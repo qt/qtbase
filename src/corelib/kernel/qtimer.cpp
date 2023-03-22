@@ -7,10 +7,11 @@
 
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
-#include "qobject_p.h"
-#include "qthread.h"
 #include "qcoreapplication_p.h"
+#include "qmetaobject_p.h"
+#include "qobject_p.h"
 #include "qproperty_p.h"
+#include "qthread.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -249,9 +250,6 @@ class QSingleShotTimer : public QObject
 {
     Q_OBJECT
     int timerId;
-    bool hasValidReceiver;
-    QPointer<const QObject> receiver;
-    QtPrivate::QSlotObjectBase *slotObj;
 public:
     ~QSingleShotTimer();
     QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, const char * m);
@@ -264,16 +262,23 @@ protected:
 };
 
 QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, const char *member)
-    : QObject(QAbstractEventDispatcher::instance()), hasValidReceiver(true), slotObj(nullptr)
+    : QObject(QAbstractEventDispatcher::instance())
 {
     timerId = startTimer(msec, timerType);
     connect(this, SIGNAL(timeout()), r, member);
 }
 
 QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, QtPrivate::QSlotObjectBase *slotObj)
-    : QObject(QAbstractEventDispatcher::instance()), hasValidReceiver(r), receiver(r), slotObj(slotObj)
+    : QObject(QAbstractEventDispatcher::instance())
 {
     timerId = startTimer(msec, timerType);
+
+    int signal_index = QMetaObjectPrivate::signalOffset(&staticMetaObject);
+    Q_ASSERT(QMetaObjectPrivate::signal(&staticMetaObject, signal_index).name() == "timeout");
+    QObjectPrivate::connectImpl(this, signal_index, r ? r : this, nullptr, slotObj,
+                                Qt::AutoConnection, nullptr, &staticMetaObject);
+
+    // ### Why is this here? Why doesn't the case above need it?
     if (r && thread() != r->thread()) {
         // Avoid leaking the QSingleShotTimer instance in case the application exits before the timer fires
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &QObject::deleteLater);
@@ -286,8 +291,6 @@ QSingleShotTimer::~QSingleShotTimer()
 {
     if (timerId > 0)
         killTimer(timerId);
-    if (slotObj)
-        slotObj->destroyIfLastRef();
 }
 
 void QSingleShotTimer::timerEvent(QTimerEvent *)
@@ -298,17 +301,7 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
         killTimer(timerId);
     timerId = -1;
 
-    if (slotObj) {
-        // If the receiver was destroyed, skip this part
-        if (Q_LIKELY(!receiver.isNull() || !hasValidReceiver)) {
-            // We allocate only the return type - we previously checked the function had
-            // no arguments.
-            void *args[1] = { nullptr };
-            slotObj->call(const_cast<QObject*>(receiver.data()), args);
-        }
-    } else {
-        emit timeout();
-    }
+    emit timeout();
 
     // we would like to use delete later here, but it feels like a
     // waste to post a new event to handle this event, so we just unset the flag
