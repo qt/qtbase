@@ -828,6 +828,8 @@ macro(qt_examples_build_begin)
 
     cmake_parse_arguments(arg "${options}" "${singleOpts}" "${multiOpts}" ${ARGN})
 
+    set(CMAKE_UNITY_BUILD OFF)
+
     # Use by qt_internal_add_example.
     set(QT_EXAMPLE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -964,6 +966,8 @@ macro(qt_examples_build_end)
 # Restore backed up CMAKE_INSTALL_PREFIX.
 set(CMAKE_INSTALL_PREFIX \"\${_qt_internal_examples_cmake_install_prefix_backup}\")
 ")
+
+    set(CMAKE_UNITY_BUILD ${QT_UNITY_BUILD})
 endmacro()
 
 function(qt_internal_add_example subdir)
