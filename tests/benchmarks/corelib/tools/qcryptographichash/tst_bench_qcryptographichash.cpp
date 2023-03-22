@@ -11,7 +11,7 @@
 #include <QString>
 #include <QTest>
 
-#include <functional>
+#include <qxpfunctional.h>
 #include <numeric>
 
 #include <time.h>
@@ -45,9 +45,8 @@ private Q_SLOTS:
 
 const int MaxBlockSize = 65536;
 
-static void for_each_algorithm(std::function<void(QCryptographicHash::Algorithm, const char*)> f)
+static void for_each_algorithm(qxp::function_ref<void(QCryptographicHash::Algorithm, const char*) const> f)
 {
-    Q_ASSERT(f);
     using A = QCryptographicHash::Algorithm;
     static const auto metaEnum = QMetaEnum::fromType<A>();
     for (int i = 0, value = metaEnum.value(i); value != -1; value = metaEnum.value(++i))
