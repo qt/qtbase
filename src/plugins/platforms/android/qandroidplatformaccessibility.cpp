@@ -66,7 +66,15 @@ void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *
         QtAndroidAccessibility::notifyObjectHide(event->uniqueId());
     } else if (event->type() == QAccessible::Focus) {
         QtAndroidAccessibility::notifyObjectFocus(event->uniqueId());
+    } else if (event->type() == QAccessible::ValueChanged) {
+        QtAndroidAccessibility::notifyValueChanged(event->uniqueId());
     }
+}
+
+void QAndroidPlatformAccessibility::setRootObject(QObject *obj)
+{
+    QPlatformAccessibility::setRootObject(obj);
+    QtAndroidAccessibility::createAccessibilityContextObject(obj);
 }
 
 QT_END_NAMESPACE

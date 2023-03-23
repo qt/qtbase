@@ -1120,6 +1120,8 @@ void QCompleter::setModel(QAbstractItemModel *model)
 {
     Q_D(QCompleter);
     QAbstractItemModel *oldModel = d->proxy->sourceModel();
+    if (oldModel == model)
+        return;
 #if QT_CONFIG(filesystemmodel)
     if (qobject_cast<const QFileSystemModel *>(oldModel))
         setCompletionRole(Qt::EditRole); // QTBUG-54642, clear FileNameRole set by QFileSystemModel

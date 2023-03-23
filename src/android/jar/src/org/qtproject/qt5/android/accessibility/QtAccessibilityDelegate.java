@@ -89,6 +89,8 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
     // this is because the Android platform window does not take
     // the offset of the view on screen into account (eg status bar on top)
     private final int[] m_globalOffset = new int[2];
+    private int m_oldOffsetX = 0;
+    private int m_oldOffsetY = 0;
 
     private class HoverEventListener implements View.OnHoverListener
     {
@@ -196,18 +198,58 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         invalidateVirtualViewId(m_focusedVirtualViewId);
     }
 
-    public void notifyObjectHide(int viewId)
+    public void notifyObjectHide(int viewId, int parentId)
     {
-        invalidateVirtualViewId(viewId);
+        // If the object had accessibility focus, we need to clear it.
+        // Note: This code is mostly copied from
+        // AccessibilityNodeProvider::performAction, but we remove the
+        // focus only if the focused view id matches the one that was hidden.
+        if (m_focusedVirtualViewId == viewId) {
+            m_focusedVirtualViewId = INVALID_ID;
+            m_view.invalidate();
+            sendEventForVirtualViewId(viewId,
+                    AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
+        }
+        // When the object is hidden, we need to notify its parent about
+        // content change, not the hidden object itself
+        invalidateVirtualViewId(parentId);
     }
 
     public void notifyObjectFocus(int viewId)
     {
         if (m_view == null)
             return;
+        m_focusedVirtualViewId = viewId;
         m_view.invalidate();
         sendEventForVirtualViewId(viewId,
                 AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+    }
+
+    public void notifyValueChanged(int viewId, String value)
+    {
+        // Send a TYPE_ANNOUNCEMENT event with the new value
+        if ((viewId == INVALID_ID) || !m_manager.isEnabled()) {
+            Log.w(TAG, "notifyValueChanged() for invalid view");
+            return;
+        }
+        final ViewGroup group = (ViewGroup)m_view.getParent();
+        if (group == null) {
+            Log.w(TAG, "Could not announce value because ViewGroup was null.");
+            return;
+        }
+        final AccessibilityEvent event =
+                AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT);
+        event.setEnabled(true);
+        event.setClassName(m_view.getClass().getName() + DEFAULT_CLASS_NAME);
+        event.setContentDescription(value);
+        if (event.getText().isEmpty() && TextUtils.isEmpty(event.getContentDescription())) {
+            Log.w(TAG, "No value to announce for " + event.getClassName());
+            return;
+        }
+        event.setPackageName(m_view.getContext().getPackageName());
+        event.setSource(m_view, viewId);
+        if (!group.requestSendAccessibilityEvent(m_view, event))
+            Log.w(TAG, "Failed to send value change announcement for " + event.getClassName());
     }
 
     public boolean sendEventForVirtualViewId(int virtualViewId, int eventType)
@@ -314,6 +356,22 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         for (int i = 0; i < ids.length; ++i)
             result.addChild(m_view, ids[i]);
 
+        // The offset values have changed, so we need to re-focus the
+        // currently focused item, otherwise it will have an incorrect
+        // focus frame
+        if ((m_oldOffsetX != offsetX) || (m_oldOffsetY != offsetY)) {
+            m_oldOffsetX = offsetX;
+            m_oldOffsetY = offsetY;
+            if (m_focusedVirtualViewId != INVALID_ID) {
+                m_nodeProvider.performAction(m_focusedVirtualViewId,
+                                             AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS,
+                                             new Bundle());
+                m_nodeProvider.performAction(m_focusedVirtualViewId,
+                                             AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS,
+                                             new Bundle());
+            }
+        }
+
         return result;
     }
 
@@ -355,6 +413,10 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
             node.setAccessibilityFocused(false);
             node.addAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
         }
+
+        int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(virtualViewId);
+        for (int i = 0; i < ids.length; ++i)
+            node.addChild(m_view, ids[i]);
 
         return node;
     }

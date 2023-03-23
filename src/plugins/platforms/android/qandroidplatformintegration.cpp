@@ -188,9 +188,10 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
     m_primaryScreen = new QAndroidPlatformScreen();
     QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
-    m_primaryScreen->setPhysicalSize(QSize(m_defaultPhysicalSizeWidth, m_defaultPhysicalSizeHeight));
-    m_primaryScreen->setSize(QSize(m_defaultScreenWidth, m_defaultScreenHeight));
-    m_primaryScreen->setAvailableGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
+    const QSize physicalSize(m_defaultPhysicalSizeWidth, m_defaultPhysicalSizeHeight);
+    const QSize screenSize(m_defaultScreenWidth, m_defaultScreenHeight);
+    const QRect geometry(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight);
+    m_primaryScreen->setSizeParameters(physicalSize, screenSize, geometry);
 
     m_mainThread = QThread::currentThread();
 
@@ -463,10 +464,10 @@ void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation cur
 
 void QAndroidPlatformIntegration::flushPendingUpdates()
 {
-    m_primaryScreen->setPhysicalSize(QSize(m_defaultPhysicalSizeWidth,
-                                           m_defaultPhysicalSizeHeight));
-    m_primaryScreen->setSize(QSize(m_defaultScreenWidth, m_defaultScreenHeight));
-    m_primaryScreen->setAvailableGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
+    const QSize physicalSize(m_defaultPhysicalSizeWidth, m_defaultPhysicalSizeHeight);
+    const QSize screenSize(m_defaultScreenWidth, m_defaultScreenHeight);
+    const QRect geometry(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight);
+    m_primaryScreen->setSizeParameters(physicalSize, screenSize, geometry);
 }
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -494,6 +495,23 @@ void QAndroidPlatformIntegration::setScreenSize(int width, int height)
         QMetaObject::invokeMethod(m_primaryScreen, "setSize", Qt::AutoConnection, Q_ARG(QSize, QSize(width, height)));
 }
 
+void QAndroidPlatformIntegration::setScreenSizeParameters(const QSize &physicalSize,
+                                                          const QSize &screenSize,
+                                                          const QRect &availableGeometry)
+{
+    if (m_primaryScreen) {
+        QMetaObject::invokeMethod(m_primaryScreen, "setSizeParameters", Qt::AutoConnection,
+                                  Q_ARG(QSize, physicalSize), Q_ARG(QSize, screenSize),
+                                  Q_ARG(QRect, availableGeometry));
+    }
+}
+
+void QAndroidPlatformIntegration::setRefreshRate(qreal refreshRate)
+{
+    if (m_primaryScreen)
+        QMetaObject::invokeMethod(m_primaryScreen, "setRefreshRate", Qt::AutoConnection,
+                                  Q_ARG(qreal, refreshRate));
+}
 #if QT_CONFIG(vulkan)
 
 QPlatformVulkanInstance *QAndroidPlatformIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const

@@ -55,6 +55,7 @@
 #include <android/native_window_jni.h>
 #include <qguiapplication.h>
 
+#include <QtCore/private/qjnihelpers_p.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <QtGui/private/qwindow_p.h>
@@ -104,6 +105,42 @@ QAndroidPlatformScreen::QAndroidPlatformScreen()
     m_physicalSize.setHeight(QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight);
     m_physicalSize.setWidth(QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth);
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QAndroidPlatformScreen::applicationStateChanged);
+
+    QJNIObjectPrivate activity(QtAndroid::activity());
+    if (!activity.isValid())
+        return;
+    QJNIObjectPrivate display;
+    if (QtAndroidPrivate::androidSdkVersion() < 30) {
+        display = activity.callObjectMethod("getWindowManager", "()Landroid/view/WindowManager;")
+                          .callObjectMethod("getDefaultDisplay", "()Landroid/view/Display;");
+    } else {
+        display = activity.callObjectMethod("getDisplay", "()Landroid/view/Display;");
+    }
+    if (!display.isValid())
+        return;
+    m_name = display.callObjectMethod("getName", "()Ljava/lang/String;").toString();
+    m_refreshRate = display.callMethod<jfloat>("getRefreshRate");
+    if (QtAndroidPrivate::androidSdkVersion() < 23) {
+        m_modes << Mode { .size = m_physicalSize.toSize(), .refreshRate = m_refreshRate };
+        return;
+    }
+    QJNIEnvironmentPrivate env;
+    const jint currentMode = display.callObjectMethod("getMode", "()Landroid/view/Display$Mode;")
+                                    .callMethod<jint>("getModeId");
+    const auto modes = display.callObjectMethod("getSupportedModes",
+                                                "()[Landroid/view/Display$Mode;");
+    const auto modesArray = jobjectArray(modes.object());
+    const auto sz = env->GetArrayLength(modesArray);
+    for (jsize i = 0; i < sz; ++i) {
+        auto mode = QJNIObjectPrivate::fromLocalRef(env->GetObjectArrayElement(modesArray, i));
+        if (currentMode == mode.callMethod<jint>("getModeId"))
+            m_currentMode = m_modes.size();
+        m_modes << Mode { .size = QSize { mode.callMethod<jint>("getPhysicalHeight"),
+                                          mode.callMethod<jint>("getPhysicalWidth") },
+                          .refreshRate = mode.callMethod<jfloat>("getRefreshRate") };
+    }
+    if (m_modes.isEmpty())
+        m_modes << Mode { .size = m_physicalSize.toSize(), .refreshRate = m_refreshRate };
 }
 
 QAndroidPlatformScreen::~QAndroidPlatformScreen()
@@ -241,6 +278,37 @@ void QAndroidPlatformScreen::setSize(const QSize &size)
 {
     m_size = size;
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
+}
+
+void QAndroidPlatformScreen::setSizeParameters(const QSize &physicalSize, const QSize &size,
+                                               const QRect &availableGeometry)
+{
+    // The goal of this method is to set all geometry-related parameters
+    // at the same time and generate only one screen geometry change event.
+    m_physicalSize = physicalSize;
+    m_size = size;
+    // If available geometry has changed, the event will be handled in
+    // setAvailableGeometry. Otherwise we need to explicitly handle it to
+    // retain the behavior, because setSize() does the handling unconditionally.
+    if (m_availableGeometry != availableGeometry) {
+        setAvailableGeometry(availableGeometry);
+    } else {
+        QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(),
+                                                           this->availableGeometry());
+    }
+}
+
+void QAndroidPlatformScreen::setRefreshRate(qreal refreshRate)
+{
+    if (refreshRate == m_refreshRate)
+        return;
+    m_refreshRate = refreshRate;
+    QWindowSystemInterface::handleScreenRefreshRateChange(QPlatformScreen::screen(), refreshRate);
+}
+
+void QAndroidPlatformScreen::setOrientation(Qt::ScreenOrientation orientation)
+{
+    QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), orientation);
 }
 
 void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)

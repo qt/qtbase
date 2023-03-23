@@ -560,31 +560,6 @@ void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
     QRasterPaintEngineState *s = state();
     // FALCON: get rid of this line, see drawImage call below.
     s->matrix = matrix;
-    QTransform::TransformationType txop = s->matrix.type();
-
-    switch (txop) {
-
-    case QTransform::TxNone:
-        s->flags.int_xform = true;
-        break;
-
-    case QTransform::TxTranslate:
-        s->flags.int_xform = qreal(int(s->matrix.dx())) == s->matrix.dx()
-                            && qreal(int(s->matrix.dy())) == s->matrix.dy();
-        break;
-
-    case QTransform::TxScale:
-        s->flags.int_xform = qreal(int(s->matrix.dx())) == s->matrix.dx()
-                            && qreal(int(s->matrix.dy())) == s->matrix.dy()
-                            && qreal(int(s->matrix.m11())) == s->matrix.m11()
-                            && qreal(int(s->matrix.m22())) == s->matrix.m22();
-        break;
-
-    default: // shear / perspective...
-        s->flags.int_xform = false;
-        break;
-    }
-
     s->flags.tx_noshear = qt_scaleForTransform(s->matrix, &s->txscale);
 
     ensureOutlineMapper();
@@ -617,7 +592,6 @@ QRasterPaintEngineState::QRasterPaintEngineState()
     flags.bilinear = false;
     flags.legacy_rounding = false;
     flags.fast_text = true;
-    flags.int_xform = true;
     flags.tx_noshear = true;
     flags.fast_images = true;
 
@@ -1793,7 +1767,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     QRectF cpRect = path.controlPointRect();
     const QRectF pathDeviceRect = s->matrix.mapRect(cpRect);
     // Skip paths that by conservative estimates are completely outside the paint device.
-    if (!pathDeviceRect.intersects(QRectF(d->deviceRect)))
+    if (!pathDeviceRect.intersects(QRectF(d->deviceRect)) || !pathDeviceRect.isValid())
         return;
 
     ProcessSpans blend = d->getBrushFunc(pathDeviceRect, &s->brushData);
@@ -3095,10 +3069,10 @@ QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
 static QPair<int, int> visibleGlyphRange(const QRectF &clip, QFontEngine *fontEngine,
                                          glyph_t *glyphs, QFixedPoint *positions, int numGlyphs)
 {
-    QFixed clipLeft = QFixed::fromReal(clip.left());
-    QFixed clipRight = QFixed::fromReal(clip.right());
-    QFixed clipTop = QFixed::fromReal(clip.top());
-    QFixed clipBottom = QFixed::fromReal(clip.bottom());
+    QFixed clipLeft = QFixed::fromReal(clip.left() - 1);
+    QFixed clipRight = QFixed::fromReal(clip.right() + 1);
+    QFixed clipTop = QFixed::fromReal(clip.top() - 1);
+    QFixed clipBottom = QFixed::fromReal(clip.bottom() + 1);
 
     int first = 0;
     while (first < numGlyphs) {
@@ -3585,7 +3559,7 @@ QRasterPaintEngine::ClipType QRasterPaintEngine::clipType() const
     \internal
     Returns the bounding rect of the currently set clip.
 */
-QRect QRasterPaintEngine::clipBoundingRect() const
+QRectF QRasterPaintEngine::clipBoundingRect() const
 {
     Q_D(const QRasterPaintEngine);
 
@@ -3597,7 +3571,7 @@ QRect QRasterPaintEngine::clipBoundingRect() const
     if (clip->hasRectClip)
         return clip->clipRect;
 
-    return QRect(clip->xmin, clip->ymin, clip->xmax - clip->xmin, clip->ymax - clip->ymin);
+    return QRectF(clip->xmin, clip->ymin, clip->xmax - clip->xmin, clip->ymax - clip->ymin);
 }
 
 void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)

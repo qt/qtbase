@@ -31,6 +31,8 @@ class tst_QFlags: public QObject
 {
     Q_OBJECT
 private slots:
+    void boolCasts() const;
+    void operators() const;
     void testFlag() const;
     void testFlagZeroFlag() const;
     void testFlagMultiBits() const;
@@ -41,6 +43,73 @@ private slots:
     void testSetFlags();
     void adl();
 };
+
+void tst_QFlags::boolCasts() const
+{
+    // This tests that the operator overloading is sufficient so that common
+    // idioms involving flags -> bool casts work as expected:
+
+    const Qt::Alignment nonNull = Qt::AlignCenter;
+    const Qt::Alignment null = {};
+
+    // basic premiss:
+    QVERIFY(bool(nonNull));
+    QVERIFY(!bool(null));
+
+    // The rest is just checking that stuff compiles:
+
+    // QVERIFY should compile:
+    QVERIFY(nonNull);
+    QVERIFY(!null);
+
+    // ifs should compile:
+    if (null) QFAIL("Can't contextually convert QFlags to bool!");
+    if (!nonNull) QFAIL("Missing operator! on QFlags (shouldn't be necessary).");
+
+    // ternary should compile:
+    QVERIFY(nonNull ? true : false);
+    QVERIFY(!null ? true : false);
+
+    // logical operators should compile:
+    QVERIFY(nonNull && true);
+    QVERIFY(nonNull || false);
+    QVERIFY(!null && true);
+    QVERIFY(!null || false);
+
+    // ... in both directions:
+    QVERIFY(true && nonNull);
+    QVERIFY(false || nonNull);
+    QVERIFY(true && !null);
+    QVERIFY(false || !null);
+
+    // ... and mixed:
+    QVERIFY(null || nonNull);
+    QVERIFY(!(null && nonNull));
+}
+
+void tst_QFlags::operators() const
+{
+#define CHECK(op, LHS, RHS, RES) \
+    do { \
+        using LFlags = QFlags<decltype(LHS)>; \
+        using RFlags = QFlags<decltype(RHS)>; \
+        QCOMPARE((LHS op RHS), (RES)); \
+        QCOMPARE((LFlags(LHS) op RHS), (RES)); \
+        QCOMPARE((LHS op RFlags(RHS)), (RES)); \
+        QCOMPARE((LFlags(LHS) op RFlags(RHS)), (RES)); \
+        QCOMPARE((LFlags(LHS) op ## = RHS), (RES)); \
+        QCOMPARE((LFlags(LHS) op ## = RFlags(RHS)), (RES)); \
+    } while (false)
+
+    CHECK(|, Qt::AlignHCenter, Qt::AlignVCenter, Qt::AlignCenter);
+    CHECK(|, Qt::AlignHCenter, Qt::AlignHCenter, Qt::AlignHCenter);
+    CHECK(&, Qt::AlignHCenter, Qt::AlignVCenter, Qt::Alignment());
+    CHECK(&, Qt::AlignHCenter, Qt::AlignHCenter, Qt::AlignHCenter);
+    CHECK(^, Qt::AlignHCenter, Qt::AlignVCenter, Qt::AlignCenter);
+    CHECK(^, Qt::AlignHCenter, Qt::AlignHCenter, Qt::Alignment());
+
+#undef CHECK
+}
 
 void tst_QFlags::testFlag() const
 {

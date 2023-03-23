@@ -2663,8 +2663,18 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
         if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget))
             allowed = dw->isAreaAllowed(toDockWidgetArea(path.at(1)));
 
-        if (qobject_cast<QDockWidgetGroupWindow *>(widget))
-            allowed = true;
+        // Read permissions from a DockWidgetGroupWindow depending on its DockWidget children
+        if (QDockWidgetGroupWindow* dwgw = qobject_cast<QDockWidgetGroupWindow *>(widget)) {
+            const QList<QDockWidget*> children = dwgw->findChildren<QDockWidget*>(QString(), Qt::FindDirectChildrenOnly);
+
+            if (children.count() == 1) {
+                // Group window has a single child => read its permissions
+                allowed = children.at(0)->isAreaAllowed(toDockWidgetArea(path.at(1)));
+            } else {
+                // Group window has more than one or no children => dock it anywhere
+                allowed = true;
+            }
+        }
 #endif
 #if QT_CONFIG(toolbar)
         if (QToolBar *tb = qobject_cast<QToolBar*>(widget))

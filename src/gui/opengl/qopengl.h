@@ -157,8 +157,6 @@ typedef char GLchar;
 # endif
 #endif
 
-QT_BEGIN_NAMESPACE
-
 
 // When all else fails we provide sensible fallbacks - this is needed to
 // allow compilation on OS X 10.6
@@ -287,6 +285,7 @@ typedef GLintptr GLvdpauSurfaceNV;
 // End of block copied from glext.h
 #endif
 
+QT_BEGIN_NAMESPACE
 
 // Types that aren't defined in all system's gl.h files.
 typedef ptrdiff_t qopengl_GLintptr;

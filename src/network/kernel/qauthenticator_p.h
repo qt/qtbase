@@ -91,6 +91,7 @@ public:
 
     enum Phase {
         Start,
+        Phase1,
         Phase2,
         Done,
         Invalid

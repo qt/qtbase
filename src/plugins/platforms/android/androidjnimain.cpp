@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -107,7 +107,6 @@ static sem_t m_exitSemaphore, m_terminateSemaphore;
 QHash<int, AndroidSurfaceClient *> m_surfaces;
 
 static QBasicMutex m_surfacesMutex;
-static int m_surfaceId = 1;
 
 
 static QAndroidPlatformIntegration *m_androidPlatformIntegration = nullptr;
@@ -231,14 +230,22 @@ namespace QtAndroid
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyAccessibilityLocationChange");
     }
 
-    void notifyObjectHide(uint accessibilityObjectId)
+    void notifyObjectHide(uint accessibilityObjectId, uint parentObjectId)
     {
-        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyObjectHide","(I)V", accessibilityObjectId);
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyObjectHide", "(II)V",
+                                                  accessibilityObjectId, parentObjectId);
     }
 
     void notifyObjectFocus(uint accessibilityObjectId)
     {
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyObjectFocus","(I)V", accessibilityObjectId);
+    }
+
+    void notifyValueChanged(uint accessibilityObjectId, jstring value)
+    {
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyValueChanged",
+                                                  "(ILjava/lang/String;)V", accessibilityObjectId,
+                                                  value);
     }
 
     void notifyQtAndroidPluginRunning(bool running)
@@ -340,6 +347,12 @@ namespace QtAndroid
         return manufacturer + QLatin1Char(' ') + model;
     }
 
+    jint generateViewId()
+    {
+        return QJNIObjectPrivate::callStaticMethod<jint>("android/view/View","generateViewId",
+                                                         "()I");
+    }
+
     int createSurface(AndroidSurfaceClient *client, const QRect &geometry, bool onTop, int imageDepth)
     {
         QJNIEnvironmentPrivate env;
@@ -347,7 +360,7 @@ namespace QtAndroid
             return -1;
 
         m_surfacesMutex.lock();
-        int surfaceId = m_surfaceId++;
+        jint surfaceId = generateViewId();
         m_surfaces[surfaceId] = client;
         m_surfacesMutex.unlock();
 
@@ -370,7 +383,7 @@ namespace QtAndroid
     int insertNativeView(jobject view, const QRect &geometry)
     {
         m_surfacesMutex.lock();
-        const int surfaceId = m_surfaceId++;
+        jint surfaceId = generateViewId();
         m_surfaces[surfaceId] = nullptr; // dummy
         m_surfacesMutex.unlock();
 
@@ -554,16 +567,21 @@ static void startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
             vm->AttachCurrentThread(&env, &args);
     }
 
+    // Register type for invokeMethod() calls.
+    qRegisterMetaType<Qt::ScreenOrientation>("Qt::ScreenOrientation");
+
     // Register resources if they are available
     if (QFile{QStringLiteral("assets:/android_rcc_bundle.rcc")}.exists())
         QResource::registerResource(QStringLiteral("assets:/android_rcc_bundle.rcc"));
 
-    QVarLengthArray<const char *> params(m_applicationParams.size());
-    for (int i = 0; i < m_applicationParams.size(); i++)
-        params[i] = static_cast<const char *>(m_applicationParams[i].constData());
+    const int argc = m_applicationParams.size();
+    QVarLengthArray<char *> argv(argc + 1);
+    for (int i = 0; i < argc; i++)
+        argv[i] = m_applicationParams[i].data();
+    argv[argc] = nullptr;
 
     startQtAndroidPluginCalled.fetchAndAddRelease(1);
-    int ret = m_main(m_applicationParams.length(), const_cast<char **>(params.data()));
+    int ret = m_main(argc, argv.data());
 
     if (m_mainLibraryHnd) {
         int res = dlclose(m_mainLibraryHnd);
@@ -655,12 +673,11 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                             jint widthPixels, jint heightPixels,
                             jint desktopWidthPixels, jint desktopHeightPixels,
                             jdouble xdpi, jdouble ydpi,
-                            jdouble scaledDensity, jdouble density, bool forceUpdate)
+                            jdouble scaledDensity, jdouble density, jfloat refreshRate)
 {
     // Android does not give us the correct screen size for immersive mode, but
     // the surface does have the right size
 
-    bool updateDesktopSize = m_desktopWidthPixels != desktopWidthPixels;
     widthPixels = qMax(widthPixels, desktopWidthPixels);
     heightPixels = qMax(heightPixels, desktopHeightPixels);
 
@@ -678,12 +695,13 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                                                               widthPixels,
                                                               heightPixels);
     } else {
-        m_androidPlatformIntegration->setDisplayMetrics(qRound(double(widthPixels)  / xdpi * 25.4),
-                                                        qRound(double(heightPixels) / ydpi * 25.4));
-        m_androidPlatformIntegration->setScreenSize(widthPixels, heightPixels);
-        if (updateDesktopSize || forceUpdate) {
-            m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
-        }
+        const QSize physicalSize(qRound(double(widthPixels) / xdpi * 25.4),
+                                 qRound(double(heightPixels) / ydpi * 25.4));
+        const QSize screenSize(widthPixels, heightPixels);
+        const QRect availableGeometry(0, 0, desktopWidthPixels, desktopHeightPixels);
+        m_androidPlatformIntegration->setScreenSizeParameters(physicalSize, screenSize,
+                                                              availableGeometry);
+        m_androidPlatformIntegration->setRefreshRate(refreshRate);
     }
 }
 
@@ -778,10 +796,20 @@ static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint new
     QAndroidPlatformIntegration::setScreenOrientation(screenOrientation, native);
     QMutexLocker lock(&m_platformMutex);
     if (m_androidPlatformIntegration) {
-        QPlatformScreen *screen = m_androidPlatformIntegration->screen();
-        QWindowSystemInterface::handleScreenOrientationChange(screen->screen(),
-                                                              screenOrientation);
+        QAndroidPlatformScreen *screen = m_androidPlatformIntegration->screen();
+        // Use invokeMethod to keep the certain order of the "geometry change"
+        // and "orientation change" event handling.
+        if (screen) {
+            QMetaObject::invokeMethod(screen, "setOrientation", Qt::AutoConnection,
+                                      Q_ARG(Qt::ScreenOrientation, screenOrientation));
+        }
     }
+}
+
+static void handleRefreshRateChanged(JNIEnv */*env*/, jclass /*cls*/, jfloat refreshRate)
+{
+    if (m_androidPlatformIntegration)
+        m_androidPlatformIntegration->setRefreshRate(refreshRate);
 }
 
 static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,
@@ -809,14 +837,15 @@ static JNINativeMethod methods[] = {
     {"quitQtCoreApplication", "()V", (void *)quitQtCoreApplication},
     {"terminateQt", "()V", (void *)terminateQt},
     {"waitForServiceSetup", "()V", (void *)waitForServiceSetup},
-    {"setDisplayMetrics", "(IIIIDDDDZ)V", (void *)setDisplayMetrics},
+    {"setDisplayMetrics", "(IIIIDDDDF)V", (void *)setDisplayMetrics},
     {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},
     {"handleOrientationChanged", "(II)V", (void *)handleOrientationChanged},
     {"onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult},
     {"onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent},
-    {"onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind}
+    {"onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind},
+    {"handleRefreshRateChanged", "(F)V", (void *)handleRefreshRateChanged}
 };
 
 #define FIND_AND_CHECK_CLASS(CLASS_NAME) \

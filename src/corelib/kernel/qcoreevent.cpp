@@ -421,6 +421,8 @@ struct QBasicAtomicBitField {
     QBasicAtomicInteger<uint> next;
     QBasicAtomicInteger<uint> data[NumInts];
 
+    constexpr QBasicAtomicBitField() = default;
+
     bool allocateSpecific(int which) noexcept
     {
         QBasicAtomicInteger<uint> &entry = data[which / BitsPerInt];
@@ -461,7 +463,7 @@ struct QBasicAtomicBitField {
 
 typedef QBasicAtomicBitField<QEvent::MaxUser - QEvent::User + 1> UserEventTypeRegistry;
 
-static UserEventTypeRegistry userEventTypeRegistry;
+static UserEventTypeRegistry userEventTypeRegistry {};
 
 static inline int registerEventTypeZeroBased(int id) noexcept
 {

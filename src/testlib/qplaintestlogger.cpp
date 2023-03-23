@@ -225,7 +225,8 @@ void QPlainTestLogger::outputMessage(const char *str)
     outputString(str);
 }
 
-void QPlainTestLogger::printMessage(const char *type, const char *msg, const char *file, int line)
+void QPlainTestLogger::printMessage(MessageSource source, const char *type, const char *msg,
+                                    const char *file, int line)
 {
     QTEST_ASSERT(type);
     QTEST_ASSERT(msg);
@@ -233,13 +234,23 @@ void QPlainTestLogger::printMessage(const char *type, const char *msg, const cha
     QTestCharBuffer messagePrefix;
 
     QTestCharBuffer failureLocation;
-    if (file) {
 #ifdef Q_OS_WIN
-#define FAILURE_LOCATION_STR "\n%s(%d) : failure location"
+    constexpr const char *INCIDENT_LOCATION_STR = "\n%s(%d) : failure location";
+    constexpr const char *OTHER_LOCATION_STR = "\n%s(%d) : message location";
 #else
-#define FAILURE_LOCATION_STR "\n   Loc: [%s(%d)]"
+    constexpr const char *INCIDENT_LOCATION_STR = "\n   Loc: [%s(%d)]";
+    constexpr const char *OTHER_LOCATION_STR = INCIDENT_LOCATION_STR;
 #endif
-        QTest::qt_asprintf(&failureLocation, FAILURE_LOCATION_STR, file, line);
+
+    if (file) {
+        switch (source) {
+        case MessageSource::Incident:
+            QTest::qt_asprintf(&failureLocation, INCIDENT_LOCATION_STR, file, line);
+            break;
+        case MessageSource::Other:
+            QTest::qt_asprintf(&failureLocation, OTHER_LOCATION_STR, file, line);
+            break;
+        }
     }
 
     const char *msgFiller = msg[0] ? " " : "";
@@ -360,7 +371,7 @@ void QPlainTestLogger::stopLogging()
 void QPlainTestLogger::enterTestFunction(const char * /*function*/)
 {
     if (QTestLog::verboseLevel() >= 1)
-        printMessage(QTest::messageType2String(Info), "entering");
+        printMessage(MessageSource::Other, QTest::messageType2String(Info), "entering");
 }
 
 void QPlainTestLogger::leaveTestFunction()
@@ -375,7 +386,7 @@ void QPlainTestLogger::addIncident(IncidentTypes type, const char *description,
         && QTestLog::verboseLevel() < 0)
         return;
 
-    printMessage(QTest::incidentType2String(type), description, file, line);
+    printMessage(MessageSource::Incident, QTest::incidentType2String(type), description, file, line);
 }
 
 void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
@@ -399,7 +410,7 @@ void QPlainTestLogger::addMessage(MessageTypes type, const QString &message,
     if (type != QAbstractTestLogger::QFatal && QTestLog::verboseLevel() < 0)
         return;
 
-    printMessage(QTest::messageType2String(type), qPrintable(message), file, line);
+    printMessage(MessageSource::Other, QTest::messageType2String(type), qPrintable(message), file, line);
 }
 
 QT_END_NAMESPACE

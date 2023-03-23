@@ -243,6 +243,7 @@ public:
 
     QIcuTimeZonePrivate *clone() const override;
 
+    using QTimeZonePrivate::displayName;
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
                         const QLocale &locale) const override;
     QString abbreviation(qint64 atMSecsSinceEpoch) const override;
@@ -345,12 +346,17 @@ public:
     QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const override;
 
 private:
-    void init(const QByteArray &ianaId);
+    static QByteArray staticSystemTimeZoneId();
     QVector<QTimeZonePrivate::Data> getPosixTransitions(qint64 msNear) const;
 
     Data dataForTzTransition(QTzTransitionTime tran) const;
 #if QT_CONFIG(icu)
-    mutable QSharedDataPointer<QTimeZonePrivate> m_icu;
+# ifdef __cpp_lib_is_final
+    static_assert(std::is_final<QIcuTimeZonePrivate>::value,
+                  "if QIcuTimeZonePrivate isn't final, we may need to specialize "
+                  "QExplicitlySharedDataPointer::clone() to call QTimeZonePrivate::clone()");
+# endif
+    mutable QExplicitlySharedDataPointer<const QIcuTimeZonePrivate> m_icu;
 #endif
     QTzTimeZoneCacheEntry cached_data;
     QVector<QTzTransitionTime> tranCache() const { return cached_data.m_tranTimes; }

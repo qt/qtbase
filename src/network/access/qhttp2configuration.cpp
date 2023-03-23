@@ -159,7 +159,7 @@ QHttp2Configuration::~QHttp2Configuration()
 
 /*!
     If \a enable is \c true, a remote server can potentially
-    use server push to send reponses in advance.
+    use server push to send responses in advance.
 
     \sa serverPushEnabled
 */

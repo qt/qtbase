@@ -85,6 +85,14 @@ inline QTestData &operator<<(QTestData &data, const char * value)
     return data;
 }
 
+#ifdef __cpp_char8_t
+Q_WEAK_OVERLOAD
+inline QTestData &operator<<(QTestData &data, const char8_t *value)
+{
+    return data << reinterpret_cast<const char *>(value);
+}
+#endif
+
 #ifdef QT_USE_QSTRINGBUILDER
 template<typename A, typename B>
 inline QTestData &operator<<(QTestData &data, const QStringBuilder<A, B> &value)

@@ -57,7 +57,7 @@ struct PkmType
     quint32 bytesPerBlock;
 };
 
-static PkmType typeMap[5] = {
+static constexpr PkmType typeMap[5] = {
     { 0x8D64,  8 },   // GL_ETC1_RGB8_OES
     { 0x9274,  8 },   // GL_COMPRESSED_RGB8_ETC2
     { 0, 0 },         // unused (obsolete)

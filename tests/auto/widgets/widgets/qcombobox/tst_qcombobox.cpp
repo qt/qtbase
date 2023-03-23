@@ -1682,6 +1682,16 @@ void tst_QComboBox::setModel()
     QCOMPARE(box.rootModelIndex(), rootModelIndex);
     box.setModel(box.model());
     QCOMPARE(box.rootModelIndex(), rootModelIndex);
+
+    // check that setting the same model as the completer's doesn't crash
+    QCompleter *completer = new QCompleter(&box);
+    box.setEditable(true);
+    box.setCompleter(completer);
+    auto *listModel = new QStringListModel({ "one", "two" }, completer);
+    completer->setModel(listModel);
+    QCOMPARE(listModel->rowCount(), 2); // make sure it wasn't deleted
+    box.setModel(listModel);
+    QCOMPARE(listModel->rowCount(), 2); // make sure it wasn't deleted
 }
 
 void tst_QComboBox::setCustomModelAndView()

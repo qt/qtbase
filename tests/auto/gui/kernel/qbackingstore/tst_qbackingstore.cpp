@@ -43,7 +43,46 @@ class tst_QBackingStore : public QObject
 
 private slots:
     void flush();
+
+    void scrollRectInImage_data();
+    void scrollRectInImage();
 };
+
+void tst_QBackingStore::scrollRectInImage_data()
+{
+    QTest::addColumn<QRect>("rect");
+    QTest::addColumn<QPoint>("offset");
+
+    QTest::newRow("empty rect") << QRect() << QPoint();
+    QTest::newRow("rect outside image") << QRect(-100, -100, 1000, 1000) << QPoint(10, 10);
+    QTest::newRow("scroll outside positive") << QRect(10, 10, 10, 10) << QPoint(1000, 1000);
+    QTest::newRow("scroll outside negative") << QRect(10, 10, 10, 10) << QPoint(-1000, -1000);
+
+    QTest::newRow("sub-rect positive scroll") << QRect(100, 100, 50, 50) << QPoint(10, 10);
+    QTest::newRow("sub-rect negative scroll") << QRect(100, 100, 50, 50) << QPoint(-10, -10);
+
+    QTest::newRow("positive vertical only") << QRect(100, 100, 50, 50) << QPoint(0, 10);
+    QTest::newRow("negative vertical only") << QRect(100, 100, 50, 50) << QPoint(0, -10);
+    QTest::newRow("positive horizontal only") << QRect(100, 100, 50, 50) << QPoint(10, 0);
+    QTest::newRow("negative horizontal only") << QRect(100, 100, 50, 50) << QPoint(-10, 0);
+
+    QTest::newRow("whole rect positive") << QRect(0, 0, 250, 250) << QPoint(10, 10);
+    QTest::newRow("whole rect negative") << QRect(0, 0, 250, 250) << QPoint(-10, -10);
+}
+
+QT_BEGIN_NAMESPACE
+Q_GUI_EXPORT void qt_scrollRectInImage(QImage &, const QRect &, const QPoint &);
+QT_END_NAMESPACE
+
+void tst_QBackingStore::scrollRectInImage()
+{
+    QImage test(250, 250, QImage::Format_ARGB32_Premultiplied);
+
+    QFETCH(QRect, rect);
+    QFETCH(QPoint, offset);
+
+    qt_scrollRectInImage(test, rect, offset);
+}
 
 class Window : public QWindow
 {

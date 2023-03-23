@@ -275,6 +275,8 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 
 void QEventDispatcherWin32Private::startPostedEventsTimer()
 {
+    // we received WM_QT_SENDPOSTEDEVENTS, so allow posting it again
+    wakeUps.storeRelaxed(0);
     if (sendPostedEventsTimerId == 0) {
         // Start a timer to deliver posted events when the message queue is emptied.
         sendPostedEventsTimerId = SetTimer(internalHwnd, SendPostedEventsTimerId,

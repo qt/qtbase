@@ -3024,6 +3024,16 @@ void tst_QObject::recursiveSignalEmission()
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess proc;
+
+    // Add the executable's directory to path so that we can find the test helper next to it
+    // in a cross-platform way. We must do this because the CWD is not pointing to this directory
+    // in debug-and-release builds.
+    QByteArray pathEnv = qgetenv("PATH");
+    qputenv("PATH",
+            pathEnv + QDir::listSeparator().toLatin1()
+                    + QCoreApplication::applicationDirPath().toLocal8Bit());
+    auto restore = qScopeGuard([&] { qputenv("PATH", pathEnv); });
+
     // signalbug helper app should always be next to this test binary
     const QString path = QStringLiteral("signalbug_helper");
     proc.start(path);

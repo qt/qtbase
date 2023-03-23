@@ -133,8 +133,8 @@ class QVersionNumber
 
         explicit SegmentStorage(QVector<int> &&seg)
         {
-            if (dataFitsInline(seg.begin(), seg.size()))
-                setInlineData(seg.begin(), seg.size());
+            if (dataFitsInline(seg.cbegin(), seg.size()))
+                setInlineData(seg.cbegin(), seg.size());
             else
                 pointer_segments = new QVector<int>(std::move(seg));
         }
@@ -269,14 +269,14 @@ public:
 
     Q_REQUIRED_RESULT Q_CORE_EXPORT static int compare(const QVersionNumber &v1, const QVersionNumber &v2) noexcept;
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
 
     Q_REQUIRED_RESULT Q_CORE_EXPORT QString toString() const;
 #if QT_STRINGVIEW_LEVEL < 2
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = nullptr);
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static QVersionNumber fromString(const QString &string, int *suffixIndex = nullptr);
 #endif
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QLatin1String string, int *suffixIndex = nullptr);
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QStringView string, int *suffixIndex = nullptr);
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static QVersionNumber fromString(QLatin1String string, int *suffixIndex = nullptr);
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static QVersionNumber fromString(QStringView string, int *suffixIndex = nullptr);
 
 private:
 #ifndef QT_NO_DATASTREAM

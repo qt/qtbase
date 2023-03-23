@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
@@ -377,6 +377,10 @@ bool QSqlQuery::exec(const QString& query)
     QElapsedTimer t;
     t.start();
 #endif
+    if (!driver()) {
+        qWarning("QSqlQuery::exec: called before driver has been set up");
+        return false;
+    }
     if (d->ref.loadRelaxed() != 1) {
         bool fo = isForwardOnly();
         *this = QSqlQuery(driver()->createResult());

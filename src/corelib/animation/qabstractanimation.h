@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 class QAnimationGroup;
 class QSequentialAnimationGroup;
 class QAnimationDriver;
+class QUnifiedTimer;
 
 class QAbstractAnimationPrivate;
 class Q_CORE_EXPORT QAbstractAnimation : public QObject

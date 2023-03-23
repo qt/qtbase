@@ -1549,7 +1549,8 @@ static bool getBlock(const ushort *tokens, int limit, int &offset, QString *outS
                 ok = getSubBlock(tokens, limit, offset, outStr, indent, "block");
                 break;
             default:
-                Q_ASSERT(!"unhandled token");
+                // unhandled token
+                Q_UNREACHABLE();
             }
         }
         if (!ok)

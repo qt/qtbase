@@ -84,7 +84,13 @@ public:
         this->setRunnable(this);
         this->reportStarted();
         QFuture<T> theFuture = this->future();
-        pool->start(this, /*m_priority*/ 0);
+        if (pool) {
+            pool->start(this, /*m_priority*/ 0);
+        } else {
+            this->reportCanceled();
+            this->reportFinished();
+            delete this;
+        }
         return theFuture;
     }
 

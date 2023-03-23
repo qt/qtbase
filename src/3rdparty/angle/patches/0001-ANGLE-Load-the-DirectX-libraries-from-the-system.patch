@@ -1,0 +1,77 @@
+From a5b015834168dee1ba91603bb82ccab3a50b445c Mon Sep 17 00:00:00 2001
+From: Andy Shaw <andy.shaw@qt.io>
+Date: Fri, 18 Feb 2022 14:47:55 +0100
+Subject: [PATCH] ANGLE: Load the DirectX libraries from the system path
+ directly
+
+Change-Id: I34812b32e420a6f50e5be6b26b97c8e21e0e7870
+---
+ .../renderer/d3d/d3d11/DebugAnnotator11.cpp    |  8 +++++++-
+ .../libANGLE/renderer/d3d/d3d11/Renderer11.cpp | 18 +++++++++++++++---
+ 2 files changed, 22 insertions(+), 4 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
+index 1e70363e11..8100acf56c 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
+@@ -11,6 +11,8 @@
+ #include "common/debug.h"
+ #include "libANGLE/renderer/d3d/d3d11/renderer11_utils.h"
+ 
++#define INFO_BUFFER_SIZE 32767
++
+ namespace rx
+ {
+ 
+@@ -88,7 +90,11 @@ void DebugAnnotator11::initializeDevice()
+     if (!mInitialized)
+     {
+ #if !defined(ANGLE_ENABLE_WINDOWS_STORE)
+-        mD3d11Module = LoadLibrary(TEXT("d3d11.dll"));
++        TCHAR infoBuf[INFO_BUFFER_SIZE];
++        DWORD bufCharCount = INFO_BUFFER_SIZE;
++        GetSystemDirectory(infoBuf, INFO_BUFFER_SIZE);
++        lstrcat(infoBuf, TEXT("\\d3d11.dll"));
++        mD3d11Module = LoadLibrary(infoBuf);
+         ASSERT(mD3d11Module);
+ 
+         PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)GetProcAddress(mD3d11Module, "D3D11CreateDevice");
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+index b0ef9abddc..c9aeace241 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+@@ -80,6 +80,8 @@
+ #define ANGLE_SKIP_DXGI_1_2_CHECK 0
+ #endif
+ 
++#define INFO_BUFFER_SIZE 32767
++
+ namespace rx
+ {
+ 
+@@ -772,9 +774,19 @@ egl::Error Renderer11::initializeD3DDevice()
+         {
+             SCOPED_ANGLE_HISTOGRAM_TIMER("GPU.ANGLE.Renderer11InitializeDLLsMS");
+             TRACE_EVENT0("gpu.angle", "Renderer11::initialize (Load DLLs)");
+-            mDxgiModule  = LoadLibrary(TEXT("dxgi.dll"));
+-            mD3d11Module = LoadLibrary(TEXT("d3d11.dll"));
+-            mDCompModule = LoadLibrary(TEXT("dcomp.dll"));
++            TCHAR dxgiFile[INFO_BUFFER_SIZE];
++            TCHAR d3d11File[INFO_BUFFER_SIZE];
++            TCHAR dcompFile[INFO_BUFFER_SIZE];
++            DWORD bufCharCount = INFO_BUFFER_SIZE;
++            GetSystemDirectory(dxgiFile, INFO_BUFFER_SIZE);
++            lstrcpy(d3d11File, dxgiFile);
++            lstrcpy(dcompFile, dxgiFile);
++            lstrcat(dxgiFile, TEXT("\\dxgi.dll"));
++            mDxgiModule = LoadLibrary(dxgiFile);
++            lstrcat(d3d11File, TEXT("\\d3d11.dll"));
++            mD3d11Module = LoadLibrary(d3d11File);
++            lstrcat(dcompFile, TEXT("\\dcomp.dll"));
++            mDCompModule = LoadLibrary(dcompFile);
+ 
+             if (mD3d11Module == nullptr || mDxgiModule == nullptr)
+             {
+-- 
+2.27.0.windows.1
+

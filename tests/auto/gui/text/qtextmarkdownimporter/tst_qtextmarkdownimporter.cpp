@@ -73,6 +73,7 @@ public:
         Mono = 0x08,
         Link = 0x10
     };
+    Q_ENUM(CharFormat)
     Q_DECLARE_FLAGS(CharFormats, CharFormat)
 };
 
@@ -324,12 +325,14 @@ void tst_QTextMarkdownImporter::nestedSpans()
                          << "weight" << fmt.fontWeight() << "italic" << fmt.fontItalic()
                          << "strikeout" << fmt.fontStrikeOut() << "anchor" << fmt.isAnchor()
                          << "monospace" << QFontInfo(fmt.font()).fixedPitch() // depends on installed fonts (QTBUG-75649)
-                                        << fmt.fontFixedPitch() // returns false even when font family is "monospace"
-                                        << fmt.hasProperty(QTextFormat::FontFixedPitch); // works
-        QCOMPARE(fmt.fontWeight() > 50, expectedFormat.testFlag(Bold));
+                                        << fmt.fontFixedPitch()
+                                        << fmt.hasProperty(QTextFormat::FontFixedPitch)
+                         << "expected" << expectedFormat;
+        QCOMPARE(fmt.fontWeight() > QFont::Normal, expectedFormat.testFlag(Bold));
         QCOMPARE(fmt.fontItalic(), expectedFormat.testFlag(Italic));
         QCOMPARE(fmt.fontStrikeOut(), expectedFormat.testFlag(Strikeout));
         QCOMPARE(fmt.isAnchor(), expectedFormat.testFlag(Link));
+        QCOMPARE(fmt.fontFixedPitch(), expectedFormat.testFlag(Mono));
         QCOMPARE(fmt.hasProperty(QTextFormat::FontFixedPitch), expectedFormat.testFlag(Mono));
         ++iterator;
     }

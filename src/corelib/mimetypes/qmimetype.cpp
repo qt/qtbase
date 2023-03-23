@@ -529,3 +529,5 @@ QDebug operator<<(QDebug debug, const QMimeType &mime)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qmimetype.cpp"

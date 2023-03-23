@@ -145,14 +145,14 @@ QAbstractItemModel *ModelsToTest::createModel(const QString &modelType)
 
     if (modelType == "QSortFilterProxyModelEmpty") {
         QSortFilterProxyModel *model = new QSortFilterProxyModel;
-        QStandardItemModel *standardItemModel = new QStandardItemModel;
+        QStandardItemModel *standardItemModel = new QStandardItemModel(model);
         model->setSourceModel(standardItemModel);
         return model;
     }
 
     if (modelType == "QSortFilterProxyModelRegExp") {
         QSortFilterProxyModel *model = new QSortFilterProxyModel;
-        QStandardItemModel *standardItemModel = new QStandardItemModel;
+        QStandardItemModel *standardItemModel = new QStandardItemModel(model);
         model->setSourceModel(standardItemModel);
         populateTestArea(model);
         model->setFilterRegularExpression(QRegularExpression("(^$|I.*)"));
@@ -161,7 +161,7 @@ QAbstractItemModel *ModelsToTest::createModel(const QString &modelType)
 
     if (modelType == "QSortFilterProxyModel") {
         QSortFilterProxyModel *model = new QSortFilterProxyModel;
-        QStandardItemModel *standardItemModel = new QStandardItemModel;
+        QStandardItemModel *standardItemModel = new QStandardItemModel(model);
         model->setSourceModel(standardItemModel);
         populateTestArea(model);
         return model;

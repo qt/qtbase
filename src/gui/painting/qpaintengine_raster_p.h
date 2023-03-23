@@ -111,7 +111,6 @@ public:
         uint bilinear : 1;
         uint legacy_rounding : 1;
         uint fast_text : 1;
-        uint int_xform : 1;
         uint tx_noshear : 1;
         uint fast_images : 1;
     };
@@ -206,7 +205,7 @@ public:
         ComplexClip
     };
     ClipType clipType() const;
-    QRect clipBoundingRect() const;
+    QRectF clipBoundingRect() const;
 
 #ifdef Q_OS_WIN
     void setDC(HDC hdc);

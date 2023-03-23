@@ -286,16 +286,16 @@ void tst_QPropertyAnimation::statesAndSignals_data()
 void tst_QPropertyAnimation::statesAndSignals()
 {
     QFETCH(bool, uncontrolled);
-    QPropertyAnimation *anim;
+    std::unique_ptr<QPropertyAnimation> anim;
     if (uncontrolled)
-        anim = new UncontrolledAnimation;
+        anim.reset(new UncontrolledAnimation);
     else
-        anim = new DummyPropertyAnimation;
+        anim.reset(new DummyPropertyAnimation);
     anim->setDuration(100);
 
-    QSignalSpy finishedSpy(anim, &QPropertyAnimation::finished);
-    QSignalSpy runningSpy(anim, &QPropertyAnimation::stateChanged);
-    QSignalSpy currentLoopSpy(anim, &QPropertyAnimation::currentLoopChanged);
+    QSignalSpy finishedSpy(anim.get(), &QPropertyAnimation::finished);
+    QSignalSpy runningSpy(anim.get(), &QPropertyAnimation::stateChanged);
+    QSignalSpy currentLoopSpy(anim.get(), &QPropertyAnimation::currentLoopChanged);
 
     QVERIFY(finishedSpy.isValid());
     QVERIFY(runningSpy.isValid());
@@ -366,8 +366,6 @@ void tst_QPropertyAnimation::statesAndSignals()
         QCOMPARE(runningSpy.count(), 1); // anim has stopped
         QCOMPARE(finishedSpy.count(), 2);
         QCOMPARE(anim->currentLoopTime(), 100);
-
-        delete anim;
     }
 }
 
@@ -416,9 +414,10 @@ void tst_QPropertyAnimation::deletion1()
 void tst_QPropertyAnimation::deletion2()
 {
     TestAnimationDriver timeDriver;
-    //test that the animation get deleted if the object is deleted
+    // test that the animation does not get deleted if the object is deleted
     QObject *object = new QWidget;
     QPointer<QPropertyAnimation> anim = new QPropertyAnimation(object,"minimumWidth");
+    QVERIFY(anim->parent() != object);
     anim->setStartValue(10);
     anim->setEndValue(20);
     anim->setDuration(200);
@@ -445,14 +444,18 @@ void tst_QPropertyAnimation::deletion2()
     QTimer::singleShot(0, object, SLOT(deleteLater()));
     timeDriver.wait(50);
 
+    QVERIFY(anim);
     QVERIFY(!anim->targetObject());
+
+    delete anim;
 }
 
 void tst_QPropertyAnimation::deletion3()
 {
     //test that the stopped signal is emit when the animation is destroyed
     TestAnimationDriver timeDriver;
-    QObject *object = new QWidget;
+    QWidget w;
+    QObject *object = &w;
     QPropertyAnimation *anim = new QPropertyAnimation(object,"minimumWidth");
     anim->setStartValue(10);
     anim->setEndValue(20);
@@ -1327,8 +1330,8 @@ void tst_QPropertyAnimation::totalDuration()
 
 void tst_QPropertyAnimation::zeroLoopCount()
 {
-    DummyPropertyAnimation* anim;
-    anim = new DummyPropertyAnimation;
+    DummyPropertyAnimation animation;
+    auto *anim = &animation;
     anim->setStartValue(0);
     anim->setDuration(20);
     anim->setLoopCount(0);

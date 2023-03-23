@@ -887,6 +887,8 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
             what |= QFileSystemMetaData::DirectoryType;
     }
+    if (what & QFileSystemMetaData::AliasType)
+        what |= QFileSystemMetaData::LinkType;
 #endif
 #ifdef UF_HIDDEN
     if (what & QFileSystemMetaData::HiddenAttribute) {
@@ -1022,8 +1024,11 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
 #if defined(Q_OS_DARWIN)
     if (what & QFileSystemMetaData::AliasType) {
-        if (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsAliasFileKey))
-            data.entryFlags |= QFileSystemMetaData::AliasType;
+        if (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsAliasFileKey)) {
+            // kCFURLIsAliasFileKey includes symbolic links, so filter those out
+            if (!(data.entryFlags & QFileSystemMetaData::LinkType))
+                data.entryFlags |= QFileSystemMetaData::AliasType;
+        }
         data.knownFlagsMask |= QFileSystemMetaData::AliasType;
     }
 
@@ -1360,10 +1365,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     int counter = 0;
     QFile infoFile;
     auto makeUniqueTrashedName = [trashedName, &counter]() -> QString {
-        ++counter;
-        return QString(QLatin1String("/%1-%2"))
-                                        .arg(trashedName)
-                                        .arg(counter, 4, 10, QLatin1Char('0'));
+        return QString::asprintf("/%ls-%04d", qUtf16Printable(trashedName), ++counter);
     };
     do {
         while (QFile::exists(trashDir.filePath(filesDir) + uniqueTrashedName))

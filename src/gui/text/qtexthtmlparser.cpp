@@ -784,8 +784,8 @@ void QTextHtmlParser::parseCloseTag()
 void QTextHtmlParser::parseExclamationTag()
 {
     ++pos;
-    if (hasPrefix(QLatin1Char('-'),1) && hasPrefix(QLatin1Char('-'),2)) {
-        pos += 3;
+    if (hasPrefix(QLatin1Char('-')) && hasPrefix(QLatin1Char('-'), 1)) {
+        pos += 2;
         // eat comments
         int end = txt.indexOf(QLatin1String("-->"), pos);
         pos = (end >= 0 ? end + 3 : len);
@@ -880,7 +880,7 @@ QString QTextHtmlParser::parseWord()
         while (pos < len) {
             QChar c = txt.at(pos++);
             if (c == QLatin1Char('>')
-                || (c == QLatin1Char('/') && hasPrefix(QLatin1Char('>'), 1))
+                || (c == QLatin1Char('/') && hasPrefix(QLatin1Char('>')))
                 || c == QLatin1Char('<')
                 || c == QLatin1Char('=')
                 || c.isSpace()) {

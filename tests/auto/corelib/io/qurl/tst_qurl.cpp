@@ -3497,7 +3497,7 @@ void tst_QUrl::effectiveTLDs_data()
         << ".app.os.stg.fedoraproject.org";
     QTest::newRow("development.run") << QUrl::fromEncoded("http://test.development.run") << ".development.run";
     QTest::newRow("crafting.xyz") << QUrl::fromEncoded("http://test.crafting.xyz") << ".crafting.xyz";
-    QTest::newRow("nym.ie") << QUrl::fromEncoded("http://shamus.nym.ie") << ".nym.ie";
+    QTest::newRow("nym.ie") << QUrl::fromEncoded("http://shamus.nym.ie") << ".ie";
     QTest::newRow("vapor.cloud") << QUrl::fromEncoded("http://test.vapor.cloud") << ".vapor.cloud";
     QTest::newRow("official.academy") << QUrl::fromEncoded("http://acredited.official.academy") << ".official.academy";
 }

@@ -1680,8 +1680,8 @@ bool QMacStylePrivate::CocoaControl::getCocoaButtonTypeAndBezelStyle(NSButtonTyp
         *bezelStyle = NSShadowlessSquareBezelStyle;
         break;
     case Button_PushButton:
-        *buttonType = NSPushOnPushOffButton;
-        *bezelStyle = NSRoundedBezelStyle;
+        *buttonType = NSButtonTypeMomentaryPushIn;
+        *bezelStyle = NSBezelStyleRounded;
         break;
     default:
         return false;
@@ -3725,8 +3725,15 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             pb.frame = frameRect.toCGRect();
 
             pb.enabled = isEnabled;
+
+            // With the 'momentary push in' type this gives an impression of a
+            // button in a 'pressed' state (the 'momentary push in' does
+            // not show its state otherwise):
             [pb highlight:isPressed];
-            pb.state = isHighlighted && !isPressed ? NSOnState : NSOffState;
+            // For default/checked button this will give the required
+            // button accent color:
+            pb.keyEquivalent = isHighlighted ? @"\r" : @"";
+
             d->drawNSViewInRect(pb, frameRect, p, ^(CGContextRef, const CGRect &r) {
                 [pb.cell drawBezelWithFrame:r inView:pb.superview];
             });
@@ -3768,16 +3775,22 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const bool hasText = !btn.text.isEmpty();
             const bool isActive = btn.state & State_Active;
             const bool isPressed = btn.state & State_Sunken;
+            const bool isDefault = (btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)
+                                                || d->autoDefaultButton == btn.styleObject;
 
             const auto ct = cocoaControlType(&btn, w);
 
             if (!hasMenu && ct != QMacStylePrivate::Button_SquareButton) {
-                if (isPressed
-                    || (isActive && isEnabled
-                        && ((btn.state & State_On)
-                            || ((btn.features & QStyleOptionButton::DefaultButton) && !d->autoDefaultButton)
-                            || d->autoDefaultButton == btn.styleObject)))
-                btn.palette.setColor(QPalette::ButtonText, Qt::white);
+                if (isPressed || (isActive && isEnabled && ((btn.state & State_On) || isDefault)))
+                    btn.palette.setColor(QPalette::ButtonText, Qt::white);
+            }
+
+            if (!isDarkMode() && QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSBigSur) {
+                if (!isDefault && !(btn.state & State_On)) {
+                    // On macOS 12 it's a gray button, white text color (if set in the
+                    // previous statement) would be almost invisible.
+                    btn.palette.setColor(QPalette::ButtonText, Qt::black);
+                }
             }
 
             if ((!hasIcon && !hasMenu) || (hasIcon && !hasText)) {
@@ -3954,6 +3967,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 break;
             }
             pb.frame = frameRect.toCGRect();
+
+            if (!isPopupButton) {
+                // Note: these days we use 'momentary push in' for Button_PushButton,
+                // but tabs are also rendered using NSButton/ButtonPushButton, and
+                // here we need 'push on/off' to make it work (tab highlight colors).
+                pb.buttonType = NSButtonTypePushOnPushOff;
+            }
 
             pb.enabled = isEnabled;
             [pb highlight:isPressed];

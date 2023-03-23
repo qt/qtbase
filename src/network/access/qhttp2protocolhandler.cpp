@@ -1135,8 +1135,6 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
     // moment and we are probably not done yet. So we extract url and set it
     // here, if needed.
     int statusCode = 0;
-    QUrl redirectUrl;
-
     for (const auto &pair : headers) {
         const auto &name = pair.name;
         auto value = pair.value;
@@ -1159,8 +1157,6 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
             if (ok)
                 httpReply->setContentLength(length);
         } else {
-            if (name == "location")
-                redirectUrl = QUrl::fromEncoded(value);
             QByteArray binder(", ");
             if (name == "set-cookie")
                 binder = "\n";
@@ -1225,8 +1221,20 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
         }
     }
 
-    if (QHttpNetworkReply::isHttpRedirect(statusCode) && redirectUrl.isValid())
-        httpReply->setRedirectUrl(redirectUrl);
+    if (QHttpNetworkReply::isHttpRedirect(statusCode) && httpRequest.isFollowRedirects()) {
+        QHttpNetworkConnectionPrivate::ParseRedirectResult result =
+                m_connection->d_func()->parseRedirectResponse(httpReply);
+        if (result.errorCode != QNetworkReply::NoError) {
+            auto errorString = m_connection->d_func()->errorDetail(result.errorCode, m_socket);
+            finishStreamWithError(stream, result.errorCode, errorString);
+            sendRST_STREAM(stream.streamID, INTERNAL_ERROR);
+            markAsReset(stream.streamID);
+            return;
+        }
+
+        if (result.redirectUrl.isValid())
+            httpReply->setRedirectUrl(result.redirectUrl);
+    }
 
     if (httpReplyPrivate->isCompressed() && httpRequest.d->autoDecompress)
         httpReplyPrivate->removeAutoDecompressHeader();

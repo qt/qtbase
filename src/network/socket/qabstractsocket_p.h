@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -162,9 +162,9 @@ public:
 
     QAbstractSocket::NetworkLayerProtocol preferredNetworkLayerProtocol;
 
-    bool prePauseReadSocketNotifierState;
-    bool prePauseWriteSocketNotifierState;
-    bool prePauseExceptionSocketNotifierState;
+    bool prePauseReadSocketNotifierState = false;
+    bool prePauseWriteSocketNotifierState = false;
+    bool prePauseExceptionSocketNotifierState = false;
     static void pauseSocketNotifiers(QAbstractSocket*);
     static void resumeSocketNotifiers(QAbstractSocket*);
     static QAbstractSocketEngine* getSocketEngine(QAbstractSocket*);

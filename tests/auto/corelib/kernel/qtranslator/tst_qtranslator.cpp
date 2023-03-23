@@ -401,9 +401,9 @@ void tst_QTranslator::translationInThreadWhileInstallingTranslator()
 
     thread.runningCondition.wait(&thread.startupLock);
 
-    QTranslator *tor = new QTranslator;
-    tor->load("hellotr_la");
-    QCoreApplication::installTranslator(tor);
+    QTranslator tor;
+    tor.load("hellotr_la");
+    QCoreApplication::installTranslator(&tor);
 
     ++thread.terminate;
 

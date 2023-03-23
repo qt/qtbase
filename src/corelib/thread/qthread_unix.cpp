@@ -278,6 +278,29 @@ static void setCurrentThreadName(const char *name)
 }
 #endif
 
+namespace {
+template <typename T>
+void terminate_on_exception(T &&t)
+{
+#ifndef QT_NO_EXCEPTIONS
+    try {
+#endif
+        std::forward<T>(t)();
+#ifndef QT_NO_EXCEPTIONS
+#ifdef __GLIBCXX__
+    // POSIX thread cancellation under glibc is implemented by throwing an exception
+    // of this type. Do what libstdc++ is doing and handle it specially in order not to
+    // abort the application if user's code calls a cancellation function.
+    } catch (abi::__forced_unwind &) {
+        throw;
+#endif // __GLIBCXX__
+    } catch (...) {
+        qTerminate();
+    }
+#endif // QT_NO_EXCEPTIONS
+}
+} // unnamed namespace
+
 void *QThreadPrivate::start(void *arg)
 {
 #if !defined(Q_OS_ANDROID)
@@ -285,10 +308,7 @@ void *QThreadPrivate::start(void *arg)
 #endif
     pthread_cleanup_push(QThreadPrivate::finish, arg);
 
-#ifndef QT_NO_EXCEPTIONS
-    try
-#endif
-    {
+    terminate_on_exception([&] {
         QThread *thr = reinterpret_cast<QThread *>(arg);
         QThreadData *data = QThreadData::get2(thr);
 
@@ -296,7 +316,7 @@ void *QThreadPrivate::start(void *arg)
             QMutexLocker locker(&thr->d_func()->mutex);
 
             // do we need to reset the thread priority?
-            if (int(thr->d_func()->priority) & ThreadPriorityResetFlag) {
+            if (thr->d_func()->priority & ThreadPriorityResetFlag) {
                 thr->d_func()->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
             }
 
@@ -316,10 +336,10 @@ void *QThreadPrivate::start(void *arg)
             // Sets the name of the current thread. We can only do this
             // when the thread is starting, as we don't have a cross
             // platform way of setting the name of an arbitrary thread.
-            if (Q_LIKELY(thr->objectName().isEmpty()))
+            if (Q_LIKELY(thr->d_func()->objectName.isEmpty()))
                 setCurrentThreadName(thr->metaObject()->className());
             else
-                setCurrentThreadName(thr->objectName().toLocal8Bit());
+                setCurrentThreadName(std::exchange(thr->d_func()->objectName, {}).toLocal8Bit());
         }
 #endif
 
@@ -329,20 +349,7 @@ void *QThreadPrivate::start(void *arg)
         pthread_testcancel();
 #endif
         thr->run();
-    }
-#ifndef QT_NO_EXCEPTIONS
-#ifdef __GLIBCXX__
-    // POSIX thread cancellation under glibc is implemented by throwing an exception
-    // of this type. Do what libstdc++ is doing and handle it specially in order not to
-    // abort the application if user's code calls a cancellation function.
-    catch (const abi::__forced_unwind &) {
-        throw;
-    }
-#endif // __GLIBCXX__
-    catch (...) {
-        qTerminate();
-    }
-#endif // QT_NO_EXCEPTIONS
+    });
 
     // This pop runs finish() below. It's outside the try/catch (and has its
     // own try/catch) to prevent finish() to be run in case an exception is
@@ -354,10 +361,7 @@ void *QThreadPrivate::start(void *arg)
 
 void QThreadPrivate::finish(void *arg)
 {
-#ifndef QT_NO_EXCEPTIONS
-    try
-#endif
-    {
+    terminate_on_exception([&] {
         QThread *thr = reinterpret_cast<QThread *>(arg);
         QThreadPrivate *d = thr->d_func();
 
@@ -389,20 +393,7 @@ void QThreadPrivate::finish(void *arg)
         d->data->threadId.storeRelaxed(nullptr);
 
         d->thread_done.wakeAll();
-    }
-#ifndef QT_NO_EXCEPTIONS
-#ifdef __GLIBCXX__
-    // POSIX thread cancellation under glibc is implemented by throwing an exception
-    // of this type. Do what libstdc++ is doing and handle it specially in order not to
-    // abort the application if user's code calls a cancellation function.
-    catch (const abi::__forced_unwind &) {
-        throw;
-    }
-#endif // __GLIBCXX__
-    catch (...) {
-        qTerminate();
-    }
-#endif // QT_NO_EXCEPTIONS
+    });
 }
 
 
@@ -671,7 +662,7 @@ void QThread::start(Priority priority)
                 // could not set scheduling hints, fallback to inheriting them
                 // we'll try again from inside the thread
                 pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED);
-                d->priority = Priority(priority | ThreadPriorityResetFlag);
+                d->priority = std::underlying_type<Priority>::type(priority) | ThreadPriorityResetFlag;
             }
             break;
         }
@@ -702,7 +693,10 @@ void QThread::start(Priority priority)
         pthread_attr_setthreadname(&attr, metaObject()->className());
     else
         pthread_attr_setthreadname(&attr, objectName().toLocal8Bit());
+#else
+    d->objectName = objectName();
 #endif
+
     pthread_t threadId;
     int code = pthread_create(&threadId, &attr, QThreadPrivate::start, this);
     if (code == EPERM) {

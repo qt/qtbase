@@ -193,11 +193,11 @@ void QWindowsPipeReader::notified(DWORD errorCode, DWORD numberOfBytesRead)
 
     actualReadBufferSize += numberOfBytesRead;
     readBuffer.truncate(actualReadBufferSize);
-    startAsyncRead();
     if (!readyReadPending) {
         readyReadPending = true;
         emit _q_queueReadyRead(QWindowsPipeReader::QPrivateSignal());
     }
+    startAsyncRead();
 }
 
 /*!

@@ -50,6 +50,7 @@
 #include <qstring.h>
 #include <qdatetime.h>
 #include <qrandom.h>
+#include "private/qsystemlibrary_p.h"
 
 #ifdef Q_OS_WIN
 #include <qmutex.h>
@@ -1563,7 +1564,7 @@ static bool q_SSPI_library_load()
 
     // Initialize security interface
     if (pSecurityFunctionTable == nullptr) {
-        securityDLLHandle = LoadLibrary(L"secur32.dll");
+        securityDLLHandle = QSystemLibrary::load(L"secur32");
         if (securityDLLHandle != nullptr) {
             INIT_SECURITY_INTERFACE pInitSecurityInterface =
                 reinterpret_cast<INIT_SECURITY_INTERFACE>(

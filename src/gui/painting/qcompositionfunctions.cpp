@@ -1045,12 +1045,12 @@ private:
 
 static inline int mix_alpha(int da, int sa)
 {
-    return 255 - ((255 - sa) * (255 - da) >> 8);
+    return 255 - qt_div_255((255 - sa) * (255 - da));
 }
 
 static inline uint mix_alpha_rgb64(uint da, uint sa)
 {
-    return 65535 - ((65535 - sa) * (65535 - da) >> 16);
+    return 65535U - qt_div_65535((65535U - sa) * (65535U - da));
 }
 
 /*
@@ -1337,7 +1337,7 @@ static inline void comp_func_Screen_impl(uint *Q_DECL_RESTRICT dest, const uint 
         int da = qAlpha(d);
         int sa = qAlpha(s);
 
-#define OP(a, b) 255 - (((255-a) * (255-b)) >> 8)
+#define OP(a, b) 255 - qt_div_255((255-a) * (255-b))
         int r = OP(  qRed(d),   qRed(s));
         int b = OP( qBlue(d),  qBlue(s));
         int g = OP(qGreen(d), qGreen(s));
@@ -1367,7 +1367,7 @@ static inline void comp_func_Screen_impl(QRgba64 *Q_DECL_RESTRICT dest, const QR
         uint da = d.alpha();
         uint sa = s.alpha();
 
-#define OP(a, b) 65535 - (((65535-a) * (65535-b)) >> 16)
+#define OP(a, b) 65535U - qt_div_65535((65535U-a) * (65535U-b))
         uint r = OP(  d.red(),   s.red());
         uint b = OP( d.blue(),  s.blue());
         uint g = OP(d.green(), s.green());

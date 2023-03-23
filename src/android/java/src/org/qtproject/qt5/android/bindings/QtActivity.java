@@ -1127,15 +1127,21 @@ public class QtActivity extends Activity
         QtNative.activityDelegate().notifyAccessibilityLocationChange();
     }
 
-    public void notifyObjectHide(int viewId)
+    public void notifyObjectHide(int viewId, int parentId)
     {
-        QtNative.activityDelegate().notifyObjectHide(viewId);
+        QtNative.activityDelegate().notifyObjectHide(viewId, parentId);
     }
 
     public void notifyObjectFocus(int viewId)
     {
         QtNative.activityDelegate().notifyObjectFocus(viewId);
     }
+
+    public void notifyValueChanged(int viewId, String value)
+    {
+        QtNative.activityDelegate().notifyValueChanged(viewId, value);
+    }
+
     public boolean isKeyboardVisible()
     {
         return QtNative.activityDelegate().isKeyboardVisible();

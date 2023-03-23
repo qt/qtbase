@@ -51,6 +51,7 @@ private slots:
     void testWriteParagraph();
     void testWriteList();
     void testWriteEmptyList();
+    void testWriteCheckboxListItemEndingWithCode();
     void testWriteNestedBulletLists_data();
     void testWriteNestedBulletLists();
     void testWriteNestedNumericLists();
@@ -131,6 +132,34 @@ void tst_QTextMarkdownWriter::testWriteEmptyList()
     cursor.createList(QTextListFormat::ListDisc);
 
     QCOMPARE(documentToUnixMarkdown(), QString::fromLatin1("- \n"));
+}
+
+void tst_QTextMarkdownWriter::testWriteCheckboxListItemEndingWithCode()
+{
+    QTextCursor cursor(document);
+    QTextList *list = cursor.createList(QTextListFormat::ListDisc);
+    cursor.insertText("Image.originalSize property (not necessary; PdfDocument.pagePointSize() substitutes)");
+    list->add(cursor.block());
+    {
+        auto fmt = cursor.block().blockFormat();
+        fmt.setMarker(QTextBlockFormat::MarkerType::Unchecked);
+        cursor.setBlockFormat(fmt);
+    }
+    cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor, 2);
+    cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
+    cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor, 4);
+    QCOMPARE(cursor.selectedText(), QString::fromLatin1("PdfDocument.pagePointSize()"));
+    auto fmt = cursor.charFormat();
+    fmt.setFontFixedPitch(true);
+    cursor.setCharFormat(fmt);
+    cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor, 5);
+    cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
+    cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor, 4);
+    QCOMPARE(cursor.selectedText(), QString::fromLatin1("Image.originalSize"));
+    cursor.setCharFormat(fmt);
+
+    QCOMPARE(documentToUnixMarkdown(), QString::fromLatin1(
+        "- [ ] `Image.originalSize` property (not necessary; `PdfDocument.pagePointSize()`\n  substitutes)\n"));
 }
 
 void tst_QTextMarkdownWriter::testWriteNestedBulletLists_data()

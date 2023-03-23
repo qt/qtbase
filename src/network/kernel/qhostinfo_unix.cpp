@@ -122,7 +122,6 @@ static QFunctionPointer resolveSymbol(QLibrary &lib, const char *sym)
 
 LibResolv::LibResolv()
 {
-    QLibrary lib;
 #ifdef LIBRESOLV_SO
     lib.setFileName(QStringLiteral(LIBRESOLV_SO));
     if (!lib.load())

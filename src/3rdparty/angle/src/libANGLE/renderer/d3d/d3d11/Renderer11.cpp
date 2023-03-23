@@ -80,6 +80,8 @@
 #define ANGLE_SKIP_DXGI_1_2_CHECK 0
 #endif
 
+#define INFO_BUFFER_SIZE 32767
+
 namespace rx
 {
 
@@ -772,9 +774,19 @@ egl::Error Renderer11::initializeD3DDevice()
         {
             SCOPED_ANGLE_HISTOGRAM_TIMER("GPU.ANGLE.Renderer11InitializeDLLsMS");
             TRACE_EVENT0("gpu.angle", "Renderer11::initialize (Load DLLs)");
-            mDxgiModule  = LoadLibrary(TEXT("dxgi.dll"));
-            mD3d11Module = LoadLibrary(TEXT("d3d11.dll"));
-            mDCompModule = LoadLibrary(TEXT("dcomp.dll"));
+            TCHAR dxgiFile[INFO_BUFFER_SIZE];
+            TCHAR d3d11File[INFO_BUFFER_SIZE];
+            TCHAR dcompFile[INFO_BUFFER_SIZE];
+            DWORD bufCharCount = INFO_BUFFER_SIZE;
+            GetSystemDirectory(dxgiFile, INFO_BUFFER_SIZE);
+            lstrcpy(d3d11File, dxgiFile);
+            lstrcpy(dcompFile, dxgiFile);
+            lstrcat(dxgiFile, TEXT("\\dxgi.dll"));
+            mDxgiModule = LoadLibrary(dxgiFile);
+            lstrcat(d3d11File, TEXT("\\d3d11.dll"));
+            mD3d11Module = LoadLibrary(d3d11File);
+            lstrcat(dcompFile, TEXT("\\dcomp.dll"));
+            mDCompModule = LoadLibrary(dcompFile);
 
             if (mD3d11Module == nullptr || mDxgiModule == nullptr)
             {

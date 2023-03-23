@@ -276,7 +276,9 @@ void QVariantAnimationPrivate::setCurrentValueForProgress(const qreal progress)
 
     const qreal startProgress = currentInterval.start.first;
     const qreal endProgress = currentInterval.end.first;
-    const qreal localProgress = (progress - startProgress) / (endProgress - startProgress);
+    const qreal localProgress =
+            qIsNull(progress - startProgress) ? 0.0 // avoid 0/0 below
+            /* else */                        : (progress - startProgress) / (endProgress - startProgress);
 
     QVariant ret = q->interpolated(currentInterval.start.second,
                                    currentInterval.end.second,

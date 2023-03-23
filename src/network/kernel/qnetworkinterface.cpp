@@ -489,7 +489,7 @@ void QNetworkAddressEntry::clearAddressLifetime()
     \since 5.11
 
     Returns \c true if this address is permanent on this interface, \c false if
-    it's temporary. A permenant address is one which has no expiration time and
+    it's temporary. A permanent address is one which has no expiration time and
     is often static (manually configured).
 
     If this information could not be determined, this function returns \c true.

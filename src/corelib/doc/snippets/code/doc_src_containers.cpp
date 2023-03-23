@@ -70,7 +70,7 @@ list << "A" << "B" << "C" << "D";
 
 QListIterator<QString> i(list);
 while (i.hasNext())
-    qDebug() << i.next();
+    QString s = i.next();
 //! [1]
 
 
@@ -78,7 +78,7 @@ while (i.hasNext())
 QListIterator<QString> i(list);
 i.toBack();
 while (i.hasPrevious())
-    qDebug() << i.previous();
+    QString s = i.previous();
 //! [2]
 
 
@@ -217,8 +217,10 @@ foreach (str, list)
 QLinkedList<QString> list;
 ...
 QLinkedListIterator<QString> i(list);
-while (i.hasNext())
-    qDebug() << i.next();
+while (i.hasNext()) {
+    QString s = i.next();
+    qDebug() << s;
+}
 //! [16]
 
 

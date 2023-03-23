@@ -148,7 +148,7 @@ private slots:
     void layoutAfterMultiLineRemove();
     void undoCommandRemovesAndReinsertsBlock();
     void taskQTBUG_43562_lineCountCrash();
-#ifndef QT_NO_CONTEXTMENU
+#if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_CLIPBOARD)
     void contextMenu();
 #endif
     void inputMethodCursorRect();
@@ -1740,7 +1740,7 @@ void tst_QPlainTextEdit::taskQTBUG_43562_lineCountCrash()
     disconnect(ed->document(), SIGNAL(contentsChange(int, int, int)), 0, 0);
 }
 
-#ifndef QT_NO_CONTEXTMENU
+#if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_CLIPBOARD)
 void tst_QPlainTextEdit::contextMenu()
 {
     ed->appendHtml(QStringLiteral("Hello <a href='http://www.qt.io'>Qt</a>"));
@@ -1774,7 +1774,7 @@ void tst_QPlainTextEdit::contextMenu()
     delete menu;
     QVERIFY(!ed->findChild<QAction *>(QStringLiteral("link-copy")));
 }
-#endif // QT_NO_CONTEXTMENU
+#endif // QT_NO_CONTEXTMENU && QT_NO_CLIPBOARD
 
 // QTBUG-51923: Verify that the cursor rectangle returned by the input
 // method query correctly reflects the viewport offset.

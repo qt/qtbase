@@ -158,11 +158,22 @@ FILES="
    jsimddct.h
    jstdhuff.c
    jutils.c
-   jversion.h
 "
 
 for i in $FILES; do
     copy_file "$i" "src/$i"
 done
+copy_file "jversion.h.in" "src/jversion.h"
+
+cyear=$(grep COPYRIGHT_YEAR $LIBJPEG_DIR/CMakeLists.txt | sed -e 's/.*"\(.*\)".*/\1/')
+sed -i -e "s/@COPYRIGHT_YEAR@/$cyear/" $TARGET_DIR/src/jversion.h
+
+sed -n -e 's/^[ ]*"//
+           s/\(\\n\)*"[ ]*\\*$//
+           /JCOPYRIGHT\ /,/^[ ]*$/ {
+               /Copyright/p
+           }
+          ' $TARGET_DIR/src/jversion.h > $TARGET_DIR/COPYRIGHT.txt
+
 
 echo Done. $TARGET_DIR/src/jconfig.h and jconfigint.h may need manual updating.

@@ -41,6 +41,8 @@
 
 #include "qiosfiledialog.h"
 
-@interface QIOSDocumentPickerController : UIDocumentPickerViewController <UIDocumentPickerDelegate, UINavigationControllerDelegate>
+@interface QIOSDocumentPickerController : UIDocumentPickerViewController <UIDocumentPickerDelegate,
+                                                                          UINavigationControllerDelegate,
+                                                                          UIAdaptivePresentationControllerDelegate>
 - (instancetype)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog;
 @end

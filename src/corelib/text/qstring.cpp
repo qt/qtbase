@@ -12312,7 +12312,7 @@ static qsizetype qLastIndexOf(Haystack haystack0, qsizetype from,
     const auto needle = needle0.data();
     const auto *end = haystack;
     haystack += from;
-    const std::size_t sl_minus_1 = sl - 1;
+    const std::size_t sl_minus_1 = sl ? sl - 1 : 0;
     const auto *n = needle + sl_minus_1;
     const auto *h = haystack + sl_minus_1;
     std::size_t hashNeedle = 0, hashHaystack = 0;

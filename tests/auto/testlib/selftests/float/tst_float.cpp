@@ -31,8 +31,6 @@
 #include <QtTest/QtTest>
 #include <QDebug>
 
-#include "emulationdetector.h"
-
 // Test proper handling of floating-point types
 class tst_float: public QObject
 {
@@ -182,11 +180,11 @@ void tst_float::float16Comparisons_data() const
     QTest::addColumn<qfloat16>("operandLeft");
     QTest::addColumn<qfloat16>("operandRight");
     const qfloat16 zero(0), one(1);
-    const qfloat16 tiny(EmulationDetector::isRunningArmOnX86() ? 0.00099f : 0.001f);
+    const qfloat16 tiny(0.00099f);
 
     QTest::newRow("should FAIL 1") << one << qfloat16(3);
     QTest::newRow("should PASS 1") << zero << zero;
-    QTest::newRow("should FAIL 2") << qfloat16(1e-3f) << qfloat16(3e-3f);
+    QTest::newRow("should FAIL 2") << qfloat16(1.f/128.f) << qfloat16(3e-3f);
 
     // QCOMPARE for uses qFuzzyCompare(), which ignores differences of one part
     // in 102.5 and considers any two qFuzzyIsNull() values, i.e. values smaller

@@ -755,7 +755,7 @@ bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
     store is enabled, these policies will be preserved in the store. In case both
     cache and store contain the same known hosts, policies from cache are considered
     to be more up-to-date (and thus will overwrite the previous values in the store).
-    If this behavior is undesired, enable HSTS store before enabling Strict Tranport
+    If this behavior is undesired, enable HSTS store before enabling Strict Transport
     Security. By default, the persistent store of HSTS policies is disabled.
 
     \sa isStrictTransportSecurityStoreEnabled(), setStrictTransportSecurityEnabled(),

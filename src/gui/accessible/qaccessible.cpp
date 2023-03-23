@@ -162,7 +162,6 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value hasPopup                The object opens a popup.
     \value hotTracked              The object's appearance is sensitive to the mouse cursor position.
     \value invalid                 The object is no longer valid (because it has been deleted).
-    \value invalidEntry            Input validation current input invalid.
     \value invisible               The object is not visible to the user.
     \value linked                  The object is linked to another object, e.g. a hyperlink.
     \value marqueed                The object displays scrolling contents, e.g. a log view.

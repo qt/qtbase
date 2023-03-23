@@ -70,7 +70,14 @@ private:
 };
 
 tst_QSystemSemaphore::tst_QSystemSemaphore()
-    : m_helperBinary("acquirerelease_helper")
+    :
+#ifdef Q_OS_WIN
+    // On windows the CWD is not the same as the test binary, so we cannot use the ./ path.
+    m_helperBinary("acquirerelease_helper")
+#else
+    // But on Unix we *must*
+    m_helperBinary("./acquirerelease_helper")
+#endif
 {
 }
 

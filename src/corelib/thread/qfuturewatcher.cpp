@@ -511,9 +511,15 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
 
     Starts watching the given \a future.
 
-    One of the signals might be emitted for the current state of the
-    \a future. For example, if the future is already stopped, the
-    finished signal will be emitted.
+    If \a future has already started, the watcher will initially emit signals
+    that bring their listeners up to date about the future's state. The
+    following signals will, if applicable, be emitted in the given order:
+    started(), progressRangeChanged(), progressValueChanged(),
+    progressTextChanged(), resultsReadyAt(), resultReadyAt(), paused(),
+    canceled(), and finished(). Of these, resultsReadyAt() and
+    resultReadyAt() may be emitted several times to cover all available
+    results. progressValueChanged() and progressTextChanged() will only be
+    emitted once for the latest available progress value and text.
 
     To avoid a race condition, it is important to call this function
     \e after doing the connections.

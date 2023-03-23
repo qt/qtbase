@@ -50,6 +50,7 @@
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/private/qjni_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtCore/QObject>
 
 #include "qdebug.h"
 
@@ -74,6 +75,28 @@ namespace QtAndroidAccessibility
     static jmethodID m_setVisibleToUserMethodID = 0;
 
     static bool m_accessibilityActivated = false;
+
+    // This object is needed to schedule the execution of the code that
+    // deals with accessibility instances to the Qt main thread.
+    // Because of that almost every method here is split into two parts.
+    // The _helper part is executed in the context of m_accessibilityContext
+    // on the main thread. The other part is executed in Java thread.
+    static QObject *m_accessibilityContext = nullptr;
+
+    // This method is called from the Qt main thread, and normally a
+    // QGuiApplication instance will be used as a parent.
+    void createAccessibilityContextObject(QObject *parent)
+    {
+        if (m_accessibilityContext)
+            m_accessibilityContext->deleteLater();
+        m_accessibilityContext = new QObject(parent);
+    }
+
+    template <typename Func, typename Ret>
+    void runInObjectContext(QObject *context, Func &&func, Ret *retVal)
+    {
+        QMetaObject::invokeMethod(context, func, Qt::BlockingQueuedConnection, retVal);
+    }
 
     void initialize()
     {
@@ -115,9 +138,12 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyAccessibilityLocationChange();
     }
 
+    static int parentId_helper(int objectId); // forward declaration
+
     void notifyObjectHide(uint accessibilityObjectId)
     {
-        QtAndroid::notifyObjectHide(accessibilityObjectId);
+        const auto parentObjectId = parentId_helper(accessibilityObjectId);
+        QtAndroid::notifyObjectHide(accessibilityObjectId, parentObjectId);
     }
 
     void notifyObjectFocus(uint accessibilityObjectId)
@@ -125,7 +151,15 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyObjectFocus(accessibilityObjectId);
     }
 
-    static jintArray childIdListForAccessibleObject(JNIEnv *env, jobject /*thiz*/, jint objectId)
+    static jstring jvalueForAccessibleObject(int objectId); // forward declaration
+
+    void notifyValueChanged(uint accessibilityObjectId)
+    {
+        jstring value = jvalueForAccessibleObject(accessibilityObjectId);
+        QtAndroid::notifyValueChanged(accessibilityObjectId, value);
+    }
+
+    static QVarLengthArray<int, 8> childIdListForAccessibleObject_helper(int objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
         if (iface && iface->isValid()) {
@@ -137,6 +171,18 @@ namespace QtAndroidAccessibility
                 if (child && child->isValid())
                     ifaceIdArray.append(QAccessible::uniqueId(child));
             }
+            return ifaceIdArray;
+        }
+        return {};
+    }
+
+    static jintArray childIdListForAccessibleObject(JNIEnv *env, jobject /*thiz*/, jint objectId)
+    {
+        if (m_accessibilityContext) {
+            QVarLengthArray<jint, 8> ifaceIdArray;
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return childIdListForAccessibleObject_helper(objectId);
+            }, &ifaceIdArray);
             jintArray jArray = env->NewIntArray(jsize(ifaceIdArray.count()));
             env->SetIntArrayRegion(jArray, 0, ifaceIdArray.count(), ifaceIdArray.data());
             return jArray;
@@ -145,7 +191,7 @@ namespace QtAndroidAccessibility
         return env->NewIntArray(jsize(0));
     }
 
-    static jint parentId(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
+    static int parentId_helper(int objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
         if (iface && iface->isValid()) {
@@ -159,7 +205,18 @@ namespace QtAndroidAccessibility
         return -1;
     }
 
-    static jobject screenRect(JNIEnv *env, jobject /*thiz*/, jint objectId)
+    static jint parentId(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
+    {
+        jint result = -1;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return parentId_helper(objectId);
+            }, &result);
+        }
+        return result;
+    }
+
+    static QRect screenRect_helper(int objectId)
     {
         QRect rect;
         QAccessibleInterface *iface = interfaceFromId(objectId);
@@ -171,14 +228,24 @@ namespace QtAndroidAccessibility
             const auto parentRect = QHighDpi::toNativePixels(iface->parent()->rect(), iface->parent()->window());
             rect = rect.intersected(parentRect);
         }
+        return rect;
+    }
 
+    static jobject screenRect(JNIEnv *env, jobject /*thiz*/, jint objectId)
+    {
+        QRect rect;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return screenRect_helper(objectId);
+            }, &rect);
+        }
         jclass rectClass = env->FindClass("android/graphics/Rect");
         jmethodID ctor = env->GetMethodID(rectClass, "<init>", "(IIII)V");
         jobject jrect = env->NewObject(rectClass, ctor, rect.left(), rect.top(), rect.right(), rect.bottom());
         return jrect;
     }
 
-    static jint hitTest(JNIEnv */*env*/, jobject /*thiz*/, jfloat x, jfloat y)
+    static int hitTest_helper(float x, float y)
     {
         QAccessibleInterface *root = interfaceFromId(-1);
         if (root && root->isValid()) {
@@ -196,17 +263,29 @@ namespace QtAndroidAccessibility
         return -1;
     }
 
+    static jint hitTest(JNIEnv */*env*/, jobject /*thiz*/, jfloat x, jfloat y)
+    {
+        jint result = -1;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [x, y]() {
+                return hitTest_helper(x, y);
+            }, &result);
+        }
+        return result;
+    }
+
     static void invokeActionOnInterfaceInMainThread(QAccessibleActionInterface* actionInterface,
                                                     const QString& action)
     {
+        // Queue the action and return back to Java thread, so that we do not
+        // block it for too long
         QMetaObject::invokeMethod(qApp, [actionInterface, action]() {
             actionInterface->doAction(action);
-        });
+        }, Qt::QueuedConnection);
     }
 
-    static jboolean clickAction(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
+    static bool clickAction_helper(int objectId)
     {
-//        qDebug() << "A11Y: CLICK: " << objectId;
         QAccessibleInterface *iface = interfaceFromId(objectId);
         if (!iface || !iface->isValid() || !iface->actionInterface())
             return false;
@@ -225,20 +304,45 @@ namespace QtAndroidAccessibility
         return true;
     }
 
-    static jboolean scrollForward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
+    static jboolean clickAction(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
+    {
+        bool result = false;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return clickAction_helper(objectId);
+            }, &result);
+        }
+        return result;
+    }
+
+    static bool scroll_helper(int objectId, const QString &actionName)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
         if (iface && iface->isValid())
-            return QAccessibleBridgeUtils::performEffectiveAction(iface, QAccessibleActionInterface::increaseAction());
+            return QAccessibleBridgeUtils::performEffectiveAction(iface, actionName);
         return false;
+    }
+
+    static jboolean scrollForward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
+    {
+        bool result = false;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return scroll_helper(objectId, QAccessibleActionInterface::increaseAction());
+            }, &result);
+        }
+        return result;
     }
 
     static jboolean scrollBackward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
     {
-        QAccessibleInterface *iface = interfaceFromId(objectId);
-        if (iface && iface->isValid())
-            return QAccessibleBridgeUtils::performEffectiveAction(iface, QAccessibleActionInterface::decreaseAction());
-        return false;
+        bool result = false;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return scroll_helper(objectId, QAccessibleActionInterface::decreaseAction());
+            }, &result);
+        }
+        return result;
     }
 
 
@@ -251,66 +355,173 @@ if (!clazz) { \
 
         //__android_log_print(ANDROID_LOG_FATAL, m_qtTag, m_methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE);
 
+    static QString textFromValue(QAccessibleInterface *iface)
+    {
+        QString valueStr;
+        QAccessibleValueInterface *valueIface = iface->valueInterface();
+        if (valueIface) {
+            const QVariant valueVar = valueIface->currentValue();
+            const auto type = static_cast<QMetaType::Type>(valueVar.type());
+            if (type == QMetaType::Double || type == QMetaType::Float) {
+                // QVariant's toString() formats floating-point values with
+                // FloatingPointShortest, which is not an accessible
+                // representation; nor, in many cases, is it suitable to the UI
+                // element whose value we're looking at. So roll our own
+                // A11Y-friendly conversion to string.
+                const double val = valueVar.toDouble();
+                // Try to use minimumStepSize() to determine precision
+                bool stepIsValid = false;
+                const double step = qAbs(valueIface->minimumStepSize().toDouble(&stepIsValid));
+                if (!stepIsValid || qFuzzyIsNull(step)) {
+                    // Ignore step, use default precision
+                    valueStr = qFuzzyIsNull(val) ? QStringLiteral("0") : QString::number(val, 'f');
+                } else {
+                    const int precision = [](double s) {
+                        int count = 0;
+                        while (s < 1. && !qFuzzyCompare(s, 1.)) {
+                            ++count;
+                            s *= 10;
+                        }
+                        // If s is now 1.25, we want to show some more digits,
+                        // but don't want to get silly with a step like 1./7;
+                        // so only include a few extra digits.
+                        const int stop = count + 3;
+                        const auto fractional = [](double v) {
+                            double whole = 0.0;
+                            std::modf(v + 0.5, &whole);
+                            return qAbs(v - whole);
+                        };
+                        s = fractional(s);
+                        while (count < stop && !qFuzzyIsNull(s)) {
+                            ++count;
+                            s = fractional(s * 10);
+                        }
+                        return count;
+                    }(step);
+                    valueStr = qFuzzyIsNull(val / step) ? QStringLiteral("0")
+                                                        : QString::number(val, 'f', precision);
+                }
+            } else {
+                valueStr = valueVar.toString();
+            }
+        }
+        return valueStr;
+    }
 
+    static jstring jvalueForAccessibleObject(int objectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(objectId);
+        const QString value = textFromValue(iface);
+        QJNIEnvironmentPrivate env;
+        jstring jstr = env->NewString((jchar*)value.constData(), (jsize)value.size());
+#ifdef QT_DEBUG
+        env->ExceptionDescribe();
+#endif // QT_DEBUG
+        env->ExceptionClear();
+        return jstr;
+    }
 
-    static jstring descriptionForAccessibleObject_helper(JNIEnv *env, QAccessibleInterface *iface)
+    static QString descriptionForInterface(QAccessibleInterface *iface)
     {
         QString desc;
         if (iface && iface->isValid()) {
+            bool hasValue = false;
             desc = iface->text(QAccessible::Name);
             if (desc.isEmpty())
                 desc = iface->text(QAccessible::Description);
             if (desc.isEmpty()) {
                 desc = iface->text(QAccessible::Value);
-                if (desc.isEmpty()) {
-                    if (QAccessibleValueInterface *valueIface = iface->valueInterface()) {
-                        desc= valueIface->currentValue().toString();
-                    }
-                }
+                hasValue = !desc.isEmpty();
+            }
+            if (!hasValue) {
+                if (!desc.isEmpty())
+                    desc.append(QChar(QChar::Space));
+                desc.append(textFromValue(iface));
             }
         }
-        return env->NewString((jchar*) desc.constData(), (jsize) desc.size());
+        return desc;
+    }
+
+    static QString descriptionForAccessibleObject_helper(int objectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(objectId);
+        return descriptionForInterface(iface);
     }
 
     static jstring descriptionForAccessibleObject(JNIEnv *env, jobject /*thiz*/, jint objectId)
     {
-        QAccessibleInterface *iface = interfaceFromId(objectId);
-        return descriptionForAccessibleObject_helper(env, iface);
+        QString desc;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return descriptionForAccessibleObject_helper(objectId);
+            }, &desc);
+        }
+        return env->NewString((jchar*) desc.constData(), (jsize) desc.size());
     }
 
-    static bool populateNode(JNIEnv *env, jobject /*thiz*/, jint objectId, jobject node)
+
+    struct NodeInfo
     {
+        bool valid = false;
+        QAccessible::State state;
+        QStringList actions;
+        QString description;
+        bool hasTextSelection = false;
+        int selectionStart = 0;
+        int selectionEnd = 0;
+    };
+
+    static NodeInfo populateNode_helper(int objectId)
+    {
+        NodeInfo info;
         QAccessibleInterface *iface = interfaceFromId(objectId);
-        if (!iface || !iface->isValid()) {
+        if (iface && iface->isValid()) {
+            info.valid = true;
+            info.state = iface->state();
+            info.actions = QAccessibleBridgeUtils::effectiveActionNames(iface);
+            info.description = descriptionForInterface(iface);
+            QAccessibleTextInterface *textIface = iface->textInterface();
+            if (textIface && (textIface->selectionCount() > 0)) {
+                info.hasTextSelection = true;
+                textIface->selection(0, &info.selectionStart, &info.selectionEnd);
+            }
+        }
+        return info;
+    }
+
+    static jboolean populateNode(JNIEnv *env, jobject /*thiz*/, jint objectId, jobject node)
+    {
+        NodeInfo info;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return populateNode_helper(objectId);
+            }, &info);
+        }
+        if (!info.valid) {
             __android_log_print(ANDROID_LOG_WARN, m_qtTag, "Accessibility: populateNode for Invalid ID");
             return false;
         }
-        QAccessible::State state = iface->state();
-        const QStringList actions = QAccessibleBridgeUtils::effectiveActionNames(iface);
-        const bool hasClickableAction = actions.contains(QAccessibleActionInterface::pressAction())
-                                        || actions.contains(QAccessibleActionInterface::toggleAction());
-        const bool hasIncreaseAction = actions.contains(QAccessibleActionInterface::increaseAction());
-        const bool hasDecreaseAction = actions.contains(QAccessibleActionInterface::decreaseAction());
 
-        // try to fill in the text property, this is what the screen reader reads
-        jstring jdesc = descriptionForAccessibleObject_helper(env, iface);
+        const bool hasClickableAction =
+                info.actions.contains(QAccessibleActionInterface::pressAction()) ||
+                info.actions.contains(QAccessibleActionInterface::toggleAction());
+        const bool hasIncreaseAction =
+                info.actions.contains(QAccessibleActionInterface::increaseAction());
+        const bool hasDecreaseAction =
+                info.actions.contains(QAccessibleActionInterface::decreaseAction());
 
-        if (QAccessibleTextInterface *textIface = iface->textInterface()) {
-            if (m_setTextSelectionMethodID && textIface->selectionCount() > 0) {
-                int startSelection;
-                int endSelection;
-                textIface->selection(0, &startSelection, &endSelection);
-                env->CallVoidMethod(node, m_setTextSelectionMethodID, startSelection, endSelection);
-            }
+        if (info.hasTextSelection && m_setTextSelectionMethodID) {
+            env->CallVoidMethod(node, m_setTextSelectionMethodID, info.selectionStart,
+                                info.selectionEnd);
         }
 
-        env->CallVoidMethod(node, m_setCheckableMethodID, (bool)state.checkable);
-        env->CallVoidMethod(node, m_setCheckedMethodID, (bool)state.checked);
-        env->CallVoidMethod(node, m_setEditableMethodID, state.editable);
-        env->CallVoidMethod(node, m_setEnabledMethodID, !state.disabled);
-        env->CallVoidMethod(node, m_setFocusableMethodID, (bool)state.focusable);
-        env->CallVoidMethod(node, m_setFocusedMethodID, (bool)state.focused);
-        env->CallVoidMethod(node, m_setVisibleToUserMethodID, !state.invisible);
+        env->CallVoidMethod(node, m_setCheckableMethodID, (bool)info.state.checkable);
+        env->CallVoidMethod(node, m_setCheckedMethodID, (bool)info.state.checked);
+        env->CallVoidMethod(node, m_setEditableMethodID, info.state.editable);
+        env->CallVoidMethod(node, m_setEnabledMethodID, !info.state.disabled);
+        env->CallVoidMethod(node, m_setFocusableMethodID, (bool)info.state.focusable);
+        env->CallVoidMethod(node, m_setFocusedMethodID, (bool)info.state.focused);
+        env->CallVoidMethod(node, m_setVisibleToUserMethodID, !info.state.invisible);
         env->CallVoidMethod(node, m_setScrollableMethodID, hasIncreaseAction || hasDecreaseAction);
         env->CallVoidMethod(node, m_setClickableMethodID, hasClickableAction);
 
@@ -326,7 +537,9 @@ if (!clazz) { \
         if (hasDecreaseAction)
             env->CallVoidMethod(node, m_addActionMethodID, (int)0x00002000);    // ACTION_SCROLL_BACKWARD defined in AccessibilityNodeInfo
 
-
+        // try to fill in the text property, this is what the screen reader reads
+        jstring jdesc = env->NewString((jchar*)info.description.constData(),
+                                       (jsize)info.description.size());
         //CALL_METHOD(node, "setText", "(Ljava/lang/CharSequence;)V", jdesc)
         env->CallVoidMethod(node, m_setContentDescriptionMethodID, jdesc);
 

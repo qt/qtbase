@@ -645,7 +645,7 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
             continue;
         if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
             qCDebug(lcQpaXInputEvents, "   valuator %20s value %lf from range %lf -> %lf",
-                    atomName(vci.label).constData(), value, vci.min, vci.max);
+                    atomName(atom(vci.label)).constData(), value, vci.min, vci.max);
         if (value > vci.max)
             value = vci.max;
         if (value < vci.min)

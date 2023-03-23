@@ -46,6 +46,7 @@
 #include "qelapsedtimer.h"
 #include "qvarlengtharray.h"
 #include "qnetworkinterface.h"
+#include "qendian.h"
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -364,12 +365,12 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     }
 
     int n, level;
-    int v = -1;
+    int v = 0;
     QT_SOCKOPTLEN_T len = sizeof(v);
 
     convertToLevelAndOption(opt, socketProtocol, level, n);
     if (n != -1 && ::getsockopt(socketDescriptor, level, n, (char *) &v, &len) != -1)
-        return v;
+        return len == 1 ? qFromUnaligned<quint8>(&v) : v;
 
     return -1;
 }

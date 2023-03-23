@@ -51,8 +51,8 @@
 //! [0]
 QDirIterator it("/etc", QDirIterator::Subdirectories);
 while (it.hasNext()) {
-    qDebug() << it.next();
-
+    QString dir = it.next();
+    qDebug() << dir;
     // /etc/.
     // /etc/..
     // /etc/X11

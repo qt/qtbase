@@ -153,8 +153,15 @@ void tst_QVulkan::vulkanVersionRequest()
     inst.destroy();
 
     inst.setApiVersion(QVersionNumber(10, 0, 0));
-    QVERIFY(!inst.create());
-    QCOMPARE(inst.errorCode(), VK_ERROR_INCOMPATIBLE_DRIVER);
+
+    bool result = inst.create();
+
+    // Starting with Vulkan 1.1 the spec does not allow the implementation to
+    // fail the instance creation. So check for the 1.0 behavior only when
+    // create() failed, skip this verification with 1.1+ (where create() will
+    // succeed for any bogus api version).
+    if (!result)
+        QCOMPARE(inst.errorCode(), VK_ERROR_INCOMPATIBLE_DRIVER);
 }
 
 static void waitForUnexposed(QWindow *w)

@@ -49,6 +49,7 @@
 #include <QtCore/qstandardpaths.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qhash.h>
+#include <private/qsystemlibrary_p.h>
 
 #ifndef QT_NO_OPENGL
 #include <private/qopengl_p.h>
@@ -396,7 +397,7 @@ bool QWindowsOpenGLTester::testDesktopGL()
 
     // Test #1: Load opengl32.dll and try to resolve an OpenGL 2 function.
     // This will typically fail on systems that do not have a real OpenGL driver.
-    lib = LoadLibraryA("opengl32.dll");
+    lib = QSystemLibrary::load(L"opengl32");
     if (lib) {
         CreateContext = reinterpret_cast<CreateContextType>(
             reinterpret_cast<QFunctionPointer>(::GetProcAddress(lib, "wglCreateContext")));

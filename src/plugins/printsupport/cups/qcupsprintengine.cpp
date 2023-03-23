@@ -89,8 +89,10 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
         break;
     case PPK_Duplex: {
         QPrint::DuplexMode mode = QPrint::DuplexMode(value.toInt());
-        if (mode != d->duplex && d->m_printDevice.supportedDuplexModes().contains(mode))
+        if (d->m_printDevice.supportedDuplexModes().contains(mode)) {
             d->duplex = mode;
+            d->duplexRequestedExplicitly = true;
+        }
         break;
     }
     case PPK_PrinterName:
@@ -277,9 +279,12 @@ void QCupsPrintEnginePrivate::changePrinter(const QString &newPrinter)
     m_printDevice.swap(printDevice);
     printerName = m_printDevice.id();
 
-    // Check if new printer supports current settings, otherwise us defaults
-    if (duplex != QPrint::DuplexAuto && !m_printDevice.supportedDuplexModes().contains(duplex))
+    // in case a duplex value was explicitly set, check if new printer supports current value,
+    // otherwise use device default
+    if (!duplexRequestedExplicitly || !m_printDevice.supportedDuplexModes().contains(duplex)) {
         duplex = m_printDevice.defaultDuplexMode();
+        duplexRequestedExplicitly = false;
+    }
     QPrint::ColorMode colorMode = grayscale ? QPrint::GrayScale : QPrint::Color;
     if (!m_printDevice.supportedColorModes().contains(colorMode))
         grayscale = m_printDevice.defaultColorMode() == QPrint::GrayScale;

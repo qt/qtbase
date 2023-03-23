@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -423,6 +423,11 @@ QT_BEGIN_NAMESPACE
                                        for example, to ask the user whether to
                                        accept the redirect, or to decide
                                        based on some app-specific configuration.
+
+    \note When Qt handles redirects it will, for legacy and compatibility
+    reasons, issue the redirected request using GET when the server returns
+    a 301 or 302 response, regardless of the original method used, unless it was
+    HEAD.
 */
 
 /*!
@@ -1036,9 +1041,10 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
     case QNetworkRequest::LastModifiedHeader:
     case QNetworkRequest::IfModifiedSinceHeader:
         switch (value.userType()) {
+            // Generate RFC 1123/822 dates:
         case QMetaType::QDate:
+            return QNetworkHeadersPrivate::toHttpDate(value.toDate().startOfDay(Qt::UTC));
         case QMetaType::QDateTime:
-            // generate RFC 1123/822 dates:
             return QNetworkHeadersPrivate::toHttpDate(value.toDateTime());
 
         default:
@@ -1482,8 +1488,7 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
 
 QByteArray QNetworkHeadersPrivate::toHttpDate(const QDateTime &dt)
 {
-    return QLocale::c().toString(dt, u"ddd, dd MMM yyyy hh:mm:ss 'GMT'")
-        .toLatin1();
+    return QLocale::c().toString(dt.toUTC(), u"ddd, dd MMM yyyy hh:mm:ss 'GMT'").toLatin1();
 }
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -75,6 +75,7 @@
 
 #include "qcalendar.h"
 #include "qgregoriancalendar_p.h"
+#include "private/qnumeric_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1429,9 +1430,11 @@ QDate QDate::addDays(qint64 ndays) const
     if (isNull())
         return QDate();
 
-    // Due to limits on minJd() and maxJd() we know that any overflow
-    // will be invalid and caught by fromJulianDay().
-    return fromJulianDay(jd + ndays);
+    qint64 r;
+    if (Q_UNLIKELY(add_overflow(jd, ndays, &r)))
+        return QDate();
+    else
+        return fromJulianDay(r);
 }
 
 /*!
@@ -4548,9 +4551,9 @@ static inline void massageAdjustedDateTime(const QDateTimeData &d, QDate *date, 
         QDateTimePrivate::DaylightStatus status = QDateTimePrivate::UnknownDaylightTime;
         localMSecsToEpochMSecs(timeToMSecs(*date, *time), &status, date, time);
 #if QT_CONFIG(timezone)
-    } else if (spec == Qt::TimeZone && d->m_timeZone.isValid()) {
+    } else if (spec == Qt::TimeZone && d.d->m_timeZone.isValid()) {
         QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(*date, *time),
-                                                d->m_timeZone,
+                                                d.d->m_timeZone,
                                                 QDateTimePrivate::UnknownDaylightTime,
                                                 date, time);
 #endif // timezone

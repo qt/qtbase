@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -437,7 +437,7 @@
 
     \value DontShareAddress Bind the address and port exclusively, so that
     no other services are allowed to rebind. By passing this option to
-    QAbstractSocket::bind(), you are guaranteed that on successs, your service
+    QAbstractSocket::bind(), you are guaranteed that on success, your service
     is the only one that listens to the address and port. No services are
     allowed to rebind, even if they pass ReuseAddressHint. This option
     provides more security than ShareAddress, but on certain operating
@@ -1404,12 +1404,29 @@ void QAbstractSocketPrivate::pauseSocketNotifiers(QAbstractSocket *socket)
     QAbstractSocketEngine *socketEngine = socket->d_func()->socketEngine;
     if (!socketEngine)
         return;
-    socket->d_func()->prePauseReadSocketNotifierState = socketEngine->isReadNotificationEnabled();
-    socket->d_func()->prePauseWriteSocketNotifierState = socketEngine->isWriteNotificationEnabled();
-    socket->d_func()->prePauseExceptionSocketNotifierState = socketEngine->isExceptionNotificationEnabled();
-    socketEngine->setReadNotificationEnabled(false);
-    socketEngine->setWriteNotificationEnabled(false);
-    socketEngine->setExceptionNotificationEnabled(false);
+    bool read = socketEngine->isReadNotificationEnabled();
+    bool write = socketEngine->isWriteNotificationEnabled();
+    bool except = socketEngine->isExceptionNotificationEnabled();
+
+#ifdef QABSTRACTSOCKET_DEBUG
+    qDebug() << socketEngine->socketDescriptor()
+             << "pause notifiers, storing 'true' states, currently read:" << read
+             << "write:" << write << "except:" << except;
+#endif
+    // We do this if-check to avoid accidentally overwriting any previously stored state
+    // It will reset to false once the socket is re-enabled.
+    if (read) {
+        socket->d_func()->prePauseReadSocketNotifierState = true;
+        socketEngine->setReadNotificationEnabled(false);
+    }
+    if (write) {
+        socket->d_func()->prePauseWriteSocketNotifierState = true;
+        socketEngine->setWriteNotificationEnabled(false);
+    }
+    if (except) {
+        socket->d_func()->prePauseExceptionSocketNotifierState = true;
+        socketEngine->setExceptionNotificationEnabled(false);
+    }
 }
 
 void QAbstractSocketPrivate::resumeSocketNotifiers(QAbstractSocket *socket)
@@ -1417,9 +1434,19 @@ void QAbstractSocketPrivate::resumeSocketNotifiers(QAbstractSocket *socket)
     QAbstractSocketEngine *socketEngine = socket->d_func()->socketEngine;
     if (!socketEngine)
         return;
-    socketEngine->setReadNotificationEnabled(socket->d_func()->prePauseReadSocketNotifierState);
-    socketEngine->setWriteNotificationEnabled(socket->d_func()->prePauseWriteSocketNotifierState);
-    socketEngine->setExceptionNotificationEnabled(socket->d_func()->prePauseExceptionSocketNotifierState);
+    QAbstractSocketPrivate *priv = socket->d_func();
+#ifdef QABSTRACTSOCKET_DEBUG
+    qDebug() << socketEngine->socketDescriptor()
+             << "Maybe resume notifiers, read:" << priv->prePauseReadSocketNotifierState
+             << "write:" << priv->prePauseWriteSocketNotifierState
+             << "exception:" << priv->prePauseExceptionSocketNotifierState;
+#endif
+    if (qExchange(priv->prePauseReadSocketNotifierState, false))
+        socketEngine->setReadNotificationEnabled(true);
+    if (qExchange(priv->prePauseWriteSocketNotifierState, false))
+        socketEngine->setWriteNotificationEnabled(true);
+    if (qExchange(priv->prePauseExceptionSocketNotifierState, false))
+        socketEngine->setExceptionNotificationEnabled(true);
 }
 
 QAbstractSocketEngine* QAbstractSocketPrivate::getSocketEngine(QAbstractSocket *socket)

@@ -90,7 +90,7 @@ QT_BEGIN_NAMESPACE
     Note that unlike in most other QIODevice subclasses, open() may not open the device directly.
     The function return false if the socket was already connected or if the server to connect
     to was not defined and true in any other case. The connected() or errorOccurred() signals will be
-    emitted once the device is actualy open (or the connection failed).
+    emitted once the device is actually open (or the connection failed).
 
     See connectToServer() for more details.
 */

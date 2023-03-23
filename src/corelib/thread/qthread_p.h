@@ -174,7 +174,7 @@ public:
     int returnCode;
 
     uint stackSize;
-    QThread::Priority priority;
+    std::underlying_type<QThread::Priority>::type priority;
 
     static QThread *threadForId(int id);
 
@@ -213,6 +213,13 @@ public:
             QCoreApplication::instance()->postEvent(q_ptr, new QEvent(QEvent::Quit));
         }
     }
+
+#ifndef Q_OS_INTEGRITY
+private:
+    // Used in QThread(Private)::start to avoid racy access to QObject::objectName,
+    // unset afterwards. On INTEGRITY we set the thread name before starting it.
+    QString objectName;
+#endif
 };
 
 #else // QT_CONFIG(thread)

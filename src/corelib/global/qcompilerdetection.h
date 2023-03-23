@@ -1247,6 +1247,12 @@
 #endif
 
 /*
+ * "Weak overloads" - makes an otherwise confliciting overload weaker
+ * (by making it a template)
+ */
+#define Q_WEAK_OVERLOAD template <typename = void>
+
+/*
  * Warning/diagnostic handling
  */
 

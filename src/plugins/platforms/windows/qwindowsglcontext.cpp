@@ -48,6 +48,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <QtPlatformHeaders/qwglnativecontext.h>
 
+#include <private/qsystemlibrary_p.h>
 #include <algorithm>
 
 #include <wingdi.h>
@@ -162,19 +163,25 @@ QFunctionPointer QWindowsOpengl32DLL::resolve(const char *name)
 
 bool QWindowsOpengl32DLL::init(bool softwareRendering)
 {
-    const QByteArray opengl32 = QByteArrayLiteral("opengl32.dll");
-    const QByteArray swopengl = QByteArrayLiteral("opengl32sw.dll");
+    const QByteArray opengl32 = QByteArrayLiteral("opengl32");
+    const QByteArray swopengl = QByteArrayLiteral("opengl32sw");
+    bool useSystemLib = false;
 
     QByteArray openglDll = qgetenv("QT_OPENGL_DLL");
-    if (openglDll.isEmpty())
+    if (openglDll.isEmpty()) {
         openglDll = softwareRendering ? swopengl : opengl32;
+        useSystemLib = !softwareRendering;
+    }
 
     openglDll = openglDll.toLower();
     m_nonOpengl32 = openglDll != opengl32;
 
     qCDebug(lcQpaGl) << "Qt: Using WGL and OpenGL from" << openglDll;
 
-    m_lib = ::LoadLibraryA(openglDll.constData());
+    if (useSystemLib)
+        m_lib = QSystemLibrary::load((wchar_t*)(QString::fromLatin1(openglDll).utf16()));
+    else
+        m_lib = LoadLibraryA(openglDll.constData());
     if (!m_lib) {
         qErrnoWarning(::GetLastError(), "Failed to load %s", openglDll.constData());
         return false;
@@ -184,7 +191,7 @@ bool QWindowsOpengl32DLL::init(bool softwareRendering)
         // Load opengl32.dll always. GDI functions like ChoosePixelFormat do
         // GetModuleHandle for opengl32.dll and behave differently (and call back into
         // opengl32) when the module is present. This is fine for dummy contexts and windows.
-        ::LoadLibraryA("opengl32.dll");
+        QSystemLibrary::load(L"opengl32");
     }
 
     wglCreateContext = reinterpret_cast<HGLRC (WINAPI *)(HDC)>(resolve("wglCreateContext"));

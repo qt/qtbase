@@ -308,6 +308,13 @@ def generateTestData(testname, clean,
         print("Warning: directory", testname, "contains no test executable")
         return
 
+    # See TestLogger::shouldIgnoreTest() in tst_selftest.cpp for these
+    # single-format tests:
+    if testname == 'junit':
+        formats = ( 'junitxml', ) if 'junitxml' in formats else ()
+    elif testname == 'float':
+        formats = ( 'txt', ) if 'txt' in formats else ()
+
     # Prepare environment in which to run tests:
     env = testEnv(testname)
 

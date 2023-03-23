@@ -273,6 +273,12 @@ public:
 
     void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
+    struct ParseRedirectResult {
+        QUrl redirectUrl;
+        QNetworkReply::NetworkError errorCode;
+    };
+    ParseRedirectResult parseRedirectResponse(QHttpNetworkReply *reply);
+    // Used by the HTTP1 code-path
     QUrl parseRedirectResponse(QAbstractSocket *socket, QHttpNetworkReply *reply);
 
 #ifndef QT_NO_NETWORKPROXY
