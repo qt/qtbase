@@ -1995,6 +1995,8 @@ void tst_QVariant::userType()
             QVariant userVar;
             userVar.setValue(data);
 
+            QVERIFY(QMetaType::fromName("MyType").isValid());
+            QCOMPARE(QMetaType::fromName("MyType"), QMetaType::fromType<MyType>());
             QVERIFY(userVar.typeId() > QMetaType::User);
             QCOMPARE(userVar.userType(), qMetaTypeId<MyType>());
             QCOMPARE(userVar.typeName(), "MyType");
@@ -2118,7 +2120,15 @@ void tst_QVariant::podUserType()
     pod.a = 10;
     pod.b = 20;
 
+    // one of these two must register the type
+    // (QVariant::fromValue calls QMetaType::fromType)
     QVariant pod_as_variant = QVariant::fromValue(pod);
+    QMetaType mt = QMetaType::fromType<MyTypePOD>();
+    QCOMPARE(pod_as_variant.metaType(), mt);
+    QCOMPARE(pod_as_variant.metaType().name(), mt.name());
+    QCOMPARE(QMetaType::fromName(mt.name()), mt);
+    QCOMPARE_NE(pod_as_variant.typeId(), 0);
+
     MyTypePOD pod2 = qvariant_cast<MyTypePOD>(pod_as_variant);
 
     QCOMPARE(pod.a, pod2.a);
