@@ -806,6 +806,7 @@ QVariant::QVariant(const QVariant &p)
 */
 QVariant::QVariant(QMetaType type, const void *copy) : d(type.iface())
 {
+    type.registerType();
     if (isValidMetaTypeForVariant(type.iface(), copy))
         customConstruct(type.iface(), &d, copy);
     else
