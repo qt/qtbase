@@ -164,6 +164,7 @@ public:
 
     QFixed letterSpacing;
     QFixed wordSpacing;
+    QHash<quint32, quint32> fontFeatures;
 
     mutable QFontPrivate *scFont;
     QFont smallCapsFont() const { return QFont(smallCapsFontPrivate()); }
@@ -177,6 +178,9 @@ public:
     void resolve(uint mask, const QFontPrivate *other);
 
     static void detachButKeepEngineData(QFont *font);
+
+    void setFontFeature(quint32 tag, quint32 value);
+    void unsetFontFeature(quint32 tag);
 
 private:
     QFontPrivate &operator=(const QFontPrivate &) { return *this; }

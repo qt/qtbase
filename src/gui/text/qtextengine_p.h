@@ -621,9 +621,14 @@ private:
     void addRequiredBoundaries() const;
     void shapeText(int item) const;
 #if QT_CONFIG(harfbuzz)
-    int shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *string, int itemLength,
-                                QFontEngine *fontEngine, const QList<uint> &itemBoundaries,
-                                bool kerningEnabled, bool hasLetterSpacing) const;
+    int shapeTextWithHarfbuzzNG(const QScriptItem &si,
+                                const ushort *string,
+                                int itemLength,
+                                QFontEngine *fontEngine,
+                                const QList<uint> &itemBoundaries,
+                                bool kerningEnabled,
+                                bool hasLetterSpacing,
+                                const QHash<quint32, quint32> &fontFeatures) const;
 #endif
 
     int endOfLine(int lineNum);

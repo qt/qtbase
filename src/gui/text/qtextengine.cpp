@@ -1404,6 +1404,7 @@ void QTextEngine::shapeText(int item) const
     bool kerningEnabled;
     bool letterSpacingIsAbsolute;
     bool shapingEnabled = false;
+    QHash<quint32, quint32> fontFeatures;
     QFixed letterSpacing, wordSpacing;
 #ifndef QT_NO_RAWFONT
     if (useRawFont) {
@@ -1417,6 +1418,7 @@ void QTextEngine::shapeText(int item) const
         wordSpacing = QFixed::fromReal(font.wordSpacing());
         letterSpacing = QFixed::fromReal(font.letterSpacing());
         letterSpacingIsAbsolute = true;
+        fontFeatures = font.d->fontFeatures;
     } else
 #endif
     {
@@ -1429,6 +1431,7 @@ void QTextEngine::shapeText(int item) const
         letterSpacingIsAbsolute = font.d->letterSpacingIsAbsolute;
         letterSpacing = font.d->letterSpacing;
         wordSpacing = font.d->wordSpacing;
+        fontFeatures = font.d->fontFeatures;
 
         if (letterSpacingIsAbsolute && letterSpacing.value())
             letterSpacing *= font.d->dpi / qt_defaultDpiY();
@@ -1482,7 +1485,14 @@ void QTextEngine::shapeText(int item) const
 
 #if QT_CONFIG(harfbuzz)
     if (Q_LIKELY(shapingEnabled)) {
-        si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled, letterSpacing != 0);
+        si.num_glyphs = shapeTextWithHarfbuzzNG(si,
+                                                string,
+                                                itemLength,
+                                                fontEngine,
+                                                itemBoundaries,
+                                                kerningEnabled,
+                                                letterSpacing != 0,
+                                                fontFeatures);
     } else
 #endif
     {
@@ -1594,7 +1604,8 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                                          QFontEngine *fontEngine,
                                          const QList<uint> &itemBoundaries,
                                          bool kerningEnabled,
-                                         bool hasLetterSpacing) const
+                                         bool hasLetterSpacing,
+                                         const QHash<quint32, quint32> &fontFeatures) const
 {
     uint glyphs_shaped = 0;
 
@@ -1648,14 +1659,24 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                                          || script == QChar::Script_Khmer || script == QChar::Script_Nko);
 
             bool dontLigate = hasLetterSpacing && !scriptRequiresOpenType;
-            const hb_feature_t features[5] = {
-                { HB_TAG('k','e','r','n'), !!kerningEnabled, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END },
-                { HB_TAG('l','i','g','a'), false, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END },
-                { HB_TAG('c','l','i','g'), false, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END },
-                { HB_TAG('d','l','i','g'), false, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END },
-                { HB_TAG('h','l','i','g'), false, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END }
-            };
-            const int num_features = dontLigate ? 5 : 1;
+
+            QHash<quint32, quint32> features;
+            features.insert(HB_TAG('k','e','r','n'), !!kerningEnabled);
+            if (dontLigate) {
+                features.insert(HB_TAG('l','i','g','a'), false);
+                features.insert(HB_TAG('c','l','i','g'), false);
+                features.insert(HB_TAG('d','l','i','g'), false);
+                features.insert(HB_TAG('h','l','i','g'), false);
+            }
+            features.insert(fontFeatures);
+
+            QVarLengthArray<hb_feature_t, 16> featureArray;
+            for (auto it = features.constBegin(); it != features.constEnd(); ++it) {
+                featureArray.append({ it.key(),
+                                      it.value(),
+                                      HB_FEATURE_GLOBAL_START,
+                                      HB_FEATURE_GLOBAL_END });
+            }
 
             // whitelist cross-platforms shapers only
             static const char *shaper_list[] = {
@@ -1665,7 +1686,11 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                 nullptr
             };
 
-            bool shapedOk = hb_shape_full(hb_font, buffer, features, num_features, shaper_list);
+            bool shapedOk = hb_shape_full(hb_font,
+                                          buffer,
+                                          featureArray.constData(),
+                                          features.size(),
+                                          shaper_list);
             if (Q_UNLIKELY(!shapedOk)) {
                 hb_buffer_destroy(buffer);
                 return 0;

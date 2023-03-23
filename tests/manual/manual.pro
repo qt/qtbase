@@ -5,6 +5,7 @@ SUBDIRS = \
 filetest \
 embeddedintoforeignwindow \
 foreignwindows \
+fontfeatures \
 gestures \
 highdpi \
 inputmethodhints \

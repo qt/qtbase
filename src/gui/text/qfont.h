@@ -126,7 +126,8 @@ public:
         HintingPreferenceResolved   = 0x8000,
         StyleNameResolved           = 0x10000,
         FamiliesResolved            = 0x20000,
-        AllPropertiesResolved       = 0x3ffff
+        FontFeaturesResolved        = 0x40000,
+        AllPropertiesResolved       = 0x7ffff
     };
     Q_ENUM(ResolveProperties)
 
@@ -205,6 +206,16 @@ public:
 
     void setHintingPreference(HintingPreference hintingPreference);
     HintingPreference hintingPreference() const;
+
+    void setFontFeature(const char *fontFeature, quint32 value);
+    void setFontFeature(quint32 tag, quint32 value);
+    void setFontFeatures(const QHash<quint32, quint32> &fontFeatures);
+    void unsetFontFeature(quint32 tag);
+    void unsetFontFeature(const char *tag);
+    QHash<quint32, quint32> fontFeatures() const;
+
+    static QByteArray tagToString(quint32 tag);
+    static quint32 stringToTag(const char *tagString);
 
     // dupicated from QFontInfo
     bool exactMatch() const;
