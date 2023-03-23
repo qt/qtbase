@@ -380,6 +380,7 @@ private slots:
     void copyNonDefaultConstructible();
 
     void inplaceConstruct();
+    void emplace();
 
     void getIf_int() { getIf_impl(42); }
     void getIf_QString() { getIf_impl(u"string"_s); };
@@ -5764,6 +5765,103 @@ void tst_QVariant::inplaceConstruct()
         QVariant var(std::in_place_type<std::vector<int>>, {1, 2, 3, 4});
         QVERIFY(get_if<std::vector<int>>(&var));
         QCOMPARE(get<std::vector<int>>(var), vec);
+    }
+}
+
+struct LargerThanInternalQVariantStorage {
+    char data[6 * sizeof(void *)];
+};
+
+struct alignas(256) LargerThanInternalQVariantStorageOveraligned {
+    char data[6 * sizeof(void *)];
+};
+
+struct alignas(128) SmallerAlignmentEvenLargerSize {
+    char data[17 * sizeof(void *)];
+};
+
+void tst_QVariant::emplace()
+{
+    {
+        // can emplace non default constructible + can emplace on null variant
+        NonDefaultConstructible ndc(42);
+        QVariant var;
+        var.emplace<NonDefaultConstructible>(42);
+        QVERIFY(get_if<NonDefaultConstructible>(&var));
+        QCOMPARE(get<NonDefaultConstructible>(var), ndc);
+    }
+    {
+        // can emplace using ctor taking initializer_list
+        QVariant var;
+        var.emplace<std::vector<int>>({0, 1, 2, 3, 4});
+        auto vecPtr = get_if<std::vector<int>>(&var);
+        QVERIFY(vecPtr);
+        QCOMPARE(vecPtr->size(), 5U);
+        for (int i = 0; i < 5; ++i)
+            QCOMPARE(vecPtr->at(size_t(i)), i);
+    }
+    // prequisites for the test
+    QCOMPARE_LE(sizeof(std::vector<int>), sizeof(std::string));
+    QCOMPARE(alignof(std::vector<int>), alignof(std::string));
+    {
+        // emplace can reuse storage
+        auto var = QVariant::fromValue(std::string{});
+        QVERIFY(var.data_ptr().is_shared);
+        auto data = var.constData();
+        std::vector<int> &vec = var.emplace<std::vector<int>>(3, 42);
+        /* alignment is the same, so the pointer is exactly the same;
+           no offset change */
+        auto expected = std::vector<int>{42, 42, 42};
+        QCOMPARE(get_if<std::vector<int>>(&var), &vec);
+        QCOMPARE(get<std::vector<int>>(var), expected);
+        QCOMPARE(var.constData(), data);
+    }
+    {
+        // emplace can't reuse storage if the variant is shared
+        auto var = QVariant::fromValue(std::string{});
+        [[maybe_unused]] QVariant causesSharing = var;
+        QVERIFY(var.data_ptr().is_shared);
+        auto data = var.constData();
+        var.emplace<std::vector<int>>(3, 42);
+        auto expected = std::vector<int>{42, 42, 42};
+        QVERIFY(get_if<std::vector<int>>(&var));
+        QCOMPARE(get<std::vector<int>>(var), expected);
+        QCOMPARE_NE(var.constData(), data);
+    }
+    {
+        // emplace puts element into the correct place - non-shared
+        QVERIFY(QVariant::Private::canUseInternalSpace(QMetaType::fromType<QString>().iface()));
+        QVariant var;
+        var.emplace<QString>(QChar('x'));
+        QVERIFY(!var.data_ptr().is_shared);
+    }
+    {
+        // emplace puts element into the correct place - shared
+        QVERIFY(!QVariant::Private::canUseInternalSpace(QMetaType::fromType<std::string>().iface()));
+        QVariant var;
+        var.emplace<std::string>(42, 'x');
+        QVERIFY(var.data_ptr().is_shared);
+    }
+    {
+        // emplace does not reuse the storage if alignment is too large
+        auto iface = QMetaType::fromType<LargerThanInternalQVariantStorage>().iface();
+        QVERIFY(!QVariant::Private::canUseInternalSpace(iface));
+        auto var = QVariant::fromValue(LargerThanInternalQVariantStorage{});
+        auto data = var.constData();
+        var.emplace<LargerThanInternalQVariantStorageOveraligned>();
+        QCOMPARE_NE(var.constData(), data);
+    }
+    {
+        // emplace does reuse the storage if new alignment and size are together small enough
+        auto iface = QMetaType::fromType<LargerThanInternalQVariantStorageOveraligned>().iface();
+        QVERIFY(!QVariant::Private::canUseInternalSpace(iface));
+        auto var = QVariant::fromValue(LargerThanInternalQVariantStorageOveraligned{});
+        auto data = var.constData();
+        var.emplace<SmallerAlignmentEvenLargerSize>();
+        // no exact match below - the alignment is after all different
+        QCOMPARE_LE(quintptr(var.constData()), quintptr(data));
+        QCOMPARE_LE(quintptr(var.constData()),
+                    quintptr(data) + sizeof(LargerThanInternalQVariantStorageOveraligned));
     }
 }
 

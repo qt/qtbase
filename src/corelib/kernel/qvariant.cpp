@@ -545,6 +545,28 @@ QVariant::QVariant(const QVariant &p)
     non-initializer list \c{in_place_type_t} overload.
 */
 
+
+/*!
+    \fn template <typename Type, typename... Args, if_constructible<Type, Args...> = true> QVariant::emplace(Args&&... args)
+
+    \since 6.6
+    Replaces the object currently held in \c{*this} with an object of
+    type \c{Type}, constructed from \a{args}\c{...}. If \c{*this} was non-null,
+    the previously held object is destroyed first.
+    If possible, this method will reuse memory allocated by the QVariant.
+    Returns a reference to the newly-created object.
+ */
+
+/*!
+    \fn template <typename Type, typename List, typename... Args, if_constructible<Type, std::initializer_list<List> &, Args...> = true> QVariant::emplace(std::initializer_list<List> list, Args&&... args)
+
+    \since 6.6
+    \overload
+    This overload exists to support types with constructors taking an
+    \c initializer_list. It behaves otherwise equivalent to the
+    non-initializer list overload.
+*/
+
 QVariant::QVariant(std::in_place_t, QMetaType type) : d(type.iface())
 {
     // we query the metatype instead of detecting it at compile time
@@ -553,6 +575,47 @@ QVariant::QVariant(std::in_place_t, QMetaType type) : d(type.iface())
         d.data.shared = PrivateShared::create(type.sizeOf(), type.alignOf());
         d.is_shared = true;
     }
+}
+
+/*!
+    \internal
+    Returns a pointer to data suitable for placement new
+    of an object of type \a type
+    Changes the variant's metatype to \a type
+ */
+void *QVariant::prepareForEmplace(QMetaType type)
+{
+    /* There are two cases where we can reuse the existing storage
+       (1) The new type fits in QVariant's SBO storage
+       (2) We are using the externally allocated storage, the variant is
+           detached, and the new type fits into the existing storage.
+       In all other cases (3), we cannot reuse the storage.
+     */
+    auto typeFits = [&] {
+        auto newIface = type.iface();
+        auto oldIface = d.typeInterface();
+        auto newSize = PrivateShared::computeAllocationSize(newIface->size, newIface->alignment);
+        auto oldSize = PrivateShared::computeAllocationSize(oldIface->size, oldIface->alignment);
+        return newSize <= oldSize;
+    };
+    if (Private::canUseInternalSpace(type.iface())) { // (1)
+        clear();
+        d.packedType = quintptr(type.iface()) >> 2;
+        return d.data.data;
+    } else if (d.is_shared && isDetached() && typeFits()) { // (2)
+        QtMetaTypePrivate::destruct(d.typeInterface(), d.data.shared->data());
+        // compare QVariant::PrivateShared::create
+        const auto ps = d.data.shared;
+        const auto align = type.alignOf();
+        ps->offset =  PrivateShared::computeOffset(ps, align);
+        d.packedType = quintptr(type.iface()) >> 2;
+        return ps->data();
+    }
+    // (3)
+    QVariant newVariant(std::in_place, type);
+    swap(newVariant);
+    // const cast is safe, we're in a non-const method
+    return const_cast<void *>(d.storage());
 }
 
 /*!

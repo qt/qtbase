@@ -444,6 +444,43 @@ public:
     { return d.storage(); }
     inline const void *data() const { return constData(); }
 
+private:
+    template <typename Type>
+    void verifySuitableForEmplace()
+    {
+        static_assert(!std::is_reference_v<Type>,
+                      "QVariant does not support reference types");
+        static_assert(!std::is_const_v<Type>,
+                      "QVariant does not support const types");
+        static_assert(std::is_copy_constructible_v<Type>,
+                      "QVariant requires that the type is copyable");
+        static_assert(std::is_destructible_v<Type>,
+                      "QVariant requires that the type is destructible");
+    }
+
+    template <typename Type, typename... Args>
+    Type &emplaceImpl(Args&&... args)
+    {
+        verifySuitableForEmplace<Type>();
+        auto data = static_cast<Type *>(prepareForEmplace(QMetaType::fromType<Type>()));
+        return *q20::construct_at(data, std::forward<Args>(args)...);
+    }
+
+public:
+    template <typename Type, typename... Args,
+              if_constructible<Type, Args...> = true>
+    Type &emplace(Args&&... args)
+    {
+        return emplaceImpl<Type>(std::forward<Args>(args)...);
+    }
+
+    template <typename Type, typename List, typename... Args,
+             if_constructible<Type, std::initializer_list<List> &, Args...> = true>
+    Type &emplace(std::initializer_list<List> list, Args&&... args)
+    {
+        return emplaceImpl<Type>(list, std::forward<Args>(args)...);
+    }
+
     template<typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, QVariant>>>
     void setValue(T &&avalue)
     {
@@ -580,6 +617,8 @@ private:
 
     // used to setup the QVariant internals for the "real" inplace ctor
     QVariant(std::in_place_t, QMetaType type);
+    // helper for emplace
+    void *prepareForEmplace(QMetaType type);
 
     // These constructors don't create QVariants of the type associated
     // with the enum, as expected, but they would create a QVariant of
