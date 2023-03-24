@@ -1141,12 +1141,16 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam, result);
     case QtWindows::NonClientMouseEvent:
-        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer) && platformWindow->frameStrutEventsEnabled())
+        if (!platformWindow->frameStrutEventsEnabled())
+            break;
+        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
             return sessionManagerInteractionBlocked() || d->m_pointerHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
         else
             return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::NonClientPointerEvent:
-        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer) && platformWindow->frameStrutEventsEnabled())
+        if (!platformWindow->frameStrutEventsEnabled())
+            break;
+        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
             return sessionManagerInteractionBlocked() || d->m_pointerHandler.translatePointerEvent(platformWindow->window(), hwnd, et, msg, result);
         break;
     case QtWindows::EnterSizeMoveEvent:
