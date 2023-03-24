@@ -39,6 +39,7 @@ private:
 
     bool showImagePickerDialog(QWindow *parent);
     bool showNativeDocumentPickerDialog(QWindow *parent);
+    void showImagePickerDialog_helper(QWindow *parent);
 };
 
 QT_END_NAMESPACE

@@ -63,6 +63,7 @@ qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
     LIBRARIES
         ${FWAssetsLibrary}
         ${FWUniformTypeIdentifiers}
+        ${FWPhotos}
 )
 
 add_subdirectory(optional)
