@@ -4610,34 +4610,35 @@ void tst_QDateTimeEdit::springForward_data()
         QSKIP("Spring forward transition did not actually skip any time!");
 
     const QTime springGap = springTransition.time().addSecs(-gapWidth);
-    const QByteArray springTime = springGap.toString("hh:mm").toLocal8Bit();
-    const QTime springGapMiddle = springTransition.time().addSecs(-gapWidth/2);
+    const QTime springGapMiddle = springTransition.time().addSecs(-gapWidth / 2);
+    const QByteArray startGapTime = springGap.toString("hh:mm").toLocal8Bit();
+    const QByteArray midGapTime = springGapMiddle.toString("hh:mm").toLocal8Bit();
 
-    QTest::addRow("forward to %s, correct to previous", springTime.data())
+    QTest::addRow("forward to %s, correct to previous", startGapTime.data())
         << QDateTime(springDate, springGap.addSecs(-gapWidth))
         << QAbstractSpinBox::CorrectToPreviousValue
         << springGap
         << QDateTime(springDate, springGap.addSecs(-gapWidth));
 
-    QTest::addRow("back to %s, correct to previous", springTime.data())
+    QTest::addRow("back to %s, correct to previous", startGapTime.data())
         << springTransition
         << QAbstractSpinBox::CorrectToPreviousValue
         << springGap
         << springTransition;
 
-    QTest::addRow("forward to %s, correct to nearest", springTime.data())
+    QTest::addRow("forward to %s, correct to nearest", midGapTime.data())
         << QDateTime(springDate, springGap.addSecs(-gapWidth))
         << QAbstractSpinBox::CorrectToNearestValue
         << springGapMiddle
         << springTransition;
 
-    QTest::addRow("back to %s, correct to nearest", springTime.data())
+    QTest::addRow("back to %s, correct to nearest", midGapTime.data())
         << springTransition
         << QAbstractSpinBox::CorrectToNearestValue
         << springGapMiddle
         << springTransition;
 
-    QTest::addRow("jump to %s, correct to nearest", qPrintable(springGapMiddle.toString("hh:mm")))
+    QTest::addRow("jump to %s, correct to nearest", midGapTime.data())
         << QDateTime(QDate(1980, 5, 10), springGap)
         << QAbstractSpinBox::CorrectToNearestValue
         << springGapMiddle
