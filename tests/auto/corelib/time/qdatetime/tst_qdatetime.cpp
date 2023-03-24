@@ -2665,10 +2665,16 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::newRow("ISO 24:00") << QString::fromLatin1("2012-06-04T24:00:00")
                                << Qt::ISODate << QDate(2012, 6, 5).startOfDay();
 #if QT_CONFIG(timezone)
-    QTest::newRow("ISO 24:00 in DST") // Only special if TZ=America/Sao_Paulo
+    const QByteArray sysId = QTimeZone::systemTimeZoneId();
+    const bool midnightSkip = sysId == "America/Sao_Paulo" || sysId == "America/Asuncion"
+        || sysId == "America/Cordoba" || sysId == "America/Argentina/Cordoba"
+        || sysId == "America/Campo_Grande"
+        || sysId == "America/Cuiaba" || sysId == "America/Buenos_Aires"
+        || sysId == "America/Argentina/Buenos_Aires"
+        || sysId == "America/Argentina/Tucuman" || sysId == "Brazil/East";
+    QTest::newRow("ISO 24:00 in DST") // Midnight spring forward in some of South America.
         << QString::fromLatin1("2008-10-18T24:00") << Qt::ISODate
-        << QDateTime(QDate(2008, 10, 19),
-                     QTime(QTimeZone::systemTimeZoneId() == "America/Sao_Paulo" ? 1 : 0, 0));
+        << QDateTime(QDate(2008, 10, 19), QTime(midnightSkip ? 1 : 0, 0));
 #endif
     QTest::newRow("ISO 24:00 end of month")
         << QString::fromLatin1("2012-06-30T24:00:00")
