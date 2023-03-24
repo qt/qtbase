@@ -140,10 +140,12 @@ void tst_QDateTimeParser::intermediateYear()
 
     QVERIFY(testParser.parseFormat(format));
 
+    // Indian/Cocos has a transition at the start of 1900, so it started this
+    // day at 00:02:20, throwing a time offset into QDTP.
     QDateTime val(QDate(1900, 1, 1).startOfDay());
     const QDateTimeParser::StateNode tmp = testParser.parse(input, -1, val, false);
     QCOMPARE(tmp.state, QDateTimeParser::Intermediate);
-    QCOMPARE(tmp.value, expected.startOfDay());
+    QCOMPARE(tmp.value.date(), expected);
 }
 
 QTEST_APPLESS_MAIN(tst_QDateTimeParser)
