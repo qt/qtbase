@@ -352,13 +352,15 @@ static QDate calculateDowDate(int year, int month, int dayOfWeek, int week)
 
 static QDate calculatePosixDate(const QByteArray &dateRule, int year)
 {
+    Q_ASSERT(!dateRule.isEmpty());
     bool ok;
     // Can start with M, J, or a digit
     if (dateRule.at(0) == 'M') {
         // nth week in month format "Mmonth.week.dow"
         QList<QByteArray> dateParts = dateRule.split('.');
         if (dateParts.size() > 2) {
-            int month = dateParts.at(0).mid(1).toInt(&ok);
+            Q_ASSERT(!dateParts.at(0).isEmpty()); // the 'M' is its [0].
+            int month = QByteArrayView{ dateParts.at(0) }.sliced(1).toInt(&ok);
             int week = ok ? dateParts.at(1).toInt(&ok) : 0;
             int dow = ok ? dateParts.at(2).toInt(&ok) : 0;
             if (ok)
@@ -367,7 +369,7 @@ static QDate calculatePosixDate(const QByteArray &dateRule, int year)
     } else if (dateRule.at(0) == 'J') {
         // Day of Year 1...365, ignores Feb 29.
         // So March always starts on day 60.
-        int doy = dateRule.mid(1).toInt(&ok);
+        int doy = QByteArrayView{ dateRule }.sliced(1).toInt(&ok);
         if (ok && doy > 0 && doy < 366) {
             // Subtract 1 because we're adding days *after* the first of
             // January, unless it's after February in a leap year, when the leap
@@ -905,8 +907,8 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
         if (ruleIndex == -1) {
             if (rule.dstOffset != 0)
                 ret.m_hasDst = true;
+            tran.ruleIndex = ret.m_tranRules.size();
             ret.m_tranRules.append(rule);
-            tran.ruleIndex = ret.m_tranRules.size() - 1;
         } else {
             tran.ruleIndex = ruleIndex;
         }
@@ -1308,7 +1310,7 @@ private:
             path = QFile::symLinkTarget(path);
             int index = path.indexOf(zoneinfo);
             if (index >= 0) // Found zoneinfo file; extract zone name from path:
-                return QStringView{ path }.mid(index + zoneinfo.size()).toUtf8();
+                return QStringView{ path }.sliced(index + zoneinfo.size()).toUtf8();
         } while (!path.isEmpty() && --iteration > 0);
 
         return QByteArray();
@@ -1365,7 +1367,7 @@ QByteArray QTzTimeZonePrivate::staticSystemTimeZoneId()
     if (ianaId == ":/etc/localtime")
         ianaId.clear();
     else if (ianaId.startsWith(':'))
-        ianaId = ianaId.mid(1);
+        ianaId = ianaId.sliced(1);
 
     if (ianaId.isEmpty()) {
         Q_CONSTINIT thread_local static ZoneNameReader reader;
