@@ -4723,7 +4723,7 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
 
         // 3:00:10 into 2:00:10 should get us to 1:00:10
         QTest::addRow("hour down into %s gap", springTime.data())
-            << QDateTime(spring, springGap.addSecs(3610))
+            << QDateTime(spring, springGap.addSecs(gapWidth + 10))
             << QDateTimeEdit::HourSection
             << -1
             << QDateTime(spring, springGap.addSecs(-3590));
