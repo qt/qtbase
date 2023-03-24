@@ -156,7 +156,7 @@ public:
           begin(_begin),
           end(_end),
           current(_begin),
-          iterationCount(selectIteration(IteratorCategory()) ? std::distance(_begin, _end) : 0),
+          iterationCount(selectIteration(IteratorCategory()) ? static_cast<int>(std::distance(_begin, _end)) : 0),
           forIteration(selectIteration(IteratorCategory())),
           progressReportingEnabled(true)
     {
@@ -168,7 +168,7 @@ public:
           begin(_begin),
           end(_end),
           current(_begin),
-          iterationCount(selectIteration(IteratorCategory()) ? std::distance(_begin, _end) : 0),
+          iterationCount(selectIteration(IteratorCategory()) ? static_cast<int>(std::distance(_begin, _end)) : 0),
           forIteration(selectIteration(IteratorCategory())),
           progressReportingEnabled(true),
           defaultValue(U())
@@ -181,7 +181,7 @@ public:
           begin(_begin),
           end(_end),
           current(_begin),
-          iterationCount(selectIteration(IteratorCategory()) ? std::distance(_begin, _end) : 0),
+          iterationCount(selectIteration(IteratorCategory()) ? static_cast<int>(std::distance(_begin, _end)) : 0),
           forIteration(selectIteration(IteratorCategory())),
           progressReportingEnabled(true),
           defaultValue(std::forward<U>(_defaultValue))
