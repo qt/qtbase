@@ -504,6 +504,13 @@ void tst_QDate::startOfDay_endOfDay_data()
     QTest::newRow("epoch")
         << epochDate() << QByteArray("UTC")
         << early << late;
+
+    if (QTimeZone("America/Hermosillo").isValid()) {
+        // The western Mexico time-zones skipped the first hour of 1970.
+        QTest::newRow("BajaMexico")
+            << QDate(1970, 1, 1) << QByteArray("America/Hermosillo")
+            << invalid << late;
+    }
     if (QTimeZone("America/Sao_Paulo").isValid()) {
         QTest::newRow("Brazil")
             << QDate(2008, 10, 19) << QByteArray("America/Sao_Paulo")
@@ -566,6 +573,7 @@ void tst_QDate::startOfDay_endOfDay()
     } while (isSystem);
     if (end.isValid())
         QCOMPARE(date.addDays(1).startOfDay().addMSecs(-1), back);
+    // Fails epoch in western Mexico; see America/Hermosillo.
     if (start.isValid())
         QCOMPARE(date.addDays(-1).endOfDay().addMSecs(1), front);
     if (!isSystem) {
