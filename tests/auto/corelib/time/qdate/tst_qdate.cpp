@@ -498,22 +498,29 @@ void tst_QDate::startOfDay_endOfDay_data()
     QTest::addColumn<QTime>("start");
     QTest::addColumn<QTime>("end");
 
-    const QTime initial(0, 0), final(23, 59, 59, 999), invalid(QDateTime().time());
+    const QTime early(0, 0), late(23, 59, 59, 999), invalid(QDateTime().time());
 
     // UTC is always a valid zone.
     QTest::newRow("epoch")
         << epochDate() << QByteArray("UTC")
-        << initial << final;
+        << early << late;
     if (QTimeZone("America/Sao_Paulo").isValid()) {
         QTest::newRow("Brazil")
             << QDate(2008, 10, 19) << QByteArray("America/Sao_Paulo")
-            << QTime(1, 0) << final;
+            << QTime(1, 0) << late;
+        // Several South American zones coincide, see
+        // tst_QDateTime::fromStringDateFormat(ISO 24:00 in DST).
     }
 #if QT_CONFIG(icu) || !defined(Q_OS_WIN) // MS's TZ APIs lack data
     if (QTimeZone("Europe/Sofia").isValid()) {
+        // Several southern zones within EET (but not the northern ones) spent
+        // part of the 1990s using midnight as spring transition. These included
+        // Asia/{Beirut,Famagusta,Nicosia} and Europe/{Bucharest,Chisinau,Nicosia}.
         QTest::newRow("Sofia")
             << QDate(1994, 3, 27) << QByteArray("Europe/Sofia")
-            << QTime(1, 0) << final;
+            << QTime(1, 0) << late;
+        // Additionally, America/Scoresbysund, Atlantic/Azores,
+        // Asia/{Choibalsan,Hovd,Tbilisi,Ulan_Bator,Ulaanbaatar} coincide.
     }
 #endif
     if (QTimeZone("Pacific/Kiritimati").isValid()) {
@@ -564,6 +571,7 @@ void tst_QDate::startOfDay_endOfDay()
     if (!isSystem) {
         // These might fail if system zone coincides with zone; but only if it
         // did something similarly unusual on the date picked for this test.
+        // See comments on test cases.
         if (start.isValid()) {
             QCOMPARE(front.date(), date);
             QCOMPARE(front.time(), QTime(0, 0));
