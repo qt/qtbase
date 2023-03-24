@@ -12,10 +12,137 @@
 #include <emscripten/val.h>
 #include <emscripten/bind.h>
 
+#include <map>
+#include <array>
+
 QT_BEGIN_NAMESPACE
 
 using namespace emscripten;
 using namespace Qt::StringLiterals;
+
+
+namespace {
+
+bool isLocalFontsAPISupported()
+{
+    return val::global("window")["queryLocalFonts"].isUndefined() == false;
+}
+
+val makeObject(const char *key, const char *value)
+{
+    val obj = val::object();
+    obj.set(key, std::string(value));
+    return obj;
+}
+
+std::multimap<QString, emscripten::val> makeFontFamilyMap(const QList<val> &fonts)
+{
+    std::multimap<QString, emscripten::val> fontFamilies;
+    for (auto font : fonts) {
+        QString family = QString::fromStdString(font["family"].as<std::string>());
+        fontFamilies.insert(std::make_pair(family, font));
+    }
+    return fontFamilies;
+}
+
+void printError(val err) {
+    qCWarning(lcQpaFonts)
+        << QString::fromStdString(err["name"].as<std::string>())
+        << QString::fromStdString(err["message"].as<std::string>());
+}
+
+std::array<const char *, 8> webSafeFontFamilies()
+{
+    return {"Arial", "Verdana", "Tahoma", "Trebuchet", "Times New Roman",
+            "Georgia", "Garamond", "Courier New"};
+}
+
+void checkFontAccessPermitted(std::function<void()> callback)
+{
+    const val permissions = val::global("navigator")["permissions"];
+    if (permissions.isUndefined())
+        return;
+
+    qstdweb::Promise::make(permissions, "query", {
+        .thenFunc = [callback](val status) {
+            if (status["state"].as<std::string>() == "granted")
+                callback();
+        }
+    }, makeObject("name", "local-fonts"));
+}
+
+void queryLocalFonts(std::function<void(const QList<val> &)> callback)
+{
+    emscripten::val window = emscripten::val::global("window");
+    qstdweb::Promise::make(window, "queryLocalFonts", {
+        .thenFunc = [callback](emscripten::val fontArray) {
+            QList<val> fonts;
+            const int count = fontArray["length"].as<int>();
+            fonts.reserve(count);
+            for (int i = 0; i < count; ++i)
+                fonts.append(fontArray.call<emscripten::val>("at", i));
+            callback(fonts);
+        },
+        .catchFunc = printError
+    });
+}
+
+void readBlob(val blob, std::function<void(const QByteArray &)> callback)
+{
+    qstdweb::Promise::make(blob, "arrayBuffer", {
+        .thenFunc = [callback](emscripten::val fontArrayBuffer) {
+            QByteArray fontData = qstdweb::Uint8Array(qstdweb::ArrayBuffer(fontArrayBuffer)).copyToQByteArray();
+            callback(fontData);
+        },
+        .catchFunc = printError
+    });
+}
+
+void readFont(val font, std::function<void(const QByteArray &)> callback)
+{
+    qstdweb::Promise::make(font, "blob", {
+        .thenFunc = [callback](val blob) {
+            readBlob(blob, [callback](const QByteArray &data) {
+                callback(data);
+            });
+        },
+        .catchFunc = printError
+    });
+}
+
+} // namespace
+
+void QWasmFontDatabase::populateLocalfonts()
+{
+    if (!isLocalFontsAPISupported())
+        return;
+
+    // Run the font population code if local font access has been
+    // permitted. This does not request permission, since we are currently
+    // starting up and should not display a permission request dialog at
+    // this point.
+    checkFontAccessPermitted([](){
+        queryLocalFonts([](const QList<val> &fonts){
+            auto fontFamilies = makeFontFamilyMap(fonts);
+            // Populate some font families. We can't populate _all_ fonts as in-memory fonts,
+            // since that would require several gigabytes of memory. Instead, populate
+            // a subset of the available fonts.
+            for (const QString &family: webSafeFontFamilies()) {
+                auto fontsRange = fontFamilies.equal_range(family);
+                if (fontsRange.first != fontsRange.second)
+                    QFreeTypeFontDatabase::registerFontFamily(family);
+
+                for (auto it = fontsRange.first; it != fontsRange.second; ++it) {
+                    const val font = it->second;
+                    readFont(font, [](const QByteArray &fontData){
+                        QFreeTypeFontDatabase::addTTFile(fontData, QByteArray());
+                        QWasmFontDatabase::notifyFontsChanged();
+                    });
+                }
+            }
+        });
+    });
+}
 
 void QWasmFontDatabase::populateFontDatabase()
 {
@@ -36,102 +163,7 @@ void QWasmFontDatabase::populateFontDatabase()
         QFreeTypeFontDatabase::addTTFile(theFont.readAll(), fontFileName.toLatin1());
     }
 
-    // check if local-fonts API is available in the browser
-    val window = val::global("window");
-    val fonts = window["queryLocalFonts"];
-
-    if (fonts.isUndefined())
-        return;
-
-    val permissions = val::global("navigator")["permissions"];
-    if (permissions["request"].isUndefined())
-        return;
-
-    val requestLocalFontsPermission = val::object();
-    requestLocalFontsPermission.set("name", std::string("local-fonts"));
-
-    qstdweb::PromiseCallbacks permissionRequestCallbacks {
-        .thenFunc = [window](val status) {
-            qCDebug(lcQpaFonts) << "onFontPermissionSuccess:"
-                << QString::fromStdString(status["state"].as<std::string>());
-
-            // query all available local fonts and call registerFontFamily for each of them
-            qstdweb::Promise::make(window, "queryLocalFonts", {
-                .thenFunc = [](val status) {
-                    const int count = status["length"].as<int>();
-                    for (int i = 0; i < count; ++i) {
-                        val font = status.call<val>("at", i);
-                        const std::string family = font["family"].as<std::string>();
-                        QFreeTypeFontDatabase::registerFontFamily(QString::fromStdString(family));
-                    }
-                    QWasmFontDatabase::notifyFontsChanged();
-                },
-                .catchFunc = [](val) {
-                    qCWarning(lcQpaFonts)
-                        << "Error while trying to query local-fonts API";
-                }
-            });
-        },
-        .catchFunc = [](val error) {
-            qCWarning(lcQpaFonts)
-                << "Error while requesting local-fonts API permission: "
-                << QString::fromStdString(error["name"].as<std::string>());
-        }
-    };
-
-    // request local fonts permission (currently supported only by Chrome 103+)
-    qstdweb::Promise::make(permissions, "request", std::move(permissionRequestCallbacks), std::move(requestLocalFontsPermission));
-}
-
-void QWasmFontDatabase::populateFamily(const QString &familyName)
-{
-    val window = val::global("window");
-
-    auto queryFontsArgument = val::array(std::vector<val>({ val(familyName.toStdString()) }));
-    val queryFont = val::object();
-    queryFont.set("postscriptNames", std::move(queryFontsArgument));
-
-    qstdweb::PromiseCallbacks localFontsQueryCallback {
-        .thenFunc = [](val status) {
-            val font = status.call<val>("at", 0);
-
-            if (font.isUndefined())
-                return;
-
-            qstdweb::PromiseCallbacks blobQueryCallback {
-                .thenFunc = [](val status) {
-                    qCDebug(lcQpaFonts) << "onBlobQuerySuccess";
-
-                    qstdweb::PromiseCallbacks arrayBufferCallback {
-                        .thenFunc = [](val status) {
-                            qCDebug(lcQpaFonts) << "onArrayBuffer" ;
-
-                            QByteArray fontByteArray = QByteArray::fromEcmaUint8Array(status);
-
-                            QFreeTypeFontDatabase::addTTFile(fontByteArray, QByteArray());
-
-                            QWasmFontDatabase::notifyFontsChanged();
-                        },
-                        .catchFunc = [](val) {
-                            qCWarning(lcQpaFonts) << "onArrayBufferError";
-                        }
-                    };
-
-                    qstdweb::Promise::make(status, "arrayBuffer", std::move(arrayBufferCallback));
-                },
-                .catchFunc = [](val) {
-                    qCWarning(lcQpaFonts) << "onBlobQueryError";
-                }
-            };
-
-            qstdweb::Promise::make(font, "blob", std::move(blobQueryCallback));
-        },
-        .catchFunc = [](val) {
-            qCWarning(lcQpaFonts) << "onLocalFontsQueryError";
-        }
-    };
-
-    qstdweb::Promise::make(window, "queryLocalFonts", std::move(localFontsQueryCallback), std::move(queryFont));
+    populateLocalfonts();
 }
 
 QFontEngine *QWasmFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
