@@ -7,6 +7,9 @@
 #include <QString>
 #include <QStringBuilder>
 #include <QVarLengthArray>
+#if QT_CONFIG(cpp_winrt)
+#  include <private/qt_winrtbase_p.h>
+#endif
 #include <private/qxmlstream_p.h>
 
 #include <QTest>
@@ -235,6 +238,19 @@ static_assert(!CanConvert<std::list<wchar_t>>);
 //
 
 static_assert(CanConvert<QStringBuilder<QString, QString>>);
+
+#if QT_CONFIG(cpp_winrt)
+
+//
+// winrt::hstring (QTBUG-111886)
+//
+
+static_assert(CanConvert<      winrt::hstring >);
+static_assert(CanConvert<const winrt::hstring >);
+static_assert(CanConvert<      winrt::hstring&>);
+static_assert(CanConvert<const winrt::hstring&>);
+
+#endif // QT_CONFIG(cpp_winrt)
 
 
 class tst_QAnyStringView : public QObject
