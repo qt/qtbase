@@ -95,7 +95,6 @@ QWasmScreen::~QWasmScreen()
 
 void QWasmScreen::deleteScreen()
 {
-    m_compositor->onScreenDeleting();
     // Deletes |this|!
     QWindowSystemInterface::handleScreenRemoved(this);
 }

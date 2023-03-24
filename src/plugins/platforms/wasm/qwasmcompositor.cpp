@@ -3,19 +3,10 @@
 
 #include "qwasmcompositor.h"
 #include "qwasmwindow.h"
-#include "qwasmeventdispatcher.h"
-#include "qwasmclipboard.h"
-#include "qwasmevent.h"
-
-#include <QtGui/private/qwindow_p.h>
-
-#include <private/qguiapplication_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
-#include <QtCore/qcoreapplication.h>
-#include <QtGui/qguiapplication.h>
 
-#include <emscripten/bind.h>
+#include <emscripten/html5.h>
 
 namespace {
 QWasmWindow *asWasmWindow(QWindow *window)
@@ -32,11 +23,7 @@ QWasmWindowStack::PositionPreference positionPreferenceFromWindowFlags(Qt::Windo
     return QWasmWindowStack::PositionPreference::Regular;
 }
 
-}  // namespace
-
-using namespace emscripten;
-
-Q_GUI_EXPORT int qt_defaultDpiX();
+} // namespace
 
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
     : QObject(screen), m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this))
@@ -49,27 +36,6 @@ QWasmCompositor::~QWasmCompositor()
     if (m_requestAnimationFrameId != -1)
         emscripten_cancel_animation_frame(m_requestAnimationFrameId);
 
-    destroy();
-}
-
-void QWasmCompositor::onScreenDeleting()
-{
-    deregisterEventHandlers();
-}
-
-void QWasmCompositor::deregisterEventHandlers()
-{
-    QByteArray screenElementSelector = screen()->eventTargetId().toUtf8();
-
-    emscripten_set_touchstart_callback(screenElementSelector.constData(), 0, 0, NULL);
-    emscripten_set_touchend_callback(screenElementSelector.constData(), 0, 0, NULL);
-    emscripten_set_touchmove_callback(screenElementSelector.constData(), 0, 0, NULL);
-
-    emscripten_set_touchcancel_callback(screenElementSelector.constData(), 0, 0, NULL);
-}
-
-void QWasmCompositor::destroy()
-{
     // TODO(mikolaj.boc): Investigate if m_isEnabled is needed at all. It seems like a frame should
     // not be generated after this instead.
     m_isEnabled = false; // prevent frame() from creating a new m_context
@@ -226,11 +192,6 @@ void QWasmCompositor::handleBackingStoreFlush(QWindow *window)
     // processing an update, in which case the new content will flushed as a part of that update.
     if (!m_inDeliverUpdateRequest)
         requestUpdateWindow(asWasmWindow(window));
-}
-
-int dpiScaled(qreal value)
-{
-    return value * (qreal(qt_defaultDpiX()) / 96.0);
 }
 
 void QWasmCompositor::frame(const QList<QWasmWindow *> &windows)
