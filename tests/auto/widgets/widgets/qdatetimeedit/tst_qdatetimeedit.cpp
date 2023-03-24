@@ -4575,6 +4575,13 @@ static QDateTime findSpring(int year, const QTimeZone &timeZone)
 
     return spring;
 };
+
+// Number of missing seconds between a day before and a day after when.
+// If when is the time of a spring-forward transition, this is the width of its gap.
+static int missingSecondsNear(const QDateTime &when)
+{
+    return 2 * 24 * 60 * 60 - when.addDays(-1).secsTo(when.addDays(1));
+}
 #endif
 
 /*!
@@ -4598,7 +4605,10 @@ void tst_QDateTimeEdit::springForward_data()
         QSKIP("Failed to obtain valid spring forward datetime for 2019!");
 
     const QDate springDate = springTransition.date();
-    const int gapWidth = timeZone.daylightTimeOffset(springTransition.addDays(1));
+    const int gapWidth = missingSecondsNear(springTransition);
+    if (gapWidth <= 0)
+        QSKIP("Spring forward transition did not actually skip any time!");
+
     const QTime springGap = springTransition.time().addSecs(-gapWidth);
     const QByteArray springTime = springGap.toString("hh:mm").toLocal8Bit();
     const QTime springGapMiddle = springTransition.time().addSecs(-gapWidth/2);
@@ -4695,7 +4705,10 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
         QSKIP("Failed to obtain valid spring forward datetime for 2007!");
 
     const QDate spring = springTransition.date();
-    const int gapWidth = timeZone.daylightTimeOffset(springTransition.addDays(1));
+    const int gapWidth = missingSecondsNear(springTransition);
+    if (gapWidth <= 0)
+        QSKIP("Spring forward transition did not actually skip any time!");
+
     const QTime springGap = springTransition.time().addSecs(-gapWidth);
     const QByteArray springTime = springGap.toString("hh:mm").toLocal8Bit();
 
