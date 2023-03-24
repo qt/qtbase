@@ -4738,7 +4738,7 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
     QTest::addColumn<int>("steps");
     QTest::addColumn<QDateTime>("end");
 
-    const QTimeZone timeZone = QTimeZone("Europe/Oslo");
+    const QTimeZone timeZone = QTimeZone::systemTimeZone();
     if (!timeZone.hasDaylightTime())
         QSKIP("This test needs to run in a timezone that observes DST!");
 
