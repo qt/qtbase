@@ -19,7 +19,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcDebugTrace, "qt.core.ctf");
+Q_LOGGING_CATEGORY(lcDebugTrace, "qt.core.ctf", QtWarningMsg)
 
 static const size_t packetHeaderSize = 24 + 6 * 8 + 4;
 static const size_t packetSize = 4096;
@@ -56,7 +56,7 @@ QCtfLibImpl::QCtfLibImpl()
 {
     QString location = QString::fromUtf8(qgetenv("QTRACE_LOCATION"));
     if (location.isEmpty()) {
-        qCWarning (lcDebugTrace) << "QTRACE_LOCATION not set";
+        qCInfo (lcDebugTrace) << "QTRACE_LOCATION not set";
         return;
     }
 
