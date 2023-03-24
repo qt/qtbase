@@ -39,10 +39,13 @@ public:
 
     EGLDisplay eglDisplay() const { return m_egl_display; }
 
+    bool usingPlatformDisplay() const { return m_using_platform_display; }
+
     xcb_visualid_t getCompatibleVisualId(xcb_screen_t *screen, EGLConfig config) const;
 private:
     QXcbConnection *m_connection;
     EGLDisplay m_egl_display;
+    bool m_using_platform_display;
 
     QScopedPointer<QXcbEglNativeInterfaceHandler> m_native_interface_handler;
 };

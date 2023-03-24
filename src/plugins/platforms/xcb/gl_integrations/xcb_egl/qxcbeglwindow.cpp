@@ -46,15 +46,19 @@ void QXcbEglWindow::create()
 {
     QXcbWindow::create();
 
+    // this is always true without egl_x11
+    if (m_glIntegration->usingPlatformDisplay()) {
+        auto createPlatformWindowSurface = reinterpret_cast<PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC>(
+            eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT"));
+        m_surface = createPlatformWindowSurface(m_glIntegration->eglDisplay(),
+                                                m_config,
+                                                reinterpret_cast<void *>(&m_window),
+                                                nullptr);
+        return;
+    }
+
 #if QT_CONFIG(egl_x11)
     m_surface = eglCreateWindowSurface(m_glIntegration->eglDisplay(), m_config, m_window, nullptr);
-#else
-    auto createPlatformWindowSurface = reinterpret_cast<PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC>(
-        eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT"));
-    m_surface = createPlatformWindowSurface(m_glIntegration->eglDisplay(),
-                                            m_config,
-                                            reinterpret_cast<void *>(m_window),
-                                            nullptr);
 #endif
 }
 

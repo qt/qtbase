@@ -58,6 +58,7 @@ std::optional<VisualInfo> getVisualInfo(xcb_screen_t *screen,
 QXcbEglIntegration::QXcbEglIntegration()
     : m_connection(nullptr)
     , m_egl_display(EGL_NO_DISPLAY)
+    , m_using_platform_display(false)
 {
     qCDebug(lcQpaGl) << "Xcb EGL gl-integration created";
 }
@@ -80,6 +81,7 @@ bool QXcbEglIntegration::initialize(QXcbConnection *connection)
         m_egl_display = streamFuncs.get_platform_display(EGL_PLATFORM_X11_KHR,
                                                          m_connection->xlib_display(),
                                                          nullptr);
+        m_using_platform_display = true;
     }
 
 #if QT_CONFIG(egl_x11)
@@ -92,6 +94,7 @@ bool QXcbEglIntegration::initialize(QXcbConnection *connection)
         m_egl_display = streamFuncs.get_platform_display(EGL_PLATFORM_XCB_KHR,
                                                          reinterpret_cast<void *>(connection->xcb_connection()),
                                                          nullptr);
+        m_using_platform_display = true;
     }
 #endif
 
