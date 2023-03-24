@@ -24,6 +24,7 @@ private slots:
     void promise();
     void futureFromPromise();
     void addResult();
+    void addResultWithBracedInitializer();
     void addResultOutOfOrder();
 #ifndef QT_NO_EXCEPTIONS
     void setException();
@@ -193,6 +194,20 @@ void tst_QPromise::addResult()
         QVERIFY(!promise.addResult(-1, 0));
         QCOMPARE(f.resultCount(), originalCount);
         QCOMPARE(f.resultAt(0), resultAt0); // overwrite does not work
+    }
+}
+
+void tst_QPromise::addResultWithBracedInitializer() // QTBUG-111826
+{
+    struct MyClass
+    {
+        QString strValue;
+        int intValue = 0;
+    };
+
+    {
+        QPromise<MyClass> myPromise;
+        myPromise.addResult({"bar", 1});
     }
 }
 

@@ -46,7 +46,7 @@ public:
 
     // Core QPromise APIs
     QFuture<T> future() const { return d.future(); }
-    template<typename U, typename = QtPrivate::EnableIfSameOrConvertible<U, T>>
+    template<typename U = T, typename = QtPrivate::EnableIfSameOrConvertible<U, T>>
     bool addResult(U &&result, int index = -1)
     {
         return d.reportResult(std::forward<U>(result), index);
