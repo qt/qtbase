@@ -507,7 +507,7 @@ void tst_QTimeZone::asBackendZone()
 void tst_QTimeZone::systemZone()
 {
     const QTimeZone zone = QTimeZone::systemTimeZone();
-    QVERIFY(zone.isValid());
+    QVERIFY2(zone.isValid(), "Invalid system zone setting, tests are doomed.");
     QCOMPARE(zone.id(), QTimeZone::systemTimeZoneId());
     QCOMPARE(zone, QTimeZone(QTimeZone::systemTimeZoneId()));
     // Check it behaves the same as local-time:
@@ -1162,9 +1162,9 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tz.standardTimeOffset(now), 36000);
     QCOMPARE(tz.daylightTimeOffset(now), 0);
 
-    // Test invalid UTC offset, must be in range -14 to +14 hours
-    int min = -14*60*60;
-    int max = 14*60*60;
+    // Test validity range of UTC offsets:
+    int min = int(QTimeZone::MinUtcOffsetSecs);
+    int max = int(QTimeZone::MaxUtcOffsetSecs);
     QCOMPARE(QTimeZone(min - 1).isValid(), false);
     QCOMPARE(QTimeZone(min).isValid(), true);
     QCOMPARE(QTimeZone(min + 1).isValid(), true);

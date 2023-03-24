@@ -177,7 +177,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 
     A default UTC time zone backend is provided which is always available when
     feature \c timezone is enabled. This provides a set of generic Offset From
-    UTC time zones in the range UTC-14:00 to UTC+14:00. These time zones can be
+    UTC time zones in the range UTC-16:00 to UTC+16:00. These time zones can be
     created using either the standard ISO format names, such as "UTC+00:00", as
     listed by availableTimeZoneIds(), or using a name of similar form in
     combination with the number of offset seconds.
@@ -258,13 +258,27 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 
   This enumeration provides constants bounding the range of plausible timezone
   offsets from UTC, measured in seconds.
-  Sane UTC offsets range from -14 to +14 hours.
-  No known zone has offset > 12 hrs West of Greenwich (Baker Island, USA).
-  No known zone has offset > 14 hrs East of Greenwich (Kiritimati, Christmas Island, Kiribati).
+
+  Sane modern zones' UTC offsets range from -14 to +12 hours.
+  No known modern zone has offset > 12 hrs West of Greenwich (Baker Island, USA).
+  No known modern zone has offset > 14 hrs East of Greenwich
+  (Kiritimati, Christmas Island, Kiribati).
   Note that there are zones whose offsets differ by more than a day.
 
-  \value MinUtcOffsetSecs -14 * 3600,
-  \value MaxUtcOffsetSecs +14 * 3600
+  Historically, before 1867, when Russia sold Alaska to America, Alaska used the
+  same date as Russia, so had offsets over 15 hours East of Greenwich.
+  Earlier still, until 1844, The Philippines (then controlled by Spain) used the
+  same date as Spain's American holdings, so had offsets close to 16 hours West
+  of Greenwich.
+  Each made its one-day transition to cross the international date line while
+  using local solar mean time, before adopting a unified time-zone, so the
+  offsets within their territories were variable.
+  As a result, The Philippines might have exceeded 16 hours as offset at the
+  extremities of its territory, but no modern zone's representative location was
+  at such an extremity.
+
+  \value MinUtcOffsetSecs -16 * 3600,
+  \value MaxUtcOffsetSecs +16 * 3600
 */
 
 #if QT_CONFIG(timezone)
@@ -468,7 +482,7 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
 /*!
     Creates a time zone instance with the given offset, \a offsetSeconds, from UTC.
 
-    The \a offsetSeconds from UTC must be in the range -14 hours to +14 hours
+    The \a offsetSeconds from UTC must be in the range -16 hours to +16 hours
     otherwise an invalid time zone will be returned.
 
     This constructor is only available when feature \c timezone is enabled. The
@@ -495,7 +509,7 @@ QTimeZone::QTimeZone(int offsetSeconds)
 
     The \a ianaId must not be one of the available system IDs returned by
     availableTimeZoneIds().  The \a offsetSeconds from UTC must be in the range
-    -14 hours to +14 hours.
+    -16 hours to +16 hours.
 
     If the custom time zone does not have a specific territory then set it to the
     default value of QLocale::AnyTerritory.
@@ -605,10 +619,10 @@ QTimeZone QTimeZone::asBackendZone() const
     Returns a time representation at a fixed \a offset, in seconds, ahead of
     UTC.
 
-    The \a offset from UTC must be in the range -14 hours to +14 hours otherwise an
-    invalid time zone will be returned. The returned QTimeZone is a lightweight
-    time representation, not a time zone (backed by system-supplied or standard
-    data).
+    The \a offset from UTC must be in the range -16 hours to +16 hours otherwise
+    an invalid time zone will be returned. The returned QTimeZone is a
+    lightweight time representation, not a time zone (backed by system-supplied
+    or standard data).
 
     If the offset is 0, the \l timeSpec() of the returned instance will be
     Qt::UTC. Otherwise, if \a offset is valid, timeSpec() is
