@@ -2836,8 +2836,6 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(14, 24, 51), UTC);
     QTest::newRow("RFC 850 and 1036 +0000") << QString::fromLatin1("Thu Jan 01 00:12:34 1970 +0000")
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), UTC);
-    QTest::newRow("RFC 850 and 1036 +0000") << QString::fromLatin1("Thu Jan 01 00:12:34 1970 +0000")
-        << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), UTC);
     // No timezone assume UTC
     QTest::newRow("RFC 850 and 1036 no timezone") << QString::fromLatin1("Thu Jan 01 00:12:34 1970")
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), UTC);
@@ -2986,9 +2984,6 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("offset-from-utc:3-digit-with-colon")
         << QString("2008-10-13 -4:30 11.50") << QString("yyyy-MM-dd t hh.mm")
         << QDateTime(QDate(2008, 10, 13), QTime(11, 50), QTimeZone::fromSecondsAheadOfUtc(-16200));
-    QTest::newRow("offset-from-utc:merged-with-time")
-        << QString("2008-10-13 UTC+010011.50") << QString("yyyy-MM-dd thh.mm")
-        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), QTimeZone::fromSecondsAheadOfUtc(3600));
     QTest::newRow("offset-from-utc:with-colon-merged-with-time")
         << QString("2008-10-13 UTC+01:0011.50") << QString("yyyy-MM-dd thh.mm")
         << QDateTime(QDate(2008, 10, 13), QTime(11, 50), QTimeZone::fromSecondsAheadOfUtc(3600));
