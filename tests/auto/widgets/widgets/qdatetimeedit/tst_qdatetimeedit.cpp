@@ -4666,11 +4666,11 @@ void tst_QDateTimeEdit::springForward()
 
     edit.setSelectedSection(QDateTimeEdit::DaySection);
     const QDate date = expected.date();
-    const QString day = QString::number(date.day()).rightJustified(2, QLatin1Char('0'));
-    const QString month = QString::number(date.month()).rightJustified(2, QLatin1Char('0'));
+    const QString day = QString::number(date.day()).rightJustified(2, u'0');
+    const QString month = QString::number(date.month()).rightJustified(2, u'0');
     const QString year = QString::number(date.year());
-    const QString hour = QString::number(inputTime.hour()).rightJustified(2, QLatin1Char('0'));
-    const QString minute = QString::number(inputTime.minute()).rightJustified(2, QLatin1Char('0'));
+    const QString hour = QString::number(inputTime.hour()).rightJustified(2, u'0');
+    const QString minute = QString::number(inputTime.minute()).rightJustified(2, u'0');
     QTest::keyClicks(&edit, day);
     QTest::keyClicks(&edit, month);
     QTest::keyClicks(&edit, year);
