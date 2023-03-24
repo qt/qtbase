@@ -756,7 +756,7 @@ void tst_ContainerApiSymmetry::resize_impl() const
     auto c = make<Container>(3);
     QCOMPARE(c.size(), S(3));
     c.resize(4, V(5));
-    QCOMPARE(c.size(), S(4));
+    QCOMPARE(std::size(c), S(4));
     QCOMPARE(c.back(), V(5));
 
     // ctor/resize symmetry:
