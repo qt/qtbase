@@ -756,6 +756,7 @@ void tst_QDateTime::setMSecsSinceEpoch()
     QFETCH(qint64, msecs);
     QFETCH(QDateTime, utc);
     QFETCH(QDateTime, cet);
+    using Bound = std::numeric_limits<qint64>;
 
     QDateTime dt;
     dt.setTimeZone(UTC);
@@ -789,10 +790,10 @@ void tst_QDateTime::setMSecsSinceEpoch()
         QCOMPARE(dt1.timeSpec(), Qt::UTC);
     }
 
-    if (zoneIsCET && (msecs == std::numeric_limits<qint64>::max()
+    if (zoneIsCET && (msecs == Bound::max()
                       // LocalTime will also overflow for min in a CET zone west
                       // of Greenwich (Europe/Madrid):
-                      || (preZoneFix < -3600 && msecs == std::numeric_limits<qint64>::min()))) {
+                      || (preZoneFix < -3600 && msecs == Bound::min()))) {
         QVERIFY(!cet.isValid()); // overflows
     } else if (zoneIsCET) {
         QVERIFY(cet.isValid());
@@ -834,18 +835,18 @@ void tst_QDateTime::setMSecsSinceEpoch()
     QCOMPARE(dt, reference.addMSecs(msecs));
 
     // Tests that we correctly recognize when we fall off the extremities:
-    if (msecs == std::numeric_limits<qint64>::max()) {
+    if (msecs == Bound::max()) {
         QDateTime off(QDate(1970, 1, 1).startOfDay(QTimeZone::fromSecondsAheadOfUtc(1)));
         off.setMSecsSinceEpoch(msecs);
         QVERIFY(!off.isValid());
-    } else if (msecs == std::numeric_limits<qint64>::min()) {
+    } else if (msecs == Bound::min()) {
         QDateTime off(QDate(1970, 1, 1).startOfDay(QTimeZone::fromSecondsAheadOfUtc(-1)));
         off.setMSecsSinceEpoch(msecs);
         QVERIFY(!off.isValid());
     }
 
-    if ((localTimeType == LocalTimeAheadOfUtc && msecs == std::numeric_limits<qint64>::max())
-        || (localTimeType == LocalTimeBehindUtc && msecs == std::numeric_limits<qint64>::min())) {
+    if ((localTimeType == LocalTimeAheadOfUtc && msecs == Bound::max())
+        || (localTimeType == LocalTimeBehindUtc && msecs == Bound::min())) {
         QDateTime curt = QDate(1970, 1, 1).startOfDay(); // initially in short-form
         curt.setMSecsSinceEpoch(msecs); // Overflows due to offset
         QVERIFY(!curt.isValid());
