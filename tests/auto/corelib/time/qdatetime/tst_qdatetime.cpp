@@ -3465,16 +3465,34 @@ void tst_QDateTime::timeZoneAbbreviation()
     if (zoneIsCET) {
         // Time definitely in Standard Time
         QDateTime dt4 = QDate(2013, 1, 1).startOfDay();
+        /* Note that MET is functionally an alias for CET (their zoneinfo files
+           differ only in the first letter of the abbreviations), unlike the
+           various zones that give CET as their abbreviation.
+        */
+        {
+            const auto abbrev = dt4.timeZoneAbbreviation();
+            auto reporter = qScopeGuard([abbrev]() {
+                qDebug() << "Unexpected abbreviation" << abbrev;
+            });
 #ifdef Q_OS_WIN
-        QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
+            QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
 #endif
-        QCOMPARE(dt4.timeZoneAbbreviation(), QStringLiteral("CET"));
+            QVERIFY(abbrev == u"CET"_s || abbrev == u"MET"_s);
+            reporter.dismiss();
+        }
         // Time definitely in Daylight Time
         QDateTime dt5 = QDate(2013, 6, 1).startOfDay();
+        {
+            const auto abbrev = dt5.timeZoneAbbreviation();
+            auto reporter = qScopeGuard([abbrev]() {
+                qDebug() << "Unexpected abbreviation" << abbrev;
+            });
 #ifdef Q_OS_WIN
-        QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
+            QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
 #endif
-        QCOMPARE(dt5.timeZoneAbbreviation(), QStringLiteral("CEST"));
+            QVERIFY(abbrev == u"CEST"_s || abbrev == u"MEST"_s);
+            reporter.dismiss();
+        }
     } else {
         qDebug("(Skipped some CET-only tests)");
     }
