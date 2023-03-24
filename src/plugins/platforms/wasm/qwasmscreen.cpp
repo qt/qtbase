@@ -261,7 +261,6 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     };
 
     setGeometry(QRect(getElementBodyPosition(m_shadowContainer), cssSize.toSize()));
-    m_compositor->requestUpdateAllWindows();
 }
 
 void QWasmScreen::canvasResizeObserverCallback(emscripten::val entries, emscripten::val)

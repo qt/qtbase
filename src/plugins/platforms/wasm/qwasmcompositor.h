@@ -47,13 +47,13 @@ public:
     QWasmScreen *screen();
 
     enum UpdateRequestDeliveryType { ExposeEventDelivery, UpdateRequestDelivery };
-    void requestUpdateAllWindows();
+
     void requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType = ExposeEventDelivery);
 
     void handleBackingStoreFlush(QWindow *window);
 
 private:
-    void frame(bool all, const QList<QWasmWindow *> &windows);
+    void frame(const QList<QWasmWindow *> &windows);
 
     void onTopWindowChanged();
 
@@ -75,7 +75,6 @@ private:
 
     bool m_isEnabled = true;
     QMap<QWasmWindow *, UpdateRequestDeliveryType> m_requestUpdateWindows;
-    bool m_requestUpdateAllWindows = false;
     int m_requestAnimationFrameId = -1;
     bool m_inDeliverUpdateRequest = false;
 };

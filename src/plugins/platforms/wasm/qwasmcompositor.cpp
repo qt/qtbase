@@ -151,12 +151,6 @@ QWindow *QWasmCompositor::keyWindow() const
     return m_activeWindow ? m_activeWindow->window() : nullptr;
 }
 
-void QWasmCompositor::requestUpdateAllWindows()
-{
-    m_requestUpdateAllWindows = true;
-    requestUpdate();
-}
-
 void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType)
 {
     auto it = m_requestUpdateWindows.find(window);
@@ -198,36 +192,27 @@ void QWasmCompositor::deliverUpdateRequests()
     // update set.
     auto requestUpdateWindows = m_requestUpdateWindows;
     m_requestUpdateWindows.clear();
-    bool requestUpdateAllWindows = m_requestUpdateAllWindows;
-    m_requestUpdateAllWindows = false;
 
     // Update window content, either all windows or a spesific set of windows. Use the correct
     // update type: QWindow subclasses expect that requested and delivered updateRequests matches
     // exactly.
     m_inDeliverUpdateRequest = true;
-    if (requestUpdateAllWindows) {
-        for (QWasmWindow *window : m_windowStack) {
-            auto it = requestUpdateWindows.find(window);
-            UpdateRequestDeliveryType updateType =
-                (it == m_requestUpdateWindows.end() ? ExposeEventDelivery : it.value());
-            deliverUpdateRequest(window, updateType);
-        }
-    } else {
-        for (auto it = requestUpdateWindows.constBegin(); it != requestUpdateWindows.constEnd(); ++it) {
-            auto *window = it.key();
-            UpdateRequestDeliveryType updateType = it.value();
-            deliverUpdateRequest(window, updateType);
-        }
+
+    for (auto it = requestUpdateWindows.constBegin(); it != requestUpdateWindows.constEnd(); ++it) {
+        auto *window = it.key();
+        UpdateRequestDeliveryType updateType = it.value();
+        deliverUpdateRequest(window, updateType);
     }
+
     m_inDeliverUpdateRequest = false;
-    frame(requestUpdateAllWindows, requestUpdateWindows.keys());
+    frame(requestUpdateWindows.keys());
 }
 
 void QWasmCompositor::deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType)
 {
     // update by deliverUpdateRequest and expose event accordingly.
     if (updateType == UpdateRequestDelivery) {
-        window->QPlatformWindow::deliverUpdateRequest();
+        window->deliverUpdateRequest();
     } else {
         QWindow *qwindow = window->window();
         QWindowSystemInterface::handleExposeEvent(
@@ -248,17 +233,12 @@ int dpiScaled(qreal value)
     return value * (qreal(qt_defaultDpiX()) / 96.0);
 }
 
-void QWasmCompositor::frame(bool all, const QList<QWasmWindow *> &windows)
+void QWasmCompositor::frame(const QList<QWasmWindow *> &windows)
 {
-    if (!m_isEnabled || m_windowStack.empty() || !screen())
+    if (!m_isEnabled || !screen())
         return;
 
-    if (all) {
-        std::for_each(m_windowStack.rbegin(), m_windowStack.rend(),
-                      [](QWasmWindow *window) { window->paint(); });
-    } else {
-        std::for_each(windows.begin(), windows.end(), [](QWasmWindow *window) { window->paint(); });
-    }
+    std::for_each(windows.begin(), windows.end(), [](QWasmWindow *window) { window->paint(); });
 }
 
 void QWasmCompositor::onTopWindowChanged()
