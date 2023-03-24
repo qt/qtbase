@@ -10,6 +10,7 @@
 
 #include <QtCore/QDataStream>
 #include <QtCore/QDateTime>
+#include <QtCore/QDirIterator>
 #include <QtCore/QFile>
 #include <QtCore/QCache>
 #include <QtCore/QMap>
@@ -41,14 +42,18 @@ Q_CONSTINIT static QBasicMutex s_icu_mutex;
 */
 
 struct QTzTimeZone {
-    QLocale::Territory territory;
+    QLocale::Territory territory = QLocale::AnyTerritory;
     QByteArray comment;
 };
 
 // Define as a type as Q_GLOBAL_STATIC doesn't like it
 typedef QHash<QByteArray, QTzTimeZone> QTzTimeZoneHash;
 
-// Parse zone.tab table, assume lists all installed zones, if not will need to read directories
+static bool isTzFile(const QString &name);
+
+// Parse zone.tab table for territory information, read directories to ensure we
+// find all installed zones (many are omitted from zone.tab; even more from
+// zone1970.tab).
 static QTzTimeZoneHash loadTzTimeZones()
 {
     QString path = QStringLiteral("/usr/share/zoneinfo/zone.tab");
@@ -84,6 +89,28 @@ static QTzTimeZoneHash loadTzTimeZones()
                 }
             }
         }
+    }
+
+    const qsizetype cut = path.lastIndexOf(u'/');
+    Q_ASSERT(cut > 0);
+    const QDir zoneDir = QDir(path.first(cut));
+    QDirIterator zoneFiles(zoneDir, QDirIterator::Subdirectories);
+    while (zoneFiles.hasNext()) {
+        const QFileInfo info = zoneFiles.nextFileInfo();
+        if (!(info.isFile() || info.isSymLink()))
+            continue;
+        const QString name = zoneDir.relativeFilePath(info.filePath());
+        // Two sub-directories containing (more or less) copies of the zoneinfo tree.
+        if (info.isDir() ? name == "posix"_L1 || name == "right"_L1
+            : name.startsWith("posix/"_L1) || name.startsWith("right/"_L1)) {
+            continue;
+        }
+        // We could filter out *.* and leapseconds instead of doing the
+        // isTzFile() check; in practice current (2023) zoneinfo/ contains only
+        // actual zone files and matches to that filter.
+        const QByteArray id = QFile::encodeName(name);
+        if (!zonesHash.contains(id) && isTzFile(zoneDir.absoluteFilePath(name)))
+            zonesHash.insert(id, QTzTimeZone());
     }
     return zonesHash;
 }
@@ -128,6 +155,11 @@ struct QTzType {
 };
 Q_DECLARE_TYPEINFO(QTzType, Q_PRIMITIVE_TYPE);
 
+static bool isTzFile(const QString &name)
+{
+    QFile file(name);
+    return file.open(QFile::ReadOnly) && file.read(strlen(TZ_MAGIC)) == TZ_MAGIC;
+}
 
 // TZ File parsing
 
