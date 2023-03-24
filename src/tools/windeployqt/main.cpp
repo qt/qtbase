@@ -995,7 +995,12 @@ static bool deployTranslations(const QString &sourcePath, const ModuleBitset &us
         if (options.json)
             options.json->addFile(sourcePath +  u'/' + targetFile, absoluteTarget);
         arguments.append(QDir::toNativeSeparators(targetFilePath));
-        const QFileInfoList &langQmFiles = sourceDir.entryInfoList(translationNameFilters(usedQtModules, prefix));
+        const QStringList translationFilters = translationNameFilters(usedQtModules, prefix);
+        if (translationFilters.isEmpty()){
+            std::wcerr << "Warning: translation catalogs are all empty, skipping translation deployment\n";
+            return true;
+        }
+        const QFileInfoList &langQmFiles = sourceDir.entryInfoList(translationFilters);
         for (const QFileInfo &langQmFileFi : langQmFiles) {
             if (options.json) {
                 options.json->addFile(langQmFileFi.absoluteFilePath(),
