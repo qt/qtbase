@@ -501,6 +501,8 @@ QTimeZone::QTimeZone(int offsetSeconds)
     default value of QLocale::AnyTerritory.
 
     This constructor is only available when feature \c timezone is enabled.
+
+    \sa id(), offsetFromUtc(), displayName(), abbreviation(), territory(), comment()
 */
 
 QTimeZone::QTimeZone(const QByteArray &ianaId, int offsetSeconds, const QString &name,
@@ -791,6 +793,14 @@ QByteArray QTimeZone::id() const
     \since 6.2
 
     Returns the territory for the time zone.
+
+    A return of \l {QLocale::}{AnyTerritory} means the zone has no known
+    territorial association. In some cases this may be because the zone has no
+    associated territory - for example, UTC - or because the zone is used in
+    several territories - for example, CET. In other cases, the QTimeZone
+    backend may not know which territory the zone is associated with - for
+    example, because it is not the primary zone of the territory in which it is
+    used.
 
     This method is only available when feature \c timezone is enabled.
 */
@@ -1382,14 +1392,14 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds()
 /*!
     Returns a list of all available IANA time zone IDs for a given \a territory.
 
-    As a special case, a \a territory of Qt::AnyTerritory returns those time zones
-    that do not have any territory related to them, such as UTC.  If you require
-    a list of all time zone IDs for all countries then use the standard
-    availableTimeZoneIds() method.
+    As a special case, a \a territory of \l {QLocale::}{AnyTerritory} selects
+    those time zones that have no kown territorial association, such as UTC. If
+    you require a list of all time zone IDs for all territories then use the
+    standard availableTimeZoneIds() method.
 
     This method is only available when feature \c timezone is enabled.
 
-    \sa isTimeZoneIdAvailable()
+    \sa isTimeZoneIdAvailable(), territory()
 */
 
 QList<QByteArray> QTimeZone::availableTimeZoneIds(QLocale::Territory territory)
@@ -1430,9 +1440,9 @@ QByteArray QTimeZone::ianaIdToWindowsId(const QByteArray &ianaId)
     Returns the default IANA ID for a given \a windowsId.
 
     Because a Windows ID can cover several IANA IDs in several different
-    countries, this function returns the most frequently used IANA ID with no
-    regard for the country and should thus be used with care.  It is usually
-    best to request the default for a specific country.
+    territories, this function returns the most frequently used IANA ID with no
+    regard for the territory and should thus be used with care.  It is usually
+    best to request the default for a specific territory.
 
     This method is only available when feature \c timezone is enabled.
 
@@ -1450,15 +1460,16 @@ QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId)
     Because a Windows ID can cover several IANA IDs within a given territory,
     the most frequently used IANA ID in that territory is returned.
 
-    As a special case, QLocale::AnyTerritory returns the default of those IANA IDs
-    that do not have any specific territory.
+    As a special case, \l{QLocale::}{AnyTerritory} returns the default of those
+    IANA IDs that have no known territorial association.
 
     This method is only available when feature \c timezone is enabled.
 
-    \sa ianaIdToWindowsId(), windowsIdToIanaIds()
+    \sa ianaIdToWindowsId(), windowsIdToIanaIds(), territory()
 */
 
-QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId, QLocale::Territory territory)
+QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId,
+                                               QLocale::Territory territory)
 {
     return QTimeZonePrivate::windowsIdToDefaultIanaId(windowsId, territory);
 }
@@ -1481,18 +1492,19 @@ QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId)
 /*!
     Returns all the IANA IDs for a given \a windowsId and \a territory.
 
-    As a special case QLocale::AnyTerritory returns those IANA IDs that do
-    not have any specific territory.
+    As a special case, \l{QLocale::}{AnyTerritory} selects those IANA IDs that
+    have no known territorial association.
 
     The returned list is in order of frequency of usage, i.e. larger zones
     within a territory are listed first.
 
     This method is only available when feature \c timezone is enabled.
 
-    \sa ianaIdToWindowsId(), windowsIdToDefaultIanaId()
+    \sa ianaIdToWindowsId(), windowsIdToDefaultIanaId(), territory()
 */
 
-QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId, QLocale::Territory territory)
+QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId,
+                                                QLocale::Territory territory)
 {
     return QTimeZonePrivate::windowsIdToIanaIds(windowsId, territory);
 }
