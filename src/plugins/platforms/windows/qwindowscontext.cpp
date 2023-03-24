@@ -1596,9 +1596,13 @@ void QWindowsContext::handleExitSizeMove(QWindow *window)
         ? QEvent::MouseButtonRelease : QEvent::NonClientAreaMouseButtonRelease;
     for (Qt::MouseButton button : {Qt::LeftButton, Qt::RightButton, Qt::MiddleButton}) {
         if (appButtons.testFlag(button) && !currentButtons.testFlag(button)) {
-            QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
-                                                     currentButtons, button, type,
-                                                     keyboardModifiers);
+            if (type == QEvent::NonClientAreaMouseButtonRelease) {
+                QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos,
+                    currentButtons, button, type, keyboardModifiers);
+            } else {
+                QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
+                    currentButtons, button, type, keyboardModifiers);
+            }
         }
     }
     if (d->m_systemInfo & QWindowsContext::SI_SupportsPointer)
