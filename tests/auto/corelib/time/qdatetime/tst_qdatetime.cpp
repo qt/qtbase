@@ -197,7 +197,7 @@ tst_QDateTime::tst_QDateTime()
       might not be properly handled by our work-arounds for the MS backend and
       32-bit time_t; so don't probe them here.
     */
-    const uint day = 24 * 3600; // in seconds
+    constexpr uint day = 24 * 3600; // in seconds
     zoneIsCET = (QDateTime(QDate(2038, 1, 19), QTime(4, 14, 7)).toSecsSinceEpoch() == 0x7fffffff
                  // Entries a year apart robustly differ by multiples of day.
                  && QDate(2015, 7, 1).startOfDay().toSecsSinceEpoch() == 1435701600
@@ -235,15 +235,17 @@ tst_QDateTime::tst_QDateTime()
       our TZ data, so we can't helpfully be exhaustive.  Instead, scan a sample
       of years' starts and middles.
     */
-    const int sampled = 3;
-    // UTC starts of months in 2004, 2038 and 1970:
-    qint64 jans[sampled] = { 12418 * day, 24837 * day, 0 };
-    qint64 juls[sampled] = { 12600 * day, 25018 * day, 181 * day };
+    // UTC starts of January and July in the given years:
+    constexpr struct { int year; qint64 jan; qint64 jul; } dates[] = {
+        { 1970, 0, 181 * day },
+        { 2038, 24837 * day, 25018 * day },
+        { 2004, 12418 * day, 12600 * day },
+    };
     localTimeType = LocalTimeIsUtc;
-    for (int i = sampled; i-- > 0; ) {
-        QDateTime jan = QDateTime::fromSecsSinceEpoch(jans[i]);
-        QDateTime jul = QDateTime::fromSecsSinceEpoch(juls[i]);
-        if (jan.date().year() < 1970 || jul.date().month() < 7) {
+    for (const auto &date : dates) {
+        QDateTime jan = QDateTime::fromSecsSinceEpoch(date.jan);
+        QDateTime jul = QDateTime::fromSecsSinceEpoch(date.jul);
+        if (jan.date().year() < date.year || jul.date().month() < 7) {
             localTimeType = LocalTimeBehindUtc;
             break;
         } else if (jan.time().hour() > 0 || jul.time().hour() > 0
