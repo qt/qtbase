@@ -4510,7 +4510,11 @@ void tst_QDateTimeEdit::stepModifierPressAndHold()
     QFETCH(Qt::KeyboardModifiers, modifiers);
     QFETCH(int, expectedStepModifier);
 
-    const QDate startDate(2000, 1, 1);
+    // Some west African zones (e.g. Niamey, Conakry) changed from 1 hour west
+    // of GMT to GMT at the start of 1960; and spy.size() can get as high as 4,
+    // causing the expectedDate below, when expectedStepModifier is -10, to land
+    // in a transition gap for these zones, if we use Jan 1st; so use Jan 2nd.
+    const QDate startDate(2000, 1, 2);
 
     testWidget->hide();
 
