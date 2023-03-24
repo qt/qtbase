@@ -1609,10 +1609,15 @@ void tst_QDateTime::addMSecs()
             QCOMPARE(result.addMSecs(qint64(-nsecs) * 1000), dt);
         }
     };
+#define VERIFY(datum) \
+    verify(datum); \
+    if (QTest::currentTestFailed()) \
+        return
 
-    verify(dt.addMSecs(qint64(nsecs) * 1000));
-    verify(dt.addDuration(std::chrono::seconds(nsecs)));
-    verify(dt.addDuration(std::chrono::milliseconds(nsecs * 1000)));
+    VERIFY(dt.addMSecs(qint64(nsecs) * 1000));
+    VERIFY(dt.addDuration(std::chrono::seconds(nsecs)));
+    VERIFY(dt.addDuration(std::chrono::milliseconds(nsecs * 1000)));
+#undef VERIFY
 }
 
 #if QT_DEPRECATED_SINCE(6, 9)
