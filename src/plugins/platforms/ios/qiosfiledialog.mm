@@ -3,6 +3,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import <Photos/Photos.h>
+
 #include <QtCore/qstandardpaths.h>
 #include <QtGui/qwindow.h>
 #include <QDebug>
@@ -53,6 +55,13 @@ bool QIOSFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality window
     return false;
 }
 
+void QIOSFileDialog::showImagePickerDialog_helper(QWindow *parent)
+{
+    UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
+                              : qt_apple_sharedApplication().keyWindow;
+    [window.rootViewController presentViewController:m_viewController animated:YES completion:nil];
+}
+
 bool QIOSFileDialog::showImagePickerDialog(QWindow *parent)
 {
     if (!m_viewController) {
@@ -71,9 +80,38 @@ bool QIOSFileDialog::showImagePickerDialog(QWindow *parent)
         return false;
     }
 
-    UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
-        : qt_apple_sharedApplication().keyWindow;
-    [window.rootViewController presentViewController:m_viewController animated:YES completion:nil];
+    // "Old style" authorization (deprecated, but we have to work with AssetsLibrary anyway).
+    //
+    // From the documentation:
+    // "The authorizationStatus and requestAuthorization: methods aren’t compatible with the
+    //  limited library and return PHAuthorizationStatusAuthorized when the user authorizes your
+    //  app for limited access only."
+    //
+    // This is good enough for us.
+
+    const auto authStatus = [PHPhotoLibrary authorizationStatus];
+    if (authStatus == PHAuthorizationStatusAuthorized) {
+        showImagePickerDialog_helper(parent);
+    } else if (authStatus == PHAuthorizationStatusNotDetermined) {
+        QPointer<QWindow> winGuard(parent);
+        QPointer<QIOSFileDialog> thisGuard(this);
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (status == PHAuthorizationStatusAuthorized) {
+                    if (thisGuard && winGuard)
+                        thisGuard->showImagePickerDialog_helper(winGuard);
+
+                } else if (thisGuard) {
+                    emit thisGuard->reject();
+                }
+            });
+        }];
+    } else {
+        // Treat 'Limited' (we don't know how to deal with anyway) and 'Denied' as errors.
+        // FIXME: logging category?
+        qWarning() << "QIOSFileDialog: insufficient permission, cannot pick images";
+        return false;
+    }
 
     return true;
 }
