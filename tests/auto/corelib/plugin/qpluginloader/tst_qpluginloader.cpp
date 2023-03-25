@@ -206,6 +206,7 @@ private slots:
     void preloadedPlugin_data();
     void preloadedPlugin();
     void staticPlugins();
+    void reregisteredStaticPlugins();
 };
 
 Q_IMPORT_PLUGIN(StaticPlugin)
@@ -1080,19 +1081,18 @@ void tst_QPluginLoader::staticPlugins()
     const QObjectList instances = QPluginLoader::staticInstances();
     QVERIFY(instances.size());
 
-    bool found = false;
-    for (QObject *obj : instances) {
-        found = obj->metaObject()->className() == QLatin1String("StaticPlugin");
-        if (found)
-            break;
-    }
-    QVERIFY(found);
+    // ensure the our plugin only shows up once
+    int foundCount = std::count_if(instances.begin(), instances.end(), [](QObject *obj) {
+            return obj->metaObject()->className() == QLatin1String("StaticPlugin");
+    });
+    QCOMPARE(foundCount, 1);
 
     const auto plugins = QPluginLoader::staticPlugins();
     QCOMPARE(plugins.size(), instances.size());
 
     // find the metadata
     QJsonObject metaData;
+    bool found = false;
     for (const auto &p : plugins) {
         metaData = p.metaData();
         found = metaData.value("className").toString() == QLatin1String("StaticPlugin");
@@ -1106,6 +1106,18 @@ void tst_QPluginLoader::staticPlugins()
     QCOMPARE(metaData.value("IID").toString(), "SomeIID");
     QCOMPARE(metaData.value("ExtraMetaData"), QJsonArray({ "StaticPlugin", "foo" }));
     QCOMPARE(metaData.value("URI").toString(), "qt.test.pluginloader.staticplugin");
+}
+
+void tst_QPluginLoader::reregisteredStaticPlugins()
+{
+    // the Q_IMPORT_PLUGIN macro will have already done this
+    qRegisterStaticPluginFunction(qt_static_plugin_StaticPlugin());
+    staticPlugins();
+    if (QTest::currentTestFailed())
+        return;
+
+    qRegisterStaticPluginFunction(qt_static_plugin_StaticPlugin());
+    staticPlugins();
 }
 
 
