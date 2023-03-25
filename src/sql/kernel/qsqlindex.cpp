@@ -41,6 +41,25 @@ QSqlIndex::QSqlIndex(const QSqlIndex& other)
 {
 }
 
+/*! \fn QSqlIndex::QSqlIndex(QSqlIndex &&other)
+    Move-constructs a new QSqlIndex from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+
+    \since 6.6
+*/
+/*! \fn QSqlIndex& QSqlIndex::operator=(QSqlIndex &&other)
+    Move-assigns \a other to this QSqlIndex instance.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+
+    \since 6.6
+*/
+
 /*!
     Sets the index equal to \a other.
 */
@@ -53,6 +72,7 @@ QSqlIndex& QSqlIndex::operator=(const QSqlIndex& other)
     QSqlRecord::operator=(other);
     return *this;
 }
+
 
 /*!
     Destroys the object and frees any allocated resources.

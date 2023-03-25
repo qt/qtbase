@@ -17,8 +17,11 @@ class Q_SQL_EXPORT QSqlIndex : public QSqlRecord
 public:
     explicit QSqlIndex(const QString &cursorName = QString(), const QString &name = QString());
     QSqlIndex(const QSqlIndex &other);
+    QSqlIndex(QSqlIndex &&other) noexcept = default;
     ~QSqlIndex();
     QSqlIndex &operator=(const QSqlIndex &other);
+    QSqlIndex &operator=(QSqlIndex &&other) = default;
+
     void setCursorName(const QString &cursorName);
     inline QString cursorName() const { return cursor; }
     void setName(const QString& name);
@@ -32,6 +35,7 @@ public:
 
 private:
     QString createField(int i, const QString& prefix, bool verbose) const;
+    // ### Qt7: move to d-ptr
     QString cursor;
     QString nm;
     QList<bool> sorts;
