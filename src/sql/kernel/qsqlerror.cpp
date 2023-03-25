@@ -126,22 +126,26 @@ QSqlError &QSqlError::operator=(const QSqlError &other)
 }
 
 /*!
-    Compare the \a other error's values to this error and returns \c true, if it equal.
+    Compare the \a other error's type() and nativeErrorCode()
+    to this error and returns \c true, if it equal.
 */
 
 bool QSqlError::operator==(const QSqlError &other) const
 {
-    return (d->errorType == other.d->errorType);
+    return (d->errorType == other.d->errorType &&
+            d->errorCode == other.d->errorCode);
 }
 
 
 /*!
-    Compare the \a other error's values to this error and returns \c true if it is not equal.
+    Compare the \a other error's type() and nativeErrorCode()
+    to this error and returns \c true if it is not equal.
 */
 
 bool QSqlError::operator!=(const QSqlError &other) const
 {
-    return (d->errorType != other.d->errorType);
+    return (d->errorType != other.d->errorType ||
+            d->errorCode != other.d->errorCode);
 }
 
 

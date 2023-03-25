@@ -108,12 +108,16 @@ void tst_QSqlError::moveOperator()
 
 void tst_QSqlError::operators()
 {
-   QSqlError error1(QString(), QString(), QSqlError::NoError);
-   QSqlError error2(QString(), QString(), QSqlError::NoError);
-   QSqlError error3(QString(), QString(), QSqlError::UnknownError);
+   QSqlError error1(QStringLiteral("a"), QStringLiteral("b"), QSqlError::NoError, QStringLiteral("ec1"));
+   QSqlError error2(QStringLiteral("c"), QStringLiteral("d"), QSqlError::NoError, QStringLiteral("ec1"));
+   QSqlError error3(QString(), QString(), QSqlError::UnknownError, QStringLiteral("ec1"));
+   QSqlError error4(QString(), QString(), QSqlError::NoError, QStringLiteral("ec2"));
+   QSqlError error5(QString(), QString(), QSqlError::UnknownError, QStringLiteral("ec2"));
 
    QCOMPARE(error1, error2);
    QVERIFY(error1 != error3);
+   QVERIFY(error1 != error4);
+   QVERIFY(error4 != error5);
 }
 
 void tst_QSqlError::qtbug_74575()
