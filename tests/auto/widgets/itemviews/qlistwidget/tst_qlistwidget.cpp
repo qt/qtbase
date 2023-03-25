@@ -8,6 +8,7 @@
 #include <QSignalSpy>
 #include <QStyledItemDelegate>
 #include <QTest>
+#include <QLabel>
 #include <private/qlistwidget_p.h>
 
 #include <QtWidgets/private/qapplication_p.h>
@@ -105,6 +106,7 @@ private slots:
     void moveRows();
     void moveRowsInvalid_data();
     void moveRowsInvalid();
+    void noopDragDrop();
 
 protected slots:
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last)
@@ -1887,6 +1889,58 @@ void tst_QListWidget::createPersistentOnLayoutAboutToBeChangedAutoSort() // QTBU
     widget.model()->setData(widget.model()->index(1, 0), -1);
     QCOMPARE(layoutAboutToBeChangedSpy.size(), 1);
     QCOMPARE(layoutChangedSpy.size(), 1);
+}
+
+// Test that dropping an item on or beneath itself remains a no-op
+void tst_QListWidget::noopDragDrop() // QTBUG-100128
+{
+    QListWidget listWidget;
+    QList<QListWidgetItem *> items;
+    for (int i = 0; i < 5; ++i) {
+        const QString number = QString::number(i);
+        QListWidgetItem *item = new QListWidgetItem(&listWidget);
+        item->setData(Qt::UserRole, number);
+        QLabel *label = new QLabel(number);
+        listWidget.setItemWidget(item, label);
+        items.append(item);
+    }
+
+    listWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&listWidget));
+
+    const QRect &lastItemRect = listWidget.visualItemRect(items.at(4));
+    const QPoint &dragStart = lastItemRect.center();
+    const QPoint &dropPointNirvana = lastItemRect.center() + QPoint(20, 2 * lastItemRect.height());
+
+    // Implement check as a macro (not a method) to safely determine the error location.
+    // The macro checks that item data and item widget remain unchanged when drag&drop are executed.
+    // In order to verify that the assets do *not* change, we can't use QTRY*: These macros would
+    // spin the event loop only once, while 3/4 mouse events need to get processed.
+    // That's why we spin the event loop 13 times, to make sure other unexpected or pending events
+    // get processed.
+#define CHECK_ITEM {\
+        const QString number = QString::number(4);\
+        for (int i = 0; i < 13; ++i)\
+            QApplication::processEvents();\
+        QLabel *label = qobject_cast<QLabel *>(listWidget.itemWidget(items.at(4)));\
+        QVERIFY(label);\
+        QCOMPARE(label->text(), number);\
+        const QString &data = items.at(4)->data(Qt::UserRole).toString();\
+        QCOMPARE(data, number);\
+    }
+
+    // Test dropping last item beneath itself
+    QTest::mousePress(&listWidget, Qt::LeftButton, Qt::KeyboardModifiers(), dragStart);
+    QTest::mouseMove(&listWidget, dropPointNirvana);
+    QTest::mouseRelease(&listWidget, Qt::LeftButton);
+    CHECK_ITEM;
+
+    // Test dropping last item on itself
+    QTest::mousePress(&listWidget, Qt::LeftButton, Qt::KeyboardModifiers(), dragStart);
+    QTest::mouseMove(&listWidget, dropPointNirvana);
+    QTest::mouseMove(&listWidget, dragStart);
+    QTest::mouseRelease(&listWidget, Qt::LeftButton);
+    CHECK_ITEM;
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
