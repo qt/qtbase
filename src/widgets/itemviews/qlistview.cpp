@@ -942,7 +942,8 @@ void QListView::dropEvent(QDropEvent *event)
                 int r = row == -1 ? model()->rowCount() : (dropRow.row() >= 0 ? dropRow.row() : row);
                 for (int i = 0; i < persIndexes.count(); ++i) {
                     const QPersistentModelIndex &pIndex = persIndexes.at(i);
-                    if (r != pIndex.row()) {
+                    // only generate a move when not same row or behind itself
+                    if (r != pIndex.row() && r != pIndex.row() + 1) {
                         // try to move (preserves selection)
                         d->dropEventMoved |= model()->moveRow(QModelIndex(), pIndex.row(), QModelIndex(), r);
                         if (!d->dropEventMoved) // can't move - abort and let QAbstractItemView handle this
