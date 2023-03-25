@@ -429,12 +429,11 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin plugin)
 QObjectList QPluginLoader::staticInstances()
 {
     QObjectList instances;
-    const StaticPluginList *plugins = staticPluginList();
-    if (plugins) {
-        const int numPlugins = plugins->size();
-        instances.reserve(numPlugins);
-        for (int i = 0; i < numPlugins; ++i)
-            instances += plugins->at(i).instance();
+    if (staticPluginList.exists()) {
+        const StaticPluginList &plugins = *staticPluginList;
+        instances.reserve(plugins.size());
+        for (QStaticPlugin plugin : plugins)
+            instances += plugin.instance();
     }
     return instances;
 }
