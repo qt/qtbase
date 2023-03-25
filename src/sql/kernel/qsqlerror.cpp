@@ -19,7 +19,7 @@ QDebug operator<<(QDebug dbg, const QSqlError &s)
 }
 #endif
 
-class QSqlErrorPrivate
+class QSqlErrorPrivate : public QSharedData
 {
 public:
     QString driverError;
@@ -27,7 +27,7 @@ public:
     QSqlError::ErrorType errorType;
     QString errorCode;
 };
-
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QSqlErrorPrivate)
 
 /*!
     \class QSqlError
@@ -104,26 +104,15 @@ QSqlError::QSqlError(const QString &driverText, const QString &databaseText,
     Creates a copy of \a other.
 */
 QSqlError::QSqlError(const QSqlError &other)
-    : d(new QSqlErrorPrivate(*other.d))
-{
-}
+    = default;
 
 /*!
     Assigns the \a other error's values to this error.
 */
 
 QSqlError &QSqlError::operator=(const QSqlError &other)
-{
-    if (&other == this)
-        return *this;
-    if (d && other.d)
-        *d = *other.d;
-    else if (d)
-        *d = QSqlErrorPrivate();
-    else if (other.d)
-        d = new QSqlErrorPrivate(*other.d);
-    return *this;
-}
+    = default;
+
 
 /*!
     Compare the \a other error's type() and nativeErrorCode()
@@ -154,9 +143,7 @@ bool QSqlError::operator!=(const QSqlError &other) const
 */
 
 QSqlError::~QSqlError()
-{
-    delete d;
-}
+    = default;
 
 /*!
     Returns the text of the error as reported by the driver. This may

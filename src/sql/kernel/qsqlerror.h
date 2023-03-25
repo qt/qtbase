@@ -5,11 +5,13 @@
 #define QSQLERROR_H
 
 #include <QtSql/qtsqlglobal.h>
+#include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 
 class QSqlErrorPrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QSqlErrorPrivate, Q_SQL_EXPORT)
 
 class Q_SQL_EXPORT QSqlError
 {
@@ -26,15 +28,15 @@ public:
               ErrorType type = NoError,
               const QString &errorCode = QString());
     QSqlError(const QSqlError &other);
-    QSqlError(QSqlError &&other) noexcept : d(other.d) { other.d = nullptr; }
+    QSqlError(QSqlError &&other) noexcept = default;
     QSqlError& operator=(const QSqlError &other);
-    QSqlError &operator=(QSqlError &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QSqlError)
     ~QSqlError();
 
     bool operator==(const QSqlError &other) const;
     bool operator!=(const QSqlError &other) const;
 
-    void swap(QSqlError &other) noexcept { qt_ptr_swap(d, other.d); }
+    void swap(QSqlError &other) noexcept { d.swap(other.d); }
 
     QString driverText() const;
     QString databaseText() const;
@@ -44,7 +46,7 @@ public:
     bool isValid() const;
 
 private:
-    QSqlErrorPrivate *d = nullptr;
+    QExplicitlySharedDataPointer<QSqlErrorPrivate> d;
 };
 
 Q_DECLARE_SHARED(QSqlError)
