@@ -58,7 +58,7 @@ public:
     qint64 bytesTotal;
     qint64 bytesFree;
     qint64 bytesAvailable;
-    int blockSize;
+    ulong blockSize;
 
     bool readOnly;
     bool ready;
