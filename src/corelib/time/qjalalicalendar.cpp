@@ -15,8 +15,9 @@ using namespace QRoundingDown;
 
 constexpr qint64 cycleDays = 1029983;
 constexpr int cycleYears = 2820;
-constexpr double yearLength = 365.24219858156028368; // 365 + leapRatio;
+constexpr double yearLength = 365.24219858156028368; // 365 + 683 / 2820.
 constexpr qint64 jalaliEpoch = 2121446; // 475/01/01 AP, start of 2820 cycle
+// This appears to be based on Ahmad Birashk's algorithm.
 
 // Calendar implementation
 
@@ -75,7 +76,7 @@ qint64 firstDayOfYear(int year, int cycleNo)
 
     Source: \l {https://en.wikipedia.org/wiki/Solar_Hijri_calendar}{Wikipedia
     page on Solar Hijri Calendar}
- */
+*/
 
 QString QJalaliCalendar::name() const
 {
