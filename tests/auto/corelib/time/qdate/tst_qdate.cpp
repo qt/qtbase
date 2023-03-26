@@ -12,6 +12,8 @@
 #include <private/qglobal_p.h> // for the icu feature test
 #include <private/qdatetime_p.h>
 
+using namespace QtPrivate::DateTimeConstants;
+
 class tst_QDate : public QObject
 {
     Q_OBJECT
@@ -98,8 +100,8 @@ void tst_QDate::isNull_data()
     QTest::addColumn<qint64>("jd");
     QTest::addColumn<bool>("null");
 
-    qint64 minJd = Q_INT64_C(-784350574879);
-    qint64 maxJd = Q_INT64_C( 784354017364);
+    qint64 minJd = JulianDayMin;
+    qint64 maxJd = JulianDayMax;
 
     QTest::newRow("qint64 min") << std::numeric_limits<qint64>::min() << true;
     QTest::newRow("minJd - 1")  << minJd - 1                          << true;
@@ -693,8 +695,8 @@ void tst_QDate::julianDaysLimits()
 {
     qint64 min = std::numeric_limits<qint64>::min();
     qint64 max = std::numeric_limits<qint64>::max();
-    qint64 minJd = Q_INT64_C(-784350574879);
-    qint64 maxJd = Q_INT64_C( 784354017364);
+    qint64 minJd = JulianDayMin;
+    qint64 maxJd = JulianDayMax;
 
     QDate maxDate = QDate::fromJulianDay(maxJd);
     QDate minDate = QDate::fromJulianDay(minJd);
@@ -917,8 +919,8 @@ void tst_QDate::addYears_data()
 
 void tst_QDate::daysTo()
 {
-    qint64 minJd = Q_INT64_C(-784350574879);
-    qint64 maxJd = Q_INT64_C( 784354017364);
+    qint64 minJd = JulianDayMin;
+    qint64 maxJd = JulianDayMax;
 
     QDate dt1(2000, 1, 1);
     QDate dt2(2000, 1, 5);
@@ -1682,8 +1684,8 @@ void tst_QDate::roundtrip() const
         loopDate = loopDate.addDays(1);
     }
 
-    qint64 minJd = Q_INT64_C(-784350574879);
-    qint64 maxJd = Q_INT64_C( 784354017364);
+    qint64 minJd = JulianDayMin;
+    qint64 maxJd = JulianDayMax;
 
     // Test Gregorian round trip at top end of conversion range
     loopDate = QDate::fromJulianDay(maxJd);

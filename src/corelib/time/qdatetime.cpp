@@ -435,6 +435,9 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
 
 QDate::QDate(int y, int m, int d)
 {
+    static_assert(QDate::maxJd() == JulianDayMax);
+    static_assert(QDate::minJd() == JulianDayMin);
+
     if (!QGregorianCalendar::julianFromParts(y, m, d, &jd))
         jd = nullJd();
 }
