@@ -578,35 +578,27 @@ void tst_QDate::startOfDay_endOfDay()
 
 void tst_QDate::startOfDay_endOfDay_fixed_data()
 {
+    QTest::addColumn<QDate>("date");
+
     const qint64 kilo(1000);
     using Bounds = std::numeric_limits<qint64>;
     const auto UTC = QTimeZone::UTC;
-    const QDateTime
-        first(QDateTime::fromMSecsSinceEpoch(Bounds::min() + 1, UTC)),
-        start32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(-0x80000000) * kilo, UTC)),
-        end32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x80000000) * kilo, UTC)),
-        end32unsign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x100000000) * kilo, UTC)),
-        last(QDateTime::fromMSecsSinceEpoch(Bounds::max(), UTC));
+    const QDateTime first(QDateTime::fromMSecsSinceEpoch(Bounds::min() + 1, UTC));
+    const QDateTime start32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(-0x80000000) * kilo, UTC));
+    const QDateTime end32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x80000000) * kilo, UTC));
+    const QDateTime end32unsign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x100000000) * kilo, UTC));
+    const QDateTime last(QDateTime::fromMSecsSinceEpoch(Bounds::max(), UTC));
 
-    const struct {
-        const char *name;
-        QDate date;
-    } data[] = {
-        { "epoch", epochDate() },
-        { "y2k-leap-day", QDate(2000, 2, 29) },
-        { "start-1900", QDate(1900, 1, 1) }, // QTBUG-99747
-        // Just outside the start and end of 32-bit time_t:
-        { "pre-sign32", QDate(start32sign.date().year(), 1, 1) },
-        { "post-sign32", QDate(end32sign.date().year(), 12, 31) },
-        { "post-uint32", QDate(end32unsign.date().year(), 12, 31) },
-        // Just inside the start and end of QDateTime's range:
-        { "first-full", first.date().addDays(1) },
-        { "last-full", last.date().addDays(-1) }
-    };
-
-    QTest::addColumn<QDate>("date");
-    for (const auto &r : data)
-        QTest::newRow(r.name) << r.date;
+    QTest::newRow("epoch") <<  epochDate();
+    QTest::newRow("y2k-leap-day") << QDate(2000, 2, 29);
+    QTest::newRow("start-1900") << QDate(1900, 1, 1); // QTBUG-99747
+   // Just outside the start and end of 32-bit time_t:
+    QTest::newRow("pre-sign32") << QDate(start32sign.date().year(), 1, 1);
+    QTest::newRow("post-sign32") << QDate(end32sign.date().year(), 12, 31);
+    QTest::newRow("post-uint32") << QDate(end32unsign.date().year(), 12, 31);
+    // Just inside the start and end of QDateTime's range:
+    QTest::newRow("first-full") << first.date().addDays(1);
+    QTest::newRow("last-full") << last.date().addDays(-1);
 }
 
 void tst_QDate::startOfDay_endOfDay_fixed()
