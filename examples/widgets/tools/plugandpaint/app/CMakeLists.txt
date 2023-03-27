@@ -19,7 +19,11 @@ target_link_libraries(plugandpaint PRIVATE
     pnp_basictools
 )
 
-if(NOT QT6_IS_SHARED_LIBS_BUILD)
+if(QT6_IS_SHARED_LIBS_BUILD)
+    # Build the shared plugin too when building this example target.
+    add_dependencies(plugandpaint pnp_extrafilters)
+else()
+    # Link the extrafilters plugin if Qt is built statically.
     target_link_libraries(plugandpaint PRIVATE
         pnp_extrafilters
     )
