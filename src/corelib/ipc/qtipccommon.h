@@ -18,7 +18,7 @@ class QNativeIpcKey
 {
     Q_GADGET_EXPORT(Q_CORE_EXPORT)
 public:
-    enum class Type : quint16 {
+    enum class Type : quintptr {
         // 0 is reserved for the invalid type
         // keep 1 through 0xff free, except for SystemV
         SystemV = 0x51,         // 'Q'
@@ -57,7 +57,7 @@ public:
     }
 
     QNativeIpcKey(QNativeIpcKey &&other) noexcept
-        : d(other.d), key(std::move(other.key))
+        : d(std::exchange(other.d, 0)), key(std::move(other.key))
     {
         if (isSlowPath())
             move_internal(std::move(other));
@@ -81,7 +81,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QNativeIpcKey)
     void swap(QNativeIpcKey &other)
     {
-        qt_ptr_swap(d, other.d);
+        std::swap(d, other.d);
         key.swap(other.key);
     }
 
@@ -119,17 +119,27 @@ public:
 
 private:
     struct TypeAndFlags {
-        quint16 isExtended : 1;
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        // this is the LSB
+        quintptr isExtended : 1;
         Type type : 15;
-        quint16 reserved;
+#endif
+
+        quintptr reserved : sizeof(quintptr) * 8 - 16;
+
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        Type type : 15;
+        quint16 isExtended : 1;
+        // this was the LSB
+#endif
     };
 
     // Bit 0: if set, holds a pointer (with the LSB set); if clear, holds the
     // the TypeAndFlags structure.
     union {
-        QNativeIpcKeyPrivate *d = nullptr;
+        quintptr d = 0;
         TypeAndFlags typeAndFlags;
-        static_assert(sizeof(typeAndFlags) <= sizeof(d));
+        static_assert(sizeof(typeAndFlags) == sizeof(d));
     };
 
     QString key;
