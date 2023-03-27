@@ -16,6 +16,15 @@ function(qt_find_package_promote_targets_to_global_scope target)
                             "qt_find_package_targets_dict" "promote_global")
 endfunction()
 
+# As an optimization when using -developer-build, qt_find_package records which
+# packages were found during the initial configuration. Then on subsequent
+# reconfigurations it skips looking for packages that were not found on the
+# initial run.
+# For the build system to pick up a newly added qt_find_package call, you need to:
+# - Start with a clean build dir
+# - Or remove the <builddir>/CMakeCache.txt file and configure from scratch
+# - Or remove the QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES cache variable (by
+#   editing CMakeCache.txt) and reconfigure.
 macro(qt_find_package)
     # Get the target names we expect to be provided by the package.
     set(find_package_options CONFIG NO_MODULE MODULE REQUIRED)
