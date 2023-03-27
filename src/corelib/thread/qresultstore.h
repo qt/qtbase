@@ -152,7 +152,7 @@ public:
         if (containsValidResultItem(index)) // reject if already present
             return -1;
 
-        return addResult(index, static_cast<void *>(new T(std::move_if_noexcept(result))));
+        return addResult(index, static_cast<void *>(new T(std::move(result))));
     }
 
     template<typename T>
