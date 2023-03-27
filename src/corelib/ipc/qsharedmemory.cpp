@@ -7,6 +7,7 @@
 #include "qtipccommon_p.h"
 #include "qsystemsemaphore.h"
 
+#include <q20memory.h>
 #include <qdebug.h>
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -23,15 +24,6 @@ QT_BEGIN_NAMESPACE
 using namespace QtIpcCommon;
 using namespace Qt::StringLiterals;
 
-#if __cplusplus >= 202002L
-using std::construct_at;
-#else
-template <typename T> static void construct_at(T *ptr)
-{
-    new (ptr) T;
-}
-#endif
-
 QSharedMemoryPrivate::~QSharedMemoryPrivate()
 {
     destructBackend();
@@ -39,6 +31,7 @@ QSharedMemoryPrivate::~QSharedMemoryPrivate()
 
 inline void QSharedMemoryPrivate::constructBackend()
 {
+    using namespace q20;
     visit([](auto p) { construct_at(p); });
 }
 
