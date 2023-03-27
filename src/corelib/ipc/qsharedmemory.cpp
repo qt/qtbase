@@ -686,12 +686,12 @@ bool QSharedMemory::isKeyTypeSupported(QNativeIpcKey::Type type)
 
 QNativeIpcKey QSharedMemory::platformSafeKey(const QString &key, QNativeIpcKey::Type type)
 {
-    return { QtIpcCommon::platformSafeKey(key, IpcType::SharedMemory, type), type };
+    return QtIpcCommon::platformSafeKey(key, IpcType::SharedMemory, type);
 }
 
 QNativeIpcKey QSharedMemory::legacyNativeKey(const QString &key, QNativeIpcKey::Type type)
 {
-    return { legacyPlatformSafeKey(key, IpcType::SharedMemory, type), type };
+    return QtIpcCommon::legacyPlatformSafeKey(key, IpcType::SharedMemory, type);
 }
 
 #endif // QT_CONFIG(sharedmemory)
