@@ -683,10 +683,10 @@ void tst_QtConcurrentRun::implicitConvertibleTypes()
 {
     QThreadPool pool;
 
-    double d;
+    double d = 0.0;
     run(doubleFunction, d).waitForFinished();
     run(&pool, doubleFunction, d).waitForFinished();
-    int i;
+    int i = 0;
     run(doubleFunction, d).waitForFinished();
     run(&pool, doubleFunction, d).waitForFinished();
     run(doubleFunction, i).waitForFinished();
