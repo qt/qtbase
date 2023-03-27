@@ -98,11 +98,12 @@ static QNativeIpcKey::Type stringToType(QStringView typeString)
 
     On Unix this will be a file name
 */
-QString QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcType ipcType,
-                                           QNativeIpcKey::Type type)
+QNativeIpcKey QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcType ipcType,
+                                                 QNativeIpcKey::Type type)
 {
+    QNativeIpcKey k(type);
     if (key.isEmpty())
-        return QString();
+        return k;
 
     QByteArray hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
 
@@ -113,13 +114,15 @@ QString QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcT
             // to be in the form <application group identifier>/<custom identifier>.
             // Since we don't know which application group identifier the user wants
             // to apply, we instead document that requirement, and use the key directly.
-            return key;
+            k.setNativeKey(key);
+        } else {
+            // The shared memory name limit on Apple platforms is very low (30 characters),
+            // so we can't use the logic below of combining the prefix, key, and a hash,
+            // to ensure a unique and valid name. Instead we use the first part of the
+            // hash, which should still long enough to avoid collisions in practice.
+            k.setNativeKey(u'/' + QLatin1StringView(hex).left(SHM_NAME_MAX - 1));
         }
-        // The shared memory name limit on Apple platforms is very low (30 characters),
-        // so we can't use the logic below of combining the prefix, key, and a hash,
-        // to ensure a unique and valid name. Instead we use the first part of the
-        // hash, which should still long enough to avoid collisions in practice.
-        return u'/' + QLatin1StringView(hex).left(SHM_NAME_MAX - 1);
+        return k;
 #endif
     }
 
@@ -143,38 +146,41 @@ QString QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcT
 
     switch (type) {
     case QNativeIpcKey::Type::Windows:
-        if (!isIpcSupported(ipcType, QNativeIpcKey::Type::Windows))
-            return QString();
-        return result;
+        if (isIpcSupported(ipcType, QNativeIpcKey::Type::Windows))
+            k.setNativeKey(result);
+        return k;
     case QNativeIpcKey::Type::PosixRealtime:
-        if (!isIpcSupported(ipcType, QNativeIpcKey::Type::PosixRealtime))
-            return QString();
-        return result.prepend(u'/');
+        if (isIpcSupported(ipcType, QNativeIpcKey::Type::PosixRealtime))
+            k.setNativeKey(result.prepend(u'/'));
+        return k;
     case QNativeIpcKey::Type::SystemV:
         break;
     }
-    if (!isIpcSupported(ipcType, QNativeIpcKey::Type::SystemV))
-        return QString();
-    return QStandardPaths::writableLocation(QStandardPaths::TempLocation) + u'/' + result;
+    if (isIpcSupported(ipcType, QNativeIpcKey::Type::SystemV))
+        k.setNativeKey(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + u'/' + result);
+    return k;
 }
 
-QString QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcType ipcType,
-                                     QNativeIpcKey::Type type)
+QNativeIpcKey QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcType ipcType,
+                                           QNativeIpcKey::Type type)
 {
+    QNativeIpcKey k(type);
     if (key.isEmpty())
-        return key;
+        return k;
 
     switch (type) {
     case QNativeIpcKey::Type::PosixRealtime:
-        if (!isIpcSupported(ipcType, QNativeIpcKey::Type::PosixRealtime))
-            return QString();
+        if (isIpcSupported(ipcType, QNativeIpcKey::Type::PosixRealtime)) {
 #ifdef SHM_NAME_MAX
-        // The shared memory name limit on Apple platforms is very low (30
-        // characters), so we have to cut it down to avoid ENAMETOOLONG. We
-        // hope that there won't be too many collisions...
-        return u'/' + QStringView(key).left(SHM_NAME_MAX - 1);
+            // The shared memory name limit on Apple platforms is very low (30
+            // characters), so we have to cut it down to avoid ENAMETOOLONG. We
+            // hope that there won't be too many collisions...
+            k.setNativeKey(u'/' + QStringView(key).left(SHM_NAME_MAX - 1));
+#else
+            k.setNativeKey(u'/' + key);
 #endif
-        return u'/' + key;
+        }
+        return k;
 
     case QNativeIpcKey::Type::Windows:
         if (isIpcSupported(ipcType, QNativeIpcKey::Type::Windows)) {
@@ -199,22 +205,24 @@ QString QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcType ip
 #ifdef Q_OS_WINDOWS
             result.truncate(MAX_PATH);
 #endif
-            return result;
+            k.setNativeKey(result);
         }
-        return QString();
+        return k;
 
     case QNativeIpcKey::Type::SystemV:
         break;
     }
 
     // System V
-    if (!isIpcSupported(ipcType, QNativeIpcKey::Type::SystemV))
-        return QString();
-    if (key.startsWith(u'/'))
-        return key;
-
-    QString baseDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-    return baseDir + u'/' + key;
+    if (isIpcSupported(ipcType, QNativeIpcKey::Type::SystemV)) {
+        if (key.startsWith(u'/')) {
+            k.setNativeKey(key);
+        } else {
+            QString baseDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+            k.setNativeKey(baseDir + u'/' + key);
+        }
+    }
+    return k;
 }
 
 /*!

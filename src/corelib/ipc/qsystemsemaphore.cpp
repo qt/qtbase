@@ -406,12 +406,12 @@ bool QSystemSemaphore::isKeyTypeSupported(QNativeIpcKey::Type type)
 
 QNativeIpcKey QSystemSemaphore::platformSafeKey(const QString &key, QNativeIpcKey::Type type)
 {
-    return { QtIpcCommon::platformSafeKey(key, IpcType::SystemSemaphore, type), type };
+    return QtIpcCommon::platformSafeKey(key, IpcType::SystemSemaphore, type);
 }
 
 QNativeIpcKey QSystemSemaphore::legacyNativeKey(const QString &key, QNativeIpcKey::Type type)
 {
-    return { legacyPlatformSafeKey(key, IpcType::SystemSemaphore, type), type };
+    return QtIpcCommon::legacyPlatformSafeKey(key, IpcType::SystemSemaphore, type);
 }
 
 QT_END_NAMESPACE
