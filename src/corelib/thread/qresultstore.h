@@ -149,6 +149,8 @@ public:
     template <typename T>
     int moveResult(int index, T &&result)
     {
+        static_assert(!std::is_reference_v<T>, "trying to move from an lvalue!");
+
         if (containsValidResultItem(index)) // reject if already present
             return -1;
 
