@@ -7,7 +7,7 @@
 #include <qcryptographichash.h>
 #include <qstandardpaths.h>
 #include <qstringconverter.h>
-#include <private/qurl_p.h>
+#include <qurl.h>
 
 #if defined(Q_OS_DARWIN)
 #  include "private/qcore_mac_p.h"
@@ -486,21 +486,15 @@ QString QNativeIpcKey::toString() const
         return prefix;
     }
 
-    prefix += u':';
     QString copy = nativeKey();
     copy.replace(u'%', "%25"_L1);
     if (copy.startsWith("//"_L1))
         copy.replace(0, 2, u"/%2F"_s);  // ensure it's parsed as a URL path
 
-    const ushort recodeActions[] = {
-        '\\' | 0,       // decode
-        '?' | 0x200,    // encode
-        '#' | 0x200,    // encode
-        0
-    };
-    if (!qt_urlRecode(prefix, copy, QUrl::DecodeReserved, recodeActions))
-        prefix += copy;
-    return prefix;
+    QUrl u;
+    u.setScheme(prefix);
+    u.setPath(copy, QUrl::TolerantMode);
+    return u.toString(QUrl::DecodeReserved);
 }
 
 /*!
@@ -515,14 +509,11 @@ QString QNativeIpcKey::toString() const
 */
 QNativeIpcKey QNativeIpcKey::fromString(const QString &text)
 {
-    // this duplicates QUrlPrivate::parse a little
+    QUrl u(text, QUrl::TolerantMode);
     Type invalidType = {};
-    qsizetype colon = text.indexOf(u':');
-    if (colon < 0)
-        return QNativeIpcKey(invalidType);
-
-    Type type = stringToType(QStringView(text).left(colon));
-    if (type == invalidType)
+    Type type = stringToType(u.scheme());
+    if (type == invalidType || !u.isValid() || !u.userInfo().isEmpty() || !u.host().isEmpty()
+            || u.port() != -1)
         return QNativeIpcKey(invalidType);
 
     QNativeIpcKey result(QString(), type);
@@ -530,20 +521,7 @@ QNativeIpcKey QNativeIpcKey::fromString(const QString &text)
         return QNativeIpcKey(invalidType);
 
     // decode the payload
-    QStringView payload = QStringView(text).sliced(colon + 1);
-    if (qsizetype pos = payload.indexOf(u'?'); pos >= 0)
-        payload.truncate(pos);
-    if (qsizetype pos = payload.indexOf(u'#'); pos >= 0)
-        payload.truncate(pos);
-
-    // qt_urlRecode requires a two-step decoding for non-ASCII content
-    QString nativeKey, intermediate;
-    if (qt_urlRecode(intermediate, payload, QUrl::PrettyDecoded))
-        payload = intermediate;
-    if (!qt_urlRecode(nativeKey, payload, QUrl::FullyDecoded))
-        nativeKey = payload.toString();
-
-    result.setNativeKey(nativeKey);
+    result.setNativeKey(u.path());
     return result;
 }
 
