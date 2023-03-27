@@ -11,23 +11,17 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSqlRecordPrivate
+class QSqlRecordPrivate : public QSharedData
 {
 public:
-    QSqlRecordPrivate() = default;
-    QSqlRecordPrivate(const QSqlRecordPrivate &other)
-        : fields(other.fields)
-    {
-    }
-
     inline bool contains(qsizetype index) const
     {
       return index >= 0 && index < fields.size();
     }
 
     QList<QSqlField> fields;
-    QAtomicInt ref{1};
 };
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QSqlRecordPrivate)
 
 /*!
     \class QSqlRecord
@@ -82,10 +76,7 @@ QSqlRecord::QSqlRecord()
 */
 
 QSqlRecord::QSqlRecord(const QSqlRecord& other)
-  : d(other.d)
-{
-    d->ref.ref();
-}
+    = default;
 
 /*!
     \fn QSqlRecord::QSqlRecord(QSqlRecord &&other)
@@ -126,20 +117,15 @@ QSqlRecord::QSqlRecord(const QSqlRecord& other)
 */
 
 QSqlRecord& QSqlRecord::operator=(const QSqlRecord& other)
-{
-    QSqlRecord(other).swap(*this);
-    return *this;
-}
+    = default;
 
 /*!
     Destroys the object and frees any allocated resources.
 */
 
 QSqlRecord::~QSqlRecord()
-{
-    if (d && !d->ref.deref())
-        delete d;
-}
+    = default;
+
 
 /*!
     \fn bool QSqlRecord::operator!=(const QSqlRecord &other) const
@@ -501,7 +487,7 @@ void QSqlRecord::setValue(const QString& name, const QVariant& val)
 */
 void QSqlRecord::detach()
 {
-    qAtomicDetach(d);
+    d.detach();
 }
 
 #ifndef QT_NO_DEBUG_STREAM
