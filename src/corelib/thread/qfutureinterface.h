@@ -311,7 +311,7 @@ bool QFutureInterface<T>::reportAndMoveResult(T &&result, int index)
     QtPrivate::ResultStoreBase &store = resultStoreBase();
 
     const int oldResultCount = store.count();
-    const int insertIndex = store.moveResult(index, std::forward<T>(result));
+    const int insertIndex = store.moveResult(index, std::move(result));
     // Let's make sure it's not in pending results.
     if (insertIndex != -1 && (!store.filterMode() || oldResultCount < store.count()))
         reportResultsReady(insertIndex, store.count());
