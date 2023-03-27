@@ -625,6 +625,30 @@ static void _q_regexp_cleanup(void *cache)
 }
 #endif
 
+static void _q_lower(sqlite3_context* context, int argc, sqlite3_value** argv)
+{
+    if (Q_UNLIKELY(argc != 1)) {
+        sqlite3_result_text(context, nullptr, 0, nullptr);
+        return;
+    }
+    const QString lower = QString::fromUtf8(
+        reinterpret_cast<const char*>(sqlite3_value_text(argv[0]))).toLower();
+    const QByteArray ba = lower.toUtf8();
+    sqlite3_result_text(context, ba.data(), ba.size(), SQLITE_TRANSIENT);
+}
+
+static void _q_upper(sqlite3_context* context, int argc, sqlite3_value** argv)
+{
+    if (Q_UNLIKELY(argc != 1)) {
+        sqlite3_result_text(context, nullptr, 0, nullptr);
+        return;
+    }
+    const QString upper = QString::fromUtf8(
+        reinterpret_cast<const char*>(sqlite3_value_text(argv[0]))).toUpper();
+    const QByteArray ba = upper.toUtf8();
+    sqlite3_result_text(context, ba.data(), ba.size(), SQLITE_TRANSIENT);
+}
+
 QSQLiteDriver::QSQLiteDriver(QObject * parent)
     : QSqlDriver(*new QSQLiteDriverPrivate, parent)
 {
@@ -692,6 +716,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     bool openUriOption = false;
     bool useExtendedResultCodes = true;
     bool useQtVfs = false;
+    bool useQtCaseFolding = false;
 #if QT_CONFIG(regularexpression)
     static const auto regexpConnectOption = "QSQLITE_ENABLE_REGEXP"_L1;
     bool defineRegexp = false;
@@ -719,6 +744,8 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
             sharedCache = true;
         } else if (option == "QSQLITE_NO_USE_EXTENDED_RESULT_CODES"_L1) {
             useExtendedResultCodes = false;
+        } else if (option == "QSQLITE_ENABLE_NON_ASCII_CASE_FOLDING"_L1) {
+            useQtCaseFolding = true;
         }
 #if QT_CONFIG(regularexpression)
         else if (option.startsWith(regexpConnectOption)) {
@@ -760,6 +787,12 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
                                        nullptr, &_q_regexp_cleanup);
         }
 #endif
+        if (useQtCaseFolding) {
+            sqlite3_create_function_v2(d->access, "lower", 1, SQLITE_UTF8, nullptr,
+                                       &_q_lower, nullptr, nullptr, nullptr);
+            sqlite3_create_function_v2(d->access, "upper", 1, SQLITE_UTF8, nullptr,
+                                       &_q_upper, nullptr, nullptr, nullptr);
+        }
         return true;
     } else {
         setLastError(qMakeError(d->access, tr("Error opening database"),

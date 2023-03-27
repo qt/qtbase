@@ -4454,7 +4454,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
                             .arg(tableName)));
 
         QVERIFY_SQL(q, exec("SELECT MAX(txt) FROM " + tableName));
-        QVERIFY(q.next());
+        QVERIFY_SQL(q, next());
         if (dbType == QSqlDriver::SQLite)
             QCOMPARE(q.record().field(0).metaType().id(), QMetaType::UnknownType);
         else
@@ -4468,6 +4468,19 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT MAX(txt) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toString(), QLatin1String("upper"));
+        QCOMPARE(q.record().field(0).metaType().id(), QMetaType::QString);
+
+        QVERIFY_SQL(q, exec(QLatin1String("DELETE FROM %1").arg(tableName)));
+        QVERIFY_SQL(q, exec(QString::fromUtf8("INSERT INTO %1 (id, txt) VALUES (1, 'löW€RÄ')")
+                            .arg(tableName)));
+        QVERIFY_SQL(q, exec("SELECT LOWER(txt) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toString(), QString::fromUtf8("löw€rä"));
+        QCOMPARE(q.record().field(0).metaType().id(), QMetaType::QString);
+
+        QVERIFY_SQL(q, exec("SELECT UPPER(txt) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toString(), QString::fromUtf8("LÖW€RÄ"));
         QCOMPARE(q.record().field(0).metaType().id(), QMetaType::QString);
     }
 }

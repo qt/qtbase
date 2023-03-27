@@ -757,6 +757,10 @@
       \li QSQLITE_NO_USE_EXTENDED_RESULT_CODES
       \li Disables the usage of the \l {https://www.sqlite.org/c3ref/extended_result_codes.html}
           {extended result code} feature in SQLite (for backwards compatibility)
+    \row
+      \li QSQLITE_ENABLE_NON_ASCII_CASE_FOLDING
+      \li If set, the plugin replaces the functions 'lower' and 'upper' with
+          QString functions for correct case folding of non-ascii characters
     \endtable
 
     \section3 How to Build the QSQLITE Plugin
