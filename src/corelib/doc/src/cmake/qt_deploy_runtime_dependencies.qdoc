@@ -54,8 +54,12 @@ When installing an application, it may be desirable to also install the
 libraries and plugins it depends on. When the application is a macOS app bundle
 or a Windows executable, \c{qt_deploy_runtime_dependencies()} can be called
 from an install-time script to deploy those dependencies. It will install
-non-system libraries (both Qt and those provided by the project), plus an
-appropriate set of Qt plugins.
+non-system Qt libraries plus an appropriate set of Qt plugins.
+
+On Linux, the command will deploy additional libraries, beyond just those
+related to Qt, that are included with the project. However, when executed on
+macOS or Windows, the command will use either \c macdeployqt or \c windeployqt,
+which will only deploy libraries that are specific to Qt.
 
 This command only considers runtime dependencies for which linking
 relationships exist in the underlying binaries. It does not deploy QML modules,
