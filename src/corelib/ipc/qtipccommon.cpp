@@ -343,7 +343,6 @@ QNativeIpcKey::Type QNativeIpcKey::defaultTypeForOs_internal() noexcept
 }
 #endif
 
-
 /*!
     \fn QNativeIpcKey::QNativeIpcKey(Type type) noexcept
     \fn QNativeIpcKey::QNativeIpcKey(const QString &key, Type type)
@@ -360,19 +359,35 @@ QNativeIpcKey::Type QNativeIpcKey::defaultTypeForOs_internal() noexcept
 
     Copies or moves the content of \a other.
 */
-void QNativeIpcKey::copy_internal(const QNativeIpcKey &)
+void QNativeIpcKey::copy_internal(const QNativeIpcKey &other)
 {
-    Q_UNREACHABLE();
+    auto copy = new QNativeIpcKeyPrivate(*other.d_func());
+    d = quintptr(copy) & 1;
 }
 
 void QNativeIpcKey::move_internal(QNativeIpcKey &&) noexcept
 {
-    Q_UNREACHABLE();
+    // inline code already moved properly, nothing for us to do here
 }
 
-QNativeIpcKey &QNativeIpcKey::assign_internal(const QNativeIpcKey &)
+QNativeIpcKey &QNativeIpcKey::assign_internal(const QNativeIpcKey &other)
 {
-    Q_UNREACHABLE_RETURN(*this);
+    QNativeIpcKeyPrivate *us = (d & 1) ? d_func() : nullptr;
+    const QNativeIpcKeyPrivate *them = (other.d & 1) ? other.d_func() : nullptr;
+    if (us && !them) {
+        // don't need the extra info, reset to skinny object
+        typeAndFlags = {};
+        typeAndFlags.type = us->type;
+        delete us;
+    } else {
+        // do need the extra info, so create if necessary
+        if (us)
+            *us = *them;
+        else
+            us = new QNativeIpcKeyPrivate(*them);
+        d = quintptr(us) | 1;
+    }
+    return *this;
 }
 
 /*!
@@ -382,8 +397,8 @@ QNativeIpcKey &QNativeIpcKey::assign_internal(const QNativeIpcKey &)
 */
 void QNativeIpcKey::destroy_internal() noexcept
 {
-    Q_ASSERT(isSlowPath());
-    Q_UNREACHABLE();
+    Q_D(QNativeIpcKey);
+    delete d;
 }
 
 /*!
@@ -424,8 +439,8 @@ void QNativeIpcKey::destroy_internal() noexcept
 */
 QNativeIpcKey::Type QNativeIpcKey::type_internal() const noexcept
 {
-    Q_ASSERT(isSlowPath());
-    Q_UNREACHABLE_RETURN({});
+    Q_D(const QNativeIpcKey);
+    return d->type;
 }
 
 /*!
@@ -435,9 +450,10 @@ QNativeIpcKey::Type QNativeIpcKey::type_internal() const noexcept
 
     \sa type(), setNativeKey()
 */
-void QNativeIpcKey::setType_internal(Type)
+void QNativeIpcKey::setType_internal(Type type)
 {
-    Q_UNREACHABLE();
+    Q_D(QNativeIpcKey);
+    d->type = type;
 }
 
 /*!
@@ -455,6 +471,9 @@ void QNativeIpcKey::setType_internal(Type)
 
     \sa nativeKey(), setType()
 */
+void QNativeIpcKey::setNativeKey_internal(const QString &)
+{
+}
 
 /*!
     \fn bool QNativeIpcKey::operator==(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
@@ -462,9 +481,9 @@ void QNativeIpcKey::setType_internal(Type)
 
     Returns true if the \a lhs and \a rhs objects hold the same (or different) contents.
 */
-int QNativeIpcKey::compare_internal(const QNativeIpcKey &, const QNativeIpcKey &) noexcept
+int QNativeIpcKey::compare_internal(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
 {
-    Q_UNREACHABLE_RETURN(0);
+    return *lhs.d_func() == *rhs.d_func() ? 0 : 1;
 }
 
 /*!
@@ -479,8 +498,7 @@ int QNativeIpcKey::compare_internal(const QNativeIpcKey &, const QNativeIpcKey &
 */
 QString QNativeIpcKey::toString() const
 {
-    Q_ASSERT(!isSlowPath());
-    QString prefix = typeToString(typeAndFlags.type);
+    QString prefix = typeToString(type());
     if (prefix.isEmpty()) {
         Q_ASSERT(prefix.isNull());
         return prefix;

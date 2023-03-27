@@ -28,6 +28,29 @@
 
 QT_BEGIN_NAMESPACE
 
+class QNativeIpcKeyPrivate
+{
+public:
+    QNativeIpcKey::Type type = {};
+
+    friend bool operator==(const QNativeIpcKeyPrivate &lhs, const QNativeIpcKeyPrivate &rhs)
+    {
+        return lhs.type == rhs.type;
+    }
+};
+
+inline QNativeIpcKeyPrivate *QNativeIpcKey::d_func()
+{
+    Q_ASSERT(d & 1);    // Q_ASSERT(isSlowPath) but without the unlikely
+    return reinterpret_cast<QNativeIpcKeyPrivate *>(d & ~1);
+}
+
+inline const QNativeIpcKeyPrivate *QNativeIpcKey::d_func() const
+{
+    Q_ASSERT(d & 1);    // Q_ASSERT(isSlowPath) but without the unlikely
+    return reinterpret_cast<QNativeIpcKeyPrivate *>(d & ~1);
+}
+
 namespace QtIpcCommon {
 enum class IpcType {
     SharedMemory,

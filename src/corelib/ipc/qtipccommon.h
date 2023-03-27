@@ -71,10 +71,10 @@ public:
 
     QNativeIpcKey &operator=(const QNativeIpcKey &other)
     {
+        key = other.key;
         if (isSlowPath() || other.isSlowPath())
             return assign_internal(other);
         d = other.d;
-        key = other.key;
         return *this;
     }
 
@@ -112,7 +112,11 @@ public:
     QString nativeKey() const noexcept
     { return key; }
     void setNativeKey(const QString &newKey)
-    { key = newKey; }
+    {
+        key = newKey;
+        if (isSlowPath())
+            setNativeKey_internal(newKey);
+    }
 
     Q_CORE_EXPORT QString toString() const;
     Q_CORE_EXPORT static QNativeIpcKey fromString(const QString &string);
@@ -144,6 +148,9 @@ private:
 
     QString key;
 
+    friend class QNativeIpcKeyPrivate;
+    QNativeIpcKeyPrivate *d_func();
+    const QNativeIpcKeyPrivate *d_func() const;
     constexpr bool isSlowPath() const noexcept
     { return Q_UNLIKELY(typeAndFlags.isExtended); }
 
@@ -168,6 +175,7 @@ private:
     Q_CORE_EXPORT void destroy_internal() noexcept;
     Q_DECL_PURE_FUNCTION Q_CORE_EXPORT Type type_internal() const noexcept;
     Q_CORE_EXPORT void setType_internal(Type);
+    Q_CORE_EXPORT void setNativeKey_internal(const QString &);
     Q_DECL_PURE_FUNCTION Q_CORE_EXPORT static int
     compare_internal(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept;
 
