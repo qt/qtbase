@@ -11,6 +11,7 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qset.h>
 #include <QtCore/qthreadstorage.h>
+#include <QtCore/qfileselector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -344,6 +345,17 @@ QAbstractFileEngine::FileFlags QIOSFileEngineAssetsLibrary::fileFlags(QAbstractF
 {
     QAbstractFileEngine::FileFlags flags;
     const bool isDir = (m_assetUrl == "assets-library://"_L1);
+    if (!isDir) {
+        static const QFileSelector fileSelector;
+        static const auto selectors = fileSelector.allSelectors();
+        if (m_assetUrl.startsWith("assets-library://"_L1)) {
+            for (const auto &selector : selectors) {
+                if (m_assetUrl.endsWith(selector))
+                    return flags;
+            }
+        }
+    }
+
     const bool exists = isDir || m_assetUrl == g_iteratorCurrentUrl.localData() || loadAsset();
 
     if (!exists)
