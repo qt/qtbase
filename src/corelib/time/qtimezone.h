@@ -83,14 +83,12 @@ class Q_CORE_EXPORT QTimeZone
 
 public:
     // Sane UTC offsets range from -16 to +16 hours:
-    enum {
-        // No known modern zone > 12 hrs West of Greenwich.
-        // Until 1844, Asia/Manila (in The Philippines) was at 15:56 West.
-        MinUtcOffsetSecs = -16 * 3600,
-        // No known modern zone > 14 hrs East of Greenwich.
-        // Until 1867, America/Metlakatla (in Alaska) was at 15:13:42 East.
-        MaxUtcOffsetSecs = +16 * 3600
-    };
+    static constexpr int MinUtcOffsetSecs = -16 * 3600;
+    // No known modern zone > 12 hrs West of Greenwich.
+    // Until 1844, Asia/Manila (in The Philippines) was at 15:56 West.
+    static constexpr int MaxUtcOffsetSecs = +16 * 3600;
+    // No known modern zone > 14 hrs East of Greenwich.
+    // Until 1867, America/Metlakatla (in Alaska) was at 15:13:42 East.
 
     enum Initialization { LocalTime, UTC };
 

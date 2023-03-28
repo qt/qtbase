@@ -254,31 +254,34 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 */
 
 /*!
-  \enum QTimeZone::anonymous
+    \variable QTimeZone::MinUtcOffsetSecs
+    \brief Timezone offsets from UTC are expected to be no lower than this.
 
-  This enumeration provides constants bounding the range of plausible timezone
-  offsets from UTC, measured in seconds.
+    The lowest UTC offset of any early 21st century timezone is -12 hours (Baker
+    Island, USA), or 12 hours west of Greenwich.
 
-  Sane modern zones' UTC offsets range from -14 to +12 hours.
-  No known modern zone has offset > 12 hrs West of Greenwich (Baker Island, USA).
-  No known modern zone has offset > 14 hrs East of Greenwich
-  (Kiritimati, Christmas Island, Kiribati).
-  Note that there are zones whose offsets differ by more than a day.
+    Historically, until 1844, The Philippines (then controlled by Spain) used
+    the same date as Spain's American holdings, so had offsets close to 16 hours
+    west of Greenwich. As The Philippines was using local solar mean time, it is
+    possible some outlying territory of it may have been operating at more than
+    16 hours west of Greenwich, but no early 21st century timezone traces its
+    history back to such an extreme.
 
-  Historically, before 1867, when Russia sold Alaska to America, Alaska used the
-  same date as Russia, so had offsets over 15 hours East of Greenwich.
-  Earlier still, until 1844, The Philippines (then controlled by Spain) used the
-  same date as Spain's American holdings, so had offsets close to 16 hours West
-  of Greenwich.
-  Each made its one-day transition to cross the international date line while
-  using local solar mean time, before adopting a unified time-zone, so the
-  offsets within their territories were variable.
-  As a result, The Philippines might have exceeded 16 hours as offset at the
-  extremities of its territory, but no modern zone's representative location was
-  at such an extremity.
+    \sa MaxUtcOffsetSecs
+*/
+/*!
+    \variable QTimeZone::MaxUtcOffsetSecs
+    \brief Timezone offsets from UTC are expected to be no higher than this.
 
-  \value MinUtcOffsetSecs -16 * 3600,
-  \value MaxUtcOffsetSecs +16 * 3600
+    The highest UTC offset of any early 21st century timezone is +14 hours
+    (Christmas Island, Kiribati, Kiritimati), or 14 hours east of Greenwich.
+
+    Historically, before 1867, when Russia sold Alaska to America, Alaska used
+    the same date as Russia, so had offsets over 15 hours east of Greenwich. As
+    Alaska was using local solar mean time, its offsets varied, but all were
+    less than 16 hours east of Greenwich.
+
+    \sa MinUtcOffsetSecs
 */
 
 #if QT_CONFIG(timezone)
@@ -489,6 +492,8 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
     returned instance is equivalent to the lightweight time representation
     \c{QTimeZone::fromSecondsAfterUtc(offsetSeconds)}, albeit implemented as a
     time zone.
+
+    \sa MinUtcOffsetSecs, MaxUtcOffsetSecs
 */
 
 QTimeZone::QTimeZone(int offsetSeconds)
@@ -516,7 +521,8 @@ QTimeZone::QTimeZone(int offsetSeconds)
 
     This constructor is only available when feature \c timezone is enabled.
 
-    \sa id(), offsetFromUtc(), displayName(), abbreviation(), territory(), comment()
+    \sa id(), offsetFromUtc(), displayName(), abbreviation(), territory(), comment(),
+        MinUtcOffsetSecs, MaxUtcOffsetSecs
 */
 
 QTimeZone::QTimeZone(const QByteArray &ianaId, int offsetSeconds, const QString &name,
@@ -629,7 +635,8 @@ QTimeZone QTimeZone::asBackendZone() const
     Qt::OffsetFromUTC. An invalid time zone, when returned, has Qt::TimeZone as
     its timeSpec().
 
-    \sa QTimeZone(int), asBackendZone(), fixedSecondsAheadOfUtc()
+    \sa QTimeZone(int), asBackendZone(), fixedSecondsAheadOfUtc(),
+        MinUtcOffsetSecs, MaxUtcOffsetSecs
 */
 
 /*!

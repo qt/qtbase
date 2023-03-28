@@ -1163,8 +1163,8 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tz.daylightTimeOffset(now), 0);
 
     // Test validity range of UTC offsets:
-    int min = int(QTimeZone::MinUtcOffsetSecs);
-    int max = int(QTimeZone::MaxUtcOffsetSecs);
+    int min = QTimeZone::MinUtcOffsetSecs;
+    int max = QTimeZone::MaxUtcOffsetSecs;
     QCOMPARE(QTimeZone(min - 1).isValid(), false);
     QCOMPARE(QTimeZone(min).isValid(), true);
     QCOMPARE(QTimeZone(min + 1).isValid(), true);
