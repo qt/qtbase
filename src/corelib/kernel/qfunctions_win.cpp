@@ -33,6 +33,7 @@ QComHelper::~QComHelper()
 }
 
 /*!
+    \internal
     Checks if the application has a \e{package identity}
 
     Having a \e{package identity} is required to use many modern
