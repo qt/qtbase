@@ -84,7 +84,6 @@ inline void QSystemSemaphorePrivate::destructBackend()
 QSystemSemaphore::QSystemSemaphore(const QString &key, int initialValue, AccessMode mode)
     : QSystemSemaphore(legacyNativeKey(key), initialValue, mode)
 {
-    d->legacyKey = key;
 }
 #endif
 
@@ -210,8 +209,6 @@ void QSystemSemaphore::setNativeKey(const QNativeIpcKey &key, int initialValue, 
     }
     d->initialValue = initialValue;
     d->handle(mode);
-
-    d->legacyKey.clear();
 }
 
 /*!
@@ -244,7 +241,6 @@ QNativeIpcKey QSystemSemaphore::nativeIpcKey() const
 void QSystemSemaphore::setKey(const QString &key, int initialValue, AccessMode mode)
 {
     setNativeKey(legacyNativeKey(key), initialValue, mode);
-    d->legacyKey = key;
 }
 
 /*!
@@ -256,7 +252,7 @@ void QSystemSemaphore::setKey(const QString &key, int initialValue, AccessMode m
  */
 QString QSystemSemaphore::key() const
 {
-    return d->legacyKey;
+    return QNativeIpcKeyPrivate::legacyKey(d->nativeKey);
 }
 #endif
 

@@ -205,8 +205,6 @@ public:
     }
     QNativeIpcKey semaphoreNativeKey() const;
 #endif // QT_CONFIG(systemsemaphore)
-
-    QString legacyKey;  // deprecated
 };
 
 QT_END_NAMESPACE
