@@ -140,7 +140,6 @@ QSharedMemory::QSharedMemory(const QNativeIpcKey &key, QObject *parent)
 QSharedMemory::QSharedMemory(const QString &key, QObject *parent)
     : QSharedMemory(legacyNativeKey(key), parent)
 {
-    d_func()->legacyKey = key;
 }
 #endif
 
@@ -185,9 +184,7 @@ QSharedMemory::~QSharedMemory()
 */
 void QSharedMemory::setKey(const QString &key)
 {
-    Q_D(QSharedMemory);
     setNativeKey(legacyNativeKey(key));
-    d->legacyKey = key;
 }
 #endif
 
@@ -245,7 +242,6 @@ void QSharedMemory::setNativeKey(const QNativeIpcKey &key)
     if (isAttached())
         detach();
     d->cleanHandle();
-    d->legacyKey = QString();
     if (key.type() == d->nativeKey.type()) {
         // we can reuse the backend
         d->nativeKey = key;
@@ -314,7 +310,7 @@ bool QSharedMemoryPrivate::initKey(SemaphoreAccessMode mode)
 QString QSharedMemory::key() const
 {
     Q_D(const QSharedMemory);
-    return d->legacyKey;
+    return QNativeIpcKeyPrivate::legacyKey(d->nativeKey);
 }
 #endif
 

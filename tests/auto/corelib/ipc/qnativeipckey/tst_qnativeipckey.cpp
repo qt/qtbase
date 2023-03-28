@@ -6,6 +6,19 @@
 
 #include "../ipctestcommon.h"
 
+#if QT_CONFIG(sharedmemory)
+#  include <qsharedmemory.h>
+#endif
+#if QT_CONFIG(systemsemaphore)
+#  include <qsystemsemaphore.h>
+#endif
+
+#if QT_CONFIG(sharedmemory)
+static const auto makeLegacyKey = QSharedMemory::legacyNativeKey;
+#else
+static const auto makeLegacyKey = QSystemSemaphore::legacyNativeKey;
+#endif
+
 using namespace Qt::StringLiterals;
 
 class tst_QNativeIpcKey : public QObject
@@ -22,6 +35,8 @@ private slots:
     void toString();
     void fromString_data();
     void fromString();
+    void legacyKeys_data();
+    void legacyKeys();
 };
 
 void tst_QNativeIpcKey::defaultTypes()
@@ -181,6 +196,19 @@ void tst_QNativeIpcKey::equality()
     key2.setType(QNativeIpcKey::DefaultTypeForOs);
     QCOMPARE(key1, key2);
     QVERIFY(!(key1 != key2));
+
+    key1 = makeLegacyKey("key1", QNativeIpcKey::DefaultTypeForOs);
+    QCOMPARE_NE(key1, key2);
+    QVERIFY(!(key1 == key2));
+
+    key2 = key1;
+    QCOMPARE(key1, key2);
+    QVERIFY(!(key1 != key2));
+
+    // just setting the native key won't make them equal again!
+    key2.setNativeKey(key1.nativeKey());
+    QCOMPARE_NE(key1, key2);
+    QVERIFY(!(key1 == key2));
 }
 
 void tst_QNativeIpcKey::hash()
@@ -215,6 +243,12 @@ void tst_QNativeIpcKey::swap()
     QCOMPARE(key1.type(), QNativeIpcKey::Type::PosixRealtime);
     QCOMPARE(key2.nativeKey(), "key2");
     QCOMPARE(key2.type(), QNativeIpcKey::Type::Windows);
+
+    key1 = makeLegacyKey("key1", QNativeIpcKey::DefaultTypeForOs);
+    QCOMPARE(key1.type(), QNativeIpcKey::DefaultTypeForOs);
+    key1.swap(key2);
+    QCOMPARE(key1.type(), QNativeIpcKey::Type::Windows);
+    QCOMPARE(key2.type(), QNativeIpcKey::DefaultTypeForOs);
 }
 
 void tst_QNativeIpcKey::toString_data()
@@ -321,6 +355,71 @@ void tst_QNativeIpcKey::fromString()
     QFETCH(QNativeIpcKey, key);
 
     QCOMPARE(QNativeIpcKey::fromString(string), key);
+}
+
+void tst_QNativeIpcKey::legacyKeys_data()
+{
+    QTest::addColumn<QNativeIpcKey::Type>("type");
+    QTest::addColumn<QString>("legacyKey");
+    auto addRows = [](QNativeIpcKey::Type type) {
+        const char *label = "<unknown-type>";
+        switch (type) {
+        case QNativeIpcKey::Type::SystemV:
+            label = "systemv";
+            break;
+        case QNativeIpcKey::Type::PosixRealtime:
+            label = "posix";
+            break;
+        case QNativeIpcKey::Type::Windows:
+            label = "windows";
+            break;
+        }
+        auto add = [=](const char *name, const QString &legacyKey) {
+            QTest::addRow("%s-%s", label, name) << type << legacyKey;
+        };
+        add("empty", {});
+        add("text", "foobar"_L1);
+        add("pathlike", "/sometext"_L1);
+        add("objectlike", "Global\\sometext"_L1);
+        add("colon-slash", ":/"_L1);
+        add("slash-colon", "/:"_L1);
+        add("percent", "%"_L1);
+        add("question-hash", "?#"_L1);
+        add("hash-question", "#?"_L1);
+        add("double-slash", "//"_L1);
+        add("triple-slash", "///"_L1);
+        add("non-ascii", "\xe9"_L1);
+        add("non-utf8", "\xa0\xff"_L1);
+        add("non-latin1", u":\u0100.\u2000.\U00010000"_s);
+    };
+
+    addRows(QNativeIpcKey::DefaultTypeForOs);
+    if (auto type = QNativeIpcKey::legacyDefaultTypeForOs();
+            type != QNativeIpcKey::DefaultTypeForOs)
+        addRows(type);
+}
+
+void tst_QNativeIpcKey::legacyKeys()
+{
+    QFETCH(QNativeIpcKey::Type, type);
+    QFETCH(QString, legacyKey);
+
+    QNativeIpcKey key = makeLegacyKey(legacyKey, type);
+    QCOMPARE(key.type(), type);
+
+    QString string = key.toString();
+    QNativeIpcKey key2 = QNativeIpcKey::fromString(string);
+    QCOMPARE(key2, key);
+
+    if (!legacyKey.isEmpty()) {
+        // confirm it shows up in the encoded form
+        Q_ASSERT(!legacyKey.contains(u'&'));    // needs extra encoding
+        QUrl u;
+        u.setQuery("legacyKey="_L1 + legacyKey, QUrl::DecodedMode);
+        QString encodedLegacyKey = u.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority
+                                              | QUrl::DecodeReserved);
+        QVERIFY2(string.contains(encodedLegacyKey), qPrintable(string));
+    }
 }
 
 QTEST_MAIN(tst_QNativeIpcKey)
