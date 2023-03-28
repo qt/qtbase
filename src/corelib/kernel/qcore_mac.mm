@@ -30,6 +30,10 @@
 #include "qvarlengtharray.h"
 #include "private/qlocking_p.h"
 
+#if !defined(QT_BOOTSTRAPPED)
+#include <thread>
+#endif
+
 #if !defined(QT_APPLE_NO_PRIVATE_APIS)
 extern "C" {
 typedef uint32_t csr_config_t;
@@ -456,34 +460,62 @@ AppleApplication *qt_apple_sharedApplication()
 }
 #endif
 
+#if !defined(QT_BOOTSTRAPPED)
+
+#if defined(Q_OS_MACOS)
+namespace {
+struct SandboxChecker
+{
+    SandboxChecker() : m_thread([this]{
+            m_isSandboxed = []{
+                QCFType<SecStaticCodeRef> staticCode = nullptr;
+                NSURL *executableUrl = NSBundle.mainBundle.executableURL;
+                if (SecStaticCodeCreateWithPath((__bridge CFURLRef)executableUrl,
+                    kSecCSDefaultFlags, &staticCode) != errSecSuccess)
+                    return false;
+
+                QCFType<SecRequirementRef> sandboxRequirement;
+                if (SecRequirementCreateWithString(CFSTR("entitlement[\"com.apple.security.app-sandbox\"] exists"),
+                    kSecCSDefaultFlags, &sandboxRequirement) != errSecSuccess)
+                    return false;
+
+                if (SecStaticCodeCheckValidityWithErrors(staticCode,
+                    kSecCSBasicValidateOnly, sandboxRequirement, nullptr) != errSecSuccess)
+                    return false;
+
+                return true;
+            }();
+        })
+    {}
+    ~SandboxChecker() {
+        std::scoped_lock lock(m_mutex);
+        if (m_thread.joinable())
+            m_thread.detach();
+    }
+    bool isSandboxed() const {
+        std::scoped_lock lock(m_mutex);
+        if (m_thread.joinable())
+            m_thread.join();
+        return m_isSandboxed;
+    }
+private:
+    bool m_isSandboxed;
+    mutable std::thread m_thread;
+    mutable std::mutex m_mutex;
+};
+} // namespace
+static SandboxChecker sandboxChecker;
+#endif // Q_OS_MACOS
+
 bool qt_apple_isSandboxed()
 {
 #if defined(Q_OS_MACOS)
-    static bool isSandboxed = []() {
-        QCFType<SecStaticCodeRef> staticCode = nullptr;
-        NSURL *executableUrl = NSBundle.mainBundle.executableURL;
-        if (SecStaticCodeCreateWithPath((__bridge CFURLRef)executableUrl,
-            kSecCSDefaultFlags, &staticCode) != errSecSuccess)
-            return false;
-
-        QCFType<SecRequirementRef> sandboxRequirement;
-        if (SecRequirementCreateWithString(CFSTR("entitlement[\"com.apple.security.app-sandbox\"] exists"),
-            kSecCSDefaultFlags, &sandboxRequirement) != errSecSuccess)
-            return false;
-
-        if (SecStaticCodeCheckValidityWithErrors(staticCode,
-            kSecCSBasicValidateOnly, sandboxRequirement, nullptr) != errSecSuccess)
-            return false;
-
-        return true;
-    }();
-    return isSandboxed;
+    return sandboxChecker.isSandboxed();
 #else
     return true; // All other Apple platforms
 #endif
 }
 
-#if !defined(QT_BOOTSTRAPPED)
 QT_END_NAMESPACE
 @implementation NSObject (QtSandboxHelpers)
 - (id)qt_valueForPrivateKey:(NSString *)key
@@ -495,7 +527,7 @@ QT_END_NAMESPACE
 }
 @end
 QT_BEGIN_NAMESPACE
-#endif
+#endif // !QT_BOOTSTRAPPED
 
 #ifdef Q_OS_MACOS
 /*
