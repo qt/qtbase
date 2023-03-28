@@ -509,6 +509,13 @@ QByteArray QMessageAuthenticationCode::hash(const QByteArray &msg, const QByteAr
                 qToByteArrayViewIgnoringNull(key), method);
 }
 
+#include "qrunnable.h"
+
+QRunnable *QRunnable::create(std::function<void()> functionToRun)
+{
+    return QRunnable::create<std::function<void()>>(std::move(functionToRun));
+}
+
 #include "qstring.h"
 
 qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)

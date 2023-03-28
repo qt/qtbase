@@ -6,6 +6,7 @@
 #include <QSemaphore>
 
 #include <qelapsedtimer.h>
+#include <qrunnable.h>
 #include <qthreadpool.h>
 #include <qstring.h>
 #include <qmutex.h>
@@ -45,6 +46,7 @@ public:
 private slots:
     void runFunction();
     void runFunction2();
+    void runFunction3();
     void createThreadRunFunction();
     void runMultiple();
     void waitcomplete();
@@ -171,6 +173,23 @@ void tst_QThreadPool::runFunction2()
         manager.start([&]() { ++localCount; });
     }
     QCOMPARE(localCount, 1);
+}
+
+struct DeleteCheck
+{
+    static bool s_deleted;
+    ~DeleteCheck() { s_deleted = true; }
+};
+bool DeleteCheck::s_deleted = false;
+
+void tst_QThreadPool::runFunction3()
+{
+    std::unique_ptr<DeleteCheck> ptr(new DeleteCheck);
+    {
+        TestThreadPool manager;
+        manager.start(QRunnable::create([my_ptr = std::move(ptr)]() { }));
+    }
+    QVERIFY(DeleteCheck::s_deleted);
 }
 
 void tst_QThreadPool::createThreadRunFunction()
