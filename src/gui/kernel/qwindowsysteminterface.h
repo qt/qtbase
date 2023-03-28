@@ -64,31 +64,6 @@ public:
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
-    static bool handleFrameStrutMouseEvent(QWindow *window, const QPointF &local,
-                                           const QPointF &global, Qt::MouseButtons state,
-                                           Qt::MouseButton button, QEvent::Type type,
-                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
-                                           Qt::MouseEventSource source =
-                                           Qt::MouseEventNotSynthesized);
-    static bool handleFrameStrutMouseEvent(QWindow *window, const QPointingDevice *device,
-                                           const QPointF &local, const QPointF &global,
-                                           Qt::MouseButtons state,
-                                           Qt::MouseButton button, QEvent::Type type,
-                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
-                                           Qt::MouseEventSource source =
-                                           Qt::MouseEventNotSynthesized);
-    static bool handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF &local,
-                                           const QPointF &global, Qt::MouseButtons state,
-                                           Qt::MouseButton button, QEvent::Type type,
-                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
-                                           Qt::MouseEventSource source =
-                                           Qt::MouseEventNotSynthesized);
-    static bool handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,
-                                           const QPointF &local, const QPointF &global, Qt::MouseButtons state,
-                                           Qt::MouseButton button, QEvent::Type type,
-                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
-                                           Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
-
     static bool handleShortcutEvent(QWindow *window, ulong timestamp, int k, Qt::KeyboardModifiers mods, quint32 nativeScanCode,
                                       quint32 nativeVirtualKey, quint32 nativeModifiers, const QString & text = QString(), bool autorep = false, ushort count = 1);
 

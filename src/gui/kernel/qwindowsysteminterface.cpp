@@ -389,61 +389,34 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleMouseEvent, QWindow *window, ulong times
                             Qt::MouseButton button, QEvent::Type type, Qt::KeyboardModifiers mods,
                             Qt::MouseEventSource source)
 {
-    Q_ASSERT_X(type != QEvent::MouseButtonDblClick && type != QEvent::NonClientAreaMouseButtonDblClick,
-               "QWindowSystemInterface::handleMouseEvent",
+
+    bool isNonClientArea = {};
+
+    switch (type) {
+    case QEvent::MouseButtonDblClick:
+    case QEvent::NonClientAreaMouseButtonDblClick:
+        Q_ASSERT_X(false, "QWindowSystemInterface::handleMouseEvent",
                "QTBUG-71263: Native double clicks are not implemented.");
+        return false;
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+        isNonClientArea = false;
+        break;
+    case QEvent::NonClientAreaMouseMove:
+    case QEvent::NonClientAreaMouseButtonPress:
+    case QEvent::NonClientAreaMouseButtonRelease:
+        isNonClientArea = true;
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+
     auto localPos = QHighDpi::fromNativeLocalPosition(local, window);
     auto globalPos = QHighDpi::fromNativeGlobalPosition(global, window);
 
     return handleWindowSystemEvent<QWindowSystemInterfacePrivate::MouseEvent, Delivery>(window,
-        timestamp, localPos, globalPos, state, mods, button, type, source, false, device);
-}
-
-bool QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window,
-                                                        const QPointF &local, const QPointF &global,
-                                                        Qt::MouseButtons state,
-                                                        Qt::MouseButton button, QEvent::Type type,
-                                                        Qt::KeyboardModifiers mods,
-                                                        Qt::MouseEventSource source)
-{
-    const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    return handleFrameStrutMouseEvent(window, time, local, global, state, button, type, mods, source);
-}
-
-bool QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, const QPointingDevice *device,
-                                                        const QPointF &local, const QPointF &global,
-                                                        Qt::MouseButtons state,
-                                                        Qt::MouseButton button, QEvent::Type type,
-                                                        Qt::KeyboardModifiers mods,
-                                                        Qt::MouseEventSource source)
-{
-    const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    return handleFrameStrutMouseEvent(window, time, device, local, global, state, button, type, mods, source);
-}
-
-bool QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong timestamp,
-                                                        const QPointF &local, const QPointF &global,
-                                                        Qt::MouseButtons state,
-                                                        Qt::MouseButton button, QEvent::Type type,
-                                                        Qt::KeyboardModifiers mods,
-                                                        Qt::MouseEventSource source)
-{
-    return handleFrameStrutMouseEvent(window, timestamp, QPointingDevice::primaryPointingDevice(),
-                                      local, global, state, button, type, mods, source);
-}
-
-bool QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,
-                                                        const QPointF &local, const QPointF &global,
-                                                        Qt::MouseButtons state,
-                                                        Qt::MouseButton button, QEvent::Type type,
-                                                        Qt::KeyboardModifiers mods,
-                                                        Qt::MouseEventSource source)
-{
-    auto localPos = QHighDpi::fromNativeLocalPosition(local, window);
-    auto globalPos = QHighDpi::fromNativeGlobalPosition(global, window);
-
-    return handleWindowSystemEvent<QWindowSystemInterfacePrivate::MouseEvent>(window,
-        timestamp, localPos, globalPos, state, mods, button, type, source, true, device);
+        timestamp, localPos, globalPos, state, mods, button, type, source, isNonClientArea, device);
 }
 
 bool QWindowSystemInterface::handleShortcutEvent(QWindow *window, ulong timestamp, int keyCode, Qt::KeyboardModifiers modifiers, quint32 nativeScanCode,
