@@ -134,6 +134,14 @@ protected:
     }
 
 public:
+    template <typename T, typename...Args>
+    int emplaceResult(int index, Args&&...args)
+    {
+        if (containsValidResultItem(index)) // reject if already present
+            return -1;
+        return addResult(index, static_cast<void *>(new T(std::forward<Args>(args)...)));
+    }
+
     template <typename T>
     int addResult(int index, const T *result)
     {
@@ -151,10 +159,7 @@ public:
     {
         static_assert(!std::is_reference_v<T>, "trying to move from an lvalue!");
 
-        if (containsValidResultItem(index)) // reject if already present
-            return -1;
-
-        return addResult(index, static_cast<void *>(new T(std::move(result))));
+        return emplaceResult<std::remove_cv_t<T>>(index, std::forward<T>(result));
     }
 
     template<typename T>
