@@ -240,6 +240,9 @@ private slots:
     void QTBUG_73286_data() { generic_data("QODBC"); }
     void QTBUG_73286();
 
+    void insertVarChar1_data() { generic_data("QODBC"); }
+    void insertVarChar1();
+
     void dateTime_data();
     void dateTime();
 
@@ -4715,6 +4718,22 @@ void tst_QSqlQuery::QTBUG_73286()
     QCOMPARE(q.value(0).toString(), "99.99");
     QCOMPARE(q.value(1).toString(), "12345678901234567890");
     QCOMPARE(q.value(2).toString(), "12345678901234567.890");
+}
+
+void tst_QSqlQuery::insertVarChar1()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+    TableScope ts(db, "testtable", __FILE__);
+    QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (smallcol VARCHAR(1))").arg(ts.tableName())));
+    QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 (smallcol) VALUES (?)").arg(ts.tableName())));
+    QSqlField smallCol("smallcol");
+    smallCol.setValue(QVariant(QString(QChar('F'))));
+    q.bindValue(0, smallCol.value());
+    QVERIFY_SQL(q, exec());
 }
 
 void tst_QSqlQuery::dateTime_data()
