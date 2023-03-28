@@ -5625,7 +5625,11 @@ QDebug operator<<(QDebug dbg, QDate date)
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QDate(";
     if (date.isValid())
-        dbg.nospace() << date.toString(Qt::ISODate);
+        // QTBUG-91070, ISODate only supports years in the range 0-9999
+        if (int y = date.year(); y > 0 && y <= 9999)
+            dbg.nospace() << date.toString(Qt::ISODate);
+        else
+            dbg.nospace() << date.toString(Qt::TextDate);
     else
         dbg.nospace() << "Invalid";
     dbg.nospace() << ')';
