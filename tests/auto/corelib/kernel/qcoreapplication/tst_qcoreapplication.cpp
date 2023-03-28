@@ -1034,16 +1034,50 @@ void tst_QCoreApplication::addRemoveLibPaths()
 }
 #endif
 
+static bool theMainThreadIsSet()
+{
+    // QCoreApplicationPrivate::mainThread() has a Q_ASSERT we'd trigger
+    return QCoreApplicationPrivate::theMainThread.loadRelaxed() != nullptr;
+}
+
+static bool theMainThreadWasUnset = !theMainThreadIsSet(); // global static
+void tst_QCoreApplication::theMainThread()
+{
+    QVERIFY2(theMainThreadWasUnset, "Something set the theMainThread before main()");
+    QVERIFY(theMainThreadIsSet()); // we have at LEAST one QObject alive: tst_QCoreApplication
+
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+    QVERIFY(QCoreApplicationPrivate::theMainThread.loadRelaxed());
+    QCOMPARE(QCoreApplicationPrivate::theMainThread.loadRelaxed(), thread());
+    QCOMPARE(app.thread(), thread());
+    QCOMPARE(app.thread(), QThread::currentThread());
+}
+
 static void createQObjectOnDestruction()
 {
-    // Make sure that we can create a QObject after the last QObject has been
-    // destroyed (especially after QCoreApplication has).
-    //
+    // Make sure that we can create a QObject (and thus have an associated
+    // QThread) after the last QObject has been destroyed (especially after
+    // QCoreApplication has).
+
+#if !defined(QT_QGUIAPPLICATIONTEST) && !defined(Q_OS_WIN)
+    // QCoreApplicationData's global static destructor has run and cleaned up
+    // the QAdoptedThrad.
+    if (theMainThreadIsSet())
+        qFatal("theMainThreadIsSet() returned true; some QObject must have leaked");
+#endif
+
     // Before the fixes, this would cause a dangling pointer dereference. If
     // the problem comes back, it's possible that the following causes no
     // effect.
     QObject obj;
     obj.thread()->setProperty("testing", 1);
+    if (!theMainThreadIsSet())
+        qFatal("theMainThreadIsSet() returned false");
+
+    // because we created a QObject after QCoreApplicationData was destroyed,
+    // the QAdoptedThread won't get cleaned up
 }
 Q_DESTRUCTOR_FUNCTION(createQObjectOnDestruction)
 
