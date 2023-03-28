@@ -5,17 +5,12 @@
 #define COMPLEXPING_H
 
 #include <QtCore/QObject>
-#include <QtCore/QFile>
-#include <QtDBus/QDBusInterface>
 
-class Ping: public QObject
+class Ping : public QObject
 {
     Q_OBJECT
 public slots:
-    void start(const QString &);
-public:
-    QFile qstdin;
-    QDBusInterface *iface;
+    void start(const QString &name);
 };
 
 #endif

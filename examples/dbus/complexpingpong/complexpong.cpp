@@ -7,12 +7,8 @@
 #include <QCoreApplication>
 #include <QDBusConnection>
 #include <QDBusError>
-#include <QTimer>
+#include <QDebug>
 
-#include <stdio.h>
-#include <stdlib.h>
-
-// the property
 QString Pong::value() const
 {
     return m_value;
@@ -25,7 +21,8 @@ void Pong::setValue(const QString &newValue)
 
 void Pong::quit()
 {
-    QTimer::singleShot(0, QCoreApplication::instance(), &QCoreApplication::quit);
+    QMetaObject::invokeMethod(QCoreApplication::instance(), &QCoreApplication::quit,
+                              Qt::QueuedConnection);
 }
 
 QDBusVariant Pong::query(const QString &query)
@@ -54,12 +51,13 @@ int main(int argc, char **argv)
     Pong *pong = new Pong(&obj);
     QObject::connect(&app, &QCoreApplication::aboutToQuit, pong, &Pong::aboutToQuit);
     pong->setProperty("value", "initial value");
-    QDBusConnection::sessionBus().registerObject("/", &obj);
 
-    if (!QDBusConnection::sessionBus().registerService(SERVICE_NAME)) {
-        fprintf(stderr, "%s\n",
-                qPrintable(QDBusConnection::sessionBus().lastError().message()));
-        exit(1);
+    auto connection = QDBusConnection::sessionBus();
+    connection.registerObject("/", &obj);
+
+    if (!connection.registerService(SERVICE_NAME)) {
+        qWarning().noquote() << connection.lastError().message();
+        return 1;
     }
 
     app.exec();
