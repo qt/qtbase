@@ -142,8 +142,6 @@ public:
     {
         return visit([&](auto p) { return p->modifySemaphore(this, count); });
     }
-
-    QString legacyKey;  // deprecated
 };
 
 QT_END_NAMESPACE

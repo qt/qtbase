@@ -31,6 +31,32 @@ QT_BEGIN_NAMESPACE
 class QNativeIpcKeyPrivate
 {
 public:
+    QString legacyKey_;
+
+    static QString legacyKey(const QNativeIpcKey &key)
+    {
+        if (key.isSlowPath())
+            return key.d->legacyKey_;
+        return QString();
+    }
+    static void setLegacyKey(QNativeIpcKey &key, const QString &legacyKey)
+    {
+        QNativeIpcKeyPrivate::makeExtended(key)->legacyKey_ = legacyKey;
+    }
+    static void setNativeAndLegacyKeys(QNativeIpcKey &key, const QString &nativeKey,
+                                       const QString &legacyKey)
+    {
+        key.setNativeKey(nativeKey);
+        setLegacyKey(key, legacyKey);
+    }
+
+private:
+    static QNativeIpcKeyPrivate *makeExtended(QNativeIpcKey &key)
+    {
+        if (!key.isSlowPath())
+            key.d = new QNativeIpcKeyPrivate;
+        return key.d;
+    }
 };
 
 namespace QtIpcCommon {

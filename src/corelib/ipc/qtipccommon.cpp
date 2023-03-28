@@ -8,6 +8,7 @@
 #include <qstandardpaths.h>
 #include <qstringconverter.h>
 #include <qurl.h>
+#include <qurlquery.h>
 
 #if defined(Q_OS_DARWIN)
 #  include "private/qcore_mac_p.h"
@@ -93,10 +94,11 @@ static QNativeIpcKey::Type stringToType(QStringView typeString)
     Legacy: this exists for compatibility with QSharedMemory and
     QSystemSemaphore between 4.4 and 6.6.
 
-    Generate a string from the key which can be any unicode string into
-    the subset that the win/unix kernel allows.
-
-    On Unix this will be a file name
+    Returns a QNativeIpcKey that contains a platform-safe key using rules
+    similar to QtIpcCommon::platformSafeKey() below, but using an algorithm
+    that is compatible with Qt 4.4 to 6.6. Additionally, the returned
+    QNativeIpcKey will record the input \a key so it can be included in the
+    string form if necessary to pass to other processes.
 */
 QNativeIpcKey QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcType ipcType,
                                                  QNativeIpcKey::Type type)
@@ -114,13 +116,14 @@ QNativeIpcKey QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon
             // to be in the form <application group identifier>/<custom identifier>.
             // Since we don't know which application group identifier the user wants
             // to apply, we instead document that requirement, and use the key directly.
-            k.setNativeKey(key);
+            QNativeIpcKeyPrivate::setNativeAndLegacyKeys(k, key, key);
         } else {
             // The shared memory name limit on Apple platforms is very low (30 characters),
             // so we can't use the logic below of combining the prefix, key, and a hash,
             // to ensure a unique and valid name. Instead we use the first part of the
             // hash, which should still long enough to avoid collisions in practice.
-            k.setNativeKey(u'/' + QLatin1StringView(hex).left(SHM_NAME_MAX - 1));
+            QString native = u'/' + QLatin1StringView(hex).left(SHM_NAME_MAX - 1);
+            QNativeIpcKeyPrivate::setNativeAndLegacyKeys(k, native, key);
         }
         return k;
 #endif
@@ -147,20 +150,30 @@ QNativeIpcKey QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon
     switch (type) {
     case QNativeIpcKey::Type::Windows:
         if (isIpcSupported(ipcType, QNativeIpcKey::Type::Windows))
-            k.setNativeKey(result);
+            QNativeIpcKeyPrivate::setNativeAndLegacyKeys(k, result, key);
         return k;
     case QNativeIpcKey::Type::PosixRealtime:
+        result.prepend(u'/');
         if (isIpcSupported(ipcType, QNativeIpcKey::Type::PosixRealtime))
-            k.setNativeKey(result.prepend(u'/'));
+            QNativeIpcKeyPrivate::setNativeAndLegacyKeys(k, result, key);
         return k;
     case QNativeIpcKey::Type::SystemV:
         break;
     }
-    if (isIpcSupported(ipcType, QNativeIpcKey::Type::SystemV))
-        k.setNativeKey(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + u'/' + result);
+    if (isIpcSupported(ipcType, QNativeIpcKey::Type::SystemV)) {
+        result = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + u'/' + result;
+        QNativeIpcKeyPrivate::setNativeAndLegacyKeys(k, result, key);
+    }
     return k;
 }
 
+/*!
+    \internal
+    Returns a QNativeIpcKey of type \a type, suitable for QSystemSemaphore or
+    QSharedMemory depending on \a ipcType. The returned native key is generated
+    from the Unicode input \a key and is safe for use on for the key type in
+    question in the current OS.
+*/
 QNativeIpcKey QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcType ipcType,
                                            QNativeIpcKey::Type type)
 {
@@ -480,6 +493,7 @@ void QNativeIpcKey::setType_internal(Type type)
 */
 void QNativeIpcKey::setNativeKey_internal(const QString &)
 {
+    d->legacyKey_.clear();
 }
 
 /*!
@@ -495,6 +509,8 @@ void QNativeIpcKey::setNativeKey_internal(const QString &)
 */
 size_t qHash(const QNativeIpcKey &ipcKey, size_t seed) noexcept
 {
+    // by *choice*, we're not including d->legacyKey_ in the hash -- it's
+    // already partially encoded in the key
     return qHashMulti(seed, ipcKey.key, ipcKey.type());
 }
 
@@ -506,8 +522,7 @@ size_t qHash(const QNativeIpcKey &ipcKey, size_t seed) noexcept
 */
 int QNativeIpcKey::compare_internal(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
 {
-    Q_UNUSED(lhs); Q_UNUSED(rhs);
-    return 0;
+    return (QNativeIpcKeyPrivate::legacyKey(lhs) == QNativeIpcKeyPrivate::legacyKey(rhs)) ? 0 : 1;
 }
 
 /*!
@@ -536,6 +551,12 @@ QString QNativeIpcKey::toString() const
     QUrl u;
     u.setScheme(prefix);
     u.setPath(copy, QUrl::TolerantMode);
+    if (isSlowPath()) {
+        QUrlQuery q;
+        if (!d->legacyKey_.isEmpty())
+            q.addQueryItem(u"legacyKey"_s, QString(d->legacyKey_).replace(u'%', "%25"_L1));
+        u.setQuery(q);
+    }
     return u.toString(QUrl::DecodeReserved);
 }
 
@@ -555,7 +576,7 @@ QNativeIpcKey QNativeIpcKey::fromString(const QString &text)
     Type invalidType = {};
     Type type = stringToType(u.scheme());
     if (type == invalidType || !u.isValid() || !u.userInfo().isEmpty() || !u.host().isEmpty()
-            || u.port() != -1 || u.hasQuery())
+            || u.port() != -1)
         return QNativeIpcKey(invalidType);
 
     QNativeIpcKey result(QString(), type);
@@ -565,6 +586,18 @@ QNativeIpcKey QNativeIpcKey::fromString(const QString &text)
     // decode the payload
     result.setNativeKey(u.path());
 
+    if (u.hasQuery()) {
+        const QList items = QUrlQuery(u).queryItems();
+        for (const auto &item : items) {
+            if (item.first == u"legacyKey"_s) {
+                QString legacyKey = QUrl::fromPercentEncoding(item.second.toUtf8());
+                QNativeIpcKeyPrivate::setLegacyKey(result, std::move(legacyKey));
+            } else {
+                // unknown query item
+                return QNativeIpcKey(invalidType);
+            }
+        }
+    }
     return result;
 }
 
