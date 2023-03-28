@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:a="http://www.iana.org/assignments" xmlns="http://www.iana.org/assignments" xmlns:_="http://www.iana.org/assignments" xmlns:DEFAULT="http://www.iana.org/assignments" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:a="http://www.iana.org/assignments" version="1.0">
 <xsl:output omit-xml-declaration="yes" indent="no" method="text"/>
 <xsl:template match="/a:registry[@id='cbor-tags']">struct CborTagDescription
 {
