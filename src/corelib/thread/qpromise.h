@@ -46,10 +46,20 @@ public:
 
     // Core QPromise APIs
     QFuture<T> future() const { return d.future(); }
+    template<typename...Args, std::enable_if_t<std::is_constructible_v<T, Args...>, bool> = true>
+    bool emplaceResultAt(int index, Args&&...args)
+    {
+        return d.reportAndEmplaceResult(index, std::forward<Args>(args)...);
+    }
+    template<typename...Args, std::enable_if_t<std::is_constructible_v<T, Args...>, bool> = true>
+    bool emplaceResult(Args&&...args)
+    {
+        return d.reportAndEmplaceResult(-1, std::forward<Args>(args)...);
+    }
     template<typename U = T, typename = QtPrivate::EnableIfSameOrConvertible<U, T>>
     bool addResult(U &&result, int index = -1)
     {
-        return d.reportResult(std::forward<U>(result), index);
+        return d.reportAndEmplaceResult(index, std::forward<U>(result));
     }
     bool addResults(const QList<T> &result)
     { return d.reportResults(result); }

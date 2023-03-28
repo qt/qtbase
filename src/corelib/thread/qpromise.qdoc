@@ -91,14 +91,37 @@
 /*! \fn template <typename T> bool QPromise<T>::addResult(const T &result, int index = -1)
     \fn template <typename T> bool QPromise<T>::addResult(T &&result, int index = -1)
 
-    Adds \a result to the internal result collection at \a index position. If
-    index is unspecified, \a result is added to the end of the collection.
+    Same as
+    \code
+    emplaceResultAt(index, result);            // first overload
+    emplaceResultAt(index, std::move(result)); // second overload
+    \endcode
+    or, if \c{index == -1} (the default)
+    \code
+    emplaceResult(result);            // first overload
+    emplaceResult(std::move(result)); // second overload
+    \endcode
 
-    Returns \c true when \a result is added to the collection.
+    \sa emplaceResultAt(), emplaceResult(), addResults()
+*/
+
+/*!
+    \fn template <typename T> template <typename...Args, std::enable_if_t<std::is_constructible_v<T, Args...>, bool> = true> QPromise<T>::emplaceResultAt(int index, Args&&...args)
+    \fn template <typename T> template <typename...Args, std::enable_if_t<std::is_constructible_v<T, Args...>, bool> = true> QPromise<T>::emplaceResult(Args&&...args)
+    \since 6.6
+
+    Adds a result constructed from \a args... to the internal result collection
+    at \a index position (emplaceResultAt()) or the end of of the collection
+    (emplaceResult()).
+
+    Returns \c true when the result was added to the collection.
 
     Returns \c false when this promise is in canceled or finished state or when
-    \a result is rejected. addResult() rejects \a result if there's already
+    the result was rejected. addResult() rejects to add a result if there's already
     another result in the collection stored at the same index.
+
+    These functions only participate in overload resolutions if \c T is
+    constructible from \a args....
 
     You can get a result at a specific index by calling QFuture::resultAt().
 
@@ -108,7 +131,7 @@
     QFuture::const_iterator. In order to get all available results without
     thinking if there are index gaps or not, use QFuture::results().
 
-    \sa addResults()
+    \sa addResult(), addResults()
 */
 
 /*!

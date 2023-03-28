@@ -203,11 +203,19 @@ void tst_QPromise::addResultWithBracedInitializer() // QTBUG-111826
     {
         QString strValue;
         int intValue = 0;
+#ifndef __cpp_aggregate_paren_init // make emplacement work with MyClass
+        MyClass(QString s, int i) : strValue(std::move(s)), intValue(i) {}
+#endif
     };
 
     {
         QPromise<MyClass> myPromise;
         myPromise.addResult({"bar", 1});
+    }
+
+    {
+        QPromise<MyClass> myPromise;
+        myPromise.emplaceResult("bar", 1);
     }
 }
 
