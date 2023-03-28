@@ -5,54 +5,58 @@
 #include "complexping.h"
 
 #include <QCoreApplication>
+#include <QDBusInterface>
 #include <QDBusReply>
 #include <QDBusServiceWatcher>
-#include <QFile>
 #include <QDebug>
 #include <QProcess>
 
-#include <stdio.h>
+#include <iostream>
+#include <string>
 
 void Ping::start(const QString &name)
 {
     if (name != SERVICE_NAME)
         return;
 
-    // open stdin for reading
-    qstdin.open(stdin, QIODevice::ReadOnly);
-
+    auto connection = QDBusConnection::sessionBus();
     // find our remote
-    iface = new QDBusInterface(SERVICE_NAME, "/", "org.example.QtDBus.ComplexPong.Pong",
-                               QDBusConnection::sessionBus(), this);
+    auto iface = new QDBusInterface(SERVICE_NAME, "/", "org.example.QtDBus.ComplexPong.Pong",
+                                    connection, this);
     if (!iface->isValid()) {
-        fprintf(stderr, "%s\n",
-                qPrintable(QDBusConnection::sessionBus().lastError().message()));
+        qWarning().noquote() << connection.lastError().message();
         QCoreApplication::instance()->quit();
     }
 
     connect(iface, SIGNAL(aboutToQuit()), QCoreApplication::instance(), SLOT(quit()));
 
-    while (true) {
-        printf("Ask your question: ");
+    std::string s;
 
-        QString line = QString::fromLocal8Bit(qstdin.readLine()).trimmed();
+    while (true) {
+        std::cout << qPrintable(tr("Ask your question: ")) << std::flush;
+
+        std::getline(std::cin, s);
+        auto line = QString::fromStdString(s).trimmed();
+
         if (line.isEmpty()) {
             iface->call("quit");
             return;
         } else if (line == "value") {
             QVariant reply = iface->property("value");
             if (!reply.isNull())
-                printf("value = %s\n", qPrintable(reply.toString()));
+                std::cout << "value = " << qPrintable(reply.toString()) << std::endl;
         } else if (line.startsWith("value=")) {
             iface->setProperty("value", line.mid(6));
         } else {
             QDBusReply<QDBusVariant> reply = iface->call("query", line);
-            if (reply.isValid())
-                printf("Reply was: %s\n", qPrintable(reply.value().variant().toString()));
+            if (reply.isValid()) {
+                std::cout << qPrintable(tr("Reply was: %1").arg(reply.value().variant().toString()))
+                          << std::endl;
+            }
         }
 
         if (iface->lastError().isValid())
-            fprintf(stderr, "Call failed: %s\n", qPrintable(iface->lastError().message()));
+            qWarning().noquote() << tr("Call failed: %1").arg(iface->lastError().message());
     }
 }
 
@@ -61,9 +65,11 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 
     if (!QDBusConnection::sessionBus().isConnected()) {
-        fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
+        qWarning().noquote() << QCoreApplication::translate(
+                "complexping",
+                "Cannot connect to the D-Bus session bus.\n"
                 "To start it, run:\n"
-                "\teval `dbus-launch --auto-syntax`\n");
+                "\teval `dbus-launch --auto-syntax`");
         return 1;
     }
 
