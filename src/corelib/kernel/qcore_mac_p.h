@@ -195,15 +195,18 @@ Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QCFString &string);
 #endif
 
 Q_CORE_EXPORT bool qt_apple_isApplicationExtension();
+
+#if !defined(QT_BOOTSTRAPPED)
 Q_CORE_EXPORT bool qt_apple_isSandboxed();
 
-#if !defined(QT_BOOTSTRAPPED) && defined(__OBJC__)
+#if defined(__OBJC__)
 QT_END_NAMESPACE
 @interface NSObject (QtSandboxHelpers)
 - (id)qt_valueForPrivateKey:(NSString *)key;
 @end
 QT_BEGIN_NAMESPACE
 #endif
+#endif // !QT_BOOTSTRAPPED
 
 #if !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WATCHOS)
 QT_END_NAMESPACE
