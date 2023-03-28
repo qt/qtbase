@@ -959,6 +959,7 @@
 */
 
 /*! \fn template <class Key, class T> QMultiMap<Key, T> operator+=(QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
+    \relates QMultiMap
 
     Inserts all the items in the \a rhs map into the \a lhs map and
     returns the resulting map.
@@ -967,6 +968,7 @@
 */
 
 /*! \fn template <class Key, class T> QMultiMap<Key, T> operator+(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
+    \relates QMultiMap
 
     Returns a map that contains all the items in the \a lhs map in
     addition to all the items in \a rhs. If a key is common to both

@@ -1362,12 +1362,14 @@ QDataStream &operator<<(QDataStream &s, const QVariant &p)
 }
 
 /*! \fn QDataStream& operator>>(QDataStream &s, QVariant::Type &p)
+    \relates QVariant
     \deprecated [6.0] Stream QMetaType::Type instead.
 
     Reads a variant type \a p in enum representation from the stream \a s.
 */
 
 /*! \fn QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
+    \relates QVariant
     \deprecated [6.0] Stream QMetaType::Type instead.
 
     Writes a variant type \a p to the stream \a s.

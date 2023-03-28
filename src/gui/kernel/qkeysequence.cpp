@@ -1427,6 +1427,7 @@ bool QKeySequence::operator==(const QKeySequence &other) const
 
 /*!
     \since 5.6
+    \relates QKeySequence
 
     Calculates the hash value of \a key, using
     \a seed to seed the calculation.
