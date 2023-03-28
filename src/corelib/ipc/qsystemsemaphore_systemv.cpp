@@ -53,6 +53,9 @@ bool QSystemSemaphoreSystemV::runtimeSupportCheck()
  */
 key_t QSystemSemaphoreSystemV::handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode mode)
 {
+    if (unix_key != -1)
+        return unix_key;  // we already have a semaphore
+
 #if defined(Q_OS_DARWIN)
     if (qt_apple_isSandboxed()) {
         // attempting to use System V semaphores will get us a SIGSYS
@@ -72,9 +75,6 @@ key_t QSystemSemaphoreSystemV::handle(QSystemSemaphorePrivate *self, QSystemSema
                        .arg("QSystemSemaphore::handle:"_L1));
         return -1;
     }
-
-    if (-1 != unix_key)
-        return unix_key;
 
     // ftok requires that an actual file exists somewhere
     int built = QtIpcCommon::createUnixKeyFile(nativeKeyFile);
