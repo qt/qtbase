@@ -228,13 +228,13 @@ void tst_QNativeIpcKey::toString_data()
         add("objectlike", "Global\\sometext"_L1);
         add("colon-slash", ":/"_L1);
         add("slash-colon", "/:"_L1);
-        add("non-ascii", "\xa0\xff"_L1);
         add("percent", "%"_L1, "%25"_L1);
         add("question-hash", "?#"_L1, "%3F%23"_L1);
         add("hash-question", "#?"_L1, "%23%3F"_L1);
         add("double-slash", "//"_L1, "/%2F"_L1);
         add("triple-slash", "///"_L1, "/%2F/"_L1);
-        add("non-ascii", "/\xe9"_L1);
+        add("non-ascii", "\xe9"_L1);
+        add("non-utf8", "\xa0\xff"_L1);
         QTest::addRow("%s-%s", prefix, "non-latin1")
                 << prefix + u":\u0100.\u2000.\U00010000"_s
                 << QNativeIpcKey(u"\u0100.\u2000.\U00010000"_s, type);
