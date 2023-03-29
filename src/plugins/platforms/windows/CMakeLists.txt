@@ -102,6 +102,8 @@ qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl 
 qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION MINGW
     LIBRARIES
         uuid
+    NO_PCH_SOURCES
+        qwindowspointerhandler.cpp
 )
 
 qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_systemtrayicon
@@ -197,7 +199,3 @@ qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION MINGW AND QT_FEATU
     LIBRARIES
         uuid
 )
-
-if (MINGW)
-    set_source_files_properties(qwindowspointerhandler.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-endif()
