@@ -54,6 +54,7 @@ macro.pi.DocBook          = "&#928;"
 macro.beginqdoc.HTML      = "/*!"
 macro.endqdoc.HTML        = "*/"
 macro.borderedimage       = "\\div {class=\"border\"} \\image \1\n\\enddiv"
+macro.examplecategory     = "\\meta category {\1}\n\\ingroup {category \1}"
 
 macro.beginfloatleft.HTML   = "<div style=\"float: left; margin-right: 2em\">"
 macro.beginfloatright.HTML  = "<div style=\"float: right; margin-left: 2em\">"
