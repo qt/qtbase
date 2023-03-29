@@ -87,7 +87,8 @@ void QWasmBackingStore::updateTexture(QWasmWindow *window)
             auto imageMemory = emscripten::typed_memory_view(dirtyRect.width() * dirtyRect.height()
                                                                      * BytesPerColor,
                                                              m_image.constScanLine(dirtyRect.y()));
-            m_webImageDataArray["data"].call<void>("set", imageMemory);
+            m_webImageDataArray["data"].call<void>("set", imageMemory,
+                                                   dirtyRect.y() * m_image.width() * BytesPerColor);
         } else {
             // Go through the scanlines manually to set the individual lines in bulk. This is
             // marginally less performant than the above.
@@ -98,11 +99,12 @@ void QWasmBackingStore::updateTexture(QWasmWindow *window)
             // ...............
             for (int r = 0; r < dirtyRect.height(); ++r) {
                 auto scanlineMemory = emscripten::typed_memory_view(
-                        dirtyRect.width() * 4,
-                        m_image.constScanLine(r) + BytesPerColor * dirtyRect.x());
+                        dirtyRect.width() * BytesPerColor,
+                        m_image.constScanLine(r + dirtyRect.y()) + BytesPerColor * dirtyRect.x());
                 m_webImageDataArray["data"].call<void>("set", scanlineMemory,
-                                                       (r * dirtyRect.width() + dirtyRect.x())
-                                                               * BytesPerColor);
+                                                       (dirtyRect.y() + r) * m_image.width()
+                                                                       * BytesPerColor
+                                                               + dirtyRect.x() * BytesPerColor);
             }
         }
     }
