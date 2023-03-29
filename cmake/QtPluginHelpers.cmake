@@ -333,14 +333,11 @@ function(qt_internal_add_plugin target)
         set(arg_NO_UNITY_BUILD "")
     endif()
 
-    if(arg_NO_UNITY_BUILD_SOURCES)
-        set(arg_NO_UNITY_BUILD_SOURCES "NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}")
-    else()
-        set(arg_NO_UNITY_BUILD_SOURCES "")
-    endif()
-
     qt_internal_extend_target("${target}"
+        ${arg_NO_UNITY_BUILD}
         SOURCES ${arg_SOURCES}
+        NO_UNITY_BUILD_SOURCES
+            ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES
             ${private_includes}
         SYSTEM_INCLUDE_DIRECTORIES
@@ -366,8 +363,6 @@ function(qt_internal_add_plugin target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        ${arg_NO_UNITY_BUILD_SOURCES}
-        ${arg_NO_UNITY_BUILD}
     )
 
     qt_internal_add_repo_local_defines("${target}")
