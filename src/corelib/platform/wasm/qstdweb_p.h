@@ -196,6 +196,12 @@ namespace qstdweb {
         void Q_CORE_EXPORT all(std::vector<emscripten::val> promises, PromiseCallbacks callbacks);
     };
 
+    template<class F>
+    decltype(auto) bindForever(F wrappedCallback)
+    {
+        return wrappedCallback;
+    }
+
     inline emscripten::val window()
     {
         static emscripten::val savedWindow = emscripten::val::global("window");
