@@ -79,10 +79,6 @@ static void assignKnownModuleIds()
 #undef DECLARE_KNOWN_MODULE
 #undef DEFINE_KNOWN_MODULE
 
-enum QtPlugin {
-    QtVirtualKeyboardPlugin = 0x1
-};
-
 static const char webEngineProcessC[] = "QtWebEngineProcess";
 
 static inline QString webProcessBinary(const char *binaryName, Platform p)
@@ -420,10 +416,6 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                              QStringLiteral("Deploy compiler runtime (Desktop only)."));
     parser->addOption(compilerRunTimeOption);
 
-    QCommandLineOption noVirtualKeyboardOption(QStringLiteral("no-virtualkeyboard"),
-                                               QStringLiteral("Disable deployment of the Virtual Keyboard."));
-    parser->addOption(noVirtualKeyboardOption);
-
     QCommandLineOption noCompilerRunTimeOption(QStringLiteral("no-compiler-runtime"),
                                              QStringLiteral("Do not deploy compiler runtime (Desktop only)."));
     parser->addOption(noCompilerRunTimeOption);
@@ -506,8 +498,6 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
         return CommandLineParseError;
     }
 
-    if (parser->isSet(noVirtualKeyboardOption))
-        options->disabledPlugins |= QtVirtualKeyboardPlugin;
 
     if (parser->isSet(releaseWithDebugInfoOption))
         std::wcerr << "Warning: " << releaseWithDebugInfoOption.names().first() << " is obsolete.";
@@ -838,12 +828,6 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir,
                             const QString &libraryLocation, const QString &infix,
                             Platform platform)
 {
-    // Filter out disabled plugins
-    if ((disabledPlugins & QtVirtualKeyboardPlugin)
-        && plugin.startsWith("qtvirtualkeyboardplugin"_L1)) {
-        return {};
-    }
-
     const QString pluginPath = subDir.absoluteFilePath(plugin);
     // Deploy QUiTools plugins as is without further dependency checking.
     // The user needs to ensure all required libraries are present (would
@@ -914,8 +898,6 @@ QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disab
                 : debugMatchModeIn;
             QDir subDir(subDirFi.absoluteFilePath());
             // Filter out disabled plugins
-            if ((disabledPlugins & QtVirtualKeyboardPlugin) && subDirName == "virtualkeyboard"_L1)
-                continue;
             if (disabledQtModules.test(QtQmlToolingModuleId) && subDirName == "qmltooling"_L1)
                 continue;
             // Filter for platform or any.
