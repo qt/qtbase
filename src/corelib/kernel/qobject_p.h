@@ -402,6 +402,26 @@ public:
 
     ~QMetaCallEvent() override;
 
+    template<typename ...Args>
+    static QMetaCallEvent *create(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender,
+                                  int signal_index, Args ...argv)
+    {
+        auto metaCallEvent = std::make_unique<QMetaCallEvent>(slotObj, sender,
+                                                              signal_index, int(1 + sizeof...(Args)));
+
+        void **args = metaCallEvent->args();
+        QMetaType *types = metaCallEvent->types();
+        const std::array<void *, sizeof...(Args) + 1> argp{ nullptr, std::addressof(argv)... };
+        const std::array metaTypes{ QMetaType::fromType<void>(), QMetaType::fromType<Args>()... };
+        for (size_t i = 0; i < sizeof...(Args) + 1; ++i) {
+            types[i] = metaTypes[i];
+            args[i] = types[i].create(argp[i]);
+            Q_CHECK_PTR(!i || args[i]);
+        }
+
+        return metaCallEvent.release();
+    }
+
     inline int id() const { return d.method_offset_ + d.method_relative_; }
     inline const void * const* args() const { return d.args_; }
     inline void ** args() { return d.args_; }
