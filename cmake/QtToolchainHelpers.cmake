@@ -222,15 +222,11 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
     elseif(ANDROID)
         list(APPEND init_platform
 "# Detect Android SDK/NDK from environment before loading the Android platform toolchain file."
-"if(NOT DEFINED ANDROID_SDK_ROOT)"
-"    if(NOT \"\$ENV{ANDROID_SDK_ROOT}\" STREQUAL \"\")"
-"        set(ANDROID_SDK_ROOT \"\$ENV{ANDROID_SDK_ROOT}\" CACHE STRING \"Path to the Android SDK\")"
-"    endif()"
+"if(\"$\{ANDROID_SDK_ROOT}\" STREQUAL \"\" AND NOT \"\$ENV{ANDROID_SDK_ROOT}\" STREQUAL \"\")"
+"    set(ANDROID_SDK_ROOT \"\$ENV{ANDROID_SDK_ROOT}\" CACHE STRING \"Path to the Android SDK\")"
 "endif()"
-"if(NOT DEFINED ANDROID_NDK_ROOT)"
-"    if(NOT \"\$ENV{ANDROID_NDK_ROOT}\" STREQUAL \"\")"
-"        set(ANDROID_NDK_ROOT \"\$ENV{ANDROID_NDK_ROOT}\" CACHE STRING \"Path to the Android NDK\")"
-"    endif()"
+"if(\"$\{ANDROID_NDK_ROOT}\" STREQUAL \"\" AND NOT \"\$ENV{ANDROID_NDK_ROOT}\" STREQUAL \"\")"
+"    set(ANDROID_NDK_ROOT \"\$ENV{ANDROID_NDK_ROOT}\" CACHE STRING \"Path to the Android NDK\")"
 "endif()"
         )
 
