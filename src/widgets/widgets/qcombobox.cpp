@@ -2535,10 +2535,12 @@ bool QComboBoxPrivate::showNativePopup()
         QVariant textVariant = model->data(rowIndex, Qt::EditRole);
         item->setText(textVariant.toString());
         QVariant iconVariant = model->data(rowIndex, Qt::DecorationRole);
+        const Qt::ItemFlags itemFlags = model->flags(rowIndex);
         if (iconVariant.canConvert<QIcon>())
             item->setIcon(iconVariant.value<QIcon>());
         item->setCheckable(true);
         item->setChecked(i == currentIndex);
+        item->setEnabled(itemFlags & Qt::ItemIsEnabled);
         if (!currentItem || i == currentIndex)
             currentItem = item;
 
