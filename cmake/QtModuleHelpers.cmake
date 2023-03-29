@@ -579,19 +579,17 @@ function(qt_internal_add_module target)
         set(arg_NO_UNITY_BUILD "")
     endif()
 
-    if(arg_NO_UNITY_BUILD_SOURCES)
-        set(arg_NO_UNITY_BUILD_SOURCES "NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}")
-    else()
-        set(arg_NO_UNITY_BUILD_SOURCES "")
-    endif()
-
     if(NOT arg_EXTERNAL_HEADERS)
         set(arg_EXTERNAL_HEADERS "")
     endif()
+
     qt_internal_extend_target("${target}"
+        ${arg_NO_UNITY_BUILD}
         SOURCES
             ${arg_SOURCES}
             ${arg_EXTERNAL_HEADERS}
+        NO_UNITY_BUILD_SOURCES
+            ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES
             ${private_includes}
         SYSTEM_INCLUDE_DIRECTORIES
@@ -620,8 +618,6 @@ function(qt_internal_add_module target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         PRECOMPILED_HEADER ${arg_PRECOMPILED_HEADER}
         NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
-        ${arg_NO_UNITY_BUILD_SOURCES}
-        ${arg_NO_UNITY_BUILD}
     )
 
     # The public module define is not meant to be used when building the module itself,

@@ -99,17 +99,13 @@ function(qt_internal_add_tool target_name)
         set(arg_NO_UNITY_BUILD "")
     endif()
 
-    if(arg_NO_UNITY_BUILD_SOURCES)
-        set(arg_NO_UNITY_BUILD_SOURCES "NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}")
-    else()
-        set(arg_NO_UNITY_BUILD_SOURCES "")
-    endif()
-
     qt_internal_add_executable("${target_name}"
         OUTPUT_DIRECTORY "${output_dir}"
         ${exceptions}
         NO_INSTALL
+        ${arg_NO_UNITY_BUILD}
         SOURCES ${arg_SOURCES}
+        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES
@@ -130,8 +126,6 @@ function(qt_internal_add_tool target_name)
         TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
         TARGET_COMPANY "${arg_TARGET_COMPANY}"
         TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
-        ${arg_NO_UNITY_BUILD_SOURCES}
-        ${arg_NO_UNITY_BUILD}
     )
     qt_internal_add_target_aliases("${target_name}")
     _qt_internal_apply_strict_cpp("${target_name}")

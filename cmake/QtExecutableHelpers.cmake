@@ -116,14 +116,10 @@ function(qt_internal_add_executable name)
         set(arg_NO_UNITY_BUILD "")
     endif()
 
-    if(arg_NO_UNITY_BUILD_SOURCES)
-        set(arg_NO_UNITY_BUILD_SOURCES "NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}")
-    else()
-        set(arg_NO_UNITY_BUILD_SOURCES "")
-    endif()
-
     qt_internal_extend_target("${name}"
+        ${arg_NO_UNITY_BUILD}
         SOURCES ${arg_SOURCES}
+        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES ${private_includes}
         DEFINES ${arg_DEFINES}
         LIBRARIES
@@ -140,8 +136,6 @@ function(qt_internal_add_executable name)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        ${arg_NO_UNITY_BUILD_SOURCES}
-        ${arg_NO_UNITY_BUILD}
     )
     set_target_properties("${name}" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
