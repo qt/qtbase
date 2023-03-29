@@ -1249,6 +1249,8 @@ bool QWindow::isExposed() const
     Typically active windows should appear active from a style perspective.
 
     To get the window that currently has focus, use QGuiApplication::focusWindow().
+
+    \sa requestActivate()
 */
 bool QWindow::isActive() const
 {

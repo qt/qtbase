@@ -948,6 +948,8 @@ bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blocking
 /*!
     Returns the QWindow that receives events tied to focus,
     such as key events.
+
+    \sa QWindow::requestActivate()
 */
 QWindow *QGuiApplication::focusWindow()
 {
