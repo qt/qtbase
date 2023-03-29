@@ -25,6 +25,10 @@ private Q_SLOTS:
     void converting_Bluetooth() const { return converting_impl<QBluetoothPermission>(); }
 
     void conversionMaintainsState() const;
+
+    void functorWithContextInThread();
+    void receiverInThread();
+    void destroyedContextObject();
 private:
     template <typename T>
     void converting_impl() const;
@@ -139,6 +143,94 @@ void tst_QPermission::conversionMaintainsState() const
         // check mismatched returns nullopt:
         QCOMPARE_EQ(p.value<QContactsPermission>(), std::nullopt);
     }
+}
+
+void tst_QPermission::functorWithContextInThread()
+{
+    int argc = 0;
+    char *argv = nullptr;
+    QCoreApplication app(argc, &argv);
+    QThread::currentThread()->setObjectName("main thread");
+    QThread receiverThread;
+    receiverThread.setObjectName("receiverThread");
+    QObject receiver;
+    receiver.moveToThread(&receiverThread);
+    receiverThread.start();
+    auto guard = qScopeGuard([&receiverThread]{
+        receiverThread.quit();
+        QVERIFY(receiverThread.wait(1000));
+    });
+
+    DummyPermission dummy;
+#ifdef Q_OS_DARWIN
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression(".*Could not find permission plugin for DummyPermission.*"));
+#endif
+    QThread *permissionReceiverThread = nullptr;
+    qApp->requestPermission(dummy, &receiver, [&](const QPermission &permission){
+        auto dummy = permission.value<DummyPermission>();
+        QVERIFY(dummy);
+        permissionReceiverThread = QThread::currentThread();
+    });
+    QTRY_COMPARE(permissionReceiverThread, &receiverThread);
+}
+
+void tst_QPermission::receiverInThread()
+{
+    int argc = 0;
+    char *argv = nullptr;
+    QCoreApplication app(argc, &argv);
+    QThread::currentThread()->setObjectName("main thread");
+    QThread receiverThread;
+    receiverThread.setObjectName("receiverThread");
+    class Receiver : public QObject
+    {
+    public:
+        using QObject::QObject;
+        void handlePermission(const QPermission &permission)
+        {
+            auto dummy = permission.value<DummyPermission>();
+            QVERIFY(dummy);
+            permissionReceiverThread = QThread::currentThread();
+        }
+
+        QThread *permissionReceiverThread = nullptr;
+    } receiver;
+    receiver.moveToThread(&receiverThread);
+    receiverThread.start();
+    auto guard = qScopeGuard([&receiverThread]{
+        receiverThread.quit();
+        QVERIFY(receiverThread.wait(1000));
+    });
+
+    DummyPermission dummy;
+#ifdef Q_OS_DARWIN
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression(".*Could not find permission plugin for DummyPermission.*"));
+#endif
+
+    qApp->requestPermission(dummy, &receiver, &Receiver::handlePermission);
+    QTRY_COMPARE(receiver.permissionReceiverThread, &receiverThread);
+}
+
+void tst_QPermission::destroyedContextObject()
+{
+    int argc = 0;
+    char *argv = nullptr;
+    QCoreApplication app(argc, &argv);
+
+    QObject *context = new QObject;
+
+    DummyPermission dummy;
+#ifdef Q_OS_DARWIN
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression(".*Could not find permission plugin for DummyPermission.*"));
+#endif
+    bool permissionReceived = false;
+    qApp->requestPermission(dummy, context, [&]{
+        permissionReceived = true;
+    });
+    QVERIFY2(!permissionReceived, "Permission received synchronously");
+    delete context;
+    QTest::qWait(100);
+    QVERIFY(!permissionReceived);
 }
 
 QTEST_APPLESS_MAIN(tst_QPermission)
