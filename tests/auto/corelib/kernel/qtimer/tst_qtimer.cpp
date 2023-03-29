@@ -56,6 +56,7 @@ private slots:
     void singleShotToFunctors();
     void singleShot_chrono();
     void singleShot_static();
+    void crossThreadSingleShotToFunctor_data();
     void crossThreadSingleShotToFunctor();
     void timerOrder();
     void timerOrder_data();
@@ -1007,28 +1008,39 @@ void tst_QTimer::postedEventsShouldNotStarveTimers()
 
 struct DummyFunctor {
     static QThread *callThread;
-    void operator()() { callThread = QThread::currentThread(); }
+    void operator()() {
+        callThread = QThread::currentThread();
+        callThread->quit();
+    }
 };
 QThread *DummyFunctor::callThread = nullptr;
 
+void tst_QTimer::crossThreadSingleShotToFunctor_data()
+{
+    QTest::addColumn<int>("timeout");
+
+    QTest::addRow("zero-timer") << 0;
+    QTest::addRow("1ms") << 1;
+}
+
 void tst_QTimer::crossThreadSingleShotToFunctor()
 {
+    QFETCH(int, timeout);
     // We're also testing for crashes here, so the test simply running to
     // completion is part of the success
+    DummyFunctor::callThread = nullptr;
+
     QThread t;
     t.start();
 
-    QObject* o = new QObject();
+    std::unique_ptr<QObject> o(new QObject());
     o->moveToThread(&t);
-    DummyFunctor::callThread = nullptr;
 
-    for (int i = 0; i < 10000; i++) {
-        QTimer::singleShot(0, o, DummyFunctor());
-    }
+    for (int i = 0; i < 10000; i++)
+        QTimer::singleShot(timeout, o.get(), DummyFunctor());
 
-    t.quit();
     t.wait();
-    delete o;
+    o.reset();
 
     QCOMPARE(DummyFunctor::callThread, &t);
 }
