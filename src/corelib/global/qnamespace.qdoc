@@ -1442,6 +1442,7 @@
     \value Key_Help
     \value Key_Direction_L
     \value Key_Direction_R
+
     \value Key_Space
     \value Key_Any
     \value Key_Exclam
@@ -1533,7 +1534,8 @@
     \value Key_twosuperior
     \value Key_threesuperior
     \value Key_acute
-    \value Key_mu
+    \value [since 6.7] Key_micro
+    \value Key_mu Deprecated alias for Key_micro
     \value Key_paragraph
     \value Key_periodcentered
     \value Key_cedilla
@@ -1578,6 +1580,7 @@
     \value Key_ssharp
     \value Key_division
     \value Key_ydiaeresis
+
     \value Key_Multi_key
     \value Key_Codeinput
     \value Key_SingleCandidate

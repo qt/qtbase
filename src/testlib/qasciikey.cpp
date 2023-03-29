@@ -141,7 +141,7 @@ Qt::Key QTest::asciiToKey(char ascii)
     case 0xb2: return Qt::Key_twosuperior;
     case 0xb3: return Qt::Key_threesuperior;
     case 0xb4: return Qt::Key_acute;
-    case 0xb5: return Qt::Key_mu;
+    case 0xb5: return Qt::Key_micro;
     case 0xb6: return Qt::Key_paragraph;
     case 0xb7: return Qt::Key_periodcentered;
     case 0xb8: return Qt::Key_cedilla;
@@ -369,7 +369,7 @@ char QTest::keyToAscii(Qt::Key key)
     case Qt::Key_twosuperior: return char(0xb2);
     case Qt::Key_threesuperior: return char(0xb3);
     case Qt::Key_acute: return char(0xb4);
-    case Qt::Key_mu: return char(0xb5);
+    case Qt::Key_micro: return char(0xb5);
     case Qt::Key_paragraph: return char(0xb6);
     case Qt::Key_periodcentered: return char(0xb7);
     case Qt::Key_cedilla: return char(0xb8);

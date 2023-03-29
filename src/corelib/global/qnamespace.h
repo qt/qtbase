@@ -602,7 +602,11 @@ namespace Qt {
         Key_twosuperior = 0x0b2,
         Key_threesuperior = 0x0b3,
         Key_acute = 0x0b4,
-        Key_mu = 0x0b5,
+        Key_micro = 0x0b5,
+#if QT_DEPRECATED_SINCE(6, 11)
+        Key_mu Q_DECL_ENUMERATOR_DEPRECATED_X("This key was misnamed, use Key_micro instead")
+            = Key_micro,
+#endif
         Key_paragraph = 0x0b6,
         Key_periodcentered = 0x0b7,
         Key_cedilla = 0x0b8,
