@@ -68,11 +68,13 @@ function(qt_internal_add_app target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        TARGET_VERSION "${arg_TARGET_VERSION}"
-        TARGET_PRODUCT "${arg_TARGET_PRODUCT}"
-        TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
-        TARGET_COMPANY "${arg_TARGET_COMPANY}"
-        TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
+        TARGET_VERSION ${arg_TARGET_VERSION}
+        TARGET_PRODUCT ${arg_TARGET_PRODUCT}
+        TARGET_DESCRIPTION ${arg_TARGET_DESCRIPTION}
+        TARGET_COMPANY ${arg_TARGET_COMPANY}
+        TARGET_COPYRIGHT ${arg_TARGET_COPYRIGHT}
+        # If you are putting anything after these, make sure that
+        # qt_set_target_info_properties knows how to process them
     )
     qt_internal_add_target_aliases("${target}")
     _qt_internal_apply_strict_cpp("${target}")

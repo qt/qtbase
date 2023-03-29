@@ -64,12 +64,12 @@ function(qt_internal_add_executable name)
             QT_DELAYED_TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
             )
     else()
-        if("${arg_TARGET_DESCRIPTION}" STREQUAL "")
+        if(NOT arg_TARGET_DESCRIPTION)
             set(arg_TARGET_DESCRIPTION "Qt ${name}")
         endif()
         qt_set_target_info_properties(${name} ${ARGN}
-            TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
-            TARGET_VERSION "${arg_VERSION}")
+            TARGET_DESCRIPTION ${arg_TARGET_DESCRIPTION}
+            TARGET_VERSION ${arg_VERSION})
     endif()
 
     if (WIN32 AND NOT arg_DELAY_RC)
