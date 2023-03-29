@@ -107,6 +107,8 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION MINGW
     LIBRARIES
         uuid
+    NO_PCH_SOURCES
+        ../windows/qwindowspointerhandler.cpp
 )
 
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE_opengl
@@ -211,6 +213,3 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION MINGW AND 
         uuid
 )
 
-if (MINGW)
-    set_source_files_properties(../windows/qwindowspointerhandler.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-endif()
