@@ -5,7 +5,7 @@
 # Such projects had a load(qt_app) command.
 function(qt_internal_add_app target)
     cmake_parse_arguments(PARSE_ARGV 1 arg
-        "NO_INSTALL;INSTALL_VERSIONED_LINK;EXCEPTIONS"
+        "NO_INSTALL;INSTALL_VERSIONED_LINK;EXCEPTIONS;NO_UNITY_BUILD"
         "${__default_target_info_args};INSTALL_DIR"
         "${__default_private_args};PUBLIC_LIBRARIES"
     )
@@ -37,6 +37,12 @@ function(qt_internal_add_app target)
 
     qt_internal_library_deprecation_level(deprecation_define)
 
+    if(arg_NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD "NO_UNITY_BUILD")
+    else()
+        set(arg_NO_UNITY_BUILD "")
+    endif()
+
     qt_internal_add_executable("${target}"
         QT_APP
         DELAY_RC
@@ -44,8 +50,10 @@ function(qt_internal_add_app target)
         OUTPUT_DIRECTORY "${output_directory}"
         ${exceptions}
         ${no_install}
+        ${arg_NO_UNITY_BUILD}
         ${forward_install_dir}
         SOURCES ${arg_SOURCES}
+        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES
