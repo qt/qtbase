@@ -104,6 +104,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         -includeDir "${module_build_interface_include_dir}"
         -privateIncludeDir "${module_build_interface_private_include_dir}"
         -qpaIncludeDir "${module_build_interface_qpa_include_dir}"
+        -generatedHeaders ${module_headers_generated}
         ${qpa_filter_argument}
         ${public_namespaces_filter}
         ${non_qt_module_argument}
@@ -140,7 +141,6 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     list(APPEND syncqt_args
         ${common_syncqt_arguments}
         -headers ${module_headers}
-        -generatedHeaders ${module_headers_generated}
         -stagingDir "${syncqt_staging_dir}"
         -knownModules ${known_modules}
         ${framework_args}
