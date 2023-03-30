@@ -652,7 +652,6 @@ void tst_QDate::startOfDay_endOfDay_bounds()
     QVERIFY(last.isValid());
     QVERIFY(first < epoch);
     QVERIFY(last > epoch);
-    // QDateTime's addMSecs doesn't check against {und,ov}erflow ...
     QVERIFY(!first.addMSecs(-1).isValid() || first.addMSecs(-1) > first);
     QVERIFY(!last.addMSecs(1).isValid() || last.addMSecs(1) < last);
 
