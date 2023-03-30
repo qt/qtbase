@@ -169,16 +169,15 @@
         case NSEventTypeOtherMouseUp:
             return QEvent::NonClientAreaMouseButtonRelease;
 
+        case NSEventTypeMouseMoved:
         case NSEventTypeLeftMouseDragged:
         case NSEventTypeRightMouseDragged:
         case NSEventTypeOtherMouseDragged:
             return QEvent::NonClientAreaMouseMove;
 
         default:
-            break;
+            Q_UNREACHABLE();
         }
-
-        return QEvent::None;
     }();
 
     qCInfo(lcQpaMouse) << eventType << "at" << qtWindowPoint << "with" << m_frameStrutButtons << "in" << self.window;
