@@ -249,7 +249,7 @@ tst_QDateTime::tst_QDateTime()
         }
     };
     // UTC starts of January and July in the given years:
-    setType(1800, -62092, -61911, solarMeanType);
+    setType(1800, -62091, -61910, solarMeanType);
     setType(1970, 0, 181, epochTimeType);
     setType(2038, 24837, 25018, futureTimeType);
 }
