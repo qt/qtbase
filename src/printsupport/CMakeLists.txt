@@ -59,7 +59,7 @@ qt_internal_extend_target(PrintSupport CONDITION MACOS
         ${FWApplicationServices}
         Cups::Cups
     NO_PCH_SOURCES
-        "platform/macos/qcocoaprintersupport.mm"
+        platform/macos/qcocoaprintersupport.mm
 )
 
 qt_internal_extend_target(PrintSupport CONDITION WIN32
@@ -74,12 +74,8 @@ qt_internal_extend_target(PrintSupport CONDITION WIN32
         comdlg32
         winspool
     NO_PCH_SOURCES
-        "platform/windows/qwindowsprintersupport.cpp"
+        platform/windows/qwindowsprintersupport.cpp
 )
-
-set_source_files_properties(platform/macos/qcocoaprintersupport.mm # NO_PCH_SOURCES
-                            platform/windows/qwindowsprintersupport.cpp
-                            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewwidget
     SOURCES
@@ -188,14 +184,13 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND UNIX
         dialogs/qprintpropertieswidget.ui
         dialogs/qprintsettingsoutput.ui
         dialogs/qprintwidget.ui
+    NO_UNITY_BUILD_SOURCES
+        dialogs/qprintdialog_unix.cpp   # Clashes with CUPS headers
     INCLUDE_DIRECTORIES
         ${QtBase_SOURCE_DIR}/src/plugins/printsupport/cups
     ENABLE_AUTOGEN_TOOLS
         uic
 )
-
-# Clashes with CUPS headers
-set_source_files_properties(dialogs/qprintdialog_unix.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewdialog
     SOURCES

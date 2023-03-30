@@ -33,6 +33,8 @@ qt_internal_add_module(OpenGL
         qopenglvertexarrayobject.cpp qopenglvertexarrayobject.h qopenglvertexarrayobject_p.h
         qopenglwindow.cpp qopenglwindow.h
         qtopenglglobal.h
+    NO_UNITY_BUILD_SOURCES
+        qopengltextureblitter.cpp       # qDebug()<< ambiguities
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
@@ -48,16 +50,13 @@ qt_internal_add_module(OpenGL
     GENERATE_CPP_EXPORTS
 )
 
-# qDebug()<< ambiguities
-set_source_files_properties(qopengltextureblitter.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
-
-if(APPLE)
-    set_source_files_properties(qopenglversionfunctionsfactory.cpp
-                                PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
-endif()
-
 ## Scopes:
 #####################################################################
+
+qt_internal_extend_target(OpenGL CONDITION APPLE
+    NO_UNITY_BUILD_SOURCES
+        qopenglversionfunctionsfactory.cpp
+)
 
 qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_opengles2
     SOURCES

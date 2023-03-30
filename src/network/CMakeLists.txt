@@ -362,24 +362,23 @@ qt_internal_extend_target(Network CONDITION QNX PUBLIC_LIBRARIES socket) # speci
 
 qt_internal_extend_target(Network CONDITION SOLARIS PUBLIC_LIBRARIES socket nsl)
 
-if (WIN32)
-    set_source_files_properties(Network # include windows.h (causing clashes with "interface" define)
-                                kernel/qauthenticator.cpp
-                                kernel/qdnslookup_win.cpp
-                                kernel/qhostaddress.cpp
-                                kernel/qhostinfo.cpp
-                                kernel/qhostinfo_win.cpp
-                                kernel/qnetconmonitor_win.cpp
-                                kernel/qnetworkinterface_win.cpp
-                                kernel/qnetworkproxy_win.cpp
-                                socket/qabstractsocket.cpp
-                                socket/qlocalserver.cpp
-                                socket/qlocalserver_win.cpp
-                                socket/qlocalsocket_win.cpp
-                                socket/qnativesocketengine.cpp
-                                socket/qnativesocketengine_win.cpp
-                                PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
-endif()
+qt_internal_extend_target(Network CONDITION WIN32
+    NO_UNITY_BUILD_SOURCES
+        kernel/qauthenticator.cpp
+        kernel/qdnslookup_win.cpp
+        kernel/qhostaddress.cpp
+        kernel/qhostinfo.cpp
+        kernel/qhostinfo_win.cpp
+        kernel/qnetconmonitor_win.cpp
+        kernel/qnetworkinterface_win.cpp
+        kernel/qnetworkproxy_win.cpp
+        socket/qabstractsocket.cpp
+        socket/qlocalserver.cpp
+        socket/qlocalserver_win.cpp
+        socket/qlocalsocket_win.cpp
+        socket/qnativesocketengine.cpp
+        socket/qnativesocketengine_win.cpp
+)
 
 # include the snippet projects for developer-builds
 if(QT_FEATURE_private_tests)
