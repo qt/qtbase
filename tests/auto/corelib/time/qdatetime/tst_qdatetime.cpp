@@ -2174,12 +2174,13 @@ void tst_QDateTime::springForward_data()
       document any such conflicts, if discovered.
 
       See http://www.timeanddate.com/time/zones/ for data on more candidates to
-      test.
-     */
+      test. Note, however, that the IANA DB disagrees with it for some zones,
+      and is authoritative.
+    */
 
-    QTimeZone local(QTimeZone::LocalTime);
-    uint winter = QDate(2015, 1, 1).startOfDay(local).toSecsSinceEpoch();
-    uint summer = QDate(2015, 7, 1).startOfDay(local).toSecsSinceEpoch();
+    const QTimeZone local(QTimeZone::LocalTime);
+    const uint winter = QDate(2015, 1, 1).startOfDay(local).toSecsSinceEpoch();
+    const uint summer = QDate(2015, 7, 1).startOfDay(local).toSecsSinceEpoch();
 
     if (winter == 1420066800 && summer == 1435701600) {
         QTest::newRow("Local (CET) from day before")
@@ -2187,11 +2188,28 @@ void tst_QDateTime::springForward_data()
         QTest::newRow("Local (CET) from day after")
             << local << QDate(2015, 3, 29) << QTime(2, 30) << -1 << 120;
     } else if (winter == 1420063200 && summer == 1435698000) {
-        // e.g. Finland, where our CI runs ...
+        // EET: but there's some variation in the date and time.
+        // Asia/{Amman,Beirut,Gaza,Hebron}, Europe/Chisinau and Israel: at start of
+        QDate date(2015, 3, 29); // Sunday by default.
+        QTime time(0, 30);
+        if (auto thursday = QDate(2015, 3, 26); thursday.startOfDay(local).time() > time) {
+            // Asia/Damascus: start of March 26th.
+            date = thursday;
+        } else if (auto friday = QDate(2015, 3, 27); friday.startOfDay(local).time() > time) {
+            // Israel, Asia/{Jerusalem,Tel_Aviv}: start of March 27th (IANA DB).
+            date = friday;
+        } else if (friday.startOfDay(local).addSecs(2 * 60 * 60).time() == QTime(3, 0)) {
+            // Israel, Asia/{Jerusalem,Tel_Aviv} according to glibc at 02:00 on March 27th.
+            date = friday;
+            time = QTime(2, 30);
+        } else if (date.startOfDay(local).time() < time) {
+            // Most of Europeean EET, e.g. Finland.
+            time = QTime(3, 30);
+        }
         QTest::newRow("Local (EET) from day before")
-            << local << QDate(2015, 3, 29) << QTime(3, 30) << 1 << 120;
+            << local << date << time << 1 << 120;
         QTest::newRow("Local (EET) from day after")
-            << local << QDate(2015, 3, 29) << QTime(3, 30) << -1 << 180;
+            << local << date << time << -1 << 180;
     } else if (winter == 1420070400 && summer == 1435705200) {
         // Western European Time, WET/WEST; a.k.a. GMT/BST
         QTest::newRow("Local (WET) from day before")
@@ -2200,16 +2218,23 @@ void tst_QDateTime::springForward_data()
             << local << QDate(2015, 3, 29) << QTime(1, 30) << -1 << 60;
     } else if (winter == 1420099200 && summer == 1435734000) {
         // Western USA, Canada: Pacific Time (e.g. US/Pacific)
+        QDate date(2015, 3, 8);
+        // America/Ensenada did its transition on April 5th, like the rest of Mexico.
+        if (QDate(2015, 4, 1).startOfDay().toSecsSinceEpoch() == 1427875200)
+            date = QDate(2015, 4, 5);
         QTest::newRow("Local (PT) from day before")
-            << local << QDate(2015, 3, 8) << QTime(2, 30) << 1 << -480;
+            << local << date << QTime(2, 30) << 1 << -480;
         QTest::newRow("Local (PT) from day after")
-            << local << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -420;
+            << local << date << QTime(2, 30) << -1 << -420;
     } else if (winter == 1420088400 && summer == 1435723200) {
         // Eastern USA, Canada: Eastern Time (e.g. US/Eastern)
+        // Havana matches offset and date, but at midnight.
+        const QTime start = QDate(2015, 3, 8).startOfDay(local).time();
+        const QTime when = start == QTime(0, 0) ? QTime(2, 30) : QTime(0, 30);
         QTest::newRow("Local(ET) from day before")
-            << local << QDate(2015, 3, 8) << QTime(2, 30) << 1 << -300;
+            << local << QDate(2015, 3, 8) << when << 1 << -300;
         QTest::newRow("Local(ET) from day after")
-            << local << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -240;
+            << local << QDate(2015, 3, 8) << when << -1 << -240;
 #if !QT_CONFIG(timezone)
     } else {
         // Includes the numbers you need to test for your zone, as above:
@@ -2265,9 +2290,13 @@ void tst_QDateTime::springForward()
         QCOMPARE(direct.date(), day);
         QCOMPARE(direct.time().minute(), time.minute());
         QCOMPARE(direct.time().second(), time.second());
-        int off = direct.time().hour() - time.hour();
-        QVERIFY(off == 1 || off == -1);
         // Note: function doc claims always +1, but this should be reviewed !
+        int off = direct.time().hour() - time.hour();
+        auto report = qScopeGuard([off]() {
+            qDebug("Offset %d found where 1 or -1 expected", off);
+        });
+        QVERIFY(off == 1 || off == -1);
+        report.dismiss();
     }
 
     // Repeat, but getting there via .toTimeZone(). Apply adjust to datetime,
