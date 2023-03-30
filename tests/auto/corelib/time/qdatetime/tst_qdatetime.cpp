@@ -151,7 +151,8 @@ private Q_SLOTS:
 #endif
 
 private:
-    enum { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1} localTimeType;
+    enum LocalTimeType { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1};
+    LocalTimeType solarMeanType, epochTimeType, futureTimeType;
     static constexpr auto UTC = QTimeZone::UTC;
     int preZoneFix;
     bool zoneIsCET;
@@ -229,31 +230,28 @@ tst_QDateTime::tst_QDateTime()
     // we must add it to the QDateTime constructed from it.
 
     /*
-      Again, rule changes can cause a TZ to look like UTC at some sample dates
-      but deviate at some date relevant to a test using localTimeType.  These
-      tests mostly use years outside the 1970--2037 range, for which we trust
-      our TZ data, so we can't helpfully be exhaustive.  Instead, scan a sample
-      of years' starts and middles.
+      Various zones close to UTC (notably Iceland, the WET zones and several in
+      West Africa) or nominally assigned to it historically (north Canada, the
+      Antarctic) and those that have crossed the international date-line (by
+      skipping or repeating a day) don't have a consistent answer to "which side
+      of UTC is it ?" So the three LocalTimeType members may be different.
     */
-    // UTC starts of January and July in the given years:
-    constexpr struct { int year; qint64 jan; qint64 jul; } dates[] = {
-        { 1970, 0, 181 * day },
-        { 2038, 24837 * day, 25018 * day },
-        { 2004, 12418 * day, 12600 * day },
-    };
-    localTimeType = LocalTimeIsUtc;
-    for (const auto &date : dates) {
-        QDateTime jan = QDateTime::fromSecsSinceEpoch(date.jan);
-        QDateTime jul = QDateTime::fromSecsSinceEpoch(date.jul);
-        if (jan.date().year() < date.year || jul.date().month() < 7) {
-            localTimeType = LocalTimeBehindUtc;
-            break;
+    const auto setType = [day](int year, qint64 jand, qint64 juld, LocalTimeType &set) {
+        QDateTime jan = QDateTime::fromSecsSinceEpoch(jand * day);
+        QDateTime jul = QDateTime::fromSecsSinceEpoch(juld * day);
+        if (jan.date().year() < year || jul.date().month() < 7) {
+            set = LocalTimeBehindUtc;
         } else if (jan.time().hour() > 0 || jul.time().hour() > 0
                    || jan.date().day() > 1 || jul.date().day() > 1) {
-            localTimeType = LocalTimeAheadOfUtc;
-            break;
+            set = LocalTimeAheadOfUtc;
+        } else {
+            set = LocalTimeIsUtc;
         }
-    }
+    };
+    // UTC starts of January and July in the given years:
+    setType(1800, -62092, -61911, solarMeanType);
+    setType(1970, 0, 181, epochTimeType);
+    setType(2038, 24837, 25018, futureTimeType);
 }
 
 void tst_QDateTime::initTestCase()
@@ -261,7 +259,7 @@ void tst_QDateTime::initTestCase()
     // Never construct a message like this in an i18n context...
     const char *typemsg1 = "exactly";
     const char *typemsg2 = "and therefore not";
-    switch (localTimeType) {
+    switch (futureTimeType) {
     case LocalTimeIsUtc:
         break;
     case LocalTimeBehindUtc:
@@ -847,8 +845,12 @@ void tst_QDateTime::setMSecsSinceEpoch()
         QVERIFY(!off.isValid());
     }
 
-    if ((localTimeType == LocalTimeAheadOfUtc && msecs == Bound::max())
-        || (localTimeType == LocalTimeBehindUtc && msecs == Bound::min())) {
+    // Check overflow; only robust if local time is the same at epoch as relevant bound.
+    // See setting of LocalTimeType values for details.
+    if (epochTimeType == LocalTimeAheadOfUtc
+        ? futureTimeType == LocalTimeAheadOfUtc && msecs == Bound::max()
+        : (solarMeanType == LocalTimeBehindUtc && msecs == Bound::min()
+           && epochTimeType == LocalTimeBehindUtc)) {
         QDateTime curt = QDate(1970, 1, 1).startOfDay(); // initially in short-form
         curt.setMSecsSinceEpoch(msecs); // Overflows due to offset
         QVERIFY(!curt.isValid());
@@ -870,10 +872,10 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     // you're East or West of Greenwich.  In UTC, we won't overflow. If we're
     // actually west of Greenwich but (e.g. Europe/Madrid) our zone claims east,
     // "min" can also overflow (case only caught if local time is CET).
-    const bool localOverflow = (localTimeType == LocalTimeAheadOfUtc
-                                ? msecs == Bound::max() || preZoneFix < -3600
-                                : localTimeType == LocalTimeBehindUtc && msecs == Bound::min());
-    if (!localOverflow)
+    const bool localOverflow =
+        (futureTimeType == LocalTimeAheadOfUtc && (msecs == Bound::max() || preZoneFix < -3600))
+        || (solarMeanType == LocalTimeBehindUtc && msecs == Bound::min());
+    if (!localOverflow) // Can fail if offset changes sign, e.g. Alaska, Philippines.
         QCOMPARE(dtLocal, utc);
 
     QCOMPARE(dtUtc, utc);
@@ -2292,7 +2294,7 @@ void tst_QDateTime::operator_eqeq_data()
     QTest::newRow("data10") << dateTime3 << dateTime3c << true << false;
     QTest::newRow("data11") << dateTime3 << dateTime3d << true << false;
     QTest::newRow("data12") << dateTime3c << dateTime3d << true << false;
-    if (localTimeType == LocalTimeIsUtc)
+    if (epochTimeType == LocalTimeIsUtc)
         QTest::newRow("data13") << dateTime3 << dateTime3e << true << false;
     // ... but a zone (sometimes) ahead of or behind UTC (e.g. Europe/London)
     // might agree with UTC about the epoch, all the same.
