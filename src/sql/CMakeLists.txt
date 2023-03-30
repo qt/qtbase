@@ -38,9 +38,6 @@ qt_internal_add_module(Sql
     GENERATE_CPP_EXPORTS
 )
 
-set_source_files_properties(compat/removed_api.cpp # NO_PCH_SOURCES
-                            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
-
 ## Scopes:
 #####################################################################
 

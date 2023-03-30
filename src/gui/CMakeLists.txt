@@ -275,7 +275,7 @@ qt_internal_add_module(Gui
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
     NO_PCH_SOURCES
-        "painting/qdrawhelper.cpp"
+        painting/qdrawhelper.cpp
     PRECOMPILED_HEADER
         "kernel/qt_gui_pch.h"
     GENERATE_CPP_EXPORTS
@@ -291,9 +291,6 @@ set(qpdf_resource_files
     "../3rdparty/icc/sRGB2014.icc"
     "painting/qpdfa_metadata.xml"
 )
-
-set_source_files_properties(painting/qdrawhelper.cpp # NO_PCH_SOURCES
-                            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 if(WIN32 OR (UNIX AND NOT APPLE))
     set_target_properties(Gui PROPERTIES UNITY_BUILD OFF) # X11 define clashes/Windows oddities.
