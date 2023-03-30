@@ -1,3 +1,7 @@
 # QTBUG-101274
-[onDemandRootCertLoadingMemberMethods:WithoutProxy]
-qnx ci
+# [onDemandRootCertLoadingMemberMethods:WithoutProxy]
+# qnx ci
+
+# QTBUG-63481
+[onDemandRootCertLoadingMemberMethods]
+*
