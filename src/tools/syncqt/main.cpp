@@ -560,13 +560,26 @@ public:
         if (m_commandLineArgs->scanAllMode()) {
             for (auto const &entry :
                  std::filesystem::recursive_directory_iterator(m_commandLineArgs->sourceDir())) {
-                if (entry.is_regular_file() && isHeader(entry)
-                    && !isDocFileHeuristic(entry.path().generic_string())) {
-                    const std::string filePath = entry.path().generic_string();
-                    const std::string fileName = entry.path().filename().generic_string();
-                    scannerDebug() << "Checking: " << filePath << std::endl;
+
+                const bool isRegularFile = entry.is_regular_file();
+                const bool isHeaderFlag = isHeader(entry);
+                const bool isDocFileHeuristicFlag =
+                    isDocFileHeuristic(entry.path().generic_string());
+                const bool shouldProcessHeader =
+                    isRegularFile && isHeaderFlag && !isDocFileHeuristicFlag;
+                const std::string filePath = entry.path().generic_string();
+
+                if (shouldProcessHeader) {
+                    scannerDebug() << "Processing header: " << filePath << std::endl;
                     if (!processHeader(makeHeaderAbsolute(filePath)))
                         error = SyncFailed;
+                } else {
+                    scannerDebug()
+                        << "Skipping processing header: " << filePath
+                        << " isRegularFile: " << isRegularFile
+                        << " isHeaderFlag: " << isHeaderFlag
+                        << " isDocFileHeuristicFlag: " << isDocFileHeuristicFlag
+                        << std::endl;
                 }
             }
         } else {
@@ -576,11 +589,13 @@ public:
             const auto &headers = m_commandLineArgs->headers();
             for (auto it = headers.begin(); it != headers.end(); ++it) {
                 const auto &header = *it;
+                scannerDebug() << "Processing header: " << header << std::endl;
                 if (!processHeader(makeHeaderAbsolute(header))) {
                     error = SyncFailed;
                 }
             }
             for (const auto &header : rspHeaders) {
+                scannerDebug() << "Processing header: " << header << std::endl;
                 if (!processHeader(makeHeaderAbsolute(header)))
                     error = SyncFailed;
             }
@@ -748,8 +763,12 @@ public:
         bool isPrivate = m_currentFileType & PrivateHeader;
         bool isQpa = m_currentFileType & QpaHeader;
         bool isExport = m_currentFileType & ExportHeader;
-        scannerDebug() << headerFile << " m_currentFilename: " << m_currentFilename
-                       << " isPrivate: " << isPrivate << " isQpa: " << isQpa << std::endl;
+        scannerDebug()
+            << "processHeader:start: " << headerFile
+            << " m_currentFilename: " << m_currentFilename
+            << " isPrivate: " << isPrivate
+            << " isQpa: " << isQpa
+            << std::endl;
 
         // Chose the directory where to generate the header aliases or to copy header file if
         // the '-copy' argument is passed.
@@ -829,8 +848,10 @@ public:
             ParsingResult parsingResult;
             parsingResult.masterInclude = m_currentFileInSourceDir && !isExport && !is3rdParty
                     && !isQpa && !isPrivate && !isGenerated;
-            if (!parseHeader(headerFile, parsingResult, skipChecks))
+            if (!parseHeader(headerFile, parsingResult, skipChecks)) {
+                scannerDebug() << "parseHeader failed: " << headerFile << std::endl;
                 return false;
+            }
 
             // Record the private header file inside the version script content.
             if (isPrivate && !m_commandLineArgs->versionScriptFile().empty()
@@ -842,12 +863,22 @@ public:
 
             // Add the '#if QT_CONFIG(<feature>)' check for header files that supposed to be
             // included into the module master header only if corresponding feature is enabled.
+            bool willBeInModuleMasterHeader = false;
             if (!isQpa && !isPrivate) {
                 if (m_currentFilename.find('_') == std::string::npos
                     && parsingResult.masterInclude) {
                     m_masterHeaderContents[m_currentFilename] = parsingResult.requireConfig;
+                    willBeInModuleMasterHeader = true;
                 }
             }
+
+            scannerDebug()
+                << "processHeader:end: " << headerFile
+                << " is3rdParty: " << is3rdParty
+                << " isGenerated: " << isGenerated
+                << " m_currentFileInSourceDir: " << m_currentFileInSourceDir
+                << " willBeInModuleMasterHeader: " << willBeInModuleMasterHeader
+                << std::endl;
         } else if (m_currentFilename == "qconfig.h") {
             // Hardcode generating of QtConfig alias
             updateSymbolDescriptor("QtConfig", "qconfig.h", SyncScanner::SymbolDescriptor::Pragma);
