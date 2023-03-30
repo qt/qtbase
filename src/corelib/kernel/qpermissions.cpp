@@ -358,8 +358,27 @@ QT_PERMISSION_IMPL_COMMON(QMicrophonePermission)
       \row
         \li Android
         \li \l{android-uses-permission}{\c{uses-permission}}
-        \li \c android.permission.BLUETOOTH
+        \li Up to Android 11 (API Level < 31):
+            \list
+                \li \c android.permission.BLUETOOTH
+                \li \c android.permission.ACCESS_FINE_LOCATION
+            \endlist
+
+            Starting from Android 12 (API Level >= 31):
+            \list
+                \li \c android.permission.BLUETOOTH_ADVERTISE
+                \li \c android.permission.BLUETOOTH_CONNECT
+                \li \c android.permission.BLUETOOTH_SCAN
+                \li \c android.permission.ACCESS_FINE_LOCATION
+            \endlist
     \include permissions.qdocinc end-usage-declarations
+
+    \note Currently on Android the \c android.permission.ACCESS_FINE_LOCATION
+    permission is requested together with Bluetooth permissions. This is
+    required for Bluetooth to work properly, unless the application provides a
+    strong assertion in the application manifest that it does not use Bluetooth
+    to derive a physical location. This permission coupling may change in
+    future.
 
     \include permissions.qdocinc permission-metadata
 */
