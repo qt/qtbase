@@ -202,7 +202,7 @@ void QWasmWindow::initialize()
     const QSize targetSize = !rect.isEmpty() ? rect.size() : minimumSize;
 
     rect.setWidth(qBound(minimumSize.width(), targetSize.width(), maximumSize.width()));
-    rect.setHeight(qBound(minimumSize.width(), targetSize.height(), maximumSize.height()));
+    rect.setHeight(qBound(minimumSize.height(), targetSize.height(), maximumSize.height()));
 
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
