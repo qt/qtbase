@@ -307,10 +307,9 @@ QStringList Parser::findEnumValues(const QString &name, const QStringList &inclu
                             ret << trimmed;
                     }
 
-                    break;
+                    return ret;
                 }
             }
-            return ret;
         }
     }
     return ret;
