@@ -1255,8 +1255,20 @@ void tst_QXmlStream::hasAttributeSignature() const
 
 void tst_QXmlStream::hasAttribute() const
 {
-    QXmlStreamReader reader(QLatin1String("<e xmlns:p='http://example.com/2' xmlns='http://example.com/' "
-                                          "attr1='value' attr2='value2' p:attr3='value3' emptyAttr=''><noAttributes/></e>"));
+    auto xml = QStringLiteral("<e"
+                              "  xmlns:p='http://example.com/2'"
+                              "  xmlns='http://example.com/'"
+                              "  attr1='value'"
+                              "  attr2='value2'"
+                              "  p:attr3='value3'"
+                              "  emptyAttr=''"
+                              "  atträbute='meep'"
+                              "  α='β'"
+                              "  >"
+                              "    <noAttributes/>"
+                              "</e>");
+
+    QXmlStreamReader reader(xml);
 
     QCOMPARE(reader.readNext(), QXmlStreamReader::StartDocument);
     QCOMPARE(reader.readNext(), QXmlStreamReader::StartElement);
@@ -1267,6 +1279,8 @@ void tst_QXmlStream::hasAttribute() const
     QVERIFY(atts.hasAttribute(QLatin1String("attr2")));
     QVERIFY(atts.hasAttribute(QLatin1String("p:attr3")));
     QVERIFY(atts.hasAttribute(QLatin1String("emptyAttr")));
+    QVERIFY(atts.hasAttribute(QLatin1String("attr\xE4""bute")));
+    // α is not representable in L1...
     QVERIFY(!atts.hasAttribute(QLatin1String("DOESNOTEXIST")));
 
     /* Test with an empty & null namespaces. */
@@ -1277,6 +1291,8 @@ void tst_QXmlStream::hasAttribute() const
     QVERIFY(atts.hasAttribute(QString::fromLatin1("attr1")));
     QVERIFY(atts.hasAttribute(QString::fromLatin1("attr2")));
     QVERIFY(atts.hasAttribute(QString::fromLatin1("p:attr3")));
+    QVERIFY(atts.hasAttribute(QStringLiteral("atträbute")));
+    QVERIFY(atts.hasAttribute(QStringLiteral("α")));
     QVERIFY(atts.hasAttribute(QString::fromLatin1("emptyAttr")));
     QVERIFY(!atts.hasAttribute(QString::fromLatin1("DOESNOTEXIST")));
 
@@ -1290,6 +1306,7 @@ void tst_QXmlStream::hasAttribute() const
     QVERIFY(!atts.hasAttribute(QLatin1String("WRONG_NAMESPACE"), QString::fromLatin1("attr3")));
 
     /* Invoke on an QXmlStreamAttributes that has no attributes at all. */
+    QCOMPARE(reader.readNext(), QXmlStreamReader::Characters);
     QCOMPARE(reader.readNext(), QXmlStreamReader::StartElement);
 
     const QXmlStreamAttributes &atts2 = reader.attributes();
