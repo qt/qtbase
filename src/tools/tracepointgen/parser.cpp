@@ -353,6 +353,10 @@ static QList<EnumNameValue> enumsToValues(const QStringList &values)
                 }
             }
         } else {
+            if (value.endsWith(QLatin1Char(',')))
+                r.name = value.left(value.length() - 1);
+            else
+                r.name = value;
             r.value = ++cur;
             ret << r;
         }
