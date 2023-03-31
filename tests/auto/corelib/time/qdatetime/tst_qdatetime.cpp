@@ -2899,34 +2899,35 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::addColumn<QDateTime>("expected");
 
     const QDate defDate(1900, 1, 1);
-    QTest::newRow("data0")
-        << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
+    // Indian/Cocos had a transition at the start of 1900, so its Jan 1st starts
+    // at 00:02:20 on that day; this leads to perverse results. QTBUG-77948.
+    if (defDate.startOfDay().time() == QTime(0, 0)) {
+        QTest::newRow("dMyy-only")
+            << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
+        QTest::newRow("secs-repeat-valid")
+            << QString("1010") << QString("sss") << QDateTime(defDate, QTime(0, 0, 10));
+        QTest::newRow("pm-only")
+            << QString("pm") << QString("ap") << QDateTime(defDate, QTime(12, 0));
+        QTest::newRow("date-only")
+            << QString("10 Oct 10") << QString("dd MMM yy") << QDate(1910, 10, 10).startOfDay();
+        QTest::newRow("dow-date-only")
+            << QString("Fri December 3 2004") << QString("ddd MMMM d yyyy")
+            << QDate(2004, 12, 3).startOfDay();
+        QTest::newRow("dow-mon-yr-only")
+            << QString("Thu January 2004") << QString("ddd MMMM yyyy")
+            << QDate(2004, 1, 1).startOfDay();
+    }
     QTest::newRow("data1") << QString("1020") << QString("sss") << QDateTime();
-    QTest::newRow("data2")
-        << QString("1010") << QString("sss") << QDateTime(defDate, QTime(0, 0, 10));
     QTest::newRow("data3") << QString("10hello20") << QString("ss'hello'ss") << QDateTime();
     QTest::newRow("data4") << QString("10") << QString("''") << QDateTime();
     QTest::newRow("data5") << QString("10") << QString("'") << QDateTime();
-    QTest::newRow("data6") << QString("pm") << QString("ap") << QDateTime(defDate, QTime(12, 0));
     QTest::newRow("data7") << QString("foo") << QString("ap") << QDateTime();
     // Day non-conflict should not hide earlier year conflict (1963-03-01 was a
     // Friday; asking for Thursday moves this, without conflict, to the 7th):
     QTest::newRow("data8")
         << QString("77 03 1963 Thu") << QString("yy MM yyyy ddd") << QDateTime();
-    QTest::newRow("data9")
-        << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
-    QTest::newRow("data10")
-        << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
-    QTest::newRow("data11")
-        << QString("10 Oct 10") << QString("dd MMM yy") << QDate(1910, 10, 10).startOfDay();
-    QTest::newRow("data12")
-        << QString("Fri December 3 2004") << QString("ddd MMMM d yyyy")
-        << QDate(2004, 12, 3).startOfDay();
     QTest::newRow("data13") << QString("30.02.2004") << QString("dd.MM.yyyy") << QDateTime();
     QTest::newRow("data14") << QString("32.01.2004") << QString("dd.MM.yyyy") << QDateTime();
-    QTest::newRow("data15")
-        << QString("Thu January 2004") << QString("ddd MMMM yyyy")
-        << QDate(2004, 1, 1).startOfDay();
     QTest::newRow("zulu-time-with-z-centisec")
         << QString("2005-06-28T07:57:30.01Z") << QString("yyyy-MM-ddThh:mm:ss.zt")
         << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 10), UTC);
