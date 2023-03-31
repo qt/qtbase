@@ -3,9 +3,7 @@
 #ifndef QZIPWRITER_H
 #define QZIPWRITER_H
 
-#include <QtGui/private/qtguiglobal_p.h>
-
-#ifndef QT_NO_TEXTODFWRITER
+#include <QtCore/private/qglobal_p.h>
 
 //
 //  W A R N I N G
@@ -25,8 +23,7 @@ QT_BEGIN_NAMESPACE
 
 class QZipWriterPrivate;
 
-
-class Q_GUI_EXPORT QZipWriter
+class Q_CORE_EXPORT QZipWriter
 {
 public:
     explicit QZipWriter(const QString &fileName, QIODevice::OpenMode mode = (QIODevice::WriteOnly | QIODevice::Truncate) );
@@ -77,5 +74,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_TEXTODFWRITER
 #endif // QZIPWRITER_H

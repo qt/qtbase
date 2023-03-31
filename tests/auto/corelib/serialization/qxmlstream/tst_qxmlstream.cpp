@@ -12,7 +12,7 @@
 #include <QXmlStreamReader>
 #include <QBuffer>
 #include <QStack>
-#include <QtGui/private/qzipreader_p.h>
+#include <private/qzipreader_p.h>
 
 #include "qc14n.h"
 

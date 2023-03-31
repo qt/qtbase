@@ -4,10 +4,7 @@
 #ifndef QZIPREADER_H
 #define QZIPREADER_H
 
-#include <QtGui/private/qtguiglobal_p.h>
-#include <QtCore/qglobal.h>
-
-#ifndef QT_NO_TEXTODFWRITER
+#include <QtCore/private/qglobal_p.h>
 
 //
 //  W A R N I N G
@@ -28,7 +25,7 @@ QT_BEGIN_NAMESPACE
 
 class QZipReaderPrivate;
 
-class Q_GUI_EXPORT QZipReader
+class Q_CORE_EXPORT QZipReader
 {
 public:
     explicit QZipReader(const QString &fileName, QIODevice::OpenMode mode = QIODevice::ReadOnly );
@@ -87,5 +84,4 @@ Q_DECLARE_TYPEINFO(QZipReader::Status, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_TEXTODFWRITER
 #endif // QZIPREADER_H

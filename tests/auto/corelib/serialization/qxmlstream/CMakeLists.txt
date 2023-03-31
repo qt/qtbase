@@ -15,6 +15,6 @@ qt_internal_add_test(tst_qxmlstream
         tst_qxmlstream.cpp
     LIBRARIES
         Qt::Network
-        Qt::GuiPrivate
+        Qt::CorePrivate
     TESTDATA ${test_data}
 )

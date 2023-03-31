@@ -18,9 +18,10 @@
 #include "qtexttable.h"
 #include "qtextcursor.h"
 #include "qtextimagehandler_p.h"
-#include "qzipwriter_p.h"
 
 #include <QDebug>
+#include <QtCore/private/qzipwriter_p.h>
+
 
 QT_BEGIN_NAMESPACE
 

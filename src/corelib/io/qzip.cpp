@@ -1,12 +1,9 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <qglobal.h>
-
-#ifndef QT_NO_TEXTODFWRITER
-
 #include "qzipreader_p.h"
 #include "qzipwriter_p.h"
+
 #include <qdatetime.h>
 #include <qendian.h>
 #include <qdebug.h>
@@ -1348,5 +1345,3 @@ void QZipWriter::close()
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TEXTODFWRITER
