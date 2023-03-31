@@ -2501,7 +2501,7 @@ void tst_Moc::cxx11Enums()
     const QMetaType metaType = metaEnum.metaType();
     const bool isUnsigned = metaType.flags() & QMetaType::IsUnsignedEnumeration;
     if (isTyped) {
-        QCOMPARE(metaType.sizeOf(), sizeof(char));
+        QCOMPARE(size_t(metaType.sizeOf()), sizeof(char));
         QCOMPARE(isUnsigned, !std::is_signed_v<char>);
     } else if (isScoped) {
         QCOMPARE(metaType.sizeOf(), sizeof(int));
