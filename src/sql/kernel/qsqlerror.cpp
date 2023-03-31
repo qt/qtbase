@@ -106,7 +106,7 @@ QSqlError::QSqlError(const QString &driverText, const QString &databaseText,
 /*!
     Creates a copy of \a other.
 */
-QSqlError::QSqlError(const QSqlError& other)
+QSqlError::QSqlError(const QSqlError &other)
     : d(new QSqlErrorPrivate(*other.d))
 {
 }
@@ -115,7 +115,7 @@ QSqlError::QSqlError(const QSqlError& other)
     Assigns the \a other error's values to this error.
 */
 
-QSqlError& QSqlError::operator=(const QSqlError& other)
+QSqlError &QSqlError::operator=(const QSqlError &other)
 {
     if (&other == this)
         return *this;
@@ -132,7 +132,7 @@ QSqlError& QSqlError::operator=(const QSqlError& other)
     Compare the \a other error's values to this error and returns \c true, if it equal.
 */
 
-bool QSqlError::operator==(const QSqlError& other) const
+bool QSqlError::operator==(const QSqlError &other) const
 {
     return (d->errorType == other.d->errorType);
 }
@@ -142,7 +142,7 @@ bool QSqlError::operator==(const QSqlError& other) const
     Compare the \a other error's values to this error and returns \c true if it is not equal.
 */
 
-bool QSqlError::operator!=(const QSqlError& other) const
+bool QSqlError::operator!=(const QSqlError &other) const
 {
     return (d->errorType != other.d->errorType);
 }
@@ -209,7 +209,7 @@ QString QSqlError::nativeErrorCode() const
 QString QSqlError::text() const
 {
     QString result = d->databaseError;
-    if (!d->databaseError.isEmpty() && !d->driverError.isEmpty() && !d->databaseError.endsWith("\n"_L1))
+    if (!d->databaseError.isEmpty() && !d->driverError.isEmpty() && !d->databaseError.endsWith(u'\n'))
         result += u' ';
     result += d->driverError;
     return result;
