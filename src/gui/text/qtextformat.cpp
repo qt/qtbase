@@ -684,6 +684,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextTableCellFormat &
                             numeric lists.
     \value ListNumberSuffix Defines the text which is appended to item numbers in
                             numeric lists.
+    \value ListStart        Defines the first value of a list.
+                            This enum value has been added in Qt 6.6.
 
     Table and frame properties
 
