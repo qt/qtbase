@@ -8,9 +8,8 @@
     \title Hello Vulkan Triangle Example
     \brief Shows the basics of rendering with QVulkanWindow and the Vulkan API.
 
-    The \e{Hello Vulkan Triangle Example} builds on \l hellovulkanwindow. This
-    time a full graphics pipeline is created, including a vertex and fragment
-    shader. This pipeline is then used to render a triangle.
+    The \e{Hello Vulkan Triangle Example} creates a full graphics pipeline,
+    including a vertex and fragment shader, to render a triangle.
 
     \image hellovulkantriangle.png
 
