@@ -25,14 +25,14 @@ public:
               const QString &databaseText = QString(),
               ErrorType type = NoError,
               const QString &errorCode = QString());
-    QSqlError(const QSqlError& other);
+    QSqlError(const QSqlError &other);
     QSqlError(QSqlError &&other) noexcept : d(other.d) { other.d = nullptr; }
-    QSqlError& operator=(const QSqlError& other);
+    QSqlError& operator=(const QSqlError &other);
     QSqlError &operator=(QSqlError &&other) noexcept { swap(other); return *this; }
-
-    bool operator==(const QSqlError& other) const;
-    bool operator!=(const QSqlError& other) const;
     ~QSqlError();
+
+    bool operator==(const QSqlError &other) const;
+    bool operator!=(const QSqlError &other) const;
 
     void swap(QSqlError &other) noexcept { qt_ptr_swap(d, other.d); }
 
