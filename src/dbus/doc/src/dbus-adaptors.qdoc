@@ -44,7 +44,7 @@
       \li \l{Declaring Slots in D-Bus Adaptors}
       \li \l{Declaring Signals in D-Bus Adaptors}
       \li \l{The Qt D-Bus Type System}
-      \li In the \l{D-Bus Complex Ping Pong Example}, \c complexpong.h and
+      \li In the \l{D-Bus Complex Ping Pong} example, \c complexpong.h and
           \c complexpong.cpp show an implementation of QDBusAbstractAdaptor.
     \endlist
 
@@ -87,7 +87,7 @@
 
     Asynchronous slots are marked by the keyword \l Q_NOREPLY in the method
     signature, before the \c void return type and the slot name. The \c quit()
-    slot in the \l {D-Bus Complex Ping Pong Example} is an example of this.
+    slot in the \l {D-Bus Complex Ping Pong} example is an example of this.
 
     \section1 Input-Only Slots
 
@@ -193,8 +193,8 @@
     However, signals must still be emitted. The easiest way to emit an adaptor
     signal is to connect another signal to it, so that Qt's signals and slots
     mechanism automatically emits the adaptor signal, too. This can be done in
-    the adaptor's constructor, as you can see in the \l {D-Bus Complex Ping
-    Pong Example}.
+    the adaptor's constructor, as you can see in the \l {D-Bus Complex Ping Pong}
+    example.
 
     The QDBusAbstractAdaptor::setAutoRelaySignals() convenience function can also
     be used to make and break connections between signals in the real object and

@@ -164,7 +164,7 @@
     This feature can be enabled on a per-application basis by setting the
     \c QDBUS_DEBUG environment variable before running each application.
     For example, we can enable debugging only for the car in the
-    \l{D-Bus Remote Controlled Car Example} by running the controller and the
+    \l{D-Bus Remote Controlled Car} example by running the controller and the
     car in the following way:
 
     \snippet code/doc_src_introtodbus.qdoc QDBUS_DEBUG
