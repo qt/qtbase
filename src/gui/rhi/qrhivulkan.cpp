@@ -3,6 +3,7 @@
 
 #include "qrhivulkan_p_p.h"
 #include "qrhivulkanext_p.h"
+#include <qpa/qplatformvulkaninstance.h>
 
 #define VMA_IMPLEMENTATION
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
@@ -1695,6 +1696,8 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     const int frameResIndex = swapChainD->bufferCount > 1 ? swapChainD->currentFrameSlot : 0;
     QVkSwapChain::FrameResources &frame(swapChainD->frameRes[frameResIndex]);
 
+    inst->handle()->beginFrame(swapChainD->window);
+
     if (!frame.imageAcquired) {
         // Wait if we are too far ahead, i.e. the thread gets throttled based on the presentation rate
         // (note that we are using FIFO mode -> vsync)
@@ -1802,6 +1805,10 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
 {
     QVkSwapChain *swapChainD = QRHI_RES(QVkSwapChain, swapChain);
     Q_ASSERT(currentSwapChain == swapChainD);
+
+    auto cleanup = qScopeGuard([this, swapChainD] {
+        inst->handle()->endFrame(swapChainD->window);
+    });
 
     recordPrimaryCommandBuffer(&swapChainD->cbWrapper);
 

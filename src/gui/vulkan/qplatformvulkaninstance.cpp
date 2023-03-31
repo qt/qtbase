@@ -64,4 +64,15 @@ void QPlatformVulkanInstance::setDebugUtilsFilters(const QList<QVulkanInstance::
     Q_UNUSED(filters);
 }
 
+void QPlatformVulkanInstance::beginFrame(QWindow *window)
+{
+    Q_UNUSED(window);
+}
+
+void QPlatformVulkanInstance::endFrame(QWindow *window)
+{
+    Q_UNUSED(window);
+}
+
+
 QT_END_NAMESPACE

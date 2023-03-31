@@ -46,6 +46,8 @@ public:
     virtual void presentQueued(QWindow *window);
     virtual void setDebugFilters(const QList<QVulkanInstance::DebugFilter> &filters);
     virtual void setDebugUtilsFilters(const QList<QVulkanInstance::DebugUtilsFilter> &filters);
+    virtual void beginFrame(QWindow *window);
+    virtual void endFrame(QWindow *window);
 
 private:
     QScopedPointer<QPlatformVulkanInstancePrivate> d_ptr;
