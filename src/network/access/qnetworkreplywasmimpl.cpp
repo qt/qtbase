@@ -538,6 +538,8 @@ void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
                 reasonStr = QStringLiteral("Operation canceled");
             else
                 reasonStr = QString::fromUtf8(fetch->statusText);
+            QByteArray buffer(fetch->data, fetch->numBytes);
+            reply->dataReceived(buffer, buffer.size());
             QByteArray statusText(fetch->statusText);
             reply->setStatusCode(fetch->status, statusText);
             reply->emitReplyError(reply->statusCodeFromHttp(fetch->status, reply->request.url()), reasonStr);
