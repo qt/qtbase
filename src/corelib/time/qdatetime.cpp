@@ -864,13 +864,31 @@ static QDateTime toEarliest(QDate day, const QTimeZone &zone)
     int low = 0;
     // Binary chop to the right minute
     while (high > low + 1) {
-        int mid = (high + low) / 2;
-        QDateTime probe = moment(QTime(mid / 60, mid % 60));
+        const int mid = (high + low) / 2;
+        const QDateTime probe = moment(QTime(mid / 60, mid % 60));
         if (probe.isValid() && probe.date() == day) {
             high = mid;
             when = probe;
         } else {
             low = mid;
+        }
+    }
+    // Transitions out of local solar mean time, and the few international
+    // date-line crossings before that (Alaska, Philippines), may have happened
+    // between minute boundaries. Don't try to fix milliseconds.
+    if (QDateTime p = moment(when.time().addSecs(-1)); Q_UNLIKELY(p.isValid() && p.date() == day)) {
+        high *= 60;
+        low *= 60;
+        while (high > low + 1) {
+            const int mid = (high + low) / 2;
+            const int min = mid / 60;
+            const QDateTime probe = moment(QTime(min / 60, min % 60, mid % 60));
+            if (probe.isValid() && probe.date() == day) {
+                high = mid;
+                when = probe;
+            } else {
+                low = mid;
+            }
         }
     }
     return when.isValid() ? when : QDateTime();
@@ -910,7 +928,7 @@ QDateTime QDate::startOfDay(const QTimeZone &zone) const
         return QDateTime();
 
     QDateTime when(*this, QTime(0, 0), zone);
-    if (when.isValid())
+    if (Q_LIKELY(when.isValid()))
         return when;
 
 #if QT_CONFIG(timezone)
@@ -995,13 +1013,31 @@ static QDateTime toLatest(QDate day, const QTimeZone &zone)
     int low = when.time().msecsSinceStartOfDay() / 60000;
     // Binary chop to the right minute
     while (high > low + 1) {
-        int mid = (high + low) / 2;
-        QDateTime probe = moment(QTime(mid / 60, mid % 60, 59, 999));
+        const int mid = (high + low) / 2;
+        const QDateTime probe = moment(QTime(mid / 60, mid % 60, 59, 999));
         if (probe.isValid() && probe.date() == day) {
             low = mid;
             when = probe;
         } else {
             high = mid;
+        }
+    }
+    // Transitions out of local solar mean time, and the few international
+    // date-line crossings before that (Alaska, Philippines), may have happened
+    // between minute boundaries. Don't try to fix milliseconds.
+    if (QDateTime p = moment(when.time().addSecs(1)); Q_UNLIKELY(p.isValid() && p.date() == day)) {
+        high *= 60;
+        low *= 60;
+        while (high > low + 1) {
+            const int mid = (high + low) / 2;
+            const int min = mid / 60;
+            const QDateTime probe = moment(QTime(min / 60, min % 60, mid % 60, 999));
+            if (probe.isValid() && probe.date() == day) {
+                low = mid;
+                when = probe;
+            } else {
+                high = mid;
+            }
         }
     }
     return when.isValid() ? when : QDateTime();
@@ -1042,7 +1078,7 @@ QDateTime QDate::endOfDay(const QTimeZone &zone) const
         return QDateTime();
 
     QDateTime when(*this, QTime(23, 59, 59, 999), zone);
-    if (when.isValid())
+    if (Q_LIKELY(when.isValid()))
         return when;
 
 #if QT_CONFIG(timezone)
