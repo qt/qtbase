@@ -79,6 +79,9 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     The use of the \c{QT_CONFIG(permissions)} macro ensures that the code
     will work as before on platforms where permissions are not available.
 
+    \note On \macOS and iOS permissions can currently only be requested for
+    GUI applications.
+
     \section2 Declaring Permissions
 
     Some platforms require that the permissions you request are declared
