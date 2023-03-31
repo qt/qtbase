@@ -31,7 +31,7 @@ using namespace QtCbor;
     from those two, though there may be loss of information in some
     conversions.
 
-    \sa QCborValue, QCborMap, QJsonArray, QList, {Cbordump Example},
+    \sa QCborValue, QCborMap, QJsonArray, QList, {Parsing and displaying CBOR data},
         {Convert Example}, {JSON Save Game Example}
  */
 

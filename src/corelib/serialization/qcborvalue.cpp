@@ -191,9 +191,9 @@ Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
     array or map it refers to will be modified with the new value. In all other
     aspects, its API is identical to QCborValue.
 
-    \sa QCborArray, QCborMap, QCborStreamReader, QCborStreamWriter
-    \sa QJsonValue, QJsonDocument, {Cbordump Example}, {Convert Example}
-    \sa {JSON Save Game Example}
+    \sa QCborArray, QCborMap, QCborStreamReader, QCborStreamWriter,
+        QJsonValue, QJsonDocument, {Convert Example}, {JSON Save Game Example}
+        {Parsing and displaying CBOR data}
  */
 
 /*!

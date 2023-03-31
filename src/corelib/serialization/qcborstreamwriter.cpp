@@ -174,7 +174,8 @@ Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
    \endlist
 
    \sa QCborStreamReader, QCborValue, QXmlStreamWriter
-   \sa {Cbordump Example}, {Convert Example}, {JSON Save Game Example}
+       {Parsing and displaying CBOR data}, {Convert Example},
+       {JSON Save Game Example}
  */
 
 class QCborStreamWriterPrivate

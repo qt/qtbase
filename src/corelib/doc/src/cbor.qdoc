@@ -35,7 +35,7 @@
     In addition, CBOR can add a "tag" to extend the meaning of the type. The
     container types can contain basic types, string-like types and containers.
 
-    \sa {Cbordump Example}, {Convert Example}, {JSON Save Game Example}
+    \sa {Parsing and displaying CBOR data}, {Convert Example}, {JSON Save Game Example}
 
     \section1 The CBOR Classes
 
