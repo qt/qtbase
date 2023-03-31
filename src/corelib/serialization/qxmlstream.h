@@ -75,25 +75,25 @@ class QXmlStreamAttributes : public QList<QXmlStreamAttribute>
 {
 public:
     inline QXmlStreamAttributes() {}
+#if QT_CORE_REMOVED_SINCE(6, 6)
     Q_CORE_EXPORT QStringView value(const QString &namespaceUri, const QString &name) const;
     Q_CORE_EXPORT QStringView value(const QString &namespaceUri, QLatin1StringView name) const;
     Q_CORE_EXPORT QStringView value(QLatin1StringView namespaceUri, QLatin1StringView name) const;
     Q_CORE_EXPORT QStringView value(const QString &qualifiedName) const;
     Q_CORE_EXPORT QStringView value(QLatin1StringView qualifiedName) const;
+#endif
+    Q_CORE_EXPORT QStringView value(QAnyStringView namespaceUri, QAnyStringView name) const noexcept;
+    Q_CORE_EXPORT QStringView value(QAnyStringView qualifiedName) const noexcept;
+
     Q_CORE_EXPORT void append(const QString &namespaceUri, const QString &name, const QString &value);
     Q_CORE_EXPORT void append(const QString &qualifiedName, const QString &value);
 
-    inline bool hasAttribute(const QString &qualifiedName) const
+    bool hasAttribute(QAnyStringView qualifiedName) const
     {
         return !value(qualifiedName).isNull();
     }
 
-    inline bool hasAttribute(QLatin1StringView qualifiedName) const
-    {
-        return !value(qualifiedName).isNull();
-    }
-
-    inline bool hasAttribute(const QString &namespaceUri, const QString &name) const
+    bool hasAttribute(QAnyStringView namespaceUri, QAnyStringView name) const
     {
         return !value(namespaceUri, name).isNull();
     }

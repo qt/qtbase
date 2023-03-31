@@ -1287,6 +1287,14 @@ void tst_QXmlStream::hasAttribute() const
     // α is not representable in L1...
     QVERIFY(!atts.hasAttribute(QLatin1String("DOESNOTEXIST")));
 
+    /* string literals (UTF-8/16) */
+    QVERIFY(atts.hasAttribute(u8"atträbute"));
+    QVERIFY(atts.hasAttribute( u"atträbute"));
+    QVERIFY(atts.hasAttribute(u8"α"));
+    QVERIFY(atts.hasAttribute( u"α"));
+    QVERIFY(!atts.hasAttribute(u8"β"));
+    QVERIFY(!atts.hasAttribute( u"β"));
+
     /* Test with an empty & null namespaces. */
     QVERIFY(atts.hasAttribute(QString(), QLatin1String("attr2"))); /* A null string. */
     QVERIFY(atts.hasAttribute(QLatin1String(""), QLatin1String("attr2"))); /* An empty string. */

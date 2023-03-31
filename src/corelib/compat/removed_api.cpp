@@ -524,6 +524,34 @@ qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)
                          reinterpret_cast<char32_t *>(out));
 }
 
+#include "qxmlstream.h"
+
+QStringView QXmlStreamAttributes::value(const QString &namespaceUri, const QString &name) const
+{
+    return value(qToAnyStringViewIgnoringNull(namespaceUri), qToAnyStringViewIgnoringNull(name));
+}
+
+QStringView QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1StringView name) const
+{
+    return value(qToAnyStringViewIgnoringNull(namespaceUri), QAnyStringView(name));
+}
+
+QStringView QXmlStreamAttributes::value(QLatin1StringView namespaceUri, QLatin1StringView name) const
+{
+    return value(QAnyStringView(namespaceUri), QAnyStringView(name));
+}
+
+QStringView QXmlStreamAttributes::value(const QString &qualifiedName) const
+{
+    return value(qToAnyStringViewIgnoringNull(qualifiedName));
+}
+
+QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
+{
+    return value(QAnyStringView(qualifiedName));
+}
+
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts
