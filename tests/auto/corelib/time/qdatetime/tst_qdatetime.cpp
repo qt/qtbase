@@ -328,7 +328,7 @@ void tst_QDateTime::ctor()
 
 void tst_QDateTime::operator_eq()
 {
-    QVERIFY(QDateTime() != QDateTime(QDate(1970, 1, 1), QTime(0, 0))); // QTBUG-79006
+    QVERIFY(QDateTime() != QDate(1970, 1, 1).startOfDay()); // QTBUG-79006
     QDateTime dt1(QDate(2004, 3, 24), QTime(23, 45, 57), UTC);
     QDateTime dt2(QDate(2005, 3, 11), QTime(0, 0), UTC);
     dt2 = dt1;
@@ -1266,13 +1266,17 @@ void tst_QDateTime::addDays()
     }
 #endif
 
-    // Test last UTC second of 1969 *is* valid (despite being time_t(-1))
-    dt1 = QDateTime(QDate(1969, 12, 30), QTime(23, 59, 59), UTC).toLocalTime().addDays(1);
-    QVERIFY(dt1.isValid());
-    QCOMPARE(dt1.toSecsSinceEpoch(), -1);
-    dt2 = QDateTime(QDate(1970, 1, 1), QTime(23, 59, 59), UTC).toLocalTime().addDays(-1);
-    QVERIFY(dt2.isValid());
-    QCOMPARE(dt2.toSecsSinceEpoch(), -1);
+    // Baja Mexico has a transition at the epoch, see fromStringDateFormat_data().
+    if (QDateTime(QDate(1969, 12, 30), QTime(0, 0)).secsTo(
+            QDateTime(QDate(1970, 1, 2), QTime(0, 0))) == 3 * 24 * 60 * 60) {
+        // Test last UTC second of 1969 *is* valid (despite being time_t(-1))
+        dt1 = QDateTime(QDate(1969, 12, 30), QTime(23, 59, 59), UTC).toLocalTime().addDays(1);
+        QVERIFY(dt1.isValid());
+        QCOMPARE(dt1.toSecsSinceEpoch(), -1);
+        dt2 = QDateTime(QDate(1970, 1, 1), QTime(23, 59, 59), UTC).toLocalTime().addDays(-1);
+        QVERIFY(dt2.isValid());
+        QCOMPARE(dt2.toSecsSinceEpoch(), -1);
+    }
 }
 
 void tst_QDateTime::addInvalid()
@@ -1528,10 +1532,10 @@ void tst_QDateTime::addMSecs_data()
         << QDateTime(QDate(2013, 1, 1), QTime(2, 2, 3), QTimeZone::fromSecondsAheadOfUtc(60 * 60));
     // Check last second of 1969
     QTest::newRow("epoch-1s-utc")
-        << QDateTime(QDate(1970, 1, 1), QTime(0, 0), UTC) << qint64(-1)
+        << QDate(1970, 1, 1).startOfDay(UTC) << qint64(-1)
         << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), UTC);
     QTest::newRow("epoch-1s-local")
-        << QDateTime(QDate(1970, 1, 1), QTime(0, 0)) << qint64(-1)
+        << QDate(1970, 1, 1).startOfDay() << qint64(-1)
         << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59));
     QTest::newRow("epoch-1s-utc-as-local")
         << QDate(1970, 1, 1).startOfDay(UTC).toLocalTime() << qint64(-1)
@@ -2481,6 +2485,10 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::addColumn<Qt::DateFormat>("dateFormat");
     QTest::addColumn<QDateTime>("expected");
 
+    // Fails 1970 start dates in western Mexico
+    // due to changing from PST to MST at the start of 1970.
+    const bool goodEpochStart = QDateTime(QDate(1970, 1, 1), QTime(0, 0)).isValid();
+
     // Test Qt::TextDate format.
     QTest::newRow("text date") << QString::fromLatin1("Tue Jun 17 08:00:10 2003")
         << Qt::TextDate << QDateTime(QDate(2003, 6, 17), QTime(8, 0, 10));
@@ -2492,22 +2500,25 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << QDateTime(QDate(12345, 6, 17), QTime(8, 0, 10));
     QTest::newRow("text date Year -4712") << QString::fromLatin1("Tue Jan 1 00:01:02 -4712")
         << Qt::TextDate << QDateTime(QDate(-4712, 1, 1), QTime(0, 1, 2));
-    QTest::newRow("text epoch")
-        << QString::fromLatin1("Thu Jan 1 00:00:00 1970") << Qt::TextDate
-        << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("text data1") << QString::fromLatin1("Thu Jan 2 12:34 1970")
         << Qt::TextDate << QDateTime(QDate(1970, 1, 2), QTime(12, 34));
+    if (goodEpochStart) {
+        QTest::newRow("text epoch year after time")
+            << QString::fromLatin1("Thu Jan 1 00:00:00 1970") << Qt::TextDate
+            << QDate(1970, 1, 1).startOfDay();
+        QTest::newRow("text epoch spaced")
+            << QString::fromLatin1(" Thu   Jan   1    00:00:00    1970  ")
+            << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
+        QTest::newRow("text epoch time after year")
+            << QString::fromLatin1("Thu Jan 1 1970 00:00:00")
+            << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
+    }
     QTest::newRow("text epoch terse")
         << QString::fromLatin1("Thu Jan 1 00 1970") << Qt::TextDate << QDateTime();
     QTest::newRow("text epoch stray :00")
         << QString::fromLatin1("Thu Jan 1 00:00:00:00 1970") << Qt::TextDate << QDateTime();
-    QTest::newRow("text epoch spaced")
-        << QString::fromLatin1(" Thu   Jan   1    00:00:00    1970  ")
-        << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("text data6") << QString::fromLatin1("Thu Jan 1 00:00:00")
         << Qt::TextDate << QDateTime();
-    QTest::newRow("text data7") << QString::fromLatin1("Thu Jan 1 1970 00:00:00")
-                                << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("text bad offset") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC+foo")
         << Qt::TextDate << QDateTime();
     QTest::newRow("text UTC early") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC")
