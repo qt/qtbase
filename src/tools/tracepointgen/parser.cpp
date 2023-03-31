@@ -11,7 +11,7 @@ static void removeOffsetRange(qsizetype begin, qsizetype end, QList<LineNumber> 
 {
     qsizetype count = end - begin;
     qsizetype i = 0;
-    DEBUGPRINTF2(printf("tracepointgen: removeOffsetRange: %d %d\n", begin, end));
+    DEBUGPRINTF2(printf("tracepointgen: removeOffsetRange: %llu %llu\n", begin, end));
     while (i < offsets.size()) {
         LineNumber &cur = offsets[i];
         if (begin > cur.end) {
@@ -21,7 +21,7 @@ static void removeOffsetRange(qsizetype begin, qsizetype end, QList<LineNumber> 
             i++;
         } else if (begin < cur.begin && end > cur.end) {
             offsets.remove(i);
-            DEBUGPRINTF2(printf("tracepointgen: removeOffsetRange: %d, %d, %d\n", cur.begin, cur.end, cur.line));
+            DEBUGPRINTF2(printf("tracepointgen: removeOffsetRange: %llu, %llu, %d\n", cur.begin, cur.end, cur.line));
         } else if (end >= cur.begin && end <= cur.end) {
             cur.begin = begin;
             cur.end -= count;
@@ -130,9 +130,9 @@ static QString preprocessMetadata(const QString &in)
 
 int Parser::lineNumber(qsizetype offset) const
 {
-    DEBUGPRINTF(printf("tracepointgen: lineNumber: offset %u, line count: %u\n", offset , m_offsets.size()));
+    DEBUGPRINTF(printf("tracepointgen: lineNumber: offset %llu, line count: %llu\n", offset , m_offsets.size()));
     for (const auto line : m_offsets) {
-        DEBUGPRINTF(printf("tracepointgen: lineNumber: %d %d %d\n", line.begin, line.end, line.line));
+        DEBUGPRINTF(printf("tracepointgen: lineNumber: %llu %llu %d\n", line.begin, line.end, line.line));
         if (offset >= line.begin && offset <= line.end)
             return line.line;
     }
@@ -147,7 +147,7 @@ void Parser::parseParamReplace(const QString &data, qsizetype offset, const QStr
     QString params = data.mid(beginBrace + 1, endBrace - beginBrace -1);
     int punc = params.indexOf(QLatin1Char(','));
     if (punc < 0)
-        panic("Syntax error in Q_TRACE_PARAM_REPLACE at file %s, line %d", qPrintable(name), lineNumber(offset));
+        panic("Syntax error in Q_TRACE_PARAM_REPLACE at file %s, line %llu", qPrintable(name), lineNumber(offset));
     rep.in = params.left(punc).simplified();
     rep.out = params.right(params.length() - punc - 1).simplified();
     if (rep.in.endsWith(QLatin1Char('*')) || rep.out.endsWith(QLatin1Char(']')))
