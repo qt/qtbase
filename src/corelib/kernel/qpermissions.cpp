@@ -198,7 +198,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     \endcode
 
     To inspect the properties of the original, typed permission,
-    use the data() function:
+    use the \l {QPermission::}{value()} function:
 
     \code
     QLocationPermission locationPermission;
