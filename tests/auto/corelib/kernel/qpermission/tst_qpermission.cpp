@@ -26,6 +26,7 @@ private Q_SLOTS:
 
     void conversionMaintainsState() const;
 
+    void functorWithoutContext();
     void functorWithContextInThread();
     void receiverInThread();
     void destroyedContextObject();
@@ -145,6 +146,23 @@ void tst_QPermission::conversionMaintainsState() const
     }
 }
 
+// Compile test for context-less functor overloads
+void tst_QPermission::functorWithoutContext()
+{
+    int argc = 0;
+    char *argv = nullptr;
+    QCoreApplication app(argc, &argv);
+
+    DummyPermission dummy;
+#ifdef Q_OS_DARWIN
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression(".*Could not find permission plugin for DummyPermission.*"));
+#endif
+
+    qApp->requestPermission(dummy, [](const QPermission &permission){
+        QVERIFY(permission.value<DummyPermission>());
+    });
+}
+
 void tst_QPermission::functorWithContextInThread()
 {
     int argc = 0;
@@ -209,6 +227,11 @@ void tst_QPermission::receiverInThread()
 
     qApp->requestPermission(dummy, &receiver, &Receiver::handlePermission);
     QTRY_COMPARE(receiver.permissionReceiverThread, &receiverThread);
+
+    // compile tests: none of these work and the error output isn't horrible
+    // qApp->requestPermission(dummy, &receiver, "&tst_QPermission::receiverInThread");
+    // qApp->requestPermission(dummy, &receiver, &tst_QPermission::receiverInThread);
+    // qApp->requestPermission(dummy, &receiver, &QObject::destroyed);
 }
 
 void tst_QPermission::destroyedContextObject()

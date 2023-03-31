@@ -116,66 +116,34 @@ public:
 
 # ifdef Q_QDOC
     template <typename Functor>
-    void requestPermission(const QPermission &permission, Functor functor);
-    template <typename Functor>
     void requestPermission(const QPermission &permission, const QObject *context, Functor functor);
 # else
-    template <typename Slot> // requestPermission to a QObject slot
+    // requestPermission with context or receiver object; need to require here that receiver is the
+    // right type to avoid ambiguity with the private implementation function.
+    template <typename Functor>
     void requestPermission(const QPermission &permission,
-        const typename QtPrivate::FunctionPointer<Slot>::Object *receiver, Slot slot)
+                           const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
+                           Functor func)
     {
-        using CallbackSignature = QtPrivate::FunctionPointer<void (*)(QPermission)>;
-        using SlotSignature = QtPrivate::FunctionPointer<Slot>;
-
-        static_assert(int(SlotSignature::ArgumentCount) <= int(CallbackSignature::ArgumentCount),
-            "Slot requires more arguments than what can be provided.");
-        static_assert((QtPrivate::CheckCompatibleArguments<typename CallbackSignature::Arguments, typename SlotSignature::Arguments>::value),
-            "Slot arguments are not compatible (must be QPermission)");
-
-        auto slotObj = new QtPrivate::QSlotObject<Slot, typename SlotSignature::Arguments, void>(slot);
-        requestPermission(permission, slotObj, receiver);
+        using Prototype = void(*)(QPermission);
+        requestPermission(permission,
+                          QtPrivate::makeSlotObject<Prototype>(std::move(func)),
+                          receiver);
     }
-
-    // requestPermission to a functor or function pointer (with context)
-    template <typename Func, std::enable_if_t<
-        !QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction
-        && !std::is_same<const char *, Func>::value, bool> = true>
-    void requestPermission(const QPermission &permission, const QObject *context, Func func)
-    {
-        using CallbackSignature = QtPrivate::FunctionPointer<void (*)(QPermission)>;
-        constexpr int MatchingArgumentCount = QtPrivate::ComputeFunctorArgumentCount<
-            Func, CallbackSignature::Arguments>::Value;
-
-        static_assert(MatchingArgumentCount == 0
-            || MatchingArgumentCount == CallbackSignature::ArgumentCount,
-           "Functor arguments are not compatible (must be QPermission)");
-
-        QtPrivate::QSlotObjectBase *slotObj = nullptr;
-        if constexpr (MatchingArgumentCount == CallbackSignature::ArgumentCount) {
-            slotObj = new QtPrivate::QFunctorSlotObject<Func, 1,
-                typename CallbackSignature::Arguments, void>(std::move(func));
-        } else {
-            slotObj = new QtPrivate::QFunctorSlotObject<Func, 0,
-                typename QtPrivate::List_Left<void, 0>::Value, void>(std::move(func));
-        }
-
-        requestPermission(permission, slotObj, context);
-    }
+# endif // Q_QDOC
 
     // requestPermission to a functor or function pointer (without context)
-    template <typename Func, std::enable_if_t<
-        !QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction
-        && !std::is_same<const char *, Func>::value, bool> = true>
-    void requestPermission(const QPermission &permission, Func func)
+    template <typename Functor>
+    void requestPermission(const QPermission &permission, Functor func)
     {
         requestPermission(permission, nullptr, std::move(func));
     }
 
 private:
+    // ### Qt 7: rename to requestPermissionImpl to avoid ambiguity
     void requestPermission(const QPermission &permission,
         QtPrivate::QSlotObjectBase *slotObj, const QObject *context);
 public:
-# endif // Q_QDOC
 
 #endif // QT_CONFIG(permission)
 

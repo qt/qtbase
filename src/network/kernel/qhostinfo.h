@@ -57,59 +57,27 @@ public:
 
 #ifdef Q_QDOC
     template<typename Functor>
-    static int lookupHost(const QString &name, Functor functor);
-    template<typename Functor>
     static int lookupHost(const QString &name, const QObject *context, Functor functor);
 #else
-    // lookupHost to a QObject slot
-    template <typename Func>
+    // lookupHost to a callable (with context)
+    template <typename Functor>
     static inline int lookupHost(const QString &name,
-                                 const typename QtPrivate::FunctionPointer<Func>::Object *receiver,
-                                 Func slot)
+                                 const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
+                                 Functor func)
     {
-        typedef QtPrivate::FunctionPointer<Func> SlotType;
-
-        typedef QtPrivate::FunctionPointer<void (*)(QHostInfo)> SignalType;
-        static_assert(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
-                          "The slot requires more arguments than the signal provides.");
-        static_assert((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments,
-                           typename SlotType::Arguments>::value),
-                          "Signal and slot arguments are not compatible.");
-        static_assert((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType,
-                           typename SignalType::ReturnType>::value),
-                          "Return type of the slot is not compatible "
-                          "with the return type of the signal.");
-
-        auto slotObj = new QtPrivate::QSlotObject<Func, typename SlotType::Arguments, void>(slot);
-        return lookupHostImpl(name, receiver, slotObj, nullptr);
+        using Prototype = void(*)(QHostInfo);
+        return lookupHostImpl(name, receiver,
+                              QtPrivate::makeSlotObject<Prototype>(std::move(func)),
+                              nullptr);
     }
+#endif // Q_QDOC
 
     // lookupHost to a callable (without context)
-    template <typename Func>
-    static inline typename std::enable_if<!QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction &&
-                                          !std::is_same<const char *, Func>::value, int>::type
-        lookupHost(const QString &name, Func slot)
+    template <typename Functor>
+    static inline int lookupHost(const QString &name, Functor slot)
     {
         return lookupHost(name, nullptr, std::move(slot));
     }
-
-    // lookupHost to a functor or function pointer (with context)
-    template <typename Func1>
-    static inline typename std::enable_if<!QtPrivate::FunctionPointer<Func1>::IsPointerToMemberFunction &&
-                                          !std::is_same<const char*, Func1>::value, int>::type
-        lookupHost(const QString &name, QObject *context, Func1 slot)
-    {
-        typedef QtPrivate::FunctionPointer<Func1> SlotType;
-
-        static_assert(int(SlotType::ArgumentCount) <= 1,
-                          "The slot must not require more than one argument");
-
-        auto slotObj = new QtPrivate::QFunctorSlotObject<Func1, 1,
-                                                         typename QtPrivate::List<QHostInfo>,
-                                                         void>(std::move(slot));
-        return lookupHostImpl(name, context, slotObj, nullptr);
-    }
-#endif // Q_QDOC
 
 private:
     QHostInfoPrivate *d_ptr;

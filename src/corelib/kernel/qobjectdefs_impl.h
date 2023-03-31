@@ -333,6 +333,27 @@ namespace QtPrivate {
         typedef decltype(dummy<Functor>().operator()((dummy<ArgList>())...)) Value;
     };
 
+    /*
+        Wrapper around ComputeFunctorArgumentCount and CheckCompatibleArgument,
+        depending on whether \a Functor is a PMF or not. Returns -1 if \a Func is
+        not compatible with the \a ExpectedArguments, otherwise returns >= 0.
+    */
+    template<typename Prototype, typename Functor>
+    constexpr int inline countMatchingArguments()
+    {
+        using ExpectedArguments = typename QtPrivate::FunctionPointer<Prototype>::Arguments;
+
+        if constexpr (QtPrivate::FunctionPointer<Functor>::IsPointerToMemberFunction) {
+            using ActualArguments = typename QtPrivate::FunctionPointer<Functor>::Arguments;
+            if constexpr (QtPrivate::CheckCompatibleArguments<ExpectedArguments, ActualArguments>::value)
+                return QtPrivate::FunctionPointer<Functor>::ArgumentCount;
+            else
+                return -1;
+        } else {
+            return QtPrivate::ComputeFunctorArgumentCount<Functor, ExpectedArguments>::Value;
+        }
+    }
+
     // internal base class (interface) containing functions required to call a slot managed by a pointer to function.
     class QSlotObjectBase {
         QAtomicInt m_ref;
@@ -428,6 +449,64 @@ namespace QtPrivate {
 
     template <typename Func>
     using QFunctorSlotObjectWithNoArgsImplicitReturn = QFunctorSlotObjectWithNoArgs<Func, typename QtPrivate::FunctionPointer<Func>::ReturnType>;
+
+
+    // Helper to detect the context object type based on the functor type:
+    // QObject for free functions and lambdas; the callee for member function
+    // pointers. The default declaration doesn't have the ContextType typedef,
+    // and so non-functor APIs (like old-style string-based slots) are removed
+    // from the overload set.
+    template <typename Func, typename = void>
+    struct ContextTypeForFunctor {};
+
+    template <typename Func>
+    struct ContextTypeForFunctor<Func,
+        std::enable_if_t<std::negation_v<std::disjunction<std::is_same<const char *, Func>,
+                                                          std::is_member_function_pointer<Func>>>
+        >
+    >
+    {
+        using ContextType = QObject;
+    };
+    template <typename Func>
+    struct ContextTypeForFunctor<Func,
+        std::enable_if_t<std::conjunction_v<std::negation<std::is_same<const char *, Func>>,
+                                            std::is_member_function_pointer<Func>,
+                                            std::is_convertible<typename QtPrivate::FunctionPointer<Func>::Object *, QObject *>>
+        >
+    >
+    {
+        using ContextType = typename QtPrivate::FunctionPointer<Func>::Object;
+    };
+
+    /*
+        Returns a suitable QSlotObjectBase object that holds \a func, if possible.
+
+        Not available (and thus produces compile-time errors) if the Functor provided is
+        not compatible with the expected Prototype.
+    */
+    template <typename Prototype, typename Functor>
+    static constexpr std::enable_if_t<QtPrivate::countMatchingArguments<Prototype, Functor>() >= 0,
+        QtPrivate::QSlotObjectBase *>
+    makeSlotObject(Functor &&func)
+    {
+        using ExpectedSignature = QtPrivate::FunctionPointer<Prototype>;
+        using ExpectedArguments = typename ExpectedSignature::Arguments;
+        using ActualSignature = QtPrivate::FunctionPointer<Functor>;
+
+        static_assert(int(ActualSignature::ArgumentCount) <= int(ExpectedSignature::ArgumentCount),
+            "Functor requires more arguments than what can be provided.");
+        constexpr int MatchingArgumentCount = QtPrivate::countMatchingArguments<Prototype, Functor>();
+
+        if constexpr (QtPrivate::FunctionPointer<Functor>::IsPointerToMemberFunction) {
+            using ActualArguments = typename ActualSignature::Arguments;
+            return  new QtPrivate::QSlotObject<Functor, ActualArguments, void>(func);
+        } else {
+            using ActualArguments = typename QtPrivate::List_Left<ExpectedArguments, MatchingArgumentCount>::Value;
+
+            return new QtPrivate::QFunctorSlotObject<Functor, MatchingArgumentCount, ActualArguments, void>(std::move(func));
+        }
+    }
 }
 
 QT_END_NAMESPACE
