@@ -179,8 +179,9 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
    \brief The QCborError class holds the error condition found while parsing or
    validating a CBOR stream.
 
-   \sa QCborStreamReader, QCborValue, QCborParserError
-   \sa {Cbordump Example}, {Convert Example}, {JSON Save Game Example}
+   \sa QCborStreamReader, QCborValue, QCborParserError,
+       {Parsing and displaying CBOR data}, {Convert Example},
+       {JSON Save Game Example}
  */
 
 /*!
