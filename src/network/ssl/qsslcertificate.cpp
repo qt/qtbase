@@ -974,15 +974,15 @@ QDebug operator<<(QDebug debug, const QSslCertificate &certificate)
     QDebugStateSaver saver(debug);
     debug.resetFormat().nospace();
     debug << "QSslCertificate("
-          << certificate.version()
-          << ", " << certificate.serialNumber()
-          << ", " << certificate.digest().toBase64()
-          << ", " << certificate.issuerDisplayName()
-          << ", " << certificate.subjectDisplayName()
-          << ", " << certificate.subjectAlternativeNames()
+          << "Version=" << certificate.version()
+          << ", SerialNumber=" << certificate.serialNumber()
+          << ", Digest=" << certificate.digest().toBase64()
+          << ", Issuer=" << certificate.issuerDisplayName()
+          << ", Subject=" << certificate.subjectDisplayName()
+          << ", AlternativeSubjectNames=" << certificate.subjectAlternativeNames()
 #if QT_CONFIG(datestring)
-          << ", " << certificate.effectiveDate()
-          << ", " << certificate.expiryDate()
+          << ", EffectiveDate=" << certificate.effectiveDate()
+          << ", ExpiryDate=" << certificate.expiryDate()
 #endif
           << ')';
     return debug;
