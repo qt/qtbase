@@ -542,6 +542,7 @@ public:
 private slots:
     void initTestCase();
     void cleanupTestCase();
+    void runTestSuite();
     void reportFailures() const;
     void reportFailures_data();
     void checkBaseline() const;
@@ -624,16 +625,19 @@ void tst_QXmlStream::initTestCase()
         QFile::remove(destinationPath); // copy will fail if file exists
         QVERIFY(QFile::copy(fileInfo.filePath(), destinationPath));
     }
+}
 
+void tst_QXmlStream::cleanupTestCase()
+{
+}
+
+void tst_QXmlStream::runTestSuite()
+{
     QFile file(m_tempDir.filePath(catalogFile));
     QVERIFY2(file.open(QIODevice::ReadOnly),
              qPrintable(QString::fromLatin1("Failed to open the test suite catalog; %1").arg(file.fileName())));
 
     QVERIFY(m_handler.runTests(&file));
-}
-
-void tst_QXmlStream::cleanupTestCase()
-{
 }
 
 void tst_QXmlStream::reportFailures() const
