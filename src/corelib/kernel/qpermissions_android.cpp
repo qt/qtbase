@@ -104,6 +104,18 @@ Q_GLOBAL_STATIC_WITH_ARGS(PermissionStatusHash, g_permissionStatusHash, ({
         { qMetaTypeId<QLocationPermission>(), Qt::PermissionStatus::Undetermined }
 }));
 
+static Qt::PermissionStatus
+getCombinedStatus(const QList<QtAndroidPrivate::PermissionResult> &androidResults)
+{
+    // Android returns only Denied or Granted
+    for (const auto &result : androidResults) {
+        const auto status = permissionStatusForAndroidResult(result);
+        if (status == Qt::PermissionStatus::Denied)
+            return status;
+    }
+    return Qt::PermissionStatus::Granted;
+}
+
 namespace QPermissions::Private
 {
     Qt::PermissionStatus checkPermission(const QPermission &permission)
@@ -112,8 +124,12 @@ namespace QPermissions::Private
         if (nativePermissionList.isEmpty())
             return Qt::PermissionStatus::Granted;
 
-        const auto result = QtAndroidPrivate::checkPermission(nativePermissionList.first()).result();
-        const auto status = permissionStatusForAndroidResult(result);
+        QList<QtAndroidPrivate::PermissionResult> androidResults;
+        androidResults.reserve(nativePermissionList.size());
+        for (const auto &nativePermission : nativePermissionList)
+            androidResults.push_back(QtAndroidPrivate::checkPermission(nativePermission).result());
+
+        const auto status = getCombinedStatus(androidResults);
         const auto it = g_permissionStatusHash->constFind(permission.type().id());
         const bool foundStatus = (it != g_permissionStatusHash->constEnd());
         const bool itUndetermined = foundStatus && (*it) == Qt::PermissionStatus::Undetermined;
@@ -133,8 +149,9 @@ namespace QPermissions::Private
 
         QtAndroidPrivate::requestPermissions(nativePermissionList).then(qApp,
             [callback, permission](QFuture<QtAndroidPrivate::PermissionResult> future) {
-                const auto result = future.isValid() ? future.result() : QtAndroidPrivate::Denied;
-                const auto status = permissionStatusForAndroidResult(result);
+                const auto androidResults = future.isValid() ? future.results()
+                                                             : QList{QtAndroidPrivate::Denied};
+                const auto status = getCombinedStatus(androidResults);
                 g_permissionStatusHash->insert(permission.type().id(), status);
                 callback(status);
             }
