@@ -102,6 +102,8 @@ public:
 
     static QXcbIntegration *instance() { return m_instance; }
 
+    void setApplicationBadge(qint64 number) override;
+
 private:
     QXcbConnection *m_connection = nullptr;
 

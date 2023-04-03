@@ -575,6 +575,37 @@ bool QGenericUnixServices::hasCapability(Capability capability) const
     return false;
 }
 
+void QGenericUnixServices::setApplicationBadge(qint64 number)
+{
+#if QT_CONFIG(dbus)
+    if (qGuiApp->desktopFileName().isEmpty()) {
+        qWarning("QGuiApplication::desktopFileName() is empty");
+        return;
+    }
+
+
+    const QString launcherUrl = QStringLiteral("application://") + qGuiApp->desktopFileName() + QStringLiteral(".desktop");
+    const qint64 count = qBound(0, number, 9999);
+    QVariantMap dbusUnityProperties;
+
+    if (count > 0) {
+        dbusUnityProperties[QStringLiteral("count")] = count;
+        dbusUnityProperties[QStringLiteral("count-visible")] = true;
+    } else {
+        dbusUnityProperties[QStringLiteral("count-visible")] = false;
+    }
+
+    auto signal = QDBusMessage::createSignal(QStringLiteral("/com/canonical/unity/launcherentry/")
+        + qGuiApp->applicationName(), QStringLiteral("com.canonical.Unity.LauncherEntry"), QStringLiteral("Update"));
+
+    signal.setArguments({launcherUrl, dbusUnityProperties});
+
+    QDBusConnection::sessionBus().send(signal);
+#else
+    Q_UNUSED(number)
+#endif
+}
+
 QT_END_NAMESPACE
 
 #include "qgenericunixservices.moc"
