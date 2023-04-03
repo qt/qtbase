@@ -387,8 +387,59 @@ QT_PERMISSION_IMPL_COMMON(QMicrophonePermission)
 */
 
 QT_PERMISSION_IMPL_COMMON(QBluetoothPermission)
-    : u{} // stateless, atm
+    : u{ShortData{CommunicationMode::Default, {}}}
 {}
+
+/*!
+    \enum QBluetoothPermission::CommunicationMode
+    \since 6.6
+
+    This enum is used to control the allowed Bluetooth communication modes.
+
+    \value Access Allow this device to access other Bluetooth devices. This
+           includes scanning for nearby devices and connecting to them.
+    \value Advertise Allow other Bluetooth devices to discover this device.
+    \value Default This configuration is used by default.
+
+    \note The fine-grained permissions are currently supported only on
+    Android 12 and newer. On older Android versions, as well as on Apple
+    operating systems, any mode results in full Bluetooth access.
+
+    \note For now the \c Access mode on Android also requests the
+    \l {QLocationPermission::Precise}{precise location} permission.
+    This permission coupling may change in the future.
+*/
+
+/*!
+    \since 6.6
+
+    Sets the allowed Bluetooth communication modes to \a modes.
+
+    \note A default-constructed instance of \l {QBluetoothPermission::}
+    {CommunicationModes} has no sense, so an attempt to set such a mode will
+    raise a \c {qWarning()} and fall back to using the
+    \l {QBluetoothPermission::}{Default} mode.
+*/
+void QBluetoothPermission::setCommunicationModes(CommunicationModes modes)
+{
+    if (modes == CommunicationModes{}) {
+        qCWarning(lcPermissions, "QBluetoothPermission: trying to set an invalid empty mode. "
+                                 "Falling back to CommunicationMode::Default.");
+        u.data.mode = Default;
+    } else {
+        u.data.mode = static_cast<CommunicationMode>(modes.toInt());
+    }
+}
+
+/*!
+    \since 6.6
+
+    Returns the allowed Bluetooth communication modes.
+*/
+QBluetoothPermission::CommunicationModes QBluetoothPermission::communicationModes() const
+{
+    return u.data.mode;
+}
 
 /*!
     \class QLocationPermission

@@ -173,6 +173,32 @@ private:
 };
 Q_DECLARE_SHARED(QContactsPermission)
 
+class QBluetoothPermissionPrivate;
+class QBluetoothPermission
+{
+    Q_GADGET_EXPORT(Q_CORE_EXPORT)
+public:
+    enum CommunicationMode : quint8 {
+        Access = 0x01,
+        Advertise = 0x02,
+        Default = Access | Advertise,
+    };
+    Q_DECLARE_FLAGS(CommunicationModes, CommunicationMode)
+    Q_FLAG(CommunicationModes)
+
+    Q_CORE_EXPORT void setCommunicationModes(CommunicationModes modes);
+    Q_CORE_EXPORT CommunicationModes communicationModes() const;
+
+private:
+    struct ShortData {
+        CommunicationMode mode;
+        char reserved[sizeof(void*) - sizeof(mode)];
+    };
+    QT_PERMISSION(QBluetoothPermission)
+};
+Q_DECLARE_OPERATORS_FOR_FLAGS(QBluetoothPermission::CommunicationModes)
+Q_DECLARE_SHARED(QBluetoothPermission)
+
 #define Q_DECLARE_MINIMAL_PERMISSION(ClassName) \
     class ClassName##Private; \
     class ClassName \
@@ -184,7 +210,6 @@ Q_DECLARE_SHARED(QContactsPermission)
 
 Q_DECLARE_MINIMAL_PERMISSION(QCameraPermission)
 Q_DECLARE_MINIMAL_PERMISSION(QMicrophonePermission)
-Q_DECLARE_MINIMAL_PERMISSION(QBluetoothPermission)
 
 #undef QT_PERMISSION
 #undef Q_DECLARE_MINIMAL_PERMISSION
