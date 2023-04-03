@@ -14,6 +14,11 @@
 
 #include "cs_mipmap_p.h"
 
+#if __has_include(<pix.h>)
+#include <pix.h>
+#define QRHI_D3D12_HAS_OLD_PIX
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -514,7 +519,11 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::MultisampleRenderBuffer:
         return true;
     case QRhi::DebugMarkers:
-        return false; // ###
+#ifdef QRHI_D3D12_HAS_OLD_PIX
+        return true;
+#else
+        return false;
+#endif
     case QRhi::Timestamps:
         return false; // ###
     case QRhi::Instancing:
@@ -1261,19 +1270,43 @@ void QRhiD3D12::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
 
 void QRhiD3D12::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
 {
-    Q_UNUSED(cb);
+    if (!debugMarkers)
+        return;
+
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+#ifdef QRHI_D3D12_HAS_OLD_PIX
+    PIXBeginEvent(cbD->cmdList, PIX_COLOR_DEFAULT, reinterpret_cast<LPCWSTR>(QString::fromLatin1(name).utf16()));
+#else
+    Q_UNUSED(cbD);
     Q_UNUSED(name);
+#endif
 }
 
 void QRhiD3D12::debugMarkEnd(QRhiCommandBuffer *cb)
 {
-    Q_UNUSED(cb);
+    if (!debugMarkers)
+        return;
+
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+#ifdef QRHI_D3D12_HAS_OLD_PIX
+    PIXEndEvent(cbD->cmdList);
+#else
+    Q_UNUSED(cbD);
+#endif
 }
 
 void QRhiD3D12::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
 {
-    Q_UNUSED(cb);
+    if (!debugMarkers)
+        return;
+
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+#ifdef QRHI_D3D12_HAS_OLD_PIX
+    PIXSetMarker(cbD->cmdList, PIX_COLOR_DEFAULT, reinterpret_cast<LPCWSTR>(QString::fromLatin1(msg).utf16()));
+#else
+    Q_UNUSED(cbD);
     Q_UNUSED(msg);
+#endif
 }
 
 const QRhiNativeHandles *QRhiD3D12::nativeHandles(QRhiCommandBuffer *cb)
