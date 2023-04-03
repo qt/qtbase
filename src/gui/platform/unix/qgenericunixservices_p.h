@@ -35,6 +35,7 @@ public:
     bool openDocument(const QUrl &url) override;
     QPlatformServiceColorPicker *colorPicker(QWindow *parent = nullptr) override;
 
+    void setApplicationBadge(qint64 number);
     virtual QString portalWindowIdentifier(QWindow *window);
 
 private:

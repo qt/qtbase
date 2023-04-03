@@ -751,7 +751,8 @@ QString QGuiApplication::applicationDisplayName()
     of unread messages or similar.
 
     The badge will be overlaid on the application's icon in the Dock
-    on \macos, the home screen icon on iOS, or the task bar on Windows.
+    on \macos, the home screen icon on iOS, or the task bar on Windows
+    and Linux.
 
     If the number is outside the range supported by the platform, the
     number will be clamped to the supported range. If the number does

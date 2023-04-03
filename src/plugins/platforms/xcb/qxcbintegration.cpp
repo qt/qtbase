@@ -585,4 +585,10 @@ QPlatformVulkanInstance *QXcbIntegration::createPlatformVulkanInstance(QVulkanIn
 }
 #endif
 
+void QXcbIntegration::setApplicationBadge(qint64 number)
+{
+    auto unixServices = dynamic_cast<QGenericUnixServices *>(services());
+    unixServices->setApplicationBadge(number);
+}
+
 QT_END_NAMESPACE
