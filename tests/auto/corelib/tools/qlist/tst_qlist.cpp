@@ -231,6 +231,9 @@ private slots:
     void appendCustom() const { append<Custom>(); }
     void appendRvalue() const;
     void appendList() const;
+    void assignInt() const { assign<int>(); }
+    void assignMovable() const { assign<Movable>(); }
+    void assignCustom() const { assign<Custom>(); }
     void at() const;
     void capacityInt() const { capacity<int>(); }
     void capacityMovable() const { capacity<Movable>(); }
@@ -396,6 +399,7 @@ private:
     template<typename T> void testAssignment() const;
     template<typename T> void add() const;
     template<typename T> void append() const;
+    template<typename T> void assign() const;
     template<typename T> void assignFromInitializerList() const;
     template<typename T> void capacity() const;
     template<typename T> void clear() const;
@@ -747,6 +751,66 @@ void tst_QList::append() const
         QVERIFY(emptyVec.isEmpty());
         QVERIFY(!emptyVec.isDetached());
         QCOMPARE(myvec, QList<T>({ SimpleValue<T>::at(0), SimpleValue<T>::at(1) }));
+    }
+}
+
+template <typename T>
+void tst_QList::assign() const
+{
+    TST_QLIST_CHECK_LEAKS(T)
+    {
+        QList<T> myvec;
+        myvec.assign(2, T_FOO);
+        QVERIFY(myvec.isDetached());
+        QCOMPARE(myvec, QList<T>() << T_FOO << T_FOO);
+
+        QList<T> myvecCopy = myvec;
+        QVERIFY(!myvec.isDetached());
+        QVERIFY(!myvecCopy.isDetached());
+        QVERIFY(myvec.isSharedWith(myvecCopy));
+        QVERIFY(myvecCopy.isSharedWith(myvec));
+
+        myvec.assign(3, T_BAR);
+        QCOMPARE(myvec, QList<T>() << T_BAR << T_BAR << T_BAR);
+        QVERIFY(myvec.isDetached());
+        QVERIFY(myvecCopy.isDetached());
+        QVERIFY(!myvec.isSharedWith(myvecCopy));
+        QVERIFY(!myvecCopy.isSharedWith(myvec));
+    }
+    {
+        QList<T> myvec;
+        myvec.assign(4, T_FOO);
+        QVERIFY(myvec.isDetached());
+        QCOMPARE(myvec, QList<T>() << T_FOO << T_FOO << T_FOO << T_FOO);
+
+        QList<T> myvecCopy = myvec;
+        QVERIFY(!myvec.isDetached());
+        QVERIFY(!myvecCopy.isDetached());
+        QVERIFY(myvec.isSharedWith(myvecCopy));
+        QVERIFY(myvecCopy.isSharedWith(myvec));
+
+        myvecCopy.assign(myvec.begin(), myvec.begin() + 2);
+        QVERIFY(myvec.isDetached());
+        QVERIFY(myvecCopy.isDetached());
+        QVERIFY(!myvec.isSharedWith(myvecCopy));
+        QVERIFY(!myvecCopy.isSharedWith(myvec));
+        QCOMPARE(myvecCopy, QList<T>() << T_FOO << T_FOO);
+    }
+    {
+        // Test the prepend optimization.
+        QList<T> withFreeSpaceAtBegin(16, T_FOO);
+        // try at most 100 times to create freeSpaceAtBegin():
+        for (int i = 0; i < 100 && !withFreeSpaceAtBegin.d.freeSpaceAtBegin(); ++i)
+             withFreeSpaceAtBegin.prepend(T_FOO);
+        QCOMPARE_GT(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 0);
+        const auto oldData = withFreeSpaceAtBegin.constData();
+        std::vector<T> v(withFreeSpaceAtBegin.capacity(), T_BAR);
+        withFreeSpaceAtBegin.assign(v.begin(), v.end());
+        QCOMPARE_EQ(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 0);
+        // TODO: Check for equality after the prepend optimization
+        // the following test checks that we didn't reallocate, but re-used the prepend buffer
+        QEXPECT_FAIL("","Use of freeSpaceAtBegin() isn't, yet, implemented", Continue);
+        QVERIFY(QtPrivate::q_points_into_range(oldData, withFreeSpaceAtBegin));
     }
 }
 

@@ -305,6 +305,53 @@ public:
         this->ptr = res;
     }
 
+    template <typename InputIterator>
+    void assign(InputIterator first, InputIterator last)
+    {
+        // This function only provides the basic exception guarantee.
+        constexpr bool IsFwdIt = std::is_convertible_v<
+                typename std::iterator_traits<InputIterator>::iterator_category,
+                std::forward_iterator_tag>;
+
+        if constexpr (IsFwdIt) {
+            const qsizetype n = std::distance(first, last);
+            // Use of freeSpaceAtBegin() isn't, yet, implemented.
+            const auto usableCapacity = constAllocatedCapacity() - freeSpaceAtBegin();
+            if (needsDetach() || n > usableCapacity) {
+                QArrayDataPointer allocated(Data::allocate(detachCapacity(n)));
+                swap(allocated);
+            }
+        } else if (needsDetach()) {
+            QArrayDataPointer allocated(Data::allocate(allocatedCapacity()));
+            swap(allocated);
+            // We don't want to copy data that we know we'll overwrite
+        }
+
+        auto dst = begin();
+        const auto dend = end();
+        while (true) {
+            if (first == last) {    // ran out of elements to assign
+                std::destroy(dst, dend);
+                break;
+            }
+            if (dst == dend) {      // ran out of existing elements to overwrite
+                if constexpr (IsFwdIt) {
+                    dst = std::uninitialized_copy(first, last, dst);
+                    break;
+                } else {
+                    do {
+                        (*this)->emplace(size, *first);
+                    } while (++first != last);
+                    return;         // size() is already correct (and dst invalidated)!
+                }
+            }
+            *dst = *first;          // overwrite existing element
+            ++dst;
+            ++first;
+        }
+        size = dst - begin();
+    }
+
     // forwards from QArrayData
     qsizetype allocatedCapacity() noexcept { return d ? d->allocatedCapacity() : 0; }
     qsizetype constAllocatedCapacity() const noexcept { return d ? d->constAllocatedCapacity() : 0; }

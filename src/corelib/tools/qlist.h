@@ -16,6 +16,8 @@
 #include <initializer_list>
 #include <type_traits>
 
+class tst_QList;
+
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
@@ -75,10 +77,15 @@ class QList
     using DataPointer = QArrayDataPointer<T>;
     class DisableRValueRefs {};
 
+    friend class ::tst_QList;
+
     DataPointer d;
 
     template <typename V, typename U> friend qsizetype QtPrivate::indexOf(const QList<V> &list, const U &u, qsizetype from) noexcept;
     template <typename V, typename U> friend qsizetype QtPrivate::lastIndexOf(const QList<V> &list, const U &u, qsizetype from) noexcept;
+    // This alias prevents the QtPrivate namespace from being exposed into the docs.
+    template <typename InputIterator>
+    using if_input_iterator = QtPrivate::IfIsInputIterator<InputIterator>;
 
 public:
     using Type = T;
@@ -287,7 +294,8 @@ public:
             d->copyAppend(args.begin(), args.end());
         return *this;
     }
-    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+
+    template <typename InputIterator, if_input_iterator<InputIterator> = true>
     QList(InputIterator i1, InputIterator i2)
     {
         if constexpr (!std::is_convertible_v<typename std::iterator_traits<InputIterator>::iterator_category, std::forward_iterator_tag>) {
@@ -487,6 +495,19 @@ public:
             return emplace(i, std::move(t));
         }
     }
+
+    void assign(qsizetype n, parameter_type t)
+    {
+        Q_ASSERT(n >= 0);
+        fill(t, n);
+    }
+
+    template <typename InputIterator, if_input_iterator<InputIterator> = true>
+    void assign(InputIterator first, InputIterator last)
+    { d.assign(first, last); }
+
+    void assign(std::initializer_list<T> l)
+    { assign(l.begin(), l.end()); }
 
     template <typename ...Args>
     iterator emplace(const_iterator before, Args&&... args)

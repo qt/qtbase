@@ -274,10 +274,14 @@
     Constructs a list from the std::initializer_list given by \a args.
 */
 
-/*! \fn template <typename T> template<typename InputIterator> QList<T>::QList(InputIterator first, InputIterator last)
+/*! \fn template <typename T> template<typename InputIterator, if_input_iterator<InputIterator>> QList<T>::QList(InputIterator first, InputIterator last)
     \since 5.14
 
     Constructs a list with the contents in the iterator range [\a first, \a last).
+
+    \note This constructor only participates in overload resolution if
+    \c InputIterator meets the requirements of a
+    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
 
     The value type of \c InputIterator must be convertible to \c T.
 */
@@ -1532,4 +1536,48 @@
     any.
 
     \sa erase
+*/
+
+/*! \fn template <typename T> void QList<T>::assign(qsizetype n, parameter_type t)
+    \since 6.6
+
+    Replaces the contents of this list with \a n copies of \a t.
+
+    The size of this list will be equal to \a n.
+
+    This function will only allocate memory if \a n exceeds the capacity of the
+    list or this list is shared.
+*/
+
+/*! \fn template <typename T> template <typename InputIterator, if_input_iterator<InputIterator>> void QList<T>::assign(InputIterator first, InputIterator last)
+    \since 6.6
+
+    Replaces the contents of this list with a copy of the elements in the
+    iterator range [\a first, \a last).
+
+    The size of this list will be equal to the number of elements in the
+    range [\a first, \a last).
+
+    This function will only allocate memory if the number of elements in the
+    range exceeds the capacity of this list or this list is shared.
+
+    \note This function overload only participates in overload resolution if
+    \c InputIterator meets the requirements of a
+    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
+
+    \note The behavior is undefined if either argument is an iterator into
+    *this.
+*/
+
+/*! \fn template <typename T> void QList<T>::assign(std::initializer_list<T> l)
+    \since 6.6
+
+    Replaces the contents of this list with a copy of the elements of
+    \a l.
+
+    The size of this list will be equal to the number of elements in
+    \a l.
+
+    This function only allocates memory if the number of elements in \a l
+    exceeds the capacity of this list or this list is shared.
 */

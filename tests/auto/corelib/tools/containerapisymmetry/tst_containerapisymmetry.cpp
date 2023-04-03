@@ -338,6 +338,7 @@ private:
 private Q_SLOTS:
     void assign_std_vector() { assign_impl<std::vector<int>>(); };
     void assign_QVarLengthArray() { assign_impl<QVarLengthArray<int, 4>>(); };
+    void assign_QList() { assign_impl<QList<int>>(); }
 
 private:
     template <typename Container>
@@ -802,6 +803,10 @@ void tst_ContainerApiSymmetry::assign_impl() const
         iter.assign(8, tData);
         c.assign(iter.begin(), iter.end());
         CHECK(c, tData, c.size(), S(8), c.capacity(), std::max(oldCapacity, S(8)));
+
+        c.assign(iter.begin(), iter.begin());
+        QCOMPARE_EQ(c.size(), S(0));
+        QCOMPARE_EQ(c.capacity(), std::max(oldCapacity, S(8)));
     }
     {
         // range version for input iterator
