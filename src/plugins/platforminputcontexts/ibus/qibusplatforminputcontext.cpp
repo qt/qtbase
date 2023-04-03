@@ -8,6 +8,7 @@
 #include <QWindow>
 #include <QEvent>
 #include <QFile>
+#include <QFileInfo>
 #include <QStandardPaths>
 #include <QDBusVariant>
 #include <QDBusPendingReply>
@@ -596,8 +597,7 @@ void QIBusPlatformInputContext::connectToContextSignals()
 
 static inline bool checkNeedPortalSupport()
 {
-    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, "flatpak-info"_L1).isEmpty()
-        || qEnvironmentVariableIsSet("SNAP");
+    return QFileInfo::exists("/.flatpak-info"_L1) || qEnvironmentVariableIsSet("SNAP");
 }
 
 static bool shouldConnectIbusPortal()
