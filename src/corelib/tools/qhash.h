@@ -1499,8 +1499,10 @@ public:
         detach();
         auto result = d->findOrInsert(key);
         Q_ASSERT(!result.it.atEnd());
-        if (!result.initialized)
+        if (!result.initialized) {
             Node::createInPlace(result.it.node(), key, T());
+            ++m_size;
+        }
         return result.it.node()->value->value;
     }
 
