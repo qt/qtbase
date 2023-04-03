@@ -3141,7 +3141,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             break;
         case QGles2CommandBuffer::Command::GetBufferSubData:
         {
-            QRhiBufferReadbackResult *result = cmd.args.getBufferSubData.result;
+            QRhiReadbackResult *result = cmd.args.getBufferSubData.result;
             bindVertexIndexBufferWithStateReset(&state, f, cmd.args.getBufferSubData.target, cmd.args.getBufferSubData.buffer);
             if (caps.gles) {
                 if (caps.properMapBuffer) {

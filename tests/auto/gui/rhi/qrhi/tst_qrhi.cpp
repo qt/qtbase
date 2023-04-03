@@ -983,7 +983,7 @@ void tst_QRhi::resourceUpdateBatchBuffer()
         batch->updateDynamicBuffer(dynamicBuffer.data(), 10, bufferSize - 10, a.constData());
         batch->updateDynamicBuffer(dynamicBuffer.data(), 0, 12, b.constData());
 
-        QRhiBufferReadbackResult readResult;
+        QRhiReadbackResult readResult;
         bool readCompleted = false;
         readResult.completed = [&readCompleted] { readCompleted = true; };
         batch->readBackBuffer(dynamicBuffer.data(), 5, 10, &readResult);
@@ -1010,7 +1010,7 @@ void tst_QRhi::resourceUpdateBatchBuffer()
         batch->uploadStaticBuffer(dynamicBuffer.data(), 10, bufferSize - 10, a.constData());
         batch->uploadStaticBuffer(dynamicBuffer.data(), 0, 12, b.constData());
 
-        QRhiBufferReadbackResult readResult;
+        QRhiReadbackResult readResult;
         bool readCompleted = false;
         readResult.completed = [&readCompleted] { readCompleted = true; };
 
@@ -3872,7 +3872,7 @@ void tst_QRhi::resourceUpdateBatchBufferTextureWithSwapchainFrames()
     const char *b = "abcdefghi";
 
     bool readCompleted = false;
-    QRhiBufferReadbackResult readResult;
+    QRhiReadbackResult readResult;
     readResult.completed = [&readCompleted] { readCompleted = true; };
     QRhiReadbackResult texReadResult;
     texReadResult.completed = [&readCompleted] { readCompleted = true; };
@@ -5937,7 +5937,7 @@ void tst_QRhi::tessellationInterfaceBlocks()
     QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
     readbackBatch->readBackTexture({ texture.data() }, &readResult);
 
-    QRhiBufferReadbackResult bufferReadResult;
+    QRhiReadbackResult bufferReadResult;
     bufferReadResult.completed = []() {};
     readbackBatch->readBackBuffer(buffer.data(), 0, 1024, &bufferReadResult);
 
@@ -6213,7 +6213,7 @@ void tst_QRhi::storageBuffer()
         QVERIFY(u);
 
         int readCompletedNotifications = 0;
-        QRhiBufferReadbackResult result;
+        QRhiReadbackResult result;
         result.completed = [&readCompletedNotifications]() { readCompletedNotifications++; };
         u->readBackBuffer(fromGpuBuffer.data(), 0, blocks["fromGpu"].knownSize, &result);
 
@@ -6338,7 +6338,7 @@ void tst_QRhi::storageBuffer()
         u = rhi->nextResourceUpdateBatch();
         QVERIFY(u);
         int readbackCompleted = 0;
-        QRhiBufferReadbackResult result;
+        QRhiReadbackResult result;
         result.completed = [&readbackCompleted]() { readbackCompleted++; };
         u->readBackBuffer(fromGpuBuffer.data(), 0, fromGpuBuffer->size(), &result);
 

@@ -211,7 +211,7 @@ struct QRhiMetalData
     struct BufferReadback
     {
         int activeFrameSlot = -1;
-        QRhiBufferReadbackResult *result;
+        QRhiReadbackResult *result;
         quint32 offset;
         quint32 readSize;
         id<MTLBuffer> buf;

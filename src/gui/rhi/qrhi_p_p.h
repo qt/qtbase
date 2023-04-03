@@ -399,7 +399,7 @@ public:
         quint32 offset;
         QRhiBufferData data;
         quint32 readSize;
-        QRhiBufferReadbackResult *result;
+        QRhiReadbackResult *result;
 
         static BufferOp dynamicUpdate(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
         {
@@ -441,7 +441,7 @@ public:
             op->data.assign(reinterpret_cast<const char *>(data), effectiveSize);
         }
 
-        static BufferOp read(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiBufferReadbackResult *result)
+        static BufferOp read(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiReadbackResult *result)
         {
             BufferOp op = {};
             op.type = Read;

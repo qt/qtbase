@@ -6056,7 +6056,7 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
 
     A readback is asynchronous. \a result contains a callback that is invoked
     when the operation has completed. The data is provided in
-    QRhiBufferReadbackResult::data. Upon successful completion that QByteArray
+    QRhiReadbackResult::data. Upon successful completion that QByteArray
     will have a size equal to \a size. On failure the QByteArray will be empty.
 
     \note Reading buffers with a usage different than QRhiBuffer::UniformBuffer
@@ -6073,7 +6073,7 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
 
    \sa readBackTexture(), QRhi::isFeatureSupported(), QRhi::resourceLimit()
  */
-void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiBufferReadbackResult *result)
+void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiReadbackResult *result)
 {
     const int idx = d->activeBufferOpCount++;
     if (idx < d->bufferOps.size())

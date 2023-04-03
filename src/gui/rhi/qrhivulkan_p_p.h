@@ -918,7 +918,7 @@ public:
     QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
     struct BufferReadback {
         int activeFrameSlot = -1;
-        QRhiBufferReadbackResult *result;
+        QRhiReadbackResult *result;
         quint32 byteSize;
         VkBuffer stagingBuf;
         QVkAlloc stagingAlloc;

@@ -1680,8 +1680,6 @@ struct Q_GUI_EXPORT QRhiReadbackResult
     QByteArray data;
 };
 
-using QRhiBufferReadbackResult = QRhiReadbackResult;
-
 class Q_GUI_EXPORT QRhiResourceUpdateBatch
 {
 public:
@@ -1695,7 +1693,7 @@ public:
     void updateDynamicBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data);
     void uploadStaticBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data);
     void uploadStaticBuffer(QRhiBuffer *buf, const void *data);
-    void readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiBufferReadbackResult *result);
+    void readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiReadbackResult *result);
     void uploadTexture(QRhiTexture *tex, const QRhiTextureUploadDescription &desc);
     void uploadTexture(QRhiTexture *tex, const QImage &image);
     void copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc = QRhiTextureCopyDescription());

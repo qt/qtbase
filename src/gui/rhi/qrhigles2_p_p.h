@@ -414,7 +414,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 const void *data; // must come from retainData()
             } bufferSubData;
             struct {
-                QRhiBufferReadbackResult *result;
+                QRhiReadbackResult *result;
                 GLenum target;
                 GLuint buffer;
                 int offset;

@@ -774,7 +774,7 @@ public:
     };
     QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
     struct BufferReadback {
-        QRhiBufferReadbackResult *result;
+        QRhiReadbackResult *result;
         quint32 byteSize;
         ID3D11Buffer *stagingBuf;
     };
