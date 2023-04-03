@@ -831,7 +831,9 @@ static QTimeZone asTimeZone(Qt::TimeSpec spec, int offset, const char *warner)
 }
 #endif // Helper for 6.9 deprecation
 
-static bool inDateTimeRange(qint64 jd, bool start)
+enum class DaySide { Start, End };
+
+static bool inDateTimeRange(qint64 jd, DaySide side)
 {
     using Bounds = std::numeric_limits<qint64>;
     if (jd < Bounds::min() + JULIAN_DAY_FOR_EPOCH)
@@ -842,9 +844,13 @@ static bool inDateTimeRange(qint64 jd, bool start)
     // (Divisions rounded towards zero, as MSECS_PER_DAY is even - so doesn't
     // divide max() - and has factors other than two, so doesn't divide min().)
     // Range includes start of last day and end of first:
-    if (start)
+    switch (side) {
+    case DaySide::Start:
         return jd > minDay && jd <= maxDay;
-    return jd >= minDay && jd < maxDay;
+    case DaySide::End:
+        return jd >= minDay && jd < maxDay;
+    }
+    Q_UNREACHABLE_RETURN(false);
 }
 
 static QDateTime toEarliest(QDate day, const QTimeZone &zone)
@@ -927,7 +933,7 @@ static QDateTime toEarliest(QDate day, const QTimeZone &zone)
 */
 QDateTime QDate::startOfDay(const QTimeZone &zone) const
 {
-    if (!inDateTimeRange(jd, true) || !zone.isValid())
+    if (!inDateTimeRange(jd, DaySide::Start) || !zone.isValid())
         return QDateTime();
 
     QDateTime when(*this, QTime(0, 0), zone);
@@ -1077,7 +1083,7 @@ static QDateTime toLatest(QDate day, const QTimeZone &zone)
 */
 QDateTime QDate::endOfDay(const QTimeZone &zone) const
 {
-    if (!inDateTimeRange(jd, false) || !zone.isValid())
+    if (!inDateTimeRange(jd, DaySide::End) || !zone.isValid())
         return QDateTime();
 
     QDateTime when(*this, QTime(23, 59, 59, 999), zone);
