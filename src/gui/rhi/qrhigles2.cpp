@@ -3362,6 +3362,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             break;
         case QGles2CommandBuffer::Command::BlitFromRenderbuffer:
         {
+            // Altering the scissor state, so reset the stored state, although
+            // not strictly required as long as blit is done in endPass() only.
+            cbD->graphicsPassState.reset();
+            f->glDisable(GL_SCISSOR_TEST);
             GLuint fbo[2];
             f->glGenFramebuffers(2, fbo);
             f->glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo[0]);
