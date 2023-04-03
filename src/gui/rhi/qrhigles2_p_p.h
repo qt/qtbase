@@ -806,6 +806,7 @@ public:
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
+    double lastCompletedGpuTime(QRhiCommandBuffer *cb) override;
 
     QList<int> supportedSampleCounts() const override;
     int ubufAlignment() const override;

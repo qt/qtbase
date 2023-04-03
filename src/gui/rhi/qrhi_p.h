@@ -1666,6 +1666,8 @@ public:
     void beginExternal();
     void endExternal();
 
+    double lastCompletedGpuTime();
+
 protected:
     QRhiCommandBuffer(QRhiImplementation *rhi);
 };
@@ -1768,7 +1770,8 @@ public:
     enum Flag {
         EnableDebugMarkers = 1 << 0,
         PreferSoftwareRenderer = 1 << 1,
-        EnablePipelineCacheDataSave = 1 << 2
+        EnablePipelineCacheDataSave = 1 << 2,
+        EnableTimestamps = 1 << 3
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -1865,9 +1868,6 @@ public:
     using CleanupCallback = std::function<void(QRhi *)>;
     void addCleanupCallback(const CleanupCallback &callback);
     void runCleanup();
-
-    using GpuFrameTimeCallback = std::function<void(float t)>;
-    void addGpuFrameTimeCallback(const GpuFrameTimeCallback &callback);
 
     QRhiGraphicsPipeline *newGraphicsPipeline();
     QRhiComputePipeline *newComputePipeline();

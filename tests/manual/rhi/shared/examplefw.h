@@ -92,7 +92,7 @@ QString graphicsApiName()
     return QString();
 }
 
-QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers;
+QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers | QRhi::EnableTimestamps;
 int sampleCount = 1;
 QRhiSwapChain::Flags scFlags;
 QRhi::BeginFrameFlags beginFrameFlags;

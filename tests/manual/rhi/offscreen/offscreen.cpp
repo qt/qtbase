@@ -126,10 +126,11 @@ int main(int argc, char **argv)
     qDebug("This is a multi-api example, use command line arguments to override:\n%s", qPrintable(cmdLineParser.helpText()));
 
     QRhi *r = nullptr;
+    QRhi::Flags rhiFlags = QRhi::EnableTimestamps;
 
     if (graphicsApi == Null) {
         QRhiNullInitParams params;
-        r = QRhi::create(QRhi::Null, &params);
+        r = QRhi::create(QRhi::Null, &params, rhiFlags);
     }
 
 #if QT_CONFIG(vulkan)
@@ -141,7 +142,7 @@ int main(int argc, char **argv)
         if (inst.create()) {
             QRhiVulkanInitParams params;
             params.inst = &inst;
-            r = QRhi::create(QRhi::Vulkan, &params);
+            r = QRhi::create(QRhi::Vulkan, &params, rhiFlags);
         } else {
             qWarning("Failed to create Vulkan instance, switching to OpenGL");
             graphicsApi = OpenGL;
@@ -155,7 +156,7 @@ int main(int argc, char **argv)
         offscreenSurface.reset(QRhiGles2InitParams::newFallbackSurface());
         QRhiGles2InitParams params;
         params.fallbackSurface = offscreenSurface.data();
-        r = QRhi::create(QRhi::OpenGLES2, &params);
+        r = QRhi::create(QRhi::OpenGLES2, &params, rhiFlags);
     }
 #endif
 
@@ -163,18 +164,18 @@ int main(int argc, char **argv)
     if (graphicsApi == D3D11) {
         QRhiD3D11InitParams params;
         params.enableDebugLayer = true;
-        r = QRhi::create(QRhi::D3D11, &params);
+        r = QRhi::create(QRhi::D3D11, &params, rhiFlags);
     } else if (graphicsApi == D3D12) {
         QRhiD3D12InitParams params;
         params.enableDebugLayer = true;
-        r = QRhi::create(QRhi::D3D12, &params);
+        r = QRhi::create(QRhi::D3D12, &params, rhiFlags);
     }
 #endif
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
     if (graphicsApi == Metal) {
         QRhiMetalInitParams params;
-        r = QRhi::create(QRhi::Metal, &params);
+        r = QRhi::create(QRhi::Metal, &params, rhiFlags);
     }
 #endif
 
@@ -301,6 +302,8 @@ int main(int argc, char **argv)
 #ifdef TEST_FINISH
         r->endOffscreenFrame();
 #endif
+        if (r->isFeatureSupported(QRhi::Timestamps))
+            qDebug() << "GPU time:" << cb->lastCompletedGpuTime() << "seconds (may refer to a previous frame)";
     }
 
     delete ps;

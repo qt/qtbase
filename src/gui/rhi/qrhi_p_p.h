@@ -120,6 +120,7 @@ public:
     virtual const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) = 0;
     virtual void beginExternal(QRhiCommandBuffer *cb) = 0;
     virtual void endExternal(QRhiCommandBuffer *cb) = 0;
+    virtual double lastCompletedGpuTime(QRhiCommandBuffer *cb) = 0;
 
     virtual QList<int> supportedSampleCounts() const = 0;
     virtual int ubufAlignment() const = 0;
@@ -175,22 +176,6 @@ public:
     void addCleanupCallback(const QRhi::CleanupCallback &callback)
     {
         cleanupCallbacks.append(callback);
-    }
-
-    void addGpuFrameTimeCallback(const QRhi::GpuFrameTimeCallback &callback)
-    {
-        gpuFrameTimeCallbacks.append(callback);
-    }
-
-    bool hasGpuFrameTimeCallback() const
-    {
-        return !gpuFrameTimeCallbacks.isEmpty();
-    }
-
-    void runGpuFrameTimeCallbacks(float t)
-    {
-        for (const QRhi::GpuFrameTimeCallback &f : std::as_const(gpuFrameTimeCallbacks))
-            f(t);
     }
 
     bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
@@ -253,7 +238,6 @@ private:
     QHash<QRhiResource *, bool> resources;
     QSet<QRhiResource *> pendingDeleteResources;
     QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
-    QVarLengthArray<QRhi::GpuFrameTimeCallback, 4> gpuFrameTimeCallbacks;
     QElapsedTimer pipelineCreationTimer;
     qint64 accumulatedPipelineCreationTime = 0;
 

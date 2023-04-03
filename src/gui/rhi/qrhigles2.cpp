@@ -1962,6 +1962,12 @@ void QRhiGles2::endExternal(QRhiCommandBuffer *cb)
         enqueueBindFramebuffer(cbD->currentTarget, cbD);
 }
 
+double QRhiGles2::lastCompletedGpuTime(QRhiCommandBuffer *cb)
+{
+    Q_UNUSED(cb);
+    return 0;
+}
+
 QRhi::FrameOpResult QRhiGles2::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags)
 {
     QGles2SwapChain *swapChainD = QRHI_RES(QGles2SwapChain, swapChain);

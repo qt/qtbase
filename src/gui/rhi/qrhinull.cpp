@@ -344,6 +344,12 @@ void QRhiNull::endExternal(QRhiCommandBuffer *cb)
     Q_UNUSED(cb);
 }
 
+double QRhiNull::lastCompletedGpuTime(QRhiCommandBuffer *cb)
+{
+    Q_UNUSED(cb);
+    return 0;
+}
+
 QRhi::FrameOpResult QRhiNull::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
 {
     Q_UNUSED(flags);

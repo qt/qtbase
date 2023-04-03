@@ -1671,6 +1671,24 @@ void QRhiVulkan::ensureCommandPoolForNewFrame()
     df->vkResetCommandPool(dev, cmdPool[currentFrameSlot], flags);
 }
 
+double QRhiVulkan::elapsedSecondsFromTimestamp(quint64 timestamp[2], bool *ok)
+{
+    quint64 mask = 0;
+    for (quint64 i = 0; i < timestampValidBits; i += 8)
+        mask |= 0xFFULL << i;
+    const quint64 ts0 = timestamp[0] & mask;
+    const quint64 ts1 = timestamp[1] & mask;
+    const float nsecsPerTick = physDevProperties.limits.timestampPeriod;
+    if (!qFuzzyIsNull(nsecsPerTick)) {
+        const float elapsedMs = float(ts1 - ts0) * nsecsPerTick / 1000000.0f;
+        const double elapsedSec = elapsedMs / 1000.0;
+        *ok = true;
+        return elapsedSec;
+    }
+    *ok = false;
+    return 0;
+}
+
 QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags)
 {
     QVkSwapChain *swapChainD = QRHI_RES(QVkSwapChain, swapChain);
@@ -1720,30 +1738,6 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     // mess up A's in-flight commands (as they are not in flight anymore).
     waitCommandCompletion(frameResIndex);
 
-    // Now is the time to read the timestamps for the previous frame for this slot.
-    if (frame.timestampQueryIndex >= 0) {
-        quint64 timestamp[2] = { 0, 0 };
-        VkResult err = df->vkGetQueryPoolResults(dev, timestampQueryPool, uint32_t(frame.timestampQueryIndex), 2,
-                                                 2 * sizeof(quint64), timestamp, sizeof(quint64),
-                                                 VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
-        timestampQueryPoolMap.clearBit(frame.timestampQueryIndex / 2);
-        frame.timestampQueryIndex = -1;
-        if (err == VK_SUCCESS) {
-            quint64 mask = 0;
-            for (quint64 i = 0; i < timestampValidBits; i += 8)
-                mask |= 0xFFULL << i;
-            const quint64 ts0 = timestamp[0] & mask;
-            const quint64 ts1 = timestamp[1] & mask;
-            const float nsecsPerTick = physDevProperties.limits.timestampPeriod;
-            if (!qFuzzyIsNull(nsecsPerTick)) {
-                const float elapsedMs = float(ts1 - ts0) * nsecsPerTick / 1000000.0f;
-                runGpuFrameTimeCallbacks(elapsedMs);
-            }
-        } else {
-            qWarning("Failed to query timestamp: %d", err);
-        }
-    }
-
     currentFrameSlot = int(swapChainD->currentFrameSlot);
     currentSwapChain = swapChainD;
     if (swapChainD->ds)
@@ -1757,9 +1751,34 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     if (cbres != QRhi::FrameOpSuccess)
         return cbres;
 
-    // when profiling is enabled, pick a free query (pair) from the pool
-    int timestampQueryIdx = -1;
-    if (hasGpuFrameTimeCallback() && swapChainD->bufferCount > 1) { // no timestamps if not having at least 2 frames in flight
+    swapChainD->cbWrapper.cb = frame.cmdBuf;
+
+    QVkSwapChain::ImageResources &image(swapChainD->imageRes[swapChainD->currentImageIndex]);
+    swapChainD->rtWrapper.d.fb = image.fb;
+
+    prepareNewFrame(&swapChainD->cbWrapper);
+
+    // Read the timestamps for the previous frame for this slot.
+    if (frame.timestampQueryIndex >= 0) {
+        quint64 timestamp[2] = { 0, 0 };
+        VkResult err = df->vkGetQueryPoolResults(dev, timestampQueryPool, uint32_t(frame.timestampQueryIndex), 2,
+                                                 2 * sizeof(quint64), timestamp, sizeof(quint64),
+                                                 VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+        timestampQueryPoolMap.clearBit(frame.timestampQueryIndex / 2);
+        frame.timestampQueryIndex = -1;
+        if (err == VK_SUCCESS) {
+            bool ok = false;
+            const double elapsedSec = elapsedSecondsFromTimestamp(timestamp, &ok);
+            if (ok)
+                swapChainD->cbWrapper.lastGpuTime = elapsedSec;
+        } else {
+            qWarning("Failed to query timestamp: %d", err);
+        }
+    }
+
+    // No timestamps if the client did not opt in, or when not having at least 2 frames in flight.
+    if (rhiFlags.testFlag(QRhi::EnableTimestamps) && swapChainD->bufferCount > 1) {
+        int timestampQueryIdx = -1;
         for (int i = 0; i < timestampQueryPoolMap.size(); ++i) {
             if (!timestampQueryPoolMap.testBit(i)) {
                 timestampQueryPoolMap.setBit(i);
@@ -1767,21 +1786,14 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
                 break;
             }
         }
+        if (timestampQueryIdx >= 0) {
+            df->vkCmdResetQueryPool(frame.cmdBuf, timestampQueryPool, uint32_t(timestampQueryIdx), 2);
+            // record timestamp at the start of the command buffer
+            df->vkCmdWriteTimestamp(frame.cmdBuf, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                    timestampQueryPool, uint32_t(timestampQueryIdx));
+            frame.timestampQueryIndex = timestampQueryIdx;
+        }
     }
-    if (timestampQueryIdx >= 0) {
-        df->vkCmdResetQueryPool(frame.cmdBuf, timestampQueryPool, uint32_t(timestampQueryIdx), 2);
-        // record timestamp at the start of the command buffer
-        df->vkCmdWriteTimestamp(frame.cmdBuf, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                timestampQueryPool, uint32_t(timestampQueryIdx));
-        frame.timestampQueryIndex = timestampQueryIdx;
-    }
-
-    swapChainD->cbWrapper.cb = frame.cmdBuf;
-
-    QVkSwapChain::ImageResources &image(swapChainD->imageRes[swapChainD->currentImageIndex]);
-    swapChainD->rtWrapper.d.fb = image.fb;
-
-    prepareNewFrame(&swapChainD->cbWrapper);
 
     return QRhi::FrameOpSuccess;
 }
@@ -2031,6 +2043,24 @@ QRhi::FrameOpResult QRhiVulkan::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi
     prepareNewFrame(cbWrapper);
     ofr.active = true;
 
+    if (rhiFlags.testFlag(QRhi::EnableTimestamps)) {
+        int timestampQueryIdx = -1;
+        for (int i = 0; i < timestampQueryPoolMap.size(); ++i) {
+            if (!timestampQueryPoolMap.testBit(i)) {
+                timestampQueryPoolMap.setBit(i);
+                timestampQueryIdx = i * 2;
+                break;
+            }
+        }
+        if (timestampQueryIdx >= 0) {
+            df->vkCmdResetQueryPool(cbWrapper->cb, timestampQueryPool, uint32_t(timestampQueryIdx), 2);
+            // record timestamp at the start of the command buffer
+            df->vkCmdWriteTimestamp(cbWrapper->cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                    timestampQueryPool, uint32_t(timestampQueryIdx));
+            ofr.timestampQueryIndex = timestampQueryIdx;
+        }
+    }
+
     *cb = cbWrapper;
     return QRhi::FrameOpSuccess;
 }
@@ -2043,6 +2073,12 @@ QRhi::FrameOpResult QRhiVulkan::endOffscreenFrame(QRhi::EndFrameFlags flags)
 
     QVkCommandBuffer *cbWrapper(ofr.cbWrapper[currentFrameSlot]);
     recordPrimaryCommandBuffer(cbWrapper);
+
+    // record another timestamp, when enabled
+    if (ofr.timestampQueryIndex >= 0) {
+        df->vkCmdWriteTimestamp(cbWrapper->cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                                timestampQueryPool, uint32_t(ofr.timestampQueryIndex + 1));
+    }
 
     if (!ofr.cmdFence) {
         VkFenceCreateInfo fenceInfo = {};
@@ -2065,6 +2101,24 @@ QRhi::FrameOpResult QRhiVulkan::endOffscreenFrame(QRhi::EndFrameFlags flags)
     // Here we know that executing the host-side reads for this (or any
     // previous) frame is safe since we waited for completion above.
     finishActiveReadbacks(true);
+
+    // Read the timestamps, if we wrote them.
+    if (ofr.timestampQueryIndex >= 0) {
+        quint64 timestamp[2] = { 0, 0 };
+        VkResult err = df->vkGetQueryPoolResults(dev, timestampQueryPool, uint32_t(ofr.timestampQueryIndex), 2,
+                                                 2 * sizeof(quint64), timestamp, sizeof(quint64),
+                                                 VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+        timestampQueryPoolMap.clearBit(ofr.timestampQueryIndex / 2);
+        ofr.timestampQueryIndex = -1;
+        if (err == VK_SUCCESS) {
+            bool ok = false;
+            const double elapsedSec = elapsedSecondsFromTimestamp(timestamp, &ok);
+            if (ok)
+                cbWrapper->lastGpuTime = elapsedSec;
+        } else {
+            qWarning("Failed to query timestamp: %d", err);
+        }
+    }
 
     return QRhi::FrameOpSuccess;
 }
@@ -5151,6 +5205,12 @@ void QRhiVulkan::endExternal(QRhiCommandBuffer *cb)
     }
 
     cbD->resetCachedState();
+}
+
+double QRhiVulkan::lastCompletedGpuTime(QRhiCommandBuffer *cb)
+{
+    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
+    return cbD->lastGpuTime;
 }
 
 void QRhiVulkan::setObjectName(uint64_t object, VkObjectType type, const QByteArray &name, int slot)

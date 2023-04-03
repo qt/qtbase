@@ -283,7 +283,7 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     QPair<float, float> currentDepthBiasValues;
 
     const QRhiNativeHandles *nativeHandles();
-    void resetState();
+    void resetState(double lastGpuTime = 0);
     void resetPerPassState();
     void resetPerPassCachedState();
 };
@@ -418,6 +418,7 @@ public:
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
+    double lastCompletedGpuTime(QRhiCommandBuffer *cb) override;
 
     QList<int> supportedSampleCounts() const override;
     int ubufAlignment() const override;

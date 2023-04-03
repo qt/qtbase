@@ -194,6 +194,7 @@ struct QRhiMetalData
     struct OffscreenFrame {
         OffscreenFrame(QRhiImplementation *rhi) : cbWrapper(rhi) { }
         bool active = false;
+        double lastGpuTime = 0;
         QMetalCommandBuffer cbWrapper;
     } ofr;
 
@@ -296,6 +297,7 @@ struct QMetalShaderResourceBindingsData {
 struct QMetalCommandBufferData
 {
     id<MTLCommandBuffer> cb;
+    double lastGpuTime = 0;
     id<MTLRenderCommandEncoder> currentRenderPassEncoder;
     id<MTLComputeCommandEncoder> currentComputePassEncoder;
     id<MTLComputeCommandEncoder> tessellationComputeEncoder;
@@ -413,6 +415,7 @@ struct QMetalSwapChainData
     CAMetalLayer *layer = nullptr;
     id<CAMetalDrawable> curDrawable = nil;
     dispatch_semaphore_t sem[QMTL_FRAMES_IN_FLIGHT];
+    double lastGpuTime[QMTL_FRAMES_IN_FLIGHT];
     MTLRenderPassDescriptor *rp = nullptr;
     id<MTLTexture> msaaTex[QMTL_FRAMES_IN_FLIGHT];
     QRhiTexture::Format rhiColorFormat;
@@ -727,7 +730,7 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::DebugMarkers:
         return true;
     case QRhi::Timestamps:
-        return false;
+        return true;
     case QRhi::Instancing:
         return true;
     case QRhi::CustomInstanceStepRate:
@@ -2237,6 +2240,12 @@ void QRhiMetal::endExternal(QRhiCommandBuffer *cb)
     cbD->resetPerPassCachedState();
 }
 
+double QRhiMetal::lastCompletedGpuTime(QRhiCommandBuffer *cb)
+{
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    return cbD->d->lastGpuTime;
+}
+
 QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
 {
     Q_UNUSED(flags);
@@ -2285,7 +2294,8 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
         swapChainD->ds->lastActiveFrameSlot = currentFrameSlot;
 
     executeDeferredReleases();
-    swapChainD->cbWrapper.resetState();
+    swapChainD->cbWrapper.resetState(swapChainD->d->lastGpuTime[currentFrameSlot]);
+    swapChainD->d->lastGpuTime[currentFrameSlot] = 0;
     finishActiveReadbacks();
 
     return QRhi::FrameOpSuccess;
@@ -2297,7 +2307,8 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     Q_ASSERT(currentSwapChain == swapChainD);
 
     __block int thisFrameSlot = currentFrameSlot;
-    [swapChainD->cbWrapper.d->cb addCompletedHandler: ^(id<MTLCommandBuffer>) {
+    [swapChainD->cbWrapper.d->cb addCompletedHandler: ^(id<MTLCommandBuffer> cb) {
+        swapChainD->d->lastGpuTime[thisFrameSlot] += cb.GPUEndTime - cb.GPUStartTime;
         dispatch_semaphore_signal(swapChainD->d->sem[thisFrameSlot]);
     }];
 
@@ -2350,7 +2361,8 @@ QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     d->ofr.cbWrapper.d->cb = [d->cmdQueue commandBufferWithUnretainedReferences];
 
     executeDeferredReleases();
-    d->ofr.cbWrapper.resetState();
+    d->ofr.cbWrapper.resetState(d->ofr.lastGpuTime);
+    d->ofr.lastGpuTime = 0;
     finishActiveReadbacks();
 
     return QRhi::FrameOpSuccess;
@@ -2362,10 +2374,13 @@ QRhi::FrameOpResult QRhiMetal::endOffscreenFrame(QRhi::EndFrameFlags flags)
     Q_ASSERT(d->ofr.active);
     d->ofr.active = false;
 
-    [d->ofr.cbWrapper.d->cb commit];
+    id<MTLCommandBuffer> cb = d->ofr.cbWrapper.d->cb;
+    [cb commit];
 
     // offscreen frames wait for completion, unlike swapchain ones
-    [d->ofr.cbWrapper.d->cb waitUntilCompleted];
+    [cb waitUntilCompleted];
+
+    d->ofr.lastGpuTime += cb.GPUEndTime - cb.GPUStartTime;
 
     finishActiveReadbacks(true);
 
@@ -2406,10 +2421,13 @@ QRhi::FrameOpResult QRhiMetal::finish()
     }
 
     if (inFrame) {
-        if (d->ofr.active)
+        if (d->ofr.active) {
+            d->ofr.lastGpuTime += cb.GPUEndTime - cb.GPUStartTime;
             d->ofr.cbWrapper.d->cb = [d->cmdQueue commandBufferWithUnretainedReferences];
-        else
+        } else {
+            swapChainD->d->lastGpuTime[currentFrameSlot] += cb.GPUEndTime - cb.GPUStartTime;
             swapChainD->cbWrapper.d->cb = [d->cmdQueue commandBufferWithUnretainedReferences];
+        }
     }
 
     executeDeferredReleases(true);
@@ -5914,8 +5932,9 @@ const QRhiNativeHandles *QMetalCommandBuffer::nativeHandles()
     return &nativeHandlesStruct;
 }
 
-void QMetalCommandBuffer::resetState()
+void QMetalCommandBuffer::resetState(double lastGpuTime)
 {
+    d->lastGpuTime = lastGpuTime;
     d->currentRenderPassEncoder = nil;
     d->currentComputePassEncoder = nil;
     d->tessellationComputeEncoder = nil;
@@ -6222,6 +6241,7 @@ bool QMetalSwapChain::createOrResize()
     d->curDrawable = nil;
 
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
+        d->lastGpuTime[i] = 0;
         if (!d->sem[i])
             d->sem[i] = dispatch_semaphore_create(QMTL_FRAMES_IN_FLIGHT - 1);
     }

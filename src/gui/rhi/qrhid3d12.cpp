@@ -1333,6 +1333,12 @@ void QRhiD3D12::endExternal(QRhiCommandBuffer *cb)
     }
 }
 
+double QRhiD3D12::lastCompletedGpuTime(QRhiCommandBuffer *cb)
+{
+    Q_UNUSED(cb);
+    return 0;
+}
+
 QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
 {
     Q_UNUSED(flags);

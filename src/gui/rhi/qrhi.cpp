@@ -418,8 +418,15 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value EnableDebugMarkers Enables debug marker groups. Without this frame
     debugging features like making debug groups and custom resource name
     visible in external GPU debugging tools will not be available and functions
-    like QRhiCommandBuffer::debugMarkBegin() will become a no-op. Avoid
-    enabling in production builds as it may involve a performance penalty.
+    like QRhiCommandBuffer::debugMarkBegin() will become no-ops. Avoid enabling
+    in production builds as it may involve a small performance impact. Has no
+    effect when the QRhi::DebugMarkers feature is not reported as supported.
+
+    \value EnableTimestamps Enables GPU timestamp collection. When not set,
+    QRhiCommandBuffer::lastCompletedGpuTime() always returns 0. Enable this
+    only when needed since there may be a small amount of extra work involved
+    (e.g. timestamp queries), depending on the underlying graphics API. Has no
+    effect when the QRhi::Timestamps feature is not reported as supported.
 
     \value PreferSoftwareRenderer Indicates that backends should prefer
     choosing an adapter or physical device that renders in software on the CPU.
@@ -490,8 +497,9 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     QRhiCommandBuffer::debugMarkBegin()) are supported.
 
     \value Timestamps Indicates that command buffer timestamps are supported.
-    Relevant for addGpuFrameTimeCallback(). Can be expected to be supported on
-    D3D11 and Vulkan, assuming the underlying implementation supports it.
+    Relevant for QRhiCommandBuffer::lastCompletedGpuTime(). Can be expected to
+    be supported on Metal, Vulkan, and Direct 3D, assuming the underlying
+    implementation supports timestamp queries or similar.
 
     \value Instancing Indicates that instanced drawing is supported. In
     practice this feature will be unsupported with OpenGL ES 2.0 and OpenGL
@@ -4853,11 +4861,21 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
 /*!
     \fn QRhiCommandBuffer *QRhiSwapChain::currentFrameCommandBuffer()
 
-    \return a command buffer on which rendering commands can be recorded. Only
-    valid within a QRhi::beginFrame() - QRhi::endFrame() block where
-    beginFrame() was called with this swapchain.
+    \return a command buffer on which rendering commands and resource updates
+    can be recorded within a \l{QRhi::beginFrame()}{beginFrame} -
+    \l{QRhi::endFrame()}{endFrame} block, assuming beginFrame() was called with
+    this swapchain.
 
-    \note the value must not be cached and reused between frames
+    \note The returned object is valid also after endFrame(), up until the next
+    beginFrame(), but the returned command buffer should not be used to record
+    any commands then. Rather, it can be used to query data collected during
+    the frame (or previous frames), for example by calling
+    \l{QRhiCommandBuffer::lastCompletedGpuTime()}{lastCompletedGpuTime()}.
+
+    \note The value must not be cached and reused between frames. The caller
+    should not hold on to the returned object once
+    \l{QRhi::beginFrame()}{beginFrame()} is called again. Instead, the command
+    buffer object should be queried again by calling this function.
 */
 
 /*!
@@ -5855,36 +5873,6 @@ void QRhi::runCleanup()
         f(this);
 
     d->cleanupCallbacks.clear();
-}
-
-/*!
-    Registers a \a callback that is called with an elapsed time calculated from
-    GPU timestamps asynchronously after a timestamp becomes available at some
-    point after presenting a frame.
-
-    The callback is called with a float value that is meant to be in
-    milliseconds and represents the elapsed time on the GPU side for a given
-    frame. Care must be exercised with the interpretation of the value, as what
-    it exactly is is not controlled by Qt and depends on the underlying
-    graphics API and its implementation. In particular, comparing the values
-    between different graphics APIs is discouraged and may be meaningless.
-
-    The timing values become available asynchronously, sometimes several frames
-    after the frame has been submitted in endFrame(). There is currently no way
-    to identify the frame. The callback is invoked whenever the timestamp
-    queries complete.
-
-    \note This is only supported when the Timestamp feature is reported as
-    supported from isFeatureSupported(). Otherwise the \a callback is never
-    called.
-
-    The \a callback is always called on the thread the QRhi lives and operates
-    on. While not guaranteed, it is typical that the callback is invoked from
-    within beginFrame().
- */
-void QRhi::addGpuFrameTimeCallback(const GpuFrameTimeCallback &callback)
-{
-    d->addGpuFrameTimeCallback(callback);
 }
 
 /*!
@@ -6899,6 +6887,41 @@ void QRhiCommandBuffer::beginExternal()
 void QRhiCommandBuffer::endExternal()
 {
     m_rhi->endExternal(this);
+}
+
+/*!
+    \return the last available timestamp, in seconds. The value indicates the
+    elapsed time on the GPU during the last completed frame.
+
+    Care must be exercised with the interpretation of the value, as its
+    precision and granularity is often not controlled by Qt, and depends on the
+    underlying graphics API and its implementation. In particular, comparing
+    the values between different graphics APIs and hardware is discouraged and
+    may be meaningless.
+
+    The timing values may become available asynchronously. The returned value
+    may therefore be 0 or the last known value referring to some previous
+    frame. The value my also become 0 again under certain conditions, such as
+    when resizing the window. It can be expected that the most up-to-date
+    available value is retrieved in beginFrame() and becomes queriable via this
+    function once beginFrame() returns.
+
+    \note Do not assume that the value refers to the previous
+    (\c{currently_recorded - 1}) frame. It may refer to \c{currently_recorded -
+    2} or \c{currently_recorded - 3} as well. The exact behavior may depend on
+    the graphics API and its implementation.
+
+    \note The result is always 0 when the QRhi::Timestamps feature is not
+    reported as supported, or when QRhi::EnableTimestamps was not passed to
+    QRhi::create(). There are exceptions to the latter, because with some
+    graphics APIs timings are available without having to perform extra
+    operations, but portable applications should always consciously opt-in to
+    timestamp collection when they know it is needed, and call this function
+    accordingly.
+ */
+double QRhiCommandBuffer::lastCompletedGpuTime()
+{
+    return m_rhi->lastCompletedGpuTime(this);
 }
 
 /*!

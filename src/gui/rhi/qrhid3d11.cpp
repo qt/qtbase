@@ -315,6 +315,11 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     if (FAILED(context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), reinterpret_cast<void **>(&annotations))))
         annotations = nullptr;
 
+    if (flags.testFlag(QRhi::EnableTimestamps)) {
+        ofr.timestamps.prepare(2, this);
+        // timestamp queries are optional so we can go on even if they failed
+    }
+
     deviceLost = false;
 
     nativeHandlesStruct.dev = dev;
@@ -339,6 +344,8 @@ void QRhiD3D11::destroy()
     finishActiveReadbacks();
 
     clearShaderCache();
+
+    ofr.timestamps.destroy();
 
     if (annotations) {
         annotations->Release();
@@ -1235,6 +1242,12 @@ void QRhiD3D11::endExternal(QRhiCommandBuffer *cb)
     }
 }
 
+double QRhiD3D11::lastCompletedGpuTime(QRhiCommandBuffer *cb)
+{
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    return cbD->lastGpuTime;
+}
+
 QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
 {
     Q_UNUSED(flags);
@@ -1243,30 +1256,6 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     contextState.currentSwapChain = swapChainD;
     const int currentFrameSlot = swapChainD->currentFrameSlot;
 
-    if (swapChainD->timestampActive[currentFrameSlot]) {
-        ID3D11Query *tsDisjoint = swapChainD->timestampDisjointQuery[currentFrameSlot];
-        const int tsIdx = QD3D11SwapChain::BUFFER_COUNT * currentFrameSlot;
-        ID3D11Query *tsStart = swapChainD->timestampQuery[tsIdx];
-        ID3D11Query *tsEnd = swapChainD->timestampQuery[tsIdx + 1];
-        quint64 timestamps[2];
-        D3D11_QUERY_DATA_TIMESTAMP_DISJOINT dj;
-        bool ok = true;
-        ok &= context->GetData(tsDisjoint, &dj, sizeof(dj), D3D11_ASYNC_GETDATA_DONOTFLUSH) == S_OK;
-        ok &= context->GetData(tsEnd, &timestamps[1], sizeof(quint64), D3D11_ASYNC_GETDATA_DONOTFLUSH) == S_OK;
-        // this above is often not ready, not even in frame_where_recorded+2,
-        // not clear why. so make the whole thing async and do not touch the
-        // queries until they are finally all available in frame this+2 or
-        // this+4 or ...
-        ok &= context->GetData(tsStart, &timestamps[0], sizeof(quint64), D3D11_ASYNC_GETDATA_DONOTFLUSH) == S_OK;
-        if (ok) {
-            if (!dj.Disjoint && dj.Frequency) {
-                const float elapsedMs = (timestamps[1] - timestamps[0]) / float(dj.Frequency) * 1000.0f;
-                runGpuFrameTimeCallbacks(elapsedMs);
-            }
-            swapChainD->timestampActive[currentFrameSlot] = false;
-        } // else leave timestampActive set to true, will retry in a subsequent beginFrame
-    }
-
     swapChainD->cb.resetState();
 
     swapChainD->rt.d.rtv[0] = swapChainD->sampleDesc.Count > 1 ?
@@ -1274,6 +1263,12 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     swapChainD->rt.d.dsv = swapChainD->ds ? swapChainD->ds->dsv : nullptr;
 
     finishActiveReadbacks();
+
+    if (swapChainD->timestamps.active[currentFrameSlot]) {
+        double elapsedSec = 0;
+        if (swapChainD->timestamps.tryQueryTimestamps(currentFrameSlot, context, &elapsedSec))
+            swapChainD->cb.lastGpuTime = elapsedSec;
+    }
 
     return QRhi::FrameOpSuccess;
 }
@@ -1284,11 +1279,11 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     Q_ASSERT(contextState.currentSwapChain = swapChainD);
     const int currentFrameSlot = swapChainD->currentFrameSlot;
 
-    ID3D11Query *tsDisjoint = swapChainD->timestampDisjointQuery[currentFrameSlot];
+    ID3D11Query *tsDisjoint = swapChainD->timestamps.disjointQuery[currentFrameSlot];
     const int tsIdx = QD3D11SwapChain::BUFFER_COUNT * currentFrameSlot;
-    ID3D11Query *tsStart = swapChainD->timestampQuery[tsIdx];
-    ID3D11Query *tsEnd = swapChainD->timestampQuery[tsIdx + 1];
-    const bool recordTimestamps = tsDisjoint && tsStart && tsEnd && !swapChainD->timestampActive[currentFrameSlot];
+    ID3D11Query *tsStart = swapChainD->timestamps.query[tsIdx];
+    ID3D11Query *tsEnd = swapChainD->timestamps.query[tsIdx + 1];
+    const bool recordTimestamps = tsDisjoint && tsStart && tsEnd && !swapChainD->timestamps.active[currentFrameSlot];
 
     // send all commands to the context
     if (recordTimestamps)
@@ -1306,7 +1301,7 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     if (recordTimestamps) {
         context->End(tsEnd);
         context->End(tsDisjoint);
-        swapChainD->timestampActive[currentFrameSlot] = true;
+        swapChainD->timestamps.active[currentFrameSlot] = true;
     }
 
     if (!flags.testFlag(QRhi::SkipPresent)) {
@@ -1347,6 +1342,12 @@ QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     ofr.cbWrapper.resetState();
     *cb = &ofr.cbWrapper;
 
+    if (ofr.timestamps.active[ofr.timestampIdx]) {
+        double elapsedSec = 0;
+        if (ofr.timestamps.tryQueryTimestamps(ofr.timestampIdx, context, &elapsedSec))
+            ofr.cbWrapper.lastGpuTime = elapsedSec;
+    }
+
     return QRhi::FrameOpSuccess;
 }
 
@@ -1355,9 +1356,26 @@ QRhi::FrameOpResult QRhiD3D11::endOffscreenFrame(QRhi::EndFrameFlags flags)
     Q_UNUSED(flags);
     ofr.active = false;
 
+    ID3D11Query *tsDisjoint = ofr.timestamps.disjointQuery[ofr.timestampIdx];
+    ID3D11Query *tsStart = ofr.timestamps.query[ofr.timestampIdx * 2];
+    ID3D11Query *tsEnd = ofr.timestamps.query[ofr.timestampIdx * 2 + 1];
+    const bool recordTimestamps = tsDisjoint && tsStart && tsEnd && !ofr.timestamps.active[ofr.timestampIdx];
+    if (recordTimestamps) {
+        context->Begin(tsDisjoint);
+        context->End(tsStart); // record timestamp; no Begin() for D3D11_QUERY_TIMESTAMP
+    }
+
     executeCommandBuffer(&ofr.cbWrapper);
+    context->Flush();
 
     finishActiveReadbacks();
+
+    if (recordTimestamps) {
+        context->End(tsEnd);
+        context->End(tsDisjoint);
+        ofr.timestamps.active[ofr.timestampIdx] = true;
+        ofr.timestampIdx = (ofr.timestampIdx + 1) % 2;
+    }
 
     return QRhi::FrameOpSuccess;
 }
@@ -2607,10 +2625,10 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *
 
     if (timestampSwapChain) {
         const int currentFrameSlot = timestampSwapChain->currentFrameSlot;
-        ID3D11Query *tsDisjoint = timestampSwapChain->timestampDisjointQuery[currentFrameSlot];
+        ID3D11Query *tsDisjoint = timestampSwapChain->timestamps.disjointQuery[currentFrameSlot];
         const int tsIdx = QD3D11SwapChain::BUFFER_COUNT * currentFrameSlot;
-        ID3D11Query *tsStart = timestampSwapChain->timestampQuery[tsIdx];
-        if (tsDisjoint && tsStart && !timestampSwapChain->timestampActive[currentFrameSlot]) {
+        ID3D11Query *tsStart = timestampSwapChain->timestamps.query[tsIdx];
+        if (tsDisjoint && tsStart && !timestampSwapChain->timestamps.active[currentFrameSlot]) {
             // The timestamps seem to include vsync time with Present(1), except
             // when running on a non-primary gpu. This is not ideal. So try working
             // it around by issuing a semi-fake OMSetRenderTargets early and
@@ -4636,6 +4654,92 @@ void QD3D11CommandBuffer::destroy()
     // nothing to do here
 }
 
+bool QD3D11Timestamps::prepare(int pairCount, QRhiD3D11 *rhiD)
+{
+    // Creates the query objects if not yet done, but otherwise calling this
+    // function is expected to be a no-op.
+
+    Q_ASSERT(pairCount <= MAX_TIMESTAMP_PAIRS);
+    D3D11_QUERY_DESC queryDesc = {};
+    for (int i = 0; i < pairCount; ++i) {
+        if (!disjointQuery[i]) {
+            queryDesc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+            HRESULT hr = rhiD->dev->CreateQuery(&queryDesc, &disjointQuery[i]);
+            if (FAILED(hr)) {
+                qWarning("Failed to create timestamp disjoint query: %s",
+                         qPrintable(QSystemError::windowsComString(hr)));
+                return false;
+            }
+        }
+        queryDesc.Query = D3D11_QUERY_TIMESTAMP;
+        for (int j = 0; j < 2; ++j) {
+            const int idx = pairCount * i + j;
+            if (!query[idx]) {
+                HRESULT hr = rhiD->dev->CreateQuery(&queryDesc, &query[idx]);
+                if (FAILED(hr)) {
+                    qWarning("Failed to create timestamp query: %s",
+                             qPrintable(QSystemError::windowsComString(hr)));
+                    return false;
+                }
+            }
+        }
+    }
+    this->pairCount = pairCount;
+    return true;
+}
+
+void QD3D11Timestamps::destroy()
+{
+    for (int i = 0; i < MAX_TIMESTAMP_PAIRS; ++i) {
+        active[i] = false;
+        if (disjointQuery[i]) {
+            disjointQuery[i]->Release();
+            disjointQuery[i] = nullptr;
+        }
+        for (int j = 0; j < 2; ++j) {
+            const int idx = MAX_TIMESTAMP_PAIRS * i + j;
+            if (query[idx]) {
+                query[idx]->Release();
+                query[idx] = nullptr;
+            }
+        }
+    }
+}
+
+bool QD3D11Timestamps::tryQueryTimestamps(int idx, ID3D11DeviceContext *context, double *elapsedSec)
+{
+    bool result = false;
+    if (!active[idx])
+        return result;
+
+    ID3D11Query *tsDisjoint = disjointQuery[idx];
+    const int tsIdx = pairCount * idx;
+    ID3D11Query *tsStart = query[tsIdx];
+    ID3D11Query *tsEnd = query[tsIdx + 1];
+    quint64 timestamps[2];
+    D3D11_QUERY_DATA_TIMESTAMP_DISJOINT dj;
+
+    bool ok = true;
+    ok &= context->GetData(tsDisjoint, &dj, sizeof(dj), D3D11_ASYNC_GETDATA_DONOTFLUSH) == S_OK;
+    ok &= context->GetData(tsEnd, &timestamps[1], sizeof(quint64), D3D11_ASYNC_GETDATA_DONOTFLUSH) == S_OK;
+    // this above is often not ready, not even in frame_where_recorded+2,
+    // not clear why. so make the whole thing async and do not touch the
+    // queries until they are finally all available in frame this+2 or
+    // this+4 or ...
+    ok &= context->GetData(tsStart, &timestamps[0], sizeof(quint64), D3D11_ASYNC_GETDATA_DONOTFLUSH) == S_OK;
+
+    if (ok) {
+        if (!dj.Disjoint && dj.Frequency) {
+            const float elapsedMs = (timestamps[1] - timestamps[0]) / float(dj.Frequency) * 1000.0f;
+            *elapsedSec = elapsedMs / 1000.0;
+            result = true;
+        }
+        active[idx] = false;
+    } // else leave active set, will retry in a subsequent beginFrame or similar
+
+    return result;
+}
+
 QD3D11SwapChain::QD3D11SwapChain(QRhiImplementation *rhi)
     : QRhiSwapChain(rhi),
       rt(rhi, this),
@@ -4646,10 +4750,6 @@ QD3D11SwapChain::QD3D11SwapChain(QRhiImplementation *rhi)
     for (int i = 0; i < BUFFER_COUNT; ++i) {
         msaaTex[i] = nullptr;
         msaaRtv[i] = nullptr;
-        timestampActive[i] = false;
-        timestampDisjointQuery[i] = nullptr;
-        timestampQuery[2 * i] = nullptr;
-        timestampQuery[2 * i + 1] = nullptr;
     }
 }
 
@@ -4687,19 +4787,7 @@ void QD3D11SwapChain::destroy()
 
     releaseBuffers();
 
-    for (int i = 0; i < BUFFER_COUNT; ++i) {
-        if (timestampDisjointQuery[i]) {
-            timestampDisjointQuery[i]->Release();
-            timestampDisjointQuery[i] = nullptr;
-        }
-        for (int j = 0; j < 2; ++j) {
-            const int idx = BUFFER_COUNT * i + j;
-            if (timestampQuery[idx]) {
-                timestampQuery[idx]->Release();
-                timestampQuery[idx] = nullptr;
-            }
-        }
-    }
+    timestamps.destroy();
 
     swapChain->Release();
     swapChain = nullptr;
@@ -5128,31 +5216,8 @@ bool QD3D11SwapChain::createOrResize()
     rtD->d.colorAttCount = 1;
     rtD->d.dsAttCount = m_depthStencil ? 1 : 0;
 
-    if (rhiD->hasGpuFrameTimeCallback()) {
-        D3D11_QUERY_DESC queryDesc = {};
-        for (int i = 0; i < BUFFER_COUNT; ++i) {
-            if (!timestampDisjointQuery[i]) {
-                queryDesc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
-                hr = rhiD->dev->CreateQuery(&queryDesc, &timestampDisjointQuery[i]);
-                if (FAILED(hr)) {
-                    qWarning("Failed to create timestamp disjoint query: %s",
-                        qPrintable(QSystemError::windowsComString(hr)));
-                    break;
-                }
-            }
-            queryDesc.Query = D3D11_QUERY_TIMESTAMP;
-            for (int j = 0; j < 2; ++j) {
-                const int idx = BUFFER_COUNT * i + j; // one pair per buffer (frame)
-                if (!timestampQuery[idx]) {
-                    hr = rhiD->dev->CreateQuery(&queryDesc, &timestampQuery[idx]);
-                    if (FAILED(hr)) {
-                        qWarning("Failed to create timestamp query: %s",
-                            qPrintable(QSystemError::windowsComString(hr)));
-                        break;
-                    }
-                }
-            }
-        }
+    if (rhiD->rhiFlags.testFlag(QRhi::EnableTimestamps)) {
+        timestamps.prepare(BUFFER_COUNT, rhiD);
         // timestamp queries are optional so we can go on even if they failed
     }
 
