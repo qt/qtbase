@@ -18,7 +18,7 @@
 #include <qpa/qplatformintegration.h>
 
 #include <QtCore/QAbstractEventDispatcher>
-#include <QtCore/QStandardPaths>
+#include <QtCore/QFileInfo>
 #include <QtCore/QVariant>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
@@ -231,7 +231,7 @@ static void initThemeHints()
 static bool checkNeedPortalSupport()
 {
 #if QT_CONFIG(dbus)
-    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, "flatpak-info"_L1).isEmpty() || qEnvironmentVariableIsSet("SNAP");
+    return QFileInfo::exists("/.flatpak-info"_L1) || qEnvironmentVariableIsSet("SNAP");
 #else
     return false;
 #endif // QT_CONFIG(dbus)
