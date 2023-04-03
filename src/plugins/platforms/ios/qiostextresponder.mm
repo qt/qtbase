@@ -368,8 +368,12 @@
 
 - (UIResponder*)nextResponder
 {
-    return qApp->focusWindow() ?
-        reinterpret_cast<QUIView *>(qApp->focusWindow()->handle()->winId()) : 0;
+    // Make sure we have a handle/platform window before getting the winId().
+    // In the dtor of QIOSWindow the platform window is set to null before calling
+    // removeFromSuperview which will end up calling nextResponder. That means it's
+    // possible that we can get here while the window is being torn down.
+    return (qApp->focusWindow() && qApp->focusWindow()->handle()) ?
+            reinterpret_cast<QUIView *>(qApp->focusWindow()->handle()->winId()) : 0;
 }
 
 // -------------------------------------------------------------------------
