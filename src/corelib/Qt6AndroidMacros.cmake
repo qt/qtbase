@@ -197,7 +197,7 @@ function(qt6_android_generate_deployment_settings target)
         "   \"architectures\": { ${architecture_records} },\n")
 
     # deployment dependencies
-    _qt_internal_add_android_deployment_multi_value_property(file_contents "dependencies"
+    _qt_internal_add_android_deployment_multi_value_property(file_contents "deployment-dependencies"
         ${target} "QT_ANDROID_DEPLOYMENT_DEPENDENCIES" )
 
     # Extra plugins
