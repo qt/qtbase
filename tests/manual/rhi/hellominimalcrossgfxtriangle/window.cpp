@@ -82,7 +82,7 @@ bool Window::event(QEvent *e)
 
 void Window::init()
 {
-    QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers | QRhi::EnableProfiling;
+    QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers;
 
     if (m_graphicsApi == QRhi::Null) {
         QRhiNullInitParams params;

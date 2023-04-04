@@ -415,8 +415,6 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \enum QRhi::Flag
     Describes what special features to enable.
 
-    \value EnableProfiling This flag has currently no effect.
-
     \value EnableDebugMarkers Enables debug marker groups. Without this frame
     debugging features like making debug groups and custom resource name
     visible in external GPU debugging tools will not be available and functions

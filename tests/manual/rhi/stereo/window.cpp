@@ -55,7 +55,7 @@ bool Window::event(QEvent *e)
 
 void Window::init()
 {
-    QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers | QRhi::EnableProfiling;
+    QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers;
 
     m_fallbackSurface.reset(QRhiGles2InitParams::newFallbackSurface());
     QRhiGles2InitParams params;
