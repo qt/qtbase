@@ -1430,7 +1430,6 @@ bool updateLibsXml(Options *options)
                     || qtDependency.relativePath.contains(
                             QString::asprintf("libQt%dQuick", QT_VERSION_MAJOR))) {
                     options->usesOpenGL |= true;
-                    break;
                 }
             }
 
