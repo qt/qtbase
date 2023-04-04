@@ -31,6 +31,10 @@ public:
         bool isValid() const noexcept;
 
     private:
+        friend size_t qHash(const QPixmapCache::Key &k, size_t seed = 0) noexcept
+        { return k.hash(seed); }
+        size_t hash(size_t seed) const noexcept;
+
         KeyData *d;
         friend class QPMCache;
         friend class QPixmapCache;

@@ -23,8 +23,6 @@
 
 QT_BEGIN_NAMESPACE
 
-size_t qHash(const QPixmapCache::Key &k, size_t seed = 0);
-
 class QPixmapCache::KeyData
 {
 public:
