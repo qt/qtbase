@@ -218,10 +218,15 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qpixmapcache.moc"
 QT_END_INCLUDE_NAMESPACE
 
-size_t qHash(const QPixmapCache::Key &k, size_t seed)
+/*!
+    size_t QPixmapCache::qHash(const Key &key, size_t seed = 0);
+    \since 6.6
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+size_t QPixmapCache::Key::hash(size_t seed) const noexcept
 {
-    const auto *keyData = QPMCache::get(k);
-    return qHash(keyData ? keyData->key : 0, seed);
+    return qHash(this->d ? this->d->key : 0, seed);
 }
 
 QPMCache::QPMCache()
