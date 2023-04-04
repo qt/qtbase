@@ -470,6 +470,7 @@ function(qt_internal_add_configure_time_executable target)
             OUTPUT_VARIABLE try_compile_output
         )
 
+        file(WRITE "${timestamp_file}" "")
         if(NOT result)
             message(FATAL_ERROR "Unable to build ${target}: ${try_compile_output}")
         endif()
