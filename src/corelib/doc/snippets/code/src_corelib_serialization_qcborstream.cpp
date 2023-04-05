@@ -198,7 +198,7 @@ using namespace Qt::StringLiterals;
    void appendMap(QCborStreamWriter &writer, const QMap<int, QString> &map)
    {
        writer.startMap(map.size());
-       for (auto it = map.begin(); it != map.end(); ++it) {
+       for (auto it = map.cbegin(), end = map.cend(); it != end; ++it) {
            writer.append(it.key());
            writer.append(it.value());
        }

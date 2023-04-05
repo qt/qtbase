@@ -46,7 +46,7 @@
     QSet is unordered, so an iterator's sequence cannot be assumed to
     be predictable. If ordering by key is required, use a QMap.
 
-    To navigate through a QSet, you can also use \l{foreach}:
+    To navigate through a QSet, you can also use range-based for:
 
     \snippet code/doc_src_qset.cpp 6
 

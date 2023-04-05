@@ -66,7 +66,7 @@ Widget::Widget(QWidget *parent)
 
     result.clear();
 //! [12]
-    foreach (const QString &str, list) {
+    for (const auto &str : std::as_const(list)) {
         if (str.contains("Bill"))
             result += str;
     }

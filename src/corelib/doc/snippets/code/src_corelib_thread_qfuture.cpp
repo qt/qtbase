@@ -6,7 +6,7 @@ QFuture<QString> future = ...;
 
 QFuture<QString>::const_iterator i;
 for (i = future.constBegin(); i != future.constEnd(); ++i)
-    cout << *i << Qt::endl;
+    cout << qPrintable(*i) << endl;
 //! [0]
 
 

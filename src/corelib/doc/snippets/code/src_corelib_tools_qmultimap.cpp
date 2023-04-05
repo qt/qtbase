@@ -19,8 +19,8 @@ multimap.insert("c", -5);
 int num2 = multimap.value("a"); // 1
 int num3 = multimap.value("thirteen"); // not found; 0
 int num3 = 0;
-auto it = multimap.value("b");
-if (it != multimap.end()) {
+auto it = multimap.constFind("b");
+if (it != multimap.cend()) {
     num3 = it.value();
 }
 //! [3]
@@ -47,17 +47,14 @@ int timeout = multimap.value("TIMEOUT", 30);
 QMultiMapIterator<QString, int> i(multimap);
 while (i.hasNext()) {
     i.next();
-    cout << i.key() << ": " << i.value() << Qt::endl;
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 }
 //! [7]
 
 
 //! [8]
-auto i = multimap.cbegin();
-while (i != multimap.cend()) {
-    cout << i.key() << ": " << i.value() << Qt::endl;
-    ++i;
-}
+for (auto i = multimap.cbegin(), end = multimap.cend(); i != end; ++i)
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 //! [8]
 
 
@@ -70,22 +67,22 @@ multimap.insert("plenty", 2000);
 
 //! [10]
 QList<int> values = multimap.values("plenty");
-for (int i = 0; i < values.size(); ++i)
-    cout << values.at(i) << Qt::endl;
+for (auto i : std::as_const(values))
+    cout << i << endl;
 //! [10]
 
 
 //! [11]
-QMultiMap<QString, int>::iterator i = multimap.find("plenty");
+auto i = multimap.find("plenty");
 while (i != map.end() && i.key() == "plenty") {
-    cout << i.value() << Qt::endl;
+    cout << i.value() << endl;
     ++i;
 }
 
 // better:
 auto [i, end] = multimap.equal_range("plenty");
 while (i != end) {
-    cout << i.value() << Qt::endl;
+    cout << i.value() << endl;
     ++i;
 }
 //! [11]
@@ -94,8 +91,8 @@ while (i != end) {
 //! [12]
 QMap<QString, int> multimap;
 ...
-foreach (int value, multimap)
-    cout << value << Qt::endl;
+for (int value : std::as_const(multimap))
+    cout << value << endl;
 //! [12]
 
 
@@ -149,7 +146,7 @@ QMap<QString, int> multimap;
 QMap<QString, int>::const_iterator i = multimap.lowerBound("HDR");
 QMap<QString, int>::const_iterator upperBound = multimap.upperBound("HDR");
 while (i != upperBound) {
-    cout << i.value() << Qt::endl;
+    cout << i.value() << endl;
     ++i;
 }
 //! [16]
@@ -207,9 +204,8 @@ multimap.insert("February", 2);
 ...
 multimap.insert("December", 12);
 
-QMultiMap<QString, int>::const_iterator i;
-for (i = multimap.cbegin(); i != multimap.cend(); ++i)
-    cout << i.key() << ": " << i.value() << Qt::endl;
+for (auto i = multimap.cbegin(), end = multimap.cend(); i != end; ++i)
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 //! [24]
 
 
@@ -228,10 +224,10 @@ map3 = map1 + map2;
 //! [25]
 
 //! [keyiterator1]
-for (QMultiMap<int, QString>::const_iterator it = multimap.cbegin(), end = multimap.cend(); it != end; ++it) {
-    cout << "The key: " << it.key() << Qt::endl
-    cout << "The value: " << it.value() << Qt::endl;
-    cout << "Also the value: " << (*it) << Qt::endl;
+for (auto it = multimap.cbegin(), end = multimap.cend(); it != end; ++it) {
+    cout << "The key: " << it.key() << endl
+    cout << "The value: " << qPrintable(it.value()) << endl;
+    cout << "Also the value: " << qPrintable(*it) << endl;
 }
 //! [keyiterator1]
 
@@ -254,7 +250,7 @@ map.insert("February", 2);
 map.insert("December", 12);
 
 for (auto [key, value] : map.asKeyValueRange()) {
-    cout << key << ": " << value << Qt::endl;
+    cout << qPrintable(key) << ": " << value << endl;
     --value; // convert to JS month indexing
 }
 //! [26]
