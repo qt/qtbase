@@ -23,8 +23,10 @@ public:
 
     friend bool operator==(const QTableWidgetSelectionRange &lhs,
                            const QTableWidgetSelectionRange &rhs) noexcept
-    { return lhs.m_top == rhs.m_top && lhs.m_left == rhs.m_left
-          && lhs.m_bottom == rhs.m_bottom && lhs.m_right == rhs.m_right; };
+    {
+        return lhs.m_top == rhs.m_top && lhs.m_left == rhs.m_left && lhs.m_bottom == rhs.m_bottom
+                && lhs.m_right == rhs.m_right;
+    }
     friend bool operator!=(const QTableWidgetSelectionRange &lhs,
                            const QTableWidgetSelectionRange &rhs) noexcept
     { return !(lhs == rhs); }
