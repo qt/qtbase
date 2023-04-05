@@ -20,9 +20,8 @@
     the QCoreApplication. This makes it ideal to store semi-static QObjects, which
     should also be destroyed once the QCoreApplication is destroyed. This means the
     type will get deleted once the QCoreApplication emits the destroyed signal.
-    However, as long as the actual holder is still in the initialized state, the
-    type will be recreated when it's accessed again once a new QCoreApplication
-    has been created.
+    It is permitted for the object to be recreated when it's accessed again, if
+    a new QCoreApplication has also been created.
 
     Since the value is bound to the QCoreApplication, it should only ever be
     accessed if there is a valid QCoreApplication::instance(). Accessing this
@@ -44,6 +43,31 @@
     Aside from the value also being bound to the lifetime of the QCoreApplication,
     this macro behaves identically to Q_GLOBAL_STATIC(). Please see that macro's
     documentation for more information.
+
+    \section1 Threading guarantees
+
+    The Q_APPLICATION_STATIC macro ensures that the object is initialized only
+    once (per lifetime of a QCoreApplication), even if multiple threads try to
+    concurrently access the object. This is done by providing a per-object
+    mutex; application and library developers need to be aware that their
+    object will be constructed with this mutex locked and therefore must not
+    reenter the same object's initialization, or a deadlock will occur.
+
+    There is no thread-safety on the destruction of the object: user code must
+    not access this object once the QCoreApplication destructor starts to run.
+    User code must arrange to ensure this does not happen, such as by not
+    accessing it once the main thread's event loop has exited.
+
+    Like Q_GLOBAL_STATIC, Q_APPLICATION_STATIC provides no thread-safety
+    guarantees for accesses to the object once creation is finished. It is up
+    to user code to ensure that no racy data accesses happen.
+
+    In case the object created by this operation is a QObject, its associated
+    thread will be the one that succeeded in creating it. It will be destroyed
+    by the main thread, so a \l{QObject::}{moveToThread()} to the main thread
+    or to no thread before destruction is adviseable. Doing so from the
+    constructor of the class in question is a sensible solution if one can't
+    guarantee that the main thread will be the one to initialize the object.
 
     \omit
     \section1 Implementation details
