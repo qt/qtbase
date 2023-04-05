@@ -42,7 +42,7 @@ QHash<int, QWidget *> hash;
 ...
 for (int i = 0; i < 1000; ++i) {
     if (hash[i] == okButton)
-        cout << "Found button at index " << i << Qt::endl;
+        cout << "Found button at index " << i << endl;
 }
 //! [6]
 
@@ -51,17 +51,14 @@ for (int i = 0; i < 1000; ++i) {
 QHashIterator<QString, int> i(hash);
 while (i.hasNext()) {
     i.next();
-    cout << i.key() << ": " << i.value() << Qt::endl;
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 }
 //! [7]
 
 
 //! [8]
-QHash<QString, int>::const_iterator i = hash.cbegin();
-while (i != hash.cend()) {
-    cout << i.key() << ": " << i.value() << Qt::endl;
-    ++i;
-}
+for (auto i = map.cbegin(), end = map.cend(); != end; ++i)
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 //! [8]
 
 
@@ -75,8 +72,8 @@ hash.insert("plenty", 2000);
 //! [12]
 QHash<QString, int> hash;
 ...
-foreach (int value, hash)
-    cout << value << Qt::endl;
+for (int value : std::as_const(hash))
+    cout << value << endl;
 //! [12]
 
 
@@ -138,7 +135,7 @@ QHash<QString, int> hash;
 ...
 QHash<QString, int>::const_iterator i = hash.find("HDR");
 while (i != hash.end() && i.key() == "HDR") {
-    cout << i.value() << Qt::endl;
+    cout << i.value() << endl;
     ++i;
 }
 //! [16]
@@ -151,15 +148,13 @@ hash.insert("February", 2);
 ...
 hash.insert("December", 12);
 
-QHash<QString, int>::iterator i;
-for (i = hash.begin(); i != hash.end(); ++i)
-    cout << i.key() << ": " << i.value() << Qt::endl;
+for (auto i = hash.cbegin(), end = hash.cend(); i != end; ++i)
+    cout << qPrintable(key()) << ": " << i.value() << endl;
 //! [17]
 
 
 //! [18]
-QHash<QString, int>::iterator i;
-for (i = hash.begin(); i != hash.end(); ++i)
+for (auto i = hash.begin(), end = hash.end(); i != end; ++i)
     i.value() += 2;
 //! [18]
 
@@ -181,9 +176,8 @@ hash.insert("February", 2);
 ...
 hash.insert("December", 12);
 
-QHash<QString, int>::const_iterator i;
-for (i = hash.cbegin(); i != hash.cend(); ++i)
-    cout << i.key() << ": " << i.value() << Qt::endl;
+for (auto i = hash.cbegin(), end = hash.cend(); i != end; ++i)
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 //! [23]
 
 
@@ -204,24 +198,24 @@ hash3 = hash1 + hash2;
 
 //! [25]
 QList<int> values = hash.values("plenty");
-for (int i = 0; i < values.size(); ++i)
-    cout << values.at(i) << Qt::endl;
+for (auto i : std::as_const(values))
+    cout << i << endl;
 //! [25]
 
 
 //! [26]
-QMultiHash<QString, int>::iterator i = hash.find("plenty");
-while (i != hash.end() && i.key() == "plenty") {
-    cout << i.value() << Qt::endl;
+auto i = hash.constFind("plenty");
+while (i != hash.cend() && i.key() == "plenty") {
+    cout << i.value() << endl;
     ++i;
 }
 //! [26]
 
 //! [27]
-for (QHash<int, QString>::const_iterator it = hash.cbegin(), end = hash.cend(); it != end; ++it) {
-    cout << "The key: " << it.key() << Qt::endl
-    cout << "The value: " << it.value() << Qt::endl;
-    cout << "Also the value: " << (*it) << Qt::endl;
+for (auto it = hash.cbegin(), end = hash.cend(); it != end; ++it) {
+    cout << "The key: " << it.key() << endl;
+    cout << "The value: " << qPrintable(it.value()) << endl;
+    cout << "Also the value: " << qPrintable(*it) << endl;
 }
 //! [27]
 
@@ -294,7 +288,7 @@ hash.insert("February", 2);
 hash.insert("December", 12);
 
 for (auto [key, value] : hash.asKeyValueRange()) {
-    cout << key << ": " << value << Qt::endl;
+    cout << qPrintable(key) << ": " << value << endl;
     --value; // convert to JS month indexing
 }
 //! [34]
@@ -307,7 +301,7 @@ hash.insert("February", 2);
 hash.insert("December", 12);
 
 for (auto [key, value] : hash.asKeyValueRange()) {
-    cout << key << ": " << value << Qt::endl;
+    cout << qPrintable(key) << ": " << value << endl;
     --value; // convert to JS month indexing
 }
 //! [35]

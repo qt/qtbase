@@ -92,7 +92,7 @@
     \snippet code/src_corelib_tools_qmultimap.cpp 11
 
     If you only need to extract the values from a map (not the keys),
-    you can also use \l{foreach}:
+    you can also use range-based for:
 
     \snippet code/src_corelib_tools_qmultimap.cpp 12
 

@@ -42,7 +42,7 @@ QMap<int, QWidget *> map;
 ...
 for (int i = 0; i < 1000; ++i) {
     if (map[i] == okButton)
-        cout << "Found button at index " << i << Qt::endl;
+        cout << "Found button at index " << i << endl;
 }
 //! [6]
 
@@ -51,17 +51,14 @@ for (int i = 0; i < 1000; ++i) {
 QMapIterator<QString, int> i(map);
 while (i.hasNext()) {
     i.next();
-    cout << i.key() << ": " << i.value() << Qt::endl;
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 }
 //! [7]
 
 
 //! [8]
-QMap<QString, int>::const_iterator i = map.cbegin();
-while (i != map.cend()) {
-    cout << i.key() << ": " << i.value() << Qt::endl;
-    ++i;
-}
+for (auto i = map.cbegin(), end = map.cend(); != end; ++i)
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 //! [8]
 
 
@@ -75,8 +72,8 @@ map.insert("plenty", 2000);
 //! [12]
 QMap<QString, int> map;
 ...
-foreach (int value, map)
-    cout << value << Qt::endl;
+for (int value : std::as_const(map))
+    cout << value << endl;
 //! [12]
 
 
@@ -128,15 +125,13 @@ map.insert("February", 2);
 ...
 map.insert("December", 12);
 
-QMap<QString, int>::iterator i;
-for (i = map.begin(); i != map.end(); ++i)
-    cout << i.key() << ": " << i.value() << Qt::endl;
+for (auto i = map.cbegin(), end = map.cend(); i != end; ++i)
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 //! [18]
 
 
 //! [19]
-QMap<QString, int>::iterator i;
-for (i = map.begin(); i != map.end(); ++i)
+for (auto i = map.begin(), end = map.end(); i != end; ++i)
     i.value() += 2;
 //! [19]
 
@@ -171,17 +166,16 @@ map.insert("February", 2);
 ...
 map.insert("December", 12);
 
-QMap<QString, int>::const_iterator i;
-for (i = map.cbegin(); i != map.cend(); ++i)
-    cout << i.key() << ": " << i.value() << Qt::endl;
+for (auto i = map.cbegin(), end = map.cend(); i != end; ++i)
+    cout << qPrintable(i.key()) << ": " << i.value() << endl;
 //! [24]
 
 
 //! [keyiterator1]
 for (QMap<int, QString>::const_iterator it = map.cbegin(), end = map.cend(); it != end; ++it) {
-    cout << "The key: " << it.key() << Qt::endl
-    cout << "The value: " << it.value() << Qt::endl;
-    cout << "Also the value: " << (*it) << Qt::endl;
+    cout << "The key: " << it.key() << endl;
+    cout << "The value: " << qPrintable(it.value()) << endl;
+    cout << "Also the value: " << qPrintable(*it) << endl;
 }
 //! [keyiterator1]
 
@@ -204,7 +198,7 @@ map.insert("February", 2);
 map.insert("December", 12);
 
 for (auto [key, value] : map.asKeyValueRange()) {
-    cout << key << ": " << value << Qt::endl;
+    cout << qPrintable(key) << ": " << value << endl;
     --value; // convert to JS month indexing
 }
 //! [28]

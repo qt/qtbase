@@ -24,7 +24,7 @@ ba[4] = 0xca;
 //! [2]
 for (qsizetype i = 0; i < ba.size(); ++i) {
     if (ba.at(i) >= 'a' && ba.at(i) <= 'f')
-        cout << "Found character in range [a-f]" << Qt::endl;
+        cout << "Found character in range [a-f]" << endl;
 }
 //! [2]
 
@@ -41,7 +41,7 @@ x.replace(5, 3, "&");       // x == "rock & roll"
 QByteArray ba("We must be <b>bold</b>, very <b>bold</b>");
 qsizetype j = 0;
 while ((j = ba.indexOf("<b>", j)) != -1) {
-    cout << "Found <b> tag at index position " << j << Qt::endl;
+    cout << "Found <b> tag at index position " << j << endl;
     ++j;
 }
 //! [4]
@@ -79,7 +79,7 @@ QByteArray("abc").isEmpty();    // returns false
 QByteArray ba("Hello world");
 char *data = ba.data();
 while (*data) {
-    cout << "[" << *data << "]" << Qt::endl;
+    cout << "[" << *data << "]" << endl;
     ++data;
 }
 //! [8]

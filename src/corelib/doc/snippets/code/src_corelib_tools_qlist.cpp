@@ -26,7 +26,7 @@ if (list[0] == "Liz")
 //! [4]
 for (qsizetype i = 0; i < list.size(); ++i) {
     if (list.at(i) == "Alfonso")
-        cout << "Found Alfonso at position " << i << Qt::endl;
+        cout << "Found Alfonso at position " << i << endl;
 }
 //! [4]
 
@@ -34,7 +34,7 @@ for (qsizetype i = 0; i < list.size(); ++i) {
 //! [5]
 qsizetype i = list.indexOf("Harumi");
 if (i != -1)
-    cout << "First occurrence of Harumi is at position " << i << Qt::endl;
+    cout << "First occurrence of Harumi is at position " << i << endl;
 //! [5]
 
 
@@ -101,16 +101,14 @@ list.prepend("three");
 
 
 //! [9]
-QList<QString> list;
-list << "alpha" << "beta" << "delta";
+QList<QString> list = {"alpha", "beta", "delta"};
 list.insert(2, "gamma");
 // list: ["alpha", "beta", "gamma", "delta"]
 //! [9]
 
 
 //! [10]
-QList<double> list;
-list << 2.718 << 1.442 << 0.4342;
+QList<double> list = {2.718, 1.442, 0.4342};
 list.insert(1, 3, 9.9);
 // list: [2.718, 9.9, 9.9, 9.9, 1.442, 0.4342]
 //! [10]
@@ -127,8 +125,7 @@ list.fill("oh", 5);
 
 
 //! [12]
-QList<QString> list;
-list << "A" << "B" << "C" << "B" << "A";
+QList<QString> list{"A", "B", "C", "B", "A"};
 list.indexOf("B");            // returns 1
 list.indexOf("B", 1);         // returns 1
 list.indexOf("B", 2);         // returns 3
@@ -137,8 +134,7 @@ list.indexOf("X");            // returns -1
 
 
 //! [13]
-QList<QString> list;
-list << "A" << "B" << "C" << "B" << "A";
+QList<QString> list = {"A", "B", "C", "B", "A"};
 list.lastIndexOf("B");        // returns 3
 list.lastIndexOf("B", 3);     // returns 3
 list.lastIndexOf("B", 2);     // returns 1

@@ -1640,7 +1640,7 @@ size_t qHash(long double key, size_t seed) noexcept
     hash table, use \l{QMultiHash}.
 
     If you only need to extract the values from a hash (not the keys),
-    you can also use \l{foreach}:
+    you can also use range-based for:
 
     \snippet code/src_corelib_tools_qhash.cpp 12
 

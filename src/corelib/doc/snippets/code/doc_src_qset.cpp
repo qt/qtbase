@@ -34,18 +34,15 @@ while (i.hasNext()) {
 
 
 //! [5]
-QSet<QWidget *>::const_iterator i = set.constBegin();
-while (i != set.constEnd()) {
+for (auto i = set.cbegin(), end = set.cend(); != end; ++i)
     qDebug() << *i;
-    ++i;
-}
 //! [5]
 
 
 //! [6]
 QSet<QString> set;
 ...
-foreach (const QString &value, set)
+for (const auto &value : set)
     qDebug() << value;
 //! [6]
 
@@ -59,20 +56,18 @@ for (int i = 0; i < 20000; ++i)
 
 
 //! [8]
-QSet<QString> set;
-set << "January" << "February" << ... << "December";
+QSet<QString> set = {"January", "February", ... "December"}
 
-QSet<QString>::iterator i;
-for (i = set.begin(); i != set.end(); ++i)
+// i is a QSet<QString>::iterator
+for (auto i = set.begin(), end = set.end(); i != end; ++i)
     qDebug() << *i;
 //! [8]
 
 
 //! [9]
-QSet<QString> set;
-set << "January" << "February" << ... << "December";
+QSet<QString> set = {"January", "February", ... "December"};
 
-QSet<QString>::iterator i = set.begin();
+auto i = set.begin();
 while (i != set.end()) {
     if ((*i).startsWith('J')) {
         i = set.erase(i);
@@ -94,11 +89,10 @@ if (it != set.end())
 
 
 //! [11]
-QSet<QString> set;
-set << "January" << "February" << ... << "December";
+QSet<QString> set = {"January", "February", ... "December"};
 
-QSet<QString>::const_iterator i;
-for (i = set.begin(); i != set.end(); ++i)
+// i is QSet<QString>::const_iterator
+for (auto i = set.cbegin(), end = set.cend(); i != end; ++i)
     qDebug() << *i;
 //! [11]
 
