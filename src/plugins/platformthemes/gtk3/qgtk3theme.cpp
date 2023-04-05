@@ -104,20 +104,6 @@ QGtk3Theme::QGtk3Theme()
     SETTING_CONNECT("gtk-cursor-theme-size");
 #undef SETTING_CONNECT
 
-    /* Set XCURSOR_SIZE and XCURSOR_THEME for Wayland sessions */
-    if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
-        if (qEnvironmentVariableIsEmpty("XCURSOR_SIZE")) {
-            const int cursorSize = gtkSetting<gint>("gtk-cursor-theme-size");
-            if (cursorSize > 0)
-                qputenv("XCURSOR_SIZE", QByteArray::number(cursorSize));
-        }
-        if (qEnvironmentVariableIsEmpty("XCURSOR_THEME")) {
-            const QString cursorTheme = gtkSetting("gtk-cursor-theme-name");
-            if (!cursorTheme.isEmpty())
-                qputenv("XCURSOR_THEME", cursorTheme.toUtf8());
-        }
-    }
-
     m_storage.reset(new QGtk3Storage);
 }
 
