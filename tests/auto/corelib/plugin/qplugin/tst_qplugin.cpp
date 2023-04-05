@@ -224,10 +224,6 @@ void tst_QPlugin::scanInvalidPlugin()
     // now try to load this
     QFETCH(bool, loads);
     QFETCH(QString, errMsg);
-    if (!errMsg.isEmpty())
-        QTest::ignoreMessage(QtWarningMsg,
-                             "Found invalid metadata in lib " + QFile::encodeName(newName) +
-                             ":" + errMsg.toUtf8());
     QPluginLoader loader(newName);
     QCOMPARE(loader.load(), loads);
     if (loads)
