@@ -22,7 +22,7 @@ using namespace Qt::StringLiterals;
 
 extern void Q_CORE_EXPORT qt_call_post_routines();
 
-typedef QHash<QString, int> NameHash_t;
+typedef QHash<QString, qsizetype> NameHash_t;
 
 class QCommandLineParserPrivate
 {
@@ -55,7 +55,7 @@ public:
     NameHash_t nameHash;
 
     //! Option values found (only for options with a value)
-    QHash<int, QStringList> optionValuesHash;
+    QHash<qsizetype, QStringList> optionValuesHash;
 
     //! Names of options found on the command line.
     QStringList optionNames;
@@ -341,7 +341,7 @@ bool QCommandLineParser::addOption(const QCommandLineOption &option)
 
         d->commandLineOptionList.append(option);
 
-        const int offset = d->commandLineOptionList.size() - 1;
+        const qsizetype offset = d->commandLineOptionList.size() - 1;
         for (const QString &name : optionNames)
             d->nameHash.insert(name, offset);
 
@@ -628,7 +628,7 @@ bool QCommandLineParserPrivate::parseOptionValue(const QString &optionName, cons
     const QLatin1Char assignChar('=');
     const NameHash_t::const_iterator nameHashIt = nameHash.constFind(optionName);
     if (nameHashIt != nameHash.constEnd()) {
-        const int assignPos = argument.indexOf(assignChar);
+        const qsizetype assignPos = argument.indexOf(assignChar);
         const NameHash_t::mapped_type optionOffset = *nameHashIt;
         const bool withValue = !commandLineOptionList.at(optionOffset).valueName().isEmpty();
         if (withValue) {
@@ -852,9 +852,9 @@ QString QCommandLineParser::value(const QString &optionName) const
 QStringList QCommandLineParser::values(const QString &optionName) const
 {
     d->checkParsed("values");
-    const NameHash_t::const_iterator it = d->nameHash.constFind(optionName);
+    auto it = d->nameHash.constFind(optionName);
     if (it != d->nameHash.cend()) {
-        const int optionOffset = *it;
+        const qsizetype optionOffset = *it;
         QStringList values = d->optionValuesHash.value(optionOffset);
         if (values.isEmpty())
             values = d->commandLineOptionList.at(optionOffset).defaultValues();
@@ -1040,20 +1040,20 @@ static QString wrapText(const QString &names, int optionNameMaxWidth, const QStr
     };
 
     QString text;
-    int lineStart = 0;
-    int lastBreakable = -1;
+    qsizetype lineStart = 0;
+    qsizetype lastBreakable = -1;
     const int max = 79 - (indentation.size() + optionNameMaxWidth + 1);
     int x = 0;
-    const int len = description.size();
+    const qsizetype len = description.size();
 
-    for (int i = 0; i < len; ++i) {
+    for (qsizetype i = 0; i < len; ++i) {
         ++x;
         const QChar c = description.at(i);
         if (c.isSpace())
             lastBreakable = i;
 
-        int breakAt = -1;
-        int nextLineStart = -1;
+        qsizetype breakAt = -1;
+        qsizetype nextLineStart = -1;
         if (x > max && lastBreakable != -1) {
             // time to break and we know where
             breakAt = lastBreakable;
@@ -1069,7 +1069,7 @@ static QString wrapText(const QString &names, int optionNameMaxWidth, const QStr
         }
 
         if (breakAt != -1) {
-            const int numChars = breakAt - lineStart;
+            const qsizetype numChars = breakAt - lineStart;
             //qDebug() << "breakAt=" << description.at(breakAt) << "breakAtSpace=" << breakAtSpace << lineStart << "to" << breakAt << description.mid(lineStart, numChars);
             text += indentation + nextNameSection().leftJustified(optionNameMaxWidth) + u' ';
             text += QStringView{description}.mid(lineStart, numChars) + nl;
@@ -1111,7 +1111,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
         text += QCommandLineParser::tr("Options:") + nl;
     QStringList optionNameList;
     optionNameList.reserve(options.size());
-    int longestOptionNameString = 0;
+    qsizetype longestOptionNameString = 0;
     for (const QCommandLineOption &option : std::as_const(options)) {
         if (option.flags() & QCommandLineOption::HiddenFromHelp)
             continue;
@@ -1130,7 +1130,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
         longestOptionNameString = qMax(longestOptionNameString, optionNamesString.size());
     }
     ++longestOptionNameString;
-    const int optionNameMaxWidth = qMin(50, longestOptionNameString);
+    const int optionNameMaxWidth = qMin(50, int(longestOptionNameString));
     auto optionNameIterator = optionNameList.cbegin();
     for (const QCommandLineOption &option : std::as_const(options)) {
         if (option.flags() & QCommandLineOption::HiddenFromHelp)
