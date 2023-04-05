@@ -405,7 +405,7 @@ bool QEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
 void QEventDispatcherGlib::registerSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
-    int sockfd = notifier->socket();
+    int sockfd = int(notifier->socket());
     int type = notifier->type();
 #ifndef QT_NO_DEBUG
     if (sockfd < 0) {
@@ -445,8 +445,7 @@ void QEventDispatcherGlib::unregisterSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
 #ifndef QT_NO_DEBUG
-    int sockfd = notifier->socket();
-    if (sockfd < 0) {
+    if (notifier->socket() < 0) {
         qWarning("QSocketNotifier: Internal error");
         return;
     } else if (notifier->thread() != thread()
