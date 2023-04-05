@@ -218,19 +218,10 @@ multimap.upperBound(10);     // returns end()
 multimap.upperBound(999);    // returns end()
 //! [17]
 
-
-//! [18]
-QMultiMap<QString, int> multimap;
-multimap.insert("January", 1);
-multimap.insert("February", 2);
-...
-multimap.insert("December", 12);
-
-QMap<QString, int>::iterator i;
-for (i = multimap.begin(); i != multimap.end(); ++i)
-    cout << i.key() << ": " << i.value() << Qt::endl;
-//! [18]
-
+//! [19]
+for (auto it = multimap.begin(), end = multimap.end(); i != end; ++i)
+    i.value() += 2;
+//! [19]
 
 //! [19]
 QMultiMap<QString, int>::iterator i;
