@@ -27,10 +27,10 @@
 #  define Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type) typedef struct __ ## type * type ## Ref
 #endif
 #ifndef Q_FORWARD_DECLARE_CG_TYPE
-#define Q_FORWARD_DECLARE_CG_TYPE(type) typedef const struct type *type ## Ref;
+#    define Q_FORWARD_DECLARE_CG_TYPE(type) typedef const struct type *type##Ref
 #endif
 #ifndef Q_FORWARD_DECLARE_MUTABLE_CG_TYPE
-#define Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(type) typedef struct type *type ## Ref;
+#    define Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(type) typedef struct type *type##Ref
 #endif
 
 
