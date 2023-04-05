@@ -197,7 +197,7 @@
 
     \snippet code/src_corelib_global_qglobal.cpp qlikely
 
-    \sa Q_UNLIKELY(), Q_ASSUME()
+    \sa Q_UNLIKELY()
 */
 
 /*!
