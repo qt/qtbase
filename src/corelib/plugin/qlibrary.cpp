@@ -258,7 +258,7 @@ static QLibraryScanResult findPatternUnloaded(const QString &library, QLibraryPr
 #endif
         if (!lib->metaData.parse(QByteArrayView(filedata + r.pos, r.length))) {
             errMsg = lib->metaData.errorString();
-            qCWarning(qt_lcDebugPlugins, "Found invalid metadata in lib %ls: %ls",
+            qCDebug(qt_lcDebugPlugins, "Found invalid metadata in lib %ls: %ls",
                       qUtf16Printable(library), qUtf16Printable(errMsg));
         } else {
             qCDebug(qt_lcDebugPlugins, "Found metadata in lib %ls, metadata=\n%s\n",
@@ -766,7 +766,7 @@ void QLibraryPrivate::updatePluginState()
     uint qt_version = uint(metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
     bool debug = metaData.value(QtPluginMetaDataKeys::IsDebug).toBool();
     if ((qt_version & 0x00ff00) > (QT_VERSION & 0x00ff00) || (qt_version & 0xff0000) != (QT_VERSION & 0xff0000)) {
-        qCWarning(qt_lcDebugPlugins, "In %s:\n"
+        qCDebug(qt_lcDebugPlugins, "In %s:\n"
                  "  Plugin uses incompatible Qt library (%d.%d.%d) [%s]",
                  QFile::encodeName(fileName).constData(),
                  (qt_version&0xff0000) >> 16, (qt_version&0xff00) >> 8, qt_version&0xff,
