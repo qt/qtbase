@@ -18,7 +18,11 @@ target_link_libraries(echopluginwindow PRIVATE
     Qt6::Widgets
 )
 
-if(NOT QT6_IS_SHARED_LIBS_BUILD)
+if(QT6_IS_SHARED_LIBS_BUILD)
+    # Build the shared plugin too when building this example target.
+    add_dependencies(echopluginwindow echoplugin)
+else()
+    # Link the echoplugin if Qt is built statically.
     target_link_libraries(echopluginwindow PRIVATE
         echoplugin
     )
