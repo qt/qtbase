@@ -2314,8 +2314,11 @@
         \li \c ${PRODUCT_BUNDLE_IDENTIFIER}, \c @BUNDLEIDENTIFIER@
         \li Expands to the target bundle's bundle identifier string,
             for example: \c{com.example.myapp}. Determined by concatenating the
-            values of QMAKE_TARGET_BUNDLE_PREFIX and QMAKE_BUNDLE, separated
-            by a full stop (\c{.}).
+            values of \c QMAKE_TARGET_BUNDLE_PREFIX and \c QMAKE_BUNDLE, separated
+            by a full stop (\c{.}). The value of \c QMAKE_BUNDLE is derived from
+            \c QMAKE_APPLICATION_BUNDLE_NAME, \c QMAKE_PLUGIN_BUNDLE_NAME, or
+            \c QMAKE_FRAMEWORK_BUNDLE_NAME. It should not be set directly by the
+            project.
     \row
         \li \c ${EXECUTABLE_NAME}, \c @EXECUTABLE@, \c @LIBRARY@
         \li Equivalent to the value of QMAKE_APPLICATION_BUNDLE_NAME,
