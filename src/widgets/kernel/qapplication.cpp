@@ -527,6 +527,8 @@ void QApplicationPrivate::initialize()
                 qWarning("QApplication: invalid style override '%s' passed, ignoring it.\n"
                     "\tAvailable styles: %s", qPrintable(styleOverride),
                     qPrintable(QStyleFactory::keys().join(", "_L1)));
+                // Clear styleOverride so it is not picked by Qt Quick Controls (QTBUG-100563)
+                styleOverride.clear();
             }
         }
 
