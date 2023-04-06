@@ -50,6 +50,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include "private/qwindow_p.h"
+#include "private/qicon_p.h"
 #include "private/qcursor_p.h"
 #if QT_CONFIG(opengl)
 #  include "private/qopenglcontext_p.h"
@@ -2594,6 +2595,8 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
 {
     if (self)
         self->handleThemeChanged();
+
+    QIconPrivate::clearIconCache();
 
     QEvent themeChangeEvent(QEvent::ThemeChange);
     const QWindowList windows = tce->window ? QWindowList{tce->window} : window_list;

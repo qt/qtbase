@@ -125,8 +125,18 @@ void QIconLoader::updateSystemTheme()
     }
 }
 
+void QIconLoader::invalidateKey()
+{
+    m_themeKey++;
+
+    QIconPrivate::clearIconCache();
+}
+
 void QIconLoader::setThemeName(const QString &themeName)
 {
+    if (m_userTheme == themeName)
+        return;
+
     m_userTheme = themeName;
     invalidateKey();
 }

@@ -98,6 +98,11 @@ QIconPrivate::QIconPrivate(QIconEngine *e)
 {
 }
 
+void QIconPrivate::clearIconCache()
+{
+    qt_cleanup_icon_cache();
+}
+
 /*! \internal
     Computes the displayDevicePixelRatio for a pixmap.
 
@@ -1277,11 +1282,8 @@ void QIcon::setFallbackThemeName(const QString &name)
 QIcon QIcon::fromTheme(const QString &name)
 {
 
-    if (QIcon *cachedIcon = qtIconCache()->object(name)) {
-        if (!cachedIcon->isNull())
-            return *cachedIcon;
-        qtIconCache()->remove(name);
-    }
+    if (QIcon *cachedIcon = qtIconCache()->object(name))
+        return *cachedIcon;
 
     QIcon icon;
     if (QDir::isAbsolutePath(name)) {
@@ -1292,8 +1294,7 @@ QIcon QIcon::fromTheme(const QString &name)
         QIconEngine * const engine = (platformTheme && !hasUserTheme) ? platformTheme->createIconEngine(name)
                                                    : new QIconLoaderEngine(name);
         icon = QIcon(engine);
-        if (!icon.isNull())
-            qtIconCache()->insert(name, new QIcon(icon));
+        qtIconCache()->insert(name, new QIcon(icon));
     }
 
     return icon;
