@@ -42,6 +42,8 @@ public:
     int serialNum;
     int detach_no;
     bool is_mask;
+
+    static void clearIconCache();
 };
 
 

@@ -158,7 +158,7 @@ public:
     QIconDirInfo dirInfo(int dirindex);
     static QIconLoader *instance();
     void updateSystemTheme();
-    void invalidateKey() { m_themeKey++; }
+    void invalidateKey();
     void ensureInitialized();
     bool hasUserTheme() const { return !m_userTheme.isEmpty(); }
 
