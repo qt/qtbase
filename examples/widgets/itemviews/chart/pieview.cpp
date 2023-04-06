@@ -311,8 +311,6 @@ void PieView::paintEvent(QPaintEvent *event)
     }
     painter.restore();
 
-    int keyNumber = 0;
-
     for (row = 0; row < model()->rowCount(rootIndex()); ++row) {
         QModelIndex index = model()->index(row, 1, rootIndex());
         double value = model()->data(index).toDouble();
@@ -329,8 +327,6 @@ void PieView::paintEvent(QPaintEvent *event)
             if (currentIndex() == labelIndex)
                 option.state |= QStyle::State_HasFocus;
             itemDelegate()->paint(&painter, option, labelIndex);
-
-            ++keyNumber;
         }
     }
 }

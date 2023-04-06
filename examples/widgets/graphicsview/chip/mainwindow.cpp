@@ -48,7 +48,6 @@ void MainWindow::populateScene()
 
     // Populate scene
     int xx = 0;
-    int nitems = 0;
     for (int i = -11000; i < 11000; i += 110) {
         ++xx;
         int yy = 0;
@@ -61,8 +60,6 @@ void MainWindow::populateScene()
             QGraphicsItem *item = new Chip(color, xx, yy);
             item->setPos(QPointF(i, j));
             scene->addItem(item);
-
-            ++nitems;
         }
     }
 }
