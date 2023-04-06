@@ -813,7 +813,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "-e \"s,\\$${ASSETCATALOG_COMPILER_APPICON_NAME}," << iconName << ",g\" "
                   << "-e \"s,@EXECUTABLE@," << app_bundle_name << ",g\" "
                   << "-e \"s,@LIBRARY@," << plugin_bundle_name << ",g\" "
-                  << "-e \"s,\\$${EXECUTABLE_NAME}," << (app_bundle_name.isEmpty() ? app_bundle_name : plugin_bundle_name) << ",g\" "
+                  << "-e \"s,\\$${EXECUTABLE_NAME}," << (!app_bundle_name.isEmpty() ? app_bundle_name : plugin_bundle_name) << ",g\" "
                   << "-e \"s,@TYPEINFO@,"<< typeInfo << ",g\" "
                   << "-e \"s,\\$${QMAKE_PKGINFO_TYPEINFO},"<< typeInfo << ",g\" "
                   << ">" << info_plist_out << Qt::endl;
