@@ -240,7 +240,7 @@ QModelIndex QFileSystemModel::index(int row, int column, const QModelIndex &pare
 */
 QModelIndex QFileSystemModel::sibling(int row, int column, const QModelIndex &idx) const
 {
-    if (row == idx.row() && column < QFileSystemModelPrivate::NumColumns) {
+    if (row == idx.row() && column < columnCount(idx.parent())) {
         // cheap sibling operation: just adjust the column:
         return createIndex(row, column, idx.internalPointer());
     } else {
@@ -1995,9 +1995,16 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path,
             && visibleMin < parentNode->visibleChildren.size()
             && parentNode->visibleChildren.at(visibleMin) == min
             && visibleMax >= 0) {
-            QModelIndex bottom = q->index(translateVisibleLocation(parentNode, visibleMin), QFileSystemModelPrivate::NameColumn, parentIndex);
-            QModelIndex top = q->index(translateVisibleLocation(parentNode, visibleMax), QFileSystemModelPrivate::NumColumns - 1, parentIndex);
-            emit q->dataChanged(bottom, top);
+            // don't use NumColumns here, a subclass might override columnCount
+            const int lastColumn = q->columnCount(parentIndex) - 1;
+            const QModelIndex top = q->index(translateVisibleLocation(parentNode, visibleMin),
+                                             QFileSystemModelPrivate::NameColumn, parentIndex);
+            const QModelIndex bottom = q->index(translateVisibleLocation(parentNode, visibleMax),
+                                                lastColumn, parentIndex);
+            // We document that emitting dataChanged with indexes that don't have the
+            // same parent is undefined behavior.
+            Q_ASSERT(bottom.parent() == top.parent());
+            emit q->dataChanged(top, bottom);
         }
 
         /*min = QString();
