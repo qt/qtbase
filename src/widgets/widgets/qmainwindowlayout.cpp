@@ -46,6 +46,8 @@
 #include <private/qlayoutengine_p.h>
 #include <private/qwidgetresizehandler_p.h>
 
+#include <QScopedValueRollback>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -1813,7 +1815,7 @@ bool QMainWindowTabBar::event(QEvent *e)
 
 QTabBar *QMainWindowLayout::getTabBar()
 {
-    if (!usedTabBars.isEmpty()) {
+    if (!usedTabBars.isEmpty() && !isInRestoreState) {
         /*
             If dock widgets have been removed and added while the main window was
             hidden, then the layout hasn't been activated yet, and tab bars from empty
@@ -2960,6 +2962,7 @@ void QMainWindowLayout::saveState(QDataStream &stream) const
 
 bool QMainWindowLayout::restoreState(QDataStream &stream)
 {
+    QScopedValueRollback<bool> guard(isInRestoreState, true);
     savedState = layoutState;
     layoutState.clear();
     layoutState.rect = savedState.rect;
