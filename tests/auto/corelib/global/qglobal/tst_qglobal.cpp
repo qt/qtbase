@@ -37,6 +37,7 @@ private slots:
     void qRoundDoubles();
     void PRImacros();
     void testqToUnderlying();
+    void nodiscardConstructor();
 };
 
 extern "C" {        // functions in qglobal.c
@@ -689,6 +690,26 @@ void tst_QGlobal::testqToUnderlying()
     static_assert(std::is_same_v<decltype(qToUnderlying(EE1)), unsigned long>);
     QCOMPARE(qToUnderlying(EE1), 123UL);
     QCOMPARE(qToUnderlying(EE2), 456UL);
+}
+
+void tst_QGlobal::nodiscardConstructor()
+{
+    // Syntax-only test, just to make sure that Q_NODISCARD_CTOR compiles
+    // on all platforms.
+    // Other code is just to silence all various compiler warnings about
+    // unused private members or methods.
+    class Test {
+    public:
+        Q_NODISCARD_CTOR explicit Test(int val) : m_val(val) {}
+
+        int get() const { return m_val; }
+
+    private:
+        int m_val;
+    };
+
+    Test t{42};
+    QCOMPARE(t.get(), 42);
 }
 
 QTEST_APPLESS_MAIN(tst_QGlobal)

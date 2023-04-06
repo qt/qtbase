@@ -970,6 +970,15 @@
 #define Q_DECL_ENUMERATOR_DEPRECATED Q_DECL_DEPRECATED
 #define Q_DECL_ENUMERATOR_DEPRECATED_X(x) Q_DECL_DEPRECATED_X(x)
 
+// [[nodiscard]] constructor
+#ifndef Q_NODISCARD_CTOR
+#  if __has_cpp_attribute(nodiscard) >= 201907L
+#    define Q_NODISCARD_CTOR [[nodiscard]]
+#  else
+#    define Q_NODISCARD_CTOR
+#  endif
+#endif
+
 /*
  * Fallback macros to certain compiler features
  */

@@ -231,6 +231,7 @@ template <typename Mutex>
 class [[nodiscard]] QMutexLocker
 {
 public:
+    Q_NODISCARD_CTOR
     inline explicit QMutexLocker(Mutex *mutex) QT_MUTEX_LOCK_NOEXCEPT
     {
         m_mutex = mutex;
@@ -240,6 +241,7 @@ public:
         }
     }
 
+    Q_NODISCARD_CTOR
     inline QMutexLocker(QMutexLocker &&other) noexcept
         : m_mutex(std::exchange(other.m_mutex, nullptr)),
           m_isLocked(std::exchange(other.m_isLocked, false))
@@ -326,6 +328,7 @@ template <typename Mutex>
 class [[nodiscard]] QMutexLocker
 {
 public:
+    Q_NODISCARD_CTOR
     inline explicit QMutexLocker(Mutex *) noexcept {}
     inline ~QMutexLocker() noexcept {}
 
