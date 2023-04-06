@@ -1989,14 +1989,20 @@ void QDockAreaLayoutInfo::updateSeparatorWidgets() const
             break;
 
         QWidget *sepWidget;
-        if (j < separatorWidgets.size() && separatorWidgets.at(j)) {
+        if (j < separatorWidgets.size()) {
             sepWidget = separatorWidgets.at(j);
+            if (!sepWidget) {
+                qWarning("QDockAreaLayoutInfo::updateSeparatorWidgets: null separator widget");
+                sepWidget = mainWindowLayout()->getSeparatorWidget();
+                separatorWidgets[j] = sepWidget;
+            }
         } else {
             sepWidget = mainWindowLayout()->getSeparatorWidget();
             separatorWidgets.append(sepWidget);
         }
         j++;
 
+        Q_ASSERT(sepWidget);
         sepWidget->raise();
 
         QRect sepRect = separatorRect(i).adjusted(-2, -2, 2, 2);
@@ -2009,7 +2015,6 @@ void QDockAreaLayoutInfo::updateSeparatorWidgets() const
         separatorWidgets[k]->hide();
     }
     separatorWidgets.resize(j);
-    Q_ASSERT(separatorWidgets.size() == j);
 }
 
 /*! \internal
@@ -3271,12 +3276,18 @@ void QDockAreaLayout::updateSeparatorWidgets() const
         QWidget *sepWidget;
         if (j < separatorWidgets.size()) {
             sepWidget = separatorWidgets.at(j);
+            if (!sepWidget) {
+                qWarning("QDockAreaLayout::updateSeparatorWidgets: null separator widget");
+                sepWidget = qt_mainwindow_layout(mainWindow)->getSeparatorWidget();
+                separatorWidgets[j] = sepWidget;
+            }
         } else {
             sepWidget = qt_mainwindow_layout(mainWindow)->getSeparatorWidget();
             separatorWidgets.append(sepWidget);
         }
         j++;
 
+        Q_ASSERT(sepWidget);
         sepWidget->raise();
 
         QRect sepRect = separatorRect(i).adjusted(-2, -2, 2, 2);
