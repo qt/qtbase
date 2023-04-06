@@ -63,7 +63,13 @@ class Q_GUI_EXPORT QFileSystemModelPrivate : public QAbstractItemModelPrivate
     Q_DECLARE_PUBLIC(QFileSystemModel)
 
 public:
-    enum { NumColumns = 4 };
+    enum {
+        NameColumn,
+        SizeColumn,
+        TypeColumn,
+        TimeColumn,
+        NumColumns = 4
+    };
 
     class QFileSystemNode
     {
