@@ -586,6 +586,7 @@ private:
 #if QT_CONFIG(tabbar)
     void updateTabBarShapes();
 #endif
+    bool isInRestoreState = false;
 };
 
 #if QT_CONFIG(dockwidget) && !defined(QT_NO_DEBUG_STREAM)
