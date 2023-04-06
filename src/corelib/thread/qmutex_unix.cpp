@@ -25,8 +25,6 @@ static void report_error(int code, const char *where, const char *what)
         qErrnoWarning(code, "%s: %s failure", where, what);
 }
 
-#ifdef QT_UNIX_SEMAPHORE
-
 QMutexPrivate::QMutexPrivate()
 {
     report_error(sem_init(&semaphore, 0, 0), "QMutex", "sem_init");
@@ -67,57 +65,5 @@ void QMutexPrivate::wakeUp() noexcept
 {
     report_error(sem_post(&semaphore), "QMutex::unlock", "sem_post");
 }
-
-#else // QT_UNIX_SEMAPHORE
-
-QMutexPrivate::QMutexPrivate()
-    : wakeup(false)
-{
-    report_error(pthread_mutex_init(&mutex, NULL), "QMutex", "mutex init");
-    qt_initialize_pthread_cond(&cond, "QMutex");
-}
-
-QMutexPrivate::~QMutexPrivate()
-{
-    report_error(pthread_cond_destroy(&cond), "QMutex", "cv destroy");
-    report_error(pthread_mutex_destroy(&mutex), "QMutex", "mutex destroy");
-}
-
-bool QMutexPrivate::wait(int timeout)
-{
-    report_error(pthread_mutex_lock(&mutex), "QMutex::lock", "mutex lock");
-    int errorCode = 0;
-    while (!wakeup) {
-        if (timeout < 0) {
-            errorCode = pthread_cond_wait(&cond, &mutex);
-        } else {
-            timespec ti;
-            qt_abstime_for_timeout(&ti, QDeadlineTimer(timeout));
-            errorCode = pthread_cond_timedwait(&cond, &mutex, &ti);
-        }
-        if (errorCode) {
-            if (errorCode == ETIMEDOUT) {
-                if (wakeup)
-                    errorCode = 0;
-                break;
-            }
-            report_error(errorCode, "QMutex::lock()", "cv wait");
-        }
-    }
-    bool ret = wakeup;
-    wakeup = false;
-    report_error(pthread_mutex_unlock(&mutex), "QMutex::lock", "mutex unlock");
-    return ret;
-}
-
-void QMutexPrivate::wakeUp() noexcept
-{
-    report_error(pthread_mutex_lock(&mutex), "QMutex::unlock", "mutex lock");
-    wakeup = true;
-    report_error(pthread_cond_signal(&cond), "QMutex::unlock", "cv signal");
-    report_error(pthread_mutex_unlock(&mutex), "QMutex::unlock", "mutex unlock");
-}
-
-#endif
 
 QT_END_NAMESPACE

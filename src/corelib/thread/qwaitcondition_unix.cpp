@@ -52,7 +52,7 @@ static void report_error(int code, const char *where, const char *what)
         qErrnoWarning(code, "%s: %s failure", where, what);
 }
 
-void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
+static void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
 {
     pthread_condattr_t *attrp = nullptr;
 
@@ -69,7 +69,7 @@ void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
     report_error(pthread_cond_init(cond, attrp), where, "cv init");
 }
 
-void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
+static void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
 {
     using namespace std::chrono;
     using Clock =
