@@ -33,11 +33,15 @@
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/private/qmacmimeregistry_p.h>
-#include <QtGui/private/qopenglcontext_p.h>
+#ifndef QT_NO_OPENGL
+#  include <QtGui/private/qopenglcontext_p.h>
+#endif
 #include <QtGui/private/qrhibackingstore_p.h>
 #include <QtGui/private/qfontengine_coretext_p.h>
 
 #include <IOKit/graphics/IOGraphicsLib.h>
+
+#include <inttypes.h>
 
 static void initResources()
 {
