@@ -784,16 +784,31 @@ int QSqlResult::boundValueCount() const
 }
 
 /*!
-    Returns a vector of the result's bound values for the current
+    Returns a list of the result's bound values for the current
     record (row).
 
     \sa boundValueCount()
 */
-QList<QVariant> &QSqlResult::boundValues() const
+QVariantList QSqlResult::boundValues(QT6_IMPL_NEW_OVERLOAD) const
 {
     Q_D(const QSqlResult);
-    return const_cast<QSqlResultPrivate *>(d)->values;
+    return d->values;
 }
+
+/*!
+    \overload
+
+    Returns a mutable reference to the list of the result's bound values
+    for the current record (row).
+
+    \sa boundValueCount()
+*/
+QVariantList &QSqlResult::boundValues(QT6_IMPL_NEW_OVERLOAD)
+{
+    Q_D(QSqlResult);
+    return d->values;
+}
+
 
 /*!
     Returns the binding syntax used by prepared queries.
