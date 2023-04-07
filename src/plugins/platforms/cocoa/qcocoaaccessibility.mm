@@ -117,7 +117,6 @@ static void populateRoleMap()
     roleMap[QAccessible::ColumnHeader] = NSAccessibilityColumnRole;
     roleMap[QAccessible::Row] = NSAccessibilityRowRole;
     roleMap[QAccessible::RowHeader] = NSAccessibilityRowRole;
-    roleMap[QAccessible::Cell] = NSAccessibilityTextFieldRole;
     roleMap[QAccessible::Button] = NSAccessibilityButtonRole;
     roleMap[QAccessible::EditableText] = NSAccessibilityTextFieldRole;
     roleMap[QAccessible::Link] = NSAccessibilityLinkRole;
@@ -125,7 +124,7 @@ static void populateRoleMap()
     roleMap[QAccessible::Splitter] = NSAccessibilitySplitGroupRole;
     roleMap[QAccessible::List] = NSAccessibilityListRole;
     roleMap[QAccessible::ListItem] = NSAccessibilityStaticTextRole;
-    roleMap[QAccessible::Cell] = NSAccessibilityStaticTextRole;
+    roleMap[QAccessible::Cell] = NSAccessibilityCellRole;
     roleMap[QAccessible::Client] = NSAccessibilityGroupRole;
     roleMap[QAccessible::Paragraph] = NSAccessibilityGroupRole;
     roleMap[QAccessible::Section] = NSAccessibilityGroupRole;
