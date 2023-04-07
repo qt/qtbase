@@ -4071,6 +4071,9 @@ private:
 
 void tst_QAccessibility::focusChild()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Platform does not support window activation");
+
     {
         QMainWindow mainWindow;
         QtTestAccessibleWidget *widget1 = new QtTestAccessibleWidget(0, "Widget1");
