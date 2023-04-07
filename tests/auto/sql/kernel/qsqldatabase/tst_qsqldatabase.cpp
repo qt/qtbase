@@ -1613,13 +1613,11 @@ void tst_QSqlDatabase::ibase_procWithoutReturnValues()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    ProcScope ps(db, "qtest_proc1", __FILE__);
 
     QSqlQuery q(db);
-    const QString procName(qTableName("qtest_proc1", __FILE__, db));
-    q.exec(QString("drop procedure %1").arg(procName));
-    QVERIFY_SQL(q, exec("CREATE PROCEDURE " + procName + " (str VARCHAR(10))\nAS BEGIN\nstr='test';\nEND;"));
-    QVERIFY_SQL(q, exec(QString("execute procedure %1('qtest')").arg(procName)));
-    q.exec(QString("drop procedure %1").arg(procName));
+    QVERIFY_SQL(q, exec("CREATE PROCEDURE " + ps.name() + " (str VARCHAR(10))\nAS BEGIN\nstr='test';\nEND;"));
+    QVERIFY_SQL(q, exec(QString("execute procedure %1('qtest')").arg(ps.name())));
 }
 
 void tst_QSqlDatabase::ibase_procWithReturnValues()
@@ -1627,12 +1625,10 @@ void tst_QSqlDatabase::ibase_procWithReturnValues()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-
-    const QString procName(qTableName("qtest_proc2", __FILE__, db));
+    ProcScope ps(db, "qtest_proc2", __FILE__);
 
     QSqlQuery q(db);
-    q.exec(QString("drop procedure %1").arg(procName));
-    QVERIFY_SQL(q, exec("CREATE PROCEDURE " + procName + " ("
+    QVERIFY_SQL(q, exec("CREATE PROCEDURE " + ps.name() + " ("
                         "\nABC INTEGER)"
                         "\nRETURNS ("
                         "\nRESULT INTEGER)"
@@ -1643,13 +1639,13 @@ void tst_QSqlDatabase::ibase_procWithReturnValues()
                         "\nend"));
 
     // Interbase procedures can be executed in two ways: EXECUTE PROCEDURE or SELECT
-    QVERIFY_SQL(q, exec(QString("execute procedure %1(123)").arg(procName)));
+    QVERIFY_SQL(q, exec(QString("execute procedure %1(123)").arg(ps.name())));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 1230);
-    QVERIFY_SQL(q, exec(QString("select result from %1(456)").arg(procName)));
+    QVERIFY_SQL(q, exec(QString("select result from %1(456)").arg(ps.name())));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 4560);
-    QVERIFY_SQL(q, prepare(QLatin1String("execute procedure ")+procName+QLatin1String("(?)")));
+    QVERIFY_SQL(q, prepare(QLatin1String("execute procedure ") + ps.name() + QLatin1String("(?)")));
     q.bindValue(0, 123);
     QVERIFY_SQL(q, exec());
     QVERIFY_SQL(q, next());
@@ -1658,8 +1654,6 @@ void tst_QSqlDatabase::ibase_procWithReturnValues()
     QVERIFY_SQL(q, exec());
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 4560);
-
-    q.exec(QString("drop procedure %1").arg(procName));
 }
 
 void tst_QSqlDatabase::formatValueTrimStrings()
@@ -2020,16 +2014,15 @@ void tst_QSqlDatabase::eventNotificationIBase()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    const QString procedureName(qTableName("posteventProc", __FILE__, db));
+    ProcScope ps(db, "posteventProc", __FILE__);
     QSqlDriver *driver=db.driver();
-    QVERIFY_SQL(*driver, subscribeToNotification(procedureName));
+    QVERIFY_SQL(*driver, subscribeToNotification(ps.name()));
     QTest::qWait(300);  // Interbase needs some time to call the driver callback.
 
     db.transaction();   // InterBase events are posted from within transactions.
     QSqlQuery q(db);
-    q.exec(QString("DROP PROCEDURE %1").arg(procedureName));
-    q.exec(QString("CREATE PROCEDURE %1\nAS BEGIN\nPOST_EVENT '%1';\nEND;").arg(procedureName));
-    q.exec(QString("EXECUTE PROCEDURE %1").arg(procedureName));
+    q.exec(QString("CREATE PROCEDURE %1\nAS BEGIN\nPOST_EVENT '%1';\nEND;").arg(ps.name()));
+    q.exec(QString("EXECUTE PROCEDURE %1").arg(ps.name()));
     QSignalSpy spy(driver, &QSqlDriver::notification);
     db.commit();        // No notifications are posted until the transaction is committed.
     // Interbase needs some time to post the notification and call the driver callback.
@@ -2037,9 +2030,8 @@ void tst_QSqlDatabase::eventNotificationIBase()
     // event handler in the driver to be executed and emit the notification signal.
     QTRY_COMPARE(spy.size(), 1);
     QList<QVariant> arguments = spy.takeFirst();
-    QCOMPARE(arguments.at(0).toString(), procedureName);
-    QVERIFY_SQL(*driver, unsubscribeFromNotification(procedureName));
-    q.exec(QString("DROP PROCEDURE %1").arg(procedureName));
+    QCOMPARE(arguments.at(0).toString(), ps.name());
+    QVERIFY_SQL(*driver, unsubscribeFromNotification(ps.name()));
 }
 
 void tst_QSqlDatabase::eventNotificationPSQL()

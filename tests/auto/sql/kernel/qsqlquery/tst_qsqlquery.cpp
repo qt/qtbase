@@ -342,16 +342,6 @@ void tst_QSqlQuery::dropTestTables(QSqlDatabase db)
                << qTableName("qtest_null", __FILE__, db)
                << qTableName("tst_record", __FILE__, db);
 
-    if (dbType == QSqlDriver::MSSqlServer) {
-        QSqlQuery q(db);
-        q.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__, db));
-    }
-
-    if (dbType == QSqlDriver::MySqlServer) {
-        QSqlQuery q(db);
-        q.exec("DROP PROCEDURE IF EXISTS " + qTableName("bug6852_proc", __FILE__, db));
-    }
-
     tst_Databases::safeDropTables(db, tablenames);
 
     if (dbType == QSqlDriver::Oracle) {
@@ -529,7 +519,7 @@ void tst_QSqlQuery::mysql_outValues()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     const QString hello(qTableName("hello", __FILE__, db));
-    const QString qtestproc(qTableName("qtestproc", __FILE__, db));
+    ProcScope ps(db, "qtestproc", __FILE__);
 
     QSqlQuery q(db);
 
@@ -551,25 +541,22 @@ void tst_QSqlQuery::mysql_outValues()
     QCOMPARE(q.value(0).toString(), u"Hello harald");
 
     QVERIFY_SQL(q, exec("drop function " + hello));
-    q.exec("drop procedure " + qtestproc);
 
     QVERIFY_SQL(q, exec(QLatin1String("create procedure %1 () BEGIN "
-                                      "select * from %2 order by id; END").arg(qtestproc, qtest)));
-    QVERIFY_SQL(q, exec(QLatin1String("call %1()").arg(qtestproc)));
+                                      "select * from %2 order by id; END").arg(ps.name(), qtest)));
+    QVERIFY_SQL(q, exec(QLatin1String("call %1()").arg(ps.name())));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(1).toString(), u"VarChar1");
 
-    QVERIFY_SQL(q, exec("drop procedure " + qtestproc));
+    QVERIFY_SQL(q, exec("drop procedure " + ps.name()));
     QVERIFY_SQL(q, exec(QLatin1String("create procedure %1 (OUT param1 INT) "
-                                      "BEGIN set param1 = 42; END").arg(qtestproc)));
+                                      "BEGIN set param1 = 42; END").arg(ps.name())));
 
-    QVERIFY_SQL(q, exec(QLatin1String("call %1 (@out)").arg(qtestproc)));
+    QVERIFY_SQL(q, exec(QLatin1String("call %1 (@out)").arg(ps.name())));
     QVERIFY_SQL(q, exec("select @out"));
     QCOMPARE(q.record().fieldName(0), u"@out");
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 42);
-
-    QVERIFY_SQL(q, exec("drop procedure " + qtestproc));
 }
 
 void tst_QSqlQuery::bindBool()
@@ -829,19 +816,15 @@ void tst_QSqlQuery::storedProceduresIBase()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    ProcScope ps(db, "TESTPROC", __FILE__);
 
     QSqlQuery q(db);
-    const auto procName = qTableName("TESTPROC", __FILE__, db);
-    q.exec("drop procedure " + procName);
-
     QVERIFY_SQL(q, exec(QLatin1String("create procedure %1 RETURNS (x integer, y varchar(20)) "
                                       "AS BEGIN "
                                       "  x = 42; "
                                       "  y = 'Hello Anders'; "
-                                      "END").arg(procName)));
-    const auto tidier = qScopeGuard([&]() { q.exec("drop procedure " + procName); });
-
-    QVERIFY_SQL(q, prepare("execute procedure " + procName));
+                                      "END").arg(ps.name())));
+    QVERIFY_SQL(q, prepare("execute procedure " + ps.name()));
     QVERIFY_SQL(q, exec());
 
     // Check for a valid result set:
@@ -868,12 +851,11 @@ void tst_QSqlQuery::outValuesDB2()
     if (!db.driver()->hasFeature(QSqlDriver::PreparedQueries))
         QSKIP("Test requires prepared query support");
 
-    QSqlQuery q(db);
+    ProcScope ps(db, "tst_outValues", __FILE__);
 
+    QSqlQuery q(db);
     q.setForwardOnly(true);
 
-    const QString procName = qTableName("tst_outValues", __FILE__, db);
-    q.exec("drop procedure " + procName); // non-fatal
     QVERIFY_SQL(q, exec(QLatin1String("CREATE PROCEDURE %1 "
                                       "(OUT x int, OUT x2 double, OUT x3 char(20))\n"
                                       "LANGUAGE SQL\n"
@@ -881,9 +863,9 @@ void tst_QSqlQuery::outValuesDB2()
                                       " SET x = 42;\n"
                                       " SET x2 = 4.2;\n"
                                       " SET x3 = 'Homer';\n"
-                                      "END P1").arg(procName)));
+                                      "END P1").arg(ps.name())));
 
-    QVERIFY_SQL(q, prepare(QLatin1String("call %1(?, ?, ?)").arg(procName)));
+    QVERIFY_SQL(q, prepare(QLatin1String("call %1(?, ?, ?)").arg(ps.name())));
 
     q.addBindValue(0, QSql::Out);
     q.addBindValue(0.0, QSql::Out);
@@ -901,11 +883,11 @@ void tst_QSqlQuery::outValues()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QString tst_outValues(qTableName("tst_outValues", __FILE__, db));
 
     if (!db.driver()->hasFeature(QSqlDriver::PreparedQueries))
         QSKIP("Test requires prepared query support");
 
+    ProcScope ps(db, "tst_outValues", __FILE__);
     QSqlQuery q(db);
 
     q.setForwardOnly(true);
@@ -919,7 +901,6 @@ void tst_QSqlQuery::outValues()
         caller = QLatin1String("call %1(?)");
         break;
     case QSqlDriver::DB2:
-        q.exec("drop procedure " + tst_outValues); // non-fatal
         creator = QLatin1String("CREATE PROCEDURE %1 (OUT x int)\n"
                                 "LANGUAGE SQL\n"
                                 "P1: BEGIN\n"
@@ -928,7 +909,6 @@ void tst_QSqlQuery::outValues()
         caller = QLatin1String("call %1(?)");
         break;
     case QSqlDriver::MSSqlServer:
-        q.exec("drop procedure " + tst_outValues);  // non-fatal
         creator = QLatin1String("create procedure %1 (@x int out) as\n"
                                 "begin\n"
                                 "    set @x = 42\n"
@@ -939,8 +919,8 @@ void tst_QSqlQuery::outValues()
         QSKIP("Don't know how to create a stored procedure for this database server, "
               "please fix this test");
     }
-    QVERIFY_SQL(q, exec(creator.arg(tst_outValues)));
-    QVERIFY(q.prepare(caller.arg(tst_outValues)));
+    QVERIFY_SQL(q, exec(creator.arg(ps.name())));
+    QVERIFY(q.prepare(caller.arg(ps.name())));
 
     q.addBindValue(0, QSql::Out);
 
@@ -3564,11 +3544,10 @@ void tst_QSqlQuery::sqlServerReturn0()
     if (tst_Databases::getDatabaseType(db) != QSqlDriver::MSSqlServer)
         QSKIP("Test is specific to SQL Server");
 
+    ProcScope ps(db, "test141895_proc", __FILE__);
     TableScope ts(db, "test141895", __FILE__);
     const auto &tableName = ts.tableName();
-    const QString procName(qTableName("test141895_proc", __FILE__, db));
     QSqlQuery q(db);
-    q.exec("DROP PROCEDURE " + procName);
     QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (id integer)").arg(tableName)));
     QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 (id) VALUES (1)").arg(tableName)));
     QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 (id) VALUES (2)").arg(tableName)));
@@ -3576,10 +3555,10 @@ void tst_QSqlQuery::sqlServerReturn0()
     QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 (id) VALUES (3)").arg(tableName)));
     QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 (id) VALUES (1)").arg(tableName)));
     QVERIFY_SQL(q, exec(QLatin1String("CREATE PROCEDURE %1 AS "
-                                      "SELECT * FROM %1 WHERE ID = 2 "
-                                      "RETURN 0").arg(tableName)));
+                                      "SELECT * FROM %2 WHERE ID = 2 "
+                                      "RETURN 0").arg(ps.name(), ts.tableName())));
 
-    QVERIFY_SQL(q, exec(QLatin1String("{CALL %1}").arg(procName)));
+    QVERIFY_SQL(q, exec(QLatin1String("{CALL %1}").arg(ps.name())));
     QVERIFY_SQL(q, next());
 }
 
@@ -3677,24 +3656,21 @@ void tst_QSqlQuery::QTBUG_18435()
     if (dbType != QSqlDriver::MSSqlServer || !db.driverName().startsWith("QODBC"))
         QSKIP("Test is specific to SQL Server");
 
+    ProcScope ps(db, "qtbug_18435_proc", __FILE__);
     QSqlQuery q(db);
-    QString procName(qTableName("qtbug_18435_proc", __FILE__, db));
 
-    q.exec("DROP PROCEDURE " + procName);
     const QString stmt = QLatin1String("CREATE PROCEDURE %1 @key nvarchar(50) OUTPUT AS\n"
                                        "BEGIN\n"
                                        "  SET NOCOUNT ON\n"
                                        "  SET @key = 'TEST'\n"
-                                       "END\n").arg(procName);
+                                       "END\n").arg(ps.name());
 
     QVERIFY_SQL(q, exec(stmt));
-    QVERIFY_SQL(q, prepare(QLatin1String("{CALL %1(?)}").arg(procName)));
+    QVERIFY_SQL(q, prepare(QLatin1String("{CALL %1(?)}").arg(ps.name())));
     const QString testStr = "0123";
     q.bindValue(0, testStr, QSql::Out);
     QVERIFY_SQL(q, exec());
     QCOMPARE(q.boundValue(0).toString(), QLatin1String("TEST"));
-
-    QVERIFY_SQL(q, exec("DROP PROCEDURE " + procName));
 }
 
 void tst_QSqlQuery::QTBUG_5251()
@@ -3765,9 +3741,8 @@ void tst_QSqlQuery::QTBUG_6618()
     if (tst_Databases::getDatabaseType(db) != QSqlDriver::MSSqlServer)
         QSKIP("Test is specific to SQL Server");
 
+    ProcScope ps(db, "tst_raiseError", __FILE__);
     QSqlQuery q(db);
-    const QString procedureName = qTableName("tst_raiseError", __FILE__, db);
-    q.exec("drop procedure " + procedureName);  // non-fatal
     QString errorString;
     for (int i = 0; i < 110; ++i)
         errorString += "reallylong";
@@ -3775,8 +3750,8 @@ void tst_QSqlQuery::QTBUG_6618()
     QVERIFY_SQL(q, exec(QLatin1String("create procedure %1 as\n"
                                       "begin\n"
                                       "    raiserror('%2', 16, 1)\n"
-                                      "end\n").arg(procedureName, errorString)));
-    q.exec(QLatin1String("{call %1}").arg(procedureName));
+                                      "end\n").arg(ps.name(), errorString)));
+    q.exec(QLatin1String("{call %1}").arg(ps.name()));
     QVERIFY(q.lastError().text().contains(errorString));
 }
 
@@ -3787,11 +3762,9 @@ void tst_QSqlQuery::QTBUG_6852()
     CHECK_DATABASE(db);
     TableScope ts(db, "bug6852", __FILE__);
     const auto &tableName = ts.tableName();
+    ProcScope ps(db, "bug6852_proc", __FILE__);
 
     QSqlQuery q(db);
-    const QString procName(qTableName("bug6852_proc", __FILE__, db));
-
-    QVERIFY_SQL(q, exec("DROP PROCEDURE IF EXISTS " + procName));
     QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1(\n"
                                       "MainKey INT NOT NULL,\n"
                                       "OtherTextCol VARCHAR(45) NOT NULL,\n"
@@ -3806,9 +3779,9 @@ void tst_QSqlQuery::QTBUG_6852()
                                       "  SET @st = 'SELECT MainKey, OtherTextCol from %2';\n"
                                       "  PREPARE stmt from @st;\n"
                                       "  EXECUTE stmt;\n"
-                                      "END;").arg(procName, tableName)));
+                                      "END;").arg(ps.name(), tableName)));
 
-    QVERIFY_SQL(q, exec(QLatin1String("CALL %1()").arg(procName)));
+    QVERIFY_SQL(q, exec(QLatin1String("CALL %1()").arg(ps.name())));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 0);
     QCOMPARE(q.value(1).toString(), QLatin1String("Disabled"));

@@ -495,5 +495,33 @@ private:
     QString m_tableName;
 };
 
+class ProcScope
+{
+public:
+    ProcScope(const QSqlDatabase &db, const char *procName, const char *file)
+        : m_db(db),
+          m_procName(qTableName(procName, file, db))
+    {
+        cleanup();
+    }
+    ~ProcScope()
+    {
+        cleanup();
+    }
+    QString name() const
+    {
+        return m_procName;
+    }
+protected:
+    void cleanup()
+    {
+        QSqlQuery q(m_db);
+        q.exec("DROP PROCEDURE IF EXISTS " + m_procName);
+    }
+private:
+    QSqlDatabase m_db;
+    const QString m_procName;
+};
+
 #endif
 
