@@ -9,10 +9,6 @@ QT_USE_NAMESPACE
 
 #if QT_SQL_REMOVED_SINCE(6, 4)
 
-// #include <qotherheader.h>
-// // implement removed functions from qotherheader.h
-// order sections alphabetically to reduce chances of merge conflicts
-
 #endif // QT_SQL_REMOVED_SINCE(6, 4)
 
 #if QT_SQL_REMOVED_SINCE(6, 5)
@@ -36,8 +32,21 @@ void QSqlTableModel::setQuery(const QSqlQuery &query)
 
 #endif // QT_CONFIG(sqlmodel)
 
+#endif // QT_SQL_REMOVED_SINCE(6, 5)
+
+#if QT_SQL_REMOVED_SINCE(6, 6)
+
+#include "qsqlresult.h"
+#include <QtSql/private/qsqlresult_p.h>
+
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts
 
-#endif // QT_SQL_REMOVED_SINCE(6, 5)
+QList<QVariant> &QSqlResult::boundValues() const
+{
+    Q_D(const QSqlResult);
+    return const_cast<QSqlResultPrivate *>(d)->values;
+}
+
+#endif // QT_SQL_REMOVED_SINCE(6, 6)

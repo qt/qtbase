@@ -69,8 +69,12 @@ protected:
     QSql::ParamType bindValueType(const QString& placeholder) const;
     QSql::ParamType bindValueType(int pos) const;
     int boundValueCount() const;
-    // ### Qt 7 - don't return a non-const reference from a const function
+#if QT_SQL_REMOVED_SINCE(6, 6)
     QList<QVariant> &boundValues() const;
+#endif
+    QVariantList &boundValues(QT6_DECL_NEW_OVERLOAD);
+    QVariantList boundValues(QT6_DECL_NEW_OVERLOAD) const;
+
     QString executedQuery() const;
     QStringList boundValueNames() const;
     QString boundValueName(int pos) const;
