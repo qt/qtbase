@@ -249,12 +249,9 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (BOOL)isAccessibilityFocused
 {
-    if (QAccessibleInterface *iface = self.qtInterface) {
-        // Just check if the app thinks we're focused.
-        id focusedElement = NSApp.accessibilityApplicationFocusedUIElement;
-        return [focusedElement isEqual:self];
-    }
-    return false;
+    // Just check if the app thinks we're focused.
+    id focusedElement = NSApp.accessibilityApplicationFocusedUIElement;
+    return [focusedElement isEqual:self];
 }
 
 // attributes
