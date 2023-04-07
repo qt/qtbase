@@ -2504,7 +2504,7 @@ void tst_Moc::cxx11Enums()
         QCOMPARE(size_t(metaType.sizeOf()), sizeof(char));
         QCOMPARE(isUnsigned, !std::is_signed_v<char>);
     } else if (isScoped) {
-        QCOMPARE(metaType.sizeOf(), sizeof(int));
+        QCOMPARE(size_t(metaType.sizeOf()), sizeof(int));
         QCOMPARE(isUnsigned, !std::is_signed_v<int>);
     } else {
         // underlying type is implementation defined
