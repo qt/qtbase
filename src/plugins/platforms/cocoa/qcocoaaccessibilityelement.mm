@@ -148,6 +148,16 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return element;
 }
 
++ (instancetype)elementWithInterface:(QAccessibleInterface *)iface
+{
+    Q_ASSERT(iface);
+    if (!iface)
+        return nil;
+
+    const QAccessible::Id anId = QAccessible::uniqueId(iface);
+    return [self elementWithId:anId];
+}
+
 - (void)invalidate {
     axid = 0;
     rows = nil;
@@ -343,9 +353,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
                 for (int i = 0; i < numColumns; ++i) {
                     QAccessibleInterface *cell = table->cellAt(m_rowIndex, i);
                     if (cell && cell->isValid()) {
-                        QAccessible::Id cellId = QAccessible::uniqueId(cell);
                         QMacAccessibilityElement *element =
-                                [QMacAccessibilityElement elementWithId:cellId];
+                                [QMacAccessibilityElement elementWithInterface:cell];
                         if (element) {
                             element->m_rowIndex = m_rowIndex;
                             element->m_columnIndex = i;
@@ -405,9 +414,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
     if (QAccessibleInterface *parent = iface->parent()) {
         if (parent->tableInterface()) {
-            QAccessible::Id parentId = QAccessible::uniqueId(parent);
             QMacAccessibilityElement *tableElement =
-                    [QMacAccessibilityElement elementWithId:parentId];
+                    [QMacAccessibilityElement elementWithInterface:parent];
 
             // parent of cell should be row
             int rowIndex = -1;
@@ -419,10 +427,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             QMacAccessibilityElement *rowElement = tableElement->rows[rowIndex];
             return NSAccessibilityUnignoredAncestor(rowElement);
         }
-        if (parent->role() != QAccessible::Application) {
-            QAccessible::Id parentId = QAccessible::uniqueId(parent);
-            return NSAccessibilityUnignoredAncestor([QMacAccessibilityElement elementWithId: parentId]);
-        }
+        if (parent->role() != QAccessible::Application)
+            return NSAccessibilityUnignoredAncestor([QMacAccessibilityElement elementWithInterface: parent]);
     }
 
     if (QWindow *window = iface->window()) {
@@ -779,9 +785,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             childInterface = childOfChildInterface;
     } while (childOfChildInterface && childOfChildInterface->isValid());
 
-    QAccessible::Id childId = QAccessible::uniqueId(childInterface);
     // hit a child, forward to child accessible interface.
-    QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithId:childId];
+    QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithInterface:childInterface];
     if (accessibleElement)
         return NSAccessibilityUnignoredAncestor(accessibleElement);
     return NSAccessibilityUnignoredAncestor(self);
@@ -796,8 +801,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
     QAccessibleInterface *childInterface = iface->focusChild();
     if (childInterface && childInterface->isValid()) {
-        QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
-        QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithId:childAxid];
+        QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithInterface:childInterface];
         return NSAccessibilityUnignoredAncestor(accessibleElement);
     }
 
