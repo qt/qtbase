@@ -440,7 +440,8 @@ public:
 
     static QVersionNumber getIbaseEngineVersion(const QSqlDatabase &db)
     {
-        auto q = db.exec("SELECT rdb$get_context('SYSTEM', 'ENGINE_VERSION') as version from rdb$database;"_L1);
+        QSqlQuery q(db);
+        q.exec("SELECT rdb$get_context('SYSTEM', 'ENGINE_VERSION') as version from rdb$database;"_L1);
         q.next();
         auto record = q.record();
         auto version = QVersionNumber::fromString(record.value(0).toString());
