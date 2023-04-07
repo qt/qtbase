@@ -38,15 +38,8 @@ DBusConnection::DBusConnection(QObject *parent)
     // If the bus is explicitly set via env var it overrides everything else.
     QByteArray addressEnv = qgetenv("AT_SPI_BUS_ADDRESS");
     if (!addressEnv.isEmpty()) {
-        // Only connect on next loop run, connections to our enabled signal are
-        // only established after the ctor returns.
-        QMetaObject::invokeMethod(
-                this,
-                [this, addressEnv] {
-                    m_enabled = true;
-                    connectA11yBus(QString::fromLocal8Bit(addressEnv));
-                },
-                Qt::QueuedConnection);
+        m_enabled = true;
+        connectA11yBus(QString::fromLocal8Bit(addressEnv));
         return;
     }
 
