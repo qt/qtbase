@@ -99,6 +99,7 @@ qt_internal_add_module(Core
         ${core_version_tagging_files}
         global/qvolatile_p.h
         global/q20algorithm.h
+        global/q20chrono.h
         global/q20functional.h
         global/q20iterator.h
         global/q20memory.h
