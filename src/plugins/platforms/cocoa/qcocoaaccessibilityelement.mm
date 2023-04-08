@@ -830,9 +830,10 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 // misc
 
 - (BOOL)accessibilityIsIgnored {
-    // Placeholders for cells should never be ignored, but we also
-    // don't want to generate a QAccessibleInterface for them yet.
-    if (synthesizedRole == NSAccessibilityCellRole)
+    // Short-cut for placeholders and synthesized elements. Working around a bug
+    // that corrups lists returned by NSAccessibilityUnignoredChildren, otherwise
+    // we could ignore rows and columns that are outside the table.
+    if (self.isManagedByParent)
         return false;
 
     if (QAccessibleInterface *iface = self.qtInterface)
