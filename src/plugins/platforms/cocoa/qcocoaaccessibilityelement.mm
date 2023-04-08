@@ -120,9 +120,24 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
                 if (iface->tableInterface()) {
                     [self updateTableModel];
                 } else if (const auto *cell = iface->tableCellInterface()) {
-                    // if we create an element for a table cell, initialize it with row/column
+                    // If we create an element for a table cell, initialize it with row/column
+                    // and insert it into the corresponding row's columns array.
                     m_rowIndex = cell->rowIndex();
                     m_columnIndex = cell->columnIndex();
+                    QAccessibleInterface *table = cell->table();
+                    Q_ASSERT(table);
+                    QAccessibleTableInterface *tableInterface = table->tableInterface();
+                    if (tableInterface) {
+                        auto *tableElement = [QMacAccessibilityElement elementWithInterface:table];
+                        Q_ASSERT(tableElement);
+                        Q_ASSERT(tableElement->rows && int(tableElement->rows.count) > m_rowIndex);
+                        auto *rowElement = tableElement->rows[m_rowIndex];
+                        if (!rowElement->columns) {
+                            rowElement->columns = [rowElement populateTableRow:rowElement->columns
+                                                              count:tableInterface->columnCount()];
+                        }
+                        rowElement->columns[m_columnIndex] = self;
+                    }
                 }
             }
         }
@@ -223,6 +238,34 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return nil;
 }
 
+- (NSMutableArray *)populateTableRow:(NSMutableArray *)array count:(int)count
+{
+    Q_ASSERT(synthesizedRole == NSAccessibilityRowRole);
+    if (!array) {
+        array = [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:count];
+        [array retain];
+        // When macOS asks for the children of a row, then we populate the row's column
+        // array with synthetic elements as place holders. This way, we don't have to
+        // create QAccessibleInterfaces for every cell before they are really needed.
+        // We don't add those synthetic elements into the cache, and we give them the
+        // same axid as the table. This way, we can get easily to the table, and from
+        // there to the QAccessibleInterface for the cell, when we have to eventually
+        // associate such an interface with the element (at which point it is no longer
+        // a placeholder).
+        for (int n = 0; n < count; ++n) {
+            // columns will have same axid as table (but not inserted in cache)
+            QMacAccessibilityElement *cell =
+                    [[QMacAccessibilityElement alloc] initWithId:axid role:NSAccessibilityCellRole];
+            if (cell) {
+                cell->m_rowIndex = m_rowIndex;
+                cell->m_columnIndex = n;
+                [array addObject:cell];
+            }
+        }
+    }
+    Q_ASSERT(array);
+    return array;
+}
 
 - (void)updateTableModel
 {
@@ -240,6 +283,36 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface || !iface->isValid())
         return nullptr;
+
+    // If this is a placeholder element for a table cell, associate it with the
+    // cell interface (which will be created now, if needed). The current axid is
+    // for the table to which the cell belongs, so iface is pointing at the table.
+    if (synthesizedRole == NSAccessibilityCellRole) {
+        // get the cell interface - there must be a valid one
+        QAccessibleTableInterface *table = iface->tableInterface();
+        Q_ASSERT(table);
+        QAccessibleInterface *cell = table->cellAt(m_rowIndex, m_columnIndex);
+        Q_ASSERT(cell && cell->isValid());
+        iface = cell;
+
+        // no longer a placeholder
+        axid = QAccessible::uniqueId(cell);
+        synthesizedRole = nil;
+
+        QAccessibleCache *cache = QAccessibleCache::instance();
+        if (QMacAccessibilityElement *cellElement = cache->elementForId(axid)) {
+            // there already is another, non-placeholder element in the cache
+            Q_ASSERT(cellElement->synthesizedRole == nil);
+            // we have to release it if it's not us
+            if (cellElement != self) {
+                // for the same cell position
+                Q_ASSERT(cellElement->m_rowIndex == m_rowIndex && cellElement->m_columnIndex == m_columnIndex);
+                [cellElement release];
+            }
+        }
+
+        cache->insertElement(axid, self);
+    }
     return iface;
 }
 
@@ -289,6 +362,10 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 }
 
 - (NSArray *) accessibilityChildren {
+    // shortcut for cells
+    if (synthesizedRole == NSAccessibilityCellRole)
+        return nil;
+
     QAccessibleInterface *iface = self.qtInterface;
     if (!iface)
         return nil;
@@ -347,23 +424,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             // axid matches the parent table axid so that we can easily find the parent table
             // children of row are cell/any items
             Q_ASSERT(m_rowIndex >= 0);
-            if (!columns) {
-                const int numColumns = table->columnCount();
-                columns = [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:numColumns];
-                for (int i = 0; i < numColumns; ++i) {
-                    QAccessibleInterface *cell = table->cellAt(m_rowIndex, i);
-                    if (cell && cell->isValid()) {
-                        QMacAccessibilityElement *element =
-                                [QMacAccessibilityElement elementWithInterface:cell];
-                        if (element) {
-                            element->m_rowIndex = m_rowIndex;
-                            element->m_columnIndex = i;
-                            [columns insertObject:element atIndex:i];
-                        }
-                    }
-                }
-                [columns retain];
-            }
+            const int numColumns = table->columnCount();
+            columns = [self populateTableRow:columns count:numColumns];
             return NSAccessibilityUnignoredChildren(columns);
         }
     }
@@ -398,6 +460,15 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 }
 
 - (id)accessibilityParent {
+    if (synthesizedRole == NSAccessibilityCellRole) {
+        // a synthetic cell without interface - shortcut to the row
+        QMacAccessibilityElement *tableElement =
+                    [QMacAccessibilityElement elementWithId:axid];
+        Q_ASSERT(tableElement && tableElement->rows && int(tableElement->rows.count) > m_rowIndex);
+        QMacAccessibilityElement *rowElement = tableElement->rows[m_rowIndex];
+        return rowElement;
+    }
+
     QAccessibleInterface *iface = self.qtInterface;
     if (!iface)
         return nil;
@@ -759,6 +830,11 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 // misc
 
 - (BOOL)accessibilityIsIgnored {
+    // Placeholders for cells should never be ignored, but we also
+    // don't want to generate a QAccessibleInterface for them yet.
+    if (synthesizedRole == NSAccessibilityCellRole)
+        return false;
+
     if (QAccessibleInterface *iface = self.qtInterface)
         return QCocoaAccessible::shouldBeIgnored(iface);
     return true;
@@ -822,6 +898,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
  */
 - (NSInteger) accessibilityIndex {
     NSInteger index = 0;
+    if (synthesizedRole == NSAccessibilityCellRole)
+        return m_columnIndex;
     if (QAccessibleInterface *iface = self.qtInterface) {
         if (self.isManagedByParent) {
             // axid matches the parent table axid so that we can easily find the parent table
