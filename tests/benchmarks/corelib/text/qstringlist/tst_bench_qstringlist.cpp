@@ -43,9 +43,9 @@ private:
 QStringList tst_QStringList::populateList(const int count, const QString &unit)
 {
     QStringList retval;
-
+    retval.reserve(count);
     for (int i = 0; i < count; ++i)
-        retval.append(unit);
+        retval.append(unit + QString::number(i));
 
     return retval;
 }
@@ -77,20 +77,20 @@ void tst_QStringList::join_data() const
     QTest::addColumn<QStringList>("input");
     QTest::addColumn<QString>("separator");
 
-    QTest::newRow("")
+    QTest::newRow("100")
         << populateList(100, QLatin1String("unit"))
         << QString();
 
-    QTest::newRow("")
+    QTest::newRow("1000")
         << populateList(1000, QLatin1String("unit"))
         << QString();
 
-    QTest::newRow("")
-        << populateList(10000, QLatin1String("unit"))
+    QTest::newRow("10000")
+        << populateList(10'000, QLatin1String("unit"))
         << QString();
 
-    QTest::newRow("")
-        << populateList(100000, QLatin1String("unit"))
+    QTest::newRow("100000")
+        << populateList(100'000, QLatin1String("unit"))
         << QString();
 }
 
