@@ -886,9 +886,9 @@ bool QMYSQLResult::prepare(const QString& query)
         return false;
     }
 
-    if (mysql_stmt_param_count(d->stmt) > 0) {// allocate memory for outvalues
-        d->outBinds = new MYSQL_BIND[mysql_stmt_param_count(d->stmt)];
-    }
+    const auto paramCount = mysql_stmt_param_count(d->stmt);
+    if (paramCount > 0) // allocate memory for outvalues
+        d->outBinds = new MYSQL_BIND[paramCount]();
 
     setSelect(d->bindInValues());
     d->preparedQuery = true;
