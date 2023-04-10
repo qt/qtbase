@@ -61,12 +61,12 @@ bool QMimeMagicRule::operator==(const QMimeMagicRule &other) const
 }
 
 // Used by both providers
-bool QMimeMagicRule::matchSubstring(const char *dataPtr, int dataSize, int rangeStart, int rangeLength,
-                                    int valueLength, const char *valueData, const char *mask)
+bool QMimeMagicRule::matchSubstring(const char *dataPtr, qsizetype dataSize, int rangeStart, int rangeLength,
+                                    qsizetype valueLength, const char *valueData, const char *mask)
 {
     // Size of searched data.
     // Example: value="ABC", rangeLength=3 -> we need 3+3-1=5 bytes (ABCxx,xABCx,xxABC would match)
-    const int dataNeeded = qMin(rangeLength + valueLength - 1, dataSize - rangeStart);
+    const qsizetype dataNeeded = qMin(rangeLength + valueLength - 1, dataSize - rangeStart);
 
     if (!mask) {
         // callgrind says QByteArray::indexOf is much slower, since our strings are typically too
@@ -90,7 +90,7 @@ bool QMimeMagicRule::matchSubstring(const char *dataPtr, int dataSize, int range
         // deviceSize is 4, so dataNeeded was max'ed to 4.
         // maxStartPos = 4 - 3 + 1 = 2, and indeed
         // we need to check for a match a positions 0 and 1 (ABCx and xABC).
-        const int maxStartPos = dataNeeded - valueLength + 1;
+        const qsizetype maxStartPos = dataNeeded - valueLength + 1;
         for (int i = 0; i < maxStartPos; ++i) {
             const char *d = readDataBase + i;
             bool valid = true;
@@ -205,7 +205,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
     }
 
     // Parse for offset as "1" or "1:10"
-    const int colonIndex = offsets.indexOf(u':');
+    const qsizetype colonIndex = offsets.indexOf(u':');
     const QStringView startPosStr = QStringView{offsets}.mid(0, colonIndex); // \ These decay to returning 'offsets'
     const QStringView endPosStr   = QStringView{offsets}.mid(colonIndex + 1);// / unchanged when colonIndex == -1
     if (Q_UNLIKELY(!QMimeTypeParserBase::parseNumber(startPosStr, &m_startPos, errorString)) ||

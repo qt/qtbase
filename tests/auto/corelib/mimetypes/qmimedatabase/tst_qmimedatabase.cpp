@@ -808,7 +808,7 @@ void tst_QMimeDatabase::findByFileName_data()
     QByteArray line(1024, Qt::Uninitialized);
 
     while (!f.atEnd()) {
-        int len = f.readLine(line.data(), 1023);
+        const qint64 len = f.readLine(line.data(), 1023);
 
         if (len <= 2 || line.at(0) == '#')
             continue;
