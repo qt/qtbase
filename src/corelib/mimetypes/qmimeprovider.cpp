@@ -250,7 +250,10 @@ void QMimeBinaryProvider::matchGlobList(QMimeGlobMatchResult &result, CacheFile 
     }
 }
 
-bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result, QMimeBinaryProvider::CacheFile *cacheFile, int numEntries, int firstOffset, const QString &fileName, int charPos, bool caseSensitiveCheck)
+bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result,
+                                          QMimeBinaryProvider::CacheFile *cacheFile, int numEntries,
+                                          int firstOffset, const QString &fileName,
+                                          qsizetype charPos, bool caseSensitiveCheck)
 {
     QChar fileChar = fileName[charPos];
     int min = 0;
@@ -298,7 +301,7 @@ bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result, QMimeBin
 bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFile, int numMatchlets, int firstOffset, const QByteArray &data)
 {
     const char *dataPtr = data.constData();
-    const int dataSize = data.size();
+    const qsizetype dataSize = data.size();
     for (int matchlet = 0; matchlet < numMatchlets; ++matchlet) {
         const int off = firstOffset + matchlet * 32;
         const int rangeStart = cacheFile->getUint32(off);
