@@ -75,26 +75,33 @@ void tst_QStringList::constructors()
 
 void tst_QStringList::indexOf_data()
 {
+    QTest::addColumn<QStringList>("list");
     QTest::addColumn<QString>("search");
     QTest::addColumn<int>("from");
     QTest::addColumn<int>("expectedResult");
 
-    QTest::newRow("harald") << "harald" << 0 << 0;
-    QTest::newRow("trond") << "trond" << 0 << 1;
-    QTest::newRow("vohi") << "vohi" << 0 << 2;
-    QTest::newRow("harald-1") << "harald" << 1 << 3;
+    QStringList searchIn{"harald", "trond", "vohi", "harald"};
+    QTest::newRow("harald") << searchIn << "harald" << 0 << 0;
+    QTest::newRow("trond") << searchIn << "trond" << 0 << 1;
+    QTest::newRow("vohi") << searchIn << "vohi" << 0 << 2;
+    QTest::newRow("harald-1") << searchIn << "harald" << 1 << 3;
 
-    QTest::newRow("hans") << "hans" << 0 << -1;
-    QTest::newRow("trond-1") << "trond" << 2 << -1;
-    QTest::newRow("harald-2") << "harald" << -1 << 3;
-    QTest::newRow("vohi-1") << "vohi" << -3 << 2;
+    QTest::newRow("hans") << searchIn << "hans" << 0 << -1;
+    QTest::newRow("trond-1") << searchIn << "trond" << 2 << -1;
+    QTest::newRow("harald-2") << searchIn << "harald" << -1 << 3;
+    QTest::newRow("vohi-1") << searchIn << "vohi" << -3 << 2;
+
+    QTest::newRow("from-bigger-than-size") << searchIn << "harald" << 100 << -1;
+
+    searchIn = {"lost+found", "foo.bar"};
+    QTest::newRow("string-with-regex-meta-char1") << searchIn << "lost+found" << 0 << 0;
+    QTest::newRow("string-with-regex-meta-char2") << searchIn << "foo.bar" << 0 << 1;
+    QTest::newRow("string-with-regex-meta-char3") << searchIn << "foo.bar" << 2 << -1;
 }
 
 void tst_QStringList::indexOf()
 {
-    QStringList list;
-    list << "harald" << "trond" << "vohi" << "harald";
-
+    QFETCH(QStringList, list);
     QFETCH(QString, search);
     QFETCH(int, from);
     QFETCH(int, expectedResult);
@@ -102,30 +109,36 @@ void tst_QStringList::indexOf()
     QCOMPARE(list.indexOf(search, from), expectedResult);
     QCOMPARE(list.indexOf(QStringView(search), from), expectedResult);
     QCOMPARE(list.indexOf(QLatin1String(search.toLatin1()), from), expectedResult);
+    QCOMPARE(list.indexOf(QRegularExpression(QRegularExpression::escape(search)), from), expectedResult);
 }
 
 void tst_QStringList::lastIndexOf_data()
 {
+    QTest::addColumn<QStringList>("list");
     QTest::addColumn<QString>("search");
     QTest::addColumn<int>("from");
     QTest::addColumn<int>("expectedResult");
 
-    QTest::newRow("harald") << "harald" << -1 << 3;
-    QTest::newRow("trond") << "trond" << -1 << 1;
-    QTest::newRow("vohi") << "vohi" << -1 << 2;
-    QTest::newRow("harald-1") << "harald" << 2 << 0;
+    QStringList list{"harald", "trond", "vohi", "harald"};
+    QTest::newRow("harald") << list << "harald" << -1 << 3;
+    QTest::newRow("trond") << list << "trond" << -1 << 1;
+    QTest::newRow("vohi") << list << "vohi" << -1 << 2;
+    QTest::newRow("harald-1") << list << "harald" << 2 << 0;
 
-    QTest::newRow("hans") << "hans" << -1 << -1;
-    QTest::newRow("vohi-1") << "vohi" << 1 << -1;
-    QTest::newRow("vohi-2") << "vohi" << -1 << 2;
-    QTest::newRow("vohi-3") << "vohi" << -3 << -1;
+    QTest::newRow("hans") << list << "hans" << -1 << -1;
+    QTest::newRow("vohi-1") << list << "vohi" << 1 << -1;
+    QTest::newRow("vohi-2") << list << "vohi" << -1 << 2;
+    QTest::newRow("vohi-3") << list << "vohi" << -3 << -1;
+
+    list = {"lost+found", "foo.bar"};
+    QTest::newRow("string-with-regex-meta-char1") << list << "lost+found" << -1 << 0;
+    QTest::newRow("string-with-regex-meta-char2") << list << "foo.bar" << -1 << 1;
+    QTest::newRow("string-with-regex-meta-char3") << list << "foo.bar" << -2 << -1;
 }
 
 void tst_QStringList::lastIndexOf()
 {
-    QStringList list;
-    list << "harald" << "trond" << "vohi" << "harald";
-
+    QFETCH(QStringList, list);
     QFETCH(QString, search);
     QFETCH(int, from);
     QFETCH(int, expectedResult);
@@ -133,6 +146,7 @@ void tst_QStringList::lastIndexOf()
     QCOMPARE(list.lastIndexOf(search, from), expectedResult);
     QCOMPARE(list.lastIndexOf(QStringView(search), from), expectedResult);
     QCOMPARE(list.lastIndexOf(QLatin1String(search.toLatin1()), from), expectedResult);
+    QCOMPARE(list.lastIndexOf(QRegularExpression(QRegularExpression::escape(search)), from), expectedResult);
 }
 
 void tst_QStringList::filter()
