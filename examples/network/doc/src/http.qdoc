@@ -3,7 +3,7 @@
 
 /*!
     \example http
-    \meta category {Networking}
+    \examplecategory {Networking}
     \meta tags {http,network,https,proxy}
     \title HTTP Client
     \ingroup examples-network

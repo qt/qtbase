@@ -4,7 +4,7 @@
 /*!
     \example blockingfortuneclient
     \title Blocking Fortune Client
-    \meta category {Networking}
+    \examplecategory {Networking}
     \meta tags {tcp,network,threading,synchronous-io}
     \ingroup examples-network
     \brief Demonstrates how to create a client for a network service.
