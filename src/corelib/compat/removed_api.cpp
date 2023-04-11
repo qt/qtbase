@@ -524,6 +524,45 @@ qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)
                          reinterpret_cast<char32_t *>(out));
 }
 
+#if QT_CONFIG(thread)
+
+#include "qthreadpool.h"
+#include "private/qthreadpool_p.h"
+
+void QThreadPool::start(std::function<void()> functionToRun, int priority)
+{
+    if (!functionToRun)
+        return;
+    start(QRunnable::create(std::move(functionToRun)), priority);
+}
+
+bool QThreadPool::tryStart(std::function<void()> functionToRun)
+{
+    if (!functionToRun)
+        return false;
+
+    Q_D(QThreadPool);
+    QMutexLocker locker(&d->mutex);
+    if (!d->allThreads.isEmpty() && d->areAllThreadsActive())
+        return false;
+
+    QRunnable *runnable = QRunnable::create(std::move(functionToRun));
+    if (d->tryStart(runnable))
+        return true;
+    delete runnable;
+    return false;
+}
+
+void QThreadPool::startOnReservedThread(std::function<void()> functionToRun)
+{
+    if (!functionToRun)
+        return releaseThread();
+
+    startOnReservedThread(QRunnable::create(std::move(functionToRun)));
+}
+
+#endif // QT_CONFIG(thread)
+
 #include "qxmlstream.h"
 
 QStringView QXmlStreamAttributes::value(const QString &namespaceUri, const QString &name) const

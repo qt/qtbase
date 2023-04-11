@@ -517,6 +517,7 @@ void QThreadPool::start(QRunnable *runnable, int priority)
 }
 
 /*!
+    \fn template<typename Callable, QRunnable::if_callable<Callable>> void QThreadPool::start(Callable &&callableToRun, int priority)
     \overload
     \since 5.15
 
@@ -524,13 +525,13 @@ void QThreadPool::start(QRunnable *runnable, int priority)
     make the current thread count exceed maxThreadCount().  In that case,
     \a functionToRun is added to a run queue instead. The \a priority argument can
     be used to control the run queue's order of execution.
+
+    \note This function participates in overload resolution only if \c Callable
+    is a function or function object which can be called with zero arguments.
+
+    \note In Qt version prior to 6.6, this function took std::function<void()>,
+    and therefore couldn't handle move-only callables.
 */
-void QThreadPool::start(std::function<void()> functionToRun, int priority)
-{
-    if (!functionToRun)
-        return;
-    start(QRunnable::create(std::move(functionToRun)), priority);
-}
 
 /*!
     Attempts to reserve a thread to run \a runnable.
@@ -562,6 +563,7 @@ bool QThreadPool::tryStart(QRunnable *runnable)
 }
 
 /*!
+    \fn template<typename Callable, QRunnable::if_callable<Callable>> bool QThreadPool::tryStart(Callable &&callableToRun)
     \overload
     \since 5.15
     Attempts to reserve a thread to run \a functionToRun.
@@ -569,23 +571,13 @@ bool QThreadPool::tryStart(QRunnable *runnable)
     If no threads are available at the time of calling, then this function
     does nothing and returns \c false.  Otherwise, \a functionToRun is run immediately
     using one available thread and this function returns \c true.
+
+    \note This function participates in overload resolution only if \c Callable
+    is a function or function object which can be called with zero arguments.
+
+    \note In Qt version prior to 6.6, this function took std::function<void()>,
+    and therefore couldn't handle move-only callables.
 */
-bool QThreadPool::tryStart(std::function<void()> functionToRun)
-{
-    if (!functionToRun)
-        return false;
-
-    Q_D(QThreadPool);
-    QMutexLocker locker(&d->mutex);
-    if (!d->allThreads.isEmpty() && d->areAllThreadsActive())
-        return false;
-
-    QRunnable *runnable = QRunnable::create(std::move(functionToRun));
-    if (d->tryStart(runnable))
-        return true;
-    delete runnable;
-    return false;
-}
 
 /*! \property QThreadPool::expiryTimeout
     \brief the thread expiry timeout value in milliseconds.
@@ -799,19 +791,19 @@ void QThreadPool::startOnReservedThread(QRunnable *runnable)
 }
 
 /*!
+    \fn template<typename Callable, QRunnable::if_callable<Callable>> void QThreadPool::startOnReservedThread(Callable &&callableToRun)
     \overload
     \since 6.3
 
     Releases a thread previously reserved with reserveThread() and uses it
     to run \a functionToRun.
-*/
-void QThreadPool::startOnReservedThread(std::function<void()> functionToRun)
-{
-    if (!functionToRun)
-        return releaseThread();
 
-    startOnReservedThread(QRunnable::create(std::move(functionToRun)));
-}
+    \note This function participates in overload resolution only if \c Callable
+    is a function or function object which can be called with zero arguments.
+
+    \note In Qt version prior to 6.6, this function took std::function<void()>,
+    and therefore couldn't handle move-only callables.
+*/
 
 /*!
     Waits up to \a msecs milliseconds for all threads to exit and removes all

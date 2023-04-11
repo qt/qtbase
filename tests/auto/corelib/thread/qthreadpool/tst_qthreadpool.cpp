@@ -87,6 +87,7 @@ private slots:
     void takeAllAndIncreaseMaxThreadCount();
     void waitForDoneAfterTake();
     void threadReuse();
+    void nullFunctions();
 
 private:
     QMutex m_functionTestMutex;
@@ -187,7 +188,7 @@ void tst_QThreadPool::runFunction3()
     std::unique_ptr<DeleteCheck> ptr(new DeleteCheck);
     {
         TestThreadPool manager;
-        manager.start(QRunnable::create([my_ptr = std::move(ptr)]() { }));
+        manager.start([my_ptr = std::move(ptr)]() { });
     }
     QVERIFY(DeleteCheck::s_deleted);
 }
@@ -1462,6 +1463,23 @@ void tst_QThreadPool::threadReuse()
         manager.releaseThread();
         QVERIFY(sem.tryAcquire(2, timeoutMs));
         manager.reserveThread();
+    }
+}
+
+void tst_QThreadPool::nullFunctions()
+{
+    // Note this is not necessarily testing intended behavior, only undocumented behavior.
+    // If this is changed it should be noted in Behavioral Changes.
+    FunctionPointer nullFunction = nullptr;
+    std::function<void()> nullStdFunction(nullptr);
+    {
+        TestThreadPool manager;
+        // should not crash:
+        manager.start(nullFunction);
+        manager.start(nullStdFunction);
+        // should fail (and not leak):
+        QVERIFY(!manager.tryStart(nullStdFunction));
+        QVERIFY(!manager.tryStart(nullFunction));
     }
 }
 

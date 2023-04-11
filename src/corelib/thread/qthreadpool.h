@@ -36,11 +36,22 @@ public:
     void start(QRunnable *runnable, int priority = 0);
     bool tryStart(QRunnable *runnable);
 
+#if QT_CORE_REMOVED_SINCE(6, 6)
     void start(std::function<void()> functionToRun, int priority = 0);
     bool tryStart(std::function<void()> functionToRun);
+#endif
 
     void startOnReservedThread(QRunnable *runnable);
+#if QT_CORE_REMOVED_SINCE(6, 6)
     void startOnReservedThread(std::function<void()> functionToRun);
+#endif
+
+    template <typename Callable, QRunnable::if_callable<Callable> = true>
+    void start(Callable &&functionToRun, int priority = 0);
+    template <typename Callable, QRunnable::if_callable<Callable> = true>
+    bool tryStart(Callable &&functionToRun);
+    template <typename Callable, QRunnable::if_callable<Callable> = true>
+    void startOnReservedThread(Callable &&functionToRun);
 
     int expiryTimeout() const;
     void setExpiryTimeout(int expiryTimeout);
@@ -67,6 +78,28 @@ public:
 
     [[nodiscard]] bool tryTake(QRunnable *runnable);
 };
+
+template <typename Callable, QRunnable::if_callable<Callable>>
+void QThreadPool::start(Callable &&functionToRun, int priority)
+{
+    start(QRunnable::create(std::forward<Callable>(functionToRun)), priority);
+}
+
+template <typename Callable, QRunnable::if_callable<Callable>>
+bool QThreadPool::tryStart(Callable &&functionToRun)
+{
+    QRunnable *runnable = QRunnable::create(std::forward<Callable>(functionToRun));
+    if (tryStart(runnable))
+        return true;
+    delete runnable;
+    return false;
+}
+
+template <typename Callable, QRunnable::if_callable<Callable>>
+void QThreadPool::startOnReservedThread(Callable &&functionToRun)
+{
+    startOnReservedThread(QRunnable::create(std::forward<Callable>(functionToRun)));
+}
 
 QT_END_NAMESPACE
 

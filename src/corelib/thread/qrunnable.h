@@ -4,7 +4,9 @@
 #ifndef QRUNNABLE_H
 #define QRUNNABLE_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qcompilerdetection.h>
+#include <QtCore/qdebug.h>
+
 #include <functional>
 #include <type_traits>
 
@@ -28,6 +30,8 @@ public:
 
     template <typename Callable, if_callable<Callable> = true>
     static QRunnable *create(Callable &&functionToRun);
+    static QRunnable *create(std::nullptr_t) = delete;
+
     bool autoDelete() const { return m_autoDelete; }
     void setAutoDelete(bool autoDelete) { m_autoDelete = autoDelete; }
 
@@ -35,7 +39,7 @@ protected:
     // Type erasure, to only instantiate a non-virtual class per Callable:
     class QGenericRunnableHelperBase
     {
-        using OpFn = void(*)(const QGenericRunnableHelperBase *);
+        using OpFn = void(*)(QGenericRunnableHelperBase *);
         OpFn runFn;
         OpFn destroyFn;
     protected:
@@ -54,8 +58,8 @@ protected:
         template <typename UniCallable>
         QGenericRunnableHelper(UniCallable &&functionToRun) noexcept :
               QGenericRunnableHelperBase(
-                      [](const QGenericRunnableHelperBase *that) { static_cast<const QGenericRunnableHelper*>(that)->m_functionToRun(); },
-                      [](const QGenericRunnableHelperBase *that) { delete static_cast<const QGenericRunnableHelper*>(that); }),
+                      [](QGenericRunnableHelperBase *that) { static_cast<QGenericRunnableHelper*>(that)->m_functionToRun(); },
+                      [](QGenericRunnableHelperBase *that) { delete static_cast<QGenericRunnableHelper*>(that); }),
               m_functionToRun(std::forward<UniCallable>(functionToRun))
         {
         }
@@ -79,9 +83,33 @@ public:
     }
 };
 
+namespace QtPrivate {
+
+template <typename T>
+using is_function_pointer = std::conjunction<std::is_pointer<T>, std::is_function<std::remove_pointer_t<T>>>;
+template <typename T>
+struct is_std_function : std::false_type {};
+template <typename T>
+struct is_std_function<std::function<T>> : std::true_type {};
+
+} // namespace QtPrivate
+
 template <typename Callable, QRunnable::if_callable<Callable>>
 QRunnable *QRunnable::create(Callable &&functionToRun)
 {
+    bool is_null = false;
+    if constexpr(QtPrivate::is_std_function<std::decay_t<Callable>>::value)
+        is_null = !functionToRun;
+
+    if constexpr(QtPrivate::is_function_pointer<std::decay_t<Callable>>::value) {
+        const void *functionPtr = reinterpret_cast<void *>(functionToRun);
+        is_null = !functionPtr;
+    }
+    if (is_null) {
+        qWarning() << "Trying to create null QRunnable. This may stop working.";
+        return nullptr;
+    }
+
     return new QGenericRunnable(
             new QGenericRunnableHelper<std::decay_t<Callable>>(
                     std::forward<Callable>(functionToRun)));
