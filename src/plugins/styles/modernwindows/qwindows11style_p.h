@@ -40,6 +40,8 @@ public:
                   const QWidget *widget = nullptr, QStyleHintReturn *returnData = nullptr) const override;
     void polish(QWidget* widget) override;
 
+    QSize sizeFromContents(ContentsType type, const QStyleOption *option,
+                           const QSize &size, const QWidget *widget) const override;
 protected:
     QWindows11Style(QWindows11StylePrivate &dd);
 private:

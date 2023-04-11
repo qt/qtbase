@@ -183,6 +183,19 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
     switch (element) {
+    case QStyle::PE_FrameMenu:
+        break;
+    case QStyle::PE_PanelMenu: {
+        QRect rect = option->rect;
+        QPen pen(frameColorLight);
+        painter->save();
+        painter->setPen(pen);
+        painter->setBrush(QBrush(menuPanelFill));
+        painter->setRenderHint(QPainter::Antialiasing);
+        painter->drawRoundedRect(rect.marginsRemoved(QMargins(2,2,12,2)), topLevelRoundingRadius, topLevelRoundingRadius);
+        painter->restore();
+        break;
+    }
     case PE_PanelLineEdit:
         if (const auto *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             QBrush fillColor = state & State_MouseOver && !(state & State_HasFocus) ? QBrush(subtleHighlightColor) : option->palette.brush(QPalette::Base);
@@ -264,6 +277,190 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
     switch (element) {
+    case CE_MenuBarItem:
+        if (const auto *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(option))  {
+            bool active = mbi->state & State_Selected;
+            bool hasFocus = mbi->state & State_HasFocus;
+            bool down = mbi->state & State_Sunken;
+            QStyleOptionMenuItem newMbi = *mbi;
+            if (active || hasFocus) {
+                if (active && down)
+                    painter->setBrushOrigin(painter->brushOrigin() + QPoint(1, 1));
+                if (active && hasFocus) {
+                    painter->setBrush(subtleHighlightColor);
+                    painter->setPen(Qt::NoPen);
+                    QRect rect = mbi->rect.marginsRemoved(QMargins(2,2,2,2));
+                    painter->drawRoundedRect(rect,secondLevelRoundingRadius,secondLevelRoundingRadius,Qt::AbsoluteSize);
+                }
+            }
+            QCommonStyle::drawControl(element, &newMbi, painter, widget);
+        }
+        break;
+
+#if QT_CONFIG(menu)
+    case CE_MenuEmptyArea:
+        break;
+
+    case CE_MenuItem:
+        if (const auto *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
+            int x, y, w, h;
+            menuitem->rect.getRect(&x, &y, &w, &h);
+            int tab = menuitem->reservedShortcutWidth;
+            bool dis = !(menuitem->state & State_Enabled);
+            bool checked = menuitem->checkType != QStyleOptionMenuItem::NotCheckable
+                    ? menuitem->checked : false;
+            bool act = menuitem->state & State_Selected;
+
+            // windows always has a check column, regardless whether we have an icon or not
+            int checkcol = qMax<int>(menuitem->maxIconWidth, 32);
+
+            QBrush fill = (act == true) ? QBrush(subtleHighlightColor) : menuitem->palette.brush(QPalette::Button);
+            painter->setBrush(fill);
+            painter->setPen(Qt::NoPen);
+            QRect rect = menuitem->rect;
+            rect = rect.marginsRemoved(QMargins(2,2,2,2));
+            if (act)
+                painter->drawRoundedRect(rect,secondLevelRoundingRadius,secondLevelRoundingRadius,Qt::AbsoluteSize);
+
+            if (menuitem->menuItemType == QStyleOptionMenuItem::Separator){
+                int yoff = 4;
+                painter->setPen(frameColorLight);
+                painter->drawLine(x, y + yoff, x + w, y + yoff  );
+                break;
+            }
+
+            QRect vCheckRect = visualRect(option->direction, menuitem->rect, QRect(menuitem->rect.x(), menuitem->rect.y(), checkcol, menuitem->rect.height()));
+            if (!menuitem->icon.isNull() && checked) {
+                if (act) {
+                    qDrawShadePanel(painter, vCheckRect,
+                                    menuitem->palette, true, 1,
+                                    &menuitem->palette.brush(QPalette::Button));
+                } else {
+                    QBrush fill(menuitem->palette.light().color(), Qt::Dense4Pattern);
+                    qDrawShadePanel(painter, vCheckRect, menuitem->palette, true, 1, &fill);
+                }
+            }
+            // On Windows Style, if we have a checkable item and an icon we
+            // draw the icon recessed to indicate an item is checked. If we
+            // have no icon, we draw a checkmark instead.
+            if (!menuitem->icon.isNull()) {
+                QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
+                if (act && !dis)
+                    mode = QIcon::Active;
+                QPixmap pixmap;
+                if (checked)
+                    pixmap = menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), mode, QIcon::On);
+                else
+                    pixmap = menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), mode);
+                QRect pmr(QPoint(0, 0), pixmap.deviceIndependentSize().toSize());
+                pmr.moveCenter(vCheckRect.center());
+                painter->setPen(menuitem->palette.text().color());
+                painter->drawPixmap(pmr.topLeft(), pixmap);
+            } else if (checked) {
+                QStyleOptionMenuItem newMi = *menuitem;
+                newMi.state = State_None;
+                if (!dis)
+                    newMi.state |= State_Enabled;
+                if (act)
+                    newMi.state |= State_On | State_Selected;
+                newMi.rect = visualRect(option->direction, menuitem->rect, QRect(menuitem->rect.x() + QWindowsStylePrivate::windowsItemFrame,
+                                                                              menuitem->rect.y() + QWindowsStylePrivate::windowsItemFrame,
+                                                                              checkcol - 2 * QWindowsStylePrivate::windowsItemFrame,
+                                                                              menuitem->rect.height() - 2 * QWindowsStylePrivate::windowsItemFrame));
+
+                QColor discol;
+                if (dis) {
+                    discol = menuitem->palette.text().color();
+                    painter->setPen(discol);
+                }
+                int xm = int(QWindowsStylePrivate::windowsItemFrame) + checkcol / 4 + int(QWindowsStylePrivate::windowsItemHMargin);
+                int xpos = menuitem->rect.x() + xm;
+                QRect textRect(xpos, y + QWindowsStylePrivate::windowsItemVMargin,
+                               w - xm - QWindowsStylePrivate::windowsRightBorder - tab + 1, h - 2 * QWindowsStylePrivate::windowsItemVMargin);
+                QRect vTextRect = visualRect(option->direction, menuitem->rect, textRect);
+
+                    painter->save();
+                    painter->setFont(assetFont);
+                    int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
+                    if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
+                        text_flags |= Qt::TextHideMnemonic;
+                    text_flags |= Qt::AlignLeft;
+
+                    const QString textToDraw("\uE001");
+                    painter->setPen(option->palette.text().color());
+                    painter->drawText(vTextRect, text_flags, textToDraw);
+                    painter->restore();
+            }
+            painter->setPen(act ? menuitem->palette.highlightedText().color() : menuitem->palette.buttonText().color());
+
+            QColor discol;
+            if (dis) {
+                discol = menuitem->palette.text().color();
+                painter->setPen(discol);
+            }
+
+            int xm = int(QWindowsStylePrivate::windowsItemFrame) + checkcol + int(QWindowsStylePrivate::windowsItemHMargin);
+            int xpos = menuitem->rect.x() + xm;
+            QRect textRect(xpos, y + QWindowsStylePrivate::windowsItemVMargin,
+                           w - xm - QWindowsStylePrivate::windowsRightBorder - tab + 1, h - 2 * QWindowsStylePrivate::windowsItemVMargin);
+            QRect vTextRect = visualRect(option->direction, menuitem->rect, textRect);
+            QStringView s(menuitem->text);
+            if (!s.isEmpty()) {                     // draw text
+                painter->save();
+                qsizetype t = s.indexOf(u'\t');
+                int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
+                if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
+                    text_flags |= Qt::TextHideMnemonic;
+                text_flags |= Qt::AlignLeft;
+                if (t >= 0) {
+                    QRect vShortcutRect = visualRect(option->direction, menuitem->rect,
+                                                     QRect(textRect.topRight(), QPoint(menuitem->rect.right(), textRect.bottom())));
+                    const QString textToDraw = s.mid(t + 1).toString();
+                    if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
+                        painter->setPen(menuitem->palette.light().color());
+                        painter->drawText(vShortcutRect.adjusted(1, 1, 1, 1), text_flags, textToDraw);
+                        painter->setPen(discol);
+                    }
+                    painter->setPen(menuitem->palette.color(QPalette::Disabled, QPalette::Text));
+                    painter->drawText(vShortcutRect, text_flags, textToDraw);
+                    s = s.left(t);
+                }
+                QFont font = menuitem->font;
+                if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
+                    font.setBold(true);
+                painter->setFont(font);
+                const QString textToDraw = s.left(t).toString();
+                painter->setPen(discol);
+                painter->drawText(vTextRect, text_flags, textToDraw);
+                painter->restore();
+            }
+            if (menuitem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
+                int dim = (h - 2 * QWindowsStylePrivate::windowsItemFrame) / 2;
+                xpos = x + w - QWindowsStylePrivate::windowsArrowHMargin - QWindowsStylePrivate::windowsItemFrame - dim;
+                QRect  vSubMenuRect = visualRect(option->direction, menuitem->rect, QRect(xpos, y + h / 2 - dim / 2, dim, dim));
+                QStyleOptionMenuItem newMI = *menuitem;
+                newMI.rect = vSubMenuRect;
+                newMI.state = dis ? State_None : State_Enabled;
+                if (act)
+                    newMI.palette.setColor(QPalette::ButtonText,
+                                           newMI.palette.highlightedText().color());
+                painter->save();
+                painter->setFont(assetFont);
+                int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
+                if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
+                    text_flags |= Qt::TextHideMnemonic;
+                text_flags |= Qt::AlignLeft;
+                const QString textToDraw("\uE013");
+                painter->setPen(option->palette.text().color());
+                painter->drawText(vSubMenuRect, text_flags, textToDraw);
+                painter->restore();
+            }
+        }
+        break;
+#endif // QT_CONFIG(menu)
+    case CE_MenuBarEmptyArea: {
+        break;
+    }
     case CE_HeaderEmptyArea:
         break;
     case CE_HeaderSection: {
@@ -382,21 +579,52 @@ int QWindows11Style::styleHint(StyleHint hint, const QStyleOption *opt,
     }
 }
 
+/*!
+ \internal
+ */
+QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *option,
+                                           const QSize &size, const QWidget *widget) const
+{
+    QSize contentSize(size);
+
+    switch (type) {
+
+    case CT_Menu:
+        contentSize += QSize(10, 0);
+        break;
+
+#if QT_CONFIG(menubar)
+    case CT_MenuBarItem:
+        if (!contentSize.isEmpty())
+            contentSize += QSize(QWindowsVistaStylePrivate::windowsItemHMargin * 5 + 1 + 16, 5 + 16);
+        break;
+#endif
+
+    default:
+        contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
+        break;
+    }
+
+    return contentSize;
+}
+
 void QWindows11Style::polish(QWidget* widget)
 {
     QWindowsVistaStyle::polish(widget);
-    if (widget->inherits("QScrollBar") || widget->inherits("QComboBoxPrivateContainer")) {
+    if (widget->inherits("QScrollBar") || widget->inherits("QComboBoxPrivateContainer") || widget->inherits("QMenu")) {
         bool wasCreated = widget->testAttribute(Qt::WA_WState_Created);
+        bool layoutDirection = widget->testAttribute(Qt::WA_RightToLeft);
         widget->setAttribute(Qt::WA_OpaquePaintEvent,false);
         widget->setAttribute(Qt::WA_TranslucentBackground);
         widget->setWindowFlag(Qt::FramelessWindowHint);
         widget->setWindowFlag(Qt::NoDropShadowWindowHint);
+        widget->setAttribute(Qt::WA_RightToLeft, layoutDirection);
         widget->setAttribute(Qt::WA_WState_Created, wasCreated);
         auto pal = widget->palette();
         pal.setColor(widget->backgroundRole(), Qt::transparent);
         widget->setPalette(pal);
     }
-    if (widget->inherits("QComboBoxPrivateContainer")) {
+    if (widget->inherits("QComboBoxPrivateContainer") || widget->inherits("QMenu")) {
         QGraphicsDropShadowEffect* dropshadow = new QGraphicsDropShadowEffect(widget);
         dropshadow->setBlurRadius(3);
         dropshadow->setXOffset(3);
