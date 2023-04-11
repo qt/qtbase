@@ -140,6 +140,8 @@ public:
     virtual QByteArray pipelineCacheData() = 0;
     virtual void setPipelineCacheData(const QByteArray &data) = 0;
 
+    void prepareForCreate(QRhi *rhi, QRhi::Implementation impl, QRhi::Flags flags);
+
     bool isCompressedFormat(QRhiTexture::Format format) const;
     void compressedFormatInfo(QRhiTexture::Format format, const QSize &size,
                               quint32 *bpl, quint32 *byteSize,

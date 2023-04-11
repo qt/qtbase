@@ -5507,6 +5507,22 @@ QRhi::~QRhi()
     delete d;
 }
 
+void QRhiImplementation::prepareForCreate(QRhi *rhi, QRhi::Implementation impl, QRhi::Flags flags)
+{
+    q = rhi;
+
+    // Play nice with QSG_INFO since that is still the most commonly used
+    // way to get graphics info printed from Qt Quick apps, and the Quick
+    // scenegraph is our primary user.
+    if (qEnvironmentVariableIsSet("QSG_INFO"))
+        const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
+
+    debugMarkers = flags.testFlag(QRhi::EnableDebugMarkers);
+
+    implType = impl;
+    implThread = QThread::currentThread();
+}
+
 /*!
     \return a new QRhi instance with a backend for the graphics API specified
     by \a impl with the specified \a flags.
@@ -5594,21 +5610,9 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
     }
 
     if (r->d) {
-        r->d->q = r.get();
-
-        // Play nice with QSG_INFO since that is still the most commonly used
-        // way to get graphics info printed from Qt Quick apps, and the Quick
-        // scenegraph is our primary user.
-        if (qEnvironmentVariableIsSet("QSG_INFO"))
-            const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
-
-        r->d->debugMarkers = flags.testFlag(EnableDebugMarkers);
-
-        if (r->d->create(flags)) {
-            r->d->implType = impl;
-            r->d->implThread = QThread::currentThread();
+        r->d->prepareForCreate(r.get(), impl, flags);
+        if (r->d->create(flags))
             return r.release();
-        }
     }
 
     return nullptr;
