@@ -20,8 +20,19 @@ static void writeCtfMacro(QTextStream &stream, const Provider &provider, const T
     const int arrayLen = field.arrayLen;
 
     if (arrayLen > 0) {
-        stream << "ctf_array(" <<paramType << ", "
-               << name << ", " << name << ", " << arrayLen << ")";
+        if (paramType == QStringLiteral("double") || paramType == QStringLiteral("float")) {
+            const char *newline = nullptr;
+            for (int i = 0; i < arrayLen; i++) {
+                stream << newline;
+                stream << "ctf_float(" <<paramType << ", " << name << "_" << QString::number(i) << ", "
+                       << name << "[" << QString::number(i) << "]" << ")";
+                newline = "\n        ";
+            }
+
+        } else {
+            stream << "ctf_array(" <<paramType << ", "
+                   << name << ", " << name << ", " << arrayLen << ")";
+        }
         return;
     }
 
