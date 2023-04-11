@@ -4,7 +4,7 @@
 /*!
     \example multicastreceiver
     \title Multicast Receiver
-    \meta category {Networking}
+    \examplecategory {Networking}
     \meta tags {network,multicast,ipv6,ipv4,udp}
     \ingroup examples-network
     \brief Demonstrates how to receive information sent to a multicast group.

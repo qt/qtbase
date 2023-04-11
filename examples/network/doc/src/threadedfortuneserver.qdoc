@@ -4,7 +4,7 @@
 /*!
     \example threadedfortuneserver
     \title Threaded Fortune Server
-    \meta category {Networking}
+    \examplecategory {Networking}
     \meta tags {tcp,network,threading,server,synchronous-io}
     \ingroup examples-network
 

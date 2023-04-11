@@ -4,7 +4,7 @@
 /*!
     \example multicastsender
     \title Multicast Sender
-    \meta category {Networking}
+    \examplecategory {Networking}
     \meta tags {network,multicast,ipv6,ipv4,udp}
     \ingroup examples-network
     \brief Demonstrates how to send messages to a multicast group.
