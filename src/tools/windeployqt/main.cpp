@@ -1084,25 +1084,30 @@ static QString vcRedistDir()
     return QString();
 }
 
-static QStringList compilerRunTimeLibs(Platform platform, bool isDebug, unsigned short machineArch)
+static QStringList compilerRunTimeLibs(const QString &qtBinDir, Platform platform, bool isDebug, unsigned short machineArch)
 {
     QStringList result;
     switch (platform) {
-    case WindowsDesktopMinGW: { // MinGW: Add runtime libraries
+    case WindowsDesktopMinGW: { // MinGW: Add runtime libraries. Check first for the Qt binary directory, and default to path if nothing is found.
         static const char *minGwRuntimes[] = {"*gcc_", "*stdc++", "*winpthread"};
-        const QString gcc = findInPath(QStringLiteral("g++.exe"));
-        if (gcc.isEmpty()) {
-            std::wcerr << "Warning: Cannot find GCC installation directory. g++.exe must be in the path.\n";
-            break;
-        }
-        const QString binPath = QFileInfo(gcc).absolutePath();
         QStringList filters;
         const QString suffix = u'*' + sharedLibrarySuffix(platform);
         for (auto minGwRuntime : minGwRuntimes)
             filters.append(QLatin1StringView(minGwRuntime) + suffix);
-        const QFileInfoList &dlls = QDir(binPath).entryInfoList(filters, QDir::Files);
+
+        QFileInfoList dlls = QDir(qtBinDir).entryInfoList(filters, QDir::Files);
+        if (dlls.isEmpty()) {
+            std::wcerr << "Warning: Runtime libraries not found in Qt binary folder, defaulting to path\n";
+            const QString gcc = findInPath(QStringLiteral("g++.exe"));
+            if (gcc.isEmpty()) {
+                std::wcerr << "Warning: Cannot find GCC installation directory. g++.exe must be in the path.\n";
+                break;
+            }
+            const QString binPath = QFileInfo(gcc).absolutePath();
+            dlls = QDir(binPath).entryInfoList(filters, QDir::Files);
+        }
         for (const QFileInfo &dllFi : dlls)
-                result.append(dllFi.absoluteFilePath());
+            result.append(dllFi.absoluteFilePath());
     }
         break;
 #ifdef Q_OS_WIN
@@ -1435,7 +1440,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             options.directory : options.libraryDirectory;
         QStringList libraries = deployedQtLibraries;
         if (options.compilerRunTime)
-            libraries.append(compilerRunTimeLibs(options.platform, result.isDebug, machineArch));
+            libraries.append(compilerRunTimeLibs(qtBinDir, options.platform, result.isDebug, machineArch));
         for (const QString &qtLib : std::as_const(libraries)) {
             if (!updateLibrary(qtLib, targetPath, options, errorMessage))
                 return result;
