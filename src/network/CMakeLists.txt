@@ -174,6 +174,10 @@ qt_internal_extend_target(Network CONDITION UNIX
         kernel/qhostinfo_unix.cpp
         socket/qnativesocketengine_unix.cpp
         socket/qnet_unix_p.h
+    NO_UNITY_BUILD_SOURCES
+        kernel/qhostinfo_unix.cpp # Temporary exclusion until, this,
+                                  # https://codereview.qt-project.org/c/qt/qtbase/+/463670
+                                  # is merged.
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_dlopen AND UNIX

@@ -589,6 +589,8 @@ qt_internal_extend_target(Core CONDITION APPLE
         # This makes sure that the tst_qmakelib passes. For some reason,
         # QtCore ends up returning a corrupted error message in
         # write_file(): fail
+        kernel/qelapsedtimer_mac.cpp # Temporary exclusion, until this,
+                                     # https://codereview.qt-project.org/c/qt/qtbase/+/462132, is merged
 )
 
 qt_internal_extend_target(Core CONDITION MACOS
