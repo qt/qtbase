@@ -190,7 +190,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForName(const QString &nameOrAlias)
 {
     const QString mimeName = resolveAlias(nameOrAlias);
     for (const auto &provider : providers()) {
-        const QMimeType mime = provider->mimeTypeForName(mimeName);
+        QMimeType mime = provider->mimeTypeForName(mimeName);
         if (mime.isValid())
             return mime;
     }
