@@ -2,34 +2,18 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qsqlfield.h"
-#include "qatomic.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
-class QSqlFieldPrivate
+class QSqlFieldPrivate : public QSharedData
 {
 public:
     QSqlFieldPrivate(const QString &name,
                      QMetaType type, const QString &tableName) :
-        ref(1), nm(name), table(tableName), def(QVariant()), type(type),
+        nm(name), table(tableName), def(QVariant()), type(type),
         req(QSqlField::Unknown), len(-1), prec(-1), tp(-1),
         ro(false), gen(true), autoval(false)
-    {}
-
-    QSqlFieldPrivate(const QSqlFieldPrivate &other)
-        : ref(1),
-          nm(other.nm),
-          table(other.table),
-          def(other.def),
-          type(other.type),
-          req(other.req),
-          len(other.len),
-          prec(other.prec),
-          tp(other.tp),
-          ro(other.ro),
-          gen(other.gen),
-          autoval(other.autoval)
     {}
 
     bool operator==(const QSqlFieldPrivate& other) const
@@ -46,7 +30,6 @@ public:
                 && autoval == other.autoval);
     }
 
-    QAtomicInt ref;
     QString nm;
     QString table;
     QVariant def;
@@ -59,6 +42,7 @@ public:
     bool gen: 1;
     bool autoval: 1;
 };
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QSqlFieldPrivate)
 
 
 /*!
@@ -151,23 +135,14 @@ QSqlField::QSqlField(const QString &fieldName, QMetaType type, const QString &ta
 */
 
 QSqlField::QSqlField(const QSqlField &other)
-    : val(other.val),
-      d(other.d)
-{
-    d->ref.ref();
-}
+    = default;
 
 /*!
     Sets the field equal to \a other.
 */
 
 QSqlField& QSqlField::operator=(const QSqlField& other)
-{
-    qAtomicAssign(d, other.d);
-    val = other.val;
-    return *this;
-}
-
+    = default;
 
 /*! \fn bool QSqlField::operator!=(const QSqlField &other) const
     Returns \c true if the field is unequal to \a other; otherwise returns
@@ -189,10 +164,7 @@ bool QSqlField::operator==(const QSqlField& other) const
 */
 
 QSqlField::~QSqlField()
-{
-    if (!d->ref.deref())
-        delete d;
-}
+    = default;
 
 /*!
     Sets the required status of this field to \a required.
@@ -426,7 +398,7 @@ bool QSqlField::isNull() const
 */
 void QSqlField::detach()
 {
-    qAtomicDetach(d);
+    d.detach();
 }
 
 /*!

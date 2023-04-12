@@ -39,6 +39,7 @@ private slots:
     void clear();
     void setTableName_data();
     void setTableName();
+    void moveSemantics();
 };
 
 // Testing get/set functions
@@ -342,6 +343,25 @@ void tst_QSqlField::setTableName()
     QCOMPARE(field.tableName(), QLatin1String("test"));
     field.setTableName(tableName);
     QCOMPARE(field.tableName(), tableName);
+}
+
+void tst_QSqlField::moveSemantics()
+{
+    QSqlField field("test", QMetaType(QMetaType::QString), "testTable");
+    QSqlField empty;
+    field.setValue("string");
+    auto moved = std::move(field);
+    // `field` is now partially-formed
+
+    // moving transfers state:
+    QCOMPARE(moved.value().toString(), QLatin1String("string"));
+
+    // moved-from objects can be assigned-to:
+    field = empty;
+    QVERIFY(field.value().isNull());
+
+    // moved-from object can be destroyed:
+    moved = std::move(field);
 }
 
 QTEST_MAIN(tst_QSqlField)

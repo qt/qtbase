@@ -5,6 +5,7 @@
 #define QSQLFIELD_H
 
 #include <QtSql/qtsqlglobal.h>
+#include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
 
@@ -12,6 +13,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QSqlFieldPrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QSqlFieldPrivate, Q_SQL_EXPORT)
 
 class Q_SQL_EXPORT QSqlField
 {
@@ -22,9 +24,14 @@ public:
 
     QSqlField(const QSqlField& other);
     QSqlField& operator=(const QSqlField& other);
+    QSqlField(QSqlField &&other) noexcept = default;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSqlField)
+    ~QSqlField();
+
+    void swap(QSqlField &other) noexcept { val.swap(other.val); d.swap(other.d); }
+
     bool operator==(const QSqlField& other) const;
     inline bool operator!=(const QSqlField &other) const { return !operator==(other); }
-    ~QSqlField();
 
     void setValue(const QVariant& value);
     inline QVariant value() const
@@ -76,8 +83,9 @@ public:
 
 private:
     void detach();
+    // ### Qt7: move to private class
     QVariant val;
-    QSqlFieldPrivate* d;
+    QExplicitlySharedDataPointer<QSqlFieldPrivate> d;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
