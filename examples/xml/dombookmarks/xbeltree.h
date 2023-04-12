@@ -8,6 +8,7 @@
 #include <QIcon>
 #include <QTreeWidget>
 
+//! [0]
 class XbelTree : public QTreeWidget
 {
     Q_OBJECT
@@ -36,5 +37,6 @@ private:
     QIcon folderIcon;
     QIcon bookmarkIcon;
 };
+//! [0]
 
 #endif
