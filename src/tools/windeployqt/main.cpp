@@ -1084,32 +1084,48 @@ static QString vcRedistDir()
     return QString();
 }
 
+static QStringList findMinGWRuntimePaths(const QString &qtBinDir, Platform platform, const QStringList &runtimeFilters)
+{
+    //MinGW: Add runtime libraries. Check first for the Qt binary directory, and default to path if nothing is found.
+    QStringList result;
+    const bool isClang = platform == WindowsDesktopClangMinGW;
+    QStringList filters;
+    const QString suffix = u'*' + sharedLibrarySuffix(platform);
+    for (const auto &minGWRuntime : runtimeFilters)
+        filters.append(minGWRuntime + suffix);
+
+    QFileInfoList dlls = QDir(qtBinDir).entryInfoList(filters, QDir::Files);
+    if (dlls.isEmpty()) {
+        std::wcerr << "Warning: Runtime libraries not found in Qt binary folder, defaulting to looking in path\n";
+        const QString binaryPath = isClang ? findInPath("clang++.exe"_L1) : findInPath("g++.exe"_L1);
+        if (binaryPath.isEmpty()) {
+            std::wcerr << "Warning: Cannot find " << (isClang ? "Clang" : "GCC") << " installation directory, " << (isClang ? "clang++" : "g++") << ".exe must be in the path\n";
+            return {};
+        }
+        const QString binaryFolder = QFileInfo(binaryPath).absolutePath();
+        dlls = QDir(binaryFolder).entryInfoList(filters, QDir::Files);
+    }
+
+    for (const QFileInfo &dllFi : dlls)
+        result.append(dllFi.absoluteFilePath());
+
+    return result;
+}
+
 static QStringList compilerRunTimeLibs(const QString &qtBinDir, Platform platform, bool isDebug, unsigned short machineArch)
 {
     QStringList result;
     switch (platform) {
-    case WindowsDesktopMinGW: { // MinGW: Add runtime libraries. Check first for the Qt binary directory, and default to path if nothing is found.
-        static const char *minGwRuntimes[] = {"*gcc_", "*stdc++", "*winpthread"};
-        QStringList filters;
-        const QString suffix = u'*' + sharedLibrarySuffix(platform);
-        for (auto minGwRuntime : minGwRuntimes)
-            filters.append(QLatin1StringView(minGwRuntime) + suffix);
-
-        QFileInfoList dlls = QDir(qtBinDir).entryInfoList(filters, QDir::Files);
-        if (dlls.isEmpty()) {
-            std::wcerr << "Warning: Runtime libraries not found in Qt binary folder, defaulting to path\n";
-            const QString gcc = findInPath(QStringLiteral("g++.exe"));
-            if (gcc.isEmpty()) {
-                std::wcerr << "Warning: Cannot find GCC installation directory. g++.exe must be in the path.\n";
-                break;
-            }
-            const QString binPath = QFileInfo(gcc).absolutePath();
-            dlls = QDir(binPath).entryInfoList(filters, QDir::Files);
-        }
-        for (const QFileInfo &dllFi : dlls)
-            result.append(dllFi.absoluteFilePath());
-    }
+    case WindowsDesktopMinGW: {
+        const QStringList minGWRuntimes = { "*gcc_"_L1, "*stdc++"_L1, "*winpthread"_L1 };
+        result.append(findMinGWRuntimePaths(qtBinDir, platform, minGWRuntimes));
         break;
+    }
+    case WindowsDesktopClangMinGW: {
+        const QStringList clangMinGWRuntimes = { "*unwind"_L1, "*c++"_L1 };
+        result.append(findMinGWRuntimePaths(qtBinDir, platform, clangMinGWRuntimes));
+        break;
+    }
 #ifdef Q_OS_WIN
     case WindowsDesktopMsvc: { // MSVC/Desktop: Add redistributable packages.
         QString vcRedistDirName = vcRedistDir();
