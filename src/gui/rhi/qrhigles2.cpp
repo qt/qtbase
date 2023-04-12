@@ -658,6 +658,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
         return false;
 
     f = static_cast<QOpenGLExtensions *>(ctx->extraFunctions());
+    const QSurfaceFormat actualFormat = ctx->format();
+    caps.gles = actualFormat.renderableType() == QSurfaceFormat::OpenGLES;
 
     if (!caps.gles) {
         glPolygonMode = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLenum)>(
@@ -707,8 +709,6 @@ bool QRhiGles2::create(QRhi::Flags flags)
     }
     if (version)
         driverInfoStruct.deviceName += QByteArray(version);
-
-    const QSurfaceFormat actualFormat = ctx->format();
 
     caps.ctxMajor = actualFormat.majorVersion();
     caps.ctxMinor = actualFormat.minorVersion();
@@ -768,8 +768,6 @@ bool QRhiGles2::create(QRhi::Flags flags)
     }
 
     f->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &caps.maxTextureSize);
-
-    caps.gles = actualFormat.renderableType() == QSurfaceFormat::OpenGLES;
 
     if (!caps.gles || caps.ctxMajor >= 3) {
         // non-ES or ES 3.0+
