@@ -109,6 +109,8 @@ else()
     find_package(Qt6 REQUIRED COMPONENTS BuildInternals CMAKE_FIND_ROOT_PATH_BOTH)
 endif()
 
+qt_internal_project_setup()
+
 qt_build_repo_begin()
 
 if(NOT QT_BUILD_STANDALONE_TESTS)

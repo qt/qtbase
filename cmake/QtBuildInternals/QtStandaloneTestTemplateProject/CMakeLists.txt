@@ -6,7 +6,7 @@ project(qt_single_test VERSION 6.0.0 LANGUAGES C CXX ASM)
 
 find_package(Qt6 REQUIRED COMPONENTS BuildInternals Core)
 
-include(${CMAKE_CURRENT_LIST_DIR}/Main.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/Main.cmake NO_POLICY_SCOPE)
 
 # Get the absolute path of the passed-in project dir, relative to the current working directory
 # of the calling script, rather than relative to this source directory.

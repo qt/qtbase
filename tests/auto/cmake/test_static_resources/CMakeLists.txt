@@ -13,6 +13,7 @@ project(TestStaticResources
 )
 
 find_package(Qt6 COMPONENTS Core BuildInternals Test CONFIG REQUIRED)
+qt_internal_project_setup()
 
 qt_build_repo_begin()
 

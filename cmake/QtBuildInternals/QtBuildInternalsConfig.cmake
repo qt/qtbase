@@ -230,11 +230,20 @@ if(NOT QT_BUILD_INTERNALS_SKIP_SYSTEM_PREFIX_ADJUSTMENT)
     qt_build_internals_set_up_system_prefixes()
 endif()
 
-macro(qt_build_internals_set_up_private_api)
+# The macro sets all the necessary pre-conditions and setup consistent environment for building
+# the Qt repository. It has to be called right after the find_package(Qt6 COMPONENTS BuildInternals)
+# call. Otherwise we cannot make sure that all the required policies will be applied to the Qt
+# components that are involved in build procedure.
+macro(qt_internal_project_setup)
     # Check for the minimum CMake version.
     include(QtCMakeVersionHelpers)
     qt_internal_require_suitable_cmake_version()
     qt_internal_upgrade_cmake_policies()
+endmacro()
+
+macro(qt_build_internals_set_up_private_api)
+    # TODO: this call needs to be removed once all repositories got the qtbase update
+    qt_internal_project_setup()
 
     # Qt specific setup common for all modules:
     include(QtSetup)
