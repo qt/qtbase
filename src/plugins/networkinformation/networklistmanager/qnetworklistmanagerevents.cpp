@@ -102,16 +102,22 @@ bool QNetworkListManagerEvents::start()
 #if QT_CONFIG(cpp_winrt)
     using namespace winrt::Windows::Networking::Connectivity;
     using winrt::Windows::Foundation::IInspectable;
-    // Register for changes in the network and store a token to unregister later:
-    token = NetworkInformation::NetworkStatusChanged(
-            [owner = QPointer(this)](const IInspectable sender) {
-                Q_UNUSED(sender);
-                if (owner) {
-                    std::scoped_lock locker(owner->winrtLock);
-                    if (owner->token)
-                        owner->emitWinRTUpdates();
-                }
-            });
+    try {
+        // Register for changes in the network and store a token to unregister later:
+        token = NetworkInformation::NetworkStatusChanged(
+                [owner = QPointer(this)](const IInspectable sender) {
+                    Q_UNUSED(sender);
+                    if (owner) {
+                        std::scoped_lock locker(owner->winrtLock);
+                        if (owner->token)
+                            owner->emitWinRTUpdates();
+                    }
+                });
+    } catch (const winrt::hresult_error &ex) {
+        qCWarning(lcNetInfoNLM) << "Failed to register network status changed callback:"
+                                << QSystemError::windowsComString(ex.code());
+    }
+
     // Emit initial state
     emitWinRTUpdates();
 #endif
