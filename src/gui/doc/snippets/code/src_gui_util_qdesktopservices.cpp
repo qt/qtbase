@@ -65,15 +65,6 @@ QDesktopServices::openUrl(QUrl("file:///C:/Program Files", QUrl::TolerantMode));
 
 */ // comment wrapper 2
 
-
-void wrapper3() {
-//! [6]
-QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
-    "/data/organization/application";
-//! [6]
-} // wrapper3
-
-
 /* comment wrapper 3
 //! [7]
 <key>com.apple.developer.associated-domains</key>

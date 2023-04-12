@@ -22,19 +22,6 @@ aWidget->window()->setWindowTitle("New Window Title");
 //! [3]
 
 
-//! [4]
-QFont font("Helvetica", 12, QFont::Bold);
-setFont(font);
-//! [4]
-
-
-//! [5]
-QFont font;
-font.setBold(false);
-setFont(font);
-//! [5]
-
-
 //! [6]
 setCursor(Qt::IBeamCursor);
 //! [6]

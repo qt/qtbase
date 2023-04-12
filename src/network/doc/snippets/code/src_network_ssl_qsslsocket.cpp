@@ -49,12 +49,6 @@ socket->write("1 CAPABILITY\r\n");
 //! [3]
 
 
-//! [4]
-QSslSocket socket;
-socket.setCiphers("DHE-RSA-AES256-SHA:DHE-DSS-AES256-SHA:AES256-SHA");
-//! [4]
-
-
 //! [5]
 socket->connectToHostEncrypted("imap", 993);
 if (socket->waitForEncrypted(1000))

@@ -3,7 +3,6 @@
 
 add_library(testlib_code_snippets OBJECT
     doc_src_qtqskip.cpp
-    doc_src_qttest.cpp
     src_corelib_kernel_qtestsupport_core.cpp
 )
 

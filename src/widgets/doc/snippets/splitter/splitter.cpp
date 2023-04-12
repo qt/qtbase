@@ -37,11 +37,5 @@ int main()
 //! [2]
     }
 
-//! [3]
-    QListIterator<int> it(splitter->sizes());
-    while (it.hasNext())
-        processSize(it.next());
-//! [3]
-
     return 0;
 }

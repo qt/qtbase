@@ -24,22 +24,3 @@ void MyWidget::paintEvent(QPaintEvent *event)
                           this);
 }
 //! [1]
-
-
-//! [2]
-void drawControl(ControlElement element,
-                 QPainter *painter,
-                 const QWidget *widget,
-                 const QRect &rect,
-                 const QColorGroup &colorGroup,
-                 SFlags how = Style_Default,
-                 const QStyleOption &option = QStyleOption::Default) const;
-//! [2]
-
-
-//! [3]
-void drawControl(ControlElement element,
-                 const QStyleOption *option,
-                 QPainter *painter,
-                 const QWidget *widget = nullptr) const;
-//! [3]

@@ -111,23 +111,3 @@ QSet<QString>::const_iterator it = std::find_if(set.cbegin(), set.cend(), predic
 if (it != set.constEnd())
     cout << "Found Jeanette" << endl;
 //! [12]
-
-
-//! [13]
-QSet<QString> set;
-set << "red" << "green" << "blue" << ... << "black";
-
-QList<QString> list = set.toList();
-std::sort(list.begin(), list.end());
-//! [13]
-
-
-//! [14]
-QStringList list;
-list << "Julia" << "Mike" << "Mike" << "Julia" << "Julia";
-
-QSet<QString> set = QSet<QString>::fromList(list);
-set.contains("Julia");  // returns true
-set.contains("Mike");   // returns true
-set.size();             // returns 2
-//! [14]

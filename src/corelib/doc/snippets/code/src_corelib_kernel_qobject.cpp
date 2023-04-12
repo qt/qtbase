@@ -129,13 +129,6 @@ void MyObject::timerEvent(QTimerEvent *event)
 //! [8]
 
 
-//! [9]
-QList<QObject *> list = window()->queryList("QAbstractButton"));
-foreach (QObject *obj, list)
-    static_cast<QAbstractButton *>(obj)->setEnabled(false);
-//! [9]
-
-
 //! [10]
 QPushButton *button = parentWidget->findChild<QPushButton *>("button1");
 //! [10]
@@ -202,22 +195,6 @@ MyWindow::MyWindow()
     QLabel *recipientLabel = new QLabel(tr("Name:", "recipient"));
 //! [17]
 }
-
-
-//! [18]
-int n = messages.count();
-showMessage(tr("%n message(s) saved", "", n));
-//! [18]
-
-
-//! [19]
-n == 1 ? tr("%n message saved") : tr("%n messages saved")
-//! [19]
-
-
-//! [20]
-label->setText(tr("F\374r \310lise"));
-//! [20]
 
 
 //! [21]
@@ -383,14 +360,6 @@ public:
 //! [39]
 
 
-//! [40]
-//: This name refers to a host name.
-hostNameLabel->setText(tr("Name:"));
-
-/*: This text refers to a C++ code example. */
-QString example = tr("Example");
-//! [40]
-
 //! [41]
 QPushButton *button = parentWidget->findChild<QPushButton *>("button1", Qt::FindDirectChildrenOnly);
 //! [41]
@@ -487,18 +456,6 @@ public:
 };
 //! [52]
 
-//! [meta data]
-//: This is a comment for the translator.
-//= qtn_foo_bar
-//~ loc-layout_id foo_dialog
-//~ loc-blank False
-//~ magic-stuff This might mean something magic.
-QString text = MyMagicClass::tr("Sim sala bim.");
-//! [meta data]
-
-//! [explicit tr context]
-QString text = QScrollBar::tr("Page up");
-//! [explicit tr context]
 
 //! [53]
 {

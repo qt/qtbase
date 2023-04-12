@@ -55,10 +55,8 @@ if (q.next())
 //! [26]
 
 qDebug( \
-//! [31]
 "QSqlDatabase: QMYSQL driver not loaded \
 QSqlDatabase: available drivers: QMYSQL" \
-//! [31]
 );
 
 /* Commented because the following line is not compilable

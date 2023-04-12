@@ -15,16 +15,3 @@ MyClass::MyClass() : BaseClass()
     ...
 }
 //! [5]
-
-
-//! [6]
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-    Q_INIT_RESOURCE(graphlib);
-
-    QFile file(":/graph.png");
-    ...
-    return app.exec();
-}
-//! [6]

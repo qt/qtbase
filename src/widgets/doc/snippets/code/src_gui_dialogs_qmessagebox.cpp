@@ -11,23 +11,6 @@ int ret = QMessageBox::warning(this, tr("My Application"),
 //! [0]
 
 
-//! [1]
-QMessageBox msgBox;
-msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-switch (msgBox.exec()) {
-case QMessageBox::Yes:
-    // yes was clicked
-    break;
-case QMessageBox::No:
-    // no was clicked
-    break;
-default:
-    // should never be reached
-    break;
-}
-//! [1]
-
-
 //! [2]
 QMessageBox msgBox;
 QPushButton *connectButton = msgBox.addButton(tr("Connect"), QMessageBox::ActionRole);
@@ -100,12 +83,3 @@ switch (ret) {
       break;
 }
 //! [7]
-
-//! [9]
-QMessageBox msgBox(this);
-msgBox.setText(tr("The document has been modified.\n"
-                  "Do you want to save your changes?"));
-msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard
-                          | QMessageBox::Cancel);
-msgBox.setDefaultButton(QMessageBox::Save);
-//! [9]

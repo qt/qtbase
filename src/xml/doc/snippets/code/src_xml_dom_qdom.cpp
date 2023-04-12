@@ -89,17 +89,6 @@ for(QDomNode n = element.firstChild(); !n.isNull(); n = n.nextSibling())
 //! [10]
 
 }
-void FirstElement()
-{
-//! [11]
-QDomDocument doc;
-QDomElement root = doc.firstChildElement("database");
-QDomElement elt = root.firstChildElement("entry");
-for (; !elt.isNull(); elt = elt.nextSiblingElement("entry")) {
-    // ...
-}
-//! [11]
-}
 
 void FileContent()
 {

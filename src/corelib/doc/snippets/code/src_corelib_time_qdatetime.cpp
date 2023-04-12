@@ -71,14 +71,6 @@ QTime::isValid(22, 5,  62); // returns false
 //! [9]
 
 
-//! [10]
-QTime t;
-t.start();
-some_lengthy_task();
-qDebug("Time elapsed: %d ms", t.elapsed());
-//! [10]
-
-
 //! [11]
 QDateTime now = QDateTime::currentDateTime();
 QDateTime xmas(QDate(now.date().year(), 12, 25).startOfDay());

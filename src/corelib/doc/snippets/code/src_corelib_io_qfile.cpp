@@ -10,16 +10,6 @@ file.open(QIODevice::ReadOnly);      // opens "/home/readme.txt" under Unix
 //! [0]
 
 
-//! [1]
-QByteArray myEncoderFunc(const QString &fileName);
-//! [1]
-
-
-//! [2]
-QString myDecoderFunc(const QByteArray &localFileName);
-//! [2]
-
-
 //! [3]
 #include <stdio.h>
 

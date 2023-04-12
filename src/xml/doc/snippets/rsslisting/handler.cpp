@@ -133,7 +133,6 @@ bool Handler::characters (const QString &chars)
     that parsing should stop.
 */
 
-//! [0]
 bool Handler::fatalError (const QXmlParseException & exception)
 {
     qWarning() << "Fatal error on line" << exception.lineNumber()
@@ -142,4 +141,3 @@ bool Handler::fatalError (const QXmlParseException & exception)
 
     return false;
 }
-//! [0]

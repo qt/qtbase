@@ -22,9 +22,3 @@ class MyInstance : public QObject
 //! [2]
 Q_IMPORT_PLUGIN(qjpeg)
 //! [2]
-
-
-//! [3]
-TEMPLATE      = app
-QTPLUGIN     += qjpeg qgif    # image formats
-//! [3]

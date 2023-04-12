@@ -97,15 +97,6 @@ struct QPainter {
     void setWorldTransform(QTransform matrix, bool);
 };
 
-//! [4]
-void QPainter::rotate(qreal angle)
-{
-    QTransform matrix;
-    matrix.rotate(angle);
-    setWorldTransform(matrix, true);
-}
-//! [4]
-
 } // QPainterWrapper
 
 void MyWidget::wrapper1() {

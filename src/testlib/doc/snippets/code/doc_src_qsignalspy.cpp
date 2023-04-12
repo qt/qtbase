@@ -43,9 +43,6 @@ SomeStruct result = qvariant_cast<SomeStruct>(spy.at(0).at(0));
 QSignalSpy spy(myPushButton, SIGNAL(clicked(bool)));
 //! [4]
 
-//! [5]
-QVERIFY(spy.wait(1000));
-//! [5]
 
 //! [6]
 QSignalSpy spy(myPushButton, &QPushButton::clicked);
