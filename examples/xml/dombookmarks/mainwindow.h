@@ -8,6 +8,7 @@
 
 class XbelTree;
 
+//! [0]
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -25,5 +26,6 @@ private:
 
     XbelTree *xbelTree;
 };
+//! [0]
 
 #endif

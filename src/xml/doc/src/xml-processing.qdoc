@@ -7,7 +7,7 @@
 
     \brief Classes that support XML.
 
-    These classes are relevant to XML users.
+    These classes are relevant to \l{XML Processing}{XML} users.
 
     \generatelist{related}
 */
@@ -180,7 +180,7 @@
     namespace prefix. In this case the local part and the qualified name
     are identical (i.e. \e chapter).
 
-    \sa {DOM Bookmarks Example}
+    \sa {DOM Bookmarks Application}
 */
 
 /*!
@@ -339,7 +339,7 @@
     DOM implementation.
 
     To get started please refer to the \l QDomDocument documentation.
-    You might also want to take a look at the \l{DOM Bookmarks Example},
+    You might also want to take a look at the \l{DOM Bookmarks Application},
     which illustrates how to read and write an XML bookmark file (XBEL)
     using DOM.
 */

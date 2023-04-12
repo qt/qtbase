@@ -17,6 +17,7 @@ static inline QString versionAttribute() { return QStringLiteral("version"); }
 static inline QString hrefAttribute() { return QStringLiteral("href"); }
 static inline QString foldedAttribute() { return QStringLiteral("folded"); }
 
+//! [0]
 XbelTree::XbelTree(QWidget *parent)
     : QTreeWidget(parent)
 {
@@ -32,6 +33,7 @@ XbelTree::XbelTree(QWidget *parent)
                          QIcon::Normal, QIcon::On);
     bookmarkIcon.addPixmap(style()->standardPixmap(QStyle::SP_FileIcon));
 }
+//! [0]
 
 #if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_CLIPBOARD)
 void XbelTree::contextMenuEvent(QContextMenuEvent *event)
@@ -51,6 +53,7 @@ void XbelTree::contextMenuEvent(QContextMenuEvent *event)
 }
 #endif // !QT_NO_CONTEXTMENU && !QT_NO_CLIPBOARD
 
+//! [1]
 bool XbelTree::read(QIODevice *device)
 {
     QDomDocument::ParseResult result =
@@ -91,7 +94,9 @@ bool XbelTree::read(QIODevice *device)
 
     return true;
 }
+//! [1]
 
+//! [2]
 bool XbelTree::write(QIODevice *device) const
 {
     const int IndentSize = 4;
@@ -100,6 +105,7 @@ bool XbelTree::write(QIODevice *device) const
     domDocument.save(out, IndentSize);
     return true;
 }
+//! [2]
 
 void XbelTree::updateDomElement(const QTreeWidgetItem *item, int column)
 {
@@ -120,6 +126,7 @@ void XbelTree::updateDomElement(const QTreeWidgetItem *item, int column)
     }
 }
 
+//! [3]
 void XbelTree::parseFolderElement(const QDomElement &element,
                                   QTreeWidgetItem *parentItem)
 {
@@ -159,6 +166,7 @@ void XbelTree::parseFolderElement(const QDomElement &element,
         child = child.nextSiblingElement();
     }
 }
+//! [3]
 
 QTreeWidgetItem *XbelTree::createItem(const QDomElement &element,
                                       QTreeWidgetItem *parentItem)

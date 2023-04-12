@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include "xbeltree.h"
 
+//! [0]
 MainWindow::MainWindow()
 {
     xbelTree = new XbelTree;
@@ -19,7 +20,9 @@ MainWindow::MainWindow()
     const QSize availableSize = screen()->availableGeometry().size();
     resize(availableSize.width() / 2, availableSize.height() / 3);
 }
+//! [0]
 
+//! [1]
 void MainWindow::open()
 {
     QString fileName =
@@ -41,7 +44,9 @@ void MainWindow::open()
     if (xbelTree->read(&file))
         statusBar()->showMessage(tr("File loaded"), 2000);
 }
+//! [1]
 
+//! [2]
 void MainWindow::saveAs()
 {
     QString fileName =
@@ -63,7 +68,9 @@ void MainWindow::saveAs()
     if (xbelTree->write(&file))
         statusBar()->showMessage(tr("File saved"), 2000);
 }
+//! [2]
 
+//! [3]
 void MainWindow::about()
 {
    QMessageBox::about(this, tr("About DOM Bookmarks"),
@@ -71,7 +78,9 @@ void MainWindow::about()
                          "use Qt's DOM classes to read and write XML "
                          "documents."));
 }
+//! [3]
 
+//! [4]
 void MainWindow::createMenus()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -90,3 +99,4 @@ void MainWindow::createMenus()
     helpMenu->addAction(tr("&About"), this, &MainWindow::about);
     helpMenu->addAction(tr("About &Qt"), qApp, &QCoreApplication::quit);
 }
+//! [4]
