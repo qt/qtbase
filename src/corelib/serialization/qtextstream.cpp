@@ -1952,7 +1952,7 @@ QTextStream &QTextStream::operator>>(QChar &c)
     \overload
 
     Reads a character from the stream and stores it in \a c. The
-    character from the stream is converted to ISO-5589-1 before it is
+    character from the stream is converted to ISO-8859-1 before it is
     stored.
 
     \sa QChar::toLatin1()
