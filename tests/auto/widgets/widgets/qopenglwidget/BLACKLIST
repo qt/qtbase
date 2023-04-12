@@ -1,3 +1,4 @@
 [stackWidgetOpaqueChildIsVisible]
 windows-10 msvc-2017
+sles-15.4 # QTBUG-104241
 
