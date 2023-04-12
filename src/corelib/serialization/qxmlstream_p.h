@@ -498,7 +498,7 @@ public:
     qsizetype fastScanLiteralContent();
     qsizetype fastScanSpace();
     qsizetype fastScanContentCharList();
-    qsizetype fastScanName(qint16 *prefix = nullptr);
+    qsizetype fastScanName(Value *val = nullptr);
     inline qsizetype fastScanNMTOKEN();
 
 
