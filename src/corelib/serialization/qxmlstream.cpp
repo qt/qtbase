@@ -1296,7 +1296,7 @@ inline qsizetype QXmlStreamReaderPrivate::fastScanContentCharList()
     return n;
 }
 
-inline qsizetype QXmlStreamReaderPrivate::fastScanName(qint16 *prefix)
+inline qsizetype QXmlStreamReaderPrivate::fastScanName(Value *val)
 {
     qsizetype n = 0;
     uint c;
@@ -1333,16 +1333,16 @@ inline qsizetype QXmlStreamReaderPrivate::fastScanName(qint16 *prefix)
         case '+':
         case '*':
             putChar(c);
-            if (prefix && *prefix == n+1) {
-                *prefix = 0;
+            if (val && val->prefix == n + 1) {
+                val->prefix = 0;
                 putChar(':');
                 --n;
             }
             return n;
         case ':':
-            if (prefix) {
-                if (*prefix == 0) {
-                    *prefix = qint16(n + 2);
+            if (val) {
+                if (val->prefix == 0) {
+                    val->prefix = qint16(n + 2);
                 } else { // only one colon allowed according to the namespace spec.
                     putChar(c);
                     return n;
@@ -1358,8 +1358,8 @@ inline qsizetype QXmlStreamReaderPrivate::fastScanName(qint16 *prefix)
         }
     }
 
-    if (prefix)
-        *prefix = 0;
+    if (val)
+        val->prefix = 0;
     qsizetype pos = textBuffer.size() - n;
     putString(textBuffer, pos);
     textBuffer.resize(pos);
