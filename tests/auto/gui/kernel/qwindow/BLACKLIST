@@ -17,6 +17,7 @@ osx
 windows-10
 [testInputEvents]
 rhel-7.4
+sles-15.4
 [modalWindowPosition]
 # QTBUG-69161
 android
