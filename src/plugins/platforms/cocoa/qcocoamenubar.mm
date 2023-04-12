@@ -174,10 +174,45 @@ void QCocoaMenuBar::syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate)
             }
     }
 
-    if (NSMenuItem *attachedItem = cocoaMenu->attachedItem()) {
-        // Non-nil attached item means the item's submenu is set
-        attachedItem.title = cocoaMenu->nsMenu().title;
-        attachedItem.hidden = shouldHide;
+    if (NSMenuItem *menuItem = cocoaMenu->attachedItem()) {
+        // Non-nil menu item means the item's sub menu is set
+
+        NSString *menuTitle = cocoaMenu->nsMenu().title;
+
+        // The NSMenu's title is what's visible to the user, and AppKit uses this
+        // for some of its heuristics of when to add special items to the menus,
+        // such as 'Enter Full Screen' in the View menu, the search bare in the
+        // Help menu, and the "Send App feedback to Apple" in the Help menu.
+        // This relies on the title matching AppKit's localized value from the
+        // MenuCommands table, which in turn depends on the preferredLocalizations
+        // of the AppKit bundle. We don't do any automatic translation of menu
+        // titles visible to the user, so this relies on the application developer
+        // having chosen translated titles that match AppKit's, and that the Qt
+        // preferred UI languages match AppKit's preferredLocalizations.
+
+        // In the case of the Edit menu, AppKit uses the NSMenuItem's title
+        // for its heuristics of when to add the dictation and emoji entries,
+        // and this title is not visible to the user. But like above, the
+        // heuristics are based on the localized title of the menu, so we need
+        // to ensure the title matches AppKit's localization.
+
+        // Unfortunately, the title we have at this point may have gone through
+        // Qt's i18n machinery already, via e.g. tr("Edit") in the application,
+        // in which case we don't know the context of the translation, and can't
+        // do a reverse lookup to go back to the untranslated title to pass to
+        // AppKit. As a workaround we translate the title via a our context,
+        // and document that the user needs to ensure their application matches
+        // this translation.
+        if ([menuTitle isEqual:@"Edit"] || [menuTitle isEqual:tr("Edit").toNSString()]) {
+            static const NSBundle *appKit = [NSBundle bundleForClass:NSApplication.class];
+            menuItem.title = [appKit localizedStringForKey:@"Edit" value:menuTitle table:@"InputManager"];
+        } else {
+            // The Edit menu is the only case we know of so far, but to be on
+            // the safe side we always sync the menu title.
+            menuItem.title = menuTitle;
+        }
+
+        menuItem.hidden = shouldHide;
     }
 }
 
