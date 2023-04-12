@@ -947,7 +947,8 @@ bool QXmlStreamReaderPrivate::parse()
         break;
 
         case 262: {
-            sym(1).len += fastScanName(&sym(1).prefix);
+            Value &val = sym(1);
+            val.len += fastScanName(&val);
             if (atEnd) {
                 resume(262);
                 return false;
