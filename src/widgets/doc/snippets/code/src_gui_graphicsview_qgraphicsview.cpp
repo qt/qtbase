@@ -27,16 +27,6 @@ view.setCacheMode(QGraphicsView::CacheBackground);
 //! [2]
 
 
-//! [3]
-QGraphicsScene scene;
-scene.addText("GraphicsView rotated clockwise");
-
-QGraphicsView view(&scene);
-view.rotate(90); // the text is rendered with a 90 degree clockwise rotation
-view.show();
-//! [3]
-
-
 //! [4]
 QGraphicsScene scene;
 scene.addItem(...

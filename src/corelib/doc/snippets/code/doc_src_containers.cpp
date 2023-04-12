@@ -226,13 +226,6 @@ foreach (const QString &str, map.uniqueKeys()) {
 //! [20]
 
 
-//! [21]
-forever {
-    ...
-}
-//! [21]
-
-
 //! [22]
 CONFIG += no_keywords
 //! [22]

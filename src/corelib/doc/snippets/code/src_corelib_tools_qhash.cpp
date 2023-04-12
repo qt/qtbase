@@ -163,18 +163,6 @@ for (i = hash.begin(); i != hash.end(); ++i)
     i.value() += 2;
 //! [18]
 
-void erase()
-{
-QHash<QString, int> hash;
-//! [20]
-QHash<QString, int>::const_iterator i = hash.cbegin();
-while (i != hash.cend()) {
-    if (i.value() > 10)
-        i = hash.erase(i);
-    else
-        ++i;
-}
-//! [20]
 //! [21]
 erase_if(hash, [](const QHash<QString, int>::iterator it) { return it.value() > 10; });
 //! [21]

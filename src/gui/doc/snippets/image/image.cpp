@@ -25,13 +25,6 @@ buffer.open(QIODevice::WriteOnly);
 pixmap.save(&buffer, "PNG"); // writes pixmap into bytes in PNG format
 //! [1]
 
-
-//! [2]
-QPixmap alpha("image-with-alpha.png");
-QPixmap alphacopy = alpha;
-alphacopy.setMask(alphacopy.mask());
-//! [2]
-
 } // wrapper1
 
 } // image

@@ -71,24 +71,6 @@ rect.deviceTransform(view->viewportTransform()).inverted().map(QPointF(100, 100)
 //! [5]
 
 
-//! [6]
-// Rotate an item 45 degrees around (0, 0).
-item->rotate(45);
-
-// Rotate an item 45 degrees around (x, y).
-item->setTransform(QTransform().translate(x, y).rotate(45).translate(-x, -y));
-//! [6]
-
-
-//! [7]
-// Scale an item by 3x2 from its origin
-item->scale(3, 2);
-
-// Scale an item by 3x2 from (x, y)
-item->setTransform(QTransform().translate(x, y).scale(3, 2).translate(-x, -y));
-//! [7]
-
-
 //! [8]
 QRectF CircleItem::boundingRect() const
 {
@@ -223,19 +205,3 @@ QTransform xform = item->deviceTransform(view->viewportTransform());
 QRect deviceRect = xform.mapRect(rect).toAlignedRect();
 view->viewport()->scroll(dx, dy, deviceRect);
 //! [19]
-
-//! [20]
-item->setTransform(QTransform().rotate(angle), true);
-//! [20]
-
-//! [21]
-setTransform(QTransform::fromScale(sx, sy), true);
-//! [21]
-
-//! [22]
-setTransform(QTransform().shear(sh, sv), true);
-//! [22]
-
-//! [23]
-setTransform(QTransform::fromTranslate(dx, dy), true);
-//! [23]

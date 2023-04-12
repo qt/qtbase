@@ -89,11 +89,6 @@ return QVariant::fromValue(s);
 //! [7]
 
 
-//! [8]
-QObject *object = getObjectFromSomewhere();
-QVariant data = QVariant::fromValue(object);
-//! [8]
-
 //! [9]
 
 QList<int> intList = {7, 11, 42};

@@ -7,9 +7,7 @@
 
 #define Counter ReentrantCounter
 
-//! [3]
 class Counter
-//! [3] //! [4]
 {
 public:
     Counter() { n = 0; }
@@ -21,14 +19,11 @@ public:
 private:
     int n;
 };
-//! [4]
 
 #undef Counter
 #define Counter ThreadSafeCounter
 
-//! [5]
 class Counter
-//! [5] //! [6]
 {
 public:
     Counter() { n = 0; }
@@ -41,7 +36,6 @@ private:
     mutable QMutex mutex;
     int n;
 };
-//! [6]
 
 typedef int SomeClass;
 

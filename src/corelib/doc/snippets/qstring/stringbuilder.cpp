@@ -15,10 +15,6 @@ using namespace Qt::StringLiterals;
         ...
 //! [0]
 
-//! [3]
-    DEFINES *= QT_USE_QSTRINGBUILDER
-//! [3]
-
 //! [5]
     #include <QStringBuilder>
 

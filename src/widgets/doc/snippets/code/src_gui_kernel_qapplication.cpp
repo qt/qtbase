@@ -31,26 +31,6 @@ QApplication::setStyle(QStyleFactory::create("Fusion"));
 //! [1]
 
 
-// ### fixme: Qt 6: Remove [2]
-//! [2]
-int main(int argc, char *argv[])
-{
-    QApplication::setColorSpec(QApplication::ManyColor);
-    QApplication app(argc, argv);
-    ...
-    return app.exec();
-}
-//! [2]
-
-
-//! [3]
-QSize MyWidget::sizeHint() const
-{
-    return QSize(80, 25);
-}
-//! [3]
-
-
 //! [4]
 void showAllHiddenTopLevelWidgets()
 {
@@ -73,82 +53,8 @@ void updateAllWidgets()
 //! [5]
 
 
-//! [6]
-int main(int argc, char *argv[])
-{
-    QApplication::setDesktopSettingsAware(false);
-    QApplication app(argc, argv);
-    ...
-    return app.exec();
-}
-//! [6]
-
-
 //! [7]
 if ((startPos - currentPos).manhattanLength() >=
         QApplication::startDragDistance())
     startTheDrag();
 //! [7]
-
-
-//! [8]
-void MyApplication::commitData(QSessionManager& manager)
-{
-    if (manager.allowsInteraction()) {
-        int ret = QMessageBox::warning(
-                    mainWindow,
-                    tr("My Application"),
-                    tr("Save changes to document?"),
-                    QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-
-        switch (ret) {
-        case QMessageBox::Save:
-            manager.release();
-            if (!saveDocument())
-                manager.cancel();
-            break;
-        case QMessageBox::Discard:
-            break;
-        case QMessageBox::Cancel:
-        default:
-            manager.cancel();
-        }
-    } else {
-        // we did not get permission to interact, then
-        // do something reasonable instead
-    }
-}
-//! [8]
-
-
-//! [9]
-appname -session id
-//! [9]
-
-
-//! [10]
-const QStringList commands = mySession.restartCommand();
-for (const QString &command : commands)
-    do_something(command);
-//! [10]
-
-
-//! [11]
-const QStringList commands = mySession.discardCommand();
-for (const QString &command : commands)
-    do_something(command);
-//! [11]
-
-
-//! [12]
-QWidget *widget = QApplication::widgetAt(x, y);
-if (widget)
-    widget = widget->window();
-//! [12]
-
-
-//! [13]
-QWidget *widget = QApplication::widgetAt(point);
-if (widget)
-    widget = widget->window();
-//! [13]

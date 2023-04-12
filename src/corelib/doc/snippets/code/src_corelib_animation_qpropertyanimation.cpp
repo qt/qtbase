@@ -6,7 +6,7 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QPropertyAnimation>
-//! [1]
+
 class MyButtonWidget : public QWidget
 {
 public:
@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
     buttonAnimWidget.show();
     return a.exec();
 }
-//! [1]
 //! [0]
 
 

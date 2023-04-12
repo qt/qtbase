@@ -84,9 +84,3 @@ out << "Qt rocks!" << Qt::endl;
 //! [9]
 stream << '\n' << Qt::flush;
 //! [9]
-
-
-//! [10]
-QTextStream out(&file);
-out.setEncoding(QStringConverter::Utf8);
-//! [10]

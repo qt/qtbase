@@ -1,23 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-//! [Working with lists]
-QStringList getTrackTitles(const QJniObject &album) {
-    QStringList stringList;
-    QJniObject list = album.callObjectMethod("getTitles",
-                                             "()Ljava/util/List;");
-
-    if (list.isValid()) {
-        const int size = list.callMethod<jint>("size");
-        for (int i = 0; i < size; ++i) {
-            QJniObject title = list.callObjectMethod("get", "(I)Ljava/lang/Object;", i);
-            stringList.append(title.toString());
-        }
-    }
-    return stringList;
-}
-//! [Working with lists]
-
 //! [QJniObject scope]
 void functionScope()
 {

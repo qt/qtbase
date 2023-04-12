@@ -32,17 +32,6 @@ Q_FLAG(Options)
 typedef QFlags<Enum> Flags;
 //! [2]
 
-
-//! [3]
-int myValue = 10;
-int minValue = 2;
-int maxValue = 6;
-
-int boundedValue = qBound(minValue, myValue, maxValue);
-// boundedValue == 6
-//! [3]
-
-
 //! [4]
 if (!driver()->isOpen() || driver()->isOpenError()) {
     qWarning("QSqlQuery::exec: database not open");
@@ -59,11 +48,6 @@ qint64 value = Q_INT64_C(932838457459459);
 //! [6]
 quint64 value = Q_UINT64_C(932838457459459);
 //! [6]
-
-
-//! [7]
-void myMsgHandler(QtMsgType, const char *);
-//! [7]
 
 
 //! [8]
@@ -579,11 +563,6 @@ qFuzzyCompare(0.0, 1.0e-200); // This will return false
 qFuzzyCompare(1 + 0.0, 1 + 1.0e-200); // This will return true
 //! [46]
 
-//! [47]
-CApaApplication *myApplicationFactory();
-//! [47]
-
-
 //! [49]
 void myMessageHandler(QtMsgType, const QMessageLogContext &, const QString &);
 //! [49]
@@ -666,19 +645,6 @@ bool readConfiguration(const QFile &file)
            break;
    }
 //! [qunreachable-switch]
-
-//! [qunreachable-return]
-   switch (shape) {
-       case Rectangle:
-           return rectangle();
-       case Triangle:
-           return triangle();
-       case Circle:
-           return circle();
-       case NumShapes:
-           Q_UNREACHABLE_RETURN(nullptr);
-   }
-//! [qunreachable-return]
 
 //! [qt-version-check]
 #include <QtGlobal>

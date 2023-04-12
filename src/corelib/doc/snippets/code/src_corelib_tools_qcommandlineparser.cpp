@@ -90,12 +90,4 @@ Arguments:
 //! [3]
 }
 
-{
-//! [4]
-QCommandLineParser parser;
-parser.setApplicationDescription(QCoreApplication::translate("main", "The best application in the world"));
-parser.addHelpOption();
-//! [4]
-}
-
 }

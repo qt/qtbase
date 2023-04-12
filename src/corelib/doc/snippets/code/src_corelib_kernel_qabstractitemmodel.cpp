@@ -50,16 +50,6 @@ beginMoveRows(parent, 2, 2, parent, 0);
 beginMoveRows(parent, 2, 2, parent, 4);
 //! [9]
 
-//! [10]
-myData.clear();
-reset();
-//! [10]
-
-//! [11]
-beginResetModel();
-myData.clear();
-endResetModel();
-//! [11]
 
 //! [12]
 class CustomDataProxy : public QSortFilterProxyModel

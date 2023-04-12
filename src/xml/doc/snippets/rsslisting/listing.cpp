@@ -110,10 +110,8 @@ void RSSListing::fetch()
         delete handler;
     handler = new Handler;
 
-//! [0]
     xmlReader.setContentHandler(handler);
     xmlReader.setErrorHandler(handler);
-//! [0]
 
     connect(handler, SIGNAL(newItem(QString&,QString&)),
              this, SLOT(addItem(QString&,QString&)));
@@ -136,7 +134,6 @@ void RSSListing::fetch()
     If parsing fails for any reason, we abort the fetch.
 */
 
-//! [1]
 void RSSListing::readData(const QHttpResponseHeader &resp)
 {
     bool ok;
@@ -157,7 +154,6 @@ void RSSListing::readData(const QHttpResponseHeader &resp)
             http.abort();
     }
 }
-//! [1]
 
 /*
     Finishes processing an HTTP request.
