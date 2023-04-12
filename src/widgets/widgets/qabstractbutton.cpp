@@ -613,12 +613,13 @@ void QAbstractButton::setChecked(bool checked)
     if (guard)
         d->emitToggled(checked);
 
-
 #if QT_CONFIG(accessibility)
-    QAccessible::State s;
-    s.checked = true;
-    QAccessibleStateChangeEvent event(this, s);
-    QAccessible::updateAccessibility(&event);
+    if (guard) {
+        QAccessible::State s;
+        s.checked = true;
+        QAccessibleStateChangeEvent event(this, s);
+        QAccessible::updateAccessibility(&event);
+    }
 #endif
 }
 
