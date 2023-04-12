@@ -15,12 +15,10 @@ if(QT_FEATURE_thread)
     add_subdirectory(qreadlocker)
     add_subdirectory(qreadwritelock)
     add_subdirectory(qsemaphore)
-    # special case begin
     # QTBUG-85364
     if(NOT CMAKE_CROSSCOMPILING)
         add_subdirectory(qthread)
     endif()
-    # special case end
     add_subdirectory(qthreadonce)
     add_subdirectory(qthreadpool)
     add_subdirectory(qthreadstorage)

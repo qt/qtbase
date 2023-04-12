@@ -11,7 +11,7 @@ qt_internal_add_executable(verbose1
     SOURCES
         ../counting/tst_counting.cpp
     DEFINES
-        TESTLIB_VERBOSITY_ARG=-v1 # special case remove quotes
+        TESTLIB_VERBOSITY_ARG=-v1
     LIBRARIES
         Qt::Test
 )

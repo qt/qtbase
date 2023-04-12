@@ -1306,10 +1306,11 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_ctf AND QT_FEATURE_library
         tracing
 )
 
+# These files are included by qmutex.cpp
 set_source_files_properties(
     thread/qmutex_mac.cpp
     thread/qmutex_unix.cpp
-    PROPERTIES HEADER_FILE_ONLY ON)  # special case: These files are included by qmutex.cpp!
+    PROPERTIES HEADER_FILE_ONLY ON)
 
 # Remove QT_NO_CAST_TO_ASCII to ensure that the symbols are included in the library.
 if(WIN32)

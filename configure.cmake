@@ -105,7 +105,6 @@ SSL_free(SSL_new(0));
 }
 ")
 
-# special case end
 qt_find_package(WrapZSTD 1.3 PROVIDED_TARGETS WrapZSTD::WrapZSTD MODULE_NAME global QMAKE_LIB zstd)
 qt_find_package(WrapDBus1 1.2 PROVIDED_TARGETS dbus-1 MODULE_NAME global QMAKE_LIB dbus)
 qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev MODULE_NAME global QMAKE_LIB libudev)
@@ -465,7 +464,6 @@ qt_feature("optimize_size"
     CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
 )
 qt_feature_config("optimize_size" QMAKE_PRIVATE_CONFIG)
-# special case begin
 qt_feature("optimize_full"
     LABEL "Fully optimize release builds (-O3)"
     AUTODETECT OFF
@@ -477,7 +475,6 @@ qt_feature("msvc_obj_debug_info"
     AUTODETECT OFF
 )
 qt_feature_config("msvc_obj_debug_info" QMAKE_PRIVATE_CONFIG)
-# special case end
 qt_feature("pkg-config" PUBLIC
     LABEL "Using pkg-config"
     AUTODETECT NOT APPLE AND NOT WIN32 AND NOT ANDROID
@@ -838,7 +835,9 @@ qt_feature_definition("mips_dspr2" "QT_COMPILER_SUPPORTS_MIPS_DSPR2" VALUE "1")
 qt_feature_config("mips_dspr2" QMAKE_PRIVATE_CONFIG)
 qt_feature("neon" PRIVATE
     LABEL "NEON"
-    CONDITION ( ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_neon ) OR QT_FORCE_FEATURE_neon  # special case
+    CONDITION ( ( ( TEST_architecture_arch STREQUAL arm ) OR
+        ( TEST_architecture_arch STREQUAL arm64 ) ) AND
+        TEST_arch_${TEST_architecture_arch}_subarch_neon ) OR QT_FORCE_FEATURE_neon
 )
 qt_feature_definition("neon" "QT_COMPILER_SUPPORTS_NEON" VALUE "1")
 qt_feature_config("neon" QMAKE_PRIVATE_CONFIG)
@@ -904,7 +903,6 @@ qt_feature("stdlib-libcpp" PRIVATE
     AUTODETECT OFF
     CONDITION LINUX AND NOT ANDROID
 )
-# special case begin
 # Check whether CMake was built with zstd support.
 # See https://gitlab.kitware.com/cmake/cmake/-/issues/21552
 if(NOT DEFINED CACHE{QT_CMAKE_ZSTD_SUPPORT})
@@ -921,7 +919,6 @@ if(NOT DEFINED CACHE{QT_CMAKE_ZSTD_SUPPORT})
         unset(qt_check_zstd_exit_code)
     endif()
 endif()
-# special case end
 qt_feature("thread" PUBLIC
     SECTION "Kernel"
     LABEL "Thread support"
@@ -1061,11 +1058,9 @@ qt_configure_add_summary_entry(
     ARGS "optimize_size"
     CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
 )
-# special case begin
 qt_configure_add_summary_entry(
     ARGS "optimize_full"
 )
-# special case end
 qt_configure_add_summary_entry(ARGS "shared")
 qt_configure_add_summary_entry(
     ARGS "ccache"
@@ -1161,13 +1156,6 @@ qt_configure_add_report_entry(
     MESSAGE "Using static linking will disable the use of dynamically loaded plugins. Make sure to import all needed static plugins, or compile needed modules into the library."
     CONDITION NOT QT_FEATURE_shared
 )
-# special case begin
-# qt_configure_add_report_entry(
-#     TYPE ERROR
-#     MESSAGE "Debug build without Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
-#     CONDITION IOS AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
-# )
-# special case end
 qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "-debug-and-release is only supported on Darwin and Windows platforms.  Qt can be built in release mode with separate debug information, so -debug-and-release is no longer necessary."
@@ -1223,7 +1211,6 @@ ${TEST_x86intrin_OUTPUT}
         )
     endif()
 endif()
-# special case begin
 qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "Setting a library infix is not supported for framework builds."
@@ -1242,7 +1229,6 @@ qt_configure_add_report_entry(
 if(WASM)
     qt_extra_definition("QT_EMCC_VERSION" "\"${EMCC_VERSION}\"" PUBLIC)
 endif()
-# special case end
 qt_extra_definition("QT_VERSION_STR" "\"${PROJECT_VERSION}\"" PUBLIC)
 qt_extra_definition("QT_VERSION_MAJOR" ${PROJECT_VERSION_MAJOR} PUBLIC)
 qt_extra_definition("QT_VERSION_MINOR" ${PROJECT_VERSION_MINOR} PUBLIC)

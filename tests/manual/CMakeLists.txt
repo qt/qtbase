@@ -15,7 +15,7 @@ add_subdirectory(gestures)
 add_subdirectory(highdpi)
 add_subdirectory(inputmethodhints)
 add_subdirectory(keypadnavigation)
-#add_subdirectory(lance) # special case qgl.h missing
+#add_subdirectory(lance) # qgl.h missing
 add_subdirectory(qcursor)
 add_subdirectory(qdesktopservices)
 add_subdirectory(qgraphicsitem)
@@ -29,11 +29,9 @@ add_subdirectory(qmimedatabase)
 add_subdirectory(qnetconmonitor)
 add_subdirectory(qnetworkaccessmanager/qget)
 add_subdirectory(qnetworkinformation)
-#special case begin
 if (QT_FEATURE_openssl AND UNIX)
     add_subdirectory(qnetworkreply)
 endif()
-#special case end
 if(QT_FEATURE_permissions)
     add_subdirectory(permissions)
 endif()
@@ -77,10 +75,10 @@ if(QT_FEATURE_openssl)
     add_subdirectory(qssloptions)
 endif()
 if(QT_FEATURE_opengl)
-    # add_subdirectory(qopengltextureblitter) special case broken in dev
+    # add_subdirectory(qopengltextureblitter) # TODO: broken in dev
 endif()
 if(QT_FEATURE_egl AND QT_FEATURE_opengl)
-    # add_subdirectory(qopenglcontext) # special case broken in dev
+    # add_subdirectory(qopenglcontext) # TODO: broken in dev
 endif()
 if(QT_FEATURE_vulkan)
     add_subdirectory(qvulkaninstance)

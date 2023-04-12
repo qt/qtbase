@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# special case skip regeneration
-
 # Need an explicit call at the top level. This is the absolute minimum version
 # needed to configure the project with any combination of enabled features.
 # The call to qt_build_repo_begin() will upgrade policies further.

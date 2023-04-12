@@ -20,7 +20,6 @@ qt_internal_add_tool(${target_name}
         outputrevision.h
         parser.cpp parser.h
         preprocessor.cpp preprocessor.h
-        # qdatetime_p.h special case remove
         symbols.h
         token.cpp token.h
         utils.h

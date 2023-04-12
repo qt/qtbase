@@ -14,10 +14,10 @@ if(QT_FEATURE_eglfs_egldevice)
     add_subdirectory(eglfs_kms_egldevice)
 endif()
 if(QT_FEATURE_eglfs_vsp2)
-    # add_subdirectory(eglfs_kms_vsp2) # special case TODO
+    # add_subdirectory(eglfs_kms_vsp2) # TODO: QTBUG-112769
 endif()
 if(QT_FEATURE_eglfs_brcm)
-    # add_subdirectory(eglfs_brcm) # special case TODO
+    # add_subdirectory(eglfs_brcm) # TODO: QTBUG-112769
 endif()
 if(QT_FEATURE_eglfs_mali)
     add_subdirectory(eglfs_mali)
@@ -26,7 +26,7 @@ if(QT_FEATURE_eglfs_viv)
     add_subdirectory(eglfs_viv)
 endif()
 if(QT_FEATURE_eglfs_rcar)
-    # add_subdirectory(eglfs_rcar) # special case TODO
+    # add_subdirectory(eglfs_rcar) # TODO: QTBUG-112769
 endif()
 if(QT_FEATURE_eglfs_viv_wl)
     add_subdirectory(eglfs_viv_wl)

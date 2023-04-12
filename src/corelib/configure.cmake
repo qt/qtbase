@@ -125,7 +125,6 @@ int pipes[2];
 }
 ")
 
-# special case begin
 # cxx11_future
 if (UNIX AND NOT ANDROID AND NOT QNX AND NOT INTEGRITY)
     set(cxx11_future_TEST_LIBRARIES pthread)
@@ -146,7 +145,6 @@ std::future<int> f = std::async([]() { return 42; });
     return 0;
 }
 ")
-# special case end
 
 # cxx11_random
 qt_config_compile_test(cxx11_random

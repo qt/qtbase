@@ -377,9 +377,11 @@ qt_internal_add_docs(Network
     doc/qtnetwork.qdocconf
 )
 
-qt_internal_extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf
+# See mkspecs/common/msvc-desktop.conf
+qt_internal_extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32)
 
-qt_internal_extend_target(Network CONDITION QNX PUBLIC_LIBRARIES socket) # special case: mkspecs/common/qcc-base-qnx.conf
+# See mkspecs/common/qcc-base-qnx.conf
+qt_internal_extend_target(Network CONDITION QNX PUBLIC_LIBRARIES socket)
 
 qt_internal_extend_target(Network CONDITION SOLARIS PUBLIC_LIBRARIES socket nsl)
 
