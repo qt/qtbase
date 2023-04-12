@@ -297,9 +297,9 @@ MakefileGenerator::findFilesInVPATH(ProStringList l, uchar flags, const QString 
                         debug_msg(1, "%s:%d Failure to find %s in vpath (%s)",
                                   __FILE__, __LINE__, val.toLatin1().constData(),
                                   vpath.join(QString("::")).toLatin1().constData());
-                        if(flags & VPATH_RemoveMissingFiles)
+                        if (flags & VPATH_RemoveMissingFiles)
                             remove_file = true;
-                        else if(flags & VPATH_WarnMissingFiles)
+                        if (flags & VPATH_WarnMissingFiles)
                             warn_msg(WarnLogic, "Failure to find: %s", val.toLatin1().constData());
                     } else {
                         l.removeAt(val_it);
@@ -315,9 +315,9 @@ MakefileGenerator::findFilesInVPATH(ProStringList l, uchar flags, const QString 
                     debug_msg(1, "%s:%d Cannot match %s%s, as %s does not exist.",
                               __FILE__, __LINE__, real_dir.toLatin1().constData(),
                               regex.toLatin1().constData(), real_dir.toLatin1().constData());
-                    if(flags & VPATH_RemoveMissingFiles)
+                    if (flags & VPATH_RemoveMissingFiles)
                         remove_file = true;
-                    else if(flags & VPATH_WarnMissingFiles)
+                    if (flags & VPATH_WarnMissingFiles)
                         warn_msg(WarnLogic, "Failure to find: %s", val.toLatin1().constData());
                 }
             }
@@ -338,9 +338,14 @@ MakefileGenerator::initCompiler(const MakefileGenerator::Compiler &comp)
     // find all the relevant file inputs
     if(!init_compiler_already.contains(comp.variable_in)) {
         init_compiler_already.insert(comp.variable_in, true);
-        if(!noIO())
-            l = findFilesInVPATH(l, (comp.flags & Compiler::CompilerRemoveNoExist) ?
-                                 VPATH_RemoveMissingFiles : VPATH_WarnMissingFiles, "VPATH_" + comp.variable_in);
+        if(!noIO()) {
+            uchar flags = 0;
+            if (comp.flags & Compiler::CompilerRemoveNoExist)
+                flags |= VPATH_RemoveMissingFiles;
+            if (comp.flags & Compiler::CompilerWarnNoExist)
+                flags |= VPATH_WarnMissingFiles;
+            l = findFilesInVPATH(l, flags, "VPATH_" + comp.variable_in);
+        }
     }
 }
 
@@ -612,6 +617,10 @@ MakefileGenerator::init()
                 compiler.flags = Compiler::CompilerNoFlags;
                 const ProStringList &config = v[ProKey(*it + ".CONFIG")];
                 if (config.indexOf("ignore_no_exist") != -1)
+                    compiler.flags |= Compiler::CompilerRemoveNoExist;
+                else
+                    compiler.flags |= Compiler::CompilerWarnNoExist;
+                if (config.indexOf("remove_no_exist") != -1)
                     compiler.flags |= Compiler::CompilerRemoveNoExist;
                 if (config.indexOf("no_dependencies") != -1)
                     compiler.flags |= Compiler::CompilerNoCheckDeps;

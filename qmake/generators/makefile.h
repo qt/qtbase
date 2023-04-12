@@ -145,7 +145,8 @@ protected:
             CompilerBuiltin                 = 0x01,
             CompilerNoCheckDeps             = 0x02,
             CompilerRemoveNoExist           = 0x04,
-            CompilerAddInputsAsMakefileDeps = 0x08
+            CompilerWarnNoExist             = 0x08,
+            CompilerAddInputsAsMakefileDeps = 0x10
         };
         uint flags, type;
     };

@@ -13,7 +13,7 @@ qtEnsurePluginResourcesCpp()
 rcc.input = RESOURCES
 rcc.name = RCC ${QMAKE_FILE_IN}
 rcc.depend_command = $$QMAKE_RCC_DEP -list $$QMAKE_RESOURCE_FLAGS ${QMAKE_FILE_IN}
-rcc.CONFIG += add_inputs_as_makefile_deps dep_lines
+rcc.CONFIG += add_inputs_as_makefile_deps dep_lines remove_no_exist
 
 !resources_big|ltcg|macx-xcode|wasm|contains(TEMPLATE, "vc.*") {
 
