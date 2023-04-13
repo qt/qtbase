@@ -18,6 +18,9 @@ else()
     set(absolute_project_path "${QT_STANDALONE_TEST_PATH}")
 endif()
 
+# If path does not include the drive letter, we try to add it.
+get_filename_component(absolute_project_path "." REALPATH BASE_DIR "${absolute_project_path}")
+
 if(NOT IS_DIRECTORY "${absolute_project_path}")
     get_filename_component(filename "${absolute_project_path}" NAME)
     get_filename_component(directory "${absolute_project_path}" DIRECTORY)

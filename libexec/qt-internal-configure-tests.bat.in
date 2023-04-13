@@ -3,6 +3,13 @@ setlocal ENABLEDELAYEDEXPANSION ENABLEEXTENSIONS
 set script_dir_path=%~dp0
 set script_dir_path=%script_dir_path:~0,-1%
 
+rem add the drive letter to the source_dir_path,
+rem by removing the path argument, expanding it, and adding it back
+set source_dir_path=%~dpnx1
+set args=%*
+set args=%args:* =%
+set args=%source_dir_path% %args%
+
 set cmake_scripts_dir=%script_dir_path%
 
 set relative_bin_dir=@relative_path_from_libexec_dir_to_bin_dir@
@@ -11,4 +18,4 @@ set relative_bin_dir="%relative_bin_dir%"\
 )
 
 call "%script_dir_path%"\%relative_bin_dir%"qt-cmake.bat" ^
-     @script_passed_args@ %*
+     @script_passed_args@ %args%
