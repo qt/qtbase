@@ -46,7 +46,7 @@ class QMimeProviderBase
 
 public:
     QMimeProviderBase(QMimeDatabasePrivate *db, const QString &directory);
-    virtual ~QMimeProviderBase() {}
+    virtual ~QMimeProviderBase() = default;
 
     virtual bool isValid() = 0;
     virtual bool isInternalDatabase() const = 0;
