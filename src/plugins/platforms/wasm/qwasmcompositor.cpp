@@ -17,13 +17,6 @@
 
 #include <emscripten/bind.h>
 
-namespace {
-QWasmWindow *asWasmWindow(QWindow *window)
-{
-    return static_cast<QWasmWindow*>(window->handle());
-}
-}  // namespace
-
 using namespace emscripten;
 
 Q_GUI_EXPORT int qt_defaultDpiX();
@@ -207,7 +200,7 @@ void QWasmCompositor::handleBackingStoreFlush(QWindow *window)
     // Request update to flush the updated backing store content, unless we are currently
     // processing an update, in which case the new content will flushed as a part of that update.
     if (!m_inDeliverUpdateRequest)
-        requestUpdateWindow(asWasmWindow(window));
+        requestUpdateWindow(static_cast<QWasmWindow *>(window->handle()));
 }
 
 int dpiScaled(qreal value)

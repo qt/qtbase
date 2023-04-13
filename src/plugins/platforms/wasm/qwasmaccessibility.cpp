@@ -21,13 +21,6 @@ Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 // events. In addition or alternatively, we could also walk the accessibility tree
 // from setRootObject().
 
-namespace {
-QWasmWindow *asWasmWindow(QWindow *window)
-{
-    return static_cast<QWasmWindow*>(window->handle());
-}
-}  // namespace
-
 QWasmAccessibility::QWasmAccessibility()
 {
 
@@ -108,7 +101,8 @@ void QWasmAccessibility::enableAccessibility()
 
 emscripten::val QWasmAccessibility::getContainer(QWindow *window)
 {
-    return window ? asWasmWindow(window)->a11yContainer() : emscripten::val::undefined();
+    return window ? static_cast<QWasmWindow *>(window->handle())->a11yContainer()
+                  : emscripten::val::undefined();
 }
 
 emscripten::val QWasmAccessibility::getContainer(QAccessibleInterface *iface)
