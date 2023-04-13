@@ -5,7 +5,7 @@ qt_internal_add_manual_test(tex1d
     GUI
     SOURCES
         tex1d.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

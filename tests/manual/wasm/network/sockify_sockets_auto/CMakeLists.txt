@@ -2,7 +2,7 @@ qt_internal_add_manual_test(sockify_sockets_auto
     SOURCES
         main.cpp
         ../../qtwasmtestlib/qtwasmtestlib.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::Network
 )

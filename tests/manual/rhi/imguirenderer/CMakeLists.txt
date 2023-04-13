@@ -2,7 +2,7 @@ qt_internal_add_manual_test(imguirenderer
     GUI
     SOURCES
         imguirenderer.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

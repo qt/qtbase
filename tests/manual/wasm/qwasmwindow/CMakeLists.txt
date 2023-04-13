@@ -1,7 +1,7 @@
 qt_internal_add_manual_test(qwasmwindow_harness
     SOURCES
         qwasmwindow_harness.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::GuiPrivate
