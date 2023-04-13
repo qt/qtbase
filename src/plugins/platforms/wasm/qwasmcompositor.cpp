@@ -9,10 +9,6 @@
 #include <emscripten/html5.h>
 
 namespace {
-QWasmWindow *asWasmWindow(QWindow *window)
-{
-    return static_cast<QWasmWindow*>(window->handle());
-}
 
 QWasmWindowStack::PositionPreference positionPreferenceFromWindowFlags(Qt::WindowFlags flags)
 {
@@ -191,7 +187,7 @@ void QWasmCompositor::handleBackingStoreFlush(QWindow *window)
     // Request update to flush the updated backing store content, unless we are currently
     // processing an update, in which case the new content will flushed as a part of that update.
     if (!m_inDeliverUpdateRequest)
-        requestUpdateWindow(asWasmWindow(window));
+        requestUpdateWindow(static_cast<QWasmWindow *>(window->handle()));
 }
 
 void QWasmCompositor::frame(const QList<QWasmWindow *> &windows)
