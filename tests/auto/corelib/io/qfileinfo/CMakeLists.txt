@@ -48,5 +48,5 @@ qt_internal_extend_target(tst_qfileinfo CONDITION WIN32
 )
 
 if (APPLE)
-    target_compile_options(tst_qfileinfo PRIVATE -x objective-c++)
+    set_source_files_properties(tst_qfileinfo.cpp PROPERTIES LANGUAGE OBJCXX)
 endif()
