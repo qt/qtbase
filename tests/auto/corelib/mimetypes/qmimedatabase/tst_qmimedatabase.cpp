@@ -129,7 +129,9 @@ void tst_QMimeDatabase::initTestCase()
     const QString globalPackageDir = m_globalXdgDir + QStringLiteral("/mime/packages");
     QVERIFY(here.mkpath(globalPackageDir));
 
-    qputenv("XDG_DATA_DIRS", QFile::encodeName(m_globalXdgDir));
+    QString overrideDir = QFINDTESTDATA("mimetypes-override/");
+    QByteArray env = QFile::encodeName(overrideDir) + ':' + QFile::encodeName(m_globalXdgDir);
+    qputenv("XDG_DATA_DIRS", env);
     qDebug() << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
 
     const QString freeDesktopXml = QStringLiteral("freedesktop.org.xml");
@@ -299,6 +301,15 @@ void tst_QMimeDatabase::mimeTypesForFileName_data()
     QTest::newRow("non_ascii") << QString::fromUtf8("AİİA.pdf") << (QStringList() << "application/pdf");
 }
 
+static QStringList mimeTypeNames(const QList<QMimeType> &mimes)
+{
+    QStringList mimeNames;
+    mimeNames.reserve(mimes.size());
+    for (const auto &mime : mimes)
+        mimeNames.append(mime.name());
+    return mimeNames;
+}
+
 void tst_QMimeDatabase::mimeTypesForFileName()
 {
     QFETCH(QString, fileName);
@@ -309,6 +320,24 @@ void tst_QMimeDatabase::mimeTypesForFileName()
     foreach (const QMimeType &mime, mimes)
         mimeNames.append(mime.name());
     QCOMPARE(mimeNames, expectedMimeTypes);
+}
+
+void tst_QMimeDatabase::mimeTypesForFileName_glob_deleteall()
+{
+#if !defined(USE_XDG_DATA_DIRS)
+    QSKIP("This test requires XDG_DATA_DIRS");
+#endif
+
+    QMimeDatabase mdb;
+    QList<QMimeType> mimes = mdb.mimeTypesForFileName(u"foo.webm"_s);
+
+    // "*.webm" glob pattern is deleted with "glob-deleteall"
+    QVERIFY2(mimes.isEmpty(), qPrintable(mimeTypeNames(mimes).join(u',')));
+    mimes = mdb.mimeTypesForFileName(u"foo.videowebm"_s);
+    QCOMPARE(mimes.size(), 1);
+    QCOMPARE(mimes.at(0).globPatterns(), QStringList{"*.videowebm"});
+    // Custom "*.videowebm" pattern is used instead
+    QCOMPARE(mimes.at(0).name(), u"video/webm");
 }
 
 void tst_QMimeDatabase::inheritance()

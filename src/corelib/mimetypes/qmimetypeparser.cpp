@@ -215,6 +215,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 break;
             case ParseGlobDeleteAll:
                 data.globPatterns.clear();
+                data.hasGlobDeleteAll = true;
                 break;
             case ParseSubClass: {
                 const QString inheritsFrom = atts.value(QLatin1StringView(mimeTypeAttributeC)).toString();
