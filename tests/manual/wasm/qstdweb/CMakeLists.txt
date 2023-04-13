@@ -25,7 +25,7 @@ qt_internal_add_manual_test(files_auto
     SOURCES
         files_main.cpp
         ../qtwasmtestlib/qtwasmtestlib.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::GuiPrivate
@@ -49,7 +49,7 @@ qt_internal_add_manual_test(qwasmcompositor_auto
     SOURCES
         qwasmcompositor_main.cpp
         ../qtwasmtestlib/qtwasmtestlib.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::GuiPrivate

@@ -11,7 +11,7 @@ qt_internal_add_manual_test(kitchensink
         HAVE_SCREEN_BASE_DPI
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets
