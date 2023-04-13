@@ -129,6 +129,7 @@ int main(int argc, char **argv)
     if (graphicsApi == Vulkan) {
         QLoggingCategory::setFilterRules(QStringLiteral("qt.vulkan=true"));
         inst.setLayers({ "VK_LAYER_KHRONOS_validation" });
+        inst.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
         if (inst.create()) {
             QRhiVulkanInitParams params;
             params.inst = &inst;
