@@ -1,6 +1,9 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#ifndef QWASMOPENGLCONTEXT_H
+#define QWASMOPENGLCONTEXT_H
+
 #include <qpa/qplatformopenglcontext.h>
 
 #include <emscripten.h>
@@ -39,3 +42,4 @@ private:
 
 QT_END_NAMESPACE
 
+#endif // QWASMOPENGLCONTEXT_H
