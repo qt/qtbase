@@ -13,5 +13,5 @@ qt_internal_add_test(tst_qdebug
 )
 
 if (APPLE)
-    target_compile_options(tst_qdebug PRIVATE -x objective-c++)
+    set_source_files_properties(tst_qdebug.cpp PROPERTIES LANGUAGE OBJCXX)
 endif()
