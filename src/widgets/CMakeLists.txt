@@ -680,7 +680,7 @@ if(QT_FEATURE_wizard)
     if(APPLE)
         set_source_files_properties(dialogs/qwizard.cpp
             PROPERTIES
-                COMPILE_FLAGS "-x objective-c++"
+                LANGUAGE OBJCXX
                 SKIP_PRECOMPILE_HEADERS ON
         )
     endif()
