@@ -4805,19 +4805,22 @@ void tst_QSqlQuery::ibaseDateTimeWithTZ_data()
     QTest::addColumn<QList<QDateTime> >("initialDateTimes");
     QTest::addColumn<QList<QDateTime> >("expectedDateTimes");
 
+#if QT_CONFIG(timezone)
     const QTimeZone afterUTCTimeZone("Asia/Hong_Kong");
     const QTimeZone beforeUTCTimeZone("America/Los_Angeles");
-    const QTimeZone utcTimeZone("UTC");
-
     const QDateTime dtWithAfterTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), afterUTCTimeZone);
     const QDateTime dtWithBeforeTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), beforeUTCTimeZone);
+    const QTimeZone utcTimeZone("UTC");
     const QDateTime dtWithUTCTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), utcTimeZone);
+#endif // QT_CONFIG(timezone)
     const QDateTime dtLocalTZ(QDateTime::currentDateTime());
 
     const QList<QDateTime> dateTimes = {
+#if QT_CONFIG(timezone)
         dtWithAfterTZ,
         dtWithBeforeTZ,
         dtWithUTCTZ,
+#endif // QT_CONFIG(timezone)
         dtLocalTZ
     };
 
@@ -5018,7 +5021,7 @@ void tst_QSqlQuery::ibaseTimeStampTzArray()
                               "create table %1 (timeStampData timestamp with time zone[0:4])").arg(ts.tableName())));
     QVERIFY_SQL(qry, prepare(QLatin1String("insert into %1 (timeStampData)"
                                            " values(?)").arg(ts.tableName())));
-
+#if QT_CONFIG(timezone)
     const QDateTime dtWithAfterTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), QTimeZone("Asia/Hong_Kong"));
     const QDateTime dtWithBeforeTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), QTimeZone("America/Los_Angeles"));
     const QDateTime dtWithUTCTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), QTimeZone("UTC"));
@@ -5036,6 +5039,7 @@ void tst_QSqlQuery::ibaseTimeStampTzArray()
     QVERIFY_SQL(qry, exec("select * from " + ts.tableName()));
     QVERIFY(qry.next());
     QCOMPARE(qry.value(0).toList(), timeStampData.toList());
+#endif // QT_CONFIG(timezone)
 }
 
 void tst_QSqlQuery::ibase_executeBlock()
