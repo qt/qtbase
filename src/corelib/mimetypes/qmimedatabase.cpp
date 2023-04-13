@@ -142,6 +142,19 @@ void QMimeDatabasePrivate::loadProviders()
             m_providers.push_back(std::move(*it));
         }
     }
+
+    // Handle mimetypes with glob-deleteall tags (from XML providers)
+    auto it = m_providers.begin();
+    const auto end = m_providers.end();
+    for (;it != end; ++it) {
+        const QStringList &list = (*it)->m_mimeTypesWithDeletedGlobs;
+        if (list.isEmpty())
+            continue;
+        // Each Provider affects Providers with lower precedence
+        auto nextIt = it + 1;
+        for (; nextIt != end; ++nextIt)
+            (*nextIt)->excludeMimeTypeGlobs(list);
+    }
 }
 
 const QMimeDatabasePrivate::Providers &QMimeDatabasePrivate::providers()
