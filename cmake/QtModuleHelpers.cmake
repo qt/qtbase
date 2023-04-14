@@ -1076,7 +1076,7 @@ function(qt_describe_module target)
 
     get_target_property(target_type ${target} TYPE)
     if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
-        get_target_property(plugin_types ${target} MODULE_PLUGIN_TYPES)
+        get_target_property(plugin_types ${target} QMAKE_MODULE_PLUGIN_TYPES)
         if(plugin_types)
             qt_internal_list_to_json_array(plugin_types plugin_types)
             string(APPEND extra_module_information "\n    \"plugin_types\": ${plugin_types},")
