@@ -501,23 +501,22 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             h = qRound(devicePixelRatio * h);
             p->translate(0.5, 0.5);
         }
-        // center and make sure horizontal and vertical line has equal length
-        if (w < h) {
-            y += (h - w) / 2;
-            h = w;
-        } else {
-            x += (w - h) / 2;
-            w = h;
+        int len = std::min(w, h);
+        if (len & 1)
+            ++len;
+        int step = (len + 4) / 5;
+        if (step & 1)
+            ++step;
+        const int step2 = step / 2;
+        QPoint center(x + w / 2, y + h / 2);
+        if (opt->state & State_Sunken) {
+            center += QPoint(proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt),
+                             proxy()->pixelMetric(PM_ButtonShiftVertical, opt));
         }
-
-        int offset = (opt->state & State_Sunken) ? 1 : 0;
-        int step = (w + 4) / 5;
-        p->fillRect(x + offset, y + offset + h / 2 - step / 2, w, step,
-                    opt->palette.buttonText());
-        if (pe == PE_IndicatorSpinPlus) {
-            p->fillRect(x + w / 2 - step / 2 + offset, y + offset, step, h,
-                        opt->palette.buttonText());
-        }
+        p->translate(center);
+        p->fillRect(-len / 2, -step2, len, step, opt->palette.buttonText());
+        if (pe == PE_IndicatorSpinPlus)
+            p->fillRect(-step2, -len / 2, step, len, opt->palette.buttonText());
         p->restore();
         break; }
     case PE_IndicatorSpinUp:
