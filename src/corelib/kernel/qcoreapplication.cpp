@@ -2281,7 +2281,8 @@ static void replacePercentN(QString *result, int n)
     This function is not virtual. You can use alternative translation
     techniques by subclassing \l QTranslator.
 
-    \sa QObject::tr(), installTranslator(), removeTranslator(), translate()
+    \sa QObject::tr(), installTranslator(), removeTranslator(),
+        {Internationalization and Translations}
 */
 QString QCoreApplication::translate(const char *context, const char *sourceText,
                                     const char *disambiguation, int n)
