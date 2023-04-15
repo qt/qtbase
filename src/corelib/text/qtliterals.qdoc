@@ -11,6 +11,7 @@
 /*!
     \namespace Qt::Literals
     \inmodule QtCore
+    \headerfile QtLiterals
 
     \brief The Literals inline namespace declares literal operators for Qt types.
 */
@@ -18,6 +19,7 @@
 /*!
     \namespace Qt::Literals::StringLiterals
     \inmodule QtCore
+    \headerfile QStringLiterals
 
     \brief The StringLiterals namespace declares string literal operators
     for Qt types.
