@@ -203,7 +203,9 @@ QNetworkInformation::TransportMedium getTransportMedium(const ConnectionProfile 
     NetworkAdapter adapter(nullptr);
     try {
         adapter = profile.NetworkAdapter();
-    } catch (...) {
+    } catch (const winrt::hresult_error &ex) {
+        qCWarning(lcNetInfoNLM) << "Failed to obtain network adapter:"
+                                << QSystemError::windowsComString(ex.code());
         // pass, we will return Unknown anyway
     }
     if (adapter == nullptr)
@@ -231,7 +233,9 @@ QNetworkInformation::TransportMedium getTransportMedium(const ConnectionProfile 
     ConnectionCost cost(nullptr);
     try {
         cost = profile.GetConnectionCost();
-    } catch (...) {
+    } catch (const winrt::hresult_error &ex) {
+        qCWarning(lcNetInfoNLM) << "Failed to obtain connection cost:"
+                                << QSystemError::windowsComString(ex.code());
         // pass, we return false if we get an empty object back anyway
     }
     if (cost == nullptr)
@@ -247,7 +251,9 @@ void QNetworkListManagerEvents::emitWinRTUpdates()
     ConnectionProfile profile = nullptr;
     try {
         profile = NetworkInformation::GetInternetConnectionProfile();
-    } catch (...) {
+    } catch (const winrt::hresult_error &ex) {
+        qCWarning(lcNetInfoNLM) << "Failed to obtain connection profile:"
+                                << QSystemError::windowsComString(ex.code());
         // pass, we would just return early if we get an empty object back anyway
     }
     if (profile == nullptr)
