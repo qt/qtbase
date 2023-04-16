@@ -728,13 +728,10 @@ inline QStringList determineDependentLibs(const ImageNtHeader *nth, const void *
 
 template <class ImageNtHeader>
 inline bool determineDebug(const ImageNtHeader *nth, const void *fileMemory,
-                                           bool isMinGW,
-                                           QStringList *dependentLibrariesIn,
-                                           QString *errorMessage)
+                           QStringList *dependentLibrariesIn, QString *errorMessage)
 {
-    // Use logic that's used e.g. in objdump / pfd library
-    if (isMinGW)
-        return !(nth->FileHeader.Characteristics & IMAGE_FILE_DEBUG_STRIPPED);
+    if (nth->FileHeader.Characteristics & IMAGE_FILE_DEBUG_STRIPPED)
+        return false;
 
     const QStringList dependentLibraries = dependentLibrariesIn != nullptr ?
                 *dependentLibrariesIn :
@@ -752,7 +749,6 @@ inline bool determineDebug(const ImageNtHeader *nth, const void *fileMemory,
 
 template <class ImageNtHeader>
 inline void determineDebugAndDependentLibs(const ImageNtHeader *nth, const void *fileMemory,
-                                           bool isMinGW,
                                            QStringList *dependentLibrariesIn,
                                            bool *isDebugIn, QString *errorMessage)
 {
@@ -760,7 +756,7 @@ inline void determineDebugAndDependentLibs(const ImageNtHeader *nth, const void 
         *dependentLibrariesIn = determineDependentLibs(nth, fileMemory, errorMessage);
 
     if (isDebugIn)
-        *isDebugIn = determineDebug(nth, fileMemory, isMinGW, dependentLibrariesIn, errorMessage);
+        *isDebugIn = determineDebug(nth, fileMemory, dependentLibrariesIn, errorMessage);
 }
 
 // Read a PE executable and determine dependent libraries, word size
@@ -814,10 +810,10 @@ bool readPeExecutable(const QString &peExecutableFileName, QString *errorMessage
             *wordSizeIn = wordSize;
         if (wordSize == 32) {
             determineDebugAndDependentLibs(reinterpret_cast<const IMAGE_NT_HEADERS32 *>(ntHeaders),
-                                           fileMemory, isMinGW, dependentLibrariesIn, isDebugIn, errorMessage);
+                                           fileMemory, dependentLibrariesIn, isDebugIn, errorMessage);
         } else {
             determineDebugAndDependentLibs(reinterpret_cast<const IMAGE_NT_HEADERS64 *>(ntHeaders),
-                                           fileMemory, isMinGW, dependentLibrariesIn, isDebugIn, errorMessage);
+                                           fileMemory, dependentLibrariesIn, isDebugIn, errorMessage);
         }
 
         if (machineArchIn)
