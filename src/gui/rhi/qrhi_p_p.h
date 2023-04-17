@@ -147,20 +147,19 @@ public:
     void textureFormatInfo(QRhiTexture::Format format, const QSize &size,
                            quint32 *bpl, quint32 *byteSize, quint32 *bytesPerPixel) const;
 
-    // only really care about resources that own native graphics resources underneath
-    void registerResource(QRhiResource *res)
+    void registerResource(QRhiResource *res, bool ownsNativeResources = true)
     {
-        resources.insert(res);
+        // The ownsNativeResources is relevant for the (graphics resource) leak
+        // check in ~QRhiImplementation; when false, the registration's sole
+        // purpose is to automatically null out the resource's m_rhi pointer in
+        // case the rhi goes away first. (which should not happen in
+        // well-written applications but we try to be graceful)
+        resources.insert(res, ownsNativeResources);
     }
 
     void unregisterResource(QRhiResource *res)
     {
         resources.remove(res);
-    }
-
-    QSet<QRhiResource *> activeResources() const
-    {
-        return resources;
     }
 
     void addDeleteLater(QRhiResource *res)
@@ -234,7 +233,7 @@ private:
     QVarLengthArray<QRhiResourceUpdateBatch *, 4> resUpdPool;
     quint64 resUpdPoolMap = 0;
     int lastResUpdIdx = -1;
-    QSet<QRhiResource *> resources;
+    QHash<QRhiResource *, bool> resources;
     QSet<QRhiResource *> pendingDeleteResources;
     QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
     QVarLengthArray<QRhi::GpuFrameTimeCallback, 4> gpuFrameTimeCallbacks;

@@ -716,10 +716,15 @@ QNullSampler::~QNullSampler()
 
 void QNullSampler::destroy()
 {
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QNullSampler::create()
 {
+    QRHI_RES_RHI(QRhiNull);
+    rhiD->registerResource(this);
     return true;
 }
 
@@ -735,6 +740,9 @@ QNullRenderPassDescriptor::~QNullRenderPassDescriptor()
 
 void QNullRenderPassDescriptor::destroy()
 {
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QNullRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
@@ -745,7 +753,10 @@ bool QNullRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *oth
 
 QRhiRenderPassDescriptor *QNullRenderPassDescriptor::newCompatibleRenderPassDescriptor() const
 {
-    return new QNullRenderPassDescriptor(m_rhi);
+    QNullRenderPassDescriptor *rpD = new QNullRenderPassDescriptor(m_rhi);
+    QRHI_RES_RHI(QRhiNull);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 QVector<quint32> QNullRenderPassDescriptor::serializedFormat() const
@@ -798,11 +809,17 @@ QNullTextureRenderTarget::~QNullTextureRenderTarget()
 
 void QNullTextureRenderTarget::destroy()
 {
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 QRhiRenderPassDescriptor *QNullTextureRenderTarget::newCompatibleRenderPassDescriptor()
 {
-    return new QNullRenderPassDescriptor(m_rhi);
+    QNullRenderPassDescriptor *rpD = new QNullRenderPassDescriptor(m_rhi);
+    QRHI_RES_RHI(QRhiNull);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 bool QNullTextureRenderTarget::create()
@@ -820,6 +837,7 @@ bool QNullTextureRenderTarget::create()
         d.pixelSize = m_desc.depthTexture()->pixelSize();
     }
     QRhiRenderTargetAttachmentTracker::updateResIdList<QNullTexture, QNullRenderBuffer>(m_desc, &d.currentResIdList);
+    rhiD->registerResource(this);
     return true;
 }
 
@@ -853,6 +871,9 @@ QNullShaderResourceBindings::~QNullShaderResourceBindings()
 
 void QNullShaderResourceBindings::destroy()
 {
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QNullShaderResourceBindings::create()
@@ -863,6 +884,7 @@ bool QNullShaderResourceBindings::create()
 
     rhiD->updateLayoutDesc(this);
 
+    rhiD->registerResource(this, false);
     return true;
 }
 
@@ -883,6 +905,9 @@ QNullGraphicsPipeline::~QNullGraphicsPipeline()
 
 void QNullGraphicsPipeline::destroy()
 {
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QNullGraphicsPipeline::create()
@@ -891,6 +916,7 @@ bool QNullGraphicsPipeline::create()
     if (!rhiD->sanityCheckGraphicsPipeline(this))
         return false;
 
+    rhiD->registerResource(this);
     return true;
 }
 
@@ -906,10 +932,15 @@ QNullComputePipeline::~QNullComputePipeline()
 
 void QNullComputePipeline::destroy()
 {
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QNullComputePipeline::create()
 {
+    QRHI_RES_RHI(QRhiNull);
+    rhiD->registerResource(this);
     return true;
 }
 
@@ -969,7 +1000,10 @@ bool QNullSwapChain::isFormatSupported(Format f)
 
 QRhiRenderPassDescriptor *QNullSwapChain::newCompatibleRenderPassDescriptor()
 {
-    return new QNullRenderPassDescriptor(m_rhi);
+    QNullRenderPassDescriptor *rpD = new QNullRenderPassDescriptor(m_rhi);
+    QRHI_RES_RHI(QRhiNull);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 bool QNullSwapChain::createOrResize()
