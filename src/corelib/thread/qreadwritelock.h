@@ -22,12 +22,16 @@ public:
     ~QReadWriteLock();
 
     void lockForRead();
+#if QT_CORE_REMOVED_SINCE(6, 6)
     bool tryLockForRead();
-    bool tryLockForRead(int timeout);
+#endif
+    bool tryLockForRead(int timeout = 0);
 
     void lockForWrite();
+#if QT_CORE_REMOVED_SINCE(6, 6)
     bool tryLockForWrite();
-    bool tryLockForWrite(int timeout);
+#endif
+    bool tryLockForWrite(int timeout = 0);
 
     void unlock();
 

@@ -525,6 +525,17 @@ qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)
 }
 
 #if QT_CONFIG(thread)
+#include "qreadwritelock.h"
+
+bool QReadWriteLock::tryLockForRead()
+{
+    return tryLockForRead(0);
+}
+
+bool QReadWriteLock::tryLockForWrite()
+{
+    return tryLockForWrite(0);
+}
 
 #include "qthreadpool.h"
 #include "private/qthreadpool_p.h"

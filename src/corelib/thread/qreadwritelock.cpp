@@ -146,27 +146,6 @@ void QReadWriteLock::lockForRead()
 }
 
 /*!
-    Attempts to lock for reading. If the lock was obtained, this
-    function returns \c true, otherwise it returns \c false instead of
-    waiting for the lock to become available, i.e. it does not block.
-
-    The lock attempt will fail if another thread has locked for
-    writing.
-
-    If the lock was obtained, the lock must be unlocked with unlock()
-    before another thread can successfully lock it for writing.
-
-    It is not possible to lock for read if the thread already has
-    locked for write.
-
-    \sa unlock(), lockForRead()
-*/
-bool QReadWriteLock::tryLockForRead()
-{
-    return tryLockForRead(0);
-}
-
-/*! \overload
 
     Attempts to lock for reading. This function returns \c true if the
     lock was obtained; otherwise it returns \c false. If another thread
@@ -266,27 +245,6 @@ void QReadWriteLock::lockForWrite()
 }
 
 /*!
-    Attempts to lock for writing. If the lock was obtained, this
-    function returns \c true; otherwise, it returns \c false immediately.
-
-    The lock attempt will fail if another thread has locked for
-    reading or writing.
-
-    If the lock was obtained, the lock must be unlocked with unlock()
-    before another thread can successfully lock it.
-
-    It is not possible to lock for write if the thread already has
-    locked for read.
-
-    \sa unlock(), lockForWrite()
-*/
-bool QReadWriteLock::tryLockForWrite()
-{
-    return tryLockForWrite(0);
-}
-
-/*! \overload
-
     Attempts to lock for writing. This function returns \c true if the
     lock was obtained; otherwise it returns \c false. If another thread
     has locked for reading or writing, this function will wait for at
