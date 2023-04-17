@@ -353,8 +353,7 @@ static QList<EnumNameValue> enumsToValues(const QStringList &values)
                 }
             }
         } else {
-            r.name = value;
-            r.value = cur++;
+            r.value = ++cur;
             ret << r;
         }
     }
@@ -384,7 +383,7 @@ void Parser::parseMetadata(const QString &data, qsizetype offset, const QStringL
     qsizetype prev = 0;
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
-        const QString values = match.captured(2).trimmed();
+        QString values = match.captured(2).trimmed();
         int cur = match.capturedStart();
         if (cur > prev)
             m_metadata.append(preprocessed.mid(prev, cur - prev));
@@ -392,7 +391,7 @@ void Parser::parseMetadata(const QString &data, qsizetype offset, const QStringL
         prev = match.capturedEnd() + 1;
         DEBUGPRINTF2(printf("values: %s\n", qPrintable(values)));
         if (values.isEmpty() || values.startsWith(QStringLiteral("AUTO"))) {
-
+            values.replace(QLatin1Char('\n'), QLatin1Char(' '));
             QStringList ranges;
             if (values.contains(QStringLiteral("RANGE"))) {
                 QRegularExpression rangeMacro(QStringLiteral("RANGE +([A-Za-z0-9_]*) +... +([A-Za-z0-9_]*)"));
@@ -421,16 +420,23 @@ void Parser::parseMetadata(const QString &data, qsizetype offset, const QStringL
                 auto moreValues = enumsToValues(values);
                 if (ranges.size()) {
                     for (int i = 0; i < ranges.size() / 2; i++) {
+                        bool rangeFound = false;
                         for (auto &v : moreValues) {
                             if (v.name == ranges[2 * i]) {
+                                rangeFound = true;
                                 QString rangeEnd = ranges[2 * i + 1];
                                 auto iter = std::find_if(moreValues.begin(), moreValues.end(), [&rangeEnd](const EnumNameValue &elem){
                                     return elem.name == rangeEnd;
                                 });
                                 if (iter != moreValues.end())
                                     v.valueStr = QStringLiteral("RANGE(%1, %2 ... %3)").arg(v.name).arg(v.value).arg(iter->value);
+                                else
+                                    panic("Unable to find range end: %s\n", qPrintable(rangeEnd));
+                                break;
                             }
                         }
+                        if (rangeFound == false)
+                            panic("Unable to find range begin: %s\n", qPrintable(ranges[2 * i]));
                     }
                 }
                 std::sort(moreValues.begin(), moreValues.end(), [](const EnumNameValue &a, const EnumNameValue &b) {
