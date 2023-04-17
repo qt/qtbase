@@ -380,8 +380,10 @@ void QPSQLResultPrivate::deallocatePreparedStmt()
         const QString stmt = QStringLiteral("DEALLOCATE ") + preparedStmtId;
         PGresult *result = drv_d_func()->exec(stmt);
 
-        if (PQresultStatus(result) != PGRES_COMMAND_OK)
-            qWarning("Unable to free statement: %s", PQerrorMessage(drv_d_func()->connection));
+        if (PQresultStatus(result) != PGRES_COMMAND_OK) {
+            const QString msg = QString::fromUtf8(PQerrorMessage(drv_d_func()->connection));
+            qWarning("Unable to free statement: %ls", qUtf16Printable(msg));
+        }
         PQclear(result);
     }
     preparedStmtId.clear();
@@ -913,7 +915,7 @@ void QPSQLDriverPrivate::setDatestyle()
     PGresult *result = exec("SET DATESTYLE TO 'ISO'");
     int status =  PQresultStatus(result);
     if (status != PGRES_COMMAND_OK)
-        qWarning("%s", PQerrorMessage(connection));
+        qWarning() << QString::fromUtf8(PQerrorMessage(connection));
     PQclear(result);
 }
 
@@ -926,7 +928,7 @@ void QPSQLDriverPrivate::setByteaOutput()
         PGresult *result = exec("SET bytea_output TO escape");
         int status = PQresultStatus(result);
         if (status != PGRES_COMMAND_OK)
-            qWarning("%s", PQerrorMessage(connection));
+            qWarning() << QString::fromUtf8(PQerrorMessage(connection));
         PQclear(result);
     }
 }
@@ -1583,8 +1585,8 @@ bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
     }
 
     if (!d->seid.contains(name)) {
-        qWarning("QPSQLDriver::unsubscribeFromNotificationImplementation: not subscribed to '%s'.",
-            qPrintable(name));
+        qWarning("QPSQLDriver::unsubscribeFromNotificationImplementation: not subscribed to '%ls'.",
+            qUtf16Printable(name));
         return false;
     }
 
@@ -1633,8 +1635,8 @@ void QPSQLDriver::_q_handleNotification()
             emit notification(name, source, payload);
         }
         else
-            qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
-                    qPrintable(name));
+            qWarning("QPSQLDriver: received notification for '%ls' which isn't subscribed to.",
+                    qUtf16Printable(name));
 
         qPQfreemem(notify);
     }

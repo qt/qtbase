@@ -984,7 +984,7 @@ bool QSQLiteDriver::subscribeToNotification(const QString &name)
     }
 
     if (d->notificationid.contains(name)) {
-        qWarning("Already subscribing to '%s'.", qPrintable(name));
+        qWarning("Already subscribing to '%ls'.", qUtf16Printable(name));
         return false;
     }
 
@@ -1005,7 +1005,7 @@ bool QSQLiteDriver::unsubscribeFromNotification(const QString &name)
     }
 
     if (!d->notificationid.contains(name)) {
-        qWarning("Not subscribed to '%s'.", qPrintable(name));
+        qWarning("Not subscribed to '%ls'.", qUtf16Printable(name));
         return false;
     }
 

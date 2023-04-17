@@ -941,7 +941,7 @@ QIBaseResult::QIBaseResult(const QIBaseDriver *db)
 bool QIBaseResult::prepare(const QString& query)
 {
     Q_D(QIBaseResult);
-//     qDebug("prepare: %s", qPrintable(query));
+//     qDebug("prepare: %ls", qUtf16Printable(query));
     if (!driver() || !driver()->isOpen() || driver()->isOpenError())
         return false;
     d->cleanup();
@@ -1835,8 +1835,8 @@ bool QIBaseDriver::subscribeToNotification(const QString &name)
     }
 
     if (d->eventBuffers.contains(name)) {
-        qWarning("QIBaseDriver::subscribeToNotificationImplementation: already subscribing to '%s'.",
-            qPrintable(name));
+        qWarning("QIBaseDriver::subscribeToNotificationImplementation: already subscribing to '%ls'.",
+            qUtf16Printable(name));
         return false;
     }
 
@@ -1882,8 +1882,8 @@ bool QIBaseDriver::unsubscribeFromNotification(const QString &name)
     }
 
     if (!d->eventBuffers.contains(name)) {
-        qWarning("QIBaseDriver::QIBaseSubscriptionState not subscribed to '%s'.",
-            qPrintable(name));
+        qWarning("QIBaseDriver::QIBaseSubscriptionState not subscribed to '%ls'.",
+            qUtf16Printable(name));
         return false;
     }
 
@@ -1938,8 +1938,8 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
                                                                 (&qEventCallback)),
                                    eBuffer->resultBuffer);
             if (Q_UNLIKELY(status[0] == 1 && status[1])) {
-                qCritical("QIBaseDriver::qHandleEventNotification: could not resubscribe to '%s'",
-                    qPrintable(i.key()));
+                qCritical("QIBaseDriver::qHandleEventNotification: could not resubscribe to '%ls'",
+                    qUtf16Printable(i.key()));
             }
 
             return;
