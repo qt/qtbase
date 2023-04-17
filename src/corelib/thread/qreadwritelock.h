@@ -21,12 +21,14 @@ public:
     explicit QReadWriteLock(RecursionMode recursionMode = NonRecursive);
     ~QReadWriteLock();
 
+    QT_CORE_INLINE_SINCE(6, 6)
     void lockForRead();
 #if QT_CORE_REMOVED_SINCE(6, 6)
     bool tryLockForRead();
 #endif
     bool tryLockForRead(int timeout = 0);
 
+    QT_CORE_INLINE_SINCE(6, 6)
     void lockForWrite();
 #if QT_CORE_REMOVED_SINCE(6, 6)
     bool tryLockForWrite();
@@ -40,6 +42,18 @@ private:
     QAtomicPointer<QReadWriteLockPrivate> d_ptr;
     friend class QReadWriteLockPrivate;
 };
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 6)
+void QReadWriteLock::lockForRead()
+{
+    tryLockForRead(-1);
+}
+
+void QReadWriteLock::lockForWrite()
+{
+    tryLockForWrite(-1);
+}
+#endif // inline since 6.6
 
 #if defined(Q_CC_MSVC)
 #pragma warning( push )

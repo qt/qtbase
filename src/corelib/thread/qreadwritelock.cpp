@@ -132,6 +132,7 @@ QReadWriteLock::~QReadWriteLock()
 }
 
 /*!
+    \fn QReadWriteLock::lockForRead()
     Locks the lock for reading. This function will block the current
     thread if another thread has locked for writing.
 
@@ -140,10 +141,6 @@ QReadWriteLock::~QReadWriteLock()
 
     \sa unlock(), lockForWrite(), tryLockForRead()
 */
-void QReadWriteLock::lockForRead()
-{
-    tryLockForRead(-1);
-}
 
 /*!
 
@@ -229,6 +226,7 @@ Q_NEVER_INLINE static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLock
 }
 
 /*!
+    \fn QReadWriteLock::lockForWrite()
     Locks the lock for writing. This function will block the current
     thread if another thread (including the current) has locked for
     reading or writing (unless the lock has been created using the
@@ -239,10 +237,6 @@ Q_NEVER_INLINE static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLock
 
     \sa unlock(), lockForRead(), tryLockForWrite()
 */
-void QReadWriteLock::lockForWrite()
-{
-    tryLockForWrite(-1);
-}
 
 /*!
     Attempts to lock for writing. This function returns \c true if the

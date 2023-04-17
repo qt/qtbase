@@ -601,6 +601,10 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
     return value(QAnyStringView(qualifiedName));
 }
 
+// inlined API
+#if QT_CONFIG(thread)
+#include "qreadwritelock.h"
+#endif
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
