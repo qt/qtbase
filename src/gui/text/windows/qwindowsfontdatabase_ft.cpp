@@ -295,6 +295,21 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
     return 1;
 }
 
+bool QWindowsFontDatabaseFT::populateFamilyAliases(const QString &missingFamily)
+{
+    Q_UNUSED(missingFamily);
+
+    if (m_hasPopulatedAliases)
+        return false;
+
+    QStringList families = QFontDatabase::families();
+    for (const QString &family : families)
+        populateFamily(family);
+    m_hasPopulatedAliases = true;
+
+    return true;
+}
+
 /*
     \brief Populates the font database using EnumFontFamiliesEx().
 
