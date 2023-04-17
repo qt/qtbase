@@ -45,7 +45,7 @@ private:
 #pragma warning( disable : 4312 ) // ignoring the warning from /Wp64
 #endif
 
-class Q_CORE_EXPORT QReadLocker
+class QT6_ONLY(Q_CORE_EXPORT) QReadLocker
 {
 public:
     inline QReadLocker(QReadWriteLock *readWriteLock);
@@ -89,7 +89,7 @@ inline QReadLocker::QReadLocker(QReadWriteLock *areadWriteLock)
     relock();
 }
 
-class Q_CORE_EXPORT QWriteLocker
+class QT6_ONLY(Q_CORE_EXPORT) QWriteLocker
 {
 public:
     inline QWriteLocker(QReadWriteLock *readWriteLock);
@@ -140,7 +140,7 @@ inline QWriteLocker::QWriteLocker(QReadWriteLock *areadWriteLock)
 
 #else // QT_CONFIG(thread)
 
-class Q_CORE_EXPORT QReadWriteLock
+class QT6_ONLY(Q_CORE_EXPORT) QReadWriteLock
 {
 public:
     enum RecursionMode { NonRecursive, Recursive };
@@ -161,7 +161,7 @@ private:
     Q_DISABLE_COPY(QReadWriteLock)
 };
 
-class Q_CORE_EXPORT QReadLocker
+class QT6_ONLY(Q_CORE_EXPORT) QReadLocker
 {
 public:
     inline explicit QReadLocker(QReadWriteLock *) noexcept { }
@@ -175,7 +175,7 @@ private:
     Q_DISABLE_COPY(QReadLocker)
 };
 
-class Q_CORE_EXPORT QWriteLocker
+class QT6_ONLY(Q_CORE_EXPORT) QWriteLocker
 {
 public:
     inline explicit QWriteLocker(QReadWriteLock *) noexcept { }
