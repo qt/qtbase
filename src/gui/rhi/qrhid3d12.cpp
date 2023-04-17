@@ -4168,6 +4168,10 @@ QD3D12Sampler::~QD3D12Sampler()
 void QD3D12Sampler::destroy()
 {
     shaderVisibleDescriptor = {};
+
+    QRHI_RES_RHI(QRhiD3D12);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 static inline D3D12_FILTER toD3DFilter(QRhiSampler::Filter minFilter, QRhiSampler::Filter magFilter, QRhiSampler::Filter mipFilter)
@@ -4248,6 +4252,9 @@ bool QD3D12Sampler::create()
     desc.MaxAnisotropy = 1.0f;
     desc.ComparisonFunc = toD3DTextureComparisonFunc(m_compareOp);
     desc.MaxLOD = m_mipmapMode == None ? 0.0f : 10000.0f;
+
+    QRHI_RES_RHI(QRhiD3D12);
+    rhiD->registerResource(this, false);
     return true;
 }
 
@@ -4326,6 +4333,8 @@ QRhiRenderPassDescriptor *QD3D12TextureRenderTarget::newCompatibleRenderPassDesc
 
     rpD->updateSerializedFormat();
 
+    QRHI_RES_RHI(QRhiD3D12);
+    rhiD->registerResource(rpD);
     return rpD;
 }
 
@@ -4499,6 +4508,10 @@ QD3D12ShaderResourceBindings::~QD3D12ShaderResourceBindings()
 void QD3D12ShaderResourceBindings::destroy()
 {
     sortedBindings.clear();
+
+    QRHI_RES_RHI(QRhiD3D12);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QD3D12ShaderResourceBindings::create()
@@ -4533,6 +4546,7 @@ bool QD3D12ShaderResourceBindings::create()
     // therefore impossible.
 
     generation += 1;
+    rhiD->registerResource(this, false);
     return true;
 }
 
@@ -5464,7 +5478,9 @@ QD3D12RenderPassDescriptor::~QD3D12RenderPassDescriptor()
 
 void QD3D12RenderPassDescriptor::destroy()
 {
-    // nothing to do here
+    QRHI_RES_RHI(QRhiD3D12);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QD3D12RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
@@ -5507,13 +5523,17 @@ void QD3D12RenderPassDescriptor::updateSerializedFormat()
 
 QRhiRenderPassDescriptor *QD3D12RenderPassDescriptor::newCompatibleRenderPassDescriptor() const
 {
-    QD3D12RenderPassDescriptor *rp = new QD3D12RenderPassDescriptor(m_rhi);
-    rp->colorAttachmentCount = colorAttachmentCount;
-    rp->hasDepthStencil = hasDepthStencil;
-    memcpy(rp->colorFormat, colorFormat, sizeof(colorFormat));
-    rp->dsFormat = dsFormat;
-    rp->updateSerializedFormat();
-    return rp;
+    QD3D12RenderPassDescriptor *rpD = new QD3D12RenderPassDescriptor(m_rhi);
+    rpD->colorAttachmentCount = colorAttachmentCount;
+    rpD->hasDepthStencil = hasDepthStencil;
+    memcpy(rpD->colorFormat, colorFormat, sizeof(colorFormat));
+    rpD->dsFormat = dsFormat;
+
+    rpD->updateSerializedFormat();
+
+    QRHI_RES_RHI(QRhiD3D12);
+    rhiD->registerResource(rpD);
+    return rpD;
 }
 
 QVector<quint32> QD3D12RenderPassDescriptor::serializedFormat() const
@@ -5756,6 +5776,9 @@ QRhiRenderPassDescriptor *QD3D12SwapChain::newCompatibleRenderPassDescriptor()
     rpD->colorFormat[0] = int(srgbAdjustedColorFormat);
     rpD->dsFormat = QD3D12RenderBuffer::DS_FORMAT;
     rpD->updateSerializedFormat();
+
+    QRHI_RES_RHI(QRhiD3D12);
+    rhiD->registerResource(rpD);
     return rpD;
 }
 

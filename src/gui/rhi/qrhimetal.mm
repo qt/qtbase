@@ -3930,7 +3930,9 @@ QMetalRenderPassDescriptor::~QMetalRenderPassDescriptor()
 
 void QMetalRenderPassDescriptor::destroy()
 {
-    // nothing to do here
+    QRHI_RES_RHI(QRhiMetal);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QMetalRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
@@ -3973,13 +3975,17 @@ void QMetalRenderPassDescriptor::updateSerializedFormat()
 
 QRhiRenderPassDescriptor *QMetalRenderPassDescriptor::newCompatibleRenderPassDescriptor() const
 {
-    QMetalRenderPassDescriptor *rp = new QMetalRenderPassDescriptor(m_rhi);
-    rp->colorAttachmentCount = colorAttachmentCount;
-    rp->hasDepthStencil = hasDepthStencil;
-    memcpy(rp->colorFormat, colorFormat, sizeof(colorFormat));
-    rp->dsFormat = dsFormat;
-    rp->updateSerializedFormat();
-    return rp;
+    QMetalRenderPassDescriptor *rpD = new QMetalRenderPassDescriptor(m_rhi);
+    rpD->colorAttachmentCount = colorAttachmentCount;
+    rpD->hasDepthStencil = hasDepthStencil;
+    memcpy(rpD->colorFormat, colorFormat, sizeof(colorFormat));
+    rpD->dsFormat = dsFormat;
+
+    rpD->updateSerializedFormat();
+
+    QRHI_RES_RHI(QRhiMetal);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 QVector<quint32> QMetalRenderPassDescriptor::serializedFormat() const
@@ -4035,7 +4041,9 @@ QMetalTextureRenderTarget::~QMetalTextureRenderTarget()
 
 void QMetalTextureRenderTarget::destroy()
 {
-    // nothing to do here
+    QRHI_RES_RHI(QRhiMetal);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 QRhiRenderPassDescriptor *QMetalTextureRenderTarget::newCompatibleRenderPassDescriptor()
@@ -4058,6 +4066,9 @@ QRhiRenderPassDescriptor *QMetalTextureRenderTarget::newCompatibleRenderPassDesc
         rpD->dsFormat = int(QRHI_RES(QMetalRenderBuffer, m_desc.depthStencilBuffer())->d->format);
 
     rpD->updateSerializedFormat();
+
+    QRHI_RES_RHI(QRhiMetal);
+    rhiD->registerResource(rpD, false);
     return rpD;
 }
 
@@ -4131,6 +4142,7 @@ bool QMetalTextureRenderTarget::create()
 
     QRhiRenderTargetAttachmentTracker::updateResIdList<QMetalTexture, QMetalRenderBuffer>(m_desc, &d->currentResIdList);
 
+    rhiD->registerResource(this, false);
     return true;
 }
 
@@ -4166,6 +4178,10 @@ void QMetalShaderResourceBindings::destroy()
 {
     sortedBindings.clear();
     maxBinding = -1;
+
+    QRHI_RES_RHI(QRhiMetal);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QMetalShaderResourceBindings::create()
@@ -4192,6 +4208,7 @@ bool QMetalShaderResourceBindings::create()
         memset(&bd, 0, sizeof(BoundResourceData));
 
     generation += 1;
+    rhiD->registerResource(this, false);
     return true;
 }
 
@@ -6053,6 +6070,8 @@ bool QMetalSwapChain::isFormatSupported(Format f)
 
 QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
 {
+    QRHI_RES_RHI(QRhiMetal);
+
     chooseFormats(); // ensure colorFormat and similar are filled out
 
     QMetalRenderPassDescriptor *rpD = new QMetalRenderPassDescriptor(m_rhi);
@@ -6063,7 +6082,6 @@ QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
 
 #ifdef Q_OS_MACOS
     // m_depthStencil may not be built yet so cannot rely on computed fields in it
-    QRHI_RES_RHI(QRhiMetal);
     rpD->dsFormat = rhiD->d->dev.depth24Stencil8PixelFormatSupported
             ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
 #else
@@ -6071,6 +6089,8 @@ QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
 #endif
 
     rpD->updateSerializedFormat();
+
+    rhiD->registerResource(rpD, false);
     return rpD;
 }
 

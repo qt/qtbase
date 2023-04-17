@@ -5450,12 +5450,36 @@ void tst_QRhi::leakedResourceDestroy()
     rt->setRenderPassDescriptor(rpDesc.data());
     QVERIFY(rt->create());
 
+    QRhiRenderBuffer *rb = rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, QSize(512, 512));
+    QVERIFY(rb->create());
+
+    QRhiShaderResourceBindings *srb = rhi->newShaderResourceBindings();
+    QVERIFY(srb->create());
+
     if (impl == QRhi::Vulkan)
         qDebug("Vulkan validation layer warnings may be printed below - this is expected");
 
+    if (impl == QRhi::D3D12)
+        qDebug("QD3D12CpuDescriptorPool warnings may be printed below - this is expected");
+
+    qDebug("QRhi resource leak check warnings may be printed below - this is expected");
+
+    // make the QRhi go away early
     rhi.reset();
 
-    // let the scoped ptr do its job with the resources
+    // see if the internal rhi backpointer got nulled out
+    QVERIFY(buffer->rhi() == nullptr);
+    QVERIFY(texture->rhi() == nullptr);
+    QVERIFY(rt->rhi() == nullptr);
+    QVERIFY(rpDesc->rhi() == nullptr);
+    QVERIFY(rb->rhi() == nullptr);
+    QVERIFY(srb->rhi() == nullptr);
+
+    // test out deleteLater on some of the resources
+    rb->deleteLater();
+    srb->deleteLater();
+
+    // let the scoped ptr do its job with the rest
 }
 
 void tst_QRhi::renderToFloatTexture_data()

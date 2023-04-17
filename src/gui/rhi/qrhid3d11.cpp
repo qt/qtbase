@@ -3588,7 +3588,9 @@ QD3D11RenderPassDescriptor::~QD3D11RenderPassDescriptor()
 
 void QD3D11RenderPassDescriptor::destroy()
 {
-    // nothing to do here
+    QRHI_RES_RHI(QRhiD3D11);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QD3D11RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
@@ -3599,7 +3601,10 @@ bool QD3D11RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *ot
 
 QRhiRenderPassDescriptor *QD3D11RenderPassDescriptor::newCompatibleRenderPassDescriptor() const
 {
-    return new QD3D11RenderPassDescriptor(m_rhi);
+    QD3D11RenderPassDescriptor *rpD = new QD3D11RenderPassDescriptor(m_rhi);
+    QRHI_RES_RHI(QRhiD3D11);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 QVector<quint32> QD3D11RenderPassDescriptor::serializedFormat() const
@@ -3681,7 +3686,10 @@ void QD3D11TextureRenderTarget::destroy()
 
 QRhiRenderPassDescriptor *QD3D11TextureRenderTarget::newCompatibleRenderPassDescriptor()
 {
-    return new QD3D11RenderPassDescriptor(m_rhi);
+    QD3D11RenderPassDescriptor *rpD = new QD3D11RenderPassDescriptor(m_rhi);
+    QRHI_RES_RHI(QRhiD3D11);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 bool QD3D11TextureRenderTarget::create()
@@ -3845,6 +3853,10 @@ void QD3D11ShaderResourceBindings::destroy()
 {
     sortedBindings.clear();
     boundResourceData.clear();
+
+    QRHI_RES_RHI(QRhiD3D11);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QD3D11ShaderResourceBindings::create()
@@ -3876,6 +3888,7 @@ bool QD3D11ShaderResourceBindings::create()
     }
 
     generation += 1;
+    rhiD->registerResource(this, false);
     return true;
 }
 
@@ -4796,7 +4809,10 @@ QRhiSwapChainHdrInfo QD3D11SwapChain::hdrInfo()
 
 QRhiRenderPassDescriptor *QD3D11SwapChain::newCompatibleRenderPassDescriptor()
 {
-    return new QD3D11RenderPassDescriptor(m_rhi);
+    QD3D11RenderPassDescriptor *rpD = new QD3D11RenderPassDescriptor(m_rhi);
+    QRHI_RES_RHI(QRhiD3D11);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI_SAMPLE_DESC sampleDesc,

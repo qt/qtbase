@@ -5334,7 +5334,9 @@ QGles2Sampler::~QGles2Sampler()
 
 void QGles2Sampler::destroy()
 {
-    // nothing to do here
+    QRHI_RES_RHI(QRhiGles2);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QGles2Sampler::create()
@@ -5347,6 +5349,8 @@ bool QGles2Sampler::create()
     d.gltexcomparefunc = toGlTextureCompareFunc(m_compareOp);
 
     generation += 1;
+    QRHI_RES_RHI(QRhiGles2);
+    rhiD->registerResource(this, false);
     return true;
 }
 
@@ -5363,7 +5367,9 @@ QGles2RenderPassDescriptor::~QGles2RenderPassDescriptor()
 
 void QGles2RenderPassDescriptor::destroy()
 {
-    // nothing to do here
+    QRHI_RES_RHI(QRhiGles2);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QGles2RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
@@ -5374,7 +5380,10 @@ bool QGles2RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *ot
 
 QRhiRenderPassDescriptor *QGles2RenderPassDescriptor::newCompatibleRenderPassDescriptor() const
 {
-    return new QGles2RenderPassDescriptor(m_rhi);
+    QGles2RenderPassDescriptor *rpD = new QGles2RenderPassDescriptor(m_rhi);
+    QRHI_RES_RHI(QRhiGles2);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 QVector<quint32> QGles2RenderPassDescriptor::serializedFormat() const
@@ -5447,7 +5456,10 @@ void QGles2TextureRenderTarget::destroy()
 
 QRhiRenderPassDescriptor *QGles2TextureRenderTarget::newCompatibleRenderPassDescriptor()
 {
-    return new QGles2RenderPassDescriptor(m_rhi);
+    QGles2RenderPassDescriptor *rpD = new QGles2RenderPassDescriptor(m_rhi);
+    QRHI_RES_RHI(QRhiGles2);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 bool QGles2TextureRenderTarget::create()
@@ -5594,7 +5606,9 @@ QGles2ShaderResourceBindings::~QGles2ShaderResourceBindings()
 
 void QGles2ShaderResourceBindings::destroy()
 {
-    // nothing to do here
+    QRHI_RES_RHI(QRhiGles2);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QGles2ShaderResourceBindings::create()
@@ -5617,6 +5631,7 @@ bool QGles2ShaderResourceBindings::create()
     rhiD->updateLayoutDesc(this);
 
     generation += 1;
+    rhiD->registerResource(this, false);
     return true;
 }
 
@@ -5981,7 +5996,10 @@ bool QGles2SwapChain::isFormatSupported(Format f)
 
 QRhiRenderPassDescriptor *QGles2SwapChain::newCompatibleRenderPassDescriptor()
 {
-    return new QGles2RenderPassDescriptor(m_rhi);
+    QGles2RenderPassDescriptor *rpD = new QGles2RenderPassDescriptor(m_rhi);
+    QRHI_RES_RHI(QRhiGles2);
+    rhiD->registerResource(rpD, false);
+    return rpD;
 }
 
 void QGles2SwapChain::initSwapChainRenderTarget(QGles2SwapChainRenderTarget *rt)
@@ -6030,7 +6048,7 @@ bool QGles2SwapChain::createOrResize()
     // implement a safe destroy().
     if (needsRegistration) {
         QRHI_RES_RHI(QRhiGles2);
-        rhiD->registerResource(this);
+        rhiD->registerResource(this, false);
     }
 
     return true;

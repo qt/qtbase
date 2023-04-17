@@ -2119,11 +2119,17 @@ QRhiResource::~QRhiResource()
     requirement of not altering QRhiResource objects that are referenced by the
     frame being recorded.
 
+    If the QRhi that created this object is already destroyed, the object is
+    deleted immediately.
+
     \sa destroy()
  */
 void QRhiResource::deleteLater()
 {
-    m_rhi->addDeleteLater(this);
+    if (m_rhi)
+        m_rhi->addDeleteLater(this);
+    else
+        delete this;
 }
 
 /*!
@@ -2172,10 +2178,13 @@ quint64 QRhiResource::globalResourceId() const
 
 /*!
     \return the QRhi that created this resource.
+
+    If the QRhi that created this object is already destroyed, the result is
+    \nullptr.
  */
 QRhi *QRhiResource::rhi() const
 {
-    return m_rhi->q;
+    return m_rhi ? m_rhi->q : nullptr;
 }
 
 /*!
@@ -5100,7 +5109,7 @@ QRhiResource::Type QRhiCommandBuffer::resourceType() const
     return CommandBuffer;
 }
 
-static const char *resourceTypeStr(QRhiResource *res)
+static const char *resourceTypeStr(const QRhiResource *res)
 {
     switch (res->resourceType()) {
     case QRhiResource::Buffer:
@@ -5151,8 +5160,10 @@ QRhiImplementation::~QRhiImplementation()
             qWarning("QRhi %p going down with %d unreleased resources that own native graphics objects. This is not nice.",
                      q, int(resources.size()));
         }
-        for (QRhiResource *res : std::as_const(resources)) {
-            if (leakCheck)
+        for (auto it = resources.cbegin(), end = resources.cend(); it != end; ++it) {
+            QRhiResource *res = it.key();
+            const bool ownsNativeResources = it.value();
+            if (leakCheck && ownsNativeResources)
                 qWarning("  %s resource %p (%s)", resourceTypeStr(res), res, res->m_objectName.constData());
 
             // Null out the resource's rhi pointer. This is why it makes sense to do null
