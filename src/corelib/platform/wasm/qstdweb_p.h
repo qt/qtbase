@@ -64,6 +64,7 @@ namespace qstdweb {
     public:
         explicit Blob(const emscripten::val &blob);
         uint32_t size() const;
+        static Blob copyFrom(const char *buffer, uint32_t size, std::string mimeType);
         static Blob copyFrom(const char *buffer, uint32_t size);
         emscripten::val val();
         std::string type() const;
