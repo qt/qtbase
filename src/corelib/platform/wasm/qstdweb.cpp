@@ -512,16 +512,21 @@ uint32_t Blob::size() const
     return m_blob["size"].as<uint32_t>();
 }
 
-// Copies content from the given buffer into a Blob object
-Blob Blob::copyFrom(const char *buffer, uint32_t size)
+Blob Blob::copyFrom(const char *buffer, uint32_t size, std::string mimeType)
 {
     Uint8Array contentCopy = Uint8Array::copyFrom(buffer, size);
 
     emscripten::val contentArray = emscripten::val::array();
     contentArray.call<void>("push", contentCopy.val());
     emscripten::val type = emscripten::val::object();
-    type.set("type","application/octet-stream");
+    type.set("type", std::move(mimeType));
     return Blob(emscripten::val::global("Blob").new_(contentArray, type));
+}
+
+// Copies content from the given buffer into a Blob object
+Blob Blob::copyFrom(const char *buffer, uint32_t size)
+{
+    return copyFrom(buffer, size, "application/octet-stream");
 }
 
 emscripten::val Blob::val()
