@@ -4254,12 +4254,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if (rule.hasDrawable()) {
                 rule.drawFrame(p, opt->rect);
                 p->save();
-                switch (sgOpt->corner) {
-                case Qt::BottomRightCorner: break;
-                case Qt::BottomLeftCorner: p->rotate(90); break;
-                case Qt::TopLeftCorner: p->rotate(180); break;
-                case Qt::TopRightCorner: p->rotate(270); break;
-                default: break;
+                static constexpr int rotation[] = { 180, 270, 90, 0 };
+                if (rotation[sgOpt->corner]) {
+                    p->translate(opt->rect.center());
+                    p->rotate(rotation[sgOpt->corner]);
+                    p->translate(-opt->rect.center());
                 }
                 rule.drawImage(p, opt->rect);
                 p->restore();
