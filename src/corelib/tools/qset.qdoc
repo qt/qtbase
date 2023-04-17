@@ -435,7 +435,7 @@
 */
 
 /*!
-    \fn template <class T> QSet<T>::insert(const T &value)
+    \fn template <class T> QSet<T>::iterator QSet<T>::insert(const T &value)
 
     Inserts item \a value into the set, if \a value isn't already
     in the set, and returns an iterator pointing at the inserted
