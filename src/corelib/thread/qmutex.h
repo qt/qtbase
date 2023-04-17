@@ -102,7 +102,10 @@ public:
     bool try_lock() noexcept { return tryLock(); }
 
 private:
-    inline bool fastTryLock() noexcept {
+    inline bool fastTryLock() noexcept
+    {
+        if (d_ptr.loadRelaxed() != nullptr)
+            return false;
         return d_ptr.testAndSetAcquire(nullptr, dummyLocked());
     }
     inline bool fastTryUnlock() noexcept {

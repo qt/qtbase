@@ -191,8 +191,8 @@ bool QReadWriteLock::tryLockForRead()
 bool QReadWriteLock::tryLockForRead(int timeout)
 {
     // Fast case: non contended:
-    QReadWriteLockPrivate *d;
-    if (d_ptr.testAndSetAcquire(nullptr, dummyLockedForRead, d))
+    QReadWriteLockPrivate *d = d_ptr.loadRelaxed();
+    if (d == nullptr && d_ptr.testAndSetAcquire(nullptr, dummyLockedForRead, d))
         return true;
 
     while (true) {
@@ -305,8 +305,8 @@ bool QReadWriteLock::tryLockForWrite()
 bool QReadWriteLock::tryLockForWrite(int timeout)
 {
     // Fast case: non contended:
-    QReadWriteLockPrivate *d;
-    if (d_ptr.testAndSetAcquire(nullptr, dummyLockedForWrite, d))
+    QReadWriteLockPrivate *d = d_ptr.loadRelaxed();
+    if (d == nullptr && d_ptr.testAndSetAcquire(nullptr, dummyLockedForWrite, d))
         return true;
 
     while (true) {
