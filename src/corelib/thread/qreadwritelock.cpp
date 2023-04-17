@@ -39,6 +39,11 @@ inline bool isUncontendedLocked(const QReadWriteLockPrivate *d)
 { return quintptr(d) & StateMask; }
 }
 
+static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLockPrivate> &d_ptr,
+                                    int timeout, QReadWriteLockPrivate *d);
+static bool contendedTryLockForWrite(QAtomicPointer<QReadWriteLockPrivate> &d_ptr,
+                                     int timeout, QReadWriteLockPrivate *d);
+
 /*! \class QReadWriteLock
     \inmodule QtCore
     \brief The QReadWriteLock class provides read-write locking.
@@ -137,8 +142,6 @@ QReadWriteLock::~QReadWriteLock()
 */
 void QReadWriteLock::lockForRead()
 {
-    if (d_ptr.testAndSetAcquire(nullptr, dummyLockedForRead))
-        return;
     tryLockForRead(-1);
 }
 
@@ -188,7 +191,12 @@ bool QReadWriteLock::tryLockForRead(int timeout)
     QReadWriteLockPrivate *d;
     if (d_ptr.testAndSetAcquire(nullptr, dummyLockedForRead, d))
         return true;
+    return contendedTryLockForRead(d_ptr, timeout, d);
+}
 
+Q_NEVER_INLINE static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLockPrivate> &d_ptr,
+                                                   int timeout, QReadWriteLockPrivate *d)
+{
     while (true) {
         if (d == nullptr) {
             if (!d_ptr.testAndSetAcquire(nullptr, dummyLockedForRead, d))
@@ -302,7 +310,12 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
     QReadWriteLockPrivate *d;
     if (d_ptr.testAndSetAcquire(nullptr, dummyLockedForWrite, d))
         return true;
+    return contendedTryLockForWrite(d_ptr, timeout, d);
+}
 
+Q_NEVER_INLINE static bool contendedTryLockForWrite(QAtomicPointer<QReadWriteLockPrivate> &d_ptr,
+                                                    int timeout, QReadWriteLockPrivate *d)
+{
     while (true) {
         if (d == nullptr) {
             if (!d_ptr.testAndSetAcquire(d, dummyLockedForWrite, d))
