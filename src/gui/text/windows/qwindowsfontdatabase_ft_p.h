@@ -25,6 +25,7 @@ class Q_GUI_EXPORT QWindowsFontDatabaseFT : public QFreeTypeFontDatabase
 {
 public:
     void populateFontDatabase() override;
+    bool populateFamilyAliases(const QString &familyName) override;
     void populateFamily(const QString &familyName) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize,
@@ -36,6 +37,8 @@ public:
 
     QString fontDir() const override;
     QFont defaultFont() const override;
+
+    bool m_hasPopulatedAliases = false;
 };
 
 QT_END_NAMESPACE
