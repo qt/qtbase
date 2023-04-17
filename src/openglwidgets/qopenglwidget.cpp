@@ -691,8 +691,6 @@ void QOpenGLWidgetPrivate::reset()
 
     destroyFbos();
 
-    resetRhiDependentResources();
-
     if (initialized)
         q->doneCurrent();
 
@@ -1016,6 +1014,8 @@ void QOpenGLWidgetPrivate::destroyFbos()
     fbos[QOpenGLWidget::RightBuffer] = nullptr;
     delete resolvedFbos[QOpenGLWidget::RightBuffer];
     resolvedFbos[QOpenGLWidget::RightBuffer] = nullptr;
+
+    resetRhiDependentResources();
 }
 
 QImage QOpenGLWidgetPrivate::grabFramebuffer()
