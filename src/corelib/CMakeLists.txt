@@ -87,6 +87,7 @@ qt_internal_add_module(Core
         global/qtpreprocessorsupport.h
         global/qtrace_p.h
         global/qtresource.h
+        global/qtsymbolmacros.h
         global/qttranslation.h
         global/qttypetraits.h
         global/qtversionchecks.h
@@ -342,11 +343,12 @@ qt_internal_add_module(Core
     PUBLIC_LIBRARIES
         Qt::Platform
     EXTRA_CMAKE_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CTestMacros.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreConfigureFileTemplate.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreDeploySupport.cmake"
-    "${config_build_dir}/QtInstallPaths.cmake"
-    ${corelib_extra_cmake_files}
+        "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CTestMacros.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreConfigureFileTemplate.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreResourceInit.in.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreDeploySupport.cmake"
+        "${config_build_dir}/QtInstallPaths.cmake"
+        ${corelib_extra_cmake_files}
     POLICIES
         QTP0002
 )
