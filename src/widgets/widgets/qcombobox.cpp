@@ -1726,6 +1726,8 @@ void QComboBoxPrivate::updateDelegate(bool force)
 
 QIcon QComboBoxPrivate::itemIcon(const QModelIndex &index) const
 {
+    if (!index.isValid())
+        return {};
     QVariant decoration = model->data(index, Qt::DecorationRole);
     if (decoration.userType() == QMetaType::QPixmap)
         return QIcon(qvariant_cast<QPixmap>(decoration));
