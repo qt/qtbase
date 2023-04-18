@@ -1155,11 +1155,15 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         break;
     case QtWindows::EnterSizeMoveEvent:
         platformWindow->setFlag(QWindowsWindow::ResizeMoveActive);
+        if (!IsZoomed(hwnd))
+            platformWindow->updateRestoreGeometry();
         return true;
     case QtWindows::ExitSizeMoveEvent:
         platformWindow->clearFlag(QWindowsWindow::ResizeMoveActive);
         platformWindow->checkForScreenChanged();
         handleExitSizeMove(platformWindow->window());
+        if (!IsZoomed(hwnd))
+            platformWindow->updateRestoreGeometry();
         return true;
     case QtWindows::ScrollEvent:
         if (!(d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
