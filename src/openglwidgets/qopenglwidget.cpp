@@ -963,6 +963,10 @@ void QOpenGLWidgetPrivate::render()
     f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
     inPaintGL = true;
 
+#ifdef Q_OS_WASM
+    f->glDepthMask(GL_TRUE);
+#endif
+
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbos[currentTargetBuffer]->handle();
     q->paintGL();
 
