@@ -135,6 +135,10 @@ void tst_QSql::open()
 
 void tst_QSql::openInvalid()
 {
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QCoreApplication app(argc, argv, false);
+
     QSqlDatabase db;
     QVERIFY(!db.open());
 
