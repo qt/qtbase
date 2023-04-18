@@ -72,14 +72,6 @@ void MainWidget::initializeGL()
     initShaders();
     initTextures();
 
-//! [2]
-    // Enable depth buffer
-    glEnable(GL_DEPTH_TEST);
-
-    // Enable back face culling
-    glEnable(GL_CULL_FACE);
-//! [2]
-
     geometries = new GeometryEngine;
 
     // Use QBasicTimer because its faster than QTimer
@@ -146,6 +138,14 @@ void MainWidget::paintGL()
 {
     // Clear color and depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+//! [2]
+    // Enable depth buffer
+    glEnable(GL_DEPTH_TEST);
+
+    // Enable back face culling
+    glEnable(GL_CULL_FACE);
+//! [2]
 
     texture->bind();
     program.bind();
