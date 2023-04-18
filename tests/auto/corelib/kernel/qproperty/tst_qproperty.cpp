@@ -76,6 +76,7 @@ private slots:
     void metaProperty();
 
     void modifyObserverListWhileIterating();
+    void noDoubleCapture();
     void compatPropertyNoDobuleNotification();
     void compatPropertySignals();
 
@@ -1491,6 +1492,22 @@ void tst_QProperty::modifyObserverListWhileIterating()
         prop = 42; // should not crash
         QCOMPARE(counter, 1); // only one trigger should run as the other has been deleted
     }
+}
+
+void tst_QProperty::noDoubleCapture()
+{
+    QProperty<long long> size;
+    size = 3;
+    QProperty<int> max;
+    max.setBinding([&size]() -> int {
+        // each loop run attempts to capture size
+        for (int i = 0; i < size; ++i) {}
+        return size.value();
+    });
+    auto bindingPriv = QPropertyBindingPrivate::get(max.binding());
+    QCOMPARE(bindingPriv->dependencyObserverCount, 1);
+    size = 4; // should not crash
+    QCOMPARE(max.value(), 4);
 }
 
 class CompatPropertyTester : public QObject
