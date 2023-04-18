@@ -389,6 +389,7 @@ public:
     uint hasExternalDtdSubset : 1;
     uint lockEncoding : 1;
     uint namespaceProcessing : 1;
+    uint hasStandalone : 1; // TODO: expose in public API
 
     int resumeReduction;
     void resume(int rule);
@@ -514,6 +515,8 @@ public:
     void raiseWellFormedError(const QString &message);
 
     QXmlStreamEntityResolver *entityResolver;
+
+    static QXmlStreamReaderPrivate *get(QXmlStreamReader *q) { return q->d_func(); }
 
 private:
     /*! \internal
