@@ -51,6 +51,11 @@ template<typename C>
 inline constexpr bool has_size_v<C, std::void_t<decltype(C().size())>> = true;
 
 template<typename C, typename = void>
+inline constexpr bool has_reserve_v = false;
+template<typename C>
+inline constexpr bool has_reserve_v<C, std::void_t<decltype(C().reserve(0))>> = true;
+
+template<typename C, typename = void>
 inline constexpr bool has_clear_v = false;
 template<typename C>
 inline constexpr bool has_clear_v<C, std::void_t<decltype(C().clear())>> = true;
