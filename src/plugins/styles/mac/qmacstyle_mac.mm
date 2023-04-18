@@ -3915,6 +3915,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     frameRect = frameRect.adjusted(-1, 0, 1, 0);
                 }
                 break;
+            case QStyleOptionTab::Moving: // Moving tab treated like End
             case QStyleOptionTab::End:
                 // Pressed state hack: tweak adjustments in preparation for flip below
                 if (isSelected || tabDirection == QMacStylePrivate::West)

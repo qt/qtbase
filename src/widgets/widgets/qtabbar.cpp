@@ -1873,21 +1873,30 @@ void QTabBar::paintEvent(QPaintEvent *)
         QStyleOptionTab tabOption;
         const auto tab = d->tabList.at(selected);
         initStyleOption(&tabOption, selected);
+
         if (d->paintWithOffsets && tab->dragOffset != 0) {
+            // if the drag offset is != 0, a move is in progress (drag or animation)
+            // => set the tab position to Moving to preserve the rect
+            tabOption.position = QStyleOptionTab::TabPosition::Moving;
+
             if (vertical)
                 tabOption.rect.moveTop(tabOption.rect.y() + tab->dragOffset);
             else
                 tabOption.rect.moveLeft(tabOption.rect.x() + tab->dragOffset);
         }
-        if (!d->dragInProgress)
-            p.drawControl(QStyle::CE_TabBarTab, tabOption);
-        else {
-            int taboverlap = style()->pixelMetric(QStyle::PM_TabBarTabOverlap, nullptr, this);
-            if (verticalTabs(d->shape))
-                d->movingTab->setGeometry(tabOption.rect.adjusted(0, -taboverlap, 0, taboverlap));
-            else
-                d->movingTab->setGeometry(tabOption.rect.adjusted(-taboverlap, 0, taboverlap, 0));
-        }
+
+        // Calculate the rect of a moving tab
+        const int taboverlap = style()->pixelMetric(QStyle::PM_TabBarTabOverlap, nullptr, this);
+        const QRect &movingRect = verticalTabs(d->shape)
+                ? tabOption.rect.adjusted(0, -taboverlap, 0, taboverlap)
+                : tabOption.rect.adjusted(-taboverlap, 0, taboverlap, 0);
+
+        // If a drag is in process, set the moving tab's geometry here
+        // (in an animation, it is already set)
+        if (d->dragInProgress)
+            d->movingTab->setGeometry(movingRect);
+
+        p.drawControl(QStyle::CE_TabBarTab, tabOption);
     }
 
     // Only draw the tear indicator if necessary. Most of the time we don't need too.

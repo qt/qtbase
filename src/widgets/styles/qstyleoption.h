@@ -244,7 +244,7 @@ public:
     enum StyleOptionType { Type = SO_Tab };
     enum StyleOptionVersion { Version = 1 };
 
-    enum TabPosition { Beginning, Middle, End, OnlyOneTab };
+    enum TabPosition { Beginning, Middle, End, OnlyOneTab, Moving };
     enum SelectedPosition { NotAdjacent, NextIsSelected, PreviousIsSelected };
     enum CornerWidget { NoCornerWidgets = 0x00, LeftCornerWidget = 0x01,
                         RightCornerWidget = 0x02 };

@@ -2009,7 +2009,10 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
             QRect iconRect;
             d->tabLayout(tab, widget, &tr, &iconRect);
-            tr = proxy()->subElementRect(SE_TabBarTabText, opt, widget); //we compute tr twice because the style may override subElementRect
+
+            // compute tr again, unless tab is moving, because the style may override subElementRect
+            if (tab->position != QStyleOptionTab::TabPosition::Moving)
+                tr = proxy()->subElementRect(SE_TabBarTabText, opt, widget);
 
             if (!tab->icon.isNull()) {
                 QPixmap tabIcon = tab->icon.pixmap(tab->iconSize, p->device()->devicePixelRatio(),

@@ -1314,6 +1314,8 @@ QStyleOptionTab::QStyleOptionTab(int version)
     \value Middle The tab is neither the first nor the last tab in the tab bar.
     \value End The tab is the last tab in the tab bar.
     \value OnlyOneTab The tab is both the first and the last tab in the tab bar.
+    \value Moving The tab is moving by mouse drag or animation.
+           This enum value was added in Qt 6.6.
 
     \sa position
 */
