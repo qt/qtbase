@@ -537,13 +537,13 @@ inline constexpr QGtk3Interface::QGtkWidget QGtk3Interface::toWidgetType(QPlatfo
     case QPlatformTheme::ToolButtonFont: return QGtkWidget::gtk_button;
     case QPlatformTheme::ItemViewFont: return QGtkWidget::gtk_entry;
     case QPlatformTheme::ListViewFont: return QGtkWidget::gtk_tree_view;
-    case QPlatformTheme::HeaderViewFont: return QGtkWidget::gtk_fixed;
+    case QPlatformTheme::HeaderViewFont: return QGtkWidget::gtk_combo_box;
     case QPlatformTheme::ListBoxFont: return QGtkWidget::gtk_Default;
     case QPlatformTheme::ComboMenuItemFont: return QGtkWidget::gtk_combo_box;
     case QPlatformTheme::ComboLineEditFont: return QGtkWidget::gtk_combo_box_text;
     case QPlatformTheme::SmallFont: return QGtkWidget::gtk_Default;
     case QPlatformTheme::MiniFont: return QGtkWidget::gtk_Default;
-    case QPlatformTheme::FixedFont: return QGtkWidget::gtk_fixed;
+    case QPlatformTheme::FixedFont: return QGtkWidget::gtk_Default;
     case QPlatformTheme::GroupBoxTitleFont: return QGtkWidget::gtk_Default;
     case QPlatformTheme::TabButtonFont: return QGtkWidget::gtk_button;
     case QPlatformTheme::EditorFont: return QGtkWidget::gtk_entry;
@@ -604,6 +604,24 @@ QFont QGtk3Interface::font(QPlatformTheme::Font type) const
     if (!con)
         return QFont();
 
+    // explicitly add provider for fixed font
+    GtkCssProvider *cssProvider = nullptr;
+    if (type == QPlatformTheme::FixedFont) {
+        cssProvider = gtk_css_provider_new();
+        const char *fontSpec = "{font-family: monospace;}";
+        gtk_css_provider_load_from_data(cssProvider, fontSpec, -1, NULL);
+        gtk_style_context_add_provider(con, GTK_STYLE_PROVIDER(cssProvider),
+                                       GTK_STYLE_PROVIDER_PRIORITY_USER);
+    }
+
+    // remove monospace provider from style context and unref it
+    QScopeGuard guard([&](){
+        if (cssProvider) {
+            gtk_style_context_remove_provider(con, GTK_STYLE_PROVIDER(cssProvider));
+            g_object_unref(cssProvider);
+        }
+    });
+
     const PangoFontDescription *gtkFont = gtk_style_context_get_font(con, GTK_STATE_FLAG_NORMAL);
     if (!gtkFont)
         return QFont();
@@ -630,6 +648,7 @@ QFont QGtk3Interface::font(QPlatformTheme::Font type) const
             font.setFamily("monospace"_L1);
         }
     }
+
     return font;
 }
 
