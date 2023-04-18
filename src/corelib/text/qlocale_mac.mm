@@ -14,6 +14,9 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/qcoreapplication.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -21,6 +24,39 @@ using namespace Qt::StringLiterals;
 /******************************************************************************
 ** Wrappers for Mac locale system functions
 */
+
+Q_LOGGING_CATEGORY(lcLocale, "qt.core.locale")
+
+static void printLocalizationInformation()
+{
+    if (!lcLocale().isDebugEnabled())
+        return;
+
+    // Trigger initialization of standard user defaults, so that Foundation picks
+    // up -AppleLanguages and -AppleLocale passed on the command line.
+    Q_UNUSED(NSUserDefaults.standardUserDefaults);
+
+    auto singleLineDescription = [](NSArray *array) {
+        NSString *str = [array description];
+        str = [str stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+        return [str stringByReplacingOccurrencesOfString:@"    " withString:@""];
+    };
+
+    bool allowMixedLocalizations = [NSBundle.mainBundle.infoDictionary[@"CFBundleAllowMixedLocalizations"] boolValue];
+
+    NSBundle *foundation = [NSBundle bundleForClass:NSBundle.class];
+    qCDebug(lcLocale).nospace() << "Launched with locale \"" << NSLocale.currentLocale.localeIdentifier
+        << "\" based on user's preferred languages " << singleLineDescription(NSLocale.preferredLanguages)
+        << ", main bundle localizations " << singleLineDescription(NSBundle.mainBundle.localizations)
+        << ", and allowing mixed localizations " << allowMixedLocalizations
+        << "; resulting in main bundle preferred localizations "
+        << singleLineDescription(NSBundle.mainBundle.preferredLocalizations)
+        << " and Foundation preferred localizations "
+        << singleLineDescription(foundation.preferredLocalizations);
+    qCDebug(lcLocale) << "Reflected by Qt as system locale"
+        << QLocale::system() << "with UI languges " << QLocale::system().uiLanguages();
+}
+Q_COREAPP_STARTUP_FUNCTION(printLocalizationInformation);
 
 static QString getMacLocaleName()
 {
