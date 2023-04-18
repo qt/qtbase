@@ -8,6 +8,7 @@
 #include "qdomhelpers_p.h"
 #include "qdom_p.h"
 #include "qxmlstream.h"
+#include "private/qxmlstream_p.h"
 
 #include <memory>
 #include <stack>
@@ -264,9 +265,10 @@ bool QDomParser::parseProlog()
                 if (reader->isStandaloneDocument()) {
                     value += u" standalone='yes'"_s;
                 } else {
-                    // TODO: Add standalone='no', if 'standalone' is specified. With the current
-                    // QXmlStreamReader there is no way to figure out if it was specified or not.
-                    // QXmlStreamReader needs to be modified for handling that case correctly.
+                    // Add the standalone attribute only if it was specified
+                    QXmlStreamReaderPrivate *priv = QXmlStreamReaderPrivate::get(reader);
+                    if (priv->hasStandalone)
+                        value += u" standalone='no'"_s;
                 }
 
                 if (!domBuilder.processingInstruction(u"xml"_s, value)) {

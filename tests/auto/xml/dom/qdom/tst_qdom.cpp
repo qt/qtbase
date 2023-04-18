@@ -105,6 +105,7 @@ private slots:
     void DTDInternalSubset() const;
     void DTDInternalSubset_data() const;
     void QTBUG49113_dontCrashWithNegativeIndex() const;
+    void standalone();
 
     void cleanupTestCase() const;
 
@@ -2223,6 +2224,31 @@ void tst_QDom::QTBUG49113_dontCrashWithNegativeIndex() const
     QDomElement elem = doc.appendChild(doc.createElement("root")).toElement();
     QDomNode node = elem.attributes().item(-1);
     QVERIFY(node.isNull());
+}
+
+void tst_QDom::standalone()
+{
+    {
+        QDomDocument doc;
+        const QString dtd("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+                    "<Test/>\n");
+        doc.setContent(dtd);
+        QVERIFY(doc.toString().contains("standalone=\'no\'"));
+    }
+    {
+        QDomDocument doc;
+        const QString dtd("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                    "<Test/>\n");
+        doc.setContent(dtd);
+        QVERIFY(!doc.toString().contains("standalone"));
+    }
+    {
+        QDomDocument doc;
+        const QString dtd("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+                    "<Test/>\n");
+        doc.setContent(dtd);
+        QVERIFY(doc.toString().contains("standalone=\'yes\'"));
+    }
 }
 
 void tst_QDom::DTDInternalSubset() const
