@@ -2096,7 +2096,7 @@ int QComboBox::currentIndex() const
 void QComboBox::setCurrentIndex(int index)
 {
     Q_D(QComboBox);
-    QModelIndex mi = d->model->index(index, d->modelColumn, d->root);
+    QModelIndex mi = index >= 0 ? d->model->index(index, d->modelColumn, d->root) : QModelIndex();
     d->setCurrentIndex(mi);
 }
 
