@@ -78,6 +78,7 @@ struct QWindowsWindowData
 {
     Qt::WindowFlags flags;
     QRect geometry;
+    QRect restoreGeometry;
     QMargins fullFrameMargins; // Do not use directly for windows, see FrameDirty.
     QMargins customMargins;    // User-defined, additional frame for NCCALCSIZE
     HWND hwnd = nullptr;
@@ -218,6 +219,8 @@ public:
     void setGeometry(const QRect &rect) override;
     QRect geometry() const override { return m_data.geometry; }
     QRect normalGeometry() const override;
+    QRect restoreGeometry() const { return m_data.restoreGeometry; }
+    void updateRestoreGeometry();
 
     void setVisible(bool visible) override;
     bool isVisible() const;

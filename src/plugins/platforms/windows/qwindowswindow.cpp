@@ -932,6 +932,7 @@ QWindowsWindowData
     QRect obtainedGeometry(context->obtainedPos, context->obtainedSize);
 
     result.geometry = obtainedGeometry;
+    result.restoreGeometry = frameGeometry(result.hwnd, topLevel);
     result.fullFrameMargins = context->margins;
     result.embedded = embedded;
     result.hasFrame = hasFrame;
@@ -1972,6 +1973,11 @@ void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *
         // are currently doing.
         m_data.customMargins *= scale;
     }
+    if (!m_data.restoreGeometry.isEmpty()) {
+        m_data.restoreGeometry.setWidth(m_data.restoreGeometry.width() * scale);
+        m_data.restoreGeometry.setHeight(m_data.restoreGeometry.height() * scale);
+    }
+
     const QSize windowSize = (geometry().size() * scale).grownBy(margins + customMargins());
     SIZE *size = reinterpret_cast<SIZE *>(lParam);
     size->cx = windowSize.width();
@@ -2435,6 +2441,14 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
         handleHidden();
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents); // Tell QQuickWindow to stop rendering now.
     } else {
+        if (state & Qt::WindowMaximized) {
+            WINDOWPLACEMENT windowPlacement{};
+            windowPlacement.length = sizeof(WINDOWPLACEMENT);
+            GetWindowPlacement(m_data.hwnd, &windowPlacement);
+            const RECT geometry = RECTfromQRect(m_data.restoreGeometry);
+            windowPlacement.rcNormalPosition = geometry;
+            SetWindowPlacement(m_data.hwnd, &windowPlacement);
+        }
         // QTBUG-17548: We send expose events when receiving WM_Paint, but for
         // layered windows and transient children, we won't receive any WM_Paint.
         QWindow *w = window();
@@ -2456,6 +2470,11 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
         if (exposeEventsSent && !QWindowsContext::instance()->asyncExpose())
             QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
     }
+}
+
+void QWindowsWindow::updateRestoreGeometry()
+{
+    m_data.restoreGeometry = normalFrameGeometry(m_data.hwnd);
 }
 
 void QWindowsWindow::setWindowState(Qt::WindowStates state)
