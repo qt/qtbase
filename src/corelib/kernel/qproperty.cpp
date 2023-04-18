@@ -586,6 +586,11 @@ void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding_helper(Binding
 {
     QPropertyBindingDataPointer d{this};
 
+    if (currentState->alreadyCaptureProperties.contains(this))
+        return;
+    else
+        currentState->alreadyCaptureProperties.push_back(this);
+
     QPropertyObserverPointer dependencyObserver = currentState->binding->allocateDependencyObserver();
     Q_ASSERT(QPropertyObserver::ObserverNotifiesBinding == 0);
     dependencyObserver.setBindingToNotify_unsafe(currentState->binding);

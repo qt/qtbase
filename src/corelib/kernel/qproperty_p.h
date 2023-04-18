@@ -193,6 +193,7 @@ struct BindingEvaluationState
     QPropertyBindingPrivate *binding;
     BindingEvaluationState *previousState = nullptr;
     BindingEvaluationState **currentState = nullptr;
+    QVarLengthArray<const QPropertyBindingData *, 8> alreadyCaptureProperties;
 };
 
 /*!
