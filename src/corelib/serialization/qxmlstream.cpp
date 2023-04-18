@@ -1297,8 +1297,7 @@ inline qsizetype QXmlStreamReaderPrivate::fastScanContentCharList()
 }
 
 // Fast scan an XML attribute name (e.g. "xml:lang").
-inline QXmlStreamReaderPrivate::FastScanNameResult
-QXmlStreamReaderPrivate::fastScanName(Value *val)
+inline std::optional<qsizetype> QXmlStreamReaderPrivate::fastScanName(Value *val)
 {
     qsizetype n = 0;
     uint c;
@@ -1307,7 +1306,7 @@ QXmlStreamReaderPrivate::fastScanName(Value *val)
             // This is too long to be a sensible name, and
             // can exhaust memory, or the range of decltype(*prefix)
             raiseNamePrefixTooLongError();
-            return {};
+            return std::nullopt;
         }
         switch (c) {
         case '\n':
@@ -1341,18 +1340,18 @@ QXmlStreamReaderPrivate::fastScanName(Value *val)
                 putChar(':');
                 --n;
             }
-            return FastScanNameResult(n);
+            return n;
         case ':':
             if (val) {
                 if (val->prefix == 0) {
                     val->prefix = qint16(n + 2);
                 } else { // only one colon allowed according to the namespace spec.
                     putChar(c);
-                    return FastScanNameResult(n);
+                    return n;
                 }
             } else {
                 putChar(c);
-                return FastScanNameResult(n);
+                return n;
             }
             Q_FALLTHROUGH();
         default:
@@ -1366,7 +1365,7 @@ QXmlStreamReaderPrivate::fastScanName(Value *val)
     qsizetype pos = textBuffer.size() - n;
     putString(textBuffer, pos);
     textBuffer.resize(pos);
-    return FastScanNameResult(0);
+    return 0;
 }
 
 enum NameChar { NameBeginning, NameNotBeginning, NotName };
