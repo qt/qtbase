@@ -65,7 +65,7 @@
         "qsql.h" => "QtSql/qtsqlglobal.h"
     },
     "QtDBus" => {
-        "qdbusmacros.h" => "QtDbus/qtdbusglobal.h"
+        "qdbusmacros.h" => "QtDBus/qtdbusglobal.h"
     },
     "QtTest" => {
         "qtest_global.h" => "QtTest/qttestglobal.h"
