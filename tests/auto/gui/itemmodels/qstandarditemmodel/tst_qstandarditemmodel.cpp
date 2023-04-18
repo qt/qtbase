@@ -5,11 +5,16 @@
 #include <QTest>
 #include <QStandardItemModel>
 #include <QTreeView>
+#include <QMap>
 #include <QSignalSpy>
 #include <QAbstractItemModelTester>
 
 #include <private/qabstractitemmodel_p.h>
 #include <private/qtreeview_p.h>
+
+#include <algorithm>
+
+using namespace Qt::StringLiterals;
 
 class tst_QStandardItemModel : public QObject
 {
@@ -87,6 +92,7 @@ private slots:
     void indexFromItem();
     void itemFromIndex();
     void getSetItemPrototype();
+    void getSetItemData_data();
     void getSetItemData();
     void setHeaderLabels_data();
     void setHeaderLabels();
@@ -1025,33 +1031,49 @@ void tst_QStandardItemModel::getSetItemPrototype()
     QCOMPARE(model.itemPrototype(), nullptr);
 }
 
+using RoleMap = QMap<int, QVariant>;
+using RoleList = QList<int>;
+
+static RoleMap getSetItemDataRoleMap(int textRole)
+{
+    return {{textRole, "text"_L1},
+            {Qt::StatusTipRole, "statusTip"_L1},
+            {Qt::ToolTipRole, "toolTip"_L1},
+            {Qt::WhatsThisRole, "whatsThis"_L1},
+            {Qt::SizeHintRole, QSize{64, 48}},
+            {Qt::FontRole, QFont{}},
+            {Qt::TextAlignmentRole, int(Qt::AlignLeft|Qt::AlignVCenter)},
+            {Qt::BackgroundRole, QColor(Qt::blue)},
+            {Qt::ForegroundRole, QColor(Qt::green)},
+            {Qt::CheckStateRole, int(Qt::PartiallyChecked)},
+            {Qt::AccessibleTextRole, "accessibleText"_L1},
+            {Qt::AccessibleDescriptionRole, "accessibleDescription"_L1}};
+}
+
+void tst_QStandardItemModel::getSetItemData_data()
+{
+    QTest::addColumn<RoleMap>("itemData");
+    QTest::addColumn<RoleMap>("expectedItemData");
+    QTest::addColumn<RoleList>("expectedRoles");
+
+    // QTBUG-112326: verify that text data set using Qt::EditRole is mapped to
+    // Qt::DisplayRole and both roles are in the changed signal
+    const RoleMap expectedItemData =  getSetItemDataRoleMap(Qt::DisplayRole);
+    RoleList expectedRoles = expectedItemData.keys() << Qt::EditRole;
+    std::sort(expectedRoles.begin(), expectedRoles.end());
+
+    QTest::newRow("DisplayRole") << expectedItemData
+                                 << expectedItemData << expectedRoles;
+
+    QTest::newRow("EditRole") << getSetItemDataRoleMap(Qt::EditRole)
+                              << expectedItemData << expectedRoles;
+}
+
 void tst_QStandardItemModel::getSetItemData()
 {
-    QMap<int, QVariant> roles;
-    QLatin1String text("text");
-    roles.insert(Qt::DisplayRole, text);
-    QLatin1String statusTip("statusTip");
-    roles.insert(Qt::StatusTipRole, statusTip);
-    QLatin1String toolTip("toolTip");
-    roles.insert(Qt::ToolTipRole, toolTip);
-    QLatin1String whatsThis("whatsThis");
-    roles.insert(Qt::WhatsThisRole, whatsThis);
-    QSize sizeHint(64, 48);
-    roles.insert(Qt::SizeHintRole, sizeHint);
-    QFont font;
-    roles.insert(Qt::FontRole, font);
-    Qt::Alignment textAlignment(Qt::AlignLeft|Qt::AlignVCenter);
-    roles.insert(Qt::TextAlignmentRole, int(textAlignment));
-    QColor backgroundColor(Qt::blue);
-    roles.insert(Qt::BackgroundRole, backgroundColor);
-    QColor textColor(Qt::green);
-    roles.insert(Qt::ForegroundRole, textColor);
-    Qt::CheckState checkState(Qt::PartiallyChecked);
-    roles.insert(Qt::CheckStateRole, int(checkState));
-    QLatin1String accessibleText("accessibleText");
-    roles.insert(Qt::AccessibleTextRole, accessibleText);
-    QLatin1String accessibleDescription("accessibleDescription");
-    roles.insert(Qt::AccessibleDescriptionRole, accessibleDescription);
+    QFETCH(RoleMap, itemData);
+    QFETCH(RoleMap, expectedItemData);
+    QFETCH(RoleList, expectedRoles);
 
     QStandardItemModel model;
     model.insertRows(0, 1);
@@ -1060,11 +1082,17 @@ void tst_QStandardItemModel::getSetItemData()
 
     QSignalSpy modelDataChangedSpy(
          &model, &QStandardItemModel::dataChanged);
-    QVERIFY(model.setItemData(idx, roles));
+    QVERIFY(model.setItemData(idx, itemData));
     QCOMPARE(modelDataChangedSpy.size(), 1);
-    QVERIFY(model.setItemData(idx, roles));
+    const QVariantList &args = modelDataChangedSpy.constFirst();
+    QCOMPARE(args.size(), 3);
+    auto roleList = args.at(2).value<QList<int> >();
+    std::sort(roleList.begin(), roleList.end());
+    QCOMPARE(roleList, expectedRoles);
+
+    QVERIFY(model.setItemData(idx, itemData));
     QCOMPARE(modelDataChangedSpy.size(), 1); //it was already changed once
-    QCOMPARE(model.itemData(idx), roles);
+    QCOMPARE(model.itemData(idx), expectedItemData);
 }
 
 void tst_QStandardItemModel::setHeaderLabels_data()
