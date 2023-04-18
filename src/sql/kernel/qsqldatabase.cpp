@@ -9,6 +9,7 @@
 #include "qsqldriver.h"
 #include "qsqldriverplugin.h"
 #include "qsqlindex.h"
+#include "QtCore/qapplicationstatic.h"
 #include "private/qfactoryloader_p.h"
 #include "private/qsqlnulldriver_p.h"
 #include "qhash.h"
@@ -22,8 +23,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QSqlDriverFactoryInterface_iid, "/sqldrivers"_L1))
 
 const char *QSqlDatabase::defaultConnection = "qt_sql_default_connection";
-
-typedef QHash<QString, QSqlDriverCreatorBase*> DriverDict;
 
 class QConnectionDict: public QHash<QString, QSqlDatabase>
 {
@@ -47,6 +46,14 @@ public:
     mutable QReadWriteLock lock;
 };
 Q_GLOBAL_STATIC(QConnectionDict, dbDict)
+
+namespace {
+    struct DriverDict : public QHash<QString, QSqlDriverCreatorBase*>
+    {
+        ~DriverDict();
+    };
+}
+Q_APPLICATION_STATIC(DriverDict, qtDriverDict)
 
 class QSqlDatabasePrivate
 {
@@ -120,23 +127,15 @@ void QSqlDatabasePrivate::cleanConnections()
     dict->clear();
 }
 
-static bool qDriverDictInit = false;
-static void cleanDriverDict()
+DriverDict::~DriverDict()
 {
-    qDeleteAll(QSqlDatabasePrivate::driverDict());
-    QSqlDatabasePrivate::driverDict().clear();
+    qDeleteAll(*this);
     QSqlDatabasePrivate::cleanConnections();
-    qDriverDictInit = false;
 }
 
 DriverDict &QSqlDatabasePrivate::driverDict()
 {
-    static DriverDict dict;
-    if (!qDriverDictInit) {
-        qDriverDictInit = true;
-        qAddPostRoutine(cleanDriverDict);
-    }
-    return dict;
+    return *qtDriverDict();
 }
 
 QSqlDatabasePrivate *QSqlDatabasePrivate::shared_null()
@@ -504,7 +503,7 @@ QStringList QSqlDatabase::drivers()
     }
 
     QReadLocker locker(&dbDict()->lock);
-    const DriverDict dict = QSqlDatabasePrivate::driverDict();
+    const DriverDict &dict = QSqlDatabasePrivate::driverDict();
     for (const auto &[k, _] : dict.asKeyValueRange()) {
         if (!list.contains(k))
             list << k;
@@ -645,7 +644,7 @@ void QSqlDatabasePrivate::init(const QString &type)
 
     if (!driver) {
         QReadLocker locker(&dbDict()->lock);
-        DriverDict dict = QSqlDatabasePrivate::driverDict();
+        const DriverDict &dict = QSqlDatabasePrivate::driverDict();
         for (DriverDict::const_iterator it = dict.constBegin();
              it != dict.constEnd() && !driver; ++it) {
             if (type == it.key()) {
