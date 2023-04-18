@@ -827,6 +827,7 @@ void QXmlStreamReaderPrivate::init()
     isWhitespace = true;
     isCDATA = false;
     standalone = false;
+    hasStandalone = false;
     tos = 0;
     resumeReduction = 0;
     state_stack[tos++] = 0;
@@ -1777,7 +1778,6 @@ void QXmlStreamReaderPrivate::startDocument()
      * proper order:
      *
      * [23]     XMLDecl     ::=     '<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>' */
-    bool hasStandalone = false;
 
     for (qsizetype i = 0; err.isNull() && i < n; ++i) {
         Attribute &attrib = attributeStack[i];
