@@ -939,13 +939,11 @@ void tst_QSet::javaIterator()
     QSetIterator<QString> i(set1);
     QSetIterator<QString> j(set1);
 
-    int n = 0;
     while (i.hasNext()) {
         QVERIFY(j.hasNext());
         set1.remove(i.peekNext());
         sum1 += toNumber(i.next());
         sum2 += toNumber(j.next());
-        ++n;
     }
     QVERIFY(!j.hasNext());
     QVERIFY(sum1 == 24999 * 25000 / 2);
