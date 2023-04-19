@@ -12,6 +12,7 @@
 #include <private/qstylehelper_p.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <private/qapplication_p.h>
+#include <private/qsystemlibrary_p.h>
 
 #include "qdrawutil.h" // for now
 #include <qbackingstore.h>
@@ -228,6 +229,33 @@ bool QWindowsVistaStylePrivate::transitionsEnabled() const
     return false;
 }
 
+HTHEME QWindowsVistaStylePrivate::openThemeForPrimaryScreenDpi(HWND hwnd, const wchar_t *name)
+{
+    // We want to call OpenThemeDataForDpi, but it won't link with MinGW (11.2.0), so we
+    // dynamically load this.
+    using FuncThemeDpi = decltype(&::OpenThemeDataForDpi);
+
+    // Only try to initialize openThemeForDpiFunc once. If it fails, it will likely keep failing.
+    const FuncThemeDpi uninitializedFunction = reinterpret_cast<FuncThemeDpi>(1);
+    static FuncThemeDpi openThemeForDpiFunc = uninitializedFunction;
+    if (openThemeForDpiFunc == uninitializedFunction) {
+        QSystemLibrary uxthemeLib(L"uxtheme.dll");
+        openThemeForDpiFunc = reinterpret_cast<FuncThemeDpi>(uxthemeLib.resolve("OpenThemeDataForDpi"));
+        if (!openThemeForDpiFunc) {
+            qWarning() << "QWindowsVistaStylePrivate: Load OpenThemeDataForDpi in uxtheme.dll failed";
+        }
+    }
+
+    // If we have screens and the openThemeDataForDpi function then use it :).
+    if (openThemeForDpiFunc && QGuiApplication::primaryScreen()) {
+        const int dpi = qRound(QGuiApplication::primaryScreen()->handle()->logicalDpi().first);
+        return openThemeForDpiFunc(hwnd, name, dpi);
+    }
+
+    // In case of any issues we fall back to use the plain/old OpenThemeData.
+    return OpenThemeData(hwnd, name);
+}
+
 int QWindowsVistaStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option, const QWidget *widget)
 {
     switch (pm) {
@@ -331,7 +359,8 @@ HTHEME QWindowsVistaStylePrivate::createTheme(int theme, HWND hwnd)
         const wchar_t *name = themeNames[theme];
         if (theme == VistaTreeViewTheme && QWindowsVistaStylePrivate::initVistaTreeViewTheming())
             hwnd = QWindowsVistaStylePrivate::m_vistaTreeViewHelper;
-        m_themes[theme] = OpenThemeData(hwnd, name);
+        // Use dpi from primary screen in theme.
+        m_themes[theme] = openThemeForPrimaryScreenDpi(hwnd, name);
         if (Q_UNLIKELY(!m_themes[theme]))
             qErrnoWarning("OpenThemeData() failed for theme %d (%s).",
                           theme, qPrintable(themeName(theme)));

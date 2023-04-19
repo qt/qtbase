@@ -77,6 +77,7 @@
 #endif
 #include <qlabel.h>
 #include <qheaderview.h>
+#include <uxtheme.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -152,6 +153,8 @@ public:
 
     QTime animationTime() const;
     bool transitionsEnabled() const;
+
+    static HTHEME openThemeForPrimaryScreenDpi(HWND hwnd, const wchar_t *name);
 
 private:
     static bool initVistaTreeViewTheming();
