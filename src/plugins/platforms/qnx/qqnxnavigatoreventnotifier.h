@@ -32,6 +32,9 @@ private:
     int m_fd;
     QSocketNotifier *m_readNotifier;
     QQnxNavigatorEventHandler *m_eventHandler;
+
+    static const char *navigatorControlPath;
+    static const size_t ppsBufferSize;
 };
 
 QT_END_NAMESPACE

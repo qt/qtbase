@@ -21,8 +21,8 @@
 
 QT_BEGIN_NAMESPACE
 
-static const char *ppsPath = "/pps/system/buttons/status";
-static const int ppsBufferSize = 256;
+const char *QQnxButtonEventNotifier::ppsPath = "/pps/system/buttons/status";
+const size_t QQnxButtonEventNotifier::ppsBufferSize = 256;
 
 QQnxButtonEventNotifier::QQnxButtonEventNotifier(QObject *parent)
     : QObject(parent),
