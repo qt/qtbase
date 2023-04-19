@@ -23,10 +23,10 @@
 #define qNavigatorEventNotifierDebug QT_NO_QDEBUG_MACRO
 #endif
 
-static const char *navigatorControlPath = "/pps/services/navigator/control";
-static const int ppsBufferSize = 4096;
-
 QT_BEGIN_NAMESPACE
+
+const char *QQnxNavigatorEventNotifier::navigatorControlPath = "/pps/services/navigator/control";
+const size_t QQnxNavigatorEventNotifier::ppsBufferSize = 4096;
 
 QQnxNavigatorEventNotifier::QQnxNavigatorEventNotifier(QQnxNavigatorEventHandler *eventHandler, QObject *parent)
     : QObject(parent),

@@ -14,10 +14,10 @@
 #define qNavigatorDebug QT_NO_QDEBUG_MACRO
 #endif
 
-static const char *navigatorControlPath = "/pps/services/navigator/control";
-static const int ppsBufferSize = 4096;
-
 QT_BEGIN_NAMESPACE
+
+const char *QQnxNavigatorPps::navigatorControlPath = "/pps/services/navigator/control";
+const size_t QQnxNavigatorPps::ppsBufferSize = 4096;
 
 QQnxNavigatorPps::QQnxNavigatorPps(QObject *parent)
     : QQnxAbstractNavigator(parent)

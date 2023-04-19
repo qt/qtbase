@@ -45,6 +45,9 @@ private:
     QSocketNotifier *m_readNotifier;
     ButtonState m_state[ButtonCount];
     QList<QByteArray> m_buttonKeys;
+
+    static const char *ppsPath;
+    static const size_t ppsBufferSize;
 };
 
 QT_END_NAMESPACE

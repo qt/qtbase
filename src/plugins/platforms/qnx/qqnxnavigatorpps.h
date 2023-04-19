@@ -26,8 +26,9 @@ private:
     bool sendPpsMessage(const QByteArray &message, const QByteArray &data);
     void parsePPS(const QByteArray &ppsData, QHash<QByteArray, QByteArray> &messageFields);
 
-private:
     int m_fd;
+    static const char *navigatorControlPath;
+    static const size_t ppsBufferSize;
 };
 
 QT_END_NAMESPACE
