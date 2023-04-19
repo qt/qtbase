@@ -591,11 +591,6 @@ void QProcessPrivate::Channel::clear()
     command line option; X11 applications generally accept a
     \c{-geometry} command line option.
 
-    \note On QNX, setting the working directory may cause all
-    application threads, with the exception of the QProcess caller
-    thread, to temporarily freeze during the spawning process,
-    owing to a limitation in the operating system.
-
     \section1 Synchronous Process API
 
     QProcess provides a set of functions which allow it to be used
@@ -1624,9 +1619,6 @@ QString QProcess::workingDirectory() const
     process in this directory. The default behavior is to start the
     process in the working directory of the calling process.
 
-    \note On QNX, this may cause all application threads to
-    temporarily freeze.
-
     \sa workingDirectory(), start()
 */
 void QProcess::setWorkingDirectory(const QString &dir)
@@ -2086,9 +2078,6 @@ void QProcess::startCommand(const QString &command, OpenMode mode)
     The process will be started in the directory set by setWorkingDirectory().
     If workingDirectory() is empty, the working directory is inherited
     from the calling process.
-
-    \note On QNX, this may cause all application threads to
-    temporarily freeze.
 
     If the function is successful then *\a pid is set to the process identifier
     of the started process; otherwise, it's set to -1. Note that the child
