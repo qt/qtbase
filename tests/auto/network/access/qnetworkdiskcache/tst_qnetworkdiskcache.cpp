@@ -693,8 +693,6 @@ public:
         QNetworkDiskCache cache;
         cache.setCacheDirectory(cachePath);
 
-        int read = 0;
-
         int i = 0;
         for (; i < 5000; ++i) {
             if (other && other->isFinished())
@@ -745,7 +743,6 @@ public:
                     }
                     if (gotMetaData.isValid())
                         QVERIFY(x == longString || x == longString2);
-                    read++;
                     delete d;
                 }
             }
@@ -755,7 +752,6 @@ public:
                 cache.clear();
             sleep(std::chrono::seconds{0});
         }
-        //qDebug() << "read!" << read << i;
     }
 
     QDateTime dt;

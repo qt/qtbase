@@ -1257,7 +1257,6 @@ void tst_QSortFilterProxyModel::filterHierarchy()
 
 void tst_QSortFilterProxyModel::buildHierarchy(const QStringList &l, QAbstractItemModel *m)
 {
-    int ind = 0;
     int row = 0;
     QStack<int> row_stack;
     QModelIndex parent;
@@ -1265,14 +1264,12 @@ void tst_QSortFilterProxyModel::buildHierarchy(const QStringList &l, QAbstractIt
     for (int i = 0; i < l.size(); ++i) {
         QString token = l.at(i);
         if (token == QLatin1String("<")) { // start table
-            ++ind;
             parent_stack.push(parent);
             row_stack.push(row);
             parent = m->index(row - 1, 0, parent);
             row = 0;
             QVERIFY(m->insertColumns(0, 1, parent)); // add column
         } else if (token == QLatin1String(">")) { // end table
-            --ind;
             parent = parent_stack.pop();
             row = row_stack.pop();
         } else { // append row
@@ -1288,21 +1285,18 @@ void tst_QSortFilterProxyModel::buildHierarchy(const QStringList &l, QAbstractIt
 void tst_QSortFilterProxyModel::checkHierarchy(const QStringList &l, const QAbstractItemModel *m)
 {
     int row = 0;
-    int indent = 0;
     QStack<int> row_stack;
     QModelIndex parent;
     QStack<QModelIndex> parent_stack;
     for (int i = 0; i < l.size(); ++i) {
         QString token = l.at(i);
         if (token == QLatin1String("<")) { // start table
-            ++indent;
             parent_stack.push(parent);
             row_stack.push(row);
             parent = m->index(row - 1, 0, parent);
             QVERIFY(parent.isValid());
             row = 0;
         } else if (token == QLatin1String(">")) { // end table
-            --indent;
             parent = parent_stack.pop();
             row = row_stack.pop();
         } else { // compare row
