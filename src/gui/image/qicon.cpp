@@ -169,6 +169,9 @@ static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale
         qreal ascore = pa->scale - scale;
         qreal bscore = pb->scale - scale;
 
+        // always prefer positive scores to prevent upscaling
+        if ((ascore < 0) != (bscore < 0))
+            return bscore < 0 ? pa : pb;
         // Take the one closest to 0
         return (qAbs(ascore) < qAbs(bscore)) ? pa : pb;
     }

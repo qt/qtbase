@@ -17,6 +17,7 @@ private slots:
     void addPixmap_data();
     void addPixmap();
     void ninePatch();
+    void preferUpscale();
 };
 
 tst_QIconHighDpi::tst_QIconHighDpi()
@@ -209,6 +210,23 @@ void tst_QIconHighDpi::ninePatch()
         QCOMPARE(icon.availableSizes().at(1), QSize(82, 82));
         break;
     }
+}
+
+void tst_QIconHighDpi::preferUpscale()
+{
+    QIcon icon;
+
+    // manual pixmap adder for full control of devicePixelRatio
+    auto addPixmapWithDpr = [&icon](const QString &path, qreal dpr) {
+        QImage image(path);
+        image.setDevicePixelRatio(dpr);
+        icon.addPixmap(QPixmap::fromImage(image));
+    };
+
+    addPixmapWithDpr(":/icons/testtheme/22x22/actions/appointment-new.png", 1);
+    addPixmapWithDpr(":/icons/testtheme/22x22@2/actions/appointment-new.png", 2);
+
+    QCOMPARE(icon.pixmap(QSize(22, 22), 1.25f).devicePixelRatio(), 1.25f);
 }
 
 int main(int argc, char *argv[])
