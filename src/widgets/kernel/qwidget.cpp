@@ -6412,6 +6412,30 @@ void QWidget::setFocusProxy(QWidget * w)
         d->focus_prev = oldPrev;
         oldPrev->d_func()->focus_next = this;
         firstChild->d_func()->focus_prev = this;
+    } else if (w && w->isAncestorOf(this)) {
+        // If the focus proxy is a parent, 'this' has to be inserted directly after its parent in the focus chain
+        // remove it from the chain and insert this into the focus chain after its parent
+
+        // is this the case already?
+        QWidget *parentsNext = w->d_func()->focus_next;
+        if (parentsNext == this) {
+            // nothing to do.
+            Q_ASSERT(d->focus_prev == w);
+        } else {
+            // Remove 'this' from the focus chain by making prev and next point directly to each other
+            QWidget *myOldNext = d->focus_next;
+            QWidget *myOldPrev = d->focus_prev;
+            if (myOldNext && myOldPrev) {
+                myOldNext->d_func()->focus_prev = myOldPrev;
+                myOldPrev->d_func()->focus_next = myOldNext;
+            }
+
+            // Insert 'this' behind the parent
+            w->d_func()->focus_next = this;
+            d->focus_prev = w;
+            d->focus_next = parentsNext;
+            parentsNext->d_func()->focus_prev = this;
+        }
     }
 
     if (moveFocusToProxy)
