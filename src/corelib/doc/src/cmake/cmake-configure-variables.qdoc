@@ -80,6 +80,25 @@ out as part of the deployment settings for a target.
 */
 
 /*!
+\page cmake-variable-qt-android-deploy-release.html
+\ingroup cmake-variables-qtcore
+
+\title QT_ANDROID_DEPLOY_RELEASE
+\target cmake-variable-QT_ANDROID_DEPLOY_RELEASE
+
+\summary {Set the package type as a release}
+
+\cmakevariablesince 6.5.1
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+Setting \c{QT_ANDROID_DEPLOY_RELEASE} to true allows to create release package by passing --release
+flag to androiddeployqt tool.
+
+\sa {androiddeployqt}
+*/
+
+/*!
 \page cmake_variable-qt-android-multi-abi-forward-vars
 \ingroup cmake-variables-qtcore
 

@@ -428,6 +428,9 @@ function(qt6_android_add_apk_target target)
     if(QT_ENABLE_VERBOSE_DEPLOYMENT)
         list(APPEND extra_args "--verbose")
     endif()
+    if(QT_ANDROID_DEPLOY_RELEASE)
+        list(APPEND extra_args "--release")
+    endif()
 
     _qt_internal_check_depfile_support(has_depfile_support)
 
