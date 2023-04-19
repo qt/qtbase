@@ -981,6 +981,12 @@ qt_internal_extend_target(Core CONDITION ANDROID
         kernel/qjnihelpers.cpp kernel/qjnihelpers_p.h
         platform/android/qandroidextras_p.h platform/android/qandroidextras.cpp
         platform/android/qandroidnativeinterface.cpp
+    NO_UNITY_BUILD_SOURCES
+        platform/android/qandroidextras.cpp
+        # qtNativeClassName conflicts with similar symbols in android headers
+        # TODO: Resolve conflicts between various variables set as,
+        # `org/qtproject/qt/android/QtNative` QtAndroidPrivate might be a good
+        # place to put them.
 )
 
 qt_internal_extend_target(Core CONDITION WIN32
