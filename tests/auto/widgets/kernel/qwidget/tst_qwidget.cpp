@@ -49,6 +49,7 @@
 #include <QtGui/qwindow.h>
 #include <qtimer.h>
 #include <QtWidgets/QDoubleSpinBox>
+#include <QtWidgets/QComboBox>
 
 #include <QtTest/QTest>
 #include <QtTest/private/qtesthelpers_p.h>
@@ -174,6 +175,8 @@ private slots:
     void explicitTabOrderWithComplexWidget();
     void explicitTabOrderWithSpinBox_QTBUG81097();
     void tabOrderList();
+    void tabOrderComboBox_data();
+    void tabOrderComboBox();
 #if defined(Q_OS_WIN)
     void activation();
 #endif
@@ -2078,6 +2081,102 @@ void tst_QWidget::tabOrderList()
     // not starting with 3 like one would maybe expect, but still 3, 2, 1
     QCOMPARE(getFocusChain(&c, true),
              QList<QWidget *>({&c, c.lineEdit1, c.lineEdit3, c.lineEdit2}));
+}
+
+void tst_QWidget::tabOrderComboBox_data()
+{
+    QTest::addColumn<const bool>("editableAtBeginning");
+    QTest::addColumn<const QList<int>>("firstTabOrder");
+    QTest::addColumn<const QList<int>>("secondTabOrder");
+
+    QTest::addRow("3 not editable") << false << QList<int>{2, 1, 0} << QList<int>{0, 1, 2};
+    QTest::addRow("4 editable") << true << QList<int>{2, 1, 0, 3} << QList<int>{3, 0, 2, 1};
+}
+
+QWidgetList expectedFocusChain(const QList<QComboBox *> &boxes, const QList<int> &sequence)
+{
+    Q_ASSERT(boxes.count() == sequence.count());
+    QWidgetList widgets;
+    for (int i : sequence) {
+        Q_ASSERT(i >= 0);
+        Q_ASSERT(i < boxes.count());
+        QComboBox *box = boxes.at(i);
+        widgets.append(box);
+        if (box->lineEdit())
+            widgets.append(box->lineEdit());
+    }
+
+    return widgets;
+}
+
+QWidgetList realFocusChain(const QList<QComboBox *> &boxes, const QList<int> &sequence)
+{
+    QWidgetList widgets = getFocusChain(boxes.at(sequence.at(0)), true);
+    // Filter everything with NoFocus
+    for (auto *widget : widgets) {
+        if (widget->focusPolicy() == Qt::NoFocus)
+            widgets.removeOne(widget);
+    }
+    return widgets;
+}
+
+void setTabOrder(const QList<QComboBox *> &boxes, const QList<int> &sequence)
+{
+    Q_ASSERT(boxes.count() == sequence.count());
+    QWidget *previous = nullptr;
+    for (int i : sequence) {
+        Q_ASSERT(i >= 0);
+        Q_ASSERT(i < boxes.count());
+        QWidget *box = boxes.at(i);
+        if (!previous) {
+            previous = box;
+        } else {
+            QWidget::setTabOrder(previous, box);
+            previous = box;
+        }
+    }
+}
+
+void tst_QWidget::tabOrderComboBox()
+{
+    QFETCH(const bool, editableAtBeginning);
+    QFETCH(const QList<int>, firstTabOrder);
+    QFETCH(const QList<int>, secondTabOrder);
+    const int count = firstTabOrder.count();
+    Q_ASSERT(count == secondTabOrder.count());
+
+    QWidget w;
+    w.setObjectName("MainWidget");
+    QVBoxLayout* layout = new QVBoxLayout();
+    w.setLayout(layout);
+
+    QList<QComboBox *> boxes;
+    for (int i = 0; i < count; ++i) {
+        auto box = new QComboBox;
+        box->setObjectName("ComboBox " + QString::number(i));
+        if (editableAtBeginning) {
+            box->setEditable(true);
+            box->lineEdit()->setObjectName("LineEdit " + QString::number(i));
+        }
+        boxes.append(box);
+        layout->addWidget(box);
+    }
+    layout->addStretch();
+
+#define COMPARE(seq)\
+    setTabOrder(boxes, seq);\
+    QCOMPARE(realFocusChain(boxes, seq), expectedFocusChain(boxes, seq))
+
+    COMPARE(firstTabOrder);
+
+    if (!editableAtBeginning) {
+        for (auto *box : boxes)
+            box->setEditable(box);
+    }
+
+    COMPARE(secondTabOrder);
+
+#undef COMPARE
 }
 
 void tst_QWidget::tabOrderWithProxy()
