@@ -1031,11 +1031,22 @@ void tst_QTimer::crossThreadSingleShotToFunctor()
     DummyFunctor::callThread = nullptr;
 
     QThread t;
-    t.start();
-
     std::unique_ptr<QObject> o(new QObject());
     o->moveToThread(&t);
 
+    QTimer::singleShot(timeout, o.get(), DummyFunctor());
+
+    // wait enough time for the timer to have timed out before the timer
+    // could be start in the receiver's thread.
+    QTest::qWait(10 + timeout * 10);
+    t.start();
+    t.wait();
+    QCOMPARE(DummyFunctor::callThread, &t);
+
+    // continue with a stress test - the calling thread is busy, the
+    // timer should still fire and no crashes.
+    DummyFunctor::callThread = nullptr;
+    t.start();
     for (int i = 0; i < 10000; i++)
         QTimer::singleShot(timeout, o.get(), DummyFunctor());
 
