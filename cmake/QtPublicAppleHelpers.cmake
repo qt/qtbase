@@ -567,6 +567,62 @@ function(_qt_internal_copy_info_plist target)
     set_target_properties("${target}" PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${info_plist_out}")
 endfunction()
 
+function(_qt_internal_plist_buddy plist_file)
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "" "OUTPUT_VARIABLE;ERROR_VARIABLE" "COMMANDS")
+    foreach(command ${arg_COMMANDS})
+        execute_process(COMMAND "/usr/libexec/PlistBuddy"
+                                -c "${command}" "${plist_file}"
+                    OUTPUT_VARIABLE plist_buddy_output
+                    ERROR_VARIABLE plist_buddy_error)
+        string(STRIP "${plist_buddy_output}" plist_buddy_output)
+        if(arg_OUTPUT_VARIABLE)
+            list(APPEND ${arg_OUTPUT_VARIABLE} ${plist_buddy_output})
+            set(${arg_OUTPUT_VARIABLE} ${${arg_OUTPUT_VARIABLE}} PARENT_SCOPE)
+        endif()
+        if(arg_ERROR_VARIABLE)
+            list(APPEND ${arg_ERROR_VARIABLE} ${plist_buddy_error})
+            set(${arg_ERROR_VARIABLE} ${${arg_ERROR_VARIABLE}} PARENT_SCOPE)
+        endif()
+        if(plist_buddy_error)
+            return()
+        endif()
+    endforeach()
+endfunction()
+
+function(_qt_internal_set_apple_localizations target)
+    if(QT_NO_SET_PLIST_LOCALIZATIONS)
+        return()
+    endif()
+
+    get_target_property(supported_languages "${target}" _qt_apple_supported_languages)
+    if("${supported_languages}" STREQUAL "supported_languages-NOTFOUND")
+        return()
+    endif()
+    get_target_property(plist_file "${target}" MACOSX_BUNDLE_INFO_PLIST)
+    if (NOT plist_file)
+        return()
+    endif()
+
+    _qt_internal_plist_buddy("${plist_file}"
+        COMMANDS "print CFBundleLocalizations"
+        OUTPUT_VARIABLE existing_localizations
+    )
+    if(existing_localizations)
+        return()
+    endif()
+
+    list(TRANSFORM supported_languages PREPEND
+        "Add CFBundleLocalizations: string ")
+
+    _qt_internal_plist_buddy("${plist_file}"
+        COMMANDS
+            "Add CFBundleLocalizations array"
+            ${supported_languages}
+            "Delete CFBundleAllowMixedLocalizations"
+    )
+endfunction()
+
 function(_qt_internal_set_ios_simulator_arch target)
     if(CMAKE_XCODE_ATTRIBUTE_ARCHS
         OR QT_NO_SET_XCODE_ARCHS)
@@ -597,6 +653,7 @@ function(_qt_internal_finalize_apple_app target)
     # Shared between macOS and iOS apps
 
     _qt_internal_copy_info_plist("${target}")
+    _qt_internal_set_apple_localizations("${target}")
 
     # Only set the various properties if targeting the Xcode generator, otherwise the various
     # Xcode tokens are embedded as-is instead of being dynamically evaluated.
