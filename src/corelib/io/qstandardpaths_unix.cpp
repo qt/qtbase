@@ -357,9 +357,9 @@ static QStringList dirsList(const QString &xdgEnvVar)
         if (dir.startsWith(u'/'))
             dirs.push_back(QDir::cleanPath(dir.toString()));
 
-    // Remove duplicates from the list, there's no use for duplicated
-    // paths in XDG_DATA_DIRS - if it's not found in the given
-    // directory the first time, it won't be there the second time.
+    // Remove duplicates from the list, there's no use for duplicated paths
+    // in XDG_* env vars - if whatever is being looked for is not found in
+    // the given directory the first time, it won't be there the second time.
     // Plus duplicate paths causes problems for example for mimetypes,
     // where duplicate paths here lead to duplicated mime types returned
     // for a file, eg "text/plain,text/plain" instead of "text/plain"
