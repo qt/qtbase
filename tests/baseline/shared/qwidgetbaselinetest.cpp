@@ -124,8 +124,9 @@ QImage QWidgetBaselineTest::takeSnapshot()
 */
 QImage QWidgetBaselineTest::takeScreenSnapshot(const QRect& windowRect)
 {
-    // make sure all effects are done
-    QTest::qWait(250);
+    // make sure all effects are done - wait longer here because entire
+    // windows might be fading in and out.
+    QTest::qWait(750);
     return window->screen()->grabWindow(0, windowRect.x(), windowRect.y(),
                                         windowRect.width(), windowRect.height()).toImage();
 }
