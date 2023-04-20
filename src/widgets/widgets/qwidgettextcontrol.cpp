@@ -967,9 +967,12 @@ void QWidgetTextControl::selectAll()
 {
     Q_D(QWidgetTextControl);
     const int selectionLength = qAbs(d->cursor.position() - d->cursor.anchor());
+    const int oldCursorPos = d->cursor.position();
     d->cursor.select(QTextCursor::Document);
     d->selectionChanged(selectionLength != qAbs(d->cursor.position() - d->cursor.anchor()));
     d->cursorIsFocusIndicator = false;
+    if (d->cursor.position() != oldCursorPos)
+        emit cursorPositionChanged();
     emit updateRequest();
 }
 
