@@ -160,7 +160,8 @@ void tst_QTcpServer::initTestCase()
 #ifdef QT_TEST_SERVER
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3128));
-    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
+    // FTP currently not supported:
+    // QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::imapServerName(), 143));
 #else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
@@ -755,6 +756,7 @@ void tst_QTcpServer::proxyFactory_data()
         << proxyList << proxyList.at(1)
         << false << int(QAbstractSocket::UnknownSocketError);
 
+#if 0 // ftp not currently supported
     proxyList.clear();
     proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
               << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3128)
@@ -762,6 +764,7 @@ void tst_QTcpServer::proxyFactory_data()
     QTest::newRow("ftp+cachinghttp+socks5")
         << proxyList << proxyList.at(2)
         << false << int(QAbstractSocket::UnknownSocketError);
+#endif
 
     // tests that fail to listen
     proxyList.clear();
@@ -776,6 +779,7 @@ void tst_QTcpServer::proxyFactory_data()
         << proxyList << QNetworkProxy()
         << true << int(QAbstractSocket::UnsupportedSocketOperationError);
 
+#if 0 // ftp not currently supported
     proxyList.clear();
     proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121);
     QTest::newRow("ftp")
@@ -788,6 +792,7 @@ void tst_QTcpServer::proxyFactory_data()
     QTest::newRow("ftp+cachinghttp")
         << proxyList << QNetworkProxy()
         << true << int(QAbstractSocket::UnsupportedSocketOperationError);
+#endif
 }
 
 void tst_QTcpServer::proxyFactory()
