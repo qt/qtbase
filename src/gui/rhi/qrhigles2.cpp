@@ -454,6 +454,10 @@ QT_BEGIN_NAMESPACE
 #define GL_HALF_FLOAT 0x140B
 #endif
 
+#ifndef GL_MAX_VERTEX_OUTPUT_COMPONENTS
+#define GL_MAX_VERTEX_OUTPUT_COMPONENTS   0x9122
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -939,7 +943,7 @@ bool QRhiGles2::create(QRhi::Flags flags)
         f->glGetIntegerv(GL_MAX_VARYING_VECTORS, &caps.maxVertexOutputs);
     } else if (caps.ctxMajor >= 3) {
         GLint components = 0;
-        f->glGetIntegerv(GL_MAX_VARYING_COMPONENTS, &components);
+        f->glGetIntegerv(caps.coreProfile ? GL_MAX_VERTEX_OUTPUT_COMPONENTS : GL_MAX_VARYING_COMPONENTS, &components);
         caps.maxVertexOutputs = components / 4;
     } else {
         // OpenGL before 3.0 only has this, and not the same as
