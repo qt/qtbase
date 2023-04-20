@@ -354,7 +354,7 @@ void tst_NetworkSelfTest::initTestCase()
     if (resolved.error() == QHostInfo::NoError && !resolved.addresses().isEmpty())
         ftpServerIpAddress = resolved.addresses().first();
     // TODO: 'ssh', port 22.
-    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
+    // QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));
     // TODO: 'smb', port 139.
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::imapServerName(), 143));
@@ -511,6 +511,7 @@ void tst_NetworkSelfTest::ftpServer()
 
 void tst_NetworkSelfTest::ftpProxyServer()
 {
+    QSKIP("FTP not currently supported.");
     netChat(2121, ftpChat("@" + QtNetworkSettings::ftpServerName().toLatin1()));
 }
 

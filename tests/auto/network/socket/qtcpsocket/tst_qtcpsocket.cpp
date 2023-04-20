@@ -332,7 +332,8 @@ void tst_QTcpSocket::initTestCase()
      //QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::firewallServerName(), 1357));
      QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
      QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpServerName(), 21));
-     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
+    // FTP currently not supported:
+    // QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
 #else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
@@ -2912,6 +2913,7 @@ void tst_QTcpSocket::proxyFactory_data()
         << proxyList << proxyList.at(1)
         << false << int(QAbstractSocket::UnknownSocketError);
 
+#if 0 // FTP not currently supported
     proxyList.clear();
     proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
               << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129)
@@ -2919,6 +2921,7 @@ void tst_QTcpSocket::proxyFactory_data()
     QTest::newRow("ftp+cachinghttp+socks5")
         << proxyList << proxyList.at(2)
         << false << int(QAbstractSocket::UnknownSocketError);
+#endif
 
     // tests that fail to connect
     proxyList.clear();
@@ -2927,6 +2930,7 @@ void tst_QTcpSocket::proxyFactory_data()
         << proxyList << QNetworkProxy()
         << true << int(QAbstractSocket::UnsupportedSocketOperationError);
 
+#if 0 // FTP not currently supported
     proxyList.clear();
     proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121);
     QTest::newRow("ftp")
@@ -2939,6 +2943,7 @@ void tst_QTcpSocket::proxyFactory_data()
     QTest::newRow("ftp+cachinghttp")
         << proxyList << QNetworkProxy()
         << true << int(QAbstractSocket::UnsupportedSocketOperationError);
+#endif
 }
 
 void tst_QTcpSocket::proxyFactory()
