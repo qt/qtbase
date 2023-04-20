@@ -804,7 +804,7 @@ static bool directoryMatchesSizeAndScale(const QIconDirInfo &dir, int iconsize, 
     case QIconDirInfo::Threshold:
         return iconsize >= dir.size - dir.threshold && iconsize <= dir.size + dir.threshold;
     case QIconDirInfo::Fallback:
-        return true;
+        return false;   // just because the scale matches it doesn't mean there is a better sized icon somewhere
     }
 
     Q_ASSERT(1); // Not a valid value
@@ -812,16 +812,16 @@ static bool directoryMatchesSizeAndScale(const QIconDirInfo &dir, int iconsize, 
 }
 
 /*
- * This algorithm is defined by the freedesktop spec:
+ * This algorithm is a modification of the algorithm defined by the freedesktop spec:
  * http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
  */
-static int directorySizeDistance(const QIconDirInfo &dir, int iconsize, int iconscale)
+static std::optional<int> directorySizeDelta(const QIconDirInfo &dir, int iconsize, int iconscale)
 {
     const auto scaledIconSize = iconsize * iconscale;
 
     switch (dir.type) {
     case QIconDirInfo::Fixed:
-        return qAbs(dir.size * dir.scale - scaledIconSize);
+        return dir.size * dir.scale - scaledIconSize;
     case QIconDirInfo::Scalable: {
         const auto minScaled = dir.minSize * dir.scale;
         if (scaledIconSize < minScaled)
@@ -829,16 +829,16 @@ static int directorySizeDistance(const QIconDirInfo &dir, int iconsize, int icon
         const auto maxScaled = dir.maxSize * dir.scale;
         if (scaledIconSize > maxScaled)
             return scaledIconSize - maxScaled;
-        return 0;
+        return {};
     }
     case QIconDirInfo::Threshold:
         if (scaledIconSize < (dir.size - dir.threshold) * dir.scale)
             return dir.minSize * dir.scale - scaledIconSize;
         if (scaledIconSize > (dir.size + dir.threshold) * dir.scale)
             return scaledIconSize - dir.maxSize * dir.scale;
-        return 0;
+        return {};
     case QIconDirInfo::Fallback:
-        return 0;
+        return {};
     }
 
     Q_ASSERT(1); // Not a valid value
@@ -857,23 +857,33 @@ QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QThemeIconInfo &in
     // Note that m_info.entries are sorted so that png-files
     // come first
 
-    // Search for exact matches first
-    for (const auto &entry : info.entries) {
-        if (directoryMatchesSizeAndScale(entry->dir, iconsize, scale))
-            return entry.get();
-    }
-
-    // Find the minimum distance icon
-    int minimalSize = INT_MAX;
+    int minimalDelta = INT_MIN;
     QIconLoaderEngineEntry *closestMatch = nullptr;
     for (const auto &entry : info.entries) {
-        int distance = directorySizeDistance(entry->dir, iconsize, scale);
-        if (distance < minimalSize) {
-            minimalSize  = distance;
-            closestMatch = entry.get();
+        // exact match in scale and dpr
+        if (directoryMatchesSizeAndScale(entry->dir, iconsize, scale))
+            return entry.get();
+
+        // Find the minimum distance icon
+        const auto delta = directorySizeDelta(entry->dir, iconsize, scale);
+        if (delta.has_value()) {
+            const auto deltaValue = delta.value();
+            // always prefer downscaled icons over upscaled icons
+            if (deltaValue > minimalDelta && minimalDelta <= 0) {
+                minimalDelta = deltaValue;
+                closestMatch = entry.get();
+            } else if (deltaValue > 0 && deltaValue < qAbs(minimalDelta)) {
+                minimalDelta = deltaValue;
+                closestMatch = entry.get();
+            } else if (deltaValue == 0) {
+                // exact match but different dpr:
+                // --> size * scale == entry.size * entry.scale
+                minimalDelta = deltaValue;
+                closestMatch = entry.get();
+            }
         }
     }
-    return closestMatch;
+    return closestMatch ? closestMatch : info.entries.at(0).get();
 }
 
 /*

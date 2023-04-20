@@ -46,76 +46,74 @@ void tst_QIconHighDpi::fromTheme_data()
 
     // We don't have a high DPI version of the 16x16 size of this icon,
     // so directoryMatchesSize() will return false for all directories.
-    // directorySizeDistance() is then called to find the best match.
+    // directorySizeDelta() is then called to find the best match.
     // The table below illustrates the results for our available images at various DPRs:
-    // Available size | Available scale | Requested size | Requested scale | Distance
+    // Available size | Available scale | Requested size | Requested scale | Delta
     //        22      *        2        -       16       *        1        =    28
     //        22      *        1        -       16       *        1        =     6
     //        16      *        1        -       16       *        1        =     0 < (16x16)
-    // Available size | Available scale | Requested size | Requested scale | Distance
-    //        22      *        2        -       16       *        2        =    12
-    //        22      *        1        -       16       *        2        =    10 < (22x22)
-    //        16      *        1        -       16       *        2        =    16
-    // Available size | Available scale | Requested size | Requested scale | Distance
-    //        22      *        2        -       16       *        3        =     4 < (22x22@2)
-    //        22      *        1        -       16       *        3        =    26
-    //        16      *        1        -       16       *        3        =    32
+    // Available size | Available scale | Requested size | Requested scale | Delta
+    //        22      *        2        -       16       *        2        =    12 < (22x22, prefer downscale)
+    //        22      *        1        -       16       *        2        =   -10
+    //        16      *        1        -       16       *        2        =   -16
+    // Available size | Available scale | Requested size | Requested scale | Delta
+    //        22      *        2        -       16       *        3        =    -4 < (22x22@2)
+    //        22      *        1        -       16       *        3        =   -26
+    //        16      *        1        -       16       *        3        =   -32
     // Both of these functions are implementations of the freedesktop icon theme spec,
     // which dictates that if there is no matching scale, directorySizeDistance() determines
     // the winner, regardless of whether or not the scale is too low for the requested scale.
     QTest::newRow("16x16,dpr=1") << 16 << 1.0 << 16 << 1.0;
-    // PixmapEntry::pixmap() will only downscale the pixmap if actualSize.width() > size.width().
-    // In this case, 22 > 32 is false, so a 22x22 pixmap is returned.
-    QTest::newRow("16x16,dpr=2") << 16 << 2.0 << 22 << 1.375;
+    QTest::newRow("16x16,dpr=2") << 16 << 2.0 << 32 << 2.0;
     QTest::newRow("16x16,dpr=3") << 16 << 3.0 << 44 << 2.75;
 
     // We don't have an 8x8 size of this icon, so:
-    // Available size | Available scale | Requested size | Requested scale | Distance
+    // Available size | Available scale | Requested size | Requested scale | Delta
     //        22      *        2        -       8        *        1        =    36
     //        22      *        1        -       8        *        1        =    14
     //        16      *        1        -       8        *        1        =     8 < (16x16)
-    // Available size | Available scale | Requested size | Requested scale | Distance
+    // Available size | Available scale | Requested size | Requested scale | Delta
     //        22      *        2        -       8        *        2        =    28
     //        22      *        1        -       8        *        2        =     6
     //        16      *        1        -       8        *        2        =     0 < (16x16)
-    // Available size | Available scale | Requested size | Requested scale | Distance
-    //        22      *        2        -       8        *        3        =    20
-    //        22      *        1        -       8        *        3        =     2 < (22x22)
-    //        16      *        1        -       8        *        3        =     8
+    // Available size | Available scale | Requested size | Requested scale | Delta
+    //        22      *        2        -       8        *        3        =    20 < (22x22, prefer downscale)
+    //        22      *        1        -       8        *        3        =    -2
+    //        16      *        1        -       8        *        3        =    -8
     QTest::newRow("8x8,dpr=1") << 8 << 1.0 << 8 << 1.0;
     QTest::newRow("8x8,dpr=2") << 8 << 2.0 << 16 << 2.0;
-    QTest::newRow("8x8,dpr=3") << 8 << 3.0 << 22 << 2.75;
+    QTest::newRow("8x8,dpr=3") << 8 << 3.0 << 24 << 3.0;
 
     // We don't have a 44x44 size of this icon, so:
-    // Available size | Available scale | Requested size | Requested scale | Distance
+    // Available size | Available scale | Requested size | Requested scale | Delta
     //        22      *        2        -       44       *        1        =     0 < (22x22@2)
-    //        22      *        1        -       44       *        1        =    22
-    //        16      *        1        -       44       *        1        =    28
-    // Available size | Available scale | Requested size | Requested scale | Distance
-    //        22      *        2        -       44       *        2        =    44 < (22x22@2)
-    //        22      *        1        -       44       *        2        =    66
-    //        16      *        1        -       44       *        2        =    72
-    // Available size | Available scale | Requested size | Requested scale | Distance
-    //        22      *        2        -       44       *        3        =    88 < (22x22@2)
-    //        22      *        1        -       44       *        3        =   110
-    //        16      *        1        -       44       *        3        =   116
+    //        22      *        1        -       44       *        1        =   -22
+    //        16      *        1        -       44       *        1        =   -28
+    // Available size | Available scale | Requested size | Requested scale | Delta
+    //        22      *        2        -       44       *        2        =   -44 < (22x22@2)
+    //        22      *        1        -       44       *        2        =   -66
+    //        16      *        1        -       44       *        2        =   -72
+    // Available size | Available scale | Requested size | Requested scale | Delta
+    //        22      *        2        -       44       *        3        =   -88 < (22x22@2)
+    //        22      *        1        -       44       *        3        =  -110
+    //        16      *        1        -       44       *        3        =  -116
     QTest::newRow("44x44,dpr=1") << 44 << 1.0 << 44 << 1.0;
     QTest::newRow("44x44,dpr=2") << 44 << 2.0 << 44 << 1.0;
     QTest::newRow("44x44,dpr=3") << 44 << 3.0 << 44 << 1.0;
 
     // We don't have a 20x20 size of this icon, so:
-    // Available size | Available scale | Requested size | Requested scale | Distance
+    // Available size | Available scale | Requested size | Requested scale | Delta
     //        22      *        2        -       20       *        1        =    24
     //        22      *        1        -       20       *        1        =     2 < (22x22)
-    //        16      *        1        -       20       *        1        =     4
-    // Available size | Available scale | Requested size | Requested scale | Distance
+    //        16      *        1        -       20       *        1        =    -4
+    // Available size | Available scale | Requested size | Requested scale | Delta
     //        22      *        2        -       20       *        2        =     4 < (22x22@2)
-    //        22      *        1        -       20       *        2        =    18
-    //        16      *        1        -       20       *        2        =    24
-    // Available size | Available scale | Requested size | Requested scale | Distance
-    //        22      *        2        -       20       *        3        =    16 < (22x22@2)
-    //        22      *        1        -       20       *        3        =    38
-    //        16      *        1        -       20       *        3        =    44
+    //        22      *        1        -       20       *        2        =   -18
+    //        16      *        1        -       20       *        2        =   -24
+    // Available size | Available scale | Requested size | Requested scale | Delta
+    //        22      *        2        -       20       *        3        =   -16 < (22x22@2)
+    //        22      *        1        -       20       *        3        =   -38
+    //        16      *        1        -       20       *        3        =   -44
     QTest::newRow("20x20,dpr=1") << 20 << 1.0 << 20 << 1.0;
     // PixmapEntry::pixmap() will only downscale the pixmap if actualSize.width() > size.width().
     // In this case, 44 > 40 is true, so the 44x44 pixmap is downscaled to 40x40.
@@ -182,12 +180,8 @@ void tst_QIconHighDpi::addPixmap()
     QVERIFY(icon.availableSizes().contains(QSize(16, 16)));
     QVERIFY(icon.availableSizes().contains(QSize(22, 22)));
 
-    if (qstrcmp(QTest::currentDataTag(), "16x16,dpr=2") == 0)
-        QSKIP("broken corner case"); // expect 22x22, get 32x32
     if (qstrcmp(QTest::currentDataTag(), "44x44,dpr=1") == 0)
         QSKIP("broken corner case"); // expect 44x44, get 22x22
-    if (qstrcmp(QTest::currentDataTag(), "8x8,dpr=3") == 0)
-        QSKIP("broken corner case");// expect 22x22, get 24x24
 
     const QPixmap pixmap = icon.pixmap(QSize(requestedSize, requestedSize), requestedDpr);
     QCOMPARE(pixmap.size(), QSize(expectedSize, expectedSize));
