@@ -1056,8 +1056,8 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
                         }
                     } else if (hintName.endsWith("icon"_L1)) {
                         hintValue = decl.iconValue();
-                    } else if (hintName == "button-layout"_L1
-                                && decl.d->values.size() != 0 && decl.d->values.at(0).type == Value::String) {
+                    } else if (hintName == "button-layout"_L1 && decl.d->values.size() != 0
+                               && decl.d->values.at(0).type == QCss::Value::String) {
                         hintValue = subControlLayout(decl.d->values.at(0).variant.toString());
                     } else {
                         int integer;
