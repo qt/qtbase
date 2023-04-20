@@ -36,6 +36,7 @@ class tst_qstandardpaths : public QObject
 private slots:
     void initTestCase();
     void dump();
+    void init();
     void testDefaultLocations();
     void testCustomLocations();
     void enableTestMode();
@@ -138,6 +139,16 @@ void tst_qstandardpaths::dump()
                  << QStandardPaths::writableLocation(s)
                  << QStandardPaths::standardLocations(s);
     }
+}
+
+void tst_qstandardpaths::init()
+{
+    // Some unittests set a custom org/app names, restore the original ones
+    // before each unittest is run
+    static const QString org = QCoreApplication::organizationName();
+    static const QString app = QCoreApplication::applicationName();
+    QCoreApplication::setOrganizationName(org);
+    QCoreApplication::setApplicationName(app);
 }
 
 void tst_qstandardpaths::testDefaultLocations()
@@ -308,10 +319,6 @@ void tst_qstandardpaths::testDataLocation()
     QCOMPARE(appDataDirs.at(1), QString::fromLatin1("/usr/local/share/Qt/QtTest"));
     QCOMPARE(appDataDirs.at(2), QString::fromLatin1("/usr/share/Qt/QtTest"));
 #endif
-
-    // reset for other tests
-    QCoreApplication::setOrganizationName(QString());
-    QCoreApplication::setApplicationName(QString());
 }
 
 void tst_qstandardpaths::testAppConfigLocation()
@@ -325,9 +332,6 @@ void tst_qstandardpaths::testAppConfigLocation()
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation), base + "/Qt/tst_qstandardpaths");
     QCoreApplication::setApplicationName("QtTest");
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation), base + "/Qt/QtTest");
-    // reset for other tests
-    QCoreApplication::setOrganizationName(QString());
-    QCoreApplication::setApplicationName(QString());
 #endif
 }
 
