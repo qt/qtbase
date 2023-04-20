@@ -29,6 +29,41 @@ using namespace Qt::StringLiterals;
 // Update this when adding new enum values; update enumNames too
 static const int MaxStandardLocation = QStandardPaths::AppConfigLocation;
 
+static QString genericCacheLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
+}
+static QString cacheLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+}
+
+static QString genericDataLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+}
+static QString appDataLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+}
+static QString appLocalDataLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+}
+
+static QString genericConfigLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+}
+static QString configLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+}
+static QString appConfigLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+}
+
 class tst_qstandardpaths : public QObject
 {
     Q_OBJECT
@@ -221,24 +256,52 @@ void tst_qstandardpaths::enableTestMode()
     setCustomLocations(); // for the global config dir
     const QString qttestDir = QDir::homePath() + QLatin1String("/.qttest");
 
-    // ConfigLocation
+    // *Config*Location
     const QString configDir = qttestDir + QLatin1String("/config");
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation), configDir);
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation), configDir);
     const QStringList confDirs = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
     QCOMPARE(confDirs, QStringList() << configDir << m_globalConfigDir);
+    // AppConfigLocation should be "GenericConfigLocation/organization-name/app-name"
+    QCOMPARE(appConfigLoc(), configDir + "/tst_qstandardpaths"_L1);
 
-    // GenericDataLocation
+    // *Data*Location
     const QString dataDir = qttestDir + QLatin1String("/share");
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation), dataDir);
     const QStringList gdDirs = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
     QCOMPARE(gdDirs, QStringList() << dataDir << m_globalAppDir);
+    // AppDataLocation/AppLocalDataLocation should be
+    // "GenericDataLocation/organization-name/app-name"
+    QCOMPARE(appDataLoc(), dataDir + "/tst_qstandardpaths"_L1);
+    QCOMPARE(appLocalDataLoc(), dataDir + "/tst_qstandardpaths"_L1);
 
-    // GenericCacheLocation
+    // *CacheLocation
     const QString cacheDir = qttestDir + QLatin1String("/cache");
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation), cacheDir);
     const QStringList cacheDirs = QStandardPaths::standardLocations(QStandardPaths::GenericCacheLocation);
     QCOMPARE(cacheDirs, QStringList() << cacheDir);
+    // CacheLocation should be "GenericCacheLocation/organization-name/app-name"
+    QCOMPARE(cacheLoc(), cacheDir + "/tst_qstandardpaths"_L1);
+
+    QCoreApplication::setOrganizationName("Qt");
+    QCOMPARE(appConfigLoc(), configDir + "/Qt/tst_qstandardpaths"_L1);
+    QCOMPARE(appDataLoc(), dataDir + "/Qt/tst_qstandardpaths"_L1);
+    QCOMPARE(appLocalDataLoc(), dataDir + "/Qt/tst_qstandardpaths"_L1);
+    QCOMPARE(cacheLoc(), cacheDir + "/Qt/tst_qstandardpaths"_L1);
+    QCOMPARE(cacheLoc(), cacheDir + "/Qt/tst_qstandardpaths"_L1);
+
+    QCoreApplication::setApplicationName("QtTest");
+    QCOMPARE(appConfigLoc(), configDir + "/Qt/QtTest"_L1);
+    QCOMPARE(appDataLoc(), dataDir + "/Qt/QtTest"_L1);
+    QCOMPARE(appLocalDataLoc(), dataDir + "/Qt/QtTest"_L1);
+    QCoreApplication::setApplicationName("QtTest");
+    QCOMPARE(cacheLoc(), cacheDir + "/Qt/QtTest"_L1);
+
+    // Check these are unaffected by org/app names
+    QCOMPARE(genericConfigLoc(), configDir);
+    QCOMPARE(configLoc(), configDir);
+    QCOMPARE(genericDataLoc(), dataDir);
+    QCOMPARE(genericCacheLoc(), cacheDir);
 #endif
 
     // On all platforms, we want to ensure that the writableLocation is different in test mode and real mode.
