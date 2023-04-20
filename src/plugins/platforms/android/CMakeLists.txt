@@ -87,4 +87,7 @@ qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qandroidplatformvulkaninstance.cpp qandroidplatformvulkaninstance.h
         qandroidplatformvulkanwindow.cpp qandroidplatformvulkanwindow.h
+    NO_UNITY_BUILD_SOURCES
+        # To avoid undefined symbols due to missing VK_USE_PLATFORM_ANDROID_KHR
+        qandroidplatformvulkaninstance.cpp qandroidplatformvulkanwindow.cpp
 )
