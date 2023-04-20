@@ -1391,7 +1391,7 @@ GLuint QOpenGLWidget::defaultFramebufferObject(TargetBuffer targetBuffer) const
   This virtual function is called once before the first call to
   paintGL() or resizeGL(). Reimplement it in a subclass.
 
-  This function should set up any required OpenGL resources and state.
+  This function should set up any required OpenGL resources.
 
   There is no need to call makeCurrent() because this has already been
   done when this function is called. Note however that the framebuffer
@@ -1432,6 +1432,13 @@ void QOpenGLWidget::resizeGL(int w, int h)
   bound, and the viewport is set up by a call to glViewport(). No
   other state is set and no clearing or drawing is performed by the
   framework.
+
+  \note To ensure portability, do not expect that state set in initializeGL()
+  persists. Rather, set all necessary state, for example, by calling
+  glEnable(), in paintGL(). This is because some platforms, such as WebAssembly
+  with WebGL, may have limitations on OpenGL contexts in some situations, which
+  can lead to using the context used with the QOpenGLWidget for other purposes
+  as well.
 
   When \l QSurfaceFormat::StereoBuffers is enabled, this function
   will be called twice - once for each buffer. Query what buffer is

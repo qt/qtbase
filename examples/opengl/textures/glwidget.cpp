@@ -46,9 +46,6 @@ void GLWidget::initializeGL()
 
     makeObject();
 
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
@@ -91,6 +88,9 @@ void GLWidget::paintGL()
     glClearColor(clearColor.redF(), clearColor.greenF(), clearColor.blueF(), clearColor.alphaF());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
     QMatrix4x4 m;
     m.ortho(-0.5f, +0.5f, +0.5f, -0.5f, 4.0f, 15.0f);
     m.translate(0.0f, 0.0f, -10.0f);
@@ -98,6 +98,8 @@ void GLWidget::paintGL()
     m.rotate(yRot / 16.0f, 0.0f, 1.0f, 0.0f);
     m.rotate(zRot / 16.0f, 0.0f, 0.0f, 1.0f);
 
+    vbo.bind();
+    program->bind();
     program->setUniformValue("matrix", m);
     program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
