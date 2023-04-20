@@ -531,14 +531,12 @@ function(_qt_internal_set_xcode_bitcode_enablement target)
         "NO")
 endfunction()
 
-function(_qt_internal_generate_info_plist target)
+function(_qt_internal_copy_info_plist target)
     # If the project already specifies a custom file, we don't override it.
-    get_target_property(existing_plist "${target}" MACOSX_BUNDLE_INFO_PLIST)
-    if(existing_plist)
-        return()
+    get_target_property(info_plist_in "${target}" MACOSX_BUNDLE_INFO_PLIST)
+    if(NOT info_plist_in)
+        set(info_plist_in "${__qt_internal_cmake_apple_support_files_path}/Info.plist.app.in")
     endif()
-
-    set(info_plist_in "${__qt_internal_cmake_apple_support_files_path}/Info.plist.app.in")
 
     string(MAKE_C_IDENTIFIER "${target}" target_identifier)
     set(info_plist_out_dir
@@ -598,7 +596,7 @@ endfunction()
 function(_qt_internal_finalize_apple_app target)
     # Shared between macOS and iOS apps
 
-    _qt_internal_generate_info_plist("${target}")
+    _qt_internal_copy_info_plist("${target}")
 
     # Only set the various properties if targeting the Xcode generator, otherwise the various
     # Xcode tokens are embedded as-is instead of being dynamically evaluated.
