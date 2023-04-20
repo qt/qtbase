@@ -1559,8 +1559,10 @@ void tst_QNetworkReply::initTestCase()
         testDataDir = QCoreApplication::applicationDirPath();
 
 #if defined(QT_TEST_SERVER)
-    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpServerName(), 21));
-    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
+    if (ftpSupported) {
+        QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpServerName(), 21));
+        QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
+    }
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 443));
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3128));
@@ -4301,15 +4303,15 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
 
     // Tests that fail:
 
-    // HTTP request with FTP caching proxy
-    proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121);
-    QTest::newRow("http-on-ftp")
-        << proxyList << QNetworkProxy()
-        << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
-        << QNetworkReply::ProxyNotFoundError;
-
     if (ftpSupported) {
+        // HTTP request with FTP caching proxy
+        proxyList.clear();
+        proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121);
+        QTest::newRow("http-on-ftp")
+            << proxyList << QNetworkProxy()
+            << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
+            << QNetworkReply::ProxyNotFoundError;
+
         // FTP request with HTTP caching proxy
         proxyList.clear();
         proxyList << QNetworkProxy(QNetworkProxy::HttpCachingProxy,
@@ -4340,13 +4342,15 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << "https://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
         << QNetworkReply::ProxyNotFoundError;
 
-    // HTTPS with FTP caching proxy
-    proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121);
-    QTest::newRow("https-on-ftp")
-        << proxyList << QNetworkProxy()
-        << "https://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
-        << QNetworkReply::ProxyNotFoundError;
+    if (ftpSupported) {
+        // HTTPS with FTP caching proxy
+        proxyList.clear();
+        proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121);
+        QTest::newRow("https-on-ftp")
+            << proxyList << QNetworkProxy()
+            << "https://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
+            << QNetworkReply::ProxyNotFoundError;
+    }
 #endif
 
     // Complex requests:
@@ -4369,15 +4373,17 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
         << QNetworkReply::NoError;
 
-    // HTTP request with FTP + HTTP + SOCKS
-    proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
-              << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129)
-              << QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1081);
-    QTest::newRow("http-on-ftp+http+socks")
-        << proxyList << proxyList.at(1) // second proxy should be used
-        << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
-        << QNetworkReply::NoError;
+    if (ftpSupported) {
+        // HTTP request with FTP + HTTP + SOCKS
+        proxyList.clear();
+        proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
+                << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129)
+                << QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1081);
+        QTest::newRow("http-on-ftp+http+socks")
+            << proxyList << proxyList.at(1) // second proxy should be used
+            << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
+            << QNetworkReply::NoError;
+    }
 
     // HTTP request with NoProxy + HTTP
     proxyList.clear();
@@ -4389,15 +4395,15 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << QNetworkReply::NoError;
 
     // HTTP request with FTP + NoProxy
-    proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
-              << QNetworkProxy(QNetworkProxy::NoProxy);
-    QTest::newRow("http-on-ftp+noproxy")
-        << proxyList << proxyList.at(1) // second proxy should be used
-        << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
-        << QNetworkReply::NoError;
-
     if (ftpSupported) {
+        proxyList.clear();
+        proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
+                << QNetworkProxy(QNetworkProxy::NoProxy);
+        QTest::newRow("http-on-ftp+noproxy")
+            << proxyList << proxyList.at(1) // second proxy should be used
+            << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
+            << QNetworkReply::NoError;
+
         // FTP request with HTTP Caching + FTP
         proxyList.clear();
         proxyList << QNetworkProxy(QNetworkProxy::HttpCachingProxy,
@@ -4420,15 +4426,17 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << "https://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
         << QNetworkReply::NoError;
 
-    // HTTPS request with FTP + HTTP C + HTTP T
-    proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
-              << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129)
-              << QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::httpProxyServerName(), 3129);
-    QTest::newRow("https-on-ftp+httpcaching+http")
-        << proxyList << proxyList.at(2) // skip the first two
-        << "https://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
-        << QNetworkReply::NoError;
+    if (ftpSupported) {
+        // HTTPS request with FTP + HTTP C + HTTP T
+        proxyList.clear();
+        proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
+                << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129)
+                << QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::httpProxyServerName(), 3129);
+        QTest::newRow("https-on-ftp+httpcaching+http")
+            << proxyList << proxyList.at(2) // skip the first two
+            << "https://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
+            << QNetworkReply::NoError;
+    }
 #endif
 }
 
