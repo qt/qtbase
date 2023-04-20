@@ -27,7 +27,7 @@ function(_qt_internal_handle_ios_launch_screen target)
     if(NOT launch_screen AND NOT QT_NO_SET_DEFAULT_IOS_LAUNCH_SCREEN)
         set(is_default_launch_screen TRUE)
         set(launch_screen
-            "${__qt_internal_cmake_ios_support_files_path}/LaunchScreen.storyboard")
+            "${__qt_internal_cmake_apple_support_files_path}/LaunchScreen.storyboard")
     endif()
 
     # Check that the launch screen exists.
@@ -531,14 +531,14 @@ function(_qt_internal_set_xcode_bitcode_enablement target)
         "NO")
 endfunction()
 
-function(_qt_internal_generate_ios_info_plist target)
+function(_qt_internal_generate_info_plist target)
     # If the project already specifies a custom file, we don't override it.
     get_target_property(existing_plist "${target}" MACOSX_BUNDLE_INFO_PLIST)
     if(existing_plist)
         return()
     endif()
 
-    set(info_plist_in "${__qt_internal_cmake_ios_support_files_path}/Info.plist.app.in")
+    set(info_plist_in "${__qt_internal_cmake_apple_support_files_path}/Info.plist.app.in")
 
     string(MAKE_C_IDENTIFIER "${target}" target_identifier)
     set(info_plist_out_dir
@@ -598,6 +598,8 @@ endfunction()
 function(_qt_internal_finalize_apple_app target)
     # Shared between macOS and iOS apps
 
+    _qt_internal_generate_info_plist("${target}")
+
     # Only set the various properties if targeting the Xcode generator, otherwise the various
     # Xcode tokens are embedded as-is instead of being dynamically evaluated.
     # This affects things like the version number or application name as reported by Qt API.
@@ -613,12 +615,12 @@ function(_qt_internal_finalize_apple_app target)
 endfunction()
 
 function(_qt_internal_finalize_ios_app target)
-    _qt_internal_finalize_apple_app("${target}")
+    # Must be called before we generate the Info.plist
+    _qt_internal_handle_ios_launch_screen("${target}")
 
+    _qt_internal_finalize_apple_app("${target}")
     _qt_internal_set_xcode_targeted_device_family("${target}")
     _qt_internal_set_xcode_bitcode_enablement("${target}")
-    _qt_internal_handle_ios_launch_screen("${target}")
-    _qt_internal_generate_ios_info_plist("${target}")
     _qt_internal_set_ios_simulator_arch("${target}")
 endfunction()
 
