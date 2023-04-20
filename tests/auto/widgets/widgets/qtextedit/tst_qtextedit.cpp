@@ -757,6 +757,11 @@ void tst_QTextEdit::cursorPositionChanged()
     QCOMPARE(spy2.cursorPositions.size(), 1);
     QCOMPARE(spy2.cursorPositions.at(0), 0);
     QCOMPARE(ed->textCursor().position(), 0);
+
+    ed->selectAll();
+    QCOMPARE(spy2.cursorPositions.size(), 2);
+    QCOMPARE(spy2.cursorPositions.at(1), 11);
+    QCOMPARE(ed->textCursor().position(), 11);
 }
 
 void tst_QTextEdit::setTextCursor()
