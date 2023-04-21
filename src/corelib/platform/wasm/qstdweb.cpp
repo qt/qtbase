@@ -623,17 +623,20 @@ void FileReader::readAsArrayBuffer(const Blob &blob) const
 
 void FileReader::onLoad(const std::function<void(emscripten::val)> &onLoad)
 {
-    m_onLoad.reset(new EventCallback(m_fileReader, "load", onLoad));
+    m_onLoad.reset();
+    m_onLoad = std::make_unique<EventCallback>(m_fileReader, "load", onLoad);
 }
 
 void FileReader::onError(const std::function<void(emscripten::val)> &onError)
 {
-    m_onError.reset(new EventCallback(m_fileReader, "error", onError));
+    m_onError.reset();
+    m_onError = std::make_unique<EventCallback>(m_fileReader, "error", onError);
 }
 
 void FileReader::onAbort(const std::function<void(emscripten::val)> &onAbort)
 {
-    m_onAbort.reset(new EventCallback(m_fileReader, "abort", onAbort));
+    m_onAbort.reset();
+    m_onAbort = std::make_unique<EventCallback>(m_fileReader, "abort", onAbort);
 }
 
 emscripten::val FileReader::val()
