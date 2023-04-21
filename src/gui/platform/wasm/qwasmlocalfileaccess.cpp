@@ -258,6 +258,11 @@ void saveDataToFileInChunks(emscripten::val fileHandle, const QByteArray &data)
                 std::function<void(val result)> continuation;
             };
 
+            static constexpr size_t desiredChunkSize = 1024u;
+#if defined(__EMSCRIPTEN_SHARED_MEMORY__)
+            qstdweb::Uint8Array chunkArray(desiredChunkSize);
+#endif
+
             auto state = std::make_shared<State>();
             state->written = 0u;
             state->continuation = [=](val) mutable {
@@ -267,11 +272,30 @@ void saveDataToFileInChunks(emscripten::val fileHandle, const QByteArray &data)
                     state.reset();
                     return;
                 }
-                static constexpr size_t desiredChunkSize = 1024u;
+
                 const auto currentChunkSize = std::min(remaining, desiredChunkSize);
-                Promise::make(writable, QStringLiteral("write"), {
-                    .thenFunc = state->continuation,
-                }, val(typed_memory_view(currentChunkSize, data.constData() + state->written)));
+
+#if defined(__EMSCRIPTEN_SHARED_MEMORY__)
+                // If shared memory is used, WebAssembly.Memory is instantiated with the 'shared'
+                // option on. Passing a typed_memory_view to SharedArrayBuffer to
+                // FileSystemWritableFileStream.write is disallowed by security policies, so we
+                // need to make a copy of the data to a chunk array buffer.
+                Promise::make(
+                    writable, QStringLiteral("write"),
+                    {
+                        .thenFunc = state->continuation,
+                    },
+                    chunkArray.copyFrom(data.constData() + state->written, currentChunkSize)
+                        .val()
+                        .call<emscripten::val>("subarray", emscripten::val(0),
+                                               emscripten::val(currentChunkSize)));
+#else
+                Promise::make(writable, QStringLiteral("write"),
+                    {
+                        .thenFunc = state->continuation,
+                    },
+                    val(typed_memory_view(currentChunkSize, data.constData() + state->written)));
+#endif
                 state->written += currentChunkSize;
             };
 
