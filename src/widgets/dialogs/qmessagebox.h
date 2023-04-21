@@ -5,8 +5,12 @@
 #define QMESSAGEBOX_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-
+#include <QtWidgets/qapplication.h>
 #include <QtWidgets/qdialog.h>
+
+#include <QtCore/qanystringview.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qversionnumber.h>
 
 QT_REQUIRE_CONFIG(messagebox);
 
@@ -312,20 +316,24 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMessageBox::StandardButtons)
 
-#define QT_REQUIRE_VERSION(argc, argv, str) { QString s = QString::fromLatin1(str);\
-QString sq = QString::fromLatin1(qVersion()); \
-if ((sq.section(QChar::fromLatin1('.'),0,0).toInt()<<16)+\
-(sq.section(QChar::fromLatin1('.'),1,1).toInt()<<8)+\
-sq.section(QChar::fromLatin1('.'),2,2).toInt()<(s.section(QChar::fromLatin1('.'),0,0).toInt()<<16)+\
-(s.section(QChar::fromLatin1('.'),1,1).toInt()<<8)+\
-s.section(QChar::fromLatin1('.'),2,2).toInt()) { \
-if (!qApp){ \
-    new QApplication(argc,argv); \
-} \
-QString s = QApplication::tr("Executable '%1' requires Qt "\
- "%2, found Qt %3.").arg(qAppName()).arg(QString::fromLatin1(\
-str)).arg(QString::fromLatin1(qVersion())); QMessageBox::critical(0, QApplication::tr(\
-"Incompatible Qt Library Error"), s, QMessageBox::Abort, 0); qFatal("%s", s.toLatin1().data()); }}
+[[maybe_unused]]
+static inline void qRequireVersion(int argc, char *argv[], QAnyStringView req)
+{
+    const auto required = QVersionNumber::fromString(req).normalized();
+    const auto current = QVersionNumber::fromString(qVersion()).normalized();
+    if (current >= required)
+        return;
+    std::unique_ptr<QApplication> application;
+    if (!qApp)
+        application = std::make_unique<QApplication>(argc, argv);
+    const QString message = QApplication::tr("Application \"%1\" requires Qt %2, found Qt %3.")
+                                             .arg(qAppName(), required.toString(), current.toString());
+    QMessageBox::critical(nullptr, QApplication::tr("Incompatible Qt Library Error"),
+                          message, QMessageBox::Abort);
+    qFatal().noquote() << message;
+}
+
+#define QT_REQUIRE_VERSION(argc, argv, str) qRequireVersion(argc, argv, str);
 
 QT_END_NAMESPACE
 
