@@ -31,8 +31,14 @@ class Q_WIDGETS_EXPORT QMessageBox : public QDialog
     Q_PROPERTY(QString informativeText READ informativeText WRITE setInformativeText)
     Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags
                WRITE setTextInteractionFlags)
-
+    Q_PROPERTY(Options options READ options WRITE setOptions)
 public:
+    // Keep in sync with MessageBoxOption in qplatformdialoghelper.h
+    enum class Option : quint8 {
+        DontUseNativeDialog = 0x00000001
+    };
+    Q_FLAG(Option)
+
     enum Icon {
         // keep this in sync with QMessageDialogOptions::StandardIcon
         NoIcon = 0,
@@ -95,8 +101,9 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     typedef StandardButton Button;
 #endif
-
+    Q_DECLARE_FLAGS(Options, Option)
     Q_DECLARE_FLAGS(StandardButtons, StandardButton)
+
     Q_FLAG(StandardButtons)
 
     explicit QMessageBox(QWidget *parent = nullptr);
@@ -148,6 +155,11 @@ public:
 
     void setCheckBox(QCheckBox *cb);
     QCheckBox* checkBox() const;
+
+    void setOption(Option option, bool on = true);
+    bool testOption(Option option) const;
+    void setOptions(Options options);
+    Options options() const;
 
     static StandardButton information(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,

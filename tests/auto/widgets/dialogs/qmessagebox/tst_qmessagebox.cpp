@@ -38,6 +38,9 @@ private slots:
     void detailsButtonText();
     void expandDetailsWithoutMoving();
 
+    void optionsEmptyByDefault();
+    void changeNativeOption();
+
 #ifndef Q_OS_MAC
     void shortcut();
 #endif
@@ -582,6 +585,20 @@ void tst_QMessageBox::expandDetailsWithoutMoving() // QTBUG-32473
     QTRY_VERIFY(box.resized);
     QVERIFY(box.geometry().height() > geom.height());
     QCOMPARE(box.geometry().topLeft(), geom.topLeft());
+}
+
+void tst_QMessageBox::optionsEmptyByDefault()
+{
+    QMessageBox b;
+    QCOMPARE(b.options(), QMessageBox::Options());
+    QVERIFY(!b.testOption(QMessageBox::Option::DontUseNativeDialog));
+}
+
+void tst_QMessageBox::changeNativeOption()
+{
+    QMessageBox b;
+    b.setOption(QMessageBox::Option::DontUseNativeDialog);
+    QCOMPARE(b.options(), QMessageBox::Options(QMessageBox::Option::DontUseNativeDialog));
 }
 
 void tst_QMessageBox::incorrectDefaultButton()

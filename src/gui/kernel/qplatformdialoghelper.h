@@ -403,6 +403,11 @@ protected:
     ~QMessageDialogOptions();
 
 public:
+    // Keep in sync with QMessageBox Option
+    enum class Option : quint8 { DontUseNativeDialog = 0x00000001 };
+    Q_DECLARE_FLAGS(Options, Option);
+    Q_FLAG(Options);
+
     // Keep in sync with QMessageBox::Icon
     enum StandardIcon { NoIcon, Information, Warning, Critical, Question };
     Q_ENUM(StandardIcon)
@@ -427,6 +432,11 @@ public:
 
     void setDetailedText(const QString &text);
     QString detailedText() const;
+
+    void setOption(Option option, bool on = true);
+    bool testOption(Option option) const;
+    void setOptions(Options options);
+    Options options() const;
 
     void setStandardButtons(QPlatformDialogHelper::StandardButtons buttons);
     QPlatformDialogHelper::StandardButtons standardButtons() const;
