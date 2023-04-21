@@ -274,7 +274,7 @@ public:
     }
 
     inline QList(std::initializer_list<T> args)
-        : d(Data::allocate(args.size()))
+        : d(Data::allocate(qsizetype(args.size())))
     {
         if (args.size())
             d->copyAppend(args.begin(), args.end());
@@ -282,7 +282,7 @@ public:
 
     QList<T> &operator=(std::initializer_list<T> args)
     {
-        d = DataPointer(Data::allocate(args.size()));
+        d = DataPointer(Data::allocate(qsizetype(args.size())));
         if (args.size())
             d->copyAppend(args.begin(), args.end());
         return *this;
@@ -295,7 +295,7 @@ public:
         } else {
             const auto distance = std::distance(i1, i2);
             if (distance) {
-                d = DataPointer(Data::allocate(distance));
+                d = DataPointer(Data::allocate(qsizetype(distance)));
                 // appendIteratorRange can deal with contiguous iterators on its own,
                 // this is an optimization for C++17 code.
                 if constexpr (std::is_same_v<std::decay_t<InputIterator>, iterator> ||
