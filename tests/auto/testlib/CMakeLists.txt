@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_subdirectory(qsignalspy)
+add_subdirectory(tostring)
 
 # QTBUG-88507
 if(QT_FEATURE_process AND NOT ANDROID)

@@ -360,6 +360,9 @@ namespace QTest
     template <class... Types>
     inline char *toString(const std::tuple<Types...> &tuple);
 
+    template <typename Rep, typename Period>
+    inline char *toString(std::chrono::duration<Rep, Period> duration);
+
     Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, qsizetype length);
     Q_TESTLIB_EXPORT char *toPrettyCString(const char *unicode, qsizetype length);
     Q_TESTLIB_EXPORT char *toPrettyUnicode(QStringView string);

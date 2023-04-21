@@ -27,52 +27,6 @@ template<> char *toString(const QDeadlineTimer &dt)
               dt.hasExpired() ? " (expired)" : "");
     return buf;
 }
-
-template <typename Rep, typename Period> char *toString(std::chrono::duration<Rep, Period> dur)
-{
-    using namespace std::chrono;
-    static_assert(sizeof(double) == sizeof(qlonglong));
-
-    if constexpr (Period::num == 1 && sizeof(Rep) <= sizeof(qlonglong)) {
-        // typical case: second or sub-multiple of second, in a representation
-        // we can directly use
-        char *buf = new char[128];
-        if constexpr (std::is_integral_v<Rep>) {
-            char unit[] = "ss";
-            if constexpr (std::is_same_v<Period, std::atto>) {  // from Norwegian "atten", 18
-                unit[0] = 'a';
-            } else if constexpr (std::is_same_v<Period, std::femto>) {  // Norwegian "femten", 15
-                unit[0] = 'f';
-            } else if constexpr (std::is_same_v<Period, std::pico>) {
-                unit[0] = 'p';
-            } else if constexpr (std::is_same_v<Period, std::nano>) {
-                unit[0] = 'n';
-            } else if constexpr (std::is_same_v<Period, std::micro>) {
-                unit[0] = 'u';      // µ, really, but the output may not be UTF-8-safe
-            } else if constexpr (std::is_same_v<Period, std::milli>) {
-                unit[0] = 'm';
-            } else {
-                // deci, centi, cycles of something (60 Hz, 8000 Hz, etc.)
-                static_assert(Period::den == 1,
-                        "Unsupported std::chrono::duration of a sub-multiple of second");
-                unit[1] = '\0';
-            }
-
-            // cast to qlonglong in case Rep is not int64_t
-            qsnprintf(buf, 128, "%lld %s", qlonglong(dur.count()), unit);
-        } else {
-            auto secs = duration_cast<duration<double>>(dur);
-            qsnprintf(buf, 128, "%g s", secs.count());
-        }
-        return buf;
-    } else if constexpr (std::is_integral_v<Rep> && Period::den == 1) {
-        // multiple of second, so just print it in seconds
-        return toString(std::chrono::seconds(dur));
-    } else {
-        // something else, use floating-point seconds
-        return toString(std::chrono::duration_cast<double>(dur));
-    }
-}
 }
 QT_END_NAMESPACE
 

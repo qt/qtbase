@@ -16,6 +16,7 @@
 #include <QtCore/qsharedpointer.h>
 
 // all these have already been included by various headers above, but don't rely on indirect includes:
+#include <chrono>
 #include <list>
 #include <map>
 #include <string>
@@ -67,6 +68,7 @@ class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
     QT7_ONLY(Q_CORE_EXPORT) void putUcs4(uint ucs4);
     QT7_ONLY(Q_CORE_EXPORT) void putString(const QChar *begin, size_t length);
     QT7_ONLY(Q_CORE_EXPORT) void putByteArray(const char *begin, size_t length, Latin1Content content);
+    QT7_ONLY(Q_CORE_EXPORT) static QByteArray timeUnit(qint64 num, qint64 den);
 public:
     explicit QDebug(QIODevice *device) : stream(new Stream(device)) {}
     explicit QDebug(QString *string) : stream(new Stream(string)) {}
@@ -188,6 +190,13 @@ public:
     QDebug &operator<<(std::basic_string_view<char32_t, Args...> s)
     { return *this << QString::fromUcs4(s.data(), s.size()); }
 #endif // !Q_QDOC
+
+    template <typename Rep, typename Period>
+    QDebug &operator<<(std::chrono::duration<Rep, Period> duration)
+    {
+        stream->ts << duration.count() << timeUnit(Period::num, Period::den);
+        return maybeSpace();
+    }
 
     template <typename T>
     static QString toString(T &&object)
