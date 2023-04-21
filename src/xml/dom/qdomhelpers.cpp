@@ -266,8 +266,7 @@ bool QDomParser::parseProlog()
                     value += u" standalone='yes'"_s;
                 } else {
                     // Add the standalone attribute only if it was specified
-                    QXmlStreamReaderPrivate *priv = QXmlStreamReaderPrivate::get(reader);
-                    if (priv->hasStandalone)
+                    if (reader->hasStandaloneDeclaration())
                         value += u" standalone='no'"_s;
                 }
 

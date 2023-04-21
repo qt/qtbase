@@ -2692,6 +2692,8 @@ bool QXmlStreamReader::isCDATA() const
   XML declaration; otherwise returns \c false.
 
   If no XML declaration has been parsed, this function returns \c false.
+
+  \sa hasStandaloneDeclaration()
  */
 bool QXmlStreamReader::isStandaloneDocument() const
 {
@@ -2699,6 +2701,21 @@ bool QXmlStreamReader::isStandaloneDocument() const
     return d->standalone;
 }
 
+/*!
+  \since 6.6
+
+  Returns \c true if this document has an explicit standalone
+  declaration (can be 'yes' or 'no'); otherwise returns \c false;
+
+  If no XML declaration has been parsed, this function returns \c false.
+
+  \sa isStandaloneDocument()
+ */
+bool QXmlStreamReader::hasStandaloneDeclaration() const
+{
+    Q_D(const QXmlStreamReader);
+    return d->hasStandalone;
+}
 
 /*!
      \since 4.4

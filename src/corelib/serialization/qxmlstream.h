@@ -246,6 +246,7 @@ public:
     inline bool isProcessingInstruction() const { return tokenType() == ProcessingInstruction; }
 
     bool isStandaloneDocument() const;
+    bool hasStandaloneDeclaration() const;
     QStringView documentVersion() const;
     QStringView documentEncoding() const;
 

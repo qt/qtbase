@@ -510,8 +510,6 @@ public:
 
     QXmlStreamEntityResolver *entityResolver;
 
-    static QXmlStreamReaderPrivate *get(QXmlStreamReader *q) { return q->d_func(); }
-
 private:
     /*! \internal
        Never assign to variable type directly. Instead use this function.
