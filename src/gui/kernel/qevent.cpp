@@ -3761,6 +3761,13 @@ static void formatUnicodeString(QDebug d, const QString &s)
     d << Qt::dec << '"';
 }
 
+static QDebug operator<<(QDebug dbg, const QInputMethodEvent::Attribute &attr)
+{
+    dbg << "[type= " << attr.type << ", start=" << attr.start << ", length=" << attr.length
+        << ", value=" << attr.value << ']';
+    return dbg;
+}
+
 static inline void formatInputMethodEvent(QDebug d, const QInputMethodEvent *e)
 {
     d << "QInputMethodEvent(";
@@ -3776,15 +3783,15 @@ static inline void formatInputMethodEvent(QDebug d, const QInputMethodEvent *e)
         d << ", replacementStart=" << e->replacementStart() << ", replacementLength="
           << e->replacementLength();
     }
-    if (const int attributeCount = e->attributes().size()) {
+    const auto attributes = e->attributes();
+    auto it = attributes.cbegin();
+    const auto end = attributes.cend();
+    if (it != end) {
         d << ", attributes= {";
-        for (int a = 0; a < attributeCount; ++a) {
-            const QInputMethodEvent::Attribute &at = e->attributes().at(a);
-            if (a)
-                d << ',';
-            d << "[type= " << at.type << ", start=" << at.start << ", length=" << at.length
-              << ", value=" << at.value << ']';
-        }
+        d << *it;
+        ++it;
+        for (; it != end; ++it)
+            d << ',' << *it;
         d << '}';
     }
     d << ')';
