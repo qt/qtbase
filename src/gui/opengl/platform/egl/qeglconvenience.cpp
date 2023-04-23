@@ -88,13 +88,12 @@ QList<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
 
 bool q_reduceConfigAttributes(QList<EGLint> *configAttributes)
 {
-    int i = -1;
     // Reduce the complexity of a configuration request to ask for less
     // because the previous request did not result in success.  Returns
     // true if the complexity was reduced, or false if no further
     // reductions in complexity are possible.
 
-    i = configAttributes->indexOf(EGL_SWAP_BEHAVIOR);
+    qsizetype i = configAttributes->indexOf(EGL_SWAP_BEHAVIOR);
     if (i >= 0) {
         configAttributes->remove(i,2);
     }
@@ -258,7 +257,7 @@ EGLConfig QEglConfigChooser::chooseConfig()
 
         // Fetch all of the matching configurations and find the
         // first that matches the pixel format we wanted.
-        int i = configureAttributes.indexOf(EGL_RED_SIZE);
+        qsizetype i = configureAttributes.indexOf(EGL_RED_SIZE);
         m_confAttrRed = configureAttributes.at(i+1);
         i = configureAttributes.indexOf(EGL_GREEN_SIZE);
         m_confAttrGreen = configureAttributes.at(i+1);
@@ -268,7 +267,8 @@ EGLConfig QEglConfigChooser::chooseConfig()
         m_confAttrAlpha = i == -1 ? 0 : configureAttributes.at(i+1);
 
         QList<EGLConfig> configs(matching);
-        eglChooseConfig(display(), configureAttributes.constData(), configs.data(), configs.size(), &matching);
+        eglChooseConfig(display(), configureAttributes.constData(), configs.data(),
+                        EGLint(configs.size()), &matching);
         if (!cfg && matching > 0)
             cfg = configs.first();
 

@@ -800,7 +800,7 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
 void QFutureInterfaceBasePrivate::disconnectOutputInterface(QFutureCallOutInterface *interface)
 {
     QMutexLocker lock(&m_mutex);
-    const int index = outputConnections.indexOf(interface);
+    const qsizetype index = outputConnections.indexOf(interface);
     if (index == -1)
         return;
     outputConnections.removeAt(index);

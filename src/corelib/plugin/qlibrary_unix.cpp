@@ -199,7 +199,7 @@ bool QLibraryPrivate::load_sys()
                 continue;
             if (loadHints & QLibrary::LoadArchiveMemberHint) {
                 attempt = name;
-                int lparen = attempt.indexOf(u'(');
+                qsizetype lparen = attempt.indexOf(u'(');
                 if (lparen == -1)
                     lparen = attempt.size();
                 attempt = path + prefixes.at(prefix) + attempt.insert(lparen, suffixes.at(suffix));

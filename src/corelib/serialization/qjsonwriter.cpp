@@ -35,7 +35,7 @@ static QByteArray escapedString(const QString &s)
     while (src != end) {
         if (cursor >= ba_end - 6) {
             // ensure we have enough space
-            int pos = cursor - (const uchar *)ba.constData();
+            qptrdiff pos = cursor - (const uchar *)ba.constData();
             ba.resize(ba.size()*2);
             cursor = (uchar *)ba.data() + pos;
             ba_end = (const uchar *)ba.constData() + ba.size();

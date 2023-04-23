@@ -431,14 +431,14 @@ void QWindowPrivate::updateSiblingPosition(SiblingPosition position)
 
     QObjectList &siblings = q->parent()->d_ptr->children;
 
-    const int siblingCount = siblings.size() - 1;
+    const qsizetype siblingCount = siblings.size() - 1;
     if (siblingCount == 0)
         return;
 
-    const int currentPosition = siblings.indexOf(q);
+    const qsizetype currentPosition = siblings.indexOf(q);
     Q_ASSERT(currentPosition >= 0);
 
-    const int targetPosition = position == PositionTop ? siblingCount : 0;
+    const qsizetype targetPosition = position == PositionTop ? siblingCount : 0;
 
     if (currentPosition == targetPosition)
         return;

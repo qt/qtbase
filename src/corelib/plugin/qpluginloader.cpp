@@ -235,7 +235,7 @@ static QString locatePlugin(const QString& fileName)
     suffixes.prepend(QString());
 
     // Split up "subdir/filename"
-    const int slash = fileName.lastIndexOf(u'/');
+    const qsizetype slash = fileName.lastIndexOf(u'/');
     const auto baseName = QStringView{fileName}.mid(slash + 1);
     const auto basePath = isAbsolute ? QStringView() : QStringView{fileName}.left(slash + 1); // keep the '/'
 

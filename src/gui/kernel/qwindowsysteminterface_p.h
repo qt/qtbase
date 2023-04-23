@@ -473,7 +473,7 @@ public:
         }
         void append(WindowSystemEvent *e)
         { const QMutexLocker locker(&mutex); impl.append(e); }
-        int count() const
+        qsizetype count() const
         { const QMutexLocker locker(&mutex); return impl.size(); }
         WindowSystemEvent *peekAtFirstOfType(EventType t) const
         {
@@ -500,7 +500,7 @@ public:
 
     static WindowSystemEventList windowSystemEventQueue;
 
-    static int windowSystemEventsQueued();
+    static qsizetype windowSystemEventsQueued();
     static bool nonUserInputEventsQueued();
     static WindowSystemEvent *getWindowSystemEvent();
     static WindowSystemEvent *getNonUserInputWindowSystemEvent();

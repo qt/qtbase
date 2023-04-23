@@ -385,7 +385,8 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
     QJsonParseError error;
     const QJsonDocument document = QJsonDocument::fromJson(jsonAsciiData, &error);
     if (document.isNull()) {
-        const int lineNumber = 1 + jsonAsciiData.left(error.offset).count('\n');
+        const qsizetype lineNumber =
+                QByteArrayView(jsonAsciiData).left(error.offset).count('\n') + 1;
         QTextStream str(errorMessage);
         str << "Failed to parse data: \"" << error.errorString()
             << "\" at line " << lineNumber << " (offset: "

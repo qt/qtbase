@@ -20,7 +20,7 @@ static QStringList imageMimeFormats(const QList<QByteArray> &imageFormats)
         formats.append("image/"_L1 + QLatin1StringView(format.toLower()));
 
     //put png at the front because it is best
-    int pngIndex = formats.indexOf("image/png"_L1);
+    const qsizetype pngIndex = formats.indexOf("image/png"_L1);
     if (pngIndex != -1 && pngIndex != 0)
         formats.move(pngIndex, 0);
 

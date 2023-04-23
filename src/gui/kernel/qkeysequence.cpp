@@ -940,7 +940,7 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
         return ret;
 
     bool found = false;
-    int p = 0;
+    qsizetype p = 0;
     while (p >= 0) {
         p = text.indexOf(u'&', p) + 1;
         if (p <= 0 || p >= (int)text.size())
@@ -993,7 +993,7 @@ int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
 {
     QString keyseq = ks;
     int n = 0;
-    int p = 0, diff = 0;
+    qsizetype p = 0, diff = 0;
 
     // Run through the whole string, but stop
     // if we have MaxKeyCount keys before the end.
@@ -1111,8 +1111,8 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         return Qt::Key_unknown;
 #endif
 
-    int i = 0;
-    int lastI = 0;
+    qsizetype i = 0;
+    qsizetype lastI = 0;
     while ((i = sl.indexOf(u'+', i + 1)) != -1) {
         const QStringView sub = QStringView{sl}.mid(lastI, i - lastI + 1);
         // If we get here the shortcuts contains at least one '+'. We break up
@@ -1146,7 +1146,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         lastI = i + 1;
     }
 
-    int p = accel.lastIndexOf(u'+', accel.size() - 2); // -2 so that Ctrl++ works
+    qsizetype p = accel.lastIndexOf(u'+', accel.size() - 2); // -2 so that Ctrl++ works
     QStringView accelRef(accel);
     if (p > 0)
         accelRef = accelRef.mid(p + 1);

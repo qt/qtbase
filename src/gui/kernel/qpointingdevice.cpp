@@ -564,7 +564,7 @@ bool QPointingDevicePrivate::addPassiveGrabber(const QPointerEvent *event, const
 
 bool QPointingDevicePrivate::setPassiveGrabberContext(QPointingDevicePrivate::EventPointData *epd, QObject *grabber, QObject *context)
 {
-    int i = epd->passiveGrabbers.indexOf(grabber);
+    qsizetype i = epd->passiveGrabbers.indexOf(grabber);
     if (i < 0)
         return false;
     if (epd->passiveGrabbersContext.size() <= i)
@@ -581,7 +581,7 @@ bool QPointingDevicePrivate::removePassiveGrabber(const QPointerEvent *event, co
         qWarning() << "point is not in activePoints" << point;
         return false;
     }
-    int i = persistentPoint->passiveGrabbers.indexOf(grabber);
+    qsizetype i = persistentPoint->passiveGrabbers.indexOf(grabber);
     if (i >= 0) {
         if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
             qCDebug(lcPointerGrab) << name << "point" << point.id() << point.state()
@@ -644,7 +644,7 @@ void QPointingDevicePrivate::removeGrabber(QObject *grabber, bool cancel)
                                 cancel ? QPointingDevice::CancelGrabExclusive : QPointingDevice::UngrabExclusive,
                                 nullptr, epd.eventPoint);
         }
-        int pi = epd.passiveGrabbers.indexOf(grabber);
+        qsizetype pi = epd.passiveGrabbers.indexOf(grabber);
         if (pi >= 0) {
             qCDebug(lcPointerGrab) << name << "point" << epd.eventPoint.id() << epd.eventPoint.state()
                                    << ": removing passive grabber" << grabber;

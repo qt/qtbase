@@ -138,7 +138,7 @@ static bool handleWindowSystemEvent(Args ...args)
     return QWindowSystemHelper<Delivery>::template handleEvent<EventType>(args...);
 }
 
-int QWindowSystemInterfacePrivate::windowSystemEventsQueued()
+qsizetype QWindowSystemInterfacePrivate::windowSystemEventsQueued()
 {
     return windowSystemEventQueue.count();
 }
@@ -791,7 +791,7 @@ void QWindowSystemInterface::handleScreenRemoved(QPlatformScreen *platformScreen
 void QWindowSystemInterface::handlePrimaryScreenChanged(QPlatformScreen *newPrimary)
 {
     QScreen *newPrimaryScreen = newPrimary->screen();
-    int indexOfScreen = QGuiApplicationPrivate::screen_list.indexOf(newPrimaryScreen);
+    qsizetype indexOfScreen = QGuiApplicationPrivate::screen_list.indexOf(newPrimaryScreen);
     Q_ASSERT(indexOfScreen >= 0);
     if (indexOfScreen == 0)
         return;
@@ -1058,7 +1058,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPo
 */
 bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    const int count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
+    const qsizetype count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
     if (!count)
         return false;
     if (!QGuiApplication::instance()) {
