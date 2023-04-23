@@ -696,7 +696,7 @@ QVector<QHighDpiScaling::ScreenFactor> QHighDpiScaling::parseScreenScaleFactorsS
     // - a semicolon-separated name=factor list: "foo=1.5;bar=2;baz=3"
     const auto specs = screenScaleFactors.split(u';');
     for (const auto &spec : specs) {
-        const int equalsPos = spec.lastIndexOf(u'=');
+        const qsizetype equalsPos = spec.lastIndexOf(u'=');
         if (equalsPos == -1) {
             // screens in order
             bool ok;

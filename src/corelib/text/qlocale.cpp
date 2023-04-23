@@ -3324,7 +3324,9 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
         }
 
         const QChar c = format.at(i);
-        qsizetype repeat = qt_repeatCount(format.mid(i));
+        qsizetype rep = qt_repeatCount(format.mid(i));
+        Q_ASSERT(rep < std::numeric_limits<int>::max());
+        int repeat = int(rep);
         bool used = false;
         if (formatDate) {
             switch (c.unicode()) {

@@ -841,7 +841,7 @@ static inline bool scanUtf8Char(const char *&json, const char *end, char32_t *re
     const auto *usrc = reinterpret_cast<const uchar *>(json);
     const auto *uend = reinterpret_cast<const uchar *>(end);
     const uchar b = *usrc++;
-    int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, result, usrc, uend);
+    qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, result, usrc, uend);
     if (res < 0)
         return false;
 

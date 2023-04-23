@@ -259,7 +259,7 @@ struct QWindowGeometrySpecification
 static inline int nextGeometryToken(const QByteArray &a, int &pos, char *op)
 {
     *op = 0;
-    const int size = a.size();
+    const qsizetype size = a.size();
     if (pos >= size)
         return -1;
 
@@ -1311,7 +1311,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     if (!platformArguments.isEmpty()) {
         if (QObject *nativeInterface = QGuiApplicationPrivate::platform_integration->nativeInterface()) {
             for (const QString &argument : std::as_const(platformArguments)) {
-                const int equalsPos = argument.indexOf(u'=');
+                const qsizetype equalsPos = argument.indexOf(u'=');
                 const QByteArray name =
                     equalsPos != -1 ? argument.left(equalsPos).toUtf8() : argument.toUtf8();
                 const QVariant value =
@@ -1331,7 +1331,7 @@ static void init_plugins(const QList<QByteArray> &pluginList)
 {
     for (int i = 0; i < pluginList.size(); ++i) {
         QByteArray pluginSpec = pluginList.at(i);
-        int colonPos = pluginSpec.indexOf(':');
+        qsizetype colonPos = pluginSpec.indexOf(':');
         QObject *plugin;
         if (colonPos < 0)
             plugin = QGenericPluginFactory::create(QLatin1StringView(pluginSpec), QString());
@@ -1598,7 +1598,7 @@ void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::init()
             ++i;
             if (argv[i] && *argv[i]) {
                 session_id = QString::fromLatin1(argv[i]);
-                int p = session_id.indexOf(u'_');
+                qsizetype p = session_id.indexOf(u'_');
                 if (p >= 0) {
                     session_key = session_id.mid(p +1);
                     session_id = session_id.left(p);

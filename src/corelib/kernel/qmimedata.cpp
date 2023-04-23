@@ -341,13 +341,7 @@ QList<QUrl> QMimeData::urls() const
 void QMimeData::setUrls(const QList<QUrl> &urls)
 {
     Q_D(QMimeData);
-    QList<QVariant> list;
-    const int numUrls = urls.size();
-    list.reserve(numUrls);
-    for (int i = 0; i < numUrls; ++i)
-        list.append(urls.at(i));
-
-    d->setData(textUriListLiteral(), list);
+    d->setData(textUriListLiteral(), QList<QVariant>(urls.cbegin(), urls.cend()));
 }
 
 /*!
