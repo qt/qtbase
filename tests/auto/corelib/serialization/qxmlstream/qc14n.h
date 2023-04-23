@@ -1,10 +1,11 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-QT_FORWARD_DECLARE_CLASS(QIODevice)
-QT_FORWARD_DECLARE_CLASS(QString)
-
+#include <QtCore/QDebug>
 #include <QtCore/QFlags>
+#include <QtCore/QXmlStreamReader>
+
+#include <algorithm>
 
 class QC14N
 {
@@ -93,18 +94,11 @@ bool QC14N::isAttributesEqual(const QXmlStreamReader &r1,
 
     const QXmlStreamAttributes &attrs1 = r1.attributes();
     const QXmlStreamAttributes &attrs2 = r2.attributes();
-    const int len = attrs1.size();
-
-    if(len != attrs2.size())
+    if (attrs1.size() != attrs2.size())
         return false;
 
-    for(int i = 0; i < len; ++i)
-    {
-        if(!attrs2.contains(attrs1.at(i)))
-            return false;
-    }
-
-    return true;
+    auto existsInOtherList = [&attrs2](const auto &attr) { return attrs2.contains(attr); };
+    return std::all_of(attrs1.cbegin(), attrs1.cend(), existsInOtherList);
 }
 
 bool QC14N::isDifferent(const QXmlStreamReader &r1,
