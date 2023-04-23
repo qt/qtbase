@@ -22,23 +22,24 @@ static inline uchar hexdig(uint u)
     return (u < 0xa ? '0' + u : 'a' + u - 0xa);
 }
 
-static QByteArray escapedString(const QString &s)
+static QByteArray escapedString(QStringView s)
 {
     // give it a minimum size to ensure the resize() below always adds enough space
     QByteArray ba(qMax(s.size(), 16), Qt::Uninitialized);
 
+    auto ba_const_start = [&]() { return reinterpret_cast<const uchar *>(ba.constData()); };
     uchar *cursor = reinterpret_cast<uchar *>(const_cast<char *>(ba.constData()));
     const uchar *ba_end = cursor + ba.size();
-    const char16_t *src = reinterpret_cast<const char16_t *>(s.constBegin());
-    const char16_t *const end = reinterpret_cast<const char16_t *>(s.constEnd());
+    const char16_t *src = s.utf16();
+    const char16_t *const end = s.utf16() + s.size();
 
     while (src != end) {
         if (cursor >= ba_end - 6) {
             // ensure we have enough space
-            qptrdiff pos = cursor - (const uchar *)ba.constData();
+            qptrdiff pos = cursor - ba_const_start();
             ba.resize(ba.size()*2);
-            cursor = (uchar *)ba.data() + pos;
-            ba_end = (const uchar *)ba.constData() + ba.size();
+            cursor = reinterpret_cast<uchar *>(ba.data()) + pos;
+            ba_end = ba_const_start() + ba.size();
         }
 
         char16_t u = *src++;
@@ -88,7 +89,7 @@ static QByteArray escapedString(const QString &s)
         }
     }
 
-    ba.resize(cursor - (const uchar *)ba.constData());
+    ba.resize(cursor - ba_const_start());
     return ba;
 }
 
