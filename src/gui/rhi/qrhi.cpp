@@ -6265,8 +6265,25 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex)
    \note Can be called outside beginFrame() - endFrame() as well since a batch
    instance just collects data on its own, it does not perform any operations.
 
-   \warning The maximum number of batches is 64. When this limit is reached,
-   the function will return null until a batch is returned to the pool.
+   Due to not being tied to a frame being recorded, the following sequence is
+   valid for example:
+
+   \badcode
+      rhi->beginFrame(swapchain);
+      u = rhi->nextResourceUpdateBatch();
+      u->uploadStaticBuffer(buf, data);
+      ... // does not commit the batch
+      rhi->endFrame();
+      // u stays valid (assuming buf stays valid as well)
+      rhi->beginFrame(swapchain);
+      swapchain->currentFrameCommandBuffer()->resourceUpdate(u);
+      ... // draw with buf
+      rhi->endFrame();
+   \endcode
+
+   \warning The maximum number of batches per QRhi is 64. When this limit is
+   reached, the function will return null until a batch is returned to the
+   pool.
  */
 QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
 {
