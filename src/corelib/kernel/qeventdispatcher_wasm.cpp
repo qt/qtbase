@@ -583,19 +583,15 @@ void QEventDispatcherWasm::updateNativeTimer()
     // access to m_timerInfo), and then call native API to set the new
     // wakeup time on the main thread.
 
-    using namespace std::chrono;
-    auto timespecToMsec = [](timespec ts) -> milliseconds {
-        return duration_cast<milliseconds>(seconds{ts.tv_sec} + nanoseconds{ts.tv_nsec});
-    };
-    timespec toWait;
-    bool hasTimer = m_timerInfo->timerWait(toWait);
-    const milliseconds toWaitDuration = timespecToMsec(toWait);
-    const time_point newTargetTimePoint = m_timerInfo->currentTime + toWaitDuration;
-    auto newTargetTime = duration_cast<milliseconds>(newTargetTimePoint.time_since_epoch());
-    auto maintainNativeTimer = [this, hasTimer, toWaitDuration, newTargetTime]() {
+    const std::optional<std::chrono::milliseconds> wait = m_timerInfo->timerWait();
+    const auto toWaitDuration = wait.value_or(0ms);
+    const auto newTargetTimePoint = m_timerInfo->currentTime + toWaitDuration;
+    auto epochNsecs = newTargetTimePoint.time_since_epoch();
+    auto newTargetTime = std::chrono::duration_cast<std::chrono::milliseconds>(epochNsecs);
+    auto maintainNativeTimer = [this, wait, toWaitDuration, newTargetTime]() {
         Q_ASSERT(emscripten_is_main_runtime_thread());
 
-        if (!hasTimer) {
+        if (!wait) {
             if (m_timerId > 0) {
                 emscripten_clear_timeout(m_timerId);
                 m_timerId = 0;

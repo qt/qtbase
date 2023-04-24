@@ -27,6 +27,8 @@
 #  include <pipeDrv.h>
 #endif
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 static const char *socketType(QSocketNotifier::Type type)
@@ -427,8 +429,15 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     timespec *tm = nullptr;
     timespec wait_tm = { 0, 0 };
 
-    if (!canWait || (include_timers && d->timerList.timerWait(wait_tm)))
+    if (!canWait) {
         tm = &wait_tm;
+    } else if (include_timers) {
+        std::optional<std::chrono::milliseconds> msecs = d->timerList.timerWait();
+        if (msecs) {
+            wait_tm = durationToTimespec(*msecs);
+            tm = &wait_tm;
+        }
+    }
 
     d->pollfds.clear();
     d->pollfds.reserve(1 + (include_notifiers ? d->socketNotifiers.size() : 0));

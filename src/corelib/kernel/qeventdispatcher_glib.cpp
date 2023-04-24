@@ -4,6 +4,7 @@
 #include "qeventdispatcher_glib_p.h"
 #include "qeventdispatcher_unix_p.h"
 
+#include <private/qnumeric_p.h>
 #include <private/qthread_p.h>
 
 #include "qcoreapplication.h"
@@ -13,6 +14,8 @@
 #include <QtCore/qpair.h>
 
 #include <glib.h>
+
+using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
 
@@ -95,11 +98,13 @@ struct GTimerSource
 
 static gboolean timerSourcePrepareHelper(GTimerSource *src, gint *timeout)
 {
-    timespec tv = { 0l, 0l };
-    if (!(src->processEventsFlags & QEventLoop::X11ExcludeTimers) && src->timerList.timerWait(tv))
-        *timeout = (tv.tv_sec * 1000) + ((tv.tv_nsec + 999999) / 1000 / 1000);
-    else
+    if (src->processEventsFlags & QEventLoop::X11ExcludeTimers) {
         *timeout = -1;
+        return true;
+    }
+
+    auto msecs = src->timerList.timerWait().value_or(-1ms);
+    *timeout = qt_saturate<gint>(msecs.count());
 
     return (*timeout == 0);
 }

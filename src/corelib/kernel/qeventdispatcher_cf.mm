@@ -555,23 +555,25 @@ int QEventDispatcherCoreFoundation::remainingTime(int timerId)
     return m_timerInfoList.timerRemainingTime(timerId);
 }
 
-static double timespecToSeconds(const timespec &spec)
-{
-    static double nanosecondsPerSecond = 1.0 * 1000 * 1000 * 1000;
-    return spec.tv_sec + (spec.tv_nsec / nanosecondsPerSecond);
-}
-
 void QEventDispatcherCoreFoundation::updateTimers()
 {
     if (m_timerInfoList.size() > 0) {
         // We have Qt timers registered, so create or reschedule CF timer to match
 
-        timespec tv = { -1, -1 };
-        CFAbsoluteTime timeToFire = m_timerInfoList.timerWait(tv) ?
+        using namespace std::chrono_literals;
+        using DoubleSeconds = std::chrono::duration<double, std::ratio<1>>;
+
+        CFAbsoluteTime timeToFire;
+        auto opt = m_timerInfoList.timerWait();
+        DoubleSeconds secs{};
+        if (opt) {
             // We have a timer ready to fire right now, or some time in the future
-            CFAbsoluteTimeGetCurrent() + timespecToSeconds(tv)
+            secs = DoubleSeconds{*opt};
+            timeToFire = CFAbsoluteTimeGetCurrent() + secs.count();
+        } else {
             // We have timers, but they are all currently blocked by callbacks
-            : kCFTimeIntervalDistantFuture;
+            timeToFire = kCFTimeIntervalDistantFuture;
+        }
 
         if (!m_runLoopTimer) {
             m_runLoopTimer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault,
@@ -587,9 +589,9 @@ void QEventDispatcherCoreFoundation::updateTimers()
             qCDebug(lcEventDispatcherTimers) << "Re-scheduled CFRunLoopTimer" << m_runLoopTimer;
         }
 
-        m_overdueTimerScheduled = !timespecToSeconds(tv);
+        m_overdueTimerScheduled = secs > 0s;
 
-        qCDebug(lcEventDispatcherTimers) << "Next timeout in" << tv << "seconds";
+        qCDebug(lcEventDispatcherTimers) << "Next timeout in" << secs;
 
     } else {
         // No Qt timers are registered, so make sure we're not running any CF timers

@@ -230,7 +230,11 @@ static void calculateNextTimeout(QTimerInfo *t, steady_clock::time_point now)
     }
 }
 
-bool QTimerInfoList::timerWait(timespec &tm)
+/*
+    Returns the time to wait for the first timer that has not been activated yet,
+    otherwise returns std::nullopt.
+ */
+std::optional<std::chrono::milliseconds> QTimerInfoList::timerWait()
 {
     steady_clock::time_point now = updateCurrentTime();
 
@@ -238,15 +242,12 @@ bool QTimerInfoList::timerWait(timespec &tm)
     // Find first waiting timer not already active
     auto it = std::find_if(timers.cbegin(), timers.cend(), isWaiting);
     if (it == timers.cend())
-        return false;
+        return std::nullopt;
 
     nanoseconds timeToWait = (*it)->timeout - now;
     if (timeToWait > 0ns)
-        tm = durationToTimespec(roundToMillisecond(timeToWait));
-    else
-        tm = {0, 0};
-
-    return true;
+        return roundToMillisecond(timeToWait);
+    return 0ms;
 }
 
 /*

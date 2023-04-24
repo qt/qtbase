@@ -46,7 +46,7 @@ public:
 
     std::chrono::steady_clock::time_point currentTime;
 
-    bool timerWait(timespec &);
+    std::optional<std::chrono::milliseconds> timerWait();
     void timerInsert(QTimerInfo *);
 
     qint64 timerRemainingTime(int timerId);
