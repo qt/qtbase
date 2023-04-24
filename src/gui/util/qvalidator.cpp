@@ -362,6 +362,23 @@ static qlonglong pow10(int exp)
     return result;
 }
 
+template <typename T> static inline
+std::optional<QValidator::State> initialResultCheck(T min, T max, const QByteArray &buff)
+{
+    if (buff.isEmpty())
+        return QValidator::Intermediate;
+
+    char ch = buff[0];
+    const bool signConflicts = (min >= 0 && ch == '-') || (max < 0 && ch == '+');
+    if (signConflicts)
+        return QValidator::Invalid;
+
+    if (buff.size() == 1 && (ch == '-' || ch == '+'))
+        return QValidator::Intermediate;
+
+    return std::nullopt;
+}
+
 QValidator::State QIntValidator::validate(QString & input, int&) const
 {
     QByteArray buff;
@@ -370,19 +387,9 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
         return Invalid;
     }
 
-    if (buff.isEmpty())
-        return Intermediate;
-
-    const bool startsWithMinus(buff[0] == '-');
-    if (b >= 0 && startsWithMinus)
-        return Invalid;
-
-    const bool startsWithPlus(buff[0] == '+');
-    if (t < 0 && startsWithPlus)
-        return Invalid;
-
-    if (buff.size() == 1 && (startsWithPlus || startsWithMinus))
-        return Intermediate;
+    std::optional<QValidator::State> opt = initialResultCheck(b, t, buff);
+    if (opt)
+        return *opt;
 
     bool ok;
     qlonglong entered = QLocaleData::bytearrayToLongLong(buff, 10, &ok);
@@ -401,7 +408,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
         // of a number of digits equal to or less than the max value as intermediate.
 
         int buffLength = buff.size();
-        if (startsWithPlus)
+        if (buff[0] == '+')
             buffLength--;
         const int tLength = t != 0 ? static_cast<int>(std::log10(qAbs(t))) + 1 : 1;
 
@@ -651,14 +658,9 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
         return QValidator::Invalid;
     }
 
-    if (buff.isEmpty())
-        return QValidator::Intermediate;
-
-    if (q->b >= 0 && buff.startsWith('-'))
-        return QValidator::Invalid;
-
-    if (q->t < 0 && buff.startsWith('+'))
-        return QValidator::Invalid;
+    std::optional<QValidator::State> opt = initialResultCheck(q->b, q->t, buff);
+    if (opt)
+        return *opt;
 
     bool ok = false;
     double i = locale.toDouble(input, &ok); // returns 0.0 if !ok
