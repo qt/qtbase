@@ -165,6 +165,14 @@ struct tm timeToTm(qint64 localDay, int secs, QDateTimePrivate::DaylightStatus d
     return local;
 }
 
+inline std::optional<qint64> tmToJd(const struct tm &date)
+{
+    qint64 jd;
+    return QGregorianCalendar::julianFromParts(qYearFromTmYear(date.tm_year),
+                                               date.tm_mon + 1, date.tm_mday, &jd)
+        ? std::optional<qint64>(jd) : std::nullopt;
+}
+
 #define IC(N) std::integral_constant<qint64, N>()
 
 // True if combining day and seconds overflows qint64; otherwise, sets *epochSeconds
@@ -265,15 +273,14 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
     if (!qLocalTime(epochSeconds, &local))
         return {utcMillis};
 
-    qint64 jd;
-    if (Q_UNLIKELY(!QGregorianCalendar::julianFromParts(qYearFromTmYear(local.tm_year),
-                                                        local.tm_mon + 1, local.tm_mday, &jd))) {
+    auto jd = tmToJd(local);
+    if (Q_UNLIKELY(!jd))
         return {utcMillis};
-    }
+
     const qint64 daySeconds = tmSecsWithinDay(local);
     Q_ASSERT(0 <= daySeconds && daySeconds < SECS_PER_DAY);
     qint64 localSeconds, localMillis;
-    if (Q_UNLIKELY(daysAndSecondsOverflow(jd, daySeconds, &localSeconds)
+    if (Q_UNLIKELY(daysAndSecondsOverflow(*jd, daySeconds, &localSeconds)
                    || secondsAndMillisOverflow(localSeconds, qint64(msec), &localMillis))) {
         return {utcMillis};
     }
@@ -312,19 +319,17 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
     // Provisional offset, until we have a revised localSeconds:
     int offset = localSecs - utcSecs;
     dst = tmLocal.tm_isdst > 0 ? QDateTimePrivate::DaylightTime : QDateTimePrivate::StandardTime;
-    qint64 jd;
-    if (Q_UNLIKELY(!QGregorianCalendar::julianFromParts(
-                       qYearFromTmYear(tmLocal.tm_year), tmLocal.tm_mon + 1, tmLocal.tm_mday,
-                       &jd))) {
+    auto jd = tmToJd(tmLocal);
+    if (Q_UNLIKELY(!jd))
         return {local, offset, dst, false};
-    }
+
     daySecs = tmSecsWithinDay(tmLocal);
     Q_ASSERT(0 <= daySecs && daySecs < SECS_PER_DAY);
-    if (daySecs > 0 && jd < JULIAN_DAY_FOR_EPOCH) {
-        ++jd;
+    if (daySecs > 0 && *jd < JULIAN_DAY_FOR_EPOCH) {
+        jd = *jd + 1;
         daySecs -= SECS_PER_DAY;
     }
-    if (Q_UNLIKELY(daysAndSecondsOverflow(jd, daySecs, &localSecs)))
+    if (Q_UNLIKELY(daysAndSecondsOverflow(*jd, daySecs, &localSecs)))
         return {local, offset, dst, false};
 
     offset = localSecs - utcSecs;
