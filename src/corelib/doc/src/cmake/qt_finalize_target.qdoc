@@ -32,10 +32,10 @@ was created, so this command should also be called from that same directory
 scope.
 
 This command is ordinarily invoked as part of a call to
-\l{qt6_add_executable}{qt_add_executable()} or
-\l{qt6_add_library}{qt_add_library()}. The timing of when that call takes
-place and when it might need to be called explicitly by a project is discussed
-in the documentation of those commands.
+\l{qt6_add_executable}{qt_add_executable()},
+\l{qt6_add_library}{qt_add_library()}, or \l{qt6_add_plugin}{qt_add_plugin()}.
+The timing of when that call takes place and when a project might need to call
+it explicitly, is discussed in the documentation of those commands.
 
 \sa {qt6_set_finalizer_mode}{qt_set_finalizer_mode()}
 

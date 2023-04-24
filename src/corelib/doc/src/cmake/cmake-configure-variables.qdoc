@@ -429,7 +429,7 @@ part of a post-build rule.
 The following example shows one way the variable would be used when installing
 an application, along with its runtime dependencies:
 
-\include cmake-deploy-runtime-dependencies.qdocinc
+\include cmake-deploy-modified-variable-values.qdocinc
 
 \sa {qt6_deploy_runtime_dependencies}{qt_deploy_runtime_dependencies()},
     {qt6_deploy_qml_imports}{qt_deploy_qml_imports()}
