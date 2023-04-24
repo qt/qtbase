@@ -47,7 +47,7 @@ public:
     static NSScreen *nativeScreenForDisplayId(CGDirectDisplayID displayId);
     NSScreen *nativeScreen() const;
 
-    void requestUpdate();
+    bool requestUpdate();
     void deliverUpdateRequests();
     bool isRunningDisplayLink() const;
 

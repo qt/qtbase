@@ -289,24 +289,33 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
 
 Q_LOGGING_CATEGORY(lcQpaScreenUpdates, "qt.qpa.screen.updates", QtCriticalMsg);
 
-void QCocoaScreen::requestUpdate()
+bool QCocoaScreen::requestUpdate()
 {
     Q_ASSERT(m_displayId);
 
     if (!isOnline()) {
         qCDebug(lcQpaScreenUpdates) << this << "is not online. Ignoring update request";
-        return;
+        return false;
     }
 
     if (!m_displayLink) {
-        CVDisplayLinkCreateWithCGDisplay(m_displayId, &m_displayLink);
+        qCDebug(lcQpaScreenUpdates) << "Creating display link for" << this;
+        if (CVDisplayLinkCreateWithCGDisplay(m_displayId, &m_displayLink) != kCVReturnSuccess) {
+            qCWarning(lcQpaScreenUpdates) << "Failed to create display link for" << this;
+            return false;
+        }
+        if (auto displayId = CVDisplayLinkGetCurrentCGDisplay(m_displayLink); displayId != m_displayId) {
+            qCWarning(lcQpaScreenUpdates) << "Unexpected display" << displayId << "for display link";
+            CVDisplayLinkRelease(m_displayLink);
+            m_displayLink = nullptr;
+            return false;
+        }
         CVDisplayLinkSetOutputCallback(m_displayLink, [](CVDisplayLinkRef, const CVTimeStamp*,
             const CVTimeStamp*, CVOptionFlags, CVOptionFlags*, void* displayLinkContext) -> int {
                 // FIXME: It would be nice if update requests would include timing info
                 static_cast<QCocoaScreen*>(displayLinkContext)->deliverUpdateRequests();
                 return kCVReturnSuccess;
         }, this);
-        qCDebug(lcQpaScreenUpdates) << "Display link created for" << this;
 
         // During live window resizing -[NSWindow _resizeWithEvent:] will spin a local event loop
         // in event-tracking mode, dequeuing only the mouse drag events needed to update the window's
@@ -361,6 +370,8 @@ void QCocoaScreen::requestUpdate()
         qCDebug(lcQpaScreenUpdates) << "Starting display link for" << this;
         CVDisplayLinkStart(m_displayLink);
     }
+
+    return true;
 }
 
 // Helper to allow building up debug output in multiple steps
