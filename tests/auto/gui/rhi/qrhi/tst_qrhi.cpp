@@ -78,6 +78,8 @@ private slots:
     void resourceUpdateBatchTextureRawDataStride();
     void resourceUpdateBatchLotsOfResources_data();
     void resourceUpdateBatchLotsOfResources();
+    void resourceUpdateBatchBetweenFrames_data();
+    void resourceUpdateBatchBetweenFrames();
     void invalidPipeline_data();
     void invalidPipeline();
     void srbLayoutCompatibility_data();
@@ -1530,6 +1532,86 @@ void tst_QRhi::resourceUpdateBatchLotsOfResources()
     }
 
     submitResourceUpdates(rhi.data(), b);
+}
+
+void tst_QRhi::resourceUpdateBatchBetweenFrames_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchBetweenFrames()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing resource updates");
+
+    QImage image(128, 128, QImage::Format_RGBA8888_Premultiplied);
+    image.fill(Qt::red);
+    static const float bufferData[64] = {};
+
+    QRhiCommandBuffer *cb = nullptr;
+    QRhi::FrameOpResult result = rhi->beginOffscreenFrame(&cb);
+    QVERIFY(result == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    static const int TEXTURE_COUNT = 123;
+    static const int BUFFER_COUNT = 456;
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+    std::vector<std::unique_ptr<QRhiTexture>> textures;
+    std::vector<std::unique_ptr<QRhiBuffer>> buffers;
+
+    for (int i = 0; i < TEXTURE_COUNT; ++i) {
+        std::unique_ptr<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8,
+                                                             image.size(),
+                                                             1,
+                                                             QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->create());
+        u->uploadTexture(texture.get(), image);
+        textures.push_back(std::move(texture));
+    }
+
+    for (int i = 0; i < BUFFER_COUNT; ++i) {
+        std::unique_ptr<QRhiBuffer> buffer(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, 256));
+        QVERIFY(buffer->create());
+        u->uploadStaticBuffer(buffer.get(), bufferData);
+        buffers.push_back(std::move(buffer));
+    }
+
+    rhi->endOffscreenFrame();
+    cb = nullptr;
+
+    // 'u' stays valid, commit it in another frame
+
+    result = rhi->beginOffscreenFrame(&cb);
+    QVERIFY(result == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    cb->resourceUpdate(u); // this should work
+
+    rhi->endOffscreenFrame();
+
+    u = rhi->nextResourceUpdateBatch();
+    QRhiReadbackResult readResult;
+    bool readCompleted = false;
+    readResult.completed = [&readCompleted] { readCompleted = true; };
+    u->readBackTexture(textures[5].get(), &readResult);
+
+    QVERIFY(submitResourceUpdates(rhi.data(), u));
+    QVERIFY(readCompleted);
+    QCOMPARE(readResult.format, QRhiTexture::RGBA8);
+    QCOMPARE(readResult.pixelSize, image.size());
+
+    QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x)
+            QCOMPARE(wrapperImage.pixel(x, y), qRgba(255, 0, 0, 255));
+    }
 }
 
 static QShader loadShader(const char *name)
