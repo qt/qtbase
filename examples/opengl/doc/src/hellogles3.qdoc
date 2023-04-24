@@ -6,23 +6,142 @@
     \title Hello GLES3 Example
     \ingroup examples-widgets-opengl
 
-    \brief The Hello GLES3 example demonstrates easy, cross-platform usage of
-    OpenGL ES 3.0 functions via QOpenGLExtraFunctions in an application that
+    \brief Demonstrates OpenGL ES 3.0 functions via QOpenGLExtraFunctions.
+
+    \image hellogles3-example.png
+    \section1 Overview
+
+    This example demonstrates easy, cross-platform usage of OpenGL ES 3.0
+    functions via QOpenGLExtraFunctions in an application that
     works identically on desktop platforms with OpenGL 3.3 and mobile/embedded
     devices with OpenGL ES 3.0.
 
-    The code is always the same, with the exception of two places:
-    \list
-      \li The OpenGL context creation has to have a sufficiently high version
-    number for the features that are in use.
-      \li The shader code's version directive is different.
-    \endlist
-
-    This example has no QWidget dependencies. Instead, it uses QOpenGLWindow, a
+    This example has no QWidget dependencies, it uses QOpenGLWindow, a
     convenience subclass of QWindow that allows easy implementation of windows
     that contain OpenGL-rendered content. In this sense it complements the
     \l{OpenGL Window Example}, which shows the implementation of an OpenGL-based
     QWindow without using the convenience subclass.
 
-    \image hellogles3-example.png
+    The Qt logo shape implementation is included from the \l{Hello GL2 Example}.
+
+    In other aspects pertaining to using OpenGL there are the following
+    differences.
+
+    \list
+      \li The OpenGL context creation has to have a sufficiently high version
+    number for the features that are in use.
+      \li The shader's version directive is different.
+    \endlist
+
+    \section1 Setting up in main.cpp
+
+    Here we instantiate our QGuiApplication, QSurfaceformat and set its
+    \l{QSurfaceFormat::depthBufferSize()}{depth buffer size}:
+
+    \quotefromfile hellogles3/main.cpp
+    \skipto int main(int argc, char *argv[])
+    \printuntil fmt.setDepthBufferSize(24);
+
+    We request an OpenGL 3.3 core or OpenGL ES 3.0 context, depending on
+    QOpenGLContext::openGLModuleType():
+
+    \skipto if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+    \printuntil QSurfaceFormat::setDefaultFormat(fmt);
+
+    We set the default surface format and instantiate our GLWindow \c glWindow.
+
+    \section1 Implementing GLWindow
+
+    This class delivers the features of the example application.
+
+    To start, \c GLWindow is declared by implementing a subclass of
+    QOpenGLWindow:
+
+    \quotefromfile hellogles3/glwindow.h
+    \skipto class GLWindow : public QOpenGLWindow
+    \printto {
+
+    The following properties are declared using Q_PROPERTY:
+
+    \printto public:
+
+    The following public functions are declared:
+
+    \printto private slots:
+
+    The following private objects are declared:
+
+    \printto };
+
+    On the implementation side, those functions that are not declared inline are
+    implemented (or re-implemented) in \c{glwindow.cpp}. The following selections
+    will cover implementation particulars pertaining to the use of OpenGL ES 3.0.
+
+    \section2 Animations
+
+    The following code pertains to the animations, and won't be explored here:
+
+    \quotefromfile hellogles3/glwindow.cpp
+    \skipto GLWindow::GLWindow()
+    \printto static const char *vertexShaderSource =
+
+    For more information see the documentation for \l QPropertyAnimation,
+    \l QSequentialAnimationGroup.
+
+    \section2 Shaders
+    The shaders are defined like so:
+
+    \printto QByteArray versionedShaderCode(const char *src)
+
+    \note These are OpenGL version agnostic. We take this and append
+    the version like so:
+
+    \printto void GLWindow::initializeGL()
+
+    \section2 Initializing OpenGL
+
+    Initializing the shader program in handled by \c initializeGL():
+
+    \printuntil   m_program = new QOpenGLShaderProgram;
+    \skipto  m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, versionedShaderCode(vertexShaderSource));
+
+    Now the OpenGL version is prepended and the various matrices and light
+    position is set:
+
+    \printuntil m_lightPosLoc = m_program->uniformLocation("lightPos");
+
+    While not strictly required for ES 3, a vertex array object is created.
+
+    \skipto delete m_vao;
+    \printuntil f->glEnable(GL_CULL_FACE);
+
+    \section2 Resizing the window
+
+    The perspective needs to be aligned with the new window size as so:
+
+    \skipto void GLWindow::resizeGL(int w, int h)
+    \printto void GLWindow::paintGL()
+
+    \section2 Painting
+
+    We use QOpenGLExtraFunctions instead of QOpenGLFunctions as we want to
+    do more than what GL(ES) 2.0 offers:
+
+    \printuntil QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
+
+    We clear the screen and buffers and bind our shader program and texture:
+
+    \printuntil m_texture->bind();
+
+    Logic for handling an initial \c paintGL() call or a call after a
+    \c resizeGL() call is implemented like so:
+
+    \printuntil }
+
+    Last, we demonstrate a function introduced in OpenGL 3.1 or OpenGL ES 3.0:
+
+    \skipto f->glDrawArraysInstanced(GL_TRIANGLES, 0, m_logo.vertexCount(), 32 * 36);
+    \printuntil }
+
+    This works because we earlier requested 3.3 or 3.0 context.
 */
