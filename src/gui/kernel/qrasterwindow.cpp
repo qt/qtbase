@@ -139,3 +139,5 @@ QPaintDevice *QRasterWindow::redirected(QPoint *) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qrasterwindow.cpp"

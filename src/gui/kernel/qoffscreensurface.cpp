@@ -435,3 +435,5 @@ QPlatformSurface *QOffscreenSurface::surfaceHandle() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qoffscreensurface.cpp"

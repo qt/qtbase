@@ -709,7 +709,7 @@ const QDBusArgument &QDBusArgument::operator>>(qulonglong &arg) const
 /*!
     \overload
     Extracts one D-Bus primitive argument of type \c{DOUBLE}
-    (double-precision floating pount) from the D-Bus stream.
+    (double-precision floating point) from the D-Bus stream.
 */
 const QDBusArgument &QDBusArgument::operator>>(double &arg) const
 {

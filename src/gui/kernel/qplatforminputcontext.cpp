@@ -298,3 +298,5 @@ void QPlatformInputContext::setSelectionOnFocusObject(const QPointF &anchorPos, 
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatforminputcontext.cpp"

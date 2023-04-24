@@ -1,7 +1,7 @@
 TARGET  = qgif
 
 SOURCES += main.cpp qgifhandler.cpp
-HEADERS += main.h qgifhandler_p.h
+HEADERS += qgifhandler_p.h
 
 OTHER_FILES += gif.json
 

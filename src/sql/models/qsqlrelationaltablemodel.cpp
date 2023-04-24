@@ -789,3 +789,5 @@ bool QSqlRelationalTableModel::removeColumns(int column, int count, const QModel
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsqlrelationaltablemodel.cpp"

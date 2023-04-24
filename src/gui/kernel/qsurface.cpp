@@ -160,3 +160,5 @@ QSurface::SurfaceClass QSurface::surfaceClass() const
 
 QT_END_NAMESPACE
 
+#include "moc_qsurface.cpp"
+

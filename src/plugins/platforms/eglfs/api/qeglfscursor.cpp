@@ -548,3 +548,5 @@ void QEglFSCursor::draw(const QRectF &r)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qeglfscursor_p.cpp"

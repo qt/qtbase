@@ -100,3 +100,5 @@ QSqlDriverPlugin::~QSqlDriverPlugin()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsqldriverplugin.cpp"

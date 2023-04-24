@@ -3481,7 +3481,7 @@ QStyleOptionTabWidgetFrame::QStyleOptionTabWidgetFrame(int version)
 
 /*!
     Construct a QStyleOptionTabBarBase, initializing the members
-    vaiables to their default values.
+    variables to their default values.
 */
 QStyleOptionTabBarBase::QStyleOptionTabBarBase()
     : QStyleOption(Version, SO_TabBarBase), shape(QTabBar::RoundedNorth),

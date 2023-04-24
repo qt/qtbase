@@ -159,4 +159,6 @@ void QAccessibleCache::deleteInterface(QAccessible::Id id, QObject *obj)
 
 QT_END_NAMESPACE
 
+#include "moc_qaccessiblecache_p.cpp"
+
 #endif

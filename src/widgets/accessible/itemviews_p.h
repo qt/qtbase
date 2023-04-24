@@ -79,6 +79,7 @@ public:
     QRect rect() const override;
 
     QAccessibleInterface *childAt(int x, int y) const override;
+    QAccessibleInterface *focusChild() const override;
     int childCount() const override;
     int indexOfChild(const QAccessibleInterface *) const override;
 
@@ -154,6 +155,7 @@ public:
 
 
     QAccessibleInterface *childAt(int x, int y) const override;
+    QAccessibleInterface *focusChild() const override;
     int childCount() const override;
     QAccessibleInterface *child(int index) const override;
 

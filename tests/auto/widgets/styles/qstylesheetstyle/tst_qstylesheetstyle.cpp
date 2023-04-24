@@ -94,6 +94,7 @@ private slots:
     void layoutSpacing();
 #endif
     void qproperty();
+    void qproperty_styleSheet();
     void palettePropagation_data();
     void palettePropagation();
     void fontPropagation_data();
@@ -678,6 +679,23 @@ void tst_QStyleSheetStyle::qproperty()
     QCOMPARE(pb.text(), QString("hello"));
     QCOMPARE(pb.isCheckable(), true);
     QCOMPARE(pb.isChecked(), false);
+}
+
+void tst_QStyleSheetStyle::qproperty_styleSheet()
+{
+    QWidget w;
+    auto checkBox = new QCheckBox("check", &w);
+    QString sheet = R"(QCheckBox { qproperty-styleSheet: "QCheckBox { qproperty-text: foobar; }"; })";
+
+    QVERIFY(w.property("styleSheet").toString().isEmpty());
+
+    w.setStyleSheet(sheet);
+    QCOMPARE(checkBox->text(), "check");
+
+    //recursion crash
+    w.ensurePolished();
+    QCOMPARE(w.property("styleSheet").toString(), sheet);
+    QCOMPARE(checkBox->text(), "foobar");
 }
 
 namespace ns {

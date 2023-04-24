@@ -41,7 +41,6 @@
 #include "single_function_keyword.h"
 #include "backslash-newlines.h"
 #include "slots-with-void-template.h"
-#include "pure-virtual-signals.h"
 #include "qinvokable.h"
 // msvc and friends crap out on it
 #if !defined(Q_CC_GNU) || defined(Q_OS_WIN)
@@ -631,7 +630,6 @@ public:
 private slots:
     void initTestCase();
 
-    void slotWithException() throw(MyStruct);
     void dontStripNamespaces();
     void oldStyleCasts();
     void warnOnExtraSignalSlotQualifiaction();
@@ -782,12 +780,6 @@ void tst_Moc::initTestCase()
     QVERIFY(fi.exists());
     QVERIFY(fi.isDir());
 #endif
-}
-
-void tst_Moc::slotWithException() throw(MyStruct)
-{
-    // be happy
-    QVERIFY(true);
 }
 
 void tst_Moc::dontStripNamespaces()
@@ -1595,7 +1587,7 @@ void tst_Moc::qprivateproperties()
 
 #include "task189996.h"
 
-void InlineSlotsWithThrowDeclaration::c() throw() {}
+void InlineSlotsWithThrowDeclaration::c() noexcept {}
 
 void tst_Moc::inlineSlotsWithThrowDeclaration()
 {
@@ -1604,8 +1596,6 @@ void tst_Moc::inlineSlotsWithThrowDeclaration()
     QVERIFY(mobj->indexOfSlot("a()") != -1);
     QVERIFY(mobj->indexOfSlot("b()") != -1);
     QVERIFY(mobj->indexOfSlot("c()") != -1);
-    QVERIFY(mobj->indexOfSlot("d()") != -1);
-    QVERIFY(mobj->indexOfSlot("e()") != -1);
 }
 
 void tst_Moc::warnOnPropertyWithoutREAD()

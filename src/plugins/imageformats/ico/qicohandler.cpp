@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+
 // These next two structs represent how the icon information is stored
 // in an ICO file.
 typedef struct
@@ -94,6 +96,8 @@ typedef struct {                    // BMP information header
     quint32_le biClrImportant;        // number of important colors
 } BMP_INFOHDR ,*LPBMP_INFOHDR;
 #define BMP_INFOHDR_SIZE 40
+
+}
 
 class ICOReader
 {

@@ -610,4 +610,6 @@ void QClipboard::emitChanged(Mode mode)
 
 QT_END_NAMESPACE
 
+#include "moc_qclipboard.cpp"
+
 #endif // QT_NO_CLIPBOARD

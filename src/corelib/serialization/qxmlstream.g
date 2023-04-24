@@ -557,6 +557,7 @@ bool QXmlStreamReaderPrivate::parse()
             setType(QXmlStreamReader::EndElement);
             Tag &tag = tagStack_pop();
             namespaceUri = tag.namespaceDeclaration.namespaceUri;
+            prefix = tag.namespaceDeclaration.prefix;
             name = tag.name;
             qualifiedName = tag.qualifiedName;
             isEmptyElement = false;
@@ -1617,6 +1618,7 @@ etag ::= LANGLE SLASH qname space_opt RANGLE;
             Tag &tag = tagStack_pop();
 
             namespaceUri = tag.namespaceDeclaration.namespaceUri;
+            prefix = tag.namespaceDeclaration.prefix;
             name = tag.name;
             qualifiedName = tag.qualifiedName;
             if (qualifiedName != symName(3))

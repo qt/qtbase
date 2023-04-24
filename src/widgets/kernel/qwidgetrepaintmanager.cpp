@@ -1018,7 +1018,8 @@ void QWidgetRepaintManager::paintAndFlush()
 
     // Paint the rest with composition.
     if (repaintAllWidgets || !dirtyCopy.isEmpty()) {
-        QWidgetPrivate::DrawWidgetFlags flags = QWidgetPrivate::DrawAsRoot | QWidgetPrivate::DrawRecursive;
+        QWidgetPrivate::DrawWidgetFlags flags = QWidgetPrivate::DrawAsRoot | QWidgetPrivate::DrawRecursive
+                | QWidgetPrivate::UseEffectRegionBounds;
         tlw->d_func()->drawWidget(store->paintDevice(), dirtyCopy, QPoint(), flags, nullptr, this);
     }
 
@@ -1409,3 +1410,4 @@ void QWidgetPrivate::invalidateBackingStore_resizeHelper(const QPoint &oldPos, c
 QT_END_NAMESPACE
 
 #include "qwidgetrepaintmanager.moc"
+#include "moc_qwidgetrepaintmanager_p.cpp"

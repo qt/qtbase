@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -619,7 +619,8 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
     bool needsQuotes = false;
     bool escapeNextIfDigit = false;
     bool useCodec = codec && !str.startsWith(QLatin1String("@ByteArray("))
-                    && !str.startsWith(QLatin1String("@Variant("));
+                    && !str.startsWith(QLatin1String("@Variant("))
+                    && !str.startsWith(QLatin1String("@DateTime("));
 
     int i;
     int startPos = result.size();
@@ -2162,8 +2163,10 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \snippet settings/settings.cpp 15
 
-    Note that type information is not preserved when reading settings from INI
-    files; all values will be returned as QString.
+    Note that INI files lose the distinction between numeric data and the
+    strings used to encode them, so values written as numbers shall be read back
+    as QString. The numeric value can be recovered using \l QString::toInt(), \l
+    QString::toDouble() and related functions.
 
     The \l{tools/settingseditor}{Settings Editor} example lets you
     experiment with different settings location and with fallbacks
@@ -2446,9 +2449,10 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
                             On 32-bit Windows or from a 64-bit application on 64-bit Windows,
                             this works the same as specifying NativeFormat.
                             This enum value was added in Qt 5.7.
-    \value IniFormat        Store the settings in INI files. Note that type information
-                            is not preserved when reading settings from INI files;
-                            all values will be returned as QString.
+    \value IniFormat        Store the settings in INI files. Note that INI files
+                            lose the distinction between numeric data and the
+                            strings used to encode them, so values written as
+                            numbers shall be read back as QString.
 
     \value InvalidFormat    Special value returned by registerFormat().
     \omitvalue CustomFormat1

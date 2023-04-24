@@ -680,7 +680,7 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
     // read until EOF from data
     if (Q_UNLIKELY(copyDevice)) {
         qCritical("QNetworkReplyImpl: copy from QIODevice already in progress -- "
-                  "backend probly needs to be fixed");
+                  "backend probably needs to be fixed");
         return;
     }
 

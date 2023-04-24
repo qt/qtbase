@@ -33,10 +33,10 @@ Characters( whitespace text="
 " )
 StartElement( name="title" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:title" prefix="html" )
 Characters( text="test file" )
-EndElement( name="title" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:title" )
+EndElement( name="title" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:title" prefix="html" )
 Characters( whitespace text="
 " )
-EndElement( name="head" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:head" )
+EndElement( name="head" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:head" prefix="html" )
 Characters( whitespace text="
 " )
 StartElement( name="body" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:body" prefix="html" )
@@ -46,11 +46,11 @@ StartElement( name="p" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName
     Attribute( name="class" qualifiedName="class" value="visible:false" )
  )
 Characters( text="bar" )
-EndElement( name="p" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:p" )
+EndElement( name="p" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:p" prefix="html" )
 Characters( whitespace text="
 " )
-EndElement( name="body" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:body" )
+EndElement( name="body" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:body" prefix="html" )
 Characters( whitespace text="
 " )
-EndElement( name="html" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:html" )
+EndElement( name="html" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:html" prefix="html" )
 EndDocument( )

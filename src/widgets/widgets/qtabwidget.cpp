@@ -1348,7 +1348,7 @@ void QTabWidget::setIconSize(const QSize &size)
     This property controls how items are elided when there is not
     enough space to show them for a given tab bar size.
 
-    By default the value is style dependant.
+    By default the value is style dependent.
 
     \sa QTabBar::elideMode, usesScrollButtons, QStyle::SH_TabBar_ElideMode
 */
@@ -1371,7 +1371,7 @@ void QTabWidget::setElideMode(Qt::TextElideMode mode)
     When there are too many tabs in a tab bar for its size, the tab bar can either choose
     to expand its size or to add buttons that allow you to scroll through the tabs.
 
-    By default the value is style dependant.
+    By default the value is style dependent.
 
     \sa elideMode, QTabBar::usesScrollButtons, QStyle::SH_TabBar_PreferNoArrows
 */

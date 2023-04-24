@@ -86,17 +86,10 @@ QAndroidTimeZonePrivate::~QAndroidTimeZonePrivate()
 static QJNIObjectPrivate getDisplayName(QJNIObjectPrivate zone, jint style, jboolean dst,
                                         const QLocale &locale)
 {
-    QJNIObjectPrivate jlanguage
-        = QJNIObjectPrivate::fromString(QLocale::languageToString(locale.language()));
-    QJNIObjectPrivate jcountry
-        = QJNIObjectPrivate::fromString(QLocale::countryToString(locale.country()));
-    QJNIObjectPrivate
-        jvariant = QJNIObjectPrivate::fromString(QLocale::scriptToString(locale.script()));
-    QJNIObjectPrivate jlocale("java.util.Locale",
-                              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
-                              static_cast<jstring>(jlanguage.object()),
-                              static_cast<jstring>(jcountry.object()),
-                              static_cast<jstring>(jvariant.object()));
+    QJNIObjectPrivate jbcpTag = QJNIObjectPrivate::fromString(locale.bcp47Name());
+    QJNIObjectPrivate jlocale = QJNIObjectPrivate::callStaticObjectMethod(
+                "java/util/Locale", "forLanguageTag", "(Ljava/lang/String;)Ljava/util/Locale;",
+                static_cast<jstring>(jbcpTag.object()));
 
     return zone.callObjectMethod("getDisplayName",
                                  "(ZILjava/util/Locale;)Ljava/lang/String;",

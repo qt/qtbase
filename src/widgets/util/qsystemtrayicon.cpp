@@ -190,7 +190,7 @@ QSystemTrayIcon::~QSystemTrayIcon()
     The menu will pop up when the user requests the context menu for the system
     tray icon by clicking the mouse button.
 
-    On \macos, this is currenly converted to a NSMenu, so the
+    On \macos, this is currently converted to a NSMenu, so the
     aboutToHide() signal is not emitted.
 
     \note The system tray icon does not take ownership of the menu. You must

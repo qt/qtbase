@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace QWindowsUiAutomation;
 
+bool QWindowsUiaAccessibility::m_accessibleActive = false;
 
 QWindowsUiaAccessibility::QWindowsUiaAccessibility()
 {
@@ -72,6 +73,7 @@ bool QWindowsUiaAccessibility::handleWmGetObject(HWND hwnd, WPARAM wParam, LPARA
 {
     // Start handling accessibility internally
     QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);
+    m_accessibleActive = true;
 
     // Ignoring all requests while starting up / shutting down
     if (QCoreApplication::startingUp() || QCoreApplication::closingDown())
@@ -129,6 +131,11 @@ static void playSystemSound(const QString &soundName)
 void QWindowsUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
     if (!event)
+        return;
+
+    // Ignore events sent before the first UI Automation
+    // request or while QAccessible is being activated.
+    if (!m_accessibleActive)
         return;
 
     switch (event->type()) {

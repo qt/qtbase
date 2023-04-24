@@ -52,6 +52,7 @@
 //
 
 #include <QtCore/qendian.h>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
@@ -136,6 +137,198 @@ using qint32_be_bitfield = QBEIntegerBitfield<int, pos, width>;
 template<int pos, int width>
 using quint32_be_bitfield = QBEIntegerBitfield<uint, pos, width>;
 
+enum class QSpecialIntegerBitfieldInitializer {};
+constexpr QSpecialIntegerBitfieldInitializer QSpecialIntegerBitfieldZero{};
+
+template<class S>
+class QSpecialIntegerStorage
+{
+public:
+    using UnsignedStorageType = typename std::make_unsigned<typename S::StorageType>::type;
+
+    constexpr QSpecialIntegerStorage() = default;
+    constexpr QSpecialIntegerStorage(QSpecialIntegerBitfieldInitializer) : val(0) {}
+    constexpr QSpecialIntegerStorage(UnsignedStorageType initial) : val(initial) {}
+
+    UnsignedStorageType val;
+};
+
+template<class S, int pos, int width, class T = typename S::StorageType>
+class QSpecialIntegerAccessor;
+
+template<class S, int pos, int width, class T = typename S::StorageType>
+class QSpecialIntegerConstAccessor
+{
+    Q_DISABLE_COPY(QSpecialIntegerConstAccessor)
+public:
+    using Storage = const QSpecialIntegerStorage<S>;
+    using Type = T;
+    using UnsignedType = typename std::make_unsigned<T>::type;
+
+    QSpecialIntegerConstAccessor(QSpecialIntegerConstAccessor &&) noexcept = default;
+    QSpecialIntegerConstAccessor &operator=(QSpecialIntegerConstAccessor &&) noexcept = default;
+
+    operator Type() const noexcept
+    {
+        if (std::is_signed<Type>::value) {
+            UnsignedType i = S::fromSpecial(storage->val);
+            i <<= (sizeof(Type) * 8) - width - pos;
+            Type t = Type(i);
+            t >>= (sizeof(Type) * 8) - width;
+            return t;
+        }
+        return (S::fromSpecial(storage->val) & mask()) >> pos;
+    }
+
+    bool operator!() const noexcept { return !(storage->val & S::toSpecial(mask())); }
+
+    static constexpr UnsignedType mask() noexcept
+    {
+        return ((UnsignedType(1) << width) - 1) << pos;
+    }
+
+private:
+    template<class Storage, typename... Accessors>
+    friend class QSpecialIntegerBitfieldUnion;
+    friend class QSpecialIntegerAccessor<S, pos, width, T>;
+
+    explicit QSpecialIntegerConstAccessor(Storage *storage) : storage(storage) {}
+
+    friend bool operator==(const QSpecialIntegerConstAccessor<S, pos, width, T> &i,
+                           const QSpecialIntegerConstAccessor<S, pos, width, T> &j) noexcept
+    {
+        return ((i.storage->val ^ j.storage->val) & S::toSpecial(mask())) == 0;
+    }
+
+    friend bool operator!=(const QSpecialIntegerConstAccessor<S, pos, width, T> &i,
+                           const QSpecialIntegerConstAccessor<S, pos, width, T> &j) noexcept
+    {
+        return ((i.storage->val ^ j.storage->val) & S::toSpecial(mask())) != 0;
+    }
+
+    Storage *storage;
+};
+
+template<class S, int pos, int width, class T>
+class QSpecialIntegerAccessor
+{
+    Q_DISABLE_COPY(QSpecialIntegerAccessor)
+public:
+    using Const = QSpecialIntegerConstAccessor<S, pos, width, T>;
+    using Storage = QSpecialIntegerStorage<S>;
+    using Type = T;
+    using UnsignedType = typename std::make_unsigned<T>::type;
+
+    QSpecialIntegerAccessor(QSpecialIntegerAccessor &&) noexcept = default;
+    QSpecialIntegerAccessor &operator=(QSpecialIntegerAccessor &&) noexcept = default;
+
+    QSpecialIntegerAccessor &operator=(Type t)
+    {
+        UnsignedType i = S::fromSpecial(storage->val);
+        i &= ~Const::mask();
+        i |= (UnsignedType(t) << pos) & Const::mask();
+        storage->val = S::toSpecial(i);
+        return *this;
+    }
+
+    operator Const() { return Const(storage); }
+
+private:
+    template<class Storage, typename... Accessors>
+    friend class QSpecialIntegerBitfieldUnion;
+
+    explicit QSpecialIntegerAccessor(Storage *storage) : storage(storage) {}
+
+    Storage *storage;
+};
+
+template<class S, typename... Accessors>
+class QSpecialIntegerBitfieldUnion
+{
+public:
+    constexpr QSpecialIntegerBitfieldUnion() = default;
+    constexpr QSpecialIntegerBitfieldUnion(QSpecialIntegerBitfieldInitializer initial)
+        : storage(initial)
+    {}
+
+    constexpr QSpecialIntegerBitfieldUnion(
+            typename QSpecialIntegerStorage<S>::UnsignedStorageType initial)
+        : storage(initial)
+    {}
+
+    template<typename A>
+    void set(typename A::Type value)
+    {
+        member<A>() = value;
+    }
+
+    template<typename A>
+    typename A::Type get() const
+    {
+        return member<A>();
+    }
+
+    typename QSpecialIntegerStorage<S>::UnsignedStorageType data() const
+    {
+        return storage.val;
+    }
+
+private:
+    template<class A, class...> struct Contains : std::false_type { };
+    template<class A, class B> struct Contains<A, B> : std::is_same<A, B> { };
+    template<class A, class B1, class... Bn>
+    struct Contains<A, B1, Bn...>
+        : std::conditional<Contains<A, B1>::value, std::true_type, Contains<A, Bn...>>::type {};
+
+    template<typename A>
+    using IsAccessor = Contains<A, Accessors...>;
+
+    template<typename A>
+    A member()
+    {
+        Q_STATIC_ASSERT(IsAccessor<A>::value);
+        return A(&storage);
+    }
+
+    template<typename A>
+    typename A::Const member() const
+    {
+        Q_STATIC_ASSERT(IsAccessor<A>::value);
+        return typename A::Const(&storage);
+    }
+
+    QSpecialIntegerStorage<S> storage;
+};
+
+template<typename T, typename... Accessors>
+using QLEIntegerBitfieldUnion
+        = QSpecialIntegerBitfieldUnion<QLittleEndianStorageType<T>, Accessors...>;
+
+template<typename T, typename... Accessors>
+using QBEIntegerBitfieldUnion
+        = QSpecialIntegerBitfieldUnion<QBigEndianStorageType<T>, Accessors...>;
+
+template<typename... Accessors>
+using qint32_le_bitfield_union = QLEIntegerBitfieldUnion<int, Accessors...>;
+template<typename... Accessors>
+using quint32_le_bitfield_union = QLEIntegerBitfieldUnion<uint, Accessors...>;
+template<typename... Accessors>
+using qint32_be_bitfield_union = QBEIntegerBitfieldUnion<int, Accessors...>;
+template<typename... Accessors>
+using quint32_be_bitfield_union = QBEIntegerBitfieldUnion<uint, Accessors...>;
+
+template<int pos, int width, typename T = int>
+using qint32_le_bitfield_member
+        = QSpecialIntegerAccessor<QLittleEndianStorageType<int>, pos, width, T>;
+template<int pos, int width, typename T = uint>
+using quint32_le_bitfield_member
+        = QSpecialIntegerAccessor<QLittleEndianStorageType<uint>, pos, width, T>;
+template<int pos, int width, typename T = int>
+using qint32_be_bitfield_member
+        = QSpecialIntegerAccessor<QBigEndianStorageType<int>, pos, width, T>;
+template<int pos, int width, typename T = uint>
+using quint32_be_bitfield_member
+        = QSpecialIntegerAccessor<QBigEndianStorageType<uint>, pos, width, T>;
 
 QT_END_NAMESPACE
 

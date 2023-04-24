@@ -274,7 +274,7 @@ qlibraryinfo.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) -DQT_BUILD_QMAKE_BOOTSTRAP $<
 
 qlibraryinfo_final.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(BUILD_PATH)/src/corelib/global/qconfig.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
 
 qnumeric.o: $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<

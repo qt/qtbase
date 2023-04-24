@@ -138,4 +138,6 @@ QAccessibleBridgePlugin::~QAccessibleBridgePlugin()
 
 QT_END_NAMESPACE
 
+#include "moc_qaccessiblebridge.cpp"
+
 #endif // QT_NO_ACCESSIBILITY

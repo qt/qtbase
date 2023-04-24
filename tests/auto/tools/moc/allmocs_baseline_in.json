@@ -689,16 +689,6 @@
                         "access": "public",
                         "name": "c",
                         "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "d",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "e",
-                        "returnType": "void"
                     }
                 ],
                 "superClasses": [

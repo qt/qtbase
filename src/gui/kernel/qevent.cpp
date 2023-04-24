@@ -5320,3 +5320,5 @@ uint qHash(QPointingDeviceUniqueId key, uint seed) noexcept
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qevent.cpp"

@@ -2952,7 +2952,7 @@ void QCalendarWidget::setDateEditEnabled(bool enable)
     \since 4.3
 
     If the calendar widget's \l{dateEditEnabled}{date edit is enabled}, this
-    property specifies the amount of time (in millseconds) that the date edit
+    property specifies the amount of time (in milliseconds) that the date edit
     remains open after the most recent user input. Once this time has elapsed,
     the date specified in the date edit is accepted and the popup is closed.
 

@@ -74,13 +74,12 @@ public:
 
     Q_DECLARE_FLAGS(NetWmStates, NetWmState)
 
-    enum Task {
-        Map,
-        Unmap,
-        SetGeometry,
-        SetWindowFlags,
-        SetWindowState
+    enum RecreationReason {
+        RecreationNotNeeded = 0,
+        WindowStaysOnTopHintChanged = 0x1,
+        WindowStaysOnBottomHintChanged = 0x2
     };
+    Q_DECLARE_FLAGS(RecreationReasons, RecreationReason)
 
     QXcbWindow(QWindow *window);
     ~QXcbWindow();
@@ -150,9 +149,6 @@ public:
     void handleXIEnterLeave(xcb_ge_event_t *) override;
 
     QXcbWindow *toWindow() override;
-
-    bool shouldDeferTask(Task task);
-    void handleDeferredTasks();
 
     void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global,
                           Qt::KeyboardModifiers modifiers, QEvent::Type type, Qt::MouseEventSource source);
@@ -293,10 +289,7 @@ protected:
 
     qreal m_sizeHintsScaleFactor = 1.0;
 
-    bool m_wmStateValid = true;
-    QVector<Task> m_deferredTasks;
-    bool m_isWmManagedWindow = true;
-    QRect m_deferredGeometry;
+    RecreationReasons m_recreationReasons = RecreationNotNeeded;
 };
 
 class QXcbForeignWindow : public QXcbWindow

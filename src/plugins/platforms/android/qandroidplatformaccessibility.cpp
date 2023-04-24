@@ -61,7 +61,7 @@ void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *
     // so that the element can be moved on the screen if it's focused.
 
     if (event->type() == QAccessible::LocationChanged) {
-        QtAndroidAccessibility::notifyLocationChange();
+        QtAndroidAccessibility::notifyLocationChange(event->uniqueId());
     } else if (event->type() == QAccessible::ObjectHide) {
         QtAndroidAccessibility::notifyObjectHide(event->uniqueId());
     } else if (event->type() == QAccessible::Focus) {

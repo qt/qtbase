@@ -1033,7 +1033,7 @@ void QGestureEvent::accept(Qt::GestureType gestureType)
     of calling \l{QGestureEvent::setAccepted()}{setAccepted(gesture, false)}.
 
     Clearing the accept flag indicates that the event receiver does not
-    want the gesture. Unwanted gestures may be propgated to the parent widget.
+    want the gesture. Unwanted gestures may be propagated to the parent widget.
 
     \sa QGestureEvent::accept()
 */

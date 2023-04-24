@@ -341,3 +341,5 @@ void QEvdevMouseHandler::readMouseData()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qevdevmousehandler_p.cpp"

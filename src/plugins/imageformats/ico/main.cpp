@@ -37,9 +37,24 @@
 **
 ****************************************************************************/
 
-#include "main.h"
+#include <qimageiohandler.h>
+#include <qdebug.h>
+
+#ifdef QT_NO_IMAGEFORMAT_ICO
+#undef QT_NO_IMAGEFORMAT_ICO
+#endif
+#include "qicohandler.h"
 
 QT_BEGIN_NAMESPACE
+
+class QICOPlugin : public QImageIOPlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QImageIOHandlerFactoryInterface" FILE "ico.json")
+public:
+    Capabilities capabilities(QIODevice *device, const QByteArray &format) const override;
+    QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const override;
+};
 
 QImageIOPlugin::Capabilities QICOPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
@@ -67,3 +82,5 @@ QImageIOHandler *QICOPlugin::create(QIODevice *device, const QByteArray &format)
 }
 
 QT_END_NAMESPACE
+
+#include "main.moc"

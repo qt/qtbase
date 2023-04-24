@@ -9279,9 +9279,16 @@ void tst_QNetworkReply::autoDeleteRepliesAttribute_data()
 {
     QTest::addColumn<QUrl>("destination");
 
-    QTest::newRow("http") << QUrl("http://QInvalidDomain.qt/test");
-    QTest::newRow("https") << QUrl("https://QInvalidDomain.qt/test");
-    QTest::newRow("ftp") << QUrl("ftp://QInvalidDomain.qt/test");
+    QUrl webServerUrl = QtNetworkSettings::httpServerIp().toString();
+    webServerUrl.setPath("/notfound");
+    webServerUrl.setScheme("http");
+    QTest::newRow("http") << webServerUrl;
+    webServerUrl.setScheme("https");
+    QTest::newRow("https") << webServerUrl;
+    QUrl ftpServerUrl = QtNetworkSettings::ftpServerName();
+    ftpServerUrl.setScheme("ftp");
+    ftpServerUrl.setPath("/test/notfound");
+    QTest::newRow("ftp") << ftpServerUrl;
     QTest::newRow("file") << QUrl("file:///thisfolderdoesn'texist/probably.txt");
 #ifdef Q_OS_WIN
     // Only supported on windows.

@@ -97,3 +97,5 @@ QIconEnginePlugin::~QIconEnginePlugin()
 
 
 QT_END_NAMESPACE
+
+#include "moc_qiconengineplugin.cpp"

@@ -147,3 +147,5 @@ QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qkeymapper_p.cpp"

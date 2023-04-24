@@ -175,3 +175,5 @@ void QPlatformNativeInterface::setWindowProperty(QPlatformWindow *window, const 
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatformnativeinterface.cpp"

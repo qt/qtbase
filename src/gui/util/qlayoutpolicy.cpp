@@ -133,3 +133,5 @@ QDebug operator<<(QDebug dbg, const QLayoutPolicy &p)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qlayoutpolicy_p.cpp"

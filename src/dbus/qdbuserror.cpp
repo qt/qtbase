@@ -354,12 +354,16 @@ QDebug operator<<(QDebug dbg, const QDBusError &msg)
 
 QT_END_NAMESPACE
 
+#ifndef QT_BOOTSTRAPPED
+#include "moc_qdbuserror.cpp"
+#endif
+
 #endif // QT_NO_DBUS
 
 /*
 MSVC2015 has the warning C4503 at the end of the file:
 QtPrivate::StaticStringBuilder<QtPrivate::IndexesList<...> - decorated name length exceeded, name was truncated
-It is used by qOffsetStringArray in a constexpr evaulation and this code does not exist in the object file,
+It is used by qOffsetStringArray in a constexpr evaluation and this code does not exist in the object file,
 but we still have the warning or even error with -WX flag
 */
 QT_WARNING_DISABLE_MSVC(4503)

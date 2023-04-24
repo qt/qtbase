@@ -1101,6 +1101,8 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
     table can be found by using rowHeight(); similarly, the width of
     columns can be found using columnWidth().  Since both of these are plain
     widgets, you can hide either of them using their hide() functions.
+    Each header is configured with its \l{QHeaderView::}{highlightSections}
+    and \l{QHeaderView::}{sectionsClickable} properties set to \c true.
 
     Rows and columns can be hidden and shown with hideRow(), hideColumn(),
     showRow(), and showColumn(). They can be selected with selectRow()

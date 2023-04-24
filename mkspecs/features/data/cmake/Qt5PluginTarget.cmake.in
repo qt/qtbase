@@ -87,7 +87,7 @@ string(CONCAT _plugin_genex
         # Add this plugin if all of the following are true:
         # 1) the list of explicitly included plugin types is empty
         # 2) the QT_PLUGIN_EXTENDS property for the plugin is empty or equal to one of the modules
-        #    listed in the plugin's PLUGIN_EXTEND qmake variable
+        #    listed in the plugin\'s PLUGIN_EXTEND qmake variable
         # 3) the user hasn\'t explicitly excluded the plugin.
         # TODO: Note that the current implementation of (2) is not entirely correct QTBUG-93501
         \"$<AND:\"

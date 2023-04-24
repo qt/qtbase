@@ -22,18 +22,27 @@ defineTest(qtConfCommandline_cxxstd) {
             qtConfCommandlineSetInput("c++14", "no")
             qtConfCommandlineSetInput("c++1z", "no")
             qtConfCommandlineSetInput("c++2a", "no")
+            qtConfCommandlineSetInput("c++2b", "no")
         } else: contains(val, "(c\+\+)?(14|1y)") {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++1z", "no")
             qtConfCommandlineSetInput("c++2a", "no")
+            qtConfCommandlineSetInput("c++2b", "no")
         } else: contains(val, "(c\+\+)?(17|1z)") {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++1z", "yes")
             qtConfCommandlineSetInput("c++2a", "no")
+            qtConfCommandlineSetInput("c++2b", "no")
         } else: contains(val, "(c\+\+)?(2a)") {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++1z", "yes")
             qtConfCommandlineSetInput("c++2a", "yes")
+            qtConfCommandlineSetInput("c++2b", "no")
+        } else: contains(val, "(c\+\+)?(2b)") {
+            qtConfCommandlineSetInput("c++14", "yes")
+            qtConfCommandlineSetInput("c++1z", "yes")
+            qtConfCommandlineSetInput("c++2a", "yes")
+            qtConfCommandlineSetInput("c++2b", "yes")
         } else {
             qtConfAddError("Invalid argument $$val to command line parameter $$arg")
         }

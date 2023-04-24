@@ -161,9 +161,10 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
   By default, a platform-native file dialog will be used if the platform has
   one. In that case, the widgets which would otherwise be used to construct the
   dialog will not be instantiated, so related accessors such as layout() and
-  itemDelegate() will return null. You can set the \l DontUseNativeDialog option to
-  ensure that the widget-based implementation will be used instead of the
-  native dialog.
+  itemDelegate() will return null. Also, not all platforms show file dialogs
+  with a title bar, so be aware that the caption text might not be visible to
+  the user. You can set the \l DontUseNativeDialog option to ensure that the
+  widget-based implementation will be used instead of the native dialog.
 
   \sa QDir, QFileInfo, QFile, QColorDialog, QFontDialog, {Standard Dialogs Example},
       {Application Example}
@@ -1256,8 +1257,9 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList &files
         QFileInfo info(name);
         // if the filename has no suffix, add the default suffix
         const QString defaultSuffix = options->defaultSuffix();
-        if (!defaultSuffix.isEmpty() && !info.isDir() && name.lastIndexOf(QLatin1Char('.')) == -1)
+        if (!defaultSuffix.isEmpty() && !info.isDir() && !info.fileName().contains(u'.'))
             name += QLatin1Char('.') + defaultSuffix;
+
         if (info.isAbsolute()) {
             files.append(name);
         } else {
@@ -1283,8 +1285,12 @@ QList<QUrl> QFileDialogPrivate::addDefaultSuffixToUrls(const QList<QUrl> &urlsTo
         QUrl url = urlsToFix.at(i);
         // if the filename has no suffix, add the default suffix
         const QString defaultSuffix = options->defaultSuffix();
-        if (!defaultSuffix.isEmpty() && !url.path().endsWith(QLatin1Char('/')) && url.path().lastIndexOf(QLatin1Char('.')) == -1)
-            url.setPath(url.path() + QLatin1Char('.') + defaultSuffix);
+        if (!defaultSuffix.isEmpty()) {
+            const QString urlPath = url.path();
+            const auto idx = urlPath.lastIndexOf(u'/');
+            if (idx != (urlPath.size() - 1) && !QStringView{urlPath}.mid(idx + 1).contains(u'.'))
+                url.setPath(urlPath + u'.' + defaultSuffix);
+        }
         urls.append(url);
     }
     return urls;
@@ -2183,7 +2189,8 @@ QString QFileDialog::labelText(DialogLabel label) const
     then a default caption will be used.
 
     On Windows, and \macos, this static function will use the
-    native file dialog and not a QFileDialog.
+    native file dialog and not a QFileDialog. Note that the \macos native file
+    dialog does not show a title bar.
 
     On Windows the dialog will spin a blocking modal event loop that will not
     dispatch any QTimers, and if \a parent is not \nullptr then it will position
@@ -2294,7 +2301,8 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     then a default caption will be used.
 
     On Windows, and \macos, this static function will use the
-    native file dialog and not a QFileDialog.
+    native file dialog and not a QFileDialog. Note that the \macos native file
+    dialog does not show a title bar.
 
     On Windows the dialog will spin a blocking modal event loop that will not
     dispatch any QTimers, and if \a parent is not \nullptr then it will position
@@ -2461,7 +2469,7 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
 
     auto dialogClosed = [=](int code) {
         Q_UNUSED(code);
-        delete dialog;
+        dialog->deleteLater();
     };
 
     connect(dialog, &QFileDialog::fileSelected, fileSelected);
@@ -2506,7 +2514,7 @@ void QFileDialog::saveFileContent(const QByteArray &fileContent, const QString &
 
     auto dialogClosed = [=](int code) {
         Q_UNUSED(code);
-        delete dialog;
+        dialog->deleteLater();
     };
 
     connect(dialog, &QFileDialog::fileSelected, fileSelected);
@@ -2658,6 +2666,8 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     dialog does not support displaying files in the directory chooser. You need
     to pass \l{QFileDialog::}{DontUseNativeDialog} to display files using a
     QFileDialog.
+
+    Note that the \macos native file dialog does not show a title bar.
 
     On Unix/X11, the normal behavior of the file dialog is to resolve and
     follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},

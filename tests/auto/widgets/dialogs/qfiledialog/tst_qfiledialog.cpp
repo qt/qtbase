@@ -137,6 +137,7 @@ private slots:
     void clearLineEdit();
     void enableChooseButton();
     void selectedFilesWithoutWidgets();
+    void selectedFileWithDefaultSuffix();
     void trailingDotsAndSpaces();
 #ifdef Q_OS_UNIX
 #ifdef QT_BUILD_INTERNAL
@@ -1473,6 +1474,21 @@ void tst_QFiledialog::selectedFilesWithoutWidgets()
     QFileDialog fd;
     fd.setAcceptMode(QFileDialog::AcceptOpen);
     QVERIFY(fd.selectedFiles().size() >= 0);
+}
+
+void tst_QFiledialog::selectedFileWithDefaultSuffix()
+{
+    // QTBUG-59401: dot in file path should not prevent default suffix from being added
+    QTemporaryDir tempDir(QDir::tempPath() + "/abcXXXXXX.def");
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
+
+    QFileDialog fd;
+    fd.setDirectory(tempDir.path());
+    fd.setDefaultSuffix(".txt");
+    fd.selectFile("xxx");
+    const auto selectedFiles = fd.selectedFiles();
+    QCOMPARE(selectedFiles.size(), 1);
+    QVERIFY(selectedFiles.first().endsWith(".txt"));
 }
 
 void tst_QFiledialog::trailingDotsAndSpaces()

@@ -107,7 +107,7 @@ QT_BEGIN_NAMESPACE
     \row \li \l sliderReleased()
          \li the user releases the slider.
     \row \li \l actionTriggered()
-         \li a slider action was triggerd.
+         \li a slider action was triggered.
     \row \li \l rangeChanged()
          \li a the range has changed.
     \endtable

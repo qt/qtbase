@@ -2638,3 +2638,5 @@ void QConicalGradient::setAngle(qreal angle)
 #undef Q_DUMMY_ACCESSOR
 
 QT_END_NAMESPACE
+
+#include "moc_qbrush.cpp"

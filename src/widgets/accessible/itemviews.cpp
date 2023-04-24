@@ -425,6 +425,15 @@ QAccessibleInterface *QAccessibleTable::childAt(int x, int y) const
     return nullptr;
 }
 
+QAccessibleInterface *QAccessibleTable::focusChild() const
+{
+    QModelIndex index = view()->currentIndex();
+    if (!index.isValid())
+        return nullptr;
+
+    return child(logicalIndex(index));
+}
+
 int QAccessibleTable::childCount() const
 {
     if (!view()->model())
@@ -681,6 +690,20 @@ QAccessibleInterface *QAccessibleTree::childAt(int x, int y) const
     QPoint indexPosition = view()->mapFromGlobal(QPoint(x, y) - viewportOffset);
 
     QModelIndex index = view()->indexAt(indexPosition);
+    if (!index.isValid())
+        return nullptr;
+
+    const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
+    int row = treeView->d_func()->viewIndex(index) + (horizontalHeader() ? 1 : 0);
+    int column = index.column();
+
+    int i = row * view()->model()->columnCount() + column;
+    return child(i);
+}
+
+QAccessibleInterface *QAccessibleTree::focusChild() const
+{
+    QModelIndex index = view()->currentIndex();
     if (!index.isValid())
         return nullptr;
 

@@ -621,3 +621,5 @@ int QStyleHints::mouseQuickSelectionThreshold() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qstylehints.cpp"

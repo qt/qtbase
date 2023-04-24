@@ -156,6 +156,12 @@ namespace QtSharedPointer {
         inline void checkQObjectShared(...) { }
         inline void setQObjectShared(...) { }
 
+        // Normally, only subclasses of ExternalRefCountData are allocated
+        // One exception exists in getAndRef; that uses the global operator new
+        // to prevent a mismatch with the custom operator delete
+        inline void *operator new(std::size_t) = delete;
+        // placement new
+        inline void *operator new(std::size_t, void *ptr) noexcept { return ptr; }
         inline void operator delete(void *ptr) { ::operator delete(ptr); }
         inline void operator delete(void *, void *) { }
     };

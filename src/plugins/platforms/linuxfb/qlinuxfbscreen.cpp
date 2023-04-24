@@ -448,3 +448,5 @@ QPixmap QLinuxFbScreen::grabWindow(WId wid, int x, int y, int width, int height)
 
 QT_END_NAMESPACE
 
+#include "moc_qlinuxfbscreen.cpp"
+

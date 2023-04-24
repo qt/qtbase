@@ -926,4 +926,5 @@ QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, 
 
 QT_END_NAMESPACE
 
+#include "moc_qxcbclipboard.cpp"
 #include "qxcbclipboard.moc"

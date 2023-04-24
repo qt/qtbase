@@ -380,6 +380,20 @@
                 "qmake": "CONFIG += c++11 c++14 c++17 c++2a"
             }
         },
+        "cxx2b": {
+            "label": "C++2b support",
+            "type": "compile",
+            "test": {
+                "head": [
+                    "#if __cplusplus > 202002L",
+                    "// Compiler claims to support experimental C++2b, trust it",
+                    "#else",
+                    "#  error __cplusplus must be > 202002L (the value for C++20)",
+                    "#endif"
+                ],
+                "qmake": "CONFIG += c++11 c++14 c++17 c++2a c++2b"
+            }
+        },
         "precompile_header": {
             "label": "precompiled header support",
             "type": "compile",
@@ -1002,6 +1016,12 @@
             "condition": "features.c++17 && tests.cxx2a",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
+        "c++2b": {
+            "label": "C++2b",
+            "autoDetect": false,
+            "condition": "features.c++2a && tests.cxx2b",
+            "output": [ "publicFeature", "publicQtConfig" ]
+        },
         "c89": {
             "label": "C89"
         },
@@ -1554,7 +1574,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 {
                     "message": "Using C++ standard",
                     "type": "firstAvailableFeature",
-                    "args": "c++2a c++17 c++14 c++11"
+                    "args": "c++2b c++2a c++17 c++14 c++11"
                 },
                 {
                     "type": "feature",

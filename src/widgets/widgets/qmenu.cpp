@@ -1651,7 +1651,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     and all other items are considered action items.
 
     When inserting action items you usually specify a receiver and a
-    slot. The receiver will be notifed whenever the item is
+    slot. The receiver will be notified whenever the item is
     \l{QAction::triggered()}{triggered()}. In addition, QMenu provides
     two signals, triggered() and hovered(), which signal the
     QAction that was triggered from the menu.
@@ -2221,7 +2221,7 @@ void QMenu::setActiveAction(QAction *act)
 {
     Q_D(QMenu);
     d->setCurrentAction(act, 0);
-    if (d->scroll)
+    if (d->scroll && act)
         d->scrollMenu(act, QMenuPrivate::QMenuScroller::ScrollCenter);
 }
 

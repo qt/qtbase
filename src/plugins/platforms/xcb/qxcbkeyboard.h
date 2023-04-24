@@ -69,7 +69,6 @@ public:
 
     Qt::KeyboardModifiers translateModifiers(int s) const;
     void updateKeymap(xcb_mapping_notify_event_t *event);
-    void updateKeymap(xcb_xkb_new_keyboard_notify_event_t *event);
     void updateKeymap();
     QList<int> possibleKeys(const QKeyEvent *event) const;
 

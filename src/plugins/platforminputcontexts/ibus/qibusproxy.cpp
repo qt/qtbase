@@ -96,3 +96,4 @@ void QIBusProxy::globalEngineChanged(const QString &engine_name)
     emit GlobalEngineChanged(engine_name);
 }
 
+#include "moc_qibusproxy.cpp"

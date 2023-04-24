@@ -112,3 +112,5 @@ void QShapedPixmapWindow::updateGeometry(const QPoint &pos)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qshapedpixmapdndwindow_p.cpp"

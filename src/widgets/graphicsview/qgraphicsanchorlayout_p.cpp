@@ -2078,7 +2078,7 @@ QList<AnchorData *> getVariables(const QList<QSimplexConstraint *> &constraints)
     In a nutshell it should do:
 
     1) Refresh anchor nominal sizes, that is, the size that each anchor would
-       have if no other restrictions applied. This is done by quering the
+       have if no other restrictions applied. This is done by querying the
        layout style and the sizeHints of the items belonging to the layout.
 
     2) Simplify the graph by grouping together parallel and sequential anchors

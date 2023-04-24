@@ -479,7 +479,7 @@
     database connections, or if we execute query2 after the while loop.
 
     \note Some methods of QSqlDatabase like tables(), primaryIndex()
-    implicity execute SQL queries, so these also cannot be used while
+    implicitly execute SQL queries, so these also cannot be used while
     navigating the results of forward-only query.
 
     \note QPSQL will print the following warning if it detects a loss of
@@ -758,7 +758,7 @@
 
     You should always use client libraries that have been compiled with
     the same compiler as you are using for your project. If you cannot get
-    a source distibution to compile the client libraries yourself, you
+    a source distribution to compile the client libraries yourself, you
     must make sure that the pre-compiled library is compatible with
     your compiler, otherwise you will get a lot of "undefined symbols"
     errors. Some compilers have tools to convert libraries, e.g. Borland

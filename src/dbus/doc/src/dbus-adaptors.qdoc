@@ -193,7 +193,7 @@
 
     The delayed reply itself is requested from Qt D-Bus by calling
     QDBusMessage::reply() on the original message. It then becomes the
-    resposibility of the called code to eventually send a reply to the
+    responsibility of the called code to eventually send a reply to the
     caller.
 
     \warning When a caller places a method call and waits for a reply, it will

@@ -666,3 +666,5 @@ bool QVncClient::pixelConversionNeeded() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qvncclient.cpp"

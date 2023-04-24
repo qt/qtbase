@@ -90,6 +90,7 @@ enum {
     MSECS_PER_HOUR = 3600000,
     SECS_PER_MIN = 60,
     MSECS_PER_MIN = 60000,
+    MSECS_PER_SEC = 1000,
     TIME_T_MAX = 2145916799,  // int maximum 2037-12-31T23:59:59 UTC
     JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromDate(1970, 1, 1)
 };
@@ -4532,7 +4533,7 @@ QString QDateTime::toString(const QString &format, QCalendar cal) const
 
 #endif // datestring
 
-static inline void massageAdjustedDateTime(const QDateTimeData &d, QDate *date, QTime *time)
+static inline void massageAdjustedDateTime(QDateTimeData &d, QDate *date, QTime *time)
 {
     /*
       If we have just adjusted to a day with a DST transition, our given time
@@ -4547,16 +4548,44 @@ static inline void massageAdjustedDateTime(const QDateTimeData &d, QDate *date, 
       answers do then differ only in DST-ness.)
     */
     auto spec = getSpec(d);
+    if (spec == Qt::OffsetFromUTC || spec == Qt::UTC) {
+        setDateTime(d, *date, *time);
+        checkValidDateTime(d);
+        return;
+    }
+    auto dst = extractDaylightStatus(getStatus(d));
+    qint64 utc = 0;
+    qint64 local = timeToMSecs(*date, *time);
     if (spec == Qt::LocalTime) {
-        QDateTimePrivate::DaylightStatus status = QDateTimePrivate::UnknownDaylightTime;
-        localMSecsToEpochMSecs(timeToMSecs(*date, *time), &status, date, time);
+        utc = localMSecsToEpochMSecs(local, &dst, date, time);
 #if QT_CONFIG(timezone)
     } else if (spec == Qt::TimeZone && d.d->m_timeZone.isValid()) {
-        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(*date, *time),
-                                                d.d->m_timeZone,
-                                                QDateTimePrivate::UnknownDaylightTime,
-                                                date, time);
+        utc = QDateTimePrivate::zoneMSecsToEpochMSecs(local, d.d->m_timeZone, dst, date, time);
+        // update dst, as it's passed to zoneMSecsToEpochMSecs() by value
+        dst = d.d->m_timeZone.isDaylightTime(QDateTime::fromMSecsSinceEpoch(utc))
+                ? QDateTimePrivate::DaylightTime : QDateTimePrivate::StandardTime;
 #endif // timezone
+    } else {
+        dst = QDateTimePrivate::UnknownDaylightTime;
+    }
+
+    setDateTime(d, *date, *time);
+
+    auto status = getStatus(d); // Updated by setDateTime()
+    const bool ok = (dst != QDateTimePrivate::UnknownDaylightTime
+                     && (status & QDateTimePrivate::ValidDate)
+                     && (status & QDateTimePrivate::ValidTime));
+    if (ok)
+        status = mergeDaylightStatus(status | QDateTimePrivate::ValidDateTime, dst);
+    else
+        status &= ~QDateTimePrivate::ValidDateTime;
+
+    if (status & QDateTimePrivate::ShortData) {
+        d.data.status = status;
+    } else {
+        d->m_status = status;
+        if (ok)
+            d->m_offsetFromUtc = (local - utc) / MSECS_PER_SEC;
     }
 }
 
@@ -4582,7 +4611,6 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     QTime &time = p.second;
     date = date.addDays(ndays);
     massageAdjustedDateTime(dt.d, &date, &time);
-    setDateTime(dt.d, date, time);
     return dt;
 }
 
@@ -4608,7 +4636,6 @@ QDateTime QDateTime::addMonths(int nmonths) const
     QTime &time = p.second;
     date = date.addMonths(nmonths);
     massageAdjustedDateTime(dt.d, &date, &time);
-    setDateTime(dt.d, date, time);
     return dt;
 }
 
@@ -4634,7 +4661,6 @@ QDateTime QDateTime::addYears(int nyears) const
     QTime &time = p.second;
     date = date.addYears(nyears);
     massageAdjustedDateTime(dt.d, &date, &time);
-    setDateTime(dt.d, date, time);
     return dt;
 }
 

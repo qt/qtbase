@@ -63,7 +63,7 @@ QBinaryJsonArray QBinaryJsonArray::fromJsonArray(const QJsonArray &array)
 
 void QBinaryJsonArray::append(const QBinaryJsonValue &value)
 {
-    const uint i = a ? a->length : 0;
+    const uint i = a ? a->length() : 0;
 
     bool compressed;
     uint valueSize = QBinaryJsonPrivate::Value::requiredStorage(value, &compressed);
@@ -71,7 +71,7 @@ void QBinaryJsonArray::append(const QBinaryJsonValue &value)
     if (!detach(valueSize + sizeof(QBinaryJsonPrivate::Value)))
         return;
 
-    if (!a->length)
+    if (!a->length())
         a->tableOffset = sizeof(QBinaryJsonPrivate::Array);
 
     uint valueOffset = a->reserveSpace(valueSize, i, 1, false);
@@ -79,10 +79,10 @@ void QBinaryJsonArray::append(const QBinaryJsonValue &value)
         return;
 
     QBinaryJsonPrivate::Value *v = a->at(i);
-    v->type = (value.t == QJsonValue::Undefined ? QJsonValue::Null : value.t);
-    v->latinOrIntValue = compressed;
-    v->latinKey = false;
-    v->value = QBinaryJsonPrivate::Value::valueToStore(value, valueOffset);
+    v->setType(value.t == QJsonValue::Undefined ? QJsonValue::Null : value.t);
+    v->setIsLatinOrIntValue(compressed);
+    v->setIsLatinKey(false);
+    v->setValue(QBinaryJsonPrivate::Value::valueToStore(value, valueOffset));
     if (valueSize) {
         QBinaryJsonPrivate::Value::copyData(value, reinterpret_cast<char *>(a) + valueOffset,
                                             compressed);

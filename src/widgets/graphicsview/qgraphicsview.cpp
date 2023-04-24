@@ -107,7 +107,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     the events and reacts to them. For example, if you click on a selectable
     item, the item will typically let the scene know that it has been
     selected, and it will also redraw itself to display a selection
-    rectangle. Similiary, if you click and drag the mouse to move a movable
+    rectangle. Similarly, if you click and drag the mouse to move a movable
     item, it's the item that handles the mouse moves and moves itself.  Item
     interaction is enabled by default, and you can toggle it by calling
     setInteractive().
@@ -3773,7 +3773,12 @@ void QGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
         return;
     }
 
+    const bool wasAa = painter->testRenderHint(QPainter::Antialiasing);
+    if (wasAa)
+        painter->setRenderHints(QPainter::Antialiasing, false);
     painter->fillRect(rect, d->backgroundBrush);
+    if (wasAa)
+        painter->setRenderHints(QPainter::Antialiasing, true);
 }
 
 /*!
@@ -3877,7 +3882,7 @@ bool QGraphicsView::isTransformed() const
     otherwise, \a matrix \e replaces the current matrix. \a combine is false
     by default.
 
-    The transformation matrix tranforms the scene into view coordinates. Using
+    The transformation matrix transforms the scene into view coordinates. Using
     the default transformation, provided by the identity matrix, one pixel in
     the view represents one unit in the scene (e.g., a 10x10 rectangular item
     is drawn using 10x10 pixels in the view). If a 2x2 scaling matrix is
@@ -3891,7 +3896,7 @@ bool QGraphicsView::isTransformed() const
     To simplify interation with items using a transformed view, QGraphicsView
     provides mapTo... and mapFrom... functions that can translate between
     scene and view coordinates. For example, you can call mapToScene() to map
-    a view coordiate to a floating point scene coordinate, or mapFromScene()
+    a view coordinate to a floating point scene coordinate, or mapFromScene()
     to map from floating point scene coordinates to view coordinates.
 
     \sa transform(), rotate(), scale(), shear(), translate()

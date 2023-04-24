@@ -1217,6 +1217,9 @@
     \row    \li c++2a \li C++2a support is enabled. This option has no effect if
             the compiler does not support C++2a, or can't select the C++ standard.
             By default, support is disabled.
+    \row    \li c++2b \li c++2b support is enabled. This option has no effect if
+            the compiler does not support c++2b, or can't select the C++ standard.
+            By default, support is disabled.
     \row    \li c++latest \li Support for the latest C++ language standard is
             enabled that is supported by the compiler. By default, this option is
             disabled.

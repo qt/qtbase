@@ -916,7 +916,7 @@ void QTextBrowser::doSetSource(const QUrl &url, QTextDocument::ResourceType type
     being the new source.
 
     Source changes happen both programmatically when calling
-    setSource(), forward(), backword() or home() or when the user
+    setSource(), forward(), backward() or home() or when the user
     clicks on links or presses the equivalent key sequences.
 */
 

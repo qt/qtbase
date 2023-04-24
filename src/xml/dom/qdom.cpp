@@ -4491,7 +4491,7 @@ QString QDomElement::attributeNS(const QString nsURI, const QString& localName, 
     Adds an attribute with the qualified name \a qName and the
     namespace URI \a nsURI with the value \a value. If an attribute
     with the same local name and namespace URI exists, its prefix is
-    replaced by the prefix of \a qName and its value is repaced by \a
+    replaced by the prefix of \a qName and its value is replaced by \a
     value.
 
     Although \a qName is the qualified name, the local name is used to
@@ -4714,7 +4714,7 @@ void QDomTextPrivate::save(QTextStream& s, int, int) const
     \ingroup xml-tools
 
     You can split the text in a QDomText object over two QDomText
-    objecs with splitText().
+    objects with splitText().
 
    For further information about the Document Object Model see
     \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and

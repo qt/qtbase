@@ -123,3 +123,5 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qdnd_p.cpp"

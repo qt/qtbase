@@ -3730,9 +3730,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // button in a 'pressed' state (the 'momentary push in' does
             // not show its state otherwise):
             [pb highlight:isPressed];
-            // For default/checked button this will give the required
-            // button accent color:
-            pb.keyEquivalent = isHighlighted ? @"\r" : @"";
+
+            if (cw.type == QMacStylePrivate::Button_SquareButton) {
+                pb.state = isHighlighted && !isPressed ? NSControlStateValueOn : NSControlStateValueOff;
+            } else {
+                // For default/checked button this will give the required
+                // button accent color:
+                pb.keyEquivalent = isHighlighted ? @"\r" : @"";
+            }
 
             d->drawNSViewInRect(pb, frameRect, p, ^(CGContextRef, const CGRect &r) {
                 [pb.cell drawBezelWithFrame:r inView:pb.superview];
@@ -3785,7 +3790,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     btn.palette.setColor(QPalette::ButtonText, Qt::white);
             }
 
-            if (!isDarkMode() && QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSBigSur) {
+            if (isEnabled && !isDarkMode() && QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSBigSur) {
                 if (!isDefault && !(btn.state & State_On)) {
                     // On macOS 12 it's a gray button, white text color (if set in the
                     // previous statement) would be almost invisible.
@@ -4092,27 +4097,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                        opt->rect.right(), opt->rect.bottom() - 0.5));
                 }
                 p->restore();
-            }
-
-            // TODO Needs size adjustment to fit the focus ring
-            if (tabOpt->state & State_HasFocus) {
-                QMacStylePrivate::CocoaControlType focusRingType;
-                switch (tp) {
-                case QStyleOptionTab::Beginning:
-                    focusRingType = verticalTabs ? QMacStylePrivate::SegmentedControl_Last
-                                                 : QMacStylePrivate::SegmentedControl_First;
-                    break;
-                case QStyleOptionTab::Middle:
-                    focusRingType = QMacStylePrivate::SegmentedControl_Middle;
-                    break;
-                case QStyleOptionTab::End:
-                    focusRingType = verticalTabs ? QMacStylePrivate::SegmentedControl_First
-                                                 : QMacStylePrivate::SegmentedControl_Last;
-                    break;
-                case QStyleOptionTab::OnlyOneTab:
-                    focusRingType = QMacStylePrivate::SegmentedControl_Single;
-                    break;
-                }
             }
         }
         break;

@@ -1033,7 +1033,7 @@
 
            The slider can be styled using the \l{#handle-sub}{::handle} subcontrol.
            Setting the \l{#min-width-prop}{min-width} or \l{#min-height-prop}{min-height}
-           provides size contraints for the slider depending on the orientation.
+           provides size constraints for the slider depending on the orientation.
 
            The \l{add-line-sub}{::add-line} subcontrol can be used to style the
            button to add a line. By default, the add-line subcontrol is placed in
@@ -1950,7 +1950,7 @@
 
         The only widget currently supporting this property is QPushButton.
 
-        \note It's the application's responsibilty to assign an icon to a
+        \note It's the application's responsibility to assign an icon to a
         button (using the QAbstractButton API), and not the style's. So be
         careful setting it unless your stylesheet is targeting a specific
         application.

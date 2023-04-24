@@ -1693,3 +1693,5 @@ QDebug operator<<(QDebug dbg, const QKeySequence &p)
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qkeysequence.cpp"

@@ -302,6 +302,7 @@ void QXdgDesktopPortalFileDialog::openPortal()
                                                   this,
                                                   SLOT(gotResponse(uint,QVariantMap)));
         }
+        watcher->deleteLater();
     });
 }
 
@@ -466,3 +467,5 @@ void QXdgDesktopPortalFileDialog::gotResponse(uint response, const QVariantMap &
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxdgdesktopportalfiledialog_p.cpp"

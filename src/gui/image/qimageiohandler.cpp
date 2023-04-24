@@ -618,3 +618,5 @@ QImageIOPlugin::~QImageIOPlugin()
 #endif // QT_NO_IMAGEFORMATPLUGIN
 
 QT_END_NAMESPACE
+
+#include "moc_qimageiohandler.cpp"

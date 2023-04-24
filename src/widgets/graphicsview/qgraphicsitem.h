@@ -964,9 +964,6 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsTextItem)
-    Q_PRIVATE_SLOT(dd, void _q_updateBoundingRect(const QSizeF &))
-    Q_PRIVATE_SLOT(dd, void _q_update(QRectF))
-    Q_PRIVATE_SLOT(dd, void _q_ensureVisible(QRectF))
     QGraphicsTextItemPrivate *dd;
     friend class QGraphicsTextItemPrivate;
 };

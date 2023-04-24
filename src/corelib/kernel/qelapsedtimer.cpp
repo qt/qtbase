@@ -111,18 +111,6 @@ QT_BEGIN_NAMESPACE
     that the clock used is the same as QElapsedTimer (see
     QElapsedTimer::clockType()).
 
-    \section2 32-bit overflows
-
-    Some of the clocks used by QElapsedTimer have a limited range and may
-    overflow after hitting the upper limit (usually 32-bit). QElapsedTimer
-    deals with this overflow issue and presents a consistent timing. However,
-    when extracting the time since reference from QElapsedTimer, two
-    different processes in the same machine may have different understanding
-    of how much time has actually elapsed.
-
-    The information on which clocks types may overflow and how to remedy that
-    issue is documented along with the clock types.
-
     \sa QTime, QTimer, QDeadlineTimer
 */
 
@@ -138,10 +126,13 @@ QT_BEGIN_NAMESPACE
     used.
 
     \value SystemTime         The human-readable system time. This clock is not monotonic.
-    \value MonotonicClock     The system's monotonic clock, usually found in Unix systems. This clock is monotonic and does not overflow.
+    \value MonotonicClock     The system's monotonic clock, usually found in Unix systems.
+                              This clock is monotonic.
     \value TickCounter        Not used anymore.
-    \value MachAbsoluteTime   The Mach kernel's absolute time (\macos and iOS). This clock is monotonic and does not overflow.
-    \value PerformanceCounter The performance counter provided by Windows. This clock is monotonic and does not overflow.
+    \value MachAbsoluteTime   The Mach kernel's absolute time (\macos and iOS).
+                              This clock is monotonic.
+    \value PerformanceCounter The performance counter provided by Windows.
+                              This clock is monotonic.
 
     \section2 SystemTime
 
@@ -159,8 +150,6 @@ QT_BEGIN_NAMESPACE
     arbitrary point in the past. This clock type is used on Unix systems
     which support POSIX monotonic clocks (\tt{_POSIX_MONOTONIC_CLOCK}).
 
-    This clock does not overflow.
-
     \section2 MachAbsoluteTime
 
     This clock type is based on the absolute time presented by Mach kernels,
@@ -169,14 +158,14 @@ QT_BEGIN_NAMESPACE
     a POSIX monotonic clock with values differing from the Mach absolute
     time.
 
-    This clock is monotonic and does not overflow.
+    This clock is monotonic.
 
     \section2 PerformanceCounter
 
     This clock uses the Windows functions \tt{QueryPerformanceCounter} and
     \tt{QueryPerformanceFrequency} to access the system's performance counter.
 
-    This clock is monotonic and does not overflow.
+    This clock is monotonic.
 
     \sa clockType(), isMonotonic()
 */
