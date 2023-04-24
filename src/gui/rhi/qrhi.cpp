@@ -6234,6 +6234,16 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex)
  */
 QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
 {
+    // By default we prefer spreading out the utilization of the 64 batches as
+    // much as possible, meaning we won't pick the first one even if it's free,
+    // but prefer picking one after the last picked one. Relevant due to how
+    // QVLA and QRhiBufferData allocations behind the bufferOps are reused; in
+    // typical Qt Quick scenes this leads to a form of (eventually) seeding all
+    // the 64 resource batches with buffer operation data allocations which are
+    // then reused in subsequent frames. This comes at the expense of using
+    // more memory, but has proven good results when (CPU) profiling typical
+    // Quick/Quick3D apps.
+
     auto nextFreeBatch = [this]() -> QRhiResourceUpdateBatch * {
         auto isFree = [this](int i) -> QRhiResourceUpdateBatch * {
             const quint64 mask = 1ULL << quint64(i);
@@ -6284,7 +6294,15 @@ void QRhiResourceUpdateBatchPrivate::free()
     rhi->resUpdPoolMap &= ~mask;
     poolIndex = -1;
 
+    // textureOps is cleared, to not keep the potentially large image pixel
+    // data alive, but it is expected that the container keeps the list alloc
+    // at least. Only trimOpList() goes for the more aggressive route with squeeze.
     textureOps.clear();
+
+    // bufferOps is not touched, to allow reusing allocations (incl. in the
+    // elements' QRhiBufferData) as much as possible when this batch is used
+    // again in the future, which is important for performance, in particular
+    // with Qt Quick.
 }
 
 void QRhiResourceUpdateBatchPrivate::merge(QRhiResourceUpdateBatchPrivate *other)
@@ -6314,11 +6332,21 @@ void QRhiResourceUpdateBatchPrivate::trimOpLists()
 {
     Q_ASSERT(poolIndex == -1); // must not be in use
 
+    // Unlike free(), this is expected to aggressively deallocate all memory
+    // used by both the buffer and texture operation lists. (i.e. using
+    // squeeze() to only keep the stack prealloc of the QVLAs)
+    //
+    // This (e.g. just the destruction of bufferOps elements) may have a
+    // non-negligible performance impact e.g. with Qt Quick with scenes where
+    // there are lots of buffer operations per frame.
+
     activeBufferOpCount = 0;
     bufferOps.clear();
+    bufferOps.squeeze();
 
     activeTextureOpCount = 0;
     textureOps.clear();
+    textureOps.squeeze();
 }
 
 /*!
