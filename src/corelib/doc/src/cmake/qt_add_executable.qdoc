@@ -110,5 +110,5 @@ for finalizing the target by adding the \c{MANUAL_FINALIZATION} keyword.
 
 \snippet cmake-macros/examples.cmake qt_add_executable_deferred
 
-\include cmake-android-qt-finalize-project-warning.qdocinc
+\include cmake-android-qt-finalize-project-warning.qdocinc warning
 */

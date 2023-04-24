@@ -1,6 +1,8 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
+//! [warning]
 \warning If your \e Android project is built using a CMake version lower than
 3.19, make sure that you call \l{qt_finalize_project}{qt6_finalize_project()} at
 the end of a top-level CMakeLists.txt.
+//! [warning]

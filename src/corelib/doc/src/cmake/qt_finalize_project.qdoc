@@ -38,7 +38,7 @@ With CMake version 3.19 or later, you don't need to call this command since
 it consists of sub-commands that are ordinarily invoked at the end of
 \c CMAKE_SOURCE_DIR directory scope processing.
 
-\include cmake-android-qt-finalize-project-warning.qdocinc
+\include cmake-android-qt-finalize-project-warning.qdocinc warning
 
 \section2 Examples
 
