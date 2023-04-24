@@ -51,7 +51,6 @@ manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "QtLocation/Places Map (QML)" \
                                         "QtLocation/Plane Spotter (QML)" \
                                         "QtMultimedia/AudioEngine Example" \
-                                        "QtMultimedia/Camera Example" \
                                         "QtMultimedia/QML Camera Example" \
                                         "QtMultimedia/QML Video Example" \
                                         "QtMultimedia/QML Video Shader Effects Example" \
