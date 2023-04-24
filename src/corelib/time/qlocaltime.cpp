@@ -165,6 +165,24 @@ struct tm timeToTm(qint64 localDay, int secs, QDateTimePrivate::DaylightStatus d
     return local;
 }
 
+#define IC(N) std::integral_constant<qint64, N>()
+
+// True if combining day and seconds overflows qint64; otherwise, sets *epochSeconds
+inline bool daysAndSecondsOverflow(qint64 julianDay, qint64 daySeconds, qint64 *epochSeconds)
+{
+    return mul_overflow(julianDay - JULIAN_DAY_FOR_EPOCH, IC(SECS_PER_DAY), epochSeconds)
+        || add_overflow(*epochSeconds, daySeconds, epochSeconds);
+}
+
+// True if combining seconds and millis overflows; otherwise sets *epochMillis
+inline bool secondsAndMillisOverflow(qint64 epochSeconds, qint64 millis, qint64 *epochMillis)
+{
+    return mul_overflow(epochSeconds, IC(MSECS_PER_SEC), epochMillis)
+        || add_overflow(*epochMillis, millis, epochMillis);
+}
+
+#undef IC
+
 } // namespace
 
 namespace QLocalTime {
@@ -231,24 +249,6 @@ int getUtcOffset(qint64 atMSecsSinceEpoch)
     return QDateTimePrivate::expressUtcAsLocal(atMSecsSinceEpoch).offset;
 }
 #endif // QT_BOOTSTRAPPED
-
-#define IC(N) std::integral_constant<qint64, N>()
-
-// True if combining day and seconds overflows qint64; otherwise, sets *epochSeconds
-inline bool daysAndSecondsOverflow(qint64 julianDay, qint64 daySeconds, qint64 *epochSeconds)
-{
-    return mul_overflow(julianDay - JULIAN_DAY_FOR_EPOCH, IC(SECS_PER_DAY), epochSeconds)
-        || add_overflow(*epochSeconds, daySeconds, epochSeconds);
-}
-
-// True if combining seconds and millis overflows; otherwise sets *epochMillis
-inline bool secondsAndMillisOverflow(qint64 epochSeconds, qint64 millis, qint64 *epochMillis)
-{
-    return mul_overflow(epochSeconds, IC(MSECS_PER_SEC), epochMillis)
-        || add_overflow(*epochMillis, millis, epochMillis);
-}
-
-#undef IC
 
 // Calls the platform variant of localtime() for the given utcMillis, and
 // returns the local milliseconds, offset from UTC and DST status.
