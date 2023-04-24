@@ -930,7 +930,22 @@ void tst_QDateTime::fromSecsSinceEpoch()
     QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1, UTC).isValid());
 
     // Local time: need to adjust for its zone offset
-    const qint64 last = maxSeconds - qMax(late.addYears(-1).toLocalTime().offsetFromUtc(), 0);
+    const int lateOffset = late.addYears(-1).toLocalTime().offsetFromUtc();
+#if QT_CONFIG(timezone)
+    // Check what system zone believes in, as it's used as fall-back to cope
+    // with times outside the system time_t functions' range, or overflow on the
+    // results of using those functions. (It seems glibc's handling of
+    // Australasian zones parts company with the IANA DB after about 5881580 CE,
+    // leaving NZ in permanent DST after that, for example.) Of course, if
+    // that's less than lateOffset (as it is for glibc's similar handling of
+    // MET), the fall-back code will also fail when the primary code fails, so
+    // use the lesser of these late offsets.
+    const int lateZone = qMin(QTimeZone::systemTimeZone().offsetFromUtc(late), lateOffset);
+#else
+    const int lateZone = lateOffset;
+#endif
+
+    const qint64 last = maxSeconds - qMax(lateZone, 0);
     QVERIFY(QDateTime::fromSecsSinceEpoch(last).isValid());
     QVERIFY(!QDateTime::fromSecsSinceEpoch(last + 1).isValid());
     const qint64 first = -maxSeconds - qMin(early.addYears(1).toLocalTime().offsetFromUtc(), 0);
