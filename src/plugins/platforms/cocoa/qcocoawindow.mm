@@ -1531,7 +1531,10 @@ void QCocoaWindow::requestUpdate()
         << "using" << (updatesWithDisplayLink() ? "display-link" : "timer");
 
     if (updatesWithDisplayLink()) {
-        static_cast<QCocoaScreen *>(screen())->requestUpdate();
+        if (!static_cast<QCocoaScreen *>(screen())->requestUpdate()) {
+            qCDebug(lcQpaDrawing) << "Falling back to timer-based update request";
+            QPlatformWindow::requestUpdate();
+        }
     } else {
         // Fall back to the un-throttled timer-based callback
         QPlatformWindow::requestUpdate();
