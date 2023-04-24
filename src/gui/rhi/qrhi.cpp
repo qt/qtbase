@@ -6296,6 +6296,11 @@ QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
     // then reused in subsequent frames. This comes at the expense of using
     // more memory, but has proven good results when (CPU) profiling typical
     // Quick/Quick3D apps.
+    //
+    // Prefering memory over performance means that we always pick the first
+    // free batch, and triggering the aggressive deallocating of all backing
+    // memory (see trimOpLists) before returning it.
+    static const bool preferMemoryOverPerformance = qEnvironmentVariableIntValue("QT_RHI_MINIMIZE_POOLS");
 
     auto nextFreeBatch = [this]() -> QRhiResourceUpdateBatch * {
         auto isFree = [this](int i) -> QRhiResourceUpdateBatch * {
@@ -6304,7 +6309,8 @@ QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
                 d->resUpdPoolMap |= mask;
                 QRhiResourceUpdateBatch *u = d->resUpdPool[i];
                 QRhiResourceUpdateBatchPrivate::get(u)->poolIndex = i;
-                d->lastResUpdIdx = i;
+                if (!preferMemoryOverPerformance)
+                    d->lastResUpdIdx = i;
                 return u;
             }
             return nullptr;
@@ -6332,6 +6338,9 @@ QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
         if (!u)
             qWarning("Resource update batch pool exhausted (max is 64)");
     }
+
+    if (preferMemoryOverPerformance && u)
+        u->d->trimOpLists();
 
     return u;
 }
@@ -6383,8 +6392,6 @@ bool QRhiResourceUpdateBatchPrivate::hasOptimalCapacity() const
 
 void QRhiResourceUpdateBatchPrivate::trimOpLists()
 {
-    Q_ASSERT(poolIndex == -1); // must not be in use
-
     // Unlike free(), this is expected to aggressively deallocate all memory
     // used by both the buffer and texture operation lists. (i.e. using
     // squeeze() to only keep the stack prealloc of the QVLAs)
