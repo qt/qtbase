@@ -318,9 +318,7 @@ void tst_QMimeDatabase::mimeTypesForFileName()
     QFETCH(QStringList, expectedMimeTypes);
     QMimeDatabase db;
     QList<QMimeType> mimes = db.mimeTypesForFileName(fileName);
-    QStringList mimeNames;
-    foreach (const QMimeType &mime, mimes)
-        mimeNames.append(mime.name());
+    QStringList mimeNames = mimeTypeNames(mimes);
     QCOMPARE(mimeNames, expectedMimeTypes);
 }
 
