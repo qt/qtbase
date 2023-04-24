@@ -58,7 +58,7 @@ that is used in the project via \c{find_package}.
 The \c LCONVERT argument specifies the \c lconvert executable that is used to
 combine the catalogs. By default, the Qt installation's \c lconvert is used.
 
-For debugging purposed, the \c VERBOSE argument can be set to turn on diagnostic
+For debugging purposes, the \c VERBOSE argument can be set to turn on diagnostic
 messages.
 
 \sa QT_DEPLOY_TRANSLATIONS_DIR

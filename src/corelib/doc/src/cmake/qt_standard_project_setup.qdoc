@@ -83,5 +83,5 @@ setting the \l{QT_NO_STANDARD_PROJECT_SETUP} variable to true.
 
 \section1 Example
 
-\include cmake-deploy-runtime-dependencies.qdocinc
+\include cmake-generate-deploy-app-script.qdocinc
 */

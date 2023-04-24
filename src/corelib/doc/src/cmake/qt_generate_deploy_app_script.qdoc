@@ -13,7 +13,7 @@
 \include cmake-find-package-core.qdocinc
 
 \cmakecommandsince 6.3
-\note This command is currently only supported on Windows and macOS.
+\note This command is currently only supported on Windows, macOS, and Linux.
 
 \section1 Synopsis
 
@@ -93,25 +93,5 @@ unmodified to \l{qt6_deploy_runtime_dependencies}{qt_deploy_runtime_dependencies
 
 \section1 Example
 
-\badcode
-cmake_minimum_required(VERSION 3.16...3.22)
-project(MyThings)
-
-find_package(Qt6 REQUIRED COMPONENTS Core)
-qt_standard_project_setup()
-
-qt_add_executable(MyApp main.cpp)
-
-install(TARGETS MyApp
-    BUNDLE  DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-qt_generate_deploy_app_script(
-    TARGET MyApp
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
-install(SCRIPT ${deploy_script})
-\endcode
+\include cmake-generate-deploy-app-script.qdocinc
 */
