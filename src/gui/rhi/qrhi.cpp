@@ -2130,6 +2130,28 @@ QRhiResource::~QRhiResource()
     If the QRhi that created this object is already destroyed, the object is
     deleted immediately.
 
+    Using deleteLater() can be a useful convenience in many cases, and it
+    complements the low-level guarantee (that the underlying native graphics
+    objects are never destroyed until it is safe to do so and it is known for
+    sure that they are not used by the GPU in an still in-flight frame), by
+    offering a way to make sure the C++ object instances (of QRhiBuffer,
+    QRhiTexture, etc.) themselves also stay valid until the end of the current
+    frame.
+
+    The following example shows a convenient way of creating a throwaway buffer
+    that is only used in one frame and gets automatically released (both the
+    underlying native objects and the C++ QRhiBuffer object) in endFrame():
+
+    \badcode
+        rhi->beginFrame(swapchain);
+        buf = rhi->newBuffer(...);
+        buf->deleteLater(); // !
+        u = rhi->nextResourceUpdateBatch();
+        u->uploadStaticBuffer(buf, data);
+        ... // draw with buf
+        rhi->endFrame();
+    \endcode
+
     \sa destroy()
  */
 void QRhiResource::deleteLater()
