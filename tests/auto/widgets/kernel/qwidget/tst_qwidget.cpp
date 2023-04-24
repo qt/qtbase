@@ -2144,6 +2144,7 @@ void tst_QWidget::tabOrderComboBox()
     QFETCH(const QList<int>, secondTabOrder);
     const int count = firstTabOrder.count();
     Q_ASSERT(count == secondTabOrder.count());
+    Q_ASSERT(count > 1);
 
     QWidget w;
     w.setObjectName("MainWidget");
@@ -2175,6 +2176,31 @@ void tst_QWidget::tabOrderComboBox()
     }
 
     COMPARE(secondTabOrder);
+
+    // Remove the focus proxy of the first combobox's line edit.
+    QComboBox *box = boxes.at(0);
+    QLineEdit *lineEdit = box->lineEdit();
+    QWidgetPrivate *lePriv = QWidgetPrivate::get(lineEdit);
+    const QWidget *prev = lePriv->focus_prev;
+    const QWidget *next = lePriv->focus_next;
+    const QWidget *proxy = lePriv->extra->focus_proxy;
+    QCOMPARE(proxy, box);
+    lineEdit->setFocusProxy(nullptr);
+    QCOMPARE(lePriv->extra->focus_proxy, nullptr);
+    QCOMPARE(lePriv->focus_prev, prev);
+    QCOMPARE(lePriv->focus_next, next);
+
+    // Remove first item and check chain consistency
+    boxes.removeFirst();
+    delete box;
+
+    // Create new list with 0 removed and other indexes updated
+    QList<int> thirdTabOrder(secondTabOrder);
+    thirdTabOrder.removeIf([](int i){ return i == 0; });
+    for (int &i : thirdTabOrder)
+        --i;
+
+    COMPARE(thirdTabOrder);
 
 #undef COMPARE
 }
