@@ -550,6 +550,14 @@ qt_internal_extend_target(Core CONDITION WIN32
         tools/qhash.cpp # Q_DECL_INIT_PRIORITY
 )
 
+qt_internal_extend_target(Core CONDITION LINUX
+    NO_UNITY_BUILD_SOURCES
+        # Some of the macros in X11.h and Xlib.h are colliding with
+        # symbols defined in some of the enums, e.g., None.
+        io/qurl.h
+        serialization/qjsonvalue.h
+)
+
 if(NOT WIN32)
     ### Qt7: remove
     # Make qwineventnotifier.h available on non-Windows platforms too for code bases that include
