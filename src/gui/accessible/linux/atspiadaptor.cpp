@@ -469,6 +469,14 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "      <arg direction=\"out\" name=\"row_extents\" type=\"i\" />\n"
                 "      <arg direction=\"out\" name=\"col_extents\" type=\"i\" />\n"
                 "    </method>\n"
+                "    <method name=\"GetColumnHeaderCells\">\n"
+                "      <arg direction=\"out\" type=\"a(so)\"/>\n"
+                "      <annotation value=\"QSpiObjectReferenceArray\" name=\"org.qtproject.QtDBus.QtTypeName.Out0\"/>\n"
+                "    </method>\n"
+                "    <method name=\"GetRowHeaderCells\">\n"
+                "      <arg direction=\"out\" type=\"a(so)\"/>\n"
+                "      <annotation value=\"QSpiObjectReferenceArray\" name=\"org.qtproject.QtDBus.QtTypeName.Out0\"/>\n"
+                "    </method>\n"
                 "  </interface>\n"
                 );
 
@@ -2770,7 +2778,17 @@ bool AtSpiAdaptor::tableCellInterface(QAccessibleInterface *interface, const QSt
         return false;
     }
 
-    if (function == "GetColumnSpan"_L1) {
+    if (function == "GetColumnHeaderCells"_L1) {
+        QSpiObjectReferenceArray headerCells;
+        const auto headerCellInterfaces = cellInterface->columnHeaderCells();
+        headerCells.reserve(headerCellInterfaces.size());
+        for (QAccessibleInterface *cell : headerCellInterfaces) {
+            const QString childPath = pathForInterface(cell);
+            const QSpiObjectReference ref(connection, QDBusObjectPath(childPath));
+            headerCells << ref;
+        }
+        connection.send(message.createReply(QVariant::fromValue(headerCells)));
+    } else if (function == "GetColumnSpan"_L1) {
         connection.send(message.createReply(QVariant::fromValue(QDBusVariant(
             QVariant::fromValue(cellInterface->columnExtent())))));
     } else if (function == "GetPosition"_L1) {
@@ -2778,6 +2796,16 @@ bool AtSpiAdaptor::tableCellInterface(QAccessibleInterface *interface, const QSt
         const int column = cellInterface->columnIndex();
         connection.send(message.createReply(QVariant::fromValue(QDBusVariant(
             QVariant::fromValue(QPoint(row, column))))));
+    } else if (function == "GetRowHeaderCells"_L1) {
+        QSpiObjectReferenceArray headerCells;
+        const auto headerCellInterfaces = cellInterface->rowHeaderCells();
+        headerCells.reserve(headerCellInterfaces.size());
+        for (QAccessibleInterface *cell : headerCellInterfaces) {
+            const QString childPath = pathForInterface(cell);
+            const QSpiObjectReference ref(connection, QDBusObjectPath(childPath));
+            headerCells << ref;
+        }
+        connection.send(message.createReply(QVariant::fromValue(headerCells)));
     } else if (function == "GetRowSpan"_L1) {
         connection.send(message.createReply(QVariant::fromValue(QDBusVariant(
             QVariant::fromValue(cellInterface->rowExtent())))));
@@ -2791,6 +2819,9 @@ bool AtSpiAdaptor::tableCellInterface(QAccessibleInterface *interface, const QSt
         if (table && table->tableInterface())
             ref = QSpiObjectReference(connection, QDBusObjectPath(pathForInterface(table)));
         connection.send(message.createReply(QVariant::fromValue(QDBusVariant(QVariant::fromValue(ref)))));
+    } else {
+        qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::tableCellInterface does not implement" << function << message.path();
+        return false;
     }
 
     return true;
