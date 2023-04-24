@@ -16,10 +16,6 @@
 #include <X11/Xlib.h>
 #undef register
 
-#ifndef None
-#define None 0L
-#endif
-
 QT_BEGIN_NAMESPACE
 
 QXcbNativeBackingStore::QXcbNativeBackingStore(QWindow *window)
@@ -78,11 +74,8 @@ void QXcbNativeBackingStore::flush(QWindow *window, const QRegion &region, const
 
         XRenderSetPictureClipRectangles(display(), dstPic, 0, 0, clipRects.constData(), clipRects.size());
 
-        XRenderComposite(display(), PictOpSrc, srcPic, None, dstPic,
-                         br.x() + offset.x(), br.y() + offset.y(),
-                         0, 0,
-                         br.x(), br.y(),
-                         br.width(), br.height());
+        XRenderComposite(display(), PictOpSrc, srcPic, 0L /*None*/, dstPic, br.x() + offset.x(),
+                         br.y() + offset.y(), 0, 0, br.x(), br.y(), br.width(), br.height());
 
         XRenderFreePicture(display(), dstPic);
     }
