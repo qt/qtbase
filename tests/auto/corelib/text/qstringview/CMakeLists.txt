@@ -8,6 +8,7 @@
 qt_internal_add_test(tst_qstringview
     SOURCES
         tst_qstringview.cpp
+        arrays_of_unknown_bounds.cpp arrays_of_unknown_bounds.h
     LIBRARIES
         Qt::CorePrivate
 )
