@@ -345,6 +345,7 @@ public:
 
     void setSavedDpi(int dpi) { m_savedDpi = dpi; }
     int savedDpi() const { return m_savedDpi; }
+    qreal dpiRelativeScale(const UINT dpi) const;
 
 private:
     inline void show_sys() const;
