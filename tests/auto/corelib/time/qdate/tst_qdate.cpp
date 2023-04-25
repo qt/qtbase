@@ -518,8 +518,19 @@ void tst_QDate::startOfDay_endOfDay_data()
     constexpr MsKludges IgnoreBoth = IgnoreStart | IgnoreEnd;
     const QTimeZone UTC(QTimeZone::UTC);
 
+    using Bound = std::numeric_limits<qint64>;
+    const auto dateAtMillis = [UTC](qint64 millis) {
+        return QDateTime::fromMSecsSinceEpoch(millis, UTC).date();
+    };
+
     // UTC and fixed offset are always available and predictable:
     QTest::newRow("epoch") << epochDate() << UTC << early << late << MsKludges{};
+
+    // First and last days in QDateTime's supported range:
+    QTest::newRow("earliest")
+        << dateAtMillis(Bound::min()) << UTC << invalid << late << MsKludges{};
+    QTest::newRow("latest")
+        << dateAtMillis(Bound::max()) << UTC << early << invalid << MsKludges{};
 
     const struct {
         const char *test;
