@@ -150,10 +150,13 @@ public:
     template <typename Char>
     constexpr QStringView(const Char *str) noexcept;
 #else
-
     template <typename Pointer, if_compatible_pointer<Pointer> = true>
     constexpr QStringView(const Pointer &str) noexcept
         : QStringView(str, str ? lengthHelperPointer(str) : 0) {}
+
+    template <typename Char, if_compatible_char<Char> = true>
+    constexpr QStringView(const Char (&str)[]) noexcept // array of unknown bounds
+        : QStringView{&*str} {} // decay to pointer
 #endif
 
 #ifdef Q_QDOC
