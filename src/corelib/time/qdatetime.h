@@ -298,6 +298,7 @@ class Q_CORE_EXPORT QDateTime
         { std::swap(data, other.data); }
 
         bool isShort() const;
+        inline void invalidate();
         void detach();
         QTimeZone timeZone() const;
 
