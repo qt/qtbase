@@ -574,6 +574,20 @@ ol.I > li {
     padding: 3px 15px 3px 0
 }
 
+span.status.technical-preview {
+    display: inline-block;
+    position: relative;
+    background: center/contain no-repeat url(tech_preview.svg);
+    width: 26px;
+    height: 23px;
+}
+
+td.memItemRight span.status {
+    margin-top: -10px;
+    right: -10px;
+    top: 6px;
+}
+
 .qml {
     display: block;
     margin: 10px;

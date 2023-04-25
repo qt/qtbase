@@ -2,11 +2,13 @@
 
 #specify the CSS file used by this template
 HTML.stylesheets = template/style/offline.css \
-                   template/style/offline-dark.css
+                   template/style/offline-dark.css \
+                   template/style/tech_preview.svg
 
 #for including files into the qch file
 qhp.extraFiles += style/offline.css \
-                  style/offline-dark.css
+                  style/offline-dark.css \
+                  style/tech_preview.svg
 
 HTML.headerstyles = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
