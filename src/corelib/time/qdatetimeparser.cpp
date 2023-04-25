@@ -2186,8 +2186,8 @@ bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) con
 // Only called when we want both date and time; default to local time.
 bool QDateTimeParser::fromString(const QString &t, QDateTime *datetime) const
 {
-    QDateTime val(QDate(1900, 1, 1).startOfDay());
-    const StateNode tmp = parse(t, -1, val, false);
+    static const QDateTime defaultLocalTime = QDate(1900, 1, 1).startOfDay();
+    const StateNode tmp = parse(t, -1, defaultLocalTime, false);
     if (datetime)
         *datetime = tmp.value;
     return tmp.state == Acceptable && !tmp.conflicts && tmp.value.isValid();
