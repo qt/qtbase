@@ -534,7 +534,6 @@ void QTabBarPrivate::layoutTabs()
 
     if (useScrollButtons && tabList.size() && last > available) {
         const QRect scrollRect = normalizedScrollRect(0);
-        scrollOffset = -scrollRect.left();
 
         Q_Q(QTabBar);
         QStyleOption opt;
@@ -571,10 +570,9 @@ void QTabBarPrivate::layoutTabs()
         leftB->show();
 
         rightB->setGeometry(scrollButtonRightRect);
-        rightB->setEnabled(last - scrollOffset > scrollRect.x() + scrollRect.width());
+        rightB->setEnabled(last + scrollRect.left() > scrollRect.x() + scrollRect.width());
         rightB->show();
     } else {
-        scrollOffset = 0;
         rightB->hide();
         leftB->hide();
     }
@@ -591,6 +589,11 @@ QRect QTabBarPrivate::normalizedScrollRect(int index)
     // tab bar itself is in a different orientation.
 
     Q_Q(QTabBar);
+    // If scrollbuttons are not visible, then there's no tear either, and
+    // the entire widget is the scroll rect.
+    if (leftB->isHidden())
+        return verticalTabs(shape) ? q->rect().transposed() : q->rect();
+
     QStyleOptionTab opt;
     q->initStyleOption(&opt, currentIndex);
     opt.rect = q->rect();
@@ -670,16 +673,18 @@ int QTabBarPrivate::hoveredTabIndex() const
 void QTabBarPrivate::makeVisible(int index)
 {
     Q_Q(QTabBar);
-    if (!validIndex(index) || leftB->isHidden())
+    if (!validIndex(index))
         return;
 
     const QRect tabRect = tabList.at(index)->rect;
     const int oldScrollOffset = scrollOffset;
     const bool horiz = !verticalTabs(shape);
+    const int available = horiz ? q->width() : q->height();
     const int tabStart = horiz ? tabRect.left() : tabRect.top();
     const int tabEnd = horiz ? tabRect.right() : tabRect.bottom();
     const int lastTabEnd = horiz ? tabList.constLast()->rect.right() : tabList.constLast()->rect.bottom();
     const QRect scrollRect = normalizedScrollRect(index);
+    const QRect entireScrollRect = normalizedScrollRect(0); // ignore tears
     const int scrolledTabBarStart = qMax(1, scrollRect.left() + scrollOffset);
     const int scrolledTabBarEnd = qMin(lastTabEnd - 1, scrollRect.right() + scrollOffset);
 
@@ -689,6 +694,12 @@ void QTabBarPrivate::makeVisible(int index)
     } else if (tabEnd > scrolledTabBarEnd) {
         // Tab is outside on the right, so scroll right.
         scrollOffset = tabEnd - scrollRect.right();
+    } else if (scrollOffset + entireScrollRect.width() > lastTabEnd + 1) {
+        // there's space on the right
+        scrollOffset = lastTabEnd - entireScrollRect.width() + 1;
+    } else if (available >= lastTabEnd) {
+        // the entire tabbar fits, reset scroll
+        scrollOffset = 0;
     }
 
     leftB->setEnabled(scrollOffset > -scrollRect.left());
@@ -1778,6 +1789,8 @@ void QTabBar::resizeEvent(QResizeEvent *)
     Q_D(QTabBar);
     if (d->layoutDirty)
         updateGeometry();
+
+    // when resizing, we want to keep the scroll offset as much as possible
     d->layoutTabs();
 
     d->makeVisible(d->currentIndex);
