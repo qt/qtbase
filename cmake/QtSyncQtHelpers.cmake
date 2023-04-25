@@ -232,6 +232,14 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
             ERROR_VARIABLE syncqt_output
         )
         if(NOT syncqt_result EQUAL 0)
+            if(syncqt_output STREQUAL "")
+                string(JOIN "" syncqt_output "The syncqt process exited with code ${syncqt_result}"
+                " and without any useful output. This can happen if syncqt crashes due to the"
+                " incompatibilities with the standard C++ library located by either PATH or"
+                " LD_LIBRARY_PATH environment variables. Please make sure that PATH or"
+                " LD_LIBRARY_PATH don't point to the standard libraries different from the one you"
+                " use for building Qt.")
+            endif()
             message(FATAL_ERROR
                 "syncqt.cpp failed for module ${module}:\n${syncqt_output}")
         endif()
