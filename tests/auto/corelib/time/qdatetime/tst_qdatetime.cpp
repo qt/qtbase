@@ -2262,10 +2262,10 @@ void tst_QDateTime::springForward()
         // Note: function doc claims always +1, but this should be reviewed !
     }
 
-    // Repeat, but getting there via .toTimeZone():
-    QDateTime detour = QDateTime(day.addDays(-step),
-                                 time.addSecs(-60 * adjust),
-                                 UTC).toTimeZone(zone);
+    // Repeat, but getting there via .toTimeZone(). Apply adjust to datetime,
+    // not time, as the time wraps round if the adjustment crosses midnight.
+    QDateTime detour = QDateTime(day.addDays(-step), time,
+                                 UTC).addSecs(-60 * adjust).toTimeZone(zone);
     QCOMPARE(detour.time(), time);
     detour = detour.addDays(step);
     // Insist on consistency:
