@@ -11,6 +11,9 @@
 
 #include <private/qglobal_p.h> // for the icu feature test
 #include <private/qdatetime_p.h>
+#if !QT_CONFIG(timezone)
+#  include <private/qtenvironmentvariables_p.h> // for qTzName()
+#endif
 
 using namespace QtPrivate::DateTimeConstants;
 
@@ -41,10 +44,8 @@ private Q_SLOTS:
     void weekNumber_invalid();
     void weekNumber_data();
     void weekNumber();
-#if QT_CONFIG(timezone)
     void startOfDay_endOfDay_data();
     void startOfDay_endOfDay();
-#endif
     void startOfDay_endOfDay_fixed_data();
     void startOfDay_endOfDay_fixed();
     void startOfDay_endOfDay_bounds();
@@ -493,117 +494,106 @@ void tst_QDate::weekNumber_invalid()
     QCOMPARE( dt.weekNumber( &yearNumber ), 0 );
 }
 
-#if QT_CONFIG(timezone)
 void tst_QDate::startOfDay_endOfDay_data()
 {
     QTest::addColumn<QDate>("date"); // Typically a spring-forward.
     // A zone in which that date's start and end are worth checking:
-    QTest::addColumn<QByteArray>("zoneName");
+    QTest::addColumn<QTimeZone>("zone");
     // The start and end times in that zone:
     QTest::addColumn<QTime>("start");
     QTest::addColumn<QTime>("end");
 
     const QTime early(0, 0), late(23, 59, 59, 999), invalid(QDateTime().time());
 
-    // UTC is always a valid zone.
-    QTest::newRow("epoch")
-        << epochDate() << QByteArray("UTC")
-        << early << late;
+    // UTC and fixed offset are always available and predictable:
+    QTest::newRow("epoch") << epochDate() << QTimeZone(QTimeZone::UTC) << early << late;
 
-    if (QTimeZone("America/Hermosillo").isValid()) {
+    const struct {
+        const char *test;
+        const char *zone;
+        const QDate day;
+        const QTime start;
+        const QTime end;
+    } transitions[] = {
         // The western Mexico time-zones skipped the first hour of 1970.
-        QTest::newRow("BajaMexico")
-            << QDate(1970, 1, 1) << QByteArray("America/Hermosillo")
+        { "BajaMexico", "America/Hermosillo", QDate(1970, 1, 1),
 #ifdef USING_WIN_TZ // MS's TZ APIs lack data
-            << invalid
+          invalid,
 #else
-            << QTime(1, 0)
+          QTime(1, 0),
 #endif
-            << late;
-    }
-    if (QTimeZone("America/Sao_Paulo").isValid()) {
-        QTest::newRow("Brazil")
-            << QDate(2008, 10, 19) << QByteArray("America/Sao_Paulo")
-            << QTime(1, 0) << late;
-        // Several South American zones coincide, see
-        // tst_QDateTime::fromStringDateFormat(ISO 24:00 in DST).
-    }
-    if (QTimeZone("Europe/Sofia").isValid()) {
+          late },
+
+        // Compare tst_QDateTime::fromStringDateFormat(ISO 24:00 in DST).
+        { "Brazil", "America/Sao_Paulo", QDate(2008, 10, 19), QTime(1, 0), late },
+
         // Several southern zones within EET (but not the northern ones) spent
-        // part of the 1990s using midnight as spring transition. These included
-        // Asia/{Beirut,Famagusta,Nicosia} and Europe/{Bucharest,Chisinau,Nicosia}.
-        QTest::newRow("Sofia")
-            << QDate(1994, 3, 27) << QByteArray("Europe/Sofia")
+        // part of the 1990s using midnight as spring transition.
+        { "Sofia", "Europe/Sofia", QDate(1994, 3, 27),
 #ifdef USING_WIN_TZ // MS's TZ APIs lack data
-            << invalid
+          invalid,
 #else
-            << QTime(1, 0)
+          QTime(1, 0),
 #endif
-            << late;
-        // Additionally, America/Scoresbysund, Atlantic/Azores,
-        // Asia/{Choibalsan,Hovd,Tbilisi,Ulan_Bator,Ulaanbaatar} coincide.
+          late },
+
+        // Two Pacific zones skipped days to get on the west of the
+        // International Date Line; those days have neither start nor end.
+        { "Kiritimati", "Pacific/Kiritimati", QDate(1994, 12, 31), invalid, invalid },
+        { "Samoa", "Pacific/Apia", QDate(2011, 12, 30), invalid, invalid },
+
+        // TODO: find other zones with transitions at/crossing midnight.
+    };
+    const QTimeZone local = QTimeZone::LocalTime;
+
+#if QT_CONFIG(timezone)
+    const QTimeZone sys = QTimeZone::systemTimeZone();
+    for (const auto &tran : transitions) {
+        if (QTimeZone zone(tran.zone); zone.isValid()) {
+            QTest::newRow(tran.test) << tran.day << zone << tran.start << tran.end;
+            if (zone == sys)
+                QTest::addRow("Local=%s", tran.test) << tran.day << local << tran.start << tran.end;
+        }
     }
-    if (QTimeZone("Pacific/Kiritimati").isValid()) {
-        QTest::newRow("Kiritimati")
-            << QDate(1994, 12, 31) << QByteArray("Pacific/Kiritimati")
-            << invalid << invalid;
+#else
+    const auto isLocalZone = [](const char *zone) {
+        const QLatin1StringView name(zone);
+        for (int i = 0; i < 2; ++i) {
+            if (qTzName(i) == name)
+                return true;
+        }
+        return false;
+    };
+    for (const auto &tran : transitions) {
+        if (isLocalZone(tran.zone)) // Might need a different name to match
+            QTest::addRow("Local=%s", tran.test) << tran.day << local << tran.start << tran.end;
     }
-    if (QTimeZone("Pacific/Apia").isValid()) {
-        QTest::newRow("Samoa")
-            << QDate(2011, 12, 30) << QByteArray("Pacific/Apia")
-            << invalid << invalid;
-    }
-    // TODO: find other zones with transitions at/crossing midnight.
+#endif // timezone
 }
 
 void tst_QDate::startOfDay_endOfDay()
 {
-    QFETCH(QDate, date);
-    QFETCH(QByteArray, zoneName);
-    QFETCH(QTime, start);
-    QFETCH(QTime, end);
-    const auto zone = QTimeZone(zoneName);
+    QFETCH(const QDate, date);
+    QFETCH(const QTimeZone, zone);
+    QFETCH(const QTime, start);
+    QFETCH(const QTime, end);
     QVERIFY(zone.isValid());
-    const bool isSystem = QTimeZone::systemTimeZone() == zone;
+
     QDateTime front(date.startOfDay(zone)), back(date.endOfDay(zone));
     if (end.isValid())
         QCOMPARE(date.addDays(1).startOfDay(zone).addMSecs(-1), back);
     if (start.isValid())
         QCOMPARE(date.addDays(-1).endOfDay(zone).addMSecs(1), front);
-    do { // Avoids duplicating these tests for local-time when it *is* zone:
-        if (start.isValid()) {
-            QCOMPARE(front.date(), date);
-            QCOMPARE(front.time(), start);
-        }
-        if (end.isValid()) {
-            QCOMPARE(back.date(), date);
-            QCOMPARE(back.time(), end);
-        }
-        if (front.timeSpec() == Qt::LocalTime)
-            break;
-        front = date.startOfDay();
-        back = date.endOfDay();
-    } while (isSystem);
-    if (end.isValid())
-        QCOMPARE(date.addDays(1).startOfDay().addMSecs(-1), back);
-    // Fails epoch in western Mexico; see America/Hermosillo.
-    if (start.isValid())
-        QCOMPARE(date.addDays(-1).endOfDay().addMSecs(1), front);
-    if (!isSystem) {
-        // These might fail if system zone coincides with zone; but only if it
-        // did something similarly unusual on the date picked for this test.
-        // See comments on test cases.
-        if (start.isValid()) {
-            QCOMPARE(front.date(), date);
-            QCOMPARE(front.time(), QTime(0, 0));
-        }
-        if (end.isValid()) {
-            QCOMPARE(back.date(), date);
-            QCOMPARE(back.time(), QTime(23, 59, 59, 999));
-        }
+
+    if (start.isValid()) {
+        QCOMPARE(front.date(), date);
+        QCOMPARE(front.time(), start);
+    }
+    if (end.isValid()) {
+        QCOMPARE(back.date(), date);
+        QCOMPARE(back.time(), end);
     }
 }
-#endif // timezone
 
 void tst_QDate::startOfDay_endOfDay_fixed_data()
 {
