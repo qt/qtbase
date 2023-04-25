@@ -1061,6 +1061,7 @@ The Agreement includes following Appendices 1-10, as applicable.
 - Appendix 8: Intentionally left blank (optional)
 - Appendix 9: Support Terms
 - Appendix 10: Conversion from legacy Licenses to Subscription (optional)
+- Appendix 11: TERMS OF USE - QT INSIGHT TRACKER LIBRARY
 
 
 APPENDIX 1: LICENSED SOFTWARE
@@ -1252,7 +1253,7 @@ only ("Redistributables") are marked with "R" in the below table.
 +----------------------------------------------------------+
 | Device Utilities                 |     |     | X,R | X,R |
 +----------------------------------------------------------+
-| Qt Debugging Bridge (QBD) Daemon |     |     | X,R | X,R |
+| Qt Debugging Bridge (QDB) Daemon |     |     | X,R | X,R |
 +----------------------------------------------------------+
 | Qt Quick Ultralite Controls      |     |     | X,R | X,R |
 +----------------------------------------------------------+
@@ -1668,116 +1669,152 @@ Content Format and Channel as mentioned in paragraph 3 and 4.
 APPENDIX 8: INTENTIONALLY LEFT BLANK
 
 APPENDIX 9: SUPPORT TERMS
+Version 2023-04
 
-These Qt support terms and conditions ("Support Terms") set forth the legal
-framework, where under The Qt Company ("The Qt Company") provides support
+These Qt support terms and conditions (“Support Terms”) set forth the legal
+framework, where under The Qt Company (“The Qt Company”) provides support
 services (as herein defined) to the Licensee.
 
 1 DEFINITIONS
 
-"Application Code" shall mean a computer software program written strictly
+“Application Code” shall mean a computer software program written strictly
 using the Qt programming language, by or for the Licensee, with a user
 interface, enabling the Licensee or their users to accomplish a specific task
 and display any results of the task on the display monitor or screen.
 
-"Dedicated Contact" shall mean the employee of The Qt Company who will be the
-first point of contact for all Designated Users' requests for Support.
+“Customer Portal” shall mean The Qt Company’s web-based service and support
+user interface located at https://account.qt.io/ or at another location
+designated by The Qt Company. Customer Portal is used by a Designated User with
+Qt Account, and it provides downloads, license management, license certificate
+and other services for Designated Users.
 
-"Errors" shall mean an error, flaw, mistake, failure, or fault in Licensed
+“Dedicated Contact” shall mean the employee of The Qt Company who will be the
+first point of contact for all Designated Users’ requests for Support.
+
+“Errors” shall mean an error, flaw, mistake, failure, or fault in Licensed
 Software that prevents it from behaving as described in the relevant
-documentation or as agreed between the Parties.
+documentation or as agreed between the Parties. Designated User can follow the
+state and progress of Errors in Customer Portal.
 
-"Extended Support" shall mean a continuation to the normal Support period,
+“Extended Support” shall mean a continuation to the normal Support period,
 which allows Designated Users to receive selected Support (Standard Support or
 Premium Support) for a version of Licensed Software that is no longer generally
 supported by The Qt Company.
 
-"Install Support" shall mean Support that is limited to installation related
+”Install Support” shall mean Support that is limited to installation-related
 Error(s) on Development Platforms specified as supported host platforms for
-each Qt release under doc.qt.io.
+each Qt release under doc.qt.io. Install Support covers also operational use of
+the QA Tools, but not operational use of Qt Software.
 
-"Maintenance Release" shall mean a release or version of Licensed Software
+“Maintenance Release” shall mean a release or version of Licensed Software
 containing bug fixes, error corrections and other changes targeted to
 maintaining and improving product stability and quality. Maintenance Releases
 are generally depicted as a change to the third digit of Licensed Software
 version number.
 
-"Platforms" shall mean both Development Platforms and Deployment Platforms.
+“Platforms” shall mean both Development Platforms and Deployment Platforms.
 Supported host and target Platforms may vary from for each Qt release as
 defined under doc.qt.io.
 
-"Premium Support" shall mean an upgraded level of Support that The Qt Company
+“Premium Support” shall mean an upgraded level of Support that The Qt Company
 provides pursuant to these Support Terms to Licensee if Licensee has purchased
-Premium Support instead of Standard Support. Premium Support shall always be
-purchased for all Designated User(s) in the respective development team of the
-Licensee.
+Premium Support instead of Standard Support. Premium Support also covers what
+is included in Standard Support. Premium Support shall always be purchased for
+all Designated User(s) in the respective development team of the Licensee.
 
-"Response Time" shall mean the period of time from when Licensee notifies
-TheQt Company about an Error or requests Support until The Qt Company provides
+“Qt Account” shall mean the Qt Account for a Designated User used for using Qt
+services and Customer Portal. A Qt Account is mapped to the Licensee company
+with the corporate email domain or domains.
+
+”Qualification Kit” shall mean a set of documents and validation test cases
+used for product certification needs as defined in section 2.6.
+
+“Response Time” shall mean the period of time from when Licensee notifies The
+Qt Company about an Error or requests Support until The Qt Company provides
 Licensee with a response that addresses (but not necessarily resolves) the
 reported Error or provides the requested Support.
 
-"Standard Support" shall mean standard level of Support that The Qt Company
-provides pursuant to these Support Terms to Licensee.
+“Standard Support” shall mean standard level of Support that The Qt Company
+provides pursuant to these Support Terms to Licensee.  Standard Support also
+covers what is included in Install Support.
 
-"Support" shall mean developer assistance that is provided by The Qt Company
-to assist eligible Designated Users in Licensed Software installation, usage
-and functionality problem resolution for Error(s) and Error workarounds
-pursuant to the terms of these Support Terms. Support for different products is
-available as specified in the below table ("X" marking the Support that is
-included in the license price, optional Add-on Support services are marked as
-"O"):
+“Security Issue” shall mean an Error that may cause a vulnerability in a system
+or application that uses the Licensed Software.
 
-+-----------------------------------------------------------------------+
-|                       |ADP|ADE|DCP|DCE|DSP|DSE|Squish|Coco|Test Center|
-+-----------------------------------------------------------------------+
-| Install Support       | X | X | X | X | X | X |  X   |  X |     X     |
-+-----------------------------------------------------------------------+
-| Standard Support      |   | X | X | X | X | X |  X   |  X |     X     |
-+-----------------------------------------------------------------------+
-| Premium Support       |   | O | O | O | O | O |  O   |  O |     O     |
-+-----------------------------------------------------------------------+
-| Extended Support      |   | O | O | O | O | O |      |    |           |
-+-----------------------------------------------------------------------+
-| Tool Qualification Kit|   |   |   |   |   |   |  O   |  O |           |
-+-----------------------------------------------------------------------+
+“Support” shall mean developer assistance that is provided by The Qt Company to
+assist eligible Designated Users in Licensed Software installation, usage and
+functionality problem resolution for Error(s) and Error workarounds pursuant to
+the terms of these Support Terms. Support for different products is available
+as specified in the below table (‘X’ marking the Support that is included in
+the license price, optional Add-on Support services are marked as ‘O’):
 
-"Support Validity Term" shall mean the Development License Term or any other
-fixed time period agreed between the Parties during which time the Customer is
++-----------------------------------------------------------------------------+
+|                        | Install| Standard| Premium| Extended| Qualification|
+|                        | Support| Support | Support| Support | Kit          |
++-----------------------------------------------------------------------------+
+| DSP                    |    X   |     X   |    O   |     O   |              |
++-----------------------------------------------------------------------------+
+| DSE                    |    X   |     X   |    O   |     O   |              |
++-----------------------------------------------------------------------------+
+| ADP                    |    X   |         |        |         |              |
++-----------------------------------------------------------------------------+
+| ADE                    |    X   |     X   |    O   |     O   |              |
++-----------------------------------------------------------------------------+
+| DCP                    |    X   |     X   |    O   |     O   |              |
++-----------------------------------------------------------------------------+
+| DCE                    |    X   |     X   |    O   |     O   |              |
++-----------------------------------------------------------------------------+
+| Squish                 |    X   |     X   |    O   |         |       O      |
++-----------------------------------------------------------------------------+
+| Coco                   |    X   |     X   |    O   |         |       O      |
++-----------------------------------------------------------------------------+
+| Test Center            |    X   |     X   |    O   |         |       O      |
++-----------------------------------------------------------------------------+
+| Axivion Suite          |    X   |     X   |        |         |              |
++-----------------------------------------------------------------------------+
+| Architecture Analysis  |    X   |     X   |        |         |              |
++-----------------------------------------------------------------------------+
+| Static Code Analysis   |    X   |     X   |        |         |              |
++-----------------------------------------------------------------------------+
+| Static Coverage        |    X   |     X   |        |         |              |
+| Analysis Professional  |        |         |        |         |              |
++-----------------------------------------------------------------------------+
+| Qt Insight             |        |     X   |        |         |              |
++-----------------------------------------------------------------------------+
+
+“Support Validity Term” shall mean the Development License Term or any other
+fixed time period agreed between the Parties during which time the Licensee is
 eligible to receive Support from The Qt Company.
-
-"Tool Qualification Kit" shall mean a customized set of documents and
-validation test cases.
 
 2 SUPPORT SERVICES
 
 2.1  Support Services Provided by The Qt Company
 
 Subject to these Support Terms and during the Support Validity Term, The Qt
-Company will via its web-based support user-interface, provide Designated
-User(s) with Support for the Platforms which Customer has licensed under the
-Agreement.
-The Qt Company will make commercially reasonable efforts to solve any Errors
-reported by Designated User(s).  Resolution of an Error may be provided through
+Company will via its Customer Portal, provide Designated User(s) with Support
+for the Licensed Software which Licensee has licensed under the Agreement. The
+Qt Company will make commercially reasonable efforts to solve any Errors
+reported by Designated User(s). Resolution of an Error may be provided through
 Designated User(s) themselves downloading of a later released version of the
 applicable Licensed Software product(s) or providing the Designated User with a
-temporary workaround addressing such Error.
+workaround addressing such Error or providing the Designated User with an
+updated tool configuration.
 
 2.2  Licensee's Obligations
 
-To report an Error, the Designated User shall register the Error on The Qt
-Company's web-based support user interface located at:
-https://account.qt.io/login or at another location designated by The Qt Company.
+To report an Error, the Designated User shall register the Error on the
+Customer Portal. If the Designated User considers the reported Error to be a
+Security Issue, the Error shall be marked as a Security Issue.
 
 The Designated User must provide adequate information and documentation to The
 Qt Company to enable it to recreate the Error or problem for which the
-Designated User has sought assistance.
-To ensure efficient handling of Errors, the Designated User must provide the
-following information, where relevant:
+Designated User has sought assistance. To ensure efficient handling of Errors,
+the Designated User must provide the following information, where relevant:
 - A clear, detailed description of the problem, question or suggestion;
 - Identification of which Licensed Software product and version is affected;
 - Identification of the operating environment (e.g. operating system, hardware
-  Platform, build tools, etc.) on which the problem exists;
+  Platform, build tools, tool configuration, etc.) on which the problem exists;
+- Marking the issue as a Security Issue, when reporting a Security Issue;
 - On Standard Support: A complete and compilable test case of not more than 500
  lines of code that demonstrates the problem;
 - On Premium Support: A complete and compilable test case that demonstrates the
@@ -1799,29 +1836,30 @@ General limitations:
 
 Each version or release of the Licensed Software will be Supported under
 Standard Support or Premium Support only for limited time period as set forth
-in doc.qt.io. For example, regular releases of Qt Software are supported for
-one (1) year from the release date of the version x.y.0 and Long Term Support
-(LTS) Releases are supported for a period of three (3) years from the release
-date of the LTS version x.y.0.
+in doc.qt.io or in documentation provided with the respective Licensed Software
+product. If nothing is documented, a release of Licensed Software is supported
+for one (1) year from the release date of the version x.y.0 and Long Term
+Support (LTS) Releases are supported for a period of three (3) years from the
+release date of the LTS version x.y.0.
 
-The Qt Company shall only provide Support for Designated User(s).
-
-Support is made available for the entire development teams only: It is not
-allowed to purchase Support only for some members of the development team, and
-all Designated Users of the respective development team must be eligible for
-the same level of Support.
+The Qt Company shall only provide Support for Designated User(s) through
+Customer Portal.Support is made available for the entire development teams
+only: It is not allowed to purchase Support only for some members of the
+development team, and all Designated Users of the respective development team
+must be eligible for the same level of Support.
 
 Support is not provided for snapshots, preview releases, beta releases or
 release candidates.
 
-The Qt Company shall have no obligation to provide Support for hardware or
-operating system specific  problems or problems arising from improper use,
-accident, neglect or modification of Qt.
+The Qt Company shall have no obligation to provide Support for 3rd party
+components, hardware or operating system specific problems or problems arising
+from improper use, accident, neglect, or modification of Qt.
 
 Limitations with Install Support:
 
-Support limited to Error(s) regarding installation and setting up of the Qt
-development environment on host Platforms.
+Support limited to (i) Error(s) regarding installation and setting up of the Qt
+development environment on host Platforms, or (ii) Errors impacting operational
+use of the QA Tools.
 
 Limitations with Standard Support:
 
@@ -1847,31 +1885,60 @@ will make commercially reasonable efforts to provide a solution on closest
 corresponding supported Platform.
 
 Premium Support is optional and purchased for an agreed bucket of hours
-("Bucket"). Hours can be used by any Designated User in the respective
+(“Bucket”). Hours can be used by any Designated User in the respective
 development team. To encourage continuous usage of the Support, ten percent
 (10%) of the purchased Bucket shall automatically expire (regardless of whether
 such support hours are actually used or not by the Licensee) each month after
 three (3) months from the purchase of the Premium Support.
 
-2.4 Extended Support
+2.4 Handling of Security Issues
+
+The reported Errors marked as Security Issues will be assessed by experts to
+determine the severity of the issue and to verify if it indeed is a valid
+Security Issue. The Designated User who reported the issue may be contacted for
+more details. If the reported issue is not deemed to be a Security Issue, it
+will be treated as a normal Error and handled accordingly.
+
+A verified Security Issue will be fixed as soon as possible. Qt Company will
+notify all Licensees via appropriate channels about the Security Errors and
+availability of patches for Licensed Software. Typically, a fix for the
+Security Issue is included in the next Maintenance Release of Licensed
+Software.
+
+If the Security Issue is reported in a third-party library used in Licensed
+Software, The Qt Company will notify the relevant third party of such Security
+Issue detected in their library. When the Security Issue is fixed in the
+third-party library, the new version of the third-party library will be in the
+next feasible Maintenance Release of the Licensed Software. If a fixed version
+of the third-party library is not available, The Qt Company may instead decide
+to include documentation regarding the issue, or a patch for this third-party
+library.
+
+All known Security Issues in Licensed Software will be mentioned as part of the
+change notes released with each version of Licensed Software.
+
+2.5 Extended Support
 
 Extended Support extends the Support Validity Term for a release of Licensed
 Software that is no longer generally supported.
 
 Extended Support includes and is by default provided with Standard Support
-rules and limitations, unless Extended Support is purchased with Premium
-Support in which case Premium Support rules and limitations will apply.
+rules and limitations, unless Extended Support is purchased together with
+Premium Support in which case Premium Support rules and limitations will apply.
 
 Extended Support is optional and purchased with annual fee and separately per
 each Licensee product. Extended Support will need definition of (i) Licensee
-product, (ii) used Platform(s) and (iii) Licensed Software version(s).
+product, (ii) used Platform(s) and (iii) Licensed Software version(s). For
+avoidance of doubt, Extended Support requires that the Designated User has a
+valid license for the respective Licensed Software.
 
-2.5 Tool Qualification Kit
+2.6 Qualification Kit
 
-The Qt Company shall provide set of customized documents and validation tests
-that enable Licensee to qualify QA testing tool for the purpose of ISO 26262,
-EN 50128, DO-330, IEC 61508, IEC 62304 or IEC 13485 certification Licensee end
-to end solution.
+The Qt Company shall provide a set of documents and validation tests that
+enable the Licensee to qualify QA testing tool (subject to a separate fee) or
+Qt Safe Renderer for the purpose of safety certification of Licensee end-to-end
+solution. Exact complied safety standards may vary between products, used
+features, use case, and industry.
 
 3 RESPONSE TIME
 
@@ -1883,6 +1950,9 @@ exceed two (2) business days.
 
 Premium Support: Errors and Support requests will have a Response Time not to
 exceed one (1) business day.
+
+Security Issues: Errors that are Security Issues will have a Response Time not
+to exceed one (1) business day.
 
 For complex issues, The Qt Company may provide an initial response to the
 Designated User and then follow up, without undue delay, with additional
@@ -1907,7 +1977,7 @@ All Support requests will be handled with high priority.
 
 5 MAINTENANCE RELEASES, UPDATES AND UPGRADES
 
-Under the Support the Customer is eligible for Maintenance Releases and Updates
+Under the Support the Licensee is eligible for Maintenance Releases and Updates
 that The Qt Company generally makes available to customers who has purchased
 Support. Unless otherwise decided by The Company at its free and absolute
 discretion, Upgrades will not be provided under the Support.
@@ -1919,6 +1989,7 @@ previous version of Licensed Software:
 - Fixes related to build issues on supported Platforms;
 - Error corrections specific to a single Platform that are not present on other
   Platforms;
+- Corrections to Security Issues;
 - Critical Error corrections such as crashes, data corruption, loss of data,
   race conditions; and
 - Updates to documentation and license information when deemed necessary by
@@ -1975,3 +2046,46 @@ remain outstanding on the Current Licenses under the applicable terms Licensee
 will continue to make such payments in accordance with the applicable order
 documentation, notwithstanding the fact that the Current Licenses are being
 converted to Development Licenses pursuant to this Appendix.
+
+APPENDIX 11: TERMS OF USE - QT INSIGHT TRACKER LIBRARY
+Version 1.0
+
+Qt Insight Tracker Library ("Tracker Library") is a software module used to
+collect end user data from Customer's Application and Devices relating to The
+Qt Company's Qt Insight online service the Customer is ordering from The Qt
+Company under a separate service agreement ("Service Agreement").
+
+Unless otherwise set forth herein, definitions written in capital letters used
+herein shall have the meaning set forth in the Service Agreement.
+
+Subject to these terms The Qt Company grants to Customer a worldwide,
+non-exclusive, non-transferable, royalty-free, revocable (for cause) right and
+license, valid for the term of the Service Agreement, to
+    (i)  use, copy and modify Tracker Library for the purpose of including it
+         into the Devices and Applications and solely for the purpose of being
+         used only in conjunction with Insight Cloud or Insight Private Cloud,
+         and
+    (ii) distribute, by itself or through its Contractors, Tracker Library as
+         installed, incorporated, or integrated into Applications and/or
+         Devices.
+
+Use of Tracker Library in a way or for the purpose other than the above is
+strictly prohibited. Tracker Library is licensed to the Customer in all
+respects "as is".
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE QT COMPANY ON BEHALF OF
+ITSELF AND ITS LICENSORS, SUPPLIERS AND AFFILIATES, DISCLAIMS ALL OTHER
+WARRANTIES, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, ANY IMPLIED
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND
+NON-INFRINGEMENT WITH REGARD TO THE TRACKER LIBRARY. THE QT COMPANY DOES NOT
+WARRANT THAT THE TRACKER LIBRARY WILL SATISFY CUSTOMER'S REQUIREMENTS OR THAT
+IT WILL OPERATE WITHOUT DEFECT OR ERROR OR THAT THE OPERATION THEREOF WILL BE
+UNINTERRUPTED.
+IN NO EVENT SHALL THE QT COMPANY BE LIABLE TO THE CUSTOMER FOR ANY LOSS OF
+PROFIT, LOSS OF DATA, LOSS OF BUSINESS OR GOODWILL OR ANY OTHER INDIRECT,
+SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE COST, DAMAGES OR EXPENSE OF ANY
+KIND, HOWSOEVER ARISING UNDER OR IN CONNECTION WITH THE USE OF THE TRACKER
+LIBRARY.
+
+THE TOTAL MAXIMUM LIABILITY OF THE QT COMPANY UNDER THESE TERMS SHALL IN NO
+EVENT EXCEED 10,000 EUROS.
