@@ -67,24 +67,24 @@ static void writeCtfMacro(QTextStream &stream, const Provider &provider, const T
         stream << "ctf_string(" << name << ", " << name << ".toString().toUtf8().constData())";
         return;
     case Tracepoint::Field::QtRect:
-        stream << "ctf_integer(int, x, " << name << ".x()) "
-               << "ctf_integer(int, y, " << name << ".y()) "
-               << "ctf_integer(int, width, " << name << ".width()) "
-               << "ctf_integer(int, height, " << name << ".height()) ";
+        stream << "ctf_integer(int, QRect_" << name << "_x, " << name << ".x()) "
+               << "ctf_integer(int, QRect_" << name << "_y, " << name << ".y()) "
+               << "ctf_integer(int, QRect_" << name << "_width, " << name << ".width()) "
+               << "ctf_integer(int, QRect_" << name << "_height, " << name << ".height()) ";
         return;
     case Tracepoint::Field::QtSizeF:
-        stream << "ctf_float(int, width, " << name << ".width()) "
-               << "ctf_float(int, height, " << name << ".height()) ";
+        stream << "ctf_float(double, QSizeF_" << name << "_width, " << name << ".width()) "
+               << "ctf_float(double, QSizeF_" << name << "_height, " << name << ".height()) ";
         return;
     case Tracepoint::Field::QtRectF:
-        stream << "ctf_float(int, x, " << name << ".x()) "
-               << "ctf_float(int, y, " << name << ".y()) "
-               << "ctf_float(int, width, " << name << ".width()) "
-               << "ctf_float(int, height, " << name << ".height()) ";
+        stream << "ctf_float(double, QRectF_" << name << "_x, " << name << ".x()) "
+               << "ctf_float(double, QRectF_" << name << "_y, " << name << ".y()) "
+               << "ctf_float(double, QRectF_" << name << "_width, " << name << ".width()) "
+               << "ctf_float(double, QRectF_" << name << "_height, " << name << ".height()) ";
         return;
     case Tracepoint::Field::QtSize:
-        stream << "ctf_integer(int, width, " << name << ".width()) "
-               << "ctf_integer(int, height, " << name << ".height()) ";
+        stream << "ctf_integer(int, QSize_" << name << "_width, " << name << ".width()) "
+               << "ctf_integer(int, QSize_" << name << "_height, " << name << ".height()) ";
         return;
     case Tracepoint::Field::EnumeratedType:
         stream << "ctf_enum(" << provider.name << ", " << typeToTypeName(paramType) << ", int, " << name << ", " << name << ") ";
