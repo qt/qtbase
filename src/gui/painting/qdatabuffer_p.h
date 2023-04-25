@@ -89,13 +89,16 @@ public:
     }
 
     void shrink(qsizetype size) {
+        Q_ASSERT(capacity >= size);
         capacity = size;
         if (size) {
             buffer = (Type*) realloc(static_cast<void*>(buffer), capacity * sizeof(Type));
             Q_CHECK_PTR(buffer);
+            siz = std::min(siz, size);
         } else {
             free(buffer);
             buffer = nullptr;
+            siz = 0;
         }
     }
 
