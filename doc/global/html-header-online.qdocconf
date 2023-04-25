@@ -11,7 +11,9 @@ HTML.stylesheets = template/style/online.css \
                    template/style/icomoon.woff \
                    template/style/cookiebar-x.png \
                    template/style/doc_search.png \
+                   template/style/tech_preview.svg \
                    template/style/theqtcompany.png
+
 
 #for including files into the qch file. Relative to the outputdir of a QDoc build.
 qhp.extraFiles += style/online.css \
@@ -25,6 +27,7 @@ qhp.extraFiles += style/online.css \
                   style/icomoon.woff \
                   style/cookiebar-x.png \
                   style/doc_search.png \
+                  style/tech_preview.svg \
                   style/theqtcompany.png
 
 HTML.headerstyles = \
