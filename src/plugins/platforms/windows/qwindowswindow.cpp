@@ -1961,6 +1961,12 @@ void QWindowsWindow::handleCompositionSettingsChanged()
     }
 }
 
+qreal QWindowsWindow::dpiRelativeScale(const UINT dpi) const
+{
+    return QHighDpiScaling::roundScaleFactor(qreal(dpi) / QWindowsScreen::baseDpi) /
+           QHighDpiScaling::roundScaleFactor(qreal(savedDpi()) / QWindowsScreen::baseDpi);
+}
+
 void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *result)
 {
     // We want to keep QWindow's device independent size constant across the
@@ -1968,9 +1974,8 @@ void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *
     // by the change of DPI (e.g. 120 -> 144 = 1.2), also taking any scale
     // factor rounding into account. The win32 window size includes the margins;
     // add the margins for the new DPI to the window size.
-    const int dpi = int(wParam);
-    const qreal scale = QHighDpiScaling::roundScaleFactor(qreal(dpi) / QWindowsScreen::baseDpi) /
-                        QHighDpiScaling::roundScaleFactor(qreal(savedDpi()) / QWindowsScreen::baseDpi);
+    const UINT dpi = UINT(wParam);
+    const qreal scale = dpiRelativeScale(dpi);
     const QMargins margins = QWindowsGeometryHint::frame(window(), style(), exStyle(), dpi);
     if (!(m_data.flags & Qt::FramelessWindowHint)) {
         // We need to update the custom margins to match the current DPI, because
@@ -1979,10 +1984,6 @@ void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *
         // function will change the window geometry which conflicts with what we
         // are currently doing.
         m_data.customMargins *= scale;
-    }
-    if (!m_data.restoreGeometry.isEmpty()) {
-        m_data.restoreGeometry.setWidth(m_data.restoreGeometry.width() * scale);
-        m_data.restoreGeometry.setHeight(m_data.restoreGeometry.height() * scale);
     }
 
     const QSize windowSize = (geometry().size() * scale).grownBy(margins + customMargins());
@@ -1995,10 +1996,13 @@ void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *
 void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
     const UINT dpi = HIWORD(wParam);
+    const qreal scale = dpiRelativeScale(dpi);
     setSavedDpi(dpi);
-
     // Send screen change first, so that the new screen is set during any following resize
     checkForScreenChanged(QWindowsWindow::FromDpiChange);
+
+    if (!IsZoomed(hwnd))
+        m_data.restoreGeometry.setSize(m_data.restoreGeometry.size() * scale);
 
     // We get WM_DPICHANGED in one of two situations:
     //
@@ -2037,7 +2041,7 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
 void QWindowsWindow::handleDpiChangedAfterParent(HWND hwnd)
 {
     const UINT dpi = GetDpiForWindow(hwnd);
-    const qreal scale = qreal(dpi) / qreal(savedDpi());
+    const qreal scale = dpiRelativeScale(dpi);
     setSavedDpi(dpi);
 
     checkForScreenChanged(QWindowsWindow::FromDpiChange);
@@ -2272,6 +2276,9 @@ void QWindowsWindow::handleGeometryChange()
 
     if (testFlag(SynchronousGeometryChangeEvent))
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
+
+    if (!testFlag(ResizeMoveActive))
+        updateRestoreGeometry();
 
     if (!wasSync)
         clearFlag(SynchronousGeometryChangeEvent);
