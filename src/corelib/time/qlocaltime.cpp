@@ -310,7 +310,7 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
     // TODO: for glibc, we could use tmLocal.tm_gmtoff
     // That would give us offset directly, hence localSecs = offset + utcSecs
     // Provisional offset, until we have a revised localSeconds:
-    int offset = QRoundingDown::qDiv<MSECS_PER_SEC>(local) - utcSecs;
+    int offset = localSecs - utcSecs;
     dst = tmLocal.tm_isdst > 0 ? QDateTimePrivate::DaylightTime : QDateTimePrivate::StandardTime;
     qint64 jd;
     if (Q_UNLIKELY(!QGregorianCalendar::julianFromParts(
