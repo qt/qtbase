@@ -234,6 +234,23 @@
 */
 
 /*!
+    \fn template <typename Container, if_compatible_container<Container>> QAnyStringView::QAnyStringView(const Container &str)
+
+    Constructs a string view on \a str. The length is taken from \c{std::size(str)}.
+
+    \c{std::data(str)} must remain valid for the lifetime of this string view object.
+
+    This constructor only participates in overload resolution if \c Container is a
+    container with a compatible character type as \c{value_type}.
+
+    The string view will be empty if and only if \c{std::size(str) == 0}. It is unspecified
+    whether this constructor can result in a null string view (\c{std::data(str)} would
+    have to return \nullptr for this).
+
+    \sa isNull(), isEmpty()
+*/
+
+/*!
     \fn template <typename Char, size_t Size> static QAnyStringView fromArray(const Char (&string)[Size]) noexcept
 
     Constructs a string view on the full character string literal \a string,
