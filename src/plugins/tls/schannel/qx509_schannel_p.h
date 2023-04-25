@@ -36,6 +36,10 @@ public:
     Qt::HANDLE handle() const override;
 
     static QSslCertificate QSslCertificate_from_CERT_CONTEXT(const CERT_CONTEXT *certificateContext);
+
+    static bool importPkcs12(QIODevice *device, QSslKey *key, QSslCertificate *cert,
+                             QList<QSslCertificate> *caCertificates,
+                             const QByteArray &passPhrase);
 private:
     const CERT_CONTEXT *certificateContext = nullptr;
 

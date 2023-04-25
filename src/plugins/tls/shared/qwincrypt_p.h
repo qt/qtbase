@@ -40,6 +40,16 @@ struct QHCertStoreDeleter {
 // A simple RAII type used by Schannel code and Window CA fetcher class:
 using QHCertStorePointer = std::unique_ptr<void, QHCertStoreDeleter>;
 
+struct QPCCertContextDeleter {
+    void operator()(PCCERT_CONTEXT context) const
+    {
+        CertFreeCertificateContext(context);
+    }
+};
+
+// A simple RAII type used by Schannel code
+using QPCCertContextPointer = std::unique_ptr<const CERT_CONTEXT, QPCCertContextDeleter>;
+
 QT_END_NAMESPACE
 
 #endif // QWINCRYPT_P_H

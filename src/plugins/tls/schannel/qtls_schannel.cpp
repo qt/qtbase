@@ -313,6 +313,11 @@ QTlsPrivate::X509DerReaderPtr QSchannelBackend::X509DerReader() const
     return QTlsPrivate::X509CertificateGeneric::certificatesFromDer;
 }
 
+QTlsPrivate::X509Pkcs12ReaderPtr QSchannelBackend::X509Pkcs12Reader() const
+{
+    return QTlsPrivate::X509CertificateSchannel::importPkcs12;
+}
+
 namespace {
 
 SecBuffer createSecBuffer(void *ptr, unsigned long length, unsigned long bufferType)

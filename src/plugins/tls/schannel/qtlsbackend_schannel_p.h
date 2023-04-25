@@ -57,6 +57,7 @@ private:
 
     QTlsPrivate::X509PemReaderPtr X509PemReader() const override;
     QTlsPrivate::X509DerReaderPtr X509DerReader() const override;
+    QTlsPrivate::X509Pkcs12ReaderPtr X509Pkcs12Reader() const override;
 
     static bool s_loadedCiphersAndCerts;
 };
