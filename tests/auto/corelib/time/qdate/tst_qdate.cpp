@@ -14,6 +14,10 @@
 
 using namespace QtPrivate::DateTimeConstants;
 
+#if defined(Q_OS_WIN) && !QT_CONFIG(icu)
+#  define USING_WIN_TZ
+#endif
+
 class tst_QDate : public QObject
 {
     Q_OBJECT
@@ -510,7 +514,12 @@ void tst_QDate::startOfDay_endOfDay_data()
         // The western Mexico time-zones skipped the first hour of 1970.
         QTest::newRow("BajaMexico")
             << QDate(1970, 1, 1) << QByteArray("America/Hermosillo")
-            << invalid << late;
+#ifdef USING_WIN_TZ // MS's TZ APIs lack data
+            << invalid
+#else
+            << QTime(1, 0)
+#endif
+            << late;
     }
     if (QTimeZone("America/Sao_Paulo").isValid()) {
         QTest::newRow("Brazil")
@@ -519,18 +528,21 @@ void tst_QDate::startOfDay_endOfDay_data()
         // Several South American zones coincide, see
         // tst_QDateTime::fromStringDateFormat(ISO 24:00 in DST).
     }
-#if QT_CONFIG(icu) || !defined(Q_OS_WIN) // MS's TZ APIs lack data
     if (QTimeZone("Europe/Sofia").isValid()) {
         // Several southern zones within EET (but not the northern ones) spent
         // part of the 1990s using midnight as spring transition. These included
         // Asia/{Beirut,Famagusta,Nicosia} and Europe/{Bucharest,Chisinau,Nicosia}.
         QTest::newRow("Sofia")
             << QDate(1994, 3, 27) << QByteArray("Europe/Sofia")
-            << QTime(1, 0) << late;
+#ifdef USING_WIN_TZ // MS's TZ APIs lack data
+            << invalid
+#else
+            << QTime(1, 0)
+#endif
+            << late;
         // Additionally, America/Scoresbysund, Atlantic/Azores,
         // Asia/{Choibalsan,Hovd,Tbilisi,Ulan_Bator,Ulaanbaatar} coincide.
     }
-#endif
     if (QTimeZone("Pacific/Kiritimati").isValid()) {
         QTest::newRow("Kiritimati")
             << QDate(1994, 12, 31) << QByteArray("Pacific/Kiritimati")
