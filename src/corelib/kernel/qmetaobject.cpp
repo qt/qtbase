@@ -4050,23 +4050,24 @@ const char *QMetaClassInfo::value() const
 */
 
 /*!
-    \macro QGenericArgument Q_ARG(Type, const Type &value)
+    \macro QMetaMethodArgument Q_ARG(Type, const Type &value)
     \relates QMetaObject
 
     This macro takes a \a Type and a \a value of that type and
-    returns a \l QGenericArgument object that can be passed to
-    QMetaObject::invokeMethod().
+    returns a QMetaMethodArgument, which can be passed to the template
+    QMetaObject::invokeMethod() with the \c {Args &&...} arguments.
 
     \sa Q_RETURN_ARG()
 */
 
 /*!
-    \macro QGenericReturnArgument Q_RETURN_ARG(Type, Type &value)
+    \macro QMetaMethodReturnArgument Q_RETURN_ARG(Type, Type &value)
     \relates QMetaObject
 
     This macro takes a \a Type and a non-const reference to a \a
-    value of that type and returns a QGenericReturnArgument object
-    that can be passed to QMetaObject::invokeMethod().
+    value of that type and returns a QMetaMethodReturnArgument, which can be
+    passed to the template QMetaObject::invokeMethod() with the \c {Args &&...}
+    arguments.
 
     \sa Q_ARG()
 */
