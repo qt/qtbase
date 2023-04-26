@@ -402,7 +402,7 @@ function(qt_internal_add_configure_time_executable target)
     set(timestamp_file "${target_binary_dir}/${target_binary}_timestamp")
     add_custom_command(OUTPUT "${target_binary_path}" "${timestamp_file}"
         COMMAND
-            ${CMAKE_COMMAND} --build "${target_binary_dir}" ${config_build_arg}
+            ${CMAKE_COMMAND} --build "${target_binary_dir}" --clean-first ${config_build_arg}
         COMMAND
             ${CMAKE_COMMAND} -E touch "${timestamp_file}"
         DEPENDS
