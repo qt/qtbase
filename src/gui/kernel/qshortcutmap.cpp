@@ -410,6 +410,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
     int result = QKeySequence::NoMatch;
     for (int i = d->newEntries.size()-1; i >= 0 ; --i) {
         QShortcutEntry entry(d->newEntries.at(i)); // needed for searching
+        qCDebug(lcShortcutMap) << "- checking entry" << entry.id << entry.keyseq;
         const auto itEnd = d->sequences.constEnd();
         auto it = std::lower_bound(d->sequences.constBegin(), itEnd, entry);
 
@@ -420,6 +421,8 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
                 break;
             tempRes = matches(entry.keyseq, (*it).keyseq);
             oneKSResult = qMax(oneKSResult, tempRes);
+            qCDebug(lcShortcutMap) << "  - matches returned" << tempRes << "for" << entry.keyseq << it->keyseq
+                << "- correctContext()?" << it->correctContext();
             if (tempRes != QKeySequence::NoMatch && (*it).correctContext()) {
                 if (tempRes == QKeySequence::ExactMatch) {
                     if ((*it).enabled)
