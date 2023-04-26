@@ -63,9 +63,9 @@ static inline QDate fixedDate(QCalendar::YearMonthDay parts)
 {
     if (parts.year) {
         parts.day = qMin(parts.day, QGregorianCalendar::monthLength(parts.month, parts.year));
-        qint64 jd;
-        if (QGregorianCalendar::julianFromParts(parts.year, parts.month, parts.day, &jd))
-            return QDate::fromJulianDay(jd);
+        const auto jd = QGregorianCalendar::julianFromParts(parts.year, parts.month, parts.day);
+        if (jd)
+            return QDate::fromJulianDay(*jd);
     }
     return QDate();
 }
@@ -437,9 +437,7 @@ QDate::QDate(int y, int m, int d)
 {
     static_assert(QDate::maxJd() == JulianDayMax);
     static_assert(QDate::minJd() == JulianDayMin);
-
-    if (!QGregorianCalendar::julianFromParts(y, m, d, &jd))
-        jd = nullJd();
+    jd = QGregorianCalendar::julianFromParts(y, m, d).value_or(nullJd());
 }
 
 QDate::QDate(int y, int m, int d, QCalendar cal)
@@ -698,9 +696,8 @@ int QDate::dayOfYear(QCalendar cal) const
 int QDate::dayOfYear() const
 {
     if (isValid()) {
-        qint64 first;
-        if (QGregorianCalendar::julianFromParts(year(), 1, 1, &first))
-            return jd - first + 1;
+        if (const auto first = QGregorianCalendar::julianFromParts(year(), 1, 1))
+            return jd - *first + 1;
     }
     return 0;
 }
@@ -1303,11 +1300,9 @@ QString QDate::toString(QStringView format, QCalendar cal) const
 */
 bool QDate::setDate(int year, int month, int day)
 {
-    if (QGregorianCalendar::julianFromParts(year, month, day, &jd))
-        return true;
-
-    jd = nullJd();
-    return false;
+    const auto maybe = QGregorianCalendar::julianFromParts(year, month, day);
+    jd = maybe.value_or(nullJd());
+    return bool(maybe);
 }
 
 /*!
@@ -2698,10 +2693,11 @@ QDateTimePrivate::ZoneState QDateTimePrivate::expressUtcAsLocal(qint64 utcMSecs)
     // dates might be right, and adjust by the number of days that was off:
     const qint64 jd = msecsToJulianDay(utcMSecs);
     const auto ymd = QGregorianCalendar::partsFromJulian(jd);
-    qint64 fakeJd, diffMillis, fakeUtc;
-    if (Q_UNLIKELY(!QGregorianCalendar::julianFromParts(systemTimeYearMatching(ymd.year),
-                                                        ymd.month, ymd.day, &fakeJd)
-                   || mul_overflow(jd - fakeJd, std::integral_constant<qint64, MSECS_PER_DAY>(),
+    qint64 diffMillis, fakeUtc;
+    const auto fakeJd = QGregorianCalendar::julianFromParts(systemTimeYearMatching(ymd.year),
+                                                            ymd.month, ymd.day);
+    if (Q_UNLIKELY(!fakeJd
+                   || mul_overflow(jd - *fakeJd, std::integral_constant<qint64, MSECS_PER_DAY>(),
                                    &diffMillis)
                    || sub_overflow(utcMSecs, diffMillis, &fakeUtc))) {
         return result;
@@ -2724,11 +2720,11 @@ static auto millisToWithinRange(qint64 millis)
         qint64 shifted = 0;
         bool good = false;
     } result;
-    qint64 jd = msecsToJulianDay(millis), fakeJd;
+    qint64 jd = msecsToJulianDay(millis);
     auto ymd = QGregorianCalendar::partsFromJulian(jd);
-    result.good = QGregorianCalendar::julianFromParts(systemTimeYearMatching(ymd.year),
-                                                      ymd.month, ymd.day, &fakeJd)
-        && !daysAndMillisOverflow(fakeJd - jd, millis, &result.shifted);
+    const auto fakeJd = QGregorianCalendar::julianFromParts(systemTimeYearMatching(ymd.year),
+                                                            ymd.month, ymd.day);
+    result.good = fakeJd && !daysAndMillisOverflow(*fakeJd - jd, millis, &result.shifted);
     return result;
 }
 

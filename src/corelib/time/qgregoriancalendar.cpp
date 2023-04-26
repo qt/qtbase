@@ -98,7 +98,10 @@ int QGregorianCalendar::weekDayOfJulian(qint64 jd)
 
 bool QGregorianCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) const
 {
-    return julianFromParts(year, month, day, jd);
+    const auto maybe = julianFromParts(year, month, day);
+    if (maybe)
+        *jd = *maybe;
+    return bool(maybe);
 }
 
 QCalendar::YearMonthDay QGregorianCalendar::julianDayToDate(qint64 jd) const
@@ -175,17 +178,15 @@ constexpr qint64 BaseJd = LeapDayGregorian1Bce;
 // Every four centures there are 97 leap years:
 constexpr unsigned FourCenturies = 400 * 365 + 97;
 
-bool QGregorianCalendar::julianFromParts(int year, int month, int day, qint64 *jd)
+std::optional<qint64> QGregorianCalendar::julianFromParts(int year, int month, int day)
 {
-    Q_ASSERT(jd);
     if (!validParts(year, month, day))
-        return false;
+        return std::nullopt;
 
     const auto yearDays = yearMonthToYearDays(year, month);
     const qint64 y = yearDays.year;
     const qint64 fromYear = 365 * y + qDiv<4>(y) - qDiv<100>(y) + qDiv<400>(y);
-    *jd = fromYear + yearDays.days + day + BaseJd ;
-    return true;
+    return fromYear + yearDays.days + day + BaseJd;
 }
 
 QCalendar::YearMonthDay QGregorianCalendar::partsFromJulian(qint64 jd)

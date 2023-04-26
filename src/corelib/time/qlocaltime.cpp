@@ -167,10 +167,8 @@ struct tm timeToTm(qint64 localDay, int secs, QDateTimePrivate::DaylightStatus d
 
 inline std::optional<qint64> tmToJd(const struct tm &date)
 {
-    qint64 jd;
     return QGregorianCalendar::julianFromParts(qYearFromTmYear(date.tm_year),
-                                               date.tm_mon + 1, date.tm_mday, &jd)
-        ? std::optional<qint64>(jd) : std::nullopt;
+                                               date.tm_mon + 1, date.tm_mday);
 }
 
 #define IC(N) std::integral_constant<qint64, N>()
@@ -374,9 +372,7 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
 SystemMillisRange computeSystemMillisRange()
 {
     // Assert this here, as this is called just once, in a static initialization.
-    [[maybe_unused]] qint64 epochJd;
-    Q_ASSERT(QGregorianCalendar::julianFromParts(1970, 1, 1, &epochJd)
-             && epochJd == JULIAN_DAY_FOR_EPOCH);
+    Q_ASSERT(QGregorianCalendar::julianFromParts(1970, 1, 1) == JULIAN_DAY_FOR_EPOCH);
 
     constexpr qint64 TIME_T_MAX = std::numeric_limits<time_t>::max();
     using Bounds = std::numeric_limits<qint64>;

@@ -368,13 +368,12 @@ void tst_QCalendar::gregory()
         // dateToJulianDay() and weekDayOfJulian():
         if (!year) // No year zero.
             continue;
-        qint64 first, last;
-        QVERIFY2(QGregorianCalendar::julianFromParts(year, 1, 1, &first),
-                 "Only year zero should lack a first day");
+        const auto first = QGregorianCalendar::julianFromParts(year, 1, 1);
+        QVERIFY2(first, "Only year zero should lack a first day");
         QCOMPARE(QGregorianCalendar::yearStartWeekDay(year),
-                 QGregorianCalendar::weekDayOfJulian(first));
-        QVERIFY2(QGregorianCalendar::julianFromParts(year, 12, 31, &last),
-                 "Only year zero should lack a last day");
+                 QGregorianCalendar::weekDayOfJulian(*first));
+        const auto last = QGregorianCalendar::julianFromParts(year, 12, 31);
+        QVERIFY2(last, "Only year zero should lack a last day");
 
         const int lastTwo = (year + (year < 0 ? 1 : 0)) % 100 + (year < -1 ? 100 : 0);
         const QDate probe(year, lastTwo && lastTwo <= 12 ? lastTwo : 8,
@@ -392,13 +391,14 @@ void tst_QCalendar::gregory()
             if (year > 0 && lastTwo > 31)
                 QCOMPARE(match % 100, lastTwo);
             // Its first and last days of the year match those of year:
-            qint64 day;
-            QVERIFY(QGregorianCalendar::julianFromParts(match, 1, 1, &day));
-            QCOMPARE(QGregorianCalendar::weekDayOfJulian(day),
-                     QGregorianCalendar::weekDayOfJulian(first));
-            QVERIFY(QGregorianCalendar::julianFromParts(match, 12, 31, &day));
-            QCOMPARE(QGregorianCalendar::weekDayOfJulian(day),
-                     QGregorianCalendar::weekDayOfJulian(last));
+            auto day = QGregorianCalendar::julianFromParts(match, 1, 1);
+            QVERIFY(day);
+            QCOMPARE(QGregorianCalendar::weekDayOfJulian(*day),
+                     QGregorianCalendar::weekDayOfJulian(*first));
+            day = QGregorianCalendar::julianFromParts(match, 12, 31);
+            QVERIFY(day);
+            QCOMPARE(QGregorianCalendar::weekDayOfJulian(*day),
+                     QGregorianCalendar::weekDayOfJulian(*last));
         }
     }
 }

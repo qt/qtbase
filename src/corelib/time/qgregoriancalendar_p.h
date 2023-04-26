@@ -17,6 +17,8 @@
 
 #include "qromancalendar_p.h"
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QGregorianCalendar : public QRomanCalendar
@@ -45,7 +47,7 @@ public:
     static int monthLength(int month, int year);
     static bool validParts(int year, int month, int day);
     static QCalendar::YearMonthDay partsFromJulian(qint64 jd);
-    static bool julianFromParts(int year, int month, int day, qint64 *jd);
+    static std::optional<qint64> julianFromParts(int year, int month, int day);
     // Used internally:
     static int yearStartWeekDay(int year);
     static int yearSharingWeekDays(QDate date);
