@@ -622,12 +622,18 @@ void tst_QDate::startOfDay_endOfDay()
         QCOMPARE(date.addDays(-1).endOfDay(zone).addMSecs(1), front);
 
     if (start.isValid()) {
+        QVERIFY(front.isValid());
         QCOMPARE(front.date(), date);
         UNLESSKLUDGE(IgnoreStart) QCOMPARE(front.time(), start);
+    } else UNLESSKLUDGE(IgnoreStart) {
+        QVERIFY(!front.isValid());
     }
     if (end.isValid()) {
+        QVERIFY(back.isValid());
         QCOMPARE(back.date(), date);
         UNLESSKLUDGE(IgnoreEnd) QCOMPARE(back.time(), end);
+    } else UNLESSKLUDGE(IgnoreEnd) {
+        QVERIFY(!back.isValid());
     }
 #undef UNLESSKLUDGE
 }
