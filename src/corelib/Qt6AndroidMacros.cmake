@@ -837,6 +837,9 @@ function(_qt_internal_add_android_deployment_list_property out_var json_key)
         set(add_quote_genex
             "$<$<BOOL:${property_genex}>:\">"
         )
+
+        # Add comma only if next property genex contains non-empty value.
+        set(add_comma_genex "$<$<BOOL:${property_genex}>:${add_comma_genex}>")
         string(JOIN "" list_join_genex
             "${list_join_genex}"
             "${add_comma_genex}${add_quote_genex}"
