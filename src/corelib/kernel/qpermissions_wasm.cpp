@@ -133,9 +133,6 @@ namespace
         qstdweb::PromiseCallbacks queryCallbacks;
         queryCallbacks.thenFunc = [device, cb](val mediaStream)
         {
-            val tracks = mediaStream.call<val>("getTracks");
-            if (!tracks.isUndefined() && !tracks.isNull())
-                tracks[0].call<void>("stop");
             updatePermission(device, wapiGranted, cb);
         };
         queryCallbacks.catchFunc = [device, cb](val error)
