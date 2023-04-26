@@ -19,7 +19,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static void report_error(int code, const char *where, const char *what)
+static void qt_report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
         qErrnoWarning(code, "%s: %s failure", where, what);
@@ -27,13 +27,13 @@ static void report_error(int code, const char *where, const char *what)
 
 QMutexPrivate::QMutexPrivate()
 {
-    report_error(sem_init(&semaphore, 0, 0), "QMutex", "sem_init");
+    qt_report_error(sem_init(&semaphore, 0, 0), "QMutex", "sem_init");
 }
 
 QMutexPrivate::~QMutexPrivate()
 {
 
-    report_error(sem_destroy(&semaphore), "QMutex", "sem_destroy");
+    qt_report_error(sem_destroy(&semaphore), "QMutex", "sem_destroy");
 }
 
 bool QMutexPrivate::wait(QDeadlineTimer timeout)
@@ -43,7 +43,7 @@ bool QMutexPrivate::wait(QDeadlineTimer timeout)
         do {
             errorCode = sem_wait(&semaphore);
         } while (errorCode && errno == EINTR);
-        report_error(errorCode, "QMutex::lock()", "sem_wait");
+        qt_report_error(errorCode, "QMutex::lock()", "sem_wait");
     } else {
         do {
             auto tp = timeout.deadline<std::chrono::system_clock>();
@@ -53,14 +53,14 @@ bool QMutexPrivate::wait(QDeadlineTimer timeout)
 
         if (errorCode && errno == ETIMEDOUT)
             return false;
-        report_error(errorCode, "QMutex::lock()", "sem_timedwait");
+        qt_report_error(errorCode, "QMutex::lock()", "sem_timedwait");
     }
     return true;
 }
 
 void QMutexPrivate::wakeUp() noexcept
 {
-    report_error(sem_post(&semaphore), "QMutex::unlock", "sem_post");
+    qt_report_error(sem_post(&semaphore), "QMutex::unlock", "sem_post");
 }
 
 QT_END_NAMESPACE

@@ -674,10 +674,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX
     SOURCES
         thread/qwaitcondition_unix.cpp
-    NO_UNITY_BUILD_SOURCES
-        thread/qwaitcondition_unix.cpp
-        # Temporary exclusion until this, https://codereview.qt-project.org/c/qt/qtbase/+/472013,
-        # or this, https://codereview.qt-project.org/c/qt/qtbase/+/471184 addresses the issue.
 )
 
 qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_thread

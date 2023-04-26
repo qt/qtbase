@@ -46,7 +46,7 @@ static constexpr clockid_t SteadyClockClockId =
 #endif
         ;
 
-static void report_error(int code, const char *where, const char *what)
+static void qt_report_pthread_error(int code, const char *where, const char *what)
 {
     if (code != 0)
         qErrnoWarning(code, "%s: %s failure", where, what);
@@ -66,7 +66,7 @@ static void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
         pthread_condattr_setclock(&condattr, SteadyClockClockId);
 #endif
 
-    report_error(pthread_cond_init(cond, attrp), where, "cv init");
+    qt_report_pthread_error(pthread_cond_init(cond, attrp), where, "cv init");
 }
 
 static void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
@@ -115,10 +115,11 @@ public:
             Q_ASSERT_X(wakeups > 0, "QWaitCondition::wait", "internal error (wakeups)");
             --wakeups;
         }
-        report_error(pthread_mutex_unlock(&mutex), "QWaitCondition::wait()", "mutex unlock");
+        qt_report_pthread_error(pthread_mutex_unlock(&mutex), "QWaitCondition::wait()",
+                                "mutex unlock");
 
         if (code && code != ETIMEDOUT)
-            report_error(code, "QWaitCondition::wait()", "cv wait");
+            qt_report_pthread_error(code, "QWaitCondition::wait()", "cv wait");
 
         return (code == 0);
     }
@@ -127,32 +128,38 @@ public:
 QWaitCondition::QWaitCondition()
 {
     d = new QWaitConditionPrivate;
-    report_error(pthread_mutex_init(&d->mutex, nullptr), "QWaitCondition", "mutex init");
+    qt_report_pthread_error(pthread_mutex_init(&d->mutex, nullptr), "QWaitCondition", "mutex init");
     qt_initialize_pthread_cond(&d->cond, "QWaitCondition");
     d->waiters = d->wakeups = 0;
 }
 
 QWaitCondition::~QWaitCondition()
 {
-    report_error(pthread_cond_destroy(&d->cond), "QWaitCondition", "cv destroy");
-    report_error(pthread_mutex_destroy(&d->mutex), "QWaitCondition", "mutex destroy");
+    qt_report_pthread_error(pthread_cond_destroy(&d->cond), "QWaitCondition", "cv destroy");
+    qt_report_pthread_error(pthread_mutex_destroy(&d->mutex), "QWaitCondition", "mutex destroy");
     delete d;
 }
 
 void QWaitCondition::wakeOne()
 {
-    report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wakeOne()", "mutex lock");
+    qt_report_pthread_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wakeOne()",
+                            "mutex lock");
     d->wakeups = qMin(d->wakeups + 1, d->waiters);
-    report_error(pthread_cond_signal(&d->cond), "QWaitCondition::wakeOne()", "cv signal");
-    report_error(pthread_mutex_unlock(&d->mutex), "QWaitCondition::wakeOne()", "mutex unlock");
+    qt_report_pthread_error(pthread_cond_signal(&d->cond), "QWaitCondition::wakeOne()",
+                            "cv signal");
+    qt_report_pthread_error(pthread_mutex_unlock(&d->mutex), "QWaitCondition::wakeOne()",
+                            "mutex unlock");
 }
 
 void QWaitCondition::wakeAll()
 {
-    report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wakeAll()", "mutex lock");
+    qt_report_pthread_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wakeAll()",
+                            "mutex lock");
     d->wakeups = d->waiters;
-    report_error(pthread_cond_broadcast(&d->cond), "QWaitCondition::wakeAll()", "cv broadcast");
-    report_error(pthread_mutex_unlock(&d->mutex), "QWaitCondition::wakeAll()", "mutex unlock");
+    qt_report_pthread_error(pthread_cond_broadcast(&d->cond), "QWaitCondition::wakeAll()",
+                            "cv broadcast");
+    qt_report_pthread_error(pthread_mutex_unlock(&d->mutex), "QWaitCondition::wakeAll()",
+                            "mutex unlock");
 }
 
 bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
@@ -167,7 +174,7 @@ bool QWaitCondition::wait(QMutex *mutex, QDeadlineTimer deadline)
     if (!mutex)
         return false;
 
-    report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
+    qt_report_pthread_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
     ++d->waiters;
     mutex->unlock();
 
@@ -199,7 +206,7 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, QDeadlineTimer deadline
         return false;
     }
 
-    report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
+    qt_report_pthread_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
     ++d->waiters;
 
     readWriteLock->unlock();
