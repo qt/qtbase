@@ -3062,7 +3062,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             bool eventAccepted = touchEvent->isAccepted();
             bool acceptTouchEvents = w->testAttribute(Qt::WA_AcceptTouchEvents);
 
-            if (acceptTouchEvents && e->spontaneous()) {
+            if (acceptTouchEvents && e->spontaneous()
+             && touchEvent->device()->type() != QInputDevice::DeviceType::TouchPad) {
                 const QPoint localPos = touchEvent->points()[0].position().toPoint();
                 QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, localPos);
             }
