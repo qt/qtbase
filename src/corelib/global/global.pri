@@ -67,7 +67,10 @@ unset(f16c_cxx)
 
 VERSIONTAGGING_SOURCES = global/qversiontagging.cpp
 
-darwin: SOURCES += global/qoperatingsystemversion_darwin.mm
+darwin {
+    SOURCES += global/qoperatingsystemversion_darwin.mm
+    LIBS += -framework IOKit
+}
 win32 {
     SOURCES += global/qoperatingsystemversion_win.cpp
     HEADERS += global/qoperatingsystemversion_win_p.h
