@@ -109,7 +109,8 @@
     Constructs an array with the contents in the iterator range [\a first, \a last).
 
     This constructor only participates in overload resolution if
-    \c InputIterator models the \c std::input_iterator concept.
+    \c InputIterator meets the requirements of an
+    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
 
     The value type of \c InputIterator must be convertible to \c T.
 */
@@ -1016,7 +1017,9 @@
     number of elements in the range exceeds the capacity of the container.
 
     This function overload only participates in overload resolution if
-    \c InputIterator models the \c std::input_iterator concept.
+    \c InputIterator meets the requirements of an
+    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
+
     The behavior is undefined if either argument is an iterator into *this.
 */
 

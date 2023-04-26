@@ -796,8 +796,8 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *arr
         ++first;
     }
 
-    qsizetype n = 0;
-    if constexpr (IsFwdIt && noexcept(T(*first))) {
+    qsizetype n;
+    if constexpr (IsFwdIt) {
         dst = std::uninitialized_copy(first, last, dst);
         n = dst - begin();
         if (n > s) // otherwise: readjust 's' in erase() later
