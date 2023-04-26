@@ -252,7 +252,7 @@ def testEnv(testname,
         "watchdog": { "QTEST_FUNCTION_TIMEOUT": "100" },
         },
             # Must match tst_Selftests::runSubTest_data():
-            crashers = ("assert", "blacklisted", "crashes", "crashedterminate",
+            crashers = ("assert", "crashes", "crashedterminate",
                         "exceptionthrow", "faildatatype", "failfetchtype",
                         "fetchbogus", "silent", "watchdog")):
     """Determine the environment in which to run a test."""

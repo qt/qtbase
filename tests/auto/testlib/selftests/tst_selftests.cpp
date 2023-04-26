@@ -765,8 +765,7 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
         return;
 
 #ifdef Q_CC_MINGW
-    if (test == "blacklisted" // calls qFatal()
-        || test == "silent") // calls qFatal()
+    if (test == "silent") // calls qFatal()
         return;
 #endif
 
@@ -787,7 +786,6 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
     // QEMU outputs to stderr about uncaught signals
     if (QTestPrivate::isRunningArmOnX86() &&
         (test == "assert"
-         || test == "blacklisted"
          || test == "crashes"
          || test == "faildatatype"
          || test == "failfetchtype"
@@ -980,8 +978,7 @@ TestProcessResult runTestProcess(const QString &test, const QStringList &argumen
     const bool expectedCrash = test == "assert" || test == "exceptionthrow"
         || test == "fetchbogus" || test == "crashedterminate"
         || test == "faildatatype" || test == "failfetchtype"
-        || test == "crashes" || test == "silent"
-        || test == "blacklisted" || test == "watchdog";
+        || test == "crashes" || test == "silent" || test == "watchdog";
 
     if (expectedCrash) {
         environment.insert("QTEST_DISABLE_CORE_DUMP", "1");
