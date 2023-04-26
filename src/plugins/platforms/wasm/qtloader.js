@@ -165,26 +165,8 @@ function _QtLoader(config)
         while (element.firstChild) element.removeChild(element.firstChild);
     }
 
-    function createCanvas() {
-        var canvas = document.createElement("canvas");
-        canvas.className = "QtCanvas";
-        canvas.style.height = "100%";
-        canvas.style.width = "100%";
-
-        // Set contentEditable in order to enable clipboard events; hide the resulting focus frame.
-        canvas.contentEditable = true;
-        canvas.style.outline = "0px solid transparent";
-        canvas.style.caretColor = "transparent";
-        canvas.style.cursor = "default";
-
-        return canvas;
-    }
-
-    // Set default state handler functions and create canvases if needed
+    // Set default state handler functions
     if (config.containerElements !== undefined) {
-
-        config.canvasElements = config.containerElements.map(createCanvas);
-
         config.showError = config.showError || function(errorText, container) {
             removeChildren(container);
             var errorTextElement = document.createElement("text");
@@ -197,7 +179,7 @@ function _QtLoader(config)
             removeChildren(container);
             var loadingText = document.createElement("text");
             loadingText.className = "QtLoading"
-            loadingText.innerHTML = '<p><center> ${loadingState}...</center><p>';
+            loadingText.innerHTML = "<p><center>" + loadingState + "</center><p>";
             return loadingText;
         };
 
@@ -220,6 +202,8 @@ function _QtLoader(config)
             errorElement.innerHTML = errorHtml;
             return errorElement;
         }
+    } else {
+        config.containerElements = config.canvasElements
     }
 
     config.restartMode = config.restartMode || "DoNotRestart";
@@ -432,7 +416,7 @@ function _QtLoader(config)
 
         self.moduleConfig.mainScriptUrlOrBlob = new Blob([emscriptenModuleSource], {type: 'text/javascript'});
 
-        self.qtContainerElements = config.canvasElements;
+        self.qtContainerElements = config.containerElements;
 
         config.restart = function() {
 
@@ -486,7 +470,8 @@ function _QtLoader(config)
 
         for (container of config.containerElements) {
             var loaderElement = config.showLoader(self.loaderSubState, container);
-            container.appendChild(loaderElement);
+            if (loaderElement !== undefined)
+                container.appendChild(loaderElement);
         }
     }
 
@@ -499,9 +484,10 @@ function _QtLoader(config)
 
         for (var i = 0; i < config.containerElements.length; ++i) {
             var container = config.containerElements[i];
-            var canvas = config.canvasElements[i];
+            var canvas = undefined;
+            if (config.canvasElements !== undefined)
+                canvas = config.canvasElements[i];
             config.showCanvas(canvas, container);
-            container.appendChild(canvas);
         }
     }
 
