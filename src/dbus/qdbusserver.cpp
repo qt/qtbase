@@ -39,6 +39,8 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
         return;
 
     emit instance->serverRequested(address, this);
+    Q_ASSERT(d != nullptr);
+
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
                      this, SLOT(_q_newConnection(QDBusConnectionPrivate*)), Qt::QueuedConnection);
 }
@@ -66,6 +68,8 @@ QDBusServer::QDBusServer(QObject *parent)
         return;
 
     emit instance->serverRequested(address, this);
+    Q_ASSERT(d != nullptr);
+
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
                      this, SLOT(_q_newConnection(QDBusConnectionPrivate*)), Qt::QueuedConnection);
 }
@@ -75,17 +79,20 @@ QDBusServer::QDBusServer(QObject *parent)
 */
 QDBusServer::~QDBusServer()
 {
-    QMutex *managerMutex = nullptr;
-    if (QDBusConnectionManager::instance())
-        managerMutex = &QDBusConnectionManager::instance()->mutex;
-    QMutexLocker locker(managerMutex);
+    if (!d)
+        return;
+
+    auto manager = QDBusConnectionManager::instance();
+    if (!manager)
+        return;
+
+    QMutexLocker locker(&manager->mutex);
     QWriteLocker writeLocker(&d->lock);
-    if (QDBusConnectionManager::instance()) {
-        for (const QString &name : std::as_const(d->serverConnectionNames))
-            QDBusConnectionManager::instance()->removeConnection(name);
-        d->serverConnectionNames.clear();
-        locker.unlock();
-    }
+    for (const QString &name : std::as_const(d->serverConnectionNames))
+        manager->removeConnection(name);
+    d->serverConnectionNames.clear();
+    locker.unlock();
+
     d->serverObject = nullptr;
     d->ref.storeRelaxed(0);
     d->deleteLater();
@@ -138,6 +145,9 @@ QString QDBusServer::address() const
 */
 void QDBusServer::setAnonymousAuthenticationAllowed(bool value)
 {
+    if (!d)
+        return;
+
     d->anonymousAuthenticationAllowed = value;
 }
 
@@ -150,6 +160,9 @@ void QDBusServer::setAnonymousAuthenticationAllowed(bool value)
 */
 bool QDBusServer::isAnonymousAuthenticationAllowed() const
 {
+    if (!d)
+        return false;
+
     return d->anonymousAuthenticationAllowed;
 }
 
