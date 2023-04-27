@@ -8434,6 +8434,7 @@ void tst_QObject::asyncCallbackHelper()
     static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::callback0));
     static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::staticCallback0));
     static_assert(compiles<AsyncCaller::Prototype0>(lambda0));
+    static_assert(compiles<AsyncCaller::Prototype0>(moveOnlyLambda));
     static_assert(compiles<AsyncCaller::Prototype0>(freeFunction0));
     static_assert(compiles<AsyncCaller::Prototype0>(functor0));
 
@@ -8448,6 +8449,7 @@ void tst_QObject::asyncCallbackHelper()
     static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::callback1));
     static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::staticCallback1));
     static_assert(compiles<AsyncCaller::Prototype1>(lambda1));
+    static_assert(compiles<AsyncCaller::Prototype1>(moveOnlyLambda));
     static_assert(compiles<AsyncCaller::Prototype1>(constLambda));
     static_assert(compiles<AsyncCaller::Prototype1>(freeFunction1));
     static_assert(compiles<AsyncCaller::Prototype1>(functor1));
@@ -8460,11 +8462,6 @@ void tst_QObject::asyncCallbackHelper()
     static_assert(!compiles<AsyncCaller::Prototype0>(lambda2));
     static_assert(!compiles<AsyncCaller::Prototype0>(freeFunction1));
     static_assert(!compiles<AsyncCaller::Prototype0>(functor1));
-
-    // move-only functor - should work, but doesn't because QFunctorSlotObject requires
-    // the functor to be of a copyable type!
-    static_assert(!compiles<AsyncCaller::Prototype0>(moveOnlyLambda));
-    static_assert(!compiles<AsyncCaller::Prototype1>(moveOnlyLambda));
 
     // wrong parameter type
     static_assert(!compiles<AsyncCaller::Prototype1>(&AsyncCaller::callbackInt));
@@ -8483,7 +8480,7 @@ void tst_QObject::asyncCallbackHelper()
     QVERIFY(caller.callMe0(&caller, &AsyncCaller::staticCallback0));
     QVERIFY(caller.callMe0(&caller, lambda0));
     QVERIFY(caller.callMe0(&caller, freeFunction0));
-//    QVERIFY(caller.callMe0(&caller, moveOnlyLambda));
+    QVERIFY(caller.callMe0(&caller, moveOnlyLambda));
 
     QVERIFY(caller.callMe1(&caller, &AsyncCaller::callback1));
     QVERIFY(caller.callMe1(&caller, &AsyncCaller::staticCallback1));
@@ -8495,7 +8492,7 @@ void tst_QObject::asyncCallbackHelper()
     QVERIFY(caller.callMe0(&AsyncCaller::staticCallback0));
     QVERIFY(caller.callMe0(lambda0));
     QVERIFY(caller.callMe0(freeFunction0));
-//    QVERIFY(caller.callMe0(moveOnlyLambda));
+    QVERIFY(caller.callMe0(moveOnlyLambda));
 
     QVERIFY(caller.callMe1(&AsyncCaller::staticCallback1));
     QVERIFY(caller.callMe1(lambda1));

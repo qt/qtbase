@@ -439,7 +439,7 @@ namespace QtPrivate {
             }
         }
     public:
-        explicit QFunctorSlotObject(Func f) : QSlotObjectBase(&impl), function(std::move(f)) {}
+        explicit QFunctorSlotObject(Func &&f) : QSlotObjectBase(&impl), function(std::forward<Func>(f)) {}
     };
 
     // typedefs for readability for when there are no parameters
@@ -492,7 +492,7 @@ namespace QtPrivate {
     template <typename Prototype, typename Functor>
     static constexpr std::enable_if_t<QtPrivate::countMatchingArguments<Prototype, Functor>() >= 0,
         QtPrivate::QSlotObjectBase *>
-    makeSlotObject(Functor func)
+    makeSlotObject(Functor &&func)
     {
         using ExpectedSignature = QtPrivate::FunctionPointer<Prototype>;
         using ExpectedArguments = typename ExpectedSignature::Arguments;
@@ -503,13 +503,13 @@ namespace QtPrivate {
 
         if constexpr (QtPrivate::FunctionPointer<Functor>::IsPointerToMemberFunction) {
             using ActualArguments = typename ActualSignature::Arguments;
-            return new QtPrivate::QSlotObject<Functor, ActualArguments, void>(func);
+            return new QtPrivate::QSlotObject<Functor, ActualArguments, void>(std::forward<Functor>(func));
         } else {
             constexpr int MatchingArgumentCount = QtPrivate::countMatchingArguments<Prototype, Functor>();
             using ActualArguments = typename QtPrivate::List_Left<ExpectedArguments, MatchingArgumentCount>::Value;
 
             return new QtPrivate::QFunctorSlotObject<Functor, MatchingArgumentCount,
-                                                     ActualArguments, void>(std::move(func));
+                                                     ActualArguments, void>(std::forward<Functor>(func));
         }
     }
 }
