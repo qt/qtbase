@@ -15,10 +15,13 @@ file(GENERATE OUTPUT ${deploy_script} CONTENT "
 
 set(QT_DEPLOY_PLUGINS_DIR \"mypluginsdir\")
 set(QT_DEPLOY_QML_DIR \"myqmldir\")
+set(QT_DEPLOY_TRANSLATIONS_DIR \"i18n\")
 
 include(\"${QT_DEPLOY_SUPPORT}\")
 
 qt_deploy_runtime_dependencies(
     EXECUTABLE \"\${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:MyApp>\"
 )")
+
+install(SCRIPT ${deploy_script})
 \endcode
