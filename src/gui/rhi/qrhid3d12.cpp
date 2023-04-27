@@ -1,8 +1,8 @@
-// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qrhid3d12_p_p.h"
-#include "qshader_p.h"
+#include "qrhid3d12_p.h"
+#include "qshader.h"
 #include <QWindow>
 #include <qmath.h>
 #include <private/qsystemlibrary_p.h>
@@ -29,6 +29,9 @@ QT_BEGIN_NAMESPACE
     \class QRhiD3D12InitParams
     \inmodule QtGui
     \brief Direct3D 12 specific initialization parameters.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
 
     A D3D12-based QRhi needs no special parameters for initialization. If
     desired, enableDebugLayer can be set to \c true to enable the Direct3D
@@ -63,14 +66,44 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
+    \variable QRhiD3D12InitParams::enableDebugLayer
+
+    When set to true, the debug layer is enabled, if installed and available.
+    The default value is false.
+*/
+
+/*!
     \class QRhiD3D12NativeHandles
     \inmodule QtGui
     \brief Holds the D3D12 device used by the QRhi.
 
     \note The class uses \c{void *} as the type since including the COM-based
-    \c{d3d12.h} headers is not acceptable here. The actual type is
-    \c{ID3D12Device *}.
+    \c{d3d12.h} headers is not acceptable here. The actual types are
+    \c{ID3D12Device *} and \c{ID3D12CommandQueue *}.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
+
+/*!
+    \variable QRhiD3D12NativeHandles::dev
+*/
+
+/*!
+    \variable QRhiD3D12NativeHandles::minimumFeatureLevel
+*/
+
+/*!
+    \variable QRhiD3D12NativeHandles::adapterLuidLow
+*/
+
+/*!
+    \variable QRhiD3D12NativeHandles::adapterLuidHigh
+*/
+
+/*!
+    \variable QRhiD3D12NativeHandles::commandQueue
+*/
 
 /*!
     \class QRhiD3D12CommandBufferNativeHandles
@@ -82,7 +115,14 @@ QT_BEGIN_NAMESPACE
     \l{QRhi::beginFrame()}{beginFrame()} - \l{QRhi::endFrame()}{endFrame()} or
     \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
     \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} pair.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
+
+/*!
+    \variable QRhiD3D12CommandBufferNativeHandles::commandList
+*/
 
 // https://learn.microsoft.com/en-us/windows/win32/direct3d12/hardware-feature-levels
 static const D3D_FEATURE_LEVEL MIN_FEATURE_LEVEL = D3D_FEATURE_LEVEL_11_0;

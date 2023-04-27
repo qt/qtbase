@@ -19,7 +19,7 @@
 #include <QtGui/qwindow.h>
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qoffscreensurface.h>
-#include <QtGui/private/qrhi_p.h>
+#include <rhi/qrhi.h>
 #include <qpa/qplatformbackingstore.h>
 
 QT_BEGIN_NAMESPACE

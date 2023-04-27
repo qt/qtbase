@@ -73,6 +73,7 @@
 );
 
 @qpa_headers = ( qr/^qplatform/, qr/^qwindowsystem/ );
+@rhi_headers = ( "qrhi.h", "qrhi_platform.h", "qshader.h", "qshaderdescription.h");
 my @internal_zlib_headers = ( "crc32.h", "deflate.h", "gzguts.h", "inffast.h", "inffixed.h", "inflate.h", "inftrees.h", "trees.h", "zutil.h" );
 my @zlib_headers = ( "zconf.h", "zlib.h" );
 @ignore_headers = ( @internal_zlib_headers );

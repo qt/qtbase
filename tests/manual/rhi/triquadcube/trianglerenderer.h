@@ -4,7 +4,7 @@
 #ifndef TRIANGLERENDERER_H
 #define TRIANGLERENDERER_H
 
-#include <QtGui/private/qrhi_p.h>
+#include <rhi/qrhi.h>
 
 class TriangleRenderer
 {

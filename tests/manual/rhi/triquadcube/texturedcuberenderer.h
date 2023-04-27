@@ -4,7 +4,7 @@
 #ifndef TEXTUREDCUBERENDERER_H
 #define TEXTUREDCUBERENDERER_H
 
-#include <QtGui/private/qrhi_p.h>
+#include <rhi/qrhi.h>
 
 class TexturedCubeRenderer
 {

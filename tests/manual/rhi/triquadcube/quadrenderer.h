@@ -4,7 +4,7 @@
 #ifndef QUADRENDERER_H
 #define QUADRENDERER_H
 
-#include <QtGui/private/qrhi_p.h>
+#include <rhi/qrhi.h>
 
 class QuadRenderer
 {

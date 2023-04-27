@@ -6,7 +6,7 @@
 #include <QtGui/QPainter>
 #include <qpa/qplatformbackingstore.h>
 #include <private/qwindow_p.h>
-#include <private/qrhi_p.h>
+#include <rhi/qrhi.h>
 
 #include "qopenglcompositorbackingstore_p.h"
 #include "qopenglcompositor_p.h"

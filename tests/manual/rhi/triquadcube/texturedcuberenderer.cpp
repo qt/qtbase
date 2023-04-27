@@ -3,7 +3,7 @@
 
 #include "texturedcuberenderer.h"
 #include <QFile>
-#include <QtGui/private/qshader_p.h>
+#include <rhi/qshader.h>
 
 #include "../shared/cube.h"
 

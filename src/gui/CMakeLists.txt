@@ -212,14 +212,10 @@ qt_internal_add_module(Gui
         painting/qtriangulatingstroker.cpp painting/qtriangulatingstroker_p.h
         painting/qtriangulator.cpp painting/qtriangulator_p.h
         painting/qvectorpath_p.h
-        rhi/qrhi.cpp rhi/qrhi_p.h
-        rhi/qrhi_p_p.h
+        rhi/qrhi.cpp rhi/qrhi.h rhi/qrhi_platform.h rhi/qrhi_p.h
         rhi/qrhinull.cpp rhi/qrhinull_p.h
-        rhi/qrhinull_p_p.h
-        rhi/qshader.cpp rhi/qshader_p.h
-        rhi/qshader_p_p.h
-        rhi/qshaderdescription.cpp rhi/qshaderdescription_p.h
-        rhi/qshaderdescription_p_p.h
+        rhi/qshader.cpp rhi/qshader.h rhi/qshader_p.h
+        rhi/qshaderdescription.cpp rhi/qshaderdescription.h rhi/qshaderdescription_p.h
         text/qabstracttextdocumentlayout.cpp text/qabstracttextdocumentlayout.h text/qabstracttextdocumentlayout_p.h
         text/qdistancefield.cpp text/qdistancefield_p.h
         text/qfont.cpp text/qfont.h text/qfont_p.h
@@ -283,6 +279,8 @@ qt_internal_add_module(Gui
     GENERATE_CPP_EXPORTS
     QPA_HEADER_FILTERS
         "(^|/)qplatform.+\\.h$|(^|/)qwindowsystem.+\\.h$"
+    RHI_HEADER_FILTERS
+        "(^|/)qrhi\\.h$|(^|/)qrhi_platform\\.h$|(^|/)qshader\\.h$|(^|/)qshaderdescription\\.h$"
 )
 
 # Resources:
@@ -358,7 +356,6 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglfunctions.cpp
         opengl/qopenglprogrambinarycache.cpp opengl/qopenglprogrambinarycache_p.h
         rhi/qrhigles2.cpp rhi/qrhigles2_p.h
-        rhi/qrhigles2_p_p.h
 )
 
 qt_internal_extend_target(Gui CONDITION MACOS
@@ -409,10 +406,8 @@ qt_internal_extend_target(Gui CONDITION WIN32
         platform/windows/qwindowsmimeconverter.h platform/windows/qwindowsmimeconverter.cpp
         platform/windows/qwindowsnativeinterface.cpp
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
-        rhi/qrhid3d11_p_p.h
         rhi/vs_test_p.h
         rhi/qrhid3d12.cpp rhi/qrhid3d12_p.h
-        rhi/qrhid3d12_p_p.h
         rhi/cs_mipmap_p.h
         ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
         ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
@@ -832,8 +827,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_filesystemmodel
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
-        rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
-        rhi/qrhivulkanext_p.h
+        rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h rhi/qrhivulkanext_p.h
         vulkan/qbasicvulkanplatforminstance.cpp vulkan/qbasicvulkanplatforminstance_p.h
         vulkan/qplatformvulkaninstance.cpp vulkan/qplatformvulkaninstance.h
         vulkan/qvulkandefaultinstance.cpp vulkan/qvulkandefaultinstance_p.h
@@ -969,7 +963,6 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_xkbcommon AND UNIX
 qt_internal_extend_target(Gui CONDITION IOS OR MACOS
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h
-        rhi/qrhimetal_p_p.h
     PUBLIC_LIBRARIES
         ${FWMetal}
 )

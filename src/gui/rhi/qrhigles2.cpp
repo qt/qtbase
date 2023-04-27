@@ -1,7 +1,7 @@
-// Copyright (C) 2021 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qrhigles2_p_p.h"
+#include "qrhigles2_p.h"
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QtCore/qmap.h>
@@ -27,9 +27,12 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiGles2InitParams
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief OpenGL specific initialization parameters.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
 
     An OpenGL-based QRhi needs an already created QSurface that can be used in
     combination with QOpenGLContext. Most commonly, this is a QOffscreenSurface
@@ -104,11 +107,49 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
+    \variable QRhiGles2InitParams::format
+
+    The QSurfaceFormat, initialized to QSurfaceFormat::defaultFormat() by default.
+*/
+
+/*!
+    \variable QRhiGles2InitParams::fallbackSurface
+
+    A QSurface compatible with \l format. Typically a QOffscreenSurface.
+    Providing this is mandatory. Be aware of the threading implications: a
+    QOffscreenSurface, like QWindow, must only ever be created and destroyed on
+    the main (gui) thread, even if the QRhi is created and operates on another
+    thread.
+*/
+
+/*!
+    \variable QRhiGles2InitParams::window
+
+    Optional, but setting it is recommended when targeting a QWindow with the
+    QRhi.
+*/
+
+/*!
+    \variable QRhiGles2InitParams::shareContext
+
+    Optional, the QOpenGLContext to share resource with. QRhi creates its own
+    context, and setting this member to a valid QOpenGLContext leads to calling
+    \l{QOpenGLContext::setShareContext()}{setShareContext()} with it.
+*/
+
+/*!
     \class QRhiGles2NativeHandles
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief Holds the OpenGL context used by the QRhi.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
+
+/*!
+    \variable QRhiGles2NativeHandles::context
+*/
 
 #ifndef GL_BGRA
 #define GL_BGRA                           0x80E1

@@ -5,8 +5,8 @@
 #include <QFile>
 #include <QBuffer>
 
-#include <QtGui/private/qshaderdescription_p_p.h>
-#include <QtGui/private/qshader_p_p.h>
+#include <private/qshaderdescription_p.h>
+#include <private/qshader_p.h>
 
 class tst_QShader : public QObject
 {

@@ -7,7 +7,7 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qoffscreensurface.h>
 #include <QtGui/qpa/qwindowsysteminterface.h>
-#include <QtGui/private/qrhigles2_p.h>
+#include <QtGui/rhi/qrhi.h>
 
 #include <qtwasmtestlib.h>
 

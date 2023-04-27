@@ -1,8 +1,8 @@
-// Copyright (C) 2019 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qrhimetal_p_p.h"
-#include <QtGui/private/qshader_p_p.h>
+#include "qrhimetal_p.h"
+#include "qshader_p.h"
 #include <QGuiApplication>
 #include <QWindow>
 #include <QUrl>
@@ -50,8 +50,11 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QRhiMetalInitParams
     \inmodule QtRhi
-    \internal
+    \since 6.6
     \brief Metal specific initialization parameters.
+
+    \note This an RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
 
     A Metal-based QRhi needs no special parameters for initialization.
 
@@ -85,14 +88,25 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QRhiMetalNativeHandles
     \inmodule QtRhi
-    \internal
+    \since 6.6
     \brief Holds the Metal device used by the QRhi.
+
+    \note This an RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
+
+/*!
+    \variable QRhiMetalNativeHandles::dev
+*/
+
+/*!
+    \variable QRhiMetalNativeHandles::cmdQueue
+*/
 
 /*!
     \class QRhiMetalCommandBufferNativeHandles
     \inmodule QtRhi
-    \internal
+    \since 6.6
     \brief Holds the MTLCommandBuffer and MTLRenderCommandEncoder objects that are backing a QRhiCommandBuffer.
 
     \note The command buffer object is only guaranteed to be valid while
@@ -104,7 +118,18 @@ QT_BEGIN_NAMESPACE
     \note The command encoder is only valid while recording a pass, that is,
     between \l{QRhiCommandBuffer::beginPass()} -
     \l{QRhiCommandBuffer::endPass()}.
+
+    \note This an RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
+
+/*!
+    \variable QRhiMetalCommandBufferNativeHandles::commandBuffer
+*/
+
+/*!
+    \variable QRhiMetalCommandBufferNativeHandles::encoder
+*/
 
 struct QMetalShader
 {

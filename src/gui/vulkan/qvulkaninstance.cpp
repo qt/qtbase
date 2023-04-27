@@ -12,6 +12,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QVulkanInstance
     \since 5.10
+    \ingroup painting-3D
     \inmodule QtGui
 
     \brief The QVulkanInstance class represents a native Vulkan instance, enabling

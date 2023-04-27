@@ -3,7 +3,7 @@
 
 #include "trianglerenderer.h"
 #include <QFile>
-#include <QtGui/private/qshader_p.h>
+#include <rhi/qshader.h>
 
 //#define VBUF_IS_DYNAMIC
 

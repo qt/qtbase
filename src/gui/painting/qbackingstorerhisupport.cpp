@@ -8,20 +8,9 @@
 #if QT_CONFIG(opengl)
 #include <QtGui/qoffscreensurface.h>
 #include <QtGui/private/qopenglcontext_p.h>
-#include <QtGui/private/qrhigles2_p.h>
-#endif
-
-#ifdef Q_OS_WIN
-#include <QtGui/private/qrhid3d11_p.h>
-#include <QtGui/private/qrhid3d12_p.h>
-#endif
-
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
-#include <QtGui/private/qrhimetal_p.h>
 #endif
 
 #if QT_CONFIG(vulkan)
-#include <QtGui/private/qrhivulkan_p.h>
 #include <QtGui/private/qvulkandefaultinstance_p.h>
 #endif
 

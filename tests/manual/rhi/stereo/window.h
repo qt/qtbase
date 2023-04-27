@@ -5,8 +5,8 @@
 #define WINDOW_H
 
 #include <QWindow>
-#include <QtGui/private/qrhigles2_p.h>
 #include <QOffscreenSurface>
+#include <rhi/qrhi.h>
 
 class Window : public QWindow
 {

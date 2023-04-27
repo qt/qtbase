@@ -51,6 +51,56 @@
     that prefer more low-level APIs to text and font handling can use classes
     like QRawFont and QGlyphRun.
 
+    \section1 RHI Graphics
+
+    The Qt Rendering Hardware Interface is an abstraction for hardware accelerated
+    graphics APIs, such as, \l{https://www.khronos.org/opengl/}{OpenGL},
+    \l{https://www.khronos.org/opengles/}{OpenGL ES},
+    \l{https://docs.microsoft.com/en-us/windows/desktop/direct3d}{Direct3D},
+    \l{https://developer.apple.com/metal/}{Metal}, and
+    \l{https://www.khronos.org/vulkan/}{Vulkan}.
+
+    As an alternative to using OpenGL or Vulkan directly to render to a
+    QWindow, \l QRhi and the related classes provide a portable, cross-platform
+    3D graphics and compute API complemented by a shader conditioning and
+    transpiling pipeline. This way applications can avoid directly depending on
+    a single, and, in some cases, vendor or platform-specific 3D API.
+
+    Below is a list of the main RHI-related classes. These are complemented by
+    a number of additional classes and structs.
+
+    \list
+        \li QRhi
+        \li QShader
+        \li QShaderDescription
+        \li QRhiCommandBuffer
+        \li QRhiResourceUpdateBatch
+        \li QRhiBuffer
+        \li QRhiRenderBuffer
+        \li QRhiTexture
+        \li QRhiSampler
+        \li QRhiTextureRenderTarget
+        \li QRhiShaderResourceBindings
+        \li QRhiGraphicsPipeline
+        \li QRhiComputePipeline
+        \li QRhiSwapChain
+    \endlist
+
+    See the \l{RHI Window Example} for an introductory example of creating a
+    portable, cross-platform application that performs accelerated 3D rendering
+    onto a QWindow using QRhi.
+
+    \note The RHI family of APIs are currently offered with a limited
+    compatibility guarantee, as opposed to regular Qt public APIs. See \l QRhi
+    for details.
+
+    \section1 3D Matrix and Vector Math
+
+    The Qt GUI module also contains a few math classes to aid with the most
+    common mathematical operations related to 3D graphics. These classes
+    include \l {QMatrix4x4}, \l {QVector2D}, \l {QVector3D}, \l {QVector4D},
+    and \l {QQuaternion}.
+
     \section1 OpenGL and OpenGL ES Integration
 
     QWindow supports rendering using OpenGL and OpenGL ES, depending on what the
@@ -86,10 +136,6 @@
 
     For more information, see the \l {OpenGL Window Example}.
 
-    The Qt GUI module also contains a few math classes to aid with the most
-    common mathematical operations related to 3D graphics. These classes include
-    \l {QMatrix4x4}, \l {QVector4D}, and \l {QQuaternion}.
-
     A \l {QWindow} created with the \l {QSurface::OpenGLSurface} can be used in
     combination with \l QPainter and \l QOpenGLPaintDevice to have OpenGL
     hardware-accelerated 2D graphics by sacrificing some of the visual quality.
@@ -104,17 +150,20 @@
 
     On Android, Vulkan headers were added in API level 24 of the NDK.
 
-    Relevant classes:
+    The main relevant classes for low-level Vulkan support are:
 
     \list
-        \li QVulkanDeviceFunctions
-        \li QVulkanExtension
-        \li QVulkanFunctions
-        \li QVulkanInfoVector
         \li QVulkanInstance
-        \li QVulkanWindow
-        \li QVulkanWindowRenderer
+        \li QVulkanFunctions
+        \li QVulkanDeviceFunctions
     \endlist
+
+    In addition, \l QVulkanWindow provides a convenience subclass of QWindow
+    that makes it easier to get started with implementing Vulkan-based
+    rendering targeting a QWindow. Using this helper class is completely
+    optional; applications with more advanced Vulkan-based renderers may
+    instead want to use a QWindow with the \l {QSurface::VulkanSurface} type
+    directly.
 
     For more information, see the \l{Hello Vulkan Widget Example}
     and the \l {Hello Vulkan Triangle Example}.

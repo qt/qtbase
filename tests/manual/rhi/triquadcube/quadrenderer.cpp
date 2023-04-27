@@ -3,7 +3,7 @@
 
 #include "quadrenderer.h"
 #include <QFile>
-#include <QtGui/private/qshader_p.h>
+#include <rhi/qshader.h>
 
 // Renders a quad using indexed drawing. No QRhiGraphicsPipeline is created, it
 // expects to reuse the one created by TriangleRenderer. A separate

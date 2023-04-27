@@ -5,7 +5,7 @@
 #define RHIWIDGET_H
 
 #include <QWidget>
-#include <QtGui/private/qrhi_p.h>
+#include <rhi/qrhi.h>
 
 class QRhiWidgetPrivate;
 

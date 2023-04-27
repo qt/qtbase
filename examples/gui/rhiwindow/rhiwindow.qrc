@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file alias="color.vert.qsb">shaders/prebuilt/color.vert.qsb</file>
+  <file alias="color.frag.qsb">shaders/prebuilt/color.frag.qsb</file>
+  <file alias="quad.vert.qsb">shaders/prebuilt/quad.vert.qsb</file>
+  <file alias="quad.frag.qsb">shaders/prebuilt/quad.frag.qsb</file>
+</qresource>
+</RCC>

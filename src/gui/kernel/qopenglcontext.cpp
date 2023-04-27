@@ -69,6 +69,7 @@ QOpenGLContext *qt_gl_global_share_context()
 
 /*!
     \class QOpenGLContext
+    \ingroup painting-3D
     \inmodule QtGui
     \since 5.0
     \brief The QOpenGLContext class represents a native OpenGL context, enabling

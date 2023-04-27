@@ -24,8 +24,7 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformbackingstore.h>
 #include <qpa/qplatformintegration.h>
-#include <private/qrhi_p.h>
-#include <private/qrhigles2_p.h>
+#include <rhi/qrhi.h>
 
 class tst_QOpenGLWidget : public QObject
 {

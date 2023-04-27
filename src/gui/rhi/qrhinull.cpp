@@ -1,7 +1,7 @@
-// Copyright (C) 2019 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qrhinull_p_p.h"
+#include "qrhinull_p.h"
 #include <qmath.h>
 #include <QPainter>
 
@@ -9,9 +9,12 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiNullInitParams
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief Null backend specific initialization parameters.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
 
     A Null QRhi needs no special parameters for initialization.
 
@@ -28,9 +31,12 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiNullNativeHandles
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief Empty.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
 
 QRhiNull::QRhiNull(QRhiNullInitParams *params)

@@ -20,7 +20,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/QLoggingCategory>
 #include <QtGui/private/qopenglcontext_p.h>
-#include <QtGui/private/qshader_p.h>
+#include <rhi/qshader.h>
 
 QT_BEGIN_NAMESPACE
 

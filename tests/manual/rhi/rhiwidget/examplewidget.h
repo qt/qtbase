@@ -5,7 +5,7 @@
 #define EXAMPLEWIDGET_H
 
 #include "rhiwidget.h"
-#include <QtGui/private/qrhi_p.h>
+#include <rhi/qrhi.h>
 
 class ExampleRhiWidget : public QRhiWidget
 {

@@ -54,6 +54,8 @@
         \list
             \li \l {Application Windows} {Qt GUI Application Windows}
             \li \l {2D Graphics} {Qt GUI 2D Graphics}
+            \li \l {RHI Graphics} {Qt GUI Accelerated 2D and 3D Graphics using the Qt RHI}
+            \li \l {3D Matrix and Vector Math} {Qt GUI Matrix and Vector Math}
             \li \l {OpenGL and OpenGL ES Integration}
                    {Qt GUI OpenGL and OpenGL ES Integration}
             \li \l {Vulkan Integration} {Qt GUI Vulkan Integration}

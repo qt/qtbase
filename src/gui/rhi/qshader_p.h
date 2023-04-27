@@ -1,4 +1,4 @@
-// Copyright (C) 2019 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QSHADER_P_H
@@ -15,224 +15,75 @@
 // We mean it.
 //
 
-#include <QtGui/qtguiglobal.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qmap.h>
-#include <private/qshaderdescription_p.h>
+#include <rhi/qshader.h>
+#include <QtCore/QAtomicInt>
+#include <QtCore/QMap>
+#include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
 
-struct QShaderPrivate;
-class QShaderKey;
-
-#ifdef Q_OS_INTEGRITY
-  class QShaderVersion;
-  size_t qHash(const QShaderVersion &, size_t = 0) noexcept;
-#endif
-
-class Q_GUI_EXPORT QShaderVersion
+struct Q_GUI_EXPORT QShaderPrivate
 {
-public:
-    enum Flag {
-        GlslEs = 0x01
+    static const int QSB_VERSION = 9;
+    static const int QSB_VERSION_WITHOUT_INPUT_OUTPUT_INTERFACE_BLOCKS = 8;
+    static const int QSB_VERSION_WITHOUT_EXTENDED_STORAGE_BUFFER_INFO = 7;
+    static const int QSB_VERSION_WITHOUT_NATIVE_SHADER_INFO = 6;
+    static const int QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS = 5;
+    static const int QSB_VERSION_WITHOUT_VAR_ARRAYDIMS = 4;
+    static const int QSB_VERSION_WITH_CBOR = 3;
+    static const int QSB_VERSION_WITH_BINARY_JSON = 2;
+    static const int QSB_VERSION_WITHOUT_BINDINGS = 1;
+
+    enum MslNativeShaderInfoExtraBufferBindings {
+        MslTessVertIndicesBufferBinding = 0,
+        MslTessVertTescOutputBufferBinding,
+        MslTessTescTessLevelBufferBinding,
+        MslTessTescPatchOutputBufferBinding,
+        MslTessTescParamsBufferBinding,
+        MslTessTescInputBufferBinding,
+        MslBufferSizeBufferBinding
     };
-    Q_DECLARE_FLAGS(Flags, Flag)
 
-    QShaderVersion() = default;
-    QShaderVersion(int v, Flags f = Flags());
+    QShaderPrivate()
+        : ref(1)
+    {
+    }
 
-    int version() const { return m_version; }
-    void setVersion(int v) { m_version = v; }
+    QShaderPrivate(const QShaderPrivate &other)
+        : ref(1),
+          qsbVersion(other.qsbVersion),
+          stage(other.stage),
+          desc(other.desc),
+          shaders(other.shaders),
+          bindings(other.bindings),
+          combinedImageMap(other.combinedImageMap),
+          nativeShaderInfoMap(other.nativeShaderInfoMap)
+    {
+    }
 
-    Flags flags() const { return m_flags; }
-    void setFlags(Flags f) { m_flags = f; }
+    static QShaderPrivate *get(QShader *s) { return s->d; }
+    static const QShaderPrivate *get(const QShader *s) { return s->d; }
+    static int qtQsbVersion(QShader::SerializedFormatVersion qtVersion) {
+        switch (qtVersion) {
+        case QShader::SerializedFormatVersion::Qt_6_4:
+            return (QShaderPrivate::QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS + 1);
+        case QShader::SerializedFormatVersion::Qt_6_5:
+            return (QShaderPrivate::QSB_VERSION_WITHOUT_EXTENDED_STORAGE_BUFFER_INFO + 1);
+        default:
+            return QShaderPrivate::QSB_VERSION;
+        }
+    }
 
-private:
-    int m_version = 100;
-    Flags m_flags;
+    QAtomicInt ref;
+    int qsbVersion = QSB_VERSION;
+    QShader::Stage stage = QShader::VertexStage;
+    QShaderDescription desc;
+    // QMap not QHash because we need to be able to iterate based on sorted keys
+    QMap<QShaderKey, QShaderCode> shaders;
+    QMap<QShaderKey, QShader::NativeResourceBindingMap> bindings;
+    QMap<QShaderKey, QShader::SeparateToCombinedImageSamplerMappingList> combinedImageMap;
+    QMap<QShaderKey, QShader::NativeShaderInfo> nativeShaderInfoMap;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QShaderVersion::Flags)
-Q_DECLARE_TYPEINFO(QShaderVersion, Q_RELOCATABLE_TYPE);
-
-class QShaderCode;
-Q_GUI_EXPORT size_t qHash(const QShaderCode &, size_t = 0) noexcept;
-
-class Q_GUI_EXPORT QShaderCode
-{
-public:
-    QShaderCode() = default;
-    QShaderCode(const QByteArray &code, const QByteArray &entry = QByteArray());
-
-    QByteArray shader() const { return m_shader; }
-    void setShader(const QByteArray &code) { m_shader = code; }
-
-    QByteArray entryPoint() const { return m_entryPoint; }
-    void setEntryPoint(const QByteArray &entry) { m_entryPoint = entry; }
-
-private:
-    friend Q_GUI_EXPORT size_t qHash(const QShaderCode &, size_t) noexcept;
-
-    QByteArray m_shader;
-    QByteArray m_entryPoint;
-};
-
-Q_DECLARE_TYPEINFO(QShaderCode, Q_RELOCATABLE_TYPE);
-
-class Q_GUI_EXPORT QShader
-{
-public:
-    enum Stage {
-        VertexStage = 0,
-        TessellationControlStage,
-        TessellationEvaluationStage,
-        GeometryStage,
-        FragmentStage,
-        ComputeStage
-    };
-
-    enum Source {
-        SpirvShader = 0,
-        GlslShader,
-        HlslShader,
-        DxbcShader, // fxc
-        MslShader,
-        DxilShader, // dxc
-        MetalLibShader, // xcrun metal + xcrun metallib
-        WgslShader
-    };
-
-    enum Variant {
-        StandardShader = 0,
-        BatchableVertexShader,
-        UInt16IndexedVertexAsComputeShader,
-        UInt32IndexedVertexAsComputeShader,
-        NonIndexedVertexAsComputeShader
-    };
-
-    enum class SerializedFormatVersion {
-        Latest = 0,
-        Qt_6_5,
-        Qt_6_4
-    };
-
-    QShader();
-    QShader(const QShader &other);
-    QShader &operator=(const QShader &other);
-    ~QShader();
-    void detach();
-
-    bool isValid() const;
-
-    Stage stage() const;
-    void setStage(Stage stage);
-
-    QShaderDescription description() const;
-    void setDescription(const QShaderDescription &desc);
-
-    QList<QShaderKey> availableShaders() const;
-    QShaderCode shader(const QShaderKey &key) const;
-    void setShader(const QShaderKey &key, const QShaderCode &shader);
-    void removeShader(const QShaderKey &key);
-
-    QByteArray serialized(SerializedFormatVersion version = SerializedFormatVersion::Latest) const;
-    static QShader fromSerialized(const QByteArray &data);
-
-    using NativeResourceBindingMap = QMap<int, QPair<int, int> >; // binding -> native_binding[, native_binding]
-    NativeResourceBindingMap nativeResourceBindingMap(const QShaderKey &key) const;
-    void setResourceBindingMap(const QShaderKey &key, const NativeResourceBindingMap &map);
-    void removeResourceBindingMap(const QShaderKey &key);
-
-    struct SeparateToCombinedImageSamplerMapping {
-        QByteArray combinedSamplerName;
-        int textureBinding;
-        int samplerBinding;
-    };
-    using SeparateToCombinedImageSamplerMappingList = QList<SeparateToCombinedImageSamplerMapping>;
-    SeparateToCombinedImageSamplerMappingList separateToCombinedImageSamplerMappingList(const QShaderKey &key) const;
-    void setSeparateToCombinedImageSamplerMappingList(const QShaderKey &key,
-                                                      const SeparateToCombinedImageSamplerMappingList &list);
-    void removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &key);
-
-    struct NativeShaderInfo {
-        int flags = 0;
-        QMap<int, int> extraBufferBindings;
-    };
-    NativeShaderInfo nativeShaderInfo(const QShaderKey &key) const;
-    void setNativeShaderInfo(const QShaderKey &key, const NativeShaderInfo &info);
-    void removeNativeShaderInfo(const QShaderKey &key);
-
-private:
-    QShaderPrivate *d;
-    friend struct QShaderPrivate;
-    friend Q_GUI_EXPORT bool operator==(const QShader &, const QShader &) noexcept;
-    friend Q_GUI_EXPORT size_t qHash(const QShader &, size_t) noexcept;
-#ifndef QT_NO_DEBUG_STREAM
-    friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QShader &);
-#endif
-};
-
-class Q_GUI_EXPORT QShaderKey
-{
-public:
-    QShaderKey() = default;
-    QShaderKey(QShader::Source s,
-               const QShaderVersion &sver,
-               QShader::Variant svar = QShader::StandardShader);
-
-    QShader::Source source() const { return m_source; }
-    void setSource(QShader::Source s) { m_source = s; }
-
-    QShaderVersion sourceVersion() const { return m_sourceVersion; }
-    void setSourceVersion(const QShaderVersion &sver) { m_sourceVersion = sver; }
-
-    QShader::Variant sourceVariant() const { return m_sourceVariant; }
-    void setSourceVariant(QShader::Variant svar) { m_sourceVariant = svar; }
-
-private:
-    QShader::Source m_source = QShader::SpirvShader;
-    QShaderVersion m_sourceVersion;
-    QShader::Variant m_sourceVariant = QShader::StandardShader;
-};
-
-Q_DECLARE_TYPEINFO(QShaderKey, Q_RELOCATABLE_TYPE);
-
-Q_GUI_EXPORT bool operator==(const QShader &lhs, const QShader &rhs) noexcept;
-Q_GUI_EXPORT size_t qHash(const QShader &s, size_t seed = 0) noexcept;
-
-inline bool operator!=(const QShader &lhs, const QShader &rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
-Q_GUI_EXPORT bool operator==(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept;
-Q_GUI_EXPORT bool operator<(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept;
-Q_GUI_EXPORT bool operator==(const QShaderKey &lhs, const QShaderKey &rhs) noexcept;
-Q_GUI_EXPORT bool operator<(const QShaderKey &lhs, const QShaderKey &rhs) noexcept;
-Q_GUI_EXPORT bool operator==(const QShaderCode &lhs, const QShaderCode &rhs) noexcept;
-
-inline bool operator!=(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
-inline bool operator!=(const QShaderKey &lhs, const QShaderKey &rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
-inline bool operator!=(const QShaderCode &lhs, const QShaderCode &rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
-Q_GUI_EXPORT size_t qHash(const QShaderKey &k, size_t seed = 0) noexcept;
-
-#ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QShader &);
-Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QShaderKey &k);
-Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QShaderVersion &v);
-#endif
 
 QT_END_NAMESPACE
 

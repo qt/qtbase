@@ -5,7 +5,7 @@
 #include <QPlatformSurfaceEvent>
 #include <QTimer>
 #include <QFile>
-#include <QtGui/private/qshader_p.h>
+#include <rhi/qshader.h>
 #include "../shared/cube.h"
 
 Window::Window()

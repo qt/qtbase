@@ -1,7 +1,7 @@
-// Copyright (C) 2019 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qrhivulkan_p_p.h"
+#include "qrhivulkan_p.h"
 #include "qrhivulkanext_p.h"
 #include <qpa/qplatformvulkaninstance.h>
 
@@ -60,9 +60,12 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiVulkanInitParams
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief Vulkan specific initialization parameters.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
 
     A Vulkan-based QRhi needs at minimum a valid QVulkanInstance. It is up to
     the user to ensure this is available and initialized. This is typically
@@ -166,18 +169,80 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
+    \variable QRhiVulkanInitParams::inst
+
+    The QVulkanInstance that has already been successfully
+    \l{QVulkanInstance::create()}{created}, required.
+*/
+
+/*!
+    \variable QRhiVulkanInitParams::window
+
+    Optional, but recommended when targeting a QWindow.
+*/
+
+/*!
+    \variable QRhiVulkanInitParams::deviceExtensions
+
+    Optional, empty by default. The list of Vulkan device extensions to enable.
+    Unsupported extensions are ignored gracefully.
+*/
+
+/*!
     \class QRhiVulkanNativeHandles
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief Collects device, queue, and other Vulkan objects that are used by the QRhi.
 
     \note Ownership of the Vulkan objects is never transferred.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
 
 /*!
+    \variable QRhiVulkanNativeHandles::physDev
+
+    When different from \nullptr, specifies the Vulkan physical device to use.
+*/
+
+/*!
+    \variable QRhiVulkanNativeHandles::dev
+
+    When wanting to import not just a physical device, but also use an already
+    existing VkDevice, set this and the graphics queue index and family index.
+*/
+
+/*!
+    \variable QRhiVulkanNativeHandles::gfxQueueFamilyIdx
+
+    Graphics queue family index.
+*/
+
+/*!
+    \variable QRhiVulkanNativeHandles::gfxQueueIdx
+
+    Graphics queue index.
+*/
+
+/*!
+    \variable QRhiVulkanNativeHandles::gfxQueue
+
+    Output only, not used by QRhi::create(), only set by the
+    QRhi::nativeHandles() accessor. The graphics VkQueue used by the QRhi.
+*/
+
+/*!
+    \variable QRhiVulkanNativeHandles::vmemAllocator
+
+    Relevant only when importing an existing memory allocator object,
+    leave it set to \nullptr otherwise.
+*/
+
+/*!
     \class QRhiVulkanCommandBufferNativeHandles
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief Holds the Vulkan command buffer object that is backing a QRhiCommandBuffer.
 
     \note The Vulkan command buffer object is only guaranteed to be valid, and
@@ -185,14 +250,32 @@ QT_BEGIN_NAMESPACE
     \l{QRhi::beginFrame()}{beginFrame()} - \l{QRhi::endFrame()}{endFrame()} or
     \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
     \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} pair.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
 
 /*!
+    \variable QRhiVulkanCommandBufferNativeHandles::commandBuffer
+
+    The VkCommandBuffer object.
+*/
+
+/*!
     \class QRhiVulkanRenderPassNativeHandles
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief Holds the Vulkan render pass object backing a QRhiRenderPassDescriptor.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
+
+/*!
+    \variable QRhiVulkanRenderPassNativeHandles::renderPass
+
+    The VkRenderPass object.
+*/
 
 template <class Int>
 inline Int aligned(Int v, Int byteAlign)
@@ -222,6 +305,13 @@ static inline VmaAllocator toVmaAllocator(QVkAllocator a)
     return reinterpret_cast<VmaAllocator>(a);
 }
 
+/*!
+    \return the list of instance extensions that are expected to be enabled on
+    the QVulkanInstance that is used for the Vulkan-based QRhi.
+
+    The returned list can be safely passed to QVulkanInstance::setExtensions()
+    as-is, because unsupported extensions are filtered out automatically.
+ */
 QByteArrayList QRhiVulkanInitParams::preferredInstanceExtensions()
 {
     return {
@@ -229,6 +319,11 @@ QByteArrayList QRhiVulkanInitParams::preferredInstanceExtensions()
     };
 }
 
+/*!
+    \return the list of device extensions that are expected to be enabled on the
+    \c VkDevice when creating a Vulkan-based QRhi with an externally created
+    \c VkDevice object.
+ */
 QByteArrayList QRhiVulkanInitParams::preferredExtensionsForImportedDevice()
 {
     return {

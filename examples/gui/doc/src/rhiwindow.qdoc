@@ -1,0 +1,439 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example rhiwindow
+    \title RHI Window Example
+
+    \brief This example shows how to create a minimal QWindow-based
+    application using QRhi.
+
+    \image rhiwindow_example.jpg
+
+    Qt 6.6 starts offering its accelerated 3D API and shader abstraction layer
+    for application use as well. Applications can now use the same 3D graphics
+    classes Qt itself uses to implement the Qt Quick scenegraph or the Qt Quick
+    3D engine. In earlier Qt versions QRhi and the related classes were all
+    private APIs. From 6.6 on these classes are in a similar category as QPA
+    family of classes: neither fully public nor private, but something
+    in-between, with a more limited compatibility promise compared to public
+    APIs. On the other hand, QRhi and the related classes now come with full
+    documentation similarly to public APIs.
+
+    There are multiple ways to use QRhi, the example here shows the most
+    low-level approach: targeting a QWindow, while not using Qt Quick, Qt Quick
+    3D, or Widgets in any form, and setting up all the rendering and windowing
+    infrastructure in the application.
+
+    In contrast, when writing a QML application with Qt Quick or Qt Quick 3D,
+    and wanting to add QRhi-based rendering to it, such an application is going
+    to rely on the window and rendering infrastructure Qt Quick has already
+    initialized, and it is likely going to query an existing QRhi instance from
+    the QQuickWindow. There dealing with QRhi::create(), platform/API specifics
+    such as \l{QVulkanInstance}{Vulkan instances}, or correctly handling
+    \l{QExposeEvent}{expose} and resize events for the window are all managed
+    by Qt Quick. Whereas in this example, all that is managed and taken care
+    of by the application itself.
+
+    \note For QWidget-based applications in particular, it should be noted that
+    QWidget::createWindowContainer() allows embedding a QWindow (backed by a
+    native window) into the widget-based user interface. Therefore, the \c
+    HelloWindow class from this example is reusable in QWidget-based
+    applications, assuming the necessary initialization from \c main() is in
+    place as well.
+
+    \section1 3D API Support
+
+    The application supports all the current \l{QRhi::Implementation}{QRhi
+    backends}. When no command-line arguments are specified, platform-specific
+    defaults are used: Direct 3D 11 on Windows, OpenGL on Linux, Metal on
+    macOS/iOS.
+
+    Running with \c{--help} shows the available command-line options:
+
+    \list
+    \li -d or --d3d11 for Direct 3D 11
+    \li -D or --d3d12 for Direct 3D 12
+    \li -m or --metal for Metal
+    \li -v or --vulkan for Vulkan
+    \li -g or --opengl for OpenGL or OpenGL ES
+    \li -n or --null for the \l{QRhi::Null}{Null backend}
+    \endlist
+
+    \section1 Build System Notes
+
+    This application relies solely on the Qt GUI module. It does not use Qt
+    Widgets or Qt Quick.
+
+    In order to access the RHI APIs, which are available to all Qt applications
+    but come with a limited compatibility promise, the \c target_link_libraries
+    CMake command lists \c{Qt6::GuiPrivate}. This is what enables the
+    \c{#include <rhi/qrhi.h>} include statement to compile successfully.
+
+    \section1 Features
+
+    The application features:
+
+    \list
+
+    \li A resizable QWindow,
+
+    \li a swapchain and depth-stencil buffer that properly follows the size of
+    the window,
+
+    \li logic to initialize, render, and tear down at the appropriate time
+    based on events such as \l QExposeEvent and \l QPlatformSurfaceEvent,
+
+    \li rendering a fullscreen textured quad, using a texture the contents of
+    which is generated in a QImage via QPainter (using the raster paint engine,
+    i.e. the generating of the image's pixel data is all CPU-based, that data
+    is then uploaded into a GPU texture),
+
+    \li rendering a triangle with blending and depth testing enabled, using a
+    perspective projection, while applying a model transform that changes on
+    every frame,
+
+    \li an efficient, cross-platform render loop using
+    \l{QWindow::requestUpdate()}{requestUpdate()}.
+
+    \endlist
+
+    \section1 Shaders
+
+    The application uses two sets of vertex and fragment shader pairs:
+
+    \list
+
+    \li one for the fullscreen quad, which uses no vertex inputs and the
+    fragment shader samples a texture (\c quad.vert, \c quad.frag),
+
+    \li and another pair for the triangle, where vertex positions and colors
+    are provided in a vertex buffer and a modelview-projection matrix is
+    provided in a uniform buffer (\c color.vert, \c color.frag).
+
+    \endlist
+
+    The shaders are written as Vulkan-compatible GLSL source code.
+
+    Due to being a Qt GUI module example, this example cannot have a dependency
+    on the \l{Qt Shader Tools} module. This means that CMake helper functions
+    such as \c{qt_add_shaders} are not available for use. Therefore, the
+    example has the pre-processed \c{.qsb} files included in the
+    \c{shaders/prebuilt} folder, and they are simply included within the
+    executable via \c{qt_add_resources}. This approach is not generally
+    recommended for applications, consider rather using \l{Qt Shader Tools
+    Build System Integration}{qt_add_shaders}, which avoids the need to
+    manually generate and manage the \c{.qsb} files.
+
+    To generate the \c{.qsb} files for this example, the command \c{qsb --qt6
+    color.vert -o prebuilt/color.vert.qsb} etc. was used. This leads to
+    compiling to \l{https://www.khronos.org/spir/}{SPIR-V} and than transpiling
+    into GLSL (\c{100 es} and \c 120), HLSL (5.0), and MSL (1.2). All the
+    shader versions are then packed together into a QShader and serialized to
+    disk.
+
+    \section1 API-specific Initialization
+
+    For some of the 3D APIs the main() function has to perform the appropriate
+    API-specific initialiation, e.g. to create a QVulkanInstance when using
+    Vulkan. For OpenGL we have to ensure a depth buffer is available, this is
+    done via QSurfaceFormat. These steps are not in the scope of QRhi since
+    QRhi backends for OpenGL or Vulkan build on the existing Qt facilities such
+    as QOpenGLContext or QVulkanInstance.
+
+    \snippet rhiwindow/main.cpp api-setup
+
+    \note For Vulkan, note how
+    QRhiVulkanInitParams::preferredInstanceExtensions() is taken into account
+    to ensure the appropriate extensions are enabled.
+
+    \c HelloWindow is a subclass of \c RhiWindow, which in turn is a QWindow.
+    \c RhiWindow contains everything needed to manage a resizable window with
+    a\ swapchain (and depth-stencil buffer), and is potentially reusable in
+    other applications as well. \c HelloWindow contains the rendering logic
+    specific to this particular example application.
+
+    In the QWindow subclass constructor the surface type is set based on the
+    selected 3D API.
+
+    \snippet rhiwindow/rhiwindow.cpp rhiwindow-ctor
+
+    Creating and initializing a QRhi object is implemented in
+    RhiWindow::init(). Note that this is invoked only when the window is
+    \c renderable, which is indicated by an \l{QExposeEvent}{expose event}.
+
+    Depending on which 3D API we use, the appropriate InitParams struct needs
+    to be passed to QRhi::create(). With OpenGL for example, a
+    QOffscreenSurface (or some other QSurface) must be created by the
+    application and provided for use to the QRhi. With Vulkan, a successfully
+    initialized QVulkanInstance is required. Others, such as Direct 3D or Metal
+    need no additional information to be able to initialize.
+
+    \snippet rhiwindow/rhiwindow.cpp rhi-init
+
+    Apart from this, everything else, all the rendering code, is fully
+    cross-platform and has no branching or conditions specific to any of the 3D
+    API.
+
+    \section1 Expose Events
+
+    What \c renderable exactly means is platform-specific. For example, on
+    macOS a window that is fully obscured (fully behind some other window) is
+    not renderable, whereas on Windows obscuring has no significance.
+    Fortunately, the application needs no special knowledge about this: Qt's
+    platform plugins abstract the differences behind the expose event. However,
+    the \l{QWindow::exposeEvent()}{exposeEvent()} reimplementation also needs
+    to be aware that an empty output size (e.g. width and height of 0) is also
+    something that should be treated as a non-renderable situation. On Windows
+    for example, this is what is going to happen when minimizing the window.
+    Hence the check based on QRhiSwapChain::surfacePixelSize().
+
+    This implementation of expose event handling attempts to be robust, safe,
+    and portable. Qt Quick itself also implements a very similar logic in its
+    render loops.
+
+    \snippet rhiwindow/rhiwindow.cpp expose
+
+    In RhiWindow::render(), which is invoked in response to the
+    \l{QEvent::UpdateRequest}{UpdateRequest} event generated by
+    \l{QWindow::requestUpdate()}{requestUpdate()}, the following check is in
+    place, to prevent attempting to render when the swapchain initialization
+    failed, or when the window became non-renderable.
+
+    \snippet rhiwindow/rhiwindow.cpp render-precheck
+
+    \section1 Swapchain, Depth-Stencil buffer, and Resizing
+
+    To render to the QWindow, a QRhiSwapChain is needed. In addition, a
+    QRhiRenderBuffer acting as the depth-stencil buffer is created as well
+    since the application demonstrates how depth testing can be enabled in a
+    graphics pipeline. With some legacy 3D APIs managing the depth/stencil
+    buffer for a window is part of the corresponding windowing system interface
+    API (EGL, WGL, GLX, etc., meaning the depth/stencil buffer is implicitly
+    managed together with the \c{window surface}), whereas with modern APIs
+    managing the depth-stencil buffer for a window-based render target is no
+    different from offscreen render targets. QRhi abstracts this, but for best
+    performance it still needs to be indicated that the QRhiRenderBuffer is
+    \l{QRhiRenderBuffer::UsedWithSwapChainOnly}{used with together with a
+    QRhiSwapChain}.
+
+    The QRhiSwapChain is associated with the QWindow and the depth/stencil
+    buffer.
+
+    \snippet rhiwindow/rhiwindow.cpp swapchain-data
+
+    \snippet rhiwindow/rhiwindow.cpp swapchain-init
+
+    When the window size changes, the swapchain needs to be resized as well.
+    This is implemented in resizeSwapChain().
+
+    \snippet rhiwindow/rhiwindow.cpp swapchain-resize
+
+    Unlike other QRhiResource subclasses, QRhiSwapChain features slightly
+    different semantics when it comes to its create-function. As the name,
+    \l{QRhiSwapChain::createOrResize()}{createOrResize()}, suggests, this needs
+    to be called whenever it is known that the output window size may be out of
+    sync with what the swapchain was last initialized. The associated
+    QRhiRenderBuffer for depth-stencil gets its
+    \l{QRhiRenderBuffer::pixelSize()}{size} set automatically, and
+    \l{QRhiRenderBuffer::create()}{create()} is called on it implicitly from the
+    swapchain's createOrResize().
+
+    This is also a convenient place to (re)calculate the projection and view
+    matrices since the perspective projection we set up depends on the output
+    aspect ratio.
+
+    \note To eliminate coordinate system differences, the
+    \l{QRhi::clipSpaceCorrMatrix()}{a backend/API-specific "correction" matrix}
+    is queried from QRhi and baked in to the projection matrix. This is what
+    allows the application to work with OpenGL-style vertex data, assuming a
+    coordinate system with the origin at the bottom-left.
+
+    The resizeSwapChain() function is called from RhiWindow::render() when it
+    is discovered that the currently reported size is not the same anymore as
+    what the swapchain was last initialized with.
+
+    See QRhiSwapChain::currentPixelSize() and QRhiSwapChain::surfacePixelSize()
+    for further details.
+
+    High DPI support is built-in: the sizes, as the naming indicates, are
+    always in pixels, taking the window-specific
+    \l{QWindow::devicePixelRatio()}{scale factor} into account. On the QRhi
+    (and 3D API) level there is no concept of high DPI scaling, everything is
+    always in pixels. This means that a QWindow with a size() of 1280x720 and
+    a devicePixelRatio() of 2 is a render target (swapchain) with a (pixel) size
+    of 2560x1440.
+
+    \snippet rhiwindow/rhiwindow.cpp render-resize
+
+    \section1 Render Loop
+
+    The application renders continuously, throttled by the presentation rate
+    (vsync). This is ensured by calling
+    \l{QWindow::requestUpdate()}{requestUpdate()} from RhiWindow::render() when
+    the currently recorded frame has been submitted.
+
+    \snippet rhiwindow/rhiwindow.cpp request-update
+
+    This eventually leads to getting a \l{QEvent::UpdateRequest}{UpdateRequest}
+    event. This is handled in the reimplementation of event().
+
+    \snippet rhiwindow/rhiwindow.cpp event
+
+    \section1 Resource and Pipeline Setup
+
+    The application records a single render pass that issues two draw calls,
+    with two different graphics pipelines. One is the "background", with the
+    texture containing the QPainter-generated image, then a single triangle is
+    rendered on top with blending enabled.
+
+    The vertex and uniform buffer used with the triangle is created like this.
+    The size of the uniform buffer is 68 bytes since the shader specific a \c
+    mat4 and a \c float member in the uniform block. Watch out for the
+    \l{https://registry.khronos.org/OpenGL/specs/gl/glspec45.core.pdf#page=159}{std140
+    layout rules}. This presents no surprises in this example since the \c
+    float member that follows the \c mat4 has the correct alignment without any
+    additional padding, but it may become relevant in other applications,
+    especially when working with types such as \c vec2 or \c vec3. When in
+    doubt, consider checking the QShaderDescription for the
+    \l{QShader::description()}{QShader}, or, what is often more convenient, run
+    the \c qsb tool on the \c{.qsb} file with the \c{-d} argument to inspect
+    the metadata in human-readable form. The printed information includes,
+    among other things, the uniform block member offsets, sizes, and the total
+    size in bytes of each uniform block.
+
+    \snippet rhiwindow/rhiwindow.cpp render-init-1
+
+    The vertex and fragment shaders both need a uniform buffer at binding point
+    0. This is ensured by the QRhiShaderResourceBindings object. The graphics
+    pipeline is then setup with the shaders and a number of additional
+    information. The example also relies on a number of convenient defaults,
+    e.g. the primitive topology is
+    \l{QRhiGraphicsPipeline::Triangles}{Triangles}, but that is the default,
+    and therefore it is not explicitly set. See QRhiGraphicsPipeline for
+    further details.
+
+    In addition to specifying the topology and various state, the pipeline must
+    also be associated with:
+
+    \list
+
+    \li The vertex input layout in form of a QRhiVertexInputLayout. This
+    specifies the type and component count for each vertex input location, the
+    total stride in bytes per vertex, and other related data.
+    QRhiVertexInputLayout only holds data, not actual native resources, and is
+    copiable.
+
+    \li A valid and successfully initialized QRhiShaderResourceBindings object.
+    This describes the layout of the resource bindings (uniform buffers,
+    textures, samplers) the shaders expect. This must either by the
+    QRhiShaderResourceBindings used when recording the draw calls, or another
+    that is
+    \l{QRhiShaderResourceBindings::isLayoutCompatible()}{layout-compatible with it}.
+    This simple application takes the former approach.
+
+    \li A valid QRhiRenderPassDescriptor object. This must be retrieved from,
+    or \l{QRhiRenderPassDescriptor::isCompatible()}{be compatible with} the
+    render target. The example uses the former, by creating a
+    QRhiRenderPassDescriptor object via
+    QRhiSwapChain::newCompatibleRenderPassDescriptor().
+
+    \endlist
+
+    \snippet rhiwindow/rhiwindow.cpp render-init-2
+
+    getShader() is a helper function that loads a \c{.qsb} file and
+    deserializes a QShader from it.
+
+    \snippet rhiwindow/rhiwindow.cpp getshader
+
+    The \c{color.vert} shader specifies the following as the vertex inputs:
+
+    \badcode
+        layout(location = 0) in vec4 position;
+        layout(location = 1) in vec3 color;
+    \endcode
+
+    The C++ code however provides vertex data as 2 floats for position, with 3
+    floats for the color interleaved. (\c x, \c y, \c r, \c g, \c b for each
+    vertex) This is why the stride is \c{5 * sizeof(float)} and the inputs for
+    locations 0 and 1 are specified as \c Float2 and \c Float3, respectively.
+    This is valid, and the \c z and \c w of the \c vec4 position will get set
+    automatically.
+
+    \section1 Rendering
+
+    Recording a frame is started by calling \l{QRhi::beginFrame()} and finished
+    by calling \l{QRhi::endFrame()}.
+
+    \snippet rhiwindow/rhiwindow.cpp beginframe
+
+    Some of the resources (buffers, textures) have static data in the
+    application, meaning the content never changes. The vertex buffer's content
+    is provided in the initialization step for example, and is not changed
+    afterwards. These data update operations are recorded in \c
+    m_initialUpdates. When not yet done, the commands on this resource update
+    batch are merged into the per-frame batch.
+
+    \snippet rhiwindow/rhiwindow.cpp render-1
+
+    Having a per-frame resource update batch is necessary since the uniform
+    buffer contents with the modelview-projection matrix and the opacity
+    changes on every frame.
+
+    \snippet rhiwindow/rhiwindow.cpp render-rotation
+
+    \snippet rhiwindow/rhiwindow.cpp render-opacity
+
+    To begin recording the render pass, a QRhiCommandBuffer is queried, and the
+    output size is determined, which will be useful for setting up the viewport
+    and resizing our fullscreen texture, if needed.
+
+    \snippet rhiwindow/rhiwindow.cpp render-cb
+
+    Starting a render pass implies clearing the render target's color and
+    depth-stencil buffers (unless the render target flags indicate otherwise,
+    but that is only an option for texture-based render targets). Here we
+    specify black for color, 1.0f for depth, and 0 for stencil (unused). The
+    last argument, \c resourceUpdates, is what ensures that the data update
+    commands recorded on the batch get committed. Alternatively, we could have
+    used QRhiCommandBuffer::resourceUpdate() instead. The render pass targets a
+    swapchain, hence calling
+    \l{QRhiSwapChain::currentFrameRenderTarget()}{currentFrameRenderTarget()}
+    to get a valid QRhiRenderTarget.
+
+    \snippet rhiwindow/rhiwindow.cpp render-pass
+
+    Recording the draw call for the triangle is straightforward: set the
+    pipeline, set the shader resources, set the vertex/index buffer(s), and
+    record the draw call. Here we use a non-indexed draw with just 3 vertices.
+
+    \snippet rhiwindow/rhiwindow.cpp render-pass-record
+
+    The \l{QRhiCommandBuffer::setShaderResources()}{setShaderResources()} call
+    has no arguments given, which implies using \c m_colorTriSrb since that was
+    associated with the active QRhiGraphicsPipeline (\c m_colorPipeline).
+
+    We will not dive into the details of the rendering of the fullscreen
+    background image. See the example source code for that. It is however worth
+    noting a common pattern for "resizing" a texture or buffer resource. There
+    is no such thing as changing the size of an existing native resource, so
+    changing a texture or buffer size must be followed by a call to create(),
+    to release and recreate the underlying native resources. To ensure that the
+    QRhiTexture always has the required size, the application implements the
+    following logic. Note that \c m_texture stays valid for the entire lifetime
+    of the window, which means object references to it, e.g. in a
+    QRhiShaderResourceBindings, continue to be valid all the time. It is only
+    the underlying native resources that come and go over time.
+
+    \snippet rhiwindow/rhiwindow.cpp ensure-texture
+
+    Once a QImage is generated and the QPainter-based drawing into it has
+    finished, we use
+    \l{QRhiResourceUpdateBatch::uploadTexture()}{uploadTexture()} to record a
+    texture upload on the resource update batch:
+
+    \snippet rhiwindow/rhiwindow.cpp ensure-texture-2
+
+    \sa QRhi, QRhiSwapChain, QWindow, QRhiCommandBuffer, QRhiResourceUpdateBatch, QRhiBuffer, QRhiTexture
+  */

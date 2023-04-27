@@ -4,7 +4,7 @@
 #include <QtOpenGL/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
-#include <QtGui/private/qrhi_p.h>
+#include <rhi/qrhi.h>
 #include <qpa/qplatformbackingstore.h>
 
 #include "qopenglcompositor_p.h"

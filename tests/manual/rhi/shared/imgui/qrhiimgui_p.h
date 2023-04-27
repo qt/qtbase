@@ -4,7 +4,7 @@
 #ifndef QRHIIMGUI_P_H
 #define QRHIIMGUI_P_H
 
-#include <QtGui/private/qrhi_p.h>
+#include <rhi/qrhi.h>
 
 QT_BEGIN_NAMESPACE
 

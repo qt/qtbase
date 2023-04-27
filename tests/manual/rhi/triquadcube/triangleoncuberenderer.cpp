@@ -3,7 +3,7 @@
 
 #include "triangleoncuberenderer.h"
 #include <QFile>
-#include <QtGui/private/qshader_p.h>
+#include <rhi/qshader.h>
 
 // toggle to test the preserved content (no clear) path
 const bool IMAGE_UNDER_OFFSCREEN_RENDERING = false;

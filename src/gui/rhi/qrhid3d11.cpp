@@ -1,8 +1,8 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qrhid3d11_p_p.h"
-#include "qshader_p.h"
+#include "qrhid3d11_p.h"
+#include "qshader.h"
 #include "vs_test_p.h"
 #include <QWindow>
 #include <qmath.h>
@@ -28,9 +28,12 @@ using namespace Qt::StringLiterals;
 
 /*!
     \class QRhiD3D11InitParams
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief Direct3D 11 specific initialization parameters.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
 
     A D3D11-based QRhi needs no special parameters for initialization. If
     desired, enableDebugLayer can be set to \c true to enable the Direct3D
@@ -70,15 +73,45 @@ using namespace Qt::StringLiterals;
  */
 
 /*!
+    \variable QRhiD3D11InitParams::enableDebugLayer
+
+    When set to true, a debug device is created, assuming the debug layer is
+    available. The default value is false.
+*/
+
+/*!
     \class QRhiD3D11NativeHandles
-    \internal
     \inmodule QtGui
+    \since 6.6
     \brief Holds the D3D device and device context used by the QRhi.
 
     \note The class uses \c{void *} as the type since including the COM-based
     \c{d3d11.h} headers is not acceptable here. The actual types are
     \c{ID3D11Device *} and \c{ID3D11DeviceContext *}.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
  */
+
+/*!
+    \variable QRhiD3D11NativeHandles::dev
+*/
+
+/*!
+    \variable QRhiD3D11NativeHandles::context
+*/
+
+/*!
+    \variable QRhiD3D11NativeHandles::featureLevel
+*/
+
+/*!
+    \variable QRhiD3D11NativeHandles::adapterLuidLow
+*/
+
+/*!
+    \variable QRhiD3D11NativeHandles::adapterLuidHigh
+*/
 
 // help mingw with its ancient sdk headers
 #ifndef DXGI_ADAPTER_FLAG_SOFTWARE

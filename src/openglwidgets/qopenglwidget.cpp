@@ -23,8 +23,7 @@
 #include <QtWidgets/private/qwidget_p.h>
 #include <QtWidgets/private/qwidgetrepaintmanager_p.h>
 
-#include <QtGui/private/qrhi_p.h>
-#include <QtGui/private/qrhigles2_p.h>
+#include <rhi/qrhi.h>
 
 QT_BEGIN_NAMESPACE
 

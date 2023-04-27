@@ -16,3 +16,8 @@
 #include <QtGui/qpa/qplatformscreen_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qkeymapper_p.h>
+
+// rhi
+#include <QtGui/rhi/qrhi.h>
+#include <QtGui/rhi/qshader.h>
+#include <QtGui/rhi/qshaderdescription.h>

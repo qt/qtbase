@@ -1,8 +1,8 @@
-// Copyright (C) 2019 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qshaderdescription_p_p.h"
-#include "qshader_p_p.h"
+#include "qshaderdescription_p.h"
+#include "qshader_p.h"
 #include <QDebug>
 #include <QDataStream>
 #include <QJsonObject>
@@ -12,10 +12,21 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderDescription
-    \internal
+    \ingroup painting-3D
     \inmodule QtGui
+    \since 6.6
 
     \brief Describes the interface of a shader.
+
+    \warning The QRhi family of classes in the Qt Gui module, including QShader
+    and QShaderDescription, offer limited compatibility guarantees. There are
+    no source or binary compatibility guarantees for these classes, meaning the
+    API is only guaranteed to work with the Qt version the application was
+    developed against. Source incompatible changes are however aimed to be kept
+    at a minimum and will only be made in minor releases (6.7, 6.8, and so on).
+    To use these classes in an application, link to
+    \c{Qt::GuiPrivate} (if using CMake), and include the headers with the \c
+    rhi prefix, for example \c{#include <rhi/qshaderdescription.h>}.
 
     A shader typically has a set of inputs and outputs. A vertex shader for
     example has a number of input variables and may use one or more uniform
@@ -50,8 +61,6 @@ QT_BEGIN_NAMESPACE
             mat4 mvp;
             float opacity;
         } ubuf;
-
-        out gl_PerVertex { vec4 gl_Position; };
 
         void main()
         {
@@ -200,28 +209,179 @@ QT_BEGIN_NAMESPACE
     \value ImageRect
     \value ImageBuffer
     \value Struct
+    \value Half
+    \value Half2
+    \value Half3
+    \value Half4
  */
 
 /*!
-    \class QShaderDescription::InOutVariable
-    \internal
+    \enum QShaderDescription::ImageFormat
+    Image format.
+
+    \value ImageFormatUnknown
+    \value ImageFormatRgba32f
+    \value ImageFormatRgba16f
+    \value ImageFormatR32f
+    \value ImageFormatRgba8
+    \value ImageFormatRgba8Snorm
+    \value ImageFormatRg32f
+    \value ImageFormatRg16f
+    \value ImageFormatR11fG11fB10f
+    \value ImageFormatR16f
+    \value ImageFormatRgba16
+    \value ImageFormatRgb10A2
+    \value ImageFormatRg16
+    \value ImageFormatRg8
+    \value ImageFormatR16
+    \value ImageFormatR8
+    \value ImageFormatRgba16Snorm
+    \value ImageFormatRg16Snorm
+    \value ImageFormatRg8Snorm
+    \value ImageFormatR16Snorm
+    \value ImageFormatR8Snorm
+    \value ImageFormatRgba32i
+    \value ImageFormatRgba16i
+    \value ImageFormatRgba8i
+    \value ImageFormatR32i
+    \value ImageFormatRg32i
+    \value ImageFormatRg16i
+    \value ImageFormatRg8i
+    \value ImageFormatR16i
+    \value ImageFormatR8i
+    \value ImageFormatRgba32ui
+    \value ImageFormatRgba16ui
+    \value ImageFormatRgba8ui
+    \value ImageFormatR32ui
+    \value ImageFormatRgb10a2ui
+    \value ImageFormatRg32ui
+    \value ImageFormatRg16ui
+    \value ImageFormatRg8ui
+    \value ImageFormatR16ui
+    \value ImageFormatR8ui
+ */
+
+/*!
+    \enum QShaderDescription::ImageFlag
+    Image flags.
+
+    \value ReadOnlyImage
+    \value WriteOnlyImage
+ */
+
+/*!
+    \enum QShaderDescription::QualifierFlag
+    Qualifier flags.
+
+    \value QualifierReadOnly
+    \value QualifierWriteOnly
+    \value QualifierCoherent
+    \value QualifierVolatile
+    \value QualifierRestrict
+ */
+
+/*!
+    \struct QShaderDescription::InOutVariable
     \inmodule QtGui
+    \since 6.6
 
     \brief Describes an input or output variable in the shader.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    for details.
  */
 
 /*!
-    \class QShaderDescription::BlockVariable
-    \internal
+    \variable QShaderDescription::InOutVariable::name
+ */
+
+/*!
+    \variable QShaderDescription::InOutVariable::type
+ */
+
+/*!
+    \variable QShaderDescription::InOutVariable::location
+ */
+
+/*!
+    \variable QShaderDescription::InOutVariable::binding
+ */
+
+/*!
+    \variable QShaderDescription::InOutVariable::descriptorSet
+ */
+
+/*!
+    \variable QShaderDescription::InOutVariable::imageFormat
+ */
+
+/*!
+    \variable QShaderDescription::InOutVariable::imageFlags
+ */
+
+/*!
+    \variable QShaderDescription::InOutVariable::arrayDims
+ */
+
+/*!
+    \variable QShaderDescription::InOutVariable::perPatch
+ */
+
+/*!
+    \variable QShaderDescription::InOutVariable::structMembers
+ */
+
+/*!
+    \struct QShaderDescription::BlockVariable
     \inmodule QtGui
+    \since 6.6
 
     \brief Describes a member of a uniform or push constant block.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    for details.
  */
 
 /*!
-    \class QShaderDescription::UniformBlock
-    \internal
+    \variable QShaderDescription::BlockVariable::name
+ */
+
+/*!
+    \variable QShaderDescription::BlockVariable::type
+ */
+
+/*!
+    \variable QShaderDescription::BlockVariable::offset
+ */
+
+/*!
+    \variable QShaderDescription::BlockVariable::size
+ */
+
+/*!
+    \variable QShaderDescription::BlockVariable::arrayDims
+ */
+
+/*!
+    \variable QShaderDescription::BlockVariable::arrayStride
+ */
+
+/*!
+    \variable QShaderDescription::BlockVariable::matrixStride
+ */
+
+/*!
+    \variable QShaderDescription::BlockVariable::matrixIsRowMajor
+ */
+
+/*!
+    \variable QShaderDescription::BlockVariable::structMembers
+ */
+
+/*!
+    \struct QShaderDescription::UniformBlock
     \inmodule QtGui
+    \since 6.6
 
     \brief Describes a uniform block.
 
@@ -229,22 +389,157 @@ QT_BEGIN_NAMESPACE
     (like GLSL 120 or GLSL/ES 100), uniform blocks are replaced with ordinary
     uniforms in a struct. The name of the struct, and so the prefix for the
     uniforms generated from the block members, is given by structName.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    for details.
  */
 
 /*!
-    \class QShaderDescription::PushConstantBlock
-    \internal
+    \variable QShaderDescription::UniformBlock::blockName
+ */
+
+/*!
+    \variable QShaderDescription::UniformBlock::structName
+ */
+
+/*!
+    \variable QShaderDescription::UniformBlock::size
+ */
+
+/*!
+    \variable QShaderDescription::UniformBlock::binding
+ */
+
+/*!
+    \variable QShaderDescription::UniformBlock::descriptorSet
+ */
+
+/*!
+    \variable QShaderDescription::UniformBlock::members
+ */
+
+/*!
+    \struct QShaderDescription::PushConstantBlock
     \inmodule QtGui
+    \since 6.6
 
     \brief Describes a push constant block.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    for details.
  */
 
 /*!
-    \class QShaderDescription::StorageBlock
-    \internal
+    \variable QShaderDescription::PushConstantBlock::name
+ */
+
+/*!
+    \variable QShaderDescription::PushConstantBlock::size
+ */
+
+/*!
+    \variable QShaderDescription::PushConstantBlock::members
+ */
+
+/*!
+    \struct QShaderDescription::StorageBlock
     \inmodule QtGui
+    \since 6.6
 
     \brief Describes a shader storage block.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    for details.
+ */
+
+/*!
+    \variable QShaderDescription::StorageBlock::blockName
+ */
+
+/*!
+    \variable QShaderDescription::StorageBlock::instanceName
+ */
+
+/*!
+    \variable QShaderDescription::StorageBlock::knownSize
+ */
+
+/*!
+    \variable QShaderDescription::StorageBlock::binding
+ */
+
+/*!
+    \variable QShaderDescription::StorageBlock::descriptorSet
+ */
+
+/*!
+    \variable QShaderDescription::StorageBlock::members
+ */
+
+/*!
+    \variable QShaderDescription::StorageBlock::runtimeArrayStride
+ */
+
+/*!
+    \variable QShaderDescription::StorageBlock::qualifierFlags
+ */
+
+/*!
+    \struct QShaderDescription::BuiltinVariable
+    \inmodule QtGui
+    \since 6.6
+
+    \brief Describes a built-in variable.
+
+    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    for details.
+ */
+
+/*!
+    \variable QShaderDescription::BuiltinVariable::type
+ */
+
+/*!
+    \variable QShaderDescription::BuiltinVariable::varType
+ */
+
+/*!
+    \variable QShaderDescription::BuiltinVariable::arrayDims
+ */
+
+/*!
+    \enum QShaderDescription::BuiltinType
+    Built-in variable type.
+
+    \value PositionBuiltin
+    \value PointSizeBuiltin
+    \value ClipDistanceBuiltin
+    \value CullDistanceBuiltin
+    \value VertexIdBuiltin
+    \value InstanceIdBuiltin
+    \value PrimitiveIdBuiltin
+    \value InvocationIdBuiltin
+    \value LayerBuiltin
+    \value ViewportIndexBuiltin
+    \value TessLevelOuterBuiltin
+    \value TessLevelInnerBuiltin
+    \value TessCoordBuiltin
+    \value PatchVerticesBuiltin
+    \value FragCoordBuiltin
+    \value PointCoordBuiltin
+    \value FrontFacingBuiltin
+    \value SampleIdBuiltin
+    \value SamplePositionBuiltin
+    \value SampleMaskBuiltin
+    \value FragDepthBuiltin
+    \value NumWorkGroupsBuiltin
+    \value WorkgroupSizeBuiltin
+    \value WorkgroupIdBuiltin
+    \value LocalInvocationIdBuiltin
+    \value GlobalInvocationIdBuiltin
+    \value LocalInvocationIndexBuiltin
+    \value VertexIndexBuiltin
+    \value InstanceIndexBuiltin
  */
 
 /*!
@@ -267,7 +562,7 @@ void QShaderDescription::detach()
 }
 
 /*!
-    \internal
+    Constructs a copy of \a other.
  */
 QShaderDescription::QShaderDescription(const QShaderDescription &other)
     : d(other.d)
@@ -276,7 +571,7 @@ QShaderDescription::QShaderDescription(const QShaderDescription &other)
 }
 
 /*!
-    \internal
+    Assigns \a other to this object.
  */
 QShaderDescription &QShaderDescription::operator=(const QShaderDescription &other)
 {
@@ -574,7 +869,7 @@ uint QShaderDescription::tessellationOutputVertexCount() const
     \value UnknownTessellationMode
     \value TrianglesTessellationMode
     \value QuadTessellationMode
-    \value IsolinesTessellationMode
+    \value IsolineTessellationMode
  */
 
 /*!

@@ -4,10 +4,6 @@
 #include "window.h"
 #include <QPlatformSurfaceEvent>
 
-#ifndef QT_NO_OPENGL
-#include <QtGui/private/qrhigles2_p.h>
-#endif
-
 #if QT_CONFIG(vulkan)
 extern QVulkanInstance *instance;
 #endif
@@ -25,6 +21,7 @@ Window::Window(const QString &title, GraphicsApi api)
 #endif
         break;
     case D3D11:
+    case D3D12:
         setSurfaceType(Direct3DSurface);
         break;
     case Metal:

@@ -9,14 +9,11 @@
 #include <qrgbafloat.h>
 #include <qrgba64.h>
 
-#include <QtGui/private/qrhi_p.h>
-#include <QtGui/private/qrhi_p_p.h>
-#include <QtGui/private/qrhinull_p.h>
+#include <private/qrhi_p.h>
 
 #if QT_CONFIG(opengl)
 # include <QOpenGLContext>
 # include <QOpenGLFunctions>
-# include <QtGui/private/qrhigles2_p.h>
 # include <QtGui/private/qguiapplication_p.h>
 # include <qpa/qplatformintegration.h>
 # define TST_GL
@@ -25,19 +22,15 @@
 #if QT_CONFIG(vulkan)
 # include <QVulkanInstance>
 # include <QVulkanFunctions>
-# include <QtGui/private/qrhivulkan_p.h>
 # define TST_VK
 #endif
 
 #ifdef Q_OS_WIN
-#include <QtGui/private/qrhid3d11_p.h>
-#include <QtGui/private/qrhid3d12_p.h>
 # define TST_D3D11
 # define TST_D3D12
 #endif
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
-# include <QtGui/private/qrhimetal_p.h>
 # define TST_MTL
 #endif
 
