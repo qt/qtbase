@@ -78,12 +78,15 @@ QRunnable::~QRunnable()
 */
 
 /*!
-    \fn template<typename Callable> QRunnable *QRunnable::create(Callable &&callableToRun);
+    \fn template<typename Callable, if_callable<Callable>> QRunnable *QRunnable::create(Callable &&callableToRun);
     \since 5.15
 
     Creates a QRunnable that calls \a callableToRun in run().
 
     Auto-deletion is enabled by default.
+
+    \note This function participates in overload resolution only if \c Callable
+    is a function or function object which can be called with zero arguments.
 
     \note In Qt versions prior to 6.6, this method took copyable functions only.
 

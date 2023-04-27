@@ -24,6 +24,9 @@ public:
     static QRunnable *create(std::function<void()> functionToRun);
 #endif
     template <typename Callable>
+    using if_callable = std::enable_if_t<std::is_invocable_r_v<void, Callable>, bool>;
+
+    template <typename Callable, if_callable<Callable> = true>
     static QRunnable *create(Callable &&functionToRun);
     bool autoDelete() const { return m_autoDelete; }
     void setAutoDelete(bool autoDelete) { m_autoDelete = autoDelete; }
@@ -76,7 +79,7 @@ public:
     }
 };
 
-template <typename Callable>
+template <typename Callable, QRunnable::if_callable<Callable>>
 QRunnable *QRunnable::create(Callable &&functionToRun)
 {
     return new QGenericRunnable(
