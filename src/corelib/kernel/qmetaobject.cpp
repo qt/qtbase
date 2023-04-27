@@ -3681,26 +3681,38 @@ QVariant QMetaProperty::read(const QObject *object) const
     if this property is resettable, or setting a default-constructed object
     otherwise.
 
+    \note This function internally makes a copy of \a value. Prefer to use the
+    rvalue overload when possible.
+
     \sa read(), reset(), isWritable()
 */
 bool QMetaProperty::write(QObject *object, const QVariant &value) const
 {
     if (!object || !isWritable())
         return false;
+    return write(object, QVariant(value));
+}
 
-    QVariant v = value;
+/*!
+    \overload
+    \since 6.6
+*/
+bool QMetaProperty::write(QObject *object, QVariant &&v) const
+{
+    if (!object || !isWritable())
+        return false;
     QMetaType t(mobj->d.metaTypes[data.index(mobj)]);
     if (t != QMetaType::fromType<QVariant>() && t != v.metaType()) {
         if (isEnumType() && !t.metaObject() && v.metaType().id() == QMetaType::QString) {
             // Assigning a string to a property of type Q_ENUMS (instead of Q_ENUM)
             bool ok;
             if (isFlagType())
-                v = QVariant(menum.keysToValue(value.toByteArray(), &ok));
+                v = QVariant(menum.keysToValue(v.toByteArray(), &ok));
             else
-                v = QVariant(menum.keyToValue(value.toByteArray(), &ok));
+                v = QVariant(menum.keyToValue(v.toByteArray(), &ok));
             if (!ok)
                 return false;
-        } else if (!value.isValid()) {
+        } else if (!v.isValid()) {
             if (isResettable())
                 return reset(object);
             v = QVariant(t, nullptr);

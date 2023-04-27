@@ -363,6 +363,7 @@ public:
 
     QVariant read(const QObject *obj) const;
     bool write(QObject *obj, const QVariant &value) const;
+    bool write(QObject *obj, QVariant &&value) const;
     bool reset(QObject *obj) const;
 
     QUntypedBindable bindable(QObject *object) const;
