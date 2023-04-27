@@ -8377,6 +8377,7 @@ public:
     template<typename Functor>
     bool callMe0(const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *, Functor &&func)
     {
+        QtPrivate::AssertCompatibleFunctions<Prototype0, Functor>();
         auto *slotObject = QtPrivate::makeSlotObject<Prototype0>(std::forward<Functor>(func));
         slotObject->destroyIfLastRef();
         return true;
@@ -8391,6 +8392,7 @@ public:
     template<typename Functor>
     bool callMe1(const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *, Functor &&func)
     {
+        QtPrivate::AssertCompatibleFunctions<Prototype1, Functor>();
         auto *slotObject = QtPrivate::makeSlotObject<Prototype1>(std::forward<Functor>(func));
         slotObject->destroyIfLastRef();
         return true;
@@ -8405,14 +8407,6 @@ public:
 
 static void freeFunction0() {}
 static void freeFunction1(QString) {}
-
-template<typename Prototype, typename Functor, typename = void>
-struct AreFunctionsCompatible : std::false_type {};
-template<typename Prototype, typename Functor>
-struct AreFunctionsCompatible<Prototype, Functor, std::enable_if_t<
-    std::is_same_v<decltype(QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(std::declval<Functor>()))),
-    QtPrivate::QSlotObjectBase *>>
-> : std::true_type {};
 
 template<typename Prototype, typename Functor>
 inline constexpr bool compiles(Functor &&) {

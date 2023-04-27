@@ -512,6 +512,21 @@ namespace QtPrivate {
                                                      ActualArguments, void>(std::forward<Functor>(func));
         }
     }
+
+    template<typename Prototype, typename Functor, typename = void>
+    struct AreFunctionsCompatible : std::false_type {};
+    template<typename Prototype, typename Functor>
+    struct AreFunctionsCompatible<Prototype, Functor, std::enable_if_t<
+        std::is_same_v<decltype(QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(std::declval<Functor>()))),
+        QtPrivate::QSlotObjectBase *>>
+    > : std::true_type {};
+
+    template<typename Prototype, typename Functor>
+    inline constexpr bool AssertCompatibleFunctions() {
+        static_assert(AreFunctionsCompatible<Prototype, Functor>::value,
+                      "Functor is not compatible with expected prototype!");
+        return true;
+    }
 }
 
 QT_END_NAMESPACE

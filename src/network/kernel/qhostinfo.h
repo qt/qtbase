@@ -66,6 +66,7 @@ public:
                                  Functor &&func)
     {
         using Prototype = void(*)(QHostInfo);
+        QtPrivate::AssertCompatibleFunctions<Prototype, Functor>();
         return lookupHostImpl(name, receiver,
                               QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(func)),
                               nullptr);
