@@ -658,14 +658,14 @@ void QCoreApplicationPrivate::initLocale()
             qWarning("Detected locale \"%s\" with character encoding \"%s\", which is not UTF-8.\n"
                      "Qt depends on a UTF-8 locale, but has failed to switch to one.\n"
                      "If this causes problems, reconfigure your locale. See the locale(1) manual\n"
-                     "for more information.", oldLocale.constData(), charEncoding);
+                     "for more information.", oldLocale.constData(), nl_langinfo(CODESET));
         } else if (warnOnOverride) {
             // Let the user know we over-rode their configuration.
             qWarning("Detected locale \"%s\" with character encoding \"%s\", which is not UTF-8.\n"
                      "Qt depends on a UTF-8 locale, and has switched to \"%s\" instead.\n"
                      "If this causes problems, reconfigure your locale. See the locale(1) manual\n"
                      "for more information.",
-                     oldLocale.constData(), charEncoding, newLocale.constData());
+                     oldLocale.constData(), nl_langinfo(CODESET), newLocale.constData());
         }
     }
 #  endif // Platform choice
