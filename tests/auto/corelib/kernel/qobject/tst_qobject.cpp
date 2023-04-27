@@ -149,6 +149,7 @@ private slots:
     void objectNameBinding();
     void emitToDestroyedClass();
     void declarativeData();
+    void asyncCallbackHelper();
 };
 
 struct QObjectCreatedOnShutdown
@@ -8353,6 +8354,153 @@ void tst_QObject::declarativeData()
     QtDeclarative::Object *child = new QtDeclarative::Object;
     child->setParent(&p);
 #endif
+}
+
+/*
+    Compile-time test for the helpers in qobjectdefs_impl.h.
+*/
+class AsyncCaller : public QObject
+{
+    Q_OBJECT
+public:
+    void callback0() {}
+    void callback1(const QString &) {}
+    void callbackInt(int) {}
+    int returnInt() const { return 0; }
+
+    static void staticCallback0() {}
+    static void staticCallback1(const QString &) {}
+
+    using Prototype0 = void(*)();
+    using Prototype1 = void(*)(QString);
+
+    template<typename Functor>
+    bool callMe0(const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *, Functor &&func)
+    {
+        auto *slotObject = QtPrivate::makeSlotObject<Prototype0>(std::forward<Functor>(func));
+        slotObject->destroyIfLastRef();
+        return true;
+    }
+
+    template<typename Functor>
+    bool callMe0(Functor &&func)
+    {
+        return callMe0(nullptr, std::forward<Functor>(func));
+    }
+
+    template<typename Functor>
+    bool callMe1(const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *, Functor &&func)
+    {
+        auto *slotObject = QtPrivate::makeSlotObject<Prototype1>(std::forward<Functor>(func));
+        slotObject->destroyIfLastRef();
+        return true;
+    }
+
+    template<typename Functor>
+    bool callMe1(Functor &&func)
+    {
+        return callMe1(nullptr, std::forward<Functor>(func));
+    }
+};
+
+static void freeFunction0() {}
+static void freeFunction1(QString) {}
+
+template<typename Prototype, typename Functor, typename = void>
+struct AreFunctionsCompatible : std::false_type {};
+template<typename Prototype, typename Functor>
+struct AreFunctionsCompatible<Prototype, Functor, std::enable_if_t<
+    std::is_same_v<decltype(QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(std::declval<Functor>()))),
+    QtPrivate::QSlotObjectBase *>>
+> : std::true_type {};
+
+template<typename Prototype, typename Functor>
+inline constexpr bool compiles(Functor &&) {
+    return QtPrivate::AreFunctionsCompatible<Prototype, Functor>::value;
+}
+
+void tst_QObject::asyncCallbackHelper()
+{
+    auto lambda0 = []{};
+    auto lambda1 = [](const QString &) {};
+    auto lambda2 = [](const QString &, int) {};
+    const auto constLambda = [](const QString &) {};
+    auto moveOnlyLambda = [u = std::unique_ptr<int>()]{};
+
+    SlotFunctor functor0;
+    SlotFunctorString functor1;
+
+    // no parameters provided or needed
+    static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::callback0));
+    static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::staticCallback0));
+    static_assert(compiles<AsyncCaller::Prototype0>(lambda0));
+    static_assert(compiles<AsyncCaller::Prototype0>(freeFunction0));
+    static_assert(compiles<AsyncCaller::Prototype0>(functor0));
+
+    // more parameters than needed
+    static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::callback0));
+    static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::staticCallback0));
+    static_assert(compiles<AsyncCaller::Prototype1>(lambda0));
+    static_assert(compiles<AsyncCaller::Prototype1>(freeFunction0));
+    static_assert(compiles<AsyncCaller::Prototype1>(functor0));
+
+    // matching parameter
+    static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::callback1));
+    static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::staticCallback1));
+    static_assert(compiles<AsyncCaller::Prototype1>(lambda1));
+    static_assert(compiles<AsyncCaller::Prototype1>(constLambda));
+    static_assert(compiles<AsyncCaller::Prototype1>(freeFunction1));
+    static_assert(compiles<AsyncCaller::Prototype1>(functor1));
+
+    // not enough parameters
+    static_assert(!compiles<AsyncCaller::Prototype0>(&AsyncCaller::callback1));
+    static_assert(!compiles<AsyncCaller::Prototype0>(&AsyncCaller::staticCallback1));
+    static_assert(!compiles<AsyncCaller::Prototype0>(lambda1));
+    static_assert(!compiles<AsyncCaller::Prototype0>(constLambda));
+    static_assert(!compiles<AsyncCaller::Prototype0>(lambda2));
+    static_assert(!compiles<AsyncCaller::Prototype0>(freeFunction1));
+    static_assert(!compiles<AsyncCaller::Prototype0>(functor1));
+
+    // move-only functor - should work, but doesn't because QFunctorSlotObject requires
+    // the functor to be of a copyable type!
+    static_assert(!compiles<AsyncCaller::Prototype0>(moveOnlyLambda));
+    static_assert(!compiles<AsyncCaller::Prototype1>(moveOnlyLambda));
+
+    // wrong parameter type
+    static_assert(!compiles<AsyncCaller::Prototype1>(&AsyncCaller::callbackInt));
+
+    // old-style slot name
+    static_assert(!compiles<AsyncCaller::Prototype0>("callback1"));
+
+    // slot with return value is ok, we just don't pass
+    // the return value through to anything.
+    static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::returnInt));
+
+    AsyncCaller caller;
+    // with context
+    QVERIFY(caller.callMe0(&caller, &AsyncCaller::callback0));
+    QVERIFY(caller.callMe0(&caller, &AsyncCaller::returnInt));
+    QVERIFY(caller.callMe0(&caller, &AsyncCaller::staticCallback0));
+    QVERIFY(caller.callMe0(&caller, lambda0));
+    QVERIFY(caller.callMe0(&caller, freeFunction0));
+//    QVERIFY(caller.callMe0(&caller, moveOnlyLambda));
+
+    QVERIFY(caller.callMe1(&caller, &AsyncCaller::callback1));
+    QVERIFY(caller.callMe1(&caller, &AsyncCaller::staticCallback1));
+    QVERIFY(caller.callMe1(&caller, lambda1));
+    QVERIFY(caller.callMe1(&caller, freeFunction1));
+    QVERIFY(caller.callMe1(&caller, constLambda));
+
+    // without context
+    QVERIFY(caller.callMe0(&AsyncCaller::staticCallback0));
+    QVERIFY(caller.callMe0(lambda0));
+    QVERIFY(caller.callMe0(freeFunction0));
+//    QVERIFY(caller.callMe0(moveOnlyLambda));
+
+    QVERIFY(caller.callMe1(&AsyncCaller::staticCallback1));
+    QVERIFY(caller.callMe1(lambda1));
+    QVERIFY(caller.callMe1(constLambda));
+    QVERIFY(caller.callMe1(freeFunction1));
 }
 
 QTEST_MAIN(tst_QObject)

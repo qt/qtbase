@@ -123,20 +123,20 @@ public:
     template <typename Functor>
     void requestPermission(const QPermission &permission,
                            const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
-                           Functor func)
+                           Functor &&func)
     {
         using Prototype = void(*)(QPermission);
         requestPermission(permission,
-                          QtPrivate::makeSlotObject<Prototype>(std::move(func)),
+                          QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(func)),
                           receiver);
     }
 # endif // Q_QDOC
 
     // requestPermission to a functor or function pointer (without context)
     template <typename Functor>
-    void requestPermission(const QPermission &permission, Functor func)
+    void requestPermission(const QPermission &permission, Functor &&func)
     {
-        requestPermission(permission, nullptr, std::move(func));
+        requestPermission(permission, nullptr, std::forward<Functor>(func));
     }
 
 private:

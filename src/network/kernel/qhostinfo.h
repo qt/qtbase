@@ -63,20 +63,20 @@ public:
     template <typename Functor>
     static inline int lookupHost(const QString &name,
                                  const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
-                                 Functor func)
+                                 Functor &&func)
     {
         using Prototype = void(*)(QHostInfo);
         return lookupHostImpl(name, receiver,
-                              QtPrivate::makeSlotObject<Prototype>(std::move(func)),
+                              QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(func)),
                               nullptr);
     }
 #endif // Q_QDOC
 
     // lookupHost to a callable (without context)
     template <typename Functor>
-    static inline int lookupHost(const QString &name, Functor slot)
+    static inline int lookupHost(const QString &name, Functor &&slot)
     {
-        return lookupHost(name, nullptr, std::move(slot));
+        return lookupHost(name, nullptr, std::forward<Functor>(slot));
     }
 
 private:

@@ -342,15 +342,19 @@ namespace QtPrivate {
     constexpr int inline countMatchingArguments()
     {
         using ExpectedArguments = typename QtPrivate::FunctionPointer<Prototype>::Arguments;
+        using Actual = std::decay_t<Functor>;
 
-        if constexpr (QtPrivate::FunctionPointer<Functor>::IsPointerToMemberFunction) {
-            using ActualArguments = typename QtPrivate::FunctionPointer<Functor>::Arguments;
+        if constexpr (QtPrivate::FunctionPointer<Actual>::IsPointerToMemberFunction
+                   || QtPrivate::FunctionPointer<Actual>::ArgumentCount >= 0) {
+            // PMF or free function
+            using ActualArguments = typename QtPrivate::FunctionPointer<Actual>::Arguments;
             if constexpr (QtPrivate::CheckCompatibleArguments<ExpectedArguments, ActualArguments>::value)
-                return QtPrivate::FunctionPointer<Functor>::ArgumentCount;
+                return QtPrivate::FunctionPointer<Actual>::ArgumentCount;
             else
                 return -1;
         } else {
-            return QtPrivate::ComputeFunctorArgumentCount<Functor, ExpectedArguments>::Value;
+            // lambda or functor
+            return QtPrivate::ComputeFunctorArgumentCount<Actual, ExpectedArguments>::Value;
         }
     }
 
@@ -488,7 +492,7 @@ namespace QtPrivate {
     template <typename Prototype, typename Functor>
     static constexpr std::enable_if_t<QtPrivate::countMatchingArguments<Prototype, Functor>() >= 0,
         QtPrivate::QSlotObjectBase *>
-    makeSlotObject(Functor &&func)
+    makeSlotObject(Functor func)
     {
         using ExpectedSignature = QtPrivate::FunctionPointer<Prototype>;
         using ExpectedArguments = typename ExpectedSignature::Arguments;
@@ -496,15 +500,16 @@ namespace QtPrivate {
 
         static_assert(int(ActualSignature::ArgumentCount) <= int(ExpectedSignature::ArgumentCount),
             "Functor requires more arguments than what can be provided.");
-        constexpr int MatchingArgumentCount = QtPrivate::countMatchingArguments<Prototype, Functor>();
 
         if constexpr (QtPrivate::FunctionPointer<Functor>::IsPointerToMemberFunction) {
             using ActualArguments = typename ActualSignature::Arguments;
-            return  new QtPrivate::QSlotObject<Functor, ActualArguments, void>(func);
+            return new QtPrivate::QSlotObject<Functor, ActualArguments, void>(func);
         } else {
+            constexpr int MatchingArgumentCount = QtPrivate::countMatchingArguments<Prototype, Functor>();
             using ActualArguments = typename QtPrivate::List_Left<ExpectedArguments, MatchingArgumentCount>::Value;
 
-            return new QtPrivate::QFunctorSlotObject<Functor, MatchingArgumentCount, ActualArguments, void>(std::move(func));
+            return new QtPrivate::QFunctorSlotObject<Functor, MatchingArgumentCount,
+                                                     ActualArguments, void>(std::move(func));
         }
     }
 }
