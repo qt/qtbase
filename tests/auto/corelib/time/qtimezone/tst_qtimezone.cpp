@@ -777,17 +777,29 @@ void tst_QTimeZone::transitionEachZone()
 
 void tst_QTimeZone::checkOffset_data()
 {
-    QTest::addColumn<QByteArray>("zoneName");
+    QTest::addColumn<QTimeZone>("zone");
     QTest::addColumn<QDateTime>("when");
     QTest::addColumn<int>("netOffset");
     QTest::addColumn<int>("stdOffset");
     QTest::addColumn<int>("dstOffset");
+
+    const QTimeZone UTC = QTimeZone::UTC;
+    QTest::addRow("UTC")
+        << UTC << QDate(1970, 1, 1).startOfDay(UTC) << 0 << 0 << 0;
+    const auto east = QTimeZone::fromSecondsAheadOfUtc(28'800); // 8 hours
+    QTest::addRow("UTC+8")
+        << east << QDate(2000, 2, 29).startOfDay(east) << 28'800 << 28'800 << 0;
+    const auto west = QTimeZone::fromDurationAheadOfUtc(std::chrono::hours{-8});
+    QTest::addRow("UTC-8")
+        << west << QDate(2100, 2, 28).startOfDay(west) << -28'800 << -28'800 << 0;
 
     struct {
         const char *zone, *nick;
         int year, month, day, hour, min, sec;
         int std, dst;
     } table[] = {
+        // Exercise the UTC-backend:
+        { "UTC", "epoch", 1970, 1, 1, 0, 0, 0, 0, 0 },
         // Zone with no transitions (QTBUG-74614, QTBUG-74666, when TZ backend uses minimal data)
         { "Etc/UTC", "epoch", 1970, 1, 1, 0, 0, 0, 0, 0 },
         { "Etc/UTC", "pre_int32", 1901, 12, 13, 20, 45, 51, 0, 0 },
@@ -799,38 +811,40 @@ void tst_QTimeZone::checkOffset_data()
         { "Europe/Kiev", "summer", 2017, 10, 27, 12, 0, 0, 2 * 3600, 3600 },
         { "Europe/Kiev", "winter", 2017, 10, 29, 12, 0, 0, 2 * 3600, 0 }
     };
-    bool lacksRows = true;
     for (const auto &entry : table) {
         QTimeZone zone(entry.zone);
         if (zone.isValid()) {
             QTest::addRow("%s@%s", entry.zone, entry.nick)
-                << QByteArray(entry.zone)
+                << zone
                 << QDateTime(QDate(entry.year, entry.month, entry.day),
                              QTime(entry.hour, entry.min, entry.sec), zone)
                 << entry.dst + entry.std << entry.std << entry.dst;
-            lacksRows = false;
         } else {
             qWarning("Skipping %s@%s test as zone is invalid", entry.zone, entry.nick);
         }
     }
-    if (lacksRows)
-        QSKIP("No valid zone info found, skipping test");
 }
 
 void tst_QTimeZone::checkOffset()
 {
-    QFETCH(QByteArray, zoneName);
+    QFETCH(QTimeZone, zone);
     QFETCH(QDateTime, when);
     QFETCH(int, netOffset);
     QFETCH(int, stdOffset);
     QFETCH(int, dstOffset);
 
-    QTimeZone zone(zoneName);
     QVERIFY(zone.isValid()); // It was when _data() added the row !
     QCOMPARE(zone.offsetFromUtc(when), netOffset);
     QCOMPARE(zone.standardTimeOffset(when), stdOffset);
     QCOMPARE(zone.daylightTimeOffset(when), dstOffset);
     QCOMPARE(zone.isDaylightTime(when), dstOffset != 0);
+
+    // Also test offsetData(), which gets all this data in one go:
+    const auto data = zone.offsetData(when);
+    QCOMPARE(data.atUtc, when);
+    QCOMPARE(data.offsetFromUtc, netOffset);
+    QCOMPARE(data.standardTimeOffset, stdOffset);
+    QCOMPARE(data.daylightTimeOffset, dstOffset);
 }
 
 void tst_QTimeZone::availableTimeZoneIds()

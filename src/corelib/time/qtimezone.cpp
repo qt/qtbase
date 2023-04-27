@@ -1141,9 +1141,12 @@ bool QTimeZone::isDaylightTime(const QDateTime &atDateTime) const
 }
 
 /*!
-    Returns the effective offset details at the given \a forDateTime. This is
-    the equivalent of calling offsetFromUtc(), abbreviation(), etc individually but is
-    more efficient.
+    Returns the effective offset details at the given \a forDateTime.
+
+    This is the equivalent of calling abbreviation() and all three offset
+    functions individually but is more efficient. If this data is not available
+    for the given datetime, an invalid OffsetData will be returned with an
+    invalid QDateTime as its \c atUtc.
 
     This method is only available when feature \c timezone is enabled.
 
@@ -1163,9 +1166,9 @@ QTimeZone::OffsetData QTimeZone::offsetData(const QDateTime &forDateTime) const
             Q_UNREACHABLE();
             break;
         }
-    } else if (hasTransitions()) {
-        return QTimeZonePrivate::toOffsetData(d->data(forDateTime.toMSecsSinceEpoch()));
     }
+    if (isValid())
+        return QTimeZonePrivate::toOffsetData(d->data(forDateTime.toMSecsSinceEpoch()));
 
     return QTimeZonePrivate::invalidOffsetData();
 }
@@ -1206,7 +1209,7 @@ bool QTimeZone::hasTransitions() const
     Transition after it.
 
     If there is no transition after the given \a afterDateTime then an invalid
-    OffsetData will be returned with an invalid QDateTime.
+    OffsetData will be returned with an invalid QDateTime as its \c atUtc.
 
     The given \a afterDateTime is exclusive.
 
@@ -1241,7 +1244,7 @@ QTimeZone::OffsetData QTimeZone::nextTransition(const QDateTime &afterDateTime) 
     Transition before it.
 
     If there is no transition before the given \a beforeDateTime then an invalid
-    OffsetData will be returned with an invalid QDateTime.
+    OffsetData will be returned with an invalid QDateTime as its \c atUtc.
 
     The given \a beforeDateTime is exclusive.
 
