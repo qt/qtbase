@@ -246,7 +246,14 @@ using NonConstMetaTypeInterface = const QMetaTypeInterface;
 class QMetaTypeInterface
 {
 public:
-    ushort revision; // 0 in Qt 6.0. Can increase if new field are added
+
+    /* Revision: Can increase if new field are added, or if semantics changes
+       0: Initial Revision
+       1: the meaning of the NeedsDestruction flag changed
+    */
+    static inline constexpr ushort CurrentRevision = 1;
+
+    ushort revision;
     ushort alignment;
     uint size;
     uint flags;
@@ -2461,7 +2468,7 @@ struct QMetaTypeInterfaceWrapper
     using InterfaceType = std::conditional_t<IsConstMetaTypeInterface, const QMetaTypeInterface, NonConstMetaTypeInterface>;
 
     static inline InterfaceType metaType = {
-        /*.revision=*/ 0,
+        /*.revision=*/ QMetaTypeInterface::CurrentRevision,
         /*.alignment=*/ alignof(T),
         /*.size=*/ sizeof(T),
         /*.flags=*/ QMetaTypeForType<T>::Flags,

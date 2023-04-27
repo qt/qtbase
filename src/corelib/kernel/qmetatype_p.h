@@ -152,7 +152,12 @@ inline bool isMoveConstructible(const QtPrivate::QMetaTypeInterface *iface) noex
 
 inline bool isDestructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
 {
-    return checkMetaTypeFlagOrPointer(iface, iface->dtor, QMetaType::NeedsDestruction);
+    /* For metatypes of revision 1, the NeedsDestruction was set even for trivially
+       destructible types, but their dtor pointer would be null.
+       For that reason, we need the additional check here.
+     */
+    return iface->revision < 1 ||
+           checkMetaTypeFlagOrPointer(iface, iface->dtor, QMetaType::NeedsDestruction);
 }
 
 inline void defaultConstruct(const QtPrivate::QMetaTypeInterface *iface, void *where)
