@@ -503,6 +503,7 @@ QStringList QSqlDatabase::drivers()
         }
     }
 
+    QReadLocker locker(&dbDict()->lock);
     const DriverDict dict = QSqlDatabasePrivate::driverDict();
     for (const auto &[k, _] : dict.asKeyValueRange()) {
         if (!list.contains(k))
@@ -527,6 +528,7 @@ QStringList QSqlDatabase::drivers()
 */
 void QSqlDatabase::registerSqlDriver(const QString& name, QSqlDriverCreatorBase *creator)
 {
+    QWriteLocker locker(&dbDict()->lock);
     delete QSqlDatabasePrivate::driverDict().take(name);
     if (creator)
         QSqlDatabasePrivate::driverDict().insert(name, creator);
@@ -642,6 +644,7 @@ void QSqlDatabasePrivate::init(const QString &type)
     drvName = type;
 
     if (!driver) {
+        QReadLocker locker(&dbDict()->lock);
         DriverDict dict = QSqlDatabasePrivate::driverDict();
         for (DriverDict::const_iterator it = dict.constBegin();
              it != dict.constEnd() && !driver; ++it) {
