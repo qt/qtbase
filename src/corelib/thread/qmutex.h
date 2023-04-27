@@ -12,10 +12,7 @@
 #include <chrono>
 #include <limits>
 
-class tst_QMutex;
-
 QT_BEGIN_NAMESPACE
-
 
 #if QT_CONFIG(thread) || defined(Q_QDOC)
 
