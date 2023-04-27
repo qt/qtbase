@@ -535,6 +535,7 @@ QStringList QSqlDatabase::drivers()
 */
 void QSqlDatabase::registerSqlDriver(const QString& name, QSqlDriverCreatorBase *creator)
 {
+    QWriteLocker locker(&dbDict()->lock);
     delete QSqlDatabasePrivate::driverDict().take(name);
     if (creator)
         QSqlDatabasePrivate::driverDict().insert(name, creator);
