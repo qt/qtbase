@@ -1437,6 +1437,11 @@ void tst_QDBusConnection::pendingCallWhenDisconnected()
 #endif
 }
 
+void tst_QDBusConnection::emptyServerAddress()
+{
+    QDBusServer server({}, nullptr);
+}
+
 QString MyObject::path;
 QString MyObjectWithoutInterface::path;
 QString MyObjectWithoutInterface::interface;
