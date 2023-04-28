@@ -98,6 +98,20 @@
 */
 
 /*!
+    \fn template <class T> template <class X> QPointer<T>::QPointer(QPointer<X> &&other)
+    \fn template <class T> template <class X> QPointer<T>::QPointer(const QPointer<X> &other)
+    \since 6.6
+
+    Conversion constructor. Constructs a new QPointer by moving or copying from
+    \a other.
+
+    The moved-from QPointer is reset to nullptr.
+
+    \note These constructors participate in overload resolution only if \c{X*}
+    is convertible to \c{T*}.
+*/
+
+/*!
     \fn template <class T> void QPointer<T>::swap(QPointer &other)
     \since 5.6
 

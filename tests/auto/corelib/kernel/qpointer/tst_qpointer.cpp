@@ -19,6 +19,7 @@ public:
 
 private slots:
     void constructors();
+    void conversion();
     void destructor();
     void assignment_operators();
     void equality_operators();
@@ -42,6 +43,31 @@ void tst_QPointer::constructors()
     QCOMPARE(p1, QPointer<QObject>(0));
     QCOMPARE(p2, QPointer<QObject>(this));
     QCOMPARE(p3, QPointer<QObject>(this));
+}
+
+void tst_QPointer::conversion()
+{
+    // copy-conversion:
+    {
+        QFile file;
+        QPointer<QFile> pf = &file;
+        QCOMPARE_EQ(pf, &file);
+        QPointer<QIODevice> pio = pf;
+        QCOMPARE_EQ(pio, &file);
+        QCOMPARE_EQ(pio.get(), &file);
+        QCOMPARE_EQ(pio, pf);
+        QCOMPARE_EQ(pio.get(), pf.get());
+    }
+    // move-conversion:
+    {
+        QFile file;
+        QPointer<QFile> pf = &file;
+        QCOMPARE_EQ(pf, &file);
+        QPointer<QIODevice> pio = std::move(pf);
+        QCOMPARE_EQ(pf, nullptr);
+        QCOMPARE_EQ(pio, &file);
+        QCOMPARE_EQ(pio.get(), &file);
+    }
 }
 
 void tst_QPointer::destructor()
