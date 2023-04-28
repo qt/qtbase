@@ -5,6 +5,7 @@
 
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
+#include "qcocoaeventdispatcher.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qscopedvaluerollback.h>
@@ -90,10 +91,6 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     if (!options())
         return false;
 
-    if (windowModality == Qt::ApplicationModal && QThread::currentThread()->loopLevel() > 1) {
-        qCWarning(lcQpaDialogs, "Cannot use native application modal dialog from nested event loop");
-        return false;
-    }
 
     Q_ASSERT(!m_alert);
     m_alert = [NSAlert new];
@@ -224,6 +221,7 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         QTimer::singleShot(0, this, [this]{
             if (m_alert && NSApp.modalWindow != m_alert.window) {
                 qCDebug(lcQpaDialogs) << "Running deferred modal" << m_alert;
+                QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
                 processResponse([m_alert runModal]);
             }
         });
@@ -243,6 +241,7 @@ void QCocoaMessageDialog::exec()
         m_eventLoop->exec(QEventLoop::DialogExec);
     } else {
         qCDebug(lcQpaDialogs) << "Running modal" << m_alert;
+        QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
         processResponse([m_alert runModal]);
     }
 }
