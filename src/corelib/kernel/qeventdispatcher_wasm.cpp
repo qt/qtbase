@@ -507,13 +507,13 @@ void QEventDispatcherWasm::updateNativeTimer()
     // access to m_timerInfo), and then call native API to set the new
     // wakeup time on the main thread.
 
-    auto timespecToNanosec = [](timespec ts) -> uint64_t {
+    auto timespecToMsec = [](timespec ts) -> uint64_t {
         return ts.tv_sec * 1000 + ts.tv_nsec / (1000 * 1000);
     };
     timespec toWait;
     bool hasTimer = m_timerInfo->timerWait(toWait);
-    uint64_t currentTime = timespecToNanosec(m_timerInfo->currentTime);
-    uint64_t toWaitDuration = timespecToNanosec(toWait);
+    uint64_t currentTime = timespecToMsec(m_timerInfo->currentTime);
+    uint64_t toWaitDuration = timespecToMsec(toWait);
     uint64_t newTargetTime = currentTime + toWaitDuration;
 
     auto maintainNativeTimer = [this, hasTimer, toWaitDuration, newTargetTime]() {
