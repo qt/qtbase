@@ -35,6 +35,12 @@ sem.tryAcquire(250, 1000);    // sem.available() == 5, waits 1000 milliseconds a
 sem.tryAcquire(3, 30000);     // sem.available() == 2, returns true without waiting
 //! [3]
 
+//! [tryAcquire-QDeadlineTimer]
+QSemaphore sem(5);                          // sem.available() == 5
+sem.tryAcquire(250, QDeadlineTimer(1000));  // sem.available() == 5, waits 1000 milliseconds and returns false
+sem.tryAcquire(3, QDeadlineTimer(30s));     // sem.available() == 2, returns true without waiting
+//! [tryAcquire-QDeadlineTimer]
+
 //! [4]
 // ... do something that may throw or return early
 sem.release();

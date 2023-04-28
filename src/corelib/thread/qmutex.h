@@ -8,10 +8,6 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qtsan_impl.h>
-#include <new>
-
-#include <chrono>
-#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -26,32 +22,6 @@ QT_BEGIN_NAMESPACE
 class QMutex;
 class QRecursiveMutex;
 class QMutexPrivate;
-
-namespace QtPrivate
-{
-    template<class Rep, class Period>
-    static int convertToMilliseconds(std::chrono::duration<Rep, Period> duration)
-    {
-        // N4606 § 30.4.1.3.5 [thread.timedmutex.requirements] specifies that a
-        // duration less than or equal to duration.zero() shall result in a
-        // try_lock, unlike QMutex's tryLock with a negative duration which
-        // results in a lock.
-
-        if (duration <= duration.zero())
-            return 0;
-
-        // when converting from 'duration' to milliseconds, make sure that
-        // the result is not shorter than 'duration':
-        std::chrono::milliseconds wait = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-        if (wait < duration)
-            wait += std::chrono::milliseconds(1);
-        Q_ASSERT(wait >= duration);
-        const auto ms = wait.count();
-        const auto maxInt = (std::numeric_limits<int>::max)();
-
-        return ms < maxInt ? int(ms) : maxInt;
-    }
-}
 
 class Q_CORE_EXPORT QBasicMutex
 {

@@ -5,16 +5,13 @@
 #define QSEMAPHORE_H
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qmutex.h> // for convertToMilliseconds()
-
-#include <chrono>
+#include <QtCore/qdeadlinetimer.h>
 
 QT_REQUIRE_CONFIG(thread);
 
 QT_BEGIN_NAMESPACE
 
 class QSemaphorePrivate;
-
 class Q_CORE_EXPORT QSemaphore
 {
 public:
@@ -23,10 +20,19 @@ public:
 
     void acquire(int n = 1);
     bool tryAcquire(int n = 1);
+    QT_CORE_INLINE_SINCE(6, 6)
     bool tryAcquire(int n, int timeout);
+    bool tryAcquire(int n, QDeadlineTimer timeout);
+#ifndef Q_QDOC
+    // because tryAcquire(n, QDeadlineTimer::Forever) is tryLock(n, 0)
+    bool tryAcquire(int n, QDeadlineTimer::ForeverConstant)
+    { acquire(n); return true; }
+#endif
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     template <typename Rep, typename Period>
     bool tryAcquire(int n, std::chrono::duration<Rep, Period> timeout)
-    { return tryAcquire(n, QtPrivate::convertToMilliseconds(timeout)); }
+    { return tryAcquire(n, QDeadlineTimer(timeout)); }
+#endif
 
     void release(int n = 1);
 
@@ -52,6 +58,13 @@ private:
         QBasicAtomicInteger<quint64> u64;
     };
 };
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 6)
+bool QSemaphore::tryAcquire(int n, int timeout)
+{
+    return tryAcquire(n, QDeadlineTimer(timeout));
+}
+#endif
 
 class QSemaphoreReleaser
 {

@@ -145,10 +145,10 @@ static QBasicAtomicInteger<quint32> *futexHigh32(QBasicAtomicInteger<quintptr> *
 }
 
 template <bool IsTimed> bool
-futexSemaphoreTryAcquire_loop(QBasicAtomicInteger<quintptr> &u, quintptr curValue, quintptr nn, int timeout)
+futexSemaphoreTryAcquire_loop(QBasicAtomicInteger<quintptr> &u, quintptr curValue, quintptr nn,
+                              QDeadlineTimer timer)
 {
-    QDeadlineTimer timer(IsTimed ? QDeadlineTimer(timeout) : QDeadlineTimer());
-    qint64 remainingTime = timeout * Q_INT64_C(1000) * 1000;
+    qint64 remainingTime = IsTimed ? timer.remainingTimeNSecs() : -1;
     int n = int(unsigned(nn));
 
     // we're called after one testAndSet, so start by waiting first
@@ -190,8 +190,13 @@ futexSemaphoreTryAcquire_loop(QBasicAtomicInteger<quintptr> &u, quintptr curValu
     }
 }
 
-template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintptr> &u, int n, int timeout)
+static constexpr QDeadlineTimer::ForeverConstant Expired =
+        QDeadlineTimer::ForeverConstant(1);
+
+template <typename T> bool
+futexSemaphoreTryAcquire(QBasicAtomicInteger<quintptr> &u, int n, T timeout)
 {
+    constexpr bool IsTimed = std::is_same_v<QDeadlineTimer, T>;
     // Try to acquire without waiting (we still loop because the testAndSet
     // call can fail).
     quintptr nn = unsigned(n);
@@ -205,8 +210,13 @@ template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintp
         if (u.testAndSetOrdered(curValue, newValue, curValue))
             return true;        // succeeded!
     }
-    if (timeout == 0)
-        return false;
+    if constexpr (IsTimed) {
+        if (timeout.hasExpired())
+            return false;
+    } else {
+        if (timeout == Expired)
+            return false;
+    }
 
     // we need to wait
     constexpr quintptr oneWaiter = quintptr(Q_UINT64_C(1) << 32); // zero on 32-bit
@@ -293,7 +303,7 @@ void QSemaphore::acquire(int n)
     Q_ASSERT_X(n >= 0, "QSemaphore::acquire", "parameter 'n' must be non-negative");
 
     if (futexAvailable()) {
-        futexSemaphoreTryAcquire<false>(u, n, -1);
+        futexSemaphoreTryAcquire(u, n, QDeadlineTimer::Forever);
         return;
     }
 
@@ -409,7 +419,7 @@ bool QSemaphore::tryAcquire(int n)
     Q_ASSERT_X(n >= 0, "QSemaphore::tryAcquire", "parameter 'n' must be non-negative");
 
     if (futexAvailable())
-        return futexSemaphoreTryAcquire<false>(u, n, 0);
+        return futexSemaphoreTryAcquire(u, n, Expired);
 
     const auto locker = qt_scoped_lock(d->mutex);
     if (n > d->avail)
@@ -419,6 +429,8 @@ bool QSemaphore::tryAcquire(int n)
 }
 
 /*!
+    \fn QSemaphore::tryAcquire(int n, int timeout)
+
     Tries to acquire \c n resources guarded by the semaphore and
     returns \c true on success. If available() < \a n, this call will
     wait for at most \a timeout milliseconds for resources to become
@@ -434,26 +446,40 @@ bool QSemaphore::tryAcquire(int n)
 
     \sa acquire()
 */
-bool QSemaphore::tryAcquire(int n, int timeout)
+
+/*!
+    \since 6.6
+
+    Tries to acquire \c n resources guarded by the semaphore and returns \c
+    true on success. If available() < \a n, this call will wait until \a timer
+    expires for resources to become available.
+
+    Example:
+
+    \snippet code/src_corelib_thread_qsemaphore.cpp tryAcquire-QDeadlineTimer
+
+    \sa acquire()
+*/
+bool QSemaphore::tryAcquire(int n, QDeadlineTimer timer)
 {
-    if (timeout < 0) {
+    if (timer.isForever()) {
         acquire(n);
         return true;
     }
 
-    if (timeout == 0)
+    if (timer.hasExpired())
         return tryAcquire(n);
 
     Q_ASSERT_X(n >= 0, "QSemaphore::tryAcquire", "parameter 'n' must be non-negative");
 
     if (futexAvailable())
-        return futexSemaphoreTryAcquire<true>(u, n, timeout);
+        return futexSemaphoreTryAcquire(u, n, timer);
 
     using namespace std::chrono;
     const auto sufficientResourcesAvailable = [this, n] { return d->avail >= n; };
 
     auto locker = qt_unique_lock(d->mutex);
-    if (!d->cond.wait_for(locker, milliseconds{timeout}, sufficientResourcesAvailable))
+    if (!d->cond.wait_until(locker, timer.deadline<steady_clock>(), sufficientResourcesAvailable))
         return false;
     d->avail -= n;
     return true;

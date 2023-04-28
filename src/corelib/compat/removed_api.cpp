@@ -605,6 +605,7 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 #if QT_CONFIG(thread)
 #include "qmutex.h"
 #include "qreadwritelock.h"
+#include "qsemaphore.h"
 #endif
 
 // #include "qotherheader.h"
