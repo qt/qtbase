@@ -4094,6 +4094,8 @@ int QObjectPrivate::signalIndex(const char *signalName,
  *****************************************************************************/
 
 /*!
+  \fn bool QObject::setProperty(const char *name, const QVariant &value)
+
   Sets the value of the object's \a name property to \a value.
 
   If the property is defined in the class using Q_PROPERTY then
@@ -4114,9 +4116,17 @@ int QObjectPrivate::signalIndex(const char *signalName,
 
   \sa property(), metaObject(), dynamicPropertyNames(), QMetaProperty::write()
 */
-bool QObject::setProperty(const char *name, const QVariant &value)
+
+/*!
+  \fn bool QObject::setProperty(const char *name, QVariant &&value)
+  \since 6.6
+  \overload setProperty
+*/
+
+bool QObject::doSetProperty(const char *name, const QVariant *lvalue, QVariant *rvalue)
 {
     Q_D(QObject);
+    const auto &value =*lvalue;
     const QMetaObject *meta = metaObject();
     if (!name || !meta)
         return false;
@@ -4135,12 +4145,18 @@ bool QObject::setProperty(const char *name, const QVariant &value)
         } else {
             if (idx == -1) {
                 d->extraData->propertyNames.append(name);
-                d->extraData->propertyValues.append(value);
+                if (rvalue)
+                    d->extraData->propertyValues.append(std::move(*rvalue));
+                else
+                    d->extraData->propertyValues.append(*lvalue);
             } else {
                 if (value.userType() == d->extraData->propertyValues.at(idx).userType()
                         && value == d->extraData->propertyValues.at(idx))
                     return false;
-                d->extraData->propertyValues[idx] = value;
+                if (rvalue)
+                    d->extraData->propertyValues[idx] = std::move(*rvalue);
+                else
+                    d->extraData->propertyValues[idx] = *lvalue;
             }
         }
 
@@ -4155,7 +4171,7 @@ bool QObject::setProperty(const char *name, const QVariant &value)
         qWarning("%s::setProperty: Property \"%s\" invalid,"
                  " read-only or does not exist", metaObject()->className(), name);
 #endif
-    return p.write(this, value);
+    return rvalue ? p.write(this, std::move(*rvalue)) : p.write(this, *lvalue);
 }
 
 /*!

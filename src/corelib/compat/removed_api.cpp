@@ -509,6 +509,8 @@ QByteArray QMessageAuthenticationCode::hash(const QByteArray &msg, const QByteAr
                 qToByteArrayViewIgnoringNull(key), method);
 }
 
+#include "qobject.h" // inlined API
+
 #include "qrunnable.h"
 
 QRunnable *QRunnable::create(std::function<void()> functionToRun)

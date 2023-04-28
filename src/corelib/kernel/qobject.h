@@ -292,7 +292,9 @@ public:
     void dumpObjectTree() const;
     void dumpObjectInfo() const;
 
+    QT_CORE_INLINE_SINCE(6, 6)
     bool setProperty(const char *name, const QVariant &value);
+    inline bool setProperty(const char *name, QVariant &&value);
     QVariant property(const char *name) const;
     QList<QByteArray> dynamicPropertyNames() const;
     QBindingStorage *bindingStorage() { return &d_ptr->bindingStorage; }
@@ -345,6 +347,8 @@ protected:
 
 private:
     void doSetObjectName(const QString &name);
+    bool doSetProperty(const char *name, const QVariant *lvalue, QVariant *rvalue);
+
     Q_DISABLE_COPY(QObject)
     Q_PRIVATE_SLOT(d_func(), void _q_reregisterTimers(void *))
 
@@ -362,6 +366,17 @@ private:
 inline QMetaObject::Connection QObject::connect(const QObject *asender, const char *asignal,
                                             const char *amember, Qt::ConnectionType atype) const
 { return connect(asender, asignal, this, amember, atype); }
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 6)
+bool QObject::setProperty(const char *name, const QVariant &value)
+{
+    return doSetProperty(name, &value, nullptr);
+}
+#endif // inline since 6.6
+bool QObject::setProperty(const char *name, QVariant &&value)
+{
+    return doSetProperty(name, &value, &value);
+}
 
 template <class T>
 inline T qobject_cast(QObject *object)
