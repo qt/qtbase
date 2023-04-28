@@ -16,13 +16,28 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
+#include <QtCore/private/qlocking_p.h>
 #include <QtCore/private/qwaitcondition_p.h>
+#include <QtCore/qreadwritelock.h>
 #include <QtCore/qvarlengtharray.h>
 
 QT_REQUIRE_CONFIG(thread);
 
 QT_BEGIN_NAMESPACE
+
+namespace QReadWriteLockStates {
+enum {
+    StateMask = 0x3,
+    StateLockedForRead = 0x1,
+    StateLockedForWrite = 0x2,
+};
+enum StateForWaitCondition {
+    LockedForRead,
+    LockedForWrite,
+    Unlocked,
+    RecursivelyLocked
+};
+}
 
 class QReadWriteLockPrivate
 {
@@ -63,8 +78,33 @@ public:
     bool recursiveLockForWrite(int timeout);
     bool recursiveLockForRead(int timeout);
     void recursiveUnlock();
+
+    static QReadWriteLockStates::StateForWaitCondition
+    stateForWaitCondition(const QReadWriteLock *lock);
 };
-Q_DECLARE_TYPEINFO(QReadWriteLockPrivate::Reader, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QReadWriteLockPrivate::Reader, Q_PRIMITIVE_TYPE);\
+
+/*! \internal  Helper for QWaitCondition::wait */
+inline QReadWriteLockStates::StateForWaitCondition
+QReadWriteLockPrivate::stateForWaitCondition(const QReadWriteLock *q)
+{
+    using namespace QReadWriteLockStates;
+    QReadWriteLockPrivate *d = q->d_ptr.loadAcquire();
+    switch (quintptr(d) & StateMask) {
+    case StateLockedForRead: return LockedForRead;
+    case StateLockedForWrite: return LockedForWrite;
+    }
+
+    if (!d)
+        return Unlocked;
+    const auto lock = qt_scoped_lock(d->mutex);
+    if (d->writerCount > 1)
+        return RecursivelyLocked;
+    else if (d->writerCount == 1)
+        return LockedForWrite;
+    return LockedForRead;
+
+}
 
 QT_END_NAMESPACE
 

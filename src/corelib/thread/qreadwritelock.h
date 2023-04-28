@@ -34,10 +34,7 @@ public:
 private:
     Q_DISABLE_COPY(QReadWriteLock)
     QAtomicPointer<QReadWriteLockPrivate> d_ptr;
-
-    enum StateForWaitCondition { LockedForRead, LockedForWrite, Unlocked, RecursivelyLocked };
-    StateForWaitCondition stateForWaitCondition() const;
-    friend class QWaitCondition;
+    friend class QReadWriteLockPrivate;
 };
 
 #if defined(Q_CC_MSVC)

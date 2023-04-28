@@ -6,9 +6,7 @@
 #include "qplatformdefs.h"
 #include "qreadwritelock.h"
 
-#include "qmutex.h"
 #include "qthread.h"
-#include "qwaitcondition.h"
 #include "qreadwritelock_p.h"
 #include "qelapsedtimer.h"
 #include "private/qfreelist_p.h"
@@ -30,15 +28,11 @@ QT_BEGIN_NAMESPACE
  *  - In any other case, d_ptr points to an actual QReadWriteLockPrivate.
  */
 
+using namespace QReadWriteLockStates;
 namespace {
 
 using ms = std::chrono::milliseconds;
 
-enum {
-    StateMask = 0x3,
-    StateLockedForRead = 0x1,
-    StateLockedForWrite = 0x2,
-};
 const auto dummyLockedForRead = reinterpret_cast<QReadWriteLockPrivate *>(quintptr(StateLockedForRead));
 const auto dummyLockedForWrite = reinterpret_cast<QReadWriteLockPrivate *>(quintptr(StateLockedForWrite));
 inline bool isUncontendedLocked(const QReadWriteLockPrivate *d)
@@ -409,26 +403,6 @@ void QReadWriteLock::unlock()
         }
         return;
     }
-}
-
-/*! \internal  Helper for QWaitCondition::wait */
-QReadWriteLock::StateForWaitCondition QReadWriteLock::stateForWaitCondition() const
-{
-    QReadWriteLockPrivate *d = d_ptr.loadAcquire();
-    switch (quintptr(d) & StateMask) {
-    case StateLockedForRead: return LockedForRead;
-    case StateLockedForWrite: return LockedForWrite;
-    }
-
-    if (!d)
-        return Unlocked;
-    const auto lock = qt_scoped_lock(d->mutex);
-    if (d->writerCount > 1)
-        return RecursivelyLocked;
-    else if (d->writerCount == 1)
-        return LockedForWrite;
-    return LockedForRead;
-
 }
 
 bool QReadWriteLockPrivate::lockForRead(std::unique_lock<QtPrivate::mutex> &lock, int timeout)
