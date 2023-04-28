@@ -55,8 +55,8 @@ public:
     const bool recursive;
 
     //Called with the mutex locked
-    bool lockForWrite(std::unique_lock<QtPrivate::mutex> &lock, int timeout);
-    bool lockForRead(std::unique_lock<QtPrivate::mutex> &lock, int timeout);
+    bool lockForWrite(std::unique_lock<QtPrivate::mutex> &lock, QDeadlineTimer timeout);
+    bool lockForRead(std::unique_lock<QtPrivate::mutex> &lock, QDeadlineTimer timeout);
     void unlock();
 
     //memory management
@@ -75,8 +75,8 @@ public:
     QVarLengthArray<Reader, 16> currentReaders;
 
     // called with the mutex unlocked
-    bool recursiveLockForWrite(int timeout);
-    bool recursiveLockForRead(int timeout);
+    bool recursiveLockForWrite(QDeadlineTimer timeout);
+    bool recursiveLockForRead(QDeadlineTimer timeout);
     void recursiveUnlock();
 
     static QReadWriteLockStates::StateForWaitCondition

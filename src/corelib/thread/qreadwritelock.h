@@ -5,9 +5,9 @@
 #define QREADWRITELOCK_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qdeadlinetimer.h>
 
 QT_BEGIN_NAMESPACE
-
 
 #if QT_CONFIG(thread)
 
@@ -26,16 +26,29 @@ public:
 #if QT_CORE_REMOVED_SINCE(6, 6)
     bool tryLockForRead();
 #endif
-    bool tryLockForRead(int timeout = 0);
+    QT_CORE_INLINE_SINCE(6, 6)
+    bool tryLockForRead(int timeout);
+    bool tryLockForRead(QDeadlineTimer timeout = {});
 
     QT_CORE_INLINE_SINCE(6, 6)
     void lockForWrite();
 #if QT_CORE_REMOVED_SINCE(6, 6)
     bool tryLockForWrite();
 #endif
-    bool tryLockForWrite(int timeout = 0);
+    QT_CORE_INLINE_SINCE(6, 6)
+    bool tryLockForWrite(int timeout);
+    bool tryLockForWrite(QDeadlineTimer timeout = {});
 
     void unlock();
+
+#ifndef Q_QDOC
+    // because tryLockForXxx(QDeadlineTimer::Forever) is the same
+    // as tryLockForXxx(0), which is not forever
+    bool tryLockForRead(QDeadlineTimer::ForeverConstant)
+    { lockForRead(); return true; }
+    bool tryLockForWrite(QDeadlineTimer::ForeverConstant)
+    { lockForWrite(); return true; }
+#endif
 
 private:
     Q_DISABLE_COPY(QReadWriteLock)
@@ -46,12 +59,22 @@ private:
 #if QT_CORE_INLINE_IMPL_SINCE(6, 6)
 void QReadWriteLock::lockForRead()
 {
-    tryLockForRead(-1);
+    tryLockForRead(QDeadlineTimer(QDeadlineTimer::Forever));
+}
+
+bool QReadWriteLock::tryLockForRead(int timeout)
+{
+    return tryLockForRead(QDeadlineTimer(timeout));
 }
 
 void QReadWriteLock::lockForWrite()
 {
-    tryLockForWrite(-1);
+    tryLockForWrite(QDeadlineTimer(QDeadlineTimer::Forever));
+}
+
+bool QReadWriteLock::tryLockForWrite(int timeout)
+{
+    return tryLockForWrite(QDeadlineTimer(timeout));
 }
 #endif // inline since 6.6
 
@@ -164,10 +187,12 @@ public:
 
     void lockForRead() noexcept { }
     bool tryLockForRead() noexcept { return true; }
+    bool tryLockForRead(QDeadlineTimer) noexcept { return true; }
     bool tryLockForRead(int timeout) noexcept { Q_UNUSED(timeout); return true; }
 
     void lockForWrite() noexcept { }
     bool tryLockForWrite() noexcept { return true; }
+    bool tryLockForWrite(QDeadlineTimer) noexcept { return true; }
     bool tryLockForWrite(int timeout) noexcept { Q_UNUSED(timeout); return true; }
 
     void unlock() noexcept { }

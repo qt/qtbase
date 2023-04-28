@@ -31,7 +31,7 @@ QT_BEGIN_NAMESPACE
 using namespace QReadWriteLockStates;
 namespace {
 
-using ms = std::chrono::milliseconds;
+using steady_clock = std::chrono::steady_clock;
 
 const auto dummyLockedForRead = reinterpret_cast<QReadWriteLockPrivate *>(quintptr(StateLockedForRead));
 const auto dummyLockedForWrite = reinterpret_cast<QReadWriteLockPrivate *>(quintptr(StateLockedForWrite));
@@ -40,9 +40,9 @@ inline bool isUncontendedLocked(const QReadWriteLockPrivate *d)
 }
 
 static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLockPrivate> &d_ptr,
-                                    int timeout, QReadWriteLockPrivate *d);
+                                    QDeadlineTimer timeout, QReadWriteLockPrivate *d);
 static bool contendedTryLockForWrite(QAtomicPointer<QReadWriteLockPrivate> &d_ptr,
-                                     int timeout, QReadWriteLockPrivate *d);
+                                     QDeadlineTimer timeout, QReadWriteLockPrivate *d);
 
 /*! \class QReadWriteLock
     \inmodule QtCore
@@ -143,6 +143,7 @@ QReadWriteLock::~QReadWriteLock()
 */
 
 /*!
+    \fn bool QReadWriteLock::tryLockForRead(int timeout)
 
     Attempts to lock for reading. This function returns \c true if the
     lock was obtained; otherwise it returns \c false. If another thread
@@ -161,7 +162,25 @@ QReadWriteLock::~QReadWriteLock()
 
     \sa unlock(), lockForRead()
 */
-bool QReadWriteLock::tryLockForRead(int timeout)
+
+/*!
+    \overload
+    \since 6.6
+
+    Attempts to lock for reading. This function returns \c true if the lock was
+    obtained; otherwise it returns \c false. If another thread has locked for
+    writing, this function will wait until \a timeout expires for the lock to
+    become available.
+
+    If the lock was obtained, the lock must be unlocked with unlock()
+    before another thread can successfully lock it for writing.
+
+    It is not possible to lock for read if the thread already has
+    locked for write.
+
+    \sa unlock(), lockForRead()
+*/
+bool QReadWriteLock::tryLockForRead(QDeadlineTimer timeout)
 {
     // Fast case: non contended:
     QReadWriteLockPrivate *d = d_ptr.loadRelaxed();
@@ -171,7 +190,7 @@ bool QReadWriteLock::tryLockForRead(int timeout)
 }
 
 Q_NEVER_INLINE static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLockPrivate> &d_ptr,
-                                                   int timeout, QReadWriteLockPrivate *d)
+                                                   QDeadlineTimer timeout, QReadWriteLockPrivate *d)
 {
     while (true) {
         if (d == nullptr) {
@@ -191,7 +210,7 @@ Q_NEVER_INLINE static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLock
         }
 
         if (d == dummyLockedForWrite) {
-            if (!timeout)
+            if (timeout.hasExpired())
                 return false;
 
             // locked for write, assign a d_ptr and wait.
@@ -239,6 +258,8 @@ Q_NEVER_INLINE static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLock
 */
 
 /*!
+    \fn QReadWriteLock::tryLockForWrite(int timeout)
+
     Attempts to lock for writing. This function returns \c true if the
     lock was obtained; otherwise it returns \c false. If another thread
     has locked for reading or writing, this function will wait for at
@@ -256,7 +277,25 @@ Q_NEVER_INLINE static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLock
 
     \sa unlock(), lockForWrite()
 */
-bool QReadWriteLock::tryLockForWrite(int timeout)
+
+/*!
+    \overload
+    \since 6.6
+
+    Attempts to lock for writing. This function returns \c true if the lock was
+    obtained; otherwise it returns \c false. If another thread has locked for
+    reading or writing, this function will wait until \a timeout expires for
+    the lock to become available.
+
+    If the lock was obtained, the lock must be unlocked with unlock()
+    before another thread can successfully lock it.
+
+    It is not possible to lock for write if the thread already has
+    locked for read.
+
+    \sa unlock(), lockForWrite()
+*/
+bool QReadWriteLock::tryLockForWrite(QDeadlineTimer timeout)
 {
     // Fast case: non contended:
     QReadWriteLockPrivate *d = d_ptr.loadRelaxed();
@@ -266,7 +305,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
 }
 
 Q_NEVER_INLINE static bool contendedTryLockForWrite(QAtomicPointer<QReadWriteLockPrivate> &d_ptr,
-                                                    int timeout, QReadWriteLockPrivate *d)
+                                                    QDeadlineTimer timeout, QReadWriteLockPrivate *d)
 {
     while (true) {
         if (d == nullptr) {
@@ -276,7 +315,7 @@ Q_NEVER_INLINE static bool contendedTryLockForWrite(QAtomicPointer<QReadWriteLoc
         }
 
         if (isUncontendedLocked(d)) {
-            if (!timeout)
+            if (timeout.hasExpired())
                 return false;
 
             // locked for either read or write, assign a d_ptr and wait.
@@ -370,23 +409,16 @@ void QReadWriteLock::unlock()
     }
 }
 
-bool QReadWriteLockPrivate::lockForRead(std::unique_lock<QtPrivate::mutex> &lock, int timeout)
+bool QReadWriteLockPrivate::lockForRead(std::unique_lock<QtPrivate::mutex> &lock, QDeadlineTimer timeout)
 {
     Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
 
-    QElapsedTimer t;
-    if (timeout > 0)
-        t.start();
-
     while (waitingWriters || writerCount) {
-        if (timeout == 0)
+        if (timeout.hasExpired())
             return false;
-        if (timeout > 0) {
-            auto elapsed = t.elapsed();
-            if (elapsed > timeout)
-                return false;
+        if (!timeout.isForever()) {
             waitingReaders++;
-            readerCond.wait_for(lock, ms{timeout - elapsed});
+            readerCond.wait_until(lock, timeout.deadline<steady_clock>());
         } else {
             waitingReaders++;
             readerCond.wait(lock);
@@ -398,29 +430,22 @@ bool QReadWriteLockPrivate::lockForRead(std::unique_lock<QtPrivate::mutex> &lock
     return true;
 }
 
-bool QReadWriteLockPrivate::lockForWrite(std::unique_lock<QtPrivate::mutex> &lock, int timeout)
+bool QReadWriteLockPrivate::lockForWrite(std::unique_lock<QtPrivate::mutex> &lock, QDeadlineTimer timeout)
 {
     Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
 
-    QElapsedTimer t;
-    if (timeout > 0)
-        t.start();
-
     while (readerCount || writerCount) {
-        if (timeout == 0)
-            return false;
-        if (timeout > 0) {
-            auto elapsed = t.elapsed();
-            if (elapsed > timeout) {
-                if (waitingReaders && !waitingWriters && !writerCount) {
-                    // We timed out and now there is no more writers or waiting writers, but some
-                    // readers were queued (probably because of us). Wake the waiting readers.
-                    readerCond.notify_all();
-                }
-                return false;
+        if (timeout.hasExpired()) {
+            if (waitingReaders && !waitingWriters && !writerCount) {
+                // We timed out and now there is no more writers or waiting writers, but some
+                // readers were queued (probably because of us). Wake the waiting readers.
+                readerCond.notify_all();
             }
+            return false;
+        }
+        if (!timeout.isForever()) {
             waitingWriters++;
-            writerCond.wait_for(lock, ms{timeout - elapsed});
+            writerCond.wait_until(lock, timeout.deadline<steady_clock>());
         } else {
             waitingWriters++;
             writerCond.wait(lock);
@@ -448,7 +473,7 @@ static auto handleEquals(Qt::HANDLE handle)
     return [handle](QReadWriteLockPrivate::Reader reader) { return reader.handle == handle; };
 }
 
-bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
+bool QReadWriteLockPrivate::recursiveLockForRead(QDeadlineTimer timeout)
 {
     Q_ASSERT(recursive);
     auto lock = qt_unique_lock(mutex);
@@ -470,7 +495,7 @@ bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
     return true;
 }
 
-bool QReadWriteLockPrivate::recursiveLockForWrite(int timeout)
+bool QReadWriteLockPrivate::recursiveLockForWrite(QDeadlineTimer timeout)
 {
     Q_ASSERT(recursive);
     auto lock = qt_unique_lock(mutex);
