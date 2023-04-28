@@ -36,13 +36,6 @@
 #include "qcocoaintegration.h"
 #include <QtGui/private/qmacmimeregistry_p.h>
 
-// Private interface
-@interface QNSView ()
-- (BOOL)isTransparentForUserInput;
-@property (assign) NSView* previousSuperview;
-@property (assign) NSWindow* previousWindow;
-@end
-
 @interface QNSView (Drawing) <CALayerDelegate>
 - (void)initDrawing;
 @end
@@ -84,6 +77,19 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
 
 @interface QNSView (ComplexText) <NSTextInputClient>
 @property (readonly) QObject* focusObject;
+@end
+
+@interface QT_MANGLE_NAMESPACE(QNSViewMenuHelper) : NSObject
+- (instancetype)initWithView:(QNSView *)theView;
+@end
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
+
+// Private interface
+@interface QNSView ()
+- (BOOL)isTransparentForUserInput;
+@property (assign) NSView* previousSuperview;
+@property (assign) NSWindow* previousWindow;
+@property (retain) QNSViewMenuHelper* menuHelper;
 @end
 
 @implementation QNSView {
@@ -140,6 +146,8 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
         m_sendKeyEvent = false;
         m_currentlyInterpretedKeyEvent = nil;
         m_lastSeenContext = NSDraggingContextWithinApplication;
+
+        self.menuHelper = [[[QNSViewMenuHelper alloc] initWithView:self] autorelease];
     }
     return self;
 }
