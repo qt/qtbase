@@ -562,7 +562,7 @@ macro(qt_build_repo_end)
     endif()
 
     if(NOT QT_SUPERBUILD)
-        qt_internal_save_previously_found_packages()
+        qt_internal_save_previously_visited_packages()
     endif()
 
     if(QT_INTERNAL_FRESH_REQUESTED)

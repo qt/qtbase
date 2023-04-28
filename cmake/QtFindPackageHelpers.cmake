@@ -41,9 +41,12 @@ macro(qt_find_package)
     # Due to this behavior being different from what general CMake projects expect, it is only
     # done for -developer-builds.
     if(QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES AND
-            NOT "${ARGV0}" IN_LIST QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES)
+            NOT "${ARGV0}" IN_LIST QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES
+            AND "${ARGV0}" IN_LIST QT_INTERNAL_PREVIOUSLY_SEARCHED_PACKAGES)
         set(_qt_find_package_skip_find_package TRUE)
     endif()
+
+    set_property(GLOBAL APPEND PROPERTY _qt_previously_searched_packages "${ARGV0}")
 
     if(QT_DEBUG_QT_FIND_PACKAGE AND ${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
         set(_qt_find_package_skip_find_package TRUE)
@@ -221,7 +224,7 @@ endmacro()
 # Only applies to -developer-builds by default.
 # Can also be opted in or opted out via QT_INTERNAL_SAVE_PREVIOUSLY_FOUND_PACKAGES.
 # Opting out will need two reconfigurations to take effect.
-function(qt_internal_save_previously_found_packages)
+function(qt_internal_save_previously_visited_packages)
     if(DEFINED QT_INTERNAL_SAVE_PREVIOUSLY_FOUND_PACKAGES)
         set(should_save "${QT_INTERNAL_SAVE_PREVIOUSLY_FOUND_PACKAGES}")
     else()
@@ -235,6 +238,7 @@ function(qt_internal_save_previously_found_packages)
     if(NOT should_save)
         # When the value is flipped to OFF, remove any previously saved packages.
         unset(QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES CACHE)
+        unset(QT_INTERNAL_PREVIOUSLY_SEARCHED_PACKAGES CACHE)
         return()
     endif()
 
@@ -243,6 +247,15 @@ function(qt_internal_save_previously_found_packages)
         list(REMOVE_DUPLICATES _qt_previously_found_packages)
         set(QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES "${_qt_previously_found_packages}" CACHE INTERNAL
             "List of CMake packages found during configuration using qt_find_package.")
+    endif()
+
+    get_property(_qt_previously_searched_packages GLOBAL PROPERTY _qt_previously_searched_packages)
+    if(_qt_previously_searched_packages)
+        list(REMOVE_DUPLICATES _qt_previously_searched_packages)
+        set(QT_INTERNAL_PREVIOUSLY_SEARCHED_PACKAGES
+            "${_qt_previously_searched_packages}" CACHE INTERNAL
+            "List of CMake packages searched during configuration using qt_find_package."
+        )
     endif()
 endfunction()
 

@@ -109,7 +109,7 @@ from the build directory")
     set(QT_INTERNAL_BUILD_INSTRUCTIONS_SHOWN "TRUE" CACHE STRING "" FORCE)
 
     if(QT_SUPERBUILD)
-        qt_internal_save_previously_found_packages()
+        qt_internal_save_previously_visited_packages()
     endif()
 endfunction()
 
