@@ -2428,8 +2428,8 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
             connector->connectAllSignals(node->obj);
         }
 
-        connect(connector, SIGNAL(relaySignal(QObject*,const QMetaObject*,int,QVariantList)),
-                this, SLOT(relaySignal(QObject*,const QMetaObject*,int,QVariantList)),
+        connect(connector, &QDBusAdaptorConnector::relaySignal, this,
+                &QDBusConnectionPrivate::relaySignal,
                 Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
     }
 }

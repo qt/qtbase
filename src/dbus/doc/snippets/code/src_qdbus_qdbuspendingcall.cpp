@@ -33,8 +33,8 @@ void DBus_PendingCall_Interface::callInterfaceMain()
     QDBusPendingCall async = iface->asyncCall("RemoteMethod", value1, value2);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
 
-    QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     this, SLOT(callFinishedSlot(QDBusPendingCallWatcher*)));
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this,
+                     &DBus_PendingCall_Interface::callFinishedSlot);
 //! [0]
 
 }

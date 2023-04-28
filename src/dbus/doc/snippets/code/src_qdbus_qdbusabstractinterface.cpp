@@ -52,7 +52,7 @@ QDBusPendingCall pcall = interface->asyncCall("Process"_L1, value);
 
 QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pcall);
 
-QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                this, SLOT(callFinishedSlot(QDBusPendingCallWatcher*)));
+QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this,
+                 &Abstract_DBus_Interface::callFinishedSlot);
 //! [1]
 }
