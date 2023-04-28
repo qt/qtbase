@@ -2366,6 +2366,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
                    mouse_buttons, e->modifiers, e->phase, e->inverted, e->source, device);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(window, &ev);
+    e->eventAccepted = ev.isAccepted();
 #else
      Q_UNUSED(e);
 #endif // QT_CONFIG(wheelevent)
