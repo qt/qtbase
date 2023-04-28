@@ -308,7 +308,7 @@ void QListModel::sort(int column, Qt::SortOrder order)
     }
 
     const auto compare = (order == Qt::AscendingOrder ? &itemLessThan : &itemGreaterThan);
-    std::sort(sorting.begin(), sorting.end(), compare);
+    std::stable_sort(sorting.begin(), sorting.end(), compare);
     QModelIndexList fromIndexes;
     QModelIndexList toIndexes;
     const int sortingCount = sorting.size();
@@ -328,76 +328,34 @@ void QListModel::sort(int column, Qt::SortOrder order)
 /**
  * This function assumes that all items in the model except the items that are between
  * (inclusive) start and end are sorted.
- * With these assumptions, this function can ensure that the model is sorted in a
- * much more efficient way than doing a naive 'sort everything'.
- * (provided that the range is relatively small compared to the total number of items)
  */
 void QListModel::ensureSorted(int column, Qt::SortOrder order, int start, int end)
 {
     if (column != 0)
         return;
 
-    const int count = end - start + 1;
-    QList<QPair<QListWidgetItem *, int>> sorting(count);
-    for (int i = 0; i < count; ++i) {
-        sorting[i].first = items.at(start + i);
-        sorting[i].second = start + i;
-    }
+    const auto compareLt = [](const QListWidgetItem *left, const QListWidgetItem *right) -> bool {
+        return *left < *right;
+    };
 
-    const auto compare = (order == Qt::AscendingOrder ? &itemLessThan : &itemGreaterThan);
-    std::sort(sorting.begin(), sorting.end(), compare);
+    const auto compareGt = [](const QListWidgetItem *left, const QListWidgetItem *right) -> bool {
+        return *right < *left;
+    };
 
-    QModelIndexList oldPersistentIndexes = persistentIndexList();
-    QModelIndexList newPersistentIndexes = oldPersistentIndexes;
-    QList<QListWidgetItem*> tmp = items;
-    QList<QListWidgetItem*>::iterator lit = tmp.begin();
-    bool changed = false;
-    for (int i = 0; i < count; ++i) {
-        int oldRow = sorting.at(i).second;
-        int tmpitepos = lit - tmp.begin();
-        QListWidgetItem *item = tmp.takeAt(oldRow);
-        if (tmpitepos > tmp.size())
-            --tmpitepos;
-        lit = tmp.begin() + tmpitepos;
-        lit = sortedInsertionIterator(lit, tmp.end(), order, item);
-        int newRow = qMax<qsizetype>(lit - tmp.begin(), 0);
-        lit = tmp.insert(lit, item);
-        if (newRow != oldRow) {
-            if (!changed) {
-                emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
-                oldPersistentIndexes = persistentIndexList();
-                newPersistentIndexes = oldPersistentIndexes;
-                changed = true;
-            }
-            for (int j = i + 1; j < count; ++j) {
-                int otherRow = sorting.at(j).second;
-                if (oldRow < otherRow && newRow >= otherRow)
-                    --sorting[j].second;
-                else if (oldRow > otherRow && newRow <= otherRow)
-                    ++sorting[j].second;
-            }
-            for (int k = 0; k < newPersistentIndexes.size(); ++k) {
-                QModelIndex pi = newPersistentIndexes.at(k);
-                int oldPersistentRow = pi.row();
-                int newPersistentRow = oldPersistentRow;
-                if (oldPersistentRow == oldRow)
-                    newPersistentRow = newRow;
-                else if (oldRow < oldPersistentRow && newRow >= oldPersistentRow)
-                    newPersistentRow = oldPersistentRow - 1;
-                else if (oldRow > oldPersistentRow && newRow <= oldPersistentRow)
-                    newPersistentRow = oldPersistentRow + 1;
-                if (newPersistentRow != oldPersistentRow)
-                    newPersistentIndexes[k] = createIndex(newPersistentRow,
-                                                          pi.column(), pi.internalPointer());
-            }
-        }
-    }
+    /** Check if range [start,end] is already in sorted position in list.
+     *  Take for this the assumption, that outside [start,end] the list
+     *  is already sorted. Therefore the sorted check has to be extended
+     *  to the first element that is known to be sorted before the range
+     *  [start, end], which is (start-1) and the first element after the
+     *  range [start, end], which is (end+2) due to end being included.
+    */
+    const auto beginChangedIterator = items.constBegin() + qMax(start - 1, 0);
+    const auto endChangedIterator = items.constBegin() + qMin(end + 2, items.size());
+    const bool needsSorting = !std::is_sorted(beginChangedIterator, endChangedIterator,
+                                              order == Qt::AscendingOrder ? compareLt : compareGt);
 
-    if (changed) {
-        items = tmp;
-        changePersistentIndexList(oldPersistentIndexes, newPersistentIndexes);
-        emit layoutChanged({}, QAbstractItemModel::VerticalSortHint);
-    }
+    if (needsSorting)
+        sort(column, order);
 }
 
 bool QListModel::itemLessThan(const QPair<QListWidgetItem*,int> &left,
