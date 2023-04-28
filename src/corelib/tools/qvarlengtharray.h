@@ -790,27 +790,28 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *arr
     }
 
     auto dst = begin();
-    while (first != last && dst != end()) {
-        *dst = *first; // reuse initialized buffer
+    const auto dend = end();
+    while (true) {
+        if (first == last) {          // ran out of elements to assign
+            std::destroy(dst, dend);
+            break;
+        }
+        if (dst == dend) {            // ran out of existing elements to overwrite
+            if constexpr (IsFwdIt) {
+                dst = std::uninitialized_copy(first, last, dst);
+                break;
+            } else {
+                do {
+                    emplace_back_impl(prealloc, array, *first);
+                } while (++first != last);
+                return; // size() is already correct (and dst invalidated)!
+            }
+        }
+        *dst = *first;                // overwrite existing element
         ++dst;
         ++first;
     }
-
-    qsizetype n;
-    if constexpr (IsFwdIt) {
-        dst = std::uninitialized_copy(first, last, dst);
-        n = dst - begin();
-        if (n > s) // otherwise: readjust 's' in erase() later
-            s = n;
-    } else {
-        n = dst - begin();
-        while (first != last) {
-            emplace_back_impl(prealloc, array, *first);
-            ++first;
-            ++n;
-        }
-    }
-    erase(data() + n, data() + size());
+    this->s = dst - begin();
 }
 
 template <class T>
