@@ -494,6 +494,16 @@ void tst_QDate::weekNumber_invalid()
     QCOMPARE( dt.weekNumber( &yearNumber ), 0 );
 }
 
+/* The MS backend tends to lack data for historical transitions.  So some of the
+   transition-based tests will get wrong results, that we can't do anything
+   about, when using that backend.  Rather than complicating the #if-ery more,
+   overtly record, in a flags column, which we need to ignore and merely make
+   the testing of these flags subject to #if-ery.
+*/
+enum MsKludge { IgnoreStart = 1, IgnoreEnd = 2, };
+Q_DECLARE_FLAGS(MsKludges, MsKludge)
+Q_DECLARE_OPERATORS_FOR_FLAGS(MsKludges)
+
 void tst_QDate::startOfDay_endOfDay_data()
 {
     QTest::addColumn<QDate>("date"); // Typically a spring-forward.
@@ -502,11 +512,14 @@ void tst_QDate::startOfDay_endOfDay_data()
     // The start and end times in that zone:
     QTest::addColumn<QTime>("start");
     QTest::addColumn<QTime>("end");
+    QTest::addColumn<MsKludges>("msKludge");
 
     const QTime early(0, 0), late(23, 59, 59, 999), invalid(QDateTime().time());
+    constexpr MsKludges IgnoreBoth = IgnoreStart | IgnoreEnd;
+    const QTimeZone UTC(QTimeZone::UTC);
 
     // UTC and fixed offset are always available and predictable:
-    QTest::newRow("epoch") << epochDate() << QTimeZone(QTimeZone::UTC) << early << late;
+    QTest::newRow("epoch") << epochDate() << UTC << early << late << MsKludges{};
 
     const struct {
         const char *test;
@@ -514,33 +527,22 @@ void tst_QDate::startOfDay_endOfDay_data()
         const QDate day;
         const QTime start;
         const QTime end;
+        const MsKludges msOpt;
     } transitions[] = {
         // The western Mexico time-zones skipped the first hour of 1970.
-        { "BajaMexico", "America/Hermosillo", QDate(1970, 1, 1),
-#ifdef USING_WIN_TZ // MS's TZ APIs lack data
-          invalid,
-#else
-          QTime(1, 0),
-#endif
-          late },
+        { "BajaMexico", "America/Hermosillo", QDate(1970, 1, 1), QTime(1, 0), late, IgnoreStart },
 
         // Compare tst_QDateTime::fromStringDateFormat(ISO 24:00 in DST).
-        { "Brazil", "America/Sao_Paulo", QDate(2008, 10, 19), QTime(1, 0), late },
+        { "Brazil", "America/Sao_Paulo", QDate(2008, 10, 19), QTime(1, 0), late, MsKludges{} },
 
         // Several southern zones within EET (but not the northern ones) spent
         // part of the 1990s using midnight as spring transition.
-        { "Sofia", "Europe/Sofia", QDate(1994, 3, 27),
-#ifdef USING_WIN_TZ // MS's TZ APIs lack data
-          invalid,
-#else
-          QTime(1, 0),
-#endif
-          late },
+        { "Sofia", "Europe/Sofia", QDate(1994, 3, 27), QTime(1, 0), late, IgnoreStart },
 
         // Two Pacific zones skipped days to get on the west of the
         // International Date Line; those days have neither start nor end.
-        { "Kiritimati", "Pacific/Kiritimati", QDate(1994, 12, 31), invalid, invalid },
-        { "Samoa", "Pacific/Apia", QDate(2011, 12, 30), invalid, invalid },
+        { "Kiritimati", "Pacific/Kiritimati", QDate(1994, 12, 31), invalid, invalid, IgnoreBoth },
+        { "Samoa", "Pacific/Apia", QDate(2011, 12, 30), invalid, invalid, IgnoreBoth },
 
         // TODO: find other zones with transitions at/crossing midnight.
     };
@@ -550,9 +552,12 @@ void tst_QDate::startOfDay_endOfDay_data()
     const QTimeZone sys = QTimeZone::systemTimeZone();
     for (const auto &tran : transitions) {
         if (QTimeZone zone(tran.zone); zone.isValid()) {
-            QTest::newRow(tran.test) << tran.day << zone << tran.start << tran.end;
-            if (zone == sys)
-                QTest::addRow("Local=%s", tran.test) << tran.day << local << tran.start << tran.end;
+            QTest::newRow(tran.test)
+                << tran.day << zone << tran.start << tran.end << tran.msOpt;
+            if (zone == sys) {
+                QTest::addRow("Local=%s", tran.test)
+                    << tran.day << local << tran.start << tran.end << tran.msOpt;
+            }
         }
     }
 #else
@@ -565,8 +570,10 @@ void tst_QDate::startOfDay_endOfDay_data()
         return false;
     };
     for (const auto &tran : transitions) {
-        if (isLocalZone(tran.zone)) // Might need a different name to match
-            QTest::addRow("Local=%s", tran.test) << tran.day << local << tran.start << tran.end;
+        if (isLocalZone(tran.zone)) { // Might need a different name to match
+            QTest::addRow("Local=%s", tran.test)
+                << tran.day << local << tran.start << tran.end << tran.msOpt;
+        }
     }
 #endif // timezone
 }
@@ -577,6 +584,12 @@ void tst_QDate::startOfDay_endOfDay()
     QFETCH(const QTimeZone, zone);
     QFETCH(const QTime, start);
     QFETCH(const QTime, end);
+#ifdef USING_WIN_TZ // Coping with MS limitations.
+    QFETCH(const MsKludges, msKludge);
+#define UNLESSMS(flag) if (!msKludge.testFlag(flag))
+#else
+#define UNLESSMS(flag)
+#endif
     QVERIFY(zone.isValid());
 
     QDateTime front(date.startOfDay(zone)), back(date.endOfDay(zone));
@@ -587,12 +600,13 @@ void tst_QDate::startOfDay_endOfDay()
 
     if (start.isValid()) {
         QCOMPARE(front.date(), date);
-        QCOMPARE(front.time(), start);
+        UNLESSMS(IgnoreStart) QCOMPARE(front.time(), start);
     }
     if (end.isValid()) {
         QCOMPARE(back.date(), date);
-        QCOMPARE(back.time(), end);
+        UNLESSMS(IgnoreEnd) QCOMPARE(back.time(), end);
     }
+#undef UNLESSMS
 }
 
 void tst_QDate::startOfDay_endOfDay_fixed_data()
