@@ -503,7 +503,7 @@ namespace QtPrivate {
 
         if constexpr (QtPrivate::FunctionPointer<Functor>::IsPointerToMemberFunction) {
             using ActualArguments = typename ActualSignature::Arguments;
-            return new QtPrivate::QSlotObject<Functor, ActualArguments, void>(func);
+            return new QtPrivate::QSlotObject<Functor, ActualArguments, void>(std::move(func));
         } else {
             constexpr int MatchingArgumentCount = QtPrivate::countMatchingArguments<Prototype, Functor>();
             using ActualArguments = typename QtPrivate::List_Left<ExpectedArguments, MatchingArgumentCount>::Value;

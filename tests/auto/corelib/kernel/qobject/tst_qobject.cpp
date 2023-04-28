@@ -8363,6 +8363,11 @@ class AsyncCaller : public QObject
 {
     Q_OBJECT
 public:
+    ~AsyncCaller()
+    {
+        if (slotObject)
+            slotObject->destroyIfLastRef();
+    }
     void callback0() {}
     void callback1(const QString &) {}
     void callbackInt(int) {}
@@ -8377,9 +8382,12 @@ public:
     template<typename Functor>
     bool callMe0(const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *, Functor &&func)
     {
+        if (slotObject) {
+            slotObject->destroyIfLastRef();
+            slotObject = nullptr;
+        }
         QtPrivate::AssertCompatibleFunctions<Prototype0, Functor>();
-        auto *slotObject = QtPrivate::makeSlotObject<Prototype0>(std::forward<Functor>(func));
-        slotObject->destroyIfLastRef();
+        slotObject = QtPrivate::makeSlotObject<Prototype0>(std::forward<Functor>(func));
         return true;
     }
 
@@ -8392,9 +8400,12 @@ public:
     template<typename Functor>
     bool callMe1(const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *, Functor &&func)
     {
+        if (slotObject) {
+            slotObject->destroyIfLastRef();
+            slotObject = nullptr;
+        }
         QtPrivate::AssertCompatibleFunctions<Prototype1, Functor>();
-        auto *slotObject = QtPrivate::makeSlotObject<Prototype1>(std::forward<Functor>(func));
-        slotObject->destroyIfLastRef();
+        slotObject = QtPrivate::makeSlotObject<Prototype1>(std::forward<Functor>(func));
         return true;
     }
 
@@ -8403,10 +8414,13 @@ public:
     {
         return callMe1(nullptr, std::forward<Functor>(func));
     }
+
+    QtPrivate::QSlotObjectBase *slotObject = nullptr;
 };
 
 static void freeFunction0() {}
 static void freeFunction1(QString) {}
+static void freeFunctionVariant(QVariant) {}
 
 template<typename Prototype, typename Functor>
 inline constexpr bool compiles(Functor &&) {
@@ -8415,11 +8429,15 @@ inline constexpr bool compiles(Functor &&) {
 
 void tst_QObject::asyncCallbackHelper()
 {
+    QString arg1 = "Parameter";
+    void *argv[] = { nullptr, &arg1 };
+
     auto lambda0 = []{};
     auto lambda1 = [](const QString &) {};
     auto lambda2 = [](const QString &, int) {};
     const auto constLambda = [](const QString &) {};
     auto moveOnlyLambda = [u = std::unique_ptr<int>()]{};
+    auto moveOnlyLambda1 = [u = std::unique_ptr<int>()](const QString &){};
 
     SlotFunctor functor0;
     SlotFunctorString functor1;
@@ -8428,6 +8446,8 @@ void tst_QObject::asyncCallbackHelper()
     static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::callback0));
     static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::staticCallback0));
     static_assert(compiles<AsyncCaller::Prototype0>(lambda0));
+    static_assert(!compiles<AsyncCaller::Prototype0>(moveOnlyLambda));
+    static_assert(compiles<AsyncCaller::Prototype0>(std::move(moveOnlyLambda)));
     static_assert(compiles<AsyncCaller::Prototype0>(freeFunction0));
     static_assert(compiles<AsyncCaller::Prototype0>(functor0));
 
@@ -8442,6 +8462,8 @@ void tst_QObject::asyncCallbackHelper()
     static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::callback1));
     static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::staticCallback1));
     static_assert(compiles<AsyncCaller::Prototype1>(lambda1));
+    static_assert(!compiles<AsyncCaller::Prototype1>(moveOnlyLambda1));
+    static_assert(compiles<AsyncCaller::Prototype1>(std::move(moveOnlyLambda1)));
     static_assert(compiles<AsyncCaller::Prototype1>(constLambda));
     static_assert(compiles<AsyncCaller::Prototype1>(freeFunction1));
     static_assert(compiles<AsyncCaller::Prototype1>(functor1));
@@ -8470,6 +8492,8 @@ void tst_QObject::asyncCallbackHelper()
     // the return value through to anything.
     static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::returnInt));
 
+    static_assert(compiles<AsyncCaller::Prototype1>(freeFunctionVariant));
+
     AsyncCaller caller;
     // with context
     QVERIFY(caller.callMe0(&caller, &AsyncCaller::callback0));
@@ -8477,7 +8501,7 @@ void tst_QObject::asyncCallbackHelper()
     QVERIFY(caller.callMe0(&caller, &AsyncCaller::staticCallback0));
     QVERIFY(caller.callMe0(&caller, lambda0));
     QVERIFY(caller.callMe0(&caller, freeFunction0));
-//    QVERIFY(caller.callMe0(&caller, moveOnlyLambda));
+    QVERIFY(caller.callMe0(&caller, std::move(moveOnlyLambda)));
 
     QVERIFY(caller.callMe1(&caller, &AsyncCaller::callback1));
     QVERIFY(caller.callMe1(&caller, &AsyncCaller::staticCallback1));
@@ -8489,12 +8513,45 @@ void tst_QObject::asyncCallbackHelper()
     QVERIFY(caller.callMe0(&AsyncCaller::staticCallback0));
     QVERIFY(caller.callMe0(lambda0));
     QVERIFY(caller.callMe0(freeFunction0));
-//    QVERIFY(caller.callMe0(moveOnlyLambda));
 
     QVERIFY(caller.callMe1(&AsyncCaller::staticCallback1));
     QVERIFY(caller.callMe1(lambda1));
     QVERIFY(caller.callMe1(constLambda));
+    QVERIFY(caller.callMe1(std::move(moveOnlyLambda1)));
     QVERIFY(caller.callMe1(freeFunction1));
+
+    {
+        struct MoveOnlyFunctor {
+            MoveOnlyFunctor() : payload("Hello World!") {}
+            MoveOnlyFunctor(MoveOnlyFunctor &&) = default;
+            MoveOnlyFunctor(const MoveOnlyFunctor &) = delete;
+            ~MoveOnlyFunctor() = default;
+
+            void operator()() const { qDebug() << payload; }
+            QString payload;
+        } moveOnlyFunctor;
+        QVERIFY(caller.callMe0(std::move(moveOnlyFunctor)));
+    }
+    caller.slotObject->call(nullptr, argv);
+
+    // mutable lambda; same behavior as mutableFunctor - we copy the functor
+    // in the QFunctorSlotObject, so the original is not modified
+    int status = 0;
+    auto mutableLambda1 = [&status, calls = 0]() mutable { status = ++calls; };
+
+    mutableLambda1();
+    QCOMPARE(status, 1);
+    QVERIFY(caller.callMe0(mutableLambda1)); // this copies the lambda with count == 1
+    caller.slotObject->call(nullptr, argv);  // this doesn't change mutableLambda1, but the copy
+    QCOMPARE(status, 2);
+    mutableLambda1();
+    QCOMPARE(status, 2);                     // and we are still at two
+
+    auto mutableLambda2 = [calls = 0]() mutable { return ++calls; };
+    QCOMPARE(mutableLambda2(), 1);
+    QVERIFY(caller.callMe0(mutableLambda2)); // this copies the lambda
+    caller.slotObject->call(nullptr, argv);  // this call doesn't change mutableLambda2
+    QCOMPARE(mutableLambda2(), 2);           // so we are still at 2
 }
 
 QTEST_MAIN(tst_QObject)
