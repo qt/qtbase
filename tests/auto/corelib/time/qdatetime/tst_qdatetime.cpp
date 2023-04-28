@@ -151,11 +151,33 @@ private Q_SLOTS:
 #endif
 
 private:
+    /*
+      Various zones close to UTC (notably Iceland, the WET zones and several in
+      West Africa) or nominally assigned to it historically (north Canada, the
+      Antarctic) and those that have crossed the international date-line (by
+      skipping or repeating a day) don't have a consistent answer to "which side
+      of UTC is it ?" So the various LocalTimeType members may be different.
+    */
     enum LocalTimeType { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1};
-    LocalTimeType solarMeanType, epochTimeType, futureTimeType;
+    const LocalTimeType solarMeanType, epochTimeType, futureTimeType;
     static constexpr auto UTC = QTimeZone::UTC;
+    static constexpr qint64 epochJd = Q_INT64_C(2440588);
     int preZoneFix;
     bool zoneIsCET;
+
+    static LocalTimeType timeTypeFor(qint64 jand, qint64 juld)
+    {
+        constexpr uint day = 24 * 3600; // in seconds
+        QDateTime jan = QDateTime::fromSecsSinceEpoch(jand * day);
+        QDateTime jul = QDateTime::fromSecsSinceEpoch(juld * day);
+        if (jan.date().toJulianDay() < jand + epochJd || jul.date().toJulianDay() < juld + epochJd)
+            return LocalTimeBehindUtc;
+        if (jan.date().toJulianDay() > jand + epochJd || jul.date().toJulianDay() > juld + epochJd
+                || jan.time().hour() > 0 || jul.time().hour() > 0) {
+            return LocalTimeAheadOfUtc;
+        }
+        return LocalTimeIsUtc;
+    }
 
     class TimeZoneRollback
     {
@@ -184,7 +206,12 @@ private:
 Q_DECLARE_METATYPE(Qt::TimeSpec)
 Q_DECLARE_METATYPE(Qt::DateFormat)
 
-tst_QDateTime::tst_QDateTime()
+tst_QDateTime::tst_QDateTime() :
+    // UTC starts of January and July in the commented years:
+    solarMeanType(timeTypeFor(-62091, -61910)), // 1800
+    epochTimeType(timeTypeFor(0, 181)), // 1970
+    // Use stable future, to which current rule is extrapolated, as surrogate for variable current:
+    futureTimeType(timeTypeFor(24837, 25018)) // 2038
 {
     /*
       Due to some jurisdictions changing their zones and rules, it's possible
@@ -198,7 +225,6 @@ tst_QDateTime::tst_QDateTime()
       might not be properly handled by our work-arounds for the MS backend and
       32-bit time_t; so don't probe them here.
     */
-    constexpr uint day = 24 * 3600; // in seconds
     zoneIsCET = (QDateTime(QDate(2038, 1, 19), QTime(4, 14, 7)).toSecsSinceEpoch() == 0x7fffffff
                  // Entries a year apart robustly differ by multiples of day.
                  && QDate(2015, 7, 1).startOfDay().toSecsSinceEpoch() == 1435701600
@@ -228,30 +254,6 @@ tst_QDateTime::tst_QDateTime()
     Q_ASSERT(preZoneFix > -7200 && preZoneFix < 7200);
     // So it's OK to add it to a QTime() between 02:00 and 22:00, but otherwise
     // we must add it to the QDateTime constructed from it.
-
-    /*
-      Various zones close to UTC (notably Iceland, the WET zones and several in
-      West Africa) or nominally assigned to it historically (north Canada, the
-      Antarctic) and those that have crossed the international date-line (by
-      skipping or repeating a day) don't have a consistent answer to "which side
-      of UTC is it ?" So the three LocalTimeType members may be different.
-    */
-    const auto setType = [day](int year, qint64 jand, qint64 juld, LocalTimeType &set) {
-        QDateTime jan = QDateTime::fromSecsSinceEpoch(jand * day);
-        QDateTime jul = QDateTime::fromSecsSinceEpoch(juld * day);
-        if (jan.date().year() < year || jul.date().month() < 7) {
-            set = LocalTimeBehindUtc;
-        } else if (jan.time().hour() > 0 || jul.time().hour() > 0
-                   || jan.date().day() > 1 || jul.date().day() > 1) {
-            set = LocalTimeAheadOfUtc;
-        } else {
-            set = LocalTimeIsUtc;
-        }
-    };
-    // UTC starts of January and July in the given years:
-    setType(1800, -62091, -61910, solarMeanType);
-    setType(1970, 0, 181, epochTimeType);
-    setType(2038, 24837, 25018, futureTimeType);
 }
 
 void tst_QDateTime::initTestCase()
