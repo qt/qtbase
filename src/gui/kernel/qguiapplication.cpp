@@ -1523,7 +1523,11 @@ void QGuiApplicationPrivate::createEventDispatcher()
     if (platform_integration == nullptr)
         createPlatformIntegration();
 
-    // The platform integration should not mess with the event dispatcher
+    // The platform integration should not result in creating an event dispatcher
+    Q_ASSERT_X(!threadData.loadRelaxed()->eventDispatcher, "QGuiApplication",
+        "Creating the platform integration resulted in creating an event dispatcher");
+
+    // Nor should it mess with the QCoreApplication's event dispatcher
     Q_ASSERT(!eventDispatcher);
 
     eventDispatcher = platform_integration->createEventDispatcher();
