@@ -26,37 +26,38 @@
 
 QT_BEGIN_NAMESPACE
 namespace QtMocHelpers {
-template <uint... Nx> struct StringData
+// The maximum Size of a string literal is 2 GB on 32-bit and 4 GB on 64-bit
+// (but the compiler is likely to give up before you get anywhere near that much)
+static constexpr size_t MaxStringSize =
+        (std::min)(size_t((std::numeric_limits<uint>::max)()),
+                   size_t((std::numeric_limits<qsizetype>::max)()));
+
+template <uint... Nx> constexpr size_t stringDataSizeHelper(std::integer_sequence<uint, Nx...>)
 {
-    static constexpr size_t calculateStringSize()
-    {
-        // same as:
-        //   return (0 + ... + Nx);
-        // but not using the fold expression to avoid exceeding compiler limits
-        size_t total = 0;
-        uint sizes[] = { Nx... };
-        for (uint n : sizes)
-            total += n;
-        return total;
-    }
+    // same as:
+    //   return (0 + ... + Nx);
+    // but not using the fold expression to avoid exceeding compiler limits
+    size_t total = 0;
+    uint sizes[] = { Nx... };
+    for (uint n : sizes)
+        total += n;
+    return total;
+}
 
-    // The maximum Size of a string literal is 2 GB on 32-bit and 4 GB on 64-bit
-    // (but the compiler is likely to give up before you get anywhere near that much)
-    static constexpr size_t MaxStringSize =
-            (std::min)(size_t((std::numeric_limits<uint>::max)()),
-                       size_t((std::numeric_limits<qsizetype>::max)()));
-
-    static constexpr size_t StringSize = calculateStringSize();
+template <int Count, size_t StringSize> struct StringData
+{
     static_assert(StringSize <= MaxStringSize, "Meta Object data is too big");
-
-    uint offsetsAndSizes[2 * sizeof...(Nx)] = {};
+    uint offsetsAndSizes[Count] = {};
     char stringdata0[StringSize] = {};
     constexpr StringData() = default;
 };
 
 template <uint... Nx> constexpr auto stringData(const char (&...strings)[Nx])
 {
-    StringData<Nx...> result;
+    constexpr size_t StringSize = stringDataSizeHelper<Nx...>({});
+    constexpr size_t Count = 2 * sizeof...(Nx);
+
+    StringData<Count, StringSize> result;
     const char *inputs[] = { strings... };
     uint sizes[] = { Nx... };
 
