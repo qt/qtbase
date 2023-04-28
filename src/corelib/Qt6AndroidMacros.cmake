@@ -430,6 +430,13 @@ function(qt6_android_add_apk_target target)
     endif()
     if(QT_ANDROID_DEPLOY_RELEASE)
         list(APPEND extra_args "--release")
+    elseif(NOT QT_BUILD_TESTS)
+    # Workaround for tests: do not set automatically --release flag if QT_BUILD_TESTS is set.
+    # Release package need to be signed. Signing is currently not supported by CI.
+    # What is more, also androidtestrunner is not working on release APKs,
+    # For example running "adb shell run-as" on release APK will finish with the error:
+    #    run-as: Package '[PACKAGE-NAME]' is not debuggable
+        list(APPEND extra_args $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>:--release>)
     endif()
 
     _qt_internal_check_depfile_support(has_depfile_support)
