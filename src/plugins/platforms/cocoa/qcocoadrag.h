@@ -44,7 +44,7 @@ private:
     NSEvent *m_lastEvent;
     NSView *m_lastView;
     Qt::DropAction m_executed_drop_action;
-    QEventLoop internalDragLoop;
+    QEventLoop *m_internalDragLoop = nullptr;
 
     bool maybeDragMultipleItems();
 
