@@ -70,7 +70,7 @@ QPrinterInfo::QPrinterInfo()
     Constructs a copy of \a other.
 */
 QPrinterInfo::QPrinterInfo(const QPrinterInfo &other)
-    : d_ptr((other.d_ptr.data() == shared_null) ? shared_null : new QPrinterInfoPrivate(*other.d_ptr))
+    : d_ptr((other.d_ptr.data() == shared_null) ? &*shared_null : new QPrinterInfoPrivate(*other.d_ptr))
 {
 }
 
