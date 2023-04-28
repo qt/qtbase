@@ -458,17 +458,39 @@ void tst_QDeadlineTimer::overflow()
 
     // Make sure setRemainingTime underflows gracefully
     deadline.setPreciseRemainingTime(std::numeric_limits<qint64>::min() / 10, 0, timerType);
-    QVERIFY(!deadline.isForever());     // The above underflows, so make sure we don't saturate to Forever
-    QCOMPARE(deadline.remainingTimeNSecs(), 0);
-    QVERIFY(deadline.remainingTime() == 0);
+    QVERIFY(deadline.isForever());      // The above could underflow, so make sure we did set to Forever
+    QCOMPARE(deadline.remainingTimeNSecs(), -1);
+    QCOMPARE(deadline.remainingTime(), -1);
     // If the timer is saturated we don't want to get a valid number of milliseconds
-    QCOMPARE(deadline.deadline(), std::numeric_limits<qint64>::min());
+    QCOMPARE(deadline.deadline(), std::numeric_limits<qint64>::max());
 
     // Check that the conversion to milliseconds and nanoseconds underflows gracefully
     deadline.setPreciseDeadline(std::numeric_limits<qint64>::min() / 10, 0, timerType);
     QVERIFY(!deadline.isForever());     // The above underflows, make sure we don't saturate to Forever
     QVERIFY(deadline.deadline() == std::numeric_limits<qint64>::min());
     QVERIFY(deadline.deadlineNSecs() == std::numeric_limits<qint64>::min());
+
+    // Check that subtracting max() twice doesn't make it become positive
+    deadline.setPreciseDeadline(0);
+    deadline -= std::numeric_limits<qint64>::max();
+    deadline -= std::numeric_limits<qint64>::max();
+    QVERIFY(!deadline.isForever());
+    QCOMPARE(deadline.deadline(), std::numeric_limits<qint64>::min());
+    QCOMPARE(deadline.deadlineNSecs(), std::numeric_limits<qint64>::min());
+
+    // Ditto for adding max()
+    deadline.setPreciseDeadline(0);
+    deadline += std::numeric_limits<qint64>::max();
+    deadline += std::numeric_limits<qint64>::max();
+    QVERIFY(deadline.isForever());      // it's so far in the future it's effectively forever
+    QCOMPARE(deadline.deadline(), std::numeric_limits<qint64>::max());
+    QCOMPARE(deadline.deadlineNSecs(), std::numeric_limits<qint64>::max());
+
+    // But we don't un-become forever after saturation
+    deadline -= std::numeric_limits<qint64>::max();
+    QVERIFY(deadline.isForever());
+    QCOMPARE(deadline.deadline(), std::numeric_limits<qint64>::max());
+    QCOMPARE(deadline.deadlineNSecs(), std::numeric_limits<qint64>::max());
 }
 
 void tst_QDeadlineTimer::expire()

@@ -164,7 +164,7 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
     from the moment of the creation of this object, if msecs is positive. If \a
     msecs is zero, this QDeadlineTimer will be marked as expired, causing
     remainingTime() to return zero and deadline() to return an indeterminate
-    time point in the past. If \a msecs is -1, the timer will be set to never
+    time point in the past. If \a msecs is negative, the timer will be set to never
     expire, causing remainingTime() to return -1 and deadline() to return the
     maximum value.
 
@@ -176,6 +176,9 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
     object cannot be used in calculation of how long it is overdue. If that
     functionality is required, use QDeadlineTimer::current() and add time to
     it.
+
+    \note Prior to Qt 6.6, the only value that caused the timer to never expire
+    was -1.
 
     \sa hasExpired(), isForever(), remainingTime(), setRemainingTime()
 */
@@ -243,16 +246,19 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) noexcept
 /*!
     Sets the remaining time for this QDeadlineTimer object to \a msecs
     milliseconds from now, if \a msecs has a positive value. If \a msecs is
-    zero, this QDeadlineTimer object will be marked as expired, whereas a value
-    of -1 will set it to never expire.
+    zero, this QDeadlineTimer object will be marked as expired, whereas a
+    negative value will set it to never expire.
 
     The timer type for this QDeadlineTimer object will be set to the specified \a timerType.
+
+    \note Prior to Qt 6.6, the only value that caused the timer to never expire
+    was -1.
 
     \sa setPreciseRemainingTime(), hasExpired(), isForever(), remainingTime()
 */
 void QDeadlineTimer::setRemainingTime(qint64 msecs, Qt::TimerType timerType) noexcept
 {
-    if (msecs == -1) {
+    if (msecs < 0) {
         *this = QDeadlineTimer(Forever, timerType);
         return;
     }
@@ -266,17 +272,21 @@ void QDeadlineTimer::setRemainingTime(qint64 msecs, Qt::TimerType timerType) noe
 /*!
     Sets the remaining time for this QDeadlineTimer object to \a secs seconds
     plus \a nsecs nanoseconds from now, if \a secs has a positive value. If \a
-    secs is -1, this QDeadlineTimer will be set it to never expire. If both
-    parameters are zero, this QDeadlineTimer will be marked as expired.
+    secs is negative, this QDeadlineTimer will be set it to never expire (this
+    behavior does not apply to \a nsecs). If both parameters are zero, this
+    QDeadlineTimer will be marked as expired.
 
     The timer type for this QDeadlineTimer object will be set to the specified
     \a timerType.
+
+    \note Prior to Qt 6.6, the only condition that caused the timer to never
+    expire was when \a secs was -1.
 
     \sa setRemainingTime(), hasExpired(), isForever(), remainingTime()
 */
 void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::TimerType timerType) noexcept
 {
-    if (secs == -1) {
+    if (secs < 0) {
         *this = QDeadlineTimer(Forever, timerType);
         return;
     }
