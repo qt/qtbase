@@ -296,7 +296,7 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     newConnection->ref.ref();
     QReadLocker serverLock(&serverConnection->lock);
     QDBusConnectionDispatchEnabler *o = new QDBusConnectionDispatchEnabler(newConnection);
-    QTimer::singleShot(0, o, SLOT(execute()));
+    QMetaObject::invokeMethod(o, &QDBusConnectionDispatchEnabler::execute, Qt::QueuedConnection);
     if (serverConnection->serverObject)
         o->moveToThread(serverConnection->serverObject->thread());
 }

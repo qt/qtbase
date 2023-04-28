@@ -153,7 +153,8 @@ QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(QDBusConnection::Bu
     if (suspendedDelivery && data.result->connection) {
         data.result->ref.ref();
         QDBusConnectionDispatchEnabler *o = new QDBusConnectionDispatchEnabler(data.result);
-        QTimer::singleShot(0, o, SLOT(execute()));
+        QMetaObject::invokeMethod(o, &QDBusConnectionDispatchEnabler::execute,
+                                  Qt::QueuedConnection);
         o->moveToThread(qApp->thread());    // qApp was checked in the caller
     }
     return data.result;
