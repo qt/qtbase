@@ -889,20 +889,28 @@ QSslCipher QTlsBackend::createCiphersuite(const QString &suiteName, QSsl::SslPro
 
 /*!
     \internal
-    Auxiliary function. Creates a new QSslCipher from \a name (which is an implementation-specific
-    string), \a protocol and \a protocolString, e.g.:
+    Auxiliary function. Creates a new QSslCipher from \a name, \a keyExchangeMethod, \a encryptionMethod,
+    \a authenticationMethod, \a bits, \a protocol version and \a protocolString.
+    For example:
     \code
-    createCipher(QStringLiteral("schannel"), QSsl::TlsV1_2, "TLSv1.2"_L1);
+    createCiphersuite("ECDHE-RSA-AES256-GCM-SHA256"_L1, "ECDH"_L1, "AES"_L1, "RSA"_L1, 256,
+                      QSsl::TlsV1_2, "TLSv1.2"_L1);
     \endcode
 */
-QSslCipher QTlsBackend::createCipher(const QString &name, QSsl::SslProtocol protocol,
-                                     const QString &protocolString)
+QSslCipher QTlsBackend::createCiphersuite(const QString &name, const QString &keyExchangeMethod,
+                                          const QString &encryptionMethod,
+                                          const QString &authenticationMethod,
+                                          int bits, QSsl::SslProtocol protocol,
+                                          const QString &protocolString)
 {
-    // Note the name 'createCipher' (not 'ciphersuite'): we don't provide
-    // information about Kx, Au, bits/supported etc.
     QSslCipher cipher;
     cipher.d->isNull = false;
     cipher.d->name = name;
+    cipher.d->bits = bits;
+    cipher.d->supportedBits = bits;
+    cipher.d->keyExchangeMethod = keyExchangeMethod;
+    cipher.d->encryptionMethod = encryptionMethod;
+    cipher.d->authenticationMethod = authenticationMethod;
     cipher.d->protocol = protocol;
     cipher.d->protocolString = protocolString;
     return cipher;

@@ -93,6 +93,7 @@ private:
     QSslSocket *q = nullptr;
     QSslSocketPrivate *d = nullptr;
 
+    SecPkgContext_CipherInfo cipherInfo = {};
     SecPkgContext_ConnectionInfo connectionInfo = {};
     SecPkgContext_StreamSizes streamSizes = {};
 
