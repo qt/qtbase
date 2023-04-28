@@ -222,8 +222,8 @@
         if (appMenu.supermenu)
             unparentAppMenu(appMenu.supermenu);
 
-    NSMenuItem *appMenuItem = [[NSMenuItem alloc] initWithTitle:@"Apple"
-                               action:nil keyEquivalent:@""];
+    NSMenuItem *appMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Apple"
+                               action:nil keyEquivalent:@""] autorelease];
     appMenuItem.submenu = appMenu;
     [menu insertItem:appMenuItem atIndex:0];
 }
