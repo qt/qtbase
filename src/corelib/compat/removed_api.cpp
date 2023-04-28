@@ -603,6 +603,7 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 
 // inlined API
 #if QT_CONFIG(thread)
+#include "qmutex.h"
 #include "qreadwritelock.h"
 #endif
 

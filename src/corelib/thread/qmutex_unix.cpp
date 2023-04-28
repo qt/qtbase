@@ -36,21 +36,18 @@ QMutexPrivate::~QMutexPrivate()
     report_error(sem_destroy(&semaphore), "QMutex", "sem_destroy");
 }
 
-bool QMutexPrivate::wait(int timeout)
+bool QMutexPrivate::wait(QDeadlineTimer timeout)
 {
     int errorCode;
-    if (timeout < 0) {
+    if (timeout.isForever()) {
         do {
             errorCode = sem_wait(&semaphore);
         } while (errorCode && errno == EINTR);
         report_error(errorCode, "QMutex::lock()", "sem_wait");
     } else {
-        timespec ts;
-        report_error(clock_gettime(CLOCK_REALTIME, &ts), "QMutex::lock()", "clock_gettime");
-        ts.tv_sec += timeout / 1000;
-        ts.tv_nsec += timeout % 1000 * Q_UINT64_C(1000) * 1000;
-        normalizedTimespec(ts);
         do {
+            auto tp = timeout.deadline<std::chrono::system_clock>();
+            timespec ts = durationToTimespec(tp.time_since_epoch());
             errorCode = sem_timedwait(&semaphore, &ts);
         } while (errorCode && errno == EINTR);
 

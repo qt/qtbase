@@ -5,6 +5,8 @@
 #include "qmutex.h"
 #include "qmutex_p.h"
 
+#include "private/qcore_unix_p.h"
+
 #include <mach/mach.h>
 #include <mach/task.h>
 
@@ -26,18 +28,19 @@ QMutexPrivate::~QMutexPrivate()
         qWarning("QMutex: failed to destroy semaphore, error %d", r);
 }
 
-bool QMutexPrivate::wait(int timeout)
+bool QMutexPrivate::wait(QDeadlineTimer timeout)
 {
     kern_return_t r;
-    if (timeout < 0) {
+    if (timeout.isForever()) {
         do {
             r = semaphore_wait(mach_semaphore);
         } while (r == KERN_ABORTED);
         Q_ASSERT(r == KERN_SUCCESS);
     } else {
+        timespec tv = durationToTimespec(timeout.remainingTimeAsDuration());
         mach_timespec_t ts;
-        ts.tv_nsec = ((timeout % 1000) * 1000) * 1000;
-        ts.tv_sec = (timeout / 1000);
+        ts.tv_nsec = tv.tv_nsec;
+        ts.tv_sec = tv.tv_sec;
         r = semaphore_timedwait(mach_semaphore, ts);
     }
     return (r == KERN_SUCCESS);

@@ -43,7 +43,7 @@ public:
     ~QMutexPrivate();
     QMutexPrivate();
 
-    bool wait(int timeout = -1);
+    bool wait(QDeadlineTimer timeout = QDeadlineTimer::Forever);
     void wakeUp() noexcept;
 
     // Control the lifetime of the privates

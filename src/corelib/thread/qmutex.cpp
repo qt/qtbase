@@ -146,6 +146,23 @@ void QBasicMutex::destroyInternal(QMutexPrivate *d)
     \sa lock(), unlock()
 */
 
+/*! \fn bool QMutex::tryLock(QDeadlineTimer timer)
+    \since 6.6
+
+    Attempts to lock the mutex. This function returns \c true if the lock
+    was obtained; otherwise it returns \c false. If another thread has
+    locked the mutex, this function will wait until \a timer expires
+    for the mutex to become available.
+
+    If the lock was obtained, the mutex must be unlocked with unlock()
+    before another thread can successfully lock it.
+
+    Calling this function multiple times on the same mutex from the
+    same thread will cause a \e dead-lock.
+
+    \sa lock(), unlock()
+*/
+
 /*! \fn bool QMutex::tryLock()
     \overload
 
@@ -279,6 +296,8 @@ QRecursiveMutex::~QRecursiveMutex()
 */
 
 /*!
+    \fn QRecursiveMutex::tryLock(int timeout)
+
     Attempts to lock the mutex. This function returns \c true if the lock
     was obtained; otherwise it returns \c false. If another thread has
     locked the mutex, this function will wait for at most \a timeout
@@ -296,7 +315,24 @@ QRecursiveMutex::~QRecursiveMutex()
 
     \sa lock(), unlock()
 */
-bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
+
+/*!
+    \since 6.6
+
+    Attempts to lock the mutex. This function returns \c true if the lock
+    was obtained; otherwise it returns \c false. If another thread has
+    locked the mutex, this function will wait until \a timeout expires
+    for the mutex to become available.
+
+    If the lock was obtained, the mutex must be unlocked with unlock()
+    before another thread can successfully lock it.
+
+    Calling this function multiple times on the same mutex from the
+    same thread is allowed.
+
+    \sa lock(), unlock()
+*/
+bool QRecursiveMutex::tryLock(QDeadlineTimer timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
     unsigned tsanFlags = QtTsan::MutexWriteReentrant | QtTsan::TryLock;
     QtTsan::mutexPreLock(this, tsanFlags);
@@ -309,7 +345,7 @@ bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
         return true;
     }
     bool success = true;
-    if (timeout == -1) {
+    if (timeout.isForever()) {
         mutex.lock();
     } else {
         success = mutex.tryLock(timeout);
@@ -622,25 +658,37 @@ void QBasicMutex::lockInternal() QT_MUTEX_LOCK_NOEXCEPT
 /*!
     \internal helper for lock(int)
  */
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
     if (timeout == 0)
         return false;
 
+    return lockInternal(QDeadlineTimer(timeout));
+}
+#endif
+
+/*!
+    \internal helper for tryLock(QDeadlineTimer)
+ */
+bool QBasicMutex::lockInternal(QDeadlineTimer deadlineTimer) QT_MUTEX_LOCK_NOEXCEPT
+{
+    qint64 remainingTime = deadlineTimer.remainingTimeNSecs();
+    if (remainingTime == 0)
+        return false;
+
     if (futexAvailable()) {
-        if (Q_UNLIKELY(timeout < 0)) {
+        if (Q_UNLIKELY(remainingTime < 0)) {    // deadlineTimer.isForever()
             lockInternal();
             return true;
         }
 
-        QDeadlineTimer deadlineTimer(timeout);
         // The mutex is already locked, set a bit indicating we're waiting.
         // Note we must set to dummyFutexValue because there could be other threads
         // also waiting.
         if (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) == nullptr)
             return true;
 
-        qint64 remainingTime = deadlineTimer.remainingTimeNSecs();
         Q_FOREVER {
             if (!futexWait(d_ptr, dummyFutexValue(), remainingTime))
                 return false;
@@ -665,7 +713,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
             continue;
 
         if (copy == dummyLocked()) {
-            if (timeout == 0)
+            if (remainingTime == 0)
                 return false;
             // The mutex is locked but does not have a QMutexPrivate yet.
             // we need to allocate a QMutexPrivate
@@ -680,7 +728,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
         }
 
         QMutexPrivate *d = static_cast<QMutexPrivate *>(copy);
-        if (timeout == 0 && !d->possiblyUnlocked.loadRelaxed())
+        if (remainingTime == 0 && !d->possiblyUnlocked.loadRelaxed())
             return false;
 
         // At this point we have a pointer to a QMutexPrivate. But the other thread
@@ -733,7 +781,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
             continue;
         }
 
-        if (d->wait(timeout)) {
+        if (d->wait(deadlineTimer)) {
             // reset the possiblyUnlocked flag if needed (and deref its corresponding reference)
             if (d->possiblyUnlocked.loadRelaxed() && d->possiblyUnlocked.testAndSetRelaxed(true, false))
                 d->deref();
@@ -742,8 +790,8 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
             Q_ASSERT(d == d_ptr.loadRelaxed());
             return true;
         } else {
-            Q_ASSERT(timeout >= 0);
-            //timeout
+            Q_ASSERT(remainingTime >= 0);
+            // timed out
             d->derefWaiters(1);
             //There may be a race in which the mutex is unlocked right after we timed out,
             // and before we deref the waiters, so maybe the mutex is actually unlocked.
