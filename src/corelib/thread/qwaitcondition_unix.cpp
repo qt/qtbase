@@ -13,7 +13,7 @@
 #include "qstring.h"
 
 #include "private/qcore_unix_p.h"
-#include "qmutex_p.h"
+#include "qreadwritelock_p.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -187,12 +187,14 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
 
 bool QWaitCondition::wait(QReadWriteLock *readWriteLock, QDeadlineTimer deadline)
 {
+    using namespace QReadWriteLockStates;
+
     if (!readWriteLock)
         return false;
-    auto previousState = readWriteLock->stateForWaitCondition();
-    if (previousState == QReadWriteLock::Unlocked)
+    auto previousState = QReadWriteLockPrivate::stateForWaitCondition(readWriteLock);
+    if (previousState == Unlocked)
         return false;
-    if (previousState == QReadWriteLock::RecursivelyLocked) {
+    if (previousState == RecursivelyLocked) {
         qWarning("QWaitCondition: cannot wait on QReadWriteLocks with recursive lockForWrite()");
         return false;
     }
@@ -204,7 +206,7 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, QDeadlineTimer deadline
 
     bool returnValue = d->wait(deadline);
 
-    if (previousState == QReadWriteLock::LockedForWrite)
+    if (previousState == LockedForWrite)
         readWriteLock->lockForWrite();
     else
         readWriteLock->lockForRead();
