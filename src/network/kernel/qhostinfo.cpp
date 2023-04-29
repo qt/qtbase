@@ -262,7 +262,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver, const char *me
 */
 
 /*!
-    \fn template<typename Functor> int QHostInfo::lookupHost(const QString &name, Functor functor)
+    \fn template<typename Functor> int QHostInfo::lookupHost(const QString &name, Functor &&functor)
 
     \since 5.9
 
