@@ -239,9 +239,9 @@ void addFixedData()
     QTest::newRow("0.f16") << raw("\xf9\0\0") << QVariant::fromValue(qfloat16(0));
     QTest::newRow("-1.f16") << raw("\xf9\xbc\0") << QVariant::fromValue(qfloat16(-1));
     QTest::newRow("1.5f16") << raw("\xf9\x3e\0") << QVariant::fromValue(qfloat16(1.5));
-    QTest::newRow("nan_f16") << raw("\xf9\x7e\0") << QVariant::fromValue<qfloat16>(myNaNf());
-    QTest::newRow("-inf_f16") << raw("\xf9\xfc\0") << QVariant::fromValue<qfloat16>(myNInff());
-    QTest::newRow("+inf_f16") << raw("\xf9\x7c\0") << QVariant::fromValue<qfloat16>(myInff());
+    QTest::newRow("nan_f16") << raw("\xf9\x7e\0") << QVariant::fromValue<qfloat16>(qfloat16(myNaNf()));
+    QTest::newRow("-inf_f16") << raw("\xf9\xfc\0") << QVariant::fromValue<qfloat16>(qfloat16(myNInff()));
+    QTest::newRow("+inf_f16") << raw("\xf9\x7c\0") << QVariant::fromValue<qfloat16>(qfloat16(myInff()));
 #endif
 
     QTest::newRow("0.f") << raw("\xfa\0\0\0\0") << QVariant::fromValue(0.f);
