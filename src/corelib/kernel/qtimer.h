@@ -121,8 +121,7 @@ public:
         static_assert(int(SlotType::ArgumentCount) <= 0,  "The slot must not have any arguments.");
 
         singleShotImpl(interval, timerType, context,
-                       new QtPrivate::QFunctorSlotObject<Func1, 0,
-                            typename QtPrivate::List_Left<void, 0>::Value, void>(std::move(slot)));
+                       new QtPrivate::QFunctorSlotObject<Func1, QtPrivate::List<>, void>(std::move(slot)));
     }
 
     template <typename ... Args>

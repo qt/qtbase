@@ -302,7 +302,7 @@ public:
             types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
         return connectImpl(sender, reinterpret_cast<void **>(&signal), context, nullptr,
-                           new QtPrivate::QFunctorSlotObject<Func2, SlotArgumentCount,
+                           new QtPrivate::QFunctorSlotObject<Func2,
                                 typename QtPrivate::List_Left<typename SignalType::Arguments, SlotArgumentCount>::Value,
                                 typename SignalType::ReturnType>(std::move(slot)),
                            type, types, &SignalType::Object::staticMetaObject);

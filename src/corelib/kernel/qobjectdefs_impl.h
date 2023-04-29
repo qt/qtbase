@@ -29,17 +29,20 @@ namespace QtPrivate {
        the list composed of the first N element of the list
      */
     // With variadic template, lists are represented using a variadic template argument instead of the lisp way
-    template <typename...> struct List {};
-    template <typename Head, typename... Tail> struct List<Head, Tail...> { typedef Head Car; typedef List<Tail...> Cdr; };
+    template <typename... Ts> struct List { static constexpr size_t size = sizeof...(Ts); };
+    template<typename T> struct SizeOfList { static constexpr size_t value = 1; };
+    template<> struct SizeOfList<List<>> { static constexpr size_t value = 0; };
+    template<typename ...Ts> struct SizeOfList<List<Ts...>>  { static constexpr size_t value = List<Ts...>::size; };
+    template <typename Head, typename... Tail> struct List<Head, Tail...> {
+        static constexpr size_t size = 1 + sizeof...(Tail);
+        typedef Head Car; typedef List<Tail...> Cdr;
+    };
     template <typename, typename> struct List_Append;
     template <typename... L1, typename...L2> struct List_Append<List<L1...>, List<L2...>> { typedef List<L1..., L2...> Value; };
     template <typename L, int N> struct List_Left {
         typedef typename List_Append<List<typename L::Car>,typename List_Left<typename L::Cdr, N - 1>::Value>::Value Value;
     };
     template <typename L> struct List_Left<L, 0> { typedef List<> Value; };
-    // List_Select<L,N> returns (via typedef Value) the Nth element of the list L
-    template <typename L, int N> struct List_Select { typedef typename List_Select<typename L::Cdr, N - 1>::Value Value; };
-    template <typename L> struct List_Select<L,0> { typedef typename L::Car Value; };
 
     /*
        trick to set the return value of a slot that works even if the signal or the slot returns void
@@ -418,11 +421,10 @@ namespace QtPrivate {
         explicit QSlotObject(Func f) : QSlotObjectBase(&impl), function(f) {}
     };
     // implementation of QSlotObjectBase for which the slot is a functor (or lambda)
-    // N is the number of arguments
     // Args and R are the List of arguments and the return type of the signal to which the slot is connected.
-    template<typename Func, int N, typename Args, typename R> class QFunctorSlotObject : public QSlotObjectBase
+    template<typename Func, typename Args, typename R> class QFunctorSlotObject : public QSlotObjectBase
     {
-        typedef QtPrivate::Functor<Func, N> FuncType;
+        using FuncType = QtPrivate::Functor<Func, Args::size>;
         Func function;
         static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
         {
@@ -449,7 +451,7 @@ namespace QtPrivate {
                                               typename QtPrivate::FunctionPointer<Func>::ReturnType>;
 
     template <typename Func, typename R>
-    using QFunctorSlotObjectWithNoArgs = QFunctorSlotObject<Func, 0, QtPrivate::List<>, R>;
+    using QFunctorSlotObjectWithNoArgs = QFunctorSlotObject<Func, QtPrivate::List<>, R>;
 
     template <typename Func>
     using QFunctorSlotObjectWithNoArgsImplicitReturn = QFunctorSlotObjectWithNoArgs<Func, typename QtPrivate::FunctionPointer<Func>::ReturnType>;
@@ -508,8 +510,7 @@ namespace QtPrivate {
             constexpr int MatchingArgumentCount = QtPrivate::countMatchingArguments<Prototype, Functor>();
             using ActualArguments = typename QtPrivate::List_Left<ExpectedArguments, MatchingArgumentCount>::Value;
 
-            return new QtPrivate::QFunctorSlotObject<Functor, MatchingArgumentCount,
-                                                     ActualArguments, void>(std::move(func));
+            return new QtPrivate::QFunctorSlotObject<Functor,  ActualArguments, void>(std::move(func));
         }
     }
 
