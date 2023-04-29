@@ -441,125 +441,26 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     }
 }
 
-/*! \fn template<typename PointerToMemberFunction> void QTimer::singleShot(int msec, const QObject *receiver, PointerToMemberFunction method)
-
+/*! \fn template<typename Functor> void QTimer::singleShot(int msec, const QObject *context, Functor &&functor)
+    \fn template<typename Functor> void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *context, Functor &&functor)
+    \fn template<typename Functor> void QTimer::singleShot(int msec, Functor &&functor)
+    \fn template<typename Functor> void QTimer::singleShot(int msec, Qt::TimerType timerType, Functor &&functor)
     \since 5.4
 
-    \overload
     \reentrant
-    This static function calls a member function of a QObject after a given time interval.
+    This static function calls \a functor after \a msec milliseconds.
 
     It is very convenient to use this function because you do not need
     to bother with a \l{QObject::timerEvent()}{timerEvent} or
     create a local QTimer object.
 
-    The \a receiver is the receiving object and the \a method is the member function. The
-    time interval is \a msec milliseconds.
+    If \a context is specified, then the \a functor will be called only if the
+    \a context object has not been destroyed before the interval occurs. The functor
+    will then be run the thread of \a context. The context's thread must have a
+    running Qt event loop.
 
-    If \a receiver is destroyed before the interval occurs, the method will not be called.
-    The function will be run in the thread of \a receiver. The receiver's thread must have
-    a running Qt event loop.
-
-    \sa start()
-*/
-
-/*! \fn template<typename PointerToMemberFunction> void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, PointerToMemberFunction method)
-
-    \since 5.4
-
-    \overload
-    \reentrant
-    This static function calls a member function of a QObject after a given time interval.
-
-    It is very convenient to use this function because you do not need
-    to bother with a \l{QObject::timerEvent()}{timerEvent} or
-    create a local QTimer object.
-
-    The \a receiver is the receiving object and the \a method is the member function. The
-    time interval is \a msec milliseconds. The \a timerType affects the
-    accuracy of the timer.
-
-    If \a receiver is destroyed before the interval occurs, the method will not be called.
-    The function will be run in the thread of \a receiver. The receiver's thread must have
-    a running Qt event loop.
-
-    \sa start()
-*/
-
-/*! \fn template<typename Functor> void QTimer::singleShot(int msec, Functor functor)
-
-    \since 5.4
-
-    \overload
-    \reentrant
-    This static function calls \a functor after a given time interval.
-
-    It is very convenient to use this function because you do not need
-    to bother with a \l{QObject::timerEvent()}{timerEvent} or
-    create a local QTimer object.
-
-    The time interval is \a msec milliseconds.
-
-    \sa start()
-*/
-
-/*! \fn template<typename Functor> void QTimer::singleShot(int msec, Qt::TimerType timerType, Functor functor)
-
-    \since 5.4
-
-    \overload
-    \reentrant
-    This static function calls \a functor after a given time interval.
-
-    It is very convenient to use this function because you do not need
-    to bother with a \l{QObject::timerEvent()}{timerEvent} or
-    create a local QTimer object.
-
-    The time interval is \a msec milliseconds. The \a timerType affects the
-    accuracy of the timer.
-
-    \sa start()
-*/
-
-/*! \fn template<typename Functor> void QTimer::singleShot(int msec, const QObject *context, Functor functor)
-
-    \since 5.4
-
-    \overload
-    \reentrant
-    This static function calls \a functor after a given time interval.
-
-    It is very convenient to use this function because you do not need
-    to bother with a \l{QObject::timerEvent()}{timerEvent} or
-    create a local QTimer object.
-
-    The time interval is \a msec milliseconds.
-
-    If \a context is destroyed before the interval occurs, the method will not be called.
-    The function will be run in the thread of \a context. The context's thread must have
-    a running Qt event loop.
-
-    \sa start()
-*/
-
-/*! \fn template<typename Functor> void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *context, Functor functor)
-
-    \since 5.4
-
-    \overload
-    \reentrant
-    This static function calls \a functor after a given time interval.
-
-    It is very convenient to use this function because you do not need
-    to bother with a \l{QObject::timerEvent()}{timerEvent} or
-    create a local QTimer object.
-
-    The time interval is \a msec milliseconds. The \a timerType affects the
-    accuracy of the timer.
-
-    If \a context is destroyed before the interval occurs, the method will not be called.
-    The function will be run in the thread of \a context. The context's thread must have
-    a running Qt event loop.
+    If \a functor is a member
+    function of \a context, then the function will be called on the object.
 
     \sa start()
 */

@@ -49,81 +49,50 @@ public:
     static void singleShot(int msec, const QObject *receiver, const char *member);
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member);
 
+    // singleShot with context
+    template <typename Duration, typename Func1>
+    static inline void singleShot(Duration interval,
 #ifdef Q_QDOC
-    template<typename PointerToMemberFunction>
-    static void singleShot(int msec, const QObject *receiver, PointerToMemberFunction method);
-    template<typename PointerToMemberFunction>
-    static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, PointerToMemberFunction method);
-    template<typename Functor>
-    static void singleShot(int msec, Functor functor);
-    template<typename Functor>
-    static void singleShot(int msec, Qt::TimerType timerType, Functor functor);
-    template<typename Functor, int>
-    static void singleShot(int msec, const QObject *context, Functor functor);
-    template<typename Functor, int>
-    static void singleShot(int msec, Qt::TimerType timerType, const QObject *context, Functor functor);
-    template <typename Functor>
-    QMetaObject::Connection callOnTimeout(Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
-    template <typename Functor>
-    QMetaObject::Connection callOnTimeout(const QObject *context, Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
-    template <typename MemberFunction>
-    QMetaObject::Connection callOnTimeout(const QObject *receiver, MemberFunction *slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
+                                  const QObject *receiver,
 #else
-    // singleShot to a QObject slot
-    template <typename Duration, typename Func1>
-    static inline void singleShot(Duration interval, const typename QtPrivate::FunctionPointer<Func1>::Object *receiver, Func1 slot)
+                                  const typename QtPrivate::ContextTypeForFunctor<Func1>::ContextType *receiver,
+#endif
+
+                                  Func1 &&slot)
     {
-        singleShot(interval, defaultTypeFor(interval), receiver, slot);
+        singleShot(interval, defaultTypeFor(interval), receiver, std::forward<Func1>(slot));
     }
     template <typename Duration, typename Func1>
-    static inline void singleShot(Duration interval, Qt::TimerType timerType, const typename QtPrivate::FunctionPointer<Func1>::Object *receiver,
-                                  Func1 slot)
+    static inline void singleShot(Duration interval, Qt::TimerType timerType,
+#ifdef Q_QDOC
+                                  const QObject *receiver,
+#else
+                                  const typename QtPrivate::ContextTypeForFunctor<Func1>::ContextType *receiver,
+#endif
+                                  Func1 &&slot)
     {
-        typedef QtPrivate::FunctionPointer<Func1> SlotType;
-
-        //compilation error if the slot has arguments.
-        static_assert(int(SlotType::ArgumentCount) == 0,
-                          "The slot must not have any arguments.");
-
+        using Prototype = void(*)();
         singleShotImpl(interval, timerType, receiver,
-                       new QtPrivate::QSlotObject<Func1, typename SlotType::Arguments, void>(slot));
+                       QtPrivate::makeSlotObject<Prototype>(std::forward<Func1>(slot)));
     }
-    // singleShot to a functor or function pointer (without context)
+    // singleShot without context
     template <typename Duration, typename Func1>
-    static inline typename std::enable_if<!QtPrivate::FunctionPointer<Func1>::IsPointerToMemberFunction &&
-                                          !std::is_same<const char*, Func1>::value, void>::type
-            singleShot(Duration interval, Func1 slot)
+    static inline void singleShot(Duration interval, Func1 &&slot)
     {
-        singleShot(interval, defaultTypeFor(interval), nullptr, std::move(slot));
+        singleShot(interval, defaultTypeFor(interval), nullptr, std::forward<Func1>(slot));
     }
     template <typename Duration, typename Func1>
-    static inline typename std::enable_if<!QtPrivate::FunctionPointer<Func1>::IsPointerToMemberFunction &&
-                                          !std::is_same<const char*, Func1>::value, void>::type
-            singleShot(Duration interval, Qt::TimerType timerType, Func1 slot)
+    static inline void singleShot(Duration interval, Qt::TimerType timerType, Func1 &&slot)
     {
-        singleShot(interval, timerType, nullptr, std::move(slot));
-    }
-    // singleShot to a functor or function pointer (with context)
-    template <typename Duration, typename Func1>
-    static inline typename std::enable_if<!QtPrivate::FunctionPointer<Func1>::IsPointerToMemberFunction &&
-                                          !std::is_same<const char*, Func1>::value, void>::type
-            singleShot(Duration interval, const QObject *context, Func1 slot)
-    {
-        singleShot(interval, defaultTypeFor(interval), context, std::move(slot));
-    }
-    template <typename Duration, typename Func1>
-    static inline typename std::enable_if<!QtPrivate::FunctionPointer<Func1>::IsPointerToMemberFunction &&
-                                          !std::is_same<const char*, Func1>::value, void>::type
-            singleShot(Duration interval, Qt::TimerType timerType, const QObject *context, Func1 slot)
-    {
-        //compilation error if the slot has arguments.
-        typedef QtPrivate::FunctionPointer<Func1> SlotType;
-        static_assert(int(SlotType::ArgumentCount) <= 0,  "The slot must not have any arguments.");
-
-        singleShotImpl(interval, timerType, context,
-                       new QtPrivate::QFunctorSlotObject<Func1, QtPrivate::List<>, void>(std::move(slot)));
+        singleShot(interval, timerType, nullptr, std::forward<Func1>(slot));
     }
 
+#ifdef Q_QDOC
+    template <typename Functor>
+    QMetaObject::Connection callOnTimeout(Functor &&slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
+    template <typename Functor>
+    QMetaObject::Connection callOnTimeout(const QObject *context, Functor &&slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
+#else
     template <typename ... Args>
     QMetaObject::Connection callOnTimeout(Args && ...args)
     {
