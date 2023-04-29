@@ -89,25 +89,15 @@ public:
     \sa QAbstractButton, QRadioButton
 */
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
     \fn void QCheckBox::stateChanged(int state)
+    //! Qt 7: \fn void QCheckBox::stateChanged(Qt::CheckState state)
 
     This signal is emitted whenever the checkbox's state changes, i.e.,
     whenever the user checks or unchecks it.
 
     \a state contains the checkbox's new Qt::CheckState.
 */
-#else
-/*!
-    \fn void QCheckBox::stateChanged(Qt::CheckState state)
-
-    This signal is emitted whenever the checkbox's state changes, i.e.,
-    whenever the user checks or unchecks it.
-
-    \a state contains the checkbox's new Qt::CheckState.
-*/
-#endif
 
 /*!
     \property QCheckBox::tristate

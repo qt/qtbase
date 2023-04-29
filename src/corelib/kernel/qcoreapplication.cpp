@@ -2768,7 +2768,7 @@ Qt::PermissionStatus QCoreApplication::checkPermission(const QPermission &permis
 
 /*!
     \fn template<typename Functor> void QCoreApplication::requestPermission(
-        const QPermission &permission, Functor functor)
+        const QPermission &permission, Functor &&functor)
 
     Requests the given \a permission.
 

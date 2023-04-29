@@ -3804,8 +3804,7 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
 }
 
 /*!
- \fn bool QXmlStreamAttributes::hasAttribute(const QString &qualifiedName) const
- \since 4.5
+ \fn bool QXmlStreamAttributes::hasAttribute(QAnyStringView qualifiedName) const
 
  Returns \c true if this QXmlStreamAttributes has an attribute whose
  qualified name is \a qualifiedName; otherwise returns \c false.
@@ -3819,16 +3818,9 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
 */
 
 /*!
- \fn bool QXmlStreamAttributes::hasAttribute(QLatin1StringView qualifiedName) const
+ \fn bool QXmlStreamAttributes::hasAttribute(QAnyStringView namespaceUri,
+                                             QAnyStringView name) const
  \overload
- \since 4.5
-*/
-
-/*!
- \fn bool QXmlStreamAttributes::hasAttribute(const QString &namespaceUri,
-                                             const QString &name) const
- \overload
- \since 4.5
 
  Returns \c true if this QXmlStreamAttributes has an attribute whose
  namespace URI and name correspond to \a namespaceUri and \a name;
