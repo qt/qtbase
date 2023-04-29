@@ -504,6 +504,7 @@ namespace QtPrivate {
     makeSlotObject(Functor func)
     {
         using ExpectedSignature = QtPrivate::FunctionPointer<Prototype>;
+        using ExpectedReturnType = typename ExpectedSignature::ReturnType;
         using ExpectedArguments = typename ExpectedSignature::Arguments;
         using ActualSignature = QtPrivate::FunctionPointer<Functor>;
 
@@ -512,12 +513,11 @@ namespace QtPrivate {
 
         if constexpr (QtPrivate::FunctionPointer<Functor>::IsPointerToMemberFunction) {
             using ActualArguments = typename ActualSignature::Arguments;
-            return new QtPrivate::QSlotObject<Functor, ActualArguments, void>(std::move(func));
+            return new QtPrivate::QSlotObject<Functor, ActualArguments, ExpectedReturnType>(std::move(func));
         } else {
             constexpr int MatchingArgumentCount = QtPrivate::countMatchingArguments<Prototype, Functor>();
             using ActualArguments = typename QtPrivate::List_Left<ExpectedArguments, MatchingArgumentCount>::Value;
-
-            return new QtPrivate::QFunctorSlotObject<Functor,  ActualArguments, void>(std::move(func));
+            return new QtPrivate::QFunctorSlotObject<Functor, ActualArguments, ExpectedReturnType>(std::move(func));
         }
     }
 
