@@ -26,11 +26,6 @@
 # define _POSIX_
 # include <limits.h>
 # undef _POSIX_
-#        if defined(Q_CC_CLANG) && defined(Q_CC_MSVC)
-// See https://bugs.llvm.org/show_bug.cgi?id=41226
-#            include <wchar.h>
-__declspec(selectany) auto *__wmemchr_symbol_loader_value = wmemchr(L"", L'0', 0);
-#        endif
 #    endif
 #    include <qcoreapplication.h>
 #    include <qcoreevent.h>
