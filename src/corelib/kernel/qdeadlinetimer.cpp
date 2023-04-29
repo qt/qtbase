@@ -249,6 +249,13 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) noexcept
     zero, this QDeadlineTimer object will be marked as expired, whereas a
     negative value will set it to never expire.
 
+    For optimization purposes, if \a msecs is zero, this function may skip
+    obtaining the current time and may instead use a value known to be in the
+    past. If that happens, deadline() may return an unexpected value and this
+    object cannot be used in calculation of how long it is overdue. If that
+    functionality is required, use QDeadlineTimer::current() and add time to
+    it.
+
     The timer type for this QDeadlineTimer object will be set to the specified \a timerType.
 
     \note Prior to Qt 6.6, the only value that caused the timer to never expire
@@ -260,13 +267,14 @@ void QDeadlineTimer::setRemainingTime(qint64 msecs, Qt::TimerType timerType) noe
 {
     if (msecs < 0) {
         *this = QDeadlineTimer(Forever, timerType);
-        return;
+    } else if (msecs == 0) {
+        *this = QDeadlineTimer(timerType);
+        t1 = std::numeric_limits<qint64>::min();
+    } else {
+        *this = current(timerType);
+        milliseconds ms(msecs);
+        t1 = add_saturate(t1, ms);
     }
-
-    *this = current(timerType);
-
-    milliseconds ms(msecs);
-    t1 = add_saturate(t1, ms);
 }
 
 /*!
@@ -275,6 +283,13 @@ void QDeadlineTimer::setRemainingTime(qint64 msecs, Qt::TimerType timerType) noe
     secs is negative, this QDeadlineTimer will be set it to never expire (this
     behavior does not apply to \a nsecs). If both parameters are zero, this
     QDeadlineTimer will be marked as expired.
+
+    For optimization purposes, if both \a secs and \a nsecs are zero, this
+    function may skip obtaining the current time and may instead use a value
+    known to be in the past. If that happens, deadline() may return an
+    unexpected value and this object cannot be used in calculation of how long
+    it is overdue. If that functionality is required, use
+    QDeadlineTimer::current() and add time to it.
 
     The timer type for this QDeadlineTimer object will be set to the specified
     \a timerType.
@@ -288,11 +303,13 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
 {
     if (secs < 0) {
         *this = QDeadlineTimer(Forever, timerType);
-        return;
+    } else if (secs == 0 && nsecs == 0) {
+        *this = QDeadlineTimer(timerType);
+        t1 = std::numeric_limits<qint64>::min();
+    } else {
+        *this = current(timerType);
+        t1 = add_saturate(t1, seconds{secs}, nanoseconds{nsecs});
     }
-
-    *this = current(timerType);
-    t1 = add_saturate(t1, seconds{secs}, nanoseconds{nsecs});
 }
 
 /*!
@@ -342,6 +359,8 @@ bool QDeadlineTimer::hasExpired() const noexcept
 {
     if (isForever())
         return false;
+    if (t1 == std::numeric_limits<qint64>::min())
+        return true;
     return *this <= current(timerType());
 }
 
@@ -418,6 +437,9 @@ qint64 QDeadlineTimer::remainingTimeNSecs() const noexcept
 */
 qint64 QDeadlineTimer::rawRemainingTimeNSecs() const noexcept
 {
+    if (t1 == std::numeric_limits<qint64>::min())
+        return t1;          // we'd saturate to this anyway
+
     QDeadlineTimer now = current(timerType());
     qint64 r;
     if (qSubOverflow(t1, now.t1, &r))
