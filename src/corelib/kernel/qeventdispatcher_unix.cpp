@@ -428,20 +428,18 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     if (d->interrupt.loadRelaxed())
         return false;
 
-    // If canWait is true, and include_timers is false or there are no pending
-    // timers, call qt_safe_poll() with a nullptr so that it waits until there
-    // are events to process (see QEventLoop::WaitForMoreEvents).
-    timespec *tm = nullptr;
-    timespec wait_tm = { 0, 0 };
-
-    if (!canWait) {
-        tm = &wait_tm;
-    } else if (include_timers) {
-        std::optional<std::chrono::milliseconds> msecs = d->timerList.timerWait();
-        if (msecs) {
-            wait_tm = durationToTimespec(*msecs);
-            tm = &wait_tm;
+    QDeadlineTimer deadline;
+    if (canWait) {
+        if (include_timers) {
+            std::optional<std::chrono::milliseconds> msecs = d->timerList.timerWait();
+            deadline = msecs ? QDeadlineTimer{*msecs}
+                             : QDeadlineTimer(QDeadlineTimer::Forever);
+        } else {
+            deadline = QDeadlineTimer(QDeadlineTimer::Forever);
         }
+    } else {
+        // Using the default-constructed `deadline`, which is already expired,
+        // ensures the code in the do-while loop in qt_safe_poll runs at least once.
     }
 
     d->pollfds.clear();
@@ -455,8 +453,7 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     d->pollfds.append(d->threadPipe.prepare());
 
     int nevents = 0;
-
-    switch (qt_safe_poll(d->pollfds.data(), d->pollfds.size(), tm)) {
+    switch (qt_safe_poll(d->pollfds.data(), d->pollfds.size(), deadline)) {
     case -1:
         qErrnoWarning("qt_safe_poll");
         if (QT_CONFIG(poll_exit_on_error))

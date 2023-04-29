@@ -20,6 +20,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qatomic.h"
 #include "qbytearray.h"
+#include "qdeadlinetimer.h"
 
 #ifndef Q_OS_UNIX
 # error "qcore_unix_p.h included on a non-Unix system"
@@ -376,8 +377,6 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 #  define _POSIX_MONOTONIC_CLOCK -1
 #endif
 
-// in qelapsedtimer_mac.cpp or qtimestamp_unix.cpp
-timespec qt_gettime() noexcept;
 QByteArray qt_readlink(const char *path);
 
 /* non-static */
@@ -395,20 +394,7 @@ inline bool qt_haveLinuxProcfs()
 #endif
 }
 
-Q_CORE_EXPORT int qt_safe_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts);
-
-static inline int qt_poll_msecs(struct pollfd *fds, nfds_t nfds, int timeout)
-{
-    timespec ts, *pts = nullptr;
-
-    if (timeout >= 0) {
-        ts.tv_sec = timeout / 1000;
-        ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
-        pts = &ts;
-    }
-
-    return qt_safe_poll(fds, nfds, pts);
-}
+Q_CORE_EXPORT int qt_safe_poll(struct pollfd *fds, nfds_t nfds, QDeadlineTimer deadline);
 
 static inline struct pollfd qt_make_pollfd(int fd, short events)
 {

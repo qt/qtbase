@@ -221,7 +221,7 @@ QProcessPoller::QProcessPoller(const QProcessPrivate &proc)
 
 int QProcessPoller::poll(const QDeadlineTimer &deadline)
 {
-    return qt_poll_msecs(pfds, n_pfds, deadline.remainingTime());
+    return qt_safe_poll(pfds, n_pfds, deadline);
 }
 
 struct QChildProcess
@@ -1092,15 +1092,15 @@ void QProcessPrivate::killProcess()
 
 bool QProcessPrivate::waitForStarted(const QDeadlineTimer &deadline)
 {
-    const qint64 msecs = deadline.remainingTime();
 #if defined (QPROCESS_DEBUG)
+    const qint64 msecs = deadline.remainingTime();
     qDebug("QProcessPrivate::waitForStarted(%lld) waiting for child to start (fd = %d)",
            msecs, childStartedPipe[0]);
 #endif
 
     pollfd pfd = qt_make_pollfd(childStartedPipe[0], POLLIN);
 
-    if (qt_poll_msecs(&pfd, 1, msecs) == 0) {
+    if (qt_safe_poll(&pfd, 1, deadline) == 0) {
         setError(QProcess::Timedout);
 #if defined (QPROCESS_DEBUG)
         qDebug("QProcessPrivate::waitForStarted(%lld) == false (timed out)", msecs);

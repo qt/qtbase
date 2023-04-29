@@ -1364,7 +1364,7 @@ int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool check
     if (checkWrite)
         pfd.events |= POLLOUT;
 
-    const int ret = qt_poll_msecs(&pfd, 1, deadline.remainingTime());
+    const int ret = qt_safe_poll(&pfd, 1, deadline);
 
     if (ret <= 0)
         return ret;

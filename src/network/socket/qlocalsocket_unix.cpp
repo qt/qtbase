@@ -25,7 +25,6 @@ using namespace std::chrono_literals;
 
 #define QT_CONNECT_TIMEOUT 30000
 
-
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -593,9 +592,7 @@ bool QLocalSocket::waitForConnected(int msec)
     auto remainingTime = deadline.remainingTimeAsDuration();
 
     do {
-        timespec ts = durationToTimespec(remainingTime);
-        const int result = qt_safe_poll(&pfd, 1, &ts);
-
+        const int result = qt_safe_poll(&pfd, 1, deadline);
         if (result == -1)
             d->setErrorAndEmit(QLocalSocket::UnknownSocketError,
                                "QLocalSocket::waitForConnected"_L1);
