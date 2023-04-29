@@ -15,6 +15,8 @@
 QT_BEGIN_NAMESPACE
 class QObject;
 class QObjectPrivate;
+class QMetaMethod;
+class QByteArray;
 
 namespace QtPrivate {
     template <typename T> struct RemoveRef { typedef T Type; };
@@ -339,7 +341,13 @@ namespace QtPrivate {
         not compatible with the \a ExpectedArguments, otherwise returns >= 0.
     */
     template<typename Prototype, typename Functor>
-    constexpr int inline countMatchingArguments()
+    inline constexpr std::enable_if_t<!std::disjunction_v<std::is_convertible<Prototype, const char *>,
+                                                          std::is_same<std::decay_t<Prototype>, QMetaMethod>,
+                                                          std::is_convertible<Functor, const char *>,
+                                                          std::is_same<std::decay_t<Functor>, QMetaMethod>
+                                                         >,
+                                      int>
+    countMatchingArguments()
     {
         using ExpectedArguments = typename QtPrivate::FunctionPointer<Prototype>::Arguments;
         using Actual = std::decay_t<Functor>;
@@ -464,19 +472,21 @@ namespace QtPrivate {
 
     template <typename Func>
     struct ContextTypeForFunctor<Func,
-        std::enable_if_t<std::negation_v<std::disjunction<std::is_same<const char *, Func>,
-                                                          std::is_member_function_pointer<Func>>>
-        >
+        std::enable_if_t<!std::disjunction_v<std::is_convertible<Func, const char *>,
+                                             std::is_member_function_pointer<Func>
+                                            >
+                        >
     >
     {
         using ContextType = QObject;
     };
     template <typename Func>
     struct ContextTypeForFunctor<Func,
-        std::enable_if_t<std::conjunction_v<std::negation<std::is_same<const char *, Func>>,
+        std::enable_if_t<std::conjunction_v<std::negation<std::is_convertible<Func, const char *>>,
                                             std::is_member_function_pointer<Func>,
-                                            std::is_convertible<typename QtPrivate::FunctionPointer<Func>::Object *, QObject *>>
-        >
+                                            std::is_convertible<typename QtPrivate::FunctionPointer<Func>::Object *, QObject *>
+                                           >
+                        >
     >
     {
         using ContextType = typename QtPrivate::FunctionPointer<Func>::Object;
