@@ -226,20 +226,20 @@ public:
     //connect to a function pointer  (not a member)
     template <typename Func1, typename Func2>
     static inline typename std::enable_if<int(QtPrivate::FunctionPointer<Func2>::ArgumentCount) >= 0, QMetaObject::Connection>::type
-            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
+            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 &&slot)
     {
-        return connect(sender, signal, sender, slot, Qt::DirectConnection);
+        return connect(sender, signal, sender, std::forward<Func2>(slot), Qt::DirectConnection);
     }
 
     //connect to a function pointer  (not a member)
     template <typename Func1, typename Func2>
-    static inline typename std::enable_if<int(QtPrivate::FunctionPointer<Func2>::ArgumentCount) >= 0 &&
-                                          !QtPrivate::FunctionPointer<Func2>::IsPointerToMemberFunction, QMetaObject::Connection>::type
-            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, const QObject *context, Func2 slot,
+    static inline typename std::enable_if<int(QtPrivate::FunctionPointer<std::decay_t<Func2>>::ArgumentCount) >= 0 &&
+                                          !QtPrivate::FunctionPointer<std::decay_t<Func2>>::IsPointerToMemberFunction, QMetaObject::Connection>::type
+            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, const QObject *context, Func2 &&slot,
                     Qt::ConnectionType type = Qt::AutoConnection)
     {
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
-        typedef QtPrivate::FunctionPointer<Func2> SlotType;
+        typedef QtPrivate::FunctionPointer<std::decay_t<Func2>> SlotType;
 
         static_assert(QtPrivate::HasQ_OBJECT_Macro<typename SignalType::Object>::Value,
                           "No Q_OBJECT in the class with the signal");
@@ -257,9 +257,9 @@ public:
             types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
         return connectImpl(sender, reinterpret_cast<void **>(&signal), context, nullptr,
-                           new QtPrivate::QStaticSlotObject<Func2,
+                           new QtPrivate::QFunctorSlotObject<Func2,
                                                  typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
-                                                 typename SignalType::ReturnType>(slot),
+                                                 typename SignalType::ReturnType>(std::forward<Func2>(slot)),
                            type, types, &SignalType::Object::staticMetaObject);
     }
 
@@ -269,9 +269,9 @@ public:
         QtPrivate::FunctionPointer<Func2>::ArgumentCount == -1 &&
         !std::is_convertible_v<Func2, const char*>, // don't match old-style connect
     QMetaObject::Connection>::type
-            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
+            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 &&slot)
     {
-        return connect(sender, signal, sender, std::move(slot), Qt::DirectConnection);
+        return connect(sender, signal, sender, std::forward<Func2>(slot), Qt::DirectConnection);
     }
 
     //connect to a functor, with a "context" object defining in which event loop is going to be executed

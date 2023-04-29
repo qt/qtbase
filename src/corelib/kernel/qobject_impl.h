@@ -37,30 +37,6 @@ namespace QtPrivate {
     { static const int *types() { return nullptr; } };
     template <typename... Args> struct ConnectionTypes<List<Args...>, true>
     { static const int *types() { static const int t[sizeof...(Args) + 1] = { (QtPrivate::QMetaTypeIdHelper<Args>::qt_metatype_id())..., 0 }; return t; } };
-
-    // implementation of QSlotObjectBase for which the slot is a static function
-    // Args and R are the List of arguments and the return type of the signal to which the slot is connected.
-    template<typename Func, typename Args, typename R> class QStaticSlotObject : public QSlotObjectBase
-    {
-        typedef QtPrivate::FunctionPointer<Func> FuncType;
-        Func function;
-        static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
-        {
-            switch (which) {
-            case Destroy:
-                delete static_cast<QStaticSlotObject*>(this_);
-                break;
-            case Call:
-                FuncType::template call<Args, R>(static_cast<QStaticSlotObject*>(this_)->function, r, a);
-                break;
-            case Compare:   // not implemented
-            case NumOperations:
-                Q_UNUSED(ret);
-            }
-        }
-    public:
-        explicit QStaticSlotObject(Func f) : QSlotObjectBase(&impl), function(f) {}
-    };
 }
 
 
