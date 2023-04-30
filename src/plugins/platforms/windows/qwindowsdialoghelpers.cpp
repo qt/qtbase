@@ -43,26 +43,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#ifndef QT_NO_DEBUG_STREAM
-/* Output UID (IID, CLSID) as C++ constants.
- * The constants are contained in the Windows SDK libs, but not for MinGW. */
-static inline QString guidToString(const GUID &g)
-{
-    QString rc;
-    QTextStream str(&rc);
-    str.setIntegerBase(16);
-    str.setNumberFlags(str.numberFlags() | QTextStream::ShowBase);
-    str << '{' << g.Data1 << ", " << g.Data2 << ", " << g.Data3;
-    str.setFieldWidth(2);
-    str.setFieldAlignment(QTextStream::AlignRight);
-    str.setPadChar(u'0');
-    str << ",{" << g.Data4[0] << ", " << g.Data4[1]  << ", " << g.Data4[2]  << ", " << g.Data4[3]
-        << ", " << g.Data4[4] << ", " << g.Data4[5]  << ", " << g.Data4[6]  << ", " << g.Data4[7]
-        << "}};";
-    return rc;
-}
-#endif // !QT_NO_DEBUG_STREAM
-
 // Return an allocated wchar_t array from a QString, reserve more memory if desired.
 static wchar_t *qStringToWCharArray(const QString &s, size_t reserveSize = 0)
 {
