@@ -278,10 +278,9 @@ namespace QtPrivate {
        static_assert(CheckCompatibleArguments<FunctionPointer<Signal>::Arguments, FunctionPointer<Slot>::Arguments>::value)
     */
     template<typename A1, typename A2> struct AreArgumentsCompatible {
-        static int test(const typename RemoveRef<A2>::Type&);
+        static int test(const std::remove_reference_t<A2>&);
         static char test(...);
-        static const typename RemoveRef<A1>::Type &dummy();
-        enum { value = sizeof(test(dummy())) == sizeof(int) };
+        enum { value = sizeof(test(std::declval<std::remove_reference_t<A1>>())) == sizeof(int) };
 #ifdef QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
         using AreArgumentsConvertibleWithoutNarrowing = AreArgumentsConvertibleWithoutNarrowingBase<std::decay_t<A1>, std::decay_t<A2>>;
         static_assert(AreArgumentsConvertibleWithoutNarrowing::value, "Signal and slot arguments are not compatible (narrowing)");
@@ -320,11 +319,10 @@ namespace QtPrivate {
 
     template <typename Functor, typename... ArgList> struct ComputeFunctorArgumentCount<Functor, List<ArgList...>>
     {
-        template <typename D> static D dummy();
-        template <typename F> static auto test(F f) -> decltype(((f.operator()((dummy<ArgList>())...)), int()));
+        template <typename F> static auto test(F f) -> decltype(((f.operator()((std::declval<ArgList>())...)), int()));
         static char test(...);
         enum {
-            Ok = sizeof(test(dummy<Functor>())) == sizeof(int),
+            Ok = sizeof(test(std::declval<Functor>())) == sizeof(int),
             Value = Ok ? int(sizeof...(ArgList)) : int(ComputeFunctorArgumentCountHelper<Functor, List<ArgList...>, Ok>::Value)
         };
     };
@@ -332,8 +330,7 @@ namespace QtPrivate {
     /* get the return type of a functor, given the signal argument list  */
     template <typename Functor, typename ArgList> struct FunctorReturnType;
     template <typename Functor, typename ... ArgList> struct FunctorReturnType<Functor, List<ArgList...>> {
-        template <typename D> static D dummy();
-        typedef decltype(dummy<Functor>().operator()((dummy<ArgList>())...)) Value;
+        typedef decltype(std::declval<Functor>().operator()((std::declval<ArgList>())...)) Value;
     };
 
     /*
