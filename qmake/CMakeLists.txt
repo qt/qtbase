@@ -49,6 +49,8 @@ target_compile_definitions(QtLibraryInfo PUBLIC
     ${deprecation_define}
 )
 
+qt_internal_set_exceptions_flags(QtLibraryInfo OFF)
+
 if(NOT QT_FEATURE_qmake)
     return()
 endif()
