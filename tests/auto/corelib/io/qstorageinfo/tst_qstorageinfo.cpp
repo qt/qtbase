@@ -9,6 +9,10 @@
 
 #include "../../../../manual/qstorageinfo/printvolumes.cpp"
 
+#ifdef Q_OS_LINUX
+#  include "../../../../../src/corelib/io/qstorageinfo_linux_p.h"
+#endif
+
 class tst_QStorageInfo : public QObject
 {
     Q_OBJECT
@@ -22,6 +26,13 @@ private slots:
     void storageList();
     void tempFile();
     void caching();
+
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+    void testParseMountInfo_data();
+    void testParseMountInfo();
+    void testParseMountInfo_filtered_data();
+    void testParseMountInfo_filtered();
+#endif
 };
 
 void tst_QStorageInfo::defaultValues()
@@ -210,6 +221,155 @@ void tst_QStorageInfo::caching()
     }
     QCOMPARE_NE(free, storage2.bytesFree());
 }
+
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+void tst_QStorageInfo::testParseMountInfo_data()
+{
+    QTest::addColumn<QByteArray>("line");
+    QTest::addColumn<MountInfo>("expected");
+
+    QTest::newRow("tmpfs")
+        << "17 25 0:18 / /dev rw,nosuid,relatime shared:2 - tmpfs tmpfs rw,seclabel,mode=755\n"_ba
+        << MountInfo{"/dev", "tmpfs", "tmpfs", "", makedev(0, 18)};
+    QTest::newRow("proc")
+        << "23 66 0:21 / /proc rw,nosuid,nodev,noexec,relatime shared:12 - proc proc rw\n"_ba
+        << MountInfo{"/proc", "proc", "proc", "", makedev(0, 21)};
+
+    // E.g. on Android
+    QTest::newRow("rootfs")
+        << "618 618 0:1 / / ro,relatime master:1 - rootfs rootfs ro,seclabel\n"_ba
+        << MountInfo{"/", "rootfs", "rootfs", "", makedev(0, 1)};
+
+    QTest::newRow("ext4")
+        << "47 66 8:3 / /home rw,relatime shared:50 - ext4 /dev/sda3 rw,stripe=32736\n"_ba
+        << MountInfo{"/home", "ext4", "/dev/sda3", "", makedev(8, 3)};
+
+    QTest::newRow("empty-optional-field")
+        << "23 25 0:22 / /apex rw,nosuid,nodev,noexec,relatime - tmpfs tmpfs rw,seclabel,mode=755\n"_ba
+        << MountInfo{"/apex", "tmpfs", "tmpfs", "", makedev(0, 22)};
+
+    QTest::newRow("one-optional-field")
+        << "47 66 8:3 / /home rw,relatime shared:50 - ext4 /dev/sda3 rw,stripe=32736\n"_ba
+        << MountInfo{"/home", "ext4", "/dev/sda3", "", makedev(8, 3)};
+
+    QTest::newRow("multiple-optional-fields")
+        << "47 66 8:3 / /home rw,relatime shared:142 master:111 - ext4 /dev/sda3 rw,stripe=32736\n"_ba
+        << MountInfo{"/home", "ext4", "/dev/sda3", "", makedev(8, 3)};
+
+    QTest::newRow("mountdir-with-utf8")
+        << "129 66 8:51 / /mnt/lab\xC3\xA9l rw,relatime shared:234 - ext4 /dev/sdd3 rw\n"_ba
+        << MountInfo{"/mnt/labél", "ext4", "/dev/sdd3", "", makedev(8, 51)};
+
+    QTest::newRow("mountdir-with-space")
+        << "129 66 8:51 / /mnt/labe\\040l rw,relatime shared:234 - ext4 /dev/sdd3 rw\n"_ba
+        << MountInfo{"/mnt/labe l", "ext4", "/dev/sdd3", "", makedev(8, 51)};
+
+    QTest::newRow("mountdir-with-tab")
+        << "129 66 8:51 / /mnt/labe\\011l rw,relatime shared:234 - ext4 /dev/sdd3 rw\n"_ba
+        << MountInfo{"/mnt/labe\tl", "ext4", "/dev/sdd3", "", makedev(8, 51)};
+
+    QTest::newRow("mountdir-with-backslash")
+        << "129 66 8:51 / /mnt/labe\\134l rw,relatime shared:234 - ext4 /dev/sdd3 rw\n"_ba
+        << MountInfo{"/mnt/labe\\l", "ext4", "/dev/sdd3", "", makedev(8, 51)};
+
+    QTest::newRow("mountdir-with-newline")
+        << "129 66 8:51 / /mnt/labe\\012l rw,relatime shared:234 - ext4 /dev/sdd3 rw\n"_ba
+        << MountInfo{"/mnt/labe\nl", "ext4", "/dev/sdd3", "", makedev(8, 51)};
+
+    QTest::newRow("btrfs-subvol")
+        << "775 503 0:49 /foo/bar / rw,relatime shared:142 master:111 - btrfs "
+           "/dev/mapper/vg0-stuff rw,ssd,discard,space_cache,subvolid=272,subvol=/foo/bar\n"_ba
+        << MountInfo{"/", "btrfs", "/dev/mapper/vg0-stuff", "/foo/bar", makedev(0, 49)};
+
+    QTest::newRow("bind-mount")
+        << "59 47 8:17 /rpmbuild /home/user/rpmbuild rw,relatime shared:48 - ext4 /dev/sdb1 rw\n"_ba
+        << MountInfo{"/home/user/rpmbuild", "ext4", "/dev/sdb1", "/rpmbuild", makedev(8, 17)};
+
+    QTest::newRow("space-dash-space")
+        << "47 66 8:3 / /home\\040-\\040dir rw,relatime shared:50 - ext4 /dev/sda3 rw,stripe=32736\n"_ba
+        << MountInfo{"/home - dir", "ext4", "/dev/sda3", "", makedev(8, 3)};
+
+    QTest::newRow("btrfs-mount-bind-file")
+        << "1799 1778 0:49 "
+            "/var_lib_docker/containers/81fde0fec3dd3d99765c3f7fd9cf1ab121b6ffcfd05d5d7ff434db933fe9d795/resolv.conf "
+            "/etc/resolv.conf rw,relatime - btrfs /dev/mapper/vg0-stuff "
+            "rw,ssd,discard,space_cache,subvolid=1773,subvol=/var_lib_docker\n"_ba
+        << MountInfo{"/etc/resolv.conf", "btrfs", "/dev/mapper/vg0-stuff",
+                     "/var_lib_docker/containers/81fde0fec3dd3d99765c3f7fd9cf1ab121b6ffcfd05d5d7ff434db933fe9d795/resolv.conf",
+                     makedev(0, 49)};
+
+    QTest::newRow("very-long-line-QTBUG-77059")
+        << "727 26 0:52 / "
+           "/var/lib/docker/overlay2/f3fbad5eedef71145f00729f0826ea8c44defcfec8c92c58aee0aa2c5ea3fa3a/merged "
+           "rw,relatime shared:399 - overlay overlay "
+           "rw,lowerdir=/var/lib/docker/overlay2/l/PUP2PIY4EQLAOEDQOZ56BHVE53:"
+           "/var/lib/docker/overlay2/l/6IIID3C6J3SUXZEA3GJXKQSTLD:"
+           "/var/lib/docker/overlay2/l/PA6N6URNR7XDBBGGOSFWSFQ2CG:"
+           "/var/lib/docker/overlay2/l/5EOMBTZNCPOCE4LM3I4JCTNSTT:"
+           "/var/lib/docker/overlay2/l/DAMINQ46P3LKX2GDDDIWQKDIWC:"
+           "/var/lib/docker/overlay2/l/DHR3N57AEH4OG5QER5XJW2LXIN:"
+           "/var/lib/docker/overlay2/l/NW26KA7QPRS2KSVQI77QJWLMHW,"
+           "upperdir=/var/lib/docker/overlay2/f3fbad5eedef71145f00729f0826ea8c44defcfec8c92c58aee0aa2c5ea3fa3a/diff,"
+           "workdir=/var/lib/docker/overlay2/f3fbad5eedef71145f00729f0826ea8c44defcfec8c92c58aee0aa2c5ea3fa3a/work,"
+           "index=off,xino=off\n"_ba
+        << MountInfo{"/var/lib/docker/overlay2/f3fbad5eedef71145f00729f0826ea8c44defcfec8c92c58aee0aa2c5ea3fa3a/merged",
+                     "overlay", "overlay", "", makedev(0, 52)};
+
+    QTest::newRow("sshfs-src-device-not-start-with-slash")
+        << "128 92 0:64 / /mnt-point rw,nosuid,nodev,relatime shared:234 - "
+           "fuse.sshfs admin@192.168.1.2:/storage/emulated/0 rw,user_id=1000,group_id=1000\n"_ba
+        << MountInfo{"/mnt-point", "fuse.sshfs",
+                     "admin@192.168.1.2:/storage/emulated/0", "", makedev(0, 64)};
+}
+
+void tst_QStorageInfo::testParseMountInfo()
+{
+    QFETCH(QByteArray, line);
+    QFETCH(MountInfo, expected);
+
+    const std::vector<MountInfo> result = doParseMountInfo(line);
+    QVERIFY(!result.empty());
+    const MountInfo &a = result.front();
+    QCOMPARE(a.mountPoint, expected.mountPoint);
+    QCOMPARE(a.fsType, expected.fsType);
+    QCOMPARE(a.device, expected.device);
+    QCOMPARE(a.fsRoot, expected.fsRoot);
+    QCOMPARE(a.stDev, expected.stDev);
+}
+
+void tst_QStorageInfo::testParseMountInfo_filtered_data()
+{
+    QTest::addColumn<QByteArray>("line");
+
+    QTest::newRow("proc")
+        << "23 66 0:21 / /proc rw,nosuid,nodev,noexec,relatime shared:12 - proc proc rw\n"_ba;
+
+    QTest::newRow("sys")
+        << "24 66 0:22 / /sys rw,nosuid,nodev,noexec,relatime shared:2 - sysfs sysfs rw\n"_ba;
+    QTest::newRow("sys-kernel")
+        << "26 24 0:6 / /sys/kernel/security rw,nosuid,nodev,noexec,relatime "
+           "shared:3 - securityfs securityfs rw\n"_ba;
+
+    QTest::newRow("dev")
+        << "25 66 0:5 / /dev rw,nosuid shared:8 - devtmpfs devtmpfs "
+           "rw,size=4096k,nr_inodes=8213017,mode=755,inode64\n"_ba;
+    QTest::newRow("dev-shm")
+            << "27 25 0:23 / /dev/shm rw,nosuid,nodev shared:9 - tmpfs tmpfs rw,inode64\n"_ba;
+
+    QTest::newRow("var-run")
+        << "46 28 0:25 / /var/run rw,nosuid,nodev,noexec,relatime shared:1 - "
+           "tmpfs tmpfs rw,size=32768k,mode=755,inode64\n"_ba;
+    QTest::newRow("var-lock")
+        << "46 28 0:25 / /var/lock rw,nosuid,nodev,noexec,relatime shared:1 - "
+           "tmpfs tmpfs rw,size=32768k,mode=755,inode64\n"_ba;
+}
+void tst_QStorageInfo::testParseMountInfo_filtered()
+{
+    QFETCH(QByteArray, line);
+    QVERIFY(doParseMountInfo(line, FilterMountInfo::Filtered).empty());
+}
+
+#endif // Q_OS_LINUX
 
 QTEST_MAIN(tst_QStorageInfo)
 
