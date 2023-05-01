@@ -300,7 +300,12 @@ QSemaphore::~QSemaphore()
 */
 void QSemaphore::acquire(int n)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+#  warning "Move the Q_ASSERT to inline code, make QSemaphore have wide contract, " \
+    "and mark noexcept where futexes are in use."
+#else
     Q_ASSERT_X(n >= 0, "QSemaphore::acquire", "parameter 'n' must be non-negative");
+#endif
 
     if (futexAvailable()) {
         futexSemaphoreTryAcquire(u, n, QDeadlineTimer::Forever);
