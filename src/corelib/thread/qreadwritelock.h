@@ -18,7 +18,9 @@ class Q_CORE_EXPORT QReadWriteLock
 public:
     enum RecursionMode { NonRecursive, Recursive };
 
+    QT_CORE_INLINE_SINCE(6, 6)
     explicit QReadWriteLock(RecursionMode recursionMode = NonRecursive);
+    QT_CORE_INLINE_SINCE(6, 6)
     ~QReadWriteLock();
 
     QT_CORE_INLINE_SINCE(6, 6)
@@ -54,9 +56,22 @@ private:
     Q_DISABLE_COPY(QReadWriteLock)
     QAtomicPointer<QReadWriteLockPrivate> d_ptr;
     friend class QReadWriteLockPrivate;
+    static QReadWriteLockPrivate *initRecursive();
+    static void destroyRecursive(QReadWriteLockPrivate *);
 };
 
 #if QT_CORE_INLINE_IMPL_SINCE(6, 6)
+QReadWriteLock::QReadWriteLock(RecursionMode recursionMode)
+    : d_ptr(recursionMode == Recursive ? initRecursive() : nullptr)
+{
+}
+
+QReadWriteLock::~QReadWriteLock()
+{
+    if (auto d = d_ptr.loadAcquire())
+        destroyRecursive(d);
+}
+
 void QReadWriteLock::lockForRead()
 {
     tryLockForRead(QDeadlineTimer(QDeadlineTimer::Forever));

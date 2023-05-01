@@ -101,6 +101,7 @@ static bool contendedTryLockForWrite(QAtomicPointer<QReadWriteLockPrivate> &d_pt
 */
 
 /*!
+    \fn QReadWriteLock::QReadWriteLock(RecursionMode recursionMode)
     \since 4.4
 
     Constructs a QReadWriteLock object in the given \a recursionMode.
@@ -109,21 +110,22 @@ static bool contendedTryLockForWrite(QAtomicPointer<QReadWriteLockPrivate> &d_pt
 
     \sa lockForRead(), lockForWrite(), RecursionMode
 */
-QReadWriteLock::QReadWriteLock(RecursionMode recursionMode)
-    : d_ptr(recursionMode == Recursive ? new QReadWriteLockPrivate(true) : nullptr)
+QReadWriteLockPrivate *QReadWriteLock::initRecursive()
 {
-    Q_ASSERT_X(!(quintptr(d_ptr.loadRelaxed()) & StateMask), "QReadWriteLock::QReadWriteLock", "bad d_ptr alignment");
+    auto d = new QReadWriteLockPrivate(true);
+    Q_ASSERT_X(!(quintptr(d) & StateMask), "QReadWriteLock::QReadWriteLock", "bad d_ptr alignment");
+    return d;
 }
 
 /*!
+    \fn QReadWriteLock::~QReadWriteLock()
     Destroys the QReadWriteLock object.
 
     \warning Destroying a read-write lock that is in use may result
     in undefined behavior.
 */
-QReadWriteLock::~QReadWriteLock()
+void QReadWriteLock::destroyRecursive(QReadWriteLockPrivate *d)
 {
-    auto d = d_ptr.loadAcquire();
     if (isUncontendedLocked(d)) {
         qWarning("QReadWriteLock: destroying locked QReadWriteLock");
         return;
