@@ -534,7 +534,8 @@ bool QTestResult::compare(bool success, const char *failureMsg,
 void QTestResult::addFailure(const char *message, const char *file, int line)
 {
     clearExpectFail();
-    QTestEventLoop::instance().exitLoop();
+    if (qApp && QThread::currentThread() == qApp->thread())
+        QTestEventLoop::instance().exitLoop();
 
     if (QTest::blacklistCurrentTest)
         QTestLog::addBFail(message, file, line);
