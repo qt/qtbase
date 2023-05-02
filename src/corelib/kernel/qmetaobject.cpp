@@ -1720,31 +1720,19 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 */
 
 /*!
-    \fn  template<typename Functor, typename FunctorReturnType> bool QMetaObject::invokeMethod(QObject *context, Functor function, Qt::ConnectionType type, FunctorReturnType *ret)
+    \fn  template<typename Functor, typename FunctorReturnType> bool QMetaObject::invokeMethod(QObject *context, Functor &&function, Qt::ConnectionType type, FunctorReturnType *ret)
+    \fn  template<typename Functor, typename FunctorReturnType> bool QMetaObject::invokeMethod(QObject *context, Functor &&function, FunctorReturnType *ret)
 
     \since 5.10
-
     \threadsafe
-    \overload
 
     Invokes the \a function in the event loop of \a context. \a function can be a functor
     or a pointer to a member function. Returns \c true if the function could be invoked.
     Returns \c false if there is no such function or the parameters did not match.
     The return value of the function call is placed in \a ret.
-*/
 
-/*!
-    \fn  template<typename Functor, typename FunctorReturnType> bool QMetaObject::invokeMethod(QObject *context, Functor function, FunctorReturnType *ret)
-
-    \since 5.10
-
-    \threadsafe
-    \overload
-
-    Invokes the \a function in the event loop of \a context using the connection type Qt::AutoConnection.
-    \a function can be a functor or a pointer to a member function. Returns \c true if the function could
-    be invoked. Returns \c false if there is no such member or the parameters did not match.
-    The return value of the function call is placed in \a ret.
+    If \a type is set, then the function is invoked using that connection type. Otherwise,
+    Qt::AutoConnection will be used.
 */
 
 /*!
