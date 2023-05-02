@@ -4666,7 +4666,7 @@ def create_top_level_cmake_conf():
     conf_file_name = ".cmake.conf"
     try:
         with open(conf_file_name, "x") as file:
-            file.write('set(QT_REPO_MODULE_VERSION "6.5.1")\n')
+            file.write('set(QT_REPO_MODULE_VERSION "6.5.2")\n')
     except FileExistsError:
         pass
 
