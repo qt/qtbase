@@ -4,6 +4,7 @@
 /*!
     \example serialization/convert
     \examplecategory {Input/Output}
+    \meta tag {network}
     \title Convert Example
 
     \brief The Convert example demonstrates how to convert between different
