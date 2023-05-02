@@ -8561,6 +8561,30 @@ void tst_QObject::asyncCallbackHelper()
     QVERIFY(caller.callMe0(mutableLambda2)); // this copies the lambda
     caller.slotObject->call(nullptr, argv);  // this call doesn't change mutableLambda2
     QCOMPARE(mutableLambda2(), 2);           // so we are still at 2
+
+    {
+        int called = -1;
+        struct MutableFunctor {
+            void operator()() { called = 0; }
+            int &called;
+        };
+        struct ConstFunctor
+        {
+            void operator()() const { called = 1; }
+            int &called;
+        };
+
+        MutableFunctor mf{called};
+        QMetaObject::invokeMethod(this, mf);
+        QCOMPARE(called, 0);
+        ConstFunctor cf{called};
+        QMetaObject::invokeMethod(this, cf);
+        QCOMPARE(called, 1);
+        QMetaObject::invokeMethod(this, [&called, u = std::unique_ptr<int>()]{ called = 2; });
+        QCOMPARE(called, 2);
+        QMetaObject::invokeMethod(this, [&called, count = 0]() mutable { called = 3; });
+        QCOMPARE(called, 3);
+    }
 }
 
 QTEST_MAIN(tst_QObject)

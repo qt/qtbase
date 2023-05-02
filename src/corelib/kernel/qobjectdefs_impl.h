@@ -239,14 +239,6 @@ namespace QtPrivate {
         }
     };
 
-    template<typename Function, int N> struct Functor
-    {
-        template <typename SignalArgs, typename R>
-        static void call(Function &f, void *, void **arg) {
-            FunctorCall<typename Indexes<N>::Value, SignalArgs, R, Function>::call(f, arg);
-        }
-    };
-
     // Traits to detect if there is a conversion between two types,
     // and that conversion does not include a narrowing conversion.
     template <typename T>
@@ -334,6 +326,43 @@ namespace QtPrivate {
     template <typename Functor, typename ... ArgList> struct FunctorReturnType<Functor, List<ArgList...>> {
         typedef decltype(std::declval<Functor>().operator()((std::declval<ArgList>())...)) Value;
     };
+
+    // Get the function prototype for a functor. There can only be one call operator
+    // in a functor, otherwise we get errors from ambiguity. But that's good enough.
+    template <typename Ret, typename... Args>
+    using FunctionTypeForTypes = Ret(*)(Args...);
+
+    template <typename Ret, typename Obj, typename... Args>
+    FunctionTypeForTypes<Ret, Args...> FunctorPrototype(Ret(Obj::*)(Args...) const) { return nullptr; }
+    template <typename Ret, typename Obj, typename... Args>
+    FunctionTypeForTypes<Ret, Args...> FunctorPrototype(Ret(Obj::*)(Args...)) { return nullptr; }
+    template <typename Ret, typename Obj, typename... Args>
+    FunctionTypeForTypes<Ret, Args...> FunctorPrototype(Ret(Obj::*)(Args...) const noexcept) { return nullptr; }
+    template <typename Ret, typename Obj, typename... Args>
+    FunctionTypeForTypes<Ret, Args...> FunctorPrototype(Ret(Obj::*)(Args...) noexcept) { return nullptr; }
+
+    template<typename Function, int N> struct Functor
+    {
+        template <typename SignalArgs, typename R>
+        static void call(Function &f, void *, void **arg) {
+            FunctorCall<typename Indexes<N>::Value, SignalArgs, R, Function>::call(f, arg);
+        }
+    };
+
+    template<typename Func>
+    struct ZeroArgFunctor : Functor<Func, 0>
+    {
+        using Function = decltype(FunctorPrototype(&std::decay_t<Func>::operator()));
+        enum {ArgumentCount = 0};
+        using Arguments = QtPrivate::List<>;
+        using ReturnType = typename FunctionPointer<Function>::ReturnType;
+    };
+
+    template<typename Func>
+    using Callable = std::conditional_t<FunctionPointer<Func>::ArgumentCount == -1,
+        ZeroArgFunctor<Func>,
+        FunctionPointer<Func>
+    >;
 
     /*
         Wrapper around ComputeFunctorArgumentCount and CheckCompatibleArgument,
@@ -439,19 +468,6 @@ namespace QtPrivate {
         explicit QFunctorSlotObject(Func &&f) : QSlotObjectBase(&impl), function(std::move(f)) {}
         explicit QFunctorSlotObject(const Func &f) : QSlotObjectBase(&impl), function(f) {}
     };
-
-    // typedefs for readability for when there are no parameters
-    template <typename Func>
-    using QSlotObjectWithNoArgs = QFunctorSlotObject<Func,
-                                              QtPrivate::List<>,
-                                              typename QtPrivate::FunctionPointer<Func>::ReturnType>;
-
-    template <typename Func, typename R>
-    using QFunctorSlotObjectWithNoArgs = QFunctorSlotObject<Func, QtPrivate::List<>, R>;
-
-    template <typename Func>
-    using QFunctorSlotObjectWithNoArgsImplicitReturn = QFunctorSlotObjectWithNoArgs<Func, typename QtPrivate::FunctionPointer<Func>::ReturnType>;
-
 
     // Helper to detect the context object type based on the functor type:
     // QObject for free functions and lambdas; the callee for member function
