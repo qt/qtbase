@@ -303,7 +303,7 @@ void QSingleShotTimer::startTimerForReceiver(int msec, Qt::TimerType timerType, 
         moveToThread(receiver->thread());
 
         QDeadlineTimer deadline(std::chrono::milliseconds{msec}, timerType);
-        QMetaObject::invokeMethod(this, [=]{
+        QMetaObject::invokeMethod(this, [this, deadline, timerType]{
             if (deadline.hasExpired())
                 emit timeout();
             else
