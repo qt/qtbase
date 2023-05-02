@@ -8376,7 +8376,7 @@ public:
     static void staticCallback0() {}
     static void staticCallback1(const QString &) {}
 
-    using Prototype0 = void(*)();
+    using Prototype0 = int(*)();
     using Prototype1 = void(*)(QString);
 
     template<typename Functor>
@@ -8429,8 +8429,9 @@ inline constexpr bool compiles(Functor &&) {
 
 void tst_QObject::asyncCallbackHelper()
 {
+    int result = 0;
     QString arg1 = "Parameter";
-    void *argv[] = { nullptr, &arg1 };
+    void *argv[] = { &result, &arg1 };
 
     auto lambda0 = []{};
     auto lambda1 = [](const QString &) {};
@@ -8477,11 +8478,6 @@ void tst_QObject::asyncCallbackHelper()
     static_assert(!compiles<AsyncCaller::Prototype0>(freeFunction1));
     static_assert(!compiles<AsyncCaller::Prototype0>(functor1));
 
-    // move-only functor - should work, but doesn't because QFunctorSlotObject requires
-    // the functor to be of a copyable type!
-    static_assert(!compiles<AsyncCaller::Prototype0>(moveOnlyLambda));
-    static_assert(!compiles<AsyncCaller::Prototype1>(moveOnlyLambda));
-
     // wrong parameter type
     static_assert(!compiles<AsyncCaller::Prototype1>(&AsyncCaller::callbackInt));
 
@@ -8520,19 +8516,25 @@ void tst_QObject::asyncCallbackHelper()
     QVERIFY(caller.callMe1(std::move(moveOnlyLambda1)));
     QVERIFY(caller.callMe1(freeFunction1));
 
+    static const char *expectedPayload = "Hello World!";
     {
         struct MoveOnlyFunctor {
-            MoveOnlyFunctor() : payload("Hello World!") {}
+            MoveOnlyFunctor() = default;
             MoveOnlyFunctor(MoveOnlyFunctor &&) = default;
             MoveOnlyFunctor(const MoveOnlyFunctor &) = delete;
             ~MoveOnlyFunctor() = default;
 
-            void operator()() const { qDebug() << payload; }
-            QString payload;
+            int operator()() const {
+                qDebug().noquote() << payload;
+                return int(payload.length());
+            }
+            QString payload = expectedPayload;
         } moveOnlyFunctor;
         QVERIFY(caller.callMe0(std::move(moveOnlyFunctor)));
     }
+    QTest::ignoreMessage(QtDebugMsg, expectedPayload);
     caller.slotObject->call(nullptr, argv);
+    QCOMPARE(result, QLatin1String(expectedPayload).length());
 
     // mutable lambda; same behavior as mutableFunctor - we copy the functor
     // in the QFunctorSlotObject, so the original is not modified
