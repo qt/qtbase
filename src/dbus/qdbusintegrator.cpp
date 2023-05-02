@@ -1757,7 +1757,7 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
 
     watchForDBusDisconnection();
 
-    QMetaObject::invokeMethod(this, "doDispatch", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &QDBusConnectionPrivate::doDispatch, Qt::QueuedConnection);
 }
 
 static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnection *connection)
@@ -1845,7 +1845,7 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     qDBusDebug() << this << ": connected successfully";
 
     // schedule a dispatch:
-    QMetaObject::invokeMethod(this, "doDispatch", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &QDBusConnectionPrivate::doDispatch, Qt::QueuedConnection);
 }
 
 extern "C"{

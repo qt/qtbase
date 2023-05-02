@@ -474,7 +474,9 @@ QDBusPendingCallWatcher::QDBusPendingCallWatcher(const QDBusPendingCall &call, Q
             d->watcherHelper = new QDBusPendingCallWatcherHelper;
             if (d->replyMessage.type() != QDBusMessage::InvalidMessage) {
                 // cause a signal emission anyways
-                QMetaObject::invokeMethod(d->watcherHelper, "finished", Qt::QueuedConnection);
+                QMetaObject::invokeMethod(d->watcherHelper,
+                                          &QDBusPendingCallWatcherHelper::finished,
+                                          Qt::QueuedConnection);
             }
         }
         d->watcherHelper->add(this);

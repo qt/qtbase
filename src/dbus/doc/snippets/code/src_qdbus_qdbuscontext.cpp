@@ -37,7 +37,7 @@ QString MyObject::methodWithDelayedReply()
     conn = connection();
     msg = message();
     setDelayedReply(true);
-    QMetaObject::invokeMethod(this, "process", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &MyObject::process, Qt::QueuedConnection);
     return QString();
 }
 //! [0]

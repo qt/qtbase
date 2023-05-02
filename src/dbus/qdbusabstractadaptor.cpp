@@ -113,7 +113,7 @@ QDBusAbstractAdaptor::QDBusAbstractAdaptor(QObject* obj)
     QDBusAdaptorConnector *connector = qDBusCreateAdaptorConnector(obj);
 
     connector->waitingForPolish = true;
-    QMetaObject::invokeMethod(connector, "polish", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(connector, &QDBusAdaptorConnector::polish, Qt::QueuedConnection);
 }
 
 /*!

@@ -370,7 +370,8 @@ public slots:
     {
         // This call cannot race with something disabling dispatch only because dispatch is
         // never re-disabled from Qt code on an in-use connection once it has been enabled.
-        QMetaObject::invokeMethod(con, "setDispatchEnabled", Qt::QueuedConnection, Q_ARG(bool, true));
+        QMetaObject::invokeMethod(
+                con, [con = con]() { con->setDispatchEnabled(true); }, Qt::QueuedConnection);
         if (!con->ref.deref())
             con->deleteLater();
         deleteLater();
