@@ -33,9 +33,11 @@ public:
     // compiler-generated dtor is fine!
 
     template <typename X, if_convertible<X> = true>
-    QPointer(QPointer<X> &&other) noexcept : wp(std::move(other.wp)) {}
+    QPointer(QPointer<X> &&other) noexcept
+        : wp(std::exchange(other.wp, nullptr).internalData(), true) {}
     template <typename X, if_convertible<X> = true>
-    QPointer(const QPointer<X> &other) noexcept : wp(other.wp) {}
+    QPointer(const QPointer<X> &other) noexcept
+        : wp(other.wp.internalData(), true) {}
 
 #ifdef Q_QDOC
     // Stop qdoc from complaining about missing function

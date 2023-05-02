@@ -52,7 +52,7 @@ void tst_QPointer::conversion()
         QFile file;
         QPointer<QFile> pf = &file;
         QCOMPARE_EQ(pf, &file);
-        QPointer<QIODevice> pio = pf;
+        QPointer<const QIODevice> pio = pf;
         QCOMPARE_EQ(pio, &file);
         QCOMPARE_EQ(pio.get(), &file);
         QCOMPARE_EQ(pio, pf);
@@ -63,7 +63,7 @@ void tst_QPointer::conversion()
         QFile file;
         QPointer<QFile> pf = &file;
         QCOMPARE_EQ(pf, &file);
-        QPointer<QIODevice> pio = std::move(pf);
+        QPointer<const QIODevice> pio = std::move(pf);
         QCOMPARE_EQ(pf, nullptr);
         QCOMPARE_EQ(pio, &file);
         QCOMPARE_EQ(pio.get(), &file);
