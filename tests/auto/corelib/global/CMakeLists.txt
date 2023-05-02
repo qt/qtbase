@@ -4,6 +4,7 @@
 if(NOT INTEGRITY)
     add_subdirectory(qcompare)
 endif()
+add_subdirectory(qcomparehelpers)
 add_subdirectory(qflags)
 add_subdirectory(q_func_info)
 add_subdirectory(qgetputenv)

@@ -123,6 +123,20 @@ CHECK(strong, equivalent);
 */
 
 /*!
+    \headerfile <QtCompare>
+    \inmodule QtCore
+    \title Classes and helpers for defining comparison operators
+    \keyword qtcompare
+
+    \brief The <QtCompare> header file defines \c {Qt::*_ordering} types and helper
+    macros for defining comparison operators.
+
+    This header introduces the \l Qt::partial_ordering, \l Qt::weak_ordering, and
+    \l Qt::strong_ordering types, which are Qt's C++17 backports of
+    \c {std::*_ordering} types.
+*/
+
+/*!
     \class Qt::strong_ordering
     \inmodule QtCore
     \brief Qt::strong_ordering represents a comparison where equivalent values are
@@ -760,6 +774,328 @@ CHECK(strong, equivalent);
 
     Represents the result of a comparison where the left operand is not ordered
     with respect to the right operand.
+*/
+
+/*!
+    \internal
+    \macro Q_DECLARE_EQUALITY_COMPARABLE(Type)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE(LeftType, RightType)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(Type)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(LeftType, RightType)
+    \since 6.7
+    \relates <QtCompare>
+
+    These macros are used to generate \c {operator==()} and \c {operator!=()}.
+
+    In C++17 mode, the mixed-type overloads also generate the reversed
+    operators.
+
+    In C++20 mode, only \c {operator==()} is defined. \c {operator!=()},
+    as well as the reversed operators for mixed-type comparison, are synthesized
+    by the compiler.
+
+    The operators are implemented in terms of a helper function
+    \c {comparesEqual()}.
+    It's the user's responsibility to declare and define this function.
+
+    Consider the following example of a comparison operators declaration:
+
+    \code
+    class MyClass {
+        ...
+    private:
+        friend bool comparesEqual(const MyClass &, const MyClass &) noexcept;
+        Q_DECLARE_EQUALITY_COMPARABLE(MyClass)
+    };
+    \endcode
+
+    When compiled with C++17, the macro will expand into the following code:
+
+    \code
+    friend bool operator==(const MyClass &lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    friend bool operator!=(const MyClass &lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    \endcode
+
+    When compiled with C++20, the macro will expand only into \c {operator==()}:
+
+    \code
+    friend bool operator==(const MyClass &lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    \endcode
+
+    The \c {*_LITERAL_TYPE} versions of the macros are used to generate
+    \c constexpr operators. This means that the helper \c {comparesEqual()}
+    function must also be \c constexpr.
+
+    Consider the following example of a mixed-type \c constexpr comparison
+    operators declaration:
+
+    \code
+    class MyClass {
+        ...
+    private:
+        friend constexpr bool comparesEqual(const MyClass &, int) noexcept;
+        Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(MyClass, int)
+    };
+    \endcode
+
+    When compiled with C++17, the macro will expand into the following code:
+
+    \code
+    friend constexpr bool operator==(const MyClass &lhs, int rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    friend constexpr bool operator!=(const MyClass &lhs, int rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    friend constexpr bool operator==(int lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    friend constexpr bool operator!=(int lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    \endcode
+
+    When compiled with C++20, the macro expands only into \c {operator==()}:
+
+    \code
+    friend constexpr bool operator==(const MyClass &lhs, int rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    \endcode
+*/
+
+/*!
+    \internal
+    \macro Q_DECLARE_PARTIALLY_ORDERED(Type)
+    \macro Q_DECLARE_PARTIALLY_ORDERED(LeftType, RightType)
+    \macro Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE(Type)
+    \macro Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE(LeftType, RightType)
+    \since 6.7
+    \relates <QtCompare>
+
+    These macros are used to generate all six relational operators.
+    The operators represent
+    \l {https://en.cppreference.com/w/cpp/utility/compare/partial_ordering}
+    {partial ordering}.
+
+    These macros use respective overloads of the
+    \l {Q_DECLARE_EQUALITY_COMPARABLE} macro to generate \c {operator==()} and
+    \c {operator!=()}, and also generate the four relational operators:
+    \c {operator<()}, \c {operator>()}, \c {operator<=()}, and \c {operator>()}.
+
+    In C++17 mode, the mixed-type overloads also generate the reversed
+    operators.
+
+    In C++20 mode, only \c {operator==()} and \c {operator<=>()} are defined.
+    Other operators, as well as the reversed operators for mixed-type
+    comparison, are synthesized by the compiler.
+
+    The (in)equality operators are implemented in terms of a helper function
+    \c {comparesEqual()}. The other relational operators are implemented in
+    terms of a helper function \c {compareThreeWay()}.
+    The \c {compareThreeWay()} function \e must return an object of type
+    \l Qt::partial_ordering. It's the user's responsibility to declare and define
+    both helper functions.
+
+    Consider the following example of a comparison operators declaration:
+
+    \code
+    class MyClass {
+        ...
+    private:
+        friend bool comparesEqual(const MyClass &, const MyClass &) noexcept;
+        friend Qt::partial_ordering compareThreeWay(const MyClass &, const MyClass &) noexcept;
+        Q_DECLARE_PARTIALLY_ORDERED(MyClass)
+    };
+    \endcode
+
+    When compiled with C++17, the macro will expand into the following code:
+
+    \code
+    // operator==() and operator!=() are generated from
+    // Q_DECLARE_EQUALITY_COMPARABLE
+    friend bool operator<(const MyClass &lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend bool operator>(const MyClass &lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend bool operator<=(const MyClass &lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend bool operator>=(const MyClass &lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    \endcode
+
+    When compiled with C++20, the macro will expand into \c {operator==()} and
+    \c {operator<=>()}:
+
+    \code
+    friend bool operator==(const MyClass &lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    friend std::partial_ordering
+    operator<=>(const MyClass &lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    \endcode
+
+    The \c {*_LITERAL_TYPE} versions of the macros are used to generate
+    \c constexpr operators. This means that the helper \c {comparesEqual()} and
+    \c {compareThreeWay()} functions must also be \c constexpr.
+
+    Consider the following example of a mixed-type \c constexpr comparison
+    operators declaration:
+
+    \code
+    class MyClass {
+        ...
+    private:
+        friend constexpr bool comparesEqual(const MyClass &, int) noexcept;
+        friend constexpr Qt::partial_ordering compareThreeWay(const MyClass &, int) noexcept;
+        Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE(MyClass, int)
+    };
+    \endcode
+
+    When compiled with C++17, the macro will expand into the following code:
+
+    \code
+    // operator==(), operator!=(), and their reversed versions are generated
+    // from Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE
+    friend constexpr bool operator<(const MyClass &lhs, int rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend constexpr bool operator>(const MyClass &lhs, int rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend constexpr bool operator<=(const MyClass &lhs, int rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend constexpr bool operator>=(const MyClass &lhs, int rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend constexpr bool operator<(int lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend constexpr bool operator>(int lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend constexpr bool operator<=(int lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    friend constexpr bool operator>=(int lhs, const MyClass &rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    \endcode
+
+    When compiled with C++20, the macro will expand into \c {operator==()} and
+    \c {operator<=>()}:
+
+    \code
+    friend constexpr bool operator==(const MyClass &lhs, int rhs) noexcept
+    {
+        // inline implementation which uses comparesEqual()
+    }
+    friend constexpr std::partial_ordering
+    operator<=>(const MyClass &lhs, int rhs) noexcept
+    {
+        // inline implementation which uses compareThreeWay()
+    }
+    \endcode
+
+    \sa Q_DECLARE_EQUALITY_COMPARABLE, Q_DECLARE_WEAKLY_ORDERED,
+        Q_DECLARE_STRONGLY_ORDERED
+*/
+
+/*!
+    \internal
+    \macro Q_DECLARE_WEAKLY_ORDERED(Type)
+    \macro Q_DECLARE_WEAKLY_ORDERED(LeftType, RightType)
+    \macro Q_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE(Type)
+    \macro Q_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE(LeftType, RightType)
+    \since 6.7
+    \relates <QtCompare>
+
+    These macros behave similarly to the
+    \l {Q_DECLARE_PARTIALLY_ORDERED} overloads, but represent
+    \l {https://en.cppreference.com/w/cpp/utility/compare/weak_ordering}
+    {weak ordering}.
+
+    The (in)equality operators are implemented in terms of a helper function
+    \c {comparesEqual()}. The other relational operators are implemented in
+    terms of a helper function \c {compareThreeWay()}.
+    The \c {compareThreeWay()} function \e must return an object of type
+    \l Qt::weak_ordering. It's the user's responsibility to declare and define both
+    helper functions.
+
+    The \c {*_LITERAL_TYPE} overloads are used to generate \c constexpr
+    operators. This means that the helper \c {comparesEqual()} and
+    \c {compareThreeWay()} functions must also be \c constexpr.
+
+    See \l {Q_DECLARE_PARTIALLY_ORDERED} for usage examples.
+
+    \sa Q_DECLARE_PARTIALLY_ORDERED, Q_DECLARE_STRONGLY_ORDERED,
+        Q_DECLARE_EQUALITY_COMPARABLE
+*/
+
+/*!
+    \internal
+    \macro Q_DECLARE_STRONGLY_ORDERED(Type)
+    \macro Q_DECLARE_STRONGLY_ORDERED(LeftType, RightType)
+    \macro Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(Type)
+    \macro Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(LeftType, RightType)
+    \since 6.7
+    \relates <QtCompare>
+
+    These macros behave similarly to the
+    \l {Q_DECLARE_PARTIALLY_ORDERED} overloads, but represent
+    \l {https://en.cppreference.com/w/cpp/utility/compare/strong_ordering}
+    {strong ordering}.
+
+    The (in)equality operators are implemented in terms of a helper function
+    \c {comparesEqual()}. The other relational operators are implemented in
+    terms of a helper function \c {compareThreeWay()}.
+    The \c {compareThreeWay()} function \e must return an object of type
+    \l Qt::strong_ordering. It's the user's responsibility to declare and define
+    both helper functions.
+
+    The \c {*_LITERAL_TYPE} overloads are used to generate \c constexpr
+    operators. This means that the helper \c {comparesEqual()} and
+    \c {compareThreeWay()} functions must also be \c constexpr.
+
+    See \l {Q_DECLARE_PARTIALLY_ORDERED} for usage examples.
+
+    \sa Q_DECLARE_PARTIALLY_ORDERED, Q_DECLARE_WEAKLY_ORDERED,
+        Q_DECLARE_EQUALITY_COMPARABLE
 */
 
 QT_END_NAMESPACE

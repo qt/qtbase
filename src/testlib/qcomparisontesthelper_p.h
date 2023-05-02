@@ -127,6 +127,7 @@ void testAllComparisonOperatorsCompile()
     Func(std::as_const(Left), std::as_const(Right), Op, Expected); \
     /* END */
 
+
 /*!
     \internal
     Basic testing of equality operators.
@@ -166,8 +167,9 @@ void testEqualityOperators(LeftType lhs, RightType rhs, bool expectedEqual)
     (==, !=, <, >, <=, >=) for the \a lhs operand of type \c {LeftType} and
     the \a rhs operand of type \c {RightType}.
 
-    The \c OrderingType must be one of Qt::partial_ordering,
-    Qt::weak_ordering, or Qt::strong_ordering.
+    When compiled in C++17 mode, the \c OrderingType must be one of
+    Qt::partial_ordering, Qt::strong_ordering, or Qt::weak_ordering.
+    In C++20 mode, also the \c {std::*_ordering} types can be used.
 
     The \a expectedOrdering parameter provides the expected
     relation between \a lhs and \a rhs.
@@ -189,9 +191,18 @@ void testAllComparisonOperators(LeftType lhs, RightType rhs, OrderingType expect
     constexpr bool isQOrderingType = std::is_same_v<OrderingType, Qt::partial_ordering>
                                         || std::is_same_v<OrderingType, Qt::weak_ordering>
                                         || std::is_same_v<OrderingType, Qt::strong_ordering>;
-    static_assert(isQOrderingType,
+#ifdef __cpp_lib_three_way_comparison
+    constexpr bool isStdOrderingType = std::is_same_v<OrderingType, std::partial_ordering>
+                                        || std::is_same_v<OrderingType, std::weak_ordering>
+                                        || std::is_same_v<OrderingType, std::strong_ordering>;
+#else
+    constexpr bool isStdOrderingType = false;
+#endif
+
+    static_assert(isQOrderingType || isStdOrderingType,
                   "Please provide, as the expectedOrdering parameter, a value "
-                  "of one of the Qt::{partial,weak,strong_ordering types.");
+                  "of one of the Qt::{partial,weak,strong}_ordering or "
+                  "std::{partial,weak,strong}_ordering types.");
 
     // We have all sorts of operator==() between Q*Ordering and std::*_ordering
     // types, so we can just compare to Qt::partial_ordering.

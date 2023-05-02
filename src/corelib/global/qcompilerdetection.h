@@ -852,6 +852,13 @@
 #    if _MSC_VER >= 1910
 #      define Q_COMPILER_CONSTEXPR
 #    endif
+// MSVC versions before 19.36 have a bug in C++20 comparison implementation.
+// This leads to ambiguities when resolving comparison operator overloads in
+// certain scenarios (the buggy MSVC versions were checked using our CI and
+// compiler explorer).
+#    if _MSC_VER < 1936
+#      define Q_COMPILER_LACKS_THREE_WAY_COMPARE_SYMMETRY
+#    endif
 #  endif /* __cplusplus */
 #endif // defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 

@@ -684,4 +684,7 @@ inline constexpr strong_ordering strong_ordering::greater(QtPrivate::Ordering::G
 
 QT_END_NAMESPACE
 
+// This is intentionally included in the end of qcompare.h
+#include <QtCore/qcomparehelpers.h>
+
 #endif // QCOMPARE_H

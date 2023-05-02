@@ -50,6 +50,7 @@ qt_internal_add_module(Core
         global/qassert.cpp global/qassert.h
         global/qcompare_impl.h
         global/qcompare.cpp global/qcompare.h
+        global/qcomparehelpers.h
         global/qcompilerdetection.h
         global/qconstructormacros.h
         global/qcontainerinfo.h
