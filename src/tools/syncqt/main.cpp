@@ -110,7 +110,7 @@ void printInternalError()
 
 std::filesystem::path normilizedPath(const std::string &path)
 {
-    return std::filesystem::path(std::filesystem::absolute(path).generic_string());
+    return std::filesystem::path(std::filesystem::weakly_canonical(path).generic_string());
 }
 }
 
