@@ -352,6 +352,8 @@ if(QT_UNITY_BUILD)
     set(CMAKE_UNITY_BUILD_BATCH_SIZE "${QT_UNITY_BUILD_BATCH_SIZE}")
 endif()
 
+option(QT_ALLOW_SYMLINK_IN_PATHS "Allows symlinks in paths." OFF)
+
 # We need to clean up QT_FEATURE_*, but only once per configuration cycle
 get_property(qt_feature_clean GLOBAL PROPERTY _qt_feature_clean)
 if(NOT qt_feature_clean)
