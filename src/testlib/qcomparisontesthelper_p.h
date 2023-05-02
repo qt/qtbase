@@ -16,11 +16,21 @@
 //
 
 #include <QtCore/q20type_traits.h>
+#include <QtCore/qxptype_traits.h>
 #include <QtTest/qtest.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QTestPrivate {
+
+#ifdef __cpp_lib_three_way_comparison
+template <typename LT, typename RT>
+using HasThreeWayComparisonOp = decltype(std::declval<LT>() <=> std::declval<RT>());
+
+template <typename LT, typename RT>
+constexpr bool implementsThreeWayComparisonOp_v = qxp::is_detected_v<HasThreeWayComparisonOp,
+                                                                     LT, RT>;
+#endif
 
 Q_TESTLIB_EXPORT QByteArray formatTypeWithCRefImpl(QMetaType type, bool isConst,
                                                    bool isRef, bool isRvalueRef);
@@ -95,6 +105,9 @@ void testEqualityOperatorsCompile()
     This function checks that the types \c LeftType and \c RightType properly
     define all comparison operators (==, !=, <, >, <=, >=). The checks are
     performed for all combinations of cvref-qualified lvalues and rvalues.
+
+    If compiled in C++20 mode, also checks \c {operator<=>()} if that is
+    implemented.
 */
 template <typename LeftType, typename RightType = LeftType>
 void testAllComparisonOperatorsCompile()
@@ -106,6 +119,11 @@ void testAllComparisonOperatorsCompile()
     FOR_EACH_CREF(CHECK_SINGLE_OPERATOR, LeftType, RightType, <, bool)
     FOR_EACH_CREF(CHECK_SINGLE_OPERATOR, LeftType, RightType, >=, bool)
     FOR_EACH_CREF(CHECK_SINGLE_OPERATOR, LeftType, RightType, <=, bool)
+#ifdef __cpp_lib_three_way_comparison
+    if constexpr (implementsThreeWayComparisonOp_v<LeftType, RightType>) {
+        FOR_EACH_CREF(CHECK_SINGLE_OPERATOR, LeftType, RightType, <=>, std::partial_ordering)
+    }
+#endif
 }
 
 #undef CHECK_SINGLE_OPERATOR
@@ -127,6 +145,20 @@ void testAllComparisonOperatorsCompile()
     Func(std::as_const(Left), std::as_const(Right), Op, Expected); \
     /* END */
 
+#ifdef __cpp_lib_three_way_comparison
+
+// Hide the macro under an ifdef, because it otherwise triggers a warning
+// in Clang C++17 build.
+#define CHECK_RUNTIME_3WAY(Left, Right, Op, Expected) \
+    do { \
+        QCOMPARE_EQ((Left <=> Right) Op 0, Expected); \
+        QCOMPARE_EQ((std::move(Left) <=> Right) Op 0, Expected); \
+        QCOMPARE_EQ((Left <=> std::move(Right)) Op 0, Expected); \
+        QCOMPARE_EQ((std::move(Left) <=> std::move(Right)) Op 0, Expected); \
+    } while (false); \
+    /* END */
+
+#endif // __cpp_lib_three_way_comparison
 
 /*!
     \internal
@@ -166,6 +198,9 @@ void testEqualityOperators(LeftType lhs, RightType rhs, bool expectedEqual)
     The helper function tests all six relation and equality operators
     (==, !=, <, >, <=, >=) for the \a lhs operand of type \c {LeftType} and
     the \a rhs operand of type \c {RightType}.
+
+    If compiled in C++20 mode, also checks \c {operator<=>()} if that is
+    implemented.
 
     When compiled in C++17 mode, the \c OrderingType must be one of
     Qt::partial_ordering, Qt::strong_ordering, or Qt::weak_ordering.
@@ -222,6 +257,29 @@ void testAllComparisonOperators(LeftType lhs, RightType rhs, OrderingType expect
                        !expectedUnordered && (expectedEqual || expectedLess))
     CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, lhs, rhs, >=,
                        !expectedUnordered && !expectedLess)
+#ifdef __cpp_lib_three_way_comparison
+    if constexpr (implementsThreeWayComparisonOp_v<LeftType, RightType>) {
+        if constexpr (std::is_convertible_v<OrderingType, std::strong_ordering>)
+            static_assert(std::is_same_v<decltype(lhs <=> rhs), std::strong_ordering>);
+        else if constexpr (std::is_convertible_v<OrderingType, std::weak_ordering>)
+            static_assert(std::is_same_v<decltype(lhs <=> rhs), std::weak_ordering>);
+        else
+            static_assert(std::is_same_v<decltype(lhs <=> rhs), std::partial_ordering>);
+
+        CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, lhs, rhs, ==,
+                           !expectedUnordered && expectedEqual)
+        CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, lhs, rhs, !=,
+                           expectedUnordered || !expectedEqual)
+        CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, lhs, rhs, <,
+                           !expectedUnordered && expectedLess)
+        CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, lhs, rhs, >,
+                           !expectedUnordered && !expectedLess && !expectedEqual)
+        CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, lhs, rhs, <=,
+                           !expectedUnordered && (expectedEqual || expectedLess))
+        CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, lhs, rhs, >=,
+                           !expectedUnordered && !expectedLess)
+    }
+#endif
 
     if constexpr (!std::is_same_v<LeftType, RightType>) {
         CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, ==,
@@ -236,9 +294,35 @@ void testAllComparisonOperators(LeftType lhs, RightType rhs, OrderingType expect
                            !expectedUnordered && !expectedLess)
         CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, >=,
                            !expectedUnordered && (expectedEqual || expectedLess))
+#ifdef __cpp_lib_three_way_comparison
+        if constexpr (implementsThreeWayComparisonOp_v<LeftType, RightType>) {
+            if constexpr (std::is_convertible_v<OrderingType, std::strong_ordering>)
+                static_assert(std::is_same_v<decltype(rhs <=> lhs), std::strong_ordering>);
+            else if constexpr (std::is_convertible_v<OrderingType, std::weak_ordering>)
+                static_assert(std::is_same_v<decltype(rhs <=> lhs), std::weak_ordering>);
+            else
+                static_assert(std::is_same_v<decltype(rhs <=> lhs), std::partial_ordering>);
+
+            CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, rhs, lhs, ==,
+                               !expectedUnordered && expectedEqual)
+            CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, rhs, lhs, !=,
+                               expectedUnordered || !expectedEqual)
+            CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, rhs, lhs, <,
+                               !expectedUnordered && !expectedLess && !expectedEqual)
+            CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, rhs, lhs, >,
+                               !expectedUnordered && expectedLess)
+            CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, rhs, lhs, <=,
+                               !expectedUnordered && !expectedLess)
+            CHECK_RUNTIME_CREF(CHECK_RUNTIME_3WAY, rhs, lhs, >=,
+                               !expectedUnordered && (expectedEqual || expectedLess))
+        }
+#endif
     }
 }
 
+#ifdef __cpp_lib_three_way_comparison
+#undef CHECK_RUNTIME_3WAY
+#endif
 #undef CHECK_RUNTIME_CREF
 #undef CHECK_RUNTIME_LR
 
