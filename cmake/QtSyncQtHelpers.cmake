@@ -139,7 +139,6 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
 
     set(syncqt_args "${common_syncqt_arguments}")
     list(APPEND syncqt_args
-        ${common_syncqt_arguments}
         -headers ${module_headers}
         -stagingDir "${syncqt_staging_dir}"
         -knownModules ${known_modules}
