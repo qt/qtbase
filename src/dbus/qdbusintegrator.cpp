@@ -1175,7 +1175,6 @@ void QDBusConnectionPrivate::timerEvent(QTimerEvent *e)
 void QDBusConnectionPrivate::doDispatch()
 {
     if (mode == ClientMode || mode == PeerMode) {
-        while (q_dbus_connection_dispatch(connection) == DBUS_DISPATCH_DATA_REMAINS) ;
         if (dispatchEnabled && !pendingMessages.isEmpty()) {
             // dispatch previously queued messages
             PendingMessageList::Iterator it = pendingMessages.begin();
@@ -1186,6 +1185,7 @@ void QDBusConnectionPrivate::doDispatch()
             }
             pendingMessages.clear();
         }
+        while (q_dbus_connection_dispatch(connection) == DBUS_DISPATCH_DATA_REMAINS) ;
     }
 }
 
