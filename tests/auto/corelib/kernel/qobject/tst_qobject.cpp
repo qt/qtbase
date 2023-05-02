@@ -8447,7 +8447,6 @@ void tst_QObject::asyncCallbackHelper()
     static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::callback0));
     static_assert(compiles<AsyncCaller::Prototype0>(&AsyncCaller::staticCallback0));
     static_assert(compiles<AsyncCaller::Prototype0>(lambda0));
-    static_assert(!compiles<AsyncCaller::Prototype0>(moveOnlyLambda));
     static_assert(compiles<AsyncCaller::Prototype0>(std::move(moveOnlyLambda)));
     static_assert(compiles<AsyncCaller::Prototype0>(freeFunction0));
     static_assert(compiles<AsyncCaller::Prototype0>(functor0));
@@ -8463,7 +8462,6 @@ void tst_QObject::asyncCallbackHelper()
     static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::callback1));
     static_assert(compiles<AsyncCaller::Prototype1>(&AsyncCaller::staticCallback1));
     static_assert(compiles<AsyncCaller::Prototype1>(lambda1));
-    static_assert(!compiles<AsyncCaller::Prototype1>(moveOnlyLambda1));
     static_assert(compiles<AsyncCaller::Prototype1>(std::move(moveOnlyLambda1)));
     static_assert(compiles<AsyncCaller::Prototype1>(constLambda));
     static_assert(compiles<AsyncCaller::Prototype1>(freeFunction1));

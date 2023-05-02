@@ -405,11 +405,12 @@ namespace QtPrivate {
     // Args and R are the List of arguments and the return type of the signal to which the slot is connected.
     template<typename Func, typename Args, typename R> class QFunctorSlotObject : public QSlotObjectBase
     {
-        using FuncType = std::conditional_t<std::is_member_function_pointer_v<std::decay_t<Func>>,
-            QtPrivate::FunctionPointer<std::decay_t<Func>>,
-            QtPrivate::Functor<Func, Args::size>
+        using FunctorValue = std::decay_t<Func>;
+        using FuncType = std::conditional_t<std::is_member_function_pointer_v<FunctorValue>,
+            QtPrivate::FunctionPointer<FunctorValue>,
+            QtPrivate::Functor<FunctorValue, Args::size>
         >;
-        Func function;
+        FunctorValue function;
         static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
         {
             switch (which) {
@@ -417,14 +418,14 @@ namespace QtPrivate {
                 delete static_cast<QFunctorSlotObject*>(this_);
                 break;
             case Call:
-                if constexpr (std::is_member_function_pointer_v<std::decay_t<Func>>)
+                if constexpr (std::is_member_function_pointer_v<FunctorValue>)
                     FuncType::template call<Args, R>(static_cast<QFunctorSlotObject*>(this_)->function, static_cast<typename FuncType::Object *>(r), a);
                 else
                     FuncType::template call<Args, R>(static_cast<QFunctorSlotObject*>(this_)->function, r, a);
                 break;
             case Compare:
-                if constexpr (std::is_member_function_pointer_v<std::decay_t<Func>>) {
-                    *ret = *reinterpret_cast<std::decay_t<Func> *>(a) == static_cast<QFunctorSlotObject*>(this_)->function;
+                if constexpr (std::is_member_function_pointer_v<FunctorValue>) {
+                    *ret = *reinterpret_cast<FunctorValue *>(a) == static_cast<QFunctorSlotObject*>(this_)->function;
                     break;
                 }
                 // not implemented otherwise
@@ -434,7 +435,8 @@ namespace QtPrivate {
             }
         }
     public:
-        explicit QFunctorSlotObject(Func f) : QSlotObjectBase(&impl), function(std::move(f)) {}
+        explicit QFunctorSlotObject(Func &&f) : QSlotObjectBase(&impl), function(std::move(f)) {}
+        explicit QFunctorSlotObject(const Func &f) : QSlotObjectBase(&impl), function(f) {}
     };
 
     // typedefs for readability for when there are no parameters
@@ -489,7 +491,7 @@ namespace QtPrivate {
     template <typename Prototype, typename Functor>
     static constexpr std::enable_if_t<QtPrivate::countMatchingArguments<Prototype, Functor>() >= 0,
         QtPrivate::QSlotObjectBase *>
-    makeSlotObject(Functor func)
+    makeSlotObject(Functor &&func)
     {
         using ExpectedSignature = QtPrivate::FunctionPointer<Prototype>;
         using ExpectedReturnType = typename ExpectedSignature::ReturnType;
@@ -502,7 +504,7 @@ namespace QtPrivate {
         static_assert(int(ActualSignature::ArgumentCount) <= int(ExpectedSignature::ArgumentCount),
             "Functor requires more arguments than what can be provided.");
 
-        return new QtPrivate::QFunctorSlotObject<Functor, ActualArguments, ExpectedReturnType>(std::forward<Functor>(func));
+        return new QtPrivate::QFunctorSlotObject<std::decay_t<Functor>, ActualArguments, ExpectedReturnType>(std::forward<Functor>(func));
     }
 
     template<typename Prototype, typename Functor, typename = void>
