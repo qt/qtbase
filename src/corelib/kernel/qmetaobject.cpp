@@ -3807,6 +3807,16 @@ bool QMetaProperty::writeOnGadget(void *gadget, const QVariant &value) const
 }
 
 /*!
+    \overload
+    \since 6.6
+*/
+bool QMetaProperty::writeOnGadget(void *gadget, QVariant &&value) const
+{
+    Q_ASSERT(priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall);
+    return write(reinterpret_cast<QObject*>(gadget), std::move(value));
+}
+
+/*!
     \since 5.5
 
     Resets the property for the given \a gadget with a reset method.

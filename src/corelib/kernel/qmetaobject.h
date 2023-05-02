@@ -370,6 +370,7 @@ public:
 
     QVariant readOnGadget(const void *gadget) const;
     bool writeOnGadget(void *gadget, const QVariant &value) const;
+    bool writeOnGadget(void *gadget, QVariant &&value) const;
     bool resetOnGadget(void *gadget) const;
 
     bool hasStdCppSet() const;
