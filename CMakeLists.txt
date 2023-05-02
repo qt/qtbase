@@ -40,11 +40,26 @@ function(qt_internal_check_if_path_has_symlinks path)
         endwhile()
     endif()
     if(is_symlink)
-        message(FATAL_ERROR "The path \"${path}\" contains symlinks. \
-            This is not supported. Possible solutions:
-            - map directories using a transparent mechanism such as mount --bind
-            - pass the real path of the build directory to CMake, e.g. using \
-            cd $(realpath <path>) before invoking cmake <source_dir>.")
+        set(possible_solutions_for_resolving_symlink [[
+    - Map directories using a transparent mechanism such as mount --bind
+    - Pass the real path of the build directory to CMake, e.g. using
+      cd $(realpath <path>) before invoking cmake <source_dir>.
+            ]])
+        if(QT_ALLOW_SYMLINK_IN_PATHS)
+            # In some cases, e.g., Homebrew, it is beneficial to skip this check.
+            # Before this, Homebrew had to patch this out to be able to get their build.
+            message(WARNING
+                "The path \"${path}\" contains symlinks. "
+                "This is not recommended, and it may lead to unexpected issues. If you do "
+                "not have a good reason for enabling 'QT_ALLOW_SYMLINK_IN_PATHS', disable "
+                "it, and follow one of the following solutions: \n"
+                "${possible_solutions_for_resolving_symlink} ")
+        else()
+            message(FATAL_ERROR
+                "The path \"${path}\" contains symlinks. "
+                "This is not supported. Possible solutions: \n"
+                "${possible_solutions_for_resolving_symlink} ")
+        endif()
     endif()
 endfunction()
 qt_internal_check_if_path_has_symlinks("${CMAKE_BINARY_DIR}")
