@@ -28,18 +28,17 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QDBusMetaTypeId
-{
-    static QMetaType message();         // QDBusMessage
-    static QMetaType argument();        // QDBusArgument
-    static QMetaType variant();         // QDBusVariant
-    static QMetaType objectpath();      // QDBusObjectPath
-    static QMetaType signature();       // QDBusSignature
-    static QMetaType error();           // QDBusError
-    static QMetaType unixfd();          // QDBusUnixFileDescriptor
+namespace QDBusMetaTypeId {
+QMetaType message(); // QDBusMessage
+QMetaType argument(); // QDBusArgument
+QMetaType variant(); // QDBusVariant
+QMetaType objectpath(); // QDBusObjectPath
+QMetaType signature(); // QDBusSignature
+QMetaType error(); // QDBusError
+QMetaType unixfd(); // QDBusUnixFileDescriptor
 
-    static void init();
-};
+void init();
+}; // namespace QDBusMetaTypeId
 
 inline QMetaType QDBusMetaTypeId::message()
 { return QMetaType::fromType<QDBusMessage>(); }
