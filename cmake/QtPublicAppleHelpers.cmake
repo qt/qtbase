@@ -300,7 +300,7 @@ function(_qt_internal_get_default_apple_bundle_identifier target out_var)
     _qt_internal_escape_rfc_1034_identifier("${prefix}" prefix)
 
     if(CMAKE_GENERATOR STREQUAL "Xcode")
-        set(identifier "${prefix}.\${PRODUCT_NAME:rfc1034identifier}")
+        set(identifier "${prefix}.$(PRODUCT_NAME:rfc1034identifier)")
     else()
         set(identifier "${prefix}.${target}")
     endif()
@@ -450,7 +450,7 @@ function(_qt_internal_set_apple_bundle_identifier target)
         set_target_properties("${target}"
                               PROPERTIES
                               XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "${bundle_id}"
-                              MACOSX_BUNDLE_GUI_IDENTIFIER "\${PRODUCT_BUNDLE_IDENTIFIER}")
+                              MACOSX_BUNDLE_GUI_IDENTIFIER "$(PRODUCT_BUNDLE_IDENTIFIER)")
     else()
         set_target_properties("${target}"
                               PROPERTIES
@@ -524,7 +524,7 @@ function(_qt_internal_set_xcode_bundle_name target)
         if(CMAKE_GENERATOR STREQUAL Xcode)
             set_target_properties("${target}"
                                   PROPERTIES
-                                  MACOSX_BUNDLE_BUNDLE_NAME "\${PRODUCT_NAME}")
+                                  MACOSX_BUNDLE_BUNDLE_NAME "$(PRODUCT_NAME)")
         else()
             set_target_properties("${target}"
                                   PROPERTIES
