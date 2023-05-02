@@ -1209,7 +1209,6 @@ function(qt_internal_collect_module_headers out_var target)
         get_target_property(source_dir ${target} SOURCE_DIR)
     endif()
     get_filename_component(source_dir "${source_dir}" ABSOLUTE)
-    get_filename_component(source_dir "${source_dir}" REALPATH)
 
     get_target_property(is_3rdparty_library ${target} _qt_module_is_3rdparty_header_library)
 
@@ -1230,7 +1229,6 @@ function(qt_internal_collect_module_headers out_var target)
         endif()
 
         get_filename_component(file_path "${file_path}" ABSOLUTE)
-        get_filename_component(file_path "${file_path}" REALPATH)
 
         string(FIND "${file_path}" "${source_dir}" source_dir_pos)
         if(source_dir_pos EQUAL 0)
