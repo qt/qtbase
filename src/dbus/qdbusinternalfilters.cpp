@@ -332,14 +332,14 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
             return PropertyWriteFailed;
         }
 
-        value = other;
+        value = std::move(other);
     }
 
     if (mp.metaType() == QMetaType::fromType<QDBusVariant>())
         value = QVariant::fromValue(QDBusVariant(value));
 
     // the property type here should match
-    return mp.write(obj, value) ? PropertyWriteSuccess : PropertyWriteFailed;
+    return mp.write(obj, std::move(value)) ? PropertyWriteSuccess : PropertyWriteFailed;
 }
 
 QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node,
