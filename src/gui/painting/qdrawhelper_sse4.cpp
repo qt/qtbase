@@ -10,7 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef __AVX2__
+#ifndef __haswell__
 template<bool RGBA>
 static void convertARGBToARGB32PM_sse4(uint *buffer, const uint *src, int count)
 {
@@ -106,7 +106,7 @@ static void convertARGBToRGBA64PM_sse4(QRgba64 *buffer, const uint *src, int cou
         buffer[i] = QRgba64::fromArgb32(s).premultiplied();
     }
 }
-#endif // __AVX2__
+#endif // __haswell__
 
 static inline __m128 Q_DECL_VECTORCALL reciprocal_mul_ps(__m128 a, float mul)
 {
@@ -375,7 +375,7 @@ static inline void convertRGBA64FromRGBA64PM_sse4(QRgba64 *buffer, const QRgba64
     }
 }
 
-#ifndef __AVX2__
+#ifndef __haswell__
 void QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, int count, const QList<QRgb> *)
 {
     convertARGBToARGB32PM_sse4<false>(buffer, buffer, count);
@@ -427,7 +427,7 @@ const QRgba64 *QT_FASTCALL fetchRGBA8888ToRGBA64PM_sse4(QRgba64 *buffer, const u
     convertARGBToRGBA64PM_sse4<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
     return buffer;
 }
-#endif // __AVX2__
+#endif // __haswell__
 
 void QT_FASTCALL storeRGB32FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
                                              const QList<QRgb> *, QDitherInfo *)

@@ -197,7 +197,7 @@ void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, u
     }
 }
 
-#ifndef __AVX2__
+#ifndef __haswell__
 static Q_NEVER_INLINE
 void Q_DECL_VECTORCALL qt_memfillXX_aligned(void *dest, __m128i value128, quintptr bytecount)
 {
@@ -281,7 +281,7 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, qsizetype count)
 
     qt_memfillXX_aligned(dest, _mm_set1_epi32(value), count * sizeof(quint32));
 }
-#endif // !__AVX2__
+#endif // !__haswell__
 
 void QT_FASTCALL comp_func_solid_Source_sse2(uint *destPixels, int length, uint color, uint const_alpha)
 {
