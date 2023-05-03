@@ -152,6 +152,7 @@ private slots:
     void buttonPressKeys();
     void clearModel();
     void cancelClosesPopupNotDialog();
+    void closePopupWithCheckableItems();
 
 private:
     PlatformInputContext m_platformInputContext;
@@ -3694,6 +3695,41 @@ void tst_QComboBox::cancelClosesPopupNotDialog()
     // without shortcut, escape key propagates to the parent
     QTest::keyClick(dialog.window()->windowHandle(), Qt::Key_Escape);
     QVERIFY(!dialog.isVisible());
+}
+
+void tst_QComboBox::closePopupWithCheckableItems()
+{
+    QWidget widget;
+
+    QVBoxLayout *vb = new QVBoxLayout(&widget);
+
+    QLabel *dlgLabel = new QLabel("Click when combo expanded.");
+    vb->addWidget(dlgLabel);
+
+    QComboBox *combo = new QComboBox();
+    vb->addWidget(combo);
+
+    QStandardItemModel model;
+    const int rowCount = 10;
+    for (int r = 0; r < rowCount; ++r) {
+        QString str = "Item: " + QString::number(r);
+        QStandardItem *item = new QStandardItem(str);
+        const bool isChecked = (r % 2);
+
+        item->setData(isChecked ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole);
+        item->setFlags(Qt::ItemIsUserCheckable | (item->flags() & ~(Qt::ItemIsSelectable)) );
+        model.appendRow(item);
+    }
+
+    combo->setModel(&model);
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    QTest::mouseClick(widget.windowHandle(), Qt::LeftButton, {}, combo->geometry().center());
+    QVERIFY(QTest::qWaitForWindowExposed(combo->view()));
+    QTest::mouseClick(widget.windowHandle(), Qt::LeftButton, {}, dlgLabel->geometry().center());
+    QTRY_VERIFY(!combo->view()->isVisible());
 }
 
 QTEST_MAIN(tst_QComboBox)
