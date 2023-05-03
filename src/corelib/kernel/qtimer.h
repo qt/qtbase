@@ -50,41 +50,41 @@ public:
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member);
 
     // singleShot with context
-    template <typename Duration, typename Func1>
+    template <typename Duration, typename Functor>
     static inline void singleShot(Duration interval,
 #ifdef Q_QDOC
                                   const QObject *receiver,
 #else
-                                  const typename QtPrivate::ContextTypeForFunctor<Func1>::ContextType *receiver,
+                                  const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
 #endif
 
-                                  Func1 &&slot)
+                                  Functor &&slot)
     {
-        singleShot(interval, defaultTypeFor(interval), receiver, std::forward<Func1>(slot));
+        singleShot(interval, defaultTypeFor(interval), receiver, std::forward<Functor>(slot));
     }
-    template <typename Duration, typename Func1>
+    template <typename Duration, typename Functor>
     static inline void singleShot(Duration interval, Qt::TimerType timerType,
 #ifdef Q_QDOC
                                   const QObject *receiver,
 #else
-                                  const typename QtPrivate::ContextTypeForFunctor<Func1>::ContextType *receiver,
+                                  const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
 #endif
-                                  Func1 &&slot)
+                                  Functor &&slot)
     {
         using Prototype = void(*)();
         singleShotImpl(interval, timerType, receiver,
-                       QtPrivate::makeSlotObject<Prototype>(std::forward<Func1>(slot)));
+                       QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(slot)));
     }
     // singleShot without context
-    template <typename Duration, typename Func1>
-    static inline void singleShot(Duration interval, Func1 &&slot)
+    template <typename Duration, typename Functor>
+    static inline void singleShot(Duration interval, Functor &&slot)
     {
-        singleShot(interval, defaultTypeFor(interval), nullptr, std::forward<Func1>(slot));
+        singleShot(interval, defaultTypeFor(interval), nullptr, std::forward<Functor>(slot));
     }
-    template <typename Duration, typename Func1>
-    static inline void singleShot(Duration interval, Qt::TimerType timerType, Func1 &&slot)
+    template <typename Duration, typename Functor>
+    static inline void singleShot(Duration interval, Qt::TimerType timerType, Functor &&slot)
     {
-        singleShot(interval, timerType, nullptr, std::forward<Func1>(slot));
+        singleShot(interval, timerType, nullptr, std::forward<Functor>(slot));
     }
 
 #ifdef Q_QDOC

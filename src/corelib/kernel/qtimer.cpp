@@ -441,10 +441,10 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     }
 }
 
-/*! \fn template<typename Functor> void QTimer::singleShot(int msec, const QObject *context, Functor &&functor)
-    \fn template<typename Functor> void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *context, Functor &&functor)
-    \fn template<typename Functor> void QTimer::singleShot(int msec, Functor &&functor)
-    \fn template<typename Functor> void QTimer::singleShot(int msec, Qt::TimerType timerType, Functor &&functor)
+/*! \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration msec, const QObject *context, Functor &&functor)
+    \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration msec, Qt::TimerType timerType, const QObject *context, Functor &&functor)
+    \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration msec, Functor &&functor)
+    \fn template<typename Duration, typename Functor> void QTimer::singleShot(Duration msec, Qt::TimerType timerType, Functor &&functor)
     \since 5.4
 
     \reentrant
@@ -461,6 +461,8 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 
     If \a functor is a member
     function of \a context, then the function will be called on the object.
+
+    The \a msec parameter can be an \c int or a \c std::chrono::milliseconds value.
 
     \sa start()
 */
@@ -503,9 +505,8 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(Functor &&slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
-    \overload
 
     Creates a connection of type \a connectionType from the timeout() signal
     to \a slot, and returns a handle to the connection.
@@ -517,7 +518,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(const QObject *context, Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(const QObject *context, Functor &&slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
     \overload callOnTimeout()
 
@@ -526,20 +527,6 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 
     This method is provided for convenience. It's equivalent to calling
     \c {QObject::connect(timer, &QTimer::timeout, context, slot, connectionType)}.
-
-    \sa QObject::connect(), timeout()
-*/
-
-/*!
-    \fn template <typename MemberFunction> QMetaObject::Connection QTimer::callOnTimeout(const QObject *receiver, MemberFunction *slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
-    \since 5.12
-    \overload callOnTimeout()
-
-    Creates a connection from the timeout() signal to the \a slot in the \a receiver object. Returns
-    a handle to the connection.
-
-    This method is provided for convenience. It's equivalent to calling
-    \c {QObject::connect(timer, &QTimer::timeout, receiver, slot, connectionType)}.
 
     \sa QObject::connect(), timeout()
 */
