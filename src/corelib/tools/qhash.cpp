@@ -1485,6 +1485,7 @@ size_t qHash(long double key, size_t seed) noexcept
 
     \ingroup tools
     \ingroup shared
+    \ingroup containers
 
     \reentrant
 
@@ -3072,6 +3073,7 @@ size_t qHash(long double key, size_t seed) noexcept
 
     \ingroup tools
     \ingroup shared
+    \ingroup containers
 
     \reentrant
 
