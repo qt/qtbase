@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \page java-style-iterators.html
+    \group java-style-iterators
+    \noautolist
     \title Java-style Iterators in Qt
     \ingroup groups
     \ingroup qt-basic-concepts

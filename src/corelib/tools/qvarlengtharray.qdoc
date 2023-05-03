@@ -7,6 +7,7 @@
     \brief The QVarLengthArray class provides a low-level variable-length array.
 
     \ingroup tools
+    \ingroup containers
     \reentrant
 
     The C++ language doesn't support variable-length arrays on the stack.

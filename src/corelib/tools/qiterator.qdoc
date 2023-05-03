@@ -133,6 +133,7 @@
 /*!
     \class QListIterator
     \inmodule QtCore
+    \ingroup java-style-iterators
 
     \brief The QListIterator class provides a Java-style const iterator for QList and QQueue.
 
@@ -185,6 +186,7 @@
 /*!
     \class QSetIterator
     \inmodule QtCore
+    \ingroup java-style-iterators
     \brief The QSetIterator class provides a Java-style const iterator for QSet.
 
     QSet has both \l{Java-style iterators} and \l{STL-style
@@ -292,6 +294,7 @@
 /*!
     \class QMutableSetIterator
     \inmodule QtCore
+    \ingroup java-style-iterators
     \since 4.2
 
     \brief The QMutableSetIterator class provides a Java-style non-const iterator for QSet.
@@ -689,6 +692,7 @@
 /*!
     \class QMapIterator
     \inmodule QtCore
+    \ingroup java-style-iterators
 
     \brief The QMapIterator class provides a Java-style const iterator for QMap.
 
@@ -740,6 +744,7 @@
 /*!
     \class QMultiMapIterator
     \inmodule QtCore
+    \ingroup java-style-iterators
 
     \brief The QMultiMapIterator class provides a Java-style const iterator for QMultiMap.
     QMultiMap has both \l{Java-style iterators} and \l{STL-style
@@ -790,6 +795,7 @@
 /*!
     \class QHashIterator
     \inmodule QtCore
+    \ingroup java-style-iterators
 
     \brief The QHashIterator class provides a Java-style const iterator for QHash and QMultiHash.
 
@@ -837,6 +843,7 @@
 /*!
     \class QMutableMapIterator
     \inmodule QtCore
+    \ingroup java-style-iterators
 
     \brief The QMutableMapIterator class provides a Java-style non-const iterator for QMap.
 
@@ -965,6 +972,7 @@
 /*!
     \class QMutableHashIterator
     \inmodule QtCore
+    \ingroup java-style-iterators
 
     \brief The QMutableHashIterator class provides a Java-style non-const iterator for QHash and QMultiHash.
 
