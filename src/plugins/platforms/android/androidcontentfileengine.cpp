@@ -650,10 +650,14 @@ DocumentFile::DocumentFile(const QJNIObjectPrivate &uri,
 QJNIObjectPrivate parseUri(const QString &uri)
 {
     JniExceptionCleaner cleaner;
+    QString uriToParse = uri;
+    if (uriToParse.contains(QLatin1Char(' ')))
+        uriToParse.replace(QLatin1Char(' '), QUrl::toPercentEncoding(QLatin1String(" ")));
+
     return QJNIObjectPrivate::callStaticObjectMethod("android/net/Uri",
                                               "parse",
                                               "(Ljava/lang/String;)Landroid/net/Uri;",
-                                              QJNIObjectPrivate::fromString(uri).object());
+                                              QJNIObjectPrivate::fromString(uriToParse).object());
 }
 
 DocumentFilePtr DocumentFile::parseFromAnyUri(const QString &fileName)
