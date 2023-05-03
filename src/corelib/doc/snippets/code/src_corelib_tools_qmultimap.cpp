@@ -19,7 +19,7 @@ multimap.insert("c", -5);
 int num2 = multimap.value("a"); // 1
 int num3 = multimap.value("thirteen"); // not found; 0
 int num3 = 0;
-auto it = multimap.value("b");
+auto it = multimap.find("b");
 if (it != multimap.end()) {
     num3 = it.value();
 }
