@@ -371,6 +371,11 @@ qt_internal_extend_target(Gui CONDITION MACOS
         ${FWAppKit}
 )
 
+qt_internal_extend_target(Gui CONDITION WASM
+    SOURCES
+        platform/wasm/qwasmnativeinterface.cpp
+)
+
 qt_internal_extend_target(Gui CONDITION APPLE
     SOURCES
         image/qimage_darwin.mm

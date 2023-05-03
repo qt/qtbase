@@ -41,6 +41,15 @@ public:
 
 namespace QNativeInterface::Private {
 
+#if defined(Q_OS_WASM) || defined(Q_QDOC)
+struct Q_GUI_EXPORT QWasmWindow
+{
+    QT_DECLARE_NATIVE_INTERFACE(QWasmWindow, 1, QWindow)
+    virtual emscripten::val document() const = 0;
+    virtual emscripten::val clientArea() const = 0;
+};
+#endif
+
 #if defined(Q_OS_MACOS) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QCocoaWindow
 {
