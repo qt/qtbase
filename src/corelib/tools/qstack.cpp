@@ -8,6 +8,7 @@
 
     \ingroup tools
     \ingroup shared
+    \ingroup containers
 
     \reentrant
 
