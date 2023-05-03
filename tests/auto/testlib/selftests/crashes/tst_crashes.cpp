@@ -38,7 +38,11 @@ void tst_Crashes::crash()
         rather than SIGSEGV).
     */
     int *i = 0;
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Warray-bounds")
     i[1] = 1;
+QT_WARNING_POP
 }
 
 QTEST_MAIN(tst_Crashes)
