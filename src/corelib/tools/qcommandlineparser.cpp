@@ -389,13 +389,17 @@ QCommandLineOption QCommandLineParser::addVersionOption()
 }
 
 /*!
-    Adds the help option (\c{-h}, \c{--help} and \c{-?} on Windows)
-    as well as an option \c{--help-all} to include Qt-specific options in the output.
+    Adds help options to the command-line parser.
+
+    The options specified for this command-line are described by \c{-h} or
+    \c{--help}. On Windows, the alternative \c{-?} is also supported. The option
+    \c{--help-all} extends that to include generic Qt options, not defined by
+    this command, in the output.
 
     These options are handled automatically by QCommandLineParser.
 
-    Remember to use setApplicationDescription to set the application description,
-    which will be displayed when this option is used.
+    Remember to use \c setApplicationDescription() to set the application
+    description, which will be displayed when this option is used.
 
     Example:
     \snippet code/src_corelib_tools_qcommandlineparser_main.cpp 0
@@ -411,7 +415,8 @@ QCommandLineOption QCommandLineParser::addHelpOption()
                 << QStringLiteral("h")
                 << QStringLiteral("help"), tr("Displays help on commandline options."));
     addOption(opt);
-    QCommandLineOption optHelpAll(QStringLiteral("help-all"), tr("Displays help including Qt specific options."));
+    QCommandLineOption optHelpAll(QStringLiteral("help-all"),
+                                  tr("Displays help, including generic Qt options."));
     addOption(optHelpAll);
     d->builtinHelpOption = true;
     return opt;

@@ -553,7 +553,7 @@ void tst_QCommandLineParser::testVersionOption()
 static const char expectedOptionsHelp[] =
         "Options:\n"
         "  -h, --help                  Displays help on commandline options.\n"
-        "  --help-all                  Displays help including Qt specific options.\n"
+        "  --help-all                  Displays help, including generic Qt options.\n"
         "  -v, --version               Displays version information.\n"
         "  --load <url>                Load file from URL.\n"
         "  -o, --output <file>         Set output file.\n"
