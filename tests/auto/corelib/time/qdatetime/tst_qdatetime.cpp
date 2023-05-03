@@ -159,7 +159,7 @@ private:
       of UTC is it ?" So the various LocalTimeType members may be different.
     */
     enum LocalTimeType { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1};
-    const LocalTimeType solarMeanType, epochTimeType, futureTimeType;
+    const LocalTimeType solarMeanType, epochTimeType, futureTimeType, distantTimeType;
     static constexpr auto UTC = QTimeZone::UTC;
     static constexpr qint64 epochJd = Q_INT64_C(2440588);
     int preZoneFix;
@@ -211,7 +211,13 @@ tst_QDateTime::tst_QDateTime() :
     solarMeanType(timeTypeFor(-62091, -61910)), // 1800
     epochTimeType(timeTypeFor(0, 181)), // 1970
     // Use stable future, to which current rule is extrapolated, as surrogate for variable current:
-    futureTimeType(timeTypeFor(24837, 25018)) // 2038
+    futureTimeType(timeTypeFor(24837, 25018)), // 2038
+    // The glibc functions only handle DST as far as a 32-bit signed day-count
+    // from some date in 1970 reaches; the future extreme of that is in the
+    // second half of 5'881'580 CE. Beyond 5'881'581 CE it treats all zones as
+    // being in their January state, regardless of time of year. So use data for
+    // this later year for tests of QDateTime's upper bound.
+    distantTimeType(timeTypeFor(0x800000adLL, 0x80000162LL))
 {
     /*
       Due to some jurisdictions changing their zones and rules, it's possible
@@ -850,7 +856,7 @@ void tst_QDateTime::setMSecsSinceEpoch()
     // Check overflow; only robust if local time is the same at epoch as relevant bound.
     // See setting of LocalTimeType values for details.
     if (epochTimeType == LocalTimeAheadOfUtc
-        ? futureTimeType == LocalTimeAheadOfUtc && msecs == Bound::max()
+        ? distantTimeType == LocalTimeAheadOfUtc && msecs == Bound::max()
         : (solarMeanType == LocalTimeBehindUtc && msecs == Bound::min()
            && epochTimeType == LocalTimeBehindUtc)) {
         QDateTime curt = QDate(1970, 1, 1).startOfDay(); // initially in short-form
@@ -875,7 +881,7 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     // actually west of Greenwich but (e.g. Europe/Madrid) our zone claims east,
     // "min" can also overflow (case only caught if local time is CET).
     const bool localOverflow =
-        (futureTimeType == LocalTimeAheadOfUtc && (msecs == Bound::max() || preZoneFix < -3600))
+        (distantTimeType == LocalTimeAheadOfUtc && (msecs == Bound::max() || preZoneFix < -3600))
         || (solarMeanType == LocalTimeBehindUtc && msecs == Bound::min());
     if (!localOverflow) // Can fail if offset changes sign, e.g. Alaska, Philippines.
         QCOMPARE(dtLocal, utc);
