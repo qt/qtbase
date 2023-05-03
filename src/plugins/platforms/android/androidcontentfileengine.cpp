@@ -593,10 +593,14 @@ DocumentFile::DocumentFile(const QJniObject &uri,
 
 QJniObject parseUri(const QString &uri)
 {
+    QString uriToParse = uri;
+    if (uriToParse.contains(' '))
+        uriToParse.replace(' ', QUrl::toPercentEncoding(" "));
+
     return QJniObject::callStaticMethod<QtJniTypes::UriType>(
                 QtJniTypes::className<QtJniTypes::Uri>(),
                 "parse",
-                QJniObject::fromString(uri).object<jstring>());
+                QJniObject::fromString(uriToParse).object<jstring>());
 }
 
 DocumentFilePtr DocumentFile::parseFromAnyUri(const QString &fileName)
