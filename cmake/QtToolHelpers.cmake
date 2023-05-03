@@ -15,6 +15,10 @@
 #     INSTALL_VERSIONED_LINK
 #         Prefix build only. On installation, create a versioned hard-link of the installed file.
 #         E.g. create a link of "bin/qmake6" to "bin/qmake".
+#     TRY_RUN
+#         On Windows, it creates a helper batch script that tests whether the tool can be executed
+#         successfully or not. If not, build halts and an error will be show, with tips on what
+#         might be cause, and how to fix it.
 #
 # One-value Arguments:
 #     EXTRA_CMAKE_FILES
@@ -42,7 +46,8 @@ function(qt_internal_add_tool target_name)
         USER_FACING
         INSTALL_VERSIONED_LINK
         EXCEPTIONS
-        NO_UNITY_BUILD)
+        NO_UNITY_BUILD
+        TRY_RUN)
     set(one_value_keywords
         TOOLS_TARGET
         INSTALL_DIR
@@ -224,8 +229,56 @@ function(qt_internal_add_tool target_name)
         qt_internal_apply_staging_prefix_build_rpath_workaround()
     endif()
 
+    if(arg_TRY_RUN AND WIN32)
+        _qt_internal_add_try_run_post_build(${target_name})
+    endif()
+
     qt_enable_separate_debug_info(${target_name} "${install_dir}" QT_EXECUTABLE)
     qt_internal_install_pdb_files(${target_name} "${install_dir}")
+endfunction()
+
+function(_qt_internal_add_try_run_post_build target)
+    qt_internal_get_upper_case_main_cmake_configuration(main_cmake_configuration)
+    get_target_property(target_out_dir ${target}
+                        RUNTIME_OUTPUT_DIRECTORY_${main_cmake_configuration})
+    get_target_property(target_bin_dir ${target}
+                        BINARY_DIR)
+
+    set(try_run_scripts_path "${target_bin_dir}/${target}_try_run.bat")
+    # The only reason -h is passed is because some of the tools, e.g., moc
+    # wait for an input without any arguments.
+
+    qt_configure_file(OUTPUT "${try_run_scripts_path}"
+        CONTENT "@echo off
+
+${target_out_dir}/${target}.exe -h > nul 2>&1
+
+if \"%errorlevel%\" == \"-1073741515\" (
+echo
+echo     '${target}' is built successfully, but some of the libraries
+echo     necessary for running it are missing. If you are building Qt with
+echo     3rdparty libraries, make sure that you add their directory to the
+echo     PATH environment variable.
+echo
+exit /b %errorlevel%
+)
+echo. > ${target_bin_dir}/${target}_try_run_passed"
+        )
+
+    add_custom_command(
+        OUTPUT
+            ${target_bin_dir}/${target}_try_run_passed
+        DEPENDS
+            ${target}
+        COMMAND
+            cmd /c ${try_run_scripts_path}
+        COMMENT
+            "Testing ${target} by trying to run it."
+        VERBATIM
+    )
+
+    add_custom_target(${target}_try_run ALL
+                      DEPENDS ${target_bin_dir}/${target}_try_run_passed)
 endfunction()
 
 function(qt_export_tools module_name)
