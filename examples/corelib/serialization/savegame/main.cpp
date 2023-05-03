@@ -17,9 +17,9 @@ int main(int argc, char *argv[])
 
     const QStringList args = QCoreApplication::arguments();
     const bool newGame
-            = args.size() <= 1 || QString::compare(args[1], "load"_L1, Qt::CaseInsensitive) == 0;
+            = args.size() <= 1 || QString::compare(args[1], "load"_L1, Qt::CaseInsensitive) != 0;
     const bool json
-            = args.size() <= 2 || QString::compare(args[2], "binary"_L1, Qt::CaseInsensitive) == 0;
+            = args.size() <= 2 || QString::compare(args[2], "binary"_L1, Qt::CaseInsensitive) != 0;
 
     Game game;
     if (newGame)
