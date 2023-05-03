@@ -612,10 +612,14 @@ DocumentFile::DocumentFile(const QJniObject &uri,
 
 QJniObject parseUri(const QString &uri)
 {
+    QString uriToParse = uri;
+    if (uriToParse.contains(QLatin1Char(' ')))
+        uriToParse.replace(QLatin1Char(' '), QUrl::toPercentEncoding(QLatin1String(" ")));
+
     return QJniObject::callStaticObjectMethod("android/net/Uri",
                                               "parse",
                                               "(Ljava/lang/String;)Landroid/net/Uri;",
-                                              QJniObject::fromString(uri).object());
+                                              QJniObject::fromString(uriToParse).object());
 }
 
 DocumentFilePtr DocumentFile::parseFromAnyUri(const QString &fileName)
