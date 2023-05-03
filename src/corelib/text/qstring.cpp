@@ -10432,7 +10432,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
         quint32 bytes = 0;
         in >> bytes;                                  // read size of string
         if (bytes == 0xffffffff) {                    // null string
-            str.clear();
+            str = QString();
         } else if (bytes > 0) {                       // not empty
             if (bytes & 0x1) {
                 str.clear();
