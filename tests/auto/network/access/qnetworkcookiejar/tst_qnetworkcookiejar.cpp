@@ -408,13 +408,11 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
 
     QTest::newRow("yes1") << "com" << true;
     QTest::newRow("yes2") << "de" << true;
-    QTest::newRow("yes3") << "ulm.museum" << true;
     QTest::newRow("yes4") << "krodsherad.no" << true;
     QTest::newRow("yes5") << "1.bg" << true;
     QTest::newRow("yes6") << "com.cn" << true;
     QTest::newRow("yes7") << "org.ws" << true;
     QTest::newRow("yes8") << "co.uk" << true;
-    QTest::newRow("yes9") << "wallonie.museum" << true;
     QTest::newRow("yes10") << "hk.com" << true;
     QTest::newRow("yes11") << "hk.org" << true;
 
@@ -431,33 +429,23 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
     QTest::newRow("no11") << "mosreg.ru" << false;
 
     const char16_t s1[] = {0x74, 0x72, 0x61, 0x6e, 0xf8, 0x79, 0x2e, 0x6e, 0x6f, 0x00}; // xn--trany-yua.no
-    const char16_t s2[] = {0x5d9, 0x5e8, 0x5d5, 0x5e9, 0x5dc, 0x5d9, 0x5dd, 0x2e, 0x6d, 0x75, 0x73, 0x65, 0x75, 0x6d, 0x00}; // xn--9dbhblg6di.museum
     const char16_t s3[] = {0x7ec4, 0x7e54, 0x2e, 0x68, 0x6b, 0x00}; // xn--mk0axi.hk
     const char16_t s4[] = {0x7f51, 0x7edc, 0x2e, 0x63, 0x6e, 0x00}; // xn--io0a7i.cn
     const char16_t s5[] = {0x72, 0xe1, 0x68, 0x6b, 0x6b, 0x65, 0x72, 0xe1, 0x76, 0x6a, 0x75, 0x2e, 0x6e, 0x6f, 0x00}; // xn--rhkkervju-01af.no
     const char16_t s6[] = {0xb9a, 0xbbf, 0xb99, 0xbcd, 0xb95, 0xbaa, 0xbcd, 0xbaa, 0xbc2, 0xbb0, 0xbcd, 0x00}; // xn--clchc0ea0b2g2a9gcd
     const char16_t s7[] = {0x627, 0x644, 0x627, 0x631, 0x62f, 0x646, 0x00}; // xn--mgbayh7gpa
-    const char16_t s8[] = {0x63, 0x6f, 0x72, 0x72, 0x65, 0x69, 0x6f, 0x73, 0x2d, 0x65, 0x2d, 0x74, 0x65, 0x6c, 0x65,
-                           0x63, 0x6f, 0x6d, 0x75, 0x6e, 0x69, 0x63, 0x61, 0xe7, 0xf5, 0x65, 0x73, 0x2e, 0x6d, 0x75,
-                           0x73, 0x65, 0x75, 0x6d, 0x00}; // xn--correios-e-telecomunicaes-ghc29a.museum
     QTest::newRow("yes-specialchars1") << QString::fromUtf16(s1) << true;
-    QTest::newRow("yes-specialchars2") << QString::fromUtf16(s2) << true;
     QTest::newRow("yes-specialchars3") << QString::fromUtf16(s3) << true;
     QTest::newRow("yes-specialchars4") << QString::fromUtf16(s4) << true;
     QTest::newRow("yes-specialchars5") << QString::fromUtf16(s5) << true;
     QTest::newRow("yes-specialchars6") << QString::fromUtf16(s6) << true;
     QTest::newRow("yes-specialchars7") << QString::fromUtf16(s7) << true;
-    QTest::newRow("yes-specialchars8") << QString::fromUtf16(s8) << true;
 
     QTest::newRow("no-specialchars1") << QString::fromUtf16(s1).prepend("something") << false;
-    QTest::newRow("no-specialchars2") << QString::fromUtf16(s2).prepend(QString::fromUtf16(s2)) << false;
-    QTest::newRow("no-specialchars2.5") << QString::fromUtf16(s2).prepend("whatever") << false;
     QTest::newRow("no-specialchars3") << QString::fromUtf16(s3).prepend("foo") << false;
     QTest::newRow("no-specialchars4") << QString::fromUtf16(s4).prepend("bar") << false;
-    QTest::newRow("no-specialchars5") << QString::fromUtf16(s5).prepend(QString::fromUtf16(s2)) << false;
     QTest::newRow("no-specialchars6") << QString::fromUtf16(s6).prepend(QLatin1Char('.') + QString::fromUtf16(s6)) << false;
     QTest::newRow("no-specialchars7") << QString::fromUtf16(s7).prepend("bla") << false;
-    QTest::newRow("no-specialchars8") << QString::fromUtf16(s8).append("foo") << false;
 
     QTest::newRow("exception1") << "pref.iwate.jp" << false;
     QTest::newRow("exception2") << "omanpost.om" << false;
