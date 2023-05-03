@@ -538,6 +538,14 @@ struct Data
             size_t nSpans;
         };
 
+        constexpr qptrdiff MaxSpanCount = (std::numeric_limits<qptrdiff>::max)() / sizeof(Span);
+        constexpr size_t MaxBucketCount = MaxSpanCount << SpanConstants::SpanShift;
+
+        if (numBuckets > MaxBucketCount) {
+            Q_CHECK_PTR(false);
+            Q_UNREACHABLE();    // no exceptions and no assertions -> no error reporting
+        }
+
         size_t nSpans = numBuckets >> SpanConstants::SpanShift;
         return R{ new Span[nSpans], nSpans };
     }
