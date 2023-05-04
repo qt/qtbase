@@ -764,6 +764,9 @@ void tst_QGlyphRun::multiLineBoundingRect()
 
 void tst_QGlyphRun::defaultIgnorables()
 {
+#if defined(QT_NO_HARFBUZZ)
+    QEXPECT_FAIL("", "Ignorables handled differently by old Harfbuzz and Harfbuzz-NG", Abort);
+#endif
     QTextLayout layout;
     layout.setFont(QFont("QtsSpecialTestFont"));
     layout.setText(QChar(0x200D));
