@@ -23,7 +23,6 @@ its operation, and also allows very large data sources to be read.
 
 #include "rsslisting.h"
 
-
 /*
     Constructs an RSSListing widget with a simple user interface, and sets
     up the XML reader to use a custom handler class.
@@ -58,7 +57,6 @@ RSSListing::RSSListing(QWidget *parent)
     connect(fetchButton, &QPushButton::clicked, this, &RSSListing::fetch);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
-
     QHBoxLayout *hboxLayout = new QHBoxLayout;
 
     hboxLayout->addWidget(lineEdit);
@@ -154,7 +152,6 @@ void RSSListing::finished(QNetworkReply *reply)
     fetchButton->setEnabled(true);
 }
 
-
 /*
     Parses the XML data and creates treeWidget items accordingly.
 */
@@ -176,7 +173,6 @@ void RSSListing::parseXml()
                 item->setText(1, linkString);
                 treeWidget->addTopLevelItem(item);
             }
-
         } else if (xml.isCharacters() && !xml.isWhitespace()) {
             if (currentTag == "title")
                 titleString += xml.text();
