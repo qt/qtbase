@@ -85,7 +85,9 @@ class QGenericRunnable : public QRunnable
 {
     QGenericRunnableHelperBase *runHelper;
 public:
-    QGenericRunnable(QGenericRunnableHelperBase *runner) noexcept: runHelper(runner)
+    template <typename Callable, if_callable<Callable> = true>
+    explicit QGenericRunnable(Callable &&c)
+        : runHelper(new QGenericRunnableHelper<std::decay_t<Callable>>(std::forward<Callable>(c)))
     {
     }
     ~QGenericRunnable() override
@@ -123,9 +125,7 @@ QRunnable *QRunnable::create(Callable &&functionToRun)
     if (is_null)
         return warnNullCallable();
 
-    return new QGenericRunnable(
-            new QGenericRunnableHelper<std::decay_t<Callable>>(
-                    std::forward<Callable>(functionToRun)));
+    return new QGenericRunnable(std::forward<Callable>(functionToRun));
 }
 
 QT_END_NAMESPACE
