@@ -693,10 +693,10 @@ void QTabBarPrivate::makeVisible(int index)
         scrollOffset = tabStart - scrollRect.left();
     } else if (tabEnd > scrolledTabBarEnd) {
         // Tab is outside on the right, so scroll right.
-        scrollOffset = tabEnd - scrollRect.right();
+        scrollOffset = qMax(0, tabEnd - scrollRect.right());
     } else if (scrollOffset + entireScrollRect.width() > lastTabEnd + 1) {
-        // there's space on the right
-        scrollOffset = lastTabEnd - entireScrollRect.width() + 1;
+        // fill any free space on the right without overshooting
+        scrollOffset = qMax(0, lastTabEnd - entireScrollRect.width() + 1);
     } else if (available >= lastTabEnd) {
         // the entire tabbar fits, reset scroll
         scrollOffset = 0;
