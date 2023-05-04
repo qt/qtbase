@@ -18,6 +18,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include "QtCore/qcoreevent.h"
+#include <QtCore/qfunctionaltools_impl.h>
 #include "QtCore/qlist.h"
 #include "QtCore/qobject.h"
 #include "QtCore/qpointer.h"
@@ -255,28 +256,7 @@ namespace QtPrivate {
 inline const QObject *getQObject(const QObjectPrivate *d) { return d->q_func(); }
 
 template <typename Func>
-struct FunctionStorageByValue
-{
-    Func f;
-    Func &func() noexcept { return f; }
-};
-
-template <typename Func>
-struct FunctionStorageEmptyBaseClassOptimization : Func
-{
-    Func &func() noexcept { return *this; }
-    using Func::Func;
-};
-
-template <typename Func>
-using FunctionStorage = typename std::conditional_t<
-        std::conjunction_v<
-            std::is_empty<Func>,
-            std::negation<std::is_final<Func>>
-        >,
-        FunctionStorageEmptyBaseClassOptimization<Func>,
-        FunctionStorageByValue<Func>
-    >;
+using FunctionStorage = QtPrivate::CompactStorage<Func>;
 
 template <typename ObjPrivate> inline void assertObjectType(QObjectPrivate *d)
 {
@@ -296,11 +276,11 @@ class QPrivateSlotObject : public QSlotObjectBase, private FunctionStorage<Func>
                 delete that;
                 break;
             case Call:
-                FuncType::template call<Args, R>(that->func(),
+                FuncType::template call<Args, R>(that->object(),
                                                  static_cast<typename FuncType::Object *>(QObjectPrivate::get(r)), a);
                 break;
             case Compare:
-                *ret = *reinterpret_cast<Func *>(a) == that->func();
+                *ret = *reinterpret_cast<Func *>(a) == that->object();
                 break;
             case NumOperations: ;
         }
