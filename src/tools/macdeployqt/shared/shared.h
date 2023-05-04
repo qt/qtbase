@@ -37,7 +37,10 @@ public:
 
     bool isDebugLibrary() const
     {
-        return binaryName.endsWith(QStringLiteral("_debug"));
+        if (isDylib)
+            return binaryName.contains(QStringLiteral("_debug."));
+        else
+            return binaryName.endsWith(QStringLiteral("_debug"));
     }
 };
 
