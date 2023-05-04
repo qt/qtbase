@@ -38,27 +38,38 @@ protected:
     // Type erasure, to only instantiate a non-virtual class per Callable:
     class QGenericRunnableHelperBase
     {
-        using OpFn = void(*)(QGenericRunnableHelperBase *);
-        OpFn runFn;
-        OpFn destroyFn;
     protected:
-        constexpr explicit QGenericRunnableHelperBase(OpFn fn, OpFn del) noexcept : runFn(fn), destroyFn(del) {}
+        enum class Op {
+            Run,
+            Destroy,
+        };
+        using OpFn = void* (*)(Op, QGenericRunnableHelperBase *, void*);
+        OpFn fn;
+    protected:
+        constexpr explicit QGenericRunnableHelperBase(OpFn f) noexcept : fn(f) {}
         ~QGenericRunnableHelperBase() = default;
     public:
-        void run() { runFn(this); }
-        void destroy() { destroyFn(this); }
+        void run() { fn(Op::Run, this, nullptr); }
+        void destroy() { fn(Op::Destroy, this, nullptr); }
     };
 
     template <typename Callable>
     class QGenericRunnableHelper : public QGenericRunnableHelperBase
     {
         Callable m_functionToRun;
+        static void *impl(Op op, QGenericRunnableHelperBase *that, [[maybe_unused]] void *arg)
+        {
+            const auto _this = static_cast<QGenericRunnableHelper*>(that);
+            switch (op) {
+            case Op::Run:     _this->m_functionToRun(); break;
+            case Op::Destroy: delete _this; break;
+            }
+            return nullptr;
+        }
     public:
         template <typename UniCallable>
-        QGenericRunnableHelper(UniCallable &&functionToRun) noexcept :
-              QGenericRunnableHelperBase(
-                      [](QGenericRunnableHelperBase *that) { static_cast<QGenericRunnableHelper*>(that)->m_functionToRun(); },
-                      [](QGenericRunnableHelperBase *that) { delete static_cast<QGenericRunnableHelper*>(that); }),
+        explicit QGenericRunnableHelper(UniCallable &&functionToRun) noexcept
+            : QGenericRunnableHelperBase(&impl),
               m_functionToRun(std::forward<UniCallable>(functionToRun))
         {
         }
