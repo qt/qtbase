@@ -134,6 +134,108 @@ void QBezier::addToPolygon(QDataBuffer<QPointF> &polygon, qreal bezier_flattenin
     }
 }
 
+QPolygonF QBezier::toQuadratics(qreal errorLimit) const
+{
+    qreal infPoints[2];
+    int numInfPoints = inflectionPoints(infPoints);
+    QPolygonF res;
+    res.reserve((numInfPoints + 1) * 3 * 2);
+    res.append(pt1());
+    qreal t0 = 0;
+    for (int i = 0; i < numInfPoints + 1; i++) { // #segments == #inflectionpoints + 1
+        qreal t1 = (i < numInfPoints) ? infPoints[i] : 1;
+        QBezier segment = bezierOnInterval(t0, t1);
+        segment.addToQuadratics(&res, t1 - t0, errorLimit);
+        t0 = t1;
+    }
+    return res;
+}
+
+static inline qreal scoreQuadratic(const QBezier &b, QPointF qcp)
+{
+    // Construct a cubic from the quadratic, and compare its control points to the originals'
+    const QRectF bounds = b.bounds();
+    qreal dim = QLineF(bounds.topLeft(), bounds.bottomRight()).length();
+    if (qFuzzyIsNull(dim))
+        return 1;
+    const qreal f = 2.0 / 3;
+    const QPointF cp1 = b.pt1() + f * (qcp - b.pt1());
+    const QPointF cp2 = b.pt4() + f * (qcp - b.pt4());
+    const QLineF d1(b.pt2(), cp1);
+    const QLineF d2(b.pt3(), cp2);
+    return qMax(d1.length(), d2.length()) / dim;
+}
+
+static inline QPointF quadraticForCubic(const QBezier &b)
+{
+    QPointF qcp;
+    const QLineF st = b.startTangent();
+    const QLineF et = b.endTangent();
+    if (st.intersects(et, &qcp) == QLineF::NoIntersection)
+        qcp = b.midPoint();
+    return qcp;
+}
+
+void QBezier::addToQuadratics(QPolygonF *p, qreal tspan, qreal errorLimit) const
+{
+    Q_ASSERT((tspan > 0) && !(tspan > 1));
+    static constexpr qreal MinimumTSpan = 0.1;
+
+    QPointF qcp = quadraticForCubic(*this);
+    if (tspan < MinimumTSpan || scoreQuadratic(*this, qcp) < errorLimit) {
+        p->append(qcp);
+        p->append(pt4());
+    } else {
+        std::pair<QBezier, QBezier> halves = split();
+        halves.first.addToQuadratics(p, tspan / 2, errorLimit);
+        halves.second.addToQuadratics(p, tspan / 2, errorLimit);
+    }
+}
+
+int QBezier::inflectionPoints(qreal *tpoints) const
+{
+    auto isValidRoot = [](qreal r) {
+        return qIsFinite(r) && (r > 0) && (!qFuzzyIsNull(float(r))) && (r < 1)
+                && (!qFuzzyIsNull(float(r - 1)));
+    };
+
+    // normalize so pt1.x,pt1.y,pt4.y == 0
+    QTransform xf;
+    const QLineF l(pt1(), pt4());
+    xf.rotate(l.angle());
+    xf.translate(-pt1().x(), -pt1().y());
+    const QBezier n = mapBy(xf);
+    Q_ASSERT(n.pt1() == QPoint() && qFuzzyIsNull(float(n.pt4().y())));
+
+    const qreal p = n.pt3().x() * n.pt2().y();
+    const qreal q = n.pt4().x() * n.pt2().y();
+    const qreal r = n.pt2().x() * n.pt3().y();
+    const qreal s = n.pt4().x() * n.pt3().y();
+
+    const qreal a = 36 * ((-3 * p) + (2 * q) + (3 * r) - s);
+    if (!a)
+        return 0;
+    const qreal b = -18 * (((3 * p) - q) - (3 * r));
+    const qreal c = 18 * (r - p);
+    const qreal rad = (b * b) - (2 * a * c);
+    if (rad < 0)
+        return 0;
+    const qreal sqr = qSqrt(rad);
+    const qreal root1 = (b + sqr) / a;
+    const qreal root2 = (b - sqr) / a;
+
+    int res = 0;
+    if (isValidRoot(root1))
+        tpoints[res++] = root1;
+    if (!qFuzzyCompare(root2, root1) && isValidRoot(root2))
+        tpoints[res++] = root2;
+
+    if (res == 2 && tpoints[0] > tpoints[1])
+        qSwap(tpoints[0], tpoints[1]);
+
+    return res;
+}
+
 QRectF QBezier::bounds() const
 {
     qreal xmin = x1;

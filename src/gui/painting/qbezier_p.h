@@ -47,6 +47,10 @@ public:
     void addToPolygon(QPolygonF *p, qreal bezier_flattening_threshold = 0.5) const;
     void addToPolygon(QDataBuffer<QPointF> &polygon, qreal bezier_flattening_threshold) const;
 
+    QPolygonF toQuadratics(qreal errorLimit = 0.2) const;
+    void addToQuadratics(QPolygonF *p, qreal tspan = 1.0, qreal errorLimit = 0.2) const;
+    int inflectionPoints(qreal *tpoints) const;
+
     QRectF bounds() const;
     qreal length(qreal error = 0.01) const;
     void addIfClose(qreal *length, qreal error) const;
