@@ -112,10 +112,10 @@ void RSSListing::fetch()
 
 void RSSListing::metaDataChanged()
 {
-    QUrl redirectionTarget = currentReply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
-    if (redirectionTarget.isValid()) {
+    const QUrl redirectionTarget =
+        currentReply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+    if (redirectionTarget.isValid())
         get(redirectionTarget);
-    }
 }
 
 /*
@@ -180,9 +180,8 @@ void RSSListing::parseXml()
                 linkString += xml.text();
         }
     }
-    if (xml.error() && xml.error() != QXmlStreamReader::PrematureEndOfDocumentError) {
+    if (xml.error() && xml.error() != QXmlStreamReader::PrematureEndOfDocumentError)
         qWarning() << "XML ERROR:" << xml.lineNumber() << ": " << xml.errorString();
-    }
 }
 
 /*
