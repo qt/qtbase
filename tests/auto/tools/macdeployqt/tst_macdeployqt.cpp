@@ -6,7 +6,6 @@
 
 Q_LOGGING_CATEGORY(lcTests, "qt.tools.tests")
 
-bool g_testDirectoryBuild = false; // toggle to keep build output for debugging.
 QTemporaryDir *g_temporaryDirectory;
 QString g_macdeployqtBinary;
 QString g_qmakeBinary;
@@ -108,8 +107,6 @@ QString sourcePath(const QString &name)
 
 QString buildPath(const QString &name)
 {
-    if (g_testDirectoryBuild)
-        return "build_" + name;
     return g_temporaryDirectory->path() + "/build_" + name;
 }
 
@@ -226,6 +223,7 @@ void tst_macdeployqt::initTestCase()
 
     // Set up test-global unique temporary directory
     g_temporaryDirectory = new QTemporaryDir();
+    g_temporaryDirectory->setAutoRemove(!lcTests().isDebugEnabled());
     QVERIFY(g_temporaryDirectory->isValid());
 
     // Locate build and deployment tools
