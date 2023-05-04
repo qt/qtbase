@@ -42,31 +42,30 @@ private:
 class QGenericRunnable : public QRunnable
 {
     // Type erasure, to only instantiate a non-virtual class per Callable:
-    class QGenericRunnableHelperBase
+    class HelperBase
     {
     protected:
         enum class Op {
             Run,
             Destroy,
         };
-        using OpFn = void* (*)(Op, QGenericRunnableHelperBase *, void*);
+        using OpFn = void* (*)(Op, HelperBase *, void*);
         OpFn fn;
     protected:
-        constexpr explicit QGenericRunnableHelperBase(OpFn f) noexcept : fn(f) {}
-        ~QGenericRunnableHelperBase() = default;
+        constexpr explicit HelperBase(OpFn f) noexcept : fn(f) {}
+        ~HelperBase() = default;
     public:
         void run() { fn(Op::Run, this, nullptr); }
         void destroy() { fn(Op::Destroy, this, nullptr); }
     };
 
     template <typename Callable>
-    class QGenericRunnableHelper : public QGenericRunnableHelperBase,
-                                   private QtPrivate::CompactStorage<Callable>
+    class Helper : public HelperBase, private QtPrivate::CompactStorage<Callable>
     {
         using Storage = QtPrivate::CompactStorage<Callable>;
-        static void *impl(Op op, QGenericRunnableHelperBase *that, [[maybe_unused]] void *arg)
+        static void *impl(Op op, HelperBase *that, [[maybe_unused]] void *arg)
         {
-            const auto _this = static_cast<QGenericRunnableHelper*>(that);
+            const auto _this = static_cast<Helper*>(that);
             switch (op) {
             case Op::Run:     _this->object()(); break;
             case Op::Destroy: delete _this; break;
@@ -75,18 +74,18 @@ class QGenericRunnable : public QRunnable
         }
     public:
         template <typename UniCallable>
-        explicit QGenericRunnableHelper(UniCallable &&functionToRun) noexcept
-            : QGenericRunnableHelperBase(&impl),
+        explicit Helper(UniCallable &&functionToRun) noexcept
+            : HelperBase(&impl),
               Storage{std::forward<UniCallable>(functionToRun)}
         {
         }
     };
 
-    QGenericRunnableHelperBase *runHelper;
+    HelperBase *runHelper;
 public:
     template <typename Callable, if_callable<Callable> = true>
     explicit QGenericRunnable(Callable &&c)
-        : runHelper(new QGenericRunnableHelper<std::decay_t<Callable>>(std::forward<Callable>(c)))
+        : runHelper(new Helper<std::decay_t<Callable>>(std::forward<Callable>(c)))
     {
     }
     ~QGenericRunnable() override
