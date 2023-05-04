@@ -10,6 +10,16 @@ QRunnable::~QRunnable()
 }
 
 /*!
+    \internal
+    Prints a warning and returns nullptr.
+*/
+QRunnable *QRunnable::warnNullCallable()
+{
+    qWarning("Trying to create null QRunnable. This may stop working.");
+    return nullptr;
+}
+
+/*!
     \class QRunnable
     \inmodule QtCore
     \since 4.4

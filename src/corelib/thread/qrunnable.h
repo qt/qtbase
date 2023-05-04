@@ -5,7 +5,6 @@
 #define QRUNNABLE_H
 
 #include <QtCore/qcompilerdetection.h>
-#include <QtCore/qdebug.h>
 
 #include <functional>
 #include <type_traits>
@@ -64,6 +63,9 @@ protected:
         {
         }
     };
+
+private:
+    static Q_DECL_COLD_FUNCTION QRunnable *warnNullCallable();
 };
 
 class QGenericRunnable : public QRunnable
@@ -105,10 +107,8 @@ QRunnable *QRunnable::create(Callable &&functionToRun)
         const void *functionPtr = reinterpret_cast<void *>(functionToRun);
         is_null = !functionPtr;
     }
-    if (is_null) {
-        qWarning() << "Trying to create null QRunnable. This may stop working.";
-        return nullptr;
-    }
+    if (is_null)
+        return warnNullCallable();
 
     return new QGenericRunnable(
             new QGenericRunnableHelper<std::decay_t<Callable>>(
