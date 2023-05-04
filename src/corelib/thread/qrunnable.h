@@ -35,7 +35,12 @@ public:
     bool autoDelete() const { return m_autoDelete; }
     void setAutoDelete(bool autoDelete) { m_autoDelete = autoDelete; }
 
-protected:
+private:
+    static Q_DECL_COLD_FUNCTION QRunnable *warnNullCallable();
+};
+
+class QGenericRunnable : public QRunnable
+{
     // Type erasure, to only instantiate a non-virtual class per Callable:
     class QGenericRunnableHelperBase
     {
@@ -77,12 +82,6 @@ protected:
         }
     };
 
-private:
-    static Q_DECL_COLD_FUNCTION QRunnable *warnNullCallable();
-};
-
-class QGenericRunnable : public QRunnable
-{
     QGenericRunnableHelperBase *runHelper;
 public:
     template <typename Callable, if_callable<Callable> = true>
