@@ -290,16 +290,17 @@ class QPrivateSlotObject : public QSlotObjectBase, private FunctionStorage<Func>
     typedef QtPrivate::FunctionPointer<Func> FuncType;
     static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
     {
+        const auto that = static_cast<QPrivateSlotObject*>(this_);
         switch (which) {
             case Destroy:
-                delete static_cast<QPrivateSlotObject*>(this_);
+                delete that;
                 break;
             case Call:
-                FuncType::template call<Args, R>(static_cast<QPrivateSlotObject*>(this_)->func(),
+                FuncType::template call<Args, R>(that->func(),
                                                  static_cast<typename FuncType::Object *>(QObjectPrivate::get(r)), a);
                 break;
             case Compare:
-                *ret = *reinterpret_cast<Func *>(a) == static_cast<QPrivateSlotObject*>(this_)->func();
+                *ret = *reinterpret_cast<Func *>(a) == that->func();
                 break;
             case NumOperations: ;
         }

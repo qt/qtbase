@@ -413,19 +413,20 @@ namespace QtPrivate {
         FunctorValue function;
         static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
         {
+            const auto that = static_cast<QFunctorSlotObject*>(this_);
             switch (which) {
             case Destroy:
-                delete static_cast<QFunctorSlotObject*>(this_);
+                delete that;
                 break;
             case Call:
                 if constexpr (std::is_member_function_pointer_v<FunctorValue>)
-                    FuncType::template call<Args, R>(static_cast<QFunctorSlotObject*>(this_)->function, static_cast<typename FuncType::Object *>(r), a);
+                    FuncType::template call<Args, R>(that->function, static_cast<typename FuncType::Object *>(r), a);
                 else
-                    FuncType::template call<Args, R>(static_cast<QFunctorSlotObject*>(this_)->function, r, a);
+                    FuncType::template call<Args, R>(that->function, r, a);
                 break;
             case Compare:
                 if constexpr (std::is_member_function_pointer_v<FunctorValue>) {
-                    *ret = *reinterpret_cast<FunctorValue *>(a) == static_cast<QFunctorSlotObject*>(this_)->function;
+                    *ret = *reinterpret_cast<FunctorValue *>(a) == that->function;
                     break;
                 }
                 // not implemented otherwise
