@@ -12,6 +12,8 @@
 #pragma qt_sync_stop_processing
 #endif
 
+#include <QtCore/qfunctionaltools_impl.h>
+
 QT_BEGIN_NAMESPACE
 class QObject;
 class QObjectPrivate;
@@ -440,14 +442,16 @@ namespace QtPrivate {
 
     // Implementation of QSlotObjectBase for which the slot is a callable (function, PMF, functor, or lambda).
     // Args and R are the List of arguments and the return type of the signal to which the slot is connected.
-    template<typename Func, typename Args, typename R> class QCallableObject : public QSlotObjectBase
+    template <typename Func, typename Args, typename R>
+    class QCallableObject : public QSlotObjectBase,
+                            private QtPrivate::CompactStorage<std::decay_t<Func>>
     {
         using FunctorValue = std::decay_t<Func>;
+        using Storage = QtPrivate::CompactStorage<FunctorValue>;
         using FuncType = std::conditional_t<std::is_member_function_pointer_v<FunctorValue>,
             QtPrivate::FunctionPointer<FunctorValue>,
             QtPrivate::Functor<FunctorValue, Args::size>
         >;
-        FunctorValue function;
         Q_DECL_HIDDEN static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
         {
             const auto that = static_cast<QCallableObject*>(this_);
@@ -457,13 +461,13 @@ namespace QtPrivate {
                 break;
             case Call:
                 if constexpr (std::is_member_function_pointer_v<FunctorValue>)
-                    FuncType::template call<Args, R>(that->function, static_cast<typename FuncType::Object *>(r), a);
+                    FuncType::template call<Args, R>(that->object(), static_cast<typename FuncType::Object *>(r), a);
                 else
-                    FuncType::template call<Args, R>(that->function, r, a);
+                    FuncType::template call<Args, R>(that->object(), r, a);
                 break;
             case Compare:
                 if constexpr (std::is_member_function_pointer_v<FunctorValue>) {
-                    *ret = *reinterpret_cast<FunctorValue *>(a) == that->function;
+                    *ret = *reinterpret_cast<FunctorValue *>(a) == that->object();
                     break;
                 }
                 // not implemented otherwise
@@ -473,8 +477,8 @@ namespace QtPrivate {
             }
         }
     public:
-        explicit QCallableObject(Func &&f) : QSlotObjectBase(&impl), function(std::move(f)) {}
-        explicit QCallableObject(const Func &f) : QSlotObjectBase(&impl), function(f) {}
+        explicit QCallableObject(Func &&f) : QSlotObjectBase(&impl), Storage{std::move(f)} {}
+        explicit QCallableObject(const Func &f) : QSlotObjectBase(&impl), Storage{f} {}
     };
 
     // Helper to detect the context object type based on the functor type:
