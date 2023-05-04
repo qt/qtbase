@@ -14,6 +14,8 @@
 #include <QScreen>
 #include <QWindow>
 
+#include <QtWidgets/private/qtabbar_p.h>
+
 using namespace Qt::StringLiterals;
 
 class TabBar;
@@ -1353,16 +1355,21 @@ void tst_QTabBar::hoverTab()
 void tst_QTabBar::resizeKeepsScroll_data()
 {
     QTest::addColumn<QTabBar::Shape>("tabShape");
+    QTest::addColumn<bool>("expanding");
 
-    QTest::addRow("North") << QTabBar::RoundedNorth;
-    QTest::addRow("East") << QTabBar::RoundedEast;
-    QTest::addRow("South") << QTabBar::RoundedSouth;
-    QTest::addRow("West") << QTabBar::RoundedWest;
+    QTest::addRow("North, expanding") << QTabBar::RoundedNorth << true;
+    QTest::addRow("East, expanding") << QTabBar::RoundedEast << true;
+    QTest::addRow("South, expanding") << QTabBar::RoundedSouth << true;
+    QTest::addRow("West, expanding") << QTabBar::RoundedWest << true;
+
+    QTest::addRow("North, not expanding") << QTabBar::RoundedNorth << false;
+    QTest::addRow("South, not expanding") << QTabBar::RoundedSouth << false;
 }
 
 void tst_QTabBar::resizeKeepsScroll()
 {
     QFETCH(QTabBar::Shape, tabShape);
+    QFETCH(const bool, expanding);
 
     QTabBar tabBar;
     TabBarScrollingProxyStyle proxyStyle;
@@ -1373,6 +1380,7 @@ void tst_QTabBar::resizeKeepsScroll()
 
     tabBar.setShape(tabShape);
     tabBar.setUsesScrollButtons(true);
+    tabBar.setExpanding(expanding);
 
     // resize to half
     const QSize fullSize = tabBar.sizeHint();
@@ -1385,13 +1393,15 @@ void tst_QTabBar::resizeKeepsScroll()
     tabBar.show();
     QVERIFY(QTest::qWaitForWindowExposed(&tabBar));
 
+    const auto getScrollOffset = [&]() -> int {
+        return static_cast<QTabBarPrivate *>(QObjectPrivate::get(&tabBar))->scrollOffset;
+    };
+
     // select a tab outside, this will scroll
     tabBar.setCurrentIndex(6);
     // the first tab is now scrolled out
-    const int scrollOffset = horizontal
-                           ? tabBar.tabRect(0).left()
-                           : tabBar.tabRect(0).top();
-    QCOMPARE_LT(scrollOffset, 0);
+    const int scrollOffset = getScrollOffset();
+    QCOMPARE_GT(scrollOffset, 0);
     // the current index is now fully visible, with margin on both sides
     tabBar.setCurrentIndex(5);
 
@@ -1402,10 +1412,18 @@ void tst_QTabBar::resizeKeepsScroll()
         tabBar.resize(tabBar.width(), tabBar.height() + tabBar.tabRect(5).height());
 
     // this should not change the scroll
-    QCOMPARE(scrollOffset, horizontal
-                         ? tabBar.tabRect(0).left()
-                         : tabBar.tabRect(0).top());
+    QCOMPARE(getScrollOffset(), scrollOffset);
 
+    // make the tab bar large enough to fit everything with extra space
+    tabBar.resize(fullSize + QSize(50, 50));
+
+    // there should be no scroll
+    QCOMPARE(getScrollOffset(), 0);
+
+    for (int i = 0; i < tabBar.count(); ++i) {
+        tabBar.setCurrentIndex(i);
+        QCOMPARE(getScrollOffset(), 0);
+    }
 }
 
 QTEST_MAIN(tst_QTabBar)
