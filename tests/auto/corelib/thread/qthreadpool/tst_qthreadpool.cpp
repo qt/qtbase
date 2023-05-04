@@ -1468,6 +1468,10 @@ void tst_QThreadPool::threadReuse()
 
 void tst_QThreadPool::nullFunctions()
 {
+    const auto expectWarning = [] {
+            QTest::ignoreMessage(QtMsgType::QtWarningMsg,
+                                 "Trying to create null QRunnable. This may stop working.");
+        };
     // Note this is not necessarily testing intended behavior, only undocumented behavior.
     // If this is changed it should be noted in Behavioral Changes.
     FunctionPointer nullFunction = nullptr;
@@ -1475,10 +1479,14 @@ void tst_QThreadPool::nullFunctions()
     {
         TestThreadPool manager;
         // should not crash:
+        expectWarning();
         manager.start(nullFunction);
+        expectWarning();
         manager.start(nullStdFunction);
         // should fail (and not leak):
+        expectWarning();
         QVERIFY(!manager.tryStart(nullStdFunction));
+        expectWarning();
         QVERIFY(!manager.tryStart(nullFunction));
     }
 }
