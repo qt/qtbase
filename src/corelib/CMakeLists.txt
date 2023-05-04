@@ -208,9 +208,6 @@ qt_internal_add_module(Core
         serialization/qjsonvalue.cpp serialization/qjsonvalue.h
         serialization/qjsonwriter.cpp serialization/qjsonwriter_p.h
         serialization/qtextstream.cpp serialization/qtextstream.h serialization/qtextstream_p.h
-        serialization/qxmlstream.cpp serialization/qxmlstream.h serialization/qxmlstream_p.h
-        serialization/qxmlstreamgrammar.cpp serialization/qxmlstreamgrammar_p.h
-        serialization/qxmlstreamparser_p.h
         serialization/qxmlutils.cpp serialization/qxmlutils_p.h
         text/qanystringview.h
         text/qbytearray.cpp text/qbytearray.h text/qbytearray_p.h
@@ -478,6 +475,13 @@ qt_internal_extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQU
 qt_internal_extend_target(Core CONDITION FREEBSD
     LINK_OPTIONS
       "LINKER:--warn-unresolved-symbols"
+)
+
+qt_internal_extend_target(Core CONDITION QT_FEATURE_xmlstream
+    SOURCES
+        serialization/qxmlstream.cpp serialization/qxmlstream.h serialization/qxmlstream_p.h
+        serialization/qxmlstreamgrammar.cpp serialization/qxmlstreamgrammar_p.h
+        serialization/qxmlstreamparser_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_animation

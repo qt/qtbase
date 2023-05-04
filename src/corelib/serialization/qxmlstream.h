@@ -6,7 +6,7 @@
 
 #include <QtCore/qiodevice.h>
 
-#ifndef QT_NO_XMLSTREAM
+QT_REQUIRE_CONFIG(xmlstream);
 
 #include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
@@ -176,8 +176,9 @@ public:
     virtual QString resolveUndeclaredEntity(const QString &name);
 };
 
-#ifndef QT_NO_XMLSTREAMREADER
-class Q_CORE_EXPORT QXmlStreamReader {
+#if QT_CONFIG(xmlstreamreader)
+class Q_CORE_EXPORT QXmlStreamReader
+{
     QDOC_PROPERTY(bool namespaceProcessing READ namespaceProcessing WRITE setNamespaceProcessing)
 public:
     enum TokenType {
@@ -314,9 +315,9 @@ private:
     QScopedPointer<QXmlStreamReaderPrivate> d_ptr;
 
 };
-#endif // QT_NO_XMLSTREAMREADER
+#endif // feature xmlstreamreader
 
-#ifndef QT_NO_XMLSTREAMWRITER
+#if QT_CONFIG(xmlstreamwriter)
 
 class QXmlStreamWriterPrivate;
 
@@ -402,7 +403,7 @@ public:
     void writeStartElement(QAnyStringView qualifiedName);
     void writeStartElement(QAnyStringView namespaceUri, QAnyStringView name);
 
-#ifndef QT_NO_XMLSTREAMREADER
+#if QT_CONFIG(xmlstreamreader)
     void writeCurrentToken(const QXmlStreamReader &reader);
 #endif
 
@@ -413,9 +414,8 @@ private:
     Q_DECLARE_PRIVATE(QXmlStreamWriter)
     QScopedPointer<QXmlStreamWriterPrivate> d_ptr;
 };
-#endif // QT_NO_XMLSTREAMWRITER
+#endif // feature xmlstreamwriter
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_XMLSTREAM
 #endif // QXMLSTREAM_H

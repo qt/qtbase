@@ -482,11 +482,7 @@ void QMimeBinaryProvider::addAllMimeTypes(QList<QMimeType> &result)
 
 bool QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 {
-#ifdef QT_NO_XMLSTREAMREADER
-    Q_UNUSED(data);
-    qWarning("Cannot load mime type since QXmlStreamReader is not available.");
-    return false;
-#else
+#if QT_CONFIG(xmlstreamreader)
     if (data.loaded)
         return true;
 
@@ -557,7 +553,11 @@ bool QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
     data.localeComments = e.localeComments;
     data.globPatterns = e.globPatterns;
     return true;
-#endif //QT_NO_XMLSTREAMREADER
+#else
+    Q_UNUSED(data);
+    qWarning("Cannot load mime type since QXmlStreamReader is not available.");
+    return false;
+#endif // feature xmlstreamreader
 }
 
 // Binary search in the icons or generic-icons list

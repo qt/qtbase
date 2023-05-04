@@ -770,21 +770,18 @@ qt_feature("cpp-winrt" PRIVATE PUBLIC
     AUTODETECT WIN32
     CONDITION WIN32 AND TEST_cpp_winrt
 )
-qt_feature_definition("xmlstream" "QT_NO_XMLSTREAM" NEGATE VALUE "1")
 qt_feature("xmlstreamreader" PUBLIC
     SECTION "Kernel"
     LABEL "QXmlStreamReader"
     PURPOSE "Provides a well-formed XML parser with a simple streaming API."
     CONDITION QT_FEATURE_xmlstream
 )
-qt_feature_definition("xmlstreamreader" "QT_NO_XMLSTREAMREADER" NEGATE VALUE "1")
 qt_feature("xmlstreamwriter" PUBLIC
     SECTION "Kernel"
     LABEL "QXmlStreamWriter"
     PURPOSE "Provides a XML writer with a simple streaming API."
     CONDITION QT_FEATURE_xmlstream
 )
-qt_feature_definition("xmlstreamwriter" "QT_NO_XMLSTREAMWRITER" NEGATE VALUE "1")
 qt_feature("textdate" PUBLIC
     SECTION "Data structures"
     LABEL "Text Date"

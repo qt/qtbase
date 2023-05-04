@@ -149,7 +149,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_XMLSTREAMREADER
+#if QT_CONFIG(xmlstreamreader)
 
 bool QXmlStreamReaderPrivate::parse()
 {
@@ -1478,7 +1478,7 @@ nmtoken ::= COLON;
     return false;
 }
 
-#endif
+#endif // feature xmlstreamreader
 
 QT_END_NAMESPACE
 

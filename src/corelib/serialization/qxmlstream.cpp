@@ -3,7 +3,7 @@
 
 #include "QtCore/qxmlstream.h"
 
-#ifndef QT_NO_XMLSTREAM
+#if QT_CONFIG(xmlstream)
 
 #include "qxmlutils_p.h"
 #include <qdebug.h>
@@ -232,7 +232,7 @@ QString QXmlStreamEntityResolver::resolveUndeclaredEntity(const QString &/*name*
     return QString();
 }
 
-#ifndef QT_NO_XMLSTREAMREADER
+#if QT_CONFIG(xmlstreamreader)
 
 QString QXmlStreamReaderPrivate::resolveUndeclaredEntity(const QString &name)
 {
@@ -777,7 +777,7 @@ QString QXmlStreamReader::tokenString() const
     return QLatin1StringView(QXmlStreamReader_tokenTypeString.at(d->type));
 }
 
-#endif // QT_NO_XMLSTREAMREADER
+#endif // feature xmlstreamreader
 
 QXmlStreamPrivateTagStack::QXmlStreamPrivateTagStack()
 {
@@ -791,7 +791,7 @@ QXmlStreamPrivateTagStack::QXmlStreamPrivateTagStack()
     tagsDone = false;
 }
 
-#ifndef QT_NO_XMLSTREAMREADER
+#if QT_CONFIG(xmlstreamreader)
 
 QXmlStreamReaderPrivate::QXmlStreamReaderPrivate(QXmlStreamReader *q)
     :q_ptr(q)
@@ -2272,7 +2272,7 @@ QXmlStreamAttributes QXmlStreamReader::attributes() const
     return d->attributes;
 }
 
-#endif // QT_NO_XMLSTREAMREADER
+#endif // feature xmlstreamreader
 
 /*!
     \class QXmlStreamAttribute
@@ -2631,7 +2631,7 @@ void QXmlStreamAttributes::append(const QString &qualifiedName, const QString &v
     append(QXmlStreamAttribute(qualifiedName, value));
 }
 
-#ifndef QT_NO_XMLSTREAMREADER
+#if QT_CONFIG(xmlstreamreader)
 
 /*! \fn bool QXmlStreamReader::isStartDocument() const
   Returns \c true if tokenType() equals \l StartDocument; otherwise returns \c false.
@@ -2747,7 +2747,7 @@ QStringView QXmlStreamReader::documentEncoding() const
    return QStringView();
 }
 
-#endif // QT_NO_XMLSTREAMREADER
+#endif // feature xmlstreamreader
 
 /*!
   \class QXmlStreamWriter
@@ -2824,9 +2824,10 @@ QStringView QXmlStreamReader::documentEncoding() const
 
 */
 
-#ifndef QT_NO_XMLSTREAMWRITER
+#if QT_CONFIG(xmlstreamwriter)
 
-class QXmlStreamWriterPrivate : public QXmlStreamPrivateTagStack {
+class QXmlStreamWriterPrivate : public QXmlStreamPrivateTagStack
+{
     QXmlStreamWriter *q_ptr;
     Q_DECLARE_PUBLIC(QXmlStreamWriter)
 public:
@@ -3746,7 +3747,7 @@ void QXmlStreamWriterPrivate::writeStartElement(QAnyStringView namespaceUri, QAn
     tag.namespaceDeclarationsSize = lastNamespaceDeclaration;
 }
 
-#ifndef QT_NO_XMLSTREAMREADER
+#if QT_CONFIG(xmlstreamreader)
 /*!  Writes the current state of the \a reader. All possible valid
   states are supported.
 
@@ -3827,9 +3828,9 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
  otherwise returns \c false.
 */
 
-#endif // QT_NO_XMLSTREAMREADER
-#endif // QT_NO_XMLSTREAMWRITER
+#endif // feature xmlstreamreader
+#endif // feature xmlstreamwriter
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_XMLSTREAM
+#endif // feature xmlstream

@@ -139,7 +139,7 @@ bool QMimeTypeParserBase::parseNumber(QStringView n, int *target, QString *error
     return true;
 }
 
-#ifndef QT_NO_XMLSTREAMREADER
+#if QT_CONFIG(xmlstreamreader)
 struct CreateMagicMatchRuleResult
 {
     QString errorMessage; // must be first
@@ -160,16 +160,11 @@ static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttribute
     const auto mask = atts.value(QLatin1StringView(matchMaskAttributeC));
     return CreateMagicMatchRuleResult(type, value, offsets, mask);
 }
-#endif
+#endif // feature xmlstreamreader
 
 bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString *errorMessage)
 {
-#ifdef QT_NO_XMLSTREAMREADER
-    Q_UNUSED(dev);
-    if (errorMessage)
-        *errorMessage = QString::fromLatin1("QXmlStreamReader is not available, cannot parse '%1'.").arg(fileName);
-    return false;
-#else
+#if QT_CONFIG(xmlstreamreader)
     QMimeTypePrivate data;
     data.loaded = true;
     int priority = 50;
@@ -311,7 +306,12 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
     }
 
     return true;
-#endif //QT_NO_XMLSTREAMREADER
+#else
+    Q_UNUSED(dev);
+    if (errorMessage)
+        *errorMessage = "QXmlStreamReader is not available, cannot parse '%1'."_L1.arg(fileName);
+    return false;
+#endif // feature xmlstreamreader
 }
 
 QT_END_NAMESPACE
