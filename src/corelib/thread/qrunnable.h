@@ -5,6 +5,7 @@
 #define QRUNNABLE_H
 
 #include <QtCore/qcompilerdetection.h>
+#include <QtCore/qfunctionaltools_impl.h>
 
 #include <functional>
 #include <type_traits>
@@ -54,14 +55,15 @@ protected:
     };
 
     template <typename Callable>
-    class QGenericRunnableHelper : public QGenericRunnableHelperBase
+    class QGenericRunnableHelper : public QGenericRunnableHelperBase,
+                                   private QtPrivate::CompactStorage<Callable>
     {
-        Callable m_functionToRun;
+        using Storage = QtPrivate::CompactStorage<Callable>;
         static void *impl(Op op, QGenericRunnableHelperBase *that, [[maybe_unused]] void *arg)
         {
             const auto _this = static_cast<QGenericRunnableHelper*>(that);
             switch (op) {
-            case Op::Run:     _this->m_functionToRun(); break;
+            case Op::Run:     _this->object()(); break;
             case Op::Destroy: delete _this; break;
             }
             return nullptr;
@@ -70,7 +72,7 @@ protected:
         template <typename UniCallable>
         explicit QGenericRunnableHelper(UniCallable &&functionToRun) noexcept
             : QGenericRunnableHelperBase(&impl),
-              m_functionToRun(std::forward<UniCallable>(functionToRun))
+              Storage{std::forward<UniCallable>(functionToRun)}
         {
         }
     };
