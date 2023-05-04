@@ -7,7 +7,6 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QWidget>
-#include <QBuffer>
 #include <QXmlStreamReader>
 #include <QUrl>
 
@@ -48,8 +47,6 @@ private:
     QLineEdit *lineEdit;
     QTreeWidget *treeWidget;
     QPushButton *fetchButton;
-
 };
 
 #endif
-
