@@ -758,6 +758,8 @@ QGridLayoutEngine::QGridLayoutEngine(Qt::Alignment defaultAlignment, bool snapTo
     m_visualDirection = Qt::LeftToRight;
     m_defaultAlignment = defaultAlignment;
     m_snapToPixelGrid = snapToPixelGrid;
+    m_uniformCellWidths = false;
+    m_uniformCellHeights = false;
     invalidate();
 }
 
@@ -873,6 +875,34 @@ void QGridLayoutEngine::setRowSizeHint(Qt::SizeHint which, int row, qreal size,
 qreal QGridLayoutEngine::rowSizeHint(Qt::SizeHint which, int row, Qt::Orientation orientation) const
 {
     return q_infos[orientation].boxes.value(row).q_sizes(which);
+}
+
+bool QGridLayoutEngine::uniformCellWidths() const
+{
+    return m_uniformCellWidths;
+}
+
+void QGridLayoutEngine::setUniformCellWidths(bool uniformCellWidths)
+{
+    if (m_uniformCellWidths == uniformCellWidths)
+        return;
+
+    m_uniformCellWidths = uniformCellWidths;
+    invalidate();
+}
+
+bool QGridLayoutEngine::uniformCellHeights() const
+{
+    return m_uniformCellHeights;
+}
+
+void QGridLayoutEngine::setUniformCellHeights(bool uniformCellHeights)
+{
+    if (m_uniformCellHeights == uniformCellHeights)
+        return;
+
+    m_uniformCellHeights = uniformCellHeights;
+    invalidate();
 }
 
 void QGridLayoutEngine::setRowAlignment(int row, Qt::Alignment alignment,
@@ -1497,6 +1527,27 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
             qreal windowMargin = styleInfo->windowMargin(orientation);
             qreal &rowSpacing = rowData->spacings[prevRow];
             rowSpacing = qMax(windowMargin, rowSpacing);
+        }
+    }
+
+    if (rowData->boxes.size() > 1 &&
+        ((orientation == Qt::Horizontal && m_uniformCellWidths) ||
+        (orientation == Qt::Vertical && m_uniformCellHeights))) {
+        qreal averagePreferredSize = 0.;
+        qreal minimumMaximumSize = std::numeric_limits<qreal>::max();
+        qreal maximumMinimumSize = 0.;
+        for (const auto &box : rowData->boxes) {
+            averagePreferredSize += box.q_preferredSize;
+            minimumMaximumSize = qMin(minimumMaximumSize, box.q_maximumSize);
+            maximumMinimumSize = qMax(maximumMinimumSize, box.q_minimumSize);
+        }
+        averagePreferredSize /= rowData->boxes.size();
+        minimumMaximumSize = qMax(minimumMaximumSize, maximumMinimumSize);
+        averagePreferredSize = qBound(maximumMinimumSize, averagePreferredSize, minimumMaximumSize);
+        for (auto &box : rowData->boxes) {
+            box.q_preferredSize = averagePreferredSize;
+            box.q_minimumSize = maximumMinimumSize;
+            box.q_maximumSize = minimumMaximumSize;
         }
     }
 }

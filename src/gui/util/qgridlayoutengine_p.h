@@ -334,6 +334,12 @@ public:
     qreal rowSizeHint(Qt::SizeHint which, int row,
                       Qt::Orientation orientation = Qt::Vertical) const;
 
+    bool uniformCellWidths() const;
+    void setUniformCellWidths(bool uniformCellWidths);
+
+    bool uniformCellHeights() const;
+    void setUniformCellHeights(bool uniformCellHeights);
+
     void setRowAlignment(int row, Qt::Alignment alignment, Qt::Orientation orientation);
     Qt::Alignment rowAlignment(int row, Qt::Orientation orientation) const;
 
@@ -415,6 +421,8 @@ private:
     // Configuration
     Qt::Alignment m_defaultAlignment;
     unsigned m_snapToPixelGrid : 1;
+    unsigned m_uniformCellWidths : 1;
+    unsigned m_uniformCellHeights : 1;
 
     // Lazily computed from the above user input
     mutable QHVContainer<int> q_cachedEffectiveFirstRows;
