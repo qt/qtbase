@@ -11,4 +11,5 @@ qt_internal_add_test(tst_qtabbar
     LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
