@@ -937,7 +937,10 @@ bool DeploymentInfo::containsModule(const QString &module, const QString &libInF
     if (deployedFrameworks.contains("Qt"_L1 + module + libInFix + ".framework"_L1))
         return true;
     // Check for dylib
-    const QRegularExpression dylibRegExp("libQt[0-9]+"_L1 + module + libInFix + ".[0-9]+.dylib"_L1);
+    const QRegularExpression dylibRegExp("libQt[0-9]+"_L1
+        + module + libInFix
+        + (isDebug ? "_debug" : "")
+        + ".[0-9]+.dylib"_L1);
     return deployedFrameworks.filter(dylibRegExp).size() > 0;
 }
 
