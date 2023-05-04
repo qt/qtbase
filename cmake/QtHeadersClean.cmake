@@ -182,7 +182,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         )
         set(input_header_path_type ABSOLUTE)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -Za -WX -W3)
+        set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -Za -WX -W3 -EHsc)
 
         # cl.exe needs a source path
         get_filename_component(source_path "${QT_MKSPECS_DIR}/features/data/dummy.cpp" REALPATH)
