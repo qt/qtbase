@@ -80,8 +80,6 @@ The following table describes the mapping of configure options to CMake argument
 | -mp                                   | n/a                                               |                                                                 |
 | -warnings-are-errors                  | -DWARNINGS_ARE_ERRORS=ON                          |                                                                 |
 | -silent                               | n/a                                               |                                                                 |
-| -sysroot <dir>                        | -DCMAKE_SYSROOT=<dir>                             | Should be provided by a toolchain file that's                   |
-|                                       |                                                   | passed via -DCMAKE_TOOLCHAIN_FILE=<filename>                    |
 | -no-gcc-sysroot                       | n/a                                               | The corresponding CMake variables are CMAKE_SYSROOT_LINK        |
 |                                       |                                                   | and CMAKE_SYSROOT_COMPILE.                                      |
 |                                       |                                                   | They are usually set in a toolchain file.                       |

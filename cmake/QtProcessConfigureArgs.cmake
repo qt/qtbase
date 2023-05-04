@@ -985,6 +985,14 @@ endforeach()
 
 push("${MODULE_ROOT}")
 
+if(INPUT_sysroot)
+    qtConfAddWarning("The -sysroot option is deprecated and no longer has any effect. "
+                     "It is recommended to use a toolchain file instead, i.e., "
+                     "-DCMAKE_TOOLCHAIN_FILE=<filename>. "
+                     "Alternatively, you may use -DCMAKE_SYSROOT option "
+                     "to pass the sysroot to CMake.\n")
+endif()
+
 # Restore the escaped semicolons in arguments that are lists
 list(TRANSFORM cmake_args REPLACE "\\[\\[;\\]\\]" "\\\\;")
 

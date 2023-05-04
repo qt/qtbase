@@ -157,8 +157,6 @@ Build options:
 
 Build environment:
 
-  -sysroot <dir> ....... Set <dir> as the target sysroot
-
   -pkg-config .......... Use pkg-config [auto] (Unix only)
 
   -D <string> .......... Pass additional preprocessor define
