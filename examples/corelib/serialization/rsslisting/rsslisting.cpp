@@ -66,7 +66,7 @@ RSSListing::RSSListing(QWidget *parent)
     layout->addWidget(treeWidget);
 
     setWindowTitle(tr("RSS listing example"));
-    resize(640,480);
+    resize(640, 480);
 }
 
 /*
@@ -193,7 +193,7 @@ void RSSListing::parseXml()
 /*
     Open the link in the browser
 */
-void RSSListing::itemActivated(QTreeWidgetItem * item)
+void RSSListing::itemActivated(QTreeWidgetItem *item)
 {
     QDesktopServices::openUrl(QUrl(item->text(1)));
 }
