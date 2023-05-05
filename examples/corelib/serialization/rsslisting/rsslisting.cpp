@@ -76,7 +76,7 @@ void RSSListing::get(const QUrl &url)
     }
     currentReply = url.isValid() ? manager.get(QNetworkRequest(url)) : nullptr;
     if (currentReply) {
-        connect(currentReply, &QNetworkReply::readyRead, this, &RSSListing::readyRead);
+        connect(currentReply, &QNetworkReply::readyRead, this, &RSSListing::consumeData);
         connect(currentReply, &QNetworkReply::errorOccurred, this, &RSSListing::error);
     }
     xml.setDevice(currentReply); // Equivalent to clear() if currentReply is null.
@@ -112,7 +112,7 @@ void RSSListing::fetch()
     stream reader. Then we call the XML parsing function.
 */
 
-void RSSListing::readyRead()
+void RSSListing::consumeData()
 {
     int statusCode = currentReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if (statusCode >= 200 && statusCode < 300)
