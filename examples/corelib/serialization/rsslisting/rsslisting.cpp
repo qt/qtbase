@@ -163,8 +163,10 @@ void RSSListing::parseXml()
     while (!xml.atEnd()) {
         xml.readNext();
         if (xml.isStartElement()) {
-            if (xml.name() == u"item")
+            if (xml.name() == u"item") {
                 linkString = xml.attributes().value("rss:about").toString();
+                titleString.clear();
+            }
             currentTag = xml.name().toString();
         } else if (xml.isEndElement()) {
             if (xml.name() == u"item") {
@@ -173,9 +175,6 @@ void RSSListing::parseXml()
                 item->setText(0, titleString);
                 item->setText(1, linkString);
                 treeWidget->addTopLevelItem(item);
-
-                titleString.clear();
-                linkString.clear();
             }
 
         } else if (xml.isCharacters() && !xml.isWhitespace()) {
