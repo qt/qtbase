@@ -3,6 +3,7 @@
 
 /*!
     \example serialization/convert
+    \examplecategory {Input/Output}
     \title Convert Example
 
     \brief The Convert example demonstrates how to convert between different
