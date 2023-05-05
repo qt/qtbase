@@ -124,9 +124,7 @@ void QDBusConnectionManager::run()
 
     // cleanup:
     const auto locker = qt_scoped_lock(mutex);
-    for (QHash<QString, QDBusConnectionPrivate *>::const_iterator it = connectionHash.constBegin();
-         it != connectionHash.constEnd(); ++it) {
-        QDBusConnectionPrivate *d = it.value();
+    for (QDBusConnectionPrivate *d : std::as_const(connectionHash)) {
         if (!d->ref.deref()) {
             delete d;
         } else {

@@ -155,14 +155,12 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
     d_ptr->parametersValidated = true;
 
     QDBusMarshaller marshaller(capabilities);
-    QVariantList::ConstIterator it =  d_ptr->arguments.constBegin();
-    QVariantList::ConstIterator cend = d_ptr->arguments.constEnd();
     q_dbus_message_iter_init_append(msg, &marshaller.iterator);
     if (!d_ptr->message.isEmpty())
         // prepend the error message
         marshaller.append(d_ptr->message);
-    for ( ; it != cend; ++it)
-        marshaller.appendVariantInternal(*it);
+    for (const QVariant &argument : std::as_const(d_ptr->arguments))
+        marshaller.appendVariantInternal(argument);
 
     // check if everything is ok
     if (marshaller.ok)
@@ -239,10 +237,8 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
 
     // determine if we are carrying any complex types
     QString computedSignature;
-    QVariantList::ConstIterator it = asSent.d_ptr->arguments.constBegin();
-    QVariantList::ConstIterator end = asSent.d_ptr->arguments.constEnd();
-    for ( ; it != end; ++it) {
-        QMetaType id = it->metaType();
+    for (const QVariant &argument : std::as_const(asSent.d_ptr->arguments)) {
+        QMetaType id = argument.metaType();
         const char *signature = QDBusMetaType::typeToSignature(id);
         if ((id.id() != QMetaType::QStringList && id.id() != QMetaType::QByteArray &&
              qstrlen(signature) != 1) || id == QMetaType::fromType<QDBusVariant>()) {
@@ -804,12 +800,10 @@ static QDebug operator<<(QDebug dbg, QDBusMessage::MessageType t)
 static void debugVariantList(QDebug dbg, const QVariantList &list)
 {
     bool first = true;
-    QVariantList::ConstIterator it = list.constBegin();
-    QVariantList::ConstIterator end = list.constEnd();
-    for ( ; it != end; ++it) {
+    for (const QVariant &elem : list) {
         if (!first)
             dbg.nospace() << ", ";
-        dbg.nospace() << qPrintable(QDBusUtil::argumentToString(*it));
+        dbg.nospace() << qPrintable(QDBusUtil::argumentToString(elem));
         first = false;
     }
 }

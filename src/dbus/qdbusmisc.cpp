@@ -117,10 +117,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
     metaTypes.append(QMetaType());        // return type
     int inputCount = 0;
     bool seenMessage = false;
-    QList<QByteArray>::ConstIterator it = parameterTypes.constBegin();
-    QList<QByteArray>::ConstIterator end = parameterTypes.constEnd();
-    for ( ; it != end; ++it) {
-        QByteArray type = *it;
+    for (QByteArray type : parameterTypes) {
         if (type.endsWith('*')) {
             errorMsg = "Pointers are not supported: "_L1 + QLatin1StringView(type);
             return -1;

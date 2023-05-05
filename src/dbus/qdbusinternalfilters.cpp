@@ -76,11 +76,8 @@ static const char peerInterfaceXml[] =
 static QString generateSubObjectXml(QObject *object)
 {
     QString retval;
-    const QObjectList &objs = object->children();
-    QObjectList::ConstIterator it = objs.constBegin();
-    QObjectList::ConstIterator end = objs.constEnd();
-    for ( ; it != end; ++it) {
-        QString name = (*it)->objectName();
+    for (const QObject *child : object->children()) {
+        QString name = child->objectName();
         if (!name.isEmpty() && QDBusUtil::isValidPartOfObjectPath(name))
             retval += "  <node name=\""_L1 + name + "\"/>\n"_L1;
     }
@@ -116,20 +113,22 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
             (connector = qDBusFindAdaptorConnector(node.obj))) {
 
             // trasverse every adaptor in this object
-            QDBusAdaptorConnector::AdaptorMap::ConstIterator it = connector->adaptors.constBegin();
-            QDBusAdaptorConnector::AdaptorMap::ConstIterator end = connector->adaptors.constEnd();
-            for ( ; it != end; ++it) {
+            for (const QDBusAdaptorConnector::AdaptorData &adaptorData :
+                 std::as_const(connector->adaptors)) {
                 // add the interface:
-                QString ifaceXml = QDBusAbstractAdaptorPrivate::retrieveIntrospectionXml(it->adaptor);
+                QString ifaceXml =
+                        QDBusAbstractAdaptorPrivate::retrieveIntrospectionXml(adaptorData.adaptor);
                 if (ifaceXml.isEmpty()) {
                     // add the interface's contents:
-                    ifaceXml += qDBusGenerateMetaObjectXml(QString::fromLatin1(it->interface),
-                                                           it->adaptor->metaObject(),
-                                                           &QDBusAbstractAdaptor::staticMetaObject,
-                                                           QDBusConnection::ExportScriptableContents
-                                                           | QDBusConnection::ExportNonScriptableContents);
+                    ifaceXml += qDBusGenerateMetaObjectXml(
+                            QString::fromLatin1(adaptorData.interface),
+                            adaptorData.adaptor->metaObject(),
+                            &QDBusAbstractAdaptor::staticMetaObject,
+                            QDBusConnection::ExportScriptableContents
+                                    | QDBusConnection::ExportNonScriptableContents);
 
-                    QDBusAbstractAdaptorPrivate::saveIntrospectionXml(it->adaptor, ifaceXml);
+                    QDBusAbstractAdaptorPrivate::saveIntrospectionXml(adaptorData.adaptor,
+                                                                      ifaceXml);
                 }
 
                 xml_data += ifaceXml;
@@ -151,13 +150,10 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
         xml_data += generateSubObjectXml(node.obj);
     } else {
         // generate from the object tree
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it =
-            node.children.constBegin();
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator end =
-            node.children.constEnd();
-        for ( ; it != end; ++it)
-            if (it->obj || !it->children.isEmpty())
-                xml_data += "  <node name=\""_L1 + it->name + "\"/>\n"_L1;
+        for (const QDBusConnectionPrivate::ObjectTreeNode &node : node.children) {
+            if (node.obj || !node.children.isEmpty())
+                xml_data += "  <node name=\""_L1 + node.name + "\"/>\n"_L1;
+        }
     }
 
     xml_data += "</node>\n"_L1;
@@ -195,7 +191,7 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
     QString interface_name = msg.arguments().at(0).toString();
     QByteArray property_name = msg.arguments().at(1).toString().toUtf8();
 
-    QDBusAdaptorConnector *connector;
+    const QDBusAdaptorConnector *connector;
     QVariant value;
     bool interfaceFound = false;
     if (node.flags & QDBusConnection::ExportAdaptors &&
@@ -204,12 +200,11 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
         // find the class that implements interface_name or try until we've found the property
         // in case of an empty interface
         if (interface_name.isEmpty()) {
-            for (QDBusAdaptorConnector::AdaptorMap::ConstIterator it = connector->adaptors.constBegin(),
-                 end = connector->adaptors.constEnd(); it != end; ++it) {
-                const QMetaObject *mo = it->adaptor->metaObject();
+            for (const QDBusAdaptorConnector::AdaptorData &adaptorData : connector->adaptors) {
+                const QMetaObject *mo = adaptorData.adaptor->metaObject();
                 int pidx = mo->indexOfProperty(property_name);
                 if (pidx != -1) {
-                    value = mo->property(pidx).read(it->adaptor);
+                    value = mo->property(pidx).read(adaptorData.adaptor);
                     break;
                 }
             }
@@ -361,9 +356,9 @@ QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node
         // find the class that implements interface_name or try until we've found the property
         // in case of an empty interface
         if (interface_name.isEmpty()) {
-            for (QDBusAdaptorConnector::AdaptorMap::ConstIterator it = connector->adaptors.constBegin(),
-                 end = connector->adaptors.constEnd(); it != end; ++it) {
-                int status = writeProperty(it->adaptor, property_name, value);
+            for (const QDBusAdaptorConnector::AdaptorData &adaptorData :
+                 std::as_const(connector->adaptors)) {
+                int status = writeProperty(adaptorData.adaptor, property_name, value);
                 if (status == PropertyNotFound)
                     continue;
                 return propertyWriteReply(msg, interface_name, property_name, status);
@@ -401,10 +396,8 @@ QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node
 // unite two QVariantMaps, but don't generate duplicate keys
 static QVariantMap &operator+=(QVariantMap &lhs, const QVariantMap &rhs)
 {
-    QVariantMap::ConstIterator it = rhs.constBegin(),
-                              end = rhs.constEnd();
-    for ( ; it != end; ++it)
-        lhs.insert(it.key(), it.value());
+    for (const auto &[key, value] : rhs.asKeyValueRange())
+        lhs.insert(key, value);
     return lhs;
 }
 
@@ -461,9 +454,10 @@ QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &n
 
         if (interface_name.isEmpty()) {
             // iterate over all interfaces
-            for (QDBusAdaptorConnector::AdaptorMap::ConstIterator it = connector->adaptors.constBegin(),
-                 end = connector->adaptors.constEnd(); it != end; ++it) {
-                result += readAllProperties(it->adaptor, QDBusConnection::ExportAllProperties);
+            for (const QDBusAdaptorConnector::AdaptorData &adaptorData :
+                 std::as_const(connector->adaptors)) {
+                result += readAllProperties(adaptorData.adaptor,
+                                            QDBusConnection::ExportAllProperties);
             }
         } else {
             // find the class that implements interface_name

@@ -409,17 +409,14 @@ static QObject *findChildObject(const QDBusConnectionPrivate::ObjectTreeNode *ro
             pos = (pos == -1 ? length : pos);
             auto pathComponent = QStringView{fullpath}.mid(start, pos - start);
 
-            const QObjectList children = obj->children();
-
             // find a child with the proper name
             QObject *next = nullptr;
-            QObjectList::ConstIterator it = children.constBegin();
-            QObjectList::ConstIterator end = children.constEnd();
-            for ( ; it != end; ++it)
-                if ((*it)->objectName() == pathComponent) {
-                    next = *it;
+            for (QObject *child : std::as_const(obj->children())) {
+                if (child->objectName() == pathComponent) {
+                    next = child;
                     break;
                 }
+            }
 
             if (!next)
                 break;
@@ -561,7 +558,7 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
 
 static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNode &haystack)
 {
-    for (auto &node : haystack.children)
+    for (QDBusConnectionPrivate::ObjectTreeNode &node : haystack.children)
         huntAndDestroy(needle, node);
 
     auto isInactive = [](const QDBusConnectionPrivate::ObjectTreeNode &node) { return !node.isActive(); };
@@ -605,11 +602,11 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
                         QObject *needle, const QDBusConnectionPrivate::ObjectTreeNode &haystack,
                         bool isScriptable, bool isAdaptor, const QString &path = QString())
 {
-    QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it = haystack.children.constBegin();
-    QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator end = haystack.children.constEnd();
-    for ( ; it != end; ++it) {
-        if (it->isActive())
-            huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + u'/' + it->name);
+    for (const QDBusConnectionPrivate::ObjectTreeNode &node : std::as_const(haystack.children)) {
+        if (node.isActive()) {
+            huntAndEmit(connection, msg, needle, node, isScriptable, isAdaptor,
+                        path + u'/' + node.name);
+        }
     }
 
     if (needle == haystack.obj) {
@@ -1074,12 +1071,8 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
 void QDBusConnectionPrivate::collectAllObjects(QDBusConnectionPrivate::ObjectTreeNode &haystack,
                                                QSet<QObject *> &set)
 {
-    QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = haystack.children.begin();
-
-    while (it != haystack.children.end()) {
-        collectAllObjects(*it, set);
-        it++;
-    }
+    for (ObjectTreeNode &child : haystack.children)
+        collectAllObjects(child, set);
 
     if (haystack.obj)
         set.insert(haystack.obj);
@@ -1107,11 +1100,9 @@ void QDBusConnectionPrivate::closeConnection()
         }
     }
 
-    for (auto it = pendingCalls.begin(); it != pendingCalls.end(); ++it) {
-        auto call = *it;
-        if (!call->ref.deref()) {
+    for (QDBusPendingCallPrivate *call : pendingCalls) {
+        if (!call->ref.deref())
             delete call;
-        }
     }
     pendingCalls.clear();
 
@@ -1122,18 +1113,12 @@ void QDBusConnectionPrivate::closeConnection()
     // dangling pointer.
     QSet<QObject *> allObjects;
     collectAllObjects(rootNode, allObjects);
-    SignalHookHash::const_iterator sit = signalHooks.constBegin();
-    while (sit != signalHooks.constEnd()) {
-        allObjects.insert(sit.value().obj);
-        ++sit;
-    }
+    for (const SignalHook &signalHook : std::as_const(signalHooks))
+        allObjects.insert(signalHook.obj);
 
     // now disconnect ourselves
-    QSet<QObject *>::const_iterator oit = allObjects.constBegin();
-    while (oit != allObjects.constEnd()) {
-        (*oit)->disconnect(this);
-        ++oit;
-    }
+    for (QObject *obj : std::as_const(allObjects))
+        obj->disconnect(this);
 }
 
 void QDBusConnectionPrivate::handleDBusDisconnection()
@@ -1175,11 +1160,9 @@ void QDBusConnectionPrivate::doDispatch()
     if (mode == ClientMode || mode == PeerMode) {
         if (dispatchEnabled && !pendingMessages.isEmpty()) {
             // dispatch previously queued messages
-            PendingMessageList::Iterator it = pendingMessages.begin();
-            PendingMessageList::Iterator end = pendingMessages.end();
-            for ( ; it != end; ++it) {
-                qDBusDebug() << this << "dequeueing message" << *it;
-                handleMessage(std::move(*it));
+            for (QDBusMessage &message : pendingMessages) {
+                qDBusDebug() << this << "dequeueing message" << message;
+                handleMessage(std::move(message));
             }
             pendingMessages.clear();
         }
@@ -1459,14 +1442,11 @@ void QDBusConnectionPrivate::activateObject(ObjectTreeNode &node, const QDBusMes
         if (msg.interface().isEmpty()) {
             // place the call in all interfaces
             // let the first one that handles it to work
-            QDBusAdaptorConnector::AdaptorMap::ConstIterator it =
-                connector->adaptors.constBegin();
-            QDBusAdaptorConnector::AdaptorMap::ConstIterator end =
-                connector->adaptors.constEnd();
-
-            for ( ; it != end; ++it)
-                if (activateCall(it->adaptor, newflags, msg))
+            for (const QDBusAdaptorConnector::AdaptorData &adaptorData :
+                 std::as_const(connector->adaptors)) {
+                if (activateCall(adaptorData.adaptor, newflags, msg))
                     return;
+            }
         } else {
             // check if we have an interface matching the name that was asked:
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;

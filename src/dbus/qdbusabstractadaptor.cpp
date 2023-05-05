@@ -37,11 +37,9 @@ QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *obj)
 {
     if (!obj)
         return nullptr;
-    const QObjectList &children = obj->children();
-    QObjectList::ConstIterator it = children.constBegin();
-    QObjectList::ConstIterator end = children.constEnd();
-    for ( ; it != end; ++it) {
-        QDBusAdaptorConnector *connector = qobject_cast<QDBusAdaptorConnector *>(*it);
+
+    for (QObject *child : std::as_const(obj->children())) {
+        QDBusAdaptorConnector *connector = qobject_cast<QDBusAdaptorConnector *>(child);
         if (connector) {
             connector->polish();
             return connector;
@@ -227,11 +225,8 @@ void QDBusAdaptorConnector::polish()
         return;                 // avoid working multiple times if multiple adaptors were added
 
     waitingForPolish = false;
-    const QObjectList &objs = parent()->children();
-    QObjectList::ConstIterator it = objs.constBegin();
-    QObjectList::ConstIterator end = objs.constEnd();
-    for ( ; it != end; ++it) {
-        QDBusAbstractAdaptor *adaptor = qobject_cast<QDBusAbstractAdaptor *>(*it);
+    for (QObject *child : std::as_const(parent()->children())) {
+        QDBusAbstractAdaptor *adaptor = qobject_cast<QDBusAbstractAdaptor *>(child);
         if (adaptor)
             addAdaptor(adaptor);
     }
