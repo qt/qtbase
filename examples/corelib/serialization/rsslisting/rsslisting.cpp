@@ -46,7 +46,8 @@ RSSListing::RSSListing(const QString &url, QWidget *parent)
 
     treeWidget = new QTreeWidget(this);
     connect(treeWidget, &QTreeWidget::itemActivated,
-            this, &RSSListing::itemActivated);
+            // Open the link in the browser:
+            this, [](QTreeWidgetItem *item) { QDesktopServices::openUrl(QUrl(item->text(1))); });
     QStringList headerLabels;
     headerLabels << tr("Title") << tr("Link");
     treeWidget->setHeaderLabels(headerLabels);
@@ -177,14 +178,6 @@ void RSSListing::parseXml()
     }
     if (xml.error() && xml.error() != QXmlStreamReader::PrematureEndOfDocumentError)
         qWarning() << "XML ERROR:" << xml.lineNumber() << ": " << xml.errorString();
-}
-
-/*
-    Open the link in the browser
-*/
-void RSSListing::itemActivated(QTreeWidgetItem *item)
-{
-    QDesktopServices::openUrl(QUrl(item->text(1)));
 }
 
 void RSSListing::error(QNetworkReply::NetworkError)

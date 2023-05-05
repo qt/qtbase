@@ -28,7 +28,6 @@ public slots:
     void finished(QNetworkReply *reply);
     void readyRead();
     void metaDataChanged();
-    void itemActivated(QTreeWidgetItem *item);
     void error(QNetworkReply::NetworkError);
 
 private:
