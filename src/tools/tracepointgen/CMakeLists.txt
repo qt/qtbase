@@ -7,6 +7,7 @@
 
 qt_get_tool_target_name(target_name tracepointgen)
 qt_internal_add_tool(${target_name}
+    TRY_RUN
     CORE_LIBRARY Bootstrap
     INSTALL_DIR "${INSTALL_LIBEXECDIR}"
     TOOLS_TARGET Core
