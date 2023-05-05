@@ -55,7 +55,8 @@ endif()
 
 qt_get_tool_target_name(target_name qmake)
 qt_internal_add_tool(${target_name}
-    TOOLS_TARGET Core # special case
+    TRY_RUN
+    TOOLS_TARGET Core
     USER_FACING
     NO_UNITY_BUILD
     INSTALL_VERSIONED_LINK

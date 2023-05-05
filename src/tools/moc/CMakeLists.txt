@@ -7,6 +7,7 @@
 
 qt_get_tool_target_name(target_name moc)
 qt_internal_add_tool(${target_name}
+    TRY_RUN
     CORE_LIBRARY Bootstrap
     TARGET_DESCRIPTION "Qt Meta Object Compiler"
     INSTALL_DIR "${INSTALL_LIBEXECDIR}"
