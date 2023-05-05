@@ -16,12 +16,11 @@ data to an XML reader in pieces. This allows the user to interrupt
 its operation, and also allows very large data sources to be read.
 */
 
+#include "rsslisting.h"
 
 #include <QtCore>
 #include <QtWidgets>
 #include <QtNetwork>
-
-#include "rsslisting.h"
 
 /*
     Constructs an RSSListing widget with a simple user interface, and sets
