@@ -214,21 +214,24 @@ QT_FOR_EACH_MUTABLE_CORE_GRAPHICS_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TY
 
 QT_END_NAMESPACE
 QT_USE_NAMESPACE
+
+#ifdef QT_DEBUG
 @interface QT_MANGLE_NAMESPACE(QMacAutoReleasePoolTracker) : NSObject
 @end
 
 @implementation QT_MANGLE_NAMESPACE(QMacAutoReleasePoolTracker)
 @end
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAutoReleasePoolTracker);
+#endif // QT_DEBUG
 
 QT_BEGIN_NAMESPACE
 
 QMacAutoReleasePool::QMacAutoReleasePool()
     : pool([[NSAutoreleasePool alloc] init])
 {
+#ifdef QT_DEBUG
     Class trackerClass = [QMacAutoReleasePoolTracker class];
 
-#ifdef QT_DEBUG
     void *poolFrame = nullptr;
     void *frames[2];
     if (backtrace_from_fp(__builtin_frame_address(0), frames, 2))
@@ -258,9 +261,9 @@ QMacAutoReleasePool::QMacAutoReleasePool()
                 free((char*)symbolName);
         }
     }
-#endif
 
     [[trackerClass new] autorelease];
+#endif // QT_DEBUG
 }
 
 QMacAutoReleasePool::~QMacAutoReleasePool()
