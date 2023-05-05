@@ -35,11 +35,14 @@ its operation, and also allows very large data sources to be read.
 RSSListing::RSSListing(const QString &url, QWidget *parent)
     : QWidget(parent), currentReply(0)
 {
+    connect(&manager, &QNetworkAccessManager::finished, this, &RSSListing::finished);
 
     lineEdit = new QLineEdit(this);
     lineEdit->setText(url);
+    connect(lineEdit, &QLineEdit::returnPressed, this, &RSSListing::fetch);
 
     fetchButton = new QPushButton(tr("Fetch"), this);
+    connect(fetchButton, &QPushButton::clicked, this, &RSSListing::fetch);
 
     treeWidget = new QTreeWidget(this);
     connect(treeWidget, &QTreeWidget::itemActivated,
@@ -49,18 +52,11 @@ RSSListing::RSSListing(const QString &url, QWidget *parent)
     treeWidget->setHeaderLabels(headerLabels);
     treeWidget->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    connect(&manager, &QNetworkAccessManager::finished,
-             this, &RSSListing::finished);
-
-    connect(lineEdit, &QLineEdit::returnPressed, this, &RSSListing::fetch);
-    connect(fetchButton, &QPushButton::clicked, this, &RSSListing::fetch);
-
-    QVBoxLayout *layout = new QVBoxLayout(this);
     QHBoxLayout *hboxLayout = new QHBoxLayout;
-
     hboxLayout->addWidget(lineEdit);
     hboxLayout->addWidget(fetchButton);
 
+    QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addLayout(hboxLayout);
     layout->addWidget(treeWidget);
 
