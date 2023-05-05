@@ -30,6 +30,9 @@ namespace QtPrivate {
     Q_CORE_EXPORT QString QStringList_join(const QStringList &list, QLatin1StringView sep);
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, QStringView str,
                                                Qt::CaseSensitivity cs);
+    Q_CORE_EXPORT QStringList QStringList_filter(const QStringList &that,
+                                                 const QStringMatcher &matcher);
+
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QStringView str, Qt::CaseSensitivity cs);
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QLatin1StringView str, Qt::CaseSensitivity cs);
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, QStringView before, QStringView after,
@@ -78,6 +81,8 @@ public:
     inline QString join(QChar sep) const
     { return QtPrivate::QStringList_join(self(), &sep, 1); }
 
+    QStringList filter(const QStringMatcher &matcher) const
+    { return QtPrivate::QStringList_filter(*self(), matcher); }
     inline QStringList filter(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     { return QtPrivate::QStringList_filter(self(), str, cs); }
     inline QStringList &replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs = Qt::CaseSensitive)

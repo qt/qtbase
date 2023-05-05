@@ -237,6 +237,17 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
     \sa contains()
 */
 
+template <typename String>
+static QStringList filter_helper(const QStringList &that, const String &needle, Qt::CaseSensitivity cs)
+{
+    QStringList res;
+    for (const auto &s : that) {
+        if (s.contains(needle, cs))
+            res.append(s);
+    }
+    return res;
+}
+
 /*!
     \fn QStringList QStringList::filter(QStringView str, Qt::CaseSensitivity cs) const
     \overload
@@ -245,9 +256,30 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
 QStringList QtPrivate::QStringList_filter(const QStringList *that, QStringView str,
                                           Qt::CaseSensitivity cs)
 {
-    QStringMatcher matcher(str, cs);
+    return filter_helper(*that, str, cs);
+}
+
+/*!
+    \fn QStringList QStringList::filter(const QStringMatcher &matcher) const
+    \since 6.7
+    \overload
+
+    Returns a list of all the strings matched by \a matcher (i.e. for which
+    \c matcher.indexIn() returns an index >= 0).
+
+    Using a QStringMatcher may be faster when searching in large lists and/or
+    in lists with long strings (the best way to find out is benchmarking).
+
+    For example:
+    \snippet qstringlist/main.cpp 18
+
+    \sa contains()
+*/
+
+QStringList QtPrivate::QStringList_filter(const QStringList &that, const QStringMatcher &matcher)
+{
     QStringList res;
-    for (const auto &s : *that) {
+    for (const auto &s : that) {
         if (matcher.indexIn(s) != -1)
             res.append(s);
     }

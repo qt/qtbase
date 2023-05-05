@@ -161,6 +161,7 @@ void tst_QStringList::filter()
         QCOMPARE(list.filter(u"Bill"_s), expected);
         QCOMPARE(list.filter(u"Bill"), expected);
         QCOMPARE(list.filter(QRegularExpression(u"[i]ll"_s)), expected);
+        QCOMPARE(list.filter(QStringMatcher(u"Bill")), expected);
     }
 
     { // CaseInsensitive
@@ -169,6 +170,7 @@ void tst_QStringList::filter()
         QCOMPARE(list.filter(u"bill", Qt::CaseInsensitive), expected);
         QCOMPARE(list.filter(QRegularExpression(u"[i]ll"_s, QRegularExpression::CaseInsensitiveOption)),
                              expected);
+        QCOMPARE(list.filter(QStringMatcher(u"Bill", Qt::CaseInsensitive)), expected);
     }
 }
 

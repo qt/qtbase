@@ -93,6 +93,13 @@ Widget::Widget(QWidget *parent)
     // list == ["Bill Clinton", "Bill Murray"]
 //! [17]
 
+    {
+//! [18]
+    QStringList veryLongList;
+    QStringMatcher matcher(u"Straße", Qt::CaseInsensitive);
+    QStringList filtered = veryLongList.filter(matcher);
+//! [18]
+    }
 }
 
 int main(int argc, char *argv[])
