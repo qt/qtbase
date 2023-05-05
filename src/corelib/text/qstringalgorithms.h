@@ -11,11 +11,15 @@
 #pragma qt_class(QStringAlgorithms)
 #endif
 
+#include <algorithm>        // std::find
+#include <string>           // std::char_traits
+
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
 
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION qsizetype qustrlen(const char16_t *str) noexcept;
+[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION qsizetype qustrnlen(const char16_t *str, qsizetype maxlen) noexcept;
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION const char16_t *qustrchr(QStringView str, char16_t ch) noexcept;
 
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QStringView   lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
@@ -114,7 +118,57 @@ namespace QtPrivate {
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isLatin1(QStringView   s) noexcept;
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isValidUtf16(QStringView s) noexcept;
 
-} // namespace QtPRivate
+template <typename Char, size_t N> [[nodiscard]] constexpr Q_ALWAYS_INLINE
+std::enable_if_t<sizeof(Char) == sizeof(char16_t), qsizetype>
+lengthHelperContainer(const Char (&str)[N])
+{
+    // The following values were empirically determined to detect the threshold
+    // at which the compiler gives up pre-calculating the std::find() below and
+    // instead inserts code to be executed at runtime.
+    constexpr size_t RuntimeThreshold =
+#if defined(Q_CC_CLANG) // tested through Clang 16.0.0
+            100
+#elif defined(Q_CC_GNU) // tested through GCC 13.1 at -O3 compilation level
+            __cplusplus >= 202002L ? 39 : 17
+#else
+            0
+#endif
+            ;
+    if constexpr (N == 1) {
+        return str[0] == Char(0) ? 0 : 1;
+    } else if constexpr (N > RuntimeThreshold) {
+#ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
+        if (!qIsConstantEvaluated())
+            return QtPrivate::qustrnlen(reinterpret_cast<const char16_t *>(str), N);
+#endif
+    }
+
+    // libstdc++'s std::find_if yields a higher threshold than
+    // std::char_traits::find
+
+#if __cplusplus >= 202002 && defined(__cpp_lib_constexpr_algorithms)
+    const auto it = std::find(str, str + N, Char(0));
+    return it - str;
+#else
+    const auto it = std::char_traits<Char>::find(str, N, Char(0));
+    return it ? std::distance(str, it) : ptrdiff_t(N);
+#endif
+}
+
+template <typename Char, size_t N> [[nodiscard]] constexpr inline
+std::enable_if_t<sizeof(Char) == 1, qsizetype> lengthHelperContainer(const Char (&str)[N])
+{
+    // std::char_traits::find will call memchr or __builtin_memchr for us
+    const auto it = std::char_traits<Char>::find(str, N, Char(0));
+    return it ? std::distance(str, it) : ptrdiff_t(N);
+}
+
+template <typename Container>
+constexpr qsizetype lengthHelperContainer(const Container &c) noexcept
+{
+    return qsizetype(std::size(c));
+}
+} // namespace QtPrivate
 
 QT_END_NAMESPACE
 

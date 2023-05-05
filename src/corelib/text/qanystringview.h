@@ -147,20 +147,6 @@ private:
             return qsizetype(strlen(reinterpret_cast<const char*>(str)));
     }
 
-    template <typename Container>
-    static constexpr qsizetype lengthHelperContainer(const Container &c) noexcept
-    {
-        return qsizetype(std::size(c));
-    }
-
-    template <typename Char, size_t N>
-    static constexpr qsizetype lengthHelperContainer(const Char (&str)[N]) noexcept
-    {
-        const auto it = std::char_traits<Char>::find(str, N, Char(0));
-        const auto end = it ? it : std::next(str, N);
-        return qsizetype(std::distance(str, end));
-    }
-
     static QChar toQChar(char ch) noexcept { return toQChar(QLatin1Char{ch}); } // we don't handle UTF-8 multibytes
     static QChar toQChar(QChar ch) noexcept { return ch; }
     static QChar toQChar(QLatin1Char ch) noexcept { return ch; }
@@ -202,8 +188,8 @@ public:
     inline constexpr QAnyStringView(QLatin1StringView str) noexcept;
 
     template <typename Container, if_compatible_container<Container> = true>
-    constexpr QAnyStringView(const Container &c) noexcept
-        : QAnyStringView(std::data(c), lengthHelperContainer(c)) {}
+    constexpr Q_ALWAYS_INLINE QAnyStringView(const Container &c) noexcept
+        : QAnyStringView(std::data(c), QtPrivate::lengthHelperContainer(c)) {}
 
     template <typename Container, if_convertible_to<QString, Container> = true>
     constexpr QAnyStringView(Container &&c, QtPrivate::wrapped_t<Container, QString> &&capacity = {})
@@ -227,11 +213,11 @@ public:
         : QAnyStringView(capacity = QChar::fromUcs4(c)) {}
 
     constexpr QAnyStringView(QStringView v) noexcept
-        : QAnyStringView(std::data(v), lengthHelperContainer(v)) {}
+        : QAnyStringView(std::data(v), QtPrivate::lengthHelperContainer(v)) {}
 
     template <bool UseChar8T>
     constexpr QAnyStringView(QBasicUtf8StringView<UseChar8T> v) noexcept
-        : QAnyStringView(std::data(v), lengthHelperContainer(v)) {}
+        : QAnyStringView(std::data(v), QtPrivate::lengthHelperContainer(v)) {}
 
     template <typename Char, size_t Size, if_compatible_char<Char> = true>
     [[nodiscard]] constexpr static QAnyStringView fromArray(const Char (&string)[Size]) noexcept

@@ -698,6 +698,11 @@ qsizetype QtPrivate::qustrlen(const char16_t *str) noexcept
     return result;
 }
 
+qsizetype QtPrivate::qustrnlen(const char16_t *str, qsizetype maxlen) noexcept
+{
+    return qustrchr({ str, maxlen }, u'\0') - str;
+}
+
 /*!
  * \internal
  *

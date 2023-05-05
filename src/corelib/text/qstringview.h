@@ -116,20 +116,6 @@ private:
         return QtPrivate::qustrlen(reinterpret_cast<const char16_t *>(str));
     }
 
-    template <typename Container>
-    static constexpr qsizetype lengthHelperContainer(const Container &c) noexcept
-    {
-        return qsizetype(std::size(c));
-    }
-
-    template <typename Char, size_t N>
-    static constexpr qsizetype lengthHelperContainer(const Char (&str)[N]) noexcept
-    {
-        const auto it = std::char_traits<Char>::find(str, N, Char(0));
-        const auto end = it ? it : std::end(str);
-        return qsizetype(std::distance(str, end));
-    }
-
     template <typename Char>
     static const storage_type *castHelper(const Char *str) noexcept
     { return reinterpret_cast<const storage_type*>(str); }
@@ -178,8 +164,8 @@ public:
 #endif
 
     template <typename Container, if_compatible_container<Container> = true>
-    constexpr QStringView(const Container &c) noexcept
-        : QStringView(std::data(c), lengthHelperContainer(c)) {}
+    constexpr Q_ALWAYS_INLINE QStringView(const Container &c) noexcept
+        : QStringView(std::data(c), QtPrivate::lengthHelperContainer(c)) {}
 
     template <typename Char, size_t Size, if_compatible_char<Char> = true>
     [[nodiscard]] constexpr static QStringView fromArray(const Char (&string)[Size]) noexcept
