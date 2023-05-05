@@ -993,6 +993,26 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
                 IN_CACHE)
     endif()
 
+    # Legacy Android toolchain file adds the `-g` flag to CMAKE_<LANG>_FLAGS, as a
+    # result, our release build ends up containing debug symbols. To avoid that, we
+    # remove the flag from CMAKE_<LANGL>_FLAGS and add
+    # it to CMAKE_<LANG>_FLAGS_DEBUG.
+    #
+    # Note:
+    #   The new `android.toolchain.cmake` file does not have this problem, but
+    #   it has other issues, eg., https://github.com/android/ndk/issues/1693, so we
+    #   cannot force it. While we do load the new toolchain, it automatically falls
+    #   back to the legacy toolchain, ie., `android-legacy.toolchain.cmake` which
+    #   has the problem described above.
+    #
+    # Todo:
+    #   When the new toolchain is fixed, and it doesn't fall back to the legacy
+    #   anymore by default, then we should be able to remove this workaround.
+    if(ANDROID AND ANDROID_COMPILER_FLAGS MATCHES "(^| )-g")
+        qt_internal_remove_compiler_flags("-g")
+        qt_internal_add_compiler_flags(FLAGS "-g" CONFIGS DEBUG RELWITHDEBINFO)
+    endif()
+
     # Update all relevant flags in the calling scope
     foreach(lang ${enabled_languages})
         set(flag_var_name "CMAKE_${lang}_FLAGS")
