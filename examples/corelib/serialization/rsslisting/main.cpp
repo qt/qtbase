@@ -20,7 +20,7 @@ Provides the main function for the RSS news reader example.
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    RSSListing *rsslisting = new RSSListing;
-    rsslisting->show();
+    RSSListing rsslisting;
+    rsslisting.show();
     return app.exec();
 }
