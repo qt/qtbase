@@ -363,13 +363,25 @@ static QVariant macCurrencySymbol(QLocale::CurrencySymbolFormat format)
 
 static QVariant macZeroDigit()
 {
-    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
-    QCFType<CFNumberFormatterRef> numberFormatter =
-            CFNumberFormatterCreate(nullptr, locale, kCFNumberFormatterNoStyle);
-    static const int zeroDigit = 0;
-    QCFType<CFStringRef> value = CFNumberFormatterCreateStringWithValue(nullptr, numberFormatter,
-                                                                        kCFNumberIntType, &zeroDigit);
-    return QString::fromCFString(value);
+    static QString cachedZeroDigit;
+
+    if (cachedZeroDigit.isNull()) {
+        QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+        QCFType<CFNumberFormatterRef> numberFormatter =
+                CFNumberFormatterCreate(nullptr, locale, kCFNumberFormatterNoStyle);
+        const int zeroDigit = 0;
+        QCFType<CFStringRef> value
+            = CFNumberFormatterCreateStringWithValue(nullptr, numberFormatter,
+                                                     kCFNumberIntType, &zeroDigit);
+        cachedZeroDigit = QString::fromCFString(value);
+    }
+
+    static QMacNotificationObserver localeChangeObserver = QMacNotificationObserver(
+        nil, NSCurrentLocaleDidChangeNotification, [&] {
+            cachedZeroDigit = QString();
+    });
+
+    return cachedZeroDigit;
 }
 
 #ifndef QT_NO_SYSTEMLOCALE
