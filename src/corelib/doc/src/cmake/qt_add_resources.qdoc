@@ -48,8 +48,6 @@ When passing a target as first argument, the function creates a resource with
 the name \c{RESOURCE_NAME}, containing the specified \c{FILES}. The resource is
 automatically linked into \c{TARGET}.
 
-For embedding bigger resources, see \l qt_add_big_resources.
-
 See \l{The Qt Resource System} for a general description of Qt resources.
 
 \section1 Arguments of the target-based variant
@@ -107,4 +105,6 @@ resources linked into the final target.
 
 This especially affects static builds. There, the same resource name in
 different static libraries conflict in the consuming target.
+
+\sa {qt6_add_big_resources}{qt_add_big_resources()}
 */
