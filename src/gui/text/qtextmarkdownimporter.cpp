@@ -138,7 +138,9 @@ void QTextMarkdownImporter::import(QTextDocument *doc, const QString &markdown)
         m_monoFont.setPixelSize(doc->defaultFont().pixelSize());
     qCDebug(lcMD) << "default font" << doc->defaultFont() << "mono font" << m_monoFont;
     QByteArray md = markdown.toUtf8();
+    m_cursor->beginEditBlock();
     md_parse(md.constData(), MD_SIZE(md.size()), &callbacks, this);
+    m_cursor->endEditBlock();
     delete m_cursor;
     m_cursor = nullptr;
 }
