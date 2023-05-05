@@ -7,9 +7,8 @@ main.cpp
 Provides the main function for the RSS news reader example.
 */
 
-#include <QtWidgets>
-
 #include "rsslisting.h"
+#include <QtWidgets>
 
 /*!
     Create an application and a main widget. Open the main widget for

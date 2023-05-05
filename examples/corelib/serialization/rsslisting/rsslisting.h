@@ -8,14 +8,13 @@
 #include <QNetworkReply>
 #include <QWidget>
 #include <QXmlStreamReader>
-#include <QUrl>
-
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
+class QPushButton;
 class QTreeWidget;
 class QTreeWidgetItem;
-class QPushButton;
+class QUrl;
 QT_END_NAMESPACE
 
 class RSSListing : public QWidget
