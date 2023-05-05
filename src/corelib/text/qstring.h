@@ -1177,12 +1177,6 @@ QT_ASCII_CAST_WARN inline bool QLatin1StringView::operator<=(const QByteArray &s
 QT_ASCII_CAST_WARN inline bool QLatin1StringView::operator>=(const QByteArray &s) const
 { return QString::fromUtf8(s) <= *this; }
 
-inline int QLatin1StringView::compare_helper(const QLatin1StringView &s1, const char *s2)
-{
-    return QString::compare(s1, QString::fromUtf8(s2));
-}
-
-
 QT_ASCII_CAST_WARN inline bool QString::operator==(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), s.size()) == 0; }
 QT_ASCII_CAST_WARN inline bool QString::operator!=(const QByteArray &s) const

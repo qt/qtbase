@@ -321,9 +321,6 @@ public:
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 private:
-#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-    static inline int compare_helper(const QLatin1StringView &s1, const char *s2);
-#endif
     Q_ALWAYS_INLINE constexpr void verify(qsizetype pos, qsizetype n = 0) const
     {
         Q_ASSERT(pos >= 0);
@@ -331,6 +328,9 @@ private:
         Q_ASSERT(n >= 0);
         Q_ASSERT(n <= size() - pos);
     }
+    static int compare_helper(const QLatin1StringView &s1, const char *s2) noexcept
+    { return compare_helper(s1, s2, qstrlen(s2)); }
+    Q_CORE_EXPORT static int compare_helper(const QLatin1StringView &s1, const char *s2, qsizetype len) noexcept;
     Q_CORE_EXPORT static int compare_helper(const QChar *data1, qsizetype length1,
                                             QLatin1StringView s2,
                                             Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
