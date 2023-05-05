@@ -8373,7 +8373,7 @@ public:
     void callbackInt(int) {}
     int returnInt() const { return 0; }
 
-    static void staticCallback0() {}
+    static int staticCallback0() { return 0; }
     static void staticCallback1(const QString &) {}
 
     using Prototype0 = int(*)();
@@ -8488,6 +8488,11 @@ void tst_QObject::asyncCallbackHelper()
 
     static_assert(compiles<AsyncCaller::Prototype1>(freeFunctionVariant));
 
+    std::function<int()> stdFunction0(&AsyncCaller::staticCallback0);
+    std::function<void(QString)> stdFunction1(&AsyncCaller::staticCallback1);
+    static_assert(compiles<AsyncCaller::Prototype0>(stdFunction0));
+    static_assert(compiles<AsyncCaller::Prototype1>(stdFunction1));
+
     AsyncCaller caller;
     // with context
     QVERIFY(caller.callMe0(&caller, &AsyncCaller::callback0));
@@ -8496,23 +8501,27 @@ void tst_QObject::asyncCallbackHelper()
     QVERIFY(caller.callMe0(&caller, lambda0));
     QVERIFY(caller.callMe0(&caller, freeFunction0));
     QVERIFY(caller.callMe0(&caller, std::move(moveOnlyLambda)));
+    QVERIFY(caller.callMe0(&caller, stdFunction0));
 
     QVERIFY(caller.callMe1(&caller, &AsyncCaller::callback1));
     QVERIFY(caller.callMe1(&caller, &AsyncCaller::staticCallback1));
     QVERIFY(caller.callMe1(&caller, lambda1));
     QVERIFY(caller.callMe1(&caller, freeFunction1));
     QVERIFY(caller.callMe1(&caller, constLambda));
+    QVERIFY(caller.callMe1(&caller, stdFunction1));
 
     // without context
     QVERIFY(caller.callMe0(&AsyncCaller::staticCallback0));
     QVERIFY(caller.callMe0(lambda0));
     QVERIFY(caller.callMe0(freeFunction0));
+    QVERIFY(caller.callMe0(stdFunction0));
 
     QVERIFY(caller.callMe1(&AsyncCaller::staticCallback1));
     QVERIFY(caller.callMe1(lambda1));
     QVERIFY(caller.callMe1(constLambda));
     QVERIFY(caller.callMe1(std::move(moveOnlyLambda1)));
     QVERIFY(caller.callMe1(freeFunction1));
+    QVERIFY(caller.callMe1(stdFunction1));
 
     static const char *expectedPayload = "Hello World!";
     {
