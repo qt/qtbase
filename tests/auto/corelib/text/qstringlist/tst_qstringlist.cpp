@@ -225,6 +225,19 @@ void tst_QStringList::replaceInStrings()
     list13.replaceInStrings( QString("a"), QStringView(QString("o")) );
     list14 << "olpho" << "beto" << "gommo" << "epsilon";
     QCOMPARE( list11, list12 );
+
+    QStringList list{"alpha", "beta", "gamma"};
+    QStringList copy = list;
+    QVERIFY(!copy.isDetached());
+
+    // No matches, no detach
+    copy.replaceInStrings("z", "y");
+    QVERIFY(!copy.isDetached());
+    QCOMPARE(copy, list);
+
+    copy.replaceInStrings("a", "y");
+    QVERIFY(copy.isDetached());
+    QCOMPARE(copy, (QStringList{"ylphy", "bety", "gymmy"}));
 }
 
 void tst_QStringList::contains()

@@ -363,7 +363,18 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, QStringView before,
                                              QStringView after, Qt::CaseSensitivity cs)
 {
-    for (qsizetype i = 0; i < that->size(); ++i)
+    // Before potentially detaching "that" list, check if any string contains "before"
+    qsizetype i = -1;
+    for (qsizetype j = 0; j < that->size(); ++j) {
+        if (that->at(j).contains(before, cs)) {
+            i = j;
+            break;
+        }
+    }
+    if (i == -1)
+        return;
+
+    for (; i < that->size(); ++i)
         (*that)[i].replace(before.data(), before.size(), after.data(), after.size(), cs);
 }
 
@@ -391,9 +402,21 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, QStringView befo
     \snippet qstringlist/main.cpp 5
     \snippet qstringlist/main.cpp 17
 */
-void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularExpression &re, const QString &after)
+void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularExpression &re,
+                                             const QString &after)
 {
-    for (qsizetype i = 0; i < that->size(); ++i)
+    // Before potentially detaching "that" list, check if any string contains "before"
+    qsizetype i = -1;
+    for (qsizetype j = 0; j < that->size(); ++j) {
+        if (that->at(j).contains(re)) {
+            i = j;
+            break;
+        }
+    }
+    if (i == -1)
+        return;
+
+    for (; i < that->size(); ++i)
         (*that)[i].replace(re, after);
 }
 #endif // QT_CONFIG(regularexpression)
