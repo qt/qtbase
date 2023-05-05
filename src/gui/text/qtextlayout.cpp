@@ -2164,9 +2164,12 @@ found:
         eng->maxWidth = qMax(eng->maxWidth, line.textWidth);
     } else {
         eng->minWidth = qMax(eng->minWidth, lbh.minw);
-        eng->layoutData->currentMaxWidth += line.textWidth;
-        if (!manuallyWrapped)
-            eng->layoutData->currentMaxWidth += lbh.spaceData.textWidth;
+        if (qAddOverflow(eng->layoutData->currentMaxWidth, line.textWidth, &eng->layoutData->currentMaxWidth))
+            eng->layoutData->currentMaxWidth = QFIXED_MAX;
+        if (!manuallyWrapped) {
+            if (qAddOverflow(eng->layoutData->currentMaxWidth, lbh.spaceData.textWidth, &eng->layoutData->currentMaxWidth))
+                eng->layoutData->currentMaxWidth = QFIXED_MAX;
+        }
         eng->maxWidth = qMax(eng->maxWidth, eng->layoutData->currentMaxWidth);
         if (manuallyWrapped)
             eng->layoutData->currentMaxWidth = 0;
