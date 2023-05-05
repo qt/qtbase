@@ -17,6 +17,7 @@ class QTreeWidgetItem;
 class QUrl;
 QT_END_NAMESPACE
 
+//! [0]
 class RSSListing : public QWidget
 {
     Q_OBJECT
@@ -33,17 +34,21 @@ private:
     void parseXml();
     void get(const QUrl &url);
 
+    // Parser state:
     QXmlStreamReader xml;
     QString currentTag;
     QString linkString;
     QString titleString;
 
+    // Network state:
     QNetworkAccessManager manager;
     QNetworkReply *currentReply;
 
+    // UI elements:
     QLineEdit *lineEdit;
     QTreeWidget *treeWidget;
     QPushButton *fetchButton;
 };
+//! [0]
 
 #endif
