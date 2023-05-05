@@ -551,12 +551,20 @@ endfunction()
 
 # Removes specified flags from CMAKE_<LANGUAGES>_FLAGS[_CONFIGS] variables
 #
-# IN_CACHE enables flags removal from CACHE
-# CONFIGS list of configurations that need to clear flags. Clears all configs by default if not
-# specified.
-# LANGUAGES list of LANGUAGES that need clear flags. Clears all languages by default if not
-# specified.
-# REGEX enables the flag processing as a regular expression.
+# Option Arguments:
+#   IN_CACHE
+#       Enables flags removal from CACHE
+#   REGEX
+#       Enables the flag processing as a regular expression.
+#
+# Multi-value Arguments:
+#   CONFIGS
+#       List of configurations that need to clear flags. Clears all configs by default if not
+#       specified.
+#
+#   LANGUAGES
+#       List of LANGUAGES that need clear flags. Clears all languages by default if not
+#       specified.
 function(qt_internal_remove_compiler_flags flags)
     cmake_parse_arguments(PARSE_ARGV 1 arg
         "IN_CACHE;REGEX"
@@ -579,8 +587,7 @@ function(qt_internal_remove_compiler_flags flags)
     if(arg_CONFIGS)
         set(configs "${arg_CONFIGS}")
     else()
-        message(FATAL_ERROR
-                "You must specify at least one configuration for which to remove the flags.")
+        qt_internal_get_configs_for_flag_manipulation(configs)
     endif()
 
     if(arg_REGEX)
