@@ -54,10 +54,7 @@
 #if defined(__cplusplus)
 QT_BEGIN_NAMESPACE
 
-#if !defined(Q_CC_MSVC) || defined(Q_CC_CLANG)
-Q_NORETURN
-#endif
-Q_CORE_EXPORT void qAbort();
+Q_NORETURN Q_CORE_EXPORT void qAbort();
 
 QT_END_NAMESPACE
 
