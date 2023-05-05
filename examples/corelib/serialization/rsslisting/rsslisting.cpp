@@ -76,15 +76,17 @@ RSSListing::RSSListing(QWidget *parent)
 */
 void RSSListing::get(const QUrl &url)
 {
-    QNetworkRequest request(url);
     if (currentReply) {
         currentReply->disconnect(this);
         currentReply->deleteLater();
     }
-    currentReply = manager.get(request);
-    connect(currentReply, &QNetworkReply::readyRead, this, &RSSListing::readyRead);
-    connect(currentReply, &QNetworkReply::metaDataChanged, this, &RSSListing::metaDataChanged);
-    connect(currentReply, &QNetworkReply::errorOccurred, this, &RSSListing::error);
+    currentReply = url.isValid() ? manager.get(QNetworkRequest(url)) : nullptr;
+    if (currentReply) {
+        connect(currentReply, &QNetworkReply::readyRead, this, &RSSListing::readyRead);
+        connect(currentReply, &QNetworkReply::metaDataChanged, this, &RSSListing::metaDataChanged);
+        connect(currentReply, &QNetworkReply::errorOccurred, this, &RSSListing::error);
+    }
+    xml.setDevice(currentReply); // Equivalent to clear() if currentReply is null.
 }
 
 /*
@@ -107,10 +109,7 @@ void RSSListing::fetch()
     fetchButton->setEnabled(false);
     treeWidget->clear();
 
-    xml.clear();
-
-    QUrl url(lineEdit->text());
-    get(url);
+    get(QUrl(lineEdit->text()));
 }
 
 void RSSListing::metaDataChanged()
@@ -131,11 +130,8 @@ void RSSListing::metaDataChanged()
 void RSSListing::readyRead()
 {
     int statusCode = currentReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    if (statusCode >= 200 && statusCode < 300) {
-        QByteArray data = currentReply->readAll();
-        xml.addData(data);
+    if (statusCode >= 200 && statusCode < 300)
         parseXml();
-    }
 }
 
 /*
