@@ -327,8 +327,8 @@ quoted-pair    = "\" CHAR
 bool QHstsHeaderParser::parse(const QList<QPair<QByteArray, QByteArray>> &headers)
 {
     for (const auto &h : headers) {
-        // We use '==' since header name was already 'trimmed' for us:
-        if (h.first == "Strict-Transport-Security") {
+        // We compare directly because header name was already 'trimmed' for us:
+        if (h.first.compare("Strict-Transport-Security", Qt::CaseInsensitive) == 0) {
             header = h.second;
             // RFC6797, 8.1:
             //
