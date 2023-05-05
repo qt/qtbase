@@ -101,18 +101,13 @@ private:
     static constexpr bool isAsciiOnlyCharsAtCompileTime(Char *str, qsizetype sz) noexcept
     {
         // do not perform check if not at compile time
-#if !(defined(__cpp_lib_is_constant_evaluated) || defined(Q_CC_GNU))
+#if !defined(__cpp_lib_is_constant_evaluated)
         Q_UNUSED(str);
         Q_UNUSED(sz);
         return false;
 #else
-#  if defined(__cpp_lib_is_constant_evaluated)
         if (!std::is_constant_evaluated())
             return false;
-#  elif defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
-        if (!str || !__builtin_constant_p(*str))
-            return false;
-#  endif
         if constexpr (sizeof(Char) != sizeof(char)) {
             Q_UNUSED(str);
             Q_UNUSED(sz);
@@ -140,15 +135,11 @@ private:
     }
 
     template <typename Char>
-    static qsizetype lengthHelperPointer(const Char *str) noexcept
+    static constexpr qsizetype lengthHelperPointer(const Char *str) noexcept
     {
-#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
-        if (__builtin_constant_p(*str)) {
-            qsizetype result = 0;
-            while (*str++ != u'\0')
-                ++result;
-            return result;
-        }
+#ifdef __cpp_lib_is_constant_evaluated
+        if (std::is_constant_evaluated())
+            return qsizetype(std::char_traits<Char>::length(str));
 #endif
         if constexpr (sizeof(Char) == sizeof(char16_t))
             return QtPrivate::qustrlen(reinterpret_cast<const char16_t*>(str));

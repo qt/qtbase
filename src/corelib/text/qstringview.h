@@ -108,9 +108,6 @@ private:
 #if defined(__cpp_lib_is_constant_evaluated)
         if (std::is_constant_evaluated())
             return std::char_traits<Char>::length(str);
-#elif defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
-        if (__builtin_constant_p(*str))
-            return std::char_traits<Char>::length(str);
 #endif
         return QtPrivate::qustrlen(reinterpret_cast<const char16_t *>(str));
     }
