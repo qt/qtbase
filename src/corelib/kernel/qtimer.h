@@ -73,7 +73,7 @@ public:
     {
         using Prototype = void(*)();
         singleShotImpl(interval, timerType, receiver,
-                       QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(slot)));
+                       QtPrivate::makeCallableObject<Prototype>(std::forward<Functor>(slot)));
     }
     // singleShot without context
     template <typename Duration, typename Functor>

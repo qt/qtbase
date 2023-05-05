@@ -8387,7 +8387,7 @@ public:
             slotObject = nullptr;
         }
         QtPrivate::AssertCompatibleFunctions<Prototype0, Functor>();
-        slotObject = QtPrivate::makeSlotObject<Prototype0>(std::forward<Functor>(func));
+        slotObject = QtPrivate::makeCallableObject<Prototype0>(std::forward<Functor>(func));
         return true;
     }
 
@@ -8405,7 +8405,7 @@ public:
             slotObject = nullptr;
         }
         QtPrivate::AssertCompatibleFunctions<Prototype1, Functor>();
-        slotObject = QtPrivate::makeSlotObject<Prototype1>(std::forward<Functor>(func));
+        slotObject = QtPrivate::makeCallableObject<Prototype1>(std::forward<Functor>(func));
         return true;
     }
 
@@ -8544,7 +8544,7 @@ void tst_QObject::asyncCallbackHelper()
     QCOMPARE(result, QLatin1String(expectedPayload).length());
 
     // mutable lambda; same behavior as mutableFunctor - we copy the functor
-    // in the QFunctorSlotObject, so the original is not modified
+    // in the QCallableObject, so the original is not modified
     int status = 0;
     auto mutableLambda1 = [&status, calls = 0]() mutable { status = ++calls; };
 

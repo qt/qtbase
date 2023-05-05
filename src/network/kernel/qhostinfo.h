@@ -68,7 +68,7 @@ public:
         using Prototype = void(*)(QHostInfo);
         QtPrivate::AssertCompatibleFunctions<Prototype, Functor>();
         return lookupHostImpl(name, receiver,
-                              QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(func)),
+                              QtPrivate::makeCallableObject<Prototype>(std::forward<Functor>(func)),
                               nullptr);
     }
 #endif // Q_QDOC

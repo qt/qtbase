@@ -230,7 +230,7 @@ public:
             pSlot = const_cast<void **>(reinterpret_cast<void *const *>(&slot));
 
         return connectImpl(sender, reinterpret_cast<void **>(&signal), context, pSlot,
-                           QtPrivate::makeSlotObject<Func1>(std::forward<Func2>(slot)),
+                           QtPrivate::makeCallableObject<Func1>(std::forward<Func2>(slot)),
                            type, types, &SignalType::Object::staticMetaObject);
     }
 

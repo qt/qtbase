@@ -128,7 +128,7 @@ public:
         using Prototype = void(*)(QPermission);
         QtPrivate::AssertCompatibleFunctions<Prototype, Functor>();
         requestPermission(permission,
-                          QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(func)),
+                          QtPrivate::makeCallableObject<Prototype>(std::forward<Functor>(func)),
                           receiver);
     }
 # endif // Q_QDOC

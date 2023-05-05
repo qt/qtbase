@@ -47,10 +47,11 @@ namespace QtPrivate {
     template <typename L> struct List_Left<L, 0> { typedef List<> Value; };
 
     /*
-       trick to set the return value of a slot that works even if the signal or the slot returns void
-       to be used like     function(), ApplyReturnValue<ReturnType>(&return_value)
+       Trick to set the return value of a slot that works even if the signal or the slot returns void
+       to be used like
+            function(), ApplyReturnValue<ReturnType>(&return_value)
        if function() returns a value, the operator,(T, ApplyReturnValue<ReturnType>) is called, but if it
-       returns void, the builtin one is used without an error.
+       returns void, the built-in one is used without an error.
     */
     template <typename T>
     struct ApplyReturnValue {
@@ -80,7 +81,7 @@ namespace QtPrivate {
             and args is the array of pointer to arguments, as used in qt_metacall
 
        The Functor<Func,N> struct is the helper to call a functor of N argument.
-       its call function is the same as the FunctionPointer::call function.
+       Its call function is the same as the FunctionPointer::call function.
      */
     template<class T> using InvokeGenSeq = typename T::Type;
 
@@ -398,7 +399,7 @@ namespace QtPrivate {
     // internal base class (interface) containing functions required to call a slot managed by a pointer to function.
     class QSlotObjectBase {
         QAtomicInt m_ref;
-        // don't use virtual functions here; we don't want the
+        // Don't use virtual functions here; we don't want the
         // compiler to create tons of per-polymorphic-class stuff that
         // we'll never need. We just use one function pointer, and the
         // Operations enum below to distinguish requests
@@ -422,7 +423,7 @@ namespace QtPrivate {
         { if (!m_ref.deref()) m_impl(Destroy, this, nullptr, nullptr, nullptr); }
 
         inline bool compare(void **a) { bool ret = false; m_impl(Compare, this, nullptr, a, &ret); return ret; }
-        inline void call(QObject *r, void **a)  { m_impl(Call,    this, r, a, nullptr); }
+        inline void call(QObject *r, void **a)  { m_impl(Call, this, r, a, nullptr); }
         bool isImpl(ImplFn f) const { return m_impl == f; }
     protected:
         ~QSlotObjectBase() {}
@@ -430,9 +431,9 @@ namespace QtPrivate {
         Q_DISABLE_COPY_MOVE(QSlotObjectBase)
     };
 
-    // implementation of QSlotObjectBase for which the slot is a functor (or lambda)
+    // Implementation of QSlotObjectBase for which the slot is a callable (function, PMF, functor, or lambda).
     // Args and R are the List of arguments and the return type of the signal to which the slot is connected.
-    template<typename Func, typename Args, typename R> class QFunctorSlotObject : public QSlotObjectBase
+    template<typename Func, typename Args, typename R> class QCallableObject : public QSlotObjectBase
     {
         using FunctorValue = std::decay_t<Func>;
         using FuncType = std::conditional_t<std::is_member_function_pointer_v<FunctorValue>,
@@ -440,9 +441,9 @@ namespace QtPrivate {
             QtPrivate::Functor<FunctorValue, Args::size>
         >;
         FunctorValue function;
-        static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
+        Q_DECL_HIDDEN static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
         {
-            const auto that = static_cast<QFunctorSlotObject*>(this_);
+            const auto that = static_cast<QCallableObject*>(this_);
             switch (which) {
             case Destroy:
                 delete that;
@@ -465,8 +466,8 @@ namespace QtPrivate {
             }
         }
     public:
-        explicit QFunctorSlotObject(Func &&f) : QSlotObjectBase(&impl), function(std::move(f)) {}
-        explicit QFunctorSlotObject(const Func &f) : QSlotObjectBase(&impl), function(f) {}
+        explicit QCallableObject(Func &&f) : QSlotObjectBase(&impl), function(std::move(f)) {}
+        explicit QCallableObject(const Func &f) : QSlotObjectBase(&impl), function(f) {}
     };
 
     // Helper to detect the context object type based on the functor type:
@@ -508,7 +509,7 @@ namespace QtPrivate {
     template <typename Prototype, typename Functor>
     static constexpr std::enable_if_t<QtPrivate::countMatchingArguments<Prototype, Functor>() >= 0,
         QtPrivate::QSlotObjectBase *>
-    makeSlotObject(Functor &&func)
+    makeCallableObject(Functor &&func)
     {
         using ExpectedSignature = QtPrivate::FunctionPointer<Prototype>;
         using ExpectedReturnType = typename ExpectedSignature::ReturnType;
@@ -521,14 +522,14 @@ namespace QtPrivate {
         static_assert(int(ActualSignature::ArgumentCount) <= int(ExpectedSignature::ArgumentCount),
             "Functor requires more arguments than what can be provided.");
 
-        return new QtPrivate::QFunctorSlotObject<std::decay_t<Functor>, ActualArguments, ExpectedReturnType>(std::forward<Functor>(func));
+        return new QtPrivate::QCallableObject<std::decay_t<Functor>, ActualArguments, ExpectedReturnType>(std::forward<Functor>(func));
     }
 
     template<typename Prototype, typename Functor, typename = void>
     struct AreFunctionsCompatible : std::false_type {};
     template<typename Prototype, typename Functor>
     struct AreFunctionsCompatible<Prototype, Functor, std::enable_if_t<
-        std::is_same_v<decltype(QtPrivate::makeSlotObject<Prototype>(std::forward<Functor>(std::declval<Functor>()))),
+        std::is_same_v<decltype(QtPrivate::makeCallableObject<Prototype>(std::forward<Functor>(std::declval<Functor>()))),
         QtPrivate::QSlotObjectBase *>>
     > : std::true_type {};
 

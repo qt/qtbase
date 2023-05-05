@@ -420,7 +420,7 @@ struct Q_CORE_EXPORT QMetaObject
                  typename QtPrivate::Callable<Func>::ReturnType *ret = nullptr)
     {
         using Prototype = typename QtPrivate::Callable<Func>::Function;
-        return invokeMethodImpl(object, QtPrivate::makeSlotObject<Prototype>(std::forward<Func>(function)), type, ret);
+        return invokeMethodImpl(object, QtPrivate::makeCallableObject<Prototype>(std::forward<Func>(function)), type, ret);
     }
 
     template <typename Func>
