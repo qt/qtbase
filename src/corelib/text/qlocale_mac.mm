@@ -154,14 +154,26 @@ static QVariant macDayName(int day, QSystemLocale::QueryType type)
 
 static QString macZeroDigit()
 {
-    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
-    QCFType<CFNumberFormatterRef> numberFormatter =
-            CFNumberFormatterCreate(nullptr, locale, kCFNumberFormatterNoStyle);
-    const int zeroDigit = 0;
-    QCFType<CFStringRef> value
-        = CFNumberFormatterCreateStringWithValue(nullptr, numberFormatter,
-                                                 kCFNumberIntType, &zeroDigit);
-    return QString::fromCFString(value);
+    static QString cachedZeroDigit;
+
+    if (cachedZeroDigit.isNull()) {
+        QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+        QCFType<CFNumberFormatterRef> numberFormatter =
+                CFNumberFormatterCreate(nullptr, locale, kCFNumberFormatterNoStyle);
+        const int zeroDigit = 0;
+        QCFType<CFStringRef> value
+            = CFNumberFormatterCreateStringWithValue(nullptr, numberFormatter,
+                                                     kCFNumberIntType, &zeroDigit);
+        cachedZeroDigit = QString::fromCFString(value);
+    }
+
+    static QMacNotificationObserver localeChangeObserver = QMacNotificationObserver(
+        nil, NSCurrentLocaleDidChangeNotification, [&] {
+            qCDebug(lcLocale) << "System locale changed";
+            cachedZeroDigit = QString();
+    });
+
+    return cachedZeroDigit;
 }
 
 static QString zeroPad(QString &&number, qsizetype minDigits, const QString &zero)
