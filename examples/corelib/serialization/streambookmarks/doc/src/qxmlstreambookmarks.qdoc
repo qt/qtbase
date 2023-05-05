@@ -4,6 +4,7 @@
 /*!
     \example serialization/streambookmarks
     \title QXmlStream Bookmarks Example
+    \examplecategory {Input/Output}
     \brief Demonstrates how to read and write to XBEL files.
     \ingroup xml-examples
 
