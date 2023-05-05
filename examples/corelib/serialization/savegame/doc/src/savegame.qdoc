@@ -11,11 +11,12 @@
 
     Many games provide save functionality, so that the player's progress through
     the game can be saved and loaded at a later time. The process of saving a
-    game generally involves serializing each game object's member variables
-    to a file. Many formats can be used for this purpose, one of which is JSON.
-    With QJsonDocument, you also have the ability to serialize a document in a
-    \l {RFC 7049} {CBOR} format, which is great if you
-    don't want the save file to be readable, or if you need to keep the file size down.
+    game generally involves serializing each game object's member variables to a
+    file. Many formats can be used for this purpose, one of which is JSON.  With
+    QJsonDocument, you also have the ability to serialize a document in a \l
+    {RFC 7049} {CBOR} format, which is great if you don't want the save file to
+    be easy to read (but see \l {Parsing and displaying CBOR data} for how it \e
+    can be read), or if you need to keep the file size down.
 
     In this example, we'll demonstrate how to save and load a simple game to
     and from JSON and binary formats.
