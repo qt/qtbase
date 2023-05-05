@@ -51,10 +51,18 @@
 // We mean it.
 //
 
+// clang-format off
+
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qdebug.h"
 #include "QtCore/qpoint.h"
+#if defined(Q_OS_WIN)
+#include <qt_windows.h> // to suppress min, max macros.
+#endif
+#include <QtCore/private/qnumeric_p.h>
 #include "QtCore/qsize.h"
+
+// clang-format on
 
 QT_BEGIN_NAMESPACE
 
@@ -181,6 +189,14 @@ Q_DECL_CONSTEXPR inline bool operator<(const QFixed &f, int i) { return f.value(
 Q_DECL_CONSTEXPR inline bool operator<(int i, const QFixed &f) { return i * 64 < f.value(); }
 Q_DECL_CONSTEXPR inline bool operator>(const QFixed &f, int i) { return f.value() > i * 64; }
 Q_DECL_CONSTEXPR inline bool operator>(int i, const QFixed &f) { return i * 64 > f.value(); }
+
+inline bool qAddOverflow(QFixed v1, QFixed v2, QFixed *r)
+{
+    int val;
+    bool result = add_overflow(v1.value(), v2.value(), &val);
+    r->setValue(val);
+    return result;
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 inline QDebug &operator<<(QDebug &dbg, const QFixed &f)
