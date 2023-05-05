@@ -48,9 +48,7 @@ RSSListing::RSSListing(const QString &url, QWidget *parent)
     connect(treeWidget, &QTreeWidget::itemActivated,
             // Open the link in the browser:
             this, [](QTreeWidgetItem *item) { QDesktopServices::openUrl(QUrl(item->text(1))); });
-    QStringList headerLabels;
-    headerLabels << tr("Title") << tr("Link");
-    treeWidget->setHeaderLabels(headerLabels);
+    treeWidget->setHeaderLabels(QStringList { tr("Title"), tr("Link") });
     treeWidget->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     QHBoxLayout *hboxLayout = new QHBoxLayout;
