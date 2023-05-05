@@ -54,6 +54,7 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qdebug.h"
 #include "QtCore/qpoint.h"
+#include "QtCore/qnumeric.h"
 #include "QtCore/qsize.h"
 
 QT_BEGIN_NAMESPACE
@@ -181,6 +182,22 @@ constexpr inline bool operator<(const QFixed &f, int i) { return f.value() < i *
 constexpr inline bool operator<(int i, const QFixed &f) { return i * 64 < f.value(); }
 constexpr inline bool operator>(const QFixed &f, int i) { return f.value() > i * 64; }
 constexpr inline bool operator>(int i, const QFixed &f) { return i * 64 > f.value(); }
+
+inline bool qAddOverflow(QFixed v1, QFixed v2, QFixed *r)
+{
+    int val;
+    bool result = qAddOverflow(v1.value(), v2.value(), &val);
+    r->setValue(val);
+    return result;
+}
+
+inline bool qMulOverflow(QFixed v1, QFixed v2, QFixed *r)
+{
+    int val;
+    bool result = qMulOverflow(v1.value(), v2.value(), &val);
+    r->setValue(val);
+    return result;
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 inline QDebug &operator<<(QDebug &dbg, const QFixed &f)
