@@ -32,12 +32,12 @@ its operation, and also allows very large data sources to be read.
     news.
 */
 
-RSSListing::RSSListing(QWidget *parent)
+RSSListing::RSSListing(const QString &url, QWidget *parent)
     : QWidget(parent), currentReply(0)
 {
 
     lineEdit = new QLineEdit(this);
-    lineEdit->setText("http://blog.qt.io/feed/");
+    lineEdit->setText(url);
 
     fetchButton = new QPushButton(tr("Fetch"), this);
 

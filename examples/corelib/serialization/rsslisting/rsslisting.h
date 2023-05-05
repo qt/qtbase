@@ -21,7 +21,7 @@ class RSSListing : public QWidget
 {
     Q_OBJECT
 public:
-    RSSListing(QWidget *widget = nullptr);
+    explicit RSSListing(const QString &url = QString(), QWidget *widget = nullptr);
 
 public slots:
     void fetch();
