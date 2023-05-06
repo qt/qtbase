@@ -684,7 +684,9 @@ void tst_QAnyStringView::compare3way()
     const QAnyStringView bb = u"bb";
     COMPARE_3WAY(aa, aa, std::strong_ordering::equal);
     COMPARE_3WAY(aa, bb, std::strong_ordering::less);
-    COMPARE_3WAY(bb, aa, std::strong_ordering::greater)
+    COMPARE_3WAY(bb, aa, std::strong_ordering::greater);
+    COMPARE_3WAY(upperAa, aa, std::strong_ordering::less);
+    COMPARE_3WAY(aa, upperAa, std::strong_ordering::greater);
     );
 #undef COMPARE_3WAY
 }
