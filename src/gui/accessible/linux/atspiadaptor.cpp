@@ -16,6 +16,7 @@
 #if QT_CONFIG(accessibility)
 #include "socket_interface.h"
 #include "qspi_constant_mappings_p.h"
+#include <QtCore/private/qstringiterator_p.h>
 #include <QtGui/private/qaccessiblebridgeutils_p.h>
 
 #include "qspiapplicationadaptor_p.h"
@@ -1980,8 +1981,13 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         int offset = message.arguments().at(0).toInt();
         int start;
         int end;
-        QString result = interface->textInterface()->textAtOffset(offset, QAccessible::CharBoundary, &start, &end);
-        sendReply(connection, message, (int) *(qPrintable (result)));
+        const QString charString = interface->textInterface()
+                ->textAtOffset(offset, QAccessible::CharBoundary, &start, &end);
+        int codePoint = 0;
+        QStringIterator stringIt(charString);
+        if (stringIt.hasNext())
+            codePoint = static_cast<int>(stringIt.peekNext());
+        sendReply(connection, message, codePoint);
     } else if (function == "GetCharacterExtents"_L1) {
         int offset = message.arguments().at(0).toInt();
         int coordType = message.arguments().at(1).toUInt();
