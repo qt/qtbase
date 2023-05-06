@@ -252,6 +252,50 @@ static_assert(CanConvert<const winrt::hstring&>);
 
 #endif // QT_CONFIG(cpp_winrt)
 
+template <typename Char> struct SampleStrings
+{
+    static constexpr char emptyString[] = "";
+    static constexpr char regularString[] = "Hello World!";
+    static constexpr char regularLongString[] = R"(Lorem ipsum dolor sit amet, consectetur
+adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim
+id est laborum.)";
+    static constexpr char stringWithNulls[] = "Hello\0World\0!";
+    static constexpr qsizetype stringWithNullsLength = std::size(stringWithNulls) -1;
+};
+
+template <> struct SampleStrings<char16_t>
+{
+    static constexpr char16_t emptyString[] = u"";
+    static constexpr char16_t regularString[] = u"Hello World!";
+    static constexpr char16_t regularLongString[] = uR"(Lorem ipsum dolor sit amet, consectetur
+adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim
+id est laborum.)";
+    static constexpr char16_t stringWithNulls[] = u"Hello\0World\0!";
+    static constexpr qsizetype stringWithNullsLength = std::size(stringWithNulls) -1;
+};
+
+template <> struct SampleStrings<QChar>
+{
+    static constexpr QChar emptyString[] = { {} };  // this one is easy
+    static const QChar *const regularString;
+    static const QChar *const regularLongString;
+    static const QChar *const stringWithNulls;
+    static constexpr qsizetype stringWithNullsLength = SampleStrings<char16_t>::stringWithNullsLength;
+};
+const QChar *const SampleStrings<QChar>::regularString =
+        reinterpret_cast<const QChar *>(SampleStrings<char16_t>::regularString);
+const QChar *const SampleStrings<QChar>::regularLongString =
+        reinterpret_cast<const QChar *>(SampleStrings<char16_t>::regularLongString);
+const QChar *const SampleStrings<QChar>::stringWithNulls =
+        reinterpret_cast<const QChar *>(SampleStrings<char16_t>::stringWithNulls);
 
 class tst_QAnyStringView : public QObject
 {
@@ -264,6 +308,8 @@ private Q_SLOTS:
 
     void fromQString() const { fromQStringOrByteArray<QString>(); }
     void fromQByteArray() const { fromQStringOrByteArray<QByteArray>(); }
+    void fromQStringView() const { fromQStringOrByteArray<QStringView>(); }
+    void fromQUtf8StringView() const { fromQStringOrByteArray<QUtf8StringView>(); }
 
     void fromCharArray() const { fromArray<char>(); }
     void fromChar8Array() const { ONLY_IF_CHAR_8_T(fromArray<char8_t>()); }
@@ -291,29 +337,12 @@ private Q_SLOTS:
     void fromChar16TStar() const { fromLiteral(u"Hello, World!"); }
     void fromWCharTStar() const { ONLY_WIN(fromLiteral(L"Hello, World!")); }
 
-    void fromQCharRange() const
-    {
-        const QChar str[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
-        fromRange(std::begin(str), std::end(str));
-    }
-
-    void fromUShortRange() const
-    {
-        const ushort str[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
-        fromRange(std::begin(str), std::end(str));
-    }
-
-    void fromChar16TRange() const
-    {
-        const char16_t str[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
-        fromRange(std::begin(str), std::end(str));
-    }
-
-    void fromWCharTRange() const
-    {
-        [[maybe_unused]] const wchar_t str[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
-        ONLY_WIN(fromRange(std::begin(str), std::end(str)));
-    }
+    void fromCharRange() const { fromRange<char>(); }
+    void fromChar8TRange() const { ONLY_IF_CHAR_8_T(fromRange<char8_t>()); }
+    void fromQCharRange() const { fromRange<QChar>(); }
+    void fromUShortRange() const { fromRange<ushort>(); }
+    void fromChar16TRange() const { fromRange<char16_t>(); }
+    void fromWCharTRange() const { ONLY_WIN(fromRange<wchar_t>()); }
 
     // std::basic_string
     void fromStdStringChar() const { fromStdString<char>(); }
@@ -341,7 +370,7 @@ private:
     template <typename Char>
     void fromLiteral(const Char *arg) const;
     template <typename Char>
-    void fromRange(const Char *first, const Char *last) const;
+    void fromRange() const;
     template <typename Char, typename Container>
     void fromContainer() const;
     template <typename Char>
@@ -499,18 +528,28 @@ void tst_QAnyStringView::fromArray() const
     QCOMPARE(sv2.back(), u'c');
 }
 
+
 template <typename QStringOrByteArray>
 void tst_QAnyStringView::fromQStringOrByteArray() const
 {
+    using Char = std::remove_cv_t<typename QStringOrByteArray::value_type>;
+    using Strings = SampleStrings<Char>;
+
     QStringOrByteArray null;
-    QStringOrByteArray empty = "";
+    QStringOrByteArray empty(Strings::emptyString);
 
     QVERIFY( QAnyStringView(null).isNull());
     QVERIFY( QAnyStringView(null).isEmpty());
     QVERIFY( QAnyStringView(empty).isEmpty());
     QVERIFY(!QAnyStringView(empty).isNull());
 
-    conversion_tests(QStringOrByteArray("Hello World!"));
+    conversion_tests(QStringOrByteArray(Strings::regularString));
+    if (QTest::currentTestFailed())
+        return;
+    conversion_tests(QStringOrByteArray(Strings::regularLongString));
+    if (QTest::currentTestFailed())
+        return;
+    conversion_tests(QStringOrByteArray(Strings::stringWithNulls, Strings::stringWithNullsLength));
 }
 
 template <typename Char>
@@ -534,33 +573,61 @@ void tst_QAnyStringView::fromLiteral(const Char *arg) const
 }
 
 template <typename Char>
-void tst_QAnyStringView::fromRange(const Char *first, const Char *last) const
+void tst_QAnyStringView::fromRange() const
 {
+    auto doTest = [](const Char *first, const Char *last) {
+        QCOMPARE(QAnyStringView(first, first).size(), 0);
+        QCOMPARE(static_cast<const void*>(QAnyStringView(first, first).data()),
+                 static_cast<const void*>(first));
+
+        const auto sv = QAnyStringView(first, last);
+        QCOMPARE(sv.size(), last - first);
+        QCOMPARE(static_cast<const void*>(sv.data()),
+                 static_cast<const void*>(first));
+
+        // can't call conversion_tests() here, as it requires a single object
+    };
     const Char *null = nullptr;
+    using RealChar = std::conditional_t<sizeof(Char) == 1, char, char16_t>;
+    using Strings = SampleStrings<RealChar>;
+
     QCOMPARE(QAnyStringView(null, null).size(), 0);
     QCOMPARE(QAnyStringView(null, null).data(), nullptr);
-    QCOMPARE(QAnyStringView(first, first).size(), 0);
-    QCOMPARE(static_cast<const void*>(QAnyStringView(first, first).data()),
-             static_cast<const void*>(first));
 
-    const auto sv = QAnyStringView(first, last);
-    QCOMPARE(sv.size(), last - first);
-    QCOMPARE(static_cast<const void*>(sv.data()),
-             static_cast<const void*>(first));
+    doTest(reinterpret_cast<const Char *>(std::begin(Strings::regularString)),
+           reinterpret_cast<const Char *>(std::end(Strings::regularString)));
+    if (QTest::currentTestFailed())
+        return;
 
-    // can't call conversion_tests() here, as it requires a single object
+    doTest(reinterpret_cast<const Char *>(std::begin(Strings::regularLongString)),
+           reinterpret_cast<const Char *>(std::end(Strings::regularLongString)));
+    if (QTest::currentTestFailed())
+        return;
+
+    doTest(reinterpret_cast<const Char *>(std::begin(Strings::stringWithNulls)),
+           reinterpret_cast<const Char *>(std::end(Strings::stringWithNulls)));
+    if (QTest::currentTestFailed())
+        return;
 }
 
 template <typename Char, typename Container>
 void tst_QAnyStringView::fromContainer() const
 {
     const std::string s = "Hello World!";
+    const std::string n(SampleStrings<char>::stringWithNulls, SampleStrings<char>::stringWithNullsLength);
 
     Container c;
     // unspecified whether empty containers make null QAnyStringViews
     QVERIFY(QAnyStringView(c).isEmpty());
 
     std::copy(s.begin(), s.end(), std::back_inserter(c));
+    conversion_tests(std::move(c));
+    if (QTest::currentTestFailed())
+        return;
+
+    // repeat with nulls
+    c = {};
+    std::copy(n.begin(), n.end(), std::back_inserter(c));
     conversion_tests(std::move(c));
 }
 
