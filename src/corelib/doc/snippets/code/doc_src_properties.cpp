@@ -68,6 +68,9 @@ public:
 
     void setPriority(Priority priority)
     {
+        if (m_priority == priority)
+            return;
+
         m_priority = priority;
         emit priorityChanged(priority);
     }

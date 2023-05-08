@@ -208,7 +208,10 @@
     The \c READ function is const and returns the property type. The
     \c WRITE function returns void and has exactly one parameter of
     the property type. The meta-object compiler enforces these
-    requirements.
+    requirements. The equality check in the \c WRITE function, while not
+    mandatory, is good practice as there is no point in notifying and
+    potentially forcing re-evaluation in other places if nothing has
+    changed.
 
     Given a pointer to an instance of MyClass or a pointer to a
     QObject that is an instance of MyClass, we have two ways to set
