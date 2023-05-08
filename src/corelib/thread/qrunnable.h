@@ -101,27 +101,35 @@ public:
 namespace QtPrivate {
 
 template <typename T>
-using is_function_pointer = std::conjunction<std::is_pointer<T>, std::is_function<std::remove_pointer_t<T>>>;
+constexpr inline bool is_function_pointer_v = std::conjunction_v<
+        std::is_pointer<T>,
+        std::is_function<std::remove_pointer_t<T>>
+    >;
 template <typename T>
-struct is_std_function : std::false_type {};
+constexpr inline bool is_std_function_v = false;
 template <typename T>
-struct is_std_function<std::function<T>> : std::true_type {};
+constexpr inline bool is_std_function_v<std::function<T>> = true;
 
 } // namespace QtPrivate
 
 template <typename Callable, QRunnable::if_callable<Callable>>
 QRunnable *QRunnable::create(Callable &&functionToRun)
 {
-    bool is_null = false;
-    if constexpr(QtPrivate::is_std_function<std::decay_t<Callable>>::value)
-        is_null = !functionToRun;
-
-    if constexpr(QtPrivate::is_function_pointer<std::decay_t<Callable>>::value) {
-        const void *functionPtr = reinterpret_cast<void *>(functionToRun);
-        is_null = !functionPtr;
+    using F = std::decay_t<Callable>;
+    constexpr bool is_std_function = QtPrivate::is_std_function_v<F>;
+    constexpr bool is_function_pointer = QtPrivate::is_function_pointer_v<F>;
+    if constexpr (is_std_function || is_function_pointer) {
+        bool is_null;
+        if constexpr (is_std_function) {
+            is_null = !functionToRun;
+        } else if constexpr (is_function_pointer) {
+            // shut up warnings about functions always having a non-null address:
+            const void *functionPtr = reinterpret_cast<void *>(functionToRun);
+            is_null = !functionPtr;
+        }
+        if (is_null)
+            return warnNullCallable();
     }
-    if (is_null)
-        return warnNullCallable();
 
     return new QGenericRunnable(std::forward<Callable>(functionToRun));
 }
