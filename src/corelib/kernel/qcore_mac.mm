@@ -230,6 +230,10 @@ QMacAutoReleasePool::QMacAutoReleasePool()
     : pool([[NSAutoreleasePool alloc] init])
 {
 #ifdef QT_DEBUG
+    static const bool debugAutoReleasePools = qEnvironmentVariableIsSet("QT_DARWIN_DEBUG_AUTORELEASEPOOLS");
+    if (!debugAutoReleasePools)
+        return;
+
     Class trackerClass = [QMacAutoReleasePoolTracker class];
 
     void *poolFrame = nullptr;
