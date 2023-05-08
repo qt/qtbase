@@ -155,38 +155,29 @@ public:
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
 
-#if QT_CONFIG(networkinterface)
-    static uint scopeIdFromString(const QString &scopeid)
-    { return QNetworkInterface::interfaceIndexFromName(scopeid); }
-#endif
-
     /*! \internal
         Sets \a address and \a port in the \a aa sockaddr structure and the size in \a sockAddrSize.
         The address \a is converted to IPv6 if the current socket protocol is also IPv6.
      */
     void setPortAndAddress(quint16 port, const QHostAddress &address, qt_sockaddr *aa, QT_SOCKLEN_T *sockAddrSize)
     {
-        if (address.protocol() == QAbstractSocket::IPv6Protocol
-            || address.protocol() == QAbstractSocket::AnyIPProtocol
-            || socketProtocol == QAbstractSocket::IPv6Protocol
-            || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-            memset(&aa->a6, 0, sizeof(sockaddr_in6));
-            aa->a6.sin6_family = AF_INET6;
-#if QT_CONFIG(networkinterface)
-            aa->a6.sin6_scope_id = scopeIdFromString(address.scopeId());
-#endif
-            aa->a6.sin6_port = htons(port);
-            Q_IPV6ADDR tmp = address.toIPv6Address();
-            memcpy(&aa->a6.sin6_addr, &tmp, sizeof(tmp));
+        switch (socketProtocol) {
+        case QHostAddress::IPv6Protocol:
+        case QHostAddress::AnyIPProtocol:
+            // force to IPv6
+            setSockaddr(&aa->a6, address, port);
             *sockAddrSize = sizeof(sockaddr_in6);
-            SetSALen::set(&aa->a, sizeof(sockaddr_in6));
-        } else {
-            memset(&aa->a, 0, sizeof(sockaddr_in));
-            aa->a4.sin_family = AF_INET;
-            aa->a4.sin_port = htons(port);
-            aa->a4.sin_addr.s_addr = htonl(address.toIPv4Address());
+            return;
+
+        case QHostAddress::IPv4Protocol:
+            // force to IPv4
+            setSockaddr(&aa->a4, address, port);
             *sockAddrSize = sizeof(sockaddr_in);
-            SetSALen::set(&aa->a, sizeof(sockaddr_in));
+            return;
+
+        case QHostAddress::UnknownNetworkLayerProtocol:
+            // don't force
+            *sockAddrSize = setSockaddr(&aa->a, address, port);
         }
     }
 

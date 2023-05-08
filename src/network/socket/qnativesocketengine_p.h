@@ -20,8 +20,14 @@
 #include "QtNetwork/qhostaddress.h"
 #include "QtNetwork/qnetworkinterface.h"
 #include "private/qabstractsocketengine_p.h"
+#include "qplatformdefs.h"
+
 #ifndef Q_OS_WIN
-#  include "qplatformdefs.h"
+#  include <netinet/in.h>
+#else
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
+#  include <mswsock.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -35,11 +41,57 @@ namespace {
 namespace SetSALen {
     template <typename T> void set(T *sa, typename std::enable_if<(&T::sa_len, true), QT_SOCKLEN_T>::type len)
     { sa->sa_len = len; }
+    template <typename T> void set(T *sa, typename std::enable_if<(&T::sin_len, true), QT_SOCKLEN_T>::type len)
+    { sa->sin_len = len; }
     template <typename T> void set(T *sin6, typename std::enable_if<(&T::sin6_len, true), QT_SOCKLEN_T>::type len)
     { sin6->sin6_len = len; }
     template <typename T> void set(T *, ...) {}
 }
+
+inline QT_SOCKLEN_T setSockaddr(sockaddr_in *sin, const QHostAddress &addr, quint16 port = 0)
+{
+    *sin = {};
+    SetSALen::set(sin, sizeof(*sin));
+    sin->sin_family = AF_INET;
+    sin->sin_port = htons(port);
+    sin->sin_addr.s_addr = htonl(addr.toIPv4Address());
+    return sizeof(*sin);
 }
+
+inline QT_SOCKLEN_T setSockaddr(sockaddr_in6 *sin6, const QHostAddress &addr, quint16 port = 0)
+{
+    *sin6 = {};
+    SetSALen::set(sin6, sizeof(*sin6));
+    sin6->sin6_family = AF_INET6;
+    sin6->sin6_port = htons(port);
+    memcpy(sin6->sin6_addr.s6_addr, addr.toIPv6Address().c, sizeof(sin6->sin6_addr));
+#if QT_CONFIG(networkinterface)
+    sin6->sin6_scope_id = QNetworkInterface::interfaceIndexFromName(addr.scopeId());
+#else
+    // it had better be a number then, if it is not empty
+    sin6->sin6_scope_id = addr.scopeId().toUInt();
+#endif
+    return sizeof(*sin6);
+}
+
+inline QT_SOCKLEN_T setSockaddr(sockaddr *sa, const QHostAddress &addr, quint16 port = 0)
+{
+    switch (addr.protocol()) {
+    case QHostAddress::IPv4Protocol:
+        return setSockaddr(reinterpret_cast<sockaddr_in *>(sa), addr, port);
+
+    case QHostAddress::IPv6Protocol:
+    case QHostAddress::AnyIPProtocol:
+        return setSockaddr(reinterpret_cast<sockaddr_in6 *>(sa), addr, port);
+
+    case QHostAddress::UnknownNetworkLayerProtocol:
+        break;
+    }
+    *sa = {};
+    sa->sa_family = AF_UNSPEC;
+    return 0;
+}
+} // unnamed namespace
 
 class QNativeSocketEnginePrivate;
 #ifndef QT_NO_NETWORKINTERFACE
