@@ -387,17 +387,17 @@ namespace QtPrivate {
     // internal base class (interface) containing functions required to call a slot managed by a pointer to function.
     class QSlotObjectBase
     {
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-        QAtomicInt m_ref = 1;
-#endif
         // Don't use virtual functions here; we don't want the
         // compiler to create tons of per-polymorphic-class stuff that
         // we'll never need. We just use one function pointer, and the
         // Operations enum below to distinguish requests
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+        QAtomicInt m_ref = 1;
         typedef void (*ImplFn)(int which, QSlotObjectBase* this_, QObject *receiver, void **args, bool *ret);
         const ImplFn m_impl;
-
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+#else
+        using ImplFn = void (*)(QSlotObjectBase* this_, QObject *receiver, void **args, int which, bool *ret);
+        const ImplFn m_impl;
         QAtomicInt m_ref = 1;
 #endif
     protected:
@@ -414,11 +414,24 @@ namespace QtPrivate {
         explicit QSlotObjectBase(ImplFn fn) : m_impl(fn) {}
 
         inline int ref() noexcept { return m_ref.ref(); }
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
         inline void destroyIfLastRef() noexcept
         { if (!m_ref.deref()) m_impl(Destroy, this, nullptr, nullptr, nullptr); }
 
         inline bool compare(void **a) { bool ret = false; m_impl(Compare, this, nullptr, a, &ret); return ret; }
         inline void call(QObject *r, void **a)  { m_impl(Call, this, r, a, nullptr); }
+#else
+        inline void destroyIfLastRef() noexcept
+        { if (!m_ref.deref()) m_impl(this, nullptr, nullptr, Destroy, nullptr); }
+
+        inline bool compare(void **a)
+        {
+            bool ret = false;
+            m_impl(this, nullptr, a, Compare, &ret);
+            return ret;
+        }
+        inline void call(QObject *r, void **a)  { m_impl(this, r, a, Call, nullptr); }
+#endif
         bool isImpl(ImplFn f) const { return m_impl == f; }
     protected:
         ~QSlotObjectBase() {}
@@ -438,7 +451,15 @@ namespace QtPrivate {
             QtPrivate::FunctionPointer<FunctorValue>,
             QtPrivate::Functor<FunctorValue, Args::size>
         >;
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
         Q_DECL_HIDDEN static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
+#else
+        // Design note: the first three arguments match those for typical Call
+        // and Destroy uses. We return void to enable tail call optimization
+        // for those too.
+        Q_DECL_HIDDEN static void impl(QSlotObjectBase *this_, QObject *r, void **a, int which, bool *ret)
+#endif
         {
             const auto that = static_cast<QCallableObject*>(this_);
             switch (which) {

@@ -2477,8 +2477,13 @@ QPropertyAdaptorSlotObject::QPropertyAdaptorSlotObject(QObject *o, const QMetaPr
 {
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 void QPropertyAdaptorSlotObject::impl(int which, QSlotObjectBase *this_, QObject *r, void **a,
                                       bool *ret)
+#else
+void QPropertyAdaptorSlotObject::impl(QSlotObjectBase *this_, QObject *r, void **a, int which,
+                                      bool *ret)
+#endif
 {
     auto self = static_cast<QPropertyAdaptorSlotObject *>(this_);
     switch (which) {

@@ -6813,7 +6813,11 @@ struct QmlReceiver : public QtPrivate::QSlotObjectBase
         , magic(0)
     {}
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     static void impl(int which, QSlotObjectBase *this_, QObject *, void **metaArgs, bool *ret)
+#else
+    static void impl(QSlotObjectBase *this_, QObject *, void **metaArgs, int which, bool *ret)
+#endif
     {
         switch (which) {
         case Destroy: delete static_cast<QmlReceiver*>(this_); return;

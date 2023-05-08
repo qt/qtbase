@@ -917,7 +917,11 @@ class QPropertyAdaptorSlotObject : public QUntypedPropertyData, public QSlotObje
     QObject *obj;
     QMetaProperty metaProperty_;
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret);
+#else
+    static void impl(QSlotObjectBase *this_, QObject *r, void **a, int which, bool *ret);
+#endif
 
     QPropertyAdaptorSlotObject(QObject *o, const QMetaProperty& p);
 

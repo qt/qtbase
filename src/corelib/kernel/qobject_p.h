@@ -268,7 +268,11 @@ template<typename Func, typename Args, typename R>
 class QPrivateSlotObject : public QSlotObjectBase, private FunctionStorage<Func>
 {
     typedef QtPrivate::FunctionPointer<Func> FuncType;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
+#else
+    static void impl(QSlotObjectBase *this_, QObject *r, void **a, int which, bool *ret)
+#endif
     {
         const auto that = static_cast<QPrivateSlotObject*>(this_);
         switch (which) {
