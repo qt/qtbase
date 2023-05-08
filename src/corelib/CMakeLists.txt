@@ -281,7 +281,7 @@ qt_internal_add_module(Core
         tools/qduplicatetracker_p.h
         tools/qflatmap_p.h
         tools/qfreelist.cpp tools/qfreelist_p.h
-        tools/qfunctionaltools_impl.h
+        tools/qfunctionaltools_impl.cpp tools/qfunctionaltools_impl.h
         tools/qhashfunctions.h
         tools/qiterator.h
         tools/qline.cpp tools/qline.h
