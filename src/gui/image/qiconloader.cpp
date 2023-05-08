@@ -384,6 +384,10 @@ QIconTheme::QIconTheme(const QString &themeName)
                 m_parents.append(fallback);
         }
 
+        // Use system fallback theme as the first fallback option
+        if (const QString &systemFallback = systemFallbackThemeName(); !systemFallback.isEmpty())
+            m_parents.prepend(systemFallback);
+
         // Ensure that all themes fall back to hicolor
         if (!m_parents.contains("hicolor"_L1))
             m_parents.append("hicolor"_L1);
