@@ -500,7 +500,6 @@
 */
 
 /*! \fn template <class T> bool QListIterator<T>::hasPrevious() const
-    \fn template <class T> bool QSetIterator<T>::hasPrevious() const
     \fn template <class T> bool QMutableListIterator<T>::hasPrevious() const
 
     Returns \c true if there is at least one item behind the iterator,
@@ -511,7 +510,6 @@
 */
 
 /*! \fn template <class T> const T &QListIterator<T>::previous()
-    \fn template <class T> const T &QSetIterator<T>::previous()
 
     Returns the previous item and moves the iterator back by one
     position.
@@ -534,7 +532,6 @@
 */
 
 /*! \fn template <class T> const T &QListIterator<T>::peekPrevious() const
-    \fn template <class T> const T &QSetIterator<T>::peekPrevious() const
 
     Returns the previous item without moving the iterator.
 
@@ -580,7 +577,6 @@
 */
 
 /*! \fn template <class T> bool QListIterator<T>::findPrevious(const T &value)
-    \fn template <class T> bool QSetIterator<T>::findPrevious(const T &value)
     \fn template <class T> bool QMutableListIterator<T>::findPrevious(const T &value)
 
     Searches for \a value starting from the current iterator position

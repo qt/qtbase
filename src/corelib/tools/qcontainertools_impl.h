@@ -302,6 +302,15 @@ template <typename Iterator>
 using IfAssociativeIteratorHasFirstAndSecond =
     std::enable_if_t<qxp::is_detected_v<FirstAndSecondTest, Iterator>, bool>;
 
+template <typename Iterator>
+using MoveBackwardsTest = decltype(
+    std::declval<Iterator &>().operator--()
+);
+
+template <typename Iterator>
+using IfIteratorCanMoveBackwards =
+    std::enable_if_t<qxp::is_detected_v<MoveBackwardsTest, Iterator>, bool>;
+
 template <typename T, typename U>
 using IfIsNotSame =
     typename std::enable_if<!std::is_same<T, U>::value, bool>::type;
