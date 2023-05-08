@@ -397,14 +397,21 @@ namespace QtPrivate {
     }
 
     // internal base class (interface) containing functions required to call a slot managed by a pointer to function.
-    class QSlotObjectBase {
-        QAtomicInt m_ref;
+    class QSlotObjectBase
+    {
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+        QAtomicInt m_ref = 1;
+#endif
         // Don't use virtual functions here; we don't want the
         // compiler to create tons of per-polymorphic-class stuff that
         // we'll never need. We just use one function pointer, and the
         // Operations enum below to distinguish requests
         typedef void (*ImplFn)(int which, QSlotObjectBase* this_, QObject *receiver, void **args, bool *ret);
         const ImplFn m_impl;
+
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+        QAtomicInt m_ref = 1;
+#endif
     protected:
         // The operations that can be requested by calls to m_impl,
         // see the member functions that call m_impl below for details
@@ -416,7 +423,7 @@ namespace QtPrivate {
             NumOperations
         };
     public:
-        explicit QSlotObjectBase(ImplFn fn) : m_ref(1), m_impl(fn) {}
+        explicit QSlotObjectBase(ImplFn fn) : m_impl(fn) {}
 
         inline int ref() noexcept { return m_ref.ref(); }
         inline void destroyIfLastRef() noexcept
