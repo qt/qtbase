@@ -209,6 +209,7 @@ private slots:
     void rejectPendingResultOverwrite();
 
     void createReadyFutures();
+    void continuationsAfterReadyFutures();
 
     void getFutureInterface();
     void convertQMetaType();
@@ -4259,6 +4260,108 @@ QT_WARNING_POP
         QCOMPARE_EQ(f.resultCount(), 3);
         QCOMPARE_EQ(f.results(), expectedResult);
     }
+}
+
+void tst_QFuture::continuationsAfterReadyFutures()
+{
+    // continuations without a context
+    {
+        QFuture<int> f = QtFuture::makeReadyValueFuture(42)
+                .then([](int val) {
+                    return val + 10;
+                })
+                .onCanceled([]() {
+                    return -1;
+                });
+        QCOMPARE(f.result(), 52);
+    }
+    {
+        auto rangeF = QtFuture::makeReadyRangeFuture({1, 2, 3});
+        QFuture<int> f = rangeF
+                .then([vals = rangeF.results()](auto) {
+                    return vals.last();
+                })
+                .onCanceled([]() {
+                    return -1;
+                });
+        QCOMPARE(f.result(), 3);
+    }
+    {
+        QFuture<int> f = QtFuture::makeReadyVoidFuture()
+                .then([]() {
+                    return 1;
+                })
+                .onCanceled([]() {
+                    return -1;
+                });
+        QCOMPARE(f.result(), 1);
+    }
+#ifndef QT_NO_EXCEPTIONS
+    {
+        QException e;
+        QFuture<int> f = QtFuture::makeExceptionalFuture<int>(e)
+                .then([](int) {
+                    return 1;
+                })
+                .onCanceled([]() {
+                    return -1;
+                })
+                .onFailed([](const QException &) {
+                    return -2;
+                });
+        QCOMPARE(f.result(), -2);
+    }
+#endif
+
+    // continuations with a context
+    QObject context;
+    {
+        QFuture<int> f = QtFuture::makeReadyValueFuture(42)
+                .then(&context, [](int val) {
+                    return val + 10;
+                })
+                .onCanceled([]() {
+                    return -1;
+                });
+        QCOMPARE(f.result(), 52);
+    }
+    {
+        auto rangeF = QtFuture::makeReadyRangeFuture({1, 2, 3});
+        QFuture<int> f = rangeF
+                .then(&context, [vals = rangeF.results()](auto) {
+                    return vals.last();
+                })
+                .onCanceled([]() {
+                    return -1;
+                });
+        QCOMPARE(f.result(), 3);
+    }
+    {
+        QFuture<int> f = QtFuture::makeReadyVoidFuture()
+                .then(&context, []() {
+                    return 1;
+                })
+                .onCanceled([]() {
+                    return -1;
+                });
+        QCOMPARE(f.result(), 1);
+    }
+#ifndef QT_NO_EXCEPTIONS
+    {
+        QException e;
+        QFuture<int> f = QtFuture::makeExceptionalFuture<int>(e)
+                .then(&context, [](int) {
+                    return 1;
+                })
+                .onCanceled([]() {
+                    return -1;
+                })
+                .onFailed([](const QException &) {
+                    return -2;
+                });
+        QCOMPARE(f.result(), -2);
+    }
+#endif
 }
 
 void tst_QFuture::getFutureInterface()
