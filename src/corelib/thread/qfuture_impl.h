@@ -11,6 +11,7 @@
 #endif
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qbasicfuturewatcher.h>
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qthreadpool.h>
 #include <QtCore/qexception.h>
@@ -597,21 +598,27 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
                                                                   QObject *context)
 {
     Q_ASSERT(f);
+    Q_ASSERT(context);
 
-    auto continuation = [func = std::forward<F>(func), fi,
-                         context = QPointer<QObject>(context)](
-                                const QFutureInterfaceBase &parentData) mutable {
-        Q_ASSERT(context);
-        const auto parent = QFutureInterface<ParentResultType>(parentData).future();
-        QMetaObject::invokeMethod(
-                context,
-                [func = std::forward<F>(func), promise = QPromise(fi), parent]() mutable {
-                    SyncContinuation<Function, ResultType, ParentResultType> continuationJob(
-                            std::forward<Function>(func), parent, std::move(promise));
-                    continuationJob.execute();
-                });
+    // When the context object is destroyed, the signal-slot connection is broken and the
+    // continuation callback is destroyed. The promise that is created in the capture list is
+    // destroyed and, if it is not yet finished, cancelled.
+    auto continuation = [func = std::forward<F>(func), parent = *f,
+                         promise = QPromise(fi)]() mutable {
+        SyncContinuation<Function, ResultType, ParentResultType> continuationJob(
+                std::forward<Function>(func), parent, std::move(promise));
+        continuationJob.execute();
     };
-    f->d.setContinuation(ContinuationWrapper(std::move(continuation)), fi.d);
+
+    auto *watcher = new QBasicFutureWatcher;
+    watcher->moveToThread(context->thread());
+    QObject::connect(watcher, &QBasicFutureWatcher::finished,
+                     context, std::move(continuation));
+    QObject::connect(watcher, &QBasicFutureWatcher::finished,
+                     watcher, &QObject::deleteLater);
+    QObject::connect(context, &QObject::destroyed,
+                     watcher, &QObject::deleteLater);
+    watcher->setFuture(f->d);
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>
@@ -695,22 +702,20 @@ void FailureHandler<Function, ResultType>::create(F &&function, QFuture<ResultTy
                                                   QObject *context)
 {
     Q_ASSERT(future);
+    Q_ASSERT(context);
+    auto failureContinuation = [function = std::forward<F>(function),
+                                parent = *future, promise = QPromise(fi)]() mutable {
+        FailureHandler<Function, ResultType> failureHandler(
+                std::forward<Function>(function), parent, std::move(promise));
+        failureHandler.run();
+    };
 
-    auto failureContinuation =
-            [function = std::forward<F>(function), fi,
-             context = QPointer<QObject>(context)](const QFutureInterfaceBase &parentData) mutable {
-                Q_ASSERT(context);
-                const auto parent = QFutureInterface<ResultType>(parentData).future();
-                QMetaObject::invokeMethod(context,
-                                          [function = std::forward<F>(function),
-                                          promise = QPromise(fi), parent]() mutable {
-                    FailureHandler<Function, ResultType> failureHandler(
-                                std::forward<Function>(function), parent, std::move(promise));
-                    failureHandler.run();
-                });
-            };
-
-    future->d.setContinuation(ContinuationWrapper(std::move(failureContinuation)));
+    auto *watcher = new QBasicFutureWatcher;
+    watcher->moveToThread(context->thread());
+    QObject::connect(watcher, &QBasicFutureWatcher::finished, context, std::move(failureContinuation));
+    QObject::connect(watcher, &QBasicFutureWatcher::finished, watcher, &QObject::deleteLater);
+    QObject::connect(context, &QObject::destroyed, watcher, &QObject::deleteLater);
+    watcher->setFuture(future->d);
 }
 
 template<class Function, class ResultType>
@@ -796,19 +801,19 @@ public:
                        QObject *context)
     {
         Q_ASSERT(future);
-        auto canceledContinuation = [fi, handler = std::forward<F>(handler),
-                                     context = QPointer<QObject>(context)](
-                                            const QFutureInterfaceBase &parentData) mutable {
-            Q_ASSERT(context);
-            auto parentFuture = QFutureInterface<ResultType>(parentData).future();
-            QMetaObject::invokeMethod(context,
-                                      [promise = QPromise(fi), parentFuture,
-                                      handler = std::forward<F>(handler)]() mutable {
-                run(std::forward<F>(handler), parentFuture, std::move(promise));
-            });
+        Q_ASSERT(context);
+        auto canceledContinuation = [handler = std::forward<F>(handler),
+                                     parentFuture = *future, promise = QPromise(fi)]() mutable {
+            run(std::forward<F>(handler), parentFuture, std::move(promise));
         };
 
-        future->d.setContinuation(ContinuationWrapper(std::move(canceledContinuation)));
+        auto *watcher = new QBasicFutureWatcher;
+        watcher->moveToThread(context->thread());
+        QObject::connect(watcher, &QBasicFutureWatcher::finished,
+                         context, std::move(canceledContinuation));
+        QObject::connect(watcher, &QBasicFutureWatcher::finished, watcher, &QObject::deleteLater);
+        QObject::connect(context, &QObject::destroyed, watcher, &QObject::deleteLater);
+        watcher->setFuture(future->d);
     }
 
     template<class F = Function>

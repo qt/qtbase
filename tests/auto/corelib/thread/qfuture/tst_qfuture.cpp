@@ -11,6 +11,7 @@
 #include <QVarLengthArray>
 #include <QSet>
 #include <QList>
+#include <private/qobject_p.h>
 
 #include <QTest>
 #include <qfuture.h>
@@ -137,6 +138,18 @@ public:
 
 private:
     std::function<void ()> m_fn;
+};
+
+// Emulates QWidget behavior by deleting its children early in the destructor
+// instead of leaving it to ~QObject()
+class FakeQWidget : public QObject
+{
+    Q_OBJECT
+public:
+    ~FakeQWidget() override {
+        auto *d = QObjectPrivate::get(this);
+        d->deleteChildren();
+    }
 };
 
 using UniquePtr = std::unique_ptr<int>;
@@ -3261,6 +3274,40 @@ void tst_QFuture::continuationsWithContext()
         promise.start();
         promise.future().cancel();
         promise.finish();
+        QCOMPARE(future.result(), 2);
+    }
+
+    // Cancellation when the context object is destroyed
+    {
+        // Use something like QWidget which deletes its children early, i.e.
+        // before ~QObject() runs. This behavior can lead to side-effects
+        // like QPointers to the parent not being set to nullptr during child
+        // object destruction.
+        QPointer shortLivedContext = new FakeQWidget();
+        shortLivedContext->moveToThread(&thread);
+
+        QPromise<int> promise;
+        auto future = promise.future()
+                              .then(shortLivedContext, [&](int val) {
+                                  if (QThread::currentThread() != &thread)
+                                      return 0;
+                                  return val + 1000;
+                              })
+                              .onCanceled([&, ptr=QPointer(shortLivedContext)] {
+                                  if (QThread::currentThread() != &thread)
+                                      return 0;
+                                  if (ptr)
+                                      return 1;
+                                  return 2;
+                              });
+        promise.start();
+
+        QMetaObject::invokeMethod(shortLivedContext, [&]() {
+            delete shortLivedContext;
+        }, Qt::BlockingQueuedConnection);
+
+        promise.finish();
+
         QCOMPARE(future.result(), 2);
     }
 

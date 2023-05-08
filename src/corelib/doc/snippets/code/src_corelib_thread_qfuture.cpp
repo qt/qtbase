@@ -427,3 +427,16 @@ const bool started = f.isStarted(); // started == true
 const bool running = f.isRunning(); // running == false
 const bool finished = f.isFinished(); // finished == true
 //! [36]
+
+//! [37]
+QObject *context = ...;
+auto future = ...;
+auto continuation = future.then(context, [context](Result result) {
+                               // ...
+                           }).onCanceled([context = QPointer(context)] {
+                               if (!context)
+                                   return;  // context was destroyed already
+                               // handle cancellation
+                           });
+
+//! [37]

@@ -1298,8 +1298,18 @@
     is attached. In this case it will be resolved in the current thread. Therefore, when
     in doubt, pass the context explicitly.
 
+    \target context_lifetime
+    If the \a context is destroyed before the chain has finished, the future is canceled.
+    This implies that a cancellation handler might be invoked when the \a context is not valid
+    anymore. To guard against this, capture the \a context as a QPointer:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 37
+
+    When the context object is destroyed, cancellation happens immediately. Previous futures in the
+    chain are \e {not} cancelled and keep running until they are finished.
+
     \note When calling this method, it should be guaranteed that the \a context stays alive
-    throughout the execution of the chain.
+    during setup of the chain.
 
     \sa onFailed(), onCanceled()
 */
@@ -1364,8 +1374,11 @@
     be invoked from a non-gui thread. So \c this is provided as a context to \c .onFailed(),
     to make sure that it will be invoked in the main thread.
 
+    If the \a context is destroyed before the chain has finished, the future is canceled.
+    See \l {context_lifetime}{then()} for details.
+
     \note When calling this method, it should be guaranteed that the \a context stays alive
-    throughout the execution of the chain.
+    during setup of the chain.
 
     See the documentation of the other overload for more details about \a handler.
 
@@ -1427,8 +1440,11 @@
     invoked in the thread of the \a context object. This can be useful if the cancellation
     needs to be handled in a specific thread.
 
+    If the \a context is destroyed before the chain has finished, the future is canceled.
+    See \l {context_lifetime}{then()} for details.
+
     \note When calling this method, it should be guaranteed that the \a context stays alive
-    throughout the execution of the chain.
+    during setup of the chain.
 
     See the documentation of the other overload for more details about \a handler.
 
