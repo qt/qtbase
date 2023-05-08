@@ -25,7 +25,6 @@
 #elif defined(Q_OS_ANDROID)
 #  include <sys/mount.h>
 #  include <sys/vfs.h>
-#  include <mntent.h>
 #elif defined(Q_OS_LINUX)
 #  include <sys/statvfs.h>
 #elif defined(Q_OS_HURD)
@@ -112,12 +111,6 @@ private:
 #elif defined(Q_OS_SOLARIS)
     FILE *fp;
     mnttab mnt;
-#elif defined(Q_OS_ANDROID)
-    QFile file;
-    QByteArray m_rootPath;
-    QByteArray m_fileSystemType;
-    QByteArray m_device;
-    QByteArray m_options;
 #elif defined(Q_OS_HURD)
     FILE *fp;
     QByteArray buffer;
@@ -218,66 +211,6 @@ inline QByteArray QStorageIterator::fileSystemType() const
 inline QByteArray QStorageIterator::device() const
 {
     return QByteArray(mnt.mnt_mntopts);
-}
-
-inline QByteArray QStorageIterator::subvolume() const
-{
-    return QByteArray();
-}
-#elif defined(Q_OS_ANDROID)
-
-inline QStorageIterator::QStorageIterator()
-{
-    file.setFileName(QString::fromUtf8(_PATH_MOUNTED));
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
-}
-
-inline QStorageIterator::~QStorageIterator()
-{
-}
-
-inline bool QStorageIterator::isValid() const
-{
-    return file.isOpen();
-}
-
-inline bool QStorageIterator::next()
-{
-    QList<QByteArray> data;
-    // If file is virtual, file.readLine() may succeed even when file.atEnd().
-    do {
-        const QByteArray line = file.readLine();
-        if (line.isEmpty() && file.atEnd())
-            return false;
-        data = line.split(' ');
-    } while (data.count() < 4);
-
-    m_device = data.at(0);
-    m_rootPath = data.at(1);
-    m_fileSystemType = data.at(2);
-    m_options = data.at(3);
-
-    return true;
-}
-
-inline QString QStorageIterator::rootPath() const
-{
-    return QFile::decodeName(m_rootPath);
-}
-
-inline QByteArray QStorageIterator::fileSystemType() const
-{
-    return m_fileSystemType;
-}
-
-inline QByteArray QStorageIterator::device() const
-{
-    return m_device;
-}
-
-inline QByteArray QStorageIterator::options() const
-{
-    return m_options;
 }
 
 inline QByteArray QStorageIterator::subvolume() const
@@ -553,8 +486,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
     }
 }
 
-#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
-
+#if defined(Q_OS_LINUX)
 static std::vector<MountInfo> parseMountInfo(FilterMountInfo filter = FilterMountInfo::All)
 {
     QFile file(u"/proc/self/mountinfo"_s);
@@ -614,9 +546,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     }
     return volumes;
 }
-
-#else // defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
-
+#else // defined(Q_OS_LINUX)
 void QStorageInfoPrivate::initRootPath()
 {
     rootPath = QFileInfo(rootPath).canonicalFilePath();
@@ -672,7 +602,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 
     return volumes;
 }
-#endif // defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
+#endif // defined(Q_OS_LINUX)
 
 QStorageInfo QStorageInfoPrivate::root()
 {
