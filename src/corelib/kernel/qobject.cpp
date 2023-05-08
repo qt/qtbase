@@ -12,6 +12,7 @@
 #include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
+#include "qcoreevent_p.h"
 #include "qloggingcategory.h"
 #include "qvariant.h"
 #include "qmetaobject.h"

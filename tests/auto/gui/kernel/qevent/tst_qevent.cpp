@@ -14,7 +14,6 @@
     X(QTimerEvent, (42)) \
     X(QChildEvent, (QEvent::ChildAdded, nullptr)) \
     X(QDynamicPropertyChangeEvent, ("size")) \
-    X(QDeferredDeleteEvent, ()) \
     /* qfutureinterface_p.h */ \
     X(QFutureCallOutEvent, ()) \
     /* end */

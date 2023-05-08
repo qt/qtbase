@@ -45,6 +45,7 @@ private slots:
     void addRemoveLibPaths();
 #endif
     void theMainThread();
+    void testDeleteLaterFromBeforeOutermostEventLoop();
 };
 
 #endif // TST_QCOREAPPLICATION_H

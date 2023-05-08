@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qcoreevent.h"
+#include "qcoreevent_p.h"
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 
@@ -637,18 +638,9 @@ Q_IMPL_EVENT_COMMON(QDynamicPropertyChangeEvent)
 */
 QDeferredDeleteEvent::QDeferredDeleteEvent()
     : QEvent(QEvent::DeferredDelete)
-    , level(0)
 { }
 
 Q_IMPL_EVENT_COMMON(QDeferredDeleteEvent)
-
-/*! \fn int QDeferredDeleteEvent::loopLevel() const
-
-    Returns the loop-level in which the event was posted. The
-    loop-level is set by QCoreApplication::postEvent().
-
-    \sa QObject::deleteLater()
-*/
 
 QT_END_NAMESPACE
 

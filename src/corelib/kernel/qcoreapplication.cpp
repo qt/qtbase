@@ -8,6 +8,7 @@
 #ifndef QT_NO_QOBJECT
 #include "qabstracteventdispatcher.h"
 #include "qcoreevent.h"
+#include "qcoreevent_p.h"
 #include "qeventloop.h"
 #endif
 #include "qmetaobject.h"
@@ -1660,7 +1661,10 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         int scopeLevel = data->scopeLevel;
         if (scopeLevel == 0 && loopLevel != 0)
             scopeLevel = 1;
-        static_cast<QDeferredDeleteEvent *>(event)->level = loopLevel + scopeLevel;
+
+        QDeferredDeleteEvent *deleteEvent = static_cast<QDeferredDeleteEvent *>(event);
+        deleteEvent->m_loopLevel = loopLevel;
+        deleteEvent->m_scopeLevel = scopeLevel;
     }
 
     // delete the event on exceptions to protect against memory leaks till the event is
@@ -1849,13 +1853,15 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
             //    events posted by the current event loop; or
             // 3) if the event was posted before the outermost event loop.
 
-            int eventLevel = static_cast<QDeferredDeleteEvent *>(pe.event)->loopLevel();
-            int loopLevel = data->loopLevel + data->scopeLevel;
+            const int eventLoopLevel = static_cast<QDeferredDeleteEvent *>(pe.event)->loopLevel();
+            const int eventScopeLevel = static_cast<QDeferredDeleteEvent *>(pe.event)->scopeLevel();
+
+            const bool postedBeforeOutermostLoop = eventLoopLevel == 0;
             const bool allowDeferredDelete =
-                (eventLevel > loopLevel
-                 || (!eventLevel && loopLevel > 0)
+                (eventLoopLevel + eventScopeLevel > data->loopLevel + data->scopeLevel
+                 || (postedBeforeOutermostLoop && data->loopLevel > 0)
                  || (event_type == QEvent::DeferredDelete
-                     && eventLevel == loopLevel));
+                     && eventLoopLevel + eventScopeLevel == data->loopLevel + data->scopeLevel));
             if (!allowDeferredDelete) {
                 // cannot send deferred delete
                 if (!event_type && !receiver) {

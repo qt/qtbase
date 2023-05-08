@@ -19,6 +19,7 @@
 #if QT_CONFIG(process)
 # include <QtCore/QProcess>
 #endif
+#include <QtCore/private/qcoreevent_p.h>
 #include <QtCore/private/qeventloop_p.h>
 
 #include <QtGui/QFontDatabase>
@@ -94,7 +95,9 @@ private slots:
     void libraryPaths_qt_plugin_path_2();
 #endif
 
+#ifdef QT_BUILD_INTERNAL
     void sendPostedEvents();
+#endif  // ifdef QT_BUILD_INTERNAL
 
     void thread();
     void desktopSettingsAware();
@@ -1126,6 +1129,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
 }
 #endif
 
+#ifdef QT_BUILD_INTERNAL
 class SendPostedEventsTester : public QObject
 {
     Q_OBJECT
@@ -1171,6 +1175,7 @@ void tst_QApplication::sendPostedEvents()
     (void) QCoreApplication::exec();
     QVERIFY(p.isNull());
 }
+#endif
 
 void tst_QApplication::thread()
 {
