@@ -287,7 +287,8 @@ function(qt_set_msvc_cplusplus_options target visibility)
     # Check qt_config_compile_test for more info.
     if(MSVC AND MSVC_VERSION GREATER_EQUAL 1913)
         set(flags "-Zc:__cplusplus" "-permissive-")
-        target_compile_options("${target}" ${visibility} "$<$<COMPILE_LANGUAGE:CXX>:${flags}>")
+        target_compile_options("${target}" ${visibility}
+            "$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:${flags}>")
     endif()
 endfunction()
 
