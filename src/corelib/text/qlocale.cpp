@@ -4065,7 +4065,8 @@ char NumericTokenizer::nextToken()
     // writing Cyrillic may well use that; and Ukrainians might well use E.
     // All other Cyrillic locales (officially) use plain ASCII E.
     if (m_guide.exponentCyrillic // Only true in scientific float mode.
-        && (tail.startsWith(u"\u0415") || tail.startsWith(u"E"))) {
+        && (tail.startsWith(u"\u0415", Qt::CaseInsensitive)
+            || tail.startsWith(u"E", Qt::CaseInsensitive))) {
         ++m_index;
         return 'e';
     }
