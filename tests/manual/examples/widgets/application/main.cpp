@@ -1,7 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-//! [0]
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -29,4 +28,3 @@ int main(int argc, char *argv[])
     mainWin.show();
     return app.exec();
 }
-//! [0]

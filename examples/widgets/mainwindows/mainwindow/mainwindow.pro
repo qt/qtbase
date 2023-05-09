@@ -9,7 +9,9 @@ build_all:!build_pass {
     CONFIG += release
 }
 
+#! [qrc]
 RESOURCES += mainwindow.qrc
+#! [qrc]
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/mainwindow

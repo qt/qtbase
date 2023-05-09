@@ -13,7 +13,6 @@ class QPlainTextEdit;
 class QSessionManager;
 QT_END_NAMESPACE
 
-//! [0]
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -50,6 +49,5 @@ private:
     QPlainTextEdit *textEdit;
     QString curFile;
 };
-//! [0]
 
 #endif
