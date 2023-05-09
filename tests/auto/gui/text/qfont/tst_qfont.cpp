@@ -150,7 +150,7 @@ void tst_QFont::italicOblique()
                     continue;
                 }
                 QFont f = QFontDatabase::font(family, style, 12);
-                QVERIFY2(f.italic(), qPrintable(QString::asprintf("Failed for font \"%ls\"", f.family().utf16())));
+                QVERIFY2(f.italic(), qPrintable(QString::asprintf("Failed for font \"%ls\"", qUtf16Printable(f.family()))));
             }
         }
     }
