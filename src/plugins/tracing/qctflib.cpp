@@ -12,6 +12,7 @@
 #include <qsize.h>
 #include <qmetaobject.h>
 #include <qendian.h>
+#include <qplatformdefs.h>
 #include "qctflib_p.h"
 #include <filesystem>
 
@@ -79,12 +80,12 @@ QCtfLibImpl::QCtfLibImpl()
         m_session.name = QStringLiteral("default");
     } else {
         fseek(file, 0, SEEK_END);
-        long pos = ftell(file);
+        qsizetype pos = ftell(file);
         fseek(file, 0, SEEK_SET);
         QByteArray data(pos, Qt::Uninitialized);
-        long size = (long)fread(data.data(), pos, 1, file);
+        qsizetype size = (qsizetype)fread(data.data(), 1, pos, file);
         fclose(file);
-        if (size != 1)
+        if (size != pos)
             return;
         QJsonDocument json(QJsonDocument::fromJson(data));
 
@@ -93,7 +94,7 @@ QCtfLibImpl::QCtfLibImpl()
         if (value.isNull() || !value.isArray())
             return;
         m_session.name = obj.begin().key();
-        QJsonArray arr = value.toArray();
+        const QJsonArray arr = value.toArray();
         for (auto var : arr)
             m_session.tracepoints.append(var.toString());
 
