@@ -437,8 +437,14 @@ inline char QLocaleData::numericToCLocale(QStringView in) const
     if (in == decimalPoint())
         return '.';
 
-    if (in.compare(exponentSeparator(), Qt::CaseInsensitive) == 0)
+    if (const QString exp = exponentSeparator();
+        in.compare(exp, Qt::CaseInsensitive) == 0
+        || (m_script_id == QLocale::CyrillicScript
+            // Ukrainian officially uses the Cyrillic E, other Cyrillic-script
+            // languages use Latin E, but these are indistinguishable.
+            && in.compare(exp == u'\u0415' ? u'E' : u'\u0415', Qt::CaseInsensitive) == 0)) {
         return 'e';
+    }
 
     const QString group = groupSeparator();
     if (in == group)
