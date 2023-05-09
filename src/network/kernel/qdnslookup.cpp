@@ -470,7 +470,7 @@ void QDnsLookup::lookup()
     Q_D(QDnsLookup);
     d->isFinished = false;
     d->reply = QDnsLookupReply();
-    d->runnable = new QDnsLookupRunnable(d->type, QUrl::toAce(d->name), d->nameserver);
+    d->runnable = new QDnsLookupRunnable(d);
     connect(d->runnable, &QDnsLookupRunnable::finished,
             this, [this](const QDnsLookupReply &reply) { d_func()->_q_lookupFinished(reply); },
             Qt::BlockingQueuedConnection);
@@ -965,6 +965,13 @@ void QDnsLookupPrivate::_q_lookupFinished(const QDnsLookupReply &_reply)
     }
 }
 
+inline QDnsLookupRunnable::QDnsLookupRunnable(const QDnsLookupPrivate *d)
+    : requestName(QUrl::toAce(d->name)),
+      nameserver(d->nameserver),
+      requestType(d->type)
+{
+}
+
 void QDnsLookupRunnable::run()
 {
     QDnsLookupReply reply;
@@ -978,7 +985,7 @@ void QDnsLookupRunnable::run()
     }
 
     // Perform request.
-    query(requestType, requestName, nameserver, &reply);
+    query(&reply);
 
     // Sort results.
     qt_qdnsmailexchangerecord_sort(reply.mailExchangeRecords);

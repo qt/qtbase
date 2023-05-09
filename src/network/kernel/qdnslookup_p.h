@@ -102,21 +102,17 @@ class QDnsLookupRunnable : public QObject, public QRunnable
     Q_OBJECT
 
 public:
-    QDnsLookupRunnable(QDnsLookup::Type type, const QByteArray &name, const QHostAddress &nameserver)
-        : requestType(type)
-        , requestName(name)
-        , nameserver(nameserver)
-    { }
+    QDnsLookupRunnable(const QDnsLookupPrivate *d);
     void run() override;
 
 signals:
     void finished(const QDnsLookupReply &reply);
 
 private:
-    static void query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply);
-    QDnsLookup::Type requestType;
+    void query(QDnsLookupReply *reply);
     QByteArray requestName;
     QHostAddress nameserver;
+    QDnsLookup::Type requestType;
 };
 
 class QDnsLookupThreadPool : public QThreadPool

@@ -51,7 +51,7 @@ DNS_STATUS WINAPI DnsQueryEx(PDNS_QUERY_REQUEST pQueryRequest,
 
 QT_BEGIN_NAMESPACE
 
-void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
+void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 {
     // Perform DNS query.
     const QString requestNameUtf16 = QString::fromUtf8(requestName.data(), requestName.size());

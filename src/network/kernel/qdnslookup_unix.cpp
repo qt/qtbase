@@ -100,7 +100,7 @@ static const char *applyNameServer(res_state state, const QHostAddress &nameserv
 }
 #endif // !QT_CONFIG(res_setservers)
 
-void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
+void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 {
     // Initialize state.
     std::remove_pointer_t<res_state> state = {};
