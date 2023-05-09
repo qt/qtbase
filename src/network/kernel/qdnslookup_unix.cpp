@@ -24,6 +24,19 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+#if QT_CONFIG(res_setservers)
+// https://www.ibm.com/docs/en/i/7.3?topic=ssw_ibm_i_73/apis/ressetservers.html
+// https://docs.oracle.com/cd/E86824_01/html/E54774/res-setservers-3resolv.html
+static const char *applyNameServer(res_state state, const QHostAddress &nameserver, quint16 port)
+{
+    if (nameserver.isNull())
+        return nullptr;
+    union res_sockaddr_union u;
+    setSockaddr(reinterpret_cast<sockaddr *>(&u.sin), nameserver, port);
+    res_setservers(state, &u, 1);
+    return nullptr;
+}
+#else
 template <typename T> void setNsMap(T &ext, std::enable_if_t<sizeof(T::nsmap) != 0, uint16_t> v)
 {
     // Set nsmap[] to indicate that nsaddrs[0] is an IPv6 address
@@ -84,6 +97,7 @@ static const char *applyNameServer(res_state state, const QHostAddress &nameserv
     }
     return nullptr;
 }
+#endif // !QT_CONFIG(res_setservers)
 
 void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
 {

@@ -119,6 +119,25 @@ int main()
 "
 )
 
+# res_setserver
+qt_config_compile_test(res_setservers
+    LABEL "res_setservers()"
+    LIBRARIES
+        WrapResolv::WrapResolv
+    CODE
+"#include <sys/types.h>
+#include <netinet/in.h>
+#include <resolv.h>
+int main()
+{
+    union res_sockaddr_union sa;
+    res_state s = nullptr;
+    res_setservers(s, &sa, 1);
+    return 0;
+}
+"
+)
+
 # sctp
 qt_config_compile_test(sctp
     LABEL "SCTP support"
@@ -234,6 +253,10 @@ qt_feature("res_ninit" PRIVATE
     LABEL "res_ninit()"
     CONDITION TEST_res_ninit
     AUTODETECT UNIX
+)
+qt_feature("res_setservers" PRIVATE
+    LABEL "res_setservers()"
+    CONDITION QT_FEATURE_res_ninit AND TEST_res_setservers
 )
 qt_feature("securetransport" PUBLIC
     LABEL "SecureTransport"
