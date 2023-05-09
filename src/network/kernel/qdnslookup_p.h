@@ -31,6 +31,8 @@ QT_BEGIN_NAMESPACE
 
 //#define QDNSLOOKUP_DEBUG
 
+constexpr quint16 DnsPort = 53;
+
 class QDnsLookupRunnable;
 
 class QDnsLookupReply

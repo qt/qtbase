@@ -18,6 +18,7 @@ add_subdirectory(keypadnavigation)
 #add_subdirectory(lance) # qgl.h missing
 add_subdirectory(qcursor)
 add_subdirectory(qdesktopservices)
+add_subdirectory(qdnslookup)
 add_subdirectory(qgraphicsitem)
 add_subdirectory(qgraphicsitemgroup)
 add_subdirectory(qgraphicslayout/flicker)

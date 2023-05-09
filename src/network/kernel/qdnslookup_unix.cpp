@@ -1,4 +1,5 @@
 // Copyright (C) 2012 Jeremy Lainé <jeremy.laine@m4x.org>
+// Copyright (C) 2023 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qdnslookup_p.h"
@@ -6,7 +7,7 @@
 #include <qscopedpointer.h>
 #include <qurl.h>
 #include <qvarlengtharray.h>
-#include <private/qnativesocketengine_p.h>      // for SetSALen
+#include <private/qnativesocketengine_p.h>      // for setSockAddr
 #include <private/qtnetwork-config_p.h>
 
 QT_REQUIRE_CONFIG(res_ninit);
@@ -23,6 +24,67 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+template <typename T> void setNsMap(T &ext, std::enable_if_t<sizeof(T::nsmap) != 0, uint16_t> v)
+{
+    // Set nsmap[] to indicate that nsaddrs[0] is an IPv6 address
+    // See: https://sourceware.org/ml/libc-hacker/2002-05/msg00035.html
+    // Unneeded since glibc 2.22 (2015), but doesn't hurt to set it
+    // See: https://sourceware.org/git/?p=glibc.git;a=commit;h=2212c1420c92a33b0e0bd9a34938c9814a56c0f7
+    ext.nsmap[0] = v;
+}
+template <typename T> void setNsMap(T &, ...)
+{
+    // fallback
+}
+
+template <bool Condition>
+using EnableIfIPv6 = std::enable_if_t<Condition, const QHostAddress *>;
+
+template <typename State>
+bool setIpv6NameServer(State *state,
+                       EnableIfIPv6<sizeof(std::declval<State>()._u._ext.nsaddrs) != 0> addr,
+                       quint16 port)
+{
+    // glibc-like API to set IPv6 name servers
+    struct sockaddr_in6 *ns = state->_u._ext.nsaddrs[0];
+
+    // nsaddrs will be NULL if no nameserver is set in /etc/resolv.conf
+    if (!ns) {
+        // Memory allocated here will be free()'d in res_close() as we
+        // have done res_init() above.
+        ns = static_cast<struct sockaddr_in6*>(calloc(1, sizeof(struct sockaddr_in6)));
+        Q_CHECK_PTR(ns);
+        state->_u._ext.nsaddrs[0] = ns;
+    }
+
+    setNsMap(state->_u._ext, MAXNS + 1);
+    state->_u._ext.nscount6 = 1;
+    setSockaddr(ns, *addr, port);
+    return true;
+}
+
+template <typename State> bool setIpv6NameServer(State *, const void *, quint16)
+{
+    // fallback
+    return false;
+}
+
+static const char *applyNameServer(res_state state, const QHostAddress &nameserver, quint16 port)
+{
+    if (nameserver.isNull())
+        return nullptr;
+
+    state->nscount = 1;
+    state->nsaddr_list[0].sin_family = AF_UNSPEC;
+    if (nameserver.protocol() == QAbstractSocket::IPv6Protocol) {
+        if (!setIpv6NameServer(state, &nameserver, port))
+            return QDnsLookupPrivate::msgNoIpV6NameServerAdresses;
+    } else {
+        setSockaddr(&state->nsaddr_list[0], nameserver, port);
+    }
+    return nullptr;
+}
+
 void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
 {
     // Initialize state.
@@ -35,43 +97,11 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     auto guard = qScopeGuard([&] { res_nclose(&state); });
 
     //Check if a nameserver was set. If so, use it
-    if (!nameserver.isNull()) {
-        if (nameserver.protocol() == QAbstractSocket::IPv4Protocol) {
-            state.nsaddr_list[0].sin_addr.s_addr = htonl(nameserver.toIPv4Address());
-            state.nscount = 1;
-        } else if (nameserver.protocol() == QAbstractSocket::IPv6Protocol) {
-#if defined(Q_OS_LINUX)
-            struct sockaddr_in6 *ns;
-            ns = state._u._ext.nsaddrs[0];
-            // nsaddrs will be NULL if no nameserver is set in /etc/resolv.conf
-            if (!ns) {
-                // Memory allocated here will be free'd in res_close() as we
-                // have done res_init() above.
-                ns = (struct sockaddr_in6*) calloc(1, sizeof(struct sockaddr_in6));
-                Q_CHECK_PTR(ns);
-                state._u._ext.nsaddrs[0] = ns;
-            }
-#ifndef __UCLIBC__
-            // Set nsmap[] to indicate that nsaddrs[0] is an IPv6 address
-            // See: https://sourceware.org/ml/libc-hacker/2002-05/msg00035.html
-            state._u._ext.nsmap[0] = MAXNS + 1;
-#endif
-            state._u._ext.nscount6 = 1;
-            ns->sin6_family = AF_INET6;
-            ns->sin6_port = htons(53);
-            SetSALen::set(ns, sizeof(*ns));
-
-            Q_IPV6ADDR ipv6Address = nameserver.toIPv6Address();
-            for (int i=0; i<16; i++) {
-                ns->sin6_addr.s6_addr[i] = ipv6Address[i];
-            }
-#else
-            qWarning("%s", QDnsLookupPrivate::msgNoIpV6NameServerAdresses);
-            reply->error = QDnsLookup::ResolverError;
-            reply->errorString = tr(QDnsLookupPrivate::msgNoIpV6NameServerAdresses);
-            return;
-#endif
-        }
+    if (const char *msg = applyNameServer(&state, nameserver, DnsPort)) {
+        qWarning("%s", msg);
+        reply->error = QDnsLookup::ResolverError;
+        reply->errorString = tr(msg);
+        return;
     }
 #ifdef QDNSLOOKUP_DEBUG
     state.options |= RES_DEBUG;
