@@ -1836,10 +1836,6 @@ Q_IMPL_EVENT_COMMON(QResizeEvent)
     special handling, you should reimplement the event handler and
     ignore() the event.
 
-    The \l{mainwindows/application#close event handler}{closeEvent() in the
-    Application example} shows a close event handler that
-    asks whether to save a document before closing.
-
     If you want the widget to be deleted when it is closed, create it
     with the Qt::WA_DeleteOnClose flag. This is very useful for
     independent top-level windows in a multi-window application.
