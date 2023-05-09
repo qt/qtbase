@@ -1048,8 +1048,18 @@ QDnsTextRecord &QDnsTextRecord::operator=(const QDnsTextRecord &other)
     very fast and never fails.
 */
 
+static QDnsLookupRunnable::EncodedLabel encodeLabel(const QString &label)
+{
+    QString encodedLabel = qt_ACE_do(label, ToAceOnly, ForbidLeadingDot);
+#ifdef Q_OS_WIN
+    return encodedLabel;
+#else
+    return std::move(encodedLabel).toLatin1();
+#endif
+}
+
 inline QDnsLookupRunnable::QDnsLookupRunnable(const QDnsLookupPrivate *d)
-    : requestName(QUrl::toAce(d->name)),
+    : requestName(encodeLabel(d->name)),
       nameserver(d->nameserver),
       requestType(d->type),
       port(d->port)

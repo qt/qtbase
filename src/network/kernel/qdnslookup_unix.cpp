@@ -219,18 +219,26 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     if (header->rcode)
         return reply->makeDnsRcodeError(header->rcode);
 
-    char host[PACKETSZ], answer[PACKETSZ];
     qptrdiff offset = sizeof(HEADER);
     unsigned char *response = buffer.data();
     int status;
 
+    auto expandHost = [&](qptrdiff offset) {
+        char host[MAXCDNAME + 1];
+        status = dn_expand(response, response + responseLength, response + offset, host, sizeof(host));
+        if (status >= 0)
+            return decodeLabel(QLatin1StringView(host));
+
+        // failed
+        reply->makeInvalidReplyError(QDnsLookup::tr("Could not expand domain name"));
+        return QString();
+    };
+
     if (ntohs(header->qdcount) == 1) {
         // Skip the query host, type (2 bytes) and class (2 bytes).
-        status = dn_expand(response, response + responseLength, response + offset, host, sizeof(host));
-        if (status < 0) {
-            reply->makeInvalidReplyError(QDnsLookup::tr("Could not expand domain name"));
+        expandHost(offset);
+        if (status < 0)
             return;
-        }
         if (offset + status + 4 >= responseLength)
             header->qdcount = 0xffff;   // invalid reply below
         else
@@ -243,12 +251,9 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     const int answerCount = ntohs(header->ancount);
     int answerIndex = 0;
     while ((offset < responseLength) && (answerIndex < answerCount)) {
-        status = dn_expand(response, response + responseLength, response + offset, host, sizeof(host));
-        if (status < 0) {
-            reply->makeInvalidReplyError(QDnsLookup::tr("Could not expand domain name"));
+        const QString name = expandHost(offset);
+        if (status < 0)
             return;
-        }
-        const QString name = QUrl::fromAce(host);
 
         offset += status;
         if (offset + RRFIXEDSZ > responseLength) {
@@ -283,57 +288,52 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
             record.d->value = QHostAddress(response + offset);
             reply->hostAddressRecords.append(record);
         } else if (type == QDnsLookup::CNAME) {
-            status = dn_expand(response, response + responseLength, response + offset, answer, sizeof(answer));
+            QDnsDomainNameRecord record;
+            record.d->name = name;
+            record.d->timeToLive = ttl;
+            record.d->value = expandHost(offset);
             if (status < 0)
                 return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid canonical name record"));
-            QDnsDomainNameRecord record;
-            record.d->name = name;
-            record.d->timeToLive = ttl;
-            record.d->value = QUrl::fromAce(answer);
             reply->canonicalNameRecords.append(record);
         } else if (type == QDnsLookup::NS) {
-            status = dn_expand(response, response + responseLength, response + offset, answer, sizeof(answer));
+            QDnsDomainNameRecord record;
+            record.d->name = name;
+            record.d->timeToLive = ttl;
+            record.d->value = expandHost(offset);
             if (status < 0)
                 return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid name server record"));
-            QDnsDomainNameRecord record;
-            record.d->name = name;
-            record.d->timeToLive = ttl;
-            record.d->value = QUrl::fromAce(answer);
             reply->nameServerRecords.append(record);
         } else if (type == QDnsLookup::PTR) {
-            status = dn_expand(response, response + responseLength, response + offset, answer, sizeof(answer));
-            if (status < 0)
-                return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid pointer record"));
             QDnsDomainNameRecord record;
             record.d->name = name;
             record.d->timeToLive = ttl;
-            record.d->value = QUrl::fromAce(answer);
+            record.d->value = expandHost(offset);
+            if (status < 0)
+                return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid pointer record"));
             reply->pointerRecords.append(record);
         } else if (type == QDnsLookup::MX) {
             const quint16 preference = qFromBigEndian<quint16>(response + offset);
-            status = dn_expand(response, response + responseLength, response + offset + 2, answer, sizeof(answer));
-            if (status < 0)
-                return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid mail exchange record"));
             QDnsMailExchangeRecord record;
-            record.d->exchange = QUrl::fromAce(answer);
+            record.d->exchange = expandHost(offset + 2);
             record.d->name = name;
             record.d->preference = preference;
             record.d->timeToLive = ttl;
+            if (status < 0)
+                return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid mail exchange record"));
             reply->mailExchangeRecords.append(record);
         } else if (type == QDnsLookup::SRV) {
             const quint16 priority = qFromBigEndian<quint16>(response + offset);
             const quint16 weight = qFromBigEndian<quint16>(response + offset + 2);
             const quint16 port = qFromBigEndian<quint16>(response + offset + 4);
-            status = dn_expand(response, response + responseLength, response + offset + 6, answer, sizeof(answer));
-            if (status < 0)
-                return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid service record"));
             QDnsServiceRecord record;
             record.d->name = name;
-            record.d->target = QUrl::fromAce(answer);
+            record.d->target = expandHost(offset + 6);
             record.d->port = port;
             record.d->priority = priority;
             record.d->timeToLive = ttl;
             record.d->weight = weight;
+            if (status < 0)
+                return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid service record"));
             reply->serviceRecords.append(record);
         } else if (type == QDnsLookup::TXT) {
             QDnsTextRecord record;

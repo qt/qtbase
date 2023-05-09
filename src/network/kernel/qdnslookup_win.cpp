@@ -66,11 +66,10 @@ QT_BEGIN_NAMESPACE
 void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 {
     // Perform DNS query.
-    const QString requestNameUtf16 = QString::fromUtf8(requestName.data(), requestName.size());
     alignas(DNS_ADDR_ARRAY) uchar dnsAddresses[sizeof(DNS_ADDR_ARRAY) + sizeof(DNS_ADDR)];
     DNS_QUERY_REQUEST request = {};
     request.Version = 1;
-    request.QueryName = reinterpret_cast<const wchar_t *>(requestNameUtf16.constData());
+    request.QueryName = reinterpret_cast<const wchar_t *>(requestName.constData());
     request.QueryType = requestType;
     request.QueryOptions = DNS_QUERY_STANDARD | DNS_QUERY_TREAT_AS_FQDN;
 
@@ -98,7 +97,7 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 
     // Extract results.
     for (PDNS_RECORD ptr = results.pQueryRecords; ptr != NULL; ptr = ptr->pNext) {
-        const QString name = QUrl::fromAce( QString::fromWCharArray( ptr->pName ).toLatin1() );
+        const QString name = decodeLabel(ptr->pName);
         if (ptr->wType == QDnsLookup::A) {
             QDnsHostAddressRecord record;
             record.d->name = name;
@@ -118,12 +117,12 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
             QDnsDomainNameRecord record;
             record.d->name = name;
             record.d->timeToLive = ptr->dwTtl;
-            record.d->value = QUrl::fromAce(QString::fromWCharArray(ptr->Data.Cname.pNameHost).toLatin1());
+            record.d->value = decodeLabel(ptr->Data.Cname.pNameHost);
             reply->canonicalNameRecords.append(record);
         } else if (ptr->wType == QDnsLookup::MX) {
             QDnsMailExchangeRecord record;
             record.d->name = name;
-            record.d->exchange = QUrl::fromAce(QString::fromWCharArray(ptr->Data.Mx.pNameExchange).toLatin1());
+            record.d->exchange = decodeLabel(QStringView(ptr->Data.Mx.pNameExchange));
             record.d->preference = ptr->Data.Mx.wPreference;
             record.d->timeToLive = ptr->dwTtl;
             reply->mailExchangeRecords.append(record);
@@ -131,18 +130,18 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
             QDnsDomainNameRecord record;
             record.d->name = name;
             record.d->timeToLive = ptr->dwTtl;
-            record.d->value = QUrl::fromAce(QString::fromWCharArray(ptr->Data.Ns.pNameHost).toLatin1());
+            record.d->value = decodeLabel(QStringView(ptr->Data.Ns.pNameHost));
             reply->nameServerRecords.append(record);
         } else if (ptr->wType == QDnsLookup::PTR) {
             QDnsDomainNameRecord record;
             record.d->name = name;
             record.d->timeToLive = ptr->dwTtl;
-            record.d->value = QUrl::fromAce(QString::fromWCharArray(ptr->Data.Ptr.pNameHost).toLatin1());
+            record.d->value = decodeLabel(QStringView(ptr->Data.Ptr.pNameHost));
             reply->pointerRecords.append(record);
         } else if (ptr->wType == QDnsLookup::SRV) {
             QDnsServiceRecord record;
             record.d->name = name;
-            record.d->target = QUrl::fromAce(QString::fromWCharArray(ptr->Data.Srv.pNameTarget).toLatin1());
+            record.d->target = decodeLabel(QStringView(ptr->Data.Srv.pNameTarget));
             record.d->port = ptr->Data.Srv.wPort;
             record.d->priority = ptr->Data.Srv.wPriority;
             record.d->timeToLive = ptr->dwTtl;
@@ -153,7 +152,7 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
             record.d->name = name;
             record.d->timeToLive = ptr->dwTtl;
             for (unsigned int i = 0; i < ptr->Data.Txt.dwStringCount; ++i) {
-                record.d->values << QString::fromWCharArray((ptr->Data.Txt.pStringArray[i])).toLatin1();;
+                record.d->values << QStringView(ptr->Data.Txt.pStringArray[i]).toLatin1();
             }
             reply->textRecords.append(record);
         }

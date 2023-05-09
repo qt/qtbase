@@ -25,6 +25,7 @@
 #include "QtNetwork/qdnslookup.h"
 #include "QtNetwork/qhostaddress.h"
 #include "private/qobject_p.h"
+#include "private/qurl_p.h"
 
 QT_REQUIRE_CONFIG(dnslookup);
 
@@ -174,6 +175,12 @@ class QDnsLookupRunnable : public QObject, public QRunnable
     Q_OBJECT
 
 public:
+#ifdef Q_OS_WIN
+    using EncodedLabel = QString;
+#else
+    using EncodedLabel = QByteArray;
+#endif
+
     QDnsLookupRunnable(const QDnsLookupPrivate *d);
     void run() override;
 
@@ -181,8 +188,13 @@ signals:
     void finished(const QDnsLookupReply &reply);
 
 private:
+    template <typename T> static QString decodeLabel(T encodedLabel)
+    {
+        return qt_ACE_do(encodedLabel.toString(), NormalizeAce, ForbidLeadingDot);
+    }
     void query(QDnsLookupReply *reply);
-    QByteArray requestName;
+
+    EncodedLabel requestName;
     QHostAddress nameserver;
     QDnsLookup::Type requestType;
     quint16 port;
