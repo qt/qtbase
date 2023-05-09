@@ -944,6 +944,13 @@ void tst_QLocale::stringToDouble_data()
     // Underflow:
     QTest::newRow("C tiny") << QString("C") << QString("2e-324") << false << 0.;
     QTest::newRow("C -tiny") << QString("C") << QString("-2e-324") << false << 0.;
+
+    // Test a tiny fraction (well beyond denomal) with a huge exponent:
+    const QString zeros(500, '0');
+    QTest::newRow("C tiny fraction, huge exponent")
+        << u"C"_s << u"0."_s + zeros + u"123e501"_s << true << 1.23;
+    QTest::newRow("uk_UA tiny fraction, huge exponent")
+        << u"uk_UA"_s << u"0,"_s + zeros + u"123\u0415" "501"_s << true << 1.23;
 }
 
 void tst_QLocale::stringToDouble()
@@ -1030,6 +1037,13 @@ void tst_QLocale::stringToFloat_data()
     // Underflow double, too:
     QTest::newRow("C tiny") << C << QString("2e-324") << false << 0.;
     QTest::newRow("C -tiny") << C << QString("-2e-324") << false << 0.;
+
+    // Test a small fraction (well beyond denomal) with a big exponent:
+    const QString zeros(80, '0');
+    QTest::newRow("C small fraction, big exponent")
+        << u"C"_s << u"0."_s + zeros + u"123e81"_s << true << 1.23;
+    QTest::newRow("uk_UA small fraction, big exponent")
+        << u"uk_UA"_s << u"0,"_s + zeros + u"123\u0415" "81"_s << true << 1.23;
 }
 
 void tst_QLocale::stringToFloat()
