@@ -7,7 +7,11 @@
 #include <QSignalSpy>
 
 #include <QtNetwork/QDnsLookup>
+
+#include <QtCore/QRandomGenerator>
 #include <QtNetwork/QHostAddress>
+#include <QtNetwork/QNetworkDatagram>
+#include <QtNetwork/QUdpSocket>
 
 using namespace Qt::StringLiterals;
 static const int Timeout = 15000; // 15s
@@ -35,6 +39,7 @@ private slots:
 
     void lookupReuse();
     void lookupAbortRetry();
+    void setNameserverLoopback();
     void bindingsAndProperties();
 };
 
@@ -351,6 +356,62 @@ void tst_QDnsLookup::lookupAbortRetry()
     QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("2001:db8::1"));
 }
 
+void tst_QDnsLookup::setNameserverLoopback()
+{
+#ifdef Q_OS_WIN
+    // Windows doesn't like sending DNS requests to ports other than 53, so
+    // let's try it first.
+    constexpr quint16 DesiredPort = 53;
+#else
+    // Trying to bind to port 53 will fail on Unix systems unless this test is
+    // run as root, so we try mDNS's port (to help decoding in a packet capture).
+    constexpr quint16 DesiredPort = 5353;   // mDNS
+#endif
+    // random loopback address so multiple copies of this test can run
+    QHostAddress desiredAddress(0x7f000000 | QRandomGenerator::system()->bounded(0xffffff));
+
+    QUdpSocket server;
+    if (!server.bind(desiredAddress, DesiredPort)) {
+        // port in use, try a random one
+        server.bind(QHostAddress::LocalHost, 0);
+    }
+    QCOMPARE(server.state(), QUdpSocket::BoundState);
+
+    QDnsLookup lookup(QDnsLookup::Type::A, u"somelabel.somedomain"_s);
+    QSignalSpy spy(&lookup, SIGNAL(finished()));
+    lookup.setNameserver(server.localAddress(), server.localPort());
+
+    // QDnsLookup is threaded, so we can answer on the main thread
+    QObject::connect(&server, &QUdpSocket::readyRead,
+                     &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
+    QObject::connect(&lookup, &QDnsLookup::finished,
+                     &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
+    lookup.lookup();
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY2(spy.isEmpty(), qPrintable(lookup.errorString()));
+
+    QNetworkDatagram dgram = server.receiveDatagram();
+    QByteArray data = dgram.data();
+    QCOMPARE_GT(data.size(), HeaderSize);
+
+    quint8 opcode = (quint8(data.at(3)) >> 4) & 0xF;
+    QCOMPARE(opcode, 0);        // standard query
+
+    // send an NXDOMAIN reply to release the lookup thread
+    QByteArray reply = data;
+    reply[2] = 0x80;    // header->qr = true;
+    reply[3] = 3;       // header->rcode = NXDOMAIN;
+    server.writeDatagram(dgram.makeReply(reply));
+    server.close();
+
+    // now check that the QDnsLookup finished
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(spy.size(), 1);
+    QCOMPARE(lookup.error(), QDnsLookup::NotFoundError);
+}
+
 void tst_QDnsLookup::bindingsAndProperties()
 {
     QDnsLookup lookup;
@@ -383,14 +444,23 @@ void tst_QDnsLookup::bindingsAndProperties()
     QProperty<QHostAddress> nameserverProp;
     lookup.bindableNameserver().setBinding(Qt::makePropertyBinding(nameserverProp));
     const QSignalSpy nameserverChangeSpy(&lookup, &QDnsLookup::nameserverChanged);
+    const QSignalSpy nameserverPortChangeSpy(&lookup, &QDnsLookup::nameserverPortChanged);
 
     nameserverProp = QHostAddress::LocalHost;
     QCOMPARE(nameserverChangeSpy.size(), 1);
+    QCOMPARE(nameserverPortChangeSpy.size(), 0);
     QCOMPARE(lookup.nameserver(), QHostAddress::LocalHost);
 
     nameserverProp.setBinding(lookup.bindableNameserver().makeBinding());
     lookup.setNameserver(QHostAddress::Any);
     QCOMPARE(nameserverProp.value(), QHostAddress::Any);
+    QCOMPARE(nameserverChangeSpy.size(), 2);
+    QCOMPARE(nameserverPortChangeSpy.size(), 0);
+
+    lookup.setNameserver(QHostAddress::LocalHostIPv6, 10053);
+    QCOMPARE(nameserverProp.value(), QHostAddress::LocalHostIPv6);
+    QCOMPARE(nameserverChangeSpy.size(), 3);
+    QCOMPARE(nameserverPortChangeSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QDnsLookup)

@@ -82,7 +82,7 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
         request.pDnsServerList->MaxCount = sizeof(dnsAddresses);
         request.pDnsServerList->AddrCount = 1;
         // ### setting port 53 seems to cause some systems to fail
-        setSockaddr(sa, nameserver, 0);
+        setSockaddr(sa, nameserver, port == DnsPort ? 0 : port);
         request.pDnsServerList->Family = sa->sa_family;
     }
 

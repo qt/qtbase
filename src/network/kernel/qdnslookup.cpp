@@ -244,16 +244,39 @@ QDnsLookup::QDnsLookup(Type type, const QString &name, QObject *parent)
 /*!
     \fn QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent)
     \since 5.4
-    Constructs a QDnsLookup object for the given \a type, \a name and
-    \a nameserver and sets \a parent as the parent object.
+
+    Constructs a QDnsLookup object to issue a query for \a name of record type
+    \a type, using the DNS server \a nameserver running on the default DNS port,
+    and sets \a parent as the parent object.
 */
 
 QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent)
+    : QDnsLookup(type, name, nameserver, DnsPort, parent)
+{
+}
+
+/*!
+    \fn QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, quint16 port, QObject *parent)
+    \since 6.6
+
+    Constructs a QDnsLookup object to issue a query for \a name of record type
+    \a type, using the DNS server \a nameserver running on port \a port, and
+    sets \a parent as the parent object.
+
+//! [nameserver-port]
+    \note Setting the port number to any value other than the default (53) can
+    cause the name resolution to fail, depending on the operating system
+    limitations and firewalls. Notably, the Windows API used by QDnsLookup is
+    unable to handle alternate port numbers.
+//! [nameserver-port]
+*/
+QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, quint16 port, QObject *parent)
     : QObject(*new QDnsLookupPrivate, parent)
 {
     Q_D(QDnsLookup);
     d->name = name;
     d->type = type;
+    d->port = port;
     d->nameserver = nameserver;
 }
 
@@ -364,6 +387,46 @@ QBindable<QHostAddress> QDnsLookup::bindableNameserver()
 {
     Q_D(QDnsLookup);
     return &d->nameserver;
+}
+
+/*!
+    \property QDnsLookup::nameserverPort
+    \since 6.6
+    \brief the port number of nameserver to use for DNS lookup.
+    \include qdnslookup.cpp nameserver-port
+*/
+
+quint16 QDnsLookup::nameserverPort() const
+{
+    return d_func()->port;
+}
+
+void QDnsLookup::setNameserverPort(quint16 nameserverPort)
+{
+    Q_D(QDnsLookup);
+    d->port = nameserverPort;
+}
+
+QBindable<quint16> QDnsLookup::bindableNameserverPort()
+{
+    Q_D(QDnsLookup);
+    return &d->port;
+}
+
+/*!
+    \since 6.6
+    Sets the nameserver to \a nameserver and the port to \a port.
+
+    \include qdnslookup.cpp nameserver-port
+
+    \sa QDnsLookup::nameserver, QDnsLookup::nameserverPort
+*/
+void QDnsLookup::setNameserver(const QHostAddress &nameserver, quint16 port)
+{
+    Qt::beginPropertyUpdateGroup();
+    setNameserver(nameserver);
+    setNameserverPort(port);
+    Qt::endPropertyUpdateGroup();
 }
 
 /*!
@@ -965,7 +1028,8 @@ void QDnsLookupPrivate::_q_lookupFinished(const QDnsLookupReply &_reply)
 inline QDnsLookupRunnable::QDnsLookupRunnable(const QDnsLookupPrivate *d)
     : requestName(QUrl::toAce(d->name)),
       nameserver(d->nameserver),
-      requestType(d->type)
+      requestType(d->type),
+      port(d->port)
 {
 }
 

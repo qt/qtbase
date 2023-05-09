@@ -6,6 +6,7 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QMetaEnum>
 #include <QtCore/QTimer>
+#include <QtCore/QUrl>
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QHostInfo>
 #include <QtNetwork/QDnsLookup>
@@ -36,6 +37,24 @@ static int showHelp(const char *argv0, int exitcode)
     // like dig
     printf("%s [@global-server] [domain] [query-type]\n", argv0);
     return exitcode;
+}
+
+static auto parseServerAddress(QString server)
+{
+    struct R {
+        QHostAddress address;
+        int port = -1;
+    } r;
+
+    // let's use QUrl to help us
+    QUrl url;
+    url.setAuthority(server);
+    if (!url.isValid() || !url.userInfo().isNull())
+        return r;           // failed
+
+    r.port = url.port();
+    r.address.setAddress(url.host());
+    return r;
 }
 
 static void printAnswers(const QDnsLookup &lookup)
@@ -96,7 +115,7 @@ static void printResults(const QDnsLookup &lookup, QElapsedTimer::Duration durat
 
     printf("\n;; Query time: %lld ms\n", qint64(duration_cast<milliseconds>(duration).count()));
     if (QHostAddress server = lookup.nameserver(); !server.isNull())
-        printf(";; SERVER: %s#53\n", qPrintable(server.toString()));
+        printf(";; SERVER: %s#%d\n", qPrintable(server.toString()), lookup.nameserverPort());
 }
 
 int main(int argc, char *argv[])
@@ -138,15 +157,15 @@ int main(int argc, char *argv[])
 
     QDnsLookup lookup(type, domain);
     if (!server.isEmpty()) {
-        QHostAddress addr(server);
-        if (addr.isNull())
-            addr = QHostInfo::fromName(server).addresses().value(0);
-        if (addr.isNull()) {
+        auto addr = parseServerAddress(server);
+        if (addr.address.isNull()) {
             fprintf(stderr, "%s: could not parse name server address '%s'\n",
                     argv[0], qPrintable(server));
             return EXIT_FAILURE;
         }
-        lookup.setNameserver(addr);
+        lookup.setNameserver(addr.address);
+        if (addr.port > 0)
+            lookup.setNameserverPort(addr.port);
     }
 
     // execute the lookup

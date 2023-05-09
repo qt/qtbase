@@ -120,14 +120,11 @@ class QDnsLookupPrivate : public QObjectPrivate
 {
 public:
     QDnsLookupPrivate()
-        : isFinished(false)
-        , type(QDnsLookup::A)
-        , runnable(nullptr)
+        : type(QDnsLookup::A)
+        , port(DnsPort)
     { }
     void _q_lookupFinished(const QDnsLookupReply &reply);
 
-
-    bool isFinished;
 
     void nameChanged()
     {
@@ -135,6 +132,13 @@ public:
     }
     Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, QString, name,
                                &QDnsLookupPrivate::nameChanged);
+
+    void nameserverChanged()
+    {
+        emit q_func()->nameserverChanged(nameserver);
+    }
+    Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, QHostAddress, nameserver,
+                               &QDnsLookupPrivate::nameserverChanged);
 
     void typeChanged()
     {
@@ -144,15 +148,18 @@ public:
     Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, QDnsLookup::Type,
                                type, &QDnsLookupPrivate::typeChanged);
 
-    void nameserverChanged()
+    void nameserverPortChanged()
     {
-        emit q_func()->nameserverChanged(nameserver);
+        emit q_func()->nameserverPortChanged(port);
     }
-    Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, QHostAddress, nameserver,
-                               &QDnsLookupPrivate::nameserverChanged);
+
+    Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, quint16,
+                               port, &QDnsLookupPrivate::nameserverPortChanged);
+
 
     QDnsLookupReply reply;
-    QDnsLookupRunnable *runnable;
+    QDnsLookupRunnable *runnable = nullptr;
+    bool isFinished = false;
 
     Q_DECLARE_PUBLIC(QDnsLookup)
 };
@@ -173,6 +180,7 @@ private:
     QByteArray requestName;
     QHostAddress nameserver;
     QDnsLookup::Type requestType;
+    quint16 port;
 };
 
 class QDnsLookupThreadPool : public QThreadPool
