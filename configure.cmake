@@ -1026,6 +1026,11 @@ qt_feature("ccache"
     CONDITION QT_USE_CCACHE
 )
 qt_feature_config("ccache" QMAKE_PRIVATE_CONFIG)
+qt_feature("unity-build"
+    LABEL "Unity Build"
+    AUTODETECT 1
+    CONDITION QT_UNITY_BUILD
+)
 qt_feature("static_runtime"
     LABEL "Statically link the C/C++ runtime library"
     AUTODETECT OFF
@@ -1066,6 +1071,9 @@ qt_configure_add_summary_entry(ARGS "shared")
 qt_configure_add_summary_entry(
     ARGS "ccache"
     CONDITION UNIX
+)
+qt_configure_add_summary_entry(
+    ARGS "unity-build"
 )
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
