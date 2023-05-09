@@ -293,12 +293,8 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     // QDBusServer's thread in order to enable it after the
     // QDBusServer::newConnection() signal has been received by the
     // application's code
-    newConnection->ref.ref();
     QReadLocker serverLock(&serverConnection->lock);
-    QDBusConnectionDispatchEnabler *o = new QDBusConnectionDispatchEnabler(newConnection);
-    QMetaObject::invokeMethod(o, &QDBusConnectionDispatchEnabler::execute, Qt::QueuedConnection);
-    if (serverConnection->serverObject)
-        o->moveToThread(serverConnection->serverObject->thread());
+    newConnection->enableDispatchDelayed(serverConnection->serverObject);
 }
 
 void QDBusConnectionPrivate::_q_newConnection(QDBusConnectionPrivate *newConnection)
@@ -2654,6 +2650,28 @@ void QDBusConnectionPrivate::postEventToThread(int action, QObject *object, QEve
     QDBusLockerBase::reportThreadAction(action, QDBusLockerBase::BeforePost, this);
     QCoreApplication::postEvent(object, ev);
     QDBusLockerBase::reportThreadAction(action, QDBusLockerBase::AfterPost, this);
+}
+
+/*
+ * Enable dispatch of D-Bus events for this connection, but only after
+ * context's thread's event loop has started and processed any already
+ * pending events. The event dispatch is then enabled in the DBus aux thread.
+ */
+void QDBusConnectionPrivate::enableDispatchDelayed(QObject *context)
+{
+    ref.ref();
+    QMetaObject::invokeMethod(
+            context,
+            [this]() {
+                // This call cannot race with something disabling dispatch only
+                // because dispatch is never re-disabled from Qt code on an
+                // in-use connection once it has been enabled.
+                QMetaObject::invokeMethod(
+                        this, [this] { setDispatchEnabled(true); }, Qt::QueuedConnection);
+                if (!ref.deref())
+                    deleteLater();
+            },
+            Qt::QueuedConnection);
 }
 
 QT_END_NAMESPACE

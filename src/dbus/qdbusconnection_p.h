@@ -212,6 +212,8 @@ public:
 
     void postEventToThread(int action, QObject *target, QEvent *event);
 
+    void enableDispatchDelayed(QObject *context);
+
 private:
     void checkThread();
     bool handleError(const QDBusErrorInternal &error);
@@ -356,27 +358,6 @@ extern QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNod
                                      const QDBusMessage &msg);
 extern QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &node,
                                         const QDBusMessage &msg);
-
-// can be replaced with a lambda in Qt 5.7
-class QDBusConnectionDispatchEnabler : public QObject
-{
-    Q_OBJECT
-    QDBusConnectionPrivate *con;
-public:
-    QDBusConnectionDispatchEnabler(QDBusConnectionPrivate *con) : con(con) {}
-
-public slots:
-    void execute()
-    {
-        // This call cannot race with something disabling dispatch only because dispatch is
-        // never re-disabled from Qt code on an in-use connection once it has been enabled.
-        QMetaObject::invokeMethod(
-                con, [con = con]() { con->setDispatchEnabled(true); }, Qt::QueuedConnection);
-        if (!con->ref.deref())
-            con->deleteLater();
-        deleteLater();
-    }
-};
 
 #endif // QT_BOOTSTRAPPED
 
