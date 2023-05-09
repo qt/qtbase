@@ -5,37 +5,78 @@
 #include "qdnslookup_p.h"
 
 #include <qurl.h>
+#include <private/qnativesocketengine_p.h>
 #include <private/qsystemerror_p.h>
 
 #include <qt_windows.h>
 #include <windns.h>
 #include <memory.h>
 
+#ifndef DNS_ADDR_MAX_SOCKADDR_LENGTH
+// MinGW headers are missing almost all of this
+typedef struct Qt_DnsAddr {
+  CHAR  MaxSa[32];
+  DWORD DnsAddrUserDword[8];
+} DNS_ADDR, *PDNS_ADDR;
+typedef struct Qt_DnsAddrArray {
+  DWORD    MaxCount;
+  DWORD    AddrCount;
+  DWORD    Tag;
+  WORD     Family;
+  WORD     WordReserved;
+  DWORD    Flags;
+  DWORD    MatchFlag;
+  DWORD    Reserved1;
+  DWORD    Reserved2;
+  DNS_ADDR AddrArray[];
+} DNS_ADDR_ARRAY, *PDNS_ADDR_ARRAY;
+typedef struct Qt_DNS_QUERY_REQUEST {
+  ULONG                         Version;
+  PCWSTR                        QueryName;
+  WORD                          QueryType;
+  ULONG64                       QueryOptions;
+  PDNS_ADDR_ARRAY               pDnsServerList;
+  ULONG                         InterfaceIndex;
+  PDNS_QUERY_COMPLETION_ROUTINE pQueryCompletionCallback;
+  PVOID                         pQueryContext;
+} DNS_QUERY_REQUEST, *PDNS_QUERY_REQUEST;
+
+typedef void *PDNS_QUERY_CANCEL;    // not really, but we don't need it
+extern "C" {
+DNS_STATUS WINAPI DnsQueryEx(PDNS_QUERY_REQUEST pQueryRequest,
+        PDNS_QUERY_RESULT   pQueryResults,
+        PDNS_QUERY_CANCEL   pCancelHandle);
+}
+#endif
+
 QT_BEGIN_NAMESPACE
 
 void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
 {
     // Perform DNS query.
-    PDNS_RECORD dns_records = 0;
     const QString requestNameUtf16 = QString::fromUtf8(requestName.data(), requestName.size());
-    IP4_ARRAY srvList;
-    memset(&srvList, 0, sizeof(IP4_ARRAY));
+    alignas(DNS_ADDR_ARRAY) uchar dnsAddresses[sizeof(DNS_ADDR_ARRAY) + sizeof(DNS_ADDR)];
+    DNS_QUERY_REQUEST request = {};
+    request.Version = 1;
+    request.QueryName = reinterpret_cast<const wchar_t *>(requestNameUtf16.constData());
+    request.QueryType = requestType;
+    request.QueryOptions = DNS_QUERY_STANDARD;
+
     if (!nameserver.isNull()) {
-        if (nameserver.protocol() == QAbstractSocket::IPv4Protocol) {
-            // The below code is referenced from: http://support.microsoft.com/kb/831226
-            srvList.AddrCount = 1;
-            srvList.AddrArray[0] = htonl(nameserver.toIPv4Address());
-        } else if (nameserver.protocol() == QAbstractSocket::IPv6Protocol) {
-            // For supoprting IPv6 nameserver addresses, we'll need to switch
-            // from DnsQuey() to DnsQueryEx() as it supports passing an IPv6
-            // address in the nameserver list
-            qWarning("%s", QDnsLookupPrivate::msgNoIpV6NameServerAdresses);
-            reply->error = QDnsLookup::ResolverError;
-            reply->errorString = tr(QDnsLookupPrivate::msgNoIpV6NameServerAdresses);
-            return;
-        }
+        memset(dnsAddresses, 0, sizeof(dnsAddresses));
+        request.pDnsServerList = new (dnsAddresses) DNS_ADDR_ARRAY;
+        auto addr = new (request.pDnsServerList->AddrArray) DNS_ADDR[1];
+        auto sa = new (addr[0].MaxSa) sockaddr;
+        request.pDnsServerList->MaxCount = sizeof(dnsAddresses);
+        request.pDnsServerList->AddrCount = 1;
+        // ### setting port 53 seems to cause some systems to fail
+        setSockaddr(sa, nameserver, 0);
+        request.pDnsServerList->Family = sa->sa_family;
     }
-    const DNS_STATUS status = DnsQuery_W(reinterpret_cast<const wchar_t*>(requestNameUtf16.utf16()), requestType, DNS_QUERY_STANDARD, &srvList, &dns_records, NULL);
+
+    DNS_QUERY_RESULT results = {};
+    results.Version = 1;
+    const DNS_STATUS status = DnsQueryEx(&request, &results, nullptr);
     switch (status) {
     case ERROR_SUCCESS:
         break;
@@ -63,7 +104,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     }
 
     // Extract results.
-    for (PDNS_RECORD ptr = dns_records; ptr != NULL; ptr = ptr->pNext) {
+    for (PDNS_RECORD ptr = results.pQueryRecords; ptr != NULL; ptr = ptr->pNext) {
         const QString name = QUrl::fromAce( QString::fromWCharArray( ptr->pName ).toLatin1() );
         if (ptr->wType == QDnsLookup::A) {
             QDnsHostAddressRecord record;
@@ -125,7 +166,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         }
     }
 
-    DnsRecordListFree(dns_records, DnsFreeRecordList);
+    DnsRecordListFree(results.pQueryRecords, DnsFreeRecordList);
 }
 
 QT_END_NAMESPACE
