@@ -102,17 +102,17 @@ QCtfLibImpl::QCtfLibImpl()
     }
     m_session.all = m_session.tracepoints.contains(QStringLiteral("all"));
 
-    auto datetime = QDateTime::currentDateTime();
-    QString mhn = QSysInfo::machineHostName();
+    auto datetime = QDateTime::currentDateTime().toUTC();
+    const QString mhn = QSysInfo::machineHostName();
     QString metadata = QString::fromUtf8(traceMetadataTemplate, traceMetadataSize);
     metadata.replace(QStringLiteral("$TRACE_UUID"), s_TraceUuid.toString(QUuid::WithoutBraces));
     metadata.replace(QStringLiteral("$ARC_BIT_WIDTH"), QString::number(Q_PROCESSOR_WORDSIZE * 8));
     metadata.replace(QStringLiteral("$SESSION_NAME"), m_session.name);
-    metadata.replace(QStringLiteral("$CREATION_TIME"), datetime.toString());
+    metadata.replace(QStringLiteral("$CREATION_TIME"), datetime.toString(Qt::ISODate));
     metadata.replace(QStringLiteral("$HOST_NAME"), mhn);
-    metadata.replace(QStringLiteral("$CLOCK_FREQUENCY"), m_timer.isMonotonic() ? QStringLiteral("1000000000") : QStringLiteral("1000"));
-    metadata.replace(QStringLiteral("$CLOCK_NAME"), m_timer.isMonotonic() ? QStringLiteral("monotonic") : QStringLiteral("system"));
-    metadata.replace(QStringLiteral("$CLOCK_TYPE"), m_timer.isMonotonic() ? QStringLiteral("Monotonic clock") : QStringLiteral("System clock"));
+    metadata.replace(QStringLiteral("$CLOCK_FREQUENCY"), QStringLiteral("1000000000"));
+    metadata.replace(QStringLiteral("$CLOCK_NAME"), QStringLiteral("monotonic"));
+    metadata.replace(QStringLiteral("$CLOCK_TYPE"), QStringLiteral("Monotonic clock"));
     metadata.replace(QStringLiteral("$CLOCK_OFFSET"), QString::number(datetime.toMSecsSinceEpoch() * 1000000));
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
     metadata.replace(QStringLiteral("$ENDIANNESS"), QStringLiteral("be"));
@@ -120,7 +120,6 @@ QCtfLibImpl::QCtfLibImpl()
     metadata.replace(QStringLiteral("$ENDIANNESS"), QStringLiteral("le"));
 #endif
     writeMetadata(metadata, true);
-
     m_timer.start();
 }
 
