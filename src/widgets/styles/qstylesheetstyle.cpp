@@ -138,8 +138,6 @@ class QStyleSheetStyleRecursionGuard
     if (globalStyleSheetStyle != 0 && globalStyleSheetStyle != this) { RETURN; } \
     QStyleSheetStyleRecursionGuard recursion_guard(this);
 
-#define ceil(x) ((int)(x) + ((x) > 0 && (x) != (int)(x)))
-
 enum PseudoElement {
     PseudoElement_None,
     PseudoElement_DownArrow,
@@ -4214,6 +4212,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         --chunkCount;
                     };
                 } else if (chunkWidth > 0) {
+                    const auto ceil = [](qreal x) { return int(x) + (x > 0 && x != int(x)); };
                     const int chunkCount = ceil(qreal(fillWidth)/chunkWidth);
                     int x = reverse ? r.left() + r.width() - chunkWidth : r.x();
 
@@ -6489,8 +6488,6 @@ QPixmap QStyleSheetStyle::loadPixmap(const QString &fileName, const QObject *con
     pixmap.setDevicePixelRatio(sourceDevicePixelRatio);
     return pixmap;
 }
-
-#undef ceil
 
 QT_END_NAMESPACE
 
