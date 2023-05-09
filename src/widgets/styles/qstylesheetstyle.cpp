@@ -6500,6 +6500,8 @@ QPixmap QStyleSheetStyle::loadPixmap(const QString &fileName, const QObject *con
     return pixmap;
 }
 
+#undef ceil
+
 QT_END_NAMESPACE
 
 #include "moc_qstylesheetstyle_p.cpp"
