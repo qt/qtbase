@@ -109,10 +109,11 @@ public:
     template <class Rep, class Period>
     void setRemainingTime(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type_ = Qt::CoarseTimer)
     {
+        using namespace std::chrono;
         if (remaining == remaining.max())
             *this = QDeadlineTimer(Forever, type_);
         else
-            setPreciseRemainingTime(0, std::chrono::nanoseconds(remaining).count(), type_);
+            setPreciseRemainingTime(0, ceil<nanoseconds>(remaining).count(), type_);
     }
 
     std::chrono::nanoseconds remainingTimeAsDuration() const noexcept
