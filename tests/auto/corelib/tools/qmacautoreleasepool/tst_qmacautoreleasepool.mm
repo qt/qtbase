@@ -14,7 +14,6 @@ private slots:
     void noPool();
     void rootLevelPool();
     void stackAllocatedPool();
-    void heapAllocatedPool();
 };
 
 static id lastDeallocedObject = nil;
@@ -61,26 +60,6 @@ void tst_QMacAutoreleasePool::stackAllocatedPool()
     }
     QCOMPARE(lastDeallocedObject, allocedObject);
     [pool drain];
-}
-
-void tst_QMacAutoreleasePool::heapAllocatedPool()
-{
-    // The special case, a pool allocated on the heap, or as a member of a
-    // heap allocated object. This is not a supported use of QMacAutoReleasePool,
-    // and will result in warnings if the pool is prematurely drained.
-
-    NSObject *allocedObject = nil;
-    {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        QMacAutoReleasePool *qtPool = nullptr;
-        {
-            qtPool = new QMacAutoReleasePool;
-            allocedObject = [[[DeallocTracker alloc] init] autorelease];
-        }
-        [pool drain];
-        delete qtPool;
-    }
-    QCOMPARE(lastDeallocedObject, allocedObject);
 }
 
 QTEST_APPLESS_MAIN(tst_QMacAutoreleasePool)

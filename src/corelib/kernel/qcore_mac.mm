@@ -217,38 +217,7 @@ QT_USE_NAMESPACE
 @interface QT_MANGLE_NAMESPACE(QMacAutoReleasePoolTracker) : NSObject
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QMacAutoReleasePoolTracker) {
-    NSAutoreleasePool **m_pool;
-}
-
-- (instancetype)initWithPool:(NSAutoreleasePool **)pool
-{
-    if ((self = [self init]))
-        m_pool = pool;
-    return self;
-}
-
-- (void)dealloc
-{
-    if (*m_pool) {
-        // The pool is still valid, which means we're not being drained from
-        // the corresponding QMacAutoReleasePool (see below).
-
-        // QMacAutoReleasePool has only a single member, the NSAutoreleasePool*
-        // so the address of that member is also the QMacAutoReleasePool itself.
-        QMacAutoReleasePool *pool = reinterpret_cast<QMacAutoReleasePool *>(m_pool);
-        qWarning() << "Premature drain of" << pool << "This can happen if you've allocated"
-            << "the pool on the heap, or as a member of a heap-allocated object. This is not a"
-            << "supported use of QMacAutoReleasePool, and might result in crashes when objects"
-            << "in the pool are deallocated and then used later on under the assumption they"
-            << "will be valid until" << pool << "has been drained.";
-
-        // Reset the pool so that it's not drained again later on
-        *m_pool = nullptr;
-    }
-
-    [super dealloc];
-}
+@implementation QT_MANGLE_NAMESPACE(QMacAutoReleasePoolTracker)
 @end
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAutoReleasePoolTracker);
 
@@ -291,28 +260,15 @@ QMacAutoReleasePool::QMacAutoReleasePool()
     }
 #endif
 
-    [[[trackerClass alloc] initWithPool:
-        reinterpret_cast<NSAutoreleasePool **>(&pool)] autorelease];
+    [[trackerClass new] autorelease];
 }
 
 QMacAutoReleasePool::~QMacAutoReleasePool()
 {
-    if (!pool) {
-        qWarning() << "Prematurely drained pool" << this << "finally drained. Any objects belonging"
-            << "to this pool have already been released, and have potentially been invalid since the"
-            << "premature drain earlier on.";
-        return;
-    }
-
-    // Save and reset pool before draining, so that the pool tracker can know
-    // that it's being drained by its owning pool.
-    NSAutoreleasePool *savedPool = static_cast<NSAutoreleasePool*>(pool);
-    pool = nullptr;
-
     // Drain behaves the same as release, with the advantage that
     // if we're ever used in a garbage-collected environment, the
     // drain acts as a hint to the garbage collector to collect.
-    [savedPool drain];
+    [static_cast<NSAutoreleasePool*>(pool) drain];
 }
 
 #ifndef QT_NO_DEBUG_STREAM
