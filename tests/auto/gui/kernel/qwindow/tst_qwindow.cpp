@@ -1576,6 +1576,13 @@ void tst_QWindow::sizes()
     window.resize(80, 80);
     window.setMaximumSize(QSize(70, 70));
     QCOMPARE(window.size(), QSize(70, 70));
+
+    // QTBUG-113233
+    // test for an invalid min/max pair
+    window.setMinimumSize(QSize(80, 80)); // current maximumSize = QSize(70, 70)
+    QCOMPARE(window.size(), QSize(70, 70));
+    window.setMaximumSize(QSize(90, 90));
+    QCOMPARE(window.size(), QSize(80, 80));
 }
 
 class CloseOnCloseEventWindow : public QWindow
