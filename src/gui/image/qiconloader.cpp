@@ -585,9 +585,10 @@ QThemeIconInfo QIconLoader::loadIcon(const QString &name) const
     if (!themeName().isEmpty()) {
         QStringList visited;
         iconInfo = findIconHelper(themeName(), name, visited);
-        if (iconInfo.entries.empty())
-            iconInfo = lookupFallbackIcon(name);
     }
+
+    if (iconInfo.entries.empty())
+        iconInfo = lookupFallbackIcon(name);
 
     qCDebug(lcIconLoader) << "Resulting icon entries" << iconInfo.entries;
     return iconInfo;
