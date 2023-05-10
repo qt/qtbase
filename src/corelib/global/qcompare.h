@@ -41,36 +41,61 @@ public:
     static const QPartialOrdering Greater;
     static const QPartialOrdering Unordered;
 
-    friend constexpr bool operator==(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    { return p.isOrdered() && p.m_order == 0; }
-    friend constexpr bool operator!=(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    { return p.isOrdered() && p.m_order != 0; }
-    friend constexpr bool operator< (QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    { return p.isOrdered() && p.m_order <  0; }
-    friend constexpr bool operator<=(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    { return p.isOrdered() && p.m_order <= 0; }
-    friend constexpr bool operator> (QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    { return p.isOrdered() && p.m_order >  0; }
-    friend constexpr bool operator>=(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    { return p.isOrdered() && p.m_order >= 0; }
+    friend constexpr bool operator==(QPartialOrdering lhs,
+                                     QtPrivate::CompareAgainstLiteralZero) noexcept
+    { return lhs.isOrdered() && lhs.m_order == 0; }
 
-    friend constexpr bool operator==(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    { return p.isOrdered() && 0 == p.m_order; }
-    friend constexpr bool operator!=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    { return p.isOrdered() && 0 != p.m_order; }
-    friend constexpr bool operator< (QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    { return p.isOrdered() && 0 <  p.m_order; }
-    friend constexpr bool operator<=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    { return p.isOrdered() && 0 <= p.m_order; }
-    friend constexpr bool operator> (QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    { return p.isOrdered() && 0 >  p.m_order; }
-    friend constexpr bool operator>=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    { return p.isOrdered() && 0 >= p.m_order; }
+    friend constexpr bool operator!=(QPartialOrdering lhs,
+                                     QtPrivate::CompareAgainstLiteralZero) noexcept
+    { return lhs.isOrdered() && lhs.m_order != 0; }
 
-    friend constexpr bool operator==(QPartialOrdering p1, QPartialOrdering p2) noexcept
-    { return p1.m_order == p2.m_order; }
-    friend constexpr bool operator!=(QPartialOrdering p1, QPartialOrdering p2) noexcept
-    { return p1.m_order != p2.m_order; }
+    friend constexpr bool operator< (QPartialOrdering lhs,
+                                     QtPrivate::CompareAgainstLiteralZero) noexcept
+    { return lhs.isOrdered() && lhs.m_order <  0; }
+
+    friend constexpr bool operator<=(QPartialOrdering lhs,
+                                     QtPrivate::CompareAgainstLiteralZero) noexcept
+    { return lhs.isOrdered() && lhs.m_order <= 0; }
+
+    friend constexpr bool operator> (QPartialOrdering lhs,
+                                     QtPrivate::CompareAgainstLiteralZero) noexcept
+    { return lhs.isOrdered() && lhs.m_order >  0; }
+
+    friend constexpr bool operator>=(QPartialOrdering lhs,
+                                     QtPrivate::CompareAgainstLiteralZero) noexcept
+    { return lhs.isOrdered() && lhs.m_order >= 0; }
+
+
+    friend constexpr bool operator==(QtPrivate::CompareAgainstLiteralZero,
+                                     QPartialOrdering rhs) noexcept
+    { return rhs.isOrdered() && 0 == rhs.m_order; }
+
+    friend constexpr bool operator!=(QtPrivate::CompareAgainstLiteralZero,
+                                     QPartialOrdering rhs) noexcept
+    { return rhs.isOrdered() && 0 != rhs.m_order; }
+
+    friend constexpr bool operator< (QtPrivate::CompareAgainstLiteralZero,
+                                     QPartialOrdering rhs) noexcept
+    { return rhs.isOrdered() && 0 <  rhs.m_order; }
+
+    friend constexpr bool operator<=(QtPrivate::CompareAgainstLiteralZero,
+                                     QPartialOrdering rhs) noexcept
+    { return rhs.isOrdered() && 0 <= rhs.m_order; }
+
+    friend constexpr bool operator> (QtPrivate::CompareAgainstLiteralZero,
+                                     QPartialOrdering rhs) noexcept
+    { return rhs.isOrdered() && 0 >  rhs.m_order; }
+
+    friend constexpr bool operator>=(QtPrivate::CompareAgainstLiteralZero,
+                                     QPartialOrdering rhs) noexcept
+    { return rhs.isOrdered() && 0 >= rhs.m_order; }
+
+
+    friend constexpr bool operator==(QPartialOrdering lhs, QPartialOrdering rhs) noexcept
+    { return lhs.m_order == rhs.m_order; }
+
+    friend constexpr bool operator!=(QPartialOrdering lhs, QPartialOrdering rhs) noexcept
+    { return lhs.m_order != rhs.m_order; }
 
 private:
     constexpr explicit QPartialOrdering(QtPrivate::Ordering order) noexcept

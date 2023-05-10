@@ -18,19 +18,14 @@
     represented by the following four static values:
 
     \list
-
     \li \c QPartialOrdering::Less represents that the first object is
     less than the second;
-
     \li \c QPartialOrdering::Equivalent represents that the first
     object is equivalent to the second;
-
     \li \c QPartialOrdering::Greater represents that the first object
     is greater than the second;
-
     \li \c QPartialOrdering::Unordered represents that the first object
     is \e{not ordered} with respect to the second.
-
     \endlist
 
     QPartialOrdering is idiomatically used by comparing an instance
@@ -38,14 +33,18 @@
 
     \code
 
-    // given a, b, c, d as objects of some type that allows for a 3-way compare
+    // given a, b, c, d as objects of some type that allows for a 3-way compare,
+    // and a compare function declared as follows:
 
-    QPartialOrdering result = a.compare(b);
+    QPartialOrdering compare(T lhs, T rhs); // defined out-of-line
+    ~~~
+
+    QPartialOrdering result = compare(a, b);
     if (result < 0) {
         // a is less than b
     }
 
-    if (c.compare(d) >= 0) {
+    if (compare(c, d) >= 0) {
         // c is greater than or equal to d
     }
 
@@ -56,58 +55,62 @@
 */
 
 /*!
-    \fn bool QPartialOrdering::operator==(QPartialOrdering p1, QPartialOrdering p2) noexcept
+    \fn bool QPartialOrdering::operator==(QPartialOrdering lhs, QPartialOrdering rhs)
 
-    Return true if \a p1 and \a p2 represent the same result;
+    Return true if \a lhs and \a rhs represent the same result;
     otherwise, returns false.
 */
 
 /*!
-    \fn bool QPartialOrdering::operator!=(QPartialOrdering p1, QPartialOrdering p2) noexcept
+    \fn bool QPartialOrdering::operator!=(QPartialOrdering lhs, QPartialOrdering rhs)
 
-    Return true if \a p1 and \a p2 represent different results;
+    Return true if \a lhs and \a rhs represent different results;
     otherwise, returns true.
 */
 
 /*!
-    \fn bool operator==(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    \fn bool operator!=(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    \fn bool operator< (QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    \fn bool operator<=(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    \fn bool operator> (QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
-    \fn bool operator>=(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
+    \fn bool operator==(QPartialOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator!=(QPartialOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator< (QPartialOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator<=(QPartialOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator> (QPartialOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator>=(QPartialOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
 
-    \fn bool operator==(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    \fn bool operator!=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    \fn bool operator< (QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    \fn bool operator<=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    \fn bool operator> (QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
-    \fn bool operator>=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
+    \fn bool operator==(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering rhs)
+    \fn bool operator!=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering rhs)
+    \fn bool operator< (QtPrivate::CompareAgainstLiteralZero, QPartialOrdering rhs)
+    \fn bool operator<=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering rhs)
+    \fn bool operator> (QtPrivate::CompareAgainstLiteralZero, QPartialOrdering rhs)
+    \fn bool operator>=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering rhs)
     \relates QPartialOrdering
     \internal
 */
 
 /*!
     \variable QPartialOrdering::Less
+
     Represents the result of a comparison where the value on the left
-    hand side is less than the value on right hand side.
+    hand side is less than the value on the right hand side.
 */
 
 /*!
     \variable QPartialOrdering::Equivalent
+
     Represents the result of a comparison where the value on the left
-    hand side is equivalent to the value on right hand side.
+    hand side is equivalent to the value on the right hand side.
 */
 
 /*!
     \variable QPartialOrdering::Greater
+
     Represents the result of a comparison where the value on the left
-    hand side is greater than the value on right hand side.
+    hand side is greater than the value on the right hand side.
 */
 
 /*!
     \variable QPartialOrdering::Unordered
+
     Represents the result of a comparison where the value on the left
-    hand side is not ordered with respect to the value on right hand
+    hand side is not ordered with respect to the value on the right hand
     side.
 */
