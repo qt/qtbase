@@ -727,6 +727,18 @@ void tst_QIcon::fromTheme()
     abIcon = QIcon::fromTheme("address-book-new");
     QVERIFY(abIcon.isNull());
 
+    // Test fallback icon behavior for empty theme names.
+    // Can only reliably test this on systems that don't have a
+    // named system icon theme.
+    QIcon::setThemeName(""); // Reset user-theme
+    if (QIcon::themeName().isEmpty()) {
+        // Test icon from fallback path even when theme name is empty
+        fallbackIcon = QIcon::fromTheme("red");
+        QVERIFY(!fallbackIcon.isNull());
+        QVERIFY(QIcon::hasThemeIcon("red"));
+        QCOMPARE(fallbackIcon.availableSizes().size(), 1);
+    }
+
     // Passing a full path to fromTheme is not very useful, but should work anyway
     QIcon fullPathIcon = QIcon::fromTheme(m_pngImageFileName);
     QVERIFY(!fullPathIcon.isNull());
