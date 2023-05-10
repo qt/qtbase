@@ -8,6 +8,7 @@
 #include <QtCore/qcontainertools_impl.h>
 
 #include <QtCore/q20functional.h>
+#include <QtCore/q20memory.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -317,9 +318,7 @@ public:
 
         if constexpr (IsFwdIt) {
             const qsizetype n = std::distance(first, last);
-            // Use of freeSpaceAtBegin() isn't, yet, implemented.
-            const auto usableCapacity = constAllocatedCapacity() - freeSpaceAtBegin();
-            if (needsDetach() || n > usableCapacity) {
+            if (needsDetach() || n > constAllocatedCapacity()) {
                 QArrayDataPointer allocated(Data::allocate(detachCapacity(n)));
                 swap(allocated);
             }
@@ -329,8 +328,48 @@ public:
             // We don't want to copy data that we know we'll overwrite
         }
 
-        auto dst = begin();
+        auto offset = freeSpaceAtBegin();
+        const auto capacityBegin = begin() - offset;
+        const auto prependBufferEnd = begin();
+
+        if constexpr (!std::is_nothrow_constructible_v<T, decltype(proj(*first))>) {
+            // If construction can throw, and we have freeSpaceAtBegin(),
+            // it's easiest to just clear the container and start fresh.
+            // The alternative would be to keep track of two active, disjoint ranges.
+            if (offset) {
+                (*this)->truncate(0);
+                setBegin(capacityBegin);
+                offset = 0;
+            }
+        }
+
+        auto dst = capacityBegin;
         const auto dend = end();
+        if (offset) { // avoids dead stores
+            setBegin(capacityBegin); // undo prepend optimization
+
+            // By construction, the following loop is nothrow!
+            // (otherwise, we can't reach here)
+            // Assumes InputIterator operations don't throw.
+            // (but we can't statically assert that, as these operations
+            //  have preconditons, so typically aren't noexcept)
+            while (true) {
+                if (dst == prependBufferEnd) {  // ran out of prepend buffer space
+                    size += offset;
+                    // we now have a contiguous buffer, continue with the main loop:
+                    break;
+                }
+                if (first == last) {            // ran out of elements to assign
+                    std::destroy(prependBufferEnd, dend);
+                    size = dst - begin();
+                    return;
+                }
+                q20::construct_at(dst, proj(*first)); // construct element in prepend buffer
+                ++dst;
+                ++first;
+            }
+        }
+
         while (true) {
             if (first == last) {    // ran out of elements to assign
                 std::destroy(dst, dend);

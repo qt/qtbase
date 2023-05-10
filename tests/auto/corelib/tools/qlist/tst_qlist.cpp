@@ -234,6 +234,12 @@ private slots:
     void assignInt() const { assign<int>(); }
     void assignMovable() const { assign<Movable>(); }
     void assignCustom() const { assign<Custom>(); }
+    void assignUsesPrependBuffer_int_data() { assignUsesPrependBuffer_data(); }
+    void assignUsesPrependBuffer_int() const { assignUsesPrependBuffer<int>(); }
+    void assignUsesPrependBuffer_Movable_data() { assignUsesPrependBuffer_data(); }
+    void assignUsesPrependBuffer_Movable() const { assignUsesPrependBuffer<Movable>(); }
+    void assignUsesPrependBuffer_Custom_data() { assignUsesPrependBuffer_data(); }
+    void assignUsesPrependBuffer_Custom() const { assignUsesPrependBuffer<Custom>(); }
     void at() const;
     void capacityInt() const { capacity<int>(); }
     void capacityMovable() const { capacity<Movable>(); }
@@ -400,6 +406,8 @@ private:
     template<typename T> void add() const;
     template<typename T> void append() const;
     template<typename T> void assign() const;
+    void assignUsesPrependBuffer_data() const;
+    template<typename T> void assignUsesPrependBuffer() const;
     template<typename T> void assignFromInitializerList() const;
     template<typename T> void capacity() const;
     template<typename T> void clear() const;
@@ -796,21 +804,98 @@ void tst_QList::assign() const
         QVERIFY(!myvecCopy.isSharedWith(myvec));
         QCOMPARE(myvecCopy, QList<T>() << T_FOO << T_FOO);
     }
+}
+
+inline namespace Scenarios {
+Q_NAMESPACE
+enum ListState {
+    UnsharedList,
+    SharedList,
+};
+Q_ENUM_NS(ListState)
+enum RelationWithPrependBuffer {
+    FitsIntoFreeSpaceAtBegin,
+    FitsFreeSpaceAtBeginExactly,
+    ExceedsFreeSpaceAtBegin,
+    FitsFreeSpaceAtBeginPlusSizeExactly,
+    FullCapacity,
+};
+Q_ENUM_NS(RelationWithPrependBuffer)
+} // namespace Scenarios
+
+void tst_QList::assignUsesPrependBuffer_data() const
+{
+    QTest::addColumn<ListState>("listState");
+    QTest::addColumn<RelationWithPrependBuffer>("relationWithPrependBuffer");
+
+    const auto sme = QMetaEnum::fromType<ListState>();
+    const auto rme = QMetaEnum::fromType<RelationWithPrependBuffer>();
+
+    for (int i = 0, s = sme.value(i); s != -1; s = sme.value(++i)) {
+        for (int j = 0, r = rme.value(j); r != -1; r = rme.value(++j)) {
+            QTest::addRow("%s-%s", sme.key(i), rme.key(j))
+                << ListState(s) << RelationWithPrependBuffer(r);
+        }
+    }
+}
+
+template <typename T>
+void tst_QList::assignUsesPrependBuffer() const
+{
+    QFETCH(const ListState, listState);
+    QFETCH(const RelationWithPrependBuffer, relationWithPrependBuffer);
+
+    const auto capBegin = [](const QList<T> &l) {
+        return l.begin() - l.d.freeSpaceAtBegin();
+    };
+    const auto capEnd = [](const QList<T> &l) {
+        return l.end() + l.d.freeSpaceAtEnd();
+    };
+
+    TST_QLIST_CHECK_LEAKS(T)
     {
         // Test the prepend optimization.
         QList<T> withFreeSpaceAtBegin(16, T_FOO);
         // try at most 100 times to create freeSpaceAtBegin():
-        for (int i = 0; i < 100 && !withFreeSpaceAtBegin.d.freeSpaceAtBegin(); ++i)
+        for (int i = 0; i < 100 && withFreeSpaceAtBegin.d.freeSpaceAtBegin() < 2; ++i)
              withFreeSpaceAtBegin.prepend(T_FOO);
-        QCOMPARE_GT(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 0);
-        const auto oldData = withFreeSpaceAtBegin.constData();
-        std::vector<T> v(withFreeSpaceAtBegin.capacity(), T_BAR);
-        withFreeSpaceAtBegin.assign(v.begin(), v.end());
-        QCOMPARE_EQ(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 0);
-        // TODO: Check for equality after the prepend optimization
-        // the following test checks that we didn't reallocate, but re-used the prepend buffer
-        QEXPECT_FAIL("","Use of freeSpaceAtBegin() isn't, yet, implemented", Continue);
-        QVERIFY(QtPrivate::q_points_into_range(oldData, withFreeSpaceAtBegin));
+        QCOMPARE_GT(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 1);
+
+        auto c = [&] {
+            switch (listState) {
+            case UnsharedList: return std::move(withFreeSpaceAtBegin);
+            case SharedList:   return withFreeSpaceAtBegin;
+            }
+            Q_UNREACHABLE_RETURN(withFreeSpaceAtBegin);
+        }();
+
+        const auto n = [&] () -> qsizetype {
+            switch (relationWithPrependBuffer) {
+            case FitsIntoFreeSpaceAtBegin:
+                return qsizetype(1);
+            case FitsFreeSpaceAtBeginExactly:
+                return c.d.freeSpaceAtBegin();
+            case ExceedsFreeSpaceAtBegin:
+                return c.d.freeSpaceAtBegin() + 1;
+            case FitsFreeSpaceAtBeginPlusSizeExactly:
+                return c.d.freeSpaceAtBegin() + c.size();
+            case FullCapacity:
+                return c.capacity();
+            };
+            Q_UNREACHABLE_RETURN(0);
+        }();
+
+        const auto oldCapBegin = capBegin(c);
+        const auto oldCapEnd = capEnd(c);
+
+        const std::vector v(n, T_BAR);
+        c.assign(v.begin(), v.end());
+        QCOMPARE_EQ(c.d.freeSpaceAtBegin(), 0); // we used the prepend-buffer
+        if (listState != SharedList) {
+            // check that we didn't reallocate
+            QCOMPARE_EQ(capBegin(c), oldCapBegin);
+            QCOMPARE_EQ(capEnd(c), oldCapEnd);
+        }
     }
 }
 
