@@ -619,7 +619,7 @@ public:
 
     QOpenGLContext *shareContext() const;
 
-    virtual QObject *focusObject() { return nullptr; }
+    virtual QObject *focusObject();
 
 #ifndef QT_NO_OPENGL
     virtual GLuint textureId() const { return 0; }
