@@ -7,6 +7,8 @@
 #include <QtCore/qarraydataops.h>
 #include <QtCore/qcontainertools_impl.h>
 
+#include <QtCore/q20functional.h>
+
 QT_BEGIN_NAMESPACE
 
 template <class T>
@@ -305,8 +307,8 @@ public:
         this->ptr = res;
     }
 
-    template <typename InputIterator>
-    void assign(InputIterator first, InputIterator last)
+    template <typename InputIterator, typename Projection = q20::identity>
+    void assign(InputIterator first, InputIterator last, Projection proj = {})
     {
         // This function only provides the basic exception guarantee.
         constexpr bool IsFwdIt = std::is_convertible_v<
@@ -340,12 +342,12 @@ public:
                     break;
                 } else {
                     do {
-                        (*this)->emplace(size, *first);
+                        (*this)->emplace(size, proj(*first));
                     } while (++first != last);
                     return;         // size() is already correct (and dst invalidated)!
                 }
             }
-            *dst = *first;          // overwrite existing element
+            *dst = proj(*first);    // overwrite existing element
             ++dst;
             ++first;
         }
