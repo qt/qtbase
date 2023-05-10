@@ -866,11 +866,11 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
             if (iface->tableInterface())
                 iface->tableInterface()->modelChange(static_cast<QAccessibleTableModelChangeEvent*>(event));
         }
+    }
 
-        if (updateHandler) {
-            updateHandler(event);
-            return;
-        }
+    if (updateHandler) {
+        updateHandler(event);
+        return;
     }
 
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
