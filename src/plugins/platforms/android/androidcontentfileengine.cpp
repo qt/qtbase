@@ -329,14 +329,14 @@ QString AndroidContentFileEngineIterator::currentFileName() const
 {
     if (m_index < 0 || m_index > m_files.size())
         return QString();
-    // Returns a full path since contstructing a content path from the file name
-    // and a tree URI only will not point to a valid file URI.
-    return m_files.at(m_index)->uri().toString();
+    return m_files.at(m_index)->name();
 }
 
 QString AndroidContentFileEngineIterator::currentFilePath() const
 {
-    return currentFileName();
+    if (m_index < 0 || m_index > m_files.size())
+        return QString();
+    return m_files.at(m_index)->uri().toString();
 }
 
 // Start of Cursor
