@@ -732,6 +732,10 @@ void tst_QIcon::fromTheme()
     // named system icon theme.
     QIcon::setThemeName(""); // Reset user-theme
     if (QIcon::themeName().isEmpty()) {
+        // Test icon from fallback theme even when theme name is empty
+        QIcon::setFallbackThemeName("fallbacktheme");
+        QVERIFY(!QIcon::fromTheme("edit-cut").isNull());
+
         // Test icon from fallback path even when theme name is empty
         fallbackIcon = QIcon::fromTheme("red");
         QVERIFY(!fallbackIcon.isNull());

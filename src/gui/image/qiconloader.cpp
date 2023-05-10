@@ -437,9 +437,8 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
     if (!theme.isValid()) {
         theme = QIconTheme(themeName);
         if (!theme.isValid()) {
-            qCDebug(lcIconLoader) << "Theme" << themeName << "not found;"
-                << "trying fallback theme" << fallbackThemeName();
-            theme = QIconTheme(fallbackThemeName());
+            qCDebug(lcIconLoader) << "Theme" << themeName << "not found";
+            return info;
         }
     }
 
@@ -581,10 +580,12 @@ QThemeIconInfo QIconLoader::loadIcon(const QString &name) const
     qCDebug(lcIconLoader) << "Loading icon" << name;
 
     QThemeIconInfo iconInfo;
-    if (!themeName().isEmpty()) {
-        QStringList visited;
-        iconInfo = findIconHelper(themeName(), name, visited);
-    }
+    QStringList visitedThemes;
+    if (!themeName().isEmpty())
+        iconInfo = findIconHelper(themeName(), name, visitedThemes);
+
+    if (iconInfo.entries.empty() && !fallbackThemeName().isEmpty())
+        iconInfo = findIconHelper(fallbackThemeName(), name, visitedThemes);
 
     if (iconInfo.entries.empty())
         iconInfo = lookupFallbackIcon(name);
