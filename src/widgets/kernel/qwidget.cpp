@@ -6853,6 +6853,13 @@ QWidget *QWidget::focusWidget() const
     return const_cast<QWidget *>(d_func()->focus_child);
 }
 
+QObject *QWidgetPrivate::focusObject()
+{
+    Q_Q(QWidget);
+    QWidget *proxy = deepestFocusProxy();
+    return proxy ? proxy : q;
+}
+
 /*!
     Returns the next widget in this widget's focus chain.
 
