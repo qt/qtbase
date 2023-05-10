@@ -1,0 +1,11 @@
+[Icon Theme]
+Name=hicolor
+
+# Provide a minimal hicolor theme, so that our hicolor fallback
+# lookup during testing will find that theme on all systems.
+
+Directories=16x16
+
+[16x16]
+Size=16
+Type=Fixed

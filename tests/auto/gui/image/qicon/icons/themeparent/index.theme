@@ -1,7 +1,6 @@
 [Icon Theme]
 _Name=Test
 _Comment=Test Theme
-Inherits=gnome,crystalsvg
 Example=x-directory-normal
 
 # KDE Specific Stuff

@@ -393,19 +393,25 @@ QIconTheme::QIconTheme(const QString &themeName)
         // Parent themes provide fallbacks for missing icons
         m_parents = indexReader.value("Icon Theme/Inherits"_L1).toStringList();
         m_parents.removeAll(QString());
-
-        // Ensure a default platform fallback for all themes
-        if (m_parents.isEmpty()) {
-            const QString fallback = QIconLoader::instance()->fallbackThemeName();
-            if (!fallback.isEmpty())
-                m_parents.append(fallback);
-        }
-
-        // Ensure that all themes fall back to hicolor
-        if (!m_parents.contains("hicolor"_L1))
-            m_parents.append("hicolor"_L1);
     }
 #endif // settings
+}
+
+QStringList QIconTheme::parents() const
+{
+    // Respect explicitly declared parents
+    QStringList result = m_parents;
+
+    // Ensure a default fallback for all themes
+    const QString fallback = QIconLoader::instance()->fallbackThemeName();
+    if (!fallback.isEmpty())
+        result.append(fallback);
+
+    // Ensure that all themes fall back to hicolor
+    if (!result.contains("hicolor"_L1))
+        result.append("hicolor"_L1);
+
+    return result;
 }
 
 QDebug operator<<(QDebug debug, const std::unique_ptr<QIconLoaderEngineEntry> &entry)

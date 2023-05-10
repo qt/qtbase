@@ -1233,6 +1233,10 @@ QString QIcon::fallbackThemeName()
 
     Sets the fallback icon theme to \a name.
 
+    The fallback icon theme is used for last resort lookup of icons
+    not provided by the \l{themeName()}{current icon theme},
+    or if the \l{themeName()}{current icon theme} does not exist.
+
     The \a name should correspond to a directory name in the
     themeSearchPath() containing an index.theme
     file describing its contents.

@@ -58,6 +58,8 @@ set(tst_qicon_resource_files
     "./icons/themeparent/scalable/actions/appointment-new.svg"
     "./icons/fallbacktheme/index.theme"
     "./icons/fallbacktheme/16x16/edit-cut.png"
+    "./icons/hicolor/index.theme"
+    "./icons/hicolor/16x16/hicolor-icon.png"
     "./second_icons/testtheme/32x32/actions/appointment-new.png"
     "./styles/commonstyle/images/standardbutton-open-128.png"
     "./styles/commonstyle/images/standardbutton-open-16.png"
