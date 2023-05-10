@@ -14,6 +14,7 @@
 #include <QtCore/qmath.h>
 #include <QtCore/QList>
 #include <QtCore/QDir>
+#include <QtCore/qloggingcategory.h>
 #if QT_CONFIG(settings)
 #include <QtCore/QSettings>
 #endif
@@ -22,6 +23,8 @@
 #include <private/qhexstring_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcIconLoader, "qt.gui.icon.loader")
 
 using namespace Qt::StringLiterals;
 
@@ -90,6 +93,9 @@ void QIconLoader::ensureInitialized()
             m_systemTheme = systemFallbackThemeName();
         if (qt_iconEngineFactoryLoader()->keyMap().key("svg"_L1, -1) != -1)
             m_supportsSvg = true;
+
+        qCDebug(lcIconLoader) << "Initialized icon loader with system theme"
+            << m_systemTheme << "and SVG support" << m_supportsSvg;
     }
 }
 
@@ -120,8 +126,12 @@ void QIconLoader::updateSystemTheme()
             theme = fallbackThemeName();
         if (theme != m_systemTheme) {
             m_systemTheme = theme;
+            qCDebug(lcIconLoader) << "Updated system theme to" << m_systemTheme;
             invalidateKey();
         }
+    } else {
+        qCDebug(lcIconLoader) << "Ignoring system theme update because"
+            << "user theme" << m_userTheme << "has been set";
     }
 }
 
@@ -137,6 +147,8 @@ void QIconLoader::setThemeName(const QString &themeName)
     if (m_userTheme == themeName)
         return;
 
+    qCDebug(lcIconLoader) << "Setting user theme name to" << themeName;
+
     m_userTheme = themeName;
     invalidateKey();
 }
@@ -148,11 +160,13 @@ QString QIconLoader::fallbackThemeName() const
 
 void QIconLoader::setFallbackThemeName(const QString &themeName)
 {
+    qCDebug(lcIconLoader) << "Setting fallback theme name to" << themeName;
     m_userFallbackTheme = themeName;
 }
 
 void QIconLoader::setThemeSearchPath(const QStringList &searchPaths)
 {
+    qCDebug(lcIconLoader) << "Setting theme search path to" << searchPaths;
     m_iconDirs = searchPaths;
     themeList.clear();
     invalidateKey();
@@ -170,6 +184,7 @@ QStringList QIconLoader::themeSearchPaths() const
 
 void QIconLoader::setFallbackSearchPaths(const QStringList &searchPaths)
 {
+    qCDebug(lcIconLoader) << "Setting fallback search path to" << searchPaths;
     m_fallbackDirs = searchPaths;
     invalidateKey();
 }
@@ -391,10 +406,19 @@ QIconTheme::QIconTheme(const QString &themeName)
 #endif // settings
 }
 
+QDebug operator<<(QDebug debug, const std::unique_ptr<QIconLoaderEngineEntry> &entry)
+{
+    QDebugStateSaver saver(debug);
+    debug.noquote() << entry->filename;
+    return debug;
+}
+
 QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
                                            const QString &iconName,
                                            QStringList &visited) const
 {
+    qCDebug(lcIconLoader) << "Finding icon" << iconName << "in theme" << themeName;
+
     QThemeIconInfo info;
     Q_ASSERT(!themeName.isEmpty());
 
@@ -404,8 +428,11 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
     QIconTheme &theme = themeList[themeName];
     if (!theme.isValid()) {
         theme = QIconTheme(themeName);
-        if (!theme.isValid())
+        if (!theme.isValid()) {
+            qCDebug(lcIconLoader) << "Theme" << themeName << "not found;"
+                << "trying fallback theme" << fallbackThemeName();
             theme = QIconTheme(fallbackThemeName());
+        }
     }
 
     const QStringList contentDirs = theme.contentDirs();
@@ -481,6 +508,10 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
 
     if (info.entries.empty()) {
         const QStringList parents = theme.parents();
+        qCDebug(lcIconLoader) << "Did not find matching icons in theme;"
+            << "trying parent themes" << parents
+            << "skipping visited" << visited;
+
         // Search recursively through inherited themes
         for (int i = 0 ; i < parents.size() ; ++i) {
 
@@ -493,11 +524,14 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
                 break;
         }
     }
+
     return info;
 }
 
 QThemeIconInfo QIconLoader::lookupFallbackIcon(const QString &iconName) const
 {
+    qCDebug(lcIconLoader) << "Looking up fallback icon" << iconName;
+
     QThemeIconInfo info;
 
     const QString pngIconName = iconName + ".png"_L1;
@@ -536,16 +570,18 @@ QThemeIconInfo QIconLoader::lookupFallbackIcon(const QString &iconName) const
 
 QThemeIconInfo QIconLoader::loadIcon(const QString &name) const
 {
+    qCDebug(lcIconLoader) << "Loading icon" << name;
+
+    QThemeIconInfo iconInfo;
     if (!themeName().isEmpty()) {
         QStringList visited;
-        QThemeIconInfo iconInfo = findIconHelper(themeName(), name, visited);
-        if (!iconInfo.entries.empty())
-            return iconInfo;
-
-        return lookupFallbackIcon(name);
+        iconInfo = findIconHelper(themeName(), name, visited);
+        if (iconInfo.entries.empty())
+            iconInfo = lookupFallbackIcon(name);
     }
 
-    return QThemeIconInfo();
+    qCDebug(lcIconLoader) << "Resulting icon entries" << iconInfo.entries;
+    return iconInfo;
 }
 
 
