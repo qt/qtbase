@@ -1,7 +1,7 @@
 [Icon Theme]
 _Name=Test
 _Comment=Test Theme
-Inherits=crystalsvg, themeparent
+Inherits=themeparent
 Example=x-directory-normal
 
 # KDE Specific Stuff

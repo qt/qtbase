@@ -145,7 +145,7 @@ class QIconTheme
 public:
     QIconTheme(const QString &name);
     QIconTheme() : m_valid(false) {}
-    QStringList parents() { return m_parents; }
+    QStringList parents() const;
     QList<QIconDirInfo> keyList() { return m_keyList; }
     QStringList contentDirs() { return m_contentDirs; }
     bool isValid() { return m_valid; }
