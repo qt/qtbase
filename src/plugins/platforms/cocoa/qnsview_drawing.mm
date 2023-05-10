@@ -178,8 +178,10 @@
 - (void)drawRect:(NSRect)dirtyBoundingRect
 {
     Q_UNUSED(dirtyBoundingRect);
-    Q_ASSERT_X(!self.layer, "QNSView",
-        "The drawRect code path should not be hit when we are layer backed");
+    // As we are layer backed we shouldn't really end up here, but AppKit will
+    // in some cases call this method just because we implement it.
+    // FIXME: Remove drawRect and switch from displayLayer to updateLayer
+    qCWarning(lcQpaDrawing) << "[QNSView drawRect] called for layer backed view";
 }
 
 /*
