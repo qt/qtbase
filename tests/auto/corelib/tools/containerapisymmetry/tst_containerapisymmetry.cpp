@@ -783,37 +783,40 @@ void tst_ContainerApiSymmetry::assign_impl() const
     {
         // fill version
         auto c = make<Container>(4);
+        const S oldCapacity = c.capacity();
         c.assign(4, tData);
-        CHECK(c, tData, c.size(), S(4), c.capacity(), S(4));
+        CHECK(c, tData, c.size(), S(4), c.capacity(), oldCapacity);
 
         c.assign(8, tData);
-        CHECK(c, tData, c.size(), S(8), c.capacity(), S(8));
+        CHECK(c, tData, c.size(), S(8), c.capacity(), std::max(oldCapacity, S(8)));
 
         c.assign(0, tData);
-        CHECK(c, tData, c.size(), S(0), c.capacity(), S(8));
+        CHECK(c, tData, c.size(), S(0), c.capacity(), std::max(oldCapacity, S(8)));
     }
     {
         // range version for non input iterator
         auto c = make<Container>(4);
+        const S oldCapacity = c.capacity();
         auto iter = make<Container>(1);
 
         iter.assign(8, tData);
         c.assign(iter.begin(), iter.end());
-        CHECK(c, tData, c.size(), S(8), c.capacity(), S(8));
+        CHECK(c, tData, c.size(), S(8), c.capacity(), std::max(oldCapacity, S(8)));
     }
     {
         // range version for input iterator
         auto c = make<Container>(4);
+        const S oldCapacity = c.capacity();
 
         std::stringstream ss("9 9 ");
         c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{});
-        CHECK(c, tData, c.size(), S(2), c.capacity(), S(4));
+        CHECK(c, tData, c.size(), S(2), c.capacity(), oldCapacity);
 
         ss.str("");
         ss.clear();
         ss << "9 9 9 9 ";
         c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{});
-        CHECK(c, tData, c.size(), S(4), c.capacity(), S(4));
+        CHECK(c, tData, c.size(), S(4), c.capacity(), oldCapacity);
 
         ss.str("");
         ss.clear();
@@ -826,9 +829,10 @@ void tst_ContainerApiSymmetry::assign_impl() const
     {
         // initializer-list version
         auto c = make<Container>(4);
+        const S oldCapacity = c.capacity();
         std::initializer_list<V> list = {tData, tData, tData};
         c.assign(list);
-        CHECK(c, tData, c.size(), S(3), c.capacity(), S(4));
+        CHECK(c, tData, c.size(), S(3), c.capacity(), oldCapacity);
     }
 
 #undef CHECK
