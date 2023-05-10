@@ -105,6 +105,12 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
             "${enable_main_module_if_needed}"
         )
 
+        # Add Qt libdir to linker library paths
+        set(qt_lib_location
+            "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
+        target_link_options("${wasmTarget}" INTERFACE
+            "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:SHELL:" -L${qt_lib_location}/>)
+
         target_compile_options("${wasmTarget}" INTERFACE "${set_shared_module_type_if_needed}")
         target_link_options("${wasmTarget}" INTERFACE "${set_shared_module_type_if_needed}")
 
