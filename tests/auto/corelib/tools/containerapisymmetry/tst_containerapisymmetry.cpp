@@ -336,10 +336,8 @@ private:
     void assign_impl() const;
 
 private Q_SLOTS:
-    void assign_std_vector()
-    { assign_impl<std::vector<int>>(); };
-    void assign_QVarLengthArray()
-    { assign_impl<QVarLengthArray<int, 4>>(); };
+    void assign_std_vector() { assign_impl<std::vector<int>>(); };
+    void assign_QVarLengthArray() { assign_impl<QVarLengthArray<int, 4>>(); };
 
 private:
     template <typename Container>
