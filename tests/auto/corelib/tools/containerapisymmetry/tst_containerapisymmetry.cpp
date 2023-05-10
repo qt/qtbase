@@ -710,7 +710,8 @@ Container make(int size)
     Container c;
     c.reserve(size);
     using V = typename Container::value_type;
-    std::generate_n(std::inserter(c, c.end()), size, [i = 1]() mutable { return V(i++); });
+    int i = 0;
+    std::generate_n(std::inserter(c, c.end()), size, [&i] { return V(++i); });
     return c;
 }
 
