@@ -578,7 +578,7 @@ public:
     inline QRect mapFromWS(const QRect &r) const
     { return r.translated(data.wrect.topLeft()); }
 
-    virtual QObject *focusObject() { return nullptr; }
+    virtual QObject *focusObject();
 
     virtual QPlatformBackingStoreRhiConfig rhiConfig() const { return {}; }
 
