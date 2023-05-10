@@ -1687,6 +1687,7 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QTRY_VERIFY(comp.popup()->isVisible());
     QCOMPARE(comp.popup()->model()->rowCount(), 2);
     QApplication::processEvents();
+    QCOMPARE(qApp->focusObject(), &edit); // for QTBUG_108522
     QTest::keyClick(&edit, 'h');
     QCOMPARE(comp.popup()->model()->rowCount(), 2);
     QTest::keyClick(&edit, 'e');
