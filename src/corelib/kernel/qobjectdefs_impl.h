@@ -330,20 +330,6 @@ namespace QtPrivate {
         typedef decltype(std::declval<Functor>().operator()((std::declval<ArgList>())...)) Value;
     };
 
-    // Get the function prototype for a functor. There can only be one call operator
-    // in a functor, otherwise we get errors from ambiguity. But that's good enough.
-    template <typename Ret, typename... Args>
-    using FunctionTypeForTypes = Ret(*)(Args...);
-
-    template <typename Ret, typename Obj, typename... Args>
-    FunctionTypeForTypes<Ret, Args...> FunctorPrototype(Ret(Obj::*)(Args...) const) { return nullptr; }
-    template <typename Ret, typename Obj, typename... Args>
-    FunctionTypeForTypes<Ret, Args...> FunctorPrototype(Ret(Obj::*)(Args...)) { return nullptr; }
-    template <typename Ret, typename Obj, typename... Args>
-    FunctionTypeForTypes<Ret, Args...> FunctorPrototype(Ret(Obj::*)(Args...) const noexcept) { return nullptr; }
-    template <typename Ret, typename Obj, typename... Args>
-    FunctionTypeForTypes<Ret, Args...> FunctorPrototype(Ret(Obj::*)(Args...) noexcept) { return nullptr; }
-
     template<typename Function, int N> struct Functor
     {
         template <typename SignalArgs, typename R>
@@ -355,16 +341,16 @@ namespace QtPrivate {
     template<typename Func>
     struct ZeroArgFunctor : Functor<Func, 0>
     {
-        using Function = decltype(FunctorPrototype(&std::decay_t<Func>::operator()));
+        using ReturnType = decltype(std::declval<Func>()());
+        using Function = ReturnType(*)();
         enum {ArgumentCount = 0};
         using Arguments = QtPrivate::List<>;
-        using ReturnType = typename FunctionPointer<Function>::ReturnType;
     };
 
     template<typename Func>
-    using Callable = std::conditional_t<FunctionPointer<Func>::ArgumentCount == -1,
-        ZeroArgFunctor<Func>,
-        FunctionPointer<Func>
+    using Callable = std::conditional_t<FunctionPointer<std::decay_t<Func>>::ArgumentCount == -1,
+        ZeroArgFunctor<std::decay_t<Func>>,
+        FunctionPointer<std::decay_t<Func>>
     >;
 
     /*

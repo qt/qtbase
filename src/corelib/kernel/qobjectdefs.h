@@ -419,6 +419,8 @@ struct Q_CORE_EXPORT QMetaObject
                  Qt::ConnectionType type = Qt::AutoConnection,
                  typename QtPrivate::Callable<Func>::ReturnType *ret = nullptr)
     {
+        static_assert(QtPrivate::Callable<Func>::ArgumentCount <= 0,
+                      "QMetaObject::invokeMethod cannot call functions with arguments!");
         using Prototype = typename QtPrivate::Callable<Func>::Function;
         return invokeMethodImpl(object, QtPrivate::makeCallableObject<Prototype>(std::forward<Func>(function)), type, ret);
     }

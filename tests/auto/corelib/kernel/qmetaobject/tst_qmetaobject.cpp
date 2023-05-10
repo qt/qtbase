@@ -302,6 +302,8 @@ private slots:
     void invokeTypedefTypes();
     void invokeException();
     void invokeQueuedAutoRegister();
+    void invokeFreeFunction();
+    void invokeBind();
     void qtMetaObjectInheritance();
     void normalizedSignature_data();
     void normalizedSignature();
@@ -1995,6 +1997,49 @@ void tst_QMetaObject::invokeQueuedAutoRegister()
     qApp->processEvents(QEventLoop::AllEvents);
     QCOMPARE(obj.slotResult,
              QString("slotWithRegistrableArgument:myShared-myShared-myShared-myShared-00"));
+}
+
+namespace FunctionTest {
+    static void function0() {}
+    static int functionNoExcept() noexcept
+    {
+        return 42;
+    }
+}
+
+void tst_QMetaObject::invokeFreeFunction()
+{
+    using namespace FunctionTest;
+    QtTestObject obj;
+    QMetaObject::invokeMethod(&obj, function0);
+    int retInt = -1;
+    QMetaObject::invokeMethod(&obj, functionNoExcept, &retInt);
+    QCOMPARE(retInt, functionNoExcept());
+}
+
+void tst_QMetaObject::invokeBind()
+{
+    QtTestObject obj;
+
+    struct {
+        int number;
+        QString string;
+    } results;
+
+    const auto function = [&results](int number, const QString &string) -> bool {
+        results.number = number;
+        results.string = string;
+        return true;
+    };
+
+    const int number = 42;
+    const QString string("Test");
+    const auto binding = std::bind(function, number, string);
+    bool ret = false;
+    QMetaObject::invokeMethod(&obj, binding, &ret);
+    QVERIFY(ret);
+    QCOMPARE(results.number, number);
+    QCOMPARE(results.string, string);
 }
 
 void tst_QMetaObject::normalizedSignature_data()
