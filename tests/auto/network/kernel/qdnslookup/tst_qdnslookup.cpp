@@ -13,6 +13,13 @@
 #include <QtNetwork/QNetworkDatagram>
 #include <QtNetwork/QUdpSocket>
 
+#ifdef Q_OS_UNIX
+#  include <QtCore/QFile>
+#else
+#  include <winsock2.h>
+#  include <iphlpapi.h>
+#endif
+
 using namespace Qt::StringLiterals;
 static const int Timeout = 15000; // 15s
 
@@ -40,8 +47,122 @@ private slots:
     void lookupReuse();
     void lookupAbortRetry();
     void setNameserverLoopback();
+    void setNameserver_data();
+    void setNameserver();
     void bindingsAndProperties();
 };
+
+static constexpr qsizetype HeaderSize = 6 * sizeof(quint16);
+static const char preparedDnsQuery[] =
+        // header
+        "\x00\x00"              // transaction ID, we'll replace
+        "\x01\x20"              // flags
+        "\x00\x01"              // qdcount
+        "\x00\x00"              // ancount
+        "\x00\x00"              // nscount
+        "\x00\x00"              // arcount
+        // query:
+        "\x00\x00\x06\x00\x01"  // <root domain> IN SOA
+        ;
+
+static QList<QHostAddress> systemNameservers()
+{
+    QList<QHostAddress> result;
+
+#ifdef Q_OS_WIN
+    ULONG infosize = 0;
+    DWORD r = GetNetworkParams(nullptr, &infosize);
+    auto buffer = std::make_unique<uchar[]>(infosize);
+    auto info = new (buffer.get()) FIXED_INFO;
+    r = GetNetworkParams(info, &infosize);
+    if (r == NO_ERROR) {
+        for (PIP_ADDR_STRING ptr = &info->DnsServerList; ptr; ptr = ptr->Next) {
+            QLatin1StringView addr(ptr->IpAddress.String);
+            result.emplaceBack(addr);
+        }
+    }
+#else
+    QFile f("/etc/resolv.conf");
+    if (!f.open(QIODevice::ReadOnly))
+        return result;
+
+    while (!f.atEnd()) {
+        static const char command[] = "nameserver";
+        QByteArray line = f.readLine().simplified();
+        if (!line.startsWith(command))
+            continue;
+
+        QString addr = QLatin1StringView(line).mid(sizeof(command));
+        result.emplaceBack(addr);
+    }
+#endif
+
+    return result;
+}
+
+static QList<QHostAddress> globalPublicNameservers()
+{
+    const char *const candidates[] = {
+        // Google's dns.google
+        "8.8.8.8", "2001:4860:4860::8888",
+        //"8.8.4.4", "2001:4860:4860::8844",
+
+        // CloudFare's one.one.one.one
+        "1.1.1.1", "2606:4700:4700::1111",
+        //"1.0.0.1", "2606:4700:4700::1001",
+
+        // Quad9's dns9
+        //"9.9.9.9", "2620:fe::9",
+    };
+
+    QList<QHostAddress> result;
+    QRandomGenerator &rng = *QRandomGenerator::system();
+    for (auto name : candidates) {
+        // check the candidates for reachability
+        QHostAddress addr{QLatin1StringView(name)};
+        quint16 id = quint16(rng());
+        QByteArray data(preparedDnsQuery, sizeof(preparedDnsQuery));
+        char *ptr = data.data();
+        qToBigEndian(id, ptr);
+
+        QUdpSocket socket;
+        socket.connectToHost(addr, 53);
+        if (socket.waitForConnected(1))
+            socket.write(data);
+
+        if (!socket.waitForReadyRead(1000)) {
+            qDebug() << addr << "discarded:" << socket.errorString();
+            continue;
+        }
+
+        QNetworkDatagram dgram = socket.receiveDatagram();
+        if (!dgram.isValid()) {
+            qDebug() << addr << "discarded:" << socket.errorString();
+            continue;
+        }
+
+        data = dgram.data();
+        ptr = data.data();
+        if (data.size() < HeaderSize) {
+            qDebug() << addr << "discarded: reply too small";
+            continue;
+        }
+
+        bool ok = qFromBigEndian<quint16>(ptr) == id
+                && (ptr[2] & 0x80)                          // is a reply
+                && (ptr[3] & 0xf) == 0                      // rcode NOERROR
+                && qFromBigEndian<quint16>(ptr + 4) == 1    // qdcount
+                && qFromBigEndian<quint16>(ptr + 6) >= 1;   // ancount
+        if (!ok) {
+            qDebug() << addr << "discarded: invalid reply";
+            continue;
+        }
+
+        result.emplaceBack(std::move(addr));
+    }
+
+    return result;
+}
 
 void tst_QDnsLookup::initTestCase()
 {
@@ -410,6 +531,36 @@ void tst_QDnsLookup::setNameserverLoopback()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(spy.size(), 1);
     QCOMPARE(lookup.error(), QDnsLookup::NotFoundError);
+}
+
+void tst_QDnsLookup::setNameserver_data()
+{
+    static QList<QHostAddress> servers = systemNameservers() + globalPublicNameservers();
+    QTest::addColumn<QHostAddress>("server");
+
+    if (servers.isEmpty()) {
+        QSKIP("No reachable DNS servers were found");
+    } else {
+        for (const QHostAddress &h : std::as_const(servers))
+            QTest::addRow("%s", qUtf8Printable(h.toString())) << h;
+    }
+}
+
+void tst_QDnsLookup::setNameserver()
+{
+    QFETCH(QHostAddress, server);
+    QDnsLookup lookup;
+    lookup.setNameserver(server);
+
+    lookup.setType(QDnsLookup::Type::A);
+    lookup.setName(domainName("a-single"));
+    lookup.lookup();
+
+    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
+    QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
+    QVERIFY(!lookup.hostAddressRecords().isEmpty());
+    QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("a-single"));
+    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("192.0.2.1"));
 }
 
 void tst_QDnsLookup::bindingsAndProperties()
