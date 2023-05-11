@@ -168,6 +168,7 @@ void QIconLoader::setFallbackThemeName(const QString &themeName)
 {
     qCDebug(lcIconLoader) << "Setting fallback theme name to" << themeName;
     m_userFallbackTheme = themeName;
+    invalidateKey();
 }
 
 void QIconLoader::setThemeSearchPath(const QStringList &searchPaths)

@@ -717,6 +717,11 @@ void tst_QIcon::fromTheme()
         QCOMPARE(i.availableSizes(), abIcon.availableSizes());
     }
 
+    // Check that setting a fallback theme invalidates earlier lookups
+    QVERIFY(QIcon::fromTheme("edit-cut").isNull());
+    QIcon::setFallbackThemeName("fallbacktheme");
+    QVERIFY(!QIcon::fromTheme("edit-cut").isNull());
+
     // Make sure setting the theme name clears the state
     QIcon::setThemeName("");
     abIcon = QIcon::fromTheme("address-book-new");
@@ -725,6 +730,9 @@ void tst_QIcon::fromTheme()
     // Passing a full path to fromTheme is not very useful, but should work anyway
     QIcon fullPathIcon = QIcon::fromTheme(m_pngImageFileName);
     QVERIFY(!fullPathIcon.isNull());
+
+    // Restore to system fallback theme
+    QIcon::setFallbackThemeName("");
 }
 
 static inline QString findGtkUpdateIconCache()

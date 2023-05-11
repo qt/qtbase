@@ -56,6 +56,8 @@ set(tst_qicon_resource_files
     "./icons/themeparent/index.theme"
     "./icons/themeparent/scalable/actions/address-book-new.svg"
     "./icons/themeparent/scalable/actions/appointment-new.svg"
+    "./icons/fallbacktheme/index.theme"
+    "./icons/fallbacktheme/16x16/edit-cut.png"
     "./second_icons/testtheme/32x32/actions/appointment-new.png"
     "./styles/commonstyle/images/standardbutton-open-128.png"
     "./styles/commonstyle/images/standardbutton-open-16.png"
