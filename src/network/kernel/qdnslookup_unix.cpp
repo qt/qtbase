@@ -107,6 +107,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         reply->errorString = tr("Server could not process query");
         return;
     case SERVFAIL:
+    case NOTIMP:
         reply->error = QDnsLookup::ServerFailureError;
         reply->errorString = tr("Server failure");
         return;
