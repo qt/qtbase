@@ -55,8 +55,9 @@ private:
         QByteArray name;
     };
 
-    QMap<QByteArray, Method> signals_;
-    QMap<QByteArray, Method> methods;
+    using MethodMap = QMap<QByteArray, Method>;
+    MethodMap signals_;
+    MethodMap methods;
     QMap<QByteArray, Property> properties;
 
     const QDBusIntrospection::Interface *data;
@@ -70,7 +71,7 @@ private:
     void parseSignals();
     void parseProperties();
 
-    static qsizetype aggregateParameterCount(const QMap<QByteArray, Method> &map);
+    static qsizetype aggregateParameterCount(const MethodMap &map);
 };
 
 static const qsizetype intsPerProperty = 2;
@@ -351,7 +352,7 @@ void QDBusMetaObjectGenerator::parseProperties()
 // Returns the sum of all parameters (including return type) for the given
 // \a map of methods. This is needed for calculating the size of the methods'
 // parameter type/name meta-data.
-qsizetype QDBusMetaObjectGenerator::aggregateParameterCount(const QMap<QByteArray, Method> &map)
+qsizetype QDBusMetaObjectGenerator::aggregateParameterCount(const MethodMap &map)
 {
     qsizetype sum = 0;
     for (const Method &m : map)
@@ -403,10 +404,14 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     qsizetype data_size = idata.size() +
                     (header->methodCount * (QMetaObjectPrivate::IntsPerMethod+intsPerMethod)) + methodParametersDataSize +
                     (header->propertyCount * (QMetaObjectPrivate::IntsPerProperty+intsPerProperty));
-    for (const Method &mm : std::as_const(signals_))
-        data_size += 2 + mm.inputTypes.size() + mm.outputTypes.size();
-    for (const Method &mm : std::as_const(methods))
-        data_size += 2 + mm.inputTypes.size() + mm.outputTypes.size();
+
+    // Signals must be added before other methods, to match moc.
+    std::array<std::reference_wrapper<const MethodMap>, 2> methodMaps = { signals_, methods };
+
+    for (const auto &methodMap : methodMaps) {
+        for (const Method &mm : methodMap.get())
+            data_size += 2 + mm.inputTypes.size() + mm.outputTypes.size();
+    }
     idata.resize(data_size + 1);
 
     QMetaStringTable strings(className.toLatin1());
@@ -419,9 +424,9 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
 
     qsizetype totalMetaTypeCount = properties.size();
     ++totalMetaTypeCount; // + 1 for metatype of dynamic metaobject
-    for (const auto& methodContainer: {signals_, methods}) {
-        for (const auto& method: methodContainer) {
-            qsizetype argc = method.inputTypes.size() + qMax(qsizetype(0), method.outputTypes.size() - 1);
+    for (const auto &methodMap : methodMaps) {
+        for (const Method &mm : methodMap.get()) {
+            qsizetype argc = mm.inputTypes.size() + qMax(qsizetype(0), mm.outputTypes.size() - 1);
             totalMetaTypeCount += argc + 1;
         }
     }
@@ -430,10 +435,9 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
 
     // add each method:
     qsizetype currentMethodMetaTypeOffset = properties.size() + 1;
-    for (int x = 0; x < 2; ++x) {
-        // Signals must be added before other methods, to match moc.
-        const QMap<QByteArray, Method> &map = (x == 0) ? signals_ : methods;
-        for (const Method &mm : map) {
+
+    for (const auto &methodMap : methodMaps) {
+        for (const Method &mm : methodMap.get()) {
             qsizetype argc = mm.inputTypes.size() + qMax(qsizetype(0), mm.outputTypes.size() - 1);
 
             idata[offset++] = strings.enter(mm.name);
