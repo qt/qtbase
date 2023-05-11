@@ -37,9 +37,10 @@ public:
 
 private:
     static Q_DECL_COLD_FUNCTION QRunnable *warnNullCallable();
+    class QGenericRunnable;
 };
 
-class QGenericRunnable : public QRunnable
+class QRunnable::QGenericRunnable : public QRunnable
 {
     // Type erasure, to only instantiate a non-virtual class per Callable:
     class HelperBase
