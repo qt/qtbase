@@ -19,6 +19,7 @@ class tst_QDnsLookup: public QObject
     const QString normalDomain = u".test.qt-project.org"_s;
     const QString idnDomain = u".alqualondë.test.qt-project.org"_s;
     bool usingIdnDomain = false;
+    bool dnsServersMustWork = false;
 
     QString domainName(const QString &input);
     QString domainNameList(const QString &input);
@@ -39,6 +40,8 @@ private slots:
 
 void tst_QDnsLookup::initTestCase()
 {
+    if (qgetenv("QTEST_ENVIRONMENT") == "ci")
+        dnsServersMustWork = true;
 }
 
 QString tst_QDnsLookup::domainName(const QString &input)
@@ -146,38 +149,6 @@ void tst_QDnsLookup::lookup_data()
     QTest::newRow("txt-multi-multirr") << int(QDnsLookup::TXT) << "txt-multi-multirr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello;World";
 }
 
-static QByteArray msgDnsLookup(QDnsLookup::Error actualError,
-                               int expectedError,
-                               const QString &domain,
-                               const QString &cname,
-                               const QString &host,
-                               const QString &srv,
-                               const QString &mx,
-                               const QString &ns,
-                               const QString &ptr,
-                               const QString &errorString)
-{
-    QString result;
-    QTextStream str(&result);
-    str << "Actual error: " << actualError;
-    if (!errorString.isEmpty())
-        str << " (" << errorString << ')';
-    str << ", expected: " << expectedError;
-    str << ", domain: " << domain;
-    if (!cname.isEmpty())
-        str << ", cname: " << cname;
-    str << ", host: " << host;
-    if (!srv.isEmpty())
-        str << " server: " << srv;
-    if (!mx.isEmpty())
-        str << " mx: " << mx;
-    if (!ns.isEmpty())
-        str << " ns: " << ns;
-    if (!ptr.isEmpty())
-        str << " ptr: " << ptr;
-    return result.toLocal8Bit();
-}
-
 void tst_QDnsLookup::lookup()
 {
     QFETCH(int, type);
@@ -208,8 +179,37 @@ void tst_QDnsLookup::lookup()
     lookup.lookup();
     QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
 
-    QVERIFY2(int(lookup.error()) == error,
-             msgDnsLookup(lookup.error(), error, domain, cname, host, srv, mx, ns, ptr, lookup.errorString()));
+    auto extraErrorMsg = [&] () {
+        QString result;
+        QTextStream str(&result);
+        str << "Actual error: " << lookup.error();
+        if (QString errorString = lookup.errorString(); !errorString.isEmpty())
+            str << " (" << errorString << ')';
+        str << ", expected: " << error;
+        str << ", domain: " << domain;
+        if (!cname.isEmpty())
+            str << ", cname: " << cname;
+        str << ", host: " << host;
+        if (!srv.isEmpty())
+            str << " server: " << srv;
+        if (!mx.isEmpty())
+            str << " mx: " << mx;
+        if (!ns.isEmpty())
+            str << " ns: " << ns;
+        if (!ptr.isEmpty())
+            str << " ptr: " << ptr;
+        return result.toLocal8Bit();
+    };
+
+    if (!dnsServersMustWork && (lookup.error() == QDnsLookup::ServerFailureError
+                                || lookup.error() == QDnsLookup::ServerRefusedError)) {
+        // It's not a QDnsLookup problem if the server refuses to answer the query.
+        // This happens for queries of type ANY through Dnsmasq, for example.
+        qWarning("Server refused or was unable to answer query; %s", extraErrorMsg().constData());
+        return;
+    }
+
+    QVERIFY2(int(lookup.error()) == error, extraErrorMsg());
     if (error == QDnsLookup::NoError)
         QVERIFY(lookup.errorString().isEmpty());
     QCOMPARE(int(lookup.type()), type);
