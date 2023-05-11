@@ -42,7 +42,7 @@ private:
     class QGenericRunnable;
 };
 
-class QRunnable::QGenericRunnable : public QRunnable
+class Q_CORE_EXPORT QRunnable::QGenericRunnable : public QRunnable
 {
     // Type erasure, to only instantiate a non-virtual class per Callable:
     class HelperBase
@@ -91,14 +91,9 @@ public:
         : runHelper(new Helper<std::decay_t<Callable>>(std::forward<Callable>(c)))
     {
     }
-    ~QGenericRunnable() override
-    {
-        runHelper->destroy();
-    }
-    void run() override
-    {
-        runHelper->run();
-    }
+    ~QGenericRunnable() override;
+
+    void run() override;
 };
 
 namespace QtPrivate {

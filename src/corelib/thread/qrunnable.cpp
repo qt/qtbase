@@ -21,6 +21,17 @@ QRunnable *QRunnable::warnNullCallable()
     return nullptr;
 }
 
+
+QRunnable::QGenericRunnable::~QGenericRunnable()
+{
+    runHelper->destroy();
+}
+
+void QRunnable::QGenericRunnable::run()
+{
+    runHelper->run();
+}
+
 /*!
     \class QRunnable
     \inmodule QtCore
