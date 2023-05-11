@@ -501,13 +501,13 @@ public:
     void insert(qsizetype i, const T &t);
     void insert(qsizetype i, qsizetype n, const T &t);
 
-    void assign(qsizetype n, const T &t)
-    { Base::assign_impl(Prealloc, this->array, n, t); }
+    QVarLengthArray &assign(qsizetype n, const T &t)
+    { Base::assign_impl(Prealloc, this->array, n, t); return *this; }
     template <typename InputIterator, if_input_iterator<InputIterator> = true>
-    void assign(InputIterator first, InputIterator last)
-    { Base::assign_impl(Prealloc, this->array, first, last); }
-    void assign(std::initializer_list<T> list)
-    { assign(list.begin(), list.end()); }
+    QVarLengthArray &assign(InputIterator first, InputIterator last)
+    { Base::assign_impl(Prealloc, this->array, first, last); return *this; }
+    QVarLengthArray &assign(std::initializer_list<T> list)
+    { assign(list.begin(), list.end()); return *this; }
 
 #ifdef Q_QDOC
     void replace(qsizetype i, const T &t);

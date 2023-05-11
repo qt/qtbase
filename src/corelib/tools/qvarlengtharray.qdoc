@@ -997,7 +997,7 @@
     \sa erase()
 */
 
-/*! \fn template <class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::assign(qsizetype n, const T &t)
+/*! \fn template <class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::assign(qsizetype n, const T &t)
     \since 6.6
 
     Replaces the contents of this container with \a n copies of \a t.
@@ -1006,7 +1006,7 @@
     allocate memory if \a n exceeds the capacity of the container.
 */
 
-/*! \fn template <class T, qsizetype Prealloc> template <typename InputIterator, if_input_iterator<InputIterator>> void QVarLengthArray<T, Prealloc>::assign(InputIterator first, InputIterator last)
+/*! \fn template <class T, qsizetype Prealloc> template <typename InputIterator, if_input_iterator<InputIterator>> QVarLengthArray<T, Prealloc>::assign(InputIterator first, InputIterator last)
     \since 6.6
 
     Replaces the contents of this container with a copy of the elements in the
@@ -1023,7 +1023,7 @@
     The behavior is undefined if either argument is an iterator into *this.
 */
 
-/*! \fn template <class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::assign(std::initializer_list<T> list)
+/*! \fn template <class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::assign(std::initializer_list<T> list)
     \since 6.6
 
     Replaces the contents of this container with a copy of the elements of \a list.

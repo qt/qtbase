@@ -778,6 +778,18 @@ void tst_ContainerApiSymmetry::assign_impl() const
     for (const auto &e : Arr)                                \
         QCOMPARE(e, ComparisonData)                          \
     /*end*/
+#define RET_CHECK(...)                                           \
+    do {                                                         \
+        if constexpr (std::is_void_v<decltype( __VA_ARGS__ )>) { \
+            /* e.g. std::vector */                               \
+            __VA_ARGS__ ;                                        \
+        } else {                                                 \
+            /* e.g. std::basic_string */                         \
+            auto &&r = __VA_ARGS__ ;                             \
+            QCOMPARE_EQ(&r, &c);                                 \
+        }                                                        \
+    } while (false)                                              \
+    /* end */
     using V = typename Container::value_type;
     using S = typename Container::size_type;
     auto tData = V(9);
@@ -785,7 +797,7 @@ void tst_ContainerApiSymmetry::assign_impl() const
         // fill version
         auto c = make<Container>(4);
         const S oldCapacity = c.capacity();
-        c.assign(4, tData);
+        RET_CHECK(c.assign(4, tData));
         CHECK(c, tData, c.size(), S(4), c.capacity(), oldCapacity);
 
         c.assign(8, tData);
@@ -801,7 +813,7 @@ void tst_ContainerApiSymmetry::assign_impl() const
         auto iter = make<Container>(1);
 
         iter.assign(8, tData);
-        c.assign(iter.begin(), iter.end());
+        RET_CHECK(c.assign(iter.begin(), iter.end()));
         CHECK(c, tData, c.size(), S(8), c.capacity(), std::max(oldCapacity, S(8)));
 
         c.assign(iter.begin(), iter.begin());
@@ -814,7 +826,7 @@ void tst_ContainerApiSymmetry::assign_impl() const
         const S oldCapacity = c.capacity();
 
         std::stringstream ss("9 9 ");
-        c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{});
+        RET_CHECK(c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{}));
         CHECK(c, tData, c.size(), S(2), c.capacity(), oldCapacity);
 
         ss.str("");
@@ -836,10 +848,11 @@ void tst_ContainerApiSymmetry::assign_impl() const
         auto c = make<Container>(4);
         const S oldCapacity = c.capacity();
         std::initializer_list<V> list = {tData, tData, tData};
-        c.assign(list);
+        RET_CHECK(c.assign(list));
         CHECK(c, tData, c.size(), S(3), c.capacity(), oldCapacity);
     }
 
+#undef RET_CHECK
 #undef CHECK
 }
 

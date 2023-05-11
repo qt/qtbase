@@ -496,18 +496,18 @@ public:
         }
     }
 
-    void assign(qsizetype n, parameter_type t)
+    QList &assign(qsizetype n, parameter_type t)
     {
         Q_ASSERT(n >= 0);
-        fill(t, n);
+        return fill(t, n);
     }
 
     template <typename InputIterator, if_input_iterator<InputIterator> = true>
-    void assign(InputIterator first, InputIterator last)
-    { d.assign(first, last); }
+    QList &assign(InputIterator first, InputIterator last)
+    { d.assign(first, last); return *this; }
 
-    void assign(std::initializer_list<T> l)
-    { assign(l.begin(), l.end()); }
+    QList &assign(std::initializer_list<T> l)
+    { return assign(l.begin(), l.end()); }
 
     template <typename ...Args>
     iterator emplace(const_iterator before, Args&&... args)
