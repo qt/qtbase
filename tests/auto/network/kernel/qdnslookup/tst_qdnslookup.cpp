@@ -9,11 +9,16 @@
 #include <QtNetwork/QDnsLookup>
 #include <QtNetwork/QHostAddress>
 
+using namespace Qt::StringLiterals;
 static const int Timeout = 15000; // 15s
 
 class tst_QDnsLookup: public QObject
 {
     Q_OBJECT
+
+    const QString normalDomain = u".test.qt-project.org"_s;
+    const QString idnDomain = u".alqualondë.test.qt-project.org"_s;
+    bool usingIdnDomain = false;
 
     QString domainName(const QString &input);
     QString domainNameList(const QString &input);
@@ -24,6 +29,9 @@ public slots:
 private slots:
     void lookup_data();
     void lookup();
+    void lookupIdn_data() { lookup_data(); }
+    void lookupIdn();
+
     void lookupReuse();
     void lookupAbortRetry();
     void bindingsAndProperties();
@@ -31,9 +39,6 @@ private slots:
 
 void tst_QDnsLookup::initTestCase()
 {
-    QTest::addColumn<QString>("tld");
-    QTest::newRow("normal") << ".test.qt-project.org";
-    QTest::newRow("idn") << ".alqualond\xc3\xab.test.qt-project.org";
 }
 
 QString tst_QDnsLookup::domainName(const QString &input)
@@ -47,8 +52,9 @@ QString tst_QDnsLookup::domainName(const QString &input)
         return nodot;
     }
 
-    QFETCH_GLOBAL(QString, tld);
-    return input + tld;
+    if (usingIdnDomain)
+        return input + idnDomain;
+    return input + normalDomain;
 }
 
 QString tst_QDnsLookup::domainNameList(const QString &input)
@@ -286,6 +292,13 @@ void tst_QDnsLookup::lookup()
     QCOMPARE(texts.join(';'), txt);
 }
 
+void tst_QDnsLookup::lookupIdn()
+{
+    usingIdnDomain = true;
+    lookup();
+    usingIdnDomain = false;
+}
+
 void tst_QDnsLookup::lookupReuse()
 {
     QDnsLookup lookup;
@@ -340,10 +353,6 @@ void tst_QDnsLookup::lookupAbortRetry()
 
 void tst_QDnsLookup::bindingsAndProperties()
 {
-    QFETCH_GLOBAL(const QString, tld);
-    if (tld == QStringLiteral("idn"))
-        return;
-
     QDnsLookup lookup;
 
     lookup.setType(QDnsLookup::A);
