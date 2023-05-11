@@ -415,9 +415,9 @@ QStringList QIconTheme::parents() const
     if (!fallback.isEmpty())
         result.append(fallback);
 
-    // Ensure that all themes fall back to hicolor
-    if (!result.contains("hicolor"_L1))
-        result.append("hicolor"_L1);
+    // Ensure that all themes fall back to hicolor as the last theme
+    result.removeAll("hicolor"_L1);
+    result.append("hicolor"_L1);
 
     return result;
 }
