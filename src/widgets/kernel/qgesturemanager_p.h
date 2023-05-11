@@ -64,17 +64,6 @@ private:
     QSet<QGesture *> m_activeGestures;
     QSet<QGesture *> m_maybeGestures;
 
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_GCC("-Wattributes")
-    [[maybe_unused]] enum State {
-        Gesture,
-        NotGesture,
-        MaybeGesture // this means timers are up and waiting for some
-                     // more events, and input events are handled by
-                     // gesture recognizer explicitly
-    } state;
-    QT_WARNING_POP
-
     struct ObjectGesture
     {
         QObject* object;

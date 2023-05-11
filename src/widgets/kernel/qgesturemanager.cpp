@@ -50,7 +50,7 @@ static inline int panTouchPoints()
 #endif
 
 QGestureManager::QGestureManager(QObject *parent)
-    : QObject(parent), state(NotGesture), m_lastCustomGestureId(Qt::CustomGesture)
+    : QObject(parent), m_lastCustomGestureId(Qt::CustomGesture)
 {
     qRegisterMetaType<Qt::GestureState>();
 
