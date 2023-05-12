@@ -21,9 +21,17 @@ QT_REQUIRE_CONFIG(res_ninit);
 #endif
 #include <resolv.h>
 
+#include <array>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+
+static constexpr qsizetype ReplyBufferSize = PACKETSZ;
+
+// maximum length of a DNS query with a 255-character domain (rounded up to 16)
+static constexpr qsizetype QueryBufferSize = HFIXEDSZ + QFIXEDSZ + MAXCDNAME + 1;
+using QueryBuffer = std::array<unsigned char, (QueryBufferSize + 15) / 16 * 16>;
 
 #if QT_CONFIG(res_setservers)
 // https://www.ibm.com/docs/en/i/7.3?topic=ssw_ibm_i_73/apis/ressetservers.html
@@ -97,6 +105,16 @@ static bool applyNameServer(res_state state, const QHostAddress &nameserver, qui
 }
 #endif // !QT_CONFIG(res_setservers)
 
+static int
+prepareQueryBuffer(res_state state, QueryBuffer &buffer, const char *label, ns_rcode type)
+{
+    // Create header and our query
+    int queryLength = res_nmkquery(state, QUERY, label, C_IN, type, nullptr, 0, nullptr,
+                                   buffer.data(), buffer.size());
+    Q_ASSERT(queryLength < int(buffer.size()));
+    return queryLength;
+}
+
 void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 {
     // Initialize state.
@@ -116,35 +134,50 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     state.options |= RES_DEBUG;
 #endif
 
+    // Prepare the DNS query.
+    QueryBuffer qbuffer;
+    int queryLength = prepareQueryBuffer(&state, qbuffer, requestName, ns_rcode(requestType));
+    if (Q_UNLIKELY(queryLength < 0))
+        return reply->makeResolverSystemError();
+
     // Perform DNS query.
-    QVarLengthArray<unsigned char, PACKETSZ> buffer(PACKETSZ);
-    std::memset(buffer.data(), 0, buffer.size());
-    int responseLength = res_nquery(&state, requestName, C_IN, requestType, buffer.data(), buffer.size());
-    if (Q_UNLIKELY(responseLength > PACKETSZ)) {
+    QVarLengthArray<unsigned char, ReplyBufferSize> buffer(ReplyBufferSize);
+    auto attemptToSend = [&]() {
+        std::memset(buffer.data(), 0, HFIXEDSZ);        // the header is enough
+        int responseLength = res_nsend(&state, qbuffer.data(), queryLength, buffer.data(), buffer.size());
+        if (responseLength < 0) {
+            // network error of some sort
+            reply->makeResolverSystemError();
+        }
+        return responseLength;
+    };
+
+    int responseLength = attemptToSend();
+    if (responseLength > buffer.size()) {
+        // increase our buffer size
         buffer.resize(responseLength);
-        std::memset(buffer.data(), 0, buffer.size());
-        responseLength = res_nquery(&state, requestName, C_IN, requestType, buffer.data(), buffer.size());
+        responseLength = attemptToSend();
         if (Q_UNLIKELY(responseLength > buffer.size())) {
             // Ok, we give up.
             return reply->setError(QDnsLookup::ResolverError,
                                    QDnsLookup::tr("Reply was too large"));
         }
     }
-
-    unsigned char *response = buffer.data();
-    // Check the response header. Though res_nquery returns -1 as a
-    // responseLength in case of error, we still can extract the
-    // exact error code from the response.
-    HEADER *header = (HEADER*)response;
-    if (header->rcode)
-        return reply->makeDnsRcodeError(header->rcode);
+    if (responseLength < 0)
+        return;
 
     // Check the reply is valid.
     if (responseLength < int(sizeof(HEADER)))
         return reply->makeInvalidReplyError();
 
+    // Parse the reply.
+    auto header = reinterpret_cast<HEADER *>(buffer.data());
+    if (header->rcode)
+        return reply->makeDnsRcodeError(header->rcode);
+
     char host[PACKETSZ], answer[PACKETSZ];
     qptrdiff offset = sizeof(HEADER);
+    unsigned char *response = buffer.data();
     int status;
 
     if (ntohs(header->qdcount) == 1) {
