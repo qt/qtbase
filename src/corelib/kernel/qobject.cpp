@@ -4596,7 +4596,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     Q_GADGET makes a class member, \c{staticMetaObject}, available.
     \c{staticMetaObject} is of type QMetaObject and provides access to the
-    enums declared with Q_ENUMS.
+    enums declared with Q_ENUM.
 
     \sa Q_GADGET_EXPORT
 */
