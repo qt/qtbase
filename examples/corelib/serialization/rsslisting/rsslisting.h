@@ -27,7 +27,6 @@ public slots:
     void fetch();
     void finished(QNetworkReply *reply);
     void readyRead();
-    void metaDataChanged();
     void error(QNetworkReply::NetworkError);
 
 private:
