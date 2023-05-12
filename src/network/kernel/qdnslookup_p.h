@@ -32,6 +32,7 @@ QT_BEGIN_NAMESPACE
 
 //#define QDNSLOOKUP_DEBUG
 
+constexpr qsizetype MaxDomainNameLength = 255;
 class QDnsLookupRunnable;
 
 class QDnsLookupReply
