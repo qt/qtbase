@@ -528,6 +528,21 @@ void tst_QOpenGLWidget::showHide()
     QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
 }
 
+QtMessageHandler oldHandler = nullptr;
+
+void nativeWindowMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    if (oldHandler)
+        oldHandler(type, context, msg);
+
+    if (type == QtWarningMsg
+        && (msg.contains("QOpenGLContext::makeCurrent() called with non-opengl surface")
+            || msg.contains("Failed to make context current")))
+    {
+        QFAIL("Unexpected warning got printed");
+    }
+}
+
 void tst_QOpenGLWidget::nativeWindow()
 {
 #ifdef Q_OS_ANDROID
@@ -538,6 +553,10 @@ void tst_QOpenGLWidget::nativeWindow()
     // functional since there is no guarantee that the content is composed and
     // presented correctly as we can only do verification with
     // grabFramebuffer() here which only exercises a part of the pipeline.
+
+    // Install a message handler that looks for some typical warnings from
+    // QRhi/QOpenGLConext that occur when the RHI-related logic in widgets goes wrong.
+    oldHandler = qInstallMessageHandler(nativeWindowMessageHandler);
 
     {
         QScopedPointer<ClearWidget> w(new ClearWidget(nullptr, 800, 600));
@@ -554,7 +573,33 @@ void tst_QOpenGLWidget::nativeWindow()
         QVERIFY(w->internalWinId());
     }
 
-    // Now as a native child
+    // QTBUG-113557: a plain _raster_ QWidget that is a _native_ child in a toplevel
+    // combined with a RHI-based (non-native) widget (QOpenGLWidget in this case)
+    // in the same toplevel.
+    {
+        QWidget topLevel;
+        topLevel.resize(800, 600);
+
+        ClearWidget *child = new ClearWidget(&topLevel, 800, 600);
+        child->setClearColor(1, 0, 0);
+        child->resize(400, 400);
+        child->move(23, 34);
+
+        QWidget *raster = new QWidget(&topLevel);
+        raster->setGeometry(23, 240, 120, 120);
+        raster->setStyleSheet("QWidget { background-color: yellow; }");
+
+        raster->winId();
+
+        topLevel.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+
+        // Do not bother checking the output, i.e. if the yellow raster native child
+        // shows up as it should, but rather rely on the message handler catching the
+        // qWarnings if they occur.
+    }
+
+    // Now with the QOpenGLWidget being a native child
     {
         QWidget topLevel;
         topLevel.resize(800, 600);
@@ -620,7 +665,7 @@ void tst_QOpenGLWidget::nativeWindow()
         ClearWidget *child = new ClearWidget(nullptr, 800, 600);
         // set the parent separately, this is important, see next test case
         child->setParent(container);
-        child->setClearColor(0, 1, 0);
+        child->setClearColor(0, 0, 1);
         child->resize(400, 400);
         child->move(23, 34);
 
@@ -634,7 +679,7 @@ void tst_QOpenGLWidget::nativeWindow()
         QImage image = child->grabFramebuffer();
         QCOMPARE(image.width(), child->width());
         QCOMPARE(image.height(), child->height());
-        QVERIFY(image.pixel(30, 40) == qRgb(0, 255, 0));
+        QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
     }
 
     // Again as a child of a native child, but this time specifying the parent
@@ -646,7 +691,7 @@ void tst_QOpenGLWidget::nativeWindow()
         container->winId();
         // parent it right away
         ClearWidget *child = new ClearWidget(container, 800, 600);
-        child->setClearColor(0, 1, 0);
+        child->setClearColor(0, 0, 1);
         child->resize(400, 400);
         child->move(23, 34);
         topLevel.show();
@@ -657,7 +702,12 @@ void tst_QOpenGLWidget::nativeWindow()
         QImage image = child->grabFramebuffer();
         QCOMPARE(image.width(), child->width());
         QCOMPARE(image.height(), child->height());
-        QVERIFY(image.pixel(30, 40) == qRgb(0, 255, 0));
+        QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
+    }
+
+    if (oldHandler) {
+        qInstallMessageHandler(oldHandler);
+        oldHandler = nullptr;
     }
 }
 
