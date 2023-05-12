@@ -77,7 +77,6 @@ void RSSListing::get(const QUrl &url)
     currentReply = url.isValid() ? manager.get(QNetworkRequest(url)) : nullptr;
     if (currentReply) {
         connect(currentReply, &QNetworkReply::readyRead, this, &RSSListing::readyRead);
-        connect(currentReply, &QNetworkReply::metaDataChanged, this, &RSSListing::metaDataChanged);
         connect(currentReply, &QNetworkReply::errorOccurred, this, &RSSListing::error);
     }
     xml.setDevice(currentReply); // Equivalent to clear() if currentReply is null.
@@ -104,14 +103,6 @@ void RSSListing::fetch()
     treeWidget->clear();
 
     get(QUrl(lineEdit->text()));
-}
-
-void RSSListing::metaDataChanged()
-{
-    const QUrl redirectionTarget =
-        currentReply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
-    if (redirectionTarget.isValid())
-        get(redirectionTarget);
 }
 
 /*
