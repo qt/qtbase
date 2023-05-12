@@ -42,6 +42,47 @@ static bool useAsyncify()
     return qstdweb::haveAsyncify();
 }
 
+static bool useJspi()
+{
+    return qstdweb::haveJspi();
+}
+
+EM_ASYNC_JS(void, qt_jspi_suspend_js, (), {
+    ++Module.qtJspiSuspensionCounter;
+
+    await new Promise(resolve => {
+        Module.qtAsyncifyWakeUp.push(resolve);
+    });
+});
+
+EM_JS(bool, qt_jspi_resume_js, (), {
+    if (!Module.qtJspiSuspensionCounter)
+        return false;
+
+    --Module.qtJspiSuspensionCounter;
+
+    setTimeout(() => {
+        const wakeUp = (Module.qtAsyncifyWakeUp ?? []).pop();
+        if (wakeUp) wakeUp();
+    });
+    return true;
+});
+
+EM_JS(bool, qt_jspi_can_resume_js, (), {
+    return Module.qtJspiSuspensionCounter > 0;
+});
+
+EM_JS(void, init_jspi_support_js, (), {
+    Module.qtAsyncifyWakeUp = [];
+    Module.qtJspiSuspensionCounter = 0;
+});
+
+void initJspiSupport() {
+    init_jspi_support_js();
+}
+
+Q_CONSTRUCTOR_FUNCTION(initJspiSupport);
+
 EM_JS(void, qt_asyncify_suspend_js, (), {
     if (Module.qtSuspendId === undefined)
         Module.qtSuspendId = 0;
@@ -105,14 +146,14 @@ bool qt_asyncify_suspend()
 
 // Wakes any currently suspended main thread. Returns true if the main
 // thread was suspended, in which case it will now be asynchronously woken.
-bool qt_asyncify_resume()
+void qt_asyncify_resume()
 {
     if (!g_is_asyncify_suspended)
-        return false;
+        return;
     g_is_asyncify_suspended = false;
     qt_asyncify_resume_js();
-    return true;
 }
+
 
 Q_CONSTINIT QEventDispatcherWasm *QEventDispatcherWasm::g_mainThreadEventDispatcher = nullptr;
 #if QT_CONFIG(thread)
@@ -431,10 +472,14 @@ bool QEventDispatcherWasm::wait(int timeout)
         if (timeout > 0)
             qWarning() << "QEventDispatcherWasm asyncify wait with timeout is not supported; timeout will be ignored"; // FIXME
 
-        bool didSuspend = qt_asyncify_suspend();
-        if (!didSuspend) {
-            qWarning("QEventDispatcherWasm: current thread is already suspended; could not asyncify wait for events");
-            return false;
+        if (useJspi()) {
+            qt_jspi_suspend_js();
+        } else {
+            bool didSuspend = qt_asyncify_suspend();
+            if (!didSuspend) {
+                qWarning("QEventDispatcherWasm: current thread is already suspended; could not asyncify wait for events");
+                return false;
+            }
         }
         return true;
     } else {
@@ -458,6 +503,12 @@ bool QEventDispatcherWasm::wakeEventDispatcherThread()
     }
 #endif
     Q_ASSERT(isMainThreadEventDispatcher());
+    if (useJspi()) {
+        if (!qt_jspi_can_resume_js())
+            return false;
+        runOnMainThread([]{ qt_jspi_resume_js(); });
+        return true;
+    }
     if (g_is_asyncify_suspended) {
         runOnMainThread([]{ qt_asyncify_resume(); });
         return true;

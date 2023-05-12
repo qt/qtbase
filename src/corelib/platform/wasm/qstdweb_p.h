@@ -203,6 +203,7 @@ namespace qstdweb {
     }
 
     bool haveAsyncify();
+    bool haveJspi();
 
     struct CancellationFlag
     {

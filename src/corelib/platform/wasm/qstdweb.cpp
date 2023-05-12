@@ -30,7 +30,7 @@ static void usePotentialyUnusedSymbols()
     // called at runtime.
     volatile bool doIt = false;
     if (doIt)
-        emscripten_set_wheel_callback(NULL, 0, 0, NULL);
+        emscripten_set_wheel_callback("", 0, 0, NULL);
 }
 
 Q_CONSTRUCTOR_FUNCTION(usePotentialyUnusedSymbols)
@@ -363,10 +363,13 @@ void WebPromiseManager::adoptPromise(emscripten::val target, PromiseCallbacks ca
 #if defined(QT_STATIC)
 
 EM_JS(bool, jsHaveAsyncify, (), { return typeof Asyncify !== "undefined"; });
+EM_JS(bool, jsHaveJspi, (),
+      { return !!Asyncify && !!Asyncify.makeAsyncFunction && !!WebAssembly.Function; });
 
 #else
 
 bool jsHaveAsyncify() { return false; }
+bool jsHaveJspi() { return false; }
 
 #endif
 
@@ -853,6 +856,12 @@ bool haveAsyncify()
 {
     static bool HaveAsyncify = jsHaveAsyncify();
     return HaveAsyncify;
+}
+
+bool haveJspi()
+{
+    static bool HaveJspi = jsHaveJspi();
+    return HaveJspi;
 }
 
 std::shared_ptr<CancellationFlag>
