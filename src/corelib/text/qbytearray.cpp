@@ -1836,8 +1836,6 @@ QByteArray::QByteArray(qsizetype size, char ch)
 }
 
 /*!
-    \internal
-
     Constructs a byte array of size \a size with uninitialized contents.
 */
 
