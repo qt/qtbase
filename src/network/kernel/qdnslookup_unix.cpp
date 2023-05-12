@@ -19,18 +19,37 @@ QT_REQUIRE_CONFIG(res_ninit);
 #if __has_include(<arpa/nameser_compat.h>)
 #  include <arpa/nameser_compat.h>
 #endif
+#include <errno.h>
 #include <resolv.h>
 
 #include <array>
+
+#ifndef T_OPT
+// the older arpa/nameser_compat.h wasn't updated between 1999 and 2016 in glibc
+#  define T_OPT     ns_t_opt
+#endif
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-static constexpr qsizetype ReplyBufferSize = PACKETSZ;
+// minimum IPv6 MTU (1280) minus the IPv6 (40) and UDP headers (8)
+static constexpr qsizetype ReplyBufferSize = 1280 - 40 - 8;
 
-// maximum length of a DNS query with a 255-character domain (rounded up to 16)
-static constexpr qsizetype QueryBufferSize = HFIXEDSZ + QFIXEDSZ + MAXCDNAME + 1;
+// https://www.rfc-editor.org/rfc/rfc6891
+static constexpr unsigned char Edns0Record[] = {
+    0x00,                                           // root label
+    T_OPT >> 8, T_OPT & 0xff,                       // type OPT
+    ReplyBufferSize >> 8, ReplyBufferSize & 0xff,   // payload size
+    NOERROR,                                        // extended rcode
+    0,                                              // version
+    0x00, 0x00,                                     // flags
+    0x00, 0x00,                                     // option length
+};
+
+// maximum length of a EDNS0 query with a 255-character domain (rounded up to 16)
+static constexpr qsizetype QueryBufferSize =
+        HFIXEDSZ + QFIXEDSZ + MAXCDNAME + 1 + sizeof(Edns0Record);
 using QueryBuffer = std::array<unsigned char, (QueryBufferSize + 15) / 16 * 16>;
 
 #if QT_CONFIG(res_setservers)
@@ -112,7 +131,15 @@ prepareQueryBuffer(res_state state, QueryBuffer &buffer, const char *label, ns_r
     int queryLength = res_nmkquery(state, QUERY, label, C_IN, type, nullptr, 0, nullptr,
                                    buffer.data(), buffer.size());
     Q_ASSERT(queryLength < int(buffer.size()));
-    return queryLength;
+    if (Q_UNLIKELY(queryLength < 0))
+        return queryLength;
+
+    // Append EDNS0 record and set the number of additional RRs to 1
+    Q_ASSERT(queryLength + sizeof(Edns0Record) < buffer.size());
+    std::copy_n(std::begin(Edns0Record), sizeof(Edns0Record), buffer.begin() + queryLength);
+    reinterpret_cast<HEADER *>(buffer.data())->arcount = qToBigEndian<quint16>(1);
+
+    return queryLength + sizeof(Edns0Record);
 }
 
 void QDnsLookupRunnable::query(QDnsLookupReply *reply)
