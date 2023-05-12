@@ -1,4 +1,5 @@
 // Copyright (C) 2012 Jeremy Lainé <jeremy.laine@m4x.org>
+// Copyright (C) 2023 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <winsock2.h>
@@ -88,31 +89,10 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     DNS_QUERY_RESULT results = {};
     results.Version = 1;
     const DNS_STATUS status = DnsQueryEx(&request, &results, nullptr);
-    switch (status) {
-    case ERROR_SUCCESS:
-        break;
-    case DNS_ERROR_RCODE_FORMAT_ERROR:
-        reply->error = QDnsLookup::InvalidRequestError;
-        reply->errorString = tr("Server could not process query");
-        return;
-    case DNS_ERROR_RCODE_SERVER_FAILURE:
-    case DNS_ERROR_RCODE_NOT_IMPLEMENTED:
-        reply->error = QDnsLookup::ServerFailureError;
-        reply->errorString = tr("Server failure");
-        return;
-    case DNS_ERROR_RCODE_NAME_ERROR:
-        reply->error = QDnsLookup::NotFoundError;
-        reply->errorString = tr("Non existent domain");
-        return;
-    case DNS_ERROR_RCODE_REFUSED:
-        reply->error = QDnsLookup::ServerRefusedError;
-        reply->errorString = tr("Server refused to answer");
-        return;
-    default:
-        reply->error = QDnsLookup::InvalidReplyError;
-        reply->errorString = QSystemError(status, QSystemError::NativeError).toString();
-        return;
-    }
+    if (status >= DNS_ERROR_RCODE_FORMAT_ERROR && status <= DNS_ERROR_RCODE_LAST)
+        return reply->makeDnsRcodeError(status - DNS_ERROR_RCODE_FORMAT_ERROR + 1);
+    else if (status != ERROR_SUCCESS)
+        return reply->makeResolverSystemError(status);
 
     // Extract results.
     for (PDNS_RECORD ptr = results.pQueryRecords; ptr != NULL; ptr = ptr->pNext) {

@@ -117,9 +117,6 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
     }
 }
 
-const char *QDnsLookupPrivate::msgNoIpV6NameServerAdresses =
-    QT_TRANSLATE_NOOP("QDnsLookupRunnable", "IPv6 addresses for nameservers are currently not supported");
-
 /*!
     \class QDnsLookup
     \brief The QDnsLookup class represents a DNS lookup.
@@ -979,7 +976,7 @@ void QDnsLookupRunnable::run()
     // Validate input.
     if (qsizetype n = requestName.size(); n > MaxDomainNameLength || n == 0) {
         reply.error = QDnsLookup::InvalidRequestError;
-        reply.errorString = tr("Invalid domain name");
+        reply.errorString = QDnsLookup::tr("Invalid domain name");
         emit finished(reply);
         if (n)
             qWarning("QDnsLookup: domain name being looked up is too long (%lld bytes)", n);
