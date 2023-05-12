@@ -331,7 +331,7 @@ qt_feature("dnslookup" PUBLIC
     SECTION "Networking"
     LABEL "QDnsLookup"
     PURPOSE "Provides API for DNS lookups."
-    CONDITION NOT INTEGRITY
+    CONDITION QT_FEATURE_thread AND NOT INTEGRITY
 )
 qt_feature("gssapi" PUBLIC
     SECTION "Networking"
