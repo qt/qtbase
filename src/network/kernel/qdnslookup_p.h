@@ -181,22 +181,6 @@ private:
     quint16 port;
 };
 
-class QDnsLookupThreadPool : public QThreadPool
-{
-    Q_OBJECT
-
-public:
-    QDnsLookupThreadPool();
-    void start(QRunnable *runnable);
-
-private slots:
-    void _q_applicationDestroyed();
-
-private:
-    QMutex signalsMutex;
-    bool signalsConnected;
-};
-
 class QDnsRecordPrivate : public QSharedData
 {
 public:

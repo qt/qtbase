@@ -5,6 +5,7 @@
 #include "qdnslookup.h"
 #include "qdnslookup_p.h"
 
+#include <qapplicationstatic.h>
 #include <qcoreapplication.h>
 #include <qdatetime.h>
 #include <qrandom.h>
@@ -14,7 +15,18 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QDnsLookupThreadPool, theDnsLookupThreadPool);
+namespace {
+struct QDnsLookupThreadPool : QThreadPool
+{
+    QDnsLookupThreadPool()
+    {
+        // Run up to 5 lookups in parallel.
+        setMaxThreadCount(5);
+    }
+};
+}
+
+Q_APPLICATION_STATIC(QDnsLookupThreadPool, theDnsLookupThreadPool);
 
 static bool qt_qdnsmailexchangerecord_less_than(const QDnsMailExchangeRecord &r1, const QDnsMailExchangeRecord &r2)
 {
@@ -531,6 +543,11 @@ void QDnsLookup::lookup()
     Q_D(QDnsLookup);
     d->isFinished = false;
     d->reply = QDnsLookupReply();
+    if (!QCoreApplication::instance()) {
+        qWarning("QDnsLookup requires a QCoreApplication");
+        return;
+    }
+
     auto l = [this](const QDnsLookupReply &reply) {
         Q_D(QDnsLookup);
         if (d->runnable == sender()) {
@@ -1054,42 +1071,6 @@ void QDnsLookupRunnable::run()
     qt_qdnsservicerecord_sort(reply.serviceRecords);
 
     emit finished(reply);
-}
-
-QDnsLookupThreadPool::QDnsLookupThreadPool()
-    : signalsConnected(false)
-{
-    // Run up to 5 lookups in parallel.
-    setMaxThreadCount(5);
-}
-
-void QDnsLookupThreadPool::start(QRunnable *runnable)
-{
-    // Ensure threads complete at application destruction.
-    if (!signalsConnected) {
-        QMutexLocker signalsLocker(&signalsMutex);
-        if (!signalsConnected) {
-            QCoreApplication *app = QCoreApplication::instance();
-            if (!app) {
-                qWarning("QDnsLookup requires a QCoreApplication");
-                delete runnable;
-                return;
-            }
-
-            moveToThread(app->thread());
-            connect(app, SIGNAL(destroyed()),
-                SLOT(_q_applicationDestroyed()), Qt::DirectConnection);
-            signalsConnected = true;
-        }
-    }
-
-    QThreadPool::start(runnable);
-}
-
-void QDnsLookupThreadPool::_q_applicationDestroyed()
-{
-    waitForDone();
-    signalsConnected = false;
 }
 
 QT_END_NAMESPACE
