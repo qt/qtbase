@@ -76,7 +76,6 @@ qt_commandline_option(ltcg TYPE boolean)
 qt_commandline_option(intelcet TYPE boolean)
 qt_commandline_option(make TYPE addString VALUES examples libs tests tools
                       benchmarks manual-tests minimal-static-tests)
-qt_commandline_option(make-tool TYPE string)
 qt_commandline_option(mips_dsp TYPE boolean)
 qt_commandline_option(mips_dspr2 TYPE boolean)
 qt_commandline_option(mp TYPE boolean NAME msvc_mp)
