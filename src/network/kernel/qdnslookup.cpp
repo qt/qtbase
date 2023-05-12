@@ -231,8 +231,8 @@ const char *QDnsLookupPrivate::msgNoIpV6NameServerAdresses =
 QDnsLookup::QDnsLookup(QObject *parent)
     : QObject(*new QDnsLookupPrivate, parent)
 {
-    qRegisterMetaType<QDnsLookupReply>();
 }
+
 /*!
     Constructs a QDnsLookup object for the given \a type and \a name and sets
     \a parent as the parent object.
@@ -242,7 +242,6 @@ QDnsLookup::QDnsLookup(Type type, const QString &name, QObject *parent)
     : QObject(*new QDnsLookupPrivate, parent)
 {
     Q_D(QDnsLookup);
-    qRegisterMetaType<QDnsLookupReply>();
     d->name = name;
     d->type = type;
 }
@@ -258,7 +257,6 @@ QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &names
     : QObject(*new QDnsLookupPrivate, parent)
 {
     Q_D(QDnsLookup);
-    qRegisterMetaType<QDnsLookupReply>();
     d->name = name;
     d->type = type;
     d->nameserver = nameserver;
@@ -475,8 +473,8 @@ void QDnsLookup::lookup()
     d->isFinished = false;
     d->reply = QDnsLookupReply();
     d->runnable = new QDnsLookupRunnable(d->type, QUrl::toAce(d->name), d->nameserver);
-    connect(d->runnable, SIGNAL(finished(QDnsLookupReply)),
-            this, SLOT(_q_lookupFinished(QDnsLookupReply)),
+    connect(d->runnable, &QDnsLookupRunnable::finished,
+            this, [this](const QDnsLookupReply &reply) { d_func()->_q_lookupFinished(reply); },
             Qt::BlockingQueuedConnection);
 #if QT_CONFIG(thread)
     theDnsLookupThreadPool()->start(d->runnable);
