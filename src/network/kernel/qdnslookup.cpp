@@ -1,4 +1,5 @@
 // Copyright (C) 2012 Jeremy Lainé <jeremy.laine@m4x.org>
+// Copyright (C) 2023 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qdnslookup.h"
@@ -530,9 +531,21 @@ void QDnsLookup::lookup()
     Q_D(QDnsLookup);
     d->isFinished = false;
     d->reply = QDnsLookupReply();
+    auto l = [this](const QDnsLookupReply &reply) {
+        Q_D(QDnsLookup);
+        if (d->runnable == sender()) {
+#ifdef QDNSLOOKUP_DEBUG
+            qDebug("DNS reply for %s: %i (%s)", qPrintable(d->name), reply.error, qPrintable(reply.errorString));
+#endif
+            d->reply = reply;
+            d->runnable = nullptr;
+            d->isFinished = true;
+            emit finished();
+        }
+    };
+
     d->runnable = new QDnsLookupRunnable(d);
-    connect(d->runnable, &QDnsLookupRunnable::finished,
-            this, [this](const QDnsLookupReply &reply) { d_func()->_q_lookupFinished(reply); },
+    connect(d->runnable, &QDnsLookupRunnable::finished, this, l,
             Qt::BlockingQueuedConnection);
     theDnsLookupThreadPool->start(d->runnable);
 }
@@ -1010,20 +1023,6 @@ QDnsTextRecord &QDnsTextRecord::operator=(const QDnsTextRecord &other)
     Swaps this text record instance with \a other. This function is
     very fast and never fails.
 */
-
-void QDnsLookupPrivate::_q_lookupFinished(const QDnsLookupReply &_reply)
-{
-    Q_Q(QDnsLookup);
-    if (runnable == q->sender()) {
-#ifdef QDNSLOOKUP_DEBUG
-        qDebug("DNS reply for %s: %i (%s)", qPrintable(name), _reply.error, qPrintable(_reply.errorString));
-#endif
-        reply = _reply;
-        runnable = nullptr;
-        isFinished = true;
-        emit q->finished();
-    }
-}
 
 inline QDnsLookupRunnable::QDnsLookupRunnable(const QDnsLookupPrivate *d)
     : requestName(QUrl::toAce(d->name)),

@@ -226,7 +226,6 @@ Q_SIGNALS:
 
 private:
     Q_DECLARE_PRIVATE(QDnsLookup)
-    Q_PRIVATE_SLOT(d_func(), void _q_lookupFinished(const QDnsLookupReply &reply))
 };
 
 QT_END_NAMESPACE

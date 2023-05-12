@@ -123,8 +123,6 @@ public:
         : type(QDnsLookup::A)
         , port(DnsPort)
     { }
-    void _q_lookupFinished(const QDnsLookupReply &reply);
-
 
     void nameChanged()
     {
