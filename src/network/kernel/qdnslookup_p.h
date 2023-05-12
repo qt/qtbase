@@ -31,6 +31,7 @@ QT_BEGIN_NAMESPACE
 
 //#define QDNSLOOKUP_DEBUG
 
+constexpr qsizetype MaxDomainNameLength = 255;
 constexpr quint16 DnsPort = 53;
 
 class QDnsLookupRunnable;
