@@ -17,7 +17,6 @@ The following table describes the mapping of configure options to CMake argument
 | -no-feature-foo                       | -DFEATURE_foo=OFF                                 |                                                                 |
 | -list-features                        |                                                   | At the moment: configure with cmake once,                       |
 |                                       |                                                   | then use ccmake or cmake-gui to inspect the features.           |
-| -list-libraries                       |                                                   |                                                                 |
 | -opensource                           | n/a                                               |                                                                 |
 | -commercial                           | n/a                                               |                                                                 |
 | -confirm-license                      | n/a                                               |                                                                 |
