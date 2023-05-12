@@ -525,8 +525,8 @@
     For example,
     \snippet code/doc_src_stylesheet.qdoc 28
 
-    If the property references an enum declared with Q_ENUMS, you should
-    reference its constants by name, i.e., not their numeric value.
+    If the property references an enum declared with Q_ENUM, you should
+    reference its constants by name, not their numeric value.
 
     \note Use the qproperty syntax with care, as it modifies the
     widget that is being painted. Also, the qproperty syntax is evaluated only
