@@ -76,9 +76,6 @@ The following table describes the mapping of configure options to CMake argument
 | -unity-build                          | -DQT_UNITY_BUILD=ON                               |                                                                 |
 | -unity-build-batch-size <int>         | -DQT_UNITY_BUILD_BATCH_SIZE=<int>                 |                                                                 |
 | -warnings-are-errors                  | -DWARNINGS_ARE_ERRORS=ON                          |                                                                 |
-| -no-gcc-sysroot                       | n/a                                               | The corresponding CMake variables are CMAKE_SYSROOT_LINK        |
-|                                       |                                                   | and CMAKE_SYSROOT_COMPILE.                                      |
-|                                       |                                                   | They are usually set in a toolchain file.                       |
 | -no-pkg-config                        | -DFEATURE_pkg_config=OFF                          |                                                                 |
 | -D <string>                           | -DQT_EXTRA_DEFINES=<string1>;<string2>            |                                                                 |
 | -I <string>                           | -DQT_EXTRA_INCLUDEPATHS=<string1>;<string2>       |                                                                 |
