@@ -128,6 +128,16 @@ function(qt_internal_apply_gc_binaries target visibility)
         message(FATAL_ERROR "Visibitily setting must be one of PRIVATE, INTERFACE or PUBLIC.")
     endif()
 
+    string(JOIN "" clang_or_gcc_begin
+        "$<$<OR:"
+            "$<CXX_COMPILER_ID:GNU>,"
+            "$<CXX_COMPILER_ID:Clang>,"
+            "$<CXX_COMPILER_ID:AppleClang>,"
+            "$<CXX_COMPILER_ID:IntelLLVM>"
+        ">:"
+    )
+    set(clang_or_gcc_end ">")
+
     if ((GCC OR CLANG) AND NOT WASM AND NOT UIKIT AND NOT MSVC)
         if(APPLE)
             set(gc_sections_flag "-Wl,-dead_strip")
@@ -136,16 +146,19 @@ function(qt_internal_apply_gc_binaries target visibility)
         elseif(LINUX OR BSD OR WIN32 OR ANDROID)
             set(gc_sections_flag "-Wl,--gc-sections")
         endif()
+        set(gc_sections_flag
+            "${clang_or_gcc_begin}${gc_sections_flag}${clang_or_gcc_end}")
     endif()
     if(gc_sections_flag)
         target_link_options("${target}" ${visibility} "${gc_sections_flag}")
     endif()
 
     if((GCC OR CLANG) AND NOT WASM AND NOT UIKIT AND NOT MSVC)
-        set(split_sections_flags "-ffunction-sections" "-fdata-sections")
+        set(split_sections_flags
+            "${clang_or_gcc_begin}-ffunction-sections;-fdata-sections${clang_or_gcc_end}")
     endif()
     if(split_sections_flags)
-        target_compile_options("${target}" ${visibility} ${split_sections_flags})
+        target_compile_options("${target}" ${visibility} "${split_sections_flags}")
     endif()
 endfunction()
 
@@ -160,7 +173,12 @@ function(qt_internal_apply_intel_cet target visibility)
     endif()
 
     if(GCC)
-        set(flags "-mshstk")
+        string(JOIN "" flags
+            "$<$<OR:"
+                "$<CXX_COMPILER_ID:GNU>,"
+                "$<CXX_COMPILER_ID:Clang>,"
+                "$<CXX_COMPILER_ID:AppleClang>"
+            ">:-mshstk>")
     endif()
     if(flags)
         target_compile_options("${target}" ${visibility} "${flags}")
