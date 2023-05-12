@@ -1033,7 +1033,36 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
     if (widget != tlw)
         offset += widget->mapTo(tlw, QPoint());
 
-    if (tlw->d_func()->usesRhiFlush) {
+    // Use a condition that tries to keep both QTBUG-108344 and QTBUG-113557
+    // happy, i.e. support both (A) "native rhi-based child in a rhi-based
+    // toplevel" and (B) "native raster child in a rhi-based toplevel".
+    //
+    // If the tlw and the backingstore are RHI-based, then there are two cases
+    // to consider:
+    //
+    // (1) widget is not a native child, i.e. the QWindow for widget and tlw are
+    // the same,
+    //
+    // (2) widget is a native child which we now attempt to flush with tlw's
+    // backingstore to widget's native window. This is the interesting one.
+    //
+    // Using the condition tlw->usesRhiFlush on its own is insufficient since
+    // it fails to capture the case of a raster-based native child widget
+    // within tlw. (which must hit the non-rhi flush path)
+    //
+    // Extending the condition with tlw->windowHandle() == widget->windowHandle()
+    // would be logical but wrong, when it comes to (A) since flushing a
+    // RHI-based native child with a given 3D API using a RHI-based
+    // tlw/backingstore with the same 3D API needs to be supported still. (this
+    // happens when e.g. someone calls winId() on a QOpenGLWidget)
+    //
+    // Different 3D APIs do not need to be supported since we do not allow to
+    // do things like having a QQuickWidget with Vulkan and a QOpenGLWidget in
+    // the same toplevel, regardless of the widgets being native children or
+    // not. Hence comparing the surfaceType() instead. This satisfies both (A)
+    // and (B) given that an RHI-based toplevel cannot be RasterSurface.
+    //
+    if (tlw->d_func()->usesRhiFlush && tlw->windowHandle()->surfaceType() == widget->windowHandle()->surfaceType()) {
         QRhi *rhi = store->handle()->rhi();
         qCDebug(lcWidgetPainting) << "Flushing" << region << "of" << widget
                                   << "with QRhi" << rhi
