@@ -295,7 +295,7 @@ endfunction()
 function(qt_enable_utf8_sources target)
     set(utf8_flags "")
     if(MSVC)
-        list(APPEND utf8_flags "-utf-8")
+        list(APPEND utf8_flags "$<$<CXX_COMPILER_ID:MSVC>:-utf-8>")
     endif()
 
     if(utf8_flags)
