@@ -179,10 +179,25 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
         return responseLength;
     };
 
+    // strictly use UDP, we'll deal with truncated replies ourselves
+    state.options |= RES_IGNTC;
     int responseLength = attemptToSend();
-    if (responseLength > buffer.size()) {
-        // increase our buffer size
-        buffer.resize(responseLength);
+    if (responseLength < 0)
+        return;
+
+    // check if we need to use the virtual circuit (TCP)
+    auto header = reinterpret_cast<HEADER *>(buffer.data());
+    if (header->rcode == NOERROR && header->tc) {
+        // yes, increase our buffer size
+        buffer.resize(std::numeric_limits<quint16>::max());
+        header = reinterpret_cast<HEADER *>(buffer.data());
+
+        // remove the EDNS record in the query
+        reinterpret_cast<HEADER *>(qbuffer.data())->arcount = 0;
+        queryLength -= sizeof(Edns0Record);
+
+        // send using the virtual circuit
+        state.options |= RES_USEVC;
         responseLength = attemptToSend();
         if (Q_UNLIKELY(responseLength > buffer.size())) {
             // Ok, we give up.
@@ -198,7 +213,6 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
         return reply->makeInvalidReplyError();
 
     // Parse the reply.
-    auto header = reinterpret_cast<HEADER *>(buffer.data());
     if (header->rcode)
         return reply->makeDnsRcodeError(header->rcode);
 
