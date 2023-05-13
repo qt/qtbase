@@ -62,12 +62,22 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    if (cmd == "std-file-descriptors") {
+    if (cmd == "file-descriptors") {
         int fd = atoi(argv[2]);
         if (close(fd) < 0 && errno == EBADF)
             return EXIT_SUCCESS;
         fprintf(stderr, "%d is a valid file descriptor\n", fd);
         return EXIT_FAILURE;
+    }
+
+    if (cmd == "file-descriptors2") {
+        int fd1 = atoi(argv[2]);    // should be open
+        int fd2 = atoi(argv[3]);    // should be closed
+        if (close(fd1) < 0)
+            fprintf(stderr, "%d was not a valid file descriptor\n", fd1);
+        if (close(fd2) == 0 || errno != EBADF)
+            fprintf(stderr, "%d is a valid file descriptor\n", fd2);
+        return EXIT_SUCCESS;
     }
 
     fprintf(stderr, "Unknown command \"%s\"", cmd.data());
