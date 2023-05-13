@@ -80,6 +80,22 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
+    if (cmd == "noctty") {
+        int fd = open("/dev/tty", O_RDONLY);
+        if (fd == -1)
+            return EXIT_SUCCESS;
+        fprintf(stderr, "Could open /dev/tty\n");
+        return EXIT_FAILURE;
+    }
+
+    if (cmd == "setsid") {
+        pid_t pgid = getpgrp();
+        if (pgid == getpid())
+            return EXIT_SUCCESS;
+        fprintf(stderr, "Process group was %d\n", pgid);
+        return EXIT_FAILURE;
+    }
+
     fprintf(stderr, "Unknown command \"%s\"", cmd.data());
     return EXIT_FAILURE;
 }

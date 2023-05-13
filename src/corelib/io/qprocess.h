@@ -182,6 +182,8 @@ public:
         // some room if we want to add IgnoreSigHup or so
         CloseFileDescriptors                = 0x0010,
         UseVFork                            = 0x0020, // like POSIX_SPAWN_USEVFORK
+        CreateNewSession                    = 0x0040, // like POSIX_SPAWN_SETSID
+        DisconnectControllingTerminal       = 0x0080,
     };
     Q_DECLARE_FLAGS(UnixProcessFlags, UnixProcessFlag)
     struct UnixProcessParameters

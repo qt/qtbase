@@ -39,6 +39,9 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+#if __has_include(<paths.h>)
+#  include <paths.h>
+#endif
 #if __has_include(<linux/close_range.h>)
 // FreeBSD's is in <unistd.h>
 #  include <linux/close_range.h>
@@ -50,6 +53,12 @@
 
 #ifndef O_PATH
 #  define O_PATH        0
+#endif
+#ifndef _PATH_DEV
+#  define _PATH_DEV     "/dev/"
+#endif
+#ifndef _PATH_TTY
+#  define _PATH_TTY     _PATH_DEV "tty"
 #endif
 
 #ifdef Q_OS_FREEBSD
@@ -774,7 +783,7 @@ void QProcess::failChildProcessModifier(const char *description, int error) noex
 }
 
 // See IMPORTANT notice below
-static void applyProcessParameters(const QProcess::UnixProcessParameters &params)
+static const char *applyProcessParameters(const QProcess::UnixProcessParameters &params)
 {
     // Apply Unix signal handler parameters.
     // We don't expect signal() to fail, so we ignore its return value
@@ -817,6 +826,29 @@ static void applyProcessParameters(const QProcess::UnixProcessParameters &params
                 close(fd);
         }
     }
+
+    // Apply session and process group settings. This may fail.
+    if (params.flags.testFlag(QProcess::UnixProcessFlag::CreateNewSession)) {
+        if (setsid() < 0)
+            return "setsid";
+    }
+
+    // Disconnect from the controlling TTY. This probably won't fail. Must be
+    // done after the session settings from above.
+    if (params.flags.testFlag(QProcess::UnixProcessFlag::DisconnectControllingTerminal)) {
+        if (int fd = open(_PATH_TTY, O_RDONLY | O_NOCTTY); fd >= 0) {
+            // we still have a controlling TTY; give it up
+            int r = ioctl(fd, TIOCNOTTY);
+            int savedErrno = errno;
+            close(fd);
+            if (r != 0) {
+                errno = savedErrno;
+                return "ioctl";
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 // the noexcept here adds an extra layer of protection
@@ -857,7 +889,8 @@ void QChildProcess::startProcess() const noexcept
         callChildProcessModifier(d);
 
         // then we apply our other user-provided parameters
-        applyProcessParameters(d->unixExtras->processParameters);
+        if (const char *what = applyProcessParameters(d->unixExtras->processParameters))
+            failChildProcess(d, what, errno);
 
         auto flags = d->unixExtras->processParameters.flags;
         using P = QProcess::UnixProcessFlag;

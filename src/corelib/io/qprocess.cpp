@@ -849,6 +849,22 @@ void QProcessPrivate::Channel::clear()
            child. The \c stdin, \c stdout, and \c stderr file descriptors are
            never closed.
 
+    \value [since 6.7] CreateNewSession  Starts a new process session, by calling
+           \c{setsid(2)}. This allows the child process to outlive the session
+           the current process is in. This is one of the steps that
+           startDetached() takes to allow the process to detach, and is also one
+           of the steps to daemonize a process.
+
+    \value [since 6.7] DisconnectControllingTerminal   Requests that the process
+           disconnect from its controlling terminal, if it has one. If it has
+           none, nothing happens. Processes still connected to a controlling
+           terminal may get a Hang Up (\c SIGHUP) signal if the terminal
+           closes, or one of the other terminal-control signals (\c SIGTSTP, \c
+           SIGTTIN, \c SIGTTOU). Note that on some operating systems, a process
+           may only disconnect from the controlling terminal if it is the
+           session leader, meaning the \c CreateNewSession flag may be
+           required. Like it, this is one of the steps to daemonize a process.
+
     \value IgnoreSigPipe    Always sets the \c SIGPIPE signal to ignored
            (\c SIG_IGN), even if the \c ResetSignalHandlers flag was set. By
            default, if the child attempts to write to its standard output or

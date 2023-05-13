@@ -126,6 +126,8 @@ private slots:
     void raiseInChildProcessModifier();
     void unixProcessParameters_data();
     void unixProcessParameters();
+    void impossibleUnixProcessParameters_data();
+    void impossibleUnixProcessParameters();
     void unixProcessParametersAndChildModifier();
     void unixProcessParametersOtherFileDescriptors();
 #endif
@@ -1730,6 +1732,10 @@ void tst_QProcess::unixProcessParameters_data()
     addRow("reset-sighand", P::ResetSignalHandlers);
     addRow("ignore-sigpipe", P::IgnoreSigPipe);
     addRow("file-descriptors", P::CloseFileDescriptors);
+    addRow("setsid", P::CreateNewSession);
+
+    // On FreeBSD, we need to be session leader to disconnect from the CTTY
+    addRow("noctty", P::DisconnectControllingTerminal | P::CreateNewSession);
 }
 
 void tst_QProcess::unixProcessParameters()
@@ -1778,6 +1784,13 @@ void tst_QProcess::unixProcessParameters()
         }
     } scope;
 
+    if (params.flags & QProcess::UnixProcessFlag::DisconnectControllingTerminal) {
+        if (int fd = open("/dev/tty", O_RDONLY); fd < 0) {
+            qInfo("Process has no controlling terminal; this test will do nothing");
+            close(fd);
+        }
+    }
+
     QProcess process;
     process.setUnixProcessParameters(params);
     process.setStandardInputFile(QProcess::nullDevice());   // so we can't mess with SIGPIPE
@@ -1798,6 +1811,31 @@ void tst_QProcess::unixProcessParameters()
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
 }
 
+void tst_QProcess::impossibleUnixProcessParameters_data()
+{
+    using P = QProcess::UnixProcessParameters;
+    QTest::addColumn<P>("params");
+    QTest::newRow("setsid") << P{ QProcess::UnixProcessFlag::CreateNewSession };
+}
+
+void tst_QProcess::impossibleUnixProcessParameters()
+{
+    QFETCH(QProcess::UnixProcessParameters, params);
+
+    QProcess process;
+    if (params.flags & QProcess::UnixProcessFlag::CreateNewSession) {
+        process.setChildProcessModifier([]() {
+            // double setsid() should cause the second to fail
+            setsid();
+        });
+    }
+    process.setUnixProcessParameters(params);
+    process.start("testProcessNormal/testProcessNormal");
+
+    QVERIFY(!process.waitForStarted(5000));
+    qDebug() << process.errorString();
+}
+
 void tst_QProcess::unixProcessParametersAndChildModifier()
 {
     static constexpr char message[] = "Message from the handler function\n";
@@ -1806,6 +1844,8 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
     QAtomicInt vforkControl;
     int pipes[2];
 
+    pid_t oldpgid = getpgrp();
+
     QVERIFY2(pipe(pipes) == 0, qPrintable(qt_error_string()));
     auto pipeGuard0 = qScopeGuard([=] { close(pipes[0]); });
     {
@@ -1813,10 +1853,14 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
 
         // verify that our modifier runs before the parameters are applied
         process.setChildProcessModifier([=, &vforkControl] {
+            const char *pgidmsg = "PGID mismatch. ";
+            if (getpgrp() != oldpgid)
+                write(pipes[1], pgidmsg, strlen(pgidmsg));
             write(pipes[1], message, strlen(message));
             vforkControl.storeRelaxed(1);
         });
         auto flags = QProcess::UnixProcessFlag::CloseFileDescriptors |
+                QProcess::UnixProcessFlag::CreateNewSession |
                 QProcess::UnixProcessFlag::UseVFork;
         process.setUnixProcessParameters({ flags });
         process.setProgram("testUnixProcessParameters/testUnixProcessParameters");
