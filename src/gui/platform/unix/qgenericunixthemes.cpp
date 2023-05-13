@@ -33,6 +33,12 @@
 #include <QDBusConnectionInterface>
 #include <private/qdbusplatformmenu_p.h>
 #include <private/qdbusmenubar_p.h>
+#include <private/qflatmap_p.h>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonParseError>
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
 #include <private/qdbustrayicon_p.h>
@@ -119,7 +125,7 @@ static bool isDBusGlobalMenuAvailable()
 /*!
  * \internal
  * The QGenericUnixThemeDBusListener class listens to the SettingChanged DBus signal
- * and translates it into the QDbusSettingType enum.
+ * and translates it into combinations of the enums \c Provider and \c Setting.
  * Upon construction, it logs success/failure of the DBus connection.
  *
  * The signal settingChanged delivers the normalized setting type and the new value as a string.
@@ -131,28 +137,90 @@ class QGenericUnixThemeDBusListener : public QObject
     Q_OBJECT
 
 public:
-    QGenericUnixThemeDBusListener(const QString &service, const QString &path, const QString &interface, const QString &signal);
 
-    enum class SettingType {
-        KdeGlobalTheme,
-        KdeApplicationStyle,
-        GtkTheme,
-        Unknown
+    enum class Provider {
+        Kde,
+        Gtk,
+        Gnome,
     };
-    Q_ENUM(SettingType)
+    Q_ENUM(Provider)
 
-    static SettingType toSettingType(const QString &location, const QString &key);
+    enum class Setting {
+        Theme,
+        ApplicationStyle,
+        ColorTheme,
+    };
+    Q_ENUM(Setting)
+
+    QGenericUnixThemeDBusListener();
+    QGenericUnixThemeDBusListener(const QString &service, const QString &path,
+                                  const QString &interface, const QString &signal);
 
 private Q_SLOTS:
     void onSettingChanged(const QString &location, const QString &key, const QDBusVariant &value);
 
 Q_SIGNALS:
-    void settingChanged(QGenericUnixThemeDBusListener::SettingType type, const QString &value);
+    void settingChanged(QGenericUnixThemeDBusListener::Provider provider,
+                        QGenericUnixThemeDBusListener::Setting setting,
+                        const QString &value);
 
+private:
+    struct DBusKey
+    {
+        QString location;
+        QString key;
+        DBusKey(const QString &loc, const QString &k) : location(loc), key(k) {};
+        bool operator<(const DBusKey &other) const
+        {
+            return location + key < other.location + other.key;
+        }
+    };
+
+    struct ChangeSignal
+    {
+        Provider provider;
+        Setting setting;
+        ChangeSignal(Provider p, Setting s) : provider(p), setting(s) {}
+        ChangeSignal() {}
+    };
+
+    // Json keys
+    static constexpr QLatin1StringView s_dbusLocation = QLatin1StringView("DBusLocation");
+    static constexpr QLatin1StringView s_dbusKey = QLatin1StringView("DBusKey");
+    static constexpr QLatin1StringView s_provider = QLatin1StringView("Provider");
+    static constexpr QLatin1StringView s_setting = QLatin1StringView("Setting");
+    static constexpr QLatin1StringView s_signals = QLatin1StringView("DbusSignals");
+    static constexpr QLatin1StringView s_root = QLatin1StringView("Qt.qpa.DBusSignals");
+
+    QFlatMap <DBusKey, ChangeSignal> m_signalMap;
+
+    void init(const QString &service, const QString &path,
+              const QString &interface, const QString &signal);
+
+    std::optional<ChangeSignal> findSignal(const QString &location, const QString &key) const;
+    void populateSignalMap();
+    void loadJson(const QString &fileName);
+    void saveJson(const QString &fileName) const;
 };
 
 QGenericUnixThemeDBusListener::QGenericUnixThemeDBusListener(const QString &service,
                                const QString &path, const QString &interface, const QString &signal)
+{
+    init (service, path, interface, signal);
+}
+
+QGenericUnixThemeDBusListener::QGenericUnixThemeDBusListener()
+{
+    static constexpr QLatin1StringView service("");
+    static constexpr QLatin1StringView path("/org/freedesktop/portal/desktop");
+    static constexpr QLatin1StringView interface("org.freedesktop.portal.Settings");
+    static constexpr QLatin1StringView signal("SettingChanged");
+
+    init (service, path, interface, signal);
+}
+
+void QGenericUnixThemeDBusListener::init(const QString &service, const QString &path,
+          const QString &interface, const QString &signal)
 {
     QDBusConnection dbus = QDBusConnection::sessionBus();
     const bool dBusRunning = dbus.isConnected();
@@ -160,6 +228,7 @@ QGenericUnixThemeDBusListener::QGenericUnixThemeDBusListener(const QString &serv
 #define LOG service << path << interface << signal;
 
     if (dBusRunning) {
+        populateSignalMap();
         qRegisterMetaType<QDBusVariant>();
         dBusSignalConnected = dbus.connect(service, path, interface, signal, this,
                               SLOT(onSettingChanged(QString,QString,QDBusVariant)));
@@ -182,26 +251,153 @@ QGenericUnixThemeDBusListener::QGenericUnixThemeDBusListener(const QString &serv
 #undef LOG
 }
 
-QGenericUnixThemeDBusListener::SettingType QGenericUnixThemeDBusListener::toSettingType(
-        const QString &location, const QString &key)
+void QGenericUnixThemeDBusListener::loadJson(const QString &fileName)
 {
-    if (location == QLatin1StringView("org.kde.kdeglobals.KDE")
-          && key == QLatin1StringView("widgetStyle"))
-        return SettingType::KdeApplicationStyle;
-    if (location == QLatin1StringView("org.kde.kdeglobals.General")
-          && key == QLatin1StringView("ColorScheme"))
-        return SettingType::KdeGlobalTheme;
-    if (location == QLatin1StringView("org.gnome.desktop.interface")
-          && key == QLatin1StringView("gtk-theme"))
-        return SettingType::GtkTheme;
-    return SettingType::Unknown;
+    Q_ASSERT(!fileName.isEmpty());
+#define CHECK(cond, warning)\
+    if (!cond) {\
+        qCWarning(lcQpaThemeDBus) << fileName << warning << "Falling back to default.";\
+        return;\
+    }
+
+#define PARSE(var, enumeration, string)\
+    enumeration var;\
+    {\
+        bool success;\
+        const int val = QMetaEnum::fromType<enumeration>().keyToValue(string.toLatin1(), &success);\
+        CHECK(success, "Parse Error: Invalid value" << string << "for" << #var);\
+        var = static_cast<enumeration>(val);\
+    }
+
+    QFile file(fileName);
+    CHECK(file.exists(), fileName << "doesn't exist.");
+    CHECK(file.open(QIODevice::ReadOnly), "could not be opened for reading.");
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
+    CHECK((error.error == QJsonParseError::NoError), error.errorString());
+    qDebug() << doc;
+    CHECK(doc.isObject(), "Parse Error: Expected root object" << s_root);
+
+    const QJsonObject &root = doc.object();
+    CHECK(root.contains(s_root), "Parse Error: Expected root object" << s_root);
+    CHECK(root[s_root][s_signals].isArray(), "Parse Error: Expected array" << s_signals);
+
+    const QJsonArray &sigs = root[s_root][s_signals].toArray();
+    CHECK((sigs.count() > 0), "Parse Error: Found empty array" << s_signals);
+
+    for (auto sig = sigs.constBegin(); sig != sigs.constEnd(); ++sig) {
+        CHECK(sig->isObject(), "Parse Error: Expected object array" << s_signals);
+        const QJsonObject &obj = sig->toObject();
+        CHECK(obj.contains(s_dbusLocation), "Parse Error: Expected key" << s_dbusLocation);
+        CHECK(obj.contains(s_dbusKey), "Parse Error: Expected key" << s_dbusKey);
+        CHECK(obj.contains(s_provider), "Parse Error: Expected key" << s_provider);
+        CHECK(obj.contains(s_setting), "Parse Error: Expected key" << s_setting);
+        const QString &location = obj[s_dbusLocation].toString();
+        const QString &key = obj[s_dbusKey].toString();
+        const QString &providerString = obj[s_provider].toString();
+        const QString &settingString = obj[s_setting].toString();
+        PARSE(provider, Provider, providerString);
+        PARSE(setting, Setting, settingString);
+        const DBusKey dkey(location, key);
+        CHECK (!m_signalMap.contains(dkey), "Duplicate key" << location << key);
+        m_signalMap.insert(dkey, ChangeSignal(provider, setting));
+    }
+#undef PARSE
+#undef CHECK
+
+    if (m_signalMap.count() > 0)
+        qCInfo(lcQpaThemeDBus) << "Successfully imported" << fileName;
+    else
+        qCWarning(lcQpaThemeDBus) << "No data imported from" << fileName << "falling back to default.";
+
+#ifdef QT_DEBUG
+    const int count = m_signalMap.count();
+    if (count == 0)
+        return;
+
+    qCDebug(lcQpaThemeDBus) << "Listening to" << count << "signals:";
+    for (auto it = m_signalMap.constBegin(); it != m_signalMap.constEnd(); ++it) {
+        qDebug() << it.key().key << it.key().location << "mapped to"
+                 << it.value().provider << it.value().setting;
+    }
+
+#endif
+}
+
+void QGenericUnixThemeDBusListener::saveJson(const QString &fileName) const
+{
+    Q_ASSERT(!m_signalMap.isEmpty());
+    Q_ASSERT(!fileName.isEmpty());
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qCWarning(lcQpaThemeDBus) << fileName << "could not be opened for writing.";
+        return;
+    }
+
+    QJsonArray sigs;
+    for (auto sig = m_signalMap.constBegin(); sig != m_signalMap.constEnd(); ++sig) {
+        const DBusKey &dkey = sig.key();
+        const ChangeSignal &csig = sig.value();
+        QJsonObject obj;
+        obj[s_dbusLocation] = dkey.location;
+        obj[s_dbusKey] = dkey.key;
+        obj[s_provider] = QLatin1StringView(QMetaEnum::fromType<Provider>()
+                                            .valueToKey(static_cast<int>(csig.provider)));
+        obj[s_setting] = QLatin1StringView(QMetaEnum::fromType<Setting>()
+                                           .valueToKey(static_cast<int>(csig.setting)));
+        sigs.append(obj);
+    }
+    QJsonObject obj;
+    obj[s_signals] = sigs;
+    QJsonObject root;
+    root[s_root] = obj;
+    QJsonDocument doc(root);
+    file.write(doc.toJson());
+    file.close();
+}
+
+void QGenericUnixThemeDBusListener::populateSignalMap()
+{
+    m_signalMap.clear();
+    const QString &loadJsonFile = qEnvironmentVariable("QT_QPA_DBUS_SIGNALS");
+    if (!loadJsonFile.isEmpty())
+        loadJson(loadJsonFile);
+    if (!m_signalMap.isEmpty())
+        return;
+
+    m_signalMap.insert(DBusKey("org.kde.kdeglobals.KDE"_L1, "widgetStyle"_L1),
+                       ChangeSignal(Provider::Kde, Setting::ApplicationStyle));
+
+    m_signalMap.insert(DBusKey("org.kde.kdeglobals.General"_L1, "ColorScheme"_L1),
+                       ChangeSignal(Provider::Kde, Setting::Theme));
+
+    m_signalMap.insert(DBusKey("org.gnome.desktop.interface"_L1, "gtk-theme"_L1),
+                       ChangeSignal(Provider::Gtk, Setting::Theme));
+
+    const QString &saveJsonFile = qEnvironmentVariable("QT_QPA_DBUS_SIGNALS_SAVE");
+    if (!saveJsonFile.isEmpty())
+        saveJson(saveJsonFile);
+}
+
+std::optional<QGenericUnixThemeDBusListener::ChangeSignal>
+    QGenericUnixThemeDBusListener::findSignal(const QString &location, const QString &key) const
+{
+    const DBusKey dkey(location, key);
+    std::optional<QGenericUnixThemeDBusListener::ChangeSignal> ret;
+    if (m_signalMap.contains(dkey))
+        ret.emplace(m_signalMap.value(dkey));
+
+    return ret;
 }
 
 void QGenericUnixThemeDBusListener::onSettingChanged(const QString &location, const QString &key, const QDBusVariant &value)
 {
-    const SettingType type = toSettingType(location, key);
-    if (type != SettingType::Unknown)
-        emit settingChanged(type, value.variant().toString());
+    auto sig = findSignal(location, key);
+    if (!sig.has_value())
+        return;
+
+    emit settingChanged(sig.value().provider, sig.value().setting, value.variant().toString());
 }
 
 #endif //QT_NO_DBUS
@@ -381,24 +577,30 @@ public:
 private:
     std::unique_ptr<QGenericUnixThemeDBusListener> dbus;
     bool initDbus();
-    void settingChangedHandler(QGenericUnixThemeDBusListener::SettingType type, const QString &value);
+    void settingChangedHandler(QGenericUnixThemeDBusListener::Provider provider,
+                               QGenericUnixThemeDBusListener::Setting setting,
+                               const QString &value);
 #endif // QT_NO_DBUS
 };
 
 #ifndef QT_NO_DBUS
-void QKdeThemePrivate::settingChangedHandler(QGenericUnixThemeDBusListener::SettingType type, const QString &value)
+void QKdeThemePrivate::settingChangedHandler(QGenericUnixThemeDBusListener::Provider provider,
+                                             QGenericUnixThemeDBusListener::Setting setting,
+                                             const QString &value)
 {
-    switch (type) {
-    case QGenericUnixThemeDBusListener::SettingType::KdeGlobalTheme:
+    if (provider != QGenericUnixThemeDBusListener::Provider::Kde)
+        return;
+
+    switch (setting) {
+    case QGenericUnixThemeDBusListener::Setting::ColorTheme:
+        qCDebug(lcQpaThemeDBus) << "KDE color theme changed to:" << value;
+        break;
+    case QGenericUnixThemeDBusListener::Setting::Theme:
         qCDebug(lcQpaThemeDBus) << "KDE global theme changed to:" << value;
         break;
-    case QGenericUnixThemeDBusListener::SettingType::KdeApplicationStyle:
+    case QGenericUnixThemeDBusListener::Setting::ApplicationStyle:
         qCDebug(lcQpaThemeDBus) << "KDE application style changed to:" << value;
         break;
-    case QGenericUnixThemeDBusListener::SettingType::GtkTheme:
-        return; // KDE can change GTK2 / GTK3 themes. Ignored here, handled in GnomeTheme
-    case QGenericUnixThemeDBusListener::SettingType::Unknown:
-        Q_UNREACHABLE();
     }
 
     refresh();
@@ -406,17 +608,14 @@ void QKdeThemePrivate::settingChangedHandler(QGenericUnixThemeDBusListener::Sett
 
 bool QKdeThemePrivate::initDbus()
 {
-    static constexpr QLatin1StringView service("");
-    static constexpr QLatin1StringView path("/org/freedesktop/portal/desktop");
-    static constexpr QLatin1StringView interface("org.freedesktop.portal.Settings");
-    static constexpr QLatin1StringView signal("SettingChanged");
-
-    dbus.reset(new QGenericUnixThemeDBusListener(service, path, interface, signal));
+    dbus.reset(new QGenericUnixThemeDBusListener());
     Q_ASSERT(dbus);
 
     // Wrap slot in a lambda to avoid inheriting QKdeThemePrivate from QObject
-    auto wrapper = [this](QGenericUnixThemeDBusListener::SettingType type, const QString &value) {
-        settingChangedHandler(type, value);
+    auto wrapper = [this](QGenericUnixThemeDBusListener::Provider provider,
+                          QGenericUnixThemeDBusListener::Setting setting,
+                          const QString &value) {
+        settingChangedHandler(provider, setting, value);
     };
 
     return QObject::connect(dbus.get(), &QGenericUnixThemeDBusListener::settingChanged, wrapper);
@@ -936,21 +1135,23 @@ QGnomeThemePrivate::~QGnomeThemePrivate()
 #ifndef QT_NO_DBUS
 bool QGnomeThemePrivate::initDbus()
 {
-    static constexpr QLatin1StringView service("");
-    static constexpr QLatin1StringView path("/org/freedesktop/portal/desktop");
-    static constexpr QLatin1StringView interface("org.freedesktop.portal.Settings");
-    static constexpr QLatin1StringView signal("SettingChanged");
-    dbus.reset(new QGenericUnixThemeDBusListener(service, path, interface, signal));
+    dbus.reset(new QGenericUnixThemeDBusListener());
     Q_ASSERT(dbus);
 
     // Wrap slot in a lambda to avoid inheriting QGnomeThemePrivate from QObject
-    auto wrapper = [this](QGenericUnixThemeDBusListener::SettingType type, const QString &value) {
-        if (type == QGenericUnixThemeDBusListener::SettingType::GtkTheme)
+    auto wrapper = [this](QGenericUnixThemeDBusListener::Provider provider,
+                          QGenericUnixThemeDBusListener::Setting setting,
+                          const QString &value) {
+        if (provider != QGenericUnixThemeDBusListener::Provider::Gnome
+            && provider != QGenericUnixThemeDBusListener::Provider::Gtk) {
+            return;
+        }
+
+        if (setting == QGenericUnixThemeDBusListener::Setting::Theme)
             updateColorScheme(value);
     };
 
     return QObject::connect(dbus.get(), &QGenericUnixThemeDBusListener::settingChanged, wrapper);
-
 }
 
 void QGnomeThemePrivate::updateColorScheme(const QString &themeName)
