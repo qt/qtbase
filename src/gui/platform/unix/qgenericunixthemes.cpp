@@ -375,6 +375,9 @@ void QGenericUnixThemeDBusListener::populateSignalMap()
     m_signalMap.insert(DBusKey("org.gnome.desktop.interface"_L1, "gtk-theme"_L1),
                        ChangeSignal(Provider::Gtk, Setting::Theme));
 
+    m_signalMap.insert(DBusKey("org.freedesktop.appearance"_L1, "color-scheme"_L1),
+                       ChangeSignal(Provider::Gnome, Setting::ColorTheme));
+
     const QString &saveJsonFile = qEnvironmentVariable("QT_QPA_DBUS_SIGNALS_SAVE");
     if (!saveJsonFile.isEmpty())
         saveJson(saveJsonFile);
