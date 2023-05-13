@@ -987,7 +987,10 @@ QCoreApplication::~QCoreApplication()
     and must be set before a QCoreApplication instance is created.
 
     \note It is strongly recommended not to enable this option since
-    it introduces security risks.
+    it introduces security risks. If this application does enable the flag and
+    starts child processes, it should drop the privileges as early as possible
+    by calling \c{setuid(2)} for itself, or at the latest by using the
+    QProcess::UnixProcessParameters::ResetIds flag.
 */
 void QCoreApplication::setSetuidAllowed(bool allow)
 {

@@ -873,6 +873,12 @@ void QProcessPrivate::Channel::clear()
            terminate immediately; with this flag, the write operation fails
            without a signal and the child may continue executing.
 
+    \value [since 6.7] ResetIds     Drops any retained, effective user or group
+           ID the current process may still have (see \c{setuid(2)} and
+           \c{setgid(2)}, plus QCoreApplication::setSetuidAllowed()). This is
+           useful if the current process was setuid or setgid and does not wish
+           the child process to retain the elevated privileges.
+
     \value ResetSignalHandlers  Resets all Unix signal handlers back to their
            default state (that is, pass \c SIG_DFL to \c{signal(2)}). This flag
            is useful to ensure any ignored (\c SIG_IGN) signal does not affect

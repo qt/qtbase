@@ -848,6 +848,15 @@ static const char *applyProcessParameters(const QProcess::UnixProcessParameters 
         }
     }
 
+    // Apply UID and GID parameters last. This isn't expected to fail either:
+    // either we're trying to impersonate what we already are, or we're EUID or
+    // EGID root, in which case we are allowed to do this.
+    if (params.flags.testFlag(QProcess::UnixProcessFlag::ResetIds)) {
+        int r = setgid(getgid());
+        r = setuid(getuid());
+        (void) r;
+    }
+
     return nullptr;
 }
 

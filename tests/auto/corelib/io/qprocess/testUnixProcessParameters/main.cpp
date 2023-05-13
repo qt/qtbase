@@ -29,6 +29,14 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
+    if (cmd == "reset-ids") {
+        if (getuid() == geteuid() && getgid() == getegid())
+            return EXIT_SUCCESS;
+        fprintf(stderr, "Real: %d %d; Effective: %d %d\n",
+                getuid(), getgid(), geteuid(), getegid());
+        return EXIT_FAILURE;
+    }
+
     if (cmd == "reset-sighand") {
         bool ok = true;
 

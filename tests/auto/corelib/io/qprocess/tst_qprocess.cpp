@@ -1733,6 +1733,7 @@ void tst_QProcess::unixProcessParameters_data()
     addRow("ignore-sigpipe", P::IgnoreSigPipe);
     addRow("file-descriptors", P::CloseFileDescriptors);
     addRow("setsid", P::CreateNewSession);
+    addRow("reset-ids", P::ResetIds);
 
     // On FreeBSD, we need to be session leader to disconnect from the CTTY
     addRow("noctty", P::DisconnectControllingTerminal | P::CreateNewSession);
@@ -1783,6 +1784,11 @@ void tst_QProcess::unixProcessParameters()
             sigprocmask(SIG_BLOCK, set, nullptr);
         }
     } scope;
+
+    if (params.flags & QProcess::UnixProcessFlag::ResetIds) {
+        if (getuid() == geteuid() && getgid() == getegid())
+            qInfo("Process has identical real and effective IDs; this test will do nothing");
+    }
 
     if (params.flags & QProcess::UnixProcessFlag::DisconnectControllingTerminal) {
         if (int fd = open("/dev/tty", O_RDONLY); fd < 0) {
