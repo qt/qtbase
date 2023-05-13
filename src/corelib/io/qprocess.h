@@ -179,15 +179,16 @@ public:
         ResetSignalHandlers                 = 0x0001, // like POSIX_SPAWN_SETSIGDEF
         IgnoreSigPipe                       = 0x0002,
         // some room if we want to add IgnoreSigHup or so
-        CloseNonStandardFileDescriptors     = 0x0010,
+        CloseFileDescriptors                = 0x0010,
         UseVFork                            = 0x0020, // like POSIX_SPAWN_USEVFORK
     };
     Q_DECLARE_FLAGS(UnixProcessFlags, UnixProcessFlag)
     struct UnixProcessParameters
     {
         UnixProcessFlags flags = {};
+        int lowestFileDescriptorToClose = 0;
 
-        quint32 _reserved[7] {};
+        quint32 _reserved[6] {};
     };
     UnixProcessParameters unixProcessParameters() const noexcept;
     void setUnixProcessParameters(const UnixProcessParameters &params);

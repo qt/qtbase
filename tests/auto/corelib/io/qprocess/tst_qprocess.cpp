@@ -118,6 +118,7 @@ private slots:
     void unixProcessParameters_data();
     void unixProcessParameters();
     void unixProcessParametersAndChildModifier();
+    void unixProcessParametersOtherFileDescriptors();
 #endif
     void exitCodeTest();
     void systemEnvironment();
@@ -1537,7 +1538,7 @@ void tst_QProcess::unixProcessParameters_data()
     using P = QProcess::UnixProcessFlag;
     addRow("reset-sighand", P::ResetSignalHandlers);
     addRow("ignore-sigpipe", P::IgnoreSigPipe);
-    addRow("std-file-descriptors", P::CloseNonStandardFileDescriptors);
+    addRow("file-descriptors", P::CloseFileDescriptors);
 }
 
 void tst_QProcess::unixProcessParameters()
@@ -1618,11 +1619,11 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
             write(pipes[1], message, strlen(message));
             vforkControl.storeRelaxed(1);
         });
-        auto flags = QProcess::UnixProcessFlag::CloseNonStandardFileDescriptors |
+        auto flags = QProcess::UnixProcessFlag::CloseFileDescriptors |
                 QProcess::UnixProcessFlag::UseVFork;
         process.setUnixProcessParameters({ flags });
         process.setProgram("testUnixProcessParameters/testUnixProcessParameters");
-        process.setArguments({ "std-file-descriptors", QString::number(pipes[1]) });
+        process.setArguments({ "file-descriptors", QString::number(pipes[1]) });
         process.start();
         QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
     } // closes the writing end of the pipe
@@ -1638,6 +1639,50 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
 
     if (haveWorkingVFork)
         QVERIFY2(vforkControl.loadRelaxed(), "QProcess doesn't appear to have used vfork()");
+}
+
+void tst_QProcess::unixProcessParametersOtherFileDescriptors()
+{
+    constexpr int TargetFileDescriptor = 3;
+    int pipes[2];
+    int fd1 = open("/dev/null", O_RDONLY);
+    int devnull = fcntl(fd1, F_DUPFD, 100); // instead of F_DUPFD_CLOEXEC
+    pipe2(pipes, O_CLOEXEC);
+    close(fd1);
+
+    auto closeFds = qScopeGuard([&] {
+        close(devnull);
+        close(pipes[0]);
+        // we'll close pipe[1] before any QCOMPARE
+    });
+
+    QProcess process;
+    QProcess::UnixProcessParameters params;
+    params.flags = QProcess::UnixProcessFlag::CloseFileDescriptors
+            | QProcess::UnixProcessFlag::UseVFork;
+    params.lowestFileDescriptorToClose = 4;
+    process.setUnixProcessParameters(params);
+    process.setChildProcessModifier([devnull, pipes]() {
+        if (dup2(devnull, TargetFileDescriptor) == TargetFileDescriptor)
+            return;
+        write(pipes[1], &errno, sizeof(errno));
+        _exit(255);
+    });
+    process.setProgram("testUnixProcessParameters/testUnixProcessParameters");
+    process.setArguments({ "file-descriptors2", QString::number(TargetFileDescriptor),
+                           QString::number(devnull) });
+    process.start();
+    close(pipes[1]);
+
+    if (int duperror; read(pipes[0], &duperror, sizeof(duperror)) == sizeof(duperror))
+        QFAIL(QByteArray("dup2 failed: ") + strerror(duperror));
+
+    QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.readAllStandardError(), QString());
+    QCOMPARE(process.readAll(), QString());
+    QCOMPARE(process.exitCode(), 0);
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
 }
 #endif
 

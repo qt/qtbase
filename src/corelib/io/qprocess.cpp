@@ -816,7 +816,15 @@ void QProcessPrivate::Channel::clear()
     Its members are:
     \list
     \li UnixProcessParameters::flags    Flags, see QProcess::UnixProcessFlags
+    \li UnixProcessParameters::lowestFileDescriptorToClose  The lowest file
+            descriptor to close.
     \endlist
+
+    When the QProcess::UnixProcessFlags::CloseFileDescriptors flag is set in
+    the \c flags field, QProcess closes the application's open file descriptors
+    before executing the child process. The descriptors 0, 1, and 2 (that is,
+    \c stdin, \c stdout, and \c stderr) are left alone, along with the ones
+    numbered lower than the value of the \c lowestFileDescriptorToClose field.
 
     All of the settings above can also be manually achieved by calling the
     respective POSIX function from a handler set with
@@ -835,10 +843,11 @@ void QProcessPrivate::Channel::clear()
 
     These flags can be used in the \c flags field of \l UnixProcessParameters.
 
-    \value CloseNonStandardFileDescriptors  Close all file descriptors besides
-           \c stdin, \c stdout, and \c stderr, preventing any currently open
-           descriptor in the parent process from accidentally leaking to the
-           child.
+    \value CloseFileDescriptors  Close all file descriptors above the threshold
+           defined by \c lowestFileDescriptorToClose, preventing any currently
+           open descriptor in the parent process from accidentally leaking to the
+           child. The \c stdin, \c stdout, and \c stderr file descriptors are
+           never closed.
 
     \value IgnoreSigPipe    Always sets the \c SIGPIPE signal to ignored
            (\c SIG_IGN), even if the \c ResetSignalHandlers flag was set. By

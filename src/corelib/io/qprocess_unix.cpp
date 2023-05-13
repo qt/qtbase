@@ -669,9 +669,9 @@ static void applyProcessParameters(const QProcess::UnixProcessParameters &params
 
     // Close all file descriptors above stderr.
     // This isn't expected to fail, so we ignore close()'s return value.
-    if (params.flags.testFlag(QProcess::UnixProcessFlag::CloseNonStandardFileDescriptors)) {
+    if (params.flags.testFlag(QProcess::UnixProcessFlag::CloseFileDescriptors)) {
         int r = -1;
-        int fd = STDERR_FILENO + 1;
+        int fd = qMax(STDERR_FILENO + 1, params.lowestFileDescriptorToClose);
 #if QT_CONFIG(close_range)
         // On FreeBSD, this probably won't fail.
         // On Linux, this will fail with ENOSYS before kernel 5.9.
