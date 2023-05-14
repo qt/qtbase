@@ -1300,7 +1300,8 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
     };
 
     while (test(IDENTIFIER)) {
-        const QByteArray l = lexem();
+        const Symbol &lsym = symbol();
+        const QByteArray l = lsym.lexem();
         if (l[0] == 'C' && l == "CONSTANT") {
             propDef.constant = true;
             continue;
@@ -1327,11 +1328,11 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
         } else if (test(INTEGER_LITERAL)) {
             v = lexem();
             if (l != "REVISION")
-                error(1);
+                error(lsym);
         } else if (test(DEFAULT)) {
             v = lexem();
             if (l != "READ" && l != "WRITE")
-                error(1);
+                error(lsym);
         } else {
             next(IDENTIFIER);
             v = lexem();
@@ -1345,7 +1346,7 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
             if (l == "MEMBER")
                 propDef.member = v;
             else
-                error(2);
+                error(lsym);
             break;
         case 'R':
             if (l == "READ")
@@ -1356,10 +1357,10 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
                 bool ok = false;
                 const int minor = v.toInt(&ok);
                 if (!ok || !QTypeRevision::isValidSegment(minor))
-                    error(1);
+                    error(lsym);
                 propDef.revision = QTypeRevision::fromMinorVersion(minor).toEncodedVersion<int>();
             } else
-                error(2);
+                error(lsym);
             break;
         case 'S':
             if (l == "SCRIPTABLE") {
@@ -1369,27 +1370,27 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
                 propDef.stored = v + v2;
                 checkIsFunction(propDef.stored, "STORED");
             } else
-                error(2);
+                error(lsym);
             break;
-        case 'W': if (l != "WRITE") error(2);
+        case 'W': if (l != "WRITE") error(lsym);
             propDef.write = v;
             break;
-        case 'B': if (l != "BINDABLE") error(2);
+        case 'B': if (l != "BINDABLE") error(lsym);
             propDef.bind = v;
             break;
-        case 'D': if (l != "DESIGNABLE") error(2);
+        case 'D': if (l != "DESIGNABLE") error(lsym);
             propDef.designable = v + v2;
             checkIsFunction(propDef.designable, "DESIGNABLE");
             break;
-        case 'N': if (l != "NOTIFY") error(2);
+        case 'N': if (l != "NOTIFY") error(lsym);
             propDef.notify = v;
             break;
-        case 'U': if (l != "USER") error(2);
+        case 'U': if (l != "USER") error(lsym);
             propDef.user = v + v2;
             checkIsFunction(propDef.user, "USER");
             break;
         default:
-            error(2);
+            error(lsym);
         }
     }
     if (propDef.constant && !propDef.write.isNull()) {

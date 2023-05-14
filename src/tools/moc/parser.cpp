@@ -20,17 +20,24 @@ static const char *error_msg = nullptr;
 #define ErrorFormatString "%s:%d:%d: "
 #endif
 
-void Parser::error(int rollback) {
-    index -= rollback;
-    error();
+static void defaultErrorMsg(const QByteArray &fileName, const Symbol &sym)
+{
+    fprintf(stderr, ErrorFormatString "error: Parse error at \"%s\"\n",
+            fileName.constData(), sym.lineNum, 1, sym.lexem().data());
 }
+
+void Parser::error(const Symbol &sym)
+{
+    defaultErrorMsg(currentFilenames.top(), sym);
+    exit(EXIT_FAILURE);
+}
+
 void Parser::error(const char *msg) {
     if (msg || error_msg)
         fprintf(stderr, ErrorFormatString "error: %s\n",
                  currentFilenames.top().constData(), symbol().lineNum, 1, msg?msg:error_msg);
     else
-        fprintf(stderr, ErrorFormatString "error: Parse error at \"%s\"\n",
-                 currentFilenames.top().constData(), symbol().lineNum, 1, symbol().lexem().data());
+        defaultErrorMsg(currentFilenames.top(), symbol());
     exit(EXIT_FAILURE);
 }
 
