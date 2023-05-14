@@ -60,6 +60,8 @@
 
 #include "qmlmacro.h"
 
+using namespace Qt::StringLiterals;
+
 #ifdef Q_MOC_RUN
 // check that moc can parse these constructs, they are being used in Windows winsock2.h header
 #define STRING_HASH_HASH(x) ("foo" ## x ## "bar")
@@ -2295,6 +2297,13 @@ void tst_Moc::warnings_data()
         << 1
         << QString()
         << QString("standard input:3:1: error: Parse error at \"decltype\"");
+
+    QTest::newRow("QTBUG-36367: report correct error location")
+        << "class X { \n Q_PROPERTY(Foo* foo NONSENSE foo) \n };"_ba
+        << QStringList()
+        << 1
+        << QString()
+        << u"standard input:2:1: error: Parse error at \"NONSENSE\""_s;
 
 #ifdef Q_OS_UNIX  // Limit to Unix because the error message is platform-dependent
     QTest::newRow("Q_PLUGIN_METADATA: unreadable file")
