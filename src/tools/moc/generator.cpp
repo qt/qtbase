@@ -23,6 +23,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtMiscUtils;
+
 uint nameToBuiltinType(const QByteArray &name)
 {
     if (name.isEmpty())
@@ -80,12 +82,12 @@ static inline qsizetype lengthOfEscapeSequence(const QByteArray &s, qsizetype i)
     char ch = s.at(i);
     if (ch == 'x') {
         ++i;
-        while (i < s.size() && is_hex_char(s.at(i)))
+        while (i < s.size() && isHexDigit(s.at(i)))
             ++i;
-    } else if (is_octal_char(ch)) {
+    } else if (isOctalDigit(ch)) {
         while (i < startPos + 4
                && i < s.size()
-               && is_octal_char(s.at(i))) {
+               && isOctalDigit(s.at(i))) {
             ++i;
         }
     } else { // single character escape sequence

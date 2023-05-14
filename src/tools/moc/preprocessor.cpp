@@ -12,6 +12,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtMiscUtils;
+
 #include "ppkeywords.cpp"
 #include "keywords.cpp"
 
@@ -212,7 +214,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     data -= 2;
                     break;
                 case DIGIT:
-                    while (is_digit_char(*data) || *data == '\'')
+                    while (isAsciiDigit(*data) || *data == '\'')
                         ++data;
                     if (!*data || *data != '.') {
                         token = INTEGER_LITERAL;
@@ -221,7 +223,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                              || *data == 'b' || *data == 'B')
                             && *lexem == '0') {
                             ++data;
-                            while (is_hex_char(*data) || *data == '\'')
+                            while (isHexDigit(*data) || *data == '\'')
                                 ++data;
                         }
                         break;
@@ -230,13 +232,13 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     ++data;
                     Q_FALLTHROUGH();
                 case FLOATING_LITERAL:
-                    while (is_digit_char(*data) || *data == '\'')
+                    while (isAsciiDigit(*data) || *data == '\'')
                         ++data;
                     if (*data == '+' || *data == '-')
                         ++data;
                     if (*data == 'e' || *data == 'E') {
                         ++data;
-                        while (is_digit_char(*data) || *data == '\'')
+                        while (isAsciiDigit(*data) || *data == '\'')
                             ++data;
                     }
                     if (*data == 'f' || *data == 'F'
@@ -390,7 +392,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                 token = PP_CHARACTER_LITERAL;
                 break;
             case PP_DIGIT:
-                while (is_digit_char(*data) || *data == '\'')
+                while (isAsciiDigit(*data) || *data == '\'')
                     ++data;
                 if (!*data || *data != '.') {
                     token = PP_INTEGER_LITERAL;
@@ -398,7 +400,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                         (*data == 'x' || *data == 'X')
                         && *lexem == '0') {
                         ++data;
-                        while (is_hex_char(*data) || *data == '\'')
+                        while (isHexDigit(*data) || *data == '\'')
                             ++data;
                     }
                     break;
@@ -407,13 +409,13 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                 ++data;
                 Q_FALLTHROUGH();
             case PP_FLOATING_LITERAL:
-                while (is_digit_char(*data) || *data == '\'')
+                while (isAsciiDigit(*data) || *data == '\'')
                     ++data;
                 if (*data == '+' || *data == '-')
                     ++data;
                 if (*data == 'e' || *data == 'E') {
                     ++data;
-                    while (is_digit_char(*data) || *data == '\'')
+                    while (isAsciiDigit(*data) || *data == '\'')
                         ++data;
                 }
                 if (*data == 'f' || *data == 'F'
