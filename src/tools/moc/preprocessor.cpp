@@ -649,9 +649,9 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
 
                 const Symbols &arg = arguments.at(index);
                 QByteArray stringified;
-                for (int i = 0; i < arg.size(); ++i) {
-                    stringified += arg.at(i).lexem();
-                }
+                for (const Symbol &sym : arg)
+                    stringified += sym.lexem();
+
                 stringified.replace('"', "\\\"");
                 stringified.prepend('"');
                 stringified.append('"');
@@ -685,8 +685,8 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
 
                 if (index >= 0 && index < arguments.size()) {
                     const Symbols &arg = arguments.at(index);
-                    for (int i = 1; i < arg.size(); ++i)
-                        expansion += arg.at(i);
+                    if (!arg.isEmpty())
+                        expansion.append(arg.cbegin() + 1, arg.cend());
                 }
             }
             mode = Normal;
@@ -1000,8 +1000,10 @@ static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepa
         fprintf(stderr, "debug-includes: searching for '%s'\n", include.constData());
     }
 
-    for (int j = 0; j < includepaths.size() && !fi.exists(); ++j) {
-        const Parser::IncludePath &p = includepaths.at(j);
+    for (const Parser::IncludePath &p : includepaths) {
+        if (fi.exists())
+            break;
+
         if (p.isFrameworkPath) {
             const int slashPos = include.indexOf('/');
             if (slashPos == -1)

@@ -234,8 +234,7 @@ void Generator::generateCode()
     // filter out undeclared enumerators and sets
     {
         QList<EnumDef> enumList;
-        for (int i = 0; i < cdef->enumList.size(); ++i) {
-            EnumDef def = cdef->enumList.at(i);
+        for (EnumDef def : std::as_const(cdef->enumList)) {
             if (cdef->enumDeclarations.contains(def.name)) {
                 enumList += def;
             }
@@ -377,8 +376,9 @@ void Generator::generateCode()
     fprintf(out, "    %4d, %4d, // enums/sets\n", int(cdef->enumList.size()), cdef->enumList.size() ? index : 0);
 
     int enumsIndex = index;
-    for (int i = 0; i < cdef->enumList.size(); ++i)
-        index += QMetaObjectPrivate::IntsPerEnum + (cdef->enumList.at(i).values.size() * 2);
+    for (const EnumDef &def : std::as_const(cdef->enumList))
+        index += QMetaObjectPrivate::IntsPerEnum + (def.values.size() * 2);
+
     fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? int(cdef->constructorList.size()) : 0,
             isConstructible ? index : 0);
 
@@ -461,8 +461,7 @@ void Generator::generateCode()
     QMultiHash<QByteArray, QByteArray> knownExtraMetaObject(knownGadgets);
     knownExtraMetaObject.unite(knownQObjectClasses);
 
-    for (int i = 0; i < cdef->propertyList.size(); ++i) {
-        const PropertyDef &p = cdef->propertyList.at(i);
+    for (const PropertyDef &p : std::as_const(cdef->propertyList)) {
         if (isBuiltinType(p.type))
             continue;
 
@@ -521,9 +520,9 @@ void Generator::generateCode()
     if (!extraList.isEmpty()) {
         fprintf(out, "Q_CONSTINIT static const QMetaObject::SuperData qt_meta_extradata_%s[] = {\n",
                 qualifiedClassNameIdentifier.constData());
-        for (int i = 0; i < extraList.size(); ++i) {
-            fprintf(out, "    QMetaObject::SuperData::link<%s::staticMetaObject>(),\n", extraList.at(i).constData());
-        }
+        for (const QByteArray &ba : std::as_const(extraList))
+            fprintf(out, "    QMetaObject::SuperData::link<%s::staticMetaObject>(),\n", ba.constData());
+
         fprintf(out, "    nullptr\n};\n\n");
     }
 
@@ -569,16 +568,14 @@ void Generator::generateCode()
         fprintf(out, "    qt_metaTypeArray<");
     }
     // metatypes for properties
-    for (int i = 0; i < cdef->propertyList.size(); ++i) {
-        const PropertyDef &p = cdef->propertyList.at(i);
+    for (const PropertyDef &p : std::as_const(cdef->propertyList)) {
         fprintf(out, "%s\n        // property '%s'\n        %s",
                 comma, p.name.constData(), stringForType(p.type, true).constData());
         comma = ",";
     }
 
     // metatypes for enums
-    for (int i = 0; i < cdef->enumList.size(); ++i) {
-        const EnumDef &e = cdef->enumList.at(i);
+    for (const EnumDef &e : std::as_const(cdef->enumList)) {
         fprintf(out, "%s\n        // enum '%s'\n        %s",
                 comma, e.name.constData(),
                 stringForType(cdef->classname % "::" % e.name, true).constData());
@@ -605,8 +602,7 @@ void Generator::generateCode()
     }
 
     // but constructors have no return types, so this needs comma control again
-    for (int i = 0; i< cdef->constructorList.size(); ++i) {
-        const FunctionDef& fdef = cdef->constructorList.at(i);
+    for (const FunctionDef &fdef : std::as_const(cdef->constructorList)) {
         if (fdef.arguments.isEmpty())
             continue;
 
@@ -650,11 +646,10 @@ void Generator::generateCode()
         fprintf(out, "    if (!strcmp(_clname, \"%s\"))\n        return static_cast< %s*>(this);\n",
                 cname, cname);
     }
-    for (int i = 0; i < cdef->interfaceList.size(); ++i) {
-        const QList<ClassDef::Interface> &iface = cdef->interfaceList.at(i);
-        for (int j = 0; j < iface.size(); ++j) {
+    for (const QList<ClassDef::Interface> &iface : std::as_const(cdef->interfaceList)) {
+        for (qsizetype j = 0; j < iface.size(); ++j) {
             fprintf(out, "    if (!strcmp(_clname, %s))\n        return ", iface.at(j).interfaceId.constData());
-            for (int k = j; k >= 0; --k)
+            for (qsizetype k = j; k >= 0; --k)
                 fprintf(out, "static_cast< %s*>(", iface.at(k).className.constData());
             fprintf(out, "this%s;\n", QByteArray(j + 1, ')').constData());
         }
@@ -700,8 +695,7 @@ void Generator::generateCode()
 
 void Generator::registerClassInfoStrings()
 {
-    for (int i = 0; i < cdef->classInfoList.size(); ++i) {
-        const ClassInfoDef &c = cdef->classInfoList.at(i);
+    for (const ClassInfoDef &c : std::as_const(cdef->classInfoList)) {
         strreg(c.name);
         strreg(c.value);
     }
@@ -714,25 +708,19 @@ void Generator::generateClassInfos()
 
     fprintf(out, "\n // classinfo: key, value\n");
 
-    for (int i = 0; i < cdef->classInfoList.size(); ++i) {
-        const ClassInfoDef &c = cdef->classInfoList.at(i);
+    for (const ClassInfoDef &c : std::as_const(cdef->classInfoList))
         fprintf(out, "    %4d, %4d,\n", stridx(c.name), stridx(c.value));
-    }
 }
 
 void Generator::registerFunctionStrings(const QList<FunctionDef> &list)
 {
-    for (int i = 0; i < list.size(); ++i) {
-        const FunctionDef &f = list.at(i);
-
+    for (const FunctionDef &f : list) {
         strreg(f.name);
         if (!isBuiltinType(f.normalizedType))
             strreg(f.normalizedType);
         strreg(f.tag);
 
-        int argsCount = f.arguments.size();
-        for (int j = 0; j < argsCount; ++j) {
-            const ArgumentDef &a = f.arguments.at(j);
+        for (const ArgumentDef &a : f.arguments) {
             if (!isBuiltinType(a.normalizedType))
                 strreg(a.normalizedType);
             strreg(a.name);
@@ -753,9 +741,7 @@ void Generator::generateFunctions(const QList<FunctionDef> &list, const char *fu
         return;
     fprintf(out, "\n // %ss: name, argc, parameters, tag, flags, initial metatype offsets\n", functype);
 
-    for (int i = 0; i < list.size(); ++i) {
-        const FunctionDef &f = list.at(i);
-
+    for (const FunctionDef &f : list) {
         QByteArray comment;
         uint flags = type;
         if (f.access == FunctionDef::Private) {
@@ -804,10 +790,8 @@ void Generator::generateFunctionRevisions(const QList<FunctionDef> &list, const 
 {
     if (list.size())
         fprintf(out, "\n // %ss: revision\n", functype);
-    for (int i = 0; i < list.size(); ++i) {
-        const FunctionDef &f = list.at(i);
+    for (const FunctionDef &f : list)
         fprintf(out, "    %4d,\n", f.revision);
-    }
 }
 
 void Generator::generateFunctionParameters(const QList<FunctionDef> &list, const char *functype)
@@ -815,8 +799,7 @@ void Generator::generateFunctionParameters(const QList<FunctionDef> &list, const
     if (list.isEmpty())
         return;
     fprintf(out, "\n // %ss: parameters\n", functype);
-    for (int i = 0; i < list.size(); ++i) {
-        const FunctionDef &f = list.at(i);
+    for (const FunctionDef &f : list) {
         fprintf(out, "    ");
 
         // Types
@@ -830,10 +813,8 @@ void Generator::generateFunctionParameters(const QList<FunctionDef> &list, const
         }
 
         // Parameter names
-        for (int j = 0; j < argsCount; ++j) {
-            const ArgumentDef &arg = f.arguments.at(j);
+        for (const ArgumentDef &arg : f.arguments)
             fprintf(out, " %4d,", stridx(arg.name));
-        }
 
         fprintf(out, "\n");
     }
@@ -866,8 +847,7 @@ void Generator::generateTypeInfo(const QByteArray &typeName, bool allowEmptyName
 
 void Generator::registerPropertyStrings()
 {
-    for (int i = 0; i < cdef->propertyList.size(); ++i) {
-        const PropertyDef &p = cdef->propertyList.at(i);
+    for (const PropertyDef &p : std::as_const(cdef->propertyList)) {
         strreg(p.name);
         if (!isBuiltinType(p.type))
             strreg(p.type);
@@ -882,8 +862,7 @@ void Generator::generateProperties()
 
     if (cdef->propertyList.size())
         fprintf(out, "\n // properties: name, type, flags\n");
-    for (int i = 0; i < cdef->propertyList.size(); ++i) {
-        const PropertyDef &p = cdef->propertyList.at(i);
+    for (const PropertyDef &p : std::as_const(cdef->propertyList)) {
         uint flags = Invalid;
         if (!isBuiltinType(p.type))
             flags |= EnumOrFlag;
@@ -936,13 +915,12 @@ void Generator::generateProperties()
 
 void Generator::registerEnumStrings()
 {
-    for (int i = 0; i < cdef->enumList.size(); ++i) {
-        const EnumDef &e = cdef->enumList.at(i);
+    for (const EnumDef &e : std::as_const(cdef->enumList)) {
         strreg(e.name);
         if (!e.enumName.isNull())
             strreg(e.enumName);
-        for (int j = 0; j < e.values.size(); ++j)
-            strreg(e.values.at(j));
+        for (const QByteArray &val : e.values)
+            strreg(val);
     }
 }
 
@@ -971,10 +949,8 @@ void Generator::generateEnums(int index)
     }
 
     fprintf(out, "\n // enum data: key, value\n");
-    for (i = 0; i < cdef->enumList.size(); ++i) {
-        const EnumDef &e = cdef->enumList.at(i);
-        for (int j = 0; j < e.values.size(); ++j) {
-            const QByteArray &val = e.values.at(j);
+    for (const EnumDef &e : std::as_const(cdef->enumList)) {
+        for (const QByteArray &val : e.values) {
             QByteArray code = cdef->qualified.constData();
             if (e.isEnumClass)
                 code += "::" + (e.enumName.isNull() ? e.name : e.enumName);
@@ -1291,8 +1267,7 @@ void Generator::generateStaticMetacall()
         bool needSet = false;
         bool needReset = false;
         bool hasBindableProperties = false;
-        for (int i = 0; i < cdef->propertyList.size(); ++i) {
-            const PropertyDef &p = cdef->propertyList.at(i);
+        for (const PropertyDef &p : std::as_const(cdef->propertyList)) {
             needGet |= !p.read.isEmpty() || !p.member.isEmpty();
             if (!p.read.isEmpty() || !p.member.isEmpty())
                 needTempVarForGet |= (p.gspec != PropertyDef::PointerSpec
