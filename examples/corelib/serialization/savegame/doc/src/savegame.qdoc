@@ -35,8 +35,8 @@
     serializing to another format — for example XML or QDataStream, which require passing
     a document-like object — or when the object identity is important (QObject
     subclasses, for example), other patterns may be more suitable. See the
-    \l{xml/dombookmarks} and \l{xml/streambookmarks} examples for XML, and the
-    implementation of \l QListWidgetItem::read() and \l QListWidgetItem::write()
+    \l{dombookmarks} example for XML, and the implementation of
+    \l QListWidgetItem::read() and \l QListWidgetItem::write()
     for idiomatic QDataStream serialization. The \c{print()} functions in this example
     are good examples of QTextStream serialization, even though they, of course, lack
     the deserialization side.
