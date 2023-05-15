@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS +=  addressbook widgets modelview gettingStarted notepad
+SUBDIRS += widgets modelview gettingStarted notepad
