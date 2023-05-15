@@ -2238,10 +2238,10 @@ void QWindowsWindow::checkForScreenChanged(ScreenChangeMode mode)
         return;
     // For screens with different DPI: postpone until WM_DPICHANGE
     // Check on currentScreen as it can be 0 when resuming a session (QTBUG-80436).
-    if (mode == FromGeometryChange && currentScreen != nullptr
-        && !equalDpi(currentScreen->logicalDpi(), newScreen->logicalDpi())) {
+    const bool changingDpi = !equalDpi(QDpi(savedDpi(), savedDpi()), newScreen->logicalDpi());
+    if (mode == FromGeometryChange && currentScreen != nullptr && changingDpi)
         return;
-    }
+
     qCDebug(lcQpaWindow).noquote().nospace() << __FUNCTION__
         << ' ' << window() << " \"" << (currentScreen ? currentScreen->name() : QString())
         << "\"->\"" << newScreen->name() << '"';
