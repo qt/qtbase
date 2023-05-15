@@ -110,7 +110,9 @@ public:
     static QWhatsThat *instance;
 
 protected:
+#if defined(Q_OS_WIN)
     void showEvent(QShowEvent *e) override;
+#endif
     void mousePressEvent(QMouseEvent*) override;
     void mouseReleaseEvent(QMouseEvent*) override;
     void mouseMoveEvent(QMouseEvent*) override;
@@ -123,7 +125,9 @@ private:
     QString text;
     QTextDocument* doc;
     QString anchor;
+#if defined(Q_OS_WIN)
     QPixmap background;
+#endif
 };
 
 QWhatsThat *QWhatsThat::instance = nullptr;
@@ -197,10 +201,12 @@ QWhatsThat::~QWhatsThat()
         delete doc;
 }
 
+#if defined(Q_OS_WIN)
 void QWhatsThat::showEvent(QShowEvent *)
 {
     background = QGuiApplication::primaryScreen()->grabWindow(0, x(), y(), width(), height());
 }
+#endif
 
 void QWhatsThat::mousePressEvent(QMouseEvent* e)
 {
@@ -261,7 +267,10 @@ void QWhatsThat::paintEvent(QPaintEvent*)
     if (drawShadow)
         r.adjust(0, 0, -shadowWidth, -shadowWidth);
     QPainter p(this);
+#if defined(Q_OS_WIN)
+    // Needed due to supposed lack of support for NoSystemBackground on Windows
     p.drawPixmap(0, 0, background);
+#endif
     p.setPen(QPen(palette().toolTipText(), 0));
     p.setBrush(palette().toolTipBase());
     p.drawRect(r);
