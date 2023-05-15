@@ -30,6 +30,7 @@ public slots:
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wcomment")
+QT_WARNING_DISABLE_GCC("-Wcomment")
 
 // ends with \\\r should not make moc crash (QTBUG-53441) (no new lines on purpose!!) \
 
