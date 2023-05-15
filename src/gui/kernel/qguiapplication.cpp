@@ -776,9 +776,9 @@ void QGuiApplication::setBadgeNumber(qint64 number)
     \brief the base name of the desktop entry for this application
     \since 5.7
 
-    This is the file name, without the full path, of the desktop entry
-    that represents this application according to the freedesktop desktop
-    entry specification.
+    This is the file name, without the full path or the trailing ".desktop"
+    extension of the desktop entry that represents this application
+    according to the freedesktop desktop entry specification.
 
     This property gives a precise indication of what desktop entry represents
     the application and it is needed by the windowing system to retrieve
