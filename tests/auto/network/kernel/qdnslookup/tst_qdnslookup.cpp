@@ -39,6 +39,8 @@ public slots:
     void initTestCase();
 
 private slots:
+    void lookupLocalhost();
+    void lookupRoot();
     void lookup_data();
     void lookup();
     void lookupIdn_data() { lookup_data(); }
@@ -206,6 +208,35 @@ QStringList tst_QDnsLookup::domainNameListAlternatives(const QString &input)
     return alternatives;
 }
 
+void tst_QDnsLookup::lookupLocalhost()
+{
+    QDnsLookup lookup(QDnsLookup::Type::A, u"localhost"_s);
+    lookup.lookup();
+    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
+    QCOMPARE(lookup.error(), QDnsLookup::NoError);
+
+    QList<QDnsHostAddressRecord> hosts = lookup.hostAddressRecords();
+    QCOMPARE(hosts.size(), 1);
+    QCOMPARE(hosts.at(0).value(), QHostAddress::LocalHost);
+    QVERIFY2(hosts.at(0).name().startsWith(lookup.name()),
+             qPrintable(hosts.at(0).name()));
+}
+
+void tst_QDnsLookup::lookupRoot()
+{
+    QDnsLookup lookup(QDnsLookup::Type::NS, u""_s);
+    lookup.lookup();
+    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
+    QCOMPARE(lookup.error(), QDnsLookup::NoError);
+
+    const QList<QDnsDomainNameRecord> servers = lookup.nameServerRecords();
+    QVERIFY(!servers.isEmpty());
+    for (const QDnsDomainNameRecord &ns : servers) {
+        QCOMPARE(ns.name(), QString());
+        QVERIFY(ns.value().endsWith(".root-servers.net"));
+    }
+}
+
 void tst_QDnsLookup::lookup_data()
 {
     QTest::addColumn<int>("type");
@@ -219,22 +250,18 @@ void tst_QDnsLookup::lookup_data()
     QTest::addColumn<QString>("srv");
     QTest::addColumn<QString>("txt");
 
-    QTest::newRow("a-empty") << int(QDnsLookup::A) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << ""<< "" << "";
     QTest::newRow("a-notfound") << int(QDnsLookup::A) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("a-single") << int(QDnsLookup::A) << "a-single" << int(QDnsLookup::NoError) << "" << "192.0.2.1" << "" << "" << "" << "" << "";
     QTest::newRow("a-multi") << int(QDnsLookup::A) << "a-multi" << int(QDnsLookup::NoError) << "" << "192.0.2.1;192.0.2.2;192.0.2.3" << "" << "" << "" << "" << "";
-    QTest::newRow("aaaa-empty") << int(QDnsLookup::AAAA) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("aaaa-notfound") << int(QDnsLookup::AAAA) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("aaaa-single") << int(QDnsLookup::AAAA) << "aaaa-single" << int(QDnsLookup::NoError) << "" << "2001:db8::1" << "" << "" << "" << "" << "";
     QTest::newRow("aaaa-multi") << int(QDnsLookup::AAAA) << "aaaa-multi" << int(QDnsLookup::NoError) << "" << "2001:db8::1;2001:db8::2;2001:db8::3" << "" << "" << "" << "" << "";
 
-    QTest::newRow("any-empty") << int(QDnsLookup::ANY) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("any-notfound") << int(QDnsLookup::ANY) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("any-a-single") << int(QDnsLookup::ANY) << "a-single" << int(QDnsLookup::NoError) << "" << "192.0.2.1" << "" << "" << "" << ""  << "";
     QTest::newRow("any-a-plus-aaaa") << int(QDnsLookup::ANY) << "a-plus-aaaa" << int(QDnsLookup::NoError) << "" << "198.51.100.1;2001:db8::1:1" << "" << "" << "" << ""  << "";
     QTest::newRow("any-multi") << int(QDnsLookup::ANY) << "multi" << int(QDnsLookup::NoError) << "" << "198.51.100.1;198.51.100.2;198.51.100.3;2001:db8::1:1;2001:db8::1:2" << "" << "" << "" << ""  << "";
 
-    QTest::newRow("mx-empty") << int(QDnsLookup::MX) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("mx-notfound") << int(QDnsLookup::MX) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("mx-single") << int(QDnsLookup::MX) << "mx-single" << int(QDnsLookup::NoError) << "" << "" << "10 multi" << "" << "" << "" << "";
     QTest::newRow("mx-single-cname") << int(QDnsLookup::MX) << "mx-single-cname" << int(QDnsLookup::NoError) << "" << "" << "10 cname" << "" << "" << "" << "";
@@ -243,12 +270,10 @@ void tst_QDnsLookup::lookup_data()
                                        << "10 multi;10 a-single|"
                                           "10 a-single;10 multi" << "" << "" << "" << "";
 
-    QTest::newRow("ns-empty") << int(QDnsLookup::NS) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("ns-notfound") << int(QDnsLookup::NS) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("ns-single") << int(QDnsLookup::NS) << "ns-single" << int(QDnsLookup::NoError) << "" << "" << "" << "ns11.cloudns.net." << "" << "" << "";
     QTest::newRow("ns-multi") << int(QDnsLookup::NS) << "ns-multi" << int(QDnsLookup::NoError) << "" << "" << "" << "ns11.cloudns.net.;ns12.cloudns.net." << "" << "" << "";
 
-    QTest::newRow("ptr-empty") << int(QDnsLookup::PTR) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("ptr-notfound") << int(QDnsLookup::PTR) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
 #if 0
     // temporarily disabled since the new hosting provider can't insert
@@ -256,7 +281,6 @@ void tst_QDnsLookup::lookup_data()
     QTest::newRow("ptr-single") << int(QDnsLookup::PTR) << "ptr-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "a-single" << "" << "";
 #endif
 
-    QTest::newRow("srv-empty") << int(QDnsLookup::SRV) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("srv-notfound") << int(QDnsLookup::SRV) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("srv-single") << int(QDnsLookup::SRV) << "_echo._tcp.srv-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "5 0 7 multi" << "";
     QTest::newRow("srv-prio") << int(QDnsLookup::SRV) << "_echo._tcp.srv-prio" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "1 0 7 multi;2 0 7 a-plus-aaaa" << "";
@@ -267,7 +291,6 @@ void tst_QDnsLookup::lookup_data()
                                << "1 50 7 multi;2 50 7 a-single;2 50 7 aaaa-single;3 50 7 a-multi|"
                                   "1 50 7 multi;2 50 7 aaaa-single;2 50 7 a-single;3 50 7 a-multi" << "";
 
-    QTest::newRow("txt-empty") << int(QDnsLookup::TXT) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("txt-notfound") << int(QDnsLookup::TXT) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << "";
     QTest::newRow("txt-single") << int(QDnsLookup::TXT) << "txt-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello";
     QTest::newRow("txt-multi-onerr") << int(QDnsLookup::TXT) << "txt-multi-onerr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << ""

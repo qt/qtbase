@@ -343,6 +343,10 @@ bool QDnsLookup::isFinished() const
     \property QDnsLookup::name
     \brief the name to lookup.
 
+    If the name to look up is empty, QDnsLookup will attempt to resolve the
+    root domain of DNS. That query is usually performed with QDnsLookup::type
+    set to \l{QDnsLookup::Type}{NS}.
+
     \note The name will be encoded using IDNA, which means it's unsuitable for
     querying SRV records compatible with the DNS-SD specification.
 */
@@ -1050,6 +1054,10 @@ QDnsTextRecord &QDnsTextRecord::operator=(const QDnsTextRecord &other)
 
 static QDnsLookupRunnable::EncodedLabel encodeLabel(const QString &label)
 {
+    QDnsLookupRunnable::EncodedLabel::value_type rootDomain = u'.';
+    if (label.isEmpty())
+        return QDnsLookupRunnable::EncodedLabel(1, rootDomain);
+
     QString encodedLabel = qt_ACE_do(label, ToAceOnly, ForbidLeadingDot);
 #ifdef Q_OS_WIN
     return encodedLabel;
