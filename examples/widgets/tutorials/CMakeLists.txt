@@ -3,5 +3,4 @@
 
 add_subdirectory(widgets)
 add_subdirectory(modelview)
-add_subdirectory(gettingStarted)
 qt_internal_add_example(notepad)
