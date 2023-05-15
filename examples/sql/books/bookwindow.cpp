@@ -89,6 +89,7 @@ BookWindow::BookWindow()
             );
 
     ui.bookTable->setCurrentIndex(model->index(0, 0));
+    ui.bookTable->selectRow(0);
     createMenuBar();
 }
 
