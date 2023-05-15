@@ -8,7 +8,7 @@
 #include <QtCore/QObject>
 #include <QtCore/qnativeinterface.h>
 #include <QtGui/qsurface.h>
-Q_MOC_INCLUDE(<QScreen>)
+Q_MOC_INCLUDE(<QtGui/qscreen.h>)
 
 QT_BEGIN_NAMESPACE
 
