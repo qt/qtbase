@@ -98,6 +98,7 @@ private slots:
 
     void resizeKeepsScroll_data();
     void resizeKeepsScroll();
+    void changeTabTextKeepsScroll();
 
 private:
     void checkPositions(const TabBar &tabbar, const QList<int> &positions);
@@ -1424,6 +1425,31 @@ void tst_QTabBar::resizeKeepsScroll()
         tabBar.setCurrentIndex(i);
         QCOMPARE(getScrollOffset(), 0);
     }
+}
+
+void tst_QTabBar::changeTabTextKeepsScroll()
+{
+    QTabBar tabBar;
+    TabBarScrollingProxyStyle proxyStyle;
+    tabBar.setStyle(&proxyStyle);
+
+    for (int i = 0; i < 6; ++i)
+        tabBar.addTab(u"Tab Number %1"_s.arg(i));
+
+    const QSize fullSize = tabBar.sizeHint();
+    tabBar.resize(fullSize.width() / 2, fullSize.height());
+
+    tabBar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tabBar));
+
+    const auto getScrollOffset = [&]() -> int {
+        return static_cast<QTabBarPrivate *>(QObjectPrivate::get(&tabBar))->scrollOffset;
+    };
+
+    tabBar.setCurrentIndex(3);
+    const int scrollOffset = getScrollOffset();
+    tabBar.setTabText(3, "New title");
+    QCOMPARE(getScrollOffset(), scrollOffset);
 }
 
 QTEST_MAIN(tst_QTabBar)
