@@ -60,7 +60,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     request.Version = 1;
     request.QueryName = reinterpret_cast<const wchar_t *>(requestNameUtf16.constData());
     request.QueryType = requestType;
-    request.QueryOptions = DNS_QUERY_STANDARD;
+    request.QueryOptions = DNS_QUERY_STANDARD | DNS_QUERY_TREAT_AS_FQDN;
 
     if (!nameserver.isNull()) {
         memset(dnsAddresses, 0, sizeof(dnsAddresses));
