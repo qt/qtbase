@@ -3,7 +3,7 @@
 
 /*!
     \example desktop/screenshot
-    \title Screenshot Example
+    \title Taking a Screenshot
     \ingroup examples-desktop
     \brief The Screenshot example shows how to take a screenshot of the
     desktop.
