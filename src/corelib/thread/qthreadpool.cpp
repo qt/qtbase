@@ -521,9 +521,9 @@ void QThreadPool::start(QRunnable *runnable, int priority)
     \overload
     \since 5.15
 
-    Reserves a thread and uses it to run \a functionToRun, unless this thread will
+    Reserves a thread and uses it to run \a callableToRun, unless this thread will
     make the current thread count exceed maxThreadCount().  In that case,
-    \a functionToRun is added to a run queue instead. The \a priority argument can
+    \a callableToRun is added to a run queue instead. The \a priority argument can
     be used to control the run queue's order of execution.
 
     \note This function participates in overload resolution only if \c Callable
@@ -566,10 +566,10 @@ bool QThreadPool::tryStart(QRunnable *runnable)
     \fn template<typename Callable, QRunnable::if_callable<Callable>> bool QThreadPool::tryStart(Callable &&callableToRun)
     \overload
     \since 5.15
-    Attempts to reserve a thread to run \a functionToRun.
+    Attempts to reserve a thread to run \a callableToRun.
 
     If no threads are available at the time of calling, then this function
-    does nothing and returns \c false.  Otherwise, \a functionToRun is run immediately
+    does nothing and returns \c false.  Otherwise, \a callableToRun is run immediately
     using one available thread and this function returns \c true.
 
     \note This function participates in overload resolution only if \c Callable
@@ -796,7 +796,7 @@ void QThreadPool::startOnReservedThread(QRunnable *runnable)
     \since 6.3
 
     Releases a thread previously reserved with reserveThread() and uses it
-    to run \a functionToRun.
+    to run \a callableToRun.
 
     \note This function participates in overload resolution only if \c Callable
     is a function or function object which can be called with zero arguments.

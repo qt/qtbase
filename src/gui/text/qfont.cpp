@@ -2326,10 +2326,10 @@ void QFont::setFontFeature(const char *fontFeature, quint32 value)
 
     \sa setFontFeatures(), setFontFeature(), fontFeatures()
 */
-void QFont::unsetFontFeature(quint32 tag)
+void QFont::unsetFontFeature(quint32 fontFeature)
 {
     d->detachButKeepEngineData(this);
-    d->unsetFontFeature(tag);
+    d->unsetFontFeature(fontFeature);
     resolve_mask |= QFont::FontFeaturesResolved;
 }
 
