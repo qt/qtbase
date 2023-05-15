@@ -22,8 +22,8 @@ private slots:
 private:
     void showError(const QSqlError &err);
     Ui::BookWindow ui;
-    QSqlRelationalTableModel *model;
-    int authorIdx, genreIdx;
+    QSqlRelationalTableModel *model = nullptr;
+    int authorIdx = 0, genreIdx = 0;
 
     void createMenuBar();
 };
