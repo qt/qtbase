@@ -95,9 +95,21 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     else if (status != ERROR_SUCCESS)
         return reply->makeResolverSystemError(status);
 
+    QStringView lastEncodedName;
+    QString cachedDecodedName;
+    auto extractAndCacheHost = [&](QStringView name) -> const QString & {
+        lastEncodedName = name;
+        cachedDecodedName = decodeLabel(name);
+        return cachedDecodedName;
+    };
+    auto extractMaybeCachedHost = [&](QStringView name) -> const QString & {
+        return lastEncodedName == name ? cachedDecodedName : extractAndCacheHost(name);
+    };
+
     // Extract results.
     for (PDNS_RECORD ptr = results.pQueryRecords; ptr != NULL; ptr = ptr->pNext) {
-        const QString name = decodeLabel(ptr->pName);
+        // warning: always assign name to the record before calling extractXxxHost() again
+        const QString &name = extractMaybeCachedHost(ptr->pName);
         if (ptr->wType == QDnsLookup::A) {
             QDnsHostAddressRecord record;
             record.d->name = name;
@@ -117,7 +129,7 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
             QDnsDomainNameRecord record;
             record.d->name = name;
             record.d->timeToLive = ptr->dwTtl;
-            record.d->value = decodeLabel(ptr->Data.Cname.pNameHost);
+            record.d->value = extractAndCacheHost(ptr->Data.Cname.pNameHost);
             reply->canonicalNameRecords.append(record);
         } else if (ptr->wType == QDnsLookup::MX) {
             QDnsMailExchangeRecord record;
