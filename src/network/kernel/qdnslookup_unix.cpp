@@ -52,6 +52,17 @@ static constexpr qsizetype QueryBufferSize =
         HFIXEDSZ + QFIXEDSZ + MAXCDNAME + 1 + sizeof(Edns0Record);
 using QueryBuffer = std::array<unsigned char, (QueryBufferSize + 15) / 16 * 16>;
 
+namespace {
+struct QDnsCachedName
+{
+    QString name;
+    int code = 0;
+    QDnsCachedName(const QString &name, int code) : name(name), code(code) {}
+};
+}
+Q_DECLARE_TYPEINFO(QDnsCachedName, Q_RELOCATABLE_TYPE);
+using Cache = QList<QDnsCachedName>;    // QHash or QMap are overkill
+
 #if QT_CONFIG(res_setservers)
 // https://www.ibm.com/docs/en/i/7.3?topic=ssw_ibm_i_73/apis/ressetservers.html
 // https://docs.oracle.com/cd/E86824_01/html/E54774/res-setservers-3resolv.html
@@ -223,11 +234,26 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     unsigned char *response = buffer.data();
     int status;
 
-    auto expandHost = [&](qptrdiff offset) {
+    auto expandHost = [&, cache = Cache{}](qptrdiff offset) mutable {
+        if (uchar n = response[offset]; n & NS_CMPRSFLGS) {
+            // compressed name, see if we already have it cached
+            if (offset + 1 < responseLength) {
+                int id = ((n & ~NS_CMPRSFLGS) << 8) | response[offset + 1];
+                auto it = std::find_if(cache.constBegin(), cache.constEnd(),
+                                  [id](const QDnsCachedName &n) { return n.code == id; });
+                if (it != cache.constEnd()) {
+                    status = 2;
+                    return it->name;
+                }
+            }
+        }
+
+        // uncached, expand it
         char host[MAXCDNAME + 1];
-        status = dn_expand(response, response + responseLength, response + offset, host, sizeof(host));
+        status = dn_expand(response, response + responseLength, response + offset,
+                           host, sizeof(host));
         if (status >= 0)
-            return decodeLabel(QLatin1StringView(host));
+            return cache.emplaceBack(decodeLabel(QLatin1StringView(host)), offset).name;
 
         // failed
         reply->makeInvalidReplyError(QDnsLookup::tr("Could not expand domain name"));
