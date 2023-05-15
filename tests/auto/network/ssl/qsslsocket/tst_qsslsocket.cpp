@@ -3508,6 +3508,8 @@ void tst_QSslSocket::dhServerCustomParams()
 {
     if (!QSslSocket::supportsSsl())
         QSKIP("No SSL support");
+    if (!QSslSocket::isClassImplemented(QSsl::ImplementedClass::DiffieHellman))
+        QSKIP("The current backend doesn't support diffie hellman parameters");
 
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
