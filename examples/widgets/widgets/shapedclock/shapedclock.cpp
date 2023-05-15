@@ -78,7 +78,9 @@ void ShapedClock::paintEvent(QPaintEvent *)
 
     painter.setPen(Qt::NoPen);
     painter.setBrush(palette().window());
+    painter.setOpacity(0.9);
     painter.drawEllipse(QPoint(0, 0), 98, 98);
+    painter.setOpacity(1.0);
 
     painter.setPen(Qt::NoPen);
     painter.setBrush(hourColor);
@@ -114,18 +116,8 @@ void ShapedClock::paintEvent(QPaintEvent *)
 //! [3]
 
 //! [4]
-void ShapedClock::resizeEvent(QResizeEvent * /* event */)
-{
-    int side = qMin(width(), height());
-    QRegion maskedRegion(width() / 2 - side / 2, height() / 2 - side / 2, side,
-                         side, QRegion::Ellipse);
-    setMask(maskedRegion);
-}
-//! [4]
-
-//! [5]
 QSize ShapedClock::sizeHint() const
 {
     return QSize(200, 200);
 }
-//! [5]
+//! [4]
