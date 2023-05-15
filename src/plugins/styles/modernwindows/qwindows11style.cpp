@@ -7,12 +7,9 @@
 #include <private/qstylehelper_p.h>
 #include <qstyleoption.h>
 #include <qpainter.h>
-#include <qglobal.h>
 #include <QGraphicsDropShadowEffect>
 
 #include "qdrawutil.h"
-
-
 QT_BEGIN_NAMESPACE
 
 const static int topLevelRoundingRadius    = 8; //Radius for toplevel items like popups for round corners
@@ -101,6 +98,8 @@ QWindows11Style::~QWindows11Style() = default;
 void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
                                          QPainter *painter, const QWidget *widget) const
 {
+    QWindows11StylePrivate *d = const_cast<QWindows11StylePrivate*>(d_func());
+
     State state = option->state;
     SubControls sub = option->subControls;
     State flags = option->state;
@@ -109,7 +108,190 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
+    if (d->transitionsEnabled()) {
+        if (control == CC_Slider) {
+            if (const auto *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
+                QObject *styleObject = option->styleObject; // Can be widget or qquickitem
+
+                QRectF thumbRect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
+                auto center = thumbRect.center();
+                const qreal outerRadius = qMin(8.0, (slider->orientation == Qt::Horizontal ? thumbRect.height() / 2.0 : thumbRect.width() / 2.0) - 1);
+
+                thumbRect.setWidth(outerRadius);
+                thumbRect.setHeight(outerRadius);
+                thumbRect.moveCenter(center);
+                QPointF cursorPos = widget ? widget->mapFromGlobal(QCursor::pos()) : QPointF();
+                bool isInsideHandle = thumbRect.contains(cursorPos);
+
+                bool oldIsInsideHandle = styleObject->property("_q_insidehandle").toBool();
+                int oldState = styleObject->property("_q_stylestate").toInt();
+                int oldActiveControls = styleObject->property("_q_stylecontrols").toInt();
+
+                QRectF oldRect = styleObject->property("_q_stylerect").toRect();
+                styleObject->setProperty("_q_insidehandle", isInsideHandle);
+                styleObject->setProperty("_q_stylestate", int(option->state));
+                styleObject->setProperty("_q_stylecontrols", int(option->activeSubControls));
+                styleObject->setProperty("_q_stylerect", option->rect);
+                if (option->styleObject->property("_q_end_radius").isNull())
+                    option->styleObject->setProperty("_q_end_radius", outerRadius * 0.43);
+
+                bool doTransition = ((state & State_Sunken) != (oldState & State_Sunken)
+                                     || ((oldIsInsideHandle) != (isInsideHandle))
+                                     || oldActiveControls != int(option->activeSubControls));
+
+                if (oldRect != option->rect) {
+                    doTransition = false;
+                    d->stopAnimation(styleObject);
+                    styleObject->setProperty("_q_inner_radius", outerRadius * 0.43);
+                }
+
+                if (doTransition) {
+                    QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
+                    t->setStartValue(styleObject->property("_q_inner_radius").toFloat());
+                    if (state & State_Sunken)
+                        t->setEndValue(outerRadius * 0.29);
+                    else if (isInsideHandle)
+                        t->setEndValue(outerRadius * 0.71);
+                    else
+                        t->setEndValue(outerRadius * 0.43);
+
+                    styleObject->setProperty("_q_end_radius", t->endValue());
+
+                    t->setStartTime(d->animationTime());
+                    t->setDuration(150);
+                    d->startAnimation(t);
+                }
+            }
+        }
+    }
+
     switch (control) {
+#if QT_CONFIG(slider)
+    case CC_Slider:
+        if (const auto *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
+            QRectF slrect = slider->rect;
+            QRegion tickreg = slrect.toRect();
+
+            if (sub & SC_SliderGroove) {
+                QRectF rect = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
+                QRectF handleRect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
+                QPointF handlePos = handleRect.center();
+                QRectF leftRect;
+                QRectF rightRect;
+
+                if (slider->orientation == Qt::Horizontal) {
+                    rect = QRect(slrect.left(), rect.center().y() - 2, slrect.width() - 5, 4);
+                    leftRect = QRect(rect.left(), rect.top(), (handlePos.x() - rect.left()), rect.height());
+                    rightRect = QRect(handlePos.x(), rect.top(), (rect.width() - handlePos.x()), rect.height());
+                } else {
+                    rect = QRect(rect.center().x() - 2, slrect.top(), 4, slrect.height() - 5);
+                    rightRect = QRect(rect.left(), rect.top(), rect.width(), (handlePos.y() - rect.top()));
+                    leftRect = QRect(rect.left(), handlePos.y(), rect.width(), (rect.height() - handlePos.y()));
+                }
+
+                painter->setPen(QPen(frameColorLight));
+                painter->setBrush(option->palette.accent());
+                painter->drawRoundedRect(leftRect,1,1);
+                painter->setBrush(QBrush(controlStrongFill));
+                painter->drawRoundedRect(rightRect,1,1);
+
+                tickreg -= rect.toRect();
+            }
+            if (sub & SC_SliderTickmarks) {
+                int tickOffset = proxy()->pixelMetric(PM_SliderTickmarkOffset, slider, widget);
+                int ticks = slider->tickPosition;
+                int thickness = proxy()->pixelMetric(PM_SliderControlThickness, slider, widget);
+                int len = proxy()->pixelMetric(PM_SliderLength, slider, widget);
+                int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, widget);
+                int interval = slider->tickInterval;
+                if (interval <= 0) {
+                    interval = slider->singleStep;
+                    if (QStyle::sliderPositionFromValue(slider->minimum, slider->maximum, interval,
+                                                        available)
+                                - QStyle::sliderPositionFromValue(slider->minimum, slider->maximum,
+                                                                  0, available) < 3)
+                        interval = slider->pageStep;
+                }
+                if (!interval)
+                    interval = 1;
+                int fudge = len / 2;
+                int pos;
+                int bothOffset = (ticks & QSlider::TicksAbove && ticks & QSlider::TicksBelow) ? 1 : 0;
+                painter->setPen(slider->palette.text().color());
+                QVarLengthArray<QLine, 32> lines;
+                int v = slider->minimum;
+                while (v <= slider->maximum + 1) {
+                    if (v == slider->maximum + 1 && interval == 1)
+                        break;
+                    const int v_ = qMin(v, slider->maximum);
+                    int tickLength = (v_ == slider->minimum || v_ >= slider->maximum) ? 4 : 3;
+                    pos = QStyle::sliderPositionFromValue(slider->minimum, slider->maximum,
+                                                          v_, available) + fudge;
+                    if (slider->orientation == Qt::Horizontal) {
+                        if (ticks & QSlider::TicksAbove) {
+                            lines.append(QLine(pos, tickOffset - 1 - bothOffset,
+                                               pos, tickOffset - 1 - bothOffset - tickLength));
+                        }
+
+                        if (ticks & QSlider::TicksBelow) {
+                            lines.append(QLine(pos, tickOffset + thickness + bothOffset,
+                                               pos, tickOffset + thickness + bothOffset + tickLength));
+                        }
+                    } else {
+                        if (ticks & QSlider::TicksAbove) {
+                            lines.append(QLine(tickOffset - 1 - bothOffset, pos,
+                                               tickOffset - 1 - bothOffset - tickLength, pos));
+                        }
+
+                        if (ticks & QSlider::TicksBelow) {
+                            lines.append(QLine(tickOffset + thickness + bothOffset, pos,
+                                               tickOffset + thickness + bothOffset + tickLength, pos));
+                        }
+                    }
+                    // in the case where maximum is max int
+                    int nextInterval = v + interval;
+                    if (nextInterval < v)
+                        break;
+                    v = nextInterval;
+                }
+                if (!lines.isEmpty()) {
+                    painter->save();
+                    painter->translate(slrect.topLeft());
+                    painter->drawLines(lines.constData(), lines.size());
+                    painter->restore();
+                }
+            }
+            if (sub & SC_SliderHandle) {
+                if (const auto *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
+                    const QRectF rect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
+                    const QPointF center = rect.center();
+
+                    const QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>(d->animation(option->styleObject));
+
+                    if (animation != nullptr)
+                        option->styleObject->setProperty("_q_inner_radius", animation->currentValue());
+                    else
+                        option->styleObject->setProperty("_q_inner_radius", option->styleObject->property("_q_end_radius"));
+
+                    const qreal outerRadius = qMin(8.0,(slider->orientation == Qt::Horizontal ? rect.height() / 2.0 : rect.width() / 2.0) - 1);
+                    const float innerRadius = option->styleObject->property("_q_inner_radius").toFloat();
+                    painter->setRenderHint(QPainter::Antialiasing, true);
+                    painter->setPen(QPen(QBrush(controlStrokeSecondary),1));
+                    painter->setBrush(QBrush(Qt::white));
+                    painter->drawEllipse(center, outerRadius, outerRadius);
+                    painter->setBrush(option->palette.accent());
+                    painter->drawEllipse(center, innerRadius, innerRadius);
+                }
+            }
+            if (slider->state & State_HasFocus) {
+                QStyleOptionFocusRect fropt;
+                fropt.QStyleOption::operator=(*slider);
+                fropt.rect = subElementRect(SE_SliderFocusRect, slider, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+            }
+        }
+        break;
+#endif
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *sb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
@@ -974,6 +1156,9 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case QStyle::PM_ExclusiveIndicatorWidth:
     case QStyle::PM_ExclusiveIndicatorHeight:
         return 16;
+    case QStyle::PM_SliderLength:
+        res = int(QStyleHelper::dpiScaled(16, option));
+        break;
 
     default:
         res = QWindowsVistaStyle::pixelMetric(metric, option, widget);
@@ -981,7 +1166,6 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
 
     return res;
 }
-
 void QWindows11Style::polish(QWidget* widget)
 {
     QWindowsVistaStyle::polish(widget);
