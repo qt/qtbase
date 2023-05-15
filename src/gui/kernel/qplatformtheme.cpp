@@ -374,6 +374,7 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
     const QColor button = backGround;
     const QColor shadow = dark.darker(135);
     const QColor disabledShadow = shadow.lighter(150);
+    const QColor disabledHighlight(145, 145, 145);
     QColor placeholder = text;
     placeholder.setAlpha(128);
 
@@ -392,7 +393,11 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
 
     fusionPalette.setBrush(QPalette::Active, QPalette::Highlight, highlight);
     fusionPalette.setBrush(QPalette::Inactive, QPalette::Highlight, highlight);
-    fusionPalette.setBrush(QPalette::Disabled, QPalette::Highlight, QColor(145, 145, 145));
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Highlight, disabledHighlight);
+
+    fusionPalette.setBrush(QPalette::Active, QPalette::AccentColor, highlight);
+    fusionPalette.setBrush(QPalette::Inactive, QPalette::AccentColor, highlight);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::AccentColor, disabledHighlight);
 
     fusionPalette.setBrush(QPalette::PlaceholderText, placeholder);
 
