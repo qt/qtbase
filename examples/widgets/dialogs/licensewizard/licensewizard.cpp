@@ -288,9 +288,12 @@ void ConclusionPage::initializePage()
                          "You can use this software for 30 days and make one "
                          "backup, but you are not allowed to distribute it.");
     } else if (wizard()->hasVisitedPage(LicenseWizard::Page_Details)) {
+//! [accessField]
+        const QString emailAddress = field("details.email").toString();
         licenseText = tr("<u>First-Time License Agreement:</u> "
                          "You can use this software subject to the license "
-                         "you will receive by email.");
+                         "you will receive by email sent to %1.").arg(emailAddress);
+//! [accessField]
     } else {
         licenseText = tr("<u>Upgrade License Agreement:</u> "
                          "This software is licensed under the terms of your "

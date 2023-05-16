@@ -1786,9 +1786,8 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     \section1 A Trivial Example
 
     The following example illustrates how to create wizard pages and
-    add them to a wizard. For more advanced examples, see
-    \l{dialogs/classwizard}{Class Wizard} and \l{dialogs/licensewizard}{License
-    Wizard}.
+    add them to a wizard. For more advanced examples, see the
+    \l{dialogs/licensewizard}{License Wizard}.
 
     \snippet dialogs/trivialwizard/trivialwizard.cpp 1
     \snippet dialogs/trivialwizard/trivialwizard.cpp 3
@@ -1917,12 +1916,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     To register a field, call QWizardPage::registerField() field.
     For example:
 
-    \snippet dialogs/classwizard/classwizard.cpp 8
-    \dots
-    \snippet dialogs/classwizard/classwizard.cpp 10
-    \snippet dialogs/classwizard/classwizard.cpp 11
-    \dots
-    \snippet dialogs/classwizard/classwizard.cpp 13
+    \snippet dialogs/licensewizard/licensewizard.cpp 21
 
     The above code registers three fields, \c className, \c
     baseClass, and \c qobjectMacro, which are associated with three
@@ -1933,11 +1927,11 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     The fields of any page are accessible from any other page. For
     example:
 
-    \snippet dialogs/classwizard/classwizard.cpp 17
+    \snippet dialogs/licensewizard/licensewizard.cpp 27
 
     Here, we call QWizardPage::field() to access the contents of the
-    \c className field (which was defined in the \c ClassInfoPage)
-    and use it to initialize the \c OutputFilePage. The field's
+    \c details.email field (which was defined in the \c DetailsPage)
+    and use it to initialize the \c ConclusionPage. The field's
     contents is returned as a QVariant.
 
     When we create a field using QWizardPage::registerField(), we
@@ -1980,15 +1974,13 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     \section1 Creating Linear Wizards
 
     Most wizards have a linear structure, with page 1 followed by
-    page 2 and so on until the last page. The \l{dialogs/classwizard}{Class
-    Wizard} example is such a wizard. With QWizard, linear wizards
+    page 2 and so on until the last page. The \l{dialogs/trivialwizard}
+    {Trivial Wizard} example is such a wizard. With QWizard, linear wizards
     are created by instantiating the \l{QWizardPage}s and inserting
     them using addPage(). By default, the pages are shown in the
     order in which they were added. For example:
 
-    \snippet dialogs/classwizard/classwizard.cpp 0
-    \dots
-    \snippet dialogs/classwizard/classwizard.cpp 2
+    \snippet dialogs/trivialwizard/trivialwizard.cpp linearAddPage
 
     When a page is about to be shown, QWizard calls initializePage()
     (which in turn calls QWizardPage::initializePage()) to fill the
@@ -2058,7 +2050,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 
     \snippet dialogs/licensewizard/licensewizard.cpp 27
 
-    \sa QWizardPage, {Class Wizard Example}, {License Wizard Example}
+    \sa QWizardPage, {Trivial Wizard Example}, {License Wizard Example}
 */
 
 /*!
@@ -3443,7 +3435,7 @@ int QWizard::nextId() const
     using registerField() and can be accessed at any time using
     field() and setField().
 
-    \sa QWizard, {Class Wizard Example}, {License Wizard Example}
+    \sa QWizard, {Trivial Wizard Example}, {License Wizard Example}
 */
 
 /*!
@@ -3586,7 +3578,7 @@ QPixmap QWizardPage::pixmap(QWizard::WizardPixmap which) const
     fields are properly initialized based on fields from previous
     pages. For example:
 
-    \snippet dialogs/classwizard/classwizard.cpp 17
+    \snippet dialogs/licensewizard/licensewizard.cpp 27
 
     The default implementation does nothing.
 
@@ -3890,7 +3882,7 @@ void QWizardPage::setField(const QString &name, const QVariant &value)
 
     Example:
 
-    \snippet dialogs/classwizard/classwizard.cpp 17
+    \snippet dialogs/licensewizard/licensewizard.cpp accessField
 
     \sa QWizard::field(), setField(), registerField()
 */

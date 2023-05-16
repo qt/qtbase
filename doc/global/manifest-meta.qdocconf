@@ -166,7 +166,6 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtWidgets/Easing Curves Example" \
                                        "QtWidgets/Move Blocks Example" \
                                        "QtWidgets/States Example" \
-                                       "QtWidgets/Class Wizard Example" \
                                        "QtWidgets/Find Files Example" \
                                        "QtWidgets/License Wizard Example" \
                                        "QtWidgets/Standard Dialogs Example" \

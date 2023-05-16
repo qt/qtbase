@@ -86,10 +86,12 @@ int main(int argc, char *argv[])
         app.installTranslator(translator);
 #endif
 
+//! [linearAddPage]
     QWizard wizard;
     wizard.addPage(createIntroPage());
     wizard.addPage(createRegistrationPage());
     wizard.addPage(createConclusionPage());
+//! [linearAddPage]
 
     wizard.setWindowTitle("Trivial Wizard");
     wizard.show();
