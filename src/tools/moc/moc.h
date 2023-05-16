@@ -234,6 +234,8 @@ public:
         return index > def->begin && index < def->end - 1;
     }
 
+    void prependNamespaces(BaseDef &def, const QList<NamespaceDef> &namespaceList) const;
+
     Type parseType();
 
     bool parseEnum(EnumDef *def);
