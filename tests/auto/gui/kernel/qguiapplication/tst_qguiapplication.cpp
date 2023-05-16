@@ -122,8 +122,8 @@ void tst_QGuiApplication::desktopFileName()
 
     QCOMPARE(QGuiApplication::desktopFileName(), QString());
 
-    QGuiApplication::setDesktopFileName("io.qt.QGuiApplication.desktop");
-    QCOMPARE(QGuiApplication::desktopFileName(), QString::fromLatin1("io.qt.QGuiApplication.desktop"));
+    QGuiApplication::setDesktopFileName("io.qt.QGuiApplication");
+    QCOMPARE(QGuiApplication::desktopFileName(), QString::fromLatin1("io.qt.QGuiApplication"));
 
     QGuiApplication::setDesktopFileName(QString());
     QCOMPARE(QGuiApplication::desktopFileName(), QString());
