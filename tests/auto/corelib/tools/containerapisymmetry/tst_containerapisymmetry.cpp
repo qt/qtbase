@@ -332,7 +332,7 @@ private Q_SLOTS:
     void resize_QByteArray() { resize_impl<QByteArray>(); }
 
 private:
-    template<typename Container>
+    template <typename Container>
     void assign_impl() const;
 
 private Q_SLOTS:
