@@ -174,7 +174,10 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
         int responseLength = res_nsend(&state, qbuffer.data(), queryLength, buffer.data(), buffer.size());
         if (responseLength < 0) {
             // network error of some sort
-            reply->makeResolverSystemError();
+            if (errno == ETIMEDOUT)
+                reply->makeTimeoutError();
+            else
+                reply->makeResolverSystemError();
         }
         return responseLength;
     };

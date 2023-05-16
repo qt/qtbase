@@ -328,7 +328,8 @@ void tst_QDnsLookup::lookup()
     };
 
     if (!dnsServersMustWork && (lookup.error() == QDnsLookup::ServerFailureError
-                                || lookup.error() == QDnsLookup::ServerRefusedError)) {
+                                || lookup.error() == QDnsLookup::ServerRefusedError
+                                || lookup.error() == QDnsLookup::TimeoutError)) {
         // It's not a QDnsLookup problem if the server refuses to answer the query.
         // This happens for queries of type ANY through Dnsmasq, for example.
         qWarning("Server refused or was unable to answer query; %s", extraErrorMsg().constData());

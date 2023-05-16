@@ -65,6 +65,12 @@ public:
         setError(QDnsLookup::ResolverError, qt_error_string(code));
     }
 
+    void makeTimeoutError()
+    {
+        Q_ASSERT(allAreEmpty());
+        setError(QDnsLookup::TimeoutError, QDnsLookup::tr("Request timed out"));
+    }
+
     void makeDnsRcodeError(quint8 rcode)
     {
         Q_ASSERT(allAreEmpty());

@@ -187,6 +187,9 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
 
     \value NotFoundError        the requested domain name does not exist
     (NXDOMAIN).
+
+    \value TimeoutError         the server was not reached or did not reply
+    in time (since 6.6).
 */
 
 /*!
@@ -1079,6 +1082,7 @@ void QDnsLookupRunnable::run()
     case QDnsLookup::NotFoundError:
     case QDnsLookup::ServerFailureError:
     case QDnsLookup::ServerRefusedError:
+    case QDnsLookup::TimeoutError:
         break;      // no warning for these
 
     case QDnsLookup::ResolverError:

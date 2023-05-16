@@ -159,7 +159,8 @@ public:
         InvalidReplyError,
         ServerFailureError,
         ServerRefusedError,
-        NotFoundError
+        NotFoundError,
+        TimeoutError,
     };
     Q_ENUM(Error)
 

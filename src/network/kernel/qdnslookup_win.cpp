@@ -91,6 +91,8 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     const DNS_STATUS status = DnsQueryEx(&request, &results, nullptr);
     if (status >= DNS_ERROR_RCODE_FORMAT_ERROR && status <= DNS_ERROR_RCODE_LAST)
         return reply->makeDnsRcodeError(status - DNS_ERROR_RCODE_FORMAT_ERROR + 1);
+    else if (status == ERROR_TIMEOUT)
+        return reply->makeTimeoutError();
     else if (status != ERROR_SUCCESS)
         return reply->makeResolverSystemError(status);
 
