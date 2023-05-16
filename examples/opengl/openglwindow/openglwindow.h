@@ -7,11 +7,9 @@
 #include <QWindow>
 #include <QOpenGLFunctions>
 
-QT_BEGIN_NAMESPACE
-class QPainter;
-class QOpenGLContext;
-class QOpenGLPaintDevice;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QPainter)
+QT_FORWARD_DECLARE_CLASS(QOpenGLContext)
+QT_FORWARD_DECLARE_CLASS(QOpenGLPaintDevice)
 
 //! [1]
 class OpenGLWindow : public QWindow, protected QOpenGLFunctions
