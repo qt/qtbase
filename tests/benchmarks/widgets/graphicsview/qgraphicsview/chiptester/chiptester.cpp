@@ -79,7 +79,6 @@ void ChipTester::populateScene()
 
     // Populate scene
     int xx = 0;
-    int nitems = 0;
     for (int i = -1100; i < 1100; i += 110) {
         ++xx;
         int yy = 0;
@@ -92,8 +91,6 @@ void ChipTester::populateScene()
             QGraphicsItem *item = new Chip(color, xx, yy);
             item->setPos(QPointF(i, j));
             scene->addItem(item);
-
-            ++nitems;
         }
     }
 }
