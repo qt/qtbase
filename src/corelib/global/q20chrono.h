@@ -38,7 +38,7 @@ using IntRep = int64_t;
 using IntRep = int;
 #endif
 
-#if __cpp_lib_chrono >= 201611L && __cplusplus > 201703L
+#if __cpp_lib_chrono >= 201907L
 using std::chrono::days;
 using std::chrono::weeks;
 using std::chrono::years;
@@ -53,7 +53,7 @@ using days = std::chrono::duration<IntRep, std::ratio<86400>>;
 using weeks = std::chrono::duration<IntRep, std::ratio_multiply<std::ratio<7>, days::period>>;
 using years = std::chrono::duration<IntRep, std::ratio_multiply<std::ratio<146097, 400>, days::period>>;
 using months = std::chrono::duration<IntRep, std::ratio_divide<years::period, std::ratio<12>>>;
-#endif // __cpp_lib_chrono >= 201611L
+#endif // __cpp_lib_chrono >= 201907L
 } // namespace chrono
 } // namespace q20
 
