@@ -43,7 +43,7 @@ public:
     EventQueue freeQueue;
 
     QWaitConditionEvent *pre();
-    bool wait(QWaitConditionEvent *wce, unsigned long time);
+    bool wait(QWaitConditionEvent *wce, QDeadlineTimer deadline);
     void post(QWaitConditionEvent *wce, bool ret);
 };
 
@@ -68,19 +68,25 @@ QWaitConditionEvent *QWaitConditionPrivate::pre()
     return wce;
 }
 
-bool QWaitConditionPrivate::wait(QWaitConditionEvent *wce, unsigned long time)
+bool QWaitConditionPrivate::wait(QWaitConditionEvent *wce, QDeadlineTimer deadline)
 {
     // wait for the event
-    bool ret = false;
-    switch (WaitForSingleObjectEx(wce->event, time, FALSE)) {
-    default:
-        break;
+    while (true) {
+        const DWORD timeout = deadline.isForever()
+                ? INFINITE
+                : DWORD(std::min(deadline.remainingTime(), qint64(INFINITE - 1)));
 
-    case WAIT_OBJECT_0:
-        ret = true;
-        break;
+        switch (WaitForSingleObjectEx(wce->event, timeout, FALSE)) {
+        case WAIT_OBJECT_0:
+            return true;
+        case WAIT_TIMEOUT:
+            if (deadline.hasExpired())
+                return false;
+            break;
+        default:
+            return false;
+        }
     }
-    return ret;
 }
 
 void QWaitConditionPrivate::post(QWaitConditionEvent *wce, bool ret)
@@ -124,13 +130,20 @@ QWaitCondition::~QWaitCondition()
 
 bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
 {
+    if (time == std::numeric_limits<unsigned long>::max())
+        return wait(mutex, QDeadlineTimer(QDeadlineTimer::Forever));
+    return wait(mutex, QDeadlineTimer(time));
+}
+
+bool QWaitCondition::wait(QMutex *mutex, QDeadlineTimer deadline)
+{
     if (!mutex)
         return false;
 
     QWaitConditionEvent *wce = d->pre();
     mutex->unlock();
 
-    bool returnValue = d->wait(wce, time);
+    bool returnValue = d->wait(wce, deadline);
 
     mutex->lock();
     d->post(wce, returnValue);
@@ -138,12 +151,14 @@ bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
     return returnValue;
 }
 
-bool QWaitCondition::wait(QMutex *mutex, QDeadlineTimer deadline)
+bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
 {
-    return wait(mutex, deadline.remainingTime());
+    if (time == std::numeric_limits<unsigned long>::max())
+        return wait(readWriteLock, QDeadlineTimer(QDeadlineTimer::Forever));
+    return wait(readWriteLock, QDeadlineTimer(time));
 }
 
-bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
+bool QWaitCondition::wait(QReadWriteLock *readWriteLock, QDeadlineTimer deadline)
 {
     using namespace QReadWriteLockStates;
 
@@ -160,7 +175,7 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
     QWaitConditionEvent *wce = d->pre();
     readWriteLock->unlock();
 
-    bool returnValue = d->wait(wce, time);
+    bool returnValue = d->wait(wce, deadline);
 
     if (previousState == LockedForWrite)
         readWriteLock->lockForWrite();
@@ -169,11 +184,6 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
     d->post(wce, returnValue);
 
     return returnValue;
-}
-
-bool QWaitCondition::wait(QReadWriteLock *readWriteLock, QDeadlineTimer deadline)
-{
-    return wait(readWriteLock, deadline.remainingTime());
 }
 
 void QWaitCondition::wakeOne()
