@@ -257,11 +257,11 @@ bool ShortcutEditorModel::setData(const QModelIndex &index, const QVariant &valu
         QString keySequenceString = value.toString();
         ShortcutEditorModelItem *item = static_cast<ShortcutEditorModelItem *>(index.internalPointer());
         QAction *itemAction = item->action();
-        if (itemAction
-            && keySequenceString == itemAction->shortcut().toString(QKeySequence::NativeText))
-            return true;
-
-        itemAction->setShortcut(keySequenceString);
+        if (itemAction) {
+            if (keySequenceString == itemAction->shortcut().toString(QKeySequence::NativeText))
+                return true;
+            itemAction->setShortcut(keySequenceString);
+        }
         Q_EMIT dataChanged(index, index);
 
         if (keySequenceString.isEmpty())
