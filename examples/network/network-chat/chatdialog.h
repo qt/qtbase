@@ -12,7 +12,7 @@ class ChatDialog : public QDialog, private Ui::ChatDialog
     Q_OBJECT
 
 public:
-    ChatDialog(QWidget *parent = nullptr);
+    explicit ChatDialog(QWidget *parent = nullptr);
 
 public slots:
     void appendMessage(const QString &from, const QString &message);

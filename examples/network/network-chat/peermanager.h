@@ -18,7 +18,7 @@ class PeerManager : public QObject
     Q_OBJECT
 
 public:
-    PeerManager(Client *client);
+    explicit PeerManager(Client *client);
 
     void setServerPort(int port);
     QString userName() const;

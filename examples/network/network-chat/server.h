@@ -13,7 +13,7 @@ class Server : public QTcpServer
     Q_OBJECT
 
 public:
-    Server(QObject *parent = nullptr);
+    explicit Server(QObject *parent = nullptr);
 
 signals:
     void newConnection(Connection *connection);
