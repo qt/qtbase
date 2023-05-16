@@ -177,8 +177,9 @@ public:
 
         case QHostAddress::UnknownNetworkLayerProtocol:
             // don't force
-            *sockAddrSize = setSockaddr(&aa->a, address, port);
+            break;
         }
+        *sockAddrSize = setSockaddr(&aa->a, address, port);
     }
 
 };
