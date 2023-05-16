@@ -6,12 +6,10 @@
 
 #include <QWidget>
 
-QT_BEGIN_NAMESPACE
-class QLCDNumber;
-class QLabel;
-class QPushButton;
-class QCheckBox;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QLCDNumber)
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QCheckBox)
 
 class VulkanWindow;
 

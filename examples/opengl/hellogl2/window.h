@@ -6,10 +6,8 @@
 
 #include <QWidget>
 
-QT_BEGIN_NAMESPACE
-class QSlider;
-class QPushButton;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QSlider)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 class GLWidget;
 class MainWindow;
