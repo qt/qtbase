@@ -36,6 +36,7 @@ constexpr qsizetype MaxDomainNameLength = 255;
 constexpr quint16 DnsPort = 53;
 
 class QDnsLookupRunnable;
+QDebug operator<<(QDebug &, QDnsLookupRunnable *);
 
 class QDnsLookupReply
 {
@@ -179,6 +180,7 @@ private:
     QHostAddress nameserver;
     QDnsLookup::Type requestType;
     quint16 port;
+    friend QDebug operator<<(QDebug &, QDnsLookupRunnable *);
 };
 
 class QDnsRecordPrivate : public QSharedData

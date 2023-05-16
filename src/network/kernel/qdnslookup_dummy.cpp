@@ -7,7 +7,6 @@ QT_BEGIN_NAMESPACE
 
 void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 {
-    qWarning("Not yet supported on this OS");
     reply->error = QDnsLookup::ResolverError;
     reply->errorString = tr("Not yet supported on this OS");
     return;

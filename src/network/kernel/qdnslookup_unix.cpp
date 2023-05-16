@@ -109,11 +109,9 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     auto guard = qScopeGuard([&] { res_nclose(&state); });
 
     //Check if a nameserver was set. If so, use it
-    if (!applyNameServer(&state, nameserver, port)) {
-        qWarning("QDnsLookup: %s", "IPv6 nameservers are currently not supported on this OS");
+    if (!applyNameServer(&state, nameserver, port))
         return reply->setError(QDnsLookup::ResolverError,
                                QDnsLookup::tr("IPv6 nameservers are currently not supported on this OS"));
-    }
 #ifdef QDNSLOOKUP_DEBUG
     state.options |= RES_DEBUG;
 #endif

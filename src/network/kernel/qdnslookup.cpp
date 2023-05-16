@@ -8,12 +8,15 @@
 #include <qapplicationstatic.h>
 #include <qcoreapplication.h>
 #include <qdatetime.h>
+#include <qloggingcategory.h>
 #include <qrandom.h>
 #include <qurl.h>
 
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcDnsLookup, "qt.network.dnslookup", QtCriticalMsg)
 
 namespace {
 struct QDnsLookupThreadPool : QThreadPool
@@ -544,6 +547,7 @@ void QDnsLookup::lookup()
     d->isFinished = false;
     d->reply = QDnsLookupReply();
     if (!QCoreApplication::instance()) {
+        // NOT qCWarning because this isn't a result of the lookup
         qWarning("QDnsLookup requires a QCoreApplication");
         return;
     }
@@ -1057,20 +1061,47 @@ void QDnsLookupRunnable::run()
     if (qsizetype n = requestName.size(); n > MaxDomainNameLength || n == 0) {
         reply.error = QDnsLookup::InvalidRequestError;
         reply.errorString = QDnsLookup::tr("Invalid domain name");
-        emit finished(reply);
-        if (n)
-            qWarning("QDnsLookup: domain name being looked up is too long (%lld bytes)", n);
-        return;
+    } else {
+        // Perform request.
+        query(&reply);
+
+        // Sort results.
+        qt_qdnsmailexchangerecord_sort(reply.mailExchangeRecords);
+        qt_qdnsservicerecord_sort(reply.serviceRecords);
     }
 
-    // Perform request.
-    query(&reply);
-
-    // Sort results.
-    qt_qdnsmailexchangerecord_sort(reply.mailExchangeRecords);
-    qt_qdnsservicerecord_sort(reply.serviceRecords);
-
     emit finished(reply);
+
+    // maybe print the lookup error as warning
+    switch (reply.error) {
+    case QDnsLookup::NoError:
+    case QDnsLookup::OperationCancelledError:
+    case QDnsLookup::NotFoundError:
+    case QDnsLookup::ServerFailureError:
+    case QDnsLookup::ServerRefusedError:
+        break;      // no warning for these
+
+    case QDnsLookup::ResolverError:
+    case QDnsLookup::InvalidRequestError:
+    case QDnsLookup::InvalidReplyError:
+        qCWarning(lcDnsLookup()).nospace()
+                << "DNS lookup failed (" << reply.error << "): "
+              << qUtf16Printable(reply.errorString)
+              << "; request was " << this;  // continues below
+    }
+}
+
+inline QDebug operator<<(QDebug &d, QDnsLookupRunnable *r)
+{
+    // continued: print the information about the request
+    d << r->requestName.left(MaxDomainNameLength);
+    if (r->requestName.size() > MaxDomainNameLength)
+        d << "... (truncated)";
+    d << " type " << r->requestType;
+    if (!r->nameserver.isNull())
+        d << " to nameserver " << qUtf16Printable(r->nameserver.toString())
+          << " port " << (r->port ? r->port : DnsPort);
+    return d;
 }
 
 QT_END_NAMESPACE
