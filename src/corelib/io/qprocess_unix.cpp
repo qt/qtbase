@@ -47,16 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// we need an errno number to use to indicate the child process modifier threw,
-// something the regular operations shouldn't set.
-static constexpr int FakeErrnoForThrow =
-#ifdef ECANCELED
-        ECANCELED
-#else
-        ESHUTDOWN
-#endif
-        ;
-
 using namespace Qt::StringLiterals;
 
 namespace {
@@ -575,6 +565,16 @@ void QProcessPrivate::startProcess()
     if (stderrChannel.pipe[0] != -1)
         ::fcntl(stderrChannel.pipe[0], F_SETFL, ::fcntl(stderrChannel.pipe[0], F_GETFL) | O_NONBLOCK);
 }
+
+// we need an errno number to use to indicate the child process modifier threw,
+// something the regular operations shouldn't set.
+static constexpr int FakeErrnoForThrow =
+#ifdef ECANCELED
+        ECANCELED
+#else
+        ESHUTDOWN
+#endif
+        ;
 
 static const char *callChildProcessModifier(const QProcessPrivate::UnixExtras *unixExtras) noexcept
 {
