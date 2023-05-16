@@ -55,5 +55,5 @@
 
     \snippet dialogs/trivialwizard/trivialwizard.cpp 10
 
-    \sa QWizard, {Class Wizard Example}, {License Wizard Example}
+    \sa QWizard, {License Wizard Example}
 */
