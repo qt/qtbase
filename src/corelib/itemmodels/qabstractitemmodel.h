@@ -499,7 +499,13 @@ inline Qt::ItemFlags QModelIndex::flags() const
 { return m ? m->flags(*this) : Qt::ItemFlags(); }
 
 inline size_t qHash(const QModelIndex &index, size_t seed = 0) noexcept
-{ return size_t((size_t(index.row()) << 4) + size_t(index.column()) + index.internalId()) ^ seed; }
+{
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+    return qHashMulti(seed, index.row(), index.column(), index.internalId());
+#else
+    return size_t((size_t(index.row()) << 4) + size_t(index.column()) + index.internalId()) ^ seed;
+#endif
+}
 
 QT_END_NAMESPACE
 
