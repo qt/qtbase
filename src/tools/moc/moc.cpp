@@ -593,6 +593,16 @@ inline void handleDefaultArguments(QList<FunctionDef> *functionList, FunctionDef
     }
 }
 
+void Moc::prependNamespaces(BaseDef &def, const QList<NamespaceDef> &namespaceList) const
+{
+    auto it = namespaceList.crbegin();
+    const auto rend = namespaceList.crend();
+    for (; it != rend; ++it) {
+        if (inNamespace(&*it))
+            def.qualified.prepend(it->classname + "::");
+    }
+}
+
 void Moc::parse()
 {
     QList<NamespaceDef> namespaceList;
@@ -633,11 +643,8 @@ void Moc::parse()
                         def.end = index;
                         index = def.begin + 1;
 
-                        for (int i = namespaceList.size() - 1; i >= 0; --i) {
-                            if (inNamespace(&namespaceList.at(i))) {
-                                def.qualified.prepend(namespaceList.at(i).classname + "::");
-                            }
-                        }
+                        prependNamespaces(def, namespaceList);
+
                         for (const QByteArray &ns : nested) {
                             NamespaceDef parentNs;
                             parentNs.classname = ns;
@@ -783,9 +790,7 @@ void Moc::parse()
                 if (!def.hasQObject && !def.hasQGadget)
                     continue;
 
-                for (int i = namespaceList.size() - 1; i >= 0; --i)
-                    if (inNamespace(&namespaceList.at(i)))
-                        def.qualified.prepend(namespaceList.at(i).classname + "::");
+                prependNamespaces(def, namespaceList);
 
                 QHash<QByteArray, QByteArray> &classHash = def.hasQObject ? knownQObjectClasses : knownGadgets;
                 classHash.insert(def.classname, def.qualified);
@@ -798,10 +803,9 @@ void Moc::parse()
             continue;
         ClassDef def;
         if (parseClassHead(&def)) {
+            prependNamespaces(def, namespaceList);
+
             FunctionDef::Access access = FunctionDef::Private;
-            for (int i = namespaceList.size() - 1; i >= 0; --i)
-                if (inNamespace(&namespaceList.at(i)))
-                    def.qualified.prepend(namespaceList.at(i).classname + "::");
             while (inClass(&def) && hasNext()) {
                 switch ((t = next())) {
                 case PRIVATE:
