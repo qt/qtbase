@@ -213,12 +213,8 @@
 
     \image javaiterators1.png
 
-    Here's how to iterate over the elements in reverse order:
-
-    \snippet code/doc_src_qiterator.cpp 7
-
     If you want to find all occurrences of a particular value, use
-    findNext() or findPrevious() in a loop.
+    findNext() in a loop.
 
     Multiple iterators can be used on the same set. If the set
     is modified while a QSetIterator is active, the QSetIterator
@@ -389,13 +385,19 @@
 */
 
 /*! \fn template <class T> void QListIterator<T>::toBack()
-    \fn template <class T> void QSetIterator<T>::toBack()
     \fn template <class T> void QMutableListIterator<T>::toBack()
 
+//! [toBack]
     Moves the iterator to the back of the container (after the last
     item).
+//! [toBack]
 
     \sa toFront(), previous()
+*/
+
+/*! \fn template <class T> void QSetIterator<T>::toBack()
+    \include qiterator.qdoc toBack
+    \sa toFront()
 */
 
 /*! \fn template <class T> void QMutableSetIterator<T>::toBack()
@@ -407,14 +409,20 @@
 */
 
 /*! \fn template <class T> bool QListIterator<T>::hasNext() const
-    \fn template <class T> bool QSetIterator<T>::hasNext() const
     \fn template <class T> bool QMutableListIterator<T>::hasNext() const
 
+//! [hasNext]
     Returns \c true if there is at least one item ahead of the iterator,
     i.e. the iterator is \e not at the back of the container;
     otherwise returns \c false.
+//! [hasNext]
 
     \sa hasPrevious(), next()
+*/
+
+/*! \fn template <class T> bool QSetIterator<T>::hasNext() const
+    \include qiterator.qdoc hasNext
+    \sa next()
 */
 
 /*! \fn template <class T> bool QMutableSetIterator<T>::hasNext() const
@@ -427,14 +435,21 @@
 */
 
 /*! \fn template <class T> const T &QListIterator<T>::next()
-    \fn template <class T> const T &QSetIterator<T>::next()
 
+//! [next]
     Returns the next item and advances the iterator by one position.
 
     Calling this function on an iterator located at the back of the
     container leads to undefined results.
+//! [next]
 
     \sa hasNext(), peekNext(), previous()
+*/
+
+/*!
+    \fn template <class T> const T &QSetIterator<T>::next()
+    \include qiterator.qdoc next
+    \sa hasNext(), peekNext()
 */
 
 /* \fn template <class T> const T &QMutableSetIterator<T>::next()
@@ -468,14 +483,21 @@
 */
 
 /*! \fn template <class T> const T &QListIterator<T>::peekNext() const
-    \fn template <class T> const T &QSetIterator<T>::peekNext() const
 
+//! [peekNext]
     Returns the next item without moving the iterator.
 
     Calling this function on an iterator located at the back of the
     container leads to undefined results.
+//! [peekNext]
 
     \sa hasNext(), next(), peekPrevious()
+*/
+
+/*!
+    \fn template <class T> const T &QSetIterator<T>::peekNext() const
+    \include qiterator.qdoc peekNext
+    \sa hasNext(), next()
 */
 
 /*!
@@ -563,17 +585,22 @@
 */
 
 /*! \fn template <class T> bool QListIterator<T>::findNext(const T &value)
-    \fn template <class T> bool QSetIterator<T>::findNext(const T &value)
     \fn template <class T> bool QMutableListIterator<T>::findNext(const T &value)
 
+//! [findNext]
     Searches for \a value starting from the current iterator position
     forward. Returns \c true if \a value is found; otherwise returns \c false.
 
     After the call, if \a value was found, the iterator is positioned
     just after the matching item; otherwise, the iterator is
     positioned at the back of the container.
+//! [findNext]
 
     \sa findPrevious()
+*/
+
+/*! \fn template <class T> bool QSetIterator<T>::findNext(const T &value)
+    \include qiterator.qdoc findNext
 */
 
 /*! \fn template <class T> bool QListIterator<T>::findPrevious(const T &value)

@@ -25,15 +25,6 @@ while (i.hasNext())
     float f = i.next();
 //! [6]
 
-
-//! [7]
-QSetIterator<QString> i(set);
-i.toBack();
-while (i.hasPrevious())
-    QString s = i.previous();
-//! [7]
-
-
 //! [8]
 QList<float> list;
 ...
