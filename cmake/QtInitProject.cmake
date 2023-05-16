@@ -95,7 +95,7 @@ handle_type(qml EXTENSIONS .qml .js .mjs MODULES Gui Qml Quick TEMPLATE
     URI ${project_name}
     OUTPUT_DIRECTORY qml
     VERSION 1.0
-    AUTO_RESOURCE_PREFIX
+    RESOURCE_PREFIX /qt/qml
     QML_FILES
         @files@
 )"
