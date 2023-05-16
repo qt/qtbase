@@ -65,7 +65,7 @@ private slots:
     // Dock area permissions for DockWidgets and DockWidgetGroupWindows
     void dockPermissions();
 
-    // test floating tabs and item_tree consistency
+    // test floating tabs, item_tree and window title consistency
     void floatingTabs();
 
     // test hide & show
@@ -1375,7 +1375,10 @@ void tst_QDockWidget::floatingTabs()
 
     /*
      * replug both dock widgets into their initial position
-     * expected behavior: both docks are plugged and no longer floating
+     * expected behavior:
+       - both docks are plugged
+       - both docks are no longer floating
+       - title changes have been propagated
      */
 
 
@@ -1396,6 +1399,12 @@ void tst_QDockWidget::floatingTabs()
     QTRY_VERIFY(d1->isFloating());
     QTRY_VERIFY(!d2->isFloating());
 
+    // Change titles
+    static constexpr QLatin1StringView newD1("New D1");
+    static constexpr QLatin1StringView newD2("New D2");
+    d1->setWindowTitle(newD1);
+    d2->setWindowTitle(newD2);
+
     // Plug back into dock areas
     qCDebug(lcTestDockWidget) << "*** test plugging back to dock areas ***";
     qCDebug(lcTestDockWidget) << "Move d1 to left dock";
@@ -1414,6 +1423,10 @@ void tst_QDockWidget::floatingTabs()
     // check if QDockWidgetGroupWindow has been removed from mainWindowLayout and properly deleted
     QTRY_VERIFY(!mainWindow->findChild<QDockWidgetGroupWindow*>());
     QTRY_VERIFY(ftabs.isNull());
+
+    // check window titles
+    QCOMPARE(d1->windowTitle(), newD1);
+    QCOMPARE(d2->windowTitle(), newD2);
 
     // Check if paths are consistent
     qCDebug(lcTestDockWidget) << "Checking path consistency" << layout->layoutState.indexOf(d1) << layout->layoutState.indexOf(d2);

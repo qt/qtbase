@@ -1164,10 +1164,10 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
             return; // this dockwidget can't be redocked
     }
 
-    bool wasFloating = q->isFloating();
+    const bool wasFloating = q->isFloating();
     if (wasFloating) // Prevent repetitive unplugging from nested invocations (QTBUG-42818)
         unplug = false;
-    bool hidden = q->isHidden();
+    const bool hidden = q->isHidden();
 
     if (q->isVisible())
         q->hide();
@@ -1473,8 +1473,14 @@ void QDockWidget::changeEvent(QEvent *event)
     QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(this->layout());
 
     switch (event->type()) {
-    case QEvent::ModifiedChange:
     case QEvent::WindowTitleChange:
+        if (isFloating() && windowHandle() && d->topData()) {
+            // From QWidget::setWindowTitle(): Propagate window title without signal emission
+            d->topData()->caption = windowHandle()->title();
+            d->setWindowTitle_helper(windowHandle()->title());
+        }
+        Q_FALLTHROUGH();
+    case QEvent::ModifiedChange:
         update(layout->titleArea());
 #ifndef QT_NO_ACTION
         d->fixedWindowTitle = qt_setWindowTitle_helperHelper(windowTitle(), this);
