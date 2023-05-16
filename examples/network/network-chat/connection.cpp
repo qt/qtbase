@@ -27,12 +27,6 @@ static const int PingInterval = 5 * 1000;
 Connection::Connection(QObject *parent)
     : QTcpSocket(parent), writer(this)
 {
-    greetingMessage = tr("undefined");
-    username = tr("unknown");
-    state = WaitingForGreeting;
-    currentDataType = Undefined;
-    transferTimerId = -1;
-    isGreetingMessageSent = false;
     pingTimer.setInterval(PingInterval);
 
     connect(this, &QTcpSocket::readyRead, this,

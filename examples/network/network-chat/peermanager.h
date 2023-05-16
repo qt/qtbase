@@ -35,13 +35,13 @@ private slots:
 private:
     void updateAddresses();
 
-    Client *client;
+    Client *client = nullptr;
     QList<QHostAddress> broadcastAddresses;
     QList<QHostAddress> ipAddresses;
     QUdpSocket broadcastSocket;
     QTimer broadcastTimer;
     QString username;
-    int serverPort;
+    int serverPort = 0;
 };
 
 #endif

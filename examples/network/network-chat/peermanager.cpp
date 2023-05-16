@@ -12,10 +12,8 @@ static const qint32 BroadcastInterval = 2000;
 static const unsigned broadcastPort = 45000;
 
 PeerManager::PeerManager(Client *client)
-    : QObject(client)
+    : QObject(client), client(client)
 {
-    this->client = client;
-
     static const char *envVariables[] = {
         "USERNAME", "USER", "USERDOMAIN", "HOSTNAME", "DOMAINNAME"
     };
@@ -30,7 +28,6 @@ PeerManager::PeerManager(Client *client)
         username = "unknown";
 
     updateAddresses();
-    serverPort = 0;
 
     broadcastSocket.bind(QHostAddress::Any, broadcastPort, QUdpSocket::ShareAddress
                          | QUdpSocket::ReuseAddressHint);

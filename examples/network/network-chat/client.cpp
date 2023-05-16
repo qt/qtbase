@@ -8,8 +8,8 @@
 #include <QHostInfo>
 
 Client::Client()
+    : peerManager(new PeerManager(this))
 {
-    peerManager = new PeerManager(this);
     peerManager->setServerPort(server.serverPort());
     peerManager->startBroadcasting();
 
