@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
     the buttons (or button texts) yourself and add them to the button box,
     specifying their role.
 
-    \snippet dialogs/extension/finddialog.cpp 1
+    \snippet dialogs/dialogs.cpp buttonbox
 
     Alternatively, QDialogButtonBox provides several standard buttons (e.g. OK, Cancel, Save)
     that you can use. They exist as flags so you can OR them together in the constructor.

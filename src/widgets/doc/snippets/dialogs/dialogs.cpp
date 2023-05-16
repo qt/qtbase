@@ -227,6 +227,33 @@ void Operation::cancel()
 }
 //! [6]
 
+void extension()
+{
+    using ExtendedControls = QWidget;
+    QPushButton *findButton;
+    QPushButton *moreButton;
+    QWidget *extension;
+    QVBoxLayout *mainLayout;
+
+//! [extension]
+    findButton = new QPushButton(tr("&Find"));
+    moreButton = new QPushButton(tr("&More..."));
+    moreButton->setCheckable(true);
+
+    extension = new ExtendedControls;
+    mainLayout->addWidget(extension);
+    extension->hide();
+
+    connect(moreButton, &QAbstractButton::toggled, extension, &QWidget::setVisible);
+//! [extension]
+
+//! [buttonbox]
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(Qt::Vertical);
+    buttonBox->addButton(findButton, QDialogButtonBox::ActionRole);
+    buttonBox->addButton(moreButton, QDialogButtonBox::ActionRole);
+//! [buttonbox]
+}
+
 int main()
 {
 }
