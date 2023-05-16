@@ -19,6 +19,7 @@
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QFileInfo>
+#include <QtCore/QStandardPaths>
 #include <QtCore/QVariant>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
@@ -792,6 +793,15 @@ void QGuiApplication::setDesktopFileName(const QString &name)
     if (!QGuiApplicationPrivate::desktopFileName)
         QGuiApplicationPrivate::desktopFileName = new QString;
     *QGuiApplicationPrivate::desktopFileName = name;
+    if (name.endsWith(QLatin1String(".desktop"))) { // ### Qt 7: remove
+        const QString filePath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, name);
+        if (!filePath.isEmpty()) {
+            qWarning("QGuiApplication::setDesktopFileName: the specified desktop file name "
+                     "ends with .desktop. For compatibility reasons, the .desktop suffix will "
+                     "be removed. Please specify a desktop file name without .desktop suffix");
+            (*QGuiApplicationPrivate::desktopFileName).chop(8);
+        }
+    }
 }
 
 QString QGuiApplication::desktopFileName()
