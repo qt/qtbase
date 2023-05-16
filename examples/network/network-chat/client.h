@@ -4,11 +4,11 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include "server.h"
+
 #include <QAbstractSocket>
 #include <QHash>
 #include <QHostAddress>
-
-#include "server.h"
 
 class PeerManager;
 

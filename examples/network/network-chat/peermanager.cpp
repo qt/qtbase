@@ -2,11 +2,11 @@
 // Copyright (C) 2018 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtNetwork>
-
 #include "client.h"
 #include "connection.h"
 #include "peermanager.h"
+
+#include <QNetworkInterface>
 
 static const qint32 BroadcastInterval = 2000;
 static const unsigned broadcastPort = 45000;

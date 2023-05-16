@@ -4,7 +4,7 @@
 
 #include "connection.h"
 
-#include <QtNetwork>
+#include <QTimerEvent>
 
 static const int TransferTimeout = 30 * 1000;
 static const int PongTimeout = 60 * 1000;
