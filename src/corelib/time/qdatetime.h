@@ -6,6 +6,7 @@
 #define QDATETIME_H
 
 #include <QtCore/qcalendar.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
@@ -170,12 +171,13 @@ private:
     friend class QDateTime;
     friend class QDateTimePrivate;
 
-    friend constexpr bool operator==(QDate lhs, QDate rhs) { return lhs.jd == rhs.jd; }
-    friend constexpr bool operator!=(QDate lhs, QDate rhs) { return lhs.jd != rhs.jd; }
-    friend constexpr bool operator< (QDate lhs, QDate rhs) { return lhs.jd <  rhs.jd; }
-    friend constexpr bool operator<=(QDate lhs, QDate rhs) { return lhs.jd <= rhs.jd; }
-    friend constexpr bool operator> (QDate lhs, QDate rhs) { return lhs.jd >  rhs.jd; }
-    friend constexpr bool operator>=(QDate lhs, QDate rhs) { return lhs.jd >= rhs.jd; }
+    friend constexpr bool comparesEqual(const QDate &lhs, const QDate &rhs) noexcept
+    { return lhs.jd == rhs.jd; }
+    friend constexpr Qt::strong_ordering
+    compareThreeWay(const QDate &lhs, const QDate &rhs) noexcept
+    { return Qt::compareThreeWay(lhs.jd, rhs.jd); }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QDate)
+
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QDate);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QDate &);
