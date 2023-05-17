@@ -1098,4 +1098,155 @@ CHECK(strong, equivalent);
         Q_DECLARE_EQUALITY_COMPARABLE
 */
 
+/*!
+    \fn template <typename LeftInt, typename RightInt> Qt::compareThreeWay(LeftInt lhs, RightInt rhs)
+    \since 6.7
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of integral types.
+
+    \note This function participates in overload resolution only if both
+    \c LeftInt and \c RightInt are built-in integral types.
+
+    Returns \c {lhs <=> rhs}, provided \c LeftInt and \c RightInt are built-in
+    integral types. Unlike \c {operator<=>()}, this function template is also
+    available in C++17. See
+    \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Three-way_comparison}
+    {cppreference} for more details.
+
+    This function can also be used in custom \c {compareThreeWay()} functions,
+    when ordering members of a custom class represented by built-in types:
+
+    \code
+    class MyClass {
+    public:
+        ...
+    private:
+        int value;
+        ...
+        friend Qt::strong_ordering
+        compareThreeWay(const MyClass &lhs, const MyClass &rhs) noexcept
+        { return Qt::compareThreeWay(lhs.value, rhs.value); }
+        Q_DECLARE_STRONGLY_ORDERED(MyClass)
+    };
+    \endcode
+
+    Returns an instance of \l Qt::strong_ordering that represents the relation
+    between \a lhs and \a rhs.
+*/
+
+/*!
+    \fn template <typename LeftFloat, typename RightFloat> Qt::compareThreeWay(LeftFloat lhs, RightFloat rhs)
+    \since 6.7
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of floating point types.
+
+    \note This function participates in overload resolution only if both
+    \c LeftFloat and \c RightFloat are built-in floating-point types.
+
+    Returns \c {lhs <=> rhs}, provided \c LeftFloat and \c RightFloat are
+    built-in floating-point types. Unlike \c {operator<=>()}, this function
+    template is also available in C++17. See
+    \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Three-way_comparison}
+    {cppreference} for more details.
+
+    This function can also be used in custom \c {compareThreeWay()} functions,
+    when ordering members of a custom class represented by built-in types:
+
+    \code
+    class MyClass {
+    public:
+        ...
+    private:
+        double value;
+        ...
+        friend Qt::partial_ordering
+        compareThreeWay(const MyClass &lhs, const MyClass &rhs) noexcept
+        { return Qt::compareThreeWay(lhs.value, rhs.value); }
+        Q_DECLARE_PARTIALLY_ORDERED(MyClass)
+    };
+    \endcode
+
+    Returns an instance of \l Qt::partial_ordering that represents the relation
+    between \a lhs and \a rhs. If \a lhs or \a rhs is not a number (NaN),
+    \l Qt::partial_ordering::unordered is returned.
+*/
+
+/*!
+    \fn template <typename IntType, typename FloatType> Qt::compareThreeWay(IntType lhs, FloatType rhs)
+    \since 6.7
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of integral and floating point types.
+
+    \note This function participates in overload resolution only if \c IntType
+    is a built-in integral type and \c FloatType is a built-in floating-point
+    type.
+
+    This function converts \a lhs to \c FloatType and calls the overload for
+    floating-point types.
+
+    Returns an instance of \l Qt::partial_ordering that represents the relation
+    between \a lhs and \a rhs. If \a rhs is not a number (NaN),
+    \l Qt::partial_ordering::unordered is returned.
+*/
+
+/*!
+    \fn template <typename FloatType, typename IntType> Qt::compareThreeWay(FloatType lhs, IntType rhs)
+    \since 6.7
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of floating point and integral types.
+
+    \note This function participates in overload resolution only if \c FloatType
+    is a built-in floating-point type and \c IntType is a built-in integral
+    type.
+
+    This function converts \a rhs to \c FloatType and calls the overload for
+    floating-point types.
+
+    Returns an instance of \l Qt::partial_ordering that represents the relation
+    between \a lhs and \a rhs. If \a lhs is not a number (NaN),
+    \l Qt::partial_ordering::unordered is returned.
+*/
+
+/*!
+    \fn template <typename LeftType, typename RightType> Qt::compareThreeWay(const LeftType *lhs, const RightType *rhs)
+    \since 6.7
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of pointers.
+
+    \note This function participates in overload resolution if \c LeftType and
+    \c RightType are the same type, or base and derived types. It is also used
+    to compare any pointer to \c {std::nullptr_t}.
+
+    Returns an instance of \l Qt::strong_ordering that represents the relation
+    between \a lhs and \a rhs.
+*/
+
+/*!
+    \fn template <class Enum> Qt::compareThreeWay(Enum lhs, Enum rhs)
+    \since 6.7
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of enum types.
+
+    \note This function participates in overload resolution only if \c Enum
+    is an enum type.
+
+    This function converts \c Enum to its underlying type and calls the
+    overload for integral types.
+
+    Returns an instance of \l Qt::strong_ordering that represents the relation
+    between \a lhs and \a rhs.
+*/
+
 QT_END_NAMESPACE

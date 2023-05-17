@@ -15,10 +15,14 @@
 #endif
 
 #include <QtCore/qoverload.h>
+#include <QtCore/qttypetraits.h>
+#include <QtCore/qtypes.h>
 
 #ifdef __cpp_lib_three_way_comparison
 #include <compare>
 #endif
+
+#include <functional> // std::less
 
 QT_BEGIN_NAMESPACE
 
@@ -301,6 +305,134 @@ QT_BEGIN_NAMESPACE
 
 #define Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(...) \
     QT_OVERLOADED_MACRO(QT_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE, __VA_ARGS__)
+
+namespace QtPrivate {
+
+template <typename T>
+constexpr bool IsIntegralType_v = std::numeric_limits<std::remove_const_t<T>>::is_specialized
+                                  && std::numeric_limits<std::remove_const_t<T>>::is_integer;
+
+} // namespace QtPrivate
+
+namespace Qt {
+
+template <typename T, typename U>
+using if_integral =
+        std::enable_if_t<QtPrivate::IsIntegralType_v<std::remove_reference_t<T>>
+                           && QtPrivate::IsIntegralType_v<std::remove_reference_t<U>>,
+                         bool>;
+
+template <typename T, typename U>
+using if_floating_point =
+        std::enable_if_t<std::conjunction_v<std::is_floating_point<std::remove_reference_t<T>>,
+                                            std::is_floating_point<std::remove_reference_t<U>>>,
+                         bool>;
+
+template <typename T, typename U>
+using if_integral_and_floating_point =
+        std::enable_if_t<QtPrivate::IsIntegralType_v<std::remove_reference_t<T>>
+                           && std::is_floating_point_v<std::remove_reference_t<U>>,
+                         bool>;
+
+template <typename T, typename U>
+using if_compatible_pointers =
+        std::enable_if_t<std::disjunction_v<std::is_same<T, U>,
+                                            std::is_base_of<T, U>,
+                                            std::is_base_of<U, T>>,
+                         bool>;
+
+template <typename Enum>
+using if_enum = std::enable_if_t<std::is_enum_v<Enum>, bool>;
+
+template <typename LeftInt, typename RightInt,
+          if_integral<LeftInt, RightInt> = true>
+constexpr Qt::strong_ordering compareThreeWay(LeftInt lhs, RightInt rhs) noexcept
+{
+    static_assert(std::is_signed_v<LeftInt> == std::is_signed_v<RightInt>,
+                  "Qt::compareThreeWay() does not allow mixed-sign comparison.");
+
+#ifdef __cpp_lib_three_way_comparison
+    return lhs <=> rhs;
+#else
+    if (lhs == rhs)
+        return Qt::strong_ordering::equivalent;
+    else if (lhs < rhs)
+        return Qt::strong_ordering::less;
+    else
+        return Qt::strong_ordering::greater;
+#endif // __cpp_lib_three_way_comparison
+}
+
+template <typename LeftFloat, typename RightFloat,
+          if_floating_point<LeftFloat, RightFloat> = true>
+constexpr Qt::partial_ordering compareThreeWay(LeftFloat lhs, RightFloat rhs) noexcept
+{
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_FLOAT_COMPARE
+#ifdef __cpp_lib_three_way_comparison
+    return lhs <=> rhs;
+#else
+    if (lhs < rhs)
+        return Qt::partial_ordering::less;
+    else if (lhs > rhs)
+        return Qt::partial_ordering::greater;
+    else if (lhs == rhs)
+        return Qt::partial_ordering::equivalent;
+    else
+        return Qt::partial_ordering::unordered;
+#endif // __cpp_lib_three_way_comparison
+QT_WARNING_POP
+}
+
+template <typename IntType, typename FloatType,
+          if_integral_and_floating_point<IntType, FloatType> = true>
+constexpr Qt::partial_ordering compareThreeWay(IntType lhs, FloatType rhs) noexcept
+{
+    return compareThreeWay(FloatType(lhs), rhs);
+}
+
+template <typename FloatType, typename IntType,
+          if_integral_and_floating_point<IntType, FloatType> = true>
+constexpr Qt::partial_ordering compareThreeWay(FloatType lhs, IntType rhs) noexcept
+{
+    return compareThreeWay(lhs, FloatType(rhs));
+}
+
+template <typename LeftType, typename RightType,
+          if_compatible_pointers<LeftType, RightType> = true>
+constexpr Qt::strong_ordering compareThreeWay(const LeftType *lhs, const RightType *rhs) noexcept
+{
+#ifdef __cpp_lib_three_way_comparison
+    return std::compare_three_way{}(lhs, rhs);
+#else
+    if (lhs == rhs)
+        return Qt::strong_ordering::equivalent;
+    else if (std::less<>{}(lhs, rhs))
+        return Qt::strong_ordering::less;
+    else
+        return Qt::strong_ordering::greater;
+#endif // __cpp_lib_three_way_comparison
+}
+
+template <typename T>
+constexpr Qt::strong_ordering compareThreeWay(const T *lhs, std::nullptr_t rhs) noexcept
+{
+    return compareThreeWay(lhs, static_cast<const T *>(rhs));
+}
+
+template <typename T>
+constexpr Qt::strong_ordering compareThreeWay(std::nullptr_t lhs, const T *rhs) noexcept
+{
+    return compareThreeWay(static_cast<const T *>(lhs), rhs);
+}
+
+template <class Enum, if_enum<Enum> = true>
+constexpr Qt::strong_ordering compareThreeWay(Enum lhs, Enum rhs) noexcept
+{
+    return compareThreeWay(qToUnderlying(lhs), qToUnderlying(rhs));
+}
+
+} // namespace Qt
 
 QT_END_NAMESPACE
 
