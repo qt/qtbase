@@ -135,7 +135,7 @@ public:
     QPushButton *ok;
     QPushButton *cancel;
     QPushButton *addCusBt;
-    QPushButton *screenColorPickerButton;
+    QPushButton *eyeDropperButton = nullptr;
     QColor selectedQColor;
     int nextCust;
     bool smallDisplay;
@@ -1642,8 +1642,8 @@ void QColorDialogPrivate::_q_pickScreenColor()
 
     addCusBt->setDisabled(true);
     buttons->setDisabled(true);
-    if (screenColorPickerButton) {
-        screenColorPickerButton->setDisabled(true);
+    if (eyeDropperButton) {
+        eyeDropperButton->setDisabled(true);
         const QPoint globalPos = QCursor::pos();
         q->setCurrentColor(grabScreenColor(globalPos));
         updateColorLabelText(globalPos);
@@ -1673,7 +1673,7 @@ void QColorDialogPrivate::releaseColorPicking()
     lblScreenColorInfo->setText("\n"_L1);
     addCusBt->setDisabled(false);
     buttons->setDisabled(false);
-    screenColorPickerButton->setDisabled(false);
+    eyeDropperButton->setDisabled(false);
 }
 
 void QColorDialogPrivate::init(const QColor &initial)
@@ -1736,13 +1736,13 @@ void QColorDialogPrivate::initWidgets()
 
 #if !defined(QT_SMALL_COLORDIALOG)
         if (supportsColorPicking()) {
-            screenColorPickerButton = new QPushButton();
-            leftLay->addWidget(screenColorPickerButton);
+            eyeDropperButton = new QPushButton();
+            leftLay->addWidget(eyeDropperButton);
             lblScreenColorInfo = new QLabel("\n"_L1);
             leftLay->addWidget(lblScreenColorInfo);
-            q->connect(screenColorPickerButton, SIGNAL(clicked()), SLOT(_q_pickScreenColor()));
+            q->connect(eyeDropperButton, SIGNAL(clicked()), SLOT(_q_pickScreenColor()));
         } else {
-            screenColorPickerButton = nullptr;
+            eyeDropperButton = nullptr;
             lblScreenColorInfo = nullptr;
         }
 #endif
@@ -1882,8 +1882,8 @@ void QColorDialogPrivate::retranslateStrings()
         lblCustomColors->setText(QColorDialog::tr("&Custom colors"));
         addCusBt->setText(QColorDialog::tr("&Add to Custom Colors"));
 #if !defined(QT_SMALL_COLORDIALOG)
-        if (screenColorPickerButton)
-            screenColorPickerButton->setText(QColorDialog::tr("&Pick Screen Color"));
+        if (eyeDropperButton)
+            eyeDropperButton->setText(QColorDialog::tr("&Pick Screen Color"));
 #endif
     }
 
@@ -2079,6 +2079,8 @@ void QColorDialog::setOptions(ColorDialogOptions options)
     if (!d->nativeDialogInUse) {
         d->buttons->setVisible(!(options & NoButtons));
         d->showAlpha(options & ShowAlphaChannel);
+        if (d->eyeDropperButton)
+            d->eyeDropperButton->setVisible(!(options & NoEyeDropperButton));
     }
 }
 
@@ -2098,6 +2100,7 @@ QColorDialog::ColorDialogOptions QColorDialog::options() const
 
     \value ShowAlphaChannel Allow the user to select the alpha component of a color.
     \value NoButtons Don't display \uicontrol{OK} and \uicontrol{Cancel} buttons. (Useful for "live dialogs".)
+    \value NoEyeDropperButton Hide the \uicontrol{Eye Dropper} button. This value was added in Qt 6.6.
     \value DontUseNativeDialog  Use Qt's standard color dialog instead of the operating system
                                 native color dialog.
 

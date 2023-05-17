@@ -157,7 +157,8 @@ public:
     enum ColorDialogOption {
         ShowAlphaChannel    = 0x00000001,
         NoButtons           = 0x00000002,
-        DontUseNativeDialog = 0x00000004
+        DontUseNativeDialog = 0x00000004,
+        NoEyeDropperButton  = 0x00000008
     };
 
     Q_DECLARE_FLAGS(ColorDialogOptions, ColorDialogOption)
