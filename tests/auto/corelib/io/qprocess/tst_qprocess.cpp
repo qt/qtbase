@@ -1560,9 +1560,13 @@ void tst_QProcess::throwInChildProcessModifier()
 #ifndef __cpp_exceptions
     Q_SKIP("Exceptions disabled.");
 #else
+    static constexpr char What[] = "tst_QProcess::throwInChildProcessModifier()::MyException";
+    struct MyException : std::exception {
+        const char *what() const noexcept override { return What; }
+    };
     QProcess process;
     process.setChildProcessModifier([]() {
-        throw 42;
+        throw MyException();
     });
     process.setProgram("testProcessNormal/testProcessNormal");
 
@@ -1572,6 +1576,8 @@ void tst_QProcess::throwInChildProcessModifier()
     QCOMPARE(process.error(), QProcess::FailedToStart);
     QVERIFY2(process.errorString().contains("Child process modifier threw an exception"),
              qPrintable(process.errorString()));
+    QVERIFY2(process.errorString().contains(What),
+             qPrintable(process.errorString()));
 
     // try again, to ensure QProcess internal state wasn't corrupted
     process.start();
@@ -1579,6 +1585,8 @@ void tst_QProcess::throwInChildProcessModifier()
     QCOMPARE(process.state(), QProcess::NotRunning);
     QCOMPARE(process.error(), QProcess::FailedToStart);
     QVERIFY2(process.errorString().contains("Child process modifier threw an exception"),
+             qPrintable(process.errorString()));
+    QVERIFY2(process.errorString().contains(What),
              qPrintable(process.errorString()));
 #endif
 }

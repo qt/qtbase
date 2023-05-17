@@ -641,13 +641,7 @@ void QProcessPrivate::startProcess()
 
 // we need an errno number to use to indicate the child process modifier threw,
 // something the regular operations shouldn't set.
-static constexpr int FakeErrnoForThrow =
-#ifdef ECANCELED
-        ECANCELED
-#else
-        ESHUTDOWN
-#endif
-        ;
+static constexpr int FakeErrnoForThrow = std::numeric_limits<int>::max();
 
 static QString startFailureErrorMessage(ChildError &err, [[maybe_unused]] ssize_t bytesRead)
 {
@@ -658,7 +652,8 @@ static QString startFailureErrorMessage(ChildError &err, [[maybe_unused]] ssize_
     qsizetype len = qstrnlen(err.function, sizeof(err.function));
     QString complement = QString::fromUtf8(err.function, len);
     if (err.code == FakeErrnoForThrow)
-        return QProcess::tr("Child process modifier threw an exception");
+        return QProcess::tr("Child process modifier threw an exception: %1")
+                .arg(std::move(complement));
     if (err.code == 0)
         return QProcess::tr("Child process modifier reported error: %1")
                 .arg(std::move(complement));
@@ -732,16 +727,16 @@ static void applyProcessParameters(const QProcess::UnixProcessParameters &params
 }
 
 // the noexcept here adds an extra layer of protection
-static const char *callChildProcessModifier(const QProcessPrivate::UnixExtras *unixExtras) noexcept
+static void callChildProcessModifier(const QProcessPrivate *d) noexcept
 {
     QT_TRY {
-        if (unixExtras->childProcessModifier)
-            unixExtras->childProcessModifier();
+        if (d->unixExtras->childProcessModifier)
+            d->unixExtras->childProcessModifier();
+    } QT_CATCH (std::exception &e) {
+        failChildProcess(d, e.what(), FakeErrnoForThrow);
     } QT_CATCH (...) {
-        errno = FakeErrnoForThrow;
-        return "throw";
+        failChildProcess(d, "throw", FakeErrnoForThrow);
     }
-    return nullptr;
 }
 
 Q_NORETURN static void
@@ -754,8 +749,7 @@ doExecChild(char **argv, char **envp, int workingDirFd, const QProcessPrivate *d
     if (d->unixExtras) {
         // FIRST we call the user modifier function, before we dropping
         // privileges or closing non-standard file descriptors
-        if (const char *what = callChildProcessModifier(d->unixExtras.get()))
-            failChildProcess(d, what, FakeErrnoForThrow);
+        callChildProcessModifier(d);
 
         // then we apply our other user-provided parameters
         applyProcessParameters(d->unixExtras->processParameters);
