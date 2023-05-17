@@ -198,6 +198,8 @@ qt_internal_extend_target(Network CONDITION WIN32
         iphlpapi
         secur32
         winhttp
+    DEFINES
+        NOMINMAX
 )
 
 qt_internal_extend_target(Network CONDITION APPLE AND NOT UIKIT
