@@ -149,7 +149,7 @@ inline QString floatArrayToMetadata(const QString &size, const QString &name)
         ret += QStringLiteral("double ");
     else if (sizeof(T) == 4)
         ret += QStringLiteral("float ");
-    ret += name + QLatin1Char('[') + size + QStringLiteral("];");
+    ret += name + QLatin1Char('[') + size + QLatin1Char(']');
     return ret + QLatin1Char(';');
 }
 
