@@ -40,6 +40,8 @@ namespace emscripten {
 }
 #endif
 
+class tst_QByteArray;
+
 QT_BEGIN_NAMESPACE
 
 class QString;
@@ -60,6 +62,11 @@ private:
 
     DataPointer d;
     static const char _empty;
+
+    friend class ::tst_QByteArray;
+
+    template <typename InputIterator>
+    using if_input_iterator = QtPrivate::IfIsInputIterator<InputIterator>;
 public:
 
     enum Base64Option {
@@ -226,6 +233,20 @@ public:
     QByteArray &append(const QByteArray &a);
     QByteArray &append(QByteArrayView a)
     { return insert(size(), a); }
+
+    QByteArray &assign(QByteArrayView v);
+    QByteArray &assign(qsizetype n, char c)
+    {
+        Q_ASSERT(n >= 0);
+        return fill(c, n);
+    }
+    template <typename InputIterator, if_input_iterator<InputIterator> = true>
+    QByteArray &assign(InputIterator first, InputIterator last)
+    {
+        d.assign(first, last);
+        d.data()[d.size] = '\0';
+        return *this;
+    }
 
     QByteArray &insert(qsizetype i, QByteArrayView data);
     inline QByteArray &insert(qsizetype i, const char *s)

@@ -2105,6 +2105,73 @@ QByteArray& QByteArray::append(char ch)
 }
 
 /*!
+    \fn QByteArray &QByteArray::assign(QByteArrayView v)
+    \since 6.6
+
+    Replaces the contents of this byte array with a copy of \a v and returns a
+    reference to this byte array.
+
+    The size of this byte array will be equal to the size of \a v.
+
+    This function only allocates memory if the size of \a v exceeds the capacity
+    of this byte array or this byte array is shared.
+*/
+
+/*!
+    \fn QByteArray &QByteArray::assign(qsizetype n, char c)
+    \since 6.6
+
+    Replaces the contents of this byte array with \a n copies of \a c and
+    returns a reference to this byte array.
+
+    The size of this byte array will be equal to \a n, which has to be non-negative.
+
+    This function will only allocate memory if \a n exceeds the capacity of this
+    byte array or this byte array is shared.
+
+    \sa fill()
+*/
+
+/*!
+    \fn template <typename InputIterator, if_input_iterator<InputIterator>> QByteArray &QByteArray::assign(InputIterator first, InputIterator last)
+    \since 6.6
+
+    Replaces the contents of this byte array with a copy of the elements in the
+    iterator range [\a first, \a last) and returns a reference to this
+    byte array.
+
+    The size of this byte array will be equal to the number of elements in the
+    range [\a first, \a last).
+
+    This function will only allocate memory if the number of elements in the
+    range exceeds the capacity of this byte array or this byte array is shared.
+
+    \note This function overload only participates in overload resolution if
+    \c InputIterator meets the requirements of a
+    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}.
+
+    \note The behavior is undefined if either argument is an iterator into *this or
+    [\a first, \a last) is not a valid range.
+*/
+
+QByteArray &QByteArray::assign(QByteArrayView v)
+{
+    const auto len = v.size();
+
+    if (len <= capacity() &&  isDetached()) {
+        const auto offset = d.freeSpaceAtBegin();
+        if (offset)
+            d.setBegin(d.begin() - offset);
+        std::memcpy(d.begin(), v.data(), len);
+        d.size = len;
+        d.data()[d.size] = '\0';
+    } else {
+        *this = v.toByteArray();
+    }
+    return *this;
+}
+
+/*!
     Inserts \a data at index position \a i and returns a
     reference to this byte array.
 
