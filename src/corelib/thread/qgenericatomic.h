@@ -5,7 +5,9 @@
 #ifndef QGENERICATOMIC_H
 #define QGENERICATOMIC_H
 
-#include <QtCore/qtypeinfo.h>
+#include <QtCore/qcompilerdetection.h>
+#include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtypes.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -8,6 +8,7 @@
 #include <QtCore/qassert.h>
 #include <QtCore/qtclasshelpermacros.h>
 #include <QtCore/qtcoreexports.h>
+#include <QtCore/qtypeinfo.h>
 
 #include <climits>
 #include <limits>
