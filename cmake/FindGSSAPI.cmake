@@ -12,12 +12,24 @@ find_path(GSSAPI_INCLUDE_DIRS
           HINTS ${PC_GSSAPI_INCLUDEDIR}
 )
 
+# On macOS, vcpkg opts for finding frameworks LAST. This is generally fine;
+# however, in the case of GSSAPI, `usr/lib/libgssapi_krb5.tbd` which is a
+# symlink to `Kerberos.framework` misses a few symols, e.g.,
+# `___gss_c_nt_hostbased_service_oid_desc`, and it causes build failure.
+# So, we need to make sure that we find `GSS.framework`.
+set(gssapi_library_names
+  GSS    # framework
+  gss    # solaris
+  gssapi # FreeBSD
+  gssapi_krb5
+)
+if(VCPKG_TARGET_TRIPLET AND APPLE)
+  list(REMOVE_ITEM gssapi_library_names "gssapi_krb5")
+endif()
+
 find_library(GSSAPI_LIBRARIES
              NAMES
-             GSS # framework
-             gss # solaris
-             gssapi # FreeBSD
-             gssapi_krb5
+             ${gssapi_library_names}
              HINTS ${PC_GSSAPI_LIBDIR}
 )
 
@@ -44,4 +56,3 @@ mark_as_advanced(GSSAPI_INCLUDE_DIRS GSSAPI_LIBRARIES)
 include(FeatureSummary)
 set_package_properties(GSSAPI PROPERTIES
   DESCRIPTION "Generic Security Services Application Program Interface")
-
