@@ -1095,6 +1095,7 @@ function(qt6_extract_metatypes target)
     add_custom_command(
         OUTPUT
             ${metatypes_file_gen}
+        BYPRODUCTS
             ${metatypes_file}
         DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${automoc_dependencies} ${manual_dependencies}
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc
@@ -1106,6 +1107,17 @@ function(qt6_extract_metatypes target)
         COMMENT "Running moc --collect-json for target ${target}"
         VERBATIM
     )
+
+    if(CMAKE_GENERATOR MATCHES "Unix Makefiles")
+        # Work around https://gitlab.kitware.com/cmake/cmake/-/issues/19005 to trigger the command
+        # that generates ${metatypes_file}.
+        add_custom_command(
+            OUTPUT ${metatypes_file}
+            DEPENDS ${metatypes_file_gen}
+            COMMAND ${CMAKE_COMMAND} -E true
+            VERBATIM
+        )
+    endif()
 
     # We can't rely on policy CMP0118 since user project controls it
     set(scope_args)
