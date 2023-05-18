@@ -23,7 +23,8 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QDeadlineTimer
 {
 public:
-    enum ForeverConstant { Forever };
+    enum class ForeverConstant { Forever };
+    static constexpr ForeverConstant Forever = ForeverConstant::Forever;
 
     constexpr QDeadlineTimer(Qt::TimerType type_ = Qt::CoarseTimer) noexcept
         : type(type_) {}

@@ -145,12 +145,6 @@ public:
         return success;
     }
 
-#ifndef Q_QDOC
-    // because tryLock(QDeadlineTimer::Forever) is tryLock(0)
-    bool tryLock(QDeadlineTimer::ForeverConstant) QT_MUTEX_LOCK_NOEXCEPT
-    { lock(); return true; }
-#endif
-
     // TimedLockable concept
     template <class Rep, class Period>
     bool try_lock_for(std::chrono::duration<Rep, Period> duration)

@@ -43,15 +43,6 @@ public:
 
     void unlock();
 
-#ifndef Q_QDOC
-    // because tryLockForXxx(QDeadlineTimer::Forever) is the same
-    // as tryLockForXxx(0), which is not forever
-    bool tryLockForRead(QDeadlineTimer::ForeverConstant)
-    { lockForRead(); return true; }
-    bool tryLockForWrite(QDeadlineTimer::ForeverConstant)
-    { lockForWrite(); return true; }
-#endif
-
 private:
     Q_DISABLE_COPY(QReadWriteLock)
     QAtomicPointer<QReadWriteLockPrivate> d_ptr;

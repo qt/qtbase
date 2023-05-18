@@ -23,11 +23,6 @@ public:
     QT_CORE_INLINE_SINCE(6, 6)
     bool tryAcquire(int n, int timeout);
     bool tryAcquire(int n, QDeadlineTimer timeout);
-#ifndef Q_QDOC
-    // because tryAcquire(n, QDeadlineTimer::Forever) is tryLock(n, 0)
-    bool tryAcquire(int n, QDeadlineTimer::ForeverConstant)
-    { acquire(n); return true; }
-#endif
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     template <typename Rep, typename Period>
     bool tryAcquire(int n, std::chrono::duration<Rep, Period> timeout)
