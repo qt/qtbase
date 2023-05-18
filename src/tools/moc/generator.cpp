@@ -634,16 +634,23 @@ void Generator::generateCode()
     fprintf(out, "    if (!strcmp(_clname, qt_meta_stringdata_%s.stringdata0))\n"
                   "        return static_cast<void*>(this);\n",
             qualifiedClassNameIdentifier.constData());
-    for (int i = 1; i < cdef->superclassList.size(); ++i) { // for all superclasses but the first one
-        if (cdef->superclassList.at(i).second == FunctionDef::Private)
-            continue;
-        const char *cname = cdef->superclassList.at(i).first.constData();
-        fprintf(out, "    if (!strcmp(_clname, \"%s\"))\n        return static_cast< %s*>(this);\n",
-                cname, cname);
+
+    // for all superclasses but the first one
+    if (cdef->superclassList.size() > 1) {
+        auto it = cdef->superclassList.cbegin() + 1;
+        const auto end = cdef->superclassList.cend();
+        for (; it != end; ++it) {
+            const auto &[className, access] = *it;
+            if (access == FunctionDef::Private)
+                continue;
+            const char *cname = className.constData();
+            fprintf(out, "    if (!strcmp(_clname, \"%s\"))\n        return static_cast< %s*>(this);\n",
+                    cname, cname);
+        }
     }
-    for (int i = 0; i < cdef->interfaceList.size(); ++i) {
-        const QList<ClassDef::Interface> &iface = cdef->interfaceList.at(i);
-        for (int j = 0; j < iface.size(); ++j) {
+
+    for (const QList<ClassDef::Interface> &iface : std::as_const(cdef->interfaceList)) {
+        for (qsizetype j = 0; j < iface.size(); ++j) {
             fprintf(out, "    if (!strcmp(_clname, %s))\n        return ", iface.at(j).interfaceId.constData());
             for (int k = j; k >= 0; --k)
                 fprintf(out, "static_cast< %s*>(", iface.at(k).className.constData());
@@ -1141,16 +1148,17 @@ void Generator::generateStaticMetacall()
             if (f.isRawSlot) {
                 fprintf(out, "QMethodRawArguments{ _a }");
             } else {
-                int argsCount = f.arguments.size();
-                for (int j = 0; j < argsCount; ++j) {
-                    const ArgumentDef &a = f.arguments.at(j);
-                    if (j)
+                const auto begin = f.arguments.cbegin();
+                const auto end = f.arguments.cend();
+                for (auto it = begin; it != end; ++it) {
+                    const ArgumentDef &a = *it;
+                    if (it != begin)
                         fprintf(out, ",");
                     fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))",a.typeNameForCast.constData(), offset++);
                     isUsed_a = true;
                 }
                 if (f.isPrivateSignal) {
-                    if (argsCount > 0)
+                    if (!f.arguments.isEmpty())
                         fprintf(out, ", ");
                     fprintf(out, "%s", "QPrivateSignal()");
                 }
@@ -1211,15 +1219,16 @@ void Generator::generateStaticMetacall()
             fprintf(out, "        {\n");
             fprintf(out, "            using _t = %s (%s::*)(",f.type.rawName.constData() , cdef->classname.constData());
 
-            int argsCount = f.arguments.size();
-            for (int j = 0; j < argsCount; ++j) {
-                const ArgumentDef &a = f.arguments.at(j);
-                if (j)
+            const auto begin = f.arguments.cbegin();
+            const auto end = f.arguments.cend();
+            for (auto it = begin; it != end; ++it) {
+                const ArgumentDef &a = *it;
+                if (it != begin)
                     fprintf(out, ", ");
                 fprintf(out, "%s", QByteArray(a.type.name + ' ' + a.rightType).constData());
             }
             if (f.isPrivateSignal) {
-                if (argsCount > 0)
+                if (!f.arguments.isEmpty())
                     fprintf(out, ", ");
                 fprintf(out, "%s", "QPrivateSignal");
             }
@@ -1477,9 +1486,11 @@ void Generator::generateSignal(FunctionDef *def,int index)
     }
 
     int offset = 1;
-    for (int j = 0; j < def->arguments.size(); ++j) {
-        const ArgumentDef &a = def->arguments.at(j);
-        if (j)
+    const auto begin = def->arguments.cbegin();
+    const auto end = def->arguments.cend();
+    for (auto it = begin; it != end; ++it) {
+        const ArgumentDef &a = *it;
+        if (it != begin)
             fputs(", ", out);
         if (a.type.name.size())
             fputs(a.type.name.constData(), out);
