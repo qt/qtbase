@@ -47,6 +47,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "-qt-style-features", QtStyleFeatures },
     { "-qt-table-type", QtTableType },
     { "-qt-user-state", QtUserState },
+    { "accent-color", QtAccentColor },
     { "alternate-background-color", QtAlternateBackground },
     { "background", Background },
     { "background-attachment", BackgroundAttachment },
@@ -1341,17 +1342,23 @@ bool ValueExtractor::extractFont(QFont *font, int *fontSizeAdjustment)
     return hit;
 }
 
-bool ValueExtractor::extractPalette(QBrush *fg, QBrush *sfg, QBrush *sbg, QBrush *abg, QBrush *pfg)
+bool ValueExtractor::extractPalette(QBrush *foreground,
+                                    QBrush *selectedForeground,
+                                    QBrush *selectedBackground,
+                                    QBrush *alternateBackground,
+                                    QBrush *placeHolderTextForeground,
+                                    QBrush *accentColor)
 {
     bool hit = false;
     for (int i = 0; i < declarations.size(); ++i) {
         const Declaration &decl = declarations.at(i);
         switch (decl.d->propertyId) {
-        case Color: *fg = decl.brushValue(pal); break;
-        case QtSelectionForeground: *sfg = decl.brushValue(pal); break;
-        case QtSelectionBackground: *sbg = decl.brushValue(pal); break;
-        case QtAlternateBackground: *abg = decl.brushValue(pal); break;
-        case QtPlaceHolderTextColor: *pfg = decl.brushValue(pal); break;
+        case Color: *foreground = decl.brushValue(pal); break;
+        case QtSelectionForeground: *selectedForeground = decl.brushValue(pal); break;
+        case QtSelectionBackground: *selectedBackground = decl.brushValue(pal); break;
+        case QtAlternateBackground: *alternateBackground = decl.brushValue(pal); break;
+        case QtPlaceHolderTextColor: *placeHolderTextForeground = decl.brushValue(pal); break;
+        case QtAccentColor: *accentColor = decl.brushValue(pal); break;
         default: continue;
         }
         hit = true;

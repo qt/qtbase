@@ -166,6 +166,7 @@ enum Property {
     WordSpacing,
     TextDecorationColor,
     QtPlaceHolderTextColor,
+    QtAccentColor,
     NumProperties
 };
 
@@ -823,7 +824,9 @@ struct Q_GUI_EXPORT ValueExtractor
     bool extractBox(int *margins, int *paddings, int *spacing = nullptr);
     bool extractBorder(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii);
     bool extractOutline(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii, int *offsets);
-    bool extractPalette(QBrush *fg, QBrush *sfg, QBrush *sbg, QBrush *abg, QBrush *pfg);
+    bool extractPalette(QBrush *foreground, QBrush *selectedForeground, QBrush *selectedBackground,
+                        QBrush *alternateBackground, QBrush *placeHolderTextForeground,
+                        QBrush *accentColor);
     int  extractStyleFeatures();
     bool extractImage(QIcon *icon, Qt::Alignment *a, QSize *size);
     bool extractIcon(QIcon *icon, QSize *size);

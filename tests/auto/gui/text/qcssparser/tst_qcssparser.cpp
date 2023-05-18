@@ -1543,20 +1543,26 @@ void tst_QCssParser::gradient()
     QList<QCss::StyleRule> rules = testSelector.styleRulesForNode(n);
     QList<QCss::Declaration> decls = rules.at(0).declarations;
     QCss::ValueExtractor ve(decls);
-    QBrush fg, sfg, pfg;
-    QBrush sbg, abg;
-    QVERIFY(ve.extractPalette(&fg, &sfg, &sbg, &abg, &pfg));
+    QBrush foreground;
+    QBrush selectedForeground;
+    QBrush selectedBackground;
+    QBrush alternateBackground;
+    QBrush placeHolderTextForeground;
+    QBrush accentColor;
+    QVERIFY(ve.extractPalette(&foreground, &selectedForeground, &selectedBackground,
+                              &alternateBackground, &placeHolderTextForeground, &accentColor));
+
     if (type == "linear") {
-        QCOMPARE(sbg.style(), Qt::LinearGradientPattern);
-        const QLinearGradient *lg = static_cast<const QLinearGradient *>(sbg.gradient());
+        QCOMPARE(selectedBackground.style(), Qt::LinearGradientPattern);
+        const auto *lg = static_cast<const QLinearGradient *>(selectedBackground.gradient());
         QCOMPARE(lg->start(), start);
         QCOMPARE(lg->finalStop(), finalStop);
     } else if (type == "conical") {
-        QCOMPARE(sbg.style(), Qt::ConicalGradientPattern);
-        const QConicalGradient *cg = static_cast<const QConicalGradient *>(sbg.gradient());
+        QCOMPARE(selectedBackground.style(), Qt::ConicalGradientPattern);
+        const auto *cg = static_cast<const QConicalGradient *>(selectedBackground.gradient());
         QCOMPARE(cg->center(), start);
     }
-    const QGradient *g = sbg.gradient();
+    const QGradient *g = selectedBackground.gradient();
     QCOMPARE(g->spread(), QGradient::Spread(spread));
     QCOMPARE(g->stops().at(0).first, stop0);
     QCOMPARE(g->stops().at(0).second, color0);
