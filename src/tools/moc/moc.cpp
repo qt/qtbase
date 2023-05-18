@@ -1070,12 +1070,13 @@ static QByteArrayList requiredQtContainers(const QList<ClassDef> &classes)
 
 void Moc::generate(FILE *out, FILE *jsonOutput)
 {
-    QByteArray fn = filename;
-    int i = filename.size()-1;
-    while (i > 0 && filename.at(i - 1) != '/' && filename.at(i - 1) != '\\')
-        --i;                                // skip path
-    if (i >= 0)
-        fn = filename.mid(i);
+    QByteArrayView fn = QByteArrayView(filename);
+
+    auto isSlash = [](char ch) { return ch == '/' || ch == '\\'; };
+    auto rit = std::find_if(fn.crbegin(), fn.crend(), isSlash);
+    if (rit != fn.crend())
+        fn = fn.last(rit - fn.crbegin());
+
     fprintf(out, "/****************************************************************************\n"
             "** Meta object code from reading C++ file '%s'\n**\n" , fn.constData());
     fprintf(out, "** Created by: The Qt Meta Object Compiler version %d (Qt %s)\n**\n" , mocOutputRevision, QT_VERSION_STR);
@@ -1141,7 +1142,7 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     fprintf(out, "QT_WARNING_DISABLE_GCC(\"-Wuseless-cast\")\n");
 
     fputs("", out);
-    for (i = 0; i < classList.size(); ++i) {
+    for (int i = 0; i < classList.size(); ++i) {
         Generator generator(&classList[i], metaTypes, knownQObjectClasses, knownGadgets, out, requireCompleteTypes);
         generator.generateCode();
     }
@@ -1818,8 +1819,19 @@ void Moc::checkSuperClasses(ClassDef *def)
 #endif
         return;
     }
-    for (int i = 1; i < def->superclassList.size(); ++i) {
-        const QByteArray superClass = def->superclassList.at(i).first;
+
+    auto isRegisteredInterface = [&def](QByteArrayView super) {
+        auto matchesSuperClass = [&super](const auto &ifaces) {
+            return !ifaces.isEmpty() && ifaces.first().className == super;
+        };
+        return std::any_of(def->interfaceList.cbegin(), def->interfaceList.cend(), matchesSuperClass);
+    };
+
+    const auto end = def->superclassList.cend();
+    auto it = std::next(def->superclassList.cbegin(),
+                        !def->superclassList.isEmpty() ? 1 : 0);
+    for (; it != end; ++it) {
+        const QByteArray &superClass = it->first;
         if (knownQObjectClasses.contains(superClass)) {
             const QByteArray msg
                     = "Class "
@@ -1833,14 +1845,7 @@ void Moc::checkSuperClasses(ClassDef *def)
         }
 
         if (interface2IdMap.contains(superClass)) {
-            bool registeredInterface = false;
-            for (int i = 0; i < def->interfaceList.size(); ++i)
-                if (def->interfaceList.at(i).constFirst().className == superClass) {
-                    registeredInterface = true;
-                    break;
-                }
-
-            if (!registeredInterface) {
+            if (!isRegisteredInterface(superClass)) {
                 const QByteArray msg
                         = "Class "
                         + def->classname
