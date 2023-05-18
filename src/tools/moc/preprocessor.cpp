@@ -618,17 +618,20 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
             HashHash
         } mode = Normal;
 
-        for (int i = 0; i < macro.symbols.size(); ++i) {
-            const Symbol &s = macro.symbols.at(i);
+        const auto end = macro.symbols.cend();
+        auto it = macro.symbols.cbegin();
+        const auto lastSym = std::prev(macro.symbols.cend(), !macro.symbols.isEmpty() ? 1 : 0);
+        for (; it != end; ++it) {
+            const Symbol &s = *it;
             if (s.token == HASH || s.token == PP_HASHHASH) {
                 mode = (s.token == HASH ? Hash : HashHash);
                 continue;
             }
-            int index = macro.arguments.indexOf(s);
+            const qsizetype index = macro.arguments.indexOf(s);
             if (mode == Normal) {
                 if (index >= 0 && index < arguments.size()) {
                     // each argument undoergoes macro expansion if it's not used as part of a # or ##
-                    if (i == macro.symbols.size() - 1 || macro.symbols.at(i + 1).token != PP_HASHHASH) {
+                    if (it == lastSym || std::next(it)->token != PP_HASHHASH) {
                         Symbols arg = arguments.at(index);
                         qsizetype idx = 1;
                         macroExpand(&expansion, that, arg, idx, lineNum, false, symbols.excludeSymbols());
