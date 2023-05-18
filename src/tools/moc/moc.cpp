@@ -1931,13 +1931,10 @@ void Moc::checkProperties(ClassDef *cdef)
         }
 
         if (p.read.isEmpty() && p.member.isEmpty() && p.bind.isEmpty()) {
-            const qsizetype rewind = index;
-            if (p.location >= 0)
-                index = p.location;
             QByteArray msg = "Property declaration " + p.name + " has neither an associated QProperty<> member"
                              ", nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.";
-            warning(msg.constData());
-            index = rewind;
+            const auto &sym = p.location >= 0 ? symbolAt(p.location) : Symbol();
+            warning(sym, msg.constData());
             if (p.write.isEmpty()) {
                 cdef->propertyList.removeAt(i);
                 --i;
