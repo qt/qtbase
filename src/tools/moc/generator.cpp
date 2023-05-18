@@ -146,8 +146,8 @@ int Generator::stridx(const QByteArray &s)
 static int aggregateParameterCount(const QList<FunctionDef> &list)
 {
     int sum = 0;
-    for (int i = 0; i < list.size(); ++i)
-        sum += list.at(i).arguments.size() + 1; // +1 for return type
+    for (const FunctionDef &def : list)
+        sum += int(def.arguments.size()) + 1; // +1 for return type
     return sum;
 }
 
@@ -586,8 +586,7 @@ void Generator::generateCode()
     // because we definitely printed something above, this section doesn't need comma control
     for (const QList<FunctionDef> &methodContainer :
     { cdef->signalList, cdef->slotList, cdef->methodList }) {
-        for (int i = 0; i< methodContainer.size(); ++i) {
-            const FunctionDef& fdef = methodContainer.at(i);
+        for (const FunctionDef &fdef : methodContainer) {
             fprintf(out, ",\n        // method '%s'\n        %s",
                     fdef.name.constData(), stringForType(fdef.type.name, false).constData());
             for (const auto &argument: fdef.arguments)
