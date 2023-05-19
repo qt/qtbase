@@ -12,6 +12,7 @@
 #include <QtCore/qtconfigmacros.h>
 
 #include <type_traits>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -38,9 +39,16 @@ struct StorageByValue
 #undef MAKE_GETTER
 };
 
-template <typename Object, typename = void>
+template <typename Object, typename Tag = void>
 struct StorageEmptyBaseClassOptimization : Object
 {
+    StorageEmptyBaseClassOptimization(Object &&o)
+        : Object(std::move(o))
+    {}
+    StorageEmptyBaseClassOptimization(const Object &o)
+        : Object(o)
+    {}
+
 #define MAKE_GETTER(cvref) \
     constexpr Object cvref object() cvref noexcept \
     { return static_cast<Object cvref>(*this); }
