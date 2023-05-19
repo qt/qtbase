@@ -31,6 +31,14 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
         list(APPEND init_platform "set(CMAKE_SYSTEM_PROCESSOR arm64 CACHE STRING \"\")")
     endif()
 
+    if(QT_QMAKE_TARGET_MKSPEC)
+        list(APPEND init_platform
+            "if(NOT QT_QMAKE_TARGET_MKSPEC)"
+            "    set(QT_QMAKE_TARGET_MKSPEC ${QT_QMAKE_TARGET_MKSPEC} CACHE STRING \"\")"
+            "endif()"
+        )
+    endif()
+
     if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "linux-g++-32" AND NOT QT_NO_AUTO_DETECT_LINUX_X86)
         set(__qt_toolchain_common_flags_init "-m32")
 
