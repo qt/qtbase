@@ -30,6 +30,17 @@ typedef struct Qt_DnsAddrArray {
   DWORD    Reserved2;
   DNS_ADDR AddrArray[];
 } DNS_ADDR_ARRAY, *PDNS_ADDR_ARRAY;
+# ifndef DNS_QUERY_RESULTS_VERSION1
+typedef struct Qt_DNS_QUERY_RESULT {
+  ULONG Version;
+  DNS_STATUS QueryStatus;
+  ULONG64 QueryOptions;
+  PDNS_RECORD pQueryRecords;
+  PVOID Reserved;
+} DNS_QUERY_RESULT, *PDNS_QUERY_RESULT;
+typedef VOID WINAPI DNS_QUERY_COMPLETION_ROUTINE(PVOID pQueryContext,PDNS_QUERY_RESULT pQueryResults);
+typedef DNS_QUERY_COMPLETION_ROUTINE *PDNS_QUERY_COMPLETION_ROUTINE;
+# endif
 typedef struct Qt_DNS_QUERY_REQUEST {
   ULONG                         Version;
   PCWSTR                        QueryName;
