@@ -185,6 +185,9 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         # <windows.h> and <GL.h> violate the standards.
         set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -WX -W3)
 
+        # Because we now add `-DNOMINMAX` to `PlatformCommonInternal`.
+        set(hcleanUDEFS -UNOMINMAX)
+
         # cl.exe needs a source path
         get_filename_component(source_path "${QT_MKSPECS_DIR}/features/data/dummy.cpp" REALPATH)
 
@@ -195,6 +198,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
             "${hcleanFLAGS}"
             "${target_includes_joined_genex}"
             "${hcleanDEFS}"
+            "${hcleanUDEFS}"
         )
         string(JOIN " " compiler_command_line_variables
             "-FI"
