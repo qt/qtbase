@@ -416,7 +416,7 @@ private:
 void tst_QAccessibilityMac::init()
 {
     m_window = new AccessibleTestWindow();
-    m_window->setWindowTitle("Test window");
+    m_window->setWindowTitle(QString("Test window - %1").arg(QTest::currentTestFunction()));
     m_window->show();
     m_window->resize(400, 400);
 
@@ -481,7 +481,7 @@ void tst_QAccessibilityMac::lineEditTest()
     // height of window includes title bar
     QVERIFY([window rect].size.height >= 400);
 
-    QVERIFY([window.title isEqualToString:@"Test window"]);
+    QVERIFY([window.title isEqualToString:@"Test window - lineEditTest"]);
 
     // children of window:
     AXUIElementRef lineEditElement = [window findDirectChildByRole: kAXTextFieldRole];
