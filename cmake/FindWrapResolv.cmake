@@ -29,15 +29,19 @@ check_cxx_source_compiles("
 #include <netinet/in.h>
 #include <resolv.h>
 
-int main(int, char **)
+int main(int, char **argv)
 {
-    res_init();
+    res_state statep;
+    int n = res_nmkquery(statep, 0, argv[1], 0, 0, NULL, 0, NULL, NULL, 0);
+    n = res_nsend(statep, NULL, 0, NULL, 0);
+    n = dn_expand(NULL, NULL, NULL, NULL, 0);
+    return n;
 }
-" HAVE_RES_INIT)
+" HAVE_LIBRESOLV_FUNCTIONS)
 
 cmake_pop_check_state()
 
-if(HAVE_RES_INIT)
+if(HAVE_LIBRESOLV_FUNCTIONS)
     set(WrapResolv_FOUND ON)
     add_library(WrapResolv::WrapResolv INTERFACE IMPORTED)
     if(LIBRESOLV)
