@@ -376,15 +376,23 @@ else()
     set(QT_QMAKE_HOST_MKSPEC "${QT_QMAKE_TARGET_MKSPEC}")
 endif()
 
-if(NOT EXISTS "${QT_MKSPECS_DIR}/${QT_QMAKE_TARGET_MKSPEC}")
+if(NOT QT_QMAKE_TARGET_MKSPEC OR NOT EXISTS "${QT_MKSPECS_DIR}/${QT_QMAKE_TARGET_MKSPEC}")
+    if(NOT QT_QMAKE_TARGET_MKSPEC)
+        set(reason "Platform is not detected. Please make sure your build environment is configured"
+            " properly or specify it manually using QT_QMAKE_TARGET_MKSPEC variable and one of the"
+            " known platforms.")
+    else()
+        set(reason "Unknown platform ${QT_QMAKE_TARGET_MKSPEC}")
+    endif()
+
     file(GLOB known_platforms
         LIST_DIRECTORIES true
         RELATIVE "${QT_MKSPECS_DIR}"
         "${QT_MKSPECS_DIR}/*"
     )
     list(JOIN known_platforms "\n    " known_platforms)
-    message(FATAL_ERROR "Unknown platform ${QT_QMAKE_TARGET_MKSPEC}\n\
-Known platforms:\n    ${known_platforms}")
+    message(FATAL_ERROR "${reason}\n"
+        "Known platforms:\n    ${known_platforms}")
 endif()
 
 if(NOT DEFINED QT_DEFAULT_PLATFORM_DEFINITIONS)
