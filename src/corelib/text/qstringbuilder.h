@@ -30,7 +30,10 @@ protected:
     static void appendLatin1To(QLatin1StringView in, QChar *out) noexcept;
 };
 
-template <typename T> struct QConcatenable {};
+template <typename T> struct QConcatenable;
+
+template <typename T>
+using QConcatenableEx = QConcatenable<q20::remove_cvref_t<T>>;
 
 namespace QtStringBuilder {
     template <typename A, typename B> struct ConvertToTypeHelper
@@ -72,10 +75,20 @@ struct QStringBuilderBase<Builder, QString> : public QStringBuilderCommon<Builde
 };
 
 template <typename A, typename B>
-class QStringBuilder : public QStringBuilderBase<QStringBuilder<A, B>, typename QtStringBuilder::ConvertToTypeHelper<typename QConcatenable<A>::ConvertTo, typename QConcatenable<B>::ConvertTo>::ConvertTo>
+class QStringBuilder : public QStringBuilderBase<QStringBuilder<A, B>,
+                                                 typename QtStringBuilder::ConvertToTypeHelper<
+                                                         typename QConcatenableEx<A>::ConvertTo,
+                                                         typename QConcatenableEx<B>::ConvertTo
+                                                         >::ConvertTo
+                                                >
 {
 public:
-    QStringBuilder(const A &a_, const B &b_) : a(a_), b(b_) {}
+    QStringBuilder(A &&a_, B &&b_) : a(std::forward<A>(a_)), b(std::forward<B>(b_)) {}
+
+    QStringBuilder(QStringBuilder &&) = default;
+    QStringBuilder(const QStringBuilder &) = default;
+    ~QStringBuilder() = default;
+
 private:
     friend class QByteArray;
     friend class QString;
@@ -116,8 +129,12 @@ public:
         return QtStringBuilder::isNull(a) && QtStringBuilder::isNull(b);
     }
 
-    const A &a;
-    const B &b;
+    A a;
+    B b;
+
+private:
+    QStringBuilder &operator=(QStringBuilder &&) = delete;
+    QStringBuilder &operator=(const QStringBuilder &) = delete;
 };
 
 template <> struct QConcatenable<char> : private QAbstractConcatenable
@@ -361,34 +378,37 @@ template <typename A, typename B>
 struct QConcatenable< QStringBuilder<A, B> >
 {
     typedef QStringBuilder<A, B> type;
-    typedef typename QtStringBuilder::ConvertToTypeHelper<typename QConcatenable<A>::ConvertTo, typename QConcatenable<B>::ConvertTo>::ConvertTo ConvertTo;
-    enum { ExactSize = QConcatenable<A>::ExactSize && QConcatenable<B>::ExactSize };
+    using ConvertTo = typename QtStringBuilder::ConvertToTypeHelper<
+                typename QConcatenableEx<A>::ConvertTo,
+                typename QConcatenableEx<B>::ConvertTo
+            >::ConvertTo;
+    enum { ExactSize = QConcatenableEx<A>::ExactSize && QConcatenableEx<B>::ExactSize };
     static qsizetype size(const type &p)
     {
-        return QConcatenable<A>::size(p.a) + QConcatenable<B>::size(p.b);
+        return QConcatenableEx<A>::size(p.a) + QConcatenableEx<B>::size(p.b);
     }
     template<typename T> static inline void appendTo(const type &p, T *&out)
     {
-        QConcatenable<A>::appendTo(p.a, out);
-        QConcatenable<B>::appendTo(p.b, out);
+        QConcatenableEx<A>::appendTo(p.a, out);
+        QConcatenableEx<B>::appendTo(p.b, out);
     }
 };
 
-template <typename A, typename B>
-QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>
-operator%(const A &a, const B &b)
+template <typename A, typename B,
+         typename = std::void_t<typename QConcatenableEx<A>::type, typename QConcatenableEx<B>::type>>
+auto operator%(A &&a, B &&b)
 {
-   return QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>(a, b);
+    return QStringBuilder<A, B>(std::forward<A>(a), std::forward<B>(b));
 }
 
 // QT_USE_FAST_OPERATOR_PLUS was introduced in 4.7, QT_USE_QSTRINGBUILDER is to be used from 4.8 onwards
 // QT_USE_FAST_OPERATOR_PLUS does not remove the normal operator+ for QByteArray
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
-template <typename A, typename B>
-QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>
-operator+(const A &a, const B &b)
+template <typename A, typename B,
+         typename = std::void_t<typename QConcatenableEx<A>::type, typename QConcatenableEx<B>::type>>
+auto operator+(A &&a, B &&b)
 {
-   return QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>(a, b);
+    return std::forward<A>(a) % std::forward<B>(b);
 }
 #endif
 

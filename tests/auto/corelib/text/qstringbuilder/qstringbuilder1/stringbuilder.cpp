@@ -98,6 +98,152 @@ void checkNullVsEmpty(const String &empty)
     QVERIFY(result.isNull());
 }
 
+namespace CheckAuto {
+// T is cvref-qualified, using universal reference deduction rules.
+template <typename T> struct Helper;
+
+// These specializations forward to the non-const ones, and add const on top.
+template <typename T> struct Helper<const T>
+{
+    static const T create() { return Helper<T>::create(); }
+    static const T createNull() { return Helper<T>::createNull(); }
+};
+template <typename T> struct Helper<const T &>
+{
+    static const T &create() { return Helper<T &>::create(); }
+    static const T &createNull() { return Helper<T &>::createNull(); }
+};
+
+template <> struct Helper<QString>
+{
+    static QString create() { return QString::fromUtf8("QString rvalue"); }
+    static QString createNull() { return QString(); }
+};
+
+template <> struct Helper<QString &>
+{
+    static QString &create() { static QString s = QString::fromUtf8("QString lvalue"); return s; }
+    static QString &createNull() { static QString s; return s; }
+};
+
+template <> struct Helper<QStringView>
+{
+    static QStringView create() { return QStringView(u"QStringView rvalue"); }
+    static QStringView createNull() { return QStringView(); }
+};
+
+template <> struct Helper<QStringView &>
+{
+    static QStringView &create() { static QStringView s = u"QStringView lvalue"; return s; }
+    static QStringView &createNull() { static QStringView s; return s; }
+};
+
+template <> struct Helper<QByteArray>
+{
+    static QByteArray create() { return QByteArray("QByteArray rvalue"); }
+    static QByteArray createNull() { return QByteArray(); }
+};
+
+template <> struct Helper<QByteArray &>
+{
+    static QByteArray &create() { static QByteArray ba = QByteArray("QByteArray lvalue"); return ba; }
+    static QByteArray &createNull() { static QByteArray ba; return ba; }
+};
+
+template <> struct Helper<QByteArrayView>
+{
+    static QByteArrayView create() { return QByteArrayView("QByteArrayView rvalue"); }
+    static QByteArrayView createNull() { return QByteArrayView(); }
+};
+
+template <> struct Helper<QByteArrayView &>
+{
+    static QByteArrayView &create() { static QByteArrayView ba = "QByteArrayView lvalue"; return ba; }
+    static QByteArrayView &createNull() { static QByteArrayView ba; return ba; }
+};
+
+template <> struct Helper<const char *>
+{
+    static const char *create() { return "const char * rvalue"; }
+    static const char *createNull() { return ""; }
+};
+
+template <> struct Helper<const char *&>
+{
+    static const char *&create() { static const char *s = "const char * lvalue"; return s; }
+    static const char *&createNull() { static const char *s = ""; return s; }
+};
+
+template <typename String1, typename String2, typename Result>
+void checkAutoImpl3()
+{
+    {
+        auto result = Helper<String1>::create() P Helper<String2>::create();
+        Result expected = result;
+        QCOMPARE(result, expected);
+    }
+    {
+        auto result = Helper<String2>::create() P Helper<String1>::create();
+        Result expected = result;
+        QCOMPARE(result, expected);
+    }
+    {
+        auto result = Helper<String1>::create() P Helper<String2>::create() P Helper<String1>::create();
+        Result expected = result;
+        QCOMPARE(result, expected);
+    }
+    {
+        auto result = Helper<String2>::create() P Helper<String1>::create() P Helper<String2>::create();
+        Result expected = result;
+        QCOMPARE(result, expected);
+    }
+    {
+        auto result = Helper<String1>::createNull() P Helper<String2>::create();
+        Result expected = result;
+        QCOMPARE(result, expected);
+    }
+    {
+        auto result = Helper<String1>::createNull() P Helper<String2>::createNull();
+        Result expected = result;
+        QCOMPARE(result, expected);
+    }
+}
+
+template <typename String1, typename String2, typename Result>
+void checkAutoImpl2()
+{
+    checkAutoImpl3<String1  , String2  , Result>();
+    checkAutoImpl3<String1 &, String2  , Result>();
+    checkAutoImpl3<String1  , String2 &, Result>();
+    checkAutoImpl3<String1 &, String2 &, Result>();
+}
+
+template <typename String1, typename String2, typename Result>
+void checkAutoImpl()
+{
+    checkAutoImpl2<      String1,       String2, Result>();
+    checkAutoImpl2<const String1,       String2, Result>();
+    checkAutoImpl2<      String1, const String2, Result>();
+    checkAutoImpl2<const String1, const String2, Result>();
+}
+
+} // namespace CheckAuto
+
+void checkAuto()
+{
+    CheckAuto::checkAutoImpl<QString, QString, QString>();
+    CheckAuto::checkAutoImpl<QString, QStringView, QString>();
+
+    CheckAuto::checkAutoImpl<QByteArray, QByteArray, QByteArray>();
+    CheckAuto::checkAutoImpl<QByteArray, const char *, QByteArray>();
+    CheckAuto::checkAutoImpl<QByteArray, QByteArrayView, QByteArray>();
+
+#ifndef QT_NO_CAST_FROM_ASCII
+    CheckAuto::checkAutoImpl<QString, const char *, QString>();
+    CheckAuto::checkAutoImpl<QString, QByteArray, QString>();
+#endif
+}
+
 void runScenario()
 {
     // this code is latin1. TODO: replace it with the utf8 block below, once
@@ -380,6 +526,9 @@ void runScenario()
     // null vs. empty
     checkNullVsEmpty(QStringLiteral(""));
     checkNullVsEmpty(QByteArrayLiteral(""));
+
+    // auto
+    checkAuto();
 
     checkItWorksWithFreeSpaceAtBegin(QByteArray(UTF8_LITERAL), "1234");
     if (QTest::currentTestFailed())
