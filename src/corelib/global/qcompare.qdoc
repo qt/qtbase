@@ -3,11 +3,99 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \page comparison-types.html overview
+    \title Comparison types overview
+    \keyword three-way comparison
+    \inmodule QtCore
+    \sa QStrongOrdering, QWeakOrdering, QPartialOrdering
+
+    \note Qt's comparison types provide functionality equivalent to their C++20
+    standard counterparts. The only reason why they exist is to make the
+    functionality available in C++17 builds, too. In a C++20 build, they
+    implicitly convert to and from the \c std types, making them fully
+    interchangeable. We therefore recommended that you prefer to use the C++
+    standard types in your code, if you can use C++20 in your projects already.
+    The Qt comparison types will be removed in Qt 7.
+
+    Qt provides several comparison types for a \l
+    {https://en.cppreference.com/w/cpp/language/operator_comparison#Three-way_comparison}
+    {three-way comparison}, which are comparable against a \e {zero literal}.
+    To use these comparison types, you need to include the \c <QtCompare>
+    header. These comparison types are categorized based on their \e order,
+    which is a mathematical concept used to describe the arrangement or ranking
+    of elements. The following categories are provided:
+
+    \table 100 %
+    \header
+        \li C++ type
+        \li Qt type
+        \li strict
+        \li total
+        \li Example
+    \row
+        \li \l {https://en.cppreference.com/w/cpp/utility/compare/strong_ordering}
+        {std::strong_ordering}
+        \li QStrongOrdering
+        \li yes
+        \li yes
+        \li integral types, case-sensitive strings, QDate, QTime
+    \row
+        \li \l {https://en.cppreference.com/w/cpp/utility/compare/weak_ordering}
+        {std::weak_ordering}
+        \li QWeakOrdering
+        \li no
+        \li yes
+        \li case-insensitive strings, unordered associative containers, QDateTime
+    \row
+        \li \l {https://en.cppreference.com/w/cpp/utility/compare/partial_ordering}
+        {std::partial_ordering}
+        \li QPartialOrdering
+        \li no
+        \li no
+        \li floating-point types, QOperatingSystemVersion, QVariant
+    \endtable
+
+    The strongest comparison type, QStrongOrdering, represents a strict total
+    order. It requires that any two elements be comparable in a way where
+    equality implies substitutability. In other words, equivalent values
+    cannot be distinguished from each other. A practical example would be the
+    case-sensitive comparison of two strings. For instance, when comparing the
+    values \c "Qt" and \c "Qt" the result would be \l QStrongOrdering::Equal.
+    Both values are indistinguishable and all deterministic operations performed
+    on these values would yield identical results.
+
+    QWeakOrdering represents a total order. While any two values still need to
+    be comparable, equivalent values may be distinguishable. The canonical
+    example here would be the case-insensitive comparison of two strings. For
+    instance, when comparing the values \c "Qt" and \c "qt" both hold the same
+    letters but with different representations. This comparison would
+    result in \l QWeakOrdering::Equivalent, but not actually \c Equal.
+    Another example would be QDateTime, which can represent a given instant in
+    time in terms of local time or any other time-zone, including UTC. The
+    different representations are equivalent, even though their \c time() and
+    sometimes \c date() may differ.
+
+    QPartialOrdering represents, as the name implies, a partial ordering. It
+    allows for the possibility that two values may not be comparable, resulting
+    in an \l {QPartialOrdering::}{Unordered} state. Additionally, equivalent
+    values may still be distinguishable. A practical example would be the
+    comparison of two floating-point values, comparing with NaN (Not-a-Number)
+    would yield an unordered result. Another example is the comparison of two
+    QOperatingSystemVersion objects. Comparing versions of two different
+    operating systems, such as Android and Windows, would produce an unordered
+    result.
+
+    Utilizing these comparison types enhances the expressiveness of defining
+    relations. Furthermore, they serve as a fundamental component for
+    implementing three-way comparison with C++17.
+*/
+
+/*!
     \class QStrongOrdering
     \inmodule QtCore
     \brief QStrongOrdering represents a comparison where equivalent values are
     indistinguishable.
-    \sa QWeakOrdering, QPartialOrdering
+    \sa QWeakOrdering, QPartialOrdering, {Comparison types overview}
     \since 6.6
 
     A value of type QStrongOrdering is typically returned from a three-way
@@ -168,7 +256,7 @@
     \inmodule QtCore
     \brief QWeakOrdering represents a comparison where equivalent values are
     still distinguishable.
-    \sa QStrongOrdering, QPartialOrdering
+    \sa QStrongOrdering, QPartialOrdering, {Comparison types overview}
     \since 6.6
 
     A value of type QWeakOrdering is typically returned from a three-way
@@ -304,7 +392,7 @@
     \inmodule QtCore
     \brief QPartialOrdering represents the result of a comparison that allows
     for unordered results.
-    \sa QStrongOrdering, QWeakOrdering
+    \sa QStrongOrdering, QWeakOrdering, {Comparison types overview}
     \since 6.0
 
     A value of type QPartialOrdering is typically returned from a
