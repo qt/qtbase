@@ -191,6 +191,7 @@ Dialog::Dialog(QWidget *parent)
     colorDialogOptionsWidget->addCheckBox(doNotUseNativeDialog, QColorDialog::DontUseNativeDialog);
     colorDialogOptionsWidget->addCheckBox(tr("Show alpha channel") , QColorDialog::ShowAlphaChannel);
     colorDialogOptionsWidget->addCheckBox(tr("No buttons") , QColorDialog::NoButtons);
+    colorDialogOptionsWidget->addCheckBox(tr("Hide Color Picker") , QColorDialog::NoEyeDropperButton);
     layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 1, 0);
     layout->addWidget(colorDialogOptionsWidget, 2, 0, 1 ,2);
 
