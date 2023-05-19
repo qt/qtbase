@@ -529,7 +529,7 @@ void QProcessPrivate::startProcess()
     // Disable PThread cancellation from this point on: we mustn't have it
     // enabled when the child starts running nor while our state could get
     // corrupted if we abruptly exited this function.
-    PThreadCancelGuard cancelGuard;
+    [[maybe_unused]] PThreadCancelGuard cancelGuard;
 
     // Start the child.
     auto execChild1 = [this, workingDirFd, &argv, &envp]() {
@@ -1088,7 +1088,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     const CharPointerList envp(environment.d.constData());
 
     // see startProcess() for more information
-    PThreadCancelGuard cancelGuard;
+    [[maybe_unused]] PThreadCancelGuard cancelGuard;
 
     auto doFork = [this]() {
         if (useForkFlags(unixExtras.get()))
