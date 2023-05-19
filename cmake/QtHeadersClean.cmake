@@ -184,6 +184,9 @@ function(qt_internal_add_headersclean_target module_target module_headers)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -Za -WX -W3 -EHsc)
 
+        # Because we now add `-DNOMINMAX` to `PlatformCommonInternal`.
+        set(hcleanUDEFS -UNOMINMAX)
+
         # cl.exe needs a source path
         get_filename_component(source_path "${QT_MKSPECS_DIR}/features/data/dummy.cpp" REALPATH)
 
@@ -194,6 +197,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
             "${hcleanFLAGS}"
             "${target_includes_joined_genex}"
             "${hcleanDEFS}"
+            "${hcleanUDEFS}"
         )
         string(JOIN " " compiler_command_line_variables
             "-FI"

@@ -170,6 +170,8 @@ if(WIN32)
     # Needed for M_PI define. Same as mkspecs/features/qt_module.prf.
     # It's set for every module being built, but it's not propagated to user apps.
     target_compile_definitions(PlatformModuleInternal INTERFACE _USE_MATH_DEFINES)
+    # Not disabling min/max macros may result in unintended substitutions of std::min/max
+    target_compile_definitions(PlatformCommonInternal INTERFACE NOMINMAX)
 endif()
 if(FEATURE_largefile AND UNIX)
     target_compile_definitions(PlatformCommonInternal
