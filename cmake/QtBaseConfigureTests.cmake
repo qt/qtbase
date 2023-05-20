@@ -115,37 +115,34 @@ endfunction()
 
 
 function(qt_run_linker_version_script_support)
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/version_flag.map" "VERS_1 { global: sym; };
-VERS_2 { global: sym; }
-VERS_1;
-")
-    if(DEFINED CMAKE_REQUIRED_FLAGS)
-        set(CMAKE_REQUIRED_FLAGS_SAVE ${CMAKE_REQUIRED_FLAGS})
-    else()
-        set(CMAKE_REQUIRED_FLAGS "")
-    endif()
-    set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} "-Wl,--version-script=\"${CMAKE_CURRENT_BINARY_DIR}/version_flag.map\"")
-
-    # Pass the linker that the main project uses to the version script compile test.
-    qt_internal_get_active_linker_flags(linker_flags)
-    if(linker_flags)
-        set(CMAKE_REQUIRED_LINK_OPTIONS ${linker_flags})
-    endif()
-
-    check_cxx_source_compiles("int main(void){return 0;}" HAVE_LD_VERSION_SCRIPT)
-    if(DEFINED CMAKE_REQUIRED_FLAGS_SAVE)
-        set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
-    endif()
-    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.map")
-
     # For some reason the linker command line written by the XCode generator, which is
     # subsequently executed by xcodebuild, ignores the linker flag, and thus the test
     # seemingly succeeds. Explicitly disable the version script test on darwin platforms.
-    if(APPLE)
-        set(HAVE_LD_VERSION_SCRIPT OFF)
-    endif()
     # Also makes no sense with MSVC-style command-line
-    if(MSVC)
+    if(NOT APPLE AND NOT MSVC)
+        file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/version_flag.map" "VERS_1 { global: sym; };
+VERS_2 { global: sym; }
+VERS_1;
+")
+        if(DEFINED CMAKE_REQUIRED_FLAGS)
+            set(CMAKE_REQUIRED_FLAGS_SAVE ${CMAKE_REQUIRED_FLAGS})
+        else()
+            set(CMAKE_REQUIRED_FLAGS "")
+        endif()
+        set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} "-Wl,--version-script=\"${CMAKE_CURRENT_BINARY_DIR}/version_flag.map\"")
+
+        # Pass the linker that the main project uses to the version script compile test.
+        qt_internal_get_active_linker_flags(linker_flags)
+        if(linker_flags)
+            set(CMAKE_REQUIRED_LINK_OPTIONS ${linker_flags})
+        endif()
+
+        check_cxx_source_compiles("int main(void){return 0;}" HAVE_LD_VERSION_SCRIPT)
+        if(DEFINED CMAKE_REQUIRED_FLAGS_SAVE)
+            set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
+        endif()
+        file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.map")
+    else()
         set(HAVE_LD_VERSION_SCRIPT OFF)
     endif()
 
