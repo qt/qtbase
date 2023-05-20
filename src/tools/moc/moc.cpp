@@ -1629,7 +1629,7 @@ void Moc::parseInterfaces(ClassDef *def)
             }
         }
         // resolve from classnames to interface ids
-        for (int i = 0; i < iface.size(); ++i) {
+        for (qsizetype i = 0; i < iface.size(); ++i) {
             const QByteArray iid = interface2IdMap.value(iface.at(i).className);
             if (iid.isEmpty())
                 error("Undefined interface");

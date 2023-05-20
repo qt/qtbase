@@ -399,7 +399,7 @@ int runMoc(int argc, char **argv)
     for (const QString &arg : defines) {
         QByteArray name = arg.toLocal8Bit();
         QByteArray value("1");
-        int eq = name.indexOf('=');
+        const qsizetype eq = name.indexOf('=');
         if (eq >= 0) {
             value = name.mid(eq + 1);
             name = name.left(eq);
