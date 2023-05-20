@@ -1923,8 +1923,7 @@ void Moc::checkProperties(ClassDef *cdef)
     // returning pointers, or const char * for QByteArray.
     //
     QDuplicateTracker<QByteArray> definedProperties(cdef->propertyList.size());
-    for (int i = 0; i < cdef->propertyList.size(); ++i) {
-        PropertyDef &p = cdef->propertyList[i];
+    auto hasNoAttributes = [&](const PropertyDef &p) {
         if (definedProperties.hasSeen(p.name)) {
             QByteArray msg = "The property '" + p.name + "' is defined multiple times in class " + cdef->classname + ".";
             warning(msg.constData());
@@ -1935,13 +1934,14 @@ void Moc::checkProperties(ClassDef *cdef)
                              ", nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.";
             const auto &sym = p.location >= 0 ? symbolAt(p.location) : Symbol();
             warning(sym, msg.constData());
-            if (p.write.isEmpty()) {
-                cdef->propertyList.removeAt(i);
-                --i;
-            }
-            continue;
+            if (p.write.isEmpty())
+                return true;
         }
+        return false;
+    };
+    cdef->propertyList.removeIf(hasNoAttributes);
 
+    for (PropertyDef &p : cdef->propertyList) {
         for (const FunctionDef &f : std::as_const(cdef->publicList)) {
             if (f.name != p.read)
                 continue;
