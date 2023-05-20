@@ -8586,7 +8586,11 @@ void tst_QObject::asyncCallbackHelper()
         QCOMPARE(called, 1);
         QMetaObject::invokeMethod(this, [&called, u = std::unique_ptr<int>()]{ called = 2; });
         QCOMPARE(called, 2);
-        QMetaObject::invokeMethod(this, [&called, count = 0]() mutable { called = 3; });
+        QMetaObject::invokeMethod(this, [&called, count = 0]() mutable {
+            if (!count)
+                called = 3;
+            ++count;
+        });
         QCOMPARE(called, 3);
     }
 }
