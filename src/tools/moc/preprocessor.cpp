@@ -966,7 +966,7 @@ static void mergeStringLiterals(Symbols *_symbols)
     for (Symbols::iterator i = symbols.begin(); i != symbols.end(); ++i) {
         if (i->token == STRING_LITERAL) {
             Symbols::Iterator mergeSymbol = i;
-            int literalsLength = mergeSymbol->len;
+            qsizetype literalsLength = mergeSymbol->len;
             while (++i != symbols.end() && i->token == STRING_LITERAL)
                 literalsLength += i->len - 2; // no quotes
 
@@ -1003,7 +1003,7 @@ static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepa
     for (int j = 0; j < includepaths.size() && !fi.exists(); ++j) {
         const Parser::IncludePath &p = includepaths.at(j);
         if (p.isFrameworkPath) {
-            const int slashPos = include.indexOf('/');
+            const qsizetype slashPos = include.indexOf('/');
             if (slashPos == -1)
                 continue;
             fi.setFile(QString::fromLocal8Bit(p.path + '/' + include.left(slashPos) + ".framework/Headers/"),

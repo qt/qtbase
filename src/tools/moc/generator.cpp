@@ -186,7 +186,7 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
     for (const QByteArray &oneArgTemplateType : oneArgTemplates) {
         QByteArray ba = oneArgTemplateType + "<";
         if (propertyType.startsWith(ba) && propertyType.endsWith(">")) {
-            const int argumentSize = propertyType.size() - oneArgTemplateType.size() - 1
+            const qsizetype argumentSize = propertyType.size() - oneArgTemplateType.size() - 1
                                      // The closing '>'
                                      - 1
                                      // templates inside templates have an extra whitespace char to strip.
@@ -204,7 +204,7 @@ static bool qualifiedNameEquals(const QByteArray &qualifiedName, const QByteArra
 {
     if (qualifiedName == name)
         return true;
-    int index = qualifiedName.indexOf("::");
+    const qsizetype index = qualifiedName.indexOf("::");
     if (index == -1)
         return false;
     return qualifiedNameEquals(qualifiedName.mid(index+2), name);
@@ -469,7 +469,7 @@ void Generator::generateCode()
         if (p.type.contains('*') || p.type.contains('<') || p.type.contains('>'))
             continue;
 
-        int s = p.type.lastIndexOf("::");
+        const qsizetype s = p.type.lastIndexOf("::");
         if (s <= 0)
             continue;
 
@@ -480,7 +480,7 @@ void Generator::generateCode()
 
         QByteArray thisScope = cdef->qualified;
         do {
-            int s = thisScope.lastIndexOf("::");
+            const qsizetype s = thisScope.lastIndexOf("::");
             thisScope = thisScope.left(s);
             QByteArray currentScope = thisScope.isEmpty() ? unqualifiedScope : thisScope + "::" + unqualifiedScope;
             scopeIt = knownExtraMetaObject.constFind(currentScope);
@@ -506,7 +506,7 @@ void Generator::generateCode()
     for (auto it = cdef->enumDeclarations.keyBegin(),
          end = cdef->enumDeclarations.keyEnd(); it != end; ++it) {
         const QByteArray &enumKey = *it;
-        int s = enumKey.lastIndexOf("::");
+        const qsizetype s = enumKey.lastIndexOf("::");
         if (s > 0) {
             QByteArray scope = enumKey.left(s);
             if (scope != "Qt" && !qualifiedNameEquals(cdef->qualified, scope) && !extraList.contains(scope))
@@ -1621,7 +1621,7 @@ void Generator::generatePluginMetaData()
     };
 
     // 'Use' all namespaces.
-    int pos = cdef->qualified.indexOf("::");
+    qsizetype pos = cdef->qualified.indexOf("::");
     for ( ; pos != -1 ; pos = cdef->qualified.indexOf("::", pos + 2) )
         fprintf(out, "using namespace %s;\n", cdef->qualified.left(pos).constData());
 
