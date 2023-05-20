@@ -13,6 +13,7 @@ my %leaves = (
     Leaf07_00ECX        => "CPUID Leaf 7, Sub-leaf 0, ECX",
     Leaf07_00EDX        => "CPUID Leaf 7, Sub-leaf 0, EDX",
     Leaf07_01EAX        => "CPUID Leaf 7, Sub-leaf 1, EAX",
+    Leaf07_01EDX        => "CPUID Leaf 7, Sub-leaf 1, EDX",
     Leaf13_01EAX        => "CPUID Leaf 13, Sub-leaf 1, EAX",
     Leaf80000001hECX    => "CPUID Leaf 80000001h, ECX",
     Leaf80000008hEBX    => "CPUID Leaf 80000008h, EBX",
@@ -258,7 +259,7 @@ print "\nenum X86CpuidLeaves {";
 map { print "    $_," } @leafNames;
 print "    X86CpuidMaxLeaf\n};";
 
-my $type = scalar %leaves > 8 ? "uint16_t" : "uint8_t";
+my $type = scalar keys %leaves > 8 ? "uint16_t" : "uint8_t";
 printf "\nstatic const %s x86_locators[] = {\n",
     $type, $type;
 for (my $j = 0; $j < scalar @features; ++$j) {
@@ -283,7 +284,7 @@ struct X86Architecture
 };
 
 static const struct X86Architecture x86_architectures[] = {|;
-for (sort { $b <=> $a } keys %sorted_archs) {
+for (sort keys %sorted_archs) {
     my $arch = $sorted_archs{$_};
     next if $arch->{base} eq "<>";
     printf "    { cpu_%s, \"%s\" },\n", $arch->{id}, $arch->{prettyname};

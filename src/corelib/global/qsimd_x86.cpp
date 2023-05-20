@@ -1,8 +1,8 @@
 // Copyright (C) 2022 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-
 // This is a generated file. DO NOT EDIT.
 // Please see util/x86simdgen/README.md
+
 #include "qsimd_x86_p.h"
 
 static const char features_string[] =
@@ -30,24 +30,28 @@ static const char features_string[] =
     " avx512bw\0"
     " avx512vl\0"
     " avx512vbmi\0"
+    " waitpkg\0"
     " avx512vbmi2\0"
     " shstk\0"
     " gfni\0"
     " vaes\0"
-    " avx512vnni\0"
     " avx512bitalg\0"
     " avx512vpopcntdq\0"
     " hybrid\0"
     " ibt\0"
     " avx512fp16\0"
+    " raoint\0"
+    " cmpccxadd\0"
+    " avxifma\0"
+    " lam\0"
     "\0";
 
 static const uint16_t features_indices[] = {
       0,   6,  12,  19,  24,  32,  40,  47,
      55,  60,  65,  71,  78,  83,  89,  95,
     104, 114, 122, 134, 144, 149, 159, 169,
-    181, 194, 201, 207, 213, 225, 239, 256,
-    264, 269,
+    181, 190, 203, 210, 216, 222, 236, 253,
+    261, 266, 278, 286, 297, 306,
 };
 
 enum X86CpuidLeaves {
@@ -57,6 +61,7 @@ enum X86CpuidLeaves {
     Leaf07_00ECX,
     Leaf07_00EDX,
     Leaf07_01EAX,
+    Leaf07_01EDX,
     Leaf13_01EAX,
     Leaf80000001hECX,
     Leaf80000008hEBX,
@@ -88,16 +93,20 @@ static const uint16_t x86_locators[] = {
     Leaf07_00EBX*32 + 30,             // avx512bw
     Leaf07_00EBX*32 + 31,             // avx512vl
     Leaf07_00ECX*32 +  1,             // avx512vbmi
+    Leaf07_00ECX*32 +  5,             // waitpkg
     Leaf07_00ECX*32 +  6,             // avx512vbmi2
     Leaf07_00ECX*32 +  7,             // shstk
     Leaf07_00ECX*32 +  8,             // gfni
     Leaf07_00ECX*32 +  9,             // vaes
-    Leaf07_00ECX*32 + 11,             // avx512vnni
     Leaf07_00ECX*32 + 12,             // avx512bitalg
     Leaf07_00ECX*32 + 14,             // avx512vpopcntdq
     Leaf07_00EDX*32 + 15,             // hybrid
     Leaf07_00EDX*32 + 20,             // ibt
     Leaf07_00EDX*32 + 23,             // avx512fp16
+    Leaf07_01EAX*32 +  3,             // raoint
+    Leaf07_01EAX*32 +  6,             // cmpccxadd
+    Leaf07_01EAX*32 + 23,             // avxifma
+    Leaf07_01EAX*32 + 26,             // lam
 };
 
 struct X86Architecture
@@ -107,25 +116,31 @@ struct X86Architecture
 };
 
 static const struct X86Architecture x86_architectures[] = {
-    { cpu_sapphirerapids, "Sapphire Rapids" },
-    { cpu_tigerlake, "Tiger Lake" },
-    { cpu_icelake_server, "Ice Lake (Server)" },
-    { cpu_icelake_client, "Ice Lake (Client)" },
-    { cpu_alderlake, "Alder Lake" },
-    { cpu_cannonlake, "Cannon Lake" },
-    { cpu_cooperlake, "Cooper Lake" },
-    { cpu_cascadelake, "Cascade Lake" },
-    { cpu_skylake_avx512, "Skylake (Avx512)" },
-    { cpu_skylake, "Skylake" },
-    { cpu_tremont, "Tremont" },
-    { cpu_broadwell, "Broadwell" },
-    { cpu_haswell, "Haswell" },
-    { cpu_goldmont, "Goldmont" },
-    { cpu_ivybridge, "Ivy Bridge" },
-    { cpu_silvermont, "Silvermont" },
-    { cpu_sandybridge, "Sandy Bridge" },
-    { cpu_westmere, "Westmere" },
     { cpu_core2, "Core2" },
+    { cpu_westmere, "Westmere" },
+    { cpu_sandybridge, "Sandy Bridge" },
+    { cpu_silvermont, "Silvermont" },
+    { cpu_ivybridge, "Ivy Bridge" },
+    { cpu_goldmont, "Goldmont" },
+    { cpu_haswell, "Haswell" },
+    { cpu_broadwell, "Broadwell" },
+    { cpu_tremont, "Tremont" },
+    { cpu_skylake, "Skylake" },
+    { cpu_skylake_avx512, "Skylake (Avx512)" },
+    { cpu_cascadelake, "Cascade Lake" },
+    { cpu_cooperlake, "Cooper Lake" },
+    { cpu_cannonlake, "Cannon Lake" },
+    { cpu_gracemont, "Gracemont" },
+    { cpu_icelake_client, "Ice Lake (Client)" },
+    { cpu_icelake_server, "Ice Lake (Server)" },
+    { cpu_crestmont, "Crestmont" },
+    { cpu_tigerlake, "Tiger Lake" },
+    { cpu_clearwaterforest, "Clearwater Forest" },
+    { cpu_grandridge, "Grand Ridge" },
+    { cpu_raptorcove, "Raptor Cove" },
+    { cpu_redwoodcove, "Redwood Cove" },
+    { cpu_emeraldrapids, "Emerald Rapids" },
+    { cpu_graniterapids, "Granite Rapids" },
 };
 
 enum XSaveBits {
@@ -168,10 +183,10 @@ static const uint64_t XSaveReq_AvxState = 0
         | cpu_feature_avx512vbmi
         | cpu_feature_avx512vbmi2
         | cpu_feature_vaes
-        | cpu_feature_avx512vnni
         | cpu_feature_avx512bitalg
         | cpu_feature_avx512vpopcntdq
-        | cpu_feature_avx512fp16;
+        | cpu_feature_avx512fp16
+        | cpu_feature_avxifma;
 
 // List of features requiring XSave_Avx512State
 static const uint64_t XSaveReq_Avx512State = 0
@@ -183,7 +198,6 @@ static const uint64_t XSaveReq_Avx512State = 0
         | cpu_feature_avx512vl
         | cpu_feature_avx512vbmi
         | cpu_feature_avx512vbmi2
-        | cpu_feature_avx512vnni
         | cpu_feature_avx512bitalg
         | cpu_feature_avx512vpopcntdq
         | cpu_feature_avx512fp16;

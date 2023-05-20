@@ -1,5 +1,7 @@
 // Copyright (C) 2022 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// This is a generated file. DO NOT EDIT.
+// Please see util/x86simdgen/README.md
 
 //
 //  W A R N I N G
@@ -50,11 +52,11 @@
 
 // in CPUID Leaf 7, Sub-leaf 0, ECX:
 #define cpu_feature_avx512vbmi                      (UINT64_C(1) << 23)
-#define cpu_feature_avx512vbmi2                     (UINT64_C(1) << 24)
-#define cpu_feature_shstk                           (UINT64_C(1) << 25)
-#define cpu_feature_gfni                            (UINT64_C(1) << 26)
-#define cpu_feature_vaes                            (UINT64_C(1) << 27)
-#define cpu_feature_avx512vnni                      (UINT64_C(1) << 28)
+#define cpu_feature_waitpkg                         (UINT64_C(1) << 24)
+#define cpu_feature_avx512vbmi2                     (UINT64_C(1) << 25)
+#define cpu_feature_shstk                           (UINT64_C(1) << 26)
+#define cpu_feature_gfni                            (UINT64_C(1) << 27)
+#define cpu_feature_vaes                            (UINT64_C(1) << 28)
 #define cpu_feature_avx512bitalg                    (UINT64_C(1) << 29)
 #define cpu_feature_avx512vpopcntdq                 (UINT64_C(1) << 30)
 
@@ -62,6 +64,12 @@
 #define cpu_feature_hybrid                          (UINT64_C(1) << 31)
 #define cpu_feature_ibt                             (UINT64_C(1) << 32)
 #define cpu_feature_avx512fp16                      (UINT64_C(1) << 33)
+
+// in CPUID Leaf 7, Sub-leaf 1, EAX:
+#define cpu_feature_raoint                          (UINT64_C(1) << 34)
+#define cpu_feature_cmpccxadd                       (UINT64_C(1) << 35)
+#define cpu_feature_avxifma                         (UINT64_C(1) << 36)
+#define cpu_feature_lam                             (UINT64_C(1) << 37)
 
 // CPU architectures
 #define cpu_x86_64              (0 \
@@ -89,42 +97,65 @@
                                  | cpu_feature_rdseed)
 #define cpu_bdx                 (cpu_bdw)
 #define cpu_skl                 (cpu_bdw)
-#define cpu_adl                 (cpu_skl \
-                                 | cpu_feature_gfni \
-                                 | cpu_feature_vaes \
-                                 | cpu_feature_shstk \
-                                 | cpu_feature_ibt)
 #define cpu_skx                 (cpu_skl \
                                  | cpu_feature_avx512f \
                                  | cpu_feature_avx512dq \
                                  | cpu_feature_avx512cd \
                                  | cpu_feature_avx512bw \
                                  | cpu_feature_avx512vl)
-#define cpu_clx                 (cpu_skx \
-                                 | cpu_feature_avx512vnni)
+#define cpu_clx                 (cpu_skx)
 #define cpu_cpx                 (cpu_clx)
-#define cpu_cnl                 (cpu_skx \
+#define cpu_plc                 (cpu_skx \
                                  | cpu_feature_avx512ifma \
                                  | cpu_feature_avx512vbmi)
-#define cpu_icl                 (cpu_cnl \
+#define cpu_snc                 (cpu_plc \
                                  | cpu_feature_avx512vbmi2 \
                                  | cpu_feature_gfni \
                                  | cpu_feature_vaes \
-                                 | cpu_feature_avx512vnni \
                                  | cpu_feature_avx512bitalg \
                                  | cpu_feature_avx512vpopcntdq)
-#define cpu_icx                 (cpu_icl)
-#define cpu_tgl                 (cpu_icl \
+#define cpu_wlc                 (cpu_snc \
                                  | cpu_feature_shstk \
                                  | cpu_feature_ibt)
-#define cpu_spr                 (cpu_tgl)
+#define cpu_glc                 (cpu_wlc \
+                                 | cpu_feature_waitpkg)
+#define cpu_rpc                 (cpu_glc)
+#define cpu_rwc                 (cpu_rpc)
 #define cpu_slm                 (cpu_wsm \
                                  | cpu_feature_rdrnd \
                                  | cpu_feature_movbe)
 #define cpu_glm                 (cpu_slm \
                                  | cpu_feature_rdseed)
 #define cpu_tnt                 (cpu_glm \
-                                 | cpu_feature_gfni)
+                                 | cpu_feature_gfni \
+                                 | cpu_feature_waitpkg)
+#define cpu_grt                 (cpu_skl \
+                                 | cpu_feature_gfni \
+                                 | cpu_feature_vaes \
+                                 | cpu_feature_shstk \
+                                 | cpu_feature_ibt \
+                                 | cpu_feature_waitpkg)
+#define cpu_cmt                 (cpu_grt \
+                                 | cpu_feature_cmpccxadd \
+                                 | cpu_feature_avxifma)
+#define cpu_cnl                 (cpu_plc)
+#define cpu_icl                 (cpu_snc)
+#define cpu_tgl                 (cpu_wlc)
+#define cpu_adl                 (cpu_grt)
+#define cpu_rpl                 (cpu_grt)
+#define cpu_mtl                 (cpu_cmt)
+#define cpu_arl                 (cpu_cmt)
+#define cpu_lnl                 (cpu_cmt)
+#define cpu_icx                 (cpu_snc)
+#define cpu_spr                 (cpu_glc)
+#define cpu_emr                 (cpu_spr)
+#define cpu_gnr                 (cpu_glc)
+#define cpu_srf                 (cpu_cmt \
+                                 | cpu_feature_cmpccxadd \
+                                 | cpu_feature_avxifma)
+#define cpu_grr                 (cpu_srf \
+                                 | cpu_feature_raoint)
+#define cpu_cwf                 (cpu_srf)
 #define cpu_nehalem             (cpu_nhm)
 #define cpu_westmere            (cpu_wsm)
 #define cpu_sandybridge         (cpu_snb)
@@ -135,15 +166,32 @@
 #define cpu_skylake_avx512      (cpu_skx)
 #define cpu_cascadelake         (cpu_clx)
 #define cpu_cooperlake          (cpu_cpx)
+#define cpu_palmcove            (cpu_plc)
 #define cpu_cannonlake          (cpu_cnl)
+#define cpu_sunnycove           (cpu_snc)
 #define cpu_icelake_client      (cpu_icl)
 #define cpu_icelake_server      (cpu_icx)
-#define cpu_alderlake           (cpu_adl)
-#define cpu_sapphirerapids      (cpu_spr)
+#define cpu_willowcove          (cpu_wlc)
 #define cpu_tigerlake           (cpu_tgl)
+#define cpu_goldencove          (cpu_glc)
+#define cpu_alderlake           (cpu_adl)
+#define cpu_raptorcove          (cpu_rpc)
+#define cpu_raptorlake          (cpu_rpl)
+#define cpu_redwoodcove         (cpu_rwc)
+#define cpu_meteorlake          (cpu_mtl)
+#define cpu_arrowlake           (cpu_arl)
+#define cpu_lunarlake           (cpu_lnl)
+#define cpu_sapphirerapids      (cpu_spr)
+#define cpu_emeraldrapids       (cpu_emr)
+#define cpu_graniterapids       (cpu_gnr)
 #define cpu_silvermont          (cpu_slm)
 #define cpu_goldmont            (cpu_glm)
 #define cpu_tremont             (cpu_tnt)
+#define cpu_gracemont           (cpu_grt)
+#define cpu_crestmont           (cpu_cmt)
+#define cpu_grandridge          (cpu_grr)
+#define cpu_sierraforest        (cpu_srf)
+#define cpu_clearwaterforest    (cpu_cwf)
 
 // __attribute__ target strings for GCC and Clang
 #define QT_FUNCTION_TARGET_STRING_SSE2              "sse2"
@@ -170,16 +218,20 @@
 #define QT_FUNCTION_TARGET_STRING_AVX512BW          "avx512bw,avx512f"
 #define QT_FUNCTION_TARGET_STRING_AVX512VL          "avx512vl,avx512f"
 #define QT_FUNCTION_TARGET_STRING_AVX512VBMI        "avx512vbmi,avx512f"
+#define QT_FUNCTION_TARGET_STRING_WAITPKG           "waitpkg"
 #define QT_FUNCTION_TARGET_STRING_AVX512VBMI2       "avx512vbmi2,avx512f"
 #define QT_FUNCTION_TARGET_STRING_SHSTK             "shstk"
 #define QT_FUNCTION_TARGET_STRING_GFNI              "gfni"
 #define QT_FUNCTION_TARGET_STRING_VAES              "vaes,avx2,avx,aes"
-#define QT_FUNCTION_TARGET_STRING_AVX512VNNI        "avx512vnni,avx512f"
 #define QT_FUNCTION_TARGET_STRING_AVX512BITALG      "avx512bitalg,avx512f"
 #define QT_FUNCTION_TARGET_STRING_AVX512VPOPCNTDQ   "avx512vpopcntdq,avx512f"
 #define QT_FUNCTION_TARGET_STRING_HYBRID            "hybrid"
 #define QT_FUNCTION_TARGET_STRING_IBT               "ibt"
 #define QT_FUNCTION_TARGET_STRING_AVX512FP16        "avx512fp16,avx512f,f16c"
+#define QT_FUNCTION_TARGET_STRING_RAOINT            "raoint"
+#define QT_FUNCTION_TARGET_STRING_CMPCCXADD         "cmpccxadd"
+#define QT_FUNCTION_TARGET_STRING_AVXIFMA           "avxifma,avx"
+#define QT_FUNCTION_TARGET_STRING_LAM               "lam"
 #define QT_FUNCTION_TARGET_STRING_ARCH_X86_64       "sse2"
 #define QT_FUNCTION_TARGET_STRING_ARCH_CORE2        QT_FUNCTION_TARGET_STRING_ARCH_X86_64 ",sse3,ssse3,cx16"
 #define QT_FUNCTION_TARGET_STRING_ARCH_NHM          QT_FUNCTION_TARGET_STRING_ARCH_CORE2 ",sse4.1,sse4.2,popcnt"
@@ -190,18 +242,35 @@
 #define QT_FUNCTION_TARGET_STRING_ARCH_BDW          QT_FUNCTION_TARGET_STRING_ARCH_HSW ",adx,rdseed"
 #define QT_FUNCTION_TARGET_STRING_ARCH_BDX          QT_FUNCTION_TARGET_STRING_ARCH_BDW
 #define QT_FUNCTION_TARGET_STRING_ARCH_SKL          QT_FUNCTION_TARGET_STRING_ARCH_BDW ",xsavec,xsaves"
-#define QT_FUNCTION_TARGET_STRING_ARCH_ADL          QT_FUNCTION_TARGET_STRING_ARCH_SKL ",avxvnni,gfni,vaes,vpclmulqdq,serialize,shstk,cldemote,movdiri,movdir64b,ibt,waitpkg,keylocker"
 #define QT_FUNCTION_TARGET_STRING_ARCH_SKX          QT_FUNCTION_TARGET_STRING_ARCH_SKL ",avx512f,avx512dq,avx512cd,avx512bw,avx512vl"
 #define QT_FUNCTION_TARGET_STRING_ARCH_CLX          QT_FUNCTION_TARGET_STRING_ARCH_SKX ",avx512vnni"
 #define QT_FUNCTION_TARGET_STRING_ARCH_CPX          QT_FUNCTION_TARGET_STRING_ARCH_CLX ",avx512bf16"
-#define QT_FUNCTION_TARGET_STRING_ARCH_CNL          QT_FUNCTION_TARGET_STRING_ARCH_SKX ",avx512ifma,avx512vbmi"
-#define QT_FUNCTION_TARGET_STRING_ARCH_ICL          QT_FUNCTION_TARGET_STRING_ARCH_CNL ",avx512vbmi2,gfni,vaes,vpclmulqdq,avx512vnni,avx512bitalg,avx512vpopcntdq"
-#define QT_FUNCTION_TARGET_STRING_ARCH_ICX          QT_FUNCTION_TARGET_STRING_ARCH_ICL ",pconfig"
-#define QT_FUNCTION_TARGET_STRING_ARCH_TGL          QT_FUNCTION_TARGET_STRING_ARCH_ICL ",avx512vp2intersect,shstk,,movdiri,movdir64b,ibt,keylocker"
-#define QT_FUNCTION_TARGET_STRING_ARCH_SPR          QT_FUNCTION_TARGET_STRING_ARCH_TGL ",avx512bf16,amxtile,amxbf16,amxint8,avxvnni,cldemote,pconfig,waitpkg,serialize,tsxldtrk,uintr"
+#define QT_FUNCTION_TARGET_STRING_ARCH_PLC          QT_FUNCTION_TARGET_STRING_ARCH_SKX ",avx512ifma,avx512vbmi"
+#define QT_FUNCTION_TARGET_STRING_ARCH_SNC          QT_FUNCTION_TARGET_STRING_ARCH_PLC ",avx512vbmi2,gfni,vaes,vpclmulqdq,avx512vnni,avx512bitalg,avx512vpopcntdq"
+#define QT_FUNCTION_TARGET_STRING_ARCH_WLC          QT_FUNCTION_TARGET_STRING_ARCH_SNC ",shstk,movdiri,movdir64b,ibt,keylocker"
+#define QT_FUNCTION_TARGET_STRING_ARCH_GLC          QT_FUNCTION_TARGET_STRING_ARCH_WLC ",avx512bf16,avxvnni,cldemote,waitpkg,serialize,uintr"
+#define QT_FUNCTION_TARGET_STRING_ARCH_RPC          QT_FUNCTION_TARGET_STRING_ARCH_GLC
+#define QT_FUNCTION_TARGET_STRING_ARCH_RWC          QT_FUNCTION_TARGET_STRING_ARCH_RPC ",prefetchiti"
 #define QT_FUNCTION_TARGET_STRING_ARCH_SLM          QT_FUNCTION_TARGET_STRING_ARCH_WSM ",rdrnd,movbe"
 #define QT_FUNCTION_TARGET_STRING_ARCH_GLM          QT_FUNCTION_TARGET_STRING_ARCH_SLM ",fsgsbase,rdseed,lzcnt,xsavec,xsaves"
 #define QT_FUNCTION_TARGET_STRING_ARCH_TNT          QT_FUNCTION_TARGET_STRING_ARCH_GLM ",clwb,gfni,cldemote,waitpkg,movdiri,movdir64b"
+#define QT_FUNCTION_TARGET_STRING_ARCH_GRT          QT_FUNCTION_TARGET_STRING_ARCH_SKL ",avxvnni,gfni,vaes,vpclmulqdq,serialize,shstk,cldemote,movdiri,movdir64b,ibt,waitpkg,keylocker"
+#define QT_FUNCTION_TARGET_STRING_ARCH_CMT          QT_FUNCTION_TARGET_STRING_ARCH_GRT ",cmpccxadd,avxifma,avxneconvert,avxvnniint8"
+#define QT_FUNCTION_TARGET_STRING_ARCH_CNL          QT_FUNCTION_TARGET_STRING_ARCH_PLC
+#define QT_FUNCTION_TARGET_STRING_ARCH_ICL          QT_FUNCTION_TARGET_STRING_ARCH_SNC
+#define QT_FUNCTION_TARGET_STRING_ARCH_TGL          QT_FUNCTION_TARGET_STRING_ARCH_WLC
+#define QT_FUNCTION_TARGET_STRING_ARCH_ADL          QT_FUNCTION_TARGET_STRING_ARCH_GRT
+#define QT_FUNCTION_TARGET_STRING_ARCH_RPL          QT_FUNCTION_TARGET_STRING_ARCH_GRT
+#define QT_FUNCTION_TARGET_STRING_ARCH_MTL          QT_FUNCTION_TARGET_STRING_ARCH_CMT
+#define QT_FUNCTION_TARGET_STRING_ARCH_ARL          QT_FUNCTION_TARGET_STRING_ARCH_CMT
+#define QT_FUNCTION_TARGET_STRING_ARCH_LNL          QT_FUNCTION_TARGET_STRING_ARCH_CMT
+#define QT_FUNCTION_TARGET_STRING_ARCH_ICX          QT_FUNCTION_TARGET_STRING_ARCH_SNC ",pconfig"
+#define QT_FUNCTION_TARGET_STRING_ARCH_SPR          QT_FUNCTION_TARGET_STRING_ARCH_GLC ",pconfig,amx-tile,amx-bf16,amx-int8"
+#define QT_FUNCTION_TARGET_STRING_ARCH_EMR          QT_FUNCTION_TARGET_STRING_ARCH_SPR
+#define QT_FUNCTION_TARGET_STRING_ARCH_GNR          QT_FUNCTION_TARGET_STRING_ARCH_GLC ",pconfig,amx-tile,amx-bf16,amx-int8,amx-fp16,amx-complex"
+#define QT_FUNCTION_TARGET_STRING_ARCH_SRF          QT_FUNCTION_TARGET_STRING_ARCH_CMT ",cmpccxadd,avxifma,avxneconvert,avxvnniint8"
+#define QT_FUNCTION_TARGET_STRING_ARCH_GRR          QT_FUNCTION_TARGET_STRING_ARCH_SRF ",raoint"
+#define QT_FUNCTION_TARGET_STRING_ARCH_CWF          QT_FUNCTION_TARGET_STRING_ARCH_SRF
 #define QT_FUNCTION_TARGET_STRING_ARCH_NEHALEM      QT_FUNCTION_TARGET_STRING_ARCH_NHM
 #define QT_FUNCTION_TARGET_STRING_ARCH_WESTMERE     QT_FUNCTION_TARGET_STRING_ARCH_WSM
 #define QT_FUNCTION_TARGET_STRING_ARCH_SANDYBRIDGE  QT_FUNCTION_TARGET_STRING_ARCH_SNB
@@ -212,15 +281,32 @@
 #define QT_FUNCTION_TARGET_STRING_ARCH_SKYLAKE_AVX512 QT_FUNCTION_TARGET_STRING_ARCH_SKX
 #define QT_FUNCTION_TARGET_STRING_ARCH_CASCADELAKE  QT_FUNCTION_TARGET_STRING_ARCH_CLX
 #define QT_FUNCTION_TARGET_STRING_ARCH_COOPERLAKE   QT_FUNCTION_TARGET_STRING_ARCH_CPX
+#define QT_FUNCTION_TARGET_STRING_ARCH_PALMCOVE     QT_FUNCTION_TARGET_STRING_ARCH_PLC
 #define QT_FUNCTION_TARGET_STRING_ARCH_CANNONLAKE   QT_FUNCTION_TARGET_STRING_ARCH_CNL
+#define QT_FUNCTION_TARGET_STRING_ARCH_SUNNYCOVE    QT_FUNCTION_TARGET_STRING_ARCH_SNC
 #define QT_FUNCTION_TARGET_STRING_ARCH_ICELAKE_CLIENT QT_FUNCTION_TARGET_STRING_ARCH_ICL
 #define QT_FUNCTION_TARGET_STRING_ARCH_ICELAKE_SERVER QT_FUNCTION_TARGET_STRING_ARCH_ICX
-#define QT_FUNCTION_TARGET_STRING_ARCH_ALDERLAKE    QT_FUNCTION_TARGET_STRING_ARCH_ADL
-#define QT_FUNCTION_TARGET_STRING_ARCH_SAPPHIRERAPIDS QT_FUNCTION_TARGET_STRING_ARCH_SPR
+#define QT_FUNCTION_TARGET_STRING_ARCH_WILLOWCOVE   QT_FUNCTION_TARGET_STRING_ARCH_WLC
 #define QT_FUNCTION_TARGET_STRING_ARCH_TIGERLAKE    QT_FUNCTION_TARGET_STRING_ARCH_TGL
+#define QT_FUNCTION_TARGET_STRING_ARCH_GOLDENCOVE   QT_FUNCTION_TARGET_STRING_ARCH_GLC
+#define QT_FUNCTION_TARGET_STRING_ARCH_ALDERLAKE    QT_FUNCTION_TARGET_STRING_ARCH_ADL
+#define QT_FUNCTION_TARGET_STRING_ARCH_RAPTORCOVE   QT_FUNCTION_TARGET_STRING_ARCH_RPC
+#define QT_FUNCTION_TARGET_STRING_ARCH_RAPTORLAKE   QT_FUNCTION_TARGET_STRING_ARCH_RPL
+#define QT_FUNCTION_TARGET_STRING_ARCH_REDWOODCOVE  QT_FUNCTION_TARGET_STRING_ARCH_RWC
+#define QT_FUNCTION_TARGET_STRING_ARCH_METEORLAKE   QT_FUNCTION_TARGET_STRING_ARCH_MTL
+#define QT_FUNCTION_TARGET_STRING_ARCH_ARROWLAKE    QT_FUNCTION_TARGET_STRING_ARCH_ARL
+#define QT_FUNCTION_TARGET_STRING_ARCH_LUNARLAKE    QT_FUNCTION_TARGET_STRING_ARCH_LNL
+#define QT_FUNCTION_TARGET_STRING_ARCH_SAPPHIRERAPIDS QT_FUNCTION_TARGET_STRING_ARCH_SPR
+#define QT_FUNCTION_TARGET_STRING_ARCH_EMERALDRAPIDS QT_FUNCTION_TARGET_STRING_ARCH_EMR
+#define QT_FUNCTION_TARGET_STRING_ARCH_GRANITERAPIDS QT_FUNCTION_TARGET_STRING_ARCH_GNR
 #define QT_FUNCTION_TARGET_STRING_ARCH_SILVERMONT   QT_FUNCTION_TARGET_STRING_ARCH_SLM
 #define QT_FUNCTION_TARGET_STRING_ARCH_GOLDMONT     QT_FUNCTION_TARGET_STRING_ARCH_GLM
 #define QT_FUNCTION_TARGET_STRING_ARCH_TREMONT      QT_FUNCTION_TARGET_STRING_ARCH_TNT
+#define QT_FUNCTION_TARGET_STRING_ARCH_GRACEMONT    QT_FUNCTION_TARGET_STRING_ARCH_GRT
+#define QT_FUNCTION_TARGET_STRING_ARCH_CRESTMONT    QT_FUNCTION_TARGET_STRING_ARCH_CMT
+#define QT_FUNCTION_TARGET_STRING_ARCH_GRANDRIDGE   QT_FUNCTION_TARGET_STRING_ARCH_GRR
+#define QT_FUNCTION_TARGET_STRING_ARCH_SIERRAFOREST QT_FUNCTION_TARGET_STRING_ARCH_SRF
+#define QT_FUNCTION_TARGET_STRING_ARCH_CLEARWATERFOREST QT_FUNCTION_TARGET_STRING_ARCH_CWF
 
 static const uint64_t _compilerCpuFeatures = 0
 #ifdef __SSE2__
@@ -295,6 +381,9 @@ static const uint64_t _compilerCpuFeatures = 0
 #ifdef __AVX512VBMI__
          | cpu_feature_avx512vbmi
 #endif
+#ifdef __WAITPKG__
+         | cpu_feature_waitpkg
+#endif
 #ifdef __AVX512VBMI2__
          | cpu_feature_avx512vbmi2
 #endif
@@ -306,9 +395,6 @@ static const uint64_t _compilerCpuFeatures = 0
 #endif
 #ifdef __VAES__
          | cpu_feature_vaes
-#endif
-#ifdef __AVX512VNNI__
-         | cpu_feature_avx512vnni
 #endif
 #ifdef __AVX512BITALG__
          | cpu_feature_avx512bitalg
@@ -324,6 +410,18 @@ static const uint64_t _compilerCpuFeatures = 0
 #endif
 #ifdef __AVX512FP16__
          | cpu_feature_avx512fp16
+#endif
+#ifdef __RAOINT__
+         | cpu_feature_raoint
+#endif
+#ifdef __CMPCCXADD__
+         | cpu_feature_cmpccxadd
+#endif
+#ifdef __AVXIFMA__
+         | cpu_feature_avxifma
+#endif
+#ifdef __LAM__
+         | cpu_feature_lam
 #endif
         ;
 
@@ -353,16 +451,20 @@ enum X86CpuFeatures : uint64_t {
     CpuFeatureAVX512BW = cpu_feature_avx512bw,               ///< AVX512 Byte & Word
     CpuFeatureAVX512VL = cpu_feature_avx512vl,               ///< AVX512 Vector Length
     CpuFeatureAVX512VBMI = cpu_feature_avx512vbmi,           ///< AVX512 Vector Byte Manipulation Instructions
+    CpuFeatureWAITPKG = cpu_feature_waitpkg,                 ///< User-Level Monitor / Wait
     CpuFeatureAVX512VBMI2 = cpu_feature_avx512vbmi2,         ///< AVX512 Vector Byte Manipulation Instructions 2
     CpuFeatureSHSTK = cpu_feature_shstk,                     ///< Control Flow Enforcement Technology Shadow Stack
     CpuFeatureGFNI = cpu_feature_gfni,                       ///< Galois Field new instructions
     CpuFeatureVAES = cpu_feature_vaes,                       ///< 256- and 512-bit AES
-    CpuFeatureAVX512VNNI = cpu_feature_avx512vnni,           ///< AVX512 Vector Neural Network Instructions
     CpuFeatureAVX512BITALG = cpu_feature_avx512bitalg,       ///< AVX512 Bit Algorithms
     CpuFeatureAVX512VPOPCNTDQ = cpu_feature_avx512vpopcntdq, ///< AVX512 Population Count
     CpuFeatureHYBRID = cpu_feature_hybrid,                   ///< Hybrid processor
     CpuFeatureIBT = cpu_feature_ibt,                         ///< Control Flow Enforcement Technology Indirect Branch Tracking
     CpuFeatureAVX512FP16 = cpu_feature_avx512fp16,           ///< AVX512 16-bit Floating Point
+    CpuFeatureRAOINT = cpu_feature_raoint,                   ///< Remote Atomic Operations, Integer
+    CpuFeatureCMPCCXADD = cpu_feature_cmpccxadd,             ///< CMPccXADD instructions
+    CpuFeatureAVXIFMA = cpu_feature_avxifma,                 ///< AVX-IFMA instructions
+    CpuFeatureLAM = cpu_feature_lam,                         ///< Linear Address Masking
 }; // enum X86CpuFeatures
 
 enum X86CpuArchitectures : uint64_t {
@@ -372,22 +474,39 @@ enum X86CpuArchitectures : uint64_t {
     CpuArchWSM = cpu_wsm,
     CpuArchSNB = cpu_snb,
     CpuArchIVB = cpu_ivb,
-    CpuArchHSW = cpu_hsw,
+    CpuArchHSW = cpu_hsw,                                    ///< hle,rtm
     CpuArchBDW = cpu_bdw,
     CpuArchBDX = cpu_bdx,
     CpuArchSKL = cpu_skl,
-    CpuArchADL = cpu_adl,
-    CpuArchSKX = cpu_skx,
+    CpuArchSKX = cpu_skx,                                    ///< clwb
     CpuArchCLX = cpu_clx,
     CpuArchCPX = cpu_cpx,
-    CpuArchCNL = cpu_cnl,
-    CpuArchICL = cpu_icl,
-    CpuArchICX = cpu_icx,
-    CpuArchTGL = cpu_tgl,
-    CpuArchSPR = cpu_spr,
+    CpuArchPLC = cpu_plc,                                    ///< sha
+    CpuArchSNC = cpu_snc,                                    ///< fsrm,rdpid
+    CpuArchWLC = cpu_wlc,                                    ///< avx512vp2intersect
+    CpuArchGLC = cpu_glc,                                    ///< tsxldtrk
+    CpuArchRPC = cpu_rpc,
+    CpuArchRWC = cpu_rwc,
     CpuArchSLM = cpu_slm,
     CpuArchGLM = cpu_glm,
     CpuArchTNT = cpu_tnt,
+    CpuArchGRT = cpu_grt,                                    ///< rdpid
+    CpuArchCMT = cpu_cmt,
+    CpuArchCNL = cpu_cnl,
+    CpuArchICL = cpu_icl,
+    CpuArchTGL = cpu_tgl,
+    CpuArchADL = cpu_adl,
+    CpuArchRPL = cpu_rpl,
+    CpuArchMTL = cpu_mtl,
+    CpuArchARL = cpu_arl,
+    CpuArchLNL = cpu_lnl,
+    CpuArchICX = cpu_icx,
+    CpuArchSPR = cpu_spr,
+    CpuArchEMR = cpu_emr,
+    CpuArchGNR = cpu_gnr,
+    CpuArchSRF = cpu_srf,
+    CpuArchGRR = cpu_grr,
+    CpuArchCWF = cpu_cwf,
     CpuArchNehalem = cpu_nehalem,                            ///< Intel Core i3/i5/i7
     CpuArchWestmere = cpu_westmere,                          ///< Intel Core i3/i5/i7
     CpuArchSandyBridge = cpu_sandybridge,                    ///< Second Generation Intel Core i3/i5/i7
@@ -398,15 +517,32 @@ enum X86CpuArchitectures : uint64_t {
     CpuArchSkylakeAvx512 = cpu_skylake_avx512,               ///< Intel Xeon Scalable
     CpuArchCascadeLake = cpu_cascadelake,                    ///< Second Generation Intel Xeon Scalable
     CpuArchCooperLake = cpu_cooperlake,                      ///< Third Generation Intel Xeon Scalable
+    CpuArchPalmCove = cpu_palmcove,
     CpuArchCannonLake = cpu_cannonlake,                      ///< Intel Core i3-8121U
+    CpuArchSunnyCove = cpu_sunnycove,
     CpuArchIceLakeClient = cpu_icelake_client,               ///< Tenth Generation Intel Core i3/i5/i7
     CpuArchIceLakeServer = cpu_icelake_server,               ///< Third Generation Intel Xeon Scalable
-    CpuArchAlderLake = cpu_alderlake,
-    CpuArchSapphireRapids = cpu_sapphirerapids,
+    CpuArchWillowCove = cpu_willowcove,
     CpuArchTigerLake = cpu_tigerlake,                        ///< Eleventh Generation Intel Core i3/i5/i7
+    CpuArchGoldenCove = cpu_goldencove,
+    CpuArchAlderLake = cpu_alderlake,                        ///< Twelfth Generation Intel Core
+    CpuArchRaptorCove = cpu_raptorcove,
+    CpuArchRaptorLake = cpu_raptorlake,                      ///< Thirteenth Generation Intel Core
+    CpuArchRedwoodCove = cpu_redwoodcove,
+    CpuArchMeteorLake = cpu_meteorlake,
+    CpuArchArrowLake = cpu_arrowlake,
+    CpuArchLunarLake = cpu_lunarlake,
+    CpuArchSapphireRapids = cpu_sapphirerapids,              ///< Fourth Generation Intel Xeon Scalable
+    CpuArchEmeraldRapids = cpu_emeraldrapids,                ///< Fifth Generation Intel Xeon Scalable
+    CpuArchGraniteRapids = cpu_graniterapids,
     CpuArchSilvermont = cpu_silvermont,
     CpuArchGoldmont = cpu_goldmont,
     CpuArchTremont = cpu_tremont,
+    CpuArchGracemont = cpu_gracemont,
+    CpuArchCrestmont = cpu_crestmont,
+    CpuArchGrandRidge = cpu_grandridge,
+    CpuArchSierraForest = cpu_sierraforest,
+    CpuArchClearwaterForest = cpu_clearwaterforest,
 }; // enum X86cpuArchitectures
 #endif /* C++11 */
 
