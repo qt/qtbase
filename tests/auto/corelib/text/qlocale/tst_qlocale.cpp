@@ -1125,6 +1125,52 @@ void tst_QLocale::doubleToString_data()
 
     int shortest = QLocale::FloatingPointShortest;
 
+    QTest::newRow("C 0 f 0") << QString("C") << QString("0")        << 0.0 << 'f' << 0;
+    QTest::newRow("C 0 f 5") << QString("C") << QString("0.00000")  << 0.0 << 'f' << 5;
+    QTest::newRow("C 0 f -") << QString("C") << QString("0")        << 0.0 << 'f' << shortest;
+    QTest::newRow("C 0 e 0") << QString("C") << QString("0e+00")       << 0.0 << 'e' << 0;
+    QTest::newRow("C 0 e 5") << QString("C") << QString("0.00000e+00") << 0.0 << 'e' << 5;
+    QTest::newRow("C 0 e -") << QString("C") << QString("0e+00")       << 0.0 << 'e' << shortest;
+    QTest::newRow("C 0 g 0") << QString("C") << QString("0")        << 0.0 << 'g' << 0;
+    QTest::newRow("C 0 g 5") << QString("C") << QString("0")        << 0.0 << 'g' << 5;
+    QTest::newRow("C 0 g -") << QString("C") << QString("0")        << 0.0 << 'g' << shortest;
+
+    double d = std::numeric_limits<double>::max();
+    static const char doublemaxfixed[] =
+            "1797693134862315708145274237317043567980705675258449965989174768031572607800285387605"
+            "8955863276687817154045895351438246423432132688946418276846754670353751698604991057655"
+            "1282076245490090389328944075868508455133942304583236903222948165808559332123348274797"
+            "826204144723168738177180919299881250404026184124858368";
+
+    QTest::newRow("C max f 0") << QString("C") << QString(doublemaxfixed) << d << 'f' << 0;
+    QTest::newRow("C max f 5") << QString("C") << doublemaxfixed + QString(".00000")  << d << 'f' << 5;
+    QTest::newRow("C max e 0") << QString("C") << QString("2e+308")       << d << 'e' << 0;
+    QTest::newRow("C max g 0") << QString("C") << QString("2e+308")       << d << 'g' << 0;
+    QTest::newRow("C max e 5") << QString("C") << QString("1.79769e+308") << d << 'e' << 5;
+    QTest::newRow("C max g 5") << QString("C") << QString("1.7977e+308")  << d << 'g' << 5;
+#if QT_CONFIG(doubleconversion)
+    QTest::newRow("C max e -") << QString("C") << QString("1.7976931348623157e+308") << d << 'e' << shortest;
+    QTest::newRow("C max g -") << QString("C") << QString("1.7976931348623157e+308") << d << 'g' << shortest;
+    QTest::newRow("C max f -") << QString("C")
+                               << QString("%1").arg("17976931348623157", -int(strlen(doublemaxfixed)), u'0')
+                               << d << 'f' << shortest;
+#endif
+
+    d = std::numeric_limits<double>::min();
+    QTest::newRow("C min f 0") << QString("C") << QString("0")            << d << 'f' << 0;
+    QTest::newRow("C min f 5") << QString("C") << QString("0.00000")      << d << 'f' << 5;
+    QTest::newRow("C min e 0") << QString("C") << QString("2e-308")       << d << 'e' << 0;
+    QTest::newRow("C min g 0") << QString("C") << QString("2e-308")       << d << 'g' << 0;
+    QTest::newRow("C min e 5") << QString("C") << QString("2.22507e-308") << d << 'e' << 5;
+    QTest::newRow("C min g 5") << QString("C") << QString("2.2251e-308")  << d << 'g' << 5;
+#if QT_CONFIG(doubleconversion)
+    QTest::newRow("C min e -") << QString("C") << QString("2.2250738585072014e-308") << d << 'e' << shortest;
+    QTest::newRow("C min f -") << QString("C")
+                               << QString("0.%1").arg("22250738585072014", 308 - 1 + std::numeric_limits<double>::max_digits10, u'0')
+                               << d << 'f' << shortest;
+    QTest::newRow("C min g -") << QString("C") << QString("2.2250738585072014e-308") << d << 'g' << shortest;
+#endif
+
     QTest::newRow("C 3.4 f 5") << QString("C") << QString("3.40000")     << 3.4 << 'f' << 5;
     QTest::newRow("C 3.4 f 0") << QString("C") << QString("3")           << 3.4 << 'f' << 0;
     QTest::newRow("C 3.4 e 5") << QString("C") << QString("3.40000e+00") << 3.4 << 'e' << 5;
