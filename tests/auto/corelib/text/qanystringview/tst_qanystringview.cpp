@@ -449,7 +449,8 @@ void tst_QAnyStringView::basics() const
 
 void tst_QAnyStringView::asciiLiteralIsLatin1() const
 {
-    if constexpr (QAnyStringView::detects_US_ASCII_at_compile_time) {
+#ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
+    if constexpr (true) {
         constexpr bool asciiCstringIsLatin1 = QAnyStringView("Hello, World").isLatin1();
         QVERIFY(asciiCstringIsLatin1);
         constexpr bool asciiUtf8stringIsLatin1 = QAnyStringView(u8"Hello, World").isLatin1();
@@ -466,6 +467,9 @@ void tst_QAnyStringView::asciiLiteralIsLatin1() const
                 !QAnyStringView::fromArray(u8"Tørrfisk").isLatin1();
         QVERIFY(utf8StringArrayIsNotLatin1);
     }
+#else
+    QSKIP("Compile-detection of US-ASCII strings not possible with this compiler");
+#endif
 }
 
 template <typename StringBuilder>

@@ -17,6 +17,23 @@
 
 QT_BEGIN_NAMESPACE
 
+// like std::is_constant_evaluated
+#define QT_SUPPORTS_IS_CONSTANT_EVALUATED
+#ifdef __cpp_lib_is_constant_evaluated
+constexpr bool qIsConstantEvaluated() noexcept
+{
+    return std::is_constant_evaluated();
+}
+#elif __has_builtin(__builtin_is_constant_evaluated) || \
+    (defined(Q_CC_MSVC_ONLY) /* >= 1925, but we require 1927 in qglobal.h */)
+constexpr bool qIsConstantEvaluated() noexcept
+{
+    return __builtin_is_constant_evaluated();
+}
+#else
+#  undef QT_SUPPORTS_IS_CONSTANT_EVALUATED
+#endif
+
 // like std::to_underlying
 template <typename Enum>
 constexpr std::underlying_type_t<Enum> qToUnderlying(Enum e) noexcept
