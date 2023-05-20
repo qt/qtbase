@@ -205,7 +205,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
     want to resolve foreign keys.
 
     \sa QSqlRelationalTableModel, QSqlQuery, {Model/View Programming},
-        {Table Model Example}, {Cached Table Example}
+        {Table Model Example}, {Cached SQL Table}
 */
 
 /*!
