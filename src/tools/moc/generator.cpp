@@ -627,7 +627,7 @@ void Generator::generateCode()
 // Generate internal signal functions
 //
     for (int signalindex = 0; signalindex < int(cdef->signalList.size()); ++signalindex)
-        generateSignal(&cdef->signalList[signalindex], signalindex);
+        generateSignal(&cdef->signalList.at(signalindex), signalindex);
 
 //
 // Generate plugin meta data
@@ -1408,7 +1408,7 @@ void Generator::generateStaticMetacall()
     fprintf(out, "}\n");
 }
 
-void Generator::generateSignal(FunctionDef *def,int index)
+void Generator::generateSignal(const FunctionDef *def, int index)
 {
     if (def->wasCloned || def->isAbstract)
         return;

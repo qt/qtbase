@@ -40,7 +40,7 @@ private:
     void generateProperties();
     void generateMetacall();
     void generateStaticMetacall();
-    void generateSignal(FunctionDef *def, int index);
+    void generateSignal(const FunctionDef *def, int index);
     void generatePluginMetaData();
     QMultiMap<QByteArray, int> automaticPropertyMetaTypesHelper();
     QMap<int, QMultiMap<QByteArray, int>>
