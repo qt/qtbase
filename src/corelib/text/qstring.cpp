@@ -2614,6 +2614,12 @@ QString::QString(QChar ch)
     \internal
 */
 
+/*! \fn QString::operator std::u16string_view() const
+    \since 6.7
+
+    Converts this QString object to a \c{std::u16string_view} object.
+*/
+
 static bool needsReallocate(const QString &str, qsizetype newSize)
 {
     const auto capacityAtEnd = str.capacity() - str.data_ptr().freeSpaceAtBegin();

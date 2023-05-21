@@ -400,6 +400,9 @@ public:
     [[nodiscard]] constexpr QChar front() const { return Q_ASSERT(!empty()), QChar(m_data[0]); }
     [[nodiscard]] constexpr QChar back()  const { return Q_ASSERT(!empty()), QChar(m_data[m_size - 1]); }
 
+    [[nodiscard]] Q_IMPLICIT operator std::u16string_view() const noexcept
+    { return std::u16string_view(m_data, size_t(m_size)); }
+
     //
     // Qt compatibility API:
     //

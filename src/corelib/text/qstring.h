@@ -883,6 +883,8 @@ public:
     static inline QString fromStdU32String(const std::u32string &s);
     inline std::u32string toStdU32String() const;
 
+    Q_IMPLICIT inline operator std::u16string_view() const noexcept;
+
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QString fromCFString(CFStringRef string);
     CFStringRef toCFString() const Q_DECL_CF_RETURNS_RETAINED;
@@ -1349,6 +1351,11 @@ inline std::u32string QString::toStdU32String() const
                                         size(), u32str.data());
     u32str.resize(len);
     return u32str;
+}
+
+QString::operator std::u16string_view() const noexcept
+{
+    return std::u16string_view(d.data(), size_t(d.size));
 }
 
 #if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)

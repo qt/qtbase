@@ -696,6 +696,8 @@ private slots:
     void sliced();
     void chopped();
     void removeIf();
+
+    void std_stringview_conversion();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(tst_QString::DataOptions)
 
@@ -8760,6 +8762,31 @@ void tst_QString::removeIf()
     a = "aBcAbCa"_L1;
     b = a; // Shared
     QCOMPARE(a.removeIf(removeA), u"BcbC");
+}
+
+void tst_QString::std_stringview_conversion()
+{
+    static_assert(std::is_convertible_v<QString, std::u16string_view>);
+
+    QString s;
+    std::u16string_view sv(s);
+    QCOMPARE(sv, std::u16string_view());
+
+    s = u""_s;
+    sv = s;
+    QCOMPARE(s.size(), 0);
+    QCOMPARE(sv.size(), size_t(0));
+    QCOMPARE(sv, std::u16string_view());
+
+    s = u"Hello"_s;
+    sv = s;
+    QCOMPARE(sv, std::u16string_view(u"Hello"));
+
+    s = u"Hello\0world"_s;
+    sv = s;
+    QCOMPARE(s.size(), 11);
+    QCOMPARE(sv.size(), size_t(11));
+    QCOMPARE(sv, std::u16string_view(u"Hello\0world", 11));
 }
 
 // QString's collation order is only supported during the lifetime as QCoreApplication

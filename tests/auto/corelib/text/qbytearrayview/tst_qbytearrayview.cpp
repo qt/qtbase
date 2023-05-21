@@ -171,6 +171,7 @@ private slots:
 
     void comparison() const;
     void compare() const;
+    void std_stringview_conversion();
 
 private:
     template <typename Data>
@@ -630,6 +631,31 @@ void tst_QByteArrayView::compare() const
     beta = "Unoriginal";
     QVERIFY(alpha.compare(beta, Qt::CaseInsensitive) < 0);
     QVERIFY(alpha.compare(beta, Qt::CaseSensitive) > 0);
+}
+
+void tst_QByteArrayView::std_stringview_conversion()
+{
+    static_assert(std::is_convertible_v<QByteArrayView, std::string_view>);
+
+    QByteArrayView bav;
+    std::string_view sv(bav);
+    QCOMPARE(sv, std::string_view());
+
+    bav = "";
+    sv = bav;
+    QCOMPARE(bav.size(), 0);
+    QCOMPARE(sv.size(), size_t(0));
+    QCOMPARE(sv, std::string_view());
+
+    bav = "Hello";
+    sv = bav;
+    QCOMPARE(sv, std::string_view("Hello"));
+
+    bav = QByteArrayView::fromArray("Hello\0world");
+    sv = bav;
+    QCOMPARE(bav.size(), 12);
+    QCOMPARE(sv.size(), size_t(12));
+    QCOMPARE(sv, std::string_view("Hello\0world", 12));
 }
 
 QTEST_APPLESS_MAIN(tst_QByteArrayView)
