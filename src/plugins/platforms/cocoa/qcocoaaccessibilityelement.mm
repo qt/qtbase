@@ -292,7 +292,9 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         QAccessibleTableInterface *table = iface->tableInterface();
         Q_ASSERT(table);
         QAccessibleInterface *cell = table->cellAt(m_rowIndex, m_columnIndex);
-        Q_ASSERT(cell && cell->isValid());
+        if (!cell)
+            return nullptr;
+        Q_ASSERT(cell->isValid());
         iface = cell;
 
         // no longer a placeholder
