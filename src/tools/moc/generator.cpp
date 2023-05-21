@@ -759,12 +759,12 @@ void Generator::generateFunctionParameters(const QList<FunctionDef> &list, const
         fprintf(out, "    ");
 
         // Types
-        int argsCount = f.arguments.size();
-        for (int j = -1; j < argsCount; ++j) {
-            if (j > -1)
-                fputc(' ', out);
-            const QByteArray &typeName = (j < 0) ? f.normalizedType : f.arguments.at(j).normalizedType;
-            generateTypeInfo(typeName, /*allowEmptyName=*/f.isConstructor);
+        const bool allowEmptyName = f.isConstructor;
+        generateTypeInfo(f.normalizedType, allowEmptyName);
+        fputc(',', out);
+        for (const ArgumentDef &arg : f.arguments) {
+            fputc(' ', out);
+            generateTypeInfo(arg.normalizedType, allowEmptyName);
             fputc(',', out);
         }
 
