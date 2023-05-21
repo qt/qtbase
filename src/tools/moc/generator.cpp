@@ -174,14 +174,14 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
 #undef STREAM_1ARG_TEMPLATE
             ;
     for (const QByteArray &oneArgTemplateType : oneArgTemplates) {
-        QByteArray ba = oneArgTemplateType + "<";
+        const QByteArray ba = oneArgTemplateType + "<";
         if (propertyType.startsWith(ba) && propertyType.endsWith(">")) {
-            const qsizetype argumentSize = propertyType.size() - oneArgTemplateType.size() - 1
+            const qsizetype argumentSize = propertyType.size() - ba.size()
                                      // The closing '>'
                                      - 1
                                      // templates inside templates have an extra whitespace char to strip.
                                      - (propertyType.at(propertyType.size() - 2) == ' ' ? 1 : 0 );
-            const QByteArray templateArg = propertyType.mid(oneArgTemplateType.size() + 1, argumentSize);
+            const QByteArray templateArg = propertyType.sliced(ba.size(), argumentSize);
             return isBuiltinType(templateArg) || registerableMetaType(templateArg);
         }
     }
