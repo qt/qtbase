@@ -1942,7 +1942,9 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
 
     const GlobSettings settings = [options]() {
         if (options.testFlag(NonPathWildcardConversion)) {
-            return GlobSettings{ u'\0', u".*", u"." };
+            // using [\d\D] to mean "match everything";
+            // dot doesn't match newlines, unless in /s mode
+            return GlobSettings{ u'\0', u"[\\d\\D]*", u"[\\d\\D]" };
         } else {
 #ifdef Q_OS_WIN
             return GlobSettings{ u'\\', u"[^/\\\\]*", u"[^/\\\\]" };

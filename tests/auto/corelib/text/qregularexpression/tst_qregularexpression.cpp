@@ -2491,6 +2491,10 @@ void tst_QRegularExpression::wildcard_data()
     addRow("foo/(?)/bar", "foo/(Q)/bar", true, true);
 
     addRow("foo*bar", "foo/fie/baz/bar", false, true);
+    addRow("foo*bar", "foo bar", true, true);
+    addRow("foo*bar", "foo\tbar", true, true);
+    addRow("foo*bar", "foo\nbar", true, true);
+    addRow("foo*bar", "foo\r\nbar", true, true);
 
     // different anchor modes
     addRow("foo", "afoob", false, false, true);
