@@ -407,6 +407,7 @@ private Q_SLOTS:
     void notificationsTest();
     void checkBoxTest();
     void tableViewTest();
+    void treeViewTest();
 
 private:
     AccessibleTestWindow *m_window;
@@ -730,6 +731,55 @@ void tst_QAccessibilityMac::tableViewTest()
         QVERIFY([childObject.role isEqualToString:NSAccessibilityRowRole] ||
                [childObject.role isEqualToString:NSAccessibilityColumnRole]);
     }
+}
+
+void tst_QAccessibilityMac::treeViewTest()
+{
+    QTreeWidget *tw = new QTreeWidget;
+    tw->setColumnCount(2);
+    QTreeWidgetItem *root = new QTreeWidgetItem(tw, {"/", "0"});
+    root->setExpanded(false);
+    QTreeWidgetItem *users = new QTreeWidgetItem(root,{ "Users", "1"});
+    (void)new QTreeWidgetItem(root, {"Applications", "2"});
+    QTreeWidgetItem *lastChild = new QTreeWidgetItem(root, {"Libraries", "3"});
+
+    m_window->addWidget(tw);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    NSArray *windowList = [appObject windowList];
+    // one window
+    QVERIFY([windowList count] == 1);
+    AXUIElementRef windowRef = (AXUIElementRef)[windowList objectAtIndex:0];
+    QVERIFY(windowRef != nil);
+    TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef:windowRef];
+
+    // children of window
+    AXUIElementRef treeView = [window findDirectChildByRole:kAXOutlineRole];
+    QVERIFY(treeView != nil);
+
+    TestAXObject *tv = [[TestAXObject alloc] initWithAXUIElementRef:treeView];
+
+    // here start actual treeview tests. NSAccessibilityOutline is a specialization
+    // of NSAccessibilityTable, and we represent trees as tables.
+    // Should have 2 columns
+    const unsigned int columnCount = 2;
+    NSArray *columnArray = [tv tableColumns];
+    QCOMPARE([columnArray count], columnCount);
+
+    // should have 1 row for now - as long as the root item is not expanded
+    NSArray *rowArray = [tv tableRows];
+    QCOMPARE(int([rowArray count]), 1);
+
+    root->setExpanded(true);
+    rowArray = [tv tableRows];
+    QCOMPARE(int([rowArray count]), root->childCount() + 1);
+
+    // this should not trigger any assert
+    tw->setCurrentItem(lastChild);
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)
