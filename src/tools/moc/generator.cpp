@@ -539,9 +539,9 @@ void Generator::generateCode()
 
     // metatypes for all exposed methods
     // because we definitely printed something above, this section doesn't need comma control
-    for (const QList<FunctionDef> &methodContainer :
-    { cdef->signalList, cdef->slotList, cdef->methodList }) {
-        for (const FunctionDef &fdef : methodContainer) {
+    const auto allMethods = {&cdef->signalList, &cdef->slotList, &cdef->methodList};
+    for (const QList<FunctionDef> *methodContainer : allMethods) {
+        for (const FunctionDef &fdef : *methodContainer) {
             fprintf(out, ",\n        // method '%s'\n        %s",
                     fdef.name.constData(), stringForType(fdef.type.name, false).constData());
             for (const auto &argument: fdef.arguments)
