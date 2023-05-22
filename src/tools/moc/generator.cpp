@@ -70,11 +70,11 @@ QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
          purestSuperClass = cdef->superclassList.constFirst().first;
 }
 
-static inline int lengthOfEscapeSequence(const QByteArray &s, int i)
+static inline qsizetype lengthOfEscapeSequence(const QByteArray &s, qsizetype i)
 {
     if (s.at(i) != '\\' || i >= s.size() - 1)
         return 1;
-    const int startPos = i;
+    const qsizetype startPos = i;
     ++i;
     char ch = s.at(i);
     if (ch == 'x') {
@@ -111,18 +111,18 @@ static inline uint lengthOfEscapedString(const QByteArray &str)
 static void printStringWithIndentation(FILE *out, const QByteArray &s)
 {
     static constexpr int ColumnWidth = 72;
-    int len = s.size();
-    int idx = 0;
+    const qsizetype len = s.size();
+    qsizetype idx = 0;
 
     do {
-        int spanLen = qMin(ColumnWidth - 2, len - idx);
+        qsizetype spanLen = qMin(ColumnWidth - 2, len - idx);
         // don't cut escape sequences at the end of a line
-        int backSlashPos = s.lastIndexOf('\\', idx + spanLen - 1);
+        const qsizetype backSlashPos = s.lastIndexOf('\\', idx + spanLen - 1);
         if (backSlashPos >= idx) {
-            int escapeLen = lengthOfEscapeSequence(s, backSlashPos);
+            const qsizetype escapeLen = lengthOfEscapeSequence(s, backSlashPos);
             spanLen = qBound(spanLen, backSlashPos + escapeLen - idx, len - idx);
         }
-        fprintf(out, "\n    \"%.*s\"", spanLen, s.constData() + idx);
+        fprintf(out, "\n    \"%.*s\"", int(spanLen), s.constData() + idx);
         idx += spanLen;
     } while (idx < len);
 }
@@ -357,8 +357,8 @@ void Generator::generateCode()
     fprintf(out, "    %4d, %4d, // classinfo\n", int(cdef->classInfoList.size()), int(cdef->classInfoList.size() ? index : 0));
     index += cdef->classInfoList.size() * 2;
 
-    int methodCount = cdef->signalList.size() + cdef->slotList.size() + cdef->methodList.size();
-    fprintf(out, "    %4d, %4d, // methods\n", methodCount, methodCount ? index : 0);
+    const qsizetype methodCount = cdef->signalList.size() + cdef->slotList.size() + cdef->methodList.size();
+    fprintf(out, "    %4" PRIdQSIZETYPE ", %4d, // methods\n", methodCount, methodCount ? index : 0);
     index += methodCount * QMetaObjectPrivate::IntsPerMethod;
     if (cdef->revisionedMethods)
         index += methodCount;
