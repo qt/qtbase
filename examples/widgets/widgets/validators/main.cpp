@@ -7,8 +7,6 @@
 
 int main(int argc, char **argv)
 {
-    Q_INIT_RESOURCE(validators);
-
     QApplication app(argc, argv);
 
     ValidatorWidget w;

@@ -7,8 +7,6 @@
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(tooltips);
-
     QApplication app(argc, argv);
     SortingBox sortingBox;
     sortingBox.show();

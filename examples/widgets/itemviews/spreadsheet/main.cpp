@@ -8,8 +8,6 @@
 
 int main(int argc, char **argv)
 {
-    Q_INIT_RESOURCE(spreadsheet);
-
     QApplication app(argc, argv);
     SpreadSheet sheet(10, 6);
     sheet.setWindowIcon(QPixmap(":/images/interview.png"));
@@ -17,5 +15,3 @@ int main(int argc, char **argv)
     sheet.layout()->setSizeConstraint(QLayout::SetFixedSize);
     return app.exec();
 }
-
-

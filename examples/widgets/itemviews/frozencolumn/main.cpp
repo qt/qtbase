@@ -10,8 +10,6 @@
 
 int main(int argc, char* argv[])
 {
-    Q_INIT_RESOURCE(grades);
-
     QApplication app( argc, argv );
     QStandardItemModel *model=new QStandardItemModel();
 
@@ -46,4 +44,3 @@ int main(int argc, char* argv[])
     tableView->show();
     return app.exec();
 }
-

@@ -10,7 +10,6 @@
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(embeddeddialogs);
     QApplication app(argc, argv);
 
     QGraphicsScene scene;

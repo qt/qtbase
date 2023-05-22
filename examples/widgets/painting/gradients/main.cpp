@@ -7,8 +7,6 @@
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(gradients);
-
     QApplication app(argc, argv);
 
     GradientWidget gradientWidget;
