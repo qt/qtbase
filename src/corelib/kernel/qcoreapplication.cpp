@@ -104,6 +104,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 
 QT_BEGIN_NAMESPACE
 
@@ -622,8 +623,10 @@ void QCoreApplicationPrivate::initLocale()
     // Android 6 still lacks nl_langinfo(), so we can't check.
     // FIXME: Shouldn't we still setlocale("UTF-8")?
 #  else
-    const char *charEncoding = nl_langinfo(CODESET);
-    if (Q_UNLIKELY(qstricmp(charEncoding, "UTF-8") != 0 && qstricmp(charEncoding, "utf8") != 0)) {
+    // std::string's SSO usually saves this the need to allocate:
+    const std::string oldEncoding = nl_langinfo(CODESET);
+    if (!Q_LIKELY(qstricmp(oldEncoding.data(), "UTF-8") == 0
+                  || qstricmp(oldEncoding.data(), "utf8") == 0)) {
         const QByteArray oldLocale = setlocale(LC_ALL, nullptr);
         QByteArray newLocale;
         bool warnOnOverride = true;
@@ -658,14 +661,14 @@ void QCoreApplicationPrivate::initLocale()
             qWarning("Detected locale \"%s\" with character encoding \"%s\", which is not UTF-8.\n"
                      "Qt depends on a UTF-8 locale, but has failed to switch to one.\n"
                      "If this causes problems, reconfigure your locale. See the locale(1) manual\n"
-                     "for more information.", oldLocale.constData(), nl_langinfo(CODESET));
+                     "for more information.", oldLocale.constData(), oldEncoding.data());
         } else if (warnOnOverride) {
             // Let the user know we over-rode their configuration.
             qWarning("Detected locale \"%s\" with character encoding \"%s\", which is not UTF-8.\n"
                      "Qt depends on a UTF-8 locale, and has switched to \"%s\" instead.\n"
                      "If this causes problems, reconfigure your locale. See the locale(1) manual\n"
                      "for more information.",
-                     oldLocale.constData(), nl_langinfo(CODESET), newLocale.constData());
+                     oldLocale.constData(), oldEncoding.data(), newLocale.constData());
         }
     }
 #  endif // Platform choice
