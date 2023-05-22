@@ -11,7 +11,6 @@
 
 int main( int argc, char ** argv )
 {
-    Q_INIT_RESOURCE(texture);
     QApplication a( argc, argv );
 
     QCoreApplication::setApplicationName("Qt QOpenGLWidget Example");

@@ -342,8 +342,6 @@ private:
 
 int main(int argc, char **argv)
 {
-    Q_INIT_RESOURCE(flightinfo);
-
     QApplication app(argc, argv);
 
     FlightInfo w;

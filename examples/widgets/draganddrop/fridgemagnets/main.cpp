@@ -7,8 +7,6 @@
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(fridgemagnets);
-
     QApplication app(argc, argv);
 #ifdef QT_KEYPAD_NAVIGATION
     QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
