@@ -226,7 +226,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
     file(GENERATE OUTPUT "${headers_check_parameters}"
         CONTENT "${headers_check_parameters_content}")
 
-    set(sync_headers_dep "sync_headers")
+    set(sync_headers_dep "${module_target}_sync_headers")
 
     foreach(header ${hclean_headers})
         # We need realpath here to make sure path starts with drive letter
