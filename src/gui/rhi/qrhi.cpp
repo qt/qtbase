@@ -3529,6 +3529,7 @@ QRhi *QRhiResource::rhi() const
 
 /*!
     \class QRhiBuffer::NativeBuffer
+    \inmodule QtGui
     \brief Contains information about the underlying native resources of a buffer.
  */
 
@@ -3605,7 +3606,7 @@ QRhiResource::Type QRhiBuffer::resourceType() const
  */
 
 /*!
-    \fn void setUsage(UsageFlags u)
+    \fn void QRhiBuffer::setUsage(UsageFlags u)
     Sets the buffer's usage flags to \a u.
  */
 
@@ -3761,6 +3762,7 @@ void QRhiBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 
 /*!
     \struct QRhiRenderBuffer::NativeRenderBuffer
+    \inmodule QtGui
     \brief Wraps a native renderbuffer object.
  */
 
@@ -4129,6 +4131,7 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 
 /*!
     \struct QRhiTexture::NativeTexture
+    \inmodule QtGui
     \brief Contains information about the underlying native resources of a texture.
  */
 
@@ -6089,16 +6092,6 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
  */
 
 /*!
-    \fn void QRhiGraphicsPipeline::setTargetBlends(const QList<TargetBlend> &blends)
-
-    Sets the blend specification for color attachments. Each element in \a
-    blends corresponds to a color attachment of the render target.
-
-    By default no blends are set, which is a shortcut to disabling blending and
-    enabling color write for all four channels.
- */
-
-/*!
     \enum QRhiGraphicsPipeline::Flag
 
     Flag values for describing the dynamic state of the pipeline, and other
@@ -6987,9 +6980,9 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
   */
 
 /*!
-    \fn virtual bool QRhiSwapChain::isFormatSuported(Format f) = 0
+    \fn virtual bool QRhiSwapChain::isFormatSupported(Format f) = 0
 
-    \return true if the given swapchain format is supported. SDR is always
+    \return true if the given swapchain format \a f is supported. SDR is always
     supported.
 
     \note Can be called independently of createOrResize(), but window() must

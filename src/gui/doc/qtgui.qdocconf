@@ -39,6 +39,7 @@ depends += \
     qtdoc \
     qmake \
     qtcmake \
+    qtshadertools \
     qttestlib \
     qtplatformintegration \
     qthelp

@@ -220,8 +220,8 @@
     The QRhiSwapChain is associated with the QWindow and the depth/stencil
     buffer.
 
-    \snippet rhiwindow/rhiwindow.cpp swapchain-data
-
+    \snippet rhiwindow/rhiwindow.h swapchain-data
+    \codeline
     \snippet rhiwindow/rhiwindow.cpp swapchain-init
 
     When the window size changes, the swapchain needs to be resized as well.

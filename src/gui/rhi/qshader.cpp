@@ -1009,6 +1009,7 @@ void QShader::removeResourceBindingMap(const QShaderKey &key)
 
 /*!
     \struct QShader::SeparateToCombinedImageSamplerMapping
+    \inmodule QtGui
     \brief Mapping metadata for sampler uniforms.
 
     Describes a mapping from a traditional combined image sampler uniform to
@@ -1083,6 +1084,7 @@ void QShader::removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &
 
 /*!
     \struct QShader::NativeShaderInfo
+    \inmodule QtGui
     \brief Additional metadata about the native shader code.
 
     Describes information about the native shader code, if applicable. This
