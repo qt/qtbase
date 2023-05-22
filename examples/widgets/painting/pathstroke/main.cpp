@@ -7,8 +7,6 @@
 
 int main(int argc, char **argv)
 {
-    Q_INIT_RESOURCE(pathstroke);
-
     QApplication app(argc, argv);
 
     bool smallScreen = QApplication::arguments().contains("-small-screen");

@@ -10,8 +10,6 @@
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(licensewizard);
-
     QApplication app(argc, argv);
 
 #ifndef QT_NO_TRANSLATION

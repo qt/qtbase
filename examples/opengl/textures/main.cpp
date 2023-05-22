@@ -8,8 +8,6 @@
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(textures);
-
     QApplication app(argc, argv);
 
     QSurfaceFormat format;

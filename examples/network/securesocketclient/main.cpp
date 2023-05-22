@@ -11,8 +11,6 @@ QT_REQUIRE_CONFIG(ssl);
 
 int main(int argc, char **argv)
 {
-    Q_INIT_RESOURCE(securesocketclient);
-
     QApplication app(argc, argv);
 
     if (!QSslSocket::supportsSsl()) {
