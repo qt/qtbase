@@ -969,7 +969,9 @@ void Moc::parse()
             if (!def.pluginData.iid.isEmpty())
                 def.pluginData.metaArgs = metaArgs;
 
-            checkSuperClasses(&def);
+            if (def.hasQObject && !def.superclassList.isEmpty())
+                checkSuperClasses(&def);
+
             checkProperties(&def);
 
             classList += def;
@@ -1804,7 +1806,8 @@ bool Moc::until(Token target) {
 
 void Moc::checkSuperClasses(ClassDef *def)
 {
-    const QByteArray firstSuperclass = def->superclassList.value(0).first;
+    Q_ASSERT(!def->superclassList.isEmpty());
+    const QByteArray &firstSuperclass = def->superclassList.at(0).first;
 
     if (!knownQObjectClasses.contains(firstSuperclass)) {
         // enable once we /require/ include paths
@@ -1828,8 +1831,7 @@ void Moc::checkSuperClasses(ClassDef *def)
     };
 
     const auto end = def->superclassList.cend();
-    auto it = std::next(def->superclassList.cbegin(),
-                        !def->superclassList.isEmpty() ? 1 : 0);
+    auto it = def->superclassList.cbegin() + 1;
     for (; it != end; ++it) {
         const QByteArray &superClass = it->first;
         if (knownQObjectClasses.contains(superClass)) {
