@@ -235,6 +235,13 @@ int FontHandle::compare(const FontHandle &rhs) const
     if (const int src = styleStrategy.compare(rhsStyleStrategy))
         return src;
 
+    const QString hintingPreference = m_domFont->hasElementHintingPreference()
+        ? m_domFont->elementHintingPreference() : QString();
+    const QString rhsHintingPreference = rhs.m_domFont->hasElementHintingPreference()
+        ? rhs.m_domFont->elementHintingPreference() : QString();
+    if (const int src = hintingPreference.compare(rhsHintingPreference))
+        return src;
+
     return 0;
 }
 
@@ -1657,6 +1664,11 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
          m_output << m_indent << fontName << ".setStyleStrategy(QFont"
             << language::qualifier << f->elementStyleStrategy() << ')' << language::eol;
     }
+    if (f->hasElementHintingPreference()) {
+         m_output << m_indent << fontName << ".setHintingPreference(QFont"
+             << language::qualifier << f->elementHintingPreference() << ')' << language::eol;
+    }
+
     return  fontName;
 }
 
