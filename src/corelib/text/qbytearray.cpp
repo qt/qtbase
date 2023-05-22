@@ -34,8 +34,6 @@
 
 #include <algorithm>
 
-#define IS_RAW_DATA(d) ((d)->flags() & QArrayData::RawDataType)
-
 QT_BEGIN_NAMESPACE
 
 Q_CONSTINIT const char QByteArray::_empty = '\0';
@@ -5145,5 +5143,4 @@ size_t qHash(const QByteArray::FromBase64Result &key, size_t seed) noexcept
 
 QT_END_NAMESPACE
 
-#undef IS_RAW_DATA
 #undef REHASH

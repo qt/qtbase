@@ -66,7 +66,6 @@
 #define ULLONG_MAX quint64_C(18446744073709551615)
 #endif
 
-#define IS_RAW_DATA(d) ((d.d)->flags & QArrayData::RawDataType)
 #define REHASH(a) \
     if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT)  \
         hashHaystack -= std::size_t(a) << sl_minus_1; \
@@ -10033,5 +10032,4 @@ void QAbstractConcatenable::appendLatin1To(QLatin1StringView in, QChar *out) noe
 
 QT_END_NAMESPACE
 
-#undef IS_RAW_DATA
 #undef REHASH
