@@ -30,6 +30,7 @@ function(qt_internal_add_executable name)
     endif()
 
     _qt_internal_create_executable(${name})
+    qt_internal_mark_as_internal_target(${name})
     if(ANDROID)
         _qt_internal_android_executable_finalizer(${name})
     endif()
