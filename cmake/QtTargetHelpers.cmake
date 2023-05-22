@@ -1021,6 +1021,15 @@ endfunction()
 # Needed to allow selectively applying certain flags via PlatformXInternal targets.
 function(qt_internal_mark_as_internal_library target)
     set_target_properties(${target} PROPERTIES _qt_is_internal_library TRUE)
+    qt_internal_mark_as_internal_target(${target})
+endfunction()
+
+# Marks a target with a property that it was built using the internal Qt API (qt_internal_*) as
+# opposed to it being a user project library or executable(qt_add_*, etc).
+#
+# Needed to allow selectively applying certain flags via PlatformXInternal targets.
+function(qt_internal_mark_as_internal_target target)
+    set_target_properties(${target} PROPERTIES _qt_is_internal_target TRUE)
 endfunction()
 
 # Marks a target with a property to skip it adding it as a dependency when building examples as
