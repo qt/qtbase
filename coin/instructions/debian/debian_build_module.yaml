@@ -85,8 +85,8 @@ instructions:
       "-sAd", "tqtc-focal",
       "-c", "{{.Env.COIN_SBUILD_CHROOT}}",
       "--build-dir", "output/debian_packages",
+      "--extra-package={{.Env.COIN_EXTRA_DEBIAN_PACKAGES}}",
       "--extra-package={{.AgentWorkingDir}}/debian_packages/",
-      "--extra-package={{.AgentWorkingDir}}/output/debian_packages/",
       "qt-{{.Env.QT_REPO_MODULE_VERSION}}-{{.Env.TESTED_MODULE_PLAIN_COIN}}-src_{{.Env.QT_REPO_MODULE_VERSION}}-1.dsc"]
     maxTimeInSeconds: 18000
     maxTimeBetweenOutput: 1800
