@@ -1313,8 +1313,7 @@ QTextDocumentFragment QTextDocumentFragment::fromMarkdown(const QString &markdow
     QTextDocumentFragment res;
     res.d = new QTextDocumentFragmentPrivate;
 
-    QTextMarkdownImporter importer(features);
-    importer.import(res.d->doc, markdown);
+    QTextMarkdownImporter(res.d->doc, features).import(markdown);
     return res;
 }
 

@@ -101,7 +101,7 @@ void tst_QTextMarkdownImporter::headingBulletsContinuations()
     f.close();
 
     QTextDocument doc;
-    QTextMarkdownImporter(QTextMarkdownImporter::DialectGitHub).import(&doc, md);
+    QTextMarkdownImporter(&doc, QTextMarkdownImporter::DialectGitHub).import(md);
     QTextFrame::iterator iterator = doc.rootFrame()->begin();
     QTextFrame *currentFrame = iterator.currentFrame();
     QStringList::const_iterator expectedIt = expectedBlocks.constBegin();
@@ -149,7 +149,7 @@ void tst_QTextMarkdownImporter::thematicBreaks()
     f.close();
 
     QTextDocument doc;
-    QTextMarkdownImporter(QTextMarkdownImporter::DialectGitHub).import(&doc, md);
+    QTextMarkdownImporter(&doc, QTextMarkdownImporter::DialectGitHub).import(md);
     QTextFrame::iterator iterator = doc.rootFrame()->begin();
     QTextFrame *currentFrame = iterator.currentFrame();
     int i = 0;
@@ -423,7 +423,7 @@ void tst_QTextMarkdownImporter::avoidBlankLineAtBeginning() // QTBUG-81060
     QFETCH(int, expectedNumberOfParagraphs);
 
     QTextDocument doc;
-    QTextMarkdownImporter(QTextMarkdownImporter::DialectGitHub).import(&doc, input);
+    QTextMarkdownImporter(&doc, QTextMarkdownImporter::DialectGitHub).import(input);
     QTextFrame::iterator iterator = doc.rootFrame()->begin();
     int i = 0;
     while (!iterator.atEnd()) {
@@ -468,7 +468,7 @@ void tst_QTextMarkdownImporter::fragmentsAndProperties()
     QFETCH(int, expectedNumberOfFragments);
 
     QTextDocument doc;
-    QTextMarkdownImporter(QTextMarkdownImporter::DialectGitHub).import(&doc, input);
+    QTextMarkdownImporter(&doc, QTextMarkdownImporter::DialectGitHub).import(input);
 #ifdef DEBUG_WRITE_HTML
     {
         QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + ".html");
