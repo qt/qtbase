@@ -169,19 +169,18 @@ void QXdgDesktopPortalFileDialog::openPortal(Qt::WindowFlags windowFlags, Qt::Wi
     options.insert("multiple"_L1, d->multipleFiles);
     options.insert("directory"_L1, d->directoryMode);
 
-    if (d->saveFile) {
-        if (!d->directory.isEmpty())
-            options.insert("current_folder"_L1, QFile::encodeName(d->directory).append('\0'));
+    if (!d->directory.isEmpty())
+        options.insert("current_folder"_L1, QFile::encodeName(d->directory).append('\0'));
 
-        if (!d->selectedFiles.isEmpty()) {
-            // current_file for the file to be pre-selected, current_name for the file name to be pre-filled
-            // current_file accepts absolute path and requires the file to exist
-            // while current_name accepts just file name
-            QFileInfo selectedFileInfo(d->selectedFiles.first());
-            if (selectedFileInfo.exists())
-                options.insert("current_file"_L1, QFile::encodeName(d->selectedFiles.first()).append('\0'));
-            options.insert("current_name"_L1, selectedFileInfo.fileName());
-        }
+    if (d->saveFile && !d->selectedFiles.isEmpty()) {
+        // current_file for the file to be pre-selected, current_name for the file name to be
+        // pre-filled current_file accepts absolute path and requires the file to exist while
+        // current_name accepts just file name
+        QFileInfo selectedFileInfo(d->selectedFiles.first());
+        if (selectedFileInfo.exists())
+            options.insert("current_file"_L1,
+                           QFile::encodeName(d->selectedFiles.first()).append('\0'));
+        options.insert("current_name"_L1, selectedFileInfo.fileName());
     }
 
     // Insert filters
