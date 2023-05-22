@@ -1107,7 +1107,11 @@ bool QWindowsTheme::queryDarkMode()
 
 bool QWindowsTheme::queryHighContrast()
 {
-    return booleanSystemParametersInfo(SPI_GETHIGHCONTRAST, false);
+    HIGHCONTRAST hcf = {};
+    hcf.cbSize = static_cast<UINT>(sizeof(HIGHCONTRAST));
+    if (SystemParametersInfo(SPI_GETHIGHCONTRAST, hcf.cbSize, &hcf, FALSE))
+        return hcf.dwFlags & HCF_HIGHCONTRASTON;
+    return false;
 }
 
 QPlatformMenuItem *QWindowsTheme::createPlatformMenuItem() const
