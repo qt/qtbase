@@ -62,6 +62,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 @interface TestAXObject : NSObject
 {
     AXUIElementRef reference;
+    bool axError;
 }
     @property (readonly) NSString *role;
     @property (readonly) NSString *title;
@@ -77,11 +78,13 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 
     if ((self = [super init])) {
         reference = ref;
+        axError = false;
     }
     return self;
 }
 
 - (AXUIElementRef) ref { return reference; }
+- (bool)errorOccurred { return axError; }
 - (void) print {
     NSLog(@"Accessible Object role: '%@', title: '%@', description: '%@', value: '%@', rect: '%@'", self.role, self.title, self.description, self.value, NSStringFromRect(NSRectFromCGRect(self.rect)));
     NSLog(@"    Children: %ld", [[self childList] count]);
@@ -225,8 +228,8 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     CFTypeRef value = NULL;
     AXError err;
 
-    if (kAXErrorSuccess != (err = AXUIElementCopyAttributeValue(reference, attribute, &value)))
-    {
+    if (kAXErrorSuccess != (err = AXUIElementCopyAttributeValue(reference, attribute, &value))) {
+        axError = true;
         qDebug() << "AXUIElementCopyAttributeValue(" << QString::fromCFString(attribute) << ") returned error = " << AXErrorTag(err);
     }
     return value;
@@ -272,8 +275,8 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     CFTypeRef value = NULL;
     AXError err;
 
-    if (kAXErrorSuccess != (err = AXUIElementCopyParameterizedAttributeValue(reference, attribute, parameter, &value)))
-    {
+    if (kAXErrorSuccess != (err = AXUIElementCopyParameterizedAttributeValue(reference, attribute, parameter, &value))) {
+        axError = true;
         CFStringRef description = CFCopyDescription(parameter);
         qDebug() << "AXUIElementCopyParameterizedAttributeValue(" << QString::fromCFString(attribute) << ", parameter=" << QString::fromCFString(description) << ") returned error = " << AXErrorTag(err);
         CFRelease(description);
@@ -311,8 +314,8 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     AXError err;
     CFArrayRef actions;
 
-    if (kAXErrorSuccess != (err = AXUIElementCopyActionNames(reference, &actions)))
-    {
+    if (kAXErrorSuccess != (err = AXUIElementCopyActionNames(reference, &actions))) {
+        axError = true;
         qDebug() << "AXUIElementCopyActionNames(...) returned error = " << AXErrorTag(err);
     }
 
@@ -323,8 +326,8 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 {
     AXError err;
 
-    if (kAXErrorSuccess != (err = AXUIElementPerformAction(reference, action)))
-    {
+    if (kAXErrorSuccess != (err = AXUIElementPerformAction(reference, action))) {
+        axError = true;
         qDebug() << "AXUIElementPerformAction("  << QString::fromCFString(action) << ") returned error = " << AXErrorTag(err);
     }
 }
@@ -780,6 +783,25 @@ void tst_QAccessibilityMac::treeViewTest()
 
     // this should not trigger any assert
     tw->setCurrentItem(lastChild);
+
+    bool errorOccurred = false;
+
+    const auto cellText = [rowArray, &errorOccurred](int rowIndex, int columnIndex) -> QString {
+        TestAXObject *row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[rowIndex]];
+        Q_ASSERT(row);
+        TestAXObject *cell = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)[row childList][columnIndex]];
+        Q_ASSERT(cell);
+        const QString result = QString::fromNSString(cell.title);
+        errorOccurred = cell.errorOccurred;
+        return result;
+    };
+
+    QString text = cellText(0, 0);
+    if (errorOccurred)
+        QSKIP("Cocoa Accessibility API error, aborting");
+    QCOMPARE(text, root->text(0));
+    QCOMPARE(cellText(1, 0), users->text(0));
+    QCOMPARE(cellText(1, 1), users->text(1));
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)
