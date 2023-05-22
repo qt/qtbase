@@ -463,7 +463,7 @@ public:
     static int maxAlloc;
 };
 
-int QImageReaderPrivate::maxAlloc = 128; // 128 MB is enough for an 8K 32bpp image
+int QImageReaderPrivate::maxAlloc = 256; // 256 MB is enough for an 8K 64bpp image
 
 /*!
     \internal
@@ -1571,6 +1571,8 @@ int QImageReader::allocationLimit()
     This limit helps applications avoid unexpectedly large memory usage from
     loading corrupt image files. It is normally not needed to change it. The
     default limit is large enough for all commonly used image sizes.
+
+    At runtime, this value may be overridden by the environment variable \c QT_IMAGEIO_MAXALLOC.
 
     \note The memory requirements are calculated for a minimum of 32 bits per pixel, since Qt will
     typically convert an image to that depth when it is used in GUI. This means that the effective
