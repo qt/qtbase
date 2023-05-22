@@ -548,12 +548,12 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
                        item. By default, the highlight color is
                        Qt::darkBlue.
 
-    \value AccentColor A color that typically contrasts or compliments
+    \value [since 6.6] AccentColor
+                       A color that typically contrasts or compliments
                        Base, Window and Button colors. It usually represents
                        the users' choice of desktop personalisation.
                        Styling of interactive components is a typical use case.
                        Unless explicitly set, it defaults to Highlight.
-                       This enum value has been introduced in Qt 6.6.
 
     \value HighlightedText  A text color that contrasts with \c Highlight.
                             By default, the highlighted text color is Qt::white.

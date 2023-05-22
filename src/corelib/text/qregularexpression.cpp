@@ -1857,9 +1857,8 @@ QString QRegularExpression::escape(QStringView str)
         The conversion will not anchor the pattern. This allows for partial string matches of
         wildcard expressions.
 
-    \value NonPathWildcardConversion
+    \value [since 6.6] NonPathWildcardConversion
         The conversion will \e{not} interpret the pattern as filepath globbing.
-        This enum value has been introduced in Qt 6.6.
 
     \sa QRegularExpression::wildcardToRegularExpression
 */
