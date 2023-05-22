@@ -1309,7 +1309,7 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags)
 {
     QD3D11SwapChain *swapChainD = QRHI_RES(QD3D11SwapChain, swapChain);
-    Q_ASSERT(contextState.currentSwapChain = swapChainD);
+    Q_ASSERT(contextState.currentSwapChain == swapChainD);
     const int currentFrameSlot = swapChainD->currentFrameSlot;
 
     ID3D11Query *tsDisjoint = swapChainD->timestamps.disjointQuery[currentFrameSlot];
