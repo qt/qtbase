@@ -124,5 +124,5 @@ endif()
 # Emscripten Clang
 if(WASM)
     set(QT_CFLAGS_OPTIMIZE_DEBUG "-O2 -g") # -Og is not supported
-    set(QT_CFLAGS_SSE2 -O2 -msimd128 -msse -msse2)
+    set(QT_CFLAGS_SSE2 "-O2 -msimd128 -msse -msse2")
 endif()
