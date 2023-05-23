@@ -93,19 +93,6 @@ static inline int lengthOfEscapeSequence(const QByteArray &s, int i)
     return i - startPos;
 }
 
-static inline uint lengthOfEscapedString(const QByteArray &str)
-{
-    int extra = 0;
-    for (int j = 0; j < str.size(); ++j) {
-        if (str.at(j) == '\\') {
-            int cnt = lengthOfEscapeSequence(str, j) - 1;
-            extra += cnt;
-            j += cnt;
-        }
-    }
-    return str.size() - extra;
-}
-
 // Prints \a s to \a out, breaking it into lines of at most ColumnWidth. The
 // opening and closing quotes are NOT included (it's up to the caller).
 static void printStringWithIndentation(FILE *out, const QByteArray &s)
@@ -288,61 +275,9 @@ void Generator::generateCode()
         }
     }
     fprintf(out, "\n);\n"
-            "#else  // !QT_MOC_HAS_STRING_DATA\n");
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+            "#else  // !QT_MOC_HAS_STRINGDATA\n");
     fprintf(out, "#error \"qtmochelpers.h not found or too old.\"\n");
-#else
-//
-// Build stringdata struct
-//
-
-    fprintf(out, "struct qt_meta_stringdata_%s_t {\n", qualifiedClassNameIdentifier.constData());
-    fprintf(out, "    uint offsetsAndSizes[%d];\n", int(strings.size() * 2));
-    for (int i = 0; i < strings.size(); ++i) {
-        int thisLength = lengthOfEscapedString(strings.at(i)) + 1;
-        fprintf(out, "    char stringdata%d[%d];\n", i, thisLength);
-    }
-    fprintf(out, "};\n");
-
-    // Macro that simplifies the string data listing. The offset is calculated
-    // from the top of the stringdata object (i.e., past the uints).
-    fprintf(out, "#define QT_MOC_LITERAL(ofs, len) \\\n"
-            "    uint(sizeof(qt_meta_stringdata_%s_t::offsetsAndSizes) + ofs), len \n",
-            qualifiedClassNameIdentifier.constData());
-
-    fprintf(out, "Q_CONSTINIT static const qt_meta_stringdata_%s_t qt_meta_stringdata_%s = {\n",
-            qualifiedClassNameIdentifier.constData(), qualifiedClassNameIdentifier.constData());
-    fprintf(out, "    {");
-    {
-        int idx = 0;
-        for (int i = 0; i < strings.size(); ++i) {
-            const QByteArray &str = strings.at(i);
-            const QByteArray comment = str.size() > 32 ? str.left(29) + "..." : str;
-            const char *comma = (i != strings.size() - 1 ? "," : " ");
-            int len = lengthOfEscapedString(str);
-            fprintf(out, "\n        QT_MOC_LITERAL(%d, %d)%s  // \"%s\"", idx, len, comma,
-                    comment.constData());
-
-            idx += len + 1;
-        }
-        fprintf(out, "\n    }");
-    }
-
-//
-// Build stringdata arrays
-//
-    for (const QByteArray &s : std::as_const(strings)) {
-        fputc(',', out);
-        printStringWithIndentation(out, s);
-    }
-
-// Terminate stringdata struct
-    fprintf(out, "\n};\n");
-    fprintf(out, "#undef QT_MOC_LITERAL\n");
-#endif // Qt 6.9
-
-    fprintf(out, "#endif // !QT_MOC_HAS_STRING_DATA\n");
+    fprintf(out, "#endif // !QT_MOC_HAS_STRINGDATA\n");
     fprintf(out, "} // unnamed namespace\n\n");
 
 //

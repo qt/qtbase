@@ -1111,16 +1111,7 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     for (const QByteArray &qtContainer : qtContainers)
         fprintf(out, "#include <QtCore/%s>\n", qtContainer.constData());
 
-    fprintf(out, "\n%s#include <QtCore/qtmochelpers.h>\n%s\n",
-#if QT_VERSION <= QT_VERSION_CHECK(6, 9, 0)
-            "#if __has_include(<QtCore/qtmochelpers.h>)\n",
-            "#else\n"
-            "QT_BEGIN_MOC_NAMESPACE\n"
-            "#endif\n"
-#else
-            "", ""
-#endif
-    );
+    fprintf(out, "\n#include <QtCore/qtmochelpers.h>\n");
 
     fprintf(out, "\n#include <memory>\n\n");  // For std::addressof
 
