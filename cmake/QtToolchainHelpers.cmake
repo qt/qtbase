@@ -131,10 +131,12 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
         list(APPEND init_platform "
 set(__qt_initial_c_compiler \"${CMAKE_C_COMPILER}\")
 set(__qt_initial_cxx_compiler \"${CMAKE_CXX_COMPILER}\")
-if(NOT DEFINED CMAKE_C_COMPILER AND EXISTS \"\${__qt_initial_c_compiler}\")
+if(QT_USE_ORIGINAL_COMPILER AND NOT DEFINED CMAKE_C_COMPILER
+        AND EXISTS \"\${__qt_initial_c_compiler}\")
     set(CMAKE_C_COMPILER \"\${__qt_initial_c_compiler}\" CACHE STRING \"\")
 endif()
-if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS \"\${__qt_initial_cxx_compiler}\")
+if(QT_USE_ORIGINAL_COMPILER AND NOT DEFINED CMAKE_CXX_COMPILER
+        AND EXISTS \"\${__qt_initial_cxx_compiler}\")
     set(CMAKE_CXX_COMPILER \"\${__qt_initial_cxx_compiler}\" CACHE STRING \"\")
 endif()")
     endif()
