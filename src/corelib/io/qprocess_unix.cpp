@@ -463,6 +463,11 @@ static int useForkFlags(const QProcessPrivate::UnixExtras *unixExtras)
     // QTBUG-86285)
     return FFD_USE_FORK;
 #endif
+#if defined(Q_OS_DARWIN)
+    // Using vfork() for startDetached() is causing problems. We don't know
+    // why: without the tools to investigate why it happens, we didn't bother.
+    return FFD_USE_FORK;
+#endif
 
     if (!unixExtras || !unixExtras->childProcessModifier)
         return 0;           // no modifier was supplied
