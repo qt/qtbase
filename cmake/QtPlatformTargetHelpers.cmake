@@ -63,6 +63,10 @@ function(qt_internal_setup_public_platform_target)
 
     # Generate a pkgconfig for Qt::Platform.
     qt_internal_generate_pkg_config_file(Platform)
+
+    # Make sure Qt users use the same symbols as how we build Qt.
+    qt_internal_library_deprecation_level(deprecation_defines)
+    target_compile_definitions(Platform INTERFACE ${deprecation_defines})
 endfunction()
 
 function(qt_internal_get_platform_definition_include_dir install_interface build_interface)

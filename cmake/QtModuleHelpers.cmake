@@ -487,8 +487,6 @@ function(qt_internal_add_module target)
         endif()
     endif()
 
-    qt_internal_library_deprecation_level(deprecation_define)
-
     if(NOT arg_HEADER_MODULE)
         qt_autogen_tools_initial_setup(${target})
     endif()
@@ -578,7 +576,6 @@ function(qt_internal_add_module target)
             QT_DEPRECATED_WARNINGS
             QT_BUILDING_QT
             QT_BUILD_${module_define_infix}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
-            ${deprecation_define}
             )
         list(APPEND arg_LIBRARIES Qt::PlatformModuleInternal)
     endif()
