@@ -146,7 +146,7 @@ function(qt_internal_add_executable name)
 
     if(WASM)
         # WASM unconditionally sets DISABLE_EXCEPTION_CATCHING=1
-        qt_internal_set_exceptions_flags("${name}" NO_EXCEPTIONS)
+        qt_internal_set_exceptions_flags("${name}" FALSE)
     else()
         qt_internal_set_exceptions_flags("${name}" ${arg_EXCEPTIONS})
     endif()
