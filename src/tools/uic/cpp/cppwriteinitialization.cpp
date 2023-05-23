@@ -180,6 +180,15 @@ FontHandle::FontHandle(const DomFont *domFont) :
 {
 }
 
+static QString fontWeight(const DomFont *domFont)
+{
+   if (domFont->hasElementFontWeight())
+       return domFont->elementFontWeight();
+   if (domFont->hasElementBold())
+      return domFont->elementBold() ? u"Bold"_s : u"Normal"_s;
+   return {};
+}
+
 int FontHandle::compare(const FontHandle &rhs) const
 {
     const QString family    = m_domFont->hasElementFamily()     ?     m_domFont->elementFamily() : QString();
@@ -194,10 +203,10 @@ int FontHandle::compare(const FontHandle &rhs) const
     if (const int crc = compareInt(pointSize, rhsPointSize))
         return crc;
 
-    const int bold    = m_domFont->hasElementBold()     ? (m_domFont->elementBold()     ? 1 : 0) : -1;
-    const int rhsBold = rhs.m_domFont->hasElementBold() ? (rhs.m_domFont->elementBold() ? 1 : 0) : -1;
-    if (const int crc = compareInt(bold, rhsBold))
-        return crc;
+    const QString fontWeight  = CPP::fontWeight(m_domFont);
+    const QString rhsFontWeight = CPP::fontWeight(rhs.m_domFont);
+    if (const int wrc = fontWeight.compare(rhsFontWeight))
+        return wrc;
 
     const int italic    = m_domFont->hasElementItalic()     ? (m_domFont->elementItalic()     ? 1 : 0) : -1;
     const int rhsItalic = rhs.m_domFont->hasElementItalic() ? (rhs.m_domFont->elementItalic() ? 1 : 0) : -1;
@@ -207,11 +216,6 @@ int FontHandle::compare(const FontHandle &rhs) const
     const int underline    = m_domFont->hasElementUnderline()     ? (m_domFont->elementUnderline()     ? 1 : 0) : -1;
     const int rhsUnderline = rhs.m_domFont->hasElementUnderline() ? (rhs.m_domFont->elementUnderline() ? 1 : 0) : -1;
     if (const int crc = compareInt(underline, rhsUnderline))
-        return crc;
-
-    const int weight    = m_domFont->hasElementWeight()     ?     m_domFont->elementWeight() : -1;
-    const int rhsWeight = rhs.m_domFont->hasElementWeight() ? rhs.m_domFont->elementWeight() : -1;
-    if (const int crc = compareInt(weight, rhsWeight))
         return crc;
 
     const int strikeOut    = m_domFont->hasElementStrikeOut()     ? (m_domFont->elementStrikeOut()     ? 1 : 0) : -1;
@@ -1634,10 +1638,14 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
              << ")" << language::eol;
     }
 
-    if (f->hasElementBold()) {
+    if (f->hasElementFontWeight()) {
+         m_output << m_indent << fontName << ".setWeight(QFont"
+             << language::qualifier << f->elementFontWeight() << ')' << language::eol;
+    } else if (f->hasElementBold()) {
         m_output << m_indent << fontName << ".setBold("
             << language::boolValue(f->elementBold()) << ')' << language::eol;
     }
+
     if (f->hasElementItalic()) {
         m_output << m_indent << fontName << ".setItalic("
             << language::boolValue(f->elementItalic()) << ')' << language::eol;
