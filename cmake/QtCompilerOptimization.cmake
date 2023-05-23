@@ -92,10 +92,10 @@ endif()
 
 # Windows MSVC
 if(MSVC)
-    set(QT_CFLAGS_OPTIMIZE "-O2")
+    set(QT_CFLAGS_OPTIMIZE "-O2 -Ob3") # -Ob3 was introduced in Visual Studio 2019 version 16.0
     set(QT_CFLAGS_OPTIMIZE_DEBUG "-Od")
     set(QT_CFLAGS_OPTIMIZE_SIZE "-O1")
-    set(QT_CFLAGS_OPTIMIZE_VALID_VALUES "/O2" "/O1" "/Od" "/Ob0" "/Ob1" "/Ob2" "/O0" "-O0")
+    set(QT_CFLAGS_OPTIMIZE_VALID_VALUES "/O2" "/O1" "/Od" "/Ob0" "/Ob1" "/Ob2" "/Ob3" "/O0" "-O0")
 
     if(CLANG)
         set(QT_CFLAGS_OPTIMIZE_FULL "/clang:-O3")
