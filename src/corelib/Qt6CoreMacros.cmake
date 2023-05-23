@@ -2834,8 +2834,8 @@ macro(qt6_standard_project_setup)
             endif()
         endforeach()
 
-        # Enable folder support for IDEs. A future CMake version might enable this by default.
-        # See CMake issue #21695.
+        # Enable folder support for IDEs. CMake >= 3.26 enables USE_FOLDERS by default but this is
+        # guarded by CMake policy CMP0143.
         get_property(__qt_use_folders GLOBAL PROPERTY USE_FOLDERS)
         if(__qt_use_folders OR "${__qt_use_folders}" STREQUAL "")
             set_property(GLOBAL PROPERTY USE_FOLDERS ON)
