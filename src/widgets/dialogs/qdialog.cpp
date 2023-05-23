@@ -159,13 +159,15 @@ void QDialogPrivate::close(int resultCode)
 void QDialogPrivate::finalize(int resultCode, int dialogCode)
 {
     Q_Q(QDialog);
+    QPointer<QDialog> guard(q);
 
     if (dialogCode == QDialog::Accepted)
         emit q->accepted();
     else if (dialogCode == QDialog::Rejected)
         emit q->rejected();
 
-    emit q->finished(resultCode);
+    if (guard)
+        emit q->finished(resultCode);
 }
 
 QWindow *QDialogPrivate::transientParentWindow() const
