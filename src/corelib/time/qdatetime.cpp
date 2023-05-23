@@ -5067,26 +5067,19 @@ bool QDateTime::equals(const QDateTime &other) const
     \sa operator==()
 */
 
-/*!
-    \internal
-    Returns \c true if \a lhs is earlier than the \a rhs
-    datetime; otherwise returns \c false.
-
-    \sa equals(), operator<()
-*/
-
-bool QDateTime::precedes(const QDateTime &other) const
+Qt::weak_ordering compareThreeWay(const QDateTime &lhs, const QDateTime &rhs)
 {
-    if (!isValid())
-        return other.isValid();
-    if (!other.isValid())
-        return false;
+    if (!lhs.isValid())
+        return rhs.isValid() ? Qt::weak_ordering::less : Qt::weak_ordering::equivalent;
 
-    if (usesSameOffset(d, other.d))
-        return getMSecs(d) < getMSecs(other.d);
+    if (!rhs.isValid())
+        return Qt::weak_ordering::greater; // we know that lhs is valid here
+
+    if (usesSameOffset(lhs.d, rhs.d))
+        return Qt::compareThreeWay(getMSecs(lhs.d), getMSecs(rhs.d));
 
     // Convert to UTC and compare
-    return toMSecsSinceEpoch() < other.toMSecsSinceEpoch();
+    return Qt::compareThreeWay(lhs.toMSecsSinceEpoch(), rhs.toMSecsSinceEpoch());
 }
 
 /*!

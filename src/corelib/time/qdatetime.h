@@ -547,17 +547,18 @@ public:
 
 private:
     bool equals(const QDateTime &other) const;
+#if QT_CORE_REMOVED_SINCE(6, 7)
     bool precedes(const QDateTime &other) const;
+#endif
     friend class QDateTimePrivate;
 
     Data d;
 
-    friend bool operator==(const QDateTime &lhs, const QDateTime &rhs) { return lhs.equals(rhs); }
-    friend bool operator!=(const QDateTime &lhs, const QDateTime &rhs) { return !(lhs == rhs); }
-    friend bool operator<(const QDateTime &lhs, const QDateTime &rhs) { return lhs.precedes(rhs); }
-    friend bool operator<=(const QDateTime &lhs, const QDateTime &rhs) { return !(rhs < lhs); }
-    friend bool operator>(const QDateTime &lhs, const QDateTime &rhs) { return rhs.precedes(lhs); }
-    friend bool operator>=(const QDateTime &lhs, const QDateTime &rhs) { return !(lhs < rhs); }
+    friend bool comparesEqual(const QDateTime &lhs, const QDateTime &rhs)
+    { return lhs.equals(rhs); }
+    friend Q_CORE_EXPORT Qt::weak_ordering
+    compareThreeWay(const QDateTime &lhs, const QDateTime &rhs);
+    Q_DECLARE_WEAKLY_ORDERED(QDateTime)
 
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QDateTime &);

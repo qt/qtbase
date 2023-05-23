@@ -692,6 +692,11 @@ void QDateTime::setTimeZone(const QTimeZone &toZone)
     setTimeZone(toZone, TransitionResolution::LegacyBehavior);
 }
 
+bool QDateTime::precedes(const QDateTime &other) const
+{
+    return compareThreeWay(*this, other) < 0;
+}
+
 #include "qdatastream.h"
 
 QDataStream &QDataStream::readBytes(char *&s, uint &l)
