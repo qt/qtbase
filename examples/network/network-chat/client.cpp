@@ -67,8 +67,7 @@ void Client::newConnection(Connection *connection)
 void Client::readyForUse()
 {
     Connection *connection = qobject_cast<Connection *>(sender());
-    if (!connection || hasConnection(connection->peerAddress(),
-                                     connection->peerPort()))
+    if (!connection || hasConnection(connection->peerAddress(), connection->peerPort()))
         return;
 
     connect(connection,  &Connection::newMessage,
