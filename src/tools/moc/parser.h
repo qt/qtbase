@@ -15,7 +15,7 @@ class Parser
 public:
     Parser():index(0), displayWarnings(true), displayNotes(true) {}
     Symbols symbols;
-    int index;
+    qsizetype index;
     bool displayWarnings;
     bool displayNotes;
 
@@ -62,7 +62,7 @@ inline bool Parser::test(Token token)
 
 inline Token Parser::lookup(int k)
 {
-    const int l = index - 1 + k;
+    const qsizetype l = index - 1 + k;
     return l < symbols.size() ? symbols.at(l).token : NOTOKEN;
 }
 
