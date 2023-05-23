@@ -9,13 +9,6 @@
 #include <QtTest/private/qbenchmark_p.h>
 #include <QtTest/private/qtestlog_p.h>
 
-#ifdef min // windows.h without NOMINMAX is included by the benchmark headers.
-#  undef min
-#endif
-#ifdef max
-#  undef max
-#endif
-
 #include <QtCore/qlibraryinfo.h>
 
 #include <string.h>

@@ -7,9 +7,6 @@
 // (except qglobal.h), or else you'll get tons of compile errors
 #include <qglobal.h>
 
-// To prevent windows system header files from re-defining min/max
-#define NOMINMAX 1
-
 #if defined(Q_OS_WIN)
 # include <winsock2.h>
 # include <ws2tcpip.h>

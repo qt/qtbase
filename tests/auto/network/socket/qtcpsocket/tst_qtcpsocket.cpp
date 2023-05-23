@@ -4,8 +4,6 @@
 
 #include <qglobal.h>
 
-// To prevent windows system header files from re-defining min/max
-#define NOMINMAX 1
 #if defined(_WIN32)
 #include <winsock2.h>
 #else
