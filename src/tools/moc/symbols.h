@@ -110,7 +110,7 @@ struct SafeSymbols {
     Symbols symbols;
     QByteArray expandedMacro;
     QSet<QByteArray> excludedSymbols;
-    int index;
+    qsizetype index;
 };
 Q_DECLARE_TYPEINFO(SafeSymbols, Q_RELOCATABLE_TYPE);
 
