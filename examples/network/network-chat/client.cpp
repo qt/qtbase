@@ -94,7 +94,7 @@ void Client::connectionError(QAbstractSocket::SocketError /* socketError */)
 
 void Client::removeConnection(Connection *connection)
 {
-    if (peers.remove(connection->peerAddress()) > 0) {
+    if (peers.remove(connection->peerAddress(), connection) > 0) {
         QString nick = connection->name();
         if (!nick.isEmpty())
             emit participantLeft(nick);
