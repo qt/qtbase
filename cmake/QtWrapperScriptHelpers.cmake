@@ -53,15 +53,16 @@ function(qt_internal_create_wrapper_scripts)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-create.bat"
                 DESTINATION "${INSTALL_BINDIR}")
     endif()
-    # Provide a private convenience wrapper with options which should not be propagated via the
+    # Provide a private convenience wrapper with options that should not be propagated via the
     # public qt-cmake wrapper e.g. CMAKE_GENERATOR.
     # These options can not be set in a toolchain file, but only on the command line.
     # These options should not be in the public wrapper, because a consumer of Qt might want to
     # build their CMake app with the Unix Makefiles generator, while Qt should be built with the
-    # Ninja generator.
-    # The private wrapper is more conveient for building Qt itself, because a developer doesn't need
-    # to specify the same options for each qt module built.
-    set(__qt_cmake_extra "-G\"${CMAKE_GENERATOR}\"")
+    # Ninja generator. In a similar vein, we do want to use the same compiler for all Qt modules,
+    # but not for user applications.
+    # The private wrapper is more convenient for building Qt itself, because a developer doesn't
+    # need to specify the same options for each qt module built.
+    set(__qt_cmake_extra "-G\"${CMAKE_GENERATOR}\" -DQT_USE_ORIGINAL_COMPILER=ON")
     if(generate_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in"
             "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-cmake-private" @ONLY
@@ -231,7 +232,7 @@ function(qt_internal_create_qt_configure_tests_wrapper_script)
     # The script takes a path to the repo for which the standalone tests will be configured.
     set(script_name "qt-internal-configure-tests")
 
-    set(script_passed_args "-DQT_BUILD_STANDALONE_TESTS=ON")
+    set(script_passed_args "-DQT_BUILD_STANDALONE_TESTS=ON -DQT_USE_ORIGINAL_COMPILER=ON")
 
     file(RELATIVE_PATH relative_path_from_libexec_dir_to_bin_dir
         ${__qt_libexec_dir_absolute}
