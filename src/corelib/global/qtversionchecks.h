@@ -28,7 +28,7 @@
          void QT7_ONLY(Q_CORE_EXPORT) void operate();
      }
 */
-#if QT_VERSION_MAJOR == 7
+#if QT_VERSION_MAJOR == 7 || defined(QT_BOOTSTRAPPED)
 #  define QT7_ONLY(...)         __VA_ARGS__
 #  define QT6_ONLY(...)
 #elif QT_VERSION_MAJOR == 6
