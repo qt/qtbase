@@ -28,6 +28,10 @@ set_target_properties(network-chat PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
+target_compile_definitions(network-chat PRIVATE
+    QT_USE_QSTRINGBUILDER
+)
+
 target_link_libraries(network-chat PRIVATE
     Qt6::Core
     Qt6::Gui

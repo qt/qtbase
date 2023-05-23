@@ -11,6 +11,7 @@ SOURCES       = chatdialog.cpp \
                 server.cpp
 FORMS         = chatdialog.ui
 QT           += network widgets
+DEFINES      += QT_USE_QSTRINGBUILDER
 requires(qtConfig(udpsocket))
 requires(qtConfig(listwidget))
 
