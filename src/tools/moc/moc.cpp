@@ -1138,6 +1138,12 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     for (int i = 0; i < classList.size(); ++i) {
         Generator generator(&classList[i], metaTypes, knownQObjectClasses, knownGadgets, out, requireCompleteTypes);
         generator.generateCode();
+
+        // generator.generateCode() should have already registered all strings
+        if (Q_UNLIKELY(generator.registeredStringsCount() >= std::numeric_limits<int>::max())) {
+            error("internal limit exceeded: number of parsed strings is too big.");
+            exit(EXIT_FAILURE);
+        }
     }
     fputs("", out);
 

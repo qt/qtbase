@@ -122,7 +122,7 @@ void Generator::strreg(const QByteArray &s)
 
 int Generator::stridx(const QByteArray &s)
 {
-    int i = strings.indexOf(s);
+    int i = int(strings.indexOf(s));
     Q_ASSERT_X(i != -1, Q_FUNC_INFO, "We forgot to register some strings");
     return i;
 }
@@ -841,7 +841,7 @@ void Generator::generateProperties()
         int notifyId = p.notifyId;
         if (p.notifyId < -1) {
             // signal is in parent class
-            const int indexInStrings = strings.indexOf(p.notify);
+            const int indexInStrings = int(strings.indexOf(p.notify));
             notifyId = indexInStrings | IsUnresolvedSignal;
         }
         fprintf(out, ", 0x%.8x, uint(%d), %d,\n", flags, notifyId, p.revision);

@@ -20,6 +20,8 @@ public:
               const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile = nullptr,
               bool requireCompleteTypes = false);
     void generateCode();
+    qsizetype registeredStringsCount() { return strings.size(); };
+
 private:
     bool registerableMetaType(const QByteArray &propertyType);
     void registerClassInfoStrings();
