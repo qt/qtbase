@@ -5,6 +5,7 @@
 #ifndef QTIMEZONE_H
 #define QTIMEZONE_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qlocale.h>
 #include <QtCore/qswap.h>
@@ -114,8 +115,10 @@ public:
     void swap(QTimeZone &other) noexcept
     { d.swap(other.d); }
 
+#if QT_CORE_REMOVED_SINCE(6, 7)
     bool operator==(const QTimeZone &other) const;
     bool operator!=(const QTimeZone &other) const;
+#endif
 
     bool isValid() const;
 
@@ -230,6 +233,9 @@ public:
 #  endif
 #endif // feature timezone
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QTimeZone &lhs, const QTimeZone &rhs) noexcept;
+    Q_DECLARE_EQUALITY_COMPARABLE(QTimeZone)
+
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &ds, const QTimeZone &tz);
 #endif

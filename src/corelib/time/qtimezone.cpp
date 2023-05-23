@@ -735,7 +735,9 @@ QTimeZone &QTimeZone::operator=(const QTimeZone &other)
 */
 
 /*!
-    Returns \c true if this time representation is equal to the \a other.
+    \fn bool QTimeZone::operator==(const QTimeZone &lhs, const QTimeZone &rhs)
+
+    Returns \c true if \a lhs time zone is equal to the \a rhs time zone.
 
     Two representations are different if they are internally described
     differently, even if they agree in their representation of all moments of
@@ -743,33 +745,31 @@ QTimeZone &QTimeZone::operator=(const QTimeZone &other)
     time zone but the two will not be equal.
 */
 
-bool QTimeZone::operator==(const QTimeZone &other) const
-{
-    if (d.isShort())
-        return other.d.isShort() && d.s == other.d.s;
+/*!
+    \fn bool QTimeZone::operator!=(const QTimeZone &lhs, const QTimeZone &rhs)
 
-    if (!other.d.isShort()) {
-        if (d.d == other.d.d)
+    Returns \c true if \a lhs time zone is not equal to the \a rhs time zone.
+
+    Two representations are different if they are internally described
+    differently, even if they agree in their representation of all moments of
+    time. In particular, a lightweight time representation may coincide with a
+    time zone but the two will not be equal.
+*/
+
+bool comparesEqual(const QTimeZone &lhs, const QTimeZone &rhs) noexcept
+{
+    if (lhs.d.isShort())
+        return rhs.d.isShort() && lhs.d.s == rhs.d.s;
+
+    if (!rhs.d.isShort()) {
+        if (lhs.d.d == rhs.d.d)
             return true;
 #if QT_CONFIG(timezone)
-        return d.d && other.d.d && *d.d == *other.d.d;
+        return lhs.d.d && rhs.d.d && *lhs.d.d == *rhs.d.d;
 #endif
     }
 
     return false;
-}
-
-/*!
-    Returns \c true if this time zone is not equal to the \a other time zone.
-
-    Two representations are different if they are internally described
-    differently, even if they agree in their representation of all moments of
-    time. In particular, a lightweight time representation may coincide with a
-    time zone but the two will not be equal.
-*/
-bool QTimeZone::operator!=(const QTimeZone &other) const // ### Qt 7: inline
-{
-    return !(*this == other);
 }
 
 /*!

@@ -859,6 +859,18 @@ QString QString::chopped(qsizetype n) const
 { return sliced(0, size() - n); }
 #endif
 
+#include "qtimezone.h"
+
+bool QTimeZone::operator==(const QTimeZone &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+bool QTimeZone::operator!=(const QTimeZone &other) const
+{
+    return !comparesEqual(*this, other);
+}
+
 #include "qurl.h"
 
 QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)

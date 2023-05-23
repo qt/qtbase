@@ -4,6 +4,7 @@
 #include <QTest>
 #include <qtimezone.h>
 #include <private/qtimezoneprivate_p.h>
+#include <private/qcomparisontesthelper_p.h>
 
 #include <qlocale.h>
 
@@ -24,6 +25,8 @@ private Q_SLOTS:
     void createTest();
     void nullTest();
     void assign();
+    void compareCompiles();
+    void compare_data();
     void compare();
     void timespec();
     void offset();
@@ -331,19 +334,38 @@ void tst_QTimeZone::assign()
 #endif
 }
 
-void tst_QTimeZone::compare()
+void tst_QTimeZone::compareCompiles()
 {
+    QTestPrivate::testEqualityOperatorsCompile<QTimeZone>();
+}
+
+void tst_QTimeZone::compare_data()
+{
+    QTest::addColumn<QTimeZone>("left");
+    QTest::addColumn<QTimeZone>("right");
+    QTest::addColumn<bool>("expectedEqual");
+
     const QTimeZone local;
     const QTimeZone utc(QTimeZone::UTC);
     const auto secondEast = QTimeZone::fromSecondsAheadOfUtc(1);
+    const auto zeroOffset = QTimeZone::fromSecondsAheadOfUtc(0);
+    const auto durationEast = QTimeZone::fromDurationAheadOfUtc(std::chrono::seconds{1});
 
-    QCOMPARE_NE(local, utc);
-    QCOMPARE_NE(utc, secondEast);
-    QCOMPARE_NE(secondEast, local);
+    QTest::newRow("local vs default-constructed") << local << QTimeZone() << true;
+    QTest::newRow("local vs UTC") << local << utc << false;
+    QTest::newRow("local vs secondEast") << local << secondEast << false;
+    QTest::newRow("secondEast vs UTC") << secondEast << utc << false;
+    QTest::newRow("UTC vs zeroOffset") << utc << zeroOffset << true;
+    QTest::newRow("secondEast vs durationEast") << secondEast << durationEast << true;
+}
 
-    QCOMPARE(local, QTimeZone());
-    QCOMPARE(utc, QTimeZone::fromSecondsAheadOfUtc(0));
-    QCOMPARE(secondEast, QTimeZone::fromDurationAheadOfUtc(std::chrono::seconds{1}));
+void tst_QTimeZone::compare()
+{
+    QFETCH(QTimeZone, left);
+    QFETCH(QTimeZone, right);
+    QFETCH(bool, expectedEqual);
+
+    QTestPrivate::testEqualityOperators(left, right, expectedEqual);
 }
 
 void tst_QTimeZone::timespec()
