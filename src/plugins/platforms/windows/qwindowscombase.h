@@ -4,6 +4,8 @@
 #ifndef QWINDOWSCOMBASE_H
 #define QWINDOWSCOMBASE_H
 
+#include <qt_windows.h>
+
 #include <QtCore/qglobal.h>
 
 #include <unknwn.h>
