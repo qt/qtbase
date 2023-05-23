@@ -56,11 +56,7 @@ void PeerManager::startBroadcasting()
 
 bool PeerManager::isLocalHostAddress(const QHostAddress &address) const
 {
-    for (const QHostAddress &localAddress : ipAddresses) {
-        if (address.isEqual(localAddress))
-            return true;
-    }
-    return false;
+    return ipAddresses.contains(address);
 }
 
 void PeerManager::sendBroadcastDatagram()
