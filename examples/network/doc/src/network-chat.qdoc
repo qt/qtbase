@@ -3,8 +3,10 @@
 
 /*!
     \example network-chat
-    \title Network Chat Example
+    \title Network Chat
     \ingroup examples-network
+    \examplecategory {Networking}
+    \meta tag {network,serialization}
     \brief Demonstrates a stateful peer-to-peer Chat client.
 
     This example uses broadcasting with QUdpSocket and QNetworkInterface to
