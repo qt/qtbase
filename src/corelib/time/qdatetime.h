@@ -235,12 +235,12 @@ private:
     constexpr inline int ds() const { return mds == -1 ? 0 : mds; }
     int mds;
 
-    friend constexpr bool operator==(QTime lhs, QTime rhs) { return lhs.mds == rhs.mds; }
-    friend constexpr bool operator!=(QTime lhs, QTime rhs) { return lhs.mds != rhs.mds; }
-    friend constexpr bool operator< (QTime lhs, QTime rhs) { return lhs.mds <  rhs.mds; }
-    friend constexpr bool operator<=(QTime lhs, QTime rhs) { return lhs.mds <= rhs.mds; }
-    friend constexpr bool operator> (QTime lhs, QTime rhs) { return lhs.mds >  rhs.mds; }
-    friend constexpr bool operator>=(QTime lhs, QTime rhs) { return lhs.mds >= rhs.mds; }
+    friend constexpr bool comparesEqual(const QTime &lhs, const QTime &rhs) noexcept
+    { return lhs.mds == rhs.mds; }
+    friend constexpr Qt::strong_ordering
+    compareThreeWay(const QTime &lhs, const QTime &rhs) noexcept
+    { return Qt::compareThreeWay(lhs.mds, rhs.mds); }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QTime)
 
     friend class QDateTime;
     friend class QDateTimePrivate;
