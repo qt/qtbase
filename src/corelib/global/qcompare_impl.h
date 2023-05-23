@@ -22,7 +22,7 @@ public:
     using SafeZero = void (CompareAgainstLiteralZero::*)();
     Q_IMPLICIT constexpr CompareAgainstLiteralZero(SafeZero) noexcept {}
 
-    template <typename T, std::enable_if_t<!std::is_same_v<T, int>, bool> = false>
+    template <typename T, std::enable_if_t<std::is_null_pointer_v<T>, bool> = true>
     CompareAgainstLiteralZero(T) = delete;
 };
 
