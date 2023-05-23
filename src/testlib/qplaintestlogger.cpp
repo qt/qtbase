@@ -16,13 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef min // windows.h without NOMINMAX is included by the benchmark headers.
-#  undef min
-#endif
-#ifdef max
-#  undef max
-#endif
-
 #include <QtCore/QByteArray>
 #include <QtCore/qmath.h>
 #include <QtCore/QLibraryInfo>

@@ -1,10 +1,6 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
-
 #include <QtNetwork/private/qnativesocketengine_p_p.h>
 
 #include "qsslsocket_openssl_symbols_p.h"
