@@ -1417,6 +1417,34 @@ void tst_QDBusConnection::emptyServerAddress()
     QDBusServer server({}, nullptr);
 }
 
+void tst_QDBusConnection::parentClassSignal()
+{
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
+    const QString path = "/path";
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    // register one object at root:
+    MyObject obj;
+    QVERIFY(con.registerObject(path, &obj, QDBusConnection::ExportAllContents));
+    QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+
+    SignalReceiver recv;
+    QVERIFY(con.connect(con.baseService(), path, "local.BaseObject", "baseObjectSignal", &recv,
+                        SLOT(oneSlot())));
+    QVERIFY(con.connect(con.baseService(), path, "local.MyObject", "myObjectSignal", &recv,
+                        SLOT(oneSlot())));
+
+    emit obj.baseObjectSignal();
+    QTRY_COMPARE(recv.signalsReceived, 1);
+
+    emit obj.myObjectSignal();
+    QTRY_COMPARE(recv.signalsReceived, 2);
+}
+
 QString MyObject::path;
 QString MyObjectWithoutInterface::path;
 QString MyObjectWithoutInterface::interface;
