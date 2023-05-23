@@ -86,10 +86,18 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QBasicTimer::swap(QBasicTimer &other)
-    \fn swap(QBasicTimer &lhs, QBasicTimer &rhs)
     \since 5.14
 
-    Swaps string \a other with this string, or \a lhs with \a rhs.
+    Swaps the timer \a other with this timer.
+    This operation is very fast and never fails.
+*/
+
+/*!
+    \fn swap(QBasicTimer &lhs, QBasicTimer &rhs)
+    \relates QBasicTimer
+    \since 5.14
+
+    Swaps the timer \a lhs with \a rhs.
     This operation is very fast and never fails.
 */
 

@@ -403,10 +403,17 @@ void QNativeIpcKey::destroy_internal() noexcept
 
 /*!
     \fn QNativeIpcKey::swap(QNativeIpcKey &other) noexcept
-    \fn swap(QNativeIpcKey &lhs, QNativeIpcKey &rhs) noexcept
 
-    Swaps the native IPC key and type \a other with this object, or \a lhs with
-    \a rhs. This operation is very fast and never fails.
+    Swaps the native IPC key and type \a other with this object.
+    This operation is very fast and never fails.
+*/
+
+/*!
+    \fn swap(QNativeIpcKey &value1, QNativeIpcKey &value2) noexcept
+    \relates QNativeIpcKey
+
+    Swaps the native IPC key and type \a value1 with \a value2.
+    This operation is very fast and never fails.
 */
 
 /*!
