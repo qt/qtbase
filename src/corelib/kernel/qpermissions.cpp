@@ -46,7 +46,6 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     \code
     void VoiceMemoWidget::onRecordingInitiated()
     {
-    #if QT_CONFIG(permissions)
         QMicrophonePermission microphonePermission;
         switch (qApp->checkPermission(microphonePermission)) {
         case Qt::PermissionStatus::Undetermined:
@@ -57,10 +56,8 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
             m_permissionInstructionsDialog->show();
             return;
         case Qt::PermissionStatus::Granted:
-            break; // Proceed
+            m_microphone->startRecording();
         }
-    #endif
-        m_microphone->startRecording();
     }
     \endcode
 
@@ -75,9 +72,6 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     the request we just initiated, we redirect the user to a dialog explaining
     why we can not record voice memos at this time (if the permission was denied),
     or proceed to using the microphone (if permission was granted).
-
-    The use of the \c{QT_CONFIG(permissions)} macro ensures that the code
-    will work as before on platforms where permissions are not available.
 
     \note On \macOS and iOS permissions can currently only be requested for
     GUI applications.
@@ -671,6 +665,28 @@ QDebug operator<<(QDebug debug, const QPermission &permission)
 #endif
 
 #undef QT_PERMISSION_IMPL_COMMON
+
+#if !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WASM)
+// Default backend for platforms without a permission implementation.
+// Always returns Granted, to match behavior when not using permission APIs
+// https://bugreports.qt.io/browse/QTBUG-90498?focusedCommentId=725085#comment-725085
+namespace QPermissions::Private
+{
+    Qt::PermissionStatus checkPermission(const QPermission &permission)
+    {
+        qCDebug(lcPermissions) << "No permission backend on this platform."
+            << "Optimistically returning Granted for" << permission;
+        return Qt::PermissionStatus::Granted;
+    }
+
+    void requestPermission(const QPermission &permission, const PermissionCallback &callback)
+    {
+        qCDebug(lcPermissions) << "No permission backend on this platform."
+            << "Optimistically returning Granted for" << permission;
+        callback(Qt::PermissionStatus::Granted);
+    }
+}
+#endif
 
 QT_END_NAMESPACE
 
