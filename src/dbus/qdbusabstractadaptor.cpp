@@ -260,8 +260,8 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
         // QObject signal (destroyed(QObject *)) -- ignore
         return;
 
-    const QMetaObject *senderMetaObject = senderObj->metaObject();
-    QMetaMethod mm = senderMetaObject->method(lastSignalIdx);
+    QMetaMethod mm = senderObj->metaObject()->method(lastSignalIdx);
+    const QMetaObject *senderMetaObject = mm.enclosingMetaObject();
 
     QObject *realObject = senderObj;
     if (qobject_cast<QDBusAbstractAdaptor *>(senderObj))

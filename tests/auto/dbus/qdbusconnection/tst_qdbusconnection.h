@@ -21,11 +21,14 @@ public:
     BaseObject(QObject *parent = nullptr) : QObject(parent) { }
 public slots:
     void anotherMethod() { }
+signals:
+    void baseObjectSignal();
 };
 
 class MyObject: public BaseObject
 {
     Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "local.MyObject")
 public slots:
     void method(const QDBusMessage &msg);
 
@@ -33,6 +36,9 @@ public:
     static QString path;
     int callCount;
     MyObject(QObject *parent = nullptr) : BaseObject(parent), callCount(0) {}
+
+signals:
+    void myObjectSignal();
 };
 
 class MyObjectWithoutInterface: public QObject
@@ -116,6 +122,8 @@ private slots:
     void pendingCallWhenDisconnected();
 
     void emptyServerAddress();
+
+    void parentClassSignal();
 
 public:
     QString serviceName() const { return "org.qtproject.Qt.Autotests.QDBusConnection"; }
