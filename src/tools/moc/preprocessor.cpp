@@ -510,7 +510,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
     return symbols;
 }
 
-void Preprocessor::macroExpand(Symbols *into, Preprocessor *that, const Symbols &toExpand, int &index,
+void Preprocessor::macroExpand(Symbols *into, Preprocessor *that, const Symbols &toExpand, qsizetype &index,
                                   int lineNum, bool one, const QSet<QByteArray> &excludeSymbols)
 {
     SymbolStack symbols;
@@ -630,7 +630,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                     // each argument undoergoes macro expansion if it's not used as part of a # or ##
                     if (i == macro.symbols.size() - 1 || macro.symbols.at(i + 1).token != PP_HASHHASH) {
                         Symbols arg = arguments.at(index);
-                        int idx = 1;
+                        qsizetype idx = 1;
                         macroExpand(&expansion, that, arg, idx, lineNum, false, symbols.excludeSymbols());
                     } else {
                         expansion += arguments.at(index);
@@ -1101,7 +1101,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
                 continue;
 
             Symbols saveSymbols = symbols;
-            int saveIndex = index;
+            qsizetype saveIndex = index;
 
             // phase 1: get rid of backslash-newlines
             input = cleaned(input);
@@ -1136,14 +1136,14 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             } else {
                 macro.isFunction = false;
             }
-            int start = index;
+            qsizetype start = index;
             until(PP_NEWLINE);
             macro.symbols.reserve(index - start - 1);
 
             // remove whitespace where there shouldn't be any:
             // Before and after the macro, after a # and around ##
             Token lastToken = HASH; // skip shitespace at the beginning
-            for (int i = start; i < index - 1; ++i) {
+            for (qsizetype i = start; i < index - 1; ++i) {
                 Token token = symbols.at(i).token;
                 if (token == WHITESPACE) {
                     if (lastToken == PP_HASH || lastToken == HASH ||

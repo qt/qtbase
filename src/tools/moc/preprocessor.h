@@ -48,8 +48,9 @@ public:
 
     void substituteUntilNewline(Symbols &substituted);
     static Symbols macroExpandIdentifier(Preprocessor *that, SymbolStack &symbols, int lineNum, QByteArray *macroName);
-    static void macroExpand(Symbols *into, Preprocessor *that, const Symbols &toExpand, int &index, int lineNum, bool one,
-                               const QSet<QByteArray> &excludeSymbols = QSet<QByteArray>());
+    static void macroExpand(Symbols *into, Preprocessor *that, const Symbols &toExpand,
+                            qsizetype &index, int lineNum, bool one,
+                            const QSet<QByteArray> &excludeSymbols = QSet<QByteArray>());
 
     int evaluateCondition();
 
