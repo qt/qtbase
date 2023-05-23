@@ -1650,6 +1650,11 @@ public:
     inline bool hasElementHintingPreference() const { return m_children & HintingPreference; }
     void clearElementHintingPreference();
 
+    inline QString elementFontWeight() const { return m_fontWeight; }
+    void setElementFontWeight(const QString &a);
+    inline bool hasElementFontWeight() const { return m_children & FontWeight; }
+    void clearElementFontWeight();
+
 private:
 
     // child element data
@@ -1665,6 +1670,7 @@ private:
     QString m_styleStrategy;
     bool m_kerning = false;
     QString m_hintingPreference;
+    QString m_fontWeight;
 
     enum Child {
         Family = 1,
@@ -1677,7 +1683,8 @@ private:
         Antialiasing = 128,
         StyleStrategy = 256,
         Kerning = 512,
-        HintingPreference = 1024
+        HintingPreference = 1024,
+        FontWeight = 2048
     };
 };
 
