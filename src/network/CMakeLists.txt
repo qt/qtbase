@@ -206,12 +206,6 @@ qt_internal_extend_target(Network CONDITION APPLE AND NOT UIKIT
         ${FWSystemConfiguration}
 )
 
-qt_internal_extend_target(Network CONDITION APPLE AND NOT UIKIT
-    LIBRARIES
-        ${FWCoreServices}
-        ${FWSystemConfiguration}
-)
-
 qt_internal_extend_target(Network CONDITION APPLE
     LIBRARIES
         ${FWCFNetwork}
