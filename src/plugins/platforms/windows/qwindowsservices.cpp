@@ -154,6 +154,11 @@ static inline bool launchMail(const QUrl &url)
         qWarning("Cannot launch '%ls': There is no mail program installed.", qUtf16Printable(url.toString()));
         return false;
     }
+    // Fix mail launch if no param is expected in this command.
+    if (command.indexOf(QStringLiteral("%1")) < 0) {
+        qWarning() << "The mail command lacks the '%1' parameter.";
+        return false;
+    }
     //Make sure the path for the process is in quotes
     const QChar doubleQuote = u'"';
     if (!command.startsWith(doubleQuote)) {
