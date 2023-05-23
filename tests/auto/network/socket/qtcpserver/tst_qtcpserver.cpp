@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <qglobal.h>
-// To prevent windows system header files from re-defining min/max
-#define NOMINMAX 1
 #if defined(_WIN32)
 #include <winsock2.h>
 #else

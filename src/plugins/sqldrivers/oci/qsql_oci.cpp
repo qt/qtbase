@@ -30,14 +30,7 @@
 #define _int64 __int64
 #endif
 
-
 #include <oci.h>
-#ifdef max
-#undef max
-#endif
-#ifdef min
-#undef min
-#endif
 
 #include <stdlib.h>
 
