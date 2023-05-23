@@ -7,6 +7,9 @@
 
 #include <QHostInfo>
 
+#include <algorithm>
+#include <functional>
+
 Client::Client()
     : peerManager(new PeerManager(this))
 {
@@ -36,14 +39,15 @@ QString Client::nickName() const
 
 bool Client::hasConnection(const QHostAddress &senderIp, int senderPort) const
 {
-    if (senderPort == -1)
-        return peers.contains(senderIp);
-
-    if (!peers.contains(senderIp))
+    auto [begin, end] = peers.equal_range(senderIp);
+    if (begin == peers.constEnd())
         return false;
 
-    const QList<Connection *> connections = peers.values(senderIp);
-    for (const Connection *connection : connections) {
+    if (senderPort == -1)
+        return true;
+
+    for (; begin != end; ++begin) {
+        Connection *connection = *begin;
         if (connection->peerPort() == senderPort)
             return true;
     }
@@ -90,8 +94,7 @@ void Client::connectionError(QAbstractSocket::SocketError /* socketError */)
 
 void Client::removeConnection(Connection *connection)
 {
-    if (peers.contains(connection->peerAddress())) {
-        peers.remove(connection->peerAddress());
+    if (peers.remove(connection->peerAddress()) > 0) {
         QString nick = connection->name();
         if (!nick.isEmpty())
             emit participantLeft(nick);
