@@ -2239,6 +2239,8 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         cmd.args.subImage.rowLength = 0;
         cmd.args.subImage.data = cbD->retainImage(img);
     } else if (!rawData.isEmpty() && isCompressed) {
+        const int depth = qMax(1, texD->m_depth);
+        const int arraySize = qMax(0, texD->m_arraySize);
         if ((texD->flags().testFlag(QRhiTexture::UsedAsCompressedAtlas) || is3D || isArray)
                 && !texD->zeroInitialized)
         {
@@ -2250,9 +2252,9 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             quint32 byteSize = 0;
             compressedFormatInfo(texD->m_format, texD->m_pixelSize, nullptr, &byteSize, nullptr);
             if (is3D)
-                byteSize *= texD->m_depth;
+                byteSize *= depth;
             if (isArray)
-                byteSize *= texD->m_arraySize;
+                byteSize *= arraySize;
             QByteArray zeroBuf(byteSize, 0);
             QGles2CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QGles2CommandBuffer::Command::CompressedImage;
@@ -2262,9 +2264,8 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.args.compressedImage.level = level;
             cmd.args.compressedImage.glintformat = texD->glintformat;
             cmd.args.compressedImage.w = texD->m_pixelSize.width();
-            cmd.args.compressedImage.h =
-                    is1D && isArray ? texD->m_arraySize : texD->m_pixelSize.height();
-            cmd.args.compressedImage.depth = is3D ? texD->m_depth : (isArray ? texD->m_arraySize : 0);
+            cmd.args.compressedImage.h = is1D && isArray ? arraySize : texD->m_pixelSize.height();
+            cmd.args.compressedImage.depth = is3D ? depth : (isArray ? arraySize : 0);
             cmd.args.compressedImage.size = byteSize;
             cmd.args.compressedImage.data = cbD->retainData(zeroBuf);
             texD->zeroInitialized = true;
@@ -2296,8 +2297,8 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.args.compressedImage.level = level;
             cmd.args.compressedImage.glintformat = texD->glintformat;
             cmd.args.compressedImage.w = size.width();
-            cmd.args.compressedImage.h = is1D && isArray ? texD->m_arraySize : size.height();
-            cmd.args.compressedImage.depth = is3D ? texD->m_depth : (isArray ? texD->m_arraySize : 0);
+            cmd.args.compressedImage.h = is1D && isArray ? arraySize : size.height();
+            cmd.args.compressedImage.depth = is3D ? depth : (isArray ? arraySize : 0);
             cmd.args.compressedImage.size = rawData.size();
             cmd.args.compressedImage.data = cbD->retainData(rawData);
         }
@@ -5209,12 +5210,10 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
         return false;
     }
 
-    m_depth = qMax(1, m_depth);
     if (m_depth > 1 && !is3D) {
         qWarning("Texture cannot have a depth of %d when it is not 3D", m_depth);
         return false;
     }
-    m_arraySize = qMax(0, m_arraySize);
     if (m_arraySize > 0 && !isArray) {
         qWarning("Texture cannot have an array size of %d when it is not an array", m_arraySize);
         return false;
@@ -5289,13 +5288,13 @@ bool QGles2Texture::create()
                     const QSize mipSize = rhiD->q->sizeForMipLevel(level, size);
                     if (isArray)
                         rhiD->f->glTexImage2D(target, level, GLint(glintformat), mipSize.width(),
-                                              m_arraySize, 0, glformat, gltype, nullptr);
+                                              qMax(0, m_arraySize), 0, glformat, gltype, nullptr);
                     else
                         rhiD->glTexImage1D(target, level, GLint(glintformat), mipSize.width(), 0,
                                            glformat, gltype, nullptr);
                 }
             } else if (is3D || isArray) {
-                const int layerCount = is3D ? m_depth : m_arraySize;
+                const int layerCount = is3D ? qMax(1, m_depth) : qMax(0, m_arraySize);
                 if (hasMipMaps) {
                     for (int level = 0; level != mipLevelCount; ++level) {
                         const QSize mipSize = rhiD->q->sizeForMipLevel(level, size);
@@ -5327,10 +5326,11 @@ bool QGles2Texture::create()
             if (is1D && !isArray)
                 rhiD->glTexStorage1D(target, mipLevelCount, glsizedintformat, size.width());
             else if (!is1D && (is3D || isArray))
-                rhiD->f->glTexStorage3D(target, mipLevelCount, glsizedintformat, size.width(), size.height(), is3D ? m_depth : m_arraySize);
+                rhiD->f->glTexStorage3D(target, mipLevelCount, glsizedintformat, size.width(), size.height(),
+                                        is3D ? qMax(1, m_depth) : qMax(0, m_arraySize));
             else
                 rhiD->f->glTexStorage2D(target, mipLevelCount, glsizedintformat, size.width(),
-                                        is1D ? m_arraySize : size.height());
+                                        is1D ? qMax(0, m_arraySize) : size.height());
         }
         specified = true;
     } else {

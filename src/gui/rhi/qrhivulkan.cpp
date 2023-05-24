@@ -3598,10 +3598,10 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             if (!origStage)
                 origStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 
-            for (int layer = 0; layer < (isCube ? 6 : (isArray ? utexD->m_arraySize : 1)); ++layer) {
+            for (int layer = 0; layer < (isCube ? 6 : (isArray ? qMax(0, utexD->m_arraySize) : 1)); ++layer) {
                 int w = utexD->m_pixelSize.width();
                 int h = utexD->m_pixelSize.height();
-                int depth = is3D ? utexD->m_depth : 1;
+                int depth = is3D ? qMax(1, utexD->m_depth) : 1;
                 for (int level = 1; level < int(utexD->mipLevelCount); ++level) {
                     if (level == 1) {
                         subresourceBarrier(cbD, utexD->image,
@@ -6112,12 +6112,10 @@ bool QVkTexture::prepareCreate(QSize *adjustedSize)
         qWarning("Texture cannot be both 1D and 3D");
         return false;
     }
-    m_depth = qMax(1, m_depth);
     if (m_depth > 1 && !is3D) {
         qWarning("Texture cannot have a depth of %d when it is not 3D", m_depth);
         return false;
     }
-    m_arraySize = qMax(0, m_arraySize);
     if (m_arraySize > 0 && !isArray) {
         qWarning("Texture cannot have an array size of %d when it is not an array", m_arraySize);
         return false;
@@ -6166,7 +6164,7 @@ bool QVkTexture::finishCreate()
         viewInfo.subresourceRange.baseArrayLayer = uint32_t(m_arrayRangeStart);
         viewInfo.subresourceRange.layerCount = uint32_t(m_arrayRangeLength);
     } else {
-        viewInfo.subresourceRange.layerCount = isCube ? 6 : (isArray ? m_arraySize : 1);
+        viewInfo.subresourceRange.layerCount = isCube ? 6 : (isArray ? qMax(0, m_arraySize) : 1);
     }
 
     VkResult err = rhiD->df->vkCreateImageView(rhiD->dev, &viewInfo, nullptr, &imageView);
@@ -6220,9 +6218,9 @@ bool QVkTexture::create()
     imageInfo.format = vkformat;
     imageInfo.extent.width = uint32_t(size.width());
     imageInfo.extent.height = uint32_t(size.height());
-    imageInfo.extent.depth = is3D ? m_depth : 1;
+    imageInfo.extent.depth = is3D ? qMax(1, m_depth) : 1;
     imageInfo.mipLevels = mipLevelCount;
-    imageInfo.arrayLayers = isCube ? 6 : (isArray ? m_arraySize : 1);
+    imageInfo.arrayLayers = isCube ? 6 : (isArray ? qMax(0, m_arraySize) : 1);
     imageInfo.samples = samples;
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
@@ -6323,7 +6321,7 @@ VkImageView QVkTexture::imageViewForLevel(int level)
     viewInfo.subresourceRange.baseMipLevel = uint32_t(level);
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = isCube ? 6 : (isArray ? m_arraySize : 1);
+    viewInfo.subresourceRange.layerCount = isCube ? 6 : (isArray ? qMax(0, m_arraySize) : 1);
 
     VkImageView v = VK_NULL_HANDLE;
     QRHI_RES_RHI(QRhiVulkan);

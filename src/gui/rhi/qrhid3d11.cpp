@@ -3235,12 +3235,10 @@ bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
         qWarning("Texture cannot be both 1D and 3D");
         return false;
     }
-    m_depth = qMax(1, m_depth);
     if (m_depth > 1 && !is3D) {
         qWarning("Texture cannot have a depth of %d when it is not 3D", m_depth);
         return false;
     }
-    m_arraySize = qMax(0, m_arraySize);
     if (m_arraySize > 0 && !isArray) {
         qWarning("Texture cannot have an array size of %d when it is not an array", m_arraySize);
         return false;
@@ -3280,7 +3278,7 @@ bool QD3D11Texture::finishCreate()
                     srvDesc.Texture1DArray.ArraySize = UINT(m_arrayRangeLength);
                 } else {
                     srvDesc.Texture1DArray.FirstArraySlice = 0;
-                    srvDesc.Texture1DArray.ArraySize = UINT(m_arraySize);
+                    srvDesc.Texture1DArray.ArraySize = UINT(qMax(0, m_arraySize));
                 }
             } else {
                 srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
@@ -3294,7 +3292,7 @@ bool QD3D11Texture::finishCreate()
                     srvDesc.Texture2DMSArray.ArraySize = UINT(m_arrayRangeLength);
                 } else {
                     srvDesc.Texture2DMSArray.FirstArraySlice = 0;
-                    srvDesc.Texture2DMSArray.ArraySize = UINT(m_arraySize);
+                    srvDesc.Texture2DMSArray.ArraySize = UINT(qMax(0, m_arraySize));
                 }
             } else {
                 srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
@@ -3304,7 +3302,7 @@ bool QD3D11Texture::finishCreate()
                     srvDesc.Texture2DArray.ArraySize = UINT(m_arrayRangeLength);
                 } else {
                     srvDesc.Texture2DArray.FirstArraySlice = 0;
-                    srvDesc.Texture2DArray.ArraySize = UINT(m_arraySize);
+                    srvDesc.Texture2DArray.ArraySize = UINT(qMax(0, m_arraySize));
                 }
             }
         } else {
@@ -3367,7 +3365,7 @@ bool QD3D11Texture::create()
         D3D11_TEXTURE1D_DESC desc = {};
         desc.Width = UINT(size.width());
         desc.MipLevels = mipLevelCount;
-        desc.ArraySize = isArray ? UINT(m_arraySize) : 1;
+        desc.ArraySize = isArray ? UINT(qMax(0, m_arraySize)) : 1;
         desc.Format = dxgiFormat;
         desc.Usage = D3D11_USAGE_DEFAULT;
         desc.BindFlags = bindFlags;
@@ -3387,7 +3385,7 @@ bool QD3D11Texture::create()
         desc.Width = UINT(size.width());
         desc.Height = UINT(size.height());
         desc.MipLevels = mipLevelCount;
-        desc.ArraySize = isCube ? 6 : (isArray ? UINT(m_arraySize) : 1);
+        desc.ArraySize = isCube ? 6 : (isArray ? UINT(qMax(0, m_arraySize)) : 1);
         desc.Format = dxgiFormat;
         desc.SampleDesc = sampleDesc;
         desc.Usage = D3D11_USAGE_DEFAULT;
@@ -3406,7 +3404,7 @@ bool QD3D11Texture::create()
         D3D11_TEXTURE3D_DESC desc = {};
         desc.Width = UINT(size.width());
         desc.Height = UINT(size.height());
-        desc.Depth = UINT(m_depth);
+        desc.Depth = UINT(qMax(1, m_depth));
         desc.MipLevels = mipLevelCount;
         desc.Format = dxgiFormat;
         desc.Usage = D3D11_USAGE_DEFAULT;
@@ -3479,7 +3477,7 @@ ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
         desc.Texture2DArray.MipSlice = UINT(level);
         desc.Texture2DArray.FirstArraySlice = 0;
-        desc.Texture2DArray.ArraySize = UINT(m_arraySize);
+        desc.Texture2DArray.ArraySize = UINT(qMax(0, m_arraySize));
     } else if (is3D) {
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE3D;
         desc.Texture3D.MipSlice = UINT(level);

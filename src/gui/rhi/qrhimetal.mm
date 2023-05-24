@@ -3709,12 +3709,10 @@ bool QMetalTexture::prepareCreate(QSize *adjustedSize)
         qWarning("Texture cannot be both 1D and cube");
         return false;
     }
-    m_depth = qMax(1, m_depth);
     if (m_depth > 1 && !is3D) {
         qWarning("Texture cannot have a depth of %d when it is not 3D", m_depth);
         return false;
     }
-    m_arraySize = qMax(0, m_arraySize);
     if (m_arraySize > 0 && !isArray) {
         qWarning("Texture cannot have an array size of %d when it is not an array", m_arraySize);
         return false;
@@ -3764,12 +3762,12 @@ bool QMetalTexture::create()
     desc.pixelFormat = d->format;
     desc.width = NSUInteger(size.width());
     desc.height = NSUInteger(size.height());
-    desc.depth = is3D ? m_depth : 1;
+    desc.depth = is3D ? qMax(1, m_depth) : 1;
     desc.mipmapLevelCount = NSUInteger(mipLevelCount);
     if (samples > 1)
         desc.sampleCount = NSUInteger(samples);
     if (isArray)
-        desc.arrayLength = NSUInteger(m_arraySize);
+        desc.arrayLength = NSUInteger(qMax(0, m_arraySize));
     desc.resourceOptions = MTLResourceStorageModePrivate;
     desc.storageMode = MTLStorageModePrivate;
     desc.usage = MTLTextureUsageShaderRead;
@@ -3828,7 +3826,8 @@ id<MTLTexture> QMetalTextureData::viewForLevel(int level)
     const bool isCube = q->m_flags.testFlag(QRhiTexture::CubeMap);
     const bool isArray = q->m_flags.testFlag(QRhiTexture::TextureArray);
     id<MTLTexture> view = [tex newTextureViewWithPixelFormat: format textureType: type
-            levels: NSMakeRange(NSUInteger(level), 1) slices: NSMakeRange(0, isCube ? 6 : (isArray ? q->m_arraySize : 1))];
+            levels: NSMakeRange(NSUInteger(level), 1)
+            slices: NSMakeRange(0, isCube ? 6 : (isArray ? qMax(0, q->m_arraySize) : 1))];
 
     perLevelViews[level] = view;
     return view;
