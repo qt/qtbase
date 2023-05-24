@@ -125,24 +125,24 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     The parser handles short names, long names, more than one name for the same
     option, and option values.
 
-    Options on the command line are recognized as starting with a single or
-    double \c{-} character(s).
+    Options on the command line are recognized as starting with one or two
+    \c{-} characters, followed by the option name.
     The option \c{-} (single dash alone) is a special case, often meaning standard
-    input, and not treated as an option. The parser will treat everything after the
+    input, and is not treated as an option. The parser will treat everything after the
     option \c{--} (double dash) as positional arguments.
 
     Short options are single letters. The option \c{v} would be specified by
     passing \c{-v} on the command line. In the default parsing mode, short options
     can be written in a compact form, for instance \c{-abc} is equivalent to \c{-a -b -c}.
-    The parsing mode for can be set to ParseAsLongOptions, in which case \c{-abc}
+    The parsing mode can be changed to ParseAsLongOptions, in which case \c{-abc}
     will be parsed as the long option \c{abc}.
 
     Long options are more than one letter long and cannot be compacted together.
     The long option \c{verbose} would be passed as \c{--verbose} or \c{-verbose}.
 
-    Passing values to options can be done using the assignment operator: \c{-v=value}
-    \c{--verbose=value}, or a space: \c{-v value} \c{--verbose value}, i.e. the next
-    argument is used as value (even if it starts with a \c{-}).
+    Passing values to options can be done by using the assignment operator (\c{-v=value},
+    \c{--verbose=value}), or with a space (\c{-v value}, \c{--verbose value}). This
+    works even if the the value starts with a \c{-}.
 
     The parser does not support optional values - if an option is set to
     require a value, one must be present. If such an option is placed last
@@ -157,13 +157,13 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     Example:
     \snippet code/src_corelib_tools_qcommandlineparser_main.cpp 0
 
-    If your compiler supports the C++11 standard, the three addOption() calls in
-    the above example can be simplified:
+    The three addOption() calls in the above example can be made more compact
+    by using addOptions():
     \snippet code/src_corelib_tools_qcommandlineparser_main.cpp cxx11
 
     Known limitation: the parsing of Qt options inside QCoreApplication and subclasses
     happens before QCommandLineParser exists, so it can't take it into account. This
-    means any option value that looks like a builtin Qt option, will be treated by
+    means any option value that looks like a builtin Qt option will be treated by
     QCoreApplication as a builtin Qt option. Example: \c{--profile -reverse} will
     lead to QGuiApplication seeing the -reverse option set, and removing it from
     QCoreApplication::arguments() before QCommandLineParser defines the \c{profile}
