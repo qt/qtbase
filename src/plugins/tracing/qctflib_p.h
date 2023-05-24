@@ -89,6 +89,7 @@ public:
 private:
     static QCtfLibImpl *s_instance;
     QHash<QString, QCtfTracePointPrivate *> m_eventPrivs;
+    void removeChannel(Channel *ch);
     void updateMetadata(const QCtfTracePointEvent &point);
     void writeMetadata(const QString &metadata, bool overwrite = false);
     void clearLocation();

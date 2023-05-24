@@ -257,6 +257,7 @@ void QCtfLibImpl::writeCtfPacket(QCtfLibImpl::Channel &ch)
 QCtfLibImpl::Channel::~Channel()
 {
     impl->writeCtfPacket(*this);
+    impl->removeChannel(this);
 }
 
 QCtfLibImpl::~QCtfLibImpl()
@@ -264,6 +265,12 @@ QCtfLibImpl::~QCtfLibImpl()
     if (!m_server.isNull())
         m_server->stopServer();
     qDeleteAll(m_eventPrivs);
+}
+
+void QCtfLibImpl::removeChannel(Channel *ch)
+{
+    const QMutexLocker lock(&m_mutex);
+    m_channels.removeOne(ch);
 }
 
 bool QCtfLibImpl::tracepointEnabled(const QCtfTracePointEvent &point)
