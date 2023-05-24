@@ -90,6 +90,16 @@ macro.youtube.HTML = "<div class=\"video\">\n" \
                      "<img src=\"images/\1.jpg\"" \
                      "title=\"Click to play in a browser\" /></a>\n" \
                      "</div>\n"
+macro.youtube.DocBook = "<db:mediaobject>\n" \
+                        "<db:videoobject>\n" \
+                        "<db:videodata fileref=\"\1\">\n" \
+                        "</db:videodata>\n" \
+                        "</db:videoobject>\n" \
+                        "<db:imageobject>\n" \
+                        "<db:imagedata fileref=\"images/\1.jpg\">\n" \
+                        "</db:imagedata>\n" \
+                        "</db:imageobject>\n" \
+                        "</db:mediaobject>\n"
 
 macro.excludefromcreator = "\\meta tag broken"
 
