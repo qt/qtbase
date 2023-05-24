@@ -535,15 +535,13 @@ scrolling range.
 QSize QAbstractScrollArea::maximumViewportSize() const
 {
     Q_D(const QAbstractScrollArea);
-    int hsbExt = d->hbar->sizeHint().height();
-    int vsbExt = d->vbar->sizeHint().width();
-
     int f = 2 * d->frameWidth;
     QSize max = size() - QSize(f + d->left + d->right, f + d->top + d->bottom);
+    // Count the sizeHint of the bar only if it is displayed.
     if (d->vbarpolicy == Qt::ScrollBarAlwaysOn)
-        max.rwidth() -= vsbExt;
+        max.rwidth() -= d->vbar->sizeHint().width();
     if (d->hbarpolicy == Qt::ScrollBarAlwaysOn)
-        max.rheight() -= hsbExt;
+        max.rheight() -= d->hbar->sizeHint().height();
     return max;
 }
 
