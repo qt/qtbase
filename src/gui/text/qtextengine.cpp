@@ -1404,7 +1404,7 @@ void QTextEngine::shapeText(int item) const
     bool kerningEnabled;
     bool letterSpacingIsAbsolute;
     bool shapingEnabled = false;
-    QHash<quint32, quint32> fontFeatures;
+    QHash<quint32, quint32> features;
     QFixed letterSpacing, wordSpacing;
 #ifndef QT_NO_RAWFONT
     if (useRawFont) {
@@ -1418,7 +1418,7 @@ void QTextEngine::shapeText(int item) const
         wordSpacing = QFixed::fromReal(font.wordSpacing());
         letterSpacing = QFixed::fromReal(font.letterSpacing());
         letterSpacingIsAbsolute = true;
-        fontFeatures = font.d->fontFeatures;
+        features = font.d->features;
     } else
 #endif
     {
@@ -1431,7 +1431,7 @@ void QTextEngine::shapeText(int item) const
         letterSpacingIsAbsolute = font.d->letterSpacingIsAbsolute;
         letterSpacing = font.d->letterSpacing;
         wordSpacing = font.d->wordSpacing;
-        fontFeatures = font.d->fontFeatures;
+        features = font.d->features;
 
         if (letterSpacingIsAbsolute && letterSpacing.value())
             letterSpacing *= font.d->dpi / qt_defaultDpiY();
@@ -1492,7 +1492,7 @@ void QTextEngine::shapeText(int item) const
                                                 itemBoundaries,
                                                 kerningEnabled,
                                                 letterSpacing != 0,
-                                                fontFeatures);
+                                                features);
     } else
 #endif
     {

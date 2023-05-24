@@ -628,7 +628,7 @@ private:
                                 const QList<uint> &itemBoundaries,
                                 bool kerningEnabled,
                                 bool hasLetterSpacing,
-                                const QHash<quint32, quint32> &fontFeatures) const;
+                                const QHash<quint32, quint32> &features) const;
 #endif
 
     int endOfLine(int lineNum);

@@ -126,7 +126,7 @@ public:
         HintingPreferenceResolved   = 0x8000,
         StyleNameResolved           = 0x10000,
         FamiliesResolved            = 0x20000,
-        FontFeaturesResolved        = 0x40000,
+        FeaturesResolved            = 0x40000,
         AllPropertiesResolved       = 0x7ffff
     };
     Q_ENUM(ResolveProperties)
@@ -207,12 +207,12 @@ public:
     void setHintingPreference(HintingPreference hintingPreference);
     HintingPreference hintingPreference() const;
 
-    void setFontFeature(const char *fontFeature, quint32 value);
-    void setFontFeature(quint32 tag, quint32 value);
-    void setFontFeatures(const QHash<quint32, quint32> &fontFeatures);
-    void unsetFontFeature(quint32 tag);
-    void unsetFontFeature(const char *tag);
-    QHash<quint32, quint32> fontFeatures() const;
+    void setFeature(const char *feature, quint32 value);
+    void setFeature(quint32 tag, quint32 value);
+    void setFeatures(const QHash<quint32, quint32> &features);
+    void unsetFeature(quint32 tag);
+    void unsetFeature(const char *feature);
+    QHash<quint32, quint32> features() const;
 
     static QByteArray tagToString(quint32 tag);
     static quint32 stringToTag(const char *tagString);

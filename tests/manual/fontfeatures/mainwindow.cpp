@@ -28,7 +28,7 @@ void MainWindow::updateSampleText()
         QListWidgetItem *it = ui->lwFeatures->item(i);
         if (it->checkState() != Qt::PartiallyChecked) {
             QByteArray ba = it->text().toLatin1();
-            font.setFontFeature(ba, !!it->checkState());
+            font.setFeature(ba, !!it->checkState());
         }
     }
 
