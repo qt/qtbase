@@ -1078,6 +1078,8 @@ public:
             //    - start-end of class/structures
             // And avoid processing of the the data inside these blocks.
             for (std::size_t i = 0; i < line.size(); ++i) {
+                if (line[i] == '\r')
+                    continue;
                 if (bracesDepth == namespaceCount) {
                     if (line[i] == '/') {
                         if ((i + 1) < line.size()) {
