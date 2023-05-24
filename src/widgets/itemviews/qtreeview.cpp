@@ -3325,6 +3325,7 @@ void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninit
         return;
     }
 
+#if QT_CONFIG(accessibility)
     // QAccessibleTree's rowCount implementation uses viewItems.size(), so
     // we need to invalidate any cached accessibility data structures if
     // that value changes during the run of this function.
@@ -3334,6 +3335,7 @@ void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninit
             QAccessible::updateAccessibility(&event);
         }
     });
+#endif
 
     int count = 0;
     if (model->hasChildren(parent)) {
