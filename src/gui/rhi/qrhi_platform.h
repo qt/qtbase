@@ -86,9 +86,12 @@ struct Q_GUI_EXPORT QRhiVulkanNativeHandles : public QRhiNativeHandles
     VkDevice dev = VK_NULL_HANDLE;
     quint32 gfxQueueFamilyIdx = 0;
     quint32 gfxQueueIdx = 0;
-    VkQueue gfxQueue = VK_NULL_HANDLE;
     // and optionally, the mem allocator
     void *vmemAllocator = nullptr;
+
+    // only for querying (rhi->nativeHandles())
+    VkQueue gfxQueue = VK_NULL_HANDLE;
+    QVulkanInstance *inst = nullptr;
 };
 
 struct Q_GUI_EXPORT QRhiVulkanCommandBufferNativeHandles : public QRhiNativeHandles

@@ -487,6 +487,8 @@ void tst_QRhi::nativeHandles()
         case QRhi::Vulkan:
         {
             const QRhiVulkanNativeHandles *vkHandles = static_cast<const QRhiVulkanNativeHandles *>(rhiHandles);
+            QVERIFY(vkHandles->inst);
+            QCOMPARE(vkHandles->inst, &vulkanInstance);
             QVERIFY(vkHandles->physDev);
             QVERIFY(vkHandles->dev);
             QVERIFY(vkHandles->gfxQueue);

@@ -226,6 +226,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \variable QRhiVulkanNativeHandles::vmemAllocator
+
+    Relevant only when importing an existing memory allocator object,
+    leave it set to \nullptr otherwise.
+*/
+
+/*!
     \variable QRhiVulkanNativeHandles::gfxQueue
 
     Output only, not used by QRhi::create(), only set by the
@@ -233,10 +240,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \variable QRhiVulkanNativeHandles::vmemAllocator
+    \variable QRhiVulkanNativeHandles::inst
 
-    Relevant only when importing an existing memory allocator object,
-    leave it set to \nullptr otherwise.
+    Output only, not used by QRhi::create(), only set by the
+    QRhi::nativeHandles() accessor. The QVulkanInstance used by the QRhi.
 */
 
 /*!
@@ -819,6 +826,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     nativeHandlesStruct.gfxQueueIdx = gfxQueueIdx;
     nativeHandlesStruct.gfxQueue = gfxQueue;
     nativeHandlesStruct.vmemAllocator = allocator;
+    nativeHandlesStruct.inst = inst;
 
     return true;
 }
