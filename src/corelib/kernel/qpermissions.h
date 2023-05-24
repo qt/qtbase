@@ -37,9 +37,6 @@ class QPermission
     static constexpr inline bool is_permission_v = false;
 
     template <typename T>
-    static constexpr inline bool is_permission_v<T, typename T::QtPermissionHelper> = true;
-
-    template <typename T>
     using if_permission = std::enable_if_t<is_permission_v<T>, bool>;
 public:
     explicit QPermission() = default;
@@ -71,6 +68,9 @@ private:
 
     friend class QCoreApplication;
 };
+
+template <typename T>
+constexpr bool QPermission::is_permission_v<T, typename T::QtPermissionHelper> = true;
 
 #define QT_PERMISSION(ClassName) \
     using QtPermissionHelper = void; \
