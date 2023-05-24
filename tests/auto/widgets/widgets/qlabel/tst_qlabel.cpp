@@ -77,6 +77,8 @@ private Q_SLOTS:
 
 #ifndef QT_NO_CONTEXTMENU
     void taskQTBUG_7902_contextMenuCrash();
+    void contextMenu_data();
+    void contextMenu();
 #endif
 
     void taskQTBUG_48157_dprPixmap();
@@ -560,6 +562,43 @@ void tst_QLabel::taskQTBUG_7902_contextMenuCrash()
 
     QTest::qWait(350);
     // No crash, it's allright.
+}
+
+void tst_QLabel::contextMenu_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<Qt::TextInteractionFlag>("interactionFlags");
+    QTest::addColumn<bool>("showsContextMenu");
+
+    QTest::addRow("Read-only")  << "Plain Text"
+                                << Qt::NoTextInteraction
+                                << false;
+    QTest::addRow("Selectable") << "Plain Text"
+                                << Qt::TextEditorInteraction
+                                << true;
+    QTest::addRow("Link")       << "<a href=\"nowhere\">Rich text with link</a>"
+                                << Qt::TextBrowserInteraction
+                                << true;
+    QTest::addRow("Rich text")  << "<b>Rich text without link</b>"
+                                << Qt::TextBrowserInteraction
+                                << true;
+}
+
+void tst_QLabel::contextMenu()
+{
+    QFETCH(QString, text);
+    QFETCH(Qt::TextInteractionFlag, interactionFlags);
+    QFETCH(bool, showsContextMenu);
+
+    QLabel label(text);
+    label.setTextInteractionFlags(interactionFlags);
+    label.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&label));
+
+    const QPoint menuPosition = label.rect().center();
+    QContextMenuEvent cme(QContextMenuEvent::Mouse, menuPosition, label.mapToGlobal(menuPosition));
+    QApplication::sendEvent(&label, &cme);
+    QCOMPARE(cme.isAccepted(), showsContextMenu);
 }
 #endif
 
