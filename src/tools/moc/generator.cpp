@@ -135,7 +135,7 @@ static int aggregateParameterCount(const QList<FunctionDef> &list)
 {
     int sum = 0;
     for (int i = 0; i < list.size(); ++i)
-        sum += list.at(i).arguments.size() + 1; // +1 for return type
+        sum += int(list.at(i).arguments.size()) + 1; // +1 for return type
     return sum;
 }
 
@@ -293,7 +293,13 @@ void Generator::generateCode()
     fprintf(out, "    %4d, %4d, // classinfo\n", int(cdef->classInfoList.size()), int(cdef->classInfoList.size() ? index : 0));
     index += cdef->classInfoList.size() * 2;
 
-    const qsizetype methodCount = cdef->signalList.size() + cdef->slotList.size() + cdef->methodList.size();
+    qsizetype methodCount = 0;
+    if (qAddOverflow(cdef->signalList.size(), cdef->slotList.size(), &methodCount)
+        || qAddOverflow(cdef->methodList.size(), methodCount, &methodCount)) {
+        parser->error("internal limit exceeded: the total number of member functions"
+                      " (including signals and slots) is too big.");
+    }
+
     fprintf(out, "    %4" PRIdQSIZETYPE ", %4d, // methods\n", methodCount, methodCount ? index : 0);
     index += methodCount * QMetaObjectPrivate::IntsPerMethod;
     if (cdef->revisionedMethods)
@@ -305,7 +311,7 @@ void Generator::generateCode()
             + aggregateParameterCount(cdef->constructorList);
     index += totalParameterCount * 2 // types and parameter names
             - methodCount // return "parameters" don't have names
-            - cdef->constructorList.size(); // "this" parameters don't have names
+            - int(cdef->constructorList.size()); // "this" parameters don't have names
 
     fprintf(out, "    %4d, %4d, // properties\n", int(cdef->propertyList.size()), int(cdef->propertyList.size() ? index : 0));
     index += cdef->propertyList.size() * QMetaObjectPrivate::IntsPerProperty;
@@ -333,8 +339,14 @@ void Generator::generateCode()
 //
     generateClassInfos();
 
+    qsizetype propEnumCount = 0;
     // all property metatypes + all enum metatypes + 1 for the type of the current class itself
-    int initialMetaTypeOffset = cdef->propertyList.size() + cdef->enumList.size() + 1;
+    if (qAddOverflow(cdef->propertyList.size(), cdef->enumList.size(), &propEnumCount)
+        || qAddOverflow(propEnumCount, qsizetype(1), &propEnumCount)
+        || propEnumCount >= std::numeric_limits<int>::max()) {
+        parser->error("internal limit exceeded: number of property and enum metatypes is too big.");
+    }
+    int initialMetaTypeOffset = int(propEnumCount);
 
 //
 // Build signals array first, otherwise the signal indices would be wrong
@@ -606,7 +618,7 @@ void Generator::generateCode()
 //
 // Generate internal signal functions
 //
-    for (int signalindex = 0; signalindex < cdef->signalList.size(); ++signalindex)
+    for (int signalindex = 0; signalindex < int(cdef->signalList.size()); ++signalindex)
         generateSignal(&cdef->signalList[signalindex], signalindex);
 
 //
@@ -712,7 +724,7 @@ void Generator::generateFunctions(const QList<FunctionDef> &list, const char *fu
             comment.append(" | MethodIsConst ");
         }
 
-        int argc = f.arguments.size();
+        const int argc = int(f.arguments.size());
         fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x, %4d /* %s */,\n",
             stridx(f.name), argc, paramsIndex, stridx(f.tag), flags, initialMetatypeOffset, comment.constData());
 
@@ -963,7 +975,7 @@ void Generator::generateMetacall()
 QMultiMap<QByteArray, int> Generator::automaticPropertyMetaTypesHelper()
 {
     QMultiMap<QByteArray, int> automaticPropertyMetaTypes;
-    for (int i = 0; i < cdef->propertyList.size(); ++i) {
+    for (int i = 0; i < int(cdef->propertyList.size()); ++i) {
         const QByteArray propertyType = cdef->propertyList.at(i).type;
         if (registerableMetaType(propertyType) && !isBuiltinType(propertyType))
             automaticPropertyMetaTypes.insert(propertyType, i);
@@ -1012,7 +1024,7 @@ void Generator::generateStaticMetacall()
     if (!cdef->constructorList.isEmpty()) {
         fprintf(out, "    if (_c == QMetaObject::CreateInstance) {\n");
         fprintf(out, "        switch (_id) {\n");
-        const int ctorend = cdef->constructorList.size();
+        const int ctorend = int(cdef->constructorList.size());
         for (int ctorindex = 0; ctorindex < ctorend; ++ctorindex) {
             fprintf(out, "        case %d: { %s *_r = new %s(", ctorindex,
                     cdef->classname.constData(), cdef->classname.constData());
@@ -1136,7 +1148,7 @@ void Generator::generateStaticMetacall()
         fprintf(out, " else if (_c == QMetaObject::IndexOfMethod) {\n");
         fprintf(out, "        int *result = reinterpret_cast<int *>(_a[0]);\n");
         bool anythingUsed = false;
-        for (int methodindex = 0; methodindex < cdef->signalList.size(); ++methodindex) {
+        for (int methodindex = 0; methodindex < int(cdef->signalList.size()); ++methodindex) {
             const FunctionDef &f = cdef->signalList.at(methodindex);
             if (f.wasCloned || !f.inPrivateClass.isEmpty() || f.isStatic)
                 continue;
@@ -1234,7 +1246,7 @@ void Generator::generateStaticMetacall()
             if (needTempVarForGet)
                 fprintf(out, "        void *_v = _a[0];\n");
             fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
+            for (int propindex = 0; propindex < int(cdef->propertyList.size()); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
                 if (p.read.isEmpty() && p.member.isEmpty())
                     continue;
@@ -1275,7 +1287,7 @@ void Generator::generateStaticMetacall()
             setupMemberAccess();
             fprintf(out, "        void *_v = _a[0];\n");
             fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
+            for (int propindex = 0; propindex < int(cdef->propertyList.size()); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
                 if (p.constant)
                     continue;
@@ -1328,7 +1340,7 @@ void Generator::generateStaticMetacall()
         if (needReset) {
             setupMemberAccess();
             fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
+            for (int propindex = 0; propindex < int(cdef->propertyList.size()); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
                 if (p.reset.isEmpty())
                     continue;
@@ -1349,7 +1361,7 @@ void Generator::generateStaticMetacall()
         if (hasBindableProperties) {
             setupMemberAccess();
             fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
+            for (int propindex = 0; propindex < int(cdef->propertyList.size()); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
                 if (p.bind.isEmpty())
                     continue;
