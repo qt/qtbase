@@ -799,8 +799,6 @@ static void callChildProcessModifier(const QProcessPrivate *d) noexcept
 // still sharing memory with the parent process.
 void QChildProcess::startProcess() const noexcept
 {
-    QtVforkSafe::change_sigpipe(SIG_DFL);   // reset the signal that we ignored
-
     // Render channels configuration.
     d->commitChannels();
 
@@ -811,6 +809,7 @@ void QChildProcess::startProcess() const noexcept
     if (workingDirectory >= 0 && fchdir(workingDirectory) == -1)
         failChildProcess(d, "fchdir", errno);
 
+    bool sigpipeHandled = false;
     if (d->unixExtras) {
         // FIRST we call the user modifier function, before we dropping
         // privileges or closing non-standard file descriptors
@@ -818,6 +817,13 @@ void QChildProcess::startProcess() const noexcept
 
         // then we apply our other user-provided parameters
         applyProcessParameters(d->unixExtras->processParameters);
+
+        auto flags = d->unixExtras->processParameters.flags;
+        sigpipeHandled = flags.testAnyFlags(QProcess::ResetSignalHandlers | QProcess::IgnoreSigPipe);
+    }
+    if (!sigpipeHandled) {
+        // reset the signal that we ignored
+        QtVforkSafe::change_sigpipe(SIG_DFL);       // reset the signal that we ignored
     }
 
     // execute the process
