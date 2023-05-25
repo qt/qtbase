@@ -16,7 +16,9 @@
 // but the other side presents a certificate signed by a different CA.
 constexpr bool TestServerPresentsIncorrectCa = true;
 constexpr bool TestClientPresentsIncorrectCa = false;
-
+// Decides whether or not to put the root CA into the global ssl configuration
+// or into the socket's specific ssl configuration.
+constexpr bool UseGlobalConfiguration = true;
 
 /* No built-in QSslServer in this branch .... */
 class QSslServer : public QTcpServer
@@ -65,7 +67,6 @@ private:
     QSslConfiguration m_config;
 };
 
-
 class ServerThread : public QThread
 {
     Q_OBJECT
@@ -75,8 +76,10 @@ public:
         QSslServer server;
 
         QSslConfiguration config = server.sslConfiguration();
-        QList<QSslCertificate> certs = QSslCertificate::fromPath(QStringLiteral(":/rootCA.pem"));
-        config.setCaCertificates(certs);
+        if (!UseGlobalConfiguration) {
+            QList<QSslCertificate> certs = QSslCertificate::fromPath(QStringLiteral(":/rootCA.pem"));
+            config.setCaCertificates(certs);
+        }
         config.setLocalCertificate(QSslCertificate::fromPath(QStringLiteral(":/127.0.0.1.pem"))
                                            .first());
         QFile keyFile(QStringLiteral(":/127.0.0.1-key.pem"));
@@ -118,6 +121,12 @@ int main(int argc, char **argv)
     if (!QFileInfo(":/rootCA.pem").exists())
         qFatal("rootCA.pem not found. Did you run generate.sh in the certs directory?");
 
+    if (UseGlobalConfiguration) {
+        QSslConfiguration config = QSslConfiguration::defaultConfiguration();
+        config.setCaCertificates(QSslCertificate::fromPath(":/rootCA.pem"));
+        QSslConfiguration::setDefaultConfiguration(config);
+    }
+
     ServerThread serverThread;
     serverThread.start();
 
@@ -133,12 +142,19 @@ int main(int argc, char **argv)
         keyFileName = ":/accepted-client-key.pem";
     }
     config.setLocalCertificate(QSslCertificate::fromPath(certificatePath).first());
-    if (TestServerPresentsIncorrectCa) // true: Verify server using incorrect CA: should fail
+    if (!UseGlobalConfiguration && TestServerPresentsIncorrectCa) {
+        // Verify server using incorrect CA: should fail
         config.setCaCertificates(QSslCertificate::fromPath(":/rootCA.pem"));
+    } else if (UseGlobalConfiguration && !TestServerPresentsIncorrectCa) {
+        // Verify server using correct CA, we need to explicitly set the
+        // system CAs when the global config is overridden.
+        config.setCaCertificates(QSslConfiguration::systemCaCertificates());
+    }
     QFile keyFile(keyFileName);
     if (!keyFile.open(QIODevice::ReadOnly))
         qFatal("Failed to open key file");
     config.setPrivateKey(QSslKey(&keyFile, QSsl::Rsa));
+
     socket.setSslConfiguration(config);
 
     QObject::connect(&socket, &QSslSocket::encrypted, []() { qDebug() << "[c] encrypted"; });
