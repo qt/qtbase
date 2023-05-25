@@ -61,28 +61,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-namespace {
-struct PThreadCancelGuard
-{
-#if defined(PTHREAD_CANCEL_DISABLE)
-    int oldstate;
-    PThreadCancelGuard() noexcept(false)
-    {
-        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
-    }
-    ~PThreadCancelGuard() noexcept(false)
-    {
-        reenable();
-    }
-    void reenable() noexcept(false)
-    {
-        // this doesn't touch errno
-        pthread_setcancelstate(oldstate, nullptr);
-    }
-#endif
-};
-}
-
 #if !defined(Q_OS_DARWIN)
 
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
@@ -200,19 +178,6 @@ static_assert(std::is_trivial_v<ChildError>);
 static_assert(PIPE_BUF >= sizeof(ChildError)); // PIPE_BUF may be bigger
 #endif
 
-// Used for argv and envp arguments to execve()
-struct CharPointerList
-{
-    std::unique_ptr<char *[]> pointers;
-
-    CharPointerList(const QString &argv0, const QStringList &args);
-    explicit CharPointerList(const QProcessEnvironmentPrivate *env);
-
-private:
-    QByteArray data;
-    void updatePointers(qsizetype count);
-};
-
 struct QProcessPoller
 {
     QProcessPoller(const QProcessPrivate &proc);
@@ -249,7 +214,110 @@ int QProcessPoller::poll(const QDeadlineTimer &deadline)
     return qt_poll_msecs(pfds, n_pfds, deadline.remainingTime());
 }
 
-CharPointerList::CharPointerList(const QString &program, const QStringList &args)
+struct QChildProcess
+{
+    // Used for argv and envp arguments to execve()
+    struct CharPointerList
+    {
+        std::unique_ptr<char *[]> pointers;
+
+        CharPointerList(const QString &argv0, const QStringList &args);
+        explicit CharPointerList(const QProcessEnvironmentPrivate *env);
+        /*implicit*/ operator char **() const { return pointers.get(); }
+
+    private:
+        QByteArray data;
+        void updatePointers(qsizetype count);
+    };
+
+    const QProcessPrivate *d;
+    CharPointerList argv;
+    CharPointerList envp;
+    int workingDirectory = -2;
+
+    bool ok() const
+    {
+        return workingDirectory != -1;
+    }
+
+    QChildProcess(QProcessPrivate *d)
+        : d(d), argv(resolveExecutable(d->program), d->arguments),
+          envp(d->environmentPrivate())
+    {
+        if (!d->workingDirectory.isEmpty()) {
+            workingDirectory = opendirfd(QFile::encodeName(d->workingDirectory));
+            if (workingDirectory < 0) {
+                d->setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string());
+                d->cleanup();
+                return;
+            }
+        }
+
+        // Disable PThread cancellation until the child has successfully been
+        // executed. We make a number of POSIX calls in the child that are thread
+        // cancellation points and could cause an unexpected stack unwind. That
+        // would be bad enough with regular fork(), but it's likely fatal with
+        // vfork().
+        disableThreadCancellations();
+    }
+    ~QChildProcess() noexcept(false)
+    {
+        if (workingDirectory >= 0)
+            close(workingDirectory);
+
+        restoreThreadCancellations();
+    }
+
+    bool usingVfork() const noexcept;
+
+    template <typename Lambda> int doFork(Lambda &&childLambda)
+    {
+        pid_t pid;
+        if (usingVfork()) {
+            QT_IGNORE_DEPRECATIONS(pid = vfork();)
+        } else {
+            pid = fork();
+        }
+        if (pid == 0)
+            _exit(childLambda());
+        return pid;
+    }
+
+    int startChild(pid_t *pid)
+    {
+        int ffdflags = FFD_CLOEXEC | (usingVfork() ? 0 : FFD_USE_FORK);
+        return ::vforkfd(ffdflags, pid, &QChildProcess::startProcess, this);
+    }
+
+private:
+    Q_NORETURN void startProcess() const noexcept;
+    static int startProcess(void *self) noexcept
+    {
+        static_cast<QChildProcess *>(self)->startProcess();
+        Q_UNREACHABLE_RETURN(-1);
+    }
+
+#if defined(PTHREAD_CANCEL_DISABLE)
+    int oldstate;
+    void disableThreadCancellations() noexcept
+    {
+        // the following is *not* noexcept, but it won't throw while disabling
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
+    }
+    void restoreThreadCancellations() noexcept(false)
+    {
+        // this doesn't touch errno
+        pthread_setcancelstate(oldstate, nullptr);
+    }
+#else
+    void disableThreadCancellations() noexcept {}
+    void restoreThreadCancellations() {}
+#endif
+
+    static QString resolveExecutable(const QString &program);
+};
+
+QChildProcess::CharPointerList::CharPointerList(const QString &program, const QStringList &args)
 {
     qsizetype count = 1 + args.size();
     pointers.reset(new char *[count + 1]);
@@ -272,7 +340,7 @@ CharPointerList::CharPointerList(const QString &program, const QStringList &args
     updatePointers(count);
 }
 
-CharPointerList::CharPointerList(const QProcessEnvironmentPrivate *environment)
+QChildProcess::CharPointerList::CharPointerList(const QProcessEnvironmentPrivate *environment)
 {
     if (!environment)
         return;
@@ -298,7 +366,7 @@ CharPointerList::CharPointerList(const QProcessEnvironmentPrivate *environment)
     updatePointers(count);
 }
 
-void CharPointerList::updatePointers(qsizetype count)
+void QChildProcess::CharPointerList::updatePointers(qsizetype count)
 {
     char *const base = const_cast<char *>(data.constBegin());
     for (qsizetype i = 0; i < count; ++i)
@@ -477,7 +545,7 @@ void QProcessPrivate::commitChannels() const
     }
 }
 
-static QString resolveExecutable(const QString &program)
+inline QString QChildProcess::resolveExecutable(const QString &program)
 {
 #ifdef Q_OS_DARWIN
     // allow invoking of .app bundles on the Mac.
@@ -513,33 +581,31 @@ static QString resolveExecutable(const QString &program)
     return program;
 }
 
-static int useForkFlags(const QProcessPrivate::UnixExtras *unixExtras)
+inline bool QChildProcess::usingVfork() const noexcept
 {
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
     // ASan writes to global memory, so we mustn't use vfork().
-    return FFD_USE_FORK;
+    return false;
 #endif
 #if defined(Q_OS_LINUX) && !QT_CONFIG(forkfd_pidfd)
     // some broken environments are known to have problems with the new Linux
     // API, so we have a way for users to opt-out during configure time (see
     // QTBUG-86285)
-    return FFD_USE_FORK;
+    return false;
 #endif
 #if defined(Q_OS_DARWIN)
     // Using vfork() for startDetached() is causing problems. We don't know
     // why: without the tools to investigate why it happens, we didn't bother.
-    return FFD_USE_FORK;
+    return false;
 #endif
 
-    if (!unixExtras || !unixExtras->childProcessModifier)
-        return 0;           // no modifier was supplied
+    if (!d->unixExtras || !d->unixExtras->childProcessModifier)
+        return true;            // no modifier was supplied
 
     // if a modifier was supplied, use fork() unless the user opts in to
     // vfork()
-    auto flags = unixExtras->processParameters.flags;
-    if (flags.testFlag(QProcess::UnixProcessFlag::UseVFork))
-        return 0;
-    return FFD_USE_FORK;
+    auto flags = d->unixExtras->processParameters.flags;
+    return flags.testFlag(QProcess::UnixProcessFlag::UseVFork);
 }
 
 void QProcessPrivate::startProcess()
@@ -571,43 +637,17 @@ void QProcessPrivate::startProcess()
                          q, SLOT(_q_startupNotification()));
     }
 
-    int workingDirFd = -1;
-    if (!workingDirectory.isEmpty()) {
-        workingDirFd = opendirfd(QFile::encodeName(workingDirectory));
-        if (workingDirFd == -1) {
-            setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string());
-            cleanup();
-            return;
-        }
+    // Prepare the arguments and the environment
+    QChildProcess childProcess(this);
+    if (!childProcess.ok()) {
+        Q_ASSERT(processError != QProcess::UnknownError);
+        return;
     }
 
-    // Start the process (platform dependent)
-    q->setProcessState(QProcess::Starting);
-
-    // Prepare the arguments and the environment
-    const CharPointerList argv(resolveExecutable(program), arguments);
-    const CharPointerList envp(environment.d.constData());
-
-    // Disable PThread cancellation from this point on: we mustn't have it
-    // enabled when the child starts running nor while our state could get
-    // corrupted if we abruptly exited this function.
-    [[maybe_unused]] PThreadCancelGuard cancelGuard;
-
     // Start the child.
-    auto execChild1 = [this, workingDirFd, &argv, &envp]() {
-        execChild(workingDirFd, argv.pointers.get(), envp.pointers.get());
-    };
-    auto execChild2 = [](void *lambda) {
-        static_cast<decltype(execChild1) *>(lambda)->operator()();
-        return -1;
-    };
-
-    int ffdflags = FFD_CLOEXEC | useForkFlags(unixExtras.get());
-    forkfd = ::vforkfd(ffdflags, &pid, execChild2, &execChild1);
+    q->setProcessState(QProcess::Starting);
+    forkfd = childProcess.startChild(&pid);
     int lastForkErrno = errno;
-
-    if (workingDirFd != -1)
-        close(workingDirFd);
 
     if (forkfd == -1) {
         // Cleanup, report error and return
@@ -752,11 +792,23 @@ static void callChildProcessModifier(const QProcessPrivate *d) noexcept
     }
 }
 
-Q_NORETURN static void
-doExecChild(char **argv, char **envp, int workingDirFd, const QProcessPrivate *d) noexcept
+// IMPORTANT:
+//
+// This function is called in a vfork() context on some OSes (notably, Linux
+// with forkfd), so it MUST NOT modify any non-local variable because it's
+// still sharing memory with the parent process.
+void QChildProcess::startProcess() const noexcept
 {
+    QtVforkSafe::change_sigpipe(SIG_DFL);   // reset the signal that we ignored
+
+    // Render channels configuration.
+    d->commitChannels();
+
+    // make sure this fd is closed if execv() succeeds
+    qt_safe_close(d->childStartedPipe[0]);
+
     // enter the working directory
-    if (workingDirFd != -1 && fchdir(workingDirFd) == -1)
+    if (workingDirectory >= 0 && fchdir(workingDirectory) == -1)
         failChildProcess(d, "fchdir", errno);
 
     if (d->unixExtras) {
@@ -769,29 +821,11 @@ doExecChild(char **argv, char **envp, int workingDirFd, const QProcessPrivate *d
     }
 
     // execute the process
-    if (!envp)
+    if (!envp.pointers)
         qt_safe_execv(argv[0], argv);
     else
         qt_safe_execve(argv[0], argv, envp);
     failChildProcess(d, "execve", errno);
-}
-
-// IMPORTANT:
-//
-// This function is called in a vfork() context on some OSes (notably, Linux
-// with forkfd), so it MUST NOT modify any non-local variable because it's
-// still sharing memory with the parent process.
-void QProcessPrivate::execChild(int workingDir, char **argv, char **envp) const noexcept
-{
-    QtVforkSafe::change_sigpipe(SIG_DFL);   // reset the signal that we ignored
-
-    // Render channels configuration.
-    commitChannels();
-
-    // make sure this fd is closed if execv() succeeds
-    qt_safe_close(childStartedPipe[0]);
-
-    doExecChild(argv, envp, workingDir, this);
 }
 
 bool QProcessPrivate::processStarted(QString *errorMessage)
@@ -1152,53 +1186,30 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         return false;
     }
 
-    int workingDirFd = -1;
-    if (!workingDirectory.isEmpty()) {
-        workingDirFd = opendirfd(QFile::encodeName(workingDirectory));
-        if (workingDirFd == -1) {
-            setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string(errno));
-            return false;
-        }
+    // see startProcess() for more information
+    QChildProcess childProcess(this);
+    if (!childProcess.ok()) {
+        Q_ASSERT(processError != QProcess::UnknownError);
+        return false;
     }
 
-    const CharPointerList argv(resolveExecutable(program), arguments);
-    const CharPointerList envp(environment.d.constData());
-
-    // see startProcess() for more information
-    [[maybe_unused]] PThreadCancelGuard cancelGuard;
-
-    auto doFork = [this]() {
-        if (useForkFlags(unixExtras.get()))
-            return fork;
-        QT_IGNORE_DEPRECATIONS(return vfork;)
-    }();
-    pid_t childPid = doFork();
-    if (childPid == 0) {
-        QtVforkSafe::change_sigpipe(SIG_DFL);   // reset the signal that we ignored
+    pid_t childPid = childProcess.doFork([&] {
         ::setsid();
 
         qt_safe_close(startedPipe[0]);
         qt_safe_close(pidPipe[0]);
 
-        pid_t doubleForkPid = doFork();
-        if (doubleForkPid == 0) {
-            // Render channels configuration.
-            commitChannels();
-
-            doExecChild(argv.pointers.get(), envp.pointers.get(), workingDirFd, this);
-        } else if (doubleForkPid == -1) {
+        pid_t doubleForkPid;
+        if (childProcess.startChild(&doubleForkPid) == -1)
             failChildProcess(this, "fork", errno);
-        }
 
         // success
         qt_safe_write(pidPipe[1], &doubleForkPid, sizeof(pid_t));
-        ::_exit(1);
-    }
+        return 0;
+    });
 
     int savedErrno = errno;
     closeChannels();
-    if (workingDirFd != -1)
-        close(workingDirFd);
 
     if (childPid == -1) {
         setErrorAndEmit(QProcess::FailedToStart, "fork: "_L1 + qt_error_string(savedErrno));
