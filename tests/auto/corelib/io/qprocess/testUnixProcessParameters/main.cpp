@@ -30,17 +30,30 @@ int main(int argc, char **argv)
     }
 
     if (cmd == "reset-sighand") {
-        // confirm it was not ignored
+        bool ok = true;
+
+        // confirm our signal block mask is empty
+        sigset_t set;
+        sigprocmask(SIG_SETMASK, nullptr, &set);
+        for (int signo = 1; signo < NSIG; ++signo) {
+            if (sigismember(&set, signo)) {
+                fprintf(stderr, "'%s' is blocked.\n", strsignal(signo));
+                ok = false;
+            }
+        }
+
+        // confirm SIGUSR1 was not ignored
         struct sigaction action;
         sigaction(SIGUSR1, nullptr, &action);
-        if (action.sa_handler == SIG_DFL)
-            return EXIT_SUCCESS;
-        fprintf(stderr, "SIGUSR1 is SIG_IGN\n");
-        return EXIT_FAILURE;
+        if (action.sa_handler != SIG_DFL) {
+            fprintf(stderr, "SIGUSR1 is SIG_IGN\n");
+            ok = false;
+        }
+        return ok ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
     if (cmd == "ignore-sigpipe") {
-        // confirm it was ignored
+        // confirm SIGPIPE was ignored
         struct sigaction action;
         sigaction(SIGPIPE, nullptr, &action);
         if (action.sa_handler == SIG_IGN)

@@ -1562,6 +1562,11 @@ void tst_QProcess::unixProcessParameters()
             sigaction(SIGUSR1, &act, &old_sigusr1);
             act.sa_handler = SIG_DFL;
             sigaction(SIGPIPE, &act, &old_sigpipe);
+
+            // and we block SIGUSR2
+            sigset_t *set = &act.sa_mask;               // reuse this sigset_t
+            sigaddset(set, SIGUSR2);
+            sigprocmask(SIG_BLOCK, set, nullptr);
         }
         ~Scope()
         {
@@ -1574,6 +1579,10 @@ void tst_QProcess::unixProcessParameters()
             sigaction(SIGUSR1, &old_sigusr1, nullptr);
             sigaction(SIGPIPE, &old_sigpipe, nullptr);
             devnull = -1;
+
+            sigset_t *set = &old_sigusr1.sa_mask;       // reuse this sigset_t
+            sigaddset(set, SIGUSR2);
+            sigprocmask(SIG_BLOCK, set, nullptr);
         }
     } scope;
 
