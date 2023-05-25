@@ -171,6 +171,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
             ${syncqt_args_rsp}
             ${module_headers}
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
+            "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_internal_sync_headers_deps>>"
         COMMENT
             "Running syncqt.cpp for module: ${module}"
         VERBATIM
@@ -180,6 +181,8 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
             ${syncqt_outputs}
     )
     add_dependencies(sync_headers ${target}_sync_headers)
+    set_target_properties(${target}
+        PROPERTIES _qt_internal_sync_headers_target ${target}_sync_headers)
 
     # This target is required when building docs, to make all header files and their aliases
     # available for qdoc.

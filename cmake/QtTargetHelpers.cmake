@@ -114,6 +114,15 @@ function(qt_internal_extend_target target)
             if(NOT base_lib STREQUAL lib)
                 qt_create_nolink_target("${base_lib}" ${target})
             endif()
+
+            # Collect _sync_headers targets from libraries that the target depends on. This is
+            # heuristic way of building the dependency tree between the _sync_headers targets of
+            # different Qt modules.
+            if(TARGET "${lib}")
+                set(out_genex "$<TARGET_PROPERTY:${lib},_qt_internal_sync_headers_target>")
+                set_property(TARGET ${target}
+                    APPEND PROPERTY _qt_internal_sync_headers_deps "${out_genex}")
+            endif()
         endforeach()
 
         # Set-up the target
