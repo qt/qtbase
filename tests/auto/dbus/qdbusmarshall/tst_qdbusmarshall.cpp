@@ -1082,7 +1082,7 @@ public:
     }
 };
 
-// mostly the same as qdbusintegrator.cpp:connectionCapabilies
+// mostly the same as qdbusintegrator.cpp:connectionCapabilities
 static bool canSendUnixFd(DBusConnection *connection)
 {
     typedef dbus_bool_t (*can_send_type_t)(DBusConnection *, int);

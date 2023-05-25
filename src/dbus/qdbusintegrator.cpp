@@ -1734,7 +1734,7 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
     QMetaObject::invokeMethod(this, &QDBusConnectionPrivate::doDispatch, Qt::QueuedConnection);
 }
 
-static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnection *connection)
+static QDBusConnection::ConnectionCapabilities connectionCapabilities(DBusConnection *connection)
 {
     QDBusConnection::ConnectionCapabilities result;
     typedef dbus_bool_t (*can_send_type_t)(DBusConnection *, int);
@@ -1760,7 +1760,7 @@ static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnecti
 
 void QDBusConnectionPrivate::handleAuthentication()
 {
-    capabilities.storeRelaxed(connectionCapabilies(connection));
+    capabilities.storeRelaxed(::connectionCapabilities(connection));
     isAuthenticated = true;
 }
 
