@@ -1450,6 +1450,79 @@ void tst_QProcess::createProcessArgumentsModifier()
 #endif // Q_OS_WIN
 
 #ifdef Q_OS_UNIX
+static constexpr char messageFromChildProcess[] = "Message from the child process";
+static_assert(std::char_traits<char>::length(messageFromChildProcess) <= PIPE_BUF);
+static void childProcessModifier(int fd)
+{
+    QT_WRITE(fd, messageFromChildProcess, strlen(messageFromChildProcess));
+    QT_CLOSE(fd);
+}
+
+void tst_QProcess::setChildProcessModifier_data()
+{
+    QTest::addColumn<bool>("detached");
+    QTest::newRow("normal") << false;
+    QTest::newRow("detached") << true;
+}
+
+void tst_QProcess::setChildProcessModifier()
+{
+    QFETCH(bool, detached);
+    int pipes[2] = { -1 , -1 };
+    QVERIFY(qt_safe_pipe(pipes) == 0);
+
+    QProcess process;
+    process.setChildProcessModifier([pipes]() {
+        ::childProcessModifier(pipes[1]);
+    });
+    process.setProgram("testProcessNormal/testProcessNormal");
+    if (detached) {
+        process.startDetached();
+    } else {
+        process.start("testProcessNormal/testProcessNormal");
+        if (process.state() != QProcess::Starting)
+            QCOMPARE(process.state(), QProcess::Running);
+        QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+        QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
+        QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(process.exitCode(), 0);
+    }
+
+    char buf[sizeof messageFromChildProcess] = {};
+    qt_safe_close(pipes[1]);
+    QCOMPARE(qt_safe_read(pipes[0], buf, sizeof(buf)), qint64(sizeof(messageFromChildProcess)) - 1);
+    QCOMPARE(buf, messageFromChildProcess);
+    qt_safe_close(pipes[0]);
+}
+
+void tst_QProcess::throwInChildProcessModifier()
+{
+#ifndef __cpp_exceptions
+    Q_SKIP("Exceptions disabled.");
+#else
+    QProcess process;
+    process.setChildProcessModifier([]() {
+        throw 42;
+    });
+    process.setProgram("testProcessNormal/testProcessNormal");
+
+    process.start();
+    QVERIFY(!process.waitForStarted(5000));
+    QCOMPARE(process.state(), QProcess::NotRunning);
+    QCOMPARE(process.error(), QProcess::FailedToStart);
+    QVERIFY2(process.errorString().contains("childProcessModifier"),
+             qPrintable(process.errorString()));
+
+    // try again, to ensure QProcess internal state wasn't corrupted
+    process.start();
+    QVERIFY(!process.waitForStarted(5000));
+    QCOMPARE(process.state(), QProcess::NotRunning);
+    QCOMPARE(process.error(), QProcess::FailedToStart);
+    QVERIFY2(process.errorString().contains("childProcessModifier"),
+             qPrintable(process.errorString()));
+#endif
+}
+
 void tst_QProcess::unixProcessParameters_data()
 {
     QTest::addColumn<QProcess::UnixProcessParameters>("params");
@@ -1556,81 +1629,6 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
 
     if (haveWorkingVFork)
         QVERIFY2(vforkControl.loadRelaxed(), "QProcess doesn't appear to have used vfork()");
-}
-#endif
-
-#ifdef Q_OS_UNIX
-static constexpr char messageFromChildProcess[] = "Message from the child process";
-static_assert(std::char_traits<char>::length(messageFromChildProcess) <= PIPE_BUF);
-static void childProcessModifier(int fd)
-{
-    QT_WRITE(fd, messageFromChildProcess, strlen(messageFromChildProcess));
-    QT_CLOSE(fd);
-}
-
-void tst_QProcess::setChildProcessModifier_data()
-{
-    QTest::addColumn<bool>("detached");
-    QTest::newRow("normal") << false;
-    QTest::newRow("detached") << true;
-}
-
-void tst_QProcess::setChildProcessModifier()
-{
-    QFETCH(bool, detached);
-    int pipes[2] = { -1 , -1 };
-    QVERIFY(qt_safe_pipe(pipes) == 0);
-
-    QProcess process;
-    process.setChildProcessModifier([pipes]() {
-        ::childProcessModifier(pipes[1]);
-    });
-    process.setProgram("testProcessNormal/testProcessNormal");
-    if (detached) {
-        process.startDetached();
-    } else {
-        process.start("testProcessNormal/testProcessNormal");
-        if (process.state() != QProcess::Starting)
-            QCOMPARE(process.state(), QProcess::Running);
-        QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
-        QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
-        QCOMPARE(process.exitStatus(), QProcess::NormalExit);
-        QCOMPARE(process.exitCode(), 0);
-    }
-
-    char buf[sizeof messageFromChildProcess] = {};
-    qt_safe_close(pipes[1]);
-    QCOMPARE(qt_safe_read(pipes[0], buf, sizeof(buf)), qint64(sizeof(messageFromChildProcess)) - 1);
-    QCOMPARE(buf, messageFromChildProcess);
-    qt_safe_close(pipes[0]);
-}
-
-void tst_QProcess::throwInChildProcessModifier()
-{
-#ifndef __cpp_exceptions
-    Q_SKIP("Exceptions disabled.");
-#else
-    QProcess process;
-    process.setChildProcessModifier([]() {
-        throw 42;
-    });
-    process.setProgram("testProcessNormal/testProcessNormal");
-
-    process.start();
-    QVERIFY(!process.waitForStarted(5000));
-    QCOMPARE(process.state(), QProcess::NotRunning);
-    QCOMPARE(process.error(), QProcess::FailedToStart);
-    QVERIFY2(process.errorString().contains("childProcessModifier"),
-             qPrintable(process.errorString()));
-
-    // try again, to ensure QProcess internal state wasn't corrupted
-    process.start();
-    QVERIFY(!process.waitForStarted(5000));
-    QCOMPARE(process.state(), QProcess::NotRunning);
-    QCOMPARE(process.error(), QProcess::FailedToStart);
-    QVERIFY2(process.errorString().contains("childProcessModifier"),
-             qPrintable(process.errorString()));
-#endif
 }
 #endif
 
