@@ -315,6 +315,7 @@ public:
         constexpr bool IsFwdIt = std::is_convertible_v<
                 typename std::iterator_traits<InputIterator>::iterator_category,
                 std::forward_iterator_tag>;
+        constexpr bool IsIdentity = std::is_same_v<Projection, q20::identity>;
 
         if constexpr (IsFwdIt) {
             const qsizetype n = std::distance(first, last);
@@ -379,8 +380,13 @@ public:
                 break;
             }
             if (dst == dend) {      // ran out of existing elements to overwrite
-                if constexpr (IsFwdIt) {
+                if constexpr (IsFwdIt && IsIdentity) {
                     dst = std::uninitialized_copy(first, last, dst);
+                    break;
+                } else if constexpr (IsFwdIt && !IsIdentity
+                           && std::is_nothrow_constructible_v<T, decltype(std::invoke(proj, *first))>) {
+                    for (; first != last; ++dst, ++first)   // uninitialized_copy with projection
+                        q20::construct_at(dst, std::invoke(proj, *first));
                     break;
                 } else {
                     do {
