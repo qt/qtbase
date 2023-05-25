@@ -3310,6 +3310,52 @@ QString &QString::append(QChar ch)
 */
 
 /*!
+    \fn QString &QString::assign(QAnyStringView v)
+    \since 6.6
+
+    Replaces the contents of this string with a copy of \a v and returns a
+    reference to this string.
+
+    The size of this string will be equal to the size of \a v, converted to
+    UTF-16 as if by \c{v.toString()}. Unlike QAnyStringView::toString(), however,
+    this function only allocates memory if the estimated size exceeds the capacity
+    of this string or this string is shared.
+
+    \sa QAnyStringView::toString()
+*/
+
+/*!
+    \fn QString &QString::assign(qsizetype n, QChar c)
+    \since 6.6
+
+    Replaces the contents of this string with \a n copies of \a c and
+    returns a reference to this string.
+
+    The size of this string will be equal to \a n, which has to be non-negative.
+
+    This function will only allocate memory if \a n exceeds the capacity of this
+    string or this string is shared.
+
+    \sa fill()
+*/
+
+QString &QString::assign(QAnyStringView s)
+{
+    if (s.size() <= capacity() && isDetached()) {
+        const auto offset = d.freeSpaceAtBegin();
+        if (offset)
+            d.setBegin(d.begin() - offset);
+        resize(0);
+        s.visit([this](auto input) {
+            this->append(input);
+        });
+    } else {
+        *this = s.toString();
+    }
+    return *this;
+}
+
+/*!
   \fn QString &QString::remove(qsizetype position, qsizetype n)
 
   Removes \a n characters from the string, starting at the given \a

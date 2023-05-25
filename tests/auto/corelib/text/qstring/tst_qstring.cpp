@@ -526,6 +526,10 @@ private slots:
 
     void insert_special_cases();
 
+    void assign();
+    void assign_shared();
+    void assign_uses_prepend_buffer();
+
     void simplified_data();
     void simplified();
     void trimmed();
@@ -3385,6 +3389,100 @@ void tst_QString::append_bytearray_special_cases()
     }
 }
 #endif // !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)
+
+void tst_QString::assign()
+{
+    // QString &assign(QAnyStringView)
+    {
+        QString str;
+        QCOMPARE(str.assign("data"), u"data");
+        QCOMPARE(str.size(), 4);
+        QCOMPARE(str.assign(u8"data\0data"), u"data\0data");
+        QCOMPARE(str.size(), 4);
+        QCOMPARE(str.assign(u"\0data\0data"), u"\0data\0data");
+        QCOMPARE(str.size(), 0);
+        QCOMPARE(str.assign(QAnyStringView("data\0")), u"data\0");
+        QCOMPARE(str.size(), 4);
+        QCOMPARE(str.assign(QStringView(u"(ノಠ益ಠ)ノ彡┻━┻\0")), u"(ノಠ益ಠ)ノ彡┻━┻\0");
+        QCOMPARE(str.size(), 11);
+        QCOMPARE(str.assign(QUtf8StringView(u8"٩(⁎❛ᴗ❛⁎)۶")), u"٩(⁎❛ᴗ❛⁎)۶");
+        QCOMPARE(str.size(), 9);
+        QCOMPARE(str.assign(QLatin1String("datadata")), u"datadata");
+        QCOMPARE(str.size(), 8);
+    }
+    // QString &assign(qsizetype, char);
+    {
+        QString str;
+        QCOMPARE(str.assign(3, u'è'), u"èèè");
+        QCOMPARE(str.size(), 3);
+        QCOMPARE(str.assign(20, u'd').assign(2, u'ᴗ'), u"ᴗᴗ");
+        QCOMPARE(str.size(), 2);
+        QCOMPARE(str.assign(0, u'x').assign(5, QLatin1Char('d')), u"ddddd");
+        QCOMPARE(str.size(), 5);
+        QCOMPARE(str.assign(3, u'x'), u"xxx");
+        QCOMPARE(str.size(), 3);
+    }
+    // Test chaining
+    {
+        QString str;
+        QCOMPARE(str.assign(300, u'T').assign({"[̲̅$̲̅(̲̅5̲̅)̲̅$̲̅]"}), u"[̲̅$̲̅(̲̅5̲̅)̲̅$̲̅]");
+        QCOMPARE(str.size(), 19);
+        QCOMPARE(str.assign("data").assign(QByteArrayView::fromArray(
+            {std::byte('T'), std::byte('T'), std::byte('T')})), u"TTT");
+        QCOMPARE(str.size(), 3);
+        QCOMPARE(str.assign("data").assign("\0data"), u"\0data");
+        QCOMPARE(str.size(), 0);
+    }
+}
+
+void tst_QString::assign_shared()
+{
+    {
+        QString str = "DATA"_L1;
+        QVERIFY(str.isDetached());
+        auto strCopy = str;
+        QVERIFY(!str.isDetached());
+        QVERIFY(!strCopy.isDetached());
+        QVERIFY(str.isSharedWith(strCopy));
+        QVERIFY(strCopy.isSharedWith(str));
+
+        str.assign(4, u'D');
+        QVERIFY(str.isDetached());
+        QVERIFY(strCopy.isDetached());
+        QVERIFY(!str.isSharedWith(strCopy));
+        QVERIFY(!strCopy.isSharedWith(str));
+        QCOMPARE(str, u"DDDD");
+        QCOMPARE(strCopy, u"DATA");
+    }
+}
+
+void tst_QString::assign_uses_prepend_buffer()
+{
+    const auto capBegin = [](const QString &s) {
+        return s.begin() - s.d.freeSpaceAtBegin();
+    };
+    const auto capEnd = [](const QString &s) {
+        return s.end() + s.d.freeSpaceAtEnd();
+    };
+    // QString &assign(QAnyStringView)
+    {
+        QString withFreeSpaceAtBegin;
+        for (int i = 0; i < 100 && withFreeSpaceAtBegin.d.freeSpaceAtBegin() < 2; ++i)
+            withFreeSpaceAtBegin.prepend(u'd');
+        QCOMPARE_GT(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 1);
+
+        const auto oldCapBegin = capBegin(withFreeSpaceAtBegin);
+        const auto oldCapEnd = capEnd(withFreeSpaceAtBegin);
+
+        QString test(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), u'ȍ');
+        withFreeSpaceAtBegin.assign(test);
+
+        QCOMPARE_EQ(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 0); // we used the prepend buffer
+        QCOMPARE_EQ(capBegin(withFreeSpaceAtBegin), oldCapBegin);
+        QCOMPARE_EQ(capEnd(withFreeSpaceAtBegin), oldCapEnd);
+        QCOMPARE(withFreeSpaceAtBegin, test);
+    }
+}
 
 void tst_QString::operator_pluseq_special_cases()
 {

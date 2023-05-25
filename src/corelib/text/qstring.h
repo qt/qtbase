@@ -36,6 +36,8 @@ Q_FORWARD_DECLARE_CF_TYPE(CFString);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 #endif
 
+class tst_QString;
+
 QT_BEGIN_NAMESPACE
 
 class QRegularExpression;
@@ -116,6 +118,8 @@ constexpr QChar QAnyStringView::back() const
 class Q_CORE_EXPORT QString
 {
     typedef QTypedArrayData<char16_t> Data;
+
+    friend class ::tst_QString;
 public:
     typedef QStringPrivate DataPointer;
 
@@ -375,6 +379,12 @@ public:
     inline QString &prepend(QLatin1StringView s) { return insert(0, s); }
     QString &prepend(QUtf8StringView s) { return insert(0, s); }
 
+    QString &assign(QAnyStringView s);
+    inline QString &assign(qsizetype n, QChar c)
+    {
+        Q_ASSERT(n >= 0);
+        return fill(c, n);
+    }
     inline QString &operator+=(QChar c) { return append(c); }
 
     inline QString &operator+=(const QString &s) { return append(s); }
