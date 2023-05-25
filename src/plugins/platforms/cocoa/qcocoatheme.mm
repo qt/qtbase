@@ -94,6 +94,9 @@ static QPalette *qt_mac_createSystemPalette()
     palette->setColor(QPalette::Inactive, QPalette::PlaceholderText, qc);
     palette->setColor(QPalette::Disabled, QPalette::PlaceholderText, qc);
 
+    qc = qt_mac_toQColor([NSColor controlAccentColor]);
+    palette->setColor(QPalette::AccentColor, qc);
+
     return palette;
 }
 
