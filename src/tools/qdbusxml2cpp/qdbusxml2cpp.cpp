@@ -232,16 +232,16 @@ static QByteArray qtTypeName(const QString &where, const QString &signature,
 {
     int type = QDBusMetaType::signatureToMetaType(signature.toLatin1()).id();
     if (type == QMetaType::UnknownType) {
-        QString annotationName = QString::fromLatin1("org.qtproject.QtDBus.QtTypeName");
+        QString annotationName = u"org.qtproject.QtDBus.QtTypeName"_s;
         if (paramId >= 0)
-            annotationName += QString::fromLatin1(".%1%2").arg(QLatin1StringView(direction)).arg(paramId);
+            annotationName += ".%1%2"_L1.arg(QLatin1StringView(direction)).arg(paramId);
         QString qttype = annotations.value(annotationName);
         if (!qttype.isEmpty())
             return std::move(qttype).toLatin1();
 
-        QString oldAnnotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
+        QString oldAnnotationName = u"com.trolltech.QtDBus.QtTypeName"_s;
         if (paramId >= 0)
-            oldAnnotationName += QString::fromLatin1(".%1%2").arg(QLatin1StringView(direction)).arg(paramId);
+            oldAnnotationName += ".%1%2"_L1.arg(QLatin1StringView(direction)).arg(paramId);
         qttype = annotations.value(oldAnnotationName);
 
         if (qttype.isEmpty()) {
@@ -412,7 +412,7 @@ static QString propertySetter(const QDBusIntrospection::Property &property)
 
 static QString methodName(const QDBusIntrospection::Method &method)
 {
-    QString name = method.annotations.value(QStringLiteral("org.qtproject.QtDBus.MethodName"));
+    QString name = method.annotations.value(u"org.qtproject.QtDBus.MethodName"_s);
     if (!name.isEmpty())
         return name;
 
@@ -1078,44 +1078,44 @@ int main(int argc, char **argv)
 
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addPositionalArgument(QStringLiteral("xml-or-xml-file"), QStringLiteral("XML file to use."));
-    parser.addPositionalArgument(QStringLiteral("interfaces"), QStringLiteral("List of interfaces to use."),
-                QStringLiteral("[interfaces ...]"));
+    parser.addPositionalArgument(u"xml-or-xml-file"_s, u"XML file to use."_s);
+    parser.addPositionalArgument(u"interfaces"_s, u"List of interfaces to use."_s,
+                u"[interfaces ...]"_s);
 
-    QCommandLineOption adapterCodeOption(QStringList() << QStringLiteral("a") << QStringLiteral("adaptor"),
-                QStringLiteral("Write the adaptor code to <filename>"), QStringLiteral("filename"));
+    QCommandLineOption adapterCodeOption(QStringList{u"a"_s, u"adaptor"_s},
+                u"Write the adaptor code to <filename>"_s, u"filename"_s);
     parser.addOption(adapterCodeOption);
 
-    QCommandLineOption classNameOption(QStringList() << QStringLiteral("c") << QStringLiteral("classname"),
-                QStringLiteral("Use <classname> as the class name for the generated classes"), QStringLiteral("classname"));
+    QCommandLineOption classNameOption(QStringList{u"c"_s, u"classname"_s},
+                u"Use <classname> as the class name for the generated classes"_s, u"classname"_s);
     parser.addOption(classNameOption);
 
-    QCommandLineOption addIncludeOption(QStringList() << QStringLiteral("i") << QStringLiteral("include"),
-                QStringLiteral("Add #include \"filename\" to the output"), QStringLiteral("filename"));
+    QCommandLineOption addIncludeOption(QStringList{u"i"_s, u"include"_s},
+                u"Add #include \"filename\" to the output"_s, u"filename"_s);
     parser.addOption(addIncludeOption);
 
-    QCommandLineOption addGlobalIncludeOption(QStringList() << QStringLiteral("I") << QStringLiteral("global-include"),
-                QStringLiteral("Add #include <filename> to the output"), QStringLiteral("filename"));
+    QCommandLineOption addGlobalIncludeOption(QStringList{u"I"_s, u"global-include"_s},
+                u"Add #include <filename> to the output"_s, u"filename"_s);
     parser.addOption(addGlobalIncludeOption);
 
-    QCommandLineOption adapterParentOption(QStringLiteral("l"),
-                QStringLiteral("When generating an adaptor, use <classname> as the parent class"), QStringLiteral("classname"));
+    QCommandLineOption adapterParentOption(u"l"_s,
+                u"When generating an adaptor, use <classname> as the parent class"_s, u"classname"_s);
     parser.addOption(adapterParentOption);
 
-    QCommandLineOption mocIncludeOption(QStringList() << QStringLiteral("m") << QStringLiteral("moc"),
-                QStringLiteral("Generate #include \"filename.moc\" statements in the .cpp files"));
+    QCommandLineOption mocIncludeOption(QStringList{u"m"_s, u"moc"_s},
+                u"Generate #include \"filename.moc\" statements in the .cpp files"_s);
     parser.addOption(mocIncludeOption);
 
-    QCommandLineOption noNamespaceOption(QStringList() << QStringLiteral("N") << QStringLiteral("no-namespaces"),
-                QStringLiteral("Don't use namespaces"));
+    QCommandLineOption noNamespaceOption(QStringList{u"N"_s, u"no-namespaces"_s},
+                u"Don't use namespaces"_s);
     parser.addOption(noNamespaceOption);
 
-    QCommandLineOption proxyCodeOption(QStringList() << QStringLiteral("p") << QStringLiteral("proxy"),
-                QStringLiteral("Write the proxy code to <filename>"), QStringLiteral("filename"));
+    QCommandLineOption proxyCodeOption(QStringList{u"p"_s, u"proxy"_s},
+                u"Write the proxy code to <filename>"_s, u"filename"_s);
     parser.addOption(proxyCodeOption);
 
-    QCommandLineOption verboseOption(QStringList() << QStringLiteral("V") << QStringLiteral("verbose"),
-                QStringLiteral("Be verbose."));
+    QCommandLineOption verboseOption(QStringList{u"V"_s, u"verbose"_s},
+                u"Be verbose."_s);
     parser.addOption(verboseOption);
 
     parser.process(app);
@@ -1142,7 +1142,7 @@ int main(int argc, char **argv)
     }
 
     if (verbose)
-        QLoggingCategory::setFilterRules(QStringLiteral("dbus.parser.debug=true"));
+        QLoggingCategory::setFilterRules(u"dbus.parser.debug=true"_s);
 
     QDBusIntrospection::Interfaces interfaces = readInput();
     cleanInterfaces(interfaces);
