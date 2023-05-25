@@ -660,6 +660,11 @@ static void applyProcessParameters(const QProcess::UnixProcessParameters &params
             if (!ignore_sigpipe || sig != SIGPIPE)
                 QtVforkSafe::sigaction(sig, &sa, nullptr);
         }
+
+        // and unmask all signals
+        sigset_t set;
+        sigemptyset(&set);
+        sigprocmask(SIG_SETMASK, &set, nullptr);
     }
 
     // Close all file descriptors above stderr.
