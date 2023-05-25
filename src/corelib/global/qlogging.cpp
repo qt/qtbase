@@ -1627,8 +1627,8 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             QString timeFormat = pattern->timeArgs.at(timeArgsIdx);
             timeArgsIdx++;
             if (timeFormat == "process"_L1) {
-                    quint64 ms = pattern->timer.elapsed();
-                    message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
+                quint64 ms = pattern->timer.elapsed();
+                message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
             } else if (timeFormat == "boot"_L1) {
                 // just print the milliseconds since the elapsed timer reference
                 // like the Linux kernel does
