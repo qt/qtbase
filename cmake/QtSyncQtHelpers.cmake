@@ -206,7 +206,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     endif()
     add_dependencies(sync_all_public_headers ${target}_sync_all_public_headers)
 
-    if(NOT is_3rd_party_library AND NOT is_framework)
+    if(NOT is_3rd_party_library AND NOT is_framework AND module_headers)
         # Install all the CaMeL style aliases of header files from the staging directory in one rule
         qt_install(DIRECTORY "${syncqt_staging_dir}/"
             DESTINATION "${module_install_interface_include_dir}"
