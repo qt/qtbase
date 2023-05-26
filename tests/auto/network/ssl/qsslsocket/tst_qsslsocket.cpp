@@ -3058,7 +3058,14 @@ void tst_QSslSocket::blacklistedCertificates()
     QList<QSslError> sslErrors = receiver->sslHandshakeErrors();
     QVERIFY(sslErrors.count() > 0);
     // there are more errors (self signed cert and hostname mismatch), but we only care about the blacklist error
-    QCOMPARE(sslErrors.at(0).error(), QSslError::CertificateBlacklisted);
+    std::optional<QSslError> blacklistedError;
+    for (const QSslError &error : sslErrors) {
+        if (error.error() == QSslError::CertificateBlacklisted) {
+            blacklistedError = error;
+            break;
+        }
+    }
+    QVERIFY2(blacklistedError, "CertificateBlacklisted error not found!");
 }
 
 void tst_QSslSocket::versionAccessors()
