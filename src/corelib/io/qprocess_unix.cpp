@@ -233,6 +233,7 @@ struct QChildProcess
     const QProcessPrivate *d;
     CharPointerList argv;
     CharPointerList envp;
+    sigset_t oldsigset;
     int workingDirectory = -2;
 
     bool ok() const
@@ -253,6 +254,11 @@ struct QChildProcess
             }
         }
 
+        // Block Unix signals, to ensure the user's handlers aren't run in the
+        // child side and do something weird, especially if the handler and the
+        // user of QProcess are completely different codebases.
+        maybeBlockSignals();
+
         // Disable PThread cancellation until the child has successfully been
         // executed. We make a number of POSIX calls in the child that are thread
         // cancellation points and could cause an unexpected stack unwind. That
@@ -266,6 +272,25 @@ struct QChildProcess
             close(workingDirectory);
 
         restoreThreadCancellations();
+        restoreSignalMask();
+    }
+
+    void maybeBlockSignals() noexcept
+    {
+        // We only block Unix signals if we're using vfork(), to avoid a
+        // changing behavior to the user's modifier and because in some OSes
+        // this action would block crashing signals too.
+        if (usingVfork()) {
+            sigset_t emptyset;
+            sigfillset(&emptyset);
+            pthread_sigmask(SIG_SETMASK, &emptyset, &oldsigset);
+        }
+    }
+
+    void restoreSignalMask() const noexcept
+    {
+        if (usingVfork())
+            pthread_sigmask(SIG_SETMASK, &oldsigset, nullptr);
     }
 
     bool usingVfork() const noexcept;
@@ -581,7 +606,7 @@ inline QString QChildProcess::resolveExecutable(const QString &program)
     return program;
 }
 
-inline bool QChildProcess::usingVfork() const noexcept
+inline bool globalUsingVfork() noexcept
 {
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
     // ASan writes to global memory, so we mustn't use vfork().
@@ -599,6 +624,14 @@ inline bool QChildProcess::usingVfork() const noexcept
     return false;
 #endif
 
+    return true;
+}
+
+inline bool QChildProcess::usingVfork() const noexcept
+{
+    if (!globalUsingVfork())
+        return false;
+
     if (!d->unixExtras || !d->unixExtras->childProcessModifier)
         return true;            // no modifier was supplied
 
@@ -607,6 +640,13 @@ inline bool QChildProcess::usingVfork() const noexcept
     auto flags = d->unixExtras->processParameters.flags;
     return flags.testFlag(QProcess::UnixProcessFlag::UseVFork);
 }
+
+#ifdef QT_BUILD_INTERNAL
+Q_AUTOTEST_EXPORT bool _qprocessUsingVfork() noexcept
+{
+    return globalUsingVfork();
+}
+#endif
 
 void QProcessPrivate::startProcess()
 {
@@ -810,6 +850,7 @@ void QChildProcess::startProcess() const noexcept
         failChildProcess(d, "fchdir", errno);
 
     bool sigpipeHandled = false;
+    bool sigmaskHandled = false;
     if (d->unixExtras) {
         // FIRST we call the user modifier function, before we dropping
         // privileges or closing non-standard file descriptors
@@ -820,10 +861,16 @@ void QChildProcess::startProcess() const noexcept
 
         auto flags = d->unixExtras->processParameters.flags;
         sigpipeHandled = flags.testAnyFlags(QProcess::ResetSignalHandlers | QProcess::IgnoreSigPipe);
+        sigmaskHandled = flags.testFlag(QProcess::ResetSignalHandlers);
     }
     if (!sigpipeHandled) {
         // reset the signal that we ignored
         QtVforkSafe::change_sigpipe(SIG_DFL);       // reset the signal that we ignored
+    }
+    if (!sigmaskHandled) {
+        // restore the signal mask from the parent, if applyProcessParameters()
+        // hasn't completely reset it
+        restoreSignalMask();
     }
 
     // execute the process

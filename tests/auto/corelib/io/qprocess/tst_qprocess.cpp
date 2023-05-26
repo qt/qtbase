@@ -123,6 +123,7 @@ private slots:
     void throwInChildProcessModifier();
     void terminateInChildProcessModifier_data();
     void terminateInChildProcessModifier();
+    void raiseInChildProcessModifier();
     void unixProcessParameters_data();
     void unixProcessParameters();
     void unixProcessParametersAndChildModifier();
@@ -1545,7 +1546,7 @@ void tst_QProcess::failChildProcessModifier()
         QVERIFY(!process.startDetached(&pid));
         QCOMPARE(pid, -1);
     } else {
-        process.start("testProcessNormal/testProcessNormal");
+        process.start();
         QVERIFY(!process.waitForStarted(5000));
     }
 
@@ -1615,9 +1616,12 @@ void tst_QProcess::terminateInChildProcessModifier()
     // temporarily disable QTest's crash logger
     DisableCrashLogger disableCrashLogging;
 
+    // testForwardingHelper prints to both stdout and stderr, so if we fail to
+    // fail we should be able to tell too
     QProcess process;
     process.setChildProcessModifier(function);
-    process.setProgram("testProcessNormal/testProcessNormal");
+    process.setProgram("testForwardingHelper/testForwardingHelper");
+    process.setArguments({ "/dev/null" });
 
     // temporarily disable QTest's crash logger while starting the child process
     {
@@ -1628,6 +1632,7 @@ void tst_QProcess::terminateInChildProcessModifier()
     QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
     QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
     QCOMPARE(process.exitStatus(), exitStatus);
+    QCOMPARE(process.readAllStandardOutput(), QByteArray());
 
     // some environments print extra stuff to stderr when we crash
 #ifndef Q_OS_QNX
@@ -1636,6 +1641,77 @@ void tst_QProcess::terminateInChildProcessModifier()
         QVERIFY2(standardError.isEmpty() == stderrIsEmpty,
                  "stderr was: " + standardError);
     }
+#endif
+}
+
+QT_BEGIN_NAMESPACE
+Q_AUTOTEST_EXPORT bool _qprocessUsingVfork() noexcept;
+QT_END_NAMESPACE
+void tst_QProcess::raiseInChildProcessModifier()
+{
+#ifdef QT_BUILD_INTERNAL
+    // This is similar to the above, but knowing that raise() doesn't unblock
+    // signals, unlike abort(), this implies that
+    //  1) the raise() in the child modifier will not run our handler
+    //  2) the write() to stdout after that will run
+    //  3) QProcess resets the signal handlers to the defaults, then unblocks
+    //  4) at that point, the signal will be delivered to the child, but our
+    //     handler is no longer active so there'll be no write() to stderr
+    //
+    // Note for maintenance: if in the future this test causes the parent
+    // process to die with SIGUSR1, it means the C library is buggy and is
+    // using a cached PID in the child process after vfork().
+    if (!QT_PREPEND_NAMESPACE(_qprocessUsingVfork()))
+        QSKIP("QProcess will only block Unix signals when using vfork()");
+
+    // we use SIGUSR1 because QtTest doesn't log it and because its default
+    // action is termination, not core dumping
+    struct SigUsr1Handler {
+        SigUsr1Handler()
+        {
+            struct sigaction sa = {};
+            sa.sa_flags = SA_RESETHAND;
+            sa.sa_handler = [](int) {
+                static const char msg[] = "SIGUSR1 handler was run";
+                write(STDERR_FILENO, msg, strlen(msg));
+                raise(SIGUSR1);     // re-raise
+            };
+            sigaction(SIGUSR1, &sa, nullptr);
+        }
+        ~SigUsr1Handler() { restore(); }
+        static void restore() { signal(SIGUSR1, SIG_DFL); }
+    } sigUsr1Handler;
+
+    QProcess process;
+
+    // QProcess will block signals with UseVFork
+    process.setUnixProcessParameters(QProcess::UnixProcessFlag::UseVFork |
+                                     QProcess::UnixProcessFlag::ResetSignalHandlers);
+    process.setChildProcessModifier([]() {
+        raise(SIGUSR1);
+        ::childProcessModifier(STDOUT_FILENO);
+    });
+
+    // testForwardingHelper prints to both stdout and stderr, so if we fail to
+    // fail we should be able to tell too
+    process.setProgram("testForwardingHelper/testForwardingHelper");
+    process.setArguments({ "/dev/null" });
+
+    process.start();
+    QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+    QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
+    QCOMPARE(process.error(), QProcess::Crashed);
+
+    // ensure the write() from the child modifier DID get run
+    QCOMPARE(process.readAllStandardOutput(), messageFromChildProcess);
+
+    // some environments print extra stuff to stderr when we crash
+    if (!QTestPrivate::isRunningArmOnX86()) {
+        // and write() from the SIGUSR1 handler did not
+        QCOMPARE(process.readAllStandardError(), QByteArray());
+    }
+#else
+    QSKIP("Requires QT_BUILD_INTERNAL symbols");
 #endif
 }
 
