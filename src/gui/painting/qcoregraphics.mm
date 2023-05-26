@@ -386,11 +386,14 @@ void QMacCGContext::initialize(QPaintDevice *paintDevice)
     // Find the underlying QImage of the paint device
     switch (int deviceType = paintDevice->devType()) {
     case QInternal::Pixmap: {
-        auto *platformPixmap = static_cast<QPixmap*>(paintDevice)->handle();
-        if (platformPixmap && platformPixmap->classId() == QPlatformPixmap::RasterClass)
-            initialize(platformPixmap->buffer());
-        else
-            qWarning() << "QMacCGContext: Unsupported pixmap class" << platformPixmap->classId();
+        if (auto *platformPixmap = static_cast<QPixmap*>(paintDevice)->handle()) {
+            if (platformPixmap->classId() == QPlatformPixmap::RasterClass)
+                initialize(platformPixmap->buffer());
+            else
+                qWarning() << "QMacCGContext: Unsupported pixmap class" << platformPixmap->classId();
+        } else {
+            qWarning() << "QMacCGContext: Empty platformPixmap";
+        }
         break;
     }
     case QInternal::Image:
