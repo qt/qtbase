@@ -32,7 +32,7 @@ public:
 private:
     void setupModelData(const QStringList &lines, TreeItem *parent);
 
-    TreeItem *rootItem;
+    std::unique_ptr<TreeItem> rootItem;
 };
 //! [0]
 

@@ -11,10 +11,9 @@
 class TreeItem
 {
 public:
-    explicit TreeItem(const QList<QVariant> &data, TreeItem *parentItem = nullptr);
-    ~TreeItem();
+    explicit TreeItem(const QVariantList &data, TreeItem *parentItem = nullptr);
 
-    void appendChild(TreeItem *child);
+    void appendChild(std::unique_ptr<TreeItem> &&child);
 
     TreeItem *child(int row);
     int childCount() const;
@@ -24,8 +23,8 @@ public:
     TreeItem *parentItem();
 
 private:
-    QList<TreeItem *> m_childItems;
-    QList<QVariant> m_itemData;
+    std::vector<std::unique_ptr<TreeItem>> m_childItems;
+    QVariantList m_itemData;
     TreeItem *m_parentItem;
 };
 //! [0]

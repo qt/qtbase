@@ -13,20 +13,19 @@
 
 #include <QStringList>
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 TreeModel::TreeModel(const QString &data, QObject *parent)
     : QAbstractItemModel(parent)
+    , rootItem(std::make_unique<TreeItem>(QVariantList{tr("Title"), tr("Summary")}))
 {
-    rootItem = new TreeItem({tr("Title"), tr("Summary")});
-    setupModelData(data.split('\n'), rootItem);
+    setupModelData(data.split('\n'_L1), rootItem.get());
 }
 //! [0]
 
 //! [1]
-TreeModel::~TreeModel()
-{
-    delete rootItem;
-}
+TreeModel::~TreeModel() = default;
 //! [1]
 
 //! [2]
@@ -47,7 +46,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
+    auto item = static_cast<TreeItem*>(index.internalPointer());
 
     return item->data(index.column());
 }
@@ -83,11 +82,11 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
     TreeItem *parentItem;
 
     if (!parent.isValid())
-        parentItem = rootItem;
+        parentItem = rootItem.get();
     else
         parentItem = static_cast<TreeItem*>(parent.internalPointer());
 
-    TreeItem *childItem = parentItem->child(row);
+    auto childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
     return QModelIndex();
@@ -103,7 +102,7 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
     TreeItem *childItem = static_cast<TreeItem*>(index.internalPointer());
     TreeItem *parentItem = childItem->parentItem();
 
-    if (parentItem == rootItem)
+    if (parentItem == rootItem.get())
         return QModelIndex();
 
     return createIndex(parentItem->row(), 0, parentItem);
@@ -118,7 +117,7 @@ int TreeModel::rowCount(const QModelIndex &parent) const
         return 0;
 
     if (!parent.isValid())
-        parentItem = rootItem;
+        parentItem = rootItem.get();
     else
         parentItem = static_cast<TreeItem*>(parent.internalPointer());
 
@@ -138,7 +137,7 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
     while (number < lines.count()) {
         int position = 0;
         while (position < lines[number].length()) {
-            if (lines[number].at(position) != ' ')
+            if (lines[number].at(position) != ' '_L1)
                 break;
             position++;
         }
@@ -148,8 +147,8 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
         if (!lineData.isEmpty()) {
             // Read the column data from the rest of the line.
             const QStringList columnStrings =
-                lineData.split(QLatin1Char('\t'), Qt::SkipEmptyParts);
-            QList<QVariant> columnData;
+                lineData.split('\t'_L1, Qt::SkipEmptyParts);
+            QVariantList columnData;
             columnData.reserve(columnStrings.count());
             for (const QString &columnString : columnStrings)
                 columnData << columnString;
@@ -170,7 +169,7 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
             }
 
             // Append a new item to the current parent's list of children.
-            parents.last()->appendChild(new TreeItem(columnData, parents.last()));
+            parents.last()->appendChild(std::make_unique<TreeItem>(columnData, parents.last()));
         }
         ++number;
     }
