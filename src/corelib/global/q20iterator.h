@@ -39,6 +39,16 @@ namespace q20 {
 #endif
 } // namespace q20
 
+// like q20::iter_reference_t
+namespace q20 {
+#ifdef __cpp_lib_ranges
+    using std::iter_reference_t;
+#else
+    template <typename Dereferencable> // unconstrained (constraint requires concepts)
+    using iter_reference_t = decltype(*std::declval<Dereferencable&>());
+#endif // __cpp_lib_ranges
+} // namespace q20
+
 QT_END_NAMESPACE
 
 #endif /* Q20ITERATOR_H */
