@@ -1087,7 +1087,9 @@ int main(int argc, char **argv)
     parser.addOption(adapterCodeOption);
 
     QCommandLineOption classNameOption(QStringList{u"c"_s, u"classname"_s},
-                u"Use <classname> as the class name for the generated classes"_s, u"classname"_s);
+                u"Use <classname> as the class name for the generated classes. "
+                u"This option can only be used when processing a single interface."_s,
+                u"classname"_s);
     parser.addOption(classNameOption);
 
     QCommandLineOption addIncludeOption(QStringList{u"i"_s, u"include"_s},
@@ -1146,6 +1148,11 @@ int main(int argc, char **argv)
 
     QDBusIntrospection::Interfaces interfaces = readInput();
     cleanInterfaces(interfaces);
+
+    if (!globalClassName.isEmpty() && interfaces.count() != 1) {
+        qCritical("Option -c/--classname can only be used with a single interface.\n");
+        return 1;
+    }
 
     QStringList args = app.arguments();
     args.removeFirst();
