@@ -50,10 +50,10 @@ public:
                     const QModelIndex &parent = QModelIndex()) override;
 
 private:
-    void setupModelData(const QStringList &lines, TreeItem *parent);
+    void setupModelData(const QStringList &lines);
     TreeItem *getItem(const QModelIndex &index) const;
 
-    TreeItem *rootItem;
+    std::unique_ptr<TreeItem> rootItem;
 };
 //! [2]
 

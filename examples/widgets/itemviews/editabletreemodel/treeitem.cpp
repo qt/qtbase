@@ -10,76 +10,77 @@
 #include "treeitem.h"
 
 //! [0]
-TreeItem::TreeItem(const QList<QVariant> &data, TreeItem *parent)
-    : itemData(data), parentItem(parent)
+TreeItem::TreeItem(const QVariantList &data, TreeItem *parent)
+    : itemData(data), m_parentItem(parent)
 {}
 //! [0]
 
 //! [1]
-TreeItem::~TreeItem()
+TreeItem *TreeItem::child(int number)
 {
-    qDeleteAll(childItems);
+    if (number < 0 || number >= m_childItems.size())
+        return nullptr;
+    return m_childItems.at(number).get();
 }
 //! [1]
 
 //! [2]
-TreeItem *TreeItem::child(int number)
+int TreeItem::childCount() const
 {
-    if (number < 0 || number >= childItems.size())
-        return nullptr;
-    return childItems.at(number);
+    return m_childItems.size();
 }
 //! [2]
 
 //! [3]
-int TreeItem::childCount() const
+int TreeItem::row() const
 {
-    return childItems.count();
+    if (!m_parentItem)
+        return 0;
+    const auto it = std::find_if(m_parentItem->m_childItems.cbegin(), m_parentItem->m_childItems.cend(),
+                                 [this](const std::unique_ptr<TreeItem> &treeItem) {
+        return treeItem.get() == const_cast<TreeItem *>(this);
+    });
+
+    if (it != m_parentItem->m_childItems.cend())
+        return std::distance(m_parentItem->m_childItems.cbegin(), it);
+    Q_ASSERT(false); // should not happen
+    return -1;
 }
 //! [3]
 
 //! [4]
-int TreeItem::childNumber() const
-{
-    if (parentItem)
-        return parentItem->childItems.indexOf(const_cast<TreeItem*>(this));
-    return 0;
-}
-//! [4]
-
-//! [5]
 int TreeItem::columnCount() const
 {
     return itemData.count();
 }
-//! [5]
+//! [4]
 
-//! [6]
+//! [5]
 QVariant TreeItem::data(int column) const
 {
     if (column < 0 || column >= itemData.size())
         return QVariant();
     return itemData.at(column);
 }
-//! [6]
+//! [5]
 
-//! [7]
+//! [6]
 bool TreeItem::insertChildren(int position, int count, int columns)
 {
-    if (position < 0 || position > childItems.size())
+    if (position < 0 || position > m_childItems.size())
         return false;
 
     for (int row = 0; row < count; ++row) {
-        QList<QVariant> data(columns);
-        TreeItem *item = new TreeItem(data, this);
-        childItems.insert(position, item);
+        QVariantList data(columns);
+        m_childItems.insert(m_childItems.cbegin() + position,
+                std::make_unique<TreeItem>(data, this));
     }
 
     return true;
 }
-//! [7]
+//! [6]
 
-//! [8]
+//! [7]
 bool TreeItem::insertColumns(int position, int columns)
 {
     if (position < 0 || position > itemData.size())
@@ -88,32 +89,32 @@ bool TreeItem::insertColumns(int position, int columns)
     for (int column = 0; column < columns; ++column)
         itemData.insert(position, QVariant());
 
-    for (TreeItem *child : std::as_const(childItems))
+    for (auto &child : std::as_const(m_childItems))
         child->insertColumns(position, columns);
 
     return true;
 }
+//! [7]
+
+//! [8]
+TreeItem *TreeItem::parent()
+{
+    return m_parentItem;
+}
 //! [8]
 
 //! [9]
-TreeItem *TreeItem::parent()
-{
-    return parentItem;
-}
-//! [9]
-
-//! [10]
 bool TreeItem::removeChildren(int position, int count)
 {
-    if (position < 0 || position + count > childItems.size())
+    if (position < 0 || position + count > m_childItems.size())
         return false;
 
     for (int row = 0; row < count; ++row)
-        delete childItems.takeAt(position);
+        m_childItems.erase(m_childItems.cbegin() + position);
 
     return true;
 }
-//! [10]
+//! [9]
 
 bool TreeItem::removeColumns(int position, int columns)
 {
@@ -123,13 +124,13 @@ bool TreeItem::removeColumns(int position, int columns)
     for (int column = 0; column < columns; ++column)
         itemData.remove(position);
 
-    for (TreeItem *child : std::as_const(childItems))
+    for (auto &child : std::as_const(m_childItems))
         child->removeColumns(position, columns);
 
     return true;
 }
 
-//! [11]
+//! [10]
 bool TreeItem::setData(int column, const QVariant &value)
 {
     if (column < 0 || column >= itemData.size())
@@ -138,4 +139,4 @@ bool TreeItem::setData(int column, const QVariant &value)
     itemData[column] = value;
     return true;
 }
-//! [11]
+//! [10]
