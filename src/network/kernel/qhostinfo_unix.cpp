@@ -49,7 +49,7 @@ static void maybeRefreshResolver()
     return;
 #endif
 
-#if QT_CONFIG(res_ninit)
+#if QT_CONFIG(libresolv)
     // OSes known or thought to reach here: AIX, NetBSD, Solaris,
     // Linux with MUSL (though res_init() does nothing and is unnecessary)
 
@@ -92,7 +92,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 
 QString QHostInfo::localDomainName()
 {
-#if QT_CONFIG(res_ninit)
+#if QT_CONFIG(libresolv)
     auto domainNameFromRes = [](res_state r) {
         QString domainName;
         if (r->defdname[0])
@@ -111,7 +111,7 @@ QString QHostInfo::localDomainName()
     // using thread-unsafe version
     maybeRefreshResolver();
     return domainNameFromRes(&_res);
-#endif  // !QT_CONFIG(res_ninit)
+#endif  // !QT_CONFIG(libresolv)
 
     // nothing worked, try doing it by ourselves:
     QFile resolvconf;

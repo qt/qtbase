@@ -100,25 +100,6 @@ ci.ifa_prefered = ci.ifa_valid = 0;
 }
 ")
 
-# res_ninit
-qt_config_compile_test(res_ninit
-    LABEL "res_ninit()"
-    LIBRARIES
-        WrapResolv::WrapResolv
-    CODE
-"#include <sys/types.h>
-#include <netinet/in.h>
-#include <resolv.h>
-int main()
-{
-    res_state state;
-    res_ninit(state);
-    res_nclose(state);
-    return 0;
-}
-"
-)
-
 # res_setserver
 qt_config_compile_test(res_setservers
     LABEL "res_setservers()"
@@ -240,6 +221,11 @@ qt_feature("ipv6ifname" PUBLIC
     CONDITION TEST_ipv6ifname
 )
 qt_feature_definition("ipv6ifname" "QT_NO_IPV6IFNAME" NEGATE VALUE "1")
+qt_feature("libresolv" PRIVATE
+    LABEL "libresolv"
+    CONDITION WrapResolv_FOUND
+    AUTODETECT UNIX
+)
 qt_feature("libproxy" PRIVATE
     LABEL "libproxy"
     AUTODETECT OFF
@@ -249,14 +235,9 @@ qt_feature("linux-netlink" PRIVATE
     LABEL "Linux AF_NETLINK"
     CONDITION LINUX AND NOT ANDROID AND TEST_linux_netlink
 )
-qt_feature("res_ninit" PRIVATE
-    LABEL "res_ninit()"
-    CONDITION TEST_res_ninit
-    AUTODETECT UNIX
-)
 qt_feature("res_setservers" PRIVATE
     LABEL "res_setservers()"
-    CONDITION QT_FEATURE_res_ninit AND TEST_res_setservers
+    CONDITION QT_FEATURE_libresolv AND TEST_res_setservers
 )
 qt_feature("securetransport" PUBLIC
     LABEL "SecureTransport"

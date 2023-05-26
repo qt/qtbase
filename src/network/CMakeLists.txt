@@ -213,7 +213,7 @@ qt_internal_extend_target(Network CONDITION APPLE
         ${FWCFNetwork}
 )
 
-qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND TEST_res_ninit
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND QT_FEATURE_libresolv
     SOURCES
         kernel/qdnslookup_unix.cpp
     LIBRARIES
@@ -225,7 +225,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WIN32
         kernel/qdnslookup_win.cpp
 )
 
-qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND NOT TEST_res_ninit AND NOT WIN32
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND NOT QT_FEATURE_libresolv AND NOT WIN32
     SOURCES
         kernel/qdnslookup_dummy.cpp
 )

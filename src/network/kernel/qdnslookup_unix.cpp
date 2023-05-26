@@ -11,7 +11,7 @@
 #include <private/qnativesocketengine_p.h>      // for setSockAddr
 #include <private/qtnetwork-config_p.h>
 
-QT_REQUIRE_CONFIG(res_ninit);
+QT_REQUIRE_CONFIG(libresolv);
 
 #include <sys/types.h>
 #include <netinet/in.h>
