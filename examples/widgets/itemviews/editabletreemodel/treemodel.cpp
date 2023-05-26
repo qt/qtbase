@@ -6,24 +6,23 @@
 
 #include <QtWidgets>
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 TreeModel::TreeModel(const QStringList &headers, const QString &data, QObject *parent)
     : QAbstractItemModel(parent)
 {
-    QList<QVariant> rootData;
+    QVariantList rootData;
     for (const QString &header : headers)
         rootData << header;
 
-    rootItem = new TreeItem(rootData);
-    setupModelData(data.split('\n'), rootItem);
+    rootItem = std::make_unique<TreeItem>(rootData);
+    setupModelData(data.split('\n'_L1));
 }
 //! [0]
 
 //! [1]
-TreeModel::~TreeModel()
-{
-    delete rootItem;
-}
+TreeModel::~TreeModel() = default;
 //! [1]
 
 //! [2]
@@ -65,7 +64,7 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const
         if (item)
             return item;
     }
-    return rootItem;
+    return rootItem.get();
 }
 //! [4]
 
@@ -130,10 +129,10 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
     TreeItem *childItem = getItem(index);
     TreeItem *parentItem = childItem ? childItem->parent() : nullptr;
 
-    if (parentItem == rootItem || !parentItem)
+    if (parentItem == rootItem.get() || !parentItem)
         return QModelIndex();
 
-    return createIndex(parentItem->childNumber(), 0, parentItem);
+    return createIndex(parentItem->row(), 0, parentItem);
 }
 //! [7]
 
@@ -202,11 +201,11 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
     return result;
 }
 
-void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
+void TreeModel::setupModelData(const QStringList &lines)
 {
     QList<TreeItem *> parents;
     QList<int> indentations;
-    parents << parent;
+    parents << rootItem.get();
     indentations << 0;
 
     int number = 0;
@@ -214,7 +213,7 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
     while (number < lines.count()) {
         int position = 0;
         while (position < lines[number].length()) {
-            if (lines[number].at(position) != ' ')
+            if (lines[number].at(position) != ' '_L1)
                 break;
             ++position;
         }
@@ -224,8 +223,8 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
         if (!lineData.isEmpty()) {
             // Read the column data from the rest of the line.
             const QStringList columnStrings =
-                lineData.split(QLatin1Char('\t'), Qt::SkipEmptyParts);
-            QList<QVariant> columnData;
+                lineData.split('\t'_L1, Qt::SkipEmptyParts);
+            QVariantList columnData;
             columnData.reserve(columnStrings.size());
             for (const QString &columnString : columnStrings)
                 columnData << columnString;

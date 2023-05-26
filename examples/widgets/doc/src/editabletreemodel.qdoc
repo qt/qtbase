@@ -229,32 +229,30 @@
     internal \c childItems member using the \c insertChildren() function
     described later.
 
-    The destructor ensures that each child added to the item is deleted
-    when the item itself is deleted:
-
-    \snippet itemviews/editabletreemodel/treeitem.cpp 1
+    The children are stored in std::unique_ptr to ensures that each child
+    added to the item is deleted when the item itself is deleted.
 
     \target TreeItem::parent
     Since each item stores a pointer to its parent, the \c parent() function
     is trivial:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 9
+    \snippet itemviews/editabletreemodel/treeitem.cpp 8
 
     \target TreeItem::child
     Three functions provide information about the children of an item.
     \c child() returns a specific child from the internal list of children:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 2
+    \snippet itemviews/editabletreemodel/treeitem.cpp 1
 
     The \c childCount() function returns the total number of children:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 3
+    \snippet itemviews/editabletreemodel/treeitem.cpp 2
 
     The \c childNumber() function is used to determine the index of the child
     in its parent's list of children. It accesses the parent's \c childItems
     member directly to obtain this information:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 4
+    \snippet itemviews/editabletreemodel/treeitem.cpp 3
 
     The root item has no parent item; for this item, we return zero to be
     consistent with the other items.
@@ -262,20 +260,20 @@
     The \c columnCount() function simply returns the number of elements in
     the internal \c itemData list of QVariant objects:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 5
+    \snippet itemviews/editabletreemodel/treeitem.cpp 4
 
     \target TreeItem::data
     Data is retrieved using the \c data() function, which accesses the
     appropriate element in the \c itemData list:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 6
+    \snippet itemviews/editabletreemodel/treeitem.cpp 5
 
     \target TreeItem::setData
     Data is set using the \c setData() function, which only stores values
     in the \c itemData list for valid list indexes, corresponding to column
     values in the model:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 11
+    \snippet itemviews/editabletreemodel/treeitem.cpp 10
 
     To make implementation of the model easier, we return true to indicate
     that the data was set successfully.
@@ -285,20 +283,20 @@
     in the model leads to the insertion of new child items in the corresponding
     item, handled by the \c insertChildren() function:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 7
+    \snippet itemviews/editabletreemodel/treeitem.cpp 6
 
     This ensures that new items are created with the required number of columns
     and inserted at a valid position in the internal \c childItems list.
     Items are removed with the \c removeChildren() function:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 10
+    \snippet itemviews/editabletreemodel/treeitem.cpp 9
 
     As discussed above, the functions for inserting and removing columns are
     used differently to those for inserting and removing child items because
     they are expected to be called on every item in the tree. We do this by
     recursively calling this function on each child of the item:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 8
+    \snippet itemviews/editabletreemodel/treeitem.cpp 7
 
     \section1 TreeModel Class Definition
 
@@ -334,10 +332,11 @@
     use with the model. Other models may be initialized with a ready-made
     data structure, or use an API from a library that maintains its own data.
 
-    The destructor only has to delete the root item, which will cause all child
-    items to be recursively deleted.
-
     \snippet itemviews/editabletreemodel/treemodel.cpp 1
+
+    The destructor only has to delete the root item, which will cause all child
+    items to be recursively deleted. This is done automatically by the default
+    destructor since the root item is stored inside an unique_ptr.
 
     \target TreeModel::getItem
     Since the model's interface to the other model/view components is based
