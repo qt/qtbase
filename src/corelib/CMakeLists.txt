@@ -34,9 +34,6 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/QtInstallPaths.cmake.in"
 ## Core Module:
 #####################################################################
 
-set(core_version_tagging_files
-    global/qversiontagging.cpp
-    global/qversiontagging.h)
 qt_internal_add_module(Core
     QMAKE_MODULE_CONFIG moc resources
     NO_GENERATE_METATYPES # metatypes are extracted manually below
@@ -96,7 +93,6 @@ qt_internal_add_module(Core
         global/qtversion.h
         global/qtypeinfo.h
         global/qtypes.cpp global/qtypes.h
-        ${core_version_tagging_files}
         global/qvolatile_p.h
         global/q20algorithm.h
         global/q20chrono.h
@@ -447,8 +443,22 @@ if(ANDROID)
     )
 endif()
 
-## Scopes:
-#####################################################################
+# Add version tagging source files if the linker has version script support
+# or the platform supports it.
+set(core_version_tagging_files
+    global/qversiontagging.cpp
+    global/qversiontagging.h)
+qt_internal_extend_target(Core
+    CONDITION TEST_ld_version_script OR APPLE OR WIN32
+    SOURCES ${core_version_tagging_files}
+)
+
+# Disable LTO, as the symbols disappear somehow under GCC
+# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=48200)
+if(GCC)
+    set_source_files_properties(${core_version_tagging_files}
+        PROPERTIES COMPILE_OPTIONS "-fno-lto")
+endif()
 
 qt_internal_extend_target(Core
     CONDITION ( TEST_architecture_arch STREQUAL i386 ) OR
@@ -639,13 +649,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_journald
     LIBRARIES
         PkgConfig::Libsystemd
 )
-
-# Disable LTO, as the symbols disappear somehow under GCC
-# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=48200)
-if(GCC)
-    set_source_files_properties(${core_version_tagging_files}
-                                PROPERTIES COMPILE_OPTIONS "-fno-lto")
-endif()
 
 qt_internal_extend_target(Core CONDITION UNIX
     SOURCES
