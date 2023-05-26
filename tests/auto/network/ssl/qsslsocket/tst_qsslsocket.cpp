@@ -3449,7 +3449,13 @@ void tst_QSslSocket::dhServer()
         return;
 
     SslServer server;
-    server.ciphers = {QSslCipher("DHE-RSA-AES256-SHA"), QSslCipher("DHE-DSS-AES256-SHA")};
+    QSslCipher rsaCipher("DHE-RSA-AES256-SHA");
+    QSslCipher dssCipher("DHE-DSS-AES256-SHA");
+    if (rsaCipher.isNull())
+        QSKIP("The current backend doesn't support DHE-RSA-AES256-SHA");
+    if (dssCipher.isNull())
+        QSKIP("The current backend doesn't support DHE-DSS-AES256-SHA");
+    server.ciphers = { rsaCipher, dssCipher };
     QVERIFY(server.listen());
 
     QEventLoop loop;
@@ -3564,7 +3570,10 @@ void tst_QSslSocket::ecdhServer()
         return;
 
     SslServer server;
-    server.ciphers = {QSslCipher("ECDHE-RSA-AES128-SHA")};
+    QSslCipher cipher("ECDHE-RSA-AES128-SHA");
+    if (cipher.isNull())
+        QSKIP("The current backend doesn't support ECDHE-RSA-AES128-SHA");
+    server.ciphers = {cipher};
     QVERIFY(server.listen());
 
     QEventLoop loop;
