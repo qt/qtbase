@@ -1,0 +1,639 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
+/*!
+    \class QSpan
+    \inmodule QtCore
+    \since 6.7
+    \brief A non-owning container over contiguous data.
+    \ingroup tools
+    \reentrant
+
+    A QSpan references a contiguous portion of another contiguous container.
+    It acts as an interface type for all kinds of contiguous containers,
+    without the need to construct an owning container such as QList or
+    std::vector first.
+
+    The data referenced by a QSpan may be represented as an array (or
+    array-compatible data-structure such as QList, std::vector,
+    QVarLengthArray, etc.). QSpan itself merely stores a pointer to the data,
+    so users must ensure that QSpan objects do not outlive the data they
+    reference.
+
+    Unlike views such as QStringView, QLatin1StringView and QUtf8StringView,
+    referenced data can be modified through a QSpan object. To prevent this,
+    construct a QSpan over a \c{const T}:
+
+    \code
+    int numbers[] = {0, 1, 2};
+    QSpan<int> span = numbers;
+    span[0] = 42;
+    // numbers == {42, 1, 2};
+    QSpan<const int> cspan = numbers;
+    cspan[0] = 0; // ERROR: cspan[0] is read-only
+    \endcode
+
+    A QSpan can be \e{fixed-size} or \e{variable-sized}.
+
+    A variable-sized span is formed by omitting the second template argument
+    (or setting it to \c{std::dynamic_extent}, which is, however, only
+    available in C++20 builds), as seen in the example above.
+
+    A fixed-size span is formed by passing a number as the second template
+    argument:
+
+    \code
+    int numbers[] = {0, 1, 2};
+    QSpan<int, 3> span = numbers;
+    QSpan<const int, 3> = numbers; // also OK
+    \endcode
+
+    As the name suggests, a fixed-size span's size() is fixed at compile-time
+    whereas the size() of a variable-sized span is determined only at run-time.
+
+    A fixed-size span is not default-constructible (unless its \l extent is zero
+    (0)). A variable-sized span \e{is} default-constructible and will have
+    \c{data() == nullptr} and \c{size() == 0}.
+
+    A fixed-size span can be implicitly converted into a variable-sized one.
+    The opposite direction (variable-length into fixed-length) has the
+    precondition that both span's sizes must match.
+
+    Unlike with owning containers, \c{const} is \e{shallow} in QSpan: you can
+    still modify the data through a const QSpan (but not through a
+    \c{QSpan<const T>}), and begin() and end() are not overloaded on
+    \c{const}/non-\c{const}. There are cbegin() and cend(), though, that return
+    const_iterators which prevent modification of the data even though \c{T} is
+    not const:
+    \code
+    int numbers[] = {0, 1, 2};
+    const QSpan<int> span = numbers;
+    span.front() = 42;   // OK, numbers[0] == 42 now
+    *span.begin() = 31;  // OK, numbers[0] == 31 now
+    *span.cbegin() = -1; // ERROR: cannot assign through a const_iterator
+    \endcode
+
+    QSpan should be passed by value, not by reference-to-const:
+
+    \code
+    void consume(QSpan<const int> data); // OK
+    void consume(const QSpan<const int> &data); // works, but is non-idiomatic and less efficient
+    \endcode
+
+    \c{QSpan<T,N>} is a \e{Literal Type}, regardless of whether \c{T} is a
+    Literal Type or not.
+
+    \section2 QSpan vs. std::span
+    \target span-STL
+
+    QSpan is closely modelled after
+    \l{https://en.cppreference.com/w/cpp/container/span}{std::span}, but has a
+    few differences which we'll discuss here. Since they both implicitly
+    convert into each other, you're free to choose whichever one you like best
+    in your own code.
+
+    \list
+    \li QSpan is using the signed qsizetype as \c{size_type}
+        whereas \c{std::span} uses \c{size_t}.
+    \li All QSpan constructors are implicit;
+        many \c{std::span} ones are \c{explicit}.
+    \li QSpan can be constructed from rvalue owning containers, \c{std::span} can not.
+    \endlist
+
+    The last two are required for source-compatibility when functions that took
+    owning containers are converted to take QSpan instead, which is a
+    vitally-important use-case in Qt. The use of qsizetype is for consistency
+    with the rest of Qt containers. QSpan template arguments still use size_t
+    to avoid introducing unnecessary error conditions (negative sizes).
+
+    \section2 Compatible Iterators
+    \target span-compatible-iterators
+
+    QSpan can be constructed from an iterator and size or from an
+    iterator pair, provided the iterators are \e{compatible} ones.
+    Eventually, this should mean C++20 \c{std::contiguous_iterator} and
+    \c{std::sentinel_for}, but while Qt still supports C++17, only raw pointers
+    are considered contiguous iterators.
+
+    \section2 Compatible Ranges
+    \target span-compatible-ranges
+
+    QSpan can also be constructed from a \e{compatible} range. A range is
+    compatible if it has \l{span-compatible-iterators}{compatible iterators}.
+
+    \sa QList, QStringView, QLatin1StringView, QUtf8StringView
+*/
+
+//
+// Nested types and constants
+//
+
+/*!
+    \typedef QSpan::element_type
+
+    An alias for \c{T}. Includes the \c{const}, if any.
+
+    This alias is provided for compatbility with the STL.
+
+    \sa value_type, pointer
+*/
+
+/*!
+    \typedef QSpan::value_type
+
+    An alias for \c{T}. Excludes the \c{const}, if any.
+
+    This alias is provided for compatbility with the STL.
+
+    \sa element_type
+*/
+
+/*!
+    \typedef QSpan::size_type
+
+    An alias for qsizetype. This \l{span-STL}{differs from \c{std::span}}.
+
+    This alias is provided for compatbility with the STL.
+*/
+
+/*!
+    \typedef QSpan::difference_type
+
+    An alias for qptrdiff. This \l{span-STL}{differs from \c{std::span}}.
+
+    This alias is provided for compatbility with the STL.
+*/
+
+/*!
+    \typedef QSpan::pointer
+
+    An alias for \c{T*} and \c{element_type*}, respectively. Includes the \c{const}, if any.
+
+    This alias is provided for compatbility with the STL.
+
+    \sa element_type, const_pointer, reference, iterator
+*/
+
+/*!
+    \typedef QSpan::const_pointer
+
+    An alias for \c{const T*} and \c{const element_type*}, respectively.
+
+    This alias is provided for compatbility with the STL.
+
+    \sa element_type, pointer, const_reference, const_iterator
+*/
+
+/*!
+    \typedef QSpan::reference
+
+    An alias for \c{T&} and \c{element_type&}, respectively. Includes the \c{const}, if any.
+
+    This alias is provided for compatbility with the STL.
+
+    \sa element_type, const_reference, pointer
+*/
+
+/*!
+    \typedef QSpan::const_reference
+
+    An alias for \c{const T&} and \c{const element_type&}, respectively.
+
+    This alias is provided for compatbility with the STL.
+
+    \sa element_type, reference, const_pointer
+*/
+
+/*!
+    \typedef QSpan::iterator
+
+    An alias for \c{T*} and \c{pointer}, respectively. Includes the \c{const}, if any.
+
+    \sa pointer, const_iterator, reverse_iterator
+*/
+
+/*!
+    \typedef QSpan::const_iterator
+
+    An alias for \c{const T*} and \c{const_pointer}, respectively.
+
+    \sa const_pointer, iterator, const_reverse_iterator
+*/
+
+/*!
+    \typedef QSpan::reverse_iterator
+
+    An alias for \c{std::reverse_iterator<iterator>}. Includes the \c{const}, if any.
+
+    \sa iterator, const_reverse_iterator
+*/
+
+/*!
+    \typedef QSpan::const_reverse_iterator
+
+    An alias for \c{std::reverse_iterator<const_iterator>}.
+
+    \sa const_iterator, reverse_iterator
+*/
+
+/*!
+    \variable QSpan::extent
+
+    The second template argument of \c{QSpan<T, E>}, that is, \c{E}. This is
+    \c{std::dynamic_extent} for variable-sized spans.
+
+    \note While all other sizes and indexes in QSpan use qsizetype, this
+    variable, like \c{E}, is actually of type \c{size_t}, for compatibility with
+    \c{std::span} and \c{std::dynamic_extent}.
+
+    \sa size()
+*/
+
+//
+// Constructors and SMFs
+//
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T,E>::QSpan()
+
+    Default constructor.
+
+    This constructor is only present if \c{E} is either zero (0) or
+    \c{std::dynamic_extent}. In other words: only fixed-zero-sized or variable-sized spans
+    are default-constructible.
+
+    \sa extent
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T,E>::QSpan(const QSpan &other)
+    \fn template <typename T, size_t E> QSpan<T,E>::QSpan(QSpan &&other)
+    \fn template <typename T, size_t E> QSpan<T,E> &QSpan<T,E>::operator=(const QSpan &other)
+    \fn template <typename T, size_t E> QSpan<T,E> &QSpan<T,E>::operator=(QSpan &&other)
+    \fn template <typename T, size_t E> QSpan<T,E>::~QSpan()
+
+    These Special Member Functions are implicitly-defined.
+
+    \note Moves are equivalent to copies. Only data() and size() are copied
+    from span to span, not the referenced data.
+*/
+
+/*!
+    \fn template <typename T, size_t E> template <typename It, if_compatible_iterator<It>> QSpan<T,E>::QSpan(It first, qsizetype count)
+
+    Constructs a QSpan referencing the data starting at \a first and having length
+    \a count.
+
+    \c{[first, count)} must be a valid range.
+
+    \note This constructor participates in overload resolution only if \c{It}
+    is \l{span-compatible-iterators}{a compatible iterator}.
+*/
+
+/*!
+    \fn template <typename T, size_t E> template <typename It, if_compatible_iterator<It>> QSpan<T,E>::QSpan(It first, It last)
+
+    Constructs a QSpan referencing the data starting at \a first and having length
+    (\a last - \a first).
+
+    \c{[first, last)} must be a valid range.
+
+    \note This constructor participates in overload resolution only if \c{It}
+    is \l{span-compatible-iterators}{a compatible iterator}.
+*/
+
+/*!
+    \fn template <typename T, size_t E> template <size_t N> QSpan<T,E>::QSpan(q20::type_identity_t<T> (&arr)[N]);
+    \fn template <typename T, size_t E> template <typename S, size_t N, if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(std::array<S, N> &arr);
+    \fn template <typename T, size_t E> template <typename S, size_t N, if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(const std::array<S, N> &arr);
+
+    Constructs a QSpan referencing the data in the supplied array \a arr.
+
+    \note This constructor participates in overload resolution only if
+    \list
+    \li either \c{N} or \l{extent} are \c{std::dynamic_extent} or otherwise \l{extent} \c{==} \c{N}
+    \li and either \c{S} or \c{const S} are the same as \c{T}.
+    \endlist
+
+    \note \c{q20::type_identity_t} is a C++17 backport of C++20's
+    \l{https://en.cppreference.com/w/cpp/types/type_identity}{\c{std::type_identity_t}}.
+*/
+
+/*!
+    \fn template <typename T, size_t E> template <typename Range, if_compatible_range<Range> = true> QSpan<T,E>::QSpan(Range &&r)
+
+    Constructs a QSpan referencing the data in the supplied range \a r.
+
+    \note This constructor participates in overload resolution only if \c{Range}
+    is \l{span-compatible-ranges}{a compatible range}.
+*/
+
+/*!
+    \fn template <typename T, size_t E> template <typename S, size_t N, if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(QSpan<S, N> other);
+    \fn template <typename T, size_t E> template <typename S, size_t N, if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(std::span<S, N> other);
+
+    Constructs a QSpan referencing the data in the supplied span \a other.
+
+    \note This constructor participates in overload resolution only if
+    \list
+    \li either \c{N} or \l{extent} are \c{std::dynamic_extent} or \l{extent} \c{==} \c{N}
+    \li and either \c{S} or \c{const S} are the same as \c{T}.
+    \endlist
+*/
+
+//
+// Member functions: sizes
+//
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::size() const
+
+    Returns the size of the span, that is, the number of elements it references.
+
+    \sa size_bytes(), empty(), isEmpty()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::size_bytes() const
+
+    Returns the size of the span in bytes, that is, the number of elements
+    multiplied by \c{sizeof(T)}.
+
+    \sa size(), empty(), isEmpty()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::empty() const
+    \fn template <typename T, size_t E> QSpan<T, E>::isEmpty() const
+
+    Returns whether the span is empty, that is, whether \c{size() == 0}.
+
+    These functions do the same thing: empty() is provided for STL
+    compatibility and isEmpty() is provided for Qt compatibility.
+
+    \sa size(), size_bytes()
+*/
+
+//
+// element access
+//
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::operator[](size_type idx) const
+
+    Returns a reference to the element at index \a idx in the span.
+
+    The index must be in range, that is, \a idx >= 0 and \a idx < size(),
+    otherwise the behavior is undefined.
+
+    \sa front(), back(), size(), empty()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::front() const
+
+    Returns a reference to the first element in the span.
+
+    The span must not be empty, otherwise the behavior is undefined.
+
+    \sa operator[](), back(), size(), empty()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::back() const
+
+    Returns a reference to the last element in the span.
+
+    The span must not be empty, otherwise the behavior is undefined.
+
+    \sa operator[](), front(), size(), empty()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::data() const
+
+    Returns a pointer to the beginning of the span.
+
+    The same as calling begin().
+
+    \sa begin(), front()
+*/
+
+//
+// iterators
+//
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::begin() const
+
+    Returns an interator pointing at the beginning of the span.
+
+    Because QSpan iterators are just pointers, this is the same as calling
+    data().
+
+    \sa end(), cbegin(), rbegin(), crbegin(), data()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::end() const
+
+    Returns an iterator pointing to one past the end of the span.
+
+    Because QSpan iterators are just pointers, this it the same as calling
+    \c{data() + size()}.
+
+    \sa begin(), cend(), rend(), crend(), data(), size()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::cbegin() const
+
+    Returns a const_iterator pointing to the beginning of the span.
+
+    This will return a read-only iterator even if \c{T} is not \c{const}:
+    \code
+    QSpan<int> span = ~~~;
+    *span.begin() = 42; // OK
+    *span.cbegin() = 42; // ERROR: cannot assign through a const_iterator
+    \endcode
+
+    \sa cend(), begin(), crbegin(), rbegin(), data()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::cend() const
+
+    Returns a const_iterator pointing to one past the end of the span.
+
+    \sa cbegin(), end(), crend(), rend(), data(), size()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::rbegin() const
+
+    Returns a reverse_iterator pointing to the beginning of the reversed span.
+
+    \sa rend(), crbegin(), begin(), cbegin()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::rend() const
+
+    Returns a reverse_iterator pointing to one past the end of the reversed span.
+
+    \sa rbegin(), crend(), end(), cend()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::crbegin() const
+
+    Returns a const_reverse_iterator pointing to the beginning of the reversed span.
+
+    \sa crend(), rbegin(), cbegin(), begin()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::crend() const
+
+    Returns a const_reverse_iterator pointing to one past the end of the reversed span.
+
+    \sa crbegin(), rend(), cend(), end()
+*/
+
+//
+// compile-time subspans:
+//
+
+/*!
+    \fn template <typename T, size_t E> template <size_t Count> QSpan<T, E>::first() const
+    \keyword first-t
+
+    Returns a fixed-sized span of size \c{Count} referencing the first \c{Count} elements of \c{*this}.
+
+    The span must hold at least \c{Count} elements (\c{E} >= \c{Count} \e{and}
+    size() >= \c{Count}), otherwise the behavior is undefined.
+
+    \sa first(QSpan::size_type), last(), subspan()
+*/
+
+/*!
+    \fn template <typename T, size_t E> template <size_t Count> QSpan<T, E>::last() const
+    \keyword last-t
+
+    Returns a fixed-sized span of size \c{Count} referencing the last \c{Count} elements of \c{*this}.
+
+    The span must hold at least \c{Count} elements (\c{E} >= \c{Count} \e{and}
+    size() >= \c{Count}), otherwise the behavior is undefined.
+
+    \sa last(QSpan::size_type), first(), subspan()
+*/
+
+/*!
+    \fn template <typename T, size_t E> template <size_t Offset> QSpan<T, E>::subspan() const
+    \keyword subspan-t1
+
+    Returns a span of size \c{E - Offset} referencing the remainder of this span
+    after dropping the first \c{Offset} elements.
+
+    If \c{*this} is a variable-sized span, the return type is a variable-sized
+    span, otherwise it is a fixed-sized span.
+
+    This span must hold at least \c{Offset} elements (\c{E} >= \c{Offset} \e{and}
+    size() >= \c{Offset}), otherwise the behavior is undefined.
+
+    \sa subspan(QSpan::size_type), subspan(), first(), last()
+*/
+
+#if 0 // needs fix for QTBUG-118080 integrated into qt5.git
+/*!
+    \fn template <typename T, size_t E> template <size_t Offset, size_t Count> QSpan<T, E>::subspan() const
+    \keyword subspan-t2
+
+    Returns a span of size \c{Count} referencing the \c{Count} elements of this
+    span starting at \c{Offset}.
+
+    If \c{*this} is a variable-sized span, the return type is a variable-sized
+    span, otherwise it is a fixed-sized span.
+
+    This span must hold at least \c{Offset + Count} elements (\c{E} >=
+    \c{Offset + Count} \e{and} size() >= \c{Offset + Count}), otherwise the
+    behavior is undefined.
+
+    \sa subspan(QSpan::size_type, QSpan::size_type), subspan(), first(), last()
+*/
+#endif
+
+//
+// runtime subspans:
+//
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::first(qsizetype n) const
+    \keyword first-n
+
+    Returns a variable-sized span of size \a n referencing the first \a n elements of \c{*this}.
+
+    \a n must be non-negative.
+
+    The span must hold at least \a n elements (\c{E} >= \a n \e{and} size() >=
+    \a n), otherwise the behavior is undefined.
+
+    \sa {first-t}{first<N>()}, last(QSpan::size_type), subspan(QSpan::size_type),
+        subspan(QSpan::size_type, QSpan::size_type)
+    \sa sliced()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::last(qsizetype n) const
+    \keyword last-n
+
+    Returns a variable-sized span of size \a n referencing the last \a n elements of \c{*this}.
+
+    \a n must be non-negative.
+
+    The span must hold at least \a n elements (\c{E} >= \a n \e{and}
+    size() >= \a n), otherwise the behavior is undefined.
+
+    \sa last(), first(QSpan::size_type), subspan(QSpan::size_type),
+        subspan(QSpan::size_type, QSpan::size_type), sliced()
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::subspan(qsizetype pos) const
+    \fn template <typename T, size_t E> QSpan<T, E>::sliced(qsizetype pos) const
+    \keyword subspan-n1
+
+    Returns a variable-sized span of size \c{size() - pos} referencing the
+    remainder of this span after dropping the first \a pos elements.
+
+    \a pos must be non-negative.
+
+    This span must hold at least \a pos elements (\c{E} >= \a pos \e{and}
+    size() >= \a pos), otherwise the behavior is undefined.
+
+    These functions do the same thing: subspan() is provided for STL
+    compatibility and sliced() is provided for Qt compatibility.
+
+    \sa subspan(), first(QSpan::size_type), last(QSpan::size_type)
+*/
+
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::subspan(qsizetype pos, qsizetype n) const
+    \fn template <typename T, size_t E> QSpan<T, E>::sliced(qsizetype pos, qsizetype n) const
+    \keyword subspan-n2
+
+    Returns a variable-sized span of size \a n referencing the \a n elements of
+    this span starting at \a pos.
+
+    Both \a pos and \a n must be non-negative.
+
+    This span must hold at least \c{pos + n} elements (\c{E} >=
+    \c{pos + n} \e{and} size() >= \c{pos + n}), otherwise the
+    behavior is undefined.
+
+    These functions do the same thing: subspan() is provided for STL
+    compatibility and sliced() is provided for Qt compatibility.
+
+    \sa subspan(), first(QSpan::size_type), last(QSpan::size_type)
+*/
+

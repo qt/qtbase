@@ -16,11 +16,11 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/qspan.h>
 #include <QtCore/QStandardPaths>
 #include <QtCore/QTemporaryDir>
 #include <QtCore/QTextStream>
 #include <QtConcurrent/QtConcurrentRun>
-#include <private/qspan_p.h>
 #include <QtCore/private/qduplicatetracker_p.h>
 
 #include <QTest>

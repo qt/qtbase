@@ -4,6 +4,4 @@
 qt_internal_add_test(tst_qspan
     SOURCES
         tst_qspan.cpp
-    LIBRARIES
-        Qt::CorePrivate
 )

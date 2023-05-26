@@ -26,6 +26,7 @@
 #include "QtCore/qlist.h"
 #include "QtCore/qnamespace.h"
 #include "QtCore/qset.h"
+#include <QtCore/qspan.h>
 #include "QtCore/qstring.h"
 #include "QtCore/qvarlengtharray.h"
 
@@ -33,7 +34,6 @@
 #include "private/qfont_p.h"
 #include "private/qtextformat_p.h"
 #include "private/qunicodetools_p.h"
-#include "private/qspan_p.h"
 #ifndef QT_BUILD_COMPAT_LIB
 #include "private/qtextdocument_p.h"
 #endif

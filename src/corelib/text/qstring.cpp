@@ -17,6 +17,7 @@
 #include <qlist.h>
 #include "qlocale.h"
 #include "qlocale_p.h"
+#include "qspan.h"
 #include "qstringbuilder.h"
 #include "qstringmatcher.h"
 #include "qvarlengtharray.h"
@@ -30,7 +31,6 @@
 #endif
 
 #include <private/qfunctions_p.h>
-#include <private/qspan_p.h>
 
 #include <limits.h>
 #include <string.h>
