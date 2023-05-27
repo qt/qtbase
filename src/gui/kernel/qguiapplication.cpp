@@ -9,6 +9,7 @@
 #include <qpa/qplatformintegrationfactory_p.h>
 #include "private/qevent_p.h"
 #include "private/qeventpoint_p.h"
+#include "private/qiconloader_p.h"
 #include "qfont.h"
 #include "qpointingdevice.h"
 #include <qpa/qplatformfontdatabase.h>
@@ -2650,6 +2651,7 @@ void QGuiApplicationPrivate::handleThemeChanged()
 {
     updatePalette();
 
+    QIconLoader::instance()->updateSystemTheme();
     QAbstractFileIconProviderPrivate::clearIconTypeCache();
 
     if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
