@@ -34,9 +34,10 @@ Q_LOGGING_CATEGORY(lcDnd, "qt.gui.dnd")
 
 static QWindow* topLevelAt(const QPoint &pos)
 {
-    QWindowList list = QGuiApplication::topLevelWindows();
-    for (int i = list.size()-1; i >= 0; --i) {
-        QWindow *w = list.at(i);
+    const QWindowList list = QGuiApplication::topLevelWindows();
+    const auto crend = list.crend();
+    for (auto it = list.crbegin(); it != crend; ++it) {
+        QWindow *w = *it;
         if (w->isVisible() && w->handle() && w->geometry().contains(pos) && !qobject_cast<QShapedPixmapWindow*>(w))
             return w;
     }

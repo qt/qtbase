@@ -211,8 +211,9 @@ void QUrlModel::addUrls(const QList<QUrl> &list, int row, bool move)
     if (row == -1)
         row = rowCount();
     row = qMin(row, rowCount());
-    for (int i = list.size() - 1; i >= 0; --i) {
-        QUrl url = list.at(i);
+    const auto rend = list.crend();
+    for (auto it = list.crbegin(); it != rend; ++it) {
+        QUrl url = *it;
         if (!url.isValid() || url.scheme() != "file"_L1)
             continue;
         //this makes sure the url is clean
@@ -312,13 +313,11 @@ void QUrlModel::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
 void QUrlModel::layoutChanged()
 {
     QStringList paths;
-    const int numPaths = watching.size();
-    paths.reserve(numPaths);
-    for (int i = 0; i < numPaths; ++i)
-        paths.append(watching.at(i).path);
+    paths.reserve(watching.size());
+    for (const WatchItem &item : std::as_const(watching))
+        paths.append(item.path);
     watching.clear();
-    for (int i = 0; i < numPaths; ++i) {
-        QString path = paths.at(i);
+    for (const auto &path : paths) {
         QModelIndex newIndex = fileSystemModel->index(path);
         watching.append({newIndex, path});
         if (newIndex.isValid())
@@ -429,16 +428,13 @@ void QSidebar::showContextMenu(const QPoint &position)
 */
 void QSidebar::removeEntry()
 {
-    QList<QModelIndex> idxs = selectionModel()->selectedIndexes();
-    QList<QPersistentModelIndex> indexes;
-    const int numIndexes = idxs.size();
-    indexes.reserve(numIndexes);
-    for (int i = 0; i < numIndexes; i++)
-        indexes.append(idxs.at(i));
-
-    for (int i = 0; i < numIndexes; ++i) {
-        if (!indexes.at(i).data(QUrlModel::UrlRole).toUrl().path().isEmpty())
-            model()->removeRow(indexes.at(i).row());
+    const QList<QModelIndex> idxs = selectionModel()->selectedIndexes();
+    // Create a list of QPersistentModelIndex as the removeRow() calls below could
+    // invalidate the indexes in "idxs"
+    const QList<QPersistentModelIndex> persIndexes(idxs.cbegin(), idxs.cend());
+    for (const QPersistentModelIndex &persistent : persIndexes) {
+        if (!persistent.data(QUrlModel::UrlRole).toUrl().path().isEmpty())
+            model()->removeRow(persistent.row());
     }
 }
 

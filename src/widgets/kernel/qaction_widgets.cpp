@@ -28,8 +28,9 @@ void QtWidgetsActionPrivate::destroy()
 {
     Q_Q(QAction);
     const auto objects = associatedObjects;
-    for (int i = objects.size()-1; i >= 0; --i) {
-        QObject *object = objects.at(i);
+    const auto end = objects.crend();
+    for (auto it = objects.crbegin(); it != end; ++it) {
+        QObject *object = *it;
         if (QWidget *widget = qobject_cast<QWidget*>(object))
             widget->removeAction(q);
 #if QT_CONFIG(graphicsview)
