@@ -120,11 +120,11 @@ public:
 
     QLineEdit *lineEdit() const;
 
-    static int maxNameLength(const QString &path);
+    static long maxNameLength(const QString &path);
 
     QString basename(const QString &path) const
     {
-        int separator = QDir::toNativeSeparators(path).lastIndexOf(QDir::separator());
+        const qsizetype separator = QDir::toNativeSeparators(path).lastIndexOf(QDir::separator());
         if (separator != -1)
             return path.mid(separator + 1);
         return path;

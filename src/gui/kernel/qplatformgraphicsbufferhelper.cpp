@@ -179,14 +179,14 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
     QRect rect = subRect;
     if (rect.isNull() || rect == QRect(QPoint(0,0),size)) {
         if (needsRowLength)
-            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.bytesPerLine() / 4);
+            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, GLint(image.bytesPerLine() / 4));
         funcs->glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, size.width(), size.height(), 0, GL_RGBA, pixelType, image.constBits());
         if (needsRowLength)
             funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     } else {
         if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
             // OpenGL 2.1+ or OpenGL ES/3+
-            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.bytesPerLine() / 4);
+            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, GLint(image.bytesPerLine() / 4));
             funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, pixelType,
                                    image.constScanLine(rect.y()) + rect.x() * 4);
             funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
