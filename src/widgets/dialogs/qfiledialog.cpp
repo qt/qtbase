@@ -1240,12 +1240,10 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList &files
 QList<QUrl> QFileDialogPrivate::addDefaultSuffixToUrls(const QList<QUrl> &urlsToFix) const
 {
     QList<QUrl> urls;
-    const int numUrlsToFix = urlsToFix.size();
-    urls.reserve(numUrlsToFix);
-    for (int i = 0; i < numUrlsToFix; ++i) {
-        QUrl url = urlsToFix.at(i);
-        // if the filename has no suffix, add the default suffix
-        const QString defaultSuffix = options->defaultSuffix();
+    urls.reserve(urlsToFix.size());
+    // if the filename has no suffix, add the default suffix
+    const QString defaultSuffix = options->defaultSuffix();
+    for (QUrl url : urlsToFix) {
         if (!defaultSuffix.isEmpty()) {
             const QString urlPath = url.path();
             const auto idx = urlPath.lastIndexOf(u'/');
@@ -1353,11 +1351,10 @@ QStringList qt_strip_filters(const QStringList &filters)
 #if QT_CONFIG(regularexpression)
     QStringList strippedFilters;
     static const QRegularExpression r(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
-    const int numFilters = filters.size();
-    strippedFilters.reserve(numFilters);
-    for (int i = 0; i < numFilters; ++i) {
+    strippedFilters.reserve(filters.size());
+    for (const QString &filter : filters) {
         QString filterName;
-        auto match = r.match(filters[i]);
+        auto match = r.match(filter);
         if (match.hasMatch())
             filterName = match.captured(1);
         strippedFilters.append(filterName.simplified());
@@ -1392,11 +1389,10 @@ void QFileDialog::setNameFilters(const QStringList &filters)
 {
     Q_D(QFileDialog);
     QStringList cleanedFilters;
-    const int numFilters = filters.size();
-    cleanedFilters.reserve(numFilters);
-    for (int i = 0; i < numFilters; ++i) {
-        cleanedFilters << filters[i].simplified();
-    }
+    cleanedFilters.reserve(filters.size());
+    for (const QString &filter : filters)
+        cleanedFilters << filter.simplified();
+
     d->options->setNameFilters(cleanedFilters);
 
     if (!d->usingWidgets())
@@ -3365,8 +3361,10 @@ void QFileDialogPrivate::navigate(HistoryItem &historyItem)
         | QItemSelectionModel::Rows;
     selectionModel->select(historyItem.selection.constFirst(),
                            flags | QItemSelectionModel::Clear | QItemSelectionModel::Current);
-    for (int i = 1, size = historyItem.selection.size(); i < size; ++i)
-        selectionModel->select(historyItem.selection.at(i), flags);
+    auto it = historyItem.selection.cbegin() + 1;
+    const auto end = historyItem.selection.cend();
+    for (; it != end; ++it)
+        selectionModel->select(*it, flags);
 
     view->scrollTo(historyItem.selection.constFirst());
 }
@@ -3542,9 +3540,9 @@ void QFileDialogPrivate::_q_deleteCurrent()
     if (model->isReadOnly())
         return;
 
-    QModelIndexList list = qFileDialogUi->listView->selectionModel()->selectedRows();
-    for (int i = list.size() - 1; i >= 0; --i) {
-        QPersistentModelIndex index = list.at(i);
+    const QModelIndexList list = qFileDialogUi->listView->selectionModel()->selectedRows();
+    for (auto it = list.crbegin(), end = list.crend(); it != end; ++it) {
+        QPersistentModelIndex index = *it;
         if (index == qFileDialogUi->listView->rootIndex())
             continue;
 

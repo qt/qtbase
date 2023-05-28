@@ -1080,11 +1080,10 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
     indexNode->visibleChildren.clear();
     //No more dirty item we reset our internal dirty index
     indexNode->dirtyChildrenIndex = -1;
-    const int numValues = values.size();
-    indexNode->visibleChildren.reserve(numValues);
-    for (int i = 0; i < numValues; ++i) {
-        indexNode->visibleChildren.append(values.at(i)->fileName);
-        values.at(i)->isVisible = true;
+    indexNode->visibleChildren.reserve(values.size());
+    for (QFileSystemNode *node : std::as_const(values)) {
+        indexNode->visibleChildren.append(node->fileName);
+        node->isVisible = true;
     }
 
     if (!disableRecursiveSort) {
@@ -1110,10 +1109,8 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
     emit layoutAboutToBeChanged();
     QModelIndexList oldList = persistentIndexList();
     QList<QPair<QFileSystemModelPrivate::QFileSystemNode *, int>> oldNodes;
-    const int nodeCount = oldList.size();
-    oldNodes.reserve(nodeCount);
-    for (int i = 0; i < nodeCount; ++i) {
-        const QModelIndex &oldNode = oldList.at(i);
+    oldNodes.reserve(oldList.size());
+    for (const QModelIndex &oldNode : oldList) {
         QPair<QFileSystemModelPrivate::QFileSystemNode*, int> pair(d->node(oldNode), oldNode.column());
         oldNodes.append(pair);
     }
@@ -1127,12 +1124,10 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
     d->sortOrder = order;
 
     QModelIndexList newList;
-    const int numOldNodes = oldNodes.size();
-    newList.reserve(numOldNodes);
-    for (int i = 0; i < numOldNodes; ++i) {
-        const QPair<QFileSystemModelPrivate::QFileSystemNode*, int> &oldNode = oldNodes.at(i);
-        newList.append(d->index(oldNode.first, oldNode.second));
-    }
+    newList.reserve(oldNodes.size());
+    for (const auto &[node, col]: std::as_const(oldNodes))
+        newList.append(d->index(node, col));
+
     changePersistentIndexList(oldList, newList);
     emit layoutChanged();
 }

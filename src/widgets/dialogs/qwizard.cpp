@@ -693,8 +693,9 @@ void QWizardPrivate::reset()
     if (current != -1) {
         q->currentPage()->hide();
         cleanupPagesNotInHistory();
-        for (int i = history.size() - 1; i >= 0; --i)
-            q->cleanupPage(history.at(i));
+        const auto end = history.crend();
+        for (auto it = history.crbegin(); it != end; ++it)
+            q->cleanupPage(*it);
         history.clear();
         for (QWizardPage *page : std::as_const(pageMap))
             page->d_func()->initialized = false;
@@ -1422,10 +1423,9 @@ void QWizardPrivate::updateButtonTexts()
 void QWizardPrivate::updateButtonLayout()
 {
     if (buttonsHaveCustomLayout) {
-        QVarLengthArray<QWizard::WizardButton, QWizard::NButtons> array(buttonsCustomLayout.size());
-        for (int i = 0; i < buttonsCustomLayout.size(); ++i)
-            array[i] = buttonsCustomLayout.at(i);
-        setButtonLayout(array.constData(), array.size());
+        QVarLengthArray<QWizard::WizardButton, QWizard::NButtons> array{
+                buttonsCustomLayout.cbegin(), buttonsCustomLayout.cend()};
+        setButtonLayout(array.constData(), int(array.size()));
     } else {
         // Positions:
         //     Help Stretch Custom1 Custom2 Custom3 Cancel Back Next Commit Finish Cancel Help
@@ -2213,8 +2213,8 @@ void QWizard::setPage(int theid, QWizardPage *page)
     page->setParent(d->pageFrame);
 
     QList<QWizardField> &pendingFields = page->d_func()->pendingFields;
-    for (int i = 0; i < pendingFields.size(); ++i)
-        d->addField(pendingFields.at(i));
+    for (const auto &field : std::as_const(pendingFields))
+        d->addField(field);
     pendingFields.clear();
 
     connect(page, SIGNAL(completeChanged()), this, SLOT(_q_updateButtonStates()));
@@ -3655,8 +3655,9 @@ bool QWizardPage::isComplete() const
         return true;
 
     const QList<QWizardField> &wizardFields = d->wizard->d_func()->fields;
-    for (int i = wizardFields.size() - 1; i >= 0; --i) {
-        const QWizardField &field = wizardFields.at(i);
+    const auto end = wizardFields.crend();
+    for (auto it = wizardFields.crbegin(); it != end; ++it) {
+        const QWizardField &field = *it;
         if (field.page == this && field.mandatory) {
             QVariant value = field.object->property(field.property);
             if (value == field.initialValue)
