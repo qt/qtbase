@@ -905,7 +905,7 @@ const QList<QMessageDialogOptions::CustomButton> &QMessageDialogOptions::customB
 
 const QMessageDialogOptions::CustomButton *QMessageDialogOptions::customButton(int id)
 {
-    int i = d->customButtons.indexOf(CustomButton(id));
+    const int i = int(d->customButtons.indexOf(CustomButton(id)));
     return (i < 0 ? nullptr : &d->customButtons.at(i));
 }
 
