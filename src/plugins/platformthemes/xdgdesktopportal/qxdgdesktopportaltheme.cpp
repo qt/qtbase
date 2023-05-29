@@ -208,6 +208,8 @@ QVariant QXdgDesktopPortalTheme::themeHint(ThemeHint hint) const
 Qt::ColorScheme QXdgDesktopPortalTheme::colorScheme() const
 {
     Q_D(const QXdgDesktopPortalTheme);
+    if (d->colorScheme == Qt::ColorScheme::Unknown)
+        return d->baseTheme->colorScheme();
     return d->colorScheme;
 }
 
