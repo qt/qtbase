@@ -1109,13 +1109,15 @@ static QString homeDirFromPasswdEntry(const QString &path, const QByteArray &use
 #if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_WASM)
     passwd pw;
     passwd *tmpPw;
-    char buf[200];
-    const int bufSize = sizeof(buf);
+    long bufSize = ::sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufSize == -1)
+        bufSize = 1024;
+    QVarLengthArray<char, 1024> buf(bufSize);
     int err = 0;
 #  if defined(Q_OS_SOLARIS) && (_POSIX_C_SOURCE - 0 < 199506L)
-    tmpPw = getpwnam_r(userName.constData(), &pw, buf, bufSize);
+    tmpPw = getpwnam_r(userName.constData(), &pw, buf.data(), buf.size());
 #  else
-    err = getpwnam_r(userName.constData(), &pw, buf, bufSize, &tmpPw);
+    err = getpwnam_r(userName.constData(), &pw, buf.data(), buf.size(), &tmpPw);
 #  endif
     if (err || !tmpPw)
         return path;
