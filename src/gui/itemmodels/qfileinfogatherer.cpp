@@ -13,6 +13,8 @@
 #  include "qplatformdefs.h"
 #endif
 
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -114,13 +116,12 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
 {
     QMutexLocker locker(&mutex);
     // See if we already have this dir/file in our queue
-    int loc = this->path.lastIndexOf(path);
-    while (loc > 0)  {
-        if (this->files.at(loc) == files) {
+    qsizetype loc = 0;
+    while ((loc = this->path.lastIndexOf(path, loc - 1)) != -1) {
+        if (this->files.at(loc) == files)
             return;
-        }
-        loc = this->path.lastIndexOf(path, loc - 1);
     }
+
 #if QT_CONFIG(thread)
     this->path.push(path);
     this->files.push(files);
@@ -348,13 +349,13 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
             for (const auto &file : files)
                 infoList << QFileInfo(file);
         }
-        QList<QPair<QString, QFileInfo>> updatedFiles;
+        QList<std::pair<QString, QFileInfo>> updatedFiles;
         updatedFiles.reserve(infoList.size());
-        for (int i = infoList.size() - 1; i >= 0; --i) {
-            QFileInfo driveInfo = infoList.at(i);
+        const auto rend = infoList.rend();
+        for (auto rit = infoList.rbegin(); rit != rend; ++rit) {
+            QFileInfo &driveInfo = *rit;
             driveInfo.stat();
-            QString driveName = translateDriveName(driveInfo);
-            updatedFiles.append(QPair<QString,QFileInfo>(driveName, driveInfo));
+            updatedFiles.emplace_back(std::pair{translateDriveName(driveInfo), std::move(driveInfo)});
         }
         emit updates(path, updatedFiles);
         return;
