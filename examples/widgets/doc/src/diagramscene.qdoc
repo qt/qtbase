@@ -289,7 +289,7 @@
     added to the scene. We set the mode of the scene back to the mode
     before the item was inserted, which is ItemMove or InsertText
     depending on which button is checked in the \c pointerTypeGroup.
-    We must also uncheck the button in the in the \c buttonGroup.
+    We must also uncheck the button in the \c buttonGroup.
 
     Here is the implementation of \c textInserted():
 
