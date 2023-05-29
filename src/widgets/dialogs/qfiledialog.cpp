@@ -1104,6 +1104,30 @@ void QFileDialog::selectUrl(const QUrl &url)
 }
 
 #ifdef Q_OS_UNIX
+static QString homeDirFromPasswdEntry(const QString &path, const QByteArray &userName)
+{
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_WASM)
+    passwd pw;
+    passwd *tmpPw;
+    char buf[200];
+    const int bufSize = sizeof(buf);
+    int err = 0;
+#  if defined(Q_OS_SOLARIS) && (_POSIX_C_SOURCE - 0 < 199506L)
+    tmpPw = getpwnam_r(userName.constData(), &pw, buf, bufSize);
+#  else
+    err = getpwnam_r(userName.constData(), &pw, buf, bufSize, &tmpPw);
+#  endif
+    if (err || !tmpPw)
+        return path;
+    return QFile::decodeName(pw.pw_dir);
+#else
+    passwd *pw = getpwnam(userName.constData());
+    if (!pw)
+        return path;
+    return QFile::decodeName(pw->pw_dir);
+#endif // defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_WASM)
+}
+
 Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path)
 {
     if (!path.startsWith(u'~'))
@@ -1118,26 +1142,7 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path)
         const QString homePath = QDir::homePath();
 #else
         const QByteArray userName = QStringView{path}.mid(1, separatorPosition - 1).toLocal8Bit();
-# if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_WASM)
-        passwd pw;
-        passwd *tmpPw;
-        char buf[200];
-        const int bufSize = sizeof(buf);
-        int err = 0;
-#  if defined(Q_OS_SOLARIS) && (_POSIX_C_SOURCE - 0 < 199506L)
-        tmpPw = getpwnam_r(userName.constData(), &pw, buf, bufSize);
-#  else
-        err = getpwnam_r(userName.constData(), &pw, buf, bufSize, &tmpPw);
-#  endif
-        if (err || !tmpPw)
-            return path;
-        const QString homePath = QString::fromLocal8Bit(pw.pw_dir);
-# else
-        passwd *pw = getpwnam(userName.constData());
-        if (!pw)
-            return path;
-        const QString homePath = QString::fromLocal8Bit(pw->pw_dir);
-# endif
+        QString homePath = homeDirFromPasswdEntry(path, userName);
 #endif
         return homePath + QStringView{path}.mid(separatorPosition);
     }
