@@ -699,22 +699,10 @@ struct Data
 
     Node *findNode(const Key &key) const noexcept
     {
-        Q_ASSERT(numBuckets > 0);
-        size_t hash = QHashPrivate::calculateHash(key, seed);
-        Bucket bucket(this, GrowthPolicy::bucketForHash(numBuckets, hash));
-        // loop over the buckets until we find the entry we search for
-        // or an empty slot, in which case we know the entry doesn't exist
-        while (true) {
-            size_t offset = bucket.offset();
-            if (offset == SpanConstants::UnusedEntry) {
-                return nullptr;
-            } else {
-                Node &n = bucket.nodeAtOffset(offset);
-                if (qHashEquals(n.key, key))
-                    return &n;
-            }
-            bucket.advanceWrapped(this);
-        }
+        auto bucket = findBucket(key);
+        if (bucket.isUnused())
+            return nullptr;
+        return bucket.node();
     }
 
     struct InsertionResult
