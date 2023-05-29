@@ -1134,20 +1134,28 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path)
 {
     if (!path.startsWith(u'~'))
         return path;
-    int separatorPosition = path.indexOf(QDir::separator());
-    if (separatorPosition < 0)
-        separatorPosition = path.size();
-    if (separatorPosition == 1) {
-        return QDir::homePath() + QStringView{path}.mid(1);
-    } else {
+
+    if (path.size() == 1) // '~'
+        return QDir::homePath();
+
+    QStringView sv(path);
+    const qsizetype sepIndex = sv.indexOf(QDir::separator());
+    if (sepIndex == 1) // '~/' or '~/a/b/c'
+        return QDir::homePath() + sv.sliced(1);
+
 #if defined(Q_OS_VXWORKS) || defined(Q_OS_INTEGRITY)
-        const QString homePath = QDir::homePath();
+    if (sepIndex == -1)
+        return QDir::homePath();
+    return QDir::homePath() + sv.sliced(sepIndex);
 #else
-        const QByteArray userName = QStringView{path}.mid(1, separatorPosition - 1).toLocal8Bit();
-        QString homePath = homeDirFromPasswdEntry(path, userName);
-#endif
-        return homePath + QStringView{path}.mid(separatorPosition);
-    }
+    const qsizetype userNameLen = sepIndex != -1 ? sepIndex - strlen("~") // '~user/a/b'
+                                                 : path.size() - strlen("~"); // '~user'
+    const QByteArray userName = sv.sliced(1, userNameLen).toLocal8Bit();
+    QString homePath = homeDirFromPasswdEntry(path, userName);
+    if (sepIndex == -1)
+        return homePath;
+    return homePath + sv.sliced(sepIndex);
+#endif // defined(Q_OS_VXWORKS) || defined(Q_OS_INTEGRITY)
 }
 #endif
 
