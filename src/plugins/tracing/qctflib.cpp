@@ -75,13 +75,16 @@ QCtfLibImpl::QCtfLibImpl()
         m_session.tracepoints.append(QStringLiteral("all"));
         m_session.name = QStringLiteral("default");
     } else {
-        fseek(file, 0, SEEK_END);
-        qsizetype pos = ftell(file);
-        fseek(file, 0, SEEK_SET);
-        QByteArray data(pos, Qt::Uninitialized);
-        qsizetype size = (qsizetype)fread(data.data(), 1, pos, file);
+        QT_STATBUF stat;
+        if (QT_FSTAT(QT_FILENO(file), &stat) != 0) {
+            qCWarning (lcDebugTrace) << "Unable to stat session file, " << qt_error_string();
+            return;
+        }
+        qsizetype filesize = qMin(stat.st_size, std::numeric_limits<qsizetype>::max());
+        QByteArray data(filesize, Qt::Uninitialized);
+        qsizetype size = static_cast<qsizetype>(fread(data.data(), 1, filesize, file));
         fclose(file);
-        if (size != pos)
+        if (size != filesize)
             return;
 
         QJsonDocument json(QJsonDocument::fromJson(data));
