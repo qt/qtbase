@@ -114,7 +114,7 @@ painter.drawPath(path);
 //! [6]
 QLineF line(10.0, 80.0, 90.0, 20.0);
 
-QPainter(this);
+QPainter painter(this);
 painter.drawLine(line);
 //! [6]
 } // MyWidget::wrapper1()
@@ -251,7 +251,7 @@ QRectF target(10.0, 20.0, 80.0, 60.0);
 QRectF source(0.0, 0.0, 70.0, 40.0);
 QPixmap pixmap(":myPixmap.png");
 
-QPainter(this);
+QPainter painter(this);
 painter.drawPixmap(target, pixmap, source);
 //! [16]
 
