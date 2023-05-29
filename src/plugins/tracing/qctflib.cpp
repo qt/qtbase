@@ -62,16 +62,13 @@ QCtfLibImpl::QCtfLibImpl()
     }
 
     // Check if the location is writable
-    FILE *file = nullptr;
-    file = fopen(qPrintable(location + "/metadata"_L1), "w+b");
-    if (!file) {
+    if (QT_ACCESS(qPrintable(location), W_OK) != 0) {
         qCWarning (lcDebugTrace) << "Unable to write to location";
         return;
     }
-    fclose(file);
 
     const QString filename = location + QStringLiteral("/session.json");
-    file = fopen(qPrintable(filename), "rb");
+    FILE *file = fopen(qPrintable(filename), "rb");
     if (!file) {
         qCWarning (lcDebugTrace) << "unable to open session file: " << filename;
         m_location = location;
