@@ -627,24 +627,22 @@ void QProgressDialog::setValue(int progress)
             return;
         } else {
             d->setValueCalled = true;
-            bool need_show;
+            bool need_show = false;
             using namespace std::chrono;
             nanoseconds elapsed = d->starttime.durationElapsed();
             if (elapsed >= d->showTime) {
                 need_show = true;
             } else {
                 if (elapsed > minWaitTime) {
+                    const int totalSteps = maximum() - minimum();
+                    const int myprogress = std::max(progress - minimum(), 1);
+                    const int remainingSteps = totalSteps - myprogress;
                     nanoseconds estimate;
-                    int totalSteps = maximum() - minimum();
-                    int myprogress = progress - minimum();
-                    if (myprogress == 0) myprogress = 1;
-                    if ((totalSteps - myprogress) >= INT_MAX / elapsed.count())
-                        estimate = (totalSteps - myprogress) / myprogress * elapsed;
+                    if (remainingSteps >= INT_MAX / elapsed.count())
+                        estimate = (remainingSteps / myprogress) * elapsed;
                     else
-                        estimate = elapsed * (totalSteps - myprogress) / myprogress;
+                        estimate = (elapsed * remainingSteps) / myprogress;
                     need_show = estimate >= d->showTime;
-                } else {
-                    need_show = false;
                 }
             }
             if (need_show) {
