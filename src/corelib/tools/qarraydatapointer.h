@@ -320,10 +320,12 @@ public:
             const qsizetype n = std::distance(first, last);
             if (needsDetach() || n > constAllocatedCapacity()) {
                 QArrayDataPointer allocated(Data::allocate(detachCapacity(n)));
+                Q_CHECK_PTR(allocated.data());
                 swap(allocated);
             }
         } else if (needsDetach()) {
             QArrayDataPointer allocated(Data::allocate(allocatedCapacity()));
+            Q_CHECK_PTR(allocated.data());
             swap(allocated);
             // We don't want to copy data that we know we'll overwrite
         }
