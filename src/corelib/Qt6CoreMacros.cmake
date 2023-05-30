@@ -129,8 +129,12 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
                        ${_moc_working_dir}
                        VERBATIM)
     set_source_files_properties(${infile} PROPERTIES SKIP_AUTOMOC ON)
-    set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
-    set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
+    set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON
+                                                      SKIP_AUTOUIC ON
+    )
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+        set_source_files_properties(${outfile} PROPERTIES SKIP_LINTING ON)
+    endif()
 endfunction()
 
 function(qt6_generate_moc infile outfile )
@@ -442,6 +446,9 @@ function(qt6_add_big_resources outfiles )
 
         _qt6_parse_qrc_file(${infile} _out_depends _rc_depends)
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTOGEN ON)
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+            set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_LINTING ON)
+        endif()
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
                            DEPENDS ${infile} ${_rc_depends} "${out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
@@ -2047,6 +2054,9 @@ function(_qt_internal_process_resource target resourceName)
         SKIP_UNITY_BUILD_INCLUSION TRUE
         SKIP_PRECOMPILE_HEADERS TRUE
     )
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+        set_source_files_properties(${generatedOutfile} ${scope_args} PROPERTIES SKIP_LINTING ON)
+    endif()
 
     get_target_property(target_source_dir ${target} SOURCE_DIR)
     if(NOT target_source_dir STREQUAL CMAKE_CURRENT_SOURCE_DIR)
