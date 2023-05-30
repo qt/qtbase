@@ -4,6 +4,7 @@
 
 #ifdef QT_GUI_LIB
 #  include <QtGui/QGuiApplication>
+#  define tst_QTimer tst_QGuiTimer
 #else
 #  include <QtCore/QCoreApplication>
 #endif
@@ -21,6 +22,19 @@
 #include <unistd.h>
 #endif
 
+#ifdef DISABLE_GLIB
+#  ifdef tst_QTimer
+#    undef tst_QTimer
+#    define tst_QTimer tst_QGuiTimer_NoGlib
+#  else
+#    define tst_QTimer tst_QTimer_NoGlib
+#  endif
+static bool glibDisabled = []() {
+    qputenv("QT_NO_GLIB", "1");
+    return true;
+}();
+#endif
+
 class tst_QTimer : public QObject
 {
     Q_OBJECT
@@ -32,6 +46,10 @@ private slots:
     void zeroTimer();
     void singleShotTimeout();
     void timeout();
+    void sequentialTimers_data();
+    void sequentialTimers();
+    void singleShotSequentialTimers_data();
+    void singleShotSequentialTimers();
     void remainingTime();
     void remainingTimeInitial_data();
     void remainingTimeInitial();
@@ -118,6 +136,87 @@ void tst_QTimer::timeout()
     int oldCount = timeoutSpy.size();
 
     QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.size() > oldCount, TIMEOUT_TIMEOUT);
+}
+
+void tst_QTimer::sequentialTimers_data()
+{
+#ifdef Q_OS_WIN
+    QSKIP("The API used by QEventDispatcherWin32 doesn't respect the order");
+#endif
+    QTest::addColumn<QList<int>>("timeouts");
+    auto addRow = [](const QList<int> &l) {
+        QByteArray name;
+        int last = -1;
+        for (int i = 0; i < l.size(); ++i) {
+            Q_ASSERT_X(l[i] >= last, "tst_QTimer", "input list must be sorted");
+            name += QByteArray::number(l[i]) + ',';
+        }
+        name.chop(1);
+        QTest::addRow("%s", name.constData()) << l;
+    };
+    // PreciseTimers
+    addRow({0, 0, 0, 0, 0, 0});
+    addRow({0, 1, 2});
+    addRow({1, 1, 1, 2, 2, 2, 2});
+    addRow({1, 2, 3});
+    addRow({19, 19, 19});
+    // CoarseTimer for setInterval
+    addRow({20, 20, 20, 20, 20});
+    addRow({25, 25, 25, 25, 25, 25, 50});
+}
+
+void tst_QTimer::sequentialTimers()
+{
+    QFETCH(const QList<int>, timeouts);
+    QByteArray result, expected;
+    std::vector<std::unique_ptr<QTimer>> timers;
+    expected.resize(timeouts.size());
+    result.reserve(timeouts.size());
+    timers.reserve(timeouts.size());
+    for (int i = 0; i < timeouts.size(); ++i) {
+        auto timer = std::make_unique<QTimer>();
+        timer->setSingleShot(true);
+        timer->setInterval(timeouts[i]);
+
+        char c = 'A' + i;
+        expected[i] = c;
+        QObject::connect(timer.get(), &QTimer::timeout, this, [&result, c = c]() {
+            result.append(c);
+        });
+        timers.push_back(std::move(timer));
+    }
+
+    // start the timers
+    for (auto &timer : timers)
+        timer->start();
+
+    QTestEventLoop::instance().enterLoopMSecs(timeouts.last() * 2 + 10);
+
+    QCOMPARE(result, expected);
+}
+
+void tst_QTimer::singleShotSequentialTimers_data()
+{
+    sequentialTimers_data();
+}
+
+void tst_QTimer::singleShotSequentialTimers()
+{
+    QFETCH(const QList<int>, timeouts);
+    QByteArray result, expected;
+    expected.resize(timeouts.size());
+    result.reserve(timeouts.size());
+    for (int i = 0; i < timeouts.size(); ++i) {
+        char c = 'A' + i;
+        expected[i] = c;
+        QTimer::singleShot(timeouts[i], this, [&result, c = c]() {
+            result.append(c);
+        });
+    }
+
+    QTestEventLoop::instance().enterLoopMSecs(timeouts.last() * 2 + 10);
+
+    QCOMPARE(result, expected);
 }
 
 void tst_QTimer::remainingTime()
