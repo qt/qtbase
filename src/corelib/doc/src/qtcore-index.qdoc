@@ -78,6 +78,7 @@
     \li \l{CBOR Support in Qt}
     \li \l{How to Create Qt Plugins}
     \li \l{The Event System}
+    \li \l{Application Permissions}
     \endlist
 
     \section1 Reference
