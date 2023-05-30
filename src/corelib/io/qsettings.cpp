@@ -947,26 +947,43 @@ static inline int pathHashKey(QSettings::Format format, QSettings::Scope scope)
 }
 
 #ifndef Q_OS_WIN
-static QString make_user_path()
+static constexpr QChar sep = u'/';
+
+#if !defined(QSETTINGS_USE_QSTANDARDPATHS) || defined(Q_OS_ANDROID)
+static QString make_user_path_without_qstandard_paths()
 {
-    static constexpr QChar sep = u'/';
-#ifndef QSETTINGS_USE_QSTANDARDPATHS
-    // Non XDG platforms (OS X, iOS, Android...) have used this code path erroneously
-    // for some time now. Moving away from that would require migrating existing settings.
     QByteArray env = qgetenv("XDG_CONFIG_HOME");
     if (env.isEmpty()) {
         return QDir::homePath() + "/.config/"_L1;
     } else if (env.startsWith('/')) {
         return QFile::decodeName(env) + sep;
-    } else {
-        return QDir::homePath() + sep + QFile::decodeName(env) + sep;
     }
+
+    return QDir::homePath() + sep + QFile::decodeName(env) + sep;
+}
+#endif // !QSETTINGS_USE_QSTANDARDPATHS || Q_OS_ANDROID
+
+static QString make_user_path()
+{
+#ifndef QSETTINGS_USE_QSTANDARDPATHS
+    // Non XDG platforms (OS X, iOS, Android...) have used this code path erroneously
+    // for some time now. Moving away from that would require migrating existing settings.
+    // The migration has already been done for Android.
+    return make_user_path_without_qstandard_paths();
 #else
-    // When using a proper XDG platform, use QStandardPaths rather than the above hand-written code;
-    // it makes the use of test mode from unit tests possible.
+
+#ifdef Q_OS_ANDROID
+    // If an old settings path exists, use it instead of creating a new one
+    QString ret = make_user_path_without_qstandard_paths();
+    if (QFile(ret).exists())
+        return ret;
+#endif // Q_OS_ANDROID
+
+    // When using a proper XDG platform or Android platform, use QStandardPaths rather than the
+    // above hand-written code. It makes the use of test mode from unit tests possible.
     // Ideally all platforms should use this, but see above for the migration issue.
     return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + sep;
-#endif
+#endif // !QSETTINGS_USE_QSTANDARDPATHS
 }
 #endif // !Q_OS_WIN
 
@@ -1331,8 +1348,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
     // On android and if it is a content URL put the lock file in a
     // writable location to prevent permissions issues and invalid paths.
     if (confFile->name.startsWith("content:"_L1))
-        lockFileName = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
-                + QFileInfo(lockFileName).fileName();
+        lockFileName = make_user_path() + QFileInfo(lockFileName).fileName();
 #    endif
     /*
         Use a lockfile in order to protect us against other QSettings instances
