@@ -1812,7 +1812,7 @@ void QXmlStreamReaderPrivate::startDocument()
             else
                 err = QXmlStream::tr("Standalone accepts only yes or no.");
         } else {
-            err = QXmlStream::tr("Invalid attribute in XML declaration.");
+            err = QXmlStream::tr("Invalid attribute in XML declaration: %1 = %2").arg(key).arg(value);
         }
     }
 
