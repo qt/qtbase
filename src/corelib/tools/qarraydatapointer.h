@@ -334,7 +334,7 @@ public:
         const auto capacityBegin = begin() - offset;
         const auto prependBufferEnd = begin();
 
-        if constexpr (!std::is_nothrow_constructible_v<T, decltype(proj(*first))>) {
+        if constexpr (!std::is_nothrow_constructible_v<T, decltype(std::invoke(proj, *first))>) {
             // If construction can throw, and we have freeSpaceAtBegin(),
             // it's easiest to just clear the container and start fresh.
             // The alternative would be to keep track of two active, disjoint ranges.
@@ -366,7 +366,8 @@ public:
                     size = dst - begin();
                     return;
                 }
-                q20::construct_at(dst, proj(*first)); // construct element in prepend buffer
+                // construct element in prepend buffer
+                q20::construct_at(dst, std::invoke(proj, *first));
                 ++dst;
                 ++first;
             }
@@ -383,12 +384,12 @@ public:
                     break;
                 } else {
                     do {
-                        (*this)->emplace(size, proj(*first));
+                        (*this)->emplace(size, std::invoke(proj, *first));
                     } while (++first != last);
                     return;         // size() is already correct (and dst invalidated)!
                 }
             }
-            *dst = proj(*first);    // overwrite existing element
+            *dst = std::invoke(proj, *first);    // overwrite existing element
             ++dst;
             ++first;
         }
