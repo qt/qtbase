@@ -428,6 +428,28 @@ qt_internal_extend_target(Gui CONDITION WIN32
         d3d12
 )
 
+if(QT_FEATURE_graphicsframecapture)
+    qt_internal_extend_target(Gui
+        SOURCES
+            util/qgraphicsframecapture_p.h util/qgraphicsframecapture.cpp
+            util/qgraphicsframecapture_p_p.h
+    )
+
+    qt_internal_extend_target(Gui CONDITION WIN32 OR (UNIX AND NOT APPLE)
+        LIBRARIES
+            RenderDoc::RenderDoc
+        SOURCES
+            util/qgraphicsframecapturerenderdoc_p_p.h util/qgraphicsframecapturerenderdoc.cpp
+    )
+
+    qt_internal_extend_target(Gui CONDITION IOS OR MACOS
+        SOURCES
+            util/qgraphicsframecapturemetal_p_p.h util/qgraphicsframecapturemetal.mm
+        PUBLIC_LIBRARIES
+            ${FWMetal}
+    )
+endif()
+
 if(QT_FEATURE_egl)
     qt_find_package(EGL)
 endif()
