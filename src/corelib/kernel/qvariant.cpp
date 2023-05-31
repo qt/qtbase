@@ -519,14 +519,14 @@ QVariant::QVariant(const QVariant &p)
 }
 
 /*!
-    \fn template <typename Type, typename... Args, if_constructible<Type, Args...> = true> QVariant::QVariant(std::in_place_type_t<Type>, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<Type>, Args...>::value)
+    \fn template <typename T, typename... Args, if_constructible<T, Args...> = true> QVariant::QVariant(std::in_place_type_t<T>, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<T>, Args...>::value)
 
     \since 6.6
-    Constructs a new variant containing a value of type \c Type. The contained
+    Constructs a new variant containing a value of type \c T. The contained
     value is is initialized with the arguments
     \c{std::forward<Args>(args)...}.
 
-    This overload only participates in overload resolution if \c Type can be
+    This overload only participates in overload resolution if \c T can be
     constructed from \a args.
 
     This constructor is provided for STL/std::any compatibility.
@@ -536,7 +536,7 @@ QVariant::QVariant(const QVariant &p)
 
 /*!
 
-    \fn template <typename Type, typename List, typename... Args, if_constructible<Type, std::initializer_list<List> &, Args...> = true> explicit QVariant::QVariant(std::in_place_type_t<Type>, std::initializer_list<List> il, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<Type>, std::initializer_list<List> &, Args... >::value)
+    \fn template <typename T, typename U, typename... Args, if_constructible<T, std::initializer_list<U> &, Args...> = true> explicit QVariant::QVariant(std::in_place_type_t<T>, std::initializer_list<U> il, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<T>, std::initializer_list<U> &, Args... >::value)
 
     \since 6.6
     \overload
@@ -547,18 +547,18 @@ QVariant::QVariant(const QVariant &p)
 
 
 /*!
-    \fn template <typename Type, typename... Args, if_constructible<Type, Args...> = true> QVariant::emplace(Args&&... args)
+    \fn template <typename T, typename... Args, if_constructible<T, Args...> = true> QVariant::emplace(Args&&... args)
 
     \since 6.6
     Replaces the object currently held in \c{*this} with an object of
-    type \c{Type}, constructed from \a{args}\c{...}. If \c{*this} was non-null,
+    type \c{T}, constructed from \a{args}\c{...}. If \c{*this} was non-null,
     the previously held object is destroyed first.
     If possible, this method will reuse memory allocated by the QVariant.
     Returns a reference to the newly-created object.
  */
 
 /*!
-    \fn template <typename Type, typename List, typename... Args, if_constructible<Type, std::initializer_list<List> &, Args...> = true> QVariant::emplace(std::initializer_list<List> list, Args&&... args)
+    \fn template <typename T, typename U, typename... Args, if_constructible<T, std::initializer_list<U> &, Args...> = true> QVariant::emplace(std::initializer_list<U> list, Args&&... args)
 
     \since 6.6
     \overload

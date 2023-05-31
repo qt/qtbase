@@ -62,12 +62,12 @@ template<> constexpr inline bool qIsRelocatable<QVariant> = true;
 }
 class Q_CORE_EXPORT QVariant
 {
-    template <typename Type, typename... Args>
+    template <typename T, typename... Args>
     using if_constructible = std::enable_if_t<
         std::conjunction_v<
-            std::is_copy_constructible<q20::remove_cvref_t<Type>>,
-            std::is_destructible<q20::remove_cvref_t<Type>>,
-            std::is_constructible<q20::remove_cvref_t<Type>, Args...>
+            std::is_copy_constructible<q20::remove_cvref_t<T>>,
+            std::is_destructible<q20::remove_cvref_t<T>>,
+            std::is_constructible<q20::remove_cvref_t<T>, Args...>
         >,
     bool>;
 
@@ -217,34 +217,34 @@ public:
     QVariant(const QVariant &other);
 
 private:
-    template<typename Type, typename ...Args>
+    template <typename T, typename ...Args>
     using is_noexcept_constructible = std::conjunction<
-            std::bool_constant<Private::CanUseInternalSpace<Type>>,
-            std::is_nothrow_constructible<Type, Args...>
+            std::bool_constant<Private::CanUseInternalSpace<T>>,
+            std::is_nothrow_constructible<T, Args...>
         >;
 
 public:
-    template <typename Type, typename... Args,
-             if_constructible<Type, Args...> = true>
-    explicit QVariant(std::in_place_type_t<Type>, Args&&... args)
-            noexcept(is_noexcept_constructible<q20::remove_cvref_t<Type>, Args...>::value)
-        : QVariant(std::in_place, QMetaType::fromType<q20::remove_cvref_t<Type>>() )
+    template <typename T, typename... Args,
+             if_constructible<T, Args...> = true>
+    explicit QVariant(std::in_place_type_t<T>, Args&&... args)
+            noexcept(is_noexcept_constructible<q20::remove_cvref_t<T>, Args...>::value)
+        : QVariant(std::in_place, QMetaType::fromType<q20::remove_cvref_t<T>>() )
     {
         void *data = const_cast<void *>(constData());
-        new (data) Type(std::forward<Args>(args)...);
+        new (data) T(std::forward<Args>(args)...);
     }
 
-    template <typename Type, typename List, typename... Args,
-             if_constructible<Type, std::initializer_list<List> &, Args...> = true>
-    explicit QVariant(std::in_place_type_t<Type>, std::initializer_list<List> il, Args&&... args)
-            noexcept(is_noexcept_constructible<q20::remove_cvref_t<Type>,
-                                               std::initializer_list<List> &,
+    template <typename T, typename U, typename... Args,
+             if_constructible<T, std::initializer_list<U> &, Args...> = true>
+    explicit QVariant(std::in_place_type_t<T>, std::initializer_list<U> il, Args&&... args)
+            noexcept(is_noexcept_constructible<q20::remove_cvref_t<T>,
+                                               std::initializer_list<U> &,
                                                Args...
                     >::value)
-        : QVariant(std::in_place, QMetaType::fromType<q20::remove_cvref_t<Type>>())
+        : QVariant(std::in_place, QMetaType::fromType<q20::remove_cvref_t<T>>())
     {
         char *data = static_cast<char *>(const_cast<void *>(constData()));
-        new (data) Type(il, std::forward<Args>(args)...);
+        new (data) T(il, std::forward<Args>(args)...);
     }
 
     // primitives
@@ -445,40 +445,40 @@ public:
     inline const void *data() const { return constData(); }
 
 private:
-    template <typename Type>
+    template <typename T>
     void verifySuitableForEmplace()
     {
-        static_assert(!std::is_reference_v<Type>,
+        static_assert(!std::is_reference_v<T>,
                       "QVariant does not support reference types");
-        static_assert(!std::is_const_v<Type>,
+        static_assert(!std::is_const_v<T>,
                       "QVariant does not support const types");
-        static_assert(std::is_copy_constructible_v<Type>,
+        static_assert(std::is_copy_constructible_v<T>,
                       "QVariant requires that the type is copyable");
-        static_assert(std::is_destructible_v<Type>,
+        static_assert(std::is_destructible_v<T>,
                       "QVariant requires that the type is destructible");
     }
 
-    template <typename Type, typename... Args>
-    Type &emplaceImpl(Args&&... args)
+    template <typename T, typename... Args>
+    T &emplaceImpl(Args&&... args)
     {
-        verifySuitableForEmplace<Type>();
-        auto data = static_cast<Type *>(prepareForEmplace(QMetaType::fromType<Type>()));
+        verifySuitableForEmplace<T>();
+        auto data = static_cast<T *>(prepareForEmplace(QMetaType::fromType<T>()));
         return *q20::construct_at(data, std::forward<Args>(args)...);
     }
 
 public:
-    template <typename Type, typename... Args,
-              if_constructible<Type, Args...> = true>
-    Type &emplace(Args&&... args)
+    template <typename T, typename... Args,
+              if_constructible<T, Args...> = true>
+    T &emplace(Args&&... args)
     {
-        return emplaceImpl<Type>(std::forward<Args>(args)...);
+        return emplaceImpl<T>(std::forward<Args>(args)...);
     }
 
-    template <typename Type, typename List, typename... Args,
-             if_constructible<Type, std::initializer_list<List> &, Args...> = true>
-    Type &emplace(std::initializer_list<List> list, Args&&... args)
+    template <typename T, typename U, typename... Args,
+             if_constructible<T, std::initializer_list<U> &, Args...> = true>
+    T &emplace(std::initializer_list<U> list, Args&&... args)
     {
-        return emplaceImpl<Type>(list, std::forward<Args>(args)...);
+        return emplaceImpl<T>(list, std::forward<Args>(args)...);
     }
 
     template<typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, QVariant>>>
