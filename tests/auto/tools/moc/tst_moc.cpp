@@ -2184,7 +2184,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 0
         << QString()
-        << QString("standard input:0:1: note: No relevant classes found. No output generated.");
+        << QString("standard input: note: No relevant classes found. No output generated.");
 
     // passing "-nn" should suppress "no relevant classes" note
     QTest::newRow("-nn")
@@ -2326,7 +2326,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 1
         << QString("IGNORE_ALL_STDOUT")
-        << QString(":-1:1: error: Unexpected character in macro argument list.");
+        << QString(": error: Unexpected character in macro argument list.");
 
     QTest::newRow("Missing header warning")
         << QByteArray("class X : public QObject { Q_OBJECT };")
