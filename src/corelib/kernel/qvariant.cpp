@@ -570,7 +570,7 @@ void QVariant::create(QMetaType type, const void *copy)
 
 QVariant::~QVariant()
 {
-    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared))
+    if (!d.is_shared || !d.data.shared->ref.deref())
         customClear(&d);
 }
 
@@ -1061,7 +1061,7 @@ const char *QVariant::typeName() const
 */
 void QVariant::clear()
 {
-    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared))
+    if (!d.is_shared || !d.data.shared->ref.deref())
         customClear(&d);
     d = {};
 }
