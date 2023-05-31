@@ -72,6 +72,7 @@ public:
         const void *data() const { return reinterpret_cast<const uchar *>(this) + offset; }
         void *data() { return reinterpret_cast<uchar *>(this) + offset; }
     };
+
     struct Private
     {
         static constexpr size_t MaxInternalSize = 3 * sizeof(void *);
