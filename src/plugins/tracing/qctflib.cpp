@@ -57,27 +57,27 @@ QCtfLibImpl::QCtfLibImpl()
 {
     QString location = qEnvironmentVariable("QTRACE_LOCATION");
     if (location.isEmpty()) {
-        qCInfo (lcDebugTrace) << "QTRACE_LOCATION not set";
+        qCInfo(lcDebugTrace) << "QTRACE_LOCATION not set";
         return;
     }
 
     // Check if the location is writable
     if (QT_ACCESS(qPrintable(location), W_OK) != 0) {
-        qCWarning (lcDebugTrace) << "Unable to write to location";
+        qCWarning(lcDebugTrace) << "Unable to write to location";
         return;
     }
 
     const QString filename = location + QStringLiteral("/session.json");
     FILE *file = fopen(qPrintable(filename), "rb");
     if (!file) {
-        qCWarning (lcDebugTrace) << "unable to open session file: " << filename;
+        qCWarning(lcDebugTrace) << "unable to open session file: " << filename;
         m_location = location;
         m_session.tracepoints.append(QStringLiteral("all"));
         m_session.name = QStringLiteral("default");
     } else {
         QT_STATBUF stat;
         if (QT_FSTAT(QT_FILENO(file), &stat) != 0) {
-            qCWarning (lcDebugTrace) << "Unable to stat session file, " << qt_error_string();
+            qCWarning(lcDebugTrace) << "Unable to stat session file, " << qt_error_string();
             return;
         }
         qsizetype filesize = qMin(stat.st_size, std::numeric_limits<qsizetype>::max());
