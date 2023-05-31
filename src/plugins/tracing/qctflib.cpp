@@ -87,17 +87,24 @@ QCtfLibImpl::QCtfLibImpl()
         fclose(file);
         if (size != filesize)
             return;
+
         QJsonDocument json(QJsonDocument::fromJson(data));
-
         QJsonObject obj = json.object();
-        QJsonValue value = *obj.begin();
-        if (value.isNull() || !value.isArray())
-            return;
-        m_session.name = obj.begin().key();
-        const QJsonArray arr = value.toArray();
-        for (auto var : arr)
-            m_session.tracepoints.append(var.toString());
-
+        bool valid = false;
+        if (!obj.isEmpty()) {
+            const auto it = obj.begin();
+            if (it.value().isArray()) {
+                m_session.name = it.key();
+                for (auto var : it.value().toArray())
+                    m_session.tracepoints.append(var.toString());
+                valid = true;
+            }
+        }
+        if (!valid) {
+            qCWarning(lcDebugTrace) << "Session file is not valid";
+            m_session.tracepoints.append(QStringLiteral("all"));
+            m_session.name = QStringLiteral("default");
+        }
         m_location = location + QStringLiteral("/ust");
         std::filesystem::create_directory(qPrintable(m_location), qPrintable(location));
     }
