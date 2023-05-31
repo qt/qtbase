@@ -16,6 +16,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include "qheaderview.h"
 #include "private/qabstractitemview_p.h"
 
 #include "QtCore/qbitarray.h"

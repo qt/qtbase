@@ -15,6 +15,7 @@
 // We mean it.
 //
 
+#include "qitemselectionmodel.h"
 #include "private/qobject_p.h"
 #include "private/qproperty_p.h"
 

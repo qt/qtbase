@@ -16,6 +16,7 @@
 //
 //
 
+#include "qabstractproxymodel.h"
 #include "private/qabstractitemmodel_p.h"
 #include "private/qproperty_p.h"
 

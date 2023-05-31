@@ -6,6 +6,7 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qdatastream.h>
+#include <QtCore/qvariant.h>
 
 //
 //  W A R N I N G

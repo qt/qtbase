@@ -16,6 +16,9 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include "qtableview.h"
+#include "qheaderview.h"
+
 #include <QtCore/QList>
 #include <QtCore/QMap>
 #include <QtCore/QSet>

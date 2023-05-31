@@ -16,6 +16,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include "qlistview.h"
 #include "private/qabstractitemview_p.h"
 #include "qbitarray.h"
 #include "qbsptree_p.h"
