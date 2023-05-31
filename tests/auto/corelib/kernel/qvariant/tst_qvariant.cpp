@@ -5392,6 +5392,16 @@ void tst_QVariant::shouldDeleteVariantDataWorksForAssociative()
 
 void tst_QVariant::fromStdVariant()
 {
+#define CHECK_EQUAL(lhs, rhs, type) do { \
+        QCOMPARE(lhs.typeId(), rhs.typeId()); \
+        if (lhs.isNull()) { \
+            QVERIFY(rhs.isNull()); \
+        } else { \
+            QVERIFY(!rhs.isNull()); \
+            QCOMPARE(get< type >(lhs), get< type >(rhs)); \
+        } \
+    } while (false)
+
     {
         typedef std::variant<int, bool> intorbool_t;
         intorbool_t stdvar = 5;
@@ -5399,21 +5409,38 @@ void tst_QVariant::fromStdVariant()
         QVERIFY(!qvar.isNull());
         QCOMPARE(qvar.typeId(), QMetaType::Int);
         QCOMPARE(qvar.value<int>(), std::get<int>(stdvar));
+        {
+            const auto qv2 = QVariant::fromStdVariant(std::move(stdvar));
+            CHECK_EQUAL(qv2, qvar, int);
+        }
+
         stdvar = true;
         qvar = QVariant::fromStdVariant(stdvar);
         QVERIFY(!qvar.isNull());
         QCOMPARE(qvar.typeId(), QMetaType::Bool);
         QCOMPARE(qvar.value<bool>(), std::get<bool>(stdvar));
+        {
+            const auto qv2 = QVariant::fromStdVariant(std::move(stdvar));
+            CHECK_EQUAL(qv2, qvar, bool);
+        }
     }
     {
         std::variant<std::monostate, int> stdvar;
         QVariant qvar = QVariant::fromStdVariant(stdvar);
         QVERIFY(!qvar.isValid());
+        {
+            const auto qv2 = QVariant::fromStdVariant(std::move(stdvar));
+            CHECK_EQUAL(qv2, qvar, int); // fake type, they're empty
+        }
         stdvar = -4;
         qvar = QVariant::fromStdVariant(stdvar);
         QVERIFY(!qvar.isNull());
         QCOMPARE(qvar.typeId(), QMetaType::Int);
         QCOMPARE(qvar.value<int>(), std::get<int>(stdvar));
+        {
+            const auto qv2 = QVariant::fromStdVariant(std::move(stdvar));
+            CHECK_EQUAL(qv2, qvar, int);
+        }
     }
     {
         std::variant<int, bool, QChar> stdvar = QChar::fromLatin1(' ');
@@ -5421,7 +5448,25 @@ void tst_QVariant::fromStdVariant()
         QVERIFY(!qvar.isNull());
         QCOMPARE(qvar.typeId(), QMetaType::QChar);
         QCOMPARE(qvar.value<QChar>(), std::get<QChar>(stdvar));
+        {
+            const auto qv2 = QVariant::fromStdVariant(std::move(stdvar));
+            CHECK_EQUAL(qv2, qvar, QChar);
+        }
     }
+    // rvalue fromStdVariant() actually moves:
+    {
+        const auto foo = u"foo"_s;
+        std::variant<QString, QByteArray> stdvar = foo;
+        QVariant qvar = QVariant::fromStdVariant(std::move(stdvar));
+        const auto ps = get_if<QString>(&stdvar);
+        QVERIFY(ps);
+        QVERIFY(ps->isNull()); // QString was moved from
+        QVERIFY(!qvar.isNull());
+        QCOMPARE(qvar.typeId(), QMetaType::QString);
+        QCOMPARE(get<QString>(qvar), foo);
+    }
+
+#undef CHECK_EQUAL
 }
 
 void tst_QVariant::qt4UuidDataStream()

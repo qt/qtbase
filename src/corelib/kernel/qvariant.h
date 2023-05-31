@@ -569,9 +569,13 @@ public:
     template<typename... Types>
     static inline QVariant fromStdVariant(const std::variant<Types...> &value)
     {
-        if (value.valueless_by_exception())
-            return QVariant();
-        return std::visit([](const auto &arg) { return QVariant::fromValue(arg); }, value);
+        return fromStdVariantImpl(value);
+    }
+
+    template<typename... Types>
+    static QVariant fromStdVariant(std::variant<Types...> &&value)
+    {
+        return fromStdVariantImpl(std::move(value));
     }
 
     template<typename T>
@@ -585,6 +589,17 @@ public:
     static QPartialOrdering compare(const QVariant &lhs, const QVariant &rhs);
 
 private:
+    template <typename StdVariant>
+    static QVariant fromStdVariantImpl(StdVariant &&v)
+    {
+        if (Q_UNLIKELY(v.valueless_by_exception()))
+            return QVariant();
+        auto visitor = [](auto &&arg) {
+            return QVariant::fromValue(q23::forward_like<StdVariant>(arg));
+        };
+        return std::visit(visitor, std::forward<StdVariant>(v));
+    }
+
     friend inline bool operator==(const QVariant &a, const QVariant &b)
     { return a.equals(b); }
     friend inline bool operator!=(const QVariant &a, const QVariant &b)

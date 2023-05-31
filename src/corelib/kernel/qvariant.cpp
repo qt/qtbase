@@ -2722,6 +2722,12 @@ QT_WARNING_POP
 */
 
 /*!
+    \fn template<typename... Types> QVariant QVariant::fromStdVariant(std::variant<Types...> &&value)
+    \since 6.6
+    \overload
+*/
+
+/*!
     \fn template<typename T> T qvariant_cast(const QVariant &value)
     \relates QVariant
 
