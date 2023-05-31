@@ -14,43 +14,73 @@ Symbol::LexemStore Symbol::lexemStore;
 
 static const char *error_msg = nullptr;
 
-#ifdef Q_CC_MSVC
-#define ErrorFormatString "%s(%d:%d): "
-#else
-#define ErrorFormatString "%s:%d:%d: "
-#endif
+/*! \internal
+    Base implementation for printing diagnostic messages.
 
-static void defaultErrorMsg(const QByteArray &fileName, const Symbol &sym)
+    For example:
+        "/path/to/file:line:column: error: %s\n"
+        '%s' is replaced by \a msg. (Currently "column" is always 1).
+
+    If sym.lineNum is -1, the line and column parts aren't printed:
+        "/path/to/file: error: %s\n"
+
+    \a formatStringSuffix specifies the type of the message e.g.:
+        "error: %s\n"
+        "warning: %s\n"
+        "note: %s\n"
+        "Parse error at %s\n" (from defaultErrorMsg())
+*/
+void Parser::printMsg(QByteArrayView formatStringSuffix, QByteArrayView msg, const Symbol &sym)
 {
-    fprintf(stderr, ErrorFormatString "error: Parse error at \"%s\"\n",
-            fileName.constData(), sym.lineNum, 1, sym.lexem().data());
+    if (sym.lineNum != -1) {
+#ifdef Q_CC_MSVC
+        QByteArray formatString = "%s(%d:%d): " + formatStringSuffix;
+#else
+        QByteArray formatString = "%s:%d:%d: " + formatStringSuffix;
+#endif
+        fprintf(stderr, formatString.constData(),
+                currentFilenames.top().constData(), sym.lineNum, 1, msg.data());
+    } else {
+        QByteArray formatString = "%s: " + formatStringSuffix;
+        fprintf(stderr, formatString.constData(),
+                currentFilenames.top().constData(), msg.data());
+    }
+}
+
+void Parser::defaultErrorMsg(const Symbol &sym)
+{
+    if (sym.lineNum != -1)
+        printMsg("error: Parse error at \"%s\"\n", sym.lexem().data(), sym);
+    else
+        printMsg("error: could not parse file\n", "", sym);
 }
 
 void Parser::error(const Symbol &sym)
 {
-    defaultErrorMsg(currentFilenames.top(), sym);
+    defaultErrorMsg(sym);
     exit(EXIT_FAILURE);
 }
 
-void Parser::error(const char *msg) {
+void Parser::error(const char *msg)
+{
     if (msg || error_msg)
-        fprintf(stderr, ErrorFormatString "error: %s\n",
-                 currentFilenames.top().constData(), symbol().lineNum, 1, msg?msg:error_msg);
+        printMsg("error: %s\n",
+                 msg ? msg : error_msg,
+                 index > 0 ? symbol() : Symbol{});
     else
-        defaultErrorMsg(currentFilenames.top(), symbol());
+        defaultErrorMsg(symbol());
+
     exit(EXIT_FAILURE);
 }
 
 void Parser::warning(const char *msg) {
     if (displayWarnings && msg)
-        fprintf(stderr, ErrorFormatString "warning: %s\n",
-                currentFilenames.top().constData(), qMax(0, index > 0 ? symbol().lineNum : 0), 1, msg);
+        printMsg("warning: %s\n", msg, index > 0 ? symbol() : Symbol{});
 }
 
 void Parser::note(const char *msg) {
     if (displayNotes && msg)
-        fprintf(stderr, ErrorFormatString "note: %s\n",
-                currentFilenames.top().constData(), qMax(0, index > 0 ? symbol().lineNum : 0), 1, msg);
+        printMsg("note: %s\n", msg, index > 0 ? symbol() : Symbol{});
 }
 
 QT_END_NAMESPACE
