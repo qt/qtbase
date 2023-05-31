@@ -73,6 +73,11 @@ qt_internal_add_module(Test
     GENERATE_PRIVATE_CPP_EXPORTS
 )
 
+if(TARGET Gui)
+    set_property(TARGET Test
+        APPEND PROPERTY _qt_internal_sync_headers_deps Gui_sync_headers)
+endif()
+
 ## Scopes:
 #####################################################################
 
