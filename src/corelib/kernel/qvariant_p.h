@@ -34,7 +34,7 @@ customConstructShared(size_t size, size_t align, F &&construct)
     return ptr.release();
 }
 
-inline QVariant::PrivateShared *QVariant::PrivateShared::create(size_t size, size_t align)
+inline size_t QVariant::PrivateShared::computeAllocationSize(size_t size, size_t align)
 {
     size += sizeof(PrivateShared);
     if (align > sizeof(PrivateShared)) {
@@ -44,6 +44,12 @@ inline QVariant::PrivateShared *QVariant::PrivateShared::create(size_t size, siz
         // alignment.
         size += align - sizeof(PrivateShared);
     }
+    return size;
+}
+
+inline QVariant::PrivateShared *QVariant::PrivateShared::create(size_t size, size_t align)
+{
+    size = computeAllocationSize(size, align);
     void *data = operator new(size);
     auto *ps = new (data) QVariant::PrivateShared();
     ps->offset = int(((quintptr(ps) + sizeof(PrivateShared) + align - 1) & ~(align - 1)) - quintptr(ps));
