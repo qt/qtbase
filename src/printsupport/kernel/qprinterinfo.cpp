@@ -21,7 +21,7 @@ class QPrinterInfoPrivateDeleter
 public:
     static inline void cleanup(QPrinterInfoPrivate *d)
     {
-        if (d != shared_null)
+        if (d != &*shared_null)
             delete d;
     }
 };
