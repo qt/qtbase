@@ -78,6 +78,7 @@ public:
     private:
         inline PrivateShared() : ref(1) { }
     public:
+        static int computeOffset(PrivateShared *ps, size_t align);
         static size_t computeAllocationSize(size_t size, size_t align);
         static PrivateShared *create(size_t size, size_t align);
         static void free(PrivateShared *p);
