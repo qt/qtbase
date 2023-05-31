@@ -1815,11 +1815,6 @@ void QVariant::create(int type, const void *copy)
     \fn QVariant::~QVariant()
 
     Destroys the QVariant and the contained object.
-
-    Note that subclasses that reimplement clear() should reimplement
-    the destructor to call clear(). This destructor calls clear(), but
-    because it is the destructor, QVariant::clear() is called rather
-    than a subclass's clear().
 */
 
 QVariant::~QVariant()
