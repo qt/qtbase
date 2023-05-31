@@ -70,7 +70,8 @@ QCtfLibImpl::QCtfLibImpl()
     const QString filename = location + QStringLiteral("/session.json");
     FILE *file = fopen(qPrintable(filename), "rb");
     if (!file) {
-        qCWarning(lcDebugTrace) << "unable to open session file: " << filename;
+        qCWarning(lcDebugTrace) << "unable to open session file: "
+                                << filename << ", " << qt_error_string();
         m_location = location;
         m_session.tracepoints.append(QStringLiteral("all"));
         m_session.name = QStringLiteral("default");
