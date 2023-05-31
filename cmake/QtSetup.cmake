@@ -382,3 +382,5 @@ if(NOT QT_BUILD_EXAMPLES)
     # Disable deployment setup to avoid warnings about missing patchelf with CMake < 3.21.
     set(QT_SKIP_SETUP_DEPLOYMENT ON)
 endif()
+
+option(QT_ALLOW_DOWNLOAD "Allows files to be downloaded when building Qt." OFF)
