@@ -100,41 +100,6 @@ public:
     const B &b;
 };
 
-template <>
-class QStringBuilder <QString, QString> : public QStringBuilderBase<QStringBuilder<QString, QString>, QString>
-{
-    public:
-        QStringBuilder(const QString &a_, const QString &b_) : a(a_), b(b_) {}
-        QStringBuilder(const QStringBuilder &other) : a(other.a), b(other.b) {}
-
-        operator QString() const
-        { QString r(a); r += b; return r; }
-
-        const QString &a;
-        const QString &b;
-
-    private:
-        QStringBuilder &operator=(const QStringBuilder &) = delete;
-};
-
-template <>
-class QStringBuilder <QByteArray, QByteArray> : public QStringBuilderBase<QStringBuilder<QByteArray, QByteArray>, QByteArray>
-{
-    public:
-        QStringBuilder(const QByteArray &a_, const QByteArray &b_) : a(a_), b(b_) {}
-        QStringBuilder(const QStringBuilder &other) : a(other.a), b(other.b) {}
-
-        operator QByteArray() const
-        { QByteArray r(a); r += b; return r; }
-
-        const QByteArray &a;
-        const QByteArray &b;
-
-    private:
-        QStringBuilder &operator=(const QStringBuilder &) = delete;
-};
-
-
 template <> struct QConcatenable<char> : private QAbstractConcatenable
 {
     typedef char type;
