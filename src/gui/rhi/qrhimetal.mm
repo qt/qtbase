@@ -6335,7 +6335,8 @@ QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfo()
 
 #ifdef Q_OS_MACOS
     info.isHardCodedDefaults = false;
-    NSView *view = reinterpret_cast<NSView *>(window->winId());
+    // Must use m_window, not window, given this may be called before createOrResize().
+    NSView *view = reinterpret_cast<NSView *>(m_window->winId());
     info.limits.colorComponentValue.maxColorComponentValue = view.window.screen.maximumExtendedDynamicRangeColorComponentValue;
 #else
     // ### Fixme: Maybe retrieve the brightness from the screen and if we're not at full brightness we might be able to do more.
