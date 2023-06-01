@@ -2070,7 +2070,7 @@ void QTextDocumentLayoutPrivate::drawBlock(const QPointF &offset, QPainter *pain
         const qreal width = blockFormat.lengthProperty(QTextFormat::BlockTrailingHorizontalRulerWidth).value(r.width());
         const auto color = blockFormat.hasProperty(QTextFormat::BackgroundBrush)
                          ? qvariant_cast<QBrush>(blockFormat.property(QTextFormat::BackgroundBrush)).color()
-                         : context.palette.color(QPalette::Dark);
+                         : context.palette.color(QPalette::Inactive, QPalette::WindowText);
         painter->setPen(color);
         qreal y = r.bottom();
         if (bl.length() == 1)
