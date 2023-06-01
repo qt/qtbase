@@ -761,7 +761,9 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             QModelIndex indexUnderMouse = view->indexAt(m->position().toPoint());
             if (indexUnderMouse.isValid()
                      && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
-                view->setCurrentIndex(indexUnderMouse);
+                // Request for comments: To show selected item with AccentColor bar indicator and hovered
+                // items in the flyout, the next line needs to be removed.
+                //view->setCurrentIndex(indexUnderMouse);
             }
         }
         break;
@@ -2969,9 +2971,26 @@ void QComboBox::changeEvent(QEvent *e)
     Q_D(QComboBox);
     switch (e->type()) {
     case QEvent::StyleChange:
-        if (d->container)
+        if (d->container) {
+// If on Windows, force recreation of ComboBox container, since
+// windows11 style depends on WA_TranslucentBackground
+#ifdef Q_OS_WIN
+            auto delegate = itemDelegate();
+            d->container->deleteLater();
+            // d->container needs to be set explicitly to nullptr
+            // since QComboBoxPrivate::viewContainer() only
+            // creates a new QComboBoxPrivateContainer when
+            // d->container has the value of nullptr
+            d->container = nullptr;
+            d->container = d->viewContainer();
+            delegate->setParent(d->container);
+            setItemDelegate(delegate);
+
+#endif
             d->container->updateStyleSettings();
+        }
         d->updateDelegate();
+
 #ifdef Q_OS_MAC
     case QEvent::MacSizeChange:
 #endif

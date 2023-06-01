@@ -8,6 +8,8 @@
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <qglobal.h>
+#include <QGraphicsDropShadowEffect>
+
 #include "qdrawutil.h"
 
 QT_BEGIN_NAMESPACE
@@ -80,6 +82,30 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
     switch (control) {
+#if QT_CONFIG(combobox)
+    case CC_ComboBox:
+        if (const QStyleOptionComboBox *sb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
+            QBrush fillColor = state & State_MouseOver && !(state & State_HasFocus) ? QBrush(subtleHighlightColor) : option->palette.brush(QPalette::Base);
+            QRectF rect = option->rect.adjusted(2,2,-2,-2);
+            painter->setBrush(fillColor);
+            painter->setPen(frameColorLight);
+            painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+            if (sub & SC_ComboBoxArrow) {
+                QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget).adjusted(0, 0, 0, 1);
+                painter->setFont(assetFont);
+                painter->setPen(sb->palette.text().color());
+                painter->drawText(rect,"\uE019", Qt::AlignVCenter | Qt::AlignHCenter);
+            }
+            if (sb->editable) {
+                QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0);
+                painter->setPen(QPen(lineColor));
+                painter->drawLine(rect.bottomLeft() + QPoint(2,1), rect.bottomRight() + QPoint(-2,1));
+                if (state & State_HasFocus)
+                    painter->drawLine(rect.bottomLeft() + QPoint(3,2), rect.bottomRight() + QPoint(-3,2));
+            }
+        }
+        break;
+#endif // QT_CONFIG(combobox)
     case QStyle::CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
             QRectF rect = scrollbar->rect;
@@ -186,6 +212,12 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (frame->frameShape == QFrame::NoFrame)
                 break;
             QRect rect = option->rect.adjusted(2,2,-2,-2);
+            if (widget && widget->inherits("QComboBoxPrivateContainer")) {
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(menuPanelFill);
+                painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+
+            }
             painter->setBrush(option->palette.base());
             painter->setPen(QPen(frameColorLight));
             painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
@@ -353,7 +385,7 @@ int QWindows11Style::styleHint(StyleHint hint, const QStyleOption *opt,
 void QWindows11Style::polish(QWidget* widget)
 {
     QWindowsVistaStyle::polish(widget);
-    if (widget->inherits("QScrollBar")) {
+    if (widget->inherits("QScrollBar") || widget->inherits("QComboBoxPrivateContainer")) {
         bool wasCreated = widget->testAttribute(Qt::WA_WState_Created);
         widget->setAttribute(Qt::WA_OpaquePaintEvent,false);
         widget->setAttribute(Qt::WA_TranslucentBackground);
@@ -363,6 +395,21 @@ void QWindows11Style::polish(QWidget* widget)
         auto pal = widget->palette();
         pal.setColor(widget->backgroundRole(), Qt::transparent);
         widget->setPalette(pal);
+    }
+    if (widget->inherits("QComboBoxPrivateContainer")) {
+        QGraphicsDropShadowEffect* dropshadow = new QGraphicsDropShadowEffect(widget);
+        dropshadow->setBlurRadius(3);
+        dropshadow->setXOffset(3);
+        dropshadow->setYOffset(3);
+        widget->setGraphicsEffect(dropshadow);
+    }
+    if (widget->inherits("QComboBox")) {
+
+        QComboBox* cb = qobject_cast<QComboBox*>(widget);
+        if (cb->isEditable()) {
+            QLineEdit *le = cb->lineEdit();
+            le->setFrame(false);
+        }
     }
     if (widget->inherits("QGraphicsView") && !widget->inherits("QTextEdit")) {
         QPalette pal = widget->palette();
