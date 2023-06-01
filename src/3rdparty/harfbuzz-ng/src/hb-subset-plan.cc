@@ -381,18 +381,10 @@ _collect_layout_variation_indices (hb_subset_plan_t* plan)
 
   const OT::VariationStore *var_store = nullptr;
   hb_set_t varidx_set;
-  hb_font_t *font = nullptr;
   float *store_cache = nullptr;
   bool collect_delta = plan->pinned_at_default ? false : true;
   if (collect_delta)
   {
-    if (unlikely (!plan->check_success (font = _get_hb_font_with_variations (plan)))) {
-      hb_font_destroy (font);
-      gdef.destroy ();
-      gpos.destroy ();
-      return;
-    }
-
     if (gdef->has_var_store ())
     {
       var_store = &(gdef->get_var_store ());
@@ -402,7 +394,8 @@ _collect_layout_variation_indices (hb_subset_plan_t* plan)
 
   OT::hb_collect_variation_indices_context_t c (&varidx_set,
                                                 &plan->layout_variation_idx_delta_map,
-                                                font, var_store,
+                                                plan->normalized_coords ? &(plan->normalized_coords) : nullptr,
+                                                var_store,
                                                 &plan->_glyphset_gsub,
                                                 &plan->gpos_lookups,
                                                 store_cache);
@@ -411,7 +404,6 @@ _collect_layout_variation_indices (hb_subset_plan_t* plan)
   if (hb_ot_layout_has_positioning (plan->source))
     gpos->collect_variation_indices (&c);
 
-  hb_font_destroy (font);
   var_store->destroy_cache (store_cache);
 
   gdef->remap_layout_variation_indices (&varidx_set, &plan->layout_variation_idx_delta_map);
@@ -616,12 +608,13 @@ _glyf_add_gid_and_children (const OT::glyf_accelerator_t &glyf,
 			    int operation_count,
 			    unsigned depth = 0)
 {
-  if (unlikely (depth++ > HB_MAX_NESTING_LEVEL)) return operation_count;
-  if (unlikely (--operation_count < 0)) return operation_count;
   /* Check if is already visited */
   if (gids_to_retain->has (gid)) return operation_count;
 
   gids_to_retain->add (gid);
+
+  if (unlikely (depth++ > HB_MAX_NESTING_LEVEL)) return operation_count;
+  if (unlikely (--operation_count < 0)) return operation_count;
 
   for (auto &item : glyf.glyph_for_gid (gid).get_composite_iterator ())
     operation_count =
@@ -775,10 +768,11 @@ _create_glyph_map_gsub (const hb_set_t* glyph_set_gsub,
   ;
 }
 
-static void
+static bool
 _create_old_gid_to_new_gid_map (const hb_face_t *face,
 				bool		 retain_gids,
 				const hb_set_t	*all_gids_to_retain,
+                                const hb_map_t  *requested_glyph_map,
 				hb_map_t	*glyph_map, /* OUT */
 				hb_map_t	*reverse_glyph_map, /* OUT */
 				unsigned int	*num_glyphs /* OUT */)
@@ -787,7 +781,54 @@ _create_old_gid_to_new_gid_map (const hb_face_t *face,
   reverse_glyph_map->resize (pop);
   glyph_map->resize (pop);
 
-  if (!retain_gids)
+  if (*requested_glyph_map)
+  {
+    hb_set_t new_gids(requested_glyph_map->values());
+    if (new_gids.get_population() != requested_glyph_map->get_population())
+    {
+      DEBUG_MSG (SUBSET, nullptr, "The provided custom glyph mapping is not unique.");
+      return false;
+    }
+
+    if (retain_gids)
+    {
+      DEBUG_MSG (SUBSET, nullptr, 
+        "HB_SUBSET_FLAGS_RETAIN_GIDS cannot be set if "
+        "a custom glyph mapping has been provided.");
+      return false;
+    }
+  
+    hb_codepoint_t max_glyph = 0;
+    hb_set_t remaining;
+    for (auto old_gid : all_gids_to_retain->iter ())
+    {
+      if (old_gid == 0) {
+        reverse_glyph_map->set(0, 0);
+        continue;
+      }
+
+      hb_codepoint_t* new_gid;
+      if (!requested_glyph_map->has (old_gid, &new_gid))
+      {
+        remaining.add(old_gid);  
+        continue;
+      }
+
+      if (*new_gid > max_glyph)
+        max_glyph = *new_gid;
+      reverse_glyph_map->set (*new_gid, old_gid);
+    }
+
+    // Anything that wasn't mapped by the requested mapping should
+    // be placed after the requested mapping.
+    for (auto old_gid : remaining)
+    {
+      reverse_glyph_map->set(++max_glyph, old_gid);
+    }
+
+    *num_glyphs = max_glyph + 1;
+  }
+  else if (!retain_gids)
   {
     + hb_enumerate (hb_iter (all_gids_to_retain), (hb_codepoint_t) 0)
     | hb_sink (reverse_glyph_map)
@@ -813,6 +854,8 @@ _create_old_gid_to_new_gid_map (const hb_face_t *face,
   | hb_map (&hb_pair_t<hb_codepoint_t, hb_codepoint_t>::reverse)
   | hb_sink (glyph_map)
   ;
+
+  return true;
 }
 
 #ifndef HB_NO_VAR
@@ -1002,7 +1045,6 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
   if (accel)
     accelerator = (hb_subset_accelerator_t*) accel;
 
-
   if (unlikely (in_error ()))
     return;
 
@@ -1016,12 +1058,16 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
   if (unlikely (in_error ()))
     return;
 
-  _create_old_gid_to_new_gid_map (face,
-                                  input->flags & HB_SUBSET_FLAGS_RETAIN_GIDS,
-				  &_glyphset,
-				  glyph_map,
-				  reverse_glyph_map,
-				  &_num_output_glyphs);
+  if (!check_success(_create_old_gid_to_new_gid_map(
+          face,
+          input->flags & HB_SUBSET_FLAGS_RETAIN_GIDS,
+          &_glyphset,
+          &input->glyph_map,
+          glyph_map,
+          reverse_glyph_map,
+          &_num_output_glyphs))) {
+    return;
+  }
 
   _create_glyph_map_gsub (
       &_glyphset_gsub,
@@ -1060,7 +1106,13 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
 				       gid_to_unicodes,
                                        unicodes,
 				       has_seac);
+
+    check_success (inprogress_accelerator);
   }
+
+#define HB_SUBSET_PLAN_MEMBER(Type, Name) check_success (!Name.in_error ());
+#include "hb-subset-plan-member-list.hh"
+#undef HB_SUBSET_PLAN_MEMBER
 }
 
 /**
