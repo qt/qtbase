@@ -37,3 +37,9 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/test_body.js
             ${CMAKE_CURRENT_BINARY_DIR}/test_body.js)
+
+add_custom_command(
+    TARGET tst_qtloader_integration POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/preload.json
+            ${CMAKE_CURRENT_BINARY_DIR}/preload.json)

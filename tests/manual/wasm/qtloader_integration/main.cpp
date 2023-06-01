@@ -49,6 +49,21 @@ std::string logicalDpi()
     return out.str();
 }
 
+std::string preloadedFiles()
+{
+    QStringList files = QDir("/preload").entryList(QDir::Files);
+    std::ostringstream out;
+    out << "[";
+    const char *separator = "";
+    for (const auto &file : files) {
+        out << separator;
+        out << file.toStdString();
+        separator = ",";
+    }
+    out << "]";
+    return out.str();
+}
+
 void crash()
 {
     std::abort();
@@ -145,6 +160,7 @@ EMSCRIPTEN_BINDINGS(qtLoaderIntegrationTest)
 
     emscripten::function("screenInformation", &screenInformation);
     emscripten::function("logicalDpi", &logicalDpi);
+    emscripten::function("preloadedFiles", &preloadedFiles);
     emscripten::function("crash", &crash);
     emscripten::function("exitApp", &exitApp);
     emscripten::function("produceOutput", &produceOutput);
