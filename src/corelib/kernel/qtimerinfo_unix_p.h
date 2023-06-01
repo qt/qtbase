@@ -26,12 +26,17 @@ QT_BEGIN_NAMESPACE
 
 // internal timer info
 struct QTimerInfo {
-    int id;           // - timer identifier
-    Qt::TimerType timerType; // - timer type
-    std::chrono::milliseconds interval; // - timer interval
+    QTimerInfo(int timerId, std::chrono::milliseconds msecs, Qt::TimerType type, QObject *obj)
+        : interval(msecs), id(timerId), timerType(type), obj(obj)
+    {
+    }
+
     std::chrono::steady_clock::time_point timeout; // - when to actually fire
-    QObject *obj;     // - object to receive event
-    QTimerInfo **activateRef; // - ref from activateTimers
+    std::chrono::milliseconds interval = std::chrono::milliseconds{-1}; // - timer interval
+    int id = -1; // - timer identifier
+    Qt::TimerType timerType; // - timer type
+    QObject *obj = nullptr; // - object to receive event
+    QTimerInfo **activateRef = nullptr; // - ref from activateTimers
 };
 
 class Q_CORE_EXPORT QTimerInfoList

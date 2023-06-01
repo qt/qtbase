@@ -285,12 +285,7 @@ void QTimerInfoList::registerTimer(int timerId, qint64 interval, Qt::TimerType t
 void QTimerInfoList::registerTimer(int timerId, milliseconds interval,
                                    Qt::TimerType timerType, QObject *object)
 {
-    QTimerInfo *t = new QTimerInfo;
-    t->id = timerId;
-    t->interval = interval;
-    t->timerType = timerType;
-    t->obj = object;
-    t->activateRef = nullptr;
+    QTimerInfo *t = new QTimerInfo(timerId, interval, timerType, object);
 
     steady_clock::time_point expected = updateCurrentTime() + interval;
 
