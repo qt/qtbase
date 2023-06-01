@@ -12,6 +12,8 @@
 
 #include "../shared/test_number_shared.h"
 
+using namespace Qt::StringLiterals;
+
 class tst_QByteArray : public QObject
 {
     Q_OBJECT
@@ -2181,7 +2183,6 @@ void tst_QByteArray::literals()
 void tst_QByteArray::userDefinedLiterals()
 {
     {
-        using namespace Qt::StringLiterals;
         QByteArray str = "abcd"_ba;
 
         QVERIFY(str.size() == 4);
