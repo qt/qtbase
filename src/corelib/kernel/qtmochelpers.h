@@ -76,10 +76,7 @@ template <uint... Nx> constexpr auto stringData(const char (&...strings)[Nx])
     return result;
 }
 
-#if !defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1000
-// It looks like there's a bug in GCC 9
 #  define QT_MOC_HAS_STRINGDATA       1
-#endif
 
 } // namespace QtMocHelpers
 QT_END_NAMESPACE
