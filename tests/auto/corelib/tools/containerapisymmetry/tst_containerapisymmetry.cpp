@@ -772,9 +772,8 @@ void tst_ContainerApiSymmetry::resize_impl() const
 template <typename Container>
 void tst_ContainerApiSymmetry::assign_impl() const
 {
-#define CHECK(Arr, ComparisonData, Sz_n, Sz_e, Cap_n, Cap_e) \
+#define CHECK(Arr, ComparisonData, Sz_n, Sz_e)               \
     QCOMPARE(Sz_n, Sz_e);                                    \
-    QCOMPARE(Cap_n, Cap_e);                                  \
     for (const auto &e : Arr)                                \
         QCOMPARE(e, ComparisonData)                          \
     /*end*/
@@ -792,56 +791,64 @@ void tst_ContainerApiSymmetry::assign_impl() const
     /* end */
     using V = typename Container::value_type;
     using S = typename Container::size_type;
-    auto tData = V(9);
+    auto tData = V(65);
     {
         // fill version
         auto c = make<Container>(4);
         const S oldCapacity = c.capacity();
         RET_CHECK(c.assign(4, tData));
-        CHECK(c, tData, c.size(), S(4), c.capacity(), oldCapacity);
+        CHECK(c, tData, c.size(), S(4));
+        QCOMPARE_EQ(c.capacity(), oldCapacity);
 
-        c.assign(8, tData);
-        CHECK(c, tData, c.size(), S(8), c.capacity(), std::max(oldCapacity, S(8)));
+        tData = V(66);
+        c.assign(8, tData); // may reallocate
+        CHECK(c, tData, c.size(), S(8));
 
+        const S grownCapacity = c.capacity();
         c.assign(0, tData);
-        CHECK(c, tData, c.size(), S(0), c.capacity(), std::max(oldCapacity, S(8)));
+        CHECK(c, tData, c.size(), S(0));
+        QCOMPARE_EQ(c.capacity(), grownCapacity);
     }
     {
         // range version for non input iterator
         auto c = make<Container>(4);
-        const S oldCapacity = c.capacity();
         auto iter = make<Container>(1);
 
         iter.assign(8, tData);
-        RET_CHECK(c.assign(iter.begin(), iter.end()));
-        CHECK(c, tData, c.size(), S(8), c.capacity(), std::max(oldCapacity, S(8)));
+        RET_CHECK(c.assign(iter.begin(), iter.end())); // may reallocate
+        CHECK(c, tData, c.size(), S(8));
 
+        const S oldCapacity = c.capacity();
         c.assign(iter.begin(), iter.begin());
-        QCOMPARE_EQ(c.size(), S(0));
-        QCOMPARE_EQ(c.capacity(), std::max(oldCapacity, S(8)));
+        CHECK(c, tData, c.size(), S(0));
+        QCOMPARE_EQ(c.capacity(), oldCapacity);
     }
     {
         // range version for input iterator
         auto c = make<Container>(4);
         const S oldCapacity = c.capacity();
 
-        std::stringstream ss("9 9 ");
+        std::stringstream ss;
+        ss << tData << ' ' << tData << ' ';
         RET_CHECK(c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{}));
-        CHECK(c, tData, c.size(), S(2), c.capacity(), oldCapacity);
+        CHECK(c, tData, c.size(), S(2));
+        QCOMPARE_EQ(c.capacity(), oldCapacity);
 
         ss.str("");
         ss.clear();
-        ss << "9 9 9 9 ";
+        tData = V(66);
+        ss << tData << ' ' << tData << ' ' << tData << ' ' << tData << ' ';
         c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{});
-        CHECK(c, tData, c.size(), S(4), c.capacity(), oldCapacity);
+        CHECK(c, tData, c.size(), S(4));
+        QCOMPARE_EQ(c.capacity(), oldCapacity);
 
         ss.str("");
         ss.clear();
-        ss << "9 9 9 9 9 9 9 ";
-        c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{});
-        // We cannot check the capacity here because growth rates differ between implementations.
-        // Pass a constant:
-        CHECK(c, tData, c.size(), S(7), /*c.capacity()*/S(8), S(8));
+        tData = V(67);
+        ss << tData << ' ' << tData << ' ' << tData << ' ' << tData << ' '
+           << tData << ' ' << tData << ' ' << tData << ' ';
+        c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{}); // may reallocate
+        CHECK(c, tData, c.size(), S(7));
     }
     {
         // initializer-list version
@@ -849,7 +856,8 @@ void tst_ContainerApiSymmetry::assign_impl() const
         const S oldCapacity = c.capacity();
         std::initializer_list<V> list = {tData, tData, tData};
         RET_CHECK(c.assign(list));
-        CHECK(c, tData, c.size(), S(3), c.capacity(), oldCapacity);
+        CHECK(c, tData, c.size(), S(3));
+        QCOMPARE_EQ(c.capacity(), oldCapacity);
     }
 
 #undef RET_CHECK
