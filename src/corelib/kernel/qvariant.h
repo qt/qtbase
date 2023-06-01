@@ -450,7 +450,7 @@ public:
     {
         if (value.valueless_by_exception())
             return QVariant();
-        return std::visit([](const auto &arg) { return fromValue(arg); }, value);
+        return std::visit([](const auto &arg) { return QVariant::fromValue(arg); }, value);
     }
 
     template<typename T>
