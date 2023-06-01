@@ -1,0 +1,10 @@
+[
+    {
+        "source": "qtloader.js",
+        "destination": "/preload/qtloader.js"
+    },
+    {
+        "source": "$QTDIR/qtlogo.svg",
+        "destination": "/preload/qtlogo.svg"
+    }
+]

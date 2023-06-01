@@ -439,6 +439,20 @@ export class QtLoaderIntegrationTests
         assert.equal('ExitStatus', exception.name);
     }
 
+    async preloadFiles()
+    {
+        const instance = await qtLoad({
+            arguments: ["--no-gui"],
+            qt: {
+                preload: ['preload.json'],
+                qtdir: '.',
+            }
+        });
+        const preloadedFiles = instance.preloadedFiles();
+        // Verify that preloaded file list matches files specified in preload.json
+        assert.equal("[qtloader.js,qtlogo.svg]", preloadedFiles);
+    }
+
     #callTestInstanceApi(instance, apiName)
     {
         return eval(instance[apiName]());
