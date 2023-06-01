@@ -148,12 +148,7 @@ void QCtfLibImpl::writeCtfPacket(QCtfLibImpl::Channel &ch)
         /*  Each packet contains header and context, which are defined in the metadata.txt */
         QByteArray packet;
         packet << s_CtfHeaderMagic;
-        /* Uuid is array of bytes hence implicitely big endian.  */
-        packet << qToBigEndian(s_TraceUuid.data1);
-        packet << qToBigEndian(s_TraceUuid.data2);
-        packet << qToBigEndian(s_TraceUuid.data3);
-        for (int i = 0; i < 8; i++)
-            packet << s_TraceUuid.data4[i];
+        packet.append(QByteArrayView(s_TraceUuid.toBytes()));
 
         packet << quint32(0);
         packet << ch.minTimestamp;
