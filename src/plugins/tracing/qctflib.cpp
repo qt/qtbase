@@ -31,10 +31,10 @@ static const char traceMetadataTemplate[] =
 static const size_t traceMetadataSize = sizeof(traceMetadataTemplate);
 
 template <typename T>
-QByteArray &operator<<(QByteArray &arr, T val)
+static QByteArray &operator<<(QByteArray &arr, T val)
 {
     static_assert(std::is_arithmetic_v<T>);
-    arr.append((char *)&val, sizeof(val));
+    arr.append(reinterpret_cast<char *>(&val), sizeof(val));
     return arr;
 }
 
