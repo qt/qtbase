@@ -554,9 +554,7 @@ QPlatformServiceColorPicker *QGenericUnixServices::colorPicker(QWindow *parent)
 
 QString QGenericUnixServices::portalWindowIdentifier(QWindow *window)
 {
-    if (QGuiApplication::platformName() == QLatin1String("xcb"))
-        return "x11:"_L1 + QString::number(window->winId(), 16);
-
+    Q_UNUSED(window);
     return QString();
 }
 
