@@ -1001,13 +1001,21 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
     endif()
 
     # Update all relevant flags in the calling scope
-    foreach(config ${configs})
-        foreach(lang ${enabled_languages})
+    foreach(lang ${enabled_languages})
+        set(flag_var_name "CMAKE_${lang}_FLAGS")
+        set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
+
+        foreach(config ${configs})
             set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
             set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
+    endforeach()
 
-        foreach(t ${target_link_types})
+    foreach(t ${target_link_types})
+        set(flag_var_name "CMAKE_${t}_LINKER_FLAGS")
+        set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
+
+        foreach(config ${configs})
             set(flag_var_name "CMAKE_${t}_LINKER_FLAGS_${config}")
             set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
