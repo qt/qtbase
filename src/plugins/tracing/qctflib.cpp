@@ -55,7 +55,7 @@ void QCtfLibImpl::cleanup()
 
 QCtfLibImpl::QCtfLibImpl()
 {
-    QString location = QString::fromUtf8(qgetenv("QTRACE_LOCATION"));
+    QString location = qEnvironmentVariable("QTRACE_LOCATION");
     if (location.isEmpty()) {
         qCInfo (lcDebugTrace) << "QTRACE_LOCATION not set";
         return;
