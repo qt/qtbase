@@ -131,11 +131,7 @@ QCtfLibImpl::QCtfLibImpl()
     metadata.replace(QStringLiteral("$CLOCK_NAME"), m_timer.isMonotonic() ? QStringLiteral("monotonic") : QStringLiteral("system"));
     metadata.replace(QStringLiteral("$CLOCK_TYPE"), m_timer.isMonotonic() ? QStringLiteral("Monotonic clock") : QStringLiteral("System clock"));
     metadata.replace(QStringLiteral("$CLOCK_OFFSET"), QString::number(datetime.toMSecsSinceEpoch() * 1000000));
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-    metadata.replace(QStringLiteral("$ENDIANNESS"), QStringLiteral("be"));
-#else
-    metadata.replace(QStringLiteral("$ENDIANNESS"), QStringLiteral("le"));
-#endif
+    metadata.replace(QStringLiteral("$ENDIANNESS"), QSysInfo::ByteOrder == QSysInfo::BigEndian ? u"be"_s : u"le"_s);
     writeMetadata(metadata, true);
 
     m_timer.start();
