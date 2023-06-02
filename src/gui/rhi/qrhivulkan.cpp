@@ -714,13 +714,6 @@ bool QRhiVulkan::create(QRhi::Flags flags)
                 inst->getInstanceProcAddr("vkGetPhysicalDeviceSurfaceFormatsKHR"));
     vkGetPhysicalDeviceSurfacePresentModesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfacePresentModesKHR>(
                 inst->getInstanceProcAddr("vkGetPhysicalDeviceSurfacePresentModesKHR"));
-    if (!vkGetPhysicalDeviceSurfaceCapabilitiesKHR
-            || !vkGetPhysicalDeviceSurfaceFormatsKHR
-            || !vkGetPhysicalDeviceSurfacePresentModesKHR)
-    {
-        qWarning("Physical device surface queries not available");
-        return false;
-    }
 
     df = inst->deviceFunctions(dev);
 
@@ -4283,6 +4276,14 @@ void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhi
 
 QRhiSwapChain *QRhiVulkan::createSwapChain()
 {
+    if (!vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+        || !vkGetPhysicalDeviceSurfaceFormatsKHR
+        || !vkGetPhysicalDeviceSurfacePresentModesKHR)
+    {
+        qWarning("Physical device surface queries not available");
+        return nullptr;
+    }
+
     return new QVkSwapChain(this);
 }
 
