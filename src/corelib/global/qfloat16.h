@@ -5,6 +5,7 @@
 #ifndef QFLOAT16_H
 #define QFLOAT16_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qmath.h>
@@ -167,41 +168,32 @@ private:
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_FLOAT_COMPARE
 
-    friend inline bool operator>(qfloat16 a, qfloat16 b)  noexcept { return static_cast<NearestFloat>(a) >  static_cast<NearestFloat>(b); }
-    friend inline bool operator<(qfloat16 a, qfloat16 b)  noexcept { return static_cast<NearestFloat>(a) <  static_cast<NearestFloat>(b); }
-    friend inline bool operator>=(qfloat16 a, qfloat16 b) noexcept { return static_cast<NearestFloat>(a) >= static_cast<NearestFloat>(b); }
-    friend inline bool operator<=(qfloat16 a, qfloat16 b) noexcept { return static_cast<NearestFloat>(a) <= static_cast<NearestFloat>(b); }
-    friend inline bool operator==(qfloat16 a, qfloat16 b) noexcept { return static_cast<NearestFloat>(a) == static_cast<NearestFloat>(b); }
-    friend inline bool operator!=(qfloat16 a, qfloat16 b) noexcept { return static_cast<NearestFloat>(a) != static_cast<NearestFloat>(b); }
+    friend bool comparesEqual(const qfloat16 &lhs, const qfloat16 &rhs) noexcept
+    { return static_cast<NearestFloat>(lhs) == static_cast<NearestFloat>(rhs); }
+    friend Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, const qfloat16 &rhs) noexcept
+    { return Qt::compareThreeWay(static_cast<NearestFloat>(lhs), static_cast<NearestFloat>(rhs)); }
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16)
 
-#define QF16_MAKE_BOOL_OP_FP(FP, OP) \
-    friend inline bool operator OP(qfloat16 lhs, FP rhs) noexcept { return static_cast<FP>(lhs) OP rhs; } \
-    friend inline bool operator OP(FP lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<FP>(rhs); }
-#define QF16_MAKE_BOOL_OP(FP) \
-    QF16_MAKE_BOOL_OP_FP(FP, <) \
-    QF16_MAKE_BOOL_OP_FP(FP, >) \
-    QF16_MAKE_BOOL_OP_FP(FP, >=) \
-    QF16_MAKE_BOOL_OP_FP(FP, <=) \
-    QF16_MAKE_BOOL_OP_FP(FP, ==) \
-    QF16_MAKE_BOOL_OP_FP(FP, !=)
+#define QF16_MAKE_ORDER_OP_FP(FP) \
+    friend bool comparesEqual(const qfloat16 &lhs, FP rhs) noexcept \
+    { return static_cast<FP>(lhs) == rhs; } \
+    friend Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, FP rhs) noexcept \
+    { return Qt::compareThreeWay(static_cast<FP>(lhs), rhs); } \
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, FP)
 
-    QF16_MAKE_BOOL_OP(long double)
-    QF16_MAKE_BOOL_OP(double)
-    QF16_MAKE_BOOL_OP(float)
-#undef QF16_MAKE_BOOL_OP
-#undef QF16_MAKE_BOOL_OP_FP
+    QF16_MAKE_ORDER_OP_FP(long double)
+    QF16_MAKE_ORDER_OP_FP(double)
+    QF16_MAKE_ORDER_OP_FP(float)
+#if QFLOAT16_IS_NATIVE
+    QF16_MAKE_ORDER_OP_FP(qfloat16::NativeType)
+#endif
+#undef QF16_MAKE_ORDER_OP_FP
 
-#define QF16_MAKE_BOOL_OP_INT(OP) \
-    friend inline bool operator OP(qfloat16 a, int b) noexcept { return static_cast<NearestFloat>(a) OP static_cast<NearestFloat>(b); } \
-    friend inline bool operator OP(int a, qfloat16 b) noexcept { return static_cast<NearestFloat>(a) OP static_cast<NearestFloat>(b); }
-
-    QF16_MAKE_BOOL_OP_INT(>)
-    QF16_MAKE_BOOL_OP_INT(<)
-    QF16_MAKE_BOOL_OP_INT(>=)
-    QF16_MAKE_BOOL_OP_INT(<=)
-    QF16_MAKE_BOOL_OP_INT(==)
-    QF16_MAKE_BOOL_OP_INT(!=)
-#undef QF16_MAKE_BOOL_OP_INT
+    friend bool comparesEqual(const qfloat16 &lhs, int rhs) noexcept
+    { return static_cast<NearestFloat>(lhs) == static_cast<NearestFloat>(rhs); }
+    friend Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, int rhs) noexcept
+    { return Qt::compareThreeWay(static_cast<NearestFloat>(lhs), static_cast<NearestFloat>(rhs)); }
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, int)
 
 QT_WARNING_POP
 

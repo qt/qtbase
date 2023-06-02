@@ -7,6 +7,8 @@
 #include <QMetaType>
 #include <QTextStream>
 
+#include <private/qcomparisontesthelper_p.h>
+
 #include <math.h>
 
 //#define DO_FULL_TEST
@@ -18,6 +20,9 @@ class tst_qfloat16: public QObject
     Q_OBJECT
 
 private slots:
+    void compareCompiles();
+    void ordering_data();
+    void ordering();
     void fuzzyCompare_data();
     void fuzzyCompare();
     void fuzzyIsNull_data();
@@ -46,6 +51,106 @@ private slots:
     void dataStream();
     void textStream();
 };
+
+void tst_qfloat16::compareCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, float>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, double>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, long double>();
+#if QFLOAT16_IS_NATIVE
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, qfloat16::NativeType>();
+#endif
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, int>();
+}
+
+void tst_qfloat16::ordering_data()
+{
+    QTest::addColumn<float>("left");
+    QTest::addColumn<float>("right");
+
+    auto row = [](float left, float right) {
+        QTest::addRow("%f_vs_%f", left, right) << left << right;
+    };
+
+    row(0.0f, 0.0f);
+    row(0.000001f, 0.0f);
+    row(0.0f, 0.000001f);
+    row(-1.000001f, 1.000001f);
+    const float nan = std::numeric_limits<float>::quiet_NaN();
+    const float inf = std::numeric_limits<float>::infinity();
+    row(nan, nan);
+    row(nan, inf);
+    row(inf, nan);
+    row(-inf, nan);
+    row(nan, -inf);
+    row(-inf, inf);
+    row(inf, -inf);
+    row(-inf, 0.0f);
+    row(0.0f, inf);
+    row(0.0f, nan);
+    row(nan, 0.0f);
+    row(2.0f, 314.159f);
+    row(-314.159f, 2.0f);
+    row(-2.0f, 314.159f);
+    row(nan, 314.159f);
+    row(-314.159f, inf);
+    row(-inf, 314.159f);
+    row(2.0f, -inf);
+    row(-2.0f, nan);
+    row(-inf, -2.0f);
+    // testing with values outside qfloat16 range
+    row(0.0f, 13e5f);
+    // generateRow(inf, 13e5f); // fails qfloat16 vs qfloat16 and qfloat16 vs int (QTBUG-118193)
+    row(0.0f, -13e5f);
+    // generateRow(-inf, -13e5f); // fails qfloat16 vs qfloat16 and qfloat16 vs int (QTBUG-118193)
+}
+
+void tst_qfloat16::ordering()
+{
+    QFETCH(float, left);
+    QFETCH(float, right);
+
+    const auto expectedOrder = Qt::compareThreeWay(left, right);
+    const auto lhs = qfloat16(left);
+
+#define POSTCHECK(msg) \
+    if (QTest::currentTestFailed()) { qDebug(msg); return; }
+
+#define CHECK_FP(RHS) \
+    do { \
+        QTestPrivate::testAllComparisonOperators(lhs, static_cast<RHS>(right), expectedOrder); \
+        POSTCHECK("qfloat16 vs " #RHS " comparison failed") \
+    } while (false) \
+    /* END */
+
+    CHECK_FP(qfloat16);
+    CHECK_FP(float);
+    CHECK_FP(double);
+    CHECK_FP(long double);
+
+#undef CHECK_FP
+
+#define CHECK_INT(RHS) \
+    do { \
+        const auto rhs = static_cast<RHS>(right); \
+        const auto expectedRes = Qt::compareThreeWay(left, rhs); \
+        QTestPrivate::testAllComparisonOperators(lhs, rhs, expectedRes); \
+        POSTCHECK("qfloat16 vs " #RHS " comparison failed") \
+    } while (false) \
+    /* END */
+
+    if (qIsFinite(right)) {
+        CHECK_INT(int);
+        // These fail because of QTBUG-117637. Will be fixed in a follow-up patch.
+        // CHECK_INT(qint8);
+        // CHECK_INT(qint16);
+        // CHECK_INT(qint64);
+    }
+
+#undef CHECK_INT
+#undef POSTCHECK
+}
 
 void tst_qfloat16::fuzzyCompare_data()
 {
