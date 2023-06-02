@@ -18,9 +18,7 @@ find_package_handle_standard_args(PPS DEFAULT_MSG PPS_INCLUDE_DIR PPS_LIBRARY)
 mark_as_advanced(PPS_INCLUDE_DIR PPS_LIBRARY)
 
 if(PPS_FOUND)
-    add_library(__PPS INTERFACE IMPORTED)
-    target_link_libraries(__PPS INTERFACE "${PPS_LIBRARY}")
-    target_include_directories(__PPS INTERFACE "${PPS_INCLUDE_DIR}")
-
-    add_library(PPS::PPS ALIAS __PPS)
+    add_library(PPS::PPS INTERFACE IMPORTED)
+    target_link_libraries(PPS::PPS INTERFACE "${PPS_LIBRARY}")
+    target_include_directories(PPS::PPS INTERFACE "${PPS_INCLUDE_DIR}")
 endif()
