@@ -3346,11 +3346,15 @@ QString &QString::append(QChar ch)
     Replaces the contents of this string with a copy of the elements in the
     iterator range [\a first, \a last) and returns a reference to this string.
 
-    The size of this string will be equal to the number of elements in the
-    range [\a first, \a last).
+    The size of this string will be equal to the decoded length of the elements
+    in the range [\a first, \a last), which need not be the same as the length of
+    the range itself, because this function transparently recodes the input
+    character set to UTF-16.
 
     This function will only allocate memory if the number of elements in the
-    range exceeds the capacity of this string or this string is shared.
+    range, or, for non-UTF-16-encoded input, the maximum possible size of the
+    resulting string, exceeds the capacity of this string, or if this string is
+    shared.
 
     \note This function overload only participates in overload resolution if
     \c InputIterator meets the requirements of a
@@ -3361,6 +3365,7 @@ QString &QString::append(QChar ch)
     \li QLatin1Char
     \li \c char16_t
     \li (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t
+    \li \c char32_t
     \endlist
 
     \note The behavior is undefined if either argument is an iterator into *this or
@@ -3379,6 +3384,26 @@ QString &QString::assign(QAnyStringView s)
         });
     } else {
         *this = s.toString();
+    }
+    return *this;
+}
+
+QString &QString::assign_helper(const char32_t *data, qsizetype len)
+{
+    // worst case: each char32_t requires a surrogate pair, so
+    const auto requiredCapacity = len * 2;
+    if (requiredCapacity <= capacity() && isDetached()) {
+        const auto offset = d.freeSpaceAtBegin();
+        if (offset)
+            d.setBegin(d.begin() - offset);
+        auto begin = reinterpret_cast<QChar *>(d.begin());
+        auto ba = QByteArrayView(reinterpret_cast<const std::byte*>(data), len * sizeof(char32_t));
+        QStringConverter::State state;
+        const auto end = QUtf32::convertToUnicode(begin, ba, &state, DetectEndianness);
+        d.size = end - begin;
+        d.data()[d.size] = u'\0';
+    } else {
+        *this = QString::fromUcs4(data, len);
     }
     return *this;
 }
