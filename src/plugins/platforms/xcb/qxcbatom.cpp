@@ -204,6 +204,8 @@ static const char *xcb_atomnames = {
     "EDID_DATA\0"
     "XFree86_DDC_EDID1_RAWDATA\0"
     "_ICC_PROFILE\0"
+    "_KDE_NET_WM_APPMENU_SERVICE_NAME\0"
+    "_KDE_NET_WM_APPMENU_OBJECT_PATH\0"
     // \0\0 terminates loop.
 };
 

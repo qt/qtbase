@@ -93,10 +93,12 @@ static bool runningUnderDebugger()
 #endif
 }
 
-class QXcbUnixServices : public QGenericUnixServices
+class QXcbUnixServices : public QGenericUnixServices, public QXcbObject
 {
 public:
     QString portalWindowIdentifier(QWindow *window) override;
+    void registerDBusMenuForWindow(QWindow *window, const QString &service, const QString &path) override;
+    void unregisterDBusMenuForWindow(QWindow *window) override;
 };
 
 
@@ -173,6 +175,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
         m_connection = nullptr;
         return;
     }
+    m_services->setConnection(m_connection);
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
 
@@ -599,6 +602,32 @@ void QXcbIntegration::setApplicationBadge(qint64 number)
 QString QXcbUnixServices::portalWindowIdentifier(QWindow *window)
 {
     return "x11:"_L1 + QString::number(window->winId(), 16);
+}
+
+void QXcbUnixServices::registerDBusMenuForWindow(QWindow *window, const QString &service, const QString &path)
+{
+    const QByteArray serviceValue = service.toLatin1();
+    const QByteArray pathValue = path.toLatin1();
+
+    xcb_change_property(xcb_connection(),
+                        XCB_PROP_MODE_REPLACE, window->winId(),
+                        atom(QXcbAtom::Atom_KDE_NET_WM_APPMENU_SERVICE_NAME),
+                        XCB_ATOM_STRING, 8,
+                        serviceValue.length(),
+                        serviceValue.constData());
+
+    xcb_change_property(xcb_connection(),
+                        XCB_PROP_MODE_REPLACE, window->winId(),
+                        atom(QXcbAtom::Atom_KDE_NET_WM_APPMENU_OBJECT_PATH),
+                        XCB_ATOM_STRING, 8,
+                        pathValue.length(),
+                        pathValue.constData());
+}
+
+void QXcbUnixServices::unregisterDBusMenuForWindow(QWindow *window)
+{
+    xcb_delete_property(xcb_connection(), window->winId(), atom(QXcbAtom::Atom_KDE_NET_WM_APPMENU_SERVICE_NAME));
+    xcb_delete_property(xcb_connection(), window->winId(), atom(QXcbAtom::Atom_KDE_NET_WM_APPMENU_OBJECT_PATH));
 }
 
 QT_END_NAMESPACE

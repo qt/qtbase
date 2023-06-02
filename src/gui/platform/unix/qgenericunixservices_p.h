@@ -39,6 +39,9 @@ public:
     void setApplicationBadge(qint64 number);
     virtual QString portalWindowIdentifier(QWindow *window);
 
+    virtual void registerDBusMenuForWindow(QWindow *window, const QString &service, const QString &path);
+    virtual void unregisterDBusMenuForWindow(QWindow *window);
+
 private:
     QString m_webBrowser;
     QString m_documentLauncher;

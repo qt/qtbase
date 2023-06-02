@@ -211,6 +211,10 @@ public:
 
         Atom_ICC_PROFILE,
 
+        // AppMenu
+        Atom_KDE_NET_WM_APPMENU_SERVICE_NAME,
+        Atom_KDE_NET_WM_APPMENU_OBJECT_PATH,
+
         NAtoms
     };
 

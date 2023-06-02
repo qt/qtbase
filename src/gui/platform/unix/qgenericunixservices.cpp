@@ -577,6 +577,20 @@ QString QGenericUnixServices::portalWindowIdentifier(QWindow *window)
     return QString();
 }
 
+
+void QGenericUnixServices::registerDBusMenuForWindow(QWindow *window, const QString &service, const QString &path)
+{
+    Q_UNUSED(window);
+    Q_UNUSED(service);
+    Q_UNUSED(path);
+}
+
+void QGenericUnixServices::unregisterDBusMenuForWindow(QWindow *window)
+{
+    Q_UNUSED(window);
+}
+
+
 bool QGenericUnixServices::hasCapability(Capability capability) const
 {
     switch (capability) {

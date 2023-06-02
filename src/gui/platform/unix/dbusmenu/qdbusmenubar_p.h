@@ -42,7 +42,7 @@ private:
     QDBusPlatformMenu *m_menu;
     QDBusMenuAdaptor *m_menuAdaptor;
     QHash<quintptr, QDBusPlatformMenuItem *> m_menuItems;
-    uint m_windowId;
+    QPointer<QWindow> m_window;
     QString m_objectPath;
 
     QDBusPlatformMenuItem *menuItemForMenu(QPlatformMenu *menu);
