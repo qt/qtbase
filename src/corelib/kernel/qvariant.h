@@ -563,6 +563,10 @@ public:
     {
         if constexpr (std::is_null_pointer_v<T>)
             return QVariant(QMetaType::fromType<std::nullptr_t>());
+        else if constexpr (std::is_same_v<T, QVariant>)
+            return value;
+        else if constexpr (std::is_same_v<T, std::monostate>)
+            return QVariant();
         return QVariant(QMetaType::fromType<T>(), std::addressof(value));
     }
 
@@ -692,18 +696,6 @@ public:
     inline DataPtr &data_ptr() { return d; }
     inline const DataPtr &data_ptr() const { return d; }
 };
-
-template<>
-inline QVariant QVariant::fromValue(const QVariant &value)
-{
-    return value;
-}
-
-template<>
-inline QVariant QVariant::fromValue(const std::monostate &) noexcept
-{
-    return QVariant();
-}
 
 inline bool QVariant::isValid() const
 {
