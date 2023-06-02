@@ -481,6 +481,12 @@ function(qt_auto_detect_integrity)
     endif()
 endfunction()
 
+# Save the build type before project() might set one.
+# This allows us to determine if the user has set an explicit build type that we should use.
+function(qt_auto_detect_cmake_build_type)
+    set(__qt_auto_detect_cmake_build_type_before_project_call "${CMAKE_BUILD_TYPE}" PARENT_SCOPE)
+endfunction()
+
 # Let CMake load our custom platform modules.
 # CMake-provided platform modules take precedence.
 if(NOT QT_AVOID_CUSTOM_PLATFORM_MODULES)
@@ -500,3 +506,4 @@ qt_auto_detect_wasm()
 qt_auto_detect_win32_arm()
 qt_auto_detect_linux_x86()
 qt_auto_detect_integrity()
+qt_auto_detect_cmake_build_type()
