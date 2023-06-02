@@ -25,7 +25,6 @@
 #include <qset.h>
 #include <qthreadstorage.h>
 #include <qthread.h>
-#include <qmutex.h>
 #include <qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
