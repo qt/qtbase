@@ -24,6 +24,7 @@
 
 #include <string>
 #include <iterator>
+#include <QtCore/q20memory.h>
 
 #include <stdarg.h>
 
@@ -120,6 +121,33 @@ class Q_CORE_EXPORT QString
     typedef QTypedArrayData<char16_t> Data;
 
     friend class ::tst_QString;
+
+    template <typename Iterator>
+    static constexpr bool is_contiguous_iterator_v =
+        // Can't use contiguous_iterator_tag here, as STL impls can't agree on feature macro.
+        // To avoid differences in C++20 and C++17 builds, treat only pointers as contiguous
+        // for now:
+        // std::contiguous_iterator<Iterator>;
+        std::is_pointer_v<Iterator>;
+
+    template <typename Char>
+    using is_compatible_char_helper = std::disjunction<
+            QtPrivate::IsCompatibleCharType<Char>,
+            std::is_same<Char, QLatin1Char> // special case
+        >;
+
+    template <typename Iterator>
+    static constexpr bool is_compatible_iterator_v = std::conjunction_v<
+            std::is_convertible<
+                typename std::iterator_traits<Iterator>::iterator_category,
+                std::input_iterator_tag
+            >,
+            is_compatible_char_helper<typename std::iterator_traits<Iterator>::value_type>
+        >;
+
+    template <typename Iterator>
+    using if_compatible_iterator = std::enable_if_t<is_compatible_iterator_v<Iterator>, bool>;
+
 public:
     typedef QStringPrivate DataPointer;
 
@@ -385,6 +413,26 @@ public:
         Q_ASSERT(n >= 0);
         return fill(c, n);
     }
+    template <typename InputIterator, if_compatible_iterator<InputIterator> = true>
+    QString &assign(InputIterator first, InputIterator last)
+    {
+        using V = typename std::iterator_traits<InputIterator>::value_type;
+        constexpr bool IsL1C = std::is_same_v<std::remove_cv_t<V>, QLatin1Char>;
+
+        if constexpr (is_contiguous_iterator_v<InputIterator>) {
+            const auto p = q20::to_address(first);
+            const auto len = qsizetype(last - first);
+            if constexpr (IsL1C)
+                return assign(QLatin1StringView(reinterpret_cast<const char*>(p), len));
+            else
+                return assign(QAnyStringView(p, len));
+        } else { // non-contiguous iterator, need to feed data piecemeal
+            d.assign(first, last, [](QChar ch) -> char16_t { return ch.unicode(); });
+            d.data()[d.size] = u'\0';
+            return *this;
+        }
+    }
+
     inline QString &operator+=(QChar c) { return append(c); }
 
     inline QString &operator+=(const QString &s) { return append(s); }

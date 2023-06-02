@@ -27,9 +27,11 @@
 #include <qhash.h>
 #include <private/qtools_p.h>
 
+#include <forward_list>
 #include <string>
 #include <algorithm>
 #include <limits>
+#include <sstream>
 
 #include "../shared/test_number_shared.h"
 #include "../../../../shared/localechange.h"
@@ -3424,11 +3426,52 @@ void tst_QString::assign()
         QCOMPARE(str.assign(3, u'x'), u"xxx");
         QCOMPARE(str.size(), 3);
     }
+    // QString &assign(InputIterator, InputIterator)
+    {
+        // Forward iterator versions
+        QString str;
+        const QString tstr = QString::fromUtf8(u8"(ノಠ益ಠ)\0ノ彡┻━┻");
+        QCOMPARE(str.assign(tstr.begin(), tstr.end()), u"(ノಠ益ಠ)\0ノ彡┻━┻");
+        QCOMPARE(str.size(), 6);
+
+        const char16_t c16[] = u"٩(⁎❛ᴗ❛⁎)۶ 🤷";
+        str.assign(std::begin(c16), std::end(c16) - 1);
+        QCOMPARE(str, c16);
+
+        std::u16string c16str(c16);
+        str.assign(c16str.begin(), c16str.end());
+        QCOMPARE(str, c16);
+
+        QVarLengthArray<QLatin1Char, 5> l1ch = {'F'_L1, 'G'_L1, 'H'_L1, 'I'_L1, 'J'_L1};
+        str.assign(l1ch.begin(), l1ch.end());
+        QCOMPARE(str, u"FGHIJ");
+        std::forward_list<QChar> qch = {u'G', u'H', u'I', u'J', u'K'};
+        str.assign(qch.begin(), qch.end());
+        QCOMPARE(str, u"GHIJK");
+        const QList<char16_t> qch16 = {u'X', u'H', u'I', u'J', u'K'}; // QList<T>::iterator need not be T*
+        str.assign(qch16.begin(), qch16.end());
+        QCOMPARE(str, u"XHIJK");
+#if defined(Q_OS_WIN)
+        QVarLengthArray<wchar_t> wch = {L'A', L'B', L'C', L'D', L'E'};
+        str.assign(wch.begin(), wch.end());
+        QCOMPARE(str, u"ABCDE");
+#endif
+        // Input iterator versions
+        std::stringstream ss("50 51 52 53 54");
+        str.assign(std::istream_iterator<ushort>{ss}, std::istream_iterator<ushort>{});
+        QCOMPARE(str, u"23456");
+    }
     // Test chaining
     {
         QString str;
+        QString tstr = u"TEST DATA"_s;
+        str.assign(tstr.begin(), tstr.end()).assign({"Hello World!"}).assign(5, u'T');
+        QCOMPARE(str, u"TTTTT");
+        QCOMPARE(str.size(), 5);
         QCOMPARE(str.assign(300, u'T').assign({"[̲̅$̲̅(̲̅5̲̅)̲̅$̲̅]"}), u"[̲̅$̲̅(̲̅5̲̅)̲̅$̲̅]");
         QCOMPARE(str.size(), 19);
+        QCOMPARE(str.assign(10, u'c').assign(str.begin(), str.end()), str);
+        QCOMPARE(str.size(), 10);
         QCOMPARE(str.assign("data").assign(QByteArrayView::fromArray(
             {std::byte('T'), std::byte('T'), std::byte('T')})), u"TTT");
         QCOMPARE(str.size(), 3);
@@ -3455,6 +3498,43 @@ void tst_QString::assign_shared()
         QVERIFY(!strCopy.isSharedWith(str));
         QCOMPARE(str, u"DDDD");
         QCOMPARE(strCopy, u"DATA");
+    }
+    {
+        QString str = "DATA"_L1;
+        QVERIFY(str.isDetached());
+        auto copyForwardIt = str;
+        QVERIFY(!str.isDetached());
+        QVERIFY(!copyForwardIt.isDetached());
+        QVERIFY(str.isSharedWith(copyForwardIt));
+        QVERIFY(copyForwardIt.isSharedWith(str));
+
+        QString tstr = u"DDDD"_s;
+        str.assign(tstr.begin(), tstr.end());
+        QVERIFY(str.isDetached());
+        QVERIFY(copyForwardIt.isDetached());
+        QVERIFY(!str.isSharedWith(copyForwardIt));
+        QVERIFY(!copyForwardIt.isSharedWith(str));
+        QCOMPARE(str, u"DDDD");
+        QCOMPARE(copyForwardIt, u"DATA");
+    }
+    {
+        QString str = "DATA"_L1;
+        QVERIFY(str.isDetached());
+        auto copyInputIt = str;
+        QVERIFY(!str.isDetached());
+        QVERIFY(!copyInputIt.isDetached());
+        QVERIFY(str.isSharedWith(copyInputIt));
+        QVERIFY(copyInputIt.isSharedWith(str));
+
+        std::stringstream ss("49 50 51 52 53 54 ");
+        str.assign(std::istream_iterator<ushort>{ss}, std::istream_iterator<ushort>{});
+        QVERIFY(str.isDetached());
+        QVERIFY(copyInputIt.isDetached());
+        QVERIFY(!str.isSharedWith(copyInputIt));
+        QVERIFY(!copyInputIt.isSharedWith(str));
+
+        QCOMPARE(str, u"123456");
+        QCOMPARE(copyInputIt, u"DATA");
     }
 }
 
@@ -3483,6 +3563,25 @@ void tst_QString::assign_uses_prepend_buffer()
         QCOMPARE_EQ(capBegin(withFreeSpaceAtBegin), oldCapBegin);
         QCOMPARE_EQ(capEnd(withFreeSpaceAtBegin), oldCapEnd);
         QCOMPARE(withFreeSpaceAtBegin, test);
+    }
+    // QString &assign(InputIterator, InputIterator)
+    {
+        QString withFreeSpaceAtBegin;
+        for (int i = 0; i < 100 && withFreeSpaceAtBegin.d.freeSpaceAtBegin() < 2; ++i)
+            withFreeSpaceAtBegin.prepend(u'd');
+        QCOMPARE_GT(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 1);
+
+        const auto oldCapBegin = capBegin(withFreeSpaceAtBegin);
+        const auto oldCapEnd = capEnd(withFreeSpaceAtBegin);
+
+        std::stringstream ss;
+        for (qsizetype i = 0; i < withFreeSpaceAtBegin.d.freeSpaceAtBegin(); ++i)
+            ss << "d ";
+
+        withFreeSpaceAtBegin.assign(std::istream_iterator<ushort>{ss}, std::istream_iterator<ushort>{});
+        QCOMPARE_EQ(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 0); // we used the prepend buffer
+        QCOMPARE_EQ(capBegin(withFreeSpaceAtBegin), oldCapBegin);
+        QCOMPARE_EQ(capEnd(withFreeSpaceAtBegin), oldCapEnd);
     }
 }
 

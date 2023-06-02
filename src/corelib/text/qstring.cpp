@@ -3339,6 +3339,34 @@ QString &QString::append(QChar ch)
     \sa fill()
 */
 
+/*!
+    \fn template <typename InputIterator, if_compatible_iterator<InputIterator>> QString &QString::assign(InputIterator first, InputIterator last)
+    \since 6.6
+
+    Replaces the contents of this string with a copy of the elements in the
+    iterator range [\a first, \a last) and returns a reference to this string.
+
+    The size of this string will be equal to the number of elements in the
+    range [\a first, \a last).
+
+    This function will only allocate memory if the number of elements in the
+    range exceeds the capacity of this string or this string is shared.
+
+    \note This function overload only participates in overload resolution if
+    \c InputIterator meets the requirements of a
+    \l {https://en.cppreference.com/w/cpp/named_req/InputIterator} {LegacyInputIterator}
+    and the \c{value_type} of \c InputIterator is one of the following character types:
+    \list
+    \li QChar
+    \li QLatin1Char
+    \li \c char16_t
+    \li (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t
+    \endlist
+
+    \note The behavior is undefined if either argument is an iterator into *this or
+    [\a first, \a last) is not a valid range.
+*/
+
 QString &QString::assign(QAnyStringView s)
 {
     if (s.size() <= capacity() && isDetached()) {
