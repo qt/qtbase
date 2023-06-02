@@ -47,6 +47,13 @@ class QString;
 
 namespace QtPrivate {
 template <bool...B> class BoolList;
+
+template <typename Char>
+using IsCompatibleChar32TypeHelper =
+    std::is_same<Char, char32_t>;
+template <typename Char>
+using IsCompatibleChar32Type
+    = IsCompatibleChar32TypeHelper<q20::remove_cvref_t<Char>>;
 }
 
 // Qt 4.x compatibility
@@ -133,6 +140,7 @@ class Q_CORE_EXPORT QString
     template <typename Char>
     using is_compatible_char_helper = std::disjunction<
             QtPrivate::IsCompatibleCharType<Char>,
+            QtPrivate::IsCompatibleChar32Type<Char>,
             std::is_same<Char, QLatin1Char> // special case
         >;
 
@@ -418,15 +426,32 @@ public:
     {
         using V = typename std::iterator_traits<InputIterator>::value_type;
         constexpr bool IsL1C = std::is_same_v<std::remove_cv_t<V>, QLatin1Char>;
+        constexpr bool IsFwdIt = std::is_convertible_v<
+                typename std::iterator_traits<InputIterator>::iterator_category,
+                std::forward_iterator_tag
+            >;
 
         if constexpr (is_contiguous_iterator_v<InputIterator>) {
             const auto p = q20::to_address(first);
             const auto len = qsizetype(last - first);
             if constexpr (IsL1C)
                 return assign(QLatin1StringView(reinterpret_cast<const char*>(p), len));
+            else if constexpr (sizeof(V) == 4)
+                return assign_helper(p, len);
             else
                 return assign(QAnyStringView(p, len));
-        } else { // non-contiguous iterator, need to feed data piecemeal
+        } else if constexpr (sizeof(V) == 4) { // non-contiguous iterator, feed data piecemeal
+            resize(0);
+            if constexpr (IsFwdIt) {
+                const qsizetype requiredCapacity = 2 * std::distance(first, last);
+                reserve(requiredCapacity);
+            }
+            while (first != last) {
+                append(QChar::fromUcs4(*first));
+                ++first;
+            }
+            return *this;
+        } else {
             d.assign(first, last, [](QChar ch) -> char16_t { return ch.unicode(); });
             d.data()[d.size] = u'\0';
             return *this;
@@ -896,6 +921,8 @@ private:
 
     void reallocData(qsizetype alloc, QArrayData::AllocationOption option);
     void reallocGrowData(qsizetype n);
+    // ### remove once QAnyStringView supports UTF-32:
+    QString &assign_helper(const char32_t *data, qsizetype len);
     static int compare_helper(const QChar *data1, qsizetype length1,
                               const QChar *data2, qsizetype length2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;

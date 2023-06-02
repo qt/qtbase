@@ -3442,6 +3442,14 @@ void tst_QString::assign()
         str.assign(c16str.begin(), c16str.end());
         QCOMPARE(str, c16);
 
+        const char32_t c32[] = U"٩(⁎❛ᴗ❛⁎)۶ 🤷";
+        str.assign(std::begin(c32), std::end(c32) - 1);
+        QCOMPARE(str, c16);
+
+        std::u32string c32str(c32);
+        str.assign(c32str.begin(), c32str.end());
+        QCOMPARE(str, c16);
+
         QVarLengthArray<QLatin1Char, 5> l1ch = {'F'_L1, 'G'_L1, 'H'_L1, 'I'_L1, 'J'_L1};
         str.assign(l1ch.begin(), l1ch.end());
         QCOMPARE(str, u"FGHIJ");
