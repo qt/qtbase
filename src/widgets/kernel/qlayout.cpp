@@ -1259,7 +1259,7 @@ QLayout::SizeConstraint QLayout::sizeConstraint() const
     this layout is set to \a r, provided that this layout supports
     setAlignment().
 
-    The result is derived from sizeHint() and expanding(). It is never
+    The result is derived from sizeHint() and expandingDirections(). It is never
     larger than \a r.
 */
 QRect QLayout::alignmentRect(const QRect &r) const
