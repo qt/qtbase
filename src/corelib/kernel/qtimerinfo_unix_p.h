@@ -43,7 +43,6 @@ public:
     QTimerInfoList();
 
     std::chrono::steady_clock::time_point currentTime;
-    std::chrono::steady_clock::time_point updateCurrentTime();
 
     bool timerWait(timespec &);
     void timerInsert(QTimerInfo *);
@@ -59,12 +58,16 @@ public:
     QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const;
 
     int activateTimers();
+    bool hasPendingTimers();
 
     QList::const_iterator findTimerById(int timerId) const
     {
         auto matchesId = [timerId](const QTimerInfo *t) { return t->id == timerId; };
         return std::find_if(cbegin(), cend(), matchesId);
     }
+
+private:
+    std::chrono::steady_clock::time_point updateCurrentTime();
 };
 
 QT_END_NAMESPACE

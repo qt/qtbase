@@ -33,6 +33,19 @@ steady_clock::time_point QTimerInfoList::updateCurrentTime()
     return currentTime;
 }
 
+/*! \internal
+    Updates the currentTime member to the current time, and returns \c true if
+    the first timer's timeout is in the future (after currentTime).
+
+    The list is sorted by timeout, thus it's enough to check the first timer only.
+*/
+bool QTimerInfoList::hasPendingTimers()
+{
+    if (isEmpty())
+        return false;
+    return updateCurrentTime() < constFirst()->timeout;
+}
+
 /*
   insert timer info into list
 */

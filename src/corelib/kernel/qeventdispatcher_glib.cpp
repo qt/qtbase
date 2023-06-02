@@ -110,10 +110,7 @@ static gboolean timerSourceCheckHelper(GTimerSource *src)
         || (src->processEventsFlags & QEventLoop::X11ExcludeTimers))
         return false;
 
-    if (src->timerList.updateCurrentTime() < src->timerList.constFirst()->timeout)
-        return false;
-
-    return true;
+    return !src->timerList.hasPendingTimers();
 }
 
 static gboolean timerSourcePrepare(GSource *source, gint *timeout)
