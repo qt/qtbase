@@ -337,9 +337,11 @@ private:
 
 private Q_SLOTS:
     void assign_std_vector() { assign_impl<std::vector<int>>(); };
+    void assign_std_string() { assign_impl<std::string>(); }
     void assign_QVarLengthArray() { assign_impl<QVarLengthArray<int, 4>>(); };
     void assign_QList() { assign_impl<QList<int>>(); }
     void assign_QByteArray() { assign_impl<QByteArray>(); }
+    void assign_QString() { assign_impl<QString>(); }
 
 private:
     template <typename Container>
