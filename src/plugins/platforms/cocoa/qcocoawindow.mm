@@ -553,9 +553,16 @@ void QCocoaWindow::updateTitleBarButtons(Qt::WindowFlags windowFlags)
 
     bool hideButtons = true;
     for (const auto &[button, buttonHint] : buttons) {
+        // Set up Qt defaults based on window type
         bool enabled = true;
+        if (button == NSWindowMiniaturizeButton)
+            enabled = window()->type() != Qt::Dialog;
+
+        // Let users override via CustomizeWindowHint
         if (windowFlags & Qt::CustomizeWindowHint)
             enabled = windowFlags & buttonHint;
+
+        // Then do some final sanitizations
 
         if (button == NSWindowZoomButton && isFixedSize())
             enabled = false;
