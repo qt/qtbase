@@ -29,6 +29,9 @@ url = https://doc.qt.io/qt
 
 defines += qt6
 
+# Require Qt modules to define qhp.projects
+qhp = true
+
 # Uncomment the following two lines to generate documentation marked as \internal
 # alias.internal = disable
 # macro.internal.HTML = "<span style="color:red">[internal]</span>"
