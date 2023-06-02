@@ -2374,4 +2374,10 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
     \sa requiredSpace
 */
 
+/*!
+    \fn char16_t *QStringDecoder::appendToBuffer(char16_t *out, QByteArrayView in)
+    \since 6.6
+    \overload
+*/
+
 QT_END_NAMESPACE

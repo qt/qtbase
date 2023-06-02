@@ -252,8 +252,8 @@ void tst_QStringConverter::invalidConverter()
 
         decoder.resetState();
         QVERIFY(!decoder.hasError());
-        QChar buffer[100];
-        QChar *position = decoder.appendToBuffer(buffer, "Even more");
+        char16_t buffer[100];
+        char16_t *position = decoder.appendToBuffer(buffer, "Even more");
         QCOMPARE(position, buffer);
         QVERIFY(decoder.hasError());
     }
