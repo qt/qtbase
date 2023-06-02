@@ -17,6 +17,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods");
+
 using namespace QtAndroid;
 
 namespace QtAndroidInput
@@ -30,9 +32,7 @@ namespace QtAndroidInput
 
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
     {
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug() << ">>> UPDATESELECTION" << selStart << selEnd << candidatesStart << candidatesEnd;
-#endif
+        qCDebug(lcQpaInputMethods) << ">>> UPDATESELECTION" << selStart << selEnd << candidatesStart << candidatesEnd;
         QJniObject::callStaticMethod<void>(applicationClass(),
                                            "updateSelection",
                                            "(IIII)V",
@@ -53,25 +53,19 @@ namespace QtAndroidInput
                                            height,
                                            inputHints,
                                            enterKeyType);
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug() << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints << enterKeyType;
-#endif
+        qCDebug(lcQpaInputMethods) << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints << enterKeyType;
     }
 
     void resetSoftwareKeyboard()
     {
         QJniObject::callStaticMethod<void>(applicationClass(), "resetSoftwareKeyboard");
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug("@@@ RESETSOFTWAREKEYBOARD");
-#endif
+        qCDebug(lcQpaInputMethods) << "@@@ RESETSOFTWAREKEYBOARD";
     }
 
     void hideSoftwareKeyboard()
     {
         QJniObject::callStaticMethod<void>(applicationClass(), "hideSoftwareKeyboard");
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug("@@@ HIDESOFTWAREKEYBOARD");
-#endif
+        qCDebug(lcQpaInputMethods) << "@@@ HIDESOFTWAREKEYBOARD";
     }
 
     bool isSoftwareKeyboardVisible()
@@ -329,9 +323,7 @@ namespace QtAndroidInput
             break;
         }
 
-#ifdef QT_DEBUG_ANDROID_STYLUS
-        qDebug() << action << pointerType << buttonState << '@' << x << y << "pressure" << pressure << ": buttons" << buttons;
-#endif
+        qCDebug(lcQpaInputMethods) << action << pointerType << buttonState << '@' << x << y << "pressure" << pressure << ": buttons" << buttons;
 
         QWindowSystemInterface::handleTabletEvent(tlw, ulong(time),
             localPos, globalPosF, int(QInputDevice::DeviceType::Stylus), pointerType,
@@ -797,9 +789,7 @@ namespace QtAndroidInput
                 QMetaObject::invokeMethod(inputContext, "hideSelectionHandles", Qt::QueuedConnection);
             }
         }
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug() << "@@@ KEYBOARDVISIBILITYCHANGED" << inputContext;
-#endif
+        qCDebug(lcQpaInputMethods) << "@@@ KEYBOARDVISIBILITYCHANGED" << inputContext;
     }
 
     static void keyboardGeometryChanged(JNIEnv */*env*/, jobject /*thiz*/, jint x, jint y, jint w, jint h)
@@ -812,16 +802,12 @@ namespace QtAndroidInput
         if (inputContext && qGuiApp)
             inputContext->emitKeyboardRectChanged();
 
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug() << "@@@ KEYBOARDRECTCHANGED" << m_softwareKeyboardRect;
-#endif
+        qCDebug(lcQpaInputMethods) << "@@@ KEYBOARDRECTCHANGED" << m_softwareKeyboardRect;
     }
 
     static void handleLocationChanged(JNIEnv */*env*/, jobject /*thiz*/, int id, int x, int y)
     {
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug() << "@@@ handleLocationChanged" << id << x << y;
-#endif
+        qCDebug(lcQpaInputMethods) << "@@@ handleLocationChanged" << id << x << y;
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
         if (inputContext && qGuiApp)
             QMetaObject::invokeMethod(inputContext, "handleLocationChanged", Qt::BlockingQueuedConnection,

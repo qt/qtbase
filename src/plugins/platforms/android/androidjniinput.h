@@ -6,9 +6,12 @@
 
 #include <jni.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/QLoggingCategory>
 #include <QtCore/QRect>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods);
 
 namespace QtAndroidInput
 {
