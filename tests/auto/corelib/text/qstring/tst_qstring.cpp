@@ -432,6 +432,8 @@ private slots:
     void prepend_char_data()          { prepend_data({EmptyIsNoop, Latin1Encoded}); }
 #endif
 
+    void prependEventuallyProducesFreeSpaceAtBegin();
+
     void append_qstring()            { append_impl<QString>(); }
     void append_qstring_data()       { append_data(); }
     void append_qstringview()        { append_impl<QStringView,  QString &(QString::*)(QStringView)>(); }
@@ -3808,6 +3810,14 @@ void tst_QString::prepend_bytearray_special_cases()
     }
 }
 #endif // !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)
+
+void tst_QString::prependEventuallyProducesFreeSpaceAtBegin()
+{
+    QString s;
+    for (int i = 0; i < 100 && !s.data_ptr().freeSpaceAtBegin(); ++i)
+        s.prepend(u'd');
+    QCOMPARE_GT(s.data_ptr().freeSpaceAtBegin(), 1);
+}
 
 void tst_QString::replace_uint_uint()
 {
