@@ -19,7 +19,14 @@ cmake_minimum_required(VERSION 3.16)
 
 # Read arguments from IN_FILE and separate them.
 file(READ "${IN_FILE}" raw_args)
+# To catch cases where the path ends with an `\`, e.g., `-prefix "C:\Path\"`
+string(REPLACE "\\\"" "\"" raw_args "${raw_args}")
+string(REPLACE ";" "[[;]]" raw_args "${raw_args}")
+
 separate_arguments(args NATIVE_COMMAND "${raw_args}")
+
+string(REPLACE "\;" ";" args "${args}")
+string(REPLACE "[[;]]" "\;" args "${args}")
 
 if(DEFINED REDO_FILE)
     file(READ "${REDO_FILE}" raw_redo_args)
@@ -65,7 +72,6 @@ if(DEFINED REDO_FILE)
     else()
         list(APPEND args "${redo_args}")
     endif()
-
 endif()
 
 # Skip arguments if requested
