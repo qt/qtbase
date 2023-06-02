@@ -52,7 +52,7 @@ inline static QSize toLayoutItemSize(QWidgetPrivate *priv, const QSize &size)
 
     Pure virtual functions are provided to return information about
     the layout, including, sizeHint(), minimumSize(), maximumSize()
-    and expanding().
+    and expandingDirections().
 
     The layout's geometry can be set and retrieved with setGeometry()
     and geometry(), and its alignment with setAlignment() and
