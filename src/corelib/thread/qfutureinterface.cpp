@@ -618,7 +618,6 @@ void QFutureInterfaceBase::reset()
 {
     d->m_progressValue = 0;
     d->m_progress.reset();
-    d->setState(QFutureInterfaceBase::NoState);
     d->progressTime.invalidate();
     d->isValid = false;
 }
