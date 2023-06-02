@@ -1,0 +1,314 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
+#include <QtTest/qtest.h>
+#include <QtNetwork/qnetworkrequestfactory.h>
+#ifndef QT_NO_SSL
+#include <QtNetwork/qsslconfiguration.h>
+#endif
+#include <QtCore/qurlquery.h>
+#include <QtCore/qurl.h>
+
+using namespace Qt::StringLiterals;
+
+class tst_QNetworkRequestFactory : public QObject
+{
+    Q_OBJECT
+
+private Q_SLOTS:
+    void urlAndPath_data();
+    void urlAndPath();
+    void queryParameters();
+    void sslConfiguration();
+    void headers();
+    void bearerToken();
+    void operators();
+
+private:
+    const QUrl url1{u"http://foo.io"_s};
+    const QUrl url2{u"http://bar.io"_s};
+    const QByteArray bearerToken1{"bearertoken1"};
+    const QByteArray bearerToken2{"bearertoken2"};
+};
+
+void tst_QNetworkRequestFactory::urlAndPath_data()
+{
+    QTest::addColumn<QUrl>("baseUrl");
+    QTest::addColumn<QString>("requestPath");
+    QTest::addColumn<QUrl>("expectedRequestUrl");
+
+    QUrl base{"http://xyz.io"};
+    QUrl result{"http://xyz.io/path/to"};
+    QTest::newRow("baseUrl_nopath_noslash_1") << base << u""_s << base;
+    QTest::newRow("baseUrl_nopath_noslash_2") << base << u"/path/to"_s << result;
+    QTest::newRow("baseUrl_nopath_noslash_3") << base << u"path/to"_s << result;
+
+    base.setUrl("http://xyz.io/");
+    result.setUrl("http://xyz.io/path/to");
+    QTest::newRow("baseUrl_nopath_withslash_1") << base << u""_s << base;
+    QTest::newRow("baseUrl_nopath_withslash_2") << base << u"/path/to"_s << result;
+    QTest::newRow("baseUrl_nopath_withslash_3") << base << u"path/to"_s << result;
+
+    base.setUrl("http://xyz.io/v1");
+    result.setUrl("http://xyz.io/v1/path/to");
+    QTest::newRow("baseUrl_withpath_noslash_1") << base << u""_s << base;
+    QTest::newRow("baseUrl_withpath_noslash_2") << base << u"/path/to"_s << result;
+    QTest::newRow("baseUrl_withpath_noslash_3") << base << u"path/to"_s  << result;
+
+    base.setUrl("http://xyz.io/v1/");
+    QTest::newRow("baseUrl_withpath_withslash_1") << base << u""_s << base;
+    QTest::newRow("baseUrl_withpath_withslash_2") << base << u"/path/to"_s << result;
+    QTest::newRow("baseUrl_withpath_withslash_3") << base << u"path/to"_s << result;
+
+    // Currently we keep any double '//', but not sure if there is a use case for it, or could
+    // it be corrected to a single '/'
+    base.setUrl("http://xyz.io/v1//");
+    result.setUrl("http://xyz.io/v1//path/to");
+    QTest::newRow("baseUrl_withpath_doubleslash_1") << base << u""_s << base;
+    QTest::newRow("baseUrl_withpath_doubleslash_2") << base << u"/path/to"_s << result;
+    QTest::newRow("baseUrl_withpath_doubleslash_3") << base << u"path/to"_s << result;
+}
+
+void tst_QNetworkRequestFactory::urlAndPath()
+{
+    QFETCH(QUrl, baseUrl);
+    QFETCH(QString, requestPath);
+    QFETCH(QUrl, expectedRequestUrl);
+
+    // Set with constructor
+    QNetworkRequestFactory factory1{baseUrl};
+    QCOMPARE(factory1.baseUrl(), baseUrl);
+
+    // Set with setter calls
+    QNetworkRequestFactory factory2{};
+    factory2.setBaseUrl(baseUrl);
+    QCOMPARE(factory2.baseUrl(), baseUrl);
+
+    // Request path
+    QNetworkRequest request = factory1.request();
+    QCOMPARE(request.url(), baseUrl); // No path was provided for request(), expect baseUrl
+    request = factory1.request(requestPath);
+    QCOMPARE(request.url(), expectedRequestUrl);
+
+    // Check the request path didn't change base url
+    QCOMPARE(factory1.baseUrl(), baseUrl);
+}
+
+void tst_QNetworkRequestFactory::queryParameters()
+{
+    QNetworkRequestFactory factory({"http://example.com"});
+    const QUrlQuery query1{{"q1k", "q1v"}};
+    const QUrlQuery query2{{"q2k", "q2v"}};
+
+    // Set query parameters in request() call
+    QCOMPARE(factory.request(query1).url(), QUrl{"http://example.com?q1k=q1v"});
+    QCOMPARE(factory.request(query2).url(), QUrl{"http://example.com?q2k=q2v"});
+
+    // Set query parameters into the factory
+    factory.setQueryParameters(query1);
+    QUrlQuery resultQuery = factory.queryParameters();
+    for (const auto &item: query1.queryItems()) {
+        QVERIFY(resultQuery.hasQueryItem(item.first));
+        QCOMPARE(resultQuery.queryItemValue(item.first), item.second);
+    }
+    QCOMPARE(factory.request().url(), QUrl{"http://example.com?q1k=q1v"});
+
+    // Set query parameters into both request() and factory
+    QCOMPARE(factory.request(query2).url(), QUrl{"http://example.com?q2k=q2v&q1k=q1v"});
+
+    // Clear query parameters
+    factory.clearQueryParameters();
+    QVERIFY(factory.queryParameters().isEmpty());
+    QCOMPARE(factory.request().url(), QUrl{"http://example.com"});
+
+    const QString pathWithQuery{"content?raw=1"};
+    // Set query parameters in per-request path
+    QCOMPARE(factory.request(pathWithQuery).url(),
+             QUrl{"http://example.com/content?raw=1"});
+    // Set query parameters in per-request path and the query parameter
+    QCOMPARE(factory.request(pathWithQuery, query1).url(),
+             QUrl{"http://example.com/content?q1k=q1v&raw=1"});
+    // Set query parameter in per-request path and into the factory
+    factory.setQueryParameters(query2);
+    QCOMPARE(factory.request(pathWithQuery).url(),
+             QUrl{"http://example.com/content?raw=1&q2k=q2v"});
+    // Set query parameters in per-request, as additional parameters, and into the factory
+    QCOMPARE(factory.request(pathWithQuery, query1).url(),
+             QUrl{"http://example.com/content?q1k=q1v&raw=1&q2k=q2v"});
+
+    // Test that other than path and query items as part of path are ignored
+    factory.setQueryParameters(query1);
+    QRegularExpression re("The provided path*");
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, re);
+    QCOMPARE(factory.request("https://example2.com").url(), QUrl{"http://example.com?q1k=q1v"});
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, re);
+    QCOMPARE(factory.request("https://example2.com?q3k=q3v").url(),
+             QUrl{"http://example.com?q3k=q3v&q1k=q1v"});
+}
+
+void tst_QNetworkRequestFactory::sslConfiguration()
+{
+#ifdef QT_NO_SSL
+    QSKIP("Skipping SSL tests, not supported by build");
+#else
+    // Two initially equal factories
+    QNetworkRequestFactory factory1{url1};
+    QNetworkRequestFactory factory2{url1};
+    QCOMPARE(factory1, factory2);
+
+    // Make two differing SSL configurations (for this test it's irrelevant how they differ)
+    QSslConfiguration config1;
+    config1.setProtocol(QSsl::TlsV1_2);
+    QSslConfiguration config2;
+    config2.setProtocol(QSsl::DtlsV1_2);
+
+    // Set configuration and verify that the same config is returned
+    factory1.setSslConfiguration(config1);
+    QCOMPARE(factory1.sslConfiguration(), config1);
+    factory2.setSslConfiguration(config2);
+    QCOMPARE(factory2.sslConfiguration(), config2);
+
+    // Verify that the factories differ (different SSL config)
+    QCOMPARE_NE(factory1, factory2);
+
+    // Verify requests are set with appropriate SSL configs
+    QNetworkRequest request1 = factory1.request();
+    QCOMPARE(request1.sslConfiguration(), config1);
+    QNetworkRequest request2 = factory2.request();
+    QCOMPARE(request2.sslConfiguration(), config2);
+#endif
+}
+
+void tst_QNetworkRequestFactory::headers()
+{
+    const QByteArray name1{"headername1"};
+    const QByteArray name2{"headername2"};
+    const QByteArray value1{"headervalue1"};
+    const QByteArray value2{"headervalue2"};
+    const QByteArray value3{"headervalue3"};
+
+    QNetworkRequestFactory factory{url1};
+    // Initial state when no headers are set
+    QVERIFY(factory.headers().isEmpty());
+    QVERIFY(factory.headers().values(name1).isEmpty());
+    QVERIFY(!factory.headers().has(name1));
+
+    // Set headers
+    QHttpHeaders h1;
+    h1.append(name1, value1);
+    factory.setHeaders(h1);
+    QVERIFY(factory.headers().has(name1));
+    QCOMPARE(factory.headers().combinedValue(name1), value1);
+    QCOMPARE(factory.headers().size(), 1);
+    QVERIFY(factory.headers().values("nonexistent").isEmpty());
+    QNetworkRequest request = factory.request();
+    QVERIFY(request.hasRawHeader(name1));
+    QCOMPARE(request.rawHeader(name1), value1);
+
+    // Check that empty header does not match
+    QVERIFY(!factory.headers().has(""_ba));
+    QVERIFY(factory.headers().values(""_ba).isEmpty());
+
+    // Clear headers
+    factory.clearHeaders();
+    QVERIFY(factory.headers().isEmpty());
+    request = factory.request();
+    QVERIFY(!request.hasRawHeader(name1));
+
+    // Set headers with more entries
+    h1.clear();
+    h1.append(name1, value1);
+    h1.append(name2, value2);
+    factory.setHeaders(h1);
+    QVERIFY(factory.headers().has(name1));
+    QVERIFY(factory.headers().has(name2));
+    QCOMPARE(factory.headers().combinedValue(name1), value1);
+    QCOMPARE(factory.headers().combinedValue(name2), value2);
+    QCOMPARE(factory.headers().size(), 2);
+    request = factory.request();
+    QVERIFY(request.hasRawHeader(name1));
+    QVERIFY(request.hasRawHeader(name2));
+    QCOMPARE(request.rawHeader(name1), value1);
+    QCOMPARE(request.rawHeader(name2), value2);
+    // Append more values to pre-existing header name2
+    h1.clear();
+    h1.append(name1, value1);
+    h1.append(name1, value2);
+    h1.append(name1, value3);
+    factory.setHeaders(h1);
+    QVERIFY(factory.headers().has(name1));
+    QCOMPARE(factory.headers().combinedValue(name1), value1 + ',' + value2 + ',' + value3);
+    request = factory.request();
+    QVERIFY(request.hasRawHeader(name1));
+    QCOMPARE(request.rawHeader(name1), value1 + ',' + value2 + ',' + value3);
+}
+
+void tst_QNetworkRequestFactory::bearerToken()
+{
+    const auto authHeader = "Authorization"_ba;
+    QNetworkRequestFactory factory{url1};
+    QVERIFY(factory.bearerToken().isEmpty());
+
+    factory.setBearerToken(bearerToken1);
+    QCOMPARE(factory.bearerToken(), bearerToken1);
+    QNetworkRequest request = factory.request();
+    QVERIFY(request.hasRawHeader(authHeader));
+    QCOMPARE(request.rawHeader(authHeader), "Bearer "_ba + bearerToken1);
+
+    factory.setBearerToken(bearerToken2);
+    QCOMPARE(factory.bearerToken(), bearerToken2);
+    request = factory.request();
+    QVERIFY(request.hasRawHeader(authHeader));
+    QCOMPARE(request.rawHeader(authHeader), "Bearer "_ba + bearerToken2);
+
+    // Set authorization header manually
+    const auto value = "headervalue"_ba;
+    QHttpHeaders h1;
+    h1.append(authHeader, value);
+    factory.setHeaders(h1);
+    request = factory.request();
+    QVERIFY(request.hasRawHeader(authHeader));
+    // bearerToken has precedence over manually set header
+    QCOMPARE(request.rawHeader(authHeader), "Bearer "_ba + bearerToken2);
+    // clear bearer token, the manually set header is now used
+    factory.clearBearerToken();
+    request = factory.request();
+    QVERIFY(request.hasRawHeader(authHeader));
+    QCOMPARE(request.rawHeader(authHeader), value);
+}
+
+void tst_QNetworkRequestFactory::operators()
+{
+    QNetworkRequestFactory factory1(url1);
+
+    // Copy ctor
+    QNetworkRequestFactory factory2(factory1);
+    QCOMPARE(factory2.baseUrl(), factory1.baseUrl());
+
+    // Copy assignment
+    QNetworkRequestFactory factory3;
+    factory3 = factory2;
+    QCOMPARE(factory3.baseUrl(), factory2.baseUrl());
+
+    // Move assignment
+    QNetworkRequestFactory factory4;
+    factory4 = std::move(factory3);
+    QCOMPARE(factory4.baseUrl(), factory2.baseUrl());
+
+    // Verify implicit sharing
+    factory1.setBaseUrl(url2);
+    QCOMPARE(factory1.baseUrl(), url2); // changed
+    QCOMPARE(factory2.baseUrl(), url1); // remains
+
+    // Comparison
+    QVERIFY(factory2 == factory4); // factory4 was copied + moved, and originates from factory2
+    QVERIFY(factory1 != factory2); // factory1 url was changed
+
+    // Move ctor
+    QNetworkRequestFactory factory5{std::move(factory4)};
+    QVERIFY(factory5 == factory2); // the moved factory4 originates from factory2
+    QCOMPARE(factory5.baseUrl(), url1);
+}
+
+QTEST_MAIN(tst_QNetworkRequestFactory)
+#include "tst_qnetworkrequestfactory.moc"

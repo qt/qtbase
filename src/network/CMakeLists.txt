@@ -133,6 +133,8 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_http
         access/qhttpprotocolhandler.cpp access/qhttpprotocolhandler_p.h
         access/qhttpthreaddelegate.cpp access/qhttpthreaddelegate_p.h
         access/qnetworkreplyhttpimpl.cpp access/qnetworkreplyhttpimpl_p.h
+        access/qnetworkrequestfactory.cpp access/qnetworkrequestfactory_p.h
+        access/qnetworkrequestfactory.h
         socket/qhttpsocketengine.cpp socket/qhttpsocketengine_p.h
 )
 
