@@ -55,11 +55,12 @@ QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
     return nullptr;
  }
 
- Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes,
+ Generator::Generator(Moc *moc, ClassDef *classDef, const QList<QByteArray> &metaTypes,
                       const QHash<QByteArray, QByteArray> &knownQObjectClasses,
                       const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile,
                       bool requireCompleteTypes)
-     : out(outfile),
+     : parser(moc),
+       out(outfile),
        cdef(classDef),
        metaTypes(metaTypes),
        knownQObjectClasses(knownQObjectClasses),

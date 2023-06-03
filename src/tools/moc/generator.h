@@ -10,12 +10,13 @@ QT_BEGIN_NAMESPACE
 
 class Generator
 {
+    Moc *parser = nullptr;
     FILE *out;
     ClassDef *cdef;
     QList<uint> meta_data;
 
 public:
-    Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes,
+    Generator(Moc *moc, ClassDef *classDef, const QList<QByteArray> &metaTypes,
               const QHash<QByteArray, QByteArray> &knownQObjectClasses,
               const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile = nullptr,
               bool requireCompleteTypes = false);

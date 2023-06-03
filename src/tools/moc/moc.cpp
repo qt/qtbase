@@ -1136,7 +1136,8 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
 
     fputs("", out);
     for (int i = 0; i < classList.size(); ++i) {
-        Generator generator(&classList[i], metaTypes, knownQObjectClasses, knownGadgets, out, requireCompleteTypes);
+        Generator generator(this, &classList[i], metaTypes, knownQObjectClasses, knownGadgets, out,
+                            requireCompleteTypes);
         generator.generateCode();
 
         // generator.generateCode() should have already registered all strings
