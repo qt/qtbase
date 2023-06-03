@@ -12,6 +12,7 @@ qt_internal_add_executable(sleep
         tst_sleep.cpp
     LIBRARIES
         Qt::Test
+        Qt::CorePrivate
 )
 
 ## Scopes:

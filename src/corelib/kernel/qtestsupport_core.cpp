@@ -3,9 +3,7 @@
 
 #include "qtestsupport_core.h"
 
-#ifdef Q_OS_WIN
-#include <qt_windows.h>
-#endif
+#include <thread>
 
 QT_BEGIN_NAMESPACE
 
@@ -17,9 +15,11 @@ QT_BEGIN_NAMESPACE
 
     \a ms must be greater than 0.
 
-    \b {Note:} The qSleep() function calls either \c nanosleep() on
-    unix or \c Sleep() on windows, so the accuracy of time spent in
-    qSleep() depends on the operating system.
+    \note Starting from Qt 6.7, this function is implemented using
+    \c {std::this_thread::sleep_for}, so the accuracy of time spent depends
+    on the Standard Library implementation. Before Qt 6.7 this function called
+    either \c nanosleep() on Unix or \c Sleep() on Windows, so the accuracy of
+    time spent in this function depended on the operating system.
 
     Example:
     \snippet code/src_qtestlib_qtestcase.cpp 23
@@ -29,13 +29,7 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT void QTest::qSleep(int ms)
 {
     Q_ASSERT(ms > 0);
-
-#if defined(Q_OS_WIN)
-    Sleep(uint(ms));
-#else
-    struct timespec ts = { time_t(ms / 1000), (ms % 1000) * 1000 * 1000 };
-    nanosleep(&ts, nullptr);
-#endif
+    std::this_thread::sleep_for(std::chrono::milliseconds{ms});
 }
 
 /*! \fn template <typename Functor> bool QTest::qWaitFor(Functor predicate, int timeout)
