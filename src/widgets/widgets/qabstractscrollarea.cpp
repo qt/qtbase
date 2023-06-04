@@ -1136,7 +1136,7 @@ void QAbstractScrollArea::resizeEvent(QResizeEvent *)
     This event handler can be reimplemented in a subclass to receive
     paint events (passed in \a event), for the viewport() widget.
 
-    \note If you open a painter, make sure to open it on the viewport().
+    \note If you create a QPainter, it must operate on the viewport().
 
     \sa QWidget::paintEvent()
 */
