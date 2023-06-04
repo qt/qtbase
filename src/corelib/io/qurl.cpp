@@ -2968,19 +2968,23 @@ QByteArray QUrl::toEncoded(FormattingOptions options) const
 }
 
 /*!
-    \fn QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode parsingMode)
-
     Parses \a input and returns the corresponding QUrl. \a input is
     assumed to be in encoded form, containing only ASCII characters.
 
     Parses the URL using \a parsingMode. See setUrl() for more information on
     this parameter. QUrl::DecodedMode is not permitted in this context.
 
+    \note In Qt versions prior to 6.7, this function took a QByteArray, not
+    QByteArrayView. If you experience compile errors, it's because your code
+    is passing objects that are implicitly convertible to QByteArray, but not
+    QByteArrayView. Wrap the corresponding argument in \c{QByteArray{~~~}} to
+    make the cast explicit. This is backwards-compatible with old Qt versions.
+
     \sa toEncoded(), setUrl()
 */
-QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
+QUrl QUrl::fromEncoded(QByteArrayView input, ParsingMode mode)
 {
-    return QUrl(QString::fromUtf8(input.constData(), input.size()), mode);
+    return QUrl(QString::fromUtf8(input), mode);
 }
 
 /*!

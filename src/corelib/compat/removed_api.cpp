@@ -615,3 +615,18 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 // order sections alphabetically to reduce chances of merge conflicts
 
 #endif // QT_CORE_REMOVED_SINCE(6, 6)
+
+#if QT_CORE_REMOVED_SINCE(6, 7)
+
+#include "qurl.h"
+
+QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
+{
+    return QUrl::fromEncoded(QByteArrayView(input), mode);
+}
+
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically to reduce chances of merge conflicts
+
+#endif // QT_CORE_REMOVED_SINCE(6, 7)
