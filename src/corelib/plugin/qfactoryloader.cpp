@@ -356,6 +356,8 @@ QFactoryLoader::MetaDataList QFactoryLoader::metaData() const
             continue;
         metaData.append(std::move(parsed));
     }
+
+    Q_ASSERT(metaData.size() <= std::numeric_limits<int>::max());
     return metaData;
 }
 
@@ -400,7 +402,7 @@ QMultiMap<int, QString> QFactoryLoader::keyMap() const
 {
     QMultiMap<int, QString> result;
     const QList<QPluginParsedMetaData> metaDataList = metaData();
-    for (int i = 0; i < metaDataList.size(); ++i) {
+    for (int i = 0; i < int(metaDataList.size()); ++i) {
         const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
         const QCborArray keys = metaData.value("Keys"_L1).toArray();
         for (QCborValueConstRef key : keys)
@@ -412,7 +414,7 @@ QMultiMap<int, QString> QFactoryLoader::keyMap() const
 int QFactoryLoader::indexOf(const QString &needle) const
 {
     const QList<QPluginParsedMetaData> metaDataList = metaData();
-    for (int i = 0; i < metaDataList.size(); ++i) {
+    for (int i = 0; i < int(metaDataList.size()); ++i) {
         const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
         const QCborArray keys = metaData.value("Keys"_L1).toArray();
         for (QCborValueConstRef key : keys) {
