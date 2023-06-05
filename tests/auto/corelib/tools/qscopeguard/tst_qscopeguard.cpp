@@ -30,6 +30,8 @@
 #include <QTest>
 #include <QtCore/QScopeGuard>
 
+#include <optional>
+
 /*!
  \class tst_QScopeGuard
  \internal
@@ -45,6 +47,7 @@ private Q_SLOTS:
     void construction();
     void constructionFromLvalue();
     void constructionFromRvalue();
+    void optionalGuard();
     void leavingScope();
     void exceptions();
 };
@@ -152,6 +155,24 @@ void tst_QScopeGuard::constructionFromRvalue()
 #else
     QSKIP("This test requires C++17 Class Template Argument Deduction support enabled in the compiler.");
 #endif
+}
+
+void tst_QScopeGuard::optionalGuard()
+{
+    int i = 0;
+    auto lambda = [&] { ++i; };
+    std::optional sg = false ? std::optional{qScopeGuard(lambda)} : std::nullopt;
+    QVERIFY(!sg);
+    QCOMPARE(i, 0);
+    sg.emplace(qScopeGuard(lambda));
+    QVERIFY(sg);
+    sg->dismiss();
+    sg.reset();
+    QCOMPARE(i, 0);
+    sg.emplace(qScopeGuard(lambda));
+    QCOMPARE(i, 0);
+    sg.reset();
+    QCOMPARE(i, 1);
 }
 
 void tst_QScopeGuard::leavingScope()
