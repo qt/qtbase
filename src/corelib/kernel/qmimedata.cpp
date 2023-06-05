@@ -76,6 +76,24 @@ QVariant QMimeDataPrivate::getData(const QString &format) const
         return it->data;
 }
 
+static QList<QVariant> dataToUrls(QByteArrayView text)
+{
+    QList<QVariant> list;
+    qsizetype newLineIndex = -1;
+    qsizetype from = 0;
+    const char *begin = text.data();
+    while ((newLineIndex = text.indexOf('\n', from)) != -1) {
+        QByteArrayView bav(begin + from, begin + newLineIndex);
+        bav = bav.trimmed();
+        if (!bav.isEmpty())
+            list.push_back(QUrl::fromEncoded(bav));
+        from = newLineIndex + 1;
+        if (from >= text.size())
+            break;
+    }
+    return list;
+}
+
 QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType type) const
 {
     Q_Q(const QMimeData);
@@ -146,21 +164,13 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
             Q_FALLTHROUGH();
         }
         case QMetaType::QUrl: {
-            QByteArray ba = data.toByteArray();
+            auto bav = data.view<QByteArrayView>();
             // Qt 3.x will send text/uri-list with a trailing
             // null-terminator (that is *not* sent for any other
             // text/* mime-type), so chop it off
-            if (ba.endsWith('\0'))
-                ba.chop(1);
-
-            QList<QByteArray> urls = ba.split('\n');
-            QList<QVariant> list;
-            for (int i = 0; i < urls.size(); ++i) {
-                QByteArray ba = urls.at(i).trimmed();
-                if (!ba.isEmpty())
-                    list.append(QUrl::fromEncoded(ba));
-            }
-            return list;
+            if (bav.endsWith('\0'))
+                bav.chop(1);
+            return dataToUrls(bav);
         }
         default:
             break;
@@ -557,14 +567,7 @@ void QMimeData::setData(const QString &mimeType, const QByteArray &data)
         QByteArray ba = data;
         if (ba.endsWith('\0'))
             ba.chop(1);
-        QList<QByteArray> urls = ba.split('\n');
-        QList<QVariant> list;
-        for (int i = 0; i < urls.size(); ++i) {
-            QByteArray ba = urls.at(i).trimmed();
-            if (!ba.isEmpty())
-                list.append(QUrl::fromEncoded(ba));
-        }
-        d->setData(mimeType, list);
+        d->setData(mimeType, dataToUrls(ba));
     } else {
         d->setData(mimeType, QVariant(data));
     }
