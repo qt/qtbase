@@ -55,6 +55,7 @@ private slots:
     void clear();
     void pixmapKey();
     void noLeak();
+    void clearDoesNotLeakStringKeys();
     void strictCacheLimit();
     void noCrashOnLargeInsert();
 };
@@ -501,6 +502,39 @@ void tst_QPixmapCache::noLeak()
     int newSize = q_QPixmapCache_keyHashSize();
 
     QCOMPARE(oldSize, newSize);
+}
+
+void tst_QPixmapCache::clearDoesNotLeakStringKeys()
+{
+    QPixmapCache::setCacheLimit(20); // 20KiB
+    //
+    // GIVEN: a QPixmap with QString key `key` in QPixmapCache
+    //
+    QString key;
+    {
+        QPixmap pm(64, 64);
+        QVERIFY(pm.width() * pm.height() * std::ceil(pm.depth() / 8.0)
+                < QPixmapCache::cacheLimit() * 1024);
+        pm.fill(Qt::transparent);
+        key = QStringLiteral("theKey").repeated(20); // avoid eventual QString SSO
+        QVERIFY(key.isDetached());
+        QPixmapCache::insert(key, pm);
+    }
+    QVERIFY(!key.isDetached()); // was saved inside QPixmapCache
+
+    //
+    // WHEN: clearing the cache:
+    //
+    QPixmapCache::clear();
+
+    //
+    // THEN: `key` is no longer referenced by QPixmapCache:
+    //
+    QVERIFY(key.isDetached());
+    // verify that the pixmap is really gone from the cache
+    // (do it after the key check, because QPixmapCache cleans up `key` on a failed lookup)
+    QPixmap r;
+    QVERIFY(!QPixmapCache::find(key, &r));
 }
 
 
