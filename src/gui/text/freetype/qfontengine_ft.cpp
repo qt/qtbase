@@ -1828,7 +1828,8 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph,
     // outline drawing. To ensure the bounding box matches the rendered glyph, we
     // need to do the same here.
 
-    const bool needsImageTransform = !FT_IS_SCALABLE(freetype->face) && !matrix.isIdentity();
+    const bool needsImageTransform = !FT_IS_SCALABLE(freetype->face)
+            && matrix.type() > QTransform::TxTranslate;
     if (needsImageTransform && format == QFontEngine::Format_Mono)
         format = QFontEngine::Format_A8;
     Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix, true, true);
@@ -1957,7 +1958,8 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g,
                                        const QFixedPoint &subPixelPosition,
                                        const QTransform &t)
 {
-    const bool needsImageTransform = !FT_IS_SCALABLE(freetype->face) && !t.isIdentity();
+    const bool needsImageTransform = !FT_IS_SCALABLE(freetype->face)
+            && t.type() > QTransform::TxTranslate;
     const GlyphFormat neededFormat = antialias || needsImageTransform ? Format_A8 : Format_Mono;
 
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, neededFormat, t, false, true);
