@@ -466,6 +466,7 @@ void QPMCache::clear()
         killTimer(theid);
         theid = 0;
     }
+    cacheKeys.clear();
 }
 
 QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)
