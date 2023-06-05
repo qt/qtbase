@@ -224,9 +224,10 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
     const int size = qMin(arrowMax, rectMax);
 
     QPixmap cachePixmap;
-    QString cacheKey = QStyleHelper::uniqueName("fusion-arrow"_L1, option, rect.size())
-            % HexString<uint>(type)
-            % HexString<uint>(color.rgba());
+    const QString cacheKey = QStyleHelper::uniqueName("fusion-arrow"_L1
+                                                          % HexString<uint>(type)
+                                                          % HexString<uint>(color.rgba()),
+                                                      option, rect.size());
     if (!QPixmapCache::find(cacheKey, &cachePixmap)) {
         cachePixmap = styleCachePixmap(rect.size());
         cachePixmap.fill(Qt::transparent);
