@@ -79,7 +79,7 @@ CommandLineParseResult parseCommandLine(QCommandLineParser &parser, DnsQuery *qu
         if (query->nameServer.isNull()
             || query->nameServer.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
             return { Status::Error,
-                     u"Bad nameserver address: %1"_qs.arg(nameserver) };
+                     u"Bad nameserver address: %1"_s.arg(nameserver) };
         }
     }
 
@@ -88,14 +88,14 @@ CommandLineParseResult parseCommandLine(QCommandLineParser &parser, DnsQuery *qu
         if (std::optional<QDnsLookup::Type> type = typeFromParameter(typeParameter))
             query->type = *type;
         else
-            return { Status::Error, u"Bad record type: %1"_qs.arg(typeParameter) };
+            return { Status::Error, u"Bad record type: %1"_s.arg(typeParameter) };
     }
 
     const QStringList positionalArguments = parser.positionalArguments();
     if (positionalArguments.isEmpty())
-        return { Status::Error, u"Argument 'name' missing."_qs };
+        return { Status::Error, u"Argument 'name' missing."_s };
     if (positionalArguments.size() > 1)
-        return { Status::Error, u"Several 'name' arguments specified."_qs };
+        return { Status::Error, u"Several 'name' arguments specified."_s };
     query->name = positionalArguments.first();
 
     return { Status::Ok };
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     case Status::Ok:
         break;
     case Status::Error:
-        std::fputs(qPrintable(parseResult.errorString.value_or(u"Unknown error occurred"_qs)),
+        std::fputs(qPrintable(parseResult.errorString.value_or(u"Unknown error occurred"_s)),
                    stderr);
         std::fputs("\n\n", stderr);
         std::fputs(qPrintable(parser.helpText()), stderr);
