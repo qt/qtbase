@@ -23,6 +23,16 @@
     \relates <QtSystemDetection>
 
     Defined on Darwin-based operating systems such as \macos, iOS, watchOS, and tvOS.
+
+    \note Unless you are dealing with code specific to the Darwin kernel,
+    prefer Q_OS_APPLE to refer to the family of Apple operating systems.
+*/
+
+/*!
+    \macro Q_OS_APPLE
+    \relates <QtSystemDetection>
+
+    Defined on Apple operating systems such as \macos, iOS, watchOS, and tvOS.
 */
 
 /*!

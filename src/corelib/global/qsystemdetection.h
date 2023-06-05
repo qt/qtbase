@@ -50,6 +50,7 @@
 
 #if defined(__APPLE__) && (defined(__GNUC__) || defined(__xlC__) || defined(__xlc__))
 #  include <TargetConditionals.h>
+#  define Q_OS_APPLE
 #  if defined(TARGET_OS_MAC) && TARGET_OS_MAC
 #    define Q_OS_DARWIN
 #    define Q_OS_BSD4
