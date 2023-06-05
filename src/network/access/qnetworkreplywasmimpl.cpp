@@ -313,7 +313,7 @@ void QNetworkReplyWasmImplPrivate::emitDataReadProgress(qint64 bytesReceived, qi
 
     totalDownloadSize = bytesTotal;
 
-    percentFinished = (bytesReceived / bytesTotal) * 100;
+    percentFinished = bytesTotal ? (bytesReceived / bytesTotal) * 100 : 100;
 
     emit q->downloadProgress(bytesReceived, bytesTotal);
 }
