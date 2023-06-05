@@ -54,7 +54,6 @@
 - (void)clearAccessibleCache
 {
     [m_accessibleElements removeAllObjects];
-    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, @"");
 }
 
 // this is a container, returning yes here means the functions below will never be called
