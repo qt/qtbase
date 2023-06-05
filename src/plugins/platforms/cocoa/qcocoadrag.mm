@@ -226,9 +226,10 @@ void QCocoaDrag::setAcceptedAction(Qt::DropAction act)
 
 void QCocoaDrag::exitDragLoop()
 {
-    Q_ASSERT(m_internalDragLoop);
-    if (m_internalDragLoop->isRunning())
+    if (m_internalDragLoop) {
+        Q_ASSERT(m_internalDragLoop->isRunning());
         m_internalDragLoop->exit();
+    }
 }
 
 
