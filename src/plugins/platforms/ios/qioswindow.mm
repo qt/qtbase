@@ -75,6 +75,7 @@ QIOSWindow::~QIOSWindow()
     [m_view touchesCancelled:[NSSet set] withEvent:0];
 
     clearAccessibleCache();
+
     m_view.platformWindow = 0;
     [m_view removeFromSuperview];
     [m_view release];
