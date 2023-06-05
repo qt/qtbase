@@ -316,25 +316,16 @@ QPixmap *QPMCache::object(const QPixmapCache::Key &key) const
 
 bool QPMCache::insert(const QString& key, const QPixmap &pixmap, int cost)
 {
-    QPixmapCache::Key &cacheKey = cacheKeys[key];
     //If for the same key we add already a pixmap we should delete it
-    if (cacheKey.d)
-        QCache<QPixmapCache::Key, QPixmapCacheEntry>::remove(cacheKey);
+    remove(key);
 
-    //we create a new key the old one has been removed
-    cacheKey = createKey();
-
-    bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
-    if (success) {
-        if (!theid) {
-            theid = startTimer(flush_time);
-            t = false;
-        }
-    } else {
-        //Insertion failed we released the new allocated key
-        cacheKeys.remove(key);
+    // this will create a new key; the old one has been removed
+    auto k = insert(pixmap, cost);
+    if (k.isValid()) {
+        cacheKeys[key] = std::move(k);
+        return true;
     }
-    return success;
+    return false;
 }
 
 QPixmapCache::Key QPMCache::insert(const QPixmap &pixmap, int cost)
