@@ -1656,6 +1656,8 @@ void QTabBar::showEvent(QShowEvent *)
         d->refresh();
     if (!d->validIndex(d->currentIndex))
         setCurrentIndex(0);
+    else
+        d->makeVisible(d->currentIndex);
     d->updateMacBorderMetrics();
 }
 
