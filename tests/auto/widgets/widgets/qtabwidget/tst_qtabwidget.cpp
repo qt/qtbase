@@ -79,6 +79,9 @@ private slots:
     void moveCurrentTab();
     void autoHide();
 
+    void setCurrentBeforeShow_data();
+    void setCurrentBeforeShow();
+
   private:
     int addPage();
     void removePage(int index);
@@ -748,6 +751,40 @@ void tst_QTabWidget::autoHide()
     QVERIFY(sizeHint1.height() > tabWidget.sizeHint().height());
     QVERIFY(minSizeHint1.height() > tabWidget.sizeHint().height());
     QVERIFY(heightForWidth1 > tabWidget.heightForWidth(20));
+}
+
+void tst_QTabWidget::setCurrentBeforeShow_data()
+{
+    QTest::addColumn<QTabWidget::TabPosition>("tabPosition");
+    QTest::newRow("West") << QTabWidget::West;
+    QTest::newRow("North") << QTabWidget::North;
+    QTest::newRow("East") << QTabWidget::East;
+    QTest::newRow("South") << QTabWidget::South;
+}
+
+void tst_QTabWidget::setCurrentBeforeShow()
+{
+    QFETCH(QTabWidget::TabPosition, tabPosition);
+
+    QTabWidget tabWidget;
+    tabWidget.setTabPosition(tabPosition);
+
+    QPixmap pm(50, 50);
+    pm.fill(Qt::red);
+    const QIcon icon(pm);
+    for (int i = 0; i < 4; ++i)
+        tabWidget.addTab(new QWidget, icon, QString("Tab %1").arg(i));
+
+    // the tab widget has space for the entire tab bar
+    tabWidget.resize(tabWidget.tabBar()->sizeHint() + QSize(50, 50));
+    tabWidget.setCurrentIndex(2);
+    tabWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tabWidget));
+
+    QCOMPARE_GE(tabWidget.tabBar()->tabRect(0).x(), 0);
+    QCOMPARE_GE(tabWidget.tabBar()->tabRect(0).y(), 0);
+
+    QTest::qWait(2000);
 }
 
 QTEST_MAIN(tst_QTabWidget)
