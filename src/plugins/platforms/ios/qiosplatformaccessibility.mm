@@ -25,8 +25,6 @@ void invalidateCache(QAccessibleInterface *iface)
     // This will invalidate everything regardless of what window the
     // interface belonged to. We might want to revisit this strategy later.
     // (Therefore this function still takes the interface as argument)
-    // It is also responsible for the bug that focus gets temporary lost
-    // when items get added or removed from the screen
     foreach (QWindow *win, QGuiApplication::topLevelWindows()) {
         if (win && win->handle()) {
             QT_PREPEND_NAMESPACE(QIOSWindow) *window = static_cast<QT_PREPEND_NAMESPACE(QIOSWindow) *>(win->handle());
@@ -38,14 +36,25 @@ void invalidateCache(QAccessibleInterface *iface)
 
 void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
-    if (!isActive() || !event->accessibleInterface())
+    auto *accessibleInterface = event->accessibleInterface();
+    if (!isActive() || !accessibleInterface)
         return;
     switch (event->type()) {
     case QAccessible::ObjectCreated:
     case QAccessible::ObjectShow:
     case QAccessible::ObjectHide:
     case QAccessible::ObjectDestroyed:
-        invalidateCache(event->accessibleInterface());
+        invalidateCache(accessibleInterface);
+        switch (accessibleInterface->role()) {
+        case QAccessible::Window:
+        case QAccessible::Dialog:
+            // Bigger changes to the UI require a full reset of VoiceOver
+            UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil);
+            break;
+        default:
+            // While smaller changes can be handled by re-reading the layout
+            UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
+        }
         break;
     default:
         break;
