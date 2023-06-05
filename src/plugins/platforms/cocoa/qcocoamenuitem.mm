@@ -440,7 +440,20 @@ void QCocoaMenuItem::resolveTargetAction()
         roleAction = @selector(selectAll:);
         break;
     default:
-        roleAction = @selector(qt_itemFired:);
+        if (m_menu) {
+            // Menu items that represent sub menus should have submenuAction: as their
+            // action, so that clicking the menu item opens the sub menu without closing
+            // the entire menu hierarchy. A menu item with this action and a valid submenu
+            // will disable NSMenuValidation for the item, which is normally not an issue
+            // as NSMenuItems are enabled by default. But in our case, we haven't attached
+            // the submenu yet, which results in AppKit concluding that there's no validator
+            // for the item (the target is nil, and nothing responds to submenuAction:), and
+            // will in response disable the menu item. To work around this we explicitly
+            // enable the menu item in QCocoaMenu::setAttachedItem() once we have a submenu.
+            roleAction = @selector(submenuAction:);
+        } else {
+            roleAction = @selector(qt_itemFired:);
+        }
     }
 
     m_native.action = roleAction;

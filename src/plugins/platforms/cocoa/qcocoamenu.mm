@@ -483,6 +483,10 @@ void QCocoaMenu::setAttachedItem(NSMenuItem *item)
     if (m_attachedItem)
         m_attachedItem.submenu = m_nativeMenu;
 
+    // NSMenuItems with a submenu and submenuAction: as the item's action
+    // will not take part in NSMenuValidation, so explicitly enable/disable
+    // the item here. See also QCocoaMenuItem::resolveTargetAction()
+    m_attachedItem.enabled = m_attachedItem.hasSubmenu;
 }
 
 NSMenuItem *QCocoaMenu::attachedItem() const
