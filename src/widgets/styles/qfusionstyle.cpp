@@ -241,8 +241,7 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
         arrowRect.moveTo((rect.width() - arrowRect.width()) / 2.0,
                          (rect.height() - arrowRect.height()) / 2.0);
 
-        QPolygonF triangle;
-        triangle.reserve(3);
+        QVarLengthArray<QPointF, 3> triangle;
         switch (type) {
         case Qt::DownArrow:
             triangle << arrowRect.topLeft() << arrowRect.topRight() << QPointF(arrowRect.center().x(), arrowRect.bottom());
@@ -261,7 +260,7 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
         cachePainter.setPen(Qt::NoPen);
         cachePainter.setBrush(color);
         cachePainter.setRenderHint(QPainter::Antialiasing);
-        cachePainter.drawPolygon(triangle);
+        cachePainter.drawPolygon(triangle.data(), int(triangle.size()));
 
         QPixmapCache::insert(cacheKey, cachePixmap);
     }
