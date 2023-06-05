@@ -53,6 +53,7 @@ private:
 #endif
 
 Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
+Q_DECLARE_JNI_CLASS(DisplayMetrics, "android/util/DisplayMetrics")
 
 Q_DECLARE_JNI_TYPE(DisplayMode, "Landroid/view/Display$Mode;")
 
@@ -79,12 +80,21 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
     if (!displayObject.isValid())
         return;
 
-    m_size = QSize(displayObject.callMethod<jint>("getWidth"), displayObject.callMethod<jint>("getHeight"));
     m_name = displayObject.callObjectMethod<jstring>("getName").toString();
     m_refreshRate = displayObject.callMethod<jfloat>("getRefreshRate");
     m_displayId = displayObject.callMethod<jint>("getDisplayId");
 
+    QJniObject displayMetricsObj(QtJniTypes::className<QtJniTypes::DisplayMetrics>());
+    displayObject.callMethod<void>("getRealMetrics", displayMetricsObj.object<QtJniTypes::DisplayMetrics>());
+
+    const int widthPixels = displayMetricsObj.getField<int>("widthPixels");
+    const int heightPixels = displayMetricsObj.getField<int>("heightPixels");
+    m_size = QSize(widthPixels, heightPixels);
+
     if (QNativeInterface::QAndroidApplication::sdkVersion() >= 23) {
+        const qreal xdpi = displayMetricsObj.getField<float>("xdpi");
+        const qreal ydpi = displayMetricsObj.getField<float>("ydpi");
+
         const QJniObject currentMode = displayObject.callObjectMethod<QtJniTypes::DisplayMode>("getMode");
         const jint currentModeId = currentMode.callMethod<jint>("getModeId");
 
@@ -96,8 +106,9 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
         const auto size = env->GetArrayLength(modeArray);
         for (jsize i = 0; i < size; ++i) {
             const auto mode = QJniObject::fromLocalRef(env->GetObjectArrayElement(modeArray, i));
-            const int physicalWidth = mode.callMethod<jint>("getPhysicalWidth");
-            const int physicalHeight = mode.callMethod<jint>("getPhysicalHeight");
+            // Physical sizes in millimeters
+            const int physicalWidth = qRound(mode.callMethod<jint>("getPhysicalWidth") / xdpi * 25.4);
+            const int physicalHeight = qRound(mode.callMethod<jint>("getPhysicalHeight") / ydpi * 25.4);
 
             if (currentModeId == mode.callMethod<jint>("getModeId")) {
                 m_currentMode = i;
