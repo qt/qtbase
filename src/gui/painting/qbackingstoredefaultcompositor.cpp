@@ -426,7 +426,7 @@ void QBackingStoreDefaultCompositor::ensureResources(QRhiSwapChain *swapchain, Q
     }
 
     if (!m_sampler) {
-        m_sampler = m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
+        m_sampler = m_rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
                                       QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
         if (!m_sampler->create())
             qWarning("QBackingStoreDefaultCompositor: Failed to create sampler");
