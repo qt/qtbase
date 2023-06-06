@@ -86,17 +86,35 @@ QCFString::operator CFStringRef() const
 
 #if defined(QT_USE_APPLE_UNIFIED_LOGGING)
 
-bool AppleUnifiedLogger::willMirrorToStderr()
+bool AppleUnifiedLogger::preventsStderrLogging()
 {
-    // When running under Xcode or LLDB, one or more of these variables will
-    // be set, which triggers libsystem_trace.dyld to log messages to stderr
-    // as well, via_os_log_impl_mirror_to_stderr. Un-setting these variables
-    // is not an option, as that would silence normal NSLog or os_log calls,
-    // so instead we skip our own stderr output. See rdar://36919139.
+    // os_log will mirror to stderr if OS_ACTIVITY_DT_MODE is set,
+    // regardless of its value. OS_ACTIVITY_MODE then controls whether
+    // to include info and/or debug messages in this mirroring.
+    // For some reason, when launched under lldb (via Xcode or not),
+    // all levels are included.
+
+    // CFLog will normally log to both stderr, and via os_log.
+    // Setting CFLOG_FORCE_DISABLE_STDERR disables the stderr
+    // logging. Setting CFLOG_FORCE_STDERR will both duplicate
+    // CFLog's output to stderr, and trigger OS_ACTIVITY_DT_MODE,
+    // resulting in os_log calls also being mirrored to stderr.
+    // Setting ACTIVITY_LOG_STDERR has the same effect.
+
+    // NSLog is plumbed to CFLog, and will respond to the same
+    // environment variables as CFLog.
+
+    // We want to disable Qt's default stderr log handler when
+    // os_log has already mirrored to stderr.
     static bool willMirror = qEnvironmentVariableIsSet("OS_ACTIVITY_DT_MODE")
-                                 || qEnvironmentVariableIsSet("ACTIVITY_LOG_STDERR")
-                                 || qEnvironmentVariableIsSet("CFLOG_FORCE_STDERR");
-    return willMirror;
+                          || qEnvironmentVariableIsSet("ACTIVITY_LOG_STDERR")
+                          || qEnvironmentVariableIsSet("CFLOG_FORCE_STDERR");
+
+    // As well as when we suspect that Xcode is going to present os_log
+    // as structured log messages.
+    static bool disableStderr = qEnvironmentVariableIsSet("CFLOG_FORCE_DISABLE_STDERR");
+
+    return willMirror || disableStderr;
 }
 
 QT_MAC_WEAK_IMPORT(_os_log_default);
@@ -137,7 +155,7 @@ bool AppleUnifiedLogger::messageHandler(QtMsgType msgType, const QMessageLogCont
     // system from redacting our log message.
     os_log_with_type(log, logType, "%{public}s", qPrintable(message));
 
-    return willMirrorToStderr();
+    return preventsStderrLogging();
 }
 
 os_log_type_t AppleUnifiedLogger::logTypeForMessageType(QtMsgType msgType)

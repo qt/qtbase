@@ -235,7 +235,7 @@ class Q_CORE_EXPORT AppleUnifiedLogger
 public:
     static bool messageHandler(QtMsgType msgType, const QMessageLogContext &context, const QString &message,
         const QString &subsystem = QString());
-    static bool willMirrorToStderr();
+    static bool preventsStderrLogging();
 private:
     static os_log_type_t logTypeForMessageType(QtMsgType msgType);
     static os_log_t cachedLog(const QString &subsystem, const QString &category);
