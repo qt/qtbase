@@ -52,6 +52,11 @@
 #  define O_PATH        0
 #endif
 
+#ifdef Q_OS_FREEBSD
+__attribute__((weak))
+#endif
+extern char **environ;
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -79,10 +84,6 @@ struct PThreadCancelGuard
 }
 
 #if !defined(Q_OS_DARWIN)
-
-QT_BEGIN_INCLUDE_NAMESPACE
-extern char **environ;
-QT_END_INCLUDE_NAMESPACE
 
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
