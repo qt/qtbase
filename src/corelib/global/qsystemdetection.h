@@ -54,11 +54,6 @@
 #  if defined(TARGET_OS_MAC) && TARGET_OS_MAC
 #    define Q_OS_DARWIN
 #    define Q_OS_BSD4
-#    ifdef __LP64__
-#      define Q_OS_DARWIN64
-#    else
-#      define Q_OS_DARWIN32
-#    endif
 #    if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #      define QT_PLATFORM_UIKIT
 #      if defined(TARGET_OS_WATCH) && TARGET_OS_WATCH
@@ -154,17 +149,27 @@
 
 // Compatibility synonyms
 #ifdef Q_OS_DARWIN
-#define Q_OS_MAC
-#endif
-#ifdef Q_OS_DARWIN32
-#define Q_OS_MAC32
-#endif
-#ifdef Q_OS_DARWIN64
-#define Q_OS_MAC64
-#endif
-#ifdef Q_OS_MACOS
-#define Q_OS_MACX
-#define Q_OS_OSX
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wunknown-pragmas"
+#  define Q_OS_MAC // FIXME: Deprecate
+#  ifdef __LP64__
+#    define Q_OS_DARWIN64
+#    pragma clang deprecated(Q_OS_DARWIN64, "use Q_OS_DARWIN and QT_POINTER_SIZE/Q_PROCESSOR_* instead")
+#    define Q_OS_MAC64
+#    pragma clang deprecated(Q_OS_MAC64, "use Q_OS_DARWIN and QT_POINTER_SIZE/Q_PROCESSOR_* instead")
+#  else
+#    define Q_OS_DARWIN32
+#    pragma clang deprecated(Q_OS_DARWIN32, "use Q_OS_DARWIN and QT_POINTER_SIZE/Q_PROCESSOR_* instead")
+#    define Q_OS_MAC32
+#    pragma clang deprecated(Q_OS_MAC32, "use Q_OS_DARWIN and QT_POINTER_SIZE/Q_PROCESSOR_* instead")
+#  endif
+#  ifdef Q_OS_MACOS
+#    define Q_OS_MACX
+#    pragma clang deprecated(Q_OS_MACX, "use Q_OS_MACOS instead")
+#    define Q_OS_OSX
+#    pragma clang deprecated(Q_OS_OSX, "use Q_OS_MACOS instead")
+#  endif
+#  pragma clang diagnostic pop
 #endif
 
 #ifdef Q_OS_DARWIN
