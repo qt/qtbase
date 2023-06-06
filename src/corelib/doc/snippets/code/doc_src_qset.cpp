@@ -34,7 +34,7 @@ while (i.hasNext()) {
 
 
 //! [5]
-for (auto i = set.cbegin(), end = set.cend(); != end; ++i)
+for (auto i = set.cbegin(), end = set.cend(); i != end; ++i)
     qDebug() << *i;
 //! [5]
 
