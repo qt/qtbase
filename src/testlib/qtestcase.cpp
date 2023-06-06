@@ -1050,10 +1050,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
 
 #if defined(QT_USE_APPLE_UNIFIED_LOGGING)
     // Any explicitly requested loggers will be added by now, so we can check if they use stdout
-    const bool safeToAddAppleLogger = !AppleUnifiedLogger::willMirrorToStderr() || !QTestLog::loggerUsingStdout();
+    const bool safeToAddAppleLogger = !AppleUnifiedLogger::preventsStderrLogging() || !QTestLog::loggerUsingStdout();
     if (safeToAddAppleLogger && QAppleTestLogger::debugLoggingEnabled()) {
         QTestLog::addLogger(QTestLog::Apple, nullptr);
-        if (AppleUnifiedLogger::willMirrorToStderr() && !logFilename)
+        if (AppleUnifiedLogger::preventsStderrLogging() && !logFilename)
             addFallbackLogger = false; // Prevent plain test logger fallback below
     }
 #endif
