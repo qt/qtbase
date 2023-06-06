@@ -169,65 +169,6 @@
 #ifdef Q_OS_DARWIN
 #  include <Availability.h>
 #  include <AvailabilityMacros.h>
-#
-#  // Numerical checks are preferred to named checks, but to be safe
-#  // we define the missing version names in case Qt uses them.
-#
-#  if !defined(__MAC_10_11)
-#       define __MAC_10_11 101100
-#  endif
-#  if !defined(__MAC_10_12)
-#       define __MAC_10_12 101200
-#  endif
-#  if !defined(__MAC_10_13)
-#       define __MAC_10_13 101300
-#  endif
-#  if !defined(__MAC_10_14)
-#       define __MAC_10_14 101400
-#  endif
-#  if !defined(__MAC_10_15)
-#       define __MAC_10_15 101500
-#  endif
-#  if !defined(__MAC_10_16)
-#       define __MAC_10_16 101600
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_11)
-#       define MAC_OS_X_VERSION_10_11 __MAC_10_11
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_12)
-#       define MAC_OS_X_VERSION_10_12 __MAC_10_12
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_13)
-#       define MAC_OS_X_VERSION_10_13 __MAC_10_13
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_14)
-#       define MAC_OS_X_VERSION_10_14 __MAC_10_14
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_15)
-#       define MAC_OS_X_VERSION_10_15 __MAC_10_15
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_16)
-#       define MAC_OS_X_VERSION_10_16 __MAC_10_16
-#  endif
-#
-#  if !defined(__IPHONE_10_0)
-#       define __IPHONE_10_0 100000
-#  endif
-#  if !defined(__IPHONE_10_1)
-#       define __IPHONE_10_1 100100
-#  endif
-#  if !defined(__IPHONE_10_2)
-#       define __IPHONE_10_2 100200
-#  endif
-#  if !defined(__IPHONE_10_3)
-#       define __IPHONE_10_3 100300
-#  endif
-#  if !defined(__IPHONE_11_0)
-#       define __IPHONE_11_0 110000
-#  endif
-#  if !defined(__IPHONE_12_0)
-#       define __IPHONE_12_0 120000
-#  endif
 
 #  define QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(macos, ios, tvos, watchos) \
     ((defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && macos != __MAC_NA && __MAC_OS_X_VERSION_MAX_ALLOWED >= macos) || \
