@@ -236,8 +236,18 @@ static QString fourDigitYear(int year, const QString &zero)
 
 static QString macDateToStringImpl(QDate date, CFDateFormatterStyle style)
 {
-    QCFType<CFDateRef> myDate = date.startOfDay().toCFDate();
+    // Use noon on the given date, to avoid complications that can arise for
+    // dates before 1900 (see QTBUG-54955) using different UTC offset than
+    // QDateTime extrapolates backwards from time_t functions that only work
+    // back to 1900. (Alaska and Phillipines may still be borked, though.)
+    QCFType<CFDateRef> myDate = QDateTime(date, QTime(12, 0)).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
+    // Note: Darwin take the calendar transition from Julian to Gregorian into
+    // account (see QTBUG-54955, again). This means that, just before that
+    // transition, dates are off by ten days, drifting by one day per century
+    // before that, except when the century is a multiple of 400 years. Unless
+    // we can find a way to suppress that, we're stuck with bogus results for
+    // historic dates more than a few centuries back.
     QCFType<CFDateFormatterRef> myFormatter
         = CFDateFormatterCreate(kCFAllocatorDefault, mylocale, style,
                                 kCFDateFormatterNoStyle);
