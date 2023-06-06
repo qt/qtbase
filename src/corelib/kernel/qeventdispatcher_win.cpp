@@ -136,7 +136,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
             QSNDict *sn_vec[4] = { &d->sn_read, &d->sn_write, &d->sn_except, &d->sn_read };
             QSNDict *dict = sn_vec[type];
 
-            QSockNot *sn = dict ? dict->value(wp) : 0;
+            QSockNot *sn = dict ? dict->value(qintptr(wp)) : 0;
             if (sn == nullptr) {
                 d->postActivateSocketNotifiers();
             } else {
@@ -409,7 +409,7 @@ void QEventDispatcherWin32Private::sendTimerEvent(int timerId)
     }
 }
 
-void QEventDispatcherWin32Private::doWsaAsyncSelect(int socket, long event)
+void QEventDispatcherWin32Private::doWsaAsyncSelect(qintptr socket, long event)
 {
     Q_ASSERT(internalHwnd);
     // BoundsChecker may emit a warning for WSAAsyncSelect when event == 0
@@ -558,7 +558,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
-    int sockfd = notifier->socket();
+    qintptr sockfd = notifier->socket();
     int type = notifier->type();
 #ifndef QT_NO_DEBUG
     if (sockfd < 0) {
@@ -582,7 +582,7 @@ void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
         const char *t[] = { "Read", "Write", "Exception" };
     /* Variable "socket" below is a function pointer. */
         qWarning("QSocketNotifier: Multiple socket notifiers for "
-                 "same socket %d and type %s", sockfd, t[type]);
+                 "same socket %" PRIdQINTPTR " and type %s", sockfd, t[type]);
     }
 
     QSockNot *sn = new QSockNot;
@@ -626,7 +626,7 @@ void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
 #ifndef QT_NO_DEBUG
-    int sockfd = notifier->socket();
+    qintptr sockfd = notifier->socket();
     if (sockfd < 0) {
         qWarning("QEventDispatcherWin32::unregisterSocketNotifier: invalid socket identifier");
         return;
@@ -643,7 +643,7 @@ void QEventDispatcherWin32::doUnregisterSocketNotifier(QSocketNotifier *notifier
 {
     Q_D(QEventDispatcherWin32);
     int type = notifier->type();
-    int sockfd = notifier->socket();
+    qintptr sockfd = notifier->socket();
     Q_ASSERT(sockfd >= 0);
 
     QSFDict::iterator it = d->active_fd.find(sockfd);
