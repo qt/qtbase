@@ -402,7 +402,9 @@ Q_DECL_UNUSED Q_DECL_COLD_FUNCTION static QDebug &operator<<(QDebug &d, ElfHeade
 #ifdef EM_RISCV
     case EM_RISCV:      d << ", RISC-V"; break;
 #endif
+#ifdef EM_S390
     case EM_S390:       d << ", S/390"; break;
+#endif
     case EM_SH:         d << ", SuperH"; break;
     case EM_SPARC:      d << ", SPARC"; break;
     case EM_SPARCV9:    d << ", SPARCv9"; break;
