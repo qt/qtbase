@@ -57,7 +57,7 @@ while (i.hasNext()) {
 
 
 //! [8]
-for (auto i = map.cbegin(), end = map.cend(); != end; ++i)
+for (auto i = hash.cbegin(), end = hash.cend(); i != end; ++i)
     cout << qPrintable(i.key()) << ": " << i.value() << endl;
 //! [8]
 
