@@ -150,7 +150,7 @@ static QVariant macDayName(int day, QSystemLocale::QueryType type)
 
 static QVariant macDateToString(QDate date, bool short_format)
 {
-    QCFType<CFDateRef> myDate = QDateTime(date, QTime()).toCFDate();
+    QCFType<CFDateRef> myDate = QDateTime(date, QTime(12, 0)).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
     CFDateFormatterStyle style = short_format ? kCFDateFormatterShortStyle : kCFDateFormatterLongStyle;
     QCFType<CFDateFormatterRef> myFormatter
