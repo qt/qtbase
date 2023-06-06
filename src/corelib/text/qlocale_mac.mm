@@ -251,7 +251,7 @@ static QString macDateToStringImpl(QDate date, CFDateFormatterStyle style)
     QCFType<CFDateFormatterRef> myFormatter
         = CFDateFormatterCreate(kCFAllocatorDefault, mylocale, style,
                                 kCFDateFormatterNoStyle);
-    QCFType<CFStringRef> text = CFDateFormatterCreateStringWithDate(0, myFormatter, myDate);
+    QCFType<CFStringRef> text = CFDateFormatterCreateStringWithDate(nullptr, myFormatter, myDate);
     return QString::fromCFString(text);
 }
 
