@@ -9,6 +9,8 @@ QT_USE_NAMESPACE
 
 #if QT_GUI_REMOVED_SINCE(6, 6)
 
+#include "qpixmapcache.h" // inlined API
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically
