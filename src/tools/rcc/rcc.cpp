@@ -929,13 +929,17 @@ bool RCCResourceLibrary::output(QIODevice &outDevice, QIODevice &tempDevice, QIO
                     m_errorDevice->write("No data signature found\n");
                     return false;
                 }
+
+                if (c != pattern[i]) {
+                    for (int k = 0; k < i; ++k)
+                        outDevice.putChar(pattern[k]);
+                    i = 0;
+                }
+
                 if (c == pattern[i]) {
                     ++i;
                 } else {
-                    for (int k = 0; k < i; ++k)
-                        outDevice.putChar(pattern[k]);
                     outDevice.putChar(c);
-                    i = 0;
                 }
             }
 
