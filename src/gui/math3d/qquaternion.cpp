@@ -227,8 +227,6 @@ float QQuaternion::lengthSquared() const
 QQuaternion QQuaternion::normalized() const
 {
     const float scale = length();
-    if (qFuzzyCompare(scale, 1.0f))
-        return *this;
     if (qFuzzyIsNull(scale))
         return QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
     return *this / scale;
@@ -243,7 +241,7 @@ QQuaternion QQuaternion::normalized() const
 void QQuaternion::normalize()
 {
     const float len = length();
-    if (qFuzzyCompare(len, 1.0f) || qFuzzyIsNull(len))
+    if (qFuzzyIsNull(len))
         return;
 
     xp /= len;
