@@ -171,17 +171,6 @@
 #  include <Availability.h>
 #  include <AvailabilityMacros.h>
 #
-#  ifdef Q_OS_MACOS
-#    if !defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_6
-#       undef __MAC_OS_X_VERSION_MIN_REQUIRED
-#       define __MAC_OS_X_VERSION_MIN_REQUIRED __MAC_10_6
-#    endif
-#    if !defined(MAC_OS_X_VERSION_MIN_REQUIRED) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
-#       undef MAC_OS_X_VERSION_MIN_REQUIRED
-#       define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_6
-#    endif
-#  endif
-#
 #  // Numerical checks are preferred to named checks, but to be safe
 #  // we define the missing version names in case Qt uses them.
 #
