@@ -20,11 +20,6 @@
 #  error "Need ELF header to parse plugins."
 #endif
 
-// Support older ELFOSABI define for GNU/Linux
-#if !defined(ELFOSABI_GNU) && defined(ELFOSABI_LINUX)
-#  define ELFOSABI_GNU ELFOSABI_LINUX
-#endif
-
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -340,7 +335,7 @@ Q_DECL_UNUSED Q_DECL_COLD_FUNCTION static QDebug &operator<<(QDebug &d, ElfHeade
     case ELFOSABI_SYSV:     d << " (SYSV"; break;
     case ELFOSABI_HPUX:     d << " (HP-UX"; break;
     case ELFOSABI_NETBSD:   d << " (NetBSD"; break;
-    case ELFOSABI_GNU:      d << " (GNU/Linux"; break;
+    case ELFOSABI_LINUX:    d << " (GNU/Linux"; break;
     case ELFOSABI_SOLARIS:  d << " (Solaris"; break;
     case ELFOSABI_AIX:      d << " (AIX"; break;
     case ELFOSABI_IRIX:     d << " (IRIX"; break;
