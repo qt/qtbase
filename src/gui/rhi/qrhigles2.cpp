@@ -3354,7 +3354,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             f->glBlitFramebuffer(0, 0, cmd.args.blitFromRb.w, cmd.args.blitFromRb.h,
                                  0, 0, cmd.args.blitFromRb.w, cmd.args.blitFromRb.h,
                                  GL_COLOR_BUFFER_BIT,
-                                 GL_LINEAR);
+                                 GL_NEAREST); // Qt 5 used Nearest when resolving samples, stick to that
             f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
             f->glDeleteFramebuffers(2, fbo);
         }
