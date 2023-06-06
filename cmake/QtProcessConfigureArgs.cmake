@@ -55,7 +55,10 @@ if("${MODULE_ROOT}" STREQUAL "")
     set(qtbase_or_top_level_build TRUE)
 else()
     # If MODULE_ROOT is passed without drive letter, we try to add it to the path.
-    get_filename_component(MODULE_ROOT "." REALPATH BASE_DIR "${MODULE_ROOT}")
+    # The check is necessary; otherwise, `get_filename_component` returns an empty string.
+    if(NOT MODULE_ROOT STREQUAL ".")
+        get_filename_component(MODULE_ROOT "." REALPATH BASE_DIR "${MODULE_ROOT}")
+    endif()
     set(qtbase_or_top_level_build FALSE)
 endif()
 set(configure_filename "configure.cmake")
