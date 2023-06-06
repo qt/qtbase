@@ -1,6 +1,6 @@
-# Copyright (C) 2022 The Qt Company Ltd.
+# Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(ANDROID)
-    add_subdirectory(androidnotifier)
+    qt_internal_add_example(androidnotifier)
 endif()
