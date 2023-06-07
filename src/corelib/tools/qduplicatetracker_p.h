@@ -16,7 +16,7 @@
 
 #include <private/qglobal_p.h>
 
-#if __has_include(<memory_resource>)
+#ifdef __cpp_lib_memory_resource
 #  include <unordered_set>
 #  include <memory_resource>
 #  include <qhash.h> // for the hashing helpers
