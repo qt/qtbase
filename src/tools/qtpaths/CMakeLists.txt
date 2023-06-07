@@ -26,6 +26,7 @@ qt_internal_return_unless_building_tools()
 qt_internal_extend_target(${target_name} CONDITION QT_FEATURE_settings
     LIBRARIES
         QtLibraryInfo
+        Qt::CorePrivate
 )
 
 if(WIN32 AND TARGET ${target_name})
