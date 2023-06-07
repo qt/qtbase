@@ -37,6 +37,15 @@ namespace QtStringBuilder {
     { typedef A ConvertTo; };
     template <typename T> struct ConvertToTypeHelper<T, QString>
     { typedef QString ConvertTo; };
+
+    template <typename T> using HasIsNull = decltype(std::declval<const T &>().isNull());
+    template <typename T> bool isNull(const T &t)
+    {
+        if constexpr (qxp::is_detected_v<HasIsNull, T>)
+            return t.isNull();
+        else
+            return false;
+    }
 }
 
 template<typename Builder, typename T>
@@ -72,6 +81,12 @@ private:
     friend class QString;
     template <typename T> T convertTo() const
     {
+        if (isNull()) {
+            // appending two null strings must give back a null string,
+            // so we're special casing this one out, QTBUG-114206
+            return T();
+        }
+
         const qsizetype len = QConcatenable< QStringBuilder<A, B> >::size(*this);
         T s(len, Qt::Uninitialized);
 
@@ -96,48 +111,14 @@ public:
 
     qsizetype size() const { return Concatenable::size(*this); }
 
+    bool isNull() const
+    {
+        return QtStringBuilder::isNull(a) && QtStringBuilder::isNull(b);
+    }
+
     const A &a;
     const B &b;
 };
-
-// This specialization is here for backwards compatibility: appending
-// two null strings must give back a null string, so we're special
-// casing this one out.
-template <>
-class QStringBuilder <QString, QString> : public QStringBuilderBase<QStringBuilder<QString, QString>, QString>
-{
-    public:
-        QStringBuilder(const QString &a_, const QString &b_) : a(a_), b(b_) {}
-        QStringBuilder(const QStringBuilder &other) : a(other.a), b(other.b) {}
-
-        operator QString() const
-        { QString r(a); r += b; return r; }
-
-        const QString &a;
-        const QString &b;
-
-    private:
-        QStringBuilder &operator=(const QStringBuilder &) = delete;
-};
-
-// Ditto, but see QTBUG-114238
-template <>
-class QStringBuilder <QByteArray, QByteArray> : public QStringBuilderBase<QStringBuilder<QByteArray, QByteArray>, QByteArray>
-{
-    public:
-        QStringBuilder(const QByteArray &a_, const QByteArray &b_) : a(a_), b(b_) {}
-        QStringBuilder(const QStringBuilder &other) : a(other.a), b(other.b) {}
-
-        operator QByteArray() const
-        { QByteArray r(a); r += b; return r; }
-
-        const QByteArray &a;
-        const QByteArray &b;
-
-    private:
-        QStringBuilder &operator=(const QStringBuilder &) = delete;
-};
-
 
 template <> struct QConcatenable<char> : private QAbstractConcatenable
 {

@@ -78,7 +78,7 @@ void checkItWorksWithFreeSpaceAtBegin(const String &chunk, const Separator &sepa
 }
 
 template <typename String>
-void checkNullVsEmpty(const String &empty, const char *failureReason = nullptr)
+void checkNullVsEmpty(const String &empty)
 {
     String a;
     String b;
@@ -92,12 +92,10 @@ void checkNullVsEmpty(const String &empty, const char *failureReason = nullptr)
     QVERIFY(!d.isNull());
     result = a P d;
     QVERIFY(result.isEmpty());
-    if (failureReason)
-        QEXPECT_FAIL("", failureReason, Continue);
     QVERIFY(!result.isNull());
 
     result = a P a P a;
-    QVERIFY(!result.isNull());
+    QVERIFY(result.isNull());
 }
 
 void runScenario()
@@ -381,7 +379,7 @@ void runScenario()
 
     // null vs. empty
     checkNullVsEmpty(QStringLiteral(""));
-    checkNullVsEmpty(QByteArrayLiteral(""), "QTBUG-114238: inconsistent isEmpty/isNull between QString and QByteArray concatenation");
+    checkNullVsEmpty(QByteArrayLiteral(""));
 
     checkItWorksWithFreeSpaceAtBegin(QByteArray(UTF8_LITERAL), "1234");
     if (QTest::currentTestFailed())
