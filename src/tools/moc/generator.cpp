@@ -525,8 +525,7 @@ void Generator::generateCode()
     // metatypes for enums
     for (const EnumDef &e : std::as_const(cdef->enumList)) {
         fprintf(out, "%s\n        // enum '%s'\n        %s",
-                comma, e.name.constData(),
-                stringForType(cdef->classname % "::" % e.name, true).constData());
+                comma, e.name.constData(), stringForType(e.qualifiedType(cdef), true).constData());
         comma = ",";
     }
 

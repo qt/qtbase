@@ -203,6 +203,27 @@ namespace TestQNamespace {
     Q_FLAG_NS(TestFlag2)
 }
 
+namespace TestSameEnumNamespace {
+    Q_NAMESPACE
+
+    enum class TestSameEnumNamespace {
+        Key1 = 1,
+        Key2 = 2,
+    };
+    Q_ENUM_NS(TestSameEnumNamespace)
+}
+
+namespace TestNestedSameEnumNamespace {
+namespace a {
+    Q_NAMESPACE
+    // enum class with the same name as the enclosing nested namespace
+    enum class a {
+        Key11 = 11,
+        Key12 = 12,
+    };
+    Q_ENUM_NS(a)
+}
+}
 
 namespace TestExportNamespace {
     Q_NAMESPACE_EXPORT(TESTEXPORTMACRO)
@@ -789,6 +810,7 @@ private slots:
     void optionsFileError_data();
     void optionsFileError();
     void testQNamespace();
+    void testNestedQNamespace();
     void cxx17Namespaces();
     void cxxAttributes();
     void mocJsonOutput();
@@ -4080,6 +4102,28 @@ class EnumFromNamespaceClass : public QObject
 public:
     FooNamespace::Enum1 prop() { return FooNamespace::Enum1::Key2; }
 };
+
+void tst_Moc::testNestedQNamespace()
+{
+    QCOMPARE(TestSameEnumNamespace::staticMetaObject.enumeratorCount(), 1);
+    checkEnum(TestSameEnumNamespace::staticMetaObject.enumerator(0), "TestSameEnumNamespace",
+                {{"Key1", 1}, {"Key2", 2}});
+    QMetaEnum meta1 = QMetaEnum::fromType<TestSameEnumNamespace::TestSameEnumNamespace>();
+    QVERIFY(meta1.isValid());
+    QCOMPARE(meta1.name(), "TestSameEnumNamespace");
+    QCOMPARE(meta1.enclosingMetaObject(), &TestSameEnumNamespace::staticMetaObject);
+    QCOMPARE(meta1.keyCount(), 2);
+
+    // QTBUG-112996
+    QCOMPARE(TestNestedSameEnumNamespace::a::staticMetaObject.enumeratorCount(), 1);
+    checkEnum(TestNestedSameEnumNamespace::a::staticMetaObject.enumerator(0), "a",
+              {{"Key11", 11}, {"Key12", 12}});
+    QMetaEnum meta2 = QMetaEnum::fromType<TestNestedSameEnumNamespace::a::a>();
+    QVERIFY(meta2.isValid());
+    QCOMPARE(meta2.name(), "a");
+    QCOMPARE(meta2.enclosingMetaObject(), &TestNestedSameEnumNamespace::a::staticMetaObject);
+    QCOMPARE(meta2.keyCount(), 2);
+}
 
 void tst_Moc::testQNamespace()
 {
