@@ -10,12 +10,9 @@
 //! [0]
 MainWindow::MainWindow()
 {
-    QStringList labels;
-    labels << tr("Title") << tr("Location");
-
     treeWidget = new QTreeWidget;
     treeWidget->header()->setSectionResizeMode(QHeaderView::Stretch);
-    treeWidget->setHeaderLabels(labels);
+    treeWidget->setHeaderLabels(QStringList{ tr("Title"), tr("Location") });
 #if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_CLIPBOARD)
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(treeWidget, &QWidget::customContextMenuRequested,

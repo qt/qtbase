@@ -69,9 +69,7 @@ void XbelReader::readXBEL()
 void XbelReader::readTitle(QTreeWidgetItem *item)
 {
     Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("title"));
-
-    QString title = xml.readElementText();
-    item->setText(0, title);
+    item->setText(0, xml.readElementText());
 }
 //! [4]
 
@@ -129,12 +127,7 @@ void XbelReader::readBookmark(QTreeWidgetItem *item)
 
 QTreeWidgetItem *XbelReader::createChildItem(QTreeWidgetItem *item)
 {
-    QTreeWidgetItem *childItem;
-    if (item) {
-        childItem = new QTreeWidgetItem(item);
-    } else {
-        childItem = new QTreeWidgetItem(treeWidget);
-    }
+    QTreeWidgetItem *childItem = item ? new QTreeWidgetItem(item) : new QTreeWidgetItem(treeWidget);
     childItem->setData(0, Qt::UserRole, xml.name().toString());
     return childItem;
 }
