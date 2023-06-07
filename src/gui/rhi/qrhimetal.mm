@@ -5582,9 +5582,12 @@ QSize QMetalSwapChain::surfacePixelSize()
 
 bool QMetalSwapChain::isFormatSupported(Format f)
 {
-#ifdef Q_OS_MACOS
-    return f == SDR || f == HDRExtendedSrgbLinear;
-#endif
+    if (f == HDRExtendedSrgbLinear) {
+        if (@available(macOS 10.11, iOS 16.0, *))
+            return true;
+        else
+            return false;
+    }
     return f == SDR;
 }
 
@@ -5652,13 +5655,13 @@ bool QMetalSwapChain::createOrResize()
     chooseFormats();
     if (d->colorFormat != d->layer.pixelFormat)
         d->layer.pixelFormat = d->colorFormat;
-#ifdef Q_OS_MACOS
-    // Can't enable this on iOS until wantsExtendedDynamicRangeContent is available
+
     if (m_format == HDRExtendedSrgbLinear) {
-        d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
-        d->layer.wantsExtendedDynamicRangeContent = YES;
+        if (@available(macOS 10.11, iOS 16.0, *)) {
+            d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+            d->layer.wantsExtendedDynamicRangeContent = YES;
+        }
     }
-#endif
 
     if (m_flags.testFlag(UsedAsTransferSource))
         d->layer.framebufferOnly = NO;
