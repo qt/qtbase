@@ -1,8 +1,8 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QNETWORKREPLYFILEIMPL_H
-#define QNETWORKREPLYFILEIMPL_H
+#ifndef QNETWORKREPLYFILEIMPL_P_H
+#define QNETWORKREPLYFILEIMPL_P_H
 
 //
 //  W A R N I N G
@@ -65,4 +65,4 @@ QT_END_NAMESPACE
 QT_DECL_METATYPE_EXTERN_TAGGED(QNetworkRequest::KnownHeaders,
                                QNetworkRequest__KnownHeaders, Q_NETWORK_EXPORT)
 
-#endif // QNETWORKREPLYFILEIMPL_H
+#endif // QNETWORKREPLYFILEIMPL_P_H
