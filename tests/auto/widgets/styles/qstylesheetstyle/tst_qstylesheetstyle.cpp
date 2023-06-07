@@ -120,6 +120,8 @@ private slots:
 
     void iconSizes_data();
     void iconSizes();
+    void inheritWidgetPalette_data();
+    void inheritWidgetPalette();
 
 private:
     static QColor COLOR(const QWidget &w)
@@ -2452,6 +2454,31 @@ void tst_QStyleSheetStyle::iconSizes()
     button.setFont(font);
     button.setStyleSheet(styleSheet);
     QCOMPARE(button.iconSize(), iconSize);
+}
+
+void tst_QStyleSheetStyle::inheritWidgetPalette_data()
+{
+    QTest::addColumn<const QString>("styleSheet");
+    QTest::addColumn<const QColor>("phColorPalette");
+
+    QTest::addRow("blueAndGreen") << "QLineEdit {color: rgb(0,0,255);}" << QColor(Qt::green);
+    QTest::addRow("emptyStyleSheet") << QString() << QColor(Qt::green);
+
+}
+
+void tst_QStyleSheetStyle::inheritWidgetPalette()
+{
+    QFETCH(const QString, styleSheet);
+    QFETCH(const QColor, phColorPalette);
+
+    QLineEdit edit;
+    QPalette palette = edit.palette();
+    palette.setBrush(QPalette::PlaceholderText, phColorPalette);
+    edit.setPalette(palette);
+    edit.setStyleSheet(styleSheet);
+    const QColor phColor = edit.palette().placeholderText().color();
+
+    QCOMPARE(phColor, phColorPalette);
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)
