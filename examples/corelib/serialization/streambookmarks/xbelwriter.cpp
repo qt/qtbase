@@ -6,9 +6,7 @@
 #include "xbelwriter.h"
 #include "xbelreader.h"
 
-static inline QString yesValue() { return QStringLiteral("yes"); }
-static inline QString noValue() { return QStringLiteral("no"); }
-static inline QString titleElement() { return QStringLiteral("title"); }
+using namespace Qt::StringLiterals;
 
 //! [0]
 XbelWriter::XbelWriter(const QTreeWidget *treeWidget)
@@ -24,9 +22,9 @@ bool XbelWriter::writeFile(QIODevice *device)
     xml.setDevice(device);
 
     xml.writeStartDocument();
-    xml.writeDTD(QStringLiteral("<!DOCTYPE xbel>"));
-    xml.writeStartElement(QStringLiteral("xbel"));
-    xml.writeAttribute(XbelReader::versionAttribute(), QStringLiteral("1.0"));
+    xml.writeDTD("<!DOCTYPE xbel>"_L1);
+    xml.writeStartElement("xbel"_L1);
+    xml.writeAttribute("version"_L1, "1.0"_L1);
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         writeItem(treeWidget->topLevelItem(i));
 
@@ -39,21 +37,21 @@ bool XbelWriter::writeFile(QIODevice *device)
 void XbelWriter::writeItem(const QTreeWidgetItem *item)
 {
     QString tagName = item->data(0, Qt::UserRole).toString();
-    if (tagName == QLatin1String("folder")) {
+    if (tagName == "folder"_L1) {
         bool folded = !item->isExpanded();
         xml.writeStartElement(tagName);
-        xml.writeAttribute(XbelReader::foldedAttribute(), folded ? yesValue() : noValue());
-        xml.writeTextElement(titleElement(), item->text(0));
+        xml.writeAttribute("folded"_L1, folded ? "yes"_L1 : "no"_L1);
+        xml.writeTextElement("title"_L1, item->text(0));
         for (int i = 0; i < item->childCount(); ++i)
             writeItem(item->child(i));
         xml.writeEndElement();
-    } else if (tagName == QLatin1String("bookmark")) {
+    } else if (tagName == "bookmark"_L1) {
         xml.writeStartElement(tagName);
         if (!item->text(1).isEmpty())
-            xml.writeAttribute(XbelReader::hrefAttribute(), item->text(1));
-        xml.writeTextElement(titleElement(), item->text(0));
+            xml.writeAttribute("href"_L1, item->text(1));
+        xml.writeTextElement("title"_L1, item->text(0));
         xml.writeEndElement();
-    } else if (tagName == QLatin1String("separator")) {
+    } else if (tagName == "separator"_L1) {
         xml.writeEmptyElement(tagName);
     }
 }

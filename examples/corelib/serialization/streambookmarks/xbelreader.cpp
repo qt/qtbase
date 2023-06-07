@@ -5,6 +5,8 @@
 
 #include "xbelreader.h"
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 XbelReader::XbelReader(QTreeWidget *treeWidget)
     : treeWidget(treeWidget)
@@ -25,8 +27,8 @@ bool XbelReader::read(QIODevice *device)
     xml.setDevice(device);
 
     if (xml.readNextStartElement()) {
-        if (xml.name() == QLatin1String("xbel")
-            && xml.attributes().value(versionAttribute()) == QLatin1String("1.0")) {
+        if (xml.name() == "xbel"_L1
+            && xml.attributes().value("version"_L1) == "1.0"_L1) {
             readXBEL();
         } else {
             xml.raiseError(QObject::tr("The file is not an XBEL version 1.0 file."));
@@ -50,14 +52,14 @@ QString XbelReader::errorString() const
 //! [3]
 void XbelReader::readXBEL()
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("xbel"));
+    Q_ASSERT(xml.isStartElement() && xml.name() == "xbel"_L1);
 
     while (xml.readNextStartElement()) {
-        if (xml.name() == QLatin1String("folder"))
+        if (xml.name() == "folder"_L1)
             readFolder(nullptr);
-        else if (xml.name() == QLatin1String("bookmark"))
+        else if (xml.name() == "bookmark"_L1)
             readBookmark(nullptr);
-        else if (xml.name() == QLatin1String("separator"))
+        else if (xml.name() == "separator"_L1)
             readSeparator(nullptr);
         else
             xml.skipCurrentElement();
@@ -68,7 +70,7 @@ void XbelReader::readXBEL()
 //! [4]
 void XbelReader::readTitle(QTreeWidgetItem *item)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("title"));
+    Q_ASSERT(xml.isStartElement() && xml.name() == "title"_L1);
     item->setText(0, xml.readElementText());
 }
 //! [4]
@@ -76,7 +78,7 @@ void XbelReader::readTitle(QTreeWidgetItem *item)
 //! [5]
 void XbelReader::readSeparator(QTreeWidgetItem *item)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("separator"));
+    Q_ASSERT(xml.isStartElement() && xml.name() == "separator"_L1);
 
     QTreeWidgetItem *separator = createChildItem(item);
     separator->setFlags(item ? item->flags() & ~Qt::ItemIsSelectable : Qt::ItemFlags{});
@@ -87,20 +89,20 @@ void XbelReader::readSeparator(QTreeWidgetItem *item)
 
 void XbelReader::readFolder(QTreeWidgetItem *item)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("folder"));
+    Q_ASSERT(xml.isStartElement() && xml.name() == "folder"_L1);
 
     QTreeWidgetItem *folder = createChildItem(item);
-    bool folded = (xml.attributes().value(foldedAttribute()) != QLatin1String("no"));
+    bool folded = xml.attributes().value("folded"_L1) != "no"_L1;
     folder->setExpanded(!folded);
 
     while (xml.readNextStartElement()) {
-        if (xml.name() == QLatin1String("title"))
+        if (xml.name() == "title"_L1)
             readTitle(folder);
-        else if (xml.name() == QLatin1String("folder"))
+        else if (xml.name() == "folder"_L1)
             readFolder(folder);
-        else if (xml.name() == QLatin1String("bookmark"))
+        else if (xml.name() == "bookmark"_L1)
             readBookmark(folder);
-        else if (xml.name() == QLatin1String("separator"))
+        else if (xml.name() == "separator"_L1)
             readSeparator(folder);
         else
             xml.skipCurrentElement();
@@ -109,16 +111,16 @@ void XbelReader::readFolder(QTreeWidgetItem *item)
 
 void XbelReader::readBookmark(QTreeWidgetItem *item)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("bookmark"));
+    Q_ASSERT(xml.isStartElement() && xml.name() == "bookmark"_L1);
 
     QTreeWidgetItem *bookmark = createChildItem(item);
     bookmark->setFlags(bookmark->flags() | Qt::ItemIsEditable);
     bookmark->setIcon(0, bookmarkIcon);
     bookmark->setText(0, QObject::tr("Unknown title"));
-    bookmark->setText(1, xml.attributes().value(hrefAttribute()).toString());
+    bookmark->setText(1, xml.attributes().value("href"_L1).toString());
 
     while (xml.readNextStartElement()) {
-        if (xml.name() == QLatin1String("title"))
+        if (xml.name() == "title"_L1)
             readTitle(bookmark);
         else
             xml.skipCurrentElement();
