@@ -1055,6 +1055,11 @@
 // Also disable <atomic>, since it's clearly not there
 #  undef Q_COMPILER_ATOMICS
 # endif
+# if defined(Q_CC_CLANG) && defined(Q_OS_MAC) && defined(__cpp_lib_memory_resource) \
+   && ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED)  && __MAC_OS_X_VERSION_MIN_REQUIRED  < 140000) \
+    || (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED < 170000))
+#  undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
+# endif
 # if defined(Q_CC_CLANG) && defined(Q_CC_INTEL) && Q_CC_INTEL >= 1500
 // ICC 15.x and 16.0 have their own implementation of std::atomic, which is activated when in Clang mode
 // (probably because libc++'s <atomic> on OS X failed to compile), but they're missing some
