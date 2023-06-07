@@ -4793,8 +4793,10 @@ bool QD3D11SwapChain::isFormatSupported(Format f)
 
     QRHI_RES_RHI(QRhiD3D11);
     DXGI_OUTPUT_DESC1 desc1;
-    if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &desc1))
-        return desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+    if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &desc1)) {
+        if (desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)
+            return f == QRhiSwapChain::HDRExtendedSrgbLinear || f == QRhiSwapChain::HDR10;
+    }
 
     return false;
 }
