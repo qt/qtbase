@@ -357,6 +357,7 @@ public:
     void updateFocusPolicy();
     void showPopupFromMouseEvent(QMouseEvent *e);
     void doHidePopup();
+    void updateCurrentText(const QString &text);
 
 #ifdef Q_OS_MAC
     void cleanupNativePopup();
@@ -382,6 +383,7 @@ public:
     QPersistentModelIndex currentIndex;
     QPersistentModelIndex root;
     QString placeholderText;
+    QString currentText;
     QRect hoverRect;
     QSize iconSize;
     mutable QSize minimumSizeHint;

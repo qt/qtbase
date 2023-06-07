@@ -904,8 +904,11 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     \fn void QComboBox::currentTextChanged(const QString &text)
     \since 5.0
 
-    This signal is sent whenever currentText changes. The new value
-    is passed as \a text.
+    This signal is emitted whenever currentText changes.
+    The new value is passed as \a text.
+
+    \note It is not emitted, if currentText remains the same,
+    even if currentIndex changes.
 */
 
 /*!
@@ -1071,7 +1074,7 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
             lineEdit->setText(text);
             updateLineEditGeometry();
         } else {
-            emit q->currentTextChanged(text);
+            updateCurrentText(text);
         }
         q->update();
 #if QT_CONFIG(accessibility)
@@ -1382,7 +1385,7 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     emit q->currentIndexChanged(index.row());
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
-        emit q->currentTextChanged(text);
+        updateCurrentText(text);
 #if QT_CONFIG(accessibility)
     QAccessibleValueChangeEvent event(q, text);
     QAccessible::updateAccessibility(&event);
@@ -2846,6 +2849,15 @@ void QComboBoxPrivate::doHidePopup()
         container->hide();
 
     _q_resetButton();
+}
+
+void QComboBoxPrivate::updateCurrentText(const QString &text)
+{
+    if (text == currentText)
+        return;
+
+    currentText = text;
+    emit q_func()->currentTextChanged(text);
 }
 
 /*!
