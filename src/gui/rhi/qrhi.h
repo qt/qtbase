@@ -1485,6 +1485,7 @@ struct QRhiSwapChainHdrInfo
         } luminanceInNits;
         struct {
             float maxColorComponentValue;
+            float maxPotentialColorComponentValue;
         } colorComponentValue;
     } limits;
 };

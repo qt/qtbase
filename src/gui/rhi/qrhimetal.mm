@@ -6338,12 +6338,16 @@ QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfo()
         // Must use m_window, not window, given this may be called before createOrResize().
 #ifdef Q_OS_MACOS
         NSView *view = reinterpret_cast<NSView *>(m_window->winId());
-        info.limits.colorComponentValue.maxColorComponentValue = view.window.screen.maximumExtendedDynamicRangeColorComponentValue;
+        NSScreen *screen = view.window.screen;
+        info.limits.colorComponentValue.maxColorComponentValue = screen.maximumExtendedDynamicRangeColorComponentValue;
+        info.limits.colorComponentValue.maxPotentialColorComponentValue = screen.maximumPotentialExtendedDynamicRangeColorComponentValue;
         info.isHardCodedDefaults = false;
 #else
         if (@available(iOS 16.0, *)) {
             UIView *view = reinterpret_cast<UIView *>(m_window->winId());
+            UIScreen *screen = view.window.windowScene.screen;
             info.limits.colorComponentValue.maxColorComponentValue = view.window.windowScene.screen.currentEDRHeadroom;
+            info.limits.colorComponentValue.maxPotentialColorComponentValue = screen.potentialEDRHeadroom;
             info.isHardCodedDefaults = false;
         }
 #endif
