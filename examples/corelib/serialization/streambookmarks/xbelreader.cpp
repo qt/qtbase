@@ -54,11 +54,11 @@ void XbelReader::readXBEL()
 
     while (xml.readNextStartElement()) {
         if (xml.name() == QLatin1String("folder"))
-            readFolder(0);
+            readFolder(nullptr);
         else if (xml.name() == QLatin1String("bookmark"))
-            readBookmark(0);
+            readBookmark(nullptr);
         else if (xml.name() == QLatin1String("separator"))
-            readSeparator(0);
+            readSeparator(nullptr);
         else
             xml.skipCurrentElement();
     }
