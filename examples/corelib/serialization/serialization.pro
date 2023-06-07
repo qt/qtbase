@@ -6,6 +6,4 @@ SUBDIRS = \
 
 qtHaveModule(widgets) {
     SUBDIRS +=  streambookmarks
-    qtHaveModule(network): SUBDIRS += \
-                rsslisting
 }
