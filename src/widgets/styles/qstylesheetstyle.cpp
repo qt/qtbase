@@ -1465,6 +1465,16 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorRole fr, QPalette
         p->setBrush(QPalette::AlternateBase, pal->alternateBackground);
 }
 
+void setDefault(QPalette *palette, QPalette::ColorGroup group, QPalette::ColorRole role,
+                const QBrush &defaultBrush, const QWidget *widget)
+{
+    const QPalette &widgetPalette = widget->palette();
+    if (widgetPalette.isBrushSet(group, role))
+        palette->setBrush(group, role, widgetPalette.brush(group, role));
+    else
+        palette->setBrush(group, role, defaultBrush);
+}
+
 void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const QWidget *w, bool embedded)
 {
     if (bg && bg->brush.style() != Qt::NoBrush) {
@@ -1486,15 +1496,15 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
         return;
 
     if (pal->foreground.style() != Qt::NoBrush) {
-        p->setBrush(cg, QPalette::ButtonText, pal->foreground);
-        p->setBrush(cg, w->foregroundRole(), pal->foreground);
-        p->setBrush(cg, QPalette::WindowText, pal->foreground);
-        p->setBrush(cg, QPalette::Text, pal->foreground);
+        setDefault(p, cg, QPalette::ButtonText, pal->foreground, w);
+        setDefault(p, cg, w->foregroundRole(), pal->foreground, w);
+        setDefault(p, cg, QPalette::WindowText, pal->foreground, w);
+        setDefault(p, cg, QPalette::Text, pal->foreground, w);
         QColor phColor(pal->foreground.color());
         phColor.setAlpha((phColor.alpha() + 1) / 2);
         QBrush placeholder = pal->foreground;
         placeholder.setColor(phColor);
-        p->setBrush(cg, QPalette::PlaceholderText, placeholder);
+        setDefault(p, cg, QPalette::PlaceholderText, placeholder, w);
     }
     if (pal->selectionBackground.style() != Qt::NoBrush)
         p->setBrush(cg, QPalette::Highlight, pal->selectionBackground);
