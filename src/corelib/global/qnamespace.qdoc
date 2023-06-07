@@ -120,15 +120,15 @@
            set to true won't be used as a native menubar (e.g, the menubar at
            the top of the main screen on \macos).
 
-    \value AA_MacDontSwapCtrlAndMeta Keyboard shortcuts on \macos are typically
+    \value AA_MacDontSwapCtrlAndMeta Keyboard shortcuts on Apple platforms are typically
            based on the Command (or Cmd) keyboard modifier, represented by
            the ⌘ symbol. For example, the 'Copy' action is Command+C (⌘+C).
            To ease cross platform development Qt will by default remap Command
            to the Qt::ControlModifier, to align with other platforms. This
            allows creating keyboard shortcuts such as "Ctrl+J", which on
            \macos will then map to Command+J, as expected by \macos users. The
-           actual Control (or Ctrl) modifier on \macos, represented by ⌃, is
-           mapped to Qt::MetaModifier.
+           actual Control (or Ctrl) modifier on Apple platforms, represented by ⌃,
+           is mapped to Qt::MetaModifier.
 
            When this attribute is true Qt will not do the remapping, and pressing
            the Command modifier will result in Qt::MetaModifier, while pressing
