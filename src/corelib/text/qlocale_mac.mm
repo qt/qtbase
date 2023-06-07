@@ -242,12 +242,6 @@ static QString macDateToStringImpl(QDate date, CFDateFormatterStyle style)
     // back to 1900. (Alaska and Phillipines may still be borked, though.)
     QCFType<CFDateRef> myDate = QDateTime(date, QTime(12, 0)).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
-    // Note: Darwin take the calendar transition from Julian to Gregorian into
-    // account (see QTBUG-54955, again). This means that, just before that
-    // transition, dates are off by ten days, drifting by one day per century
-    // before that, except when the century is a multiple of 400 years. Unless
-    // we can find a way to suppress that, we're stuck with bogus results for
-    // historic dates more than a few centuries back.
     QCFType<CFDateFormatterRef> myFormatter
         = CFDateFormatterCreate(kCFAllocatorDefault, mylocale, style,
                                 kCFDateFormatterNoStyle);
@@ -259,12 +253,14 @@ static QVariant macDateToString(QDate date, bool short_format)
 {
     const int year = date.year();
     QString fakeYear, trueYear;
-    if (year < 0) {
+    if (year < 1583) {
         // System API (in macOS 11.0, at least) discards sign :-(
         // Simply negating the year won't do as the resulting year typically has
         // a different pattern of week-days.
+        // Furthermore (see QTBUG-54955), Darwin uses the Julian calendar for
+        // dates before 1582-10-15, leading to discrepancies.
         int matcher = QGregorianCalendar::yearSharingWeekDays(date);
-        Q_ASSERT(matcher > 0);
+        Q_ASSERT(matcher >= 1583);
         Q_ASSERT(matcher % 100 != date.month());
         Q_ASSERT(matcher % 100 != date.day());
         // i.e. there can't be any confusion between the two-digit year and
@@ -277,7 +273,7 @@ static QVariant macDateToString(QDate date, bool short_format)
     QString text = macDateToStringImpl(date, short_format
                                        ? kCFDateFormatterShortStyle
                                        : kCFDateFormatterLongStyle);
-    if (year < 0) {
+    if (year < 1583) {
         if (text.contains(fakeYear))
             return std::move(text).replace(fakeYear, trueYear);
         // Cope with two-digit year:
