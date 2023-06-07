@@ -48,6 +48,7 @@ struct EnumDef
     bool isEnumClass; // c++11 enum class
     EnumDef() : isEnumClass(false) {}
     QJsonObject toJson(const ClassDef &cdef) const;
+    QByteArray qualifiedType(const ClassDef *cdef) const;
 };
 Q_DECLARE_TYPEINFO(EnumDef, Q_RELOCATABLE_TYPE);
 
