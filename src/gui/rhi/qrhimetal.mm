@@ -3748,11 +3748,11 @@ bool QMetalTexture::create()
         desc.textureType = isArray ? MTLTextureType1DArray : MTLTextureType1D;
     } else if (isArray) {
 #ifdef Q_OS_IOS
-        if (samples > 1) {
-            // would be available on iOS 14.0+ but cannot test for that with a 13 SDK
-            qWarning("Multisample 2D texture array is not supported on iOS");
+        if (@available(iOS 14, *)) {
+            desc.textureType = samples > 1 ? MTLTextureType2DMultisampleArray : MTLTextureType2DArray;
+        } else {
+            desc.textureType = MTLTextureType2DArray;
         }
-        desc.textureType = MTLTextureType2DArray;
 #else
         desc.textureType = samples > 1 ? MTLTextureType2DMultisampleArray : MTLTextureType2DArray;
 #endif
