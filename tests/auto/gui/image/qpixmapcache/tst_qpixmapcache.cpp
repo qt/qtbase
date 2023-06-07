@@ -105,16 +105,16 @@ void tst_QPixmapCache::setCacheLimit()
     //The int part of the API
     p1 = new QPixmap(2, 3);
     QPixmapCache::Key key = QPixmapCache::insert(*p1);
-    QVERIFY(QPixmapCache::find(key, p1) != 0);
+    QVERIFY(QPixmapCache::find(key, p1));
     delete p1;
 
     QPixmapCache::setCacheLimit(0);
-    QVERIFY(QPixmapCache::find(key, p1) == 0);
+    QVERIFY(!QPixmapCache::find(key, p1));
 
     p1 = new QPixmap(2, 3);
     QPixmapCache::setCacheLimit(1000);
     QPixmapCache::replace(key, *p1);
-    QVERIFY(QPixmapCache::find(key, p1) == 0);
+    QVERIFY(!QPixmapCache::find(key, p1));
 
     delete p1;
 
@@ -123,10 +123,10 @@ void tst_QPixmapCache::setCacheLimit()
     QPixmapCache::clear();
     p1 = new QPixmap(2, 3);
     key = QPixmapCache::insert(*p1);
-    QVERIFY(QPixmapCache::find(key, p1) != 0);
+    QVERIFY(QPixmapCache::find(key, p1));
     p1->detach(); // dectach so that the cache thinks no-one is using it.
     QPixmapCache::setCacheLimit(0);
-    QVERIFY(QPixmapCache::find(key, p1) == 0);
+    QVERIFY(!QPixmapCache::find(key, p1));
     QPixmapCache::setCacheLimit(1000);
     key = QPixmapCache::insert(*p1);
     QVERIFY(key.isValid());
@@ -140,7 +140,7 @@ void tst_QPixmapCache::setCacheLimit()
     QPixmap p2;
     p1 = new QPixmap(2, 3);
     key = QPixmapCache::insert(*p1);
-    QVERIFY(QPixmapCache::find(key, &p2) != 0);
+    QVERIFY(QPixmapCache::find(key, &p2));
     //we flush the cache
     p1->detach();
     p2.detach();
@@ -148,8 +148,8 @@ void tst_QPixmapCache::setCacheLimit()
     QPixmapCache::setCacheLimit(1000);
     QPixmapCache::Key key2 = QPixmapCache::insert(*p1);
     QCOMPARE(getPrivate(key2)->key, 1);
-    QVERIFY(QPixmapCache::find(key, &p2) == 0);
-    QVERIFY(QPixmapCache::find(key2, &p2) != 0);
+    QVERIFY(!QPixmapCache::find(key, &p2));
+    QVERIFY(QPixmapCache::find(key2, &p2));
     QCOMPARE(p2, *p1);
 
     delete p1;
@@ -172,7 +172,7 @@ void tst_QPixmapCache::setCacheLimit()
     QCOMPARE(getPrivate(key2)->key, 1);
     //This old key is not valid anymore after the flush
     QVERIFY(!key.isValid());
-    QVERIFY(QPixmapCache::find(key, &p2) == 0);
+    QVERIFY(!QPixmapCache::find(key, &p2));
     delete p1;
 }
 
@@ -210,7 +210,7 @@ void tst_QPixmapCache::find()
         QPixmapCache::insert(p5);
 
     //at that time the first key has been erase because no more place in the cache
-    QVERIFY(QPixmapCache::find(key, &p1) == 0);
+    QVERIFY(!QPixmapCache::find(key, &p1));
     QVERIFY(!key.isValid());
 }
 
@@ -343,11 +343,11 @@ void tst_QPixmapCache::remove()
     QVERIFY(p1.toImage() == p1.toImage()); // sanity check
 
     QPixmapCache::remove(key);
-    QVERIFY(QPixmapCache::find(key, &p1) == 0);
+    QVERIFY(!QPixmapCache::find(key, &p1));
 
     //Broken key
     QPixmapCache::remove(QPixmapCache::Key());
-    QVERIFY(QPixmapCache::find(QPixmapCache::Key(), &p1) == 0);
+    QVERIFY(!QPixmapCache::find(QPixmapCache::Key(), &p1));
 
     //Test if keys are release
     QPixmapCache::clear();
@@ -361,7 +361,7 @@ void tst_QPixmapCache::remove()
     QPixmapCache::clear();
     key = QPixmapCache::insert(p1);
     QCOMPARE(getPrivate(key)->key, 1);
-    QVERIFY(QPixmapCache::find(key, &p1) != 0);
+    QVERIFY(QPixmapCache::find(key, &p1));
     QPixmapCache::remove(key);
     QCOMPARE(p1.isDetached(), true);
 
@@ -371,8 +371,8 @@ void tst_QPixmapCache::remove()
     QPixmapCache::insert("red", p1);
     key = QPixmapCache::insert(p1);
     QPixmapCache::remove(key);
-    QVERIFY(QPixmapCache::find(key, &p1) == 0);
-    QVERIFY(QPixmapCache::find("red", &p1) != 0);
+    QVERIFY(!QPixmapCache::find(key, &p1));
+    QVERIFY(QPixmapCache::find("red", &p1));
 }
 
 void tst_QPixmapCache::clear()
@@ -416,7 +416,7 @@ void tst_QPixmapCache::clear()
     QPixmapCache::clear();
 
     for (int k = 0; k < numberOfKeys; ++k) {
-        QVERIFY(QPixmapCache::find(keys.at(k), &p1) == 0);
+        QVERIFY(!QPixmapCache::find(keys.at(k), &p1));
         QVERIFY(!keys[k].isValid());
     }
 }
