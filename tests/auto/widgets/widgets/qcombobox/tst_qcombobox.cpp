@@ -1503,42 +1503,70 @@ void tst_QComboBox::currentTextChanged()
     testWidget->addItems(QStringList() << "foo" << "bar");
     QCOMPARE(testWidget->count(), 2);
 
-    QSignalSpy spy(testWidget, SIGNAL(currentTextChanged(QString)));
+    QSignalSpy textChangedSpy(testWidget, &QComboBox::currentTextChanged);
 
     testWidget->setEditable(editable);
 
     // set text in list
     testWidget->setCurrentIndex(0);
     QCOMPARE(testWidget->currentIndex(), 0);
-    spy.clear();
+    textChangedSpy.clear();
     testWidget->setCurrentText(QString("bar"));
-    QCOMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("bar"));
+    QCOMPARE(textChangedSpy.size(), 1);
+    QCOMPARE(qvariant_cast<QString>(textChangedSpy.at(0).at(0)), QString("bar"));
 
     // set text not in list
     testWidget->setCurrentIndex(0);
     QCOMPARE(testWidget->currentIndex(), 0);
-    spy.clear();
+    textChangedSpy.clear();
     testWidget->setCurrentText(QString("qt"));
     if (editable) {
-        QCOMPARE(spy.size(), 1);
-        QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("qt"));
+        QCOMPARE(textChangedSpy.size(), 1);
+        QCOMPARE(qvariant_cast<QString>(textChangedSpy.at(0).at(0)), QString("qt"));
     } else {
-        QCOMPARE(spy.size(), 0);
+        QCOMPARE(textChangedSpy.size(), 0);
     }
 
     // item changed
     testWidget->setCurrentIndex(0);
     QCOMPARE(testWidget->currentIndex(), 0);
-    spy.clear();
+    textChangedSpy.clear();
     testWidget->setItemText(0, QString("ape"));
-    QCOMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("ape"));
+    QCOMPARE(textChangedSpy.size(), 1);
+    QCOMPARE(qvariant_cast<QString>(textChangedSpy.at(0).at(0)), QString("ape"));
+
     // change it back
-    spy.clear();
+    textChangedSpy.clear();
     testWidget->setItemText(0, QString("foo"));
-    QCOMPARE(spy.size(), 1);
-    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("foo"));
+    QCOMPARE(textChangedSpy.size(), 1);
+    QCOMPARE(qvariant_cast<QString>(textChangedSpy.at(0).at(0)), QString("foo"));
+
+    // currentIndexChanged vs. currentTextChanged
+    testWidget->clear();
+    testWidget->addItems(QStringList() << "first" << "second" << "third" << "fourth" << "fourth");
+    testWidget->setCurrentIndex(4);
+    textChangedSpy.clear();
+    QSignalSpy indexChangedSpy(testWidget, &QComboBox::currentIndexChanged);
+
+    // Index change w/o text change
+    testWidget->removeItem(3);
+    QCOMPARE(textChangedSpy.count(), 0);
+    QCOMPARE(indexChangedSpy.count(), 1);
+
+    // Index and text change
+    testWidget->setCurrentIndex(0);
+    QCOMPARE(textChangedSpy.count(), 1);
+    QCOMPARE(indexChangedSpy.count(), 2);
+
+    // remove item above current index
+    testWidget->removeItem(2);
+    QCOMPARE(textChangedSpy.count(), 1);
+    QCOMPARE(indexChangedSpy.count(), 2);
+
+    // Text change w/o index change
+    testWidget->setItemText(0, "first class");
+    QCOMPARE(textChangedSpy.count(), 2);
+    QCOMPARE(indexChangedSpy.count(), 2);
 }
 
 void tst_QComboBox::editTextChanged()
