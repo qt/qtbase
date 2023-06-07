@@ -31,6 +31,7 @@ private slots:
     void setCacheLimit();
     void find();
     void insert();
+    void failedInsertReturnsInvalidKey();
     void replace();
     void remove();
     void clear();
@@ -269,6 +270,7 @@ void tst_QPixmapCache::insert()
     for (int i = 0; i < numberOfKeys; ++i) {
         QPixmap p3(10,10);
         keys.append(QPixmapCache::insert(p3));
+        QVERIFY(keys.back().isValid());
     }
 
     num = 0;
@@ -280,6 +282,32 @@ void tst_QPixmapCache::insert()
     estimatedNum = (1024 * QPixmapCache::cacheLimit())
                        / ((p1.width() * p1.height() * p1.depth()) / 8);
     QVERIFY(num <= estimatedNum);
+}
+
+void tst_QPixmapCache::failedInsertReturnsInvalidKey()
+{
+    //
+    // GIVEN: a pixmap whose memory footprint exceeds the cache's limit:
+    //
+    QPixmapCache::setCacheLimit(20);
+
+    QPixmap pm(256, 256);
+    pm.fill(Qt::transparent);
+    QCOMPARE_GT(pm.width() * pm.height() * pm.depth() / 8,
+                QPixmapCache::cacheLimit() * 1024);
+
+    //
+    // WHEN: trying to add this pixmap to the cache
+    //
+    const auto success = QPixmapCache::insert(u"foo"_s, pm); // QString API
+    { QPixmap r; QVERIFY(!QPixmapCache::find(u"foo"_s, &r)); }
+    const auto key = QPixmapCache::insert(pm);               // "int" API
+
+    //
+    // THEN: failure is reported to the user
+    //
+    QVERIFY(!key.isValid()); // "int" API
+    QVERIFY(!success);       // QString API
 }
 
 void tst_QPixmapCache::replace()
