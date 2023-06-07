@@ -374,7 +374,7 @@ bool QPMCache::insert(const QString& key, const QPixmap &pixmap, int cost)
 
 QPixmapCache::Key QPMCache::insert(const QPixmap &pixmap, int cost)
 {
-    QPixmapCache::Key cacheKey = createKey();
+    QPixmapCache::Key cacheKey = createKey(); // invalidated by ~QPixmapCacheEntry on failed insert
     bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
     if (success) {
         if (!theid) {
