@@ -22,14 +22,9 @@
  * - entryFunction: (emscriptenConfig: object) => Promise<EmscriptenModule>
  *      Qt always uses emscripten's MODULARIZE option. This is the MODULARIZE entry function.
  *
- * @return Promise<{
- *             instance: EmscriptenModule,
- *             exitStatus?: { text: string, code?: number, crashed: bool }
- *         }>
+ * @return Promise<instance: EmscriptenModule>
  *      The promise is resolved when the module has been instantiated and its main function has been
- *      called. The returned exitStatus is defined if the application crashed or exited immediately
- *      after its entry function has been called. Otherwise, config.onExit will get called at a
- *      later time when (and if) the application exits.
+ *      called.
  *
  * @see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/emscripten for
  *      EmscriptenModule
