@@ -157,6 +157,20 @@ static QSqlError qMakeError(const QString &err, const int errCode, QSqlError::Er
     return QSqlError("QMIMER: "_L1 + err, msg, type, QString::number(errCode));
 }
 
+static QString msgCouldNotGet(const char *type, int column)
+{
+    //: Data type, column
+    return QCoreApplication::translate("QMimerSQLResult",
+                                       "Could not get %1, column %2").arg(QLatin1StringView(type)).arg(column);
+}
+
+static QString msgCouldNotSet(const char *type, int column)
+{
+    //: Data type, parameter
+    return QCoreApplication::translate("QMimerSQLResult",
+                                       "Could not set %1, parameter %2").arg(QLatin1StringView(type)).arg(column);
+}
+
 QMimerSQLDriver::QMimerSQLDriver(QObject *parent) : QSqlDriver(*new QMimerSQLDriverPrivate, parent)
 {
 }
@@ -613,9 +627,7 @@ QVariant QMimerSQLResult::data(int i)
             err = MimerGetString(d->statementhandle, static_cast<std::int16_t>(i) + 1, dateString_w,
                                  sizeof(dateString_w) / sizeof(dateString_w[0]));
             if (!MIMER_SUCCEEDED(err)) {
-                setLastError(qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                                    "Could not get date, column %1")
-                                                .arg(i),
+                setLastError(qMakeError(msgCouldNotGet("date", i),
                                         err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -626,9 +638,7 @@ QVariant QMimerSQLResult::data(int i)
             err = MimerGetString(d->statementhandle, static_cast<std::int16_t>(i) + 1, timeString_w,
                                  sizeof(timeString_w) / sizeof(timeString_w[0]));
             if (!MIMER_SUCCEEDED(err)) {
-                setLastError(qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                                    "Could not get time, column %1")
-                                                .arg(i),
+                setLastError(qMakeError(msgCouldNotGet("time", i),
                                         err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -647,9 +657,7 @@ QVariant QMimerSQLResult::data(int i)
                                  sizeof(dateTimeString_w) / sizeof(dateTimeString_w[0]));
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not get date time, column %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotGet("date time", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -665,9 +673,7 @@ QVariant QMimerSQLResult::data(int i)
             int resInt;
             err = MimerGetInt32(d->statementhandle, static_cast<std::int16_t>(i) + 1, &resInt);
             if (!MIMER_SUCCEEDED(err)) {
-                setLastError(qMakeError(QCoreApplication::translate(
-                                                "QMimerSQLResult", "Could not get int32, column %1")
-                                                .arg(i),
+                setLastError(qMakeError(msgCouldNotGet("int32", i),
                                         err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -677,9 +683,7 @@ QVariant QMimerSQLResult::data(int i)
             int64_t resLongLong;
             err = MimerGetInt64(d->statementhandle, static_cast<std::int16_t>(i) + 1, &resLongLong);
             if (!MIMER_SUCCEEDED(err)) {
-                setLastError(qMakeError(QCoreApplication::translate(
-                                                "QMimerSQLResult", "Could not get int64, column %1")
-                                                .arg(i),
+                setLastError(qMakeError(msgCouldNotGet("int64", i),
                                         err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -689,9 +693,7 @@ QVariant QMimerSQLResult::data(int i)
             err = MimerGetBoolean(d->statementhandle, static_cast<std::int16_t>(i) + 1);
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not get boolean, column %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotGet("boolean", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -701,9 +703,7 @@ QVariant QMimerSQLResult::data(int i)
             float resFloat;
             err = MimerGetFloat(d->statementhandle, static_cast<std::int16_t>(i) + 1, &resFloat);
             if (!MIMER_SUCCEEDED(err)) {
-                setLastError(qMakeError(QCoreApplication::translate(
-                                                "QMimerSQLResult", "Could not get float, column %1")
-                                                .arg(i),
+                setLastError(qMakeError(msgCouldNotGet("float", i),
                                         err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -714,9 +714,7 @@ QVariant QMimerSQLResult::data(int i)
             err = MimerGetDouble(d->statementhandle, static_cast<std::int16_t>(i) + 1, &resDouble);
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not get double, column %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotGet("double", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -743,9 +741,7 @@ QVariant QMimerSQLResult::data(int i)
             }
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not get binary, column %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotGet("binary", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -768,18 +764,13 @@ QVariant QMimerSQLResult::data(int i)
                     byteArray.append(QByteArray::fromRawData(blobchar.data(), bytesToReceive));
                     left_to_return -= bytesToReceive;
                     if (!MIMER_SUCCEEDED(err)) {
-                        setLastError(qMakeError(
-                                QCoreApplication::translate("QMimerSQLResult",
-                                                            "Could not get blob, column %1")
-                                        .arg(i),
+                        setLastError(qMakeError(msgCouldNotGet("BLOB", i),
                                 err, QSqlError::StatementError, d->drv_d_func()));
                         return QVariant(QMetaType(type), nullptr);
                     }
                 }
             } else {
-                setLastError(qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                                    "Could not get blob, column %1")
-                                                .arg(i),
+                setLastError(qMakeError(msgCouldNotGet("BLOB", i),
                                         err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -806,9 +797,7 @@ QVariant QMimerSQLResult::data(int i)
                         return QString::fromWCharArray(largeResString_w.data());
                 }
             }
-            setLastError(qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                                "Could not get string, column %1")
-                                            .arg(i),
+            setLastError(qMakeError(msgCouldNotGet("string", i),
                                     err, QSqlError::StatementError, d->drv_d_func()));
             return QVariant(QMetaType(type), nullptr);
         }
@@ -829,19 +818,14 @@ QVariant QMimerSQLResult::data(int i)
                     returnString.append(QString::fromWCharArray(clobstring_w.data()));
                     left_to_return -= bytesToReceive;
                     if (!MIMER_SUCCEEDED(err)) {
-                        setLastError(qMakeError(
-                                QCoreApplication::translate("QMimerSQLResult",
-                                                            "Could not get clob, column %1")
-                                        .arg(i),
+                        setLastError(qMakeError(msgCouldNotGet("CLOB", i),
                                 err, QSqlError::StatementError, d->drv_d_func()));
                         return QVariant(QMetaType(type), nullptr);
                     }
                 }
                 return returnString;
             }
-            setLastError(qMakeError(
-                    QCoreApplication::translate("QMimerSQLResult", "Could not get clob, column %1")
-                            .arg(i),
+            setLastError(qMakeError(msgCouldNotGet("CLOB", i),
                     err, QSqlError::StatementError, d->drv_d_func()));
             return QVariant(QMetaType(type), nullptr);
         }
@@ -849,9 +833,7 @@ QVariant QMimerSQLResult::data(int i)
             unsigned char uuidChar[16];
             err = MimerGetUUID(d->statementhandle, static_cast<std::int16_t>(i) + 1, uuidChar);
             if (!MIMER_SUCCEEDED(err)) {
-                setLastError(qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                                    "Could not get uuid, column %1")
-                                                .arg(i),
+                setLastError(qMakeError(msgCouldNotGet("UUID", i),
                                         err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
@@ -1014,9 +996,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetNull(d->statementhandle, i + 1);
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set null, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("null", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
@@ -1031,9 +1011,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetInt32(d->statementhandle, i + 1, val.toInt(&convertOk));
             if (!convertOk || !MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set int32, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("int32", i),
                                    convertOk ? err : genericError, QSqlError::StatementError,
                                    convertOk ? d->drv_d_func() : nullptr));
                 return false;
@@ -1045,9 +1023,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetInt64(d->statementhandle, i + 1, val.toLongLong(&convertOk));
             if (!convertOk || !MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set int64, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("int64", i),
                                    convertOk ? err : genericError, QSqlError::StatementError,
                                    convertOk ? d->drv_d_func() : nullptr));
                 return false;
@@ -1059,9 +1035,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetFloat(d->statementhandle, i + 1, val.toFloat(&convertOk));
             if (!convertOk || !MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set float, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("float", i),
                                    convertOk ? err : genericError, QSqlError::StatementError,
                                    convertOk ? d->drv_d_func() : nullptr));
                 return false;
@@ -1073,9 +1047,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetDouble(d->statementhandle, i + 1, val.toDouble(&convertOk));
             if (!convertOk || !MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set double, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("double", i),
                                    convertOk ? err : genericError, QSqlError::StatementError,
                                    convertOk ? d->drv_d_func() : nullptr));
                 return false;
@@ -1088,9 +1060,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetBinary(d->statementhandle, i + 1, binArr.data(), size);
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set binary, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("binary", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
@@ -1100,9 +1070,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetBoolean(d->statementhandle, i + 1, val.toBool() == true ? 1 : 0);
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate(
-                                           "QMimerSQLResult", "Could not set boolean, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("boolean", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
@@ -1116,9 +1084,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetUUID(d->statementhandle, i + 1, uuid);
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set UUID, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("UUID", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
@@ -1130,9 +1096,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetString8(d->statementhandle, i + 1, string_u);
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set string, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("string", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
@@ -1142,9 +1106,7 @@ bool QMimerSQLResult::exec()
             err = MimerSetString8(d->statementhandle, i + 1, val.toString().toUtf8().constData());
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set date, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("date", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
@@ -1159,9 +1121,7 @@ bool QMimerSQLResult::exec()
                                   timeVal.toString(timeFormatString).toUtf8().constData());
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set time, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("time", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
@@ -1176,10 +1136,7 @@ bool QMimerSQLResult::exec()
                     d->statementhandle, i + 1,
                     val.toDateTime().toString(dateTimeFormatString).toUtf8().constData());
             if (!MIMER_SUCCEEDED(err)) {
-                setLastError(qMakeError(
-                        QCoreApplication::translate("QMimerSQLResult",
-                                                    "Could not set datetime, parameter %1")
-                                .arg(i),
+                setLastError(qMakeError(msgCouldNotSet("datetime", i),
                         err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
@@ -1206,10 +1163,7 @@ bool QMimerSQLResult::exec()
                     }
                     if (!MIMER_SUCCEEDED(err)) {
                         setLastError(
-                                qMakeError(QCoreApplication::translate(
-                                                   "QMimerSQLResult",
-                                                   "Could not set BLOB byte array, parameter %1")
-                                                   .arg(i),
+                                qMakeError(msgCouldNotSet("BLOB byte array", i),
                                            err, QSqlError::StatementError, d->drv_d_func()));
                         return false;
                     }
@@ -1218,10 +1172,7 @@ bool QMimerSQLResult::exec()
                 }
             }
             if (!MIMER_SUCCEEDED(err)) {
-                setLastError(qMakeError(
-                        QCoreApplication::translate("QMimerSQLResult",
-                                                    "Could not set BLOB byte array, parameter %1")
-                                .arg(i),
+                setLastError(qMakeError(msgCouldNotSet("BLOB byte array", i),
                         err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
@@ -1258,10 +1209,7 @@ bool QMimerSQLResult::exec()
                             pos += maxSize - step_back;
                         }
                         if (!MIMER_SUCCEEDED(err)) {
-                            setLastError(qMakeError(
-                                    QCoreApplication::translate("QMimerSQLResult",
-                                                                "Could not set CLOB, parameter %1")
-                                            .arg(i),
+                            setLastError(qMakeError(msgCouldNotSet("CLOB", i),
                                     err, QSqlError::StatementError, d->drv_d_func()));
                             return false;
                         }
@@ -1272,9 +1220,7 @@ bool QMimerSQLResult::exec()
             }
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(
-                        qMakeError(QCoreApplication::translate("QMimerSQLResult",
-                                                               "Could not set CLOB, parameter %1")
-                                           .arg(i),
+                        qMakeError(msgCouldNotSet("CLOB", i),
                                    err, QSqlError::StatementError, d->drv_d_func()));
                 return false;
             }
