@@ -7542,11 +7542,9 @@ bool QVkSwapChain::ensureSurface()
     const bool srgbRequested = m_flags.testFlag(sRGB);
     for (int i = 0; i < int(formatCount); ++i) {
         if (formats[i].format != VK_FORMAT_UNDEFINED) {
-            bool ok = false;
-            if (m_format == SDR)
-                ok = srgbRequested == isSrgbFormat(formats[i].format);
-            else
-                ok = hdrFormatMatchesVkSurfaceFormat(m_format, formats[i]);
+            bool ok = srgbRequested == isSrgbFormat(formats[i].format);
+            if (m_format != SDR)
+                ok &= hdrFormatMatchesVkSurfaceFormat(m_format, formats[i]);
             if (ok) {
                 colorFormat = formats[i].format;
                 colorSpace = formats[i].colorSpace;
