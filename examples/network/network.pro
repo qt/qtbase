@@ -8,18 +8,16 @@ qtHaveModule(widgets) {
                 blockingfortuneclient \
                 broadcastreceiver \
                 broadcastsender \
+                fortuneclient \
+                fortuneserver \
                 http \
-                threadedfortuneserver \
-                torrent \
                 multicastreceiver \
-                multicastsender
+                multicastsender \
+                rsslisting \
+                threadedfortuneserver \
+                torrent
 
     qtConfig(processenvironment): SUBDIRS += network-chat
-
-    SUBDIRS += \
-            fortuneclient \
-            fortuneserver
-
     qtConfig(ssl): SUBDIRS += securesocketclient
     qtConfig(dtls): SUBDIRS += secureudpserver secureudpclient
     qtConfig(sctp): SUBDIRS += multistreamserver multistreamclient

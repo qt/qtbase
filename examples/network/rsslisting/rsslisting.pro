@@ -4,5 +4,5 @@ QT += network widgets
 requires(qtConfig(treewidget))
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/corelib/serialization/rsslisting
+target.path = $$[QT_INSTALL_EXAMPLES]/network/rsslisting
 INSTALLS += target
