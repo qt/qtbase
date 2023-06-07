@@ -112,9 +112,9 @@ void tst_QPixmapCache::setCacheLimit()
     QPixmapCache::setCacheLimit(0);
     QVERIFY(!QPixmapCache::find(key, p1));
 
-    p1 = new QPixmap(2, 3);
     QPixmapCache::setCacheLimit(1000);
-    QPixmapCache::replace(key, *p1);
+    p1 = new QPixmap(2, 3);
+    QVERIFY(!QPixmapCache::replace(key, *p1));
     QVERIFY(!QPixmapCache::find(key, p1));
 
     delete p1;
