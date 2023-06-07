@@ -7256,12 +7256,13 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
         } luminanceInNits;
     \endcode
 
-    Whereas for macOS/iOS, the maximum color component value (e.g. supposedly
-    something larger than 1.0f) is provided:
+    Whereas for macOS/iOS, the current maximum and potential maximum color
+    component values are provided:
 
     \code
         struct {
             float maxColorComponentValue;
+            float maxPotentialColorComponentValue;
         } colorComponentValue;
     \endcode
 
@@ -7306,6 +7307,7 @@ QDebug operator<<(QDebug dbg, const QRhiSwapChainHdrInfo &info)
         break;
     case QRhiSwapChainHdrInfo::ColorComponentValue:
         dbg.nospace() << " maxColorComponentValue=" << info.limits.colorComponentValue.maxColorComponentValue;
+        dbg.nospace() << " maxPotentialColorComponentValue=" << info.limits.colorComponentValue.maxPotentialColorComponentValue;
         break;
     }
     dbg.nospace() << ')';
