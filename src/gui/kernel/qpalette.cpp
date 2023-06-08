@@ -549,7 +549,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
                        Qt::darkBlue.
 
     \value [since 6.6] AccentColor
-                       A color that typically contrasts or compliments
+                       A color that typically contrasts or complements
                        Base, Window and Button colors. It usually represents
                        the users' choice of desktop personalisation.
                        Styling of interactive components is a typical use case.
