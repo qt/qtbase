@@ -13,7 +13,7 @@
     Exchange Language (XBEL) files using Qt's QXmlStreamReader class
     for reading, and QXmlStreamWriter class for writing the files.
 
-    \image xmlstreamexample-screenshot.png
+    \image screenshot.png
 
     \section1 XbelWriter Class Definition
 
@@ -141,8 +141,8 @@
 
     \table
     \row
-         \li \inlineimage xmlstreamexample-filemenu.png
-         \li \inlineimage xmlstreamexample-helpmenu.png
+         \li \inlineimage filemenu.png
+         \li \inlineimage helpmenu.png
     \endtable
 
     The \c open() function enables the user to open an XBEL file using
