@@ -16,14 +16,14 @@ qt_add_library(QtLibraryInfo OBJECT
     qmakelibraryinfo.cpp qmakelibraryinfo.h
 )
 
+# Make sure we use same parameters when building QtLibraryInfo and other Qt libraries,
+# otherwise some compilers may have compilation errors, such as clang-cl.
+target_link_libraries(QtLibraryInfo PUBLIC PlatformCommonInternal)
+
+target_link_libraries(QtLibraryInfo PUBLIC Qt::CorePrivate)
+
 qt_internal_add_sync_header_dependencies(QtLibraryInfo Core)
 
-set_target_properties(QtLibraryInfo PROPERTIES
-    COMPILE_OPTIONS $<TARGET_PROPERTY:Qt::Core,INTERFACE_COMPILE_OPTIONS>
-    COMPILE_DEFINITIONS $<TARGET_PROPERTY:Qt::Core,INTERFACE_COMPILE_DEFINITIONS>
-    INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Qt::Core,INTERFACE_INCLUDE_DIRECTORIES>
-    INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Qt::CorePrivate,INTERFACE_INCLUDE_DIRECTORIES>
-)
 target_include_directories(QtLibraryInfo PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/library"
@@ -41,8 +41,6 @@ target_compile_definitions(QtLibraryInfo PUBLIC
     PROEVALUATOR_FULL
     QT_BUILD_QMAKE
     QT_USE_QSTRINGBUILDER
-    QT_NO_FOREACH
-    QT_VERSION_STR="${PROJECT_VERSION}"
     QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
     QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
     QT_HOST_DATADIR="${hostdatadir}"
@@ -99,7 +97,6 @@ qt_internal_add_tool(${target_name}
     PRECOMPILED_HEADER
         "qmake_pch.h"
     LIBRARIES
-        Qt::CorePrivate
         QtLibraryInfo
 )
 qt_internal_return_unless_building_tools()
