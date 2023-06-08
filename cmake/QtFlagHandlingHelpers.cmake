@@ -117,8 +117,7 @@ endfunction()
 
 function(qt_internal_apply_gc_binaries target visibility)
     set(possible_visibilities PRIVATE INTERFACE PUBLIC)
-    list(FIND possible_visibilities "${visibility}" known_visibility)
-    if (known_visibility EQUAL "-1")
+    if(NOT visibility IN_LIST possible_visibilities)
         message(FATAL_ERROR "Visibitily setting must be one of PRIVATE, INTERFACE or PUBLIC.")
     endif()
 
@@ -149,8 +148,7 @@ function(qt_internal_apply_intel_cet target visibility)
     endif()
 
     set(possible_visibilities PRIVATE INTERFACE PUBLIC)
-    list(FIND possible_visibilities "${visibility}" known_visibility)
-    if (known_visibility EQUAL "-1")
+    if(NOT visibility IN_LIST possible_visibilities)
         message(FATAL_ERROR "Visibitily setting must be one of PRIVATE, INTERFACE or PUBLIC.")
     endif()
 
