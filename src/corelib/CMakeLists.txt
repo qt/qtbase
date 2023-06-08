@@ -511,6 +511,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_animation
 # from the wrong DLL at runtime and crash!
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND WIN32
     SOURCES
+        thread/qfutex_win_p.h
         thread/qwaitcondition_win.cpp
     LIBRARIES
         synchronization
@@ -687,6 +688,11 @@ qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_thread
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX AND NOT APPLE AND NOT LINUX
     SOURCES
         thread/qmutex_unix.cpp
+)
+
+qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND LINUX
+    SOURCES
+        thread/qfutex_linux_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_future
