@@ -32,6 +32,7 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qpixmapcache.h>
+#include <QtCore/qoperatingsystemversion.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/private/qabstractfileiconengine_p.h>
 #include <QtGui/private/qwindowsfontdatabase_p.h>
@@ -79,11 +80,11 @@ static inline QColor mixColors(const QColor &c1, const QColor &c2)
             (c1.blue() + c2.blue()) / 2};
 }
 
-static inline QColor getSysColor(int index)
-{
-    COLORREF cr = GetSysColor(index);
-    return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
-}
+enum AccentColorLevel {
+    AccentColorDarkest,
+    AccentColorNormal,
+    AccentColorLightest
+};
 
 #if QT_CONFIG(cpp_winrt)
 static constexpr QColor getSysColor(winrt::Windows::UI::Color &&color)
@@ -91,6 +92,61 @@ static constexpr QColor getSysColor(winrt::Windows::UI::Color &&color)
     return QColor(color.R, color.G, color.B, color.A);
 }
 #endif
+
+[[maybe_unused]] [[nodiscard]] static inline QColor qt_accentColor(AccentColorLevel level)
+{
+#if QT_CONFIG(cpp_winrt)
+    using namespace winrt::Windows::UI::ViewManagement;
+    const auto settings = UISettings();
+    const QColor accent = getSysColor(settings.GetColorValue(UIColorType::Accent));
+    const QColor accentLight = getSysColor(settings.GetColorValue(UIColorType::AccentLight1));
+    const QColor accentDarkest = getSysColor(settings.GetColorValue(UIColorType::AccentDark3));
+#else
+    const QWinRegistryKey registry(HKEY_CURRENT_USER, LR"(Software\Microsoft\Windows\DWM)");
+    if (!registry.isValid())
+        return {};
+    const QVariant value = registry.value(L"AccentColor");
+    if (!value.isValid())
+        return {};
+    // The retrieved value is in the #AABBGGRR format, we need to
+    // convert it to the #AARRGGBB format which Qt expects.
+    const QColor abgr = QColor::fromRgba(qvariant_cast<DWORD>(value));
+    if (!abgr.isValid())
+        return {};
+    const QColor accent = QColor::fromRgb(abgr.blue(), abgr.green(), abgr.red(), abgr.alpha());
+    const QColor accentLight = accent.lighter(120);
+    const QColor accentDarkest = accent.darker(120 * 120 * 120);
+#endif
+    if (level == AccentColorDarkest)
+        return accentDarkest;
+    else if (level == AccentColorLightest)
+        return accentLight;
+    return accent;
+}
+
+static inline QColor getSysColor(int index)
+{
+    static const bool isWin11OrUpward = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
+    static const bool highContrastMode = QWindowsTheme::queryHighContrast();
+
+    if (isWin11OrUpward && !highContrastMode) {
+        switch (index) {
+            case COLOR_WINDOW:
+                return QColor(0xF3,0xF3,0xF3,0xFF);
+            case COLOR_3DFACE:
+                return QColor(0xFF,0xFF,0xFF,0xB3);
+            case COLOR_WINDOWTEXT:
+            case COLOR_BTNTEXT:
+                return QColor(0x00,0x00,0x00,0xE4);
+            case COLOR_HIGHLIGHT:
+                return qt_accentColor(AccentColorNormal);
+            default:
+                break;
+        }
+    }
+    COLORREF cr = GetSysColor(index);
+    return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
+}
 
 // QTBUG-48823/Windows 10: SHGetFileInfo() (as called by item views on file system
 // models has been observed to trigger a WM_PAINT on the mainwindow. Suppress the
@@ -221,63 +277,42 @@ static QColor placeHolderColor(QColor textColor)
     return textColor;
 }
 
-[[maybe_unused]] [[nodiscard]] static inline QColor qt_accentColor()
-{
-    const QWinRegistryKey registry(HKEY_CURRENT_USER, LR"(Software\Microsoft\Windows\DWM)");
-    if (!registry.isValid())
-        return {};
-    const QVariant value = registry.value(L"AccentColor");
-    if (!value.isValid())
-        return {};
-    // The retrieved value is in the #AABBGGRR format, we need to
-    // convert it to the #AARRGGBB format which Qt expects.
-    const QColor abgr = QColor::fromRgba(qvariant_cast<DWORD>(value));
-    if (!abgr.isValid())
-        return {};
-    return QColor::fromRgb(abgr.blue(), abgr.green(), abgr.red(), abgr.alpha());
-}
-
 /*
     This is used when the theme is light mode, and when the theme is dark but the
     application doesn't support dark mode. In the latter case, we need to check.
+
+    The colors for Windows 11 are taken from the official WinUI3 Figma style at
+    https://www.figma.com/community/file/1159947337437047524
 */
 static void populateLightSystemBasePalette(QPalette &result)
 {
-    const QColor background = getSysColor(COLOR_BTNFACE);
     const QColor textColor = getSysColor(COLOR_WINDOWTEXT);
 
-#if QT_CONFIG(cpp_winrt)
-    // respect the Windows 11 accent color
-    using namespace winrt::Windows::UI::ViewManagement;
-    const auto settings = UISettings();
-
-    const QColor accent = getSysColor(settings.GetColorValue(UIColorType::Accent));
-    const QColor accentDarkest = getSysColor(settings.GetColorValue(UIColorType::AccentDark3));
-#else
-    const QColor accent = qt_accentColor();
-    const QColor accentDarkest = accent.darker(120 * 120 * 120);
-#endif
+    const QColor accent = qt_accentColor(AccentColorNormal);
+    const QColor accentDarkest = qt_accentColor(AccentColorDarkest);
 
     const QColor linkColor = accent;
-    const QColor btnFace = background;
-    const QColor btnHighlight = getSysColor(COLOR_BTNHIGHLIGHT);
+    const QColor btnFace = getSysColor(COLOR_3DFACE);
+    const QColor btnHighlight = getSysColor(COLOR_HIGHLIGHT);
 
     result.setColor(QPalette::Highlight, getSysColor(COLOR_HIGHLIGHT));
     result.setColor(QPalette::WindowText, getSysColor(COLOR_WINDOWTEXT));
     result.setColor(QPalette::Button, btnFace);
-    result.setColor(QPalette::Light, btnHighlight);
-    result.setColor(QPalette::Dark, getSysColor(COLOR_BTNSHADOW));
+    result.setColor(QPalette::Light, result.button().color().lighter(150));
+    result.setColor(QPalette::Dark, result.button().color().darker(200));
     result.setColor(QPalette::Mid, result.button().color().darker(150));
     result.setColor(QPalette::Text, textColor);
     result.setColor(QPalette::PlaceholderText, placeHolderColor(textColor));
     result.setColor(QPalette::BrightText, btnHighlight);
-    result.setColor(QPalette::Base, getSysColor(COLOR_WINDOW));
-    result.setColor(QPalette::Window, btnFace);
+    result.setColor(QPalette::Base, getSysColor(COLOR_3DFACE));
+    result.setColor(QPalette::Window, getSysColor(COLOR_WINDOW));
     result.setColor(QPalette::ButtonText, getSysColor(COLOR_BTNTEXT));
-    result.setColor(QPalette::Midlight, getSysColor(COLOR_3DLIGHT));
-    result.setColor(QPalette::Shadow, getSysColor(COLOR_3DDKSHADOW));
+    result.setColor(QPalette::Midlight, result.button().color().lighter(125));
+    result.setColor(QPalette::Shadow, Qt::black);
     result.setColor(QPalette::HighlightedText, getSysColor(COLOR_HIGHLIGHTTEXT));
     result.setColor(QPalette::Accent, accent);
+    result.setColor(QPalette::ToolTipBase, getSysColor(COLOR_WINDOW));
+    result.setColor(QPalette::ToolTipText, getSysColor(COLOR_WINDOWTEXT));
 
     result.setColor(QPalette::Link, linkColor);
     result.setColor(QPalette::LinkVisited, accentDarkest);
@@ -317,7 +352,7 @@ static void populateDarkSystemBasePalette(QPalette &result)
 #else
     const QColor foreground = Qt::white;
     const QColor background = QColor(0x1E, 0x1E, 0x1E);
-    const QColor accent = qt_accentColor();
+    const QColor accent = qt_accentColor(AccentColorNormal);
     const QColor accentDark = accent.darker(120);
     const QColor accentDarker = accentDark.darker(120);
     const QColor accentDarkest = accentDarker.darker(120);
@@ -357,9 +392,9 @@ static void populateDarkSystemBasePalette(QPalette &result)
 static inline QPalette toolTipPalette(const QPalette &systemPalette, bool light)
 {
     QPalette result(systemPalette);
-    const QColor tipBgColor = light ? getSysColor(COLOR_INFOBK)
+    const QColor tipBgColor = light ? getSysColor(COLOR_WINDOW)
                                     : systemPalette.button().color();
-    const QColor tipTextColor = light ? getSysColor(COLOR_INFOTEXT)
+    const QColor tipTextColor = light ? getSysColor(COLOR_WINDOWTEXT)
                                       : systemPalette.buttonText().color().darker(120);
 
     result.setColor(QPalette::All, QPalette::Button, tipBgColor);
@@ -384,14 +419,18 @@ static inline QPalette toolTipPalette(const QPalette &systemPalette, bool light)
     return result;
 }
 
+/*
+    The colors for Windows 11 are taken from the official WinUI3 Figma style at
+    https://www.figma.com/community/file/1159947337437047524
+*/
 static inline QPalette menuPalette(const QPalette &systemPalette, bool light)
 {
     if (!light)
         return systemPalette;
 
     QPalette result(systemPalette);
-    const QColor menuColor = getSysColor(COLOR_MENU);
-    const QColor menuTextColor = getSysColor(COLOR_MENUTEXT);
+    const QColor menuColor = getSysColor(COLOR_3DFACE);
+    const QColor menuTextColor = getSysColor(COLOR_WINDOWTEXT);
     const QColor disabled = getSysColor(COLOR_GRAYTEXT);
     // we might need a special color group for the result.
     result.setColor(QPalette::Active, QPalette::Button, menuColor);
@@ -400,9 +439,10 @@ static inline QPalette menuPalette(const QPalette &systemPalette, bool light)
     result.setColor(QPalette::Active, QPalette::ButtonText, menuTextColor);
     result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Text, disabled);
-    const bool isFlat = booleanSystemParametersInfo(SPI_GETFLATMENU, false);
-    const QColor highlightColor = getSysColor(isFlat ? COLOR_MENUHILIGHT : COLOR_HIGHLIGHT);
-    result.setColor(QPalette::Disabled, QPalette::Highlight, highlightColor);
+    const QColor highlightColor = getSysColor(COLOR_HIGHLIGHT);
+    result.setColor(QPalette::Active, QPalette::Highlight, highlightColor);
+
+    result.setColor(QPalette::Active, QPalette::HighlightedText, menuTextColor);
     result.setColor(QPalette::Disabled, QPalette::HighlightedText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Button,
                     result.color(QPalette::Active, QPalette::Button));
@@ -423,6 +463,10 @@ static inline QPalette menuPalette(const QPalette &systemPalette, bool light)
     return result;
 }
 
+/*
+    The colors for Windows 11 are taken from the official WinUI3 Figma style at
+    https://www.figma.com/community/file/1159947337437047524
+*/
 static inline QPalette *menuBarPalette(const QPalette &menuPalette, bool light)
 {
     QPalette *result = nullptr;
@@ -430,7 +474,7 @@ static inline QPalette *menuBarPalette(const QPalette &menuPalette, bool light)
         return result;
 
     result = new QPalette(menuPalette);
-    const QColor menubar(getSysColor(COLOR_MENUBAR));
+    const QColor menubar = getSysColor(COLOR_WINDOW);
     result->setColor(QPalette::Active, QPalette::Button, menubar);
     result->setColor(QPalette::Disabled, QPalette::Button, menubar);
     result->setColor(QPalette::Inactive, QPalette::Button, menubar);
@@ -464,7 +508,10 @@ static inline QStringList iconThemeSearchPaths()
 
 static inline QStringList styleNames()
 {
-    return { QStringLiteral("WindowsVista"), QStringLiteral("Windows") };
+    QStringList styles = { QStringLiteral("WindowsVista"), QStringLiteral("Windows") };
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11)
+        styles.prepend(QStringLiteral("Windows11"));
+    return styles;
 }
 
 static inline int uiEffects()
@@ -551,29 +598,20 @@ void QWindowsTheme::refreshPalettes()
     m_palettes[MenuPalette] = new QPalette(menuPalette(*m_palettes[SystemPalette], light));
     m_palettes[MenuBarPalette] = menuBarPalette(*m_palettes[MenuPalette], light);
     if (!light) {
-#if QT_CONFIG(cpp_winrt)
-        using namespace winrt::Windows::UI::ViewManagement;
-        const auto settings = UISettings();
-        const QColor accent = getSysColor(settings.GetColorValue(UIColorType::Accent));
-        const QColor accentLight = getSysColor(settings.GetColorValue(UIColorType::AccentLight1));
-        const QColor accentDarkest = getSysColor(settings.GetColorValue(UIColorType::AccentDark3));
-#else
-        const QColor accent = qt_accentColor();
-        const QColor accentLight = accent.lighter(120);
-        const QColor accentDarkest = accent.darker(120 * 120 * 120);
-#endif
         m_palettes[CheckBoxPalette] = new QPalette(*m_palettes[SystemPalette]);
-        m_palettes[CheckBoxPalette]->setColor(QPalette::Active, QPalette::Base, accent);
-        m_palettes[CheckBoxPalette]->setColor(QPalette::Active, QPalette::Button, accentLight);
-        m_palettes[CheckBoxPalette]->setColor(QPalette::Inactive, QPalette::Base, accentDarkest);
+        m_palettes[CheckBoxPalette]->setColor(QPalette::Active, QPalette::Base, qt_accentColor(AccentColorNormal));
+        m_palettes[CheckBoxPalette]->setColor(QPalette::Active, QPalette::Button, qt_accentColor(AccentColorLightest));
+        m_palettes[CheckBoxPalette]->setColor(QPalette::Inactive, QPalette::Base, qt_accentColor(AccentColorDarkest));
         m_palettes[RadioButtonPalette] = new QPalette(*m_palettes[CheckBoxPalette]);
     }
 }
 
 QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
 {
-    QPalette result = standardPalette();
+    static const bool isWin11OrUpward = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
+    static const bool highContrastMode = QWindowsTheme::queryHighContrast();
 
+    QPalette result = standardPalette();
     switch (colorScheme) {
         case Qt::ColorScheme::Light:
             populateLightSystemBasePalette(result);
@@ -586,7 +624,7 @@ QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
             break;
     }
 
-    if (result.window() != result.base()) {
+    if (result.window() != result.base() && (!isWin11OrUpward || highContrastMode)) {
         result.setColor(QPalette::Inactive, QPalette::Highlight,
                         result.color(QPalette::Inactive, QPalette::Window));
         result.setColor(QPalette::Inactive, QPalette::HighlightedText,

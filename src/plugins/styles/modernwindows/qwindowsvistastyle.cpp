@@ -1325,6 +1325,14 @@ QWindowsVistaStyle::QWindowsVistaStyle() : QWindowsStyle(*new QWindowsVistaStyle
 }
 
 /*!
+ \internal
+ Constructs a QWindowsStyle object.
+*/
+QWindowsVistaStyle::QWindowsVistaStyle(QWindowsVistaStylePrivate &dd) : QWindowsStyle(dd)
+{
+}
+
+/*!
   Destructor.
 */
 QWindowsVistaStyle::~QWindowsVistaStyle() = default;

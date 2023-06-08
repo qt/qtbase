@@ -59,7 +59,8 @@ public:
     void unpolish(QWidget *widget) override;
     void polish(QPalette &pal) override;
     void polish(QApplication *app) override;
-
+protected:
+    QWindowsVistaStyle(QWindowsVistaStylePrivate &dd);
 private:
     Q_DISABLE_COPY_MOVE(QWindowsVistaStyle)
     Q_DECLARE_PRIVATE(QWindowsVistaStyle)

@@ -5,12 +5,13 @@
 ## QWindowsVistaStylePlugin Plugin:
 #####################################################################
 
-qt_internal_add_plugin(QWindowsVistaStylePlugin
-    OUTPUT_NAME qwindowsvistastyle
+qt_internal_add_plugin(QModernWindowsStylePlugin
+    OUTPUT_NAME qmodernwindowsstyle
     PLUGIN_TYPE styles
     SOURCES
         main.cpp
         qwindowsvistastyle.cpp qwindowsvistastyle_p.h
+        qwindows11style.cpp qwindows11style_p.h
         qwindowsvistastyle_p_p.h
         qwindowsvistaanimation.cpp qwindowsvistaanimation_p.h
         qwindowsthemedata.cpp qwindowsthemedata_p.h
