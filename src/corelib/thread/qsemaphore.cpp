@@ -379,12 +379,9 @@ void QSemaphore::release(int n)
             //    its acquisition anyway, so it has to wait;
             // 2) it did not see the new counter value, in which case its
             //    futexWait will fail.
-            if (futexHasWaiterCount) {
-                futexWakeAll(*futexLow32(&u));
+            futexWakeAll(*futexLow32(&u));
+            if (futexHasWaiterCount)
                 futexWakeAll(*futexHigh32(&u));
-            } else {
-                futexWakeAll(u);
-            }
         }
         return;
     }
