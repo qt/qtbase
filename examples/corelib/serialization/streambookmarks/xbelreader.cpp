@@ -67,6 +67,24 @@ void XbelReader::readXBEL()
 }
 //! [3]
 
+void XbelReader::readBookmark(QTreeWidgetItem *item)
+{
+    Q_ASSERT(xml.isStartElement() && xml.name() == "bookmark"_L1);
+
+    QTreeWidgetItem *bookmark = createChildItem(item);
+    bookmark->setFlags(bookmark->flags() | Qt::ItemIsEditable);
+    bookmark->setIcon(0, bookmarkIcon);
+    bookmark->setText(0, QObject::tr("Unknown title"));
+    bookmark->setText(1, xml.attributes().value("href"_L1).toString());
+
+    while (xml.readNextStartElement()) {
+        if (xml.name() == "title"_L1)
+            readTitle(bookmark);
+        else
+            xml.skipCurrentElement();
+    }
+}
+
 //! [4]
 void XbelReader::readTitle(QTreeWidgetItem *item)
 {
@@ -104,24 +122,6 @@ void XbelReader::readFolder(QTreeWidgetItem *item)
             readBookmark(folder);
         else if (xml.name() == "separator"_L1)
             readSeparator(folder);
-        else
-            xml.skipCurrentElement();
-    }
-}
-
-void XbelReader::readBookmark(QTreeWidgetItem *item)
-{
-    Q_ASSERT(xml.isStartElement() && xml.name() == "bookmark"_L1);
-
-    QTreeWidgetItem *bookmark = createChildItem(item);
-    bookmark->setFlags(bookmark->flags() | Qt::ItemIsEditable);
-    bookmark->setIcon(0, bookmarkIcon);
-    bookmark->setText(0, QObject::tr("Unknown title"));
-    bookmark->setText(1, xml.attributes().value("href"_L1).toString());
-
-    while (xml.readNextStartElement()) {
-        if (xml.name() == "title"_L1)
-            readTitle(bookmark);
         else
             xml.skipCurrentElement();
     }
