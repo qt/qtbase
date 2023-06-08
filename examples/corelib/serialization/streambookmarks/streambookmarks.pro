@@ -8,7 +8,7 @@ SOURCES       = main.cpp \
 QT           += widgets
 requires(qtConfig(filedialog))
 
-EXAMPLE_FILES = frank.xbel jennifer.xbel
+EXAMPLE_FILES = jennifer.xbel
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/corelib/serialization/streambookmarks
