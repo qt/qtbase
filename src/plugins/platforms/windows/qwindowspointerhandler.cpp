@@ -441,6 +441,8 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
             if (id != -1)
                 m_lastTouchPoints.remove(id);
         }
+        // Send LeaveEvent to reset hover when the last finger leaves the touch screen (QTBUG-62912)
+        QWindowSystemInterface::handleEnterLeaveEvent(nullptr, window);
     }
 
     // Only handle down/up/update, ignore others like WM_POINTERENTER, WM_POINTERLEAVE, etc.
