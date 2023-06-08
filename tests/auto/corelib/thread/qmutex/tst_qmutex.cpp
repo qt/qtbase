@@ -145,43 +145,43 @@ void tst_QMutex::tryLock_non_recursive()
     Thread thread;
     thread.start();
 
-    // TEST 1: thread can't acquire lock
+    qDebug("TEST 1: thread can't acquire lock");
     testsTurn.acquire();
     normalMutex.lock();
     QVERIFY(lockCount.testAndSetRelaxed(0, 1));
     threadsTurn.release();
 
-    // TEST 2: thread can acquire lock
+    qDebug("TEST 2: thread can acquire lock");
     testsTurn.acquire();
     QVERIFY(lockCount.testAndSetRelaxed(1, 0));
     normalMutex.unlock();
     threadsTurn.release();
 
-    // TEST 3: thread can't acquire lock, timeout = waitTime
+    qDebug("TEST 3: thread can't acquire lock, timeout = waitTime");
     testsTurn.acquire();
     normalMutex.lock();
     QVERIFY(lockCount.testAndSetRelaxed(0, 1));
     threadsTurn.release();
 
-    // TEST 4: thread can acquire lock, timeout = waitTime
+    qDebug("TEST 4: thread can acquire lock, timeout = waitTime");
     testsTurn.acquire();
     QVERIFY(lockCount.testAndSetRelaxed(1, 0));
     normalMutex.unlock();
     threadsTurn.release();
 
-    // TEST 5: thread can't acquire lock, timeout = 0
+    qDebug("TEST 5: thread can't acquire lock, timeout = 0");
     testsTurn.acquire();
     normalMutex.lock();
     QVERIFY(lockCount.testAndSetRelaxed(0, 1));
     threadsTurn.release();
 
-    // TEST 6: thread can acquire lock, timeout = 0
+    qDebug("TEST 6: thread can acquire lock, timeout = 0");
     testsTurn.acquire();
     QVERIFY(lockCount.testAndSetRelaxed(1, 0));
     normalMutex.unlock();
     threadsTurn.release();
 
-    // TEST 7: thread can acquire lock, timeout = 3000   (QTBUG-24795)
+    qDebug("TEST 7: thread can acquire lock, timeout = 3000   (QTBUG-24795)");
     testsTurn.acquire();
     normalMutex.lock();
     threadsTurn.release();

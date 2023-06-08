@@ -690,6 +690,11 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX AND NOT APPL
         thread/qmutex_unix.cpp
 )
 
+qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND FREEBSD
+    SOURCES
+        thread/qfutex_freebsd_p.h
+)
+
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND LINUX
     SOURCES
         thread/qfutex_linux_p.h
