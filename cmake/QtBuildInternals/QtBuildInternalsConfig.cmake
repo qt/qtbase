@@ -1422,12 +1422,6 @@ function(qt_internal_get_filename_path_mode out_var)
     set(mode REALPATH)
     if(APPLE AND QT_ALLOW_SYMLINK_IN_PATHS)
         set(mode ABSOLUTE)
-        message(WARNING
-            "QT_ALLOW_SYMLINK_IN_PATHS is enabled. "
-            "This is not recommended, and it may lead to unexpected issues. "
-            "E.g., When building QtWebEngine, enabling this option may result in build "
-            "issues in certain platforms. See https://bugreports.qt.io/browse/QTBUG-59769."
-        )
     endif()
     set(${out_var} ${mode} PARENT_SCOPE)
 endfunction()
