@@ -1245,3 +1245,11 @@ qt_extra_definition("QT_VERSION_PATCH" ${PROJECT_VERSION_PATCH} PUBLIC)
 
 qt_extra_definition("QT_COPYRIGHT" \"${QT_COPYRIGHT}\" PRIVATE)
 qt_extra_definition("QT_COPYRIGHT_YEAR" \"${QT_COPYRIGHT_YEAR}\" PRIVATE)
+
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "QT_ALLOW_SYMLINK_IN_PATHS is enabled. This is not recommended, and it may lead to unexpected issues.
+E.g., When building QtWebEngine, enabling this option may result in build issues in certain platforms.
+See https://bugreports.qt.io/browse/QTBUG-59769."
+    CONDITION QT_ALLOW_SYMLINK_IN_PATHS
+)
