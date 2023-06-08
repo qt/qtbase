@@ -4393,6 +4393,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     optIndicator.backgroundBrush = Qt::NoBrush; // no background
                     optIndicator.text.clear();
                     QWindowsStyle::drawControl(ce, &optIndicator, p, w);
+
+                    // If the indicator has an icon, it has been drawn now.
+                    // => don't draw it again.
+                    optCopy.icon = QIcon();
+
                     // Now draw text, background, and highlight, but not the indicator  with the
                     // base style. Since we can't turn off HasCheckIndicator to prevent the base
                     // style from drawing the check indicator again (it would change how the item
