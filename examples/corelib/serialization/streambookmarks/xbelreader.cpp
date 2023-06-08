@@ -80,10 +80,12 @@ void XbelReader::readTitle(QTreeWidgetItem *item)
 void XbelReader::readSeparator(QTreeWidgetItem *item)
 {
     Q_ASSERT(xml.isStartElement() && xml.name() == "separator"_L1);
+    constexpr char16_t midDot = u'\xB7';
+    static const QString dots(30, midDot);
 
     QTreeWidgetItem *separator = createChildItem(item);
     separator->setFlags(item ? item->flags() & ~Qt::ItemIsSelectable : Qt::ItemFlags{});
-    separator->setText(0, QString(30, u'\xB7'));
+    separator->setText(0, dots);
     xml.skipCurrentElement();
 }
 //! [5]
