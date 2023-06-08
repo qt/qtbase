@@ -3,66 +3,66 @@
 <xbel version="1.0">
     <folder folded="no">
         <title>Qt Resources</title>
-        <bookmark href="http://qt.io/">
+        <bookmark href="https://www.qt.io/">
             <title>Qt home page</title>
         </bookmark>
-        <bookmark href="https://www.qt.io/partners/">
+        <bookmark href="https://www.qt.io/contact-us/partners">
             <title>Qt Partners</title>
         </bookmark>
-        <bookmark href="https://www.qt.io/qt-training/">
-            <title>Training</title>
+        <bookmark href="https://www.qt.io/qt-professional-services">
+            <title>Professional Services</title>
         </bookmark>
-        <bookmark href="http://doc.qt.io/">
-            <title>Qt documentation</title>
-        </bookmark>
-        <bookmark href="http://qt-project.org/faq/">
-            <title>Frequently Asked Questions</title>
+        <bookmark href="https://doc.qt.io/">
+            <title>Qt Documentation</title>
         </bookmark>
         <folder folded="yes">
             <title>Community Resources</title>
-            <bookmark href="http://www.qtcentre.org/content/">
+            <bookmark href="https://contribute.qt-project.org">
+                <title>The Qt Project</title>
+            </bookmark>
+            <bookmark href="https://www.qtcentre.org/content/">
                 <title>Qt Centre</title>
             </bookmark>
-            <bookmark href="http://www.qtforum.org/">
-                <title>QtForum.org</title>
+            <bookmark href="https://forum.qt.io/">
+                <title>Forum.Qt.org</title>
             </bookmark>
-            <bookmark href="http://digitalfanatics.org/projects/qt_tutorial/">
+            <bookmark href="https://digitalfanatics.org/projects/qt_tutorial/">
                 <title>The Independent Qt Tutorial</title>
             </bookmark>
-            <bookmark href="http://www.qtforum.de/">
+            <bookmark href="https://www.qtforum.de/">
                 <title>German Qt Forum</title>
             </bookmark>
-            <bookmark href="http://www.korone.net/">
+            <bookmark href="https://www.qt-dev.com/">
                 <title>Korean Qt Community Site</title>
             </bookmark>
-            <bookmark href="http://prog.org.ru/">
+            <bookmark href="http://www.prog.org.ru/">
                 <title>Russian Qt Forum</title>
             </bookmark>
         </folder>
     </folder>
     <folder folded="no">
         <title>Online Dictionaries</title>
-        <bookmark href="http://www.dictionary.com/">
+        <bookmark href="https://www.dictionary.com/">
             <title>Dictionary.com</title>
         </bookmark>
-        <bookmark href="http://www.m-w.com/">
+        <bookmark href="https://www.merriam-webster.com/">
             <title>Merriam-Webster Online</title>
         </bookmark>
-        <bookmark href="http://dictionary.cambridge.org/">
+        <bookmark href="https://dictionary.cambridge.org/">
             <title>Cambridge Dictionaries Online</title>
         </bookmark>
-        <bookmark href="http://www.onelook.com/">
+        <bookmark href="https://www.onelook.com/">
             <title>OneLook Dictionary Search</title>
         </bookmark>
         <separator/>
-        <bookmark href="http://dict.tu-chemnitz.de/">
-            <title>TU Chemnitz German-English Dictionary</title>
+        <bookmark href="https://dict.tu-chemnitz.de/">
+            <title>BEOLINGUS, a service of TU Chemnitz</title>
         </bookmark>
         <separator/>
         <bookmark href="http://atilf.atilf.fr/tlf.htm">
             <title>Trésor de la Langue Française informatisé</title>
         </bookmark>
-        <bookmark href="http://dictionnaires.atilf.fr/dictionnaires/ACADEMIE/">
+        <bookmark href="https://www.dictionnaire-academie.fr/">
             <title>Dictionnaire de l'Académie Française</title>
         </bookmark>
     </folder>
