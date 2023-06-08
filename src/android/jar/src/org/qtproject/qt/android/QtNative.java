@@ -51,6 +51,12 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import android.util.Size;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
+import android.view.WindowMetrics;
+import android.graphics.Rect;
+
 public class QtNative
 {
     private static Activity m_activity = null;
@@ -410,6 +416,23 @@ public class QtNative
             return Arrays.asList(displays);
         }
         return new ArrayList<Display>();
+    }
+
+    public static Size getDisplaySize(Context displayContext, Display display)
+    {
+        if (Build.VERSION.SDK_INT < 31) {
+            DisplayMetrics realMetrics = new DisplayMetrics();
+            display.getRealMetrics(realMetrics);
+            return new Size(realMetrics.widthPixels, realMetrics.heightPixels);
+        }
+
+        Context windowsContext = displayContext.createWindowContext(
+                                                WindowManager.LayoutParams.TYPE_APPLICATION, null);
+        WindowManager displayMgr =
+                        (WindowManager) windowsContext.getSystemService(Context.WINDOW_SERVICE);
+        WindowMetrics windowsMetrics = displayMgr.getCurrentWindowMetrics();
+        Rect bounds = windowsMetrics.getBounds();
+        return new Size(bounds.width(), bounds.height());
     }
 
     public static boolean startApplication(String params, String mainLib) throws Exception
