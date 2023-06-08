@@ -255,15 +255,15 @@ namespace { namespace QtSemaphorePrivate {
 using namespace QtPrivate;
 struct Layout1
 {
-    alignas(IdealMutexAlignment) QtPrivate::mutex mutex;
+    alignas(IdealMutexAlignment) std::mutex mutex;
     qsizetype avail = 0;
-    alignas(IdealMutexAlignment) QtPrivate::condition_variable cond;
+    alignas(IdealMutexAlignment) std::condition_variable cond;
 };
 
 struct Layout2
 {
-    alignas(IdealMutexAlignment) QtPrivate::mutex mutex;
-    alignas(IdealMutexAlignment) QtPrivate::condition_variable cond;
+    alignas(IdealMutexAlignment) std::mutex mutex;
+    alignas(IdealMutexAlignment) std::condition_variable cond;
     qsizetype avail = 0;
 };
 

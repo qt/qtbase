@@ -1231,7 +1231,7 @@ class WatchDog : public QThread
     static constexpr Expectation combine(Expectation e, size_t gen) noexcept
     { return Expectation{e | (gen << GenerationShift)}; }
 
-    bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e)
+    bool waitFor(std::unique_lock<std::mutex> &m, Expectation e)
     {
         auto expectationChanged = [this, e] { return expecting.load(std::memory_order_relaxed) != e; };
         switch (state(e)) {
@@ -1310,8 +1310,8 @@ public:
     }
 
 private:
-    QtPrivate::mutex mutex;
-    QtPrivate::condition_variable waitCondition;
+    std::mutex mutex;
+    std::condition_variable waitCondition;
     std::atomic<Expectation> expecting;
 };
 
