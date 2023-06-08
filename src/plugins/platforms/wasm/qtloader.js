@@ -24,6 +24,11 @@
  * - module: Promise<WebAssembly.Module>
  *      The module to create the instance from (optional). Specifying the module allows optimizing
  *      use cases where several instances are created from a single WebAssembly source.
+ * - qtdir: string
+ *      Path to Qt installation. This path will be used for loading Qt shared libraries and plugins.
+ *      The path is set to 'qt' by default, and is relative to the path of the web page's html file.
+ *      This property is not in use when static linking is used, since this build mode includes all
+ *      libraries and plugins in the wasm file.
  *
  * @return Promise<instance: EmscriptenModule>
  *      The promise is resolved when the module has been instantiated and its main function has been
@@ -50,6 +55,8 @@ async function qtLoad(config)
         throw new Error('config.qt is required, expected an object');
     if (typeof config.qt.entryFunction !== 'function')
         throw new Error('config.qt.entryFunction is required, expected a function');
+
+    config.qt.qtdir ??= 'qt';
 
     config.qtContainerElements = config.qt.containerElements;
     delete config.qt.containerElements;
@@ -87,6 +94,15 @@ async function qtLoad(config)
     };
 
     config.onRuntimeInitialized = () => config.qt.onLoaded?.();
+
+    const originalLocateFile = config.locateFile;
+    config.locateFile = filename =>
+    {
+        const originalLocatedFilename = originalLocateFile ? originalLocateFile(filename) : filename;
+        if (originalLocatedFilename.startsWith('libQt6'))
+            return `${config.qt.qtdir}/lib/${originalLocatedFilename}`;
+        return originalLocatedFilename;
+    }
 
     // This is needed for errors which occur right after resolving the instance promise but
     // before exiting the function (i.e. on call to main before stack unwinding).
