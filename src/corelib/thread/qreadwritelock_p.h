@@ -45,9 +45,10 @@ public:
     explicit QReadWriteLockPrivate(bool isRecursive = false)
         : recursive(isRecursive) {}
 
-    QtPrivate::mutex mutex;
-    QtPrivate::condition_variable writerCond;
+    alignas(QtPrivate::IdealMutexAlignment) QtPrivate::condition_variable writerCond;
     QtPrivate::condition_variable readerCond;
+
+    alignas(QtPrivate::IdealMutexAlignment) QtPrivate::mutex mutex;
     int readerCount = 0;
     int writerCount = 0;
     int waitingReaders = 0;

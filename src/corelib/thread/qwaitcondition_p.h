@@ -123,6 +123,14 @@ using condition_variable = std::condition_variable;
 
 #endif // C++11 threads
 
+// Ideal alignment for mutex and condition_variable: it's the hardware
+// interference size (size of a cache line) if the types are likely to contain
+// the actual data structures, otherwise just that of a pointer.
+static constexpr quintptr IdealMutexAlignment =
+        sizeof(QtPrivate::mutex) > sizeof(void *) &&
+        sizeof(QtPrivate::condition_variable) > sizeof(void *) ?
+            64 : alignof(void*);
+
 } // namespace QtPrivate
 
 QT_END_NAMESPACE

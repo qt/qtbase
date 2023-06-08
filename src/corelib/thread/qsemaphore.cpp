@@ -251,14 +251,31 @@ futexSemaphoreTryAcquire(QBasicAtomicInteger<quintptr> &u, int n, T timeout)
     return false;
 }
 
-class QSemaphorePrivate {
+namespace { namespace QtSemaphorePrivate {
+using namespace QtPrivate;
+struct Layout1
+{
+    alignas(IdealMutexAlignment) QtPrivate::mutex mutex;
+    qsizetype avail = 0;
+    alignas(IdealMutexAlignment) QtPrivate::condition_variable cond;
+};
+
+struct Layout2
+{
+    alignas(IdealMutexAlignment) QtPrivate::mutex mutex;
+    alignas(IdealMutexAlignment) QtPrivate::condition_variable cond;
+    qsizetype avail = 0;
+};
+
+// Choose Layout1 if it is smaller than Layout2. That happens for platforms
+// where sizeof(mutex) is 64.
+using Members = std::conditional_t<sizeof(Layout1) <= sizeof(Layout2), Layout1, Layout2>;
+} } // namespace QtSemaphorePrivate
+
+class QSemaphorePrivate : public QtSemaphorePrivate::Members
+{
 public:
-    explicit QSemaphorePrivate(int n) : avail(n) { }
-
-    QtPrivate::mutex mutex;
-    QtPrivate::condition_variable cond;
-
-    int avail;
+    explicit QSemaphorePrivate(qsizetype n) { avail = n; }
 };
 
 /*!
