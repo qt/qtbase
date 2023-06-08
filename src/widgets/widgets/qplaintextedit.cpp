@@ -2284,6 +2284,7 @@ void QPlainTextEdit::changeEvent(QEvent *e)
         || e->type() == QEvent::FontChange) {
         d->control->document()->setDefaultFont(font());
     }  else if (e->type() == QEvent::ActivationChange) {
+        d->control->setPalette(palette());
         if (!isActiveWindow())
             d->autoScrollTimer.stop();
     } else if (e->type() == QEvent::EnabledChange) {
