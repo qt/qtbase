@@ -31,3 +31,6 @@ defines += qt6
 
 # Require Qt modules to define qhp.projects
 qhp = true
+
+# Disable writing host-specific paths into .index files
+locationinfo = false
