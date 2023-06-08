@@ -153,6 +153,8 @@ void XbelTree::parseFolderElement(const QDomElement &element,
     bool folded = (element.attribute(foldedAttribute) != "no"_L1);
     item->setExpanded(!folded);
 
+    constexpr char16_t midDot = u'\xB7';
+    static const QString dots = QString(30, midDot);
     QDomElement child = element.firstChildElement();
     while (!child.isNull()) {
         if (child.tagName() == folderElement) {
@@ -171,7 +173,7 @@ void XbelTree::parseFolderElement(const QDomElement &element,
         } else if (child.tagName() == "separator"_L1) {
             QTreeWidgetItem *childItem = createItem(child, item);
             childItem->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
-            childItem->setText(0, QString(30, u'\xB7'));
+            childItem->setText(0, dots);
         }
         child = child.nextSiblingElement();
     }
