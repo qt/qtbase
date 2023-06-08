@@ -412,8 +412,15 @@ bool QHttpSocketEngine::isReadNotificationEnabled() const
 void QHttpSocketEngine::setReadNotificationEnabled(bool enable)
 {
     Q_D(QHttpSocketEngine);
-    if (d->readNotificationEnabled == enable)
+    if (d->readNotificationEnabled == enable) {
+        // When already enabled, we still need to check for
+        // buffered data. The inner socket may have data in its user-space
+        // buffer that won't trigger a new OS-level read notification.
+        // Without this check, partial reads leave data stranded forever.
+        if (enable && bytesAvailable() > 0)
+            emitReadNotification();
         return;
+    }
 
     d->readNotificationEnabled = enable;
     if (enable) {

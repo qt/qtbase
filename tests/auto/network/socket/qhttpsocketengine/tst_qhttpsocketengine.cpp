@@ -39,6 +39,7 @@ private slots:
    // void tcpLoopbackPerformance();
     void passwordAuth();
     void ensureEofTriggersNotification();
+    void readNotificationStall();
 
 protected slots:
     void tcpSocketNonBlocking_hostFound();
@@ -741,6 +742,88 @@ void tst_QHttpSocketEngine::ensureEofTriggersNotification()
 
     // Check that it's closed
     QCOMPARE(socket.state(), QTcpSocket::UnconnectedState);
+}
+
+//----------------------------------------------------------------------------------
+
+void tst_QHttpSocketEngine::readNotificationStall()
+{
+    // QTBUG-113749: With HTTPS through HTTP CONNECT proxy, read notifications
+    // can stall when the read buffer is smaller than the engine's internal buffer.
+    //
+    // In production:
+    //   - QHttpNetworkConnectionChannel sets sslSocket->setReadBufferSize(64*1024)
+    //   - QHttpSocketEngine::connectInternal() sets inner socket buffer to 65536
+    //   - Schannel's transmit() reads in 16KB chunks, stops when its decrypted
+    //     buffer fills to 64KB, leaving encrypted data in the outer buffer
+    //   - canReadNotification() does a partial read from the engine
+    //   - setReadNotificationEnabled(true) early-returns, data stranded, stall
+    //
+    // We reproduce this without TLS by using a small read buffer (16KB) on a
+    // plain QTcpSocket through a fake HTTP CONNECT proxy, forcing partial reads.
+
+    const int readBufferSize = 16 * 1024;
+    const int totalSize = 64 * 1024 * 10;
+    const QByteArray payload(totalSize, 'A');
+
+    // Fake HTTP CONNECT proxy: accepts CONNECT, then sends payload in one burst
+    QTcpServer proxyServer;
+    QVERIFY(proxyServer.listen(QHostAddress::LocalHost));
+
+    QTcpSocket *serverSide = nullptr;
+
+    connect(&proxyServer, &QTcpServer::newConnection, this, [&]() {
+        serverSide = proxyServer.nextPendingConnection();
+        connect(serverSide, &QTcpSocket::readyRead, this, [&]() {
+            if (!serverSide->peek(serverSide->bytesAvailable()).contains("\r\n\r\n"))
+                return;
+            serverSide->readAll();
+            serverSide->write("HTTP/1.0 200 Connection established\r\n\r\n");
+            serverSide->write(payload);
+            disconnect(serverSide, &QTcpSocket::readyRead, nullptr, nullptr);
+            serverSide->disconnectFromHost();
+        });
+    });
+
+    QTcpSocket socket;
+    connect(&socket, SIGNAL(connected()), SLOT(exitLoopSlot()));
+    socket.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer.serverPort()));
+    socket.connectToHost("0.1.2.3", 12345);
+
+    QTestEventLoop::instance().enterLoop(5);
+    if (QTestEventLoop::instance().timeout())
+        QFAIL("Connect timed out");
+    QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
+
+    // Use a buffer smaller than the engine's internal 65536 to force partial reads
+    socket.setReadBufferSize(readBufferSize);
+
+    QByteArray received;
+    int readyReadCount = 0;
+
+    connect(&socket, &QTcpSocket::readyRead, this, [&]() {
+        received += socket.readAll();
+        ++readyReadCount;
+        if (received.size() >= totalSize)
+            QTestEventLoop::instance().exitLoop();
+    });
+
+    connect(&socket, &QTcpSocket::disconnected, this, [&]() {
+        if (socket.bytesAvailable() > 0)
+            received += socket.readAll();
+        QTestEventLoop::instance().exitLoop();
+    });
+
+    QTestEventLoop::instance().enterLoop(10);
+
+    if (QTestEventLoop::instance().timeout()) {
+        QFAIL(qPrintable(QString("QTBUG-113749: Download stalled at %1 of %2 bytes (%3%)")
+                                 .arg(received.size())
+                                 .arg(totalSize)
+                                 .arg(100.0 * received.size() / totalSize, 0, 'f', 1)));
+    }
+
+    QCOMPARE_GE(received.size(), totalSize);
 }
 
 QTEST_MAIN(tst_QHttpSocketEngine)
