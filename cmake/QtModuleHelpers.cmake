@@ -447,6 +447,8 @@ function(qt_internal_add_module target)
         # If EXTERNAL_HEADERS_DIR is set we install the specified directory and keep the structure
         # without taking into the account the CMake source tree and syncqt outputs.
         if(arg_EXTERNAL_HEADERS_DIR)
+            set_property(TARGET ${target}
+                PROPERTY _qt_external_headers_dir "${arg_EXTERNAL_HEADERS_DIR}")
             qt_install(DIRECTORY "${arg_EXTERNAL_HEADERS_DIR}/"
                 DESTINATION "${module_install_interface_include_dir}"
             )
