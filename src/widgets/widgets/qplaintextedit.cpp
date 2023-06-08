@@ -2301,6 +2301,7 @@ void QPlainTextEdit::changeEvent(QEvent *e)
         d->control->document()->setDefaultFont(font());
         break;
     case QEvent::ActivationChange:
+        d->control->setPalette(palette());
         if (!isActiveWindow())
             d->autoScrollTimer.stop();
         break;
