@@ -54,6 +54,9 @@ private:
 
 Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
 Q_DECLARE_JNI_CLASS(DisplayMetrics, "android/util/DisplayMetrics")
+Q_DECLARE_JNI_CLASS(Resources, "android/content/res/Resources")
+Q_DECLARE_JNI_CLASS(Size, "android/util/Size")
+Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
 
 Q_DECLARE_JNI_TYPE(DisplayMode, "Landroid/view/Display$Mode;")
 
@@ -84,19 +87,31 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
     m_refreshRate = displayObject.callMethod<jfloat>("getRefreshRate");
     m_displayId = displayObject.callMethod<jint>("getDisplayId");
 
-    QJniObject displayMetricsObj(QtJniTypes::className<QtJniTypes::DisplayMetrics>());
-    displayObject.callMethod<void>("getRealMetrics", displayMetricsObj.object<QtJniTypes::DisplayMetrics>());
+    const QJniObject context = QNativeInterface::QAndroidApplication::context();
+    const auto displayContext = context.callMethod<QtJniTypes::Context>("createDisplayContext",
+                                                displayObject.object<QtJniTypes::Display>());
 
-    const int widthPixels = displayMetricsObj.getField<int>("widthPixels");
-    const int heightPixels = displayMetricsObj.getField<int>("heightPixels");
-    m_size = QSize(widthPixels, heightPixels);
+    const auto sizeObj = QJniObject::callStaticMethod<QtJniTypes::Size>(
+                                                QtJniTypes::className<QtJniTypes::QtNative>(),
+                                                "getDisplaySize",
+                                                displayContext.object<QtJniTypes::Context>(),
+                                                displayObject.object<QtJniTypes::Display>());
+    m_size = QSize(sizeObj.callMethod<int>("getWidth"), sizeObj.callMethod<int>("getHeight"));
+
+    const auto resources = displayContext.callMethod<QtJniTypes::Resources>("getResources");
+    const auto metrics = resources.callMethod<QtJniTypes::DisplayMetrics>("getDisplayMetrics");
+    const float xdpi = metrics.getField<float>("xdpi");
+    const float ydpi = metrics.getField<float>("ydpi");
+
+    // Potentially densityDpi could be used instead of xpdi/ydpi to do the calculation,
+    // but the results are not consistent with devices specs.
+    // (https://issuetracker.google.com/issues/194120500)
+    m_physicalSize.setWidth(qRound(m_size.width() / xdpi * 25.4));
+    m_physicalSize.setHeight(qRound(m_size.height() / ydpi * 25.4));
 
     if (QNativeInterface::QAndroidApplication::sdkVersion() >= 23) {
-        const qreal xdpi = displayMetricsObj.getField<float>("xdpi");
-        const qreal ydpi = displayMetricsObj.getField<float>("ydpi");
-
         const QJniObject currentMode = displayObject.callObjectMethod<QtJniTypes::DisplayMode>("getMode");
-        const jint currentModeId = currentMode.callMethod<jint>("getModeId");
+        m_currentMode = currentMode.callMethod<jint>("getModeId");
 
         const QJniObject supportedModes = displayObject.callObjectMethod<QtJniTypes::DisplayMode[]>(
             "getSupportedModes");
@@ -106,20 +121,9 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
         const auto size = env->GetArrayLength(modeArray);
         for (jsize i = 0; i < size; ++i) {
             const auto mode = QJniObject::fromLocalRef(env->GetObjectArrayElement(modeArray, i));
-            // Physical sizes in millimeters
-            const int physicalWidth = qRound(mode.callMethod<jint>("getPhysicalWidth") / xdpi * 25.4);
-            const int physicalHeight = qRound(mode.callMethod<jint>("getPhysicalHeight") / ydpi * 25.4);
-
-            if (currentModeId == mode.callMethod<jint>("getModeId")) {
-                m_currentMode = i;
-                m_physicalSize = QSize {
-                    physicalWidth,
-                    physicalHeight
-                };
-            }
-
             m_modes << QPlatformScreen::Mode {
-                .size = QSize { physicalWidth, physicalHeight },
+                .size = QSize { mode.callMethod<jint>("getPhysicalWidth"),
+                                mode.callMethod<jint>("getPhysicalHeight") },
                 .refreshRate = mode.callMethod<jfloat>("getRefreshRate")
             };
         }
