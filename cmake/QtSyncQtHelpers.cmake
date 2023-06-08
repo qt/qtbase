@@ -158,6 +158,21 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     set(syncqt_args_rsp "${binary_dir_real}/${target}_syncqt_args")
     qt_configure_file(OUTPUT "${syncqt_args_rsp}" CONTENT "${syncqt_args_string}")
 
+    get_target_property(external_headers_dir ${target} _qt_external_headers_dir)
+    if(external_headers_dir)
+        if(NOT IS_ABSOLUTE "${external_headers_dir}")
+            get_filename_component(external_headers_dir "${external_headers_dir}" ABSOLUTE)
+        endif()
+        if(EXISTS "${external_headers_dir}")
+            set(external_headers_dir_copy_cmd
+                COMMAND
+                    ${CMAKE_COMMAND}
+                    -E copy_directory
+                    "${external_headers_dir}"
+                    "${module_build_interface_include_dir}"
+            )
+        endif()
+    endif()
     add_custom_command(
         OUTPUT
             ${syncqt_outputs}
@@ -165,6 +180,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
             "@${syncqt_args_rsp}"
             ${build_time_syncqt_arguments}
+        ${external_headers_dir_copy_cmd}
         COMMAND
             ${CMAKE_COMMAND} -E touch "${syncqt_timestamp}"
         DEPENDS
@@ -184,6 +200,9 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     set_target_properties(${target}
         PROPERTIES _qt_internal_sync_headers_target ${target}_sync_headers)
 
+    if(is_3rd_party_library)
+        add_dependencies(thirdparty_sync_headers ${target}_sync_headers)
+    endif()
     # This target is required when building docs, to make all header files and their aliases
     # available for qdoc.
     # ${target}_sync_headers is added as dependency to make sure that
@@ -196,6 +215,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         COMMAND
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
             "@${syncqt_all_args_rsp}"
+        ${external_headers_dir_copy_cmd}
         DEPENDS
             ${module_headers}
             ${syncqt_all_args_rsp}
