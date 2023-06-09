@@ -177,7 +177,7 @@ export class QtLoaderIntegrationTests
         // Fetch/Compile the module once; reuse for each instance. This is also if the page wants to
         // initiate the .wasm file download fetch as early as possible, before the browser has
         // finished fetching and parsing testapp.js and qtloader.js
-        const modulePromise = WebAssembly.compileStreaming(fetch('tst_qtloader_integration.wasm'));
+        const module = WebAssembly.compileStreaming(fetch('tst_qtloader_integration.wasm'));
 
         const instances = await Promise.all([1, 2, 3].map(i => qtLoad({
             qt: {
@@ -186,7 +186,7 @@ export class QtLoaderIntegrationTests
                     width: `${i * 10}px`,
                     height: `${i * 10}px`,
                 })],
-                modulePromise,
+                module,
             }
         })));
         // Confirm the identity of instances by querying their screen widths and heights
@@ -230,14 +230,26 @@ export class QtLoaderIntegrationTests
         assert.equal('Sample output!', accumulatedStdout);
     }
 
+    async modulePromiseProvided()
+    {
+        await qtLoad({
+            qt: {
+                entryFunction: createQtAppInstance,
+                containerElements: [this.#testScreenContainers[0]],
+                module: WebAssembly.compileStreaming(
+                    fetch('tst_qtloader_integration.wasm'))
+            }
+        });
+    }
+
     async moduleProvided()
     {
         await qtLoad({
             qt: {
                 entryFunction: createQtAppInstance,
                 containerElements: [this.#testScreenContainers[0]],
-                modulePromise: WebAssembly.compileStreaming(
-                    await fetch('tst_qtloader_integration.wasm'))
+                module: await WebAssembly.compileStreaming(
+                    fetch('tst_qtloader_integration.wasm'))
             }
         });
     }
@@ -265,7 +277,7 @@ export class QtLoaderIntegrationTests
                 qt: {
                     entryFunction: createQtAppInstance,
                     containerElements: [this.#testScreenContainers[0]],
-                    modulePromise: Promise.reject(new Error('Failed to load')),
+                    module: Promise.reject(new Error('Failed to load')),
                 }
             });
         } catch (e) {

@@ -21,6 +21,9 @@
  *      Called when the module has loaded.
  * - entryFunction: (emscriptenConfig: object) => Promise<EmscriptenModule>
  *      Qt always uses emscripten's MODULARIZE option. This is the MODULARIZE entry function.
+ * - module: Promise<WebAssembly.Module>
+ *      The module to create the instance from (optional). Specifying the module allows optimizing
+ *      use cases where several instances are created from a single WebAssembly source.
  *
  * @return Promise<{
  *             instance: EmscriptenModule,
@@ -65,11 +68,11 @@ async function qtLoad(config)
     const circuitBreaker = new Promise((_, reject) => { circuitBreakerReject = reject; });
 
     // If module async getter is present, use it so that module reuse is possible.
-    if (config.qt.modulePromise) {
+    if (config.qt.module) {
         config.instantiateWasm = async (imports, successCallback) =>
         {
             try {
-                const module = await config.qt.modulePromise;
+                const module = await config.qt.module;
                 successCallback(
                     await WebAssembly.instantiate(module, imports), module);
             } catch (e) {
