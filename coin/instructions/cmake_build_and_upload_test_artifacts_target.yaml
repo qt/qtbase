@@ -34,6 +34,11 @@ instructions:
         variableValue: "{{.Env.COMMON_TARGET_TEST_CMAKE_ARGS}}"
       - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts.yaml"
     disable_if:
-      condition: property
-      property: features
-      contains_value: DisableTests
+      condition: or
+      conditions:
+        - condition: property
+          property: features
+          contains_value: DisableTests
+        - condition: property
+          property: features
+          contains_value: DoNotBuildTests
