@@ -171,9 +171,7 @@ QObject *QActionPrivate::menu() const
 
     Once a QAction has been created, it should be added to the relevant
     menu and toolbar, then connected to the slot which will perform
-    the action. For example:
-
-    \snippet ../widgets/mainwindows/mdi/mainwindow.cpp qaction setup
+    the action.
 
     Actions are added to widgets using QWidget::addAction() or
     QGraphicsWidget::addAction(). Note that an action must be added to a
@@ -186,7 +184,7 @@ QObject *QActionPrivate::menu() const
     use as menu items.
 
 
-    \sa QMenu, QToolBar, {Qt Widgets - Application Example}
+    \sa QMenu, QToolBar
 */
 
 /*!
