@@ -768,9 +768,6 @@ private:
 #endif // QT_NO_GESTURES
     friend class QWidgetEffectSourcePrivate;
 
-#ifdef Q_OS_MAC
-    friend bool qt_mac_is_metal(const QWidget *w);
-#endif
     friend Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget);
     friend Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget);
 
