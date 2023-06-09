@@ -318,9 +318,6 @@ struct QMetalSwapChain : public QRhiSwapChain
     QMetalCommandBuffer cbWrapper;
     QMetalRenderBuffer *ds = nullptr;
     QMetalSwapChainData *d = nullptr;
-
-private:
-    QRhiSwapChainHdrInfo hdrInfoForScreen();
 };
 
 struct QRhiMetalData;
