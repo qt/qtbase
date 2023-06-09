@@ -116,6 +116,7 @@ TextEdit::TextEdit(QWidget *parent)
 #endif
 }
 
+//! [closeevent]
 void TextEdit::closeEvent(QCloseEvent *e)
 {
     if (maybeSave())
@@ -123,6 +124,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
     else
         e->ignore();
 }
+//! [closeevent]
 
 void TextEdit::setupFileActions()
 {
