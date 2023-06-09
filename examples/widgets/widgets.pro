@@ -17,7 +17,6 @@ SUBDIRS       = \
                 mainwindows \
                 painting \
                 richtext \
-                scroller \
                 tools \
                 touch \
                 tutorials \
