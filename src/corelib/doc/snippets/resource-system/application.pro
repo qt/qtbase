@@ -2,9 +2,9 @@ TEMPLATE = app
 
 QT += qml widgets
 
-#! [0]
+#! [0] #! [qrc]
 RESOURCES = application.qrc
-#! [0]
+#! [0] #! [qrc]
 
 #! [1]
 resources.files = \
