@@ -8,7 +8,6 @@ SUBDIRS       = addressbook \
                 dirview \
                 editabletreemodel \
                 fetchmore \
-                flattreeview \
                 frozencolumn \
                 interview \
                 pixelator \

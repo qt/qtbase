@@ -1137,6 +1137,11 @@ bool QHeaderView::sectionsMovable() const
     In such a scenario, it is recommended to call QTreeView::setRootIsDecorated(false)
     as well.
 
+    \code
+    treeView->setRootIsDecorated(false);
+    treeView->header()->setFirstSectionMovable(true);
+    \endcode
+
     Setting it to true has no effect unless setSectionsMovable(true) is called
     as well.
 
