@@ -830,7 +830,7 @@ void QProcessPrivate::Channel::clear()
 */
 
 /*!
-    \enum QProcess::UnixProcessFlags
+    \enum QProcess::UnixProcessFlag
     \since 6.6
 
     These flags can be used in the \c flags field of \l UnixProcessParameters.
