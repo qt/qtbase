@@ -602,10 +602,13 @@ function(qt_internal_add_test name)
         list(APPEND extra_test_args "--browser_args=\"--password-store=basic\"")
         list(APPEND extra_test_args "--kill_exit")
 
-        # We always want to enable asyncify for tests, as some of them use exec
+        # Tests may require asyncify if they use exec(). Enable asyncify for
+        # batched tests since this is the configuration used on the CI system.
         # Optimize for size (-Os), since asyncify tends to make the resulting
         # binary very large
-        target_link_options("${name}" PRIVATE "SHELL:-s ASYNCIFY" "-Os")
+        if(batch_current_test)
+            target_link_options("${name}" PRIVATE "SHELL:-s ASYNCIFY" "-Os")
+        endif()
 
         # This tells cmake to run the tests with this script, since wasm files can't be
         # executed directly
