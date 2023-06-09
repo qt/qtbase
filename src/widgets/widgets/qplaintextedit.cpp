@@ -1186,7 +1186,6 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
    editor with line wrap enabled in real time. It also makes for a
    fast log viewer (see setMaximumBlockCount()).
 
-
     \sa QTextDocument, QTextCursor
         {Syntax Highlighter Example}, {Rich Text Processing}
 

@@ -33,7 +33,6 @@ LocationDialog::LocationDialog(QWidget *parent)
     applicationComboBox = new QComboBox;
     applicationComboBox->addItem(tr("Any"));
     applicationComboBox->addItem(tr("Qt Creator"));
-    applicationComboBox->addItem(tr("Application Example"));
     applicationComboBox->addItem(tr("Assistant"));
     applicationComboBox->addItem(tr("Designer"));
     applicationComboBox->addItem(tr("Linguist"));
