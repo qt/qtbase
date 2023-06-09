@@ -348,7 +348,7 @@ QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
     } else {
         if (buttons && !m_currentButtons) {
             m_currentButtons = buttons;
-        } else if (!(m_currentButtons & buttons)) { // Button changed: Complete Drop operation.
+        } else if (m_currentButtons != buttons) { // Button changed: Complete Drop operation.
             result = DRAGDROP_S_DROP;
         }
     }
