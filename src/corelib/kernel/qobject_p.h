@@ -389,14 +389,14 @@ public:
 
     template<typename ...Args>
     static QMetaCallEvent *create(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender,
-                                  int signal_index, Args ...argv)
+                                  int signal_index, const Args &...argv)
     {
         auto metaCallEvent = std::make_unique<QMetaCallEvent>(slotObj, sender,
                                                               signal_index, int(1 + sizeof...(Args)));
 
         void **args = metaCallEvent->args();
         QMetaType *types = metaCallEvent->types();
-        const std::array<void *, sizeof...(Args) + 1> argp{ nullptr, std::addressof(argv)... };
+        const std::array<const void *, sizeof...(Args) + 1> argp{ nullptr, std::addressof(argv)... };
         const std::array metaTypes{ QMetaType::fromType<void>(), QMetaType::fromType<Args>()... };
         for (size_t i = 0; i < sizeof...(Args) + 1; ++i) {
             types[i] = metaTypes[i];
