@@ -13,6 +13,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QRandomGenerator>
 #include <QTemporaryDir>
 #include <QTemporaryFile>
 #include <QOperatingSystemVersion>
@@ -227,6 +228,8 @@ private slots:
 #ifdef Q_OS_UNIX
     void unixPipe_data();
     void unixPipe();
+    void unixFifo_data() { unixPipe_data(); }
+    void unixFifo();
     void socketPair_data() { unixPipe_data(); }
     void socketPair();
 #endif
@@ -2677,6 +2680,57 @@ void tst_QFile::unixPipe()
     if (pipes[0] != -1)
         qt_safe_close(pipes[0]);
     qt_safe_close(pipes[1]);
+}
+
+void tst_QFile::unixFifo()
+{
+    QByteArray fifopath = []() -> QByteArray {
+        QByteArray dir = qgetenv("XDG_RUNTIME_DIR");
+        if (dir.isEmpty())
+            dir = QFile::encodeName(QDir::tempPath());
+
+        // try to create a FIFO
+        for (int attempts = 10; attempts; --attempts) {
+            QByteArray fifopath = dir + "/tst_qfile_fifo." +
+                    QByteArray::number(QRandomGenerator::global()->generate());
+            int ret = mkfifo(fifopath, 0600);
+            if (ret == 0)
+                return fifopath;
+        }
+
+        qWarning("Failed to create a FIFO at %s; last error was %s",
+                 dir.constData(), strerror(errno));
+        return {};
+    }();
+    if (fifopath.isEmpty())
+        return;
+
+    auto removeFifo = qScopeGuard([&fifopath] { unlink(fifopath); });
+
+    // with a FIFO, the two open() system calls synchronize
+    QScopedPointer<QThread> thr(QThread::create([&fifopath]() {
+        int fd = qt_safe_open(fifopath, O_WRONLY);
+        QTest::qSleep(500);
+        char c = 2;
+        qt_safe_write(fd, &c, 1);
+        qt_safe_close(fd);
+    }));
+    thr->start();
+
+    QFETCH(bool, useStdio);
+    QFile f;
+    if (useStdio) {
+        FILE *fh = fopen(fifopath, "rb");
+        QVERIFY(f.open(fh, QIODevice::ReadOnly | QIODevice::Unbuffered, QFileDevice::AutoCloseHandle));
+    } else {
+        f.setFileName(QFile::decodeName(fifopath));
+        QVERIFY(f.open(QIODevice::ReadOnly | QIODevice::Unbuffered));
+    }
+
+    char c = 0;
+    QCOMPARE(f.read(&c, 1), 1);         // this ought to block
+    QCOMPARE(c, '\2');
+    thr->wait();
 }
 
 void tst_QFile::socketPair()
