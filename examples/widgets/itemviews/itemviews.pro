@@ -17,7 +17,6 @@ SUBDIRS       = addressbook \
                 simplewidgetmapper \
                 spinboxdelegate \
                 spreadsheet \
-                stardelegate \
-                storageview
+                stardelegate
 !qtConfig(draganddrop): SUBDIRS -= puzzle
 !qtHaveModule(xml): SUBDIRS -= simpledommodel
