@@ -235,7 +235,7 @@ QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
         \li Text block group format changes.
     \endlist
 
-    \sa QTextCursor, QTextEdit, {Rich Text Processing}, {Text Object Example}
+    \sa QTextCursor, QTextEdit, {Rich Text Processing}
 */
 
 /*!

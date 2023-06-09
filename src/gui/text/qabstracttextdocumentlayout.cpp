@@ -101,7 +101,7 @@ QTextObjectInterface::~QTextObjectInterface()
 
     \warning Copy and Paste operations ignore custom text objects.
 
-    \sa {Text Object Example}, QTextCharFormat, QTextLayout
+    \sa QTextCharFormat, QTextLayout
 */
 
 /*!

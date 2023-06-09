@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
     objects, you will also need to reimplement QTextDocument::createObject()
     which acts as a factory method for creating text objects.
 
-    \sa QTextDocument, {Text Object Example}
+    \sa QTextDocument
 */
 
 /*!
