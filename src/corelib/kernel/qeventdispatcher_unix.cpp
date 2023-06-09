@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef QT_NO_EVENTFD
+#if QT_CONFIG(eventfd)
 #  include <sys/eventfd.h>
 #endif
 
@@ -116,7 +116,7 @@ bool QThreadPipe::init()
     initThreadPipeFD(fds[0]);
     fds[1] = fds[0];
 #else
-#  ifndef QT_NO_EVENTFD
+#  if QT_CONFIG(eventfd)
     if ((fds[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)) >= 0)
         return true;
 #  endif
@@ -137,7 +137,7 @@ pollfd QThreadPipe::prepare() const
 void QThreadPipe::wakeUp()
 {
     if (wakeUps.testAndSetAcquire(0, 1)) {
-#ifndef QT_NO_EVENTFD
+#if QT_CONFIG(eventfd)
         if (fds[1] == -1) {
             // eventfd
             eventfd_t value = 1;
@@ -165,7 +165,7 @@ int QThreadPipe::check(const pollfd &pfd)
         ::read(fds[0], c, sizeof(c));
         ::ioctl(fds[0], FIOFLUSH, 0);
 #else
-#  ifndef QT_NO_EVENTFD
+#  if QT_CONFIG(eventfd)
         if (fds[1] == -1) {
             // eventfd
             eventfd_t value;

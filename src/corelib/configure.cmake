@@ -590,11 +590,10 @@ qt_feature("dladdr" PRIVATE
     LABEL "dladdr"
     CONDITION QT_FEATURE_dlopen AND TEST_dladdr
 )
-qt_feature("eventfd" PUBLIC
+qt_feature("eventfd" PRIVATE
     LABEL "eventfd"
     CONDITION NOT WASM AND TEST_eventfd
 )
-qt_feature_definition("eventfd" "QT_NO_EVENTFD" NEGATE VALUE "1")
 qt_feature("futimens" PRIVATE
     LABEL "futimens()"
     CONDITION NOT WIN32 AND TEST_futimens
