@@ -23,18 +23,8 @@
 #  include <sys/eventfd.h>
 #endif
 
-// VxWorks doesn't correctly set the _POSIX_... options
 #if defined(Q_OS_VXWORKS)
-#  if defined(_POSIX_MONOTONIC_CLOCK) && (_POSIX_MONOTONIC_CLOCK <= 0)
-#    undef _POSIX_MONOTONIC_CLOCK
-#    define _POSIX_MONOTONIC_CLOCK 1
-#  endif
 #  include <pipeDrv.h>
-#  include <sys/time.h>
-#endif
-
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
-#  include <sys/times.h>
 #endif
 
 QT_BEGIN_NAMESPACE
