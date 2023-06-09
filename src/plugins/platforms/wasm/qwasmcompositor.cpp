@@ -185,13 +185,18 @@ void QWasmCompositor::deliverUpdateRequests()
 
 void QWasmCompositor::deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType)
 {
-    // update by deliverUpdateRequest and expose event accordingly.
+    // Update by deliverUpdateRequest and expose event according to requested update
+    // type. If the window has not yet been exposed then we must expose it first regardless
+    // of update type. The deliverUpdateRequest must still be sent in this case in order
+    // to maintain correct window update state.
+    QWindow *qwindow = window->window();
+    QRect updateRect(QPoint(0, 0), qwindow->geometry().size());
     if (updateType == UpdateRequestDelivery) {
+        if (qwindow->isExposed() == false)
+            QWindowSystemInterface::handleExposeEvent(qwindow, updateRect);
         window->QPlatformWindow::deliverUpdateRequest();
     } else {
-        QWindow *qwindow = window->window();
-        QWindowSystemInterface::handleExposeEvent(
-            qwindow, QRect(QPoint(0, 0), qwindow->geometry().size()));
+        QWindowSystemInterface::handleExposeEvent(qwindow, updateRect);
     }
 }
 
