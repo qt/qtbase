@@ -2647,6 +2647,7 @@ static void unixPipe_helper(int pipes[2])
     if (useStdio) {
         FILE *fh = fdopen(pipes[0], "rb");
         QVERIFY(f.open(fh, QIODevice::ReadOnly | QIODevice::Unbuffered, QFileDevice::AutoCloseHandle));
+        pipes[0] = -1;      // QFile fclose()s the FILE* and that close()s the fd
     } else {
         QVERIFY(f.open(pipes[0], QIODevice::ReadOnly | QIODevice::Unbuffered));
     }
@@ -2673,7 +2674,8 @@ void tst_QFile::unixPipe()
     int pipes[2] = { -1, -1 };
     QVERIFY2(pipe(pipes) == 0, qPrintable(qt_error_string()));
     unixPipe_helper(pipes);
-    qt_safe_close(pipes[0]);
+    if (pipes[0] != -1)
+        qt_safe_close(pipes[0]);
     qt_safe_close(pipes[1]);
 }
 
@@ -2682,7 +2684,8 @@ void tst_QFile::socketPair()
     int pipes[2] = { -1, -1 };
     QVERIFY2(socketpair(AF_UNIX, SOCK_STREAM, 0, pipes) == 0, qPrintable(qt_error_string()));
     unixPipe_helper(pipes);
-    qt_safe_close(pipes[0]);
+    if (pipes[0] != -1)
+        qt_safe_close(pipes[0]);
     qt_safe_close(pipes[1]);
 }
 #endif
