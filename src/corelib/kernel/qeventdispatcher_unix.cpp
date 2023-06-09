@@ -45,11 +45,6 @@ static const char *socketType(QSocketNotifier::Type type)
 
 QThreadPipe::QThreadPipe()
 {
-    fds[0] = -1;
-    fds[1] = -1;
-#if defined(Q_OS_VXWORKS)
-    name[0] = '\0';
-#endif
 }
 
 QThreadPipe::~QThreadPipe()
@@ -57,7 +52,7 @@ QThreadPipe::~QThreadPipe()
     if (fds[0] >= 0)
         close(fds[0]);
 
-    if (fds[1] >= 0)
+    if (!QT_CONFIG(eventfd) && fds[1] >= 0)
         close(fds[1]);
 
 #if defined(Q_OS_VXWORKS)
@@ -106,11 +101,13 @@ bool QThreadPipe::init()
     initThreadPipeFD(fds[0]);
     fds[1] = fds[0];
 #else
+    int ret;
 #  if QT_CONFIG(eventfd)
-    if ((fds[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)) >= 0)
-        return true;
+    ret = fds[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
 #  endif
-    if (qt_safe_pipe(fds, O_NONBLOCK) == -1) {
+    if (!QT_CONFIG(eventfd))
+        ret = qt_safe_pipe(fds, O_NONBLOCK);
+    if (ret == -1) {
         perror("QThreadPipe: Unable to create pipe");
         return false;
     }
@@ -128,13 +125,8 @@ void QThreadPipe::wakeUp()
 {
     if (wakeUps.testAndSetAcquire(0, 1)) {
 #if QT_CONFIG(eventfd)
-        if (fds[1] == -1) {
-            // eventfd
-            eventfd_t value = 1;
-            int ret;
-            EINTR_LOOP(ret, eventfd_write(fds[0], value));
-            return;
-        }
+        eventfd_write(fds[0], 1);
+        return;
 #endif
         char c = 0;
         qt_safe_write(fds[1], &c, 1);
@@ -156,13 +148,10 @@ int QThreadPipe::check(const pollfd &pfd)
         ::ioctl(fds[0], FIOFLUSH, 0);
 #else
 #  if QT_CONFIG(eventfd)
-        if (fds[1] == -1) {
-            // eventfd
-            eventfd_t value;
-            eventfd_read(fds[0], &value);
-        } else
+        eventfd_t value;
+        eventfd_read(fds[0], &value);
 #  endif
-        {
+        if (!QT_CONFIG(eventfd)) {
             while (::read(fds[0], c, sizeof(c)) > 0) {}
         }
 #endif

@@ -51,13 +51,13 @@ struct QThreadPipe
     int check(const pollfd &pfd);
 
     // note for eventfd(7) support:
-    // if fds[1] is -1, then eventfd(7) is in use and is stored in fds[0]
-    int fds[2];
+    // fds[0] stores the eventfd, fds[1] is unused
+    int fds[2] = { -1, -1 };
     QAtomicInt wakeUps;
 
 #if defined(Q_OS_VXWORKS)
-    static const int len_name = 20;
-    char name[len_name];
+    static constexpr int len_name = 20;
+    char name[len_name] = {};
 #endif
 };
 
