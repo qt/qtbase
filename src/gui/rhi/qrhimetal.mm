@@ -6107,7 +6107,7 @@ bool QMetalSwapChain::isFormatSupported(Format f)
 {
     if (f == HDRExtendedSrgbLinear) {
         if (@available(macOS 10.11, iOS 16.0, *))
-            return true;
+            return hdrInfoForScreen().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
         else
             return false;
     }
@@ -6329,12 +6329,24 @@ bool QMetalSwapChain::createOrResize()
 
 QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfo()
 {
+    if (m_format == SDR) {
+        QRhiSwapChainHdrInfo info;
+        info.limitsType = QRhiSwapChainHdrInfo::ColorComponentValue;
+        info.limits.colorComponentValue.maxColorComponentValue = 1;
+        info.isHardCodedDefaults = true;
+    } else {
+        return hdrInfoForScreen();
+    }
+}
+
+QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfoForScreen()
+{
     QRhiSwapChainHdrInfo info;
     info.limitsType = QRhiSwapChainHdrInfo::ColorComponentValue;
     info.limits.colorComponentValue.maxColorComponentValue = 1;
     info.isHardCodedDefaults = true;
 
-    if (m_format != SDR && m_window) {
+    if (m_window) {
         // Must use m_window, not window, given this may be called before createOrResize().
 #ifdef Q_OS_MACOS
         NSView *view = reinterpret_cast<NSView *>(m_window->winId());
