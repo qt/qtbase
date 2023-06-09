@@ -1,4 +1,5 @@
 # See qtbase/src/testlib/qtestblacklist.cpp for format
 #QTBUG-101636
 [registerObjectPeer2]
+ci ubuntu-20.04 # QTBUG-106632
 ubuntu-20

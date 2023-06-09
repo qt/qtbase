@@ -114,8 +114,8 @@ QFutureWatcherBase::QFutureWatcherBase(QObject *parent)
 /*! \fn template <typename T> void QFutureWatcher<T>::cancel()
 
     Cancels the asynchronous computation represented by the future(). Note that
-    the cancelation is asynchronous. Use waitForFinished() after calling
-    cancel() when you need synchronous cancelation.
+    the cancellation is asynchronous. Use waitForFinished() after calling
+    cancel() when you need synchronous cancellation.
 
     Currently available results may still be accessed on a canceled QFuture,
     but new results will \e not become available after calling this function.

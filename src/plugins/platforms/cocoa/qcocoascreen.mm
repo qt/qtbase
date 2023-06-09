@@ -106,6 +106,18 @@ void QCocoaScreen::initializeScreens()
 */
 void QCocoaScreen::updateScreens()
 {
+    // Adding, updating, or removing a screen below might trigger
+    // Qt or the application to move a window to a different screen,
+    // recursing back here via QCocoaWindow::windowDidChangeScreen.
+    // The update code is not re-entrant, so bail out if we end up
+    // in this situation. The screens will stabilize eventually.
+    static bool updatingScreens = false;
+    if (updatingScreens) {
+        qCInfo(lcQpaScreen) << "Skipping screen update, already updating";
+        return;
+    }
+    QBoolBlocker recursionGuard(updatingScreens);
+
     uint32_t displayCount = 0;
     if (CGGetOnlineDisplayList(0, nullptr, &displayCount) != kCGErrorSuccess)
         qFatal("Failed to get number of online displays");
@@ -267,7 +279,6 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
 
     const QRect previousGeometry = m_geometry;
     const QRect previousAvailableGeometry = m_availableGeometry;
-    const QDpi previousLogicalDpi = m_logicalDpi;
     const qreal previousRefreshRate = m_refreshRate;
 
     // The reference screen for the geometry is always the primary screen
@@ -282,8 +293,6 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
 
     CGSize size = CGDisplayScreenSize(m_displayId);
     m_physicalSize = QSizeF(size.width, size.height);
-    m_logicalDpi.first = 72;
-    m_logicalDpi.second = 72;
 
     QCFType<CGDisplayModeRef> displayMode = CGDisplayCopyDisplayMode(m_displayId);
     float refresh = CGDisplayModeGetRefreshRate(displayMode);
@@ -295,8 +304,6 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
 
     if (didChangeGeometry)
         QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
-    if (m_logicalDpi != previousLogicalDpi)
-        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), m_logicalDpi.first, m_logicalDpi.second);
     if (m_refreshRate != previousRefreshRate)
         QWindowSystemInterface::handleScreenRefreshRateChange(screen(), m_refreshRate);
 }
@@ -308,6 +315,11 @@ Q_LOGGING_CATEGORY(lcQpaScreenUpdates, "qt.qpa.screen.updates", QtCriticalMsg);
 void QCocoaScreen::requestUpdate()
 {
     Q_ASSERT(m_displayId);
+
+    if (!isOnline()) {
+        qCDebug(lcQpaScreenUpdates) << this << "is not online. Ignoring update request";
+        return;
+    }
 
     if (!m_displayLink) {
         CVDisplayLinkCreateWithCGDisplay(m_displayId, &m_displayLink);

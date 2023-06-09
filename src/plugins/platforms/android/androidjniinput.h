@@ -60,6 +60,8 @@ namespace QtAndroidInput
     // cursor/selection handles
     void updateHandles(int handleCount, QPoint editMenuPos = QPoint(), uint32_t editButtons = 0, QPoint cursor = QPoint(), QPoint anchor = QPoint(), bool rtl = false);
 
+    int getSelectHandleWidth();
+
     bool registerNatives(JNIEnv *env);
 }
 

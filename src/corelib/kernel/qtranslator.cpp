@@ -655,15 +655,20 @@ static QString find_translation(const QLocale & locale,
 
     // see http://www.unicode.org/reports/tr35/#LanguageMatching for inspiration
 
+    // For each language_country returned by locale.uiLanguages(), add
+    // also a lowercase version to the list. Since these languages are
+    // used to create file names, this is important on case-sensitive
+    // file systems, where otherwise a file called something like
+    // "prefix_en_us.qm" won't be found under the "en_US" locale. Note
+    // that the Qt resource system is always case-sensitive, even on
+    // Windows (in other words: this codepath is *not* UNIX-only).
     QStringList languages = locale.uiLanguages();
-#if defined(Q_OS_UNIX)
     for (int i = languages.size()-1; i >= 0; --i) {
         QString lang = languages.at(i);
         QString lowerLang = lang.toLower();
         if (lang != lowerLang)
             languages.insert(i+1, lowerLang);
     }
-#endif
 
     for (QString localeName : qAsConst(languages)) {
         localeName.replace(QLatin1Char('-'), QLatin1Char('_'));
@@ -1109,7 +1114,7 @@ void QTranslatorPrivate::clear()
     If \a n is not -1, it is used to choose an appropriate form for
     the translation (e.g. "%n file found" vs. "%n files found").
 
-    If you need to programatically insert translations into a
+    If you need to programmatically insert translations into a
     QTranslator, this function can be reimplemented.
 
     \sa load()

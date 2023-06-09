@@ -233,6 +233,7 @@ Q_DECLARE_TYPEINFO(QSizePolicy, Q_RELOCATABLE_TYPE);
 #endif
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSizePolicy::ControlTypes)
+Q_DECLARE_MIXED_ENUM_OPERATORS(int, QSizePolicy::Policy, QSizePolicy::PolicyFlag)
 
 #ifndef QT_NO_DATASTREAM
 Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);

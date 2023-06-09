@@ -3077,7 +3077,8 @@ QByteArray QSysInfo::machineUniqueId()
 {
 #if defined(Q_OS_DARWIN) && __has_include(<IOKit/IOKitLib.h>)
     char uuid[UuidStringLen + 1];
-    io_service_t service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+    static const mach_port_t defaultPort = 0; // Effectively kIOMasterPortDefault/kIOMainPortDefault
+    io_service_t service = IOServiceGetMatchingService(defaultPort, IOServiceMatching("IOPlatformExpertDevice"));
     QCFString stringRef = (CFStringRef)IORegistryEntryCreateCFProperty(service, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
     CFStringGetCString(stringRef, uuid, sizeof(uuid), kCFStringEncodingMacRoman);
     return QByteArray(uuid);
@@ -3722,6 +3723,15 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
 */
 bool qputenv(const char *varName, const QByteArray& value)
 {
+    // protect against non-NUL-terminated QByteArrays:
+    #define IS_RAW_DATA(d) ((d)->offset != sizeof(QByteArrayData)) // copied from qbytearray.cpp
+    if (IS_RAW_DATA(const_cast<QByteArray&>(value).data_ptr())) {
+        QByteArray copy(value);
+        copy.detach(); // ensures NUL termination
+        return qputenv(varName, copy);
+    }
+    #undef IS_RAW_DATA
+
     const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(Q_CC_MSVC)
     return _putenv_s(varName, value.constData()) == 0;

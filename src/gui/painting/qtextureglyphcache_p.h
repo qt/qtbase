@@ -110,7 +110,7 @@ public:
     };
 
     bool populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
-                  const QFixedPoint *positions);
+                  const QFixedPoint *positions, bool includeGlyphCacheScale = false);
     bool hasPendingGlyphs() const { return !m_pendingGlyphs.isEmpty(); };
     void fillInPendingGlyphs();
 

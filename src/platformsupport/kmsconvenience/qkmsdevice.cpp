@@ -318,7 +318,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
 
     if (current < 0 && crtc_mode.clock != 0) {
         modes << crtc_mode;
-        current = mode.size() - 1;
+        current = modes.size() - 1;
     }
 
     if (configuration == OutputConfigCurrent)

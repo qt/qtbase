@@ -3064,7 +3064,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 QEvent::Type mouseEventType = QEvent::MouseMove;
                 Qt::MouseButton button = Qt::NoButton;
                 Qt::MouseButtons buttons = Qt::LeftButton;
-                if (eventType == QEvent::TouchBegin && m_fakeMouseSourcePointId < 0)
+                if (eventType == QEvent::TouchBegin || m_fakeMouseSourcePointId < 0)
                     m_fakeMouseSourcePointId = touchPoints.first().id();
                 for (const auto &touchPoint : touchPoints) {
                     if (touchPoint.id() == m_fakeMouseSourcePointId) {

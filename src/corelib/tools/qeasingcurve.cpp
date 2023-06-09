@@ -1356,7 +1356,7 @@ QVector<QPointF> static inline tcbToBezier(const TCBPoints &tcbPoints)
 /*!
     Adds a segment of a TCB bezier spline to define a custom easing curve.
     It is only applicable if type() is QEasingCurve::TCBSpline.
-    The spline has to start explitly at (0.0, 0.0) and has to end at (1.0, 1.0) to
+    The spline has to start explicitly at (0.0, 0.0) and has to end at (1.0, 1.0) to
     be a valid easing curve.
     The tension \a t changes the length of the tangent vector.
     The continuity \a c changes the sharpness in change between the tangents.

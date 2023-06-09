@@ -540,6 +540,14 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         devInfo.enabledExtensionCount = uint32_t(requestedDevExts.count());
         devInfo.ppEnabledExtensionNames = requestedDevExts.constData();
 
+        // Enable all supported 1.0 core features, except ones that likely
+        // involve a performance penalty.
+        VkPhysicalDeviceFeatures features;
+        memset(&features, 0, sizeof(features));
+        f->vkGetPhysicalDeviceFeatures(physDev, &features);
+        features.robustBufferAccess = VK_FALSE;
+        devInfo.pEnabledFeatures = &features;
+
         err = f->vkCreateDevice(physDev, &devInfo, nullptr, &dev);
         if (err != VK_SUCCESS) {
             qWarning("Failed to create device: %d", err);

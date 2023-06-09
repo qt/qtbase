@@ -550,9 +550,9 @@ static void q_loadCiphersForConnection(SSL *connection, QList<QSslCipher> &ciphe
 // Defined in qsslsocket.cpp
 void q_setDefaultDtlsCiphers(const QList<QSslCipher> &ciphers);
 
-long QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions)
+qssloptions QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions)
 {
-    long options;
+    qssloptions options;
     if (protocol == QSsl::TlsV1SslV3)
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
     else if (protocol == QSsl::SecureProtocols)

@@ -126,6 +126,13 @@ public class QtNative
         }
     };
 
+    public static boolean isStarted()
+    {
+        boolean hasActivity = m_activity != null && m_activityDelegate != null;
+        boolean hasService = m_service != null && m_serviceDelegate != null;
+        return m_started && (hasActivity || hasService);
+    }
+
     private static ClassLoader m_classLoader = null;
     public static ClassLoader classLoader()
     {
@@ -678,9 +685,10 @@ public class QtNative
     public static native void quitQtCoreApplication();
     public static native void quitQtAndroidPlugin();
     public static native void terminateQt();
+    public static native boolean updateNativeActivity();
     // application methods
 
-    private static void quitApp()
+    public static void quitApp()
     {
         runAction(new Runnable() {
             @Override
@@ -690,6 +698,8 @@ public class QtNative
                      m_activity.finish();
                  if (m_service != null)
                      m_service.stopSelf();
+
+                 m_started = false;
             }
         });
     }
@@ -871,6 +881,11 @@ public class QtNative
         });
     }
 
+    private static int getSelectHandleWidth()
+    {
+        return m_activityDelegate.getSelectHandleWidth();
+    }
+
     private static void updateHandles(final int mode,
                                       final int editX,
                                       final int editY,
@@ -991,6 +1006,18 @@ public class QtNative
             public void run() {
                 if (m_activityDelegate != null) {
                     m_activityDelegate.notifyValueChanged(viewId, value);
+                }
+            }
+        });
+    }
+
+    private static void notifyScrolledEvent(final int viewId)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_activityDelegate != null) {
+                    m_activityDelegate.notifyScrolledEvent(viewId);
                 }
             }
         });

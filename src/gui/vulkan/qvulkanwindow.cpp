@@ -729,10 +729,12 @@ void QVulkanWindowPrivate::init()
     devInfo.enabledExtensionCount = devExts.count();
     devInfo.ppEnabledExtensionNames = devExts.constData();
 
-    // Enable all 1.0 features.
+    // Enable all supported 1.0 core features, except ones that likely
+    // involve a performance penalty.
     VkPhysicalDeviceFeatures features;
     memset(&features, 0, sizeof(features));
     f->vkGetPhysicalDeviceFeatures(physDev, &features);
+    features.robustBufferAccess = VK_FALSE;
     devInfo.pEnabledFeatures = &features;
 
     // Device layers are not supported by QVulkanWindow since that's an already deprecated

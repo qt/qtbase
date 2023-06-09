@@ -680,7 +680,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
    position in the deterministic sequence as the \a other object was. Both
    objects will generate the same sequence from this point on.
 
-   For that reason, it is not adviseable to create a copy of
+   For that reason, it is not advisable to create a copy of
    QRandomGenerator::global(). If one needs an exclusive deterministic
    generator, consider instead using securelySeeded() to obtain a new object
    that shares no relationship with the QRandomGenerator::global().

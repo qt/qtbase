@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -264,11 +265,10 @@ static QList<QByteArray> uenumToIdList(UEnumeration *uenum)
 static int ucalDaylightOffset(const QByteArray &id)
 {
     UErrorCode status = U_ZERO_ERROR;
-    const int32_t dstMSecs = ucal_getDSTSavings(reinterpret_cast<const UChar *>(id.data()), &status);
-    if (U_SUCCESS(status))
-        return (dstMSecs / 1000);
-    else
-        return 0;
+    const QString utf16 = QString::fromLatin1(id);
+    const int32_t dstMSecs = ucal_getDSTSavings(
+        reinterpret_cast<const UChar *>(utf16.data()), &status);
+    return U_SUCCESS(status) ? dstMSecs / 1000 : 0;
 }
 
 // Create the system default time zone

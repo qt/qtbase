@@ -453,6 +453,7 @@ QReadWriteLock::StateForWaitCondition QReadWriteLock::stateForWaitCondition() co
 
     if (!d)
         return Unlocked;
+    const auto lock = qt_scoped_lock(d->mutex);
     if (d->writerCount > 1)
         return RecursivelyLocked;
     else if (d->writerCount == 1)

@@ -463,9 +463,9 @@ int QFrame::frameWidth() const
     \brief the frame's rectangle
 
     The frame's rectangle is the rectangle the frame is drawn in. By
-    default, this is the entire widget. Setting the rectangle does
-    does \e not cause a widget update. The frame rectangle is
-    automatically adjusted when the widget changes size.
+    default, this is the entire widget. Setting the rectangle \e doesn't
+    cause a widget update. The frame rectangle is automatically adjusted
+    when the widget changes size.
 
     If you set the rectangle to a null rectangle (for example,
     QRect(0, 0, 0, 0)), then the resulting frame rectangle is

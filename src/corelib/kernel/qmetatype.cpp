@@ -414,19 +414,21 @@ struct DefinedTypesFilter {
     \fn const QMetaObject *QMetaType::metaObject() const
     \since 5.5
 
-    return a QMetaObject relative to this type.
+    Returns a QMetaObject relative to this type.
 
     If the type is a pointer type to a subclass of QObject, flags() contains
-    QMetaType::PointerToQObject and this function returns the corresponding QMetaObject. This can
-    be used to in combinaison with QMetaObject::construct to create QObject of this type.
+    QMetaType::PointerToQObject and this function returns the corresponding QMetaObject.
+    This can be used in combination with QMetaObject::newInstance() to create QObjects of this type.
 
-    If the type is a Q_GADGET, flags() contains QMetaType::IsGadget, and this function returns its
-    QMetaObject.  This can be used to retrieve QMetaMethod and QMetaProperty and use them on a
-    pointer of this type. (given by QVariant::data for example)
+    If the type is a Q_GADGET, flags() contains QMetaType::IsGadget.
+    If the type is a pointer to a Q_GADGET, flags() contains QMetaType::PointerToGadget.
+    In both cases, this function returns its QMetaObject.
+    This can be used to retrieve QMetaMethod and QMetaProperty and use them on a
+    pointer of this type for example, as given by QVariant::data().
 
-    If the type is an enumeration, flags() contains QMetaType::IsEnumeration, and this function
-    returns the QMetaObject of the enclosing object if the enum was registered as a Q_ENUM or
-    \nullptr otherwise
+    If the type is an enumeration, flags() contains QMetaType::IsEnumeration.
+    In this case, this function returns the QMetaObject of the enclosing
+    object if the enum was registered as a Q_ENUM or \nullptr otherwise.
 
     \sa QMetaType::metaObjectForType(), QMetaType::flags()
 */

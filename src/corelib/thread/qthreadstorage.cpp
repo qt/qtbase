@@ -225,7 +225,7 @@ void QThreadStorageData::finish(void **p)
 
     The hasLocalData() function allows the programmer to determine if
     data has previously been set using the setLocalData() function.
-    This is also useful for lazy initializiation.
+    This is also useful for lazy initialization.
 
     If T is a pointer type, QThreadStorage takes ownership of the data
     (which must be created on the heap with \c new) and deletes it when

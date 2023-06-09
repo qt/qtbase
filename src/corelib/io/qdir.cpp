@@ -329,7 +329,7 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
     return r < 0;
 }
 
-inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
+inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList &l,
                                       QStringList *names, QFileInfoList *infos)
 {
     // names and infos are always empty lists or 0 here
@@ -1246,9 +1246,9 @@ QDir::Filters QDir::filter() const
     files that the application can read, write, or execute, and symlinks
     to such files/directories can be listed.
 
-    To retrieve the permissons for a directory, use the
+    To retrieve the permissions for a directory, use the
     entryInfoList() function to get the associated QFileInfo objects
-    and then use the QFileInfo::permissons() to obtain the permissions
+    and then use the QFileInfo::permissions() to obtain the permissions
     and ownership for each file.
 */
 

@@ -785,7 +785,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
     QPoint p((e->data.data32[2] & 0xffff0000) >> 16, e->data.data32[2] & 0x0000ffff);
     Q_ASSERT(w);
     QRect geometry = w->geometry();
-    p -= geometry.topLeft();
+    p -= w->isEmbedded() ? w->mapToGlobal(geometry.topLeft()) : geometry.topLeft();
 
     if (!w || !w->window() || (w->window()->type() == Qt::Desktop))
         return;
@@ -1041,21 +1041,30 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
 
     Qt::DropActions supported_drop_actions;
     QMimeData *dropData = nullptr;
+    // this could be a same-application drop, just proxied due to
+    // some XEMBEDding, so try to find the real QMimeData used
+    // based on the timestamp for this drop.
+    int at = findTransactionByTime(target_time);
+    if (at != -1) {
+        qCDebug(lcQpaXDnd) << "found one transaction via findTransactionByTime()";
+        dropData = transactions.at(at).drag->mimeData();
+        // Can't use the source QMimeData if we need the image conversion code from xdndObtainData
+        if (dropData && dropData->hasImage())
+            dropData = 0;
+    }
+    // if we can't find it, then use the data in the drag manager
     if (currentDrag()) {
-        dropData = currentDrag()->mimeData();
+        if (!dropData)
+            dropData = currentDrag()->mimeData();
         supported_drop_actions = Qt::DropActions(l[4]);
     } else {
-        dropData = m_dropData;
+        if (!dropData)
+            dropData = m_dropData;
         supported_drop_actions = accepted_drop_action | toDropActions(drop_actions);
     }
 
     if (!dropData)
         return;
-    // ###
-    //        int at = findXdndDropTransactionByTime(target_time);
-    //        if (at != -1)
-    //            dropData = QDragManager::dragPrivate(X11->dndDropTransactions.at(at).object)->data;
-    // if we can't find it, then use the data in the drag manager
 
     auto buttons = currentDrag() ? b : connection()->queryMouseButtons();
     auto modifiers = currentDrag() ? mods : connection()->queryKeyboardModifiers();
@@ -1064,7 +1073,12 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
                 currentWindow.data(), dropData, currentPosition, supported_drop_actions,
                 buttons, modifiers);
 
-    setExecutedDropAction(response.acceptedAction());
+    Qt::DropAction acceptedAaction = response.acceptedAction();
+    if (!response.isAccepted()) {
+        // Ignore a failed drag
+        acceptedAaction = Qt::IgnoreAction;
+    }
+    setExecutedDropAction(acceptedAaction);
 
     xcb_client_message_event_t finished = {};
     finished.response_type = XCB_CLIENT_MESSAGE;
@@ -1074,7 +1088,7 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     finished.type = atom(QXcbAtom::XdndFinished);
     finished.data.data32[0] = currentWindow ? xcb_window(currentWindow.data()) : XCB_NONE;
     finished.data.data32[1] = response.isAccepted(); // flags
-    finished.data.data32[2] = toXdndAction(response.acceptedAction());
+    finished.data.data32[2] = toXdndAction(acceptedAaction);
 
     qCDebug(lcQpaXDnd) << "sending XdndFinished to source:" << xdnd_dragsource;
 
@@ -1280,6 +1294,7 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
 
 bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
 {
+    qCDebug(lcQpaXDnd) << "dndEnable" << w << on;
     // Windows announce that they support the XDND protocol by creating a window property XdndAware.
     if (on) {
         QXcbWindow *window = nullptr;

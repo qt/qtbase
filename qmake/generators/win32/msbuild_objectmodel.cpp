@@ -1131,6 +1131,8 @@ static inline QString toString(optLinkTimeCodeGenType option)
         break;
     case optLTCGEnabled:
         return "UseLinkTimeCodeGeneration";
+    case optLTCGIncremental:
+        return "UseFastLinkTimeCodeGeneration";
     case optLTCGInstrument:
         return "PGInstrument";
     case optLTCGOptimize:
@@ -1164,6 +1166,8 @@ static inline QString toString(triState genDebugInfo, linkerDebugOption option)
     case _True:
         if (option == linkerDebugOptionFastLink)
             return "DebugFastLink";
+        else if (option == linkerDebugOptionFull)
+            return "DebugFull";
         return "true";
     }
     return QString();

@@ -343,8 +343,7 @@ void QEglFSCursor::paintOnScreen()
     // screens are siblings of each other. When not enabled, the sibling list
     // only contains m_screen itself.
     for (QPlatformScreen *screen : m_screen->virtualSiblings()) {
-        if (screen->geometry().contains(cr.topLeft().toPoint() + m_cursor.hotSpot)
-            && QOpenGLContext::currentContext()->screen() == screen->screen())
+        if (screen->geometry().contains(cr.topLeft().toPoint() + m_cursor.hotSpot))
         {
             cr.translate(-screen->geometry().topLeft());
             const QSize screenSize = screen->geometry().size();
@@ -468,11 +467,12 @@ void QEglFSCursor::draw(const QRectF &r)
 {
     StateSaver stateSaver;
 
-    QEglFSCursorData &gfx = static_cast<QEglFSContext*>(QOpenGLContext::currentContext()->handle())->cursorData;
-    if (!gfx.program) {
-        // one time initialization
+    // one time initialization
+    if (!QOpenGLFunctions::d_ptr)
         initializeOpenGLFunctions();
 
+    QEglFSCursorData &gfx = static_cast<QEglFSContext*>(QOpenGLContext::currentContext()->handle())->cursorData;
+    if (!gfx.program) {
         createShaderPrograms();
 
         if (!gfx.atlasTexture) {

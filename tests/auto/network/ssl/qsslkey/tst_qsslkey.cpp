@@ -112,6 +112,7 @@ private:
     QString testDataDir;
 
     bool fileContainsUnsupportedEllipticCurve(const QString &fileName) const;
+    bool algorithmsSupported(const QString &fileName) const;
     QVector<QString> unsupportedCurves;
 };
 
@@ -153,6 +154,36 @@ bool tst_QSslKey::fileContainsUnsupportedEllipticCurve(const QString &fileName) 
     }
     return false;
 }
+
+bool tst_QSslKey::algorithmsSupported(const QString &fileName) const
+{
+#if defined(Q_OS_WINRT) || QT_CONFIG(schannel)
+    if (fileName.contains("RC2-64")) // WinRT/Schannel treats RC2 as 128 bit
+        return false;
+#endif
+
+#if !defined(QT_NO_SSL) && defined(QT_NO_OPENSSL) // generic backend
+    // No AES support in the generic back-end, PKCS#12 algorithms not supported either.
+    return !(fileName.contains(QRegularExpression("-aes\\d\\d\\d-")) || fileName.contains("pkcs8-pkcs12"));
+#endif
+
+#if OPENSSL_VERSION_MAJOR < 3
+    // If it's not built with OpenSSL or it's OpenSSL v < 3.
+    return true;
+#else
+    // OpenSSL v3 first introduced the notion of 'providers'. Many algorithms
+    // were moved into the 'legacy' provider. While they are still supported in theory,
+    // the 'legacy' provider is NOT loaded by default and we are not loading it either.
+    // Thus, some of the keys we are using in tst_QSslKey would fail the test. We
+    // have to filter them out.
+    const auto name = fileName.toLower();
+    if (name.contains("-des."))
+        return false;
+
+    return !name.contains("-rc2-") && !name.contains("-rc4-");
+#endif
+}
+
 
 void tst_QSslKey::initTestCase()
 {
@@ -221,16 +252,8 @@ void tst_QSslKey::createPlainTestRows(bool pemOnly)
     foreach (KeyInfo keyInfo, keyInfoList) {
         if (pemOnly && keyInfo.format != QSsl::EncodingFormat::Pem)
             continue;
-#if defined(Q_OS_WINRT) || QT_CONFIG(schannel)
-        if (keyInfo.fileInfo.fileName().contains("RC2-64"))
-            continue; // WinRT/Schannel treats RC2 as 128 bit
-#endif
-#if !defined(QT_NO_SSL) && defined(QT_NO_OPENSSL) // generic backend
-        if (keyInfo.fileInfo.fileName().contains(QRegularExpression("-aes\\d\\d\\d-")))
-            continue; // No AES support in the generic back-end
-        if (keyInfo.fileInfo.fileName().contains("pkcs8-pkcs12"))
-            continue; // The generic back-end doesn't support PKCS#12 algorithms
-#endif
+        if (!algorithmsSupported(keyInfo.fileInfo.fileName()))
+            continue;
 
         QTest::newRow(keyInfo.fileInfo.fileName().toLatin1())
             << keyInfo.fileInfo.absoluteFilePath() << keyInfo.algorithm << keyInfo.type
@@ -521,10 +544,16 @@ void tst_QSslKey::passphraseChecks_data()
     const QByteArray pass("123");
     const QByteArray aesPass("1234");
 
+#if OPENSSL_VERSION_MAJOR < 3
+    // DES and RC2 are not provided by default in OpenSSL v3.
+    // This part is for either non-OpenSSL build, or OpenSSL v < 3.x.
     QTest::newRow("DES") << QString(testDataDir + "rsa-with-passphrase-des.pem") << pass;
-    QTest::newRow("3DES") << QString(testDataDir + "rsa-with-passphrase-3des.pem") << pass;
     QTest::newRow("RC2") << QString(testDataDir + "rsa-with-passphrase-rc2.pem") << pass;
-#if (!defined(QT_NO_OPENSSL) && !defined(OPENSSL_NO_AES)) || (defined(QT_NO_OPENSSL) && QT_CONFIG(ssl))
+#endif // OPENSSL_VERSION_MAJOR
+
+    QTest::newRow("3DES") << QString(testDataDir + "rsa-with-passphrase-3des.pem") << pass;
+
+#if defined(QT_NO_OPENSSL) || !defined(OPENSSL_NO_AES) || (defined(QT_NO_OPENSSL) && QT_CONFIG(ssl))
     QTest::newRow("AES128") << QString(testDataDir + "rsa-with-passphrase-aes128.pem") << aesPass;
     QTest::newRow("AES192") << QString(testDataDir + "rsa-with-passphrase-aes192.pem") << aesPass;
     QTest::newRow("AES256") << QString(testDataDir + "rsa-with-passphrase-aes256.pem") << aesPass;
@@ -615,6 +644,9 @@ void tst_QSslKey::encrypt_data()
     QTest::addColumn<QByteArray>("iv");
 
     QByteArray iv("abcdefgh");
+#if OPENSSL_VERSION_MAJOR < 3
+    // Either non-OpenSSL build, or OpenSSL v < 3
+    // (with DES and other legacy algorithms available by default)
     QTest::newRow("DES-CBC, length 0")
         << QSslKeyPrivate::DesCbc << QByteArray("01234567")
         << QByteArray()
@@ -704,6 +736,7 @@ void tst_QSslKey::encrypt_data()
         << QByteArray(8, 'a')
         << QByteArray::fromHex("5AEC1A5B295660B02613454232F7DECE")
         << iv;
+#endif // OPENSSL_VERSION_MAJOR
 
 #if (!defined(QT_NO_OPENSSL) && !defined(OPENSSL_NO_AES)) || (defined(QT_NO_OPENSSL) && QT_CONFIG(ssl))
     // AES needs a longer IV

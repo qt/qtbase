@@ -75,9 +75,9 @@ private:
     void stopWatching();
 
     struct udev *m_udev;
-    struct udev_monitor *m_udevMonitor;
-    int m_udevMonitorFileDescriptor;
-    QSocketNotifier *m_udevSocketNotifier;
+    struct udev_monitor *m_udevMonitor = nullptr;
+    int m_udevMonitorFileDescriptor = -1;
+    QSocketNotifier *m_udevSocketNotifier = nullptr;
 };
 
 QT_END_NAMESPACE

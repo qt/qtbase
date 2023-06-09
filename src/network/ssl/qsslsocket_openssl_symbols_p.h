@@ -237,7 +237,6 @@ Q_AUTOTEST_EXPORT int q_EVP_PKEY_up_ref(EVP_PKEY *a);
 EVP_PKEY_CTX *q_EVP_PKEY_CTX_new(EVP_PKEY *pkey, ENGINE *e);
 void q_EVP_PKEY_CTX_free(EVP_PKEY_CTX *ctx);
 int q_EVP_PKEY_param_check(EVP_PKEY_CTX *ctx);
-int q_EVP_PKEY_base_id(EVP_PKEY *a);
 int q_RSA_bits(RSA *a);
 Q_AUTOTEST_EXPORT int q_OPENSSL_sk_num(OPENSSL_STACK *a);
 Q_AUTOTEST_EXPORT void q_OPENSSL_sk_pop_free(OPENSSL_STACK *a, void (*b)(void *));
@@ -246,7 +245,14 @@ Q_AUTOTEST_EXPORT void q_OPENSSL_sk_push(OPENSSL_STACK *st, void *data);
 Q_AUTOTEST_EXPORT void q_OPENSSL_sk_free(OPENSSL_STACK *a);
 Q_AUTOTEST_EXPORT void * q_OPENSSL_sk_value(OPENSSL_STACK *a, int b);
 int q_SSL_session_reused(SSL *a);
-unsigned long q_SSL_CTX_set_options(SSL_CTX *ctx, unsigned long op);
+
+#if OPENSSL_VERSION_MAJOR < 3
+using qssloptions = unsigned long;
+#else
+using qssloptions = uint64_t;
+#endif // OPENSSL_VERSION_MAJOR
+
+qssloptions q_SSL_CTX_set_options(SSL_CTX *ctx, qssloptions op);
 int q_OPENSSL_init_ssl(uint64_t opts, const OPENSSL_INIT_SETTINGS *settings);
 size_t q_SSL_get_client_random(SSL *a, unsigned char *out, size_t outlen);
 size_t q_SSL_SESSION_get_master_key(const SSL_SESSION *session, unsigned char *out, size_t outlen);
@@ -383,6 +389,17 @@ const EC_GROUP* q_EC_KEY_get0_group(const EC_KEY* k);
 int q_EC_GROUP_get_degree(const EC_GROUP* g);
 #endif // OPENSSL_NO_EC
 
+// Here we have the ones that make difference between OpenSSL pre/post v3:
+#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
+X509 *q_SSL_get1_peer_certificate(SSL *a);
+#define q_SSL_get_peer_certificate q_SSL_get1_peer_certificate
+int q_EVP_PKEY_get_base_id(const EVP_PKEY *pkey);
+#define q_EVP_PKEY_base_id q_EVP_PKEY_get_base_id
+#else
+X509 *q_SSL_get_peer_certificate(SSL *a);
+int q_EVP_PKEY_base_id(EVP_PKEY *a);
+#endif // OPENSSL_VERSION_MAJOR >= 3
+
 DSA *q_DSA_new();
 void q_DSA_free(DSA *a);
 X509 *q_d2i_X509(X509 **a, const unsigned char **b, long c);
@@ -510,7 +527,6 @@ const SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
 int q_SSL_version(const SSL *a);
 int q_SSL_get_error(SSL *a, int b);
 STACK_OF(X509) *q_SSL_get_peer_cert_chain(SSL *a);
-X509 *q_SSL_get_peer_certificate(SSL *a);
 long q_SSL_get_verify_result(const SSL *a);
 SSL *q_SSL_new(SSL_CTX *a);
 SSL_CTX *q_SSL_get_SSL_CTX(SSL *a);

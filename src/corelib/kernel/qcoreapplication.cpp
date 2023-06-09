@@ -1157,7 +1157,7 @@ static bool doNotify(QObject *receiver, QEvent *event)
 bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiver, QEvent *event)
 {
     // We can't access the application event filters outside of the main thread (race conditions)
-    Q_ASSERT(receiver->d_func()->threadData.loadRelaxed()->thread.loadAcquire() == mainThread());
+    Q_ASSERT(receiver->d_func()->threadData.loadAcquire()->thread.loadRelaxed() == mainThread());
 
     if (extraData) {
         // application event filters are only called for objects in the GUI thread

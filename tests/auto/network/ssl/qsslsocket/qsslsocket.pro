@@ -3,6 +3,8 @@ CONFIG += testcase
 SOURCES += tst_qsslsocket.cpp
 QT = core core-private network-private testlib
 
+INCLUDEPATH += ../../../../shared/
+
 TARGET = tst_qsslsocket
 
 win32 {

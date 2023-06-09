@@ -169,8 +169,7 @@ static void set_thread_data(QThreadData *data)
 
 static void clear_thread_data()
 {
-    currentThreadData = nullptr;
-    pthread_setspecific(current_thread_data_key, nullptr);
+    set_thread_data(nullptr);
 }
 
 template <typename T>

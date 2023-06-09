@@ -829,7 +829,7 @@ QCborStreamReader::QCborStreamReader(const QByteArray &data)
 
    Creates a QCborStreamReader object that will parse the CBOR stream found by
    reading from \a device. QCborStreamReader does not take ownership of \a
-   device, so it must remain valid until this oject is destroyed.
+   device, so it must remain valid until this object is destroyed.
  */
 QCborStreamReader::QCborStreamReader(QIODevice *device)
     : d(new QCborStreamReaderPrivate(device))

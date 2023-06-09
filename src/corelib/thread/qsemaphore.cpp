@@ -585,7 +585,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 /*!
     \fn QSemaphoreReleaser::swap(QSemaphoreReleaser &other)
 
-    Exchanges the responsibilites of \c{*this} and \a other.
+    Exchanges the responsibilities of \c{*this} and \a other.
 
     Unlike move assignment, neither of the two objects ever releases its
     semaphore, if any, as a consequence of swapping.

@@ -148,7 +148,6 @@ DEFINEFUNC(int, EVP_PKEY_up_ref, EVP_PKEY *a, a, return 0, return)
 DEFINEFUNC2(EVP_PKEY_CTX *, EVP_PKEY_CTX_new, EVP_PKEY *pkey, pkey, ENGINE *e, e, return nullptr, return)
 DEFINEFUNC(int, EVP_PKEY_param_check, EVP_PKEY_CTX *ctx, ctx, return 0, return)
 DEFINEFUNC(void, EVP_PKEY_CTX_free, EVP_PKEY_CTX *ctx, ctx, return, return)
-DEFINEFUNC(int, EVP_PKEY_base_id, EVP_PKEY *a, a, return NID_undef, return)
 DEFINEFUNC(int, RSA_bits, RSA *a, a, return 0, return)
 DEFINEFUNC(int, DSA_bits, DSA *a, a, return 0, return)
 DEFINEFUNC(int, OPENSSL_sk_num, OPENSSL_STACK *a, a, return -1, return)
@@ -158,7 +157,7 @@ DEFINEFUNC2(void, OPENSSL_sk_push, OPENSSL_STACK *a, a, void *b, b, return, DUMM
 DEFINEFUNC(void, OPENSSL_sk_free, OPENSSL_STACK *a, a, return, DUMMYARG)
 DEFINEFUNC2(void *, OPENSSL_sk_value, OPENSSL_STACK *a, a, int b, b, return nullptr, return)
 DEFINEFUNC(int, SSL_session_reused, SSL *a, a, return 0, return)
-DEFINEFUNC2(unsigned long, SSL_CTX_set_options, SSL_CTX *ctx, ctx, unsigned long op, op, return 0, return)
+DEFINEFUNC2(qssloptions, SSL_CTX_set_options, SSL_CTX *ctx, ctx, qssloptions op, op, return 0, return)
 DEFINEFUNC(int, SSL_CTX_get_security_level, const SSL_CTX *ctx, ctx, return -1, return)
 DEFINEFUNC2(void, SSL_CTX_set_security_level, SSL_CTX *ctx, ctx, int level, level, return, return)
 #ifdef TLS1_3_VERSION
@@ -371,7 +370,15 @@ DEFINEFUNC(const SSL_CIPHER *, SSL_get_current_cipher, SSL *a, a, return nullptr
 DEFINEFUNC(int, SSL_version, const SSL *a, a, return 0, return)
 DEFINEFUNC2(int, SSL_get_error, SSL *a, a, int b, b, return -1, return)
 DEFINEFUNC(STACK_OF(X509) *, SSL_get_peer_cert_chain, SSL *a, a, return nullptr, return)
+
+#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
+DEFINEFUNC(X509 *, SSL_get1_peer_certificate, SSL *a, a, return nullptr, return)
+DEFINEFUNC(int, EVP_PKEY_get_base_id, const EVP_PKEY *pkey, pkey, return -1, return)
+#else
 DEFINEFUNC(X509 *, SSL_get_peer_certificate, SSL *a, a, return nullptr, return)
+DEFINEFUNC(int, EVP_PKEY_base_id, EVP_PKEY *a, a, return NID_undef, return)
+#endif // OPENSSL_VERSION_MAJOR >= 3
+
 DEFINEFUNC(long, SSL_get_verify_result, const SSL *a, a, return -1, return)
 DEFINEFUNC(SSL *, SSL_new, SSL_CTX *a, a, return nullptr, return)
 DEFINEFUNC(SSL_CTX *, SSL_get_SSL_CTX, SSL *a, a, return nullptr, return)
@@ -868,7 +875,6 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(EVP_PKEY_CTX_new)
     RESOLVEFUNC(EVP_PKEY_param_check)
     RESOLVEFUNC(EVP_PKEY_CTX_free)
-    RESOLVEFUNC(EVP_PKEY_base_id)
     RESOLVEFUNC(RSA_bits)
     RESOLVEFUNC(OPENSSL_sk_new_null)
     RESOLVEFUNC(OPENSSL_sk_push)
@@ -1107,7 +1113,15 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_version)
     RESOLVEFUNC(SSL_get_error)
     RESOLVEFUNC(SSL_get_peer_cert_chain)
+
+#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
+    RESOLVEFUNC(SSL_get1_peer_certificate)
+    RESOLVEFUNC(EVP_PKEY_get_base_id)
+#else
     RESOLVEFUNC(SSL_get_peer_certificate)
+    RESOLVEFUNC(EVP_PKEY_base_id)
+#endif // OPENSSL_VERSION_MAJOR >= 3
+
     RESOLVEFUNC(SSL_get_verify_result)
     RESOLVEFUNC(SSL_new)
     RESOLVEFUNC(SSL_get_SSL_CTX)

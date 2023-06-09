@@ -100,6 +100,7 @@
 #include <openssl/rsa.h>
 #include <openssl/crypto.h>
 #include <openssl/tls1.h>
+#include <openssl/opensslv.h>
 
 #if QT_CONFIG(opensslv11)
 #include <openssl/dh.h>
@@ -171,7 +172,13 @@ public:
     QVector<QSslError> ocspErrors;
     QByteArray ocspResponseDer;
 
-    Q_AUTOTEST_EXPORT static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
+#if OPENSSL_VERSION_MAJOR < 3
+    using qssloptions = unsigned long;
+#else
+    using qssloptions = uint64_t;
+#endif // OPENSSL_VERSION_MAJOR
+
+    Q_AUTOTEST_EXPORT static qssloptions setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
     static QSslCipher QSslCipher_from_SSL_CIPHER(const SSL_CIPHER *cipher);
     static QList<QSslCertificate> STACKOFX509_to_QSslCertificates(STACK_OF(X509) *x509);
     static QList<QSslError> verify(const QList<QSslCertificate> &certificateChain, const QString &hostName);

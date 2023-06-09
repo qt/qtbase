@@ -455,7 +455,7 @@ init_context:
     }
 
     // Enable bug workarounds.
-    long options = QSslSocketBackendPrivate::setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
+    const qssloptions options = QSslSocketBackendPrivate::setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
     q_SSL_CTX_set_options(sslContext->ctx, options);
 
     // Tell OpenSSL to release memory early

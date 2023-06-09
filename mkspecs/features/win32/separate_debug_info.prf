@@ -13,6 +13,10 @@ have_target:!static:!isEmpty(QMAKE_OBJCOPY) {
     QMAKE_POST_LINK = $$copy_debug_info && $$strip_debug_info && $$link_debug_info $$QMAKE_POST_LINK
     silent:QMAKE_POST_LINK = @echo creating $@.debug && $$QMAKE_POST_LINK
 
-    target.targets += $$QMAKE_TARGET_DEBUG_INFO
+    contains(TEMPLATE, lib$):!plugin {
+        dlltarget.targets += $$QMAKE_TARGET_DEBUG_INFO
+    } else {
+        target.targets += $$QMAKE_TARGET_DEBUG_INFO
+    }
     QMAKE_DISTCLEAN += $$QMAKE_TARGET_DEBUG_INFO
 }

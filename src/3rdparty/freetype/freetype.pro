@@ -51,17 +51,24 @@ SOURCES += \
     $$PWD/src/pshinter/pshinter.c \
     $$PWD/src/psnames/psmodule.c \
     $$PWD/src/raster/raster.c \
+    $$PWD/src/sdf/ftsdfrend.c \
+    $$PWD/src/sdf/ftbsdf.c \
+    $$PWD/src/sdf/ftsdf.c \
+    $$PWD/src/sdf/ftsdfcommon.c \
     $$PWD/src/sfnt/sfnt.c \
     $$PWD/src/smooth/smooth.c \
+    $$PWD/src/svg/ftsvg.c \
     $$PWD/src/truetype/truetype.c \
     $$PWD/src/type1/type1.c \
     $$PWD/src/type42/type42.c \
     $$PWD/src/winfonts/winfnt.c
 
 win32 {
-    SOURCES += $$PWD/src/base/ftsystem.c
+    SOURCES += $$PWD/src/base/ftsystem.c \
+               $$PWD/builds/windows/ftdebug.c
 } else {
     SOURCES += $$PWD/builds/unix/ftsystem.c
+               $$PWD/src/base/ftdebug.c
     INCLUDEPATH += $$PWD/builds/unix
 }
 

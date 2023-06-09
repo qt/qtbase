@@ -1364,10 +1364,14 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
             }
 
             if (applyingLayout) {
+                // Clear the previous widgetItem for the toolBar, so that it's
+                // assigned correctly in QWidgetItemV2 constructor.
+                auto *toolBarPrivate = QWidgetPrivate::get(toolBar);
+                toolBarPrivate->widgetItem = nullptr;
                 item.widgetItem = new QWidgetItemV2(toolBar);
                 toolBar->setOrientation(floating ? ((shown & 2) ? Qt::Vertical : Qt::Horizontal) : dock.o);
                 toolBar->setVisible(shown & 1);
-                toolBar->d_func()->setWindowState(floating, true, rect);
+                toolBar->d_func()->setWindowState(floating, false, rect);
 
                 item.preferredSize = item.size;
                 line.toolBarItems.append(item);

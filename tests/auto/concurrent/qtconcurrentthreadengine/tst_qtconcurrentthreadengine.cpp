@@ -65,9 +65,16 @@ public:
 
 void tst_QtConcurrentThreadEngine::runDirectly()
 {
-    PrintUser *engine = new PrintUser();
-    QFuture<void> f = engine->startAsynchronously();
-    f.waitForFinished();
+    {
+        PrintUser engine;
+        engine.startSingleThreaded();
+        engine.startBlocking();
+    }
+    {
+        PrintUser *engine = new PrintUser();
+        QFuture<void> f = engine->startAsynchronously();
+        f.waitForFinished();
+    }
 }
 
 class StringResultUser : public ThreadEngine<QString>
@@ -99,10 +106,8 @@ public:
 
 void tst_QtConcurrentThreadEngine::result()
 {
-    // ThreadEngine will delete 'engine' when it finishes
-    auto engine = new StringResultUser();
-    auto future = engine->startAsynchronously();
-    QCOMPARE(future.result(), QString("Foo"));
+    StringResultUser engine;
+    QCOMPARE(*engine.startBlocking(), QString("Foo"));
 }
 
 class VoidResultUser : public ThreadEngine<void>
@@ -128,9 +133,17 @@ public:
 
 void tst_QtConcurrentThreadEngine::runThroughStarter()
 {
-    ThreadEngineStarter<QString> starter = startThreadEngine(new StringResultUser());
-    QFuture<QString> f = starter.startAsynchronously();
-    QCOMPARE(f.result(), QString("Foo"));
+    {
+        ThreadEngineStarter<QString> starter = startThreadEngine(new StringResultUser());
+        QFuture<QString>  f = starter.startAsynchronously();
+        QCOMPARE(f.result(), QString("Foo"));
+    }
+
+    {
+        ThreadEngineStarter<QString> starter = startThreadEngine(new StringResultUser());
+        QString str = starter.startBlocking();
+        QCOMPARE(str, QString("Foo"));
+    }
 }
 
 class CancelUser : public ThreadEngine<void>
@@ -213,6 +226,12 @@ void tst_QtConcurrentThreadEngine::throttle()
         f.waitForFinished();
         QCOMPARE(count.loadRelaxed(), 0);
     }
+
+    for (int i = 0; i < repeats; ++i) {
+        ThrottleAlwaysUser t;
+        t.startBlocking();
+        QCOMPARE(count.loadRelaxed(), 0);
+    }
 }
 
 QSet<QThread *> threads;
@@ -249,17 +268,35 @@ void tst_QtConcurrentThreadEngine::threadCount()
 {
     const int repeats = 10;
     for (int i = 0; i < repeats; ++i) {
+        ThreadCountUser t;
+        t.startBlocking();
+        int count = threads.count();
+        int count_expected = QThreadPool::globalInstance()->maxThreadCount() + 1; // +1 for the main thread.
+        if (count != count_expected)
+            QEXPECT_FAIL("", "QTBUG-23333", Abort);
+        QCOMPARE(count, count_expected);
+
         (new ThreadCountUser())->startAsynchronously().waitForFinished();
-        const auto count = threads.count();
-        const auto maxThreadCount = QThreadPool::globalInstance()->maxThreadCount();
-        QVERIFY(count <= maxThreadCount);
-        QVERIFY(!threads.contains(QThread::currentThread()));
+        count = threads.count();
+        count_expected = QThreadPool::globalInstance()->maxThreadCount();
+        if (count != count_expected)
+            QEXPECT_FAIL("", "QTBUG-23333", Abort);
+        QCOMPARE(count, count_expected);
     }
 
     // Set the finish flag immediately, this should give us one thread only.
     for (int i = 0; i < repeats; ++i) {
+        ThreadCountUser t(true /*finishImmediately*/);
+        t.startBlocking();
+        int count = threads.count();
+        if (count != 1)
+            QEXPECT_FAIL("", "QTBUG-23333", Abort);
+        QCOMPARE(count, 1);
+
         (new ThreadCountUser(true /*finishImmediately*/))->startAsynchronously().waitForFinished();
-        const auto count = threads.count();
+        count = threads.count();
+        if (count != 1)
+            QEXPECT_FAIL("", "QTBUG-23333", Abort);
         QCOMPARE(count, 1);
         QVERIFY(!threads.contains(QThread::currentThread()));
     }
@@ -400,6 +437,7 @@ public:
 
 void tst_QtConcurrentThreadEngine::exceptions()
 {
+    // Asynchronous mode:
     {
         bool caught = false;
         try  {
@@ -412,12 +450,63 @@ void tst_QtConcurrentThreadEngine::exceptions()
         QVERIFY2(caught, "did not get exception");
     }
 
+    // Blocking mode:
+    // test throwing the exception from a worker thread.
+    {
+        bool caught = false;
+        try  {
+            QtConcurrentExceptionThrower e(QThread::currentThread());
+            e.startBlocking();
+        } catch (const QException &) {
+            caught = true;
+        }
+        QVERIFY2(caught, "did not get exception");
+    }
+
+    // test throwing the exception from the main thread (different code path)
+    {
+        bool caught = false;
+        try  {
+            QtConcurrentExceptionThrower e(0);
+            e.startBlocking();
+        } catch (const QException &) {
+            caught = true;
+        }
+        QVERIFY2(caught, "did not get exception");
+    }
+
+    // Asynchronous mode:
     {
         bool caught = false;
         try  {
             UnrelatedExceptionThrower *e = new UnrelatedExceptionThrower();
             QFuture<void> f = e->startAsynchronously();
             f.waitForFinished();
+        } catch (const QUnhandledException &) {
+            caught = true;
+        }
+        QVERIFY2(caught, "did not get exception");
+    }
+
+    // Blocking mode:
+    // test throwing the exception from a worker thread.
+    {
+        bool caught = false;
+        try  {
+            UnrelatedExceptionThrower e(QThread::currentThread());
+            e.startBlocking();
+        } catch (const QUnhandledException &) {
+            caught = true;
+        }
+        QVERIFY2(caught, "did not get exception");
+    }
+
+    // test throwing the exception from the main thread (different code path)
+    {
+        bool caught = false;
+        try  {
+            UnrelatedExceptionThrower e(0);
+            e.startBlocking();
         } catch (const QUnhandledException &) {
             caught = true;
         }

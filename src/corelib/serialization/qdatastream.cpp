@@ -138,9 +138,9 @@ QT_BEGIN_NAMESPACE
     \snippet code/src_corelib_io_qdatastream.cpp 4
 
     You can select which byte order to use when serializing data. The
-    default setting is big endian (MSB first). Changing it to little
-    endian breaks the portability (unless the reader also changes to
-    little endian). We recommend keeping this setting unless you have
+    default setting is big-endian (MSB first). Changing it to little-endian
+    breaks the portability (unless the reader also changes to
+    little-endian). We recommend keeping this setting unless you have
     special requirements.
 
     \target raw
@@ -513,7 +513,7 @@ void QDataStream::setStatus(Status status)
     The \a bo parameter can be QDataStream::BigEndian or
     QDataStream::LittleEndian.
 
-    The default setting is big endian. We recommend leaving this
+    The default setting is big-endian. We recommend leaving this
     setting unless you have special requirements.
 
     \sa byteOrder()

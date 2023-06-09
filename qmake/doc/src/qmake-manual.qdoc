@@ -1845,8 +1845,32 @@
     \target QML_IMPORT_PATH
     \section1 QML_IMPORT_PATH
 
-    This variable is only used by \l{Qt Creator Manual}{Qt Creator}.
+    This variable is only used by \l{Qt Creator Manual}{Qt Creator}. If you have
+    an extra module that is kept outside of your Qt installation, you can
+    specify its path here.
+
     See \l{Qt Creator: Using QML Modules with Plugins} for details.
+
+    \target QMLPATHS
+    \section1 QMLPATHS
+
+    Expects a list of import paths that point to root directories of trees of
+    QML modules. For example, if you have a custom location for your QML
+    modules, you can specify it here.
+
+    \note The path entries for QMLPATHS point to root directories of trees of
+    QML modules. This is the concept of import paths the QML engine understands.
+    You can pass the same paths via the \c QML_IMPORT_PATH \e environment variable
+    to your QML application, but they are \e different from the expected contents
+    of the \l QML_IMPORT_PATH \e qmake variable. The latter expects paths to
+    \e individual modules to be processed by Qt Creator only.
+
+    \note The contents of QMLPATHS are \e not automatically passed to your
+    application. Rather, they are only used at build time. In particular,
+    qmlimportscanner uses them to find any QML modules it may need to mark as
+    imported by your application.
+    
+    \sa QQmlEngine::addImportPath()
 
     \target QMAKE_systemvariable
     \section1 QMAKE
@@ -1893,6 +1917,33 @@
 
     See \l{Platform Notes#Creating Frameworks}{Platform Notes} for
     more information about creating library bundles.
+
+    A project can also use this variable to bundle application translation
+    files. The exact syntax depends on whether the project is using Xcode's
+    legacy build system or its new build system.
+
+    For example when the following project snippet is built using the
+    legacy build system:
+
+    \snippet code/doc_src_qmake-manual.pro 188
+
+    Xcode will ignore the original location of \c InfoPlist.strings
+    and the file will placed into the bundle \c Resources directory
+    under the provided \c translations_en.path path, so
+    \c Resources/en.lproj/InfoPlist.strings
+
+    With the new build system, the relative location of the file is
+    preserved, which means the file will incorrectly be placed under
+    \c Resources/en.lproj/en.lproj/InfoPlist.strings
+
+    To ensure correct file placement, the project can either move
+    the original file not to be in a sub-directory or it can choose
+    not to specify the \c translations_en.path variable.
+
+    \snippet code/doc_src_qmake-manual.pro 189
+
+    See \qtbug QTBUG-98417 for more details on how the Xcode build
+    system changed its behavior in bundling translation files.
 
     \section1 QMAKE_BUNDLE_EXTENSION
 

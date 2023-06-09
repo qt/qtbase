@@ -43,6 +43,8 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 
+#include <qscopedpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 class QMinimalScreen : public QPlatformScreen
@@ -82,12 +84,15 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
     QAbstractEventDispatcher *createEventDispatcher() const override;
 
+    QPlatformNativeInterface *nativeInterface() const override;
+
     unsigned options() const { return m_options; }
 
     static QMinimalIntegration *instance();
 
 private:
     mutable QPlatformFontDatabase *m_fontDatabase;
+    mutable QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
     QMinimalScreen *m_primaryScreen;
     unsigned m_options;
 };

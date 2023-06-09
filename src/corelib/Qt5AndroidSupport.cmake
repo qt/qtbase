@@ -33,8 +33,8 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
       option(ANDROID_BUILD_ABI_${abi} "Enable the build for Android ${abi}" ${abi_initial_value})
     endif()
   endforeach()
-  option(ANDROID_MIN_SDK_VERSION "Android minimum SDK version" "21")
-  option(ANDROID_TARGET_SDK_VERSION "Android target SDK version" "30")
+  set(ANDROID_MIN_SDK_VERSION "21" CACHE STRING "Android minimum SDK version")
+  set(ANDROID_TARGET_SDK_VERSION "30" CACHE STRING "Android target SDK version")
 
   # Make sure to delete the "android-build" directory, which contains all the
   # build artefacts, and also the androiddeployqt/gradle artefacts
@@ -52,12 +52,6 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
       VERBATIM)
   endif()
 
-  if("${ANDROID_SDK_BUILD_TOOLS_REVISION}" STREQUAL "")
-    qt_internal_get_highest_android_sdk_build_tools_revision(
-      ANDROID_SDK_BUILD_TOOLS_REVISION
-      "${ANDROID_SDK}/build-tools")
-  endif()
-
   # Write the android_<project_name>_deployment_settings.json file
   file(WRITE ${CMAKE_BINARY_DIR}/android_deployment_settings.json.in
 [=[{
@@ -71,6 +65,8 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
   @QT_ANDROID_PACKAGE_SOURCE_DIR@
   @QT_ANDROID_VERSION_CODE@
   @QT_ANDROID_VERSION_NAME@
+  @QT_ANDROID_TARGET_SDK_VERSION@
+  @QT_ANDROID_MIN_SDK_VERSION@
   @QT_ANDROID_EXTRA_LIBS@
   @QT_QML_IMPORT_PATH@
   "ndk": "@ANDROID_NDK@",
@@ -91,6 +87,12 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
 
   if(NOT ANDROID_SDK)
     get_filename_component(ANDROID_SDK ${ANDROID_NDK}/../ ABSOLUTE)
+  endif()
+
+  if("${ANDROID_SDK_BUILD_TOOLS_REVISION}" STREQUAL "")
+    qt_internal_get_highest_android_sdk_build_tools_revision(
+      ANDROID_SDK_BUILD_TOOLS_REVISION
+      "${ANDROID_SDK}/build-tools")
   endif()
 
   find_program(ANDROID_DEPLOY_QT androiddeployqt)
@@ -125,8 +127,8 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
   generate_json_variable(ANDROID_VERSION_NAME "android-version-name")
   generate_json_variable_list(ANDROID_EXTRA_LIBS "android-extra-libs")
   generate_json_variable_list(QML_IMPORT_PATH "qml-import-paths")
-  generate_json_variable_list(ANDROID_MIN_SDK_VERSION "android-min-sdk-version")
-  generate_json_variable_list(ANDROID_TARGET_SDK_VERSION "android-target-sdk-version")
+  generate_json_variable(ANDROID_MIN_SDK_VERSION "android-min-sdk-version")
+  generate_json_variable(ANDROID_TARGET_SDK_VERSION "android-target-sdk-version")
 
 
   configure_file(

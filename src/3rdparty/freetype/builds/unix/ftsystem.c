@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftsystem.c                                                             */
-/*                                                                         */
-/*    Unix-specific FreeType low-level system interface (body).            */
-/*                                                                         */
-/*  Copyright (C) 1996-2020 by                                             */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftsystem.c
+ *
+ *   Unix-specific FreeType low-level system interface (body).
+ *
+ * Copyright (C) 1996-2022 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -70,30 +70,40 @@
 #include <string.h>
 #include <errno.h>
 
+  /**************************************************************************
+   *
+   *                      MEMORY MANAGEMENT INTERFACE
+   *
+   */
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                       MEMORY MANAGEMENT INTERFACE                     */
-  /*                                                                       */
-  /*************************************************************************/
+
+  /**************************************************************************
+   *
+   * It is not necessary to do any error checking for the
+   * allocation-related functions.  This will be done by the higher level
+   * routines like ft_mem_alloc() or ft_mem_realloc().
+   *
+   */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ft_alloc                                                           */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The memory allocation function.                                    */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    memory :: A pointer to the memory object.                          */
-  /*                                                                       */
-  /*    size   :: The requested size in bytes.                             */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    The address of newly allocated block.                              */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ft_alloc
+   *
+   * @Description:
+   *   The memory allocation function.
+   *
+   * @Input:
+   *   memory ::
+   *     A pointer to the memory object.
+   *
+   *   size ::
+   *     The requested size in bytes.
+   *
+   * @Return:
+   *   The address of newly allocated block.
+   */
   FT_CALLBACK_DEF( void* )
   ft_alloc( FT_Memory  memory,
             long       size )
@@ -104,26 +114,30 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ft_realloc                                                         */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The memory reallocation function.                                  */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    memory   :: A pointer to the memory object.                        */
-  /*                                                                       */
-  /*    cur_size :: The current size of the allocated memory block.        */
-  /*                                                                       */
-  /*    new_size :: The newly requested size in bytes.                     */
-  /*                                                                       */
-  /*    block    :: The current address of the block in memory.            */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    The address of the reallocated memory block.                       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ft_realloc
+   *
+   * @Description:
+   *   The memory reallocation function.
+   *
+   * @Input:
+   *   memory ::
+   *     A pointer to the memory object.
+   *
+   *   cur_size ::
+   *     The current size of the allocated memory block.
+   *
+   *   new_size ::
+   *     The newly requested size in bytes.
+   *
+   *   block ::
+   *     The current address of the block in memory.
+   *
+   * @Return:
+   *   The address of the reallocated memory block.
+   */
   FT_CALLBACK_DEF( void* )
   ft_realloc( FT_Memory  memory,
               long       cur_size,
@@ -137,19 +151,21 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ft_free                                                            */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The memory release function.                                       */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    memory :: A pointer to the memory object.                          */
-  /*                                                                       */
-  /*    block  :: The address of block in memory to be freed.              */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ft_free
+   *
+   * @Description:
+   *   The memory release function.
+   *
+   * @Input:
+   *   memory ::
+   *     A pointer to the memory object.
+   *
+   *   block ::
+   *     The address of block in memory to be freed.
+   */
   FT_CALLBACK_DEF( void )
   ft_free( FT_Memory  memory,
            void*      block )
@@ -160,19 +176,19 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                     RESOURCE MANAGEMENT INTERFACE                     */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                    RESOURCE MANAGEMENT INTERFACE
+   *
+   */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
 #define FT_COMPONENT  io
 
@@ -181,17 +197,17 @@
 #define STREAM_FILE( stream )  ( (FILE*)stream->descriptor.pointer )
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ft_close_stream_by_munmap                                          */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The function to close a stream which is opened by mmap.            */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    stream :: A pointer to the stream object.                          */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ft_close_stream_by_munmap
+   *
+   * @Description:
+   *   The function to close a stream which is opened by mmap.
+   *
+   * @Input:
+   *   stream :: A pointer to the stream object.
+   */
   FT_CALLBACK_DEF( void )
   ft_close_stream_by_munmap( FT_Stream  stream )
   {
@@ -199,29 +215,29 @@
 
     stream->descriptor.pointer = NULL;
     stream->size               = 0;
-    stream->base               = 0;
+    stream->base               = NULL;
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    ft_close_stream_by_free                                            */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The function to close a stream which is created by ft_alloc.       */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    stream :: A pointer to the stream object.                          */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   ft_close_stream_by_free
+   *
+   * @Description:
+   *   The function to close a stream which is created by ft_alloc.
+   *
+   * @Input:
+   *   stream :: A pointer to the stream object.
+   */
   FT_CALLBACK_DEF( void )
   ft_close_stream_by_free( FT_Stream  stream )
   {
-    ft_free( NULL, stream->descriptor.pointer );
+    ft_free( stream->memory, stream->descriptor.pointer );
 
     stream->descriptor.pointer = NULL;
     stream->size               = 0;
-    stream->base               = 0;
+    stream->base               = NULL;
   }
 
 
@@ -297,8 +313,7 @@
                                           file,
                                           0 );
 
-    /* on some RTOS, mmap might return 0 */
-    if ( (long)stream->base != -1 && stream->base != NULL )
+    if ( stream->base != MAP_FAILED )
       stream->close = ft_close_stream_by_munmap;
     else
     {
@@ -308,7 +323,7 @@
       FT_ERROR(( "FT_Stream_Open:" ));
       FT_ERROR(( " could not `mmap' file `%s'\n", filepathname ));
 
-      stream->base = (unsigned char*)ft_alloc( NULL, stream->size );
+      stream->base = (unsigned char*)ft_alloc( stream->memory, stream->size );
 
       if ( !stream->base )
       {
@@ -349,7 +364,7 @@
     stream->descriptor.pointer = stream->base;
     stream->pathname.pointer   = (char*)filepathname;
 
-    stream->read = 0;
+    stream->read = NULL;
 
     FT_TRACE1(( "FT_Stream_Open:" ));
     FT_TRACE1(( " opened `%s' (%ld bytes) successfully\n",
@@ -358,7 +373,7 @@
     return FT_Err_Ok;
 
   Fail_Read:
-    ft_free( NULL, stream->base );
+    ft_free( stream->memory, stream->base );
 
   Fail_Map:
     close( file );
@@ -393,7 +408,7 @@
     memory = (FT_Memory)malloc( sizeof ( *memory ) );
     if ( memory )
     {
-      memory->user    = 0;
+      memory->user    = NULL;
       memory->alloc   = ft_alloc;
       memory->realloc = ft_realloc;
       memory->free    = ft_free;

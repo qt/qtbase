@@ -1108,7 +1108,7 @@
   \value MeasurementSystem a QLocale::MeasurementSystem enum specifying the measurement system
   \value AMText a string that represents the system AM designator associated with a 12-hour clock.
   \value PMText a string that represents the system PM designator associated with a 12-hour clock.
-  \value FirstDayOfWeek a Qt::DayOfWeek enum specifiying the first day of the week
+  \value FirstDayOfWeek a Qt::DayOfWeek enum specifying the first day of the week
   \value CurrencySymbol a string that represents a currency in a format QLocale::CurrencyFormat.
   \value CurrencyToString a localized string representation of a number with a currency symbol. Converts a QSystemLocale::CurrencyToStringArgument stored in the in variant to a QString.
   \value UILanguages a list of strings representing locale names that could be used for UI translation.

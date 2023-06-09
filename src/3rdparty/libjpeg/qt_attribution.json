@@ -6,7 +6,7 @@
 
     "Description": "The Independent JPEG Group's JPEG software",
     "Homepage": "http://libjpeg-turbo.virtualgl.org/",
-    "Version": "2.1.3",
+    "Version": "2.1.4",
     "License": "Independent JPEG Group License and BSD 3-Clause \"New\" or \"Revised\" License and zlib License",
     "LicenseId": "IJG AND BSD-3-Clause AND Zlib",
     "LicenseFiles": [ "LICENSE", "ijg-license.txt", "zlib-license.txt"],

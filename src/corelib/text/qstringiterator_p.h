@@ -61,6 +61,8 @@ class QStringIterator
 {
     QString::const_iterator i, pos, e;
     Q_STATIC_ASSERT((std::is_same<QString::const_iterator, const QChar *>::value));
+    static bool less(const QChar *lhs, const QChar *rhs) noexcept
+    { return std::less<const QChar *>{}(lhs, rhs); }
 public:
     explicit QStringIterator(QStringView string, qsizetype idx = 0)
         : i(string.begin()),
@@ -95,7 +97,8 @@ public:
 
     inline void setPosition(QString::const_iterator position)
     {
-        Q_ASSERT_X(i <= position && position <= e, Q_FUNC_INFO, "position out of bounds");
+        Q_ASSERT_X(!less(position, i) && !less(e, position),
+                   Q_FUNC_INFO, "position out of bounds");
         pos = position;
     }
 
@@ -103,7 +106,7 @@ public:
 
     inline bool hasNext() const
     {
-        return pos < e;
+        return less(pos, e);
     }
 
     inline void advance()
@@ -166,7 +169,7 @@ public:
 
         const QChar uc = *pos++;
         if (Q_UNLIKELY(uc.isSurrogate())) {
-            if (Q_LIKELY(uc.isHighSurrogate() && pos < e && pos->isLowSurrogate()))
+            if (Q_LIKELY(uc.isHighSurrogate() && hasNext() && pos->isLowSurrogate()))
                 return QChar::surrogateToUcs4(uc, *pos++);
             return invalidAs;
         }
@@ -178,7 +181,7 @@ public:
 
     inline bool hasPrevious() const
     {
-        return pos > i;
+        return less(i, pos);
     }
 
     inline void recede()
@@ -241,7 +244,7 @@ public:
 
         const QChar uc = *--pos;
         if (Q_UNLIKELY(uc.isSurrogate())) {
-            if (Q_LIKELY(uc.isLowSurrogate() && pos > i && pos[-1].isHighSurrogate()))
+            if (Q_LIKELY(uc.isLowSurrogate() && hasPrevious() && pos[-1].isHighSurrogate()))
                 return QChar::surrogateToUcs4(*--pos, uc);
             return invalidAs;
         }
