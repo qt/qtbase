@@ -279,6 +279,7 @@ void MainWindow::createActions()
     fileMenu->addAction(newAct);
     fileToolBar->addAction(newAct);
 
+//! [qaction setup]
     const QIcon openIcon = QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
     QAction *openAct = new QAction(openIcon, tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
@@ -286,6 +287,7 @@ void MainWindow::createActions()
     connect(openAct, &QAction::triggered, this, &MainWindow::open);
     fileMenu->addAction(openAct);
     fileToolBar->addAction(openAct);
+//! [qaction setup]
 
     const QIcon saveIcon = QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
     saveAct = new QAction(saveIcon, tr("&Save"), this);

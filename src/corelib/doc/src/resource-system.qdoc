@@ -52,7 +52,7 @@
 
     Here's an example \c .qrc file:
 
-    \quotefile resource-system/mainwindow.qrc
+    \quotefile resource-system/application.qrc
 
     Each \c <file> element in the XML identifies a file in the application's
     source tree. The path is resolved relative to the directory containing
@@ -102,7 +102,7 @@
     variable. If you add a \c .qrc file path to the variable, the listed
     resource files will be embedded into the generated library or executable:
 
-    \snippet resource-system/mainwindow.pro qrc
+    \snippet resource-system/application.pro qrc
 
     This creates a resource of several \c{.png} files, that are addressable
     like this: \c{":/res/titlebarLeft.png"}.

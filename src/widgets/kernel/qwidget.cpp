@@ -9862,13 +9862,12 @@ void QWidget::actionEvent(QActionEvent *)
 
     Main window applications typically use reimplementations of this function to check
     whether the user's work has been saved and ask for permission before closing.
-    For example, the \l{Qt Widgets - Application Example} uses a helper function to
+    For example, the \l{Text Edit} example uses a helper function to
     determine whether or not to close the window:
 
-    \snippet mainwindows/application/mainwindow.cpp 3
-    \snippet mainwindows/application/mainwindow.cpp 4
+    \snippet richtext/textedit/textedit.cpp closeevent
 
-    \sa event(), hide(), close(), QCloseEvent, {Qt Widgets - Application Example}
+    \sa event(), hide(), close(), QCloseEvent
 */
 
 void QWidget::closeEvent(QCloseEvent *event)

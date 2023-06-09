@@ -2976,7 +2976,7 @@ QByteArray QUrl::toEncoded(FormattingOptions options) const
     Parses \a input and returns the corresponding QUrl. \a input is
     assumed to be in encoded form, containing only ASCII characters.
 
-    Parses the URL using \a parsingMode. See setUrl() for more information on
+    Parses the URL using \a mode. See setUrl() for more information on
     this parameter. QUrl::DecodedMode is not permitted in this context.
 
     \sa toEncoded(), setUrl()

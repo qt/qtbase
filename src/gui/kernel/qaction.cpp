@@ -173,7 +173,7 @@ QObject *QActionPrivate::menu() const
     menu and toolbar, then connected to the slot which will perform
     the action. For example:
 
-    \snippet ../widgets/mainwindows/application/mainwindow.cpp 19
+    \snippet ../widgets/mainwindows/mdi/mainwindow.cpp qaction setup
 
     Actions are added to widgets using QWidget::addAction() or
     QGraphicsWidget::addAction(). Note that an action must be added to a
