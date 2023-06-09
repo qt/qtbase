@@ -5801,7 +5801,7 @@ bool QD3D12SwapChain::isFormatSupported(Format f)
 QRhiSwapChainHdrInfo QD3D12SwapChain::hdrInfo()
 {
     QRhiSwapChainHdrInfo info = QRhiSwapChain::hdrInfo();
-    if (m_format != QRhiSwapChain::SDR && m_window) {
+    if (m_window) {
         QRHI_RES_RHI(QRhiD3D12);
         DXGI_OUTPUT_DESC1 hdrOutputDesc;
         if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc)) {
