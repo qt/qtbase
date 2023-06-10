@@ -16,9 +16,8 @@
 //
 
 #include <private/qcore_unix_p.h>
+#include <qdeadlinetimer.h>
 #include <qtsan_impl.h>
-
-#include <chrono>
 
 #include <asm/unistd.h>
 #include <errno.h>
@@ -68,10 +67,12 @@ inline void futexWait(Atomic &futex, typename Atomic::Type expectedValue)
     _q_futex(addr(&futex), FUTEX_WAIT, qintptr(expectedValue));
 }
 template <typename Atomic>
-inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, std::chrono::nanoseconds timeout)
+inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, QDeadlineTimer deadline)
 {
+    auto timeout = deadline.deadline<std::chrono::steady_clock>().time_since_epoch();
     struct timespec ts = durationToTimespec(timeout);
-    int r = _q_futex(addr(&futex), FUTEX_WAIT, qintptr(expectedValue), quintptr(&ts));
+    int r = _q_futex(addr(&futex), FUTEX_WAIT_BITSET, qintptr(expectedValue), quintptr(&ts),
+                     nullptr, FUTEX_BITSET_MATCH_ANY);
     return r == 0 || errno != ETIMEDOUT;
 }
 template <typename Atomic> inline void futexWakeOne(Atomic &futex)

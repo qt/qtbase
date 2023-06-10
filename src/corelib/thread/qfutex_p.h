@@ -15,16 +15,15 @@
 // We mean it.
 //
 
+#include <qdeadlinetimer.h>
 #include <private/qglobal_p.h>
-
-#include <chrono>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtDummyFutex {
     constexpr inline bool futexAvailable() { return false; }
     template <typename Atomic>
-    inline bool futexWait(Atomic &, typename Atomic::Type, std::chrono::nanoseconds = {})
+    inline bool futexWait(Atomic &, typename Atomic::Type, QDeadlineTimer = {})
     { Q_UNREACHABLE_RETURN(false); }
     template <typename Atomic> inline void futexWakeOne(Atomic &)
     { Q_UNREACHABLE(); }

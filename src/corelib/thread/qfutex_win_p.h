@@ -16,9 +16,8 @@
 //
 
 #include <private/qglobal_p.h>
+#include <qdeadlinetimer.h>
 #include <qtsan_impl.h>
-
-#include <chrono>
 
 #include <qt_windows.h>
 
@@ -37,12 +36,10 @@ inline void futexWait(Atomic &futex, typename Atomic::Type expectedValue)
     QtTsan::futexAcquire(&futex);
 }
 template <typename Atomic>
-inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, std::chrono::nanoseconds timeout)
+inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, QDeadlineTimer deadline)
 {
     using namespace std::chrono;
-    // Using ceil so that any non-zero timeout doesn't get trunated to 0ms
-    auto msecs = ceil<milliseconds>(timeout);
-    BOOL r = WaitOnAddress(&futex, &expectedValue, sizeof(expectedValue), DWORD(msecs.count()));
+    BOOL r = WaitOnAddress(&futex, &expectedValue, sizeof(expectedValue), DWORD(deadline.remainingTime()));
     return r || GetLastError() != ERROR_TIMEOUT;
 }
 template <typename Atomic> inline void futexWakeAll(Atomic &futex)

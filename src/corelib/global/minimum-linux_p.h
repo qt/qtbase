@@ -35,6 +35,7 @@ QT_BEGIN_NAMESPACE
  * - FUTEX_PRIVATE_FLAG         2.6.22
  * - O_CLOEXEC                  2.6.23
  * - eventfd                    2.6.23
+ * - FUTEX_WAIT_BITSET          2.6.25
  * - pipe2 & dup3               2.6.27
  * - accept4                    2.6.28
  * - renameat2                  3.16                    QT_CONFIG(renameat2)
