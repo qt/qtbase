@@ -386,7 +386,7 @@ void QQuaternion::getAxisAndAngle(float *x, float *y, float *z, float *angle) co
             *y = yp / length;
             *z = zp / length;
         }
-        *angle = qRadiansToDegrees(2.0f * std::acos(wp));
+        *angle = qRadiansToDegrees(2.0f * std::atan2(length, wp));
     } else {
         // angle is 0 (mod 2*pi), so any axis will fit
         *x = *y = *z = *angle = 0.0f;
