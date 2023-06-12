@@ -109,7 +109,15 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
 namespace QtVforkSafe {
 // Certain libc functions we need to call in the child process scenario aren't
 // safe under vfork() because they do more than just place the system call to
-// the kernel and set errno on return. Those are:
+// the kernel and set errno on return. For those, we'll create a function
+// pointer like:
+//  static constexpr auto foobar = __libc_foobar;
+// while for all other OSes, it'll be
+//  using ::foobar;
+// allowing the code for the child side of the vfork to simply use
+//  QtVforkSafe::foobar(args);
+//
+// Currently known issues are:
 //
 // - FreeBSD's libthr sigaction() wrapper locks a rwlock
 //   https://github.com/freebsd/freebsd-src/blob/8dad5ece49479ba6cdcd5bb4c2799bbd61add3e6/lib/libthr/thread/thr_sig.c#L575-L641
@@ -142,11 +150,11 @@ DECLARE_FUNCTIONS(sigaction)
 #undef LIBC_PREFIX
 #undef DECLARE_FUNCTIONS
 
-// like qt_ignore_sigpipe() in qcore_unix_p.h, but vfork-safe
-static void ignore_sigpipe()
+// similar to qt_ignore_sigpipe() in qcore_unix_p.h, but vfork-safe
+static void change_sigpipe(decltype(SIG_DFL) new_handler)
 {
     struct sigaction sa;
-    sa.sa_handler = SIG_IGN;
+    sa.sa_handler = new_handler;
     sigaction(SIGPIPE, &sa, nullptr);
 }
 } // namespace QtVforkSafe
@@ -653,7 +661,7 @@ static void applyProcessParameters(const QProcess::UnixProcessParameters &params
     // We don't expect signal() to fail, so we ignore its return value
     bool ignore_sigpipe = params.flags.testFlag(QProcess::UnixProcessFlag::IgnoreSigPipe);
     if (ignore_sigpipe)
-        QtVforkSafe::ignore_sigpipe();
+        QtVforkSafe::change_sigpipe(SIG_IGN);
     if (params.flags.testFlag(QProcess::UnixProcessFlag::ResetSignalHandlers)) {
         struct sigaction sa = {};
         sa.sa_handler = SIG_DFL;
@@ -739,7 +747,7 @@ static const char *doExecChild(char **argv, char **envp, int workingDirFd,
 // still sharing memory with the parent process.
 void QProcessPrivate::execChild(int workingDir, char **argv, char **envp) const noexcept
 {
-    QtVforkSafe::ignore_sigpipe();      // reset the signal that we ignored
+    QtVforkSafe::change_sigpipe(SIG_DFL);   // reset the signal that we ignored
 
     ChildError error = { 0, {} };       // force zeroing of function[8]
 
@@ -1150,7 +1158,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     }();
     pid_t childPid = doFork();
     if (childPid == 0) {
-        QtVforkSafe::ignore_sigpipe();  // reset the signal that we ignored
+        QtVforkSafe::change_sigpipe(SIG_DFL);   // reset the signal that we ignored
         ::setsid();
 
         qt_safe_close(startedPipe[0]);
