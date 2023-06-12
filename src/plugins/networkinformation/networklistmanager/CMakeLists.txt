@@ -17,6 +17,7 @@ qt_internal_add_plugin(QNLMNIPlugin
 qt_internal_extend_target(QNLMNIPlugin CONDITION WIN32 AND MSVC AND NOT CLANG
     LIBRARIES
         runtimeobject
+        oleaut32
 )
 
 # Don't repeat the target name in AUTOGEN_BUILD_DIR to work around issues with overlong paths.
