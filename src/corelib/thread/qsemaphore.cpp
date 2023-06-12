@@ -251,7 +251,7 @@ futexSemaphoreTryAcquire(QBasicAtomicInteger<quintptr> &u, int n, T timeout)
     return false;
 }
 
-namespace { namespace QtSemaphorePrivate {
+namespace QtSemaphorePrivate {
 using namespace QtPrivate;
 struct Layout1
 {
@@ -270,7 +270,7 @@ struct Layout2
 // Choose Layout1 if it is smaller than Layout2. That happens for platforms
 // where sizeof(mutex) is 64.
 using Members = std::conditional_t<sizeof(Layout1) <= sizeof(Layout2), Layout1, Layout2>;
-} } // namespace QtSemaphorePrivate
+} // namespace QtSemaphorePrivate
 
 class QSemaphorePrivate : public QtSemaphorePrivate::Members
 {
