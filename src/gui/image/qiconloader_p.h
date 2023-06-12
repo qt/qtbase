@@ -146,7 +146,7 @@ public:
     QThemeIconInfo loadIcon(const QString &iconName) const;
     uint themeKey() const { return m_themeKey; }
 
-    QString themeName() const { return m_userTheme.isEmpty() ? m_systemTheme : m_userTheme; }
+    QString themeName() const;
     void setThemeName(const QString &themeName);
     QString fallbackThemeName() const;
     void setFallbackThemeName(const QString &themeName);

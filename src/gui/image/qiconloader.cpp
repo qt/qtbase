@@ -142,6 +142,11 @@ void QIconLoader::invalidateKey()
     QIconPrivate::clearIconCache();
 }
 
+QString QIconLoader::themeName() const
+{
+    return m_userTheme.isEmpty() ? m_systemTheme : m_userTheme;
+}
+
 void QIconLoader::setThemeName(const QString &themeName)
 {
     if (m_userTheme == themeName)
