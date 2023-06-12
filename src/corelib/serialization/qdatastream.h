@@ -69,8 +69,9 @@ public:
         Qt_6_4 = Qt_6_0,
         Qt_6_5 = Qt_6_0,
         Qt_6_6 = 21,
-        Qt_DefaultCompiledVersion = Qt_6_6
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+        Qt_6_7 = Qt_6_6,
+        Qt_DefaultCompiledVersion = Qt_6_7
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 #error Add the datastream version for this Qt version and update Qt_DefaultCompiledVersion
 #endif
     };
