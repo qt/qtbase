@@ -34,4 +34,5 @@ qt_internal_add_test(tst_qsslcertificate
     LIBRARIES
         Qt::Network
     TESTDATA ${test_data}
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )

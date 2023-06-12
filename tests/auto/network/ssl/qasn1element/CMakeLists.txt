@@ -11,4 +11,5 @@ qt_internal_add_test(tst_qasn1element
     LIBRARIES
         Qt::Network
         Qt::NetworkPrivate
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )

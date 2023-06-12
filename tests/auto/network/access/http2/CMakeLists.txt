@@ -14,4 +14,5 @@ qt_internal_add_test(tst_http2
         Qt::Network
         Qt::NetworkPrivate
         Qt::TestPrivate
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )

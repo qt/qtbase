@@ -10,4 +10,5 @@ qt_internal_add_test(tst_qssldiffiehellmanparameters
         tst_qssldiffiehellmanparameters.cpp
     LIBRARIES
         Qt::Network
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )

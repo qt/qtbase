@@ -16,4 +16,5 @@ qt_internal_add_test(tst_qsslsocket_onDemandCertificates_static
         Qt::CorePrivate
         Qt::NetworkPrivate
     QT_TEST_SERVER_LIST "squid" "danted"
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )

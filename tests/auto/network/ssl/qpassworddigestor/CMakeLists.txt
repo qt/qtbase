@@ -10,4 +10,5 @@ qt_internal_add_test(tst_qpassworddigestor
         tst_qpassworddigestor.cpp
     LIBRARIES
         Qt::Network
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )

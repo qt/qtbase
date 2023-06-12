@@ -10,4 +10,5 @@ qt_internal_add_test(tst_qsslcipher
         tst_qsslcipher.cpp
     LIBRARIES
         Qt::Network
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )

@@ -10,4 +10,5 @@ qt_internal_add_test(tst_qdtlscookie
         tst_qdtlscookie.cpp
     LIBRARIES
         Qt::NetworkPrivate
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )
