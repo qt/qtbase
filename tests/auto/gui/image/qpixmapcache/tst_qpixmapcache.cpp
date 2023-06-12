@@ -542,7 +542,6 @@ void tst_QPixmapCache::evictionDoesNotLeakStringKeys()
             pm.fill(Qt::transparent);
             [[maybe_unused]] auto r = QPixmapCache::insert(pm);
         }
-        QEXPECT_FAIL("", "QTBUG-112200", Continue);
     });
 }
 
@@ -550,7 +549,6 @@ void tst_QPixmapCache::reducingCacheLimitDoesNotLeakStringKeys()
 {
     stringLeak_impl([] {
         QPixmapCache::setCacheLimit(0);
-        QEXPECT_FAIL("", "QTBUG-112200", Continue);
     });
 }
 
