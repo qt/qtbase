@@ -1,10 +1,10 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtWidgets>
-
 #include "xbelwriter.h"
 #include "xbelreader.h"
+
+#include <QTreeWidget>
 
 static inline QString yesValue() { return QStringLiteral("yes"); }
 static inline QString noValue() { return QStringLiteral("no"); }

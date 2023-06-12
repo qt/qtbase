@@ -121,14 +121,14 @@
     \snippet serialization/streambookmarks/mainwindow.cpp 0
 
     The \c open() function enables the user to open an XBEL file using
-    QFileDialog::getOpenFileName(). A warning message is displayed along
+    QFileDialog. A warning message is displayed along
     with the \c fileName and \c errorString if the file cannot be read or
     if there is a parse error.
 
     \snippet serialization/streambookmarks/mainwindow.cpp 1
 
     The \c saveAs() function displays a QFileDialog, prompting the user for
-    a \c fileName using QFileDialog::getSaveFileName(). Similar to the
+    a \c fileName. Similar to the
     \c open() function, this function also displays a warning message if
     the file cannot be written to.
 

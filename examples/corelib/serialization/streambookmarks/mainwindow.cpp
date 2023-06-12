@@ -1,22 +1,34 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
 #include "xbelreader.h"
 #include "xbelwriter.h"
 
+#include <QFileDialog>
+#include <QHeaderView>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QStatusBar>
+#include <QTreeWidget>
+
+#include <QAction>
+#if QT_CONFIG(clipboard)
+#  include <QClipboard>
+#endif
+#include <QDesktopServices>
+#include <QGuiApplication>
+#include <QScreen>
+
+using namespace Qt::StringLiterals;
+
 //! [0]
 MainWindow::MainWindow()
 {
-    QStringList labels;
-    labels << tr("Title") << tr("Location");
-
     treeWidget = new QTreeWidget;
     treeWidget->header()->setSectionResizeMode(QHeaderView::Stretch);
-    treeWidget->setHeaderLabels(labels);
-#if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_CLIPBOARD)
+    treeWidget->setHeaderLabels(QStringList{ tr("Title"), tr("Location") });
+#if QT_CONFIG(clipboard) && QT_CONFIG(contextmenu)
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(treeWidget, &QWidget::customContextMenuRequested,
             this, &MainWindow::onCustomContextMenuRequested);
@@ -33,7 +45,7 @@ MainWindow::MainWindow()
 }
 //! [0]
 
-#if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_CLIPBOARD)
+#if QT_CONFIG(clipboard) && QT_CONFIG(contextmenu)
 void MainWindow::onCustomContextMenuRequested(const QPoint &pos)
 {
     const QTreeWidgetItem *item = treeWidget->itemAt(pos);
@@ -49,21 +61,19 @@ void MainWindow::onCustomContextMenuRequested(const QPoint &pos)
     else if (action == openAction)
         QDesktopServices::openUrl(QUrl(url));
 }
-#endif // !QT_NO_CONTEXTMENU && !QT_NO_CLIPBOARD
+#endif // QT_CONFIG(clipboard) && QT_CONFIG(contextmenu)
 
 //! [1]
 void MainWindow::open()
 {
-    QString fileName =
-            QFileDialog::getOpenFileName(this, tr("Open Bookmark File"),
-                                         QDir::currentPath(),
-                                         tr("XBEL Files (*.xbel *.xml)"));
-    if (fileName.isEmpty())
+    QFileDialog fileDialog(this, tr("Open Bookmark File"), QDir::currentPath());
+    fileDialog.setMimeTypeFilters({"application/x-xbel"_L1});
+    if (fileDialog.exec() != QDialog::Accepted)
         return;
 
     treeWidget->clear();
 
-
+    const QString fileName = fileDialog.selectedFiles().constFirst();
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("QXmlStream Bookmarks"),
@@ -89,13 +99,14 @@ void MainWindow::open()
 //! [2]
 void MainWindow::saveAs()
 {
-    QString fileName =
-            QFileDialog::getSaveFileName(this, tr("Save Bookmark File"),
-                                         QDir::currentPath(),
-                                         tr("XBEL Files (*.xbel *.xml)"));
-    if (fileName.isEmpty())
+    QFileDialog fileDialog(this, tr("Save Bookmark File"), QDir::currentPath());
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setDefaultSuffix("xbel"_L1);
+    fileDialog.setMimeTypeFilters({"application/x-xbel"_L1});
+    if (fileDialog.exec() != QDialog::Accepted)
         return;
 
+    const QString fileName = fileDialog.selectedFiles().constFirst();
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("QXmlStream Bookmarks"),
