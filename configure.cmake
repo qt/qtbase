@@ -285,11 +285,13 @@ int main(void)
 "# FIXME: qmake: ['TEMPLATE = lib', 'CONFIG += dll bsymbolic_functions', 'isEmpty(QMAKE_LFLAGS_BSYMBOLIC_FUNC): error("Nope")']
 )
 
+if(NOT MSVC AND NOT APPLE)
+    qt_config_compile_test("separate_debug_info"
+                       LABEL "separate debug information support"
+                       PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/separate_debug_info"
+    )
+endif()
 
-qt_config_compile_test("separate_debug_info"
-                   LABEL "separate debug information support"
-                   PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/separate_debug_info"
-)
 # signaling_nan
 qt_config_compile_test(signaling_nan
     LABEL "Signaling NaN for doubles"
@@ -519,7 +521,7 @@ qt_feature_config("force_debug_info" QMAKE_PRIVATE_CONFIG)
 qt_feature("separate_debug_info" PUBLIC
     LABEL "Split off debug information"
     AUTODETECT OFF
-    CONDITION ( QT_FEATURE_shared ) AND ( QT_FEATURE_debug OR QT_FEATURE_debug_and_release OR QT_FEATURE_force_debug_info ) AND ( APPLE OR TEST_separate_debug_info )
+    CONDITION ( QT_FEATURE_shared ) AND ( QT_FEATURE_debug OR QT_FEATURE_debug_and_release OR QT_FEATURE_force_debug_info ) AND ( MSVC OR APPLE OR TEST_separate_debug_info )
 )
 qt_feature_config("separate_debug_info" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("appstore-compliant" PUBLIC
