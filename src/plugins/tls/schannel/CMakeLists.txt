@@ -29,4 +29,6 @@ qt_internal_add_plugin(QSchannelBackendPlugin
         secur32
         bcrypt
         ncrypt
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
 )
