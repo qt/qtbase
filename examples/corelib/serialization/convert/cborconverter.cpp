@@ -3,14 +3,14 @@
 
 #include "cborconverter.h"
 
+#include <QCborArray>
+#include <QCborMap>
 #include <QCborStreamReader>
 #include <QCborStreamWriter>
-#include <QCborMap>
-#include <QCborArray>
 #include <QCborValue>
 #include <QDataStream>
-#include <QFloat16>
 #include <QFile>
+#include <QFloat16>
 #include <QMetaType>
 #include <QTextStream>
 
