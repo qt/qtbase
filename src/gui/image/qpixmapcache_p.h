@@ -31,6 +31,7 @@ public:
      : isValid(other.isValid), key(other.key), ref(1) {}
     ~KeyData() {}
 
+    QString stringKey;
     bool isValid;
     int key;
     int ref;
