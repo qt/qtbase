@@ -42,6 +42,7 @@
 #include <qstandarditemmodel.h>
 #include <qproxystyle.h>
 #include <qfont.h>
+#include <qstylehints.h>
 
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
@@ -109,6 +110,7 @@ private slots:
 #ifndef QT_NO_STYLE_FUSION
     void task190351_layout();
     void task191329_size();
+    void popupPositionAfterStyleChange();
 #endif
     void task166349_setEditableOnReturn();
     void task190205_setModelAdjustToContents();
@@ -3358,6 +3360,58 @@ void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
     QCOMPARE(proxyStyle->italicItemsNo, 5);
 
     box.hidePopup();
+}
+
+void tst_QComboBox::popupPositionAfterStyleChange()
+{
+    // Check that the popup opens up centered on top of the current
+    // index if the style has changed since the last time it was
+    // opened (QTBUG-113765).
+    QComboBox box;
+    QStyleOptionComboBox opt;
+    const bool usePopup = qApp->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, &box);
+    if (!usePopup)
+        QSKIP("This test is only relevant for styles that centers the popup on top of the combo!");
+
+    box.addItems({"first", "middle", "last"});
+    box.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&box));
+    box.showPopup();
+
+    QFrame *container = box.findChild<QComboBoxPrivateContainer *>();
+    QVERIFY(container);
+    QVERIFY(QTest::qWaitForWindowExposed(container));
+
+    // Select the last menu item, which will close the popup. This item is then expected
+    // to be centered on top of the combobox the next time the popup opens.
+    const QRect lastItemRect = box.view()->visualRect(box.view()->model()->index(2, 0));
+    QTest::mouseClick(box.view(), Qt::LeftButton, Qt::NoModifier, lastItemRect.center());
+
+    // Change style. This can make the popup smaller, which will result in up-and-down
+    // scroll widgets showing in the menu, directly underneath the mouse before the popup
+    // ends up hidden. This again will trigger the item view to scroll, which seems to be
+    // the root cause of QTBUG-113765.
+    qApp->setStyle(QStringLiteral("Fusion"));
+
+    // Click on the combobox again to reopen it. But since both QComboBox
+    // (QComboBoxPrivateScroller) is using its own internal timer to do scrolling, we
+    // need to wait a bit until the scrolling is done before we can reopen it (since
+    // the scrolling is the sore spot that we want to test).
+    // But note, we expect, but don't require, the popup to scroll. And for that
+    // reason, we don't see it as a failure if the scrolling doesn't happen.
+    (void) QTest::qWaitFor([&box]{ return box.view()->verticalScrollBar()->value() > 0; }, 1000);
+
+    // Verify that the popup is hidden before we click the button
+    QTRY_VERIFY(!container->isVisible());
+    QTest::mouseClick(&box, Qt::LeftButton);
+
+    // Click on item under mouse. But wait a bit, to avoid a double click
+    QTest::qWait(qApp->styleHints()->mouseDoubleClickInterval());
+    QTest::mouseClick(&box, Qt::LeftButton);
+
+    // Ensure that the item that was centered on top of the combobox, and which
+    // we therefore clicked, was the same item we clicked on the first time.
+    QCOMPARE(box.currentText(), QStringLiteral("last"));
 }
 
 void tst_QComboBox::inputMethodUpdate()

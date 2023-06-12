@@ -2676,7 +2676,13 @@ void QComboBox::showPopup()
         listRect.moveLeft(above.x());
 
         // Position vertically so the currently selected item lines up
-        // with the combo box.
+        // with the combo box. In order to do that, make sure that the item
+        // view is scrolled to the top first, otherwise calls to view()->visualRect()
+        // will return the geometry the selected item had the last time the popup
+        // was visible (and perhaps scrolled). And this will not match the geometry
+        // it will actually have when we resize the container to fit all the items
+        // further down in this function.
+        view()->scrollToTop();
         const QRect currentItemRect = view()->visualRect(view()->currentIndex());
         const int offset = listRect.top() - currentItemRect.top();
         listRect.moveTop(above.y() + offset - listRect.top());
