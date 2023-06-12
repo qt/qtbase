@@ -119,19 +119,14 @@ QIconLoader *QIconLoader::instance()
 // icons if the theme has changed.
 void QIconLoader::updateSystemTheme()
 {
-    // Only change if this is not explicitly set by the user
-    if (m_userTheme.isEmpty()) {
-        QString theme = systemThemeName();
-        if (theme.isEmpty())
-            theme = fallbackThemeName();
-        if (theme != m_systemTheme) {
-            m_systemTheme = theme;
-            qCDebug(lcIconLoader) << "Updated system theme to" << m_systemTheme;
+    const QString currentSystemTheme = m_systemTheme;
+    m_systemTheme = systemThemeName();
+    if (m_systemTheme.isEmpty())
+        m_systemTheme = fallbackThemeName();
+    if (m_systemTheme != currentSystemTheme) {
+        qCDebug(lcIconLoader) << "Updated system theme to" << m_systemTheme;
+        if (!hasUserTheme())
             invalidateKey();
-        }
-    } else {
-        qCDebug(lcIconLoader) << "Ignoring system theme update because"
-            << "user theme" << m_userTheme << "has been set";
     }
 }
 
