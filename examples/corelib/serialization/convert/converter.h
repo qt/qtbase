@@ -5,10 +5,10 @@
 #define CONVERTER_H
 
 #include <QIODevice>
+#include <QList>
 #include <QPair>
 #include <QVariant>
 #include <QVariantMap>
-#include <QList>
 
 class VariantOrderedMap : public QList<QPair<QVariant, QVariant>>
 {
