@@ -608,7 +608,8 @@ QFont QGtk3Interface::font(QPlatformTheme::Font type) const
     GtkCssProvider *cssProvider = nullptr;
     if (type == QPlatformTheme::FixedFont) {
         cssProvider = gtk_css_provider_new();
-        const char *fontSpec = "{font-family: monospace;}";
+        gtk_style_context_add_class (con, GTK_STYLE_CLASS_MONOSPACE);
+        const char *fontSpec = "* {font-family: monospace;}";
         gtk_css_provider_load_from_data(cssProvider, fontSpec, -1, NULL);
         gtk_style_context_add_provider(con, GTK_STYLE_PROVIDER(cssProvider),
                                        GTK_STYLE_PROVIDER_PRIORITY_USER);
