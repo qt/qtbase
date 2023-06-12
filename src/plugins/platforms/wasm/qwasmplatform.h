@@ -19,7 +19,7 @@ enum class Platform {
     Windows,
     Linux,
     Android,
-    iPhone,
+    iOS
 };
 
 Platform platform();
