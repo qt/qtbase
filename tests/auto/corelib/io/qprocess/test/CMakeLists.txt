@@ -42,3 +42,7 @@ endif()
 if(WIN32)
     add_dependencies(tst_qprocess testProcessEchoGui testSetNamedPipeHandleState)
 endif()
+
+if(UNIX)
+    add_dependencies(tst_qprocess testUnixProcessParameters)
+endif()
