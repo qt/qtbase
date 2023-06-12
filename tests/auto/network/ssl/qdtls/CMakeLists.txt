@@ -14,4 +14,5 @@ qt_internal_add_test(tst_qdtls
     LIBRARIES
         Qt::NetworkPrivate
     TESTDATA ${test_data}
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )

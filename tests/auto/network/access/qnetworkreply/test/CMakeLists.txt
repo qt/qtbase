@@ -29,6 +29,7 @@ qt_internal_add_test(tst_qnetworkreply
         Qt::NetworkPrivate
     TESTDATA ${test_data}
     QT_TEST_SERVER_LIST "vsftpd" "apache2" "ftp-proxy" "danted" "squid"
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )
 add_dependencies(tst_qnetworkreply echo)
 

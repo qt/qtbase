@@ -11,6 +11,7 @@ qt_internal_add_test(tst_qocsp
     LIBRARIES
         Qt::Network
         Qt::NetworkPrivate
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )
 
 qt_internal_extend_target(tst_qocsp CONDITION QT_FEATURE_openssl_linked
