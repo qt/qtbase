@@ -1,10 +1,18 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
 #include "xbeltree.h"
+
+#include <QFileDialog>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QStatusBar>
+
+#include <QAction>
+#include <QScreen>
+
+using namespace Qt::StringLiterals;
 
 //! [0]
 MainWindow::MainWindow()
@@ -25,16 +33,15 @@ MainWindow::MainWindow()
 //! [1]
 void MainWindow::open()
 {
-    QString fileName =
-            QFileDialog::getOpenFileName(this, tr("Open Bookmark File"),
-                                         QDir::currentPath(),
-                                         tr("XBEL Files (*.xbel *.xml)"));
-    if (fileName.isEmpty())
+    QFileDialog fileDialog(this, tr("Open Bookmark File"), QDir::currentPath());
+    fileDialog.setMimeTypeFilters({"application/x-xbel"_L1});
+    if (fileDialog.exec() != QDialog::Accepted)
         return;
 
+    const QString fileName = fileDialog.selectedFiles().constFirst();
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("SAX Bookmarks"),
+        QMessageBox::warning(this, tr("DOM Bookmarks"),
                              tr("Cannot read file %1:\n%2.")
                              .arg(QDir::toNativeSeparators(fileName),
                                   file.errorString()));
@@ -49,16 +56,17 @@ void MainWindow::open()
 //! [2]
 void MainWindow::saveAs()
 {
-    QString fileName =
-            QFileDialog::getSaveFileName(this, tr("Save Bookmark File"),
-                                         QDir::currentPath(),
-                                         tr("XBEL Files (*.xbel *.xml)"));
-    if (fileName.isEmpty())
+    QFileDialog fileDialog(this, tr("Save Bookmark File"), QDir::currentPath());
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setDefaultSuffix("xbel"_L1);
+    fileDialog.setMimeTypeFilters({"application/x-xbel"_L1});
+    if (fileDialog.exec() != QDialog::Accepted)
         return;
 
+    const QString fileName = fileDialog.selectedFiles().constFirst();
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("SAX Bookmarks"),
+        QMessageBox::warning(this, tr("DOM Bookmarks"),
                              tr("Cannot write file %1:\n%2.")
                              .arg(QDir::toNativeSeparators(fileName),
                                   file.errorString()));

@@ -14,13 +14,13 @@ class XbelTree : public QTreeWidget
     Q_OBJECT
 
 public:
-    XbelTree(QWidget *parent = nullptr);
+    explicit XbelTree(QWidget *parent = nullptr);
 
     bool read(QIODevice *device);
     bool write(QIODevice *device) const;
 
 protected:
-#if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_CLIPBOARD)
+#if QT_CONFIG(clipboard) && QT_CONFIG(contextmenu)
     void contextMenuEvent(QContextMenuEvent *event) override;
 #endif
 
