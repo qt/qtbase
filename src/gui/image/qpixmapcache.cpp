@@ -252,25 +252,12 @@ bool QPMCache::flushDetachedPixmaps(bool nt)
 {
     auto mc = maxCost();
     const qsizetype currentTotal = totalCost();
+    const qsizetype oldSize = size();
     if (currentTotal)
         setMaxCost(nt ? currentTotal * 3 / 4 : currentTotal - 1);
     setMaxCost(mc);
     ps = totalCost();
-
-    bool any = false;
-    QHash<QString, QPixmapCache::Key>::iterator it = cacheKeys.begin();
-    while (it != cacheKeys.end()) {
-        const auto value = it.value();
-        if (value.isValid() && !contains(value)) {
-            releaseKey(value);
-            it = cacheKeys.erase(it);
-            any = true;
-        } else {
-            ++it;
-        }
-    }
-
-    return any;
+    return size() != oldSize;
 }
 
 void QPMCache::timerEvent(QTimerEvent *)
@@ -289,17 +276,9 @@ void QPMCache::timerEvent(QTimerEvent *)
 
 QPixmap *QPMCache::object(const QString &key) const
 {
-    QPixmapCache::Key cacheKey = cacheKeys.value(key);
-    if (!cacheKey.d || !cacheKey.d->isValid) {
-        const_cast<QPMCache *>(this)->cacheKeys.remove(key);
-        return nullptr;
-    }
-    QPixmap *ptr = QCache<QPixmapCache::Key, QPixmapCacheEntry>::object(cacheKey);
-     //We didn't find the pixmap in the cache, the key is not valid anymore
-    if (!ptr) {
-        const_cast<QPMCache *>(this)->cacheKeys.remove(key);
-    }
-    return ptr;
+    if (const auto it = cacheKeys.find(key); it != cacheKeys.cend())
+        return object(it.value());
+    return nullptr;
 }
 
 QPixmap *QPMCache::object(const QPixmapCache::Key &key) const
@@ -320,6 +299,7 @@ bool QPMCache::insert(const QString& key, const QPixmap &pixmap, int cost)
     // this will create a new key; the old one has been removed
     auto k = insert(pixmap, cost);
     if (k.isValid()) {
+        k.d->stringKey = key;
         cacheKeys[key] = std::move(k);
         return true;
     }
@@ -395,7 +375,11 @@ QPixmapCache::Key QPMCache::createKey()
 void QPMCache::releaseKey(const QPixmapCache::Key &key)
 {
     QPixmapCache::KeyData *keyData = key.d;
-    if (!keyData || keyData->key > keyArraySize || keyData->key <= 0)
+    if (!keyData)
+        return;
+    if (!keyData->stringKey.isNull())
+        cacheKeys.remove(keyData->stringKey);
+    if (keyData->key > keyArraySize || keyData->key <= 0)
         return;
     keyData->key--;
     keyArray[keyData->key] = freeKey;
@@ -422,7 +406,6 @@ void QPMCache::clear()
         killTimer(theid);
         theid = 0;
     }
-    cacheKeys.clear();
 }
 
 QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)
