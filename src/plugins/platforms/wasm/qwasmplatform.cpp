@@ -13,8 +13,9 @@ Platform platform()
 
         if (rawPlatform.call<bool>("includes", emscripten::val("Mac")))
             return Platform::MacOS;
-        if (rawPlatform.call<bool>("includes", emscripten::val("iPhone")))
-            return Platform::iPhone;
+        if (rawPlatform.call<bool>("includes", emscripten::val("iPhone"))
+        || rawPlatform.call<bool>("includes", emscripten::val("iPad")))
+            return Platform::iOS;
         if (rawPlatform.call<bool>("includes", emscripten::val("Win32")))
             return Platform::Windows;
         if (rawPlatform.call<bool>("includes", emscripten::val("Linux"))) {

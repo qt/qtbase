@@ -66,7 +66,7 @@ QWasmInputContext::QWasmInputContext()
 
     }
 
-    if (platform() == Platform::MacOS || platform() == Platform::iPhone) {
+    if (platform() == Platform::MacOS || platform() == Platform::iOS) {
         auto callback = [=](emscripten::val) {
             m_inputElement["parentElement"].call<void>("removeChild", m_inputElement);
             inputPanelIsOpen = false;
@@ -118,7 +118,7 @@ void QWasmInputContext::showInputPanel()
     // screen element.
 
     if (platform() == Platform::MacOS // keep for compatibility
-     || platform() == Platform::iPhone
+     || platform() == Platform::iOS
      || platform() == Platform::Windows) {
         emscripten::val inputWrapper = inputHandlerElementForFocusedWindow();
         if (inputWrapper.isUndefined())
