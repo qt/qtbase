@@ -131,7 +131,7 @@ namespace
             return cb(Qt::PermissionStatus::Denied);
 
         qstdweb::PromiseCallbacks queryCallbacks;
-        queryCallbacks.thenFunc = [device, cb](val mediaStream)
+        queryCallbacks.thenFunc = [device, cb](val)
         {
             updatePermission(device, wapiGranted, cb);
         };
