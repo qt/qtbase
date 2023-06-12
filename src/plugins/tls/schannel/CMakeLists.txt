@@ -31,4 +31,5 @@ qt_internal_add_plugin(QSchannelBackendPlugin
         ncrypt
     DEFINES
         QT_NO_CAST_FROM_ASCII
+        QT_USE_QSTRINGBUILDER
 )
