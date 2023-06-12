@@ -1,9 +1,10 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtWidgets>
-
 #include "xbelreader.h"
+
+#include <QStyle>
+#include <QTreeWidget>
 
 using namespace Qt::StringLiterals;
 
