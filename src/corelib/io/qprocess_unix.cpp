@@ -669,7 +669,7 @@ failChildProcess(const QProcessPrivate *d, const char *description, int code) no
 {
     ChildError error = {};
     error.code = code;
-    strncpy(error.function, description, sizeof(error.function));
+    qstrncpy(error.function, description, sizeof(error.function));
     qt_safe_write(d->childStartedPipe[1], &error, sizeof(error));
     _exit(-1);
 }
