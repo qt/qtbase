@@ -21,6 +21,7 @@ qt_internal_add_test(tst_qsslsocket
         Qt::TestPrivate
     TESTDATA ${test_data}
     QT_TEST_SERVER_LIST "squid" "danted" "cyrus" "apache2" "echo"
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )
 
 qt_internal_extend_target(tst_qsslsocket CONDITION QT_FEATURE_private_tests AND QT_FEATURE_openssl_linked

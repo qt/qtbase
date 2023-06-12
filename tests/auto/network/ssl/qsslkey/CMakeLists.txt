@@ -21,6 +21,7 @@ qt_internal_add_test(tst_qsslkey
     LIBRARIES
         Qt::Network
     TESTDATA ${test_data}
+    BUNDLE_ANDROID_OPENSSL_LIBS
 )
 
 qt_internal_extend_target(tst_qsslkey CONDITION QT_FEATURE_private_tests AND QT_FEATURE_openssl_linked
