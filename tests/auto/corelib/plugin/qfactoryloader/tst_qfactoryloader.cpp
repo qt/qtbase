@@ -6,6 +6,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qplugin.h>
 #include <private/qfactoryloader_p.h>
+#include <private/qlibrary_p.h>
 #include "plugin1/plugininterface1.h"
 #include "plugin2/plugininterface2.h"
 
@@ -29,6 +30,7 @@ public slots:
 private slots:
     void usingTwoFactoriesFromSameDir();
     void extraSearchPath();
+    void multiplePaths();
 };
 
 static const char binFolderC[] = "bin";
@@ -106,6 +108,29 @@ void tst_QFactoryLoader::extraSearchPath()
     // check that it forgets that plugin
     loader1.setExtraSearchPath(QString());
     QVERIFY(loader1.metaData().isEmpty());
+#endif
+}
+
+void tst_QFactoryLoader::multiplePaths()
+{
+#if !QT_CONFIG(library) || !(defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)) || defined(Q_OS_ANDROID)
+    QSKIP("Test not applicable in this configuration.");
+#else
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+
+    QString pluginsPath = QFileInfo(binFolder, binFolderC).absolutePath();
+    QString linkPath = dir.filePath(binFolderC);
+    QVERIFY(QFile::link(pluginsPath, linkPath));
+
+    QCoreApplication::setLibraryPaths({ QFileInfo(binFolder).absolutePath(), dir.path() });
+
+    const QString suffix = QLatin1Char('/') + QLatin1String(binFolderC);
+    QFactoryLoader loader1(PluginInterface1_iid, suffix);
+
+    QLibraryPrivate *library1 = loader1.library("plugin1");
+    QVERIFY(library1);
+    QCOMPARE(library1->loadHints(), QLibrary::PreventUnloadHint);
 #endif
 }
 

@@ -349,10 +349,11 @@ QString QPluginLoader::errorString() const
 void QPluginLoader::setLoadHints(QLibrary::LoadHints loadHints)
 {
     if (!d) {
-        d = QLibraryPrivate::findOrCreate(QString());   // ugly, but we need a d-ptr
+        d = QLibraryPrivate::findOrCreate({}, {}, loadHints); // ugly, but we need a d-ptr
         d->errorString.clear();
+    } else {
+        d->setLoadHints(loadHints);
     }
-    d->setLoadHints(loadHints);
 }
 
 QLibrary::LoadHints QPluginLoader::loadHints() const

@@ -465,7 +465,7 @@ void QLibraryPrivate::mergeLoadHints(QLibrary::LoadHints lh)
     if (pHnd.loadRelaxed())
         return;
 
-    loadHintsInt.storeRelaxed(lh.toInt());
+    loadHintsInt.fetchAndOrRelaxed(lh.toInt());
 }
 
 QFunctionPointer QLibraryPrivate::resolve(const char *symbol)
@@ -477,6 +477,13 @@ QFunctionPointer QLibraryPrivate::resolve(const char *symbol)
 
 void QLibraryPrivate::setLoadHints(QLibrary::LoadHints lh)
 {
+    // Set the load hints directly for a dummy if this object is not associated
+    // with a file. Such object is not shared between multiple instances.
+    if (fileName.isEmpty()) {
+        loadHintsInt.storeRelaxed(lh.toInt());
+        return;
+    }
+
     // this locks a global mutex
     QMutexLocker lock(&qt_library_mutex);
     mergeLoadHints(lh);
@@ -1112,6 +1119,10 @@ QString QLibrary::errorString() const
     By default, none of these flags are set, so libraries will be loaded with
     lazy symbol resolution, and will not export external symbols for resolution
     in other dynamically-loaded libraries.
+
+    \note Hints can only be cleared when this object is not associated with a
+    file. Hints can only be added once the file name is set (\a hints will
+    be or'ed with the old hints).
 
     \note Setting this property after the library has been loaded has no effect
     and loadHints() will not reflect those changes.

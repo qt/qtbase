@@ -278,7 +278,9 @@ void tst_QPluginLoader::errorString()
     QVERIFY(!unloaded);
     }
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN) && !defined(Q_OS_HPUX)
+// A bug in QNX causes the test to crash on exit after attempting to load
+// a shared library with undefined symbols (tracked as QTBUG-114682).
+#if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
     {
     QPluginLoader loader( sys_qualifiedLibraryName("almostplugin"));     //a plugin with unresolved symbols
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
@@ -338,16 +340,34 @@ void tst_QPluginLoader::loadHints()
     QCOMPARE(loader.loadHints(), QLibrary::PreventUnloadHint);   //Do not crash
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
     QCOMPARE(loader.loadHints(), QLibrary::ResolveAllSymbolsHint);
+    // We can clear load hints when file name is not set.
+    loader.setLoadHints(QLibrary::LoadHints{});
+    QCOMPARE(loader.loadHints(), QLibrary::LoadHints{});
+    // Set the hints again
+    loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    QCOMPARE(loader.loadHints(), QLibrary::ResolveAllSymbolsHint);
     loader.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
+    QCOMPARE(loader.loadHints(), QLibrary::ResolveAllSymbolsHint);
+
+    QPluginLoader loader4;
+    QCOMPARE(loader4.loadHints(), QLibrary::PreventUnloadHint);
+    loader4.setLoadHints(QLibrary::LoadHints{});
+    QCOMPARE(loader4.loadHints(), QLibrary::LoadHints{});
+    loader4.setFileName(sys_qualifiedLibraryName("theplugin"));
+    // Hints are merged with hints from the previous loader.
+    QCOMPARE(loader4.loadHints(), QLibrary::ResolveAllSymbolsHint);
+    // We cannot clear load hints after associating the loader with a file.
+    loader.setLoadHints(QLibrary::LoadHints{});
     QCOMPARE(loader.loadHints(), QLibrary::ResolveAllSymbolsHint);
 
     QPluginLoader loader2;
     QCOMPARE(loader2.loadHints(), QLibrary::PreventUnloadHint);
     loader2.setFileName(sys_qualifiedLibraryName("theplugin"));
-    QCOMPARE(loader2.loadHints(), QLibrary::PreventUnloadHint);
+    // Hints are merged with hints from previous loaders.
+    QCOMPARE(loader2.loadHints(), QLibrary::PreventUnloadHint | QLibrary::ResolveAllSymbolsHint);
 
     QPluginLoader loader3(sys_qualifiedLibraryName("theplugin"));
-    QCOMPARE(loader3.loadHints(), QLibrary::PreventUnloadHint);
+    QCOMPARE(loader3.loadHints(), QLibrary::PreventUnloadHint | QLibrary::ResolveAllSymbolsHint);
 }
 
 void tst_QPluginLoader::deleteinstanceOnUnload()
