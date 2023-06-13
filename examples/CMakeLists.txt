@@ -5,7 +5,6 @@ qt_examples_build_begin(EXTERNAL_BUILD)
 
 add_subdirectory(corelib)
 add_subdirectory(embedded)
-add_subdirectory(qpa)
 if(TARGET Qt6::DBus)
     add_subdirectory(dbus)
 endif()
