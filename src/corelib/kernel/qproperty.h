@@ -57,6 +57,7 @@ class [[nodiscard]] QScopedPropertyUpdateGroup
 {
     Q_DISABLE_COPY_MOVE(QScopedPropertyUpdateGroup)
 public:
+    Q_NODISCARD_CTOR
     QScopedPropertyUpdateGroup()
     { Qt::beginPropertyUpdateGroup(); }
     ~QScopedPropertyUpdateGroup() noexcept(false)
@@ -290,6 +291,7 @@ class [[nodiscard]] QPropertyChangeHandler : public QPropertyObserver
 {
     Functor m_handler;
 public:
+    Q_NODISCARD_CTOR
     QPropertyChangeHandler(Functor handler)
         : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
@@ -300,6 +302,7 @@ public:
     }
 
     template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
+    Q_NODISCARD_CTOR
     QPropertyChangeHandler(const Property &property, Functor handler)
         : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
@@ -315,8 +318,10 @@ class [[nodiscard]] QPropertyNotifier : public QPropertyObserver
 {
     std::function<void()> m_handler;
 public:
+    Q_NODISCARD_CTOR
     QPropertyNotifier() = default;
     template<typename Functor>
+    Q_NODISCARD_CTOR
     QPropertyNotifier(Functor handler)
         : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
             auto This = static_cast<QPropertyNotifier *>(self);
@@ -327,6 +332,7 @@ public:
     }
 
     template<typename Functor, typename Property, typename = typename Property::InheritsQUntypedPropertyData>
+    Q_NODISCARD_CTOR
     QPropertyNotifier(const Property &property, Functor handler)
         : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
             auto This = static_cast<QPropertyNotifier *>(self);

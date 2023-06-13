@@ -99,6 +99,7 @@ struct [[nodiscard]] QPropertyObserverNodeProtector
     Q_DISABLE_COPY_MOVE(QPropertyObserverNodeProtector)
 
     QPropertyObserverBase m_placeHolder;
+    Q_NODISCARD_CTOR
     QPropertyObserverNodeProtector(QPropertyObserver *observer)
     {
         // insert m_placeholder after observer into the linked list

@@ -52,11 +52,13 @@ public:
     //
     // std::atomic:
     //
+    Q_NODISCARD_CTOR
     explicit constexpr
     QAtomicScopedValueRollback(std::atomic<T> &var,
                                std::memory_order mo = std::memory_order_seq_cst)
         : m_atomic(var), m_value(var.load(mo)), m_mo(mo) {}
 
+    Q_NODISCARD_CTOR
     explicit constexpr
     QAtomicScopedValueRollback(std::atomic<T> &var, T value,
                                std::memory_order mo = std::memory_order_seq_cst)
@@ -65,11 +67,13 @@ public:
     //
     // Q(Basic)AtomicInteger:
     //
+    Q_NODISCARD_CTOR
     explicit constexpr
     QAtomicScopedValueRollback(QBasicAtomicInteger<T> &var,
                                std::memory_order mo = std::memory_order_seq_cst)
         : QAtomicScopedValueRollback(var._q_value, mo) {}
 
+    Q_NODISCARD_CTOR
     explicit constexpr
     QAtomicScopedValueRollback(QBasicAtomicInteger<T> &var, T value,
                                std::memory_order mo = std::memory_order_seq_cst)
@@ -78,11 +82,13 @@ public:
     //
     // Q(Basic)AtomicPointer:
     //
+    Q_NODISCARD_CTOR
     explicit constexpr
     QAtomicScopedValueRollback(QBasicAtomicPointer<std::remove_pointer_t<T>> &var,
                                std::memory_order mo = std::memory_order_seq_cst)
         : QAtomicScopedValueRollback(var._q_value, mo) {}
 
+    Q_NODISCARD_CTOR
     explicit constexpr
     QAtomicScopedValueRollback(QBasicAtomicPointer<std::remove_pointer_t<T>> &var, T value,
                                std::memory_order mo = std::memory_order_seq_cst)
