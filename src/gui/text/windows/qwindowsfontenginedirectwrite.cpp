@@ -586,7 +586,9 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::boundingBox(const QGlyphLayout &g
     for (int i = 0; i < glyphs.numGlyphs; ++i)
         w += glyphs.effectiveAdvance(i);
 
-    return glyph_metrics_t(0, -ascent(), w - lastRightBearing(glyphs), ascent() + descent(), w, 0);
+    const QFixed leftBearing = firstLeftBearing(glyphs);
+    return glyph_metrics_t(leftBearing, -ascent(), w - leftBearing - lastRightBearing(glyphs),
+            ascent() + descent(), w, 0);
 }
 
 glyph_metrics_t QWindowsFontEngineDirectWrite::boundingBox(glyph_t g)
