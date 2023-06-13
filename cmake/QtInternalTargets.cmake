@@ -102,7 +102,7 @@ function(qt_internal_add_global_definition definition)
     set(optional_args)
     set(single_value_args VALUE)
     set(multi_value_args SCOPE)
-    cmake_parse_arguments(args
+    cmake_parse_arguments(arg
         "${optional_args}"
         "${single_value_args}"
         "${multi_value_args}"
