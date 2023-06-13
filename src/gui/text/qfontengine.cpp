@@ -1471,10 +1471,10 @@ bool QFontEngine::hasUnreliableGlyphOutline() const
 
 QFixed QFontEngine::firstLeftBearing(const QGlyphLayout &glyphs)
 {
-    if (glyphs.numGlyphs >= 1) {
-        glyph_t glyph = glyphs.glyphs[0];
+    for (int i = 0; i < glyphs.numGlyphs; ++i) {
+        glyph_t glyph = glyphs.glyphs[i];
         glyph_metrics_t gi = boundingBox(glyph);
-        if (gi.isValid())
+        if (gi.isValid() && gi.width > 0)
             return gi.leftBearing();
     }
     return 0;
