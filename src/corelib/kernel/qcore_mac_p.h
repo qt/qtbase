@@ -169,15 +169,15 @@ class QIOType : public QAppleRefCounted<T, io_object_t, IOObjectRetain, IOObject
 };
 #endif
 
-class Q_CORE_EXPORT QCFString : public QCFType<CFStringRef>
+class QCFString : public QCFType<CFStringRef>
 {
 public:
     using QCFType<CFStringRef>::QCFType;
     Q_NODISCARD_CTOR QCFString(const QString &str) : QCFType<CFStringRef>(0), string(str) {}
     Q_NODISCARD_CTOR QCFString(const CFStringRef cfstr = 0) : QCFType<CFStringRef>(cfstr) {}
     Q_NODISCARD_CTOR QCFString(const QCFType<CFStringRef> &other) : QCFType<CFStringRef>(other) {}
-    operator QString() const;
-    operator CFStringRef() const;
+    Q_CORE_EXPORT operator QString() const;
+    Q_CORE_EXPORT operator CFStringRef() const;
 
 private:
     QString string;
