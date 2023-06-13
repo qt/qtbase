@@ -2056,7 +2056,8 @@ void tst_QMenu::nestedTearOffDetached()
     public:
         QMenu *tornOffMenu = nullptr;
     protected:
-        bool eventFilter(QObject *receiver, QEvent *event) {
+        bool eventFilter(QObject *receiver, QEvent *event) override
+        {
             if (event->type() == QEvent::Show && receiver->inherits("QTornOffMenu"))
                 tornOffMenu = qobject_cast<QMenu *>(receiver);
             return QObject::eventFilter(receiver, event);
