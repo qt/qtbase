@@ -1503,7 +1503,7 @@ void tst_QProperty::noDoubleCapture()
         return size.value();
     });
     auto bindingPriv = QPropertyBindingPrivate::get(max.binding());
-    QCOMPARE(bindingPriv->dependencyObserverCount, 1);
+    QCOMPARE(bindingPriv->dependencyObserverCount, 1U);
     size = 4; // should not crash
     QCOMPARE(max.value(), 4);
 }
