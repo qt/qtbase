@@ -4,6 +4,7 @@
 #include <qsqldriverplugin.h>
 #include <qstringlist.h>
 #include "qsql_sqlite_p.h"
+#include "qsql_sqlite_vfs_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -23,6 +24,7 @@ public:
 QSQLiteDriverPlugin::QSQLiteDriverPlugin()
     : QSqlDriverPlugin()
 {
+    register_qt_vfs();
 }
 
 QSqlDriver* QSQLiteDriverPlugin::create(const QString &name)

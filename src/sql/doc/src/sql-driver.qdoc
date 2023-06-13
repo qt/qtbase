@@ -723,6 +723,17 @@
       \li Busy handler timeout in milliseconds (val <= 0: disabled),
           see \l {https://www.sqlite.org/c3ref/busy_timeout.html}
           {SQLite documentation} for more information
+
+    \row
+      \li QSQLITE_USE_QT_VFS
+      \li If set, the database is opened using Qt's VFS which allows to
+          open databases using QFile. This way it can open databases from
+          any read-write locations (e.g.android shared storage) but also
+          from read-only resources (e.g. qrc or android assets). Be aware
+          that when opening databases from read-only resources make sure
+          you add QSQLITE_OPEN_READONLY attribute as well.
+          Otherwise it will fail to open it.
+
     \row
       \li QSQLITE_OPEN_READONLY
       \li If set, the database is open in read-only mode which will fail

@@ -691,6 +691,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     bool openReadOnlyOption = false;
     bool openUriOption = false;
     bool useExtendedResultCodes = true;
+    bool useQtVfs = false;
 #if QT_CONFIG(regularexpression)
     static const auto regexpConnectOption = "QSQLITE_ENABLE_REGEXP"_L1;
     bool defineRegexp = false;
@@ -708,6 +709,8 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
                 if (ok)
                     timeOut = nt;
             }
+        } else if (option == "QSQLITE_USE_QT_VFS"_L1) {
+            useQtVfs = true;
         } else if (option == "QSQLITE_OPEN_READONLY"_L1) {
             openReadOnlyOption = true;
         } else if (option == "QSQLITE_OPEN_URI"_L1) {
@@ -742,7 +745,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 
     openMode |= SQLITE_OPEN_NOMUTEX;
 
-    const int res = sqlite3_open_v2(db.toUtf8().constData(), &d->access, openMode, nullptr);
+    const int res = sqlite3_open_v2(db.toUtf8().constData(), &d->access, openMode, useQtVfs ? "QtVFS" : nullptr);
 
     if (res == SQLITE_OK) {
         sqlite3_busy_timeout(d->access, timeOut);
