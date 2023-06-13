@@ -2626,7 +2626,7 @@ QT_WARNING_POP
     move assigning \a value to this QVariant.
 */
 
-/*! \fn template<typename T> T QVariant::value() const
+/*! \fn template<typename T> T QVariant::value() const &
 
     Returns the stored value converted to the template type \c{T}.
     Call canConvert() to find out whether a type can be converted.
