@@ -214,6 +214,28 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
+    \enum QShader::SerializedFormatVersion
+    Describes the desired output format when serializing the QShader.
+
+    The default value for the \c version argument of serialized() is \c Latest.
+    This is sufficient in the vast majority of cases. Specifying another value
+    is needed only when the intention is to generate serialized data that can
+    be loaded by earlier Qt versions. For example, the \c qsb tool uses these
+    enum values when the \c{--qsbversion} command-line argument is given.
+
+    \note Targeting earlier versions will make certain features disfunctional
+    with the generated asset. This is not an issue when using the asset with
+    the specified, older Qt version, given that that Qt version does not have
+    the newer features in newer Qt versions that rely on additional data
+    generated in the QShader and the serialized data stream, but may become a
+    problem if the generated asset is then used with a newer Qt version.
+
+    \value Latest The current Qt version
+    \value Qt_6_5 Qt 6.5
+    \value Qt_6_4 Qt 6.4
+ */
+
+/*!
     \class QShaderCode
     \inmodule QtGui
     \since 6.6
@@ -387,7 +409,11 @@ static void writeShaderKey(QDataStream *ds, const QShaderKey &k)
     QShader, suitable for writing to files or other I/O devices.
 
     By default the latest serialization format is used. Use \a version
-    parameter to serialize for a compatibility Qt version.
+    parameter to serialize for a compatibility Qt version. Only when it is
+    known that the generated data stream must be made compatible with an older
+    Qt version at the expense of making it incompatible with features
+    introduced since that Qt version, should another value (for example,
+    \l{SerializedFormatVersion}{Qt_6_5} for Qt 6.5) be used.
 
     \sa fromSerialized()
  */
@@ -475,6 +501,9 @@ static void readShaderKey(QDataStream *ds, QShaderKey *k)
 
 /*!
     Creates a new QShader instance from the given \a data.
+
+    If \a data cannot be deserialized successfully, the result is a default
+    constructed QShader for which isValid() returns \c false.
 
     \sa serialized()
   */
