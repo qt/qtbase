@@ -364,7 +364,7 @@ void WebPromiseManager::adoptPromise(emscripten::val target, PromiseCallbacks ca
 
 EM_JS(bool, jsHaveAsyncify, (), { return typeof Asyncify !== "undefined"; });
 EM_JS(bool, jsHaveJspi, (),
-      { return !!Asyncify && !!Asyncify.makeAsyncFunction && !!WebAssembly.Function; });
+      { return typeof Asyncify !== "undefined" && !!Asyncify.makeAsyncFunction && !!WebAssembly.Function; });
 
 #else
 
