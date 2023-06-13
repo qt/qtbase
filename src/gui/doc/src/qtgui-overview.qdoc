@@ -90,6 +90,18 @@
     portable, cross-platform application that performs accelerated 3D rendering
     onto a QWindow using QRhi.
 
+    Working directly with QWindow is the most advanced and often the most
+    flexible way of rendering with the QRhi API. It is the most low-level
+    approach, however, and limited in the sense that Qt's UI technologies,
+    widgets and Qt Quick, are not utilized at all. In many cases applications
+    will rather want to integrate QRhi-based rendering into a widget or Qt
+    Quick-based user interface. QWidget-based applications may choose to embed
+    the window as a native child into the widget hierarchy via
+    QWidget::createWindowContainer(), but in many cases \l QRhiWidget will
+    offer a more convenient enabler to integrate QRhi-based rendering into a
+    widget UI. Qt Quick provides its own set of enablers for extending the
+    2D/3D scene with QRhi-based custom rendering.
+
     \note The RHI family of APIs are currently offered with a limited
     compatibility guarantee, as opposed to regular Qt public APIs. See \l QRhi
     for details.

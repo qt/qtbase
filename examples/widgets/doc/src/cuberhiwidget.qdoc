@@ -1,0 +1,169 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example rhi/cuberhiwidget
+    \title Cube RHI Widget Example
+    \ingroup examples-widgets
+    \brief Shows how to render a textured cube and integrate with QPainter and widgets, using QRhi Qt's 3D API and shading language abstraction layer.
+
+    \image cuberhiwidget-example.jpg
+    \caption Screenshot of the Cube RHI Widget example
+
+    This example builds on the \l{Simple RHI Widget Example}. While the simple
+    example is intentionally minimal and as compact as possible, rendering only
+    a single triangle with no additional widgets in the window, this
+    application demonstrates:
+
+    \list
+
+    \li Having various widgets in the window, some of them controlling data
+    that is consumed by the QRhiWidget subclass.
+
+    \li Instead of continuously requesting updates, the QRhiWidget here only
+    updates the content in its backing texture when some related data changes.
+
+    \li The cube is textured using a \l QRhiTexture that sources its content
+    from a \l QImage that contains software-based rendering performed with
+    \l QPainter.
+
+    \li The contents of the QRhiWidget \l{QRhiWidget::grab()}{can be
+    read back} and saved to an image file (e.g. a PNG file).
+
+    \li 4x multisample antialiasing \l{QRhiWidget::sampleConut}{can be toggled}
+    at run time. The QRhiWidget subclass is prepared to handle the changing
+    sample count correctly.
+
+    \li Forcing an \l{QRhiWidget::explicitSize}{explicitly specified backing
+    texture size} can be toggled dynamically and controlled with a slider
+    between 16x16 up to 512x512 pixels.
+
+    \li The QRhiWidget subclass deals with a changing \l QRhi correctly. This
+    can be seen in action when making the widget top-level (no parent; becomes
+    a separate window) and then reparenting it again into the main window's
+    child hierarchy.
+
+    \li Most importantly, some widgets, with semi-transparency even, can be
+    placed on top of the QRhiWidget, proving that correct stacking and blending
+    is feasible. This is a case where QRhiWidget is superior to embedding a
+    native window, i.e. a QRhi-based QWindow using
+    QWidget::createWindowContainer(), because it allows stacking and clipping
+    the same way as any ordinary, software-rendered QWidget, whereas native
+    window embedding may, depending on the platform, have various limitations,
+    e.g. often it can be difficult or inefficient to place additional controls
+    on top.
+
+    \endlist
+
+    In the reimplementation of \l{QRhiWidget::initialize()}{initialize()}, the
+    first thing to do is to check if the QRhi we last worked with is still
+    up-to-date, and if the sample count (for multisample antialiasing) has
+    changed. The former is important because all graphics resources must be
+    released when the QRhi changes, whereas with a dynamically changing sample
+    count a similar problem arises specifically for QRhiGraphicsPipeline
+    objects as those bake the sample count in. For simplicity, the application
+    handles all such changes the same way, by resetting its \c scene struct to
+    a default constructed one, which conveniently drops all graphics resources.
+    All resources are then recreated.
+
+    When the backing texture size (so the render target size) changes, no
+    special action is needed, but a signal is emitted for convenience, just so
+    that main() can reposition the overlay label. The 3D API name is also
+    exposed via a signal by querying \l QRhi::backendName() whenever the QRhi
+    changes.
+
+    The implementation has to be aware that multisample antialiasing implies
+    that \l{QRhiWidget::colorTexture()}{colorTexture()} is \nullptr, while
+    \l{QRhiWidget::msaaColorBuffer()}{msaaColorBuffer()} is valid. This is
+    the opposite of when MSAA is not in use. The reason for differentiating
+    and using different types (QRhiTexture, QRhiRenderBuffer) is to allow
+    using MSAA with 3D graphics APIs that do not have support for
+    multisample textures, but have support for multisample renderbuffers.
+    An example of this is OpenGL ES 3.0.
+
+    When checking the up-to-date pixel size and sample count, a convenient and
+    compact solution is to query via the QRhiRenderTarget, because this way one
+    does not need to check which of colorTexture() and msaaColorBuffer() are
+    valid.
+
+    \snippet rhi/cuberhiwidget/examplewidget.cpp init-1
+
+    The rest is quite self-explanatory. The buffers and pipelines are
+    (re)created, if necessary. The contents of the texture that is used to
+    texture the cube mesh is updated. The scene is rendered using a perspective
+    projection. The view is just a simple translation for now.
+
+    \snippet rhi/cuberhiwidget/examplewidget.cpp init-2
+
+    The function that performs the actual enqueuing of the uniform buffer write
+    is also taking the user-provided rotation into account, thus generating the
+    final modelview-projection matrix.
+
+    \snippet rhi/cuberhiwidget/examplewidget.cpp rotation-update
+
+    Updating the \l QRhiTexture that is sampled in the fragment shader when
+    rendering the cube, is quite simple, even though a lot is happening in
+    there: first a QPainter-based drawing is generated within a QImage. This
+    uses the user-provided text. Then the CPU-side pixel data is uploaded to a
+    texture (more precisely, the upload operation is recorded on a \l
+    QRhiResourceUpdateBatch, which is then submitted later in render()).
+
+    \snippet rhi/cuberhiwidget/examplewidget.cpp texture-update
+
+    The graphics resource initialization is simple. There is only a vertex
+    buffer, no index buffer, and a uniform buffer with only a 4x4 matrix in it
+    (16 floats).
+
+    The texture that contains the QPainter-generated drawing has a size of
+    512x512. Note that all sizes (texture sizes, viewports, scissors, texture
+    upload regions, etc.) are always in pixels when working with QRhi. To
+    sample this texture in the shader, a \l{QRhiSampler}{sampler object} is
+    needed (irrespective of the fact that QRhi-based applications will
+    typically use combined image samplers in the GLSL shader code, which then
+    may be transpiled to separate texture and sampler objects with some shading
+    languages, or may stay a combined texture-sampler object with others,
+    meaning there may not actually be a native sampler object under the hood at
+    run time, depending on the 3D API, but this is all transparent to the
+    application)
+
+    The vertex shader reads from the uniform buffer at binding point 0,
+    therefore
+    \c{scene.ubuf} is exposed at that binding location. The fragment shader
+    samples a texture provided at binding point 1,
+    therefore a combined texture-sampler pair is specified for that binding location.
+
+    The QRhiGraphicsPipeline enables depth test/write, and culls backfaces. It
+    also relies on a number of defaults, e.g. the depth comparison function
+    defaults to \c Less, which is fine for us, and the front face mode is
+    counter-clockwise, which is also good as-is so does not need to be set
+    again.
+
+    \snippet rhi/cuberhiwidget/examplewidget.cpp setup-scene
+
+    In the reimplementation of \l{QRhiWidget::render()}{render()}, first the
+    user-provided data is checked. If the \l QSlider controlling the rotation
+    has provided a new value, or the \l QTextEdit with the cube text has
+    changed its text, the graphics resources the contents of which depend on
+    such data get updated.
+
+    Then, a single render pass with a single draw call is recorded. The cube
+    mesh data is provided in a non-interleaved format, hence the need for two
+    vertex input bindings, one is the positions (x, y, z) the other is the UVs
+    (u, v), with a start offset that corresponds to 36 x-y-z float pairs.
+
+    \snippet rhi/cuberhiwidget/examplewidget.cpp render
+
+    How is the user-provided data sent? Take the rotation for example. main()
+    connects to the QSlider's \l{QSlider::valueChanged}{valueChanged} signal.
+    When emitted, the connected lamda calls setCubeRotation() on the
+    ExampleRhiWidget. Here, if the value is different from before, it is
+    stored, and a dirty flag is set. Then, most importantly,
+    \l{QWidget::update()}{update()} is called on the ExampleRhiWidget. This is
+    what triggers rendering a new frame into the QRhiWidget's backing texture.
+    Without this the content of the ExampleRhiWidget would not update when
+    dragging the slider.
+
+    \snippet rhi/cuberhiwidget/examplewidget.h data-setters
+
+    \sa QRhi, {Simple RHI Widget Example}, {RHI Window Example}
+*/

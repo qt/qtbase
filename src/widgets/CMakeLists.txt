@@ -20,6 +20,7 @@ qt_internal_add_module(Widgets
         kernel/qlayout.cpp kernel/qlayout.h kernel/qlayout_p.h
         kernel/qlayoutengine.cpp kernel/qlayoutengine_p.h
         kernel/qlayoutitem.cpp kernel/qlayoutitem.h
+        kernel/qrhiwidget.cpp kernel/qrhiwidget.h kernel/qrhiwidget_p.h
         kernel/qsizepolicy.cpp kernel/qsizepolicy.h
         kernel/qstackedlayout.cpp kernel/qstackedlayout.h
         kernel/qstandardgestures.cpp kernel/qstandardgestures_p.h

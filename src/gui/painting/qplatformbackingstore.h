@@ -94,7 +94,8 @@ public:
     enum Flag {
         StacksOnTop = 0x01,
         TextureIsSrgb = 0x02,
-        NeedsPremultipliedAlphaBlending = 0x04
+        NeedsPremultipliedAlphaBlending = 0x04,
+        MirrorVertically = 0x08
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

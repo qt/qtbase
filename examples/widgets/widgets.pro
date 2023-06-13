@@ -15,6 +15,7 @@ SUBDIRS       = \
                 layouts \
                 mainwindows \
                 painting \
+                rhi \
                 richtext \
                 tools \
                 touch \

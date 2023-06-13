@@ -10858,9 +10858,10 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         // do it on newtlw instead, the performance implications of that are
         // problematic when it comes to large widget trees.
         if (q_evaluateRhiConfig(this, nullptr, &surfaceType)) {
+            const bool wasUsingRhiFlush = newtlw->d_func()->usesRhiFlush;
             newtlw->d_func()->usesRhiFlush = true;
             if (QWindow *w = newtlw->windowHandle()) {
-                if (w->surfaceType() != surfaceType) {
+                if (w->surfaceType() != surfaceType || !wasUsingRhiFlush) {
                     newtlw->destroy();
                     newtlw->create();
                 }

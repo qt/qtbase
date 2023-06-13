@@ -551,10 +551,13 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
     }
 
     for (int i = 0; i < textureWidgetCount; ++i) {
+        const bool invertSourceForTextureWidget = textures->flags(i).testFlag(QPlatformTextureList::MirrorVertically)
+                                                      ? !invertSource : invertSource;
         QMatrix4x4 target;
         QMatrix3x3 source;
         if (!prepareDrawForRenderToTextureWidget(textures, i, window, deviceWindowRect,
-                                                 offset, invertTargetY, invertSource, &target, &source))
+                                                 offset, invertTargetY, invertSourceForTextureWidget,
+                                                 &target, &source))
         {
             m_textureQuadData[i].reset();
             continue;
