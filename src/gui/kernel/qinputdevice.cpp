@@ -384,7 +384,7 @@ QDebug operator<<(QDebug debug, const QInputDevice *device)
 
     debug << "QInputDevice(";
     debug << '"' << device->name() << "\", type=" << device->type()
-          << Qt::hex << ", ID=" << device->systemId() << ", seat='" << device->seatName() << "'";
+          << ", ID=" << device->systemId() << ", seat='" << device->seatName() << "'";
     debug << ')';
     return debug;
 }

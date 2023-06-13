@@ -708,7 +708,7 @@ QDebug operator<<(QDebug debug, const QPointingDevice *device)
     if (device) {
         debug << '"' << device->name() << "\" ";
         QtDebugUtils::formatQEnum(debug, device->type());
-        debug << " id=" << Qt::hex << device->systemId() << Qt::dec;
+        debug << " id=" << device->systemId();
         if (!device->seatName().isEmpty())
             debug << " seat=" << device->seatName();
         if (device->pointerType() != QPointingDevice::PointerType::Generic) {
