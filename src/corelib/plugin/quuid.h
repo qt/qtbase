@@ -192,9 +192,10 @@ private:
     static constexpr Id128Bytes bswap(Id128Bytes b)
     {
         // 128-bit byte swap
-        b.data64[0] = qbswap(b.data64[0]);
-        b.data64[1] = qbswap(b.data64[1]);
-        qSwap(b.data64[0], b.data64[1]);
+        auto b0 = qbswap(b.data64[0]);
+        auto b1 = qbswap(b.data64[1]);
+        b.data64[0] = b1;
+        b.data64[1] = b0;
         return b;
     }
 };
