@@ -2579,7 +2579,7 @@ void QHeaderView::mousePressEvent(QMouseEvent *e)
 void QHeaderView::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QHeaderView);
-    int pos = d->orientation == Qt::Horizontal ? e->position().toPoint().x() : e->position().toPoint().y();
+    const int pos = d->orientation == Qt::Horizontal ? e->position().toPoint().x() : e->position().toPoint().y();
     if (pos < 0 && d->state != QHeaderViewPrivate::SelectSections)
         return;
     if (e->buttons() == Qt::NoButton) {
@@ -2607,8 +2607,10 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
             return;
         }
         case QHeaderViewPrivate::MoveSection: {
-            if (d->shouldAutoScroll(e->position().toPoint()))
+            if (d->shouldAutoScroll(e->position().toPoint())) {
+                d->draggedPosition = e->pos();
                 d->startAutoScroll();
+            }
             if (qAbs(pos - d->firstPos) >= QApplication::startDragDistance()
 #if QT_CONFIG(label)
                 || !d->sectionIndicator->isHidden()
@@ -3805,12 +3807,9 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
             if (currentSectionSize <= minimumSize)
                 continue;
             int newSectionSize = qMax(currentSectionSize - delta, minimumSize);
-            //qDebug() << "### cascading to" << i << newSectionSize - currentSectionSize << delta;
             resizeSectionItem(i, currentSectionSize, newSectionSize);
             saveCascadingSectionSize(i, currentSectionSize);
             delta = delta - (currentSectionSize - newSectionSize);
-            //qDebug() << "new delta" << delta;
-            //if (newSectionSize != minimumSize)
             if (delta <= 0)
                 break;
         }
@@ -3828,7 +3827,6 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
             int newSectionSize = currentSectionSize - delta;
             resizeSectionItem(i, currentSectionSize, newSectionSize);
             if (newSectionSize >= originalSectionSize && false) {
-                //qDebug() << "section" << i << "restored to" << originalSectionSize;
                 cascadingSectionSize.remove(i); // the section is now restored
             }
             sectionResized = true;
