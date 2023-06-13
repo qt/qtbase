@@ -109,11 +109,11 @@ protected:
     T value;
 };
 
-class Q_CORE_EXPORT QMacAutoReleasePool
+class QMacAutoReleasePool
 {
 public:
-    QMacAutoReleasePool();
-    ~QMacAutoReleasePool();
+    Q_CORE_EXPORT QMacAutoReleasePool();
+    Q_CORE_EXPORT ~QMacAutoReleasePool();
 private:
     Q_DISABLE_COPY(QMacAutoReleasePool)
     void *pool;
