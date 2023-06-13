@@ -436,13 +436,16 @@ inline QBindingStorage *qGetBindingStorage(QObject *o)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
 #endif
 
-class QSignalBlocker
+class [[nodiscard]] QSignalBlocker
 {
 public:
+    Q_NODISCARD_CTOR
     inline explicit QSignalBlocker(QObject *o) noexcept;
+    Q_NODISCARD_CTOR
     inline explicit QSignalBlocker(QObject &o) noexcept;
     inline ~QSignalBlocker();
 
+    Q_NODISCARD_CTOR
     inline QSignalBlocker(QSignalBlocker &&other) noexcept;
     inline QSignalBlocker &operator=(QSignalBlocker &&other) noexcept;
 
