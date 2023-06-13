@@ -7,7 +7,6 @@
 
 qt_get_tool_target_name(target_name cmake_automoc_parser)
 qt_internal_add_tool(${target_name}
-    TRY_RUN
     CORE_LIBRARY Bootstrap
     TARGET_DESCRIPTION "Qt CMake AUTOMOC Parser"
     INSTALL_DIR "${INSTALL_LIBEXECDIR}"
