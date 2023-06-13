@@ -116,35 +116,6 @@ private:
     bool locked;
 };
 
-class QBasicMutexLocker
-{
-public:
-    inline explicit QBasicMutexLocker(QBasicMutex *m) QT_MUTEX_LOCK_NOEXCEPT
-        : m(m), isLocked(true)
-    {
-        m->lock();
-    }
-    inline ~QBasicMutexLocker() { if (isLocked) unlock(); }
-
-    inline void unlock() noexcept
-    {
-        isLocked = false;
-        m->unlock();
-    }
-
-    inline void relock() QT_MUTEX_LOCK_NOEXCEPT
-    {
-        isLocked = true;
-        m->lock();
-    }
-
-private:
-    Q_DISABLE_COPY(QBasicMutexLocker)
-
-    QBasicMutex *m;
-    bool isLocked;
-};
-
 #else
 
 class QOrderedMutexLocker
@@ -162,8 +133,6 @@ public:
 
     static bool relock(QBasicMutex *, QBasicMutex *) { return false; }
 };
-
-using QBasicMutexLocker = QMutexLocker<QBasicMutex>;
 
 #endif
 
