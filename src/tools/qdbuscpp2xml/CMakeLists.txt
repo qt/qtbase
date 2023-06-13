@@ -8,6 +8,7 @@
 qt_get_tool_target_name(target_name qdbuscpp2xml)
 qt_internal_add_tool(${target_name}
     TRY_RUN
+    TRY_RUN_FLAGS "-V"
     TARGET_DESCRIPTION "Qt D-Bus C++ to XML Compiler"
     TOOLS_TARGET DBus
     SOURCES

@@ -7,7 +7,6 @@
 
 qt_get_tool_target_name(target_name androidtestrunner)
 qt_internal_add_tool(${target_name}
-    TRY_RUN
     TARGET_DESCRIPTION "Qt Android Test Runner Tool"
     TOOLS_TARGET Core
     SOURCES
