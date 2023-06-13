@@ -241,6 +241,7 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
     const QByteArray nameRaw = QByteArray(xcb_input_xi_device_info_name(deviceInfo),
                                     xcb_input_xi_device_info_name_length(deviceInfo));
     const QString name = QString::fromUtf8(nameRaw);
+    m_xiSlavePointerIds.append(deviceInfo->deviceid);
     qCDebug(lcQpaXInputDevices) << "input device " << name << "ID" << deviceInfo->deviceid;
 #if QT_CONFIG(tabletevent)
     TabletData tabletData;
@@ -453,10 +454,6 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
 */
 void QXcbConnection::xi2SetupDevices()
 {
-#if QT_CONFIG(tabletevent)
-    m_tabletData.clear();
-#endif
-    m_touchDevices.clear();
     m_xiMasterPointerIds.clear();
 
     auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, xcb_connection(), XCB_INPUT_DEVICE_ALL);
@@ -468,14 +465,13 @@ void QXcbConnection::xi2SetupDevices()
     // Start with all known devices; remove the ones that still exist.
     // Afterwards, previousDevices will be the list of those that we should delete.
     QList<const QInputDevice *> previousDevices = QInputDevice::devices();
+    // Return true if the device with the given systemId is new;
+    // otherwise remove it from previousDevices and return false.
     auto newOrKeep = [&previousDevices](qint64 systemId) {
-        for (auto it = previousDevices.constBegin(); it != previousDevices.constEnd(); ++it) {
-            if ((*it)->systemId() == systemId) {
-                previousDevices.erase(it); // it's a keeper
-                return false; // not new
-            }
-        }
-        return true; // it's really new
+        // if nothing is removed from previousDevices, it's a new device
+        return !previousDevices.removeIf([systemId](const QInputDevice *dev) {
+            return dev->systemId() == systemId;
+        });
     };
 
     // XInput doesn't provide a way to identify "seats"; but each device has an attachment to another device.
@@ -540,6 +536,11 @@ void QXcbConnection::xi2SetupDevices()
 
     // previousDevices is now the list of those that are no longer found
     qCDebug(lcQpaXInputDevices) << "removed" << previousDevices;
+    for (auto it = previousDevices.constBegin(); it != previousDevices.constEnd(); ++it) {
+        const auto id = (*it)->systemId();
+        m_xiSlavePointerIds.removeAll(id);
+        m_touchDevices.remove(id);
+    }
     qDeleteAll(previousDevices);
 
     if (m_xiMasterPointerIds.size() > 1)
@@ -1274,6 +1275,9 @@ void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
     auto *xiEvent = reinterpret_cast<xcb_input_device_changed_event_t *>(event);
     switch (xiEvent->reason) {
     case XCB_INPUT_CHANGE_REASON_DEVICE_CHANGE: {
+        // Don't call xi2SetupSlavePointerDevice() again for an already-known device, and never for a master.
+        if (m_xiMasterPointerIds.contains(xiEvent->deviceid) || m_xiSlavePointerIds.contains(xiEvent->deviceid))
+            return;
         auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, xcb_connection(), xiEvent->sourceid);
         if (!reply || reply->num_infos <= 0)
             return;
