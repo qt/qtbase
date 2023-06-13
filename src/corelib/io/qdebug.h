@@ -211,10 +211,12 @@ public:
 Q_DECLARE_SHARED(QDebug)
 
 class QDebugStateSaverPrivate;
-class Q_CORE_EXPORT QDebugStateSaver
+class QDebugStateSaver
 {
 public:
+    Q_CORE_EXPORT
     QDebugStateSaver(QDebug &dbg);
+    Q_CORE_EXPORT
     ~QDebugStateSaver();
 private:
     Q_DISABLE_COPY(QDebugStateSaver)
