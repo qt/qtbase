@@ -261,7 +261,7 @@ bool QObjectPrivate::isSender(const QObject *receiver, const char *signal) const
     ConnectionData *cd = connections.loadRelaxed();
     if (signal_index < 0 || !cd)
         return false;
-    QBasicMutexLocker locker(signalSlotLock(q));
+    QMutexLocker locker(signalSlotLock(q));
     if (signal_index < cd->signalVectorCount()) {
         const QObjectPrivate::Connection *c = cd->signalVector.loadRelaxed()->at(signal_index).first.loadRelaxed();
 
@@ -301,7 +301,7 @@ QObjectList QObjectPrivate::senderList() const
     QObjectList returnValue;
     ConnectionData *cd = connections.loadRelaxed();
     if (cd) {
-        QBasicMutexLocker locker(signalSlotLock(q_func()));
+        QMutexLocker locker(signalSlotLock(q_func()));
         for (Connection *c = cd->senders; c; c = c->next)
             returnValue << c->sender;
     }
@@ -1046,7 +1046,7 @@ QObject::~QObject()
         }
 
         QBasicMutex *signalSlotMutex = signalSlotLock(this);
-        QBasicMutexLocker locker(signalSlotMutex);
+        QMutexLocker locker(signalSlotMutex);
 
         // disconnect all receivers
         int receiverCount = cd->signalVectorCount();
@@ -1379,7 +1379,7 @@ bool QObject::event(QEvent *e)
             QAbstractMetaCallEvent *mce = static_cast<QAbstractMetaCallEvent*>(e);
 
             if (!d_func()->connections.loadRelaxed()) {
-                QBasicMutexLocker locker(signalSlotLock(this));
+                QMutexLocker locker(signalSlotLock(this));
                 d_func()->ensureConnectionData();
             }
             QObjectPrivate::Sender sender(this, const_cast<QObject*>(mce->sender()), mce->signalId());
@@ -2491,7 +2491,7 @@ QObject *QObject::sender() const
 {
     Q_D(const QObject);
 
-    QBasicMutexLocker locker(signalSlotLock(this));
+    QMutexLocker locker(signalSlotLock(this));
     QObjectPrivate::ConnectionData *cd = d->connections.loadRelaxed();
     if (!cd || !cd->currentSender)
         return nullptr;
@@ -2533,7 +2533,7 @@ int QObject::senderSignalIndex() const
 {
     Q_D(const QObject);
 
-    QBasicMutexLocker locker(signalSlotLock(this));
+    QMutexLocker locker(signalSlotLock(this));
     QObjectPrivate::ConnectionData *cd = d->connections.loadRelaxed();
     if (!cd || !cd->currentSender)
         return -1;
@@ -2598,7 +2598,7 @@ int QObject::receivers(const char *signal) const
         }
 
         QObjectPrivate::ConnectionData *cd = d->connections.loadRelaxed();
-        QBasicMutexLocker locker(signalSlotLock(this));
+        QMutexLocker locker(signalSlotLock(this));
         if (cd && signal_index < cd->signalVectorCount()) {
             const QObjectPrivate::Connection *c = cd->signalVector.loadRelaxed()->at(signal_index).first.loadRelaxed();
             while (c) {
@@ -2645,7 +2645,7 @@ bool QObject::isSignalConnected(const QMetaMethod &signal) const
 
     signalIndex += QMetaObjectPrivate::signalOffset(signal.mobj);
 
-    QBasicMutexLocker locker(signalSlotLock(this));
+    QMutexLocker locker(signalSlotLock(this));
     return d->isSignalConnected(signalIndex, true);
 }
 
@@ -3559,7 +3559,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
     QObject *s = const_cast<QObject *>(sender);
 
     QBasicMutex *senderMutex = signalSlotLock(sender);
-    QBasicMutexLocker locker(senderMutex);
+    QMutexLocker locker(senderMutex);
 
     QObjectPrivate::ConnectionData *scd = QObjectPrivate::get(s)->connections.loadRelaxed();
     if (!scd)
@@ -3786,7 +3786,7 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     while (argumentTypes[nargs - 1])
         ++nargs;
 
-    QBasicMutexLocker locker(signalSlotLock(c->receiver.loadRelaxed()));
+    QMutexLocker locker(signalSlotLock(c->receiver.loadRelaxed()));
     QObject *receiver = c->receiver.loadRelaxed();
     if (!receiver) {
         // the connection has been disconnected before we got the lock
@@ -3927,7 +3927,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
 
                 QSemaphore semaphore;
                 {
-                    QBasicMutexLocker locker(signalSlotLock(receiver));
+                    QMutexLocker locker(signalSlotLock(receiver));
                     if (!c->isSingleShot && !c->receiver.loadAcquire())
                         continue;
                     QMetaCallEvent *ev = c->isSlotObject ?
@@ -4253,7 +4253,7 @@ void QObject::dumpObjectInfo() const
            objectName().isEmpty() ? "unnamed" : objectName().toLocal8Bit().data());
 
     Q_D(const QObject);
-    QBasicMutexLocker locker(signalSlotLock(this));
+    QMutexLocker locker(signalSlotLock(this));
 
     // first, look for connections where this object is the sender
     qDebug("  SIGNALS OUT");
