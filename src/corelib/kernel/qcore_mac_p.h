@@ -85,15 +85,18 @@ template <typename T, typename U, auto RetainFunction, auto ReleaseFunction>
 class QAppleRefCounted
 {
 public:
-    QAppleRefCounted() : value() {}
-    QAppleRefCounted(const T &t) : value(t) {}
-    QAppleRefCounted(T &&t) noexcept(std::is_nothrow_move_constructible<T>::value)
+    Q_NODISCARD_CTOR QAppleRefCounted() : value() {}
+    Q_NODISCARD_CTOR QAppleRefCounted(const T &t) : value(t) {}
+    Q_NODISCARD_CTOR QAppleRefCounted(T &&t)
+            noexcept(std::is_nothrow_move_constructible<T>::value)
         : value(std::move(t)) {}
-    QAppleRefCounted(QAppleRefCounted &&other)
+    Q_NODISCARD_CTOR QAppleRefCounted(QAppleRefCounted &&other)
             noexcept(std::is_nothrow_move_assignable<T>::value &&
                      std::is_nothrow_move_constructible<T>::value)
         : value(std::exchange(other.value, T())) {}
-    QAppleRefCounted(const QAppleRefCounted &other) : value(other.value) { if (value) RetainFunction(value); }
+    Q_NODISCARD_CTOR QAppleRefCounted(const QAppleRefCounted &other)
+        : value(other.value)
+    { if (value) RetainFunction(value); }
     ~QAppleRefCounted() { if (value) ReleaseFunction(value); }
     operator T() const { return value; }
     void swap(QAppleRefCounted &other) noexcept(noexcept(qSwap(value, other.value)))
@@ -148,7 +151,7 @@ class QCFType : public QAppleRefCounted<T, CFTypeRef, CFRetain, CFRelease>
     using Base = QAppleRefCounted<T, CFTypeRef, CFRetain, CFRelease>;
 public:
     using Base::Base;
-    explicit QCFType(CFTypeRef r) : Base(static_cast<T>(r)) {}
+    Q_NODISCARD_CTOR explicit QCFType(CFTypeRef r) : Base(static_cast<T>(r)) {}
     template <typename X> X as() const { return reinterpret_cast<X>(this->value); }
     static QCFType constructFromGet(const T &t)
     {
@@ -170,9 +173,9 @@ class Q_CORE_EXPORT QCFString : public QCFType<CFStringRef>
 {
 public:
     using QCFType<CFStringRef>::QCFType;
-    inline QCFString(const QString &str) : QCFType<CFStringRef>(0), string(str) {}
-    inline QCFString(const CFStringRef cfstr = 0) : QCFType<CFStringRef>(cfstr) {}
-    inline QCFString(const QCFType<CFStringRef> &other) : QCFType<CFStringRef>(other) {}
+    Q_NODISCARD_CTOR QCFString(const QString &str) : QCFType<CFStringRef>(0), string(str) {}
+    Q_NODISCARD_CTOR QCFString(const CFStringRef cfstr = 0) : QCFType<CFStringRef>(cfstr) {}
+    Q_NODISCARD_CTOR QCFString(const QCFType<CFStringRef> &other) : QCFType<CFStringRef>(other) {}
     operator QString() const;
     operator CFStringRef() const;
 
