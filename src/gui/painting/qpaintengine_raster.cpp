@@ -277,8 +277,7 @@ QRasterPaintEnginePrivate::QRasterPaintEnginePrivate() :
 
 /*!
     \class QRasterPaintEngine
-    \preliminary
-    \ingroup qws
+    \internal
     \inmodule QtGui
     \since 4.2
 
