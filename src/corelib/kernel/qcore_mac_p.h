@@ -112,7 +112,7 @@ protected:
 class QMacAutoReleasePool
 {
 public:
-    Q_CORE_EXPORT QMacAutoReleasePool();
+    Q_NODISCARD_CTOR Q_CORE_EXPORT QMacAutoReleasePool();
     Q_CORE_EXPORT ~QMacAutoReleasePool();
 private:
     Q_DISABLE_COPY(QMacAutoReleasePool)
@@ -123,7 +123,7 @@ private:
 class QMacRootLevelAutoReleasePool
 {
 public:
-    QMacRootLevelAutoReleasePool();
+    Q_NODISCARD_CTOR QMacRootLevelAutoReleasePool();
     ~QMacRootLevelAutoReleasePool();
 private:
     QScopedPointer<QMacAutoReleasePool> pool;
