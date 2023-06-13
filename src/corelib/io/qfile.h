@@ -41,6 +41,7 @@ class [[nodiscard]] QNtfsPermissionCheckGuard
 {
     Q_DISABLE_COPY_MOVE(QNtfsPermissionCheckGuard)
 public:
+    Q_NODISCARD_CTOR
     QNtfsPermissionCheckGuard()
     {
         qEnableNtfsPermissionChecks();

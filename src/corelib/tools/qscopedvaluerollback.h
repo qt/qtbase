@@ -12,11 +12,13 @@ template <typename T>
 class [[nodiscard]] QScopedValueRollback
 {
 public:
+    Q_NODISCARD_CTOR
     explicit constexpr QScopedValueRollback(T &var)
         : varRef(var), oldValue(var)
     {
     }
 
+    Q_NODISCARD_CTOR
     explicit constexpr QScopedValueRollback(T &var, T value)
         : varRef(var), oldValue(std::move(var)) // ### C++20: std::exchange(var, std::move(value))
     {
