@@ -27,15 +27,19 @@ class QPointer
         typename std::conditional<std::is_const<T>::value, const QObject, QObject>::type;
     QWeakPointer<QObjectType> wp;
 public:
+    Q_NODISCARD_CTOR
     QPointer() = default;
+    Q_NODISCARD_CTOR
     inline QPointer(T *p) : wp(p, true) { }
     // compiler-generated copy/move ctor/assignment operators are fine!
     // compiler-generated dtor is fine!
 
     template <typename X, if_convertible<X> = true>
+    Q_NODISCARD_CTOR
     QPointer(QPointer<X> &&other) noexcept
         : wp(std::exchange(other.wp, nullptr).internalData(), true) {}
     template <typename X, if_convertible<X> = true>
+    Q_NODISCARD_CTOR
     QPointer(const QPointer<X> &other) noexcept
         : wp(other.wp.internalData(), true) {}
 

@@ -276,23 +276,29 @@ public:
     T &operator*() const { return *data(); }
     T *operator->() const noexcept { return data(); }
 
+    Q_NODISCARD_CTOR
     constexpr QSharedPointer() noexcept : value(nullptr), d(nullptr) { }
     ~QSharedPointer() { deref(); }
 
+    Q_NODISCARD_CTOR
     constexpr QSharedPointer(std::nullptr_t) noexcept : value(nullptr), d(nullptr) { }
 
     template <class X, IfCompatible<X> = true>
+    Q_NODISCARD_CTOR
     inline explicit QSharedPointer(X *ptr) : value(ptr) // noexcept
     { internalConstruct(ptr, QtSharedPointer::NormalDeleter()); }
 
     template <class X, typename Deleter, IfCompatible<X> = true>
+    Q_NODISCARD_CTOR
     inline QSharedPointer(X *ptr, Deleter deleter) : value(ptr) // throws
     { internalConstruct(ptr, deleter); }
 
     template <typename Deleter>
+    Q_NODISCARD_CTOR
     QSharedPointer(std::nullptr_t, Deleter deleter) : value(nullptr)
     { internalConstruct(static_cast<T *>(nullptr), deleter); }
 
+    Q_NODISCARD_CTOR
     QSharedPointer(const QSharedPointer &other) noexcept : value(other.value), d(other.d)
     { if (d) ref(); }
     QSharedPointer &operator=(const QSharedPointer &other) noexcept
@@ -301,6 +307,7 @@ public:
         swap(copy);
         return *this;
     }
+    Q_NODISCARD_CTOR
     QSharedPointer(QSharedPointer &&other) noexcept
         : value(other.value), d(other.d)
     {
@@ -310,6 +317,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSharedPointer)
 
     template <class X, IfCompatible<X> = true>
+    Q_NODISCARD_CTOR
     QSharedPointer(QSharedPointer<X> &&other) noexcept
         : value(other.value), d(other.d)
     {
@@ -326,6 +334,7 @@ public:
     }
 
     template <class X, IfCompatible<X> = true>
+    Q_NODISCARD_CTOR
     QSharedPointer(const QSharedPointer<X> &other) noexcept : value(other.value), d(other.d)
     { if (d) ref(); }
 
@@ -338,6 +347,7 @@ public:
     }
 
     template <class X, IfCompatible<X> = true>
+    Q_NODISCARD_CTOR
     inline QSharedPointer(const QWeakPointer<X> &other) : value(nullptr), d(nullptr)
     { *this = other; }
 
@@ -434,6 +444,7 @@ public:
 #undef DECLARE_COMPARE_SET
 
 private:
+    Q_NODISCARD_CTOR
     explicit QSharedPointer(Qt::Initialization) {}
 
     void deref() noexcept
@@ -539,11 +550,14 @@ public:
     explicit operator bool() const noexcept { return !isNull(); }
     bool operator !() const noexcept { return isNull(); }
 
+    Q_NODISCARD_CTOR
     constexpr QWeakPointer() noexcept : d(nullptr), value(nullptr) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
 
+    Q_NODISCARD_CTOR
     QWeakPointer(const QWeakPointer &other) noexcept : d(other.d), value(other.value)
     { if (d) d->weakref.ref(); }
+    Q_NODISCARD_CTOR
     QWeakPointer(QWeakPointer &&other) noexcept
         : d(other.d), value(other.value)
     {
@@ -553,6 +567,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QWeakPointer)
 
     template <class X, IfCompatible<X> = true>
+    Q_NODISCARD_CTOR
     QWeakPointer(QWeakPointer<X> &&other) noexcept
         : d(other.d), value(other.value)
     {
@@ -581,6 +596,7 @@ public:
         qt_ptr_swap(this->value, other.value);
     }
 
+    Q_NODISCARD_CTOR
     inline QWeakPointer(const QSharedPointer<T> &o) : d(o.d), value(o.data())
     { if (d) d->weakref.ref();}
     inline QWeakPointer &operator=(const QSharedPointer<T> &o)
@@ -590,6 +606,7 @@ public:
     }
 
     template <class X, IfCompatible<X> = true>
+    Q_NODISCARD_CTOR
     inline QWeakPointer(const QWeakPointer<X> &o) : d(nullptr), value(nullptr)
     { *this = o; }
 
@@ -603,6 +620,7 @@ public:
     }
 
     template <class X, IfCompatible<X> = true>
+    Q_NODISCARD_CTOR
     inline QWeakPointer(const QSharedPointer<X> &o) : d(nullptr), value(nullptr)
     { *this = o; }
 
@@ -663,6 +681,7 @@ private:
 
 #ifndef QT_NO_QOBJECT
     template <class X, IfCompatible<X> = true>
+    Q_NODISCARD_CTOR
     inline QWeakPointer(X *ptr, bool) : d(ptr ? Data::getAndRef(ptr) : nullptr), value(ptr)
     { }
 #endif
