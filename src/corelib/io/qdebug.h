@@ -214,7 +214,7 @@ class QDebugStateSaverPrivate;
 class QDebugStateSaver
 {
 public:
-    Q_CORE_EXPORT
+    Q_NODISCARD_CTOR Q_CORE_EXPORT
     QDebugStateSaver(QDebug &dbg);
     Q_CORE_EXPORT
     ~QDebugStateSaver();
