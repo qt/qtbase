@@ -101,7 +101,7 @@ class QFdContainer
     int m_fd;
     Q_DISABLE_COPY_MOVE(QFdContainer);
 public:
-    explicit QFdContainer(int fd = -1) noexcept : m_fd(fd) {}
+    Q_NODISCARD_CTOR explicit QFdContainer(int fd = -1) noexcept : m_fd(fd) {}
     ~QFdContainer() { reset(); }
 
     int get() const noexcept { return m_fd; }
