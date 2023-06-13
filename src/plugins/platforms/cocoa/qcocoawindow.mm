@@ -1924,7 +1924,7 @@ qreal QCocoaWindow::devicePixelRatio() const
 {
     // The documented way to observe the relationship between device-independent
     // and device pixels is to use one for the convertToBacking functions. Other
-    // methods such as [NSWindow backingScaleFacor] might not give the correct
+    // methods such as [NSWindow backingScaleFactor] might not give the correct
     // result, for example if setWantsBestResolutionOpenGLSurface is not set or
     // or ignored by the OpenGL driver.
     NSSize backingSize = [m_view convertSizeToBacking:NSMakeSize(1.0, 1.0)];
