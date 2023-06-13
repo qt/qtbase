@@ -19,6 +19,9 @@
 #         On Windows, it creates a helper batch script that tests whether the tool can be executed
 #         successfully or not. If not, build halts and an error will be show, with tips on what
 #         might be cause, and how to fix it.
+#     TRY_RUN_FLAGS
+#         Command line flags that are going to be passed to the tool for testing its correctness.
+#         If no flags were given, we default to `-v`.
 #
 # One-value Arguments:
 #     EXTRA_CMAKE_FILES
@@ -52,6 +55,7 @@ function(qt_internal_add_tool target_name)
         TOOLS_TARGET
         INSTALL_DIR
         CORE_LIBRARY
+        TRY_RUN_FLAGS
         ${__default_target_info_args})
     set(multi_value_keywords
         EXTRA_CMAKE_FILES
@@ -230,14 +234,17 @@ function(qt_internal_add_tool target_name)
     endif()
 
     if(arg_TRY_RUN AND WIN32)
-        _qt_internal_add_try_run_post_build(${target_name})
+        if(NOT arg_TRY_RUN_FLAGS)
+            set(arg_TRY_RUN_FLAGS "-v")
+        endif()
+        _qt_internal_add_try_run_post_build("${target_name}" "${arg_TRY_RUN_FLAGS}")
     endif()
 
     qt_enable_separate_debug_info(${target_name} "${install_dir}" QT_EXECUTABLE)
     qt_internal_install_pdb_files(${target_name} "${install_dir}")
 endfunction()
 
-function(_qt_internal_add_try_run_post_build target)
+function(_qt_internal_add_try_run_post_build target try_run_flags)
     qt_internal_get_upper_case_main_cmake_configuration(main_cmake_configuration)
     get_target_property(target_out_dir ${target}
                         RUNTIME_OUTPUT_DIRECTORY_${main_cmake_configuration})
@@ -251,7 +258,7 @@ function(_qt_internal_add_try_run_post_build target)
     qt_configure_file(OUTPUT "${try_run_scripts_path}"
         CONTENT "@echo off
 
-${target_out_dir}/${target}.exe -h > nul 2>&1
+${target_out_dir}/${target}.exe ${try_run_flags} > nul 2>&1
 
 if \"%errorlevel%\" == \"-1073741515\" (
 echo

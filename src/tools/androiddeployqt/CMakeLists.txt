@@ -7,7 +7,6 @@
 
 qt_get_tool_target_name(target_name androiddeployqt)
 qt_internal_add_tool(${target_name}
-    TRY_RUN
     TARGET_DESCRIPTION "Qt Android Deployment Tool"
     TOOLS_TARGET Core
     USER_FACING
