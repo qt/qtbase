@@ -92,6 +92,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
 class QT6_ONLY(Q_CORE_EXPORT) QReadLocker
 {
 public:
+    Q_NODISCARD_CTOR
     inline QReadLocker(QReadWriteLock *readWriteLock);
 
     inline ~QReadLocker()
@@ -136,6 +137,7 @@ inline QReadLocker::QReadLocker(QReadWriteLock *areadWriteLock)
 class QT6_ONLY(Q_CORE_EXPORT) QWriteLocker
 {
 public:
+    Q_NODISCARD_CTOR
     inline QWriteLocker(QReadWriteLock *readWriteLock);
 
     inline ~QWriteLocker()
@@ -210,6 +212,7 @@ private:
 class QT6_ONLY(Q_CORE_EXPORT) QReadLocker
 {
 public:
+    Q_NODISCARD_CTOR
     inline explicit QReadLocker(QReadWriteLock *) noexcept { }
     inline ~QReadLocker() noexcept { }
 
@@ -224,6 +227,7 @@ private:
 class QT6_ONLY(Q_CORE_EXPORT) QWriteLocker
 {
 public:
+    Q_NODISCARD_CTOR
     inline explicit QWriteLocker(QReadWriteLock *) noexcept { }
     inline ~QWriteLocker() noexcept { }
 
