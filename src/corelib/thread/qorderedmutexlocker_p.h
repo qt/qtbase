@@ -28,9 +28,10 @@ QT_BEGIN_NAMESPACE
   Locks 2 mutexes in a defined order, avoiding a recursive lock if
   we're trying to lock the same mutex twice.
 */
-class QOrderedMutexLocker
+class [[nodiscard]] QOrderedMutexLocker
 {
 public:
+    Q_NODISCARD_CTOR
     QOrderedMutexLocker(QBasicMutex *m1, QBasicMutex *m2)
         : mtx1((m1 == m2) ? m1 : (std::less<QBasicMutex *>()(m1, m2) ? m1 : m2)),
           mtx2((m1 == m2) ?  nullptr : (std::less<QBasicMutex *>()(m1, m2) ? m2 : m1)),
@@ -50,6 +51,7 @@ public:
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QOrderedMutexLocker)
 
+    Q_NODISCARD_CTOR
     QOrderedMutexLocker(QOrderedMutexLocker &&other) noexcept
         : mtx1(std::exchange(other.mtx1, nullptr))
         , mtx2(std::exchange(other.mtx2, nullptr))
@@ -147,11 +149,13 @@ private:
 
 #else
 
-class QOrderedMutexLocker
+class [[nodiscard]] QOrderedMutexLocker
 {
 public:
     Q_DISABLE_COPY(QOrderedMutexLocker)
+    Q_NODISCARD_CTOR
     QOrderedMutexLocker(QBasicMutex *, QBasicMutex *) {}
+    Q_NODISCARD_CTOR
     QOrderedMutexLocker(QOrderedMutexLocker &&) = default;
     QOrderedMutexLocker& operator=(QOrderedMutexLocker &&other) = default;
     ~QOrderedMutexLocker() {}
