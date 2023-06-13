@@ -57,9 +57,9 @@ QT_BEGIN_NAMESPACE
     if there are three or more of them, and performs equally well in other
     cases.
 
-    \note Definnig \c QT_USE_STRINGBUILDER at build time (this is the default
-    when building Qt libraries and tools), will make using \c {'+'} when
-    concatenating strings work the same way as \c operator%().
+    \note Defining \c QT_USE_QSTRINGBUILDER at build time (this is the
+    default when building Qt libraries and tools), will make using \c {'+'}
+    when concatenating strings work the same way as \c operator%().
 
     \sa QLatin1StringView, QString
 */
