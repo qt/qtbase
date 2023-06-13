@@ -61,14 +61,18 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 }
 #endif
 
-class QSemaphoreReleaser
+class [[nodiscard]] QSemaphoreReleaser
 {
 public:
+    Q_NODISCARD_CTOR
     QSemaphoreReleaser() = default;
+    Q_NODISCARD_CTOR
     explicit QSemaphoreReleaser(QSemaphore &sem, int n = 1) noexcept
         : m_sem(&sem), m_n(n) {}
+    Q_NODISCARD_CTOR
     explicit QSemaphoreReleaser(QSemaphore *sem, int n = 1) noexcept
         : m_sem(sem), m_n(n) {}
+    Q_NODISCARD_CTOR
     QSemaphoreReleaser(QSemaphoreReleaser &&other) noexcept
         : m_sem(other.cancel()), m_n(other.m_n) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSemaphoreReleaser)
