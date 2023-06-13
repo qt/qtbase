@@ -24,8 +24,8 @@ using namespace Qt::StringLiterals;
 
 //! [0]
 MainWindow::MainWindow()
+    : treeWidget(new QTreeWidget)
 {
-    treeWidget = new QTreeWidget;
     treeWidget->header()->setSectionResizeMode(QHeaderView::Stretch);
     treeWidget->setHeaderLabels(QStringList{ tr("Title"), tr("Location") });
 #if QT_CONFIG(clipboard) && QT_CONFIG(contextmenu)
