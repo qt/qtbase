@@ -51,13 +51,17 @@ public:
     const T *constData() const noexcept { return d; }
     T *take() noexcept { return std::exchange(d, nullptr); }
 
+    Q_NODISCARD_CTOR
     QSharedDataPointer() noexcept : d(nullptr) { }
     ~QSharedDataPointer() { if (d && !d->ref.deref()) delete d; }
 
+    Q_NODISCARD_CTOR
     explicit QSharedDataPointer(T *data) noexcept : d(data)
     { if (d) d->ref.ref(); }
+    Q_NODISCARD_CTOR
     QSharedDataPointer(T *data, QAdoptSharedDataTag) noexcept : d(data)
     {}
+    Q_NODISCARD_CTOR
     QSharedDataPointer(const QSharedDataPointer &o) noexcept : d(o.d)
     { if (d) d->ref.ref(); }
 
@@ -82,6 +86,7 @@ public:
         reset(o);
         return *this;
     }
+    Q_NODISCARD_CTOR
     QSharedDataPointer(QSharedDataPointer &&o) noexcept : d(std::exchange(o.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSharedDataPointer)
 
@@ -139,17 +144,22 @@ public:
 
     void detach() { if (d && d->ref.loadRelaxed() != 1) detach_helper(); }
 
+    Q_NODISCARD_CTOR
     QExplicitlySharedDataPointer() noexcept : d(nullptr) { }
     ~QExplicitlySharedDataPointer() { if (d && !d->ref.deref()) delete d; }
 
+    Q_NODISCARD_CTOR
     explicit QExplicitlySharedDataPointer(T *data) noexcept : d(data)
     { if (d) d->ref.ref(); }
+    Q_NODISCARD_CTOR
     QExplicitlySharedDataPointer(T *data, QAdoptSharedDataTag) noexcept : d(data)
     {}
+    Q_NODISCARD_CTOR
     QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer &o) noexcept : d(o.d)
     { if (d) d->ref.ref(); }
 
     template<typename X>
+    Q_NODISCARD_CTOR
     QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<X> &o) noexcept
 #ifdef QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST
         : d(static_cast<T *>(o.data()))
@@ -179,6 +189,7 @@ public:
         reset(o);
         return *this;
     }
+    Q_NODISCARD_CTOR
     QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) noexcept : d(std::exchange(o.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QExplicitlySharedDataPointer)
 
