@@ -63,6 +63,27 @@ void MainWindow::onCustomContextMenuRequested(const QPoint &pos)
 }
 #endif // QT_CONFIG(clipboard) && QT_CONFIG(contextmenu)
 
+//! [5]
+void MainWindow::createMenus()
+{
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    QAction *openAct = fileMenu->addAction(tr("&Open..."), this, &MainWindow::open);
+    openAct->setShortcuts(QKeySequence::Open);
+
+    QAction *saveAsAct = fileMenu->addAction(tr("&Save As..."), this, &MainWindow::saveAs);
+    saveAsAct->setShortcuts(QKeySequence::SaveAs);
+
+    QAction *exitAct = fileMenu->addAction(tr("E&xit"), this, &QWidget::close);
+    exitAct->setShortcuts(QKeySequence::Quit);
+
+    menuBar()->addSeparator();
+
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(tr("&About"), this, &MainWindow::about);
+    helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
+}
+//! [5]
+
 //! [1]
 void MainWindow::open()
 {
@@ -130,24 +151,3 @@ void MainWindow::about()
                "QXmlStream classes to read and write XML documents."));
 }
 //! [3]
-
-//! [5]
-void MainWindow::createMenus()
-{
-    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-    QAction *openAct = fileMenu->addAction(tr("&Open..."), this, &MainWindow::open);
-    openAct->setShortcuts(QKeySequence::Open);
-
-    QAction *saveAsAct = fileMenu->addAction(tr("&Save As..."), this, &MainWindow::saveAs);
-    saveAsAct->setShortcuts(QKeySequence::SaveAs);
-
-    QAction *exitAct = fileMenu->addAction(tr("E&xit"), this, &QWidget::close);
-    exitAct->setShortcuts(QKeySequence::Quit);
-
-    menuBar()->addSeparator();
-
-    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(tr("&About"), this, &MainWindow::about);
-    helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
-}
-//! [5]
