@@ -48,7 +48,7 @@ Connection::Connection(qintptr socketDescriptor, QObject *parent)
 
 Connection::~Connection()
 {
-    if (isGreetingMessageSent) {
+    if (isGreetingMessageSent && QAbstractSocket::state() != QAbstractSocket::UnconnectedState) {
         // Indicate clean shutdown.
         writer.endArray();
         waitForBytesWritten(2000);
