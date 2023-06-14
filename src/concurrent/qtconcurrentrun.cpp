@@ -150,9 +150,8 @@
     \since 5.4
     \fn QFuture<T> QtConcurrent::run(QThreadPool *pool, Function function, ...);
 
-    Runs \a function in a separate thread. The thread is taken from the
-    QThreadPool \a pool. Note that \a function may not run immediately; \a function
-    will only be run once a thread becomes available.
+    Schedules \a function on \a pool. Note that \a function may not run
+    immediately; \a function will only be run once a thread becomes available.
 
     T is the same type as the return value of \a function. Non-void return
     values can be accessed via the QFuture::result() function.
