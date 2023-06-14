@@ -2623,11 +2623,12 @@ void QGuiApplicationPrivate::processSafeAreaMarginsChangedEvent(QWindowSystemInt
 
 void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)
 {
-    QStyleHintsPrivate::get(QGuiApplication::styleHints())->setColorScheme(colorScheme());
     if (self)
         self->handleThemeChanged();
 
     QIconPrivate::clearIconCache();
+
+    QStyleHintsPrivate::get(QGuiApplication::styleHints())->setColorScheme(colorScheme());
 
     QEvent themeChangeEvent(QEvent::ThemeChange);
     const QWindowList windows = tce->window ? QWindowList{tce->window} : window_list;
