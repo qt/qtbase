@@ -95,13 +95,13 @@
 
     The \c readTitle() function reads the bookmark's title.
 
-    \snippet serialization/streambookmarks/xbelreader.cpp 4
+    \snippet serialization/streambookmarks/xbelreader.cpp 5
 
     The \c readSeparator() function creates a separator and sets its flags.
     The text is set to 30 "0xB7", the HEX equivalent for period. The element
     is then skipped using \l{QXmlStreamReader::}{skipCurrentElement()}.
 
-    \snippet serialization/streambookmarks/xbelreader.cpp 5
+    \snippet serialization/streambookmarks/xbelreader.cpp 6
 
     \section1 MainWindow Class Definition
 
