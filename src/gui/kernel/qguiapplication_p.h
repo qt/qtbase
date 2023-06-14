@@ -320,6 +320,8 @@ public:
 
     static void updatePalette();
 
+    static Qt::ColorScheme colorScheme();
+
 protected:
     virtual void handleThemeChanged();
 
@@ -335,8 +337,6 @@ private:
     static void clearPalette();
 
     friend class QDragManager;
-
-    static Qt::ColorScheme colorScheme();
 
     static QGuiApplicationPrivate *self;
     static int m_fakeMouseSourcePointId;
