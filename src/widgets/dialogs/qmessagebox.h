@@ -5,17 +5,13 @@
 #define QMESSAGEBOX_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-#include <QtWidgets/qapplication.h>
 #include <QtWidgets/qdialog.h>
-
-#include <QtCore/qanystringview.h>
-#include <QtCore/qdebug.h>
-#include <QtCore/qversionnumber.h>
 
 QT_REQUIRE_CONFIG(messagebox);
 
 QT_BEGIN_NAMESPACE
 
+class QAnyStringView;
 class QLabel;
 class QMessageBoxPrivate;
 class QAbstractButton;
@@ -319,18 +315,8 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QMessageBox::StandardButtons)
 [[maybe_unused]]
 static inline void qRequireVersion(int argc, char *argv[], QAnyStringView req)
 {
-    const auto required = QVersionNumber::fromString(req).normalized();
-    const auto current = QVersionNumber::fromString(qVersion()).normalized();
-    if (current >= required)
-        return;
-    std::unique_ptr<QApplication> application;
-    if (!qApp)
-        application = std::make_unique<QApplication>(argc, argv);
-    const QString message = QApplication::tr("Application \"%1\" requires Qt %2, found Qt %3.")
-                                             .arg(qAppName(), required.toString(), current.toString());
-    QMessageBox::critical(nullptr, QApplication::tr("Incompatible Qt Library Error"),
-                          message, QMessageBox::Abort);
-    qFatal().noquote() << message;
+    Q_WIDGETS_EXPORT void _q_requireVersion(int, char *[], QAnyStringView);
+    _q_requireVersion(argc, argv, req);
 }
 
 #define QT_REQUIRE_VERSION(argc, argv, str) qRequireVersion(argc, argv, str);
