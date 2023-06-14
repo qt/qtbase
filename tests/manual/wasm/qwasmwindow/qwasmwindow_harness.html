@@ -9,6 +9,7 @@
 
             const testSandbox = document.createElement('div');
             testSandbox.id = 'test-sandbox';
+            let nextScreenId = 1;
             document.body.appendChild(testSandbox);
 
             const eventList = [];
@@ -21,6 +22,7 @@
                 screenDiv.style.width = `${width}px`;
                 screenDiv.style.height = `${height}px`;
                 screenDiv.style.backgroundColor = 'lightblue';
+                screenDiv.id = `test-screen-${nextScreenId++}`;
 
                 return screenDiv;
             };
@@ -62,7 +64,11 @@
                 reportEvent: event => {
                     eventList.push(event);
                 },
-                events: () => eventList
+                events: () => eventList,
+                hitTestPoint: (x, y, screenId) => {
+                    return document
+                        .querySelector(`#${screenId}`).shadowRoot.elementsFromPoint(x, y);
+                }
             };
         })();
     </script>

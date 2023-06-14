@@ -12,6 +12,8 @@
 #include "qwasmscreen.h"
 #include "qwasmcompositor.h"
 #include "qwasmwindownonclientarea.h"
+#include "qwasmwindowstack.h"
+#include "qwasmwindowtreenode.h"
 
 #include <QtCore/private/qstdweb_p.h>
 #include "QtGui/qopenglcontext.h"
@@ -38,14 +40,15 @@ struct PointerEvent;
 class QWasmDeadKeySupport;
 struct WheelEvent;
 
-class QWasmWindow final : public QPlatformWindow, public QNativeInterface::Private::QWasmWindow
+class QWasmWindow final : public QPlatformWindow,
+                          public QWasmWindowTreeNode,
+                          public QNativeInterface::Private::QWasmWindow
 {
 public:
     QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport, QWasmCompositor *compositor,
                 QWasmBackingStore *backingStore);
     ~QWasmWindow() final;
 
-    void destroy();
     void paint();
     void setZOrder(int order);
     void setWindowCursor(QByteArray cssCursorName);
@@ -81,6 +84,7 @@ public:
     bool setMouseGrabEnabled(bool grab) final;
     bool windowEvent(QEvent *event) final;
     void setMask(const QRegion &region) final;
+    void setParent(const QPlatformWindow *window) final;
 
     QWasmScreen *platformScreen() const;
     void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }
@@ -88,6 +92,7 @@ public:
     QWindow *window() const { return m_window; }
 
     std::string canvasSelector() const;
+
     emscripten::val context2d() const { return m_context2d; }
     emscripten::val a11yContainer() const { return m_a11yContainer; }
     emscripten::val inputHandlerElement() const { return m_windowContents; }
@@ -96,15 +101,25 @@ public:
     emscripten::val document() const override { return m_document; }
     emscripten::val clientArea() const override { return m_qtWindow; }
 
+    // QWasmWindowTreeNode:
+    emscripten::val containerElement() final;
+    QWasmWindowTreeNode *parentNode() final;
+
 private:
     friend class QWasmScreen;
     static constexpr auto minSizeForRegularWindows = 100;
+
+    // QWasmWindowTreeNode:
+    QWasmWindow *asWasmWindow() final;
+    void onParentChanged(QWasmWindowTreeNode *previous, QWasmWindowTreeNode *current,
+                         QWasmWindowStack::PositionPreference positionPreference) final;
 
     void invalidate();
     bool hasBorder() const;
     bool hasShadow() const;
     bool hasMaximizeButton() const;
     void applyWindowState();
+    void commitParent(QWasmWindowTreeNode *parent);
 
     bool processKey(const KeyEvent &event);
     bool processPointer(const PointerEvent &event);
@@ -127,6 +142,8 @@ private:
 
     std::unique_ptr<NonClientArea> m_nonClientArea;
     std::unique_ptr<ClientArea> m_clientArea;
+
+    QWasmWindowTreeNode *m_commitedParent = nullptr;
 
     std::unique_ptr<qstdweb::EventCallback> m_keyDownCallback;
     std::unique_ptr<qstdweb::EventCallback> m_keyUpCallback;

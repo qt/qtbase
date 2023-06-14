@@ -199,12 +199,18 @@ void QWasmScreen::resizeMaximizedWindows()
 
 QWindow *QWasmScreen::topWindow() const
 {
-    return m_compositor->keyWindow();
+    return activeChild() ? activeChild()->window() : nullptr;
 }
 
 QWindow *QWasmScreen::topLevelAt(const QPoint &p) const
 {
-    return m_compositor->windowAt(p);
+    const auto found =
+            std::find_if(childStack().begin(), childStack().end(), [&p](const QWasmWindow *window) {
+                const QRect geometry = window->windowFrameGeometry();
+
+                return window->isVisible() && geometry.contains(p);
+            });
+    return found != childStack().end() ? (*found)->window() : nullptr;
 }
 
 QPointF QWasmScreen::mapFromLocal(const QPointF &p) const
@@ -230,6 +236,18 @@ void QWasmScreen::setGeometry(const QRect &rect)
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(),
                                                        availableGeometry());
     resizeMaximizedWindows();
+}
+
+void QWasmScreen::onSubtreeChanged(QWasmWindowTreeNodeChangeType changeType,
+                                   QWasmWindowTreeNode *parent, QWasmWindow *child)
+{
+    Q_UNUSED(parent);
+    if (changeType == QWasmWindowTreeNodeChangeType::NodeInsertion && parent == this
+        && childStack().size() == 1) {
+        child->window()->setFlag(Qt::WindowStaysOnBottomHint);
+    }
+    QWasmWindowTreeNode::onSubtreeChanged(changeType, parent, child);
+    m_compositor->onWindowTreeChanged(changeType, child);
 }
 
 void QWasmScreen::updateQScreenAndCanvasRenderSize()
@@ -303,6 +321,29 @@ void QWasmScreen::installCanvasResizeObserver()
                           emscripten::val(intptr_t(this)));
 
     resizeObserver.call<void>("observe", m_shadowContainer);
+}
+
+emscripten::val QWasmScreen::containerElement()
+{
+    return m_shadowContainer;
+}
+
+QWasmWindowTreeNode *QWasmScreen::parentNode()
+{
+    return nullptr;
+}
+
+QList<QWasmWindow *> QWasmScreen::allWindows()
+{
+    QList<QWasmWindow *> windows;
+    for (auto *child : childStack()) {
+        QWindowList list = child->window()->findChildren<QWindow *>(Qt::FindChildrenRecursively);
+        std::transform(
+                list.begin(), list.end(), std::back_inserter(windows),
+                [](const QWindow *window) { return static_cast<QWasmWindow *>(window->handle()); });
+        windows.push_back(child);
+    }
+    return windows;
 }
 
 QT_END_NAMESPACE

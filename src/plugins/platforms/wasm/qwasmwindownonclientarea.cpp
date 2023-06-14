@@ -187,9 +187,11 @@ ResizeConstraints Resizer::getResizeConstraints() {
 
     const auto frameRect =
             QRectF::fromDOMRect(m_windowElement.call<emscripten::val>("getBoundingClientRect"));
-    const auto screenRect = QRectF::fromDOMRect(
-            m_window->platformScreen()->element().call<emscripten::val>("getBoundingClientRect"));
-    const int maxGrowTop = frameRect.top() - screenRect.top();
+    auto containerGeometry =
+            QRectF::fromDOMRect(m_window->parentNode()->containerElement().call<emscripten::val>(
+                    "getBoundingClientRect"));
+
+    const int maxGrowTop = frameRect.top() - containerGeometry.top();
 
     return ResizeConstraints{minShrink, maxGrow, maxGrowTop};
 }
@@ -211,6 +213,7 @@ void Resizer::startResize(Qt::Edges resizeEdges, const PointerEvent &event)
 
     const auto resizeConstraints = getResizeConstraints();
     m_currentResizeData->minShrink = resizeConstraints.minShrink;
+
     m_currentResizeData->maxGrow =
             QPoint(resizeConstraints.maxGrow.x(),
                    std::min(resizeEdges & Qt::Edge::TopEdge ? resizeConstraints.maxGrowTop : INT_MAX,
@@ -415,9 +418,15 @@ bool TitleBar::onDoubleClick()
 
 QPointF TitleBar::clipPointWithScreen(const QPointF &pointInTitleBarCoords) const
 {
-    auto *screen = m_window->platformScreen();
-    return screen->clipPoint(screen->mapFromLocal(
-            dom::mapPoint(m_element, screen->element(), pointInTitleBarCoords)));
+    auto containerRect =
+            QRectF::fromDOMRect(m_window->parentNode()->containerElement().call<emscripten::val>(
+                    "getBoundingClientRect"));
+    const auto p = dom::mapPoint(m_element, m_window->parentNode()->containerElement(),
+                                 pointInTitleBarCoords);
+
+    auto result = QPointF(qBound(0., qreal(p.x()), containerRect.width()),
+                          qBound(0., qreal(p.y()), containerRect.height()));
+    return m_window->parent() ? result : m_window->platformScreen()->mapFromLocal(result).toPoint();
 }
 
 NonClientArea::NonClientArea(QWasmWindow *window, emscripten::val qtWindowElement)

@@ -50,6 +50,17 @@ private:
     }
 };
 
+namespace {
+DeleteOnCloseWindow *findWindowByTitle(const std::string &title)
+{
+    auto windows = qGuiApp->allWindows();
+    auto window_it = std::find_if(windows.begin(), windows.end(), [&title](QWindow *window) {
+        return window->title() == QString::fromLatin1(title);
+    });
+    return window_it == windows.end() ? nullptr : static_cast<DeleteOnCloseWindow *>(*window_it);
+}
+} // namespace
+
 using namespace emscripten;
 
 std::string toJSArray(const std::vector<std::string> &elements)
@@ -103,6 +114,7 @@ std::string windowToJSObject(const QWindow &window)
         << "  id: " << std::to_string(window.winId()) << ","
         << "  geometry: " << rectToJSObject(window.geometry()) << ","
         << "  frameGeometry: " << rectToJSObject(window.frameGeometry()) << ","
+        << "  screen: " << screenToJSObject(*window.screen()) << ","
         << "  title: '" << window.title().toStdString() << "' }";
     return out.str();
 }
@@ -132,14 +144,34 @@ void screenInformation()
                                                  emscripten::val(toJSArray(screensAsJsObjects)));
 }
 
-void createWindow(int x, int y, int w, int h, std::string screenId, std::string title)
+void createWindow(int x, int y, int w, int h, std::string parentType, std::string parentId,
+                  std::string title)
 {
-    auto screens = qGuiApp->screens();
-    auto screen_it = std::find_if(screens.begin(), screens.end(), [&screenId](QScreen *screen) {
-        return screen->name() == QString::fromLatin1(screenId);
-    });
-    if (screen_it == screens.end()) {
-        qWarning() << "No such screen: " << screenId;
+    QScreen *parentScreen = nullptr;
+    QWindow *parentWindow = nullptr;
+    if (parentType == "screen") {
+        auto screens = qGuiApp->screens();
+        auto screen_it = std::find_if(screens.begin(), screens.end(), [&parentId](QScreen *screen) {
+            return screen->name() == QString::fromLatin1(parentId);
+        });
+        if (screen_it == screens.end()) {
+            qWarning() << "No such screen: " << parentId;
+            return;
+        }
+        parentScreen = *screen_it;
+    } else if (parentType == "window") {
+        auto windows = qGuiApp->allWindows();
+        auto window_it = std::find_if(windows.begin(), windows.end(), [&parentId](QWindow *window) {
+            return window->title() == QString::fromLatin1(parentId);
+        });
+        if (window_it == windows.end()) {
+            qWarning() << "No such window: " << parentId;
+            return;
+        }
+        parentWindow = *window_it;
+        parentScreen = parentWindow->screen();
+    } else {
+        qWarning() << "Wrong parent type " << parentType;
         return;
     }
 
@@ -149,7 +181,8 @@ void createWindow(int x, int y, int w, int h, std::string screenId, std::string 
     window->setFlag(Qt::WindowMaximizeButtonHint);
     window->setTitle(QString::fromLatin1(title));
     window->setGeometry(x, y, w, h);
-    window->setScreen(*screen_it);
+    window->setScreen(parentScreen);
+    window->setParent(parentWindow);
 }
 
 void setWindowVisible(int windowId, bool visible) {
@@ -165,12 +198,37 @@ void setWindowVisible(int windowId, bool visible) {
     (*window_it)->setVisible(visible);
 }
 
+void setWindowParent(std::string windowTitle, std::string parentTitle)
+{
+    QWindow *window = findWindowByTitle(windowTitle);
+    if (!window) {
+        qWarning() << "Window could not be found " << parentTitle;
+        return;
+    }
+    QWindow *parent = nullptr;
+    if (parentTitle != "none") {
+        if ((parent = findWindowByTitle(parentTitle)) == nullptr) {
+            qWarning() << "Parent window could not be found " << parentTitle;
+            return;
+        }
+    }
+    window->setParent(parent);
+}
+
+bool closeWindow(std::string title)
+{
+    QWindow *window = findWindowByTitle(title);
+    return window ? window->close() : false;
+}
+
 EMSCRIPTEN_BINDINGS(qwasmwindow)
 {
     emscripten::function("screenInformation", &screenInformation);
     emscripten::function("windowInformation", &windowInformation);
     emscripten::function("createWindow", &createWindow);
     emscripten::function("setWindowVisible", &setWindowVisible);
+    emscripten::function("setWindowParent", &setWindowParent);
+    emscripten::function("closeWindow", &closeWindow);
 }
 
 int main(int argc, char **argv)

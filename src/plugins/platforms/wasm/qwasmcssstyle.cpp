@@ -35,6 +35,11 @@ const char *Style = R"css(
     background-color: lightgray;
 }
 
+.qt-window-contents {
+    overflow: hidden;
+    position: relative;
+}
+
 .qt-window.transparent-for-input {
     pointer-events: none;
 }
@@ -135,7 +140,7 @@ const char *Style = R"css(
     padding-bottom: 4px;
 }
 
-.qt-window.has-border .title-bar {
+.qt-window.has-border > .title-bar {
     display: flex;
 }
 

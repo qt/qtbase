@@ -14,6 +14,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 import unittest
 from enum import Enum, auto
 
+import time
+
 class WidgetTestCase(unittest.TestCase):
     def setUp(self):
         self._driver = Chrome()
@@ -28,8 +30,7 @@ class WidgetTestCase(unittest.TestCase):
         defaultWindowMinSize = 100
         screen = Screen(self._driver, ScreenPosition.FIXED,
                        x=0, y=0, width=600, height=600)
-        window = Window(screen, x=100, y=100, width=200, height=200)
-        window.set_visible(True)
+        window = Window(parent=screen, rect=Rect(x=100, y=100, width=200, height=200))
         self.assertEqual(window.rect, Rect(x=100, y=100, width=200, height=200))
 
         window.drag(Handle.TOP_LEFT, direction=UP(10) + LEFT(10))
@@ -62,8 +63,7 @@ class WidgetTestCase(unittest.TestCase):
     def test_cannot_resize_over_screen_top_edge(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                        x=200, y=200, width=300, height=300)
-        window = Window(screen, x=300, y=300, width=100, height=100)
-        window.set_visible(True)
+        window = Window(parent=screen, rect=Rect(x=300, y=300, width=100, height=100))
         self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
         frame_rect_before_resize = window.frame_rect
 
@@ -77,8 +77,7 @@ class WidgetTestCase(unittest.TestCase):
     def test_window_move(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                        x=200, y=200, width=300, height=300)
-        window = Window(screen, x=300, y=300, width=100, height=100)
-        window.set_visible(True)
+        window = Window(parent=screen, rect=Rect(x=300, y=300, width=100, height=100))
         self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
 
         window.drag(Handle.TOP_WINDOW_BAR, direction=UP(30))
@@ -93,8 +92,7 @@ class WidgetTestCase(unittest.TestCase):
     def test_screen_limits_window_moves(self):
         screen = Screen(self._driver, ScreenPosition.RELATIVE,
                        x=200, y=200, width=300, height=300)
-        window = Window(screen, x=300, y=300, width=100, height=100)
-        window.set_visible(True)
+        window = Window(parent=screen, rect=Rect(x=300, y=300, width=100, height=100))
         self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
 
         window.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
@@ -105,8 +103,7 @@ class WidgetTestCase(unittest.TestCase):
                         x=200, y=2000, width=300, height=300,
                         container_width=500, container_height=7000)
         screen.scroll_to()
-        window = Window(screen, x=300, y=2100, width=100, height=100)
-        window.set_visible(True)
+        window = Window(parent=screen, rect=Rect(x=300, y=2100, width=100, height=100))
         self.assertEqual(window.rect, Rect(x=300, y=2100, width=100, height=100))
 
         window.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
@@ -115,8 +112,7 @@ class WidgetTestCase(unittest.TestCase):
     def test_maximize(self):
         screen = Screen(self._driver, ScreenPosition.RELATIVE,
                         x=200, y=200, width=300, height=300)
-        window = Window(screen, x=300, y=300, width=100, height=100, title='Maximize')
-        window.set_visible(True)
+        window = Window(parent=screen, rect=Rect(x=300, y=300, width=100, height=100), title='Maximize')
         self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
 
         window.maximize()
@@ -125,11 +121,9 @@ class WidgetTestCase(unittest.TestCase):
     def test_multitouch_window_move(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                         x=0, y=0, width=800, height=800)
-        windows = [Window(screen, x=50, y=50, width=100, height=100, title='First'),
-                   Window(screen, x=400, y=400, width=100, height=100, title='Second'),
-                   Window(screen, x=50, y=400, width=100, height=100, title='Third')]
-        for window in windows:
-            window.set_visible(True)
+        windows = [Window(screen, rect=Rect(x=50, y=50, width=100, height=100), title='First'),
+                   Window(screen, rect=Rect(x=400, y=400, width=100, height=100), title='Second'),
+                   Window(screen, rect=Rect(x=50, y=400, width=100, height=100), title='Third')]
 
         self.assertEqual(windows[0].rect, Rect(x=50, y=50, width=100, height=100))
         self.assertEqual(windows[1].rect, Rect(x=400, y=400, width=100, height=100))
@@ -146,11 +140,9 @@ class WidgetTestCase(unittest.TestCase):
     def test_multitouch_window_resize(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                         x=0, y=0, width=800, height=800)
-        windows = [Window(screen, x=50, y=50, width=150, height=150, title='First'),
-                   Window(screen, x=400, y=400, width=150, height=150, title='Second'),
-                   Window(screen, x=50, y=400, width=150, height=150, title='Third')]
-        for window in windows:
-            window.set_visible(True)
+        windows = [Window(screen, rect=Rect(x=50, y=50, width=150, height=150), title='First'),
+                   Window(screen, rect=Rect(x=400, y=400, width=150, height=150), title='Second'),
+                   Window(screen, rect=Rect(x=50, y=400, width=150, height=150), title='Third')]
 
         self.assertEqual(windows[0].rect, Rect(x=50, y=50, width=150, height=150))
         self.assertEqual(windows[1].rect, Rect(x=400, y=400, width=150, height=150))
@@ -167,8 +159,7 @@ class WidgetTestCase(unittest.TestCase):
     def test_newly_created_window_gets_keyboard_focus(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                         x=0, y=0, width=800, height=800)
-        window = Window(screen, x=0, y=0, width=800, height=800, title='root')
-        window.set_visible(True)
+        window = Window(parent=screen, rect=Rect(x=0, y=0, width=800, height=800), title='root')
 
         ActionChains(self._driver).key_down('c').key_up('c').perform()
 
@@ -179,29 +170,262 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(events[-1]['type'], 'keyRelease')
         self.assertEqual(events[-1]['key'], 'c')
 
+    def test_parent_window_limits_moves_of_children(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+
+        w1 = Window(parent=screen, rect=Rect(x=200, y=200, width=400, height=400), title='w1')
+        w1_w1 = Window(parent=w1, rect=Rect(x=100, y=100, width=200, height=200), title='w1_w1')
+        w1_w1_w1 = Window(parent=w1_w1, rect=Rect(50, 50, 100, 100), title='w1_w1_w1')
+
+        self.assertEqual(w1.rect, Rect(200, 200, 400, 400))
+        self.assertEqual(w1_w1.rect, Rect(100, 100, 200, 200))
+        self.assertEqual(w1_w1_w1.rect, Rect(50, 50, 100, 100))
+
+        # Left - Middle window
+        w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
+
+        self.assertEqual(
+            w1_w1.frame_rect.x, -w1_w1.frame_rect.width / 2)
+        w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=RIGHT(w1_w1.frame_rect.width / 2 + 100))
+
+        # Right - Middle window
+        w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=RIGHT(300))
+
+        self.assertEqual(
+            w1_w1.frame_rect.x, w1.rect.width - w1_w1.frame_rect.width / 2)
+        w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(w1.rect.width / 2))
+
+        # Left - Inner window
+        w1_w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
+
+        self.assertEqual(
+            w1_w1_w1.frame_rect.x, -w1_w1_w1.frame_rect.width / 2)
+
+    def test_child_window_activation(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+
+        bottom = Window(parent=screen, rect=Rect(x=0, y=0, width=800, height=800), title='root')
+        w1 = Window(parent=bottom, rect=Rect(x=100, y=100, width=600, height=600), title='w1')
+        w1_w1 = Window(parent=w1, rect=Rect(x=100, y=100, width=300, height=300), title='w1_w1')
+        w1_w1_w1 = Window(parent=w1_w1, rect=Rect(x=100, y=100, width=100, height=100), title='w1_w1_w1')
+        w1_w1_w2 = Window(parent=w1_w1, rect=Rect(x=150, y=150, width=100, height=100), title='w1_w1_w2')
+        w1_w2 = Window(parent=w1, rect=Rect(x=300, y=300, width=300, height=300), title='w1_w2')
+        w1_w2_w1 = Window(parent=w1_w2, rect=Rect(x=100, y=100, width=100, height=100), title='w1_w2_w1')
+        w2 = Window(parent=bottom, rect=Rect(x=300, y=300, width=450, height=450), title='w2')
+
+        self.assertEqual(screen.window_stack_at_point(w1_w1.bounding_box.midpoint[0], w1_w1.bounding_box.midpoint[1]),
+                         [w2, w1_w1_w2, w1_w1_w1, w1_w1, w1, bottom])
+
+        self.assertEqual(screen.window_stack_at_point(w2.bounding_box.midpoint[0], w2.bounding_box.midpoint[1]),
+                         [w2, w1_w2_w1, w1_w2, w1, bottom])
+
+        for w in [w1, w1_w1, w1_w1_w1, w1_w1_w2, w1_w2, w1_w2_w1]:
+            self.assertFalse(w.active)
+        self.assertTrue(w2.active)
+
+        w1.click(0, 0)
+
+        for w in [w1, w1_w2, w1_w2_w1]:
+            self.assertTrue(w.active)
+        for w in [w1_w1, w1_w1_w1, w1_w1_w2, w2]:
+            self.assertFalse(w.active)
+
+        self.assertEqual(screen.window_stack_at_point(w2.frame_rect.midpoint[0], w2.frame_rect.midpoint[1]),
+                         [w1_w2_w1, w1_w2, w1, w2, bottom])
+
+        w1_w1_w1.click(0, 0)
+
+        for w in [w1, w1_w1, w1_w1_w1]:
+            self.assertTrue(w.active)
+        for w in [w1_w1_w2, w1_w2, w1_w2_w1, w2]:
+            self.assertFalse(w.active)
+
+        self.assertEqual(screen.window_stack_at_point(w1_w1_w1.bounding_box.midpoint[0], w1_w1_w1.bounding_box.midpoint[1]),
+                         [w1_w1_w1, w1_w1_w2, w1_w1, w1, w2, bottom])
+
+        w1_w1_w2.click(w1_w1_w2.bounding_box.width, w1_w1_w2.bounding_box.height)
+
+        for w in [w1, w1_w1, w1_w1_w2]:
+            self.assertTrue(w.active)
+        for w in [w1_w1_w1, w1_w2, w1_w2_w1, w2]:
+            self.assertFalse(w.active)
+
+        self.assertEqual(screen.window_stack_at_point(w1_w1_w2.bounding_box.x, w1_w1_w2.bounding_box.y),
+                         [w1_w1_w2, w1_w1_w1, w1_w1, w1, w2, bottom])
+
+    def test_window_reparenting(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+
+        bottom = Window(parent=screen, rect=Rect(x=800, y=800, width=300, height=300), title='bottom')
+        w1 = Window(parent=screen, rect=Rect(x=50, y=50, width=300, height=300), title='w1')
+        w2 = Window(parent=screen, rect=Rect(x=50, y=50, width=300, height=300), title='w2')
+        w3 = Window(parent=screen, rect=Rect(x=50, y=50, width=300, height=300), title='w3')
+
+        self.assertTrue(
+            w2.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w2.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+
+        w2.set_parent(w1)
+
+        self.assertTrue(
+            w2.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w2.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+
+        w3.set_parent(w2)
+
+        self.assertTrue(
+            w2.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w2.element in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+
+        w2.set_parent(screen)
+
+        self.assertTrue(
+            w2.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w2.element in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+
+        w1.set_parent(w2)
+
+        self.assertTrue(
+            w2.element in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w2.element in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+
+        w3.set_parent(screen)
+
+        self.assertTrue(
+            w2.element in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w2.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+
+        w2.set_parent(w3)
+
+        self.assertTrue(
+            w2.element in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element in [*w1.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w3.element in [*w2.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w1.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+        self.assertTrue(
+            w2.element not in [*w3.element.find_elements(By.XPATH, "ancestor::div")])
+
+    def test_window_closing(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+
+        bottom = Window(parent=screen, rect=Rect(x=800, y=800, width=300, height=300), title='root')
+        bottom.close()
+
+        w1 = Window(parent=screen, rect=Rect(x=50, y=50, width=300, height=300), title='w1')
+        w2 = Window(parent=screen, rect=Rect(x=50, y=50, width=300, height=300), title='w2')
+        w3 = Window(parent=screen, rect=Rect(x=50, y=50, width=300, height=300), title='w3')
+
+        w3.close()
+
+        self.assertFalse(w3 in screen.query_windows())
+        self.assertTrue(w2 in screen.query_windows())
+        self.assertTrue(w1 in screen.query_windows())
+
+        w4 = Window(parent=screen, rect=Rect(x=50, y=50, width=300, height=300), title='w4')
+
+        self.assertTrue(w4 in screen.query_windows())
+        self.assertTrue(w2 in screen.query_windows())
+        self.assertTrue(w1 in screen.query_windows())
+
+        w2.close()
+        w1.close()
+
+        self.assertTrue(w4 in screen.query_windows())
+        self.assertFalse(w2 in screen.query_windows())
+        self.assertFalse(w1 in screen.query_windows())
+
+        w4.close()
+
+        self.assertFalse(w4 in screen.query_windows())
+
     def tearDown(self):
         self._driver.quit()
-
 
 class ScreenPosition(Enum):
     FIXED = auto()
     RELATIVE = auto()
     IN_SCROLL_CONTAINER = auto()
 
-
 class Screen:
-    def __init__(self, driver, positioning, x, y, width, height, container_width=0, container_height=0):
+    def __init__(self, driver, positioning=None, x=None, y=None, width=None, height=None, container_width=0, container_height=0, screen_name=None):
         self.driver = driver
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        if screen_name is not None:
+            screen_information = call_instance_function(self.driver, 'screenInformation')
+            if len(screen_information) != 1:
+                raise AssertionError('Expecting exactly one screen_information!')
+            self.screen_info = screen_information[0]
+            self.element = driver.find_element(By.CSS_SELECTOR, f'#test-screen-1')
+            return
+
         if positioning == ScreenPosition.FIXED:
-            command = f'initializeScreenWithFixedPosition({self.x}, {self.y}, {self.width}, {self.height})'
+            command = f'initializeScreenWithFixedPosition({x}, {y}, {width}, {height})'
         elif positioning == ScreenPosition.RELATIVE:
-            command = f'initializeScreenWithRelativePosition({self.x}, {self.y}, {self.width}, {self.height})'
+            command = f'initializeScreenWithRelativePosition({x}, {y}, {width}, {height})'
         elif positioning == ScreenPosition.IN_SCROLL_CONTAINER:
-            command = f'initializeScreenInScrollContainer({container_width}, {container_height}, {self.x}, {self.y}, {self.width}, {self.height})'
+            command = f'initializeScreenInScrollContainer({container_width}, {container_height}, {x}, {y}, {width}, {height})'
         self.element = self.driver.execute_script(
             f'''
                 return testSupport.{command};
@@ -223,26 +447,72 @@ class Screen:
         geo = self.screen_info['geometry']
         return Rect(geo['x'], geo['y'], geo['width'], geo['height'])
 
+    @property
+    def name(self):
+        return self.screen_info['name']
+
     def scroll_to(self):
         ActionChains(self.driver).scroll_to_element(self.element).perform()
 
-
-class Window:
-    def __init__(self, screen, x, y, width, height, title='title'):
-        self.driver = screen.driver
-        self.title = title
-        self.driver.execute_script(
+    def hit_test_point(self, x, y):
+        return self.driver.execute_script(
             f'''
-                instance.createWindow({x}, {y}, {width}, {height}, '{screen.screen_info["name"]}', '{title}');
+                return testSupport.hitTestPoint({x}, {y}, '{self.element.get_attribute("id")}');
             '''
         )
+
+    def window_stack_at_point(self, x, y):
+        return [
+            Window(self, element=element) for element in [
+                *filter(lambda elem: (elem.get_attribute('id') if elem.get_attribute('id') is not None else '')
+                        .startswith('qt-window-'), self.hit_test_point(x, y))]]
+
+    def query_windows(self):
+        return [
+            Window(self, element=element) for element in self.element.shadow_root.find_elements(
+                    By.CSS_SELECTOR, f'div#{self.name} > div.qt-window')]
+
+
+class Window:
+    def __init__(self, parent=None, rect=None, title=None, element=None, visible=True):
+        self.driver = parent.driver
+        if element is not None:
+            self.element = element
+            self.title = element.find_element(
+                    By.CSS_SELECTOR, f'.title-bar > .window-name').text
+            information = self.__window_information()
+            self.screen = Screen(self.driver, screen_name=information['screen']['name'])
+            pass
+        else:
+            self.title = title = title if title is not None else 'window'
+            if isinstance(parent, Window):
+                self.driver.execute_script(
+                    f'''
+                        instance.createWindow({rect.x}, {rect.y}, {rect.width}, {rect.height}, 'window', '{parent.title}', '{title}');
+                    '''
+                )
+                self.screen = parent.screen
+            else:
+                assert(isinstance(parent, Screen))
+                self.driver.execute_script(
+                    f'''
+                        instance.createWindow({rect.x}, {rect.y}, {rect.width}, {rect.height}, 'screen', '{parent.name}', '{title}');
+                    '''
+                )
+                self.screen = parent
         self._window_id = self.__window_information()['id']
-        self.element = screen.element.shadow_root.find_element(
-            By.CSS_SELECTOR, f'#qt-window-{self._window_id}')
+        self.element = self.screen.element.shadow_root.find_element(
+                    By.CSS_SELECTOR, f'#qt-window-{self._window_id}')
+        if visible:
+            self.set_visible(True)
+
+    def __eq__(self, other):
+        return self._window_id == other._window_id if isinstance(other, Window) else False
 
     def __window_information(self):
         information = call_instance_function(self.driver, 'windowInformation')
-        return next(filter(lambda e: e['title'] == self.title, information))
+        #print(information)
+        return next(filter(lambda e: e['title'] == self.title, information))        
 
     @property
     def rect(self):
@@ -308,6 +578,61 @@ class Window:
             offset = (0, -height/2 + top_frame_bar_width/2)
         return {'window': self, 'offset': offset}
 
+    @property
+    def bounding_box(self):
+        raw = self.driver.execute_script("""
+            return arguments[0].getBoundingClientRect();
+            """, self.element)
+        return Rect(raw['x'], raw['y'], raw['width'], raw['height'])
+
+    @property
+    def active(self):
+        return not self.inactive
+        # self.assertFalse('inactive' in window_element.get_attribute(
+        #     'class').split(' '), window_element.get_attribute('id'))
+
+    @property
+    def inactive(self):
+        window_chain = [
+            *self.element.find_elements(By.XPATH, "ancestor::div"), self.element]
+        return next(filter(lambda elem: 'qt-window' in elem.get_attribute('class').split(' ') and
+                           'inactive' in elem.get_attribute(
+                               'class').split(' '),
+                           window_chain
+                           ), None) is not None
+
+    def click(self, x, y):
+        rect = self.bounding_box
+
+        SELENIUM_IMPRECISION_COMPENSATION = 2
+        ActionChains(self.driver).move_to_element(
+            self.element).move_by_offset(-rect.width / 2 + x + SELENIUM_IMPRECISION_COMPENSATION,
+                                         -rect.height / 2 + y + SELENIUM_IMPRECISION_COMPENSATION).click().perform()
+
+    def set_parent(self, parent):
+        if isinstance(parent, Screen):
+            # TODO won't work with screen that is not parent.screen
+            self.screen = parent
+            self.driver.execute_script(
+                f'''
+                    instance.setWindowParent('{self.title}', 'none');
+                '''
+            )
+        else:
+            assert(isinstance(parent, Window))
+            self.screen = parent.screen
+            self.driver.execute_script(
+                f'''
+                    instance.setWindowParent('{self.title}', '{parent.title}');
+                '''
+            )
+
+    def close(self):
+        self.driver.execute_script(
+            f'''
+                instance.closeWindow('{self.title}');
+            '''
+        )
 
 class TouchDragAction:
     def __init__(self, origin, direction):
@@ -477,10 +802,13 @@ class Rect:
     def __str__(self):
         return f'(x: {self.x}, y: {self.y}, width: {self.width}, height: {self.height})'
 
+    @property
+    def midpoint(self):
+        return self.x + self.width / 2, self.y + self.height / 2,
+
 
 def assert_rects_equal(geo1, geo2, msg=None):
     if geo1.x != geo2.x or geo1.y != geo2.y or geo1.width != geo2.width or geo1.height != geo2.height:
         raise AssertionError(f'Rectangles not equal: \n{geo1} \nvs \n{geo2}')
-
 
 unittest.main()

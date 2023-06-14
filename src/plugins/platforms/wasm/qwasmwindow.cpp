@@ -32,6 +32,17 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+QWasmWindowStack::PositionPreference positionPreferenceFromWindowFlags(Qt::WindowFlags flags)
+{
+    if (flags.testFlag(Qt::WindowStaysOnTopHint))
+        return QWasmWindowStack::PositionPreference::StayOnTop;
+    if (flags.testFlag(Qt::WindowStaysOnBottomHint))
+        return QWasmWindowStack::PositionPreference::StayOnBottom;
+    return QWasmWindowStack::PositionPreference::Regular;
+}
+} // namespace
+
 Q_GUI_EXPORT int qt_defaultDpiX();
 
 QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
@@ -56,6 +67,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 
     m_clientArea = std::make_unique<ClientArea>(this, compositor->screen(), m_windowContents);
 
+    m_windowContents.set("className", "qt-window-contents");
     m_qtWindow.call<void>("appendChild", m_windowContents);
 
     m_canvas["classList"].call<void>("add", emscripten::val("qt-window-content"));
@@ -82,8 +94,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     m_canvasContainer.call<void>("appendChild", m_a11yContainer);
     m_a11yContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-container"));
 
-    compositor->screen()->element().call<void>("appendChild", m_qtWindow);
-
     const bool rendersTo2dContext = w->surfaceType() != QSurface::OpenGLSurface;
     if (rendersTo2dContext)
         m_context2d = m_canvas.call<emscripten::val>("getContext", emscripten::val("2d"));
@@ -92,7 +102,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     m_qtWindow.set("id", "qt-window-" + std::to_string(m_winId));
     emscripten::val::module_property("specialHTMLTargets").set(canvasSelector(), m_canvas);
 
-    m_compositor->addWindow(this);
     m_flags = window()->flags();
 
     const auto pointerCallback = std::function([this](emscripten::val event) {
@@ -125,13 +134,16 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     m_keyDownCallback =
             std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keydown", keyCallback);
     m_keyUpCallback = std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keyup", keyCallback);
+
+    setParent(parent());
 }
 
 QWasmWindow::~QWasmWindow()
 {
     emscripten::val::module_property("specialHTMLTargets").delete_(canvasSelector());
-    destroy();
-    m_compositor->removeWindow(this);
+    m_canvasContainer.call<void>("removeChild", m_canvas);
+    m_context2d = emscripten::val::undefined();
+    commitParent(nullptr);
     if (m_requestAnimationFrameId > -1)
         emscripten_cancel_animation_frame(m_requestAnimationFrameId);
 #if QT_CONFIG(accessibility)
@@ -162,8 +174,7 @@ void QWasmWindow::onCloseClicked()
 
 void QWasmWindow::onNonClientAreaInteraction()
 {
-    if (!isActive())
-        requestActivateWindow();
+    requestActivateWindow();
     QGuiApplicationPrivate::instance()->closeAllPopups();
 }
 
@@ -176,14 +187,6 @@ bool QWasmWindow::onNonClientEvent(const PointerEvent &event)
             pointInScreen, event.mouseButtons, event.mouseButton,
             MouseEvent::mouseEventTypeFromEventType(event.type, WindowArea::NonClient),
             event.modifiers);
-}
-
-void QWasmWindow::destroy()
-{
-    m_qtWindow["parentElement"].call<emscripten::val>("removeChild", m_qtWindow);
-
-    m_canvasContainer.call<void>("removeChild", m_canvas);
-    m_context2d = emscripten::val::undefined();
 }
 
 void QWasmWindow::initialize()
@@ -258,21 +261,31 @@ void QWasmWindow::setGeometry(const QRect &rect)
         if (m_state.testFlag(Qt::WindowMaximized))
             return platformScreen()->availableGeometry().marginsRemoved(frameMargins());
 
-        const auto screenGeometry = screen()->geometry();
+        auto offset = rect.topLeft() - (!parent() ? screen()->geometry().topLeft() : QPoint());
 
-        QRect result(rect);
-        result.moveTop(std::max(std::min(rect.y(), screenGeometry.bottom()),
-                                screenGeometry.y() + margins.top()));
-        result.setSize(
-                result.size().expandedTo(windowMinimumSize()).boundedTo(windowMaximumSize()));
-        return result;
+        // In viewport
+        auto containerGeometryInViewport =
+                QRectF::fromDOMRect(parentNode()->containerElement().call<emscripten::val>(
+                                            "getBoundingClientRect"))
+                        .toRect();
+
+        auto rectInViewport = QRect(containerGeometryInViewport.topLeft() + offset, rect.size());
+
+        QRect cappedGeometry(rectInViewport);
+        cappedGeometry.moveTop(
+                std::max(std::min(rectInViewport.y(), containerGeometryInViewport.bottom()),
+                         containerGeometryInViewport.y() + margins.top()));
+        cappedGeometry.setSize(
+                cappedGeometry.size().expandedTo(windowMinimumSize()).boundedTo(windowMaximumSize()));
+        return QRect(QPoint(rect.x(), rect.y() + cappedGeometry.y() - rectInViewport.y()),
+                     rect.size());
     })();
     m_nonClientArea->onClientAreaWidthChange(clientAreaRect.width());
 
     const auto frameRect =
             clientAreaRect
                     .adjusted(-margins.left(), -margins.top(), margins.right(), margins.bottom())
-                    .translated(-screen()->geometry().topLeft());
+                    .translated(!parent() ? -screen()->geometry().topLeft() : QPoint());
 
     m_qtWindow["style"].set("left", std::to_string(frameRect.left()) + "px");
     m_qtWindow["style"].set("top", std::to_string(frameRect.top()) + "px");
@@ -335,13 +348,13 @@ QMargins QWasmWindow::frameMargins() const
 
 void QWasmWindow::raise()
 {
-    m_compositor->raise(this);
+    bringToTop();
     invalidate();
 }
 
 void QWasmWindow::lower()
 {
-    m_compositor->lower(this);
+    sendToBottom();
     invalidate();
 }
 
@@ -378,8 +391,11 @@ void QWasmWindow::onActivationChanged(bool active)
 
 void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
 {
-    if (flags.testFlag(Qt::WindowStaysOnTopHint) != m_flags.testFlag(Qt::WindowStaysOnTopHint))
-        m_compositor->windowPositionPreferenceChanged(this, flags);
+    if (flags.testFlag(Qt::WindowStaysOnTopHint) != m_flags.testFlag(Qt::WindowStaysOnTopHint)
+        || flags.testFlag(Qt::WindowStaysOnBottomHint)
+                != m_flags.testFlag(Qt::WindowStaysOnBottomHint)) {
+        onPositionPreferenceChanged(positionPreferenceFromWindowFlags(flags));
+    }
     m_flags = flags;
     dom::syncCSSClassWith(m_qtWindow, "has-border", hasBorder());
     dom::syncCSSClassWith(m_qtWindow, "has-shadow", hasShadow());
@@ -459,6 +475,12 @@ void QWasmWindow::applyWindowState()
     if (isVisible())
         QWindowSystemInterface::handleWindowStateChanged(window(), m_state, m_previousWindowState);
     setGeometry(newGeom);
+}
+
+void QWasmWindow::commitParent(QWasmWindowTreeNode *parent)
+{
+    onParentChanged(m_commitedParent, parent, positionPreferenceFromWindowFlags(window()->flags()));
+    m_commitedParent = parent;
 }
 
 bool QWasmWindow::processKey(const KeyEvent &event)
@@ -600,10 +622,8 @@ void QWasmWindow::requestActivateWindow()
         return;
     }
 
-    if (window()->isTopLevel()) {
-        raise();
-        m_compositor->setActive(this);
-    }
+    raise();
+    setAsActiveNode();
 
     if (!QWasmIntegration::get()->inputContext())
         m_canvas.call<void>("focus");
@@ -651,9 +671,41 @@ void QWasmWindow::setMask(const QRegion &region)
     m_qtWindow["style"].set("clipPath", emscripten::val(cssClipPath.str()));
 }
 
+void QWasmWindow::setParent(const QPlatformWindow *)
+{
+    commitParent(parentNode());
+}
+
 std::string QWasmWindow::canvasSelector() const
 {
     return "!qtwindow" + std::to_string(m_winId);
+}
+
+emscripten::val QWasmWindow::containerElement()
+{
+    return m_windowContents;
+}
+
+QWasmWindowTreeNode *QWasmWindow::parentNode()
+{
+    if (parent())
+        return static_cast<QWasmWindow *>(parent());
+    return platformScreen();
+}
+
+QWasmWindow *QWasmWindow::asWasmWindow()
+{
+    return this;
+}
+
+void QWasmWindow::onParentChanged(QWasmWindowTreeNode *previous, QWasmWindowTreeNode *current,
+                                  QWasmWindowStack::PositionPreference positionPreference)
+{
+    if (previous)
+        previous->containerElement().call<void>("removeChild", m_qtWindow);
+    if (current)
+        current->containerElement().call<void>("appendChild", m_qtWindow);
+    QWasmWindowTreeNode::onParentChanged(previous, current, positionPreference);
 }
 
 QT_END_NAMESPACE
