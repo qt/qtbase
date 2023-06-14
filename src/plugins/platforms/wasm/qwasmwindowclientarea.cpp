@@ -105,7 +105,10 @@ bool ClientArea::deliverEvent(const PointerEvent &event)
                               .insert(event.pointerId, QWindowSystemInterface::TouchPoint())
                               .value();
 
-        touchPoint->id = event.pointerId;
+        // Assign touch point id. TouchPoint::id is int, but QGuiApplicationPrivate::processTouchEvent()
+        // will not synthesize mouse events for touch points with negative id; use the absolute value for
+        // the touch point id.
+        touchPoint->id = qAbs(event.pointerId);
 
         touchPoint->state = QEventPoint::State::Pressed;
     }
