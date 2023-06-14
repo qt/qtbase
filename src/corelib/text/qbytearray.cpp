@@ -2044,9 +2044,14 @@ QByteArray &QByteArray::prepend(const QByteArray &ba)
 
 QByteArray &QByteArray::append(const QByteArray &ba)
 {
-    if (size() == 0 && ba.size() > d->freeSpaceAtEnd() && ba.d.isMutable())
-        return (*this = ba);
-    return append(QByteArrayView(ba));
+    if (!ba.isNull()) {
+        if (isNull()) {
+            operator=(ba);
+        } else if (ba.size()) {
+            append(QByteArrayView(ba));
+        }
+    }
+    return *this;
 }
 
 /*!

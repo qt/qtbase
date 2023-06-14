@@ -53,6 +53,7 @@ private slots:
     void append();
     void appendExtended_data();
     void appendExtended();
+    void appendEmptyNull();
     void assign();
     void assignShared();
     void assignUsesPrependBuffer();
@@ -935,6 +936,23 @@ void tst_QByteArray::appendExtended()
     QCOMPARE(array.append("\0"), QByteArray("data123xxx"));
     QCOMPARE(array.append("\0", 1), QByteArray::fromRawData("data123xxx\0", 11));
     QCOMPARE(array.size(), 11);
+}
+
+void tst_QByteArray::appendEmptyNull()
+{
+    QByteArray a;
+    QVERIFY(a.isEmpty());
+    QVERIFY(a.isNull());
+
+    QByteArray b("");
+    QVERIFY(b.isEmpty());
+    QVERIFY(!b.isNull());
+
+    // Concatenating a null and an empty-but-not-null byte arrays results in
+    // an empty but not null byte array
+    QByteArray r = a + b;
+    QVERIFY(r.isEmpty());
+    QVERIFY(!r.isNull());
 }
 
 void tst_QByteArray::assign()
