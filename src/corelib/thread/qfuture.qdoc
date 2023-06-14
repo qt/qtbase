@@ -121,6 +121,12 @@
     be created using convenience functions QtFuture::makeReadyFuture() and
     QtFuture::makeExceptionalFuture().
 
+    \note Some APIs (see \l {QFuture::then()} or various QtConcurrent method
+    overloads) allow scheduling the computation to a specific thread pool.
+    However, QFuture implements a work-stealing algorithm to prevent deadlocks
+    and optimize thread usage. As a result, computations can be executed
+    directly in the thread which requests the QFuture's result.
+
     \note To start a computation and store results in a QFuture, use QPromise or
     one of the APIs in the \l {Qt Concurrent} framework.
 
@@ -1164,8 +1170,7 @@
 
     Attaches a continuation to this future, allowing to chain multiple asynchronous
     computations if desired. When the asynchronous computation represented by this
-    future finishes, \a function will be invoked in a separate thread taken from the
-    QThreadPool \a pool.
+    future finishes, \a function will be scheduled on \a pool.
 
     \sa onFailed(), onCanceled()
 */
