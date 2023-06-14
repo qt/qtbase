@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "xbeltree.h"
 
+#include <QApplication>
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QMessageBox>

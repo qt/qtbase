@@ -30,10 +30,16 @@
 #include "private/qabstractbutton_p.h"
 #include <QtGui/qpa/qplatformtheme.h>
 
+#include <QtCore/qanystringview.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qversionnumber.h>
+
 #ifdef Q_OS_WIN
 #    include <QtCore/qt_windows.h>
 #include <qpa/qplatformnativeinterface.h>
 #endif
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -2839,6 +2845,22 @@ void QMessageBoxPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHel
     // In that case, clickedButton has already been set in _q_buttonClicked.
     if (button)
         clickedButton = button;
+}
+
+Q_WIDGETS_EXPORT void _q_requireVersion(int argc, char *argv[], QAnyStringView req)
+{
+    const auto required = QVersionNumber::fromString(req).normalized();
+    const auto current = QVersionNumber::fromString(qVersion()).normalized();
+    if (current >= required)
+        return;
+    std::unique_ptr<QApplication> application;
+    if (!qApp)
+        application = std::make_unique<QApplication>(argc, argv);
+    const QString message = QApplication::tr("Application \"%1\" requires Qt %2, found Qt %3.")
+                                    .arg(qAppName(), required.toString(), current.toString());
+    QMessageBox::critical(nullptr, QApplication::tr("Incompatible Qt Library Error"),
+                          message, QMessageBox::Abort);
+    qFatal("%s", qPrintable(message));
 }
 
 #if QT_DEPRECATED_SINCE(6,2)
