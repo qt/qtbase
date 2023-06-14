@@ -252,6 +252,8 @@ public:
                                                      Qt::MouseButtons buttons = {}, int xTilt = 0, int yTilt = 0,
                                                      qreal tangentialPressure = 0, qreal rotation = 0, int z = 0,
                                                      Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+
+    // The following 4 functions are deprecated (QTBUG-114560)
     static bool handleTabletEnterProximityEvent(ulong timestamp, int deviceType, int pointerType, qint64 uid);
     static void handleTabletEnterProximityEvent(int deviceType, int pointerType, qint64 uid);
     static bool handleTabletLeaveProximityEvent(ulong timestamp, int deviceType, int pointerType, qint64 uid);
