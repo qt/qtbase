@@ -45,6 +45,7 @@ MainWindow::MainWindow()
 }
 //! [0]
 
+//! [1]
 #if QT_CONFIG(clipboard) && QT_CONFIG(contextmenu)
 void MainWindow::onCustomContextMenuRequested(const QPoint &pos)
 {
@@ -62,8 +63,9 @@ void MainWindow::onCustomContextMenuRequested(const QPoint &pos)
         QDesktopServices::openUrl(QUrl(url));
 }
 #endif // QT_CONFIG(clipboard) && QT_CONFIG(contextmenu)
+//! [1]
 
-//! [5]
+//! [2]
 void MainWindow::createMenus()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -82,9 +84,9 @@ void MainWindow::createMenus()
     helpMenu->addAction(tr("&About"), this, &MainWindow::about);
     helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
 }
-//! [5]
+//! [2]
 
-//! [1]
+//! [3]
 void MainWindow::open()
 {
     QFileDialog fileDialog(this, tr("Open Bookmark File"), QDir::currentPath());
@@ -115,9 +117,9 @@ void MainWindow::open()
     }
 
 }
-//! [1]
+//! [3]
 
-//! [2]
+//! [4]
 void MainWindow::saveAs()
 {
     QFileDialog fileDialog(this, tr("Save Bookmark File"), QDir::currentPath());
@@ -141,13 +143,13 @@ void MainWindow::saveAs()
     if (writer.writeFile(&file))
         statusBar()->showMessage(tr("File saved"), 2000);
 }
-//! [2]
+//! [4]
 
-//! [3]
+//! [5]
 void MainWindow::about()
 {
    QMessageBox::about(this, tr("About QXmlStream Bookmarks"),
             tr("The <b>QXmlStream Bookmarks</b> example demonstrates how to use Qt's "
                "QXmlStream classes to read and write XML documents."));
 }
-//! [3]
+//! [5]
