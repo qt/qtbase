@@ -1529,6 +1529,7 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
                         if (!tool && ptr[_WACSER_TOOL_SERIAL])
                             tool = ptr[_WACSER_TOOL_SERIAL];
 
+                        QWindow *win = nullptr; // TODO QTBUG-111400 get the position somehow, then the window
                         // The property change event informs us which tool is in proximity or which one left proximity.
                         if (tool) {
                             const QPointingDevice *dev = tabletToolInstance(nullptr, tabletData->name,
@@ -1537,22 +1538,19 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
                             tabletData->inProximity = true;
                             tabletData->tool = dev->type();
                             tabletData->serialId = qint64(ptr[_WACSER_TOOL_SERIAL]);
-                            QWindowSystemInterface::handleTabletEnterProximityEvent(ev->time,
-                                int(tabletData->tool), int(tabletData->pointerType), tabletData->serialId);
+                            QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(win, ev->time, dev, true); // enter
                         } else {
                             tool = ptr[_WACSER_LAST_TOOL_ID];
                             // Workaround for http://sourceforge.net/p/linuxwacom/bugs/246/
                             // e.g. on Thinkpad Helix, tool ID will be 0 and serial will be 1
                             if (!tool)
                                 tool = ptr[_WACSER_LAST_TOOL_SERIAL];
-                            const QInputDevice *dev = QInputDevicePrivate::fromId(tabletData->deviceId);
+                            auto *dev = qobject_cast<const QPointingDevice *>(QInputDevicePrivate::fromId(tabletData->deviceId));
                             Q_ASSERT(dev);
                             tabletData->tool = dev->type();
                             tabletData->inProximity = false;
                             tabletData->serialId = qint64(ptr[_WACSER_LAST_TOOL_SERIAL]);
-                            // TODO why doesn't it just take QPointingDevice*
-                            QWindowSystemInterface::handleTabletLeaveProximityEvent(ev->time,
-                                int(tabletData->tool), int(tabletData->pointerType), tabletData->serialId);
+                            QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(win, ev->time, dev, false); // leave
                         }
                         // TODO maybe have a hash of tabletData->deviceId to device data so we can
                         // look up the tablet name here, and distinguish multiple tablets
