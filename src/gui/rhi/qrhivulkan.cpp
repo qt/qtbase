@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
     \since 6.6
     \brief Vulkan specific initialization parameters.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     A Vulkan-based QRhi needs at minimum a valid QVulkanInstance. It is up to
@@ -196,7 +196,7 @@ QT_BEGIN_NAMESPACE
 
     \note Ownership of the Vulkan objects is never transferred.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -258,7 +258,7 @@ QT_BEGIN_NAMESPACE
     \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
     \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} pair.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -274,7 +274,7 @@ QT_BEGIN_NAMESPACE
     \since 6.6
     \brief Holds the Vulkan render pass object backing a QRhiRenderPassDescriptor.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 

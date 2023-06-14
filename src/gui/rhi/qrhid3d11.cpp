@@ -32,7 +32,7 @@ using namespace Qt::StringLiterals;
     \since 6.6
     \brief Direct3D 11 specific initialization parameters.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     A D3D11-based QRhi needs no special parameters for initialization. If
@@ -89,7 +89,7 @@ using namespace Qt::StringLiterals;
     \c{d3d11.h} headers is not acceptable here. The actual types are
     \c{ID3D11Device *} and \c{ID3D11DeviceContext *}.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 

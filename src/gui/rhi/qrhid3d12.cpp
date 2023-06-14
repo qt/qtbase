@@ -30,7 +30,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtGui
     \brief Direct3D 12 specific initialization parameters.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     A D3D12-based QRhi needs no special parameters for initialization. If
@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
     \c{d3d12.h} headers is not acceptable here. The actual types are
     \c{ID3D12Device *} and \c{ID3D12CommandQueue *}.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
     \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
     \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} pair.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 

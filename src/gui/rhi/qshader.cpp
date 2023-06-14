@@ -141,7 +141,7 @@ QT_BEGIN_NAMESPACE
     A default constructed QShaderVersion contains a version of 100 and no
     flags set.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShader
+    \note This is a RHI API with limited compatibility guarantees, see \l QShader
     for details.
  */
 
@@ -163,7 +163,7 @@ QT_BEGIN_NAMESPACE
     A default constructed QShaderKey has source set to SpirvShader and
     sourceVersion set to 100. sourceVariant defaults to StandardShader.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShader
+    \note This is a RHI API with limited compatibility guarantees, see \l QShader
     for details.
  */
 
@@ -245,7 +245,7 @@ QT_BEGIN_NAMESPACE
     When shader() is empty after retrieving a QShaderCode instance from
     QShader, it indicates no shader code was found for the requested key.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShader
+    \note This is a RHI API with limited compatibility guarantees, see \l QShader
     for details.
  */
 
@@ -1050,7 +1050,7 @@ void QShader::removeResourceBindingMap(const QShaderKey &key)
     \c{_54} which corresponds to two separate resource bindings (\c 1 and \c 2)
     in the original shader.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShader
+    \note This is a RHI API with limited compatibility guarantees, see \l QShader
     for details.
  */
 
@@ -1132,7 +1132,7 @@ void QShader::removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &
     that the shader code relies on such a buffer present can be indicated by
     the data in this struct.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShader
+    \note This is a RHI API with limited compatibility guarantees, see \l QShader
     for details.
  */
 

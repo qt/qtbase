@@ -1083,7 +1083,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     Contains fields that are relevant to all backends.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -1093,7 +1093,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \since 6.6
     \brief Specifies clear values for a depth or stencil buffer.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -1188,7 +1188,7 @@ QDebug operator<<(QDebug dbg, const QRhiDepthStencilClearValue &v)
       // ...
     \endcode
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiCommandBuffer::setViewport(), QRhi::clipSpaceCorrMatrix(), QRhiScissor
@@ -1308,7 +1308,7 @@ QDebug operator<<(QDebug dbg, const QRhiViewport &v)
     appropriate. Therefore, any rendering logic targeting OpenGL can feed
     scissor rectangles into QRhiScissor as-is, without any adaptation.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiCommandBuffer::setScissor(), QRhiViewport
@@ -1436,7 +1436,7 @@ QDebug operator<<(QDebug dbg, const QRhiScissor &s)
 
     \note the stride must always be a multiple of 4.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiCommandBuffer::setVertexInput()
@@ -1605,7 +1605,7 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
         cb->setVertexInput(0, 1, &vbufBinding);
     \endcode
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiCommandBuffer::setVertexInput()
@@ -1883,7 +1883,7 @@ quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInpu
         });
     \endcode
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -2019,7 +2019,7 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
         });
     \endcode
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -2169,7 +2169,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderStage &s)
     out at all. This means that the multisample texture() must not be used
     afterwards with shaders for sampling when resolveTexture() is set.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiTextureRenderTargetDescription
@@ -2371,7 +2371,7 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
         QRhiTextureRenderTarget *rt = rhi->newTextureRenderTarget({ colorAtt, depthStencil });
     \endcode
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiColorAttachment, QRhiTextureRenderTarget
@@ -2543,7 +2543,7 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
     caller is strongly encouraged to call QImage::detach() on the image before
     passing it to uploadTexture().
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiTextureUploadDescription
@@ -2698,7 +2698,7 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
     \brief Describes one layer (face for cubemaps, slice for 3D textures,
     element for texture arrays) in a texture upload operation.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -2838,7 +2838,7 @@ QRhiTextureUploadEntry::QRhiTextureUploadEntry(int layer, int level,
       resourceUpdates->uploadTexture(texture, desc);
     \endcode
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiResourceUpdateBatch
@@ -2927,7 +2927,7 @@ QRhiTextureUploadDescription::QRhiTextureUploadDescription(std::initializer_list
     differ, but the size and position must be carefully controlled to avoid out
     of bounds copies, in which case the behavior is undefined.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -3033,7 +3033,7 @@ QRhiTextureUploadDescription::QRhiTextureUploadDescription(std::initializer_list
     \note Multisample textures cannot be read back. Readbacks are supported for
     multisample swapchain buffers however.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -3124,7 +3124,7 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
     available. \l format and \l pixelSize are set upon completion together with
     \l data.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -3162,7 +3162,7 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
     \since 6.6
     \brief Base class for classes exposing backend-specific collections of native resource objects.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -3172,7 +3172,7 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
     \since 6.6
     \brief Base class for classes encapsulating native resource objects.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -3353,7 +3353,7 @@ QRhi *QRhiResource::rhi() const
     \since 6.6
     \brief Vertex, index, or uniform (constant) buffer resource.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     A QRhiBuffer encapsulates zero, one, or more native buffer objects (such as
@@ -3748,7 +3748,7 @@ void QRhiBuffer::endFullDynamicBufferUpdateForCurrentFrame()
     means calling setPixelSize() and create() are not necessary for such
     renderbuffers.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -3973,7 +3973,7 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
         // continue using texture, fill it with new data
     \endcode
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiResourceUpdateBatch, QRhi, QRhiTextureRenderTarget
@@ -4364,7 +4364,7 @@ void QRhiTexture::setNativeLayout(int layout)
     \since 6.6
     \brief Sampler resource.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -4505,7 +4505,7 @@ QRhiResource::Type QRhiSampler::resourceType() const
     a collection of attachments (color, depth, stencil) and describes how those
     attachments are used.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -4624,7 +4624,7 @@ const QRhiNativeHandles *QRhiRenderPassDescriptor::nativeHandles()
     QRhiSwapChain returns when calling
     \l{QRhiSwapChain::currentFrameRenderTarget()}{currentFrameRenderTarget()}.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiSwapChainRenderTarget, QRhiTextureRenderTarget
@@ -4703,7 +4703,7 @@ QRhiSwapChainRenderTarget::QRhiSwapChainRenderTarget(QRhiImplementation *rhi, QR
     QRhiSwapChainRenderTarget. This is what
     QRhiSwapChain::currentFrameRenderTarget() returns.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiSwapChain
@@ -4752,7 +4752,7 @@ QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
         // rt can now be used with beginPass()
     \endcode
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -4933,7 +4933,7 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
         cb->setShaderResources(srb2); // binds srb2
     \endcode
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -5064,7 +5064,7 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
     static functions such as uniformBuffer() or sampledTexture() to get an
     instance.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -6085,7 +6085,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     four channels, depth test/write are disabled, stencil operations are
     disabled.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiCommandBuffer, QRhi
@@ -6258,7 +6258,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     mode Qt Quick uses, it is enough to set the \c enable flag to true while
     leaving other values at their defaults.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -6308,7 +6308,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     \li compareOp \l Always
     \endlist
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -6825,7 +6825,7 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     appropriate sample count also via QSurfaceFormat, by calling
     QSurfaceFormat::setDefaultFormat() before initializing the QRhi.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -7200,7 +7200,7 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
     values are always the built-in defaults and \c isHardCodedDefaults is
     always true.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhiSwapChain::hdrInfo()
@@ -7327,7 +7327,7 @@ QDebug operator<<(QDebug dbg, const QRhiSwapChainHdrInfo &info)
 
     \note Setting the shader is mandatory.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -7409,7 +7409,7 @@ QRhiComputePipeline::QRhiComputePipeline(QRhiImplementation *rhi)
     QRhiSwapChain::currentFrameCommandBuffer(), or, in case of rendering
     completely offscreen, initializing one via QRhi::beginOffscreenFrame().
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -8030,7 +8030,7 @@ bool QRhi::probe(QRhi::Implementation impl, QRhiInitParams *params)
 
     \brief Opaque data describing native objects needed to set up a swapchain.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     \sa QRhi::updateSwapChainProxyData()
@@ -8143,7 +8143,7 @@ const char *QRhi::backendName() const
     for OpenGL and Metal. deviceType is always UnknownDevice for OpenGL and
     Direct 3D.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -8273,7 +8273,7 @@ void QRhi::runCleanup()
     To get an available, empty batch from the pool, call
     QRhi::nextResourceUpdateBatch().
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -9695,7 +9695,7 @@ void QRhi::setPipelineCacheData(const QByteArray &data)
 
     \brief Statistics provided from the underlying memory allocator.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
