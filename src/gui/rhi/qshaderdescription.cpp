@@ -287,7 +287,7 @@ QT_BEGIN_NAMESPACE
 
     \brief Describes an input or output variable in the shader.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    \note This is a RHI API with limited compatibility guarantees, see \l QShaderDescription
     for details.
  */
 
@@ -338,7 +338,7 @@ QT_BEGIN_NAMESPACE
 
     \brief Describes a member of a uniform or push constant block.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    \note This is a RHI API with limited compatibility guarantees, see \l QShaderDescription
     for details.
  */
 
@@ -390,7 +390,7 @@ QT_BEGIN_NAMESPACE
     uniforms in a struct. The name of the struct, and so the prefix for the
     uniforms generated from the block members, is given by structName.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    \note This is a RHI API with limited compatibility guarantees, see \l QShaderDescription
     for details.
  */
 
@@ -425,7 +425,7 @@ QT_BEGIN_NAMESPACE
 
     \brief Describes a push constant block.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    \note This is a RHI API with limited compatibility guarantees, see \l QShaderDescription
     for details.
  */
 
@@ -448,7 +448,7 @@ QT_BEGIN_NAMESPACE
 
     \brief Describes a shader storage block.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    \note This is a RHI API with limited compatibility guarantees, see \l QShaderDescription
     for details.
  */
 
@@ -491,7 +491,7 @@ QT_BEGIN_NAMESPACE
 
     \brief Describes a built-in variable.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QShaderDescription
+    \note This is a RHI API with limited compatibility guarantees, see \l QShaderDescription
     for details.
  */
 

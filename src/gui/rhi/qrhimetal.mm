@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
     \since 6.6
     \brief Metal specific initialization parameters.
 
-    \note This an RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     A Metal-based QRhi needs no special parameters for initialization.
@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
     \since 6.6
     \brief Holds the Metal device used by the QRhi.
 
-    \note This an RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
@@ -119,7 +119,7 @@ QT_BEGIN_NAMESPACE
     between \l{QRhiCommandBuffer::beginPass()} -
     \l{QRhiCommandBuffer::endPass()}.
 
-    \note This an RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 

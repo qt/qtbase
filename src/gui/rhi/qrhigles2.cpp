@@ -31,7 +31,7 @@ QT_BEGIN_NAMESPACE
     \since 6.6
     \brief OpenGL specific initialization parameters.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
     An OpenGL-based QRhi needs an already created QSurface that can be used in
@@ -143,7 +143,7 @@ QT_BEGIN_NAMESPACE
     \since 6.6
     \brief Holds the OpenGL context used by the QRhi.
 
-    \note This a RHI API with limited compatibility guarantees, see \l QRhi
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
  */
 
