@@ -568,11 +568,6 @@ qt_feature("largefile"
 )
 qt_feature_definition("largefile" "QT_LARGEFILE_SUPPORT" VALUE "64")
 qt_feature_config("largefile" QMAKE_PRIVATE_CONFIG)
-qt_feature("testcocoon"
-    LABEL "Testcocoon support"
-    AUTODETECT OFF
-)
-qt_feature_config("testcocoon" QMAKE_PUBLIC_CONFIG)
 qt_feature("sanitize_address"
     LABEL "Addresses"
     AUTODETECT OFF

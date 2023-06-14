@@ -46,7 +46,6 @@ The following table describes the mapping of configure options to CMake argument
 | -appstore-compliant                   | -DFEATURE_appstore_compliant=ON                   |                                                                 |
 | -qtnamespace <name>                   | -DQT_NAMESPACE=<name>                             |                                                                 |
 | -qtlibinfix <infix>                   | -DQT_LIBINFIX=<infix>                             |                                                                 |
-| -testcocoon                           |                                                   |                                                                 |
 | -gcov                                 |                                                   |                                                                 |
 | -trace [backend]                      | -DINPUT_trace=yes or -DINPUT_trace=<backend>      |                                                                 |
 |                                       | or -DFEATURE_<backend>                            |                                                                 |
