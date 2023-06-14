@@ -121,31 +121,17 @@
 
     \snippet serialization/streambookmarks/mainwindow.cpp 0
 
-    The \c open() function enables the user to open an XBEL file using
-    QFileDialog. A warning message is displayed along
-    with the \c fileName and \c errorString if the file cannot be read or
-    if there is a parse error.
+    A custom menu, triggered when the user right-clicks on a bookmark, provides
+    for copying the bookmark as a link or directing a desktop browser to open
+    the URL it references. This menu is implemented (when relevant features are
+    enabled) by \c onCustomContextMenuRequested().
 
     \snippet serialization/streambookmarks/mainwindow.cpp 1
 
-    The \c saveAs() function displays a QFileDialog, prompting the user for
-    a \c fileName. Similar to the
-    \c open() function, this function also displays a warning message if
-    the file cannot be written to.
-
-    \snippet serialization/streambookmarks/mainwindow.cpp 2
-
-    The \c about() function displays a QMessageBox with a brief description
-    of the example.
-
-    \snippet serialization/streambookmarks/mainwindow.cpp 3
-
-    In order to implement the \c open(), \c saveAs(), \c exit(), \c about()
-    and \c aboutQt() functions, we connect them to QAction objects and
-    add them to the \c fileMenu and \c helpMenu. The connections are as shown
-    below:
-
-    \snippet serialization/streambookmarks/mainwindow.cpp 5
+    In order to implement the \c open(), \c saveAs(), \c exit(), \c about() and
+    \c aboutQt() functions, \c createMenus() connects them to QAction objects
+    and adds them to the \c fileMenu and \c helpMenu. The connections are as
+    shown below:
 
     The \c createMenus() function creates the \c fileMenu and \c helpMenu
     and adds the QAction objects to them in order to create the menu shown
@@ -156,6 +142,25 @@
          \li \inlineimage filemenu.png
          \li \inlineimage helpmenu.png
     \endtable
+
+    \snippet serialization/streambookmarks/mainwindow.cpp 2
+
+    The \c open() function enables the user to open an XBEL file using
+    QFileDialog. A warning message is displayed along
+    with the \c fileName and \c errorString if the file cannot be read or
+    if there is a parse error.
+
+    \snippet serialization/streambookmarks/mainwindow.cpp 3
+
+    The \c saveAs() function displays a QFileDialog, prompting the user for
+    a \c fileName. Similar to the
+    \c open() function, this function also displays a warning message if
+    the file cannot be written to.
+
+    \snippet serialization/streambookmarks/mainwindow.cpp 4
+
+    The \c about() function displays a QMessageBox with a brief description
+    of the example.
 
     \snippet serialization/streambookmarks/mainwindow.cpp 5
 
