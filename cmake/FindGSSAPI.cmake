@@ -23,7 +23,7 @@ set(gssapi_library_names
   gssapi # FreeBSD
   gssapi_krb5
 )
-if(VCPKG_TARGET_TRIPLET AND APPLE)
+if(APPLE)
   list(REMOVE_ITEM gssapi_library_names "gssapi_krb5")
 endif()
 
