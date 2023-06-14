@@ -151,7 +151,7 @@ void MainWindow::createActions()
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&About"), this, &MainWindow::about);
-    helpMenu->addAction(tr("About &Qt"), qApp, &QCoreApplication::quit);
+    helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
 }
 
 void MainWindow::setSettingsObject(const SettingsPtr &settings)
