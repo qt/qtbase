@@ -8,6 +8,8 @@
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
 
+#include <iterator>
+
 QT_BEGIN_NAMESPACE
 
 class QMetaType;
