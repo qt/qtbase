@@ -307,9 +307,9 @@ public:
                 return prefixedPath(m_fileName);
         case BaseName:
             if ((pos = m_fileName.lastIndexOf(u'/')) != -1)
-                return prefixedPath(m_fileName.mid(pos));
+                return m_fileName.mid(pos + 1);
             else
-                return prefixedPath(m_fileName);
+                return m_fileName;
         case PathName:
         case AbsolutePathName:
         case CanonicalPathName:
