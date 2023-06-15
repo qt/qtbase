@@ -123,11 +123,12 @@ void QIconLoader::updateSystemTheme()
     m_systemTheme = systemThemeName();
     if (m_systemTheme.isEmpty())
         m_systemTheme = systemFallbackThemeName();
-    if (m_systemTheme != currentSystemTheme) {
+    if (m_systemTheme != currentSystemTheme)
         qCDebug(lcIconLoader) << "Updated system theme to" << m_systemTheme;
-        if (!hasUserTheme())
-            invalidateKey();
-    }
+    // Invalidate even if the system theme name hasn't changed, as the
+    // theme itself may have changed its underlying icon lookup logic.
+    if (!hasUserTheme())
+        invalidateKey();
 }
 
 void QIconLoader::invalidateKey()
