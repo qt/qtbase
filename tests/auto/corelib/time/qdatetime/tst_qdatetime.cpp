@@ -3186,10 +3186,15 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     QTimeZone gmt("GMT");
     if (gmt.isValid()) {
         lacksRows = false;
+        const bool fullyLocal = ([]() {
+            TimeZoneRollback useZone("GMT");
+            return QDateTime::currentDateTime().timeZoneAbbreviation() == u"GMT"_s;
+        })();
         QTest::newRow("local-timezone-with-offset:GMT")
             << QByteArrayLiteral("GMT")
             << QString("2008-10-13 GMT 11.50") << QString("yyyy-MM-dd t hh.mm")
-            << QDateTime(QDate(2008, 10, 13), QTime(11, 50), gmt);
+            << QDateTime(QDate(2008, 10, 13), QTime(11, 50),
+                         fullyLocal ? QTimeZone(QTimeZone::LocalTime) : gmt);
     }
     QTimeZone helsinki("Europe/Helsinki");
     if (helsinki.isValid()) {
