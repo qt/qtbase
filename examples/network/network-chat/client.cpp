@@ -45,10 +45,9 @@ bool Client::hasConnection(const QByteArray &peerUniqueId) const
 void Client::newConnection(Connection *connection)
 {
     connection->setGreetingMessage(peerManager->userName(), peerManager->uniqueId());
-
-    connect(connection, &Connection::errorOccurred, this, &Client::connectionError);
-    connect(connection, &Connection::disconnected, this, &Client::disconnected);
     connect(connection, &Connection::readyForUse, this, &Client::readyForUse);
+    connect(connection, &Connection::errorOccurred, connection, &QObject::deleteLater);
+    connect(connection, &Connection::disconnected, connection, &QObject::deleteLater);
 }
 
 void Client::readyForUse()
@@ -62,8 +61,9 @@ void Client::readyForUse()
         return;
     }
 
-    connect(connection,  &Connection::newMessage,
-            this, &Client::newMessage);
+    connect(connection, &Connection::errorOccurred, this, &Client::connectionError);
+    connect(connection, &Connection::disconnected, this, &Client::disconnected);
+    connect(connection, &Connection::newMessage, this, &Client::newMessage);
 
     peers.insert(connection->uniqueId(), connection);
     QString nick = connection->name();
@@ -85,7 +85,7 @@ void Client::connectionError(QAbstractSocket::SocketError /* socketError */)
 
 void Client::removeConnection(Connection *connection)
 {
-    if (peers.remove(connection->uniqueId(), connection) > 0) {
+    if (peers.remove(connection->uniqueId())) {
         QString nick = connection->name();
         if (!nick.isEmpty())
             emit participantLeft(nick);

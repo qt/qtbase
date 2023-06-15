@@ -39,7 +39,7 @@ private:
 
     PeerManager *peerManager;
     Server server;
-    QMultiHash<QByteArray, Connection *> peers;
+    QHash<QByteArray, Connection *> peers;
 };
 
 #endif
