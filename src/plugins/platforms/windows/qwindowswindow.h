@@ -33,7 +33,7 @@ struct QWindowsGeometryHint
     static QMargins frame(const QWindow *w, HWND hwnd);
     static QMargins frame(const QWindow *w, const QRect &geometry,
                           DWORD style, DWORD exStyle);
-    static bool handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result);
+    static bool handleCalculateSize(const QWindow *window, const QMargins &customMargins, const MSG &msg, LRESULT *result);
     static void applyToMinMaxInfo(const QWindow *w, const QScreen *screen,
                                   const QMargins &margins, MINMAXINFO *mmi);
     static void applyToMinMaxInfo(const QWindow *w, const QMargins &margins,

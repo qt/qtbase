@@ -772,12 +772,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
     if (popup || (type == Qt::ToolTip) || (type == Qt::SplashScreen)) {
         style = WS_POPUP;
     } else if (topLevel) {
-        if (flags & Qt::FramelessWindowHint)
-            style = WS_POPUP;                // no border
-        else if (flags & Qt::WindowTitleHint)
-            style = WS_OVERLAPPED;
-        else
-            style = 0;
+        style = WS_OVERLAPPED;
     } else {
         style = WS_CHILD;
     }
@@ -786,16 +781,15 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
 
     if (topLevel) {
         if ((type == Qt::Window || dialog || tool)) {
-            if (!(flags & Qt::FramelessWindowHint)) {
+            if (!(flags & Qt::FramelessWindowHint))
                 style |= WS_POPUP;
-                if (flags & Qt::MSWindowsFixedSizeDialogHint) {
-                    style |= WS_DLGFRAME;
-                } else {
-                    style |= WS_THICKFRAME;
-                }
-                if (flags & Qt::WindowTitleHint)
-                    style |= WS_CAPTION; // Contains WS_DLGFRAME
+            if (flags & Qt::MSWindowsFixedSizeDialogHint) {
+                style |= WS_DLGFRAME;
+            } else {
+                style |= WS_THICKFRAME;
             }
+            if (flags & Qt::WindowTitleHint)
+                style |= WS_CAPTION; // Contains WS_DLGFRAME
             if (flags & Qt::WindowSystemMenuHint)
                 style |= WS_SYSMENU;
             else if (dialog && (flags & Qt::WindowCloseButtonHint) && !(flags & Qt::FramelessWindowHint)) {
@@ -815,8 +809,15 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
             if ((flags & Qt::WindowContextHelpButtonHint) && !showMinimizeButton
                 && !showMaximizeButton)
                 exStyle |= WS_EX_CONTEXTHELP;
+            if (flags & Qt::FramelessWindowHint) {
+                style |= WS_CAPTION; // Needed for aero
+                style |= WS_SYSMENU; // Needed for taskbar shortcuts
+                style |= WS_THICKFRAME;
+                style |= WS_MINIMIZEBOX; // Needed for minimize animations
+                style |= WS_MAXIMIZEBOX; // Needed for maximize animations
+            }
         } else {
-             exStyle |= WS_EX_TOOLWINDOW;
+            exStyle |= WS_EX_TOOLWINDOW;
         }
 
         // make mouse events fall through this window
@@ -975,9 +976,13 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
         if (flags & (Qt::CustomizeWindowHint|Qt::WindowTitleHint)) {
             HMENU systemMenu = GetSystemMenu(hwnd, FALSE);
             if (flags & Qt::WindowCloseButtonHint)
-                EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED);
+                EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED);
             else
-                EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
+                EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+        }
+        if (flags & Qt::FramelessWindowHint) { // Gives us the rounded corners looks and the frame shadow
+            MARGINS margins = { -1, -1, -1, -1 };
+            DwmExtendFrameIntoClientArea(hwnd, &margins);
         }
         updateGLWindowSettings(w, hwnd, flags, opacityLevel);
     } else { // child.
@@ -1106,8 +1111,29 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, const QRect &geometry,
     return QWindowsGeometryHint::frame(w, style, exStyle, dpi);
 }
 
-bool QWindowsGeometryHint::handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result)
+bool QWindowsGeometryHint::handleCalculateSize(const QWindow *window, const QMargins &customMargins, const MSG &msg, LRESULT *result)
 {
+    // Return 0 to remove the window's border
+    QWindowsWindow *w = QWindowsWindow::windowsWindowOf(window);
+    bool frameless = w ? w->isFrameless() : window->flags() & Qt::FramelessWindowHint;
+    if (msg.wParam && frameless) {
+        //Query for fullscreen
+        QUERY_USER_NOTIFICATION_STATE quns;
+        SHQueryUserNotificationState(&quns);
+
+        // Prevent content from being cutoff by border for maximized, but not fullscreened windows.
+        if (IsZoomed(msg.hwnd) && quns == QUNS_ACCEPTS_NOTIFICATIONS) {
+            auto *ncp = reinterpret_cast<NCCALCSIZE_PARAMS *>(msg.lParam);
+            RECT *clientArea = &ncp->rgrc[0];
+            const int border = getResizeBorderThickness(QWindowsWindow::windowsWindowOf(window)->savedDpi());
+            clientArea->top += border;
+            clientArea->bottom -= border;
+            clientArea->left += border;
+            clientArea->right -= border;
+        }
+        *result = msg.wParam ? WVR_REDRAW : 0;
+        return true;
+    }
     // NCCALCSIZE_PARAMS structure if wParam==TRUE
     if (!msg.wParam || customMargins.isNull())
         return false;
@@ -2177,13 +2203,11 @@ void QWindowsWindow::handleMoved()
 
 void QWindowsWindow::handleResized(int wParam, LPARAM lParam)
 {
-    /* Prevents borderless windows from covering the taskbar when maximized. */
-    if ((m_data.flags.testFlag(Qt::FramelessWindowHint)
-         || (m_data.flags.testFlag(Qt::CustomizeWindowHint) && !m_data.flags.testFlag(Qt::WindowTitleHint)))
+    /* Prevents windows with no frame from covering the taskbar when maximized. */
+    if (m_data.flags.testFlag(Qt::CustomizeWindowHint) && !m_data.flags.testFlag(Qt::WindowTitleHint)
         && IsZoomed(m_data.hwnd)) {
         const int resizedWidth = LOWORD(lParam);
         const int resizedHeight = HIWORD(lParam);
-
         const HMONITOR monitor = MonitorFromWindow(m_data.hwnd, MONITOR_DEFAULTTOPRIMARY);
         MONITORINFO monitorInfo = {};
         monitorInfo.cbSize = sizeof(MONITORINFO);
@@ -2194,13 +2218,11 @@ void QWindowsWindow::handleResized(int wParam, LPARAM lParam)
         int correctWidth = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
         int correctHeight = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
 
-        if (!m_data.flags.testFlag(Qt::FramelessWindowHint)) {
-            const int borderWidth = invisibleMargins(m_data.hwnd).left();
-            correctLeft -= borderWidth;
-            correctTop -= borderWidth;
-            correctWidth += borderWidth * 2;
-            correctHeight += borderWidth * 2;
-        }
+        const int borderWidth = invisibleMargins(m_data.hwnd).left();
+        correctLeft -= borderWidth;
+        correctTop -= borderWidth;
+        correctWidth += borderWidth * 2;
+        correctHeight += borderWidth * 2;
 
         if (resizedWidth != correctWidth || resizedHeight != correctHeight) {
             qCDebug(lcQpaWindow) << __FUNCTION__ << "correcting: " << resizedWidth << "x"
@@ -3139,8 +3161,35 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 
 bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *result) const
 {
-    // QTBUG-32663, suppress resize cursor for fixed size windows.
     const QWindow *w = window();
+    const QPoint localPos = w->mapFromGlobal(QHighDpi::fromNativePixels(globalPos, w));
+
+    if (m_data.flags & Qt::FramelessWindowHint) {
+        const int border = (IsZoomed(m_data.hwnd) || isFullScreen_sys()) ? 0 : getResizeBorderThickness(savedDpi());
+        if (border == 0) {
+            *result = HTCLIENT;
+            return true;
+        }
+
+        const bool left   = (globalPos.x() >= geometry().left()) && (globalPos.x() < geometry().left() + border);
+        const bool right  = (globalPos.x() >  geometry().right() - border) && (globalPos.x() <= geometry().right());
+        const bool top    = (globalPos.y() >= geometry().top()) && (globalPos.y() < geometry().top() + border);
+        const bool bottom = (globalPos.y() >  geometry().bottom() - border) && (globalPos.y() <= geometry().bottom());
+
+        if (left || right || top || bottom) {
+            if (left)
+                *result = top ? HTTOPLEFT : (bottom ? HTBOTTOMLEFT : HTLEFT);
+            else if (right)
+                *result = top ? HTTOPRIGHT : (bottom ? HTBOTTOMRIGHT : HTRIGHT);
+            else
+                *result = top ? HTTOP : HTBOTTOM;
+        } else {
+            *result = HTCLIENT;
+        }
+        return true;
+    }
+
+    // QTBUG-32663, suppress resize cursor for fixed size windows.
     if (!w->isTopLevel() // Task 105852, minimized windows need to respond to user input.
         || (m_windowState != Qt::WindowNoState)
         || !isActive()
@@ -3155,7 +3204,6 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
     const bool fixedHeight = minimumSize.height() == maximumSize.height();
     if (!fixedWidth && !fixedHeight)
         return false;
-    const QPoint localPos = w->mapFromGlobal(QHighDpi::fromNativePixels(globalPos, w));
     const QSize size = w->size();
     if (fixedHeight) {
         if (localPos.y() >= size.height()) {
