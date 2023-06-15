@@ -12,8 +12,6 @@
 #include <QTcpSocket>
 #include <QTimer>
 
-static const int MaxBufferSize = 1024000;
-
 class Connection : public QTcpSocket
 {
     Q_OBJECT
