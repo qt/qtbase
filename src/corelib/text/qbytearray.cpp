@@ -3572,6 +3572,17 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     array \a a2.
 */
 
+/*! \fn QByteArray operator+(const QByteArray &lhs, QByteArrayView rhs)
+    \fn QByteArray operator+(QByteArrayView lhs, const QByteArray &rhs)
+    \overload
+    \since 6.9
+    \relates QByteArray
+
+    Returns a byte array that is the result of concatenating \a lhs and \a rhs.
+
+    \sa QByteArray::operator+=()
+*/
+
 /*!
     \fn QByteArray QByteArray::simplified() const
 
