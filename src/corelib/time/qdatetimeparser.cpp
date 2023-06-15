@@ -1233,15 +1233,15 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
 
                 if (isUtc || isUtcOffset) {
                     tspec = sect.value ? Qt::OffsetFromUTC : Qt::UTC;
-                } else {
 #if QT_CONFIG(timezone)
-                    timeZone = QTimeZone(zoneName.toLatin1());
-                    tspec = timeZone.isValid()
-                        ? Qt::TimeZone
-                        : (Q_ASSERT(startsWithLocalTimeZone(zoneName, usedDateTime)), Qt::LocalTime);
-#else
-                    tspec = Qt::LocalTime;
+                } else if (startsWithLocalTimeZone(zoneName, usedDateTime) != sect.used) {
+                    QTimeZone namedZone = QTimeZone(zoneName.toLatin1());
+                    Q_ASSERT(namedZone.isValid());
+                    timeZone = namedZone;
+                    tspec = Qt::TimeZone;
 #endif
+                } else {
+                    tspec = Qt::LocalTime;
                 }
             }
             break;
