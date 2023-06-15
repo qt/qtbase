@@ -469,8 +469,12 @@ void QProcessPrivate::startProcess()
 
     int ffdflags = FFD_CLOEXEC;
 
-    // QTBUG-86285
 #if defined(Q_OS_LINUX) && !QT_CONFIG(forkfd_pidfd)
+    // QTBUG-86285
+    ffdflags |= FFD_USE_FORK;
+#endif
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+    // ASan writes to global memory, so we mustn't use vfork().
     ffdflags |= FFD_USE_FORK;
 #endif
     if (unixExtras && unixExtras->childProcessModifier)
