@@ -13,6 +13,8 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <QtCore/qdiriterator.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_Android : public QObject
 {
 Q_OBJECT
@@ -64,10 +66,14 @@ void tst_Android::assetsIterating()
 
     QDirIterator it("assets:/top_level_dir", QDirIterator::Subdirectories);
     QStringList iteratorAssets;
-     while (it.hasNext())
-         iteratorAssets.append(it.next());
+    while (it.hasNext())
+        iteratorAssets.append(it.next());
 
-     QVERIFY(assets == iteratorAssets);
+    QVERIFY(assets == iteratorAssets);
+
+    auto entryList = QDir{"assets:/"_L1}.entryList(QStringList{"*.txt"_L1});
+    QCOMPARE(entryList.size(), 1);
+    QCOMPARE(entryList[0], "test.txt"_L1);
 }
 
 void tst_Android::testAndroidSdkVersion()
