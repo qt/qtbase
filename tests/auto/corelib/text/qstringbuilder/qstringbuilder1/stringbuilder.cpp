@@ -44,6 +44,7 @@ template <> QString toQString(const char16_t &c) { return QChar(c); }
 template <typename T> QByteArray toQByteArray(const T &t);
 
 template <> QByteArray toQByteArray(const QByteArray &b) { return b; }
+template <> QByteArray toQByteArray(const QByteArrayView &bav) { return bav.toByteArray(); }
 template <> QByteArray toQByteArray(char * const &p) { return p; }
 template <size_t N> QByteArray toQByteArray(const char (&a)[N]) { return a; }
 template <> QByteArray toQByteArray(const char &c) { return QByteArray(&c, 1); }
@@ -267,6 +268,10 @@ void runScenario()
 
     CHECK(P, l1string, l1string);
     CHECK(P, l1string, string);
+    CHECK(P, l1string, QString(string));
+    CHECK(Q, l1string, string);
+    CHECK(Q, l1string, QString(string));
+
     CHECK(Q, l1string, stringview);
     CHECK(P, l1string, lchar);
     CHECK(P, l1string, qchar);
@@ -277,20 +282,48 @@ void runScenario()
     CHECK(Q, l1string, u16charstar);
 
     CHECK(P, string, string);
+    CHECK(P, string, QString(string));
+    CHECK(P, QString(string), QString(string));
+    CHECK(Q, string, string);
+    CHECK(Q, string, QString(string));
+    CHECK(Q, QString(string), QString(string));
+
+    CHECK(P, string, stringview);
+    CHECK(P, QString(string), stringview);
     CHECK(Q, string, stringview);
+    CHECK(Q, QString(string), stringview);
+
     CHECK(P, string, lchar);
+    CHECK(P, QString(string), lchar);
+    CHECK(Q, string, lchar);
+    CHECK(Q, QString(string), lchar);
+
     CHECK(P, string, qchar);
+    CHECK(P, QString(string), qchar);
     CHECK(P, string, special);
+    CHECK(P, QString(string), special);
     CHECK(P, string, QStringLiteral(LITERAL));
+    CHECK(P, QString(string), QStringLiteral(LITERAL));
+    CHECK(Q, string, qchar);
+    CHECK(Q, QString(string), qchar);
+    CHECK(Q, string, special);
+    CHECK(Q, QString(string), special);
+    CHECK(Q, string, QStringLiteral(LITERAL));
+    CHECK(Q, QString(string), QStringLiteral(LITERAL));
+
     CHECK(Q, string, u16char);
+    CHECK(Q, QString(string), u16char);
     CHECK(Q, string, u16chararray);
+    CHECK(Q, QString(string), u16chararray);
     CHECK(Q, string, u16charstar);
+    CHECK(Q, QString(string), u16charstar);
 
     CHECK(Q, stringview, stringview);
     CHECK(Q, stringview, lchar);
     CHECK(Q, stringview, qchar);
     CHECK(Q, stringview, special);
     CHECK(P, stringview, QStringLiteral(LITERAL));
+    CHECK(Q, stringview, QStringLiteral(LITERAL));
     CHECK(Q, stringview, u16char);
     CHECK(Q, stringview, u16chararray);
     CHECK(Q, stringview, u16charstar);
@@ -339,13 +372,25 @@ void runScenario()
     } while (0)
 
     QByteArray bytearray = stringview.toUtf8();
+    QByteArrayView baview = QByteArrayView(bytearray).mid(0, bytearray.size() - 2);
     char *charstar = bytearray.data();
     char chararray[3] = { 'H', 'i', '\0' };
     const char constchararray[3] = { 'H', 'i', '\0' };
     char achar = 'a';
 
     CHECK(P, bytearray, bytearray);
+    CHECK(P, QByteArray(bytearray), bytearray);
+    CHECK(P, QByteArray(bytearray), QByteArray(bytearray));
+    CHECK(P, bytearray, baview);
+    CHECK(P, QByteArray(bytearray), baview);
     CHECK(P, bytearray, charstar);
+    CHECK(Q, bytearray, bytearray);
+    CHECK(Q, QByteArray(bytearray), bytearray);
+    CHECK(Q, QByteArray(bytearray), QByteArray(bytearray));
+    CHECK(Q, bytearray, baview);
+    CHECK(Q, QByteArray(bytearray), baview);
+    CHECK(Q, bytearray, charstar);
+
 #ifndef Q_CC_MSVC // see QTBUG-65359
     CHECK(P, bytearray, chararray);
 #else
@@ -353,6 +398,8 @@ void runScenario()
 #endif
     CHECK(P, bytearray, constchararray);
     CHECK(P, bytearray, achar);
+    CHECK(Q, bytearray, constchararray);
+    CHECK(Q, bytearray, achar);
 
     //CHECK(Q, charstar, charstar);     // BUILTIN <-> BUILTIN cat't be overloaded
     //CHECK(Q, charstar, chararray);
