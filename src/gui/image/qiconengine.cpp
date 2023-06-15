@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qiconengine.h"
+#include "qiconengine_p.h"
 #include "qpainter.h"
 
 QT_BEGIN_NAMESPACE
@@ -306,5 +307,79 @@ QPixmap QIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::St
     const_cast<QIconEngine *>(this)->virtual_hook(QIconEngine::ScaledPixmapHook, reinterpret_cast<void*>(&arg));
     return arg.pixmap;
 }
+
+
+// ------- QProxyIconEngine -----
+
+void QProxyIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
+{
+    proxiedEngine()->paint(painter, rect, mode, state);
+}
+
+QSize QProxyIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state)
+{
+    return proxiedEngine()->actualSize(size, mode, state);
+}
+
+QPixmap QProxyIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
+{
+    return proxiedEngine()->pixmap(size, mode, state);
+}
+
+void QProxyIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state)
+{
+    proxiedEngine()->addPixmap(pixmap, mode, state);
+}
+
+void QProxyIconEngine::addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state)
+{
+    proxiedEngine()->addFile(fileName, size, mode, state);
+}
+
+QString QProxyIconEngine::key() const
+{
+    return proxiedEngine()->key();
+}
+
+QIconEngine *QProxyIconEngine::clone() const
+{
+    return proxiedEngine()->clone();
+}
+
+bool QProxyIconEngine::read(QDataStream &in)
+{
+    return proxiedEngine()->read(in);
+}
+
+bool QProxyIconEngine::write(QDataStream &out) const
+{
+    return proxiedEngine()->write(out);
+}
+
+QList<QSize> QProxyIconEngine::availableSizes(QIcon::Mode mode, QIcon::State state)
+{
+    return proxiedEngine()->availableSizes(mode, state);
+}
+
+QString QProxyIconEngine::iconName()
+{
+    return proxiedEngine()->iconName();
+}
+
+bool QProxyIconEngine::isNull()
+{
+    return proxiedEngine()->isNull();
+}
+
+QPixmap QProxyIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
+{
+    return proxiedEngine()->scaledPixmap(size, mode, state, scale);
+}
+
+void QProxyIconEngine::virtual_hook(int id, void *data)
+{
+    proxiedEngine()->virtual_hook(id, data);
+}
+
 
 QT_END_NAMESPACE
