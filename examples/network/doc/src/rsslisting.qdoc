@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \example serialization/rsslisting
+    \example rsslisting
     \examplecategory {Networking}
     \meta tag {serialization}
     \title A minimal RSS listing application
@@ -31,11 +31,11 @@
     former. For the sake of illustration, it gives the widget the Qt blog's URL
     as default value for the resource to check.
 
-    \snippet serialization/rsslisting/main.cpp 0
+    \snippet rsslisting/main.cpp 0
 
     \section1 The RSSListing class
 
-    \snippet serialization/rsslisting/rsslisting.h 0
+    \snippet rsslisting/rsslisting.h 0
 
     The widget itself provides a simple user interface for specifying the URL to
     fetch and, once available updates are displayed, controlling the downloading
@@ -51,7 +51,7 @@
 
     \section2 Construction
 
-    \snippet serialization/rsslisting/rsslisting.cpp setup
+    \snippet rsslisting/rsslisting.cpp setup
 
     The constructor sets up the assorted components of the widget and connects
     their various signals to the slots it shall use to handle them.
@@ -69,7 +69,7 @@
 
     \section2 The slots
 
-    \snippet serialization/rsslisting/rsslisting.cpp slots
+    \snippet rsslisting/rsslisting.cpp slots
 
     All slots are kept simple by delegating any hard work to private methods.
 
@@ -94,7 +94,7 @@
 
     \section2 The get() method
 
-    \snippet serialization/rsslisting/rsslisting.cpp get
+    \snippet rsslisting/rsslisting.cpp get
 
     The private \c get() method is used by the \c fetch() slot to initiate an
     HTTP GET request. It first clears the XML stream reader and, if a reply is
@@ -106,7 +106,7 @@
 
     \section2 The parseXml() method
 
-    \snippet serialization/rsslisting/rsslisting.cpp parse
+    \snippet rsslisting/rsslisting.cpp parse
 
     When data is received, and thus made available to the XML stream reader, \c
     parseXml() reads from the XML stream, checking for \c item elements and,
