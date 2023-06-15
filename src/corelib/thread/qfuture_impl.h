@@ -732,6 +732,8 @@ void FailureHandler<Function, ResultType>::run()
         } else {
             handleException<ArgType>();
         }
+    } else if (parentFuture.d.isChainCanceled()) {
+        promise.future().cancel();
     } else {
         QtPrivate::fulfillPromise(promise, parentFuture);
     }
