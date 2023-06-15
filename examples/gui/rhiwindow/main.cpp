@@ -52,10 +52,20 @@ int main(int argc, char **argv)
         graphicsApi = QRhi::Metal;
 
  //! [api-setup]
-    // For OpenGL.
+    // For OpenGL, to ensure there is a depth/stencil buffer for the window.
+    // With other APIs this is under the application's control (QRhiRenderBuffer etc.)
+    // and so no special setup is needed for those.
     QSurfaceFormat fmt;
     fmt.setDepthBufferSize(24);
     fmt.setStencilBufferSize(8);
+    // Special case macOS to allow using OpenGL there.
+    // (the default Metal is the recommended approach, though)
+    // gl_VertexID is a GLSL 130 feature, and so the default OpenGL 2.1 context
+    // we get on macOS is not sufficient.
+#ifdef Q_OS_MACOS
+    fmt.setVersion(4, 1);
+    fmt.setProfile(QSurfaceFormat::CoreProfile);
+#endif
     QSurfaceFormat::setDefaultFormat(fmt);
 
     // For Vulkan.
