@@ -122,7 +122,7 @@ void QIconLoader::updateSystemTheme()
     const QString currentSystemTheme = m_systemTheme;
     m_systemTheme = systemThemeName();
     if (m_systemTheme.isEmpty())
-        m_systemTheme = fallbackThemeName();
+        m_systemTheme = systemFallbackThemeName();
     if (m_systemTheme != currentSystemTheme) {
         qCDebug(lcIconLoader) << "Updated system theme to" << m_systemTheme;
         if (!hasUserTheme())
