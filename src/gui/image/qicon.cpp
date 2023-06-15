@@ -1285,18 +1285,11 @@ QIcon QIcon::fromTheme(const QString &name)
     if (QIcon *cachedIcon = qtIconCache()->object(name))
         return *cachedIcon;
 
-    QIcon icon;
-    if (QDir::isAbsolutePath(name)) {
+    if (QDir::isAbsolutePath(name))
         return QIcon(name);
-    } else {
-        QPlatformTheme * const platformTheme = QGuiApplicationPrivate::platformTheme();
-        bool hasUserTheme = QIconLoader::instance()->hasUserTheme();
-        QIconEngine * const engine = (platformTheme && !hasUserTheme) ? platformTheme->createIconEngine(name)
-                                                   : new QIconLoaderEngine(name);
-        icon = QIcon(engine);
-        qtIconCache()->insert(name, new QIcon(icon));
-    }
 
+    QIcon icon(new QThemeIconEngine(name));
+    qtIconCache()->insert(name, new QIcon(icon));
     return icon;
 }
 
@@ -1431,8 +1424,8 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
         if (key == "QPixmapIconEngine"_L1) {
             icon.d = new QIconPrivate(new QPixmapIconEngine);
             icon.d->engine->read(s);
-        } else if (key == "QIconLoaderEngine"_L1) {
-            icon.d = new QIconPrivate(new QIconLoaderEngine());
+        } else if (key == "QIconLoaderEngine"_L1 || key == "QThemeIconEngine"_L1) {
+            icon.d = new QIconPrivate(new QThemeIconEngine);
             icon.d->engine->read(s);
         } else {
             const int index = iceLoader()->indexOf(key);

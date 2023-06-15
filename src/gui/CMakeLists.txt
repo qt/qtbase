@@ -62,7 +62,7 @@ qt_internal_add_module(Gui
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
         image/qicon.cpp image/qicon.h image/qicon_p.h
-        image/qiconengine.cpp image/qiconengine.h
+        image/qiconengine.cpp image/qiconengine.h image/qiconengine_p.h
         image/qiconengineplugin.cpp image/qiconengineplugin.h
         image/qiconloader.cpp image/qiconloader_p.h
         image/qimage.cpp image/qimage.h image/qimage_p.h

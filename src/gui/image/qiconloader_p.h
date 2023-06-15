@@ -22,6 +22,7 @@
 #include <QtGui/QIconEngine>
 #include <QtGui/QPixmapCache>
 #include <private/qicon_p.h>
+#include <private/qiconengine_p.h>
 #include <private/qfactoryloader_p.h>
 #include <QtCore/QHash>
 #include <QtCore/QList>
@@ -86,6 +87,27 @@ struct QThemeIconInfo
     QString iconName;
 };
 
+class QThemeIconEngine : public QProxyIconEngine
+{
+public:
+    QThemeIconEngine(const QString& iconName = QString());
+    QIconEngine *clone() const override;
+    bool read(QDataStream &in) override;
+    bool write(QDataStream &out) const override;
+
+protected:
+    QIconEngine *proxiedEngine() const override;
+
+private:
+    QThemeIconEngine(const QThemeIconEngine &other);
+    QString key() const override;
+
+    QString m_iconName;
+    mutable uint m_themeKey = 0;
+
+    mutable std::unique_ptr<QIconEngine> m_proxiedEngine;
+};
+
 class QIconLoaderEngine : public QIconEngine
 {
 public:
@@ -96,8 +118,6 @@ public:
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
     QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
     QIconEngine *clone() const override;
-    bool read(QDataStream &in) override;
-    bool write(QDataStream &out) const override;
 
     QString iconName() override;
     bool isNull() override;
@@ -107,14 +127,13 @@ public:
     Q_GUI_EXPORT static QIconLoaderEngineEntry *entryForSize(const QThemeIconInfo &info, const QSize &size, int scale = 1);
 
 private:
+    Q_DISABLE_COPY(QIconLoaderEngine)
+
     QString key() const override;
     bool hasIcon() const;
-    void ensureLoaded();
 
-    QIconLoaderEngine(const QIconLoaderEngine &other);
-    QThemeIconInfo m_info;
     QString m_iconName;
-    uint m_key;
+    QThemeIconInfo m_info;
 
     friend class QIconLoader;
 };
@@ -161,6 +180,8 @@ public:
     void invalidateKey();
     void ensureInitialized();
     bool hasUserTheme() const { return !m_userTheme.isEmpty(); }
+
+    QIconEngine *iconEngine(const QString &iconName) const;
 
 private:
     QThemeIconInfo findIconHelper(const QString &themeName,
