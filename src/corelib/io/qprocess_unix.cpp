@@ -515,6 +515,10 @@ static QString resolveExecutable(const QString &program)
 
 static int useForkFlags(const QProcessPrivate::UnixExtras *unixExtras)
 {
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+    // ASan writes to global memory, so we mustn't use vfork().
+    return FFD_USE_FORK;
+#endif
 #if defined(Q_OS_LINUX) && !QT_CONFIG(forkfd_pidfd)
     // some broken environments are known to have problems with the new Linux
     // API, so we have a way for users to opt-out during configure time (see
