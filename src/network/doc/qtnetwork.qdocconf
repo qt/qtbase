@@ -23,7 +23,7 @@ qhp.QtNetwork.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtnetwork/qtnetwork.tags
 
-depends                 += qtcore qtgui qtdoc qmake qtcmake
+depends                 += qtcore qtgui qtdoc qmake qtcmake qtwidgets
 
 headerdirs  += ..
 
