@@ -72,7 +72,7 @@ Q_SIGNALS:
     void featuresChanged(QDockWidget::DockWidgetFeatures features);
     void topLevelChanged(bool topLevel);
     void allowedAreasChanged(Qt::DockWidgetAreas allowedAreas);
-    void visibilityChanged(bool visible);
+    void visibilityChanged(bool visible); //TODO depricate in Qt7: Better listen to hide/show events
     void dockLocationChanged(Qt::DockWidgetArea area);
 
 protected:

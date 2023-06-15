@@ -1697,6 +1697,10 @@ QAction * QDockWidget::toggleViewAction() const
     invisible). This happens when the widget is hidden or shown, as
     well as when it is docked in a tabbed dock area and its tab
     becomes selected or unselected.
+
+    \note The signal can differ from QWidget::isVisible(). This can be the case, if
+    a dock widget is minimized or tabified and associated to a non-selected or
+    inactive tab.
 */
 
 /*!
