@@ -261,14 +261,9 @@ void runScenario()
 
 #define CHECK(QorP, a1, a2) \
     do { \
-        DO(QorP, a1, a2); \
-        DO(QorP, a2, a1); \
+        QCOMPARE(QString(a1 QorP a2), toQString(a1).append(toQString(a2))); \
+        QCOMPARE(QString(a2 QorP a1), toQString(a2).append(toQString(a1))); \
     } while (0)
-
-#define DO(QorP, a1, a2) \
-    QCOMPARE(QString(a1 QorP a2), \
-             toQString(a1).append(toQString(a2))) \
-    /* end */
 
     CHECK(P, l1string, l1string);
     CHECK(P, l1string, string);
@@ -335,12 +330,13 @@ void runScenario()
 
     // CHECK(Q, u16charstar, u16charstar);     // BUILTIN <-> BUILTIN cat't be overloaded
 
-#undef DO
+#undef CHECK
 
-#define DO(QorP, a1, a2) \
-    QCOMPARE(QByteArray(a1 QorP a2), \
-             toQByteArray(a1).append(toQByteArray(a2))) \
-    /* end */
+#define CHECK(QorP, a1, a2) \
+    do { \
+        QCOMPARE(QByteArray(a1 QorP a2), toQByteArray(a1).append(toQByteArray(a2))); \
+        QCOMPARE(QByteArray(a2 QorP a1), toQByteArray(a2).append(toQByteArray(a1))); \
+    } while (0)
 
     QByteArray bytearray = stringview.toUtf8();
     char *charstar = bytearray.data();
@@ -367,7 +363,6 @@ void runScenario()
 
     //CHECK(Q, achar, achar);           // BUILTIN <-> BUILTIN cat't be overloaded
 
-#undef DO
 #undef CHECK
 
     QString r2(QLatin1String(LITERAL LITERAL));
