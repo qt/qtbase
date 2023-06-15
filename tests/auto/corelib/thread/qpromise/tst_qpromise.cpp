@@ -41,6 +41,7 @@ private slots:
     void cancelWhenReassigned();
     void cancelWhenDestroyedWithoutStarting();
     void cancelWhenDestroyedRunsContinuations();
+    void cancelWhenDestroyedWithFailureHandler();  // QTBUG-114606
     void continuationsRunWhenFinished();
     void finishWhenSwapped();
     void cancelWhenMoved();
@@ -541,6 +542,38 @@ void tst_QPromise::cancelWhenDestroyedRunsContinuations()
     testCancelWhenDestroyedRunsContinuations<int>();
     testCancelWhenDestroyedRunsContinuations<CopyOnlyType>();
     testCancelWhenDestroyedRunsContinuations<MoveOnlyType>();
+}
+
+template <typename T>
+static inline void testCancelWhenDestroyedWithFailureHandler()
+{
+    QFuture<T> future;
+    bool onFailedCalled = false;
+    bool thenCalled = false;
+    {
+        QPromise<T> promise;
+        future = promise.future();
+        future
+            .onFailed([&] () {
+                onFailedCalled = true;
+                if constexpr (!std::is_same_v<void, T>)
+                    return T{};
+            })
+            .then([&] (auto&&) {
+                thenCalled = true;
+            });
+    }
+    QVERIFY(future.isFinished());
+    QVERIFY(!onFailedCalled);
+    QVERIFY(!thenCalled);
+}
+
+void tst_QPromise::cancelWhenDestroyedWithFailureHandler()
+{
+    testCancelWhenDestroyedWithFailureHandler<void>();
+    testCancelWhenDestroyedWithFailureHandler<int>();
+    testCancelWhenDestroyedWithFailureHandler<CopyOnlyType>();
+    testCancelWhenDestroyedWithFailureHandler<MoveOnlyType>();
 }
 
 template <typename T>
