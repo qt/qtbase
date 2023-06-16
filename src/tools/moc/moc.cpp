@@ -423,35 +423,29 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
             error();
     }
     bool scopedFunctionName = false;
-    if (test(LPAREN)) {
-        def->name = def->type.name;
-        scopedFunctionName = def->type.isScoped;
-        def->type = Type("int");
-    } else {
-        // we might have modifiers and attributes after a tag
-        // note that testFunctionAttribute is handled further below,
-        // and revisions and attributes must come first
-        while (testForFunctionModifiers(def)) {}
-        Type tempType = parseType();;
-        while (!tempType.name.isEmpty() && lookup() != LPAREN) {
-            if (testFunctionAttribute(def->type.firstToken, def))
-                ; // fine
-            else if (def->type.firstToken == Q_SIGNALS_TOKEN)
-                error();
-            else if (def->type.firstToken == Q_SLOTS_TOKEN)
-                error();
-            else {
-                if (!def->tag.isEmpty())
-                    def->tag += ' ';
-                def->tag += def->type.name;
-            }
-            def->type = tempType;
-            tempType = parseType();
+    // we might have modifiers and attributes after a tag
+    // note that testFunctionAttribute is handled further below,
+    // and revisions and attributes must come first
+    while (testForFunctionModifiers(def)) {}
+    Type tempType = parseType();;
+    while (!tempType.name.isEmpty() && lookup() != LPAREN) {
+        if (testFunctionAttribute(def->type.firstToken, def))
+            ; // fine
+        else if (def->type.firstToken == Q_SIGNALS_TOKEN)
+            error();
+        else if (def->type.firstToken == Q_SLOTS_TOKEN)
+            error();
+        else {
+            if (!def->tag.isEmpty())
+                def->tag += ' ';
+            def->tag += def->type.name;
         }
-        next(LPAREN, "Not a signal or slot declaration");
-        def->name = tempType.name;
-        scopedFunctionName = tempType.isScoped;
+        def->type = tempType;
+        tempType = parseType();
     }
+    next(LPAREN, "Not a signal or slot declaration");
+    def->name = tempType.name;
+    scopedFunctionName = tempType.isScoped;
 
     if (!test(RPAREN)) {
         parseFunctionArguments(def);
@@ -543,7 +537,8 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
             def->isConstructor = !tilde;
             def->type = Type();
         } else {
-            def->type = Type("int");
+            // missing type name? => Skip
+            return false;
         }
     } else {
         // ### TODO: The condition before testForFunctionModifiers shoulnd't be necessary,
