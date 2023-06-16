@@ -431,10 +431,14 @@ void QEventDispatcherWasm::handleApplicationExec()
     // Note that we don't use asyncify here: Emscripten supports one level of
     // asyncify only and we want to reserve that for dialog exec() instead of
     // using it for the one qApp exec().
-    const bool simulateInfiniteLoop = true;
-    emscripten_set_main_loop([](){
-        emscripten_pause_main_loop();
-    }, 0, simulateInfiniteLoop);
+    // When JSPI is used, awaited async calls are allowed to be nested, so we
+    // proceed normally.
+    if (!qstdweb::haveJspi()) {
+        const bool simulateInfiniteLoop = true;
+        emscripten_set_main_loop([](){
+            emscripten_pause_main_loop();
+        }, 0, simulateInfiniteLoop);
+    }
 }
 
 void QEventDispatcherWasm::handleDialogExec()
