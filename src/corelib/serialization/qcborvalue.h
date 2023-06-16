@@ -428,6 +428,8 @@ protected:
     qsizetype i;
 };
 
+QT_WARNING_PUSH
+QT6_ONLY(QT_WARNING_DISABLE_MSVC(4275)) // non dll-interface class 'QJsonValueConstRef' used as base for dll-interface class 'QJsonValueRef'
 class QT6_ONLY(Q_CORE_EXPORT) QCborValueRef : public QCborValueConstRef
 {
 public:
@@ -582,6 +584,7 @@ private:
     QT7_ONLY(Q_CORE_EXPORT) static void assign(QCborValueRef that, QCborValue &&other);
     QT7_ONLY(Q_CORE_EXPORT) static void assign(QCborValueRef that, const QCborValueRef other);
 };
+QT_WARNING_POP
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCborValue::EncodingOptions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCborValue::DiagnosticNotationOptions)
 
