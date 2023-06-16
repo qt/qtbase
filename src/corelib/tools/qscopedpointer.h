@@ -67,7 +67,7 @@ typedef QScopedPointerObjectDeleteLater<QObject> QScopedPointerDeleteLater;
 #endif
 
 template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
-class [[nodiscard]] QScopedPointer
+class QScopedPointer
 {
 public:
     Q_NODISCARD_CTOR
@@ -188,7 +188,7 @@ private:
 };
 
 template <typename T, typename Cleanup = QScopedPointerArrayDeleter<T> >
-class [[nodiscard]] QScopedArrayPointer : public QScopedPointer<T, Cleanup>
+class QScopedArrayPointer : public QScopedPointer<T, Cleanup>
 {
     template <typename Ptr>
     using if_same_type = typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, Ptr>::value, bool>::type;
