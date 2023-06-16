@@ -18,7 +18,7 @@
 #     TRY_RUN
 #         On Windows, it creates a helper batch script that tests whether the tool can be executed
 #         successfully or not. If not, build halts and an error will be show, with tips on what
-#         might be cause, and how to fix it.
+#         might be cause, and how to fix it. TRY_RUN is disabled when cross-compiling.
 #     TRY_RUN_FLAGS
 #         Command line flags that are going to be passed to the tool for testing its correctness.
 #         If no flags were given, we default to `-v`.
@@ -233,7 +233,7 @@ function(qt_internal_add_tool target_name)
         qt_internal_apply_staging_prefix_build_rpath_workaround()
     endif()
 
-    if(arg_TRY_RUN AND WIN32)
+    if(arg_TRY_RUN AND WIN32 AND NOT CMAKE_CROSSCOMPILING)
         if(NOT arg_TRY_RUN_FLAGS)
             set(arg_TRY_RUN_FLAGS "-v")
         endif()
