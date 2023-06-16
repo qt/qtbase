@@ -281,7 +281,7 @@ qt_setup_tool_path_command()
 # Platform define path, etc.
 if(WIN32)
     set(QT_DEFAULT_PLATFORM_DEFINITIONS WIN32 _ENABLE_EXTENDED_ALIGNED_STORAGE)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    if(QT_64BIT)
         list(APPEND QT_DEFAULT_PLATFORM_DEFINITIONS WIN64 _WIN64)
     endif()
 
