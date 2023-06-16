@@ -215,6 +215,8 @@ protected:
     friend class QJsonPrivate::Value;
 };
 
+QT_WARNING_PUSH
+QT6_ONLY(QT_WARNING_DISABLE_MSVC(4275)) // non dll-interface class 'QJsonValueConstRef' used as base for dll-interface class 'QJsonValueRef'
 class QT6_ONLY(Q_CORE_EXPORT) QJsonValueRef : public QJsonValueConstRef
 {
 public:
@@ -273,6 +275,7 @@ private:
     friend class QJsonArray;
     friend class QJsonObject;
 };
+QT_WARNING_POP
 
 inline QJsonValue QCborValueConstRef::toJsonValue() const
 {
