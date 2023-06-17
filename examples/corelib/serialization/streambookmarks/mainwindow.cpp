@@ -17,7 +17,7 @@
 #  include <QClipboard>
 #endif
 #include <QDesktopServices>
-#include <QGuiApplication>
+#include <QApplication>
 #include <QScreen>
 
 using namespace Qt::StringLiterals;
