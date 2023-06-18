@@ -43,6 +43,9 @@
    No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
    for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
+
+   \note After adding Q_AUTOTEST_EXPORT to a method, you'll need to wrap any unittests
+   that will use that method in "#ifdef QT_BUILD_INTERNAL".
 */
 #if defined(QT_BUILD_INTERNAL) && defined(QT_BUILDING_QT) && defined(QT_SHARED)
 #    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
