@@ -266,7 +266,7 @@ void Generator::generateCode()
 
     fprintf(out, "\n#ifdef QT_MOC_HAS_STRINGDATA\n"
                  "struct qt_meta_stringdata_%s_t {};\n"
-                 "static constexpr auto qt_meta_stringdata_%s = QtMocHelpers::stringData(",
+                 "constexpr auto qt_meta_stringdata_%s = QtMocHelpers::stringData(",
             qualifiedClassNameIdentifier.constData(), qualifiedClassNameIdentifier.constData());
     {
         char comma = 0;
