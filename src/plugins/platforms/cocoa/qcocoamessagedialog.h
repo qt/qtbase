@@ -28,6 +28,7 @@ private:
     Qt::WindowModality modality() const;
     NSAlert *m_alert = nullptr;
     QEventLoop *m_eventLoop = nullptr;
+    NSModalResponse runModal() const;
     void processResponse(NSModalResponse response);
 };
 

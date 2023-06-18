@@ -222,12 +222,26 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
             if (m_alert && NSApp.modalWindow != m_alert.window) {
                 qCDebug(lcQpaDialogs) << "Running deferred modal" << m_alert;
                 QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
-                processResponse([m_alert runModal]);
+                processResponse(runModal());
             }
         });
     }
 
     return true;
+}
+
+// We shouldn't get NSModalResponseContinue as a response from NSAlert::runModal,
+// and processResponse must not be called with that value (if we are there, it's
+// too late to do anything about it.
+// However, as QTBUG-114546 shows, there are scenarios where we might get that
+// response anyway. We interpret it to keep the modal loop running, and we only
+// return if we got something else to pass to processResponse.
+NSModalResponse QCocoaMessageDialog::runModal() const
+{
+    NSModalResponse response = NSModalResponseContinue;
+    while (response == NSModalResponseContinue)
+        response = [m_alert runModal];
+    return response;
 }
 
 void QCocoaMessageDialog::exec()
@@ -242,7 +256,7 @@ void QCocoaMessageDialog::exec()
     } else {
         qCDebug(lcQpaDialogs) << "Running modal" << m_alert;
         QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
-        processResponse([m_alert runModal]);
+        processResponse(runModal());
     }
 }
 
