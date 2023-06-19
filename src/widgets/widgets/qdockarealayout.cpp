@@ -171,6 +171,21 @@ QDockAreaLayoutItem
     return *this;
 }
 
+QDebug QDockAreaLayoutItem::operator<<(QDebug dbg)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg << "QDockAreaLayoutItem(" << static_cast<void *>(this) << "->";
+    if (widgetItem)
+        dbg << "widgetItem(" << widgetItem->widget() << ")";
+    else if (subinfo)
+        dbg << "subInfo(" << subinfo << ")";
+    else if (placeHolderItem)
+        dbg << "placeHolderItem(" << placeHolderItem << ")";
+    dbg << ")";
+    return dbg;
+}
+
 /******************************************************************************
 ** QDockAreaLayoutInfo
 */
