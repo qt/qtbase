@@ -988,7 +988,7 @@ qt_internal_extend_target(Core CONDITION APPLE AND NOT MACOS
 qt_internal_extend_target(Core CONDITION ANDROID
     SOURCES
         io/qstandardpaths_android.cpp
-        io/qstorageinfo_unix.cpp
+        io/qstorageinfo_linux.cpp
         kernel/qjnitypes.h
         kernel/qjnienvironment.cpp kernel/qjnienvironment.h
         kernel/qjniobject.cpp kernel/qjniobject.h
@@ -1018,10 +1018,17 @@ qt_internal_extend_target(Core CONDITION HAIKU AND NOT ANDROID
         be
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT ANDROID
+qt_internal_extend_target(Core
+    CONDITION UNIX AND NOT LINUX AND NOT APPLE AND NOT HAIKU AND NOT ANDROID
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_unix.cpp
+)
+
+qt_internal_extend_target(Core CONDITION LINUX AND NOT ANDROID
+    SOURCES
+        io/qstandardpaths_unix.cpp
+        io/qstorageinfo_linux.cpp
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_itemmodel

@@ -170,11 +170,6 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     return volumes;
 }
 
-QStorageInfo QStorageInfoPrivate::root()
-{
-    return QStorageInfo(QDir::fromNativeSeparators(QFile::decodeName(qgetenv("SystemDrive"))));
-}
-
 bool QStorageInfoPrivate::queryStorageProperty()
 {
     QString path = QDir::toNativeSeparators(uR"(\\.\)" + rootPath);

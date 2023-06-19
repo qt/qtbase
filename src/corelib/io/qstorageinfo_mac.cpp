@@ -160,9 +160,4 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     return volumes;
 }
 
-QStorageInfo QStorageInfoPrivate::root()
-{
-    return QStorageInfo(QStringLiteral("/"));
-}
-
 QT_END_NAMESPACE

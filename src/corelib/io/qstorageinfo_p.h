@@ -16,6 +16,8 @@
 //
 
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qsystemdetection.h>
+#include <QtCore/qtenvironmentvariables.h>
 #include <QtCore/private/qglobal_p.h>
 #include "qstorageinfo.h"
 
@@ -35,7 +37,15 @@ public:
     void doStat();
 
     static QList<QStorageInfo> mountedVolumes();
-    static QStorageInfo root();
+
+    static QStorageInfo root()
+    {
+#ifdef Q_OS_WIN
+        return QStorageInfo(QDir::fromNativeSeparators(QFile::decodeName(qgetenv("SystemDrive"))));
+#else
+        return QStorageInfo(QStringLiteral("/"));
+#endif
+    };
 
 protected:
 #if defined(Q_OS_WIN)
