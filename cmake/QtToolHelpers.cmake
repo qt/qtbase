@@ -278,7 +278,8 @@ echo. > ${target_bin_dir}/${target}_try_run_passed"
         DEPENDS
             ${target}
         COMMAND
-            cmd /c ${try_run_scripts_path}
+            ${CMAKE_COMMAND} -E env QT_COMMAND_LINE_PARSER_NO_GUI_MESSAGE_BOXES=1
+            ${try_run_scripts_path}
         COMMENT
             "Testing ${target} by trying to run it."
         VERBATIM
