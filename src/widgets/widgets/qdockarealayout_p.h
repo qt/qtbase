@@ -73,6 +73,7 @@ struct Q_AUTOTEST_EXPORT QDockAreaLayoutItem
     int pos;
     int size;
     uint flags;
+    QDebug operator<<(QDebug dbg);
 };
 
 class Q_AUTOTEST_EXPORT QPlaceHolderItem
