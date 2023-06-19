@@ -20,6 +20,8 @@
 #include "../qdbusmarshall/common.h"
 #include "myobject.h"
 
+using namespace Qt::StringLiterals;
+
 #define TEST_INTERFACE_NAME "org.qtproject.QtDBus.MyObject"
 #define TEST_SIGNAL_NAME "somethingHappened"
 
@@ -198,6 +200,10 @@ private slots:
     void complexPropertyWritePeer();
 
     void interactiveAuthorizationRequired();
+
+    void interfaceNameFallback_data();
+    void interfaceNameFallback();
+
 private:
     QProcess proc;
 };
@@ -1145,6 +1151,60 @@ void tst_QDBusInterface::interactiveAuthorizationRequired()
 
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
     QVERIFY(reply.arguments().at(0).toBool());
+}
+
+class TestObject : public QObject
+{
+    Q_OBJECT
+public Q_SLOTS:
+    void test() { }
+};
+
+void tst_QDBusInterface::interfaceNameFallback_data()
+{
+    QTest::addColumn<QString>("appName");
+    QTest::addColumn<QString>("orgDomain");
+    QTest::addColumn<QString>("interfaceName");
+
+    QTest::addRow("empty.empty") << "" << "" << "local.tst_qdbusinterface";
+    QTest::addRow("with-domain") << "" << "qt-project.org" << "org.qt_project.tst_qdbusinterface";
+    QTest::addRow("numbers") << "prog42" << "7-zip.org" << "org._7_zip.prog42";
+    QTest::addRow("non-latin1") << u"\u00e6"_s << u"\u00e5"_s << "xn__5ca.xn__6ca";
+}
+
+void tst_QDBusInterface::interfaceNameFallback()
+{
+    QFETCH(QString, appName);
+    QFETCH(QString, orgDomain);
+    QFETCH(QString, interfaceName);
+
+    auto app = QCoreApplication::instance();
+    auto oldApplicationName = app->applicationName();
+    auto oldOrganizationDomain = app->organizationDomain();
+
+    app->setApplicationName(appName);
+    app->setOrganizationDomain(orgDomain);
+    auto obj = new TestObject;
+
+    auto cleanup = qScopeGuard([&] {
+        obj->deleteLater();
+        app->setApplicationName(oldApplicationName);
+        app->setOrganizationDomain(oldOrganizationDomain);
+    });
+
+    auto con = QDBusConnection::sessionBus();
+    const QString path = "/interfaceNameFallback"_L1;
+
+    QVERIFY(con.registerObject(path, obj, QDBusConnection::ExportAllContents));
+
+    QDBusInterface interface(con.baseService(), path, "org.freedesktop.DBus.Introspectable"_L1,
+                             con);
+    auto reply = interface.call("Introspect");
+
+    QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
+    QString tag = u"<interface name=\"%1.TestObject\">"_s.arg(interfaceName);
+    auto result = reply.arguments().at(0).toString();
+    QVERIFY2(result.contains(tag), qUtf8Printable(u"Tag '%1' not found\n%2"_s.arg(tag, result)));
 }
 
 QTEST_MAIN(tst_QDBusInterface)
