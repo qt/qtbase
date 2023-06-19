@@ -1006,19 +1006,26 @@ QIOSTextInputOverlay::~QIOSTextInputOverlay()
 
 void QIOSTextInputOverlay::updateFocusObject()
 {
+    // Destroy old recognizers since they were created with
+    // dependencies to the old focus object (focus view).
     if (m_cursorRecognizer) {
-        // Destroy old recognizers since they were created with
-        // dependencies to the old focus object (focus view).
         m_cursorRecognizer.enabled = NO;
-        m_selectionRecognizer.enabled = NO;
-        m_openMenuOnTapRecognizer.enabled = NO;
         [m_cursorRecognizer release];
-        [m_selectionRecognizer release];
-        [m_openMenuOnTapRecognizer release];
-        [s_editMenu release];
         m_cursorRecognizer = nullptr;
+    }
+    if (m_selectionRecognizer) {
+        m_selectionRecognizer.enabled = NO;
+        [m_selectionRecognizer release];
         m_selectionRecognizer = nullptr;
+    }
+    if (m_openMenuOnTapRecognizer) {
+        m_openMenuOnTapRecognizer.enabled = NO;
+        [m_openMenuOnTapRecognizer release];
         m_openMenuOnTapRecognizer = nullptr;
+    }
+
+    if (s_editMenu) {
+        [s_editMenu release];
         s_editMenu = nullptr;
     }
 
