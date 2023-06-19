@@ -135,6 +135,7 @@ public:
 
     void clear();
     bool isEmpty() const;
+    bool hasGapItem(const QList<int> &path) const;
     bool onlyHasPlaceholders() const;
     bool hasFixedSize() const;
     QList<int> findSeparator(const QPoint &pos) const;

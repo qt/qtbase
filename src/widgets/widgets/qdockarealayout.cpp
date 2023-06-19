@@ -1107,6 +1107,21 @@ static QRect dockedGeometry(QWidget *widget)
     return result;
 }
 
+bool QDockAreaLayoutInfo::hasGapItem(const QList<int> &path) const
+{
+    // empty path has no gap item
+    if (path.isEmpty())
+        return false;
+
+    // Index -1 isn't a gap
+    // Index out of range points at a position to be created. That isn't a gap either.
+    const int index = path.constFirst();
+    if (index < 0 || index >= item_list.count())
+        return false;
+
+    return item_list[index].flags & QDockAreaLayoutItem::GapItem;
+}
+
 bool QDockAreaLayoutInfo::insertGap(const QList<int> &path, QLayoutItem *dockWidgetItem)
 {
     Q_ASSERT(!path.isEmpty());
