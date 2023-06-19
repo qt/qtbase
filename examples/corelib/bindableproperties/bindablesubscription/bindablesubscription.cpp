@@ -38,8 +38,7 @@ double BindableSubscription::calculateDiscount() const
     case Yearly:
         return 0.6;
     }
-    Q_ASSERT(false);
-    return -1;
+    Q_UNREACHABLE_RETURN(-1);
 }
 
 int BindableSubscription::basePrice() const
