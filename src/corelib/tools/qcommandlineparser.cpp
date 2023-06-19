@@ -516,7 +516,8 @@ enum MessageType { UsageMessage, ErrorMessage };
 // or we are run with redirected handles (for example, by QProcess).
 static inline bool displayMessageBox()
 {
-    if (GetConsoleWindow())
+    if (GetConsoleWindow()
+        || qEnvironmentVariableIsSet("QT_COMMAND_LINE_PARSER_NO_GUI_MESSAGE_BOXES"))
         return false;
     STARTUPINFO startupInfo;
     startupInfo.cb = sizeof(STARTUPINFO);
