@@ -414,7 +414,8 @@ void QKeySequenceEdit::timerEvent(QTimerEvent *e)
 void QKeySequenceEdit::focusOutEvent(QFocusEvent *e)
 {
     Q_D(QKeySequenceEdit);
-    d->finishEditing();
+    if (e->reason() != Qt::PopupFocusReason)
+        d->finishEditing();
     QWidget::focusOutEvent(e);
 }
 
