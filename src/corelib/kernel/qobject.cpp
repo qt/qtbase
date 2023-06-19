@@ -5383,7 +5383,9 @@ QObjectPrivate::getPropertyAdaptorSlotObject(const QMetaProperty &property)
         Q_Q(QObject);
         const QMetaObject *metaObject = q->metaObject();
         int signal_index = methodIndexToSignalIndex(&metaObject, property.notifySignalIndex());
-        auto connectionList = conns->connectionsForSignal(signal_index);
+        if (signal_index >= conns->signalVectorCount())
+            return nullptr;
+        const auto connectionList = conns->connectionsForSignal(signal_index);
         for (auto c = connectionList.first.loadRelaxed(); c;
              c = c->nextConnectionList.loadRelaxed()) {
             if (c->isSlotObject) {
