@@ -3,7 +3,9 @@
 
 /*!
     \example securesocketclient
-    \title Secure Socket Client Example
+    \title Secure Socket Client
+    \examplecategory {Networking}
+    \meta tags {tcp,network,tls,ssl}
     \ingroup examples-network
     \brief Demonstrates how to communicate over an encrypted (SSL) connection.
 
