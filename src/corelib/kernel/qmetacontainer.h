@@ -982,6 +982,8 @@ public:
         return a.d() != b.d();
     }
 
+    const QtMetaContainerPrivate::QMetaSequenceInterface *iface() const { return d(); }
+
 private:
     template<typename T>
     struct MetaSequence
@@ -1175,6 +1177,8 @@ public:
     {
         return a.d() != b.d();
     }
+
+    const QtMetaContainerPrivate::QMetaAssociationInterface *iface() const { return d(); }
 
 private:
     template<typename T>

@@ -497,6 +497,10 @@ void tst_QMetaContainer::testSequence()
     QVERIFY(metaSequence.compareConstIterator(constIt, constEnd));
     metaSequence.destroyConstIterator(constIt);
     metaSequence.destroyConstIterator(constEnd);
+
+    QVERIFY(metaSequence.iface() != nullptr);
+    QMetaSequence defaultConstructed;
+    QVERIFY(defaultConstructed.iface() == nullptr);
 }
 
 void tst_QMetaContainer::testAssociation_data()
@@ -722,6 +726,10 @@ void tst_QMetaContainer::testAssociation()
     QVERIFY(metaAssociation.compareConstIterator(constIt, constEnd));
     metaAssociation.destroyConstIterator(constIt);
     metaAssociation.destroyConstIterator(constEnd);
+
+    QVERIFY(metaAssociation.iface() != nullptr);
+    QMetaSequence defaultConstructed;
+    QVERIFY(defaultConstructed.iface() == nullptr);
 }
 
 QTEST_MAIN(tst_QMetaContainer)
