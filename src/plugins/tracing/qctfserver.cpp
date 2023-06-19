@@ -4,31 +4,34 @@
 #include <qloggingcategory.h>
 #include "qctfserver_p.h"
 
+#if QT_CONFIG(zstd)
+#include <zstd.h>
+#endif
+
 using namespace Qt::Literals::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcCtfInfoTrace, "qt.core.ctfserver", QtWarningMsg)
 
-TracePacket &TracePacket::writePacket(TracePacket &packet, QCborStreamWriter &cbor, int compression)
+#if QT_CONFIG(zstd)
+static QByteArray zstdCompress(ZSTD_CCtx *&context, const QByteArray &data, int compression)
 {
-    cbor.startMap(4);
-    cbor.append("magic"_L1);
-    cbor.append(packet.PacketMagicNumber);
-    cbor.append("name"_L1);
-    cbor.append(QString::fromUtf8(packet.stream_name));
-    cbor.append("flags"_L1);
-    cbor.append(packet.flags);
-
-    cbor.append("data"_L1);
-    if (compression > 0) {
-        QByteArray compressed = qCompress(packet.stream_data, compression);
-        cbor.append(compressed);
-    } else {
-        cbor.append(packet.stream_data);
+    if (context == nullptr)
+        context = ZSTD_createCCtx();
+    qsizetype size = data.size();
+    size = ZSTD_COMPRESSBOUND(size);
+    QByteArray compressed(size, Qt::Uninitialized);
+    char *dst = compressed.data();
+    size_t n = ZSTD_compressCCtx(context, dst, size,
+                                 data.constData(), data.size(),
+                                 compression);
+    if (ZSTD_isError(n)) {
+        qCWarning(lcCtfInfoTrace) << "Compression with zstd failed: " << QString::fromUtf8(ZSTD_getErrorName(n));
+        return {};
     }
-
-    cbor.endMap();
-    return packet;
+    compressed.truncate(n);
+    return compressed;
 }
+#endif
 
 QCtfServer::QCtfServer(QObject *parent)
     : QThread(parent)
@@ -38,7 +41,15 @@ QCtfServer::QCtfServer(QObject *parent)
              << "sessionName"_L1
              << "sessionTracepoints"_L1
              << "flags"_L1
-             << "bufferSize"_L1;
+             << "bufferSize"_L1
+             << "compressionScheme"_L1;
+}
+
+QCtfServer::~QCtfServer()
+{
+#if QT_CONFIG(zstd)
+    ZSTD_freeCCtx(m_zstdCCtx);
+#endif
 }
 
 void QCtfServer::setHost(const QString &address)
@@ -129,6 +140,9 @@ void QCtfServer::handleString(QCborStreamReader &cbor)
             case RequestSessionTracepoints:
                 m_req.sessionTracepoints = readString(cbor);
                 break;
+            case RequestCompressionScheme:
+                m_requestedCompressionScheme = readString(cbor);
+                break;
             default:
                 // handle error
                 break;
@@ -201,6 +215,47 @@ void QCtfServer::readCbor(QCborStreamReader &cbor)
     }
 }
 
+void QCtfServer::writePacket(TracePacket &packet, QCborStreamWriter &cbor)
+{
+    cbor.startMap(4);
+    cbor.append("magic"_L1);
+    cbor.append(packet.PacketMagicNumber);
+    cbor.append("name"_L1);
+    cbor.append(QString::fromUtf8(packet.stream_name));
+    cbor.append("flags"_L1);
+    cbor.append(packet.flags);
+
+    cbor.append("data"_L1);
+    if (m_compression > 0) {
+        QByteArray compressed;
+#if QT_CONFIG(zstd)
+        if (m_requestedCompressionScheme == QStringLiteral("zstd"))
+            compressed = zstdCompress(m_zstdCCtx, packet.stream_data, m_compression);
+        else
+#endif
+        compressed = qCompress(packet.stream_data, m_compression);
+
+        cbor.append(compressed);
+    } else {
+        cbor.append(packet.stream_data);
+    }
+
+    cbor.endMap();
+}
+
+bool QCtfServer::recognizedCompressionScheme() const
+{
+    if (m_requestedCompressionScheme.isEmpty())
+        return true;
+#if QT_CONFIG(zstd)
+    if (m_requestedCompressionScheme == QStringLiteral("zstd"))
+        return true;
+#endif
+    if (m_requestedCompressionScheme == QStringLiteral("zlib"))
+        return true;
+    return false;
+}
+
 void QCtfServer::run()
 {
     m_server = new QTcpServer();
@@ -250,9 +305,20 @@ void QCtfServer::run()
                     m_socket->close();
                 } else {
                     m_compression = m_req.flags & CompressionMask;
+#if QT_CONFIG(zstd)
+                    m_compression = qMin(m_compression, ZSTD_maxCLevel());
+#else
+                    m_compression = qMin(m_compression, 9);
+#endif
                     m_bufferOnIdle = !(m_req.flags & DontBufferOnIdle);
 
                     m_maxPackets = qMax(m_req.bufferSize / TracePacket::PacketSize, 16u);
+
+                    if (!recognizedCompressionScheme()) {
+                        qCWarning(lcCtfInfoTrace) << "Client requested unrecognized compression scheme: " << m_requestedCompressionScheme;
+                        m_requestedCompressionScheme.clear();
+                        m_compression = 0;
+                    }
 
                     qCInfo(lcCtfInfoTrace) << "request received: " << m_req.sessionName << ", " << m_req.sessionTracepoints;
 
@@ -273,7 +339,7 @@ void QCtfServer::run()
                         cbor.append(resp.serverName);
                         if (m_compression) {
                             cbor.append("compressionScheme"_L1);
-                            cbor.append("zlib"_L1);
+                            cbor.append(m_requestedCompressionScheme);
                         }
                         cbor.endMap();
                     }
@@ -292,7 +358,7 @@ void QCtfServer::run()
                             {
                                 QCborStreamWriter cbor(m_socket);
                                 for (TracePacket &packet : packets) {
-                                    TracePacket::writePacket(packet, cbor, m_compression);
+                                    writePacket(packet, cbor);
                                     if (!waitSocket())
                                         break;
                                 }

@@ -28,8 +28,11 @@
 #include <qcborstreamwriter.h>
 #include <qlist.h>
 
+typedef struct ZSTD_CCtx_s ZSTD_CCtx;
+
 QT_BEGIN_NAMESPACE
 
+class QCtfServer;
 struct TracePacket
 {
     static constexpr quint32 PacketMagicNumber = 0x100924da;
@@ -66,8 +69,6 @@ struct TracePacket
         flags = t.flags;
         return *this;
     }
-
-    static TracePacket &writePacket(TracePacket &packet, QCborStreamWriter &cbor, int compression);
 };
 
 auto constexpr operator""_MB(quint64 s) -> quint64
@@ -115,9 +116,9 @@ public:
     };
     enum ServerFlags
     {
-        CompressionMask = 15,
-        DontBufferOnIdle = 16,  // not set -> the server is buffering even without client connection
-                                // set -> the server is buffering only when client is connected
+        CompressionMask = 255,
+        DontBufferOnIdle = 256,  // not set -> the server is buffering even without client connection
+                                 // set -> the server is buffering only when client is connected
     };
     enum RequestIds
     {
@@ -127,6 +128,7 @@ public:
         RequestSessionTracepoints,
         RequestFlags,
         RequestBufferSize,
+        RequestCompressionScheme,
     };
 
     struct ServerCallback
@@ -135,6 +137,7 @@ public:
         virtual void handleStatusChange(ServerStatus status) = 0;
     };
     QCtfServer(QObject *parent = nullptr);
+    ~QCtfServer();
     void setCallback(ServerCallback *cb);
     void setHost(const QString &address);
     void setPort(int port);
@@ -154,8 +157,9 @@ private:
     void readCbor(QCborStreamReader &cbor);
     void handleString(QCborStreamReader &cbor);
     void handleFixedWidth(QCborStreamReader &cbor);
-
+    bool recognizedCompressionScheme() const;
     void setStatusAndNotify(ServerStatus status);
+    void writePacket(TracePacket &packet, QCborStreamWriter &cbor);
 
     QMutex m_mutex;
     QWaitCondition m_bufferHasData;
@@ -176,6 +180,10 @@ private:
     QAtomicInt m_stopping;
     bool m_bufferOnIdle = true;
     QString m_currentKey;
+    QString m_requestedCompressionScheme;
+#if QT_CONFIG(zstd)
+    ZSTD_CCtx *m_zstdCCtx = nullptr;
+#endif
 
     static constexpr quint32 ServerId = 1;
     static constexpr quint32 DefaultMaxPackets = 256; // 1 MB

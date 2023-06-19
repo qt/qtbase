@@ -22,3 +22,7 @@ qt_internal_add_plugin(QCtfTracePlugin
         Qt6::Core Qt6::CorePrivate Qt6::Network
 )
 
+qt_internal_extend_target(QCtfTracePlugin CONDITION QT_FEATURE_zstd
+    LIBRARIES
+        WrapZSTD::WrapZSTD
+)
