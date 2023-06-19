@@ -537,8 +537,12 @@ bool QDockWidgetGroupWindow::hover(QLayoutItem *widgetItem, const QPoint &mouseP
 
     auto newGapPos = newState.gapIndex(mousePos, nestingEnabled, tabMode);
     Q_ASSERT(!newGapPos.isEmpty());
-    if (newGapPos == currentGapPos)
-        return false; // gap is already there
+
+    // Do not insert a new gap item, if the current position already is a gap,
+    // or if the group window contains one
+    if (newGapPos == currentGapPos || newState.hasGapItem(newGapPos))
+        return false;
+
     currentGapPos = newGapPos;
     newState.insertGap(currentGapPos, widgetItem);
     newState.fitItems();
