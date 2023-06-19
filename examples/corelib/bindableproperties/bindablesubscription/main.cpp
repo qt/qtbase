@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
     BindableSubscription subscription(&user);
 
     SubscriptionWindow w;
+    // clazy:excludeall=lambda-in-connect
+    // when subscription is out of scope so is window
 
     // Initialize subscription data
     QRadioButton *monthly = w.findChild<QRadioButton *>("btnMonthly");
