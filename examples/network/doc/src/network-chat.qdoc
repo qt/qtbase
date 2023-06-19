@@ -12,5 +12,5 @@
     This example uses broadcasting with QUdpSocket and QNetworkInterface to
     discover its peers.
 
-    \image network-chat-example.png
+    \image network-chat-example.webp
 */
