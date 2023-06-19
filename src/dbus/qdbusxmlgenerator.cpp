@@ -228,56 +228,6 @@ QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo,
     return "  <interface name=\"%1\">\n%2  </interface>\n"_L1
         .arg(interface, xml);
 }
-#if 0
-QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo, const QMetaObject *base,
-                                   int flags)
-{
-    if (interface.isEmpty()) {
-        // generate the interface name from the meta object
-        int idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
-        if (idx >= mo->classInfoOffset()) {
-            interface = QLatin1StringView(mo->classInfo(idx).value());
-        } else {
-            interface = QLatin1StringView(mo->className());
-            interface.replace("::"_L1, "."_L1);
-
-            if (interface.startsWith("QDBus"_L1)) {
-                interface.prepend("org.qtproject.QtDBus."_L1);
-            } else if (interface.startsWith(u'Q') &&
-                       interface.length() >= 2 && interface.at(1).isUpper()) {
-                // assume it's Qt
-                interface.prepend("org.qtproject.Qt."_L1);
-            } else if (!QCoreApplication::instance()||
-                       QCoreApplication::instance()->applicationName().isEmpty()) {
-                interface.prepend("local."_L1);
-            } else {
-                interface.prepend(u'.').prepend(QCoreApplication::instance()->applicationName());
-                QStringList domainName =
-                    QCoreApplication::instance()->organizationDomain().split(u'.',
-                                                                             Qt::SkipEmptyParts);
-                if (domainName.isEmpty())
-                    interface.prepend("local."_L1);
-                else
-                    for (int i = 0; i < domainName.count(); ++i)
-                        interface.prepend(u'.').prepend(domainName.at(i));
-            }
-        }
-    }
-
-    QString xml;
-    int idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTROSPECTION);
-    if (idx >= mo->classInfoOffset())
-        return QString::fromUtf8(mo->classInfo(idx).value());
-    else
-        xml = generateInterfaceXml(mo, flags, base->methodCount(), base->propertyCount());
-
-    if (xml.isEmpty())
-        return QString();       // don't add an empty interface
-    return QString::fromLatin1("  <interface name=\"%1\">\n%2  </interface>\n")
-        .arg(interface, xml);
-}
-
-#endif
 
 QT_END_NAMESPACE
 
