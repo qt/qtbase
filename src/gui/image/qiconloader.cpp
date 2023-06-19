@@ -628,7 +628,9 @@ QIconEngine *QIconLoader::iconEngine(const QString &iconName) const
 }
 
 /*!
+    \internal
     \class QThemeIconEngine
+    \inmodule QtGui
 
     \brief A named-based icon engine for providing theme icons.
 
@@ -690,7 +692,9 @@ QIconEngine *QThemeIconEngine::proxiedEngine() const
 }
 
 /*!
+    \internal
     \class QIconLoaderEngine
+    \inmodule QtGui
 
     \brief An icon engine based on icon entries collected by QIconLoader.
 
