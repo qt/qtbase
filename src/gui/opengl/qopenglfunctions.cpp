@@ -348,6 +348,10 @@ static int qt_gl_resolve_extensions()
         extensions |= QOpenGLExtensions::StandardDerivatives;
     if (extensionMatcher.match("GL_ARB_half_float_vertex"))
         extensions |= QOpenGLExtensions::HalfFloatVertex;
+    if (extensionMatcher.match("GL_OVR_multiview"))
+        extensions |= QOpenGLExtensions::MultiView;
+    if (extensionMatcher.match("GL_OVR_multiview2"))
+        extensions |= QOpenGLExtensions::MultiViewExtended;
 
     if (ctx->isOpenGLES()) {
         if (format.majorVersion() >= 2)

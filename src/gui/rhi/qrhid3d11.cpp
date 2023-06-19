@@ -588,6 +588,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ThreeDimensionalTextureMipmaps:
         return true;
+    case QRhi::MultiView:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;

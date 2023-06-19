@@ -909,6 +909,8 @@ public:
                                                        GLsizei, const GLvoid *) = nullptr;
     void(QOPENGLF_APIENTRYP glFramebufferTexture1D)(GLenum, GLenum, GLenum, GLuint,
                                                     GLint) = nullptr;
+    void(QOPENGLF_APIENTRYP glFramebufferTextureMultiviewOVR)(GLenum, GLenum, GLuint, GLint,
+                                                              GLint, GLsizei) = nullptr;
 
     uint vao = 0;
     struct Caps {
@@ -962,7 +964,8 @@ public:
               geometryShader(false),
               texture1D(false),
               hasDrawBuffersFunc(false),
-              halfAttributes(false)
+              halfAttributes(false),
+              multiView(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1016,6 +1019,7 @@ public:
         uint texture1D : 1;
         uint hasDrawBuffersFunc : 1;
         uint halfAttributes : 1;
+        uint multiView : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

@@ -592,6 +592,9 @@ public:
     int resolveLevel() const { return m_resolveLevel; }
     void setResolveLevel(int level) { m_resolveLevel = level; }
 
+    int multiViewCount() const { return m_multiViewCount; }
+    void setMultiViewCount(int count) { m_multiViewCount = count; }
+
 private:
     QRhiTexture *m_texture = nullptr;
     QRhiRenderBuffer *m_renderBuffer = nullptr;
@@ -600,6 +603,7 @@ private:
     QRhiTexture *m_resolveTexture = nullptr;
     int m_resolveLayer = 0;
     int m_resolveLevel = 0;
+    int m_multiViewCount = 0;
 };
 
 Q_DECLARE_TYPEINFO(QRhiColorAttachment, Q_RELOCATABLE_TYPE);
@@ -1822,7 +1826,8 @@ public:
         OneDimensionalTextureMipmaps,
         HalfAttributes,
         RenderToOneDimensionalTexture,
-        ThreeDimensionalTextureMipmaps
+        ThreeDimensionalTextureMipmaps,
+        MultiView
     };
 
     enum BeginFrameFlag {

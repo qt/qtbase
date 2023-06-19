@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>multiview.vert.qsb</file>
+    <file>multiview.frag.qsb</file>
+    <file>texture.vert.qsb</file>
+    <file>texture.frag.qsb</file>
+</qresource>
+</RCC>

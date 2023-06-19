@@ -59,7 +59,9 @@ public:
         StandardDerivatives     = 0x02000000,
         ASTCTextureCompression  = 0x04000000,
         ETC2TextureCompression  = 0x08000000,
-        HalfFloatVertex         = 0x10000000
+        HalfFloatVertex         = 0x10000000,
+        MultiView               = 0x20000000,
+        MultiViewExtended       = 0x40000000
     };
     Q_DECLARE_FLAGS(OpenGLExtensions, OpenGLExtension)
 

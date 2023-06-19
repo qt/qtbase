@@ -967,6 +967,22 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value ThreeDimensionalTextureMipmaps Indicates that generating 3D texture
     mipmaps are supported. In practice this feature will be unsupported with
     Direct 3D 12.
+
+    \value MultiView Indicates that multiview, see e.g.
+    \l{https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_multiview.html}{VK_KHR_multiview}
+    is supported. With OpenGL ES 2.0, Direct 3D 11, and OpenGL (ES)
+    implementations without \c{GL_OVR_multiview2} this feature will not be
+    supported. With Vulkan 1.1 and newer, and Direct 3D 12 multiview is
+    typically supported. When reported as supported, creating a
+    QRhiTextureRenderTarget with a QRhiColorAttachment that references a texture
+    array and has \l{QRhiColorAttachment::setMultiViewCount()}{multiViewCount}
+    set enables recording a render pass that uses multiview rendering. Note that
+    multiview is only available in combination with 2D texture arrays. It cannot
+    be used to optimize the rendering into individual textures (e.g. two, for
+    the left and right eyes). Rather, the target of a multiview render pass is
+    always a texture array, automatically rendering to the layer (array element)
+    corresponding to each view. Therefore this feature implies \l TextureArrays
+    as well. This enum value has been introduced in Qt 6.7.
  */
 
 /*!
@@ -2294,6 +2310,70 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
 /*!
     \fn void QRhiColorAttachment::setResolveLevel(int level)
     Sets the resolve texture mip \a level to use.
+ */
+
+/*!
+    \fn int QRhiColorAttachment::multiViewCount() const
+
+    \return the currently set number of views. Defaults to 0 which indicates
+    the render target with this color attachment is not going to be used with
+    multiview rendering.
+
+    \since 6.7
+ */
+
+/*!
+    \fn void QRhiColorAttachment::setMultiViewCount(int count)
+
+    Sets the view \a count. Setting a value larger than 1 indicates that the
+    render target with this color attachment is going to be used with multiview
+    rendering. The default value is 0. Values smaller than 2 indicate no
+    multiview rendering.
+
+    When \a count is set to \c 2 or greater, the color attachment must be
+    associated with a 2D texture array. layer() and multiViewCount() together
+    define the range of texture array elements that are targeted during
+    multiview rendering.
+
+    For example, if \c layer is \c 0 and \c multiViewCount is \c 2, the texture
+    array must have 2 (or more) elements, and the multiview rendering will
+    target elements 0 and 1. The \c{gl_ViewIndex} variable in the shaders has a
+    value of \c 0 or \c 1 then, where view \c 0 corresponds to the texture array
+    element \c 0, and view \c 1 to the array element \c 1.
+
+    \note Setting a \a count larger than 1, using a texture array as texture(),
+    and calling \l{QRhiCommandBuffer::beginPass()}{beginPass()} on a
+    QRhiTextureRenderTarget with this color attachment implies multiview
+    rendering for the entire render pass. multiViewCount() should not be set
+    unless multiview rendering is wanted. Multiview cannot be used with texture
+    types other than 2D texture arrays. (although 3D textures may work,
+    depending on the graphics API and backend; applications are nonetheless
+    advised not to rely on that and only use 2D texture arrays as the render
+    targets of multiview rendering)
+
+    See
+    \l{https://registry.khronos.org/OpenGL/extensions/OVR/OVR_multiview.txt}{GL_OVR_multiview}
+    for more details regarding multiview rendering. Do note that Qt requires
+    \l{https://registry.khronos.org/OpenGL/extensions/OVR/OVR_multiview2.txt}{GL_OVR_multiview2}
+    as well, when running on OpenGL (ES).
+
+    Multiview rendering is available only when the
+    \l{QRhi::MultiView}{MultiView} feature is reported as supported from
+    \l{QRhi::isFeatureSupported()}{isFeatureSupported()}.
+
+    \note For portability, be aware of limitations that exist for multiview
+    rendering with some of the graphics APIs. For example, OpenGL disallows
+    tessellation or geometry shaders with multiview. With other APIs, e.g.
+    Vulkan, some of these are optional features, the actual support depending
+    on the implementation. It is therefore recommended that multiview render
+    passes do not rely on any of the features that
+    \l{https://registry.khronos.org/OpenGL/extensions/OVR/OVR_multiview.txt}{GL_OVR_multiview}
+    declares as unsupported. The one exception is shader stage outputs other
+    than \c{gl_Position} depending on \c{gl_ViewIndex}: that can be relied on
+    (even with OpenGL) because QRhi never reports multiview as supported without
+    \c{GL_OVR_multiview2} also being present.
+
+    \since 6.7
  */
 
 /*!

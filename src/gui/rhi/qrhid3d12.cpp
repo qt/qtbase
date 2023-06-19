@@ -638,6 +638,8 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ThreeDimensionalTextureMipmaps:
         return false; // we generate mipmaps ourselves with compute and this is not implemented
+    case QRhi::MultiView:
+        return false;
     }
     return false;
 }

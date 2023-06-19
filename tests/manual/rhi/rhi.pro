@@ -22,7 +22,17 @@ SUBDIRS += \
     computeimage \
     instancing \
     noninstanced \
-    tex3d
+    tex3d \
+    texturearray \
+    polygonmode \
+    tessellation \
+    geometryshader \
+    stenciloutline \
+    stereo \
+    tex1d \
+    displacement \
+    imguirenderer \
+    multiview
 
 qtConfig(widgets) {
     SUBDIRS += \

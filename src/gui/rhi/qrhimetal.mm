@@ -833,6 +833,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::ThreeDimensionalTextureMipmaps:
         return true;
+    case QRhi::MultiView:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;

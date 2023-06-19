@@ -1009,6 +1009,15 @@ bool QRhiGles2::create(QRhi::Flags flags)
 
     caps.halfAttributes = f->hasOpenGLExtension(QOpenGLExtensions::HalfFloatVertex);
 
+    // We always require GL_OVR_multiview2 for symmetry with other backends.
+    caps.multiView = f->hasOpenGLExtension(QOpenGLExtensions::MultiView)
+                     && f->hasOpenGLExtension(QOpenGLExtensions::MultiViewExtended);
+    if (caps.multiView) {
+        glFramebufferTextureMultiviewOVR =
+            reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei)>(
+                ctx->getProcAddress(QByteArrayLiteral("glFramebufferTextureMultiviewOVR")));
+    }
+
     nativeHandlesStruct.context = ctx;
 
     contextLost = false;
@@ -1371,6 +1380,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.texture1D;
     case QRhi::ThreeDimensionalTextureMipmaps:
         return caps.texture3D;
+    case QRhi::MultiView:
+        return caps.multiView && caps.maxTextureArraySize > 0;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -5554,8 +5565,13 @@ bool QGles2TextureRenderTarget::create()
             QGles2Texture *texD = QRHI_RES(QGles2Texture, texture);
             Q_ASSERT(texD->texture && texD->specified);
             if (texD->flags().testFlag(QRhiTexture::ThreeDimensional) || texD->flags().testFlag(QRhiTexture::TextureArray)) {
-                rhiD->f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), texD->texture,
-                                                   colorAtt.level(), colorAtt.layer());
+                if (it->multiViewCount() < 2) {
+                    rhiD->f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), texD->texture,
+                                                       colorAtt.level(), colorAtt.layer());
+                } else {
+                    rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), texD->texture,
+                                                           colorAtt.level(), colorAtt.layer(), colorAtt.multiViewCount());
+                }
             } else if (texD->flags().testFlag(QRhiTexture::OneDimensional)) {
                 rhiD->glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex),
                                              texD->target + uint(colorAtt.layer()), texD->texture,
