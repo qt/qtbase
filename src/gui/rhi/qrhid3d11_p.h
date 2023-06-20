@@ -16,7 +16,7 @@
 //
 
 #include "qrhi_p.h"
-#include "qshaderdescription.h"
+#include <rhi/qshaderdescription.h>
 #include <QWindow>
 
 #include <d3d11_1.h>
