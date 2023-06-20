@@ -44,6 +44,8 @@ public:
                 QWasmBackingStore *backingStore);
     ~QWasmWindow() final;
 
+    QSurfaceFormat format() const override;
+
     void destroy();
     void paint();
     void setZOrder(int order);
