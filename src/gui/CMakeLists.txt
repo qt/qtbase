@@ -827,7 +827,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_filesystemmodel
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
-        rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h rhi/qrhivulkanext_p.h
+        rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
         vulkan/qbasicvulkanplatforminstance.cpp vulkan/qbasicvulkanplatforminstance_p.h
         vulkan/qplatformvulkaninstance.cpp vulkan/qplatformvulkaninstance.h
         vulkan/qvulkandefaultinstance.cpp vulkan/qvulkandefaultinstance_p.h

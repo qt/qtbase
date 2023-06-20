@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qrhivulkan_p.h"
-#include "qrhivulkanext_p.h"
 #include <qpa/qplatformvulkaninstance.h>
 
 #define VMA_IMPLEMENTATION
@@ -603,12 +602,14 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         }
 
         caps.vertexAttribDivisor = false;
+#ifdef VK_EXT_vertex_attribute_divisor
         if (devExts.contains(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
             if (hasPhysDevProp2) {
                 requestedDevExts.append(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
                 caps.vertexAttribDivisor = true;
             }
         }
+#endif
 
         for (const QByteArray &ext : requestedDeviceExtensions) {
             if (!ext.isEmpty() && !requestedDevExts.contains(ext)) {
@@ -7048,7 +7049,9 @@ bool QVkGraphicsPipeline::create()
     pipelineInfo.pStages = shaderStageCreateInfos.constData();
 
     QVarLengthArray<VkVertexInputBindingDescription, 4> vertexBindings;
+#ifdef VK_EXT_vertex_attribute_divisor
     QVarLengthArray<VkVertexInputBindingDivisorDescriptionEXT> nonOneStepRates;
+#endif
     int bindingIndex = 0;
     for (auto it = m_vertexInputLayout.cbeginBindings(), itEnd = m_vertexInputLayout.cendBindings();
          it != itEnd; ++it, ++bindingIndex)
@@ -7060,9 +7063,12 @@ bool QVkGraphicsPipeline::create()
                 ? VK_VERTEX_INPUT_RATE_VERTEX : VK_VERTEX_INPUT_RATE_INSTANCE
         };
         if (it->classification() == QRhiVertexInputBinding::PerInstance && it->instanceStepRate() != 1) {
+#ifdef VK_EXT_vertex_attribute_divisor
             if (rhiD->caps.vertexAttribDivisor) {
                 nonOneStepRates.append({ uint32_t(bindingIndex), it->instanceStepRate() });
-            } else {
+            } else
+#endif
+            {
                 qWarning("QRhiVulkan: Instance step rates other than 1 not supported without "
                          "VK_EXT_vertex_attribute_divisor on the device and "
                          "VK_KHR_get_physical_device_properties2 on the instance");
@@ -7088,13 +7094,15 @@ bool QVkGraphicsPipeline::create()
     vertexInputInfo.pVertexBindingDescriptions = vertexBindings.constData();
     vertexInputInfo.vertexAttributeDescriptionCount = uint32_t(vertexAttributes.size());
     vertexInputInfo.pVertexAttributeDescriptions = vertexAttributes.constData();
+#ifdef VK_EXT_vertex_attribute_divisor
     VkPipelineVertexInputDivisorStateCreateInfoEXT divisorInfo = {};
     if (!nonOneStepRates.isEmpty()) {
-        divisorInfo.sType = VkStructureType(1000190001); // VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT
+        divisorInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT;
         divisorInfo.vertexBindingDivisorCount = uint32_t(nonOneStepRates.size());
         divisorInfo.pVertexBindingDivisors = nonOneStepRates.constData();
         vertexInputInfo.pNext = &divisorInfo;
     }
+#endif
     pipelineInfo.pVertexInputState = &vertexInputInfo;
 
     QVarLengthArray<VkDynamicState, 8> dynEnable;
