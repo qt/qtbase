@@ -16,7 +16,7 @@
 //
 
 #include "qrhi_p.h"
-#include "qshaderdescription.h"
+#include <rhi/qshaderdescription.h>
 #include <qopengl.h>
 #include <QByteArray>
 #include <QWindow>
