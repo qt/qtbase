@@ -116,6 +116,7 @@ QCtfLibImpl::QCtfLibImpl()
         }
         m_location = location + QStringLiteral("/ust");
         std::filesystem::create_directory(qPrintable(m_location), qPrintable(location));
+        clearLocation();
     }
     m_session.all = m_session.tracepoints.contains(QStringLiteral("all"));
 
@@ -134,6 +135,30 @@ QCtfLibImpl::QCtfLibImpl()
     metadata.replace(QStringLiteral("$ENDIANNESS"), QSysInfo::ByteOrder == QSysInfo::BigEndian ? u"be"_s : u"le"_s);
     writeMetadata(metadata, true);
     m_timer.start();
+}
+
+void QCtfLibImpl::clearLocation()
+{
+    const std::filesystem::path location{qUtf16Printable(m_location)};
+    for (auto const& dirEntry : std::filesystem::directory_iterator{location})
+    {
+        const auto path = dirEntry.path();
+#if __cplusplus > 201703L
+        if (dirEntry.is_regular_file()
+            && path.filename().wstring().starts_with(std::wstring_view(L"channel_"))
+            && !path.has_extension()) {
+#else
+        const auto strview = std::wstring_view(L"channel_");
+        const auto sub = path.filename().wstring().substr(0, strview.length());
+        if (dirEntry.is_regular_file() && sub.compare(strview) == 0
+            && !path.has_extension()) {
+#endif
+            if (!std::filesystem::remove(path)) {
+                qCInfo(lcDebugTrace) << "Unable to clear output location.";
+                break;
+            }
+        }
+    }
 }
 
 void QCtfLibImpl::writeMetadata(const QString &metadata, bool overwrite)
@@ -276,11 +301,6 @@ void QCtfLibImpl::doTracepoint(const QCtfTracePointEvent &point, const QByteArra
 
     if (ch.channelName[0] == 0) {
         m_threadIndices.insert(thread, m_threadIndices.size());
-        sprintf(ch.channelName, "%s/channel_%d", qPrintable(m_location), m_threadIndices[thread]);
-        FILE *f = nullptr;
-        f = openFile(ch.channelName, "wb"_L1);
-        if (f)
-            fclose(f);
         ch.minTimestamp = ch.maxTimestamp = timestamp;
         ch.thread = thread;
         ch.threadIndex = m_threadIndices[thread];
