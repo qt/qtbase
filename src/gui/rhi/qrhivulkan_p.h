@@ -834,6 +834,13 @@ public:
     QVulkanDeviceFunctions *df = nullptr;
     QRhi::Flags rhiFlags;
     VkPhysicalDeviceFeatures physDevFeatures;
+#ifdef VK_VERSION_1_2
+    VkPhysicalDeviceVulkan11Features physDevFeatures11;
+    VkPhysicalDeviceVulkan12Features physDevFeatures12;
+#endif
+#ifdef VK_VERSION_1_3
+    VkPhysicalDeviceVulkan13Features physDevFeatures13;
+#endif
     VkPhysicalDeviceProperties physDevProperties;
     VkDeviceSize ubufAlign;
     VkDeviceSize texbufAlign;
