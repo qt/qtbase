@@ -754,6 +754,10 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
     caps.nonFillPolygonMode = physDevFeatures.fillModeNonSolid;
 
+#ifdef VK_VERSION_1_2
+    caps.multiView = caps.apiVersion >= QVersionNumber(1, 1) && physDevFeatures11.multiview;
+#endif
+
     if (!importedAllocator) {
         VmaVulkanFunctions funcs = {};
         funcs.vkGetInstanceProcAddr = wrap_vkGetInstanceProcAddr;
@@ -1360,6 +1364,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
 {
     // attachment list layout is color (0-8), ds (0-1), resolve (0-8)
 
+    int multiViewCount = 0;
     for (auto it = firstColorAttachment; it != lastColorAttachment; ++it) {
         QVkTexture *texD = QRHI_RES(QVkTexture, it->texture());
         QVkRenderBuffer *rbD = QRHI_RES(QVkRenderBuffer, it->renderBuffer());
@@ -1381,7 +1386,17 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
 
         const VkAttachmentReference ref = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
         rpD->colorRefs.append(ref);
+
+        if (it->multiViewCount() >= 2) {
+            if (multiViewCount > 0 && multiViewCount != it->multiViewCount())
+                qWarning("Inconsistent multiViewCount in color attachment set");
+            else
+                multiViewCount = it->multiViewCount();
+        } else if (multiViewCount > 0) {
+            qWarning("Mixing non-multiview color attachments within a multiview render pass");
+        }
     }
+    Q_ASSERT(multiViewCount == 0 || multiViewCount >= 2);
 
     rpD->hasDepthStencil = depthStencilBuffer || depthTexture;
     if (rpD->hasDepthStencil) {
@@ -1450,6 +1465,29 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
     VkRenderPassCreateInfo rpInfo;
     VkSubpassDescription subpassDesc;
     fillRenderPassCreateInfo(&rpInfo, &subpassDesc, rpD);
+
+#ifdef VK_VERSION_1_1
+    VkRenderPassMultiviewCreateInfo multiViewInfo = {};
+    uint32_t allViewsMask = 0;
+    for (uint32_t i = 0; i < uint32_t(multiViewCount); ++i)
+        allViewsMask |= (1 << i);
+    uint32_t multiViewMasks[] = { allViewsMask };
+    uint32_t multiViewCorrelationMasks[] = { allViewsMask };
+#endif
+    if (multiViewCount > 0) {
+        if (!caps.multiView) {
+            qWarning("Cannot create multiview render pass without support for the Vulkan 1.1 multiview feature");
+            return false;
+        }
+#ifdef VK_VERSION_1_1
+        multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+        multiViewInfo.subpassCount = 1;
+        multiViewInfo.pViewMasks = multiViewMasks;
+        multiViewInfo.correlationMaskCount = 1;
+        multiViewInfo.pCorrelationMasks = multiViewCorrelationMasks;
+        rpInfo.pNext = &multiViewInfo;
+#endif
+    }
 
     VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
     if (err != VK_SUCCESS) {
@@ -4438,7 +4476,7 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ThreeDimensionalTextureMipmaps:
         return true;
     case QRhi::MultiView:
-        return false;
+        return caps.multiView;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -6695,12 +6733,14 @@ bool QVkTextureRenderTarget::create()
         Q_ASSERT(texD || rbD);
         if (texD) {
             Q_ASSERT(texD->flags().testFlag(QRhiTexture::RenderTarget));
+            const bool is1D = texD->flags().testFlag(QRhiTexture::OneDimensional);
+            const bool isMultiView = it->multiViewCount() >= 2;
             VkImageViewCreateInfo viewInfo = {};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = texD->image;
-            viewInfo.viewType = texD->flags().testFlag(QRhiTexture::OneDimensional)
-                    ? VK_IMAGE_VIEW_TYPE_1D
-                    : VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.viewType = is1D ? VK_IMAGE_VIEW_TYPE_1D
+                                     : (isMultiView ? VK_IMAGE_VIEW_TYPE_2D_ARRAY
+                                                    : VK_IMAGE_VIEW_TYPE_2D);
             viewInfo.format = texD->vkformat;
             viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
             viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
@@ -6710,7 +6750,7 @@ bool QVkTextureRenderTarget::create()
             viewInfo.subresourceRange.baseMipLevel = uint32_t(it->level());
             viewInfo.subresourceRange.levelCount = 1;
             viewInfo.subresourceRange.baseArrayLayer = uint32_t(it->layer());
-            viewInfo.subresourceRange.layerCount = 1;
+            viewInfo.subresourceRange.layerCount = uint32_t(isMultiView ? it->multiViewCount() : 1);
             VkResult err = rhiD->df->vkCreateImageView(rhiD->dev, &viewInfo, nullptr, &rtv[attIndex]);
             if (err != VK_SUCCESS) {
                 qWarning("Failed to create render target image view: %d", err);

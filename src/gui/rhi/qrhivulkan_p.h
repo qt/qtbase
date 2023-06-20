@@ -872,6 +872,7 @@ public:
         bool tessellation = false;
         bool geometryShader = false;
         bool nonFillPolygonMode = false;
+        bool multiView = false;
         QVersionNumber apiVersion;
     } caps;
 
