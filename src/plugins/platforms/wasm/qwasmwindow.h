@@ -49,6 +49,8 @@ public:
                 QWasmBackingStore *backingStore);
     ~QWasmWindow() final;
 
+    QSurfaceFormat format() const override;
+
     void paint();
     void setZOrder(int order);
     void setWindowCursor(QByteArray cssCursorName);

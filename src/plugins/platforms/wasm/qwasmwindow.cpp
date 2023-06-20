@@ -152,6 +152,11 @@ QWasmWindow::~QWasmWindow()
 #endif
 }
 
+QSurfaceFormat QWasmWindow::format() const
+{
+    return window()->requestedFormat();
+}
+
 void QWasmWindow::onRestoreClicked()
 {
     window()->setWindowState(Qt::WindowNoState);
