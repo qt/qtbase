@@ -73,7 +73,9 @@ struct Q_AUTOTEST_EXPORT QDockAreaLayoutItem
     int pos;
     int size;
     uint flags;
-    QDebug operator<<(QDebug dbg);
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_AUTOTEST_EXPORT QDebug operator<<(QDebug dbg, const QDockAreaLayoutItem &item);
+#endif
 };
 
 class Q_AUTOTEST_EXPORT QPlaceHolderItem
