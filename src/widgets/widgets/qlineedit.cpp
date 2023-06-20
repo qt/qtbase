@@ -1781,12 +1781,13 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
 /*!
     \reimp
 */
-void QLineEdit::keyReleaseEvent(QKeyEvent *)
+void QLineEdit::keyReleaseEvent(QKeyEvent *e)
 {
     Q_D(QLineEdit);
     if (!isReadOnly())
         d->handleSoftwareInputPanel();
     d->control->updateCursorBlinking();
+    QWidget::keyReleaseEvent(e);
 }
 
 /*!
