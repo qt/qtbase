@@ -529,7 +529,31 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     driverInfoStruct.vendorId = physDevProperties.vendorID;
     driverInfoStruct.deviceType = toRhiDeviceType(physDevProperties.deviceType);
 
-    f->vkGetPhysicalDeviceFeatures(physDev, &physDevFeatures);
+#ifdef VK_VERSION_1_2 // Vulkan11Features is only in Vulkan 1.2
+    VkPhysicalDeviceFeatures2 physDevFeaturesChainable = {};
+    physDevFeaturesChainable.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    physDevFeatures11 = {};
+    physDevFeatures11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+    physDevFeatures12 = {};
+    physDevFeatures12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+#ifdef VK_VERSION_1_3
+    physDevFeatures13 = {};
+    physDevFeatures13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+#endif
+    if (caps.apiVersion >= QVersionNumber(1, 2)) {
+        physDevFeaturesChainable.pNext = &physDevFeatures11;
+        physDevFeatures11.pNext = &physDevFeatures12;
+#ifdef VK_VERSION_1_3
+        if (caps.apiVersion >= QVersionNumber(1, 3))
+            physDevFeatures12.pNext = &physDevFeatures13;
+#endif
+        f->vkGetPhysicalDeviceFeatures2(physDev, &physDevFeaturesChainable);
+        memcpy(&physDevFeatures, &physDevFeaturesChainable.features, sizeof(VkPhysicalDeviceFeatures));
+    } else
+#endif // VK_VERSION_1_2
+    {
+        f->vkGetPhysicalDeviceFeatures(physDev, &physDevFeatures);
+    }
 
     // Choose queue and create device, unless the device was specified in importParams.
     if (!importedDevice) {
@@ -662,42 +686,18 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         // tessellationShader, geometryShader
         // textureCompressionETC2, textureCompressionASTC_LDR, textureCompressionBC
 
-#ifdef VK_VERSION_1_2 // Vulkan11Features is only in Vulkan 1.2
-        VkPhysicalDeviceFeatures2 physDevFeatures2 = {};
-        physDevFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-
-        VkPhysicalDeviceVulkan11Features features11 = {};
-        features11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-        VkPhysicalDeviceVulkan12Features features12 = {};
-        features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-#ifdef VK_VERSION_1_3
-        VkPhysicalDeviceVulkan13Features features13 = {};
-        features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-#endif
-
+#ifdef VK_VERSION_1_2
         if (caps.apiVersion >= QVersionNumber(1, 2)) {
-            physDevFeatures2.pNext = &features11;
-            features11.pNext = &features12;
+            physDevFeaturesChainable.features.robustBufferAccess = VK_FALSE;
 #ifdef VK_VERSION_1_3
-            if (caps.apiVersion >= QVersionNumber(1, 3))
-                features12.pNext = &features13;
+            physDevFeatures13.robustImageAccess = VK_FALSE;
 #endif
-            f->vkGetPhysicalDeviceFeatures2(physDev, &physDevFeatures2);
-
-            physDevFeatures2.features.robustBufferAccess = VK_FALSE;
-#ifdef VK_VERSION_1_3
-            features13.robustImageAccess = VK_FALSE;
-#endif
-
-            devInfo.pNext = &physDevFeatures2;
-        }
+            devInfo.pNext = &physDevFeaturesChainable;
+        } else
 #endif // VK_VERSION_1_2
-
-        VkPhysicalDeviceFeatures features;
-        if (!devInfo.pNext) {
-            memcpy(&features, &physDevFeatures, sizeof(features));
-            features.robustBufferAccess = VK_FALSE;
-            devInfo.pEnabledFeatures = &features;
+        {
+            physDevFeatures.robustBufferAccess = VK_FALSE;
+            devInfo.pEnabledFeatures = &physDevFeatures;
         }
 
         VkResult err = f->vkCreateDevice(physDev, &devInfo, nullptr, &dev);
