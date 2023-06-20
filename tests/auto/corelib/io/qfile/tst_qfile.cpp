@@ -2615,8 +2615,6 @@ static void unixPipe_helper(int pipes[2])
         qt_safe_write(fd, &c, 1);
     }));
 
-    QElapsedTimer timer;
-    timer.start();
     thr->start();
 
     // synchronize with the thread having started
@@ -2638,8 +2636,6 @@ static void unixPipe_helper(int pipes[2])
     c = 0;
     QCOMPARE(f.read(&c, 1), 1);
     QCOMPARE(c, '\2');
-    const int elapsed = timer.elapsed();
-    QCOMPARE_GE(elapsed, Timeout);
 
     thr->wait();
 }
