@@ -94,7 +94,6 @@ manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "QtQuickControls/Qt Quick Controls - Flat Style" \
                                         "QtQuickControls/Qt Quick Controls - Gallery" \
                                         "QtQuickControls/Qt Quick Controls - Imagine Style Example: Automotive" \
-                                        "QtQuickControls/Qt Quick Controls - Imagine Style Example: Music Player" \
                                         "QtQuickControls/Qt Quick Controls - Side Panel" \
                                         "QtQuickControls/Qt Quick Controls - Swipe to Remove" \
                                         "QtQuickControls/Qt Quick Controls - Text Editor" \
