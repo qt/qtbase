@@ -947,7 +947,17 @@ static void executeBlockWithoutAnimation(Block block)
         int cursorPosOnRelease = QPlatformInputContext::queryFocusObject(Qt::ImCursorPosition, touchPos).toInt();
 
         if (cursorPosOnRelease == _cursorPosOnPress) {
+            // We've recognized a gesture to open the menu, but we don't know
+            // whether the user tapped a control that was overlaid our input
+            // area, since we don't do any granular hit-testing in touchesBegan.
+            // To ensure that the gesture doesn't eat touch events that should
+            // have reached another UI control we report the gesture as failed
+            // here, and then manually show the menu at the next runloop pass.
             _menuShouldBeVisible = true;
+            self.state = UIGestureRecognizerStateFailed;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                QIOSTextInputOverlay::s_editMenu.visible = _menuShouldBeVisible;
+            });
         } else {
             // The menu is hidden, and the cursor will change position once
             // Qt receive the touch release. We therefore fail so that we
