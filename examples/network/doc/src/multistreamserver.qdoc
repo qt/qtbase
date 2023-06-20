@@ -1,0 +1,16 @@
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example multistreamserver
+    \title Multi-stream Server
+    \examplecategory {Networking}
+    \meta tags {network,sctp}
+    \ingroup examples-network
+    \brief Demonstrates how to use SCTP on the server side
+
+    This example demonstrates how to use SCTP, with multiple channels,
+    on the server side, receiving multiple connections and sending
+    messages to connected clients.
+    \image multi-stream-server-example.webp
+*/
