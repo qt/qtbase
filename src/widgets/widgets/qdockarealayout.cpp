@@ -171,20 +171,22 @@ QDockAreaLayoutItem
     return *this;
 }
 
-QDebug QDockAreaLayoutItem::operator<<(QDebug dbg)
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QDockAreaLayoutItem &item)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
-    dbg << "QDockAreaLayoutItem(" << static_cast<void *>(this) << "->";
-    if (widgetItem)
-        dbg << "widgetItem(" << widgetItem->widget() << ")";
-    else if (subinfo)
-        dbg << "subInfo(" << subinfo << ")";
-    else if (placeHolderItem)
-        dbg << "placeHolderItem(" << placeHolderItem << ")";
+    dbg << "QDockAreaLayoutItem(" << static_cast<const void *>(&item) << "->";
+    if (item.widgetItem)
+        dbg << "widgetItem(" << item.widgetItem->widget() << ")";
+    else if (item.subinfo)
+        dbg << "subInfo(" << item.subinfo << ")";
+    else if (item.placeHolderItem)
+        dbg << "placeHolderItem(" << item.placeHolderItem << ")";
     dbg << ")";
     return dbg;
 }
+#endif // QT_NO_DEBUG_STREAM
 
 /******************************************************************************
 ** QDockAreaLayoutInfo
