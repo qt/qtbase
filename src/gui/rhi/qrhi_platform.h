@@ -145,7 +145,7 @@ struct Q_GUI_EXPORT QRhiD3D12NativeHandles : public QRhiNativeHandles
 
 struct Q_GUI_EXPORT QRhiD3D12CommandBufferNativeHandles : public QRhiNativeHandles
 {
-    void *commandList = nullptr; // ID3D12GraphicsCommandList
+    void *commandList = nullptr; // ID3D12GraphicsCommandList1
 };
 
 #endif // WIN/QDOC

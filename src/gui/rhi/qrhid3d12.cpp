@@ -19,6 +19,8 @@
 #define QRHI_D3D12_HAS_OLD_PIX
 #endif
 
+#ifdef __ID3D12Device2_INTERFACE_DEFINED__
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -108,7 +110,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QRhiD3D12CommandBufferNativeHandles
     \inmodule QtGui
-    \brief Holds the ID3D12GraphicsCommandList object that is backing a QRhiCommandBuffer.
+    \brief Holds the ID3D12GraphicsCommandList1 object that is backing a QRhiCommandBuffer.
 
     \note The command list object is only guaranteed to be valid, and
     in recording state, while recording a frame. That is, between a
@@ -132,8 +134,14 @@ QRhiD3D12::QRhiD3D12(QRhiD3D12InitParams *params, QRhiD3D12NativeHandles *import
     debugLayer = params->enableDebugLayer;
     if (importParams) {
         if (importParams->dev) {
-            dev = reinterpret_cast<ID3D12Device *>(importParams->dev);
-            importedDevice = true;
+            ID3D12Device *d3d12Device = reinterpret_cast<ID3D12Device *>(importParams->dev);
+            if (SUCCEEDED(d3d12Device->QueryInterface(__uuidof(ID3D12Device2), reinterpret_cast<void **>(&dev)))) {
+                // get rid of the ref added by QueryInterface
+                d3d12Device->Release();
+                importedDevice = true;
+            } else {
+                qWarning("ID3D12Device2 not supported, cannot import device");
+            }
         }
         if (importParams->commandQueue) {
             cmdQueue = reinterpret_cast<ID3D12CommandQueue *>(importParams->commandQueue);
@@ -267,7 +275,7 @@ bool QRhiD3D12::create(QRhi::Flags flags)
 
         hr = D3D12CreateDevice(activeAdapter,
                                minimumFeatureLevel,
-                               __uuidof(ID3D12Device),
+                               __uuidof(ID3D12Device2),
                                reinterpret_cast<void **>(&dev));
         if (FAILED(hr)) {
             qWarning("Failed to create D3D12 device: %s", qPrintable(QSystemError::windowsComString(hr)));
@@ -401,6 +409,10 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         qWarning("Could not create first shader-visible CBV/SRV/UAV heap");
         return false;
     }
+
+    D3D12_FEATURE_DATA_D3D12_OPTIONS3 options3 = {};
+    if (SUCCEEDED(dev->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &options3, sizeof(options3))))
+        caps.multiView = options3.ViewInstancingTier != D3D12_VIEW_INSTANCING_TIER_NOT_SUPPORTED;
 
     deviceLost = false;
     offscreenActive = false;
@@ -639,7 +651,7 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ThreeDimensionalTextureMipmaps:
         return false; // we generate mipmaps ourselves with compute and this is not implemented
     case QRhi::MultiView:
-        return false;
+        return caps.multiView;
     }
     return false;
 }
@@ -796,6 +808,9 @@ void QRhiD3D12::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
         }
 
         cbD->cmdList->IASetPrimitiveTopology(psD->topology);
+
+        if (psD->viewInstanceMask)
+            cbD->cmdList->SetViewInstanceMask(psD->viewInstanceMask);
     }
 }
 
@@ -1465,7 +1480,7 @@ QRhi::FrameOpResult QRhiD3D12::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     barrierGen.addTransitionBarrier(backBufferResourceHandle, D3D12_RESOURCE_STATE_PRESENT);
     barrierGen.enqueueBufferedTransitionBarriers(cbD);
 
-    ID3D12GraphicsCommandList *cmdList = cbD->cmdList;
+    ID3D12GraphicsCommandList1 *cmdList = cbD->cmdList;
     HRESULT hr = cmdList->Close();
     if (FAILED(hr)) {
         qWarning("Failed to close command list: %s",
@@ -1562,7 +1577,7 @@ QRhi::FrameOpResult QRhiD3D12::endOffscreenFrame(QRhi::EndFrameFlags flags)
     offscreenActive = false;
 
     QD3D12CommandBuffer *cbD = offscreenCb[currentFrameSlot];
-    ID3D12GraphicsCommandList *cmdList = cbD->cmdList;
+    ID3D12GraphicsCommandList1 *cmdList = cbD->cmdList;
     HRESULT hr = cmdList->Close();
     if (FAILED(hr)) {
         qWarning("Failed to close command list: %s",
@@ -1603,7 +1618,7 @@ QRhi::FrameOpResult QRhiD3D12::finish()
 
     Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::NoPass);
 
-    ID3D12GraphicsCommandList *cmdList = cbD->cmdList;
+    ID3D12GraphicsCommandList1 *cmdList = cbD->cmdList;
     HRESULT hr = cmdList->Close();
     if (FAILED(hr)) {
         qWarning("Failed to close command list: %s",
@@ -2912,7 +2927,7 @@ DXGI_SAMPLE_DESC QRhiD3D12::effectiveSampleCount(int sampleCount, DXGI_FORMAT fo
     return desc;
 }
 
-bool QRhiD3D12::startCommandListForCurrentFrameSlot(ID3D12GraphicsCommandList **cmdList)
+bool QRhiD3D12::startCommandListForCurrentFrameSlot(ID3D12GraphicsCommandList1 **cmdList)
 {
     ID3D12CommandAllocator *cmdAlloc = cmdAllocators[currentFrameSlot];
     if (!*cmdList) {
@@ -2920,7 +2935,7 @@ bool QRhiD3D12::startCommandListForCurrentFrameSlot(ID3D12GraphicsCommandList **
                                             D3D12_COMMAND_LIST_TYPE_DIRECT,
                                             cmdAlloc,
                                             nullptr,
-                                            __uuidof(ID3D12GraphicsCommandList),
+                                            __uuidof(ID3D12GraphicsCommandList1),
                                             reinterpret_cast<void **>(cmdList));
         if (FAILED(hr)) {
             qWarning("Failed to create command list: %s", qPrintable(QSystemError::windowsComString(hr)));
@@ -4412,19 +4427,21 @@ bool QD3D12TextureRenderTarget::create()
                 qWarning("Could not look up texture handle for render target");
                 return false;
             }
+            const bool isMultiView = it->multiViewCount() >= 2;
+            UINT layerCount = isMultiView ? UINT(it->multiViewCount()) : 1;
             D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
             rtvDesc.Format = toD3DTextureFormat(texD->format(), texD->flags());
             if (texD->flags().testFlag(QRhiTexture::CubeMap)) {
                 rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
                 rtvDesc.Texture2DArray.MipSlice = UINT(colorAtt.level());
                 rtvDesc.Texture2DArray.FirstArraySlice = UINT(colorAtt.layer());
-                rtvDesc.Texture2DArray.ArraySize = 1;
+                rtvDesc.Texture2DArray.ArraySize = layerCount;
             } else if (texD->flags().testFlag(QRhiTexture::OneDimensional)) {
                 if (texD->flags().testFlag(QRhiTexture::TextureArray)) {
                     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE1DARRAY;
                     rtvDesc.Texture1DArray.MipSlice = UINT(colorAtt.level());
                     rtvDesc.Texture1DArray.FirstArraySlice = UINT(colorAtt.layer());
-                    rtvDesc.Texture1DArray.ArraySize = 1;
+                    rtvDesc.Texture1DArray.ArraySize = layerCount;
                 } else {
                     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE1D;
                     rtvDesc.Texture1D.MipSlice = UINT(colorAtt.level());
@@ -4433,18 +4450,18 @@ bool QD3D12TextureRenderTarget::create()
                 if (texD->sampleDesc.Count > 1) {
                     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMSARRAY;
                     rtvDesc.Texture2DMSArray.FirstArraySlice = UINT(colorAtt.layer());
-                    rtvDesc.Texture2DMSArray.ArraySize = 1;
+                    rtvDesc.Texture2DMSArray.ArraySize = layerCount;
                 } else {
                     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
                     rtvDesc.Texture2DArray.MipSlice = UINT(colorAtt.level());
                     rtvDesc.Texture2DArray.FirstArraySlice = UINT(colorAtt.layer());
-                    rtvDesc.Texture2DArray.ArraySize = 1;
+                    rtvDesc.Texture2DArray.ArraySize = layerCount;
                 }
             } else if (texD->flags().testFlag(QRhiTexture::ThreeDimensional)) {
                 rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
                 rtvDesc.Texture3D.MipSlice = UINT(colorAtt.level());
                 rtvDesc.Texture3D.FirstWSlice = UINT(colorAtt.layer());
-                rtvDesc.Texture3D.WSize = 1;
+                rtvDesc.Texture3D.WSize = layerCount;
             } else {
                 if (texD->sampleDesc.Count > 1) {
                     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
@@ -5257,83 +5274,26 @@ bool QD3D12GraphicsPipeline::create()
     QD3D12RenderPassDescriptor *rpD = QRHI_RES(QD3D12RenderPassDescriptor, m_renderPassDesc);
     const DXGI_SAMPLE_DESC sampleDesc = rhiD->effectiveSampleCount(m_sampleCount, DXGI_FORMAT(rpD->colorFormat[0]));
 
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-    psoDesc.pRootSignature = rootSig;
-    for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
-        const int d3dStage = qd3d12_stage(shaderStage.type());
-        switch (d3dStage) {
-        case VS:
-            psoDesc.VS.pShaderBytecode = shaderBytecode[d3dStage].constData();
-            psoDesc.VS.BytecodeLength = shaderBytecode[d3dStage].size();
-            break;
-        case HS:
-            psoDesc.HS.pShaderBytecode = shaderBytecode[d3dStage].constData();
-            psoDesc.HS.BytecodeLength = shaderBytecode[d3dStage].size();
-            break;
-        case DS:
-            psoDesc.DS.pShaderBytecode = shaderBytecode[d3dStage].constData();
-            psoDesc.DS.BytecodeLength = shaderBytecode[d3dStage].size();
-            break;
-        case GS:
-            psoDesc.GS.pShaderBytecode = shaderBytecode[d3dStage].constData();
-            psoDesc.GS.BytecodeLength = shaderBytecode[d3dStage].size();
-            break;
-        case PS:
-            psoDesc.PS.pShaderBytecode = shaderBytecode[d3dStage].constData();
-            psoDesc.PS.BytecodeLength = shaderBytecode[d3dStage].size();
-            break;
-        default:
-            Q_UNREACHABLE();
-            break;
-        }
-    }
+    struct {
+        QD3D12PipelineStateSubObject<ID3D12RootSignature *, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE> rootSig;
+        QD3D12PipelineStateSubObject<D3D12_INPUT_LAYOUT_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT> inputLayout;
+        QD3D12PipelineStateSubObject<D3D12_PRIMITIVE_TOPOLOGY_TYPE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY> primitiveTopology;
+        QD3D12PipelineStateSubObject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS> VS;
+        QD3D12PipelineStateSubObject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_HS> HS;
+        QD3D12PipelineStateSubObject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DS> DS;
+        QD3D12PipelineStateSubObject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_GS> GS;
+        QD3D12PipelineStateSubObject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PS> PS;
+        QD3D12PipelineStateSubObject<D3D12_RASTERIZER_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER> rasterizerState;
+        QD3D12PipelineStateSubObject<D3D12_DEPTH_STENCIL_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL> depthStencilState;
+        QD3D12PipelineStateSubObject<D3D12_BLEND_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND> blendState;
+        QD3D12PipelineStateSubObject<D3D12_RT_FORMAT_ARRAY, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS> rtFormats;
+        QD3D12PipelineStateSubObject<DXGI_FORMAT, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT> dsFormat;
+        QD3D12PipelineStateSubObject<DXGI_SAMPLE_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC> sampleDesc;
+        QD3D12PipelineStateSubObject<UINT, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK> sampleMask;
+        QD3D12PipelineStateSubObject<D3D12_VIEW_INSTANCING_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VIEW_INSTANCING> viewInstancingDesc;
+    } stream;
 
-    psoDesc.BlendState.IndependentBlendEnable = m_targetBlends.count() > 1;
-    for (int i = 0, ie = m_targetBlends.count(); i != ie; ++i) {
-        const QRhiGraphicsPipeline::TargetBlend &b(m_targetBlends[i]);
-        D3D12_RENDER_TARGET_BLEND_DESC blend = {};
-        blend.BlendEnable = b.enable;
-        blend.SrcBlend = toD3DBlendFactor(b.srcColor, true);
-        blend.DestBlend = toD3DBlendFactor(b.dstColor, true);
-        blend.BlendOp = toD3DBlendOp(b.opColor);
-        blend.SrcBlendAlpha = toD3DBlendFactor(b.srcAlpha, false);
-        blend.DestBlendAlpha = toD3DBlendFactor(b.dstAlpha, false);
-        blend.BlendOpAlpha = toD3DBlendOp(b.opAlpha);
-        blend.RenderTargetWriteMask = toD3DColorWriteMask(b.colorWrite);
-        psoDesc.BlendState.RenderTarget[i] = blend;
-    }
-    if (m_targetBlends.isEmpty()) {
-        D3D12_RENDER_TARGET_BLEND_DESC blend = {};
-        blend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-        psoDesc.BlendState.RenderTarget[0] = blend;
-    }
-
-    psoDesc.SampleMask = 0xFFFFFFFF;
-
-    psoDesc.RasterizerState.FillMode = toD3DFillMode(m_polygonMode);
-    psoDesc.RasterizerState.CullMode = toD3DCullMode(m_cullMode);
-    psoDesc.RasterizerState.FrontCounterClockwise = m_frontFace == CCW;
-    psoDesc.RasterizerState.DepthBias = m_depthBias;
-    psoDesc.RasterizerState.SlopeScaledDepthBias = m_slopeScaledDepthBias;
-    psoDesc.RasterizerState.DepthClipEnable = TRUE;
-    psoDesc.RasterizerState.MultisampleEnable = sampleDesc.Count > 1;
-
-    psoDesc.DepthStencilState.DepthEnable = m_depthTest;
-    psoDesc.DepthStencilState.DepthWriteMask = m_depthWrite ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-    psoDesc.DepthStencilState.DepthFunc = toD3DCompareOp(m_depthOp);
-    psoDesc.DepthStencilState.StencilEnable = m_stencilTest;
-    if (m_stencilTest) {
-        psoDesc.DepthStencilState.StencilReadMask = UINT8(m_stencilReadMask);
-        psoDesc.DepthStencilState.StencilWriteMask = UINT8(m_stencilWriteMask);
-        psoDesc.DepthStencilState.FrontFace.StencilFailOp = toD3DStencilOp(m_stencilFront.failOp);
-        psoDesc.DepthStencilState.FrontFace.StencilDepthFailOp = toD3DStencilOp(m_stencilFront.depthFailOp);
-        psoDesc.DepthStencilState.FrontFace.StencilPassOp = toD3DStencilOp(m_stencilFront.passOp);
-        psoDesc.DepthStencilState.FrontFace.StencilFunc = toD3DCompareOp(m_stencilFront.compareOp);
-        psoDesc.DepthStencilState.BackFace.StencilFailOp = toD3DStencilOp(m_stencilBack.failOp);
-        psoDesc.DepthStencilState.BackFace.StencilDepthFailOp = toD3DStencilOp(m_stencilBack.depthFailOp);
-        psoDesc.DepthStencilState.BackFace.StencilPassOp = toD3DStencilOp(m_stencilBack.passOp);
-        psoDesc.DepthStencilState.BackFace.StencilFunc = toD3DCompareOp(m_stencilBack.compareOp);
-    }
+    stream.rootSig.object = rootSig;
 
     QVarLengthArray<D3D12_INPUT_ELEMENT_DESC, 4> inputDescs;
     QByteArrayList matrixSliceSemantics;
@@ -5371,24 +5331,113 @@ bool QD3D12GraphicsPipeline::create()
             inputDescs.append(desc);
         }
     }
-    if (!inputDescs.isEmpty()) {
-        psoDesc.InputLayout.pInputElementDescs = inputDescs.constData();
-        psoDesc.InputLayout.NumElements = inputDescs.count();
-    }
 
-    psoDesc.PrimitiveTopologyType = toD3DTopologyType(m_topology);
+    stream.inputLayout.object.NumElements = inputDescs.count();
+    stream.inputLayout.object.pInputElementDescs = inputDescs.isEmpty() ? nullptr : inputDescs.constData();
+
+    stream.primitiveTopology.object = toD3DTopologyType(m_topology);
     topology = toD3DTopology(m_topology, m_patchControlPointCount);
 
-    psoDesc.NumRenderTargets = rpD->colorAttachmentCount;
+    for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
+        const int d3dStage = qd3d12_stage(shaderStage.type());
+        switch (d3dStage) {
+        case VS:
+            stream.VS.object.pShaderBytecode = shaderBytecode[d3dStage].constData();
+            stream.VS.object.BytecodeLength = shaderBytecode[d3dStage].size();
+            break;
+        case HS:
+            stream.HS.object.pShaderBytecode = shaderBytecode[d3dStage].constData();
+            stream.HS.object.BytecodeLength = shaderBytecode[d3dStage].size();
+            break;
+        case DS:
+            stream.DS.object.pShaderBytecode = shaderBytecode[d3dStage].constData();
+            stream.DS.object.BytecodeLength = shaderBytecode[d3dStage].size();
+            break;
+        case GS:
+            stream.GS.object.pShaderBytecode = shaderBytecode[d3dStage].constData();
+            stream.GS.object.BytecodeLength = shaderBytecode[d3dStage].size();
+            break;
+        case PS:
+            stream.PS.object.pShaderBytecode = shaderBytecode[d3dStage].constData();
+            stream.PS.object.BytecodeLength = shaderBytecode[d3dStage].size();
+            break;
+        default:
+            Q_UNREACHABLE();
+            break;
+        }
+    }
+
+    stream.rasterizerState.object.FillMode = toD3DFillMode(m_polygonMode);
+    stream.rasterizerState.object.CullMode = toD3DCullMode(m_cullMode);
+    stream.rasterizerState.object.FrontCounterClockwise = m_frontFace == CCW;
+    stream.rasterizerState.object.DepthBias = m_depthBias;
+    stream.rasterizerState.object.SlopeScaledDepthBias = m_slopeScaledDepthBias;
+    stream.rasterizerState.object.DepthClipEnable = TRUE;
+    stream.rasterizerState.object.MultisampleEnable = sampleDesc.Count > 1;
+
+    stream.depthStencilState.object.DepthEnable = m_depthTest;
+    stream.depthStencilState.object.DepthWriteMask = m_depthWrite ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+    stream.depthStencilState.object.DepthFunc = toD3DCompareOp(m_depthOp);
+    stream.depthStencilState.object.StencilEnable = m_stencilTest;
+    if (m_stencilTest) {
+        stream.depthStencilState.object.StencilReadMask = UINT8(m_stencilReadMask);
+        stream.depthStencilState.object.StencilWriteMask = UINT8(m_stencilWriteMask);
+        stream.depthStencilState.object.FrontFace.StencilFailOp = toD3DStencilOp(m_stencilFront.failOp);
+        stream.depthStencilState.object.FrontFace.StencilDepthFailOp = toD3DStencilOp(m_stencilFront.depthFailOp);
+        stream.depthStencilState.object.FrontFace.StencilPassOp = toD3DStencilOp(m_stencilFront.passOp);
+        stream.depthStencilState.object.FrontFace.StencilFunc = toD3DCompareOp(m_stencilFront.compareOp);
+        stream.depthStencilState.object.BackFace.StencilFailOp = toD3DStencilOp(m_stencilBack.failOp);
+        stream.depthStencilState.object.BackFace.StencilDepthFailOp = toD3DStencilOp(m_stencilBack.depthFailOp);
+        stream.depthStencilState.object.BackFace.StencilPassOp = toD3DStencilOp(m_stencilBack.passOp);
+        stream.depthStencilState.object.BackFace.StencilFunc = toD3DCompareOp(m_stencilBack.compareOp);
+    }
+
+    stream.blendState.object.IndependentBlendEnable = m_targetBlends.count() > 1;
+    for (int i = 0, ie = m_targetBlends.count(); i != ie; ++i) {
+        const QRhiGraphicsPipeline::TargetBlend &b(m_targetBlends[i]);
+        D3D12_RENDER_TARGET_BLEND_DESC blend = {};
+        blend.BlendEnable = b.enable;
+        blend.SrcBlend = toD3DBlendFactor(b.srcColor, true);
+        blend.DestBlend = toD3DBlendFactor(b.dstColor, true);
+        blend.BlendOp = toD3DBlendOp(b.opColor);
+        blend.SrcBlendAlpha = toD3DBlendFactor(b.srcAlpha, false);
+        blend.DestBlendAlpha = toD3DBlendFactor(b.dstAlpha, false);
+        blend.BlendOpAlpha = toD3DBlendOp(b.opAlpha);
+        blend.RenderTargetWriteMask = toD3DColorWriteMask(b.colorWrite);
+        stream.blendState.object.RenderTarget[i] = blend;
+    }
+    if (m_targetBlends.isEmpty()) {
+        D3D12_RENDER_TARGET_BLEND_DESC blend = {};
+        blend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+        stream.blendState.object.RenderTarget[0] = blend;
+    }
+
+    stream.rtFormats.object.NumRenderTargets = rpD->colorAttachmentCount;
     for (int i = 0; i < rpD->colorAttachmentCount; ++i)
-        psoDesc.RTVFormats[i] = DXGI_FORMAT(rpD->colorFormat[i]);
-    psoDesc.DSVFormat = rpD->hasDepthStencil ? DXGI_FORMAT(rpD->dsFormat) : DXGI_FORMAT_UNKNOWN;
-    psoDesc.SampleDesc = sampleDesc;
+        stream.rtFormats.object.RTFormats[i] = DXGI_FORMAT(rpD->colorFormat[i]);
+
+    stream.dsFormat.object = rpD->hasDepthStencil ? DXGI_FORMAT(rpD->dsFormat) : DXGI_FORMAT_UNKNOWN;
+
+    stream.sampleDesc.object = sampleDesc;
+
+    stream.sampleMask.object = 0xFFFFFFFF;
+
+    viewInstanceMask = 0;
+    const bool isMultiView = m_multiViewCount >= 2;
+    stream.viewInstancingDesc.object.ViewInstanceCount = isMultiView ? m_multiViewCount : 0;
+    QVarLengthArray<D3D12_VIEW_INSTANCE_LOCATION, 4> viewInstanceLocations;
+    if (isMultiView) {
+        for (int i = 0; i < m_multiViewCount; ++i) {
+            viewInstanceMask |= (1 << i);
+            viewInstanceLocations.append({ 0, UINT(i) });
+        }
+        stream.viewInstancingDesc.object.pViewInstanceLocations = viewInstanceLocations.constData();
+    }
+
+    const D3D12_PIPELINE_STATE_STREAM_DESC streamDesc = { sizeof(stream), &stream };
 
     ID3D12PipelineState *pso = nullptr;
-    HRESULT hr = rhiD->dev->CreateGraphicsPipelineState(&psoDesc,
-                                                        __uuidof(ID3D12PipelineState),
-                                                       reinterpret_cast<void **>(&pso));
+    HRESULT hr = rhiD->dev->CreatePipelineState(&streamDesc, __uuidof(ID3D12PipelineState), reinterpret_cast<void **>(&pso));
     if (FAILED(hr)) {
         qWarning("Failed to create graphics pipeline state: %s",
                  qPrintable(QSystemError::windowsComString(hr)));
@@ -5487,14 +5536,16 @@ bool QD3D12ComputePipeline::create()
         return false;
     }
 
-    D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
-    psoDesc.pRootSignature = rootSig;
-    psoDesc.CS.pShaderBytecode = shaderBytecode.constData();
-    psoDesc.CS.BytecodeLength = shaderBytecode.size();
+    struct {
+        QD3D12PipelineStateSubObject<ID3D12RootSignature *, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE> rootSig;
+        QD3D12PipelineStateSubObject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_CS> CS;
+    } stream;
+    stream.rootSig.object = rootSig;
+    stream.CS.object.pShaderBytecode = shaderBytecode.constData();
+    stream.CS.object.BytecodeLength = shaderBytecode.size();
+    const D3D12_PIPELINE_STATE_STREAM_DESC streamDesc = { sizeof(stream), &stream };
     ID3D12PipelineState *pso = nullptr;
-    HRESULT hr = rhiD->dev->CreateComputePipelineState(&psoDesc,
-                                                       __uuidof(ID3D12PipelineState),
-                                                       reinterpret_cast<void **>(&pso));
+    HRESULT hr = rhiD->dev->CreatePipelineState(&streamDesc, __uuidof(ID3D12PipelineState), reinterpret_cast<void **>(&pso));
     if (FAILED(hr)) {
         qWarning("Failed to create compute pipeline state: %s",
                  qPrintable(QSystemError::windowsComString(hr)));
@@ -6141,3 +6192,5 @@ bool QD3D12SwapChain::createOrResize()
 }
 
 QT_END_NAMESPACE
+
+#endif // __ID3D12Device2_INTERFACE_DEFINED__

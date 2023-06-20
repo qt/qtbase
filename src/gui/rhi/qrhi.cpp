@@ -78,8 +78,10 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \l{https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp}{software
     adapter} is still an option.
 
-    \li Direct3D 12.0 or newer, with Shader Model 5.0 or newer. The D3D12
-    device is by default created with specifying a minimum feature level of
+    \li Direct3D 12 on Windows 10 version 1703 and newer, with Shader Model 5.0
+    or newer. Qt requires ID3D12Device2 to be present, hence the requirement
+    for at least version 1703 of Windows 10. The D3D12 device is by default
+    created with specifying a minimum feature level of
     \c{D3D_FEATURE_LEVEL_11_0}.
 
     \li Metal 1.2 or newer.
@@ -976,7 +978,9 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     typically supported. When reported as supported, creating a
     QRhiTextureRenderTarget with a QRhiColorAttachment that references a texture
     array and has \l{QRhiColorAttachment::setMultiViewCount()}{multiViewCount}
-    set enables recording a render pass that uses multiview rendering. Note that
+    set enables recording a render pass that uses multiview rendering. In addition,
+    any QRhiGraphicsPipeline used in that render pass must have
+    \l{QRhiGraphicsPipeline::setMultiViewCount()}{the same view count set}. Note that
     multiview is only available in combination with 2D texture arrays. It cannot
     be used to optimize the rendering into individual textures (e.g. two, for
     the left and right eyes). Rather, the target of a multiview render pass is
@@ -6773,6 +6777,26 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
  */
 
 /*!
+    \fn int QRhiGraphicsPipeline::multiViewCount() const
+    \return the view count. The default is 0, indicating no multiview rendering.
+    \since 6.7
+ */
+
+/*!
+    \fn void QRhiGraphicsPipeline::setMultiViewCount(int count)
+    Sets the view \a count for multiview rendering. The default is 0,
+    indicating no multiview rendering.
+    \a count must be 2 or larger to trigger multiview rendering.
+
+    Multiview is only available when the \l{QRhi::MultiView}{MultiView feature}
+    is reported as supported. The render target must be a 2D texture array, and
+    the color attachment for the render target must have the same \a count set.
+
+    \since 6.7
+    \sa QRhi::MultiView, QRhiColorAttachment::setMultiViewCount()
+ */
+
+/*!
     \class QRhiSwapChain
     \inmodule QtGui
     \since 6.6
@@ -8088,9 +8112,17 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
 #endif
     case D3D12:
 #ifdef Q_OS_WIN
+#ifdef QRHI_D3D12_AVAILABLE
         r->d = new QRhiD3D12(static_cast<QRhiD3D12InitParams *>(params),
                              static_cast<QRhiD3D12NativeHandles *>(importDevice));
         break;
+#else
+        qWarning("Qt was built without Direct3D 12 support. "
+                 "This is likely due to having ancient SDK headers (such as d3d12.h) in the Qt build environment. "
+                 "Rebuild Qt with an SDK supporting D3D12 features introduced in Windows 10 version 1703, "
+                 "or use an MSVC build as those typically are built with more up-to-date SDKs.");
+        break;
+#endif
 #else
         qWarning("This platform has no Direct3D 12 support");
         break;

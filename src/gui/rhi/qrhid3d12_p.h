@@ -30,6 +30,15 @@
 
 #include "D3D12MemAlloc.h"
 
+// ID3D12Device2 and ID3D12GraphicsCommandList1 and types and enums introduced
+// with those are hard requirements now. These should be declared in any
+// moderately recent d3d12.h, but if it is an SDK from before Windows 10
+// version 1703 then these types could be missing. In the absence of other
+// options, handle this by skipping all the code and making QRhi::create() fail
+// in such builds.
+#ifdef __ID3D12Device2_INTERFACE_DEFINED__
+#define QRHI_D3D12_AVAILABLE
+
 QT_BEGIN_NAMESPACE
 
 static const int QD3D12_FRAMES_IN_FLIGHT = 2;
@@ -863,6 +872,7 @@ struct QD3D12GraphicsPipeline : public QRhiGraphicsPipeline
     QD3D12ObjectHandle rootSigHandle;
     std::array<QD3D12ShaderStageData, 5> stageData;
     D3D12_PRIMITIVE_TOPOLOGY topology;
+    UINT viewInstanceMask = 0;
     uint generation = 0;
     friend class QRhiD3D12;
 };
@@ -889,7 +899,7 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
 
     const QRhiNativeHandles *nativeHandles();
 
-    ID3D12GraphicsCommandList *cmdList = nullptr; // not owned
+    ID3D12GraphicsCommandList1 *cmdList = nullptr; // not owned
     QRhiD3D12CommandBufferNativeHandles nativeHandlesStruct;
 
     enum PassType {
@@ -984,10 +994,17 @@ struct QD3D12SwapChain : public QRhiSwapChain
         ID3D12Fence *fence = nullptr;
         HANDLE fenceEvent = nullptr;
         UINT64 fenceCounter = 0;
-        ID3D12GraphicsCommandList *cmdList = nullptr;
+        ID3D12GraphicsCommandList1 *cmdList = nullptr;
     } frameRes[QD3D12_FRAMES_IN_FLIGHT];
 
     int currentFrameSlot = 0; // index in frameRes
+};
+
+template<typename T, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE Type>
+struct alignas(void*) QD3D12PipelineStateSubObject
+{
+    D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type = Type;
+    T object = {};
 };
 
 class QRhiD3D12 : public QRhiImplementation
@@ -1111,7 +1128,7 @@ public:
     void waitGpu();
     DXGI_SAMPLE_DESC effectiveSampleCount(int sampleCount, DXGI_FORMAT format) const;
     bool ensureDirectCompositionDevice();
-    bool startCommandListForCurrentFrameSlot(ID3D12GraphicsCommandList **cmdList);
+    bool startCommandListForCurrentFrameSlot(ID3D12GraphicsCommandList1 **cmdList);
     void enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpdateBatch *resourceUpdates);
     void finishActiveReadbacks(bool forced = false);
     bool ensureShaderVisibleDescriptorHeapCapacity(QD3D12ShaderVisibleDescriptorHeap *h,
@@ -1122,7 +1139,7 @@ public:
     void bindShaderVisibleHeaps(QD3D12CommandBuffer *cbD);
 
     bool debugLayer = false;
-    ID3D12Device *dev = nullptr;
+    ID3D12Device2 *dev = nullptr;
     D3D_FEATURE_LEVEL minimumFeatureLevel = D3D_FEATURE_LEVEL(0);
     LUID adapterLuid = {};
     bool importedDevice = false;
@@ -1187,8 +1204,14 @@ public:
                            const QRhiShaderResourceBinding::Data::StorageImageData &d,
                            QD3D12ShaderResourceVisitor::StorageOp op,
                            int shaderRegister);
+
+    struct {
+        bool multiView = false;
+    } caps;
 };
 
 QT_END_NAMESPACE
+
+#endif // __ID3D12Device2_INTERFACE_DEFINED__
 
 #endif

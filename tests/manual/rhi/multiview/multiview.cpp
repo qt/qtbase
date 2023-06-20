@@ -64,7 +64,7 @@ void Window::customInit()
     QRhiColorAttachment multiViewAtt(d.tex);
     // using array elements 0 and 1
     multiViewAtt.setLayer(0);
-    multiViewAtt.setMultiViewCount(2);
+    multiViewAtt.setMultiViewCount(2); // the view count must be set both on the render target and the pipeline
     QRhiTextureRenderTargetDescription rtDesc(multiViewAtt);
     d.rt = m_r->newTextureRenderTarget(rtDesc);
     d.releasePool << d.rt;
@@ -155,7 +155,7 @@ void Window::customInit()
         { QRhiShaderStage::Vertex, getShader(QLatin1String(":/multiview.vert.qsb")) },
         { QRhiShaderStage::Fragment, getShader(QLatin1String(":/multiview.frag.qsb")) }
     });
-
+    d.triPs->setMultiViewCount(2); // the view count must be set both on the render target and the pipeline
     inputLayout.setBindings({
         { 5 * sizeof(float) }
     });

@@ -1441,6 +1441,9 @@ public:
     PolygonMode polygonMode() const {return m_polygonMode; }
     void setPolygonMode(PolygonMode mode) {m_polygonMode = mode; }
 
+    int multiViewCount() const { return m_multiViewCount; }
+    void setMultiViewCount(int count) { m_multiViewCount = count; }
+
     virtual bool create() = 0;
 
 protected:
@@ -1464,6 +1467,7 @@ protected:
     float m_slopeScaledDepthBias = 0.0f;
     int m_patchControlPointCount = 3;
     PolygonMode m_polygonMode = Fill;
+    int m_multiViewCount = 0;
     QVarLengthArray<QRhiShaderStage, 4> m_shaderStages;
     QRhiVertexInputLayout m_vertexInputLayout;
     QRhiShaderResourceBindings *m_shaderResourceBindings = nullptr;
