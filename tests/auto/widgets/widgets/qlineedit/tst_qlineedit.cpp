@@ -290,6 +290,8 @@ private slots:
     void QTBUG_60319_setInputMaskCheckImSurroundingText();
     void testQuickSelectionWithMouse();
     void inputRejected();
+    void keyReleasePropagates();
+
 protected slots:
     void editingFinished();
 
@@ -5113,6 +5115,44 @@ void tst_QLineEdit::inputRejected()
     QTest::keyClicks(testWidget, "a#");
     QCOMPARE(spyInputRejected.size(), 2);
 }
+
+void tst_QLineEdit::keyReleasePropagates()
+{
+    struct Dialog : QWidget
+    {
+        QLineEdit *lineEdit;
+        int releasedKey = {};
+
+        Dialog()
+        {
+            lineEdit = new QLineEdit;
+            QHBoxLayout *hbox = new QHBoxLayout;
+
+            hbox->addWidget(lineEdit);
+            setLayout(hbox);
+        }
+
+    protected:
+        void keyReleaseEvent(QKeyEvent *e)
+        {
+            releasedKey = e->key();
+        }
+    } dialog;
+
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+
+    QTest::keyPress(dialog.lineEdit, Qt::Key_A);
+    QTest::keyRelease(dialog.lineEdit, Qt::Key_A);
+
+    QCOMPARE(dialog.releasedKey, Qt::Key_A);
+
+    QTest::keyPress(dialog.lineEdit, Qt::Key_Alt);
+    QTest::keyRelease(dialog.lineEdit, Qt::Key_Alt);
+
+    QCOMPARE(dialog.releasedKey, Qt::Key_Alt);
+}
+
 
 QTEST_MAIN(tst_QLineEdit)
 #include "tst_qlineedit.moc"
