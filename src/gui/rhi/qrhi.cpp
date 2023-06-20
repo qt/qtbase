@@ -71,19 +71,20 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     builds on QOpenGLContext, QOpenGLFunctions, and the related cross-platform
     infrastructure of the Qt GUI module.
 
-    \li Direct3D 11.1 or newer, with Shader Model 5.0 or newer . When the D3D
+    \li Direct3D 11.1 or newer, with Shader Model 5.0 or newer. When the D3D
     runtime has no support for 11.1 features or Shader Model 5.0,
     initialization using an accelerated graphics device will fail, but using
     the
     \l{https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp}{software
     adapter} is still an option.
 
-    \li Direct3D 12.0 or newer. The D3D12 device is by default created with
-    specifying a minimum feature level of \c{D3D_FEATURE_LEVEL_11_0}.
+    \li Direct3D 12.0 or newer, with Shader Model 5.0 or newer. The D3D12
+    device is by default created with specifying a minimum feature level of
+    \c{D3D_FEATURE_LEVEL_11_0}.
 
     \li Metal 1.2 or newer.
 
-    \li Vulkan 1.0 or newer , optionally utilizing some Vulkan 1.1 level
+    \li Vulkan 1.0 or newer, optionally utilizing some Vulkan 1.1 level
     features.
 
     \li Null, a "dummy" backend that issues no graphics calls at all.
@@ -650,7 +651,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     mechanism because the cost of maintaining the related data structures is
     not insignificant with some backends. With Vulkan this feature maps
     directly to VkPipelineCache, vkGetPipelineCacheData and
-    VkPipelineCacheCreateInfo::pInitialData. With D3D11 there is no real
+    VkPipelineCacheCreateInfo::pInitialData. With Direct3D 11 there is no real
     pipline cache, but the results of HLSL->DXBC compilations are stored and
     can be serialized/deserialized via this mechanism. This allows skipping the
     time consuming D3DCompile() in future runs of the applications for shaders
@@ -771,7 +772,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value WideLines Indicates that lines with a width other than 1 are
     supported. When reported as not supported, the line width set on the
     graphics pipeline state is ignored. This can always be false with some
-    backends (D3D11, Metal). With Vulkan, the value depends on the
+    backends (D3D11, D3D12, Metal). With Vulkan, the value depends on the
     implementation. With OpenGL, wide lines are not supported in core profile
     contexts.
 
@@ -932,7 +933,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     with image load/store. This feature is only available with some backends as
     it does not map well to all graphics APIs, and it is only meant to provide
     support for special cases anyhow. In practice the feature can be expected to
-    be supported with Direct3D 11 and Vulkan.
+    be supported with Direct3D 11/12 and Vulkan.
 
     \value NonFillPolygonMode Indicates that setting a PolygonMode other than
     the default Fill is supported for QRhiGraphicsPipeline. A common use case
@@ -953,8 +954,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     When not supported, build() will succeed but just show a warning message
     and the values of the target attributes will be broken. In practice this
     feature will be unsupported in some OpenGL ES 2.0 and OpenGL 2.x
-    implementations. Note that while D3D does support half precision input
-    attributes, it does not support the half3 type. The D3D backends pass
+    implementations. Note that while Direct3D 11/12 does support half precision
+    input attributes, it does not support the half3 type. The D3D backends pass
     half3 attributes as half4. To ensure cross platform compatibility, half3
     inputs should be padded to 8 bytes.
 
@@ -1636,10 +1637,10 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
     \value Half Half precision (16 bit) float
 
     \note Support for half precision floating point attributes is indicated at
-    run time by the QRhi::Feature::HalfAttributes feature flag. Note that D3D
-    supports half input attributes, but does not support the Half3 type. The
-    D3D backends pass through Half3 as Half4. To ensure cross platform
-    compatibility, Half3 inputs should be padded to 8 bytes.
+    run time by the QRhi::Feature::HalfAttributes feature flag. Note that
+    Direct3D 11/12 supports half input attributes, but does not support the
+    Half3 type. The D3D backends pass through Half3 as Half4. To ensure cross
+    platform compatibility, Half3 inputs should be padded to 8 bytes.
  */
 
 /*!
@@ -3541,10 +3542,13 @@ QRhi *QRhiResource::rhi() const
     objects array are pointers to a GLuint. With Vulkan, the native handle is a
     VkBuffer, so the elements of the array are pointers to a VkBuffer. With
     Direct3D 11 and Metal the elements are pointers to a ID3D11Buffer or
-    MTLBuffer pointer, respectively.
+    MTLBuffer pointer, respectively. With Direct3D 12, the elements are
+    pointers to a ID3D12Resource.
 
     \note Pay attention to the fact that the elements are always pointers to
     the native buffer handle type, even if the native type itself is a pointer.
+    (so the elements are \c{VkBuffer *} on Vulkan, even though VkBuffer itself
+    is a pointer on 64-bit architectures).
  */
 
 /*!
@@ -4140,9 +4144,10 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
     \brief 64-bit integer containing the native object handle.
 
     With OpenGL, the native handle is a GLuint value, so \c object can then be
-    cast to a GLuint. With Vulkan, the native handle is a VkImage, so \c
-    object can be cast to a VkImage. With Direct3D 11 and Metal \c
-    object contains a ID3D11Texture2D or MTLTexture pointer, respectively.
+    cast to a GLuint. With Vulkan, the native handle is a VkImage, so \c object
+    can be cast to a VkImage. With Direct3D 11 and Metal \c object contains a
+    ID3D11Texture2D or MTLTexture pointer, respectively. With Direct3D 12
+    \c object contains a ID3D12Resource pointer.
  */
 
 /*!
@@ -9301,9 +9306,9 @@ const QRhiNativeHandles *QRhiCommandBuffer::nativeHandles()
     called when the pass recording was started with specifying
     QRhiCommandBuffer::ExternalContent.
 
-    With Vulkan or Metal one can query the native command buffer or encoder
-    objects via nativeHandles() and enqueue commands to them. With OpenGL or
-    Direct3D 11 the (device) context can be retrieved from
+    With Vulkan, Metal, or Direct3D 12 one can query the native command buffer
+    or encoder objects via nativeHandles() and enqueue commands to them. With
+    OpenGL or Direct3D 11 the (device) context can be retrieved from
     QRhi::nativeHandles(). However, this must never be done without ensuring
     the QRhiCommandBuffer's state stays up-to-date. Hence the requirement for
     wrapping any externally added command recording between beginExternal() and
