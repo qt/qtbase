@@ -18,7 +18,7 @@ class QFutureSynchronizer
 
 public:
     Q_NODISCARD_CTOR QFutureSynchronizer() : m_cancelOnWait(false) { }
-    Q_NODISCARD_CTOR
+    Q_NODISCARD_CTOR_X("Use future.waitForFinished() instead.")
     explicit QFutureSynchronizer(QFuture<T> future)
         : m_cancelOnWait(false)
     { addFuture(std::move(future)); }
