@@ -17,7 +17,8 @@ class QFutureSynchronizer
     Q_DISABLE_COPY(QFutureSynchronizer)
 
 public:
-    QFutureSynchronizer() : m_cancelOnWait(false) { }
+    Q_NODISCARD_CTOR QFutureSynchronizer() : m_cancelOnWait(false) { }
+    Q_NODISCARD_CTOR
     explicit QFutureSynchronizer(QFuture<T> future)
         : m_cancelOnWait(false)
     { addFuture(std::move(future)); }
