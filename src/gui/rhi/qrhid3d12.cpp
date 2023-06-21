@@ -6003,13 +6003,15 @@ bool QD3D12SwapChain::createOrResize()
                     qWarning("Failed to set content for Direct Composition visual: %s",
                              qPrintable(QSystemError::windowsComString(hr)));
                 }
+            } else {
+                // disable Alt+Enter; not relevant when using DirectComposition
+                rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
             }
         }
         if (FAILED(hr)) {
             qWarning("Failed to create D3D12 swapchain: %s", qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
-        rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 
         for (int i = 0; i < QD3D12_FRAMES_IN_FLIGHT; ++i) {
             hr = rhiD->dev->CreateFence(0,

@@ -5157,6 +5157,9 @@ bool QD3D11SwapChain::createOrResize()
                     qWarning("Failed to set content for Direct Composition visual: %s",
                              qPrintable(QSystemError::windowsComString(hr)));
                 }
+            } else {
+                // disable Alt+Enter; not relevant when using DirectComposition
+                rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
             }
         }
         if (FAILED(hr)) {
@@ -5164,7 +5167,6 @@ bool QD3D11SwapChain::createOrResize()
                 qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
-        rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
     } else {
         releaseBuffers();
         // flip model -> buffer count is the real buffer count, not 1 like with the legacy modes
