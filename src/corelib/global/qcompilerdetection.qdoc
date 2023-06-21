@@ -392,3 +392,21 @@
 
     If this macro is used outside a function, the behavior is undefined.
 */
+
+/*!
+    \macro Q_NODISCARD_CTOR
+    \relates <QtCompilerDetection>
+    \since 6.6
+
+    \brief Expands to \c{[[nodiscard]]} on compilers that accept it on constructors.
+
+    Otherwise it expands to nothing.
+
+    Constructors marked as Q_NODISCARD_CTOR cause a compiler warning if a call
+    site doesn't use the resulting object.
+
+    This macro is exists solely to prevent warnings on compilers that don't
+    implement the feature. If your supported platforms all allow \c{[[nodiscard]]}
+    on constructors, we strongly recommend you use the C++ attribute directly instead
+    of this macro.
+*/
