@@ -896,6 +896,53 @@ QString findD3dCompiler(Platform platform, const QString &qtBinDir, unsigned wor
     return QString();
 }
 
+QStringList findDxc(Platform platform, const QString &qtBinDir, unsigned wordSize)
+{
+    QStringList results;
+    const QString kitDir = QString::fromLocal8Bit(qgetenv("WindowsSdkDir"));
+    const QString suffix = QLatin1StringView(windowsSharedLibrarySuffix);
+    for (QString prefix : { QStringLiteral("dxcompiler"), QStringLiteral("dxil") }) {
+        QString name = prefix + suffix;
+        if (!kitDir.isEmpty()) {
+            QString redistDirPath = QDir::cleanPath(kitDir) + QStringLiteral("/Redist/D3D/");
+            if (platform.testFlag(ArmBased)) {
+                redistDirPath += wordSize == 32 ? QStringLiteral("arm") : QStringLiteral("arm64");
+            } else {
+                redistDirPath += wordSize == 32 ? QStringLiteral("x86") : QStringLiteral("x64");
+            }
+            QDir redistDir(redistDirPath);
+            if (redistDir.exists()) {
+                const QFileInfoList files = redistDir.entryInfoList(QStringList(prefix + u'*' + suffix), QDir::Files);
+                if (!files.isEmpty()) {
+                    results.append(files.front().absoluteFilePath());
+                    continue;
+                }
+            }
+        }
+        // Check the bin directory of the Qt SDK (in case it is shadowed by the
+        // Windows system directory in PATH).
+        const QFileInfo fi(qtBinDir + u'/' + name);
+        if (fi.isFile()) {
+            results.append(fi.absoluteFilePath());
+            continue;
+        }
+        // Try to find it in the PATH (e.g. the Vulkan SDK ships these, even if Windows itself doesn't).
+        if (platform.testFlag(IntelBased)) {
+            QString errorMessage;
+            unsigned detectedWordSize;
+            const QString dll = findInPath(name);
+            if (!dll.isEmpty()
+                && readPeExecutable(dll, &errorMessage, 0, &detectedWordSize, 0)
+                && detectedWordSize == wordSize)
+            {
+                results.append(dll);
+                continue;
+            }
+        }
+    }
+    return results;
+}
+
 #else // Q_OS_WIN
 
 bool readPeExecutable(const QString &, QString *errorMessage,
@@ -908,6 +955,11 @@ bool readPeExecutable(const QString &, QString *errorMessage,
 QString findD3dCompiler(Platform, const QString &, unsigned)
 {
     return QString();
+}
+
+QStringList findDxc(Platform, const QString &, unsigned)
+{
+    return QStringList();
 }
 
 #endif // !Q_OS_WIN

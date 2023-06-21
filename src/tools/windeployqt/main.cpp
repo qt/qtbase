@@ -162,6 +162,7 @@ struct Options {
     bool quickImports = true;
     bool translations = true;
     bool systemD3dCompiler = true;
+    bool systemDxc = true;
     bool compilerRunTime = false;
     QStringList disabledPluginTypes;
     bool softwareRasterizer = true;
@@ -416,6 +417,10 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                                  QStringLiteral("Skip deployment of the system D3D compiler."));
     parser->addOption(noSystemD3DCompilerOption);
 
+    QCommandLineOption noSystemDxcOption(QStringLiteral("no-system-dxc-compiler"),
+                                         QStringLiteral("Skip deployment of the system DXC (dxcompiler.dll, dxil.dll)."));
+    parser->addOption(noSystemDxcOption);
+
 
     QCommandLineOption compilerRunTimeOption(QStringLiteral("compiler-runtime"),
                                              QStringLiteral("Deploy compiler runtime (Desktop only)."));
@@ -489,6 +494,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     if (parser->isSet(translationOption))
         options->languages = parser->value(translationOption).split(u',');
     options->systemD3dCompiler = !parser->isSet(noSystemD3DCompilerOption);
+    options->systemDxc = !parser->isSet(noSystemDxcOption);
     options->quickImports = !parser->isSet(noQuickImportOption);
 
     // default to deployment of compiler runtime for windows desktop configurations
@@ -1447,6 +1453,13 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             } else {
                 deployedQtLibraries.push_back(d3dCompiler);
             }
+        }
+        if (options.systemDxc) {
+            const QStringList dxcLibs = findDxc(options.platform, qtBinDir, wordSize);
+            if (!dxcLibs.isEmpty())
+                deployedQtLibraries.append(dxcLibs);
+            else
+                std::wcerr << "Warning: Cannot find any version of the dxcompiler.dll and dxil.dll.\n";
         }
     } // Windows
 

@@ -201,6 +201,7 @@ inline QStringList findDependentLibraries(const QString &executableFileName, Pla
 }
 
 QString findD3dCompiler(Platform platform, const QString &qtBinDir, unsigned wordSize);
+QStringList findDxc(Platform platform, const QString &qtBinDir, unsigned wordSize);
 
 bool patchQtCore(const QString &path, QString *errorMessage);
 
