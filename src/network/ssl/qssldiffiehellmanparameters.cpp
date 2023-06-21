@@ -33,17 +33,18 @@
 
 QT_BEGIN_NAMESPACE
 
-// The 1024-bit MODP group from RFC 2459 (Second Oakley Group)
+// The 2048-bit MODP group from RFC 3526
 Q_AUTOTEST_EXPORT const char *qssl_dhparams_default_base64 =
-    "MIGHAoGBAP//////////yQ/aoiFowjTExmKLgNwc0SkCTgiKZ8x0Agu+pjsTmyJR"
-    "Sgh5jjQE3e+VGbPNOkMbMCsKbfJfFDdP4TVtbVHCReSFtXZiXn7G9ExC6aY37WsL"
-    "/1y29Aa37e44a/taiZ+lrp8kEXxLH+ZJKGZR7OZTgf//////////AgEC";
+    "MIIBCAKCAQEA///////////JD9qiIWjCNMTGYouA3BzRKQJOCIpnzHQCC76mOxObIlFKCHmO"
+    "NATd75UZs806QxswKwpt8l8UN0/hNW1tUcJF5IW1dmJefsb0TELppjftawv/XLb0Brft7jhr"
+    "+1qJn6WunyQRfEsf5kkoZlHs5Fs9wgB8uKFjvwWY2kg2HFXTmmkWP6j9JM9fg2VdI9yjrZYc"
+    "YvNWIIVSu57VKQdwlpZtZww1Tkq8mATxdGwIyhghfDKQXkYuNs474553LBgOhgObJ4Oi7Aei"
+    "j7XFXfBvTFLJ3ivL9pVYFxg5lUl86pVq5RXSJhiY+gUQFXKOWoqsqmj//////////wIBAg==";
 
 /*!
     Returns the default QSslDiffieHellmanParameters used by QSslSocket.
 
-    This is currently the 1024-bit MODP group from RFC 2459, also
-    known as the Second Oakley Group.
+    This is currently the 2048-bit MODP group from RFC 3526.
 */
 QSslDiffieHellmanParameters QSslDiffieHellmanParameters::defaultParameters()
 {
