@@ -312,12 +312,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMessageBox::StandardButtons)
 
-[[maybe_unused]]
-static inline void qRequireVersion(int argc, char *argv[], QAnyStringView req)
-{
-    Q_WIDGETS_EXPORT void _q_requireVersion(int, char *[], QAnyStringView);
-    _q_requireVersion(argc, argv, req);
-}
+Q_WIDGETS_EXPORT void qRequireVersion(int argc, char *argv[], QAnyStringView req);
 
 #define QT_REQUIRE_VERSION(argc, argv, str) qRequireVersion(argc, argv, str);
 
