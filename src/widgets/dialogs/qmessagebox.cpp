@@ -2860,7 +2860,7 @@ Q_WIDGETS_EXPORT void _q_requireVersion(int argc, char *argv[], QAnyStringView r
                                     .arg(qAppName(), required.toString(), current.toString());
     QMessageBox::critical(nullptr, QApplication::tr("Incompatible Qt Library Error"),
                           message, QMessageBox::Abort);
-    qFatal("%s", qPrintable(message));
+    qFatal("%ls", qUtf16Printable(message));
 }
 
 #if QT_DEPRECATED_SINCE(6,2)
