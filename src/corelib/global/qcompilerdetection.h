@@ -959,6 +959,13 @@
 #  ifndef Q_NODISCARD_CTOR
 #    define Q_NODISCARD_CTOR [[nodiscard]]
 #  endif
+// [[nodiscard("reason")]] (P1301)
+#  ifndef Q_NODISCARD_X
+#    define Q_NODISCARD_X(message) [[nodiscard(message)]]
+#  endif
+#  ifndef Q_NODISCARD_CTOR_X
+#    define Q_NODISCARD_CTOR_X(message) [[nodiscard(message)]]
+#  endif
 #endif
 
 #if __has_cpp_attribute(maybe_unused)
@@ -1010,8 +1017,14 @@
 #ifndef Q_REQUIRED_RESULT
 #  define Q_REQUIRED_RESULT
 #endif
+#ifndef Q_NODISCARD_X
+#  define Q_NODISCARD_X(message) Q_REQUIRED_RESULT
+#endif
 #ifndef Q_NODISCARD_CTOR
 #  define Q_NODISCARD_CTOR
+#endif
+#ifndef Q_NODISCARD_CTOR_X
+#  define Q_NODISCARD_CTOR_X(message) Q_NODISCARD_CTOR
 #endif
 #ifndef Q_DECL_DEPRECATED
 #  define Q_DECL_DEPRECATED

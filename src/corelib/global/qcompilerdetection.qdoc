@@ -409,4 +409,19 @@
     implement the feature. If your supported platforms all allow \c{[[nodiscard]]}
     on constructors, we strongly recommend you use the C++ attribute directly instead
     of this macro.
+
+    \sa Q_NODISCARD_CTOR_X
+*/
+
+/*!
+    \macro Q_NODISCARD_X(message)
+    \macro Q_NODISCARD_CTOR_X(message)
+    \relates <QtCompilerDetection>
+    \since 6.7
+
+    \brief Expand to \c{[[nodiscard(message)]]} on compilers that support the feature.
+
+    Otherwise they expand to [[nodiscard]] and Q_NODISCARD_CTOR, respectively.
+
+    \sa`Q_NODISCARD_CTOR
 */
