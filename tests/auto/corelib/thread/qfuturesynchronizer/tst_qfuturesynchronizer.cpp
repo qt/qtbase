@@ -13,6 +13,7 @@ class tst_QFutureSynchronizer : public QObject
 
 private Q_SLOTS:
     void construction();
+    void setFutureAliasingExistingMember();
     void addFuture();
     void cancelOnWait();
     void clearFutures();
@@ -31,6 +32,28 @@ void tst_QFutureSynchronizer::construction()
 
     QCOMPARE(synchronizer.futures().size(), 0);
     QCOMPARE(synchronizerWithFuture.futures().size(), 1);
+}
+
+void tst_QFutureSynchronizer::setFutureAliasingExistingMember()
+{
+    //
+    // GIVEN: a QFutureSynchronizer with one QFuture:
+    //
+    QFutureSynchronizer synchronizer(QtFuture::makeReadyFuture(42));
+
+    //
+    // WHEN: calling setFuture() with an alias of the QFuture already in `synchronizer`:
+    //
+    for (int i = 0; i < 2; ++i) {
+        const auto &f = synchronizer.futures().constFirst();
+        synchronizer.setFuture(f);
+    }
+
+    //
+    // THEN: it didn't crash
+    //
+    QCOMPARE(synchronizer.futures().size(), 1);
+    QCOMPARE(synchronizer.futures().constFirst().result(), 42);
 }
 
 void tst_QFutureSynchronizer::addFuture()
