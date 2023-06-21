@@ -1017,6 +1017,11 @@ qt_feature("permissions" PUBLIC
     LABEL "Application permissions"
     PURPOSE "Provides support for requesting user permission to access restricted data or APIs"
 )
+qt_feature("openssl-hash" PUBLIC
+    LABEL "OpenSSL based cryptographic hash"
+    CONDITION QT_FEATURE_openssl_linked AND QT_FEATURE_opensslv30
+    PURPOSE "Uses OpenSSL based implementation of cryptographic hash algorithms."
+)
 
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "backtrace")
@@ -1034,6 +1039,7 @@ qt_configure_add_summary_entry(
     ARGS "etw lttng ctf"
     MESSAGE "Tracing backend"
 )
+qt_configure_add_summary_entry(ARGS "openssl-hash")
 qt_configure_add_summary_section(NAME "Logging backends")
 qt_configure_add_summary_entry(ARGS "journald")
 qt_configure_add_summary_entry(ARGS "syslog")

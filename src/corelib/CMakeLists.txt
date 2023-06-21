@@ -829,7 +829,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_regularexpression
         WrapPCRE2::WrapPCRE2
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_openssl_linked AND QT_FEATURE_opensslv30
+qt_internal_extend_target(Core CONDITION QT_FEATURE_openssl_hash
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
 )

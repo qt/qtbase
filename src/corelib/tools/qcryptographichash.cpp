@@ -25,7 +25,7 @@
 #include "../../3rdparty/rfc6234/sha.h"
 
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-#if !QT_CONFIG(opensslv30) || !QT_CONFIG(openssl_linked)
+#if !QT_CONFIG(openssl_hash)
 // qdoc and qmake only need SHA-1
 #include "../../3rdparty/md5/md5.h"
 #include "../../3rdparty/md5/md5.cpp"
@@ -114,7 +114,7 @@ static inline int SHA384_512AddLength(SHA512Context *context, unsigned int lengt
 #endif
 #endif // QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 
-#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(opensslv30) && QT_CONFIG(openssl_linked)
+#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(openssl_hash)
 #define USING_OPENSSL30
 #include <openssl/evp.h>
 #include <openssl/provider.h>
