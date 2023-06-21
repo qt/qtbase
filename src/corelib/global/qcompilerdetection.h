@@ -954,6 +954,13 @@
 #  define Q_REQUIRED_RESULT [[nodiscard]]
 #endif
 
+#if __has_cpp_attribute(nodiscard) >= 201907L /* used for both P1771 and P1301... */
+// [[nodiscard]] constructor (P1771)
+#  ifndef Q_NODISCARD_CTOR
+#    define Q_NODISCARD_CTOR [[nodiscard]]
+#  endif
+#endif
+
 #if __has_cpp_attribute(maybe_unused)
 #  undef Q_DECL_UNUSED
 #  define Q_DECL_UNUSED [[maybe_unused]]
@@ -977,15 +984,6 @@
 
 #define Q_DECL_ENUMERATOR_DEPRECATED Q_DECL_DEPRECATED
 #define Q_DECL_ENUMERATOR_DEPRECATED_X(x) Q_DECL_DEPRECATED_X(x)
-
-// [[nodiscard]] constructor
-#ifndef Q_NODISCARD_CTOR
-#  if __has_cpp_attribute(nodiscard) >= 201907L
-#    define Q_NODISCARD_CTOR [[nodiscard]]
-#  else
-#    define Q_NODISCARD_CTOR
-#  endif
-#endif
 
 /*
  * Fallback macros to certain compiler features
@@ -1011,6 +1009,9 @@
 #endif
 #ifndef Q_REQUIRED_RESULT
 #  define Q_REQUIRED_RESULT
+#endif
+#ifndef Q_NODISCARD_CTOR
+#  define Q_NODISCARD_CTOR
 #endif
 #ifndef Q_DECL_DEPRECATED
 #  define Q_DECL_DEPRECATED
