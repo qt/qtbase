@@ -6885,6 +6885,14 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     \enum QRhiSwapChain::Format
     Describes the swapchain format. The default format is SDR.
 
+    This enum is used with
+    \l{QRhiSwapChain::isFormatSupported()}{isFormatSupported()} to check
+    upfront if creating the swapchain with the given format is supported by the
+    platform and the window's associated screen, and with
+    \l{QRhiSwapChain::setFormat()}{setFormat()}
+    to set the requested format in the swapchain before calling
+    \l{QRhiSwapChain::createOrResize()}{createOrResize()} for the first time.
+
     \value SDR 8-bit RGBA or BGRA, depending on the backend and platform. With
     OpenGL ES in particular, it could happen that the platform provides less
     than 8 bits (e.g. due to EGL and the QSurfaceFormat choosing a 565 or 444
@@ -6993,6 +7001,21 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     time. If the result is true for a HDR format, then creating the swapchain
     with that format is expected to succeed as long as the window is not moved
     to another screen in the meantime.
+
+    The main use of this function is to call it before the first
+    createOrResize() after the window is already set. This allow the QRhi
+    backends to perform platform or windowing system specific queries to
+    determine if the window (and the screen it is on) is capable of true HDR
+    output with the specified format.
+
+    When the format is reported as supported, call setFormat() to set the
+    requested format and call createOrResize(). Be aware of the consequences
+    however: successfully requesting a HDR format will involve having to deal
+    with a different color space, possibly doing white level correction for
+    non-HDR-aware content, adjusting tonemapping methods, adjusting offscreen
+    render target settings, etc.
+
+    \sa setFormat()
  */
 
 /*!
@@ -7111,6 +7134,15 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
 /*!
     \fn void QRhiSwapChain::setFormat(Format f)
     Sets the format \a f.
+
+    Avoid setting formats that are reported as unsupported from
+    isFormatSupported(). Note that support for a given format may depend on the
+    screen the swapchain's associated window is opened on. On some platforms,
+    such as Windows and macOS, for HDR output to work it is necessary to have
+    HDR output enabled in the display settings.
+
+    See isFormatSupported(), \l QRhiSwapChainHdrInfo, and \l Format for more
+    information on high dynamic range output.
  */
 
 /*!
