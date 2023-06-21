@@ -2847,7 +2847,7 @@ void QMessageBoxPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHel
         clickedButton = button;
 }
 
-Q_WIDGETS_EXPORT void _q_requireVersion(int argc, char *argv[], QAnyStringView req)
+void qRequireVersion(int argc, char *argv[], QAnyStringView req)
 {
     const auto required = QVersionNumber::fromString(req).normalized();
     const auto current = QVersionNumber::fromString(qVersion()).normalized();
