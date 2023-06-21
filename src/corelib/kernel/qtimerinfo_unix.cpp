@@ -46,18 +46,16 @@ bool QTimerInfoList::hasPendingTimers()
     return updateCurrentTime() < constFirst()->timeout;
 }
 
+static bool byTimeout(const QTimerInfo *a, const QTimerInfo *b)
+{ return a->timeout < b->timeout; };
+
 /*
   insert timer info into list
 */
 void QTimerInfoList::timerInsert(QTimerInfo *ti)
 {
-    int index = size();
-    while (index--) {
-        const QTimerInfo * const t = at(index);
-        if (!(ti->timeout < t->timeout))
-            break;
-    }
-    insert(index+1, ti);
+    insert(std::upper_bound(cbegin(), cend(), ti, byTimeout),
+           ti);
 }
 
 static constexpr milliseconds roundToMillisecond(nanoseconds val)
@@ -420,14 +418,16 @@ int QTimerInfoList::activateTimers()
             firstTimerInfo = currentTimerInfo;
         }
 
-        // remove from list
-        removeFirst();
-
         // determine next timeout time
         calculateNextTimeout(currentTimerInfo, now);
+        if (size() > 1) {
+            // Find where "currentTimerInfo" should be in the list so as
+            // to keep the list ordered by timeout
+            auto afterCurrentIt = begin() + 1;
+            auto iter = std::upper_bound(afterCurrentIt, end(), currentTimerInfo, byTimeout);
+            currentTimerInfo = *std::rotate(begin(), afterCurrentIt, iter);
+        }
 
-        // reinsert timer
-        timerInsert(currentTimerInfo);
         if (currentTimerInfo->interval > 0ms)
             n_act++;
 
