@@ -53,7 +53,7 @@ Q_CORE_EXPORT void beginPropertyUpdateGroup();
 Q_CORE_EXPORT void endPropertyUpdateGroup();
 }
 
-class [[nodiscard]] QScopedPropertyUpdateGroup
+class QScopedPropertyUpdateGroup
 {
     Q_DISABLE_COPY_MOVE(QScopedPropertyUpdateGroup)
 public:
@@ -287,7 +287,7 @@ private:
 };
 
 template <typename Functor>
-class [[nodiscard]] QPropertyChangeHandler : public QPropertyObserver
+class QPropertyChangeHandler : public QPropertyObserver
 {
     Functor m_handler;
 public:
@@ -314,7 +314,7 @@ public:
     }
 };
 
-class [[nodiscard]] QPropertyNotifier : public QPropertyObserver
+class QPropertyNotifier : public QPropertyObserver
 {
     std::function<void()> m_handler;
 public:

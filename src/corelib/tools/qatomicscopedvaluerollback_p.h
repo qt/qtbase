@@ -23,7 +23,7 @@
 QT_BEGIN_NAMESPACE
 
 template <typename T>
-class [[nodiscard]] QAtomicScopedValueRollback
+class QAtomicScopedValueRollback
 {
     std::atomic<T> &m_atomic;
     T m_value;

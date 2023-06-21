@@ -37,7 +37,7 @@ Q_CORE_EXPORT bool qEnableNtfsPermissionChecks() noexcept;
 Q_CORE_EXPORT bool qDisableNtfsPermissionChecks() noexcept;
 Q_CORE_EXPORT bool qAreNtfsPermissionChecksEnabled() noexcept;
 
-class [[nodiscard]] QNtfsPermissionCheckGuard
+class QNtfsPermissionCheckGuard
 {
     Q_DISABLE_COPY_MOVE(QNtfsPermissionCheckGuard)
 public:

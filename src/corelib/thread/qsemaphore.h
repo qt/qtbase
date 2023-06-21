@@ -61,7 +61,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 }
 #endif
 
-class [[nodiscard]] QSemaphoreReleaser
+class QSemaphoreReleaser
 {
 public:
     Q_NODISCARD_CTOR
