@@ -4828,9 +4828,14 @@ QD3D12ObjectHandle QD3D12ShaderResourceBindings::createRootSignature(const QD3D1
     return QD3D12RootSignature::addToPool(&rhiD->rootSignaturePool, rootSig);
 }
 
-// For now we mirror exactly what's done in the D3D11 backend, meaning we use
-// the old shader compiler (so like fxc, not dxc) to generate shader model 5.0
-// output. Some day this should be moved to the new compiler and DXIL.
+// For shader model < 6.0 we do the same as the D3D11 backend: use the old
+// compiler (D3DCompile) to generate DXBC, just as qsb does (when -c is passed)
+// by invoking fxc, not dxc. For SM >= 6.0 we have to use the new compiler and
+// work with DXIL. And that involves IDxcCompiler and needs the presence of
+// dxcompiler.dll and dxil.dll at runtime. Plus there's a chance we have
+// ancient SDK headers when not using MSVC. So this is heavily optional,
+// meaning support for dxc can be disabled both at build time (no dxcapi.h) and
+// at run time (no DLLs).
 
 static inline void makeHlslTargetString(char target[7], const char stage[3], int version)
 {
@@ -4844,6 +4849,108 @@ static inline void makeHlslTargetString(char target[7], const char stage[3], int
     target[5] = '0' + smMinor;
     target[6] = '\0';
 }
+
+static QByteArray legacyCompile(const QShaderCode &hlslSource, const char *target, UINT flags, QString *error)
+{
+    static const pD3DCompile d3dCompile = QRhiD3D::resolveD3DCompile();
+    if (!d3dCompile) {
+        qWarning("Unable to resolve function D3DCompile()");
+        return QByteArray();
+    }
+
+    ID3DBlob *bytecode = nullptr;
+    ID3DBlob *errors = nullptr;
+    HRESULT hr = d3dCompile(hlslSource.shader().constData(), SIZE_T(hlslSource.shader().size()),
+                            nullptr, nullptr, nullptr,
+                            hlslSource.entryPoint().constData(), target, flags, 0, &bytecode, &errors);
+    if (FAILED(hr) || !bytecode) {
+        qWarning("HLSL shader compilation failed: 0x%x", uint(hr));
+        if (errors) {
+            *error = QString::fromUtf8(static_cast<const char *>(errors->GetBufferPointer()),
+                                       int(errors->GetBufferSize()));
+            errors->Release();
+        }
+        return QByteArray();
+    }
+
+    QByteArray result;
+    result.resize(int(bytecode->GetBufferSize()));
+    memcpy(result.data(), bytecode->GetBufferPointer(), size_t(result.size()));
+    bytecode->Release();
+    return result;
+}
+
+#ifdef QRHI_D3D12_HAS_DXC
+static QByteArray dxcCompile(const QShaderCode &hlslSource, const char *target, UINT flags, QString *error)
+{
+    static std::pair<IDxcCompiler *, IDxcLibrary *> dxc = QRhiD3D::createDxcCompiler();
+    IDxcCompiler *compiler = dxc.first;
+    if (!compiler) {
+        qWarning("Unable to instantiate IDxcCompiler. Likely no dxcompiler.dll and dxil.dll present. "
+                 "Bundling these are out of scope for Qt. Try https://github.com/microsoft/DirectXShaderCompiler/releases");
+        return QByteArray();
+    }
+    IDxcLibrary *library = dxc.second;
+    if (!library)
+        return QByteArray();
+
+    IDxcBlobEncoding *sourceBlob = nullptr;
+    HRESULT hr = library->CreateBlobWithEncodingOnHeapCopy(hlslSource.shader().constData(),
+                                                           UINT32(hlslSource.shader().size()),
+                                                           DXC_CP_UTF8,
+                                                           &sourceBlob);
+    if (FAILED(hr)) {
+        qWarning("Failed to create source blob for dxc: 0x%x (%s)",
+                 uint(hr),
+                 qPrintable(QSystemError::windowsComString(hr)));
+        return QByteArray();
+    }
+
+    const QString entryPointStr = QString::fromLatin1(hlslSource.entryPoint());
+    const QString targetStr = QString::fromLatin1(target);
+
+    IDxcOperationResult *result = nullptr;
+    hr = compiler->Compile(sourceBlob,
+                           nullptr,
+                           reinterpret_cast<LPCWSTR>(entryPointStr.utf16()),
+                           reinterpret_cast<LPCWSTR>(targetStr.utf16()),
+                           nullptr, 0, nullptr, 0, nullptr,
+                           &result);
+    sourceBlob->Release();
+    if (SUCCEEDED(hr))
+        result->GetStatus(&hr);
+    if (FAILED(hr)) {
+        qWarning("HLSL shader compilation failed: 0x%x (%s)",
+                 uint(hr),
+                 qPrintable(QSystemError::windowsComString(hr)));
+        if (result) {
+            IDxcBlobEncoding *errorsBlob = nullptr;
+            if (SUCCEEDED(result->GetErrorBuffer(&errorsBlob))) {
+                if (errorsBlob) {
+                    *error = QString::fromUtf8(static_cast<const char *>(errorsBlob->GetBufferPointer()),
+                                               int(errorsBlob->GetBufferSize()));
+                    errorsBlob->Release();
+                }
+            }
+        }
+        return QByteArray();
+    }
+
+    IDxcBlob *bytecode = nullptr;
+    if FAILED(result->GetResult(&bytecode)) {
+        qWarning("No result from IDxcCompiler: 0x%x (%s)",
+                 uint(hr),
+                 qPrintable(QSystemError::windowsComString(hr)));
+        return QByteArray();
+    }
+
+    QByteArray ba;
+    ba.resize(int(bytecode->GetBufferSize()));
+    memcpy(ba.data(), bytecode->GetBufferPointer(), size_t(ba.size()));
+    bytecode->Release();
+    return ba;
+}
+#endif
 
 static QByteArray compileHlslShaderSource(const QShader &shader,
                                           QShader::Variant shaderVariant,
@@ -4904,33 +5011,17 @@ static QByteArray compileHlslShaderSource(const QShader &shader,
         break;
     }
 
-    static const pD3DCompile d3dCompile = QRhiD3D::resolveD3DCompile();
-    if (!d3dCompile) {
-        qWarning("Unable to resolve function D3DCompile()");
-        return QByteArray();
+    if (key.sourceVersion().version() >= 60) {
+#ifdef QRHI_D3D12_HAS_DXC
+        return dxcCompile(hlslSource, target, flags, error);
+#else
+        qWarning("Attempted to runtime-compile HLSL source code for shader model >= 6.0 "
+                 "but the Qt build has no support for DXC. "
+                 "Rebuild Qt with a recent Windows SDK or switch to an MSVC build.");
+#endif
     }
 
-    ID3DBlob *bytecode = nullptr;
-    ID3DBlob *errors = nullptr;
-    HRESULT hr = d3dCompile(hlslSource.shader().constData(), SIZE_T(hlslSource.shader().size()),
-                            nullptr, nullptr, nullptr,
-                            hlslSource.entryPoint().constData(), target, flags, 0, &bytecode, &errors);
-    if (FAILED(hr) || !bytecode) {
-        qWarning("HLSL shader compilation failed: 0x%x", uint(hr));
-        if (errors) {
-            *error = QString::fromUtf8(static_cast<const char *>(errors->GetBufferPointer()),
-                                       int(errors->GetBufferSize()));
-            errors->Release();
-        }
-        return QByteArray();
-    }
-
-    QByteArray result;
-    result.resize(int(bytecode->GetBufferSize()));
-    memcpy(result.data(), bytecode->GetBufferPointer(), size_t(result.size()));
-    bytecode->Release();
-
-    return result;
+    return legacyCompile(hlslSource, target, flags, error);
 }
 
 static inline UINT8 toD3DColorWriteMask(QRhiGraphicsPipeline::ColorMask c)
@@ -5229,7 +5320,7 @@ bool QD3D12GraphicsPipeline::create()
                                                                 &error,
                                                                 &shaderKey);
             if (bytecode.isEmpty()) {
-                qWarning("HLSL compute shader compilation failed: %s", qPrintable(error));
+                qWarning("HLSL graphics shader compilation failed: %s", qPrintable(error));
                 return false;
             }
 
