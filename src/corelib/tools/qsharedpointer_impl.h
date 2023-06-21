@@ -396,7 +396,7 @@ public:
     [[nodiscard]] QWeakPointer<T> toWeakRef() const;
 
     template <typename... Args>
-    static QSharedPointer create(Args && ...arguments)
+    [[nodiscard]] static QSharedPointer create(Args && ...arguments)
     {
         typedef QtSharedPointer::ExternalRefCountWithContiguousData<T> Private;
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS
