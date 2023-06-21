@@ -216,7 +216,7 @@ bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 #endif
 
 template <typename Mutex>
-class [[nodiscard]] QMutexLocker
+class QMutexLocker
 {
 public:
     Q_NODISCARD_CTOR
@@ -313,7 +313,7 @@ private:
 class QRecursiveMutex : public QMutex {};
 
 template <typename Mutex>
-class [[nodiscard]] QMutexLocker
+class QMutexLocker
 {
 public:
     Q_NODISCARD_CTOR

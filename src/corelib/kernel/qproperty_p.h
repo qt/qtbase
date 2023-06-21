@@ -94,7 +94,7 @@ struct QPropertyBindingDataPointer
     }
 };
 
-struct [[nodiscard]] QPropertyObserverNodeProtector
+struct QPropertyObserverNodeProtector
 {
     Q_DISABLE_COPY_MOVE(QPropertyObserverNodeProtector)
 

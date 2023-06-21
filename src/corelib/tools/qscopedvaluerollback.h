@@ -9,7 +9,7 @@
 QT_BEGIN_NAMESPACE
 
 template <typename T>
-class [[nodiscard]] QScopedValueRollback
+class QScopedValueRollback
 {
 public:
     Q_NODISCARD_CTOR

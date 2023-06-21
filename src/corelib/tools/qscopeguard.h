@@ -13,7 +13,7 @@
 QT_BEGIN_NAMESPACE
 
 template <typename F>
-class [[nodiscard]] QScopeGuard
+class QScopeGuard
 {
 public:
     Q_NODISCARD_CTOR

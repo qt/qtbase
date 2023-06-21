@@ -439,7 +439,7 @@ inline QBindingStorage *qGetBindingStorage(QObject *o)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
 #endif
 
-class [[nodiscard]] QSignalBlocker
+class QSignalBlocker
 {
 public:
     Q_NODISCARD_CTOR

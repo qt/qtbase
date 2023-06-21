@@ -28,7 +28,7 @@ QT_BEGIN_NAMESPACE
   Locks 2 mutexes in a defined order, avoiding a recursive lock if
   we're trying to lock the same mutex twice.
 */
-class [[nodiscard]] QOrderedMutexLocker
+class QOrderedMutexLocker
 {
 public:
     Q_NODISCARD_CTOR
@@ -120,7 +120,7 @@ private:
 
 #else
 
-class [[nodiscard]] QOrderedMutexLocker
+class QOrderedMutexLocker
 {
 public:
     Q_DISABLE_COPY(QOrderedMutexLocker)
