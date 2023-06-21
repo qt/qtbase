@@ -7,7 +7,7 @@
 #include "cs_tdr_p.h"
 #include <QWindow>
 #include <qmath.h>
-#include <private/qsystemlibrary_p.h>
+#include <QtCore/private/qsystemlibrary_p.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/private/qsystemerror_p.h>
 
@@ -4858,8 +4858,28 @@ bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI
     return true;
 }
 
-static const DXGI_FORMAT DEFAULT_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
-static const DXGI_FORMAT DEFAULT_SRGB_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+static IDCompositionDevice *createDirectCompositionDevice()
+{
+    QSystemLibrary dcomplib(QStringLiteral("dcomp"));
+    typedef HRESULT (__stdcall *DCompositionCreateDeviceFuncPtr)(
+        _In_opt_ IDXGIDevice *dxgiDevice,
+        _In_ REFIID iid,
+        _Outptr_ void **dcompositionDevice);
+    DCompositionCreateDeviceFuncPtr func = reinterpret_cast<DCompositionCreateDeviceFuncPtr>(
+        dcomplib.resolve("DCompositionCreateDevice"));
+    if (!func) {
+        qWarning("Unable to resolve DCompositionCreateDevice, perhaps dcomp.dll is missing?");
+        return nullptr;
+    }
+    IDCompositionDevice *device = nullptr;
+    HRESULT hr = func(nullptr, __uuidof(IDCompositionDevice), reinterpret_cast<void **>(&device));
+    if (FAILED(hr)) {
+        qWarning("Failed to Direct Composition device: %s",
+                 qPrintable(QSystemError::windowsComString(hr)));
+        return nullptr;
+    }
+    return device;
+}
 
 bool QRhiD3D11::ensureDirectCompositionDevice()
 {
@@ -4867,16 +4887,12 @@ bool QRhiD3D11::ensureDirectCompositionDevice()
         return true;
 
     qCDebug(QRHI_LOG_INFO, "Creating Direct Composition device (needed for semi-transparent windows)");
-
-    HRESULT hr = DCompositionCreateDevice(nullptr, __uuidof(IDCompositionDevice), reinterpret_cast<void **>(&dcompDevice));
-    if (FAILED(hr)) {
-        qWarning("Failed to Direct Composition device: %s",
-            qPrintable(QSystemError::windowsComString(hr)));
-        return false;
-    }
-
-    return true;
+    dcompDevice = createDirectCompositionDevice();
+    return dcompDevice ? true : false;
 }
+
+static const DXGI_FORMAT DEFAULT_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
+static const DXGI_FORMAT DEFAULT_SRGB_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
 bool QD3D11SwapChain::createOrResize()
 {

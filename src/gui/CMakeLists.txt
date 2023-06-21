@@ -420,7 +420,6 @@ qt_internal_extend_target(Gui CONDITION WIN32
         d3d11
         dxgi
         dxguid
-        dcomp
 )
 
 if(QT_FEATURE_egl)
