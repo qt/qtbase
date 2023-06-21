@@ -29,7 +29,6 @@ class QWindows11Style : public QWindowsVistaStyle
 public:
     QWindows11Style();
     ~QWindows11Style() override;
-
     void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
                             QPainter *painter, const QWidget *widget) const override;
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
