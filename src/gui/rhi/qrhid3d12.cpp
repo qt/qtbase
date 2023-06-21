@@ -5,13 +5,10 @@
 #include "qshader.h"
 #include <QWindow>
 #include <qmath.h>
-#include <private/qsystemlibrary_p.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/private/qsystemerror_p.h>
-
-#include <d3dcompiler.h>
 #include <comdef.h>
-
+#include "qrhid3dhelpers_p.h"
 #include "cs_mipmap_p.h"
 
 #if __has_include(<pix.h>)
@@ -4835,18 +4832,6 @@ QD3D12ObjectHandle QD3D12ShaderResourceBindings::createRootSignature(const QD3D1
 // the old shader compiler (so like fxc, not dxc) to generate shader model 5.0
 // output. Some day this should be moved to the new compiler and DXIL.
 
-static pD3DCompile resolveD3DCompile()
-{
-    for (const wchar_t *libraryName : {L"D3DCompiler_47", L"D3DCompiler_43"}) {
-        QSystemLibrary library(libraryName);
-        if (library.load()) {
-            if (auto symbol = library.resolve("D3DCompile"))
-                return reinterpret_cast<pD3DCompile>(symbol);
-        }
-    }
-    return nullptr;
-}
-
 static inline void makeHlslTargetString(char target[7], const char stage[3], int version)
 {
     const int smMajor = version / 10;
@@ -4919,7 +4904,7 @@ static QByteArray compileHlslShaderSource(const QShader &shader,
         break;
     }
 
-    static const pD3DCompile d3dCompile = resolveD3DCompile();
+    static const pD3DCompile d3dCompile = QRhiD3D::resolveD3DCompile();
     if (!d3dCompile) {
         qWarning("Unable to resolve function D3DCompile()");
         return QByteArray();
@@ -5884,24 +5869,18 @@ QRhiRenderPassDescriptor *QD3D12SwapChain::newCompatibleRenderPassDescriptor()
     return rpD;
 }
 
-static const DXGI_FORMAT DEFAULT_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
-static const DXGI_FORMAT DEFAULT_SRGB_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-
 bool QRhiD3D12::ensureDirectCompositionDevice()
 {
     if (dcompDevice)
         return true;
 
     qCDebug(QRHI_LOG_INFO, "Creating Direct Composition device (needed for semi-transparent windows)");
-
-    HRESULT hr = DCompositionCreateDevice(nullptr, __uuidof(IDCompositionDevice), reinterpret_cast<void **>(&dcompDevice));
-    if (FAILED(hr)) {
-        qWarning("Failed to Direct Composition device: %s", qPrintable(QSystemError::windowsComString(hr)));
-        return false;
-    }
-
-    return true;
+    dcompDevice = QRhiD3D::createDirectCompositionDevice();
+    return dcompDevice ? true : false;
 }
+
+static const DXGI_FORMAT DEFAULT_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
+static const DXGI_FORMAT DEFAULT_SRGB_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
 void QD3D12SwapChain::chooseFormats()
 {

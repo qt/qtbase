@@ -6,11 +6,9 @@
 #include "vs_test_p.h"
 #include <QWindow>
 #include <qmath.h>
-#include <private/qsystemlibrary_p.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/private/qsystemerror_p.h>
-
-#include <d3dcompiler.h>
+#include "qrhid3dhelpers_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -4242,18 +4240,6 @@ static inline D3D11_BLEND_OP toD3DBlendOp(QRhiGraphicsPipeline::BlendOp op)
     }
 }
 
-static pD3DCompile resolveD3DCompile()
-{
-    for (const wchar_t *libraryName : {L"D3DCompiler_47", L"D3DCompiler_43"}) {
-        QSystemLibrary library(libraryName);
-        if (library.load()) {
-            if (auto symbol = library.resolve("D3DCompile"))
-                return reinterpret_cast<pD3DCompile>(symbol);
-        }
-    }
-    return nullptr;
-}
-
 static inline QByteArray sourceHash(const QByteArray &source)
 {
     // taken from the GL backend, use the same mechanism to get a key
@@ -4319,7 +4305,7 @@ QByteArray QRhiD3D11::compileHlslShaderSource(const QShader &shader, QShader::Va
             return cacheIt.value();
     }
 
-    static const pD3DCompile d3dCompile = resolveD3DCompile();
+    static const pD3DCompile d3dCompile = QRhiD3D::resolveD3DCompile();
     if (d3dCompile == nullptr) {
         qWarning("Unable to resolve function D3DCompile()");
         return QByteArray();
@@ -4974,25 +4960,18 @@ bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI
     return true;
 }
 
-static const DXGI_FORMAT DEFAULT_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
-static const DXGI_FORMAT DEFAULT_SRGB_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-
 bool QRhiD3D11::ensureDirectCompositionDevice()
 {
     if (dcompDevice)
         return true;
 
     qCDebug(QRHI_LOG_INFO, "Creating Direct Composition device (needed for semi-transparent windows)");
-
-    HRESULT hr = DCompositionCreateDevice(nullptr, __uuidof(IDCompositionDevice), reinterpret_cast<void **>(&dcompDevice));
-    if (FAILED(hr)) {
-        qWarning("Failed to Direct Composition device: %s",
-            qPrintable(QSystemError::windowsComString(hr)));
-        return false;
-    }
-
-    return true;
+    dcompDevice = QRhiD3D::createDirectCompositionDevice();
+    return dcompDevice ? true : false;
 }
+
+static const DXGI_FORMAT DEFAULT_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
+static const DXGI_FORMAT DEFAULT_SRGB_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
 bool QD3D11SwapChain::createOrResize()
 {

@@ -405,7 +405,7 @@ qt_internal_extend_target(Gui CONDITION WIN32
         platform/windows/qwindowsguieventdispatcher.cpp platform/windows/qwindowsguieventdispatcher_p.h
         platform/windows/qwindowsmimeconverter.h platform/windows/qwindowsmimeconverter.cpp
         platform/windows/qwindowsnativeinterface.cpp
-        rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
+        rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h rhi/qrhid3dhelpers_p.h
         rhi/vs_test_p.h
         rhi/qrhid3d12.cpp rhi/qrhid3d12_p.h
         rhi/cs_mipmap_p.h
@@ -425,7 +425,6 @@ qt_internal_extend_target(Gui CONDITION WIN32
         d3d11
         dxgi
         dxguid
-        dcomp
         d3d12
 )
 
