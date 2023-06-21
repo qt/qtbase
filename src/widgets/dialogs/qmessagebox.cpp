@@ -39,7 +39,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #endif
 
-#include <memory>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -2853,9 +2853,9 @@ Q_WIDGETS_EXPORT void _q_requireVersion(int argc, char *argv[], QAnyStringView r
     const auto current = QVersionNumber::fromString(qVersion()).normalized();
     if (current >= required)
         return;
-    std::unique_ptr<QApplication> application;
+    std::optional<QApplication> application;
     if (!qApp)
-        application = std::make_unique<QApplication>(argc, argv);
+        application.emplace(argc, argv);
     const QString message = QApplication::tr("Application \"%1\" requires Qt %2, found Qt %3.")
                                     .arg(qAppName(), required.toString(), current.toString());
     QMessageBox::critical(nullptr, QApplication::tr("Incompatible Qt Library Error"),
