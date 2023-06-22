@@ -55,6 +55,13 @@ void QAbstractProxyModelPrivate::_q_sourceModelDestroyed()
     model = QAbstractItemModelPrivate::staticEmptyModel();
 }
 
+static auto emitHeaderDataChanged(QAbstractItemModel *model,
+                                  Qt::Orientation orientation,
+                                  int count)
+{
+    return [=](){ emit model->headerDataChanged(orientation, 0, count); };
+}
+
 void QAbstractProxyModelPrivate::_q_sourceModelRowsAboutToBeInserted(const QModelIndex &parent, int, int)
 {
     if (parent.isValid())
@@ -70,7 +77,7 @@ void QAbstractProxyModelPrivate::_q_sourceModelRowsInserted(const QModelIndex &p
         Q_Q(QAbstractProxyModel);
         const int columnCount = q->columnCount();
         if (columnCount > 0)
-            emit q->headerDataChanged(Qt::Horizontal, 0, columnCount - 1);
+            QMetaObject::invokeMethod(q, emitHeaderDataChanged(q, Qt::Horizontal, columnCount - 1), Qt::QueuedConnection);
     }
 }
 
@@ -83,7 +90,7 @@ void QAbstractProxyModelPrivate::_q_sourceModelRowsRemoved(const QModelIndex &pa
         Q_Q(QAbstractProxyModel);
         const int columnCount = q->columnCount();
         if (columnCount > 0)
-            emit q->headerDataChanged(Qt::Horizontal, 0, columnCount - 1);
+            QMetaObject::invokeMethod(q, emitHeaderDataChanged(q, Qt::Horizontal, columnCount - 1), Qt::QueuedConnection);
     }
 }
 
@@ -102,7 +109,7 @@ void QAbstractProxyModelPrivate::_q_sourceModelColumnsInserted(const QModelIndex
         Q_Q(QAbstractProxyModel);
         const int rowCount = q->rowCount();
         if (rowCount > 0)
-            emit q->headerDataChanged(Qt::Vertical, 0, rowCount - 1);
+            QMetaObject::invokeMethod(q, emitHeaderDataChanged(q, Qt::Vertical, rowCount - 1), Qt::QueuedConnection);
     }
 }
 
@@ -114,7 +121,7 @@ void QAbstractProxyModelPrivate::_q_sourceModelColumnsRemoved(const QModelIndex 
         Q_Q(QAbstractProxyModel);
         const int rowCount = q->rowCount();
         if (rowCount > 0)
-            emit q->headerDataChanged(Qt::Vertical, 0, rowCount - 1);
+            QMetaObject::invokeMethod(q, emitHeaderDataChanged(q, Qt::Vertical, rowCount - 1), Qt::QueuedConnection);
     }
 }
 
