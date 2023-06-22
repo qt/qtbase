@@ -6075,6 +6075,7 @@ void tst_QObject::connectFunctorArgDifference()
 
     connect(&timer, &QTimer::timeout, [=](){});
     connect(&timer, &QTimer::objectNameChanged, [=](const QString &){});
+    connect(&timer, &QTimer::objectNameChanged, this, [](){});
     connect(qApp, &QCoreApplication::aboutToQuit, [=](){});
 
     connect(&timer, &QTimer::objectNameChanged, [=](){});
