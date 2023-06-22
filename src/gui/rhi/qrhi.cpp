@@ -2284,16 +2284,40 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
     \nullptr if there is none.
 
     Setting a non-null resolve texture is applicable when the attachment
-    references a multisample, color renderbuffer. (i.e., renderBuffer() is set)
-    The QRhiTexture in the resolveTexture() is then a regular, 2D,
-    non-multisample texture with the same size (but a sample count of 1). The
-    multisample content is automatically resolved into this texture at the end
-    of each render pass.
+    references a multisample texture or renderbuffer. The QRhiTexture in the
+    resolveTexture() is then a non-multisample 2D texture (or texture array)
+    with the same size (but a sample count of 1). The multisample content is
+    automatically resolved into this texture at the end of each render pass.
  */
 
 /*!
     \fn void QRhiColorAttachment::setResolveTexture(QRhiTexture *tex)
+
     Sets the resolve texture \a tex.
+
+    \a tex is expected to be a 2D texture or a 2D texture array. In either
+    case, resolving targets a single mip level of a single layer (array
+    element) of \a tex. The mip level and array layer are specified by
+    resolveLevel() and resolveLayer().
+
+    An exception is \l{setMultiViewCount()}{multiview}: when the color
+    attachment is associated with a texture array and multiview is enabled, the
+    resolve texture must also be a texture array with sufficient elements for
+    all views. In this case all elements that correspond to views are resolved
+    automatically; the behavior is similar to the following pseudo-code:
+    \badcode
+        for (i = 0; i < multiViewCount(); ++i)
+            resolve texture's layer() + i into resolveTexture's resolveLayer() + i
+    \endcode
+
+    Setting a non-multisample texture to resolve a multisample texture or
+    renderbuffer automatically at the end of the render pass is often
+    preferable to working with multisample textures (and not setting a resolve
+    texture), because it avoids the need for writing dedicated fragment shaders
+    that work exclusively with multisample textures (\c sampler2DMS, \c
+    texelFetch, etc.), and rather allows using the same shader as one would if
+    the attachment's texture was not multisampled to begin with. This comes at
+    the expense of an additional resource (the non-multisample \a tex).
  */
 
 /*!

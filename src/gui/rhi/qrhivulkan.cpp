@@ -6723,6 +6723,7 @@ bool QVkTextureRenderTarget::create()
 
     QRHI_RES_RHI(QRhiVulkan);
     QVarLengthArray<VkImageView, 8> views;
+    uint32_t multiViewCount = 0;
 
     d.colorAttCount = 0;
     int attIndex = 0;
@@ -6735,6 +6736,8 @@ bool QVkTextureRenderTarget::create()
             Q_ASSERT(texD->flags().testFlag(QRhiTexture::RenderTarget));
             const bool is1D = texD->flags().testFlag(QRhiTexture::OneDimensional);
             const bool isMultiView = it->multiViewCount() >= 2;
+            if (isMultiView && multiViewCount == 0)
+                multiViewCount = uint32_t(it->multiViewCount());
             VkImageViewCreateInfo viewInfo = {};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = texD->image;
@@ -6795,6 +6798,7 @@ bool QVkTextureRenderTarget::create()
 
     d.resolveAttCount = 0;
     attIndex = 0;
+    Q_ASSERT(multiViewCount == 0 || multiViewCount >= 2);
     for (auto it = m_desc.cbeginColorAttachments(), itEnd = m_desc.cendColorAttachments(); it != itEnd; ++it, ++attIndex) {
         if (it->resolveTexture()) {
             QVkTexture *resTexD = QRHI_RES(QVkTexture, it->resolveTexture());
@@ -6804,7 +6808,8 @@ bool QVkTextureRenderTarget::create()
             VkImageViewCreateInfo viewInfo = {};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = resTexD->image;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.viewType = multiViewCount ? VK_IMAGE_VIEW_TYPE_2D_ARRAY
+                                               : VK_IMAGE_VIEW_TYPE_2D;
             viewInfo.format = resTexD->vkformat;
             viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
             viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
@@ -6814,7 +6819,7 @@ bool QVkTextureRenderTarget::create()
             viewInfo.subresourceRange.baseMipLevel = uint32_t(it->resolveLevel());
             viewInfo.subresourceRange.levelCount = 1;
             viewInfo.subresourceRange.baseArrayLayer = uint32_t(it->resolveLayer());
-            viewInfo.subresourceRange.layerCount = 1;
+            viewInfo.subresourceRange.layerCount = qMax(1u, multiViewCount);
             VkResult err = rhiD->df->vkCreateImageView(rhiD->dev, &viewInfo, nullptr, &resrtv[attIndex]);
             if (err != VK_SUCCESS) {
                 qWarning("Failed to create render target resolve image view: %d", err);
