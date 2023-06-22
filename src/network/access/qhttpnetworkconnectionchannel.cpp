@@ -949,6 +949,10 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         break;
     case QAbstractSocket::ConnectionRefusedError:
         errorCode = QNetworkReply::ConnectionRefusedError;
+#ifndef QT_NO_NETWORKPROXY
+        if (connection->d_func()->networkProxy.type() != QNetworkProxy::NoProxy && !ssl)
+            errorCode = QNetworkReply::ProxyConnectionRefusedError;
+#endif
         break;
     case QAbstractSocket::RemoteHostClosedError:
         // This error for SSL comes twice in a row, first from SSL layer ("The TLS/SSL connection has been closed") then from TCP layer.
@@ -1029,6 +1033,9 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             return;
         }
         errorCode = QNetworkReply::TimeoutError;
+        break;
+    case QAbstractSocket::ProxyConnectionRefusedError:
+        errorCode = QNetworkReply::ProxyConnectionRefusedError;
         break;
     case QAbstractSocket::ProxyAuthenticationRequiredError:
         errorCode = QNetworkReply::ProxyAuthenticationRequiredError;

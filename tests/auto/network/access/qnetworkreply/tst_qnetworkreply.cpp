@@ -526,6 +526,9 @@ private Q_SLOTS:
     void notFoundWithCompression_data();
     void notFoundWithCompression();
 
+    void qtbug68821proxyError_data();
+    void qtbug68821proxyError();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
@@ -3852,7 +3855,6 @@ void tst_QNetworkReply::ioGetFromHttpWithSocksProxy()
         QVERIFY(reader.data.isEmpty());
 
         QVERIFY(int(reply->error()) > 0);
-        QEXPECT_FAIL("", "QTcpSocket doesn't return enough information yet", Continue);
         QCOMPARE(int(reply->error()), int(QNetworkReply::ProxyConnectionRefusedError));
 
         QCOMPARE(authspy.size(), 0);
@@ -10092,6 +10094,48 @@ void tst_QNetworkReply::notFoundWithCompression()
 
     QFETCH(QByteArray, expected);
     QCOMPARE(reply->readAll(), expected);
+}
+
+void tst_QNetworkReply::qtbug68821proxyError_data()
+{
+    QTest::addColumn<QString>("proxyHost");
+    QTest::addColumn<QString>("scheme");
+    QTest::addColumn<QNetworkReply::NetworkError>("error");
+
+    QTest::newRow("invalidhost+http") << "this-host-will-never-exist.qt-project.org"
+                                      << "http" << QNetworkReply::ProxyNotFoundError;
+    QTest::newRow("localhost+http") << "localhost"
+                                    << "http" << QNetworkReply::ProxyConnectionRefusedError;
+#ifndef QT_NO_SSL
+    QTest::newRow("invalidhost+https") << "this-host-will-never-exist.qt-project.org"
+                                       << "https" << QNetworkReply::ProxyNotFoundError;
+    QTest::newRow("localhost+https") << "localhost"
+                                     << "https" << QNetworkReply::ProxyConnectionRefusedError;
+#endif
+}
+
+void tst_QNetworkReply::qtbug68821proxyError()
+{
+    QTcpServer proxyServer;
+    QVERIFY(proxyServer.listen());
+    quint16 proxyPort = proxyServer.serverPort();
+    proxyServer.close();
+
+    QFETCH(QString, proxyHost);
+    QNetworkProxy proxy(QNetworkProxy::HttpProxy, proxyHost, proxyPort);
+
+    manager.setProxy(proxy);
+
+    QFETCH(QString, scheme);
+    QNetworkReply *reply = manager.get(QNetworkRequest(QUrl(scheme + "://example.com")));
+    QSignalSpy spy(reply, &QNetworkReply::errorOccurred);
+    QVERIFY(spy.isValid());
+
+    QVERIFY(spy.wait(15000));
+
+    QFETCH(QNetworkReply::NetworkError, error);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0), error);
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
