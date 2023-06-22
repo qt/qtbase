@@ -1800,13 +1800,16 @@ void QRhiD3D12::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
             barrierGen.addTransitionBarrier(dstTexD->handle, D3D12_RESOURCE_STATE_RESOLVE_DEST);
             barrierGen.enqueueBufferedTransitionBarriers(cbD);
 
-            const UINT srcSubresource = calcSubresource(0, UINT(colorAtt.layer()), 1);
-            const UINT dstSubresource = calcSubresource(UINT(colorAtt.resolveLevel()),
-                                                        UINT(colorAtt.resolveLayer()),
-                                                        dstTexD->mipLevelCount);
-            cbD->cmdList->ResolveSubresource(dstRes->resource, dstSubresource,
-                                             srcRes->resource, srcSubresource,
-                                             dstTexD->dxgiFormat);
+            const UINT resolveCount = colorAtt.multiViewCount() >= 2 ? colorAtt.multiViewCount() : 1;
+            for (UINT resolveIdx = 0; resolveIdx < resolveCount; ++resolveIdx) {
+                const UINT srcSubresource = calcSubresource(0, UINT(colorAtt.layer()) + resolveIdx, 1);
+                const UINT dstSubresource = calcSubresource(UINT(colorAtt.resolveLevel()),
+                                                            UINT(colorAtt.resolveLayer()) + resolveIdx,
+                                                            dstTexD->mipLevelCount);
+                cbD->cmdList->ResolveSubresource(dstRes->resource, dstSubresource,
+                                                 srcRes->resource, srcSubresource,
+                                                 dstTexD->dxgiFormat);
+            }
         }
 
     }
