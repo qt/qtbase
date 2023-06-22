@@ -4369,28 +4369,33 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                     qWarning("Resolve source (%dx%d) and target (%dx%d) size does not match",
                              texD->pixelSize().width(), texD->pixelSize().height(), size.width(), size.height());
                 }
-                QGles2CommandBuffer::Command &cmd(cbD->commands.get());
-                cmd.cmd = QGles2CommandBuffer::Command::BlitFromTexture;
-                if (texD->m_flags.testFlag(QRhiTexture::CubeMap))
-                    cmd.args.blitFromTexture.srcTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(colorAtt.layer());
-                else
-                    cmd.args.blitFromTexture.srcTarget = texD->target;
-                cmd.args.blitFromTexture.srcTexture = texD->texture;
-                cmd.args.blitFromTexture.srcLevel = colorAtt.level();
-                cmd.args.blitFromTexture.srcLayer = 0;
-                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || texD->m_flags.testFlag(QRhiTexture::TextureArray))
-                    cmd.args.blitFromTexture.srcLayer = colorAtt.layer();
-                cmd.args.blitFromTexture.w = size.width();
-                cmd.args.blitFromTexture.h = size.height();
-                if (resolveTexD->m_flags.testFlag(QRhiTexture::CubeMap))
-                    cmd.args.blitFromTexture.dstTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(colorAtt.resolveLayer());
-                else
-                    cmd.args.blitFromTexture.dstTarget = resolveTexD->target;
-                cmd.args.blitFromTexture.dstTexture = resolveTexD->texture;
-                cmd.args.blitFromTexture.dstLevel = colorAtt.resolveLevel();
-                cmd.args.blitFromTexture.dstLayer = 0;
-                if (resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray))
-                    cmd.args.blitFromTexture.dstLayer = colorAtt.resolveLayer();
+                const int resolveCount = colorAtt.multiViewCount() >= 2 ? colorAtt.multiViewCount() : 1;
+                for (int resolveIdx = 0; resolveIdx < resolveCount; ++resolveIdx) {
+                    const int srcLayer = colorAtt.layer() + resolveIdx;
+                    const int dstLayer = colorAtt.resolveLayer() + resolveIdx;
+                    QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+                    cmd.cmd = QGles2CommandBuffer::Command::BlitFromTexture;
+                    if (texD->m_flags.testFlag(QRhiTexture::CubeMap))
+                        cmd.args.blitFromTexture.srcTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(srcLayer);
+                    else
+                        cmd.args.blitFromTexture.srcTarget = texD->target;
+                    cmd.args.blitFromTexture.srcTexture = texD->texture;
+                    cmd.args.blitFromTexture.srcLevel = colorAtt.level();
+                    cmd.args.blitFromTexture.srcLayer = 0;
+                    if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || texD->m_flags.testFlag(QRhiTexture::TextureArray))
+                        cmd.args.blitFromTexture.srcLayer = srcLayer;
+                    cmd.args.blitFromTexture.w = size.width();
+                    cmd.args.blitFromTexture.h = size.height();
+                    if (resolveTexD->m_flags.testFlag(QRhiTexture::CubeMap))
+                        cmd.args.blitFromTexture.dstTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(dstLayer);
+                    else
+                        cmd.args.blitFromTexture.dstTarget = resolveTexD->target;
+                    cmd.args.blitFromTexture.dstTexture = resolveTexD->texture;
+                    cmd.args.blitFromTexture.dstLevel = colorAtt.resolveLevel();
+                    cmd.args.blitFromTexture.dstLayer = 0;
+                    if (resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray))
+                        cmd.args.blitFromTexture.dstLayer = dstLayer;
+                }
             }
         }
     }
