@@ -2233,6 +2233,9 @@ static bool convertToAssociativeIterable(QMetaType fromType, const void *from, v
 
 static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
 {
+    if ((fromType.flags() & QMetaType::IsPointer) != (toType.flags() & QMetaType::IsPointer))
+        return false; // Can not convert between pointer and value
+
     const QMetaObject *f = fromType.metaObject();
     const QMetaObject *t = toType.metaObject();
     if (f && t) {
@@ -2303,7 +2306,8 @@ static bool convertMetaObject(QMetaType fromType, const void *from, QMetaType to
             *static_cast<void **>(to) = nullptr;
             return fromType.metaObject()->inherits(toType.metaObject());
         }
-    } else {
+    } else if ((fromType.flags() & QMetaType::IsPointer) == (toType.flags() & QMetaType::IsPointer)) {
+        // fromType and toType are of same 'pointedness'
         const QMetaObject *f = fromType.metaObject();
         const QMetaObject *t = toType.metaObject();
         if (f && t && f->inherits(t)) {

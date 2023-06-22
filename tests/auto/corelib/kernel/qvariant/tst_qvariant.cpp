@@ -129,6 +129,12 @@ private slots:
 
     void canConvert_data();
     void canConvert();
+
+    void canConvertAndConvert_ReturnFalse_WhenConvertingBetweenPointerAndValue_data();
+    void canConvertAndConvert_ReturnFalse_WhenConvertingBetweenPointerAndValue();
+
+    void canConvertAndConvert_ReturnFalse_WhenConvertingQObjectBetweenPointerAndValue();
+
     void convert();
 
     void toSize_data();
@@ -326,6 +332,8 @@ private slots:
     void preferDirectConversionOverInterfaces();
     void mutableView();
 
+    void canViewAndView_ReturnFalseAndDefault_WhenConvertingBetweenPointerAndValue();
+
     void moveOperations();
     void equalsWithoutMetaObject();
 
@@ -335,6 +343,8 @@ private slots:
     void copyNonDefaultConstructible();
 
 private:
+    template<typename T>
+    void canViewAndView_ReturnFalseAndDefault_WhenConvertingBetweenPointerAndValue_impl(const QByteArray &typeName);
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
     void saveQVariantFromDataStream(QDataStream::Version version);
@@ -623,6 +633,100 @@ QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 0)
 }
 
+namespace {
+
+// Used for testing canConvert/convert of QObject derived types
+struct QObjectDerived : QObject
+{
+    Q_OBJECT
+};
+
+// Adds a test table row for checking value <-> pointer conversion
+// If type is a pointer, the target type is value type and vice versa.
+template<typename T>
+void addRowForPointerValueConversion()
+{
+    using ValueType = std::remove_pointer_t<T>;
+    if constexpr (!std::is_same_v<ValueType, std::nullptr_t>) {
+
+        static ValueType instance{}; // static since we may need a pointer to a valid object
+
+        QVariant variant;
+        if constexpr (std::is_pointer_v<T>)
+            variant = QVariant::fromValue(&instance);
+        else
+            variant = QVariant::fromValue(instance);
+
+        // Toggle pointer/value type
+        using TargetType = std::conditional_t<std::is_pointer_v<T>, ValueType, T *>;
+
+        const QMetaType fromType = QMetaType::fromType<T>();
+        const QMetaType toType = QMetaType::fromType<TargetType>();
+
+        QTest::addRow("%s->%s", fromType.name(), toType.name())
+                << variant << QMetaType::fromType<TargetType>();
+    }
+}
+
+} // namespace
+
+void tst_QVariant::canConvertAndConvert_ReturnFalse_WhenConvertingBetweenPointerAndValue_data()
+{
+    QTest::addColumn<QVariant>("variant");
+    QTest::addColumn<QMetaType>("targetType");
+
+#define ADD_ROW(typeName, typeNameId, realType)  \
+    addRowForPointerValueConversion<realType>(); \
+    addRowForPointerValueConversion<realType *>();
+
+    // Add rows for static primitive types
+    QT_FOR_EACH_STATIC_PRIMITIVE_NON_VOID_TYPE(ADD_ROW)
+
+    // Add rows for static core types
+    QT_FOR_EACH_STATIC_CORE_CLASS(ADD_ROW)
+#undef ADD_ROW
+
+}
+
+void tst_QVariant::canConvertAndConvert_ReturnFalse_WhenConvertingBetweenPointerAndValue()
+{
+    QFETCH(QVariant, variant);
+    QFETCH(QMetaType, targetType);
+
+    QVERIFY(!variant.canConvert(targetType));
+
+    QVERIFY(!variant.convert(targetType));
+
+    // As per the documentation, when QVariant::convert fails, the
+    // QVariant is cleared and changed to the requested type.
+    QVERIFY(variant.isNull());
+    QCOMPARE(variant.metaType(), targetType);
+}
+
+void tst_QVariant::canConvertAndConvert_ReturnFalse_WhenConvertingQObjectBetweenPointerAndValue()
+{
+    // Types derived from QObject are non-copyable and require their own test.
+    // We only test pointer -> value conversion, because constructing a QVariant
+    // from a non-copyable object will just set the QVariant to null.
+
+    QObjectDerived object;
+    QVariant variant = QVariant::fromValue(&object);
+
+    constexpr QMetaType targetType = QMetaType::fromType<QObjectDerived>();
+    QVERIFY(!variant.canConvert(targetType));
+
+    QTest::ignoreMessage(
+            QtWarningMsg,
+            QRegularExpression(".*does not support destruction and copy construction"));
+
+    QVERIFY(!variant.convert(targetType));
+
+    // When the QVariant::convert fails, the QVariant is cleared, and since the target type is
+    // invalid for QVariant, the QVariant's type is also cleared to an unknown type.
+    QVERIFY(variant.isNull());
+    QCOMPARE(variant.metaType(), QMetaType());
+}
+
 void tst_QVariant::convert()
 {
    // verify that after convert(), the variant's type has been changed
@@ -631,7 +735,6 @@ void tst_QVariant::convert()
    QCOMPARE(var.metaType(), QMetaType::fromType<int>());
    QCOMPARE(var.toInt(), 0);
 }
-
 
 void tst_QVariant::toInt_data()
 {
@@ -5506,6 +5609,38 @@ void tst_QVariant::mutableView()
     QCOMPARE(extracted.text, nullptr);
 }
 
+template<typename T>
+void tst_QVariant::canViewAndView_ReturnFalseAndDefault_WhenConvertingBetweenPointerAndValue_impl(
+        const QByteArray &typeName)
+{
+    T instance{};
+
+    // Value -> Pointer
+    QVariant value = QVariant::fromValue(instance);
+    QVERIFY2(!value.canView<T *>(), typeName);
+    QCOMPARE(value.view<T *>(), nullptr); // Expect default constructed pointer
+
+    // Pointer -> Value
+    QVariant pointer = QVariant::fromValue(&instance);
+    QVERIFY2(!pointer.canView<T>(), typeName);
+    QCOMPARE(pointer.view<T>(), T{}); // Expect default constructed. Note: Weak test since instance
+                                      // is default constructed, but we detect data corruption
+}
+
+void tst_QVariant::canViewAndView_ReturnFalseAndDefault_WhenConvertingBetweenPointerAndValue()
+{
+#define ADD_TEST_IMPL(typeName, typeNameId, realType)                                         \
+    canViewAndView_ReturnFalseAndDefault_WhenConvertingBetweenPointerAndValue_impl<realType>( \
+            #typeName);
+
+    // Add tests for static primitive types
+    QT_FOR_EACH_STATIC_PRIMITIVE_NON_VOID_TYPE(ADD_TEST_IMPL)
+
+    // Add tests for static core types
+    QT_FOR_EACH_STATIC_CORE_CLASS(ADD_TEST_IMPL)
+#undef ADD_TEST_IMPL
+}
+
 void tst_QVariant::moveOperations()
 {
     {
@@ -5597,6 +5732,13 @@ private:
     ~Indestructible() {}
 };
 
+struct NotCopyable
+{
+    NotCopyable() = default;
+    NotCopyable(const NotCopyable&) = delete;
+    NotCopyable &operator=(const NotCopyable &) = delete;
+};
+
 void tst_QVariant::constructFromIncompatibleMetaType_data()
 {
     QTest::addColumn<QMetaType>("type");
@@ -5607,6 +5749,7 @@ void tst_QVariant::constructFromIncompatibleMetaType_data()
     addRow(QMetaType::fromType<NonDefaultConstructible>());
     addRow(QMetaType::fromType<QObject>());
     addRow(QMetaType::fromType<Indestructible>());
+    addRow(QMetaType::fromType<NotCopyable>());
 }
 
 void tst_QVariant::constructFromIncompatibleMetaType()
