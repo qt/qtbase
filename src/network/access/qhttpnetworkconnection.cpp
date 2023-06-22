@@ -1265,8 +1265,16 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
         networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
         QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
     } else {
+        auto lookupError = QNetworkReply::HostNotFoundError;
+#ifndef QT_NO_NETWORKPROXY
+        // if the proxy can lookup hostnames, all hostname lookups except for the lookup of the
+        // proxy hostname are delegated to the proxy.
+        auto proxyCapabilities = networkProxy.capabilities() | channels[0].proxy.capabilities();
+        if (proxyCapabilities & QNetworkProxy::HostNameLookupCapability)
+            lookupError = QNetworkReply::ProxyNotFoundError;
+#endif
         if (dequeueRequest(channels[0].socket)) {
-            emitReplyError(channels[0].socket, channels[0].reply, QNetworkReply::HostNotFoundError);
+            emitReplyError(channels[0].socket, channels[0].reply, lookupError);
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
         } else if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
                    || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
@@ -1274,7 +1282,7 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
                 // emit error for all replies
                 QHttpNetworkReply *currentReply = h2Pair.second;
                 Q_ASSERT(currentReply);
-                emitReplyError(channels[0].socket, currentReply, QNetworkReply::HostNotFoundError);
+                emitReplyError(channels[0].socket, currentReply, lookupError);
             }
         } else {
             // We can end up here if a request has been aborted or otherwise failed (e.g. timeout)
