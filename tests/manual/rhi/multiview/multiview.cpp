@@ -10,6 +10,12 @@
 // twice, whereas with modern hardware it can be expected to be implemented
 // more efficiently, but that's hidden from us)
 
+// Toggle this to exercise 4x MSAA for the texture array that is the render
+// target of the multiview render pass. The elements written by the multiview
+// render pass get resolved to a non-multisample texture array at the end of
+// the pass.
+static bool MSAA = false;
+
 static float quadVertexData[] =
 { // Y up, CCW
   -0.5f,   0.5f,   0.0f, 0.0f,
@@ -42,6 +48,7 @@ struct {
     QRhiResourceUpdateBatch *initialUpdates = nullptr;
     QMatrix4x4 winProj;
     QRhiTexture *tex = nullptr;
+    QRhiTexture *resolveTex = nullptr; // only if MSAA is true
     QRhiShaderResourceBindings *srb[2] = {};
 
     QRhiBuffer *triUbuf = nullptr;
@@ -55,16 +62,40 @@ void Window::customInit()
     if (!m_r->isFeatureSupported(QRhi::MultiView))
         qFatal("Multiview is not supported");
 
+    int sampleCount = 1;
+    if (MSAA) {
+        qDebug("Using 4x MSAA for the multiview render pass");
+        sampleCount = 4;
+    }
+
     // texture array with 2 elements, e.g. 0 is left eye, 1 is right
-    d.tex = m_r->newTextureArray(QRhiTexture::RGBA8, 2, QSize(512, 512), 1, QRhiTexture::RenderTarget);
+    d.tex = m_r->newTextureArray(QRhiTexture::RGBA8, 2, QSize(512, 512), sampleCount, QRhiTexture::RenderTarget);
     d.releasePool << d.tex;
     d.tex->create();
+
+    if (MSAA) {
+        d.resolveTex = m_r->newTextureArray(QRhiTexture::RGBA8, 2, QSize(512, 512), 1, QRhiTexture::RenderTarget);
+        d.releasePool << d.resolveTex;
+        d.resolveTex->create();
+    }
 
     // set up the multiview render target
     QRhiColorAttachment multiViewAtt(d.tex);
     // using array elements 0 and 1
     multiViewAtt.setLayer(0);
     multiViewAtt.setMultiViewCount(2); // the view count must be set both on the render target and the pipeline
+
+    // On-screen we work with a non-MSAA texture array, so the fragment shader
+    // does not need to deal with sampler2DMSArray, but can use sampler2DArray
+    // regardless of using multisampling or not. This means using an extra
+    // non-MSAA 2D texture array into which both array elements get resolved at
+    // the end of the multiview render pass.
+    QRhiTexture *textureForOnscreenView = d.tex;
+    if (MSAA) {
+        multiViewAtt.setResolveTexture(d.resolveTex);
+        textureForOnscreenView = d.resolveTex;
+    }
+
     QRhiTextureRenderTargetDescription rtDesc(multiViewAtt);
     d.rt = m_r->newTextureRenderTarget(rtDesc);
     d.releasePool << d.rt;
@@ -99,8 +130,9 @@ void Window::customInit()
         d.releasePool << srb;
         srb->setBindings({
             QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage,
-                             d.ubuf, i * oneRoundedUniformBlockSize, 72),
-            QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.tex, d.sampler)
+                                                     d.ubuf, i * oneRoundedUniformBlockSize, 72),
+            QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage,
+                                                      textureForOnscreenView, d.sampler)
         });
         srb->create();
         d.srb[i] = srb;
@@ -163,6 +195,7 @@ void Window::customInit()
         { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
         { 0, 1, QRhiVertexInputAttribute::Float3, quint32(2 * sizeof(float)) }
     });
+    d.triPs->setSampleCount(sampleCount);
     d.triPs->setVertexInputLayout(inputLayout);
     d.triPs->setShaderResourceBindings(d.triSrb);
     d.triPs->setRenderPassDescriptor(d.rtRp);
