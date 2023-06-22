@@ -27,27 +27,32 @@ public:
 
     typedef typename std::conditional<pass_parameter_by_value, T, const T &>::type parameter_type;
 
+    Q_NODISCARD_CTOR
     constexpr QArrayDataPointer() noexcept
         : d(nullptr), ptr(nullptr), size(0)
     {
     }
 
+    Q_NODISCARD_CTOR
     QArrayDataPointer(const QArrayDataPointer &other) noexcept
         : d(other.d), ptr(other.ptr), size(other.size)
     {
         ref();
     }
 
+    Q_NODISCARD_CTOR
     constexpr QArrayDataPointer(Data *header, T *adata, qsizetype n = 0) noexcept
         : d(header), ptr(adata), size(n)
     {
     }
 
+    Q_NODISCARD_CTOR
     explicit QArrayDataPointer(QPair<QTypedArrayData<T> *, T *> adata, qsizetype n = 0) noexcept
         : d(adata.first), ptr(adata.second), size(n)
     {
     }
 
+    Q_NODISCARD_CTOR
     static QArrayDataPointer fromRawData(const T *rawData, qsizetype length) noexcept
     {
         Q_ASSERT(rawData || !length);
@@ -61,6 +66,7 @@ public:
         return *this;
     }
 
+    Q_NODISCARD_CTOR
     QArrayDataPointer(QArrayDataPointer &&other) noexcept
         : d(other.d), ptr(other.ptr), size(other.size)
     {

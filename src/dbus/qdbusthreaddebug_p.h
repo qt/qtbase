@@ -93,7 +93,7 @@ struct QDBusReadLocker: QDBusLockerBase
 {
     QDBusConnectionPrivate *self;
     ThreadAction action;
-    inline QDBusReadLocker(ThreadAction a, QDBusConnectionPrivate *s)
+    Q_NODISCARD_CTOR QDBusReadLocker(ThreadAction a, QDBusConnectionPrivate *s)
         : self(s), action(a)
     {
         reportThreadAction(action, BeforeLock, self);
@@ -113,7 +113,7 @@ struct QDBusWriteLocker: QDBusLockerBase
 {
     QDBusConnectionPrivate *self;
     ThreadAction action;
-    inline QDBusWriteLocker(ThreadAction a, QDBusConnectionPrivate *s)
+    Q_NODISCARD_CTOR QDBusWriteLocker(ThreadAction a, QDBusConnectionPrivate *s)
         : self(s), action(a)
     {
         reportThreadAction(action, BeforeLock, self);

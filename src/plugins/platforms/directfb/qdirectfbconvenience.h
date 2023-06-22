@@ -62,7 +62,7 @@ template <typename T>
 class QDirectFBPointer : public QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >
 {
 public:
-    QDirectFBPointer(T *t = nullptr)
+    Q_NODISCARD_CTOR QDirectFBPointer(T *t = nullptr)
         : QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >(t)
     {}
 

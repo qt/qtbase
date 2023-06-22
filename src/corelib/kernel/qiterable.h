@@ -19,16 +19,16 @@ namespace QtPrivate {
         QTaggedPointer<Storage, Tag> m_pointer;
 
     public:
-        QConstPreservingPointer(std::nullptr_t) : m_pointer(nullptr, Const) {}
+        Q_NODISCARD_CTOR QConstPreservingPointer(std::nullptr_t) : m_pointer(nullptr, Const) {}
 
-        QConstPreservingPointer(const void *pointer, qsizetype alignment)
+        Q_NODISCARD_CTOR QConstPreservingPointer(const void *pointer, qsizetype alignment)
             : m_pointer(reinterpret_cast<Storage *>(const_cast<void *>(pointer)), Const)
         {
             Q_UNUSED(alignment);
             Q_ASSERT(alignment > qsizetype(alignof(Storage)));
         }
 
-        QConstPreservingPointer(void *pointer, qsizetype alignment)
+        Q_NODISCARD_CTOR QConstPreservingPointer(void *pointer, qsizetype alignment)
             : m_pointer(reinterpret_cast<Storage *>(pointer), Mutable)
         {
             Q_UNUSED(alignment);
@@ -36,20 +36,20 @@ namespace QtPrivate {
         }
 
         template<typename InputType>
-        QConstPreservingPointer(const InputType *pointer)
+        Q_NODISCARD_CTOR QConstPreservingPointer(const InputType *pointer)
             : m_pointer(reinterpret_cast<Storage *>(const_cast<InputType *>(pointer)), Const)
         {
             static_assert(alignof(InputType) >= alignof(Storage));
         }
 
         template<typename InputType>
-        QConstPreservingPointer(InputType *pointer)
+        Q_NODISCARD_CTOR QConstPreservingPointer(InputType *pointer)
             : m_pointer(reinterpret_cast<Storage *>(pointer), Mutable)
         {
             static_assert(alignof(InputType) >= alignof(Storage));
         }
 
-        QConstPreservingPointer() = default;
+        Q_NODISCARD_CTOR QConstPreservingPointer() = default;
 
         const Type *constPointer() const
         {
