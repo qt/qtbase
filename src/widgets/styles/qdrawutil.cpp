@@ -297,7 +297,6 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
     p->setPen(oldPen);                        // restore pen
 }
 
-
 /*!
     \fn void qDrawShadePanel(QPainter *painter, int x, int y, int width, int height,
                       const QPalette &palette, bool sunken,
@@ -408,7 +407,6 @@ void qDrawShadePanel(QPainter *p, int x, int y, int w, int h,
     }
     p->setPen(oldPen);                        // restore pen
 }
-
 
 /*!
   \internal
@@ -609,6 +607,69 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
     }
     p->setPen(oldPen);
     p->setBrush(oldBrush);
+}
+
+/*!
+    \fn void qDrawPlainRoundedRect(QPainter *painter, int x, int y,
+                     int width, int height, qreal rx, qreal ry,
+                     const QColor &lineColor, int lineWidth,
+                     const QBrush *fill)
+    \relates <qdrawutil.h>
+
+    Draws the plain rounded rectangle beginning at (\a x, \a y)
+    with the given \a width and \a height,
+    using the horizontal \a rx and vertical radius \a ry,
+    specified \a painter, \a lineColor and \a lineWidth.
+    The rectangle's interior is filled with the \a
+    fill brush unless \a fill is \nullptr.
+
+    \warning This function does not look at QWidget::style() or
+    QApplication::style(). Use the drawing functions in QStyle to make
+    widgets that follow the current GUI style.
+
+    Alternatively you can use a QFrame widget and apply the
+    QFrame::setFrameStyle() function to display a plain rectangle:
+
+    \snippet code/src_gui_painting_qdrawutil.cpp 4
+
+    \sa qDrawShadeRect(), QStyle
+*/
+
+void qDrawPlainRoundedRect(QPainter *p, int x, int y, int w, int h,
+                    qreal rx, qreal ry, const QColor &c,
+                    int lineWidth, const QBrush *fill)
+{
+    if (w == 0 || h == 0)
+        return;
+    if (Q_UNLIKELY(w < 0 || h < 0 || lineWidth < 0)) {
+        qWarning("qDrawPlainRect: Invalid parameters");
+    }
+
+    PainterStateGuard painterGuard(p);
+    const qreal devicePixelRatio = p->device()->devicePixelRatio();
+    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+        painterGuard.save();
+        const qreal inverseScale = qreal(1) / devicePixelRatio;
+        p->scale(inverseScale, inverseScale);
+        x = qRound(devicePixelRatio * x);
+        y = qRound(devicePixelRatio * y);
+        w = devicePixelRatio * w;
+        h = devicePixelRatio * h;
+        lineWidth = qRound(devicePixelRatio * lineWidth);
+        p->translate(0.5, 0.5);
+    }
+
+    p->save();
+    p->setPen(c);
+    p->setBrush(Qt::NoBrush);
+    for (int i=0; i<lineWidth; i++)
+        p->drawRoundedRect(x+i, y+i, w-i*2 - 1, h-i*2 - 1, rx, ry);
+    if (fill) {                                // fill with fill color
+        p->setPen(Qt::NoPen);
+        p->setBrush(*fill);
+        p->drawRoundedRect(x+lineWidth, y+lineWidth, w-lineWidth*2, h-lineWidth*2, rx, ry);
+    }
+    p->restore();
 }
 
 /*****************************************************************************
@@ -819,6 +880,38 @@ void qDrawPlainRect(QPainter *p, const QRect &r, const QColor &c,
                     lineWidth, fill);
 }
 
+/*!
+    \fn void qDrawPlainRoundedRect(QPainter *painter, const QRect &rect,
+                                   qreal rx, qreal ry,
+                                   const QColor &lineColor, int lineWidth,
+                                   const QBrush *fill)
+    \relates <qdrawutil.h>
+    \overload
+
+    Draws the plain rectangle specified by \a rect using
+    the horizontal \a rx and vertical radius \a ry,
+    the given \a painter, \a lineColor and \a lineWidth.
+    The rectangle's interior is filled with the
+    \a fill brush unless \a fill is \nullptr.
+
+    \warning This function does not look at QWidget::style() or
+    QApplication::style(). Use the drawing functions in QStyle to make
+    widgets that follow the current GUI style.
+
+    Alternatively you can use a QFrame widget and apply the
+    QFrame::setFrameStyle() function to display a plain rectangle:
+
+    \snippet code/src_gui_painting_qdrawutil.cpp 9
+
+    \sa qDrawShadeRect(), QStyle
+*/
+
+void qDrawPlainRoundedRect(QPainter *p, const QRect &r, qreal rx, qreal ry,
+                    const QColor &c, int lineWidth, const QBrush *fill)
+{
+    qDrawPlainRoundedRect(p, r.x(), r.y(), r.width(), r.height(), rx, ry, c,
+                   lineWidth, fill);
+}
 
 /*!
     \class QTileRules

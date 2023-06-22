@@ -438,6 +438,20 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
 
     switch (element) {
+    case PE_FrameGroupBox:
+        if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+            painter->setPen(frameColorStrong);
+            painter->setBrush(Qt::NoBrush);
+            if (frame->features & QStyleOptionFrame::Flat) {
+                QRect fr = frame->rect;
+                QPoint p1(fr.x(), fr.y() + 1);
+                QPoint p2(fr.x() + fr.width(), p1.y());
+                painter->drawLine(p1,p2);
+            } else {
+                painter->drawRoundedRect(frame->rect.marginsRemoved(QMargins(1,1,1,1)), secondLevelRoundingRadius, secondLevelRoundingRadius);
+            }
+        }
+        break;
     case PE_IndicatorCheckBox:
         {
             QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>(d->animation(option->styleObject));
@@ -717,6 +731,36 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                         proxy()->drawItemPixmap(painter, rect, Qt::AlignCenter, pm);
                     }
                 }
+            }
+        }
+        break;
+    case QStyle::CE_ShapedFrame:
+        if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+            int frameShape  = f->frameShape;
+            int frameShadow = QFrame::Plain;
+            if (f->state & QStyle::State_Sunken)
+                frameShadow = QFrame::Sunken;
+            else if (f->state & QStyle::State_Raised)
+                frameShadow = QFrame::Raised;
+
+            int lw = f->lineWidth;
+            int mlw = f->midLineWidth;
+
+            switch (frameShape) {
+            case QFrame::Box:
+                if (frameShadow == QFrame::Plain)
+                    qDrawPlainRoundedRect(painter, f->rect, secondLevelRoundingRadius, secondLevelRoundingRadius, frameColorStrong, lw);
+                else
+                    qDrawShadeRect(painter, f->rect, f->palette, frameShadow == QFrame::Sunken, lw, mlw);
+                break;
+            case QFrame::Panel:
+                if (frameShadow == QFrame::Plain)
+                    qDrawPlainRoundedRect(painter, f->rect, secondLevelRoundingRadius, secondLevelRoundingRadius, frameColorStrong, lw);
+                else
+                    qDrawShadePanel(painter, f->rect, f->palette, frameShadow == QFrame::Sunken, lw);
+                break;
+            default:
+                QWindowsVistaStyle::drawControl(element, option, painter, widget);
             }
         }
         break;
@@ -1182,6 +1226,10 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 int QWindows11Style::styleHint(StyleHint hint, const QStyleOption *opt,
               const QWidget *widget, QStyleHintReturn *returnData) const {
     switch (hint) {
+    case SH_GroupBox_TextLabelColor:
+        if (opt!=nullptr && widget!=nullptr)
+            return opt->palette.text().color().rgba();
+        return 0;
     case QStyle::SH_ItemView_ShowDecorationSelected:
         return 1;
     default:
@@ -1242,6 +1290,7 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
 
     return res;
 }
+
 void QWindows11Style::polish(QWidget* widget)
 {
     QWindowsVistaStyle::polish(widget);
