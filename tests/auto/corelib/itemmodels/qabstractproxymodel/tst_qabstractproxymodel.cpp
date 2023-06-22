@@ -225,7 +225,7 @@ void tst_QAbstractProxyModel::headerDataInBounds()
 
     QCOMPARE(proxy.rowCount(), 1);
     QCOMPARE(proxy.columnCount(), 5);
-    QCOMPARE(headerDataChangedSpy.size(), 1);
+    QTRY_COMPARE(headerDataChangedSpy.size(), 1);
     QCOMPARE(headerDataChangedSpy[0][0].value<Qt::Orientation>(), Qt::Horizontal);
     QCOMPARE(headerDataChangedSpy[0][1].value<int>(), 0);
     QCOMPARE(headerDataChangedSpy[0][2].value<int>(), 4);
@@ -266,7 +266,7 @@ void tst_QAbstractProxyModel::headerDataInBounds()
 
     QCOMPARE(proxy.rowCount(), 0);
     QCOMPARE(proxy.columnCount(), 5);
-    QCOMPARE(headerDataChangedSpy.size(), 2);
+    QTRY_COMPARE(headerDataChangedSpy.size(), 2);
     QCOMPARE(headerDataChangedSpy[1][0].value<Qt::Orientation>(), Qt::Horizontal);
     QCOMPARE(headerDataChangedSpy[1][1].value<int>(), 0);
     QCOMPARE(headerDataChangedSpy[1][2].value<int>(), 4);
