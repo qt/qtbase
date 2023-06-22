@@ -23,6 +23,7 @@
 #include "qiosmessagedialog.h"
 #include "qioscolordialog.h"
 #include "qiosfontdialog.h"
+#include "qiosscreen.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -144,14 +145,17 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
 
 Qt::ColorScheme QIOSTheme::colorScheme() const
 {
-    UIUserInterfaceStyle appearance = UIUserInterfaceStyleUnspecified;
-    // Set the appearance based on the UIWindow
+    // Set the appearance based on the QUIWindow
     // Fallback to the UIScreen if no window is created yet
-    if (UIWindow *window = qt_apple_sharedApplication().windows.lastObject) {
-        appearance = window.traitCollection.userInterfaceStyle;
-    } else {
-        appearance = UIScreen.mainScreen.traitCollection.userInterfaceStyle;
+    UIUserInterfaceStyle appearance = UIScreen.mainScreen.traitCollection.userInterfaceStyle;
+    NSArray<UIWindow *> *windows = qt_apple_sharedApplication().windows;
+    for (UIWindow *window in windows) {
+        if ([window isKindOfClass:[QUIWindow class]]) {
+            appearance = static_cast<QUIWindow*>(window).traitCollection.userInterfaceStyle;
+            break;
+        }
     }
+
     return appearance == UIUserInterfaceStyleDark
                        ? Qt::ColorScheme::Dark
                        : Qt::ColorScheme::Light;
