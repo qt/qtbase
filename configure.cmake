@@ -1148,6 +1148,14 @@ qt_configure_add_summary_entry(ARGS "xml")
 qt_configure_end_summary_section() # end of "Qt modules and options" section
 qt_configure_add_summary_section(NAME "Support enabled for")
 qt_configure_add_summary_entry(ARGS "pkg-config")
+
+if(QT_USE_VCPKG AND (DEFINED ENV{VCPKG_ROOT} OR VCPKG_TARGET_TRIPLET))
+    set(_vcpkg_entry_message "yes")
+else()
+    set(_vcpkg_entry_message "no")
+endif()
+qt_configure_add_summary_entry(ARGS "Using vcpkg" TYPE "message" MESSAGE "${_vcpkg_entry_message}")
+
 qt_configure_add_summary_entry(ARGS "libudev")
 qt_configure_add_summary_entry(ARGS "openssl")
 qt_configure_add_summary_entry(ARGS "openssl-linked")

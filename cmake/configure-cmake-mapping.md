@@ -76,6 +76,7 @@ The following table describes the mapping of configure options to CMake argument
 | -unity-build-batch-size <int>         | -DQT_UNITY_BUILD_BATCH_SIZE=<int>                 |                                                                 |
 | -warnings-are-errors                  | -DWARNINGS_ARE_ERRORS=ON                          |                                                                 |
 | -no-pkg-config                        | -DFEATURE_pkg_config=OFF                          |                                                                 |
+| -no-vcpkg                             | -DQT_USE_VCPKG=OFF                                |                                                                 |
 | -D <string>                           | -DQT_EXTRA_DEFINES=<string1>;<string2>            |                                                                 |
 | -I <string>                           | -DQT_EXTRA_INCLUDEPATHS=<string1>;<string2>       |                                                                 |
 | -L <string>                           | -DQT_EXTRA_LIBDIRS=<string1>;<string2>            |                                                                 |

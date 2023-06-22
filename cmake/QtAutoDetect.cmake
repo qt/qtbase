@@ -8,6 +8,9 @@
 # Make sure to not run detection when building standalone tests, because the detection was already
 # done when initially configuring qtbase.
 
+# This needs to be here because QtAutoDetect loads before any other modules
+option(QT_USE_VCPKG "Enable the use of vcpkg" ON)
+
 function(qt_internal_ensure_static_qt_config)
     if(NOT DEFINED BUILD_SHARED_LIBS)
         set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Qt statically or dynamically" FORCE)
@@ -161,7 +164,7 @@ function(qt_auto_detect_android)
 endfunction()
 
 function(qt_auto_detect_vcpkg)
-    if(DEFINED ENV{VCPKG_ROOT})
+    if(QT_USE_VCPKG AND DEFINED ENV{VCPKG_ROOT})
         set(vcpkg_toolchain_file "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
         get_filename_component(vcpkg_toolchain_file "${vcpkg_toolchain_file}" ABSOLUTE)
 
