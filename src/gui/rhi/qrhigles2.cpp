@@ -355,6 +355,10 @@ QT_BEGIN_NAMESPACE
 #define GL_TEXTURE_2D_MULTISAMPLE         0x9100
 #endif
 
+#ifndef GL_TEXTURE_2D_MULTISAMPLE_ARRAY
+#define GL_TEXTURE_2D_MULTISAMPLE_ARRAY   0x9102
+#endif
+
 #ifndef GL_TEXTURE_EXTERNAL_OES
 #define GL_TEXTURE_EXTERNAL_OES           0x8D65
 #endif
@@ -3421,17 +3425,55 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             f->glGenFramebuffers(2, fbo);
             f->glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo[0]);
             f->glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                         GL_RENDERBUFFER, cmd.args.blitFromRb.renderbuffer);
+                                         GL_RENDERBUFFER, cmd.args.blitFromRenderbuffer.renderbuffer);
             f->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo[1]);
-            if (cmd.args.blitFromRb.target == GL_TEXTURE_3D || cmd.args.blitFromRb.target == GL_TEXTURE_2D_ARRAY) {
+            if (cmd.args.blitFromRenderbuffer.target == GL_TEXTURE_3D || cmd.args.blitFromRenderbuffer.target == GL_TEXTURE_2D_ARRAY) {
                 f->glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                             cmd.args.blitFromRb.texture, cmd.args.blitFromRb.dstLevel, cmd.args.blitFromRb.dstLayer);
+                                             cmd.args.blitFromRenderbuffer.dstTexture,
+                                             cmd.args.blitFromRenderbuffer.dstLevel,
+                                             cmd.args.blitFromRenderbuffer.dstLayer);
             } else {
-                f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromRb.target,
-                                          cmd.args.blitFromRb.texture, cmd.args.blitFromRb.dstLevel);
+                f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromRenderbuffer.target,
+                                          cmd.args.blitFromRenderbuffer.dstTexture, cmd.args.blitFromRenderbuffer.dstLevel);
             }
-            f->glBlitFramebuffer(0, 0, cmd.args.blitFromRb.w, cmd.args.blitFromRb.h,
-                                 0, 0, cmd.args.blitFromRb.w, cmd.args.blitFromRb.h,
+            f->glBlitFramebuffer(0, 0, cmd.args.blitFromRenderbuffer.w, cmd.args.blitFromRenderbuffer.h,
+                                 0, 0, cmd.args.blitFromRenderbuffer.w, cmd.args.blitFromRenderbuffer.h,
+                                 GL_COLOR_BUFFER_BIT,
+                                 GL_NEAREST); // Qt 5 used Nearest when resolving samples, stick to that
+            f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
+            f->glDeleteFramebuffers(2, fbo);
+        }
+            break;
+        case QGles2CommandBuffer::Command::BlitFromTexture:
+        {
+            // Altering the scissor state, so reset the stored state, although
+            // not strictly required as long as blit is done in endPass() only.
+            cbD->graphicsPassState.reset();
+            f->glDisable(GL_SCISSOR_TEST);
+            GLuint fbo[2];
+            f->glGenFramebuffers(2, fbo);
+            f->glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo[0]);
+            if (cmd.args.blitFromTexture.srcTarget == GL_TEXTURE_2D_MULTISAMPLE_ARRAY) {
+                f->glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                             cmd.args.blitFromTexture.srcTexture,
+                                             cmd.args.blitFromTexture.srcLevel,
+                                             cmd.args.blitFromTexture.srcLayer);
+            } else {
+                f->glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromTexture.srcTarget,
+                                          cmd.args.blitFromTexture.srcTexture, cmd.args.blitFromTexture.srcLevel);
+            }
+            f->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo[1]);
+            if (cmd.args.blitFromTexture.dstTarget == GL_TEXTURE_3D || cmd.args.blitFromTexture.dstTarget == GL_TEXTURE_2D_ARRAY) {
+                f->glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                             cmd.args.blitFromTexture.dstTexture,
+                                             cmd.args.blitFromTexture.dstLevel,
+                                             cmd.args.blitFromTexture.dstLayer);
+            } else {
+                f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromTexture.dstTarget,
+                                          cmd.args.blitFromTexture.dstTexture, cmd.args.blitFromTexture.dstLevel);
+            }
+            f->glBlitFramebuffer(0, 0, cmd.args.blitFromTexture.w, cmd.args.blitFromTexture.h,
+                                 0, 0, cmd.args.blitFromTexture.w, cmd.args.blitFromTexture.h,
                                  GL_COLOR_BUFFER_BIT,
                                  GL_NEAREST); // Qt 5 used Nearest when resolving samples, stick to that
             f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
@@ -4280,32 +4322,64 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
 
     if (cbD->currentTarget->resourceType() == QRhiResource::TextureRenderTarget) {
         QGles2TextureRenderTarget *rtTex = QRHI_RES(QGles2TextureRenderTarget, cbD->currentTarget);
-        if (rtTex->m_desc.cbeginColorAttachments() != rtTex->m_desc.cendColorAttachments()) {
-            // handle only 1 color attachment and only (msaa) renderbuffer
-            const QRhiColorAttachment &colorAtt(*rtTex->m_desc.cbeginColorAttachments());
-            if (colorAtt.resolveTexture()) {
-                Q_ASSERT(colorAtt.renderBuffer());
+        for (auto it = rtTex->m_desc.cbeginColorAttachments(), itEnd = rtTex->m_desc.cendColorAttachments();
+             it != itEnd; ++it)
+        {
+            const QRhiColorAttachment &colorAtt(*it);
+            if (!colorAtt.resolveTexture())
+                continue;
+
+            QGles2Texture *resolveTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
+            const QSize size = resolveTexD->pixelSize();
+            if (colorAtt.renderBuffer()) {
                 QGles2RenderBuffer *rbD = QRHI_RES(QGles2RenderBuffer, colorAtt.renderBuffer());
-                const QSize size = colorAtt.resolveTexture()->pixelSize();
                 if (rbD->pixelSize() != size) {
                     qWarning("Resolve source (%dx%d) and target (%dx%d) size does not match",
                              rbD->pixelSize().width(), rbD->pixelSize().height(), size.width(), size.height());
                 }
                 QGles2CommandBuffer::Command &cmd(cbD->commands.get());
                 cmd.cmd = QGles2CommandBuffer::Command::BlitFromRenderbuffer;
-                cmd.args.blitFromRb.renderbuffer = rbD->renderbuffer;
-                cmd.args.blitFromRb.w = size.width();
-                cmd.args.blitFromRb.h = size.height();
-                QGles2Texture *colorTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
-                if (colorTexD->m_flags.testFlag(QRhiTexture::CubeMap))
-                    cmd.args.blitFromRb.target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(colorAtt.resolveLayer());
+                cmd.args.blitFromRenderbuffer.renderbuffer = rbD->renderbuffer;
+                cmd.args.blitFromRenderbuffer.w = size.width();
+                cmd.args.blitFromRenderbuffer.h = size.height();
+                if (resolveTexD->m_flags.testFlag(QRhiTexture::CubeMap))
+                    cmd.args.blitFromRenderbuffer.target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(colorAtt.resolveLayer());
                 else
-                    cmd.args.blitFromRb.target = colorTexD->target;
-                cmd.args.blitFromRb.texture = colorTexD->texture;
-                cmd.args.blitFromRb.dstLevel = colorAtt.resolveLevel();
-                const bool hasZ = colorTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
-                    || colorTexD->m_flags.testFlag(QRhiTexture::TextureArray);
-                cmd.args.blitFromRb.dstLayer = hasZ ? colorAtt.resolveLayer() : 0;
+                    cmd.args.blitFromRenderbuffer.target = resolveTexD->target;
+                cmd.args.blitFromRenderbuffer.dstTexture = resolveTexD->texture;
+                cmd.args.blitFromRenderbuffer.dstLevel = colorAtt.resolveLevel();
+                const bool hasZ = resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
+                    || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray);
+                cmd.args.blitFromRenderbuffer.dstLayer = hasZ ? colorAtt.resolveLayer() : 0;
+            } else {
+                Q_ASSERT(colorAtt.texture());
+                QGles2Texture *texD = QRHI_RES(QGles2Texture, colorAtt.texture());
+                if (texD->pixelSize() != size) {
+                    qWarning("Resolve source (%dx%d) and target (%dx%d) size does not match",
+                             texD->pixelSize().width(), texD->pixelSize().height(), size.width(), size.height());
+                }
+                QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+                cmd.cmd = QGles2CommandBuffer::Command::BlitFromTexture;
+                if (texD->m_flags.testFlag(QRhiTexture::CubeMap))
+                    cmd.args.blitFromTexture.srcTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(colorAtt.layer());
+                else
+                    cmd.args.blitFromTexture.srcTarget = texD->target;
+                cmd.args.blitFromTexture.srcTexture = texD->texture;
+                cmd.args.blitFromTexture.srcLevel = colorAtt.level();
+                cmd.args.blitFromTexture.srcLayer = 0;
+                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || texD->m_flags.testFlag(QRhiTexture::TextureArray))
+                    cmd.args.blitFromTexture.srcLayer = colorAtt.layer();
+                cmd.args.blitFromTexture.w = size.width();
+                cmd.args.blitFromTexture.h = size.height();
+                if (resolveTexD->m_flags.testFlag(QRhiTexture::CubeMap))
+                    cmd.args.blitFromTexture.dstTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(colorAtt.resolveLayer());
+                else
+                    cmd.args.blitFromTexture.dstTarget = resolveTexD->target;
+                cmd.args.blitFromTexture.dstTexture = resolveTexD->texture;
+                cmd.args.blitFromTexture.dstLevel = colorAtt.resolveLevel();
+                cmd.args.blitFromTexture.dstLayer = 0;
+                if (resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray))
+                    cmd.args.blitFromTexture.dstLayer = colorAtt.resolveLayer();
             }
         }
     }
@@ -5224,7 +5298,7 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
     }
 
     target = isCube             ? GL_TEXTURE_CUBE_MAP
-            : m_sampleCount > 1 ? GL_TEXTURE_2D_MULTISAMPLE
+            : m_sampleCount > 1 ? (isArray ? GL_TEXTURE_2D_MULTISAMPLE_ARRAY : GL_TEXTURE_2D_MULTISAMPLE)
                                 : (is3D ? GL_TEXTURE_3D
                                         : (is1D ? (isArray ? GL_TEXTURE_1D_ARRAY : GL_TEXTURE_1D)
                                                 : (isArray ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D)));
