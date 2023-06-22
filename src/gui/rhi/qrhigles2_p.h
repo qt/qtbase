@@ -331,6 +331,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             CompressedImage,
             CompressedSubImage,
             BlitFromRenderbuffer,
+            BlitFromTexture,
             GenMip,
             BindComputePipeline,
             Dispatch,
@@ -494,10 +495,22 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int w;
                 int h;
                 GLenum target;
-                GLuint texture;
+                GLuint dstTexture;
                 int dstLevel;
                 int dstLayer;
-            } blitFromRb;
+            } blitFromRenderbuffer;
+            struct {
+                GLenum srcTarget;
+                GLuint srcTexture;
+                int srcLevel;
+                int srcLayer;
+                int w;
+                int h;
+                GLenum dstTarget;
+                GLuint dstTexture;
+                int dstLevel;
+                int dstLayer;
+            } blitFromTexture;
             struct {
                 GLenum target;
                 GLuint texture;
