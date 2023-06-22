@@ -1885,8 +1885,9 @@ void QHeaderView::sectionsInserted(const QModelIndex &parent,
                                    int logicalFirst, int logicalLast)
 {
     Q_D(QHeaderView);
-    if (parent != d->root)
-        return; // we only handle changes in the root level
+    // only handle root level changes and return on no-op
+    if (parent != d->root || d->modelSectionCount() == d->sectionCount())
+        return;
     int oldCount = d->sectionCount();
 
     d->invalidateCachedSizeHint();
