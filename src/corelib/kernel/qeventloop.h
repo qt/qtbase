@@ -54,8 +54,11 @@ class QEventLoopLockerPrivate;
 class Q_CORE_EXPORT QEventLoopLocker
 {
 public:
+    Q_NODISCARD_CTOR
     QEventLoopLocker();
+    Q_NODISCARD_CTOR
     explicit QEventLoopLocker(QEventLoop *loop);
+    Q_NODISCARD_CTOR
     explicit QEventLoopLocker(QThread *thread);
     ~QEventLoopLocker();
 

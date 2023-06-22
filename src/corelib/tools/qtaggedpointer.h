@@ -43,10 +43,10 @@ public:
     static constexpr quintptr tagMask() { return QtPrivate::TagInfo<T>::alignment - 1; }
     static constexpr quintptr pointerMask() { return ~tagMask(); }
 
-    constexpr QTaggedPointer() noexcept : d(0) {}
-    constexpr QTaggedPointer(std::nullptr_t) noexcept : QTaggedPointer() {}
+    Q_NODISCARD_CTOR constexpr QTaggedPointer() noexcept : d(0) {}
+    Q_NODISCARD_CTOR constexpr QTaggedPointer(std::nullptr_t) noexcept : QTaggedPointer() {}
 
-    explicit QTaggedPointer(T *pointer, Tag tag = Tag()) noexcept
+    Q_NODISCARD_CTOR explicit QTaggedPointer(T *pointer, Tag tag = Tag()) noexcept
         : d(quintptr(pointer) | quintptr(tag))
     {
         static_assert(sizeof(Type*) == sizeof(QTaggedPointer));

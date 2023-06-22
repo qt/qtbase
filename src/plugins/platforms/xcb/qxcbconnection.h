@@ -367,7 +367,7 @@ Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_RELOCATABLE_TYPE);
 class QXcbConnectionGrabber
 {
 public:
-    QXcbConnectionGrabber(QXcbConnection *connection);
+    Q_NODISCARD_CTOR QXcbConnectionGrabber(QXcbConnection *connection);
     ~QXcbConnectionGrabber();
     void release();
 private:

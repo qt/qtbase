@@ -1944,7 +1944,7 @@ bool QDBusConnectionPrivate::send(const QDBusMessage& message)
 class QDBusBlockingCallWatcher
 {
 public:
-    QDBusBlockingCallWatcher(const QDBusMessage &message)
+    Q_NODISCARD_CTOR QDBusBlockingCallWatcher(const QDBusMessage &message)
         : m_message(message), m_maxCallTimeoutMs(0)
     {
 #if defined(QT_NO_DEBUG)

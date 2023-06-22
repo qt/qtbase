@@ -43,7 +43,7 @@ class QSharedMemoryLocker
 {
 
 public:
-    inline QSharedMemoryLocker(QSharedMemory *sharedMemory) : q_sm(sharedMemory)
+    Q_NODISCARD_CTOR QSharedMemoryLocker(QSharedMemory *sharedMemory) : q_sm(sharedMemory)
     {
         Q_ASSERT(q_sm);
     }
