@@ -576,8 +576,9 @@ void QHttp2ProtocolHandler::handleDATA()
 
     sessionReceiveWindowSize -= inboundFrame.payloadSize();
 
-    if (activeStreams.contains(streamID)) {
-        auto &stream = activeStreams[streamID];
+    auto it = activeStreams.find(streamID);
+    if (it != activeStreams.end()) {
+        Stream &stream = it.value();
 
         if (qint32(inboundFrame.payloadSize()) > stream.recvWindow) {
             finishStreamWithError(stream, QNetworkReply::ProtocolFailure, "flow control error"_L1);
@@ -887,11 +888,12 @@ void QHttp2ProtocolHandler::handleWINDOW_UPDATE()
             return connectionError(PROTOCOL_ERROR, "WINDOW_UPDATE invalid delta");
         sessionSendWindowSize += delta;
     } else {
-        if (!activeStreams.contains(streamID)) {
+        auto it = activeStreams.find(streamID);
+        if (it == activeStreams.end()) {
             // WINDOW_UPDATE on closed streams can be ignored.
             return;
         }
-        auto &stream = activeStreams[streamID];
+        Stream &stream = it.value();
         if (!valid || sum_will_overflow(stream.sendWindow, delta)) {
             finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
                                   "invalid WINDOW_UPDATE delta"_L1);
@@ -939,9 +941,10 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
 
     const auto streamID = continuedFrames[0].streamID();
 
+    const auto streamIt = activeStreams.find(streamID);
     if (firstFrameType == FrameType::HEADERS) {
-        if (activeStreams.contains(streamID)) {
-            Stream &stream = activeStreams[streamID];
+        if (streamIt != activeStreams.end()) {
+            Stream &stream = streamIt.value();
             if (stream.state != Stream::halfClosedLocal
                 && stream.state != Stream::remoteReserved
                 && stream.state != Stream::open) {
@@ -984,8 +987,8 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
 
     switch (firstFrameType) {
     case FrameType::HEADERS:
-        if (activeStreams.contains(streamID)) {
-            Stream &stream = activeStreams[streamID];
+        if (streamIt != activeStreams.end()) {
+            Stream &stream = streamIt.value();
             if (hasHeaderFields)
                 updateStream(stream, decoder.decodedHeader());
             // Needs to resend the request; we should finish and delete the current stream
@@ -1389,9 +1392,10 @@ quint32 QHttp2ProtocolHandler::popStreamToResume()
         auto &queue = suspendedStreams[rank];
         auto it = queue.begin();
         for (; it != queue.end(); ++it) {
-            if (!activeStreams.contains(*it))
+            auto stream = activeStreams.constFind(*it);
+            if (stream == activeStreams.cend())
                 continue;
-            if (activeStreams[*it].sendWindow > 0)
+            if (stream->sendWindow > 0)
                 break;
         }
 
@@ -1414,8 +1418,8 @@ void QHttp2ProtocolHandler::removeFromSuspended(quint32 streamID)
 
 void QHttp2ProtocolHandler::deleteActiveStream(quint32 streamID)
 {
-    if (activeStreams.contains(streamID)) {
-        auto &stream = activeStreams[streamID];
+    if (const auto it = activeStreams.constFind(streamID); it != activeStreams.cend()) {
+        const Stream &stream = it.value();
         if (stream.reply()) {
             stream.reply()->disconnect(this);
             streamIDs.remove(stream.reply());
@@ -1424,7 +1428,7 @@ void QHttp2ProtocolHandler::deleteActiveStream(quint32 streamID)
             stream.data()->disconnect(this);
             streamIDs.remove(stream.data());
         }
-        activeStreams.remove(streamID);
+        activeStreams.erase(it);
     }
 
     removeFromSuspended(streamID);
@@ -1447,10 +1451,11 @@ void QHttp2ProtocolHandler::resumeSuspendedStreams()
         if (!streamID)
             return;
 
-        if (!activeStreams.contains(streamID))
+        auto it = activeStreams.find(streamID);
+        if (it == activeStreams.end())
             continue;
+        Stream &stream = it.value();
 
-        Stream &stream = activeStreams[streamID];
         if (!sendDATA(stream)) {
             finishStreamWithError(stream, QNetworkReply::UnknownNetworkError,
                                   "failed to send DATA"_L1);
@@ -1553,8 +1558,8 @@ void QHttp2ProtocolHandler::initReplyFromPushPromise(const HttpMessagePair &mess
 
     bool replyFinished = false;
     Stream *promisedStream = nullptr;
-    if (activeStreams.contains(promise.reservedID)) {
-        promisedStream = &activeStreams[promise.reservedID];
+    if (auto it = activeStreams.find(promise.reservedID); it != activeStreams.end()) {
+        promisedStream = &it.value();
         // Ok, we have an active (not closed yet) stream waiting for more frames,
         // let's pretend we requested it:
         promisedStream->httpPair = message;
@@ -1564,8 +1569,8 @@ void QHttp2ProtocolHandler::initReplyFromPushPromise(const HttpMessagePair &mess
                             streamInitialSendWindowSize,
                             streamInitialReceiveWindowSize);
         closedStream.state = Stream::halfClosedLocal;
-        activeStreams.insert(promise.reservedID, closedStream);
-        promisedStream = &activeStreams[promise.reservedID];
+        it = activeStreams.insert(promise.reservedID, closedStream);
+        promisedStream = &it.value();
         replyFinished = true;
     }
 
