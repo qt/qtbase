@@ -31,6 +31,10 @@ else()
     if(CMAKE_OSX_ARCHITECTURES)
         set(osx_architectures "-DCMAKE_OSX_ARCHITECTURES:STRING=${CMAKE_OSX_ARCHITECTURES}")
     endif()
+
+    if(CMAKE_OSX_SYSROOT)
+        set(osx_sysroot "-DCMAKE_OSX_SYSROOT:STRING=${CMAKE_OSX_SYSROOT}")
+    endif()
     # Note: configure-time tools reserve the original tool name for the imported executable.
     # To re-build syncqt use 'syncqt_build' target.
     qt_internal_add_configure_time_tool(${target_name}
@@ -44,6 +48,7 @@ else()
             # std::filesystem API is only available in macOS 10.15+
             -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.15
             "${osx_architectures}"
+            "${osx_sysroot}"
         SOURCES
             "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
         ${config_type}
