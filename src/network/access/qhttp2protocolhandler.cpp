@@ -504,7 +504,7 @@ bool QHttp2ProtocolHandler::sendDATA(Stream &stream)
         }
 
         frameWriter.start(FrameType::DATA, FrameFlag::EMPTY, stream.streamID);
-        const qint32 bytesWritten = std::min<qint32>(slot, chunkSize);
+        const qint32 bytesWritten = qint32(std::min<qint64>(slot, chunkSize));
 
         if (!frameWriter.writeDATA(*m_socket, maxFrameSize, src, bytesWritten))
             return false;
