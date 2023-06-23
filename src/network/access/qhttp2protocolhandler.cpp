@@ -120,13 +120,6 @@ QUrl urlkey_from_request(const QHttpNetworkRequest &request)
     return url;
 }
 
-bool sum_will_overflow(qint32 windowSize, qint32 delta)
-{
-    if (windowSize > 0)
-        return std::numeric_limits<qint32>::max() - windowSize < delta;
-    return std::numeric_limits<qint32>::min() - windowSize > delta;
-}
-
 }// Unnamed namespace
 
 // Since we anyway end up having this in every function definition:
@@ -884,9 +877,10 @@ void QHttp2ProtocolHandler::handleWINDOW_UPDATE()
     const auto streamID = inboundFrame.streamID();
 
     if (streamID == Http2::connectionStreamID) {
-        if (!valid || sum_will_overflow(sessionSendWindowSize, delta))
+        qint32 sum = 0;
+        if (!valid || qAddOverflow(sessionSendWindowSize, qint32(delta), &sum))
             return connectionError(PROTOCOL_ERROR, "WINDOW_UPDATE invalid delta");
-        sessionSendWindowSize += delta;
+        sessionSendWindowSize = sum;
     } else {
         auto it = activeStreams.find(streamID);
         if (it == activeStreams.end()) {
@@ -894,7 +888,8 @@ void QHttp2ProtocolHandler::handleWINDOW_UPDATE()
             return;
         }
         Stream &stream = it.value();
-        if (!valid || sum_will_overflow(stream.sendWindow, delta)) {
+        qint32 sum = 0;
+        if (!valid || qAddOverflow(stream.sendWindow, qint32(delta), &sum)) {
             finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
                                   "invalid WINDOW_UPDATE delta"_L1);
             sendRST_STREAM(streamID, PROTOCOL_ERROR);
@@ -902,7 +897,7 @@ void QHttp2ProtocolHandler::handleWINDOW_UPDATE()
             deleteActiveStream(streamID);
             return;
         }
-        stream.sendWindow += delta;
+        stream.sendWindow = sum;
     }
 
     // Since we're in _q_receiveReply at the moment, let's first handle other
@@ -1033,11 +1028,12 @@ bool QHttp2ProtocolHandler::acceptSetting(Http2::Settings identifier, quint32 ne
         std::vector<quint32> brokenStreams;
         brokenStreams.reserve(activeStreams.size());
         for (auto &stream : activeStreams) {
-            if (sum_will_overflow(stream.sendWindow, delta)) {
+            qint32 sum = 0;
+            if (qAddOverflow(stream.sendWindow, delta, &sum)) {
                 brokenStreams.push_back(stream.streamID);
                 continue;
             }
-            stream.sendWindow += delta;
+            stream.sendWindow = sum;
         }
 
         for (auto id : brokenStreams) {
