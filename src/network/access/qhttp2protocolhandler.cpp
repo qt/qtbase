@@ -45,10 +45,10 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
     // 1. Before anything - mandatory fields, if they do not fit into maxHeaderList -
     // then stop immediately with error.
     const auto auth = request.url().authority(QUrl::FullyEncoded | QUrl::RemoveUserInfo).toLatin1();
-    header.push_back(HeaderField(":authority", auth));
-    header.push_back(HeaderField(":method", request.methodName()));
-    header.push_back(HeaderField(":path", request.uri(useProxy)));
-    header.push_back(HeaderField(":scheme", request.url().scheme().toLatin1()));
+    header.emplace_back(":authority", auth);
+    header.emplace_back(":method", request.methodName());
+    header.emplace_back(":path", request.uri(useProxy));
+    header.emplace_back(":scheme", request.url().scheme().toLatin1());
 
     HeaderSize size = header_size(header);
     if (!size.first) // Ooops!
@@ -79,7 +79,7 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
         // to their encoding in HTTP/2.
         // A request or response containing uppercase header field names
         // MUST be treated as malformed (Section 8.1.2.6)".
-        header.push_back(HeaderField(field.first.toLower(), field.second));
+        header.emplace_back(field.first.toLower(), field.second);
     }
 
     return header;
