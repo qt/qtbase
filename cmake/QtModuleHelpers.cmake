@@ -834,7 +834,7 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     if(NOT arg_NO_SYNC_QT AND NOT arg_NO_MODULE_HEADERS)
         list(APPEND interface_includes "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 
-        # syncqt.pl does not create a private header directory like 'include/6.0/QtFoo' unless
+        # syncqt does not create a private header directory like 'include/6.0/QtFoo' unless
         # the module has foo_p.h header files. For QtZlib, there are no such private headers, so we
         # need to make sure not to add such include paths unless the directory exists, otherwise
         # consumers of the module will fail at CMake generation time stating that
