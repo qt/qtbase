@@ -201,6 +201,9 @@ private slots:
 #ifdef Q_OS_UNIX
     void isSequential();
 #endif
+    void decodeName_data();
+    void decodeName();
+    void encodeName_data() { decodeName_data(); }
     void encodeName();
     void truncate();
     void seekToPos();
@@ -1914,9 +1917,41 @@ void tst_QFile::isSequential()
 }
 #endif
 
+void tst_QFile::decodeName_data()
+{
+    QTest::addColumn<QByteArray>("bytearray");
+    QTest::addColumn<QString>("qstring");
+
+    QTest::newRow("null") << QByteArray() << QString();
+    QTest::newRow("simple") << "/path/to/file"_ba << u"/path/to/file"_s;
+
+#ifndef Q_OS_WIN
+#  ifdef Q_OS_DARWIN
+    // Mac always expects filenames in UTF-8... and decomposed...
+    QTest::newRow("filé") << "/path/to/file\xCC\x81"_ba << u"/path/to/filé"_s;
+#  else
+    QTest::newRow("filé") << "/path/to/fil\xC3\xA9"_ba << u"/path/to/filé"_s;
+#  endif
+    QTest::newRow("fraction-slash")
+            << "/path\342\201\204to\342\201\204file"_ba << u"/path⁄to⁄file"_s;
+    QTest::newRow("fraction-slash-u16") << "/path\u2044to\u2044file"_ba << u"/path⁄to⁄file"_s;
+#endif // !Q_OS_WIN
+}
+
+void tst_QFile::decodeName()
+{
+    QFETCH(QByteArray, bytearray);
+    QFETCH(QString, qstring);
+
+    QCOMPARE(QFile::decodeName(bytearray), qstring);
+}
+
 void tst_QFile::encodeName()
 {
-    QCOMPARE(QFile::encodeName(QString()), QByteArray());
+    QFETCH(QString, qstring);
+    QFETCH(QByteArray, bytearray);
+
+    QCOMPARE(QFile::encodeName(qstring), bytearray);
 }
 
 void tst_QFile::truncate()
