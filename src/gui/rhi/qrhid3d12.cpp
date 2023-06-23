@@ -1414,7 +1414,7 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     // be in flight anymore). With Qt Quick this situation cannot happen anyway
     // by design (one QRhi per window).
     for (QD3D12SwapChain *sc : std::as_const(swapchains))
-        sc->waitCommandCompletionForFrameSlot(sc->currentFrameSlot);
+        sc->waitCommandCompletionForFrameSlot(currentFrameSlot); // note: swapChainD->currentFrameSlot, not sc's
 
     HRESULT hr = cmdAllocators[currentFrameSlot]->Reset();
     if (FAILED(hr)) {
