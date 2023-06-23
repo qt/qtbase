@@ -1190,13 +1190,20 @@ QString QPropertyBindingError::description() const
    usable directly without reading through a QBindable use \l QProperty or
    \l QObjectBindableProperty.
 
+   \code
+   QProperty<QString> displayText;
+   QDateTimeEdit *dateTimeEdit = findDateTimeEdit();
+   QBindable<QDateTime> dateTimeBindable(dateTimeEdit, "dateTime");
+   displayText.setBinding([dateTimeBindable](){ return dateTimeBindable.value().toString(); });
+   \endcode
+
    \sa QProperty, QObjectBindableProperty, {Qt Bindable Properties}
 */
 
 /*!
    \fn template<typename T> QBindable<T>::QBindable(QObject *obj, const QMetaProperty &property)
 
-   See \c \l QBindable::QBindable(QObject *obj, const char *property)
+   See \l QBindable::QBindable(QObject *obj, const char *property)
 */
 
 /*!
