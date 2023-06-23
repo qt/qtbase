@@ -62,8 +62,9 @@ QWasmInputContext::QWasmInputContext()
 
         // Enter is sent through target window, let's just handle this here
         emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, (void *)this, 1,
-                                        &androidKeyboardCallback);
-
+                                        &inputMethodKeyboardCallback);
+        emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, (void *)this, 1,
+                                      &inputMethodKeyboardCallback);
     }
 
     if (platform() == Platform::MacOS || platform() == Platform::iOS) {
@@ -155,12 +156,14 @@ void QWasmInputContext::inputStringChanged(QString &inputString, int eventType, 
     } else if (thisKey == Qt::Key(0)) {
         thisKey = Qt::Key_Return;
     }
+
     QWindowSystemInterface::handleKeyEvent(
         0, eventType == EMSCRIPTEN_EVENT_KEYDOWN ? QEvent::KeyPress : QEvent::KeyRelease,
-        thisKey, keys[0].keyboardModifiers(), inputString);
+        thisKey, keys[0].keyboardModifiers(),
+        eventType == EMSCRIPTEN_EVENT_KEYDOWN ? inputString : QStringLiteral(""));
 }
 
-int QWasmInputContext::androidKeyboardCallback(int eventType,
+int QWasmInputContext::inputMethodKeyboardCallback(int eventType,
                                                const EmscriptenKeyboardEvent *keyEvent,
                                                void *userData)
 {
