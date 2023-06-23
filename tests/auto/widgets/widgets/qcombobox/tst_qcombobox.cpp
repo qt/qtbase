@@ -48,6 +48,7 @@
 #include <private/qinputmethod_p.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
+#include <QtTest/private/qemulationdetector_p.h>
 
 #include <QtWidgets/private/qapplication_p.h>
 
@@ -3400,6 +3401,8 @@ void tst_QComboBox::popupPositionAfterStyleChange()
     const bool usePopup = qApp->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, &box);
     if (!usePopup)
         QSKIP("This test is only relevant for styles that centers the popup on top of the combo!");
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Flaky on QEMU, QTBUG-114760");
 
     box.addItems({"first", "middle", "last"});
     box.show();
