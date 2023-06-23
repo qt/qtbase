@@ -27,8 +27,6 @@
 QT_REQUIRE_CONFIG(filesystemwatcher);
 QT_BEGIN_NAMESPACE
 
-enum { PollingInterval = 1000 };
-
 class QPollingFileSystemWatcherEngine : public QFileSystemWatcherEngine
 {
     Q_OBJECT
