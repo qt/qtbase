@@ -2,10 +2,17 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qfilesystemwatcher_polling_p.h"
+
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qtimer.h>
 
+#include <chrono>
+
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
+
+static constexpr auto PollingInterval = 1s;
 
 QPollingFileSystemWatcherEngine::QPollingFileSystemWatcherEngine(QObject *parent)
     : QFileSystemWatcherEngine(parent)
