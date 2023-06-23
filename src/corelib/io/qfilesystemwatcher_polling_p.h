@@ -15,11 +15,11 @@
 // We mean it.
 //
 
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdir.h>
-#include <QtCore/qtimer.h>
 #include <QtCore/qhash.h>
 
 #include "qfilesystemwatcher_p.h"
@@ -77,11 +77,11 @@ public:
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories) override;
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories) override;
 
-private Q_SLOTS:
-    void timeout();
+private:
+    void timerEvent(QTimerEvent *) final;
 
 private:
-    QTimer timer;
+    QBasicTimer timer;
 };
 
 QT_END_NAMESPACE

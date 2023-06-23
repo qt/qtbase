@@ -8,10 +8,8 @@
 QT_BEGIN_NAMESPACE
 
 QPollingFileSystemWatcherEngine::QPollingFileSystemWatcherEngine(QObject *parent)
-    : QFileSystemWatcherEngine(parent),
-      timer(this)
+    : QFileSystemWatcherEngine(parent)
 {
-    connect(&timer, SIGNAL(timeout()), SLOT(timeout()));
 }
 
 QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
@@ -43,7 +41,7 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
     if ((!this->files.isEmpty() ||
          !this->directories.isEmpty()) &&
         !timer.isActive()) {
-        timer.start(PollingInterval);
+        timer.start(PollingInterval, this);
     }
 
     return unhandled;
@@ -72,8 +70,11 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
     return unhandled;
 }
 
-void QPollingFileSystemWatcherEngine::timeout()
+void QPollingFileSystemWatcherEngine::timerEvent(QTimerEvent *e)
 {
+    if (e->timerId() != timer.timerId())
+        return QFileSystemWatcherEngine::timerEvent(e);
+
     for (auto it = files.begin(), end = files.end(); it != end; /*erasing*/) {
         QString path = it.key();
         QFileInfo fi(path);
