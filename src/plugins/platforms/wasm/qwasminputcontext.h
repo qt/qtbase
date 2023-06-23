@@ -40,7 +40,7 @@ private:
     emscripten::val m_inputElement = emscripten::val::null();
     std::unique_ptr<qstdweb::EventCallback> m_blurEventHandler;
     std::unique_ptr<qstdweb::EventCallback> m_inputEventHandler;
-    static int androidKeyboardCallback(int eventType,
+    static int inputMethodKeyboardCallback(int eventType,
                                        const EmscriptenKeyboardEvent *keyEvent, void *userData);
     bool inputPanelIsOpen = false;
 };
