@@ -107,6 +107,8 @@ public:
     void setCenterButtons(bool center);
     bool centerButtons() const;
 
+    bool eventFilter(QObject *object, QEvent *event) override;
+
 Q_SIGNALS:
     void clicked(QAbstractButton *button);
     void accepted();
