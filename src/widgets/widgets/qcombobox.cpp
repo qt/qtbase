@@ -2516,7 +2516,7 @@ bool QComboBoxPrivate::showNativePopup()
             currentItem = item;
 
         IndexSetter setter = { i, q };
-        QObject::connect(item, &QPlatformMenuItem::activated, setter);
+        QObject::connect(item, &QPlatformMenuItem::activated, q, setter);
 
         m_platformMenu->insertMenuItem(item, 0);
         m_platformMenu->syncMenuItem(item);
