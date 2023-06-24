@@ -4855,6 +4855,28 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 */
 
 /*!
+    \macro QT_NO_CONTEXTLESS_CONNECT
+    \relates QObject
+    \since 6.7
+
+    Defining this macro will the overload of QObject::connect() that
+    connects a signal to a functor, without also specifying a QObject
+    as a receiver/context object (that is, the 3-arguments overload
+    of QObject::connect()).
+
+    Using the context-less overload is error prone, because it is easy
+    to connect to functors that depend on some local state of the
+    receiving end. If such local state gets destroyed, the connection
+    does not get automatically disconnected.
+
+    Moreover, such connections are always direct connections, which may
+    cause issues in multithreaded scenarios (for instance, if the
+    signal is emitted from another thread).
+
+    \sa QObject::connect, Qt::ConnectionType
+*/
+
+/*!
     \typedef QObjectList
     \relates QObject
 
@@ -4958,6 +4980,11 @@ void qDeleteInEventHandler(QObject *o)
     The connection will automatically disconnect if the sender is destroyed.
     However, you should take care that any objects used within the functor
     are still alive when the signal is emitted.
+
+    For this reason, it is recommended to use the overload of connect()
+    that also takes a QObject as a receiver/context. It is possible
+    to disable the usage of the context-less overload by defining the
+    \c{QT_NO_CONTEXTLESS_CONNECT} macro.
 
     Overloaded functions can be resolved with help of \l qOverload.
 

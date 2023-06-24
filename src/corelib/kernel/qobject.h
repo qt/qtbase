@@ -235,6 +235,7 @@ public:
                            type, types, &SignalType::Object::staticMetaObject);
     }
 
+#ifndef QT_NO_CONTEXTLESS_CONNECT
     //connect without context
     template <typename Func1, typename Func2>
     static inline QMetaObject::Connection
@@ -242,6 +243,7 @@ public:
     {
         return connect(sender, signal, sender, std::forward<Func2>(slot), Qt::DirectConnection);
     }
+#endif // QT_NO_CONTEXTLESS_CONNECT
 #endif //Q_QDOC
 
     static bool disconnect(const QObject *sender, const char *signal,
