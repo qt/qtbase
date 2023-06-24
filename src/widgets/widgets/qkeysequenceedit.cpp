@@ -20,7 +20,7 @@ void QKeySequenceEditPrivate::init()
     lineEdit = new QLineEdit(q);
     lineEdit->setObjectName(QStringLiteral("qt_keysequenceedit_lineedit"));
     lineEdit->setClearButtonEnabled(false);
-    q->connect(lineEdit, &QLineEdit::textChanged, [q](const QString& text) {
+    q->connect(lineEdit, &QLineEdit::textChanged, q, [q](const QString& text) {
         // Clear the shortcut if the user clicked on the clear icon
         if (text.isEmpty())
             q->clear();
