@@ -50,7 +50,12 @@ void tst_QFutureSynchronizer::setFutureAliasingExistingMember()
         // around to avoid the warning, as the extra copy would cause a detach()
         // of m_futures inside setFuture() with the consequence that `f` no longer
         // aliases an element in m_futures, which is the goal of this test.
+QT_WARNING_PUSH
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1301
+QT_WARNING_DISABLE_GCC("-Wdangling-reference")
+#endif
         const auto &f = synchronizer.futures().constFirst();
+QT_WARNING_POP
         synchronizer.setFuture(f);
     }
 
