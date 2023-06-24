@@ -11,4 +11,5 @@ qt_internal_add_test(tst_qdialogbuttonbox
     LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

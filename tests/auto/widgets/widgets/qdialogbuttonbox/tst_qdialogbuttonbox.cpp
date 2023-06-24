@@ -8,6 +8,8 @@
 #include <QtWidgets/QDialog>
 #include <QtGui/QAction>
 #include <qdialogbuttonbox.h>
+#include <QtWidgets/private/qdialogbuttonbox_p.h>
+#include <QtWidgets/private/qabstractbutton_p.h>
 #include <limits.h>
 
 Q_DECLARE_METATYPE(QDialogButtonBox::ButtonRole)
@@ -49,6 +51,9 @@ private slots:
     void clear();
     void removeButton_data();
     void removeButton();
+#ifdef QT_BUILD_INTERNAL
+    void hideAndShowButton();
+#endif
     void buttonRole_data();
     void buttonRole();
     void setStandardButtons_data();
@@ -371,6 +376,51 @@ void tst_QDialogButtonBox::removeButton()
     QCOMPARE(buttonBox.buttons().size(), 0);
     delete button;
 }
+
+#ifdef QT_BUILD_INTERNAL
+void tst_QDialogButtonBox::hideAndShowButton()
+{
+    QDialogButtonBox buttonBox;
+    QDialogButtonBoxPrivate *d = static_cast<QDialogButtonBoxPrivate *>(QObjectPrivate::get(&buttonBox));
+    auto *apply = buttonBox.addButton( "Apply", QDialogButtonBox::ApplyRole );
+    auto *accept = buttonBox.addButton( "Accept", QDialogButtonBox::AcceptRole );
+    buttonBox.addButton( "Reject", QDialogButtonBox::RejectRole );
+    auto *widget = new QWidget();
+    auto *layout = new QHBoxLayout(widget);
+    layout->addWidget(&buttonBox);
+
+    // apply button shows first on macOS. accept button on all other OSes.
+    QAbstractButton *hideButton;
+#ifdef Q_OS_MACOS
+    hideButton = apply;
+    Q_UNUSED(accept);
+#else
+    hideButton = accept;
+    Q_UNUSED(apply);
+#endif
+
+    hideButton->hide();
+    widget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(widget));
+    QVERIFY(buttonBox.focusWidget()); // QTBUG-114377: Without fixing, focusWidget() == nullptr
+    QCOMPARE(d->visibleButtons().count(), 2);
+    QCOMPARE(d->hiddenButtons.count(), 1);
+    QVERIFY(d->hiddenButtons.contains(hideButton));
+    QCOMPARE(buttonBox.buttons().count(), 3);
+    QSignalSpy spy(qApp, &QApplication::focusChanged);
+    QTest::sendKeyEvent(QTest::KeyAction::Click, &buttonBox, Qt::Key_Tab, QString(), Qt::KeyboardModifiers());
+    QCOMPARE(spy.count(), 1); // QTBUG-114377: Without fixing, tabbing wouldn't work.
+    hideButton->show();
+    QCOMPARE_GE(spy.count(), 1);
+    QTRY_COMPARE(QApplication::focusWidget(), hideButton);
+    QCOMPARE(d->visibleButtons().count(), 3);
+    QCOMPARE(d->hiddenButtons.count(), 0);
+    QCOMPARE(buttonBox.buttons().count(), 3);
+    spy.clear();
+    QTest::sendKeyEvent(QTest::KeyAction::Click, &buttonBox, Qt::Key_Backtab, QString(), Qt::KeyboardModifiers());
+    QCOMPARE(spy.count(), 1);
+}
+#endif
 
 void tst_QDialogButtonBox::testDelete()
 {

@@ -112,7 +112,6 @@ QT_BEGIN_NAMESPACE
 
     \sa QMessageBox, QPushButton, QDialog
 */
-
 QDialogButtonBoxPrivate::QDialogButtonBoxPrivate(Qt::Orientation orient)
     : orientation(orient), buttonLayout(nullptr), center(false)
 {
@@ -172,6 +171,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
     Q_Q(QDialogButtonBox);
     const int MacGap = 36 - 8;    // 8 is the default gap between a widget and a spacer item
 
+    QBoolBlocker blocker(byPassEventFilter);
     for (int i = buttonLayout->count() - 1; i >= 0; --i) {
         QLayoutItem *item = buttonLayout->takeAt(i);
         if (QWidget *widget = item->widget())
@@ -367,11 +367,22 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
 }
 
 void QDialogButtonBoxPrivate::addButton(QAbstractButton *button, QDialogButtonBox::ButtonRole role,
-                                        LayoutRule layoutRule)
+                                        LayoutRule layoutRule, AddRule addRule)
 {
-    QObjectPrivate::connect(button, &QAbstractButton::clicked, this, &QDialogButtonBoxPrivate::handleButtonClicked);
-    QObjectPrivate::connect(button, &QAbstractButton::destroyed, this, &QDialogButtonBoxPrivate::handleButtonDestroyed);
+    Q_Q(QDialogButtonBox);
     buttonLists[role].append(button);
+    switch (addRule) {
+    case AddRule::Connect:
+        QObjectPrivate::connect(button, &QAbstractButton::clicked,
+                               this, &QDialogButtonBoxPrivate::handleButtonClicked);
+        QObjectPrivate::connect(button, &QAbstractButton::destroyed,
+                               this, &QDialogButtonBoxPrivate::handleButtonDestroyed);
+        button->installEventFilter(q);
+        break;
+    case AddRule::SkipConnect:
+        break;
+    }
+
     switch (layoutRule) {
     case LayoutRule::DoLayout:
         layoutButtons();
@@ -453,10 +464,13 @@ QDialogButtonBox::QDialogButtonBox(StandardButtons buttons, Qt::Orientation orie
 */
 QDialogButtonBox::~QDialogButtonBox()
 {
+    Q_D(QDialogButtonBox);
+
+    d->byPassEventFilter = true;
+
     // QObjectPrivate::connect requires explicit disconnect in destructor
     // otherwise the connection may kick in on child destruction and reach
     // the parent's destroyed private object
-    Q_D(QDialogButtonBox);
     d->disconnectAll();
 }
 
@@ -622,20 +636,30 @@ void QDialogButtonBox::clear()
 }
 
 /*!
-    Returns a list of all the buttons that have been added to the button box.
+    Returns a list of all buttons that have been added to the button box.
 
     \sa buttonRole(), addButton(), removeButton()
 */
 QList<QAbstractButton *> QDialogButtonBox::buttons() const
 {
     Q_D(const QDialogButtonBox);
+    return d->allButtons();
+}
+
+QList<QAbstractButton *> QDialogButtonBoxPrivate::visibleButtons() const
+{
     QList<QAbstractButton *> finalList;
-    for (int i = 0; i < NRoles; ++i) {
-        const QList<QAbstractButton *> &list = d->buttonLists[i];
+    for (int i = 0; i < QDialogButtonBox::NRoles; ++i) {
+        const QList<QAbstractButton *> &list = buttonLists[i];
         for (int j = 0; j < list.size(); ++j)
             finalList.append(list.at(j));
     }
     return finalList;
+}
+
+QList<QAbstractButton *> QDialogButtonBoxPrivate::allButtons() const
+{
+    return visibleButtons() << hiddenButtons.keys();
 }
 
 /*!
@@ -654,7 +678,7 @@ QDialogButtonBox::ButtonRole QDialogButtonBox::buttonRole(QAbstractButton *butto
                 return ButtonRole(i);
         }
     }
-    return InvalidRole;
+    return d->hiddenButtons.value(button, InvalidRole);
 }
 
 /*!
@@ -670,8 +694,12 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
 
 void QDialogButtonBoxPrivate::removeButton(QAbstractButton *button, RemoveRule rule)
 {
+    Q_Q(QDialogButtonBox);
     if (!button)
         return;
+
+    // Remove it from hidden buttons
+    hiddenButtons.remove(button);
 
     // Remove it from the standard button hash first and then from the roles
     standardButtonHash.remove(reinterpret_cast<QPushButton *>(button));
@@ -685,6 +713,7 @@ void QDialogButtonBoxPrivate::removeButton(QAbstractButton *button, RemoveRule r
                                    this, &QDialogButtonBoxPrivate::handleButtonClicked);
         QObjectPrivate::disconnect(button, &QAbstractButton::destroyed,
                                    this, &QDialogButtonBoxPrivate::handleButtonDestroyed);
+        button->removeEventFilter(q);
         break;
     case RemoveRule::KeepConnections:
         break;
@@ -839,6 +868,54 @@ void QDialogButtonBoxPrivate::handleButtonDestroyed()
     Q_Q(QDialogButtonBox);
     if (QObject *object = q->sender())
         removeButton(reinterpret_cast<QAbstractButton *>(object), RemoveRule::KeepConnections);
+}
+
+bool QDialogButtonBox::eventFilter(QObject *object, QEvent *event)
+{
+    Q_D(QDialogButtonBox);
+    if (d->byPassEventFilter)
+        return false;
+
+    QAbstractButton *button = qobject_cast<QAbstractButton *>(object);
+    if (!button)
+        return false;
+
+
+    const QEvent::Type type = event->type();
+    if (type == QEvent::HideToParent || type == QEvent::ShowToParent)
+        return d->handleButtonShowAndHide(button, event);
+
+    return false;
+}
+
+bool QDialogButtonBoxPrivate::handleButtonShowAndHide(QAbstractButton *button, QEvent *event)
+{
+    Q_Q(QDialogButtonBox);
+
+    const QEvent::Type type = event->type();
+
+    switch (type) {
+    case QEvent::HideToParent: {
+        const QDialogButtonBox::ButtonRole role = q->buttonRole(button);
+        if (role != QDialogButtonBox::ButtonRole::InvalidRole) {
+            removeButton(button, RemoveRule::KeepConnections);
+            hiddenButtons.insert(button, role);
+            layoutButtons();
+        }
+        break;
+    }
+    case QEvent::ShowToParent:
+        if (hiddenButtons.contains(button)) {
+            const auto role = hiddenButtons.take(button);
+            addButton(button, role, LayoutRule::DoLayout, AddRule::SkipConnect);
+            if (role == QDialogButtonBox::AcceptRole)
+                ensureFirstAcceptIsDefault();
+        }
+        break;
+    default: break;
+    }
+
+    return false;
 }
 
 /*!
