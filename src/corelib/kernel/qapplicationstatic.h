@@ -50,7 +50,8 @@ template <typename QAS> struct ApplicationHolder
         QMutexLocker locker(&mutex);
         if (guard.loadRelaxed() == QtGlobalStatic::Uninitialized) {
             QAS::innerFunction(&storage);
-            QObject::connect(QCoreApplication::instance(), &QObject::destroyed, reset);
+            const auto *app = QCoreApplication::instance();
+            QObject::connect(app, &QObject::destroyed, app, reset, Qt::DirectConnection);
             guard.storeRelease(QtGlobalStatic::Initialized);
         }
         return realPointer();

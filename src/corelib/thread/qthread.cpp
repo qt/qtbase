@@ -1245,7 +1245,9 @@ QDaemonThread::QDaemonThread(QObject *parent)
 {
     // QThread::started() is emitted from the thread we start
     connect(this, &QThread::started,
-            [](){ QThreadData::current()->requiresCoreApplication = false; });
+            this,
+            [](){ QThreadData::current()->requiresCoreApplication = false; },
+            Qt::DirectConnection);
 }
 
 QDaemonThread::~QDaemonThread()
