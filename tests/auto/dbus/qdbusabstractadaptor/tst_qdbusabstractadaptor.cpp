@@ -1842,8 +1842,7 @@ void tst_QDBusAbstractAdaptor::typeMatching()
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
     QCOMPARE(reply.arguments().size(), 1);
 
-    const QVariant &retval = reply.arguments().at(0);
-    QVERIFY(compare(retval, value));
+    QVERIFY(compare(reply.arguments().at(0), value));
 }
 
 void tst_QDBusAbstractAdaptor::methodWithMoreThanOneReturnValue()
