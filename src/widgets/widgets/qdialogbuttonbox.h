@@ -120,8 +120,6 @@ protected:
 private:
     Q_DISABLE_COPY(QDialogButtonBox)
     Q_DECLARE_PRIVATE(QDialogButtonBox)
-    Q_PRIVATE_SLOT(d_func(), void _q_handleButtonClicked())
-    Q_PRIVATE_SLOT(d_func(), void _q_handleButtonDestroyed())
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDialogButtonBox::StandardButtons)
