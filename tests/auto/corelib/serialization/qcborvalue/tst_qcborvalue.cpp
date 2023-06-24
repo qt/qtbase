@@ -473,6 +473,9 @@ void tst_QCborValue::copyCompare()
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wself-move")
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1301
+QT_WARNING_DISABLE_GCC("-Wself-move")
+#endif
     // self-moving
     v = std::move(v);
     QCOMPARE(v, other); // make sure it's still valid
