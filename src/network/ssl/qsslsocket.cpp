@@ -3091,10 +3091,11 @@ QTlsBackend *QSslSocketPrivate::tlsBackendInUse()
 
     tlsBackend = QTlsBackend::findBackend(activeBackendName);
     if (tlsBackend) {
-        QObject::connect(tlsBackend, &QObject::destroyed, [] {
+        QObject::connect(tlsBackend, &QObject::destroyed, tlsBackend, [] {
             const QMutexLocker locker(&backendMutex);
             tlsBackend = nullptr;
-        });
+        },
+        Qt::DirectConnection);
     }
     return tlsBackend;
 }
