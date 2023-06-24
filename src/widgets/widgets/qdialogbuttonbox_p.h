@@ -32,6 +32,10 @@ public:
         DoLayout,
         SkipLayout,
     };
+    enum class AddRule {
+        Connect,
+        SkipConnect,
+    };
 
     QDialogButtonBoxPrivate(Qt::Orientation orient);
 
@@ -54,7 +58,8 @@ public:
     QPushButton *createButton(QDialogButtonBox::StandardButton button,
                               LayoutRule layoutRule = LayoutRule::DoLayout);
     void addButton(QAbstractButton *button, QDialogButtonBox::ButtonRole role,
-                   LayoutRule layoutRule = LayoutRule::DoLayout);
+                   LayoutRule layoutRule = LayoutRule::DoLayout,
+                   AddRule addRule = AddRule::Connect);
     void handleButtonDestroyed();
     void handleButtonClicked();
     bool handleButtonShowAndHide(QAbstractButton *button, QEvent *event);
