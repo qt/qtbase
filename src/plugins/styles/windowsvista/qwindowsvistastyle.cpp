@@ -20,6 +20,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static const int windowsItemFrame        =  2; // menu item frame width
 static const int windowsItemHMargin      =  3; // menu item hor text margin
 static const int windowsItemVMargin      =  4; // menu item ver text margin
@@ -225,23 +227,15 @@ HTHEME QWindowsVistaStylePrivate::openThemeForPrimaryScreenDpi(HWND hwnd, const 
 {
     // We want to call OpenThemeDataForDpi, but it won't link with MinGW (11.2.0), so we
     // dynamically load this.
-    using FuncThemeDpi = decltype(&::OpenThemeDataForDpi);
+    // Only try to initialize pOpenThemeDataForDpi once. If it fails, it will likely keep failing.
+    static const auto pOpenThemeDataForDpi =
+        reinterpret_cast<decltype(&::OpenThemeDataForDpi)>(
+            QSystemLibrary::resolve(u"uxtheme"_s, "OpenThemeDataForDpi"));
 
-    // Only try to initialize openThemeForDpiFunc once. If it fails, it will likely keep failing.
-    const FuncThemeDpi uninitializedFunction = reinterpret_cast<FuncThemeDpi>(1);
-    static FuncThemeDpi openThemeForDpiFunc = uninitializedFunction;
-    if (openThemeForDpiFunc == uninitializedFunction) {
-        QSystemLibrary uxthemeLib(L"uxtheme.dll");
-        openThemeForDpiFunc = reinterpret_cast<FuncThemeDpi>(uxthemeLib.resolve("OpenThemeDataForDpi"));
-        if (!openThemeForDpiFunc) {
-            qWarning() << "QWindowsVistaStylePrivate: Load OpenThemeDataForDpi in uxtheme.dll failed";
-        }
-    }
-
-    // If we have screens and the openThemeDataForDpi function then use it :).
-    if (openThemeForDpiFunc && QGuiApplication::primaryScreen()) {
+    // If we have screens and the OpenThemeDataForDpi function then use it :).
+    if (pOpenThemeDataForDpi && QGuiApplication::primaryScreen()) {
         const int dpi = qRound(QGuiApplication::primaryScreen()->handle()->logicalDpi().first);
-        return openThemeForDpiFunc(hwnd, name, dpi);
+        return pOpenThemeDataForDpi(hwnd, name, dpi);
     }
 
     // In case of any issues we fall back to use the plain/old OpenThemeData.
