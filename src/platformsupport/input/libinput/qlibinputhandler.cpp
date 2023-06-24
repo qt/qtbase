@@ -79,7 +79,7 @@ QLibInputHandler::QLibInputHandler(const QString &key, const QString &spec)
     m_touch.reset(new QLibInputTouch);
 
     QInputDeviceManager *manager = QGuiApplicationPrivate::inputDeviceManager();
-    connect(manager, &QInputDeviceManager::cursorPositionChangeRequested, [this](const QPoint &pos) {
+    connect(manager, &QInputDeviceManager::cursorPositionChangeRequested, this, [this](const QPoint &pos) {
         m_pointer->setPos(pos);
     });
 

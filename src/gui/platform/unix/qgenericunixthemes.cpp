@@ -621,7 +621,7 @@ bool QKdeThemePrivate::initDbus()
         settingChangedHandler(provider, setting, value);
     };
 
-    return QObject::connect(dbus.get(), &QGenericUnixThemeDBusListener::settingChanged, wrapper);
+    return QObject::connect(dbus.get(), &QGenericUnixThemeDBusListener::settingChanged, dbus.get(), wrapper);
 }
 #endif // QT_NO_DBUS
 
@@ -1154,7 +1154,7 @@ bool QGnomeThemePrivate::initDbus()
             updateColorScheme(value);
     };
 
-    return QObject::connect(dbus.get(), &QGenericUnixThemeDBusListener::settingChanged, wrapper);
+    return QObject::connect(dbus.get(), &QGenericUnixThemeDBusListener::settingChanged, dbus.get(), wrapper);
 }
 
 void QGnomeThemePrivate::updateColorScheme(const QString &themeName)

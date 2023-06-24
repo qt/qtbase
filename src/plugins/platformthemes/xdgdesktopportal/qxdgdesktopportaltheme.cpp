@@ -104,7 +104,7 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
     message << "org.freedesktop.portal.FileChooser"_L1 << "version"_L1;
     QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall);
-    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, [d] (QDBusPendingCallWatcher *watcher) {
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, watcher, [d] (QDBusPendingCallWatcher *watcher) {
         QDBusPendingReply<QVariant> reply = *watcher;
         if (reply.isValid()) {
             d->fileChooserPortalVersion = reply.value().toUInt();
