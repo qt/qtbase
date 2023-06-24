@@ -150,8 +150,8 @@ private:
     static void updateHandler(QAccessibleEvent *event)
     {
         auto ev = copyEvent(event);
-        if (ev->object()) {
-            QObject::connect(ev->object(), &QObject::destroyed, [&, ev](){
+        if (auto obj = ev->object()) {
+            QObject::connect(obj, &QObject::destroyed, obj, [&, ev](){
                 auto index= eventList().indexOf(ev);
                 if (index == -1)
                     return;
