@@ -510,7 +510,7 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_resizehandler
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_dialogbuttonbox
     SOURCES
-        widgets/qdialogbuttonbox.cpp widgets/qdialogbuttonbox.h
+        widgets/qdialogbuttonbox.cpp widgets/qdialogbuttonbox.h widgets/qdialogbuttonbox_p.h
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_rubberband
