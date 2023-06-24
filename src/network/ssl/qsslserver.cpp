@@ -341,7 +341,7 @@ void QSslServerPrivate::initializeHandshakeProcess(QSslSocket *socket)
             });
     auto it = socketData.emplace(quintptr(socket), readyRead, destroyed, std::make_shared<QTimer>());
     it->timeoutTimer->setSingleShot(true);
-    it->timeoutTimer->callOnTimeout([this, socket]() { handleHandshakeTimedOut(socket); });
+    it->timeoutTimer->callOnTimeout(q, [this, socket]() { handleHandshakeTimedOut(socket); });
     it->timeoutTimer->setInterval(handshakeTimeout);
     it->timeoutTimer->start();
 }
