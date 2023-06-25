@@ -4859,7 +4859,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \relates QObject
     \since 6.7
 
-    Defining this macro will the overload of QObject::connect() that
+    Defining this macro will disable the overload of QObject::connect() that
     connects a signal to a functor, without also specifying a QObject
     as a receiver/context object (that is, the 3-arguments overload
     of QObject::connect()).
