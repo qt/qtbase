@@ -138,8 +138,7 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
   the user. You can set the \l DontUseNativeDialog option to ensure that the
   widget-based implementation will be used instead of the native dialog.
 
-  \sa QDir, QFileInfo, QFile, QColorDialog, QFontDialog, {Standard Dialogs Example},
-      {Qt Widgets - Application Example}
+  \sa QDir, QFileInfo, QFile, QColorDialog, QFontDialog, {Standard Dialogs Example}
 */
 
 /*!

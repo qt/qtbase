@@ -11543,8 +11543,7 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
     its parent because other children of the parent might have been
     modified.
 
-    \sa windowTitle, {Qt Widgets - Application Example},
-    {MDI Example}
+    \sa windowTitle, {MDI Example}
 */
 bool QWidget::isWindowModified() const
 {
