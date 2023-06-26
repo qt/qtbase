@@ -11,7 +11,6 @@ SUBDIRS       = analogclock \
                 shapedclock \
                 sliders \
                 spinboxes \
-                styles \
                 tablet \
                 tooltips \
                 validators \

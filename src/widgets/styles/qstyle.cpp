@@ -249,9 +249,6 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     widget is a QSpinBox just because the enum value is called
     PE_IndicatorSpinUp or PE_IndicatorSpinDown.
 
-    The documentation for the \l{widgets/styles}{Styles} example
-    covers this topic in more detail.
-
     \warning Qt style sheets are currently not supported for custom QStyle
     subclasses. We plan to address this in some future release.
 
@@ -352,7 +349,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     The drawing of item view headers is also done by the style, giving
     control over size of header items and row and column sizes.
 
-    \sa QStyleOption, QStylePainter, {Styles Example},
+    \sa QStyleOption, QStylePainter,
         {Styles and Style Aware Widgets}, QStyledItemDelegate, {Styling}
 */
 

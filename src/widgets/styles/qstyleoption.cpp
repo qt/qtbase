@@ -50,9 +50,6 @@ QT_BEGIN_NAMESPACE
     The qstyleoption_cast() function will return 0 if the object to
     which \c option points is not of the correct type.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyle, QStylePainter
 */
 
@@ -329,9 +326,6 @@ QStyleOption &QStyleOption::operator=(const QStyleOption &other)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption
 */
 
@@ -427,9 +421,6 @@ QStyleOptionFocusRect::QStyleOptionFocusRect(int version)
     version is used by QStyleOption subclasses to implement extensions
     without breaking compatibility. If you use qstyleoption_cast(),
     you normally do not need to check it.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption
 */
@@ -554,9 +545,6 @@ QStyleOptionFrame::QStyleOptionFrame(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption, QStyleOptionComplex, QGroupBox
 */
@@ -687,9 +675,6 @@ QStyleOptionGroupBox::QStyleOptionGroupBox(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption
 */
@@ -915,9 +900,6 @@ QStyleOptionHeaderV2::QStyleOptionHeaderV2(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption, QStyleOptionToolButton
 */
 
@@ -1053,9 +1035,6 @@ QStyleOptionButton::QStyleOptionButton(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption
 */
@@ -1237,9 +1216,6 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption
 */
@@ -1476,9 +1452,6 @@ QStyleOptionTab::QStyleOptionTab(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption
 */
 
@@ -1636,9 +1609,6 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption
 */
@@ -1840,9 +1810,6 @@ QStyleOptionMenuItem::QStyleOptionMenuItem(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption
 */
 
@@ -1932,9 +1899,6 @@ QStyleOptionComplex::QStyleOptionComplex(int version, int type)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOptionComplex, QSlider, QScrollBar
 */
@@ -2130,9 +2094,6 @@ QStyleOptionSlider::QStyleOptionSlider(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption, QStyleOptionComplex
 */
 
@@ -2234,9 +2195,6 @@ QStyleOptionSpinBox::QStyleOptionSpinBox(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption
 */
@@ -2340,9 +2298,6 @@ QStyleOptionDockWidget::QStyleOptionDockWidget(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption, QStyleOptionComplex, QStyleOptionButton
 */
@@ -2505,9 +2460,6 @@ QStyleOptionToolButton::QStyleOptionToolButton(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption, QStyleOptionComplex, QComboBox
 */
 
@@ -2641,9 +2593,6 @@ QStyleOptionComboBox::QStyleOptionComboBox(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption, QToolBox
 */
 
@@ -2768,9 +2717,6 @@ QStyleOptionToolBox::QStyleOptionToolBox(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption, QRubberBand
 */
 
@@ -2859,9 +2805,6 @@ QStyleOptionRubberBand::QStyleOptionRubberBand(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption, QStyleOptionComplex, QMdiSubWindow
 */
@@ -2972,9 +2915,6 @@ QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption, {model-view-programming.html}{Model/View
     Programming}
@@ -3236,9 +3176,6 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption, QTabWidget
 */
 
@@ -3378,9 +3315,6 @@ QStyleOptionTabWidgetFrame::QStyleOptionTabWidgetFrame(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption, QTabBar::drawBase()
 */
 
@@ -3488,9 +3422,6 @@ QStyleOptionTabBarBase::QStyleOptionTabBarBase(int version)
     and emphasizes that these are simply parameters used by the style
     functions.
 
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
-
     \sa QStyleOption, QStyleOptionComplex, QSizeGrip
 */
 
@@ -3567,9 +3498,6 @@ QStyleOptionSizeGrip::QStyleOptionSizeGrip(int version)
     \c -> operator). This makes the structures straightforward to use
     and emphasizes that these are simply parameters used by the style
     functions.
-
-    For an example demonstrating how style options can be used, see
-    the \l {widgets/styles}{Styles} example.
 
     \sa QStyleOption, QGraphicsItem::paint()
 */
