@@ -15,5 +15,4 @@ SUBDIRS       = analogclock \
                 tablet \
                 tetrix \
                 tooltips \
-                validators \
                 windowflags
