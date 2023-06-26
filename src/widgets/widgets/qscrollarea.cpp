@@ -91,11 +91,7 @@ QT_BEGIN_NAMESPACE
     cause the size of the scroll area to be updated whenever the
     contents of the layout changes.
 
-    For a complete example using the QScrollArea class, see the \l
-    {widgets/imageviewer}{Image Viewer} example. The example shows how
-    to combine QLabel and QScrollArea to display an image.
-
-    \sa QAbstractScrollArea, QScrollBar, {Image Viewer Example}
+    \sa QAbstractScrollArea, QScrollBar
 */
 
 

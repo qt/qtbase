@@ -3,7 +3,6 @@ SUBDIRS       = analogclock \
                 calculator \
                 calendarwidget \
                 groupbox \
-                imageviewer \
                 lineedits \
                 movie \
                 scribble \
