@@ -10,5 +10,4 @@ SUBDIRS       = analogclock \
                 spinboxes \
                 tablet \
                 tooltips \
-                validators \
                 windowflags
