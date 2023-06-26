@@ -3,7 +3,6 @@ SUBDIRS       = \
                 completer \
                 customcompleter \
                 echoplugin \
-                plugandpaint \
                 regularexpression \
                 settingseditor \
                 styleplugin \
@@ -12,6 +11,5 @@ SUBDIRS       = \
 
 !qtConfig(library) {
     SUBDIRS -= \
-        echoplugin \
-        plugandpaint
+        echoplugin
 }

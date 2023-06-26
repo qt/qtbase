@@ -133,7 +133,4 @@
     In the \l{Echo Plugin Example}{echo plugin example} we show how to
     implement plugins that extends Qt applications rather than Qt
     itself, which is the case with the style plugin of this example.
-    The \l{Plug & Paint Example}{plug & paint} example shows how to
-    implement a static plugin as well as being a more involved example
-    on plugins that extend applications.
 */
