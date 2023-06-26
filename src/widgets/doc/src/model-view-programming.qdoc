@@ -2311,10 +2311,8 @@
     \section1 Related Examples
 
     \list
-    \li \l{itemviews/dirview}{Dir View}
     \li \l{itemviews/spinboxdelegate}{Spin Box Delegate}
     \li \l{itemviews/pixelator}{Pixelator}
     \li \l{itemviews/simpletreemodel}{Simple Tree Model}
-    \li \l{itemviews/chart}{Chart}
     \endlist
 */

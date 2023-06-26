@@ -221,9 +221,6 @@ private:
     The scroller uses the global QAbstractAnimation timer to generate its QScrollEvents. This
     can be changed with QScrollerProperties::FrameRate on a per-QScroller basis.
 
-    The \l {Dir View Example} shows one way to use a QScroller with a QTreeView.
-    An example in the \c scroller examples directory also demonstrates QScroller.
-
     Even though this kinetic scroller has a large number of settings available via
     QScrollerProperties, we recommend that you leave them all at their default, platform optimized
     values. Before changing them you can experiment with the \c plot example in

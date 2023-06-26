@@ -4,3 +4,11 @@
 //! [0]
 statusBar()->addWidget(new MyReadWriteIndication);
 //! [0]
+
+//! [1]
+statusBar()->showMessage(tr("Ready"));
+//! [1]
+
+//! [2]
+statusBar()->showMessage(tr("Ready"), 2000);
+//! [2]

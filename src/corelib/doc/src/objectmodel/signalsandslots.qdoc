@@ -297,7 +297,7 @@
     callbacks, you'd have to find five different names and keep track
     of the types yourself.
 
-    \sa QLCDNumber, QObject::connect(), {Digital Clock Example},
+    \sa QLCDNumber, QObject::connect()
     {Tetrix Example}
 
     \section1 Signals And Slots With Default Arguments
