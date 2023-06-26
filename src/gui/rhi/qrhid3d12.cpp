@@ -4853,7 +4853,12 @@ static inline void makeHlslTargetString(char target[7], const char stage[3], int
     target[6] = '\0';
 }
 
-static QByteArray legacyCompile(const QShaderCode &hlslSource, const char *target, UINT flags, QString *error)
+enum class HlslCompileFlag
+{
+    WithDebugInfo = 0x01
+};
+
+static QByteArray legacyCompile(const QShaderCode &hlslSource, const char *target, int flags, QString *error)
 {
     static const pD3DCompile d3dCompile = QRhiD3D::resolveD3DCompile();
     if (!d3dCompile) {
@@ -4863,9 +4868,13 @@ static QByteArray legacyCompile(const QShaderCode &hlslSource, const char *targe
 
     ID3DBlob *bytecode = nullptr;
     ID3DBlob *errors = nullptr;
+    UINT d3dCompileFlags = 0;
+    if (flags & int(HlslCompileFlag::WithDebugInfo))
+        d3dCompileFlags |= D3DCOMPILE_DEBUG;
+
     HRESULT hr = d3dCompile(hlslSource.shader().constData(), SIZE_T(hlslSource.shader().size()),
                             nullptr, nullptr, nullptr,
-                            hlslSource.entryPoint().constData(), target, flags, 0, &bytecode, &errors);
+                            hlslSource.entryPoint().constData(), target, d3dCompileFlags, 0, &bytecode, &errors);
     if (FAILED(hr) || !bytecode) {
         qWarning("HLSL shader compilation failed: 0x%x", uint(hr));
         if (errors) {
@@ -4884,7 +4893,7 @@ static QByteArray legacyCompile(const QShaderCode &hlslSource, const char *targe
 }
 
 #ifdef QRHI_D3D12_HAS_DXC
-static QByteArray dxcCompile(const QShaderCode &hlslSource, const char *target, UINT flags, QString *error)
+static QByteArray dxcCompile(const QShaderCode &hlslSource, const char *target, int flags, QString *error)
 {
     static std::pair<IDxcCompiler *, IDxcLibrary *> dxc = QRhiD3D::createDxcCompiler();
     IDxcCompiler *compiler = dxc.first;
@@ -4912,12 +4921,21 @@ static QByteArray dxcCompile(const QShaderCode &hlslSource, const char *target, 
     const QString entryPointStr = QString::fromLatin1(hlslSource.entryPoint());
     const QString targetStr = QString::fromLatin1(target);
 
+    QVarLengthArray<LPCWSTR, 4> argPtrs;
+    QString debugArg;
+    if (flags & int(HlslCompileFlag::WithDebugInfo)) {
+        debugArg = QString::fromUtf16(reinterpret_cast<const char16_t *>(DXC_ARG_DEBUG));
+        argPtrs.append(reinterpret_cast<LPCWSTR>(debugArg.utf16()));
+    }
+
     IDxcOperationResult *result = nullptr;
     hr = compiler->Compile(sourceBlob,
                            nullptr,
                            reinterpret_cast<LPCWSTR>(entryPointStr.utf16()),
                            reinterpret_cast<LPCWSTR>(targetStr.utf16()),
-                           nullptr, 0, nullptr, 0, nullptr,
+                           argPtrs.data(), argPtrs.count(),
+                           nullptr, 0,
+                           nullptr,
                            &result);
     sourceBlob->Release();
     if (SUCCEEDED(hr))
@@ -4957,7 +4975,7 @@ static QByteArray dxcCompile(const QShaderCode &hlslSource, const char *target, 
 
 static QByteArray compileHlslShaderSource(const QShader &shader,
                                           QShader::Variant shaderVariant,
-                                          UINT flags,
+                                          int flags,
                                           QString *error,
                                           QShaderKey *usedShaderKey)
 {
@@ -5314,9 +5332,9 @@ bool QD3D12GraphicsPipeline::create()
         } else {
             QString error;
             QShaderKey shaderKey;
-            UINT compileFlags = 0;
+            int compileFlags = 0;
             if (m_flags.testFlag(CompileShadersWithDebugInfo))
-                compileFlags |= D3DCOMPILE_DEBUG;
+                compileFlags |= int(HlslCompileFlag::WithDebugInfo);
             const QByteArray bytecode = compileHlslShaderSource(shaderStage.shader(),
                                                                 shaderStage.shaderVariant(),
                                                                 compileFlags,
@@ -5580,9 +5598,9 @@ bool QD3D12ComputePipeline::create()
     } else {
         QString error;
         QShaderKey shaderKey;
-        UINT compileFlags = 0;
+        int compileFlags = 0;
         if (m_flags.testFlag(CompileShadersWithDebugInfo))
-            compileFlags |= D3DCOMPILE_DEBUG;
+            compileFlags |= int(HlslCompileFlag::WithDebugInfo);
         const QByteArray bytecode = compileHlslShaderSource(m_shaderStage.shader(),
                                                             m_shaderStage.shaderVariant(),
                                                             compileFlags,
