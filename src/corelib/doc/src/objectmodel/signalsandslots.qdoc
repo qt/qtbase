@@ -298,7 +298,6 @@
     of the types yourself.
 
     \sa QLCDNumber, QObject::connect()
-    {Tetrix Example}
 
     \section1 Signals And Slots With Default Arguments
 

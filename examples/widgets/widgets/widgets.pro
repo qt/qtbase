@@ -13,7 +13,6 @@ SUBDIRS       = analogclock \
                 spinboxes \
                 styles \
                 tablet \
-                tetrix \
                 tooltips \
                 validators \
                 windowflags
