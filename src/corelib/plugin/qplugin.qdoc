@@ -19,13 +19,10 @@
 
     This macro associates the given \a Identifier (a string literal)
     to the interface class called \a ClassName. The \a Identifier must
-    be unique. For example:
-
-    \snippet plugandpaint/app/interfaces.h 3
+    be unique.
 
     This macro is normally used right after the class definition for
-    \a ClassName, in a header file. See the
-    \l{tools/plugandpaint/app}{Plug & Paint} example for details.
+    \a ClassName, in a header file.
 
     If you want to use Q_DECLARE_INTERFACE with interface classes
     declared in a namespace then you have to make sure the Q_DECLARE_INTERFACE
@@ -52,8 +49,6 @@
     Example:
 
     \snippet code/doc_src_qplugin.cpp 1
-
-    See the \l{tools/plugandpaint/app}{Plug & Paint} example for details.
 
     Note that the class this macro appears on must be default-constructible.
 
