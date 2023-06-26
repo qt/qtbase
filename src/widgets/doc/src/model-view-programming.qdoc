@@ -1818,8 +1818,6 @@
     Note that the model will typically need to provide implementations of the
     QAbstractItemModel::insertRows() and QAbstractItemModel::setData() functions.
 
-    \sa {itemviews/puzzle}{Item Views Puzzle Example}
-
     \section1 Proxy Models
 
     In the model/view framework, items of data supplied by a single model can be shared
