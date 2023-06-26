@@ -714,7 +714,7 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
     When an escape button can't be determined using these rules,
     pressing \uicontrol Esc has no effect.
 
-    \sa QDialogButtonBox, {Standard Dialogs Example}, {Qt Widgets - Application Example}
+    \sa QDialogButtonBox, {Standard Dialogs Example}
 */
 
 /*!

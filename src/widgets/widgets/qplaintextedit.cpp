@@ -1177,7 +1177,7 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
    fast log viewer (see setMaximumBlockCount()).
 
 
-    \sa QTextDocument, QTextCursor, {Qt Widgets - Application Example},
+    \sa QTextDocument, QTextCursor
         {Syntax Highlighter Example}, {Rich Text Processing}
 
 */

@@ -1710,7 +1710,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     \b{Important inherited functions:} addAction(), removeAction(), clear(),
     addSeparator(), and addMenu().
 
-    \sa QMenuBar, {Qt Widgets - Application Example}, {Menus Example}
+    \sa QMenuBar, {Menus Example}
 */
 
 

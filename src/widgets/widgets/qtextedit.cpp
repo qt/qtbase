@@ -540,7 +540,7 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     of the movement keystrokes, for example, \e{Shift+Right}
     will select the character to the right, and \e{Shift+Ctrl+Right} will select the word to the right, etc.
 
-    \sa QTextDocument, QTextCursor, {Qt Widgets - Application Example},
+    \sa QTextDocument, QTextCursor,
         {Syntax Highlighter Example}, {Rich Text Processing}
 */
 
