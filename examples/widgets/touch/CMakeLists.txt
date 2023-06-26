@@ -4,6 +4,5 @@
 if(NOT TARGET Qt6::Widgets)
     return()
 endif()
-qt_internal_add_example(pinchzoom)
 qt_internal_add_example(knobs)
 qt_internal_add_example(dials)
