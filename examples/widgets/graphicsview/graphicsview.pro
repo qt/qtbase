@@ -2,7 +2,6 @@ TEMPLATE      = subdirs
 SUBDIRS       = \
               chip \
               elasticnodes \
-              embeddeddialogs \
               collidingmice \
               basicgraphicslayouts \
               diagramscene \
