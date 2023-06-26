@@ -1,7 +1,6 @@
 TEMPLATE      = subdirs
 SUBDIRS       = addressbook \
                 basicsortfiltermodel \
-                chart \
                 coloreditorfactory \
                 combowidgetmapper \
                 customsortfiltermodel \
