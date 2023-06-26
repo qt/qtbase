@@ -1,3 +1,2 @@
 TEMPLATE      = subdirs
-SUBDIRS       = mainwindow \
-                menus
+SUBDIRS       = menus
