@@ -6,7 +6,6 @@ SUBDIRS       = analogclock \
                 digitalclock \
                 groupbox \
                 lineedits \
-                movie \
                 scribble \
                 shapedclock \
                 sliders \
