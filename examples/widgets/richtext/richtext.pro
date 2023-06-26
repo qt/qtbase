@@ -1,4 +1,3 @@
 TEMPLATE    = subdirs
 SUBDIRS     = orderform \
-              syntaxhighlighter \
-              textedit
+              syntaxhighlighter
