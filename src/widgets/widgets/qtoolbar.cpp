@@ -412,7 +412,7 @@ void QToolBarPrivate::plug(const QRect &r)
     addWidget(). Please use widget actions created by inheriting QWidgetAction
     and implementing QWidgetAction::createWidget() instead.
 
-    \sa QToolButton, QMenu, QAction, {Qt Widgets - Application Example}
+    \sa QToolButton, QMenu, QAction
 */
 
 /*!
