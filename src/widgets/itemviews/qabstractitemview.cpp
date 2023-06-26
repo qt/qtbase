@@ -318,7 +318,7 @@ void QAbstractItemViewPrivate::_q_delegateSizeHintChanged(const QModelIndex &ind
     \l{QWidget::update()}{update()} as all painting operations take place on the
     viewport.
 
-    \sa {View Classes}, {Model/View Programming}, QAbstractItemModel, {Chart Example}
+    \sa {View Classes}, {Model/View Programming}, QAbstractItemModel
 */
 
 /*!

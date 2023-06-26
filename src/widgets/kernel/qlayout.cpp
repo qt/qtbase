@@ -57,14 +57,13 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
     resized to zero size if there is too little space. To support
     children whose heights depend on their widths, implement
     hasHeightForWidth() and heightForWidth(). See the
-    \l{layouts/borderlayout}{Border Layout} and
-    \l{layouts/flowlayout}{Flow Layout} examples for
+    \l{layouts/flowlayout}{Flow Layout} example for
     more information about implementing custom layout managers.
 
     Geometry management stops when the layout manager is deleted.
 
     \sa QLayoutItem, {Layout Management}, {Basic Layouts Example},
-        {Border Layout Example}, {Flow Layout Example}
+        {Flow Layout Example}
 */
 
 

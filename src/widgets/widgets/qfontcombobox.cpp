@@ -381,7 +381,7 @@ void QFontComboBoxPrivate::_q_currentChanged(const QString &text)
 
     \image windowsvista-fontcombobox.png Screenshot of QFontComboBox on Windows Vista
 
-    \sa QComboBox, QFont, QFontInfo, QFontMetrics, QFontDatabase, {Character Map Example}
+    \sa QComboBox, QFont, QFontInfo, QFontMetrics, QFontDatabase
 */
 
 /*!
