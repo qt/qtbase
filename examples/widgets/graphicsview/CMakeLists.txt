@@ -3,7 +3,6 @@
 
 qt_internal_add_example(chip)
 qt_internal_add_example(elasticnodes)
-qt_internal_add_example(embeddeddialogs)
 qt_internal_add_example(collidingmice)
 qt_internal_add_example(basicgraphicslayouts)
 qt_internal_add_example(diagramscene)
