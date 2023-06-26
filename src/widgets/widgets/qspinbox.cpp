@@ -132,12 +132,9 @@ public:
     for a custom spin box that allows the user to enter icon sizes
     (e.g., "32 x 32"):
 
-    \snippet widgets/icons/iconsizespinbox.cpp 1
+    \snippet code/src_gui_widgets_qspinbox.cpp 8
     \codeline
-    \snippet widgets/icons/iconsizespinbox.cpp 2
-
-    See the \l{widgets/icons}{Icons} example for the full source
-    code.
+    \snippet code/src_gui_widgets_qspinbox.cpp 9
 
     \sa QDoubleSpinBox, QDateTimeEdit, QSlider, {Spin Boxes Example}
 */

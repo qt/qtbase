@@ -5,7 +5,6 @@ SUBDIRS       = analogclock \
                 charactermap \
                 digitalclock \
                 groupbox \
-                icons \
                 imageviewer \
                 lineedits \
                 movie \
