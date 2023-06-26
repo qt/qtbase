@@ -11,6 +11,10 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSpinBox>
+#include <QProperty>
+#include <QString>
+#include <QDateTimeEdit>
+#include <QBindable>
 
 int main(int argc, char *argv[])
 {
@@ -51,9 +55,8 @@ int main(int argc, char *argv[])
     });
 
     QSpinBox *ageSpinBox = w.findChild<QSpinBox *>("ageSpinBox");
-    QObject::connect(ageSpinBox, &QSpinBox::valueChanged, [&](int value) {
-        user.setAge(value);
-    });
+    QBindable<int> ageBindable(ageSpinBox, "value");
+    user.bindableAge().setBinding([ageBindable](){ return ageBindable.value();});
 
     QLabel *priceDisplay = w.findChild<QLabel *>("priceDisplay");
 
