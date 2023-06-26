@@ -7,9 +7,7 @@ SUBDIRS       = addressbook \
                 editabletreemodel \
                 fetchmore \
                 frozencolumn \
-                simpledommodel \
                 simpletreemodel \
                 spinboxdelegate \
                 spreadsheet \
                 stardelegate
-!qtHaveModule(xml): SUBDIRS -= simpledommodel
