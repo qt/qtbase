@@ -420,7 +420,7 @@ struct Q_GUI_EXPORT QWindowsApplication
     virtual QVariant gpu() const = 0; // internal, used by qtdiag
     virtual QVariant gpuList() const = 0;
 
-    virtual void lightSystemPalette(QPalette &pal) const = 0;
+    virtual void populateLightSystemPalette(QPalette &pal) const = 0;
 };
 #endif // Q_OS_WIN
 

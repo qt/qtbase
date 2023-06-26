@@ -143,9 +143,9 @@ QVariant QWindowsApplication::gpuList() const
     return result;
 }
 
-void QWindowsApplication::lightSystemPalette(QPalette &result) const
+void QWindowsApplication::populateLightSystemPalette(QPalette &result) const
 {
-    QWindowsTheme::populateLightSystemBasePalette(result);
+    result = QWindowsTheme::systemPalette(Qt::ColorScheme::Light);
 }
 
 QT_END_NAMESPACE

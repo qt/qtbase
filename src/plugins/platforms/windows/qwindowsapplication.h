@@ -43,7 +43,7 @@ public:
     QVariant gpu() const override;
     QVariant gpuList() const override;
 
-    void lightSystemPalette(QPalette &palette) const override;
+    void populateLightSystemPalette(QPalette &palette) const override;
 
 private:
     WindowActivationBehavior m_windowActivationBehavior = DefaultActivateWindow;
