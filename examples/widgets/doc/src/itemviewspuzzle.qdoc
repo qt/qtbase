@@ -12,8 +12,4 @@
 
     This example is an implementation of a simple jigsaw puzzle game using the
     built-in support for drag and drop provided by Qt's model/view framework.
-    The \l{Drag and Drop Puzzle Example}{Drag and Drop Puzzle} example shows
-    many of the same features, but takes an alternative approach that uses Qt's
-    drag and drop API at the application level to handle drag and drop
-    operations.
 */
