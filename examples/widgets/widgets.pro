@@ -8,7 +8,6 @@ SUBDIRS       = \
                 desktop \
                 dialogs \
                 draganddrop \
-                effects \
                 gallery \
                 gestures \
                 graphicsview \
