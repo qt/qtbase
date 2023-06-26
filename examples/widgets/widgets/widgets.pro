@@ -12,6 +12,5 @@ SUBDIRS       = analogclock \
                 styles \
                 stylesheet \
                 tablet \
-                tetrix \
                 tooltips \
                 windowflags
