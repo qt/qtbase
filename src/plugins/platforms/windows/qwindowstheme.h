@@ -61,7 +61,7 @@ public:
 
     static const char *name;
 
-    static void populateLightSystemBasePalette(QPalette &result);
+    static QPalette systemPalette(Qt::ColorScheme);
 
 private:
     void clearPalettes();

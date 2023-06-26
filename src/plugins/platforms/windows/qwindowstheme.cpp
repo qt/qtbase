@@ -225,7 +225,7 @@ static QColor placeHolderColor(QColor textColor)
     This is used when the theme is light mode, and when the theme is dark but the
     application doesn't support dark mode. In the latter case, we need to check.
 */
-void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
+static void populateLightSystemBasePalette(QPalette &result)
 {
     QColor background = getSysColor(COLOR_BTNFACE);
     QColor textColor = getSysColor(COLOR_WINDOWTEXT);
@@ -331,36 +331,6 @@ static void populateDarkSystemBasePalette(QPalette &result)
     result.setColor(QPalette::All, QPalette::ToolTipBase, buttonColor);
     result.setColor(QPalette::All, QPalette::ToolTipText, foreground.darker(120));
     result.setColor(QPalette::All, QPalette::PlaceholderText, placeHolderColor(foreground));
-}
-
-static QPalette systemPalette(bool light)
-{
-    QPalette result = standardPalette();
-    if (light)
-        QWindowsTheme::populateLightSystemBasePalette(result);
-    else
-        populateDarkSystemBasePalette(result);
-
-    if (result.window() != result.base()) {
-        result.setColor(QPalette::Inactive, QPalette::Highlight,
-                        result.color(QPalette::Inactive, QPalette::Window));
-        result.setColor(QPalette::Inactive, QPalette::HighlightedText,
-                        result.color(QPalette::Inactive, QPalette::Text));
-    }
-
-    const QColor disabled = mixColors(result.windowText().color(), result.button().color());
-
-    result.setColorGroup(QPalette::Disabled, result.windowText(), result.button(),
-                         result.light(), result.dark(), result.mid(),
-                         result.text(), result.brightText(), result.base(),
-                         result.window());
-    result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
-    result.setColor(QPalette::Disabled, QPalette::Text, disabled);
-    result.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
-    result.setColor(QPalette::Disabled, QPalette::Highlight, result.color(QPalette::Highlight));
-    result.setColor(QPalette::Disabled, QPalette::HighlightedText, result.color(QPalette::HighlightedText));
-    result.setColor(QPalette::Disabled, QPalette::Base, result.window().color());
-    return result;
 }
 
 static inline QPalette toolTipPalette(const QPalette &systemPalette, bool light)
@@ -556,7 +526,7 @@ void QWindowsTheme::refreshPalettes()
         !QWindowsContext::isDarkMode()
         || !QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle);
     clearPalettes();
-    m_palettes[SystemPalette] = new QPalette(systemPalette(light));
+    m_palettes[SystemPalette] = new QPalette(QWindowsTheme::systemPalette(light ? Qt::ColorScheme::Light : Qt::ColorScheme::Dark));
     m_palettes[ToolTipPalette] = new QPalette(toolTipPalette(*m_palettes[SystemPalette], light));
     m_palettes[MenuPalette] = new QPalette(menuPalette(*m_palettes[SystemPalette], light));
     m_palettes[MenuBarPalette] = menuBarPalette(*m_palettes[MenuPalette], light);
@@ -582,6 +552,44 @@ void QWindowsTheme::refreshPalettes()
 #endif
         m_palettes[RadioButtonPalette] = new QPalette(*m_palettes[CheckBoxPalette]);
     }
+}
+
+QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
+{
+    QPalette result = standardPalette();
+
+    switch (colorScheme) {
+        case Qt::ColorScheme::Light:
+            populateLightSystemBasePalette(result);
+            break;
+        case Qt::ColorScheme::Dark:
+            populateDarkSystemBasePalette(result);
+            break;
+        default:
+            qFatal("Unknown color scheme");
+            break;
+    }
+
+    if (result.window() != result.base()) {
+        result.setColor(QPalette::Inactive, QPalette::Highlight,
+                        result.color(QPalette::Inactive, QPalette::Window));
+        result.setColor(QPalette::Inactive, QPalette::HighlightedText,
+                        result.color(QPalette::Inactive, QPalette::Text));
+    }
+
+    const QColor disabled = mixColors(result.windowText().color(), result.button().color());
+
+    result.setColorGroup(QPalette::Disabled, result.windowText(), result.button(),
+                         result.light(), result.dark(), result.mid(),
+                         result.text(), result.brightText(), result.base(),
+                         result.window());
+    result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
+    result.setColor(QPalette::Disabled, QPalette::Text, disabled);
+    result.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
+    result.setColor(QPalette::Disabled, QPalette::Highlight, result.color(QPalette::Highlight));
+    result.setColor(QPalette::Disabled, QPalette::HighlightedText, result.color(QPalette::HighlightedText));
+    result.setColor(QPalette::Disabled, QPalette::Base, result.window().color());
+    return result;
 }
 
 void QWindowsTheme::clearFonts()
