@@ -8,8 +8,7 @@ SUBDIRS       = basicdrawing \
                 pathstroke \
                 imagecomposition \
                 painterpaths \
-                transformations \
-                fontsampler
+                transformations
 
 EXAMPLE_FILES = \
     shared
