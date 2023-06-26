@@ -27,7 +27,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformSessionManager;
 
-class QSessionManagerPrivate : public QObjectPrivate
+class Q_GUI_EXPORT QSessionManagerPrivate : public QObjectPrivate
 {
 public:
     QSessionManagerPrivate(const QString &id,
