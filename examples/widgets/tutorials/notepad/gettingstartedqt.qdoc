@@ -487,10 +487,6 @@
             \li About
             \li Here
         \row
-            \li MDI applications
-            \li QMdiArea,
-               \l{MDI Example}
-        \row
             \li Files and I/O devices
             \li QFile, QIODevice
         \row
