@@ -9,7 +9,6 @@ SUBDIRS       = analogclock \
                 sliders \
                 spinboxes \
                 styles \
-                stylesheet \
                 tablet \
                 tetrix \
                 tooltips \
