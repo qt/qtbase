@@ -1188,7 +1188,7 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
     operations between x-coordinates and column indexes.
 
     \sa QTableWidget, {View Classes}, QAbstractItemModel, QAbstractItemView,
-        {Pixelator Example}, {Table Model Example}
+        {Table Model Example}
 */
 
 /*!
