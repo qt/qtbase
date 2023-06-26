@@ -4,7 +4,6 @@ SUBDIRS       = analogclock \
                 calendarwidget \
                 groupbox \
                 lineedits \
-                movie \
                 scribble \
                 shapedclock \
                 sliders \
