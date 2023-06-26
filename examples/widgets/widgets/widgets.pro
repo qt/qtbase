@@ -2,7 +2,6 @@ TEMPLATE      = subdirs
 SUBDIRS       = analogclock \
                 calculator \
                 calendarwidget \
-                charactermap \
                 digitalclock \
                 groupbox \
                 imageviewer \
