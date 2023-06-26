@@ -85,22 +85,7 @@
     buttons and check boxes to make them stand out. Using this
     technique, you can also achieve minor customizations that would
     normally require subclassing several style classes, such as
-    specifying a \l{QStyle::styleHint()}{style hint}. The
-    \l{widgets/stylesheet}{Style Sheet} example depicted below defines
-    two distinctive style sheets that you can try out and modify at
-    will.
-
-    \table
-    \row \li \inlineimage stylesheet-pagefold.png
-    \row \li Pagefold theme running on Windows
-    \endtable
-
-    \table
-    \row \li \inlineimage stylesheet-coffee-cleanlooks.png
-         \li \inlineimage stylesheet-pagefold-mac.png
-    \row \li Coffee theme running on Ubuntu Linux
-         \li Pagefold theme running on \macos
-    \endtable
+    specifying a \l{QStyle::styleHint()}{style hint}.
 
     When a style sheet is active, the QStyle returned by QWidget::style()
     is a wrapper "style sheet" style, \e not the platform-specific style. The
@@ -4065,7 +4050,7 @@
 
     \image stylesheet-treeview.png
 
-    \sa {Style Sheet Example}, {Supported HTML Subset}, QStyle
+    \sa {Supported HTML Subset}, QStyle
 
 
     \section1 Common Mistakes
