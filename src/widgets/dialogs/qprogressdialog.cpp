@@ -215,7 +215,7 @@ void QProgressDialogPrivate::_q_disconnectOnClose()
 
   \image fusion-progressdialog.png A progress dialog shown in the Fusion widget style.
 
-  \sa QDialog, QProgressBar, {Pixelator Example}
+  \sa QDialog, QProgressBar
 */
 
 
