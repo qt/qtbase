@@ -8,7 +8,6 @@ SUBDIRS       = analogclock \
                 shapedclock \
                 sliders \
                 spinboxes \
-                styles \
                 tablet \
                 tooltips \
                 windowflags
