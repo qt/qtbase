@@ -208,8 +208,6 @@ void Window::customRender()
     cb->draw(3);
     cb->endPass();
 
-    cb->resourceUpdate(u);
-
     // "blit" the two texture layers on-screen just to visualize the contents
     u = m_r->nextResourceUpdateBatch();
     if (d.winProj != m_proj) {
