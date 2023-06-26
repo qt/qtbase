@@ -101,8 +101,7 @@
     As a result, the user is able to select an item from the combo box,
     and the associated value is written back to the model.
 
-    The rest of the constructor is very similar to that of the
-    \l{Simple Widget Mapper Example}:
+    The rest of the constructor sets up connections and layouts:
 
     \snippet sqlwidgetmapper/window.cpp Set up connections and layouts
 
