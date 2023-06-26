@@ -277,7 +277,7 @@ void QMainWindowPrivate::init()
     of the toolbars and dock widgets that are stored.
 
     \sa QMenuBar, QToolBar, QStatusBar, QDockWidget,
-    {Qt Widgets - Application Example}, {Dock Widgets Example},
+    {Qt Widgets - Application Example},
     {MDI Example}, {Menus Example}
 */
 

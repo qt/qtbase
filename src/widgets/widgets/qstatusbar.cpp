@@ -151,12 +151,12 @@ QRect QStatusBarPrivate::messageRect() const
 
     Use the showMessage() slot to display a \e temporary message:
 
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 8
+    \snippet code/src_gui_widgets_qstatusbar.cpp 1
 
     To remove a temporary message, use the clearMessage() slot, or set
     a time limit when calling showMessage(). For example:
 
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 3
+    \snippet code/src_gui_widgets_qstatusbar.cpp 2
 
     Use the currentMessage() function to retrieve the temporary
     message currently shown. The QStatusBar class also provide the

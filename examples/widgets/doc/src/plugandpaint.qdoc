@@ -116,8 +116,7 @@
     \section1 The MainWindow Class
 
     The \c MainWindow class is a standard QMainWindow subclass, as
-    found in many of the other examples (e.g.,
-    \l{mainwindows/application}{Application}). Here, we'll
+    found in many of the other examples. Here, we'll
     concentrate on the parts of the code that are related to plugins.
 
     \snippet tools/plugandpaint/app/mainwindow.cpp 4

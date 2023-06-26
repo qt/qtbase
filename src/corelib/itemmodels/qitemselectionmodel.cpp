@@ -1120,7 +1120,7 @@ void QItemSelectionModelPrivate::_q_modelDestroyed()
     \l{QItemSelectionModel::hasSelection()}{hasSelection}, and
     \l{QItemSelectionModel::currentIndex()}{currentIndex} are meta-object properties.
 
-    \sa {Model/View Programming}, QAbstractItemModel, {Chart Example}
+    \sa {Model/View Programming}, QAbstractItemModel
 */
 
 /*!

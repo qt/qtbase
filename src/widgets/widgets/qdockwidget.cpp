@@ -1262,7 +1262,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     possible to drag the dock widget when undocking. Starting the drag will undock
     the dock widget, but a second drag will be needed to move the dock widget itself.
 
-    \sa QMainWindow, {Dock Widgets Example}
+    \sa QMainWindow
 */
 
 /*!

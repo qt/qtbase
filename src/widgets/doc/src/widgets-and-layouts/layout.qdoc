@@ -263,8 +263,8 @@
     \section1 How to Write A Custom Layout Manager
 
     An alternative to manual layout is to write your own layout manager by
-    subclassing QLayout. The \l{layouts/borderlayout}{Border Layout} and
-    \l{layouts/flowlayout}{Flow Layout} examples show how to do this.
+    subclassing QLayout. The
+    \l{layouts/flowlayout}{Flow Layout} example shows how to do this.
 
     Here we present an example in detail. The \c CardLayout class is inspired
     by the Java layout manager of the same name. It lays out the items (widgets

@@ -124,8 +124,7 @@ QT_BEGIN_NAMESPACE
     that can be taken for views that are intended to display items with equal heights
     is to set the \l uniformRowHeights property to true.
 
-    \sa QListView, QTreeWidget, {View Classes}, QAbstractItemModel, QAbstractItemView,
-        {Dir View Example}
+    \sa QListView, QTreeWidget, {View Classes}, QAbstractItemModel, QAbstractItemView
 */
 
 
