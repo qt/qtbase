@@ -175,7 +175,5 @@
     create plugins.
 
     We give an example of a plugin that extends Qt in the \l{Style
-    Plugin Example}{style plugin} example. The \l{Plug & Paint
-    Example}{plug and paint} example shows how to create static
-    plugins.
+    Plugin Example}{style plugin} example.
 */

@@ -11,8 +11,4 @@ qt_internal_add_example(undoframework)
 
 if(QT_FEATURE_library)
     qt_internal_add_example(echoplugin)
-
-    if(QT_FEATURE_inputdialog)
-        qt_internal_add_example(plugandpaint)
-    endif()
 endif()
