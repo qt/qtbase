@@ -7,7 +7,6 @@ SUBDIRS       = addressbook \
                 editabletreemodel \
                 fetchmore \
                 frozencolumn \
-                interview \
                 pixelator \
                 simpledommodel \
                 simpletreemodel \
