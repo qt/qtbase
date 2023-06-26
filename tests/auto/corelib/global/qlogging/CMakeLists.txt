@@ -20,6 +20,8 @@ qt_internal_add_test(tst_qlogging SOURCES tst_qlogging.cpp
         HELPER_BINARY="${CMAKE_CURRENT_BINARY_DIR}/qlogging_helper"
 )
 
+add_dependencies(tst_qlogging qlogging_helper)
+
 qt_internal_add_test(tst_qmessagelogger SOURCES tst_qmessagelogger.cpp
     DEFINES
         QT_MESSAGELOGCONTEXT
