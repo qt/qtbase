@@ -9,7 +9,6 @@ SUBDIRS       = addressbook \
                 frozencolumn \
                 simpledommodel \
                 simpletreemodel \
-                simplewidgetmapper \
                 spinboxdelegate \
                 spreadsheet \
                 stardelegate

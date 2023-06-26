@@ -10,14 +10,7 @@
 
     \image combowidgetmapper-example.png
 
-    In the \l{Simple Widget Mapper Example}, we showed the basic use of a
-    widget mapper to relate data exposed by a model to simple input widgets
-    in a user interface. However, sometimes we want to use input widgets that
-    expose data as choices to the user, such as QComboBox, and we need a way
-    to relate their input to the values stored in the model.
-
-    This example is very similar to the \l{Simple Widget Mapper Example}.
-    Again, we create a \c Window class with an almost identical user interface,
+    We create a \c Window class with an almost identical user interface,
     except that, instead of providing a spin box so that each person's age
     can be entered, we provide a combo box to allow their addresses to be
     classified as "Home", "Work" or "Other".
@@ -65,8 +58,7 @@
     interfering with the other input widgets. The implementation is shown later.
     \endomit
 
-    The rest of the constructor is very similar to that of the
-    \l{Simple Widget Mapper Example}:
+    The rest of the constructor sets up connections and layouts:
 
     \snippet itemviews/combowidgetmapper/window.cpp Set up connections and layouts
 
