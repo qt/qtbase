@@ -9,6 +9,5 @@ SUBDIRS       = analogclock \
                 sliders \
                 spinboxes \
                 tablet \
-                tetrix \
                 tooltips \
                 windowflags

@@ -69,7 +69,7 @@ public:
     Incidentally, QLCDNumber is the very oldest part of Qt, tracing
     its roots back to a BASIC program on the \l{Sinclair Spectrum}{Sinclair Spectrum}.
 
-    \sa QLabel, QFrame, {Tetrix Example}
+    \sa QLabel, QFrame
 */
 
 /*!
