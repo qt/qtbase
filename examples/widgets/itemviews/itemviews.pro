@@ -4,7 +4,6 @@ SUBDIRS       = addressbook \
                 coloreditorfactory \
                 combowidgetmapper \
                 customsortfiltermodel \
-                dirview \
                 editabletreemodel \
                 fetchmore \
                 frozencolumn \
