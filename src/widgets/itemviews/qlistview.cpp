@@ -88,7 +88,7 @@ extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
     that can be taken for views that are intended to display items with equal sizes
     is to set the \l uniformItemSizes property to true.
 
-    \sa {View Classes}, {Item Views Puzzle Example}, QTreeView, QTableView, QListWidget
+    \sa {View Classes}, QTreeView, QTableView, QListWidget
 */
 
 /*!
