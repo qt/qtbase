@@ -1127,9 +1127,9 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
         }
     }
 
-    const auto handleAuth = [&, this](const QByteArray &authField, bool isProxy) -> bool {
+    const auto handleAuth = [&, this](QByteArrayView authField, bool isProxy) -> bool {
         Q_ASSERT(httpReply);
-        const auto auth = authField.trimmed();
+        const QByteArrayView auth = authField.trimmed();
         if (auth.startsWith("Negotiate") || auth.startsWith("NTLM")) {
             // @todo: We're supposed to fall back to http/1.1:
             // https://docs.microsoft.com/en-us/iis/get-started/whats-new-in-iis-10/http2-on-iis#when-is-http2-not-supported
