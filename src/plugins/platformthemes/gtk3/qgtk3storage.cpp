@@ -538,7 +538,6 @@ void QGtk3Storage::createMapping()
     LIGHTER(Normal, Window, 80);
     ADD(Normal, Dark);
     GTK(button, Foreground, ACTIVE);
-    ADD(Normal, WindowText);
     ADD(Inactive, WindowText);
     LIGHTER(Normal, WindowText, 50);
     ADD(Disabled, Text);
@@ -562,6 +561,7 @@ void QGtk3Storage::createMapping()
     ADD(Disabled, HighlightedText);
     GTK(Default, Text, NORMAL);
     ADD(Normal, Text);
+    ADD(Normal, WindowText);
     ADD(Inactive, Text);
     ADD(Normal, HighlightedText);
     LIGHTER(Normal, Base, 93);
