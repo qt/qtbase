@@ -482,6 +482,7 @@ public:
         };
     };
     void tessellatedDraw(const TessDrawArgs &args);
+    void adjustForMultiViewDraw(quint32 *instanceCount, QRhiCommandBuffer *cb);
 
     QRhi::Flags rhiFlags;
     bool importedDevice = false;
@@ -499,6 +500,7 @@ public:
         QVector<int> supportedSampleCounts;
         bool isAppleGPU = false;
         int maxThreadGroupSize = 512;
+        bool multiView = false;
     } caps;
 
     QRhiMetalData *d = nullptr;

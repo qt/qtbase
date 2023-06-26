@@ -986,7 +986,9 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     the left and right eyes). Rather, the target of a multiview render pass is
     always a texture array, automatically rendering to the layer (array element)
     corresponding to each view. Therefore this feature implies \l TextureArrays
-    as well. This enum value has been introduced in Qt 6.7.
+    as well. Multiview rendering is not supported in combination with
+    tessellation or geometry shaders. See QRhiColorAttachment::setMultiViewCount()
+    for further details on multiview rendering. This enum value has been introduced in Qt 6.7.
  */
 
 /*!
@@ -2390,16 +2392,17 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
     \l{QRhi::isFeatureSupported()}{isFeatureSupported()}.
 
     \note For portability, be aware of limitations that exist for multiview
-    rendering with some of the graphics APIs. For example, OpenGL disallows
-    tessellation or geometry shaders with multiview. With other APIs, e.g.
-    Vulkan, some of these are optional features, the actual support depending
-    on the implementation. It is therefore recommended that multiview render
-    passes do not rely on any of the features that
+    rendering with some of the graphics APIs. It is recommended that multiview
+    render passes do not rely on any of the features that
     \l{https://registry.khronos.org/OpenGL/extensions/OVR/OVR_multiview.txt}{GL_OVR_multiview}
     declares as unsupported. The one exception is shader stage outputs other
     than \c{gl_Position} depending on \c{gl_ViewIndex}: that can be relied on
     (even with OpenGL) because QRhi never reports multiview as supported without
     \c{GL_OVR_multiview2} also being present.
+
+    \note Multiview rendering is not supported in combination with tessellation
+    or geometry shaders, even though some implementations of some graphics APIs
+    may allow this.
 
     \since 6.7
  */
@@ -6815,6 +6818,9 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     Multiview is only available when the \l{QRhi::MultiView}{MultiView feature}
     is reported as supported. The render target must be a 2D texture array, and
     the color attachment for the render target must have the same \a count set.
+
+    See QRhiColorAttachment::setMultiViewCount() for further details on
+    multiview rendering.
 
     \since 6.7
     \sa QRhi::MultiView, QRhiColorAttachment::setMultiViewCount()

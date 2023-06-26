@@ -377,6 +377,15 @@ struct QMetalGraphicsPipelineData
     float slopeScaledDepthBias;
     QMetalShader vs;
     QMetalShader fs;
+    struct ExtraBufferManager {
+        enum class WorkBufType {
+            DeviceLocal,
+            HostVisible
+        };
+        QMetalBuffer *acquireWorkBuffer(QRhiMetal *rhiD, quint32 size, WorkBufType type = WorkBufType::DeviceLocal);
+        QVector<QMetalBuffer *> deviceLocalWorkBuffers;
+        QVector<QMetalBuffer *> hostVisibleWorkBuffers;
+    } extraBufMgr;
     struct Tessellation {
         QMetalGraphicsPipelineData *q = nullptr;
         bool enabled = false;
@@ -410,13 +419,6 @@ struct QMetalGraphicsPipelineData
         id<MTLComputePipelineState> vsCompPipeline(QRhiMetal *rhiD, QShader::Variant vertexCompVariant);
         id<MTLComputePipelineState> tescCompPipeline(QRhiMetal *rhiD);
         id<MTLRenderPipelineState> teseFragRenderPipeline(QRhiMetal *rhiD, QMetalGraphicsPipeline *pipeline);
-        enum class WorkBufType {
-            DeviceLocal,
-            HostVisible
-        };
-        QMetalBuffer *acquireWorkBuffer(QRhiMetal *rhiD, quint32 size, WorkBufType type = WorkBufType::DeviceLocal);
-        QVector<QMetalBuffer *> deviceLocalWorkBuffers;
-        QVector<QMetalBuffer *> hostVisibleWorkBuffers;
     } tess;
     void setupVertexInputDescriptor(MTLVertexDescriptor *desc);
     void setupStageInputDescriptor(MTLStageInputOutputDescriptor *desc);
@@ -580,6 +582,7 @@ bool QRhiMetal::create(QRhi::Flags flags)
     if (@available(macOS 10.15, *))
         caps.isAppleGPU = [d->dev supportsFamily:MTLGPUFamilyApple7];
     caps.maxThreadGroupSize = 1024;
+    caps.multiView = true;
 #elif defined(Q_OS_TVOS)
     if ([d->dev supportsFeatureSet: MTLFeatureSet(30003)]) // MTLFeatureSet_tvOS_GPUFamily2_v1
         caps.maxTextureSize = 16384;
@@ -606,8 +609,10 @@ bool QRhiMetal::create(QRhi::Flags flags)
     }
     caps.isAppleGPU = true;
     if (@available(iOS 13, *)) {
-        if ([d->dev supportsFamily:MTLGPUFamilyApple4])
+        if ([d->dev supportsFamily: MTLGPUFamilyApple4])
             caps.maxThreadGroupSize = 1024;
+        if ([d->dev supportsFamily: MTLGPUFamilyApple5])
+            caps.multiView = true;
     }
 #endif
 
@@ -834,7 +839,7 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ThreeDimensionalTextureMipmaps:
         return true;
     case QRhi::MultiView:
-        return false;
+        return caps.multiView;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1471,11 +1476,11 @@ void QRhiMetal::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
         psD->makeActiveForCurrentRenderPassEncoder(cbD);
     } else {
         // mark work buffers that can now be safely reused as reusable
-        for (QMetalBuffer *workBuf : psD->d->tess.deviceLocalWorkBuffers) {
+        for (QMetalBuffer *workBuf : psD->d->extraBufMgr.deviceLocalWorkBuffers) {
             if (workBuf && workBuf->lastActiveFrameSlot == currentFrameSlot)
                 workBuf->lastActiveFrameSlot = -1;
         }
-        for (QMetalBuffer *workBuf : psD->d->tess.hostVisibleWorkBuffers) {
+        for (QMetalBuffer *workBuf : psD->d->extraBufMgr.hostVisibleWorkBuffers) {
             if (workBuf && workBuf->lastActiveFrameSlot == currentFrameSlot)
                 workBuf->lastActiveFrameSlot = -1;
         }
@@ -1967,6 +1972,7 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
     const quint32 vertexOrIndexCount = indexed ? args.drawIndexed.indexCount : args.draw.vertexCount;
 
     QMetalGraphicsPipelineData::Tessellation &tess(graphicsPipeline->d->tess);
+    QMetalGraphicsPipelineData::ExtraBufferManager &extraBufMgr(graphicsPipeline->d->extraBufMgr);
     const quint32 patchCount = tess.patchCountForDrawCall(vertexOrIndexCount, instanceCount);
     QMetalBuffer *vertOutBuf = nullptr;
     QMetalBuffer *tescOutBuf = nullptr;
@@ -2000,7 +2006,7 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
 
         if (outputBufferBinding >= 0) {
             const quint32 workBufSize = tess.vsCompOutputBufferSize(vertexOrIndexCount, instanceCount);
-            vertOutBuf = tess.acquireWorkBuffer(this, workBufSize);
+            vertOutBuf = extraBufMgr.acquireWorkBuffer(this, workBufSize);
             if (!vertOutBuf)
                 return;
             [computeEncoder setBuffer: vertOutBuf->d->buf[0] offset: 0 atIndex: outputBufferBinding];
@@ -2048,7 +2054,7 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
 
         if (outputBufferBinding >= 0) {
             const quint32 workBufSize = tess.tescCompOutputBufferSize(patchCount);
-            tescOutBuf = tess.acquireWorkBuffer(this, workBufSize);
+            tescOutBuf = extraBufMgr.acquireWorkBuffer(this, workBufSize);
             if (!tescOutBuf)
                 return;
             [computeEncoder setBuffer: tescOutBuf->d->buf[0] offset: 0 atIndex: outputBufferBinding];
@@ -2056,14 +2062,14 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
 
         if (patchOutputBufferBinding >= 0) {
             const quint32 workBufSize = tess.tescCompPatchOutputBufferSize(patchCount);
-            tescPatchOutBuf = tess.acquireWorkBuffer(this, workBufSize);
+            tescPatchOutBuf = extraBufMgr.acquireWorkBuffer(this, workBufSize);
             if (!tescPatchOutBuf)
                 return;
             [computeEncoder setBuffer: tescPatchOutBuf->d->buf[0] offset: 0 atIndex: patchOutputBufferBinding];
         }
 
         if (tessFactorBufferBinding >= 0) {
-            tescFactorBuf = tess.acquireWorkBuffer(this, patchCount * sizeof(MTLQuadTessellationFactorsHalf));
+            tescFactorBuf = extraBufMgr.acquireWorkBuffer(this, patchCount * sizeof(MTLQuadTessellationFactorsHalf));
             [computeEncoder setBuffer: tescFactorBuf->d->buf[0] offset: 0 atIndex: tessFactorBufferBinding];
         }
 
@@ -2072,7 +2078,7 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
                 quint32 inControlPointCount;
                 quint32 patchCount;
             } params;
-            tescParamsBuf = tess.acquireWorkBuffer(this, sizeof(params), QMetalGraphicsPipelineData::Tessellation::WorkBufType::HostVisible);
+            tescParamsBuf = extraBufMgr.acquireWorkBuffer(this, sizeof(params), QMetalGraphicsPipelineData::ExtraBufferManager::WorkBufType::HostVisible);
             if (!tescParamsBuf)
                 return;
             params.inControlPointCount = tess.inControlPointCount;
@@ -2141,6 +2147,39 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
     }
 }
 
+void QRhiMetal::adjustForMultiViewDraw(quint32 *instanceCount, QRhiCommandBuffer *cb)
+{
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    const int multiViewCount = cbD->currentGraphicsPipeline->m_multiViewCount;
+    if (multiViewCount <= 1)
+        return;
+
+    const QMap<int, int> &ebb(cbD->currentGraphicsPipeline->d->vs.nativeShaderInfo.extraBufferBindings);
+    const int viewMaskBufBinding = ebb.value(QShaderPrivate::MslMultiViewMaskBufferBinding, -1);
+    if (viewMaskBufBinding == -1) {
+        qWarning("No extra buffer for multiview in the vertex shader; was it built with --view-count specified?");
+        return;
+    }
+    struct {
+        quint32 viewOffset;
+        quint32 viewCount;
+    } multiViewInfo;
+    multiViewInfo.viewOffset = 0;
+    multiViewInfo.viewCount = quint32(multiViewCount);
+    QMetalBuffer *buf = cbD->currentGraphicsPipeline->d->extraBufMgr.acquireWorkBuffer(this, sizeof(multiViewInfo),
+        QMetalGraphicsPipelineData::ExtraBufferManager::WorkBufType::HostVisible);
+    if (buf) {
+        id<MTLBuffer> mtlbuf = buf->d->buf[0];
+        char *p = reinterpret_cast<char *>([mtlbuf contents]);
+        memcpy(p, &multiViewInfo, sizeof(multiViewInfo));
+        [cbD->d->currentRenderPassEncoder setVertexBuffer: mtlbuf offset: 0 atIndex: viewMaskBufBinding];
+        // The instance count is adjusted for layered rendering. The vertex shader is expected to contain something like:
+        // uint gl_ViewIndex = spvViewMask[0] + (gl_InstanceIndex - gl_BaseInstance) % spvViewMask[1];
+        // where spvViewMask is the buffer with multiViewInfo passed in above.
+        *instanceCount *= multiViewCount;
+    }
+}
+
 void QRhiMetal::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
                      quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
 {
@@ -2158,6 +2197,8 @@ void QRhiMetal::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
         tessellatedDraw(a);
         return;
     }
+
+    adjustForMultiViewDraw(&instanceCount, cb);
 
     if (caps.baseVertexAndInstance) {
         [cbD->d->currentRenderPassEncoder drawPrimitives: cbD->currentGraphicsPipeline->d->primitiveType
@@ -2196,6 +2237,8 @@ void QRhiMetal::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
         tessellatedDraw(a);
         return;
     }
+
+    adjustForMultiViewDraw(&instanceCount, cb);
 
     if (caps.baseVertexAndInstance) {
         [cbD->d->currentRenderPassEncoder drawIndexedPrimitives: cbD->currentGraphicsPipeline->d->primitiveType
@@ -2904,10 +2947,13 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         for (auto it = rtTex->m_desc.cbeginColorAttachments(), itEnd = rtTex->m_desc.cendColorAttachments();
              it != itEnd; ++it)
         {
-            if (it->texture())
+            if (it->texture()) {
                 QRHI_RES(QMetalTexture, it->texture())->lastActiveFrameSlot = currentFrameSlot;
-            else if (it->renderBuffer())
+                if (it->multiViewCount() >= 2)
+                    cbD->d->currentPassRpDesc.renderTargetArrayLength = NSUInteger(it->multiViewCount());
+            } else if (it->renderBuffer()) {
                 QRHI_RES(QMetalRenderBuffer, it->renderBuffer())->lastActiveFrameSlot = currentFrameSlot;
+            }
             if (it->resolveTexture())
                 QRHI_RES(QMetalTexture, it->resolveTexture())->lastActiveFrameSlot = currentFrameSlot;
         }
@@ -4295,10 +4341,10 @@ void QMetalGraphicsPipeline::destroy()
     d->tess.compTesc.destroy();
     d->tess.vertTese.destroy();
 
-    qDeleteAll(d->tess.deviceLocalWorkBuffers);
-    d->tess.deviceLocalWorkBuffers.clear();
-    qDeleteAll(d->tess.hostVisibleWorkBuffers);
-    d->tess.hostVisibleWorkBuffers.clear();
+    qDeleteAll(d->extraBufMgr.deviceLocalWorkBuffers);
+    d->extraBufMgr.deviceLocalWorkBuffers.clear();
+    qDeleteAll(d->extraBufMgr.hostVisibleWorkBuffers);
+    d->extraBufMgr.hostVisibleWorkBuffers.clear();
 
     delete d->bufferSizeBuffer;
     d->bufferSizeBuffer = nullptr;
@@ -4522,6 +4568,24 @@ static inline MTLPrimitiveType toMetalPrimitiveType(QRhiGraphicsPipeline::Topolo
     default:
         Q_UNREACHABLE();
         return MTLPrimitiveTypeTriangle;
+    }
+}
+
+static inline MTLPrimitiveTopologyClass toMetalPrimitiveTopologyClass(QRhiGraphicsPipeline::Topology t)
+{
+    switch (t) {
+    case QRhiGraphicsPipeline::Triangles:
+    case QRhiGraphicsPipeline::TriangleStrip:
+    case QRhiGraphicsPipeline::TriangleFan:
+        return MTLPrimitiveTopologyClassTriangle;
+    case QRhiGraphicsPipeline::Lines:
+    case QRhiGraphicsPipeline::LineStrip:
+        return MTLPrimitiveTopologyClassLine;
+    case QRhiGraphicsPipeline::Points:
+        return MTLPrimitiveTopologyClassPoint;
+    default:
+        Q_UNREACHABLE();
+        return MTLPrimitiveTopologyClassTriangle;
     }
 }
 
@@ -4765,6 +4829,7 @@ void QMetalGraphicsPipelineData::setupVertexInputDescriptor(MTLVertexDescriptor 
         desc.attributes[loc].bufferIndex = NSUInteger(firstVertexBinding + it->binding());
     }
     int bindingIndex = 0;
+    const NSUInteger viewCount = qMax<NSUInteger>(1, q->multiViewCount());
     for (auto it = vertexInputLayout.cbeginBindings(), itEnd = vertexInputLayout.cendBindings();
          it != itEnd; ++it, ++bindingIndex)
     {
@@ -4773,6 +4838,8 @@ void QMetalGraphicsPipelineData::setupVertexInputDescriptor(MTLVertexDescriptor 
                     it->classification() == QRhiVertexInputBinding::PerInstance
                     ? MTLVertexStepFunctionPerInstance : MTLVertexStepFunctionPerVertex;
         desc.layouts[layoutIdx].stepRate = NSUInteger(it->instanceStepRate());
+        if (desc.layouts[layoutIdx].stepFunction == MTLVertexStepFunctionPerInstance)
+            desc.layouts[layoutIdx].stepRate *= viewCount;
         desc.layouts[layoutIdx].stride = it->stride();
     }
 }
@@ -4948,6 +5015,9 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
 
     QMetalRenderPassDescriptor *rpD = QRHI_RES(QMetalRenderPassDescriptor, m_renderPassDesc);
     setupAttachmentsInMetalRenderPassDescriptor(rpDesc, rpD);
+
+    if (m_multiViewCount >= 2)
+        rpDesc.inputPrimitiveTopology = toMetalPrimitiveTopologyClass(m_topology);
 
     rhiD->d->trySeedingRenderPipelineFromBinaryArchive(rpDesc);
 
@@ -5471,7 +5541,7 @@ id<MTLRenderPipelineState> QMetalGraphicsPipelineData::Tessellation::teseFragRen
     return ps;
 }
 
-QMetalBuffer *QMetalGraphicsPipelineData::Tessellation::acquireWorkBuffer(QRhiMetal *rhiD, quint32 size, WorkBufType type)
+QMetalBuffer *QMetalGraphicsPipelineData::ExtraBufferManager::acquireWorkBuffer(QRhiMetal *rhiD, quint32 size, WorkBufType type)
 {
     QVector<QMetalBuffer *> *workBuffers = type == WorkBufType::DeviceLocal ? &deviceLocalWorkBuffers : &hostVisibleWorkBuffers;
 
@@ -5536,6 +5606,9 @@ bool QMetalGraphicsPipeline::createTessellationPipelines(const QShader &tessVert
         d->tess.failed = true;
         return false;
     }
+
+    if (m_multiViewCount >= 2)
+        qWarning("Multiview is not supported with tessellation");
 
     // Now the vertex shader is a compute shader.
     // It should have three dedicated *VertexAsComputeShader variants.
