@@ -2,5 +2,4 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 qt_internal_add_example(basiclayouts)
-qt_internal_add_example(dynamiclayouts)
 qt_internal_add_example(flowlayout)
