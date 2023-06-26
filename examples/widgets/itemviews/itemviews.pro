@@ -9,7 +9,6 @@ SUBDIRS       = addressbook \
                 editabletreemodel \
                 fetchmore \
                 frozencolumn \
-                interview \
                 pixelator \
                 puzzle \
                 simpledommodel \
