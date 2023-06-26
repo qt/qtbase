@@ -1,5 +1,4 @@
 TEMPLATE    = subdirs
-SUBDIRS     = calendar \
-              orderform \
+SUBDIRS     = orderform \
               syntaxhighlighter \
               textedit
