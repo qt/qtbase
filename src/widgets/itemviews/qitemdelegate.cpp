@@ -282,8 +282,7 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     the style for drawing.
 
     \sa {Delegate Classes}, QStyledItemDelegate, QAbstractItemDelegate,
-        {Spin Box Delegate Example}, {Settings Editor Example},
-        {Icons Example}
+        {Spin Box Delegate Example}, {Settings Editor Example}
 */
 
 /*!
