@@ -116,7 +116,7 @@ include("${_Qt6CTestMacros}")
 # Qt::Gui is the prerequisite for all Android tests.
 if(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS AND NOT NO_GUI)
     unset(multi_abi_vars)
-    foreach(abi IN_LISTS QT_ANDROID_ABIS)
+    foreach(abi IN LISTS QT_ANDROID_ABIS)
         list(APPEND multi_abi_vars "-DQT_PATH_ANDROID_ABI_${abi}=${QT_PATH_ANDROID_ABI_${abi}}")
     endforeach()
     if(QT_ANDROID_BUILD_ALL_ABIS)
