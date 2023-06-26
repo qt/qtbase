@@ -2,5 +2,4 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 qt_internal_add_example(mainwindow)
-qt_internal_add_example(mdi)
 qt_internal_add_example(menus)
