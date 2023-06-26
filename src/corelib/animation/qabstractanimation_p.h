@@ -29,7 +29,7 @@ QT_BEGIN_NAMESPACE
 
 class QAnimationGroup;
 class QAbstractAnimation;
-class QAbstractAnimationPrivate : public QObjectPrivate
+class Q_CORE_EXPORT QAbstractAnimationPrivate : public QObjectPrivate
 {
 public:
     QAbstractAnimationPrivate();
