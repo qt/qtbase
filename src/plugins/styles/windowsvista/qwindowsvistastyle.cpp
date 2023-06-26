@@ -4815,7 +4815,7 @@ void QWindowsVistaStyle::polish(QPalette &pal)
         // Overwrite with the light system palette.
         using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
         if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
-            nativeWindowsApp->lightSystemPalette(pal);
+            nativeWindowsApp->populateLightSystemPalette(pal);
     }
 
     QPixmapCache::clear();
