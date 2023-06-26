@@ -22,6 +22,8 @@ function(_qt_internal_wasm_add_target_helpers target)
         endif()
 
         set(APPNAME ${_target_output_name})
+        _qt_internal_wasm_export_name_for_target(_export_name ${target})
+        set(APPEXPORTNAME ${_export_name})
 
         get_target_property(target_output_directory ${target} RUNTIME_OUTPUT_DIRECTORY)
 
@@ -106,10 +108,16 @@ function(_qt_internal_add_wasm_extra_exported_methods target)
 endfunction()
 
 function(_qt_internal_set_wasm_export_name target)
+    _qt_internal_wasm_export_name_for_target(export_name ${target})
+    target_link_options("${target}" PRIVATE "SHELL:-s EXPORT_NAME=${export_name}")
+endfunction()
+
+function(_qt_internal_wasm_export_name_for_target out target)
     get_target_property(export_name "${target}" QT_WASM_EXPORT_NAME)
     if(export_name)
-        target_link_options("${target}" PRIVATE "SHELL:-s EXPORT_NAME=${export_name}")
+        set(${out} "${export_name}" PARENT_SCOPE)
     else()
-        target_link_options("${target}" PRIVATE "SHELL:-s EXPORT_NAME=${target}_entry")
+        string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" target "${target}")
+        set(${out} "${target}_entry" PARENT_SCOPE)
     endif()
 endfunction()
