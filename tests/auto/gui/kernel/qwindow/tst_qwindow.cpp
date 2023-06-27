@@ -2896,6 +2896,9 @@ void tst_QWindow::enterLeaveOnWindowShowHide_data()
 */
 void tst_QWindow::enterLeaveOnWindowShowHide()
 {
+    if (isPlatformWayland())
+        QSKIP("Can't set cursor position and qWaitForWindowActive on Wayland");
+
     QFETCH(Qt::WindowType, windowType);
 
     class Window : public QWindow
