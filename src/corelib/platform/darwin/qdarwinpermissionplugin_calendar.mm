@@ -18,7 +18,8 @@
 
 - (Qt::PermissionStatus)currentStatus
 {
-    switch ([EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent]) {
+    auto status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
+    switch (status) {
     case EKAuthorizationStatusNotDetermined:
         return Qt::PermissionStatus::Undetermined;
     case EKAuthorizationStatusRestricted:
@@ -33,7 +34,8 @@
 #endif
     }
 
-    Q_UNREACHABLE();
+    qCWarning(lcPermissions) << "Unknown permission status" << status << "detected in" << self;
+    return Qt::PermissionStatus::Denied;
 }
 
 - (QStringList)usageDescriptionsFor:(QPermission)permission

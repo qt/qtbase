@@ -31,7 +31,8 @@
 
 - (Qt::PermissionStatus)currentStatus
 {
-    switch (CBCentralManager.authorization) {
+    auto status = CBCentralManager.authorization;
+    switch (status) {
     case CBManagerAuthorizationNotDetermined:
         return Qt::PermissionStatus::Undetermined;
     case CBManagerAuthorizationRestricted:
@@ -41,7 +42,8 @@
         return Qt::PermissionStatus::Granted;
     }
 
-    Q_UNREACHABLE();
+    qCWarning(lcPermissions) << "Unknown permission status" << status << "detected in" << self;
+    return Qt::PermissionStatus::Denied;
 }
 
 - (void)requestPermission:(QPermission)permission withCallback:(PermissionCallback)callback

@@ -83,7 +83,9 @@ Qt::PermissionStatus nativeStatusToQtStatus(NativeStatus status)
     case Converter::Undetermined:
         return Qt::PermissionStatus::Undetermined;
     }
-    Q_UNREACHABLE();
+    qCWarning(lcPermissions) << "Unknown permission status" << status << "detected in"
+        << QT_STRINGIFY(QT_DARWIN_PERMISSION_PLUGIN);
+    return Qt::PermissionStatus::Denied;
 }
 } // namespace
 
