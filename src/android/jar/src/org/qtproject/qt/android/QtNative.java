@@ -895,7 +895,7 @@ public class QtNative
 
     public static boolean hasClipboardText()
     {
-       return hasClipboardMimeType("text/plain");
+       return hasClipboardMimeType("text/(.*)");
     }
 
     private static String getClipboardText()
@@ -953,7 +953,7 @@ public class QtNative
 
         for (int i = 0; i < description.getMimeTypeCount(); ++i) {
             String itemMimeType = description.getMimeType(i);
-            if (itemMimeType.equals(mimeType))
+            if (itemMimeType.matches(mimeType))
                 return true;
         }
         return false;
