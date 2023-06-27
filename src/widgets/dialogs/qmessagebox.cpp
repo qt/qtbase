@@ -187,7 +187,7 @@ public:
     QAbstractButton *abstractButtonForId(int id) const;
     int execReturnCode(QAbstractButton *button);
 
-    int dialogCodeForButton(QAbstractButton *button) const;
+    int dialogCodeForButtonRole(QMessageBox::ButtonRole buttonRole) const;
 
     void detectEscapeButton();
     void updateSize();
@@ -447,11 +447,9 @@ int QMessageBoxPrivate::execReturnCode(QAbstractButton *button)
 
     Returns 0 for RejectedRole and NoRole, 1 for AcceptedRole and YesRole, -1 otherwise
  */
-int QMessageBoxPrivate::dialogCodeForButton(QAbstractButton *button) const
+int QMessageBoxPrivate::dialogCodeForButtonRole(QMessageBox::ButtonRole buttonRole) const
 {
-    Q_Q(const QMessageBox);
-
-    switch (q->buttonRole(button)) {
+    switch (buttonRole) {
     case QMessageBox::AcceptRole:
     case QMessageBox::YesRole:
         return QDialog::Accepted;
@@ -495,7 +493,7 @@ void QMessageBoxPrivate::setClickedButton(QAbstractButton *button)
 
     auto resultCode = execReturnCode(button);
     close(resultCode);
-    finalize(resultCode, dialogCodeForButton(button));
+    finalize(resultCode, dialogCodeForButtonRole(q->buttonRole(button)));
 }
 
 void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role)
@@ -507,11 +505,13 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
         clickedButton = static_cast<QAbstractButton *>(options->customButton(button)->button);
         Q_ASSERT(clickedButton);
         clickedButton->click();
-        q->done(role);
+        close(role);
+        finalize(role, dialogCodeForButtonRole(q->buttonRole(clickedButton)));
     } else {
         clickedButton = q->button(QMessageBox::StandardButton(button));
         Q_ASSERT(clickedButton);
-        q->done(button);
+        close(button);
+        finalize(button, dialogCodeForButtonRole(static_cast<QMessageBox::ButtonRole>(role)));
     }
 }
 
