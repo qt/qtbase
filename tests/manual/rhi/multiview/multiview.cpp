@@ -33,12 +33,24 @@ static float triangleData[] =
 { // Y up, CCW
      0.0f,   0.5f,   1.0f, 0.0f, 0.0f,
     -0.5f,  -0.5f,   0.0f, 1.0f, 0.0f,
-     0.5f,  -0.5f,   0.0f, 0.0f, 1.0f,
+     0.5f,  -0.5f,   0.0f, 0.0f, 1.0f
+};
+
+static const int INSTANCE_COUNT = 5;
+
+static float instanceData[INSTANCE_COUNT * 3] =
+{
+    0.4f,  0.0f, 0.0f,
+    0.2f,  0.0f, 0.0f,
+    0.0f,  0.0f, 0.0f,
+    -0.2f, 0.0f, 0.0f,
+    -0.4f, 0.0f, 0.0f
 };
 
 struct {
     QList<QRhiResource *> releasePool;
     QRhiBuffer *vbuf = nullptr;
+    QRhiBuffer *instanceBuf = nullptr;
     QRhiBuffer *ibuf = nullptr;
     QRhiBuffer *ubuf = nullptr;
     QRhiTextureRenderTarget *rt = nullptr;
@@ -109,6 +121,11 @@ void Window::customInit()
     d.vbuf->create();
     d.releasePool << d.vbuf;
 
+    // data for the instanced translation attribute
+    d.instanceBuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(instanceData));
+    d.instanceBuf->create();
+    d.releasePool << d.instanceBuf;
+
     // resources for the on-screen visualizer
     d.ibuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(quadIndexData));
     d.ibuf->create();
@@ -160,6 +177,7 @@ void Window::customInit()
     d.initialUpdates = m_r->nextResourceUpdateBatch();
     d.initialUpdates->uploadStaticBuffer(d.vbuf, 0, sizeof(quadVertexData), quadVertexData);
     d.initialUpdates->uploadStaticBuffer(d.vbuf, sizeof(quadVertexData), sizeof(triangleData), triangleData);
+    d.initialUpdates->uploadStaticBuffer(d.instanceBuf, instanceData);
     d.initialUpdates->uploadStaticBuffer(d.ibuf, quadIndexData);
 
     qint32 flip = m_r->isYUpInFramebuffer() ? 1 : 0;
@@ -189,11 +207,13 @@ void Window::customInit()
     });
     d.triPs->setMultiViewCount(2); // the view count must be set both on the render target and the pipeline
     inputLayout.setBindings({
-        { 5 * sizeof(float) }
+        { 5 * sizeof(float) },
+        { 3 * sizeof(float), QRhiVertexInputBinding::PerInstance }
     });
     inputLayout.setAttributes({
         { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
-        { 0, 1, QRhiVertexInputAttribute::Float3, quint32(2 * sizeof(float)) }
+        { 0, 1, QRhiVertexInputAttribute::Float3, quint32(2 * sizeof(float)) },
+        { 1, 2, QRhiVertexInputAttribute::Float3, 0 }
     });
     d.triPs->setSampleCount(sampleCount);
     d.triPs->setVertexInputLayout(inputLayout);
@@ -222,8 +242,6 @@ void Window::customRender()
         d.initialUpdates = nullptr;
     }
 
-    QRhiCommandBuffer::VertexInput vbufBinding(d.vbuf, quint32(sizeof(quadVertexData)));
-
     QMatrix4x4 triMvp = d.triBaseMvp;
     // let's say this is the left eye, make the triangle point left for now
     triMvp.rotate(90, 0, 0, 1);
@@ -237,8 +255,12 @@ void Window::customRender()
     cb->setGraphicsPipeline(d.triPs);
     cb->setViewport({ 0, 0, float(d.rt->pixelSize().width()), float(d.rt->pixelSize().height()) });
     cb->setShaderResources();
-    cb->setVertexInput(0, 1, &vbufBinding);
-    cb->draw(3);
+    const QRhiCommandBuffer::VertexInput multiViewPassVbufBindings[] = {
+        { d.vbuf, quint32(sizeof(quadVertexData)) },
+        { d.instanceBuf, 0 }
+    };
+    cb->setVertexInput(0, 2, multiViewPassVbufBindings);
+    cb->draw(3, INSTANCE_COUNT);
     cb->endPass();
 
     // "blit" the two texture layers on-screen just to visualize the contents
@@ -260,8 +282,8 @@ void Window::customRender()
     cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 }, u);
     cb->setGraphicsPipeline(d.ps);
     cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
-    vbufBinding.second = 0;
-    cb->setVertexInput(0, 1, &vbufBinding, d.ibuf, 0, QRhiCommandBuffer::IndexUInt16);
+    const QRhiCommandBuffer::VertexInput quadPassVBufBindings[] = { { d.vbuf, 0 } };
+    cb->setVertexInput(0, 1, quadPassVBufBindings, d.ibuf, 0, QRhiCommandBuffer::IndexUInt16);
     for (int i = 0; i < 2; ++i) {
         cb->setShaderResources(d.srb[i]);
         cb->drawIndexed(6);
