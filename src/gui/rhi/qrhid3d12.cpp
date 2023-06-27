@@ -4893,6 +4893,15 @@ static QByteArray legacyCompile(const QShaderCode &hlslSource, const char *targe
 }
 
 #ifdef QRHI_D3D12_HAS_DXC
+
+#ifndef DXC_CP_UTF8
+#define DXC_CP_UTF8 65001
+#endif
+
+#ifndef DXC_ARG_DEBUG
+#define DXC_ARG_DEBUG L"-Zi"
+#endif
+
 static QByteArray dxcCompile(const QShaderCode &hlslSource, const char *target, int flags, QString *error)
 {
     static std::pair<IDxcCompiler *, IDxcLibrary *> dxc = QRhiD3D::createDxcCompiler();
@@ -4971,7 +4980,8 @@ static QByteArray dxcCompile(const QShaderCode &hlslSource, const char *target, 
     bytecode->Release();
     return ba;
 }
-#endif
+
+#endif // QRHI_D3D12_HAS_DXC
 
 static QByteArray compileHlslShaderSource(const QShader &shader,
                                           QShader::Variant shaderVariant,
