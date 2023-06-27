@@ -7,7 +7,6 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qtextstream.h>
-#include <QtCore/qxmlstream.h>
 #include <QtCore/qdebug.h>
 
 #ifndef QT_NO_DBUS
@@ -20,9 +19,11 @@ Q_LOGGING_CATEGORY(dbusParser, "dbus.parser", QtWarningMsg)
 
 #define qDBusParserError(...) qCDebug(dbusParser, ##__VA_ARGS__)
 
-static bool parseArg(const QXmlStreamAttributes &attributes, QDBusIntrospection::Argument &argData,
-        QDBusIntrospection::Interface *ifaceData)
+bool QDBusXmlParser::parseArg(const QXmlStreamAttributes &attributes,
+                              QDBusIntrospection::Argument &argData)
 {
+    Q_ASSERT(m_currentInterface);
+
     const QString argType = attributes.value("type"_L1).toString();
 
     bool ok = QDBusUtil::isValidSingleSignature(argType);
@@ -34,25 +35,26 @@ static bool parseArg(const QXmlStreamAttributes &attributes, QDBusIntrospection:
     argData.name = attributes.value("name"_L1).toString();
     argData.type = argType;
 
-    ifaceData->introspection += "      <arg"_L1;
+    m_currentInterface->introspection += "      <arg"_L1;
     if (attributes.hasAttribute("direction"_L1)) {
         const QString direction = attributes.value("direction"_L1).toString();
-        ifaceData->introspection += " direction=\""_L1 + direction + u'"';
+        m_currentInterface->introspection += " direction=\""_L1 + direction + u'"';
     }
-    ifaceData->introspection += " type=\""_L1 + argData.type + u'"';
+    m_currentInterface->introspection += " type=\""_L1 + argData.type + u'"';
     if (!argData.name.isEmpty())
-        ifaceData->introspection += " name=\""_L1 + argData.name + u'"';
-    ifaceData->introspection += "/>\n"_L1;
+        m_currentInterface->introspection += " name=\""_L1 + argData.name + u'"';
+    m_currentInterface->introspection += "/>\n"_L1;
 
     return ok;
 }
 
-static bool parseAnnotation(const QXmlStreamReader &xml, QDBusIntrospection::Annotations &annotations,
-        QDBusIntrospection::Interface *ifaceData, bool interfaceAnnotation = false)
+bool QDBusXmlParser::parseAnnotation(QDBusIntrospection::Annotations &annotations,
+                                     bool interfaceAnnotation)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "annotation"_L1);
+    Q_ASSERT(m_currentInterface);
+    Q_ASSERT(m_xml.isStartElement() && m_xml.name() == "annotation"_L1);
 
-    const QXmlStreamAttributes attributes = xml.attributes();
+    const QXmlStreamAttributes attributes = m_xml.attributes();
     const QString name = attributes.value("name"_L1).toString();
 
     if (!QDBusUtil::isValidInterfaceName(name)) {
@@ -63,22 +65,22 @@ static bool parseAnnotation(const QXmlStreamReader &xml, QDBusIntrospection::Ann
     const QString value = attributes.value("value"_L1).toString();
     annotations.insert(name, value);
     if (!interfaceAnnotation)
-        ifaceData->introspection += "  "_L1;
-    ifaceData->introspection += "    <annotation value=\""_L1 + value.toHtmlEscaped() + "\" name=\""_L1 + name + "\"/>\n"_L1;
+        m_currentInterface->introspection += "  "_L1;
+    m_currentInterface->introspection += "    <annotation value=\""_L1 + value.toHtmlEscaped() + "\" name=\""_L1 + name + "\"/>\n"_L1;
     return true;
 }
 
-static bool parseProperty(QXmlStreamReader &xml, QDBusIntrospection::Property &propertyData,
-                QDBusIntrospection::Interface *ifaceData)
+bool QDBusXmlParser::parseProperty(QDBusIntrospection::Property &propertyData)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "property"_L1);
+    Q_ASSERT(m_currentInterface);
+    Q_ASSERT(m_xml.isStartElement() && m_xml.name() == "property"_L1);
 
-    QXmlStreamAttributes attributes = xml.attributes();
+    QXmlStreamAttributes attributes = m_xml.attributes();
     const QString propertyName = attributes.value("name"_L1).toString();
     if (!QDBusUtil::isValidMemberName(propertyName)) {
         qDBusParserError("Invalid D-BUS member name '%s' found in interface '%s' while parsing introspection",
-                qPrintable(propertyName), qPrintable(ifaceData->name));
-        xml.skipCurrentElement();
+                qPrintable(propertyName), qPrintable(m_currentInterface->name));
+        m_xml.skipCurrentElement();
         return false;
     }
 
@@ -89,7 +91,7 @@ static bool parseProperty(QXmlStreamReader &xml, QDBusIntrospection::Property &p
     if (!QDBusUtil::isValidSingleSignature(propertyData.type)) {
         // cannot be!
         qDBusParserError("Invalid D-BUS type signature '%s' found in property '%s.%s' while parsing introspection",
-                qPrintable(propertyData.type), qPrintable(ifaceData->name),
+                qPrintable(propertyData.type), qPrintable(m_currentInterface->name),
                 qPrintable(propertyName));
     }
 
@@ -102,84 +104,84 @@ static bool parseProperty(QXmlStreamReader &xml, QDBusIntrospection::Property &p
         propertyData.access = QDBusIntrospection::Property::ReadWrite;
     else {
         qDBusParserError("Invalid D-BUS property access '%s' found in property '%s.%s' while parsing introspection",
-                qPrintable(access), qPrintable(ifaceData->name),
+                qPrintable(access), qPrintable(m_currentInterface->name),
                 qPrintable(propertyName));
         return false;       // invalid one!
     }
 
-    ifaceData->introspection += "    <property access=\""_L1 + access + "\" type=\""_L1 + propertyData.type + "\" name=\""_L1 + propertyName + u'"';
+    m_currentInterface->introspection += "    <property access=\""_L1 + access + "\" type=\""_L1 + propertyData.type + "\" name=\""_L1 + propertyName + u'"';
 
-    if (!xml.readNextStartElement()) {
-        ifaceData->introspection += "/>\n"_L1;
+    if (!m_xml.readNextStartElement()) {
+        m_currentInterface->introspection += "/>\n"_L1;
     } else {
-        ifaceData->introspection += ">\n"_L1;
+        m_currentInterface->introspection += ">\n"_L1;
 
         do {
-            if (xml.name() == "annotation"_L1) {
-                parseAnnotation(xml, propertyData.annotations, ifaceData);
-            } else if (xml.prefix().isEmpty()) {
-                qDBusParserError() << "Unknown element" << xml.name() << "while checking for annotations";
+            if (m_xml.name() == "annotation"_L1) {
+                parseAnnotation(propertyData.annotations);
+            } else if (m_xml.prefix().isEmpty()) {
+                qDBusParserError() << "Unknown element" << m_xml.name() << "while checking for annotations";
             }
-            xml.skipCurrentElement();
-        } while (xml.readNextStartElement());
+            m_xml.skipCurrentElement();
+        } while (m_xml.readNextStartElement());
 
-        ifaceData->introspection += "    </property>\n"_L1;
+        m_currentInterface->introspection += "    </property>\n"_L1;
     }
 
-    if (!xml.isEndElement() || xml.name() != "property"_L1) {
-        qDBusParserError() << "Invalid property specification" << xml.tokenString() << xml.name();
+    if (!m_xml.isEndElement() || m_xml.name() != "property"_L1) {
+        qDBusParserError() << "Invalid property specification" << m_xml.tokenString() << m_xml.name();
         return false;
     }
 
     return true;
 }
 
-static bool parseMethod(QXmlStreamReader &xml, QDBusIntrospection::Method &methodData,
-        QDBusIntrospection::Interface *ifaceData)
+bool QDBusXmlParser::parseMethod(QDBusIntrospection::Method &methodData)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "method"_L1);
+    Q_ASSERT(m_currentInterface);
+    Q_ASSERT(m_xml.isStartElement() && m_xml.name() == "method"_L1);
 
-    const QXmlStreamAttributes attributes = xml.attributes();
+    const QXmlStreamAttributes attributes = m_xml.attributes();
     const QString methodName = attributes.value("name"_L1).toString();
     if (!QDBusUtil::isValidMemberName(methodName)) {
         qDBusParserError("Invalid D-BUS member name '%s' found in interface '%s' while parsing introspection",
-                qPrintable(methodName), qPrintable(ifaceData->name));
+                qPrintable(methodName), qPrintable(m_currentInterface->name));
         return false;
     }
 
     methodData.name = methodName;
-    ifaceData->introspection += "    <method name=\""_L1 + methodName + u'"';
+    m_currentInterface->introspection += "    <method name=\""_L1 + methodName + u'"';
 
     QDBusIntrospection::Arguments outArguments;
     QDBusIntrospection::Arguments inArguments;
     QDBusIntrospection::Annotations annotations;
 
-    if (!xml.readNextStartElement()) {
-        ifaceData->introspection += "/>\n"_L1;
+    if (!m_xml.readNextStartElement()) {
+        m_currentInterface->introspection += "/>\n"_L1;
     } else {
-        ifaceData->introspection += ">\n"_L1;
+        m_currentInterface->introspection += ">\n"_L1;
 
         do {
-            if (xml.name() == "annotation"_L1) {
-                parseAnnotation(xml, annotations, ifaceData);
-            } else if (xml.name() == "arg"_L1) {
-                const QXmlStreamAttributes attributes = xml.attributes();
+            if (m_xml.name() == "annotation"_L1) {
+                parseAnnotation(annotations);
+            } else if (m_xml.name() == "arg"_L1) {
+                const QXmlStreamAttributes attributes = m_xml.attributes();
                 const QString direction = attributes.value("direction"_L1).toString();
                 QDBusIntrospection::Argument argument;
                 if (!attributes.hasAttribute("direction"_L1) || direction == "in"_L1) {
-                    parseArg(attributes, argument, ifaceData);
+                    parseArg(attributes, argument);
                     inArguments << argument;
                 } else if (direction == "out"_L1) {
-                    parseArg(attributes, argument, ifaceData);
+                    parseArg(attributes, argument);
                     outArguments << argument;
                 }
-            } else if (xml.prefix().isEmpty()) {
-                qDBusParserError() << "Unknown element" << xml.name() << "while checking for method arguments";
+            } else if (m_xml.prefix().isEmpty()) {
+                qDBusParserError() << "Unknown element" << m_xml.name() << "while checking for method arguments";
             }
-            xml.skipCurrentElement();
-        } while (xml.readNextStartElement());
+            m_xml.skipCurrentElement();
+        } while (m_xml.readNextStartElement());
 
-        ifaceData->introspection += "    </method>\n"_L1;
+        m_currentInterface->introspection += "    </method>\n"_L1;
     }
 
     methodData.inputArgs = inArguments;
@@ -189,50 +191,49 @@ static bool parseMethod(QXmlStreamReader &xml, QDBusIntrospection::Method &metho
     return true;
 }
 
-
-static bool parseSignal(QXmlStreamReader &xml, QDBusIntrospection::Signal &signalData,
-        QDBusIntrospection::Interface *ifaceData)
+bool QDBusXmlParser::parseSignal(QDBusIntrospection::Signal &signalData)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "signal"_L1);
+    Q_ASSERT(m_currentInterface);
+    Q_ASSERT(m_xml.isStartElement() && m_xml.name() == "signal"_L1);
 
-    const QXmlStreamAttributes attributes = xml.attributes();
+    const QXmlStreamAttributes attributes = m_xml.attributes();
     const QString signalName = attributes.value("name"_L1).toString();
 
     if (!QDBusUtil::isValidMemberName(signalName)) {
         qDBusParserError("Invalid D-BUS member name '%s' found in interface '%s' while parsing introspection",
-                qPrintable(signalName), qPrintable(ifaceData->name));
+                qPrintable(signalName), qPrintable(m_currentInterface->name));
         return false;
     }
 
     signalData.name = signalName;
-    ifaceData->introspection += "    <signal name=\""_L1 + signalName + u'"';
+    m_currentInterface->introspection += "    <signal name=\""_L1 + signalName + u'"';
 
     QDBusIntrospection::Arguments arguments;
     QDBusIntrospection::Annotations annotations;
 
-    if (!xml.readNextStartElement()) {
-        ifaceData->introspection += "/>\n"_L1;
+    if (!m_xml.readNextStartElement()) {
+        m_currentInterface->introspection += "/>\n"_L1;
     } else {
-        ifaceData->introspection += ">\n"_L1;
+        m_currentInterface->introspection += ">\n"_L1;
 
         do {
-            if (xml.name() == "annotation"_L1) {
-                parseAnnotation(xml, annotations, ifaceData);
-            } else if (xml.name() == "arg"_L1) {
-                const QXmlStreamAttributes attributes = xml.attributes();
+            if (m_xml.name() == "annotation"_L1) {
+                parseAnnotation(annotations);
+            } else if (m_xml.name() == "arg"_L1) {
+                const QXmlStreamAttributes attributes = m_xml.attributes();
                 QDBusIntrospection::Argument argument;
                 if (!attributes.hasAttribute("direction"_L1) ||
                     attributes.value("direction"_L1) == "out"_L1) {
-                    parseArg(attributes, argument, ifaceData);
+                    parseArg(attributes, argument);
                     arguments << argument;
                 }
             } else {
-                qDBusParserError() << "Unknown element" << xml.name() << "while checking for signal arguments";
+                qDBusParserError() << "Unknown element" << m_xml.name() << "while checking for signal arguments";
             }
-            xml.skipCurrentElement();
-        } while (xml.readNextStartElement());
+            m_xml.skipCurrentElement();
+        } while (m_xml.readNextStartElement());
 
-        ifaceData->introspection += "    </signal>\n"_L1;
+        m_currentInterface->introspection += "    </signal>\n"_L1;
     }
 
     signalData.outputArgs = arguments;
@@ -241,61 +242,64 @@ static bool parseSignal(QXmlStreamReader &xml, QDBusIntrospection::Signal &signa
     return true;
 }
 
-static void readInterface(QXmlStreamReader &xml, QDBusIntrospection::Object *objData,
-        QDBusIntrospection::Interfaces *interfaces)
+void QDBusXmlParser::readInterface()
 {
-    const QString ifaceName = xml.attributes().value("name"_L1).toString();
+    Q_ASSERT(!m_currentInterface);
+
+    const QString ifaceName = m_xml.attributes().value("name"_L1).toString();
     if (!QDBusUtil::isValidInterfaceName(ifaceName)) {
         qDBusParserError("Invalid D-BUS interface name '%s' found while parsing introspection",
                 qPrintable(ifaceName));
         return;
     }
 
-    objData->interfaces.append(ifaceName);
+    m_object->interfaces.append(ifaceName);
 
-    QDBusIntrospection::Interface *ifaceData = new QDBusIntrospection::Interface;
-    ifaceData->name = ifaceName;
-    ifaceData->introspection += "  <interface name=\""_L1 + ifaceName + "\">\n"_L1;
+    m_currentInterface = std::make_unique<QDBusIntrospection::Interface>();
+    m_currentInterface->name = ifaceName;
+    m_currentInterface->introspection += "  <interface name=\""_L1 + ifaceName + "\">\n"_L1;
 
-    while (xml.readNextStartElement()) {
-        if (xml.name() == "method"_L1) {
+    while (m_xml.readNextStartElement()) {
+        if (m_xml.name() == "method"_L1) {
             QDBusIntrospection::Method methodData;
-            if (parseMethod(xml, methodData, ifaceData))
-                ifaceData->methods.insert(methodData.name, methodData);
-        } else if (xml.name() == "signal"_L1) {
+            if (parseMethod(methodData))
+                m_currentInterface->methods.insert(methodData.name, methodData);
+        } else if (m_xml.name() == "signal"_L1) {
             QDBusIntrospection::Signal signalData;
-            if (parseSignal(xml, signalData, ifaceData))
-                ifaceData->signals_.insert(signalData.name, signalData);
-        } else if (xml.name() == "property"_L1) {
+            if (parseSignal(signalData))
+                m_currentInterface->signals_.insert(signalData.name, signalData);
+        } else if (m_xml.name() == "property"_L1) {
             QDBusIntrospection::Property propertyData;
-            if (parseProperty(xml, propertyData, ifaceData))
-                ifaceData->properties.insert(propertyData.name, propertyData);
-        } else if (xml.name() == "annotation"_L1) {
-            parseAnnotation(xml, ifaceData->annotations, ifaceData, true);
-            xml.skipCurrentElement(); // skip over annotation object
+            if (parseProperty(propertyData))
+                m_currentInterface->properties.insert(propertyData.name, propertyData);
+        } else if (m_xml.name() == "annotation"_L1) {
+            parseAnnotation(m_currentInterface->annotations, true);
+            m_xml.skipCurrentElement(); // skip over annotation object
         } else {
-            if (xml.prefix().isEmpty()) {
-                qDBusParserError() << "Unknown element while parsing interface" << xml.name();
+            if (m_xml.prefix().isEmpty()) {
+                qDBusParserError() << "Unknown element while parsing interface" << m_xml.name();
             }
-            xml.skipCurrentElement();
+            m_xml.skipCurrentElement();
         }
     }
 
-    ifaceData->introspection += "  </interface>"_L1;
+    m_currentInterface->introspection += "  </interface>"_L1;
 
-    interfaces->insert(ifaceName, QSharedDataPointer<QDBusIntrospection::Interface>(ifaceData));
+    m_interfaces.insert(
+            ifaceName,
+            QSharedDataPointer<QDBusIntrospection::Interface>(m_currentInterface.release()));
 
-    if (!xml.isEndElement() || xml.name() != "interface"_L1) {
+    if (!m_xml.isEndElement() || m_xml.name() != "interface"_L1) {
         qDBusParserError() << "Invalid Interface specification";
     }
 }
 
-static void readNode(const QXmlStreamReader &xml, QDBusIntrospection::Object *objData, int nodeLevel)
+void QDBusXmlParser::readNode(int nodeLevel)
 {
-    const QString objName = xml.attributes().value("name"_L1).toString();
-    const QString fullName = objData->path.endsWith(u'/')
-                                ? (objData->path + objName)
-                                : QString(objData->path + u'/' + objName);
+    const QString objName = m_xml.attributes().value("name"_L1).toString();
+    const QString fullName = m_object->path.endsWith(u'/')
+                                ? (m_object->path + objName)
+                                : QString(m_object->path + u'/' + objName);
     if (!QDBusUtil::isValidObjectPath(fullName)) {
         qDBusParserError("Invalid D-BUS object path '%s' found while parsing introspection",
                  qPrintable(fullName));
@@ -303,43 +307,38 @@ static void readNode(const QXmlStreamReader &xml, QDBusIntrospection::Object *ob
     }
 
     if (nodeLevel > 0)
-        objData->childObjects.append(objName);
+        m_object->childObjects.append(objName);
 }
 
-QDBusXmlParser::QDBusXmlParser(const QString& service, const QString& path,
-                               const QString& xmlData)
-    : m_service(service), m_path(path), m_object(new QDBusIntrospection::Object)
+QDBusXmlParser::QDBusXmlParser(const QString &service, const QString &path, const QString &xmlData)
+    : m_service(service), m_path(path), m_object(new QDBusIntrospection::Object), m_xml(xmlData)
 {
-//    qDBusParserError() << "parsing" << xmlData;
-
     m_object->service = m_service;
     m_object->path = m_path;
 
-    QXmlStreamReader xml(xmlData);
-
     int nodeLevel = -1;
 
-    while (!xml.atEnd()) {
-        xml.readNext();
+    while (!m_xml.atEnd()) {
+        m_xml.readNext();
 
-        switch (xml.tokenType()) {
+        switch (m_xml.tokenType()) {
         case QXmlStreamReader::StartElement:
-            if (xml.name() == "node"_L1) {
-                readNode(xml, m_object, ++nodeLevel);
-            } else if (xml.name() == "interface"_L1) {
-                readInterface(xml, m_object, &m_interfaces);
+            if (m_xml.name() == "node"_L1) {
+                readNode(++nodeLevel);
+            } else if (m_xml.name() == "interface"_L1) {
+                readInterface();
             } else {
-                if (xml.prefix().isEmpty()) {
-                    qDBusParserError() << "skipping unknown element" << xml.name();
+                if (m_xml.prefix().isEmpty()) {
+                    qDBusParserError() << "skipping unknown element" << m_xml.name();
                 }
-                xml.skipCurrentElement();
+                m_xml.skipCurrentElement();
             }
             break;
         case QXmlStreamReader::EndElement:
-            if (xml.name() == "node"_L1) {
+            if (m_xml.name() == "node"_L1) {
                 --nodeLevel;
             } else {
-                qDBusParserError() << "Invalid Node declaration" << xml.name();
+                qDBusParserError() << "Invalid Node declaration" << m_xml.name();
             }
             break;
         case QXmlStreamReader::StartDocument:
@@ -352,17 +351,17 @@ QDBusXmlParser::QDBusXmlParser(const QString& service, const QString& path,
             break;
         case QXmlStreamReader::Characters:
             // ignore whitespace
-            if (xml.isWhitespace())
+            if (m_xml.isWhitespace())
                 break;
             Q_FALLTHROUGH();
         default:
-            qDBusParserError() << "unknown token" << xml.name() << xml.tokenString();
+            qDBusParserError() << "unknown token" << m_xml.name() << m_xml.tokenString();
             break;
         }
     }
 
-    if (xml.hasError()) {
-        qDBusParserError() << "xml error" << xml.errorString() << "doc" << xmlData;
+    if (m_xml.hasError()) {
+        qDBusParserError() << "xml error" << m_xml.errorString() << "doc" << xmlData;
     }
 }
 

@@ -18,6 +18,7 @@
 #include <QtDBus/private/qtdbusglobal_p.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qxmlstream.h>
 #include "qdbusintrospection_p.h"
 
 #ifndef QT_NO_DBUS
@@ -34,7 +35,9 @@ class QDBusXmlParser
     QString m_service;
     QString m_path;
     QSharedDataPointer<QDBusIntrospection::Object> m_object;
+    std::unique_ptr<QDBusIntrospection::Interface> m_currentInterface;
     QDBusIntrospection::Interfaces m_interfaces;
+    QXmlStreamReader m_xml;
 
 public:
     QDBusXmlParser(const QString& service, const QString& path,
@@ -42,6 +45,16 @@ public:
 
     inline QDBusIntrospection::Interfaces interfaces() const { return m_interfaces; }
     inline QSharedDataPointer<QDBusIntrospection::Object> object() const { return m_object; }
+
+private:
+    void readNode(int nodeLevel);
+    void readInterface();
+    bool parseSignal(QDBusIntrospection::Signal &signalData);
+    bool parseMethod(QDBusIntrospection::Method &methodData);
+    bool parseProperty(QDBusIntrospection::Property &propertyData);
+    bool parseAnnotation(QDBusIntrospection::Annotations &annotations,
+                         bool interfaceAnnotation = false);
+    bool parseArg(const QXmlStreamAttributes &attributes, QDBusIntrospection::Argument &argData);
 };
 
 QT_END_NAMESPACE
