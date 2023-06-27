@@ -5634,6 +5634,7 @@ bool QGles2TextureRenderTarget::create()
 
     d.colorAttCount = 0;
     int attIndex = 0;
+    int multiViewCount = 0;
     for (auto it = m_desc.cbeginColorAttachments(), itEnd = m_desc.cendColorAttachments(); it != itEnd; ++it, ++attIndex) {
         d.colorAttCount += 1;
         const QRhiColorAttachment &colorAtt(*it);
@@ -5644,10 +5645,11 @@ bool QGles2TextureRenderTarget::create()
             QGles2Texture *texD = QRHI_RES(QGles2Texture, texture);
             Q_ASSERT(texD->texture && texD->specified);
             if (texD->flags().testFlag(QRhiTexture::ThreeDimensional) || texD->flags().testFlag(QRhiTexture::TextureArray)) {
-                if (it->multiViewCount() < 2) {
+                if (colorAtt.multiViewCount() < 2) {
                     rhiD->f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), texD->texture,
                                                        colorAtt.level(), colorAtt.layer());
                 } else {
+                    multiViewCount = colorAtt.multiViewCount();
                     rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), texD->texture,
                                                            colorAtt.level(), colorAtt.layer(), colorAtt.multiViewCount());
                 }
@@ -5696,8 +5698,13 @@ bool QGles2TextureRenderTarget::create()
             }
         } else {
             QGles2Texture *depthTexD = QRHI_RES(QGles2Texture, m_desc.depthTexture());
-            rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->target,
-                                            depthTexD->texture, 0);
+            if (multiViewCount < 2) {
+                rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->target,
+                                                depthTexD->texture, 0);
+            } else {
+                rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->texture,
+                                                       0, 0, multiViewCount);
+            }
             if (d.colorAttCount == 0) {
                 d.pixelSize = depthTexD->pixelSize();
                 d.sampleCount = 1;
