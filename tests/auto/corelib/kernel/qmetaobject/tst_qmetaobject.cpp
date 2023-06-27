@@ -31,6 +31,8 @@ Q_DECLARE_METATYPE(const QMetaObject *)
 #  define Q_NO_ARG
 #endif
 
+using namespace Qt::StringLiterals;
+
 struct MyStruct
 {
     int i;
@@ -1081,6 +1083,98 @@ void tst_QMetaObject::invokePointer()
         QCOMPARE(obj.slotResult, QString("sl1:1"));
     }
     QCOMPARE(countedStructObjectsCount, 0);
+
+    // Invoking with parameters
+    QString result;
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl1, qReturnArg(result), u"bubu"_s));
+    QCOMPARE(obj.slotResult, u"sl1:bubu");
+    QCOMPARE(result, u"yessir");
+
+    // without taking return value
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl1, u"bubu"_s));
+    QCOMPARE(obj.slotResult, u"sl1:bubu");
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl1, Qt::DirectConnection, qReturnArg(result),
+            u"byebye"_s));
+    QCOMPARE(obj.slotResult, u"sl1:byebye");
+    QCOMPARE(result, u"yessir");
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, qOverload<int, int>(&QtTestObject::overloadedSlot), 1, 2));
+    QCOMPARE(obj.slotResult, u"overloadedSlot:1,2");
+
+    // non-const ref parameter
+    QString original = u"bubu"_s;
+    QString &ref = original;
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl1, qReturnArg(result), ref));
+    QCOMPARE(obj.slotResult, u"sl1:bubu");
+    QCOMPARE(result, u"yessir");
+
+    struct R {
+        bool operator()(int) { return true; }
+        int operator()(char) { return 15; }
+        int operator()(QString = {}, int = {}, int = {}) { return 242; }
+    } r;
+
+    // Test figuring out which operator() to call:
+    {
+        bool res = false;
+        QVERIFY(QMetaObject::invokeMethod(&obj, r, qReturnArg(res), 1));
+        QCOMPARE(res, true);
+    }
+    {
+        int res;
+        QVERIFY(QMetaObject::invokeMethod(&obj, r, qReturnArg(res), 'c'));
+        QCOMPARE(res, 15);
+    }
+    {
+        int res;
+        QVERIFY(QMetaObject::invokeMethod(&obj, r, qReturnArg(res)));
+        QCOMPARE(res, 242);
+        res = 0;
+        QVERIFY(QMetaObject::invokeMethod(&obj, r, qReturnArg(res), u"bu"_s));
+        QCOMPARE(res, 242);
+        res = 0;
+        QVERIFY(QMetaObject::invokeMethod(&obj, r, qReturnArg(res), u"bu"_s, 1));
+        QCOMPARE(res, 242);
+        res = 0;
+        QVERIFY(QMetaObject::invokeMethod(&obj, r, qReturnArg(res), u"bu"_s, 1, 2));
+        QCOMPARE(res, 242);
+    }
+
+    {
+        auto lambda = [](const QString &s) { return s + s; };
+        QVERIFY(QMetaObject::invokeMethod(&obj, lambda, qReturnArg(result), u"bu"_s));
+        QCOMPARE(result, u"bubu");
+    }
+
+    {
+        auto lambda = [](const QString &s = u"bu"_s) { return s + s; };
+        QVERIFY(QMetaObject::invokeMethod(&obj, lambda, qReturnArg(result)));
+        QCOMPARE(result, u"bubu");
+
+        QVERIFY(QMetaObject::invokeMethod(&obj, lambda, qReturnArg(result), u"bye"_s));
+        QCOMPARE(result, u"byebye");
+    }
+
+    {
+        auto lambda = [](const QString &s, qint64 a, qint16 b, qint8 c) {
+            return s + QString::number(a) + QString::number(b) + QString::number(c);
+        };
+        // Testing mismatching argument (int for qint64). The other arguments
+        // would static_assert for potential truncation if they were ints.
+        QVERIFY(QMetaObject::invokeMethod(&obj, lambda, qReturnArg(result), u"bu"_s, 1, qint16(2), qint8(3)));
+        QCOMPARE(result, u"bu123");
+    }
+    {
+        // Testing deduction
+        auto lambda = [](const QString &s, auto a) { return s + a; };
+        QVERIFY(QMetaObject::invokeMethod(&obj, lambda, qReturnArg(result), u"bu"_s, "bu"_L1));
+        QCOMPARE(result, u"bubu");
+
+        auto variadic = [](const QString &s, auto... a) { return s + (QString::number(a) + ...); };
+        QVERIFY(QMetaObject::invokeMethod(&obj, variadic, qReturnArg(result), u"bu"_s, 1, 2, 3, 4, 5, 6));
+        QCOMPARE(result, u"bu123456");
+    }
 }
 
 void tst_QMetaObject::invokeQueuedMetaMember()
@@ -1345,6 +1439,12 @@ void tst_QMetaObject::invokeQueuedPointer()
         QCOMPARE(var, 0);
     }
     QCOMPARE(countedStructObjectsCount, 0);
+
+    // Invoking with parameters
+    using namespace Qt::StringLiterals;
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl1, Qt::QueuedConnection, u"bubu"_s));
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult, u"sl1:bubu");
 }
 
 // this test is duplicated below
@@ -1764,6 +1864,18 @@ void tst_QMetaObject::invokeBlockingQueuedPointer()
                                           Qt::BlockingQueuedConnection));
         QCOMPARE(obj.slotResult, QString("sl1:hehe"));
     }
+
+    // Test with parameters
+    QString result;
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl1, Qt::BlockingQueuedConnection,
+            qReturnArg(result), u"bubu"_s));
+    QCOMPARE(result, u"yessir");
+    QCOMPARE(obj.slotResult, u"sl1:bubu");
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl2, Qt::BlockingQueuedConnection,
+            u"bubu"_s, u"baba"_s));
+    QCOMPARE(obj.slotResult, u"sl2:bububaba");
+
     QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.moveToThread(QThread::currentThread());}, Qt::BlockingQueuedConnection));
     t.quit();
     QVERIFY(t.wait());

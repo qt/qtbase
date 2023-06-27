@@ -1612,12 +1612,16 @@ bool QMetaObject::invokeMethodImpl(QObject *obj, const char *member, Qt::Connect
     return printMethodNotFoundWarning(obj->metaObject(), name, paramCount, typeNames, metaTypes);
 }
 
-bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slotObj,
-                                   Qt::ConnectionType type, void *ret)
+bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type,
+                                qsizetype parameterCount, const void *const *params, const char *const *names,
+                                const QtPrivate::QMetaTypeInterface * const *metaTypes)
 {
+    // We don't need this now but maybe we want it later, or we may be able to
+    // share more code between the two invokeMethodImpl() overloads:
+    Q_UNUSED(names);
     auto slot = QtPrivate::SlotObjUniquePtr(slotObj);
 
-    if (! object)
+    if (! object) // ### only if the slot requires the object + not queued?
         return false;
 
     Qt::HANDLE currentThreadId = QThread::currentThreadId();
@@ -1629,8 +1633,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
     if (type == Qt::AutoConnection)
         type = receiverInSameThread ? Qt::DirectConnection : Qt::QueuedConnection;
 
-    void *argv[] = { ret };
-
+    void **argv = const_cast<void **>(params);
     if (type == Qt::DirectConnection) {
         slot->call(object, argv);
     } else if (type == Qt::QueuedConnection) {
@@ -1639,8 +1642,16 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                      "queued connections");
             return false;
         }
+        auto event = std::make_unique<QMetaCallEvent>(std::move(slot), nullptr, -1, parameterCount);
+        void **args = event->args();
+        QMetaType *types = event->types();
 
-        QCoreApplication::postEvent(object, new QMetaCallEvent(std::move(slot), nullptr, -1, 1));
+        for (int i = 1; i < parameterCount; ++i) {
+            types[i] = QMetaType(metaTypes[i]);
+            args[i] = types[i].create(argv[i]);
+        }
+
+        QCoreApplication::postEvent(object, event.release());
     } else if (type == Qt::BlockingQueuedConnection) {
 #if QT_CONFIG(thread)
         if (receiverInSameThread)
@@ -1731,6 +1742,31 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 
     If \a type is set, then the function is invoked using that connection type. Otherwise,
     Qt::AutoConnection will be used.
+*/
+
+/*!
+    \fn  template<typename Functor, typename FunctorReturnType, typename... Args> bool QMetaObject::invokeMethod(QObject *context, Functor &&function, Qt::ConnectionType type, QTemplatedMetaMethodReturnArgument<FunctorReturnType> ret, Args &&...arguments)
+    \fn  template<typename Functor, typename FunctorReturnType, typename... Args> bool QMetaObject::invokeMethod(QObject *context, Functor &&function, QTemplatedMetaMethodReturnArgument<FunctorReturnType> ret, Args &&...arguments)
+    \fn  template<typename Functor, typename... Args> bool QMetaObject::invokeMethod(QObject *context, Functor &&function, Qt::ConnectionType type, Args &&...arguments)
+    \fn  template<typename Functor, typename... Args> bool QMetaObject::invokeMethod(QObject *context, Functor &&function, Args &&...arguments)
+
+    \since 6.7
+    \threadsafe
+
+    Invokes the \a function with \a arguments in the event loop of \a context.
+    \a function can be a functor or a pointer to a member function. Returns
+    \c true if the function could be invoked. The return value of the
+    function call is placed in \a ret. The object used for the \a ret argument
+    should be obtained by passing your object to qReturnArg(). For example:
+
+    \badcode
+        MyClass *obj = ...;
+        int result = 0;
+        QMetaObject::invokeMethod(obj, &MyClass::myMethod, qReturnArg(result), parameter);
+    \endcode
+
+    If \a type is set, then the function is invoked using that connection type.
+    Otherwise, Qt::AutoConnection will be used.
 */
 
 /*!

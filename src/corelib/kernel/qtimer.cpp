@@ -366,8 +366,10 @@ void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
             deleteReceiver = true;
         }
 
+        auto h = QtPrivate::invokeMethodHelper({});
         QMetaObject::invokeMethodImpl(const_cast<QObject *>(receiver), slotObj,
-                                      Qt::QueuedConnection, nullptr);
+                Qt::QueuedConnection, h.parameterCount(), h.parameters.data(), h.typeNames.data(),
+                h.metaTypes.data());
 
         if (deleteReceiver)
             const_cast<QObject *>(receiver)->deleteLater();

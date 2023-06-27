@@ -635,6 +635,13 @@ QString QLocale::bcp47Name() const
     return bcp47Name(TagSeparator::Dash);
 }
 
+#include "qobjectdefs.h"
+
+bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
+{
+    return invokeMethodImpl(object, slot, type, 1, &ret, nullptr, nullptr);
+}
+
 #include "qurl.h"
 
 QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
