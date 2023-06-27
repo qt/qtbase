@@ -79,16 +79,16 @@ namespace QtAndroidClipboard
                                                    "(Ljava/lang/String;)V",
                                                    QJniObject::fromString(u.toEncoded()).object());
             }
-        } else if (data->hasText()) { // hasText || hasUrls, so the order matter here.
-            QJniObject::callStaticMethod<void>(applicationClass(),
-                                               "setClipboardText", "(Ljava/lang/String;)V",
-                                               QJniObject::fromString(data->text()).object());
-        } else if (data->hasHtml()) {
+        } else if (data->hasHtml()) { // html can contain text
             QJniObject::callStaticMethod<void>(applicationClass(),
                                                "setClipboardHtml",
                                                "(Ljava/lang/String;Ljava/lang/String;)V",
                                                QJniObject::fromString(data->text()).object(),
                                                QJniObject::fromString(data->html()).object());
+        } else if (data->hasText()) { // hasText must be the last (the order matter here)
+            QJniObject::callStaticMethod<void>(applicationClass(),
+                                               "setClipboardText", "(Ljava/lang/String;)V",
+                                               QJniObject::fromString(data->text()).object());
         }
     }
 
