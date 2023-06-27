@@ -308,24 +308,19 @@ function(qt_build_internals_add_toplevel_targets)
 endfunction()
 
 macro(qt_enable_cmake_languages)
-    include(CheckLanguage)
     set(__qt_required_language_list C CXX)
-    set(__qt_optional_language_list )
+    set(__qt_platform_required_language_list )
 
-    # https://gitlab.kitware.com/cmake/cmake/-/issues/20545
     if(APPLE)
-        list(APPEND __qt_optional_language_list OBJC OBJCXX)
+        list(APPEND __qt_platform_required_language_list OBJC OBJCXX)
     endif()
 
     foreach(__qt_lang ${__qt_required_language_list})
         enable_language(${__qt_lang})
     endforeach()
 
-    foreach(__qt_lang ${__qt_optional_language_list})
-        check_language(${__qt_lang})
-        if(CMAKE_${__qt_lang}_COMPILER)
-            enable_language(${__qt_lang})
-        endif()
+    foreach(__qt_lang ${__qt_platform_required_language_list})
+        enable_language(${__qt_lang})
     endforeach()
 
     # The qtbase call is handled in qtbase/CMakeLists.txt.
