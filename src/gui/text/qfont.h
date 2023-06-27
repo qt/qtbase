@@ -209,10 +209,12 @@ public:
 
     void setFeature(const char *feature, quint32 value);
     void setFeature(quint32 tag, quint32 value);
-    void setFeatures(const QHash<quint32, quint32> &features);
     void unsetFeature(quint32 tag);
     void unsetFeature(const char *feature);
-    QHash<quint32, quint32> features() const;
+    quint32 featureValue(quint32 tag) const;
+    bool isFeatureSet(quint32 tag) const;
+    QList<quint32> featureTags() const;
+    void clearFeatures();
 
     static QByteArray tagToString(quint32 tag);
     static quint32 stringToTag(const char *tagString);
