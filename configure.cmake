@@ -1023,11 +1023,6 @@ qt_feature("ccache"
     CONDITION QT_USE_CCACHE
 )
 qt_feature_config("ccache" QMAKE_PRIVATE_CONFIG)
-qt_feature("unity-build"
-    LABEL "Unity Build"
-    AUTODETECT 1
-    CONDITION QT_UNITY_BUILD
-)
 qt_feature("static_runtime"
     LABEL "Statically link the C/C++ runtime library"
     AUTODETECT OFF
@@ -1070,7 +1065,16 @@ qt_configure_add_summary_entry(
     CONDITION UNIX
 )
 qt_configure_add_summary_entry(
-    ARGS "unity-build"
+    TYPE "message" ARGS "Unity Build" MESSAGE "yes" CONDITION QT_UNITY_BUILD
+)
+qt_configure_add_summary_entry(
+    TYPE "message" ARGS "Unity Build" MESSAGE "no" CONDITION NOT QT_UNITY_BUILD
+)
+qt_configure_add_summary_entry(
+    TYPE "message"
+    ARGS "Unity Build Batch Size"
+    MESSAGE "${QT_UNITY_BUILD_BATCH_SIZE}"
+    CONDITION QT_UNITY_BUILD
 )
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
