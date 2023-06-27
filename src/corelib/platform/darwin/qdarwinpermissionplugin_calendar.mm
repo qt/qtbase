@@ -5,8 +5,6 @@
 
 #include <EventKit/EventKit.h>
 
-QT_DEFINE_PERMISSION_STATUS_CONVERTER(EKAuthorizationStatus);
-
 @interface QDarwinCalendarPermissionHandler ()
 @property (nonatomic, retain) EKEventStore *eventStore;
 @end
@@ -20,8 +18,22 @@ QT_DEFINE_PERMISSION_STATUS_CONVERTER(EKAuthorizationStatus);
 
 - (Qt::PermissionStatus)currentStatus
 {
-    const auto status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
-    return nativeStatusToQtStatus(status);
+    switch ([EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent]) {
+    case EKAuthorizationStatusNotDetermined:
+        return Qt::PermissionStatus::Undetermined;
+    case EKAuthorizationStatusRestricted:
+    case EKAuthorizationStatusDenied:
+        return Qt::PermissionStatus::Denied;
+    case EKAuthorizationStatusAuthorized:
+        return Qt::PermissionStatus::Granted;
+#if QT_MACOS_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(140000, 170000)
+    case EKAuthorizationStatusWriteOnly:
+        // FIXME: Add WriteOnly AccessMode
+        return Qt::PermissionStatus::Denied;
+#endif
+    }
+
+    Q_UNREACHABLE();
 }
 
 - (QStringList)usageDescriptionsFor:(QPermission)permission
