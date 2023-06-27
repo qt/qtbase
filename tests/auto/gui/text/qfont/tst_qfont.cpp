@@ -54,6 +54,7 @@ private slots:
     void setFamilies();
     void setFamiliesAndFamily_data();
     void setFamiliesAndFamily();
+    void featureAccessors();
 };
 
 // Testing get/set functions
@@ -839,6 +840,38 @@ void tst_QFont::setFamiliesAndFamily()
         QCOMPARE(QFontInfo(f).family(), chosenFamilyName);
 
     QFontDatabase::removeApplicationFont(weirdFontId);
+}
+
+void tst_QFont::featureAccessors()
+{
+    QFont font;
+    QVERIFY(font.featureTags().isEmpty());
+    font.setFeature("abcd", 0xc0ffee);
+
+    quint32 abcdTag = QFont::stringToTag("abcd");
+    quint32 bcdeTag = QFont::stringToTag("bcde");
+    QVERIFY(font.isFeatureSet(abcdTag));
+    QVERIFY(!font.isFeatureSet(bcdeTag));
+    QCOMPARE(font.featureTags().size(), 1);
+    QCOMPARE(font.featureTags().first(), abcdTag);
+    QCOMPARE(QFont::tagToString(font.featureTags().first()), QByteArray("abcd"));
+    QCOMPARE(font.featureValue(abcdTag), 0xc0ffee);
+    QCOMPARE(font.featureValue(bcdeTag), 0);
+    font.setFeature(abcdTag, 0xf00d);
+    QCOMPARE(font.featureTags().size(), 1);
+    QCOMPARE(font.featureValue(abcdTag), 0xf00d);
+    font.setFeature("abcde", 0xcaca0);
+    QVERIFY(!font.isFeatureSet(QFont::stringToTag("abcde")));
+    QCOMPARE(font.featureTags().size(), 1);
+    QFont font2 = font;
+
+    font.unsetFeature("abcd");
+    QVERIFY(!font.isFeatureSet(QFont::stringToTag("abcd")));
+    QVERIFY(font.featureTags().isEmpty());
+
+    QVERIFY(font2.isFeatureSet(QFont::stringToTag("abcd")));
+    font2.clearFeatures();
+    QVERIFY(font.featureTags().isEmpty());
 }
 
 QTEST_MAIN(tst_QFont)
