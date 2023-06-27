@@ -7926,6 +7926,17 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
         *bytesPerPixel = bpc;
 }
 
+bool QRhiImplementation::isStencilSupportingFormat(QRhiTexture::Format format) const
+{
+    switch (format) {
+    case QRhiTexture::D24S8:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
 bool QRhiImplementation::sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps)
 {
     if (ps->cbeginShaderStages() == ps->cendShaderStages()) {

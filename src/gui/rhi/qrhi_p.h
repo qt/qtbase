@@ -149,6 +149,7 @@ public:
                               QSize *blockDim) const;
     void textureFormatInfo(QRhiTexture::Format format, const QSize &size,
                            quint32 *bpl, quint32 *byteSize, quint32 *bytesPerPixel) const;
+    bool isStencilSupportingFormat(QRhiTexture::Format format) const;
 
     void registerResource(QRhiResource *res, bool ownsNativeResources = true)
     {

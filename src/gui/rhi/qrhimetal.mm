@@ -4209,7 +4209,7 @@ bool QMetalTextureRenderTarget::create()
         if (m_desc.depthTexture()) {
             QMetalTexture *depthTexD = QRHI_RES(QMetalTexture, m_desc.depthTexture());
             d->fb.dsTex = depthTexD->d->tex;
-            d->fb.hasStencil = false;
+            d->fb.hasStencil = rhiD->isStencilSupportingFormat(depthTexD->format());
             d->fb.depthNeedsStore = true;
             if (d->colorAttCount == 0) {
                 d->pixelSize = depthTexD->pixelSize();

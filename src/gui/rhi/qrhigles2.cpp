@@ -5706,8 +5706,17 @@ bool QGles2TextureRenderTarget::create()
                 rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->target,
                                                 depthTexD->texture, 0);
             } else {
+                // This path is OpenGL (ES) 3.0+ and specific to multiview, so
+                // needsDepthStencilCombinedAttach is not a thing. The depth
+                // texture here must be an array with at least multiViewCount
+                // elements, and the format should be D24 or D32F for depth
+                // only, or D24S8 for depth and stencil.
                 rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->texture,
                                                        0, 0, multiViewCount);
+                if (rhiD->isStencilSupportingFormat(depthTexD->format())) {
+                    rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthTexD->texture,
+                                                           0, 0, multiViewCount);
+                }
             }
             if (d.colorAttCount == 0) {
                 d.pixelSize = depthTexD->pixelSize();

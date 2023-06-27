@@ -96,7 +96,7 @@ void Window::customInit()
     // rendered with depth test/write enabled. The catch here is that we must
     // use a texture array for depth/stencil as well, so QRhiRenderBuffer is
     // not an option anymore.
-    d.ds = m_r->newTextureArray(QRhiTexture::D24, 2, QSize(512, 512), sampleCount, QRhiTexture::RenderTarget);
+    d.ds = m_r->newTextureArray(QRhiTexture::D24S8, 2, QSize(512, 512), sampleCount, QRhiTexture::RenderTarget);
     d.releasePool << d.ds;
     d.ds->create();
 
