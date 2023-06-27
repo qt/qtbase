@@ -4507,6 +4507,27 @@ bool QD3D12TextureRenderTarget::create()
             dsvDesc.Format = toD3DDepthTextureDSVFormat(depthTexD->format());
             dsvDesc.ViewDimension = depthTexD->sampleDesc.Count > 1 ? D3D12_DSV_DIMENSION_TEXTURE2DMS
                                                                     : D3D12_DSV_DIMENSION_TEXTURE2D;
+            if (depthTexD->flags().testFlag(QRhiTexture::TextureArray)) {
+                if (depthTexD->sampleDesc.Count > 1) {
+                    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMSARRAY;
+                    if (depthTexD->arrayRangeStart() >= 0 && depthTexD->arrayRangeLength() >= 0) {
+                        dsvDesc.Texture2DMSArray.FirstArraySlice = UINT(depthTexD->arrayRangeStart());
+                        dsvDesc.Texture2DMSArray.ArraySize = UINT(depthTexD->arrayRangeLength());
+                    } else {
+                        dsvDesc.Texture2DMSArray.FirstArraySlice = 0;
+                        dsvDesc.Texture2DMSArray.ArraySize = UINT(qMax(0, depthTexD->arraySize()));
+                    }
+                } else {
+                    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+                    if (depthTexD->arrayRangeStart() >= 0 && depthTexD->arrayRangeLength() >= 0) {
+                        dsvDesc.Texture2DArray.FirstArraySlice = UINT(depthTexD->arrayRangeStart());
+                        dsvDesc.Texture2DArray.ArraySize = UINT(depthTexD->arrayRangeLength());
+                    } else {
+                        dsvDesc.Texture2DArray.FirstArraySlice = 0;
+                        dsvDesc.Texture2DArray.ArraySize = UINT(qMax(0, depthTexD->arraySize()));
+                    }
+                }
+            }
             dsv = rhiD->dsvPool.allocate(1);
             if (!dsv.isValid()) {
                 qWarning("Failed to allocate DSV for texture render target");
