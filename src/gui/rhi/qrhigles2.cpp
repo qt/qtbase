@@ -215,6 +215,10 @@ QT_BEGIN_NAMESPACE
 #define GL_DEPTH_COMPONENT32F             0x8CAC
 #endif
 
+#ifndef GL_UNSIGNED_INT_24_8
+#define GL_UNSIGNED_INT_24_8              0x84FA
+#endif
+
 #ifndef GL_STENCIL_INDEX
 #define GL_STENCIL_INDEX                  0x1901
 #endif
@@ -1228,13 +1232,13 @@ static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2
         *glintformat = GL_DEPTH_COMPONENT24;
         *glsizedintformat = *glintformat;
         *glformat = GL_DEPTH_COMPONENT;
-        *gltype = GL_UNSIGNED_SHORT;
+        *gltype = GL_UNSIGNED_INT;
         break;
     case QRhiTexture::D24S8:
         *glintformat = GL_DEPTH24_STENCIL8;
         *glsizedintformat = *glintformat;
         *glformat = GL_DEPTH_STENCIL;
-        *gltype = GL_UNSIGNED_SHORT;
+        *gltype = GL_UNSIGNED_INT_24_8;
         break;
     case QRhiTexture::D32F:
         *glintformat = GL_DEPTH_COMPONENT32F;
