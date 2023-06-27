@@ -2576,6 +2576,16 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
 
     \note depthStencilBuffer() and depthTexture() cannot be both set (cannot be
     non-null at the same time).
+
+    Using a QRhiRenderBuffer over a 2D QRhiTexture as the depth or
+    depth/stencil buffer is very common, and is the recommended approach for
+    applications. Using a QRhiTexture, and so setDepthTexture() becomes
+    relevant if the depth data is meant to be accessed (e.g. sampled in a
+    shader) afterwards, or when
+    \l{QRhiColorAttachment::setMultiViewCount()}{multiview rendering} is
+    involved (because then the depth texture must be a texture array).
+
+    \sa setDepthTexture()
  */
 
 /*!
@@ -2592,6 +2602,16 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
 
     \note depthStencilBuffer() and depthTexture() cannot be both set (cannot be
     non-null at the same time).
+
+    \a texture can either be a 2D texture or a 2D texture array (when texture
+    arrays are supported). Specifying a texture array is relevant in particular
+    with
+    \l{QRhiColorAttachment::setMultiViewCount()}{multiview rendering}.
+
+    \note If \a texture is a format with a stencil component, such as
+    \l QRhiTexture::D24S8, it will serve as the stencil buffer as well.
+
+    \sa setDepthStencilBuffer()
  */
 
 /*!

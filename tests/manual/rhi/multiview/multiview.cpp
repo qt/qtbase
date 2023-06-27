@@ -41,10 +41,10 @@ static const int INSTANCE_COUNT = 5;
 static float instanceData[INSTANCE_COUNT * 3] =
 {
     0.4f,  0.0f, 0.0f,
-    0.2f,  0.0f, 0.0f,
-    0.0f,  0.0f, 0.0f,
-    -0.2f, 0.0f, 0.0f,
-    -0.4f, 0.0f, 0.0f
+    0.2f,  0.0f, 0.1f,
+    0.0f,  0.0f, 0.2f,
+    -0.2f, 0.0f, 0.3f,
+    -0.4f, 0.0f, 0.4f
 };
 
 struct {
@@ -61,6 +61,7 @@ struct {
     QMatrix4x4 winProj;
     QRhiTexture *tex = nullptr;
     QRhiTexture *resolveTex = nullptr; // only if MSAA is true
+    QRhiTexture *ds = nullptr;
     QRhiShaderResourceBindings *srb[2] = {};
 
     QRhiBuffer *triUbuf = nullptr;
@@ -91,6 +92,14 @@ void Window::customInit()
         d.resolveTex->create();
     }
 
+    // Have a depth-stencil buffer, just to exercise it, the triangles will be
+    // rendered with depth test/write enabled. The catch here is that we must
+    // use a texture array for depth/stencil as well, so QRhiRenderBuffer is
+    // not an option anymore.
+    d.ds = m_r->newTextureArray(QRhiTexture::D24S8, 2, QSize(512, 512), sampleCount, QRhiTexture::RenderTarget);
+    d.releasePool << d.ds;
+    d.ds->create();
+
     // set up the multiview render target
     QRhiColorAttachment multiViewAtt(d.tex);
     // using array elements 0 and 1
@@ -109,6 +118,8 @@ void Window::customInit()
     }
 
     QRhiTextureRenderTargetDescription rtDesc(multiViewAtt);
+    rtDesc.setDepthTexture(d.ds);
+
     d.rt = m_r->newTextureRenderTarget(rtDesc);
     d.releasePool << d.rt;
     d.rtRp = d.rt->newCompatibleRenderPassDescriptor();
@@ -215,6 +226,8 @@ void Window::customInit()
         { 0, 1, QRhiVertexInputAttribute::Float3, quint32(2 * sizeof(float)) },
         { 1, 2, QRhiVertexInputAttribute::Float3, 0 }
     });
+    d.triPs->setDepthTest(true);
+    d.triPs->setDepthWrite(true);
     d.triPs->setSampleCount(sampleCount);
     d.triPs->setVertexInputLayout(inputLayout);
     d.triPs->setShaderResourceBindings(d.triSrb);
