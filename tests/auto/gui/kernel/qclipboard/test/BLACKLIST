@@ -1,0 +1,5 @@
+# QTBUG-87429
+[testSignals]
+android
+[setMimeData]
+android
