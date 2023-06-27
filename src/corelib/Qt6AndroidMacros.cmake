@@ -367,7 +367,11 @@ function(qt6_android_add_apk_target target)
     endif()
     # Use genex to get path to the deployment settings, the above check only to confirm that
     # qt6_android_add_apk_target is called on an android executable target.
-    set(deployment_file "$<TARGET_PROPERTY:${target},QT_ANDROID_DEPLOYMENT_SETTINGS_FILE>")
+    string(JOIN "" deployment_file
+        "$<GENEX_EVAL:"
+            "$<TARGET_PROPERTY:${target},QT_ANDROID_DEPLOYMENT_SETTINGS_FILE>"
+        ">"
+    )
 
     # Make global apk and aab targets depend on the current apk target.
     if(TARGET aab)
