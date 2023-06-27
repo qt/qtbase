@@ -58,6 +58,15 @@ public:
         qint64 columnNumber = 0;
     };
 
+    class DiagnosticsReporter
+    {
+    public:
+        virtual void warning(const SourceLocation &location, const char *msg, ...)
+                Q_ATTRIBUTE_FORMAT_PRINTF(3, 4) = 0;
+        virtual void error(const SourceLocation &location, const char *msg, ...)
+                Q_ATTRIBUTE_FORMAT_PRINTF(3, 4) = 0;
+    };
+
     struct Argument
     {
         SourceLocation location;

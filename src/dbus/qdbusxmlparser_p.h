@@ -39,10 +39,11 @@ class QDBusXmlParser
     QDBusIntrospection::Interfaces m_interfaces;
     QXmlStreamReader m_xml;
     QDBusIntrospection::SourceLocation m_currentLocation;
+    QDBusIntrospection::DiagnosticsReporter *m_reporter;
 
 public:
-    QDBusXmlParser(const QString& service, const QString& path,
-                   const QString& xmlData);
+    QDBusXmlParser(const QString &service, const QString &path, const QString &xmlData,
+                   QDBusIntrospection::DiagnosticsReporter *reporter = nullptr);
 
     inline QDBusIntrospection::Interfaces interfaces() const { return m_interfaces; }
     inline QSharedDataPointer<QDBusIntrospection::Object> object() const { return m_object; }

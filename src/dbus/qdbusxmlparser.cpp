@@ -17,7 +17,21 @@ using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(dbusParser, "dbus.parser", QtWarningMsg)
 
-#define qDBusParserError(...) qCDebug(dbusParser, ##__VA_ARGS__)
+#define qDBusParserWarning(format, ...)                                         \
+    do {                                                                        \
+        if (m_reporter)                                                         \
+            m_reporter->warning(m_currentLocation, format "\n", ##__VA_ARGS__); \
+        else                                                                    \
+            qCDebug(dbusParser, "Warning: " format, ##__VA_ARGS__);             \
+    } while (0)
+
+#define qDBusParserError(format, ...)                                         \
+    do {                                                                      \
+        if (m_reporter)                                                       \
+            m_reporter->error(m_currentLocation, format "\n", ##__VA_ARGS__); \
+        else                                                                  \
+            qCDebug(dbusParser, "Error: " format, ##__VA_ARGS__);             \
+    } while (0)
 
 bool QDBusXmlParser::parseArg(const QXmlStreamAttributes &attributes,
                               QDBusIntrospection::Argument &argData)
@@ -28,8 +42,8 @@ bool QDBusXmlParser::parseArg(const QXmlStreamAttributes &attributes,
 
     bool ok = QDBusUtil::isValidSingleSignature(argType);
     if (!ok) {
-        qDBusParserError("Invalid D-BUS type signature '%s' found while parsing introspection",
-                qPrintable(argType));
+        qDBusParserError("Invalid D-Bus type signature '%s' found while parsing introspection",
+                         qPrintable(argType));
     }
 
     argData.name = attributes.value("name"_L1).toString();
@@ -58,8 +72,8 @@ bool QDBusXmlParser::parseAnnotation(QDBusIntrospection::Annotations &annotation
     const QString name = attributes.value("name"_L1).toString();
 
     if (!QDBusUtil::isValidInterfaceName(name)) {
-        qDBusParserError("Invalid D-BUS annotation '%s' found while parsing introspection",
-                qPrintable(name));
+        qDBusParserError("Invalid D-Bus annotation '%s' found while parsing introspection",
+                         qPrintable(name));
         return false;
     }
     const QString value = attributes.value("value"_L1).toString();
@@ -78,8 +92,9 @@ bool QDBusXmlParser::parseProperty(QDBusIntrospection::Property &propertyData)
     QXmlStreamAttributes attributes = m_xml.attributes();
     const QString propertyName = attributes.value("name"_L1).toString();
     if (!QDBusUtil::isValidMemberName(propertyName)) {
-        qDBusParserError("Invalid D-BUS member name '%s' found in interface '%s' while parsing introspection",
-                qPrintable(propertyName), qPrintable(m_currentInterface->name));
+        qDBusParserError("Invalid D-Bus member name '%s' found in interface '%s' while parsing "
+                         "introspection",
+                         qPrintable(propertyName), qPrintable(m_currentInterface->name));
         m_xml.skipCurrentElement();
         return false;
     }
@@ -90,9 +105,10 @@ bool QDBusXmlParser::parseProperty(QDBusIntrospection::Property &propertyData)
 
     if (!QDBusUtil::isValidSingleSignature(propertyData.type)) {
         // cannot be!
-        qDBusParserError("Invalid D-BUS type signature '%s' found in property '%s.%s' while parsing introspection",
-                qPrintable(propertyData.type), qPrintable(m_currentInterface->name),
-                qPrintable(propertyName));
+        qDBusParserError("Invalid D-Bus type signature '%s' found in property '%s.%s' while "
+                         "parsing introspection",
+                         qPrintable(propertyData.type), qPrintable(m_currentInterface->name),
+                         qPrintable(propertyName));
     }
 
     const QString access = attributes.value("access"_L1).toString();
@@ -103,9 +119,10 @@ bool QDBusXmlParser::parseProperty(QDBusIntrospection::Property &propertyData)
     else if (access == "readwrite"_L1)
         propertyData.access = QDBusIntrospection::Property::ReadWrite;
     else {
-        qDBusParserError("Invalid D-BUS property access '%s' found in property '%s.%s' while parsing introspection",
-                qPrintable(access), qPrintable(m_currentInterface->name),
-                qPrintable(propertyName));
+        qDBusParserError("Invalid D-Bus property access '%s' found in property '%s.%s' while "
+                         "parsing introspection",
+                         qPrintable(access), qPrintable(m_currentInterface->name),
+                         qPrintable(propertyName));
         return false;       // invalid one!
     }
 
@@ -120,7 +137,8 @@ bool QDBusXmlParser::parseProperty(QDBusIntrospection::Property &propertyData)
             if (m_xml.name() == "annotation"_L1) {
                 parseAnnotation(propertyData.annotations);
             } else if (m_xml.prefix().isEmpty()) {
-                qDBusParserError() << "Unknown element" << m_xml.name() << "while checking for annotations";
+                qDBusParserWarning("Unknown element '%s' while checking for annotations",
+                                   qPrintable(m_xml.name().toString()));
             }
             m_xml.skipCurrentElement();
         } while (readNextStartElement());
@@ -129,7 +147,7 @@ bool QDBusXmlParser::parseProperty(QDBusIntrospection::Property &propertyData)
     }
 
     if (!m_xml.isEndElement() || m_xml.name() != "property"_L1) {
-        qDBusParserError() << "Invalid property specification" << m_xml.tokenString() << m_xml.name();
+        qDBusParserError("Invalid property specification: '%s'", qPrintable(m_xml.tokenString()));
         return false;
     }
 
@@ -144,8 +162,9 @@ bool QDBusXmlParser::parseMethod(QDBusIntrospection::Method &methodData)
     const QXmlStreamAttributes attributes = m_xml.attributes();
     const QString methodName = attributes.value("name"_L1).toString();
     if (!QDBusUtil::isValidMemberName(methodName)) {
-        qDBusParserError("Invalid D-BUS member name '%s' found in interface '%s' while parsing introspection",
-                qPrintable(methodName), qPrintable(m_currentInterface->name));
+        qDBusParserError("Invalid D-Bus member name '%s' found in interface '%s' while parsing "
+                         "introspection",
+                         qPrintable(methodName), qPrintable(m_currentInterface->name));
         return false;
     }
 
@@ -177,7 +196,8 @@ bool QDBusXmlParser::parseMethod(QDBusIntrospection::Method &methodData)
                     outArguments << argument;
                 }
             } else if (m_xml.prefix().isEmpty()) {
-                qDBusParserError() << "Unknown element" << m_xml.name() << "while checking for method arguments";
+                qDBusParserWarning("Unknown element '%s' while checking for method arguments",
+                                   qPrintable(m_xml.name().toString()));
             }
             m_xml.skipCurrentElement();
         } while (readNextStartElement());
@@ -201,8 +221,9 @@ bool QDBusXmlParser::parseSignal(QDBusIntrospection::Signal &signalData)
     const QString signalName = attributes.value("name"_L1).toString();
 
     if (!QDBusUtil::isValidMemberName(signalName)) {
-        qDBusParserError("Invalid D-BUS member name '%s' found in interface '%s' while parsing introspection",
-                qPrintable(signalName), qPrintable(m_currentInterface->name));
+        qDBusParserError("Invalid D-Bus member name '%s' found in interface '%s' while parsing "
+                         "introspection",
+                         qPrintable(signalName), qPrintable(m_currentInterface->name));
         return false;
     }
 
@@ -230,7 +251,8 @@ bool QDBusXmlParser::parseSignal(QDBusIntrospection::Signal &signalData)
                     arguments << argument;
                 }
             } else {
-                qDBusParserError() << "Unknown element" << m_xml.name() << "while checking for signal arguments";
+                qDBusParserWarning("Unknown element '%s' while checking for signal arguments",
+                                   qPrintable(m_xml.name().toString()));
             }
             m_xml.skipCurrentElement();
         } while (readNextStartElement());
@@ -250,8 +272,8 @@ void QDBusXmlParser::readInterface()
 
     const QString ifaceName = m_xml.attributes().value("name"_L1).toString();
     if (!QDBusUtil::isValidInterfaceName(ifaceName)) {
-        qDBusParserError("Invalid D-BUS interface name '%s' found while parsing introspection",
-                qPrintable(ifaceName));
+        qDBusParserError("Invalid D-Bus interface name '%s' found while parsing introspection",
+                         qPrintable(ifaceName));
         return;
     }
 
@@ -283,7 +305,8 @@ void QDBusXmlParser::readInterface()
             m_xml.skipCurrentElement(); // skip over annotation object
         } else {
             if (m_xml.prefix().isEmpty()) {
-                qDBusParserError() << "Unknown element while parsing interface" << m_xml.name();
+                qDBusParserWarning("Unknown element '%s' while parsing interface",
+                                   qPrintable(m_xml.name().toString()));
             }
             m_xml.skipCurrentElement();
         }
@@ -296,7 +319,7 @@ void QDBusXmlParser::readInterface()
             QSharedDataPointer<QDBusIntrospection::Interface>(m_currentInterface.release()));
 
     if (!m_xml.isEndElement() || m_xml.name() != "interface"_L1) {
-        qDBusParserError() << "Invalid Interface specification";
+        qDBusParserError("Invalid Interface specification");
     }
 }
 
@@ -307,8 +330,8 @@ void QDBusXmlParser::readNode(int nodeLevel)
                                 ? (m_object->path + objName)
                                 : QString(m_object->path + u'/' + objName);
     if (!QDBusUtil::isValidObjectPath(fullName)) {
-        qDBusParserError("Invalid D-BUS object path '%s' found while parsing introspection",
-                 qPrintable(fullName));
+        qDBusParserError("Invalid D-Bus object path '%s' found while parsing introspection",
+                         qPrintable(fullName));
         return;
     }
 
@@ -340,8 +363,13 @@ bool QDBusXmlParser::readNextStartElement()
     return false;
 }
 
-QDBusXmlParser::QDBusXmlParser(const QString &service, const QString &path, const QString &xmlData)
-    : m_service(service), m_path(path), m_object(new QDBusIntrospection::Object), m_xml(xmlData)
+QDBusXmlParser::QDBusXmlParser(const QString &service, const QString &path, const QString &xmlData,
+                               QDBusIntrospection::DiagnosticsReporter *reporter)
+    : m_service(service),
+      m_path(path),
+      m_object(new QDBusIntrospection::Object),
+      m_xml(xmlData),
+      m_reporter(reporter)
 {
     m_object->service = m_service;
     m_object->path = m_path;
@@ -360,7 +388,8 @@ QDBusXmlParser::QDBusXmlParser(const QString &service, const QString &path, cons
                 readInterface();
             } else {
                 if (m_xml.prefix().isEmpty()) {
-                    qDBusParserError() << "skipping unknown element" << m_xml.name();
+                    qDBusParserWarning("Skipping unknown element '%s'",
+                                       qPrintable(m_xml.name().toString()));
                 }
                 m_xml.skipCurrentElement();
             }
@@ -369,7 +398,8 @@ QDBusXmlParser::QDBusXmlParser(const QString &service, const QString &path, cons
             if (m_xml.name() == "node"_L1) {
                 --nodeLevel;
             } else {
-                qDBusParserError() << "Invalid Node declaration" << m_xml.name();
+                qDBusParserError("Invalid node declaration '%s'",
+                                 qPrintable(m_xml.name().toString()));
             }
             break;
         case QXmlStreamReader::StartDocument:
@@ -386,14 +416,13 @@ QDBusXmlParser::QDBusXmlParser(const QString &service, const QString &path, cons
                 break;
             Q_FALLTHROUGH();
         default:
-            qDBusParserError() << "unknown token" << m_xml.name() << m_xml.tokenString();
+            qDBusParserError("Unknown token: '%s'", qPrintable(m_xml.tokenString()));
             break;
         }
     }
 
-    if (m_xml.hasError()) {
-        qDBusParserError() << "xml error" << m_xml.errorString() << "doc" << xmlData;
-    }
+    if (m_xml.hasError())
+        qDBusParserError("XML error: %s", qPrintable(m_xml.errorString()));
 }
 
 QT_END_NAMESPACE
