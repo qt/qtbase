@@ -56,7 +56,7 @@ public:
     static void socketSelect(int timeout, int socket, bool waitForRead, bool waitForWrite,
                             bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
 protected:
-    virtual void processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
+    virtual bool processPostedEvents();
 
 private:
     bool isMainThreadEventDispatcher();
@@ -67,7 +67,7 @@ private:
     void handleDialogExec();
     bool wait(int timeout = -1);
     bool wakeEventDispatcherThread();
-    static void callProcessEvents(void *eventDispatcher);
+    static void callProcessPostedEvents(void *eventDispatcher);
 
     void processTimers();
     void updateNativeTimer();

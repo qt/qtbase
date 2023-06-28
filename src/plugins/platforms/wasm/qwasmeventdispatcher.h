@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
 class QWasmEventDispatcher : public QEventDispatcherWasm
 {
 protected:
-    void processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool processPostedEvents() override;
 };
 
 QT_END_NAMESPACE

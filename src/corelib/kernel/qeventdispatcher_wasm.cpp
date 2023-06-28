@@ -266,8 +266,7 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
             handleApplicationExec();
     }
 
-    QCoreApplication::sendPostedEvents();
-    processWindowSystemEvents(flags);
+    processPostedEvents();
 
     if (m_interrupted) {
         m_interrupted = false;
@@ -283,11 +282,6 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
     }
 
     return false;
-}
-
-void QEventDispatcherWasm::processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
-{
-    Q_UNUSED(flags);
 }
 
 void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)
@@ -413,7 +407,7 @@ void QEventDispatcherWasm::wakeUp()
             m_pendingProcessEvents = true;
         }
         runOnMainThreadAsync([this](){
-            QEventDispatcherWasm::callProcessEvents(this);
+            QEventDispatcherWasm::callProcessPostedEvents(this);
         });
     }
 }
@@ -519,7 +513,7 @@ bool QEventDispatcherWasm::wakeEventDispatcherThread()
 
 // Process event activation callbacks for the main thread event dispatcher.
 // Must be called on the main thread.
-void QEventDispatcherWasm::callProcessEvents(void *context)
+void QEventDispatcherWasm::callProcessPostedEvents(void *context)
 {
     Q_ASSERT(emscripten_is_main_runtime_thread());
 
@@ -527,7 +521,7 @@ void QEventDispatcherWasm::callProcessEvents(void *context)
     if (!g_mainThreadEventDispatcher)
         return;
 
-    // In the unlikely event that we get a callProcessEvents() call for
+    // In the unlikely event that we get a callProcessPostedEvents() call for
     // a previous main thread event dispatcher (i.e. the QApplication
     // object was deleted and created again): just ignore it and return.
     if (context != g_mainThreadEventDispatcher)
@@ -537,7 +531,14 @@ void QEventDispatcherWasm::callProcessEvents(void *context)
         LOCK_GUARD(g_mainThreadEventDispatcher->m_mutex);
         g_mainThreadEventDispatcher->m_pendingProcessEvents = false;
     }
-    g_mainThreadEventDispatcher->processEvents(QEventLoop::AllEvents);
+
+    g_mainThreadEventDispatcher->processPostedEvents();
+}
+
+bool QEventDispatcherWasm::processPostedEvents()
+{
+    QCoreApplication::sendPostedEvents();
+    return false;
 }
 
 void QEventDispatcherWasm::processTimers()
