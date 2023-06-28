@@ -1825,19 +1825,19 @@ void tst_QXmlStream::test_fastScanName_data() const
 
     // 4096 is the limit in QXmlStreamReaderPrivate::fastScanName()
 
-    QByteArray arr = "<a"_ba + ":" + QByteArray("b").repeated(4096 - 1);
+    QByteArray arr = "<a:" + QByteArray("b").repeated(4096 - 1);
     QTest::newRow("data1") << arr << QXmlStreamReader::PrematureEndOfDocumentError;
 
-    arr = "<a"_ba + ":" + QByteArray("b").repeated(4096);
+    arr = "<a:" + QByteArray("b").repeated(4096);
     QTest::newRow("data2") << arr << QXmlStreamReader::NotWellFormedError;
 
-    arr = "<"_ba + QByteArray("a").repeated(4000) + ":" + QByteArray("b").repeated(96);
+    arr = "<" + QByteArray("a").repeated(4000) + ":" + QByteArray("b").repeated(96);
     QTest::newRow("data3") << arr << QXmlStreamReader::PrematureEndOfDocumentError;
 
-    arr = "<"_ba + QByteArray("a").repeated(4000) + ":" + QByteArray("b").repeated(96 + 1);
+    arr = "<" + QByteArray("a").repeated(4000) + ":" + QByteArray("b").repeated(96 + 1);
     QTest::newRow("data4") << arr << QXmlStreamReader::NotWellFormedError;
 
-    arr = "<"_ba + QByteArray("a").repeated(4000 + 1) + ":" + QByteArray("b").repeated(96);
+    arr = "<" + QByteArray("a").repeated(4000 + 1) + ":" + QByteArray("b").repeated(96);
     QTest::newRow("data5") << arr << QXmlStreamReader::NotWellFormedError;
 }
 
