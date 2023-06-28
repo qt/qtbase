@@ -2,7 +2,6 @@ type: Group
 instructions:
   # The build env is needed on MSVC so that tst_qmake can properly build apps / libraries.
   - !include "{{qt/qtbase}}/prepare_building_env.yaml"
-  - !include "{{qt/qtbase}}/coin_module_test_android_start_emulator.yaml"
   - !include "{{qt/qtbase}}/coin_module_test_qnx_start_emulator.yaml"
   # The test env vars are needed to pick the proper prefix.bat file.
   - !include "{{qt/qtbase}}/cmake_setup_running_tests_env_vars.yaml"
