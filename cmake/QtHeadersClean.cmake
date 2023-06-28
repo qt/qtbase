@@ -182,7 +182,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         )
         set(input_header_path_type ABSOLUTE)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -Za -WX -W3 -EHsc)
+        set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -WX -W3 -EHsc)
 
         # Because we now add `-DNOMINMAX` to `PlatformCommonInternal`.
         set(hcleanUDEFS -UNOMINMAX)
