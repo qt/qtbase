@@ -93,6 +93,9 @@ public:
     bool autoInsertSpaces() const { return stream->space; }
     void setAutoInsertSpaces(bool b) { stream->space = b; }
 
+    [[nodiscard]] bool quoteStrings() const noexcept { return !stream->noQuotes; }
+    void setQuoteStrings(bool b) { stream->noQuotes = !b; }
+
     inline QDebug &quote() { stream->noQuotes = false; return *this; }
     inline QDebug &noquote() { stream->noQuotes = true; return *this; }
     inline QDebug &maybeQuote(char c = '"') { if (!stream->noQuotes) stream->ts << c; return *this; }

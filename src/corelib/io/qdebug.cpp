@@ -507,6 +507,29 @@ QDebug &QDebug::resetFormat()
 
 
 /*!
+    \fn bool QDebug::quoteStrings() const
+    \since 6.7
+
+    Returns \c true if this QDebug instance will quote strings streamed into
+    it (which is the default).
+
+    \sa QDebugStateSaver, quote(), noquote(), setQuoteStrings()
+*/
+
+/*!
+    \fn void QDebug::setQuoteStrings(bool b)
+    \since 6.7
+
+    Enables quoting of strings streamed into this QDebug instance if \a b is
+    \c true; otherwise quoting is disabled.
+
+    The default is to quote strings.
+
+    \sa QDebugStateSaver, quote(), noquote(), quoteStrings()
+*/
+
+
+/*!
     \fn QDebug &QDebug::quote()
     \since 5.4
 

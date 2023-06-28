@@ -318,11 +318,17 @@ void tst_QDebug::debugNoQuotes() const
     MessageHandlerSetter mhs(myMessageHandler);
     {
         QDebug d = qDebug();
+        QVERIFY(d.quoteStrings());
         d << QStringLiteral("Hello");
+        QVERIFY(d.quoteStrings());
         d.noquote();
+        QVERIFY(!d.quoteStrings());
         d << QStringLiteral("Hello");
+        QVERIFY(!d.quoteStrings());
         d.quote();
+        QVERIFY(d.quoteStrings());
         d << QStringLiteral("Hello");
+        QVERIFY(d.quoteStrings());
     }
     QCOMPARE(s_msg, QString::fromLatin1("\"Hello\" Hello \"Hello\""));
 
@@ -331,7 +337,7 @@ void tst_QDebug::debugNoQuotes() const
         d << QChar('H');
         d << QLatin1String("Hello");
         d << QByteArray("Hello");
-        d.noquote();
+        d.setQuoteStrings(false);
         d << QChar('H');
         d << QLatin1String("Hello");
         d << QByteArray("Hello");
