@@ -3467,6 +3467,37 @@ void tst_QString::assign()
         QCOMPARE_EQ(str.capacity(), oldCap);
         QCOMPARE_EQ(str.size(), 0);
 
+#ifndef QT_NO_CAST_FROM_ASCII
+        const char c8[] = "a©☻🂤"; // [1, 2, 3, 4] bytes in utf-8 code points
+        str.assign(std::begin(c8), std::end(c8) - 1);
+        QCOMPARE(str, c8);
+
+        std::string c8str(c8);
+        str.assign(c8str.begin(), c8str.end());
+        QCOMPARE(str, c8);
+        QCOMPARE(str.capacity(), qsizetype(std::size(c8) - 1));
+
+        oldCap = str.capacity();
+        str.assign(c8str.begin(), c8str.begin()); // empty range
+        QCOMPARE_EQ(str.capacity(), oldCap);
+        QCOMPARE_EQ(str.size(), 0);
+
+        std::forward_list<char> fwd(std::begin(c8), std::end(c8) - 1);
+        str.assign(fwd.begin(), fwd.end());
+        QCOMPARE(str, c8);
+#endif
+#ifdef __cpp_char8_t
+        const char8_t c8t[] = u8"🂤🂤🂤🂤🂤🂤🂤🂤🂤🂤"; // 10 x 4 bytes in utf-8 code points
+        str.assign(std::begin(c8t), std::end(c8t) - 1);
+        QCOMPARE(str, c8t);
+        QCOMPARE(str.size(), 20);
+#endif
+#ifdef __cpp_lib_char8_t
+        std::u8string c8tstr(c8t);
+        str.assign(c8tstr.begin(), c8tstr.end());
+        QCOMPARE(str, c8t);
+#endif
+
         const char16_t c16[] = u"٩(⁎❛ᴗ❛⁎)۶ 🤷";
         str.assign(std::begin(c16), std::end(c16) - 1);
         QCOMPARE(str, c16);
@@ -3516,6 +3547,51 @@ void tst_QString::assign()
         str.assign(std::istream_iterator<ushort>{}, std::istream_iterator<ushort>{}); // empty range
         QCOMPARE_EQ(str.capacity(), oldCap);
         QCOMPARE_EQ(str.size(), 0);
+
+#ifndef QT_NO_CAST_FROM_ASCII
+        str.resize(0);
+        str.squeeze();
+        str.reserve(5);
+        const char c8cmp[] = "🂤🂤a"; // 2 + 2 + 1 byte
+        ss.clear();
+        ss.str(c8cmp);
+        str.assign(std::istream_iterator<char>{ss}, std::istream_iterator<char>{});
+        QCOMPARE(str, c8cmp);
+        QCOMPARE(str.size(), 5);
+        QCOMPARE(str.capacity(), 5);
+
+        // 1 code-point + ill-formed sequence + 1 code-point.
+        const char c8IllFormed[] = "a\xe0\x9f\x80""a";
+        ss.clear();
+        ss.str(c8IllFormed);
+        str.assign(std::istream_iterator<char>{ss}, std::istream_iterator<char>{});
+        QEXPECT_FAIL("", "Iconsistent handling of ill-formed sequences, QTBUG-117051", Continue);
+        QCOMPARE_EQ(str, QString(c8IllFormed));
+
+        const char c82[] = "ÌşṫһíᶊśꞧɨℼṩuDF49ïľι?";
+        ss.clear();
+        ss.str(c82);
+        str.assign(std::istream_iterator<char>{ss}, std::istream_iterator<char>{});
+        QCOMPARE(str, c82);
+
+        const char uc8[] = "ẵƽ𝔰ȉ𝚐ꞑ𝒾𝝿𝕘";
+        ss.clear();
+        ss.str(uc8);
+        str.assign(std::istream_iterator<uchar>{ss}, std::istream_iterator<uchar>{});
+        QCOMPARE(str, uc8);
+
+        ss.clear();
+        const char sc8[] = "𓁇ख़ॵ௵";
+        ss.str(sc8);
+        str.assign(std::istream_iterator<signed char>{ss}, std::istream_iterator<signed char>{});
+        QCOMPARE(str, sc8);
+
+        oldCap = str.capacity();
+        str.assign(std::istream_iterator<signed char>{}, // empty range
+                   std::istream_iterator<signed char>{});
+        QCOMPARE_EQ(str.capacity(), oldCap);
+        QCOMPARE_EQ(str.size(), 0);
+#endif
     }
     // Test chaining
     {
@@ -3634,7 +3710,7 @@ void tst_QString::assign_uses_prepend_buffer()
         for (qsizetype i = 0; i < withFreeSpaceAtBegin.d.freeSpaceAtBegin(); ++i)
             ss << "d ";
 
-        withFreeSpaceAtBegin.assign(std::istream_iterator<ushort>{ss}, std::istream_iterator<ushort>{});
+        withFreeSpaceAtBegin.assign(std::istream_iterator<char>{ss}, std::istream_iterator<char>{});
         QCOMPARE_EQ(withFreeSpaceAtBegin.d.freeSpaceAtBegin(), 0); // we used the prepend buffer
         QCOMPARE_EQ(capBegin(withFreeSpaceAtBegin), oldCapBegin);
         QCOMPARE_EQ(capEnd(withFreeSpaceAtBegin), oldCapEnd);

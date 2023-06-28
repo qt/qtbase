@@ -3364,6 +3364,10 @@ QString &QString::append(QChar ch)
     \list
     \li QChar
     \li QLatin1Char
+    \li \c {char}
+    \li \c {unsigned char}
+    \li \c {signed char}
+    \li \c {char8_t}
     \li \c char16_t
     \li (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t
     \li \c char32_t

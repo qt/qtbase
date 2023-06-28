@@ -141,6 +141,7 @@ class Q_CORE_EXPORT QString
     using is_compatible_char_helper = std::disjunction<
             QtPrivate::IsCompatibleCharType<Char>,
             QtPrivate::IsCompatibleChar32Type<Char>,
+            QtPrivate::IsCompatibleChar8Type<Char>,
             std::is_same<Char, QLatin1Char> // special case
         >;
 
@@ -450,6 +451,10 @@ public:
                 append(QChar::fromUcs4(*first));
                 ++first;
             }
+            return *this;
+        } else if constexpr (QtPrivate::IsCompatibleChar8Type<V>::value) {
+            assign_helper_char8(first, last);
+            d.data()[d.size] = u'\0';
             return *this;
         } else {
             d.assign(first, last, [](QChar ch) -> char16_t { return ch.unicode(); });
@@ -936,6 +941,9 @@ private:
     void reallocGrowData(qsizetype n);
     // ### remove once QAnyStringView supports UTF-32:
     QString &assign_helper(const char32_t *data, qsizetype len);
+    // Defined in qstringconverter.h
+    template <typename InputIterator>
+    void assign_helper_char8(InputIterator first, InputIterator last);
     static int compare_helper(const QChar *data1, qsizetype length1,
                               const QChar *data2, qsizetype length2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
@@ -1512,6 +1520,7 @@ inline QString operator""_qs(const char16_t *str, size_t size) noexcept
 QT_END_NAMESPACE
 
 #include <QtCore/qstringbuilder.h>
+#include <QtCore/qstringconverter.h>
 
 #ifdef Q_L1S_VIEW_IS_PRIMARY
 #    undef Q_L1S_VIEW_IS_PRIMARY
