@@ -1355,6 +1355,39 @@ bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasD
     return true;
 }
 
+struct MultiViewRenderPassSetupHelper
+{
+    bool prepare(VkRenderPassCreateInfo *rpInfo, int multiViewCount, bool multiViewCap)
+    {
+        if (multiViewCount < 2)
+            return true;
+        if (!multiViewCap) {
+            qWarning("Cannot create multiview render pass without support for the Vulkan 1.1 multiview feature");
+            return false;
+        }
+#ifdef VK_VERSION_1_1
+        uint32_t allViewsMask = 0;
+        for (uint32_t i = 0; i < uint32_t(multiViewCount); ++i)
+            allViewsMask |= (1 << i);
+        multiViewMask = allViewsMask;
+        multiViewCorrelationMask = allViewsMask;
+        multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+        multiViewInfo.subpassCount = 1;
+        multiViewInfo.pViewMasks = &multiViewMask;
+        multiViewInfo.correlationMaskCount = 1;
+        multiViewInfo.pCorrelationMasks = &multiViewCorrelationMask;
+        rpInfo->pNext = &multiViewInfo;
+#endif
+        return true;
+    }
+
+#ifdef VK_VERSION_1_1
+    VkRenderPassMultiviewCreateInfo multiViewInfo = {};
+    uint32_t multiViewMask = 0;
+    uint32_t multiViewCorrelationMask = 0;
+#endif
+};
+
 bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                            const QRhiColorAttachment *firstColorAttachment,
                                            const QRhiColorAttachment *lastColorAttachment,
@@ -1468,28 +1501,9 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
     VkSubpassDescription subpassDesc;
     fillRenderPassCreateInfo(&rpInfo, &subpassDesc, rpD);
 
-#ifdef VK_VERSION_1_1
-    VkRenderPassMultiviewCreateInfo multiViewInfo = {};
-    uint32_t allViewsMask = 0;
-    for (uint32_t i = 0; i < uint32_t(multiViewCount); ++i)
-        allViewsMask |= (1 << i);
-    uint32_t multiViewMasks[] = { allViewsMask };
-    uint32_t multiViewCorrelationMasks[] = { allViewsMask };
-#endif
-    if (multiViewCount > 0) {
-        if (!caps.multiView) {
-            qWarning("Cannot create multiview render pass without support for the Vulkan 1.1 multiview feature");
-            return false;
-        }
-#ifdef VK_VERSION_1_1
-        multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
-        multiViewInfo.subpassCount = 1;
-        multiViewInfo.pViewMasks = multiViewMasks;
-        multiViewInfo.correlationMaskCount = 1;
-        multiViewInfo.pCorrelationMasks = multiViewCorrelationMasks;
-        rpInfo.pNext = &multiViewInfo;
-#endif
-    }
+    MultiViewRenderPassSetupHelper multiViewHelper;
+    if (!multiViewHelper.prepare(&rpInfo, multiViewCount, caps.multiView))
+        return false;
 
     VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
     if (err != VK_SUCCESS) {
@@ -6599,6 +6613,12 @@ QRhiRenderPassDescriptor *QVkRenderPassDescriptor::newCompatibleRenderPassDescri
     fillRenderPassCreateInfo(&rpInfo, &subpassDesc, rpD);
 
     QRHI_RES_RHI(QRhiVulkan);
+    MultiViewRenderPassSetupHelper multiViewHelper;
+    if (!multiViewHelper.prepare(&rpInfo, multiViewCount, rhiD->caps.multiView)) {
+        delete rpD;
+        return nullptr;
+    }
+
     VkResult err = rhiD->df->vkCreateRenderPass(rhiD->dev, &rpInfo, nullptr, &rpD->rp);
     if (err != VK_SUCCESS) {
         qWarning("Failed to create renderpass: %d", err);
