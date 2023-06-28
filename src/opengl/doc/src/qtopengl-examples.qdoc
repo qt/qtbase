@@ -3,7 +3,7 @@
 
 /*!
     \ingroup all-examples
-    \title OpenGL Examples from the Qt OpenGL module
+    \title Qt OpenGL Examples
     \brief Accessing OpenGL from Qt.
     \group examples-widgets-opengl
 
