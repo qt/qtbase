@@ -88,7 +88,9 @@ public:
     virtual bool canBeNativeDialog() const;
 
     void close(int resultCode);
-    void finalize(int resultCode, int dialogCode);
+
+protected:
+    virtual int dialogCode() const { return rescode; }
 
 private:
     virtual void initHelper(QPlatformDialogHelper *) {}

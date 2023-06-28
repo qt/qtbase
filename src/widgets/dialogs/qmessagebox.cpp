@@ -187,8 +187,6 @@ public:
     QAbstractButton *abstractButtonForId(int id) const;
     int execReturnCode(QAbstractButton *button);
 
-    int dialogCodeForButtonRole(QMessageBox::ButtonRole buttonRole) const;
-
     void detectEscapeButton();
     void updateSize();
     int layoutMinimumWidth();
@@ -239,6 +237,7 @@ public:
 private:
     void initHelper(QPlatformDialogHelper *) override;
     void helperPrepareShow(QPlatformDialogHelper *) override;
+    int dialogCode() const override;
 };
 
 void QMessageBoxPrivate::init(const QString &title, const QString &text)
@@ -442,23 +441,24 @@ int QMessageBoxPrivate::execReturnCode(QAbstractButton *button)
     return ret;
 }
 
-/*!
-    \internal
-
-    Returns 0 for RejectedRole and NoRole, 1 for AcceptedRole and YesRole, -1 otherwise
- */
-int QMessageBoxPrivate::dialogCodeForButtonRole(QMessageBox::ButtonRole buttonRole) const
+int QMessageBoxPrivate::dialogCode() const
 {
-    switch (buttonRole) {
-    case QMessageBox::AcceptRole:
-    case QMessageBox::YesRole:
-        return QDialog::Accepted;
-    case QMessageBox::RejectRole:
-    case QMessageBox::NoRole:
-        return QDialog::Rejected;
-    default:
-        return -1;
+    Q_Q(const QMessageBox);
+
+    if (clickedButton) {
+        switch (q->buttonRole(clickedButton)) {
+        case QMessageBox::AcceptRole:
+        case QMessageBox::YesRole:
+            return QDialog::Accepted;
+        case QMessageBox::RejectRole:
+        case QMessageBox::NoRole:
+            return QDialog::Rejected;
+        default:
+            ;
+        }
     }
+
+    return QDialogPrivate::dialogCode();
 }
 
 void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
@@ -492,8 +492,7 @@ void QMessageBoxPrivate::setClickedButton(QAbstractButton *button)
     emit q->buttonClicked(clickedButton);
 
     auto resultCode = execReturnCode(button);
-    close(resultCode);
-    finalize(resultCode, dialogCodeForButtonRole(q->buttonRole(button)));
+    q->done(resultCode);
 }
 
 void QMessageBoxPrivate::_q_helperClicked(QPlatformDialogHelper::StandardButton helperButton, QPlatformDialogHelper::ButtonRole role)

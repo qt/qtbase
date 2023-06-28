@@ -149,27 +149,6 @@ void QDialogPrivate::close(int resultCode)
     resetModalitySetByOpen();
 }
 
-/*!
-    \internal
-
-    Emits finished() signal with \a resultCode. If the \a dialogCode
-    is equal to 0 emits rejected(), if the \a dialogCode is equal to
-    1 emits accepted().
- */
-void QDialogPrivate::finalize(int resultCode, int dialogCode)
-{
-    Q_Q(QDialog);
-    QPointer<QDialog> guard(q);
-
-    if (dialogCode == QDialog::Accepted)
-        emit q->accepted();
-    else if (dialogCode == QDialog::Rejected)
-        emit q->rejected();
-
-    if (guard)
-        emit q->finished(resultCode);
-}
-
 QWindow *QDialogPrivate::transientParentWindow() const
 {
     Q_Q(const QDialog);
@@ -618,9 +597,22 @@ int QDialog::exec()
 
 void QDialog::done(int r)
 {
+    QPointer<QDialog> guard(this);
+
     Q_D(QDialog);
     d->close(r);
-    d->finalize(r, r);
+
+    if (!guard)
+        return;
+
+    int dialogCode = d->dialogCode();
+    if (dialogCode == QDialog::Accepted)
+        emit accepted();
+    else if (dialogCode == QDialog::Rejected)
+        emit rejected();
+
+    if (guard)
+        emit finished(r);
 }
 
 /*!
