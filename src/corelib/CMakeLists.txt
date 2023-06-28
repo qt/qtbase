@@ -206,7 +206,7 @@ qt_internal_add_module(Core
         serialization/qjsonwriter.cpp serialization/qjsonwriter_p.h
         serialization/qtextstream.cpp serialization/qtextstream.h serialization/qtextstream_p.h
         serialization/qxmlutils.cpp serialization/qxmlutils_p.h
-        text/qanystringview.h
+        text/qanystringview.cpp text/qanystringview.h
         text/qbytearray.cpp text/qbytearray.h text/qbytearray_p.h
         text/qbytearrayalgorithms.h
         text/qbytearraylist.cpp text/qbytearraylist.h

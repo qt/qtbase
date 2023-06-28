@@ -3,6 +3,7 @@
 
 #include <QAnyStringView>
 #include <QChar>
+#include <QDebug>
 #include <QList>
 #include <QString>
 #include <QStringBuilder>
@@ -304,6 +305,7 @@ class tst_QAnyStringView : public QObject
 private Q_SLOTS:
     void constExpr() const;
     void basics() const;
+    void debug() const;
     void asciiLiteralIsLatin1() const;
 
     void fromQString() const { fromQStringOrByteArray<QString>(); }
@@ -474,6 +476,77 @@ void tst_QAnyStringView::basics() const
 
     QVERIFY(sv2 == sv1);
     QVERIFY(!(sv2 != sv1));
+}
+
+void tst_QAnyStringView::debug() const
+{
+    #ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
+    #  define MAYBE_L1(str) str "_L1"
+    #  define VERIFY_L1(s) QVERIFY(s.isLatin1())
+    #else
+    #  define MAYBE_L1(str) "u8" str
+    #  define VERIFY_L1(s) QVERIFY(s.isUtf8())
+    #endif
+    #define CHECK1(s, mod, expected) do { \
+            QString result; \
+            QDebug(&result) mod << "X"_L1 << s << "Y"_L1; \
+            /* QDebug appends an eager ' ', so trim before comparison */ \
+            /* We use X and Y affixes so we can still check spacing   */ \
+            /* around the QAnyStringView itself.                      */ \
+            QCOMPARE(result.trimmed(), expected); \
+        } while (false)
+    #define CHECK(init, esq, eq, es, e) do { \
+            QAnyStringView s = init; \
+            CHECK1(s, ,                   esq); \
+            CHECK1(s, .nospace(),          eq); \
+            CHECK1(s, .noquote(),          es); \
+            CHECK1(s, .nospace().noquote(), e); \
+        } while (false)
+
+    CHECK(nullptr,
+          R"("X" u8"" "Y")",
+          R"("X"u8"""Y")",
+          R"(X  Y)",
+          R"(XY)");
+    CHECK(QLatin1StringView(nullptr),
+          R"("X" ""_L1 "Y")",
+          R"("X"""_L1"Y")",
+          R"(X  Y)",
+          R"(XY)");
+    CHECK(QUtf8StringView(nullptr),
+          R"("X" u8"" "Y")",
+          R"("X"u8"""Y")",
+          R"(X  Y)",
+          R"(XY)");
+    CHECK(QStringView(nullptr),
+          R"("X" u"" "Y")",
+          R"("X"u"""Y")",
+          R"(X  Y)",
+          R"(XY)");
+    {
+        constexpr QAnyStringView asv = "hello";
+        VERIFY_L1(asv); // ### fails when asv isn't constexpr
+        CHECK(asv,
+              R"("X" )" MAYBE_L1(R"("hello")") R"( "Y")",
+              R"("X")" MAYBE_L1(R"("hello")") R"("Y")",
+              R"(X hello Y)",
+              R"(XhelloY)");
+    }
+    CHECK(u8"hällo",
+          R"("X" u8"h\xC3\xA4llo" "Y")",
+          R"("X"u8"h\xC3\xA4llo""Y")",
+          R"(X hällo Y)",
+          R"(XhälloY)");
+    CHECK(u"hällo",
+          R"("X" u"hällo" "Y")",
+          R"("X"u"hällo""Y")",
+          R"(X hällo Y)",
+          R"(XhälloY)");
+
+    #undef CHECK
+    #undef CHECK1
+    #undef VERIFY_L1
+    #undef MAYBE_L1
 }
 
 void tst_QAnyStringView::asciiLiteralIsLatin1() const

@@ -1,6 +1,12 @@
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
+#include "qanystringview.h"
+#include "qdebug.h"
+#include "qttypetraits.h"
+
+QT_BEGIN_NAMESPACE
+
 /*!
     \class QAnyStringView
     \inmodule QtCore
@@ -597,3 +603,47 @@
     \sa QString::isNull(), QAnyStringView
 */
 
+/*!
+    \fn QAnyStringView::operator<<(QDebug d, QAnyStringView s)
+    \since 6.7
+    \relates QAnyStringView
+    \relatesalso QDebug
+
+    Outputs \a s to debug stream \a d.
+
+    If \c{d.quotedString()} is \c true, indicates which encoding the string is
+    in. If you just want the string data, use visit() like this:
+
+    \code
+    s.visit([&d) (auto s) { d << s; });
+    \endcode
+
+    \sa QAnyStringView::visit()
+*/
+QDebug operator<<(QDebug d, QAnyStringView s)
+{
+    struct S { const char *prefix, *suffix; };
+    const auto affixes = s.visit([](auto s) {
+            using View = decltype(s);
+            if constexpr (std::is_same_v<View, QLatin1StringView>) {
+                return S{"", "_L1"};
+            } else if constexpr (std::is_same_v<View, QUtf8StringView>) {
+                return S{"u8", ""};
+            } else if constexpr (std::is_same_v<View, QStringView>) {
+                return S{"u", ""};
+            } else {
+                static_assert(QtPrivate::type_dependent_false<View>());
+            }
+        });
+    const QDebugStateSaver saver(d);
+    d.nospace();
+    if (d.quoteStrings())
+        d << affixes.prefix;
+    s.visit([&d](auto s) { d << s; });
+    if (d.quoteStrings())
+        d << affixes.suffix;
+    return d;
+}
+
+
+QT_END_NAMESPACE

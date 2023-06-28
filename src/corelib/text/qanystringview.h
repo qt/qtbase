@@ -312,6 +312,10 @@ private:
     { return QAnyStringView::compare(lhs, rhs) > 0; }
 #endif
 
+#ifndef QT_NO_DEBUG_STREAM
+    Q_CORE_EXPORT friend QDebug operator<<(QDebug d, QAnyStringView s);
+#endif
+
     [[nodiscard]] constexpr Tag tag() const noexcept { return Tag{m_size & TypeMask}; }
     [[nodiscard]] constexpr bool isUtf16() const noexcept { return tag() == Tag::Utf16; }
     [[nodiscard]] constexpr bool isUtf8() const noexcept { return tag() == Tag::Utf8; }
