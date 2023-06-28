@@ -255,12 +255,9 @@ bool QEventDispatcherWasm::isValidEventDispatcherPointer(QEventDispatcherWasm *e
 
 bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
+    qCDebug(lcEventDispatcher) << "QEventDispatcherWasm::processEvents flags" << flags;
+
     emit awake();
-
-    bool hasPendingEvents = qGlobalPostedEventsCount() > 0;
-
-    qCDebug(lcEventDispatcher) << "QEventDispatcherWasm::processEvents flags" << flags
-                               << "pending events" << hasPendingEvents;
 
     if (isMainThreadEventDispatcher()) {
         if (flags & QEventLoop::DialogExec)
@@ -269,23 +266,23 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
             handleApplicationExec();
     }
 
-    if (!hasPendingEvents && (flags & QEventLoop::WaitForMoreEvents))
-        wait();
+    QCoreApplication::sendPostedEvents();
+    processWindowSystemEvents(flags);
 
     if (m_interrupted) {
         m_interrupted = false;
         return false;
     }
 
+    if (flags & QEventLoop::WaitForMoreEvents)
+        wait();
+
     if (m_processTimers) {
         m_processTimers = false;
         processTimers();
     }
 
-    QCoreApplication::sendPostedEvents();
-    processWindowSystemEvents(flags);
-
-    return qGlobalPostedEventsCount() > 0;
+    return false;
 }
 
 void QEventDispatcherWasm::processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
