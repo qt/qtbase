@@ -1285,6 +1285,7 @@ bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasD
     rpD->colorRefs.append({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
 
     rpD->hasDepthStencil = hasDepthStencil;
+    rpD->multiViewCount = 0;
 
     if (hasDepthStencil) {
         // clear on load + no store + lazy alloc + transient image should play
@@ -1397,6 +1398,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         }
     }
     Q_ASSERT(multiViewCount == 0 || multiViewCount >= 2);
+    rpD->multiViewCount = uint32_t(multiViewCount);
 
     rpD->hasDepthStencil = depthStencilBuffer || depthTexture;
     if (rpD->hasDepthStencil) {
@@ -6504,6 +6506,8 @@ bool QVkRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other
         return false;
     if (hasDepthStencil != o->hasDepthStencil)
         return false;
+    if (multiViewCount != o->multiViewCount)
+        return false;
 
     for (int i = 0, ie = colorRefs.size(); i != ie; ++i) {
         const uint32_t attIdx = colorRefs[i].attachment;
@@ -6543,6 +6547,7 @@ void QVkRenderPassDescriptor::updateSerializedFormat()
     *p++ = colorRefs.size();
     *p++ = resolveRefs.size();
     *p++ = hasDepthStencil;
+    *p++ = multiViewCount;
 
     auto serializeAttachmentData = [this, &p](uint32_t attIdx) {
         const bool used = attIdx != VK_ATTACHMENT_UNUSED;
@@ -6586,6 +6591,7 @@ QRhiRenderPassDescriptor *QVkRenderPassDescriptor::newCompatibleRenderPassDescri
     rpD->resolveRefs = resolveRefs;
     rpD->subpassDeps = subpassDeps;
     rpD->hasDepthStencil = hasDepthStencil;
+    rpD->multiViewCount = multiViewCount;
     rpD->dsRef = dsRef;
 
     VkRenderPassCreateInfo rpInfo;
@@ -6723,7 +6729,7 @@ bool QVkTextureRenderTarget::create()
 
     QRHI_RES_RHI(QRhiVulkan);
     QVarLengthArray<VkImageView, 8> views;
-    uint32_t multiViewCount = 0;
+    d.multiViewCount = 0;
 
     d.colorAttCount = 0;
     int attIndex = 0;
@@ -6736,8 +6742,8 @@ bool QVkTextureRenderTarget::create()
             Q_ASSERT(texD->flags().testFlag(QRhiTexture::RenderTarget));
             const bool is1D = texD->flags().testFlag(QRhiTexture::OneDimensional);
             const bool isMultiView = it->multiViewCount() >= 2;
-            if (isMultiView && multiViewCount == 0)
-                multiViewCount = uint32_t(it->multiViewCount());
+            if (isMultiView && d.multiViewCount == 0)
+                d.multiViewCount = it->multiViewCount();
             VkImageViewCreateInfo viewInfo = {};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = texD->image;
@@ -6798,7 +6804,7 @@ bool QVkTextureRenderTarget::create()
 
     d.resolveAttCount = 0;
     attIndex = 0;
-    Q_ASSERT(multiViewCount == 0 || multiViewCount >= 2);
+    Q_ASSERT(d.multiViewCount == 0 || d.multiViewCount >= 2);
     for (auto it = m_desc.cbeginColorAttachments(), itEnd = m_desc.cendColorAttachments(); it != itEnd; ++it, ++attIndex) {
         if (it->resolveTexture()) {
             QVkTexture *resTexD = QRHI_RES(QVkTexture, it->resolveTexture());
@@ -6808,8 +6814,8 @@ bool QVkTextureRenderTarget::create()
             VkImageViewCreateInfo viewInfo = {};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = resTexD->image;
-            viewInfo.viewType = multiViewCount ? VK_IMAGE_VIEW_TYPE_2D_ARRAY
-                                               : VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.viewType = d.multiViewCount ? VK_IMAGE_VIEW_TYPE_2D_ARRAY
+                                                 : VK_IMAGE_VIEW_TYPE_2D;
             viewInfo.format = resTexD->vkformat;
             viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
             viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
@@ -6819,7 +6825,7 @@ bool QVkTextureRenderTarget::create()
             viewInfo.subresourceRange.baseMipLevel = uint32_t(it->resolveLevel());
             viewInfo.subresourceRange.levelCount = 1;
             viewInfo.subresourceRange.baseArrayLayer = uint32_t(it->resolveLayer());
-            viewInfo.subresourceRange.layerCount = qMax(1u, multiViewCount);
+            viewInfo.subresourceRange.layerCount = qMax<uint32_t>(1, d.multiViewCount);
             VkResult err = rhiD->df->vkCreateImageView(rhiD->dev, &viewInfo, nullptr, &resrtv[attIndex]);
             if (err != VK_SUCCESS) {
                 qWarning("Failed to create render target resolve image view: %d", err);

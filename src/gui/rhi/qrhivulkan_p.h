@@ -162,6 +162,7 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     QVarLengthArray<VkAttachmentReference, 8> resolveRefs;
     QVarLengthArray<VkSubpassDependency, 2> subpassDeps;
     bool hasDepthStencil = false;
+    uint32_t multiViewCount = 0;
     VkAttachmentReference dsRef;
     QVector<quint32> serializedFormatData;
     QRhiVulkanRenderPassNativeHandles nativeHandlesStruct;
@@ -178,6 +179,7 @@ struct QVkRenderTargetData
     int colorAttCount = 0;
     int dsAttCount = 0;
     int resolveAttCount = 0;
+    int multiViewCount = 0;
     QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
     static const int MAX_COLOR_ATTACHMENTS = 8;
 };

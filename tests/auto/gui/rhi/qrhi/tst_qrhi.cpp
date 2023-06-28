@@ -4582,6 +4582,59 @@ void tst_QRhi::renderPassDescriptorCompatibility()
     } else {
         qDebug("Skipping texture format dependent tests");
     }
+
+    if (rhi->isFeatureSupported(QRhi::MultiView)) {
+        {
+            QScopedPointer<QRhiTexture> texArr(rhi->newTextureArray(QRhiTexture::RGBA8, 2, QSize(512, 512), 1, QRhiTexture::RenderTarget));
+            QVERIFY(texArr->create());
+            QRhiColorAttachment multiViewAtt(texArr.data());
+            multiViewAtt.setMultiViewCount(2);
+            QRhiTextureRenderTargetDescription rtDesc(multiViewAtt);
+            QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(rtDesc));
+            QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+            rt->setRenderPassDescriptor(rpDesc.data());
+            QVERIFY(rt->create());
+
+            QScopedPointer<QRhiTextureRenderTarget> rt2(rhi->newTextureRenderTarget(rtDesc));
+            QScopedPointer<QRhiRenderPassDescriptor> rpDesc2(rt2->newCompatibleRenderPassDescriptor());
+            rt2->setRenderPassDescriptor(rpDesc2.data());
+            QVERIFY(rt2->create());
+
+            QVERIFY(rpDesc->isCompatible(rpDesc2.data()));
+            QVERIFY(rpDesc2->isCompatible(rpDesc.data()));
+            QCOMPARE(rpDesc->serializedFormat(), rpDesc2->serializedFormat());
+
+            QScopedPointer<QRhiRenderPassDescriptor> rpDescClone(rpDesc->newCompatibleRenderPassDescriptor());
+            QVERIFY(rpDesc->isCompatible(rpDescClone.data()));
+            QVERIFY(rpDesc2->isCompatible(rpDescClone.data()));
+            QCOMPARE(rpDesc->serializedFormat(), rpDescClone->serializedFormat());
+
+            // With Vulkan the multiViewCount really matters since it is baked
+            // in to underlying native object (VkRenderPass). Verify that the
+            // compatibility check fails when the view count differs. Other
+            // backends cannot do this test since they will likely report the
+            // rps being compatible regardless.
+            if (impl == QRhi::Vulkan) {
+                QRhiColorAttachment nonMultiViewAtt(texArr.data());
+                QRhiTextureRenderTargetDescription rtDesc3(nonMultiViewAtt);
+                QScopedPointer<QRhiTextureRenderTarget> rt3(rhi->newTextureRenderTarget(rtDesc3));
+                QScopedPointer<QRhiRenderPassDescriptor> rpDesc3(rt3->newCompatibleRenderPassDescriptor());
+                rt3->setRenderPassDescriptor(rpDesc3.data());
+                QVERIFY(rt3->create());
+
+                QVERIFY(!rpDesc->isCompatible(rpDesc3.data()));
+                QVERIFY(!rpDesc2->isCompatible(rpDesc3.data()));
+                QVERIFY(rpDesc->serializedFormat() != rpDesc3->serializedFormat());
+
+                QScopedPointer<QRhiRenderPassDescriptor> rpDesc3Clone(rpDesc3->newCompatibleRenderPassDescriptor());
+                QVERIFY(!rpDesc->isCompatible(rpDesc3Clone.data()));
+                QVERIFY(!rpDesc2->isCompatible(rpDesc3Clone.data()));
+                QVERIFY(rpDesc->serializedFormat() != rpDesc3Clone->serializedFormat());
+            }
+        }
+    } else {
+        qDebug("Skipping multiview dependent tests");
+    }
 }
 
 void tst_QRhi::renderPassDescriptorClone_data()
