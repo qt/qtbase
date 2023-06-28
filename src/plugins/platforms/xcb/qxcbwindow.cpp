@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
+Q_LOGGING_CATEGORY(lcQpaXcbWindow, "qt.qpa.xcb.window");
 
 Q_DECLARE_TYPEINFO(xcb_rectangle_t, Q_PRIMITIVE_TYPE);
 
@@ -224,6 +225,7 @@ enum : quint32 {
 
 void QXcbWindow::create()
 {
+    xcb_window_t old_m_window = m_window;
     destroy();
 
     m_windowState = Qt::WindowNoState;
@@ -491,6 +493,17 @@ void QXcbWindow::create()
 
     if (m_trayIconWindow)
         m_embedded = requestSystemTrayWindowDock();
+
+    if (m_window != old_m_window) {
+        if (!m_wmTransientForChildren.isEmpty()) {
+            QList<QPointer<QXcbWindow>> transientChildren = m_wmTransientForChildren;
+            m_wmTransientForChildren.clear();
+            for (auto transientChild : transientChildren) {
+                if (transientChild)
+                    transientChild->updateWmTransientFor();
+            }
+        }
+    }
 }
 
 QXcbWindow::~QXcbWindow()
@@ -679,6 +692,44 @@ void QXcbWindow::setVisible(bool visible)
         hide();
 }
 
+void QXcbWindow::updateWmTransientFor()
+{
+    xcb_window_t transientXcbParent = XCB_NONE;
+    if (isTransient(window())) {
+        QWindow *tp = window()->transientParent();
+        if (tp && tp->handle()) {
+            QXcbWindow *handle = static_cast<QXcbWindow *>(tp->handle());
+            transientXcbParent = tp->handle()->winId();
+            if (transientXcbParent) {
+                handle->registerWmTransientForChild(this);
+                qCDebug(lcQpaXcbWindow) << Q_FUNC_INFO << static_cast<QPlatformWindow *>(handle)
+                    << " registerWmTransientForChild " << static_cast<QPlatformWindow *>(this);
+            }
+        }
+        // Default to client leader if there is no transient parent, else modal dialogs can
+        // be hidden by their parents.
+        if (!transientXcbParent)
+            transientXcbParent = connection()->clientLeader();
+        if (transientXcbParent) { // ICCCM 4.1.2.6
+            xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
+                                1, &transientXcbParent);
+            qCDebug(lcQpaXcbWindow, "0x%x added XCB_ATOM_WM_TRANSIENT_FOR 0x%x", m_window, transientXcbParent);
+        }
+    }
+    if (!transientXcbParent)
+        xcb_delete_property(xcb_connection(), m_window, XCB_ATOM_WM_TRANSIENT_FOR);
+}
+
+void QXcbWindow::registerWmTransientForChild(QXcbWindow *child)
+{
+    if (!child)
+        return;
+
+    if (!m_wmTransientForChildren.contains(child))
+        m_wmTransientForChildren.append(child);
+}
+
 void QXcbWindow::show()
 {
     if (window()->isTopLevel()) {
@@ -692,23 +743,7 @@ void QXcbWindow::show()
         propagateSizeHints();
 
         // update WM_TRANSIENT_FOR
-        xcb_window_t transientXcbParent = 0;
-        if (isTransient(window())) {
-            const QWindow *tp = window()->transientParent();
-            if (tp && tp->handle())
-                transientXcbParent = tp->handle()->winId();
-            // Default to client leader if there is no transient parent, else modal dialogs can
-            // be hidden by their parents.
-            if (!transientXcbParent)
-                transientXcbParent = connection()->clientLeader();
-            if (transientXcbParent) { // ICCCM 4.1.2.6
-                xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                    XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
-                                    1, &transientXcbParent);
-            }
-        }
-        if (!transientXcbParent)
-            xcb_delete_property(xcb_connection(), m_window, XCB_ATOM_WM_TRANSIENT_FOR);
+        updateWmTransientFor();
 
         // update _NET_WM_STATE
         setNetWmStateOnUnmappedWindow();
