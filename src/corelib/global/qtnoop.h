@@ -8,6 +8,13 @@
 #pragma qt_sync_stop_processing
 #endif
 
-inline void qt_noop(void) {}
+#ifdef __cplusplus
+constexpr
+#endif
+inline void qt_noop(void)
+#ifdef __cplusplus
+    noexcept
+#endif
+{}
 
 #endif // QTNOOP_H
