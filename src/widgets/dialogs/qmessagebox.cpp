@@ -178,7 +178,7 @@ public:
     void init(const QString &title = QString(), const QString &text = QString());
     void setupLayout();
     void _q_buttonClicked(QAbstractButton *);
-    void _q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role);
+    void _q_helperClicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role);
     void setClickedButton(QAbstractButton *button);
 
     QAbstractButton *findButton(int button0, int button1, int button2, int flags);
@@ -496,23 +496,23 @@ void QMessageBoxPrivate::setClickedButton(QAbstractButton *button)
     finalize(resultCode, dialogCodeForButtonRole(q->buttonRole(button)));
 }
 
-void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role)
+void QMessageBoxPrivate::_q_helperClicked(QPlatformDialogHelper::StandardButton helperButton, QPlatformDialogHelper::ButtonRole role)
 {
+    Q_UNUSED(role);
     Q_Q(QMessageBox);
-    if (button > QPlatformDialogHelper::LastButton) {
-        // It's a custom button, and the QPushButton in options is just a proxy
-        // for the button on the platform dialog.  Simulate the user clicking it.
-        clickedButton = static_cast<QAbstractButton *>(options->customButton(button)->button);
-        Q_ASSERT(clickedButton);
-        clickedButton->click();
-        close(role);
-        finalize(role, dialogCodeForButtonRole(q->buttonRole(clickedButton)));
-    } else {
-        clickedButton = q->button(QMessageBox::StandardButton(button));
-        Q_ASSERT(clickedButton);
-        close(button);
-        finalize(button, dialogCodeForButtonRole(static_cast<QMessageBox::ButtonRole>(role)));
-    }
+
+    // Map back to QAbstractButton, so that the message box behaves the same from
+    // the outside, regardless of whether it's backed by a native helper or not.
+    QAbstractButton *dialogButton = helperButton > QPlatformDialogHelper::LastButton ?
+        static_cast<QAbstractButton *>(options->customButton(helperButton)->button) :
+        q->button(QMessageBox::StandardButton(helperButton));
+
+    Q_ASSERT(dialogButton);
+
+    // Simulate click by explicitly clicking the button. This will ensure that
+    // any logic of the button that responds to the click is respected, including
+    // plumbing back to _q_buttonClicked above based on the clicked() signal.
+    dialogButton->click();
 }
 
 /*!
@@ -2767,7 +2767,7 @@ void QMessageBoxPrivate::initHelper(QPlatformDialogHelper *h)
 {
     Q_Q(QMessageBox);
     QObject::connect(h, SIGNAL(clicked(QPlatformDialogHelper::StandardButton,QPlatformDialogHelper::ButtonRole)),
-                     q, SLOT(_q_clicked(QPlatformDialogHelper::StandardButton,QPlatformDialogHelper::ButtonRole)));
+                     q, SLOT(_q_helperClicked(QPlatformDialogHelper::StandardButton,QPlatformDialogHelper::ButtonRole)));
 
     auto *messageDialogHelper = static_cast<QPlatformMessageDialogHelper *>(h);
     QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::checkBoxStateChanged, q,
