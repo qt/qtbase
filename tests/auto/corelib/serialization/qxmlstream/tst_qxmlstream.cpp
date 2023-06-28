@@ -43,6 +43,7 @@
 #include "qc14n.h"
 
 Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
+Q_DECLARE_METATYPE(QXmlStreamReader::Error)
 
 static const char *const catalogFile = "XML-Test-Suite/xmlconf/finalCatalog.xml";
 static const int expectedRunCount = 1646;
@@ -587,6 +588,8 @@ private slots:
     void readBack() const;
     void roundTrip() const;
     void roundTrip_data() const;
+    void test_fastScanName_data() const;
+    void test_fastScanName() const;
 
     void entityExpansionLimit() const;
 
@@ -1841,6 +1844,43 @@ void tst_QXmlStream::roundTrip() const
         QVERIFY(!writer.hasError());
     }
     QCOMPARE(out, in);
+}
+
+void tst_QXmlStream::test_fastScanName_data() const
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QXmlStreamReader::Error>("errorType");
+
+    // 4096 is the limit in QXmlStreamReaderPrivate::fastScanName()
+
+    QByteArray arr = "<a:" + QByteArray("b").repeated(4096 - 1);
+    QTest::newRow("data1") << arr << QXmlStreamReader::PrematureEndOfDocumentError;
+
+    arr = "<a:" + QByteArray("b").repeated(4096);
+    QTest::newRow("data2") << arr << QXmlStreamReader::NotWellFormedError;
+
+    arr = "<" + QByteArray("a").repeated(4000) + ":" + QByteArray("b").repeated(96);
+    QTest::newRow("data3") << arr << QXmlStreamReader::PrematureEndOfDocumentError;
+
+    arr = "<" + QByteArray("a").repeated(4000) + ":" + QByteArray("b").repeated(96 + 1);
+    QTest::newRow("data4") << arr << QXmlStreamReader::NotWellFormedError;
+
+    arr = "<" + QByteArray("a").repeated(4000 + 1) + ":" + QByteArray("b").repeated(96);
+    QTest::newRow("data5") << arr << QXmlStreamReader::NotWellFormedError;
+}
+
+void tst_QXmlStream::test_fastScanName() const
+{
+    QFETCH(QByteArray, data);
+    QFETCH(QXmlStreamReader::Error, errorType);
+
+    QXmlStreamReader reader(data);
+    QXmlStreamReader::TokenType tokenType;
+    while (!reader.atEnd())
+        tokenType = reader.readNext();
+
+    QCOMPARE(tokenType, QXmlStreamReader::Invalid);
+    QCOMPARE(reader.error(), errorType);
 }
 
 #include "tst_qxmlstream.moc"
