@@ -1,6 +1,17 @@
-# The tool should be optimized for maximum performance when working.
-if(NOT QT_USE_DEFAULT_CMAKE_OPTIMIZATION_FLAGS)
+if(NOT QT_INTERNAL_AVOID_OVERRIDING_SYNCQT_CONFIG)
+    qt_internal_get_configs_for_flag_manipulation(configs)
+    qt_internal_remove_known_optimization_flags(LANGUAGES CXX CONFIGS ${configs})
+    # The /RTC1 flag is present in the default DEBUG flags list and contradicts -O2 but is not
+    # removed by qt_internal_remove_known_optimization_flags
+    qt_internal_remove_compiler_flags("/RTC1" LANGUAGES CXX CONFIGS ${configs})
     qt_internal_get_optimize_full_flags(optimize_full_flags)
+    qt_internal_add_compiler_flags(LANGUAGES CXX CONFIGS ${configs} FLAGS "${optimize_full_flags}")
+
+    # Replace all linker flags with those we use in the RelWithDebInfo configuration
+    list(REMOVE_ITEM configs RELWITHDEBINFO)
+    foreach(config IN LISTS configs)
+        set(CMAKE_EXE_LINKER_FLAGS_${config} "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}")
+    endforeach()
 endif()
 
 set(compile_definitions
@@ -24,7 +35,6 @@ qt_get_tool_target_name(target_name syncqt)
 # To re-build syncqt use 'syncqt_build' target.
 qt_internal_add_configure_time_tool(${target_name}
     DEFINES ${compile_definitions}
-    COMPILE_OPTIONS ${optimize_full_flags}
     TOOLS_TARGET Core
     INSTALL_DIRECTORY "${INSTALL_LIBEXECDIR}"
     CMAKE_FLAGS

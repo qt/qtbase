@@ -370,6 +370,7 @@ function(qt_internal_add_configure_time_executable target)
     set(target_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/configure_time_bins")
     if(arg_CONFIG)
         set(CMAKE_TRY_COMPILE_CONFIGURATION "${arg_CONFIG}")
+        string(TOUPPER "_${arg_CONFIG}" config_suffix)
     endif()
 
     get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
@@ -463,6 +464,29 @@ function(qt_internal_add_configure_time_executable target)
             set(cmake_flags_arg CMAKE_FLAGS "${arg_CMAKE_FLAGS}")
         endif()
         configure_file("${template}" "${target_binary_dir}/CMakeLists.txt" @ONLY)
+
+        qt_internal_get_enabled_languages_for_flag_manipulation(enabled_languages)
+        foreach(lang IN LISTS enabled_languages)
+            set(compiler_flags_var "CMAKE_${lang}_FLAGS")
+            list(APPEND cmake_flags_arg "-D${compiler_flags_var}:STRING=${${compiler_flags_var}}")
+            if(arg_CONFIG)
+                set(compiler_flags_var_config "${compiler_flags_var}${config_suffix}")
+                list(APPEND cmake_flags_arg
+                    "-D${compiler_flags_var_config}:STRING=${${compiler_flags_var_config}}")
+            endif()
+        endforeach()
+
+        qt_internal_get_target_link_types_for_flag_manipulation(target_link_types)
+        foreach(linker_type IN LISTS target_link_types)
+            set(linker_flags_var "CMAKE_${linker_type}_LINKER_FLAGS")
+            list(APPEND cmake_flags_arg "-D${linker_flags_var}:STRING=${${linker_flags_var}}")
+            if(arg_CONFIG)
+                set(linker_flags_var_config "${linker_flags_var}${config_suffix}")
+                list(APPEND cmake_flags_arg
+                    "-D${linker_flags_var_config}:STRING=${${linker_flags_var_config}}")
+            endif()
+        endforeach()
+
         try_compile(result
             "${target_binary_dir}"
             "${target_binary_dir}"
