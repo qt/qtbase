@@ -7,6 +7,7 @@
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformwindow_p.h>
 #include <QtCore/QObject>
+#include <QtCore/QPointer>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
 
@@ -120,6 +121,8 @@ public:
                           Qt::KeyboardModifiers modifiers, QEvent::Type type, Qt::MouseEventSource source);
 
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
+    void updateWmTransientFor();
+    void registerWmTransientForChild(QXcbWindow *);
 
     WindowTypes wmWindowTypes() const;
     void setWmWindowType(WindowTypes types, Qt::WindowFlags flags);
@@ -255,6 +258,8 @@ protected:
     qreal m_sizeHintsScaleFactor = 1.0;
 
     RecreationReasons m_recreationReasons = RecreationNotNeeded;
+
+    QList<QPointer<QXcbWindow>> m_wmTransientForChildren;
 };
 
 class QXcbForeignWindow : public QXcbWindow
