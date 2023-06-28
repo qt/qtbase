@@ -232,7 +232,6 @@ public:
 private:
     void initHelper(QPlatformDialogHelper *) override;
     void helperPrepareShow(QPlatformDialogHelper *) override;
-    void helperDone(QDialog::DialogCode, QPlatformDialogHelper *) override;
 };
 
 void QMessageBoxPrivate::init(const QString &title, const QString &text)
@@ -503,6 +502,8 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
         clickedButton->click();
         q->done(role);
     } else {
+        clickedButton = q->button(QMessageBox::StandardButton(button));
+        Q_ASSERT(clickedButton);
         q->done(button);
     }
 }
@@ -2731,16 +2732,6 @@ void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
     options->setStandardButtons(helperStandardButtons(q));
     if (checkbox)
         options->setCheckBox(checkbox->text(), checkbox->checkState());
-}
-
-void QMessageBoxPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHelper *)
-{
-    Q_Q(QMessageBox);
-    QAbstractButton *button = q->button(QMessageBox::StandardButton(code));
-    // If it was a custom button, a custom ID was used, so we won't get a valid pointer here.
-    // In that case, clickedButton has already been set in _q_buttonClicked.
-    if (button)
-        clickedButton = button;
 }
 
 #if QT_DEPRECATED_SINCE(6,2)
