@@ -8,10 +8,11 @@
 QT_BEGIN_NAMESPACE
 
 // Note: All event dispatcher functionality is implemented in QEventDispatcherWasm
-// in QtCore, except for processWindowSystemEvents() below which uses API from QtGui.
-void QWasmEventDispatcher::processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
+// in QtCore, except for processPostedEvents() below which uses API from QtGui.
+bool QWasmEventDispatcher::processPostedEvents()
 {
-    QWindowSystemInterface::sendWindowSystemEvents(flags);
+    QEventDispatcherWasm::processPostedEvents();
+    return QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
 }
 
 QT_END_NAMESPACE
