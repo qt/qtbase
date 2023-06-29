@@ -36,4 +36,4 @@ qhp = true
 locationinfo = false
 
 # Include the warninglimit used for documentation testing in CI
-include(../../coin/instructions/coin_module_test_docs.qdocconf)
+include(warninglimit.qdocconf)
