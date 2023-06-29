@@ -13,7 +13,6 @@ class RandomListModel : public QAbstractListModel
     Q_OBJECT
 public:
     RandomListModel(QObject *parent = nullptr);
-    ~RandomListModel();
 
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     QVariant data(const QModelIndex &, int) const override;

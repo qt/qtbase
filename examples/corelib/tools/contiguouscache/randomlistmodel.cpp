@@ -3,16 +3,12 @@
 #include "randomlistmodel.h"
 #include <QRandomGenerator>
 
-static const int bufferSize(500);
-static const int lookAhead(100);
-static const int halfLookAhead(lookAhead/2);
+static constexpr int bufferSize(500);
+static constexpr int lookAhead(100);
+static constexpr int halfLookAhead(lookAhead / 2);
 
 RandomListModel::RandomListModel(QObject *parent)
-: QAbstractListModel(parent), m_rows(bufferSize), m_count(10000)
-{
-}
-
-RandomListModel::~RandomListModel()
+    : QAbstractListModel(parent), m_rows(bufferSize), m_count(10000)
 {
 }
 
@@ -31,14 +27,14 @@ QVariant RandomListModel::data(const QModelIndex &index, int role) const
 
     if (row > m_rows.lastIndex()) {
         if (row - m_rows.lastIndex() > lookAhead)
-            cacheRows(row-halfLookAhead, qMin(m_count, row+halfLookAhead));
+            cacheRows(row - halfLookAhead, qMin(m_count, row + halfLookAhead));
         else while (row > m_rows.lastIndex())
-            m_rows.append(fetchRow(m_rows.lastIndex()+1));
+                m_rows.append(fetchRow(m_rows.lastIndex() + 1));
     } else if (row < m_rows.firstIndex()) {
         if (m_rows.firstIndex() - row > lookAhead)
-            cacheRows(qMax(0, row-halfLookAhead), row+halfLookAhead);
+            cacheRows(qMax(0, row - halfLookAhead), row + halfLookAhead);
         else while (row < m_rows.firstIndex())
-            m_rows.prepend(fetchRow(m_rows.firstIndex()-1));
+                m_rows.prepend(fetchRow(m_rows.firstIndex() - 1));
     }
 
     return m_rows.at(row);
