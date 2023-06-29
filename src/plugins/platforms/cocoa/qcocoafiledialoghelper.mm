@@ -194,19 +194,6 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
         [m_panel close];
 }
 
-- (BOOL)isHiddenFileAtURL:(NSURL *)url
-{
-    BOOL hidden = NO;
-    if (url) {
-        CFBooleanRef isHiddenProperty;
-        if (CFURLCopyResourcePropertyForKey((__bridge CFURLRef)url, kCFURLIsHiddenKey, &isHiddenProperty, nullptr)) {
-            hidden = CFBooleanGetValue(isHiddenProperty);
-            CFRelease(isHiddenProperty);
-        }
-    }
-    return hidden;
-}
-
 - (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url
 {
     Q_UNUSED(sender);
@@ -215,23 +202,20 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     if (!filename.length)
         return NO;
 
-    // Always accept directories regardless of their names (unless it is a bundle):
-    NSFileManager *fm = NSFileManager.defaultManager;
-    NSDictionary *fileAttrs = [fm attributesOfItemAtPath:filename error:nil];
-    if (!fileAttrs)
-        return NO; // Error accessing the file means 'no'.
-    NSString *fileType = fileAttrs.fileType;
-    bool isDir = [fileType isEqualToString:NSFileTypeDirectory];
-    if (isDir) {
+    QFileInfo fileInfo(QString::fromNSString(filename));
+
+    // Always accept directories regardless of their names.
+    // This also includes symlinks and aliases to directories.
+    if (fileInfo.isDir()) {
+        // Unless it's a bundle, and we should treat bundles as files.
+        // FIXME: We'd like to use QFileInfo::isBundle() here, but the
+        // detection in QFileInfo goes deeper than NSWorkspace does
+        // (likely a bug), and as a result causes TCC permission
+        // dialogs to pop up when used.
         bool treatBundlesAsFiles = !m_panel.treatsFilePackagesAsDirectories;
         if (!(treatBundlesAsFiles && [NSWorkspace.sharedWorkspace isFilePackageAtPath:filename]))
             return YES;
     }
-
-    // Treat symbolic links and aliases to directories like directories
-    QFileInfo fileInfo(QString::fromNSString(filename));
-    if (fileInfo.isSymLink() && QFileInfo(fileInfo.symLinkTarget()).isDir())
-        return YES;
 
     QString qtFileName = fileInfo.fileName();
     // No filter means accept everything
@@ -245,22 +229,22 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
         return NO;
 
     QDir::Filters filter = m_options->filter();
-    if ((!(filter & (QDir::Dirs | QDir::AllDirs)) && isDir)
-        || (!(filter & QDir::Files) && [fileType isEqualToString:NSFileTypeRegular])
-        || ((filter & QDir::NoSymLinks) && [fileType isEqualToString:NSFileTypeSymbolicLink]))
+    if ((!(filter & (QDir::Dirs | QDir::AllDirs)) && fileInfo.isDir())
+        || (!(filter & QDir::Files) && (fileInfo.isFile() && !fileInfo.isSymLink()))
+        || ((filter & QDir::NoSymLinks) && fileInfo.isSymLink()))
         return NO;
 
     bool filterPermissions = ((filter & QDir::PermissionMask)
                               && (filter & QDir::PermissionMask) != QDir::PermissionMask);
     if (filterPermissions) {
-        if ((!(filter & QDir::Readable) && [fm isReadableFileAtPath:filename])
-            || (!(filter & QDir::Writable) && [fm isWritableFileAtPath:filename])
-            || (!(filter & QDir::Executable) && [fm isExecutableFileAtPath:filename]))
+        if ((!(filter & QDir::Readable) && fileInfo.isReadable())
+            || (!(filter & QDir::Writable) && fileInfo.isWritable())
+            || (!(filter & QDir::Executable) && fileInfo.isExecutable()))
             return NO;
     }
-    if (!(filter & QDir::Hidden)
-        && (qtFileName.startsWith(u'.') || [self isHiddenFileAtURL:url]))
-            return NO;
+
+    if (!(filter & QDir::Hidden) && fileInfo.isHidden())
+        return NO;
 
     return YES;
 }
