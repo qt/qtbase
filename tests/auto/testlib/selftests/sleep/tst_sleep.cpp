@@ -48,7 +48,6 @@ void tst_Sleep::wait()
     QElapsedTimer t;
     t.start();
 
-    t.start();
     QTest::qWait(1);
     QCOMPARE_GE(t.durationElapsed(), 1ms);
 
