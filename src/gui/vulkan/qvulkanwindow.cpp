@@ -448,7 +448,7 @@ void QVulkanWindow::setPreferredColorFormats(const QList<VkFormat> &formats)
 static struct {
     VkSampleCountFlagBits mask;
     int count;
-} qvk_sampleCounts[] = {
+} q_vk_sampleCounts[] = {
     // keep this sorted by 'count'
     { VK_SAMPLE_COUNT_1_BIT, 1 },
     { VK_SAMPLE_COUNT_2_BIT, 2 },
@@ -488,7 +488,7 @@ QList<int> QVulkanWindow::supportedSampleCounts()
     VkSampleCountFlags depth = limits->framebufferDepthSampleCounts;
     VkSampleCountFlags stencil = limits->framebufferStencilSampleCounts;
 
-    for (const auto &qvk_sampleCount : qvk_sampleCounts) {
+    for (const auto &qvk_sampleCount : q_vk_sampleCounts) {
         if ((color & qvk_sampleCount.mask)
                 && (depth & qvk_sampleCount.mask)
                 && (stencil & qvk_sampleCount.mask))
@@ -537,7 +537,7 @@ void QVulkanWindow::setSampleCount(int sampleCount)
         return;
     }
 
-    for (const auto &qvk_sampleCount : qvk_sampleCounts) {
+    for (const auto &qvk_sampleCount : q_vk_sampleCounts) {
         if (qvk_sampleCount.count == sampleCount) {
             d->sampleCount = qvk_sampleCount.mask;
             return;
