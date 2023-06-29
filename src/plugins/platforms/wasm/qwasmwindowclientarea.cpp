@@ -35,11 +35,6 @@ ClientArea::ClientArea(QWasmWindow *window, QWasmScreen *screen, emscripten::val
 
 bool ClientArea::processPointer(const PointerEvent &event)
 {
-    const auto localScreenPoint =
-            dom::mapPoint(event.target, m_screen->element(), event.localPoint);
-    const auto pointInScreen = m_screen->mapFromLocal(localScreenPoint);
-
-    const QPointF pointInTargetWindowCoords = m_window->window()->mapFromGlobal(pointInScreen);
 
     switch (event.type) {
     case EventType::PointerDown:
@@ -48,16 +43,6 @@ bool ClientArea::processPointer(const PointerEvent &event)
         break;
     case EventType::PointerUp:
         m_element.call<void>("releasePointerCapture", event.pointerId);
-        break;
-    case EventType::PointerEnter:
-        if (event.isPrimary) {
-            QWindowSystemInterface::handleEnterEvent(m_window->window(), pointInTargetWindowCoords,
-                                                     pointInScreen);
-        }
-        break;
-    case EventType::PointerLeave:
-        if (event.isPrimary)
-            QWindowSystemInterface::handleLeaveEvent(m_window->window());
         break;
     default:
         break;
