@@ -48,6 +48,26 @@ if(Vulkan_INCLUDE_DIR)
             target_include_directories(WrapVulkanHeaders::WrapVulkanHeaders INTERFACE
                 ${__qt_molten_vk_homebrew_include_path})
         endif()
+
+        # Check for homebrew vulkan-headers folder structure
+        # If instead of molten-vk folder, CMAKE_PREFIX_PATH points to Homebrew's
+        # vulkan-headers installation, then we will not be able to find molten-vk
+        # headers. If we assume that user has installed the molten-vk formula as
+        # well, then we might have a chance to pick it up like this.
+        if(Vulkan_INCLUDE_DIR MATCHES "/homebrew/Cellar/")
+            set(__qt_standalone_molten_vk_homebrew_include_path
+                    "${Vulkan_INCLUDE_DIR}/../../../../opt/molten-vk/include")
+        else()
+            set(__qt_standalone_molten_vk_homebrew_include_path
+                    "${Vulkan_INCLUDE_DIR}/../../molten-vk/include")
+        endif()
+        get_filename_component(
+            __qt_standalone_molten_vk_homebrew_include_path
+            "${__qt_standalone_molten_vk_homebrew_include_path}" ABSOLUTE)
+        if(EXISTS "${__qt_standalone_molten_vk_homebrew_include_path}")
+            target_include_directories(WrapVulkanHeaders::WrapVulkanHeaders INTERFACE
+                ${__qt_standalone_molten_vk_homebrew_include_path})
+        endif()
     endif()
 endif()
 
