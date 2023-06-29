@@ -243,8 +243,12 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
             return NO;
     }
 
-    if (!(filter & QDir::Hidden) && fileInfo.isHidden())
-        return NO;
+    // We control the visibility of hidden files via the showsHiddenFiles
+    // property on the panel, based on QDir::Hidden being set. But the user
+    // can also toggle this via the Command+Shift+. keyboard shortcut,
+    // in which case they have explicitly requested to show hidden files,
+    // and we should enable them even if QDir::Hidden was not set. In
+    // effect, we don't need to filter on QDir::Hidden here.
 
     return YES;
 }
@@ -349,6 +353,8 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     // switching filters in an already opened dialog.
     if (m_panel.allowedFileTypes.count > 2)
         m_panel.extensionHidden = NO;
+
+    m_panel.showsHiddenFiles = m_options->filter().testFlag(QDir::Hidden);
 
     if (m_panel.visible)
         [m_panel validateVisibleColumns];
