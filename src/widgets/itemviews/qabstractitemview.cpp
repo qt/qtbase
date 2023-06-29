@@ -1857,7 +1857,6 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
 void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
-    QPoint topLeft;
     QPoint bottomRight = event->position().toPoint();
 
     d->draggedPosition = bottomRight + d->offset();
@@ -1867,13 +1866,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
 
 #if QT_CONFIG(draganddrop)
     if (state() == DraggingState) {
-        topLeft = d->pressedPosition - d->offset();
-        if ((topLeft - bottomRight).manhattanLength() > QApplication::startDragDistance()) {
-            d->pressedIndex = QModelIndex();
-            startDrag(d->model->supportedDragActions());
-            setState(NoState); // the startDrag will return when the dnd operation is done
-            stopAutoScroll();
-        }
+        d->maybeStartDrag(bottomRight);
         return;
     }
 #endif // QT_CONFIG(draganddrop)
@@ -1884,10 +1877,8 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
         || edit(index, NoEditTriggers, event))
         return;
 
-    if (d->selectionMode != SingleSelection)
-        topLeft = d->pressedPosition - d->offset();
-    else
-        topLeft = bottomRight;
+    const QPoint topLeft =
+            d->selectionMode != SingleSelection ? d->pressedPosition - d->offset() : bottomRight;
 
     d->checkMouseMove(index);
 
@@ -1898,6 +1889,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
         && (event->buttons() != Qt::NoButton)
         && !d->selectedDraggableIndexes().isEmpty()) {
             setState(DraggingState);
+            d->maybeStartDrag(bottomRight);
             return;
     }
 #endif
@@ -4700,6 +4692,20 @@ QModelIndexList QAbstractItemViewPrivate::selectedDraggableIndexes() const
     };
     indexes.removeIf(isNotDragEnabled);
     return indexes;
+}
+
+void QAbstractItemViewPrivate::maybeStartDrag(QPoint eventPosition)
+{
+    Q_Q(QAbstractItemView);
+
+    const QPoint topLeft = pressedPosition - offset();
+    if ((topLeft - eventPosition).manhattanLength() > QApplication::startDragDistance()) {
+        pressedIndex = QModelIndex();
+        q->startDrag(model->supportedDragActions());
+        q->setState(QAbstractItemView::NoState); // the startDrag will return when the dnd operation
+                                                 // is done
+        q->stopAutoScroll();
+    }
 }
 #endif
 

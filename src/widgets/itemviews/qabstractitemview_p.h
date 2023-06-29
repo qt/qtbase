@@ -309,6 +309,7 @@ public:
 
 #if QT_CONFIG(draganddrop)
     QModelIndexList selectedDraggableIndexes() const;
+    void maybeStartDrag(QPoint eventPoint);
 #endif
 
     void doDelayedReset()
