@@ -3,6 +3,12 @@
 
 # The whole file is written manually.
 
+if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
+    cmake_minimum_required(VERSION 3.16)
+    project(tst_selftests LANGUAGES CXX)
+    find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
+endif()
+
 include(../../../../src/testlib/selfcover.cmake)
 
 # ------------- Test runner -------------
