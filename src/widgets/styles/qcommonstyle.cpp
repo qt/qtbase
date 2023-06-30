@@ -736,11 +736,10 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             QRect r = opt->rect;
             int size = qMin(r.height(), r.width());
             QPixmap pixmap;
-            QString pixmapName =
-                    QStyleHelper::uniqueName("$qt_ia-"_L1
-                                                     % QLatin1StringView(metaObject()->className()),
-                                             opt, QSize(size, size))
-                    % HexString<uint>(pe);
+            const QString pixmapName = QStyleHelper::uniqueName("$qt_ia-"_L1
+                                                     % QLatin1StringView(metaObject()->className())
+                                                     % HexString<uint>(pe),
+                                             opt, QSize(size, size));
             if (!QPixmapCache::find(pixmapName, &pixmap)) {
                 qreal pixelRatio = p->device()->devicePixelRatio();
                 int border = qRound(pixelRatio*(size/5));
