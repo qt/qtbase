@@ -326,9 +326,11 @@ void QDBusXmlParser::readInterface()
 void QDBusXmlParser::readNode(int nodeLevel)
 {
     const QString objName = m_xml.attributes().value("name"_L1).toString();
-    const QString fullName = m_object->path.endsWith(u'/')
-                                ? (m_object->path + objName)
-                                : QString(m_object->path + u'/' + objName);
+    QString fullName = m_object->path;
+    if (!(fullName.endsWith(u'/') || (nodeLevel == 0 && objName.startsWith(u'/'))))
+        fullName.append(u'/');
+    fullName += objName;
+
     if (!QDBusUtil::isValidObjectPath(fullName)) {
         qDBusParserError("Invalid D-Bus object path '%s' found while parsing introspection",
                          qPrintable(fullName));
