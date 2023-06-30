@@ -38,6 +38,7 @@ class QDBusXmlParser
     std::unique_ptr<QDBusIntrospection::Interface> m_currentInterface;
     QDBusIntrospection::Interfaces m_interfaces;
     QXmlStreamReader m_xml;
+    QDBusIntrospection::SourceLocation m_currentLocation;
 
 public:
     QDBusXmlParser(const QString& service, const QString& path,
@@ -55,6 +56,8 @@ private:
     bool parseAnnotation(QDBusIntrospection::Annotations &annotations,
                          bool interfaceAnnotation = false);
     bool parseArg(const QXmlStreamAttributes &attributes, QDBusIntrospection::Argument &argData);
+    bool readNextStartElement();
+    void updateCurrentLocation();
 };
 
 QT_END_NAMESPACE

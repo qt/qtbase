@@ -51,8 +51,16 @@ public:
 public:
     // the structs
 
+    // Line and column numbers have the same meaning as in QXmlStreamReader.
+    struct SourceLocation
+    {
+        qint64 lineNumber = 1;
+        qint64 columnNumber = 0;
+    };
+
     struct Argument
     {
+        SourceLocation location;
         QString type;
         QString name;
 
@@ -62,6 +70,7 @@ public:
 
     struct Method
     {
+        SourceLocation location;
         QString name;
         Arguments inputArgs;
         Arguments outputArgs;
@@ -74,6 +83,7 @@ public:
 
     struct Signal
     {
+        SourceLocation location;
         QString name;
         Arguments outputArgs;
         Annotations annotations;
@@ -86,6 +96,7 @@ public:
     struct Property
     {
         enum Access { Read, Write, ReadWrite };
+        SourceLocation location;
         QString name;
         QString type;
         Access access;
@@ -98,6 +109,7 @@ public:
 
     struct Interface: public QSharedData
     {
+        SourceLocation location;
         QString name;
         QString introspection;
 
@@ -112,6 +124,7 @@ public:
 
     struct Object: public QSharedData
     {
+        SourceLocation location;
         QString service;
         QString path;
 

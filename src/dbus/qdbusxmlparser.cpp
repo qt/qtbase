@@ -111,7 +111,7 @@ bool QDBusXmlParser::parseProperty(QDBusIntrospection::Property &propertyData)
 
     m_currentInterface->introspection += "    <property access=\""_L1 + access + "\" type=\""_L1 + propertyData.type + "\" name=\""_L1 + propertyName + u'"';
 
-    if (!m_xml.readNextStartElement()) {
+    if (!readNextStartElement()) {
         m_currentInterface->introspection += "/>\n"_L1;
     } else {
         m_currentInterface->introspection += ">\n"_L1;
@@ -123,7 +123,7 @@ bool QDBusXmlParser::parseProperty(QDBusIntrospection::Property &propertyData)
                 qDBusParserError() << "Unknown element" << m_xml.name() << "while checking for annotations";
             }
             m_xml.skipCurrentElement();
-        } while (m_xml.readNextStartElement());
+        } while (readNextStartElement());
 
         m_currentInterface->introspection += "    </property>\n"_L1;
     }
@@ -156,7 +156,7 @@ bool QDBusXmlParser::parseMethod(QDBusIntrospection::Method &methodData)
     QDBusIntrospection::Arguments inArguments;
     QDBusIntrospection::Annotations annotations;
 
-    if (!m_xml.readNextStartElement()) {
+    if (!readNextStartElement()) {
         m_currentInterface->introspection += "/>\n"_L1;
     } else {
         m_currentInterface->introspection += ">\n"_L1;
@@ -168,6 +168,7 @@ bool QDBusXmlParser::parseMethod(QDBusIntrospection::Method &methodData)
                 const QXmlStreamAttributes attributes = m_xml.attributes();
                 const QString direction = attributes.value("direction"_L1).toString();
                 QDBusIntrospection::Argument argument;
+                argument.location = m_currentLocation;
                 if (!attributes.hasAttribute("direction"_L1) || direction == "in"_L1) {
                     parseArg(attributes, argument);
                     inArguments << argument;
@@ -179,7 +180,7 @@ bool QDBusXmlParser::parseMethod(QDBusIntrospection::Method &methodData)
                 qDBusParserError() << "Unknown element" << m_xml.name() << "while checking for method arguments";
             }
             m_xml.skipCurrentElement();
-        } while (m_xml.readNextStartElement());
+        } while (readNextStartElement());
 
         m_currentInterface->introspection += "    </method>\n"_L1;
     }
@@ -211,7 +212,7 @@ bool QDBusXmlParser::parseSignal(QDBusIntrospection::Signal &signalData)
     QDBusIntrospection::Arguments arguments;
     QDBusIntrospection::Annotations annotations;
 
-    if (!m_xml.readNextStartElement()) {
+    if (!readNextStartElement()) {
         m_currentInterface->introspection += "/>\n"_L1;
     } else {
         m_currentInterface->introspection += ">\n"_L1;
@@ -222,6 +223,7 @@ bool QDBusXmlParser::parseSignal(QDBusIntrospection::Signal &signalData)
             } else if (m_xml.name() == "arg"_L1) {
                 const QXmlStreamAttributes attributes = m_xml.attributes();
                 QDBusIntrospection::Argument argument;
+                argument.location = m_currentLocation;
                 if (!attributes.hasAttribute("direction"_L1) ||
                     attributes.value("direction"_L1) == "out"_L1) {
                     parseArg(attributes, argument);
@@ -231,7 +233,7 @@ bool QDBusXmlParser::parseSignal(QDBusIntrospection::Signal &signalData)
                 qDBusParserError() << "Unknown element" << m_xml.name() << "while checking for signal arguments";
             }
             m_xml.skipCurrentElement();
-        } while (m_xml.readNextStartElement());
+        } while (readNextStartElement());
 
         m_currentInterface->introspection += "    </signal>\n"_L1;
     }
@@ -256,20 +258,24 @@ void QDBusXmlParser::readInterface()
     m_object->interfaces.append(ifaceName);
 
     m_currentInterface = std::make_unique<QDBusIntrospection::Interface>();
+    m_currentInterface->location = m_currentLocation;
     m_currentInterface->name = ifaceName;
     m_currentInterface->introspection += "  <interface name=\""_L1 + ifaceName + "\">\n"_L1;
 
-    while (m_xml.readNextStartElement()) {
+    while (readNextStartElement()) {
         if (m_xml.name() == "method"_L1) {
             QDBusIntrospection::Method methodData;
+            methodData.location = m_currentLocation;
             if (parseMethod(methodData))
                 m_currentInterface->methods.insert(methodData.name, methodData);
         } else if (m_xml.name() == "signal"_L1) {
             QDBusIntrospection::Signal signalData;
+            signalData.location = m_currentLocation;
             if (parseSignal(signalData))
                 m_currentInterface->signals_.insert(signalData.name, signalData);
         } else if (m_xml.name() == "property"_L1) {
             QDBusIntrospection::Property propertyData;
+            propertyData.location = m_currentLocation;
             if (parseProperty(propertyData))
                 m_currentInterface->properties.insert(propertyData.name, propertyData);
         } else if (m_xml.name() == "annotation"_L1) {
@@ -308,6 +314,30 @@ void QDBusXmlParser::readNode(int nodeLevel)
 
     if (nodeLevel > 0)
         m_object->childObjects.append(objName);
+    else
+        m_object->location = m_currentLocation;
+}
+
+void QDBusXmlParser::updateCurrentLocation()
+{
+    m_currentLocation =
+            QDBusIntrospection::SourceLocation{ m_xml.lineNumber(), m_xml.columnNumber() };
+}
+
+// Similar to m_xml.readNextElement() but sets current location to point
+// to the start element.
+bool QDBusXmlParser::readNextStartElement()
+{
+    updateCurrentLocation();
+
+    while (m_xml.readNext() != QXmlStreamReader::Invalid) {
+        if (m_xml.isEndElement())
+            return false;
+        else if (m_xml.isStartElement())
+            return true;
+        updateCurrentLocation();
+    }
+    return false;
 }
 
 QDBusXmlParser::QDBusXmlParser(const QString &service, const QString &path, const QString &xmlData)
@@ -319,6 +349,7 @@ QDBusXmlParser::QDBusXmlParser(const QString &service, const QString &path, cons
     int nodeLevel = -1;
 
     while (!m_xml.atEnd()) {
+        updateCurrentLocation();
         m_xml.readNext();
 
         switch (m_xml.tokenType()) {
