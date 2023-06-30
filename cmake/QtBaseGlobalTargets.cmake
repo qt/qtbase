@@ -374,6 +374,10 @@ qt_copy_or_install(DIRECTORY cmake/
     FILES_MATCHING PATTERN "Find*.cmake"
     PATTERN "tests" EXCLUDE
     PATTERN "3rdparty" EXCLUDE
+    PATTERN "macos" EXCLUDE
+    PATTERN "ios" EXCLUDE
+    PATTERN "platforms" EXCLUDE
+    PATTERN "QtBuildInternals" EXCLUDE
 )
 
 # In prefix builds we also need to copy the files into the build config directory, so that the
@@ -384,6 +388,10 @@ if(QT_WILL_INSTALL)
         FILES_MATCHING PATTERN "Find*.cmake"
         PATTERN "tests" EXCLUDE
         PATTERN "3rdparty" EXCLUDE
+        PATTERN "macos" EXCLUDE
+        PATTERN "ios" EXCLUDE
+        PATTERN "platforms" EXCLUDE
+        PATTERN "QtBuildInternals" EXCLUDE
     )
 endif()
 
