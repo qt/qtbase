@@ -16,6 +16,7 @@ android
 android
 [pushButtonPopulateOnAboutToShow]
 android
+wayland
 [QTBUG8122_widgetActionCrashOnClose]
 android
 [click_while_dismissing_submenu]
