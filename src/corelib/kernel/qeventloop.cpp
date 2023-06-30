@@ -314,52 +314,59 @@ class QEventLoopLockerPrivate
 {
 public:
     explicit QEventLoopLockerPrivate(QEventLoopPrivate *loop)
-      : loop(loop), type(EventLoop)
+      : QEventLoopLockerPrivate(loop, EventLoop)
     {
         loop->ref();
     }
 
     explicit QEventLoopLockerPrivate(QThreadPrivate *thread)
-      : thread(thread), type(Thread)
+      : QEventLoopLockerPrivate(thread, Thread)
     {
         thread->ref();
     }
 
     explicit QEventLoopLockerPrivate(QCoreApplicationPrivate *app)
-      : app(app), type(Application)
+      : QEventLoopLockerPrivate(app, Application)
     {
         app->ref();
     }
 
     ~QEventLoopLockerPrivate()
     {
-        switch (type)
+        switch (type())
         {
         case EventLoop:
-            loop->deref();
+            loop()->deref();
             break;
         case Thread:
-            thread->deref();
+            thread()->deref();
             break;
         default:
-            app->deref();
+            app()->deref();
             break;
         }
     }
 
 private:
-    union {
-        QEventLoopPrivate * loop;
-        QThreadPrivate * thread;
-        QCoreApplicationPrivate * app;
-    };
+    QEventLoopPrivate *loop() const { return static_cast<QEventLoopPrivate *>(pointer()); }
+    QThreadPrivate *thread() const { return static_cast<QThreadPrivate *>(pointer()); }
+    QCoreApplicationPrivate *app() const { return static_cast<QCoreApplicationPrivate *>(pointer()); }
     enum Type {
         EventLoop,
         Thread,
         Application
     };
-    const Type type;
+    explicit QEventLoopLockerPrivate(void *ptr, Type t) noexcept
+        : p{quintptr(ptr) | quintptr(t)} {}
+    quintptr p;
+    static constexpr quintptr TypeMask = 0x3;
+    Type type() const { return Type(p & TypeMask); }
+    void *pointer() const { return reinterpret_cast<void *>(p & ~TypeMask); }
 };
+// If any of these trigger, the Type bits will interfere with the pointer values:
+static_assert(alignof(QEventLoopPrivate) >= 4);
+static_assert(alignof(QThreadPrivate) >= 4);
+static_assert(alignof(QCoreApplicationPrivate) >= 4);
 
 /*!
     \class QEventLoopLocker
