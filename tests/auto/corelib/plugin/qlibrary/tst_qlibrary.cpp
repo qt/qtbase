@@ -256,10 +256,10 @@ void tst_QLibrary::setFileNameAndVersionTwice()
     QVERIFY(!library.isLoaded());
 
     // set back
+    // it'll look like it isn't loaded, but it is and we can't unload it!
     library.setFileNameAndVersion(directory + "/mylib", 1);
-    QVERIFY(library.isLoaded());
-    QVERIFY(library.unload());
     QVERIFY(!library.isLoaded());
+    QVERIFY(!library.unload());
 }
 
 void tst_QLibrary::load_data()
@@ -432,12 +432,23 @@ void tst_QLibrary::resolve()
     QFETCH( QString, symbol );
     QFETCH( bool, goodPointer );
 
-    QLibrary library( lib );
-    testFunc func = (testFunc) library.resolve( symbol.toLatin1() );
-    if ( goodPointer ) {
-        QVERIFY( func != 0 );
+    QLibrary library(lib);
+    QVERIFY(!library.isLoaded());
+    testFunc func = (testFunc) library.resolve(symbol.toLatin1());
+
+    if (goodPointer) {
+        QVERIFY(library.isLoaded());
+        QVERIFY(func);
+
+        QLibrary lib2(lib);
+        QVERIFY(!lib2.isLoaded());
+        QVERIFY(lib2.load());
+
+        // this unload() won't unload and it must still be loaded
+        QVERIFY(!lib2.unload());
+        func();                     // doesn't crash
     } else {
-        QVERIFY( func == 0 );
+        QVERIFY(func == nullptr);
     }
     library.unload();
 }
@@ -647,7 +658,7 @@ void tst_QLibrary::multipleInstancesForOneLibrary()
         QCOMPARE(lib2.isLoaded(), false);
         lib1.load();
         QCOMPARE(lib1.isLoaded(), true);
-        QCOMPARE(lib2.isLoaded(), true);
+        QCOMPARE(lib2.isLoaded(), false);   // lib2 didn't call load()
         QCOMPARE(lib1.unload(), true);
         QCOMPARE(lib1.isLoaded(), false);
         QCOMPARE(lib2.isLoaded(), false);
@@ -656,7 +667,7 @@ void tst_QLibrary::multipleInstancesForOneLibrary()
         QCOMPARE(lib1.isLoaded(), true);
         QCOMPARE(lib2.isLoaded(), true);
         QCOMPARE(lib1.unload(), false);
-        QCOMPARE(lib1.isLoaded(), true);
+        QCOMPARE(lib1.isLoaded(), false);   // lib1 did call unload()
         QCOMPARE(lib2.isLoaded(), true);
         QCOMPARE(lib2.unload(), true);
         QCOMPARE(lib1.isLoaded(), false);
@@ -665,17 +676,6 @@ void tst_QLibrary::multipleInstancesForOneLibrary()
         // Finally; unload on that is already unloaded
         QCOMPARE(lib1.unload(), false);
     }
-
-    //now let's try with a 3rd one that will go out of scope
-    {
-        QLibrary lib1(lib);
-        QCOMPARE(lib1.isLoaded(), false);
-        lib1.load();
-        QCOMPARE(lib1.isLoaded(), true);
-    }
-    QLibrary lib2(lib);
-    //lib2 should be loaded because lib1 was loaded and never unloaded
-    QCOMPARE(lib2.isLoaded(), true);
 }
 
 QTEST_MAIN(tst_QLibrary)
