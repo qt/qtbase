@@ -53,16 +53,13 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QEventLoop::ProcessEventsFlags)
 
 class QEventLoopLockerPrivate;
 
-class Q_CORE_EXPORT QEventLoopLocker
+class QEventLoopLocker
 {
 public:
-    Q_NODISCARD_CTOR
-    QEventLoopLocker();
-    Q_NODISCARD_CTOR
-    explicit QEventLoopLocker(QEventLoop *loop);
-    Q_NODISCARD_CTOR
-    explicit QEventLoopLocker(QThread *thread);
-    ~QEventLoopLocker();
+    Q_NODISCARD_CTOR Q_CORE_EXPORT QEventLoopLocker();
+    Q_NODISCARD_CTOR Q_CORE_EXPORT explicit QEventLoopLocker(QEventLoop *loop);
+    Q_NODISCARD_CTOR Q_CORE_EXPORT explicit QEventLoopLocker(QThread *thread);
+    Q_CORE_EXPORT ~QEventLoopLocker();
 
 private:
     Q_DISABLE_COPY(QEventLoopLocker)
