@@ -428,7 +428,7 @@ QPixmapCacheEntry::~QPixmapCacheEntry()
 
 bool QPixmapCache::find(const QString &key, QPixmap *pixmap)
 {
-    if (!qt_pixmapcache_thread_test())
+    if (key.isEmpty() || !qt_pixmapcache_thread_test())
         return false;
     QPixmap *ptr = pm_cache()->object(key);
     if (ptr && pixmap)
@@ -480,7 +480,7 @@ bool QPixmapCache::find(const Key &key, QPixmap *pixmap)
 
 bool QPixmapCache::insert(const QString &key, const QPixmap &pixmap)
 {
-    if (!qt_pixmapcache_thread_test())
+    if (key.isEmpty() || !qt_pixmapcache_thread_test())
         return false;
     return pm_cache()->insert(key, pixmap, cost(pixmap));
 }
@@ -562,7 +562,7 @@ void QPixmapCache::setCacheLimit(int n)
 */
 void QPixmapCache::remove(const QString &key)
 {
-    if (!qt_pixmapcache_thread_test())
+    if (key.isEmpty() || !qt_pixmapcache_thread_test())
         return;
     pm_cache()->remove(key);
 }
