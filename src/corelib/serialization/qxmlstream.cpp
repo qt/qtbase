@@ -1848,7 +1848,7 @@ void QXmlStreamReaderPrivate::raiseNamePrefixTooLongError()
 {
     // TODO: add a ImplementationLimitsExceededError and use it instead
     raiseError(QXmlStreamReader::NotWellFormedError,
-               QXmlStream::tr("Length of XML attribute name exceeds implemnetation limits (4KiB "
+               QXmlStream::tr("Length of XML attribute name exceeds implementation limits (4KiB "
                               "characters)."));
 }
 
