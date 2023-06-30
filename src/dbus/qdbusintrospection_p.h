@@ -155,10 +155,11 @@ public:
     };
 
 public:
-    static Interface parseInterface(const QString &xml);
-    static Interfaces parseInterfaces(const QString &xml);
+    static Interface parseInterface(const QString &xml, DiagnosticsReporter *reporter = nullptr);
+    static Interfaces parseInterfaces(const QString &xml, DiagnosticsReporter *reporter = nullptr);
     static Object parseObject(const QString &xml, const QString &service = QString(),
-                              const QString &path = QString());
+                              const QString &path = QString(),
+                              DiagnosticsReporter *reporter = nullptr);
 
 private:
     QDBusIntrospection();

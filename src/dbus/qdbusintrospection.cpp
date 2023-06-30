@@ -297,11 +297,11 @@ QT_BEGIN_NAMESPACE
     If there are multiple interfaces in this XML data, it is undefined which one will be
     returned.
 */
-QDBusIntrospection::Interface
-QDBusIntrospection::parseInterface(const QString &xml)
+QDBusIntrospection::Interface QDBusIntrospection::parseInterface(const QString &xml,
+                                                                 DiagnosticsReporter *reporter)
 {
     // be lazy
-    Interfaces ifs = parseInterfaces(xml);
+    Interfaces ifs = parseInterfaces(xml, reporter);
     if (ifs.isEmpty())
         return Interface();
 
@@ -315,11 +315,11 @@ QDBusIntrospection::parseInterface(const QString &xml)
     If the first element tag in this document fragment is \<node\>, the interfaces parsed will
     be those found as child elements of the \<node\> tag.
 */
-QDBusIntrospection::Interfaces
-QDBusIntrospection::parseInterfaces(const QString &xml)
+QDBusIntrospection::Interfaces QDBusIntrospection::parseInterfaces(const QString &xml,
+                                                                   DiagnosticsReporter *reporter)
 {
     QString null;
-    QDBusXmlParser parser(null, null, xml);
+    QDBusXmlParser parser(null, null, xml, reporter);
     return parser.interfaces();
 }
 
@@ -334,10 +334,12 @@ QDBusIntrospection::parseInterfaces(const QString &xml)
     This function does not parse the interfaces contained in the node, nor sub-object's contents.
     It will only list their names.
 */
-QDBusIntrospection::Object
-QDBusIntrospection::parseObject(const QString &xml, const QString &service, const QString &path)
+QDBusIntrospection::Object QDBusIntrospection::parseObject(const QString &xml,
+                                                           const QString &service,
+                                                           const QString &path,
+                                                           DiagnosticsReporter *reporter)
 {
-    QDBusXmlParser parser(service, path, xml);
+    QDBusXmlParser parser(service, path, xml, reporter);
     QSharedDataPointer<QDBusIntrospection::Object> retval = parser.object();
     if (!retval)
         return QDBusIntrospection::Object();
