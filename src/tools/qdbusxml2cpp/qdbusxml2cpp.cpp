@@ -33,6 +33,27 @@ public:
     int run(const QCoreApplication &app);
 
 private:
+    class DiagnosticsReporter final : public QDBusIntrospection::DiagnosticsReporter
+    {
+    public:
+        void setFileName(const QString &fileName) { m_fileName = fileName; }
+        bool hadErrors() const { return m_hadErrors; }
+
+        void warning(const QDBusIntrospection::SourceLocation &location, const char *msg,
+                     ...) override;
+        void error(const QDBusIntrospection::SourceLocation &location, const char *msg,
+                   ...) override;
+        void note(const QDBusIntrospection::SourceLocation &location, const char *msg, ...)
+                Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+
+    private:
+        QString m_fileName;
+        bool m_hadErrors = false;
+
+        void report(const QDBusIntrospection::SourceLocation &location, const char *msg, va_list ap,
+                    const char *severity);
+    };
+
     enum ClassType { Proxy, Adaptor };
 
     void writeAdaptor(const QString &filename, const QDBusIntrospection::Interfaces &interfaces);
@@ -42,7 +63,8 @@ private:
     void cleanInterfaces(QDBusIntrospection::Interfaces &interfaces);
     QTextStream &writeHeader(QTextStream &ts, bool changesWillBeLost);
     QString classNameForInterface(const QString &interface, ClassType classType);
-    QByteArray qtTypeName(const QString &where, const QString &signature,
+    QByteArray qtTypeName(const QDBusIntrospection::SourceLocation &location,
+                          const QString &signature,
                           const QDBusIntrospection::Annotations &annotations,
                           qsizetype paramId = -1, const char *direction = "Out");
     void
@@ -65,6 +87,8 @@ private:
     QStringList includes;
     QStringList globalIncludes;
     QStringList wantedInterfaces;
+
+    DiagnosticsReporter reporter;
 };
 
 static const char includeList[] =
@@ -78,26 +102,60 @@ static const char includeList[] =
 static const char forwardDeclarations[] =
     "#include <QtCore/qcontainerfwd.h>\n";
 
+void QDBusXmlToCpp::DiagnosticsReporter::warning(const QDBusIntrospection::SourceLocation &location,
+                                                 const char *msg, ...)
+{
+    va_list ap;
+    va_start(ap, msg);
+    report(location, msg, ap, "warning");
+    va_end(ap);
+}
+
+void QDBusXmlToCpp::DiagnosticsReporter::error(const QDBusIntrospection::SourceLocation &location,
+                                               const char *msg, ...)
+{
+    va_list ap;
+    va_start(ap, msg);
+    report(location, msg, ap, "error");
+    va_end(ap);
+    m_hadErrors = true;
+}
+
+void QDBusXmlToCpp::DiagnosticsReporter::note(const QDBusIntrospection::SourceLocation &location,
+                                              const char *msg, ...)
+{
+    va_list ap;
+    va_start(ap, msg);
+    report(location, msg, ap, "note");
+    va_end(ap);
+    m_hadErrors = true;
+}
+
+void QDBusXmlToCpp::DiagnosticsReporter::report(const QDBusIntrospection::SourceLocation &location,
+                                                const char *msg, va_list ap, const char *severity)
+{
+    fprintf(stderr, "%s:%lld:%lld: %s: ", qPrintable(m_fileName),
+            (long long int)location.lineNumber, (long long int)location.columnNumber + 1, severity);
+    vfprintf(stderr, msg, ap);
+}
+
 QDBusIntrospection::Interfaces QDBusXmlToCpp::readInput()
 {
     QFile input(inputFile);
-    if (inputFile.isEmpty() || inputFile == "-"_L1)
+    if (inputFile.isEmpty() || inputFile == "-"_L1) {
+        reporter.setFileName("<standard input>"_L1);
         input.open(stdin, QIODevice::ReadOnly);
-    else
+    } else {
+        reporter.setFileName(inputFile);
         input.open(QIODevice::ReadOnly);
+    }
 
     QByteArray data = input.readAll();
+    auto interfaces = QDBusIntrospection::parseInterfaces(QString::fromUtf8(data), &reporter);
+    if (reporter.hadErrors())
+        exit(1);
 
-    // check if the input is already XML
-    data = data.trimmed();
-    if (data.startsWith("<!DOCTYPE ") || data.startsWith("<?xml") ||
-        data.startsWith("<node") || data.startsWith("<interface"))
-        // already XML
-        return QDBusIntrospection::parseInterfaces(QString::fromUtf8(data));
-
-    fprintf(stderr, "%s: Cannot process input: '%s'. Stop.\n",
-            PROGRAMNAME, qPrintable(inputFile));
-    exit(1);
+    return interfaces;
 }
 
 void QDBusXmlToCpp::cleanInterfaces(QDBusIntrospection::Interfaces &interfaces)
@@ -253,7 +311,8 @@ QString QDBusXmlToCpp::classNameForInterface(const QString &interface,
     return retval;
 }
 
-QByteArray QDBusXmlToCpp::qtTypeName(const QString &where, const QString &signature,
+QByteArray QDBusXmlToCpp::qtTypeName(const QDBusIntrospection::SourceLocation &location,
+                                     const QString &signature,
                                      const QDBusIntrospection::Annotations &annotations,
                                      qsizetype paramId, const char *direction)
 {
@@ -274,20 +333,17 @@ QByteArray QDBusXmlToCpp::qtTypeName(const QString &where, const QString &signat
         qttype = annotation.value;
 
         if (qttype.isEmpty()) {
-            fprintf(stderr, "%s: Got unknown type `%s' processing '%s'\n",
-                    PROGRAMNAME, qPrintable(signature), qPrintable(inputFile));
-            fprintf(stderr,
-                    "You should add <annotation name=\"%s\" value=\"<type>\"/> to the XML "
-                    "description for '%s'\n",
-                    qPrintable(annotationName), qPrintable(where));
+            reporter.error(location, "unknown type `%s'\n", qPrintable(signature));
+            reporter.note(location, "you should add <annotation name=\"%s\" value=\"<type>\"/>\n",
+                          qPrintable(annotationName));
 
             exit(1);
         }
 
-        fprintf(stderr, "%s: Warning: deprecated annotation '%s' found while processing '%s'; "
-                        "suggest updating to '%s'\n",
-                PROGRAMNAME, qPrintable(oldAnnotationName), qPrintable(inputFile),
-                qPrintable(annotationName));
+        reporter.warning(annotation.location, "deprecated annotation '%s' found\n",
+                         qPrintable(oldAnnotationName));
+        reporter.note(annotation.location, "suggest updating to '%s'\n",
+                      qPrintable(annotationName));
         return std::move(qttype).toLatin1();
     }
 
@@ -358,7 +414,7 @@ void QDBusXmlToCpp::writeArgList(QTextStream &ts, const QStringList &argNames,
     qsizetype argPos = 0;
     for (qsizetype i = 0; i < inputArgs.size(); ++i) {
         const QDBusIntrospection::Argument &arg = inputArgs.at(i);
-        QString type = constRefArg(qtTypeName(arg.name, arg.type, annotations, i, "In"));
+        QString type = constRefArg(qtTypeName(arg.location, arg.type, annotations, i, "In"));
 
         if (!first)
             ts << ", ";
@@ -375,7 +431,7 @@ void QDBusXmlToCpp::writeArgList(QTextStream &ts, const QStringList &argNames,
 
         if (!first)
             ts << ", ";
-        ts << nonConstRefArg(qtTypeName(arg.name, arg.type, annotations, i, "Out"))
+        ts << nonConstRefArg(qtTypeName(arg.location, arg.type, annotations, i, "Out"))
            << argNames.at(argPos++);
         first = false;
     }
@@ -389,8 +445,7 @@ void QDBusXmlToCpp::writeSignalArgList(QTextStream &ts, const QStringList &argNa
     qsizetype argPos = 0;
     for (qsizetype i = 0; i < outputArgs.size(); ++i) {
         const QDBusIntrospection::Argument &arg = outputArgs.at(i);
-        QString type = constRefArg(
-                qtTypeName(arg.name, arg.type, annotations, i, "Out"));
+        QString type = constRefArg(qtTypeName(arg.location, arg.type, annotations, i, "Out"));
 
         if (!first)
             ts << ", ";
@@ -407,10 +462,10 @@ QString QDBusXmlToCpp::propertyGetter(const QDBusIntrospection::Property &proper
 
     annotation = property.annotations.value("com.trolltech.QtDBus.propertyGetter"_L1);
     if (!annotation.value.isEmpty()) {
-        fprintf(stderr, "%s: Warning: deprecated annotation 'com.trolltech.QtDBus.propertyGetter' found"
-                " while processing '%s';"
-                " suggest updating to 'org.qtproject.QtDBus.PropertyGetter'\n",
-                PROGRAMNAME, qPrintable(inputFile));
+        reporter.warning(annotation.location,
+                         "deprecated annotation 'com.trolltech.QtDBus.propertyGetter' found\n");
+        reporter.note(annotation.location,
+                      "suggest updating to 'org.qtproject.QtDBus.PropertyGetter'\n");
         return annotation.value;
     }
 
@@ -427,10 +482,10 @@ QString QDBusXmlToCpp::propertySetter(const QDBusIntrospection::Property &proper
 
     annotation = property.annotations.value("com.trolltech.QtDBus.propertySetter"_L1);
     if (!annotation.value.isEmpty()) {
-        fprintf(stderr, "%s: Warning: deprecated annotation 'com.trolltech.QtDBus.propertySetter' found"
-                " while processing '%s';"
-                " suggest updating to 'org.qtproject.QtDBus.PropertySetter'\n",
-                PROGRAMNAME, qPrintable(inputFile));
+        reporter.warning(annotation.location,
+                         "deprecated annotation 'com.trolltech.QtDBus.propertySetter' found\n");
+        reporter.note(annotation.location,
+                      "suggest updating to 'org.qtproject.QtDBus.PropertySetter'\n");
         return annotation.value;
     }
 
@@ -580,7 +635,7 @@ void QDBusXmlToCpp::writeProxy(const QString &filename,
 
         // properties:
         for (const QDBusIntrospection::Property &property : interface->properties) {
-            QByteArray type = qtTypeName(property.name, property.type, property.annotations);
+            QByteArray type = qtTypeName(property.location, property.type, property.annotations);
             QString getter = propertyGetter(property);
             QString setter = propertySetter(property);
 
@@ -622,9 +677,10 @@ void QDBusXmlToCpp::writeProxy(const QString &filename,
                     == "true"_L1;
             bool isNoReply = method.annotations.value(ANNOTATION_NO_WAIT ""_L1).value == "true"_L1;
             if (isNoReply && !method.outputArgs.isEmpty()) {
-                fprintf(stderr, "%s: warning while processing '%s': method %s in interface %s is marked 'no-reply' but has output arguments.\n",
-                        PROGRAMNAME, qPrintable(inputFile), qPrintable(method.name),
-                        qPrintable(interface->name));
+                reporter.warning(method.location,
+                                 "method %s in interface %s is marked 'no-reply' but has output "
+                                 "arguments.\n",
+                                 qPrintable(method.name), qPrintable(interface->name));
                 continue;
             }
 
@@ -639,8 +695,9 @@ void QDBusXmlToCpp::writeProxy(const QString &filename,
                 hs << "inline QDBusPendingReply<";
                 for (qsizetype i = 0; i < method.outputArgs.size(); ++i)
                     hs << (i > 0 ? ", " : "")
-                       << templateArg(qtTypeName(method.outputArgs.at(i).name, method.outputArgs.at(i).type,
-                                                 method.annotations, i, "Out"));
+                       << templateArg(qtTypeName(method.outputArgs.at(i).location,
+                                                 method.outputArgs.at(i).type, method.annotations,
+                                                 i, "Out"));
                 hs << "> ";
             }
 
@@ -673,8 +730,9 @@ void QDBusXmlToCpp::writeProxy(const QString &filename,
             if (method.outputArgs.size() > 1) {
                 // generate the old-form QDBusReply methods with multiple incoming parameters
                 hs << (isDeprecated ? "    Q_DECL_DEPRECATED " : "    ") << "inline QDBusReply<"
-                   << templateArg(qtTypeName(method.outputArgs.first().name, method.outputArgs.first().type,
-                                             method.annotations, 0, "Out"))
+                   << templateArg(qtTypeName(method.outputArgs.first().location,
+                                             method.outputArgs.first().type, method.annotations, 0,
+                                             "Out"))
                    << "> ";
                 hs << method.name << "(";
 
@@ -703,8 +761,9 @@ void QDBusXmlToCpp::writeProxy(const QString &filename,
                 // yes, starting from 1
                 for (qsizetype i = 1; i < method.outputArgs.size(); ++i)
                     hs << "            " << argNames.at(argPos++) << " = qdbus_cast<"
-                       << templateArg(qtTypeName(method.outputArgs.at(i).name, method.outputArgs.at(i).type,
-                                                 method.annotations, i, "Out"))
+                       << templateArg(qtTypeName(method.outputArgs.at(i).location,
+                                                 method.outputArgs.at(i).type, method.annotations,
+                                                 i, "Out"))
                        << ">(reply.arguments().at(" << i << "));\n";
                 hs << "        }\n"
                       "        return reply;\n"
@@ -911,7 +970,7 @@ void QDBusXmlToCpp::writeAdaptor(const QString &filename,
 
         hs << "public: // PROPERTIES\n";
         for (const QDBusIntrospection::Property &property : interface->properties) {
-            QByteArray type = qtTypeName(property.name, property.type, property.annotations);
+            QByteArray type = qtTypeName(property.location, property.type, property.annotations);
             QString constRefType = constRefArg(type);
             QString getter = propertyGetter(property);
             QString setter = propertySetter(property);
@@ -954,8 +1013,10 @@ void QDBusXmlToCpp::writeAdaptor(const QString &filename,
         for (const QDBusIntrospection::Method &method : interface->methods) {
             bool isNoReply = method.annotations.value(ANNOTATION_NO_WAIT ""_L1).value == "true"_L1;
             if (isNoReply && !method.outputArgs.isEmpty()) {
-                fprintf(stderr, "%s: warning while processing '%s': method %s in interface %s is marked 'no-reply' but has output arguments.\n",
-                        PROGRAMNAME, qPrintable(inputFile), qPrintable(method.name), qPrintable(interface->name));
+                reporter.warning(method.location,
+                                 "method %s in interface %s is marked 'no-reply' but has output "
+                                 "arguments.\n",
+                                 qPrintable(method.name), qPrintable(interface->name));
                 continue;
             }
 
@@ -968,8 +1029,9 @@ void QDBusXmlToCpp::writeAdaptor(const QString &filename,
                 hs << "void ";
                 cs << "void ";
             } else {
-                returnType = qtTypeName(method.outputArgs.first().name, method.outputArgs.first().type,
-                                        method.annotations, 0, "Out");
+                returnType =
+                        qtTypeName(method.outputArgs.first().location,
+                                   method.outputArgs.first().type, method.annotations, 0, "Out");
                 hs << returnType << " ";
                 cs << returnType << " ";
             }
@@ -1004,14 +1066,14 @@ void QDBusXmlToCpp::writeAdaptor(const QString &filename,
 
                 if (!method.outputArgs.isEmpty())
                     cs << ", Q_RETURN_ARG("
-                       << qtTypeName(method.outputArgs.at(0).name, method.outputArgs.at(0).type, method.annotations,
-                                     0, "Out")
+                       << qtTypeName(method.outputArgs.at(0).location, method.outputArgs.at(0).type,
+                                     method.annotations, 0, "Out")
                        << ", " << argNames.at(method.inputArgs.size()) << ")";
 
                 for (qsizetype i = 0; i < method.inputArgs.size(); ++i)
                     cs << ", Q_ARG("
-                       << qtTypeName(method.inputArgs.at(i).name, method.inputArgs.at(i).type, method.annotations,
-                                     i, "In")
+                       << qtTypeName(method.inputArgs.at(i).location, method.inputArgs.at(i).type,
+                                     method.annotations, i, "In")
                        << ", " << argNames.at(i) << ")";
 
                 cs << ");\n";
