@@ -235,14 +235,16 @@ static QByteArray qtTypeName(const QString &where, const QString &signature,
         QString annotationName = u"org.qtproject.QtDBus.QtTypeName"_s;
         if (paramId >= 0)
             annotationName += ".%1%2"_L1.arg(QLatin1StringView(direction)).arg(paramId);
-        QString qttype = annotations.value(annotationName);
+        auto annotation = annotations.value(annotationName);
+        QString qttype = annotation.value;
         if (!qttype.isEmpty())
             return std::move(qttype).toLatin1();
 
         QString oldAnnotationName = u"com.trolltech.QtDBus.QtTypeName"_s;
         if (paramId >= 0)
             oldAnnotationName += ".%1%2"_L1.arg(QLatin1StringView(direction)).arg(paramId);
-        qttype = annotations.value(oldAnnotationName);
+        annotation = annotations.value(oldAnnotationName);
+        qttype = annotation.value;
 
         if (qttype.isEmpty()) {
             fprintf(stderr, "%s: Got unknown type `%s' processing '%s'\n",
@@ -372,47 +374,47 @@ static void writeSignalArgList(QTextStream &ts, const QStringList &argNames,
 
 static QString propertyGetter(const QDBusIntrospection::Property &property)
 {
-    QString getter = property.annotations.value("org.qtproject.QtDBus.PropertyGetter"_L1);
-    if (!getter.isEmpty())
-        return getter;
+    auto annotation = property.annotations.value("org.qtproject.QtDBus.PropertyGetter"_L1);
+    if (!annotation.value.isEmpty())
+        return annotation.value;
 
-    getter = property.annotations.value("com.trolltech.QtDBus.propertyGetter"_L1);
-    if (!getter.isEmpty()) {
+    annotation = property.annotations.value("com.trolltech.QtDBus.propertyGetter"_L1);
+    if (!annotation.value.isEmpty()) {
         fprintf(stderr, "%s: Warning: deprecated annotation 'com.trolltech.QtDBus.propertyGetter' found"
                 " while processing '%s';"
                 " suggest updating to 'org.qtproject.QtDBus.PropertyGetter'\n",
                 PROGRAMNAME, qPrintable(inputFile));
-        return getter;
+        return annotation.value;
     }
 
-    getter =  property.name;
+    QString getter = property.name;
     getter[0] = getter[0].toLower();
     return getter;
 }
 
 static QString propertySetter(const QDBusIntrospection::Property &property)
 {
-    QString setter = property.annotations.value("org.qtproject.QtDBus.PropertySetter"_L1);
-    if (!setter.isEmpty())
-        return setter;
+    auto annotation = property.annotations.value("org.qtproject.QtDBus.PropertySetter"_L1);
+    if (!annotation.value.isEmpty())
+        return annotation.value;
 
-    setter = property.annotations.value("com.trolltech.QtDBus.propertySetter"_L1);
-    if (!setter.isEmpty()) {
+    annotation = property.annotations.value("com.trolltech.QtDBus.propertySetter"_L1);
+    if (!annotation.value.isEmpty()) {
         fprintf(stderr, "%s: Warning: deprecated annotation 'com.trolltech.QtDBus.propertySetter' found"
                 " while processing '%s';"
                 " suggest updating to 'org.qtproject.QtDBus.PropertySetter'\n",
                 PROGRAMNAME, qPrintable(inputFile));
-        return setter;
+        return annotation.value;
     }
 
-    setter = "set"_L1 + property.name;
+    QString setter = "set"_L1 + property.name;
     setter[3] = setter[3].toUpper();
     return setter;
 }
 
 static QString methodName(const QDBusIntrospection::Method &method)
 {
-    QString name = method.annotations.value(u"org.qtproject.QtDBus.MethodName"_s);
+    QString name = method.annotations.value(u"org.qtproject.QtDBus.MethodName"_s).value;
     if (!name.isEmpty())
         return name;
 
@@ -588,9 +590,9 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
         // methods:
         hs << "public Q_SLOTS: // METHODS\n";
         for (const QDBusIntrospection::Method &method : interface->methods) {
-            bool isDeprecated = method.annotations.value("org.freedesktop.DBus.Deprecated"_L1) == "true"_L1;
-            bool isNoReply =
-                method.annotations.value(ANNOTATION_NO_WAIT ""_L1) == "true"_L1;
+            bool isDeprecated = method.annotations.value("org.freedesktop.DBus.Deprecated"_L1).value
+                    == "true"_L1;
+            bool isNoReply = method.annotations.value(ANNOTATION_NO_WAIT ""_L1).value == "true"_L1;
             if (isNoReply && !method.outputArgs.isEmpty()) {
                 fprintf(stderr, "%s: warning while processing '%s': method %s in interface %s is marked 'no-reply' but has output arguments.\n",
                         PROGRAMNAME, qPrintable(inputFile), qPrintable(method.name),
@@ -687,7 +689,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
         hs << "Q_SIGNALS: // SIGNALS\n";
         for (const QDBusIntrospection::Signal &signal : interface->signals_) {
             hs << "    ";
-            if (signal.annotations.value("org.freedesktop.DBus.Deprecated"_L1) == "true"_L1)
+            if (signal.annotations.value("org.freedesktop.DBus.Deprecated"_L1).value == "true"_L1)
                 hs << "Q_DECL_DEPRECATED ";
 
             hs << "void " << signal.name << "(";
@@ -921,8 +923,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
 
         hs << "public Q_SLOTS: // METHODS\n";
         for (const QDBusIntrospection::Method &method : interface->methods) {
-            bool isNoReply =
-                method.annotations.value(ANNOTATION_NO_WAIT ""_L1) == "true"_L1;
+            bool isNoReply = method.annotations.value(ANNOTATION_NO_WAIT ""_L1).value == "true"_L1;
             if (isNoReply && !method.outputArgs.isEmpty()) {
                 fprintf(stderr, "%s: warning while processing '%s': method %s in interface %s is marked 'no-reply' but has output arguments.\n",
                         PROGRAMNAME, qPrintable(inputFile), qPrintable(method.name), qPrintable(interface->name));

@@ -68,19 +68,23 @@ bool QDBusXmlParser::parseAnnotation(QDBusIntrospection::Annotations &annotation
     Q_ASSERT(m_currentInterface);
     Q_ASSERT(m_xml.isStartElement() && m_xml.name() == "annotation"_L1);
 
-    const QXmlStreamAttributes attributes = m_xml.attributes();
-    const QString name = attributes.value("name"_L1).toString();
+    QDBusIntrospection::Annotation annotation;
+    annotation.location = m_currentLocation;
 
-    if (!QDBusUtil::isValidInterfaceName(name)) {
+    const QXmlStreamAttributes attributes = m_xml.attributes();
+    annotation.name = attributes.value("name"_L1).toString();
+
+    if (!QDBusUtil::isValidInterfaceName(annotation.name)) {
         qDBusParserError("Invalid D-Bus annotation '%s' found while parsing introspection",
-                         qPrintable(name));
+                         qPrintable(annotation.name));
         return false;
     }
-    const QString value = attributes.value("value"_L1).toString();
-    annotations.insert(name, value);
+    annotation.value = attributes.value("value"_L1).toString();
+    annotations.insert(annotation.name, annotation);
     if (!interfaceAnnotation)
         m_currentInterface->introspection += "  "_L1;
-    m_currentInterface->introspection += "    <annotation value=\""_L1 + value.toHtmlEscaped() + "\" name=\""_L1 + name + "\"/>\n"_L1;
+    m_currentInterface->introspection += "    <annotation value=\""_L1
+            + annotation.value.toHtmlEscaped() + "\" name=\""_L1 + annotation.name + "\"/>\n"_L1;
     return true;
 }
 

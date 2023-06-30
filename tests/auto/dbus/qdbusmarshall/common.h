@@ -214,7 +214,7 @@ QString printable(const QDBusIntrospection::Method& m)
         .arg(arg.type, arg.name);
     AnnotationsMap::const_iterator it = m.annotations.begin();
     for ( ; it != m.annotations.end(); ++it)
-        result += QString("%1 \"%2\", ").arg(it.key()).arg(it.value());
+        result += QString("%1 \"%2\", ").arg(it.key()).arg(it.value().value);
 
     result += ")";
     return result;
@@ -228,7 +228,7 @@ QString printable(const QDBusIntrospection::Signal& s)
         .arg(arg.type, arg.name);
     AnnotationsMap::const_iterator it = s.annotations.begin();
     for ( ; it != s.annotations.end(); ++it)
-        result += QString("%1 \"%2\", ").arg(it.key()).arg(it.value());
+        result += QString("%1 \"%2\", ").arg(it.key()).arg(it.value().value);
 
     result += ")";
     return result;
@@ -247,7 +247,7 @@ QString printable(const QDBusIntrospection::Property& p)
 
     AnnotationsMap::const_iterator it = p.annotations.begin();
     for ( ; it != p.annotations.end(); ++it)
-        result += QString("%1 \"%2\", ").arg(it.key()).arg(it.value());
+        result += QString("%1 \"%2\", ").arg(it.key()).arg(it.value().value);
 
     return result;
 }

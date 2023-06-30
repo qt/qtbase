@@ -38,9 +38,10 @@ public:
     struct Interface;
     struct Object;
     struct ObjectTree;
+    struct Annotation;
 
     // typedefs
-    typedef QMap<QString, QString> Annotations;
+    typedef QMap<QString, Annotation> Annotations;
     typedef QList<Argument> Arguments;
     typedef QMultiMap<QString, Method> Methods;
     typedef QMultiMap<QString, Signal> Signals;
@@ -114,6 +115,18 @@ public:
         inline bool operator==(const Property& other) const
         { return access == other.access && name == other.name &&
                 annotations == other.annotations && type == other.type; }
+    };
+
+    struct Annotation
+    {
+        SourceLocation location;
+        QString name;
+        QString value;
+
+        inline bool operator==(const Annotation &other) const
+        {
+            return name == other.name && value == other.value;
+        }
     };
 
     struct Interface: public QSharedData

@@ -148,7 +148,8 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
                               .arg(id);
 
         // extract from annotations:
-        QByteArray typeName = annotations.value(annotationName).toLatin1();
+        auto annotation = annotations.value(annotationName);
+        QByteArray typeName = annotation.value.toLatin1();
 
         // verify that it's a valid one
         if (typeName.isEmpty()) {
@@ -158,7 +159,8 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
                 annotationName += QString::fromLatin1(".%1%2")
                                   .arg(QLatin1StringView(direction))
                                   .arg(id);
-            typeName = annotations.value(annotationName).toLatin1();
+            annotation = annotations.value(annotationName);
+            typeName = annotation.value.toLatin1();
         }
 
         if (!typeName.isEmpty()) {
@@ -269,7 +271,7 @@ void QDBusMetaObjectGenerator::parseMethods()
             prototype.append(')');
 
         // check the async tag
-        if (m.annotations.value(ANNOTATION_NO_WAIT ""_L1) == "true"_L1)
+        if (m.annotations.value(ANNOTATION_NO_WAIT ""_L1).value == "true"_L1)
             mm.tag = "Q_NOREPLY";
 
         // meta method flags
