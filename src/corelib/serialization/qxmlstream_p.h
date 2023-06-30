@@ -804,6 +804,17 @@ public:
 #endif
     bool atEnd;
 
+    enum class XmlContext
+    {
+        Prolog,
+        Body,
+    };
+
+    XmlContext currentContext = XmlContext::Prolog;
+    bool foundDTD = false;
+    bool isValidToken(QXmlStreamReader::TokenType type);
+    void checkToken();
+
     /*!
       \sa setType()
      */

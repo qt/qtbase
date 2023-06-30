@@ -593,6 +593,9 @@ private slots:
 
     void entityExpansionLimit() const;
 
+    void tokenErrorHandling_data() const;
+    void tokenErrorHandling() const;
+
 private:
     static QByteArray readFile(const QString &filename);
 
@@ -1881,6 +1884,43 @@ void tst_QXmlStream::test_fastScanName() const
 
     QCOMPARE(tokenType, QXmlStreamReader::Invalid);
     QCOMPARE(reader.error(), errorType);
+}
+
+void tst_QXmlStream::tokenErrorHandling_data() const
+{
+    qRegisterMetaType<QXmlStreamReader::Error>();
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QXmlStreamReader::Error>("expectedError");
+    QTest::addColumn<QString>("errorKeyWord");
+
+    constexpr auto invalid = QXmlStreamReader::Error::UnexpectedElementError;
+    constexpr auto valid = QXmlStreamReader::Error::NoError;
+    QTest::newRow("DtdInBody") << "dtdInBody.xml" << invalid << "DTD";
+    QTest::newRow("multipleDTD") << "multipleDtd.xml" << invalid << "second DTD";
+    QTest::newRow("wellFormed") << "wellFormed.xml" << valid << "";
+}
+
+void tst_QXmlStream::tokenErrorHandling() const
+{
+    QFETCH(const QString, fileName);
+    QFETCH(const QXmlStreamReader::Error, expectedError);
+    QFETCH(const QString, errorKeyWord);
+
+    const QDir dir(QFINDTESTDATA("tokenError"));
+    QFile file(dir.absoluteFilePath(fileName));
+
+    // Cross-compiling: File will be on host only
+    if (!file.exists())
+        QSKIP("Testfile not found.");
+
+    file.open(QIODevice::ReadOnly);
+    QXmlStreamReader reader(&file);
+    while (!reader.atEnd())
+        reader.readNext();
+
+    QCOMPARE(reader.error(), expectedError);
+    if (expectedError != QXmlStreamReader::Error::NoError)
+        QVERIFY(reader.errorString().contains(errorKeyWord));
 }
 
 #include "tst_qxmlstream.moc"
