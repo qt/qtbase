@@ -820,7 +820,9 @@ bool QLibrary::load()
     call will fail, and unloading will only happen when every instance
     has called unload().
 
-    Note that on Mac OS X 10.3 (Panther), dynamic libraries cannot be unloaded.
+    Note that on \macos, dynamic libraries cannot be unloaded.
+    QLibrary::unload() will return \c true, but the library will remain
+    loaded into the process.
 
     \sa resolve(), load()
 */
