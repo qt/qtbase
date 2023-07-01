@@ -4,6 +4,7 @@
 #include <QHeaderView>
 #include <QLineEdit>
 #include <QMimeData>
+#include <QScrollBar>
 #include <QSignalSpy>
 #include <QTableWidget>
 #include <QTest>
@@ -1556,6 +1557,12 @@ void tst_QTableWidget::sizeHint()
     QFETCH(Qt::ScrollBarPolicy, scrollBarPolicy);
     QFETCH(QSize, viewSize);
 
+    const QString defaultStyle = QApplication::style()->name();
+    QApplication::setStyle("windows");
+    const auto resetStyle = qScopeGuard([defaultStyle]{
+        QApplication::setStyle(defaultStyle);
+    });
+
     QTableWidget view(2, 2);
     view.setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     view.setVerticalScrollBarPolicy(scrollBarPolicy);
@@ -1575,18 +1582,21 @@ void tst_QTableWidget::sizeHint()
         QTRY_COMPARE(view.size(), viewSize);
     }
 
+    QApplication::processEvents(); // execute delayed layouts
     auto sizeHint = view.sizeHint();
     view.hide();
     QCOMPARE(view.sizeHint(), sizeHint);
 
     view.horizontalHeader()->hide();
     view.show();
+    QApplication::processEvents(); // execute delayed layouts
     sizeHint = view.sizeHint();
     view.hide();
     QCOMPARE(view.sizeHint(), sizeHint);
 
     view.verticalHeader()->hide();
     view.show();
+    QApplication::processEvents(); // execute delayed layouts
     sizeHint = view.sizeHint();
     view.hide();
     QCOMPARE(view.sizeHint(), sizeHint);
