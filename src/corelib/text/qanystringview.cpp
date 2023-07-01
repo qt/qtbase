@@ -383,7 +383,7 @@ QT_BEGIN_NAMESPACE
     \a n is negative (default), the function returns all code points that
     are available from \a pos.
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), slice(), {Sizes and Sub-Strings}
 */
 
 /*!
@@ -398,7 +398,7 @@ QT_BEGIN_NAMESPACE
     The entire string view is returned if \a n is greater than or equal
     to size(), or less than zero.
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), slice(), {Sizes and Sub-Strings}
 */
 
 /*!
@@ -413,7 +413,7 @@ QT_BEGIN_NAMESPACE
     The entire string view is returned if \a n is greater than or equal
     to size(), or less than zero.
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), slice(), {Sizes and Sub-Strings}
 */
 
 /*!
@@ -425,7 +425,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+    \sa last(), sliced(), chopped(), chop(), truncate(), slice(), {Sizes and Sub-Strings}
 */
 
 /*!
@@ -436,7 +436,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+    \sa first(), sliced(), chopped(), chop(), truncate(), slice(), {Sizes and Sub-Strings}
 */
 
 /*!
@@ -451,7 +451,7 @@ QT_BEGIN_NAMESPACE
     or \a pos + \a n > size().
 //! [UB-sliced-index-length]
 
-    \sa first(), last(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+    \sa first(), last(), chopped(), chop(), truncate(), slice(), {Sizes and Sub-Strings}
 */
 
 /*!
@@ -465,7 +465,32 @@ QT_BEGIN_NAMESPACE
     \note The behavior is undefined when \a pos < 0 or \a pos > size().
 //! [UB-sliced-index-only]
 
-    \sa first(), last(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+    \sa first(), last(), chopped(), chop(), truncate(), slice(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView &QAnyStringView::slice(qsizetype pos, qsizetype n)
+    \since 6.8
+
+    Modifies this string view to start at position \a pos, extending for
+    \a n code points.
+
+    \include qanystringview.cpp UB-sliced-index-length
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView &QAnyStringView::slice(qsizetype pos)
+    \since 6.8
+    \overload
+
+    Modifies this string view to start at position \a pos, extending to
+    its end.
+
+    \include qanystringview.cpp UB-sliced-index-only
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
 */
 
 /*!
@@ -479,7 +504,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa sliced(), first(), last(), chop(), truncate(), {Sizes and Sub-Strings}
+    \sa sliced(), first(), last(), chop(), truncate(), slice(), {Sizes and Sub-Strings}
 */
 
 /*!
@@ -505,7 +530,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa sliced(), first(), last(), chopped(), truncate(), {Sizes and Sub-Strings}
+    \sa sliced(), first(), last(), chopped(), truncate(), slice(), {Sizes and Sub-Strings}
 */
 
 /*! \fn template <typename Visitor> decltype(auto) QAnyStringView::visit(Visitor &&v) const

@@ -247,6 +247,11 @@ public:
     [[nodiscard]] constexpr QBasicUtf8StringView chopped(qsizetype n) const
     { verify(0, n); return sliced(0, m_size - n); }
 
+    constexpr QBasicUtf8StringView &slice(qsizetype pos)
+    { *this = sliced(pos); return *this; }
+    constexpr QBasicUtf8StringView &slice(qsizetype pos, qsizetype n)
+    { *this = sliced(pos, n); return *this; }
+
     constexpr void truncate(qsizetype n)
     { verify(0, n); m_size = n; }
     constexpr void chop(qsizetype n)

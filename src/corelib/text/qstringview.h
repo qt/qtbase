@@ -237,6 +237,11 @@ public:
 
     [[nodiscard]] QStringView trimmed() const noexcept { return QtPrivate::trimmed(*this); }
 
+    constexpr QStringView &slice(qsizetype pos)
+    { *this = sliced(pos); return *this; }
+    constexpr QStringView &slice(qsizetype pos, qsizetype n)
+    { *this = sliced(pos, n); return *this; }
+
     template <typename Needle, typename...Flags>
     [[nodiscard]] constexpr inline auto tokenize(Needle &&needle, Flags...flags) const
         noexcept(noexcept(qTokenize(std::declval<const QStringView&>(), std::forward<Needle>(needle), flags...)))

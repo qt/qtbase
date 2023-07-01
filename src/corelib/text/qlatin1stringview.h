@@ -236,6 +236,11 @@ public:
     [[nodiscard]] constexpr QLatin1StringView chopped(qsizetype n) const
     { verify(0, n); return sliced(0, size() - n); }
 
+    constexpr QLatin1StringView &slice(qsizetype pos)
+    { *this = sliced(pos); return *this; }
+    constexpr QLatin1StringView &slice(qsizetype pos, qsizetype n)
+    { *this = sliced(pos, n); return *this; }
+
     constexpr void chop(qsizetype n)
     { verify(0, n); m_size -= n; }
     constexpr void truncate(qsizetype n)
