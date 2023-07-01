@@ -13,6 +13,7 @@
 #include <qwidget.h>
 #include <qdialog.h>
 #include <qscroller.h>
+#include <qstyle.h>
 
 class tst_QAbstractScrollArea : public QObject
 {
@@ -34,6 +35,7 @@ private slots:
 
     void margins();
     void resizeWithOvershoot();
+    void sizeHint();
 };
 
 tst_QAbstractScrollArea::tst_QAbstractScrollArea()
@@ -406,6 +408,57 @@ void tst_QAbstractScrollArea::resizeWithOvershoot()
     // doesn't overcompensate for the overshoot.
     QApplication::processEvents();
     QTRY_COMPARE(scrollArea.viewport()->pos(), originAtRest);
+}
+
+void tst_QAbstractScrollArea::sizeHint()
+{
+    class ScrollArea : public QAbstractScrollArea
+    {
+    public:
+        QSize viewportSizeHint() const override { return {200, 200}; }
+    } scrollArea;
+    // We cannot reliable test the impact of the scrollbars on the size hint
+    // if the style uses transient scrollbars, so use the class Windows style.
+    const QString defaultStyle = QApplication::style()->name();
+    QApplication::setStyle("Windows");
+    auto resetStyle = qScopeGuard([defaultStyle]{
+        QApplication::setStyle(defaultStyle);
+    });
+    scrollArea.setFrameShape(QFrame::NoFrame);
+    scrollArea.setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    scrollArea.show();
+
+    QSize sizeHint = scrollArea.sizeHint();
+    QCOMPARE(sizeHint, scrollArea.viewportSizeHint());
+
+    scrollArea.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    scrollArea.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    const QSize sizeHintWithScrollBars = scrollArea.sizeHint();
+    QTRY_COMPARE_GT(sizeHintWithScrollBars.width(), sizeHint.width());
+    QTRY_COMPARE_GT(sizeHintWithScrollBars.height(), sizeHint.height());
+
+    sizeHint = scrollArea.sizeHint();
+
+    // whether the scroll area itself is visible or not should not influence
+    // the size hint
+    scrollArea.hide();
+    QCOMPARE(scrollArea.sizeHint(), sizeHint);
+    scrollArea.show();
+    QCOMPARE(scrollArea.sizeHint(), sizeHint);
+
+    scrollArea.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    QCOMPARE(scrollArea.sizeHint(), scrollArea.viewportSizeHint());
+
+    scrollArea.setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea.setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    scrollArea.verticalScrollBar()->setRange(0, 1);
+    scrollArea.horizontalScrollBar()->setRange(0, 1);
+    scrollArea.resize(sizeHint / 2);
+    QApplication::processEvents(); // trigger lazy layout process
+    QCOMPARE(scrollArea.sizeHint(), sizeHintWithScrollBars);
 }
 
 QTEST_MAIN(tst_QAbstractScrollArea)

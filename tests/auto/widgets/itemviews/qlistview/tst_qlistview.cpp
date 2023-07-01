@@ -2564,8 +2564,9 @@ void tst_QListView::taskQTBUG_58749_adjustToContent()
     // use the long text and make sure the width is adjusted.
     model.setData(model.index(0, 0), longText);
     QApplication::processEvents();
-    QVERIFY(w.width() > longTextWidth);
-    QVERIFY(view->width() >= longTextWidth);
+    const QRect itemRect = view->visualRect(model.index(0, 0));
+    QVERIFY(w.width() > itemRect.width());
+    QCOMPARE_GE(view->width(), itemRect.width());
 }
 
 void tst_QListView::taskQTBUG_51086_skippingIndexesInSelectedIndexes()
