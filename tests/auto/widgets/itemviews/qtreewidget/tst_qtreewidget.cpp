@@ -2627,6 +2627,12 @@ void tst_QTreeWidget::sizeHint()
     QFETCH(Qt::ScrollBarPolicy, scrollBarPolicy);
     QFETCH(QSize, viewSize);
 
+    const QString defaultStyle = QApplication::style()->name();
+    QApplication::setStyle("fusion");
+    const auto resetStyle = qScopeGuard([defaultStyle]{
+        QApplication::setStyle(defaultStyle);
+    });
+
     QTreeWidget view;
     view.setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     view.setVerticalScrollBarPolicy(scrollBarPolicy);
@@ -2644,6 +2650,7 @@ void tst_QTreeWidget::sizeHint()
         QTRY_COMPARE(view.size(), viewSize);
     }
 
+    QApplication::processEvents(); // execute delayed layouts
     auto sizeHint = view.sizeHint();
     view.hide();
     QCOMPARE(view.sizeHint(), sizeHint);
