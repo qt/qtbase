@@ -555,7 +555,7 @@
     \a n is negative (default), the function returns all code points that
     are available from \a pos.
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -569,7 +569,7 @@
     The entire string view is returned if \a n is greater than or equal
     to size(), or less than zero.
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -583,7 +583,7 @@
     The entire string view is returned if \a n is greater than or equal
     to size(), or less than zero.
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -594,7 +594,7 @@
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), sliced(), chopped(), chop(), truncate()
+    \sa last(), sliced(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -604,7 +604,7 @@
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), sliced(), chopped(), chop(), truncate()
+    \sa first(), sliced(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -618,7 +618,7 @@
     or \a pos + \a n > size().
 //! [UB-sliced-index-length]
 
-    \sa first(), last(), chopped(), chop(), truncate()
+    \sa first(), last(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -631,7 +631,32 @@
     \note The behavior is undefined when \a pos < 0 or \a pos > size().
 //! [UB-sliced-index-only]
 
-    \sa first(), last(), chopped(), chop(), truncate()
+    \sa first(), last(), chopped(), chop(), truncate(), slice()
+*/
+
+/*!
+    \fn QUtf8StringView &QUtf8StringView::slice(qsizetype pos, qsizetype n)
+    \since 6.8
+
+    Modifies this string view to start at position \a pos, extending for
+    \a n code points.
+
+    \include qutf8stringview.qdoc UB-sliced-index-length
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QUtf8StringView &QUtf8StringView::slice(qsizetype pos)
+    \since 6.8
+    \overload
+
+    Modifies this string view to start at position \a pos, extending
+    to its end.
+
+    \include qutf8stringview.qdoc UB-sliced-index-only
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -644,7 +669,7 @@
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa sliced(), first(), last(), chop(), truncate()
+    \sa sliced(), first(), last(), chop(), truncate(), slice()
 */
 
 /*!

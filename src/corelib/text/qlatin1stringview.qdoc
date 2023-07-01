@@ -708,7 +708,7 @@
     (default), the function returns all characters that are available from
     \a start.
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -724,7 +724,7 @@
     The entire Latin-1 string view is returned if \a length is greater
     than or equal to size(), or less than zero.
 
-    \sa first(), last(), sliced(), startsWith(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), startsWith(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -740,7 +740,7 @@
     The entire Latin-1 string view is returned if \a length is greater
     than or equal to size(), or less than zero.
 
-    \sa first(), last(), sliced(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), endsWith(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -752,7 +752,7 @@
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), startsWith(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -764,7 +764,7 @@
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), endsWith(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -779,7 +779,7 @@
     or \c{pos + n > size()}.
 //! [UB-sliced-index-length]
 
-    \sa first(), last(), chopped(), chop(), truncate()
+    \sa first(), last(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -793,7 +793,32 @@
     \note The behavior is undefined when \a pos < 0 or \a pos > size().
 //! [UB-sliced-index-only]
 
-    \sa first(), last(), chopped(), chop(), truncate()
+    \sa first(), last(), chopped(), chop(), truncate(), slice()
+*/
+
+/*!
+    \fn QLatin1StringView &QLatin1StringView::slice(qsizetype pos, qsizetype n)
+    \since 6.8
+    \overload
+
+    Modifies this Latin-1 string view to start at position \a pos,
+    extending for \a n characters.
+
+    \include qlatin1stringview.qdoc UB-sliced-index-length
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QLatin1StringView &QLatin1StringView::slice(qsizetype pos)
+    \since 6.8
+
+    Modifies this Latin-1 string view to start at position \a pos, extending
+    to its end.
+
+    \include qlatin1stringview.qdoc UB-sliced-index-only
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -807,7 +832,7 @@
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa sliced(), first(), last(), chop(), truncate()
+    \sa sliced(), first(), last(), chop(), truncate(), slice()
 */
 
 /*!
@@ -833,7 +858,7 @@
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa sliced(), first(), last(), chopped(), truncate()
+    \sa sliced(), first(), last(), chopped(), truncate(), slice()
 */
 
 /*!

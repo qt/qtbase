@@ -259,6 +259,11 @@ public:
     [[nodiscard]] constexpr QAnyStringView chopped(qsizetype n) const
     { verify(0, n); return sliced(0, size() - n); }
 
+    constexpr QAnyStringView &slice(qsizetype pos)
+    { *this = sliced(pos); return *this; }
+    constexpr QAnyStringView &slice(qsizetype pos, qsizetype n)
+    { *this = sliced(pos, n); return *this; }
+
     constexpr void truncate(qsizetype n)
     { verify(0, n); setSize(n); }
     constexpr void chop(qsizetype n)

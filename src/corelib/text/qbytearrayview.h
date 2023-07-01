@@ -205,6 +205,12 @@ public:
     { verify(pos, 0); return QByteArrayView(data() + pos, size() - pos); }
     [[nodiscard]] constexpr QByteArrayView sliced(qsizetype pos, qsizetype n) const
     { verify(pos, n); return QByteArrayView(data() + pos, n); }
+
+     constexpr QByteArrayView &slice(qsizetype pos)
+    { *this = sliced(pos); return *this; }
+     constexpr QByteArrayView &slice(qsizetype pos, qsizetype n)
+    { *this = sliced(pos, n); return *this; }
+
     [[nodiscard]] constexpr QByteArrayView chopped(qsizetype len) const
     { verify(0, len); return sliced(0, size() - len); }
 
