@@ -3068,7 +3068,7 @@ bool QByteArray::isLower() const
 
     Returns an empty QByteArray if \a len is smaller than 0.
 
-    \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate()
+    \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -3085,7 +3085,7 @@ bool QByteArray::isLower() const
     returns a byte array containing all bytes starting at position \a
     pos until the end of the byte array.
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), slice()
 */
 
 QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const &
@@ -3139,7 +3139,7 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) &&
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 27
 
-    \sa last(), sliced(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), sliced(), startsWith(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -3154,7 +3154,7 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) &&
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 28
 
-    \sa first(), sliced(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), sliced(), endsWith(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -3171,7 +3171,7 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) &&
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 29
 
-    \sa first(), last(), chopped(), chop(), truncate()
+    \sa first(), last(), chopped(), chop(), truncate(), slice()
 */
 QByteArray QByteArray::sliced_helper(QByteArray &a, qsizetype pos, qsizetype n)
 {
@@ -3193,7 +3193,36 @@ QByteArray QByteArray::sliced_helper(QByteArray &a, qsizetype pos, qsizetype n)
 
     \note The behavior is undefined when \a pos < 0 or \a pos > size().
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate()
+    \sa first(), last(), chopped(), chop(), truncate(), slice()
+*/
+
+/*!
+    \fn QByteArray &QByteArray::slice(qsizetype pos, qsizetype n)
+    \since 6.8
+
+    Modifies this byte array to start at position \a pos, extending for \a n
+    bytes, and returns a reference to this byte array.
+
+    \note The behavior is undefined if \a pos < 0, \a n < 0,
+    or \a pos + \a n > size().
+
+    Example:
+    \snippet code/src_corelib_text_qbytearray.cpp 57
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QByteArray &QByteArray::slice(qsizetype pos)
+    \since 6.8
+    \overload
+
+    Modifies this byte array to start at position \a pos, extending to its
+    end, and returns a reference to this byte array.
+
+    \note The behavior is undefined if \a pos < 0 or \a pos > size().
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -3206,7 +3235,7 @@ QByteArray QByteArray::sliced_helper(QByteArray &a, qsizetype pos, qsizetype n)
 
     \note The behavior is undefined if \a len is negative or greater than size().
 
-    \sa endsWith(), first(), last(), sliced(), chop(), truncate()
+    \sa endsWith(), first(), last(), sliced(), chop(), truncate(), slice()
 */
 
 /*!

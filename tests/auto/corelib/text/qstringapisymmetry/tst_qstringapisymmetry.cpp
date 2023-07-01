@@ -694,6 +694,7 @@ private:
 
     void sliced_data();
     template <typename String> void sliced_impl();
+    template <typename String> void slice_impl();
 
     void first_data();
     template <typename String> void first_impl();
@@ -781,6 +782,11 @@ private Q_SLOTS:
     void sliced_QByteArray() { sliced_impl<QByteArray>(); }
     void sliced_QByteArrayView_data() { sliced_data(); }
     void sliced_QByteArrayView() { sliced_impl<QByteArrayView>(); }
+
+    void slice_QString_data() { sliced_data(); }
+    void slice_QString() { slice_impl<QString>(); }
+    void slice_QByteArray_data() { sliced_data(); }
+    void slice_QByteArray() { slice_impl<QByteArray>(); }
 
     void first_truncate_QString_data() { first_data(); }
     void first_truncate_QString() { first_impl<QString>(); }
@@ -2424,6 +2430,27 @@ void tst_QStringApiSymmetry::sliced_impl()
         QCOMPARE_EQ(sliced.isNull(), result2.isNull());
         QCOMPARE_EQ(sliced.isEmpty(), result2.isEmpty());
     }
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::slice_impl()
+{
+    QFETCH(const QStringView, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, pos);
+    QFETCH(const int, n);
+    QFETCH(const QAnyStringView, result);
+    QFETCH(const QAnyStringView, result2);
+
+    const auto str = make<String>(unicode, latin1, unicode.toUtf8());
+
+    auto s = str;
+    s.slice(pos);
+    QCOMPARE_EQ(s, result);
+
+    s = str;
+    s.slice(pos, n);
+    QCOMPARE_EQ(s, result2);
 }
 
 void tst_QStringApiSymmetry::first_data()

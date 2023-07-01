@@ -132,6 +132,7 @@ private slots:
     void mid();
     void length();
     void length_data();
+    void slice() const;
 };
 
 static const QByteArray::DataPointer staticStandard = {
@@ -2888,6 +2889,32 @@ void tst_QByteArray::length_data()
     QTest::newRow("with space chars") << QByteArray(" abc\r\n123\t\v") << qsizetype(11);
     QTest::newRow("with '\\0'") << QByteArray("abc\0def", 7) << qsizetype(7);
     QTest::newRow("with '\\0' no size") << QByteArray("abc\0def") << qsizetype(3);
+}
+
+void tst_QByteArray::slice() const
+{
+    QByteArray a;
+
+    a.slice(0);
+    QVERIFY(a.isEmpty());
+    QVERIFY(a.isNull());
+    a.slice(0, 0);
+    QVERIFY(a.isEmpty());
+    QVERIFY(a.isNull());
+
+    a = "Five pineapples";
+
+    a.slice(5);
+    QCOMPARE_EQ(a, "pineapples");
+
+    a.slice(4, 3);
+    QCOMPARE_EQ(a, "app");
+
+    a.slice(a.size());
+    QVERIFY(a.isEmpty());
+
+    a.slice(0, 0);
+    QVERIFY(a.isEmpty());
 }
 
 QTEST_MAIN(tst_QByteArray)

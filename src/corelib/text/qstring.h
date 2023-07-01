@@ -196,6 +196,17 @@ public:
     void truncate(qsizetype pos);
     void chop(qsizetype n);
 
+    QString &slice(qsizetype pos)
+    { verify(pos, 0); return remove(0, pos); }
+    QString &slice(qsizetype pos, qsizetype n)
+    {
+        verify(pos, n);
+        if (isNull())
+            return *this;
+        resize(pos + n);
+        return remove(0, pos);
+    }
+
     inline qsizetype capacity() const;
     inline void reserve(qsizetype size);
     inline void squeeze();

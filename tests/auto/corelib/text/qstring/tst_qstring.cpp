@@ -710,6 +710,7 @@ private slots:
     void first();
     void last();
     void sliced();
+    void slice();
     void chopped();
     void removeIf();
 
@@ -9141,6 +9142,29 @@ void tst_QString::sliced()
     QCOMPARE(detached(a).sliced(5), u"FGHIEfGEFG");
     QCOMPARE(detached(a).sliced(5, 3), u"FGH");
     QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+}
+
+void tst_QString::slice()
+{
+    QString a;
+
+    a.slice(0);
+    QVERIFY(a.isEmpty());
+    QVERIFY(a.isNull());
+    a.slice(0, 0);
+    QVERIFY(a.isEmpty());
+    QVERIFY(a.isNull());
+
+    a = u"Five pineapples"_s;
+
+    a.slice(5);
+    QCOMPARE_EQ(a, u"pineapples");
+
+    a.slice(4, 3);
+    QCOMPARE_EQ(a, u"app");
+
+    a.slice(a.size());
+    QVERIFY(a.isEmpty());
 }
 
 void tst_QString::chopped()

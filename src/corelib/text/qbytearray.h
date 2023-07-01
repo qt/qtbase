@@ -238,6 +238,17 @@ public:
     void truncate(qsizetype pos);
     void chop(qsizetype n);
 
+    QByteArray &slice(qsizetype pos)
+    { verify(pos, 0); return remove(0, pos); }
+    QByteArray &slice(qsizetype pos, qsizetype n)
+    {
+        verify(pos, n);
+        if (isNull())
+            return *this;
+        resize(pos + n);
+        return remove(0, pos);
+    }
+
 #if !defined(Q_QDOC)
     [[nodiscard]] QByteArray toLower() const &
     { return toLower_helper(*this); }

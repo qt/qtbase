@@ -5181,7 +5181,7 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
     The entire string is returned if \a n is greater than or equal
     to size(), or less than zero.
 
-    \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate()
+    \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -5200,7 +5200,7 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
     \a n is -1 (default), the function returns all characters that
     are available from the specified \a position.
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), slice()
 */
 QString QString::mid(qsizetype position, qsizetype n) const &
 {
@@ -5251,7 +5251,7 @@ QString QString::mid(qsizetype position, qsizetype n) &&
 
     \snippet qstring/main.cpp 31
 
-    \sa last(), sliced(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), sliced(), startsWith(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -5265,7 +5265,7 @@ QString QString::mid(qsizetype position, qsizetype n) &&
 
     \snippet qstring/main.cpp 48
 
-    \sa first(), sliced(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), sliced(), endsWith(), chopped(), chop(), truncate(), slice()
 */
 
 /*!
@@ -5281,7 +5281,7 @@ QString QString::mid(qsizetype position, qsizetype n) &&
 
     \snippet qstring/main.cpp 34
 
-    \sa first(), last(), chopped(), chop(), truncate()
+    \sa first(), last(), chopped(), chop(), truncate(), slice()
 */
 QString QString::sliced_helper(QString &str, qsizetype pos, qsizetype n)
 {
@@ -5303,7 +5303,35 @@ QString QString::sliced_helper(QString &str, qsizetype pos, qsizetype n)
 
     \note The behavior is undefined when \a pos < 0 or \a pos > size().
 
-    \sa first(), last(), sliced(), chopped(), chop(), truncate()
+    \sa first(), last(), chopped(), chop(), truncate(), slice()
+*/
+
+/*!
+    \fn QString &QString::slice(qsizetype pos, qsizetype n)
+    \since 6.8
+
+    Modifies this string to start at position \a pos, extending for \a n
+    characters (code points), and returns a reference to this string.
+
+    \note The behavior is undefined if \a pos < 0, \a n < 0,
+    or \a pos + \a n > size().
+
+    \snippet qstring/main.cpp 86
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QString &QString::slice(qsizetype pos)
+    \since 6.8
+    \overload
+
+    Modifies this string to start at position \a pos and extending to its end,
+    and returns a reference to this string.
+
+    \note The behavior is undefined if \a pos < 0 or \a pos > size().
+
+    \sa sliced(), first(), last(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -5316,7 +5344,7 @@ QString QString::sliced_helper(QString &str, qsizetype pos, qsizetype n)
 
     \note The behavior is undefined if \a len is negative or greater than size().
 
-    \sa endsWith(), first(), last(), sliced(), chop(), truncate()
+    \sa endsWith(), first(), last(), sliced(), chop(), truncate(), slice()
 */
 
 /*!
