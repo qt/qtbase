@@ -314,6 +314,7 @@ qt_internal_add_module(Core
         text/qlocale.cpp text/qlocale.h
         global/qglobal.cpp  # undef qFatal
         global/qlogging.cpp # undef qFatal/qInfo/qDebug
+        global/qrandom.cpp # undef Q_ASSERT/_X
         text/qstringconverter.cpp # enum Data
         tools/qcryptographichash.cpp # KeccakNISTInterface/Final
         io/qdebug.cpp # undef qDebug
