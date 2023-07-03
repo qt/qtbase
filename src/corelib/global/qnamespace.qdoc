@@ -2865,7 +2865,10 @@
     \value ElideLeft    The ellipsis should appear at the beginning of the text.
     \value ElideRight   The ellipsis should appear at the end of the text.
     \value ElideMiddle  The ellipsis should appear in the middle of the text.
-    \value ElideNone    Ellipsis should NOT appear in the text.
+    \value ElideNone    Ellipsis should NOT appear in the text. When passed to functions such as
+                        QFontMetrics::elidedText(), this will cause the full string to return unless
+                        the text contains multi-length variants. Elision in this case must be done
+                        by clipping to the component width.
 
     Qt::ElideMiddle is normally the most appropriate choice for URLs (e.g.,
     "\l{http://bugreports.qt.io/browse/QTWEBSITE-13}{http://bugreports.qt.../QTWEBSITE-13/}"),
