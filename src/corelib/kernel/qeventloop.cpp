@@ -294,20 +294,6 @@ void QEventLoop::quit()
 { exit(0); }
 
 
-class QEventLoopLockerPrivate
-{
-public:
-    using Type = QEventLoopLocker::Type;
-    QEventLoopPrivate *loop() const { return static_cast<QEventLoopPrivate *>(pointer()); }
-    QThreadPrivate *thread() const { return static_cast<QThreadPrivate *>(pointer()); }
-    QCoreApplicationPrivate *app() const { return static_cast<QCoreApplicationPrivate *>(pointer()); }
-    explicit QEventLoopLockerPrivate(void *ptr, Type t) noexcept
-        : p{quintptr(ptr) | quintptr(t)} {}
-    quintptr p;
-    static constexpr quintptr TypeMask = 0x3;
-    Type type() const { return Type(p & TypeMask); }
-    void *pointer() const { return reinterpret_cast<void *>(p & ~TypeMask); }
-};
 namespace {
 // If any of these trigger, the Type bits will interfere with the pointer values:
 static_assert(alignof(QEventLoopPrivate) >= 4);
@@ -348,7 +334,7 @@ Private *o2p(QObject *o)
 
     \sa QCoreApplication::quit(), QCoreApplication::isQuitLockEnabled()
  */
-QEventLoopLocker::QEventLoopLocker()
+QEventLoopLocker::QEventLoopLocker() noexcept
     : QEventLoopLocker{o2p<QCoreApplicationPrivate>(QCoreApplication::instance()),
                        Type::Application}
 {
@@ -362,7 +348,7 @@ QEventLoopLocker::QEventLoopLocker()
 
     \sa QEventLoop::quit()
  */
-QEventLoopLocker::QEventLoopLocker(QEventLoop *loop)
+QEventLoopLocker::QEventLoopLocker(QEventLoop *loop) noexcept
     : QEventLoopLocker{o2p<QEventLoopPrivate>(loop), Type::EventLoop}
 {
 
@@ -375,7 +361,7 @@ QEventLoopLocker::QEventLoopLocker(QEventLoop *loop)
 
     \sa QThread::quit()
  */
-QEventLoopLocker::QEventLoopLocker(QThread *thread)
+QEventLoopLocker::QEventLoopLocker(QThread *thread) noexcept
     : QEventLoopLocker{o2p<QThreadPrivate>(thread), Type::Thread}
 {
 
@@ -387,14 +373,13 @@ QEventLoopLocker::QEventLoopLocker(QThread *thread)
 QEventLoopLocker::~QEventLoopLocker()
 {
     visit([](auto p) { p->deref(); });
-    delete d_ptr;
 }
 
 /*!
     \internal
 */
 QEventLoopLocker::QEventLoopLocker(void *ptr, Type t) noexcept
-    : d_ptr(new QEventLoopLockerPrivate{ptr, t})
+    : p{quintptr(ptr) | quintptr(t)}
 {
     visit([](auto p) { p->ref(); });
 }
@@ -405,11 +390,10 @@ QEventLoopLocker::QEventLoopLocker(void *ptr, Type t) noexcept
 template <typename Func>
 void QEventLoopLocker::visit(Func f) const
 {
-    using Type = QEventLoopLockerPrivate::Type;
-    const auto ptr = d_ptr->pointer();
+    const auto ptr = pointer();
     if (!ptr)
         return;
-    switch (d_ptr->type()) {
+    switch (type()) {
     case Type::EventLoop:   return f(static_cast<QEventLoopPrivate *>(ptr));
     case Type::Thread:      return f(static_cast<QThreadPrivate *>(ptr));
     case Type::Application: return f(static_cast<QCoreApplicationPrivate *>(ptr));
