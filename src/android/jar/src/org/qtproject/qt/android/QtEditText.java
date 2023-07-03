@@ -10,6 +10,7 @@ import android.text.InputType;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.KeyEvent;
 
 import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
@@ -19,7 +20,7 @@ class QtEditText extends View
     int m_imeOptions = 0;
     int m_inputType = InputType.TYPE_CLASS_TEXT;
     boolean m_optionsChanged = false;
-
+    QtInputConnection m_inputConnection = null;
     private QtInputConnectionListener m_qtInputConnectionListener;
 
     public void setQtInputConnectionListener(QtInputConnectionListener listener)
@@ -65,8 +66,23 @@ class QtEditText extends View
         outAttrs.inputType = m_inputType;
         outAttrs.imeOptions = m_imeOptions;
         outAttrs.initialCapsMode = m_initialCapsMode;
-        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_EXTRACT_UI;
-        return new QtInputConnection(this, m_qtInputConnectionListener);
+        m_inputConnection = new QtInputConnection(this,m_qtInputConnectionListener);
+        return m_inputConnection;
+    }
+
+    @Override
+    public boolean onCheckIsTextEditor ()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean onKeyDown (int keyCode, KeyEvent event)
+    {
+        if (null != m_inputConnection)
+            m_inputConnection.restartImmInput();
+
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
