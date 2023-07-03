@@ -53,6 +53,7 @@ qt_internal_add_module(Network
         ssl/qsslsocket.h
         ssl/qtlsbackend.cpp ssl/qtlsbackend_p.h
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES

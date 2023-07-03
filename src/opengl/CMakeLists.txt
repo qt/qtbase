@@ -36,6 +36,7 @@ qt_internal_add_module(OpenGL
     NO_UNITY_BUILD_SOURCES
         qopengltextureblitter.cpp       # qDebug()<< ambiguities
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
     LIBRARIES

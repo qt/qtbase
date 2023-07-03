@@ -322,6 +322,7 @@ qt_internal_add_module(Core
         compat/removed_api.cpp
         global/qsimd.cpp
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
         QT_TYPESAFE_FLAGS

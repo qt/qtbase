@@ -42,6 +42,7 @@ qt_internal_add_module(DBus
         qtdbusglobal.h qtdbusglobal_p.h
     DEFINES
         DBUS_API_SUBJECT_TO_CHANGE
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate

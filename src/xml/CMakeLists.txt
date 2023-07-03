@@ -11,6 +11,7 @@ qt_internal_add_module(Xml
         dom/qdomhelpers.cpp dom/qdomhelpers_p.h
         qtxmlglobal.h
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
     LIBRARIES

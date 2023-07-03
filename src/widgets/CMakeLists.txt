@@ -51,6 +51,7 @@ qt_internal_add_module(Widgets
         widgets/qframe.cpp widgets/qframe.h widgets/qframe_p.h
         widgets/qwidgetanimator.cpp widgets/qwidgetanimator_p.h
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES
         dialogs

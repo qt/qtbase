@@ -259,6 +259,7 @@ qt_internal_add_module(Gui
         util/qtexturefilereader.cpp util/qtexturefilereader_p.h
         util/qvalidator.cpp util/qvalidator.h
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
         QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}"
