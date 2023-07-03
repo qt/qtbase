@@ -743,9 +743,7 @@ static QString decodeFsEncString(const QString &str)
             if (QStringView{str}.sliced(i).startsWith("\\x"_L1)) {
                 bool bOk;
                 const int code = QStringView{str}.mid(i+2, 2).toInt(&bOk, 16);
-                // only decode characters between 0x20 and 0x7f but not
-                // the backslash to prevent collisions
-                if (bOk && code >= 0x20 && code < 0x80 && code != '\\') {
+                if (bOk && code >= 0x20 && code < 0x80) {
                     decoded += QChar(code);
                     i += 4;
                     continue;
