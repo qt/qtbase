@@ -87,7 +87,7 @@ public:
     static void setSetuidAllowed(bool allow);
     static bool isSetuidAllowed();
 
-    static QCoreApplication *instance() { return self; }
+    static QCoreApplication *instance() noexcept { return self; }
 
 #ifndef QT_NO_QOBJECT
     static int exec();
