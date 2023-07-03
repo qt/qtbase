@@ -1467,6 +1467,7 @@ public:
                    << "#include <" << replacement << ">\n"
                    << "#endif\n";
             writeIfDifferent(m_commandLineArgs->includeDir() + '/' + it->first, buffer.str());
+            m_producedHeaders.insert(it->first);
         }
         return true;
     }
