@@ -61,11 +61,18 @@ public:
 
 private:
     Q_DISABLE_COPY(QEventLoopLocker)
+    friend class QEventLoopLockerPrivate;
 
     //
     // Private implementation details.
     // Do not call from public inline API!
     //
+    enum class Type : quintptr {
+        EventLoop,
+        Thread,
+        Application,
+    };
+    explicit QEventLoopLocker(void *ptr, Type t) noexcept;
     QEventLoopLockerPrivate *d_ptr;
     template <typename Func>
     void visit(Func func) const;

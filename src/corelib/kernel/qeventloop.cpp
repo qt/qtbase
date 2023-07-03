@@ -296,35 +296,11 @@ void QEventLoop::quit()
 
 class QEventLoopLockerPrivate
 {
-    friend class QEventLoopLocker;
 public:
-    explicit QEventLoopLockerPrivate(QEventLoopPrivate *loop)
-      : QEventLoopLockerPrivate(loop, EventLoop)
-    {
-        loop->ref();
-    }
-
-    explicit QEventLoopLockerPrivate(QThreadPrivate *thread)
-      : QEventLoopLockerPrivate(thread, Thread)
-    {
-        thread->ref();
-    }
-
-    explicit QEventLoopLockerPrivate(QCoreApplicationPrivate *app)
-      : QEventLoopLockerPrivate(app, Application)
-    {
-        app->ref();
-    }
-
-private:
+    using Type = QEventLoopLocker::Type;
     QEventLoopPrivate *loop() const { return static_cast<QEventLoopPrivate *>(pointer()); }
     QThreadPrivate *thread() const { return static_cast<QThreadPrivate *>(pointer()); }
     QCoreApplicationPrivate *app() const { return static_cast<QCoreApplicationPrivate *>(pointer()); }
-    enum Type {
-        EventLoop,
-        Thread,
-        Application
-    };
     explicit QEventLoopLockerPrivate(void *ptr, Type t) noexcept
         : p{quintptr(ptr) | quintptr(t)} {}
     quintptr p;
@@ -332,10 +308,18 @@ private:
     Type type() const { return Type(p & TypeMask); }
     void *pointer() const { return reinterpret_cast<void *>(p & ~TypeMask); }
 };
+namespace {
 // If any of these trigger, the Type bits will interfere with the pointer values:
 static_assert(alignof(QEventLoopPrivate) >= 4);
 static_assert(alignof(QThreadPrivate) >= 4);
 static_assert(alignof(QCoreApplicationPrivate) >= 4);
+
+template <typename Private>
+Private *o2p(QObject *o)
+{
+    return static_cast<Private*>(QObjectPrivate::get(o));
+}
+} // unnamed namespace
 
 /*!
     \class QEventLoopLocker
@@ -365,7 +349,8 @@ static_assert(alignof(QCoreApplicationPrivate) >= 4);
     \sa QCoreApplication::quit(), QCoreApplication::isQuitLockEnabled()
  */
 QEventLoopLocker::QEventLoopLocker()
-  : d_ptr(new QEventLoopLockerPrivate(static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()))))
+    : QEventLoopLocker{o2p<QCoreApplicationPrivate>(QCoreApplication::instance()),
+                       Type::Application}
 {
 
 }
@@ -378,7 +363,7 @@ QEventLoopLocker::QEventLoopLocker()
     \sa QEventLoop::quit()
  */
 QEventLoopLocker::QEventLoopLocker(QEventLoop *loop)
-  : d_ptr(new QEventLoopLockerPrivate(static_cast<QEventLoopPrivate*>(QObjectPrivate::get(loop))))
+    : QEventLoopLocker{o2p<QEventLoopPrivate>(loop), Type::EventLoop}
 {
 
 }
@@ -391,7 +376,7 @@ QEventLoopLocker::QEventLoopLocker(QEventLoop *loop)
     \sa QThread::quit()
  */
 QEventLoopLocker::QEventLoopLocker(QThread *thread)
-  : d_ptr(new QEventLoopLockerPrivate(static_cast<QThreadPrivate*>(QObjectPrivate::get(thread))))
+    : QEventLoopLocker{o2p<QThreadPrivate>(thread), Type::Thread}
 {
 
 }
@@ -403,6 +388,15 @@ QEventLoopLocker::~QEventLoopLocker()
 {
     visit([](auto p) { p->deref(); });
     delete d_ptr;
+}
+
+/*!
+    \internal
+*/
+QEventLoopLocker::QEventLoopLocker(void *ptr, Type t) noexcept
+    : d_ptr(new QEventLoopLockerPrivate{ptr, t})
+{
+    visit([](auto p) { p->ref(); });
 }
 
 /*!
