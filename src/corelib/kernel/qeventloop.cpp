@@ -312,6 +312,7 @@ void QEventLoop::quit()
 
 class QEventLoopLockerPrivate
 {
+    friend class QEventLoopLocker;
 public:
     explicit QEventLoopLockerPrivate(QEventLoopPrivate *loop)
       : QEventLoopLockerPrivate(loop, EventLoop)
@@ -329,22 +330,6 @@ public:
       : QEventLoopLockerPrivate(app, Application)
     {
         app->ref();
-    }
-
-    ~QEventLoopLockerPrivate()
-    {
-        switch (type())
-        {
-        case EventLoop:
-            loop()->deref();
-            break;
-        case Thread:
-            thread()->deref();
-            break;
-        default:
-            app()->deref();
-            break;
-        }
     }
 
 private:
@@ -432,7 +417,24 @@ QEventLoopLocker::QEventLoopLocker(QThread *thread)
  */
 QEventLoopLocker::~QEventLoopLocker()
 {
+    visit([](auto p) { p->deref(); });
     delete d_ptr;
+}
+
+/*!
+    \internal
+*/
+template <typename Func>
+void QEventLoopLocker::visit(Func f) const
+{
+    using Type = QEventLoopLockerPrivate::Type;
+    const auto ptr = d_ptr->pointer();
+    switch (d_ptr->type()) {
+    case Type::EventLoop:   return f(static_cast<QEventLoopPrivate *>(ptr));
+    case Type::Thread:      return f(static_cast<QThreadPrivate *>(ptr));
+    case Type::Application: return f(static_cast<QCoreApplicationPrivate *>(ptr));
+    }
+    Q_UNREACHABLE();
 }
 
 QT_END_NAMESPACE
