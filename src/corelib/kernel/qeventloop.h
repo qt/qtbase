@@ -56,9 +56,9 @@ class QEventLoopLockerPrivate;
 class QEventLoopLocker
 {
 public:
-    Q_NODISCARD_CTOR Q_CORE_EXPORT QEventLoopLocker();
-    Q_NODISCARD_CTOR Q_CORE_EXPORT explicit QEventLoopLocker(QEventLoop *loop);
-    Q_NODISCARD_CTOR Q_CORE_EXPORT explicit QEventLoopLocker(QThread *thread);
+    Q_NODISCARD_CTOR Q_CORE_EXPORT QEventLoopLocker() noexcept;
+    Q_NODISCARD_CTOR Q_CORE_EXPORT explicit QEventLoopLocker(QEventLoop *loop) noexcept;
+    Q_NODISCARD_CTOR Q_CORE_EXPORT explicit QEventLoopLocker(QThread *thread) noexcept;
     Q_CORE_EXPORT ~QEventLoopLocker();
 
 private:
@@ -75,7 +75,10 @@ private:
         Application,
     };
     explicit QEventLoopLocker(void *ptr, Type t) noexcept;
-    QEventLoopLockerPrivate *d_ptr;
+    quintptr p;
+    static constexpr quintptr TypeMask = 0x3;
+    Type type() const { return Type(p & TypeMask); }
+    void *pointer() const { return reinterpret_cast<void *>(p & ~TypeMask); }
     template <typename Func>
     void visit(Func func) const;
 };
