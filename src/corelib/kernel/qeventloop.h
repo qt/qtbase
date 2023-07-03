@@ -61,7 +61,14 @@ public:
 
 private:
     Q_DISABLE_COPY(QEventLoopLocker)
+
+    //
+    // Private implementation details.
+    // Do not call from public inline API!
+    //
     QEventLoopLockerPrivate *d_ptr;
+    template <typename Func>
+    void visit(Func func) const;
 };
 
 QT_END_NAMESPACE
