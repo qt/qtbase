@@ -1051,6 +1051,9 @@ bool QIBaseResult::exec()
                 }
                 // a value of 0 means non-null.
                 *(d->inda->sqlvar[para].sqlind) = 0;
+            } else {
+                qWarning() << "QIBaseResult::exec: Null value replaced by zero for"_L1
+                           << d->inda->sqlvar[para].ownname;
             }
             switch(d->inda->sqlvar[para].sqltype & ~1) {
             case SQL_INT64:
