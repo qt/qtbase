@@ -45,6 +45,7 @@ import android.text.InputType;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.KeyEvent;
 
 public class QtEditText extends View
 {
@@ -53,6 +54,7 @@ public class QtEditText extends View
     int m_inputType = InputType.TYPE_CLASS_TEXT;
     boolean m_optionsChanged = false;
     QtActivityDelegate m_activityDelegate;
+    QtInputConnection m_inputConnection = null;
 
     public void setImeOptions(int m_imeOptions)
     {
@@ -86,6 +88,7 @@ public class QtEditText extends View
         setFocusableInTouchMode(true);
         m_activityDelegate = activityDelegate;
     }
+
     public QtActivityDelegate getActivityDelegate()
     {
         return m_activityDelegate;
@@ -97,8 +100,23 @@ public class QtEditText extends View
         outAttrs.inputType = m_inputType;
         outAttrs.imeOptions = m_imeOptions;
         outAttrs.initialCapsMode = m_initialCapsMode;
-        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_EXTRACT_UI;
-        return new QtInputConnection(this);
+        m_inputConnection = new QtInputConnection(this);
+        return m_inputConnection;
+    }
+
+    @Override
+    public boolean onCheckIsTextEditor ()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean onKeyDown (int keyCode, KeyEvent event)
+    {
+        if (null != m_inputConnection)
+            m_inputConnection.restartImmInput();
+
+        return super.onKeyDown(keyCode, event);
     }
 
 // // DEBUG CODE
