@@ -44,7 +44,6 @@ QOpenGLFunctions_2_0::QOpenGLFunctions_2_0()
  , d_1_2_Deprecated(nullptr)
  , d_1_3_Deprecated(nullptr)
  , d_1_4_Deprecated(nullptr)
- , m_reserved_2_0_Deprecated(nullptr)
 {
 }
 
