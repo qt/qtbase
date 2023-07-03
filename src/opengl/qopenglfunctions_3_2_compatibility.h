@@ -832,8 +832,8 @@ private:
     QOpenGLFunctions_1_2_DeprecatedBackend* d_1_2_Deprecated;
     QOpenGLFunctions_1_3_DeprecatedBackend* d_1_3_Deprecated;
     QOpenGLFunctions_1_4_DeprecatedBackend* d_1_4_Deprecated;
-    void *m_reserved_2_0_Deprecated; // To maintain BC
-    void *m_reserved_3_0_Deprecated; // To maintain BC
+    Q_DECL_UNUSED_MEMBER void *m_reserved_2_0_Deprecated = nullptr; // To maintain BC
+    Q_DECL_UNUSED_MEMBER void *m_reserved_3_0_Deprecated = nullptr; // To maintain BC
 };
 
 // OpenGL 1.0 core functions
