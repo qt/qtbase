@@ -50,6 +50,8 @@ class QtNativeInputConnection
     static native boolean copyURL();
     static native boolean paste();
     static native boolean updateCursorPosition();
+    static native void reportFullscreenMode(boolean enabled);
+    static native boolean fullscreenMode();
 }
 
 class QtInputConnection extends BaseInputConnection
@@ -101,6 +103,7 @@ class QtInputConnection extends BaseInputConnection
     }
 
     private final QtEditText m_view;
+    private final InputMethodManager m_imm;
 
     private void setClosing(boolean closing)
     {
@@ -114,7 +117,18 @@ class QtInputConnection extends BaseInputConnection
     {
         super(targetView, true);
         m_view = targetView;
+        m_imm = (InputMethodManager)m_view.getContext().getSystemService(
+                                        Context.INPUT_METHOD_SERVICE);
         m_qtInputConnectionListener = listener;
+    }
+
+    public void restartImmInput()
+    {
+        if (QtNativeInputConnection.fullscreenMode()) {
+            if (m_imm != null)
+                m_imm.restartInput(m_view);
+        }
+
     }
 
     @Override
@@ -122,6 +136,18 @@ class QtInputConnection extends BaseInputConnection
     {
         setClosing(false);
         return QtNativeInputConnection.beginBatchEdit();
+    }
+
+    @Override
+    public boolean reportFullscreenMode (boolean enabled)
+    {
+        QtNativeInputConnection.reportFullscreenMode(enabled);
+        // Always ignored on calling editor.
+        // Always false on Android 8 and later, true with earlier.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            return false;
+
+        return true;
     }
 
     @Override
@@ -142,6 +168,7 @@ class QtInputConnection extends BaseInputConnection
     public boolean commitText(CharSequence text, int newCursorPosition)
     {
         setClosing(false);
+        restartImmInput();
         return QtNativeInputConnection.commitText(text.toString(), newCursorPosition);
     }
 
@@ -207,23 +234,25 @@ class QtInputConnection extends BaseInputConnection
     {
         switch (id) {
         case ID_SELECT_ALL:
+            restartImmInput();
             return QtNativeInputConnection.selectAll();
         case ID_COPY:
+            restartImmInput();
             return QtNativeInputConnection.copy();
         case ID_COPY_URL:
+            restartImmInput();
             return QtNativeInputConnection.copyURL();
         case ID_CUT:
+            restartImmInput();
             return QtNativeInputConnection.cut();
         case ID_PASTE:
+            restartImmInput();
             return QtNativeInputConnection.paste();
-
         case ID_SWITCH_INPUT_METHOD:
-            InputMethodManager imm = (InputMethodManager)m_view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null)
-                imm.showInputMethodPicker();
+            if (m_imm != null)
+                m_imm.showInputMethodPicker();
 
             return true;
-
         case ID_ADD_TO_DICTIONARY:
 // TODO
 //            String word = m_editable.subSequence(0, m_editable.length()).toString();
@@ -256,8 +285,7 @@ class QtInputConnection extends BaseInputConnection
                                             event.getRepeatCount(),
                                             event.getMetaState());
                     return super.sendKeyEvent(fakeEvent);
-
-               case android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS:
+                case android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS:
                     fakeEvent = new KeyEvent(event.getDownTime(),
                                             event.getEventTime(),
                                             event.getAction(),
@@ -265,16 +293,14 @@ class QtInputConnection extends BaseInputConnection
                                             event.getRepeatCount(),
                                             KeyEvent.META_SHIFT_ON);
                     return super.sendKeyEvent(fakeEvent);
-
                 case android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION:
+                    restartImmInput();
                     break;
-
                 default:
                     m_qtInputConnectionListener.onSendKeyEventDefaultCase();
-                   break;
+                    break;
             }
         }
-
         return super.sendKeyEvent(event);
     }
 
