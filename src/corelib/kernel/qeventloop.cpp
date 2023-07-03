@@ -423,6 +423,8 @@ void QEventLoopLocker::visit(Func f) const
 {
     using Type = QEventLoopLockerPrivate::Type;
     const auto ptr = d_ptr->pointer();
+    if (!ptr)
+        return;
     switch (d_ptr->type()) {
     case Type::EventLoop:   return f(static_cast<QEventLoopPrivate *>(ptr));
     case Type::Thread:      return f(static_cast<QThreadPrivate *>(ptr));
