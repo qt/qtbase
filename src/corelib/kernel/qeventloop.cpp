@@ -384,6 +384,43 @@ QEventLoopLocker::QEventLoopLocker(QThread *thread) noexcept
 }
 
 /*!
+    \fn QEventLoopLocker::QEventLoopLocker(QEventLoopLocker &&other)
+    \since 6.7
+
+    Move-constructs an event-loop locker from \a other. \a other will have a
+    no-op destructor, while responsibility for preventing the
+    QEventLoop/QThread/QCoreApplication from quitting is transferred to the new
+    object.
+*/
+
+/*!
+    \fn QEventLoopLocker &QEventLoopLocker::operator=(QEventLoopLocker &&other)
+    \since 6.7
+
+    Move-assigns this event-loop locker from \a other. \a other will have a
+    no-op destructor, while responsibility for preventing the
+    QEventLoop/QThread/QCoreApplication from quitting is transferred to this
+    object.
+*/
+
+/*!
+    \fn QEventLoopLocker::swap(QEventLoopLocker &other)
+    \since 6.7
+
+    Swaps the object and the state of this QEventLoopLocker with \a other.
+    This operation is very fast and never fails.
+*/
+
+/*!
+    \fn QEventLoopLocker::swap(QEventLoopLocker &lhs, QEventLoopLocker &rhs)
+    \relates QEventLoopLocker
+    \since 6.7
+
+    Swaps the object and the state of \a lhs with \a rhs.
+    This operation is very fast and never fails.
+*/
+
+/*!
     Destroys this event loop locker object
  */
 QEventLoopLocker::~QEventLoopLocker()
