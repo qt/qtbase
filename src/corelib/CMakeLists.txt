@@ -310,9 +310,10 @@ qt_internal_add_module(Core
         tools/qshareddata.cpp tools/qshareddata.h
         text/qlocale.cpp text/qlocale.h
         global/qglobal.cpp  # undef qFatal
-        global/qlogging.cpp # undef qFatal
+        global/qlogging.cpp # undef qFatal/qInfo/qDebug
         text/qstringconverter.cpp # enum Data
         tools/qcryptographichash.cpp # KeccakNISTInterface/Final
+        io/qdebug.cpp # undef qDebug
     NO_PCH_SOURCES
         compat/removed_api.cpp
         global/qsimd.cpp
