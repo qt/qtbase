@@ -3,10 +3,16 @@
 
 ## Set a default build type if none was specified
 
-# Set the QT_IS_BUILDING_QT variable so we can verify whether we are building
-# Qt from source
-set(QT_BUILDING_QT TRUE CACHE BOOL
+# Set the QT_BUILDING_QT variable so we can verify whether we are building
+# Qt from source.
+# Make sure not to set it when building a standalone test, otherwise
+# upon reconfiguration we get an error about qt_internal_add_test
+# not being found due the if(NOT QT_BUILDING_QT) check we have
+# in each standalone test.
+if(NOT QT_INTERNAL_IS_STANDALONE_TEST)
+    set(QT_BUILDING_QT TRUE CACHE BOOL
         "When this is present and set to true, it signals that we are building Qt from source.")
+endif()
 
 # Pre-calculate the developer_build feature if it's set by the user via the INPUT_developer_build
 # variable when using the configure script. When not using configure, don't take the INPUT variable
