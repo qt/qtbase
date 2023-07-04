@@ -76,7 +76,7 @@ static const int groupBoxTopMargin       =  3;
 
 #if QT_CONFIG(imageformat_xpm)
 /* XPM */
-static const char * const dock_widget_close_xpm[] = {
+static const char * const fusion_dock_widget_close_xpm[] = {
     "11 13 7 1",
     "  c None",
     ". c #D5CFCB",
@@ -3731,7 +3731,7 @@ QIcon QFusionStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         return QIcon(QPixmap(workspace_minimize));
     case SP_TitleBarCloseButton:
     case SP_DockWidgetCloseButton:
-        return QIcon(QPixmap(dock_widget_close_xpm));
+        return QIcon(QPixmap(fusion_dock_widget_close_xpm));
     default:
         break;
     }
@@ -3753,7 +3753,7 @@ QPixmap QFusionStyle::standardPixmap(StandardPixmap standardPixmap, const QStyle
         return QPixmap(workspace_minimize);
     case SP_TitleBarCloseButton:
     case SP_DockWidgetCloseButton:
-        return QPixmap(dock_widget_close_xpm);
+        return QPixmap(fusion_dock_widget_close_xpm);
 
     default:
         break;
