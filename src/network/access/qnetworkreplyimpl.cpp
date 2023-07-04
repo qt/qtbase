@@ -519,11 +519,6 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
     _q_copyReadyRead();
 }
 
-static void downloadBufferDeleter(char *ptr)
-{
-    delete[] ptr;
-}
-
 char* QNetworkReplyImplPrivate::getDownloadBuffer(qint64 size)
 {
     Q_Q(QNetworkReplyImpl);
@@ -536,7 +531,7 @@ char* QNetworkReplyImplPrivate::getDownloadBuffer(qint64 size)
             downloadBufferCurrentSize = 0;
             downloadBufferMaximumSize = size;
             downloadBuffer = new char[downloadBufferMaximumSize]; // throws if allocation fails
-            downloadBufferPointer = QSharedPointer<char>(downloadBuffer, downloadBufferDeleter);
+            downloadBufferPointer = QSharedPointer<char>(downloadBuffer, [](auto p) { delete[] p; });
 
             q->setAttribute(QNetworkRequest::DownloadBufferAttribute, QVariant::fromValue<QSharedPointer<char> > (downloadBufferPointer));
         }
