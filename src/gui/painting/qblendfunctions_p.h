@@ -89,7 +89,7 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     if (xend < 0 || xend >= (int)(sbpl/sizeof(SRC)))
         --w;
 
-    while (h--) {
+    while (--h >= 0) {
         const SRC *src = (const SRC *) (srcPixels + (srcy >> 16) * sbpl);
         quint32 srcx = basex;
         int x = 0;
@@ -180,7 +180,7 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     if (xend < 0 || xend >= (int)(sbpl/sizeof(quint32)))
         --w;
 
-    while (h--) {
+    while (--h >= 0) {
         const uint *src = (const quint32 *) (srcPixels + (srcy >> 16) * sbpl);
         quint32 srcx = basex;
         int x = 0;

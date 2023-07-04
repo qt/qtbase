@@ -185,7 +185,7 @@ void qt_blend_rgb16_on_argb32_neon(uchar *destPixels, int dbpl,
         quint8 a = (255 * const_alpha) >> 8;
         quint8 ia = 255 - a;
 
-        while (h--) {
+        while (--h >= 0) {
             for (int x=0; x<w; ++x)
                 dst[x] = INTERPOLATE_PIXEL_255(qConvertRgb16To32(src[x]), a, dst[x], ia);
             dst += dbpl;
@@ -228,7 +228,7 @@ static inline void blockBlit16(quint16 *dst, quint16 *src, int dstride, int sstr
     u.pointer = dst;
 
     if (u.address & 2) {
-        while (h--) {
+        while (--h >= 0) {
             // align dst
             dst[0] = src[0];
             if (Width > 1)
@@ -237,7 +237,7 @@ static inline void blockBlit16(quint16 *dst, quint16 *src, int dstride, int sstr
             src += sstride;
         }
     } else {
-        while (h--) {
+        while (--h >= 0) {
             scanLineBlit16<Width>(dst, src, dstride);
 
             dst += dstride;
