@@ -2304,7 +2304,7 @@ void QWidgetTextControlPrivate::editFocusEvent(QEvent *e)
 #endif
 
 #ifndef QT_NO_CONTEXTMENU
-static inline void setActionIcon(QAction *action, const QString &name)
+void setActionIcon(QAction *action, const QString &name)
 {
     const QIcon icon = QIcon::fromTheme(name);
     if (!icon.isNull())

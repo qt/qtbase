@@ -276,6 +276,11 @@ private:
     mutable QTextDocumentFragment fragment;
 };
 
+#ifndef QT_NO_CONTEXTMENU
+// also used by QLineEdit
+void setActionIcon(QAction *action, const QString &name);
+#endif // QT_NO_CONTEXTMENU
+
 QT_END_NAMESPACE
 
 #endif // QWidgetTextControl_H
