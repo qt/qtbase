@@ -361,7 +361,7 @@ void qt_bitmapblit32_sse2_base(QRasterBuffer *rasterBuffer, int x, int y,
                                                 0x04040404, 0x08080808);
         const __m128i maskadd2 = _mm_set_epi32(0x7f7f7f7f, 0x7e7e7e7e,
                                                0x7c7c7c7c, 0x78787878);
-        while (height--) {
+        while (--height >= 0) {
             for (int x = 0; x < width; x += 8) {
                 const quint8 s = src[x >> 3];
                 if (!s)
@@ -380,7 +380,7 @@ void qt_bitmapblit32_sse2_base(QRasterBuffer *rasterBuffer, int x, int y,
             src += stride;
         }
     } else {
-        while (height--) {
+        while (--height >= 0) {
             const quint8 s = *src;
             if (s) {
                 __m128i mask1 = _mm_set1_epi8(s);
@@ -423,7 +423,7 @@ QT_WARNING_DISABLE_MSVC(4309) // truncation of constant value
     const __m128i maskadd = _mm_set_epi16(0x7f7f, 0x7e7e, 0x7c7c, 0x7878,
                                           0x7070, 0x6060, 0x4040, 0x0000);
 
-    while (height--) {
+    while (--height >= 0) {
         for (int x = 0; x < width; x += 8) {
             const quint8 s = src[x >> 3];
             if (!s)
@@ -558,7 +558,7 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
     if (xend < 0 || xend >= (int)(sbpl/sizeof(quint32)))
         --w;
 
-    while (h--) {
+    while (--h >= 0) {
         const uint *src = (const quint32 *) (srcPixels + (srcy >> 16) * sbpl);
         int srcx = basex;
         int x = 0;
