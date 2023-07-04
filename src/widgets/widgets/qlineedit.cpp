@@ -2167,13 +2167,6 @@ void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
     }
 }
 
-static inline void setActionIcon(QAction *action, const QString &name)
-{
-    const QIcon icon = QIcon::fromTheme(name);
-    if (!icon.isNull())
-        action->setIcon(icon);
-}
-
 /*!  This function creates the standard context menu which is shown
         when the user clicks on the line edit with the right mouse
         button. It is called from the default contextMenuEvent() handler.
