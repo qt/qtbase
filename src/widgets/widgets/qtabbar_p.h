@@ -245,6 +245,14 @@ public:
 
 };
 
+constexpr inline bool verticalTabs(QTabBar::Shape shape) noexcept
+{
+    return shape == QTabBar::RoundedWest
+            || shape == QTabBar::RoundedEast
+            || shape == QTabBar::TriangularWest
+            || shape == QTabBar::TriangularEast;
+}
+
 QT_END_NAMESPACE
 
 #endif
