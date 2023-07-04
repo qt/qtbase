@@ -567,11 +567,6 @@ void QHttpThreadDelegate::synchronousFinishedWithErrorSlot(QNetworkReply::Networ
     httpReply = nullptr;
 }
 
-static void downloadBufferDeleter(char *ptr)
-{
-    delete[] ptr;
-}
-
 void QHttpThreadDelegate::headerChangedSlot()
 {
     if (!httpReply)
@@ -592,7 +587,7 @@ void QHttpThreadDelegate::headerChangedSlot()
         QT_TRY {
             char *buf = new char[httpReply->contentLength()]; // throws if allocation fails
             if (buf) {
-                downloadBuffer = QSharedPointer<char>(buf, downloadBufferDeleter);
+                downloadBuffer = QSharedPointer<char>(buf, [](auto p) { delete[] p; });
                 httpReply->setUserProvidedDownloadBuffer(buf);
             }
         } QT_CATCH(const std::bad_alloc &) {
