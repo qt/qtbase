@@ -59,7 +59,7 @@
 #include <private/qstyleanimation_p.h>
 #endif
 #if QT_CONFIG(tabbar)
-#include <qtabbar.h>
+#include <private/qtabbar_p.h>
 #endif
 #include <QMetaProperty>
 #if QT_CONFIG(mainwindow)
@@ -3056,16 +3056,6 @@ void QStyleSheetStyle::unpolish(QApplication *app)
     styleSheetCaches->renderRulesCache.clear();
     styleSheetCaches->styleSheetCache.remove(qApp);
 }
-
-#if QT_CONFIG(tabbar)
-inline static bool verticalTabs(QTabBar::Shape shape)
-{
-    return shape == QTabBar::RoundedWest
-           || shape == QTabBar::RoundedEast
-           || shape == QTabBar::TriangularWest
-           || shape == QTabBar::TriangularEast;
-}
-#endif // QT_CONFIG(tabbar)
 
 void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                                           const QWidget *w) const
