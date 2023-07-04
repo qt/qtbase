@@ -145,7 +145,7 @@ int xOpen(sqlite3_vfs *svfs, sqlite3_filename zName, sqlite3_file *sfile,
     }
 
     file->pMethods = &vfs->ioMethods;
-    file->pFile = new File::QtFile{QString::fromUtf8(zName), bool(flags & SQLITE_OPEN_DELETEONCLOSE)};
+    file->pFile = new File::QtFile(QString::fromUtf8(zName), bool(flags & SQLITE_OPEN_DELETEONCLOSE));
     if (!file->pFile->open(mode))
         return SQLITE_CANTOPEN;
     if (pOutFlags)
