@@ -309,19 +309,10 @@ bool QEventLoop::event(QEvent *event)
 void QEventLoop::quit()
 { exit(0); }
 
-
-namespace {
 // If any of these trigger, the Type bits will interfere with the pointer values:
-static_assert(alignof(QEventLoopPrivate) >= 4);
-static_assert(alignof(QThreadPrivate) >= 4);
-static_assert(alignof(QCoreApplicationPrivate) >= 4);
-
-template <typename Private>
-Private *o2p(QObject *o)
-{
-    return static_cast<Private*>(QObjectPrivate::get(o));
-}
-} // unnamed namespace
+static_assert(alignof(QEventLoop) >= 4);
+static_assert(alignof(QThread) >= 4);
+static_assert(alignof(QCoreApplication) >= 4);
 
 /*!
     \class QEventLoopLocker
@@ -351,8 +342,7 @@ Private *o2p(QObject *o)
     \sa QCoreApplication::quit(), QCoreApplication::isQuitLockEnabled()
  */
 QEventLoopLocker::QEventLoopLocker() noexcept
-    : QEventLoopLocker{o2p<QCoreApplicationPrivate>(QCoreApplication::instance()),
-                       Type::Application}
+    : QEventLoopLocker{QCoreApplication::instance(), Type::Application}
 {
 
 }
@@ -365,7 +355,7 @@ QEventLoopLocker::QEventLoopLocker() noexcept
     \sa QEventLoop::quit()
  */
 QEventLoopLocker::QEventLoopLocker(QEventLoop *loop) noexcept
-    : QEventLoopLocker{o2p<QEventLoopPrivate>(loop), Type::EventLoop}
+    : QEventLoopLocker{loop, Type::EventLoop}
 {
 
 }
@@ -378,7 +368,7 @@ QEventLoopLocker::QEventLoopLocker(QEventLoop *loop) noexcept
     \sa QThread::quit()
  */
 QEventLoopLocker::QEventLoopLocker(QThread *thread) noexcept
-    : QEventLoopLocker{o2p<QThreadPrivate>(thread), Type::Thread}
+    : QEventLoopLocker{thread, Type::Thread}
 {
 
 }
@@ -425,7 +415,7 @@ QEventLoopLocker::QEventLoopLocker(QThread *thread) noexcept
  */
 QEventLoopLocker::~QEventLoopLocker()
 {
-    visit([](auto p) { p->deref(); });
+    visit([](auto p) { p->d_func()->deref(); });
 }
 
 /*!
@@ -434,7 +424,7 @@ QEventLoopLocker::~QEventLoopLocker()
 QEventLoopLocker::QEventLoopLocker(void *ptr, Type t) noexcept
     : p{quintptr(ptr) | quintptr(t)}
 {
-    visit([](auto p) { p->ref(); });
+    visit([](auto p) { p->d_func()->ref(); });
 }
 
 /*!
@@ -447,9 +437,9 @@ void QEventLoopLocker::visit(Func f) const
     if (!ptr)
         return;
     switch (type()) {
-    case Type::EventLoop:   return f(static_cast<QEventLoopPrivate *>(ptr));
-    case Type::Thread:      return f(static_cast<QThreadPrivate *>(ptr));
-    case Type::Application: return f(static_cast<QCoreApplicationPrivate *>(ptr));
+    case Type::EventLoop:   return f(static_cast<QEventLoop *>(ptr));
+    case Type::Thread:      return f(static_cast<QThread *>(ptr));
+    case Type::Application: return f(static_cast<QCoreApplication *>(ptr));
     }
     Q_UNREACHABLE();
 }

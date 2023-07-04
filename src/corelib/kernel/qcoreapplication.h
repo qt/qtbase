@@ -33,6 +33,7 @@ class QTranslator;
 class QPostEventList;
 class QAbstractEventDispatcher;
 class QAbstractNativeEventFilter;
+class QEventLoopLocker;
 
 #if QT_CONFIG(permissions) || defined(Q_QDOC)
 class QPermission;
@@ -59,6 +60,7 @@ class Q_CORE_EXPORT QCoreApplication
 #endif
 
     Q_DECLARE_PRIVATE(QCoreApplication)
+    friend class QEventLoopLocker;
 public:
     enum { ApplicationFlags = QT_VERSION
     };
