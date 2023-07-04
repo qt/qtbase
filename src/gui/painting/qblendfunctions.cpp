@@ -152,7 +152,7 @@ void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
 
     if (const_alpha == 256) {
         int length = w << 1;
-        while (h--) {
+        while (--h >= 0) {
             memcpy(dst, src, length);
             dst += dbpl;
             src += sbpl;
@@ -162,7 +162,7 @@ void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
         const quint16 *s = (const quint16 *) src;
         quint8 a = (255 * const_alpha) >> 8;
         quint8 ia = 255 - a;
-        while (h--) {
+        while (--h >= 0) {
             for (int x=0; x<w; ++x) {
                 d[x] = BYTE_MUL_RGB16(s[x], a) + BYTE_MUL_RGB16(d[x], ia);
             }

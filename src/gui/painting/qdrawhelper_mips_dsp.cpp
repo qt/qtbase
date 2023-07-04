@@ -95,7 +95,7 @@ void qt_blend_rgb16_on_rgb16_mips_dspr2(uchar *destPixels, int dbpl,
         }
         else {
             int length = w << 1;
-            while (h--) {
+            while (--h >= 0) {
                 memcpy(destPixels, srcPixels, length);
                 destPixels += dbpl;
                 srcPixels += sbpl;
@@ -130,7 +130,7 @@ void qt_blend_rgb16_on_rgb16_mips_dsp(uchar *destPixels, int dbpl,
         }
         else {
             int length = w << 1;
-            while (h--) {
+            while (--h >= 0) {
                 memcpy(destPixels, srcPixels, length);
                 destPixels += dbpl;
                 srcPixels += sbpl;
