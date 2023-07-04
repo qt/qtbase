@@ -44,7 +44,6 @@ public:
         ENTITY = 32,
         ENTITY_DONE = 45,
         EQ = 14,
-        XML_ERROR = 43,
         FIXED = 39,
         HASH = 6,
         ID = 48,
@@ -81,6 +80,7 @@ public:
         UNRESOLVED_ENTITY = 46,
         VERSION = 55,
         XML = 54,
+        XML_ERROR = 43,
 
         ACCEPT_STATE = 416,
         RULE_COUNT = 270,
