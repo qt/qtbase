@@ -37,12 +37,6 @@ using namespace QtMiscUtils;
 
 class QNetworkProxy;
 
-static inline bool isSeparator(char c)
-{
-    static const char separators[] = "()<>@,;:\\\"/[]?={}";
-    return isLWS(c) || strchr(separators, c) != nullptr;
-}
-
 // ### merge with nextField in cookiejar.cpp
 static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &header)
 {
@@ -109,6 +103,11 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
                     ++pos;
                 }
             } else {
+                const auto isSeparator = [](char c) {
+                    static const char separators[] = "()<>@,;:\\\"/[]?={}";
+                    return isLWS(c) || strchr(separators, c) != nullptr;
+                };
+
                 // case: token
                 while (pos < header.size()) {
                     char c = header.at(pos);
