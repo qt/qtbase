@@ -529,12 +529,13 @@ function(qt_internal_add_test name)
     if (ANDROID)
         if(arg_BUNDLE_ANDROID_OPENSSL_LIBS)
             if(NOT OPENSSL_ROOT_DIR)
-                message(FATAL_ERROR "The argument BUNDLE_ANDROID_OPENSSL_LIBS is set "
+                message(WARNING "The argument BUNDLE_ANDROID_OPENSSL_LIBS is set "
                 "but OPENSSL_ROOT_DIR parameter is not set.")
+            else()
+                set_property(TARGET ${name} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS
+                    "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libcrypto_3.so"
+                    "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libssl_3.so")
             endif()
-            set_property(TARGET ${name} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS
-                "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libcrypto_3.so"
-                "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libssl_3.so")
         endif()
         qt_internal_android_test_arguments("${name}" test_executable extra_test_args)
         set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
