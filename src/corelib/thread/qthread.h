@@ -24,6 +24,7 @@ QT_BEGIN_NAMESPACE
 class QThreadData;
 class QThreadPrivate;
 class QAbstractEventDispatcher;
+class QEventLoopLocker;
 
 class Q_CORE_EXPORT QThread : public QObject
 {
@@ -109,6 +110,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QThread)
+    friend class QEventLoopLocker;
 
 #if QT_CONFIG(cxx11_future)
     [[nodiscard]] static QThread *createThreadImpl(std::future<void> &&future);

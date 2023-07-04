@@ -8,12 +8,14 @@
 
 QT_BEGIN_NAMESPACE
 
+class QEventLoopLocker;
 class QEventLoopPrivate;
 
 class Q_CORE_EXPORT QEventLoop : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QEventLoop)
+    friend class QEventLoopLocker;
 
 public:
     explicit QEventLoop(QObject *parent = nullptr);
