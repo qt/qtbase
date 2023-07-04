@@ -898,7 +898,7 @@ endfunction()
 # It doesn't overwrite public properties, but instead writes formatted values to internal
 # properties.
 function(_qt_internal_android_format_deployment_paths target)
-    if(QT_BUILD_STANDALONE_TESTS OR QT_BUILDING_QT)
+    if(QT_BUILD_STANDALONE_TESTS OR QT_BUILDING_QT OR QT_INTERNAL_IS_STANDALONE_TEST)
         set(android_deployment_paths_policy NEW)
     else()
         __qt_internal_setup_policy(QTP0002 "6.6.0"
@@ -1008,7 +1008,7 @@ function(_qt_internal_get_android_abi_cmake_dir_path out_path abi)
     else()
         _qt_internal_get_android_abi_prefix_path(prefix_path ${abi})
         if((PROJECT_NAME STREQUAL "QtBase" OR QT_SUPERBUILD) AND QT_BUILDING_QT AND
-            NOT QT_BUILD_STANDALONE_TESTS)
+            NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_INTERNAL_IS_STANDALONE_TEST)
             set(cmake_dir "${QT_CONFIG_BUILD_DIR}")
         else()
             set(cmake_dir "${prefix_path}/${QT6_INSTALL_LIBS}/cmake")
