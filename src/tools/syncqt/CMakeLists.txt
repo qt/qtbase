@@ -7,6 +7,12 @@ if(NOT QT_INTERNAL_AVOID_OVERRIDING_SYNCQT_CONFIG)
     qt_internal_get_optimize_full_flags(optimize_full_flags)
     qt_internal_add_compiler_flags(LANGUAGES CXX CONFIGS ${configs} FLAGS "${optimize_full_flags}")
 
+    if(MSVC)
+        qt_internal_add_compiler_flags(LANGUAGES CXX CONFIGS ${configs} FLAGS "/EHsc")
+    else()
+        qt_internal_add_compiler_flags(LANGUAGES CXX CONFIGS ${configs} FLAGS "-fexceptions")
+    endif()
+
     # Replace all linker flags with those we use in the RelWithDebInfo configuration
     list(REMOVE_ITEM configs RELWITHDEBINFO)
     foreach(config IN LISTS configs)
