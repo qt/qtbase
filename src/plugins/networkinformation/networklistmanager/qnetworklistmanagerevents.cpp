@@ -264,3 +264,5 @@ void QNetworkListManagerEvents::emitWinRTUpdates()
 #endif // QT_CONFIG(cpp_winrt)
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworklistmanagerevents.cpp"

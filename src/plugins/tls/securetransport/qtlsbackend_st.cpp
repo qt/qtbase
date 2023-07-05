@@ -357,3 +357,5 @@ QTlsPrivate::TlsCryptograph *QSecureTransportBackend::createTlsCryptograph() con
 
 QT_END_NAMESPACE
 
+
+#include "moc_qtlsbackend_st_p.cpp"

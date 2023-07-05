@@ -93,3 +93,5 @@ bool AndroidConnectivityManager::registerNatives() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_androidconnectivitymanager.cpp"

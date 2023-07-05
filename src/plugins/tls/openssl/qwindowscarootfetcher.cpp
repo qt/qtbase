@@ -245,3 +245,5 @@ QHCertStorePointer QWindowsCaRootFetcher::createAdditionalStore() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwindowscarootfetcher_p.cpp"
