@@ -195,7 +195,11 @@ static bool is_fatal_count_down(QAtomicInt &n)
 {
     // it's fatal if the current value is exactly 1,
     // otherwise decrement if it's non-zero
-    return n.loadRelaxed() && n.fetchAndAddRelaxed(-1) == 1;
+
+    int v = n.loadRelaxed();
+    while (v != 0 && !n.testAndSetRelaxed(v, v - 1, v))
+        ;
+    return v == 1; // we exited the loop, so either v == 0 or CAS succeeded to set n from v to v-1
 }
 
 static bool isFatal(QtMsgType msgType)
