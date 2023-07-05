@@ -125,9 +125,6 @@ QUrl urlkey_from_request(const QHttpNetworkRequest &request)
 // Since we anyway end up having this in every function definition:
 using namespace Http2;
 
-const std::deque<quint32>::size_type QHttp2ProtocolHandler::maxRecycledStreams = 10000;
-const quint32 QHttp2ProtocolHandler::maxAcceptableTableSize;
-
 QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *channel)
     : QAbstractProtocolHandler(channel),
       decoder(HPack::FieldLookupTable::DefaultSize),

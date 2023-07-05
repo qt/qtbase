@@ -120,7 +120,7 @@ private:
     // the client's preface 24-byte message.
     bool waitingForSettingsACK = false;
 
-    static const quint32 maxAcceptableTableSize = 16 * HPack::FieldLookupTable::DefaultSize;
+    inline static const quint32 maxAcceptableTableSize = 16 * HPack::FieldLookupTable::DefaultSize;
     // HTTP/2 4.3: Header compression is stateful. One compression context and
     // one decompression context are used for the entire connection.
     HPack::Decoder decoder;
@@ -129,7 +129,7 @@ private:
     QHash<QObject *, int> streamIDs;
     QHash<quint32, Stream> activeStreams;
     std::deque<quint32> suspendedStreams[3]; // 3 for priorities: High, Normal, Low.
-    static const std::deque<quint32>::size_type maxRecycledStreams;
+    inline static const std::deque<quint32>::size_type maxRecycledStreams = 10000;
     std::deque<quint32> recycledStreams;
 
     // Peer's max frame size (this min is the default value
