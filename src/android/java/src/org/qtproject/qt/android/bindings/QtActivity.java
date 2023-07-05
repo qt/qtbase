@@ -16,6 +16,7 @@ import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Browser;
 import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.ActionMode.Callback;
@@ -242,10 +243,18 @@ public class QtActivity extends Activity
         if (intent.getExtras() != null && intent.getExtras().getString(EXTRA_SOURCE_INFO) != null)
             return;
 
+        String browserApplicationId = "";
+        if (intent.getExtras() != null)
+            browserApplicationId = intent.getExtras().getString(Browser.EXTRA_APPLICATION_ID);
+
         String sourceInformation = "";
-        Uri referrer = getReferrer();
-        if (referrer != null)
-            sourceInformation = referrer.toString().replaceFirst("android-app://", "");
+        if (browserApplicationId != null && !browserApplicationId.isEmpty()) {
+            sourceInformation = browserApplicationId;
+        } else {
+            Uri referrer = getReferrer();
+            if (referrer != null)
+                sourceInformation = referrer.toString().replaceFirst("android-app://", "");
+        }
 
         intent.putExtra(EXTRA_SOURCE_INFO, sourceInformation);
     }
