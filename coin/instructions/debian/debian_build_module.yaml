@@ -32,6 +32,28 @@ instructions:
       condition: runtime
       env_var:  COIN_SKIP_DEBIAN
       contains_value: "MISSING_DEBIAN_INST"
+  - type: ChangeDirectory
+    directory: "qt6-{{.Env.TESTED_MODULE_PLAIN_COIN}}"
+    disable_if:
+      condition: runtime
+      env_var:  COIN_SKIP_DEBIAN
+      contains_value: "MISSING_DEBIAN_INST"
+  - type: ExecuteCommand
+    command: "git checkout {{.Env.DEBIAN_RULES_REF}"
+    maxTimeInSeconds: 900
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: "Failed to checkout debian rules branch"
+    disable_if:
+      condition: or
+      conditions:
+      - condition: runtime
+        env_var:  DEBIAN_RULES_REF
+        equals_value: null
+      - condition: runtime
+        env_var:  COIN_SKIP_DEBIAN
+        contains_value: "MISSING_DEBIAN_INST"
+  - type: ChangeDirectory
+    directory: "{{.AgentWorkingDir}}"
   - type: ExecuteCommand
     command: "wget -q {{.CoinDownloadURL}}/{{.Env.MODULE_SOURCES_RELATIVE_STORAGE_PATH}}"
     maxTimeInSeconds: 900
