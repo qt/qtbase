@@ -27,7 +27,7 @@
 QT_BEGIN_NAMESPACE
 
 class QHttp2ProtocolHandler;
-class QAbstractSocket;
+class QIODevice;
 
 namespace Http2
 {
@@ -65,15 +65,15 @@ struct Q_AUTOTEST_EXPORT Frame
 class Q_AUTOTEST_EXPORT FrameReader
 {
 public:
-    FrameStatus read(QAbstractSocket &socket);
+    FrameStatus read(QIODevice &socket);
 
     Frame &inboundFrame()
     {
         return frame;
     }
 private:
-    bool readHeader(QAbstractSocket &socket);
-    bool readPayload(QAbstractSocket &socket);
+    bool readHeader(QIODevice &socket);
+    bool readPayload(QIODevice &socket);
 
     quint32 offset = 0;
     Frame frame;
@@ -123,20 +123,25 @@ public:
     {
         append(&payload[0], &payload[0] + payload.size());
     }
+    void append(QByteArrayView payload)
+    {
+        append(reinterpret_cast<const uchar *>(payload.begin()),
+               reinterpret_cast<const uchar *>(payload.end()));
+    }
 
     void append(const uchar *begin, const uchar *end);
 
     // Write as a single frame:
-    bool write(QAbstractSocket &socket) const;
+    bool write(QIODevice &socket) const;
     // Two types of frames we are sending are affected by frame size limits:
     // HEADERS and DATA. HEADERS' payload (hpacked HTTP headers, following a
     // frame header) is always in our 'buffer', we send the initial HEADERS
     // frame first and then CONTINUTATION frame(s) if needed:
-    bool writeHEADERS(QAbstractSocket &socket, quint32 sizeLimit);
+    bool writeHEADERS(QIODevice &socket, quint32 sizeLimit);
     // With DATA frames the actual payload is never in our 'buffer', it's a
     // 'readPointer' from QNonContiguousData. We split this payload as needed
     // into DATA frames with correct payload size fitting into frame size limit:
-    bool writeDATA(QAbstractSocket &socket, quint32 sizeLimit,
+    bool writeDATA(QIODevice &socket, quint32 sizeLimit,
                    const uchar *src, quint32 size);
 private:
     void updatePayloadSize();
