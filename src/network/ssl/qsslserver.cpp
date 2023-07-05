@@ -408,3 +408,5 @@ void QSslServerPrivate::handleHandshakeTimedOut(QSslSocket *socket)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsslserver.cpp"
