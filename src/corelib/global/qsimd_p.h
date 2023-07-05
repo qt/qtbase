@@ -407,8 +407,7 @@ static inline void qYieldCpu()
 #elif defined(Q_PROCESSOR_ARM) && Q_PROCESSOR_ARM >= 7 /* yield was added in ARMv7 */
 #  if __has_builtin(__builtin_arm_yield) /* e.g. Clang */
     __builtin_arm_yield();
-#  elif defined(Q_OS_INTEGRITY) || \
-        (defined(Q_CC_GNU) && !defined(Q_CC_CLANG))
+#  elif defined(Q_OS_INTEGRITY) || defined(Q_CC_GNU_ONLY)
     /*
        - Integrity is missing the arm_acle.h header
        - GCC doesn't have __yield() in arm_acle.h
