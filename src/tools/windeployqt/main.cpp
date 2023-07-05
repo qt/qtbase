@@ -107,6 +107,8 @@ static QByteArray formatQtModules(const ModuleBitset &mask, bool option = false)
             result.append(option
                           ? moduleNameToOptionName(qtModule.name).toUtf8()
                           : qtModule.name.toUtf8());
+            if (qtModule.internal)
+                result.append("Internal");
         }
     }
     return result;
