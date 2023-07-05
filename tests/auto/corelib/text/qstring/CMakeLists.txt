@@ -21,6 +21,7 @@ endif()
 
 foreach(test tst_qstring tst_qstring_restricted_ascii tst_qstring_no_cast_from_ascii)
     qt_internal_add_test(${test}
+        NO_BATCH
         SOURCES
             tst_qstring.cpp
             ${tst_qstring_extra_sources}

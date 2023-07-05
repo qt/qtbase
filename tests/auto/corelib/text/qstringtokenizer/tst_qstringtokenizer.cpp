@@ -9,7 +9,7 @@
 #include <string>
 
 Q_DECLARE_METATYPE(Qt::SplitBehavior)
-
+namespace {
 class tst_QStringTokenizer : public QObject
 {
     Q_OBJECT
@@ -45,6 +45,7 @@ QStringList toQStringList(const Container &c)
         r.push_back(toQString(e));
     return r;
 }
+} // namespace
 
 void tst_QStringTokenizer::constExpr() const
 {

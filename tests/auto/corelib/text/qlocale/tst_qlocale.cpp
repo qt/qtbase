@@ -1988,6 +1988,10 @@ void tst_QLocale::formatDateTime()
     QFETCH(QString, format);
     QFETCH(QString, result);
 
+#if defined(Q_OS_WASM)
+    QEXPECT_FAIL("dd MMMM yyyy, hh:mm:ss", "Year 0001 doesn't get properly formatted on WASM C locale", Abort);
+#endif // Q_OS_WASM
+
     QLocale l(localeName);
     QCOMPARE(l.toString(dateTime, format), result);
     QCOMPARE(l.toString(dateTime, QStringView(format)), result);
@@ -2010,16 +2014,16 @@ void tst_QLocale::formatTimeZone()
     if (europeanTimeZone) {
         // Time definitely in Standard Time
         QDateTime dt4 = QDate(2013, 1, 1).startOfDay();
-#ifdef Q_OS_WIN
-        QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
-#endif // Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_WASM)
+        QEXPECT_FAIL("", "Windows and Wasm only returns long name (QTBUG-32759)", Continue);
+#endif // Q_OS_WIN || Q_OS_WASM
         QCOMPARE(enUS.toString(dt4, "t"), QLatin1String("CET"));
 
         // Time definitely in Daylight Time
         QDateTime dt5 = QDate(2013, 6, 1).startOfDay();
-#ifdef Q_OS_WIN
-        QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
-#endif // Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_WASM)
+        QEXPECT_FAIL("", "Windows and Wasm only returns long name (QTBUG-32759)", Continue);
+#endif // Q_OS_WIN || Q_OS_WASM
         QCOMPARE(enUS.toString(dt5, "t"), QLatin1String("CEST"));
     } else {
         qDebug("(Skipped some CET-only tests)");

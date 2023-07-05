@@ -33,10 +33,8 @@ if(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS)
     return()
 endif()
 
-# Only configure a single auto test for wasm for now
-# Since the linking step at this point is prohibitively long (static linking)
 if(WASM)
-    add_subdirectory(corelib/text/qchar)
+    add_subdirectory(corelib/text)
     return()
 endif()
 

@@ -8,9 +8,10 @@
 
 void tst_QString_wasmTypes()
 {
+    const QLatin1StringView testString("test string");
     // QString <-> emscripten::val
     {
-        QString qtString("test string");
+        QString qtString = testString;
         const emscripten::val jsString = qtString.toJsString();
         QString qtStringCopy(qtString);
         qtString = qtString.toUpper(); // modify
@@ -19,7 +20,7 @@ void tst_QString_wasmTypes()
     {
         QString longString;
         for (uint64_t i = 0; i < 1000; ++i)
-            longString += "Lorem ipsum FTW";
+            longString += testString;
         const emscripten::val jsString = longString.toJsString();
         QString qtStringCopy(longString);
         longString = longString.toUpper(); // modify

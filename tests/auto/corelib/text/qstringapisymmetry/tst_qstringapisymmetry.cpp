@@ -23,6 +23,8 @@
 
 Q_DECLARE_METATYPE(QLatin1String)
 
+namespace {
+
 struct QAnyStringViewUsingL1  : QAnyStringView {};  // QAnyStringView with Latin-1 content
 struct QAnyStringViewUsingU8  : QAnyStringView {};  // QAnyStringView with Utf-8 content
 struct QAnyStringViewUsingU16 : QAnyStringView {};  // QAnyStringView with Utf-16 content
@@ -81,6 +83,8 @@ MAKE_ALL(QUtf8StringView, QLatin1String)
 #undef MAKE_ALL
 #undef MAKE_RELOP
 // END FIXME
+
+} // namespace
 
 static constexpr int sign(int i) noexcept
 {
