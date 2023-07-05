@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qpalette.h"
-#include "qguiapplication.h"
+#include "qpalette_p.h"
 #include "qguiapplication_p.h"
 #include "qdatastream.h"
 #include "qvariant.h"
@@ -12,16 +11,14 @@
 
 QT_BEGIN_NAMESPACE
 
-static int qt_palette_count = 1;
-
-static constexpr QPalette::ResolveMask colorRoleOffset(QPalette::ColorGroup colorGroup)
+constexpr QPalette::ResolveMask QPalettePrivate::colorRoleOffset(QPalette::ColorGroup colorGroup)
 {
     // Exclude NoRole; that bit is used for AccentColor
     return (qToUnderlying(QPalette::NColorRoles) - 1) * qToUnderlying(colorGroup);
 }
 
-static constexpr QPalette::ResolveMask bitPosition(QPalette::ColorGroup colorGroup,
-                                                   QPalette::ColorRole colorRole)
+constexpr QPalette::ResolveMask QPalettePrivate::bitPosition(QPalette::ColorGroup colorGroup,
+                                                             QPalette::ColorRole colorRole)
 {
     // Map AccentColor into NoRole for resolving purposes
     if (colorRole == QPalette::AccentColor)
@@ -30,46 +27,10 @@ static constexpr QPalette::ResolveMask bitPosition(QPalette::ColorGroup colorGro
     return colorRole + colorRoleOffset(colorGroup);
 }
 
-static_assert(bitPosition(QPalette::ColorGroup(QPalette::NColorGroups - 1),
+static_assert(QPalettePrivate::bitPosition(QPalette::ColorGroup(QPalette::NColorGroups - 1),
                               QPalette::ColorRole(QPalette::NColorRoles - 1))
                   < sizeof(QPalette::ResolveMask) * CHAR_BIT,
                   "The resolve mask type is not wide enough to fit the entire bit mask.");
-
-class QPalettePrivate
-{
-public:
-    class Data : public QSharedData {
-    public:
-        // Every instance of Data has to have a unique serial number, even
-        // if it gets created by copying another - we wouldn't create a copy
-        // in the first place if the serial number should be the same!
-        Data(const Data &other)
-            : QSharedData(other)
-        {
-            for (int grp = 0; grp < int(QPalette::NColorGroups); grp++) {
-                for (int role = 0; role < int(QPalette::NColorRoles); role++)
-                    br[grp][role] = other.br[grp][role];
-            }
-        }
-        Data() = default;
-
-        QBrush br[QPalette::NColorGroups][QPalette::NColorRoles];
-        const int ser_no = qt_palette_count++;
-    };
-
-    QPalettePrivate(const QExplicitlySharedDataPointer<Data> &data)
-        : ref(1), data(data)
-    { }
-    QPalettePrivate()
-        : QPalettePrivate(QExplicitlySharedDataPointer<Data>(new Data))
-    { }
-
-    QAtomicInt ref;
-    QPalette::ResolveMask resolveMask = {0};
-    static inline int qt_palette_private_count = 0;
-    int detach_no = ++qt_palette_private_count;
-    QExplicitlySharedDataPointer<Data> data;
-};
 
 static QColor qt_mix_colors(QColor a, QColor b)
 {
@@ -840,7 +801,7 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
         cg = Active;
     }
 
-    const auto newResolveMask = d->resolveMask | ResolveMask(1) << bitPosition(cg, cr);
+    const auto newResolveMask = d->resolveMask | ResolveMask(1) << QPalettePrivate::bitPosition(cg, cr);
     const auto valueChanged = d->data->br[cg][cr] != b;
 
     if (valueChanged) {
@@ -887,7 +848,7 @@ bool QPalette::isBrushSet(ColorGroup cg, ColorRole cr) const
         return false;
     }
 
-    return d->resolveMask & (ResolveMask(1) << bitPosition(cg, cr));
+    return d->resolveMask & (ResolveMask(1) << QPalettePrivate::bitPosition(cg, cr));
 }
 
 /*!
@@ -996,7 +957,7 @@ static constexpr QPalette::ResolveMask allResolveMask()
     QPalette::ResolveMask mask = {0};
     for (int role = 0; role < int(QPalette::NColorRoles); ++role) {
         for (int grp = 0; grp < int(QPalette::NColorGroups); ++grp) {
-            mask |= (QPalette::ResolveMask(1) << bitPosition(QPalette::ColorGroup(grp), QPalette::ColorRole(role)));
+            mask |= (QPalette::ResolveMask(1) << QPalettePrivate::bitPosition(QPalette::ColorGroup(grp), QPalette::ColorRole(role)));
         }
     }
     return mask;
@@ -1027,7 +988,7 @@ QPalette QPalette::resolve(const QPalette &other) const
             continue;
 
         for (int grp = 0; grp < int(NColorGroups); ++grp) {
-            if (!(d->resolveMask & (ResolveMask(1) << bitPosition(ColorGroup(grp), ColorRole(role))))) {
+            if (!(d->resolveMask & (ResolveMask(1) << QPalettePrivate::bitPosition(ColorGroup(grp), ColorRole(role))))) {
                 palette.d->data.detach();
                 palette.d->data->br[grp][role] = other.d->data->br[grp][role];
             }
@@ -1212,10 +1173,10 @@ void QPalette::setColorGroup(ColorGroup cg, const QBrush &windowText, const QBru
     for (int cr = Highlight; cr <= LinkVisited; ++cr) {
         if (cg == All) {
             for (int group = Active; group < NColorGroups; ++group) {
-                d->resolveMask &= ~(ResolveMask(1) << bitPosition(ColorGroup(group), ColorRole(cr)));
+                d->resolveMask &= ~(ResolveMask(1) << QPalettePrivate::bitPosition(ColorGroup(group), ColorRole(cr)));
             }
         } else {
-            d->resolveMask &= ~(ResolveMask(1) << bitPosition(ColorGroup(cg), ColorRole(cr)));
+            d->resolveMask &= ~(ResolveMask(1) << QPalettePrivate::bitPosition(ColorGroup(cg), ColorRole(cr)));
         }
     }
 }

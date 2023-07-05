@@ -101,7 +101,7 @@ qt_internal_add_module(Gui
         kernel/qoffscreensurface_platform.h
         kernel/qopenglcontext.h
         kernel/qpaintdevicewindow.cpp kernel/qpaintdevicewindow.h kernel/qpaintdevicewindow_p.h
-        kernel/qpalette.cpp kernel/qpalette.h
+        kernel/qpalette.cpp kernel/qpalette.h kernel/qpalette_p.h
         kernel/qpixelformat.cpp kernel/qpixelformat.h
         kernel/qplatformclipboard.cpp kernel/qplatformclipboard.h
         kernel/qplatformcursor.cpp kernel/qplatformcursor.h
