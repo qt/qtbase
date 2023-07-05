@@ -19,9 +19,11 @@
 #include <QtCore/qbasictimer.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qnativeinterface.h>
+#include <QtGui/qwindow.h>
 
 #if defined(Q_OS_UNIX)
 #include <any>
+#include <QtCore/qobject.h>
 
 struct wl_surface;
 #endif
