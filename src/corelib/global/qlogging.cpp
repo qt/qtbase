@@ -14,6 +14,7 @@
 #include "qdebug.h"
 #include "qmutex.h"
 #include <QtCore/private/qlocking_p.h>
+#include <QtCore/private/qsimd_p.h>
 #include "qloggingcategory.h"
 #ifndef QT_BOOTSTRAPPED
 #include "qelapsedtimer.h"
@@ -23,7 +24,6 @@
 #include "qthread.h"
 #include "private/qloggingregistry_p.h"
 #include "private/qcoreapplication_p.h"
-#include "private/qsimd_p.h"
 #include <qtcore_tracepoints_p.h>
 #endif
 #ifdef Q_OS_WIN
@@ -191,7 +191,7 @@ static bool is_fatal_count_down(QAtomicInt &n)
 
     int v = n.loadRelaxed();
     while (v != 0 && !n.testAndSetRelaxed(v, v - 1, v))
-        ;
+        qYieldCpu();
     return v == 1; // we exited the loop, so either v == 0 or CAS succeeded to set n from v to v-1
 }
 
