@@ -332,21 +332,18 @@ namespace QtPrivate {
         typedef decltype(std::declval<Functor>().operator()((std::declval<ArgList>())...)) Value;
     };
 
-    template<typename Function, int N> struct Functor
-    {
-        template <typename SignalArgs, typename R>
-        static void call(Function &f, void *, void **arg) {
-            FunctorCall<typename Indexes<N>::Value, SignalArgs, R, Function>::call(f, arg);
-        }
-    };
-
     template<typename Func, typename... Args>
-    struct FunctorCallable : Functor<Func, sizeof...(Args)>
+    struct FunctorCallable
     {
         using ReturnType = decltype(std::declval<Func>()(std::declval<Args>()...));
         using Function = ReturnType(*)(Args...);
         enum {ArgumentCount = sizeof...(Args)};
         using Arguments = QtPrivate::List<Args...>;
+
+        template <typename SignalArgs, typename R>
+        static void call(Func &f, void *, void **arg) {
+            FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Func>::call(f, arg);
+        }
     };
 
     template <typename Functor, typename... Args>
