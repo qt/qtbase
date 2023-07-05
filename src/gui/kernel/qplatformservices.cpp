@@ -75,3 +75,5 @@ bool QPlatformServices::hasCapability(Capability capability) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatformservices.cpp"

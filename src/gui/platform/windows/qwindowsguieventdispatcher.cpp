@@ -197,3 +197,5 @@ const char *QWindowsGuiEventDispatcher::windowsMessageName(UINT msg)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwindowsguieventdispatcher_p.cpp"
