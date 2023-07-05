@@ -140,8 +140,8 @@ bool QtModuleInfoStore::populate(const QString &modulesDir, const QString &trans
         QtModule module = moduleFromJsonFile(filePath, errorString);
         if (!errorString->isEmpty())
             return false;
-        if (module.internal)
-            continue;
+        if (module.internal && module.name.endsWith(QStringLiteral("Private")))
+            module.name.chop(7);
         module.id = modules.size();
         if (module.id == QtModule::InvalidId) {
             *errorString = "Internal Error: too many modules for ModuleBitset to hold."_L1;
