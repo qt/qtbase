@@ -9,9 +9,14 @@
  * - environment: { [name:string] : string }
  *      environment variables set on the instance
  * - onExit: (exitStatus: { text: string, code?: number, crashed: bool }) => void
- *      called when the application has exited for any reason. exitStatus.code is defined in
- *      case of a normal application exit. This is not called on exit with return code 0, as
- *      the program does not shutdown its runtime and technically keeps running async.
+ *      called when the application has exited for any reason. There are two cases:
+ *      aborted: crashed is true, text contains an error message.
+ *      exited: crashed is false, code contians the exit code.
+ *
+ *      Note that by default Emscripten does not exit when main() returns. This behavior
+ *      is controlled by the EXIT_RUNTIME linker flag; set "-s EXIT_RUNTIME=1" to make
+ *      Emscripten tear down the runtime and exit when main() returns.
+ *
  * - containerElements: HTMLDivElement[]
  *      Array of host elements for Qt screens. Each of these elements is mapped to a QScreen on
  *      launch.
@@ -156,26 +161,14 @@ async function qtLoad(config)
         return originalLocatedFilename;
     }
 
-    // This is needed for errors which occur right after resolving the instance promise but
-    // before exiting the function (i.e. on call to main before stack unwinding).
-    let loadTimeException = undefined;
-    // We don't want to issue onExit when aborted
-    let aborted = false;
-    const originalQuit = config.quit;
-    config.quit = (code, exception) =>
-    {
-        originalQuit?.(code, exception);
-
-        if (exception)
-            loadTimeException = exception;
-        if (!aborted && code !== 0) {
-            config.qt.onExit?.({
-                text: exception.message,
-                code,
-                crashed: false
-            });
-        }
-    };
+    const originalOnExit = config.onExit;
+    config.onExit = code => {
+        originalOnExit?.();
+        config.qt.onExit?.({
+            code,
+            crashed: false
+        });
+    }
 
     const originalOnAbort = config.onAbort;
     config.onAbort = text =>
@@ -207,10 +200,17 @@ async function qtLoad(config)
 
     // Call app/emscripten module entry function. It may either come from the emscripten
     // runtime script or be customized as needed.
-    const instance = await Promise.race(
-        [circuitBreaker, config.qt.entryFunction(config)]);
-    if (loadTimeException && loadTimeException.name !== 'ExitStatus')
-        throw loadTimeException;
+    let instance;
+    try {
+        instance = await Promise.race(
+            [circuitBreaker, config.qt.entryFunction(config)]);
+    } catch (e) {
+        config.qt.onExit?.({
+            text: e.message,
+            crashed: true
+        });
+        throw e;
+    }
 
     return instance;
 }
