@@ -790,7 +790,7 @@
     \nextpage {Chapter 4: Replaying GUI Events}{Chapter 4}
 
     \title Chapter 3: Simulating GUI Events
-    \brief Howe to simulate GUI events.
+    \brief How to simulate GUI events.
 
     Qt Test features some mechanisms to test graphical user
     interfaces. Instead of simulating native window system events,
@@ -958,7 +958,7 @@
     \title Chapter 5: Writing a Benchmark
     \brief How to write a benchmark.
 
-    This final demonstrates how to write benchmarks using Qt Test.
+    This chapter demonstrates how to write benchmarks using Qt Test.
 
     \section1 Writing a Benchmark
     To create a benchmark we extend a test function with a QBENCHMARK macro.
