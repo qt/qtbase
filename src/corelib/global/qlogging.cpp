@@ -2378,13 +2378,7 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
     Calls the message handler with the warning message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
-    On QNX the message is sent to slogger2. This
-    function does nothing if \c QT_NO_WARNING_OUTPUT was defined
-    during compilation; it exits if at the nth warning corresponding to the
-    counter in environment variable \c QT_FATAL_WARNINGS. That is, if the
-    environment variable contains the value 1, it will exit on the 1st message;
-    if it contains the value 10, it will exit on the 10th message. Any
-    non-numeric value is equivalent to 1.
+    On QNX the message is sent to slogger2.
 
     This function takes a format string and a list of arguments,
     similar to the C printf() function. The format should be a Latin-1
@@ -2401,8 +2395,20 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
     This syntax inserts a space between each item, and
     appends a newline at the end.
 
-    To suppress the output at runtime, install your own message handler
-    with qInstallMessageHandler().
+    This function does nothing if \c QT_NO_WARNING_OUTPUT was defined
+    during compilation.
+    To suppress the output at runtime, you can set
+    \l{QLoggingCategory}{logging rules} or register a custom
+    \l{QLoggingCategory::installFilter()}{filter}.
+
+    For debugging purposes, it is sometimes convenient to let the
+    program abort for warning messages. This allows you then
+    to inspect the core dump, or attach a debugger - see also \l{qFatal()}.
+    To enable this, set the environment variable \c{QT_FATAL_WARNINGS}
+    to a number \c n. The program terminates then for the n-th warning.
+    That is, if the environment variable is set to 1, it will terminate
+    on the first call; if it contains the value 10, it will exit on the 10th
+    call. Any non-numeric value in the environment variable is equivalent to 1.
 
     \sa qDebug(), qInfo(), qCritical(), qFatal(), qInstallMessageHandler(),
         {Debugging Techniques}
@@ -2417,8 +2423,6 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
     On QNX the message is sent to slogger2.
-
-    It exits if the environment variable QT_FATAL_CRITICALS is not empty.
 
     This function takes a format string and a list of arguments,
     similar to the C printf() function. The format should be a Latin-1
@@ -2435,8 +2439,19 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
     A space is inserted between the items, and a newline is
     appended at the end.
 
-    To suppress the output at runtime, install your own message handler
-    with qInstallMessageHandler().
+    To suppress the output at runtime, you can define
+    \l{QLoggingCategory}{logging rules} or register a custom
+    \l{QLoggingCategory::installFilter()}{filter}.
+
+    For debugging purposes, it is sometimes convenient to let the
+    program abort for critical messages. This allows you then
+    to inspect the core dump, or attach a debugger - see also \l{qFatal()}.
+    To enable this, set the environment variable \c{QT_FATAL_CRITICALS}
+    to a number \c n. The program terminates then for the n-th critical
+    message.
+    That is, if the environment variable is set to 1, it will terminate
+    on the first call; if it contains the value 10, it will exit on the 10th
+    call. Any non-numeric value in the environment variable is equivalent to 1.
 
     \sa qDebug(), qInfo(), qWarning(), qFatal(), qInstallMessageHandler(),
         {Debugging Techniques}
