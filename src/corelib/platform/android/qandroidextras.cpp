@@ -1186,3 +1186,5 @@ bool QtAndroidPrivate::registerPermissionNatives()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qandroidextras_p.cpp"

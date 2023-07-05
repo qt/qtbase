@@ -906,3 +906,5 @@ HWND QEventDispatcherWin32::internalHwnd()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qeventdispatcher_win_p.cpp"

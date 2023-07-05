@@ -314,3 +314,5 @@ bool QWindowsPipeWriter::consumePendingAndEmit(bool allowWinActPosting)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwindowspipewriter_p.cpp"

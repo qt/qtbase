@@ -113,3 +113,5 @@ QCtfTracePointPrivate *_initialize_tracepoint(const QCtfTracePointEvent &point)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qctf_p.cpp"

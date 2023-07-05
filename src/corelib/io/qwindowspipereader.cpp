@@ -511,3 +511,5 @@ bool QWindowsPipeReader::waitForNotification()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwindowspipereader_p.cpp"

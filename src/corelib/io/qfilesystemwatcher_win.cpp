@@ -708,3 +708,4 @@ void QWindowsFileSystemWatcherEngineThread::wakeup()
 QT_END_NAMESPACE
 
 #  include "qfilesystemwatcher_win.moc"
+#  include "moc_qfilesystemwatcher_win_p.cpp"

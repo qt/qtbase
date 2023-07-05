@@ -248,3 +248,5 @@ void QWinEventNotifierPrivate::waitCallback(PTP_CALLBACK_INSTANCE instance, PVOI
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwineventnotifier.cpp"

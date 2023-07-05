@@ -906,3 +906,5 @@ void QEventDispatcherWasm::runOnMainThreadAsync(std::function<void(void)> fn)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qeventdispatcher_wasm_p.cpp"

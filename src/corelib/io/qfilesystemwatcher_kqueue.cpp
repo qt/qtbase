@@ -218,3 +218,5 @@ void QKqueueFileSystemWatcherEngine::readFromKqueue()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfilesystemwatcher_kqueue_p.cpp"
