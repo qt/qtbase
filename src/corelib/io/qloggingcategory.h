@@ -67,11 +67,6 @@ template <QtMsgType Which> struct QLoggingCategoryMacroHolder
         if (IsOutputEnabled)
             init(cat);
     }
-    explicit QLoggingCategoryMacroHolder(QMessageLogger::CategoryFunction catfunc)
-    {
-        if (IsOutputEnabled)
-            init(catfunc());
-    }
     void init(const QLoggingCategory &cat) noexcept
     {
         category = &cat;
@@ -122,7 +117,7 @@ template <> const bool QLoggingCategoryMacroHolder<QtWarningMsg>::IsOutputEnable
     }
 
 #define QT_MESSAGE_LOGGER_COMMON(category, level) \
-    for (QLoggingCategoryMacroHolder<level> qt_category(category); qt_category; qt_category.control = false) \
+    for (QLoggingCategoryMacroHolder<level> qt_category(category()); qt_category; qt_category.control = false) \
         QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, qt_category.name())
 
 #define qCDebug(category, ...) QT_MESSAGE_LOGGER_COMMON(category, QtDebugMsg).debug(__VA_ARGS__)
