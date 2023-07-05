@@ -219,3 +219,57 @@ async function qtLoad(config)
 
     return instance;
 }
+
+// Compatibility API. This API is deprecated,
+// and will be removed in a future version of Qt.
+function QtLoader(qtConfig) {
+
+    const warning = 'Warning: The QtLoader API is deprecated and will be removed in ' +
+                    'a future version of Qt. Please port to the new qtLoad() API.';
+    console.warn(warning);
+
+    let emscriptenConfig = qtConfig.moduleConfig || {}
+    qtConfig.moduleConfig = undefined;
+    const showLoader = qtConfig.showLoader;
+    qtConfig.showLoader = undefined;
+    const showError = qtConfig.showError;
+    qtConfig.showError = undefined;
+    const showExit = qtConfig.showExit;
+    qtConfig.showExit = undefined;
+    const showCanvas = qtConfig.showCanvas;
+    qtConfig.showCanvas = undefined;
+    if (qtConfig.canvasElements) {
+        qtConfig.containerElements = qtConfig.canvasElements
+        qtConfig.canvasElements = undefined;
+    } else {
+        qtConfig.containerElements = qtConfig.containerElements;
+        qtConfig.containerElements = undefined;
+    }
+    emscriptenConfig.qt = qtConfig;
+
+    let qtloader = {
+        exitCode: undefined,
+        exitText: "",
+        loadEmscriptenModule: _name => {
+            try {
+                qtLoad(emscriptenConfig);
+            } catch (e) {
+                showError?.(e.message);
+            }
+        }
+    }
+
+    qtConfig.onLoaded = () => {
+        showCanvas?.();
+    }
+
+    qtConfig.onExit = exit => {
+        qtloader.exitCode = exit.code
+        qtloader.exitText = exit.text;
+        showExit?.();
+    }
+
+    showLoader?.("Loading");
+
+    return qtloader;
+};
