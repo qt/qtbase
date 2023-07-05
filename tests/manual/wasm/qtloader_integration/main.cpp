@@ -71,7 +71,7 @@ void crash()
 
 void exitApp()
 {
-    exit(ExitValueFromExitApp);
+    emscripten_force_exit(ExitValueFromExitApp);
 }
 
 void produceOutput()
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
             std::find(arguments.begin(), arguments.end(), QStringLiteral("--exit-immediately"))
             != arguments.end();
     if (exitImmediately)
-        return ExitValueImmediateReturn;
+        emscripten_force_exit(ExitValueImmediateReturn);
 
     const bool crashImmediately =
             std::find(arguments.begin(), arguments.end(), QStringLiteral("--crash-immediately"))

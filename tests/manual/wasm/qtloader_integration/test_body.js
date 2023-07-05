@@ -323,9 +323,7 @@ export class QtLoaderIntegrationTests
             caughtException = e;
         }
 
-        // An exception should have been thrown from load()
-        assert.equal('RuntimeError', caughtException.name);
-
+        assert.isUndefined(caughtException);
         assert.equal(1, onExitMock.calls.length);
         const exitStatus = onExitMock.calls[0][0];
         assert.isTrue(exitStatus.crashed);
@@ -373,7 +371,7 @@ export class QtLoaderIntegrationTests
         const exitStatus = onExitMock.calls[0][0];
         assert.isFalse(exitStatus.crashed);
         assert.equal(instance.EXIT_VALUE_FROM_EXIT_APP, exitStatus.code);
-        assert.isNotUndefined(exitStatus.text);
+        assert.isUndefined(exitStatus.text);
     }
 
     async exitImmediately()
@@ -392,7 +390,7 @@ export class QtLoaderIntegrationTests
 
         assert.isFalse(exitStatusFromOnExit.crashed);
         assert.equal(instance.EXIT_VALUE_IMMEDIATE_RETURN, exitStatusFromOnExit.code);
-        assert.isNotUndefined(exitStatusFromOnExit.text);
+        assert.isUndefined(exitStatusFromOnExit.text);
     }
 
     async userQuitCallbackCalled()
