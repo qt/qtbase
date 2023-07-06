@@ -101,6 +101,8 @@
 ##teamcity[testStarted name='compareQListDouble()' flowId='tst_Cmptest']
 ##teamcity[testFailed name='compareQListDouble()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)|]' details='Compared lists differ at index 0.|n Actual (double1): 1.5|n Expected (double2): 1' flowId='tst_Cmptest']
 ##teamcity[testFinished name='compareQListDouble()' flowId='tst_Cmptest']
+##teamcity[testStarted name='compareContainerToInitializerList()' flowId='tst_Cmptest']
+##teamcity[testFinished name='compareContainerToInitializerList()' flowId='tst_Cmptest']
 ##teamcity[testStarted name='compareQColor(Qt::yellow vs "yellow")' flowId='tst_Cmptest']
 ##teamcity[testFinished name='compareQColor(Qt::yellow vs "yellow")' flowId='tst_Cmptest']
 ##teamcity[testStarted name='compareQColor(Qt::yellow vs Qt::green)' flowId='tst_Cmptest']

@@ -116,6 +116,7 @@ FAIL!  : tst_Cmptest::compareQListDouble() Compared lists differ at index 0.
    Actual   (double1): 1.5
    Expected (double2): 1
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+PASS   : tst_Cmptest::compareContainerToInitializerList()
 PASS   : tst_Cmptest::compareQColor(Qt::yellow vs "yellow")
 FAIL!  : tst_Cmptest::compareQColor(Qt::yellow vs Qt::green) Compared values are not the same
    Actual   (colorA): #ffffff00
@@ -207,5 +208,5 @@ FAIL!  : tst_Cmptest::tryVerify2() '!c' returned FALSE. (Should time out and fai
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::verifyExplicitOperatorBool()
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 21 passed, 49 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 22 passed, 49 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Cmptest *********

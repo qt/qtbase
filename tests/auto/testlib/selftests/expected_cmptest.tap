@@ -303,8 +303,9 @@ not ok 38 - compareQListDouble()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 39 - compareQColor(Qt::yellow vs "yellow")
-not ok 40 - compareQColor(Qt::yellow vs Qt::green)
+ok 39 - compareContainerToInitializerList()
+ok 40 - compareQColor(Qt::yellow vs "yellow")
+not ok 41 - compareQColor(Qt::yellow vs Qt::green)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -316,7 +317,7 @@ not ok 40 - compareQColor(Qt::yellow vs Qt::green)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 41 - compareQColor(0x88ff0000 vs 0xffff0000)
+not ok 42 - compareQColor(0x88ff0000 vs 0xffff0000)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -328,8 +329,8 @@ not ok 41 - compareQColor(0x88ff0000 vs 0xffff0000)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 42 - compareQPixmaps(both null)
-not ok 43 - compareQPixmaps(one null)
+ok 43 - compareQPixmaps(both null)
+not ok 44 - compareQPixmaps(one null)
   ---
   type: QCOMPARE
   message: Compared QPixmaps differ.
@@ -341,7 +342,7 @@ not ok 43 - compareQPixmaps(one null)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 44 - compareQPixmaps(other null)
+not ok 45 - compareQPixmaps(other null)
   ---
   type: QCOMPARE
   message: Compared QPixmaps differ.
@@ -353,8 +354,8 @@ not ok 44 - compareQPixmaps(other null)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 45 - compareQPixmaps(equal)
-not ok 46 - compareQPixmaps(different size)
+ok 46 - compareQPixmaps(equal)
+not ok 47 - compareQPixmaps(different size)
   ---
   type: QCOMPARE
   message: Compared QPixmaps differ in size.
@@ -366,14 +367,14 @@ not ok 46 - compareQPixmaps(different size)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 47 - compareQPixmaps(different pixels)
+not ok 48 - compareQPixmaps(different pixels)
   ---
   # Compared values are not the same
   at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 48 - compareQPixmaps(different dpr)
+not ok 49 - compareQPixmaps(different dpr)
   ---
   type: QCOMPARE
   message: Compared QPixmaps differ in device pixel ratio.
@@ -385,8 +386,8 @@ not ok 48 - compareQPixmaps(different dpr)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 49 - compareQImages(both null)
-not ok 50 - compareQImages(one null)
+ok 50 - compareQImages(both null)
+not ok 51 - compareQImages(one null)
   ---
   type: QCOMPARE
   message: Compared QImages differ.
@@ -398,7 +399,7 @@ not ok 50 - compareQImages(one null)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 51 - compareQImages(other null)
+not ok 52 - compareQImages(other null)
   ---
   type: QCOMPARE
   message: Compared QImages differ.
@@ -410,8 +411,8 @@ not ok 51 - compareQImages(other null)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 52 - compareQImages(equal)
-not ok 53 - compareQImages(different size)
+ok 53 - compareQImages(equal)
+not ok 54 - compareQImages(different size)
   ---
   type: QCOMPARE
   message: Compared QImages differ in size.
@@ -423,7 +424,7 @@ not ok 53 - compareQImages(different size)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 54 - compareQImages(different format)
+not ok 55 - compareQImages(different format)
   ---
   type: QCOMPARE
   message: Compared QImages differ in format.
@@ -435,14 +436,14 @@ not ok 54 - compareQImages(different format)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 55 - compareQImages(different pixels)
+not ok 56 - compareQImages(different pixels)
   ---
   # Compared values are not the same
   at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 56 - compareQImages(different dpr)
+not ok 57 - compareQImages(different dpr)
   ---
   type: QCOMPARE
   message: Compared QImages differ in device pixel ratio.
@@ -454,8 +455,8 @@ not ok 56 - compareQImages(different dpr)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 57 - compareQRegion(equal-empty)
-not ok 58 - compareQRegion(1-empty)
+ok 58 - compareQRegion(equal-empty)
+not ok 59 - compareQRegion(1-empty)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -467,8 +468,8 @@ not ok 58 - compareQRegion(1-empty)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 59 - compareQRegion(equal)
-not ok 60 - compareQRegion(different lists)
+ok 60 - compareQRegion(equal)
+not ok 61 - compareQRegion(different lists)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -480,7 +481,7 @@ not ok 60 - compareQRegion(different lists)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 61 - compareQVector2D()
+not ok 62 - compareQVector2D()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -492,7 +493,7 @@ not ok 61 - compareQVector2D()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 62 - compareQVector3D()
+not ok 63 - compareQVector3D()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -504,7 +505,7 @@ not ok 62 - compareQVector3D()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 63 - compareQVector4D()
+not ok 64 - compareQVector4D()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -516,7 +517,7 @@ not ok 63 - compareQVector4D()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 64 - tryCompare()
+not ok 65 - tryCompare()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -532,7 +533,7 @@ not ok 64 - tryCompare()
     - severity: info
       message: Should now time out and fail
   ...
-not ok 65 - verify()
+not ok 66 - verify()
   ---
   type: QVERIFY
   message: Verification failed
@@ -544,7 +545,7 @@ not ok 65 - verify()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 66 - verify2()
+not ok 67 - verify2()
   ---
   type: QVERIFY
   message: 42 >= 2 (as expected, in fact)
@@ -556,7 +557,7 @@ not ok 66 - verify2()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 67 - tryVerify()
+not ok 68 - tryVerify()
   ---
   type: QVERIFY
   message: Verification failed
@@ -572,7 +573,7 @@ not ok 67 - tryVerify()
     - severity: info
       message: Should now time out and fail
   ...
-not ok 68 - tryVerify2()
+not ok 69 - tryVerify2()
   ---
   type: QVERIFY
   message: Should time out and fail
@@ -584,9 +585,9 @@ not ok 68 - tryVerify2()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 69 - verifyExplicitOperatorBool()
-ok 70 - cleanupTestCase()
-1..70
-# tests 70
-# pass 21
+ok 70 - verifyExplicitOperatorBool()
+ok 71 - cleanupTestCase()
+1..71
+# tests 71
+# pass 22
 # fail 49
