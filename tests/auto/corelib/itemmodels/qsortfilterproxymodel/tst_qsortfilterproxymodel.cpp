@@ -62,6 +62,7 @@ void tst_QSortFilterProxyModel::cleanup()
     m_proxy->sort(-1, Qt::AscendingOrder);
     m_model->clear();
     m_model->insertColumns(0, 1);
+    QCoreApplication::processEvents();  // cleanup possibly queued events
 }
 
 /*
@@ -1100,7 +1101,6 @@ void tst_QSortFilterProxyModel::filterColumns_data()
                              << "bravo"
                              << "lima")
                          << true;
-
     QTest::newRow("some") << "lie"
                           << (QStringList()
                               << "charlie"
@@ -1126,6 +1126,7 @@ void tst_QSortFilterProxyModel::filterColumns()
     // prepare model
     m_model->setColumnCount(initial.size());
     m_model->setRowCount(1);
+    QCoreApplication::processEvents();  // QAbstractProxyModel queues the headerDataChanged() signal
     QCOMPARE(m_model->columnCount(QModelIndex()), initial.size());
     QCOMPARE(m_model->rowCount(QModelIndex()), 1);
     // set data
