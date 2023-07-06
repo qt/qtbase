@@ -12,6 +12,8 @@
 #include <QtGui/QVector3D>
 #include <QtGui/QVector4D>
 #endif
+#include <QSet>
+#include <vector>
 using namespace Qt::StringLiterals;
 
 /* XPM test data for QPixmap, QImage tests (use drag cursors as example) */
@@ -127,6 +129,7 @@ private slots:
     void compareQListIntToInitializerList_data();
     void compareQListIntToInitializerList();
     void compareQListDouble();
+    void compareContainerToInitializerList();
 #ifdef QT_GUI_LIB
     void compareQColor_data();
     void compareQColor();
@@ -504,6 +507,24 @@ void tst_Cmptest::compareQListDouble()
     QList<double> double1; double1 << 1.5 << 2 << 3;
     QList<double> double2; double2 << 1 << 2 << 4;
     QCOMPARE(double1, double2);
+}
+
+void tst_Cmptest::compareContainerToInitializerList()
+{
+    // Protect ',' in the list
+#define ARG(...) __VA_ARGS__
+    QSet<int> set{1, 2, 3};
+    QCOMPARE(set, ARG({1, 2, 3}));
+
+    std::vector<int> vec{1, 2, 3};
+    QCOMPARE(vec, ARG({1, 2, 3}));
+
+    vec.clear();
+    QCOMPARE(vec, {});
+
+    vec.push_back(42);
+    QCOMPARE(vec, {42});
+#undef ARG
 }
 
 #ifdef QT_GUI_LIB
