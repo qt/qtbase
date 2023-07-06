@@ -4,7 +4,7 @@
     <script type="text/javascript" src="qwasmwindow_harness.js"></script>
     <script>
         (async () => {
-            const instance = await createQtAppInstance({});
+            const instance = await qwasmwindow_harness_entry({});
             window.instance = instance;
 
             const testSandbox = document.createElement('div');
