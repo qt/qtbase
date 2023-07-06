@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Cmptest" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="70" failures="49" errors="0" skipped="0" time="@TEST_DURATION@">
+<testsuite name="tst_Cmptest" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="71" failures="49" errors="0" skipped="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -173,6 +173,7 @@
    Expected (double2): 1]]>
     </failure>
   </testcase>
+  <testcase name="compareContainerToInitializerList" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQColor(Qt::yellow vs &quot;yellow&quot;)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQColor(Qt::yellow vs Qt::green)" classname="tst_Cmptest" time="@TEST_DURATION@">
     <failure type="fail" message="Compared values are not the same">

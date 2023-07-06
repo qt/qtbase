@@ -579,7 +579,7 @@ namespace QTest
     QTEST_COMPARE_DECL(bool)
 #endif
 
-    template <typename T1, typename T2>
+    template <typename T1, typename T2 = T1>
     inline bool qCompare(const T1 &t1, const T2 &t2, const char *actual, const char *expected,
                          const char *file, int line)
     {
