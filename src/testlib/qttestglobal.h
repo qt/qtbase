@@ -4,10 +4,6 @@
 #ifndef QTTESTGLOBAL_H
 #define QTTESTGLOBAL_H
 
-#if 0
-#pragma qt_deprecates(qtest_global.h)
-#endif
-
 #include <QtCore/qglobal.h>
 #include <QtTest/qttestlib-config.h>
 #include <QtTest/qttestexports.h>
