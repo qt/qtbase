@@ -34,7 +34,7 @@ for(entry, DBUS_$${dbus_TYPE}S) {
     for(subent, $$list($$unique(files))) {
 
         !contains(subent, .*\\w\\.xml$) {
-            warning("Invalid D-BUS $${dbus_type}: '$$subent', please use 'com.mydomain.myinterface.xml' instead.")
+            warning("Invalid D-Bus $${dbus_type}: '$$subent', please use 'com.mydomain.myinterface.xml' instead.")
             next()
         }
 

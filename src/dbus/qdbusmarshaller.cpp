@@ -28,7 +28,7 @@ QDBusMarshaller::~QDBusMarshaller()
 void QDBusMarshaller::unregisteredTypeError(QMetaType id)
 {
     const char *name = id.name();
-    qWarning("QDBusMarshaller: type '%s' (%d) is not registered with D-BUS. "
+    qWarning("QDBusMarshaller: type '%s' (%d) is not registered with D-Bus. "
              "Use qDBusRegisterMetaType to register it",
              name ? name : "", id.id());
     error("Unregistered type %1 passed in arguments"_L1
@@ -237,7 +237,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(QMetaType kid, QMetaType vid)
     if (ksignature[1] != 0 || !QDBusUtil::isValidBasicType(*ksignature)) {
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wformat-overflow")
-        qWarning("QDBusMarshaller: type '%s' (%d) cannot be used as the key type in a D-BUS map.",
+        qWarning("QDBusMarshaller: type '%s' (%d) cannot be used as the key type in a D-Bus map.",
                  kid.name(), kid.id());
 QT_WARNING_POP
         error("Type %1 passed in arguments cannot be used as a key in a map"_L1
@@ -472,7 +472,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
         Q_FALLTHROUGH();
 
     default:
-        qWarning("QDBusMarshaller::appendVariantInternal: Found unknown D-BUS type '%s'",
+        qWarning("QDBusMarshaller::appendVariantInternal: Found unknown D-Bus type '%s'",
                  signature);
         return false;
     }
@@ -492,7 +492,7 @@ bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
     int code = q_dbus_message_iter_get_arg_type(&demarshaller->iterator);
     if (QDBusUtil::isValidBasicType(code)) {
         // easy: just append
-        // do exactly like the D-BUS docs suggest
+        // do exactly like the D-Bus docs suggest
         // (see apidocs for q_dbus_message_iter_get_basic)
 
         qlonglong value;

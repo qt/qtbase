@@ -4,7 +4,7 @@
 #ifndef QDBUSEXTRATYPES_H
 #define QDBUSEXTRATYPES_H
 
-// define some useful types for D-BUS
+// define some useful types for D-Bus
 
 #include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qvariant.h>

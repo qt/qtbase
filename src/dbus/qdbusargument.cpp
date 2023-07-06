@@ -51,14 +51,14 @@ QByteArray QDBusArgumentPrivate::createSignature(int id)
     delete marshaller;
 
     if (signature.isEmpty() || !ok || !QDBusUtil::isValidSingleSignature(QString::fromLatin1(signature))) {
-        qWarning("QDBusMarshaller: type '%s' produces invalid D-BUS signature '%s' "
+        qWarning("QDBusMarshaller: type '%s' produces invalid D-Bus signature '%s' "
                  "(Did you forget to call beginStructure() ?)",
                  QMetaType(id).name(), signature.isEmpty() ? "<empty>" : signature.constData());
         return "";
     } else if ((signature.at(0) != DBUS_TYPE_ARRAY && signature.at(0) != DBUS_STRUCT_BEGIN_CHAR) ||
                (signature.at(0) == DBUS_TYPE_ARRAY && (signature.at(1) == DBUS_TYPE_BYTE ||
                                                        signature.at(1) == DBUS_TYPE_STRING))) {
-        qWarning("QDBusMarshaller: type '%s' attempts to redefine basic D-BUS type '%s' (%s) "
+        qWarning("QDBusMarshaller: type '%s' attempts to redefine basic D-Bus type '%s' (%s) "
                  "(Did you forget to call beginStructure() ?)",
                  QMetaType(id).name(), signature.constData(),
                  QDBusMetaType::signatureToMetaType(signature).name());
@@ -562,8 +562,8 @@ QDBusArgument::ElementType QDBusArgument::currentType() const
 }
 
 /*!
-    Extracts one D-BUS primitive argument of type \c{BYTE} from the
-    D-BUS stream and puts it into \a arg.
+    Extracts one D-Bus primitive argument of type \c{BYTE} from the
+    D-Bus stream and puts it into \a arg.
 */
 const QDBusArgument &QDBusArgument::operator>>(uchar &arg) const
 {

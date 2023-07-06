@@ -47,7 +47,7 @@ public:
 
     void swap(QDBusArgument &other) noexcept { qt_ptr_swap(d, other.d); }
 
-    // used for marshalling (Qt -> D-BUS)
+    // used for marshalling (Qt -> D-Bus)
     QDBusArgument &operator<<(uchar arg);
     QDBusArgument &operator<<(bool arg);
     QDBusArgument &operator<<(short arg);
@@ -80,7 +80,7 @@ public:
 
     void appendVariant(const QVariant &v);
 
-    // used for de-marshalling (D-BUS -> Qt)
+    // used for de-marshalling (D-Bus -> Qt)
     QString currentSignature() const;
     ElementType currentType() const;
 

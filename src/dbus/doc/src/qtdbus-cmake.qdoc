@@ -172,7 +172,7 @@ qt_generate_dbus_interface(header
 \section1 Description
 
 Parses the C++ source or header file containing a QObject-derived class
-declaration and generates a file containing the D-BUS Introspection XML.
+declaration and generates a file containing the D-Bus Introspection XML.
 
 By default, the generated XML file is stored in the current binary directory,
 and has the same base name as the header. You can specify a different name or
