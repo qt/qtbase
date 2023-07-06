@@ -336,16 +336,15 @@ public:
     [[nodiscard]] QString mid(qsizetype position, qsizetype n = -1) const;
 
     [[nodiscard]] QString first(qsizetype n) const
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QString(data(), n); }
+    { verify(0, n); return QString(data(), n); }
     [[nodiscard]] QString last(qsizetype n) const
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QString(data() + size() - n, n); }
+    { verify(0, n); return QString(data() + size() - n, n); }
     [[nodiscard]] QString sliced(qsizetype pos) const
-    { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QString(data() + pos, size() - pos); }
+    { verify(pos, 0); return QString(data() + pos, size() - pos); }
     [[nodiscard]] QString sliced(qsizetype pos, qsizetype n) const
-    { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QString(data() + pos, n); }
+    { verify(pos, n); return QString(data() + pos, n); }
     [[nodiscard]] QString chopped(qsizetype n) const
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return first(size() - n); }
-
+    { verify(0, n); return first(size() - n); }
 
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
@@ -1003,6 +1002,15 @@ private:
         return T(val);
     }
 
+    Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
+                                          [[maybe_unused]] qsizetype n = 1) const
+    {
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= d.size);
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= d.size - pos);
+    }
+
 public:
     inline DataPointer &data_ptr() { return d; }
     inline const DataPointer &data_ptr() const { return d; }
@@ -1098,9 +1106,9 @@ QString QAnyStringView::toString() const
 QString::QString(QLatin1StringView latin1)
 { *this = QString::fromLatin1(latin1.data(), latin1.size()); }
 const QChar QString::at(qsizetype i) const
-{ Q_ASSERT(size_t(i) < size_t(size())); return QChar(d.data()[i]); }
+{ verify(i, 1); return QChar(d.data()[i]); }
 const QChar QString::operator[](qsizetype i) const
-{ Q_ASSERT(size_t(i) < size_t(size())); return QChar(d.data()[i]); }
+{ verify(i, 1); return QChar(d.data()[i]); }
 const QChar *QString::unicode() const
 { return data(); }
 const QChar *QString::data() const
@@ -1210,7 +1218,7 @@ void QString::squeeze()
 QString &QString::setUtf16(const ushort *autf16, qsizetype asize)
 { return setUnicode(reinterpret_cast<const QChar *>(autf16), asize); }
 QChar &QString::operator[](qsizetype i)
-{ Q_ASSERT(i >= 0 && i < size()); return data()[i]; }
+{ verify(i, 1); return data()[i]; }
 QChar &QString::front() { return operator[](0); }
 QChar &QString::back() { return operator[](size() - 1); }
 QString::iterator QString::begin()

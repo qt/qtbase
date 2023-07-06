@@ -157,15 +157,15 @@ public:
     [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) const;
 
     [[nodiscard]] QByteArray first(qsizetype n) const
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QByteArray(data(), n); }
+    { verify(0, n); return QByteArray(data(), n); }
     [[nodiscard]] QByteArray last(qsizetype n) const
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QByteArray(data() + size() - n, n); }
+    { verify(0, n); return QByteArray(data() + size() - n, n); }
     [[nodiscard]] QByteArray sliced(qsizetype pos) const
-    { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QByteArray(data() + pos, size() - pos); }
+    { verify(pos, 0); return QByteArray(data() + pos, size() - pos); }
     [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) const
-    { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QByteArray(data() + pos, n); }
+    { verify(pos, n); return QByteArray(data() + pos, n); }
     [[nodiscard]] QByteArray chopped(qsizetype len) const
-    { Q_ASSERT(len >= 0); Q_ASSERT(len <= size()); return first(size() - len); }
+    { verify(0, len); return first(size() - len); }
 
     bool startsWith(QByteArrayView bv) const
     { return QtPrivate::startsWith(qToByteArrayViewIgnoringNull(*this), bv); }
@@ -491,6 +491,15 @@ private:
     void reallocGrowData(qsizetype n);
     void expand(qsizetype i);
 
+    Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
+                                          [[maybe_unused]] qsizetype n = 1) const
+    {
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= d.size);
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= d.size - pos);
+    }
+
     static QByteArray toLower_helper(const QByteArray &a);
     static QByteArray toLower_helper(QByteArray &a);
     static QByteArray toUpper_helper(const QByteArray &a);
@@ -521,9 +530,9 @@ inline constexpr QByteArray::QByteArray() noexcept {}
 inline QByteArray::~QByteArray() {}
 
 inline char QByteArray::at(qsizetype i) const
-{ Q_ASSERT(size_t(i) < size_t(size())); return d.data()[i]; }
+{ verify(i, 1); return d.data()[i]; }
 inline char QByteArray::operator[](qsizetype i) const
-{ Q_ASSERT(size_t(i) < size_t(size())); return d.data()[i]; }
+{ verify(i, 1); return d.data()[i]; }
 
 #ifndef QT_NO_CAST_FROM_BYTEARRAY
 inline QByteArray::operator const char *() const
@@ -573,7 +582,7 @@ inline void QByteArray::squeeze()
 }
 
 inline char &QByteArray::operator[](qsizetype i)
-{ Q_ASSERT(i >= 0 && i < size()); return data()[i]; }
+{ verify(i, 1); return data()[i]; }
 inline char &QByteArray::front() { return operator[](0); }
 inline char &QByteArray::back() { return operator[](size() - 1); }
 inline QByteArray &QByteArray::append(qsizetype n, char ch)

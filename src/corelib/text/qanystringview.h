@@ -250,20 +250,20 @@ public:
     }
 
     [[nodiscard]] constexpr QAnyStringView sliced(qsizetype pos) const
-    { verify(pos); auto r = *this; r.advanceData(pos); r.setSize(size() - pos); return r; }
+    { verify(pos, 0); auto r = *this; r.advanceData(pos); r.setSize(size() - pos); return r; }
     [[nodiscard]] constexpr QAnyStringView sliced(qsizetype pos, qsizetype n) const
     { verify(pos, n); auto r = *this; r.advanceData(pos); r.setSize(n); return r; }
     [[nodiscard]] constexpr QAnyStringView first(qsizetype n) const
-    { verify(n); return sliced(0, n); }
+    { verify(0, n); return sliced(0, n); }
     [[nodiscard]] constexpr QAnyStringView last(qsizetype n) const
-    { verify(n); return sliced(size() - n, n); }
+    { verify(0, n); return sliced(size() - n, n); }
     [[nodiscard]] constexpr QAnyStringView chopped(qsizetype n) const
-    { verify(n); return sliced(0, size() - n); }
+    { verify(0, n); return sliced(0, size() - n); }
 
     constexpr void truncate(qsizetype n)
-    { verify(n); setSize(n); }
+    { verify(0, n); setSize(n); }
     constexpr void chop(qsizetype n)
-    { verify(n); setSize(size() - n); }
+    { verify(0, n); setSize(size() - n); }
 
 
     [[nodiscard]] inline QString toString() const; // defined in qstring.h
@@ -329,7 +329,8 @@ private:
     constexpr void setSize(qsizetype sz) noexcept { m_size = size_t(sz) | tag(); }
     constexpr void advanceData(qsizetype delta) noexcept
     { m_data_utf8 += delta * charSize(); }
-    Q_ALWAYS_INLINE constexpr void verify(qsizetype pos, qsizetype n = 0) const
+    Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
+                                          [[maybe_unused]] qsizetype n = 1) const
     {
         Q_ASSERT(pos >= 0);
         Q_ASSERT(pos <= size());

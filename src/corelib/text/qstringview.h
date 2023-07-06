@@ -184,7 +184,7 @@ public:
     [[nodiscard]] constexpr const storage_type *utf16() const noexcept { return m_data; }
 
     [[nodiscard]] constexpr QChar operator[](qsizetype n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n < size()), QChar(m_data[n]); }
+    { verify(n, 1); return QChar(m_data[n]); }
 
     //
     // QString API
@@ -220,20 +220,20 @@ public:
     }
 
     [[nodiscard]] constexpr QStringView first(qsizetype n) const noexcept
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QStringView(m_data, n); }
+    { verify(0, n); return QStringView(m_data, n); }
     [[nodiscard]] constexpr QStringView last(qsizetype n) const noexcept
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QStringView(m_data + size() - n, n); }
+    { verify(0, n); return QStringView(m_data + size() - n, n); }
     [[nodiscard]] constexpr QStringView sliced(qsizetype pos) const noexcept
-    { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QStringView(m_data + pos, size() - pos); }
+    { verify(pos, 0); return QStringView(m_data + pos, size() - pos); }
     [[nodiscard]] constexpr QStringView sliced(qsizetype pos, qsizetype n) const noexcept
-    { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QStringView(m_data + pos, n); }
+    { verify(pos, n); return QStringView(m_data + pos, n); }
     [[nodiscard]] constexpr QStringView chopped(qsizetype n) const noexcept
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, m_size - n); }
+    { verify(0, n); return QStringView(m_data, m_size - n); }
 
     constexpr void truncate(qsizetype n) noexcept
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
+    { verify(0, n); ; m_size = n; }
     constexpr void chop(qsizetype n) noexcept
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
+    { verify(0, n); m_size -= n; }
 
     [[nodiscard]] QStringView trimmed() const noexcept { return QtPrivate::trimmed(*this); }
 
@@ -422,6 +422,15 @@ private:
     qsizetype m_size = 0;
     const storage_type *m_data = nullptr;
 #endif
+
+    Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
+                                          [[maybe_unused]] qsizetype n = 1) const
+    {
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= size());
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= size() - pos);
+    }
 
     constexpr int compare_single_char_helper(int diff) const noexcept
     { return diff ? diff : size() > 1 ? 1 : 0; }

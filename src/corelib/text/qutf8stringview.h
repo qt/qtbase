@@ -207,7 +207,7 @@ public:
 #endif
 
     [[nodiscard]] constexpr storage_type operator[](qsizetype n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n < size()), m_data[n]; }
+    { verify(n, 1); return m_data[n]; }
 
     //
     // QString API
@@ -238,20 +238,20 @@ public:
     }
 
     [[nodiscard]] constexpr QBasicUtf8StringView sliced(qsizetype pos) const
-    { verify(pos); return QBasicUtf8StringView{m_data + pos, m_size - pos}; }
+    { verify(pos, 0); return QBasicUtf8StringView{m_data + pos, m_size - pos}; }
     [[nodiscard]] constexpr QBasicUtf8StringView sliced(qsizetype pos, qsizetype n) const
     { verify(pos, n); return QBasicUtf8StringView(m_data + pos, n); }
     [[nodiscard]] constexpr QBasicUtf8StringView first(qsizetype n) const
-    { verify(n); return QBasicUtf8StringView(m_data, n); }
+    { verify(0, n); return QBasicUtf8StringView(m_data, n); }
     [[nodiscard]] constexpr QBasicUtf8StringView last(qsizetype n) const
-    { verify(n); return QBasicUtf8StringView(m_data + m_size - n, n); }
+    { verify(0, n); return QBasicUtf8StringView(m_data + m_size - n, n); }
     [[nodiscard]] constexpr QBasicUtf8StringView chopped(qsizetype n) const
-    { verify(n); return QBasicUtf8StringView(m_data, m_size - n); }
+    { verify(0, n); return QBasicUtf8StringView(m_data, m_size - n); }
 
     constexpr void truncate(qsizetype n)
-    { verify(n); m_size = n; }
+    { verify(0, n); m_size = n; }
     constexpr void chop(qsizetype n)
-    { verify(n); m_size -= n; }
+    { verify(0, n); m_size -= n; }
 
     [[nodiscard]] inline bool isValidUtf8() const noexcept
     {
@@ -326,7 +326,8 @@ private:
     { return QBasicUtf8StringView::compare(lhs, rhs) > 0; }
 #endif
 
-    Q_ALWAYS_INLINE constexpr void verify(qsizetype pos, qsizetype n = 0) const
+    Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
+                                          [[maybe_unused]] qsizetype n = 1) const
     {
         Q_ASSERT(pos >= 0);
         Q_ASSERT(pos <= size());

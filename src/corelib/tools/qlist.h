@@ -259,6 +259,14 @@ private:
         const std::less<const T*> less = {};
         return !less(d->end(), i.i) && !less(i.i, d->begin());
     }
+
+    void verify([[maybe_unused]] qsizetype pos = 0, [[maybe_unused]] qsizetype n = 1) const
+    {
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= size());
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= size() - pos);
+    }
 public:
     QList(DataPointer dd) noexcept
         : d(dd)
@@ -633,27 +641,13 @@ public:
     QList<T> mid(qsizetype pos, qsizetype len = -1) const;
 
     QList<T> first(qsizetype n) const
-    {
-        Q_ASSERT(size_t(n) <= size_t(size()));
-        return QList<T>(begin(), begin() + n);
-    }
+    { verify(0, n); return QList<T>(begin(), begin() + n); }
     QList<T> last(qsizetype n) const
-    {
-        Q_ASSERT(size_t(n) <= size_t(size()));
-        return QList<T>(end() - n, end());
-    }
+    { verify(0, n); return QList<T>(end() - n, end()); }
     QList<T> sliced(qsizetype pos) const
-    {
-        Q_ASSERT(size_t(pos) <= size_t(size()));
-        return QList<T>(begin() + pos, end());
-    }
+    { verify(pos, 0); return QList<T>(begin() + pos, end()); }
     QList<T> sliced(qsizetype pos, qsizetype n) const
-    {
-        Q_ASSERT(size_t(pos) <= size_t(size()));
-        Q_ASSERT(n >= 0);
-        Q_ASSERT(pos + n <= size());
-        return QList<T>(begin() + pos, begin() + pos + n);
-    }
+    { verify(pos, n); return QList<T>(begin() + pos, begin() + pos + n); }
 
     T value(qsizetype i) const { return value(i, T()); }
     T value(qsizetype i, parameter_type defaultValue) const;
