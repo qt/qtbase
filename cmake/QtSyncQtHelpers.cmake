@@ -182,7 +182,14 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
             "Running syncqt.cpp for module: ${module}"
         VERBATIM
     )
+
+    set(add_sync_headers_to_all "")
+    if(is_interface_lib)
+        set(add_sync_headers_to_all ALL)
+    endif()
+
     add_custom_target(${target}_sync_headers
+        ${add_sync_headers_to_all}
         DEPENDS
             ${syncqt_outputs}
     )
