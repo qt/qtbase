@@ -37,11 +37,15 @@ set_source_files_properties("../../../shared/resources/testfont_italic.ttf"
 set_source_files_properties("../../../shared/resources/testfont_open.otf"
     PROPERTIES QT_RESOURCE_ALIAS "testfont_open.otf"
 )
+set_source_files_properties("../../../shared/resources/testfont_variable.ttf"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont_variable.ttf"
+)
 set(testdata_resource_files
     "../../../shared/resources/testfont.ttf"
     "../../../shared/resources/testfont_condensed.ttf"
     "../../../shared/resources/testfont_italic.ttf"
     "../../../shared/resources/testfont_open.otf"
+    "../../../shared/resources/testfont_variable.ttf"
     "LED_REAL.TTF"
 )
 

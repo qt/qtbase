@@ -12,6 +12,7 @@
 #include <qscreen.h>
 #include <qpa/qplatformscreen.h>
 #include <QtCore/QUuid>
+#include <QtCore/QLoggingCategory>
 #include <QtGui/QPainterPath>
 
 #ifndef QT_NO_FREETYPE
@@ -34,6 +35,7 @@
 #include FT_GLYPH_H
 #include FT_MODULE_H
 #include FT_LCD_FILTER_H
+#include FT_MULTIPLE_MASTERS_H
 
 #if defined(FT_CONFIG_OPTIONS_H)
 #include FT_CONFIG_OPTIONS_H
@@ -52,6 +54,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcFontMatch)
 
 using namespace Qt::StringLiterals;
 
@@ -243,6 +247,15 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         } else if (FT_New_Face(freetypeData->library, face_id.filename, face_id.index, &face)) {
             return nullptr;
         }
+
+#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20900
+        if (face_id.instanceIndex >= 0) {
+            qCDebug(lcFontMatch)
+                    << "Selecting named instance" << (face_id.instanceIndex)
+                    << "in" << face_id.filename;
+            FT_Set_Named_Instance(face, face_id.instanceIndex + 1);
+        }
+#endif
         newFreetype->face = face;
 
         newFreetype->ref.storeRelaxed(1);
@@ -747,6 +760,43 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
 
 static void dont_delete(void*) {}
 
+static FT_UShort calculateActualWeight(FT_Face face, QFontEngine::FaceId faceId)
+{
+    if (faceId.instanceIndex >= 0) {
+        FT_MM_Var *var = nullptr;
+        FT_Get_MM_Var(face, &var);
+        if (var != nullptr && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
+            for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
+                if (var->axis[axis].tag == MAKE_TAG('w', 'g', 'h', 't')) {
+                    return var->namedstyle[faceId.instanceIndex].coords[axis] >> 16;
+                }
+            }
+        }
+    }
+    if (const TT_OS2 *os2 = reinterpret_cast<const TT_OS2 *>(FT_Get_Sfnt_Table(face, ft_sfnt_os2))) {
+        return os2->usWeightClass;
+    }
+
+    return 700;
+}
+
+static bool calculateActualItalic(FT_Face face, QFontEngine::FaceId faceId)
+{
+    if (faceId.instanceIndex >= 0) {
+        FT_MM_Var *var = nullptr;
+        FT_Get_MM_Var(face, &var);
+        if (var != nullptr && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
+            for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
+                if (var->axis[axis].tag == MAKE_TAG('i', 't', 'a', 'l')) {
+                    return (var->namedstyle[faceId.instanceIndex].coords[axis] >> 16) == 1;
+                }
+            }
+        }
+    }
+
+    return (face->style_flags & FT_STYLE_FLAG_ITALIC);
+}
+
 bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
                          QFreetypeFace *freetypeFace)
 {
@@ -778,18 +828,18 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     FT_Face face = lockFace();
 
     if (FT_IS_SCALABLE(face)) {
-        bool fake_oblique = (fontDef.style != QFont::StyleNormal) && !(face->style_flags & FT_STYLE_FLAG_ITALIC) && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_ITALIC");
+        bool isItalic = calculateActualItalic(face, faceId);
+        bool fake_oblique = (fontDef.style != QFont::StyleNormal) && !isItalic && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_ITALIC");
         if (fake_oblique)
             obliquen = true;
         FT_Set_Transform(face, &matrix, nullptr);
         freetype->matrix = matrix;
         // fake bold
         if ((fontDef.weight >= QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face)  && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD")) {
-            if (const TT_OS2 *os2 = reinterpret_cast<const TT_OS2 *>(FT_Get_Sfnt_Table(face, ft_sfnt_os2))) {
-                if (os2->usWeightClass < 700 &&
-                    (fontDef.pixelSize < 64 || qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD_LIMIT"))) {
-                    embolden = true;
-                }
+            FT_UShort actualWeight = calculateActualWeight(face, faceId);
+            if (actualWeight < 700 &&
+                (fontDef.pixelSize < 64 || qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD_LIMIT"))) {
+                embolden = true;
             }
         }
         // underline metrics
@@ -2189,6 +2239,15 @@ QFontEngine *QFontEngineFT::cloneWithSize(qreal pixelSize) const
 Qt::HANDLE QFontEngineFT::handle() const
 {
     return non_locked_face();
+}
+
+bool QFontEngineFT::supportsVariableApplicationFonts() const
+{
+#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20900
+    return true;
+#else
+    return false;
+#endif
 }
 
 QT_END_NAMESPACE

@@ -127,10 +127,11 @@ public:
     virtual bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
 
     struct FaceId {
-        FaceId() : index(0), encoding(0) {}
+        FaceId() : index(0), instanceIndex(-1), encoding(0) {}
         QByteArray filename;
         QByteArray uuid;
         int index;
+        int instanceIndex;
         int encoding;
     };
     virtual FaceId faceId() const { return FaceId(); }
@@ -212,6 +213,7 @@ public:
 
     inline bool canRender(uint ucs4) const { return glyphIndex(ucs4) != 0; }
     virtual bool canRender(const QChar *str, int len) const;
+    virtual bool supportsVariableApplicationFonts() const;
 
     virtual bool supportsTransformation(const QTransform &transform) const;
 
@@ -370,13 +372,17 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QFontEngine::ShaperFlags)
 
 inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId &f2)
 {
-    return f1.index == f2.index && f1.encoding == f2.encoding && f1.filename == f2.filename && f1.uuid == f2.uuid;
+    return f1.index == f2.index
+            && f1.encoding == f2.encoding
+            && f1.filename == f2.filename
+            && f1.uuid == f2.uuid
+            && f1.instanceIndex == f2.instanceIndex;
 }
 
 inline size_t qHash(const QFontEngine::FaceId &f, size_t seed = 0)
     noexcept(noexcept(qHash(f.filename)))
 {
-    return qHashMulti(seed, f.filename, f.uuid, f.index, f.encoding);
+    return qHashMulti(seed, f.filename, f.uuid, f.index, f.instanceIndex, f.encoding);
 }
 
 

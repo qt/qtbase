@@ -10,6 +10,7 @@
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDir>
 #include <QtCore/QtEndian>
+#include <QtCore/QLoggingCategory>
 
 #undef QT_NO_FREETYPE
 #include "qfontengine_ft_p.h"
@@ -18,7 +19,13 @@
 #include FT_TRUETYPE_TABLES_H
 #include FT_ERRORS_H
 
+#include FT_MULTIPLE_MASTERS_H
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_IDS_H
+
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcFontDb)
 
 using namespace Qt::StringLiterals;
 
@@ -54,6 +61,7 @@ QFontEngine *QFreeTypeFontDatabase::fontEngine(const QFontDef &fontDef, void *us
     QFontEngine::FaceId faceId;
     faceId.filename = QFile::encodeName(fontfile->fileName);
     faceId.index = fontfile->indexValue;
+    faceId.instanceIndex = fontfile->instanceIndex;
 
     return QFontEngineFT::create(fontDef, faceId, fontfile->data);
 }
@@ -76,6 +84,110 @@ void QFreeTypeFontDatabase::releaseHandle(void *handle)
 }
 
 extern FT_Library qt_getFreetype();
+
+void QFreeTypeFontDatabase::addNamedInstancesForFace(void *face_,
+                                                     int faceIndex,
+                                                     const QString &family,
+                                                     const QString &styleName,
+                                                     QFont::Weight weight,
+                                                     QFont::Stretch stretch,
+                                                     QFont::Style style,
+                                                     bool fixedPitch,
+                                                     const QSupportedWritingSystems &writingSystems,
+                                                     const QByteArray &fileName,
+                                                     const QByteArray &fontData)
+{
+    FT_Face face = reinterpret_cast<FT_Face>(face_);
+
+    // Note: The following does not actually depend on API from 2.9, but the
+    // FT_Set_Named_Instance() was added in 2.9, so to avoid populating the database with
+    // named instances that cannot be selected, we disable the feature on older Freetype
+    // versions.
+#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20900
+    FT_MM_Var *var = nullptr;
+    FT_Get_MM_Var(face, &var);
+    if (var != nullptr) {
+        for (FT_UInt i = 0; i < var->num_namedstyles; ++i) {
+           FT_UInt id = var->namedstyle[i].strid;
+
+           QFont::Weight instanceWeight = weight;
+           QFont::Stretch instanceStretch = stretch;
+           QFont::Style instanceStyle = style;
+           for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
+               if (var->axis[axis].tag == MAKE_TAG('w', 'g', 'h', 't')) {
+                   instanceWeight = QFont::Weight(var->namedstyle[i].coords[axis] >> 16);
+               } else if (var->axis[axis].tag == MAKE_TAG('w', 'd', 't', 'h')) {
+                   instanceStretch = QFont::Stretch(var->namedstyle[i].coords[axis] >> 16);
+               }  else if (var->axis[axis].tag == MAKE_TAG('i', 't', 'a', 'l')) {
+                   FT_UInt ital = var->namedstyle[i].coords[axis] >> 16;
+                   if (ital == 1)
+                       instanceStyle = QFont::StyleItalic;
+                   else
+                       instanceStyle = QFont::StyleNormal;
+               }
+           }
+
+           FT_UInt count = FT_Get_Sfnt_Name_Count(face);
+           for (FT_UInt j = 0; j < count; ++j) {
+               FT_SfntName name;
+               if (FT_Get_Sfnt_Name(face, j, &name))
+                   continue;
+
+               if (name.name_id != id)
+                   continue;
+
+               // Only support Unicode for now
+               if (name.encoding_id != TT_MS_ID_UNICODE_CS)
+                   continue;
+
+               // Sfnt names stored as UTF-16BE
+               QString instanceName;
+               for (FT_UInt k = 0; k < name.string_len; k += 2)
+                   instanceName += QChar((name.string[k] << 8) + name.string[k + 1]);
+               if (instanceName != styleName) {
+                   FontFile *variantFontFile = new FontFile{
+                       QFile::decodeName(fileName),
+                       faceIndex,
+                       int(i),
+                       fontData
+                   };
+
+                   qCDebug(lcFontDb) << "Registering named instance" << i
+                                     << ":" << instanceName
+                                     << "for font family" << family
+                                     << "with weight" << instanceWeight
+                                     << ", style" << instanceStyle
+                                     << ", stretch" << instanceStretch;
+
+                   registerFont(family,
+                                instanceName,
+                                QString(),
+                                instanceWeight,
+                                instanceStyle,
+                                instanceStretch,
+                                true,
+                                true,
+                                0,
+                                fixedPitch,
+                                writingSystems,
+                                variantFontFile);
+               }
+           }
+        }
+    }
+#else
+    Q_UNUSED(face);
+    Q_UNUSED(family);
+    Q_UNUSED(styleName);
+    Q_UNUSED(weight);
+    Q_UNUSED(stretch);
+    Q_UNUSED(style);
+    Q_UNUSED(fixedPitch);
+    Q_UNUSED(writingSystems);
+    Q_UNUSED(fontData);
+#endif
+
+}
 
 QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file, QFontDatabasePrivate::ApplicationFont *applicationFont)
 {
@@ -194,6 +306,7 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
         FontFile *fontFile = new FontFile{
             QFile::decodeName(file),
             index,
+            -1,
             fontData
         };
 
@@ -211,6 +324,9 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
         }
 
         registerFont(family, styleName, QString(), weight, style, stretch, true, true, 0, fixedPitch, writingSystems, fontFile);
+
+        addNamedInstancesForFace(face, index, family, styleName, weight, stretch, style, fixedPitch, writingSystems, file, fontData);
+
         families.append(family);
 
         FT_Done_Face(face);

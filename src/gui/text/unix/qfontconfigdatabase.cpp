@@ -29,6 +29,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcFontDb)
+
 static inline int mapToQtWeightForRange(int fcweight, int fcLower, int fcUpper, int qtLower, int qtUpper)
 {
     return qtLower + ((fcweight - fcLower) * (qtUpper - qtLower)) / (fcUpper - fcLower);
@@ -366,7 +368,10 @@ static inline bool requiresOpenType(int writingSystem)
             || writingSystem == QFontDatabase::Khmer || writingSystem == QFontDatabase::Nko);
 }
 
-static void populateFromPattern(FcPattern *pattern, QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr)
+static void populateFromPattern(FcPattern *pattern,
+                                QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr,
+                                FT_Face face = nullptr,
+                                QFontconfigDatabase *db = nullptr)
 {
     QString familyName;
     QString familyNameLang;
@@ -489,6 +494,20 @@ static void populateFromPattern(FcPattern *pattern, QFontDatabasePrivate::Applic
     }
 
     QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1StringView((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
+    if (applicationFont != nullptr && face != nullptr && db != nullptr) {
+        db->addNamedInstancesForFace(face,
+                                     indexValue,
+                                     familyName,
+                                     styleName,
+                                     weight,
+                                     stretch,
+                                     style,
+                                     fixedPitch,
+                                     writingSystems,
+                                     QByteArray((const char*)file_value),
+                                     applicationFont->data);
+    }
+
 //        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
 
     for (int k = 1; FcPatternGetString(pattern, FC_FAMILY, k, &value) == FcResultMatch; ++k) {
@@ -702,6 +721,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
     QFontEngine::FaceId fid;
     fid.filename = QFile::encodeName(fontfile->fileName);
     fid.index = fontfile->indexValue;
+    fid.instanceIndex = fontfile->instanceIndex;
 
     // FIXME: Unify with logic in QFontEngineFT::create()
     QFontEngineFT *engine = new QFontEngineFT(f);
@@ -803,26 +823,28 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString &family, QFont
     return fallbackFamilies;
 }
 
-static FcPattern *queryFont(const FcChar8 *file, const QByteArray &data, int id, FcBlanks *blanks, int *count)
+static FcPattern *queryFont(const FcChar8 *file, const QByteArray &data, int id, FcBlanks *blanks, int *count, FT_Face *face)
 {
 #if FC_VERSION < 20402
     Q_UNUSED(data);
+    *face = nullptr;
     return FcFreeTypeQuery(file, id, blanks, count);
 #else
-    if (data.isEmpty())
+    if (data.isEmpty()) {
+        *face = nullptr;
         return FcFreeTypeQuery(file, id, blanks, count);
+    }
 
     FT_Library lib = qt_getFreetype();
 
     FcPattern *pattern = nullptr;
 
-    FT_Face face;
-    if (!FT_New_Memory_Face(lib, (const FT_Byte *)data.constData(), data.size(), id, &face)) {
-        *count = face->num_faces;
+    if (!FT_New_Memory_Face(lib, (const FT_Byte *)data.constData(), data.size(), id, face)) {
+        *count = (*face)->num_faces;
 
-        pattern = FcFreeTypeQueryFace(face, file, id, blanks);
-
-        FT_Done_Face(face);
+        pattern = FcFreeTypeQueryFace(*face, file, id, blanks);
+    } else {
+        *face = nullptr;
     }
 
     return pattern;
@@ -850,8 +872,9 @@ QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, 
 
     FcPattern *pattern;
     do {
+        FT_Face face;
         pattern = queryFont((const FcChar8 *)QFile::encodeName(fileName).constData(),
-                            fontData, id, blanks, &count);
+                            fontData, id, blanks, &count, &face);
         if (!pattern)
             return families;
 
@@ -860,7 +883,10 @@ QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, 
             QString family = QString::fromUtf8(reinterpret_cast<const char *>(fam));
             families << family;
         }
-        populateFromPattern(pattern, applicationFont);
+        populateFromPattern(pattern, applicationFont, face, this);
+
+        if (face)
+            FT_Done_Face(face);
 
         FcFontSetAdd(set, pattern);
 

@@ -159,6 +159,8 @@ private:
         return supportsHorizontalSubPixelPositions();
     }
 
+    bool supportsVariableApplicationFonts() const override;
+
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const override;
     int synthesized() const override;
 

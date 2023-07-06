@@ -247,6 +247,11 @@ bool QFontEngine::supportsTransformation(const QTransform &transform) const
     return transform.type() < QTransform::TxProject;
 }
 
+bool QFontEngine::supportsVariableApplicationFonts() const
+{
+    return false;
+}
+
 bool QFontEngine::expectsGammaCorrectedBlending() const
 {
     return true;

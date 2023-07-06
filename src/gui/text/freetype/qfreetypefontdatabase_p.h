@@ -26,6 +26,7 @@ struct FontFile
 {
     QString fileName;
     int indexValue;
+    int instanceIndex = -1;
 
     // Note: The data may be implicitly shared throughout the
     // font database and platform font database, so be careful
@@ -41,6 +42,13 @@ public:
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr) override;
     void releaseHandle(void *handle) override;
+
+    static void addNamedInstancesForFace(void *face, int faceIndex,
+                                         const QString &family, const QString &styleName,
+                                         QFont::Weight weight, QFont::Stretch stretch,
+                                         QFont::Style style, bool fixedPitch,
+                                         const QSupportedWritingSystems &writingSystems,
+                                         const QByteArray &fileName, const QByteArray &fontData);
 
     static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file, QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr);
 };
