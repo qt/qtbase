@@ -51,7 +51,7 @@ public:
         SQLite,
         Interbase,
         DB2,
-        MimerSQL
+        MimerSQL,
     };
 
     explicit QSqlDriver(QObject *parent = nullptr);
