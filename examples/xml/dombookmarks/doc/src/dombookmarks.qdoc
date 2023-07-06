@@ -4,7 +4,7 @@
 /*!
     \example dombookmarks
     \title DOM Bookmarks Application
-    \examplecategory {Input/Output}
+    \examplecategory {Data Processing & I/O}
     \ingroup xml-examples
     \meta tag {xml}
     \brief Provides a reader for XML Bookmark Exchange Language files.

@@ -3,7 +3,7 @@
 
 /*!
     \example serialization/savegame
-    \examplecategory {Input/Output}
+    \examplecategory {Data Processing & I/O}
     \title JSON Save Game Example
 
     \brief The JSON Save Game example demonstrates how to save and load a
