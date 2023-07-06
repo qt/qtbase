@@ -3,7 +3,7 @@
 
 /*!
     \example serialization/streambookmarks
-    \examplecategory {Input/Output}
+    \examplecategory {Data Processing & I/O}
     \meta tag {network}
     \title QXmlStream Bookmarks Example
     \brief Demonstrates how to read and write to XBEL files.
