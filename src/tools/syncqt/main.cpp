@@ -28,6 +28,7 @@
 #include <regex>
 #include <map>
 #include <set>
+#include <stdexcept>
 #include <array>
 
 enum ErrorCodes {
@@ -88,6 +89,33 @@ std::string asciiToUpper(std::string s)
     std::transform(s.begin(), s.end(), s.begin(),
                    [](unsigned char c) { return (c >= 'a' && c <= 'z') ? c & 0xdf : c; });
     return s;
+}
+
+bool parseVersion(const std::string &version, int &major, int &minor)
+{
+    const size_t separatorPos = version.find('.');
+    if (separatorPos == std::string::npos || separatorPos == (version.size() - 1)
+        || separatorPos == 0)
+        return false;
+
+    try {
+        size_t pos = 0;
+        major = std::stoi(version.substr(0, separatorPos), &pos);
+        if (pos != separatorPos)
+            return false;
+
+        const size_t nextPart = separatorPos + 1;
+        pos = 0;
+        minor = std::stoi(version.substr(nextPart), &pos);
+        if (pos != (version.size() - nextPart))
+            return false;
+    } catch (const std::invalid_argument &) {
+        return false;
+    } catch (const std::out_of_range &) {
+        return false;
+    }
+
+    return true;
 }
 
 class DummyOutputStream : public std::ostream
@@ -1015,10 +1043,13 @@ public:
         //    - 'qt_class(<symbol>)' manually declares the 'symbol' that should be used to generate
         //      the CaMeL case header alias.
         //
-        //    - 'qt_deprecates(<deprecated header file>)' indicates that this header file replaces
-        //      the 'deprecated header file'. syncqt will create the deprecated header file' with
-        //      the special deprecation content. See the 'generateDeprecatedHeaders' function
-        //      for details.
+        //    - 'qt_deprecates(<deprecated header file>[,<major.minor>])' indicates that this header
+        //      file replaces the 'deprecated header file'. syncqt will create the deprecated header
+        //      file' with the special deprecation content. Pragma optionally accepts the Qt version
+        //      where file should be removed. If the current Qt version is higher than the
+        //      deprecation version, syncqt displays deprecation warning and skips generating the
+        //      deprecated header.
+        //      See the 'generateDeprecatedHeaders' function for details.
         //
         //    - 'qt_no_master_include' indicates that syncqt should avoid including this header
         //      files into the module master header file.
@@ -1449,13 +1480,44 @@ public:
     {
         static std::regex cIdentifierSymbolsRegex("[^a-zA-Z0-9_]");
         static std::string guard_base = "DEPRECATED_HEADER_" + m_commandLineArgs->moduleName();
+        bool result = true;
         for (auto it = m_deprecatedHeaders.begin(); it != m_deprecatedHeaders.end(); ++it) {
-            std::string &replacement = it->second;
+            const std::string &descriptor = it->first;
+            const std::string &replacement = it->second;
+
+            const auto separatorPos = descriptor.find(',');
+            std::string headerName = descriptor.substr(0, separatorPos);
+            std::string versionDisclaimer;
+            if (separatorPos != std::string::npos) {
+                std::string version = descriptor.substr(separatorPos + 1);
+                versionDisclaimer = " and will be removed in Qt " + version;
+                int minor = 0;
+                int major = 0;
+                if (!utils::parseVersion(version, minor, major)) {
+                    std::cerr << ErrorMessagePreamble
+                              << "Invalid version format specified for the deprecated header file "
+                              << headerName << ": '" << version
+                              << "'. Expected format: 'major.minor'.\n";
+                    result = false;
+                    continue;
+                }
+
+                if (QT_VERSION_MAJOR > major
+                    || (QT_VERSION_MAJOR == major && QT_VERSION_MINOR >= minor)) {
+                    std::cerr << WarningMessagePreamble << headerName
+                              << " is marked as deprecated and will not be generated in Qt "
+                              << QT_VERSION_STR
+                              << ". The respective qt_deprecates pragma needs to be removed.\n";
+                    continue;
+                }
+            }
+
             std::string qualifiedHeaderName =
-                    std::regex_replace(it->first, cIdentifierSymbolsRegex, "_");
+                    std::regex_replace(headerName, cIdentifierSymbolsRegex, "_");
             std::string guard = guard_base + "_" + qualifiedHeaderName;
-            std::string warningText = "Header <" + m_commandLineArgs->moduleName() + "/" + it->first
-                    + "> is deprecated. Please include <" + replacement + "> instead.";
+            std::string warningText = "Header <" + m_commandLineArgs->moduleName() + "/"
+                    + headerName + "> is deprecated" + versionDisclaimer + ". Please include <"
+                    + replacement + "> instead.";
             std::stringstream buffer;
             buffer << "#ifndef " << guard << "\n"
                    << "#define " << guard << "\n"
@@ -1466,10 +1528,10 @@ public:
                    << "#endif\n"
                    << "#include <" << replacement << ">\n"
                    << "#endif\n";
-            writeIfDifferent(m_commandLineArgs->includeDir() + '/' + it->first, buffer.str());
-            m_producedHeaders.insert(it->first);
+            writeIfDifferent(m_commandLineArgs->includeDir() + '/' + headerName, buffer.str());
+            m_producedHeaders.insert(headerName);
         }
-        return true;
+        return result;
     }
 
     [[nodiscard]] bool generateHeaderCheckExceptions()
