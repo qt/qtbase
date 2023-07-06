@@ -148,6 +148,37 @@ while(NOT "${configure_args}" STREQUAL "")
     endif()
 endwhile()
 
+# Read the specified manually generator value from CMake command line.
+# The '-cmake-generator' argument has higher priority than CMake command line.
+if(NOT generator)
+    set(is_next_arg_generator_name FALSE)
+    foreach(arg IN LISTS cmake_args)
+        if(is_next_arg_generator_name)
+            set(is_next_arg_generator_name FALSE)
+            if(NOT arg MATCHES "^-.*")
+                set(generator "${arg}")
+                set(auto_detect_generator FALSE)
+            endif()
+        elseif(arg MATCHES "^-G(.*)")
+            set(generator "${CMAKE_MATCH_1}")
+            if(generator)
+                set(auto_detect_generator FALSE)
+            else()
+                set(is_next_arg_generator_name TRUE)
+            endif()
+        endif()
+    endforeach()
+endif()
+
+# Attempt to detect the generator type, either single or multi-config
+if("${generator}" STREQUAL "Xcode"
+    OR "${generator}" STREQUAL "Ninja Multi-Config"
+    OR "${generator}" MATCHES "^Visual Studio")
+    set(multi_config ON)
+else()
+    set(multi_config OFF)
+endif()
+
 if(FRESH_REQUESTED)
     push("-DQT_INTERNAL_FRESH_REQUESTED:BOOL=TRUE")
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
@@ -897,9 +928,9 @@ if(INPUT_force_debug_info)
 endif()
 
 list(LENGTH build_configs nr_of_build_configs)
-if(nr_of_build_configs EQUAL 1)
+if(nr_of_build_configs EQUAL 1 AND NOT multi_config)
     push("-DCMAKE_BUILD_TYPE=${build_configs}")
-elseif(nr_of_build_configs GREATER 1)
+elseif(nr_of_build_configs GREATER 1 OR multi_config)
     set(multi_config ON)
     string(REPLACE ";" "[[;]]" escaped_build_configs "${build_configs}")
     # We must not use the push macro here to avoid variable expansion.
