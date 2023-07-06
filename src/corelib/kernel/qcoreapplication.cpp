@@ -2611,7 +2611,7 @@ QStringList QCoreApplication::arguments()
     \brief the name of the organization that wrote this application
 
     The value is used by the QSettings class when it is constructed
-    using the empty constructor. This saves having to repeat this
+    using the default constructor. This saves having to repeat this
     information each time a QSettings object is created.
 
     On Mac, QSettings uses \l {QCoreApplication::}{organizationDomain()} as the organization
@@ -2651,7 +2651,7 @@ QString QCoreApplication::organizationName()
     \brief the Internet domain of the organization that wrote this application
 
     The value is used by the QSettings class when it is constructed
-    using the empty constructor. This saves having to repeat this
+    using the default constructor. This saves having to repeat this
     information each time a QSettings object is created.
 
     On Mac, QSettings uses organizationDomain() as the organization
@@ -2688,7 +2688,7 @@ QString QCoreApplication::organizationDomain()
     \brief the name of this application
 
     The application name is used in various Qt classes and modules,
-    most prominently in \l{QSettings} when it is constructed using the empty constructor.
+    most prominently in \l{QSettings} when it is constructed using the default constructor.
     Other uses are in formatted logging output (see \l{qSetMessagePattern()}),
     in output by \l{QCommandLineParser}, in \l{QTemporaryDir} and \l{QTemporaryFile}
     default paths, and in some file locations of \l{QStandardPaths}.
