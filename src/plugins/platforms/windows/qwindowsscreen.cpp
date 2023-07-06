@@ -305,11 +305,12 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
     const bool dpiChanged = !qFuzzyCompare(m_data.dpi.first, newData.dpi.first)
         || !qFuzzyCompare(m_data.dpi.second, newData.dpi.second);
     const bool orientationChanged = m_data.orientation != newData.orientation;
+    const bool primaryChanged = (newData.flags & QWindowsScreenData::PrimaryScreen) && !(m_data.flags & QWindowsScreenData::PrimaryScreen);
     m_data.dpi = newData.dpi;
     m_data.orientation = newData.orientation;
     m_data.geometry = newData.geometry;
     m_data.availableGeometry = newData.availableGeometry;
-
+    m_data.flags = (m_data.flags & ~QWindowsScreenData::PrimaryScreen) | (newData.flags & QWindowsScreenData::PrimaryScreen);
     if (dpiChanged) {
         QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(),
                                                                      newData.dpi.first,
@@ -321,6 +322,8 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
         QWindowSystemInterface::handleScreenGeometryChange(screen(),
                                                            newData.geometry, newData.availableGeometry);
     }
+    if (primaryChanged)
+        QWindowSystemInterface::handlePrimaryScreenChanged(this);
 }
 
 HMONITOR QWindowsScreen::handle() const
