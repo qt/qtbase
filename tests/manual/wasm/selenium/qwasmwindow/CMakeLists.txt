@@ -31,6 +31,6 @@ add_custom_command(
 add_custom_command(
     TARGET qwasmwindow_harness POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../../../util/wasm/qtwasmserver/qtwasmserver.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../util/wasm/qtwasmserver/qtwasmserver.py
             ${CMAKE_CURRENT_BINARY_DIR}/qtwasmserver.py
 )
