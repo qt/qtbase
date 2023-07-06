@@ -3,6 +3,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qtversion.h>
+#include <QtCore/qyieldcpu.h>
 
 #ifdef Q_COMPILER_THREAD_LOCAL
 #  include <threads.h>
@@ -60,6 +61,12 @@ const char *tst_qVersion()
 #else
     return NULL;
 #endif
+}
+
+void tst_qYieldCpu(void) Q_DECL_NOEXCEPT;
+void tst_qYieldCpu(void)
+{
+    qYieldCpu();
 }
 
 /* Static assertion */

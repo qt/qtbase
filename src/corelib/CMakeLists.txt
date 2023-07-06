@@ -251,6 +251,7 @@ qt_internal_add_module(Core
         thread/qthreadstorage.h
         thread/qtsan_impl.h
         thread/qwaitcondition.h thread/qwaitcondition_p.h
+        thread/qyieldcpu.h
         time/qcalendar.cpp time/qcalendar.h
         time/qcalendarbackend_p.h
         time/qcalendarmath_p.h
