@@ -77,24 +77,24 @@ project(QtBase
     LANGUAGES CXX C ASM
 )
 
-# Should this Qt be static or dynamically linked?
-option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
-set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
-
-# This variable is also set in Qt6CoreConfigExtras.cmake, but it's not loaded when building
-# qtbase. Set it here so qt_add_plugin can compute the proper plugin flavor.
-set(QT6_IS_SHARED_LIBS_BUILD ${BUILD_SHARED_LIBS})
-
-# BUILD_SHARED_LIBS influences the minimum required CMake version. The value is set either by:
-#   a cache variable provided on the configure command line
-#   or set by QtAutoDetect.cmake depending on the platform
-#   or specified via a toolchain file that is loaded by the project() call
-#   or set by the option() call above
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtCMakeVersionHelpers.cmake")
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtPublicCMakeVersionHelpers.cmake")
-qt_internal_check_and_warn_about_unsuitable_cmake_version()
-
 if(NOT QT_BUILD_STANDALONE_TESTS)
+    # Should this Qt be static or dynamically linked?
+    option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
+    set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+
+    # This variable is also set in Qt6CoreConfigExtras.cmake, but it's not loaded when building
+    # qtbase. Set it here so qt_add_plugin can compute the proper plugin flavor.
+    set(QT6_IS_SHARED_LIBS_BUILD ${BUILD_SHARED_LIBS})
+
+    # BUILD_SHARED_LIBS influences the minimum required CMake version. The value is set either by:
+    #   a cache variable provided on the configure command line
+    #   or set by QtAutoDetect.cmake depending on the platform
+    #   or specified via a toolchain file that is loaded by the project() call
+    #   or set by the option() call above
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtCMakeVersionHelpers.cmake")
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtPublicCMakeVersionHelpers.cmake")
+    qt_internal_check_and_warn_about_unsuitable_cmake_version()
+
     ## Add some paths to check for cmake modules:
     list(PREPEND CMAKE_MODULE_PATH
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake"

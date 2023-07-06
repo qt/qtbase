@@ -2516,7 +2516,7 @@ function(_qt_internal_add_library target)
     # This in contrast to CMake which defaults to STATIC.
     if(NOT arg_STATIC AND NOT arg_SHARED AND NOT arg_MODULE AND NOT arg_INTERFACE
             AND NOT arg_OBJECT)
-        if(QT6_IS_SHARED_LIBS_BUILD)
+        if(BUILD_SHARED_LIBS OR (NOT DEFINED BUILD_SHARED_LIBS AND QT6_IS_SHARED_LIBS_BUILD))
             set(type_to_create SHARED)
         else()
             set(type_to_create STATIC)
