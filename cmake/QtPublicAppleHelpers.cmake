@@ -283,13 +283,15 @@ function(_qt_internal_get_default_apple_bundle_identifier target out_var)
             string(APPEND prefix ".${infix}")
         endif()
 
-        message(WARNING
-            "No organization bundle identifier prefix could be retrieved from Xcode preferences. \
-            This can lead to code signing issues due to a non-unique bundle \
-            identifier. Please set up an organization prefix by creating a new project within \
-            Xcode, or consider providing a custom bundle identifier by specifying the \
-            MACOSX_BUNDLE_GUI_IDENTIFIER or XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER property."
-            )
+        if(CMAKE_GENERATOR STREQUAL "Xcode")
+            message(WARNING
+                "No organization bundle identifier prefix could be retrieved from Xcode preferences. \
+                This can lead to code signing issues due to a non-unique bundle \
+                identifier. Please set up an organization prefix by creating a new project within \
+                Xcode, or consider providing a custom bundle identifier by specifying the \
+                MACOSX_BUNDLE_GUI_IDENTIFIER or XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER property."
+                )
+        endif()
     endif()
 
     # Escape the prefix according to rfc 1034, it's important for code-signing. If an invalid
