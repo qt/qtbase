@@ -6,7 +6,6 @@
 
 #if 0
 #pragma qt_class(QSql)
-#pragma qt_deprecates(qsql.h)
 #endif
 
 #include <QtCore/qglobal.h>
