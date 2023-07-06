@@ -34,6 +34,33 @@ Q_DECLARE_LOGGING_CATEGORY(lcQrest)
 */
 
 /*!
+    \fn void QRestReply::readyRead(QRestReply *reply)
+
+    This signal is emitted when \a reply has received new data.
+
+    \sa body(), bytesAvailable(), isFinished()
+*/
+
+/*!
+    \fn void QRestReply::downloadProgress(qint64 bytesReceived,
+                                          qint64 bytesTotal,
+                                          QRestReply* reply)
+
+    This signal is emitted to indicate the progress of the download part of
+    this network \a reply.
+
+    The \a bytesReceived parameter indicates the number of bytes received,
+    while \a bytesTotal indicates the total number of bytes expected to be
+    downloaded. If the number of bytes to be downloaded is not known, for
+    instance due to a missing \c Content-Length header, \a bytesTotal
+    will be -1.
+
+    See \l QNetworkReply::downloadProgress() documentation for more details.
+
+    \sa bytesAvailable(), readyRead()
+*/
+
+/*!
     \fn void QRestReply::finished(QRestReply *reply)
 
     This signal is emitted when \a reply has finished processing. This
@@ -63,6 +90,14 @@ QRestReply::QRestReply(QNetworkReply *reply, QObject *parent)
     d->networkReply = reply;
     // Reparent so that destruction of QRestReply destroys QNetworkReply
     reply->setParent(this);
+
+    QObject::connect(reply, &QNetworkReply::readyRead, this, [this] {
+        emit readyRead(this);
+    });
+    QObject::connect(reply, &QNetworkReply::downloadProgress, this,
+                     [this](qint64 bytesReceived, qint64 bytesTotal) {
+                         emit downloadProgress(bytesReceived, bytesTotal, this);
+                     });
 }
 
 /*!
@@ -155,7 +190,7 @@ std::optional<QJsonArray> QRestReply::jsonArray()
     calls to get response data will return empty until further data has been
     received.
 
-    \sa json(), text()
+    \sa json(), text(), bytesAvailable(), readyRead()
 */
 QByteArray QRestReply::body()
 {
@@ -292,6 +327,17 @@ bool QRestReply::isFinished() const
 {
     Q_D(const QRestReply);
     return d->networkReply->isFinished();
+}
+
+/*!
+    Returns the number of bytes available.
+
+    \sa body
+*/
+qint64 QRestReply::bytesAvailable() const
+{
+    Q_D(const QRestReply);
+    return d->networkReply->bytesAvailable();
 }
 
 QRestReplyPrivate::QRestReplyPrivate()

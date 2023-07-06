@@ -73,31 +73,52 @@ void HttpTestServer::handleDataAvailable()
             m_request.url.setPort(parts.at(1).toUInt());
     }
     HttpData response;
+    ResponseControl control;
     // Inform the testcase about request and ask for response data
-    m_handler(m_request, response);
+    m_handler(m_request, response, control);
 
-    if (response.respond) {
-        QByteArray responseMessage;
-        responseMessage += "HTTP/1.1 ";
-        responseMessage += QByteArray::number(response.status);
+    QByteArray responseMessage;
+    responseMessage += "HTTP/1.1 ";
+    responseMessage += QByteArray::number(response.status);
+    responseMessage += CRLF;
+    // Insert headers if any
+    for (const auto &[name,value] : response.headers.asKeyValueRange()) {
+        responseMessage += name;
+        responseMessage += value;
         responseMessage += CRLF;
-        // Insert headers if any
-        for (const auto &[name,value] : response.headers.asKeyValueRange()) {
-            responseMessage += name;
-            responseMessage += value;
-            responseMessage += CRLF;
+    }
+    responseMessage += CRLF;
+    /*
+    qDebug() << "HTTPTestServer received request"
+             << "\nMethod:" << m_request.method
+             << "\nHeaders:" << m_request.headers
+             << "\nBody:" << m_request.body;
+    */
+    if (control.respond) {
+        if (control.responseChunkSize <= 0) {
+            responseMessage += response.body;
+            // qDebug() << "HTTPTestServer response:" << responseMessage;
+            m_socket->write(responseMessage);
+        } else {
+            // Respond in chunks, first write the headers
+            // qDebug() << "HTTPTestServer response:" << responseMessage;
+            m_socket->write(responseMessage);
+            // Then write bodydata in chunks, while allowing the testcase to process as well
+            QByteArray chunk;
+            while (!response.body.isEmpty()) {
+                chunk = response.body.left(control.responseChunkSize);
+                response.body.remove(0, control.responseChunkSize);
+                // qDebug() << "SERVER writing chunk" << chunk;
+                m_socket->write(chunk);
+                m_socket->flush();
+                m_socket->waitForBytesWritten();
+                // Process events until testcase indicates it's ready for next chunk.
+                // This way we can control the bytes the testcase gets in each chunk
+                control.readyForNextChunk = false;
+                while (!control.readyForNextChunk)
+                    QCoreApplication::processEvents();
+            }
         }
-        responseMessage += CRLF;
-        responseMessage += response.body;
-
-        /*
-        qDebug() << "HTTPTestServer received request"
-                 << "\nMethod:" << m_request.method
-                 << "\nHeaders:" << m_request.headers
-                 << "\nBody:" << m_request.body;
-        qDebug() << "HTTPTestServer sends response:" << responseMessage;
-        */
-        m_socket->write(responseMessage);
     }
     m_socket->disconnectFromHost();
     m_request = {};

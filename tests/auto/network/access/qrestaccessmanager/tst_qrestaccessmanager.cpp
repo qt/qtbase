@@ -6,6 +6,7 @@
 #include <QtNetwork/qhttpmultipart.h>
 #include <QtNetwork/qrestaccessmanager.h>
 #include <QtNetwork/qauthenticator.h>
+#include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qrestreply.h>
 
 #include <QTest>
@@ -37,6 +38,7 @@ private slots:
     void body();
     void json();
     void text();
+    void download();
 
 private:
     void memberHandler(QRestReply *reply);
@@ -86,7 +88,7 @@ void tst_QRestAccessManager::networkRequestReply()
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
     serverSideResponse.status = 200;
-    server.setHandler([&](HttpData request, HttpData &response) {
+    server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
         serverSideRequest = request;
         response = serverSideResponse;
 
@@ -227,8 +229,8 @@ void tst_QRestAccessManager::abort()
     QTRY_COMPARE(finishedSpy.size(), 1);
 
     // Abort after request has been sent out
-    server.setHandler([&](HttpData, HttpData &response) {
-        response.respond = false;
+    server.setHandler([&](HttpData, HttpData&, ResponseControl &control) {
+        control.respond = false;
         manager.abortRequests();
     });
     manager.get(request, this, callback);
@@ -480,7 +482,7 @@ void tst_QRestAccessManager::authentication()
     QRestReply *replyFromServer = nullptr;
 
     HttpData serverSideRequest;
-    server.setHandler([&](HttpData request, HttpData &response) {
+    server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
         if (!request.headers.contains("Authorization"_ba)) {
             response.status = 401;
             response.headers.insert("WWW-Authenticate: "_ba, "Basic realm=\"secret_place\""_ba);
@@ -533,7 +535,7 @@ void tst_QRestAccessManager::errors()
     bool errorSignalReceived = false;
 
     HttpData serverSideResponse; // The response data the server responds with
-    server.setHandler([&](HttpData, HttpData &response) {
+    server.setHandler([&](HttpData, HttpData &response, ResponseControl &) {
         response  = serverSideResponse;
     });
 
@@ -604,7 +606,7 @@ void tst_QRestAccessManager::body()
 
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
-    server.setHandler([&](HttpData request, HttpData &response) {
+    server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
         serverSideRequest = request;
         response = serverSideResponse;
     });
@@ -654,7 +656,7 @@ void tst_QRestAccessManager::json()
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
     serverSideResponse.status = 200;
-    server.setHandler([&](HttpData request, HttpData &response) {
+    server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
         serverSideRequest = request;
         response = serverSideResponse;
     });
@@ -723,7 +725,7 @@ void tst_QRestAccessManager::text()
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
     serverSideResponse.status = 200;
-    server.setHandler([&](HttpData request, HttpData &response) {
+    server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
         serverSideRequest = request;
         response = serverSideResponse;
     });
@@ -788,6 +790,76 @@ void tst_QRestAccessManager::text()
     QCOMPARE(responseString, sourceString);
     replyFromServer->deleteLater();
     replyFromServer = nullptr;
+}
+
+void tst_QRestAccessManager::download()
+{
+    // Test case where data is received in chunks.
+    QRestAccessManager manager;
+    manager.setDeletesRepliesOnFinished(false);
+    HttpTestServer server;
+    QTRY_VERIFY(server.isListening());
+    QNetworkRequest request(server.url());
+    HttpData serverSideResponse; // The response data the server responds with
+    constexpr qsizetype dataSize = 1 * 1024 * 1024;  // 1 MB
+    QByteArray expectedData{dataSize, 0};
+    for (qsizetype i = 0; i < dataSize; ++i) // initialize the data we download
+        expectedData[i] = i % 100;
+    QByteArray cumulativeReceivedData;
+    qsizetype cumulativeReceivedBytesAvailable = 0;
+
+    serverSideResponse.body = expectedData;
+    ResponseControl *responseControl = nullptr;
+    serverSideResponse.status = 200;
+    // Set content-length header so that underlying QNAM is able to report bytesTotal correctly
+    serverSideResponse.headers.insert("Content-Length: ",
+                                       QString::number(expectedData.size()).toLatin1());
+    server.setHandler([&](HttpData, HttpData &response, ResponseControl &control) {
+        response = serverSideResponse;
+        responseControl = &control; // store for later
+        control.responseChunkSize = 1024; // tell testserver to send data in chunks of this size
+    });
+
+    QRestReply* reply = manager.get(request, this, [&responseControl](QRestReply */*reply*/){
+        responseControl = nullptr; // all finished, no more need for controlling the response
+    });
+
+    QObject::connect(reply, &QRestReply::readyRead, this, [&](QRestReply *reply) {
+        static bool testOnce = true;
+        if (!reply->isFinished() && testOnce) {
+            // Test once that reading jsonObject or text of an unfinished reply will not work
+            testOnce = false;
+            QTest::ignoreMessage(QtWarningMsg, "Attempt to read json() of an unfinished"
+                                               " reply, ignoring.");
+            reply->json();
+            QTest::ignoreMessage(QtWarningMsg, "Attempt to read text() of an unfinished reply,"
+                                               " ignoring.");
+            (void)reply->text();
+        }
+
+        cumulativeReceivedBytesAvailable += reply->bytesAvailable();
+        cumulativeReceivedData += reply->body();
+        // Tell testserver that test is ready for next chunk
+        responseControl->readyForNextChunk = true;
+    });
+
+    qint64 totalBytes = 0;
+    qint64 receivedBytes = 0;
+    QObject::connect(reply, &QRestReply::downloadProgress, this,
+                     [&](qint64 bytesReceived, qint64 bytesTotal) {
+                         if (totalBytes == 0 && bytesTotal > 0)
+                             totalBytes = bytesTotal;
+                         receivedBytes = bytesReceived;
+                     });
+    QTRY_VERIFY(reply->isFinished());
+    reply->deleteLater();
+    reply = nullptr;
+    // Checks specific for readyRead() and bytesAvailable()
+    QCOMPARE(cumulativeReceivedData, expectedData);
+    QCOMPARE(cumulativeReceivedBytesAvailable, expectedData.size());
+    // Checks specific for downloadProgress()
+    QCOMPARE(totalBytes, expectedData.size());
+    QCOMPARE(receivedBytes, expectedData.size());
 }
 
 QTEST_MAIN(tst_QRestAccessManager)

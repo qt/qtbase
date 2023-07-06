@@ -14,12 +14,18 @@
 struct HttpData {
     QUrl url;
     int status = 0;
-    bool respond = true;
     QByteArray body;
     QByteArray method;
     quint16 port = 0;
     QPair<quint8, quint8> version;
     QMap<QByteArray, QByteArray> headers;
+};
+
+struct ResponseControl
+{
+    bool respond = true;
+    qsizetype responseChunkSize = -1;
+    bool readyForNextChunk = true;
 };
 
 // Simple HTTP server. Currently supports only one concurrent connection
@@ -62,7 +68,8 @@ public:
     QByteArray fragment;
 
     // Settable callback for testcase. Gives the received request data, and takes in response data
-    using Handler = std::function<void(const HttpData &request, HttpData &response)>;
+    using Handler = std::function<void(const HttpData &request, HttpData &response,
+                                       ResponseControl &control)>;
     void setHandler(const Handler &handler);
 
 private slots:

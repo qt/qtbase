@@ -35,6 +35,7 @@ public:
     QString errorString() const;
 
     bool isFinished() const;
+    qint64 bytesAvailable() const;
 
 public Q_SLOTS:
     void abort();
@@ -42,6 +43,8 @@ public Q_SLOTS:
 Q_SIGNALS:
     void finished(QRestReply *reply);
     void errorOccurred(QRestReply *reply);
+    void readyRead(QRestReply *reply);
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal, QRestReply *reply);
 
 private:
     friend class QRestAccessManagerPrivate;
