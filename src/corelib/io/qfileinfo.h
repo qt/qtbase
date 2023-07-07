@@ -151,7 +151,6 @@ public:
 
     qint64 size() const;
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     QDateTime birthTime() const { return fileTime(QFile::FileBirthTime); }
     QDateTime metadataChangeTime() const { return fileTime(QFile::FileMetadataChangeTime); }
     QDateTime lastModified() const { return fileTime(QFile::FileModificationTime); }
@@ -163,25 +162,6 @@ public:
     QDateTime lastModified(const QTimeZone &tz) const { return fileTime(QFile::FileModificationTime, tz); }
     QDateTime lastRead(const QTimeZone &tz) const { return fileTime(QFile::FileAccessTime, tz); }
     QDateTime fileTime(QFile::FileTime time, const QTimeZone &tz) const;
-#else
-    QDateTime birthTime(const QTimeZone &tz = QTimeZone::LocalTime) const
-    {
-        return fileTime(QFile::FileBirthTime, tz);
-    }
-    QDateTime metadataChangeTime(const QTimeZone &tz = QTimeZone::LocalTime) const
-    {
-        return fileTime(QFile::FileMetadataChangeTime, tz);
-    }
-    QDateTime lastModified(const QTimeZone &tz = QTimeZone::LocalTime) const
-    {
-        return fileTime(QFile::FileModificationTime, tz);
-    }
-    QDateTime lastRead(const QTimeZone &tz = QTimeZone::LocalTime) const
-    {
-        return fileTime(QFile::FileAccessTime, tz);
-    }
-    QDateTime fileTime(QFile::FileTime time, const QTimeZone &tz = QTimeZone::LocalTime) const;
-#endif
 
     bool caching() const;
     void setCaching(bool on);
