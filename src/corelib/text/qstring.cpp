@@ -2036,17 +2036,13 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     \section1 More Efficient String Construction
 
-    Many strings are known at compile time. But the trivial
-    constructor QString("Hello"), will copy the contents of the string,
-    treating the contents as Latin-1. To avoid this, one can use the
-    QStringLiteral macro to directly create the required data at compile
-    time. Constructing a QString out of the literal does then not cause
-    any overhead at runtime.
-
-    A slightly less efficient way is to use QLatin1StringView. This class wraps
-    a C string literal, precalculates it length at compile time and can
-    then be used for faster comparison with QStrings and conversion to
-    QStrings than a regular C string literal.
+    Many strings are known at compile time. The QString constructor from
+    C++ string literals will copy the contents of the string,
+    treating the contents as UTF-8. This requires a memory allocation and the
+    re-encoding of the string data, operations that will happen at runtime.
+    If the string data is known at compile time, you can use the QStringLiteral macro
+    or similarly \c{operator""_s} to create QString's payload at compile
+    time instead.
 
     Using the QString \c{'+'} operator, it is easy to construct a
     complex string from multiple substrings. You will often write code
@@ -2081,7 +2077,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     are copied into it one by one.
 
     Additional efficiency is gained by inlining and reduced reference
-    counting (the QString created from a \c{QStringBuilder} typically
+    counting (the QString created from a \c{QStringBuilder}
     has a ref count of 1, whereas QString::append() needs an extra
     test).
 
@@ -2097,16 +2093,17 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     flags) at build time. This will make concatenating strings with \c{'+'} work the
     same way as \c{QStringBuilder} \c{'%'}.
 
-    \note Take care when using the \c auto keyword with the result of
-    string concatenation using QStringBuilder:
+    \note Using automatic type deduction (e.g. by using the \c auto keyword)
+    with the result of string concatenation when QStringBuilder is enabled will
+    show that the concatenation is indeed an object of a QStringBuilder specialization:
+
     \snippet qstring/stringbuilder.cpp 6
 
-    Typically this is not what is expected (and can result in undefined behavior).
-    This issue can be fixed by specifying the return type:
-    \snippet qstring/stringbuilder.cpp 7
+    This does not cause any harm, as QStringBuilder will implictly convert to
+    QString when required. If this is undesirable, then one should specify
+    the required types instead of having the compiler deduce them:
 
-    \note \l {https://invent.kde.org/sdk/clazy} {Clazy} has a check, auto-unexpected-qstringbuilder,
-    that catches this issue.
+    \snippet qstring/stringbuilder.cpp 7
 
     \section1 Maximum Size and Out-of-memory Conditions
 

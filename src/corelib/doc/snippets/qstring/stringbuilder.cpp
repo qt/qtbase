@@ -27,10 +27,10 @@ using namespace Qt::StringLiterals;
 //! [6]
     QString str("QStringBuilder");
 
-    // "s" type is deduced as QStringBuilder
+    // "s" type is deduced as QStringBuilder<...>
     auto s = "Like hot glue, " % str % " concatenates strings";
 
-    // Similarly the return type of this lambda is deduced as QStringBuilder
+    // Similarly the return type of this lambda is deduced as QStringBuilder<...>
     auto concatenateStr = []() {
         return "Like hot glue, " % str % " concatenates strings";
     };
@@ -39,7 +39,7 @@ using namespace Qt::StringLiterals;
 //! [7]
     QString s = "Like hot glue, " % str % " concatenates strings";
 
-    // With a lambda, specify a trailing return type
+    // With a lambda, specify a trailing return type:
     auto concatenateStr = []() -> QString {
         return "Like hot glue, " % str % " concatenates strings";
     };
