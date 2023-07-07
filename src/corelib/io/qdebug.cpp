@@ -347,12 +347,7 @@ void QDebug::putByteArray(const char *begin, size_t length, Latin1Content conten
     }
 }
 
-/*!
-    \since 6.6
-    \internal
-    Helper to the std::chrono::duration debug streaming output.
- */
-QByteArray QDebug::timeUnit(qint64 num, qint64 den)
+static QByteArray timeUnit(qint64 num, qint64 den)
 {
     using namespace std::chrono;
     using namespace q20::chrono;
@@ -429,6 +424,16 @@ QByteArray QDebug::timeUnit(qint64 num, qint64 den)
     appendChar(']');
     memcpy(buf + len, unit, strlen(unit));
     return QByteArray(buf, len + strlen(unit));
+}
+
+/*!
+    \since 6.6
+    \internal
+    Helper to the std::chrono::duration debug streaming output.
+ */
+void QDebug::putTimeUnit(qint64 num, qint64 den)
+{
+    stream->ts << timeUnit(num, den); // ### optimize
 }
 
 /*!
