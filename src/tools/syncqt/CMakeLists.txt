@@ -32,6 +32,7 @@ qt_get_tool_target_name(target_name syncqt)
 if(NOT QT_SYNC_HEADERS_AT_CONFIGURE_TIME)
     qt_internal_add_tool(${target_name}
         DEFINES ${compile_definitions}
+        EXCEPTIONS
         TOOLS_TARGET Core
         CORE_LIBRARY None
         INSTALL_DIR "${INSTALL_LIBEXECDIR}"
