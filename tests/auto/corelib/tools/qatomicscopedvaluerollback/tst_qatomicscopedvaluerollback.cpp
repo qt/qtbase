@@ -24,23 +24,30 @@ void tst_QAtomicScopedValueRollback::leavingScope()
     QAtomicInt i = 0;
     QBasicAtomicInteger<bool> b = false;
     std::atomic<bool> b2 = false;
+    int x = 0, y = 42;
+    QBasicAtomicPointer<int> p = &x;
 
     //test rollback on going out of scope
     {
         QAtomicScopedValueRollback ri(i);
         QAtomicScopedValueRollback rb(b);
         QAtomicScopedValueRollback rb2(b2, true);
+        QAtomicScopedValueRollback rp(p);
         QCOMPARE(b.loadRelaxed(), false);
         QCOMPARE(b2, true);
         QCOMPARE(i.loadRelaxed(), 0);
+        QCOMPARE(p.loadRelaxed(), &x);
         b.storeRelaxed(true);
         i.storeRelaxed(1);
+        p.storeRelaxed(&y);
         QCOMPARE(b.loadRelaxed(), true);
         QCOMPARE(i.loadRelaxed(), 1);
+        QCOMPARE(p.loadRelaxed(), &y);
     }
     QCOMPARE(b.loadRelaxed(), false);
     QCOMPARE(b2, false);
     QCOMPARE(i.loadRelaxed(), 0);
+    QCOMPARE(p.loadRelaxed(), &x);
 }
 
 void tst_QAtomicScopedValueRollback::leavingScopeAfterCommit()

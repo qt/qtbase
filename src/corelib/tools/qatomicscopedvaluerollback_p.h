@@ -102,6 +102,13 @@ public:
     }
 };
 
+template <typename T>
+QAtomicScopedValueRollback(QBasicAtomicPointer<T> &)
+    -> QAtomicScopedValueRollback<T*>;
+template <typename T>
+QAtomicScopedValueRollback(QBasicAtomicPointer<T> &, std::memory_order)
+    -> QAtomicScopedValueRollback<T*>;
+
 QT_END_NAMESPACE
 
 #endif // QATOMICASCOPEDVALUEROLLBACK_P_H
