@@ -1426,8 +1426,8 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
 }
 
 /*!
-    \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Qt::ConnectionType type, QMetaMethodReturnArgument r, Args &&... args)
-    \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, QMetaMethodReturnArgument r, Args &&... args)
+    \fn template <typename ReturnArg, typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Qt::ConnectionType type, QTemplatedMetaMethodReturnArgument<ReturnArg> r, Args &&... args)
+    \fn template <typename ReturnArg, typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, QTemplatedMetaMethodReturnArgument<ReturnArg> r, Args &&... args)
     \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Qt::ConnectionType type, Args &&... args)
     \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Args &&... args)
     \since 6.5
@@ -1437,11 +1437,12 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
     obj. Returns \c true if the member could be invoked. Returns \c false
     if there is no such member or the parameters did not match.
 
-    For the overloads with a QMetaMethodReturnArgument parameter, the return
-    value of the \a member function call is placed in \a ret. For the overloads
-    without such a member, the return value of the called function (if any)
-    will be discarded. QMetaMethodReturnArgument is an internal type you should
-    not use directly. Instead, use the qReturnArg() function.
+    For the overloads with a QTemplatedMetaMethodReturnArgument parameter, the
+    return value of the \a member function call is placed in \a ret. For the
+    overloads without such a member, the return value of the called function
+    (if any) will be discarded. QTemplatedMetaMethodReturnArgument is an
+    internal type you should not use directly. Instead, use the qReturnArg()
+    function.
 
     The overloads with a Qt::ConnectionType \a type parameter allow explicitly
     selecting whether the invocation will be synchronous or not:
@@ -2379,20 +2380,21 @@ QMetaMethod QMetaMethod::fromSignalImpl(const QMetaObject *metaObject, void **si
 }
 
 /*!
-    \fn template <typename... Args> bool QMetaMethod::invoke(QObject *obj, Qt::ConnectionType type, QMetaMethodReturnArgument ret, Args &&... arguments) const
+    \fn template <typename ReturnArg, typename... Args> bool QMetaMethod::invoke(QObject *obj, Qt::ConnectionType type, QTemplatedMetaMethodReturnArgument<ReturnArg> ret, Args &&... arguments) const
     \fn template <typename... Args> bool QMetaMethod::invoke(QObject *obj, Qt::ConnectionType type, Args &&... arguments) const
-    \fn template <typename... Args> bool QMetaMethod::invoke(QObject *obj, QMetaMethodReturnArgument ret, Args &&... arguments) const
+    \fn template <typename ReturnArg, typename... Args> bool QMetaMethod::invoke(QObject *obj, QTemplatedMetaMethodReturnArgument<ReturnArg> ret, Args &&... arguments) const
     \fn template <typename... Args> bool QMetaMethod::invoke(QObject *obj, Args &&... arguments) const
     \since 6.5
 
     Invokes this method on the object \a object. Returns \c true if the member could be invoked.
     Returns \c false if there is no such member or the parameters did not match.
 
-    For the overloads with a QMetaMethodReturnArgument parameter, the return
-    value of the \a member function call is placed in \a ret. For the overloads
-    without such a member, the return value of the called function (if any)
-    will be discarded. QMetaMethodReturnArgument is an internal type you should
-    not use directly. Instead, use the qReturnArg() function.
+    For the overloads with a QTemplatedMetaMethodReturnArgument parameter, the
+    return value of the \a member function call is placed in \a ret. For the
+    overloads without such a member, the return value of the called function
+    (if any) will be discarded. QTemplatedMetaMethodReturnArgument is an
+    internal type you should not use directly. Instead, use the qReturnArg()
+    function.
 
     The overloads with a Qt::ConnectionType \a type parameter allow explicitly
     selecting whether the invocation will be synchronous or not:
@@ -2819,7 +2821,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
 */
 
 /*!
-    \fn template <typename... Args> bool QMetaMethod::invokeOnGadget(void *gadget, QMetaMethodReturnArgument ret, Args &&... arguments) const
+    \fn template <typename ReturnArg, typename... Args> bool QMetaMethod::invokeOnGadget(void *gadget, QTemplatedMetaMethodReturnArgument<ReturnArg> ret, Args &&... arguments) const
     \fn template <typename... Args> bool QMetaMethod::invokeOnGadget(void *gadget, Args &&... arguments) const
     \since 6.5
 
@@ -2830,11 +2832,11 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
 
     The invocation is always synchronous.
 
-    For the overload with a QMetaMethodReturnArgument parameter, the return
-    value of the \a member function call is placed in \a ret. For the overload
-    without it, the return value of the called function (if any) will be
-    discarded. QMetaMethodReturnArgument is an internal type you should not use
-    directly. Instead, use the qReturnArg() function.
+    For the overload with a QTemplatedMetaMethodReturnArgument parameter, the
+    return value of the \a member function call is placed in \a ret. For the
+    overload without it, the return value of the called function (if any) will
+    be discarded. QTemplatedMetaMethodReturnArgument is an internal type you
+    should not use directly. Instead, use the qReturnArg() function.
 
     \warning this method will not test the validity of the arguments: \a gadget
     must be an instance of the class of the QMetaObject of which this QMetaMethod

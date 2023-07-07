@@ -142,6 +142,12 @@ struct QMetaMethodReturnArgument
     void *data;
 };
 
+template <typename T>
+struct QTemplatedMetaMethodReturnArgument : QMetaMethodReturnArgument
+{
+    using Type = T;
+};
+
 namespace QtPrivate {
 namespace Invoke {
 #if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
@@ -164,7 +170,8 @@ template <typename T> inline QMetaMethodArgument argument(const char *name, cons
     }
 }
 
-template <typename T> inline QMetaMethodReturnArgument returnArgument(const char *name, T &t)
+template <typename T>
+inline QTemplatedMetaMethodReturnArgument<T> returnArgument(const char *name, T &t)
 {
     return { qMetaTypeInterfaceForType<T>(), name, std::addressof(t) };
 }
@@ -217,7 +224,7 @@ template <typename... Args> inline auto invokeMethodHelper(QMetaMethodReturnArgu
 } // namespace QtPrivate
 
 template <typename T> void qReturnArg(const T &&) = delete;
-template <typename T> inline QMetaMethodReturnArgument qReturnArg(T &data)
+template <typename T> inline QTemplatedMetaMethodReturnArgument<T> qReturnArg(T &data)
 {
     return QtPrivate::Invoke::returnArgument(nullptr, data);
 }
@@ -354,14 +361,14 @@ struct Q_CORE_EXPORT QMetaObject
     }
 #endif // Qt < 7.0
 
-    template <typename... Args> static
+    template <typename ReturnArg, typename... Args> static
 #ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
 #endif
     invokeMethod(QObject *obj, const char *member, Qt::ConnectionType c,
-                 QMetaMethodReturnArgument r, Args &&... arguments)
+                 QTemplatedMetaMethodReturnArgument<ReturnArg> r, Args &&... arguments)
     {
         auto h = QtPrivate::invokeMethodHelper(r, std::forward<Args>(arguments)...);
         return invokeMethodImpl(obj, member, c, h.parameterCount(), h.parameters.data(),
@@ -376,17 +383,17 @@ struct Q_CORE_EXPORT QMetaObject
 #endif
     invokeMethod(QObject *obj, const char *member, Qt::ConnectionType c, Args &&... arguments)
     {
-        QMetaMethodReturnArgument r = {};
+        QTemplatedMetaMethodReturnArgument<void> r = {};
         return invokeMethod(obj, member, c, r, std::forward<Args>(arguments)...);
     }
 
-    template <typename... Args> static
+    template <typename ReturnArg, typename... Args> static
 #ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
 #endif
-    invokeMethod(QObject *obj, const char *member, QMetaMethodReturnArgument r,
+    invokeMethod(QObject *obj, const char *member, QTemplatedMetaMethodReturnArgument<ReturnArg> r,
                  Args &&... arguments)
     {
         return invokeMethod(obj, member, Qt::AutoConnection, r, std::forward<Args>(arguments)...);
@@ -400,7 +407,7 @@ struct Q_CORE_EXPORT QMetaObject
 #endif
     invokeMethod(QObject *obj, const char *member, Args &&... arguments)
     {
-        QMetaMethodReturnArgument r = {};
+        QTemplatedMetaMethodReturnArgument<void> r = {};
         return invokeMethod(obj, member, Qt::AutoConnection, r, std::forward<Args>(arguments)...);
     }
 
