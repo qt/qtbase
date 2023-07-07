@@ -123,7 +123,7 @@ pollfd QThreadPipe::prepare() const
 
 void QThreadPipe::wakeUp()
 {
-    if (wakeUps.testAndSetAcquire(0, 1)) {
+    if ((wakeUps.fetchAndOrAcquire(1) & 1) == 0) {
 #if QT_CONFIG(eventfd)
         eventfd_write(fds[0], 1);
         return;
