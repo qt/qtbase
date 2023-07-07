@@ -7,6 +7,7 @@
 #include <QtWidgets/QLayout>
 #include <QtWidgets/QDialog>
 #include <QtGui/QAction>
+#include <QtGui/QStyleHints>
 #include <qdialogbuttonbox.h>
 #include <QtWidgets/private/qdialogbuttonbox_p.h>
 #include <QtWidgets/private/qabstractbutton_p.h>
@@ -380,6 +381,9 @@ void tst_QDialogButtonBox::removeButton()
 #ifdef QT_BUILD_INTERNAL
 void tst_QDialogButtonBox::hideAndShowButton()
 {
+    if (QGuiApplication::styleHints()->tabFocusBehavior() == Qt::NoTabFocus)
+        QSKIP("Test skipped with Qt::NoTabFocus");
+
     QDialogButtonBox buttonBox;
     QDialogButtonBoxPrivate *d = static_cast<QDialogButtonBoxPrivate *>(QObjectPrivate::get(&buttonBox));
     auto *apply = buttonBox.addButton( "Apply", QDialogButtonBox::ApplyRole );
@@ -402,7 +406,7 @@ void tst_QDialogButtonBox::hideAndShowButton()
     hideButton->hide();
     widget->show();
     QVERIFY(QTest::qWaitForWindowExposed(widget));
-    QVERIFY(buttonBox.focusWidget()); // QTBUG-114377: Without fixing, focusWidget() == nullptr
+    QTRY_VERIFY(buttonBox.focusWidget()); // QTBUG-114377: Without fixing, focusWidget() == nullptr
     QCOMPARE(d->visibleButtons().count(), 2);
     QCOMPARE(d->hiddenButtons.count(), 1);
     QVERIFY(d->hiddenButtons.contains(hideButton));
