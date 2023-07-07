@@ -5,6 +5,10 @@
 
 #include <iostream>
 
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+
 QT_BEGIN_NAMESPACE
 
 void qmakePropertyPrinter(const QList<QPair<QString, QString>> &values)
@@ -22,11 +26,12 @@ void qmakePropertyPrinter(const QList<QPair<QString, QString>> &values)
 
 void jsonPropertyPrinter(const QList<QPair<QString, QString>> &values)
 {
-    std::cout << "{\n";
-    for (const auto &val : values) {
-        std::cout << "\"" << qPrintable(val.first) << "\":\"" << qPrintable(val.second) << "\",\n";
-    }
-    std::cout << "}\n";
+    QJsonObject object;
+    for (const auto &val : values)
+        object.insert(val.first, val.second);
+
+    QJsonDocument document(object);
+    std::cout << document.toJson().constData();
 }
 
 QT_END_NAMESPACE
