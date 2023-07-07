@@ -58,8 +58,7 @@ You can set \c behavior to one of the following options:
 \li \c{OLD} to explicitly opt-out of it
 \endlist
 
-\note The \c{OLD} behavior of a policy is deprecated, and may
-be removed in the future.
+\qtpolicydeprecatedbehavior
 
 \sa qt_standard_project_setup
 
