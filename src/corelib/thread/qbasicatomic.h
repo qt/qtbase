@@ -19,8 +19,6 @@ QT_END_NAMESPACE
 #pragma qt_sync_stop_processing
 #endif
 
-// New atomics
-
 template <typename T>
 class QBasicAtomicInteger
 {
