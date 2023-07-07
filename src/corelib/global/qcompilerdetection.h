@@ -1376,7 +1376,7 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
-#if __cplusplus >= 202002L // P0846 doesn't have a feature macro :/
+#if defined(__cplusplus) && __cplusplus >= 202002L // P0846 doesn't have a feature macro :/
 #  define QT_COMPILER_HAS_P0846
 #endif
 
