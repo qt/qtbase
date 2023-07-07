@@ -111,3 +111,5 @@ macro.cmakepropertywebassemblyonly = "\\note This property is used only if targe
 
 macro.cmakepropertyiosonly = "\\note This property is used only if targeting iOS."
 macro.cmakevariableiosonly = "\\note This variable is used only if targeting iOS."
+
+macro.qtpolicydeprecatedbehavior = "\\note The \\c{OLD} behavior of a policy is deprecated, and may be removed in the future."
