@@ -176,7 +176,7 @@ public:
     void setChildProcessModifier(const std::function<void(void)> &modifier);
     Q_NORETURN void failChildProcessModifier(const char *description, int error = 0) noexcept;
 
-    enum UnixProcessFlag : quint32 {
+    enum class UnixProcessFlag : quint32 {
         ResetSignalHandlers                 = 0x0001, // like POSIX_SPAWN_SETSIGDEF
         IgnoreSigPipe                       = 0x0002,
         // some room if we want to add IgnoreSigHup or so

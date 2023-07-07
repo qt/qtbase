@@ -860,8 +860,9 @@ void QChildProcess::startProcess() const noexcept
         applyProcessParameters(d->unixExtras->processParameters);
 
         auto flags = d->unixExtras->processParameters.flags;
-        sigpipeHandled = flags.testAnyFlags(QProcess::ResetSignalHandlers | QProcess::IgnoreSigPipe);
-        sigmaskHandled = flags.testFlag(QProcess::ResetSignalHandlers);
+        using P = QProcess::UnixProcessFlag;
+        sigpipeHandled = flags.testAnyFlags(P::ResetSignalHandlers | P::IgnoreSigPipe);
+        sigmaskHandled = flags.testFlag(P::ResetSignalHandlers);
     }
     if (!sigpipeHandled) {
         // reset the signal that we ignored
