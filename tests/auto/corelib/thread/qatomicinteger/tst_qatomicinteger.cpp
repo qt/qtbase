@@ -1,30 +1,6 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#ifdef QT_ATOMIC_FORCE_CXX11
-// We need to check if this compiler has C++11 atomics and constexpr support.
-// We can't rely on qcompilerdetection.h because it forces all of qglobal.h to
-// be included, which causes qbasicatomic.h to be included too.
-// Incomplete, but ok
-#  if defined(__INTEL_COMPILER) && __INTEL_COMPILER >= 1500 && (__cplusplus >= 201103L || defined(__INTEL_CXX11_MODE__))
-#  elif defined(__clang__) && (__cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__))
-#    if !__has_feature(cxx_constexpr) || !__has_feature(cxx_atomic) || !__has_include(<atomic>)
-#      undef QT_ATOMIC_FORCE_CXX11
-#    endif
-#  elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 407 && (__cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__))
-#  elif defined(_MSC_VER)
-    // We need MSVC 2015 because of: atomics (2012), constexpr (2015), and unrestricted unions (2015).
-    // Support for constexpr is not working completely on MSVC 2015 but it's enough for the test.
-#  else
-#    undef QT_ATOMIC_FORCE_CXX11
-#  endif
-
-#  ifndef QT_ATOMIC_FORCE_CXX11
-#    undef QATOMIC_TEST_TYPE
-#    define QATOMIC_TEST_TYPE unsupported
-#  endif
-#endif
-
 #include <QTest>
 #include <QAtomicInt>
 
