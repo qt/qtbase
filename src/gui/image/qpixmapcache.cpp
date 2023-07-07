@@ -317,6 +317,7 @@ QPixmapCache::Key QPMCache::insert(const QPixmap &pixmap, int cost)
 {
     QPixmapCache::Key cacheKey = createKey(); // invalidated by ~QPixmapCacheEntry on failed insert
     bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
+    Q_ASSERT(success || !cacheKey.isValid());
     if (success) {
         if (!theid) {
             theid = startTimer(flush_time);
