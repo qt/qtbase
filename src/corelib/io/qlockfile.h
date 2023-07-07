@@ -28,14 +28,7 @@ public:
     void setStaleLockTime(int);
     int staleLockTime() const;
 
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
     bool tryLock(std::chrono::milliseconds timeout = std::chrono::milliseconds::zero());
-#else
-    bool tryLock(std::chrono::milliseconds timeout = std::chrono::milliseconds::zero())
-    {
-        return tryLock_impl(timeout);
-    }
-#endif
 
     void setStaleLockTime(std::chrono::milliseconds value);
     std::chrono::milliseconds staleLockTimeAsDuration() const;
@@ -58,10 +51,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QLockFile)
     Q_DISABLE_COPY(QLockFile)
-
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-    bool tryLock_impl(std::chrono::milliseconds timeout);
-#endif
 };
 
 QT_END_NAMESPACE

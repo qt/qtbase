@@ -257,7 +257,7 @@ bool QLockFile::tryLock(int timeout)
     return tryLock(std::chrono::milliseconds{ timeout });
 }
 
-/*! \fn bool QLockFile::tryLock(std::chrono::milliseconds timeout)
+/*!
     \overload
     \since 6.2
 
@@ -275,11 +275,7 @@ bool QLockFile::tryLock(int timeout)
 
     \sa lock(), unlock()
 */
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
 bool QLockFile::tryLock(std::chrono::milliseconds timeout)
-#else
-bool QLockFile::tryLock_impl(std::chrono::milliseconds timeout)
-#endif
 {
     using namespace std::chrono_literals;
     using Msec = std::chrono::milliseconds;
