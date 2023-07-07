@@ -2027,9 +2027,8 @@ private:
     QElapsedTimer m_callTimer;
 };
 
-
 QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
-                                                   int sendMode, int timeout)
+                                                   QDBus::CallMode mode, int timeout)
 {
     QDBusBlockingCallWatcher watcher(message);
 
@@ -2038,7 +2037,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
 
     if (pcall->replyMessage.type() == QDBusMessage::InvalidMessage) {
         // need to wait for the reply
-        if (sendMode == QDBus::BlockWithGui) {
+        if (mode == QDBus::BlockWithGui) {
             pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
             QEventLoop loop;
             loop.connect(pcall->watcherHelper, &QDBusPendingCallWatcherHelper::reply, &loop, &QEventLoop::quit);

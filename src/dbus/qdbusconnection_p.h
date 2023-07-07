@@ -177,7 +177,7 @@ public:
                         QObject *obj, const char *member);
 
     bool send(const QDBusMessage &message);
-    QDBusMessage sendWithReply(const QDBusMessage &message, int mode, int timeout = -1);
+    QDBusMessage sendWithReply(const QDBusMessage &message, QDBus::CallMode mode, int timeout = -1);
     QDBusMessage sendWithReplyLocal(const QDBusMessage &message);
     QDBusPendingCallPrivate *sendWithReplyAsync(const QDBusMessage &message, QObject *receiver,
                                                 const char *returnMethod, const char *errorMethod,int timeout = -1);
