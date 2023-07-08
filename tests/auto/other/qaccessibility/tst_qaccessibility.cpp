@@ -2868,6 +2868,12 @@ void tst_QAccessibility::listTest()
     QCOMPARE(iface->indexOfChild(child3), 2);
     QCOMPARE(child3->text(QAccessible::Name), QString("Brisbane"));
     }
+
+    // Check that application is accessible parent, since it's a top-level widget
+    QAccessibleInterface *parentIface = iface->parent();
+    QVERIFY(parentIface);
+    QVERIFY(parentIface->role() == QAccessible::Application);
+
     QTestAccessibility::clearEvents();
 
     // Check for events
