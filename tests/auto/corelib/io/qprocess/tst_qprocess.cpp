@@ -1787,10 +1787,12 @@ void tst_QProcess::unixProcessParameters()
     QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
     QVERIFY(process.waitForFinished(5000));
 
+    const QString stdErr = process.readAllStandardError();
 #ifdef Q_OS_QNX
-    QEXPECT_FAIL("ignore-sigpipe", "QTBUG-114720: flag is taking no effect", Abort);
+    if (stdErr != QString())
+        QEXPECT_FAIL("ignore-sigpipe", "QTBUG-114720: flag is sometimes ignored", Abort);
 #endif
-    QCOMPARE(process.readAllStandardError(), QString());
+    QCOMPARE(stdErr, QString());
     QCOMPARE(process.readAll(), QString());
     QCOMPARE(process.exitCode(), 0);
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
