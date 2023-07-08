@@ -499,7 +499,7 @@ QImage ICOReader::iconAt(int index)
                     if (!image.isNull()) {
                         readBMP(image);
                         if (!image.isNull()) {
-                            if (icoAttrib.depth == 32) {
+                            if (icoAttrib.nbits == 32) {
                                 img = std::move(image).convertToFormat(QImage::Format_ARGB32_Premultiplied);
                             } else {
                                 QImage mask(image.width(), image.height(), QImage::Format_Mono);
