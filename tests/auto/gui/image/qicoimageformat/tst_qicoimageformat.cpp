@@ -27,6 +27,8 @@ private slots:
     void pngCompression();
     void write_data();
     void write();
+    void icoMask_data();
+    void icoMask();
 
 private:
     QString m_IconPath;
@@ -317,6 +319,33 @@ void tst_QIcoImageFormat::write()
         QCOMPARE(outImg.size(), outSize);
         buf.close();
     }
+}
+
+void tst_QIcoImageFormat::icoMask_data()
+{
+    QTest::addColumn<QString>("inFile");
+    QTest::addColumn<QString>("outFile");
+
+    QTest::newRow("24bpp") << "masked/24bpp.ico" << "masked/24bpp.png";
+    QTest::newRow("32bpp") << "masked/32bpp.ico" << "masked/32bpp.png";
+}
+
+void tst_QIcoImageFormat::icoMask()
+{
+    QFETCH(QString, inFile);
+    QFETCH(QString, outFile);
+
+    QImage inImage;
+    QImageReader inReader(m_IconPath + QLatin1Char('/') + inFile);
+    inReader.read(&inImage);
+
+    QImage outImage;
+    QImageReader outReader(m_IconPath + QLatin1Char('/') + outFile);
+    outReader.read(&outImage);
+    outImage.setColorSpace(inImage.colorSpace());
+    outImage = outImage.convertToFormat(inImage.format());
+
+    QCOMPARE(inImage, outImage);
 }
 
 QTEST_MAIN(tst_QIcoImageFormat)
