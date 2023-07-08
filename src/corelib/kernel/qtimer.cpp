@@ -15,6 +15,8 @@
 #include "qproperty_p.h"
 #include "qthread.h"
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -299,7 +301,7 @@ void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
         return;
     }
 
-    new QSingleShotTimer(msec, timerType, receiver, slotObj);
+    new QSingleShotTimer(msec * 1ms, timerType, receiver, slotObj);
 }
 
 /*!
@@ -364,7 +366,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
                                       Qt::QueuedConnection);
             return;
         }
-        (void) new QSingleShotTimer(msec, timerType, receiver, member);
+        (void) new QSingleShotTimer(msec * 1ms, timerType, receiver, member);
     }
 }
 

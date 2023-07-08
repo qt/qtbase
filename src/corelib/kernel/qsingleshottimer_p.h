@@ -20,6 +20,8 @@
 #include "qcoreapplication.h"
 #include "qmetaobject_p.h"
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 class QSingleShotTimer : public QObject
@@ -29,31 +31,31 @@ class QSingleShotTimer : public QObject
 
 public:
     inline ~QSingleShotTimer();
-    inline QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r,
+    inline QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType, const QObject *r,
                             const char *member);
-    inline QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r,
+    inline QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType, const QObject *r,
                             QtPrivate::QSlotObjectBase *slotObj);
 
-    inline void startTimerForReceiver(int msec, Qt::TimerType timerType, const QObject *receiver);
+    inline void startTimerForReceiver(std::chrono::milliseconds msec, Qt::TimerType timerType,
+                                      const QObject *receiver);
 
 Q_SIGNALS:
     void timeout();
 
-protected:
+private:
     inline void timerEvent(QTimerEvent *) override;
 };
 
-QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r,
-                                   const char *member)
+QSingleShotTimer::QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType,
+                                   const QObject *r, const char *member)
     : QObject(QAbstractEventDispatcher::instance())
 {
     connect(this, SIGNAL(timeout()), r, member);
-
     startTimerForReceiver(msec, timerType, r);
 }
 
-QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r,
-                                   QtPrivate::QSlotObjectBase *slotObj)
+QSingleShotTimer::QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType,
+                                   const QObject *r, QtPrivate::QSlotObjectBase *slotObj)
     : QObject(QAbstractEventDispatcher::instance())
 {
     int signal_index = QMetaObjectPrivate::signalOffset(&staticMetaObject);
@@ -75,8 +77,8 @@ QSingleShotTimer::~QSingleShotTimer()
     the same thread as where it will be handled, so that it fires reliably even
     if the thread that set up the timer is busy.
 */
-void QSingleShotTimer::startTimerForReceiver(int msec, Qt::TimerType timerType,
-                                             const QObject *receiver)
+void QSingleShotTimer::startTimerForReceiver(std::chrono::milliseconds msec,
+                                             Qt::TimerType timerType, const QObject *receiver)
 {
     if (receiver && receiver->thread() != thread()) {
         // Avoid leaking the QSingleShotTimer instance in case the application exits before the
@@ -86,15 +88,20 @@ void QSingleShotTimer::startTimerForReceiver(int msec, Qt::TimerType timerType,
         setParent(nullptr);
         moveToThread(receiver->thread());
 
-        QDeadlineTimer deadline(std::chrono::milliseconds{msec}, timerType);
-        QMetaObject::invokeMethod(this, [this, deadline, timerType] {
-            if (deadline.hasExpired())
-                emit timeout();
-            else
-                timerId = startTimer(std::chrono::milliseconds{deadline.remainingTime()}, timerType);
-        }, Qt::QueuedConnection);
+        QDeadlineTimer deadline(msec, timerType);
+        auto invokable = [this, deadline, timerType] {
+            if (deadline.hasExpired()) {
+                Q_EMIT timeout();
+            } else {
+                auto nsecs = deadline.remainingTimeAsDuration();
+                // Use std::chrono::ceil<milliseconds> to match what
+                // QDeadlineTimer::remainingTime() did
+                timerId = startTimer(std::chrono::ceil<std::chrono::milliseconds>(nsecs), timerType);
+            }
+        };
+        QMetaObject::invokeMethod(this, invokable, Qt::QueuedConnection);
     } else {
-        timerId = startTimer(std::chrono::milliseconds{msec}, timerType);
+        timerId = startTimer(msec, timerType);
     }
 }
 
@@ -106,7 +113,7 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
         killTimer(timerId);
     timerId = -1;
 
-    emit timeout();
+    Q_EMIT timeout();
 
     // we would like to use delete later here, but it feels like a
     // waste to post a new event to handle this event, so we just unset the flag
@@ -116,4 +123,4 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
 
 QT_END_NAMESPACE
 
-#endif // qsingleshottimer_p.h
+#endif // QSINGLESHOTTIMER_P_H
