@@ -410,7 +410,7 @@
     It can be updated to be:
     \code
         QSharedMemory shm(QSharedMemory::legacyNativeKey("org.example.myapplication"));
-        QSystemSempahore sem(QSystemSemaphore::legacyNativeKey("org.example.myapplication"));
+        QSystemSemaphore sem(QSystemSemaphore::legacyNativeKey("org.example.myapplication"));
     \endcode
 
     If the two applications exchanged native keys, there is no need to update
