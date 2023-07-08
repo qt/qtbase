@@ -557,7 +557,7 @@ QAccessibleInterface *QAccessibleTable::parent() const
         }
         return QAccessible::queryAccessibleInterface(view()->parent());
     }
-    return nullptr;
+    return QAccessible::queryAccessibleInterface(qApp);
 }
 
 QAccessibleInterface *QAccessibleTable::child(int logicalIndex) const
