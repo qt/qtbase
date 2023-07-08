@@ -50,31 +50,31 @@ public:
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member);
 
     // singleShot with context
+#ifdef Q_QDOC
+    template <typename Duration, typename Functor>
+    static inline void singleShot(Duration interval, const QObject *receiver, Functor &&slot);
+    template <typename Duration, typename Functor>
+    static inline void singleShot(Duration interval, Qt::TimerType timerType,
+                                  const QObject *receiver, Functor &&slot);
+#else
     template <typename Duration, typename Functor>
     static inline void singleShot(Duration interval,
-#ifdef Q_QDOC
-                                  const QObject *receiver,
-#else
                                   const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
-#endif
-
                                   Functor &&slot)
     {
         singleShot(interval, defaultTypeFor(interval), receiver, std::forward<Functor>(slot));
     }
     template <typename Duration, typename Functor>
     static inline void singleShot(Duration interval, Qt::TimerType timerType,
-#ifdef Q_QDOC
-                                  const QObject *receiver,
-#else
                                   const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
-#endif
                                   Functor &&slot)
     {
         using Prototype = void(*)();
         singleShotImpl(interval, timerType, receiver,
                        QtPrivate::makeCallableObject<Prototype>(std::forward<Functor>(slot)));
     }
+#endif
+
     // singleShot without context
     template <typename Duration, typename Functor>
     static inline void singleShot(Duration interval, Functor &&slot)
