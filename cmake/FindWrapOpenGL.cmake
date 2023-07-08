@@ -46,6 +46,16 @@ if (OpenGL_FOUND)
     else()
         target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE OpenGL::GL)
     endif()
+elseif(UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "Integrity")
+    # Requesting only the OpenGL component ensures CMake does not mark the package as
+    # not found if neither GLX nor libGL are available. This allows finding OpenGL
+    # on an X11-less Linux system.
+    find_package(OpenGL ${WrapOpenGL_FIND_VERSION} COMPONENTS OpenGL)
+    if (OpenGL_FOUND)
+        set(WrapOpenGL_FOUND ON)
+        add_library(WrapOpenGL::WrapOpenGL INTERFACE IMPORTED)
+        target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE OpenGL::OpenGL)
+    endif()
 endif()
 
 include(FindPackageHandleStandardArgs)
