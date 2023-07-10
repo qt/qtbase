@@ -131,11 +131,11 @@ public slots:
         ++sequence;
         if (sequence == 1) {
             // read from both ends
-            (void) readEnd1->read(data1, sizeof(data1));
-            (void) readEnd2->read(data2, sizeof(data2));
+            QCOMPARE(readEnd1->read(data1, sizeof(data1)), 1);
+            QCOMPARE(readEnd2->read(data2, sizeof(data2)), 1);
             emit finished();
         } else if (sequence == 2) {
-            // we should never get here
+            // check that we can't read now because we've read our byte
             QCOMPARE(readEnd2->read(data2, sizeof(data2)), qint64(-2));
             QVERIFY(readEnd2->isValid());
         }
@@ -151,7 +151,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
       Given two sockets and two QSocketNotifiers registered on each
       their socket. If both sockets receive data, and the first slot
       invoked by one of the socket notifiers empties both sockets, the
-      other notifier will also emit activated(). This results in
+      other notifier will also emit activated(). This was causing an
       unexpected disconnection in QAbstractSocket.
 
       The use case is that somebody calls one of the
@@ -187,8 +187,9 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     writeEnd1->waitForBytesWritten();
     writeEnd2->waitForBytesWritten();
 
-    writeEnd1->flush();
-    writeEnd2->flush();
+    // ensure both read ends are ready for reading, before the event loop
+    QVERIFY(readEnd1.waitForRead(5000));
+    QVERIFY(readEnd2.waitForRead(5000));
 
     UnexpectedDisconnectTester tester(&readEnd1, &readEnd2);
 
