@@ -183,6 +183,9 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         )
         set(input_header_path_type ABSOLUTE)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+        # Note we can't enable -Za, as it does not support certain key Microsoft SDK header files
+        # we use. Microsoft suggests to use /permissive- instead, which is implicity set by
+        # -std:c++latest.
         set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -WX -W3 -EHsc)
 
         # Because we now add `-DNOMINMAX` to `PlatformCommonInternal`.
