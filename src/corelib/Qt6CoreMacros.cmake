@@ -930,6 +930,152 @@ function(_qt_internal_get_target_autogen_build_dir target out_var)
     endif()
 endfunction()
 
+function(_qt_internal_should_install_metatypes target)
+    set(args_option
+        INTERNAL_INSTALL
+    )
+    set(args_single
+        OUT_VAR
+    )
+    set(args_multi
+    )
+
+    cmake_parse_arguments(arg
+        "${args_option}"
+        "${args_single}"
+        "${args_multi}" ${ARGN})
+
+    # Check whether the generated json file needs to be installed.
+    # Executable metatypes.json files should not be installed. Qt non-prefix builds should also
+    # not install the files.
+    set(should_install FALSE)
+
+    get_target_property(target_type ${target} TYPE)
+    if(NOT target_type STREQUAL "EXECUTABLE" AND arg_INTERNAL_INSTALL)
+        set(should_install TRUE)
+    endif()
+    set(${out_var} "${should_install}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_get_metatypes_install_dir internal_install_dir arch_data_dir out_var)
+    # Automatically fill default install args when not specified.
+    if(NOT internal_install_dir)
+        # INSTALL_ARCHDATADIR is not set when QtBuildInternals is not loaded
+        # (when not doing a Qt build). Default to a hardcoded location for user
+        # projects (will likely be wrong).
+        if(arch_data_dir)
+            set(install_dir "${arch_data_dir}/metatypes")
+        else()
+            set(install_dir "lib/metatypes")
+        endif()
+    else()
+        set(install_dir "${internal_install_dir}")
+    endif()
+    set(${out_var} "${install_dir}" PARENT_SCOPE)
+endfunction()
+
+# Propagates the build time metatypes file via INTERFACE_SOURCES (using $<BUILD_INTERFACE>)
+# and saves the path and file name in properties, so that they can be queryied in the qml api
+# implementation for the purpose of duplicating a qml module backing library's metatypes in its
+# associated plugin. This is required for qmltyperegistrar to get the full set of foreign types
+# when projects link to the plugin and not the backing library.
+function(_qt_internal_assign_build_metatypes_files_and_properties target)
+    get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
+    if (existing_meta_types_file)
+        return()
+    endif()
+
+    set(args_option
+    )
+    set(args_single
+        METATYPES_FILE_NAME
+        METATYPES_FILE_PATH
+    )
+    set(args_multi
+    )
+
+    cmake_parse_arguments(arg
+        "${args_option}"
+        "${args_single}"
+        "${args_multi}" ${ARGN})
+
+    if(NOT arg_METATYPES_FILE_NAME)
+        message(FATAL_ERROR "METATYPES_FILE_NAME must be specified")
+    endif()
+
+    if(NOT arg_METATYPES_FILE_PATH)
+        message(FATAL_ERROR "METATYPES_FILE_PATH must be specified")
+    endif()
+
+    set(metatypes_file_name "${arg_METATYPES_FILE_NAME}")
+    set(metatypes_file_path "${arg_METATYPES_FILE_PATH}")
+
+    # Set up consumption of files via INTERFACE_SOURCES.
+    set(consumes_metatypes "$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>")
+    set(metatypes_file_genex_build
+        "$<BUILD_INTERFACE:$<${consumes_metatypes}:${metatypes_file_path}>>"
+    )
+    target_sources(${target} INTERFACE ${metatypes_file_genex_build})
+
+    set_target_properties(${target} PROPERTIES
+        INTERFACE_QT_MODULE_HAS_META_TYPES YES
+        # The property name is a bit misleading, it's not wrapped in a genex.
+        INTERFACE_QT_META_TYPES_BUILD_FILE "${metatypes_file_path}"
+        INTERFACE_QT_META_TYPES_FILE_NAME "${metatypes_file_name}"
+    )
+endfunction()
+
+# Same as above, but with $<INSTALL_INTERFACE>.
+function(_qt_internal_assign_install_metatypes_files_and_properties target)
+    get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_INSTALL_FILE)
+    if (existing_meta_types_file)
+        return()
+    endif()
+
+    set(args_option
+    )
+    set(args_single
+        INSTALL_DIR
+    )
+    set(args_multi
+    )
+
+    cmake_parse_arguments(arg
+        "${args_option}"
+        "${args_single}"
+        "${args_multi}" ${ARGN})
+
+
+    get_target_property(metatypes_file_name "${target}" INTERFACE_QT_META_TYPES_FILE_NAME)
+
+    if(NOT metatypes_file_name)
+        message(FATAL_ERROR "INTERFACE_QT_META_TYPES_FILE_NAME of target ${target} is empty")
+    endif()
+
+    if(NOT arg_INSTALL_DIR)
+        message(FATAL_ERROR "INSTALL_DIR must be specified")
+    endif()
+
+    set(metatypes_file_name "${arg_METATYPES_FILE_NAME}")
+
+    # Set up consumption of files via INTERFACE_SOURCES.
+    set(consumes_metatypes "$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>")
+
+    set(install_dir "${arg_INSTALL_DIR}")
+
+    set(metatypes_file_install_path "${install_dir}/${metatypes_file_name}")
+    set(metatypes_file_install_path_genex "$<INSTALL_PREFIX>/${metatypes_file_install_path}")
+    set(metatypes_file_genex_install
+        "$<INSTALL_INTERFACE:$<${consumes_metatypes}:${metatypes_file_install_path_genex}>>"
+    )
+    target_sources(${target} INTERFACE ${metatypes_file_genex_install})
+
+    set_target_properties(${target} PROPERTIES
+        INTERFACE_QT_META_TYPES_INSTALL_FILE "${metatypes_file_install_path}"
+    )
+endfunction()
+
+
 function(qt6_extract_metatypes target)
 
     get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
@@ -1175,52 +1321,42 @@ function(qt6_extract_metatypes target)
         PROPERTIES HEADER_FILE_ONLY TRUE
     )
 
-    set_target_properties(${target} PROPERTIES
-        INTERFACE_QT_MODULE_HAS_META_TYPES YES
-        INTERFACE_QT_META_TYPES_BUILD_FILE "${metatypes_file}"
-    )
-
-    # Set up consumption of files via INTERFACE_SOURCES.
-    set(consumes_metatypes "$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>")
-    set(metatypes_file_genex_build
-        "$<BUILD_INTERFACE:$<${consumes_metatypes}:${metatypes_file}>>"
-    )
-    target_sources(${target} INTERFACE ${metatypes_file_genex_build})
-
     if(arg_OUTPUT_FILES)
         set(${arg_OUTPUT_FILES} "${metatypes_file}" PARENT_SCOPE)
     endif()
 
-    # Check whether the generated json file needs to be installed.
-    # Executable metatypes.json files should not be installed. Qt non-prefix builds should also
-    # not install the files.
-    set(should_install FALSE)
+    # Propagate the build time metatypes file.
+    _qt_internal_assign_build_metatypes_files_and_properties(
+        "${target}"
+        METATYPES_FILE_NAME "${metatypes_file_name}"
+        METATYPES_FILE_PATH "${metatypes_file}"
+    )
 
-    if(NOT target_type STREQUAL "EXECUTABLE" AND arg___QT_INTERNAL_INSTALL)
-        set(should_install TRUE)
-    endif()
-
-    # Automatically fill default install args when not specified.
-    if(NOT arg___QT_INTERNAL_INSTALL_DIR)
-        # INSTALL_ARCHDATADIR is not set when QtBuildInternals is not loaded
-        # (when not doing a Qt build). Default to a hardcoded location for user
-        # projects (will likely be wrong).
-        if(INSTALL_ARCHDATADIR)
-            set(install_dir "${INSTALL_ARCHDATADIR}/metatypes")
-        else()
-            set(install_dir "lib/metatypes")
-        endif()
+    if(arg___QT_INTERNAL_INSTALL)
+        set(internal_install_option "INTERNAL_INSTALL")
     else()
-        set(install_dir "${arg___QT_INTERNAL_INSTALL_DIR}")
+        set(internal_install_option "")
     endif()
+
+    # TODO: Clean up Qt-specific installation not to happen in the public api.
+    # Check whether the metatype files should be installed.
+    _qt_internal_should_install_metatypes("${target}"
+        ${internal_install_option}
+        OUT_VAR should_install
+    )
 
     if(should_install)
-        set(metatypes_file_install_path "${install_dir}/${metatypes_file_name}")
-        set(metatypes_file_install_path_genex "$<INSTALL_PREFIX>/${metatypes_file_install_path}")
-        set(metatypes_file_genex_install
-            "$<INSTALL_INTERFACE:$<${consumes_metatypes}:${metatypes_file_install_path_genex}>>"
+        _qt_internal_get_metatypes_install_dir(
+            "${arg___QT_INTERNAL_INSTALL_DIR}"
+            "${INSTALL_ARCHDATADIR}"
+            install_dir
         )
-        target_sources(${target} INTERFACE ${metatypes_file_genex_install})
+
+        # Propagate the install time metatypes file.
+        _qt_internal_assign_install_metatypes_files_and_properties(
+            "${target}"
+            INSTALL_DIR "${install_dir}"
+        )
         install(FILES "${metatypes_file}" DESTINATION "${install_dir}")
     endif()
 endfunction()
