@@ -1,3 +1,2 @@
 [unexpectedDisconnection]
-windows ci
-
+macos ci # QTBUG-115154
