@@ -140,7 +140,6 @@ public:
     void setParent_helper(QObject *);
     void moveToThread_helper();
     void setThreadData_helper(QThreadData *currentData, QThreadData *targetData, QBindingStatus *status);
-    void _q_reregisterTimers(void *pointer);
 
     bool isSender(const QObject *receiver, const char *signal) const;
     QObjectList receiverList(const char *signal) const;

@@ -1589,41 +1589,43 @@ void tst_Moc::specifyMetaTagsFromCmdline() {
 
 void tst_Moc::invokable()
 {
+    const int fooIndex = 4;
     {
         const QMetaObject &mobj = InvokableBeforeReturnType::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 6);
-        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("foo()"));
+        QCOMPARE(mobj.methodCount(), 5);
+        QCOMPARE(mobj.method(fooIndex).methodSignature(), QByteArray("foo()"));
     }
 
     {
         const QMetaObject &mobj = InvokableBeforeInline::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 7);
-        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("foo()"));
-        QCOMPARE(mobj.method(6).methodSignature(), QByteArray("bar()"));
+        QCOMPARE(mobj.methodCount(), 6);
+        QCOMPARE(mobj.method(fooIndex).methodSignature(), QByteArray("foo()"));
+        QCOMPARE(mobj.method(fooIndex + 1).methodSignature(), QByteArray("bar()"));
     }
 }
 
 void tst_Moc::singleFunctionKeywordSignalAndSlot()
 {
+    const int mySignalIndex = 4;
     {
         const QMetaObject &mobj = SingleFunctionKeywordBeforeReturnType::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 7);
-        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("mySignal()"));
-        QCOMPARE(mobj.method(6).methodSignature(), QByteArray("mySlot()"));
+        QCOMPARE(mobj.methodCount(), 6);
+        QCOMPARE(mobj.method(mySignalIndex).methodSignature(), QByteArray("mySignal()"));
+        QCOMPARE(mobj.method(mySignalIndex + 1).methodSignature(), QByteArray("mySlot()"));
     }
 
     {
         const QMetaObject &mobj = SingleFunctionKeywordBeforeInline::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 7);
-        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("mySignal()"));
-        QCOMPARE(mobj.method(6).methodSignature(), QByteArray("mySlot()"));
+        QCOMPARE(mobj.methodCount(), 6);
+        QCOMPARE(mobj.method(mySignalIndex).methodSignature(), QByteArray("mySignal()"));
+        QCOMPARE(mobj.method(mySignalIndex + 1).methodSignature(), QByteArray("mySlot()"));
     }
 
     {
         const QMetaObject &mobj = SingleFunctionKeywordAfterInline::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 7);
-        QCOMPARE(mobj.method(5).methodSignature(), QByteArray("mySignal()"));
-        QCOMPARE(mobj.method(6).methodSignature(), QByteArray("mySlot()"));
+        QCOMPARE(mobj.methodCount(), 6);
+        QCOMPARE(mobj.method(mySignalIndex).methodSignature(), QByteArray("mySignal()"));
+        QCOMPARE(mobj.method(mySignalIndex + 1).methodSignature(), QByteArray("mySlot()"));
     }
 }
 
