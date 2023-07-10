@@ -625,6 +625,14 @@ void tst_qmessagehandler::cleanupFuncinfo_data()
         << "void `void function<Polymorphic<void __cdecl(int *)> >(void)'::`2'::S::f(Polymorphic<void __cdecl(int *)> *)"
         << "function(void)'::`2'::S::f";
 
+    QTest::newRow("gcc_lambda_1") << "main(int, char**)::<lambda()>"
+                                  << "main(int, char**)::<lambda()>";
+
+    QTest::newRow("gcc_lambda_with_auto_1")
+            << "SomeClass::someMethod(const QString&, const QString&)::<lambda(auto:57)> [with "
+               "auto:57 = QNetworkReply::NetworkError]"
+            << "SomeClass::someMethod(const QString&, const QString&)::<lambda(auto:57)>";
+
     QTest::newRow("objc_1")
         << "-[SomeClass someMethod:withArguments:]"
         << "-[SomeClass someMethod:withArguments:]";
