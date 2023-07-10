@@ -164,6 +164,20 @@ void tst_QApplication::sendEventsOnProcessEvents()
 
     QCoreApplication::postEvent(&app,  new QEvent(QEvent::Type(QEvent::User + 1)));
     QCoreApplication::processEvents();
+
+#ifdef Q_OS_LINUX
+    if ((QSysInfo::productType() == "rhel" && QSysInfo::productVersion().startsWith(u'9'))
+        || (QSysInfo::productType() == "ubuntu" && QSysInfo::productVersion().startsWith(u'2')))
+    {
+        QFile f("/proc/self/maps");
+        QVERIFY(f.open(QIODevice::ReadOnly));
+
+        QByteArray libs = f.readAll();
+        if (libs.contains("libqgtk3.") || libs.contains("libqgtk3TestInfix."))
+            QEXPECT_FAIL("", "Fails if qgtk3 (Glib) is loaded, see QTBUG-87137", Abort);
+    }
+#endif
+
     QVERIFY(spy.recordedEvents.contains(QEvent::User + 1));
 }
 
