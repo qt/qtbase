@@ -782,7 +782,8 @@
    failure will be reported.
 
    If a \l QVERIFY() or \l QCOMPARE() is marked as an expected failure,
-   but passes instead, an unexpected pass (XPASS) is written to the test log.
+   but passes instead, an unexpected pass (XPASS) is written to the test log
+   and will be counted as a test failure.
 
    The parameter \a dataIndex describes for which entry in the test data the
    failure is expected. Pass an empty string (\c{""}) if the failure
