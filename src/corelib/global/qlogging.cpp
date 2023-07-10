@@ -1003,8 +1003,13 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
     pos = info.size() - 1;
     if (info.endsWith(']') && !(info.startsWith('+') || info.startsWith('-'))) {
         while (--pos) {
-            if (info.at(pos) == '[')
-                info.truncate(pos);
+          if (info.at(pos) == '[') {
+              info.truncate(pos);
+              break;
+          }
+        }
+        if (info.endsWith(' ')) {
+          info.chop(1);
         }
     }
 
@@ -1018,10 +1023,11 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
     // canonize operator names
     info.replace("operator ", "operator");
 
+    pos = -1;
     // remove argument list
     forever {
         int parencount = 0;
-        pos = info.lastIndexOf(')');
+        pos = info.lastIndexOf(')', pos);
         if (pos == -1) {
             // Don't know how to parse this function name
             return info;
@@ -1029,8 +1035,8 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
         if (info.indexOf('>', pos) != -1
                 || info.indexOf(':', pos) != -1) {
             // that wasn't the function argument list.
-            pos = info.size();
-            break;
+            --pos;
+            continue;
         }
 
         // find the beginning of the argument list
