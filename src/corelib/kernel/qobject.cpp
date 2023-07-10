@@ -1415,8 +1415,11 @@ bool QObject::event(QEvent *e)
         if (eventDispatcher) {
             QList<QAbstractEventDispatcher::TimerInfo> timers = eventDispatcher->registeredTimers(this);
             if (!timers.isEmpty()) {
+                const bool res = eventDispatcher->unregisterTimers(this);
                 // do not to release our timer ids back to the pool (since the timer ids are moving to a new thread).
-                eventDispatcher->unregisterTimers(this);
+                Q_ASSERT_X(res, Q_FUNC_INFO,
+                           "QAbstractEventDispatcher::unregisterTimers() returned false,"
+                           " but there are timers associated with this object.");
                 QMetaObject::invokeMethod(this, "_q_reregisterTimers", Qt::QueuedConnection,
                                           Q_ARG(void*, (new QList<QAbstractEventDispatcher::TimerInfo>(timers))));
             }

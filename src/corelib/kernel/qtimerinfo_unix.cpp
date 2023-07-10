@@ -353,21 +353,23 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
 {
     if (isEmpty())
         return false;
-    for (int i = 0; i < size(); ++i) {
-        QTimerInfo *t = at(i);
-        if (t->obj == object) {
-            // object found
-            removeAt(i);
-            if (t == firstTimerInfo)
-                firstTimerInfo = nullptr;
-            if (t->activateRef)
-                *(t->activateRef) = nullptr;
-            delete t;
-            // move back one so that we don't skip the new current item
-            --i;
-        }
-    }
-    return true;
+
+    auto associatedWith = [this](QObject *o) {
+        return [this, o](auto &t) {
+            if (t->obj == o) {
+                if (t == firstTimerInfo)
+                    firstTimerInfo = nullptr;
+                if (t->activateRef)
+                    *(t->activateRef) = nullptr;
+                delete t;
+                return true;
+            }
+            return false;
+        };
+    };
+
+    qsizetype count = removeIf(associatedWith(object));
+    return count > 0;
 }
 
 QList<QAbstractEventDispatcher::TimerInfo> QTimerInfoList::registeredTimers(QObject *object) const
