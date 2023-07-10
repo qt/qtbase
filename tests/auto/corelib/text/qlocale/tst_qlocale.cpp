@@ -2431,6 +2431,10 @@ void tst_QLocale::toTime_data()
         << usa << QTime(16, 43, 32) << u"h:mm:ss AP "_s << u"4:43:32 PM "_s << true;
     QTest::newRow("shortFormat-PM")
         << usa << QTime(16, 43) << u"h:mm AP "_s << u"4:43 PM "_s << true;
+    // Some locales use a narrow non-breaking space as separator, but
+    // the user can't see the difference from a space (QTBUG-114909):
+    QTest::newRow("shortFormat-AM-mixspace")
+        << usa << QTime(4, 43) << u"h:mm\u202F" "AP "_s << u"4:43 AM "_s << true;
 
     // Parsing am/pm indicators case-insensitively:
     const QLocale czech{QLocale::Czech, QLocale::Czechia};

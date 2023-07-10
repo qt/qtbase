@@ -728,11 +728,33 @@ int QDateTimeParser::sectionMaxSize(int index) const
 }
 
 // Separator matching
+//
+// QTBUG-114909: user may be oblivious to difference between visibly
+// indistinguishable spacing characters. For now we only treat horizontal
+// spacing characters, excluding tab, as equivalent.
+
 static int matchesSeparator(QStringView text, QStringView separator)
 {
+    const auto isSimpleSpace = [](char32_t ch) {
+        // Distinguish tab, CR and the vertical spaces from the rest:
+        return ch == u' ' || (ch > 127 && QChar::isSpace(ch));
+    };
     // -1 if not a match, else length of prefix of text that does match.
-    // For now, just check for exact match:
-    return text.startsWith(separator) ? separator.size() : -1;
+    // First check for exact match
+    if (!text.startsWith(separator)) {
+        // Failing that, check for space-identifying match:
+        QStringIterator given(text), sep(separator);
+        while (sep.hasNext()) {
+            if (!given.hasNext())
+                return -1;
+            char32_t s = sep.next(), g = given.next();
+            if (s != g && !(isSimpleSpace(s) && isSimpleSpace(g)))
+                return -1;
+        }
+        // One side may have used a surrogate pair space where the other didn't:
+        return given.index();
+    }
+    return separator.size();
 }
 
 /*!
