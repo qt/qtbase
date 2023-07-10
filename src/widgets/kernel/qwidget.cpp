@@ -4359,7 +4359,7 @@ QWidget *QWidget::nativeParentWidget() const
   The background role defines the brush from the widget's \l palette that
   is used to render the background.
 
-  If no explicit background role is set, the widget inherts its parent
+  If no explicit background role is set, the widget inherits its parent
   widget's background role.
 
   \sa setBackgroundRole(), foregroundRole()
