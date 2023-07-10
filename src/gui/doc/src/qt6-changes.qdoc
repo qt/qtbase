@@ -114,4 +114,38 @@
     Metal, in addition to OpenGL. On Windows the default choice is Direct 3D,
     therefore the removal of ANGLE is alleviated by having support for graphics
     APIs other than OpenGL as well.
+
+    \section2 Native clipboard integration
+
+    Qt 5 provided interfaces for integrating platform specific or custom
+    clipboard formats into Qt through \c QMacPasteboardMime in \c QtMacExtras,
+    and \c QWindowsMime from the Windows QPA API. Since Qt 6.6, the
+    equivalent functionality is provided by the classes QUtiMimeConverter for
+    \macos, and the QWindowsMimeConverter for Windows.
+
+    Porting from QWindowsMime to QWindowsMimeConverter requires practically no
+    changes, as the virtual interface is identical. However, in Qt 6 it is no
+    longer needed to register a QWindowsMimeConverter implementation;
+    instantiating the type implicitly registers the converter.
+
+    Porting a QMacPasteboardMime to QUtiMimeConverter requires renaming some of
+    the virtual functions. Note that the \c{QMacPasteboardMime} API used the
+    outdated term \c{flavor} for the native clipboard format on \macos, whereas
+    the platform now uses \c{Uniform Type Identifiers}, i.e. \c{UTI}s, which Qt
+    has adapted for function and parameter names.
+
+    The \c{mimeFor} and \c{flavorFor} functions are replaced by the
+    \l{QUtiMimeConverter::}{mimeForUti} and \l{QUtiMimeConverter::}{utiForMime}
+    implementations, respectively. Those should return the name of the mime
+    type or \c{UTI} that the converter can convert the input format to, so a
+    port usually just involves renaming existing overrides. The
+    \c{convertToMime}, \c{convertFromMime}, and \c{count} functions in
+    QUtiMimeConverter are identical to their QMacPasteboardMime versions.
+
+    The \c{canConvert}, \c{converterName} functions are no longer needed, they
+    are implied by implementation of the above functions, so overrides of those
+    functions can be removed.
+
+    As with the the QWindowsMimeConverter, registration is done by instantiating
+    the type.
 */
