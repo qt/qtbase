@@ -200,8 +200,9 @@ inline auto QNativeIpcKey::legacyDefaultTypeForOs() noexcept -> Type
 #endif
 }
 
+QT_END_NAMESPACE
+
 #endif // QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 
-QT_END_NAMESPACE
 
 #endif // QNATIVEIPCKEY_H
