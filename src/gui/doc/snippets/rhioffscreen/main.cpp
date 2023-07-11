@@ -82,9 +82,7 @@ int main(int argc, char **argv)
     ps->setTargetBlends({ premulAlphaBlend });
     static auto getShader = [](const QString &name) {
         QFile f(name);
-        if (f.open(QIODevice::ReadOnly))
-            return QShader::fromSerialized(f.readAll());
-        return QShader();
+        return f.open(QIODevice::ReadOnly) ? QShader::fromSerialized(f.readAll()) : QShader();
     };
     ps->setShaderStages({
         { QRhiShaderStage::Vertex, getShader(QLatin1String("color.vert.qsb")) },
