@@ -388,7 +388,11 @@ namespace QtPrivate {
     };
 
     template<typename Func, typename... Args>
-    using Callable = typename CallableHelper<Func, Args...>::Type;
+    struct Callable : CallableHelper<Func, Args...>::Type
+    {};
+    template<typename Func, typename... Args>
+    struct Callable<Func, List<Args...>> : CallableHelper<Func, Args...>::Type
+    {};
 
     /*
         Wrapper around ComputeFunctorArgumentCount and CheckCompatibleArgument,
@@ -531,10 +535,7 @@ namespace QtPrivate {
     {
         using FunctorValue = std::decay_t<Func>;
         using Storage = QtPrivate::CompactStorage<FunctorValue>;
-        using FuncType = std::conditional_t<std::is_member_function_pointer_v<FunctorValue>,
-            QtPrivate::FunctionPointer<FunctorValue>,
-            QtPrivate::Functor<FunctorValue, Args::size>
-        >;
+        using FuncType = Callable<Func, Args>;
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
         Q_DECL_HIDDEN static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
