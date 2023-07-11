@@ -111,7 +111,10 @@ struct NetlinkSocket
 template <typename Lambda> struct ProcessNetlinkRequest
 {
     using FunctionTraits = QtPrivate::FunctionPointer<decltype(&Lambda::operator())>;
-    using FirstArgument = typename FunctionTraits::Arguments::Car;
+    using FirstArgumentPointer = typename FunctionTraits::Arguments::Car;
+    using FirstArgument = std::remove_pointer_t<FirstArgumentPointer>;
+    static_assert(std::is_pointer_v<FirstArgumentPointer>);
+    static_assert(std::is_aggregate_v<FirstArgument>);
 
     static int expectedTypeForRequest(int rtype)
     {
@@ -136,7 +139,7 @@ template <typename Lambda> struct ProcessNetlinkRequest
             if (!NLMSG_OK(hdr, quint32(len)))
                 return;
 
-            auto arg = reinterpret_cast<FirstArgument>(NLMSG_DATA(hdr));
+            auto arg = static_cast<FirstArgument *>(NLMSG_DATA(hdr));
             size_t payloadLen = NLMSG_PAYLOAD(hdr, 0);
 
             // is this a multipart message?
@@ -156,7 +159,7 @@ template <typename Lambda> struct ProcessNetlinkRequest
 
                     // NLMSG_NEXT also updates the len variable
                     hdr = NLMSG_NEXT(hdr, len);
-                    arg = reinterpret_cast<FirstArgument>(NLMSG_DATA(hdr));
+                    arg = static_cast<FirstArgument *>(NLMSG_DATA(hdr));
                     payloadLen = NLMSG_PAYLOAD(hdr, 0);
                 } while (NLMSG_OK(hdr, quint32(len)));
 
