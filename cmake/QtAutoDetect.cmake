@@ -9,7 +9,7 @@
 # done when initially configuring qtbase.
 
 # This needs to be here because QtAutoDetect loads before any other modules
-option(QT_USE_VCPKG "Enable the use of vcpkg" ON)
+option(QT_USE_VCPKG "Enable the use of vcpkg" OFF)
 
 function(qt_internal_ensure_static_qt_config)
     if(NOT DEFINED BUILD_SHARED_LIBS)

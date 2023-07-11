@@ -162,7 +162,7 @@ Build environment:
 
   -pkg-config .......... Use pkg-config [auto] (Unix only)
 
-  -vcpkg ............... Use vcpkg [yes]
+  -vcpkg ............... Use vcpkg [no]
 
   -D <string> .......... Pass additional preprocessor define
   -I <string> .......... Pass additional include path
