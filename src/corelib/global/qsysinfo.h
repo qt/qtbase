@@ -13,6 +13,9 @@ QT_BEGIN_NAMESPACE
    System information
 */
 
+#ifdef Q_QDOC
+class QByteArray;
+#endif
 class QString;
 class Q_CORE_EXPORT QSysInfo
 {
