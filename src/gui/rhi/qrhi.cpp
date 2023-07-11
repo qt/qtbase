@@ -2007,9 +2007,7 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
         QShader getShader(const QString &name)
         {
             QFile f(name);
-            if (f.open(QIODevice::ReadOnly))
-                return QShader::fromSerialized(f.readAll());
-            return QShader();
+            return f.open(QIODevice::ReadOnly) ? QShader::fromSerialized(f.readAll()) : QShader();
         }
 
         QShader vs = getShader("material.vert.qsb");
