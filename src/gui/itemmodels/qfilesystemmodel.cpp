@@ -2085,8 +2085,8 @@ void QFileSystemModelPrivate::init()
 #if QT_CONFIG(filesystemwatcher)
     q->connect(&fileInfoGatherer, SIGNAL(newListOfFiles(QString,QStringList)),
                q, SLOT(_q_directoryChanged(QString,QStringList)));
-    q->connect(&fileInfoGatherer, SIGNAL(updates(QString, QList<QPair<QString, QFileInfo>>)), q,
-               SLOT(_q_fileSystemChanged(QString, QList<QPair<QString, QFileInfo>>)));
+    q->connect(&fileInfoGatherer, SIGNAL(updates(QString,QList<std::pair<QString,QFileInfo>>)), q,
+               SLOT(_q_fileSystemChanged(QString,QList<std::pair<QString,QFileInfo>>)));
     q->connect(&fileInfoGatherer, SIGNAL(nameResolved(QString,QString)),
             q, SLOT(_q_resolvedName(QString,QString)));
     q->connect(&fileInfoGatherer, SIGNAL(directoryLoaded(QString)),
