@@ -1892,9 +1892,10 @@ void tst_QXmlStream::tokenErrorHandling() const
     const QDir dir(QFINDTESTDATA("tokenError"));
     QFile file(dir.absoluteFilePath(fileName));
 
-    // Cross-compiling: File will be on host only
+    // Cross-compiling: Files may not be found when running test standalone
+    // QSKIP in that case, because the tested functionality is platform independent.
     if (!file.exists())
-        QSKIP("Testfile not found.");
+        QSKIP(QObject::tr("Testfile %1 not found.").arg(fileName).toUtf8().constData());
 
     file.open(QIODevice::ReadOnly);
     QXmlStreamReader reader(&file);
