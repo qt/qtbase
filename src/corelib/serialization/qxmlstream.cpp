@@ -806,7 +806,7 @@ QString QXmlStreamReader::tokenString() const
 
 /*!
    \internal
-   \return \param loc (Prolog/Body) as a string.
+   \return \param ctxt (Prolog/Body) as a string.
  */
 static constexpr QLatin1StringView contextString(QXmlStreamReaderPrivate::XmlContext ctxt)
 {
@@ -3853,19 +3853,19 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
 }
 
 static constexpr bool isTokenAllowedInContext(QXmlStreamReader::TokenType type,
-                                               QXmlStreamReaderPrivate::XmlContext loc)
+                                               QXmlStreamReaderPrivate::XmlContext ctxt)
 {
     switch (type) {
     case QXmlStreamReader::StartDocument:
     case QXmlStreamReader::DTD:
-        return loc == QXmlStreamReaderPrivate::XmlContext::Prolog;
+        return ctxt == QXmlStreamReaderPrivate::XmlContext::Prolog;
 
     case QXmlStreamReader::StartElement:
     case QXmlStreamReader::EndElement:
     case QXmlStreamReader::Characters:
     case QXmlStreamReader::EntityReference:
     case QXmlStreamReader::EndDocument:
-        return loc == QXmlStreamReaderPrivate::XmlContext::Body;
+        return ctxt == QXmlStreamReaderPrivate::XmlContext::Body;
 
     case QXmlStreamReader::Comment:
     case QXmlStreamReader::ProcessingInstruction:
