@@ -727,6 +727,14 @@ int QDateTimeParser::sectionMaxSize(int index) const
     return sectionMaxSize(sn.type, sn.count);
 }
 
+// Separator matching
+static int matchesSeparator(QStringView text, QStringView separator)
+{
+    // -1 if not a match, else length of prefix of text that does match.
+    // For now, just check for exact match:
+    return text.startsWith(separator) ? separator.size() : -1;
+}
+
 /*!
   \internal
 
@@ -845,12 +853,26 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
     case MinuteSection:
     case SecondSection:
     case MSecSection: {
+        const auto checkSeparator = [&result, field=QStringView{m_text}.sliced(offset),
+                                     negativeYearOffset, sectionIndex, this]() {
+            // No-digit field if next separator is here, otherwise invalid.
+            const auto &sep = separators.at(sectionIndex + 1);
+            if (matchesSeparator(field.sliced(negativeYearOffset), sep) != -1)
+                result = ParsedSection(Intermediate, 0, negativeYearOffset);
+            else if (negativeYearOffset && matchesSeparator(field, sep) != -1)
+                result = ParsedSection(Intermediate, 0, 0);
+            else
+                return false;
+            return true;
+        };
         int used = negativeYearOffset;
-        // We already sliced off the - sign if it was legitimately present.
+        // We already sliced off the - sign if it was acceptable.
+        // QLocale::toUInt() would accept a sign, so we must reject it overtly:
         if (sectionTextRef.startsWith(u'-')
             || sectionTextRef.startsWith(u'+')) {
-            if (separators.at(sectionIndex + 1).startsWith(sectionTextRef[0]))
-                result = ParsedSection(Intermediate, 0, used);
+            // However, a sign here may indicate a field with no digits, if it
+            // starts the next separator:
+            checkSeparator();
             break;
         }
         QStringView digitsStr = sectionTextRef.left(digitCount(sectionTextRef));
@@ -884,13 +906,10 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             }
 
             if (lastVal == -1) {
-                const auto &sep = separators.at(sectionIndex + 1);
-                if (sep.startsWith(sectionTextRef[0])
-                    || (negate && sep.startsWith(m_text.at(offset))))
-                    result = ParsedSection(Intermediate, 0, 0);
-                else
+                if (!checkSeparator()) {
                     QDTPDEBUG << "invalid because" << sectionTextRef << "can't become a uint"
                               << lastVal;
+                }
             } else {
                 if (negate)
                     lastVal = -lastVal;
@@ -1182,13 +1201,14 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
     for (int index = 0; index < sectionNodesCount; ++index) {
         Q_ASSERT(state != Invalid);
         const QString &separator = separators.at(index);
-        if (QStringView{m_text}.mid(pos, separator.size()) != separator) {
-            QDTPDEBUG << "invalid because" << QStringView{m_text}.mid(pos, separator.size())
-                      << "!=" << separator
+        int step = matchesSeparator(QStringView{m_text}.sliced(pos), separator);
+        if (step == -1) {
+            QDTPDEBUG << "invalid because" << QStringView{m_text}.sliced(pos)
+                      << "does not start with" << separator
                       << index << pos << currentSectionIndex;
             return StateNode();
         }
-        pos += separator.size();
+        pos += step;
         sectionNodes[index].pos = pos;
         int *current = nullptr;
         int zoneOffset; // Needed to serve as *current when setting zone
@@ -1287,9 +1307,10 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         isSet |= sn.type;
     }
 
-    if (QStringView{m_text}.sliced(pos) != separators.last()) {
+    int step = matchesSeparator(QStringView{m_text}.sliced(pos), separators.last());
+    if (step == -1 || step + pos < m_text.size()) {
         QDTPDEBUG << "invalid because" << QStringView{m_text}.sliced(pos)
-                  << "!=" << separators.last() << pos;
+                  << "does not match" << separators.last() << pos;
         return StateNode();
     }
 
