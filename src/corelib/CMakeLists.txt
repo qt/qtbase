@@ -153,6 +153,7 @@ qt_internal_add_module(Core
         kernel/qassociativeiterable.cpp kernel/qassociativeiterable.h
         kernel/qbasictimer.cpp kernel/qbasictimer.h
         kernel/qbindingstorage.h
+        kernel/qchronotimer.cpp kernel/qchronotimer.h
         kernel/qcoreapplication.cpp kernel/qcoreapplication.h kernel/qcoreapplication_p.h
         kernel/qcoreapplication_platform.h
         kernel/qcorecmdlineargs_p.h

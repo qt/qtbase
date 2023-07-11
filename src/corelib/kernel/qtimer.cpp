@@ -118,8 +118,9 @@ QT_BEGIN_NAMESPACE
 */
 
 QTimer::QTimer(QObject *parent)
-    : QObject(*new QTimerPrivate, parent)
+    : QObject(*new QTimerPrivate(this), parent)
 {
+    Q_ASSERT(d_func()->isQTimer);
 }
 
 

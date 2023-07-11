@@ -639,6 +639,7 @@ private:
                                     const void **parameters, const char **typeNames,
                                     const QtPrivate::QMetaTypeInterface **metaTypes);
     friend class QTimer;
+    friend class QChronoTimer;
 };
 
 class Q_CORE_EXPORT QMetaObject::Connection {

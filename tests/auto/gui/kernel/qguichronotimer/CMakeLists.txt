@@ -2,19 +2,19 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 #####################################################################
-## tst_qguitimer Test:
+## tst_qguichronotimer Test:
 #####################################################################
 
 if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     cmake_minimum_required(VERSION 3.16)
-    project(tst_qguitimer LANGUAGES CXX)
+    project(tst_qguichronotimer LANGUAGES CXX)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
-function(addGuiTimerTest test)
+function(addGuiChronoTimerTest test)
     qt_internal_add_test(${test}
         SOURCES
-            ../../../corelib/kernel/qtimer/tst_qtimer.cpp
+            ../../../corelib/kernel/qchronotimer/tst_qchronotimer.cpp
         LIBRARIES
             Qt::CorePrivate
             Qt::Gui
@@ -22,17 +22,17 @@ function(addGuiTimerTest test)
     )
 endfunction()
 
-addGuiTimerTest(tst_qguitimer)
-qt_internal_extend_target(tst_qguitimer
+addGuiChronoTimerTest(tst_qguichronotimer)
+qt_internal_extend_target(tst_qguichronotimer
     DEFINES
-        tst_Qtimer=tst_QGuiTimer
+        tst_Qtimer=tst_QGuiChronoTimer
 )
 
 if(QT_FEATURE_glib AND UNIX)
-    addGuiTimerTest(tst_qguitimer_no_glib)
-    qt_internal_extend_target(tst_qguitimer_no_glib
+    addGuiChronoTimerTest(tst_qguichronotimer_no_glib)
+    qt_internal_extend_target(tst_qguichronotimer_no_glib
         DEFINES
             DISABLE_GLIB
-            tst_QTimer=tst_QGuiTimer_no_glib # Class name in the unittest
+            tst_QTimer=tst_QGuiChronoTimer_no_glib # Class name in the unittest
     )
 endif()
