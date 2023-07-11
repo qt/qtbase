@@ -13,9 +13,7 @@
 
 #include <QtCore/qstringconverter_base.h>
 #include <QtCore/qstring.h>
-#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
 #include <QtCore/qstringbuilder.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 

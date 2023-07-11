@@ -1500,9 +1500,7 @@ inline QString operator"" _qs(const char16_t *str, size_t size) noexcept
 
 QT_END_NAMESPACE
 
-#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
 #include <QtCore/qstringbuilder.h>
-#endif
 
 #ifdef Q_L1S_VIEW_IS_PRIMARY
 #    undef Q_L1S_VIEW_IS_PRIMARY
