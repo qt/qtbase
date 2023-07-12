@@ -385,6 +385,7 @@ qt_internal_extend_target(Gui CONDITION APPLE
         platform/darwin/qmacmimeregistry.mm platform/darwin/qmacmimeregistry_p.h
         platform/darwin/qutimimeconverter.mm platform/darwin/qutimimeconverter.h
         platform/darwin/qapplekeymapper.mm platform/darwin/qapplekeymapper_p.h
+        platform/darwin/qappleiconengine.mm platform/darwin/qappleiconengine_p.h
         text/coretext/qcoretextfontdatabase.mm text/coretext/qcoretextfontdatabase_p.h
         text/coretext/qfontengine_coretext.mm text/coretext/qfontengine_coretext_p.h
     LIBRARIES

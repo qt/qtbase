@@ -35,6 +35,7 @@ public:
     const QFont *font(Font type = SystemFont) const override;
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
     QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions options = {}) const override;
+    QIconEngine *createIconEngine(const QString &iconName) const override;
 
     QVariant themeHint(ThemeHint hint) const override;
     Qt::ColorScheme colorScheme() const override;

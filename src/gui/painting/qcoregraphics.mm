@@ -162,6 +162,9 @@ QT_BEGIN_NAMESPACE
 
 QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
 {
+    // ### TODO: add parameter so that we can decide whether to maintain the aspect
+    // ratio of the image (positioning the image inside the pixmap of size \a size),
+    // or whether we want to fill the resulting pixmap by stretching the image.
     const NSSize pixmapSize = NSMakeSize(size.width(), size.height());
     QPixmap pixmap(pixmapSize.width, pixmapSize.height);
     pixmap.fill(Qt::transparent);
@@ -186,6 +189,7 @@ QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
 
 QImage qt_mac_toQImage(const UIImage *image, QSizeF size)
 {
+    // ### TODO: same as above
     QImage ret(size.width(), size.height(), QImage::Format_ARGB32_Premultiplied);
     ret.fill(Qt::transparent);
     QMacCGContext ctx(&ret);

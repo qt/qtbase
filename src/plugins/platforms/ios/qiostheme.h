@@ -30,6 +30,7 @@ public:
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
     const QFont *font(Font type = SystemFont) const override;
+    QIconEngine *createIconEngine(const QString &iconName) const override;
 
     static const char *name;
 

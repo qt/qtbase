@@ -22,6 +22,7 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qtextformat.h>
 #include <QtGui/private/qcoretextfontdatabase_p.h>
+#include <QtGui/private/qappleiconengine_p.h>
 #include <QtGui/private/qfontengine_coretext_p.h>
 #include <QtGui/private/qabstractfileiconengine_p.h>
 #include <qpa/qplatformdialoghelper.h>
@@ -409,19 +410,8 @@ public:
                                   QPlatformTheme::IconOptions opts) :
         QAbstractFileIconEngine(info, opts) {}
 
-    static QList<QSize> availableIconSizes()
-    {
-        const qreal devicePixelRatio = qGuiApp->devicePixelRatio();
-        const int sizes[] = {
-            qRound(16 * devicePixelRatio), qRound(32 * devicePixelRatio),
-            qRound(64 * devicePixelRatio), qRound(128 * devicePixelRatio),
-            qRound(256 * devicePixelRatio)
-        };
-        return QAbstractFileIconEngine::toSizeList(sizes, sizes + sizeof(sizes) / sizeof(sizes[0]));
-    }
-
     QList<QSize> availableSizes(QIcon::Mode = QIcon::Normal, QIcon::State = QIcon::Off) override
-    { return QCocoaFileIconEngine::availableIconSizes(); }
+    { return QAppleIconEngine::availableIconSizes(); }
 
 protected:
     QPixmap filePixmap(const QSize &size, QIcon::Mode, QIcon::State) override
@@ -440,6 +430,14 @@ QIcon QCocoaTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptio
     return QIcon(new QCocoaFileIconEngine(fileInfo, iconOptions));
 }
 
+QIconEngine *QCocoaTheme::createIconEngine(const QString &iconName) const
+{
+    static bool experimentalIconEngines = qEnvironmentVariableIsSet("QT_ENABLE_EXPERIMENTAL_ICON_ENGINES");
+    if (experimentalIconEngines)
+        return new QAppleIconEngine(iconName);
+    return nullptr;
+}
+
 QVariant QCocoaTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
@@ -453,7 +451,7 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return QVariant([[NSApplication sharedApplication] isFullKeyboardAccessEnabled] ?
                     int(Qt::TabFocusAllControls) : int(Qt::TabFocusTextControls | Qt::TabFocusListControls));
     case IconPixmapSizes:
-        return QVariant::fromValue(QCocoaFileIconEngine::availableIconSizes());
+        return QVariant::fromValue(QAppleIconEngine::availableIconSizes());
     case QPlatformTheme::PasswordMaskCharacter:
         return QVariant(QChar(0x2022));
     case QPlatformTheme::UiEffects:

@@ -11,6 +11,7 @@
 #include <QtGui/private/qcoregraphics_p.h>
 
 #include <QtGui/private/qcoretextfontdatabase_p.h>
+#include <QtGui/private/qappleiconengine_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 
@@ -169,6 +170,14 @@ const QFont *QIOSTheme::font(Font type) const
     const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
     const auto *coreTextFontDatabase = static_cast<QCoreTextFontDatabase *>(platformIntegration->fontDatabase());
     return coreTextFontDatabase->themeFont(type);
+}
+
+QIconEngine *QIOSTheme::createIconEngine(const QString &iconName) const
+{
+    static bool experimentalIconEngines = qEnvironmentVariableIsSet("QT_ENABLE_EXPERIMENTAL_ICON_ENGINES");
+    if (experimentalIconEngines)
+        return new QAppleIconEngine(iconName);
+    return nullptr;
 }
 
 QT_END_NAMESPACE
