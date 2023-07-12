@@ -34,6 +34,7 @@ qt_internal_add_module(EglFSDeviceIntegrationPrivate
     DEFINES
         QT_BUILD_EGL_DEVICE_LIB
         QT_EGL_NO_X11
+        QT_NO_FOREACH
         EGLFS_PREFERRED_PLUGIN=${QT_QPA_DEFAULT_EGLFS_INTEGRATION}
     INCLUDE_DIRECTORIES
         api

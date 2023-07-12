@@ -110,7 +110,8 @@ void QEglFSIntegration::initialize()
 
 void QEglFSIntegration::destroy()
 {
-    foreach (QWindow *w, qGuiApp->topLevelWindows())
+    const auto toplevels = qGuiApp->topLevelWindows();
+    for (QWindow *w : toplevels)
         w->destroy();
 
     qt_egl_device_integration()->screenDestroy();

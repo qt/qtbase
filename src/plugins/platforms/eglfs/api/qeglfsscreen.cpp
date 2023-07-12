@@ -189,7 +189,7 @@ QPixmap QEglFSScreen::grabWindow(WId wid, int x, int y, int width, int height) c
         return QPixmap::fromImage(img).copy(x, y, width, height);
     }
 
-    foreach (QOpenGLCompositorWindow *w, windows) {
+    for (QOpenGLCompositorWindow *w : windows) {
         const QWindow *window = w->sourceWindow();
         if (window->winId() == wid) {
             const QRect geom = window->geometry();
