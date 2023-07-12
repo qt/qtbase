@@ -22,6 +22,7 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
         qwindowsdropdataobject.cpp qwindowsdropdataobject.h
         qwindowsgdiintegration.cpp qwindowsgdiintegration.h
         qwindowsgdinativeinterface.cpp qwindowsgdinativeinterface.h
+        qwindowsiconengine.cpp qwindowsiconengine.h
         qwindowsinputcontext.cpp qwindowsinputcontext.h
         qwindowsintegration.cpp qwindowsintegration.h
         qwindowsinternalmimedata.cpp qwindowsinternalmimedata.h

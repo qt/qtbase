@@ -17,6 +17,7 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
         ../windows/qwindowscursor.cpp ../windows/qwindowscursor.h
         ../windows/qwindowsdialoghelpers.cpp ../windows/qwindowsdialoghelpers.h
         ../windows/qwindowsdropdataobject.cpp ../windows/qwindowsdropdataobject.h
+        ../windows/qwindowsiconengine.cpp ../windows/qwindowsiconengine.h
         ../windows/qwindowsinputcontext.cpp ../windows/qwindowsinputcontext.h
         ../windows/qwindowsintegration.cpp ../windows/qwindowsintegration.h
         ../windows/qwindowsinternalmimedata.cpp ../windows/qwindowsinternalmimedata.h

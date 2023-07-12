@@ -7,6 +7,7 @@
 #include "qwindowsmenu.h"
 #include "qwindowsdialoghelpers.h"
 #include "qwindowscontext.h"
+#include "qwindowsiconengine.h"
 #include "qwindowsintegration.h"
 #if QT_CONFIG(systemtrayicon)
 #  include "qwindowssystemtrayicon.h"
@@ -1172,6 +1173,14 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
 QIcon QWindowsTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const
 {
     return QIcon(new QWindowsFileIconEngine(fileInfo, iconOptions));
+}
+
+QIconEngine *QWindowsTheme::createIconEngine(const QString &iconName) const
+{
+    static bool experimentalIconEngines = qEnvironmentVariableIsSet("QT_ENABLE_EXPERIMENTAL_ICON_ENGINES");
+    if (experimentalIconEngines)
+        return new QWindowsIconEngine(iconName);
+    return nullptr;
 }
 
 static inline bool doUseNativeMenus()
