@@ -39,8 +39,8 @@ template<class Function, class ResultType>
 class FailureHandler;
 #endif
 
-class QBasicFutureWatcher;
 }
+class QBasicFutureWatcher;
 
 class Q_CORE_EXPORT QFutureInterfaceBase
 {
@@ -178,7 +178,7 @@ private:
     friend class QtPrivate::FailureHandler;
 #endif
 
-    friend class QtPrivate::QBasicFutureWatcher;
+    friend class QBasicFutureWatcher;
 
     template<class T>
     friend class QPromise;
