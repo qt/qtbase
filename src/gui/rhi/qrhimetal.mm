@@ -40,6 +40,14 @@ QT_BEGIN_NAMESPACE
 #error ARC not supported
 #endif
 
+// Even though the macOS 13 MTLBinaryArchive problem (QTBUG-106703) seems
+// to be solved in later 13.x releases, we have reports from old Intel hardware
+// and older macOS versions where this causes problems (QTBUG-114338).
+// Thus we no longer do OS version based differentiation, but rather have a
+// single toggle that is currently on, and so QRhi::(set)pipelineCache()
+// does nothing with Metal.
+#define QRHI_METAL_DISABLE_BINARY_ARCHIVE
+
 /*!
     \class QRhiMetalInitParams
     \inmodule QtRhi
@@ -126,7 +134,6 @@ struct QRhiMetalData
     id<MTLDevice> dev = nil;
     id<MTLCommandQueue> cmdQueue = nil;
     API_AVAILABLE(macosx(11.0), ios(14.0)) id<MTLBinaryArchive> binArch = nil;
-    bool binArchWasEmpty = false;
 
     MTLRenderPassDescriptor *createDefaultRenderPass(bool hasDepthStencil,
                                                      const QColor &colorClearValue,
@@ -439,6 +446,10 @@ bool QRhiMetal::probe(QRhiMetalInitParams *params)
 
 bool QRhiMetalData::setupBinaryArchive(NSURL *sourceFileUrl)
 {
+#ifdef QRHI_METAL_DISABLE_BINARY_ARCHIVE
+    return false;
+#endif
+
     if (@available(macOS 11.0, iOS 14.0, *)) {
         [binArch release];
         MTLBinaryArchiveDescriptor *binArchDesc = [MTLBinaryArchiveDescriptor new];
@@ -451,7 +462,6 @@ bool QRhiMetalData::setupBinaryArchive(NSURL *sourceFileUrl)
             qWarning("newBinaryArchiveWithDescriptor failed: %s", qPrintable(msg));
             return false;
         }
-        binArchWasEmpty = sourceFileUrl == nil;
         return true;
     }
     return false;
@@ -4557,33 +4567,10 @@ void QRhiMetalData::trySeedingRenderPipelineFromBinaryArchive(MTLRenderPipelineD
     }
 }
 
-static bool canAddToBinaryArchive(QRhiMetalData *d)
-{
-    if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (!d->binArch)
-            return false;
-
-        // ### QTBUG-106703, QTBUG-108216, revisit after 13.0
-        if (!d->binArchWasEmpty && d->q->osMajor >= 13) {
-            static bool logPrinted = false;
-            if (!logPrinted) {
-                logPrinted = true;
-                qCDebug(QRHI_LOG_INFO, "Skipping adding more pipelines to MTLBinaryArchive on this OS version (%d.%d) due to known issues.",
-                        d->q->osMajor, d->q->osMinor);
-            }
-            return false;
-        }
-
-        return true;
-    } else {
-        return false;
-    }
-}
-
 void QRhiMetalData::addRenderPipelineToBinaryArchive(MTLRenderPipelineDescriptor *rpDesc)
 {
     if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (canAddToBinaryArchive(this)) {
+        if (binArch) {
             NSError *err = nil;
             if (![binArch addRenderPipelineFunctionsWithDescriptor: rpDesc error: &err]) {
                 const QString msg = QString::fromNSString(err.localizedDescription);
@@ -5324,7 +5311,7 @@ void QRhiMetalData::trySeedingComputePipelineFromBinaryArchive(MTLComputePipelin
 void QRhiMetalData::addComputePipelineToBinaryArchive(MTLComputePipelineDescriptor *cpDesc)
 {
     if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (canAddToBinaryArchive(this)) {
+        if (binArch) {
             NSError *err = nil;
             if (![binArch addComputePipelineFunctionsWithDescriptor: cpDesc error: &err]) {
                 const QString msg = QString::fromNSString(err.localizedDescription);
