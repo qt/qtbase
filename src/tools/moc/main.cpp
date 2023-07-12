@@ -549,9 +549,12 @@ int runMoc(int argc, char **argv)
             f = fopen(QFile::encodeName(jsonOutputFileName).constData(), "w");
             if (!f)
 #endif
+            {
+                const auto fopen_errno = errno;
                 fprintf(stderr, "moc: Cannot create JSON output file %s. %s\n",
                         QFile::encodeName(jsonOutputFileName).constData(),
-                        strerror(errno));
+                        strerror(fopen_errno));
+            }
             jsonOutput.reset(f);
         }
     } else { // use stdout
@@ -596,9 +599,12 @@ int runMoc(int argc, char **argv)
         depFileHandleRaw = fopen(QFile::encodeName(depOutputFileName).constData(), "w");
         if (!depFileHandleRaw)
 #endif
+        {
+            const auto fopen_errno = errno;
             fprintf(stderr, "moc: Cannot create dep output file '%s'. %s\n",
                     QFile::encodeName(depOutputFileName).constData(),
-                    strerror(errno));
+                    strerror(fopen_errno));
+        }
         depFileHandle.reset(depFileHandleRaw);
 
         if (!depFileHandle.isNull()) {
