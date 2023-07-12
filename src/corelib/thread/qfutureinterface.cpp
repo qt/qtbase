@@ -4,12 +4,14 @@
 // qfutureinterface.h included from qfuture.h
 #include "qfuture.h"
 #include "qfutureinterface_p.h"
+#include "qbasicfuturewatcher.h"
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/private/qsimd_p.h> // for qYieldCpu()
 #include <private/qthreadpool_p.h>
+#include <private/qobject_p.h>
 
 #ifdef interface
 #  undef interface
@@ -42,6 +44,36 @@ const auto suspendingOrSuspended =
         QFutureInterfaceBase::Suspending | QFutureInterfaceBase::Suspended;
 
 } // unnamed namespace
+
+void QtPrivate::watchContinuationImpl(const QObject *context, QSlotObjectBase *slotObj,
+                                      QFutureInterfaceBase &fi)
+{
+    Q_ASSERT(context);
+    Q_ASSERT(slotObj);
+
+    // ### we're missing `QSlotObjectPtr`...
+    struct Deleter {
+        void operator()(QSlotObjectBase *p) const { p->destroyIfLastRef(); }
+    };
+    auto slot = std::unique_ptr<QSlotObjectBase, Deleter>(slotObj);
+
+    auto *watcher = new QBasicFutureWatcher;
+    watcher->moveToThread(context->thread());
+    // ### we're missing a convenient way to `QObject::connect()` to a `QSlotObjectBase`...
+    QObject::connect(watcher, &QBasicFutureWatcher::finished,
+                     // for the following, cf. QMetaObject::invokeMethodImpl():
+                     // we know `slot` is a lambda returning `void`, so we can just
+                     // `call()` with `obj` and `args[0]` set to `nullptr`:
+                     watcher, [slot = std::move(slot)] {
+                         void *args[] = { nullptr }; // for `void` return value
+                         slot->call(nullptr, args);
+                     });
+    QObject::connect(watcher, &QBasicFutureWatcher::finished,
+                     watcher, &QObject::deleteLater);
+    QObject::connect(context, &QObject::destroyed,
+                     watcher, &QObject::deleteLater);
+    watcher->setFuture(fi);
+}
 
 QFutureCallOutInterface::~QFutureCallOutInterface()
     = default;
