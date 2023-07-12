@@ -5,6 +5,7 @@
     \example relationaltablemodel
     \title Relational Table Model Example
     \ingroup sql_examples
+    \examplecategory {Data Processing & I/O}
 
     \brief The Relational Table Model example shows how to use table views with a relational
     model to visualize the relations between items in a database.

@@ -5,6 +5,7 @@
     \example querymodel
     \title Query Model Example
     \ingroup sql_examples
+    \examplecategory {Data Processing & I/O}
 
     \brief The Query Model example shows how to make customized versions of
     data obtained from a SQL query, using a model that encapsulates

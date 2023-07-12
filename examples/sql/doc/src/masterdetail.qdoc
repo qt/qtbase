@@ -5,6 +5,7 @@
     \example masterdetail
     \title Master Detail Example
     \ingroup sql_examples
+    \examplecategory {Data Processing & I/O}
 
     \brief The Master Detail Example shows how to present data from different
     data sources in the same application. The album titles, and the
