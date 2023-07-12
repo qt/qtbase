@@ -37,7 +37,11 @@ public:
             ;
     static Type legacyDefaultTypeForOs() noexcept;
 
-    explicit constexpr QNativeIpcKey(Type type = DefaultTypeForOs) noexcept
+    constexpr QNativeIpcKey() noexcept
+        : QNativeIpcKey(DefaultTypeForOs)
+    {}
+
+    explicit constexpr QNativeIpcKey(Type type) noexcept
         : d()
     {
         typeAndFlags.type = type;
