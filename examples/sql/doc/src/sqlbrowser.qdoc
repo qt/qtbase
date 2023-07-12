@@ -5,6 +5,7 @@
     \example sqlbrowser
     \title SQL Browser
     \ingroup sql_examples
+    \examplecategory {Data Processing & I/O}
 
     \brief The SQL Browser example shows how a data browser can be used to visualize
     the results of SQL statements on a live database.
