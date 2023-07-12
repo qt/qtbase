@@ -432,7 +432,8 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
 
         if (priv->phase == QAuthenticatorPrivate::Done ||
                 (priv->phase == QAuthenticatorPrivate::Start
-                    && priv->method == QAuthenticatorPrivate::Ntlm)) {
+                    && (priv->method == QAuthenticatorPrivate::Ntlm
+                        || priv->method == QAuthenticatorPrivate::Negotiate))) {
             if (priv->phase == QAuthenticatorPrivate::Start)
                 priv->phase = QAuthenticatorPrivate::Phase1;
 
