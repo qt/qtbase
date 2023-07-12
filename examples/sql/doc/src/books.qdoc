@@ -5,6 +5,7 @@
     \example books
     \title Books
     \ingroup sql_examples
+    \examplecategory {Data Processing & I/O}
     \brief Shows how to use Qt SQL classes with a model/view framework.
 
     The Books example shows how Qt's SQL classes can be used with the model/view
