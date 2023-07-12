@@ -79,7 +79,7 @@ public:
     }
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QNativeIpcKey)
-    void swap(QNativeIpcKey &other)
+    void swap(QNativeIpcKey &other) noexcept
     {
         std::swap(d, other.d);
         key.swap(other.key);
