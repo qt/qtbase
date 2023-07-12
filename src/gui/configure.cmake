@@ -142,7 +142,7 @@ if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
 endif()
 qt_add_qmake_lib_dependency(xrender xlib)
 
-qt_find_package(RenderDoc)
+qt_find_package(RenderDoc PROVIDED_TARGETS RenderDoc::RenderDoc)
 
 #### Tests
 
