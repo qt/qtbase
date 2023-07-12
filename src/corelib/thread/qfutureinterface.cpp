@@ -30,6 +30,7 @@ namespace {
 class ThreadPoolThreadReleaser {
     QThreadPool *m_pool;
 public:
+    Q_NODISCARD_CTOR
     explicit ThreadPoolThreadReleaser(QThreadPool *pool)
         : m_pool(pool)
     { if (pool) pool->releaseThread(); }
