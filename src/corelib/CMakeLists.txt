@@ -683,7 +683,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX AND NOT APPL
 qt_internal_extend_target(Core CONDITION QT_FEATURE_future
     SOURCES
         thread/qexception.cpp thread/qexception.h
-        thread/qbasicfuturewatcher.cpp thread/qbasicfuturewatcher.h
         thread/qfuture.h
         thread/qfuture_impl.h
         thread/qfutureinterface.cpp thread/qfutureinterface.h thread/qfutureinterface_p.h

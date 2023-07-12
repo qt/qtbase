@@ -11,7 +11,6 @@
 #endif
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qbasicfuturewatcher.h>
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qthreadpool.h>
 #include <QtCore/qexception.h>
