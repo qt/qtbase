@@ -40,13 +40,6 @@ QT_BEGIN_NAMESPACE
 #error ARC not supported
 #endif
 
-// Note: we expect everything here pass the Metal API validation when running
-// in Debug mode in XCode (or with METAL_DEVICE_WRAPPER_TYPE=1). An exception
-// is the nextDrawable Called Early blah blah warning, which is plain and
-// simply false. This may not be present with newer XCode. There may also be
-// warnings about threading (e.g. about accessing view.layer), those are
-// expected for now.
-
 /*!
     \class QRhiMetalInitParams
     \inmodule QtRhi
