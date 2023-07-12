@@ -48,6 +48,11 @@ QT_BEGIN_NAMESPACE
 // does nothing with Metal.
 #define QRHI_METAL_DISABLE_BINARY_ARCHIVE
 
+// We should be able to operate with command buffers that do not automatically
+// retain/release the resources used by them. (since we have logic that mirrors
+// other backends such as the Vulkan one anyway)
+#define QRHI_METAL_COMMAND_BUFFERS_WITH_UNRETAINED_REFERENCES
+
 /*!
     \class QRhiMetalInitParams
     \inmodule QtRhi
@@ -160,6 +165,7 @@ struct QRhiMetalData
     id<MTLCommandQueue> cmdQueue = nil;
     API_AVAILABLE(macosx(11.0), ios(14.0)) id<MTLBinaryArchive> binArch = nil;
 
+    id<MTLCommandBuffer> newCommandBuffer();
     MTLRenderPassDescriptor *createDefaultRenderPass(bool hasDepthStencil,
                                                      const QColor &colorClearValue,
                                                      const QRhiDepthStencilClearValue &depthStencilClearValue,
@@ -494,6 +500,18 @@ bool QRhiMetal::probe(QRhiMetalInitParams *params)
         return true;
     }
     return false;
+}
+
+id<MTLCommandBuffer> QRhiMetalData::newCommandBuffer()
+{
+#ifdef QRHI_METAL_COMMAND_BUFFERS_WITH_UNRETAINED_REFERENCES
+    // Do not let the command buffer mess with the refcount of objects. We do
+    // have a proper render loop and will manage lifetimes similarly to other
+    // backends (Vulkan).
+    return [cmdQueue commandBufferWithUnretainedReferences];
+#else
+    return [cmdQueue commandBuffer];
+#endif
 }
 
 bool QRhiMetalData::setupBinaryArchive(NSURL *sourceFileUrl)
@@ -2345,10 +2363,7 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 
     [d->captureScope beginScope];
 
-    // Do not let the command buffer mess with the refcount of objects. We do
-    // have a proper render loop and will manage lifetimes similarly to other
-    // backends (Vulkan).
-    swapChainD->cbWrapper.d->cb = [d->cmdQueue commandBufferWithUnretainedReferences];
+    swapChainD->cbWrapper.d->cb = d->newCommandBuffer();
 
     QMetalRenderTargetData::ColorAtt colorAtt;
     if (swapChainD->samples > 1) {
@@ -2431,7 +2446,7 @@ QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
 
     d->ofr.active = true;
     *cb = &d->ofr.cbWrapper;
-    d->ofr.cbWrapper.d->cb = [d->cmdQueue commandBufferWithUnretainedReferences];
+    d->ofr.cbWrapper.d->cb = d->newCommandBuffer();
 
     executeDeferredReleases();
     d->ofr.cbWrapper.resetState(d->ofr.lastGpuTime);
@@ -2496,10 +2511,10 @@ QRhi::FrameOpResult QRhiMetal::finish()
     if (inFrame) {
         if (d->ofr.active) {
             d->ofr.lastGpuTime += cb.GPUEndTime - cb.GPUStartTime;
-            d->ofr.cbWrapper.d->cb = [d->cmdQueue commandBufferWithUnretainedReferences];
+            d->ofr.cbWrapper.d->cb = d->newCommandBuffer();
         } else {
             swapChainD->d->lastGpuTime[currentFrameSlot] += cb.GPUEndTime - cb.GPUStartTime;
-            swapChainD->cbWrapper.d->cb = [d->cmdQueue commandBufferWithUnretainedReferences];
+            swapChainD->cbWrapper.d->cb = d->newCommandBuffer();
         }
     }
 
