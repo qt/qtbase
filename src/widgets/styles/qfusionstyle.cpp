@@ -1240,7 +1240,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             const QString pixmapName = QStyleHelper::uniqueName("headersection-"_L1
                                                                     % HexString(header->position)
                                                                     % HexString(header->orientation)
-                                                                    % (isSectionDragTarget ? '1' : '0'),
+                                                                    % QLatin1Char(isSectionDragTarget ? '1' : '0'),
                                                                 option, option->rect.size());
             QPixmap cache;
             if (!QPixmapCache::find(pixmapName, &cache)) {
@@ -1955,7 +1955,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QPixmap cache;
-            const QString pixmapName = QStyleHelper::uniqueName("spinbox"_L1, spinBox, spinBox->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName("spinbox"_L1, spinBox, spinBox->rect.size());
             if (!QPixmapCache::find(pixmapName, &cache)) {
 
                 cache = styleCachePixmap(spinBox->rect.size());
@@ -2666,10 +2666,10 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             bool isEnabled = (comboBox->state & State_Enabled);
             QPixmap cache;
             const QString pixmapName = QStyleHelper::uniqueName("combobox"_L1
-                                                                    % (sunken ? "-sunken" : "")
-                                                                    % (comboBox->editable ? "-editable" : "")
-                                                                    % (isEnabled ? "-enabled" : "")
-                                                                    % (!comboBox->frame ? "-frameless" : ""),
+                                                                    % QLatin1StringView(sunken ? "-sunken" : "")
+                                                                    % QLatin1StringView(comboBox->editable ? "-editable" : "")
+                                                                    % QLatin1StringView(isEnabled ? "-enabled" : "")
+                                                                    % QLatin1StringView(!comboBox->frame ? "-frameless" : ""),
                                                                 option, comboBox->rect.size());
             if (!QPixmapCache::find(pixmapName, &cache)) {
                 cache = styleCachePixmap(comboBox->rect.size());
@@ -2921,7 +2921,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             }
             // draw handle
             if ((option->subControls & SC_SliderHandle) ) {
-                const QString handlePixmapName = QStyleHelper::uniqueName("slider_handle"_L1, option, handle.size());
+                QString handlePixmapName = QStyleHelper::uniqueName("slider_handle"_L1, option, handle.size());
                 if (!QPixmapCache::find(handlePixmapName, &cache)) {
                     cache = styleCachePixmap(handle.size());
                     cache.fill(Qt::transparent);
