@@ -1,0 +1,15 @@
+<!DOCTYPE TEST [
+   <!ELEMENT TESTATTRIBUTE (CASE+)>
+   <!ELEMENT CASE (CLASS, FUNCTION, DATASET, COMMENTS)>
+   <!ELEMENT CLASS (#PCDATA)>
+
+   <!-- adding random ENTITY statements, as this is typical DTD content -->
+   <!ENTITY unite "&#x222a;">
+
+   <!ATTLIST CASE CLASS CDATA #REQUIRED>
+]>
+<TEST>
+  <CASE>
+    <CLASS>tst_QXmlStream</CLASS>
+  </CASE>
+</TEST>
