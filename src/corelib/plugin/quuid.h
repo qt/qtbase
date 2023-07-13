@@ -55,7 +55,7 @@ public:
         Id128           = 3
     };
 
-    union Id128Bytes {
+    union alignas(16) Id128Bytes {
         quint8 data[16];
         quint16 data16[8];
         quint32 data32[4];
