@@ -182,10 +182,23 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
         break;
     case PE_Frame: {
-        QRect rect = option->rect.adjusted(2,2,-2,-2);
-        painter->setBrush(option->palette.base());
-        painter->setPen(QPen(frameColorLight));
-        painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+        if (const auto *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+            if (frame->frameShape == QFrame::NoFrame)
+                break;
+            QRect rect = option->rect.adjusted(2,2,-2,-2);
+            painter->setBrush(option->palette.base());
+            painter->setPen(QPen(frameColorLight));
+            painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+
+            if (widget && widget->inherits("QTextEdit")) {
+                QRegion clipRegion = option->rect;
+                QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0,255);
+                painter->setPen(QPen(lineColor));
+                painter->drawLine(rect.bottomLeft() + QPoint(1,1), rect.bottomRight() + QPoint(-1,1));
+                if (state & State_HasFocus)
+                    painter->drawLine(rect.bottomLeft() + QPoint(2,2), rect.bottomRight() + QPoint(-2,2));
+            }
+        }
         break;
     }
     default:
@@ -208,15 +221,17 @@ void QWindows11Style::polish(QWidget* widget)
         pal.setColor(widget->backgroundRole(), Qt::transparent);
         widget->setPalette(pal);
     }
-    if (widget->inherits("QGraphicsView")) {
+    if (widget->inherits("QGraphicsView") && !widget->inherits("QTextEdit")) {
         QPalette pal = widget->palette();
         pal.setColor(QPalette::Base, pal.window().color());
         widget->setPalette(pal);
     }
-    if (widget->objectName() == QStringLiteral("qt_scrollarea_viewport")) {
-        QPalette pal = widget->palette();
-        pal.setColor(widget->backgroundRole(), Qt::transparent);
-        widget->setPalette(pal);
+    else if (widget->inherits("QAbstractScrollArea")) {
+        if (auto scrollarea = qobject_cast<QAbstractScrollArea*>(widget)) {
+            QPalette pal = widget->palette();
+            pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);
+            scrollarea->viewport()->setPalette(pal);
+        }
     }
 }
 
