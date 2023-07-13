@@ -461,8 +461,8 @@ Qt::ScreenOrientation QScreen::orientation() const
   \property QScreen::refreshRate
   \brief the approximate vertical refresh rate of the screen in Hz
 
-  \warning Avoid using the screen's refresh rate to drive animations
-  via a timer such as QTimer. Instead use QWindow::requestUpdate().
+  \warning Avoid using the screen's refresh rate to drive animations via a
+  timer such as QChronoTimer. Instead use QWindow::requestUpdate().
 
   \sa QWindow::requestUpdate()
 */

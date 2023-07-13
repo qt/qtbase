@@ -2535,8 +2535,9 @@ int QApplication::startDragDistance()
     exec(), because modal widgets call exec() to start a local event loop.
 
     To make your application perform idle processing, i.e., executing a special
-    function whenever there are no pending events, use a QTimer with 0 timeout.
-    More advanced idle processing schemes can be achieved using processEvents().
+    function whenever there are no pending events, use a QChronoTimer with 0ns
+    timeout. More advanced idle processing schemes can be achieved using
+    processEvents().
 
     We recommend that you connect clean-up code to the
     \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in your

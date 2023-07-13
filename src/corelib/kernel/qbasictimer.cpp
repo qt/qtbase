@@ -33,7 +33,8 @@ QT_BEGIN_NAMESPACE
     can maintain a list of basic timers by holding them in container
     that supports move-only types, e.g. std::vector.
 
-    \sa QTimer, QTimerEvent, QObject::timerEvent(), Timers, {Affine Transformations}
+    \sa QTimer, QChronoTimer, QTimerEvent, QObject::timerEvent(),
+    Timers, {Affine Transformations}
 */
 
 

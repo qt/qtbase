@@ -1364,7 +1364,8 @@ bool QCoreApplication::closingDown()
 
     \threadsafe
 
-    \sa exec(), QTimer, QEventLoop::processEvents(), sendPostedEvents()
+    \sa exec(), QTimer, QChronoTimer, QEventLoop::processEvents(),
+    sendPostedEvents()
 */
 void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
@@ -1413,7 +1414,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
 
     \threadsafe
 
-    \sa exec(), QTimer, QEventLoop::processEvents()
+    \sa exec(), QTimer, QChronoTimer, QEventLoop::processEvents()
 */
 void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, QDeadlineTimer deadline)
 {
@@ -1443,10 +1444,10 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, QDead
     main event loop receives events from the window system and
     dispatches these to the application widgets.
 
-    To make your application perform idle processing (by executing a
-    special function whenever there are no pending events), use a
-    QTimer with 0 timeout. More advanced idle processing schemes can
-    be achieved using processEvents().
+    To make your application perform idle processing (by executing a special
+    function whenever there are no pending events), use a QChronoTimer
+    with 0ns timeout. More advanced idle processing schemes can be achieved
+    using processEvents().
 
     We recommend that you connect clean-up code to the
     \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in

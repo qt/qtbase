@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
   \endlist
 
   If you need to trigger a repaint from places other than paintGL() (a
-  typical example is when using \l{QTimer}{timers} to animate scenes),
+  typical example is when using \l{QChronoTimer}{timers} to animate scenes),
   you should call the widget's update() function to schedule an update.
 
   Your widget's OpenGL rendering context is made current when

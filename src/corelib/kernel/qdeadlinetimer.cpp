@@ -84,11 +84,12 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
 
     \section1 Timer types
 
-    Like QTimer, QDeadlineTimer can select among different levels of coarseness
-    on the timers. You can select precise timing by passing Qt::PreciseTimer to
-    the functions that set of change the timer, or you can select coarse timing
-    by passing Qt::CoarseTimer. Qt::VeryCoarseTimer is currently interpreted
-    the same way as Qt::CoarseTimer.
+    Like QTimer and QChronoTimer, QDeadlineTimer can select among
+    different levels of coarseness on the timers. You can select
+    precise timing by passing Qt::PreciseTimer to the functions that
+    set of change the timer, or you can select coarse timing by passing
+    Qt::CoarseTimer. Qt::VeryCoarseTimer is currently interpreted the same
+    way as Qt::CoarseTimer.
 
     This feature is dependent on support from the operating system: if the OS
     does not support a coarse timer functionality, then QDeadlineTimer will
@@ -120,7 +121,7 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 2
 
-    \sa QTime, QTimer, QDeadlineTimer, Qt::TimerType
+    \sa QTime, QChronoTimer, QDeadlineTimer, Qt::TimerType
 */
 
 /*!

@@ -368,7 +368,8 @@ QBindable<Qt::TimerType> QChronoTimer::bindableTimerType()
     \c SLOT() macro to get this parameter.
 
     This function is provided as a convenience to save the need to use a
-    \l{QObject::timerEvent()}{timerEvent} or create a local QTimer object.
+    \l{QObject::timerEvent()}{timerEvent} or create a local QChronoTimer
+    object.
 
     \sa start(), Qt::TimerType
 */

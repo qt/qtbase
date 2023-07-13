@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
     that the clock used is the same as QElapsedTimer (see
     QElapsedTimer::clockType()).
 
-    \sa QTime, QTimer, QDeadlineTimer
+    \sa QTime, QChronoTimer, QDeadlineTimer
 */
 
 /*!

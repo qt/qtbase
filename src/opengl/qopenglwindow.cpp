@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
   immediately result in a call to paintGL(). Calling update() multiple times in
   a row will not change the behavior in any way.
 
-  This is a slot so it can be connected to a \l QTimer::timeout() signal to
+  This is a slot so it can be connected to a \l QChronoTimer::timeout() signal to
   perform animation. Note however that in the modern OpenGL world it is a much
   better choice to rely on synchronization to the vertical refresh rate of the
   display. See \l{QSurfaceFormat::setSwapInterval()}{setSwapInterval()} on a

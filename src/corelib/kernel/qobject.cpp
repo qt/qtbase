@@ -810,7 +810,7 @@ QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::SlotObjUniquePtr slotObj,
     to catch child events.
 
     Last but not least, QObject provides the basic timer support in
-    Qt; see QTimer for high-level support for timers.
+    Qt; see QChronoTimer for high-level support for timers.
 
     Notice that the Q_OBJECT macro is mandatory for any object that
     implements signals, slots or properties. You also need to run the
@@ -1488,9 +1488,9 @@ bool QObject::event(QEvent *e)
     This event handler can be reimplemented in a subclass to receive
     timer events for the object.
 
-    QTimer provides a higher-level interface to the timer
-    functionality, and also more general information about timers. The
-    timer event is passed in the \a event parameter.
+    QChronoTimer provides higher-level interfaces to the timer functionality,
+    and also more general information about timers. The timer event is passed
+    in the \a event parameter.
 
     \sa startTimer(), killTimer(), event()
 */
@@ -1839,7 +1839,7 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
     startTimer(std::chrono::milliseconds{interval}, timerType);
     \endcode
 
-    \sa timerEvent(), killTimer(), QTimer::singleShot()
+    \sa timerEvent(), killTimer(), QChronoTimer::singleShot()
 */
 
 int QObject::startTimer(int interval, Qt::TimerType timerType)
@@ -1870,19 +1870,21 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
 
     \snippet code/src_corelib_kernel_qobject.cpp 8
 
-    Note that QTimer's accuracy depends on the underlying operating system and
-    hardware. The \a timerType argument allows you to customize the accuracy of
+    Note that the accuracy of QChronoTimer depends on the underlying operating
+    system and hardware.
+
+    The \a timerType argument allows you to customize the accuracy of
     the timer. See Qt::TimerType for information on the different timer types.
     Most platforms support an accuracy of 20 milliseconds; some provide more.
     If Qt is unable to deliver the requested number of timer events, it will
     silently discard some.
 
-    The QTimer class provides a high-level programming interface with
-    single-shot timers and timer signals instead of events. There is
-    also a QBasicTimer class that is more lightweight than QTimer and
-    less clumsy than using timer IDs directly.
+    The QTimer and QChronoTimer classes provide a high-level programming
+    interface with single-shot timers and timer signals instead of
+    events. There is also a QBasicTimer class that is more lightweight than
+    QChronoTimer but less clumsy than using timer IDs directly.
 
-    \sa timerEvent(), killTimer(), QTimer::singleShot()
+    \sa timerEvent(), killTimer(), QChronoTimer::singleShot()
 
     \note Starting from Qt 6.8 the type of \a interval
     is \c std::chrono::nanoseconds, prior to that it was \c

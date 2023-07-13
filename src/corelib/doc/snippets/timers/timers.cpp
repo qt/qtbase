@@ -46,7 +46,7 @@ class MyWidget : QObject
     {
 //! [qchronotimer-singleshot]
         MyWidget widget;
-        QChronoTimer::singleShot(100ms, &widget, &MyWidget::processOneThing);
+        QChronoTimer::singleShot(200ms, &widget, &MyWidget::updateCaption);
 //! [qchronotimer-singleshot]
 
 //! [zero-timer]

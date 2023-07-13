@@ -287,7 +287,7 @@ QThreadPrivate::~QThreadPrivate()
     \note wait() and the sleep() functions should be unnecessary in
     general, since Qt is an event-driven framework. Instead of
     wait(), consider listening for the finished() signal. Instead of
-    the sleep() functions, consider using QTimer.
+    the sleep() functions, consider using QChronoTimer.
 
     The static functions currentThreadId() and currentThread() return
     identifiers for the currently executing thread. The former

@@ -1905,9 +1905,10 @@ QFunctionPointer QGuiApplication::platformFunction(const QByteArray &function)
 
     Generally, no user interaction can take place before calling exec().
 
-    To make your application perform idle processing, e.g., executing a special
-    function whenever there are no pending events, use a QTimer with 0 timeout.
-    More advanced idle processing schemes can be achieved using processEvents().
+    To make your application perform idle processing, e.g., executing a
+    special function whenever there are no pending events, use a QChronoTimer
+    with 0ns timeout. More advanced idle processing schemes can be achieved
+    using processEvents().
 
     We recommend that you connect clean-up code to the
     \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in your
