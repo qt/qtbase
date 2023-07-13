@@ -170,7 +170,7 @@ public:
     ~QDaemonThread();
 };
 
-class QThreadPrivate : public QObjectPrivate
+class Q_AUTOTEST_EXPORT QThreadPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QThread)
 
