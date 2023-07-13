@@ -250,15 +250,16 @@ void tst_QUuid::uint128()
 {
 #ifdef __SIZEOF_INT128__
     constexpr quint128 u = quint128(Q_UINT64_C(0xfc69b59ecc344436)) << 64
-                            | Q_UINT64_C(0xa43cee95d128b8c5);
-    constexpr QUuid uuid(u);
-    static_assert(uuid.toUInt128() == u, "Round-trip through QUuid failed");
+                            | Q_UINT64_C(0xa43cee95d128b8c5); // This is LE
+    constexpr quint128 be = qToBigEndian(u);
+    constexpr QUuid uuid(be);
+    static_assert(uuid.toUInt128() == be, "Round-trip through QUuid failed");
 
     QCOMPARE(uuid, uuidA);
-    QCOMPARE(quint64(uuid.toUInt128() >> 64), quint64(u >> 64));
-    QCOMPARE(quint64(uuid.toUInt128()), quint64(u));
+    QCOMPARE(quint64(uuid.toUInt128() >> 64), quint64(be >> 64));
+    QCOMPARE(quint64(uuid.toUInt128()), quint64(be));
 
-    quint128 le = qFromBigEndian(u);
+    quint128 le = qFromBigEndian(be);
     QCOMPARE(quint64(uuid.toUInt128(QSysInfo::LittleEndian) >> 64), quint64(le >> 64));
     QCOMPARE(quint64(uuid.toUInt128(QSysInfo::LittleEndian)), quint64(le));
     QCOMPARE(QUuid(le, QSysInfo::LittleEndian), uuidA);
@@ -266,6 +267,11 @@ void tst_QUuid::uint128()
     QUuid::Id128Bytes bytes = { .data128 = { qToBigEndian(u) } };
     QUuid uuid2(bytes);
     QCOMPARE(uuid2, uuid);
+
+    // verify that toBytes() and toUInt128() provide bytewise similar result
+    constexpr quint128 val = uuid.toUInt128();
+    bytes = uuid.toBytes();
+    QVERIFY(memcmp(&val, bytes.data, sizeof(val)) == 0);
 #else
     QSKIP("This platform has no support for 128-bit integer");
 #endif
