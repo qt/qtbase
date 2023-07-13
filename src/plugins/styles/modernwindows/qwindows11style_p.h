@@ -33,6 +33,8 @@ public:
                             QPainter *painter, const QWidget *widget) const override;
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
                   QPainter *painter, const QWidget *widget) const override;
+    QRect subControlRect(ComplexControl control, const QStyleOptionComplex *option,
+                         SubControl subControl, const QWidget *widget) const override;
     void drawControl(ControlElement element, const QStyleOption *option,
                      QPainter *painter, const QWidget *widget) const override;
     int styleHint(StyleHint hint, const QStyleOption *opt = nullptr,

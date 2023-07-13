@@ -168,6 +168,75 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     }
 
     switch (control) {
+#if QT_CONFIG(spinbox)
+    case CC_SpinBox:
+        if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
+            if (sb->frame && (sub & SC_SpinBoxFrame)) {
+                painter->save();
+                QRegion clipRegion = option->rect;
+                clipRegion -= option->rect.adjusted(2, 2, -2, -2);
+                painter->setClipRegion(clipRegion);
+                QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0);
+                painter->setPen(QPen(lineColor));
+                painter->drawLine(option->rect.bottomLeft() + QPoint(6,0), option->rect.bottomRight() + QPoint(-6,0));
+                if (state & State_HasFocus)
+                    painter->drawLine(option->rect.bottomLeft() + QPoint(7,1), option->rect.bottomRight() + QPoint(-7,1));
+                painter->restore();
+            }
+            QBrush fillColor = option->palette.brush(QPalette::Base);
+            painter->setBrush(fillColor);
+            painter->setPen(QPen(frameColorLight));
+            painter->drawRoundedRect(option->rect.adjusted(2,2,-2,-2), secondLevelRoundingRadius, secondLevelRoundingRadius);
+            QPoint mousePos = widget ? widget->mapFromGlobal(QCursor::pos()) : QPoint();
+            QColor hoverColor = subtleHighlightColor;
+            if (sub & SC_SpinBoxEditField) {
+                QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget).adjusted(0, 0, 0, 1);
+                if (rect.contains(mousePos) && !(state & State_HasFocus)) {
+                    QBrush fillColor = QBrush(subtleHighlightColor);
+                    painter->setBrush(fillColor);
+                    painter->setPen(Qt::NoPen);
+                    painter->drawRoundedRect(option->rect.adjusted(2,2,-2,-2), secondLevelRoundingRadius, secondLevelRoundingRadius);
+                }
+            }
+            if (sub & SC_SpinBoxUp) {
+                QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget).adjusted(0, 0, 0, 1);
+                float scale = rect.width() >= 16 ? 1.0 : rect.width()/16.0;
+                if (rect.contains(mousePos)) {
+                    painter->setPen(Qt::NoPen);
+                    painter->setBrush(QBrush(hoverColor));
+                    painter->drawRoundedRect(rect.adjusted(1,1,-1,-1),secondLevelRoundingRadius, secondLevelRoundingRadius);
+                }
+                painter->save();
+                painter->translate(rect.center());
+                painter->scale(scale,scale);
+                painter->translate(-rect.center());
+                painter->setFont(assetFont);
+                painter->setPen(sb->palette.buttonText().color());
+                painter->setBrush(Qt::NoBrush);
+                painter->drawText(rect,"\uE018", Qt::AlignVCenter | Qt::AlignHCenter);
+                painter->restore();
+            }
+            if (sub & SC_SpinBoxDown) {
+                QRect rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
+                float scale = rect.width() >= 16 ? 1.0 : rect.width()/16.0;
+                if (rect.contains(mousePos)) {
+                    painter->setPen(Qt::NoPen);
+                    painter->setBrush(QBrush(hoverColor));
+                    painter->drawRoundedRect(rect.adjusted(1,1,-1,-1), secondLevelRoundingRadius, secondLevelRoundingRadius);
+                }
+                painter->save();
+                painter->translate(rect.center());
+                painter->scale(scale,scale);
+                painter->translate(-rect.center());
+                painter->setFont(assetFont);
+                painter->setPen(sb->palette.buttonText().color());
+                painter->setBrush(Qt::NoBrush);
+                painter->drawText(rect,"\uE019", Qt::AlignVCenter | Qt::AlignHCenter);
+                painter->restore();
+            }
+        }
+        break;
+#endif // QT_CONFIG(spinbox)
 #if QT_CONFIG(slider)
     case CC_Slider:
         if (const auto *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
@@ -560,6 +629,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     }
     case PE_PanelLineEdit:
+        if (widget && widget->objectName() == "qt_spinbox_lineedit")
+            break;
         if (const auto *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             QBrush fillColor = state & State_MouseOver && !(state & State_HasFocus) ? QBrush(subtleHighlightColor) : option->palette.brush(QPalette::Base);
             painter->setBrush(fillColor);
@@ -1235,6 +1306,60 @@ int QWindows11Style::styleHint(StyleHint hint, const QStyleOption *opt,
     default:
         return QWindowsVistaStyle::styleHint(hint, opt, widget, returnData);
     }
+}
+
+/*!
+ \internal
+ */
+QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOptionComplex *option,
+                                         SubControl subControl, const QWidget *widget) const
+{
+    QRect ret;
+
+    switch (control) {
+#if QT_CONFIG(spinbox)
+    case CC_SpinBox:
+        if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
+            QSize bs;
+            int fw = spinbox->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
+            bs.setHeight(qMax(8, spinbox->rect.height() - fw));
+            bs.setWidth(qMin(24.0, spinbox->rect.width()*(1.0/4.0)));
+            int y = fw + spinbox->rect.y();
+            int x, lx, rx;
+            x = spinbox->rect.x() + spinbox->rect.width() - fw - 2 * bs.width();
+            lx = fw;
+            rx = x - fw;
+            switch (subControl) {
+            case SC_SpinBoxUp:
+                if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
+                    return QRect();
+                ret = QRect(x, y, bs.width(), bs.height());
+                break;
+            case SC_SpinBoxDown:
+                if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
+                    return QRect();
+                ret = QRect(x + bs.width(), y, bs.width(), bs.height());
+                break;
+            case SC_SpinBoxEditField:
+                if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons) {
+                    ret = QRect(lx, fw, spinbox->rect.width() - 2*fw, spinbox->rect.height() - 2*fw);
+                } else {
+                    ret = QRect(lx, fw, rx, spinbox->rect.height() - 2*fw);
+                }
+                break;
+            case SC_SpinBoxFrame:
+                ret = spinbox->rect;
+            default:
+                break;
+            }
+            ret = visualRect(spinbox->direction, spinbox->rect, ret);
+        }
+        break;
+#endif // Qt_NO_SPINBOX
+    default:
+        ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
+    }
+    return ret;
 }
 
 /*!
