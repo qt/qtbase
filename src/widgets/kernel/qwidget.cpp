@@ -1329,14 +1329,13 @@ void QWidgetPrivate::create()
     }
 #endif
 
-    // Android doesn't allow to re-use the backing store.
-    // => force creation of a new one.
-#ifdef Q_OS_ANDROID
-    QBackingStore *store = nullptr;
-#else
     QBackingStore *store = q->backingStore();
-#endif
     usesRhiFlush = false;
+
+    // Re-use backing store, in case a new platform window was created and doesn't know about it.
+    // (e.g. QAndroidPlatformWindow)
+    if (store && q->windowHandle())
+        q->windowHandle()->handle()->setBackingStore(store->handle());
 
     if (!store) {
         if (q->windowType() != Qt::Desktop) {

@@ -3,9 +3,11 @@
 
 #include "qfbwindow_p.h"
 #include "qfbscreen_p.h"
+#include "qfbbackingstore_p.h"
 
 #include <QtGui/QScreen>
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformbackingstore.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -111,5 +113,11 @@ void QFbWindow::repaint(const QRegion &region)
     for (auto rect : region)
         platformScreen()->setDirty(rect.translated(topLeft));
 }
-
+void QFbWindow::setBackingStore(QPlatformBackingStore *store)
+{
+    Q_ASSERT(store);
+    Q_ASSERT_X(dynamic_cast<QFbBackingStore *>(store), __FUNCTION__,
+               "Argument is not a QFbBackingStore.");
+    mBackingStore = static_cast<QFbBackingStore *>(store);
+}
 QT_END_NAMESPACE

@@ -41,7 +41,7 @@ public:
 
     WId winId() const override { return mWindowId; }
 
-    void setBackingStore(QFbBackingStore *store) { mBackingStore = store; }
+    void setBackingStore(QPlatformBackingStore *store) override;
     QFbBackingStore *backingStore() const { return mBackingStore; }
 
     QFbScreen *platformScreen() const;
