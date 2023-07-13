@@ -47,6 +47,7 @@ bool QFbScreen::event(QEvent *event)
 
 void QFbScreen::addWindow(QFbWindow *window)
 {
+    Q_ASSERT(window->backingStore());
     mWindowStack.prepend(window);
     if (!mPendingBackingStores.isEmpty()) {
         //check if we have a backing store for this window
