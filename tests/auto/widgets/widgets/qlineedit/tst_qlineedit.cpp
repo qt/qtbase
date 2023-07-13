@@ -5133,7 +5133,7 @@ void tst_QLineEdit::keyReleasePropagates()
         }
 
     protected:
-        void keyReleaseEvent(QKeyEvent *e)
+        void keyReleaseEvent(QKeyEvent *e) override
         {
             releasedKey = e->key();
         }
