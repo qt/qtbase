@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qwindows11style_p.h"
+#include <qstylehints.h>
+#include <private/qstyleanimation_p.h>
+#include <private/qstylehelper_p.h>
+#include <qstyleoption.h>
+#include <qpainter.h>
+#include <qglobal.h>
+#include "qdrawutil.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -174,8 +181,15 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             painter->drawLine(option->rect.bottomLeft() + QPoint(2,1), option->rect.bottomRight() + QPoint(-2,1));
     }
         break;
+    case PE_Frame: {
+        QRect rect = option->rect.adjusted(2,2,-2,-2);
+        painter->setBrush(option->palette.base());
+        painter->setPen(QPen(frameColorLight));
+        painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+        break;
+    }
     default:
-        QWindowsVistaStyle::drawPrimitive(element, option, painter, widget);;
+        QWindowsVistaStyle::drawPrimitive(element, option, painter, widget);
     }
     painter->restore();
 }
@@ -197,6 +211,11 @@ void QWindows11Style::polish(QWidget* widget)
     if (widget->inherits("QGraphicsView")) {
         QPalette pal = widget->palette();
         pal.setColor(QPalette::Base, pal.window().color());
+        widget->setPalette(pal);
+    }
+    if (widget->objectName() == QStringLiteral("qt_scrollarea_viewport")) {
+        QPalette pal = widget->palette();
+        pal.setColor(widget->backgroundRole(), Qt::transparent);
         widget->setPalette(pal);
     }
 }
