@@ -85,12 +85,12 @@ public:
         key.swap(other.key);
     }
 
-    bool isEmpty() const
+    bool isEmpty() const noexcept
     {
         return key.isEmpty();
     }
 
-    bool isValid() const
+    bool isValid() const noexcept
     {
         return type() != Type{};
     }
