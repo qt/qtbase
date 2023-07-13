@@ -43,6 +43,14 @@ when scanning the source files with \c{moc}.
 You can set additional \c{OPTIONS} that should be added to the \c{moc} calls.
 You can find possible options in the \l{moc}{moc documentation}.
 
+The \c{OPTIONS} can evaluate generator expressions when \c{TARGET} is set.
+\note If the \c{OPTIONS} include both generator expressions and special
+characters, use variables to implement them. For example, use \c{$<ANGLE-R>},
+\c{$<COMMA>} and \c{$<SEMICOLON>} instead of \c{>}, \c{,} and \c{:}. Otherwise,
+the generator expression will not be evaluated correctly. \c {OPTIONS} are
+wrapped in generator expressions, so you must escape special characters in
+them.
+
 \c{DEPENDS} allows you to add additional dependencies for recreation of the
 generated files. This is useful when the sources have implicit dependencies,
 like code for a Qt plugin that includes a \c{.json} file using the
@@ -50,5 +58,16 @@ Q_PLUGIN_METADATA() macro.
 
 \section1 Examples
 
-\snippet cmake-macros/examples.cmake qt_wrap_cpp
+\snippet cmake-macros/examples.cmake qt_wrap_cpp_1
+
+In the following example, the generator expressions passed to \c{OPTIONS}
+will be evaluated since \c{TARGET} is set. The argument is specified this way to
+avoid syntax errors in the generator expressions.
+
+\snippet cmake-macros/examples.cmake qt_wrap_cpp_2
+
+The following example uses \l{https://cmake.org/cmake/help/latest/command/target_compile_definitions.html}{target_compile_definitions}
+to set \l{https://cmake.org/cmake/help/latest/prop_tgt/COMPILE_DEFINITIONS.html}{COMPILE_DEFINITIONS} which will be added to
+\c{OPTIONS}.
+\snippet cmake-macros/examples.cmake qt_wrap_cpp_3
 */

@@ -24,3 +24,25 @@ qt_wrap_cpp(moc_file mywrapobject.h
 add_executable(QtWrapMacroTest main_wrap_test.cpp ${moc_file})
 target_include_directories(QtWrapMacroTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/interface")
 target_link_libraries(QtWrapMacroTest PRIVATE Qt::Core)
+
+target_compile_definitions(QtWrapMacroTest PRIVATE "$<$<BOOL:TRUE>:MY_OPTION>"
+                                                   "$<$<BOOL:TRUE>:DEFINE_CMDLINE_SIGNAL=void cmdlineSignal(const QMap<int$<COMMA> int$<ANGLE-R> &i)>"
+                                                    "DEFINE_CMDLINE_SIGNAL=void cmdlineSignal(const QMap<int, int> &i)")
+
+set(parameters_file_base "${CMAKE_CURRENT_BINARY_DIR}/moc_mywrapobject.cpp_parameters")
+# check if generator is multi-config
+if(CMAKE_CONFIGURATION_TYPES)
+  set(parameters_file "${parameters_file_base}_$<CONFIG>")
+else()
+  if(NOT CMAKE_BUILD_TYPE STREQUAL "")
+    set(parameters_file "${parameters_file_base}_${CMAKE_BUILD_TYPE}")
+  else()
+    set(parameters_file "${parameters_file_base}")
+  endif()
+endif()
+
+add_custom_command(TARGET QtWrapMacroTest
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} "-DPARAMETERS_FILE_PATH=${parameters_file}" -P check_moc_parameters.cmake
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
