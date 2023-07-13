@@ -79,7 +79,7 @@ public:
     }
 
 private:
-    QTime m_timer;
+    QElapsedTimer m_timer;
     QString m_msg;
 };
 
@@ -188,6 +188,7 @@ bool QAndroidPlatformScreen::event(QEvent *event)
 
 void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
 {
+    Q_ASSERT(window->backingStore());
     if (window->parent() && window->isRaster())
         return;
 
