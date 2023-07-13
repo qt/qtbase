@@ -243,7 +243,7 @@ inline QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcep
 }
 
 #ifdef __SIZEOF_INT128__
-constexpr inline QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
+constexpr QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
     : QUuid()
 {
     if (order == QSysInfo::LittleEndian)
@@ -255,7 +255,7 @@ constexpr inline QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
         data4[i] = uchar(uuid >> (56 - i * 8));
 }
 
-constexpr inline quint128 QUuid::toUInt128(QSysInfo::Endian order) const noexcept
+constexpr quint128 QUuid::toUInt128(QSysInfo::Endian order) const noexcept
 {
     quint128 result = {};
     result = data1;
