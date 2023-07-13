@@ -205,7 +205,11 @@ static RoleMapping map[] = {
     //: Role of an accessible object
     { QAccessible::ButtonDropDown, ATSPI_ROLE_PUSH_BUTTON, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "button with drop down") },
     //: Role of an accessible object
+#if ATSPI_ROLE_COUNT > 130
+    { QAccessible::ButtonMenu, ATSPI_ROLE_PUSH_BUTTON_MENU, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "button menu") },
+#else
     { QAccessible::ButtonMenu, ATSPI_ROLE_PUSH_BUTTON, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "button menu") },
+#endif
     //: Role of an accessible object - a button that expands a grid.
     { QAccessible::ButtonDropGrid, ATSPI_ROLE_PUSH_BUTTON, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "button with drop down grid") },
     //: Role of an accessible object - blank space between other objects.
