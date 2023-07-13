@@ -32,6 +32,8 @@ public:
 
     void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
                             QPainter *painter, const QWidget *widget) const override;
+    void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
+                  QPainter *painter, const QWidget *widget) const override;
     void polish(QWidget* widget) override;
 protected:
     QWindows11Style(QWindows11StylePrivate &dd);

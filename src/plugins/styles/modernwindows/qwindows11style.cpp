@@ -143,6 +143,43 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     painter->restore();
 }
 
+void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption *option,
+                                    QPainter *painter,
+                                    const QWidget *widget) const {
+    int state = option->state;
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
+    switch (element) {
+    case PE_PanelLineEdit:
+        if (const auto *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+            QBrush fillColor = state & State_MouseOver && !(state & State_HasFocus) ? QBrush(subtleHighlightColor) : option->palette.brush(QPalette::Base);
+            painter->setBrush(fillColor);
+            painter->setPen(Qt::NoPen);
+            painter->drawRoundedRect(option->rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+            if (panel->lineWidth > 0)
+                proxy()->drawPrimitive(PE_FrameLineEdit, panel, painter, widget);
+        }
+        break;
+    case PE_FrameLineEdit: {
+        painter->setBrush(Qt::NoBrush);
+        painter->setPen(QPen(frameColorLight));
+        painter->drawRoundedRect(option->rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+        QRegion clipRegion = option->rect;
+        clipRegion -= option->rect.adjusted(2, 2, -2, -2);
+        painter->setClipRegion(clipRegion);
+        QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0);
+        painter->setPen(QPen(lineColor));
+        painter->drawLine(option->rect.bottomLeft() + QPoint(1,0), option->rect.bottomRight() + QPoint(-1,0));
+        if (state & State_HasFocus)
+            painter->drawLine(option->rect.bottomLeft() + QPoint(2,1), option->rect.bottomRight() + QPoint(-2,1));
+    }
+        break;
+    default:
+        QWindowsVistaStyle::drawPrimitive(element, option, painter, widget);;
+    }
+    painter->restore();
+}
+
 void QWindows11Style::polish(QWidget* widget)
 {
     QWindowsVistaStyle::polish(widget);
@@ -163,5 +200,6 @@ void QWindows11Style::polish(QWidget* widget)
         widget->setPalette(pal);
     }
 }
+
 
 QT_END_NAMESPACE
