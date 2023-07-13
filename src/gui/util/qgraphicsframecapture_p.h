@@ -32,8 +32,13 @@ public:
     void setRhi(QRhi *rhi);
     void startCaptureFrame();
     void endCaptureFrame();
+
+    QString capturePath() const;
     void setCapturePath(const QString &path);
+
+    QString capturePrefix() const;
     void setCapturePrefix(const QString &prefix);
+
     bool isLoaded() const;
     bool isCapturing() const;
     void openCapture() const;

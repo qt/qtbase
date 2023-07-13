@@ -36,8 +36,13 @@ public:
     virtual void setRhi(QRhi *rhi) = 0;
     virtual void startCaptureFrame() = 0;
     virtual void endCaptureFrame() = 0;
+
+    QString capturePath() const { return m_capturePath; };
     virtual void setCapturePath(const QString &path) { m_capturePath = path; }
+
+    QString capturePrefix() const { return m_capturePrefix; }
     virtual void setCapturePrefix(const QString &prefix) { m_capturePrefix = prefix; }
+
     virtual bool initialized() const = 0;
     virtual bool isCapturing() const = 0;
     virtual void openCapture() = 0;

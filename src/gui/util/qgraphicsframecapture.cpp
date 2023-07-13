@@ -54,10 +54,24 @@ void QGraphicsFrameCapture::endCaptureFrame()
         d->endCaptureFrame();
 }
 
+QString QGraphicsFrameCapture::capturePath() const
+{
+    if (!d.isNull())
+        return d->capturePath();
+    return QString();
+}
+
 void QGraphicsFrameCapture::setCapturePath(const QString &path)
 {
     if (!d.isNull())
         d->setCapturePath(path);
+}
+
+QString QGraphicsFrameCapture::capturePrefix() const
+{
+    if (!d.isNull())
+        return d->capturePrefix();
+    return QString();
 }
 
 void QGraphicsFrameCapture::setCapturePrefix(const QString &prefix)
