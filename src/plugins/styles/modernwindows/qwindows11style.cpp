@@ -201,10 +201,153 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         }
         break;
     }
+    case QStyle::PE_PanelItemViewRow:
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
+            if ((vopt->state & State_Selected || vopt->state & State_MouseOver) && vopt->showDecorationSelected) {
+                painter->setBrush(subtleHighlightColor);
+                painter->setPen(Qt::NoPen);
+                painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(0,2,-2,2)),2,2);
+                int offset = (widget && widget->inherits("QTreeView")) ? 2 : 0;
+                if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning && option->state & State_Selected) {
+                    painter->setPen(QPen(option->palette.accent().color()));
+                    painter->drawLine(option->rect.x(),option->rect.y()+offset,option->rect.x(),option->rect.y() + option->rect.height()-2);
+                    painter->drawLine(option->rect.x()+1,option->rect.y()+2,option->rect.x()+1,option->rect.y() + option->rect.height()-2);
+                }
+            }
+        }
+        break;
     default:
         QWindowsVistaStyle::drawPrimitive(element, option, painter, widget);
     }
     painter->restore();
+}
+
+/*!
+    \internal
+*/
+void QWindows11Style::drawControl(ControlElement element, const QStyleOption *option,
+                                  QPainter *painter, const QWidget *widget) const
+{
+    Q_D(const QWindows11Style);
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
+    switch (element) {
+    case CE_HeaderEmptyArea:
+        break;
+    case CE_HeaderSection: {
+        if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
+            painter->setPen(frameColorLight);
+            if (header->position == QStyleOptionHeader::OnlyOneSection) {
+                break;
+            }
+            else if (header->position == QStyleOptionHeader::Beginning) {
+                painter->drawLine(option->rect.topRight(), option->rect.bottomRight());
+            }
+            else if (header->position == QStyleOptionHeader::End) {
+                painter->drawLine(option->rect.topLeft(), option->rect.bottomLeft());
+            } else {
+                painter->drawLine(option->rect.topRight(), option->rect.bottomRight());
+                painter->drawLine(option->rect.topLeft(), option->rect.bottomLeft());
+            }
+            painter->drawLine(option->rect.bottomLeft(), option->rect.bottomRight());
+        }
+        break;
+    }
+    case QStyle::CE_ItemViewItem: {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
+            QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+            QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
+            QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
+
+            QRect rect = vopt->rect;
+
+            painter->setPen(frameColorLight);
+            if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid) {
+            }
+            else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
+                painter->drawLine(option->rect.topRight(), option->rect.bottomRight());
+            }
+            else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
+                painter->drawLine(option->rect.topLeft(), option->rect.bottomLeft());
+            } else {
+                painter->drawLine(option->rect.topRight(), option->rect.bottomRight());
+                painter->drawLine(option->rect.topLeft(), option->rect.bottomLeft());
+            }
+            painter->setPen(QPen(option->palette.buttonText().color()));
+
+            bool isTreeView = widget && widget->inherits("QTreeView");
+            if ((vopt->state & State_Selected || vopt->state & State_MouseOver) && !(isTreeView && vopt->state & State_MouseOver) && vopt->showDecorationSelected) {
+                painter->setBrush(subtleHighlightColor);
+                painter->setPen(Qt::NoPen);
+
+                if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid) {
+                    painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(2,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
+                }
+                else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
+                    painter->drawRoundedRect(rect.marginsRemoved(QMargins(2,2,0,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
+                }
+                else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
+                    painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(0,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
+                } else {
+                    painter->drawRect(vopt->rect.marginsRemoved(QMargins(0,2,0,2)));
+                }
+            }
+
+            // draw the check mark
+            if (vopt->features & QStyleOptionViewItem::HasCheckIndicator) {
+                QStyleOptionViewItem option(*vopt);
+                option.rect = checkRect;
+                option.state = option.state & ~QStyle::State_HasFocus;
+
+                switch (vopt->checkState) {
+                case Qt::Unchecked:
+                    option.state |= QStyle::State_Off;
+                    break;
+                case Qt::PartiallyChecked:
+                    option.state |= QStyle::State_NoChange;
+                    break;
+                case Qt::Checked:
+                    option.state |= QStyle::State_On;
+                    break;
+                }
+                proxy()->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &option, painter, widget);
+            }
+
+            // draw the icon
+            QIcon::Mode mode = QIcon::Normal;
+            if (!(vopt->state & QStyle::State_Enabled))
+                mode = QIcon::Disabled;
+            else if (vopt->state & QStyle::State_Selected)
+                mode = QIcon::Selected;
+            QIcon::State state = vopt->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
+            vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
+
+            painter->setPen(QPen(option->palette.buttonText().color()));
+            d->viewItemDrawText(painter, vopt, textRect);
+            if (vopt->state & State_Selected && (vopt->viewItemPosition == QStyleOptionViewItem::Beginning || vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid)) {
+                if (widget && widget->inherits("QListView") && qobject_cast<const QListView*>(widget)->viewMode() != QListView::IconMode) {
+                    painter->setPen(QPen(vopt->palette.accent().color()));
+                    painter->drawLine(option->rect.x(),option->rect.y()+2,option->rect.x(),option->rect.y() + option->rect.height()-2);
+                    painter->drawLine(option->rect.x()+1,option->rect.y()+2,option->rect.x()+1,option->rect.y() + option->rect.height()-2);
+                }
+            }
+        }
+        break;
+    }
+    default:
+        QWindowsVistaStyle::drawControl(element, option, painter, widget);
+    }
+    painter->restore();
+}
+
+int QWindows11Style::styleHint(StyleHint hint, const QStyleOption *opt,
+              const QWidget *widget, QStyleHintReturn *returnData) const {
+    switch (hint) {
+    case QStyle::SH_ItemView_ShowDecorationSelected:
+        return 1;
+    default:
+        return QWindowsVistaStyle::styleHint(hint, opt, widget, returnData);
+    }
 }
 
 void QWindows11Style::polish(QWidget* widget)
@@ -234,6 +377,5 @@ void QWindows11Style::polish(QWidget* widget)
         }
     }
 }
-
 
 QT_END_NAMESPACE
