@@ -101,11 +101,22 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
 
         set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:${targetincludes},;-I>>")
         set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:${targetdefines},;-D>>")
-        string(REPLACE ">" "$<ANGLE-R>" _moc_escaped_parameters "${_moc_parameters}")
-        string(REPLACE "," "$<COMMA>"   _moc_escaped_parameters "${_moc_escaped_parameters}")
+        set(_moc_parameters_list_without_genex)
+        set(_moc_parameters_list_with_genex)
+        foreach(_moc_parameter ${_moc_parameters})
+            if(_moc_parameter MATCHES "\\\$<")
+                list(APPEND _moc_parameters_list_with_genex ${_moc_parameter})
+            else()
+                list(APPEND _moc_parameters_list_without_genex ${_moc_parameter})
+            endif()
+        endforeach()
 
+        string(REPLACE ">" "$<ANGLE-R>" _moc_escaped_parameters "${_moc_parameters_list_without_genex}")
+        string(REPLACE "," "$<COMMA>"   _moc_escaped_parameters "${_moc_escaped_parameters}")
+        string(REPLACE ";" "$<SEMICOLON>" _moc_escaped_parameters "${_moc_escaped_parameters}")
         set(concatenated "$<$<BOOL:${targetincludes}>:${targetincludes};>$<$<BOOL:${targetdefines}>:${targetdefines};>$<$<BOOL:${_moc_escaped_parameters}>:${_moc_escaped_parameters};>")
 
+        list(APPEND concatenated ${_moc_parameters_list_with_genex})
         set(concatenated "$<FILTER:$<REMOVE_DUPLICATES:${concatenated}>,EXCLUDE,^-[DI]$>")
         set(concatenated "$<JOIN:${concatenated},\n>")
 
