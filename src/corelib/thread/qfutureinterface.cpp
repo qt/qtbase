@@ -45,11 +45,9 @@ const auto suspendingOrSuspended =
 
 } // unnamed namespace
 
-class QBasicFutureWatcherPrivate;
-class QBasicFutureWatcher : public QObject
+class QBasicFutureWatcher : public QObject, QFutureCallOutInterface
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QBasicFutureWatcher)
 public:
     explicit QBasicFutureWatcher(QObject *parent = nullptr);
     ~QBasicFutureWatcher() override;
@@ -60,56 +58,47 @@ public:
 
 Q_SIGNALS:
     void finished();
-};
 
-class QBasicFutureWatcherPrivate : public QObjectPrivate, QFutureCallOutInterface
-{
-public:
-    Q_DECLARE_PUBLIC(QBasicFutureWatcher)
-
+private:
     QFutureInterfaceBase future;
 
     void postCallOutEvent(const QFutureCallOutEvent &event) override;
     void callOutInterfaceDisconnected() override;
 };
 
-void QBasicFutureWatcherPrivate::postCallOutEvent(const QFutureCallOutEvent &event)
+void QBasicFutureWatcher::postCallOutEvent(const QFutureCallOutEvent &event)
 {
-    Q_Q(QBasicFutureWatcher);
-    if (q->thread() == QThread::currentThread()) {
+    if (thread() == QThread::currentThread()) {
         // If we are in the same thread, don't queue up anything.
         std::unique_ptr<QFutureCallOutEvent> clonedEvent(event.clone());
-        QCoreApplication::sendEvent(q, clonedEvent.get());
+        QCoreApplication::sendEvent(this, clonedEvent.get());
     } else {
-        QCoreApplication::postEvent(q, event.clone());
+        QCoreApplication::postEvent(this, event.clone());
     }
 }
 
-void QBasicFutureWatcherPrivate::callOutInterfaceDisconnected()
+void QBasicFutureWatcher::callOutInterfaceDisconnected()
 {
-    Q_Q(QBasicFutureWatcher);
-    QCoreApplication::removePostedEvents(q, QEvent::FutureCallOut);
+    QCoreApplication::removePostedEvents(this, QEvent::FutureCallOut);
 }
 
 /*
  * QBasicFutureWatcher is a more lightweight version of QFutureWatcher for internal use
  */
 QBasicFutureWatcher::QBasicFutureWatcher(QObject *parent)
-    : QObject(*new QBasicFutureWatcherPrivate, parent)
+    : QObject(parent)
 {
 }
 
 QBasicFutureWatcher::~QBasicFutureWatcher()
 {
-    Q_D(QBasicFutureWatcher);
-    d->future.d->disconnectOutputInterface(d);
+    future.d->disconnectOutputInterface(this);
 }
 
 void QBasicFutureWatcher::setFuture(QFutureInterfaceBase &fi)
 {
-    Q_D(QBasicFutureWatcher);
-    d->future = fi;
-    d->future.d->connectOutputInterface(d);
+    future = fi;
+    future.d->connectOutputInterface(this);
 }
 
 bool QBasicFutureWatcher::event(QEvent *event)
