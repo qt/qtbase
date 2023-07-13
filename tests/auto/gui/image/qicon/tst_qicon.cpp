@@ -552,6 +552,10 @@ void tst_QIcon::availableSizes()
 
 void tst_QIcon::name()
 {
+    const auto reset = qScopeGuard([]{
+        QIcon::setThemeName({});
+        QIcon::setThemeSearchPaths({});
+    });
     {
         // No name if icon does not come from a theme
         QIcon icon(":/image.png");
@@ -629,6 +633,7 @@ void tst_QIcon::task184901_badCache()
 
 void tst_QIcon::fromTheme()
 {
+    const bool abIconFromPlatform = !QIcon::fromTheme("address-book-new").isNull();
     QString firstSearchPath = QLatin1String(":/icons");
     QString secondSearchPath = QLatin1String(":/second_icons");
     QIcon::setThemeSearchPaths(QStringList() << firstSearchPath << secondSearchPath);
@@ -725,7 +730,7 @@ void tst_QIcon::fromTheme()
     // Make sure setting the theme name clears the state
     QIcon::setThemeName("");
     abIcon = QIcon::fromTheme("address-book-new");
-    QVERIFY(abIcon.isNull());
+    QCOMPARE_NE(abIcon.isNull(), abIconFromPlatform);
 
     // Test fallback icon behavior for empty theme names.
     // Can only reliably test this on systems that don't have a

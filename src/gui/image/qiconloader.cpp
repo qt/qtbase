@@ -620,11 +620,15 @@ QIconEngine *QIconLoader::iconEngine(const QString &iconName) const
     qCDebug(lcIconLoader) << "Resolving icon engine for icon" << iconName;
 
     auto *platformTheme = QGuiApplicationPrivate::platformTheme();
-    auto *iconEngine = hasUserTheme() || !platformTheme ?
-        new QIconLoaderEngine(iconName) : platformTheme->createIconEngine(iconName);
+    std::unique_ptr<QIconEngine> iconEngine;
+    if (!hasUserTheme() && platformTheme)
+        iconEngine.reset(platformTheme->createIconEngine(iconName));
+    if (!iconEngine || iconEngine->isNull()) {
+        iconEngine.reset(new QIconLoaderEngine(iconName));
+    }
 
-    qCDebug(lcIconLoader) << "Resulting engine" << iconEngine;
-    return iconEngine;
+    qCDebug(lcIconLoader) << "Resulting engine" << iconEngine.get();
+    return iconEngine.release();
 }
 
 /*!
