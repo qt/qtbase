@@ -246,26 +246,40 @@ inline QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcep
 constexpr QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
     : QUuid()
 {
-    if (order == QSysInfo::LittleEndian)
-        uuid = qbswap(uuid);
-    data1 = uint(uuid >> 96);
-    data2 = ushort(uuid >> 80);
-    data3 = ushort(uuid >> 64);
-    for (int i = 0; i < 8; ++i)
-        data4[i] = uchar(uuid >> (56 - i * 8));
+    if (order == QSysInfo::BigEndian) {
+        data1 = qFromBigEndian<quint32>(int(uuid));
+        data2 = qFromBigEndian<quint16>(ushort(uuid >> 32));
+        data3 = qFromBigEndian<quint16>(ushort(uuid >> 48));
+        for (int i = 0; i < 8; ++i)
+            data4[i] = uchar(uuid >> (64 + i * 8));
+    } else {
+        data1 = qFromLittleEndian<quint32>(uint(uuid >> 96));
+        data2 = qFromLittleEndian<quint16>(ushort(uuid >> 80));
+        data3 = qFromLittleEndian<quint16>(ushort(uuid >> 64));
+        for (int i = 0; i < 8; ++i)
+            data4[i] = uchar(uuid >> (56 - i * 8));
+    }
 }
 
 constexpr quint128 QUuid::toUInt128(QSysInfo::Endian order) const noexcept
 {
     quint128 result = {};
-    result = data1;
-    result <<= 32;
-    result |= (data2 << 16) | uint(data3);
-    result <<= 64;
-    for (int i = 0; i < 8; ++i)
-        result |= quint64(data4[i]) << (56 - i * 8);
-    if (order == QSysInfo::LittleEndian)
-        return qbswap(result);
+    if (order == QSysInfo::BigEndian) {
+        for (int i = 0; i < 8; ++i)
+            result |= quint64(data4[i]) << (i * 8);
+        result = result << 64;
+        result |= quint64(qToBigEndian<quint16>(data3)) << 48;
+        result |= quint64(qToBigEndian<quint16>(data2)) << 32;
+        result |= qToBigEndian<quint32>(data1);
+    } else {
+        result = qToLittleEndian<quint32>(data1);
+        result = result << 32;
+        result |= quint64(qToLittleEndian<quint16>(data2)) << 16;
+        result |= quint64(qToLittleEndian<quint16>(data3));
+        result = result << 64;
+        for (int i = 0; i < 8; ++i)
+            result |= quint64(data4[i]) << (56 - i * 8);
+    }
     return result;
 }
 #endif
