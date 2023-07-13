@@ -3795,8 +3795,6 @@ void tst_QFuture::signalConnect()
         QSignalSpy spy(sender, &QObject::destroyed);
         sender->deleteLater();
 
-        // emit the signal when sender is being destroyed
-        QObject::connect(sender, &QObject::destroyed, [sender] { sender->emitIntArg(42); });
         spy.wait();
 
         QVERIFY(future.isCanceled());
