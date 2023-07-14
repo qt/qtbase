@@ -158,6 +158,10 @@ private:
     constexpr bool isSlowPath() const noexcept
     { return Q_UNLIKELY(typeAndFlags.isExtended); }
 
+    friend Q_CORE_EXPORT size_t qHash(const QNativeIpcKey &ipcKey, size_t seed) noexcept;
+    friend size_t qHash(const QNativeIpcKey &ipcKey) noexcept
+    { return qHash(ipcKey, 0); }
+
     friend bool operator==(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
     {
         if (lhs.key != rhs.key)
