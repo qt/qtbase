@@ -1,0 +1,57 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2016 Intel Corporation.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qttestlib-tutorial5-example.html
+    \previouspage {Chapter 4: Replaying GUI Events}{Chapter 4}
+    \nextpage {Chapter 6: Skipping Tests with QSKIP}{Chapter 6}
+
+    \title Chapter 5: Writing a Benchmark
+    \brief How to write a benchmark.
+
+    This chapter demonstrates how to write benchmarks using Qt Test.
+
+    \section1 Writing a Benchmark
+    To create a benchmark we extend a test function with a QBENCHMARK macro.
+    A benchmark test function will then typically consist of setup code and
+    a QBENCHMARK macro that contains the code to be measured. This test
+    function benchmarks QString::localeAwareCompare().
+
+    \snippet tutorial5/benchmarking.cpp 0
+
+    Setup can be done at the beginning of the function. At this point, the clock
+    is not running. The code inside the QBENCHMARK macro will be
+    measured, and possibly repeated several times in order to get an
+    accurate measurement.
+
+    Several \l {testlib-benchmarking-measurement}{back-ends} are available
+    and can be selected on the command line.
+
+    \section1 Data Functions
+
+    Data functions are useful for creating benchmarks that compare
+    multiple data inputs, for example locale aware compare against standard
+    compare.
+
+    \snippet tutorial5/benchmarking.cpp 1
+
+    The test function then uses the data to determine what to benchmark.
+
+    \snippet tutorial5/benchmarking.cpp 2
+
+    The \c{if (useLocaleCompare)} switch is placed outside the QBENCHMARK
+    macro to avoid measuring its overhead. Each benchmark test function
+    can have one active QBENCHMARK macro.
+
+    \section1 Building the Executable
+
+    \include {building-examples.qdocinc} {building the executable} {tutorial5}
+
+    \section1 Running the Executable
+
+    Running the resulting executable should give you the following
+    output:
+
+    \snippet code/doc_src_qtestlib.qdoc 14
+*/

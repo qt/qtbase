@@ -1,0 +1,132 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2016 Intel Corporation.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qttestlib-tutorial2-example.html
+    \previouspage {Chapter 1: Writing a Unit Test}{Chapter 1}
+    \nextpage {Chapter 3: Simulating Gui Events}{Chapter 3}
+
+    \title Chapter 2: Data Driven Testing
+    \brief How to create data driven tests.
+
+    This chapter demonstrates how to execute a test multiple times with
+    different test data.
+
+    So far, we have hard coded the data we wanted to test into our
+    test function. If we add more test data, the function might look like
+    this:
+
+    \snippet code/doc_src_qtestlib.cpp 11
+
+    To prevent the function from being cluttered with repetitive code, Qt Test
+    supports adding test data to a test function. All we need is to add another
+    private slot to our test class:
+
+    \snippet tutorial2/testqstring.cpp 0
+
+    \section1 Writing the Data Function
+
+    A test function's associated data function has \c _data appended to its
+    name. Our data function looks like this:
+
+    \snippet tutorial2/testqstring.cpp 1
+
+    First, we define the two elements of our test table using the \l
+    QTest::addColumn() function: a test string and the
+    expected result of applying the QString::toUpper() function to
+    that string.
+
+    Then, we add some data to the table using the \l QTest::newRow()
+    function. We can also use \l QTest::addRow() if we need to format some data
+    in the row name, for example when generating many data rows iteratively.
+    Each row of data will become a separate row in the test table.
+
+    \l QTest::newRow() takes one argument: a name that will be associated with
+    the data set and used in the test log to identify the data row. \l
+    QTest::addRow() takes a (\c{printf}-style) format string followed by the
+    parameters to be represented in place of the formatting tokens in the format
+    string. Then, we stream the data set into the new table row. First an
+    arbitrary string, and then the expected result of applying the
+    QString::toUpper() function to that string.
+
+    You can think of the test data as a two-dimensional table. In
+    our case, it has two columns called \c string and \c result and
+    three rows. In addition, a name and an index are associated
+    with each row:
+
+    \table
+    \header
+        \li index
+        \li name
+        \li string
+        \li result
+    \row
+        \li 0
+        \li all-lower
+        \li "hello"
+        \li HELLO
+    \row
+        \li 1
+        \li mixed
+        \li "Hello"
+        \li HELLO
+    \row
+        \li 2
+        \li all-upper
+        \li "HELLO"
+        \li HELLO
+    \endtable
+
+    When data is streamed into the row, each datum is asserted to match
+    the type of the column whose value it supplies. If any assertion fails,
+    the test is aborted.
+
+    The names of rows and columns, in a given test function's data table, should
+    be unique: if two rows share a name, or two columns share a name, a warning
+    will (since Qt 6.5) be produced. See \l qWarning() for how you can cause
+    warnings to be treated as errors and \l {Test for Warnings} for how to get
+    your tests clear of other warnings.
+
+    \section1 Rewriting the Test Function
+
+    Our test function can now be rewritten:
+
+    \snippet tutorial2/testqstring.cpp 2
+
+    The TestQString::toUpper() function will be executed three times,
+    once for each entry in the test table that we created in the
+    associated TestQString::toUpper_data() function.
+
+    First, we fetch the two elements of the data set using the \l
+    QFETCH() macro. \l QFETCH() takes two arguments: The data type of
+    the element and the element name. Then, we perform the test using
+    the \l QCOMPARE() macro.
+
+    This approach makes it very easy to add new data to the test
+    without modifying the test itself.
+
+    \section1 Preparing the Stand-Alone Executable
+
+    And again, to make our test case a stand-alone executable,
+    the following two lines are needed:
+
+    \snippet tutorial2/testqstring.cpp 3
+
+    As before, the QTEST_MAIN() macro expands to a simple main()
+    method that runs all the test functions, and since both the
+    declaration and the implementation of our test class are in a .cpp
+    file, we also need to include the generated moc file to make Qt's
+    introspection work.
+
+    \section1 Building the Executable
+
+    \include {building-examples.qdocinc} {building the executable} {tutorial2}
+
+    \section1 Running the Executable
+
+    Running the resulting executable should give you the following
+    output:
+
+    \snippet code/doc_src_qtestlib.qdoc 11
+*/

@@ -1,0 +1,76 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2016 Intel Corporation.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qttestlib-tutorial1-example.html
+    \previouspage {Qt Test Tutorial}{Qt Test Tutorial Overview}
+    \nextpage {Chapter 2: Data Driven Testing}{Chapter 2}
+
+    \title Chapter 1: Writing a Unit Test
+    \brief How to write a unit test.
+
+    This first chapter demonstrates how to write a simple unit test and how to
+    run the test case as a stand-alone executable.
+
+    \section1 Writing a Test
+
+    Let's assume you want to test the behavior of our QString class.
+    First, you need a class that contains your test functions. This class
+    has to inherit from QObject:
+
+    \snippet tutorial1/testqstring.cpp 0
+
+    \note You need to include the QTest header and declare the test functions as
+    private slots so the test framework finds and executes it.
+
+    Then you need to implement the test function itself. The
+    implementation could look like this:
+
+    \snippet code/doc_src_qtestlib.cpp 8
+
+    The \l QVERIFY() macro evaluates the expression passed as its
+    argument. If the expression evaluates to true, the execution of
+    the test function continues. Otherwise, a message describing the
+    failure is appended to the test log, and the test function stops
+    executing.
+
+    But if you want a more verbose output to the test log, you should
+    use the \l QCOMPARE() macro instead:
+
+    \snippet tutorial1/testqstring.cpp 1
+
+    If the strings are not equal, the contents of both strings are
+    appended to the test log, making it immediately visible why the
+    comparison failed.
+
+    \section1 Preparing the Stand-Alone Executable
+
+    Finally, to make our test case a stand-alone executable, the
+    following two lines are needed:
+
+    \snippet tutorial1/testqstring.cpp 2
+
+    The \l QTEST_MAIN() macro expands to a simple \c main()
+    method that runs all the test functions. Note that if both the
+    declaration and the implementation of our test class are in a \c
+    .cpp file, we also need to include the generated moc file to make
+    Qt's introspection work.
+
+    \section1 Building the Executable
+
+    \include {building-examples.qdocinc} {building the executable} {tutorial1}
+
+    \note If you're using windows, replace \c make with \c
+    nmake or whatever build tool you use.
+
+    \section1 Running the Executable
+
+    Running the resulting executable should give you the following
+    output:
+
+    \snippet code/doc_src_qtestlib.qdoc 10
+
+    Congratulations! You just wrote and executed your first unit test
+    using the Qt Test framework.
+*/
