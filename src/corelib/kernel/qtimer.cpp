@@ -4,6 +4,7 @@
 
 #include "qtimer.h"
 #include "qtimer_p.h"
+#include "qsingleshottimer_p.h"
 
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
@@ -251,90 +252,6 @@ void QTimer::timerEvent(QTimerEvent *e)
             stop();
         emit timeout(QPrivateSignal());
     }
-}
-
-class QSingleShotTimer : public QObject
-{
-    Q_OBJECT
-    int timerId = -1;
-public:
-    ~QSingleShotTimer();
-    QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, const char * m);
-    QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, QtPrivate::QSlotObjectBase *slotObj);
-
-    void startTimerForReceiver(int msec, Qt::TimerType timerType, const QObject *receiver);
-
-Q_SIGNALS:
-    void timeout();
-protected:
-    void timerEvent(QTimerEvent *) override;
-};
-
-QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, const char *member)
-    : QObject(QAbstractEventDispatcher::instance())
-{
-    connect(this, SIGNAL(timeout()), r, member);
-
-    startTimerForReceiver(msec, timerType, r);
-}
-
-QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, QtPrivate::QSlotObjectBase *slotObj)
-    : QObject(QAbstractEventDispatcher::instance())
-{
-    int signal_index = QMetaObjectPrivate::signalOffset(&staticMetaObject);
-    Q_ASSERT(QMetaObjectPrivate::signal(&staticMetaObject, signal_index).name() == "timeout");
-    QObjectPrivate::connectImpl(this, signal_index, r ? r : this, nullptr, slotObj,
-                                Qt::AutoConnection, nullptr, &staticMetaObject);
-
-    startTimerForReceiver(msec, timerType, r);
-}
-
-QSingleShotTimer::~QSingleShotTimer()
-{
-    if (timerId > 0)
-        killTimer(timerId);
-}
-
-/*
-    Move the timer, and the dispatching and handling of the timer event, into
-    the same thread as where it will be handled, so that it fires reliably even
-    if the thread that set up the timer is busy.
-*/
-void QSingleShotTimer::startTimerForReceiver(int msec, Qt::TimerType timerType, const QObject *receiver)
-{
-    if (receiver && receiver->thread() != thread()) {
-        // Avoid leaking the QSingleShotTimer instance in case the application exits before the timer fires
-        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &QObject::deleteLater);
-        setParent(nullptr);
-        moveToThread(receiver->thread());
-
-        QDeadlineTimer deadline(std::chrono::milliseconds{msec}, timerType);
-        QMetaObject::invokeMethod(this, [this, deadline, timerType]{
-            if (deadline.hasExpired())
-                emit timeout();
-            else
-                timerId = startTimer(std::chrono::milliseconds{deadline.remainingTime()}, timerType);
-        }, Qt::QueuedConnection);
-    } else {
-        timerId = startTimer(std::chrono::milliseconds{msec}, timerType);
-    }
-}
-
-
-void QSingleShotTimer::timerEvent(QTimerEvent *)
-{
-    // need to kill the timer _before_ we emit timeout() in case the
-    // slot connected to timeout calls processEvents()
-    if (timerId > 0)
-        killTimer(timerId);
-    timerId = -1;
-
-    emit timeout();
-
-    // we would like to use delete later here, but it feels like a
-    // waste to post a new event to handle this event, so we just unset the flag
-    // and explicitly delete...
-    qDeleteInEventHandler(this);
 }
 
 /*!
@@ -699,5 +616,4 @@ QBindable<Qt::TimerType> QTimer::bindableTimerType()
 
 QT_END_NAMESPACE
 
-#include "qtimer.moc"
 #include "moc_qtimer.cpp"
