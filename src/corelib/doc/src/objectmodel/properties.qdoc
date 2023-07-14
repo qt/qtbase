@@ -5,7 +5,7 @@
     \page properties.html
     \title The Property System
     \brief An overview of Qt's property system.
-
+    \ingroup explanation
     \ingroup qt-basic-concepts
     \keyword Qt's Property System
 
