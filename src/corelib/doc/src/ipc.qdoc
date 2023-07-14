@@ -7,6 +7,7 @@
     \ingroup groups
     \ingroup frameworks-technologies
     \keyword ipc
+    \ingroup explanation
 
     \brief An overview of Qt's inter-process communication functionality
 
