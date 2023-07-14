@@ -14,6 +14,8 @@
 #include "private/qtldurl_p.h"
 #endif
 
+#include <memory>
+
 class tst_QNetworkCookieJar: public QObject
 {
     Q_OBJECT
@@ -249,7 +251,7 @@ void tst_QNetworkCookieJar::setCookiesFromUrl()
         QVERIFY2(result.contains(cookie), cookie.toRawForm());
         result.removeAll(cookie);
     }
-    QVERIFY2(result.isEmpty(), QTest::toString(result));
+    QVERIFY2(result.isEmpty(), std::unique_ptr<char[]>(QTest::toString(result)).get());
 }
 
 void tst_QNetworkCookieJar::cookiesForUrl_data()
