@@ -70,8 +70,6 @@ public:
     void waitForFinished();
     void setMetaTypes(int count, const QMetaType *types);
     void checkReceivedSignature();
-
-    static QDBusPendingCall fromMessage(const QDBusMessage &msg);
 };
 
 class QDBusPendingCallWatcherHelper: public QObject
