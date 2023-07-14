@@ -1,0 +1,75 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2016 Intel Corporation.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qttestlib-tutorial3-example.html
+    \previouspage {Chapter 2: Data Driven Testing}{Chapter 2}
+    \nextpage {Chapter 4: Replaying GUI Events}{Chapter 4}
+
+    \title Chapter 3: Simulating GUI Events
+    \brief How to simulate GUI events.
+
+    Qt Test features some mechanisms to test graphical user
+    interfaces. Instead of simulating native window system events,
+    Qt Test sends internal Qt events. That means there are no
+    side-effects on the machine the tests are running on.
+
+    This chapter demonstrates how to write a simple GUI test.
+
+    \section1 Writing a GUI Test
+
+    This time, let's assume you want to test the behavior of our
+    QLineEdit class. As before, you will need a class that contains
+    your test function:
+
+    \snippet tutorial3/testgui.cpp 0
+
+    The only difference is that you need to include the Qt GUI class
+    definitions in addition to the QTest namespace.
+
+    \snippet tutorial3/testgui.cpp 1
+
+    In the implementation of the test function, we first create a
+    QLineEdit. Then, we simulate writing "hello world" in the line edit
+    using the \l QTest::keyClicks() function.
+
+    \note The widget must also be shown in order to correctly test keyboard
+    shortcuts.
+
+    QTest::keyClicks() simulates clicking a sequence of keys on a
+    widget. Optionally, a keyboard modifier can be specified as well
+    as a delay (in milliseconds) of the test after each key click. In
+    a similar way, you can use the QTest::keyClick(),
+    QTest::keyPress(), QTest::keyRelease(), QTest::mouseClick(),
+    QTest::mouseDClick(), QTest::mouseMove(), QTest::mousePress()
+    and QTest::mouseRelease() functions to simulate the associated
+    GUI events.
+
+    Finally, we use the \l QCOMPARE() macro to check if the line edit's
+    text is as expected.
+
+    \section1 Preparing the Stand-Alone Executable
+
+    As before, to make our test case a stand-alone executable, the
+    following two lines are needed:
+
+    \snippet tutorial3/testgui.cpp 2
+
+    The QTEST_MAIN() macro expands to a simple main() method that
+    runs all the test functions, and since both the declaration and
+    the implementation of our test class are in a .cpp file, we also
+    need to include the generated moc file to make Qt's introspection
+    work.
+
+    \section1 Building the Executable
+
+    \include {building-examples.qdocinc} {building the executable} {tutorial3}
+
+    \section1 Running the Executable
+
+    Running the resulting executable should give you the following
+    output:
+
+    \snippet code/doc_src_qtestlib.qdoc 12
+*/

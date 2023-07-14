@@ -1,0 +1,48 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2016 Intel Corporation.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qttestlib-tutorial6.html
+
+    \previouspage {Chapter 5: Writing a Benchmark}{Chapter 5}
+
+    \title Chapter 6: Skipping Tests with QSKIP
+    \brief How to skip tests in certain cases.
+
+    \section2 Using QSKIP(\a description) in a test function
+
+    If the QSKIP() macro is called from a test function, it stops
+    the execution of the test without adding a failure to the test log.
+    It can be used to skip tests that are certain to fail. The text in
+    the QSKIP \a description parameter is appended to the test log,
+    and should explain why the test was not carried out.
+
+    QSKIP can be used to skip testing when the implementation is not yet
+    complete or not supported on a certain platform. When there are known
+    failures, QEXPECT_FAIL is recommended, as it supports running the rest
+    of the test, when possible.
+
+    Example of QSKIP in a test function:
+
+    \snippet code/doc_src_qtqskip_snippet.cpp 0
+
+    In a data-driven test, each call to QSKIP() skips only the current
+    row of test data. If the data-driven test contains an unconditional
+    call to QSKIP, it produces a skip message for each row of test data.
+
+    \section2 Using QSKIP in a _data function
+
+    If called from a _data function, the QSKIP() macro stops
+    execution of the _data function. This prevents execution of the
+    associated test function.
+
+    See below for an example:
+
+    \snippet code/doc_src_qtqskip.cpp 1
+
+    \section2 Using QSKIP from initTestCase() or initTestCase_data()
+
+    If called from \c initTestCase() or \c initTestCase_data(), the
+    QSKIP() macro will skip all test and _data functions.
+*/

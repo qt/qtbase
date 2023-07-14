@@ -1,0 +1,95 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2016 Intel Corporation.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qttestlib-tutorial4-example.html
+    \previouspage {Chapter 3: Simulating GUI Events}{Chapter 3}
+    \nextpage {Chapter 5: Writing a Benchmark}{Chapter 5}
+
+    \title Chapter 4: Replaying GUI Events
+    \brief How to replay GUI events.
+
+    In this chapter, we will show how to simulate a GUI event,
+    and how to store a series of GUI events as well as replay them on
+    a widget.
+
+    The approach to storing a series of events and replaying them is
+    quite similar to the approach explained in \l {Chapter 2:
+    Data Driven Testing}{chapter 2}. All you need to do is to add a data
+    function to your test class:
+
+    \snippet tutorial4/testgui.cpp 0
+
+    \section1 Writing the Data Function
+
+    As before, a test function's associated data function carries the
+    same name, appended by \c{_data}.
+
+    \snippet tutorial4/testgui.cpp 1
+
+    First, we define the elements of the table using the
+    QTest::addColumn() function: A list of GUI events, and the
+    expected result of applying the list of events on a QWidget. Note
+    that the type of the first element is \l QTestEventList.
+
+    A QTestEventList can be populated with GUI events that can be
+    stored as test data for later usage, or be replayed on any
+    QWidget.
+
+    In our current data function, we create two \l
+    {QTestEventList} elements. The first list consists of a single click to
+    the 'a' key. We add the event to the list using the
+    QTestEventList::addKeyClick() function. Then we use the
+    QTest::newRow() function to give the data set a name, and
+    stream the event list and the expected result into the table.
+
+    The second list consists of two key clicks: an 'a' with a
+    following 'backspace'. Again we use the
+    QTestEventList::addKeyClick() to add the events to the list, and
+    QTest::newRow() to put the event list and the expected
+    result into the table with an associated name.
+
+    \section1 Rewriting the Test Function
+
+    Our test can now be rewritten:
+
+    \snippet tutorial4/testgui.cpp 2
+
+    The TestGui::testGui() function will be executed two times,
+    once for each entry in the test data that we created in the
+    associated TestGui::testGui_data() function.
+
+    First, we fetch the two elements of the data set using the \l
+    QFETCH() macro. \l QFETCH() takes two arguments: the data type of
+    the element and the element name. Then we create a QLineEdit, and
+    apply the list of events on that widget using the
+    QTestEventList::simulate() function.
+
+    Finally, we use the QCOMPARE() macro to check if the line edit's
+    text is as expected.
+
+    \section1 Preparing the Stand-Alone Executable
+
+    As before, to make our test case a stand-alone executable,
+    the following two lines are needed:
+
+    \snippet tutorial4/testgui.cpp 3
+
+    The QTEST_MAIN() macro expands to a simple main() method that
+    runs all the test functions, and since both the declaration and
+    the implementation of our test class are in a .cpp file, we also
+    need to include the generated moc file to make Qt's introspection
+    work.
+
+    \section1 Building the Executable
+
+    \include {building-examples.qdocinc} {building the executable} {tutorial4}
+
+    \section1 Running the Executable
+
+    Running the resulting executable should give you the following
+    output:
+
+    \snippet code/doc_src_qtestlib.qdoc 13
+*/
