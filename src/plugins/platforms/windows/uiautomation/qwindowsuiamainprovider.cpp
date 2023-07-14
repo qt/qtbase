@@ -304,6 +304,7 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
             *pRetVal = new QWindowsUiaToggleProvider(id());
         break;
     case UIA_SelectionPatternId:
+    case UIA_SelectionPattern2Id:
         // Lists of items.
         if (accessible->role() == QAccessible::List
                 || accessible->role() == QAccessible::PageTabList) {

@@ -236,6 +236,24 @@ __CRT_UUID_DECL(ISelectionProvider, 0xfb8b03af, 0x3bdf, 0x48d4, 0xbd,0x36, 0x1a,
 #endif
 #endif
 
+#ifndef __ISelectionProvider2_INTERFACE_DEFINED__
+#define __ISelectionProvider2_INTERFACE_DEFINED__
+DEFINE_GUID(IID_ISelectionProvider2, 0x14f68475, 0xee1c, 0x44f6, 0xa8, 0x69, 0xd2, 0x39, 0x38, 0x1f, 0x0f, 0xe7);
+MIDL_INTERFACE("14f68475-ee1c-44f6-a869-d239381f0fe7")
+ISelectionProvider2 : public ISelectionProvider
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE get_FirstSelectedItem(__RPC__deref_out_opt IRawElementProviderSimple **retVal) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_LastSelectedItem(__RPC__deref_out_opt IRawElementProviderSimple **retVal) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_CurrentSelectedItem(__RPC__deref_out_opt IRawElementProviderSimple **retVal) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_ItemCount(__RPC__out int *retVal) = 0;
+};
+
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(ISelectionProvider2,  0x14f68475, 0xee1c, 0x44f6, 0xa8, 0x69, 0xd2, 0x39, 0x38, 0x1f, 0x0f, 0xe7)
+#endif
+#endif
+
 
 #ifndef __ISelectionItemProvider_INTERFACE_DEFINED__
 #define __ISelectionItemProvider_INTERFACE_DEFINED__

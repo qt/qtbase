@@ -49,5 +49,6 @@
 #define UIA_DropTargetPatternId         10031
 #define UIA_TextEditPatternId           10032
 #define UIA_CustomNavigationPatternId   10033
+#define UIA_SelectionPattern2Id         10034
 
 #endif
