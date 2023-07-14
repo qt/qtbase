@@ -16,6 +16,7 @@ private slots:
     void construct();
     void getSetCheck();
     void equality();
+    void hash();
     void swap();
     void toString_data();
     void toString();
@@ -180,6 +181,14 @@ void tst_QNativeIpcKey::equality()
     key2.setType(QNativeIpcKey::DefaultTypeForOs);
     QCOMPARE(key1, key2);
     QVERIFY(!(key1 != key2));
+}
+
+void tst_QNativeIpcKey::hash()
+{
+    QNativeIpcKey key1("key1", QNativeIpcKey::DefaultTypeForOs);
+    QNativeIpcKey key2(key1);
+    QCOMPARE_EQ(qHash(key1), qHash(key2));
+    QCOMPARE_EQ(qHash(key1, 123), qHash(key2, 123));
 }
 
 void tst_QNativeIpcKey::swap()
