@@ -3264,36 +3264,36 @@ void tst_QSortFilterProxyModel::removeRowsRecursive()
 
 void tst_QSortFilterProxyModel::doubleProxySelectionSetSourceModel()
 {
-    QStandardItemModel *model1 = new QStandardItemModel;
-    QStandardItem *parentItem = model1->invisibleRootItem();
+    QStandardItemModel model1;
+    QStandardItem *parentItem = model1.invisibleRootItem();
     for (int i = 0; i < 4; ++i) {
         QStandardItem *item = new QStandardItem(QLatin1String("model1 item ") + QString::number(i));
         parentItem->appendRow(item);
         parentItem = item;
     }
 
-    QStandardItemModel *model2 = new QStandardItemModel;
-    QStandardItem *parentItem2 = model2->invisibleRootItem();
+    QStandardItemModel model2;
+    QStandardItem *parentItem2 = model2.invisibleRootItem();
     for (int i = 0; i < 4; ++i) {
         QStandardItem *item = new QStandardItem(QLatin1String("model2 item ") + QString::number(i));
         parentItem2->appendRow(item);
         parentItem2 = item;
     }
 
-    QSortFilterProxyModel *toggleProxy = new QSortFilterProxyModel;
-    toggleProxy->setSourceModel(model1);
+    QSortFilterProxyModel toggleProxy;
+    toggleProxy.setSourceModel(&model1);
 
-    QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel;
-    proxyModel->setSourceModel(toggleProxy);
+    QSortFilterProxyModel proxyModel;
+    proxyModel.setSourceModel(&toggleProxy);
 
-    QModelIndex mi = proxyModel->index(0, 0, proxyModel->index(0, 0, proxyModel->index(0, 0)));
-    QItemSelectionModel ism(proxyModel);
+    QModelIndex mi = proxyModel.index(0, 0, proxyModel.index(0, 0, proxyModel.index(0, 0)));
+    QItemSelectionModel ism(&proxyModel);
     ism.select(mi, QItemSelectionModel::Select);
     QModelIndexList mil = ism.selectedIndexes();
     QCOMPARE(mil.count(), 1);
     QCOMPARE(mil.first(), mi);
 
-    toggleProxy->setSourceModel(model2);
+    toggleProxy.setSourceModel(&model2);
     // No crash, it's good news!
     QVERIFY(ism.selection().isEmpty());
 }
