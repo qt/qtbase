@@ -51,6 +51,17 @@ function(qt_internal_generate_pkg_config_file module)
     list(TRANSFORM loose_include_dirs REPLACE "${INSTALL_INCLUDEDIR}" "\${includedir}")
     list(TRANSFORM loose_include_dirs REPLACE "${INSTALL_MKSPECSDIR}" "\${mkspecsdir}")
 
+    # Remove genex wrapping around gc_sections flag because we can't evaluate genexes like
+    # $<CXX_COMPILER_ID> in file(GENERATE). And given that .pc files don't support dynamic
+    # evaluation like the $<CXX_COMPILER_ID> genex, distros will be expected to patch the .pc
+    # files according to which compiler they intend to be used with.
+    get_property(gc_sections_with_genex GLOBAL PROPERTY _qt_internal_gc_sections_with_genex)
+    get_property(gc_sections_without_genex GLOBAL PROPERTY _qt_internal_gc_sections_without_genex)
+    if(loose_link_options AND gc_sections_with_genex AND gc_sections_without_genex)
+        string(REPLACE "${gc_sections_with_genex}" "${gc_sections_without_genex}"
+            loose_link_options "${loose_link_options}")
+    endif()
+
     qt_internal_set_pkg_config_cpp_flags(link_options "${loose_link_options}" "")
     qt_internal_set_pkg_config_cpp_flags(compile_defs "${loose_compile_defs}" -D)
     qt_internal_set_pkg_config_cpp_flags(include_dirs "${loose_include_dirs}" -I)
