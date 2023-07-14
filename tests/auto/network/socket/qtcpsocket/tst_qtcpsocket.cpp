@@ -312,7 +312,7 @@ tst_QTcpSocket::tst_QTcpSocket()
     tmpSocket = 0;
 
     //This code relates to the socketsConstructedBeforeEventLoop test case
-    earlyConstructedSockets = new SocketPair;
+    earlyConstructedSockets = new SocketPair(this);
     QVERIFY(earlyConstructedSockets->create());
     earlyBytesWrittenCount = 0;
     earlyReadyReadCount = 0;
