@@ -682,6 +682,7 @@ void tst_QNetworkDiskCache::streamVersion()
         QIODevice *dataDevice = cache.data(url);
         QVERIFY(dataDevice != 0);
         QByteArray cachedData = dataDevice->readAll();
+        delete dataDevice;
         QCOMPARE(cachedData, data);
     }
 }
