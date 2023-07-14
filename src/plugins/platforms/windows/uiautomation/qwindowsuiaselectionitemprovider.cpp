@@ -36,6 +36,14 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::Select()
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
+    if (QAccessibleInterface *parent = accessible->parent()) {
+        if (QAccessibleSelectionInterface *selectionInterface = parent->selectionInterface()) {
+            selectionInterface->clear();
+            bool ok = selectionInterface->select(accessible);
+            return ok ? S_OK : S_FALSE;
+        }
+    }
+
     QAccessibleActionInterface *actionInterface = accessible->actionInterface();
     if (!actionInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
@@ -73,6 +81,13 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::AddToSelection()
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
+    if (QAccessibleInterface *parent = accessible->parent()) {
+        if (QAccessibleSelectionInterface *selectionInterface = parent->selectionInterface()) {
+            bool ok = selectionInterface->select(accessible);
+            return ok ? S_OK : S_FALSE;
+        }
+    }
+
     QAccessibleActionInterface *actionInterface = accessible->actionInterface();
     if (!actionInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
@@ -97,6 +112,13 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::RemoveFromSelection(
     QAccessibleInterface *accessible = accessibleInterface();
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
+
+    if (QAccessibleInterface *parent = accessible->parent()) {
+        if (QAccessibleSelectionInterface *selectionInterface = parent->selectionInterface()) {
+            bool ok = selectionInterface->unselect(accessible);
+            return ok ? S_OK : S_FALSE;
+        }
+    }
 
     QAccessibleActionInterface *actionInterface = accessible->actionInterface();
     if (!actionInterface)
@@ -124,6 +146,14 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::get_IsSelected(BOOL 
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
+    if (QAccessibleInterface *parent = accessible->parent()) {
+        if (QAccessibleSelectionInterface *selectionInterface = parent->selectionInterface()) {
+            bool selected = selectionInterface->isSelected(accessible);
+            *pRetVal = selected ? TRUE : FALSE;
+            return S_OK;
+        }
+    }
+
     if (accessible->role() == QAccessible::RadioButton)
         *pRetVal = accessible->state().checked;
     else if (accessible->role() == QAccessible::PageTab)
@@ -146,12 +176,18 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::get_SelectionContain
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
+    QAccessibleInterface *parent = accessible->parent();
+    if (parent && parent->selectionInterface()) {
+        *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent);
+        return S_OK;
+    }
+
     QAccessibleActionInterface *actionInterface = accessible->actionInterface();
     if (!actionInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
     // Radio buttons do not require a container.
-    if (QAccessibleInterface *parent = accessible->parent()) {
+    if (parent) {
         if ((accessible->role() == QAccessible::ListItem && parent->role() == QAccessible::List)
                 || (accessible->role() == QAccessible::PageTab && parent->role() == QAccessible::PageTabList)) {
             *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent);

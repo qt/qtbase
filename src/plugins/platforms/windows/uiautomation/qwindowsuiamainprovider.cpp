@@ -305,15 +305,17 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         break;
     case UIA_SelectionPatternId:
     case UIA_SelectionPattern2Id:
-        // Lists of items.
-        if (accessible->role() == QAccessible::List
+        // Selections via QAccessibleSelectionInterface or lists of items.
+        if (accessible->selectionInterface()
+                || accessible->role() == QAccessible::List
                 || accessible->role() == QAccessible::PageTabList) {
             *pRetVal = new QWindowsUiaSelectionProvider(id());
         }
         break;
     case UIA_SelectionItemPatternId:
-        // Items within a list and radio buttons.
-        if ((accessible->role() == QAccessible::RadioButton)
+        // Parent supports selection interface or items within a list and radio buttons.
+        if ((accessible->parent() && accessible->parent()->selectionInterface())
+                || (accessible->role() == QAccessible::RadioButton)
                 || (accessible->role() == QAccessible::ListItem)
                 || (accessible->role() == QAccessible::PageTab)) {
             *pRetVal = new QWindowsUiaSelectionItemProvider(id());
