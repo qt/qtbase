@@ -11,7 +11,7 @@ file(GLOB_RECURSE test_data
 
 file(GLOB_RECURSE tokenError
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        tokenError/* XML-token-error/*)
+        tokenError/*)
 
 qt_internal_add_test(tst_qxmlstream
     SOURCES
