@@ -17,22 +17,22 @@
 #endif
 
 #if !defined(QT_BUILD_@module_define_infix@_LIB) && !defined(QT_STATIC)
-/* outside library → inline decl + defi */
+/* outside library -> inline decl + defi */
 /* static builds treat everything as part of the library, so they never inline */
 #  define QT_@module_define_infix@_INLINE_SINCE(major, minor) inline
 #  define QT_@module_define_infix@_INLINE_IMPL_SINCE(major, minor) 1
 #elif defined(QT_@module_define_infix@_BUILD_REMOVED_API)
 /* inside library, inside removed_api.cpp:
- * keep deprecated API → non-inline decl;
- * remove deprecated API → inline decl;
+ * keep deprecated API -> non-inline decl;
+ * remove deprecated API -> inline decl;
  * definition is always available */
 #  define QT_@module_define_infix@_INLINE_SINCE(major, minor) \
     QT_IF_DEPRECATED_SINCE(major, minor, inline, /* not inline */)
 #  define QT_@module_define_infix@_INLINE_IMPL_SINCE(major, minor) 1
 #else
 /* inside library, outside removed_api.cpp:
- * keep deprecated API → non-inline decl, no defi;
- * remove deprecated API → inline decl, defi */
+ * keep deprecated API -> non-inline decl, no defi;
+ * remove deprecated API -> inline decl, defi */
 #  define QT_@module_define_infix@_INLINE_SINCE(major, minor) \
     QT_IF_DEPRECATED_SINCE(major, minor, inline, /* not inline */)
 #  define QT_@module_define_infix@_INLINE_IMPL_SINCE(major, minor) \
