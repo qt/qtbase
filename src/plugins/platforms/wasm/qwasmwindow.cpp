@@ -375,10 +375,10 @@ void QWasmWindow::onActivationChanged(bool active)
 void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     m_flags = flags;
+    dom::syncCSSClassWith(m_qtWindow, "frameless", !hasFrame());
     dom::syncCSSClassWith(m_qtWindow, "has-border", hasBorder());
     dom::syncCSSClassWith(m_qtWindow, "has-shadow", hasShadow());
-    dom::syncCSSClassWith(m_qtWindow, "has-title", flags.testFlag(Qt::WindowTitleHint));
-    dom::syncCSSClassWith(m_qtWindow, "frameless", flags.testFlag(Qt::FramelessWindowHint));
+    dom::syncCSSClassWith(m_qtWindow, "has-title", hasTitleBar());
     dom::syncCSSClassWith(m_qtWindow, "transparent-for-input",
                           flags.testFlag(Qt::WindowTransparentForInput));
 
@@ -561,16 +561,25 @@ void QWasmWindow::requestUpdate()
     m_compositor->requestUpdateWindow(this, QWasmCompositor::UpdateRequestDelivery);
 }
 
+bool QWasmWindow::hasFrame() const
+{
+    return !m_flags.testFlag(Qt::FramelessWindowHint);
+}
+
 bool QWasmWindow::hasBorder() const
 {
-    return !m_state.testFlag(Qt::WindowFullScreen) && !m_flags.testFlag(Qt::FramelessWindowHint)
+    return hasFrame() && !m_state.testFlag(Qt::WindowFullScreen) && !m_flags.testFlag(Qt::SubWindow)
             && !windowIsPopupType(m_flags);
+}
+
+bool QWasmWindow::hasTitleBar() const
+{
+    return hasBorder() && m_flags.testFlag(Qt::WindowTitleHint);
 }
 
 bool QWasmWindow::hasShadow() const
 {
-    return !m_flags.testFlag(Qt::NoDropShadowWindowHint)
-            && !m_flags.testFlag(Qt::FramelessWindowHint);
+    return hasBorder() && !m_flags.testFlag(Qt::NoDropShadowWindowHint);
 }
 
 bool QWasmWindow::hasMaximizeButton() const
