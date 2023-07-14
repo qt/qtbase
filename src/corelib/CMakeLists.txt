@@ -1022,13 +1022,13 @@ qt_internal_extend_target(Core CONDITION HAIKU AND NOT ANDROID
 )
 
 qt_internal_extend_target(Core
-    CONDITION UNIX AND NOT LINUX AND NOT APPLE AND NOT HAIKU AND NOT ANDROID
+    CONDITION UNIX AND NOT LINUX AND NOT APPLE AND NOT HAIKU AND NOT ANDROID AND NOT VXWORKS
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_unix.cpp
 )
 
-qt_internal_extend_target(Core CONDITION LINUX AND NOT ANDROID
+qt_internal_extend_target(Core CONDITION LINUX AND NOT ANDROID AND NOT VXWORKS
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_linux.cpp
@@ -1145,7 +1145,10 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_sysv_sem
 
 qt_internal_extend_target(Core CONDITION VXWORKS
     SOURCES
-        kernel/qfunctions_vxworks.cpp kernel/qfunctions_vxworks.h
+        io/qstandardpaths_unix.cpp
+        io/qstorageinfo_stub.cpp
+        kernel/qfunctions_vxworks.cpp
+        kernel/qfunctions_vxworks.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_cborstreamreader
