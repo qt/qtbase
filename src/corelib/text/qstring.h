@@ -336,15 +336,15 @@ public:
     [[nodiscard]] QString mid(qsizetype position, qsizetype n = -1) const;
 
     [[nodiscard]] QString first(qsizetype n) const
-    { verify(0, n); return QString(data(), n); }
+    { verify(0, n); return sliced(0, n); }
     [[nodiscard]] QString last(qsizetype n) const
-    { verify(0, n); return QString(data() + size() - n, n); }
+    { verify(0, n); return sliced(size() - n, n); }
     [[nodiscard]] QString sliced(qsizetype pos) const
     { verify(pos, 0); return QString(data() + pos, size() - pos); }
     [[nodiscard]] QString sliced(qsizetype pos, qsizetype n) const
     { verify(pos, n); return QString(data() + pos, n); }
     [[nodiscard]] QString chopped(qsizetype n) const
-    { verify(0, n); return first(size() - n); }
+    { verify(0, n); return sliced(0, size() - n); }
 
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept

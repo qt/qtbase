@@ -220,15 +220,15 @@ public:
     }
 
     [[nodiscard]] constexpr QStringView first(qsizetype n) const noexcept
-    { verify(0, n); return QStringView(m_data, n); }
+    { verify(0, n); return sliced(0, n); }
     [[nodiscard]] constexpr QStringView last(qsizetype n) const noexcept
-    { verify(0, n); return QStringView(m_data + size() - n, n); }
+    { verify(0, n); return sliced(size() - n, n); }
     [[nodiscard]] constexpr QStringView sliced(qsizetype pos) const noexcept
     { verify(pos, 0); return QStringView(m_data + pos, size() - pos); }
     [[nodiscard]] constexpr QStringView sliced(qsizetype pos, qsizetype n) const noexcept
     { verify(pos, n); return QStringView(m_data + pos, n); }
     [[nodiscard]] constexpr QStringView chopped(qsizetype n) const noexcept
-    { verify(0, n); return QStringView(m_data, m_size - n); }
+    { verify(0, n); return sliced(0, m_size - n); }
 
     constexpr void truncate(qsizetype n) noexcept
     { verify(0, n); ; m_size = n; }

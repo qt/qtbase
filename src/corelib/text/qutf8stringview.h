@@ -242,11 +242,11 @@ public:
     [[nodiscard]] constexpr QBasicUtf8StringView sliced(qsizetype pos, qsizetype n) const
     { verify(pos, n); return QBasicUtf8StringView(m_data + pos, n); }
     [[nodiscard]] constexpr QBasicUtf8StringView first(qsizetype n) const
-    { verify(0, n); return QBasicUtf8StringView(m_data, n); }
+    { verify(0, n); return sliced(0, n); }
     [[nodiscard]] constexpr QBasicUtf8StringView last(qsizetype n) const
-    { verify(0, n); return QBasicUtf8StringView(m_data + m_size - n, n); }
+    { verify(0, n); return sliced(m_size - n, n); }
     [[nodiscard]] constexpr QBasicUtf8StringView chopped(qsizetype n) const
-    { verify(0, n); return QBasicUtf8StringView(m_data, m_size - n); }
+    { verify(0, n); return sliced(0, m_size - n); }
 
     constexpr void truncate(qsizetype n)
     { verify(0, n); m_size = n; }

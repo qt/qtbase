@@ -157,15 +157,15 @@ public:
     [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) const;
 
     [[nodiscard]] QByteArray first(qsizetype n) const
-    { verify(0, n); return QByteArray(data(), n); }
+    { verify(0, n); return sliced(0, n); }
     [[nodiscard]] QByteArray last(qsizetype n) const
-    { verify(0, n); return QByteArray(data() + size() - n, n); }
+    { verify(0, n); return sliced(size() - n, n); }
     [[nodiscard]] QByteArray sliced(qsizetype pos) const
     { verify(pos, 0); return QByteArray(data() + pos, size() - pos); }
     [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) const
     { verify(pos, n); return QByteArray(data() + pos, n); }
     [[nodiscard]] QByteArray chopped(qsizetype len) const
-    { verify(0, len); return first(size() - len); }
+    { verify(0, len); return sliced(0, size() - len); }
 
     bool startsWith(QByteArrayView bv) const
     { return QtPrivate::startsWith(qToByteArrayViewIgnoringNull(*this), bv); }

@@ -227,11 +227,11 @@ public:
     [[nodiscard]] constexpr QLatin1StringView sliced(qsizetype pos, qsizetype n) const
     { verify(pos, n); return {m_data + pos, n}; }
     [[nodiscard]] constexpr QLatin1StringView first(qsizetype n) const
-    { verify(0, n); return {m_data, n}; }
+    { verify(0, n); return sliced(0, n); }
     [[nodiscard]] constexpr QLatin1StringView last(qsizetype n) const
-    { verify(0, n); return {m_data + size() - n, n}; }
+    { verify(0, n); return sliced(size() - n, n); }
     [[nodiscard]] constexpr QLatin1StringView chopped(qsizetype n) const
-    { verify(0, n); return {m_data, size() - n}; }
+    { verify(0, n); return sliced(0, size() - n); }
 
     constexpr void chop(qsizetype n)
     { verify(0, n); m_size -= n; }

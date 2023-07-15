@@ -188,15 +188,15 @@ public:
     [[nodiscard]] constexpr char at(qsizetype n) const { return (*this)[n]; }
 
     [[nodiscard]] constexpr QByteArrayView first(qsizetype n) const
-    { verify(0, n); return QByteArrayView(data(), n); }
+    { verify(0, n); return sliced(0, n); }
     [[nodiscard]] constexpr QByteArrayView last(qsizetype n) const
-    { verify(0, n); return QByteArrayView(data() + size() - n, n); }
+    { verify(0, n); return sliced(size() - n, n); }
     [[nodiscard]] constexpr QByteArrayView sliced(qsizetype pos) const
     { verify(pos, 0); return QByteArrayView(data() + pos, size() - pos); }
     [[nodiscard]] constexpr QByteArrayView sliced(qsizetype pos, qsizetype n) const
     { verify(pos, n); return QByteArrayView(data() + pos, n); }
     [[nodiscard]] constexpr QByteArrayView chopped(qsizetype len) const
-    { verify(0, len); return first(size() - len); }
+    { verify(0, len); return sliced(0, size() - len); }
 
     [[nodiscard]] constexpr QByteArrayView left(qsizetype n) const
     { if (n < 0 || n > size()) n = size(); return QByteArrayView(data(), n); }
