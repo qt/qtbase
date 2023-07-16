@@ -85,7 +85,7 @@ public:
     void setMask(const QRegion &region) final;
 
     QWasmScreen *platformScreen() const;
-    void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }
+    void setBackingStore(QPlatformBackingStore *store) override;
     QWasmBackingStore *backingStore() const { return m_backingStore; }
     QWindow *window() const { return m_window; }
 
