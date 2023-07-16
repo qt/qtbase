@@ -3763,7 +3763,7 @@ struct SlotObjectGuard {
     SlotObjectGuard() = default;
     // move would be fine, but we do not need it currently
     Q_DISABLE_COPY_MOVE(SlotObjectGuard)
-    explicit SlotObjectGuard(QtPrivate::QSlotObjectBase *slotObject)
+    Q_NODISCARD_CTOR explicit SlotObjectGuard(QtPrivate::QSlotObjectBase *slotObject)
         : m_slotObject(slotObject)
     {
         if (m_slotObject)
