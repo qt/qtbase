@@ -624,6 +624,25 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     }
 }
 
+QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::QSlotObjectBase *slotObj,
+                                            const QObject *sender, int signal_index,
+                                            size_t argc, const void* const argp[],
+                                            const QMetaType metaTypes[])
+{
+    auto metaCallEvent = std::make_unique<QMetaCallEvent>(slotObj, sender,
+                                                          signal_index, int(argc));
+
+    void **args = metaCallEvent->args();
+    QMetaType *types = metaCallEvent->types();
+    for (size_t i = 0; i < argc; ++i) {
+        types[i] = metaTypes[i];
+        args[i] = types[i].create(argp[i]);
+        Q_CHECK_PTR(!i || args[i]);
+    }
+
+    return metaCallEvent.release();
+}
+
 /*!
     \class QSignalBlocker
     \brief Exception-safe wrapper around QObject::blockSignals().
