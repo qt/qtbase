@@ -3783,17 +3783,14 @@ struct SlotObjectGuard {
     }
 
     QtPrivate::QSlotObjectBase const *operator->() const
-    { return m_slotObject; }
+    { return m_slotObject.get(); }
 
     QtPrivate::QSlotObjectBase *operator->()
-    { return m_slotObject; }
+    { return m_slotObject.get(); }
 
-    ~SlotObjectGuard() {
-        if (m_slotObject)
-            m_slotObject->destroyIfLastRef();
-    }
+    ~SlotObjectGuard() = default;
 private:
-    QtPrivate::QSlotObjectBase *m_slotObject = nullptr;
+    QtPrivate::SlotObjUniquePtr m_slotObject;
 };
 
 /*!
