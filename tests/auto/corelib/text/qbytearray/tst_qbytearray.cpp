@@ -122,6 +122,8 @@ private slots:
     void fill();
     void dataPointers();
     void truncate();
+    void trimmed_data();
+    void trimmed();
     void simplified();
     void simplified_data();
     void left();
@@ -2646,6 +2648,39 @@ void tst_QByteArray::truncate()
 
     a.truncate(-5);
     QVERIFY(a.isEmpty());
+}
+
+void tst_QByteArray::trimmed_data()
+{
+    QTest::addColumn<QByteArray>("full" );
+    QTest::addColumn<QByteArray>("trimmed" );
+
+    QTest::addRow("null") << QByteArray() << QByteArray();
+    QTest::addRow("simple") << "Text"_ba << "Text"_ba;
+    QTest::addRow("single-space") << " "_ba << ""_ba;
+    QTest::addRow("single-char") << " a   "_ba << "a"_ba;
+    QTest::addRow("mixed") << " a \n\t\v b   "_ba << "a \n\t\v b"_ba;
+}
+
+void tst_QByteArray::trimmed()
+{
+    QFETCH(QByteArray, full);
+    QFETCH(QByteArray, trimmed);
+
+    // Shared
+    if (!full.isNull())
+        QVERIFY(!full.isDetached());
+    QCOMPARE(full.trimmed(), trimmed); // lvalue
+    QCOMPARE(QByteArray(full).trimmed(), trimmed); // rvalue
+    QCOMPARE(full.isNull(), trimmed.isNull());
+
+    // Not shared
+    full = QByteArrayView(full).toByteArray();
+    if (!full.isNull())
+        QVERIFY(full.isDetached());
+    QCOMPARE(full.trimmed(), trimmed); // lvalue
+    QCOMPARE(QByteArray(full).trimmed(), trimmed); // rvalue
+    QCOMPARE(full.isNull(), trimmed.isNull());
 }
 
 void tst_QByteArray::simplified()
