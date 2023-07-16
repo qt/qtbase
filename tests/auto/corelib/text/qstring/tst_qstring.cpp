@@ -536,6 +536,7 @@ private slots:
 
     void simplified_data();
     void simplified();
+    void trimmed_data();
     void trimmed();
     void unicodeTableAccess_data();
     void unicodeTableAccess();
@@ -2802,30 +2803,37 @@ void tst_QString::toCaseFolded()
     }
 }
 
+void tst_QString::trimmed_data()
+{
+    QTest::addColumn<QString>("full" );
+    QTest::addColumn<QString>("trimmed" );
+
+    QTest::addRow("null") << QString() << QString();
+    QTest::addRow("simple") << u"Text"_s << u"Text"_s;
+    QTest::addRow("single-space") << u" "_s << u""_s;
+    QTest::addRow("single-char") << u" a   "_s << u"a"_s;
+    QTest::addRow("mixed") << u" a \t\n\v b  "_s << u"a \t\n\v b"_s;
+}
+
 void tst_QString::trimmed()
 {
-    QString a;
+    QFETCH(QString, full);
+    QFETCH(QString, trimmed);
 
-    QVERIFY(a.trimmed().isNull()); // lvalue
-    QVERIFY(QString().trimmed().isNull()); // rvalue
-    QVERIFY(!a.isDetached());
+    // Shared
+    if (!full.isNull())
+        QVERIFY(!full.isDetached());
+    QCOMPARE(full.trimmed(), trimmed); // lvalue
+    QCOMPARE(QString(full).trimmed(), trimmed); // rvalue
+    QCOMPARE(full.isNull(), trimmed.isNull());
 
-    a = u"Text"_s;
-    QCOMPARE(a, QLatin1String("Text"));
-    QCOMPARE(a.trimmed(), QLatin1String("Text"));
-    QCOMPARE(a, QLatin1String("Text"));
-    a= u" "_s;
-    QCOMPARE(a.trimmed(), QLatin1String(""));
-    QCOMPARE(a, QLatin1String(" "));
-    a = u" a   "_s;
-    QCOMPARE(a.trimmed(), QLatin1String("a"));
-
-    a = u"Text"_s;
-    QCOMPARE(std::move(a).trimmed(), QLatin1String("Text"));
-    a = u" "_s;
-    QCOMPARE(std::move(a).trimmed(), QLatin1String(""));
-    a = u" a   "_s;
-    QCOMPARE(std::move(a).trimmed(), QLatin1String("a"));
+    // Not shared
+    full = QStringView(full).toString();
+    if (!full.isNull())
+        QVERIFY(full.isDetached());
+    QCOMPARE(full.trimmed(), trimmed); // lvalue
+    QCOMPARE(QString(full).trimmed(), trimmed); // rvalue
+    QCOMPARE(full.isNull(), trimmed.isNull());
 }
 
 void tst_QString::simplified_data()
