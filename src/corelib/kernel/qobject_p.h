@@ -394,18 +394,7 @@ public:
         const void* const argp[] = { nullptr, std::addressof(argv)... };
         const QMetaType metaTypes[] = { QMetaType::fromType<void>(), QMetaType::fromType<Args>()... };
         constexpr auto argc = sizeof...(Args) + 1;
-        auto metaCallEvent = std::make_unique<QMetaCallEvent>(slotObj, sender,
-                                                              signal_index, int(argc));
-
-        void **args = metaCallEvent->args();
-        QMetaType *types = metaCallEvent->types();
-        for (size_t i = 0; i < argc; ++i) {
-            types[i] = metaTypes[i];
-            args[i] = types[i].create(argp[i]);
-            Q_CHECK_PTR(!i || args[i]);
-        }
-
-        return metaCallEvent.release();
+        return create_impl(slotObj, sender, signal_index, argc, argp, metaTypes);
     }
 
     inline int id() const { return d.method_offset_ + d.method_relative_; }
@@ -417,6 +406,9 @@ public:
     virtual void placeMetaCall(QObject *object) override;
 
 private:
+    static QMetaCallEvent *create_impl(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender,
+                                       int signal_index, size_t argc, const void * const argp[],
+                                       const QMetaType metaTypes[]);
     inline void allocArgs();
 
     struct Data {
