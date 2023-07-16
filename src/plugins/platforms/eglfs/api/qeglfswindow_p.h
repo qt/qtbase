@@ -71,7 +71,7 @@ public:
 
 #ifndef QT_NO_OPENGL
     QOpenGLCompositorBackingStore *backingStore() { return m_backingStore; }
-    void setBackingStore(QOpenGLCompositorBackingStore *backingStore);
+    void setBackingStore(QPlatformBackingStore *backingStore) override;
     QWindow *sourceWindow() const override;
     const QPlatformTextureList *textures() const override;
     void endCompositing() override;

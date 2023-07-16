@@ -236,6 +236,14 @@ QWasmScreen *QWasmWindow::platformScreen() const
     return static_cast<QWasmScreen *>(window()->screen()->handle());
 }
 
+void QWasmWindow::setBackingStore(QPlatformBackingStore *store)
+{
+    Q_ASSERT(store);
+    Q_ASSERT_X(dynamic_cast<QWasmBackingStore *>(store), __FUNCTION__,
+               "Argument is not a QWasmBackingStore.");
+    m_backingStore = static_cast<QWasmBackingStore *>(store);
+}
+
 void QWasmWindow::paint()
 {
     if (!m_backingStore || !isVisible() || m_context2d.isUndefined())
