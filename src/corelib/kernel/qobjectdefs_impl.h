@@ -12,6 +12,8 @@
 #pragma qt_sync_stop_processing
 #endif
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 class QObject;
 class QObjectPrivate;
@@ -355,6 +357,15 @@ namespace QtPrivate {
     public:
         explicit QSlotObjectBase(ImplFn fn) : m_ref(1), m_impl(fn) {}
 
+        // A custom deleter compatible with std protocols (op()()) we well as
+        // the legacy QScopedPointer protocol (cleanup()).
+        struct Deleter {
+            void operator()(QSlotObjectBase *p) const noexcept
+            { if (p) p->destroyIfLastRef(); }
+            // for the non-standard QScopedPointer protocol:
+            static void cleanup(QSlotObjectBase *p) noexcept { Deleter{}(p); }
+        };
+
         inline int ref() noexcept { return m_ref.ref(); }
         inline void destroyIfLastRef() noexcept
         { if (!m_ref.deref()) m_impl(Destroy, this, nullptr, nullptr, nullptr); }
@@ -367,6 +378,9 @@ namespace QtPrivate {
     private:
         Q_DISABLE_COPY_MOVE(QSlotObjectBase)
     };
+
+    using SlotObjUniquePtr = std::unique_ptr<QSlotObjectBase,
+                                             QSlotObjectBase::Deleter>;
 
     // implementation of QSlotObjectBase for which the slot is a pointer to member function of a QObject
     // Args and R are the List of arguments and the return type of the signal to which the slot is connected.

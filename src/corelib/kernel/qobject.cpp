@@ -552,7 +552,7 @@ QMetaCallEvent::QMetaCallEvent(QtPrivate::QSlotObjectBase *slotO,
                                const QObject *sender, int signalId,
                                void **args, QSemaphore *semaphore)
     : QAbstractMetaCallEvent(sender, signalId, semaphore),
-      d({slotO, args, nullptr, 0, 0, ushort(-1)}),
+      d({QtPrivate::SlotObjUniquePtr{slotO}, args, nullptr, 0, 0, ushort(-1)}),
       prealloc_()
 {
     if (d.slotObj_)
@@ -586,7 +586,7 @@ QMetaCallEvent::QMetaCallEvent(QtPrivate::QSlotObjectBase *slotO,
                                const QObject *sender, int signalId,
                                int nargs)
     : QAbstractMetaCallEvent(sender, signalId),
-      d({slotO, nullptr, nullptr, nargs, 0, ushort(-1)}),
+      d({QtPrivate::SlotObjUniquePtr(slotO), nullptr, nullptr, nargs, 0, ushort(-1)}),
       prealloc_()
 {
     if (d.slotObj_)
@@ -608,8 +608,6 @@ QMetaCallEvent::~QMetaCallEvent()
         if (reinterpret_cast<void *>(d.args_) != reinterpret_cast<void *>(prealloc_))
             free(d.args_);
     }
-    if (d.slotObj_)
-        d.slotObj_->destroyIfLastRef();
 }
 
 /*!

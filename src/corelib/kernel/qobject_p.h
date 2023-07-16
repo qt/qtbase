@@ -405,7 +405,7 @@ private:
     inline void allocArgs();
 
     struct Data {
-        QtPrivate::QSlotObjectBase *slotObj_;
+        QtPrivate::SlotObjUniquePtr slotObj_;
         void **args_;
         QObjectPrivate::StaticMetaCallFunction callFunction_;
         int nargs_;
