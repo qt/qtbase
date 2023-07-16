@@ -403,14 +403,15 @@ public:
     static QMetaCallEvent *create(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender,
                                   int signal_index, const Args &...argv)
     {
+        const void* const argp[] = { nullptr, std::addressof(argv)... };
+        const QMetaType metaTypes[] = { QMetaType::fromType<void>(), QMetaType::fromType<Args>()... };
+        constexpr auto argc = sizeof...(Args) + 1;
         auto metaCallEvent = std::make_unique<QMetaCallEvent>(slotObj, sender,
-                                                              signal_index, int(1 + sizeof...(Args)));
+                                                              signal_index, int(argc));
 
         void **args = metaCallEvent->args();
         QMetaType *types = metaCallEvent->types();
-        const std::array<const void *, sizeof...(Args) + 1> argp{ nullptr, std::addressof(argv)... };
-        const std::array metaTypes{ QMetaType::fromType<void>(), QMetaType::fromType<Args>()... };
-        for (size_t i = 0; i < sizeof...(Args) + 1; ++i) {
+        for (size_t i = 0; i < argc; ++i) {
             types[i] = metaTypes[i];
             args[i] = types[i].create(argp[i]);
             Q_CHECK_PTR(!i || args[i]);
