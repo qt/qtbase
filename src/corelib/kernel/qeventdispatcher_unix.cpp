@@ -104,12 +104,12 @@ bool QThreadPipe::init()
 
     // create the pipe
     if (pipeDevCreate(name, 128 /*maxMsg*/, 1 /*maxLength*/) != OK) {
-        perror("QThreadPipe: Unable to create thread pipe device %s", name);
+        perror("QThreadPipe: Unable to create thread pipe device");
         return false;
     }
 
     if ((fds[0] = open(name, O_RDWR, 0)) < 0) {
-        perror("QThreadPipe: Unable to open pipe device %s", name);
+        perror("QThreadPipe: Unable to open pipe device");
         return false;
     }
 
