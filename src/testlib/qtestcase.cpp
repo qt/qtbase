@@ -373,7 +373,7 @@ static void generateStackTrace()
     if (debugger == None || alreadyDebugging())
         return;
 
-#  if defined(Q_OS_UNIX) && !defined(Q_OS_WASM) && !defined(Q_OS_INTEGRITY)
+#  if defined(Q_OS_UNIX) && !defined(Q_OS_WASM) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
     writeToStderr("\n=== Stack trace ===\n");
 
     // execlp() requires null-termination, so call the default constructor
@@ -410,7 +410,7 @@ static void generateStackTrace()
     }
 
     writeToStderr("=== End of stack trace ===\n");
-#  endif // Q_OS_UNIX && !Q_OS_WASM
+#  endif // Q_OS_UNIX && !Q_OS_WASM && !Q_OS_INTEGRITY && !Q_OS_VXWORKS
 }
 #endif  // !defined(Q_OS_WASM) || QT_CONFIG(thread)
 
