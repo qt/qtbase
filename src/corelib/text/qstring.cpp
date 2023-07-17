@@ -683,6 +683,7 @@ static int ucstrncmp_sse2(const char16_t *a, const Char *b, size_t l)
 }
 #endif
 
+Q_NEVER_INLINE
 qsizetype QtPrivate::qustrlen(const char16_t *str) noexcept
 {
 #if defined(__SSE2__) && !(defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer))
@@ -711,6 +712,7 @@ qsizetype QtPrivate::qustrnlen(const char16_t *str, qsizetype maxlen) noexcept
  * character is not found, this function returns a pointer to the end of the
  * string -- that is, \c{str.end()}.
  */
+Q_NEVER_INLINE
 const char16_t *QtPrivate::qustrchr(QStringView str, char16_t c) noexcept
 {
     const char16_t *n = str.utf16();
