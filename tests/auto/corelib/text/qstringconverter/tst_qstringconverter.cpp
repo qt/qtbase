@@ -178,6 +178,8 @@ private slots:
 
     void encodingForHtml_data();
     void encodingForHtml();
+
+    void availableCodesAreAvailable();
 };
 
 void tst_QStringConverter::constructByName()
@@ -2424,6 +2426,13 @@ void tst_QStringConverter::encodingForHtml()
         decoder.isValid()) { // we got a valid decoder through ICU
         QCOMPARE(decoder.name(), name);
     }
+}
+
+void tst_QStringConverter::availableCodesAreAvailable()
+{
+    auto codecs = QStringConverter::availableCodecs();
+    for (const auto &codecName: codecs)
+        QVERIFY(QStringEncoder(codecName.toLatin1()).isValid());
 }
 
 class LoadAndConvert: public QRunnable

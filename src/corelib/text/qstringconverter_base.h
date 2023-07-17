@@ -13,6 +13,7 @@
 
 #include <QtCore/qglobal.h> // QT_{BEGIN,END}_NAMESPACE
 #include <QtCore/qflags.h> // Q_DECLARE_FLAGS
+#include <QtCore/qcontainerfwd.h>
 
 #include <cstring>
 
@@ -158,6 +159,8 @@ public:
     Q_CORE_EXPORT static std::optional<Encoding>
     encodingForData(QByteArrayView data, char16_t expectedFirstCharacter = 0) noexcept;
     Q_CORE_EXPORT static std::optional<Encoding> encodingForHtml(QByteArrayView data);
+
+    Q_CORE_EXPORT static QStringList availableCodecs();
 
 protected:
     const Interface *iface;
