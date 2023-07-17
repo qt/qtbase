@@ -2859,7 +2859,7 @@ void tst_QSortFilterProxyModel::sortColumnTracking2()
 
 void tst_QSortFilterProxyModel::sortStable()
 {
-    QStandardItemModel* model = new QStandardItemModel(5, 2);
+    QStandardItemModel model(5, 2);
     for (int r = 0; r < 5; r++) {
         const QString prefix = QLatin1String("Row:") + QString::number(r) + QLatin1String(", Column:");
         for (int c = 0; c < 2; c++)  {
@@ -2868,24 +2868,24 @@ void tst_QSortFilterProxyModel::sortStable()
                 QStandardItem* child = new QStandardItem(QLatin1String("Item ") + QString::number(i));
                 item->appendRow( child );
             }
-            model->setItem(r, c, item);
+            model.setItem(r, c, item);
         }
     }
-    model->setHorizontalHeaderItem( 0, new QStandardItem( "Name" ));
-    model->setHorizontalHeaderItem( 1, new QStandardItem( "Value" ));
+    model.setHorizontalHeaderItem( 0, new QStandardItem( "Name" ));
+    model.setHorizontalHeaderItem( 1, new QStandardItem( "Value" ));
 
-    QSortFilterProxyModel *filterModel = new QSortFilterProxyModel(model);
-    filterModel->setSourceModel(model);
+    QSortFilterProxyModel *filterModel = new QSortFilterProxyModel(&model);
+    filterModel->setSourceModel(&model);
 
-    QTreeView *view = new QTreeView;
-    view->setModel(filterModel);
+    QTreeView view;
+    view.setModel(filterModel);
     QModelIndex firstRoot = filterModel->index(0,0);
-    view->expand(firstRoot);
-    view->setSortingEnabled(true);
+    view.expand(firstRoot);
+    view.setSortingEnabled(true);
 
-    view->model()->sort(1, Qt::DescendingOrder);
+    view.model()->sort(1, Qt::DescendingOrder);
     QVariant lastItemData =filterModel->index(2,0, firstRoot).data();
-    view->model()->sort(1, Qt::DescendingOrder);
+    view.model()->sort(1, Qt::DescendingOrder);
     QCOMPARE(lastItemData, filterModel->index(2,0, firstRoot).data());
 }
 
