@@ -5995,9 +5995,7 @@ namespace {
     template <typename StringView>
     StringView qt_trimmed(StringView s) noexcept
     {
-        auto begin = s.begin();
-        auto end = s.end();
-        QStringAlgorithms<const StringView>::trimmed_helper_positions(begin, end);
+        const auto [begin, end] = QStringAlgorithms<const StringView>::trimmed_helper_positions(s);
         return StringView{begin, end};
     }
 }

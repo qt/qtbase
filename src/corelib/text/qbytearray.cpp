@@ -3657,9 +3657,7 @@ QByteArray QByteArray::trimmed_helper(QByteArray &a)
 
 QByteArrayView QtPrivate::trimmed(QByteArrayView view) noexcept
 {
-    auto start = view.begin();
-    auto stop = view.end();
-    QStringAlgorithms<QByteArrayView>::trimmed_helper_positions(start, stop);
+    const auto [start, stop] = QStringAlgorithms<QByteArrayView>::trimmed_helper_positions(view);
     return QByteArrayView(start, stop);
 }
 

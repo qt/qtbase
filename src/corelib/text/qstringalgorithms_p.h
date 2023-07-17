@@ -50,22 +50,31 @@ template <typename StringType> struct QStringAlgorithms
         Q_UNREACHABLE_RETURN(StringType());
     }
 
-    static inline void trimmed_helper_positions(const Char *&begin, const Char *&end)
+    struct TrimPositions {
+        const Char *begin;
+        const Char *end;
+    };
+    // Returns {begin, end} where:
+    // - "begin" refers to the first non-space character
+    // - if there is a sequence of one or more space chacaters at the end,
+    //   "end" refers to the first character in that sequence, otherwise
+    //   "end" is str.cend()
+    static TrimPositions trimmed_helper_positions(const StringType &str)
     {
+        const Char *begin = str.cbegin();
+        const Char *end = str.cend();
         // skip white space from end
         while (begin < end && isSpace(end[-1]))
             --end;
         // skip white space from start
         while (begin < end && isSpace(*begin))
             begin++;
+        return {begin, end};
     }
 
     static inline StringType trimmed_helper(StringType &str)
     {
-        const Char *begin = str.cbegin();
-        const Char *end = str.cend();
-        trimmed_helper_positions(begin, end);
-
+        const auto [begin, end] = trimmed_helper_positions(str);
         if (begin == str.cbegin() && end == str.cend())
             return str;
         if (!isConst && str.isDetached())
