@@ -398,7 +398,7 @@ QCommandLineOption QCommandLineParser::addVersionOption()
 
     These options are handled automatically by QCommandLineParser.
 
-    Remember to use \c setApplicationDescription() to set the application
+    Remember to use setApplicationDescription() to set the application
     description, which will be displayed when this option is used.
 
     Example:
@@ -786,7 +786,7 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
     Returns \c true if the option \a name was set, false otherwise.
 
     The name provided can be any long or short name of any option that was
-    added with \c addOption(). All the options names are treated as being
+    added with addOption(). All the options names are treated as being
     equivalent. If the name is not recognized or that option was not present,
     false is returned.
 
@@ -812,7 +812,7 @@ bool QCommandLineParser::isSet(const QString &name) const
     an empty string if not found.
 
     The name provided can be any long or short name of any option that was
-    added with \c addOption(). All the option names are treated as being
+    added with addOption(). All the option names are treated as being
     equivalent. If the name is not recognized or that option was not present, an
     empty string is returned.
 
@@ -841,7 +841,7 @@ QString QCommandLineParser::value(const QString &optionName) const
     optionName, or an empty list if not found.
 
     The name provided can be any long or short name of any option that was
-    added with \c addOption(). All the options names are treated as being
+    added with addOption(). All the options names are treated as being
     equivalent. If the name is not recognized or that option was not present, an
     empty list is returned.
 
@@ -949,8 +949,8 @@ QStringList QCommandLineParser::positionalArguments() const
     Names may appear more than once in this list if they were encountered
     more than once by the parser.
 
-    Any entry in the list can be used with \c value() or with
-    \c values() to get any relevant option values.
+    Any entry in the list can be used with value() or with
+    values() to get any relevant option values.
  */
 
 QStringList QCommandLineParser::optionNames() const
