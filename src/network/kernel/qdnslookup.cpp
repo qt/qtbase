@@ -980,8 +980,10 @@ void QDnsLookupRunnable::run()
         reply.error = QDnsLookup::InvalidRequestError;
         reply.errorString = tr("Invalid domain name");
         emit finished(reply);
-        if (n)
-            qWarning("QDnsLookup: domain name being looked up is too long (%lld bytes)", n);
+        if (n) {
+            qWarning("QDnsLookup: domain name being looked up is too long (%" PRIdQSIZETYPE
+                    " bytes)", n);
+        }
         return;
     }
 
