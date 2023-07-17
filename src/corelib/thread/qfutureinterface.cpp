@@ -118,11 +118,7 @@ void QtPrivate::watchContinuationImpl(const QObject *context, QSlotObjectBase *s
     Q_ASSERT(context);
     Q_ASSERT(slotObj);
 
-    // ### we're missing `QSlotObjectPtr`...
-    struct Deleter {
-        void operator()(QSlotObjectBase *p) const { p->destroyIfLastRef(); }
-    };
-    auto slot = std::unique_ptr<QSlotObjectBase, Deleter>(slotObj);
+    auto slot = SlotObjUniquePtr(slotObj);
 
     auto *watcher = new QBasicFutureWatcher;
     watcher->moveToThread(context->thread());
