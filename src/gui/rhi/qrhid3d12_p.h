@@ -119,6 +119,18 @@ struct QD3D12CpuDescriptorPool
     const char *debugName;
 };
 
+struct QD3D12QueryHeap
+{
+    bool isValid() const { return heap && capacity; }
+    bool create(ID3D12Device *device,
+                quint32 queryCount,
+                D3D12_QUERY_HEAP_TYPE heapType);
+    void destroy();
+
+    ID3D12QueryHeap *heap = nullptr;
+    quint32 capacity = 0;
+};
+
 struct QD3D12StagingArea
 {
     static const quint32 ALIGNMENT = D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT; // 512 so good enough both for cb and texdata
@@ -931,9 +943,11 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
         currentVertexOffsets = {};
     }
 
+    // per-frame
     PassType recordingPass;
     QRhiRenderTarget *currentTarget;
 
+    // per-pass
     QD3D12GraphicsPipeline *currentGraphicsPipeline;
     QD3D12ComputePipeline *currentComputePipeline;
     uint currentPipelineGeneration;
@@ -945,6 +959,9 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
     DXGI_FORMAT currentIndexFormat;
     std::array<QD3D12ObjectHandle, D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT> currentVertexBuffers;
     std::array<quint32, D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT> currentVertexOffsets;
+
+    // global
+    double lastGpuTime = 0;
 };
 
 struct QD3D12SwapChain : public QRhiSwapChain
@@ -1169,6 +1186,9 @@ public:
     QD3D12MipmapGenerator mipmapGen;
     QD3D12StagingArea smallStagingAreas[QD3D12_FRAMES_IN_FLIGHT];
     QD3D12ShaderVisibleDescriptorHeap shaderVisibleCbvSrvUavHeap;
+    UINT64 timestampTicksPerSecond = 0;
+    QD3D12QueryHeap timestampQueryHeap;
+    QD3D12StagingArea timestampReadbackArea;
     IDCompositionDevice *dcompDevice = nullptr;
     QD3D12SwapChain *currentSwapChain = nullptr;
     QSet<QD3D12SwapChain *> swapchains;

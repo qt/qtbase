@@ -397,6 +397,9 @@ bool QRhiD3D12::create(QRhi::Flags flags)
             qWarning("Could not create host-visible staging area");
             return false;
         }
+        QString decoratedName = QLatin1String("Small staging area buffer/");
+        decoratedName += QString::number(i);
+        smallStagingAreas[i].mem.buffer->SetName(reinterpret_cast<LPCWSTR>(decoratedName.utf16()));
     }
 
     if (!shaderVisibleCbvSrvUavHeap.create(dev,
@@ -405,6 +408,45 @@ bool QRhiD3D12::create(QRhi::Flags flags)
     {
         qWarning("Could not create first shader-visible CBV/SRV/UAV heap");
         return false;
+    }
+
+    if (flags.testFlag(QRhi::EnableTimestamps)) {
+        static bool wantsStablePowerState = qEnvironmentVariableIntValue("QT_D3D_STABLE_POWER_STATE");
+        //
+        // https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-id3d12device-setstablepowerstate
+        //
+        // NB! This is a _global_ setting, affecting other processes (and 3D
+        // APIs such as Vulkan), as long as this application is running. Hence
+        // making it an env.var. for now. Never enable it in production. But
+        // extremely useful for the GPU timings with NVIDIA at least; the
+        // timestamps become stable and smooth, making the number readable and
+        // actually useful e.g. in Quick 3D's DebugView when this is enabled.
+        // (otherwise the number's all over the place)
+        //
+        // See also
+        // https://developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate/
+        // for possible other approaches.
+        //
+        if (wantsStablePowerState)
+            dev->SetStablePowerState(TRUE);
+
+        hr = cmdQueue->GetTimestampFrequency(&timestampTicksPerSecond);
+        if (FAILED(hr)) {
+            qWarning("Failed to query timestamp frequency: %s",
+                     qPrintable(QSystemError::windowsComString(hr)));
+            return false;
+        }
+        if (!timestampQueryHeap.create(dev, QD3D12_FRAMES_IN_FLIGHT * 2, D3D12_QUERY_HEAP_TYPE_TIMESTAMP)) {
+            qWarning("Failed to create timestamp query pool");
+            return false;
+        }
+        const quint32 readbackBufSize = QD3D12_FRAMES_IN_FLIGHT * 2 * sizeof(quint64);
+        if (!timestampReadbackArea.create(this, readbackBufSize, D3D12_HEAP_TYPE_READBACK)) {
+            qWarning("Failed to create timestamp readback buffer");
+            return false;
+        }
+        timestampReadbackArea.mem.buffer->SetName(L"Timestamp readback buffer");
+        memset(timestampReadbackArea.mem.p, 0, readbackBufSize);
     }
 
     D3D12_FEATURE_DATA_D3D12_OPTIONS3 options3 = {};
@@ -438,6 +480,9 @@ void QRhiD3D12::destroy()
             offscreenCb[i] = nullptr;
         }
     }
+
+    timestampQueryHeap.destroy();
+    timestampReadbackArea.destroy();
 
     shaderVisibleCbvSrvUavHeap.destroy();
 
@@ -574,7 +619,7 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return false;
 #endif
     case QRhi::Timestamps:
-        return false; // ###
+        return true;
     case QRhi::Instancing:
         return true;
     case QRhi::CustomInstanceStepRate:
@@ -1389,8 +1434,24 @@ void QRhiD3D12::endExternal(QRhiCommandBuffer *cb)
 
 double QRhiD3D12::lastCompletedGpuTime(QRhiCommandBuffer *cb)
 {
-    Q_UNUSED(cb);
-    return 0;
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+    return cbD->lastGpuTime;
+}
+
+static void calculateGpuTime(QD3D12CommandBuffer *cbD,
+                             int timestampPairStartIndex,
+                             const quint8 *readbackBufPtr,
+                             quint64 timestampTicksPerSecond)
+{
+    const size_t byteOffset = timestampPairStartIndex * sizeof(quint64);
+    const quint64 *p = reinterpret_cast<const quint64 *>(readbackBufPtr + byteOffset);
+    const quint64 startTime = *p++;
+    const quint64 endTime = *p;
+    if (startTime < endTime) {
+        const quint64 ticks = endTime - startTime;
+        const double timeSec = ticks / double(timestampTicksPerSecond);
+        cbD->lastGpuTime = timeSec;
+    }
 }
 
 QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
@@ -1453,6 +1514,20 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 
     finishActiveReadbacks(); // last, in case the readback-completed callback issues rhi calls
 
+    if (timestampQueryHeap.isValid() && timestampTicksPerSecond) {
+        // Read the timestamps for the previous frame for this slot. (the
+        // ResolveQuery() should have completed by now due to the wait above)
+        const int timestampPairStartIndex = currentFrameSlot * QD3D12_FRAMES_IN_FLIGHT;
+        calculateGpuTime(cbD,
+                         timestampPairStartIndex,
+                         timestampReadbackArea.mem.p,
+                         timestampTicksPerSecond);
+        // Write the start timestamp for this frame for this slot.
+        cbD->cmdList->EndQuery(timestampQueryHeap.heap,
+                               D3D12_QUERY_TYPE_TIMESTAMP,
+                               timestampPairStartIndex);
+    }
+
     return QRhi::FrameOpSuccess;
 }
 
@@ -1476,6 +1551,19 @@ QRhi::FrameOpResult QRhiD3D12::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
     barrierGen.addTransitionBarrier(backBufferResourceHandle, D3D12_RESOURCE_STATE_PRESENT);
     barrierGen.enqueueBufferedTransitionBarriers(cbD);
+
+    if (timestampQueryHeap.isValid()) {
+        const int timestampPairStartIndex = currentFrameSlot * QD3D12_FRAMES_IN_FLIGHT;
+        cbD->cmdList->EndQuery(timestampQueryHeap.heap,
+                               D3D12_QUERY_TYPE_TIMESTAMP,
+                               timestampPairStartIndex + 1);
+        cbD->cmdList->ResolveQueryData(timestampQueryHeap.heap,
+                                       D3D12_QUERY_TYPE_TIMESTAMP,
+                                       timestampPairStartIndex,
+                                       2,
+                                       timestampReadbackArea.mem.buffer,
+                                       timestampPairStartIndex * sizeof(quint64));
+    }
 
     ID3D12GraphicsCommandList1 *cmdList = cbD->cmdList;
     HRESULT hr = cmdList->Close();
@@ -1561,6 +1649,12 @@ QRhi::FrameOpResult QRhiD3D12::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
 
     bindShaderVisibleHeaps(cbD);
 
+    if (timestampQueryHeap.isValid() && timestampTicksPerSecond) {
+        cbD->cmdList->EndQuery(timestampQueryHeap.heap,
+                               D3D12_QUERY_TYPE_TIMESTAMP,
+                               currentFrameSlot * QD3D12_FRAMES_IN_FLIGHT);
+    }
+
     offscreenActive = true;
     *cb = cbD;
 
@@ -1574,6 +1668,19 @@ QRhi::FrameOpResult QRhiD3D12::endOffscreenFrame(QRhi::EndFrameFlags flags)
     offscreenActive = false;
 
     QD3D12CommandBuffer *cbD = offscreenCb[currentFrameSlot];
+    if (timestampQueryHeap.isValid()) {
+        const int timestampPairStartIndex = currentFrameSlot * QD3D12_FRAMES_IN_FLIGHT;
+        cbD->cmdList->EndQuery(timestampQueryHeap.heap,
+                               D3D12_QUERY_TYPE_TIMESTAMP,
+                               timestampPairStartIndex + 1);
+        cbD->cmdList->ResolveQueryData(timestampQueryHeap.heap,
+                                       D3D12_QUERY_TYPE_TIMESTAMP,
+                                       timestampPairStartIndex,
+                                       2,
+                                       timestampReadbackArea.mem.buffer,
+                                       timestampPairStartIndex * sizeof(quint64));
+    }
+
     ID3D12GraphicsCommandList1 *cmdList = cbD->cmdList;
     HRESULT hr = cmdList->Close();
     if (FAILED(hr)) {
@@ -1593,6 +1700,14 @@ QRhi::FrameOpResult QRhiD3D12::endOffscreenFrame(QRhi::EndFrameFlags flags)
     // Here we know that executing the host-side reads for this (or any
     // previous) frame is safe since we waited for completion above.
     finishActiveReadbacks(true);
+
+    // the timestamp query results should be available too, given the wait
+    if (timestampQueryHeap.isValid()) {
+        calculateGpuTime(cbD,
+                         currentFrameSlot * QD3D12_FRAMES_IN_FLIGHT,
+                         timestampReadbackArea.mem.p,
+                         timestampTicksPerSecond);
+    }
 
     return QRhi::FrameOpSuccess;
 }
@@ -2056,6 +2171,36 @@ void QD3D12CpuDescriptorPool::release(const QD3D12Descriptor &descriptor, quint3
 
     qWarning("QD3D12CpuDescriptorPool::release: Descriptor with address %llu is not in any heap",
              quint64(descriptor.cpuHandle.ptr));
+}
+
+bool QD3D12QueryHeap::create(ID3D12Device *device,
+                             quint32 queryCount,
+                             D3D12_QUERY_HEAP_TYPE heapType)
+{
+    capacity = queryCount;
+
+    D3D12_QUERY_HEAP_DESC heapDesc = {};
+    heapDesc.Type = heapType;
+    heapDesc.Count = capacity;
+
+    HRESULT hr = device->CreateQueryHeap(&heapDesc, __uuidof(ID3D12QueryHeap), reinterpret_cast<void **>(&heap));
+    if (FAILED(hr)) {
+        qWarning("Failed to create query heap: %s", qPrintable(QSystemError::windowsComString(hr)));
+        heap = nullptr;
+        capacity = 0;
+        return false;
+    }
+
+    return true;
+}
+
+void QD3D12QueryHeap::destroy()
+{
+    if (heap) {
+        heap->Release();
+        heap = nullptr;
+    }
+    capacity = 0;
 }
 
 bool QD3D12StagingArea::create(QRhiD3D12 *rhi, quint32 capacity, D3D12_HEAP_TYPE heapType)
