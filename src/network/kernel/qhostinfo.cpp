@@ -181,7 +181,6 @@ bool QHostInfoResult::event(QEvent *event)
         // we didn't have a context object, or it's still alive
         if (!withContextObject || receiver)
             slotObj->call(const_cast<QObject*>(receiver.data()), args);
-        slotObj->destroyIfLastRef();
 
         deleteLater();
         return true;
