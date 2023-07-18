@@ -7,6 +7,8 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qdeadlinetimer.h>
 
+#include <chrono>
+
 QT_REQUIRE_CONFIG(thread);
 
 QT_BEGIN_NAMESPACE
