@@ -53,6 +53,12 @@ public:
             moveToThread(receiver->thread());
     }
 
+    ~QHostInfoResult()
+    {
+        if (slotObj)
+            slotObj->destroyIfLastRef();
+    }
+
     void postResultsReady(const QHostInfo &info);
 
 Q_SIGNALS:
@@ -66,6 +72,8 @@ private:
         : receiver(other->receiver), slotObj(other->slotObj),
           withContextObject(other->withContextObject)
     {
+        if (slotObj)
+            slotObj->ref();
         // cleanup if the application terminates before results are delivered
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
                 this, &QObject::deleteLater);
