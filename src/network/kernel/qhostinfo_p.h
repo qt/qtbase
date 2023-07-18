@@ -51,12 +51,6 @@ public:
             moveToThread(receiver->thread());
     }
 
-    ~QHostInfoResult()
-    {
-        if (slotObj)
-            slotObj->destroyIfLastRef();
-    }
-
     void postResultsReady(const QHostInfo &info);
 
 Q_SIGNALS:
@@ -67,11 +61,11 @@ protected:
 
 private:
     QHostInfoResult(const QHostInfoResult *other)
-        : receiver(other->receiver), slotObj(other->slotObj),
+        : receiver(other->receiver), slotObj(other->slotObj.get()), // ugly, but copy the pointer...
           withContextObject(other->withContextObject)
     {
         if (slotObj)
-            slotObj->ref();
+            slotObj->ref(); // ... and ref it here
         // cleanup if the application terminates before results are delivered
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
                 this, &QObject::deleteLater);
@@ -80,7 +74,7 @@ private:
     }
 
     QPointer<const QObject> receiver = nullptr;
-    QtPrivate::QSlotObjectBase *slotObj = nullptr;
+    QtPrivate::SlotObjUniquePtr slotObj;
     const bool withContextObject = false;
 };
 
