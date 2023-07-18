@@ -6,7 +6,7 @@
 
 #include <QtCore/qiodevice.h>
 
-QT_REQUIRE_CONFIG(xmlstream);
+#if QT_CONFIG(xmlstream)
 
 #include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
@@ -417,5 +417,7 @@ private:
 #endif // feature xmlstreamwriter
 
 QT_END_NAMESPACE
+
+#endif // feature xmlstream
 
 #endif // QXMLSTREAM_H
