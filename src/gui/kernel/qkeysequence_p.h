@@ -35,7 +35,7 @@ struct QKeyBinding
 class QKeySequencePrivate
 {
 public:
-    enum { MaxKeyCount = 4 }; // also used in QKeySequenceEdit
+    static constexpr int MaxKeyCount = 4 ; // also used in QKeySequenceEdit
     constexpr QKeySequencePrivate() : ref(1), key{} {}
     inline QKeySequencePrivate(const QKeySequencePrivate &copy) : ref(1)
     {
