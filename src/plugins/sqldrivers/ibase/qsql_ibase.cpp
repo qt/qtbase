@@ -1971,3 +1971,5 @@ int QIBaseDriver::maximumIdentifierLength(IdentifierType type) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_ibase_p.cpp"

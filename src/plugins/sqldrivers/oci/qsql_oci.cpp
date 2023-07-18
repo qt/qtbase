@@ -2760,3 +2760,5 @@ int QOCIDriver::maximumIdentifierLength(IdentifierType type) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_oci_p.cpp"

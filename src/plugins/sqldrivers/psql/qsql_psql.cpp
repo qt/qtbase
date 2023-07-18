@@ -1643,3 +1643,5 @@ void QPSQLDriver::_q_handleNotification()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_psql_p.cpp"

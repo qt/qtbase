@@ -1596,3 +1596,5 @@ void QMimerSQLDriverPrivate::splitTableQualifier(const QString &qualifiedName, Q
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_mimer.cpp"
