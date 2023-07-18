@@ -499,10 +499,12 @@ void tst_QDate::weekNumber_invalid()
    about, when using that backend.  Rather than complicating the #if-ery more,
    overtly record, in a flags column, which we need to ignore and merely make
    the testing of these flags subject to #if-ery.
+
+   Android appears to lack at least one other.
 */
-enum MsKludge { IgnoreStart = 1, IgnoreEnd = 2, };
-Q_DECLARE_FLAGS(MsKludges, MsKludge)
-Q_DECLARE_OPERATORS_FOR_FLAGS(MsKludges)
+enum BackendKludge { IgnoreStart = 1, IgnoreEnd = 2, };
+Q_DECLARE_FLAGS(BackendKludges, BackendKludge)
+Q_DECLARE_OPERATORS_FOR_FLAGS(BackendKludges)
 
 void tst_QDate::startOfDay_endOfDay_data()
 {
@@ -512,10 +514,20 @@ void tst_QDate::startOfDay_endOfDay_data()
     // The start and end times in that zone:
     QTest::addColumn<QTime>("start");
     QTest::addColumn<QTime>("end");
-    QTest::addColumn<MsKludges>("msKludge");
+    // Ignored for backends that don't need it:
+    QTest::addColumn<BackendKludges>("kludge");
 
     const QTime early(0, 0), late(23, 59, 59, 999), invalid(QDateTime().time());
-    constexpr MsKludges IgnoreBoth = IgnoreStart | IgnoreEnd;
+    constexpr BackendKludges Clean = {};
+    constexpr BackendKludges IgnoreBoth = IgnoreStart | IgnoreEnd;
+#ifdef USING_WIN_TZ
+    constexpr BackendKludges MsNoStart = IgnoreStart;
+    constexpr BackendKludges MsNoBoth = IgnoreBoth;
+#else
+    constexpr BackendKludges MsNoStart = Clean;
+    constexpr BackendKludges MsNoBoth = Clean;
+    // And use IgnoreBoth directly for the one transition Android lacks.
+#endif
     const QTimeZone UTC(QTimeZone::UTC);
 
     using Bound = std::numeric_limits<qint64>;
@@ -524,13 +536,13 @@ void tst_QDate::startOfDay_endOfDay_data()
     };
 
     // UTC and fixed offset are always available and predictable:
-    QTest::newRow("epoch") << epochDate() << UTC << early << late << MsKludges{};
+    QTest::newRow("epoch") << epochDate() << UTC << early << late << Clean;
 
     // First and last days in QDateTime's supported range:
     QTest::newRow("earliest")
-        << dateAtMillis(Bound::min()) << UTC << invalid << late << MsKludges{};
+        << dateAtMillis(Bound::min()) << UTC << invalid << late << Clean;
     QTest::newRow("latest")
-        << dateAtMillis(Bound::max()) << UTC << early << invalid << MsKludges{};
+        << dateAtMillis(Bound::max()) << UTC << early << invalid << Clean;
 
     const struct {
         const char *test;
@@ -538,22 +550,22 @@ void tst_QDate::startOfDay_endOfDay_data()
         const QDate day;
         const QTime start;
         const QTime end;
-        const MsKludges msOpt;
+        const BackendKludges msOpt;
     } transitions[] = {
         // The western Mexico time-zones skipped the first hour of 1970.
-        { "BajaMexico", "America/Hermosillo", QDate(1970, 1, 1), QTime(1, 0), late, IgnoreStart },
+        { "BajaMexico", "America/Hermosillo", QDate(1970, 1, 1), QTime(1, 0), late, MsNoStart },
 
         // Compare tst_QDateTime::fromStringDateFormat(ISO 24:00 in DST).
-        { "Brazil", "America/Sao_Paulo", QDate(2008, 10, 19), QTime(1, 0), late, MsKludges{} },
+        { "Brazil", "America/Sao_Paulo", QDate(2008, 10, 19), QTime(1, 0), late, Clean },
 
         // Several southern zones within EET (but not the northern ones) spent
         // part of the 1990s using midnight as spring transition.
-        { "Sofia", "Europe/Sofia", QDate(1994, 3, 27), QTime(1, 0), late, IgnoreStart },
+        { "Sofia", "Europe/Sofia", QDate(1994, 3, 27), QTime(1, 0), late, MsNoStart },
 
         // Two Pacific zones skipped days to get on the west of the
         // International Date Line; those days have neither start nor end.
         { "Kiritimati", "Pacific/Kiritimati", QDate(1994, 12, 31), invalid, invalid, IgnoreBoth },
-        { "Samoa", "Pacific/Apia", QDate(2011, 12, 30), invalid, invalid, IgnoreBoth },
+        { "Samoa", "Pacific/Apia", QDate(2011, 12, 30), invalid, invalid, MsNoBoth },
 
         // TODO: find other zones with transitions at/crossing midnight.
     };
@@ -595,11 +607,11 @@ void tst_QDate::startOfDay_endOfDay()
     QFETCH(const QTimeZone, zone);
     QFETCH(const QTime, start);
     QFETCH(const QTime, end);
-#ifdef USING_WIN_TZ // Coping with MS limitations.
-    QFETCH(const MsKludges, msKludge);
-#define UNLESSMS(flag) if (!msKludge.testFlag(flag))
+#if defined(USING_WIN_TZ) || defined(Q_OS_ANDROID) // Coping with backend limitations.
+    QFETCH(const BackendKludges, kludge);
+#define UNLESSKLUDGE(flag) if (!kludge.testFlag(flag))
 #else
-#define UNLESSMS(flag)
+#define UNLESSKLUDGE(flag)
 #endif
     QVERIFY(zone.isValid());
 
@@ -611,13 +623,13 @@ void tst_QDate::startOfDay_endOfDay()
 
     if (start.isValid()) {
         QCOMPARE(front.date(), date);
-        UNLESSMS(IgnoreStart) QCOMPARE(front.time(), start);
+        UNLESSKLUDGE(IgnoreStart) QCOMPARE(front.time(), start);
     }
     if (end.isValid()) {
         QCOMPARE(back.date(), date);
-        UNLESSMS(IgnoreEnd) QCOMPARE(back.time(), end);
+        UNLESSKLUDGE(IgnoreEnd) QCOMPARE(back.time(), end);
     }
-#undef UNLESSMS
+#undef UNLESSKLUDGE
 }
 
 void tst_QDate::startOfDay_endOfDay_fixed_data()
