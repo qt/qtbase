@@ -2968,7 +2968,6 @@ QString QAccessibleActionInterface::nextPageAction()
     \class QAccessibleSelectionInterface
     \inmodule QtGui
     \ingroup accessibility
-    \preliminary
 
     \brief The QAccessibleSelectionInterface class implements support for
     selection handling.
