@@ -276,7 +276,6 @@ void QGenericUnixThemeDBusListener::loadJson(const QString &fileName)
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
     CHECK((error.error == QJsonParseError::NoError), error.errorString());
-    qDebug() << doc;
     CHECK(doc.isObject(), "Parse Error: Expected root object" << s_root);
 
     const QJsonObject &root = doc.object();
