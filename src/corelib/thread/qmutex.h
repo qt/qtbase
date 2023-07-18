@@ -9,6 +9,8 @@
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qtsan_impl.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread) || defined(Q_QDOC)
