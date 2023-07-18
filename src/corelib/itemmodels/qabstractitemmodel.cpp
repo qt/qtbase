@@ -1499,6 +1499,8 @@ void QAbstractItemModel::resetInternalData()
     rows to the model, \l{QAbstractItemModel::}{beginInsertRows()} and
     \l{QAbstractItemModel::}{endInsertRows()} must be called.
 
+    \include models.qdocinc {thread-safety-section1}{QAbstractItemModel}
+
     \sa {Model Classes}, {Model Subclassing Reference}, QModelIndex,
         QAbstractItemView, {Using drag and drop with item views},
         {Simple Tree Model Example}, {Editable Tree Model Example},
@@ -3728,7 +3730,7 @@ void QAbstractItemModel::multiData(const QModelIndex &index, QModelRoleDataSpan 
     \note Some general guidelines for subclassing models are available in the
     \l{Model Subclassing Reference}.
 
-    \note
+    \include models.qdocinc {thread-safety-section1}{QAbstractTableModel}
 
     \sa {Model Classes}, QAbstractItemModel, QAbstractListModel
 */
