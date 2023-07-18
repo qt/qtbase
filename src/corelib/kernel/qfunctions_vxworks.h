@@ -100,9 +100,6 @@ void *lfind(const void* key, const void* base, size_t* elements, size_t size,
 int rand_r(unsigned int * /*seedp*/);
 #endif
 
-// no usleep() support
-int usleep(unsigned int);
-
 #if defined(VXWORKS_DKM) || defined(VXWORKS_RTP)
 int gettimeofday(struct timeval *, void *);
 #else
@@ -111,9 +108,6 @@ int gettimeofday(struct timeval *, void *);
 // we have to make the symbol 'weak'
 int gettimeofday(struct timeval *tv, void /*struct timezone*/ *) __attribute__((weak));
 #endif
-
-// getpagesize() not available
-int getpagesize();
 
 // symlinks are not supported (lstat is now just a call to stat - see qplatformdefs.h)
 int symlink(const char *, const char *);
@@ -131,16 +125,6 @@ uid_t getuid();
 gid_t getgid();
 uid_t geteuid();
 
-struct passwd {
-    char   *pw_name;       /* user name */
-    char   *pw_passwd;     /* user password */
-    uid_t   pw_uid;        /* user ID */
-    gid_t   pw_gid;        /* group ID */
-    char   *pw_gecos;      /* real name */
-    char   *pw_dir;        /* home directory */
-    char   *pw_shell;      /* shell program */
-};
-
 struct group {
     char   *gr_name;       /* group name */
     char   *gr_passwd;     /* group password */
@@ -148,7 +132,6 @@ struct group {
     char  **gr_mem;        /* group members */
 };
 
-struct passwd *getpwuid(uid_t uid);
 struct group *getgrgid(gid_t gid);
 
 #ifdef __cplusplus
