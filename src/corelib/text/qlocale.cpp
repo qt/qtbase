@@ -682,6 +682,7 @@ qsizetype qt_repeatCount(QStringView s)
 }
 
 Q_CONSTINIT static const QLocaleData *default_data = nullptr;
+Q_CONSTINIT QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 static QLocalePrivate *c_private()
 {
@@ -780,6 +781,10 @@ static void updateSystemPrivate()
         systemLocaleData.m_script_id = res.toInt();
 
     // Should we replace Any values based on likely sub-tags ?
+
+    // If system locale is default locale, update the default collator's generation:
+    if (default_data == &systemLocaleData)
+        QLocalePrivate::s_generation.fetchAndAddRelaxed(1);
 }
 #endif // !QT_NO_SYSTEMLOCALE
 
@@ -853,7 +858,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
 static constexpr qsizetype locale_data_size = q20::ssize(locale_data) - 1; // trailing guard
 
-Q_CONSTINIT QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 Q_GLOBAL_STATIC(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                 new QLocalePrivate(defaultData(), defaultIndex()))
 
