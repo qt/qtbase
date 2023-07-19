@@ -40,6 +40,7 @@ public:
     Qt::ColorScheme colorScheme() const override;
     const QPalette *palette(Palette type = SystemPalette) const override;
     const QFont *font(Font type = SystemFont) const override;
+    QIconEngine *createIconEngine(const QString &iconName) const override;
     QVariant themeHint(ThemeHint hint) const override;
     QString standardButtonText(int button) const override;
     bool usePlatformNativeDialog(DialogType type) const override;

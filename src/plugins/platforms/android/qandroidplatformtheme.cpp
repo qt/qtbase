@@ -4,6 +4,7 @@
 #include "androidjnimain.h"
 #include "androidjnimenu.h"
 #include "qandroidplatformtheme.h"
+#include "qandroidplatformiconengine.h"
 #include "qandroidplatformmenubar.h"
 #include "qandroidplatformmenu.h"
 #include "qandroidplatformmenuitem.h"
@@ -479,6 +480,15 @@ const QFont *QAndroidPlatformTheme::font(Font type) const
     if (type == QPlatformTheme::SystemFont)
         return &m_systemFont;
     return 0;
+}
+
+QIconEngine *QAndroidPlatformTheme::createIconEngine(const QString &iconName) const
+{
+    static bool experimentalIconEngines = qEnvironmentVariableIsSet("QT_ENABLE_EXPERIMENTAL_ICON_ENGINES");
+    if (experimentalIconEngines)
+        return new QAndroidPlatformIconEngine(iconName);
+    return nullptr;
+
 }
 
 QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const

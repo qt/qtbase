@@ -29,6 +29,7 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         qandroidplatformfiledialoghelper.cpp qandroidplatformfiledialoghelper.h
         qandroidplatformfontdatabase.cpp qandroidplatformfontdatabase.h
         qandroidplatformforeignwindow.cpp qandroidplatformforeignwindow.h
+        qandroidplatformiconengine.cpp qandroidplatformiconengine.h
         qandroidplatformintegration.cpp qandroidplatformintegration.h
         qandroidplatformmenu.cpp qandroidplatformmenu.h
         qandroidplatformmenubar.cpp qandroidplatformmenubar.h

@@ -534,6 +534,10 @@ int main(int argc, char* argv[])
 
     QApplication app(argc, argv);
 
+#ifdef ICONBROWSER_RESOURCE
+    Q_INIT_RESOURCE(icons);
+#endif
+
     IconModel model;
 
     QTabWidget widget;

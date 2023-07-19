@@ -13,3 +13,38 @@ qt_internal_add_manual_test(iconbrowser
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+if (ANDROID)
+    set(font_filename "MaterialIcons-Regular.ttf")
+    if (QT_ALLOW_DOWNLOAD)
+        include(FetchContent)
+
+        FetchContent_Declare(
+            MaterialIcons
+            URL
+                "https://github.com/google/material-design-icons/raw/master/font/${font_filename}"
+            DOWNLOAD_DIR        ${CMAKE_CURRENT_BINARY_DIR}
+            DOWNLOAD_NAME       "${font_filename}"
+            DOWNLOAD_NO_EXTRACT TRUE
+        )
+
+        FetchContent_MakeAvailable(MaterialIcons)
+    endif()
+
+    if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${font_filename}")
+        set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/${font_filename}"
+                                    PROPERTIES QT_RESOURCE_ALIAS ${font_filename})
+        target_compile_definitions(iconbrowser PRIVATE "ICONBROWSER_RESOURCE")
+        qt_add_resources(iconbrowser "icons"
+            PREFIX
+                "/qt-project.org/icons"
+            FILES
+                "${CMAKE_CURRENT_BINARY_DIR}/${font_filename}"
+        )
+    else()
+        message(WARNING "Font file ${font_filename} not found and not downloaded!\n"
+                        "Make sure the font file ${font_filename} is available in ${CMAKE_CURRENT_BINARY_DIR}.\n"
+                        "Consider configuring with -DQT_ALLOW_DOWNLOAD=ON to download the font automatically.")
+    endif()
+endif()
+
