@@ -5334,20 +5334,19 @@ QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signa
  */
 QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signal_index,
                                                 const QObject *receiver,
-                                                QtPrivate::QSlotObjectBase *slotObj,
+                                                QtPrivate::QSlotObjectBase *slotObjRaw,
                                                 Qt::ConnectionType type)
 {
+    QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
     if (!sender) {
         qCWarning(lcConnect, "QObject::connect: invalid nullptr parameter");
-        if (slotObj)
-            slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
     }
     const QMetaObject *senderMetaObject = sender->metaObject();
     signal_index = methodIndexToSignalIndex(&senderMetaObject, signal_index);
 
-    return QObjectPrivate::connectImpl(sender, signal_index, receiver, /*slot*/ nullptr, slotObj,
-                                       type, /*types*/ nullptr, senderMetaObject);
+    return connectImpl(sender, signal_index, receiver, /*slot*/ nullptr, slotObj.release(),
+                       type, /*types*/ nullptr, senderMetaObject);
 }
 
 /*!
