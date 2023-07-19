@@ -309,6 +309,7 @@ QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *wi
         return new QCALayerBackingStore(window);
     case QSurface::MetalSurface:
     case QSurface::OpenGLSurface:
+    case QSurface::VulkanSurface:
         return new QRhiBackingStore(window);
     default:
         return nullptr;
