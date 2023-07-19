@@ -8273,6 +8273,33 @@ void QRhi::addCleanupCallback(const CleanupCallback &callback)
 }
 
 /*!
+    \overload
+
+    Registers \a callback to be invoked either when the QRhi is destroyed or
+    when runCleanup() is called. This overload takes an opaque pointer, \a key,
+    that is used to ensure that a given callback is registered (and so called)
+    only once.
+
+    \sa removeCleanupCallback()
+ */
+void QRhi::addCleanupCallback(const void *key, const CleanupCallback &callback)
+{
+    d->addCleanupCallback(key, callback);
+}
+
+/*!
+    Deregisters the callback with \a key. If no cleanup callback was registered
+    with \a key, the function does nothing. Callbacks registered without a key
+    cannot be removed.
+
+    \sa addCleanupCallback()
+ */
+void QRhi::removeCleanupCallback(const void *key)
+{
+    d->removeCleanupCallback(key);
+}
+
+/*!
     Invokes all registered cleanup functions. The list of cleanup callbacks it
     then cleared. Normally destroying the QRhi does this automatically, but
     sometimes it can be useful to trigger cleanup in order to release all
@@ -8286,6 +8313,11 @@ void QRhi::runCleanup()
         f(this);
 
     d->cleanupCallbacks.clear();
+
+    for (auto it = d->keyedCleanupCallbacks.cbegin(), end = d->keyedCleanupCallbacks.cend(); it != end; ++it)
+        it.value()(this);
+
+    d->keyedCleanupCallbacks.clear();
 }
 
 /*!
