@@ -78,7 +78,9 @@ public:
         }
 
         QAccessible::State s = parent()->state();
+        s.selectable = true;
         s.focused = (m_index == m_parent->currentIndex());
+        s.selected = s.focused;
         return s;
     }
     QRect rect() const override {
@@ -181,6 +183,14 @@ QAccessibleTabBar::~QAccessibleTabBar()
         QAccessible::deleteAccessibleInterface(id);
 }
 
+void *QAccessibleTabBar::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::SelectionInterface) {
+        return static_cast<QAccessibleSelectionInterface*>(this);
+    }
+    return QAccessibleWidget::interface_cast(t);
+}
+
 /*! Returns the QTabBar. */
 QTabBar *QAccessibleTabBar::tabBar() const
 {
@@ -256,6 +266,60 @@ QString QAccessibleTabBar::text(QAccessible::Text t) const
         return qt_accHotKey(tabBar()->tabText(tabBar()->currentIndex()));
     }
     return QString();
+}
+
+int QAccessibleTabBar::selectedItemCount() const
+{
+    if (tabBar()->currentIndex() >= 0)
+        return 1;
+    return 0;
+}
+
+QList<QAccessibleInterface*> QAccessibleTabBar::selectedItems() const
+{
+    QList<QAccessibleInterface*> items;
+    QAccessibleInterface *selected = selectedItem(0);
+    if (selected)
+        items.push_back(selected);
+    return items;
+}
+
+QAccessibleInterface* QAccessibleTabBar::selectedItem(int selectionIndex) const
+{
+    const int currentIndex = tabBar()->currentIndex();
+    if (selectionIndex != 0 || currentIndex < 0)
+        return nullptr;
+    return child(currentIndex);
+}
+
+bool QAccessibleTabBar::isSelected(QAccessibleInterface *childItem) const
+{
+    return childItem && selectedItem(0) == childItem;
+}
+
+bool QAccessibleTabBar::select(QAccessibleInterface *childItem)
+{
+    const int childIndex = indexOfChild(childItem);
+    if (childIndex >= 0) {
+        tabBar()->setCurrentIndex(childIndex);
+        return true;
+    }
+    return false;
+}
+
+bool QAccessibleTabBar::unselect(QAccessibleInterface *)
+{
+    return false;
+}
+
+bool QAccessibleTabBar::selectAll()
+{
+    return false;
+}
+
+bool QAccessibleTabBar::clear()
+{
+    return false;
 }
 
 #endif // QT_CONFIG(tabbar)

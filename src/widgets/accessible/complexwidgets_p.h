@@ -70,11 +70,13 @@ public:
 #endif // QT_CONFIG(scrollarea)
 
 #if QT_CONFIG(tabbar)
-class QAccessibleTabBar : public QAccessibleWidget
+class QAccessibleTabBar : public QAccessibleWidget, public QAccessibleSelectionInterface
 {
 public:
     explicit QAccessibleTabBar(QWidget *w);
     ~QAccessibleTabBar();
+
+    void *interface_cast(QAccessible::InterfaceType t) override;
 
     QAccessibleInterface *focusChild() const override;
     int childCount() const override;
@@ -82,6 +84,16 @@ public:
 
     QAccessibleInterface* child(int index) const override;
     int indexOfChild(const QAccessibleInterface *child) const override;
+
+    // QAccessibleSelectionInterface
+    int selectedItemCount() const override;
+    QList<QAccessibleInterface*> selectedItems() const override;
+    QAccessibleInterface* selectedItem(int selectionIndex) const override;
+    bool isSelected(QAccessibleInterface *childItem) const override;
+    bool select(QAccessibleInterface *childItem) override;
+    bool unselect(QAccessibleInterface *childItem) override;
+    bool selectAll() override;
+    bool clear() override;
 
 protected:
     QTabBar *tabBar() const;
