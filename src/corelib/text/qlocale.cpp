@@ -788,25 +788,42 @@ static void updateSystemPrivate()
 }
 #endif // !QT_NO_SYSTEMLOCALE
 
-static const QLocaleData *systemData()
+static const QLocaleData *systemData(qsizetype *sysIndex = nullptr)
 {
 #ifndef QT_NO_SYSTEMLOCALE
     /*
       Copy over the information from the fallback locale and modify.
 
-      This modifies (cross-thread) global state, so take care to only call it in
-      one thread.
+      If sysIndex is passed, it should be the m_index of the system locale's
+      QLocalePrivate, which we'll update if it needs it.
+
+      This modifies (cross-thread) global state, so is mutex-protected.
     */
     {
+        Q_CONSTINIT static QLocaleId sysId;
+        bool updated = false;
+
         Q_CONSTINIT static QBasicMutex systemDataMutex;
         systemDataMutex.lock();
-        if (systemLocaleData.m_language_id == 0)
+        if (systemLocaleData.m_language_id == 0) {
             updateSystemPrivate();
+            updated = true;
+        }
+        // Initialization of system private has *sysIndex == -1 to hit this.
+        if (sysIndex && (updated || *sysIndex < 0)) {
+            const QLocaleId nowId = systemLocaleData.id();
+            if (sysId != nowId || *sysIndex < 0) {
+                // This look-up may be expensive:
+                *sysIndex = QLocaleData::findLocaleIndex(nowId);
+                sysId = nowId;
+            }
+        }
         systemDataMutex.unlock();
     }
 
     return &systemLocaleData;
 #else
+    Q_UNUSED(sysIndex);
     return locale_data;
 #endif
 }
@@ -2749,8 +2766,19 @@ QString QLocale::toString(double f, char format, int precision) const
 
 QLocale QLocale::system()
 {
-    QT_PREPEND_NAMESPACE(systemData)(); // Ensure system data is up to date.
-    static QLocalePrivate locale(systemData(), defaultIndex(), DefaultNumberOptions, 1);
+    constexpr auto sysData = []() {
+        // Same return as systemData(), but leave the setup to the actual call to it.
+#ifdef QT_NO_SYSTEMLOCALE
+        return locale_data;
+#else
+        return &systemLocaleData;
+#endif
+    };
+    Q_CONSTINIT static QLocalePrivate locale(sysData(), -1, DefaultNumberOptions, 1);
+    // Calling systemData() ensures system data is up to date; we also need it
+    // to ensure that locale's index stays up to date:
+    systemData(&locale.m_index);
+    Q_ASSERT(locale.m_index >= 0 && locale.m_index < locale_data_size);
 
     return QLocale(locale);
 }

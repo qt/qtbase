@@ -532,7 +532,7 @@ public:
     // System locale has an m_data all its own; all others have m_data = locale_data + m_index
     const QLocaleData *const m_data;
     QBasicAtomicInt ref;
-    const qsizetype m_index;
+    qsizetype m_index; // System locale needs this updated when m_data->id() changes.
     QLocale::NumberOptions m_numberOptions;
 
     static QBasicAtomicInt s_generation;

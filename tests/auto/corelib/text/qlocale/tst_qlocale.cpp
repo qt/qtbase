@@ -591,45 +591,49 @@ void tst_QLocale::systemLocale_data()
     // Note that the accepted values for fields are implementation-dependent;
     // the template is language[_territory][.codeset][@modifier]
 
+    // "Ordibehesht" is the name (as adapted to English, German or Norsk) of the
+    // second month of the Jalali calendar. If you see anything in Arabic,
+    // setDefault(Persian) has interfered with the system locale setup.
+
     // Vanilla:
-    ADD_CTOR_TEST("C", "C");
+    ADD_CTOR_TEST("C", "C Ordibehesht");
 
     // Standard forms:
-    ADD_CTOR_TEST("en", "en_US");
-    ADD_CTOR_TEST("en_GB", "en_GB");
-    ADD_CTOR_TEST("de", "de_DE");
+    ADD_CTOR_TEST("en", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en_GB", "en_GB Ordibehesht");
+    ADD_CTOR_TEST("de", "de_DE Ordibehescht");
     // Norsk has some quirks:
-    ADD_CTOR_TEST("no", "nb_NO");
-    ADD_CTOR_TEST("nb", "nb_NO");
-    ADD_CTOR_TEST("nn", "nn_NO");
-    ADD_CTOR_TEST("no_NO", "nb_NO");
-    ADD_CTOR_TEST("nb_NO", "nb_NO");
-    ADD_CTOR_TEST("nn_NO", "nn_NO");
+    ADD_CTOR_TEST("no", "nb_NO ordibehesht");
+    ADD_CTOR_TEST("nb", "nb_NO ordibehesht");
+    ADD_CTOR_TEST("nn", "nn_NO ordibehesht");
+    ADD_CTOR_TEST("no_NO", "nb_NO ordibehesht");
+    ADD_CTOR_TEST("nb_NO", "nb_NO ordibehesht");
+    ADD_CTOR_TEST("nn_NO", "nn_NO ordibehesht");
 
     // Not too fussy about case:
-    ADD_CTOR_TEST("DE", "de_DE");
-    ADD_CTOR_TEST("EN", "en_US");
+    ADD_CTOR_TEST("DE", "de_DE Ordibehescht");
+    ADD_CTOR_TEST("EN", "en_US Ordibehesht");
 
     // Invalid fields
-    ADD_CTOR_TEST("bla", "C");
-    ADD_CTOR_TEST("zz", "C");
-    ADD_CTOR_TEST("zz_zz", "C");
-    ADD_CTOR_TEST("zz...", "C");
-    ADD_CTOR_TEST("en.bla", "en_US");
-    ADD_CTOR_TEST("en@bla", "en_US");
-    ADD_CTOR_TEST("en_blaaa", "en_US");
-    ADD_CTOR_TEST("en_zz", "en_US");
-    ADD_CTOR_TEST("en_GB.bla", "en_GB");
-    ADD_CTOR_TEST("en_GB@.bla", "en_GB");
-    ADD_CTOR_TEST("en_GB@bla", "en_GB");
+    ADD_CTOR_TEST("bla", "C Ordibehesht");
+    ADD_CTOR_TEST("zz", "C Ordibehesht");
+    ADD_CTOR_TEST("zz_zz", "C Ordibehesht");
+    ADD_CTOR_TEST("zz...", "C Ordibehesht");
+    ADD_CTOR_TEST("en.bla", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en@bla", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en_blaaa", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en_zz", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en_GB.bla", "en_GB Ordibehesht");
+    ADD_CTOR_TEST("en_GB@.bla", "en_GB Ordibehesht");
+    ADD_CTOR_TEST("en_GB@bla", "en_GB Ordibehesht");
 
     // Empty optional fields, but with punctuators supplied
-    ADD_CTOR_TEST("en.", "en_US");
-    ADD_CTOR_TEST("en@", "en_US");
-    ADD_CTOR_TEST("en.@", "en_US");
-    ADD_CTOR_TEST("en_", "en_US");
-    ADD_CTOR_TEST("en_.", "en_US");
-    ADD_CTOR_TEST("en_.@", "en_US");
+    ADD_CTOR_TEST("en.", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en@", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en.@", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en_", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en_.", "en_US Ordibehesht");
+    ADD_CTOR_TEST("en_.@", "en_US Ordibehesht");
 #undef ADD_CTOR_TEST
 
 #if QT_CONFIG(process) // for runSysApp
@@ -638,7 +642,7 @@ void tst_QLocale::systemLocale_data()
     QString errorMessage;
     if (runSysApp(m_sysapp, QStringList(), cleanEnv, &defaultLoc, &errorMessage)) {
 #if defined(Q_OS_MACOS)
-        QString localeForInvalidLocale = "C";
+        QString localeForInvalidLocale = "C Ordibehesht";
 #else
         QString localeForInvalidLocale = defaultLoc;
 #endif
