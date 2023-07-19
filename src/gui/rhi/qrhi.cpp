@@ -8069,10 +8069,10 @@ QRhi::~QRhi()
     if (!d)
         return;
 
+    runCleanup();
+
     qDeleteAll(d->pendingDeleteResources);
     d->pendingDeleteResources.clear();
-
-    runCleanup();
 
     d->destroy();
     delete d;
