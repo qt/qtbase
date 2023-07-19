@@ -1586,13 +1586,10 @@ bool QMetaObject::invokeMethodImpl(QObject *obj, const char *member, Qt::Connect
     return printMethodNotFoundWarning(obj->metaObject(), name, paramCount, typeNames, metaTypes);
 }
 
-bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
+bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slotObj,
+                                   Qt::ConnectionType type, void *ret)
 {
-    struct Holder {
-        QtPrivate::QSlotObjectBase *obj;
-        ~Holder() { obj->destroyIfLastRef(); }
-    } holder = { slot };
-    Q_UNUSED(holder);
+    auto slot = QtPrivate::SlotObjUniquePtr(slotObj);
 
     if (! object)
         return false;
@@ -1617,14 +1614,14 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
             return false;
         }
 
-        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, nullptr, -1, 1));
+        QCoreApplication::postEvent(object, new QMetaCallEvent(std::move(slot), nullptr, -1, 1));
     } else if (type == Qt::BlockingQueuedConnection) {
 #if QT_CONFIG(thread)
         if (receiverInSameThread)
             qWarning("QMetaObject::invokeMethod: Dead lock detected");
 
         QSemaphore semaphore;
-        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, nullptr, -1, argv, &semaphore));
+        QCoreApplication::postEvent(object, new QMetaCallEvent(std::move(slot), nullptr, -1, argv, &semaphore));
         semaphore.acquire();
 #endif // QT_CONFIG(thread)
     } else {
