@@ -453,6 +453,39 @@ namespace QtPrivate {
     using SlotObjUniquePtr = std::unique_ptr<QSlotObjectBase,
                                              QSlotObjectBase::Deleter>;
 
+    class SlotObjSharedPtr {
+        SlotObjUniquePtr obj;
+    public:
+        Q_NODISCARD_CTOR Q_IMPLICIT SlotObjSharedPtr() noexcept = default;
+        Q_NODISCARD_CTOR Q_IMPLICIT SlotObjSharedPtr(std::nullptr_t) noexcept : SlotObjSharedPtr() {}
+        Q_NODISCARD_CTOR explicit SlotObjSharedPtr(SlotObjUniquePtr o)
+            : obj(std::move(o))
+        {
+            // does NOT ref() (takes unique_ptr by value)
+            // (that's why (QSlotObjectBase*) ctor doesn't exisit: don't know whether that one _should_)
+        }
+        Q_NODISCARD_CTOR SlotObjSharedPtr(const SlotObjSharedPtr &other) noexcept
+            : obj(other.obj.get())
+        {
+            if (obj)
+                obj->ref();
+        }
+        SlotObjSharedPtr &operator=(const SlotObjSharedPtr &other) noexcept
+        { auto copy = other; swap(copy); return *this; }
+
+        Q_NODISCARD_CTOR SlotObjSharedPtr(SlotObjSharedPtr &&other) noexcept = default;
+        SlotObjSharedPtr &operator=(SlotObjSharedPtr &&other) noexcept = default;
+        ~SlotObjSharedPtr() = default;
+
+        void swap(SlotObjSharedPtr &other) noexcept { obj.swap(other.obj); }
+
+        auto get() const noexcept { return obj.get(); }
+        auto operator->() const noexcept { return get(); }
+
+        explicit operator bool() const noexcept { return bool(obj); }
+    };
+
+
     // Implementation of QSlotObjectBase for which the slot is a callable (function, PMF, functor, or lambda).
     // Args and R are the List of arguments and the return type of the signal to which the slot is connected.
     template <typename Func, typename Args, typename R>
