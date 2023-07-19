@@ -124,12 +124,12 @@ private slots:
     void bcp47Name_data();
     void bcp47Name();
 
-#ifdef QT_BUILD_INTERNAL
-    void systemLocale_data();
-    void systemLocale();
-#endif
-
 #ifndef QT_NO_SYSTEMLOCALE
+#  ifdef QT_BUILD_INTERNAL
+    void mySystemLocale_data();
+    void mySystemLocale();
+#  endif
+
     void systemLocaleDayAndMonthNames_data();
     void systemLocaleDayAndMonthNames();
 #endif
@@ -3428,7 +3428,7 @@ void tst_QLocale::uiLanguages_data()
 
 void tst_QLocale::uiLanguages()
 {
-    // Compare systemLocale(), which tests the same for a stub system locale.
+    // Compare mySystemLocale(), which tests the same for a custom system locale.
     QFETCH(const QLocale, locale);
     QFETCH(const QStringList, all);
     auto reporter = qScopeGuard([&locale]() {
@@ -3714,7 +3714,8 @@ void tst_QLocale::bcp47Name()
     QCOMPARE(QLocale(QLatin1String(QTest::currentDataTag())).bcp47Name(), expect);
 }
 
-#ifdef QT_BUILD_INTERNAL
+#ifndef QT_NO_SYSTEMLOCALE
+#  ifdef QT_BUILD_INTERNAL
 class MySystemLocale : public QSystemLocale
 {
 public:
@@ -3754,7 +3755,7 @@ private:
     const QLocale m_locale;
 };
 
-void tst_QLocale::systemLocale_data()
+void tst_QLocale::mySystemLocale_data()
 {
     // Test uses MySystemLocale, so is platform-independent.
     QTest::addColumn<QString>("name");
@@ -3829,7 +3830,7 @@ void tst_QLocale::systemLocale_data()
     // shi_{Tfng,Latn}_MA, vai_{Vaii,Latn}_LR, zh_{Hant,Hans}_{MO,HK}
 }
 
-void tst_QLocale::systemLocale()
+void tst_QLocale::mySystemLocale()
 {
     // Compare uiLanguages(), which tests this for CLDR-derived locales.
     QLocale originalLocale;
@@ -3854,9 +3855,7 @@ void tst_QLocale::systemLocale()
     QCOMPARE(QLocale(), originalLocale);
     QCOMPARE(QLocale::system(), originalSystemLocale);
 }
-#endif // QT_BUILD_INTERNAL
-
-#ifndef QT_NO_SYSTEMLOCALE
+#  endif // QT_BUILD_INTERNAL
 
 void tst_QLocale::systemLocaleDayAndMonthNames_data()
 {
