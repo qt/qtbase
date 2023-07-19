@@ -5027,13 +5027,12 @@ void qDeleteInEventHandler(QObject *o)
  */
 QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signal,
                                              const QObject *receiver, void **slot,
-                                             QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type,
+                                             QtPrivate::QSlotObjectBase *slotObjRaw, Qt::ConnectionType type,
                                              const int *types, const QMetaObject *senderMetaObject)
 {
+    QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
     if (!signal) {
         qCWarning(lcConnect, "QObject::connect: invalid nullptr parameter");
-        if (slotObj)
-            slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
     }
 
@@ -5046,11 +5045,10 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     }
     if (!senderMetaObject) {
         qCWarning(lcConnect, "QObject::connect: signal not found in %s", sender->metaObject()->className());
-        slotObj->destroyIfLastRef();
         return QMetaObject::Connection(nullptr);
     }
     signal_index += QMetaObjectPrivate::signalOffset(senderMetaObject);
-    return QObjectPrivate::connectImpl(sender, signal_index, receiver, slot, slotObj, type, types, senderMetaObject);
+    return QObjectPrivate::connectImpl(sender, signal_index, receiver, slot, slotObj.release(), type, types, senderMetaObject);
 }
 
 static void connectWarning(const QObject *sender,
