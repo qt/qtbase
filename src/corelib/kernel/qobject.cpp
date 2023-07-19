@@ -5073,14 +5073,10 @@ static void connectWarning(const QObject *sender,
  */
 QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int signal_index,
                                              const QObject *receiver, void **slot,
-                                             QtPrivate::QSlotObjectBase *slotObj, int type,
+                                             QtPrivate::QSlotObjectBase *slotObjRaw, int type,
                                              const int *types, const QMetaObject *senderMetaObject)
 {
-    auto connectFailureGuard = qScopeGuard([&]()
-    {
-        if (slotObj)
-            slotObj->destroyIfLastRef();
-    });
+    QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
 
     if (!sender || !receiver || !slotObj || !senderMetaObject) {
         connectWarning(sender, senderMetaObject, receiver, "invalid nullptr parameter");
@@ -5091,8 +5087,6 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
         connectWarning(sender, senderMetaObject, receiver, "unique connections require a pointer to member function of a QObject subclass");
         return QMetaObject::Connection();
     }
-
-    connectFailureGuard.dismiss();
 
     QObject *s = const_cast<QObject *>(sender);
     QObject *r = const_cast<QObject *>(receiver);
@@ -5106,10 +5100,8 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
             const QObjectPrivate::Connection *c2 = connections->signalVector.loadRelaxed()->at(signal_index).first.loadRelaxed();
 
             while (c2) {
-                if (c2->receiver.loadRelaxed() == receiver && c2->isSlotObject && c2->slotObj->compare(slot)) {
-                    slotObj->destroyIfLastRef();
+                if (c2->receiver.loadRelaxed() == receiver && c2->isSlotObject && c2->slotObj->compare(slot))
                     return QMetaObject::Connection();
-                }
                 c2 = c2->nextConnectionList.loadRelaxed();
             }
         }
@@ -5129,9 +5121,9 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
     td->ref();
     c->receiverThreadData.storeRelaxed(td);
     c->receiver.storeRelaxed(r);
-    c->slotObj = slotObj;
     c->connectionType = type;
     c->isSlotObject = true;
+    c->slotObj = slotObj.release();
     if (types) {
         c->argumentTypes.storeRelaxed(types);
         c->ownArgumentTypes = false;
