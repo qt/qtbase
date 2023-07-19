@@ -454,6 +454,9 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
                                                                          QPlatformTextureList *textures,
                                                                          bool translucentBackground)
 {
+    if (!rhi)
+        return QPlatformBackingStore::FlushFailed;
+
     Q_ASSERT(textures); // may be empty if there are no render-to-texture widgets at all, but null it cannot be
 
     if (!m_rhi) {
