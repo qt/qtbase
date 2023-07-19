@@ -656,12 +656,12 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     }
 }
 
-QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::QSlotObjectBase *slotObj,
+QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::SlotObjUniquePtr slotObj,
                                             const QObject *sender, int signal_index,
                                             size_t argc, const void* const argp[],
                                             const QMetaType metaTypes[])
 {
-    auto metaCallEvent = std::make_unique<QMetaCallEvent>(slotObj, sender,
+    auto metaCallEvent = std::make_unique<QMetaCallEvent>(std::move(slotObj), sender,
                                                           signal_index, int(argc));
 
     void **args = metaCallEvent->args();
