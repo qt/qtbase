@@ -1729,6 +1729,8 @@ public:
 
     using CleanupCallback = std::function<void(QRhi *)>;
     void addCleanupCallback(const CleanupCallback &callback);
+    void addCleanupCallback(const void *key, const CleanupCallback &callback);
+    void removeCleanupCallback(const void *key);
     void runCleanup();
 
     using GpuFrameTimeCallback = std::function<void(float t)>;
