@@ -1514,7 +1514,7 @@ public:
                 versionDisclaimer = " and will be removed in Qt " + version;
                 int minor = 0;
                 int major = 0;
-                if (!utils::parseVersion(version, minor, major)) {
+                if (!utils::parseVersion(version, major, minor)) {
                     std::cerr << ErrorMessagePreamble
                               << "Invalid version format specified for the deprecated header file "
                               << headerPath << ": '" << version
