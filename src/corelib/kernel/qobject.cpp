@@ -562,6 +562,21 @@ QMetaCallEvent::QMetaCallEvent(QtPrivate::QSlotObjectBase *slotO,
 /*!
     \internal
 
+    Used for blocking queued connections, just passes \a args through without
+    allocating any memory.
+ */
+QMetaCallEvent::QMetaCallEvent(QtPrivate::SlotObjUniquePtr slotO,
+                               const QObject *sender, int signalId,
+                               void **args, QSemaphore *semaphore)
+    : QAbstractMetaCallEvent(sender, signalId, semaphore),
+      d{std::move(slotO), args, nullptr, 0, 0, ushort(-1)},
+      prealloc_()
+{
+}
+
+/*!
+    \internal
+
     Allocates memory for \a nargs; code creating an event needs to initialize
     the void* and int arrays by accessing \a args() and \a types(), respectively.
  */
@@ -596,6 +611,22 @@ QMetaCallEvent::QMetaCallEvent(QtPrivate::QSlotObjectBase *slotO,
 
 /*!
     \internal
+
+    Allocates memory for \a nargs; code creating an event needs to initialize
+    the void* and int arrays by accessing \a args() and \a types(), respectively.
+ */
+QMetaCallEvent::QMetaCallEvent(QtPrivate::SlotObjUniquePtr slotO,
+                               const QObject *sender, int signalId,
+                               int nargs)
+    : QAbstractMetaCallEvent(sender, signalId),
+      d{std::move(slotO), nullptr, nullptr, nargs, 0, ushort(-1)},
+      prealloc_()
+{
+    allocArgs();
+}
+
+/*!
+    \internal
  */
 QMetaCallEvent::~QMetaCallEvent()
 {
@@ -625,12 +656,12 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     }
 }
 
-QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::QSlotObjectBase *slotObj,
+QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::SlotObjUniquePtr slotObj,
                                             const QObject *sender, int signal_index,
                                             size_t argc, const void* const argp[],
                                             const QMetaType metaTypes[])
 {
-    auto metaCallEvent = std::make_unique<QMetaCallEvent>(slotObj, sender,
+    auto metaCallEvent = std::make_unique<QMetaCallEvent>(std::move(slotObj), sender,
                                                           signal_index, int(argc));
 
     void **args = metaCallEvent->args();
