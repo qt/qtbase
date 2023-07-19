@@ -56,6 +56,11 @@ bool QBackingStoreRhiSupport::create()
     QOffscreenSurface *surface = nullptr;
     QRhi::Flags flags;
 
+    if (m_config.api() == QPlatformBackingStoreRhiConfig::Null) {
+        QRhiNullInitParams params;
+        rhi = QRhi::create(QRhi::Null, &params, flags);
+    }
+
 #if QT_CONFIG(opengl)
     if (!rhi && m_config.api() == QPlatformBackingStoreRhiConfig::OpenGL) {
         surface = QRhiGles2InitParams::newFallbackSurface(m_format);
