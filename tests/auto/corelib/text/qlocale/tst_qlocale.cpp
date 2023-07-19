@@ -48,8 +48,8 @@ private slots:
 #endif
 
     void ctor();
-    void emptyCtor_data();
-    void emptyCtor();
+    void systemLocale_data();
+    void systemLocale();
     void consistentC();
     void matchingLocales();
     void stringToDouble_data();
@@ -573,7 +573,7 @@ static inline bool runSysAppTest(const QString &binary,
 }
 #endif
 
-void tst_QLocale::emptyCtor_data()
+void tst_QLocale::systemLocale_data()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
@@ -653,7 +653,7 @@ void tst_QLocale::emptyCtor_data()
 #endif // process
 }
 
-void tst_QLocale::emptyCtor()
+void tst_QLocale::systemLocale()
 {
 #if QT_CONFIG(process) // for runSysAppTest
     QLatin1String request(QTest::currentDataTag());
