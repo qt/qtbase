@@ -381,6 +381,9 @@ public:
     QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj,
                    const QObject *sender, int signalId,
                    void **args, QSemaphore *semaphore);
+    QMetaCallEvent(QtPrivate::SlotObjUniquePtr slotObj,
+                   const QObject *sender, int signalId,
+                   void **args, QSemaphore *semaphore);
 
     // queued - args allocated by event, copied by caller
     QMetaCallEvent(ushort method_offset, ushort method_relative,
@@ -388,6 +391,9 @@ public:
                    const QObject *sender, int signalId,
                    int nargs);
     QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj,
+                   const QObject *sender, int signalId,
+                   int nargs);
+    QMetaCallEvent(QtPrivate::SlotObjUniquePtr slotObj,
                    const QObject *sender, int signalId,
                    int nargs);
 
