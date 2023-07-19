@@ -179,6 +179,16 @@ public:
         cleanupCallbacks.append(callback);
     }
 
+    void addCleanupCallback(const void *key, const QRhi::CleanupCallback &callback)
+    {
+        keyedCleanupCallbacks[key] = callback;
+    }
+
+    void removeCleanupCallback(const void *key)
+    {
+        keyedCleanupCallbacks.remove(key);
+    }
+
     bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
     bool sanityCheckShaderResourceBindings(QRhiShaderResourceBindings *srb);
     void updateLayoutDesc(QRhiShaderResourceBindings *srb);
@@ -239,6 +249,7 @@ private:
     QHash<QRhiResource *, bool> resources;
     QSet<QRhiResource *> pendingDeleteResources;
     QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
+    QHash<const void *, QRhi::CleanupCallback> keyedCleanupCallbacks;
     QElapsedTimer pipelineCreationTimer;
     qint64 accumulatedPipelineCreationTime = 0;
 
