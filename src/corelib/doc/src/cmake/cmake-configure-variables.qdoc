@@ -88,7 +88,7 @@ out as part of the deployment settings for a target.
 
 \summary {Set the package type as a release}
 
-\cmakevariablesince 6.5.1
+\cmakevariablesince 6.5.2
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
