@@ -670,12 +670,9 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         allocatorInfo.device = dev;
         allocatorInfo.pVulkanFunctions = &funcs;
         allocatorInfo.instance = inst->vkInstance();
-        const QVersionNumber apiVer = inst->apiVersion();
-        if (!apiVer.isNull()) {
-            allocatorInfo.vulkanApiVersion = VK_MAKE_VERSION(apiVer.majorVersion(),
-                                                             apiVer.minorVersion(),
-                                                             apiVer.microVersion());
-        }
+        allocatorInfo.vulkanApiVersion = VK_MAKE_VERSION(caps.apiVersion.majorVersion(),
+                                                         caps.apiVersion.minorVersion(),
+                                                         caps.apiVersion.microVersion());
         VmaAllocator vmaallocator;
         VkResult err = vmaCreateAllocator(&allocatorInfo, &vmaallocator);
         if (err != VK_SUCCESS) {
