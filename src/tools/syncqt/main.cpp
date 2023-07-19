@@ -780,7 +780,7 @@ public:
     [[nodiscard]] bool processHeader(const std::filesystem::path &headerFile)
     {
         // This regex filters any paths that contain the '3rdparty' directory.
-        static const std::regex ThirdPartyFolderRegex(".+/3rdparty/.+");
+        static const std::regex ThirdPartyFolderRegex("(^|.+/)3rdparty/.+");
 
         // This regex filters '-config.h' and '-config_p.h' header files.
         static const std::regex ConfigHeaderRegex("^(q|.+-)config(_p)?\\.h");
@@ -872,7 +872,14 @@ public:
         }
 
         bool isGenerated = isHeaderGenerated(m_currentFileString);
-        bool is3rdParty = std::regex_match(m_currentFileString, ThirdPartyFolderRegex);
+
+        // Make sure that we detect the '3rdparty' directory inside the source directory only,
+        // since full path to the Qt sources might contain '/3rdparty/' too.
+        bool is3rdParty = std::regex_match(
+                std::filesystem::relative(headerFile, m_commandLineArgs->sourceDir())
+                        .generic_string(),
+                ThirdPartyFolderRegex);
+
         // No processing of generated Qt config header files.
         if (!std::regex_match(m_currentFilename, ConfigHeaderRegex)) {
             unsigned int skipChecks = m_commandLineArgs->scanAllMode() ? AllChecks : NoChecks;
