@@ -3004,8 +3004,8 @@ QString QCalendarBackend::monthName(const QLocale &locale, int month, int,
                         localeMonthData(), month, format);
 }
 
-QString QGregorianCalendar::monthName(const QLocale &locale, int month, int year,
-                                      QLocale::FormatType format) const
+QString QRomanCalendar::monthName(const QLocale &locale, int month, int year,
+                                  QLocale::FormatType format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (locale.d->m_data == &systemLocaleData) {
@@ -3039,8 +3039,8 @@ QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, 
                                   localeMonthData(), month, format);
 }
 
-QString QGregorianCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
-                                                QLocale::FormatType format) const
+QString QRomanCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
+                                            QLocale::FormatType format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (locale.d->m_data == &systemLocaleData) {

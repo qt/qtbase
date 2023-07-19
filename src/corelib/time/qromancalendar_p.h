@@ -29,6 +29,12 @@ public:
     bool isLunar() const override;
     bool isLuniSolar() const override;
     bool isSolar() const override;
+
+    // Names of months (implemented in qlocale.cpp):
+    QString monthName(const QLocale &locale, int month, int year,
+                      QLocale::FormatType format) const override;
+    QString standaloneMonthName(const QLocale &locale, int month, int year,
+                                QLocale::FormatType format) const override;
 protected:
     // locale support:
     const QCalendarLocale *localeMonthIndexData() const override;
