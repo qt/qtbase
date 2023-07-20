@@ -71,7 +71,7 @@ QSqlError Browser::addConnection(const QString &driver, const QString &dbName, c
     return err;
 }
 
-void Browser::addConnection()
+void Browser::openNewConnectionDialog()
 {
     QSqlConnectionDialog dialog(this);
     if (dialog.exec() != QDialog::Accepted)

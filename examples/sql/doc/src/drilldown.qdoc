@@ -154,10 +154,6 @@
     We need to use lambdas for connecting the \c enableButtons slot
     because its signature does not match \c QTextEdit::textChanged
     and \c QComboBox::currentIndexChanged.
-    Since the latter has another overload with the signature
-    \c {const QString &} and the selected signal would be ambiguous,
-    we need to use \c QOverload<int>::of to select a specific overload
-    for \c currentIndexChanged.
 
     We add all the widgets into a layout, store the item ID and the
     name of the displayed image file for future reference, and set

@@ -32,7 +32,7 @@ public slots:
     void exec();
     void showTable(const QString &table);
     void showMetaData(const QString &table);
-    void addConnection();
+    void openNewConnectionDialog();
     void currentChanged() { updateActions(); }
     void about();
 

@@ -3,6 +3,8 @@
 
 qt_examples_build_begin(EXTERNAL_BUILD)
 
+add_compile_definitions(QT_NO_CONTEXTLESS_CONNECT)
+
 add_subdirectory(corelib)
 add_subdirectory(embedded)
 if(TARGET Qt6::DBus)

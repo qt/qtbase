@@ -38,7 +38,7 @@ Renderer::Renderer(VulkanWindow *w, int initialCount)
     m_blockMesh.load(QStringLiteral(":/block.buf"));
     m_logoMesh.load(QStringLiteral(":/qt_logo.buf"));
 
-    QObject::connect(&m_frameWatcher, &QFutureWatcherBase::finished, [this] {
+    QObject::connect(&m_frameWatcher, &QFutureWatcherBase::finished, m_window, [this] {
         if (m_framePending) {
             m_framePending = false;
             m_window->frameReady();

@@ -64,25 +64,25 @@ int main(int argc, char *argv[])
     // Track the price changes
 
 //! [connect-price-changed]
-    QObject::connect(&subscription, &Subscription::priceChanged, [&] {
+    QObject::connect(&subscription, &Subscription::priceChanged, priceDisplay, [&] {
         QLocale lc{QLocale::AnyLanguage, user.country()};
         priceDisplay->setText(lc.toCurrencyString(subscription.price() / subscription.duration()));
     });
 //! [connect-price-changed]
 
 //! [connect-validity-changed]
-    QObject::connect(&subscription, &Subscription::isValidChanged, [&] {
+    QObject::connect(&subscription, &Subscription::isValidChanged, priceDisplay, [&] {
         priceDisplay->setEnabled(subscription.isValid());
     });
 //! [connect-validity-changed]
 
 //! [connect-user]
-    QObject::connect(&user, &User::countryChanged, [&] {
+    QObject::connect(&user, &User::countryChanged, &subscription, [&] {
         subscription.calculatePrice();
         subscription.updateValidity();
     });
 
-    QObject::connect(&user, &User::ageChanged, [&] {
+    QObject::connect(&user, &User::ageChanged, &subscription, [&] {
         subscription.updateValidity();
     });
 //! [connect-user]

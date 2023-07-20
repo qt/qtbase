@@ -37,12 +37,8 @@ InformationWindow::InformationWindow(int id, QSqlRelationalTableModel *items,
 //! [3]
 
 //! [4]
-    connect(descriptionEditor, &QTextEdit::textChanged, [=]() {
-        enableButtons();
-    });
-    connect(imageFileEditor, &QComboBox::currentIndexChanged, [=]() {
-        enableButtons();
-    });
+    connect(descriptionEditor, &QTextEdit::textChanged, this, [this]() { enableButtons(); });
+    connect(imageFileEditor, &QComboBox::currentIndexChanged, this, [this]() { enableButtons(); });
 
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(itemLabel, itemText);

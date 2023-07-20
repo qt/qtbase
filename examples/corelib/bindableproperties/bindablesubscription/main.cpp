@@ -28,29 +28,29 @@ int main(int argc, char *argv[])
 
     // Initialize subscription data
     QRadioButton *monthly = w.findChild<QRadioButton *>("btnMonthly");
-    QObject::connect(monthly, &QRadioButton::clicked, [&] {
+    QObject::connect(monthly, &QRadioButton::clicked, monthly, [&] {
         subscription.setDuration(BindableSubscription::Monthly);
     });
     QRadioButton *quarterly = w.findChild<QRadioButton *>("btnQuarterly");
-    QObject::connect(quarterly, &QRadioButton::clicked, [&] {
+    QObject::connect(quarterly, &QRadioButton::clicked, quarterly, [&] {
         subscription.setDuration(BindableSubscription::Quarterly);
     });
     QRadioButton *yearly = w.findChild<QRadioButton *>("btnYearly");
-    QObject::connect(yearly, &QRadioButton::clicked, [&] {
+    QObject::connect(yearly, &QRadioButton::clicked, yearly, [&] {
         subscription.setDuration(BindableSubscription::Yearly);
     });
 
     // Initialize user data
     QPushButton *germany = w.findChild<QPushButton *>("btnGermany");
-    QObject::connect(germany, &QPushButton::clicked, [&] {
+    QObject::connect(germany, &QPushButton::clicked, germany, [&] {
         user.setCountry(BindableUser::Country::Germany);
     });
     QPushButton *finland = w.findChild<QPushButton *>("btnFinland");
-    QObject::connect(finland, &QPushButton::clicked, [&] {
+    QObject::connect(finland, &QPushButton::clicked, finland, [&] {
         user.setCountry(BindableUser::Country::Finland);
     });
     QPushButton *norway = w.findChild<QPushButton *>("btnNorway");
-    QObject::connect(norway, &QPushButton::clicked, [&] {
+    QObject::connect(norway, &QPushButton::clicked, norway, [&] {
         user.setCountry(BindableUser::Country::Norway);
     });
 

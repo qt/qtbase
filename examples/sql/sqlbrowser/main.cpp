@@ -33,18 +33,17 @@ int main(int argc, char *argv[])
     mainWin.setCentralWidget(&browser);
 
     QMenu *fileMenu = mainWin.menuBar()->addMenu(QObject::tr("&File"));
-    fileMenu->addAction(QObject::tr("Add &Connection..."),
-            [&]() { browser.addConnection(); });
+    fileMenu->addAction(QObject::tr("Add &Connection..."), &browser,
+                        &Browser::openNewConnectionDialog);
     fileMenu->addSeparator();
-    fileMenu->addAction(QObject::tr("&Quit"), []() { qApp->quit(); });
+    fileMenu->addAction(QObject::tr("&Quit"), qApp, &QApplication::quit);
 
     QMenu *helpMenu = mainWin.menuBar()->addMenu(QObject::tr("&Help"));
-    helpMenu->addAction(QObject::tr("About"), [&]() { browser.about(); });
-    helpMenu->addAction(QObject::tr("About Qt"), []() { qApp->aboutQt(); });
+    helpMenu->addAction(QObject::tr("About"), &browser, &Browser::about);
+    helpMenu->addAction(QObject::tr("About Qt"), qApp, &QApplication::aboutQt);
 
-    QObject::connect(&browser, &Browser::statusMessage, [&mainWin](const QString &text) {
-        mainWin.statusBar()->showMessage(text);
-    });
+    QObject::connect(&browser, &Browser::statusMessage, &mainWin,
+                     [&mainWin](const QString &text) { mainWin.statusBar()->showMessage(text); });
 
     addConnectionsFromCommandline(app.arguments(), &browser);
     mainWin.show();
