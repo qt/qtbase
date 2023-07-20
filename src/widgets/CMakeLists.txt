@@ -662,6 +662,8 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_inputdialog
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_messagebox
     SOURCES
         dialogs/qmessagebox.cpp dialogs/qmessagebox.h
+    NO_UNITY_BUILD_SOURCES
+        dialogs/qmessagebox.cpp # error: ‘Old_Ok’ [etc] was not declared in this scope
 )
 
 if(QT_FEATURE_messagebox)
