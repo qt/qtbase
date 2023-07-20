@@ -57,12 +57,17 @@ FILES="
    jccolext.c
    jccolor.c
    jcdctmgr.c
+   jcdiffct.c
    jchuff.c
    jchuff.h
+   jcicc.c
    jcinit.c
+   jclhuff.c
+   jclossls.c
    jcmainct.c
    jcmarker.c
    jcmaster.c
+   jcmaster.h
    jcomapi.c
    jcparam.c
    jcphuff.c
@@ -81,10 +86,15 @@ FILES="
    jdcolor.c
    jdct.h
    jddctmgr.c
+   jddiffct.c
    jdhuff.c
    jdhuff.h
+   jdicc.c
    jdphuff.c
    jdinput.c
+   jdlhuff.c
+   jdlossls.c
+   jlossls.h
    jdmainct.c
    jdmainct.h
    jdmarker.c
@@ -108,7 +118,7 @@ FILES="
    jidctfst.c
    jidctint.c
    jinclude.h
-   jpegcomp.h
+   jpegapicomp.h
    jpegint.h
    jpeglib.h
    jmemmgr.c
@@ -118,8 +128,8 @@ FILES="
    jpeg_nbits_table.h
    jquant1.c
    jquant2.c
+   jsamplecomp.h
    jsimd.h
-   jsimd_none.c
    jsimddct.h
    jstdhuff.c
    jutils.c
