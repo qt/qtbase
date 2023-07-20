@@ -305,6 +305,7 @@ qt_internal_add_module(Core
         tools/qvector.h
         tools/qversionnumber.cpp tools/qversionnumber.h
     NO_UNITY_BUILD_SOURCES
+        tools/qfreelist.cpp # Size0/Offset0 (also in qabstracteventdispatcher.cpp)
         # MinGW complains about `free-nonheap-object` in ~QSharedDataPointer()
         # despite the fact that appropriate checks are in place to avoid that!
         tools/qshareddata.cpp tools/qshareddata.h
@@ -315,6 +316,7 @@ qt_internal_add_module(Core
         text/qstringconverter.cpp # enum Data
         tools/qcryptographichash.cpp # KeccakNISTInterface/Final
         io/qdebug.cpp # undef qDebug
+        io/qsettings.cpp # Space (also in qjsonparser.cpp)
     NO_PCH_SOURCES
         compat/removed_api.cpp
         global/qsimd.cpp
@@ -1120,6 +1122,8 @@ qt_internal_extend_target(Core CONDITION VXWORKS
 qt_internal_extend_target(Core CONDITION QT_FEATURE_cborstreamreader
     SOURCES
         serialization/qcborstreamreader.cpp serialization/qcborstreamreader.h
+    NO_UNITY_BUILD_SOURCES
+        serialization/qcborstreamreader.cpp # some problem with cbor_value_get_type etc
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_cborstreamwriter
