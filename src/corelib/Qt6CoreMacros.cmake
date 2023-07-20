@@ -954,7 +954,7 @@ function(_qt_internal_should_install_metatypes target)
     if(NOT target_type STREQUAL "EXECUTABLE" AND arg_INTERNAL_INSTALL)
         set(should_install TRUE)
     endif()
-    set(${out_var} "${should_install}" PARENT_SCOPE)
+    set(${arg_OUT_VAR} "${should_install}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_get_metatypes_install_dir internal_install_dir arch_data_dir out_var)
@@ -1055,8 +1055,6 @@ function(_qt_internal_assign_install_metatypes_files_and_properties target)
     if(NOT arg_INSTALL_DIR)
         message(FATAL_ERROR "INSTALL_DIR must be specified")
     endif()
-
-    set(metatypes_file_name "${arg_METATYPES_FILE_NAME}")
 
     # Set up consumption of files via INTERFACE_SOURCES.
     set(consumes_metatypes "$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>")
