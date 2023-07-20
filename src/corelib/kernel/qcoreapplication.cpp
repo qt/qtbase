@@ -622,6 +622,8 @@ void QCoreApplicationPrivate::initLocale()
 #  elif defined(Q_OS_ANDROID) && __ANDROID_API__ < __ANDROID_API_O__
     // Android 6 still lacks nl_langinfo(), so we can't check.
     // FIXME: Shouldn't we still setlocale("UTF-8")?
+#  elif defined(Q_OS_VXWORKS)
+    // VxWorks has no nl_langinfo, so we can't check.
 #  else
     // std::string's SSO usually saves this the need to allocate:
     const std::string oldEncoding = nl_langinfo(CODESET);
