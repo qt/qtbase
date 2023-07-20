@@ -151,7 +151,13 @@ void QIconLoader::setThemeName(const QString &themeName)
 
     qCDebug(lcIconLoader) << "Setting user theme name to" << themeName;
 
+    const bool hadUserTheme = hasUserTheme();
     m_userTheme = themeName;
+    // if we cleared the user theme, then reset search paths as well,
+    // otherwise we'll keep looking in the user-defined search paths for
+    // a system-provide theme, which will never work.
+    if (!hasUserTheme() && hadUserTheme)
+        setThemeSearchPath(systemIconSearchPaths());
     invalidateKey();
 }
 
