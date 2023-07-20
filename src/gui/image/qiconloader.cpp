@@ -352,12 +352,12 @@ QIconTheme::QIconTheme(const QString &themeName)
 
         if (!m_valid) {
             themeIndex.setFileName(themeDir + "/index.theme"_L1);
-            if (themeIndex.exists())
-                m_valid = true;
+            m_valid = themeIndex.exists();
+            qCDebug(lcIconLoader) << "Probing theme file at" << themeIndex.fileName() << m_valid;
         }
     }
 #if QT_CONFIG(settings)
-    if (themeIndex.exists()) {
+    if (m_valid) {
         const QSettings indexReader(themeIndex.fileName(), QSettings::IniFormat);
         const QStringList keys = indexReader.allKeys();
         for (const QString &key : keys) {
@@ -426,7 +426,8 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
                                            const QString &iconName,
                                            QStringList &visited) const
 {
-    qCDebug(lcIconLoader) << "Finding icon" << iconName << "in theme" << themeName;
+    qCDebug(lcIconLoader) << "Finding icon" << iconName << "in theme" << themeName
+                          << "skipping" << visited;
 
     QThemeIconInfo info;
     Q_ASSERT(!themeName.isEmpty());
