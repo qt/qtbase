@@ -135,8 +135,9 @@ void QIconLoader::invalidateKey()
 {
     // Invalidating the key here will result in QThemeIconEngine
     // recreating the actual engine the next time the icon is used.
-    // We don't need to clear the QIcon cache itself.
     m_themeKey++;
+    // Since the key has changed, we need to clear the cache as well.
+    QIconPrivate::clearIconCache();
 }
 
 QString QIconLoader::themeName() const
