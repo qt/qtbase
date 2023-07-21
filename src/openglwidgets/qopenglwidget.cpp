@@ -504,9 +504,8 @@ QT_BEGIN_NAMESPACE
     benefits on certain hardware architectures common in the mobile and
     embedded space when a framebuffer object is used as the rendering target.
     The framebuffer object is invalidated between frames with
-    glDiscardFramebufferEXT if supported or a glClear. Please see the
-    documentation of EXT_discard_framebuffer for more information:
-    https://www.khronos.org/registry/gles/extensions/EXT/EXT_discard_framebuffer.txt
+    glInvalidateFramebuffer (if supported), or, as fallbacks,
+    glDiscardFramebufferEXT (if supported) or a call to glClear.
 
     \value PartialUpdate The framebuffer objects color buffer and ancillary
     buffers are not invalidated between frames.
@@ -1000,7 +999,7 @@ void QOpenGLWidgetPrivate::invalidateFbo()
             gl_color_attachment0, gl_depth_attachment, gl_stencil_attachment
         };
 #endif
-        f->glDiscardFramebufferEXT(GL_FRAMEBUFFER, sizeof attachments / sizeof *attachments, attachments);
+        f->discardFramebuffer(GL_FRAMEBUFFER, GLsizei(std::size(attachments)), attachments);
     } else {
         f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
