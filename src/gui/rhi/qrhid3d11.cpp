@@ -4781,9 +4781,7 @@ bool QD3D11Timestamps::tryQueryTimestamps(int idx, ID3D11DeviceContext *context,
 }
 
 QD3D11SwapChain::QD3D11SwapChain(QRhiImplementation *rhi)
-    : QRhiSwapChain(rhi),
-      rt(rhi, this),
-      cb(rhi)
+    : QRhiSwapChain(rhi), rt(rhi, this), rtRight(rhi, this), cb(rhi)
 {
     backBufferTex = nullptr;
     backBufferRtv = nullptr;
@@ -4803,6 +4801,10 @@ void QD3D11SwapChain::releaseBuffers()
     if (backBufferRtv) {
         backBufferRtv->Release();
         backBufferRtv = nullptr;
+    }
+    if (backBufferRtvRight) {
+        backBufferRtvRight->Release();
+        backBufferRtvRight = nullptr;
     }
     if (backBufferTex) {
         backBufferTex->Release();
@@ -4855,6 +4857,11 @@ QRhiCommandBuffer *QD3D11SwapChain::currentFrameCommandBuffer()
 QRhiRenderTarget *QD3D11SwapChain::currentFrameRenderTarget()
 {
     return &rt;
+}
+
+QRhiRenderTarget *QD3D11SwapChain::currentFrameRenderTarget(StereoTargetBuffer targetBuffer)
+{
+    return targetBuffer == StereoTargetBuffer::LeftBuffer? &rt: &rtRight;
 }
 
 QSize QD3D11SwapChain::surfacePixelSize()
@@ -4965,6 +4972,7 @@ bool QD3D11SwapChain::createOrResize()
     // resize the buffers then.
 
     const bool needsRegistration = !window || window != m_window;
+    const bool stereo = m_window->format().stereo();
 
     // except if the window actually changes
     if (window && window != m_window)
@@ -5064,6 +5072,7 @@ bool QD3D11SwapChain::createOrResize()
         desc.Flags = swapChainFlags;
         desc.Scaling = DXGI_SCALING_NONE;
         desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        desc.Stereo = stereo;
 
         if (dcompVisual) {
             // With DirectComposition setting AlphaMode to STRAIGHT fails the
@@ -5179,6 +5188,19 @@ bool QD3D11SwapChain::createOrResize()
         return false;
     }
 
+    if (stereo) {
+        // Create a second render target view for the right eye
+        rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+        rtvDesc.Texture2DArray.FirstArraySlice = 1;
+        rtvDesc.Texture2DArray.ArraySize = 1;
+        hr = rhiD->dev->CreateRenderTargetView(backBufferTex, &rtvDesc, &backBufferRtvRight);
+        if (FAILED(hr)) {
+            qWarning("Failed to create rtv for swapchain backbuffer (right eye): %s",
+                     qPrintable(QSystemError::windowsComString(hr)));
+            return false;
+        }
+    }
+
     // Try to reduce stalls by having a dedicated MSAA texture per swapchain buffer.
     for (int i = 0; i < BUFFER_COUNT; ++i) {
         if (sampleDesc.Count > 1) {
@@ -5216,6 +5238,18 @@ bool QD3D11SwapChain::createOrResize()
     rtD->d.sampleCount = int(sampleDesc.Count);
     rtD->d.colorAttCount = 1;
     rtD->d.dsAttCount = m_depthStencil ? 1 : 0;
+
+    if (stereo) {
+        rtD = QRHI_RES(QD3D11SwapChainRenderTarget, &rtRight);
+        rtD->d.rp = QRHI_RES(QD3D11RenderPassDescriptor, m_renderPassDesc);
+        rtD->d.pixelSize = pixelSize;
+        rtD->d.dpr = float(window->devicePixelRatio());
+        rtD->d.sampleCount = int(sampleDesc.Count);
+        rtD->d.colorAttCount = 1;
+        rtD->d.dsAttCount = m_depthStencil ? 1 : 0;
+        rtD->d.rtv[0] = backBufferRtvRight;
+        rtD->d.dsv = ds ? ds->dsv : nullptr;
+    }
 
     if (rhiD->rhiFlags.testFlag(QRhi::EnableTimestamps)) {
         timestamps.prepare(BUFFER_COUNT, rhiD);

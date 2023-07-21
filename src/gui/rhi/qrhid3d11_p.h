@@ -579,6 +579,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
 
     QRhiCommandBuffer *currentFrameCommandBuffer() override;
     QRhiRenderTarget *currentFrameRenderTarget() override;
+    QRhiRenderTarget *currentFrameRenderTarget(StereoTargetBuffer targetBuffer) override;
 
     QSize surfacePixelSize() override;
     bool isFormatSupported(Format f) override;
@@ -594,6 +595,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
     QWindow *window = nullptr;
     QSize pixelSize;
     QD3D11SwapChainRenderTarget rt;
+    QD3D11SwapChainRenderTarget rtRight;
     QD3D11CommandBuffer cb;
     DXGI_FORMAT colorFormat;
     DXGI_FORMAT srgbAdjustedColorFormat;
@@ -601,6 +603,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
     UINT swapChainFlags = 0;
     ID3D11Texture2D *backBufferTex;
     ID3D11RenderTargetView *backBufferRtv;
+    ID3D11RenderTargetView *backBufferRtvRight = nullptr;
     static const int BUFFER_COUNT = QD3D11_SWAPCHAIN_BUFFER_COUNT;
     ID3D11Texture2D *msaaTex[BUFFER_COUNT];
     ID3D11RenderTargetView *msaaRtv[BUFFER_COUNT];
