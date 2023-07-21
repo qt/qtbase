@@ -200,7 +200,49 @@ function(qt6_wrap_cpp outfiles )
 
     foreach(it ${moc_files})
         get_filename_component(it ${it} ABSOLUTE)
-        _qt_internal_make_output_file(${it} moc_ cpp outfile)
+        get_filename_component(it_ext ${it} EXT)
+        # remove the dot
+        string(SUBSTRING ${it_ext} 1 -1 it_ext)
+        set(HEADER_REGEX "(h|hh|h\\+\\+|hm|hpp|hxx|in|txx|inl)$")
+
+        if(it_ext MATCHES "${HEADER_REGEX}")
+            _qt_internal_make_output_file("${it}" moc_ cpp outfile)
+            set(is_header_file TRUE)
+        else()
+            set(found_source_extension FALSE)
+            foreach(LANG C CXX OBJC OBJCXX CUDA)
+                list(FIND CMAKE_${LANG}_SOURCE_FILE_EXTENSIONS "${it_ext}"
+                    index)
+                if(${index} GREATER -1)
+                    set(found_extension TRUE)
+                    break()
+                endif()
+            endforeach()
+            if(found_extension)
+                if(TARGET ${moc_target})
+                    _qt_internal_make_output_file(${it} "" moc outfile)
+                    target_sources(${moc_target} PRIVATE "${outfile}")
+                    target_include_directories("${moc_target}" PRIVATE
+                        "${CMAKE_CURRENT_BINARY_DIR}")
+                else()
+                    if("${moc_target}" STREQUAL "")
+                        string(JOIN "" err_msg
+                            "qt6_wrap_cpp: TARGET parameter is empty. "
+                            "Since the file ${it} is a source file, "
+                            "the TARGET option must be specified.")
+                    else()
+                        string(JOIN "" err_msg
+                            "qt6_wrap_cpp: TARGET \"${moc_target}\" "
+                            "not found.")
+                    endif()
+                    message(FATAL_ERROR "${err_msg}")
+                endif()
+            else()
+                string(JOIN "" err_msg "qt6_wrap_cpp: Unknown file extension: "
+                    "\"\.${it_ext}\".")
+                message(FATAL_ERROR "${err_msg}")
+            endif()
+        endif()
 
         set(out_json_file_var "")
         if(_WRAP_CPP___QT_INTERNAL_OUTPUT_MOC_JSON_FILES)
@@ -215,7 +257,10 @@ function(qt6_wrap_cpp outfiles )
             list(APPEND metatypes_json_list "${${out_json_file_var}}")
         endif()
     endforeach()
-    set(${outfiles} ${${outfiles}} PARENT_SCOPE)
+
+    if(is_header_file)
+        set(${outfiles} "${${outfiles}}" PARENT_SCOPE)
+    endif()
 
     if(metatypes_json_list)
         set(${_WRAP_CPP___QT_INTERNAL_OUTPUT_MOC_JSON_FILES}

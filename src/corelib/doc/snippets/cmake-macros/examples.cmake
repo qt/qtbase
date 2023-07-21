@@ -28,6 +28,11 @@ target_compile_definitions(myapp PRIVATE "$<$<CONFIG:Debug>:MY_OPTION_FOR_DEBUG>
                                          "$<$<BOOL:TRUE>:DEFINE_CMDLINE_SIGNAL_IN_GENEX=void cmdlineSignal(const QMap<int$<COMMA> int$<ANGLE-R> &i)>")
 #! [qt_wrap_cpp_3]
 
+#! [qt_wrap_cpp_4]
+qt_add_executable(myapp myapp.cpp main.cpp)
+qt_wrap_cpp("" myapp.cpp TARGET myapp)
+#! [qt_wrap_cpp_4]
+
 #! [qt_add_resources]
 set(SOURCES main.cpp)
 qt_add_resources(SOURCES example.qrc)

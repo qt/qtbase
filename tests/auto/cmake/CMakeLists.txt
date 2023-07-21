@@ -197,6 +197,7 @@ endif()
 _qt_internal_test_expect_pass(test_add_resource_prefix BINARY test_add_resource_prefix)
 _qt_internal_test_expect_build_fail(test_add_resource_options)
 _qt_internal_test_expect_build_fail(test_wrap_cpp_options)
+_qt_internal_test_expect_pass(test_wrap_cpp_moc)
 _qt_internal_test_expect_pass(test_platform_defs_include)
 _qt_internal_test_expect_pass(test_qtmainwin_library)
 
