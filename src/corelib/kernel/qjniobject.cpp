@@ -864,64 +864,6 @@ QByteArray QJniObject::className() const
     return d->m_className;
 }
 
-QJniObject QJniObject::callObjectMethodV(const char *methodName,
-                                         const char *signature,
-                                         va_list args) const
-{
-    QJniEnvironment env;
-    jobject res = nullptr;
-    jmethodID id = getCachedMethodID(env.jniEnv(), methodName, signature);
-    if (id) {
-        res = env->CallObjectMethodV(d->m_jobject, id, args);
-        if (env.checkAndClearExceptions()) {
-            env->DeleteLocalRef(res);
-            res = nullptr;
-        }
-    }
-
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
-}
-
-QJniObject QJniObject::callStaticObjectMethodV(const char *className,
-                                               const char *methodName,
-                                               const char *signature,
-                                               va_list args)
-{
-    QJniEnvironment env;
-    jobject res = nullptr;
-    jclass clazz = loadClass(className, env.jniEnv());
-    if (clazz) {
-        jmethodID id = QJniObject::getCachedMethodID(env.jniEnv(), clazz, toBinaryEncClassName(className),
-                                         methodName, signature, true);
-        if (id) {
-            res = env->CallStaticObjectMethodV(clazz, id, args);
-            if (env.checkAndClearExceptions()) {
-                env->DeleteLocalRef(res);
-                res = nullptr;
-            }
-        }
-    }
-
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
-}
-
-QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
-                                               const char *methodName,
-                                               const char *signature,
-                                               va_list args)
-{
-    QJniEnvironment env;
-    jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true);
-    if (!id)
-        return QJniObject();
-
-    return getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args));
-}
-
 /*!
     \fn template <typename Ret, typename ...Args> auto QJniObject::callMethod(const char *methodName, const char *signature, Args &&...args) const
     \since 6.4
