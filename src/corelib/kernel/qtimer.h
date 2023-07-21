@@ -89,7 +89,7 @@ public:
 
 #ifdef Q_QDOC
     template <typename Functor>
-    QMetaObject::Connection callOnTimeout(Functor &&slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
+    QMetaObject::Connection callOnTimeout(Functor &&slot);
     template <typename Functor>
     QMetaObject::Connection callOnTimeout(const QObject *context, Functor &&slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
 #else
