@@ -110,7 +110,7 @@ void QHostInfoResult::postResultsReady(const QHostInfo &info)
     auto result = new QHostInfoResult(this);
     Q_CHECK_PTR(result);
 
-    auto metaCallEvent = QMetaCallEvent::create(slotObj.get(), nullptr, signal_index, info);
+    auto metaCallEvent = QMetaCallEvent::create(std::move(slotObj), nullptr, signal_index, info);
     Q_CHECK_PTR(metaCallEvent);
     qApp->postEvent(result, metaCallEvent);
 }
