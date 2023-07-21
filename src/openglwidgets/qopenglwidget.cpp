@@ -553,7 +553,13 @@ public:
     void initialize();
     void render();
 
-    void invalidateFbo();
+    static constexpr GLenum gl_color_attachment0 = 0x8CE0;  // GL_COLOR_ATTACHMENT0
+    static constexpr GLenum gl_depth_attachment = 0x8D00;   // GL_DEPTH_ATTACHMENT
+    static constexpr GLenum gl_stencil_attachment = 0x8D20; // GL_STENCIL_ATTACHMENT
+    static constexpr GLenum gl_depth_stencil_attachment = 0x821A; // GL_DEPTH_STENCIL_ATTACHMENT
+
+    void invalidateFboBeforePainting();
+    void invalidateFboAfterPainting();
 
     void destroyFbos();
 
@@ -946,11 +952,11 @@ void QOpenGLWidgetPrivate::render()
     }
 
     if (updateBehavior == QOpenGLWidget::NoPartialUpdate && hasBeenComposed) {
-        invalidateFbo();
+        invalidateFboBeforePainting();
 
         if (stereo && fbos[QOpenGLWidget::RightBuffer]) {
             setCurrentTargetBuffer(QOpenGLWidget::RightBuffer);
-            invalidateFbo();
+            invalidateFboBeforePainting();
             setCurrentTargetBuffer(QOpenGLWidget::LeftBuffer);
         }
 
@@ -967,11 +973,15 @@ void QOpenGLWidgetPrivate::render()
 
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbos[currentTargetBuffer]->handle();
     q->paintGL();
+    if (updateBehavior == QOpenGLWidget::NoPartialUpdate)
+        invalidateFboAfterPainting();
 
     if (stereo && fbos[QOpenGLWidget::RightBuffer]) {
         setCurrentTargetBuffer(QOpenGLWidget::RightBuffer);
         QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbos[currentTargetBuffer]->handle();
         q->paintGL();
+        if (updateBehavior == QOpenGLWidget::NoPartialUpdate)
+            invalidateFboAfterPainting();
     }
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = 0;
 
@@ -979,29 +989,40 @@ void QOpenGLWidgetPrivate::render()
     flushPending = true;
 }
 
-void QOpenGLWidgetPrivate::invalidateFbo()
+void QOpenGLWidgetPrivate::invalidateFboBeforePainting()
 {
     QOpenGLExtensions *f = static_cast<QOpenGLExtensions *>(QOpenGLContext::currentContext()->functions());
     if (f->hasOpenGLExtension(QOpenGLExtensions::DiscardFramebuffer)) {
-        const int gl_color_attachment0 = 0x8CE0;  // GL_COLOR_ATTACHMENT0
-        const int gl_depth_attachment = 0x8D00;   // GL_DEPTH_ATTACHMENT
-        const int gl_stencil_attachment = 0x8D20; // GL_STENCIL_ATTACHMENT
+        const GLenum attachments[] = {
+            gl_color_attachment0,
+            gl_depth_attachment,
+            gl_stencil_attachment,
 #ifdef Q_OS_WASM
-        // webgl does not allow separate depth and stencil attachments
-        // QTBUG-69913
-        const int gl_depth_stencil_attachment = 0x821A; // GL_DEPTH_STENCIL_ATTACHMENT
-
-        const GLenum attachments[] = {
-            gl_color_attachment0, gl_depth_attachment, gl_stencil_attachment, gl_depth_stencil_attachment
-        };
-#else
-        const GLenum attachments[] = {
-            gl_color_attachment0, gl_depth_attachment, gl_stencil_attachment
-        };
+            // webgl does not allow separate depth and stencil attachments
+            // QTBUG-69913
+            gl_depth_stencil_attachment
 #endif
+        };
         f->discardFramebuffer(GL_FRAMEBUFFER, GLsizei(std::size(attachments)), attachments);
     } else {
         f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    }
+}
+
+void QOpenGLWidgetPrivate::invalidateFboAfterPainting()
+{
+    QOpenGLExtensions *f = static_cast<QOpenGLExtensions *>(QOpenGLContext::currentContext()->functions());
+    if (f->hasOpenGLExtension(QOpenGLExtensions::DiscardFramebuffer)) {
+        const GLenum attachments[] = {
+            gl_depth_attachment,
+            gl_stencil_attachment,
+#ifdef Q_OS_WASM
+            // webgl does not allow separate depth and stencil attachments
+            // QTBUG-69913
+            gl_depth_stencil_attachment
+#endif
+        };
+        f->discardFramebuffer(GL_FRAMEBUFFER, GLsizei(std::size(attachments)), attachments);
     }
 }
 
