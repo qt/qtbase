@@ -18,7 +18,7 @@ TreeItem::TreeItem(const QVariantList &data, TreeItem *parent)
 //! [1]
 TreeItem *TreeItem::child(int number)
 {
-    if (number < 0 || number >= m_childItems.size())
+    if (number < 0 || number >= qsizetype(m_childItems.size()))
         return nullptr;
     return m_childItems.at(number).get();
 }
@@ -67,7 +67,7 @@ QVariant TreeItem::data(int column) const
 //! [6]
 bool TreeItem::insertChildren(int position, int count, int columns)
 {
-    if (position < 0 || position > m_childItems.size())
+    if (position < 0 || position > qsizetype(m_childItems.size()))
         return false;
 
     for (int row = 0; row < count; ++row) {
@@ -106,7 +106,7 @@ TreeItem *TreeItem::parent()
 //! [9]
 bool TreeItem::removeChildren(int position, int count)
 {
-    if (position < 0 || position + count > m_childItems.size())
+    if (position < 0 || position + count > qsizetype(m_childItems.size()))
         return false;
 
     for (int row = 0; row < count; ++row)
