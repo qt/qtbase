@@ -1186,7 +1186,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         sectionNodes[index].pos = pos;
         int *current = nullptr;
         const SectionNode sn = sectionNodes.at(index);
-        const QDateTime usedDateTime = ([=]() {
+        const QDateTime usedDateTime = [&] {
             const QDate date = actualDate(isSet, calendar, year, year2digits,
                                           month, day, dayofweek);
             const QTime time = actualTime(isSet, hour, hour12, ampm, minute, second, msec);
@@ -1195,7 +1195,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
                 return QDateTime(date, time, timeZone);
 #endif
             return QDateTime(date, time, tspec, zoneOffset);
-        })();
+        }();
         ParsedSection sect = parseSection(usedDateTime, index, pos);
 
         QDTPDEBUG << "sectionValue" << sn.name() << m_text
