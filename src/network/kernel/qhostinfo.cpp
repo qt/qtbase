@@ -726,27 +726,26 @@ QString QHostInfo::localHostName()
     \internal
     Called by the various lookupHost overloads to perform the lookup.
 
-    Signals either the functor encapuslated in the \a slotObj in the context
+    Signals either the functor encapuslated in the \a slotObjRaw in the context
     of \a receiver, or the \a member slot of the \a receiver.
 
-    \a receiver might be the nullptr, but only if a \a slotObj is provided.
+    \a receiver might be the nullptr, but only if a \a slotObjRaw is provided.
 */
 int QHostInfo::lookupHostImpl(const QString &name,
                               const QObject *receiver,
-                              QtPrivate::QSlotObjectBase *slotObj,
+                              QtPrivate::QSlotObjectBase *slotObjRaw,
                               const char *member)
 {
+    QtPrivate::SlotObjUniquePtr slotObj{slotObjRaw};
 #if defined QHOSTINFO_DEBUG
     qDebug("QHostInfo::lookupHostImpl(\"%s\", %p, %p, %s)",
-           name.toLatin1().constData(), receiver, slotObj, member ? member + 1 : 0);
+           name.toLatin1().constData(), receiver, slotObj.get(), member ? member + 1 : 0);
 #endif
     Q_ASSERT(!member != !slotObj); // one of these must be set, but not both
     Q_ASSERT(receiver || slotObj);
 
     if (!QAbstractEventDispatcher::instance(QThread::currentThread())) {
         qWarning("QHostInfo::lookupHost() called with no event dispatcher");
-        if (slotObj)
-            slotObj->destroyIfLastRef();
         return -1;
     }
 
@@ -759,7 +758,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
         hostInfo.setError(QHostInfo::HostNotFound);
         hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
 
-        QHostInfoResult result(receiver, slotObj);
+        QHostInfoResult result(receiver, slotObj.release());
         if (receiver && member)
             QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
                             receiver, member, Qt::QueuedConnection);
@@ -776,7 +775,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
     QHostInfo hostInfo = QHostInfoAgent::lookup(name);
     hostInfo.setLookupId(id);
 
-    QHostInfoResult result(receiver, slotObj);
+    QHostInfoResult result(receiver, slotObj.release());
     if (receiver && member)
         QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
                         receiver, member, Qt::QueuedConnection);
@@ -792,7 +791,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
             QHostInfo info = manager->cache.get(name, &valid);
             if (valid) {
                 info.setLookupId(id);
-                QHostInfoResult result(receiver, slotObj);
+                QHostInfoResult result(receiver, slotObj.release());
                 if (receiver && member)
                     QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
                                     receiver, member, Qt::QueuedConnection);
@@ -802,13 +801,11 @@ int QHostInfo::lookupHostImpl(const QString &name,
         }
 
         // cache is not enabled or it was not in the cache, do normal lookup
-        QHostInfoRunnable *runnable = new QHostInfoRunnable(name, id, receiver, slotObj);
+        QHostInfoRunnable *runnable = new QHostInfoRunnable(name, id, receiver, slotObj.release());
         if (receiver && member)
             QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)),
                                 receiver, member, Qt::QueuedConnection);
         manager->scheduleLookup(runnable);
-    } else if (slotObj) {
-        slotObj->destroyIfLastRef();
     }
 #endif // Q_OS_WASM
     return id;
