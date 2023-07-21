@@ -42,7 +42,7 @@ MainWindow::MainWindow(VulkanWindow *vulkanWindow)
     pauseButton->setFocusPolicy(Qt::NoFocus);
 
     connect(quitButton, &QPushButton::clicked, qApp, &QCoreApplication::quit);
-    connect(newButton, &QPushButton::clicked, vulkanWindow, [=] {
+    connect(newButton, &QPushButton::clicked, vulkanWindow, [this, &vulkanWindow] {
         vulkanWindow->addNew();
         m_count = vulkanWindow->instanceCount();
         counterLcd->display(m_count);
