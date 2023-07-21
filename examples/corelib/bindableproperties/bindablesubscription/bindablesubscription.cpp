@@ -10,7 +10,8 @@ BindableSubscription::BindableSubscription(BindableUser *user) : m_user(user)
 {
     Q_ASSERT(user);
 
-    m_price.setBinding([this] { return qRound(calculateDiscount() * m_duration * basePrice()); });
+    m_price.setBinding(
+            [this] { return qRound(calculateDiscount() * int(m_duration) * basePrice()); });
 
     m_isValid.setBinding([this] {
         return m_user->country() != BindableUser::Country::AnyCountry && m_user->age() > 12;

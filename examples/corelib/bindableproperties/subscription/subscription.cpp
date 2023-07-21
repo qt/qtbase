@@ -15,7 +15,7 @@ void Subscription::calculatePrice()
 {
     const auto oldPrice = m_price;
 
-    m_price = qRound(calculateDiscount() * m_duration * basePrice());
+    m_price = qRound(calculateDiscount() * int(m_duration) * basePrice());
     if (m_price != oldPrice)
         emit priceChanged();
 }
