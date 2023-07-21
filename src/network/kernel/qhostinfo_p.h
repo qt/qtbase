@@ -61,11 +61,9 @@ protected:
 
 private:
     QHostInfoResult(const QHostInfoResult *other)
-        : receiver(other->receiver), slotObj(other->slotObj.get()), // ugly, but copy the pointer...
+        : receiver(other->receiver), slotObj{copy(other->slotObj)},
           withContextObject(other->withContextObject)
     {
-        if (slotObj)
-            slotObj->ref(); // ... and ref it here
         // cleanup if the application terminates before results are delivered
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
                 this, &QObject::deleteLater);

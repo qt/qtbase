@@ -452,6 +452,12 @@ namespace QtPrivate {
 
     using SlotObjUniquePtr = std::unique_ptr<QSlotObjectBase,
                                              QSlotObjectBase::Deleter>;
+    inline SlotObjUniquePtr copy(const SlotObjUniquePtr &other) noexcept
+    {
+        if (other)
+            other->ref();
+        return SlotObjUniquePtr{other.get()};
+    }
 
     class SlotObjSharedPtr {
         SlotObjUniquePtr obj;
@@ -465,11 +471,7 @@ namespace QtPrivate {
             // (that's why (QSlotObjectBase*) ctor doesn't exisit: don't know whether that one _should_)
         }
         Q_NODISCARD_CTOR SlotObjSharedPtr(const SlotObjSharedPtr &other) noexcept
-            : obj(other.obj.get())
-        {
-            if (obj)
-                obj->ref();
-        }
+            : obj{copy(other.obj)} {}
         SlotObjSharedPtr &operator=(const SlotObjSharedPtr &other) noexcept
         { auto copy = other; swap(copy); return *this; }
 
