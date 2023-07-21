@@ -1240,12 +1240,12 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         int *current = nullptr;
         int zoneOffset; // Needed to serve as *current when setting zone
         const SectionNode sn = sectionNodes.at(index);
-        const QDateTime usedDateTime = ([=]() {
+        const QDateTime usedDateTime = [&] {
             const QDate date = actualDate(isSet, calendar, year, year2digits,
                                           month, day, dayofweek);
             const QTime time = actualTime(isSet, hour, hour12, ampm, minute, second, msec);
             return QDateTime(date, time, timeZone);
-        })();
+        }();
         ParsedSection sect = parseSection(usedDateTime, index, pos);
 
         QDTPDEBUG << "sectionValue" << sn.name() << m_text
