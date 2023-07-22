@@ -53,6 +53,8 @@ public:
             moveToThread(receiver->thread());
     }
 
+    explicit QHostInfoResult(const QObject *receiver, QtPrivate::SlotObjUniquePtr slot);
+
     ~QHostInfoResult() override;
 
     void postResultsReady(const QHostInfo &info);
@@ -147,6 +149,8 @@ class QHostInfoRunnable : public QRunnable
 public:
     QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
                       QtPrivate::QSlotObjectBase *slotObj);
+    explicit QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
+                               QtPrivate::SlotObjUniquePtr slotObj);
     ~QHostInfoRunnable() override;
 
     void run() override;
