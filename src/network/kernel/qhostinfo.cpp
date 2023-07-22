@@ -72,6 +72,13 @@ Q_APPLICATION_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
 
 }
 
+QHostInfoResult::QHostInfoResult(const QObject *receiver, QtPrivate::SlotObjUniquePtr slot)
+    : receiver{receiver}, slotObj{std::move(slot)}, withContextObject{slotObj && receiver}
+{
+    if (receiver)
+        moveToThread(receiver->thread());
+}
+
 QHostInfoResult::~QHostInfoResult()
     = default;
 
@@ -758,7 +765,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
         hostInfo.setError(QHostInfo::HostNotFound);
         hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
 
-        QHostInfoResult result(receiver, slotObj.release());
+        QHostInfoResult result(receiver, std::move(slotObj));
         if (receiver && member)
             QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
                             receiver, member, Qt::QueuedConnection);
@@ -775,7 +782,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
     QHostInfo hostInfo = QHostInfoAgent::lookup(name);
     hostInfo.setLookupId(id);
 
-    QHostInfoResult result(receiver, slotObj.release());
+    QHostInfoResult result(receiver, std::move(slotObj));
     if (receiver && member)
         QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
                         receiver, member, Qt::QueuedConnection);
@@ -791,7 +798,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
             QHostInfo info = manager->cache.get(name, &valid);
             if (valid) {
                 info.setLookupId(id);
-                QHostInfoResult result(receiver, slotObj.release());
+                QHostInfoResult result(receiver, std::move(slotObj));
                 if (receiver && member)
                     QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
                                     receiver, member, Qt::QueuedConnection);
@@ -801,7 +808,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
         }
 
         // cache is not enabled or it was not in the cache, do normal lookup
-        QHostInfoRunnable *runnable = new QHostInfoRunnable(name, id, receiver, slotObj.release());
+        QHostInfoRunnable *runnable = new QHostInfoRunnable(name, id, receiver, std::move(slotObj));
         if (receiver && member)
             QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)),
                                 receiver, member, Qt::QueuedConnection);
@@ -814,6 +821,13 @@ int QHostInfo::lookupHostImpl(const QString &name,
 QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
                                      QtPrivate::QSlotObjectBase *slotObj) :
     toBeLookedUp(hn), id(i), resultEmitter(receiver, slotObj)
+{
+    setAutoDelete(true);
+}
+
+QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
+                                     QtPrivate::SlotObjUniquePtr slotObj)
+    : toBeLookedUp{hn}, id{i}, resultEmitter{receiver, std::move(slotObj)}
 {
     setAutoDelete(true);
 }
