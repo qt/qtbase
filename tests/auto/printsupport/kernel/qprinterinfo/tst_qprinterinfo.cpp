@@ -49,6 +49,10 @@ private:
 #ifdef QT_NO_PRINTER
 void tst_QPrinterInfo::initTestCase()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() == 33)
+        QSKIP("Is flaky on Android 13 / RHEL 8.6 and 8.8 (QTQAINFRA-5606)");
+#endif
     QSKIP("This test requires printing support");
 }
 

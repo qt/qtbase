@@ -110,6 +110,10 @@ static bool isPlatformWayland()
 
 void tst_QWindow::initTestCase()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() == 33)
+        QSKIP("Is flaky on Android 13 / RHEL 8.6 and 8.8 (QTQAINFRA-5606)");
+#endif
     // Size of reference window, 200 for < 2000, scale up for larger screens
     // to avoid Windows warnings about minimum size for decorated windows.
     int width = 200;
