@@ -59,7 +59,7 @@ template <typename StringType> struct QStringAlgorithms
     // - if there is a sequence of one or more space chacaters at the end,
     //   "end" refers to the first character in that sequence, otherwise
     //   "end" is str.cend()
-    static TrimPositions trimmed_helper_positions(const StringType &str)
+    [[nodiscard]] static TrimPositions trimmed_helper_positions(const StringType &str)
     {
         const Char *begin = str.cbegin();
         const Char *end = str.cend();
