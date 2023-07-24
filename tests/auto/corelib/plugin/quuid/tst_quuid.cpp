@@ -248,7 +248,7 @@ void tst_QUuid::id128()
 
 void tst_QUuid::uint128()
 {
-#ifdef __SIZEOF_INT128__
+#ifdef QT_SUPPORTS_INT128
     constexpr quint128 u = quint128(Q_UINT64_C(0xfc69b59ecc344436)) << 64
                             | Q_UINT64_C(0xa43cee95d128b8c5); // This is LE
     constexpr quint128 be = qToBigEndian(u);

@@ -60,7 +60,7 @@ public:
         quint16 data16[8];
         quint32 data32[4];
         quint64 data64[2];
-#ifdef __SIZEOF_INT128__
+#ifdef QT_SUPPORTS_INT128
         quint128 data128[1];
 #endif
 
@@ -100,7 +100,7 @@ public:
 
     bool isNull() const noexcept;
 
-#ifdef __SIZEOF_INT128__
+#ifdef QT_SUPPORTS_INT128
     constexpr QUuid(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
     constexpr quint128 toUInt128(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
 #endif
@@ -242,7 +242,7 @@ inline QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcep
     return QUuid(result, order);
 }
 
-#ifdef __SIZEOF_INT128__
+#ifdef QT_SUPPORTS_INT128
 constexpr QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
     : QUuid()
 {

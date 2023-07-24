@@ -58,7 +58,13 @@ typedef unsigned long long quint64; /* 64 bit unsigned */
 typedef qint64 qlonglong;
 typedef quint64 qulonglong;
 
-#if defined(__SIZEOF_INT128__)
+#if defined(__SIZEOF_INT128__) && !defined(QT_NO_INT128)
+#  define QT_SUPPORTS_INT128 __SIZEOF_INT128__
+#else
+#  undef QT_SUPPORTS_INT128
+#endif
+
+#if defined(QT_SUPPORTS_INT128)
 __extension__ typedef __int128_t qint128;
 __extension__ typedef __uint128_t quint128;
 #endif
@@ -107,7 +113,7 @@ template <>    struct QIntegerForSize<1> { typedef quint8  Unsigned; typedef qin
 template <>    struct QIntegerForSize<2> { typedef quint16 Unsigned; typedef qint16 Signed; };
 template <>    struct QIntegerForSize<4> { typedef quint32 Unsigned; typedef qint32 Signed; };
 template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qint64 Signed; };
-#if defined(__SIZEOF_INT128__)
+#if defined(QT_SUPPORTS_INT128)
 template <>    struct QIntegerForSize<16> { typedef quint128 Unsigned; typedef qint128 Signed; };
 #endif
 template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
