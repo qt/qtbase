@@ -105,7 +105,7 @@ inline constexpr T qbswap(T source)
     return T(qbswap_helper(typename QIntegerForSizeof<T>::Unsigned(source)));
 }
 
-#ifdef __SIZEOF_INT128__
+#ifdef QT_SUPPORTS_INT128
 // extra definitions for q(u)int128, in case std::is_integral_v<~~> == false
 inline constexpr quint128 qbswap(quint128 source)
 {
