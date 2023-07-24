@@ -121,7 +121,7 @@ bool QTlsBackendOpenSSL::ensureLibraryLoaded()
 #else
 	    // If tpm2 is the default provider the seed is managed by the tpm
 	    // the RAND_status return false.
-	    // So, we check if the tpm2 provider is loaded because returning false.
+	    // So, we check if the tpm2 provider is loaded because q_RAND_status returned false.
 	    // If it is loaded then ignore the status
 	    if (!OSSL_PROVIDER_available(NULL, "tpm2")) {
 		    return false;

@@ -321,6 +321,16 @@ QByteArray TlsKeyOpenSSL::toPem(const QByteArray &passPhrase) const
         }
 #ifndef OPENSSL_NO_EC
     } else if (algorithm() == QSsl::Ec) {
+#ifdef OPENSSL_NO_DEPRECATED_3_0
+        EVP_PKEY *result = genericKey;
+	if (type() == QSsl::PublicKey) {
+            if (!q_PEM_write_bio_PUBKEY(bio, result))
+                fail = true;
+        } else if (!q_PEM_write_bio_PrivateKey(bio, result, cipher, (uchar *)passPhrase.data(),
+                                               passPhrase.size(), nullptr, nullptr)) {
+            fail = true;
+        }
+#else
         if (type() == QSsl::PublicKey) {
             if (!write_pubkey(EC, ec))
                 fail = true;
@@ -328,6 +338,7 @@ QByteArray TlsKeyOpenSSL::toPem(const QByteArray &passPhrase) const
             if (!write_privatekey(EC, ec))
                 fail = true;
         }
+#endif
 #endif
     } else {
         fail = true;
