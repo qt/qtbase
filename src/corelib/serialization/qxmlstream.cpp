@@ -3950,7 +3950,7 @@ void QXmlStreamReaderPrivate::checkToken()
 
     if (!ok) {
         raiseError(QXmlStreamReader::UnexpectedElementError,
-                   QObject::tr("Unexpected token type %1 in %2.")
+                   QXmlStream::tr("Unexpected token type %1 in %2.")
                    .arg(q->tokenString(), contextString(context)));
         return;
     }
@@ -3961,7 +3961,7 @@ void QXmlStreamReaderPrivate::checkToken()
     // Raise error on multiple DTD tokens
     if (foundDTD) {
         raiseError(QXmlStreamReader::UnexpectedElementError,
-                   QObject::tr("Found second DTD token in %1.").arg(contextString(context)));
+                   QXmlStream::tr("Found second DTD token in %1.").arg(contextString(context)));
     } else {
         foundDTD = true;
     }
