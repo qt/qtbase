@@ -119,6 +119,27 @@ static bool useAsyncify()
     return false;
 }
 
+static bool useJspi()
+{
+    return false;
+}
+
+void qt_jspi_suspend_js()
+{
+    Q_UNREACHABLE();
+}
+
+void qt_jspi_resume_js()
+{
+    Q_UNREACHABLE();
+}
+
+bool qt_jspi_can_resume_js()
+{
+    Q_UNREACHABLE();
+    return false;
+}
+
 void qt_asyncify_suspend_js()
 {
     Q_UNREACHABLE();
