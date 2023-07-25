@@ -3895,5 +3895,6 @@ void tst_QDataStream::typedefQt5Compat()
 }
 
 QTEST_MAIN(tst_QDataStream)
+
 #include "tst_qdatastream.moc"
 

@@ -26,7 +26,6 @@ protected:
     qint64 readData(char *data, qint64 maxlen) override;
     qint64 writeData(const char *, qint64) override { return -1; }
 };
-};
 
 qint64 LargeIODevice::readData(char *data, qint64 maxlen)
 {
@@ -118,3 +117,4 @@ void addValidationHugeDevice(qsizetype byteArrayInvalid, qsizetype stringInvalid
     addSize("4GB", quint64(1) << 32);
     addSize("max", std::numeric_limits<qint64>::max() - sizeof(buf));
 }
+} // namespace

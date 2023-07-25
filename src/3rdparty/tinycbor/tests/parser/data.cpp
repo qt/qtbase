@@ -28,6 +28,8 @@
 
 Q_DECLARE_METATYPE(CborError)
 
+namespace {
+
 template <size_t N> QByteArray raw(const char (&data)[N])
 {
     return QByteArray::fromRawData(data, N - 1);
@@ -605,3 +607,4 @@ void addValidationData(size_t minInvalid = ~size_t(0))
     // This test technically tests the dumper, not the parser.
     QTest::newRow("string-utf8-chunk-split") << raw("\x81\x7f\x61\xc2\x61\xa0\xff") << 0 << CborErrorInvalidUtf8TextString;
 }
+} // namespace

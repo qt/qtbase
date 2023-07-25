@@ -29,7 +29,7 @@ private Q_SLOTS:
 
 // Get the data from TinyCBOR (see src/3rdparty/tinycbor/tests/encoder/data.cpp)
 typedef quint64 CborTag;
-#include "data.cpp"
+#include "encoder/data.cpp"
 
 void encodeVariant(QCborStreamWriter &writer, const QVariant &v)
 {

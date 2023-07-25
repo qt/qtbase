@@ -2399,6 +2399,11 @@ void tst_QCborValue::hugeDeviceValidation_data()
 
 void tst_QCborValue::hugeDeviceValidation()
 {
+#if defined(Q_OS_WASM)
+    QSKIP("This test tries to allocate a huge memory buffer,"
+          " causes problem on WebAssembly platform which has limited resources.");
+#endif // Q_OS_WASM
+
     QFETCH(QSharedPointer<QIODevice>, device);
     QFETCH(CborError, expectedError);
     QCborError error = { QCborError::Code(expectedError) };

@@ -88,7 +88,7 @@ template<> char *toString<QCborStreamReader::Type>(const QCborStreamReader::Type
 QT_END_NAMESPACE
 
 // Get the data from TinyCBOR (see src/3rdparty/tinycbor/tests/parser/data.cpp)
-#include "data.cpp"
+#include "parser/data.cpp"
 
 void tst_QCborStreamReader::initTestCase_data()
 {
@@ -927,6 +927,10 @@ void tst_QCborStreamReader::hugeDeviceValidation()
         QSKIP("This test tries to allocate a huge memory buffer,"
               " which Address Sanitizer flags as a problem");
 #endif
+#if defined(Q_OS_WASM)
+   QSKIP("This test tries to allocate a huge memory buffer,"
+              " causes problem on WebAssembly platform which has limited resources.");
+#endif // Q_OS_WASM
 
     QFETCH(QSharedPointer<QIODevice>, device);
     QFETCH(CborError, expectedError);

@@ -34,6 +34,7 @@ if(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS)
 endif()
 
 if(WASM)
+    add_subdirectory(corelib/serialization)
     add_subdirectory(corelib/text)
     return()
 endif()

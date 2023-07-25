@@ -16,7 +16,7 @@ qt_internal_add_test(tst_qcborstreamreader
         tst_qcborstreamreader.cpp
     INCLUDE_DIRECTORIES
         ../../../../../src/3rdparty/tinycbor/src
-        ../../../../../src/3rdparty/tinycbor/tests/parser
+        ../../../../../src/3rdparty/tinycbor/tests
     LIBRARIES
         Qt::CorePrivate
 )

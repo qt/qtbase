@@ -5,7 +5,7 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QImage>
 
-class tst_QDataStream : public QObject
+class tst_QDataStreamPixmap : public QObject
 {
 Q_OBJECT
 
@@ -13,7 +13,7 @@ private slots:
     void stream_with_pixmap();
 };
 
-void tst_QDataStream::stream_with_pixmap()
+void tst_QDataStreamPixmap::stream_with_pixmap()
 {
     // This is a QVariantMap with a 3x3 red QPixmap and two strings inside
     const QByteArray ba = QByteArray::fromBase64(
@@ -37,6 +37,6 @@ void tst_QDataStream::stream_with_pixmap()
     QCOMPARE(map["z"].toString(), QString("there"));
 }
 
-QTEST_GUILESS_MAIN(tst_QDataStream)
+QTEST_GUILESS_MAIN(tst_QDataStreamPixmap)
 
 #include "tst_qdatastream_core_pixmap.moc"
