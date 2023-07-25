@@ -2243,7 +2243,7 @@ void QTabBarPrivate::setupMovableTab()
 
     QStyleOptionTab tab;
     q->initStyleOption(&tab, pressedIndex);
-    tab.position = QStyleOptionTab::OnlyOneTab;
+    tab.position = QStyleOptionTab::Moving;
     if (verticalTabs(shape))
         tab.rect.moveTopLeft(QPoint(0, taboverlap));
     else

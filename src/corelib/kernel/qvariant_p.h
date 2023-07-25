@@ -19,8 +19,7 @@
 
 QT_BEGIN_NAMESPACE
 
-template <typename F> static QVariant::PrivateShared *
-customConstructShared(size_t size, size_t align, F &&construct)
+inline auto customConstructSharedImpl(size_t size, size_t align)
 {
     struct Deleter {
         void operator()(QVariant::PrivateShared *p) const
@@ -30,6 +29,13 @@ customConstructShared(size_t size, size_t align, F &&construct)
     // this is exception-safe
     std::unique_ptr<QVariant::PrivateShared, Deleter> ptr;
     ptr.reset(QVariant::PrivateShared::create(size, align));
+    return ptr;
+}
+
+template <typename F> static QVariant::PrivateShared *
+customConstructShared(size_t size, size_t align, F &&construct)
+{
+    auto ptr = customConstructSharedImpl(size, align);
     construct(ptr->data());
     return ptr.release();
 }

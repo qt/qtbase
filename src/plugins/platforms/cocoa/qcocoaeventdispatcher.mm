@@ -957,7 +957,7 @@ QCocoaEventDispatcher::~QCocoaEventDispatcher()
 {
     Q_D(QCocoaEventDispatcher);
 
-    qDeleteAll(d->timerInfoList);
+    d->timerInfoList.clearTimers();
     d->maybeStopCFRunLoopTimer();
     CFRunLoopRemoveSource(mainRunLoop(), d->activateTimersSourceRef, kCFRunLoopCommonModes);
     CFRelease(d->activateTimersSourceRef);

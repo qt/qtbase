@@ -6336,8 +6336,8 @@ QT_WARNING_POP
 /*!
     \fn QDomDocument::ParseResult::operator bool() const
 
-    Returns \c true if an error is found by QDomDocument::setContent();
-    otherwise returns \c false.
+    Returns \c false if any error is found by QDomDocument::setContent();
+    otherwise returns \c true.
 
     \sa QDomDocument::setContent()
 */

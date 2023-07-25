@@ -41,23 +41,21 @@ steady_clock::time_point QTimerInfoList::updateCurrentTime()
 */
 bool QTimerInfoList::hasPendingTimers()
 {
-    if (isEmpty())
+    if (timers.isEmpty())
         return false;
-    return updateCurrentTime() < constFirst()->timeout;
+    return updateCurrentTime() < timers.at(0)->timeout;
 }
+
+static bool byTimeout(const QTimerInfo *a, const QTimerInfo *b)
+{ return a->timeout < b->timeout; };
 
 /*
   insert timer info into list
 */
 void QTimerInfoList::timerInsert(QTimerInfo *ti)
 {
-    int index = size();
-    while (index--) {
-        const QTimerInfo * const t = at(index);
-        if (!(ti->timeout < t->timeout))
-            break;
-    }
-    insert(index+1, ti);
+    timers.insert(std::upper_bound(timers.cbegin(), timers.cend(), ti, byTimeout),
+                  ti);
 }
 
 static constexpr milliseconds roundToMillisecond(nanoseconds val)
@@ -238,12 +236,11 @@ bool QTimerInfoList::timerWait(timespec &tm)
 
     auto isWaiting = [](QTimerInfo *tinfo) { return !tinfo->activateRef; };
     // Find first waiting timer not already active
-    auto it = std::find_if(cbegin(), cend(), isWaiting);
-    if (it == cend())
+    auto it = std::find_if(timers.cbegin(), timers.cend(), isWaiting);
+    if (it == timers.cend())
         return false;
 
-    QTimerInfo *t = *it;
-    nanoseconds timeToWait = t->timeout - now;
+    nanoseconds timeToWait = (*it)->timeout - now;
     if (timeToWait > 0ns)
         tm = durationToTimespec(roundToMillisecond(timeToWait));
     else
@@ -267,7 +264,7 @@ milliseconds QTimerInfoList::remainingDuration(int timerId)
     const steady_clock::time_point now = updateCurrentTime();
 
     auto it = findTimerById(timerId);
-    if (it == cend()) {
+    if (it == timers.cend()) {
 #ifndef QT_NO_DEBUG
         qWarning("QTimerInfoList::timerRemainingTime: timer id %i not found", timerId);
 #endif
@@ -288,12 +285,7 @@ void QTimerInfoList::registerTimer(int timerId, qint64 interval, Qt::TimerType t
 void QTimerInfoList::registerTimer(int timerId, milliseconds interval,
                                    Qt::TimerType timerType, QObject *object)
 {
-    QTimerInfo *t = new QTimerInfo;
-    t->id = timerId;
-    t->interval = interval;
-    t->timerType = timerType;
-    t->obj = object;
-    t->activateRef = nullptr;
+    QTimerInfo *t = new QTimerInfo(timerId, interval, timerType, object);
 
     steady_clock::time_point expected = updateCurrentTime() + interval;
 
@@ -337,7 +329,7 @@ void QTimerInfoList::registerTimer(int timerId, milliseconds interval,
 bool QTimerInfoList::unregisterTimer(int timerId)
 {
     auto it = findTimerById(timerId);
-    if (it == cend())
+    if (it == timers.cend())
         return false; // id not found
 
     // set timer inactive
@@ -347,35 +339,37 @@ bool QTimerInfoList::unregisterTimer(int timerId)
     if (t->activateRef)
         *(t->activateRef) = nullptr;
     delete t;
-    erase(it);
+    timers.erase(it);
     return true;
 }
 
 bool QTimerInfoList::unregisterTimers(QObject *object)
 {
-    if (isEmpty())
+    if (timers.isEmpty())
         return false;
-    for (int i = 0; i < size(); ++i) {
-        QTimerInfo *t = at(i);
-        if (t->obj == object) {
-            // object found
-            removeAt(i);
-            if (t == firstTimerInfo)
-                firstTimerInfo = nullptr;
-            if (t->activateRef)
-                *(t->activateRef) = nullptr;
-            delete t;
-            // move back one so that we don't skip the new current item
-            --i;
-        }
-    }
-    return true;
+
+    auto associatedWith = [this](QObject *o) {
+        return [this, o](auto &t) {
+            if (t->obj == o) {
+                if (t == firstTimerInfo)
+                    firstTimerInfo = nullptr;
+                if (t->activateRef)
+                    *(t->activateRef) = nullptr;
+                delete t;
+                return true;
+            }
+            return false;
+        };
+    };
+
+    qsizetype count = timers.removeIf(associatedWith(object));
+    return count > 0;
 }
 
 QList<QAbstractEventDispatcher::TimerInfo> QTimerInfoList::registeredTimers(QObject *object) const
 {
     QList<QAbstractEventDispatcher::TimerInfo> list;
-    for (const QTimerInfo *const t : std::as_const(*this)) {
+    for (const auto &t : timers) {
         if (t->obj == object)
             list.emplaceBack(t->id, t->interval.count(), t->timerType);
     }
@@ -387,7 +381,7 @@ QList<QAbstractEventDispatcher::TimerInfo> QTimerInfoList::registeredTimers(QObj
 */
 int QTimerInfoList::activateTimers()
 {
-    if (qt_disable_lowpriority_timers || isEmpty())
+    if (qt_disable_lowpriority_timers || timers.isEmpty())
         return 0; // nothing to do
 
     firstTimerInfo = nullptr;
@@ -397,16 +391,16 @@ int QTimerInfoList::activateTimers()
     // Find out how many timer have expired
     auto stillActive = [&now](const QTimerInfo *t) { return now < t->timeout; };
     // Find first one still active (list is sorted by timeout)
-    auto it = std::find_if(cbegin(), cend(), stillActive);
-    auto maxCount = it - cbegin();
+    auto it = std::find_if(timers.cbegin(), timers.cend(), stillActive);
+    auto maxCount = it - timers.cbegin();
 
     int n_act = 0;
     //fire the timers.
     while (maxCount--) {
-        if (isEmpty())
+        if (timers.isEmpty())
             break;
 
-        QTimerInfo *currentTimerInfo = constFirst();
+        QTimerInfo *currentTimerInfo = timers.constFirst();
         if (now < currentTimerInfo->timeout)
             break; // no timer has expired
 
@@ -420,14 +414,16 @@ int QTimerInfoList::activateTimers()
             firstTimerInfo = currentTimerInfo;
         }
 
-        // remove from list
-        removeFirst();
-
         // determine next timeout time
         calculateNextTimeout(currentTimerInfo, now);
+        if (timers.size() > 1) {
+            // Find where "currentTimerInfo" should be in the list so as
+            // to keep the list ordered by timeout
+            auto afterCurrentIt = timers.begin() + 1;
+            auto iter = std::upper_bound(afterCurrentIt, timers.end(), currentTimerInfo, byTimeout);
+            currentTimerInfo = *std::rotate(timers.begin(), afterCurrentIt, iter);
+        }
 
-        // reinsert timer
-        timerInsert(currentTimerInfo);
         if (currentTimerInfo->interval > 0ms)
             n_act++;
 

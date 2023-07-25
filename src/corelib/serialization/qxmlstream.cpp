@@ -806,7 +806,7 @@ QString QXmlStreamReader::tokenString() const
 
 /*!
    \internal
-   \return \param loc (Prolog/Body) as a string.
+   \return \param ctxt (Prolog/Body) as a string.
  */
 static constexpr QLatin1StringView contextString(QXmlStreamReaderPrivate::XmlContext ctxt)
 {
@@ -3853,19 +3853,19 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
 }
 
 static constexpr bool isTokenAllowedInContext(QXmlStreamReader::TokenType type,
-                                               QXmlStreamReaderPrivate::XmlContext loc)
+                                               QXmlStreamReaderPrivate::XmlContext ctxt)
 {
     switch (type) {
     case QXmlStreamReader::StartDocument:
     case QXmlStreamReader::DTD:
-        return loc == QXmlStreamReaderPrivate::XmlContext::Prolog;
+        return ctxt == QXmlStreamReaderPrivate::XmlContext::Prolog;
 
     case QXmlStreamReader::StartElement:
     case QXmlStreamReader::EndElement:
     case QXmlStreamReader::Characters:
     case QXmlStreamReader::EntityReference:
     case QXmlStreamReader::EndDocument:
-        return loc == QXmlStreamReaderPrivate::XmlContext::Body;
+        return ctxt == QXmlStreamReaderPrivate::XmlContext::Body;
 
     case QXmlStreamReader::Comment:
     case QXmlStreamReader::ProcessingInstruction:
@@ -3926,7 +3926,7 @@ void QXmlStreamReaderPrivate::checkToken()
 
     if (!ok) {
         raiseError(QXmlStreamReader::UnexpectedElementError,
-                   QObject::tr("Unexpected token type %1 in %2.")
+                   QXmlStream::tr("Unexpected token type %1 in %2.")
                    .arg(q->tokenString(), contextString(context)));
         return;
     }
@@ -3937,7 +3937,7 @@ void QXmlStreamReaderPrivate::checkToken()
     // Raise error on multiple DTD tokens
     if (foundDTD) {
         raiseError(QXmlStreamReader::UnexpectedElementError,
-                   QObject::tr("Found second DTD token in %1.").arg(contextString(context)));
+                   QXmlStream::tr("Found second DTD token in %1.").arg(contextString(context)));
     } else {
         foundDTD = true;
     }

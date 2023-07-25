@@ -1706,3 +1706,5 @@ QString QDB2Driver::escapeIdentifier(const QString &identifier, IdentifierType) 
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_db2_p.cpp"

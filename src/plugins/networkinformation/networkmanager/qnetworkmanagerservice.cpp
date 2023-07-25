@@ -59,14 +59,14 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
 
     QDBusConnection::systemBus().connect(NM_DBUS_SERVICE ""_L1, NM_DBUS_PATH ""_L1,
             DBUS_PROPERTIES_INTERFACE""_L1, "PropertiesChanged"_L1, this,
-            SLOT(setProperties(QString, QMap<QString, QVariant>, QList<QString>)));
+            SLOT(setProperties(QString,QMap<QString,QVariant>,QList<QString>)));
 }
 
 QNetworkManagerInterface::~QNetworkManagerInterface()
 {
     QDBusConnection::systemBus().disconnect(NM_DBUS_SERVICE ""_L1, NM_DBUS_PATH ""_L1,
             DBUS_PROPERTIES_INTERFACE ""_L1, "PropertiesChanged"_L1, this,
-            SLOT(setProperties(QString, QMap<QString, QVariant>, QList<QString>)));
+            SLOT(setProperties(QString,QMap<QString,QVariant>,QList<QString>)));
 }
 
 QNetworkManagerInterface::NMState QNetworkManagerInterface::state() const

@@ -28,7 +28,7 @@ public slots:
 private:
     void createMenus();
 
-    QTreeWidget *treeWidget;
+    QTreeWidget *const treeWidget;
 };
 //! [0]
 

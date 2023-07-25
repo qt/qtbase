@@ -536,6 +536,7 @@ private slots:
 
     void simplified_data();
     void simplified();
+    void trimmed_data();
     void trimmed();
     void unicodeTableAccess_data();
     void unicodeTableAccess();
@@ -696,6 +697,8 @@ private slots:
     void sliced();
     void chopped();
     void removeIf();
+
+    void std_stringview_conversion();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(tst_QString::DataOptions)
 
@@ -2800,30 +2803,37 @@ void tst_QString::toCaseFolded()
     }
 }
 
+void tst_QString::trimmed_data()
+{
+    QTest::addColumn<QString>("full" );
+    QTest::addColumn<QString>("trimmed" );
+
+    QTest::addRow("null") << QString() << QString();
+    QTest::addRow("simple") << u"Text"_s << u"Text"_s;
+    QTest::addRow("single-space") << u" "_s << u""_s;
+    QTest::addRow("single-char") << u" a   "_s << u"a"_s;
+    QTest::addRow("mixed") << u" a \t\n\v b  "_s << u"a \t\n\v b"_s;
+}
+
 void tst_QString::trimmed()
 {
-    QString a;
+    QFETCH(QString, full);
+    QFETCH(QString, trimmed);
 
-    QVERIFY(a.trimmed().isNull()); // lvalue
-    QVERIFY(QString().trimmed().isNull()); // rvalue
-    QVERIFY(!a.isDetached());
+    // Shared
+    if (!full.isNull())
+        QVERIFY(!full.isDetached());
+    QCOMPARE(full.trimmed(), trimmed); // lvalue
+    QCOMPARE(QString(full).trimmed(), trimmed); // rvalue
+    QCOMPARE(full.isNull(), trimmed.isNull());
 
-    a = u"Text"_s;
-    QCOMPARE(a, QLatin1String("Text"));
-    QCOMPARE(a.trimmed(), QLatin1String("Text"));
-    QCOMPARE(a, QLatin1String("Text"));
-    a= u" "_s;
-    QCOMPARE(a.trimmed(), QLatin1String(""));
-    QCOMPARE(a, QLatin1String(" "));
-    a = u" a   "_s;
-    QCOMPARE(a.trimmed(), QLatin1String("a"));
-
-    a = u"Text"_s;
-    QCOMPARE(std::move(a).trimmed(), QLatin1String("Text"));
-    a = u" "_s;
-    QCOMPARE(std::move(a).trimmed(), QLatin1String(""));
-    a = u" a   "_s;
-    QCOMPARE(std::move(a).trimmed(), QLatin1String("a"));
+    // Not shared
+    full = QStringView(full).toString();
+    if (!full.isNull())
+        QVERIFY(full.isDetached());
+    QCOMPARE(full.trimmed(), trimmed); // lvalue
+    QCOMPARE(QString(full).trimmed(), trimmed); // rvalue
+    QCOMPARE(full.isNull(), trimmed.isNull());
 }
 
 void tst_QString::simplified_data()
@@ -8760,6 +8770,31 @@ void tst_QString::removeIf()
     a = "aBcAbCa"_L1;
     b = a; // Shared
     QCOMPARE(a.removeIf(removeA), u"BcbC");
+}
+
+void tst_QString::std_stringview_conversion()
+{
+    static_assert(std::is_convertible_v<QString, std::u16string_view>);
+
+    QString s;
+    std::u16string_view sv(s);
+    QCOMPARE(sv, std::u16string_view());
+
+    s = u""_s;
+    sv = s;
+    QCOMPARE(s.size(), 0);
+    QCOMPARE(sv.size(), size_t(0));
+    QCOMPARE(sv, std::u16string_view());
+
+    s = u"Hello"_s;
+    sv = s;
+    QCOMPARE(sv, std::u16string_view(u"Hello"));
+
+    s = u"Hello\0world"_s;
+    sv = s;
+    QCOMPARE(s.size(), 11);
+    QCOMPARE(sv.size(), size_t(11));
+    QCOMPARE(sv, std::u16string_view(u"Hello\0world", 11));
 }
 
 // QString's collation order is only supported during the lifetime as QCoreApplication

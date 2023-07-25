@@ -5,9 +5,9 @@
 #include "qandroidplatformwindow.h"
 #include "qandroidplatformopenglcontext.h"
 #include "qandroidplatformscreen.h"
-
+#include "qandroidplatformbackingstore.h"
 #include "androidjnimain.h"
-
+#include "qpa/qplatformbackingstore.h"
 #include <qguiapplication.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qhighdpiscaling_p.h>
@@ -167,6 +167,14 @@ void QAndroidPlatformWindow::applicationStateChanged(Qt::ApplicationState)
 
     QWindowSystemInterface::handleExposeEvent(window(), region);
     QWindowSystemInterface::flushWindowSystemEvents();
+}
+
+void QAndroidPlatformWindow::setBackingStore(QPlatformBackingStore *store)
+{
+    Q_ASSERT(store);
+    Q_ASSERT_X(dynamic_cast<QAndroidPlatformBackingStore *>(store), __FUNCTION__,
+               "Argument is not a QAndroidPlatformBackingStore.");
+    m_backingStore = static_cast<QAndroidPlatformBackingStore *>(store);
 }
 
 QT_END_NAMESPACE

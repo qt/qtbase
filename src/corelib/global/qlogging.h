@@ -32,7 +32,9 @@ enum QtMsgType {
     QtCriticalMsg,
     QtFatalMsg,
     QtInfoMsg,
-    QtSystemMsg = QtCriticalMsg
+#if QT_DEPRECATED_SINCE(6, 7)
+    QtSystemMsg Q_DECL_ENUMERATOR_DEPRECATED_X("Use QtCriticalMsg instead.") = QtCriticalMsg
+#endif
 };
 
 class QMessageLogContext

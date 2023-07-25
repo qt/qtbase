@@ -32,6 +32,14 @@
 
 QT_BEGIN_NAMESPACE
 
+template <typename T> struct QSimpleParsedNumber
+{
+    T result;
+    // When used < 0, -used is how much was used, but it was an error.
+    qsizetype used;
+    bool ok() const { return used > 0; }
+};
+
 template <typename MaskType, uchar Lowest> struct QCharacterSetMatch
 {
     static constexpr int MaxRange = std::numeric_limits<MaskType>::digits;
@@ -214,6 +222,18 @@ Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 
 using CharBuff = QVarLengthArray<char, 256>;
 
+struct ParsingResult
+{
+    enum State { // A duplicate of QValidator::State
+        Invalid,
+        Intermediate,
+        Acceptable
+    };
+
+    State state = Invalid;
+    CharBuff buff;
+};
+
 struct QLocaleData
 {
 public:
@@ -301,15 +321,16 @@ public:
 
     [[nodiscard]] double stringToDouble(QStringView str, bool *ok,
                                         QLocale::NumberOptions options) const;
-    [[nodiscard]] qint64 stringToLongLong(QStringView str, int base, bool *ok,
-                                          QLocale::NumberOptions options) const;
-    [[nodiscard]] quint64 stringToUnsLongLong(QStringView str, int base, bool *ok,
-                                              QLocale::NumberOptions options) const;
+    [[nodiscard]] QSimpleParsedNumber<qint64>
+    stringToLongLong(QStringView str, int base, QLocale::NumberOptions options) const;
+    [[nodiscard]] QSimpleParsedNumber<quint64>
+    stringToUnsLongLong(QStringView str, int base, QLocale::NumberOptions options) const;
 
     // this function is used in QIntValidator (QtGui)
-    [[nodiscard]] Q_CORE_EXPORT static qint64 bytearrayToLongLong(QByteArrayView num, int base,
-                                                                  bool *ok);
-    [[nodiscard]] static quint64 bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok);
+    [[nodiscard]] Q_CORE_EXPORT
+    static QSimpleParsedNumber<qint64> bytearrayToLongLong(QByteArrayView num, int base);
+    [[nodiscard]] static QSimpleParsedNumber<quint64>
+    bytearrayToUnsLongLong(QByteArrayView num, int base);
 
     [[nodiscard]] bool numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
                                        NumberMode mode, CharBuff *result) const;
@@ -361,9 +382,9 @@ public:
     [[nodiscard]] inline NumericData numericData(NumberMode mode) const;
 
     // this function is used in QIntValidator (QtGui)
-    [[nodiscard]] Q_CORE_EXPORT bool validateChars(
-            QStringView str, NumberMode numMode, QByteArray *buff, int decDigits = -1,
-            QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
+    [[nodiscard]] Q_CORE_EXPORT ParsingResult
+    validateChars(QStringView str, NumberMode numMode, int decDigits = -1,
+                  QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
 
     // Access to assorted data members:
     [[nodiscard]] QLocaleId id() const

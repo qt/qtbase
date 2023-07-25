@@ -505,14 +505,19 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(Functor &&slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(Functor &&slot)
     \since 5.12
 
-    Creates a connection of type \a connectionType from the timeout() signal
-    to \a slot, and returns a handle to the connection.
+    Creates a connection from the timer's timeout() signal to \a slot.
+    Returns a handle to the connection.
 
-    This method is provided for convenience.
-    It's equivalent to calling \c {QObject::connect(timer, &QTimer::timeout, timer, slot, connectionType)}.
+    This method is provided for convenience. It's equivalent to calling:
+    \code
+    QObject::connect(timer, &QTimer::timeout, timer, slot, Qt::DirectConnection);
+    \endcode
+
+    \note This overload is not available when \c {QT_NO_CONTEXTLESS_CONNECT} is
+    defined, instead use the callOnTimeout() overload that takes a context object.
 
     \sa QObject::connect(), timeout()
 */
@@ -525,8 +530,10 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     Creates a connection from the timeout() signal to \a slot to be placed in a specific
     event loop of \a context, and returns a handle to the connection.
 
-    This method is provided for convenience. It's equivalent to calling
-    \c {QObject::connect(timer, &QTimer::timeout, context, slot, connectionType)}.
+    This method is provided for convenience. It's equivalent to calling:
+    \code
+    QObject::connect(timer, &QTimer::timeout, context, slot, connectionType);
+    \endcode
 
     \sa QObject::connect(), timeout()
 */

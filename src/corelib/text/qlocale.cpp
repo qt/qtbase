@@ -682,6 +682,7 @@ qsizetype qt_repeatCount(QStringView s)
 }
 
 Q_CONSTINIT static const QLocaleData *default_data = nullptr;
+Q_CONSTINIT QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 static QLocalePrivate *c_private()
 {
@@ -780,6 +781,10 @@ static void updateSystemPrivate()
         systemLocaleData.m_script_id = res.toInt();
 
     // Should we replace Any values based on likely sub-tags ?
+
+    // If system locale is default locale, update the default collator's generation:
+    if (default_data == &systemLocaleData)
+        QLocalePrivate::s_generation.fetchAndAddRelaxed(1);
 }
 #endif // !QT_NO_SYSTEMLOCALE
 
@@ -853,7 +858,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
 static constexpr qsizetype locale_data_size = q20::ssize(locale_data) - 1; // trailing guard
 
-Q_CONSTINIT QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 Q_GLOBAL_STATIC(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                 new QLocalePrivate(defaultData(), defaultIndex()))
 
@@ -1359,12 +1363,16 @@ T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
     constexpr bool isUnsigned = std::is_unsigned_v<T>;
     using Int64 = typename std::conditional_t<isUnsigned, quint64, qint64>;
 
-    Int64 val = 0;
+    QSimpleParsedNumber<Int64> r{};
     if constexpr (isUnsigned)
-        val = d->m_data->stringToUnsLongLong(str, 10, ok, d->m_numberOptions);
+        r = d->m_data->stringToUnsLongLong(str, 10, d->m_numberOptions);
     else
-        val = d->m_data->stringToLongLong(str, 10, ok, d->m_numberOptions);
+        r = d->m_data->stringToLongLong(str, 10, d->m_numberOptions);
 
+    if (ok)
+        *ok = r.ok();
+
+    Int64 val = r.result;
     if (T(val) != val) {
         if (ok != nullptr)
             *ok = false;
@@ -3000,8 +3008,8 @@ QString QCalendarBackend::monthName(const QLocale &locale, int month, int,
                         localeMonthData(), month, format);
 }
 
-QString QGregorianCalendar::monthName(const QLocale &locale, int month, int year,
-                                      QLocale::FormatType format) const
+QString QRomanCalendar::monthName(const QLocale &locale, int month, int year,
+                                  QLocale::FormatType format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (locale.d->m_data == &systemLocaleData) {
@@ -3035,8 +3043,8 @@ QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, 
                                   localeMonthData(), month, format);
 }
 
-QString QGregorianCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
-                                                QLocale::FormatType format) const
+QString QRomanCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
+                                            QLocale::FormatType format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (locale.d->m_data == &systemLocaleData) {
@@ -4201,11 +4209,12 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     return true;
 }
 
-bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray *buff,
-                                int decDigits, QLocale::NumberOptions number_options) const
+ParsingResult
+QLocaleData::validateChars(QStringView str, NumberMode numMode, int decDigits,
+                           QLocale::NumberOptions number_options) const
 {
-    buff->clear();
-    buff->reserve(str.size());
+    ParsingResult result;
+    result.buff.reserve(str.size());
 
     enum { Whole, Fractional, Exponent } state = Whole;
     const bool scientific = numMode == DoubleScientificMode;
@@ -4223,14 +4232,14 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
             case Fractional:
                 // If a double has too many digits in its fractional part it is Invalid.
                 if (decDigits-- == 0)
-                    return false;
+                    return {};
                 break;
             case Exponent:
                 if (!isAsciiDigit(last)) {
                     // This is the first digit in the exponent (there may have beena '+'
                     // or '-' in before). If it's a zero, the exponent is zero-padded.
                     if (c == '0' && (number_options & QLocale::RejectLeadingZeroInExponent))
-                        return false;
+                        return {};
                 }
                 break;
             }
@@ -4241,7 +4250,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
                 // If an integer has a decimal point, it is Invalid.
                 // A double can only have one, at the end of its whole-number part.
                 if (numMode == IntegerMode || state != Whole)
-                    return false;
+                    return {};
                 // Even when decDigits is 0, we do allow the decimal point to be
                 // present - just as long as no digits follow it.
 
@@ -4252,14 +4261,14 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
             case '-':
                 // A sign can only appear at the start or after the e of scientific:
                 if (last != '\0' && !(scientific && last == 'e'))
-                    return false;
+                    return {};
                 break;
 
             case ',':
                 // Grouping is only allowed after a digit in the whole-number portion:
                 if ((number_options & QLocale::RejectGroupSeparator) || state != Whole
                         || !isAsciiDigit(last)) {
-                    return false;
+                    return {};
                 }
                 // We could check grouping sizes are correct, but fixup()s are
                 // probably better off correcting any misplacement instead.
@@ -4268,7 +4277,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
             case 'e':
                 // Only one e is allowed and only in scientific:
                 if (!scientific || state == Exponent)
-                    return false;
+                    return {};
                 state = Exponent;
                 break;
 
@@ -4278,16 +4287,23 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
                 // validators don't accept those values.
                 // For anything else, tokens.nextToken() must have returned 0.
                 Q_ASSERT(!c || c == 'a' || c == 'f' || c == 'i' || c == 'n');
-                return false;
+                return {};
             }
         }
 
         last = c;
         if (c != ',') // Skip grouping
-            buff->append(c);
+            result.buff.append(c);
     }
 
-    return true;
+    result.state = ParsingResult::Acceptable;
+
+    // Intermediate if it ends with any character that requires a digit after
+    // it to be valid e.g. group separator, sign, or exponent
+    if (last == ',' || last == '-' || last == '+' || last == 'e')
+        result.state = ParsingResult::Intermediate;
+
+    return result;
 }
 
 double QLocaleData::stringToDouble(QStringView str, bool *ok,
@@ -4305,30 +4321,26 @@ double QLocaleData::stringToDouble(QStringView str, bool *ok,
     return r.result;
 }
 
-qlonglong QLocaleData::stringToLongLong(QStringView str, int base, bool *ok,
-                                        QLocale::NumberOptions number_options) const
+QSimpleParsedNumber<qint64>
+QLocaleData::stringToLongLong(QStringView str, int base,
+                              QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(str, number_options, IntegerMode, &buff)) {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
+    if (!numberToCLocale(str, number_options, IntegerMode, &buff))
+        return {};
 
-    return bytearrayToLongLong(QByteArrayView(buff.constData(), buff.size()), base, ok);
+    return bytearrayToLongLong(QByteArrayView(buff), base);
 }
 
-qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
-                                            QLocale::NumberOptions number_options) const
+QSimpleParsedNumber<quint64>
+QLocaleData::stringToUnsLongLong(QStringView str, int base,
+                                 QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(str, number_options, IntegerMode, &buff)) {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
+    if (!numberToCLocale(str, number_options, IntegerMode, &buff))
+        return {};
 
-    return bytearrayToUnsLongLong(QByteArrayView(buff.constData(), buff.size()), base, ok);
+    return bytearrayToUnsLongLong(QByteArrayView(buff), base);
 }
 
 static bool checkParsed(QByteArrayView num, qsizetype used)
@@ -4349,22 +4361,20 @@ static bool checkParsed(QByteArrayView num, qsizetype used)
     return true;
 }
 
-qlonglong QLocaleData::bytearrayToLongLong(QByteArrayView num, int base, bool *ok)
+QSimpleParsedNumber<qint64> QLocaleData::bytearrayToLongLong(QByteArrayView num, int base)
 {
     auto r = qstrntoll(num.data(), num.size(), base);
-    const bool parsed = checkParsed(num, r.used);
-    if (ok)
-        *ok = parsed;
-    return parsed ? r.result : 0;
+    if (!checkParsed(num, r.used))
+        return {};
+    return r;
 }
 
-qulonglong QLocaleData::bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok)
+QSimpleParsedNumber<quint64> QLocaleData::bytearrayToUnsLongLong(QByteArrayView num, int base)
 {
     auto r = qstrntoull(num.data(), num.size(), base);
-    const bool parsed = checkParsed(num, r.used);
-    if (ok)
-        *ok = parsed;
-    return parsed ? r.result : 0;
+    if (!checkParsed(num, r.used))
+        return {};
+    return r;
 }
 
 /*!

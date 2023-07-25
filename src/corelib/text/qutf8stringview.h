@@ -274,6 +274,9 @@ public:
     [[nodiscard]] constexpr storage_type front() const { return Q_ASSERT(!empty()), m_data[0]; }
     [[nodiscard]] constexpr storage_type back()  const { return Q_ASSERT(!empty()), m_data[m_size - 1]; }
 
+    [[nodiscard]] Q_IMPLICIT operator std::basic_string_view<storage_type>() const noexcept
+    { return std::basic_string_view<storage_type>(data(), size_t(size())); }
+
     //
     // Qt compatibility API:
     //

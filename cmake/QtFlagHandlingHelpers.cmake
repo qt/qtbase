@@ -139,8 +139,15 @@ function(qt_internal_apply_gc_binaries target visibility)
         elseif(LINUX OR BSD OR WIN32 OR ANDROID)
             set(gc_sections_flag "-Wl,--gc-sections")
         endif()
+
+        # Save the flag value with and without genex wrapping, so we can remove the wrapping
+        # when generating .pc pkgconfig files.
+        set_property(GLOBAL PROPERTY _qt_internal_gc_sections_without_genex "${gc_sections_flag}")
+
         set(gc_sections_flag
             "${clang_or_gcc_begin}${gc_sections_flag}${clang_or_gcc_end}")
+
+        set_property(GLOBAL PROPERTY _qt_internal_gc_sections_with_genex "${gc_sections_flag}")
     endif()
     if(gc_sections_flag)
         target_link_options("${target}" ${visibility} "${gc_sections_flag}")

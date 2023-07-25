@@ -418,9 +418,6 @@ void tst_QThreadPool::expiryTimeout()
 
 void tst_QThreadPool::expiryTimeoutRace() // QTBUG-3786
 {
-#ifdef Q_OS_WIN
-    QSKIP("This test is unstable on Windows. See QTBUG-3786.");
-#endif
     ExpiryTimeoutTask task;
 
     TestThreadPool threadPool;

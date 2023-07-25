@@ -10,6 +10,7 @@ qt_internal_add_module(OpenGLWidgets
         qopenglwidget.cpp qopenglwidget.h
         qtopenglwidgetsglobal.h
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
     LIBRARIES

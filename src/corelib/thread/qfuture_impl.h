@@ -11,7 +11,6 @@
 #endif
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qbasicfuturewatcher.h>
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qthreadpool.h>
 #include <QtCore/qexception.h>
@@ -590,6 +589,18 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
     f->d.setContinuation(ContinuationWrapper(std::move(continuation)), fi.d);
 }
 
+// defined in qfutureinterface.cpp:
+Q_CORE_EXPORT void watchContinuationImpl(const QObject *context, QSlotObjectBase *slotObj,
+                                         QFutureInterfaceBase &fi);
+template <typename Continuation>
+void watchContinuation(const QObject *context, Continuation &&c, QFutureInterfaceBase &fi)
+{
+    using Prototype = typename QtPrivate::Callable<Continuation>::Function;
+    watchContinuationImpl(context,
+                          QtPrivate::makeCallableObject<Prototype>(std::forward<Continuation>(c)),
+                          fi);
+}
+
 template<typename Function, typename ResultType, typename ParentResultType>
 template<typename F>
 void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
@@ -610,15 +621,7 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
         continuationJob.execute();
     };
 
-    auto *watcher = new QBasicFutureWatcher;
-    watcher->moveToThread(context->thread());
-    QObject::connect(watcher, &QBasicFutureWatcher::finished,
-                     context, std::move(continuation));
-    QObject::connect(watcher, &QBasicFutureWatcher::finished,
-                     watcher, &QObject::deleteLater);
-    QObject::connect(context, &QObject::destroyed,
-                     watcher, &QObject::deleteLater);
-    watcher->setFuture(f->d);
+    QtPrivate::watchContinuation(context, std::move(continuation), f->d);
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>
@@ -710,12 +713,7 @@ void FailureHandler<Function, ResultType>::create(F &&function, QFuture<ResultTy
         failureHandler.run();
     };
 
-    auto *watcher = new QBasicFutureWatcher;
-    watcher->moveToThread(context->thread());
-    QObject::connect(watcher, &QBasicFutureWatcher::finished, context, std::move(failureContinuation));
-    QObject::connect(watcher, &QBasicFutureWatcher::finished, watcher, &QObject::deleteLater);
-    QObject::connect(context, &QObject::destroyed, watcher, &QObject::deleteLater);
-    watcher->setFuture(future->d);
+    QtPrivate::watchContinuation(context, std::move(failureContinuation), future->d);
 }
 
 template<class Function, class ResultType>
@@ -809,13 +807,7 @@ public:
             run(std::forward<F>(handler), parentFuture, std::move(promise));
         };
 
-        auto *watcher = new QBasicFutureWatcher;
-        watcher->moveToThread(context->thread());
-        QObject::connect(watcher, &QBasicFutureWatcher::finished,
-                         context, std::move(canceledContinuation));
-        QObject::connect(watcher, &QBasicFutureWatcher::finished, watcher, &QObject::deleteLater);
-        QObject::connect(context, &QObject::destroyed, watcher, &QObject::deleteLater);
-        watcher->setFuture(future->d);
+        QtPrivate::watchContinuation(context, std::move(canceledContinuation), future->d);
     }
 
     template<class F = Function>

@@ -25,8 +25,18 @@ Q_GUI_EXPORT int qt_defaultDpiX();
 
 namespace QStyleHelper {
 
+static inline bool usePixmapCache(const QStyleOption *opt)
+{
+    if (QWidget *widget = qobject_cast<QWidget *>(opt->styleObject))
+        return !widget->testAttribute(Qt::WA_StyleSheetTarget);
+    return true;
+}
+
 QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
 {
+    if (!usePixmapCache(option))
+        return {};
+
     const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
     QString tmp = key % HexString<uint>(option->state)
                       % HexString<uint>(option->direction)

@@ -315,8 +315,8 @@ void QDataWidgetMapper::setModel(QAbstractItemModel *model)
         return;
 
     if (d->model) {
-        disconnect(d->model, SIGNAL(dataChanged(QModelIndex, QModelIndex, QList<int>)), this,
-                   SLOT(_q_dataChanged(QModelIndex, QModelIndex, QList<int>)));
+        disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QList<int>)), this,
+                   SLOT(_q_dataChanged(QModelIndex,QModelIndex,QList<int>)));
         disconnect(d->model, SIGNAL(destroyed()), this,
                    SLOT(_q_modelDestroyed()));
     }
@@ -326,8 +326,8 @@ void QDataWidgetMapper::setModel(QAbstractItemModel *model)
 
     d->model = model;
 
-    connect(model, SIGNAL(dataChanged(QModelIndex, QModelIndex, QList<int>)),
-            SLOT(_q_dataChanged(QModelIndex, QModelIndex, QList<int>)));
+    connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QList<int>)),
+            SLOT(_q_dataChanged(QModelIndex,QModelIndex,QList<int>)));
     connect(model, SIGNAL(destroyed()), SLOT(_q_modelDestroyed()));
 }
 

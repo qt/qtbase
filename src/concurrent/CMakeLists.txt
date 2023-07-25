@@ -25,6 +25,7 @@ qt_internal_add_module(Concurrent
         qtconcurrenttask.h
         qtconcurrentthreadengine.cpp qtconcurrentthreadengine.h
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
     LIBRARIES

@@ -304,15 +304,18 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
             *pRetVal = new QWindowsUiaToggleProvider(id());
         break;
     case UIA_SelectionPatternId:
-        // Lists of items.
-        if (accessible->role() == QAccessible::List
+    case UIA_SelectionPattern2Id:
+        // Selections via QAccessibleSelectionInterface or lists of items.
+        if (accessible->selectionInterface()
+                || accessible->role() == QAccessible::List
                 || accessible->role() == QAccessible::PageTabList) {
             *pRetVal = new QWindowsUiaSelectionProvider(id());
         }
         break;
     case UIA_SelectionItemPatternId:
-        // Items within a list and radio buttons.
-        if ((accessible->role() == QAccessible::RadioButton)
+        // Parent supports selection interface or items within a list and radio buttons.
+        if ((accessible->parent() && accessible->parent()->selectionInterface())
+                || (accessible->role() == QAccessible::RadioButton)
                 || (accessible->role() == QAccessible::ListItem)
                 || (accessible->role() == QAccessible::PageTab)) {
             *pRetVal = new QWindowsUiaSelectionItemProvider(id());
@@ -369,6 +372,28 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
     return S_OK;
 }
 
+void QWindowsUiaMainProvider::fillVariantArrayForRelation(QAccessibleInterface* accessible,
+                                                          QAccessible::Relation relation, VARIANT *pRetVal)
+{
+    Q_ASSERT(accessible);
+
+    typedef QPair<QAccessibleInterface*, QAccessible::Relation> RelationPair;
+    const QList<RelationPair> relationInterfaces = accessible->relations(relation);
+    if (relationInterfaces.empty())
+        return;
+
+    SAFEARRAY *elements = SafeArrayCreateVector(VT_UNKNOWN, 0, relationInterfaces.size());
+    for (LONG i = 0; i < relationInterfaces.size(); ++i) {
+        if (QWindowsUiaMainProvider *childProvider = QWindowsUiaMainProvider::providerForAccessible(relationInterfaces.at(i).first)) {
+            SafeArrayPutElement(elements, &i, static_cast<IRawElementProviderSimple*>(childProvider));
+            childProvider->Release();
+        }
+    }
+
+    pRetVal->vt = VT_UNKNOWN | VT_ARRAY;
+    pRetVal->parray = elements;
+}
+
 HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pRetVal)
 {
     qCDebug(lcQpaUiAutomation) << __FUNCTION__ << idProp;
@@ -402,6 +427,15 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             QString className = QLatin1StringView(o->metaObject()->className());
             setVariantString(className, pRetVal);
         }
+        break;
+    case UIA_DescribedByPropertyId:
+        fillVariantArrayForRelation(accessible, QAccessible::DescriptionFor, pRetVal);
+        break;
+    case UIA_FlowsFromPropertyId:
+        fillVariantArrayForRelation(accessible, QAccessible::FlowsTo, pRetVal);
+        break;
+    case UIA_FlowsToPropertyId:
+        fillVariantArrayForRelation(accessible, QAccessible::FlowsFrom, pRetVal);
         break;
     case UIA_FrameworkIdPropertyId:
         setVariantString(QStringLiteral("Qt"), pRetVal);

@@ -142,6 +142,7 @@ if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
 endif()
 qt_add_qmake_lib_dependency(xrender xlib)
 
+qt_find_package(RenderDoc PROVIDED_TARGETS RenderDoc::RenderDoc)
 
 #### Tests
 
@@ -609,6 +610,20 @@ int main(int, char **)
 {
     ID2D1Factory1 *d2dFactory;
     D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);
+    return 0;
+}
+")
+
+qt_config_compile_test(renderdoc
+    LIBRARIES
+        RenderDoc::RenderDoc
+    LABEL "RenderDoc header check"
+    CODE
+"#include <renderdoc_app.h>
+int main(int, char **)
+{
+    if (RENDERDOC_Version::eRENDERDOC_API_Version_1_6_0)
+        return 0;
     return 0;
 }
 ")
@@ -1219,6 +1234,12 @@ qt_feature("undogroup" PUBLIC
     LABEL "QUndoGroup"
     PURPOSE "Provides the ability to cluster QUndoCommands."
     CONDITION QT_FEATURE_undostack
+)
+qt_feature("graphicsframecapture" PRIVATE
+    SECTION "Utilities"
+    LABEL "QGraphicsFrameCapture"
+    PURPOSE "Provides a way to capture a graphic's API calls for a rendered frame."
+    CONDITION TEST_renderdoc OR (MACOS OR IOS)
 )
 qt_feature_definition("undogroup" "QT_NO_UNDOGROUP" NEGATE VALUE "1")
 qt_configure_add_summary_section(NAME "Qt Gui")

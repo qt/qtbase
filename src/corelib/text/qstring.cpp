@@ -2614,6 +2614,12 @@ QString::QString(QChar ch)
     \internal
 */
 
+/*! \fn QString::operator std::u16string_view() const
+    \since 6.7
+
+    Converts this QString object to a \c{std::u16string_view} object.
+*/
+
 static bool needsReallocate(const QString &str, qsizetype newSize)
 {
     const auto capacityAtEnd = str.capacity() - str.data_ptr().freeSpaceAtBegin();
@@ -5989,9 +5995,7 @@ namespace {
     template <typename StringView>
     StringView qt_trimmed(StringView s) noexcept
     {
-        auto begin = s.begin();
-        auto end = s.end();
-        QStringAlgorithms<const StringView>::trimmed_helper_positions(begin, end);
+        const auto [begin, end] = QStringAlgorithms<const StringView>::trimmed_helper_positions(s);
         return StringView{begin, end};
     }
 }
@@ -7388,10 +7392,14 @@ static Int toIntegral(QStringView string, bool *ok, int base)
 
     QVarLengthArray<uchar> latin1(string.size());
     qt_to_latin1(latin1.data(), string.utf16(), string.size());
+    QSimpleParsedNumber<Int> r;
     if constexpr (std::is_signed_v<Int>)
-        return QLocaleData::bytearrayToLongLong(latin1, base, ok);
+        r = QLocaleData::bytearrayToLongLong(latin1, base);
     else
-        return QLocaleData::bytearrayToUnsLongLong(latin1, base, ok);
+        r = QLocaleData::bytearrayToUnsLongLong(latin1, base);
+    if (ok)
+        *ok = r.ok();
+    return r.result;
 }
 
 qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)

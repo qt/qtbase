@@ -37,6 +37,9 @@ static bool qIsAlnum(QChar ch)
 
 QString QSqlResultPrivate::positionalToNamedBinding(const QString &query) const
 {
+    if (!positionalBindingEnabled)
+        return query;
+
     const qsizetype n = query.size();
 
     QString result;
@@ -92,6 +95,7 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
     int count = 0;
     qsizetype i = 0;
     bool ignoreBraces = (sqldriver->dbmsType() == QSqlDriver::PostgreSQL);
+    const bool qmarkNotationSupported = (sqldriver->dbmsType() != QSqlDriver::PostgreSQL);
 
     while (i < n) {
         QChar ch = query.at(i);
@@ -115,10 +119,16 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
                 int pos = i + 2;
                 while (pos < n && qIsAlnum(query.at(pos)))
                     ++pos;
+                // if question mark notation is not supported we have to use
+                // the native binding.  fieldSerial() should be renamed
+                // to toNativeBinding() and used unconditionally here
+                if (qmarkNotationSupported)
+                    result += u'?';
+                else
+                    result += fieldSerial(count);
                 QString holder(query.mid(i, pos - i));
                 indexes[holder].append(count++);
                 holders.append(QHolder(holder, i));
-                result += u'?';
                 i = pos;
             } else {
                 if (ch == u'\'' || ch == u'"' || ch == u'`')
@@ -1003,6 +1013,23 @@ QSql::NumericalPrecisionPolicy QSqlResult::numericalPrecisionPolicy() const
     Q_D(const QSqlResult);
     return d->precisionPolicy;
 }
+
+/*! \internal
+ */
+void QSqlResult::enablePositionalBinding(bool enable)
+{
+    Q_D(QSqlResult);
+    d->positionalBindingEnabled = enable;
+}
+
+/*! \internal
+ */
+bool QSqlResult::positionalBindingEnabled() const
+{
+    Q_D(const QSqlResult);
+    return d->positionalBindingEnabled;
+}
+
 
 /*! \internal
 */

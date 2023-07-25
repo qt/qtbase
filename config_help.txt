@@ -144,7 +144,7 @@ Build options:
   -unity-build ......... Enable Unity (Jumbo) build
   -unity-build-batch-size <int>
                          Maximum number of source files used by the unity build
-                         to create unity source files [8]
+                         to create unity source files [32]
 
   -warnings-are-errors . Treat warnings as errors [no; yes if -developer-build]
 
@@ -162,7 +162,7 @@ Build environment:
 
   -pkg-config .......... Use pkg-config [auto] (Unix only)
 
-  -vcpkg ............... Use vcpkg [yes]
+  -vcpkg ............... Use vcpkg [no]
 
   -D <string> .......... Pass additional preprocessor define
   -I <string> .......... Pass additional include path

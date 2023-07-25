@@ -9,6 +9,8 @@
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qtsan_impl.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread) || defined(Q_QDOC)
@@ -200,12 +202,6 @@ public:
     {
         return tryLock(QDeadlineTimer(timePoint));
     }
-
-#ifndef Q_QDOC
-    // because tryLock(QDeadlineTimer::Forever) is tryLock(0)
-    bool tryLock(QDeadlineTimer::ForeverConstant) QT_MUTEX_LOCK_NOEXCEPT
-    { lock(); return true; }
-#endif
 };
 
 #if QT_CORE_INLINE_IMPL_SINCE(6, 6)

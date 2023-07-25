@@ -1,0 +1,17 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example dnslookup
+    \title DNS lookup
+    \examplecategory {Networking}
+    \meta tags {network,dns,command line parser,command line,console}
+    \ingroup examples-network
+    \brief Demonstrates how to lookup a host name using QDnsLookup.
+
+    This example uses QDnsLookup to demonstrate how to look up a host
+    name and print the results on the command line. As well as how you can
+    use QCommandLineParser to parse command line arguments.
+
+    \image dnslookup-example.webp
+*/

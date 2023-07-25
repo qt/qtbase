@@ -3,7 +3,9 @@
 
 /*!
     \example broadcastreceiver
-    \title Broadcast Receiver Example
+    \title Broadcast Receiver
+    \examplecategory {Networking}
+    \meta tags {network,broadcast,udp}
     \ingroup examples-network
     \brief Demonstrates how to receive information broadcasted over a local network.
 

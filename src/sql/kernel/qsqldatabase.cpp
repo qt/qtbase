@@ -24,36 +24,31 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 
 const char *QSqlDatabase::defaultConnection = "qt_sql_default_connection";
 
-class QConnectionDict: public QHash<QString, QSqlDatabase>
-{
-public:
-    QSqlDatabase value_ts(const QString &key) const
-    {
-      QReadLocker locker(&lock);
-      return value(key);
-    }
-    bool contains_ts(const QString &key) const
-    {
-        QReadLocker locker(&lock);
-        return contains(key);
-    }
-    QStringList keys_ts() const
-    {
-        QReadLocker locker(&lock);
-        return keys();
-    }
-
-    mutable QReadWriteLock lock;
-};
-Q_GLOBAL_STATIC(QConnectionDict, dbDict)
-
 namespace {
-    struct DriverDict : public QHash<QString, QSqlDriverCreatorBase*>
+    struct QtSqlGlobals
     {
-        ~DriverDict();
+        ~QtSqlGlobals();
+        QSqlDatabase connection(const QString &key) const
+        {
+          QReadLocker locker(&lock);
+          return connections.value(key);
+        }
+        bool connectionExists(const QString &key) const
+        {
+            QReadLocker locker(&lock);
+            return connections.contains(key);
+        }
+        QStringList connectionNames() const
+        {
+            QReadLocker locker(&lock);
+            return connections.keys();
+        }
+        mutable QReadWriteLock lock;
+        QHash<QString, QSqlDriverCreatorBase*> registeredDrivers;
+        QHash<QString, QSqlDatabase> connections;
     };
 }
-Q_APPLICATION_STATIC(DriverDict, qtDriverDict)
+Q_APPLICATION_STATIC(QtSqlGlobals, s_sqlGlobals)
 
 class QSqlDatabasePrivate
 {
@@ -88,8 +83,6 @@ public:
     static void addDatabase(const QSqlDatabase &db, const QString & name);
     static void removeDatabase(const QString& name);
     static void invalidateDb(const QSqlDatabase &db, const QString &name, bool doWarn = true);
-    static DriverDict &driverDict();
-    static void cleanConnections();
 };
 
 QSqlDatabasePrivate::QSqlDatabasePrivate(const QSqlDatabasePrivate &other) : ref(1)
@@ -113,29 +106,11 @@ QSqlDatabasePrivate::~QSqlDatabasePrivate()
         delete driver;
 }
 
-void QSqlDatabasePrivate::cleanConnections()
+QtSqlGlobals::~QtSqlGlobals()
 {
-    QConnectionDict *dict = dbDict();
-    Q_ASSERT(dict);
-    QWriteLocker locker(&dict->lock);
-
-    QConnectionDict::iterator it = dict->begin();
-    while (it != dict->end()) {
-        invalidateDb(it.value(), it.key(), false);
-        ++it;
-    }
-    dict->clear();
-}
-
-DriverDict::~DriverDict()
-{
-    qDeleteAll(*this);
-    QSqlDatabasePrivate::cleanConnections();
-}
-
-DriverDict &QSqlDatabasePrivate::driverDict()
-{
-    return *qtDriverDict();
+    qDeleteAll(registeredDrivers);
+    for (const auto &[k, v] : connections.asKeyValueRange())
+        QSqlDatabasePrivate::invalidateDb(v, k, false);
 }
 
 QSqlDatabasePrivate *QSqlDatabasePrivate::shared_null()
@@ -157,28 +132,26 @@ void QSqlDatabasePrivate::invalidateDb(const QSqlDatabase &db, const QString &na
 
 void QSqlDatabasePrivate::removeDatabase(const QString &name)
 {
-    QConnectionDict *dict = dbDict();
-    Q_ASSERT(dict);
-    QWriteLocker locker(&dict->lock);
+    QtSqlGlobals *sqlGlobals = s_sqlGlobals();
+    QWriteLocker locker(&sqlGlobals->lock);
 
-    if (!dict->contains(name))
+    if (!sqlGlobals->connections.contains(name))
         return;
 
-    invalidateDb(dict->take(name), name);
+    invalidateDb(sqlGlobals->connections.take(name), name);
 }
 
 void QSqlDatabasePrivate::addDatabase(const QSqlDatabase &db, const QString &name)
 {
-    QConnectionDict *dict = dbDict();
-    Q_ASSERT(dict);
-    QWriteLocker locker(&dict->lock);
+    QtSqlGlobals *sqlGlobals = s_sqlGlobals();
+    QWriteLocker locker(&sqlGlobals->lock);
 
-    if (dict->contains(name)) {
-        invalidateDb(dict->take(name), name);
+    if (sqlGlobals->connections.contains(name)) {
+        invalidateDb(sqlGlobals->connections.take(name), name);
         qWarning("QSqlDatabasePrivate::addDatabase: duplicate connection name '%s', old "
                  "connection removed.", name.toLocal8Bit().data());
     }
-    dict->insert(name, db);
+    sqlGlobals->connections.insert(name, db);
     db.d->connName = name;
 }
 
@@ -186,10 +159,7 @@ void QSqlDatabasePrivate::addDatabase(const QSqlDatabase &db, const QString &nam
 */
 QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
 {
-    const QConnectionDict *dict = dbDict();
-    Q_ASSERT(dict);
-
-    QSqlDatabase db = dict->value_ts(name);
+    QSqlDatabase db = s_sqlGlobals()->connection(name);
     if (!db.isValid())
         return db;
     if (db.driver()->thread() != QThread::currentThread()) {
@@ -502,8 +472,9 @@ QStringList QSqlDatabase::drivers()
         }
     }
 
-    QReadLocker locker(&dbDict()->lock);
-    const DriverDict &dict = QSqlDatabasePrivate::driverDict();
+    QtSqlGlobals *sqlGlobals = s_sqlGlobals();
+    QReadLocker locker(&sqlGlobals->lock);
+    const auto &dict = sqlGlobals->registeredDrivers;
     for (const auto &[k, _] : dict.asKeyValueRange()) {
         if (!list.contains(k))
             list << k;
@@ -527,10 +498,11 @@ QStringList QSqlDatabase::drivers()
 */
 void QSqlDatabase::registerSqlDriver(const QString& name, QSqlDriverCreatorBase *creator)
 {
-    QWriteLocker locker(&dbDict()->lock);
-    delete QSqlDatabasePrivate::driverDict().take(name);
+    QtSqlGlobals *sqlGlobals = s_sqlGlobals();
+    QWriteLocker locker(&sqlGlobals->lock);
+    delete sqlGlobals->registeredDrivers.take(name);
     if (creator)
-        QSqlDatabasePrivate::driverDict().insert(name, creator);
+        sqlGlobals->registeredDrivers.insert(name, creator);
 }
 
 /*!
@@ -544,7 +516,7 @@ void QSqlDatabase::registerSqlDriver(const QString& name, QSqlDriverCreatorBase 
 
 bool QSqlDatabase::contains(const QString& connectionName)
 {
-    return dbDict()->contains_ts(connectionName);
+    return s_sqlGlobals()->connectionExists(connectionName);
 }
 
 /*!
@@ -556,7 +528,7 @@ bool QSqlDatabase::contains(const QString& connectionName)
 */
 QStringList QSqlDatabase::connectionNames()
 {
-    return dbDict()->keys_ts();
+    return s_sqlGlobals()->connectionNames();
 }
 
 /*!
@@ -643,14 +615,12 @@ void QSqlDatabasePrivate::init(const QString &type)
     drvName = type;
 
     if (!driver) {
-        QReadLocker locker(&dbDict()->lock);
-        const DriverDict &dict = QSqlDatabasePrivate::driverDict();
-        for (DriverDict::const_iterator it = dict.constBegin();
-             it != dict.constEnd() && !driver; ++it) {
-            if (type == it.key()) {
-                driver = ((QSqlDriverCreatorBase*)(*it))->createObject();
-            }
-        }
+        QtSqlGlobals *sqlGlobals = s_sqlGlobals();
+        QReadLocker locker(&sqlGlobals->lock);
+        const auto &dict = sqlGlobals->registeredDrivers;
+        auto it = dict.find(type);
+        if (it != dict.end())
+            driver = it.value()->createObject();
     }
 
     if (!driver && loader())
@@ -1287,10 +1257,7 @@ QSqlDatabase QSqlDatabase::cloneDatabase(const QSqlDatabase &other, const QStrin
 
 QSqlDatabase QSqlDatabase::cloneDatabase(const QString &other, const QString &connectionName)
 {
-    const QConnectionDict *dict = dbDict();
-    Q_ASSERT(dict);
-
-    return cloneDatabase(dict->value_ts(other), connectionName);
+    return cloneDatabase(s_sqlGlobals()->connection(other), connectionName);
 }
 
 /*!

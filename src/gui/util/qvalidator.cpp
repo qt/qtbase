@@ -362,34 +362,45 @@ static qlonglong pow10(int exp)
     return result;
 }
 
+template <typename T> static inline
+std::optional<QValidator::State> initialResultCheck(T min, T max, const ParsingResult &result)
+{
+    if (result.state == ParsingResult::Invalid)
+        return QValidator::Invalid;
+
+    const CharBuff &buff = result.buff;
+    if (buff.isEmpty())
+        return QValidator::Intermediate;
+
+    char ch = buff[0];
+    const bool signConflicts = (min >= 0 && ch == '-') || (max < 0 && ch == '+');
+    if (signConflicts)
+        return QValidator::Invalid;
+
+    if (result.state == ParsingResult::Intermediate)
+        return QValidator::Intermediate;
+
+    return std::nullopt;
+}
+
 QValidator::State QIntValidator::validate(QString & input, int&) const
 {
-    QByteArray buff;
-    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff, -1,
-                                           locale().numberOptions())) {
-        return Invalid;
-    }
+    ParsingResult result =
+        locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, -1,
+                                          locale().numberOptions());
 
-    if (buff.isEmpty())
-        return Intermediate;
+    std::optional<State> opt = initialResultCheck(b, t, result);
+    if (opt)
+        return *opt;
 
-    const bool startsWithMinus(buff[0] == '-');
-    if (b >= 0 && startsWithMinus)
-        return Invalid;
-
-    const bool startsWithPlus(buff[0] == '+');
-    if (t < 0 && startsWithPlus)
+    const CharBuff &buff = result.buff;
+    QSimpleParsedNumber r = QLocaleData::bytearrayToLongLong(buff, 10);
+    if (!r.ok())
         return Invalid;
 
-    if (buff.size() == 1 && (startsWithPlus || startsWithMinus))
-        return Intermediate;
-
-    bool ok;
-    qlonglong entered = QLocaleData::bytearrayToLongLong(buff, 10, &ok);
-    if (!ok)
-        return Invalid;
-
+    qint64 entered = r.result;
     if (entered >= b && entered <= t) {
+        bool ok = false;
         locale().toInt(input, &ok);
         return ok ? Acceptable : Intermediate;
     }
@@ -401,7 +412,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
         // of a number of digits equal to or less than the max value as intermediate.
 
         int buffLength = buff.size();
-        if (startsWithPlus)
+        if (buff[0] == '+')
             buffLength--;
         const int tLength = t != 0 ? static_cast<int>(std::log10(qAbs(t))) + 1 : 1;
 
@@ -414,15 +425,15 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
 /*! \reimp */
 void QIntValidator::fixup(QString &input) const
 {
-    QByteArray buff;
-    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff, -1,
-                                           locale().numberOptions())) {
+    auto [parseState, buff] =
+        locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, -1,
+                                          locale().numberOptions());
+    if (parseState == ParsingResult::Invalid)
         return;
-    }
-    bool ok;
-    qlonglong entered = QLocaleData::bytearrayToLongLong(buff, 10, &ok);
-    if (ok)
-        input = locale().toString(entered);
+
+    QSimpleParsedNumber r = QLocaleData::bytearrayToLongLong(buff, 10);
+    if (r.ok())
+        input = locale().toString(r.result);
 }
 
 /*!
@@ -646,19 +657,12 @@ QValidator::State QDoubleValidator::validate(QString & input, int &) const
 QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QLocaleData::NumberMode numMode, const QLocale &locale) const
 {
     Q_Q(const QDoubleValidator);
-    QByteArray buff;
-    if (!locale.d->m_data->validateChars(input, numMode, &buff, q->dec, locale.numberOptions())) {
-        return QValidator::Invalid;
-    }
+    ParsingResult result =
+            locale.d->m_data->validateChars(input, numMode, q->dec, locale.numberOptions());
 
-    if (buff.isEmpty())
-        return QValidator::Intermediate;
-
-    if (q->b >= 0 && buff.startsWith('-'))
-        return QValidator::Invalid;
-
-    if (q->t < 0 && buff.startsWith('+'))
-        return QValidator::Invalid;
+    std::optional<QValidator::State> opt = initialResultCheck(q->b, q->t, result);
+    if (opt)
+        return *opt;
 
     bool ok = false;
     double i = locale.toDouble(input, &ok); // returns 0.0 if !ok
@@ -737,15 +741,16 @@ void QDoubleValidatorPrivate::fixupWithLocale(QString &input, QLocaleData::Numbe
                                               const QLocale &locale) const
 {
     Q_Q(const QDoubleValidator);
-    QByteArray buff;
     // Passing -1 as the number of decimals, because fixup() exists to improve
     // an Intermediate value, if it can.
-    if (!locale.d->m_data->validateChars(input, numMode, &buff, -1, locale.numberOptions()))
+    auto [parseState, buff] =
+            locale.d->m_data->validateChars(input, numMode, -1, locale.numberOptions());
+    if (parseState == ParsingResult::Invalid)
         return;
 
-    // buff now contains data in C locale.
+    // buff contains data in C locale.
     bool ok = false;
-    const double entered = buff.toDouble(&ok);
+    const double entered = QByteArrayView(buff).toDouble(&ok);
     if (ok) {
         // Here we need to adjust the output format accordingly
         char mode;
@@ -769,7 +774,7 @@ void QDoubleValidatorPrivate::fixupWithLocale(QString &input, QLocaleData::Numbe
                 if (eIndex < 0)
                     eIndex = buff.size();
                 precision = eIndex - (buff.contains('.') ? 1 : 0)
-                        - (buff.startsWith('-') || buff.startsWith('+') ? 1 : 0);
+                        - (buff[0] == '-' || buff[0] == '+' ? 1 : 0);
             }
             // Use q->dec to limit the number of decimals, because we want the
             // fixup() result to pass validate().

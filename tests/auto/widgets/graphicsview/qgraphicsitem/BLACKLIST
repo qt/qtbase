@@ -1,3 +1,6 @@
 # QTBUG-74760
 [sorting]
 osx
+# QTBUG-115293
+[itemUsesExtendedStyleOption]
+wayland

@@ -98,6 +98,7 @@ public:
     bool active = false;
     bool isSel = false;
     bool forwardOnly = false;
+    bool positionalBindingEnabled = true;
 
     static bool isVariantNull(const QVariant &variant);
 };

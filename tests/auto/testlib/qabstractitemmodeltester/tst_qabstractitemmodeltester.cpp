@@ -54,6 +54,7 @@ void tst_QAbstractItemModelTester::treeWidgetModel()
         new QTreeWidgetItem(root, QStringList(QString::number(i)));
     QTreeWidgetItem *remove = root->child(2);
     root->removeChild(remove);
+    delete remove;
     QTreeWidgetItem *parent = new QTreeWidgetItem(&widget, QStringList("parent"));
     new QTreeWidgetItem(parent, QStringList("child"));
     parent->setHidden(true);

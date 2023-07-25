@@ -21,7 +21,7 @@ static const int PingInterval = 5 * 1000;
  *  plaintext   = { 0 => text }
  *  ping        = { 1 => null }
  *  pong        = { 2 => null }
- *  greeting    = { 3 => text }
+ *  greeting    = { 3 => { text, bytes } }
  */
 
 Connection::Connection(QObject *parent)
@@ -60,9 +60,15 @@ QString Connection::name() const
     return username;
 }
 
-void Connection::setGreetingMessage(const QString &message)
+void Connection::setGreetingMessage(const QString &message, const QByteArray &uniqueId)
 {
     greetingMessage = message;
+    localUniqueId = uniqueId;
+}
+
+QByteArray Connection::uniqueId() const
+{
+    return peerUniqueId;
 }
 
 bool Connection::sendMessage(const QString &message)
@@ -118,7 +124,29 @@ void Connection::processReadyRead()
             reader.next();
         } else {
             // Current state: read command payload
-            if (reader.isString()) {
+            if (currentDataType == Greeting) {
+                if (state == ReadingGreeting) {
+                    if (!reader.isContainer() || !reader.isLengthKnown() || reader.length() != 2)
+                        break; // protocol error
+                    state = ProcessingGreeting;
+                    reader.enterContainer();
+                }
+                if (state != ProcessingGreeting)
+                    break; // protocol error
+                if (reader.isString()) {
+                    auto r = reader.readString();
+                    buffer += r.data;
+                } else if (reader.isByteArray()) {
+                    auto r = reader.readByteArray();
+                    peerUniqueId += r.data;
+                    if (r.status == QCborStreamReader::EndOfString) {
+                        reader.leaveContainer();
+                        processGreeting();
+                    }
+                }
+                if (state == ProcessingGreeting)
+                    continue;
+            } else if (reader.isString()) {
                 auto r = reader.readString();
                 buffer += r.data;
                 if (r.status != QCborStreamReader::EndOfString)
@@ -126,7 +154,7 @@ void Connection::processReadyRead()
             } else if (reader.isNull()) {
                 reader.next();
             } else {
-                break;                   // protocol error
+                break; // protocol error
             }
 
             // Next state: no command read
@@ -136,13 +164,7 @@ void Connection::processReadyRead()
                 transferTimerId = -1;
             }
 
-            if (state == ReadingGreeting) {
-                if (currentDataType != Greeting)
-                    break;              // protocol error
-                processGreeting();
-            } else {
-                processData();
-            }
+            processData();
         }
     }
 
@@ -172,7 +194,10 @@ void Connection::sendGreetingMessage()
 
     writer.startMap(1);
     writer.append(Greeting);
+    writer.startArray(2);
     writer.append(greetingMessage);
+    writer.append(localUniqueId);
+    writer.endArray();
     writer.endMap();
     isGreetingMessageSent = true;
 

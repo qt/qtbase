@@ -5,6 +5,7 @@
     \example drilldown
     \title Drill Down Example
     \ingroup sql_examples
+    \examplecategory {Data Processing & I/O}
 
     \brief The Drill Down example shows how to read data from a database as
     well as submit changes, using the QSqlRelationalTableModel and

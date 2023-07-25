@@ -23,6 +23,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
                  -DQT_NO_CAST_FROM_ASCII
                  -DQT_NO_URL_CAST_FROM_STRING
                  -DQT_NO_CAST_FROM_BYTEARRAY
+                 -DQT_NO_CONTEXTLESS_CONNECT
                  -DQT_NO_KEYWORDS
                  -DQT_TYPESAFE_FLAGS
                  -DQT_USE_QSTRINGBUILDER
@@ -182,7 +183,10 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         )
         set(input_header_path_type ABSOLUTE)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -WX -W3 -EHsc)
+        # Note we can't enable -Za, as it does not support certain key Microsoft SDK header files
+        # we use. Microsoft suggests to use /permissive- instead, which is implicity set by
+        # -std:c++latest.
+        set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -WX -W4 -EHsc)
 
         # Because we now add `-DNOMINMAX` to `PlatformCommonInternal`.
         set(hcleanUDEFS -UNOMINMAX)

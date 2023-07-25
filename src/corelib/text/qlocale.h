@@ -1126,7 +1126,7 @@ private:
     friend class QLocalePrivate;
     friend class QSystemLocale;
     friend class QCalendarBackend;
-    friend class QGregorianCalendar;
+    friend class QRomanCalendar;
     friend Q_CORE_EXPORT size_t qHash(const QLocale &key, size_t seed) noexcept;
 
     friend bool operator==(const QLocale &lhs, const QLocale &rhs) { return lhs.equals(rhs); }

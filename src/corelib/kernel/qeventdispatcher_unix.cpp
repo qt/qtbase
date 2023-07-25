@@ -19,22 +19,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef QT_NO_EVENTFD
+#if QT_CONFIG(eventfd)
 #  include <sys/eventfd.h>
 #endif
 
-// VxWorks doesn't correctly set the _POSIX_... options
 #if defined(Q_OS_VXWORKS)
-#  if defined(_POSIX_MONOTONIC_CLOCK) && (_POSIX_MONOTONIC_CLOCK <= 0)
-#    undef _POSIX_MONOTONIC_CLOCK
-#    define _POSIX_MONOTONIC_CLOCK 1
-#  endif
 #  include <pipeDrv.h>
-#  include <sys/time.h>
-#endif
-
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
-#  include <sys/times.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -55,11 +45,6 @@ static const char *socketType(QSocketNotifier::Type type)
 
 QThreadPipe::QThreadPipe()
 {
-    fds[0] = -1;
-    fds[1] = -1;
-#if defined(Q_OS_VXWORKS)
-    name[0] = '\0';
-#endif
 }
 
 QThreadPipe::~QThreadPipe()
@@ -67,7 +52,7 @@ QThreadPipe::~QThreadPipe()
     if (fds[0] >= 0)
         close(fds[0]);
 
-    if (fds[1] >= 0)
+    if (!QT_CONFIG(eventfd) && fds[1] >= 0)
         close(fds[1]);
 
 #if defined(Q_OS_VXWORKS)
@@ -104,23 +89,25 @@ bool QThreadPipe::init()
 
     // create the pipe
     if (pipeDevCreate(name, 128 /*maxMsg*/, 1 /*maxLength*/) != OK) {
-        perror("QThreadPipe: Unable to create thread pipe device %s", name);
+        perror("QThreadPipe: Unable to create thread pipe device");
         return false;
     }
 
     if ((fds[0] = open(name, O_RDWR, 0)) < 0) {
-        perror("QThreadPipe: Unable to open pipe device %s", name);
+        perror("QThreadPipe: Unable to open pipe device");
         return false;
     }
 
     initThreadPipeFD(fds[0]);
     fds[1] = fds[0];
 #else
-#  ifndef QT_NO_EVENTFD
-    if ((fds[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)) >= 0)
-        return true;
+    int ret;
+#  if QT_CONFIG(eventfd)
+    ret = fds[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
 #  endif
-    if (qt_safe_pipe(fds, O_NONBLOCK) == -1) {
+    if (!QT_CONFIG(eventfd))
+        ret = qt_safe_pipe(fds, O_NONBLOCK);
+    if (ret == -1) {
         perror("QThreadPipe: Unable to create pipe");
         return false;
     }
@@ -136,15 +123,10 @@ pollfd QThreadPipe::prepare() const
 
 void QThreadPipe::wakeUp()
 {
-    if (wakeUps.testAndSetAcquire(0, 1)) {
-#ifndef QT_NO_EVENTFD
-        if (fds[1] == -1) {
-            // eventfd
-            eventfd_t value = 1;
-            int ret;
-            EINTR_LOOP(ret, eventfd_write(fds[0], value));
-            return;
-        }
+    if ((wakeUps.fetchAndOrAcquire(1) & 1) == 0) {
+#if QT_CONFIG(eventfd)
+        eventfd_write(fds[0], 1);
+        return;
 #endif
         char c = 0;
         qt_safe_write(fds[1], &c, 1);
@@ -165,14 +147,11 @@ int QThreadPipe::check(const pollfd &pfd)
         ::read(fds[0], c, sizeof(c));
         ::ioctl(fds[0], FIOFLUSH, 0);
 #else
-#  ifndef QT_NO_EVENTFD
-        if (fds[1] == -1) {
-            // eventfd
-            eventfd_t value;
-            eventfd_read(fds[0], &value);
-        } else
+#  if QT_CONFIG(eventfd)
+        eventfd_t value;
+        eventfd_read(fds[0], &value);
 #  endif
-        {
+        if (!QT_CONFIG(eventfd)) {
             while (::read(fds[0], c, sizeof(c)) > 0) {}
         }
 #endif
@@ -195,7 +174,7 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
 QEventDispatcherUNIXPrivate::~QEventDispatcherUNIXPrivate()
 {
     // cleanup timers
-    qDeleteAll(timerList);
+    timerList.clearTimers();
 }
 
 void QEventDispatcherUNIXPrivate::setSocketNotifierPending(QSocketNotifier *notifier)

@@ -101,7 +101,7 @@ qt_internal_add_module(Gui
         kernel/qoffscreensurface_platform.h
         kernel/qopenglcontext.h
         kernel/qpaintdevicewindow.cpp kernel/qpaintdevicewindow.h kernel/qpaintdevicewindow_p.h
-        kernel/qpalette.cpp kernel/qpalette.h
+        kernel/qpalette.cpp kernel/qpalette.h kernel/qpalette_p.h
         kernel/qpixelformat.cpp kernel/qpixelformat.h
         kernel/qplatformclipboard.cpp kernel/qplatformclipboard.h
         kernel/qplatformcursor.cpp kernel/qplatformcursor.h
@@ -259,6 +259,7 @@ qt_internal_add_module(Gui
         util/qtexturefilereader.cpp util/qtexturefilereader_p.h
         util/qvalidator.cpp util/qvalidator.h
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
         QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}"
@@ -427,6 +428,28 @@ qt_internal_extend_target(Gui CONDITION WIN32
         dxguid
         d3d12
 )
+
+if(QT_FEATURE_graphicsframecapture)
+    qt_internal_extend_target(Gui
+        SOURCES
+            util/qgraphicsframecapture_p.h util/qgraphicsframecapture.cpp
+            util/qgraphicsframecapture_p_p.h
+    )
+
+    qt_internal_extend_target(Gui CONDITION WIN32 OR (UNIX AND NOT APPLE)
+        LIBRARIES
+            RenderDoc::RenderDoc
+        SOURCES
+            util/qgraphicsframecapturerenderdoc_p_p.h util/qgraphicsframecapturerenderdoc.cpp
+    )
+
+    qt_internal_extend_target(Gui CONDITION IOS OR MACOS
+        SOURCES
+            util/qgraphicsframecapturemetal_p_p.h util/qgraphicsframecapturemetal.mm
+        PUBLIC_LIBRARIES
+            ${FWMetal}
+    )
+endif()
 
 if(QT_FEATURE_egl)
     qt_find_package(EGL)

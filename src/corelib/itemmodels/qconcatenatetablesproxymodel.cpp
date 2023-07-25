@@ -446,10 +446,10 @@ void QConcatenateTablesProxyModel::addSourceModel(QAbstractItemModel *sourceMode
     connect(sourceModel, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)), this, SLOT(_q_slotColumnsAboutToBeInserted(QModelIndex,int,int)));
     connect(sourceModel, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)), this, SLOT(_q_slotColumnsAboutToBeRemoved(QModelIndex,int,int)));
 
-    connect(sourceModel, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>, QAbstractItemModel::LayoutChangeHint)),
-            this, SLOT(_q_slotSourceLayoutAboutToBeChanged(QList<QPersistentModelIndex>, QAbstractItemModel::LayoutChangeHint)));
-    connect(sourceModel, SIGNAL(layoutChanged(QList<QPersistentModelIndex>, QAbstractItemModel::LayoutChangeHint)),
-            this, SLOT(_q_slotSourceLayoutChanged(QList<QPersistentModelIndex>, QAbstractItemModel::LayoutChangeHint)));
+    connect(sourceModel, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+            this, SLOT(_q_slotSourceLayoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
+    connect(sourceModel, SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+            this, SLOT(_q_slotSourceLayoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
     connect(sourceModel, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_slotModelAboutToBeReset()));
     connect(sourceModel, SIGNAL(modelReset()), this, SLOT(_q_slotModelReset()));
 

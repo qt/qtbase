@@ -6,10 +6,12 @@
 #include "qfutureinterface_p.h"
 
 #include <QtCore/qatomic.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/private/qsimd_p.h> // for qYieldCpu()
 #include <private/qthreadpool_p.h>
+#include <private/qobject_p.h>
 
 #ifdef interface
 #  undef interface
@@ -30,6 +32,7 @@ namespace {
 class ThreadPoolThreadReleaser {
     QThreadPool *m_pool;
 public:
+    Q_NODISCARD_CTOR
     explicit ThreadPoolThreadReleaser(QThreadPool *pool)
         : m_pool(pool)
     { if (pool) pool->releaseThread(); }
@@ -41,6 +44,99 @@ const auto suspendingOrSuspended =
         QFutureInterfaceBase::Suspending | QFutureInterfaceBase::Suspended;
 
 } // unnamed namespace
+
+class QBasicFutureWatcher : public QObject, QFutureCallOutInterface
+{
+    Q_OBJECT
+public:
+    explicit QBasicFutureWatcher(QObject *parent = nullptr);
+    ~QBasicFutureWatcher() override;
+
+    void setFuture(QFutureInterfaceBase &fi);
+
+    bool event(QEvent *event) override;
+
+Q_SIGNALS:
+    void finished();
+
+private:
+    QFutureInterfaceBase future;
+
+    void postCallOutEvent(const QFutureCallOutEvent &event) override;
+    void callOutInterfaceDisconnected() override;
+};
+
+void QBasicFutureWatcher::postCallOutEvent(const QFutureCallOutEvent &event)
+{
+    if (thread() == QThread::currentThread()) {
+        // If we are in the same thread, don't queue up anything.
+        std::unique_ptr<QFutureCallOutEvent> clonedEvent(event.clone());
+        QCoreApplication::sendEvent(this, clonedEvent.get());
+    } else {
+        QCoreApplication::postEvent(this, event.clone());
+    }
+}
+
+void QBasicFutureWatcher::callOutInterfaceDisconnected()
+{
+    QCoreApplication::removePostedEvents(this, QEvent::FutureCallOut);
+}
+
+/*
+ * QBasicFutureWatcher is a more lightweight version of QFutureWatcher for internal use
+ */
+QBasicFutureWatcher::QBasicFutureWatcher(QObject *parent)
+    : QObject(parent)
+{
+}
+
+QBasicFutureWatcher::~QBasicFutureWatcher()
+{
+    future.d->disconnectOutputInterface(this);
+}
+
+void QBasicFutureWatcher::setFuture(QFutureInterfaceBase &fi)
+{
+    future = fi;
+    future.d->connectOutputInterface(this);
+}
+
+bool QBasicFutureWatcher::event(QEvent *event)
+{
+    if (event->type() == QEvent::FutureCallOut) {
+        QFutureCallOutEvent *callOutEvent = static_cast<QFutureCallOutEvent *>(event);
+        if (callOutEvent->callOutType == QFutureCallOutEvent::Finished)
+            emit finished();
+        return true;
+    }
+    return QObject::event(event);
+}
+
+void QtPrivate::watchContinuationImpl(const QObject *context, QSlotObjectBase *slotObj,
+                                      QFutureInterfaceBase &fi)
+{
+    Q_ASSERT(context);
+    Q_ASSERT(slotObj);
+
+    auto slot = SlotObjUniquePtr(slotObj);
+
+    auto *watcher = new QBasicFutureWatcher;
+    watcher->moveToThread(context->thread());
+    // ### we're missing a convenient way to `QObject::connect()` to a `QSlotObjectBase`...
+    QObject::connect(watcher, &QBasicFutureWatcher::finished,
+                     // for the following, cf. QMetaObject::invokeMethodImpl():
+                     // we know `slot` is a lambda returning `void`, so we can just
+                     // `call()` with `obj` and `args[0]` set to `nullptr`:
+                     watcher, [slot = std::move(slot)] {
+                         void *args[] = { nullptr }; // for `void` return value
+                         slot->call(nullptr, args);
+                     });
+    QObject::connect(watcher, &QBasicFutureWatcher::finished,
+                     watcher, &QObject::deleteLater);
+    QObject::connect(context, &QObject::destroyed,
+                     watcher, &QObject::deleteLater);
+    watcher->setFuture(fi);
+}
 
 QFutureCallOutInterface::~QFutureCallOutInterface()
     = default;
@@ -909,3 +1005,5 @@ QFuture<void> makeReadyVoidFuture()
 } // namespace QtFuture
 
 QT_END_NAMESPACE
+
+#include "qfutureinterface.moc"

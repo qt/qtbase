@@ -28,6 +28,8 @@
 #  include "QtCore/qt_windows.h"
 #endif
 
+#include <memory>
+
 QT_REQUIRE_CONFIG(library);
 
 QT_BEGIN_NAMESPACE
@@ -53,6 +55,12 @@ public:
     using Handle = void *;
 #endif
     enum UnloadFlag { UnloadSys, NoUnloadSys };
+
+    struct Deleter {
+        // QLibraryPrivate::release() is not, yet, and cannot easily be made, noexcept:
+        void operator()(QLibraryPrivate *p) const { p->release(); }
+    };
+    using UniquePtr = std::unique_ptr<QLibraryPrivate, Deleter>;
 
     const QString fileName;
     const QString fullVersion;

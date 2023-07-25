@@ -37,7 +37,11 @@ public:
             ;
     static Type legacyDefaultTypeForOs() noexcept;
 
-    explicit constexpr QNativeIpcKey(Type type = DefaultTypeForOs) noexcept
+    constexpr QNativeIpcKey() noexcept
+        : QNativeIpcKey(DefaultTypeForOs)
+    {}
+
+    explicit constexpr QNativeIpcKey(Type type) noexcept
         : d()
     {
         typeAndFlags.type = type;
@@ -79,18 +83,18 @@ public:
     }
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QNativeIpcKey)
-    void swap(QNativeIpcKey &other)
+    void swap(QNativeIpcKey &other) noexcept
     {
         std::swap(d, other.d);
         key.swap(other.key);
     }
 
-    bool isEmpty() const
+    bool isEmpty() const noexcept
     {
         return key.isEmpty();
     }
 
-    bool isValid() const
+    bool isValid() const noexcept
     {
         return type() != Type{};
     }
@@ -200,8 +204,9 @@ inline auto QNativeIpcKey::legacyDefaultTypeForOs() noexcept -> Type
 #endif
 }
 
+QT_END_NAMESPACE
+
 #endif // QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 
-QT_END_NAMESPACE
 
 #endif // QNATIVEIPCKEY_H

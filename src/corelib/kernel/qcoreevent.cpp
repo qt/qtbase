@@ -433,8 +433,9 @@ struct QBasicAtomicBitField {
         QBasicAtomicInteger<uint> &entry = data[which / BitsPerInt];
         const uint old = entry.loadRelaxed();
         const uint bit = 1U << (which % BitsPerInt);
-        return !(old & bit) // wasn't taken
-            && entry.testAndSetRelaxed(old, old | bit); // still wasn't taken
+        if (old & bit)
+            return false;       // already taken
+        return (entry.fetchAndOrRelaxed(bit) & bit) == 0;
 
         // don't update 'next' here - it's unlikely that it will need
         // to be updated, in the general case, and having 'next'

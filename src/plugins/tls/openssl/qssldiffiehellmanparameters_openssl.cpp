@@ -137,8 +137,9 @@ int QTlsBackendOpenSSL::dhParametersFromPem(const QByteArray &pem, QByteArray *d
         if (isSafeDH(dh)) {
             char *buf = nullptr;
             const int len = q_i2d_DHparams(dh, reinterpret_cast<unsigned char **>(&buf));
+            const auto freeBuf = qScopeGuard([&] { q_OPENSSL_free(buf); });
             if (len > 0)
-                *data = QByteArray(buf, len);
+                data->assign({buf, len});
             else
                 return DHParams::InvalidInputDataError;
         } else {

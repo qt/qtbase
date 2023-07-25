@@ -26,19 +26,21 @@ QT_BEGIN_NAMESPACE
 
 // internal timer info
 struct QTimerInfo {
-    int id;           // - timer identifier
-    Qt::TimerType timerType; // - timer type
-    std::chrono::milliseconds interval; // - timer interval
+    QTimerInfo(int timerId, std::chrono::milliseconds msecs, Qt::TimerType type, QObject *obj)
+        : interval(msecs), id(timerId), timerType(type), obj(obj)
+    {
+    }
+
     std::chrono::steady_clock::time_point timeout; // - when to actually fire
-    QObject *obj;     // - object to receive event
-    QTimerInfo **activateRef; // - ref from activateTimers
+    std::chrono::milliseconds interval = std::chrono::milliseconds{-1}; // - timer interval
+    int id = -1; // - timer identifier
+    Qt::TimerType timerType; // - timer type
+    QObject *obj = nullptr; // - object to receive event
+    QTimerInfo **activateRef = nullptr; // - ref from activateTimers
 };
 
-class Q_CORE_EXPORT QTimerInfoList : public QList<QTimerInfo*>
+class Q_CORE_EXPORT QTimerInfoList
 {
-    // state variables used by activateTimers()
-    QTimerInfo *firstTimerInfo = nullptr;
-
 public:
     QTimerInfoList();
 
@@ -60,14 +62,28 @@ public:
     int activateTimers();
     bool hasPendingTimers();
 
-    QList::const_iterator findTimerById(int timerId) const
+    void clearTimers()
     {
-        auto matchesId = [timerId](const QTimerInfo *t) { return t->id == timerId; };
-        return std::find_if(cbegin(), cend(), matchesId);
+        qDeleteAll(timers);
+        timers.clear();
+    }
+
+    bool isEmpty() const { return timers.empty(); }
+
+    qsizetype size() const { return timers.size(); }
+
+    auto findTimerById(int timerId)
+    {
+        auto matchesId = [timerId](const auto &t) { return t->id == timerId; };
+        return std::find_if(timers.cbegin(), timers.cend(), matchesId);
     }
 
 private:
     std::chrono::steady_clock::time_point updateCurrentTime();
+
+    // state variables used by activateTimers()
+    QTimerInfo *firstTimerInfo = nullptr;
+    QList<QTimerInfo *> timers;
 };
 
 QT_END_NAMESPACE

@@ -1411,4 +1411,13 @@ or the character \a ch
     \sa QStringTokenizer, qTokenize()
 */
 
+/*!
+    \fn QStringView::operator std::u16string_view() const
+    \since 6.7
+
+    Converts this QStringView object to a \c{std::u16string_view} object.
+    The returned view will have the same data pointer and length of
+    this view.
+*/
+
 QT_END_NAMESPACE

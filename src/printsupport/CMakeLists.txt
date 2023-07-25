@@ -20,6 +20,7 @@ qt_internal_add_module(PrintSupport
         kernel/qprinterinfo.cpp kernel/qprinterinfo.h kernel/qprinterinfo_p.h
         kernel/qtprintsupportglobal.h kernel/qtprintsupportglobal_p.h
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES

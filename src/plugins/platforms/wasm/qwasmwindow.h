@@ -89,7 +89,7 @@ public:
     void setParent(const QPlatformWindow *window) final;
 
     QWasmScreen *platformScreen() const;
-    void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }
+    void setBackingStore(QPlatformBackingStore *store) override;
     QWasmBackingStore *backingStore() const { return m_backingStore; }
     QWindow *window() const { return m_window; }
 
@@ -117,6 +117,8 @@ private:
                          QWasmWindowStack::PositionPreference positionPreference) final;
 
     void invalidate();
+    bool hasFrame() const;
+    bool hasTitleBar() const;
     bool hasBorder() const;
     bool hasShadow() const;
     bool hasMaximizeButton() const;

@@ -48,8 +48,8 @@ private slots:
 #endif
 
     void ctor();
-    void emptyCtor_data();
-    void emptyCtor();
+    void systemLocale_data();
+    void systemLocale();
     void consistentC();
     void matchingLocales();
     void stringToDouble_data();
@@ -124,12 +124,12 @@ private slots:
     void bcp47Name_data();
     void bcp47Name();
 
-#ifdef QT_BUILD_INTERNAL
-    void systemLocale_data();
-    void systemLocale();
-#endif
-
 #ifndef QT_NO_SYSTEMLOCALE
+#  ifdef QT_BUILD_INTERNAL
+    void mySystemLocale_data();
+    void mySystemLocale();
+#  endif
+
     void systemLocaleDayAndMonthNames_data();
     void systemLocaleDayAndMonthNames();
 #endif
@@ -573,7 +573,7 @@ static inline bool runSysAppTest(const QString &binary,
 }
 #endif
 
-void tst_QLocale::emptyCtor_data()
+void tst_QLocale::systemLocale_data()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
@@ -653,7 +653,7 @@ void tst_QLocale::emptyCtor_data()
 #endif // process
 }
 
-void tst_QLocale::emptyCtor()
+void tst_QLocale::systemLocale()
 {
 #if QT_CONFIG(process) // for runSysAppTest
     QLatin1String request(QTest::currentDataTag());
@@ -1124,6 +1124,52 @@ void tst_QLocale::doubleToString_data()
     QTest::addColumn<int>("precision");
 
     int shortest = QLocale::FloatingPointShortest;
+
+    QTest::newRow("C 0 f 0") << QString("C") << QString("0")        << 0.0 << 'f' << 0;
+    QTest::newRow("C 0 f 5") << QString("C") << QString("0.00000")  << 0.0 << 'f' << 5;
+    QTest::newRow("C 0 f -") << QString("C") << QString("0")        << 0.0 << 'f' << shortest;
+    QTest::newRow("C 0 e 0") << QString("C") << QString("0e+00")       << 0.0 << 'e' << 0;
+    QTest::newRow("C 0 e 5") << QString("C") << QString("0.00000e+00") << 0.0 << 'e' << 5;
+    QTest::newRow("C 0 e -") << QString("C") << QString("0e+00")       << 0.0 << 'e' << shortest;
+    QTest::newRow("C 0 g 0") << QString("C") << QString("0")        << 0.0 << 'g' << 0;
+    QTest::newRow("C 0 g 5") << QString("C") << QString("0")        << 0.0 << 'g' << 5;
+    QTest::newRow("C 0 g -") << QString("C") << QString("0")        << 0.0 << 'g' << shortest;
+
+    double d = std::numeric_limits<double>::max();
+    static const char doublemaxfixed[] =
+            "1797693134862315708145274237317043567980705675258449965989174768031572607800285387605"
+            "8955863276687817154045895351438246423432132688946418276846754670353751698604991057655"
+            "1282076245490090389328944075868508455133942304583236903222948165808559332123348274797"
+            "826204144723168738177180919299881250404026184124858368";
+
+    QTest::newRow("C max f 0") << QString("C") << QString(doublemaxfixed) << d << 'f' << 0;
+    QTest::newRow("C max f 5") << QString("C") << doublemaxfixed + QString(".00000")  << d << 'f' << 5;
+    QTest::newRow("C max e 0") << QString("C") << QString("2e+308")       << d << 'e' << 0;
+    QTest::newRow("C max g 0") << QString("C") << QString("2e+308")       << d << 'g' << 0;
+    QTest::newRow("C max e 5") << QString("C") << QString("1.79769e+308") << d << 'e' << 5;
+    QTest::newRow("C max g 5") << QString("C") << QString("1.7977e+308")  << d << 'g' << 5;
+#if QT_CONFIG(doubleconversion)
+    QTest::newRow("C max e -") << QString("C") << QString("1.7976931348623157e+308") << d << 'e' << shortest;
+    QTest::newRow("C max g -") << QString("C") << QString("1.7976931348623157e+308") << d << 'g' << shortest;
+    QTest::newRow("C max f -") << QString("C")
+                               << QString("%1").arg("17976931348623157", -int(strlen(doublemaxfixed)), u'0')
+                               << d << 'f' << shortest;
+#endif
+
+    d = std::numeric_limits<double>::min();
+    QTest::newRow("C min f 0") << QString("C") << QString("0")            << d << 'f' << 0;
+    QTest::newRow("C min f 5") << QString("C") << QString("0.00000")      << d << 'f' << 5;
+    QTest::newRow("C min e 0") << QString("C") << QString("2e-308")       << d << 'e' << 0;
+    QTest::newRow("C min g 0") << QString("C") << QString("2e-308")       << d << 'g' << 0;
+    QTest::newRow("C min e 5") << QString("C") << QString("2.22507e-308") << d << 'e' << 5;
+    QTest::newRow("C min g 5") << QString("C") << QString("2.2251e-308")  << d << 'g' << 5;
+#if QT_CONFIG(doubleconversion)
+    QTest::newRow("C min e -") << QString("C") << QString("2.2250738585072014e-308") << d << 'e' << shortest;
+    QTest::newRow("C min f -") << QString("C")
+                               << QString("0.%1").arg("22250738585072014", 308 - 1 + std::numeric_limits<double>::max_digits10, u'0')
+                               << d << 'f' << shortest;
+    QTest::newRow("C min g -") << QString("C") << QString("2.2250738585072014e-308") << d << 'g' << shortest;
+#endif
 
     QTest::newRow("C 3.4 f 5") << QString("C") << QString("3.40000")     << 3.4 << 'f' << 5;
     QTest::newRow("C 3.4 f 0") << QString("C") << QString("3")           << 3.4 << 'f' << 0;
@@ -2431,6 +2477,10 @@ void tst_QLocale::toTime_data()
         << usa << QTime(16, 43, 32) << u"h:mm:ss AP "_s << u"4:43:32 PM "_s << true;
     QTest::newRow("shortFormat-PM")
         << usa << QTime(16, 43) << u"h:mm AP "_s << u"4:43 PM "_s << true;
+    // Some locales use a narrow non-breaking space as separator, but
+    // the user can't see the difference from a space (QTBUG-114909):
+    QTest::newRow("shortFormat-AM-mixspace")
+        << usa << QTime(4, 43) << u"h:mm\u202F" "AP "_s << u"4:43 AM "_s << true;
 
     // Parsing am/pm indicators case-insensitively:
     const QLocale czech{QLocale::Czech, QLocale::Czechia};
@@ -3424,7 +3474,7 @@ void tst_QLocale::uiLanguages_data()
 
 void tst_QLocale::uiLanguages()
 {
-    // Compare systemLocale(), which tests the same for a stub system locale.
+    // Compare mySystemLocale(), which tests the same for a custom system locale.
     QFETCH(const QLocale, locale);
     QFETCH(const QStringList, all);
     auto reporter = qScopeGuard([&locale]() {
@@ -3710,7 +3760,8 @@ void tst_QLocale::bcp47Name()
     QCOMPARE(QLocale(QLatin1String(QTest::currentDataTag())).bcp47Name(), expect);
 }
 
-#ifdef QT_BUILD_INTERNAL
+#ifndef QT_NO_SYSTEMLOCALE
+#  ifdef QT_BUILD_INTERNAL
 class MySystemLocale : public QSystemLocale
 {
 public:
@@ -3750,7 +3801,7 @@ private:
     const QLocale m_locale;
 };
 
-void tst_QLocale::systemLocale_data()
+void tst_QLocale::mySystemLocale_data()
 {
     // Test uses MySystemLocale, so is platform-independent.
     QTest::addColumn<QString>("name");
@@ -3825,7 +3876,7 @@ void tst_QLocale::systemLocale_data()
     // shi_{Tfng,Latn}_MA, vai_{Vaii,Latn}_LR, zh_{Hant,Hans}_{MO,HK}
 }
 
-void tst_QLocale::systemLocale()
+void tst_QLocale::mySystemLocale()
 {
     // Compare uiLanguages(), which tests this for CLDR-derived locales.
     QLocale originalLocale;
@@ -3850,9 +3901,7 @@ void tst_QLocale::systemLocale()
     QCOMPARE(QLocale(), originalLocale);
     QCOMPARE(QLocale::system(), originalSystemLocale);
 }
-#endif // QT_BUILD_INTERNAL
-
-#ifndef QT_NO_SYSTEMLOCALE
+#  endif // QT_BUILD_INTERNAL
 
 void tst_QLocale::systemLocaleDayAndMonthNames_data()
 {

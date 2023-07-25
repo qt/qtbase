@@ -179,13 +179,13 @@ public:
         = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QString)
     void swap(QString &other) noexcept { d.swap(other.d); }
-    inline qsizetype size() const { return d.size; }
+    inline qsizetype size() const noexcept { return d.size; }
 #if QT_DEPRECATED_SINCE(6, 4)
     QT_DEPRECATED_VERSION_X_6_4("Use size() or length() instead.")
     inline qsizetype count() const { return d.size; }
 #endif
-    inline qsizetype length() const { return d.size; }
-    inline bool isEmpty() const;
+    inline qsizetype length() const noexcept { return d.size; }
+    inline bool isEmpty() const noexcept { return d.size == 0; }
     void resize(qsizetype size);
     void resize(qsizetype size, QChar fillChar);
 
@@ -883,6 +883,8 @@ public:
     static inline QString fromStdU32String(const std::u32string &s);
     inline std::u32string toStdU32String() const;
 
+    Q_IMPLICIT inline operator std::u16string_view() const noexcept;
+
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QString fromCFString(CFStringRef string);
     CFStringRef toCFString() const Q_DECL_CF_RETURNS_RETAINED;
@@ -1080,8 +1082,6 @@ inline const QChar QString::at(qsizetype i) const
 { Q_ASSERT(size_t(i) < size_t(size())); return QChar(d.data()[i]); }
 inline const QChar QString::operator[](qsizetype i) const
 { Q_ASSERT(size_t(i) < size_t(size())); return QChar(d.data()[i]); }
-inline bool QString::isEmpty() const
-{ return d.size == 0; }
 inline const QChar *QString::unicode() const
 { return data(); }
 inline const QChar *QString::data() const
@@ -1349,6 +1349,11 @@ inline std::u32string QString::toStdU32String() const
                                         size(), u32str.data());
     u32str.resize(len);
     return u32str;
+}
+
+QString::operator std::u16string_view() const noexcept
+{
+    return std::u16string_view(d.data(), size_t(d.size));
 }
 
 #if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)

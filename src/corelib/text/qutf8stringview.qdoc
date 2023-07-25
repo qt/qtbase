@@ -695,3 +695,13 @@
 
     \sa QByteArray::isNull(), QUtf8StringView
 */
+
+
+/*! \fn QUtf8StringView::operator std::basic_string_view<storage_type>() const
+    \since 6.7
+
+    Converts this QUtf8StringView object to a
+    \c{std::basic_string_view} object. The returned view will have the
+    same data pointer and length of this view. The character type of
+    the returned view will be \c{storage_type}.
+*/

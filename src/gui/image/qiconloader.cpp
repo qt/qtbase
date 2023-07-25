@@ -135,8 +135,9 @@ void QIconLoader::invalidateKey()
 {
     // Invalidating the key here will result in QThemeIconEngine
     // recreating the actual engine the next time the icon is used.
-    // We don't need to clear the QIcon cache itself.
     m_themeKey++;
+    // Since the key has changed, we need to clear the cache as well.
+    QIconPrivate::clearIconCache();
 }
 
 QString QIconLoader::themeName() const
@@ -151,7 +152,13 @@ void QIconLoader::setThemeName(const QString &themeName)
 
     qCDebug(lcIconLoader) << "Setting user theme name to" << themeName;
 
+    const bool hadUserTheme = hasUserTheme();
     m_userTheme = themeName;
+    // if we cleared the user theme, then reset search paths as well,
+    // otherwise we'll keep looking in the user-defined search paths for
+    // a system-provide theme, which will never work.
+    if (!hasUserTheme() && hadUserTheme)
+        setThemeSearchPath(systemIconSearchPaths());
     invalidateKey();
 }
 
@@ -352,12 +359,12 @@ QIconTheme::QIconTheme(const QString &themeName)
 
         if (!m_valid) {
             themeIndex.setFileName(themeDir + "/index.theme"_L1);
-            if (themeIndex.exists())
-                m_valid = true;
+            m_valid = themeIndex.exists();
+            qCDebug(lcIconLoader) << "Probing theme file at" << themeIndex.fileName() << m_valid;
         }
     }
 #if QT_CONFIG(settings)
-    if (themeIndex.exists()) {
+    if (m_valid) {
         const QSettings indexReader(themeIndex.fileName(), QSettings::IniFormat);
         const QStringList keys = indexReader.allKeys();
         for (const QString &key : keys) {
@@ -426,7 +433,8 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
                                            const QString &iconName,
                                            QStringList &visited) const
 {
-    qCDebug(lcIconLoader) << "Finding icon" << iconName << "in theme" << themeName;
+    qCDebug(lcIconLoader) << "Finding icon" << iconName << "in theme" << themeName
+                          << "skipping" << visited;
 
     QThemeIconInfo info;
     Q_ASSERT(!themeName.isEmpty());
@@ -620,11 +628,15 @@ QIconEngine *QIconLoader::iconEngine(const QString &iconName) const
     qCDebug(lcIconLoader) << "Resolving icon engine for icon" << iconName;
 
     auto *platformTheme = QGuiApplicationPrivate::platformTheme();
-    auto *iconEngine = hasUserTheme() || !platformTheme ?
-        new QIconLoaderEngine(iconName) : platformTheme->createIconEngine(iconName);
+    std::unique_ptr<QIconEngine> iconEngine;
+    if (!hasUserTheme() && platformTheme)
+        iconEngine.reset(platformTheme->createIconEngine(iconName));
+    if (!iconEngine || iconEngine->isNull()) {
+        iconEngine.reset(new QIconLoaderEngine(iconName));
+    }
 
-    qCDebug(lcIconLoader) << "Resulting engine" << iconEngine;
-    return iconEngine;
+    qCDebug(lcIconLoader) << "Resulting engine" << iconEngine.get();
+    return iconEngine.release();
 }
 
 /*!

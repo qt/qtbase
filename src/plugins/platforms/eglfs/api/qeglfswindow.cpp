@@ -108,8 +108,12 @@ void QEglFSWindow::create()
 #endif
 }
 
-void QEglFSWindow::setBackingStore(QOpenGLCompositorBackingStore *backingStore)
+void QEglFSWindow::setBackingStore(QPlatformBackingStore *store)
 {
+    Q_ASSERT(store);
+    Q_ASSERT_X(dynamic_cast<QOpenGLCompositorBackingStore *>(store), __FUNCTION__,
+               "Argument is not a QOpenGLCompositorBackingStore.");
+    auto *backingStore = static_cast<QOpenGLCompositorBackingStore *>(store);
 #ifndef QT_NO_OPENGL
     if (!m_rasterCompositingContext) {
         m_rasterCompositingContext = new QOpenGLContext;

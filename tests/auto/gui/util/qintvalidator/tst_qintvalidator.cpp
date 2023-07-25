@@ -167,7 +167,8 @@ void tst_QIntValidator::validateFrench()
     int i;
     // Grouping separator is a narrow no-break space; QLocale accepts a space as it.
     QString s = QLatin1String("1 ");
-    QCOMPARE(validator.validate(s, i), QValidator::Acceptable);
+    // Shouldn't end with a group separator
+    QCOMPARE(validator.validate(s, i), QValidator::Intermediate);
     validator.fixup(s);
     QCOMPARE(s, s);
 

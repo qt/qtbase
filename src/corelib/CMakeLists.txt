@@ -301,6 +301,7 @@ qt_internal_add_module(Core
         tools/qsharedpointer.cpp tools/qsharedpointer.h
         tools/qsharedpointer_impl.h
         tools/qsize.cpp tools/qsize.h
+        tools/qspan_p.h
         tools/qstack.h
         tools/qtaggedpointer.h
         tools/qtools_p.h
@@ -308,6 +309,7 @@ qt_internal_add_module(Core
         tools/qvector.h
         tools/qversionnumber.cpp tools/qversionnumber.h
     NO_UNITY_BUILD_SOURCES
+        tools/qfreelist.cpp # Size0/Offset0 (also in qabstracteventdispatcher.cpp)
         # MinGW complains about `free-nonheap-object` in ~QSharedDataPointer()
         # despite the fact that appropriate checks are in place to avoid that!
         tools/qshareddata.cpp tools/qshareddata.h
@@ -318,10 +320,12 @@ qt_internal_add_module(Core
         text/qstringconverter.cpp # enum Data
         tools/qcryptographichash.cpp # KeccakNISTInterface/Final
         io/qdebug.cpp # undef qDebug
+        io/qsettings.cpp # Space (also in qjsonparser.cpp)
     NO_PCH_SOURCES
         compat/removed_api.cpp
         global/qsimd.cpp
     DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
         QT_TYPESAFE_FLAGS
@@ -699,7 +703,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND LINUX
 qt_internal_extend_target(Core CONDITION QT_FEATURE_future
     SOURCES
         thread/qexception.cpp thread/qexception.h
-        thread/qbasicfuturewatcher.cpp thread/qbasicfuturewatcher.h
         thread/qfuture.h
         thread/qfuture_impl.h
         thread/qfutureinterface.cpp thread/qfutureinterface.h thread/qfutureinterface_p.h
@@ -1019,13 +1022,13 @@ qt_internal_extend_target(Core CONDITION HAIKU AND NOT ANDROID
 )
 
 qt_internal_extend_target(Core
-    CONDITION UNIX AND NOT LINUX AND NOT APPLE AND NOT HAIKU AND NOT ANDROID
+    CONDITION UNIX AND NOT LINUX AND NOT APPLE AND NOT HAIKU AND NOT ANDROID AND NOT VXWORKS
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_unix.cpp
 )
 
-qt_internal_extend_target(Core CONDITION LINUX AND NOT ANDROID
+qt_internal_extend_target(Core CONDITION LINUX AND NOT ANDROID AND NOT VXWORKS
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_linux.cpp
@@ -1142,12 +1145,17 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_sysv_sem
 
 qt_internal_extend_target(Core CONDITION VXWORKS
     SOURCES
-        kernel/qfunctions_vxworks.cpp kernel/qfunctions_vxworks.h
+        io/qstandardpaths_unix.cpp
+        io/qstorageinfo_stub.cpp
+        kernel/qfunctions_vxworks.cpp
+        kernel/qfunctions_vxworks.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_cborstreamreader
     SOURCES
         serialization/qcborstreamreader.cpp serialization/qcborstreamreader.h
+    NO_UNITY_BUILD_SOURCES
+        serialization/qcborstreamreader.cpp # some problem with cbor_value_get_type etc
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_cborstreamwriter

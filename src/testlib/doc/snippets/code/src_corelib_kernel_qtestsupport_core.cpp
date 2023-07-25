@@ -5,9 +5,9 @@
 // dummy class
 class MyObject
 {
-    public:
-        int isReady();
-        bool startup();
+public:
+    int isReady();
+    void startup() {}
 };
 
 // dummy function
@@ -27,7 +27,7 @@ int MyObject::isReady()
 return 1;
 }
 
-static bool startup()
+[[maybe_unused]] static bool startup()
 {
 //! [2]
     MyObject obj;

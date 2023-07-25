@@ -106,10 +106,15 @@ private:
         // we abuse const_cast / constData here because we know we've just
         // allocated the data and we're the only reference count
         typename T::iterator d = const_cast<typename T::iterator>(s.constData());
-        typename T::const_iterator const start = d;
-        QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);
 
-        if (!QConcatenable< QStringBuilder<A, B> >::ExactSize && len != d - start) {
+        if constexpr (QConcatenable<QStringBuilder<A, B>>::ExactSize) {
+            QConcatenable<QStringBuilder<A, B>>::appendTo(*this, d);
+            return s;
+        }
+
+        typename T::const_iterator const start = d;
+        QConcatenable<QStringBuilder<A, B>>::appendTo(*this, d);
+        if (len != d - start) {
             // this resize is necessary since we allocate a bit too much
             // when dealing with variable sized 8-bit encodings
             s.resize(d - start);

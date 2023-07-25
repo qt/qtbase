@@ -55,7 +55,7 @@ public:
         Id128           = 3
     };
 
-    union Id128Bytes {
+    union alignas(16) Id128Bytes {
         quint8 data[16];
         quint16 data16[8];
         quint32 data32[4];
@@ -70,7 +70,7 @@ public:
         }
     };
 
-    constexpr QUuid() noexcept {}
+    constexpr QUuid() noexcept : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
 
     constexpr QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
                            uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
@@ -183,10 +183,10 @@ public:
     NSUUID *toNSUUID() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
 
-    uint    data1 = 0;
-    ushort  data2 = 0;
-    ushort  data3 = 0;
-    uchar   data4[8] = {};
+    uint    data1;
+    ushort  data2;
+    ushort  data3;
+    uchar   data4[8];
 
 private:
     static constexpr Id128Bytes bswap(Id128Bytes b)
@@ -243,28 +243,43 @@ inline QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcep
 }
 
 #ifdef __SIZEOF_INT128__
-constexpr inline QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
+constexpr QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
+    : QUuid()
 {
-    if (order == QSysInfo::LittleEndian)
-        uuid = qbswap(uuid);
-    data1 = uint(uuid >> 96);
-    data2 = ushort(uuid >> 80);
-    data3 = ushort(uuid >> 64);
-    for (int i = 0; i < 8; ++i)
-        data4[i] = uchar(uuid >> (56 - i * 8));
+    if (order == QSysInfo::BigEndian) {
+        data1 = qFromBigEndian<quint32>(int(uuid));
+        data2 = qFromBigEndian<quint16>(ushort(uuid >> 32));
+        data3 = qFromBigEndian<quint16>(ushort(uuid >> 48));
+        for (int i = 0; i < 8; ++i)
+            data4[i] = uchar(uuid >> (64 + i * 8));
+    } else {
+        data1 = qFromLittleEndian<quint32>(uint(uuid >> 96));
+        data2 = qFromLittleEndian<quint16>(ushort(uuid >> 80));
+        data3 = qFromLittleEndian<quint16>(ushort(uuid >> 64));
+        for (int i = 0; i < 8; ++i)
+            data4[i] = uchar(uuid >> (56 - i * 8));
+    }
 }
 
-constexpr inline quint128 QUuid::toUInt128(QSysInfo::Endian order) const noexcept
+constexpr quint128 QUuid::toUInt128(QSysInfo::Endian order) const noexcept
 {
     quint128 result = {};
-    result = data1;
-    result <<= 32;
-    result |= (data2 << 16) | uint(data3);
-    result <<= 64;
-    for (int i = 0; i < 8; ++i)
-        result |= quint64(data4[i]) << (56 - i * 8);
-    if (order == QSysInfo::LittleEndian)
-        return qbswap(result);
+    if (order == QSysInfo::BigEndian) {
+        for (int i = 0; i < 8; ++i)
+            result |= quint64(data4[i]) << (i * 8);
+        result = result << 64;
+        result |= quint64(qToBigEndian<quint16>(data3)) << 48;
+        result |= quint64(qToBigEndian<quint16>(data2)) << 32;
+        result |= qToBigEndian<quint32>(data1);
+    } else {
+        result = qToLittleEndian<quint32>(data1);
+        result = result << 32;
+        result |= quint64(qToLittleEndian<quint16>(data2)) << 16;
+        result |= quint64(qToLittleEndian<quint16>(data3));
+        result = result << 64;
+        for (int i = 0; i < 8; ++i)
+            result |= quint64(data4[i]) << (56 - i * 8);
+    }
     return result;
 }
 #endif

@@ -22,6 +22,7 @@ public:
 
     void setServerPort(int port);
     QString userName() const;
+    QByteArray uniqueId() const;
     void startBroadcasting();
     bool isLocalHostAddress(const QHostAddress &address) const;
 
@@ -41,6 +42,7 @@ private:
     QUdpSocket broadcastSocket;
     QTimer broadcastTimer;
     QString username;
+    QByteArray localUniqueId;
     int serverPort = 0;
 };
 

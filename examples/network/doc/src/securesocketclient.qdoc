@@ -3,7 +3,9 @@
 
 /*!
     \example securesocketclient
-    \title Secure Socket Client Example
+    \title Secure Socket Client
+    \examplecategory {Networking}
+    \meta tags {tcp,network,tls,ssl}
     \ingroup examples-network
     \brief Demonstrates how to communicate over an encrypted (SSL) connection.
 
@@ -11,6 +13,5 @@
     encrypted connection, deal with authenticity problems, and display security
     and certificate information.
 
-    \image securesocketclient.png
-    \image securesocketclient2.png
+    \image securesocketclient-example.webp
 */

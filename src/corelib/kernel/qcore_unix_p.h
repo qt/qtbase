@@ -44,10 +44,6 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#if !defined(QT_POSIX_IPC) && !defined(QT_NO_SHAREDMEMORY) && !defined(Q_OS_ANDROID)
-#  include <sys/ipc.h>
-#endif
-
 #if defined(Q_OS_VXWORKS)
 #  include <ioLib.h>
 #endif

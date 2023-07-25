@@ -39,19 +39,19 @@ void CertificateInfo::updateCertificateInfo(int index)
     if (index >= 0 && index < certificateChain.size()) {
         const QSslCertificate &cert = certificateChain.at(index);
         QStringList lines;
-        lines << tr("Organization: %1").arg(cert.subjectInfo(QSslCertificate::Organization).join(QLatin1Char(' ')))
-              << tr("Subunit: %1").arg(cert.subjectInfo(QSslCertificate::OrganizationalUnitName).join(QLatin1Char(' ')))
-              << tr("Country: %1").arg(cert.subjectInfo(QSslCertificate::CountryName).join(QLatin1Char(' ')))
-              << tr("Locality: %1").arg(cert.subjectInfo(QSslCertificate::LocalityName).join(QLatin1Char(' ')))
-              << tr("State/Province: %1").arg(cert.subjectInfo(QSslCertificate::StateOrProvinceName).join(QLatin1Char(' ')))
-              << tr("Common Name: %1").arg(cert.subjectInfo(QSslCertificate::CommonName).join(QLatin1Char(' ')))
+        lines << tr("Organization: %1").arg(cert.subjectInfo(QSslCertificate::Organization).join(u' '))
+              << tr("Subunit: %1").arg(cert.subjectInfo(QSslCertificate::OrganizationalUnitName).join(u' '))
+              << tr("Country: %1").arg(cert.subjectInfo(QSslCertificate::CountryName).join(u' '))
+              << tr("Locality: %1").arg(cert.subjectInfo(QSslCertificate::LocalityName).join(u' '))
+              << tr("State/Province: %1").arg(cert.subjectInfo(QSslCertificate::StateOrProvinceName).join(u' '))
+              << tr("Common Name: %1").arg(cert.subjectInfo(QSslCertificate::CommonName).join(u' '))
               << QString()
-              << tr("Issuer Organization: %1").arg(cert.issuerInfo(QSslCertificate::Organization).join(QLatin1Char(' ')))
-              << tr("Issuer Unit Name: %1").arg(cert.issuerInfo(QSslCertificate::OrganizationalUnitName).join(QLatin1Char(' ')))
-              << tr("Issuer Country: %1").arg(cert.issuerInfo(QSslCertificate::CountryName).join(QLatin1Char(' ')))
-              << tr("Issuer Locality: %1").arg(cert.issuerInfo(QSslCertificate::LocalityName).join(QLatin1Char(' ')))
-              << tr("Issuer State/Province: %1").arg(cert.issuerInfo(QSslCertificate::StateOrProvinceName).join(QLatin1Char(' ')))
-              << tr("Issuer Common Name: %1").arg(cert.issuerInfo(QSslCertificate::CommonName).join(QLatin1Char(' ')));
+              << tr("Issuer Organization: %1").arg(cert.issuerInfo(QSslCertificate::Organization).join(u' '))
+              << tr("Issuer Unit Name: %1").arg(cert.issuerInfo(QSslCertificate::OrganizationalUnitName).join(u' '))
+              << tr("Issuer Country: %1").arg(cert.issuerInfo(QSslCertificate::CountryName).join(u' '))
+              << tr("Issuer Locality: %1").arg(cert.issuerInfo(QSslCertificate::LocalityName).join(u' '))
+              << tr("Issuer State/Province: %1").arg(cert.issuerInfo(QSslCertificate::StateOrProvinceName).join(u' '))
+              << tr("Issuer Common Name: %1").arg(cert.issuerInfo(QSslCertificate::CommonName).join(u' '));
         for (const auto &line : lines)
             form->certificateInfoView->addItem(line);
     }

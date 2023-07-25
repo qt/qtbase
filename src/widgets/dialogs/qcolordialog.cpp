@@ -1316,7 +1316,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     connect(gEd, &QSpinBox::valueChanged, this, &QColorShower::rgbEd);
     connect(bEd, &QSpinBox::valueChanged, this, &QColorShower::rgbEd);
     connect(alphaEd, &QSpinBox::valueChanged, this, &QColorShower::rgbEd);
-    connect(htEd, &QLineEdit::textChanged, this, &QColorShower::htmlEd);
+    connect(htEd, &QLineEdit::textEdited, this, &QColorShower::htmlEd);
 
     retranslateStrings();
 }

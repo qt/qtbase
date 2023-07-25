@@ -247,14 +247,14 @@ void QPSQLDriverPrivate::checkPendingNotifications() const
     }
 }
 
-class QPSQLResultPrivate : public QSqlResultPrivate
+class QPSQLResultPrivate final : public QSqlResultPrivate
 {
     Q_DECLARE_PUBLIC(QPSQLResult)
 public:
     Q_DECLARE_SQLDRIVER_PRIVATE(QPSQLDriver)
     using QSqlResultPrivate::QSqlResultPrivate;
 
-    QString fieldSerial(qsizetype i) const override { return u'$' + QString::number(i + 1); }
+    QString fieldSerial(qsizetype i) const override { return QString("$%1"_L1).arg(i + 1); }
     void deallocatePreparedStmt();
 
     std::queue<PGresult*> nextResultSets;
@@ -1643,3 +1643,5 @@ void QPSQLDriver::_q_handleNotification()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_psql_p.cpp"

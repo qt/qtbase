@@ -45,16 +45,6 @@ int rand_r(unsigned int * /*seedp*/)
 }
 #endif
 
-// no usleep() support
-int usleep(unsigned int usec)
-{
-    div_t dt = div(usec, 1000000);
-    struct timespec ts = { dt.quot, dt.rem * 1000 };
-
-    return nanosleep(&ts, 0);
-}
-
-
 // gettimeofday() is declared, but is missing from the library
 // It IS however defined in the Curtis-Wright X11 libraries, so
 // we have to make the symbol 'weak'
@@ -79,16 +69,6 @@ int gettimeofday(struct timeval *tv, void /*struct timezone*/ *)
         }
         return res;
     }
-}
-
-// neither getpagesize() or sysconf(_SC_PAGESIZE) are available
-int getpagesize()
-{
-#if defined(_WRS_KERNEL)
-    return vmPageSizeGet();
-#else
-    return sysconf(_SC_PAGESIZE);
-#endif
 }
 
 // symlinks are not supported (lstat is now just a call to stat - see qplatformdefs.h)
@@ -139,18 +119,6 @@ gid_t getgid()
 uid_t geteuid()
 {
     return 0;
-}
-
-struct passwd *getpwuid(uid_t uid)
-{
-    static struct passwd pwbuf = { "root", 0, 0, 0, 0, 0, 0 };
-
-    if (uid == 0) {
-        return &pwbuf;
-    } else {
-        errno = ENOENT;
-        return 0;
-    }
 }
 
 struct group *getgrgid(gid_t gid)

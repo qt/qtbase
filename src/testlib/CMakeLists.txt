@@ -59,6 +59,7 @@ qt_internal_add_module(Test
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
+        QT_NO_CONTEXTLESS_CONNECT
         QT_NO_DATASTREAM
         QT_NO_FOREACH
         # Ensure uniform location info between release and debug builds

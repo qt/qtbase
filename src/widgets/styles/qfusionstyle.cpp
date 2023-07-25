@@ -1236,12 +1236,12 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         // Draws the header in tables.
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(option);
-            QString pixmapName = QStyleHelper::uniqueName("headersection"_L1, option, option->rect.size());
-            pixmapName += QString::number(- int(header->position));
-            pixmapName += QString::number(- int(header->orientation));
-            if (headerV2)
-                pixmapName += QString::number(- int(headerV2->isSectionDragTarget));
-
+            const bool isSectionDragTarget = headerV2 ? headerV2->isSectionDragTarget : false;
+            const QString pixmapName = QStyleHelper::uniqueName("headersection-"_L1
+                                                                    % HexString(header->position)
+                                                                    % HexString(header->orientation)
+                                                                    % QLatin1Char(isSectionDragTarget ? '1' : '0'),
+                                                                option, option->rect.size());
             QPixmap cache;
             if (!QPixmapCache::find(pixmapName, &cache)) {
                 cache = styleCachePixmap(rect.size());
@@ -1251,7 +1251,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 QColor buttonColor = d->buttonColor(option->palette);
                 QColor gradientStartColor = buttonColor.lighter(104);
                 QColor gradientStopColor = buttonColor.darker(102);
-                if (headerV2 && headerV2->isSectionDragTarget) {
+                if (isSectionDragTarget) {
                     gradientStopColor = gradientStartColor.darker(130);
                     gradientStartColor = gradientStartColor.darker(130);
                 }
@@ -2665,16 +2665,12 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             bool sunken = comboBox->state & State_On; // play dead, if combobox has no items
             bool isEnabled = (comboBox->state & State_Enabled);
             QPixmap cache;
-            QString pixmapName = QStyleHelper::uniqueName("combobox"_L1, option, comboBox->rect.size());
-            if (sunken)
-                pixmapName += "-sunken"_L1;
-            if (comboBox->editable)
-                pixmapName += "-editable"_L1;
-            if (isEnabled)
-                pixmapName += "-enabled"_L1;
-            if (!comboBox->frame)
-                pixmapName += "-frameless"_L1;
-
+            const QString pixmapName = QStyleHelper::uniqueName("combobox"_L1
+                                                                    % QLatin1StringView(sunken ? "-sunken" : "")
+                                                                    % QLatin1StringView(comboBox->editable ? "-editable" : "")
+                                                                    % QLatin1StringView(isEnabled ? "-enabled" : "")
+                                                                    % QLatin1StringView(!comboBox->frame ? "-frameless" : ""),
+                                                                option, comboBox->rect.size());
             if (!QPixmapCache::find(pixmapName, &cache)) {
                 cache = styleCachePixmap(comboBox->rect.size());
                 cache.fill(Qt::transparent);
@@ -2817,7 +2813,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
                 // draw blue groove highlight
                 QRect clipRect;
-                groovePixmapName += "_blue"_L1;
+                if (!groovePixmapName.isEmpty())
+                    groovePixmapName += "_blue"_L1;
                 if (!QPixmapCache::find(groovePixmapName, &cache)) {
                     cache = styleCachePixmap(pixmapRect.size());
                     cache.fill(Qt::transparent);

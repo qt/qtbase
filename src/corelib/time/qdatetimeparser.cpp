@@ -727,6 +727,36 @@ int QDateTimeParser::sectionMaxSize(int index) const
     return sectionMaxSize(sn.type, sn.count);
 }
 
+// Separator matching
+//
+// QTBUG-114909: user may be oblivious to difference between visibly
+// indistinguishable spacing characters. For now we only treat horizontal
+// spacing characters, excluding tab, as equivalent.
+
+static int matchesSeparator(QStringView text, QStringView separator)
+{
+    const auto isSimpleSpace = [](char32_t ch) {
+        // Distinguish tab, CR and the vertical spaces from the rest:
+        return ch == u' ' || (ch > 127 && QChar::isSpace(ch));
+    };
+    // -1 if not a match, else length of prefix of text that does match.
+    // First check for exact match
+    if (!text.startsWith(separator)) {
+        // Failing that, check for space-identifying match:
+        QStringIterator given(text), sep(separator);
+        while (sep.hasNext()) {
+            if (!given.hasNext())
+                return -1;
+            char32_t s = sep.next(), g = given.next();
+            if (s != g && !(isSimpleSpace(s) && isSimpleSpace(g)))
+                return -1;
+        }
+        // One side may have used a surrogate pair space where the other didn't:
+        return given.index();
+    }
+    return separator.size();
+}
+
 /*!
   \internal
 
@@ -845,12 +875,26 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
     case MinuteSection:
     case SecondSection:
     case MSecSection: {
+        const auto checkSeparator = [&result, field=QStringView{m_text}.sliced(offset),
+                                     negativeYearOffset, sectionIndex, this]() {
+            // No-digit field if next separator is here, otherwise invalid.
+            const auto &sep = separators.at(sectionIndex + 1);
+            if (matchesSeparator(field.sliced(negativeYearOffset), sep) != -1)
+                result = ParsedSection(Intermediate, 0, negativeYearOffset);
+            else if (negativeYearOffset && matchesSeparator(field, sep) != -1)
+                result = ParsedSection(Intermediate, 0, 0);
+            else
+                return false;
+            return true;
+        };
         int used = negativeYearOffset;
-        // We already sliced off the - sign if it was legitimately present.
+        // We already sliced off the - sign if it was acceptable.
+        // QLocale::toUInt() would accept a sign, so we must reject it overtly:
         if (sectionTextRef.startsWith(u'-')
             || sectionTextRef.startsWith(u'+')) {
-            if (separators.at(sectionIndex + 1).startsWith(sectionTextRef[0]))
-                result = ParsedSection(Intermediate, 0, used);
+            // However, a sign here may indicate a field with no digits, if it
+            // starts the next separator:
+            checkSeparator();
             break;
         }
         QStringView digitsStr = sectionTextRef.left(digitCount(sectionTextRef));
@@ -884,13 +928,10 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             }
 
             if (lastVal == -1) {
-                const auto &sep = separators.at(sectionIndex + 1);
-                if (sep.startsWith(sectionTextRef[0])
-                    || (negate && sep.startsWith(m_text.at(offset))))
-                    result = ParsedSection(Intermediate, 0, 0);
-                else
+                if (!checkSeparator()) {
                     QDTPDEBUG << "invalid because" << sectionTextRef << "can't become a uint"
                               << lastVal;
+                }
             } else {
                 if (negate)
                     lastVal = -lastVal;
@@ -1142,13 +1183,18 @@ static QTime actualTime(QDateTimeParser::Sections known,
 /*
   \internal
 */
-static int startsWithLocalTimeZone(QStringView name)
+static int startsWithLocalTimeZone(QStringView name, const QDateTime &when)
 {
+    // On MS-Win, at least when system zone is UTC, the tzname[]s may be empty.
     for (int i = 0; i < 2; ++i) {
         const QString zone(qTzName(i));
-        if (name.startsWith(zone))
+        if (!zone.isEmpty() && name.startsWith(zone))
             return zone.size();
     }
+    // Mimic what QLocale::toString() would have used, to ensure round-trips work:
+    const QString local = QDateTime(when.date(), when.time()).timeZoneAbbreviation();
+    if (name.startsWith(local))
+        return local.size();
     return 0;
 }
 
@@ -1182,25 +1228,25 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
     for (int index = 0; index < sectionNodesCount; ++index) {
         Q_ASSERT(state != Invalid);
         const QString &separator = separators.at(index);
-        if (QStringView{m_text}.mid(pos, separator.size()) != separator) {
-            QDTPDEBUG << "invalid because" << QStringView{m_text}.mid(pos, separator.size())
-                      << "!=" << separator
+        int step = matchesSeparator(QStringView{m_text}.sliced(pos), separator);
+        if (step == -1) {
+            QDTPDEBUG << "invalid because" << QStringView{m_text}.sliced(pos)
+                      << "does not start with" << separator
                       << index << pos << currentSectionIndex;
             return StateNode();
         }
-        pos += separator.size();
+        pos += step;
         sectionNodes[index].pos = pos;
         int *current = nullptr;
         int zoneOffset; // Needed to serve as *current when setting zone
         const SectionNode sn = sectionNodes.at(index);
-        ParsedSection sect;
-
-        {
+        const QDateTime usedDateTime = [&] {
             const QDate date = actualDate(isSet, calendar, year, year2digits,
                                           month, day, dayofweek);
             const QTime time = actualTime(isSet, hour, hour12, ampm, minute, second, msec);
-            sect = parseSection(QDateTime(date, time, timeZone), index, pos);
-        }
+            return QDateTime(date, time, timeZone);
+        }();
+        ParsedSection sect = parseSection(usedDateTime, index, pos);
 
         QDTPDEBUG << "sectionValue" << sn.name() << m_text
                   << "pos" << pos << "used" << sect.used << stateName(sect.state);
@@ -1235,18 +1281,14 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
 
                 if (isUtc || isUtcOffset) {
                     timeZone = QTimeZone::fromSecondsAheadOfUtc(sect.value);
-                } else {
 #if QT_CONFIG(timezone)
+                } else if (startsWithLocalTimeZone(zoneName, usedDateTime) != sect.used) {
                     QTimeZone namedZone = QTimeZone(zoneName.toLatin1());
-                    if (namedZone.isValid()) {
-                        timeZone = namedZone;
-                    } else {
-                        Q_ASSERT(startsWithLocalTimeZone(zoneName));
-                        timeZone = QTimeZone::LocalTime;
-                    }
-#else
-                    timeZone = QTimeZone::LocalTime;
+                    Q_ASSERT(namedZone.isValid());
+                    timeZone = namedZone;
 #endif
+                } else {
+                    timeZone = QTimeZone::LocalTime;
                 }
             }
             break;
@@ -1287,9 +1329,10 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         isSet |= sn.type;
     }
 
-    if (QStringView{m_text}.sliced(pos) != separators.last()) {
+    int step = matchesSeparator(QStringView{m_text}.sliced(pos), separators.last());
+    if (step == -1 || step + pos < m_text.size()) {
         QDTPDEBUG << "invalid because" << QStringView{m_text}.sliced(pos)
-                  << "!=" << separators.last() << pos;
+                  << "does not match" << separators.last() << pos;
         return StateNode();
     }
 
@@ -1750,7 +1793,7 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str, i
 QDateTimeParser::ParsedSection
 QDateTimeParser::findTimeZoneName(QStringView str, const QDateTime &when) const
 {
-    const int systemLength = startsWithLocalTimeZone(str);
+    const int systemLength = startsWithLocalTimeZone(str, when);
 #if QT_CONFIG(timezone)
     // Collect up plausibly-valid characters; let QTimeZone work out what's
     // truly valid.
