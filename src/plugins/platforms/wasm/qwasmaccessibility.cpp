@@ -423,8 +423,11 @@ void QWasmAccessibility::handleEventFromHtmlElement(const emscripten::val event)
 
         } else if (eventType == "input") {
 
-            if (iface->editableTextInterface()) {
-                 std::string insertText = event["target"]["value"].as<std::string>();
+            // as EditableTextInterface is not implemented in qml accessibility
+            // so we need to check the role for text to update in the textbox during accessibility
+
+            if (iface->editableTextInterface() || iface->role() == QAccessible::EditableText) {
+                std::string insertText = event["target"]["value"].as<std::string>();
                 iface->setText(QAccessible::Value, QString::fromStdString(insertText));
             }
         }
