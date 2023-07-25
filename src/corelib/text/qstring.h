@@ -938,7 +938,7 @@ public:
     static QString number(double, char format='g', int precision=6);
 
     friend bool operator==(const QString &s1, const QString &s2) noexcept
-    { return (s1.size() == s2.size()) && QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) == 0; }
+    { return (s1.size() == s2.size()) && QtPrivate::equalStrings(s1, s2); }
     friend bool operator< (const QString &s1, const QString &s2) noexcept
     { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) < 0; }
     friend bool operator> (const QString &s1, const QString &s2) noexcept { return s2 < s1; }
@@ -947,7 +947,7 @@ public:
     friend bool operator>=(const QString &s1, const QString &s2) noexcept { return !(s1 < s2); }
 
     friend bool operator==(const QString &s1, QLatin1StringView s2) noexcept
-    { return (s1.size() == s2.size()) && QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) == 0; }
+    { return (s1.size() == s2.size()) && QtPrivate::equalStrings(s1, s2); }
     friend bool operator< (const QString &s1, QLatin1StringView s2) noexcept
     { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) < 0; }
     friend bool operator> (const QString &s1, QLatin1StringView s2) noexcept
