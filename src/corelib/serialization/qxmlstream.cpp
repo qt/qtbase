@@ -2879,6 +2879,11 @@ class QXmlStreamWriterPrivate : public QXmlStreamPrivateTagStack
     QXmlStreamWriter *q_ptr;
     Q_DECLARE_PUBLIC(QXmlStreamWriter)
 public:
+    enum class StartElementOption {
+        KeepEverything = 0, // write out every attribute, namespace, &c.
+        OmitNamespaceDeclarations = 1,
+    };
+
     QXmlStreamWriterPrivate(QXmlStreamWriter *q);
     ~QXmlStreamWriterPrivate() {
         if (deleteDevice)
@@ -2888,7 +2893,8 @@ public:
     void write(QAnyStringView s);
     void writeEscaped(QAnyStringView, bool escapeWhitespace = false);
     bool finishStartElement(bool contents = true);
-    void writeStartElement(QAnyStringView namespaceUri, QAnyStringView name);
+    void writeStartElement(QAnyStringView namespaceUri, QAnyStringView name,
+                           StartElementOption option = StartElementOption::KeepEverything);
     QIODevice *device;
     QString *stringDevice;
     uint deleteDevice :1;
@@ -2903,6 +2909,7 @@ public:
     NamespaceDeclaration emptyNamespace;
     qsizetype lastNamespaceDeclaration;
 
+    NamespaceDeclaration &addExtraNamespace(QAnyStringView namespaceUri, QAnyStringView prefix);
     NamespaceDeclaration &findNamespace(QAnyStringView namespaceUri, bool writeDeclaration = false, bool noDefault = false);
     void writeNamespaceDeclaration(const NamespaceDeclaration &namespaceDeclaration);
 
@@ -3041,6 +3048,32 @@ bool QXmlStreamWriterPrivate::finishStartElement(bool contents)
     inStartElement = inEmptyElement = false;
     lastNamespaceDeclaration = namespaceDeclarations.size();
     return hadSomethingWritten;
+}
+
+QXmlStreamPrivateTagStack::NamespaceDeclaration &
+QXmlStreamWriterPrivate::addExtraNamespace(QAnyStringView namespaceUri, QAnyStringView prefix)
+{
+    const bool prefixIsXml = prefix == "xml"_L1;
+    const bool namespaceUriIsXml = namespaceUri == "http://www.w3.org/XML/1998/namespace"_L1;
+    if (prefixIsXml && !namespaceUriIsXml) {
+        qWarning("Reserved prefix 'xml' must not be bound to a different namespace name "
+                 "than 'http://www.w3.org/XML/1998/namespace'");
+    } else if (!prefixIsXml && namespaceUriIsXml) {
+        const QString prefixString = prefix.toString();
+        qWarning("The prefix '%ls' must not be bound to namespace name "
+                 "'http://www.w3.org/XML/1998/namespace' which 'xml' is already bound to",
+                 qUtf16Printable(prefixString));
+    }
+    if (namespaceUri == "http://www.w3.org/2000/xmlns/"_L1) {
+        const QString prefixString = prefix.toString();
+        qWarning("The prefix '%ls' must not be bound to namespace name "
+                 "'http://www.w3.org/2000/xmlns/'",
+                 qUtf16Printable(prefixString));
+    }
+    auto &namespaceDeclaration = namespaceDeclarations.push();
+    namespaceDeclaration.prefix = addToStringStorage(prefix);
+    namespaceDeclaration.namespaceUri = addToStringStorage(namespaceUri);
+    return namespaceDeclaration;
 }
 
 QXmlStreamPrivateTagStack::NamespaceDeclaration &QXmlStreamWriterPrivate::findNamespace(QAnyStringView namespaceUri, bool writeDeclaration, bool noDefault)
@@ -3621,11 +3654,7 @@ void QXmlStreamWriter::writeNamespace(QAnyStringView namespaceUri, QAnyStringVie
     if (prefix.isEmpty()) {
         d->findNamespace(namespaceUri, d->inStartElement);
     } else {
-        Q_ASSERT(!((prefix == "xml"_L1) ^ (namespaceUri == "http://www.w3.org/XML/1998/namespace"_L1)));
-        Q_ASSERT(namespaceUri != "http://www.w3.org/2000/xmlns/"_L1);
-        QXmlStreamWriterPrivate::NamespaceDeclaration &namespaceDeclaration = d->namespaceDeclarations.push();
-        namespaceDeclaration.prefix = d->addToStringStorage(prefix);
-        namespaceDeclaration.namespaceUri = d->addToStringStorage(namespaceUri);
+        auto &namespaceDeclaration = d->addExtraNamespace(namespaceUri, prefix);
         if (d->inStartElement)
             d->writeNamespaceDeclaration(namespaceDeclaration);
     }
@@ -3774,7 +3803,8 @@ void QXmlStreamWriter::writeStartElement(QAnyStringView namespaceUri, QAnyString
     d->writeStartElement(namespaceUri, name);
 }
 
-void QXmlStreamWriterPrivate::writeStartElement(QAnyStringView namespaceUri, QAnyStringView name)
+void QXmlStreamWriterPrivate::writeStartElement(QAnyStringView namespaceUri, QAnyStringView name,
+                                                StartElementOption option)
 {
     if (!finishStartElement(false) && autoFormatting)
         indent(tagStack.size());
@@ -3790,8 +3820,10 @@ void QXmlStreamWriterPrivate::writeStartElement(QAnyStringView namespaceUri, QAn
     write(tag.name);
     inStartElement = lastWasStartElement = true;
 
-    for (qsizetype i = lastNamespaceDeclaration; i < namespaceDeclarations.size(); ++i)
-        writeNamespaceDeclaration(namespaceDeclarations[i]);
+    if (option != StartElementOption::OmitNamespaceDeclarations) {
+        for (qsizetype i = lastNamespaceDeclaration; i < namespaceDeclarations.size(); ++i)
+            writeNamespaceDeclaration(namespaceDeclarations[i]);
+    }
     tag.namespaceDeclarationsSize = lastNamespaceDeclaration;
 }
 
@@ -3805,6 +3837,7 @@ void QXmlStreamWriterPrivate::writeStartElement(QAnyStringView namespaceUri, QAn
  */
 void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
 {
+    Q_D(QXmlStreamWriter);
     switch (reader.tokenType()) {
     case QXmlStreamReader::NoToken:
         break;
@@ -3815,12 +3848,19 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
         writeEndDocument();
         break;
     case QXmlStreamReader::StartElement: {
-        writeStartElement(reader.namespaceUri(), reader.name());
-        const QXmlStreamNamespaceDeclarations decls = reader.namespaceDeclarations();
-        for (const auto &namespaceDeclaration : decls) {
-            writeNamespace(namespaceDeclaration.namespaceUri(),
-                           namespaceDeclaration.prefix());
+        // Namespaces must be added before writeStartElement is called so new prefixes are found
+        QList<QXmlStreamPrivateTagStack::NamespaceDeclaration> extraNamespaces;
+        for (const auto &namespaceDeclaration : reader.namespaceDeclarations()) {
+            auto &extraNamespace = d->addExtraNamespace(namespaceDeclaration.namespaceUri(),
+                                                        namespaceDeclaration.prefix());
+            extraNamespaces.append(extraNamespace);
         }
+        d->writeStartElement(
+                reader.namespaceUri(), reader.name(),
+                QXmlStreamWriterPrivate::StartElementOption::OmitNamespaceDeclarations);
+        // Namespace declarations are written afterwards
+        for (const auto &extraNamespace : std::as_const(extraNamespaces))
+            d->writeNamespaceDeclaration(extraNamespace);
         writeAttributes(reader.attributes());
              } break;
     case QXmlStreamReader::EndElement:
