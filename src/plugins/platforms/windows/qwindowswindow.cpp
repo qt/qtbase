@@ -1984,7 +1984,7 @@ void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *
     // add the margins for the new DPI to the window size.
     const UINT dpi = UINT(wParam);
     const qreal scale = dpiRelativeScale(dpi);
-    const QMargins margins = QWindowsGeometryHint::frame(window(), style(), exStyle(), dpi);
+    const QMargins margins = fullFrameMargins();
     if (!(m_data.flags & Qt::FramelessWindowHint)) {
         // We need to update the custom margins to match the current DPI, because
         // we don't want our users manually hook into this message just to set a
@@ -1994,7 +1994,7 @@ void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *
         m_data.customMargins *= scale;
     }
 
-    const QSize windowSize = (geometry().size() * scale).grownBy(margins + customMargins());
+    const QSize windowSize = (geometry().size() * scale).grownBy((margins * scale) + customMargins());
     SIZE *size = reinterpret_cast<SIZE *>(lParam);
     size->cx = windowSize.width();
     size->cy = windowSize.height();
@@ -2313,6 +2313,7 @@ void QWindowsWindow::handleGeometryChange()
 {
     const QRect previousGeometry = m_data.geometry;
     m_data.geometry = geometry_sys();
+    updateFullFrameMargins();
     QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
     // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE
     // which we no longer support in Qt 6) do not receive expose
@@ -2823,7 +2824,29 @@ void QWindowsWindow::calculateFullFrameMargins()
     const auto systemMargins = testFlag(DisableNonClientScaling)
         ? QWindowsGeometryHint::frameOnPrimaryScreen(window(), m_data.hwnd)
         : frameMargins_sys();
-    setFullFrameMargins(systemMargins + customMargins());
+
+    // QTBUG-113736: systemMargins depends on AdjustWindowRectExForDpi. This doesn't take into
+    // account possible external modifications to the titlebar, as with ExtendsContentIntoTitleBar()
+    // from the Windows App SDK. We can fix this by comparing the WindowRect (which includes the
+    // frame) to the ClientRect. If a 'typical' frame is detected, i.e. only the titlebar has been
+    // modified, we can safely adjust the frame by deducting the bottom margin to the total Y
+    // difference between the two rects, to get the actual size of the titlebar and prevent
+    // unwanted client area slicing.
+
+    RECT windowRect{};
+    RECT clientRect{};
+    GetWindowRect(handle(), &windowRect);
+    GetClientRect(handle(), &clientRect);
+    const int yDiff = (windowRect.bottom - windowRect.top) - clientRect.bottom;
+    const bool typicalFrame = (systemMargins.left() == systemMargins.right())
+            && (systemMargins.right() == systemMargins.bottom());
+
+    const QMargins adjustedMargins = typicalFrame ?
+          QMargins(systemMargins.left(), yDiff - systemMargins.bottom(),
+                   systemMargins.right(), systemMargins.bottom())
+            : systemMargins;
+
+    setFullFrameMargins(adjustedMargins + customMargins());
 }
 
 QMargins QWindowsWindow::frameMargins() const
