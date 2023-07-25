@@ -2731,12 +2731,16 @@ void tst_QFile::unixFifo()
 
 void tst_QFile::socketPair()
 {
+#if defined(Q_OS_VXWORKS)
+    QSKIP("socketpair is not available on Vxworks");
+#else
     int pipes[2] = { -1, -1 };
     QVERIFY2(socketpair(AF_UNIX, SOCK_STREAM, 0, pipes) == 0, qPrintable(qt_error_string()));
     unixPipe_helper(pipes);
     if (pipes[0] != -1)
         qt_safe_close(pipes[0]);
     qt_safe_close(pipes[1]);
+#endif
 }
 #endif
 
