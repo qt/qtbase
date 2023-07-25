@@ -382,7 +382,15 @@ function(qt_internal_add_example_external_project subdir)
         CMAKE_OBJCXX_COMPILER_LAUNCHER:STRING
     )
 
-    foreach(var_with_type IN LISTS vars_to_pass_if_defined)
+    # QT_EXAMPLE_CMAKE_VARS_TO_PASS can be set by specific repos to pass any additional required
+    # CMake cache variables.
+    # One use case is passing locations of 3rd party package locations like Protobuf via _ROOT
+    # variables.
+    set(extra_vars_var_name "")
+    if(QT_EXAMPLE_CMAKE_VARS_TO_PASS)
+        set(extra_vars_var_name "QT_EXAMPLE_CMAKE_VARS_TO_PASS")
+    endif()
+    foreach(var_with_type IN LISTS vars_to_pass_if_defined ${extra_vars_var_name})
         string(REPLACE ":" ";" key_as_list "${var_with_type}")
         list(GET key_as_list 0 var)
         if(NOT DEFINED ${var})
