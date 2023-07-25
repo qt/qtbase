@@ -8,7 +8,6 @@
 
 #include "qthread.h"
 #include "qreadwritelock_p.h"
-#include "qelapsedtimer.h"
 #include "private/qfreelist_p.h"
 #include "private/qlocking_p.h"
 

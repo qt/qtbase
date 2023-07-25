@@ -8,7 +8,6 @@
 #include "qmutex.h"
 #include <qdebug.h>
 #include "qatomic.h"
-#include "qelapsedtimer.h"
 #include "qfutex_p.h"
 #include "qthread.h"
 #include "qmutex_p.h"

@@ -6,7 +6,6 @@
 
 #include "qatomic.h"
 #include "qdeadlinetimer.h"
-#include "qelapsedtimer.h"
 #include "qmutex.h"
 #include "qplatformdefs.h"
 #include "qreadwritelock.h"

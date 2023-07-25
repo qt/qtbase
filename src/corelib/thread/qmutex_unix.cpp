@@ -5,7 +5,6 @@
 #include "qplatformdefs.h"
 #include "qmutex.h"
 #include "qstring.h"
-#include "qelapsedtimer.h"
 #include "qatomic.h"
 #include "qmutex_p.h"
 #include <errno.h>
