@@ -857,11 +857,11 @@ void tst_QFont::featureAccessors()
     QCOMPARE(font.featureTags().size(), 1);
     QCOMPARE(font.featureTags().first(), abcdTag);
     QCOMPARE(QFont::tagToString(font.featureTags().first()), QByteArray("abcd"));
-    QCOMPARE(font.featureValue(abcdTag), 0xc0ffee);
-    QCOMPARE(font.featureValue(bcdeTag), 0);
+    QCOMPARE(font.featureValue(abcdTag), 0xc0ffeeU);
+    QCOMPARE(font.featureValue(bcdeTag), 0U);
     font.setFeature(abcdTag, 0xf00d);
     QCOMPARE(font.featureTags().size(), 1);
-    QCOMPARE(font.featureValue(abcdTag), 0xf00d);
+    QCOMPARE(font.featureValue(abcdTag), 0xf00dU);
     font.setFeature("abcde", 0xcaca0);
     QVERIFY(!font.isFeatureSet(QFont::stringToTag("abcde")));
     QCOMPARE(font.featureTags().size(), 1);
