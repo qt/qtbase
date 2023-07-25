@@ -22,10 +22,4 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     return QList<QStorageInfo>();
 }
 
-QStorageInfo QStorageInfoPrivate::root()
-{
-    Q_UNIMPLEMENTED();
-    return QStorageInfo();
-}
-
 QT_END_NAMESPACE
