@@ -1778,6 +1778,22 @@ void tst_QXmlStream::roundTrip_data() const
                 "<child xmlns:unknown=\"http://mydomain\">Text</child>"
             "</father>"
         "</root>\n";
+
+    // When a namespace is introduced by an attribute of an element,
+    // that element can exercise the namespace in its tag.
+    // This used (QTBUG-75456) to lead to the namespace definition
+    // being wrongly duplicated, with a new name.
+    QTest::newRow("QTBUG-75456") <<
+        "<?xml version=\"1.0\"?>"
+        "<abc:root xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:abc=\"ns1\">"
+            "<abc:parent>"
+                "<abc:child xmlns:unknown=\"http://mydomain\">Text</abc:child>"
+            "</abc:parent>"
+            "<def:parent xmlns:def=\"ns2\" id=\"test\">"
+                "<def:child id=\"Timmy\">More text</def:child>"
+                "<def:child id=\"Jimmy\">Even more text</def:child>"
+            "</def:parent>"
+        "</abc:root>\n";
 }
 
 void tst_QXmlStream::entityExpansionLimit() const
