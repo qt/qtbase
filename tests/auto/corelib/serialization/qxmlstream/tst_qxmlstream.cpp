@@ -1908,4 +1908,3 @@ void tst_QXmlStream::tokenErrorHandling() const
 }
 
 #include "tst_qxmlstream.moc"
-// vim: et:ts=4:sw=4:sts=4
