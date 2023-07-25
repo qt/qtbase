@@ -10,7 +10,7 @@
 #include <qdir.h>
 #include <qset.h>
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
+#if defined(Q_OS_UNIX)
 #include <unistd.h> // for geteuid
 #endif
 
@@ -120,7 +120,7 @@ void tst_QSaveFile::retryTransactionalWrite()
     // root can open the read-only file for writing...
     if (geteuid() == 0)
         QSKIP("This test does not work as the root user");
-#endif
+#endif //Q_OS_UNIX
     QTemporaryDir dir;
     QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
 
