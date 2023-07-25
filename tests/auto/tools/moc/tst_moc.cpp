@@ -592,6 +592,10 @@ private slots:
 
 QT_WARNING_POP
 
+// quick test to verify that moc handles the L suffix
+// correctly in the preprocessor
+#if 2000L < 1
+#else
 class PropertyTestClass : public QObject
 {
     Q_OBJECT
@@ -601,6 +605,7 @@ public:
 
     Q_ENUM(TestEnum)
 };
+#endif
 
 class PropertyUseClass : public QObject
 {
