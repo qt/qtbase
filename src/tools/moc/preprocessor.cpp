@@ -225,7 +225,8 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                             ++data;
                             while (isHexDigit(*data) || *data == '\'')
                                 ++data;
-                        }
+                        } else if (*data == 'L') // TODO: handle other suffixes
+                            ++data;
                         break;
                     }
                     token = FLOATING_LITERAL;
@@ -402,7 +403,8 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                         ++data;
                         while (isHexDigit(*data) || *data == '\'')
                             ++data;
-                    }
+                    } else if (*data == 'L') // TODO: handle other suffixes
+                        ++data;
                     break;
                 }
                 token = PP_FLOATING_LITERAL;
@@ -932,7 +934,11 @@ int PP_Expression::primary_expression()
         test(PP_RPAREN);
     } else {
         next();
-        value = lexem().toInt(nullptr, 0);
+        const QByteArray &lex = lexem();
+        auto lexView = QByteArrayView(lex);
+        if (lex.endsWith('L'))
+            lexView.chop(1);
+        value = lexView.toInt(nullptr, 0);
     }
     return value;
 }
