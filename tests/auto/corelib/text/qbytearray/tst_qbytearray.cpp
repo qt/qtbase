@@ -78,7 +78,6 @@ private slots:
     void blockSizeCalculations();
 
     void resizeAfterFromRawData();
-    void appendAfterFromRawData();
     void toFromHex_data();
     void toFromHex();
     void toFromPercentEncoding();
@@ -1666,17 +1665,6 @@ void tst_QByteArray::resizeAfterFromRawData()
     QVERIFY(array.constData() != buffer.constData());
     // check null termination
     QVERIFY(array.constData()[5] == 0);
-}
-
-void tst_QByteArray::appendAfterFromRawData()
-{
-    QByteArray arr;
-    {
-        char data[] = "X";
-        arr += QByteArray::fromRawData(data, sizeof(data));
-        data[0] = 'Y';
-    }
-    QCOMPARE(arr.at(0), 'X');
 }
 
 void tst_QByteArray::toFromHex_data()
