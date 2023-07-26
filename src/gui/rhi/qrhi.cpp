@@ -10048,6 +10048,14 @@ QRhiTexture *QRhi::newTextureArray(QRhiTexture::Format format,
     minification filter \a minFilter, mipmapping mode \a mipmapMode, and the
     addressing (wrap) modes \a addressU, \a addressV, and \a addressW.
 
+    \note Setting \a mipmapMode to a value other than \c None implies that
+    images for all relevant mip levels will be provided either via
+    \l{QRhiResourceUpdateBatch::uploadTexture()}{texture uploads} or by calling
+    \l{QRhiResourceUpdateBatch::generateMips()}{generateMips()} on the texture
+    that is used with this sampler. Attempting to use the sampler with a
+    texture that has no data for all relevant mip levels will lead to rendering
+    errors, with the exact behavior dependent on the underlying graphics API.
+
     \sa QRhiResource::destroy()
  */
 QRhiSampler *QRhi::newSampler(QRhiSampler::Filter magFilter,
