@@ -14,6 +14,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QList>
+#include <QSet>
 
 #include <emscripten.h>
 #include <emscripten/val.h>
@@ -22,6 +23,16 @@ QT_BEGIN_NAMESPACE
 
 using emscripten::val;
 using namespace Qt::StringLiterals;
+
+namespace {
+QStringView keyNameFromPrefixedStorageName(QStringView prefix, QStringView prefixedStorageName)
+{
+    // Return the key slice after m_keyPrefix, or an empty string view if no match
+    if (!prefixedStorageName.startsWith(prefix))
+        return QStringView();
+    return prefixedStorageName.sliced(prefix.length());
+}
+} // namespace
 
 //
 // Native settings implementation for WebAssembly using window.localStorage
@@ -33,6 +44,7 @@ class QWasmLocalStorageSettingsPrivate final : public QSettingsPrivate
 public:
     QWasmLocalStorageSettingsPrivate(QSettings::Scope scope, const QString &organization,
                                      const QString &application);
+    ~QWasmLocalStorageSettingsPrivate() final = default;
 
     void remove(const QString &key) final;
     void set(const QString &key, const QVariant &value) final;
@@ -45,10 +57,8 @@ public:
     QString fileName() const final;
 
 private:
-    QString prependStoragePrefix(const QString &key) const;
-    QStringView removeStoragePrefix(QStringView key) const;
     val m_localStorage = val::global("window")["localStorage"];
-    QString m_keyPrefix;
+    QStringList m_keyPrefixes;
 };
 
 QWasmLocalStorageSettingsPrivate::QWasmLocalStorageSettingsPrivate(QSettings::Scope scope,
@@ -56,87 +66,129 @@ QWasmLocalStorageSettingsPrivate::QWasmLocalStorageSettingsPrivate(QSettings::Sc
                                                                    const QString &application)
     : QSettingsPrivate(QSettings::NativeFormat, scope, organization, application)
 {
+    if (organization.isEmpty()) {
+        setStatus(QSettings::AccessError);
+        return;
+    }
+
     // The key prefix contians "qt" to separate Qt keys from other keys on localStorage, a
     // version tag to allow for making changes to the key format in the future, the org
     // and app names.
     //
     // User code could could create separate settings object with different org and app names,
-    // and would expect them to have separate settings. Also, different webassembly instanaces
+    // and would expect them to have separate settings. Also, different webassembly instances
     // on the page could write to the same window.localStorage. Add the org and app name
-    // to the key prefix to differentiate, even if that leads to keys with redundant sectons
+    // to the key prefix to differentiate, even if that leads to keys with redundant sections
     // for the common case of a single org and app name.
+    //
+    // Also, the common Qt mechanism for user/system scope and all-application settings are
+    // implemented, using different prefixes.
+    const QString allAppsSetting = QStringLiteral("all-apps");
+    const QString systemSetting = QStringLiteral("sys-tem");
+
     const QLatin1String separator("-");
     const QLatin1String doubleSeparator("--");
     const QString escapedOrganization = QString(organization).replace(separator, doubleSeparator);
     const QString escapedApplication = QString(application).replace(separator, doubleSeparator);
-    const QLatin1String prefix("qt-v0-");
-    m_keyPrefix.reserve(prefix.length() + escapedOrganization.length() +
-                        escapedApplication.length() + separator.length() * 2);
-    m_keyPrefix = prefix + escapedOrganization + separator + escapedApplication + separator;
+    const QString prefix = "qt-v0-" + escapedOrganization + separator;
+    if (scope == QSettings::Scope::UserScope) {
+        if (!escapedApplication.isEmpty())
+            m_keyPrefixes.push_back(prefix + escapedApplication + separator);
+        m_keyPrefixes.push_back(prefix + allAppsSetting + separator);
+    }
+    if (!escapedApplication.isEmpty()) {
+        m_keyPrefixes.push_back(prefix + escapedApplication + separator + systemSetting
+                                + separator);
+    }
+    m_keyPrefixes.push_back(prefix + allAppsSetting + separator + systemSetting + separator);
 }
 
 void QWasmLocalStorageSettingsPrivate::remove(const QString &key)
 {
-    const std::string keyString = prependStoragePrefix(key).toStdString();
-    m_localStorage.call<val>("removeItem", keyString);
+    const std::string removed = QString(m_keyPrefixes.first() + key).toStdString();
+
+    std::vector<std::string> children = { removed };
+    const int length = m_localStorage["length"].as<int>();
+    for (int i = 0; i < length; ++i) {
+        const QString storedKeyWithPrefix =
+                QString::fromStdString(m_localStorage.call<val>("key", i).as<std::string>());
+
+        const QStringView storedKey = keyNameFromPrefixedStorageName(
+                m_keyPrefixes.first(), QStringView(storedKeyWithPrefix));
+        if (storedKey.isEmpty() || !storedKey.startsWith(key))
+            continue;
+
+        children.push_back(storedKeyWithPrefix.toStdString());
+    }
+
+    for (const auto &child : children)
+        m_localStorage.call<val>("removeItem", child);
 }
 
 void QWasmLocalStorageSettingsPrivate::set(const QString &key, const QVariant &value)
 {
-    const std::string keyString = prependStoragePrefix(key).toStdString();
+    const std::string keyString = QString(m_keyPrefixes.first() + key).toStdString();
     const std::string valueString = QSettingsPrivate::variantToString(value).toStdString();
     m_localStorage.call<void>("setItem", keyString, valueString);
 }
 
 std::optional<QVariant> QWasmLocalStorageSettingsPrivate::get(const QString &key) const
 {
-    const std::string keyString = prependStoragePrefix(key).toStdString();
-    const emscripten::val value = m_localStorage.call<val>("getItem", keyString);
-    if (value.isNull())
-        return std::nullopt;
-    const QString valueString = QString::fromStdString(value.as<std::string>());
-    return QSettingsPrivate::stringToVariant(valueString);
+    for (const auto &prefix : m_keyPrefixes) {
+        const std::string keyString = QString(prefix + key).toStdString();
+        const emscripten::val value = m_localStorage.call<val>("getItem", keyString);
+        if (!value.isNull())
+            return QSettingsPrivate::stringToVariant(
+                    QString::fromStdString(value.as<std::string>()));
+        if (!fallbacks)
+            return std::nullopt;
+    }
+    return std::nullopt;
 }
 
 QStringList QWasmLocalStorageSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
 {
+    QSet<QString> nodes;
     // Loop through all keys on window.localStorage, return Qt keys belonging to
     // this application, with the correct prefix, and according to ChildSpec.
     QStringList children;
     const int length = m_localStorage["length"].as<int>();
     for (int i = 0; i < length; ++i) {
-        const QString keyString =
-                QString::fromStdString(m_localStorage.call<val>("key", i).as<std::string>());
+        for (const auto &storagePrefix : m_keyPrefixes) {
+            const QString keyString =
+                    QString::fromStdString(m_localStorage.call<val>("key", i).as<std::string>());
 
-        const QStringView key = removeStoragePrefix(QStringView(keyString));
-        if (key.isEmpty())
-            continue;
-        if (!key.startsWith(prefix))
-            continue;
-
-        QSettingsPrivate::processChild(key.sliced(prefix.length()), spec, children);
+            const QStringView key =
+                    keyNameFromPrefixedStorageName(storagePrefix, QStringView(keyString));
+            if (!key.isEmpty() && key.startsWith(prefix)) {
+                QStringList children;
+                QSettingsPrivate::processChild(key.sliced(prefix.length()), spec, children);
+                if (!children.isEmpty())
+                    nodes.insert(children.first());
+            }
+            if (!fallbacks)
+                break;
+        }
     }
 
-    return children;
+    return QStringList(nodes.begin(), nodes.end());
 }
 
 void QWasmLocalStorageSettingsPrivate::clear()
 {
     // Get all Qt keys from window.localStorage
     const int length = m_localStorage["length"].as<int>();
-    std::vector<std::string> keys;
+    QStringList keys;
     keys.reserve(length);
-    for (int i = 0; i < length; ++i) {
-        std::string key = (m_localStorage.call<val>("key", i).as<std::string>());
-        keys.push_back(std::move(key));
-    }
+    for (int i = 0; i < length; ++i)
+        keys.append(QString::fromStdString((m_localStorage.call<val>("key", i).as<std::string>())));
 
     // Remove all Qt keys. Note that localStorage does not guarantee a stable
     // iteration order when the storage is mutated, which is why removal is done
     // in a second step after getting all keys.
-    for (std::string key: keys) {
-        if (removeStoragePrefix(QString::fromStdString(key)).isEmpty() == false)
-            m_localStorage.call<val>("removeItem", key);
+    for (const QString &key : keys) {
+        if (!keyNameFromPrefixedStorageName(m_keyPrefixes.first(), key).isEmpty())
+            m_localStorage.call<val>("removeItem", key.toStdString());
     }
 }
 
@@ -152,19 +204,6 @@ bool QWasmLocalStorageSettingsPrivate::isWritable() const
 QString QWasmLocalStorageSettingsPrivate::fileName() const
 {
     return QString();
-}
-
-QString QWasmLocalStorageSettingsPrivate::prependStoragePrefix(const QString &key) const
-{
-    return m_keyPrefix + key;
-}
-
-QStringView QWasmLocalStorageSettingsPrivate::removeStoragePrefix(QStringView key) const
-{
-    // Return the key slice after m_keyPrefix, or an empty string view if no match
-    if (!key.startsWith(m_keyPrefix))
-        return QStringView();
-    return key.sliced(m_keyPrefix.length());
 }
 
 //
@@ -385,17 +424,37 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::
         format = QSettings::IniFormat;
     }
 
-    // Create settings backend according to selected format
-    if (format == WebLocalStorageFormat) {
+    if (format == WebLocalStorageFormat)
         return new QWasmLocalStorageSettingsPrivate(scope, organization, application);
-    } else if (format == WebIdbFormat) {
+    if (format == WebIdbFormat)
         return new QWasmIDBSettingsPrivate(scope, organization, application);
-    } else if (format == QSettings::IniFormat) {
-        return new QConfFileSettingsPrivate(format, scope, organization, application);
-    }
 
-    qWarning() << "Unsupported settings format" << format;
-    return nullptr;
+    // Create settings backend according to selected format
+    switch (format) {
+    case QSettings::Format::IniFormat:
+    case QSettings::Format::CustomFormat1:
+    case QSettings::Format::CustomFormat2:
+    case QSettings::Format::CustomFormat3:
+    case QSettings::Format::CustomFormat4:
+    case QSettings::Format::CustomFormat5:
+    case QSettings::Format::CustomFormat6:
+    case QSettings::Format::CustomFormat7:
+    case QSettings::Format::CustomFormat8:
+    case QSettings::Format::CustomFormat9:
+    case QSettings::Format::CustomFormat10:
+    case QSettings::Format::CustomFormat11:
+    case QSettings::Format::CustomFormat12:
+    case QSettings::Format::CustomFormat13:
+    case QSettings::Format::CustomFormat14:
+    case QSettings::Format::CustomFormat15:
+    case QSettings::Format::CustomFormat16:
+        return new QConfFileSettingsPrivate(format, scope, organization, application);
+    case QSettings::Format::InvalidFormat:
+        return nullptr;
+    case QSettings::Format::NativeFormat:
+        /* NOTREACHED */ assert(0);
+        break;
+    }
 }
 
 QT_END_NAMESPACE

@@ -41,6 +41,10 @@
 #include "qplatformdefs.h"
 #endif
 
+#if defined(Q_OS_WASM)
+#include "emscripten/val.h"
+#endif
+
 Q_DECLARE_METATYPE(QSettings::Format)
 
 #ifndef QSETTINGS_P_H_VERSION
@@ -322,6 +326,9 @@ void tst_QSettings::cleanupTestFiles()
     QSettings(QSettings::SystemScope, "software.org").clear();
     QSettings(QSettings::UserScope, "other.software.org").clear();
     QSettings(QSettings::SystemScope, "other.software.org").clear();
+#endif
+#if defined(Q_OS_WASM)
+    emscripten::val::global("window")["localStorage"].call<void>("clear");
 #endif
 
     const QString foo(QLatin1String("foo"));
@@ -2050,6 +2057,10 @@ void SettingsThread::run()
 
 void tst_QSettings::testThreadSafety()
 {
+#if !QT_CONFIG(thread)
+    QSKIP("This test requires threads to be enabled.");
+#endif // !QT_CONFIG(thread)
+
     SettingsThread threads[NumThreads];
     int i, j;
 
@@ -2328,6 +2339,12 @@ void tst_QSettings::fromFile()
 
     QStringList strList = QStringList() << "hope" << "destiny" << "chastity";
 
+#if !defined(Q_OS_WIN)
+    auto deleteFile = QScopeGuard([path, oldCur]() {
+        QFile::remove(path);
+        QDir::setCurrent(oldCur);
+    });
+#endif // !defined(Q_OS_WIN)
     {
         QSettings settings1(path, format);
         QVERIFY(settings1.allKeys().isEmpty());
@@ -2363,8 +2380,6 @@ void tst_QSettings::fromFile()
         QCOMPARE(settings1.value("gamma/foo.bar").toInt(), 4);
         QCOMPARE(settings1.allKeys().size(), 3);
     }
-
-    QDir::setCurrent(oldCur);
 }
 
 static bool containsSubList(QStringList mom, QStringList son)
@@ -3310,7 +3325,7 @@ void tst_QSettings::setPath()
         path checks that it has no bad side effects.
     */
     for (int i = 0; i < 2; ++i) {
-#if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN)
+#if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN) && !defined(Q_OS_WASM)
         TEST_PATH(i == 0, "conf", NativeFormat, UserScope, "alpha")
         TEST_PATH(i == 0, "conf", NativeFormat, SystemScope, "beta")
 #endif
@@ -3427,6 +3442,10 @@ void tst_QSettings::rainersSyncBugOnMac()
     if (format == QSettings::NativeFormat)
         QSKIP("Apple OSes do not support direct reads from and writes to .plist files, due to caching and background syncing. See QTBUG-34899.");
 #endif
+#if defined(Q_OS_WASM)
+    if (format == QSettings::NativeFormat)
+        QSKIP("WASM's localStorage backend recognizes no concept of file");
+#endif  // Q_OS_WASM
 
     QString fileName;
 
@@ -3497,14 +3516,14 @@ void tst_QSettings::consistentRegistryStorage()
 }
 #endif
 
-#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(QT_NO_STANDARDPATHS)
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WASM) && !defined(QT_NO_STANDARDPATHS)
 QT_BEGIN_NAMESPACE
 extern void clearDefaultPaths();
 QT_END_NAMESPACE
 #endif
 void tst_QSettings::testXdg()
 {
-#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(QT_NO_STANDARDPATHS)
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WASM) && !defined(QT_NO_STANDARDPATHS)
     // Note: The XDG_CONFIG_DIRS test must be done before overriding the system path
     // by QSettings::setPath/setSystemIniPath (used in cleanupTestFiles()).
     clearDefaultPaths();
