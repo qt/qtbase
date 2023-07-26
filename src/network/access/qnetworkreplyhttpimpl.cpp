@@ -699,8 +699,13 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     switch (operation) {
     case QNetworkAccessManager::GetOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Get);
-        if (loadFromCacheIfAllowed(httpRequest))
+        // If the request has a body, createUploadByteDevice() and don't use caching
+        if (outgoingData) {
+            invalidateCache();
+            createUploadByteDevice();
+        } else if (loadFromCacheIfAllowed(httpRequest)) {
             return; // no need to send the request! :)
+        }
         break;
 
     case QNetworkAccessManager::HeadOperation:
@@ -1239,13 +1244,18 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
         return;
     }
 
+    // If the original operation was a GET with a body and the status code is either
+    // 307 or 308 then keep the message body
+    const bool getOperationKeepsBody = (operation == QNetworkAccessManager::GetOperation)
+                          && (httpStatus == 307 || httpStatus == 308);
+
     redirectRequest = createRedirectRequest(originalRequest, url, maxRedirectsRemaining);
     operation = getRedirectOperation(operation, httpStatus);
 
     // Clear stale headers, the relevant ones get set again later
     httpRequest.clearHeaders();
-    if (operation == QNetworkAccessManager::GetOperation
-        || operation == QNetworkAccessManager::HeadOperation) {
+    if ((operation == QNetworkAccessManager::GetOperation
+        || operation == QNetworkAccessManager::HeadOperation) && !getOperationKeepsBody) {
         // possibly changed from not-GET/HEAD to GET/HEAD, make sure to get rid of upload device
         uploadByteDevice.reset();
         uploadByteDevicePosition = 0;

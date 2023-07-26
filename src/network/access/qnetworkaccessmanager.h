@@ -80,6 +80,8 @@ public:
 
     QNetworkReply *head(const QNetworkRequest &request);
     QNetworkReply *get(const QNetworkRequest &request);
+    QNetworkReply *get(const QNetworkRequest &request, QIODevice *data);
+    QNetworkReply *get(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *post(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);

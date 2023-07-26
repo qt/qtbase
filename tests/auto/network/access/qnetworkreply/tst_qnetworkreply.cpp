@@ -133,6 +133,29 @@ class tst_QNetworkReply: public QObject
                     "\r\n";
         return s;
     }
+    static QString movedReplyStr() {
+        QString s = "HTTP/1.1 301 Moved Permanently\r\n"
+                    "Content-Type: text/plain\r\n"
+                    "location: %1\r\n"
+                    "\r\n";
+        return s;
+    }
+
+    static QString foundReplyStr() {
+        QString s = "HTTP/1.1 302 Found\r\n"
+                    "Content-Type: text/plain\r\n"
+                    "location: %1\r\n"
+                    "\r\n";
+        return s;
+    }
+
+    static QString permRedirectReplyStr() {
+        QString s = "HTTP/1.1 308 Permanent Redirect\r\n"
+                    "Content-Type: text/plain\r\n"
+                    "location: %1\r\n"
+                    "\r\n";
+        return s;
+    }
 
     static const QByteArray httpEmpty200Response;
     static const QString filePermissionFileName;
@@ -216,6 +239,12 @@ private Q_SLOTS:
     void getFromFtpAfterError();    // QTBUG-40797
     void getFromHttp_data();
     void getFromHttp();
+    void getWithBodyFromHttp_data();
+    void getWithBodyFromHttp();
+    void getWithAndWithoutBodyFromHttp_data();
+    void getWithAndWithoutBodyFromHttp();
+    void getWithBodyRedirected_data();
+    void getWithBodyRedirected();
     void getErrors_data();
     void getErrors();
 #if QT_CONFIG(networkproxy)
@@ -613,7 +642,7 @@ public:
     int totalConnections;
 
     bool stopTransfer = false;
-    bool hasContent = false;
+    bool checkedContentLength = false;
     int contentRead = 0;
     int contentLength = 0;
 
@@ -702,6 +731,9 @@ private:
     void parseContentLength()
     {
         int index = receivedData.indexOf("Content-Length:");
+        if (index == -1)
+            return;
+
         index += sizeof("Content-Length:") - 1;
         const auto end = std::find(receivedData.cbegin() + index, receivedData.cend(), '\r');
         auto num = receivedData.mid(index, std::distance(receivedData.cbegin() + index, end));
@@ -742,12 +774,14 @@ public slots:
 
         if (doubleEndlPos != -1) {
             const int endOfHeader = doubleEndlPos + 4;
-            hasContent = receivedData.startsWith("POST") || receivedData.startsWith("PUT")
-                    || receivedData.startsWith("CUSTOM_WITH_PAYLOAD");
-            if (hasContent && contentLength == 0)
-                parseContentLength();
             contentRead = receivedData.size() - endOfHeader;
-            if (hasContent && contentRead < contentLength)
+
+            if (!checkedContentLength) {
+                parseContentLength();
+                checkedContentLength = true;
+            }
+
+            if (contentRead < contentLength)
                 return;
 
             // multiple requests incoming. remove the bytes of the current one
@@ -1989,6 +2023,253 @@ void tst_QNetworkReply::getFromHttp()
         QVERIFY(reply->header(QNetworkRequest::ServerHeader).toString().contains("Apache"));
 
     QCOMPARE(reply->readAll(), reference.readAll());
+}
+
+void tst_QNetworkReply::getWithBodyFromHttp_data()
+{
+    QTest::addColumn<QByteArray>("dataFromClientToServer");
+    QTest::addColumn<bool>("useDevice");
+    QTest::newRow("with-bytearray") << QByteArray("Body 1") << false;
+    QTest::newRow("with-bytearray2") << QByteArray("Body 2") << false;
+    QTest::newRow("with-bytearray3") << QByteArray("Body 3") << false;
+    QTest::newRow("with-device") << QByteArray("Body 1") << true;
+    QTest::newRow("with-device2") << QByteArray("Body 2") << true;
+    QTest::newRow("with-device3") << QByteArray("Body 3") << true;
+}
+
+void tst_QNetworkReply::getWithBodyFromHttp()
+{
+    QFETCH(QByteArray, dataFromClientToServer);
+    QFETCH(bool, useDevice);
+
+    QBuffer buff;
+    buff.setData(dataFromClientToServer);
+    buff.open(QIODevice::ReadOnly);
+
+    QByteArray dataFromServerToClient = QByteArray("Long first line\r\nLong second line");
+    QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
+    httpResponse += QByteArray::number(dataFromServerToClient.size());
+    httpResponse += "\r\n\r\n";
+    httpResponse += dataFromServerToClient;
+
+    MiniHttpServer server(httpResponse);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply;
+
+    if (useDevice)
+        reply.reset(manager.get(request, &buff));
+    else
+        reply.reset(manager.get(request, dataFromClientToServer));
+
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+    QCOMPARE(server.contentLength, dataFromClientToServer.size());
+    QCOMPARE(server.receivedData.right(dataFromClientToServer.size()), dataFromClientToServer);
+    QByteArray content = reply->readAll();
+    QCOMPARE(content, dataFromServerToClient);
+}
+
+void tst_QNetworkReply::getWithAndWithoutBodyFromHttp_data()
+{
+    QTest::addColumn<QByteArray>("dataFromClientToServer");
+    QTest::addColumn<bool>("alwaysCache");
+    QTest::addColumn<tst_QNetworkReply::RunSimpleRequestReturn>("requestReturn");
+    QTest::addColumn<bool>("useDevice");
+    QTest::newRow("with-bytearray") << QByteArray("Body 1") << false << Success << false;
+    QTest::newRow("with-bytearray2") << QByteArray("Body 2") << false << Success << false;
+    QTest::newRow("with-bytearray3") << QByteArray("Body 3") << false << Success << false;
+    QTest::newRow("with-bytearray-cache") << QByteArray("Body 1") << true << Failure << false;
+    QTest::newRow("with-bytearray-cache2") << QByteArray("Body 2") << true << Failure << false;
+    QTest::newRow("with-bytearray-cache3") << QByteArray("Body 3") << true << Failure << false;
+    QTest::newRow("with-device") << QByteArray("Body 1") << false << Success << true;
+    QTest::newRow("with-device2") << QByteArray("Body 2") << false << Success << true;
+    QTest::newRow("with-device3") << QByteArray("Body 3") << false << Success << true;
+    QTest::newRow("with-device-cache") << QByteArray("Body 1") << true << Failure << true;
+    QTest::newRow("with-device-cache2") << QByteArray("Body 2") << true << Failure << true;
+    QTest::newRow("with-device-cache3") << QByteArray("Body 3") << true << Failure << true;
+}
+
+void tst_QNetworkReply::getWithAndWithoutBodyFromHttp()
+{
+    QFETCH(QByteArray, dataFromClientToServer);
+    QFETCH(bool, alwaysCache);
+    QFETCH(tst_QNetworkReply::RunSimpleRequestReturn, requestReturn);
+    QFETCH(bool, useDevice);
+
+    QBuffer buff;
+    buff.setData(dataFromClientToServer);
+    buff.open(QIODevice::ReadOnly);
+
+    QNetworkAccessManager qnam;
+    MyMemoryCache *memoryCache = new MyMemoryCache(&qnam);
+    qnam.setCache(memoryCache);
+
+    const int sizeOfDataFromServerToClient =3;
+    QByteArray dataFromServerToClient1 = QByteArray("aaa");
+    QByteArray dataFromServerToClient2 = QByteArray("bbb");
+    QByteArray dataFromServerToClient3 = QByteArray("ccc");
+
+    QByteArray baseHttpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
+    baseHttpResponse += QByteArray::number(sizeOfDataFromServerToClient);
+    baseHttpResponse += "\r\n\r\n";
+
+    MiniHttpServer server(baseHttpResponse + dataFromServerToClient1);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+
+    // Send request without body
+    QNetworkReplyPtr reply(manager.get(request));
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+    QByteArray content = reply->readAll();
+    QCOMPARE(content, dataFromServerToClient1);
+
+    if (alwaysCache) {
+        request.setAttribute(QNetworkRequest::CacheLoadControlAttribute,
+                             QNetworkRequest::AlwaysCache);
+    }
+
+    server.dataToTransmit = baseHttpResponse + dataFromServerToClient2;
+
+    // Send request with body
+    QNetworkReplyPtr reply2;
+    if (useDevice)
+        reply2.reset(manager.get(request, &buff));
+    else
+        reply2.reset(manager.get(request, dataFromClientToServer));
+
+    QVERIFY2(waitForFinish(reply2) == requestReturn, msgWaitForFinished(reply2));
+    content = reply2->readAll();
+
+    if (alwaysCache)
+        QVERIFY(content.isEmpty());
+    else
+        QCOMPARE(content, dataFromServerToClient2);
+
+    QCOMPARE(reply2->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
+
+    if (alwaysCache) {
+        request.setAttribute(QNetworkRequest::CacheLoadControlAttribute,
+                             QNetworkRequest::PreferNetwork);
+    }
+
+    server.dataToTransmit = baseHttpResponse + dataFromServerToClient3;
+
+    // Send another request without a body
+    QNetworkReplyPtr reply3(manager.get(request));
+    QVERIFY2(waitForFinish(reply3) == Success, msgWaitForFinished(reply3));
+    content = reply3->readAll();
+    QCOMPARE(content, dataFromServerToClient3);
+    QCOMPARE(reply3->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
+}
+
+void tst_QNetworkReply::getWithBodyRedirected_data()
+{
+    QTest::addColumn<QByteArray>("dataFromClientToServer");
+    QTest::addColumn<bool>("useDevice");
+    QTest::addColumn<int>("status");
+    QTest::newRow("with-bytearray - 301") << QByteArray("Body 1") << false << 301;
+    QTest::newRow("with-bytearray2 - 301") << QByteArray("Body 2") << false << 301;
+    QTest::newRow("with-bytearray3 - 301") << QByteArray("Body 3") << false << 301;
+    QTest::newRow("with-device - 301") << QByteArray("Body 1") << true << 301;
+    QTest::newRow("with-device2 - 301") << QByteArray("Body 2") << true << 301;
+    QTest::newRow("with-device3 - 301") << QByteArray("Body 3") << true << 301;
+    QTest::newRow("with-bytearray - 302") << QByteArray("Body 1") << false << 302;
+    QTest::newRow("with-bytearray2 - 302") << QByteArray("Body 2") << false << 302;
+    QTest::newRow("with-bytearray3 - 302") << QByteArray("Body 3") << false << 302;
+    QTest::newRow("with-device - 302") << QByteArray("Body 1") << true << 302;
+    QTest::newRow("with-device2 - 302") << QByteArray("Body 2") << true << 302;
+    QTest::newRow("with-device3 - 302") << QByteArray("Body 3") << true << 302;
+    QTest::newRow("with-bytearray - 307") << QByteArray("Body 1") << false << 307;
+    QTest::newRow("with-bytearray2 - 307") << QByteArray("Body 2") << false << 307;
+    QTest::newRow("with-bytearray3 - 307") << QByteArray("Body 3") << false << 307;
+    QTest::newRow("with-device - 307") << QByteArray("Body 1") << true << 307;
+    QTest::newRow("with-device2 - 307") << QByteArray("Body 2") << true << 307;
+    QTest::newRow("with-device3 - 307") << QByteArray("Body 3") << true << 307;
+    QTest::newRow("with-bytearray - 308") << QByteArray("Body 1") << false << 308;
+    QTest::newRow("with-bytearray2 - 308") << QByteArray("Body 2") << false << 308;
+    QTest::newRow("with-bytearray3 - 308") << QByteArray("Body 3") << false << 308;
+    QTest::newRow("with-device - 308") << QByteArray("Body 1") << true << 308;
+    QTest::newRow("with-device2 - 308") << QByteArray("Body 2") << true << 308;
+    QTest::newRow("with-device3 - 308") << QByteArray("Body 3") << true << 308;
+}
+
+void tst_QNetworkReply::getWithBodyRedirected()
+{
+    QFETCH(QByteArray, dataFromClientToServer);
+    QFETCH(bool, useDevice);
+    QFETCH(int, status);
+
+    QBuffer buff;
+    buff.setData(dataFromClientToServer);
+    buff.open(QIODevice::ReadOnly);
+
+    QUrl localhost = QUrl("http://localhost");
+
+    // Setup server to which the second server will redirect to
+    MiniHttpServer server2(httpEmpty200Response);
+
+    QUrl redirectUrl = QUrl(localhost);
+    redirectUrl.setPort(server2.serverPort());
+
+    QByteArray redirectReply;
+    switch (status) {
+        case 301: redirectReply =
+            foundReplyStr().arg(QString(redirectUrl.toEncoded())).toLatin1(); break;
+        case 302: redirectReply =
+            movedReplyStr().arg(QString(redirectUrl.toEncoded())).toLatin1(); break;
+        case 307: redirectReply =
+            tempRedirectReplyStr().arg(QString(redirectUrl.toEncoded())).toLatin1(); break;
+        case 308:  redirectReply =
+            permRedirectReplyStr().arg(QString(redirectUrl.toEncoded())).toLatin1(); break;
+        default: QFAIL("Unexpected status code"); break;
+    }
+
+    // Setup redirect server
+    MiniHttpServer server(redirectReply);
+
+    localhost.setPort(server.serverPort());
+    QNetworkRequest request(localhost);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QNetworkRequest::NoLessSafeRedirectPolicy);
+
+    QNetworkReplyPtr reply;
+    if (useDevice)
+        reply.reset(manager.get(request, &buff));
+    else
+        reply.reset(manager.get(request, dataFromClientToServer));
+
+    QSignalSpy redSpy(reply.data(), SIGNAL(redirected(QUrl)));
+    QSignalSpy finSpy(reply.data(), SIGNAL(finished()));
+
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+
+    // Redirected and finished should be emitted exactly once
+    QCOMPARE(redSpy.size(), 1);
+    QCOMPARE(finSpy.size(), 1);
+
+    // Original URL should not be changed after redirect
+    QCOMPARE(request.url(), localhost);
+
+    // Verify Redirect url
+    QList<QVariant> args = redSpy.takeFirst();
+    QCOMPARE(args.at(0).toUrl(), redirectUrl);
+
+    // Reply url is set to the redirect url
+    QCOMPARE(reply->url(), redirectUrl);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(validateRedirectedResponseHeaders(reply));
+
+    // Verify that the message body has arrived to the server
+    if (status > 302) {
+        QVERIFY(server2.contentLength != 0);
+        QCOMPARE(server2.contentLength, dataFromClientToServer.size());
+        QCOMPARE(server2.receivedData.right(dataFromClientToServer.size()), dataFromClientToServer);
+    } else {
+        // In these cases the message body should not reach the server
+        QVERIFY(server2.contentLength == 0);
+    }
 }
 
 #if QT_CONFIG(networkproxy)

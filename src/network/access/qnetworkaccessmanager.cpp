@@ -780,6 +780,46 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
 }
 
 /*!
+   \since 6.7
+
+   \overload
+
+   \note A GET request with a message body is not cached.
+
+   \note If the request is redirected, the message body will be kept only if the status code is
+   307 or 308.
+*/
+
+QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request, QIODevice *data)
+{
+    QNetworkRequest newRequest(request);
+    return d_func()->postProcess(
+            createRequest(QNetworkAccessManager::GetOperation, newRequest, data));
+}
+
+/*!
+   \since 6.7
+
+   \overload
+
+   \note A GET request with a message body is not cached.
+
+   \note If the request is redirected, the message body will be kept only if the status code is
+   307 or 308.
+*/
+
+QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request, const QByteArray &data)
+{
+    QBuffer *buffer = new QBuffer;
+    buffer->setData(data);
+    buffer->open(QIODevice::ReadOnly);
+
+    QNetworkReply *reply = get(request, buffer);
+    buffer->setParent(reply);
+    return reply;
+}
+
+/*!
     Sends an HTTP POST request to the destination specified by \a request
     and returns a new QNetworkReply object opened for reading that will
     contain the reply sent by the server. The contents of  the \a data
