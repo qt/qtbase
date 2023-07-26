@@ -101,6 +101,8 @@ public:
                             QDeadlineTimer deadline = QDeadlineTimer{DefaultTimeout},
                             bool *timedOut = nullptr) override;
 
+    void waitForProtocolHandshake(QDeadlineTimer deadline) const;
+
     bool isReadNotificationEnabled() const override;
     void setReadNotificationEnabled(bool enable) override;
     bool isWriteNotificationEnabled() const override;

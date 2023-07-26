@@ -329,11 +329,7 @@ bool QHttpSocketEngine::waitForRead(QDeadlineTimer deadline, bool *timedOut)
         }
     }
 
-    // If we're not connected yet, wait until we are, or until an error
-    // occurs.
-    while (d->state != Connected && d->socket->waitForReadyRead(deadline.remainingTime())) {
-        // Loop while the protocol handshake is taking place.
-    }
+    waitForProtocolHandshake(deadline);
 
     // Report any error that may occur.
     if (d->state != Connected) {
@@ -361,12 +357,7 @@ bool QHttpSocketEngine::waitForWrite(QDeadlineTimer deadline, bool *timedOut)
         return true;
     }
 
-    // If we're not connected yet, wait until we are, and until bytes have
-    // been received (i.e., the socket has connected, we have sent the
-    // greeting, and then received the response).
-    while (d->state != Connected && d->socket->waitForReadyRead(deadline.remainingTime())) {
-        // Loop while the protocol handshake is taking place.
-    }
+    waitForProtocolHandshake(deadline);
 
     // Report any error that may occur.
     if (d->state != Connected) {
@@ -397,6 +388,18 @@ bool QHttpSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWrite
     if (readyToWrite)
         *readyToWrite = canWrite;
     return canWrite;
+}
+
+void QHttpSocketEngine::waitForProtocolHandshake(QDeadlineTimer deadline) const
+{
+    Q_D(const QHttpSocketEngine);
+
+    // If we're not connected yet, wait until we are (and until bytes have
+    // been received, i.e. the socket has connected, we have sent the
+    // greeting, and then received the response), or until an error occurs.
+    while (d->state != Connected && d->socket->waitForReadyRead(deadline.remainingTime())) {
+        // Loop while the protocol handshake is taking place.
+    }
 }
 
 bool QHttpSocketEngine::isReadNotificationEnabled() const
