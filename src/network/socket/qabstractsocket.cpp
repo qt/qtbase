@@ -1057,8 +1057,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
                                  q, SLOT(_q_abortConnectionAttempt()),
                                  Qt::DirectConnection);
             }
-            int connectTimeout = DefaultConnectTimeout;
-            connectTimer->start(connectTimeout);
+            connectTimer->start(DefaultConnectTimeout);
         }
 
         // Wait for a write notification that will eventually call
@@ -2073,15 +2072,14 @@ bool QAbstractSocket::waitForConnected(int msecs)
     if (state() == UnconnectedState)
         return false; // connect not im progress anymore!
 
-    int connectTimeout = DefaultConnectTimeout;
     bool timedOut = true;
 #if defined (QABSTRACTSOCKET_DEBUG)
     int attempt = 1;
 #endif
     while (state() == ConnectingState && (msecs == -1 || stopWatch.elapsed() < msecs)) {
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-        if (msecs != -1 && timeout > connectTimeout)
-            timeout = connectTimeout;
+        if (msecs != -1 && timeout > DefaultConnectTimeout)
+            timeout = DefaultConnectTimeout;
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::waitForConnected(%i) waiting %.2f secs for connection attempt #%i",
                msecs, timeout / 1000.0, attempt++);
