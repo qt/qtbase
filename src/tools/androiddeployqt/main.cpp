@@ -843,7 +843,7 @@ bool readInputFileDirectory(Options *options, QJsonObject &jsonObject, const QSt
     if (qtDirectory.isUndefined()) {
         for (auto it = options->architectures.constBegin(); it != options->architectures.constEnd(); ++it) {
             if (keyName == "qtDataDirectory"_L1) {
-                    options->architectures[it.key()].qtDirectories[keyName] = it.value().qtInstallDirectory;
+                    options->architectures[it.key()].qtDirectories[keyName] = "."_L1;
                     break;
             } else if (keyName == "qtLibsDirectory"_L1) {
                     options->architectures[it.key()].qtDirectories[keyName] = "lib"_L1;
