@@ -150,6 +150,21 @@ public:
                             QList<QStyleOptionViewItem::ViewItemPosition> *itemPositions, int left,
                             int right) const;
     int widthHintForIndex(const QModelIndex &index, int hint, const QStyleOptionViewItem &option, int i) const;
+
+    enum RectRule {
+        FullRow,
+        SingleSection,
+        AddRowIndicatorToFirstSection
+    };
+
+    // Base class will get the first visual rect including row indicator
+    QRect visualRect(const QModelIndex &index) const override
+    {
+        return visualRect(index, AddRowIndicatorToFirstSection);
+    }
+
+    QRect visualRect(const QModelIndex &index, RectRule rule) const;
+
     QHeaderView *header;
     int indent;
 
