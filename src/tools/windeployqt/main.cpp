@@ -188,6 +188,7 @@ struct Options {
     bool dryRun = false;
     bool patchQt = true;
     bool ignoreLibraryErrors = false;
+    bool deployInsightTrackerPlugin = false;
 };
 
 // Return binary to be deployed from folder, ignore pre-existing web engine process.
@@ -454,6 +455,11 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     parser->addPositionalArgument(QStringLiteral("[files]"),
                                   QStringLiteral("Binaries or directory containing the binary."));
 
+    QCommandLineOption deployInsightTrackerOption(QStringLiteral("deploy-insighttracker"),
+                                                  QStringLiteral("Deploy insight tracker plugin."));
+    // The option will be added to the parser if the module is available (see block below)
+    bool insightTrackerModuleAvailable = false;
+
     OptionPtrVector enabledModuleOptions;
     OptionPtrVector disabledModuleOptions;
     const size_t qtModulesCount = qtModuleEntries.size();
@@ -462,6 +468,10 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     for (const QtModule &module : qtModuleEntries) {
         const QString option = moduleNameToOptionName(module.name);
         const QString name = module.name;
+        if (name == u"InsightTracker") {
+            parser->addOption(deployInsightTrackerOption);
+            insightTrackerModuleAvailable = true;
+        }
         const QString enabledDescription = QStringLiteral("Add ") + name + QStringLiteral(" module.");
         CommandLineOptionPtr enabledOption(new QCommandLineOption(option, enabledDescription));
         parser->addOption(*enabledOption.data());
@@ -541,6 +551,8 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     options->patchQt = !parser->isSet(noPatchQtOption);
     options->ignoreLibraryErrors = parser->isSet(ignoreErrorOption);
+    if (insightTrackerModuleAvailable)
+        options->deployInsightTrackerPlugin = parser->isSet(deployInsightTrackerOption);
 
     for (const QtModule &module : qtModuleEntries) {
         if (parser->isSet(*enabledModuleOptions.at(module.id)))
@@ -835,12 +847,18 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir,
                             ModuleBitset *usedQtModules, const ModuleBitset &disabledQtModules,
                             const QStringList &disabledPluginTypes,
                             const QString &libraryLocation, const QString &infix,
-                            Platform platform)
+                            Platform platform, bool deployInsightTrackerPlugin)
 {
     const QString subDirName = subDir.dirName();
     // Filter out disabled plugins
     if (disabledPluginTypes.contains(subDirName)) {
         std::wcout << "Skipping plugin " << plugin << " due to skipped plugin type " << subDirName << '\n';
+        return {};
+    }
+    if (subDirName == u"generic" && plugin.contains(u"qinsighttracker")
+        && !deployInsightTrackerPlugin) {
+        std::wcout << "Skipping plugin " << plugin
+                   << ". Use -deploy-insighttracker if you want to use it.\n";
         return {};
     }
 
@@ -892,7 +910,8 @@ QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disab
                           const QStringList &disabledPluginTypes,
                           const QString &qtPluginsDirName, const QString &libraryLocation,
                           const QString &infix,
-                          DebugMatchMode debugMatchModeIn, Platform platform, QString *platformPlugin)
+                          DebugMatchMode debugMatchModeIn, Platform platform, QString *platformPlugin,
+                          bool deployInsightTrackerPlugin)
 {
     if (qtPluginsDirName.isEmpty())
         return QStringList();
@@ -938,7 +957,8 @@ QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disab
             for (const QString &plugin : plugins) {
                 const QString pluginPath =
                     deployPlugin(plugin, subDir, usedQtModules, disabledQtModules,
-                                 disabledPluginTypes, libraryLocation, infix, platform);
+                                 disabledPluginTypes, libraryLocation, infix, platform,
+                                 deployInsightTrackerPlugin);
                 if (!pluginPath.isEmpty()) {
                     if (isPlatformPlugin)
                         *platformPlugin = subDir.absoluteFilePath(plugin);
@@ -1406,7 +1426,8 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             // qtaccessiblequick plugin.
             disabled,
             options.disabledPluginTypes, qtpathsVariables.value(QStringLiteral("QT_INSTALL_PLUGINS")),
-            libraryLocation, infix, debugMatchMode, options.platform, &platformPlugin);
+            libraryLocation, infix, debugMatchMode, options.platform, &platformPlugin,
+            options.deployInsightTrackerPlugin);
 
     // Apply options flags and re-add library names.
     QString qtGuiLibrary;
