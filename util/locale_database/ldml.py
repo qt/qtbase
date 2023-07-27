@@ -270,7 +270,13 @@ class LocaleScanner (object):
         stem = f'numbers/symbols[numberSystem={system}]/'
         decimal = self.find(f'{stem}decimal')
         group = self.find(f'{stem}group')
-        assert decimal != group, (self.name, system, decimal)
+        if decimal == group:
+            # mn_Mong_MN @v43 :-(
+            clean = Node.draftScore('approved')
+            decimal = self.find(f'{stem}decimal', draft=clean)
+            group = self.find(f'{stem}group', draft=clean)
+            assert decimal != group, (self.name, system, decimal)
+
         yield 'decimal', decimal
         yield 'group', group
         yield 'percent', self.find(f'{stem}percentSign')
