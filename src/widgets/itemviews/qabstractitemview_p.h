@@ -415,6 +415,8 @@ public:
     bool verticalScrollModeSet;
     bool horizontalScrollModeSet;
 
+    virtual QRect visualRect(const QModelIndex &index) const { return q_func()->visualRect(index); }
+
 private:
     inline QAbstractItemDelegate *delegateForIndex(const QModelIndex &index) const {
         QMap<int, QPointer<QAbstractItemDelegate> >::ConstIterator it;
