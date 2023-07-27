@@ -3221,7 +3221,7 @@ void tst_QLocale::dateFormat()
     QCOMPARE(no.dateFormat(QLocale::LongFormat), QLatin1String("dddd d. MMMM yyyy"));
 
     const QLocale ca("en_CA");
-    QCOMPARE(ca.dateFormat(QLocale::ShortFormat), QLatin1String("M/d/yy"));
+    QCOMPARE(ca.dateFormat(QLocale::ShortFormat), QLatin1String("yyyy-MM-dd"));
     QCOMPARE(ca.dateFormat(QLocale::LongFormat), QLatin1String("dddd, MMMM d, yyyy"));
 
     const QLocale ja("ja_JP");
@@ -3581,6 +3581,7 @@ void tst_QLocale::textDirection_data()
         case QLocale::Arabic:
         case QLocale::Aramaic:
         case QLocale::Avestan:
+        case QLocale::Baluchi:
         case QLocale::CentralKurdish:
         case QLocale::Divehi:
 //        case QLocale::Fulah:
@@ -3601,6 +3602,7 @@ void tst_QLocale::textDirection_data()
         case QLocale::Sindhi:
         case QLocale::SouthernKurdish:
         case QLocale::Syriac:
+        case QLocale::Torwali:
         case QLocale::Uighur:
         case QLocale::Urdu:
         case QLocale::WesternBalochi:
