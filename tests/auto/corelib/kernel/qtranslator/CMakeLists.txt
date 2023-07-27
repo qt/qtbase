@@ -5,7 +5,7 @@
 ## tst_qtranslator Test:
 #####################################################################
 
-if (NOT QT_CONFIG_thread)
+if (NOT QT_FEATURE_thread)
     return()
 endif()
 
