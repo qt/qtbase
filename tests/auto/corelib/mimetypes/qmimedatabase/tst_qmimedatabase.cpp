@@ -657,6 +657,9 @@ void tst_QMimeDatabase::mimeTypeForFileNameAndData()
 #ifdef Q_OS_UNIX
 void tst_QMimeDatabase::mimeTypeForUnixSpecials_data()
 {
+#ifndef AT_FDCWD
+    QSKIP("fdopendir and fstatat are not available");
+#else
     QTest::addColumn<QString>("name");
     QTest::addColumn<QString>("expected");
 
@@ -717,6 +720,7 @@ void tst_QMimeDatabase::mimeTypeForUnixSpecials_data()
 
     if (!found)
         nothingfound();
+#endif
 }
 
 void tst_QMimeDatabase::mimeTypeForUnixSpecials()
