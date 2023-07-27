@@ -1110,9 +1110,7 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
         confFiles.append(QConfFile::fromName(systemPath.path + orgFile, false));
     }
 
-#ifndef Q_OS_WASM // wasm needs to delay access until after file sync
     initAccess();
-#endif
 }
 
 QConfFileSettingsPrivate::QConfFileSettingsPrivate(const QString &fileName,
