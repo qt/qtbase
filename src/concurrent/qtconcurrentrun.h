@@ -35,8 +35,11 @@ namespace QtConcurrent {
 
 namespace QtConcurrent {
 
+#define QTCONCURRENT_RUN_NODISCARD \
+    Q_NODISCARD_X("Use QThreadPool::start(Callable&&) if you don't need the returned QFuture")
+
 template <class Function, class ...Args>
-[[nodiscard]]
+QTCONCURRENT_RUN_NODISCARD
 auto run(QThreadPool *pool, Function &&f, Args &&...args)
 {
     DecayedTuple<Function, Args...> tuple { std::forward<Function>(f),
@@ -46,7 +49,7 @@ auto run(QThreadPool *pool, Function &&f, Args &&...args)
 }
 
 template <class Function, class ...Args>
-[[nodiscard]]
+QTCONCURRENT_RUN_NODISCARD
 auto run(QThreadPool *pool, std::reference_wrapper<const Function> &&functionWrapper,
          Args &&...args)
 {
@@ -55,7 +58,7 @@ auto run(QThreadPool *pool, std::reference_wrapper<const Function> &&functionWra
 }
 
 template <class Function, class ...Args>
-[[nodiscard]]
+QTCONCURRENT_RUN_NODISCARD
 auto run(Function &&f, Args &&...args)
 {
     return run(QThreadPool::globalInstance(), std::forward<Function>(f),
@@ -64,7 +67,7 @@ auto run(Function &&f, Args &&...args)
 
 // overload with a Promise Type hint, takes thread pool
 template <class PromiseType, class Function, class ...Args>
-[[nodiscard]]
+QTCONCURRENT_RUN_NODISCARD
 auto run(QThreadPool *pool, Function &&f, Args &&...args)
 {
     return (new StoredFunctionCallWithPromise<Function, PromiseType, Args...>(
@@ -73,12 +76,14 @@ auto run(QThreadPool *pool, Function &&f, Args &&...args)
 
 // overload with a Promise Type hint, uses global thread pool
 template <class PromiseType, class Function, class ...Args>
-[[nodiscard]]
+QTCONCURRENT_RUN_NODISCARD
 auto run(Function &&f, Args &&...args)
 {
     return run<PromiseType>(QThreadPool::globalInstance(), std::forward<Function>(f),
                             std::forward<Args>(args)...);
 }
+
+#undef QTCONCURRENT_RUN_NODISCARD
 
 } //namespace QtConcurrent
 
