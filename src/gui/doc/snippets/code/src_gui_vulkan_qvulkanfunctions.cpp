@@ -55,20 +55,18 @@
 namespace src_gui_vulkan_qvulkanfunctions {
 
 struct Window {
-    void render();
+    void init();
     QVulkanInstance *vulkanInstance() { return nullptr; }
 };
-VkDevice_T *device = nullptr;
-VkCommandBufferAllocateInfo cmdBufInfo;
-VkCommandBuffer cmdBuf;
 
 //! [0]
-void Window::render()
+void Window::init()
 {
     QVulkanInstance *inst = vulkanInstance();
     QVulkanFunctions *f = inst->functions();
     // ...
-    VkResult err = f->vkAllocateCommandBuffers(device, &cmdBufInfo, &cmdBuf);
+    uint32_t count = 0;
+    VkResult err = f->vkEnumeratePhysicalDevices(inst->vkInstance(), &count, nullptr);
     // ...
 }
 //! [0]
