@@ -11,6 +11,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobjectdefs_impl.h>
+#include <QtCore/qtcoreexports.h>
 #include <QtCore/qtmetamacros.h>
 
 QT_BEGIN_NAMESPACE
@@ -261,7 +262,12 @@ struct Q_CORE_EXPORT QMetaObject
     int indexOfMethod(const char *method) const;
     int indexOfSignal(const char *signal) const;
     int indexOfSlot(const char *slot) const;
+
+#if QT_CORE_REMOVED_SINCE(6, 7)
     int indexOfEnumerator(const char *name) const;
+#endif
+    int indexOfEnumerator(QByteArrayView name) const;
+
     int indexOfProperty(const char *name) const;
     int indexOfClassInfo(const char *name) const;
 

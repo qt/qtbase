@@ -775,6 +775,11 @@ QString QLocale::bcp47Name() const
 
 #include "qobjectdefs.h"
 
+int QMetaObject::indexOfEnumerator(const char *name) const
+{
+    return indexOfEnumerator(QByteArrayView(name));
+}
+
 bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
 {
     return invokeMethodImpl(object, slot, type, 1, &ret, nullptr, nullptr);
@@ -834,6 +839,7 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 {
     return QUrl::fromEncoded(QByteArrayView(input), mode);
 }
+
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h

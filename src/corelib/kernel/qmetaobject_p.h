@@ -212,6 +212,10 @@ struct QMetaObjectPrivate
                              int argc, const QArgumentType *types);
     static int indexOfConstructor(const QMetaObject *m, const QByteArray &name,
                                   int argc, const QArgumentType *types);
+
+    enum class Which { Name, Alias };
+    static int indexOfEnumerator(const QMetaObject *m, QByteArrayView name, Which which);
+
     Q_CORE_EXPORT static QMetaMethod signal(const QMetaObject *m, int signal_index);
     static inline int signalOffset(const QMetaObject *m)
     {

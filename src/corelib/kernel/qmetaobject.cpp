@@ -1058,30 +1058,30 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, QB
     -1.
 
     \sa enumerator(), enumeratorCount(), enumeratorOffset()
+
+    \note Starting from Qt 6.7 this method takes a \c QByteArrayView, before
+    that it took a \c {const char *}. This change is source compatible i.e.
+    calling this method on a \c {const char *} should still work.
 */
-int QMetaObject::indexOfEnumerator(const char *name) const
+int QMetaObject::indexOfEnumerator(QByteArrayView name) const
 {
-    const QMetaObject *m = this;
-    while (m) {
-        const QMetaObjectPrivate *d = priv(m->d.data);
-        for (int i = 0; i < d->enumeratorCount; ++i) {
-            const QMetaEnum e(m, i);
-            const char *prop = rawStringData(m, e.data.name());
-            if (strcmp(name, prop) == 0) {
-                i += m->enumeratorOffset();
-                return i;
-            }
-        }
-        m = m->d.superdata;
+    using W = QMetaObjectPrivate::Which;
+    for (auto which : { W::Name, W::Alias }) {
+        if (int index = QMetaObjectPrivate::indexOfEnumerator(this, name, which); index != -1)
+            return index;
     }
-    // Check alias names:
-    m = this;
+    return -1;
+}
+
+int QMetaObjectPrivate::indexOfEnumerator(const QMetaObject *m, QByteArrayView name, Which which)
+{
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
         for (int i = 0; i < d->enumeratorCount; ++i) {
             const QMetaEnum e(m, i);
-            const char *prop = rawStringData(m, e.data.alias());
-            if (strcmp(name, prop) == 0) {
+            const quint32 id = which == Which::Name ? e.data.name() : e.data.alias();
+            QLatin1StringView prop = stringDataView(m, id);
+            if (name == prop) {
                 i += m->enumeratorOffset();
                 return i;
             }
