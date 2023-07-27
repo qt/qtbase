@@ -780,6 +780,10 @@ QColorLuminancePicker::~QColorLuminancePicker()
 
 void QColorLuminancePicker::mouseMoveEvent(QMouseEvent *m)
 {
+    if (m->buttons() == Qt::NoButton) {
+        m->ignore();
+        return;
+    }
     setVal(y2val(m->position().toPoint().y()));
 }
 void QColorLuminancePicker::mousePressEvent(QMouseEvent *m)
@@ -914,6 +918,10 @@ void QColorPicker::setCol(int h, int s)
 void QColorPicker::mouseMoveEvent(QMouseEvent *m)
 {
     QPoint p = m->position().toPoint() - contentsRect().topLeft();
+    if (m->buttons() == Qt::NoButton) {
+        m->ignore();
+        return;
+    }
     setCol(p);
     emit newCol(hue, sat);
 }
