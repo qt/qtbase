@@ -324,9 +324,9 @@ class QLocaleXmlWriter (object):
         self.__languages = set(p[1] for p in language_map.values()
                                if not p[1].isspace())
         self.__scripts = set(p[1] for p in script_map.values()
-                             if p[1] != 'ZZ')
+                             if p[1] != 'Zzzz')
         self.__territories = set(p[1] for p in territory_map.values()
-                                 if p[1] != 'Zzzz')
+                                 if p[1] != 'ZZ')
 
     def likelySubTags(self, entries):
         self.__openTag('likelySubtags')
@@ -360,7 +360,7 @@ class QLocaleXmlWriter (object):
             self.__write('</localeDatabase>')
         self.__rawOutput = self.__complain
 
-        if self.__languages or self.__scripts or self.territories:
+        if self.__languages or self.__scripts or self.__territories:
             grumble('Some enum members are unused, corresponding to these tags:\n')
             import textwrap
             def kvetch(kind, seq, g = grumble, w = textwrap.wrap):
