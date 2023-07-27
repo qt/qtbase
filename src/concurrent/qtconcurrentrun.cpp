@@ -116,6 +116,10 @@
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 2
 
+    If you don't need the result (for example, because the function returns
+    \c{void}), using the QThreadPool::start() overload taking a function object
+    is more efficient.
+
     As documented above, passing arguments is done like this:
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 3
@@ -288,7 +292,7 @@
     running task, fetching multiple results from the called \a function or
     monitoring progress reported by the \a function.
 
-    \sa {Concurrent Run (basic mode)}, {Concurrent Run With Promise}
+    \sa {Concurrent Run (basic mode)}, {Concurrent Run With Promise}, QThreadPool::start()
 //! [run-description]
 */
 
