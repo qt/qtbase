@@ -334,9 +334,9 @@ int QMetaObject::metacall(QObject *object, Call cl, int idx, void **argv)
         return object->qt_metacall(cl, idx, argv);
 }
 
-static inline const char *objectClassName(const QMetaObject *m)
+static inline QByteArrayView objectClassName(const QMetaObject *m)
 {
-    return rawStringData(m, priv(m->d.data)->className);
+    return stringDataView(m, priv(m->d.data)->className);
 }
 
 /*!
@@ -346,7 +346,7 @@ static inline const char *objectClassName(const QMetaObject *m)
 */
 const char *QMetaObject::className() const
 {
-    return objectClassName(this);
+    return objectClassName(this).constData();
 }
 
 /*!
@@ -401,7 +401,7 @@ const QObject *QMetaObject::cast(const QObject *obj) const
 */
 QString QMetaObject::tr(const char *s, const char *c, int n) const
 {
-    return QCoreApplication::translate(objectClassName(this), s, c, n);
+    return QCoreApplication::translate(className(), s, c, n);
 }
 #endif // QT_NO_TRANSLATION
 
@@ -833,7 +833,7 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
             QMetaMethod conflictMethod = m->d.superdata->method(conflict);
             qWarning("QMetaObject::indexOfSignal: signal %s from %s redefined in %s",
                      conflictMethod.methodSignature().constData(),
-                     objectClassName(m->d.superdata), objectClassName(m));
+                     m->d.superdata->className(), m->className());
         }
      }
  #endif
@@ -1032,10 +1032,10 @@ bool QMetaObjectPrivate::checkConnectArgs(const QMetaMethodPrivate *signal,
     return true;
 }
 
-static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, const char *name)
+static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, QByteArrayView name)
 {
     while (self) {
-        if (strcmp(objectClassName(self), name) == 0)
+        if (objectClassName(self) == name)
             return self;
         if (self->d.relatedMetaObjects) {
             Q_ASSERT(priv(self->d.data)->revision >= 2);
@@ -3146,7 +3146,7 @@ bool QMetaEnum::isScoped() const
 */
 const char *QMetaEnum::scope() const
 {
-    return mobj ? objectClassName(mobj) : nullptr;
+    return mobj ? mobj->className() : nullptr;
 }
 
 /*!
@@ -3242,12 +3242,11 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
         }
         return std::nullopt;
     };
-    auto className = [&] { return stringDataView(mobj, priv(mobj->d.data)->className); };
 
     int value = 0;
     for (const QLatin1StringView &untrimmed : qTokenize(QLatin1StringView{keys}, u'|')) {
         const auto parsed = parse_scope(untrimmed.trimmed());
-        if (parsed.scope && *parsed.scope != className())
+        if (parsed.scope && *parsed.scope != objectClassName(mobj))
             return -1; // wrong type name in qualified name
         if (auto thisValue = lookup(parsed.key))
             value |= *thisValue;
@@ -3568,7 +3567,7 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
     if (menum.isValid())
         return;
     const char *enum_name = type;
-    const char *scope_name = objectClassName(mobj);
+    const char *scope_name = mobj->className();
     char *scope_buffer = nullptr;
 
     const char *colon = strrchr(enum_name, ':');
@@ -3587,7 +3586,7 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
     if (qstrcmp(scope_name, "Qt") == 0)
         scope = &Qt::staticMetaObject;
     else
-        scope = QMetaObject_findMetaObject(mobj, scope_name);
+        scope = QMetaObject_findMetaObject(mobj, QByteArrayView(scope_name));
     if (scope)
         menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
     if (scope_buffer)
@@ -3892,7 +3891,7 @@ int QMetaProperty::notifySignalIndex() const
             return idx + m->methodOffset();
         } else {
             qWarning("QMetaProperty::notifySignal: cannot find the NOTIFY signal %s in class %s for property '%s'",
-                     signalName.constData(), objectClassName(mobj), name());
+                     signalName.constData(), mobj->className(), name());
             return -1;
         }
     }
