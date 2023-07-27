@@ -367,7 +367,15 @@ language_map = {
     334: ("Toki Pona",                   "tok"),
     335: ("Pijin",                       "pis"),
     336: ("Obolo",                       "ann"),
+    # added in CLDR v43
+    337: ("Baluchi",                     "bal"),
+    338: ("Ligurian",                    "lij"),
+    339: ("Rohingya",                    "rhg"),
+    340: ("Torwali",                     "trw"),
 }
+# Don't add languages just because they exist; check CLDR does provide
+# substantial data for locales using it; and check, once added, they
+# don't show up in cldr2qlocalexmo.py's unused listing.
 
 language_aliases = {
     # Renamings prior to Qt 6.0 (CLDR v37):
@@ -837,6 +845,8 @@ script_map = {
     139: ("Vai",                    "Vaii"),
     140: ("Varang Kshiti",          "Wara"),
     141: ("Yi",                     "Yiii"),
+    # Added at CLDR v43
+    142: ("Hanifi",                 "Rohg"), # Used for Rohingya
 }
 
 script_aliases = {
