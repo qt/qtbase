@@ -708,7 +708,8 @@ enumdata.py (keeping the old name as an alias):
     def __parentLocale(self, cache = {}):
         # see http://www.unicode.org/reports/tr35/#Parent_Locales
         if not cache:
-            for tag, attrs in self.__supplementalData.find('parentLocales'):
+            for tag, attrs in self.__supplementalData.find('parentLocales',
+                                                           ('component',)):
                 parent = attrs.get('parent', '')
                 for child in attrs['locales'].split():
                     cache[child] = parent
