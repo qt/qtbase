@@ -940,8 +940,8 @@ void tst_QTimeZone::windowsId()
     list << "America/Chicago" << "America/Indiana/Knox" << "America/Indiana/Tell_City"
          << "America/Matamoros" << "America/Menominee" << "America/North_Dakota/Beulah"
          << "America/North_Dakota/Center" << "America/North_Dakota/New_Salem"
-         << "America/Rainy_River" << "America/Rankin_Inlet" << "America/Resolute"
-         << "America/Winnipeg" << "CST6CDT";
+         << "America/Ojinaga" << "America/Rainy_River" << "America/Rankin_Inlet"
+         << "America/Resolute" << "America/Winnipeg" << "CST6CDT";
     QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time"), list);
 
     // Check country with no match returns empty list
@@ -956,7 +956,7 @@ void tst_QTimeZone::windowsId()
     QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Canada), list);
 
     list.clear();
-    list << "America/Matamoros";
+    list << "America/Matamoros" << "America/Ojinaga";
     QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Mexico), list);
 
     list.clear();
