@@ -618,6 +618,13 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 
 #if QT_CORE_REMOVED_SINCE(6, 7)
 
+#include "qlocale.h"
+
+QStringList QLocale::uiLanguages() const
+{
+    return uiLanguages(TagSeparator::Dash);
+}
+
 #include "qurl.h"
 
 QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)

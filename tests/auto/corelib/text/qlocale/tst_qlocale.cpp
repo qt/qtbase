@@ -3602,11 +3602,51 @@ void tst_QLocale::uiLanguages()
     // Compare mySystemLocale(), which tests the same for a custom system locale.
     QFETCH(const QLocale, locale);
     QFETCH(const QStringList, all);
-    auto reporter = qScopeGuard([&locale]() {
-        qDebug("\n\t%s", qPrintable(locale.uiLanguages().join(u"\n\t")));
-    });
-    QCOMPARE(locale.uiLanguages(), all);
-    reporter.dismiss();
+    const auto expected = [all](QChar sep) {
+        QStringList adjusted;
+        for (QString name : all)
+            adjusted << name.replace(u'-', sep);
+        return adjusted;
+    };
+
+    {
+        // By default tags are joined with a dash:
+        const QStringList actual = locale.uiLanguages();
+        auto reporter = qScopeGuard([&actual]() {
+            qDebug("\n\t%ls", qUtf16Printable(actual.join("\n\t"_L1)));
+        });
+        QCOMPARE(actual, all);
+        reporter.dismiss();
+    }
+    {
+        // We also support joining with an underscore:
+        const QStringList actual = locale.uiLanguages(QLocale::TagSeparator::Underscore);
+        auto reporter = qScopeGuard([&actual]() {
+            qDebug("\n\t%ls", qUtf16Printable(actual.join("\n\t"_L1)));
+        });
+        QCOMPARE(actual, expected(u'_'));
+        reporter.dismiss();
+    }
+    {
+        // Or, in fact, any ASCII character:
+        const QStringList actual = locale.uiLanguages(QLocale::TagSeparator{'|'});
+        auto reporter = qScopeGuard([&actual]() {
+            qDebug("\n\t%ls", qUtf16Printable(actual.join("\n\t"_L1)));
+        });
+        QCOMPARE(actual, expected(u'|'));
+        reporter.dismiss();
+    }
+    {
+        // Non-ASCII separator (here, y-umlaut) is unsupported.
+        QTest::ignoreMessage(QtWarningMsg, "QLocale::uiLanguages(): "
+                             "Using non-ASCII separator '\u00ff' (ff) is unsupported");
+        const QStringList actual = locale.uiLanguages(QLocale::TagSeparator{'\xff'});
+        auto reporter = qScopeGuard([&actual]() {
+            qDebug("\n\t%ls", qUtf16Printable(actual.join("\n\t"_L1)));
+        });
+        QCOMPARE(actual, QStringList{});
+        reporter.dismiss();
+    }
 }
 
 void tst_QLocale::weekendDays()

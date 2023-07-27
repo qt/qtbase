@@ -885,6 +885,8 @@ public:
         FloatingPointShortest = -128
     };
 
+    enum class TagSeparator : char { Dash = '-', Underscore = '_' };
+
     enum CurrencySymbolFormat {
         CurrencyIsoCode,
         CurrencySymbol,
@@ -1059,7 +1061,10 @@ public:
 
     QString formattedDataSize(qint64 bytes, int precision = 2, DataSizeFormats format = DataSizeIecFormat) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 7)
     QStringList uiLanguages() const;
+#endif
+    QStringList uiLanguages(TagSeparator separator = TagSeparator::Dash) const;
 
     enum LanguageCodeType {
         ISO639Part1 = 1 << 0,

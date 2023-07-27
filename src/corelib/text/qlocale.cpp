@@ -1341,6 +1341,33 @@ QLocale::Country QLocale::country() const
 #endif
 
 /*!
+    \since 6.7
+
+    \enum QLocale::TagSeparator
+
+    Indicate how to combine the parts that make up a locale identifier.
+
+    A locale identifier may be made up of several tags, indicating language,
+    script and territory (plus, potentially, other details), joined together to
+    form the identifier. Various standards and conventional forms use either a
+    dash (the Unicode HYPHEN-MINUS, U+002D) or an underscore (LOW LINE, U+005F).
+    Different clients of QLocale may thus need one or the other.
+
+    \value Dash Use \c{'-'}, the dash or hyphen character.
+    \value Underscore Use \c{'_'}, the underscore character.
+
+    \note Although dash and underscore are the only separators used in public
+    standards (as at 2023), it is possible to cast any \l
+    {https://en.cppreference.com/w/cpp/language/ascii} {ASCII} character to this
+    type if a non-standard ASCII separator is needed. Casting a non-ASCII
+    character (with decimal value above 127) is not supported: such values are
+    reserved for future use as enum members if some public standard ever uses a
+    non-ASCII separator. It is, of course, possible to use QString::replace() to
+    replace the separator used by a function taking a parameter of this type
+    with an arbitrary Unicode character or string.
+*/
+
+/*!
     \brief The short name of this locale.
 
     Returns the language and territory of this locale as a string of the form
@@ -4602,21 +4629,33 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     \since 4.8
     \brief List of locale names for use in selecting translations
 
-    Each entry in the returned list is the dash-joined name of a locale,
-    suitable to the user's preferences for what to translate the UI into. For
-    example, if the user has configured their system to use English as used in
-    the USA, the list would be "en-Latn-US", "en-US", "en". The order of entries
-    is the order in which to check for translations; earlier items in the list
-    are to be preferred over later ones.
+    Each entry in the returned list is the name of a locale suitable to the
+    user's preferences for what to translate the UI into. Where a name in the
+    list is composed of several tags, they are joined as indicated by \a
+    separator.
+
+    For example, using the default separator QLocale::TagSeparator::Dash, if the
+    user has configured their system to use English as used in the USA, the list
+    would be "en-Latn-US", "en-US", "en". The order of entries is the order in
+    which to check for translations; earlier items in the list are to be
+    preferred over later ones. If your translation files use underscores, rather
+    than dashes, to separate locale tags, pass QLocale::TagSeparator::Underscore
+    as \a separator.
 
     Most likely you do not need to use this function directly, but just pass the
     QLocale object to the QTranslator::load() function.
 
     \sa QTranslator, bcp47Name()
 */
-QStringList QLocale::uiLanguages() const
+QStringList QLocale::uiLanguages(TagSeparator separator) const
 {
+    const char sep = char(separator);
     QStringList uiLanguages;
+    if (uchar(sep) > 0x7f) {
+        qWarning("QLocale::uiLanguages(): Using non-ASCII separator '%c' (%02x) is unsupported",
+                 sep, uint(uchar(sep)));
+        return uiLanguages;
+    }
     QList<QLocaleId> localeIds;
 #ifdef QT_NO_SYSTEMLOCALE
     constexpr bool isSystem = false;
@@ -4635,7 +4674,7 @@ QStringList QLocale::uiLanguages() const
         // first. (Known issue, QTBUG-104930, on some macOS versions when in
         // locale en_DE.) Our translation system might have a translation for a
         // locale the platform doesn't believe in.
-        const QString name = bcp47Name();
+        const QString name = QString::fromLatin1(d->bcp47Name(sep));
         if (!name.isEmpty() && language() != C && !uiLanguages.contains(name)) {
             // That uses contains(name) as a cheap pre-test, but there may be an
             // entry that matches this on purging likely subtags.
@@ -4665,11 +4704,11 @@ QStringList QLocale::uiLanguages() const
             j = i + 1;
         } else if (id.language_id == C) {
             // Attempt no likely sub-tag amendments to C:
-            uiLanguages.append(QString::fromLatin1(id.name()));
+            uiLanguages.append(QString::fromLatin1(id.name(sep)));
             continue;
         } else {
             // Plain locale or empty system uiLanguages; just append.
-            prior = id.name();
+            prior = id.name(sep);
             uiLanguages.append(QString::fromLatin1(prior));
             j = uiLanguages.size();
         }
@@ -4678,7 +4717,7 @@ QStringList QLocale::uiLanguages() const
         const QLocaleId min = max.withLikelySubtagsRemoved();
 
         // Include minimal version (last) unless it's what our locale is derived from:
-        if (auto name = min.name(); name != prior)
+        if (auto name = min.name(sep); name != prior)
             uiLanguages.insert(j, QString::fromLatin1(name));
         else if (!isSystem)
             --j; // bcp47Name() matches min(): put more specific forms *before* it.
@@ -4687,7 +4726,7 @@ QStringList QLocale::uiLanguages() const
             // Include scriptless version if likely-equivalent and distinct:
             id.script_id = 0;
             if (id != min && id.withLikelySubtagsAdded() == max) {
-                if (auto name = id.name(); name != prior)
+                if (auto name = id.name(sep); name != prior)
                     uiLanguages.insert(j, QString::fromLatin1(name));
             }
         }
@@ -4698,14 +4737,14 @@ QStringList QLocale::uiLanguages() const
             // Include version with territory if it likely-equivalent and distinct:
             id.territory_id = max.territory_id;
             if (id != max && id.withLikelySubtagsAdded() == max) {
-                if (auto name = id.name(); name != prior)
+                if (auto name = id.name(sep); name != prior)
                     uiLanguages.insert(j, QString::fromLatin1(name));
             }
         }
 
         // Include version with all likely sub-tags (first) if distinct from the rest:
         if (max != min && max != id) {
-            if (auto name = max.name(); name != prior)
+            if (auto name = max.name(sep); name != prior)
                 uiLanguages.insert(j, QString::fromLatin1(name));
         }
     }
