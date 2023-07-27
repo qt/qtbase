@@ -767,12 +767,20 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
 #ifdef Q_CC_MINGW
     if (test == "blacklisted" // calls qFatal()
         || test == "silent") // calls qFatal()
-#endif
         return;
+#endif
 
 #ifdef Q_OS_WIN
     if (test == "crashes")
         return; // Complains about uncaught exception
+#endif
+
+#ifdef Q_OS_UNIX
+    if (test == "assert"
+        || test == "crashes"
+        || test == "failfetchtype"
+        || test == "faildatatype")
+    return; // Outputs "Received signal 6 (SIGABRT)"
 #endif
 
 #ifdef Q_OS_LINUX
