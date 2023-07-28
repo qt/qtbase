@@ -96,44 +96,87 @@ endif()
 # e.g. lib/libQt6DBus_relwithdebinfo.6.3.0.dylib
 # Don't apply the postfix to the first encountered release-like config, so we have at least one
 # config without a postifx.
-if(QT_GENERATOR_IS_MULTI_CONFIG AND CMAKE_CONFIGURATION_TYPES)
-    set(__qt_setup_release_configs Release RelWithDebInfo MinSizeRel)
-    set(__qt_setup_found_first_release_config FALSE)
-    foreach(__qt_setup_config_type IN LISTS CMAKE_CONFIGURATION_TYPES)
+# If postfixes are set by user warn about potential issues.
+function(qt_internal_setup_cmake_config_postfix)
+    # Collect configuration that require postfix in Qt library names.
+    if(QT_GENERATOR_IS_MULTI_CONFIG)
+        set(postfix_configurations ${CMAKE_CONFIGURATION_TYPES})
+    else()
+        set(postfix_configurations ${CMAKE_BUILD_TYPE})
+
+        # Set the default postfix to empty by default for single-config builds.
+        string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_lower)
+        set(default_cmake_${build_type_lower}_postfix "")
+    endif()
+
+    # Override the generic debug postfixes above with custom debug postfixes (even in a single
+    # config build) to follow the conventions we had since Qt 5.
+    # e.g. lib/libQt6DBus_debug.6.3.0.dylib
+    if(WIN32)
+        if(MINGW)
+            # On MinGW we don't have "d" suffix for debug libraries like on Linux,
+            # unless we're building debug and release libraries in one go.
+            if(QT_GENERATOR_IS_MULTI_CONFIG)
+                set(default_cmake_debug_postfix "d")
+            endif()
+        else()
+            set(default_cmake_debug_postfix "d")
+        endif()
+    elseif(APPLE)
+        set(default_cmake_debug_postfix "_debug")
+    endif()
+
+    set(custom_postfix_vars "")
+    set(release_configs Release RelWithDebInfo MinSizeRel)
+    set(found_first_release_config FALSE)
+    foreach(config_type IN LISTS postfix_configurations)
+        string(TOLOWER "${config_type}" config_type_lower)
+        string(TOUPPER "${config_type}" config_type_upper)
+        set(postfix_var CMAKE_${config_type_upper}_POSTFIX)
+
         # Skip assigning postfix for the first release-like config.
-        if(NOT __qt_setup_found_first_release_config
-                AND __qt_setup_config_type IN_LIST __qt_setup_release_configs)
-            set(__qt_setup_found_first_release_config TRUE)
+        if(NOT found_first_release_config
+                AND config_type IN_LIST release_configs)
+            set(found_first_release_config TRUE)
+            if(NOT "${${postfix_var}}" STREQUAL "")
+                list(APPEND custom_postfix_vars ${postfix_var})
+            endif()
             continue()
         endif()
 
-        string(TOLOWER "${__qt_setup_config_type}" __qt_setup_config_type_lower)
-        string(TOUPPER "${__qt_setup_config_type}" __qt_setup_config_type_upper)
-        set(CMAKE_${__qt_setup_config_type_upper}_POSTFIX "_${__qt_setup_config_type_lower}")
+        # Check if the default postfix is set, use '_<config_type_lower>' otherwise.
+        set(default_postfix_var
+            default_cmake_${config_type_lower}_postfix)
+        if(NOT DEFINED ${default_postfix_var})
+            set(${default_postfix_var}
+                "_${config_type_lower}")
+        endif()
+
+        # If postfix is set by user avoid changing it, but save postfix variable that has
+        # a non-default value for further warning.
+        if("${${postfix_var}}" STREQUAL "")
+            set(${postfix_var} "${${default_postfix_var}}" PARENT_SCOPE)
+        elseif(NOT "${${postfix_var}}" STREQUAL "${${default_postfix_var}}")
+            list(APPEND custom_postfix_vars ${postfix_var})
+        endif()
+
+        # Adjust framework postfixes accordingly
         if(APPLE)
-            set(CMAKE_FRAMEWORK_MULTI_CONFIG_POSTFIX_${__qt_setup_config_type_upper}
-                "_${__qt_setup_config_type_lower}")
+            set(CMAKE_FRAMEWORK_MULTI_CONFIG_POSTFIX_${config_type_upper}
+                "${${postfix_var}}"  PARENT_SCOPE)
         endif()
     endforeach()
-endif()
+    if(custom_postfix_vars)
+        list(REMOVE_DUPLICATES custom_postfix_vars)
+        list(JOIN custom_postfix_vars ", " postfix_vars_string)
 
-# Override the generic debug postfixes above with custom debug postfixes (even in a single config
-# build) to follow the conventions we had since Qt 5.
-# e.g. lib/libQt6DBus_debug.6.3.0.dylib
-if(WIN32)
-    if(MINGW)
-        # On MinGW we don't have "d" suffix for debug libraries like on Linux,
-        # unless we're building debug and release libraries in one go.
-        if(QT_GENERATOR_IS_MULTI_CONFIG)
-            set(CMAKE_DEBUG_POSTFIX "d")
-        endif()
-    else()
-        set(CMAKE_DEBUG_POSTFIX "d")
+        message(WARNING "You are using custom library postfixes: '${postfix_vars_string}' which are"
+            " considered experimental and are not officially supported by Qt."
+            " Expect unforeseen issues and user projects built with qmake to be broken."
+        )
     endif()
-elseif(APPLE)
-    set(CMAKE_DEBUG_POSTFIX "_debug")
-    set(CMAKE_FRAMEWORK_MULTI_CONFIG_POSTFIX_DEBUG "_debug")
-endif()
+endfunction()
+qt_internal_setup_cmake_config_postfix()
 
 ## Position independent code:
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
