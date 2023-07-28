@@ -145,22 +145,12 @@ static inline QByteArray stringData(const QMetaObject *mo, int index)
     return QByteArray::fromRawData(view.data(), view.size());
 }
 
-static inline const char *rawTypeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
+static inline QByteArrayView typeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
 {
-    if (typeInfo & IsUnresolvedType) {
-        return rawStringData(mo, typeInfo & TypeNameIndexMask);
-    } else {
-        return QMetaType(typeInfo).name();
-    }
-}
-
-static inline QByteArray typeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
-{
-    if (typeInfo & IsUnresolvedType) {
-        return stringData(mo, typeInfo & TypeNameIndexMask);
-    } else {
-        return QMetaType(typeInfo).name();
-    }
+    if (typeInfo & IsUnresolvedType)
+        return stringDataView(mo, typeInfo & TypeNameIndexMask);
+    else
+        return QByteArrayView(QMetaType(typeInfo).name());
 }
 
 static inline int typeFromTypeInfo(const QMetaObject *mo, uint typeInfo)
@@ -1018,8 +1008,8 @@ bool QMetaObjectPrivate::checkConnectArgs(const QMetaMethodPrivate *signal,
         uint targetTypeInfo = method->parameterTypeInfo(i);
         if ((sourceTypeInfo & IsUnresolvedType)
             || (targetTypeInfo & IsUnresolvedType)) {
-            QByteArray sourceName = typeNameFromTypeInfo(smeta, sourceTypeInfo);
-            QByteArray targetName = typeNameFromTypeInfo(rmeta, targetTypeInfo);
+            QByteArrayView sourceName = typeNameFromTypeInfo(smeta, sourceTypeInfo);
+            QByteArrayView targetName = typeNameFromTypeInfo(rmeta, targetTypeInfo);
             if (sourceName != targetName)
                 return false;
         } else {
@@ -2022,7 +2012,7 @@ void QMetaMethodPrivate::getParameterTypes(int *types) const
 QByteArray QMetaMethodPrivate::parameterTypeName(int index) const
 {
     int paramsIndex = parametersDataIndex();
-    return typeNameFromTypeInfo(mobj, mobj->d.data[paramsIndex + index]);
+    return typeNameFromTypeInfo(mobj, mobj->d.data[paramsIndex + index]).toByteArray();
 }
 
 QList<QByteArray> QMetaMethodPrivate::parameterTypes() const
@@ -2032,8 +2022,10 @@ QList<QByteArray> QMetaMethodPrivate::parameterTypes() const
     QList<QByteArray> list;
     list.reserve(argc);
     int paramsIndex = parametersDataIndex();
-    for (int i = 0; i < argc; ++i)
-        list += typeNameFromTypeInfo(mobj, mobj->d.data[paramsIndex + i]);
+    for (int i = 0; i < argc; ++i) {
+        QByteArrayView name = typeNameFromTypeInfo(mobj, mobj->d.data[paramsIndex + i]);
+        list.emplace_back(name.toByteArray());
+    }
     return list;
 }
 
@@ -3445,7 +3437,7 @@ const char *QMetaProperty::typeName() const
     // TODO: can the metatype be invalid for dynamic metaobjects?
     if (const auto mt = metaType(); mt.isValid())
         return mt.name();
-    return rawTypeNameFromTypeInfo(mobj, data.type());
+    return typeNameFromTypeInfo(mobj, data.type()).constData();
 }
 
 /*! \fn QVariant::Type QMetaProperty::type() const
@@ -3601,7 +3593,7 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
 
     if (!(data.flags() & EnumOrFlag))
         return;
-    const char *type = rawTypeNameFromTypeInfo(mobj, data.type());
+    const char *type = typeNameFromTypeInfo(mobj, data.type()).constData();
     menum = mobj->enumerator(mobj->indexOfEnumerator(type));
     if (menum.isValid())
         return;
