@@ -2161,6 +2161,12 @@ void QCoreApplicationPrivate::quit()
   last-second cleanup. Note that no user interaction is possible in
   this state.
 
+  \note At this point the main event loop is still running, but will
+  not process further events on return except QEvent::DeferredDelete
+  events for objects deleted via deleteLater(). If event processing is
+  needed, use a nested event loop or call QCoreApplication::processEvents()
+  manually.
+
   \sa quit()
 */
 
