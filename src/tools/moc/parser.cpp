@@ -8,10 +8,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef USE_LEXEM_STORE
-Symbol::LexemStore Symbol::lexemStore;
-#endif
-
 static const char *error_msg = nullptr;
 
 /*! \internal

@@ -318,16 +318,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     continue; //ignore
                 }
             }
-#ifdef USE_LEXEM_STORE
-            if (!Preprocessor::preprocessOnly
-                && token != IDENTIFIER
-                && token != STRING_LITERAL
-                && token != FLOATING_LITERAL
-                && token != INTEGER_LITERAL)
-                symbols += Symbol(lineNum, token);
-            else
-#endif
-                symbols += Symbol(lineNum, token, input, lexem-begin, data-lexem);
+            symbols += Symbol(lineNum, token, input, lexem-begin, data-lexem);
 
         } else { //   Preprocessor
 
@@ -499,15 +490,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
             }
             if (mode == PreparePreprocessorStatement)
                 continue;
-#ifdef USE_LEXEM_STORE
-            if (token != PP_IDENTIFIER
-                && token != PP_STRING_LITERAL
-                && token != PP_FLOATING_LITERAL
-                && token != PP_INTEGER_LITERAL)
-                symbols += Symbol(lineNum, token);
-            else
-#endif
-                symbols += Symbol(lineNum, token, input, lexem-begin, data-lexem);
+            symbols += Symbol(lineNum, token, input, lexem-begin, data-lexem);
         }
     }
     symbols += Symbol(); // eof symbol
