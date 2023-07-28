@@ -160,6 +160,19 @@ static inline int typeFromTypeInfo(const QMetaObject *mo, uint typeInfo)
     return QMetaType::fromName(rawStringData(mo, typeInfo & TypeNameIndexMask)).id();
 }
 
+static auto parse_scope(QLatin1StringView qualifiedKey) noexcept
+{
+    struct R {
+        std::optional<QLatin1StringView> scope;
+        QLatin1StringView key;
+    };
+    const auto scopePos = qualifiedKey.lastIndexOf("::"_L1);
+    if (scopePos < 0)
+        return R{std::nullopt, qualifiedKey};
+    else
+        return R{qualifiedKey.first(scopePos), qualifiedKey.sliced(scopePos + 2)};
+}
+
 namespace {
 class QMetaMethodPrivate : public QMetaMethodInvoker
 {
@@ -3197,19 +3210,10 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
         *ok = false;
     if (!mobj || !key)
         return -1;
-    uint scope = 0;
-    const char *qualified_key = key;
-    const char *s = key + qstrlen(key);
-    while (s > key && *s != ':')
-        --s;
-    if (s > key && *(s - 1) == ':') {
-        scope = s - key - 1;
-        key += scope + 2;
-    }
+    const auto [scope, enumKey] = parse_scope(QLatin1StringView(key));
     for (int i = 0; i < int(data.keyCount()); ++i) {
-        const QByteArray className = stringData(mobj, priv(mobj->d.data)->className);
-        if ((!scope || (className.size() == int(scope) && strncmp(qualified_key, className.constData(), scope) == 0))
-             && strcmp(key, rawStringData(mobj, mobj->d.data[data.data() + 2*i])) == 0) {
+        if ((!scope || *scope == objectClassName(mobj))
+            && enumKey == stringDataView(mobj, mobj->d.data[data.data() + 2 * i])) {
             if (ok != nullptr)
                 *ok = true;
             return mobj->d.data[data.data() + 2 * i + 1];
@@ -3234,19 +3238,6 @@ const char *QMetaEnum::valueToKey(int value) const
         if (value == (int)mobj->d.data[data.data() + 2 * i + 1])
             return rawStringData(mobj, mobj->d.data[data.data() + 2 * i]);
     return nullptr;
-}
-
-static auto parse_scope(QLatin1StringView qualifiedKey) noexcept
-{
-    struct R {
-        std::optional<QLatin1StringView> scope;
-        QLatin1StringView key;
-    };
-    const auto scopePos = qualifiedKey.lastIndexOf("::"_L1);
-    if (scopePos < 0)
-        return R{std::nullopt, qualifiedKey};
-    else
-        return R{qualifiedKey.first(scopePos), qualifiedKey.sliced(scopePos + 2)};
 }
 
 /*!
