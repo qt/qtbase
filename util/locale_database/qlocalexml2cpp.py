@@ -107,7 +107,7 @@ class StringData:
             raise ValueError(f'Data is too big ({len(self.data)}) for quint16 index to its end!',
                              self.name)
         fd.write(f"\nstatic constexpr char16_t {self.name}[] = {{\n")
-        fd.write(wrap_list(self.data))
+        fd.write(wrap_list(self.data, 12)) # 12 == 100 // len('0xhhhh, ')
         fd.write("\n};\n")
 
 def currencyIsoCodeData(s):
