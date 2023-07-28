@@ -23,7 +23,10 @@ function(qt_internal_add_linker_version_script target)
     endif()
 
     if(TEST_ld_version_script)
-        set(contents "Qt_${PROJECT_VERSION_MAJOR}_PRIVATE_API {\n    qt_private_api_tag*;\n")
+        set(contents "NonQt { local:\n")
+        string(APPEND contents "    _ZT?S*;\n")   # {typeinfo {,name},vtable,VTT} for std::
+        string(APPEND contents "    extern \"C++\" { std::*; };\n")
+        string(APPEND contents "};\nQt_${PROJECT_VERSION_MAJOR}_PRIVATE_API { qt_private_api_tag*;\n")
         if(arg_PRIVATE_HEADERS)
             foreach(ph ${arg_PRIVATE_HEADERS})
                 string(APPEND contents "    @FILE:${ph}@\n")
