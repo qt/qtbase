@@ -41,12 +41,12 @@ def unicode2hex(s):
             lst.append(hex(v))
     return lst
 
-def wrap_list(lst):
+def wrap_list(lst, perline=20):
     def split(lst, size):
         while lst:
             head, lst = lst[:size], lst[size:]
             yield head
-    return ",\n".join(", ".join(x) for x in split(lst, 20))
+    return ",\n".join(", ".join(x) for x in split(lst, perline))
 
 
 @contextmanager
