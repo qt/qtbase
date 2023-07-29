@@ -160,11 +160,11 @@ static inline int typeFromTypeInfo(const QMetaObject *mo, uint typeInfo)
     return QMetaType::fromName(rawStringData(mo, typeInfo & TypeNameIndexMask)).id();
 }
 
-static auto parse_scope(QLatin1StringView qualifiedKey) noexcept
+static auto parse_scope(QByteArrayView qualifiedKey) noexcept
 {
     struct R {
-        std::optional<QLatin1StringView> scope;
-        QLatin1StringView key;
+        std::optional<QByteArrayView> scope;
+        QByteArrayView key;
     };
     const auto scopePos = qualifiedKey.lastIndexOf("::"_L1);
     if (scopePos < 0)
@@ -3257,7 +3257,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
     if (!mobj || !keys)
         return -1;
 
-    auto lookup = [&] (QLatin1StringView key) -> std::optional<int> {
+    auto lookup = [&] (QByteArrayView key) -> std::optional<int> {
         for (int i = data.keyCount() - 1; i >= 0; --i) {
             if (key == stringDataView(mobj, mobj->d.data[data.data() + 2*i]))
                 return mobj->d.data[data.data() + 2*i + 1];
@@ -3584,35 +3584,28 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
 
     if (!(data.flags() & EnumOrFlag))
         return;
-    const char *type = typeNameFromTypeInfo(mobj, data.type()).constData();
-    menum = mobj->enumerator(mobj->indexOfEnumerator(type));
+    QByteArrayView enum_name = typeNameFromTypeInfo(mobj, data.type());
+    menum = mobj->enumerator(mobj->indexOfEnumerator(enum_name));
     if (menum.isValid())
         return;
-    const char *enum_name = type;
-    const char *scope_name = mobj->className();
-    char *scope_buffer = nullptr;
 
-    const char *colon = strrchr(enum_name, ':');
-    // ':' will always appear in pairs
-    Q_ASSERT(colon <= enum_name || *(colon - 1) == ':');
-    if (colon > enum_name) {
-        int len = colon - enum_name - 1;
-        scope_buffer = (char *)malloc(len + 1);
-        memcpy(scope_buffer, enum_name, len);
-        scope_buffer[len] = '\0';
-        scope_name = scope_buffer;
-        enum_name = colon + 1;
+    QByteArrayView scope_name;
+    const auto parsed = parse_scope(enum_name);
+    if (parsed.scope) {
+        scope_name = *parsed.scope;
+        enum_name = parsed.key;
+    } else {
+        scope_name = objectClassName(mobj);
     }
 
     const QMetaObject *scope = nullptr;
-    if (qstrcmp(scope_name, "Qt") == 0)
+    if (scope_name == "Qt")
         scope = &Qt::staticMetaObject;
     else
         scope = QMetaObject_findMetaObject(mobj, QByteArrayView(scope_name));
+
     if (scope)
         menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
-    if (scope_buffer)
-        free(scope_buffer);
 }
 
 /*!
