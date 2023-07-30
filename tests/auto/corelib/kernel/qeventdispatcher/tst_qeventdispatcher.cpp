@@ -18,6 +18,10 @@ static bool glibDisabled = []() {
 }();
 #endif
 
+#include <chrono>
+
+using namespace std::chrono_literals;
+
 enum {
     PreciseTimerInterval    =   10,
     CoarseTimerInterval     =  200,
@@ -87,11 +91,9 @@ bool tst_QEventDispatcher::event(QEvent *e)
 // drain the system event queue after the test starts to avoid destabilizing the test functions
 void tst_QEventDispatcher::initTestCase()
 {
-    QElapsedTimer elapsedTimer;
-    elapsedTimer.start();
-    while (!elapsedTimer.hasExpired(CoarseTimerInterval) && eventDispatcher->processEvents(QEventLoop::AllEvents)) {
-            ;
-    }
+    QDeadlineTimer deadline(CoarseTimerInterval * 1ms);
+    while (!deadline.hasExpired() && eventDispatcher->processEvents(QEventLoop::AllEvents))
+        ;
 }
 
 // consume pending posted events to avoid impact on the next test function
@@ -292,9 +294,8 @@ void tst_QEventDispatcher::sendPostedEvents()
     QFETCH(int, processEventsFlagsInt);
     QEventLoop::ProcessEventsFlags processEventsFlags = QEventLoop::ProcessEventsFlags(processEventsFlagsInt);
 
-    QElapsedTimer elapsedTimer;
-    elapsedTimer.start();
-    while (!elapsedTimer.hasExpired(200)) {
+    QDeadlineTimer deadline(200ms);
+    while (!deadline.hasExpired()) {
         receivedEventType = -1;
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
 
