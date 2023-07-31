@@ -236,7 +236,7 @@ using expand_operator_equal_recursive = std::conjunction<expand_operator_equal<T
 template<typename T>
 struct expand_operator_equal_tuple : has_operator_equal<T> {};
 template<typename T>
-struct expand_operator_equal_tuple<std::optional<T>> : has_operator_equal<T> {};
+struct expand_operator_equal_tuple<std::optional<T>> : expand_operator_equal_recursive<T> {};
 template<typename T1, typename T2>
 struct expand_operator_equal_tuple<std::pair<T1, T2>> : expand_operator_equal_recursive<T1, T2> {};
 template<typename ...T>
@@ -276,7 +276,7 @@ using expand_operator_less_than_recursive = std::conjunction<expand_operator_les
 template<typename T>
 struct expand_operator_less_than_tuple : has_operator_less_than<T> {};
 template<typename T>
-struct expand_operator_less_than_tuple<std::optional<T>> : has_operator_less_than<T> {};
+struct expand_operator_less_than_tuple<std::optional<T>> : expand_operator_less_than_recursive<T> {};
 template<typename T1, typename T2>
 struct expand_operator_less_than_tuple<std::pair<T1, T2>> : expand_operator_less_than_recursive<T1, T2> {};
 template<typename ...T>

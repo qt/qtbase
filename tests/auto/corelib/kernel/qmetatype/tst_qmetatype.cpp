@@ -121,6 +121,26 @@ static_assert(!QTypeTraits::has_operator_less_than_v<std::tuple<int, Nested2>>);
 static_assert(QTypeTraits::has_operator_equal_v<std::tuple<int, Nested2>>);
 static_assert(!QTypeTraits::has_operator_less_than_v<std::tuple<int, Nested2>>);
 
+// optionals of nesteds
+static_assert(QTypeTraits::has_operator_equal_v<std::optional<std::variant<QString>>>);
+static_assert(QTypeTraits::has_operator_less_than_v<std::optional<std::variant<QString>>>);
+static_assert(!QTypeTraits::has_operator_equal_v<std::optional<std::variant<NoOperators>>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::optional<std::variant<NoOperators>>>);
+
+static_assert(QTypeTraits::has_operator_equal_v<std::optional<Nested>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::optional<Nested>>);
+static_assert(QTypeTraits::has_operator_equal_v<std::optional<std::tuple<int, Nested>>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::optional<std::tuple<int, Nested>>>);
+static_assert(QTypeTraits::has_operator_equal_v<std::optional<std::tuple<int, Nested>>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::optional<std::tuple<int, Nested>>>);
+
+static_assert(QTypeTraits::has_operator_equal_v<std::optional<Nested2>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::optional<Nested2>>);
+static_assert(QTypeTraits::has_operator_equal_v<std::optional<std::tuple<int, Nested2>>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::optional<std::tuple<int, Nested2>>>);
+static_assert(QTypeTraits::has_operator_equal_v<std::optional<std::tuple<int, Nested2>>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::optional<std::tuple<int, Nested2>>>);
+
 }
 
 struct BaseGenericType
