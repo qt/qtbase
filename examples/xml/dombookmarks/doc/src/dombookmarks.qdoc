@@ -11,7 +11,7 @@
 
     The DOM Bookmarks Application provides a reader for XML Bookmark Exchange
     Language (XBEL) files that uses Qt's DOM-based XML API to read and parse
-    the files. The {QXmlStream Bookmarks Example} provides an alternative
+    the files. The \l {QXmlStream Bookmarks Example} provides an alternative
     way to read this type of file.
 
     \image screenshot.png

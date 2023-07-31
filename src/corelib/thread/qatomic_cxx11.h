@@ -6,6 +6,7 @@
 #define QATOMIC_CXX11_H
 
 #include <QtCore/qgenericatomic.h>
+#include <QtCore/qyieldcpu.h>
 #include <atomic>
 
 QT_BEGIN_NAMESPACE

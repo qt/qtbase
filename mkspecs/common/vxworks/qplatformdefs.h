@@ -34,6 +34,8 @@
 #define QT_SNPRINTF             ::snprintf
 #define QT_VSNPRINTF            ::vsnprintf
 
+#define S_ISVTX 01000
+
 /* vxworks exposes these definitions only when _POSIX_C_SOURCE >=200809L but we don't want to set this, as it hides other API */
 #ifndef UTIME_NOW
 #  define UTIME_NOW       ((1l << 30) - 1l)

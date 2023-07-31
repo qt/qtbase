@@ -678,8 +678,10 @@ QPropertyObserver::QPropertyObserver(ChangeHandler changeHandler)
 #if QT_DEPRECATED_SINCE(6, 6)
 QPropertyObserver::QPropertyObserver(QUntypedPropertyData *data)
 {
+    QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     aliasData = data;
     next.setTag(ObserverIsAlias);
+    QT_WARNING_POP
 }
 #endif
 

@@ -403,10 +403,12 @@ bool QElapsedTimer::isValid() const noexcept
 }
 
 /*!
-    Returns \c true if this QElapsedTimer has already expired by \a timeout
-    milliseconds (that is, more than \a timeout milliseconds have elapsed).
-    The value of \a timeout can be -1 to indicate that this timer does not
-    expire, in which case this function will always return false.
+    Returns \c true if elapsed() exceeds the given \a timeout, otherwise \c false.
+
+    A negative \a timeout is interpreted as infinite, so \c false is returned in
+    this case. Otherwise, this is equivalent to \c {elapsed() > timeout}. You
+    can do the same for a duration by comparing durationElapsed() to a duration
+    timeout.
 
     \sa elapsed(), QDeadlineTimer
 */

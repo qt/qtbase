@@ -13,7 +13,10 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <resolv.h>
+
+#if QT_CONFIG(libresolv)
+#  include <resolv.h>
+#endif
 
 #ifndef _PATH_RESCONF
 #  define _PATH_RESCONF "/etc/resolv.conf"

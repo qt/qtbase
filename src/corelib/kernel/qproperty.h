@@ -229,7 +229,7 @@ public:
         ObserverNotifiesChangeHandler, // observer is a change handler, which runs on every change
         ObserverIsPlaceholder,  // the observer before this one is currently evaluated in QPropertyObserver::notifyObservers.
 #if QT_DEPRECATED_SINCE(6, 6)
-        ObserverIsAlias
+        ObserverIsAlias QT_DEPRECATED_VERSION_X_6_6("Use QProperty and add a binding to the target.")
 #endif
     };
 protected:
@@ -271,7 +271,8 @@ public:
 protected:
     QPropertyObserver(ChangeHandler changeHandler);
 #if QT_DEPRECATED_SINCE(6, 6)
-    QT_DEPRECATED QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr);
+    QT_DEPRECATED_VERSION_X_6_6("This constructor was only meant for internal use. Use QProperty and add a binding to the target.")
+    QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr);
 #endif
 
     QUntypedPropertyData *aliasedProperty() const
@@ -889,7 +890,7 @@ public:
 
 #if QT_DEPRECATED_SINCE(6, 6)
 template<typename T>
-class QT_DEPRECATED_X("Class was only meant for internal use, use a QProperty and add a binding to the target")
+class QT_DEPRECATED_VERSION_X_6_6("Class was only meant for internal use, use a QProperty and add a binding to the target")
 QPropertyAlias : public QPropertyObserver
 {
     Q_DISABLE_COPY_MOVE(QPropertyAlias)
@@ -1014,7 +1015,7 @@ public:
     }
     QT_WARNING_POP
 };
-#endif
+#endif // QT_DEPRECATED_SINCE(6, 6)
 
 template<typename Class, typename T, auto Offset, auto Signal = nullptr>
 class QObjectBindableProperty : public QPropertyData<T>

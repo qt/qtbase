@@ -70,9 +70,9 @@ public:
 
     GLvoid *glMapBuffer(GLenum target, GLenum access);
     void glGetBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data);
-    void glDiscardFramebufferEXT (GLenum target, GLsizei numAttachments, const GLenum *attachments);
 
     void flushShared();
+    void discardFramebuffer(GLenum target, GLsizei numAttachments, const GLenum *attachments);
 
     QOpenGLExtensionsPrivate *d() const;
 
@@ -117,14 +117,6 @@ inline void QOpenGLExtensions::glGetBufferSubData(GLenum target, qopengl_GLintpt
     Q_OPENGL_FUNCTIONS_DEBUG
 }
 
-
-inline void QOpenGLExtensions::glDiscardFramebufferEXT (GLenum target, GLsizei numAttachments, const GLenum *attachments)
-{
-    Q_D(QOpenGLExtensions);
-    Q_ASSERT(QOpenGLExtensions::isInitialized(d));
-    d->DiscardFramebuffer(target,numAttachments, attachments);
-    Q_OPENGL_FUNCTIONS_DEBUG
-}
 QT_END_NAMESPACE
 
 #endif // QOPENGL_EXTENSIONS_P_H

@@ -192,18 +192,16 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
     static_assert(-seventeenHoursInMSecs / 1000 < QTimeZone::MinUtcOffsetSecs
                   && seventeenHoursInMSecs / 1000 > QTimeZone::MaxUtcOffsetSecs);
     qint64 millis;
-    // Clip the bracketing times to the bounds of the supported range. Exclude
-    // minMSecs(), because at least one backend (Windows) uses it for a
-    // start-of-time fake transition, that we want previousTransition() to find.
+    // Clip the bracketing times to the bounds of the supported range.
     const qint64 recent =
-        qSubOverflow(forLocalMSecs, seventeenHoursInMSecs, &millis) || millis <= minMSecs()
-        ? minMSecs() + 1 : millis; // Necessarily <= forLocalMSecs + 2.
+        qSubOverflow(forLocalMSecs, seventeenHoursInMSecs, &millis) || millis < minMSecs()
+        ? minMSecs() : millis; // Necessarily <= forLocalMSecs + 1.
     // (Given that minMSecs() is std::numeric_limits<qint64>::min() + 1.)
     const qint64 imminent =
         qAddOverflow(forLocalMSecs, seventeenHoursInMSecs, &millis)
         ? maxMSecs() : millis; // Necessarily >= forLocalMSecs
     // At most one of those was clipped to its boundary value:
-    Q_ASSERT(recent < imminent && seventeenHoursInMSecs < imminent - recent + 2);
+    Q_ASSERT(recent < imminent && seventeenHoursInMSecs < imminent - recent + 1);
     /*
       Offsets are Local - UTC, positive to the east of Greenwich, negative to
       the west; DST offset always exceeds standard offset, when DST applies.
@@ -254,7 +252,17 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
       changes its transition dates and changing a date/time by more than six
       months lands it on a transition.  However, these cases are even more
       obscure than those where the heuristic is good.)
-     */
+    */
+    const Data past = data(recent), future = data(imminent);
+    // > 99% of the time, past and future will agree:
+    if (Q_LIKELY(past.offsetFromUtc == future.offsetFromUtc
+                 && past.standardTimeOffset == future.standardTimeOffset
+                 // Those two imply same daylightTimeOffset.
+                 && past.abbreviation == future.abbreviation)) {
+        Data data = future;
+        data.atMSecsSinceEpoch = forLocalMSecs - future.offsetFromUtc * 1000;
+        return data;
+    }
 
     if (hasTransitions()) {
         /*
@@ -271,9 +279,10 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
 
         // Get a transition definitely before the local MSecs; usually all we need.
         // Only around the transition times might we need another.
-        Data tran = previousTransition(recent);
+        Data tran = past; // Data after last transition before our window.
         Q_ASSERT(forLocalMSecs < 0 || // Pre-epoch TZ info may be unavailable
                  forLocalMSecs - tran.offsetFromUtc * 1000 >= tran.atMSecsSinceEpoch);
+        // If offset actually exceeds 17 hours, that assert may trigger.
         Data nextTran = nextTransition(tran.atMSecsSinceEpoch);
         /*
           Now walk those forward until they bracket forLocalMSecs with transitions.
@@ -281,7 +290,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
           One of the transitions should then be telling us the right offset to use.
           In a transition, we need the transition before it (to describe the run-up
           to the transition) and the transition itself; so we need to stop when
-          nextTran is that transition.
+          nextTran is (invalid or) that transition.
         */
         while (nextTran.atMSecsSinceEpoch != invalidMSecs()
                && forLocalMSecs > nextTran.atMSecsSinceEpoch + nextTran.offsetFromUtc * 1000) {
@@ -357,10 +366,9 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
     /* Bracket and refine to discover offset. */
     qint64 utcEpochMSecs;
 
-    int early = offsetFromUtc(recent);
-    int late = offsetFromUtc(imminent);
-    if (early == late // > 99% of the time
-        || late == invalidSeconds()) {
+    int early = past.offsetFromUtc;
+    int late = future.offsetFromUtc;
+    if (early == late || late == invalidSeconds()) {
         if (early == invalidSeconds()
             || qSubOverflow(forLocalMSecs, early * qint64(1000), &utcEpochMSecs)) {
             return invalidData(); // Outside representable range

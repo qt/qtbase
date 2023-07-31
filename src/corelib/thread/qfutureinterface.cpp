@@ -9,7 +9,6 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qvarlengtharray.h>
-#include <QtCore/private/qsimd_p.h> // for qYieldCpu()
 #include <private/qthreadpool_p.h>
 #include <private/qobject_p.h>
 

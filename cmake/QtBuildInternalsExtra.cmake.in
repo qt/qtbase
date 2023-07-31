@@ -166,6 +166,7 @@ function(qt_internal_force_set_cmake_build_type_conditionally value)
         AND NOT QT_NO_FORCE_SET_CMAKE_BUILD_TYPE
         AND NOT __qt_internal_extras_is_multi_config)
         set(CMAKE_BUILD_TYPE "${value}" CACHE STRING "Choose the type of build." FORCE)
+        set(__qt_build_internals_cmake_build_type "${value}" PARENT_SCOPE)
     endif()
 endfunction()
 

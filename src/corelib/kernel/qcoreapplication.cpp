@@ -622,6 +622,8 @@ void QCoreApplicationPrivate::initLocale()
 #  elif defined(Q_OS_ANDROID) && __ANDROID_API__ < __ANDROID_API_O__
     // Android 6 still lacks nl_langinfo(), so we can't check.
     // FIXME: Shouldn't we still setlocale("UTF-8")?
+#  elif defined(Q_OS_VXWORKS)
+    // VxWorks has no nl_langinfo, so we can't check.
 #  else
     // std::string's SSO usually saves this the need to allocate:
     const std::string oldEncoding = nl_langinfo(CODESET);
@@ -2158,6 +2160,12 @@ void QCoreApplicationPrivate::quit()
   The signal is particularly useful if your application has to do some
   last-second cleanup. Note that no user interaction is possible in
   this state.
+
+  \note At this point the main event loop is still running, but will
+  not process further events on return except QEvent::DeferredDelete
+  events for objects deleted via deleteLater(). If event processing is
+  needed, use a nested event loop or call QCoreApplication::processEvents()
+  manually.
 
   \sa quit()
 */

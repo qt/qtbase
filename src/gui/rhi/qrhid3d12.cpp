@@ -4929,7 +4929,7 @@ static QByteArray dxcCompile(const QShaderCode &hlslSource, const char *target, 
     IDxcCompiler *compiler = dxc.first;
     if (!compiler) {
         qWarning("Unable to instantiate IDxcCompiler. Likely no dxcompiler.dll and dxil.dll present. "
-                 "Bundling these are out of scope for Qt. Try https://github.com/microsoft/DirectXShaderCompiler/releases");
+                 "Use windeployqt or try https://github.com/microsoft/DirectXShaderCompiler/releases");
         return QByteArray();
     }
     IDxcLibrary *library = dxc.second;

@@ -67,6 +67,7 @@ get_property(QT_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CON
 # to set the build type when building other repos or tests.
 if("${CMAKE_BUILD_TYPE}" STREQUAL "${CMAKE_BUILD_TYPE_INIT}"
     AND NOT __qt_auto_detect_cmake_build_type_before_project_call
+    AND NOT __qt_build_internals_cmake_build_type
     AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${_default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${_default_build_type}" CACHE STRING "Choose the type of build." FORCE)

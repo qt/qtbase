@@ -12,6 +12,7 @@
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtCore/private/qfiledevice_p.h>
+#include <QtCore/private/qfunctions_p.h>
 #include <QtCore/qvarlengtharray.h>
 #ifndef QT_BOOTSTRAPPED
 # include <QtCore/qstandardpaths.h>

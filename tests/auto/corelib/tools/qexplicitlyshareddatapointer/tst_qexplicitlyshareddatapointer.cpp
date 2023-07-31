@@ -223,4 +223,3 @@ void tst_QExplicitlySharedDataPointer::swap() const
 QTEST_MAIN(tst_QExplicitlySharedDataPointer)
 
 #include "tst_qexplicitlyshareddatapointer.moc"
-// vim: et:ts=4:sw=4:sts=4

@@ -1451,8 +1451,13 @@ bool QObject::event(QEvent *e)
                 Q_ASSERT_X(res, Q_FUNC_INFO,
                            "QAbstractEventDispatcher::unregisterTimers() returned false,"
                            " but there are timers associated with this object.");
-                QMetaObject::invokeMethod(this, "_q_reregisterTimers", Qt::QueuedConnection,
-                                          Q_ARG(void*, (new QList<QAbstractEventDispatcher::TimerInfo>(timers))));
+                auto reRegisterTimers = [this, timers = std::move(timers)]() {
+                    QAbstractEventDispatcher *eventDispatcher =
+                            d_func()->threadData.loadRelaxed()->eventDispatcher.loadRelaxed();
+                    for (const auto &ti : timers)
+                        eventDispatcher->registerTimer(ti.timerId, ti.interval, ti.timerType, this);
+                };
+                QMetaObject::invokeMethod(this, std::move(reRegisterTimers), Qt::QueuedConnection);
             }
         }
         break;
@@ -1807,19 +1812,6 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
         child->d_func()->setThreadData_helper(currentData, targetData, status);
     }
 }
-
-void QObjectPrivate::_q_reregisterTimers(void *pointer)
-{
-    Q_Q(QObject);
-    QList<QAbstractEventDispatcher::TimerInfo> *timerList = reinterpret_cast<QList<QAbstractEventDispatcher::TimerInfo> *>(pointer);
-    QAbstractEventDispatcher *eventDispatcher = threadData.loadRelaxed()->eventDispatcher.loadRelaxed();
-    for (int i = 0; i < timerList->size(); ++i) {
-        const QAbstractEventDispatcher::TimerInfo &ti = timerList->at(i);
-        eventDispatcher->registerTimer(ti.timerId, ti.interval, ti.timerType, q);
-    }
-    delete timerList;
-}
-
 
 //
 // The timer flag hasTimer is set when startTimer is called.
