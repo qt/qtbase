@@ -539,6 +539,8 @@ static bool preScanProgramHeaders(QByteArrayView data, const ErrorMaker &error)
 
     // first, validate the extent of the full program header table
     T::Word e_phnum = header->e_phnum;
+    if (e_phnum == PN_XNUM)
+        return error(QLibrary::tr("unimplemented: PN_XNUM program headers")), false;
     T::Off offset = e_phnum * sizeof(T::Phdr);  // can't overflow due to size of T::Half
     if (qAddOverflow(offset, header->e_phoff, &offset) || offset > size_t(data.size()))
         return error(QLibrary::tr("program header table extends past the end of the file")), false;
