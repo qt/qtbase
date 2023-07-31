@@ -305,7 +305,6 @@ qt_internal_add_module(Core
         tools/qvector.h
         tools/qversionnumber.cpp tools/qversionnumber.h
     NO_UNITY_BUILD_SOURCES
-        tools/qfreelist.cpp # Size0/Offset0 (also in qabstracteventdispatcher.cpp)
         # MinGW complains about `free-nonheap-object` in ~QSharedDataPointer()
         # despite the fact that appropriate checks are in place to avoid that!
         tools/qshareddata.cpp tools/qshareddata.h
