@@ -6,6 +6,7 @@
 QT_BEGIN_NAMESPACE
 
 // default sizes and offsets (no need to define these when customizing)
+namespace QFreeListDefaultConstantsPrivate {
 enum {
     Offset0 = 0x00000000,
     Offset1 = 0x00008000,
@@ -17,12 +18,13 @@ enum {
     Size2 = Offset3 - Offset2,
     Size3 = QFreeListDefaultConstants::MaxIndex - Offset3
 };
+}
 
 Q_CONSTINIT const int QFreeListDefaultConstants::Sizes[QFreeListDefaultConstants::BlockCount] = {
-    Size0,
-    Size1,
-    Size2,
-    Size3
+    QFreeListDefaultConstantsPrivate::Size0,
+    QFreeListDefaultConstantsPrivate::Size1,
+    QFreeListDefaultConstantsPrivate::Size2,
+    QFreeListDefaultConstantsPrivate::Size3
 };
 
 QT_END_NAMESPACE
