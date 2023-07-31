@@ -405,32 +405,30 @@ void QWasmIDBSettingsPrivate::setReady()
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
                                            const QString &organization, const QString &application)
 {
-    const auto WebLocalStorageFormat = QSettings::IniFormat + 1;
-    const auto WebIdbFormat = QSettings::IniFormat + 2;
-
     // Make WebLocalStorageFormat the default native format
     if (format == QSettings::NativeFormat)
-        format = QSettings::Format(WebLocalStorageFormat);
+        format = QSettings::WebLocalStorageFormat;
 
     // Check if cookies are enabled (required for using persistent storage)
     const bool cookiesEnabled = val::global("navigator")["cookieEnabled"].as<bool>();
     constexpr QLatin1StringView cookiesWarningMessage
         ("QSettings::%1 requires cookies, falling back to IniFormat with temporary file");
-    if (format == WebLocalStorageFormat && !cookiesEnabled) {
-        qWarning() << cookiesWarningMessage.arg("WebLocalStorageFormat");
-        format = QSettings::IniFormat;
-    } else if (format == WebIdbFormat && !cookiesEnabled) {
-        qWarning() << cookiesWarningMessage.arg("WebIdbFormat");
-        format = QSettings::IniFormat;
+    if (!cookiesEnabled) {
+        if (format == QSettings::WebLocalStorageFormat) {
+            qWarning() << cookiesWarningMessage.arg("WebLocalStorageFormat");
+            format = QSettings::IniFormat;
+        } else if (format == QSettings::WebIndexedDBFormat) {
+            qWarning() << cookiesWarningMessage.arg("WebIndexedDBFormat");
+            format = QSettings::IniFormat;
+        }
     }
-
-    if (format == WebLocalStorageFormat)
-        return new QWasmLocalStorageSettingsPrivate(scope, organization, application);
-    if (format == WebIdbFormat)
-        return new QWasmIDBSettingsPrivate(scope, organization, application);
 
     // Create settings backend according to selected format
     switch (format) {
+    case QSettings::Format::WebLocalStorageFormat:
+        return new QWasmLocalStorageSettingsPrivate(scope, organization, application);
+    case QSettings::Format::WebIndexedDBFormat:
+        return new QWasmIDBSettingsPrivate(scope, organization, application);
     case QSettings::Format::IniFormat:
     case QSettings::Format::CustomFormat1:
     case QSettings::Format::CustomFormat2:

@@ -2376,6 +2376,16 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
                             lose the distinction between numeric data and the
                             strings used to encode them, so values written as
                             numbers shall be read back as QString.
+    \value WebLocalStorageFormat
+                            WASM only: Store the settings in window.localStorage for the current
+                            origin. If cookies are not allowed, this falls back to the INI format.
+                            This provides up to 5MiB storage per origin, but access to it is
+                            synchronous and JSPI is not required.
+    \value WebIndexedDBFormat
+                            WASM only: Store the settings in an Indexed DB for the current
+                            origin. If cookies are not allowed, this falls back to the INI format.
+                            This requires JSPI, but provides more storage than
+                            WebLocalStorageFormat.
 
     \value InvalidFormat    Special value returned by registerFormat().
     \omitvalue CustomFormat1

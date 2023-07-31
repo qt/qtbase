@@ -55,9 +55,8 @@ public:
 #endif
 
 #if defined(Q_OS_WASM)
-    // FIXME: add public API in next minor release.
-    // WebLocalStorageFormat (IniFormat + 1)
-    // WebIDBSFormat (IniFormat + 2)
+        WebLocalStorageFormat,
+        WebIndexedDBFormat,
 #endif
 
         InvalidFormat = 16,
