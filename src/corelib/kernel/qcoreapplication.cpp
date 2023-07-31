@@ -56,7 +56,9 @@
 #   include "qeventdispatcher_glib_p.h"
 #  endif
 # endif
-# include "qeventdispatcher_unix_p.h"
+# if !defined(Q_OS_WASM)
+#  include "qeventdispatcher_unix_p.h"
+# endif
 #endif
 #ifdef Q_OS_WIN
 #include "qeventdispatcher_win_p.h"

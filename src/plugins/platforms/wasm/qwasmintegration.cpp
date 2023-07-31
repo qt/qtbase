@@ -14,9 +14,6 @@
 #include "qwasmwindow.h"
 #include "qwasmbackingstore.h"
 #include "qwasmfontdatabase.h"
-#if defined(Q_OS_UNIX)
-#include <QtGui/private/qgenericunixeventdispatcher_p.h>
-#endif
 #include <qpa/qplatformwindow.h>
 #include <QtGui/qscreen.h>
 #include <qpa/qwindowsysteminterface.h>

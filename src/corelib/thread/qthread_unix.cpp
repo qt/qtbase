@@ -20,7 +20,9 @@
 #  endif
 #endif
 
-#include <private/qeventdispatcher_unix_p.h>
+#if !defined(Q_OS_WASM)
+#  include <private/qeventdispatcher_unix_p.h>
+#endif
 
 #include "qthreadstorage.h"
 

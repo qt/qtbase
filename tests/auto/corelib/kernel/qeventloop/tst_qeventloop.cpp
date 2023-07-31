@@ -9,7 +9,9 @@
 #include <qeventloop.h>
 #include <private/qeventloop_p.h>
 #if defined(Q_OS_UNIX)
-  #include <private/qeventdispatcher_unix_p.h>
+  #if !defined(Q_OS_WASM)
+    #include <private/qeventdispatcher_unix_p.h>
+  #endif
   #include <QtCore/private/qcore_unix_p.h>
   #if defined(HAVE_GLIB)
     #include <private/qeventdispatcher_glib_p.h>
@@ -486,7 +488,7 @@ void tst_QEventLoop::processEventsExcludeTimers()
     // but not if we exclude timers
     eventLoop.processEvents(QEventLoop::X11ExcludeTimers);
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
     QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
     if (!qobject_cast<QEventDispatcherUNIX *>(eventDispatcher)
   #if defined(HAVE_GLIB)
