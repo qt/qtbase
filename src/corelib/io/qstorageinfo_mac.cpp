@@ -43,9 +43,9 @@ void QStorageInfoPrivate::retrievePosixInfo()
     QT_STATFSBUF statfs_buf;
     int result = QT_STATFS(QFile::encodeName(rootPath).constData(), &statfs_buf);
     if (result == 0) {
-        device = QByteArray(statfs_buf.f_mntfromname);
+        device.assign(statfs_buf.f_mntfromname);
         readOnly = (statfs_buf.f_flags & MNT_RDONLY) != 0;
-        fileSystemType = QByteArray(statfs_buf.f_fstypename);
+        fileSystemType.assign(statfs_buf.f_fstypename);
         blockSize = statfs_buf.f_bsize;
     }
 }
