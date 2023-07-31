@@ -109,18 +109,19 @@ export class CompiledModule {
         this.#resourceLocator = resourceLocator;
     }
 
-    static make(js, wasm, entryFunctionName, resourceLocator
-    ) {
+    static make(js, wasm, entryFunctionName, resourceLocator)
+    {
         const exports = {};
+        const module = {};
         eval(js);
-        if (!exports[entryFunctionName]) {
+        if (!module.exports) {
             throw new Error(
                 '${entryFunctionName} has not been exported by the main script'
             );
         }
 
         return new CompiledModule(
-            exports[entryFunctionName], js, wasm, resourceLocator
+            module.exports, js, wasm, resourceLocator
         );
     }
 
