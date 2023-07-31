@@ -66,7 +66,7 @@ struct Q_GUI_EXPORT QRhiGles2NativeHandles : public QRhiNativeHandles
 
 #endif // opengl/qdoc
 
-#if QT_CONFIG(vulkan) || defined(Q_QDOC)
+#if (QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)) || defined(Q_QDOC)
 
 struct Q_GUI_EXPORT QRhiVulkanInitParams : public QRhiInitParams
 {
