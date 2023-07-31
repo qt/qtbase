@@ -146,8 +146,8 @@ public:
     qint64 nativeSendDatagram(const char *data, qint64 length, const QIpPacketHeader &header);
     qint64 nativeRead(char *data, qint64 maxLength);
     qint64 nativeWrite(const char *data, qint64 length);
-    int nativeSelect(int timeout, bool selectForRead) const;
-    int nativeSelect(int timeout, bool checkRead, bool checkWrite,
+    int nativeSelect(QDeadlineTimer deadline, bool selectForRead) const;
+    int nativeSelect(QDeadlineTimer deadline, bool checkRead, bool checkWrite,
                      bool *selectForRead, bool *selectForWrite) const;
 
     void nativeClose();

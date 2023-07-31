@@ -498,7 +498,7 @@ bool QTcpServer::waitForNewConnection(int msec, bool *timedOut)
     if (d->state != QAbstractSocket::ListeningState)
         return false;
 
-    if (!d->socketEngine->waitForRead(msec, timedOut)) {
+    if (!d->socketEngine->waitForRead(QDeadlineTimer(msec), timedOut)) {
         d->serverSocketError = d->socketEngine->error();
         d->serverSocketErrorString = d->socketEngine->errorString();
         return false;

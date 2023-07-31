@@ -7,7 +7,7 @@
 #include "qurl.h"
 #include "private/qhttpnetworkreply_p.h"
 #include "private/qiodevice_p.h"
-#include "qelapsedtimer.h"
+#include "qdeadlinetimer.h"
 #include "qnetworkinterface.h"
 
 #if !defined(QT_NO_NETWORKPROXY)
@@ -310,19 +310,16 @@ bool QHttpSocketEngine::setOption(SocketOption option, int value)
     return false;
 }
 
-bool QHttpSocketEngine::waitForRead(int msecs, bool *timedOut)
+bool QHttpSocketEngine::waitForRead(QDeadlineTimer deadline, bool *timedOut)
 {
     Q_D(const QHttpSocketEngine);
 
     if (!d->socket || d->socket->state() == QAbstractSocket::UnconnectedState)
         return false;
 
-    QElapsedTimer stopWatch;
-    stopWatch.start();
-
     // Wait for more data if nothing is available.
     if (!d->socket->bytesAvailable()) {
-        if (!d->socket->waitForReadyRead(qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
+        if (!d->socket->waitForReadyRead(deadline.remainingTime())) {
             if (d->socket->state() == QAbstractSocket::UnconnectedState)
                 return true;
             setError(d->socket->error(), d->socket->errorString());
@@ -334,7 +331,7 @@ bool QHttpSocketEngine::waitForRead(int msecs, bool *timedOut)
 
     // If we're not connected yet, wait until we are, or until an error
     // occurs.
-    while (d->state != Connected && d->socket->waitForReadyRead(qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
+    while (d->state != Connected && d->socket->waitForReadyRead(deadline.remainingTime())) {
         // Loop while the protocol handshake is taking place.
     }
 
@@ -348,14 +345,14 @@ bool QHttpSocketEngine::waitForRead(int msecs, bool *timedOut)
     return true;
 }
 
-bool QHttpSocketEngine::waitForWrite(int msecs, bool *timedOut)
+bool QHttpSocketEngine::waitForWrite(QDeadlineTimer deadline, bool *timedOut)
 {
     Q_D(const QHttpSocketEngine);
 
     // If we're connected, just forward the call.
     if (d->state == Connected) {
         if (d->socket->bytesToWrite()) {
-            if (!d->socket->waitForBytesWritten(msecs)) {
+            if (!d->socket->waitForBytesWritten(deadline.remainingTime())) {
                 if (d->socket->error() == QAbstractSocket::SocketTimeoutError && timedOut)
                     *timedOut = true;
                 return false;
@@ -364,13 +361,10 @@ bool QHttpSocketEngine::waitForWrite(int msecs, bool *timedOut)
         return true;
     }
 
-    QElapsedTimer stopWatch;
-    stopWatch.start();
-
     // If we're not connected yet, wait until we are, and until bytes have
     // been received (i.e., the socket has connected, we have sent the
     // greeting, and then received the response).
-    while (d->state != Connected && d->socket->waitForReadyRead(qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
+    while (d->state != Connected && d->socket->waitForReadyRead(deadline.remainingTime())) {
         // Loop while the protocol handshake is taking place.
     }
 
@@ -386,20 +380,20 @@ bool QHttpSocketEngine::waitForWrite(int msecs, bool *timedOut)
 
 bool QHttpSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
                                            bool checkRead, bool checkWrite,
-                                           int msecs, bool *timedOut)
+                                           QDeadlineTimer deadline, bool *timedOut)
 {
     Q_UNUSED(checkRead);
 
     if (!checkWrite) {
         // Not interested in writing? Then we wait for read notifications.
-        bool canRead = waitForRead(msecs, timedOut);
+        bool canRead = waitForRead(deadline, timedOut);
         if (readyToRead)
             *readyToRead = canRead;
         return canRead;
     }
 
     // Interested in writing? Then we wait for write notifications.
-    bool canWrite = waitForWrite(msecs, timedOut);
+    bool canWrite = waitForWrite(deadline, timedOut);
     if (readyToWrite)
         *readyToWrite = canWrite;
     return canWrite;

@@ -189,8 +189,8 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     writeEnd2->waitForBytesWritten();
 
     // ensure both read ends are ready for reading, before the event loop
-    QVERIFY(readEnd1.waitForRead(5000));
-    QVERIFY(readEnd2.waitForRead(5000));
+    QVERIFY(readEnd1.waitForRead(5s));
+    QVERIFY(readEnd2.waitForRead(5s));
 
     UnexpectedDisconnectTester tester(&readEnd1, &readEnd2);
 

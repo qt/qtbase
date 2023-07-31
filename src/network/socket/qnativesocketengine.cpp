@@ -962,9 +962,9 @@ void QNativeSocketEngine::close()
 }
 
 /*!
-    Waits for \a msecs milliseconds or until the socket is ready for
-    reading. If \a timedOut is not \nullptr and \a msecs milliseconds
-    have passed, the value of \a timedOut is set to true.
+    Waits until \a deadline has expired or until the socket is ready for
+    reading. If \a timedOut is not \nullptr and \a deadline has expired,
+    the value of \a timedOut is set to true.
 
     Returns \c true if data is available for reading; otherwise returns
     false.
@@ -976,7 +976,7 @@ void QNativeSocketEngine::close()
     is to create a QSocketNotifier, passing the socket descriptor
     returned by socketDescriptor() to its constructor.
 */
-bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
+bool QNativeSocketEngine::waitForRead(QDeadlineTimer deadline, bool *timedOut)
 {
     Q_D(const QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForRead(), false);
@@ -986,7 +986,7 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
     if (timedOut)
         *timedOut = false;
 
-    int ret = d->nativeSelect(msecs, true);
+    int ret = d->nativeSelect(deadline, true);
     if (ret == 0) {
         if (timedOut)
             *timedOut = true;
@@ -1002,9 +1002,9 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
 }
 
 /*!
-    Waits for \a msecs milliseconds or until the socket is ready for
-    writing. If \a timedOut is not \nullptr and \a msecs milliseconds
-    have passed, the value of \a timedOut is set to true.
+    Waits until \a deadline has expired or until the socket is ready for
+    writing. If \a timedOut is not \nullptr and \a deadline has expired,
+    the value of \a timedOut is set to true.
 
     Returns \c true if data is available for writing; otherwise returns
     false.
@@ -1016,7 +1016,7 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
     is to create a QSocketNotifier, passing the socket descriptor
     returned by socketDescriptor() to its constructor.
 */
-bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
+bool QNativeSocketEngine::waitForWrite(QDeadlineTimer deadline, bool *timedOut)
 {
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForWrite(), false);
@@ -1026,7 +1026,7 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
     if (timedOut)
         *timedOut = false;
 
-    int ret = d->nativeSelect(msecs, false);
+    int ret = d->nativeSelect(deadline, false);
     // On Windows, the socket is in connected state if a call to
     // select(writable) is successful. In this case we should not
     // issue a second call to WSAConnect()
@@ -1074,14 +1074,14 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
 
 bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
                                       bool checkRead, bool checkWrite,
-                                      int msecs, bool *timedOut)
+                                      QDeadlineTimer deadline, bool *timedOut)
 {
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForReadOrWrite(), false);
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForReadOrWrite(),
                       QAbstractSocket::UnconnectedState, false);
 
-    int ret = d->nativeSelect(msecs, checkRead, checkWrite, readyToRead, readyToWrite);
+    int ret = d->nativeSelect(deadline, checkRead, checkWrite, readyToRead, readyToWrite);
     // On Windows, the socket is in connected state if a call to
     // select(writable) is successful. In this case we should not
     // issue a second call to WSAConnect()

@@ -18,6 +18,8 @@
 
 #include "../../../network-settings.h"
 
+using namespace std::chrono_literals;
+
 class tst_QHttpSocketEngine : public QObject
 {
     Q_OBJECT
@@ -323,7 +325,7 @@ void tst_QHttpSocketEngine::simpleErrorsAndStates()
         QCOMPARE(socketDevice.state(), QAbstractSocket::UnconnectedState);
         QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::socksProxyServerName()), 8088));
         QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectingState);
-        if (socketDevice.waitForWrite(30000)) {
+        if (socketDevice.waitForWrite(30s)) {
             QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState ||
                     socketDevice.state() == QAbstractSocket::UnconnectedState);
         } else {

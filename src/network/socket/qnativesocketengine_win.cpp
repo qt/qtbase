@@ -16,6 +16,7 @@
 #include <qvarlengtharray.h>
 
 #include <algorithm>
+#include <chrono>
 
 //#define QNATIVESOCKETENGINE_DEBUG
 #if defined(QNATIVESOCKETENGINE_DEBUG)
@@ -1428,7 +1429,18 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxLength)
     return ret;
 }
 
-int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
+inline timeval durationToTimeval(std::chrono::nanoseconds dur) noexcept
+{
+    using namespace std::chrono;
+    const auto secs = duration_cast<seconds>(dur);
+    const auto frac = duration_cast<microseconds>(dur - secs);
+    struct timeval tval;
+    tval.tv_sec = secs.count();
+    tval.tv_usec = frac.count();
+    return tval;
+}
+
+int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool selectForRead) const
 {
     bool readEnabled = selectForRead && readNotifier && readNotifier->isEnabled();
     if (readEnabled)
@@ -1442,12 +1454,10 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     fds.fd_count = 1;
     fds.fd_array[0] = (SOCKET)socketDescriptor;
 
-    struct timeval tv;
-    tv.tv_sec = timeout / 1000;
-    tv.tv_usec = (timeout % 1000) * 1000;
+    struct timeval tv = durationToTimeval(deadline.remainingTimeAsDuration());
 
     if (selectForRead) {
-        ret = select(0, &fds, 0, 0, timeout < 0 ? 0 : &tv);
+        ret = select(0, &fds, 0, 0, &tv);
     } else {
         // select for write
 
@@ -1456,7 +1466,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
         FD_ZERO(&fdexception);
         FD_SET((SOCKET)socketDescriptor, &fdexception);
 
-        ret = select(0, 0, &fds, &fdexception, timeout < 0 ? 0 : &tv);
+        ret = select(0, 0, &fds, &fdexception, &tv);
 
         // ... but if it is actually set, pretend it did not happen
         if (ret > 0 && FD_ISSET((SOCKET)socketDescriptor, &fdexception))
@@ -1469,7 +1479,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     return ret;
 }
 
-int QNativeSocketEnginePrivate::nativeSelect(int timeout,
+int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline,
                                       bool checkRead, bool checkWrite,
                                       bool *selectForRead, bool *selectForWrite) const
 {
@@ -1498,11 +1508,9 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout,
         FD_SET((SOCKET)socketDescriptor, &fdexception);
     }
 
-    struct timeval tv;
-    tv.tv_sec = timeout / 1000;
-    tv.tv_usec = (timeout % 1000) * 1000;
+    struct timeval tv = durationToTimeval(deadline.remainingTimeAsDuration());
 
-    ret = select(socketDescriptor + 1, &fdread, &fdwrite, &fdexception, timeout < 0 ? 0 : &tv);
+    ret = select(socketDescriptor + 1, &fdread, &fdwrite, &fdexception, &tv);
 
      //... but if it is actually set, pretend it did not happen
     if (ret > 0 && FD_ISSET((SOCKET)socketDescriptor, &fdexception))

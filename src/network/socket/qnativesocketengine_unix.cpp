@@ -5,9 +5,9 @@
 //#define QNATIVESOCKETENGINE_DEBUG
 #include "qnativesocketengine_p_p.h"
 #include "private/qnet_unix_p.h"
+#include "qdeadlinetimer.h"
 #include "qiodevice.h"
 #include "qhostaddress.h"
-#include "qelapsedtimer.h"
 #include "qvarlengtharray.h"
 #include "qnetworkinterface.h"
 #include "qendian.h"
@@ -1344,16 +1344,17 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
     return qint64(r);
 }
 
-int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
+int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool selectForRead) const
 {
     bool dummy;
-    return nativeSelect(timeout, selectForRead, !selectForRead, &dummy, &dummy);
+    return nativeSelect(deadline, selectForRead, !selectForRead, &dummy, &dummy);
 }
 
 #ifndef Q_OS_WASM
 
-int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
-                       bool *selectForRead, bool *selectForWrite) const
+int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool checkRead,
+                                             bool checkWrite, bool *selectForRead,
+                                             bool *selectForWrite) const
 {
     pollfd pfd = qt_make_pollfd(socketDescriptor, 0);
 
@@ -1363,7 +1364,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
     if (checkWrite)
         pfd.events |= POLLOUT;
 
-    const int ret = qt_poll_msecs(&pfd, 1, timeout);
+    const int ret = qt_poll_msecs(&pfd, 1, deadline.remainingTime());
 
     if (ret <= 0)
         return ret;
@@ -1384,13 +1385,16 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
 
 #else
 
-int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
-                        bool *selectForRead, bool *selectForWrite) const
+int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool checkRead,
+                                             bool checkWrite, bool *selectForRead,
+                                             bool *selectForWrite) const
 {
     *selectForRead = checkRead;
     *selectForWrite = checkWrite;
     bool socketDisconnect = false;
-    QEventDispatcherWasm::socketSelect(timeout, socketDescriptor, checkRead, checkWrite,selectForRead, selectForWrite, &socketDisconnect);
+    QEventDispatcherWasm::socketSelect(deadline.remainingTime(), socketDescriptor, checkRead,
+                                       checkWrite, selectForRead, selectForWrite,
+                                       &socketDisconnect);
 
     // The disconnect/close handling code in QAbstractsScket::canReadNotification()
     // does not detect remote disconnect properly; do that here as a workardound.
