@@ -172,7 +172,6 @@ bool QAndroidPlatformScreen::event(QEvent *event)
 
 void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
 {
-    Q_ASSERT(window->backingStore());
     if (window->parent() && window->isRaster())
         return;
 
