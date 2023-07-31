@@ -96,9 +96,9 @@ bool QDBusXmlParser::parseProperty(QDBusIntrospection::Property &propertyData)
     QXmlStreamAttributes attributes = m_xml.attributes();
     const QString propertyName = attributes.value("name"_L1).toString();
     if (!QDBusUtil::isValidMemberName(propertyName)) {
-        qDBusParserError("Invalid D-Bus member name '%s' found in interface '%s' while parsing "
-                         "introspection",
-                         qPrintable(propertyName), qPrintable(m_currentInterface->name));
+        qDBusParserWarning("Invalid D-Bus member name '%s' found in interface '%s' while parsing "
+                           "introspection",
+                           qPrintable(propertyName), qPrintable(m_currentInterface->name));
         m_xml.skipCurrentElement();
         return false;
     }
