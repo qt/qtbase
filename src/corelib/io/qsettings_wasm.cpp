@@ -10,6 +10,7 @@
 #include <QFile>
 #endif // QT_NO_QOBJECT
 #include <QDebug>
+#include <QtCore/private/qstdweb_p.h>
 
 #include <QFileInfo>
 #include <QDir>
@@ -216,7 +217,6 @@ public:
     QWasmIDBSettingsPrivate(QSettings::Scope scope, const QString &organization,
                             const QString &application);
     ~QWasmIDBSettingsPrivate();
-    static QWasmIDBSettingsPrivate *get(void *userData);
 
     std::optional<QVariant> get(const QString &key) const override;
     QStringList children(const QString &prefix, ChildSpec spec) const override;
@@ -224,91 +224,59 @@ public:
     void sync() override;
     void flush() override;
     bool isWritable() const override;
-
-    void syncToLocal(const char *data, int size);
-    void loadLocal(const QByteArray &filename);
-    void setReady();
     void initAccess() override;
 
+    void loadLocal();
+    void setReady();
+
 private:
+    bool writeSettingsToTemporaryFile(void *dataPtr, int size);
+
     QString databaseName;
     QString id;
-    static QList<QWasmIDBSettingsPrivate *> liveSettings;
 };
 
-QList<QWasmIDBSettingsPrivate *> QWasmIDBSettingsPrivate::liveSettings;
 static bool isReadReady = false;
 
-static void QWasmIDBSettingsPrivate_onLoad(void *userData, void *dataPtr, int size)
-{
-    QWasmIDBSettingsPrivate *settings = QWasmIDBSettingsPrivate::get(userData);
-    if (!settings)
-        return;
-
-    QFile file(settings->fileName());
-    QFileInfo fileInfo(settings->fileName());
-    QDir dir(fileInfo.path());
-    if (!dir.exists())
-        dir.mkpath(fileInfo.path());
-
-    if (file.open(QFile::WriteOnly)) {
-        file.write(reinterpret_cast<char *>(dataPtr), size);
-        file.close();
-        settings->setReady();
-    }
-}
-
-static void QWasmIDBSettingsPrivate_onError(void *userData)
-{
-    if (QWasmIDBSettingsPrivate *settings = QWasmIDBSettingsPrivate::get(userData))
-        settings->setStatus(QSettings::AccessError);
-}
-
-static void QWasmIDBSettingsPrivate_onStore(void *userData)
-{
-    if (QWasmIDBSettingsPrivate *settings = QWasmIDBSettingsPrivate::get(userData))
-        settings->setStatus(QSettings::NoError);
-}
-
-static void QWasmIDBSettingsPrivate_onCheck(void *userData, int exists)
-{
-    if (QWasmIDBSettingsPrivate *settings = QWasmIDBSettingsPrivate::get(userData)) {
-        if (exists)
-            settings->loadLocal(settings->fileName().toLocal8Bit());
-        else
-            settings->setReady();
-    }
-}
+constexpr char DbName[] = "/home/web_user";
 
 QWasmIDBSettingsPrivate::QWasmIDBSettingsPrivate(QSettings::Scope scope,
                                                  const QString &organization,
                                                  const QString &application)
-    : QConfFileSettingsPrivate(QSettings::NativeFormat, scope, organization, application)
+    : QConfFileSettingsPrivate(QSettings::WebIndexedDBFormat, scope, organization, application)
 {
-    liveSettings.push_back(this);
+    Q_ASSERT_X(qstdweb::haveJspi(), Q_FUNC_INFO, "QWasmIDBSettingsPrivate needs JSPI to work");
+
+    if (organization.isEmpty()) {
+        setStatus(QSettings::AccessError);
+        return;
+    }
 
     setStatus(QSettings::AccessError); // access error until sandbox gets loaded
     databaseName = organization;
     id = application;
 
-    emscripten_idb_async_exists("/home/web_user",
-                                fileName().toLocal8Bit(),
-                                reinterpret_cast<void*>(this),
-                                QWasmIDBSettingsPrivate_onCheck,
-                                QWasmIDBSettingsPrivate_onError);
+    int exists = 0;
+    int error = 0;
+    emscripten_idb_exists(DbName, fileName().toLocal8Bit(), &exists, &error);
+    if (error) {
+        setStatus(QSettings::AccessError);
+        return;
+    }
+    if (exists) {
+        void *contents;
+        int size;
+        emscripten_idb_load(DbName, fileName().toLocal8Bit(), &contents, &size, &error);
+        if (error || !writeSettingsToTemporaryFile(contents, size)) {
+            setStatus(QSettings::AccessError);
+            return;
+        }
+    }
+
+    setReady();
 }
 
-QWasmIDBSettingsPrivate::~QWasmIDBSettingsPrivate()
-{
-    liveSettings.removeAll(this);
-}
-
-QWasmIDBSettingsPrivate *QWasmIDBSettingsPrivate::get(void *userData)
-{
-    if (QWasmIDBSettingsPrivate::liveSettings.contains(userData))
-        return reinterpret_cast<QWasmIDBSettingsPrivate *>(userData);
-    return nullptr;
-}
+QWasmIDBSettingsPrivate::~QWasmIDBSettingsPrivate() = default;
 
 void QWasmIDBSettingsPrivate::initAccess()
 {
@@ -324,6 +292,20 @@ std::optional<QVariant> QWasmIDBSettingsPrivate::get(const QString &key) const
     return std::nullopt;
 }
 
+bool QWasmIDBSettingsPrivate::writeSettingsToTemporaryFile(void *dataPtr, int size)
+{
+    QFile file(fileName());
+    QFileInfo fileInfo(fileName());
+    QDir dir(fileInfo.path());
+    if (!dir.exists())
+        dir.mkpath(fileInfo.path());
+
+    if (!file.open(QFile::WriteOnly))
+        return false;
+
+    return size == file.write(reinterpret_cast<char *>(dataPtr), size);
+}
+
 QStringList QWasmIDBSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
 {
     return QConfFileSettingsPrivate::children(prefix, spec);
@@ -332,11 +314,10 @@ QStringList QWasmIDBSettingsPrivate::children(const QString &prefix, ChildSpec s
 void QWasmIDBSettingsPrivate::clear()
 {
     QConfFileSettingsPrivate::clear();
-    emscripten_idb_async_delete("/home/web_user",
-                                fileName().toLocal8Bit(),
-                                reinterpret_cast<void*>(this),
-                                QWasmIDBSettingsPrivate_onStore,
-                                QWasmIDBSettingsPrivate_onError);
+
+    int error = 0;
+    emscripten_idb_delete(DbName, fileName().toLocal8Bit(), &error);
+    setStatus(!!error ? QSettings::AccessError : QSettings::NoError);
 }
 
 void QWasmIDBSettingsPrivate::sync()
@@ -347,13 +328,11 @@ void QWasmIDBSettingsPrivate::sync()
     if (file.open(QFile::ReadOnly)) {
         QByteArray dataPointer = file.readAll();
 
-        emscripten_idb_async_store("/home/web_user",
-                                  fileName().toLocal8Bit(),
-                                   reinterpret_cast<void *>(dataPointer.data()),
-                                   dataPointer.length(),
-                                   reinterpret_cast<void*>(this),
-                                   QWasmIDBSettingsPrivate_onStore,
-                                   QWasmIDBSettingsPrivate_onError);
+        int error = 0;
+        emscripten_idb_store(DbName, fileName().toLocal8Bit(),
+                             reinterpret_cast<void *>(dataPointer.data()), dataPointer.length(),
+                             &error);
+        setStatus(!!error ? QSettings::AccessError : QSettings::NoError);
     }
 }
 
@@ -365,34 +344,6 @@ void QWasmIDBSettingsPrivate::flush()
 bool QWasmIDBSettingsPrivate::isWritable() const
 {
     return isReadReady && QConfFileSettingsPrivate::isWritable();
-}
-
-void QWasmIDBSettingsPrivate::syncToLocal(const char *data, int size)
-{
-    QFile file(fileName());
-
-    if (file.open(QFile::WriteOnly)) {
-        file.write(data, size + 1);
-        QByteArray data = file.readAll();
-
-        emscripten_idb_async_store("/home/web_user",
-                                   fileName().toLocal8Bit(),
-                                   reinterpret_cast<void *>(data.data()),
-                                   data.length(),
-                                   reinterpret_cast<void*>(this),
-                                   QWasmIDBSettingsPrivate_onStore,
-                                   QWasmIDBSettingsPrivate_onError);
-        setReady();
-    }
-}
-
-void QWasmIDBSettingsPrivate::loadLocal(const QByteArray &filename)
-{
-    emscripten_idb_async_load("/home/web_user",
-                              filename.data(),
-                              reinterpret_cast<void*>(this),
-                              QWasmIDBSettingsPrivate_onLoad,
-                              QWasmIDBSettingsPrivate_onError);
 }
 
 void QWasmIDBSettingsPrivate::setReady()
@@ -421,6 +372,11 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::
             qWarning() << cookiesWarningMessage.arg("WebIndexedDBFormat");
             format = QSettings::IniFormat;
         }
+    }
+    if (format == QSettings::WebIndexedDBFormat && !qstdweb::haveJspi()) {
+        qWarning() << "QSettings::WebIndexedDBFormat requires JSPI, falling back to IniFormat with "
+                      "temporary file";
+        format = QSettings::IniFormat;
     }
 
     // Create settings backend according to selected format

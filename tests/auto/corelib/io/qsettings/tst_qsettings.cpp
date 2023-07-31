@@ -42,9 +42,9 @@
 #endif
 
 #if defined(Q_OS_WASM)
-#  include <QtCore/private/qstdweb_p.h>
+#include <QtCore/private/qstdweb_p.h>
 
-#  include "emscripten/val.h"
+#include "emscripten/val.h"
 #endif
 
 Q_DECLARE_METATYPE(QSettings::Format)
@@ -89,6 +89,10 @@ static void populateWithFormats()
     QTest::addColumn<QSettings::Format>("format");
 
     QTest::newRow("native") << QSettings::NativeFormat;
+#if defined(Q_OS_WASM)
+    if (qstdweb::haveJspi())
+        QTest::newRow("idb") << QSettings::WebIndexedDBFormat;
+#endif // defined(Q_OS_WASM)
     QTest::newRow("ini") << QSettings::IniFormat;
     QTest::newRow("custom1") << QSettings::CustomFormat1;
     QTest::newRow("custom2") << QSettings::CustomFormat2;

@@ -878,7 +878,13 @@ QStringList QSettingsPrivate::splitArgs(const QString &s, qsizetype idx)
 
 void QConfFileSettingsPrivate::initFormat()
 {
+#if defined(Q_OS_WASM)
+    extension = (format == QSettings::NativeFormat || format == QSettings::WebIndexedDBFormat)
+            ? ".conf"_L1
+            : ".ini"_L1;
+#else
     extension = (format == QSettings::NativeFormat) ? ".conf"_L1 : ".ini"_L1;
+#endif
     readFunc = nullptr;
     writeFunc = nullptr;
 #if defined(Q_OS_DARWIN)
@@ -887,7 +893,11 @@ void QConfFileSettingsPrivate::initFormat()
     caseSensitivity = IniCaseSensitivity;
 #endif
 
+#if defined Q_OS_WASM
+    if (format > QSettings::IniFormat && format != QSettings::WebIndexedDBFormat) {
+#else
     if (format > QSettings::IniFormat) {
+#endif
         const auto locker = qt_scoped_lock(settingsGlobalMutex);
         const CustomFormatVector *customFormatVector = customFormatVectorFunc();
 
@@ -905,7 +915,11 @@ void QConfFileSettingsPrivate::initFormat()
 void QConfFileSettingsPrivate::initAccess()
 {
     if (!confFiles.isEmpty()) {
+#if defined Q_OS_WASM
+        if (format > QSettings::IniFormat && format != QSettings::WebIndexedDBFormat) {
+#else
         if (format > QSettings::IniFormat) {
+#endif
             if (!readFunc)
                 setStatus(QSettings::AccessError);
         }
@@ -1307,7 +1321,11 @@ QString QConfFileSettingsPrivate::fileName() const
 
 bool QConfFileSettingsPrivate::isWritable() const
 {
+#if defined(Q_OS_WASM)
+    if (format > QSettings::IniFormat && format != QSettings::WebIndexedDBFormat && !writeFunc)
+#else
     if (format > QSettings::IniFormat && !writeFunc)
+#endif
         return false;
 
     if (confFiles.isEmpty())
@@ -1386,6 +1404,13 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
         */
         if (file.isReadable() && file.size() != 0) {
             bool ok = false;
+
+#ifdef Q_OS_WASM
+            if (format == QSettings::WebIndexedDBFormat) {
+                QByteArray data = file.readAll();
+                ok = readIniFile(data, &confFile->unparsedIniSections);
+            } else
+#endif
 #ifdef Q_OS_DARWIN
             if (format == QSettings::NativeFormat) {
                 QByteArray data = file.readAll();
@@ -1442,6 +1467,11 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
             return;
         }
 
+#ifdef Q_OS_WASM
+        if (format == QSettings::WebIndexedDBFormat) {
+            ok = writeIniFile(sf, mergedKeys);
+        } else
+#endif
 #ifdef Q_OS_DARWIN
         if (format == QSettings::NativeFormat) {
             ok = writePlistFile(sf, mergedKeys);
