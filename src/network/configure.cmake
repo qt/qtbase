@@ -209,16 +209,16 @@ connectionPointContainer->FindConnectionPoint(IID_INetworkConnectionEvents, &con
 
 qt_feature("getifaddrs" PUBLIC
     LABEL "getifaddrs()"
-    CONDITION TEST_getifaddrs
+    CONDITION UNIX AND NOT QT_FEATURE_linux_netlink AND TEST_getifaddrs
 )
 qt_feature_definition("getifaddrs" "QT_NO_GETIFADDRS" NEGATE VALUE "1")
 qt_feature("ifr_index" PRIVATE
     LABEL "ifr_index"
-    CONDITION TEST_ifr_index
+    CONDITION UNIX AND NOT QT_FEATURE_linux_netlink AND TEST_ifr_index
 )
 qt_feature("ipv6ifname" PUBLIC
     LABEL "IPv6 ifname"
-    CONDITION TEST_ipv6ifname
+    CONDITION UNIX AND NOT QT_FEATURE_linux_netlink AND TEST_ipv6ifname
 )
 qt_feature_definition("ipv6ifname" "QT_NO_IPV6IFNAME" NEGATE VALUE "1")
 qt_feature("libresolv" PRIVATE
