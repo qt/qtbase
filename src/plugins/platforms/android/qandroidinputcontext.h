@@ -113,6 +113,7 @@ private slots:
     void showInputPanelLater(Qt::ApplicationState);
 
 private:
+    bool isImhNoTextHandlesSet();
     void sendInputMethodEvent(QInputMethodEvent *event);
     QSharedPointer<QInputMethodQueryEvent> focusObjectInputMethodQuery(Qt::InputMethodQueries queries = Qt::ImQueryAll);
     bool focusObjectIsComposing() const;
