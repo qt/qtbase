@@ -148,8 +148,7 @@ The following is a list of such meta-data defined by Qt:
     \li Meta-data Name
     \li Description
 \row
-    \target android.app.lib_name
-    \li android.app.lib_name
+    \li android.app.lib_name \target android.app.lib_name
     \li The filename of the native C++ library that is used by the activity.
         \note This attribute is mandatory and shouldn't be removed.
         Default value is the Qt project's target name.
@@ -159,8 +158,7 @@ The following is a list of such meta-data defined by Qt:
         For more information, see \l {Style Extraction}.
         The default value is \c minimal.
 \row
-    \target android.app.background_running
-    \li android.app.background_running
+    \li android.app.background_running \target android.app.background_running
     \li Sets whether the app keeps running tasks in the background.
         Setting this to \c true is the equivalent of setting the environment
         variable \c QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED to \c 0.
@@ -170,8 +168,7 @@ The following is a list of such meta-data defined by Qt:
         application tries to draw after \l {QGuiApplication::applicationStateChanged()}
         signal is sent with a \l {Qt::ApplicationSuspended} state.
 \row
-    \target android.app.arguments
-    \li android.app.arguments
+    \li android.app.arguments \target android.app.arguments
     \li Sets a list of arguments to pass to the app \c {"arg1 arg2"}.
         Populated from \c ANDROID_APPLICATION_ARGUMENTS (qmake) and
         \c QT_ANDROID_APPLICATION_ARGUMENTS (CMake).
@@ -218,8 +215,7 @@ the \c <application> section:
     \li Meta-data Name
     \li Description
 \row
-    \target android.app.system_libs_prefix
-    \li android.app.system_libs_prefix
+    \li android.app.system_libs_prefix \target android.app.system_libs_prefix
     \li Specifies a custom system library path to use for library loading lookup.
         This is necessary when using Qt libraries installed outside an app's
         default native (JNI) library directory.
