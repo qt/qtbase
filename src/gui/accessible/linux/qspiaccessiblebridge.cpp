@@ -38,7 +38,7 @@ QSpiAccessibleBridge::QSpiAccessibleBridge()
     // But do that only on next loop, once dbus is really settled.
     QTimer::singleShot(
         0, this, [this]{
-            if (dbusConnection->isEnabled())
+            if (dbusConnection->isEnabled() && dbusConnection->connection().isConnected())
                 enabledChanged(true);
         });
 }
