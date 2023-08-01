@@ -531,11 +531,24 @@ void QAndroidInputContext::updateCursorPosition()
     }
 }
 
+bool QAndroidInputContext::isImhNoTextHandlesSet()
+{
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    if (query.isNull())
+        return false;
+    return query->value(Qt::ImHints).toUInt() & Qt::ImhNoTextHandles;
+}
+
 void QAndroidInputContext::updateSelectionHandles()
 {
     static bool noHandles = qEnvironmentVariableIntValue("QT_QPA_NO_TEXT_HANDLES");
     if (noHandles || !m_focusObject)
         return;
+
+    if (isImhNoTextHandlesSet()) {
+        QtAndroidInput::updateHandles(Hidden);
+        return;
+    }
 
     auto im = qGuiApp->inputMethod();
 
