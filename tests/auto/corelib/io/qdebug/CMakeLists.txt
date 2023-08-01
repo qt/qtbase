@@ -19,5 +19,6 @@ qt_internal_add_test(tst_qdebug
 )
 
 if (APPLE)
+    enable_language(OBJCXX)
     set_source_files_properties(tst_qdebug.cpp PROPERTIES LANGUAGE OBJCXX)
 endif()

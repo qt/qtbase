@@ -31,6 +31,7 @@ if(APPLE OR WIN32)
     )
 
     if(APPLE)
+        enable_language(OBJCXX)
         set_source_files_properties(tst_foreignwindow.cpp PROPERTIES LANGUAGE OBJCXX)
         set_property(TARGET tst_foreignwindow PROPERTY PROPERTY MACOSX_BUNDLE TRUE)
     endif()
