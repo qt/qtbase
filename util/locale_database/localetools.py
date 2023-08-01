@@ -48,6 +48,41 @@ def wrap_list(lst, perline=20):
             yield head
     return ",\n".join(", ".join(x) for x in split(lst, perline))
 
+def names_clash(cldr, enum):
+    """True if the reader might not recognize cldr as the name of enum
+
+    First argument, cldr, is the name CLDR gives for some language,
+    script or territory; second, enum, is the name enumdata.py gives
+    for it. If these are enough alike, returns None; otherwise, a
+    non-empty string that results from adapting cldr to be more like
+    how enumdata.py would express it."""
+    if cldr == enum:
+        return None
+
+    # Some common substitutions:
+    cldr = cldr.replace('&', 'And')
+    prefix = { 'St.': 'Saint', 'U.S.': 'United States' }
+    for k, v in prefix.items():
+        if cldr.startswith(k + ' '):
+            cldr = v + cldr[len(k):]
+
+    # Chop out any parenthesised part, e.g. (Burma):
+    while '(' in cldr:
+        try:
+            f, t = cldr.index('('), cldr.rindex(')')
+        except ValueError:
+            break
+        cldr = cldr[:f].rstrip() + ' ' + cldr[t + 1:].lstrip()
+
+    # Various accented letters:
+    remap = { 'å': 'a', 'ã': 'a', 'ç': 'c', 'é': 'e', 'í': 'i', 'ô': 'o', 'ü': 'u'}
+    skip = '\u02bc' # Punctuation for which .isalpha() is true.
+    # Let cldr match (ignoring non-letters and case) any substring as enum:
+    if ''.join(enum.lower().split()) in ''.join(
+            remap.get(ch, ch) for ch in cldr.lower() if ch.isalpha() and ch not in skip):
+        return None
+    return cldr
+
 
 @contextmanager
 def AtomicRenameTemporaryFile(originalLocation: Path, *, prefix: str, dir: Path):

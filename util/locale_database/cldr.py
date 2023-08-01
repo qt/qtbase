@@ -16,6 +16,7 @@ from weakref import WeakValueDictionary as CacheDict
 from pathlib import Path
 
 from ldml import Error, Node, XmlScanner, Supplement, LocaleScanner
+from localetools import names_clash
 from qlocalexml import Locale
 
 class CldrReader (object):
@@ -353,10 +354,7 @@ class CldrAccess (object):
                     language, script, territory, variant)
 
     @staticmethod
-    def __checkEnum(given, proper, scraps,
-                    remap = { 'å': 'a', 'ã': 'a', 'ç': 'c', 'é': 'e', 'í': 'i', 'ü': 'u'},
-                    prefix = { 'St.': 'Saint', 'U.S.': 'United States' },
-                    skip = '\u02bc'):
+    def __checkEnum(given, proper, scraps):
         # Each is a { code: full name } mapping
         for code, name in given.items():
             try: right = proper[code]
@@ -366,19 +364,9 @@ class CldrAccess (object):
                 if code not in scraps:
                     yield name, f'[Found no CLDR name for code {code}]'
                 continue
-            if name == right: continue
-            ok = right.replace('&', 'And')
-            for k, v in prefix.items():
-                if ok.startswith(k + ' '):
-                    ok = v + ok[len(k):]
-            while '(' in ok:
-                try: f, t = ok.index('('), ok.index(')')
-                except ValueError: break
-                ok = ok[:f].rstrip() + ' ' + ok[t:].lstrip()
-            if ''.join(ch for ch in name.lower() if not ch.isspace()) in ''.join(
-                remap.get(ch, ch) for ch in ok.lower() if ch.isalpha() and ch not in skip):
-                continue
-            yield name, ok
+            cleaned = names_clash(right, name)
+            if cleaned:
+                yield name, cleaned
 
     def checkEnumData(self, grumble):
         scraps = set()
