@@ -6,14 +6,18 @@
 # can find a name (taken always from en.xml) that could potentially be
 # used. There is no point adding a mapping for such a code unless the
 # CLDR's common/main/ contains an XML file for at least one locale
-# that exerciss it.
+# that exercises it (and little point absent substantial data).
 
-# Each *_list reflects the current values of its enums in qlocale.h;
-# if new xml language files are available in CLDR, these languages and
+# Each *_map reflects the current values of its enums in qlocale.h; if
+# new xml language files are available in CLDR, these languages and
 # territories need to be *appended* to this list (for compatibility
-# between versions).  Include any spaces present in names (scripts
-# shall squish them out for the enum entries) in *_list, but use the
-# squished forms of names in the *_aliases mappings.
+# between versions). Include any spaces and dashes present in names
+# (they'll be squished them out for the enum entries) in *_map, but
+# use the squished forms of names in the *_aliases mappings. The
+# squishing also turns the first letter of each word into a capital so
+# you can safely preserve the case of en.xml's name; but omit (or
+# replace with space) any punctuation aside from dashes and map any
+# accented letters to their un-accented plain ASCII.
 
 # For a new major version (and only then), we can change the
 # numbering, so re-sort each list into alphabetic order (e.g. using
@@ -21,10 +25,10 @@
 # are offset with a blank line, below. After doing that, regenerate
 # locale data as usual; this will cause a binary-incompatible change.
 
-# Note on "macrolanguage" comments: see "ISO 639 macrolanguage" on
-# Wikipedia. A "macrolanguage" is (loosely-speaking) a group of
-# languages so closely related to one another that they could also be
-# regarded as divergent dialects of the macrolanguage.
+# Note on "macrolanguage" comments: see QTBUG-107781 and "ISO 639
+# macrolanguage" on Wikipedia. A "macrolanguage" is (loosely-speaking)
+# a group of languages so closely related to one another that they
+# could also be regarded as divergent dialects of the macrolanguage.
 
 language_map = {
       0: ("AnyLanguage",                 "  "),

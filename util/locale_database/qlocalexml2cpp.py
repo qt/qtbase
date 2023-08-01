@@ -456,9 +456,9 @@ class CalendarDataWriter (LocaleSourceEditor):
         months_data.write(self.writer)
 
 class LocaleHeaderWriter (SourceFileEditor):
-    def __init__(self, path, temp, dupes):
+    def __init__(self, path, temp, enumify):
         super().__init__(path, temp)
-        self.__dupes = dupes
+        self.__enumify = enumify
 
     def languages(self, languages):
         self.__enum('Language', languages, self.__language)
@@ -483,20 +483,10 @@ class LocaleHeaderWriter (SourceFileEditor):
         if suffix is None:
             suffix = name
 
-        out, dupes = self.writer.write, self.__dupes
+        out, enumify = self.writer.write, self.__enumify
         out(f'    enum {name} : ushort {{\n')
         for key, value in book.items():
-            member = value[0].replace('-', ' ')
-            if name == 'Script':
-                # Don't .capitalize() as some names are already camel-case (see enumdata.py):
-                member = ''.join(word[0].upper() + word[1:] for word in member.split())
-                if not member.endswith('Script'):
-                    member += 'Script'
-                if member in dupes:
-                    raise Error(f'The script name "{member}" is messy')
-            else:
-                member = ''.join(member.split())
-                member = member + suffix if member in dupes else member
+            member = enumify(value[0], suffix)
             out(f'        {member} = {key},\n')
 
         out('\n        '
@@ -581,7 +571,7 @@ def main(out, err):
     # qlocale.h
     try:
         with LocaleHeaderWriter(qtsrcdir.joinpath('src/corelib/text/qlocale.h'),
-                                qtsrcdir, reader.dupes) as writer:
+                                qtsrcdir, reader.enumify) as writer:
             writer.languages(reader.languages)
             writer.scripts(reader.scripts)
             writer.territories(reader.territories)

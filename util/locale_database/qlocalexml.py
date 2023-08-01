@@ -114,7 +114,7 @@ class QLocaleXmlReader (object):
         self.__textByName = dict((v[1], (v[0], v[2])) for v in scripts)
         self.__landByName = dict((v[1], (v[0], v[2])) for v in territories)
         # Other properties:
-        self.dupes = set(v[1] for v in languages) & set(v[1] for v in territories)
+        self.__dupes = set(v[1] for v in languages) & set(v[1] for v in territories)
         self.cldrVersion = self.__firstChildText(self.root, "version")
 
     def loadLocaleMap(self, calendars, grumble = lambda text: None):
@@ -183,6 +183,32 @@ class QLocaleXmlReader (object):
                 yield ((self.__langByName[give[0]][0],
                         self.__textByName[give[1]][0]),
                        self.__landByName[give[2]][0])
+
+    def enumify(self, name, suffix):
+        """Stick together the parts of an enumdata.py name.
+
+        Names given in enumdata.py include spaces and hyphens that we
+        can't include in an identifier, such as the name of a member
+        of an enum type. Removing those would lose the word
+        boundaries, so make sure each word starts with a capital (but
+        don't simply capitalize() as some names contain words,
+        e.g. McDonald, that have later capitals in them).
+
+        We also need to resolve duplication between languages and
+        territories (by adding a suffix to each) and add Script to the
+        ends of script-names that don't already end in it."""
+        name = name.replace('-', ' ')
+        # Don't .capitalize() as McDonald is already camel-case (see enumdata.py):
+        name = ''.join(word[0].upper() + word[1:] for word in name.split())
+        if suffix != 'Script':
+            assert not(name in self.__dupes and name.endswith(suffix))
+            return name + suffix if name in self.__dupes else name
+
+        if not name.endswith(suffix):
+            name += suffix
+        if name in self.__dupes:
+            raise Error(f'The script name "{name}" is messy')
+        return name
 
     # Implementation details:
     def __loadMap(self, category):
