@@ -82,7 +82,7 @@ public:
     void markWindowAsDirty()
     {
         Q_Q(QPaintDeviceWindow);
-        dirtyRegion += QRect(QPoint(0, 0), q->size());
+        dirtyRegion = QRect(QPoint(0, 0), q->size());
     }
 
 private:
