@@ -1448,15 +1448,21 @@ void QCocoaWindow::recreateWindowIfNeeded()
 {
     QMacAutoReleasePool pool;
 
+    QPlatformWindow *parentWindow = QPlatformWindow::parent();
+    auto *parentCocoaWindow = static_cast<QCocoaWindow *>(parentWindow);
+
     if (isForeignWindow()) {
         // A foreign window is created as such, and can never move between being
         // foreign and not, so we don't need to get rid of any existing NSWindows,
         // nor create new ones, as a foreign window is a single simple NSView.
         qCDebug(lcQpaWindow) << "Skipping NSWindow management for foreign window" << this;
+
+        // We do however need to manage the parent relationship
+        if (parentCocoaWindow)
+            [parentCocoaWindow->m_view addSubview:m_view];
+
         return;
     }
-
-    QPlatformWindow *parentWindow = QPlatformWindow::parent();
 
     const bool isEmbeddedView = isEmbedded();
     RecreationReasons recreateReason = RecreationNotNeeded;
@@ -1494,8 +1500,6 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
     if (recreateReason == RecreationNotNeeded)
         return;
-
-    QCocoaWindow *parentCocoaWindow = static_cast<QCocoaWindow *>(parentWindow);
 
     // Remove current window (if any)
     if ((isContentView() && !shouldBeContentView) || (recreateReason & PanelChanged)) {
