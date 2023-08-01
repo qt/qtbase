@@ -45,7 +45,12 @@ public:
     StaticRenderData sf;
     FrameRenderData f;
 
-    void prepare(QRhi *rhi, QRhiRenderTarget *rt, QRhiCommandBuffer *cb, const QMatrix4x4 &mvp, float opacity);
+    void prepare(QRhi *rhi,
+                 QRhiRenderTarget *rt,
+                 QRhiCommandBuffer *cb,
+                 const QMatrix4x4 &mvp,
+                 float opacity = 1.0f,
+                 float hdrWhiteLevelMultiplierOrZeroForSDRsRGB = 0.0f);
     void render();
     void releaseResources();
 

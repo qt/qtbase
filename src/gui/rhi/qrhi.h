@@ -1480,11 +1480,16 @@ Q_DECLARE_TYPEINFO(QRhiGraphicsPipeline::TargetBlend, Q_RELOCATABLE_TYPE);
 
 struct QRhiSwapChainHdrInfo
 {
-    bool isHardCodedDefaults;
     enum LimitsType {
         LuminanceInNits,
         ColorComponentValue
     };
+
+    enum LuminanceBehavior {
+        SceneReferred,
+        DisplayReferred
+    };
+
     LimitsType limitsType;
     union {
         struct {
@@ -1496,6 +1501,8 @@ struct QRhiSwapChainHdrInfo
             float maxPotentialColorComponentValue;
         } colorComponentValue;
     } limits;
+    LuminanceBehavior luminanceBehavior;
+    float sdrWhiteLevel;
 };
 
 Q_DECLARE_TYPEINFO(QRhiSwapChainHdrInfo, Q_RELOCATABLE_TYPE);

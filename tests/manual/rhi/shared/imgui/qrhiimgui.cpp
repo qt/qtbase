@@ -48,7 +48,12 @@ void QRhiImguiRenderer::releaseResources()
     m_rhi = nullptr;
 }
 
-void QRhiImguiRenderer::prepare(QRhi *rhi, QRhiRenderTarget *rt, QRhiCommandBuffer *cb, const QMatrix4x4 &mvp, float opacity)
+void QRhiImguiRenderer::prepare(QRhi *rhi,
+                                QRhiRenderTarget *rt,
+                                QRhiCommandBuffer *cb,
+                                const QMatrix4x4 &mvp,
+                                float opacity,
+                                float hdrWhiteLevelMultiplierOrZeroForSDRsRGB)
 {
     if (!m_rhi) {
         m_rhi = rhi;
@@ -89,7 +94,7 @@ void QRhiImguiRenderer::prepare(QRhi *rhi, QRhiRenderTarget *rt, QRhiCommandBuff
     }
 
     if (!m_ubuf) {
-        m_ubuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64 + 4));
+        m_ubuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64 + 4 + 4));
         m_ubuf->setName(QByteArrayLiteral("imgui uniform buffer"));
         if (!m_ubuf->create())
             return;
@@ -201,6 +206,7 @@ void QRhiImguiRenderer::prepare(QRhi *rhi, QRhiRenderTarget *rt, QRhiCommandBuff
 
     u->updateDynamicBuffer(m_ubuf.get(), 0, 64, mvp.constData());
     u->updateDynamicBuffer(m_ubuf.get(), 64, 4, &opacity);
+    u->updateDynamicBuffer(m_ubuf.get(), 68, 4, &hdrWhiteLevelMultiplierOrZeroForSDRsRGB);
 
     for (int i = 0; i < texturesNeedUpdate.count(); ++i) {
         Texture &t(m_textures[texturesNeedUpdate[i]]);

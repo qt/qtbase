@@ -7361,22 +7361,18 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
     \brief Describes the high dynamic range related information of the
     swapchain's associated output.
 
-    To perform tonemapping, one often needs to know the maximum luminance of
-    the display the swapchain's window is associated with. While this is often
-    made user-configurable, it can be highly useful to set defaults based on
-    the values reported by the display itself, thus providing a decent starting
-    point.
+    To perform HDR-compatible tonemapping, where the target range is not [0,1],
+    one often needs to know the maximum luminance of the display the
+    swapchain's window is associated with. While this is often made
+    user-configurable (think brightness, gamma and similar settings in games),
+    it can be highly useful to set defaults based on the values reported by the
+    display itself, thus providing a decent starting point.
 
     There are some problems however: the information is exposed in different
     forms on different platforms, whereas with cross-platform graphics APIs
     there is often no associated solution at all, because managing such
     information is not in the scope of the API (and may rather be retrievable
     via other platform-specific means, if any).
-
-    The struct returned from QRhiSwapChain::hdrInfo() contains either some
-    hard-coded defaults, indicated by the \c isHardCodedDefaults field, or real
-    values received from an API such as DXGI (IDXGIOutput6) or Cocoa
-    (NSScreen). The default is 1000 nits for maximum luminance.
 
     With Metal on macOS/iOS, there is no luminance values exposed in the
     platform APIs. Instead, the maximum color component value, that would be
@@ -7386,8 +7382,21 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
     fit.
 
     With an API like Vulkan, where there is no way to get such information, the
-    values are always the built-in defaults and \c isHardCodedDefaults is
-    always true.
+    values are always the built-in defaults.
+
+    Therefore, the struct returned from QRhiSwapChain::hdrInfo() contains
+    either some hard-coded defaults or real values received from an API such as
+    DXGI (IDXGIOutput6) or Cocoa (NSScreen). When no platform queries are
+    available (or needs using platform facilities out of scope for QRhi), the
+    hard-coded defaults are a maximum luminance of 1000 nits and an SDR white
+    level of 200.
+
+    The struct also exposes the presumed luminance behavior of the platform and
+    its compositor, to indicate what a color component value of 1.0 is treated
+    as in a HDR color buffer. In some cases it will be necessary to perform
+    color correction of non-HDR content composited with HDR content. To enable
+    this, the SDR white level is queried from the system on some platforms
+    (Windows) and exposed here.
 
     \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
@@ -7406,16 +7415,20 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
 */
 
 /*!
-    \variable QRhiSwapChainHdrInfo::isHardCodedDefaults
+    \enum QRhiSwapChainHdrInfo::LuminanceBehavior
 
-    Set to true when the data in the QRhiSwapChainHdrInfo consists entirely of
-    the hard-coded default values, for example because there is no way to query
-    the relevant information with a given graphics API or platform. (or because
-    querying it can be achieved only by means, e.g. platform APIs in some other
-    area, that are out of scope for the QRhi layer of the Qt graphics stack to
-    handle)
+    \value SceneReferred Indicates that the color value of 1.0 is interpreted
+    as 80 nits. This is the behavior of HDR-enabled windows with the Windows
+    compositor. See
+    \l{https://learn.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range}{this
+    page} for more information on HDR on Windows.
 
-    \sa QRhiSwapChain::hdrInfo()
+    \value DisplayReferred Indicates that the color value of 1.0 is interpreted
+    as the value of the SDR white. (which can be e.g. 200 nits, but will vary
+    depending on screen brightness) This is the behavior of HDR-enabled windows
+    on Apple platforms. See
+    \l{https://developer.apple.com/documentation/metal/hdr_content/displaying_hdr_content_in_a_metal_layer}{this
+    page} for more information on Apple's EDR system.
 */
 
 /*!
@@ -7445,7 +7458,27 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
         } luminanceInNits;
     \endcode
 
-    Whereas for macOS/iOS, the current maximum and potential maximum color
+    On Windows the minimum and maximum luminance depends on the screen
+    brightness. While not relevant for desktops, on laptops the screen
+    brightness may change at any time. Increasing brightness implies decreased
+    maximum luminance. In addition, the results may also be dependent on the
+    HDR Content Brightness set in Windows Settings' System/Display/HDR view,
+    if there is such a setting.
+
+    Note however that the changes made to the laptop screen's brightness or in
+    the system settings while the application is running are not necessarily
+    reflected in the returned values, meaning calling hdrInfo() again may still
+    return the same luminance range as before for the rest of the process'
+    lifetime. The exact behavior is up to DXGI and Qt has no control over it.
+
+    \note The Windows compositor works in scene-referred mode for HDR content.
+    A color component value of 1.0 corresponds to a luminance of 80 nits. When
+    rendering non-HDR content (e.g. 2D UI elements), the correction of the
+    white level is often necessary. (e.g., outputting the fragment color (1, 1,
+    1) will likely lead to showing a shade of white that is too dim on-screen)
+    See \l sdrWhiteLevel.
+
+    For macOS/iOS, the current maximum and potential maximum color
     component values are provided:
 
     \code
@@ -7455,14 +7488,62 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
         } colorComponentValue;
     \endcode
 
+    The value may depend on the screen brightness, which on laptops means that
+    the result may change in the next call to hdrInfo() if the brightness was
+    changed in the meantime. The maximum screen brightness implies a maximum
+    color value of 1.0.
+
+    \note Apple's EDR is display-referred. 1.0 corresponds to a luminance level
+    of SDR white (e.g. 200 nits), the value of which varies based on the screen
+    brightness and possibly other settings. The exact luminance value for that,
+    or the maximum luminance of the display, are not exposed to the
+    applications.
+
+    \note It has been observed that the color component values are not set to
+    the correct larger-than-1 value right away on startup on some macOS
+    systems, but the values tend to change during or after the first frame.
+
     \sa QRhiSwapChain::hdrInfo()
+*/
+
+/*!
+    \variable QRhiSwapChainHdrInfo::luminanceBehavior
+
+    Describes the platform's presumed behavior with regards to color values.
+
+    \sa sdrWhiteLevel
+ */
+
+/*!
+    \variable QRhiSwapChainHdrInfo::sdrWhiteLevel
+
+    On Windows this is the dynamic SDR white level in nits. The value is
+    dependent on the screen brightness (on laptops), and the SDR or HDR Content
+    Brightness settings in the Windows settings' System/Display/HDR view.
+
+    To perform white level correction for non-HDR (SDR) content, such as 2D UI
+    elemenents, multiply the final color with sdrWhiteLevel / 80.0 whenever
+    \l luminanceBehavior is SceneReferred. (assuming Windows and a linear
+    extended sRGB (scRGB) color space)
+
+    On other platforms the value is always a pre-defined value, 200. This may
+    not match the system's actual SDR white level, but the value of this
+    variable is not relevant in practice when the \l luminanceBehavior is
+    DisplayReferred, because then the color component value of 1.0 refers to
+    the SDR white by default.
+
+    \sa luminanceBehavior
 */
 
 /*!
     \return the HDR information for the associated display.
 
-    The returned struct is always the default one if createOrResize() has not
-    been successfully called yet.
+    Do not assume that this is a cheap operation. Depending on the platform,
+    this function makes various platform queries which may have a performance
+    impact.
+
+    \note Can be called before createOrResize() as long as the window is
+    \l{setWindow()}{set}.
 
     \note What happens when moving a window with an initialized swapchain
     between displays (HDR to HDR with different characteristics, HDR to SDR,
@@ -7477,10 +7558,11 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
 QRhiSwapChainHdrInfo QRhiSwapChain::hdrInfo()
 {
     QRhiSwapChainHdrInfo info;
-    info.isHardCodedDefaults = true;
     info.limitsType = QRhiSwapChainHdrInfo::LuminanceInNits;
     info.limits.luminanceInNits.minLuminance = 0.0f;
     info.limits.luminanceInNits.maxLuminance = 1000.0f;
+    info.luminanceBehavior = QRhiSwapChainHdrInfo::SceneReferred;
+    info.sdrWhiteLevel = 200.0f;
     return info;
 }
 
@@ -7488,7 +7570,7 @@ QRhiSwapChainHdrInfo QRhiSwapChain::hdrInfo()
 QDebug operator<<(QDebug dbg, const QRhiSwapChainHdrInfo &info)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QRhiSwapChainHdrInfo(" << (info.isHardCodedDefaults ? "with hard-coded defaults" : "queried from system");
+    dbg.nospace() << "QRhiSwapChainHdrInfo(";
     switch (info.limitsType) {
     case QRhiSwapChainHdrInfo::LuminanceInNits:
         dbg.nospace() << " minLuminance=" << info.limits.luminanceInNits.minLuminance
@@ -7497,6 +7579,14 @@ QDebug operator<<(QDebug dbg, const QRhiSwapChainHdrInfo &info)
     case QRhiSwapChainHdrInfo::ColorComponentValue:
         dbg.nospace() << " maxColorComponentValue=" << info.limits.colorComponentValue.maxColorComponentValue;
         dbg.nospace() << " maxPotentialColorComponentValue=" << info.limits.colorComponentValue.maxPotentialColorComponentValue;
+        break;
+    }
+    switch (info.luminanceBehavior) {
+    case QRhiSwapChainHdrInfo::SceneReferred:
+        dbg.nospace() << " scene-referred, SDR white level=" << info.sdrWhiteLevel;
+        break;
+    case QRhiSwapChainHdrInfo::DisplayReferred:
+        dbg.nospace() << " display-referred";
         break;
     }
     dbg.nospace() << ')';

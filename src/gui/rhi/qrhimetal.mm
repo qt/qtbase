@@ -6402,7 +6402,9 @@ QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfo()
     QRhiSwapChainHdrInfo info;
     info.limitsType = QRhiSwapChainHdrInfo::ColorComponentValue;
     info.limits.colorComponentValue.maxColorComponentValue = 1;
-    info.isHardCodedDefaults = true;
+    info.limits.colorComponentValue.maxPotentialColorComponentValue = 1;
+    info.luminanceBehavior = QRhiSwapChainHdrInfo::DisplayReferred; // 1.0 = SDR white
+    info.sdrWhiteLevel = 200; // typical value, but dummy (don't know the real one); won't matter due to being display-referred
 
     if (m_window) {
         // Must use m_window, not window, given this may be called before createOrResize().
@@ -6411,14 +6413,12 @@ QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfo()
         NSScreen *screen = view.window.screen;
         info.limits.colorComponentValue.maxColorComponentValue = screen.maximumExtendedDynamicRangeColorComponentValue;
         info.limits.colorComponentValue.maxPotentialColorComponentValue = screen.maximumPotentialExtendedDynamicRangeColorComponentValue;
-        info.isHardCodedDefaults = false;
 #else
         if (@available(iOS 16.0, *)) {
             UIView *view = reinterpret_cast<UIView *>(m_window->winId());
             UIScreen *screen = view.window.windowScene.screen;
             info.limits.colorComponentValue.maxColorComponentValue = view.window.windowScene.screen.currentEDRHeadroom;
             info.limits.colorComponentValue.maxPotentialColorComponentValue = screen.potentialEDRHeadroom;
-            info.isHardCodedDefaults = false;
         }
 #endif
     }

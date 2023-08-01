@@ -6066,44 +6066,6 @@ QSize QD3D12SwapChain::surfacePixelSize()
     return m_window->size() * m_window->devicePixelRatio();
 }
 
-static bool output6ForWindow(QWindow *w, IDXGIAdapter1 *adapter, IDXGIOutput6 **result)
-{
-    bool ok = false;
-    QRect wr = w->geometry();
-    wr = QRect(wr.topLeft() * w->devicePixelRatio(), wr.size() * w->devicePixelRatio());
-    const QPoint center = wr.center();
-    IDXGIOutput *currentOutput = nullptr;
-    IDXGIOutput *output = nullptr;
-    for (UINT i = 0; adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND; ++i) {
-        DXGI_OUTPUT_DESC desc;
-        output->GetDesc(&desc);
-        const RECT r = desc.DesktopCoordinates;
-        const QRect dr(QPoint(r.left, r.top), QPoint(r.right - 1, r.bottom - 1));
-        if (dr.contains(center)) {
-            currentOutput = output;
-            break;
-        } else {
-            output->Release();
-        }
-    }
-    if (currentOutput) {
-        ok = SUCCEEDED(currentOutput->QueryInterface(__uuidof(IDXGIOutput6), reinterpret_cast<void **>(result)));
-        currentOutput->Release();
-    }
-    return ok;
-}
-
-static bool outputDesc1ForWindow(QWindow *w, IDXGIAdapter1 *adapter, DXGI_OUTPUT_DESC1 *result)
-{
-    bool ok = false;
-    IDXGIOutput6 *out6 = nullptr;
-    if (output6ForWindow(w, adapter, &out6)) {
-        ok = SUCCEEDED(out6->GetDesc1(result));
-        out6->Release();
-    }
-    return ok;
-}
-
 bool QD3D12SwapChain::isFormatSupported(Format f)
 {
     if (f == SDR)
@@ -6116,7 +6078,7 @@ bool QD3D12SwapChain::isFormatSupported(Format f)
 
     QRHI_RES_RHI(QRhiD3D12);
     DXGI_OUTPUT_DESC1 desc1;
-    if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &desc1)) {
+    if (QRhiD3D::outputDesc1ForWindow(m_window, rhiD->activeAdapter, &desc1)) {
         if (desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)
             return f == QRhiSwapChain::HDRExtendedSrgbLinear || f == QRhiSwapChain::HDR10;
     }
@@ -6127,14 +6089,16 @@ bool QD3D12SwapChain::isFormatSupported(Format f)
 QRhiSwapChainHdrInfo QD3D12SwapChain::hdrInfo()
 {
     QRhiSwapChainHdrInfo info = QRhiSwapChain::hdrInfo();
+    // Must use m_window, not window, given this may be called before createOrResize().
     if (m_window) {
         QRHI_RES_RHI(QRhiD3D12);
         DXGI_OUTPUT_DESC1 hdrOutputDesc;
-        if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc)) {
-            info.isHardCodedDefaults = false;
+        if (QRhiD3D::outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc)) {
             info.limitsType = QRhiSwapChainHdrInfo::LuminanceInNits;
             info.limits.luminanceInNits.minLuminance = hdrOutputDesc.MinLuminance;
             info.limits.luminanceInNits.maxLuminance = hdrOutputDesc.MaxLuminance;
+            info.luminanceBehavior = QRhiSwapChainHdrInfo::SceneReferred; // 1.0 = 80 nits
+            info.sdrWhiteLevel = QRhiD3D::sdrWhiteLevelInNits(hdrOutputDesc);
         }
     }
     return info;
@@ -6177,7 +6141,7 @@ void QD3D12SwapChain::chooseFormats()
     hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709; // SDR
     DXGI_OUTPUT_DESC1 hdrOutputDesc;
     QRHI_RES_RHI(QRhiD3D12);
-    if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc) && m_format != SDR) {
+    if (QRhiD3D::outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc) && m_format != SDR) {
         // https://docs.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
         if (hdrOutputDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
             switch (m_format) {

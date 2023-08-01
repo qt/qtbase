@@ -10,6 +10,7 @@ layout(location = 1) out vec4 v_color;
 layout(std140, binding = 0) uniform buf {
     mat4 mvp;
     float opacity;
+    float sdrMult;
 };
 
 void main()
