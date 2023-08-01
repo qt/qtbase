@@ -172,24 +172,6 @@ int main(void)
 }"
 )
 
-# eventfd
-qt_config_compile_test(eventfd
-    LABEL "eventfd"
-    CODE
-"#include <sys/eventfd.h>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-eventfd_t value;
-int fd = eventfd(0, EFD_CLOEXEC);
-eventfd_read(fd, &value);
-eventfd_write(fd, value);
-    /* END TEST: */
-    return 0;
-}
-")
-
 # futimens
 qt_config_compile_test(futimens
     LABEL "futimens()"
@@ -500,10 +482,6 @@ qt_feature("cxx17_filesystem" PUBLIC
 qt_feature("dladdr" PRIVATE
     LABEL "dladdr"
     CONDITION QT_FEATURE_dlopen AND TEST_dladdr
-)
-qt_feature("eventfd" PRIVATE
-    LABEL "eventfd"
-    CONDITION NOT WASM AND TEST_eventfd
 )
 qt_feature("futimens" PRIVATE
     LABEL "futimens()"

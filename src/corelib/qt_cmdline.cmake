@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 qt_commandline_option(doubleconversion TYPE enum VALUES no qt system)
-qt_commandline_option(eventfd TYPE boolean)
 qt_commandline_option(glib TYPE boolean)
 qt_commandline_option(icu TYPE boolean)
 qt_commandline_option(inotify TYPE boolean)

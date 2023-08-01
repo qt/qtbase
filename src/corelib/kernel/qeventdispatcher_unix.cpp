@@ -19,8 +19,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if QT_CONFIG(eventfd)
+#if __has_include(<sys/eventfd.h>)
 #  include <sys/eventfd.h>
+static constexpr bool UsingEventfd = true;
+#else
+static constexpr bool UsingEventfd = false;
 #endif
 
 #if defined(Q_OS_VXWORKS)
@@ -54,7 +57,7 @@ QThreadPipe::~QThreadPipe()
     if (fds[0] >= 0)
         close(fds[0]);
 
-    if (!QT_CONFIG(eventfd) && fds[1] >= 0)
+    if (!UsingEventfd && fds[1] >= 0)
         close(fds[1]);
 
 #if defined(Q_OS_VXWORKS)
@@ -104,10 +107,10 @@ bool QThreadPipe::init()
     fds[1] = fds[0];
 #else
     int ret;
-#  if QT_CONFIG(eventfd)
+#  ifdef EFD_CLOEXEC
     ret = fds[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
 #  endif
-    if (!QT_CONFIG(eventfd))
+    if (!UsingEventfd)
         ret = qt_safe_pipe(fds, O_NONBLOCK);
     if (ret == -1) {
         perror("QThreadPipe: Unable to create pipe");
@@ -126,7 +129,7 @@ pollfd QThreadPipe::prepare() const
 void QThreadPipe::wakeUp()
 {
     if ((wakeUps.fetchAndOrAcquire(1) & 1) == 0) {
-#if QT_CONFIG(eventfd)
+#  ifdef EFD_CLOEXEC
         eventfd_write(fds[0], 1);
         return;
 #endif
@@ -149,11 +152,11 @@ int QThreadPipe::check(const pollfd &pfd)
         ::read(fds[0], c, sizeof(c));
         ::ioctl(fds[0], FIOFLUSH, 0);
 #else
-#  if QT_CONFIG(eventfd)
+#  ifdef EFD_CLOEXEC
         eventfd_t value;
         eventfd_read(fds[0], &value);
 #  endif
-        if (!QT_CONFIG(eventfd)) {
+        if (!UsingEventfd) {
             while (::read(fds[0], c, sizeof(c)) > 0) {}
         }
 #endif

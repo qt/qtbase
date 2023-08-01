@@ -113,7 +113,6 @@ The following table describes the mapping of configure options to CMake argument
 | -doubleconversion                     | -DFEATURE_doubleconversion=ON                     |                                                                 |
 |                                       | -DFEATURE_system_doubleconversion=ON/OFF          |                                                                 |
 | -glib                                 | -DFEATURE_glib=ON                                 |                                                                 |
-| -eventfd                              | -DFEATURE_eventfd=ON                              |                                                                 |
 | -inotify                              | -DFEATURE_inotify=ON                              |                                                                 |
 | -icu                                  | -DFEATURE_icu=ON                                  |                                                                 |
 | -pcre                                 | -DFEATURE_pcre2=ON                                |                                                                 |

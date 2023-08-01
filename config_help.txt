@@ -221,7 +221,6 @@ Core options:
   -doubleconversion .... Select used double conversion library [system/qt/no]
                          No implies use of sscanf_l and snprintf_l (imprecise).
   -glib ................ Enable Glib support [no; auto on Unix]
-  -eventfd ............. Enable eventfd support
   -inotify ............. Enable inotify support
   -icu ................. Enable ICU support [auto]
   -pcre ................ Select used libpcre2 [system/qt/no]
