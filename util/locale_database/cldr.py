@@ -356,7 +356,6 @@ class CldrAccess (object):
     def __checkEnum(given, proper, scraps,
                     remap = { 'å': 'a', 'ã': 'a', 'ç': 'c', 'é': 'e', 'í': 'i', 'ü': 'u'},
                     prefix = { 'St.': 'Saint', 'U.S.': 'United States' },
-                    suffixes = ( 'Han', ),
                     skip = '\u02bc'):
         # Each is a { code: full name } mapping
         for code, name in given.items():
@@ -376,8 +375,6 @@ class CldrAccess (object):
                 try: f, t = ok.index('('), ok.index(')')
                 except ValueError: break
                 ok = ok[:f].rstrip() + ' ' + ok[t:].lstrip()
-            if any(name == ok + ' ' + s for s in suffixes):
-                continue
             if ''.join(ch for ch in name.lower() if not ch.isspace()) in ''.join(
                 remap.get(ch, ch) for ch in ok.lower() if ch.isalpha() and ch not in skip):
                 continue
@@ -699,7 +696,13 @@ enumdata.py (keeping the old name as an alias):
             except (KeyError, ValueError, TypeError):
                 pass
             else:
-                if key not in seen or 'alt' not in elt.attributes:
+                # Prefer stand-alone forms of names when present, ignore other
+                # alt="..." entries. For example, Traditional and Simplified
+                # Han omit "Han" in the plain form, but include it for
+                # stand-alone. As the stand-alone version appears later, it
+                # over-writes the plain one.
+                if (key not in seen or 'alt' not in elt.attributes
+                    or elt.attributes['alt'].nodeValue == 'stand-alone'):
                     yield key, value
                     seen.add(key)
 
