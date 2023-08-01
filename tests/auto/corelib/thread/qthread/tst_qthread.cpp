@@ -1355,9 +1355,6 @@ void tst_QThread::quitLock()
 
 void tst_QThread::create()
 {
-#if !QT_CONFIG(cxx11_future)
-    QSKIP("This test requires QThread::create");
-#else
     {
         const auto &function = [](){};
         QScopedPointer<QThread> thread(QThread::create(function));
@@ -1597,7 +1594,6 @@ void tst_QThread::create()
         QVERIFY(!thread);
     }
 #endif // QT_NO_EXCEPTIONS
-#endif // QT_CONFIG(cxx11_future)
 }
 
 void tst_QThread::createDestruction()

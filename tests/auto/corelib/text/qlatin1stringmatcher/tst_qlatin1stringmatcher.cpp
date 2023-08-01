@@ -8,9 +8,7 @@
 #include <numeric>
 #include <string>
 
-#if QT_CONFIG(cxx11_future)
-#    include <thread>
-#endif
+#include <thread>
 
 // COM interface
 #if defined(interface)
@@ -264,15 +262,7 @@ void tst_QLatin1StringMatcher::haystacksWithMoreThan4GiBWork()
     QCOMPARE(large.size(), BaseSize + needle.size());
     qDebug("created dataset in %lld ms", timer.elapsed());
 
-#    if QT_CONFIG(cxx11_future)
     using MaybeThread = std::thread;
-#    else
-    struct MaybeThread
-    {
-        std::function<void()> func;
-        void join() { func(); }
-    };
-#    endif
 
     //
     // WHEN: trying to match an occurrence past the 4GiB mark

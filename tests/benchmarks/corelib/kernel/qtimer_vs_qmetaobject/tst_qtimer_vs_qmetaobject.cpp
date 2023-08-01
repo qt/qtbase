@@ -101,13 +101,9 @@ void qtimer_vs_qmetaobject::bench_data()
 
 void qtimer_vs_qmetaobject::benchBackgroundThread()
 {
-#if !QT_CONFIG(cxx11_future)
-    QSKIP("This test requires QThread::create");
-#else
     QScopedPointer<QThread> thread(QThread::create([this]() { bench(); }));
     thread->start();
     QVERIFY(thread->wait());
-#endif
 }
 
 QTEST_MAIN(qtimer_vs_qmetaobject)

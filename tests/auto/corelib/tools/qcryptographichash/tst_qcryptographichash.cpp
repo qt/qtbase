@@ -8,9 +8,7 @@
 #include <QCryptographicHash>
 #include <QtCore/QMetaEnum>
 
-#if QT_CONFIG(cxx11_future)
-#  include <thread>
-#endif
+#include <thread>
 
 Q_DECLARE_METATYPE(QCryptographicHash::Algorithm)
 
@@ -520,14 +518,7 @@ void tst_QCryptographicHash::moreThan4GiBOfData()
 {
     QFETCH(const QCryptographicHash::Algorithm, algorithm);
 
-# if QT_CONFIG(cxx11_future)
     using MaybeThread = std::thread;
-# else
-    struct MaybeThread {
-        std::function<void()> func;
-        void join() { func(); }
-    };
-# endif
 
     QElapsedTimer timer;
     timer.start();

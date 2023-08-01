@@ -3908,9 +3908,6 @@ void tst_QFuture::signalConnect()
 
 void tst_QFuture::waitForFinished()
 {
-#if !QT_CONFIG(cxx11_future)
-    QSKIP("This test requires QThread::create");
-#else
     QFutureInterface<void> fi;
     auto future = fi.future();
 
@@ -3931,7 +3928,6 @@ void tst_QFuture::waitForFinished()
 
     QVERIFY(waitingThread->wait());
     QVERIFY(waitingThread->isFinished());
-#endif
 }
 
 void tst_QFuture::rejectResultOverwrite_data()

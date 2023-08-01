@@ -137,27 +137,6 @@ int pipes[2];
 }
 ")
 
-# cxx11_future
-if (UNIX AND NOT ANDROID AND NOT QNX AND NOT INTEGRITY)
-    set(cxx11_future_TEST_LIBRARIES pthread)
-endif()
-qt_config_compile_test(cxx11_future
-    LABEL "C++11 <future>"
-    LIBRARIES
-     "${cxx11_future_TEST_LIBRARIES}"
-    CODE
-"#include <future>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-std::future<int> f = std::async([]() { return 42; });
-(void)f.get();
-    /* END TEST: */
-    return 0;
-}
-")
-
 # cxx17_filesystem
 qt_config_compile_test(cxx17_filesystem
     LABEL "C++17 <filesystem>"
@@ -565,7 +544,7 @@ qt_feature("system-doubleconversion" PRIVATE
 )
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
-    CONDITION TEST_cxx11_future
+    CONDITION ON
 )
 qt_feature("cxx17_filesystem" PUBLIC
     LABEL "C++17 <filesystem>"

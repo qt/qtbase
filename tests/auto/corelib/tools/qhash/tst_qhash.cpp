@@ -2820,9 +2820,6 @@ void tst_QHash::QTBUG98265()
 */
 void tst_QHash::detachAndReferences()
 {
-#if !QT_CONFIG(cxx11_future)
-    QSKIP("This test requires cxx11_future")
-#else
     // Repeat a few times because it's not a guarantee
     for (int i = 0; i < 50; ++i) {
         QHash<char, char> hash;
@@ -2860,7 +2857,6 @@ void tst_QHash::detachAndReferences()
         QVERIFY(hash.contains(kCopy));
         QCOMPARE(hash.value(kCopy), vCopy);
     }
-#endif
 }
 
 void tst_QHash::lookupUsingKeyIterator()

@@ -9,10 +9,8 @@
 #include <QtCore/qdeadlinetimer.h>
 
 // For QThread::create
-#if QT_CONFIG(cxx11_future)
-#  include <future> // for std::async
-#  include <functional> // for std::invoke; no guard needed as it's a C++98 header
-#endif
+#include <future> // for std::async
+#include <functional> // for std::invoke; no guard needed as it's a C++98 header
 // internal compiler error with mingw 8.1
 #if defined(Q_CC_MSVC) && defined(Q_PROCESSOR_X86)
 #include <intrin.h>
@@ -70,10 +68,8 @@ public:
     bool event(QEvent *event) override;
     int loopLevel() const;
 
-#if QT_CONFIG(cxx11_future) || defined(Q_QDOC)
     template <typename Function, typename... Args>
     [[nodiscard]] static QThread *create(Function &&f, Args &&... args);
-#endif
 
 public Q_SLOTS:
     void start(Priority = InheritPriority);
@@ -112,16 +108,13 @@ private:
     Q_DECLARE_PRIVATE(QThread)
     friend class QEventLoopLocker;
 
-#if QT_CONFIG(cxx11_future)
     [[nodiscard]] static QThread *createThreadImpl(std::future<void> &&future);
-#endif
     static Qt::HANDLE currentThreadIdImpl() noexcept Q_DECL_PURE_FUNCTION;
 
     friend class QCoreApplication;
     friend class QThreadData;
 };
 
-#if QT_CONFIG(cxx11_future)
 template <typename Function, typename... Args>
 QThread *QThread::create(Function &&f, Args &&... args)
 {
@@ -136,7 +129,6 @@ QThread *QThread::create(Function &&f, Args &&... args)
                                        std::move(threadFunction),
                                        std::forward<Args>(args)...));
 }
-#endif // QT_CONFIG(cxx11_future)
 
 /*
     On architectures and platforms we know, interpret the thread control

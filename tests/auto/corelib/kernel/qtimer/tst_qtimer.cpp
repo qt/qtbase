@@ -1342,14 +1342,10 @@ void tst_QTimer::timerOrder_data()
 
 void tst_QTimer::timerOrderBackgroundThread()
 {
-#if !QT_CONFIG(cxx11_future)
-    QSKIP("This test requires QThread::create");
-#else
     auto *thread = QThread::create([this]() { timerOrder(); });
     thread->start();
     QVERIFY(thread->wait());
     delete thread;
-#endif
 }
 
 struct StaticSingleShotUser

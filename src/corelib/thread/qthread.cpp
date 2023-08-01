@@ -1201,7 +1201,6 @@ bool QThread::isInterruptionRequested() const
     \sa start()
 */
 
-#if QT_CONFIG(cxx11_future)
 class QThreadCreateThread : public QThread
 {
 public:
@@ -1230,7 +1229,6 @@ QThread *QThread::createThreadImpl(std::future<void> &&future)
 {
     return new QThreadCreateThread(std::move(future));
 }
-#endif // QT_CONFIG(cxx11_future)
 
 /*!
     \class QDaemonThread
