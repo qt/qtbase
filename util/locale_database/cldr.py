@@ -448,7 +448,7 @@ enumdata.py (keeping the old name as an alias):
             wid, code = attrs['other'], attrs['territory']
             data = dict(windowsId = wid,
                         territoryCode = code,
-                        ianaList = attrs['type'])
+                        ianaList = ' '.join(attrs['type'].split()))
 
             try:
                 key = lookup[wid]
