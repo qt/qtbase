@@ -158,21 +158,6 @@ std::future<int> f = std::async([]() { return 42; });
 }
 ")
 
-# cxx11_random
-qt_config_compile_test(cxx11_random
-    LABEL "C++11 <random>"
-    CODE
-"#include <random>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-std::mt19937 mt(0);
-    /* END TEST: */
-    return 0;
-}
-")
-
 # cxx17_filesystem
 qt_config_compile_test(cxx17_filesystem
     LABEL "C++17 <filesystem>"
@@ -1055,11 +1040,6 @@ qt_configure_add_report_entry(
     TYPE NOTE
     MESSAGE "journald, syslog or slog2 integration is enabled.  If your users intend to develop applications against this build, ensure that the IDEs they use either set QT_FORCE_STDERR_LOGGING to 1 or are able to read the logged output from journald, syslog or slog2."
     CONDITION QT_FEATURE_journald OR QT_FEATURE_syslog OR ( QNX AND QT_FEATURE_slog2 )
-)
-qt_configure_add_report_entry(
-    TYPE ERROR
-    MESSAGE "C++11 <random> is required and is missing or failed to compile."
-    CONDITION NOT TEST_cxx11_random
 )
 qt_configure_add_report_entry(
     TYPE ERROR
