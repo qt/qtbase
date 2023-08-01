@@ -45,3 +45,5 @@ android
 android
 [optimizedResize_topLevel]
 android
+[render]
+wayland
