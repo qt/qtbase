@@ -414,23 +414,6 @@ renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEO
 }
 ")
 
-# syslog
-qt_config_compile_test(syslog
-    LABEL "syslog"
-    CODE
-"#include <syslog.h>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-openlog(\"qt\", 0, LOG_USER);
-syslog(LOG_INFO, \"configure\");
-closelog();
-    /* END TEST: */
-    return 0;
-}
-")
-
 # cpp_winrt
 qt_config_compile_test(cpp_winrt
     LABEL "cpp/winrt"
@@ -647,7 +630,6 @@ qt_feature("slog2" PRIVATE
 qt_feature("syslog" PRIVATE
     LABEL "syslog"
     AUTODETECT OFF
-    CONDITION TEST_syslog
 )
 qt_feature("sysv_sem" PRIVATE
     LABEL "System V / XSI semaphores"
