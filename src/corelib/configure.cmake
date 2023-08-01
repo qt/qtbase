@@ -239,21 +239,6 @@ char buf[32];
 }
 ")
 
-# glibc
-qt_config_compile_test(glibc
-    LABEL "GNU libc"
-    CODE
-"#include <stdlib.h>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-return __GLIBC__;
-    /* END TEST: */
-    return 0;
-}
-")
-
 # inotify
 qt_config_compile_test(inotify
     LABEL "inotify"
@@ -576,11 +561,6 @@ qt_feature("glib" PUBLIC PRIVATE
     CONDITION GLIB2_FOUND
 )
 qt_feature_definition("glib" "QT_NO_GLIB" NEGATE VALUE "1")
-qt_feature("glibc" PRIVATE
-    LABEL "GNU libc"
-    AUTODETECT ( LINUX OR HURD )
-    CONDITION TEST_glibc
-)
 qt_feature("icu" PRIVATE
     LABEL "ICU"
     AUTODETECT NOT WIN32
