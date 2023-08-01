@@ -12,7 +12,6 @@ qt_internal_add_tool(${target_name}
     INSTALL_VERSIONED_LINK
     TARGET_DESCRIPTION "Qt Windows Deployment Tool"
     SOURCES
-        elfreader.cpp elfreader.h
         qmlutils.cpp qmlutils.h
         qtmoduleinfo.cpp qtmoduleinfo.h
         utils.cpp utils.h

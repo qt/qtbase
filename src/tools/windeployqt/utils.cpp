@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "utils.h"
-#include "elfreader.h"
 
 #include <QtCore/QString>
 #include <QtCore/QDebug>
@@ -95,7 +94,7 @@ QStringList findSharedLibraries(const QDir &directory, Platform platform,
         nameFilter += u'*';
     if (debugMatchMode == MatchDebug && platformHasDebugSuffix(platform))
         nameFilter += u'd';
-    nameFilter += sharedLibrarySuffix(platform);
+    nameFilter += sharedLibrarySuffix();
     QStringList result;
     QString errorMessage;
     const QFileInfoList &dlls = directory.entryInfoList(QStringList(nameFilter), QDir::Files);
@@ -550,37 +549,6 @@ bool updateFile(const QString &sourceFileName, const QStringList &nameFilters,
     }
     if (json)
         json->addFile(sourceFileName, targetDirectory);
-    return true;
-}
-
-bool readElfExecutable(const QString &elfExecutableFileName, QString *errorMessage,
-                       QStringList *dependentLibraries, unsigned *wordSize,
-                       bool *isDebug)
-{
-    ElfReader elfReader(elfExecutableFileName);
-    const ElfData data = elfReader.readHeaders();
-    if (data.sectionHeaders.isEmpty()) {
-        *errorMessage = QStringLiteral("Unable to read ELF binary \"")
-            + QDir::toNativeSeparators(elfExecutableFileName) + QStringLiteral("\": ")
-            + elfReader.errorString();
-            return false;
-    }
-    if (wordSize)
-        *wordSize = data.elfclass == Elf_ELFCLASS64 ? 64 : 32;
-    if (dependentLibraries) {
-        dependentLibraries->clear();
-        const QList<QByteArray> libs = elfReader.dependencies();
-        if (libs.isEmpty()) {
-            *errorMessage = QStringLiteral("Unable to read dependenices of ELF binary \"")
-                + QDir::toNativeSeparators(elfExecutableFileName) + QStringLiteral("\": ")
-                + elfReader.errorString();
-                return false;
-        }
-        for (const QByteArray &l : libs)
-            dependentLibraries->push_back(QString::fromLocal8Bit(l));
-    }
-    if (isDebug)
-        *isDebug = data.symbolsType != UnknownSymbols && data.symbolsType != NoSymbols;
     return true;
 }
 

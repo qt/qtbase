@@ -116,8 +116,6 @@ static QByteArray formatQtModules(const ModuleBitset &mask, bool option = false)
 
 static Platform platformFromMkSpec(const QString &xSpec)
 {
-    if (xSpec == "linux-g++"_L1)
-        return Unix;
     if (xSpec.startsWith("win32-"_L1)) {
         if (xSpec.contains("clang-g++"_L1))
             return WindowsDesktopClangMinGW;
@@ -712,7 +710,8 @@ static bool findDependentQtLibraries(const QString &qtBinDir, const QString &bin
     QStringList dependentLibs;
     if (directDependencyCount)
         *directDependencyCount = 0;
-    if (!readExecutable(binary, platform, errorMessage, &dependentLibs, wordSize, isDebug, machineArch)) {
+    if (!readPeExecutable(binary, errorMessage, &dependentLibs, wordSize, isDebug,
+                          platform == WindowsDesktopMinGW, machineArch)) {
         errorMessage->prepend("Unable to find dependent libraries of "_L1 +
                               QDir::toNativeSeparators(binary) + " :"_L1);
         return false;
@@ -937,19 +936,9 @@ QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disab
             QString filter;
             const bool isPlatformPlugin = subDirName == "platforms"_L1;
             if (isPlatformPlugin) {
-                switch (platform) {
-                case WindowsDesktopMsvc:
-                case WindowsDesktopMinGW:
-                    filter = QStringLiteral("qwindows");
-                    if (!infix.isEmpty())
-                        filter += infix;
-                    break;
-                case Unix:
-                    filter = QStringLiteral("libqxcb");
-                    break;
-                case UnknownPlatform:
-                    break;
-                }
+                filter = QStringLiteral("qwindows");
+                if (!infix.isEmpty())
+                    filter += infix;
             } else {
                 filter = u"*"_s;
             }
@@ -1055,17 +1044,11 @@ static QString libraryPath(const QString &libraryLocation, const char *name,
                            const QString &infix, Platform platform, bool debug)
 {
     QString result = libraryLocation + u'/';
-    if (platform & WindowsBased) {
-        result += QLatin1StringView(name);
-        result += infix;
-        if (debug && platformHasDebugSuffix(platform))
-            result += u'd';
-    } else if (platform.testFlag(UnixBased)) {
-        result += QStringLiteral("lib");
-        result += QLatin1StringView(name);
-        result += infix;
-    }
-    result += sharedLibrarySuffix(platform);
+    result += QLatin1StringView(name);
+    result += infix;
+    if (debug && platformHasDebugSuffix(platform))
+        result += u'd';
+    result += sharedLibrarySuffix();
     return result;
 }
 
@@ -1112,7 +1095,7 @@ static QStringList findMinGWRuntimePaths(const QString &qtBinDir, Platform platf
     QStringList result;
     const bool isClang = platform == WindowsDesktopClangMinGW;
     QStringList filters;
-    const QString suffix = u'*' + sharedLibrarySuffix(platform);
+    const QString suffix = u'*' + sharedLibrarySuffix();
     for (const auto &minGWRuntime : runtimeFilters)
         filters.append(minGWRuntime + suffix);
 
@@ -1244,9 +1227,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     const QChar slash = u'/';
 
     const QString qtBinDir = qtpathsVariables.value(QStringLiteral("QT_INSTALL_BINS"));
-    const QString libraryLocation = options.platform == Unix
-            ? qtpathsVariables.value(QStringLiteral("QT_INSTALL_LIBS"))
-            : qtBinDir;
+    const QString libraryLocation = qtBinDir;
     const QString infix = qtpathsVariables.value(QLatin1StringView(qmakeInfixKey));
     const int version = qtVersion(qtpathsVariables);
     Q_UNUSED(version);
@@ -1325,7 +1306,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         const QStringList qtLibs = dependentQtLibs.filter(QStringLiteral("Qt6Core"), Qt::CaseInsensitive)
             + dependentQtLibs.filter(QStringLiteral("Qt5WebKit"), Qt::CaseInsensitive);
         for (const QString &qtLib : qtLibs) {
-            QStringList icuLibs = findDependentLibraries(qtLib, options.platform, errorMessage).filter(QStringLiteral("ICU"), Qt::CaseInsensitive);
+            QStringList icuLibs = findDependentLibraries(qtLib, errorMessage).filter(QStringLiteral("ICU"), Qt::CaseInsensitive);
             if (!icuLibs.isEmpty()) {
                 // Find out the ICU version to add the data library icudtXX.dll, which does not show
                 // as a dependency.
@@ -1456,7 +1437,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     }
 
     if (options.platform.testFlag(WindowsBased) && !qtGuiLibrary.isEmpty())  {
-        const QStringList guiLibraries = findDependentLibraries(qtGuiLibrary, options.platform, errorMessage);
+        const QStringList guiLibraries = findDependentLibraries(qtGuiLibrary, errorMessage);
         const bool dependsOnOpenGl = !guiLibraries.filter(QStringLiteral("opengl32"), Qt::CaseInsensitive).isEmpty();
         if (options.softwareRasterizer && !dependsOnOpenGl) {
             const QFileInfo softwareRasterizer(qtBinDir + slash + QStringLiteral("opengl32sw") + QLatin1StringView(windowsSharedLibrarySuffix));

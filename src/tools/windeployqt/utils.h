@@ -20,7 +20,6 @@ QT_BEGIN_NAMESPACE
 enum PlatformFlag {
     // OS
     WindowsBased = 0x00001,
-    UnixBased    = 0x00002,
     // CPU
     IntelBased   = 0x00010,
     ArmBased     = 0x00020,
@@ -34,7 +33,6 @@ enum PlatformFlag {
     WindowsDesktopMinGW = WindowsBased + IntelBased + MinGW,
     WindowsDesktopClangMsvc = WindowsBased + IntelBased + ClangMsvc,
     WindowsDesktopClangMinGW = WindowsBased + IntelBased + ClangMinGW,
-    Unix = UnixBased,
     UnknownPlatform
 };
 
@@ -137,9 +135,8 @@ inline QString normalizeFileName(const QString &name) { return name; }
 #endif // !Q_OS_WIN
 
 static const char windowsSharedLibrarySuffix[] = ".dll";
-static const char unixSharedLibrarySuffix[] = ".so";
 
-inline QString sharedLibrarySuffix(Platform platform) { return QLatin1StringView((platform & WindowsBased) ? windowsSharedLibrarySuffix : unixSharedLibrarySuffix); }
+inline QString sharedLibrarySuffix() { return QLatin1StringView(windowsSharedLibrarySuffix); }
 bool isBuildDirectory(Platform platform, const QString &dirName);
 
 bool createSymbolicLink(const QFileInfo &source, const QString &target, QString *errorMessage);
@@ -170,19 +167,6 @@ bool runProcess(const QString &binary, const QStringList &args,
 bool readPeExecutable(const QString &peExecutableFileName, QString *errorMessage,
                       QStringList *dependentLibraries = 0, unsigned *wordSize = 0,
                       bool *isDebug = 0, bool isMinGW = false, unsigned short *machineArch = nullptr);
-bool readElfExecutable(const QString &elfExecutableFileName, QString *errorMessage,
-                      QStringList *dependentLibraries = 0, unsigned *wordSize = 0,
-                      bool *isDebug = 0);
-
-inline bool readExecutable(const QString &executableFileName, Platform platform,
-                           QString *errorMessage, QStringList *dependentLibraries = 0,
-                           unsigned *wordSize = 0, bool *isDebug = 0, unsigned short *machineArch = nullptr)
-{
-    return platform == Unix ?
-        readElfExecutable(executableFileName, errorMessage, dependentLibraries, wordSize, isDebug) :
-        readPeExecutable(executableFileName, errorMessage, dependentLibraries, wordSize, isDebug,
-                         (platform == WindowsDesktopMinGW), machineArch);
-}
 
 #ifdef Q_OS_WIN
 #  if !defined(IMAGE_FILE_MACHINE_ARM64)
@@ -193,10 +177,10 @@ QString getArchString (unsigned short machineArch);
 
 // Return dependent modules of executable files.
 
-inline QStringList findDependentLibraries(const QString &executableFileName, Platform platform, QString *errorMessage)
+inline QStringList findDependentLibraries(const QString &executableFileName, QString *errorMessage)
 {
     QStringList result;
-    readExecutable(executableFileName, platform, errorMessage, &result);
+    readPeExecutable(executableFileName, errorMessage, &result);
     return result;
 }
 
