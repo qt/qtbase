@@ -23,6 +23,7 @@ public:
 protected:
     int metric(PaintDeviceMetric metric) const override;
     QPaintDevice *redirected(QPoint *) const override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     Q_DISABLE_COPY(QRasterWindow)

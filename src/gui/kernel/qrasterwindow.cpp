@@ -38,10 +38,9 @@ public:
     {
         Q_Q(QRasterWindow);
         const QSize size = q->size();
-        if (backingstore->size() != size) {
+        if (backingstore->size() != size)
             backingstore->resize(size);
-            markWindowAsDirty();
-        }
+
         backingstore->beginPaint(region);
     }
 
@@ -100,6 +99,13 @@ QPaintDevice *QRasterWindow::redirected(QPoint *) const
 {
     Q_D(const QRasterWindow);
     return d->backingstore->paintDevice();
+}
+
+void QRasterWindow::resizeEvent(QResizeEvent *)
+{
+    Q_D(QRasterWindow);
+    if (d->backingstore->size() != size())
+        d->markWindowAsDirty();
 }
 
 QT_END_NAMESPACE
