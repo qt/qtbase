@@ -17,11 +17,7 @@
 #  include "qdatetime.h"
 #endif
 
-#if defined(QT_LINUXBASE)
-#  define QT_NO_GETIFADDRS
-#endif
-
-#ifndef QT_NO_GETIFADDRS
+#if QT_CONFIG(getifaddrs)
 # include <ifaddrs.h>
 #endif
 
@@ -61,7 +57,7 @@ static QHostAddress addressFromSockaddr(sockaddr *sa, int ifindex = 0, const QSt
 
 uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
 {
-#ifndef QT_NO_IPV6IFNAME
+#if QT_CONFIG(ipv6ifname)
     return ::if_nametoindex(name.toLatin1());
 #elif defined(SIOCGIFINDEX)
     struct ifreq req;
@@ -90,7 +86,7 @@ uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
 
 QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
 {
-#ifndef QT_NO_IPV6IFNAME
+#if QT_CONFIG(ipv6ifname)
     char buf[IF_NAMESIZE];
     if (::if_indextoname(index, buf))
         return QString::fromLatin1(buf);
@@ -124,13 +120,13 @@ static int getMtu(int socket, struct ifreq *req)
     return 0;
 }
 
-#ifdef QT_NO_GETIFADDRS
+#if !QT_CONFIG(getifaddrs)
 // getifaddrs not available
 
 static QSet<QByteArray> interfaceNames(int socket)
 {
     QSet<QByteArray> result;
-#ifdef QT_NO_IPV6IFNAME
+#if !QT_CONFIG(ipv6ifname)
     QByteArray storageBuffer;
     struct ifconf interfaceList;
     static const int STORAGEBUFFER_GROWTH = 256;
@@ -185,7 +181,7 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
     QNetworkInterfacePrivate *iface = nullptr;
     int ifindex = 0;
 
-#if !defined(QT_NO_IPV6IFNAME) || defined(SIOCGIFINDEX)
+#if QT_CONFIG(ipv6ifname) || defined(SIOCGIFINDEX)
     // Get the interface index
 #  ifdef SIOCGIFINDEX
     if (qt_safe_ioctl(socket, SIOCGIFINDEX, &req) >= 0)
