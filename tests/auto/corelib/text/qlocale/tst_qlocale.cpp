@@ -3382,9 +3382,20 @@ void tst_QLocale::languageToString_data()
     QTest::addColumn<QString>("name");
 
     // Prone to change at CLDR updates.
+    QTest::newRow("cu") << QLocale::Church << u"Church Slavic"_s;
     QTest::newRow("dyo") << QLocale::JolaFonyi << u"Jola-Fonyi"_s;
+    QTest::newRow("ff") << QLocale::Fulah << u"Fula"_s;
+    QTest::newRow("gd") << QLocale::Gaelic << u"Scottish Gaelic"_s;
+    QTest::newRow("ht") << QLocale::Haitian << u"Haitian Creole"_s;
     QTest::newRow("lu") << QLocale::LubaKatanga << u"Luba-Katanga"_s;
     QTest::newRow("mgh") << QLocale::MakhuwaMeetto << u"Makhuwa-Meetto"_s;
+    QTest::newRow("mgo") << QLocale::Meta << u"Meta\u02bc"_s;
+    QTest::newRow("mi") << QLocale::Maori << u"M\u0101" "ori"_s;
+    QTest::newRow("nb") << QLocale::NorwegianBokmal << u"Norwegian Bokm\u00e5" "l"_s;
+    QTest::newRow("nqo") << QLocale::Nko << u"N\u2019" "Ko"_s;
+    QTest::newRow("quc") << QLocale::Kiche << u"K\u02bc" "iche\u02bc"_s;
+    QTest::newRow("sah") << QLocale::Sakha << u"Yakut"_s;
+    QTest::newRow("vo") << QLocale::Volapuk << u"Volap\u00fc" "k"_s;
 }
 
 void tst_QLocale::languageToString()
@@ -3401,9 +3412,15 @@ void tst_QLocale::scriptToString_data()
     QTest::addColumn<QString>("name");
 
     // Prone to change at CLDR updates.
+    QTest::newRow("Cans")
+        << QLocale::CanadianAboriginalScript << u"Unified Canadian Aboriginal Syllabics"_s;
+    QTest::newRow("Dupl") << QLocale::DuployanScript << u"Duployan shorthand"_s;
     QTest::newRow("Egyp") << QLocale::EgyptianHieroglyphsScript << u"Egyptian hieroglyphs"_s;
+    QTest::newRow("Nkoo") << QLocale::NkoScript << u"N\u2019" "Ko"_s;
     QTest::newRow("Phag") << QLocale::PhagsPaScript << u"Phags-pa"_s;
+    QTest::newRow("Rohg") << QLocale::HanifiScript << u"Hanifi Rohingya"_s;
     QTest::newRow("Sgnw") << QLocale::SignWritingScript << u"SignWriting"_s;
+    QTest::newRow("Xsux") << QLocale::CuneiformScript << u"Sumero-Akkadian Cuneiform"_s;
 }
 
 void tst_QLocale::scriptToString()
@@ -3420,11 +3437,43 @@ void tst_QLocale::territoryToString_data()
     QTest::addColumn<QString>("name");
     // Prone to change at CLDR updates.
 
+    QTest::newRow("AX") << QLocale::AlandIslands << u"\u00c5" "land Islands"_s;
+    QTest::newRow("AG") << QLocale::AntiguaAndBarbuda << u"Antigua & Barbuda"_s;
+    QTest::newRow("BA") << QLocale::BosniaAndHerzegovina << u"Bosnia & Herzegovina"_s;
+    QTest::newRow("BL") << QLocale::SaintBarthelemy << u"St. Barth\u00e9" "lemy"_s;
+    QTest::newRow("CC") << QLocale::CocosIslands << u"Cocos (Keeling) Islands"_s;
     QTest::newRow("CD") << QLocale::CongoKinshasa << u"Congo - Kinshasa"_s;
     QTest::newRow("CG") << QLocale::CongoBrazzaville << u"Congo - Brazzaville"_s;
+    QTest::newRow("CI") << QLocale::IvoryCoast << u"C\u00f4" "te d\u2019" "Ivoire"_s;
+    QTest::newRow("CW") << QLocale::Curacao << u"Cura\u00e7" "ao"_s;
+    QTest::newRow("EA") << QLocale::CeutaAndMelilla << u"Ceuta & Melilla"_s;
+    QTest::newRow("GS")
+        << QLocale::SouthGeorgiaAndSouthSandwichIslands
+        << u"South Georgia & South Sandwich Islands"_s;
     QTest::newRow("GW") << QLocale::GuineaBissau << u"Guinea-Bissau"_s;
+    QTest::newRow("HM") << QLocale::HeardAndMcDonaldIslands << u"Heard & McDonald Islands"_s;
     QTest::newRow("IM") << QLocale::IsleOfMan << u"Isle of Man"_s;
+    QTest::newRow("KN") << QLocale::SaintKittsAndNevis << u"St. Kitts & Nevis"_s;
+    QTest::newRow("LC") << QLocale::SaintLucia << u"St. Lucia"_s;
+    QTest::newRow("MF") << QLocale::SaintMartin << u"St. Martin"_s;
+    QTest::newRow("MK") << QLocale::Macedonia << u"North Macedonia"_s;
+    QTest::newRow("MM") << QLocale::Myanmar << u"Myanmar (Burma)"_s;
+    QTest::newRow("MO") << QLocale::Macao << u"Macao SAR China"_s;
+    QTest::newRow("PM") << QLocale::SaintPierreAndMiquelon << u"St. Pierre & Miquelon"_s;
+    QTest::newRow("PN") << QLocale::Pitcairn << u"Pitcairn Islands"_s;
+    QTest::newRow("RE") << QLocale::Reunion << u"R\u00e9" "union"_s;
+    QTest::newRow("SH") << QLocale::SaintHelena << u"St. Helena"_s;
+    QTest::newRow("SJ") << QLocale::SvalbardAndJanMayen << u"Svalbard & Jan Mayen"_s;
+    QTest::newRow("ST")
+        << QLocale::SaoTomeAndPrincipe << u"S\u00e3" "o Tom\u00e9" " & Pr\u00ed" "ncipe"_s;
     QTest::newRow("TA") << QLocale::TristanDaCunha << u"Tristan da Cunha"_s;
+    QTest::newRow("TC") << QLocale::TurksAndCaicosIslands << u"Turks & Caicos Islands"_s;
+    QTest::newRow("TR") << QLocale::Turkey << u"T\u00fc" "rkiye"_s;
+    QTest::newRow("TT") << QLocale::TrinidadAndTobago << u"Trinidad & Tobago"_s;
+    QTest::newRow("UM") << QLocale::UnitedStatesOutlyingIslands << u"U.S. Outlying Islands"_s;
+    QTest::newRow("VC") << QLocale::SaintVincentAndGrenadines << u"St. Vincent & Grenadines"_s;
+    QTest::newRow("VI") << QLocale::UnitedStatesVirginIslands << u"U.S. Virgin Islands"_s;
+    QTest::newRow("WF") << QLocale::WallisAndFutuna << u"Wallis & Futuna"_s;
     QTest::newRow("001") << QLocale::World << u"world"_s;
 }
 

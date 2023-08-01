@@ -254,6 +254,9 @@ class CldrAccess (object):
         inheritance, where relevant."""
         return LocaleScanner(name, self.__localeRoots(name), self.__rootLocale)
 
+    def englishNaming(self, tag): # see QLocaleXmlWriter.enumData()
+        return self.__codeMap(tag).get
+
     @property
     def fileLocales(self) -> Iterable[str]:
         """Generator for locale IDs seen in file-names.

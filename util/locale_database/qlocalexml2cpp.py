@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Optional
 
 from qlocalexml import QLocaleXmlReader
-from localetools import unicode2hex, wrap_list, Error, Transcriber, SourceFileEditor, qtbase_root
+from localetools import *
 from iso639_3 import LanguageCodeData
 
 class LocaleKeySorter:
@@ -337,7 +337,11 @@ class LocaleDataWriter (LocaleSourceEditor):
         for key, value in book.items():
             if key == 0:
                 continue
-            out(f'"{value[0]}\\0"\n')
+            enum, name = value[0], value[-1]
+            if names_clash(name, enum):
+                out(f'"{name}\\0" // {enum}\n')
+            else:
+                out(f'"{name}\\0"\n') # Automagically utf-8 encoded
         out(';\n\n')
 
         out(f'static constexpr quint16 {form}_name_index[] = {{\n')
@@ -346,9 +350,8 @@ class LocaleDataWriter (LocaleSourceEditor):
         for key, value in book.items():
             if key == 0:
                 continue
-            name = value[0]
-            out(f'{index:6d}, // {name}\n')
-            index += len(name) + 1
+            out(f'{index:6d}, // {value[0]}\n')
+            index += len(value[-1].encode('utf-8')) + 1
         out('};\n\n')
 
     @staticmethod

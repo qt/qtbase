@@ -1568,7 +1568,7 @@ QString QLocale::languageToString(Language language)
 {
     if (language > QLocale::LastLanguage)
         return "Unknown"_L1;
-    return QLatin1StringView(language_name_list + language_name_index[language]);
+    return QString::fromUtf8(language_name_list + language_name_index[language]);
 }
 
 /*!
@@ -1582,7 +1582,7 @@ QString QLocale::territoryToString(QLocale::Territory territory)
 {
     if (territory > QLocale::LastTerritory)
         return "Unknown"_L1;
-    return QLatin1StringView(territory_name_list + territory_name_index[territory]);
+    return QString::fromUtf8(territory_name_list + territory_name_index[territory]);
 }
 
 #if QT_DEPRECATED_SINCE(6, 6)
@@ -1610,7 +1610,7 @@ QString QLocale::scriptToString(QLocale::Script script)
 {
     if (script > QLocale::LastScript)
         return "Unknown"_L1;
-    return QLatin1StringView(script_name_list + script_name_index[script]);
+    return QString::fromUtf8(script_name_list + script_name_index[script]);
 }
 
 /*!

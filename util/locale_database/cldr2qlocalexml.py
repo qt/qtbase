@@ -76,7 +76,7 @@ def main(out, err):
     writer = QLocaleXmlWriter(emit.write)
 
     writer.version(reader.root.cldrVersion)
-    writer.enumData()
+    writer.enumData(reader.root.englishNaming)
     writer.likelySubTags(reader.likelySubTags())
     writer.locales(reader.readLocales(args.calendars), args.calendars)
 

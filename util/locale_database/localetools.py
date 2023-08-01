@@ -75,7 +75,7 @@ def names_clash(cldr, enum):
         cldr = cldr[:f].rstrip() + ' ' + cldr[t + 1:].lstrip()
 
     # Various accented letters:
-    remap = { 'å': 'a', 'ã': 'a', 'ç': 'c', 'é': 'e', 'í': 'i', 'ô': 'o', 'ü': 'u'}
+    remap = { 'ã': 'a', 'å': 'a', 'ā': 'a', 'ç': 'c', 'é': 'e', 'í': 'i', 'ô': 'o', 'ü': 'u'}
     skip = '\u02bc' # Punctuation for which .isalpha() is true.
     # Let cldr match (ignoring non-letters and case) any substring as enum:
     if ''.join(enum.lower().split()) in ''.join(

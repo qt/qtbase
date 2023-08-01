@@ -5936,7 +5936,7 @@ static constexpr char language_name_list[] =
 "Chickasaw\0"
 "Chiga\0"
 "Chinese\0"
-"Church\0"
+"Church Slavic\0"
 "Chuvash\0"
 "Colognian\0"
 "Coptic\0"
@@ -5964,8 +5964,8 @@ static constexpr char language_name_list[] =
 "Finnish\0"
 "French\0"
 "Friulian\0"
-"Fulah\0"
-"Gaelic\0"
+"Fula\0" // Fulah
+"Scottish Gaelic\0"
 "Ga\0"
 "Galician\0"
 "Ganda\0"
@@ -5977,7 +5977,7 @@ static constexpr char language_name_list[] =
 "Guarani\0"
 "Gujarati\0"
 "Gusii\0"
-"Haitian\0"
+"Haitian Creole\0"
 "Hausa\0"
 "Hawaiian\0"
 "Hebrew\0"
@@ -6013,7 +6013,7 @@ static constexpr char language_name_list[] =
 "Kazakh\0"
 "Kenyang\0"
 "Khmer\0"
-"Kiche\0"
+"Kʼicheʼ\0"
 "Kikuyu\0"
 "Kinyarwanda\0"
 "Komi\0"
@@ -6058,7 +6058,7 @@ static constexpr char language_name_list[] =
 "Mandingo\0"
 "Manipuri\0"
 "Manx\0"
-"Maori\0"
+"Māori\0"
 "Mapuche\0"
 "Marathi\0"
 "Marshallese\0"
@@ -6066,7 +6066,7 @@ static constexpr char language_name_list[] =
 "Mazanderani\0"
 "Mende\0"
 "Meru\0"
-"Meta\0"
+"Metaʼ\0"
 "Mohawk\0"
 "Mongolian\0"
 "Morisyen\0"
@@ -6081,12 +6081,12 @@ static constexpr char language_name_list[] =
 "Ngiemboon\0"
 "Ngomba\0"
 "Nigerian Pidgin\0"
-"Nko\0"
+"N’Ko\0"
 "Northern Luri\0"
 "Northern Sami\0"
 "Northern Sotho\0"
 "North Ndebele\0"
-"Norwegian Bokmal\0"
+"Norwegian Bokmål\0"
 "Norwegian Nynorsk\0"
 "Nuer\0"
 "Nyanja\0"
@@ -6119,7 +6119,7 @@ static constexpr char language_name_list[] =
 "Russian\0"
 "Rwa\0"
 "Saho\0"
-"Sakha\0"
+"Yakut\0" // Sakha
 "Samburu\0"
 "Samoan\0"
 "Sango\0"
@@ -6188,7 +6188,7 @@ static constexpr char language_name_list[] =
 "Vai\0"
 "Venda\0"
 "Vietnamese\0"
-"Volapuk\0"
+"Volapük\0"
 "Vunjo\0"
 "Walloon\0"
 "Walser\0"
@@ -6281,287 +6281,287 @@ static constexpr quint16 language_name_index[] = {
    497, // Chiga
    503, // Chinese
    511, // Church
-   518, // Chuvash
-   526, // Colognian
-   536, // Coptic
-   543, // Cornish
-   551, // Corsican
-   560, // Cree
-   565, // Croatian
-   574, // Czech
-   580, // Danish
-   587, // Divehi
-   594, // Dogri
-   600, // Duala
-   606, // Dutch
-   612, // Dzongkha
-   621, // Embu
-   626, // English
-   634, // Erzya
-   640, // Esperanto
-   650, // Estonian
-   659, // Ewe
-   663, // Ewondo
-   670, // Faroese
-   678, // Fijian
-   685, // Filipino
-   694, // Finnish
-   702, // French
-   709, // Friulian
-   718, // Fulah
-   724, // Gaelic
-   731, // Ga
-   734, // Galician
-   743, // Ganda
-   749, // Geez
-   754, // Georgian
-   763, // German
-   770, // Gothic
-   777, // Greek
-   783, // Guarani
-   791, // Gujarati
-   800, // Gusii
-   806, // Haitian
-   814, // Hausa
-   820, // Hawaiian
-   829, // Hebrew
-   836, // Herero
-   843, // Hindi
-   849, // Hiri Motu
-   859, // Hungarian
-   869, // Icelandic
-   879, // Ido
-   883, // Igbo
-   888, // Inari Sami
-   899, // Indonesian
-   910, // Ingush
-   917, // Interlingua
-   929, // Interlingue
-   941, // Inuktitut
-   951, // Inupiaq
-   959, // Irish
-   965, // Italian
-   973, // Japanese
-   982, // Javanese
-   991, // Jju
-   995, // Jola-Fonyi
-  1006, // Kabuverdianu
-  1019, // Kabyle
-  1026, // Kako
-  1031, // Kalaallisut
-  1043, // Kalenjin
-  1052, // Kamba
-  1058, // Kannada
-  1066, // Kanuri
-  1073, // Kashmiri
-  1082, // Kazakh
-  1089, // Kenyang
-  1097, // Khmer
-  1103, // Kiche
-  1109, // Kikuyu
-  1116, // Kinyarwanda
-  1128, // Komi
-  1133, // Kongo
-  1139, // Konkani
-  1147, // Korean
-  1154, // Koro
-  1159, // Koyraboro Senni
-  1175, // Koyra Chiini
-  1188, // Kpelle
-  1195, // Kuanyama
-  1204, // Kurdish
-  1212, // Kwasio
-  1219, // Kyrgyz
-  1226, // Lakota
-  1233, // Langi
-  1239, // Lao
-  1243, // Latin
-  1249, // Latvian
-  1257, // Lezghian
-  1266, // Limburgish
-  1277, // Lingala
-  1285, // Literary Chinese
-  1302, // Lithuanian
-  1313, // Lojban
-  1320, // Lower Sorbian
-  1334, // Low German
-  1345, // Luba-Katanga
-  1358, // Lule Sami
-  1368, // Luo
-  1372, // Luxembourgish
-  1386, // Luyia
-  1392, // Macedonian
-  1403, // Machame
-  1411, // Maithili
-  1420, // Makhuwa-Meetto
-  1435, // Makonde
-  1443, // Malagasy
-  1452, // Malayalam
-  1462, // Malay
-  1468, // Maltese
-  1476, // Mandingo
-  1485, // Manipuri
-  1494, // Manx
-  1499, // Maori
-  1505, // Mapuche
-  1513, // Marathi
-  1521, // Marshallese
-  1533, // Masai
-  1539, // Mazanderani
-  1551, // Mende
-  1557, // Meru
-  1562, // Meta
-  1567, // Mohawk
-  1574, // Mongolian
-  1584, // Morisyen
-  1593, // Mundang
-  1601, // Muscogee
-  1610, // Nama
-  1615, // Nauru
-  1621, // Navajo
-  1628, // Ndonga
-  1635, // Nepali
-  1642, // Newari
-  1649, // Ngiemboon
-  1659, // Ngomba
-  1666, // Nigerian Pidgin
-  1682, // Nko
-  1686, // Northern Luri
-  1700, // Northern Sami
-  1714, // Northern Sotho
-  1729, // North Ndebele
-  1743, // Norwegian Bokmal
-  1760, // Norwegian Nynorsk
-  1778, // Nuer
-  1783, // Nyanja
-  1790, // Nyankole
-  1799, // Occitan
-  1807, // Odia
-  1812, // Ojibwa
-  1819, // Old Irish
-  1829, // Old Norse
-  1839, // Old Persian
-  1851, // Oromo
-  1857, // Osage
-  1863, // Ossetic
-  1871, // Pahlavi
-  1879, // Palauan
-  1887, // Pali
-  1892, // Papiamento
-  1903, // Pashto
-  1910, // Persian
-  1918, // Phoenician
-  1929, // Polish
-  1936, // Portuguese
-  1947, // Prussian
-  1956, // Punjabi
-  1964, // Quechua
-  1972, // Romanian
-  1981, // Romansh
-  1989, // Rombo
-  1995, // Rundi
-  2001, // Russian
-  2009, // Rwa
-  2013, // Saho
-  2018, // Sakha
-  2024, // Samburu
-  2032, // Samoan
-  2039, // Sango
-  2045, // Sangu
-  2051, // Sanskrit
-  2060, // Santali
-  2068, // Sardinian
-  2078, // Saurashtra
-  2089, // Sena
-  2094, // Serbian
-  2102, // Shambala
-  2111, // Shona
-  2117, // Sichuan Yi
-  2128, // Sicilian
-  2137, // Sidamo
-  2144, // Silesian
-  2153, // Sindhi
-  2160, // Sinhala
-  2168, // Skolt Sami
-  2179, // Slovak
-  2186, // Slovenian
-  2196, // Soga
-  2201, // Somali
-  2208, // Southern Kurdish
-  2225, // Southern Sami
-  2239, // Southern Sotho
-  2254, // South Ndebele
-  2268, // Spanish
-  2276, // Standard Moroccan Tamazight
-  2304, // Sundanese
-  2314, // Swahili
-  2322, // Swati
-  2328, // Swedish
-  2336, // Swiss German
-  2349, // Syriac
-  2356, // Tachelhit
-  2366, // Tahitian
-  2375, // Tai Dam
-  2383, // Taita
-  2389, // Tajik
-  2395, // Tamil
-  2401, // Taroko
-  2408, // Tasawaq
-  2416, // Tatar
-  2422, // Telugu
-  2429, // Teso
-  2434, // Thai
-  2439, // Tibetan
-  2447, // Tigre
-  2453, // Tigrinya
-  2462, // Tokelau
-  2470, // Tok Pisin
-  2480, // Tongan
-  2487, // Tsonga
-  2494, // Tswana
-  2501, // Turkish
-  2509, // Turkmen
-  2517, // Tuvalu
-  2524, // Tyap
-  2529, // Ugaritic
-  2538, // Ukrainian
-  2548, // Upper Sorbian
-  2562, // Urdu
-  2567, // Uyghur
-  2574, // Uzbek
-  2580, // Vai
-  2584, // Venda
-  2590, // Vietnamese
-  2601, // Volapuk
-  2609, // Vunjo
-  2615, // Walloon
-  2623, // Walser
-  2630, // Warlpiri
-  2639, // Welsh
-  2645, // Western Balochi
-  2661, // Western Frisian
-  2677, // Wolaytta
-  2686, // Wolof
-  2692, // Xhosa
-  2698, // Yangben
-  2706, // Yiddish
-  2714, // Yoruba
-  2721, // Zarma
-  2727, // Zhuang
-  2734, // Zulu
-  2739, // Kaingang
-  2748, // Nheengatu
-  2758, // Haryanvi
-  2767, // Northern Frisian
-  2784, // Rajasthani
-  2795, // Moksha
-  2802, // Toki Pona
-  2812, // Pijin
-  2818, // Obolo
-  2824, // Baluchi
-  2832, // Ligurian
-  2841, // Rohingya
-  2850, // Torwali
+   525, // Chuvash
+   533, // Colognian
+   543, // Coptic
+   550, // Cornish
+   558, // Corsican
+   567, // Cree
+   572, // Croatian
+   581, // Czech
+   587, // Danish
+   594, // Divehi
+   601, // Dogri
+   607, // Duala
+   613, // Dutch
+   619, // Dzongkha
+   628, // Embu
+   633, // English
+   641, // Erzya
+   647, // Esperanto
+   657, // Estonian
+   666, // Ewe
+   670, // Ewondo
+   677, // Faroese
+   685, // Fijian
+   692, // Filipino
+   701, // Finnish
+   709, // French
+   716, // Friulian
+   725, // Fulah
+   730, // Gaelic
+   746, // Ga
+   749, // Galician
+   758, // Ganda
+   764, // Geez
+   769, // Georgian
+   778, // German
+   785, // Gothic
+   792, // Greek
+   798, // Guarani
+   806, // Gujarati
+   815, // Gusii
+   821, // Haitian
+   836, // Hausa
+   842, // Hawaiian
+   851, // Hebrew
+   858, // Herero
+   865, // Hindi
+   871, // Hiri Motu
+   881, // Hungarian
+   891, // Icelandic
+   901, // Ido
+   905, // Igbo
+   910, // Inari Sami
+   921, // Indonesian
+   932, // Ingush
+   939, // Interlingua
+   951, // Interlingue
+   963, // Inuktitut
+   973, // Inupiaq
+   981, // Irish
+   987, // Italian
+   995, // Japanese
+  1004, // Javanese
+  1013, // Jju
+  1017, // Jola-Fonyi
+  1028, // Kabuverdianu
+  1041, // Kabyle
+  1048, // Kako
+  1053, // Kalaallisut
+  1065, // Kalenjin
+  1074, // Kamba
+  1080, // Kannada
+  1088, // Kanuri
+  1095, // Kashmiri
+  1104, // Kazakh
+  1111, // Kenyang
+  1119, // Khmer
+  1125, // Kiche
+  1135, // Kikuyu
+  1142, // Kinyarwanda
+  1154, // Komi
+  1159, // Kongo
+  1165, // Konkani
+  1173, // Korean
+  1180, // Koro
+  1185, // Koyraboro Senni
+  1201, // Koyra Chiini
+  1214, // Kpelle
+  1221, // Kuanyama
+  1230, // Kurdish
+  1238, // Kwasio
+  1245, // Kyrgyz
+  1252, // Lakota
+  1259, // Langi
+  1265, // Lao
+  1269, // Latin
+  1275, // Latvian
+  1283, // Lezghian
+  1292, // Limburgish
+  1303, // Lingala
+  1311, // Literary Chinese
+  1328, // Lithuanian
+  1339, // Lojban
+  1346, // Lower Sorbian
+  1360, // Low German
+  1371, // Luba-Katanga
+  1384, // Lule Sami
+  1394, // Luo
+  1398, // Luxembourgish
+  1412, // Luyia
+  1418, // Macedonian
+  1429, // Machame
+  1437, // Maithili
+  1446, // Makhuwa-Meetto
+  1461, // Makonde
+  1469, // Malagasy
+  1478, // Malayalam
+  1488, // Malay
+  1494, // Maltese
+  1502, // Mandingo
+  1511, // Manipuri
+  1520, // Manx
+  1525, // Maori
+  1532, // Mapuche
+  1540, // Marathi
+  1548, // Marshallese
+  1560, // Masai
+  1566, // Mazanderani
+  1578, // Mende
+  1584, // Meru
+  1589, // Meta
+  1596, // Mohawk
+  1603, // Mongolian
+  1613, // Morisyen
+  1622, // Mundang
+  1630, // Muscogee
+  1639, // Nama
+  1644, // Nauru
+  1650, // Navajo
+  1657, // Ndonga
+  1664, // Nepali
+  1671, // Newari
+  1678, // Ngiemboon
+  1688, // Ngomba
+  1695, // Nigerian Pidgin
+  1711, // Nko
+  1718, // Northern Luri
+  1732, // Northern Sami
+  1746, // Northern Sotho
+  1761, // North Ndebele
+  1775, // Norwegian Bokmal
+  1793, // Norwegian Nynorsk
+  1811, // Nuer
+  1816, // Nyanja
+  1823, // Nyankole
+  1832, // Occitan
+  1840, // Odia
+  1845, // Ojibwa
+  1852, // Old Irish
+  1862, // Old Norse
+  1872, // Old Persian
+  1884, // Oromo
+  1890, // Osage
+  1896, // Ossetic
+  1904, // Pahlavi
+  1912, // Palauan
+  1920, // Pali
+  1925, // Papiamento
+  1936, // Pashto
+  1943, // Persian
+  1951, // Phoenician
+  1962, // Polish
+  1969, // Portuguese
+  1980, // Prussian
+  1989, // Punjabi
+  1997, // Quechua
+  2005, // Romanian
+  2014, // Romansh
+  2022, // Rombo
+  2028, // Rundi
+  2034, // Russian
+  2042, // Rwa
+  2046, // Saho
+  2051, // Sakha
+  2057, // Samburu
+  2065, // Samoan
+  2072, // Sango
+  2078, // Sangu
+  2084, // Sanskrit
+  2093, // Santali
+  2101, // Sardinian
+  2111, // Saurashtra
+  2122, // Sena
+  2127, // Serbian
+  2135, // Shambala
+  2144, // Shona
+  2150, // Sichuan Yi
+  2161, // Sicilian
+  2170, // Sidamo
+  2177, // Silesian
+  2186, // Sindhi
+  2193, // Sinhala
+  2201, // Skolt Sami
+  2212, // Slovak
+  2219, // Slovenian
+  2229, // Soga
+  2234, // Somali
+  2241, // Southern Kurdish
+  2258, // Southern Sami
+  2272, // Southern Sotho
+  2287, // South Ndebele
+  2301, // Spanish
+  2309, // Standard Moroccan Tamazight
+  2337, // Sundanese
+  2347, // Swahili
+  2355, // Swati
+  2361, // Swedish
+  2369, // Swiss German
+  2382, // Syriac
+  2389, // Tachelhit
+  2399, // Tahitian
+  2408, // Tai Dam
+  2416, // Taita
+  2422, // Tajik
+  2428, // Tamil
+  2434, // Taroko
+  2441, // Tasawaq
+  2449, // Tatar
+  2455, // Telugu
+  2462, // Teso
+  2467, // Thai
+  2472, // Tibetan
+  2480, // Tigre
+  2486, // Tigrinya
+  2495, // Tokelau
+  2503, // Tok Pisin
+  2513, // Tongan
+  2520, // Tsonga
+  2527, // Tswana
+  2534, // Turkish
+  2542, // Turkmen
+  2550, // Tuvalu
+  2557, // Tyap
+  2562, // Ugaritic
+  2571, // Ukrainian
+  2581, // Upper Sorbian
+  2595, // Urdu
+  2600, // Uyghur
+  2607, // Uzbek
+  2613, // Vai
+  2617, // Venda
+  2623, // Vietnamese
+  2634, // Volapuk
+  2643, // Vunjo
+  2649, // Walloon
+  2657, // Walser
+  2664, // Warlpiri
+  2673, // Welsh
+  2679, // Western Balochi
+  2695, // Western Frisian
+  2711, // Wolaytta
+  2720, // Wolof
+  2726, // Xhosa
+  2732, // Yangben
+  2740, // Yiddish
+  2748, // Yoruba
+  2755, // Zarma
+  2761, // Zhuang
+  2768, // Zulu
+  2773, // Kaingang
+  2782, // Nheengatu
+  2792, // Haryanvi
+  2801, // Northern Frisian
+  2818, // Rajasthani
+  2829, // Moksha
+  2836, // Toki Pona
+  2846, // Pijin
+  2852, // Obolo
+  2858, // Baluchi
+  2866, // Ligurian
+  2875, // Rohingya
+  2884, // Torwali
 };
 
 static constexpr char script_name_list[] =
@@ -6583,19 +6583,19 @@ static constexpr char script_name_list[] =
 "Braille\0"
 "Buginese\0"
 "Buhid\0"
-"Canadian Aboriginal\0"
+"Unified Canadian Aboriginal Syllabics\0"
 "Carian\0"
 "Caucasian Albanian\0"
 "Chakma\0"
 "Cham\0"
 "Cherokee\0"
 "Coptic\0"
-"Cuneiform\0"
+"Sumero-Akkadian Cuneiform\0"
 "Cypriot\0"
 "Cyrillic\0"
 "Deseret\0"
 "Devanagari\0"
-"Duployan\0"
+"Duployan shorthand\0"
 "Egyptian hieroglyphs\0"
 "Elbasan\0"
 "Ethiopic\0"
@@ -6655,7 +6655,7 @@ static constexpr char script_name_list[] =
 "Nabataean\0"
 "Newa\0"
 "New Tai Lue\0"
-"Nko\0"
+"N’Ko\0"
 "Odia\0"
 "Ogham\0"
 "Ol Chiki\0"
@@ -6707,7 +6707,7 @@ static constexpr char script_name_list[] =
 "Vai\0"
 "Varang Kshiti\0"
 "Yi\0"
-"Hanifi\0"
+"Hanifi Rohingya\0"
 ;
 
 static constexpr quint16 script_name_index[] = {
@@ -6730,136 +6730,136 @@ static constexpr quint16 script_name_index[] = {
    137, // Buginese
    146, // Buhid
    152, // Canadian Aboriginal
-   172, // Carian
-   179, // Caucasian Albanian
-   198, // Chakma
-   205, // Cham
-   210, // Cherokee
-   219, // Coptic
-   226, // Cuneiform
-   236, // Cypriot
-   244, // Cyrillic
-   253, // Deseret
-   261, // Devanagari
-   272, // Duployan
-   281, // Egyptian hieroglyphs
-   302, // Elbasan
-   310, // Ethiopic
-   319, // Fraser
-   326, // Georgian
-   335, // Glagolitic
-   346, // Gothic
-   353, // Grantha
-   361, // Greek
-   367, // Gujarati
-   376, // Gurmukhi
-   385, // Hangul
-   392, // Han
-   396, // Hanunoo
-   404, // Han with Bopomofo
-   422, // Hatran
-   429, // Hebrew
-   436, // Hiragana
-   445, // Imperial Aramaic
-   462, // Inscriptional Pahlavi
-   484, // Inscriptional Parthian
-   507, // Jamo
-   512, // Japanese
-   521, // Javanese
-   530, // Kaithi
-   537, // Kannada
-   545, // Katakana
-   554, // Kayah Li
-   563, // Kharoshthi
-   574, // Khmer
-   580, // Khojki
-   587, // Khudawadi
-   597, // Korean
-   604, // Lanna
-   610, // Lao
-   614, // Latin
-   620, // Lepcha
-   627, // Limbu
-   633, // Linear A
-   642, // Linear B
-   651, // Lycian
-   658, // Lydian
-   665, // Mahajani
-   674, // Malayalam
-   684, // Mandaean
-   693, // Manichaean
-   704, // Marchen
-   712, // Meitei Mayek
-   725, // Mende
-   731, // Meroitic Cursive
-   748, // Meroitic
-   757, // Modi
-   762, // Mongolian
-   772, // Mro
-   776, // Multani
-   784, // Myanmar
-   792, // Nabataean
-   802, // Newa
-   807, // New Tai Lue
-   819, // Nko
-   823, // Odia
-   828, // Ogham
-   834, // Ol Chiki
-   843, // Old Hungarian
-   857, // Old Italic
-   868, // Old North Arabian
-   886, // Old Permic
-   897, // Old Persian
-   909, // Old South Arabian
-   927, // Orkhon
-   934, // Osage
-   940, // Osmanya
-   948, // Pahawh Hmong
-   961, // Palmyrene
-   971, // Pau Cin Hau
-   983, // Phags-pa
-   992, // Phoenician
-  1003, // Pollard Phonetic
-  1020, // Psalter Pahlavi
-  1036, // Rejang
-  1043, // Runic
-  1049, // Samaritan
-  1059, // Saurashtra
-  1070, // Sharada
-  1078, // Shavian
-  1086, // Siddham
-  1094, // SignWriting
-  1106, // Simplified Han
-  1121, // Sinhala
-  1129, // Sora Sompeng
-  1142, // Sundanese
-  1152, // Syloti Nagri
-  1165, // Syriac
-  1172, // Tagalog
-  1180, // Tagbanwa
-  1189, // Tai Le
-  1196, // Tai Viet
-  1205, // Takri
-  1211, // Tamil
-  1217, // Tangut
-  1224, // Telugu
-  1231, // Thaana
-  1238, // Thai
-  1243, // Tibetan
-  1251, // Tifinagh
-  1260, // Tirhuta
-  1268, // Traditional Han
-  1284, // Ugaritic
-  1293, // Vai
-  1297, // Varang Kshiti
-  1311, // Yi
-  1314, // Hanifi
+   190, // Carian
+   197, // Caucasian Albanian
+   216, // Chakma
+   223, // Cham
+   228, // Cherokee
+   237, // Coptic
+   244, // Cuneiform
+   270, // Cypriot
+   278, // Cyrillic
+   287, // Deseret
+   295, // Devanagari
+   306, // Duployan
+   325, // Egyptian hieroglyphs
+   346, // Elbasan
+   354, // Ethiopic
+   363, // Fraser
+   370, // Georgian
+   379, // Glagolitic
+   390, // Gothic
+   397, // Grantha
+   405, // Greek
+   411, // Gujarati
+   420, // Gurmukhi
+   429, // Hangul
+   436, // Han
+   440, // Hanunoo
+   448, // Han with Bopomofo
+   466, // Hatran
+   473, // Hebrew
+   480, // Hiragana
+   489, // Imperial Aramaic
+   506, // Inscriptional Pahlavi
+   528, // Inscriptional Parthian
+   551, // Jamo
+   556, // Japanese
+   565, // Javanese
+   574, // Kaithi
+   581, // Kannada
+   589, // Katakana
+   598, // Kayah Li
+   607, // Kharoshthi
+   618, // Khmer
+   624, // Khojki
+   631, // Khudawadi
+   641, // Korean
+   648, // Lanna
+   654, // Lao
+   658, // Latin
+   664, // Lepcha
+   671, // Limbu
+   677, // Linear A
+   686, // Linear B
+   695, // Lycian
+   702, // Lydian
+   709, // Mahajani
+   718, // Malayalam
+   728, // Mandaean
+   737, // Manichaean
+   748, // Marchen
+   756, // Meitei Mayek
+   769, // Mende
+   775, // Meroitic Cursive
+   792, // Meroitic
+   801, // Modi
+   806, // Mongolian
+   816, // Mro
+   820, // Multani
+   828, // Myanmar
+   836, // Nabataean
+   846, // Newa
+   851, // New Tai Lue
+   863, // Nko
+   870, // Odia
+   875, // Ogham
+   881, // Ol Chiki
+   890, // Old Hungarian
+   904, // Old Italic
+   915, // Old North Arabian
+   933, // Old Permic
+   944, // Old Persian
+   956, // Old South Arabian
+   974, // Orkhon
+   981, // Osage
+   987, // Osmanya
+   995, // Pahawh Hmong
+  1008, // Palmyrene
+  1018, // Pau Cin Hau
+  1030, // Phags-pa
+  1039, // Phoenician
+  1050, // Pollard Phonetic
+  1067, // Psalter Pahlavi
+  1083, // Rejang
+  1090, // Runic
+  1096, // Samaritan
+  1106, // Saurashtra
+  1117, // Sharada
+  1125, // Shavian
+  1133, // Siddham
+  1141, // SignWriting
+  1153, // Simplified Han
+  1168, // Sinhala
+  1176, // Sora Sompeng
+  1189, // Sundanese
+  1199, // Syloti Nagri
+  1212, // Syriac
+  1219, // Tagalog
+  1227, // Tagbanwa
+  1236, // Tai Le
+  1243, // Tai Viet
+  1252, // Takri
+  1258, // Tamil
+  1264, // Tangut
+  1271, // Telugu
+  1278, // Thaana
+  1285, // Thai
+  1290, // Tibetan
+  1298, // Tifinagh
+  1307, // Tirhuta
+  1315, // Traditional Han
+  1331, // Ugaritic
+  1340, // Vai
+  1344, // Varang Kshiti
+  1358, // Yi
+  1361, // Hanifi
 };
 
 static constexpr char territory_name_list[] =
 "Default\0"
 "Afghanistan\0"
-"Aland Islands\0"
+"Åland Islands\0"
 "Albania\0"
 "Algeria\0"
 "American Samoa\0"
@@ -6867,7 +6867,7 @@ static constexpr char territory_name_list[] =
 "Angola\0"
 "Anguilla\0"
 "Antarctica\0"
-"Antigua And Barbuda\0"
+"Antigua & Barbuda\0"
 "Argentina\0"
 "Armenia\0"
 "Aruba\0"
@@ -6886,7 +6886,7 @@ static constexpr char territory_name_list[] =
 "Bermuda\0"
 "Bhutan\0"
 "Bolivia\0"
-"Bosnia And Herzegovina\0"
+"Bosnia & Herzegovina\0"
 "Botswana\0"
 "Bouvet Island\0"
 "Brazil\0"
@@ -6904,13 +6904,13 @@ static constexpr char territory_name_list[] =
 "Caribbean Netherlands\0"
 "Cayman Islands\0"
 "Central African Republic\0"
-"Ceuta And Melilla\0"
+"Ceuta & Melilla\0"
 "Chad\0"
 "Chile\0"
 "China\0"
 "Christmas Island\0"
 "Clipperton Island\0"
-"Cocos Islands\0"
+"Cocos (Keeling) Islands\0"
 "Colombia\0"
 "Comoros\0"
 "Congo - Brazzaville\0"
@@ -6919,7 +6919,7 @@ static constexpr char territory_name_list[] =
 "Costa Rica\0"
 "Croatia\0"
 "Cuba\0"
-"Curacao\0"
+"Curaçao\0"
 "Cyprus\0"
 "Czechia\0"
 "Denmark\0"
@@ -6962,9 +6962,9 @@ static constexpr char territory_name_list[] =
 "Guinea\0"
 "Guyana\0"
 "Haiti\0"
-"Heard And McDonald Islands\0"
+"Heard & McDonald Islands\0"
 "Honduras\0"
-"Hong Kong\0"
+"Hong Kong SAR China\0"
 "Hungary\0"
 "Iceland\0"
 "India\0"
@@ -6975,7 +6975,7 @@ static constexpr char territory_name_list[] =
 "Isle of Man\0"
 "Israel\0"
 "Italy\0"
-"Ivory Coast\0"
+"Côte d’Ivoire\0" // Ivory Coast
 "Jamaica\0"
 "Japan\0"
 "Jersey\0"
@@ -6996,8 +6996,8 @@ static constexpr char territory_name_list[] =
 "Liechtenstein\0"
 "Lithuania\0"
 "Luxembourg\0"
-"Macao\0"
-"Macedonia\0"
+"Macao SAR China\0"
+"North Macedonia\0"
 "Madagascar\0"
 "Malawi\0"
 "Malaysia\0"
@@ -7018,7 +7018,7 @@ static constexpr char territory_name_list[] =
 "Montserrat\0"
 "Morocco\0"
 "Mozambique\0"
-"Myanmar\0"
+"Myanmar (Burma)\0"
 "Namibia\0"
 "Nauru\0"
 "Nepal\0"
@@ -7043,25 +7043,25 @@ static constexpr char territory_name_list[] =
 "Paraguay\0"
 "Peru\0"
 "Philippines\0"
-"Pitcairn\0"
+"Pitcairn Islands\0"
 "Poland\0"
 "Portugal\0"
 "Puerto Rico\0"
 "Qatar\0"
-"Reunion\0"
+"Réunion\0"
 "Romania\0"
 "Russia\0"
 "Rwanda\0"
-"Saint Barthelemy\0"
-"Saint Helena\0"
-"Saint Kitts And Nevis\0"
-"Saint Lucia\0"
-"Saint Martin\0"
-"Saint Pierre And Miquelon\0"
-"Saint Vincent And Grenadines\0"
+"St. Barthélemy\0"
+"St. Helena\0"
+"St. Kitts & Nevis\0"
+"St. Lucia\0"
+"St. Martin\0"
+"St. Pierre & Miquelon\0"
+"St. Vincent & Grenadines\0"
 "Samoa\0"
 "San Marino\0"
-"Sao Tome And Principe\0"
+"São Tomé & Príncipe\0"
 "Saudi Arabia\0"
 "Senegal\0"
 "Serbia\0"
@@ -7074,14 +7074,14 @@ static constexpr char territory_name_list[] =
 "Solomon Islands\0"
 "Somalia\0"
 "South Africa\0"
-"South Georgia And South Sandwich Islands\0"
+"South Georgia & South Sandwich Islands\0"
 "South Korea\0"
 "South Sudan\0"
 "Spain\0"
 "Sri Lanka\0"
 "Sudan\0"
 "Suriname\0"
-"Svalbard And Jan Mayen\0"
+"Svalbard & Jan Mayen\0"
 "Sweden\0"
 "Switzerland\0"
 "Syria\0"
@@ -7093,27 +7093,27 @@ static constexpr char territory_name_list[] =
 "Togo\0"
 "Tokelau\0"
 "Tonga\0"
-"Trinidad And Tobago\0"
+"Trinidad & Tobago\0"
 "Tristan da Cunha\0"
 "Tunisia\0"
-"Turkey\0"
+"Türkiye\0" // Turkey
 "Turkmenistan\0"
-"Turks And Caicos Islands\0"
+"Turks & Caicos Islands\0"
 "Tuvalu\0"
 "Uganda\0"
 "Ukraine\0"
 "United Arab Emirates\0"
 "United Kingdom\0"
-"United States Outlying Islands\0"
+"U.S. Outlying Islands\0"
 "United States\0"
-"United States Virgin Islands\0"
+"U.S. Virgin Islands\0"
 "Uruguay\0"
 "Uzbekistan\0"
 "Vanuatu\0"
 "Vatican City\0"
 "Venezuela\0"
 "Vietnam\0"
-"Wallis And Futuna\0"
+"Wallis & Futuna\0"
 "Western Sahara\0"
 "world\0"
 "Yemen\0"
@@ -7125,265 +7125,265 @@ static constexpr quint16 territory_name_index[] = {
      0, // AnyTerritory
      8, // Afghanistan
     20, // Aland Islands
-    34, // Albania
-    42, // Algeria
-    50, // American Samoa
-    65, // Andorra
-    73, // Angola
-    80, // Anguilla
-    89, // Antarctica
-   100, // Antigua And Barbuda
-   120, // Argentina
-   130, // Armenia
-   138, // Aruba
-   144, // Ascension Island
-   161, // Australia
-   171, // Austria
-   179, // Azerbaijan
-   190, // Bahamas
-   198, // Bahrain
-   206, // Bangladesh
-   217, // Barbados
-   226, // Belarus
-   234, // Belgium
-   242, // Belize
-   249, // Benin
-   255, // Bermuda
-   263, // Bhutan
-   270, // Bolivia
-   278, // Bosnia And Herzegovina
-   301, // Botswana
-   310, // Bouvet Island
-   324, // Brazil
-   331, // British Indian Ocean Territory
-   362, // British Virgin Islands
-   385, // Brunei
-   392, // Bulgaria
-   401, // Burkina Faso
-   414, // Burundi
-   422, // Cambodia
-   431, // Cameroon
-   440, // Canada
-   447, // Canary Islands
-   462, // Cape Verde
-   473, // Caribbean Netherlands
-   495, // Cayman Islands
-   510, // Central African Republic
-   535, // Ceuta And Melilla
-   553, // Chad
-   558, // Chile
-   564, // China
-   570, // Christmas Island
-   587, // Clipperton Island
-   605, // Cocos Islands
-   619, // Colombia
-   628, // Comoros
-   636, // Congo - Brazzaville
-   656, // Congo - Kinshasa
-   673, // Cook Islands
-   686, // Costa Rica
-   697, // Croatia
-   705, // Cuba
-   710, // Curacao
-   718, // Cyprus
-   725, // Czechia
-   733, // Denmark
-   741, // Diego Garcia
-   754, // Djibouti
-   763, // Dominica
-   772, // Dominican Republic
-   791, // Ecuador
-   799, // Egypt
-   805, // El Salvador
-   817, // Equatorial Guinea
-   835, // Eritrea
-   843, // Estonia
-   851, // Eswatini
-   860, // Ethiopia
-   869, // Europe
-   876, // European Union
-   891, // Falkland Islands
-   908, // Faroe Islands
-   922, // Fiji
-   927, // Finland
-   935, // France
-   942, // French Guiana
-   956, // French Polynesia
-   973, // French Southern Territories
-  1001, // Gabon
-  1007, // Gambia
-  1014, // Georgia
-  1022, // Germany
-  1030, // Ghana
-  1036, // Gibraltar
-  1046, // Greece
-  1053, // Greenland
-  1063, // Grenada
-  1071, // Guadeloupe
-  1082, // Guam
-  1087, // Guatemala
-  1097, // Guernsey
-  1106, // Guinea-Bissau
-  1120, // Guinea
-  1127, // Guyana
-  1134, // Haiti
-  1140, // Heard And McDonald Islands
-  1167, // Honduras
-  1176, // Hong Kong
-  1186, // Hungary
-  1194, // Iceland
-  1202, // India
-  1208, // Indonesia
-  1218, // Iran
-  1223, // Iraq
-  1228, // Ireland
-  1236, // Isle of Man
-  1248, // Israel
-  1255, // Italy
-  1261, // Ivory Coast
-  1273, // Jamaica
-  1281, // Japan
-  1287, // Jersey
-  1294, // Jordan
-  1301, // Kazakhstan
-  1312, // Kenya
-  1318, // Kiribati
-  1327, // Kosovo
-  1334, // Kuwait
-  1341, // Kyrgyzstan
-  1352, // Laos
-  1357, // Latin America
-  1371, // Latvia
-  1378, // Lebanon
-  1386, // Lesotho
-  1394, // Liberia
-  1402, // Libya
-  1408, // Liechtenstein
-  1422, // Lithuania
-  1432, // Luxembourg
-  1443, // Macao
-  1449, // Macedonia
-  1459, // Madagascar
-  1470, // Malawi
-  1477, // Malaysia
-  1486, // Maldives
-  1495, // Mali
-  1500, // Malta
-  1506, // Marshall Islands
-  1523, // Martinique
-  1534, // Mauritania
-  1545, // Mauritius
-  1555, // Mayotte
-  1563, // Mexico
-  1570, // Micronesia
-  1581, // Moldova
-  1589, // Monaco
-  1596, // Mongolia
-  1605, // Montenegro
-  1616, // Montserrat
-  1627, // Morocco
-  1635, // Mozambique
-  1646, // Myanmar
-  1654, // Namibia
-  1662, // Nauru
-  1668, // Nepal
-  1674, // Netherlands
-  1686, // New Caledonia
-  1700, // New Zealand
-  1712, // Nicaragua
-  1722, // Nigeria
-  1730, // Niger
-  1736, // Niue
-  1741, // Norfolk Island
-  1756, // Northern Mariana Islands
-  1781, // North Korea
-  1793, // Norway
-  1800, // Oman
-  1805, // Outlying Oceania
-  1822, // Pakistan
-  1831, // Palau
-  1837, // Palestinian Territories
-  1861, // Panama
-  1868, // Papua New Guinea
-  1885, // Paraguay
-  1894, // Peru
-  1899, // Philippines
-  1911, // Pitcairn
-  1920, // Poland
-  1927, // Portugal
-  1936, // Puerto Rico
-  1948, // Qatar
-  1954, // Reunion
-  1962, // Romania
-  1970, // Russia
-  1977, // Rwanda
-  1984, // Saint Barthelemy
-  2001, // Saint Helena
-  2014, // Saint Kitts And Nevis
-  2036, // Saint Lucia
-  2048, // Saint Martin
-  2061, // Saint Pierre And Miquelon
-  2087, // Saint Vincent And Grenadines
-  2116, // Samoa
-  2122, // San Marino
-  2133, // Sao Tome And Principe
-  2155, // Saudi Arabia
-  2168, // Senegal
-  2176, // Serbia
-  2183, // Seychelles
-  2194, // Sierra Leone
-  2207, // Singapore
-  2217, // Sint Maarten
-  2230, // Slovakia
-  2239, // Slovenia
-  2248, // Solomon Islands
-  2264, // Somalia
-  2272, // South Africa
-  2285, // South Georgia And South Sandwich Islands
-  2326, // South Korea
-  2338, // South Sudan
-  2350, // Spain
-  2356, // Sri Lanka
-  2366, // Sudan
-  2372, // Suriname
-  2381, // Svalbard And Jan Mayen
-  2404, // Sweden
-  2411, // Switzerland
-  2423, // Syria
-  2429, // Taiwan
-  2436, // Tajikistan
-  2447, // Tanzania
-  2456, // Thailand
-  2465, // Timor-Leste
-  2477, // Togo
-  2482, // Tokelau
-  2490, // Tonga
-  2496, // Trinidad And Tobago
-  2516, // Tristan da Cunha
-  2533, // Tunisia
-  2541, // Turkey
-  2548, // Turkmenistan
-  2561, // Turks And Caicos Islands
-  2586, // Tuvalu
-  2593, // Uganda
-  2600, // Ukraine
-  2608, // United Arab Emirates
-  2629, // United Kingdom
-  2644, // United States Outlying Islands
-  2675, // United States
-  2689, // United States Virgin Islands
-  2718, // Uruguay
-  2726, // Uzbekistan
-  2737, // Vanuatu
-  2745, // Vatican City
-  2758, // Venezuela
-  2768, // Vietnam
-  2776, // Wallis And Futuna
-  2794, // Western Sahara
-  2809, // world
-  2815, // Yemen
-  2821, // Zambia
-  2828, // Zimbabwe
+    35, // Albania
+    43, // Algeria
+    51, // American Samoa
+    66, // Andorra
+    74, // Angola
+    81, // Anguilla
+    90, // Antarctica
+   101, // Antigua And Barbuda
+   119, // Argentina
+   129, // Armenia
+   137, // Aruba
+   143, // Ascension Island
+   160, // Australia
+   170, // Austria
+   178, // Azerbaijan
+   189, // Bahamas
+   197, // Bahrain
+   205, // Bangladesh
+   216, // Barbados
+   225, // Belarus
+   233, // Belgium
+   241, // Belize
+   248, // Benin
+   254, // Bermuda
+   262, // Bhutan
+   269, // Bolivia
+   277, // Bosnia And Herzegovina
+   298, // Botswana
+   307, // Bouvet Island
+   321, // Brazil
+   328, // British Indian Ocean Territory
+   359, // British Virgin Islands
+   382, // Brunei
+   389, // Bulgaria
+   398, // Burkina Faso
+   411, // Burundi
+   419, // Cambodia
+   428, // Cameroon
+   437, // Canada
+   444, // Canary Islands
+   459, // Cape Verde
+   470, // Caribbean Netherlands
+   492, // Cayman Islands
+   507, // Central African Republic
+   532, // Ceuta And Melilla
+   548, // Chad
+   553, // Chile
+   559, // China
+   565, // Christmas Island
+   582, // Clipperton Island
+   600, // Cocos Islands
+   624, // Colombia
+   633, // Comoros
+   641, // Congo - Brazzaville
+   661, // Congo - Kinshasa
+   678, // Cook Islands
+   691, // Costa Rica
+   702, // Croatia
+   710, // Cuba
+   715, // Curacao
+   724, // Cyprus
+   731, // Czechia
+   739, // Denmark
+   747, // Diego Garcia
+   760, // Djibouti
+   769, // Dominica
+   778, // Dominican Republic
+   797, // Ecuador
+   805, // Egypt
+   811, // El Salvador
+   823, // Equatorial Guinea
+   841, // Eritrea
+   849, // Estonia
+   857, // Eswatini
+   866, // Ethiopia
+   875, // Europe
+   882, // European Union
+   897, // Falkland Islands
+   914, // Faroe Islands
+   928, // Fiji
+   933, // Finland
+   941, // France
+   948, // French Guiana
+   962, // French Polynesia
+   979, // French Southern Territories
+  1007, // Gabon
+  1013, // Gambia
+  1020, // Georgia
+  1028, // Germany
+  1036, // Ghana
+  1042, // Gibraltar
+  1052, // Greece
+  1059, // Greenland
+  1069, // Grenada
+  1077, // Guadeloupe
+  1088, // Guam
+  1093, // Guatemala
+  1103, // Guernsey
+  1112, // Guinea-Bissau
+  1126, // Guinea
+  1133, // Guyana
+  1140, // Haiti
+  1146, // Heard And McDonald Islands
+  1171, // Honduras
+  1180, // Hong Kong
+  1200, // Hungary
+  1208, // Iceland
+  1216, // India
+  1222, // Indonesia
+  1232, // Iran
+  1237, // Iraq
+  1242, // Ireland
+  1250, // Isle of Man
+  1262, // Israel
+  1269, // Italy
+  1275, // Ivory Coast
+  1292, // Jamaica
+  1300, // Japan
+  1306, // Jersey
+  1313, // Jordan
+  1320, // Kazakhstan
+  1331, // Kenya
+  1337, // Kiribati
+  1346, // Kosovo
+  1353, // Kuwait
+  1360, // Kyrgyzstan
+  1371, // Laos
+  1376, // Latin America
+  1390, // Latvia
+  1397, // Lebanon
+  1405, // Lesotho
+  1413, // Liberia
+  1421, // Libya
+  1427, // Liechtenstein
+  1441, // Lithuania
+  1451, // Luxembourg
+  1462, // Macao
+  1478, // Macedonia
+  1494, // Madagascar
+  1505, // Malawi
+  1512, // Malaysia
+  1521, // Maldives
+  1530, // Mali
+  1535, // Malta
+  1541, // Marshall Islands
+  1558, // Martinique
+  1569, // Mauritania
+  1580, // Mauritius
+  1590, // Mayotte
+  1598, // Mexico
+  1605, // Micronesia
+  1616, // Moldova
+  1624, // Monaco
+  1631, // Mongolia
+  1640, // Montenegro
+  1651, // Montserrat
+  1662, // Morocco
+  1670, // Mozambique
+  1681, // Myanmar
+  1697, // Namibia
+  1705, // Nauru
+  1711, // Nepal
+  1717, // Netherlands
+  1729, // New Caledonia
+  1743, // New Zealand
+  1755, // Nicaragua
+  1765, // Nigeria
+  1773, // Niger
+  1779, // Niue
+  1784, // Norfolk Island
+  1799, // Northern Mariana Islands
+  1824, // North Korea
+  1836, // Norway
+  1843, // Oman
+  1848, // Outlying Oceania
+  1865, // Pakistan
+  1874, // Palau
+  1880, // Palestinian Territories
+  1904, // Panama
+  1911, // Papua New Guinea
+  1928, // Paraguay
+  1937, // Peru
+  1942, // Philippines
+  1954, // Pitcairn
+  1971, // Poland
+  1978, // Portugal
+  1987, // Puerto Rico
+  1999, // Qatar
+  2005, // Reunion
+  2014, // Romania
+  2022, // Russia
+  2029, // Rwanda
+  2036, // Saint Barthelemy
+  2052, // Saint Helena
+  2063, // Saint Kitts And Nevis
+  2081, // Saint Lucia
+  2091, // Saint Martin
+  2102, // Saint Pierre And Miquelon
+  2124, // Saint Vincent And Grenadines
+  2149, // Samoa
+  2155, // San Marino
+  2166, // Sao Tome And Principe
+  2189, // Saudi Arabia
+  2202, // Senegal
+  2210, // Serbia
+  2217, // Seychelles
+  2228, // Sierra Leone
+  2241, // Singapore
+  2251, // Sint Maarten
+  2264, // Slovakia
+  2273, // Slovenia
+  2282, // Solomon Islands
+  2298, // Somalia
+  2306, // South Africa
+  2319, // South Georgia And South Sandwich Islands
+  2358, // South Korea
+  2370, // South Sudan
+  2382, // Spain
+  2388, // Sri Lanka
+  2398, // Sudan
+  2404, // Suriname
+  2413, // Svalbard And Jan Mayen
+  2434, // Sweden
+  2441, // Switzerland
+  2453, // Syria
+  2459, // Taiwan
+  2466, // Tajikistan
+  2477, // Tanzania
+  2486, // Thailand
+  2495, // Timor-Leste
+  2507, // Togo
+  2512, // Tokelau
+  2520, // Tonga
+  2526, // Trinidad And Tobago
+  2544, // Tristan da Cunha
+  2561, // Tunisia
+  2569, // Turkey
+  2578, // Turkmenistan
+  2591, // Turks And Caicos Islands
+  2614, // Tuvalu
+  2621, // Uganda
+  2628, // Ukraine
+  2636, // United Arab Emirates
+  2657, // United Kingdom
+  2672, // United States Outlying Islands
+  2694, // United States
+  2708, // United States Virgin Islands
+  2728, // Uruguay
+  2736, // Uzbekistan
+  2747, // Vanuatu
+  2755, // Vatican City
+  2768, // Venezuela
+  2778, // Vietnam
+  2786, // Wallis And Futuna
+  2802, // Western Sahara
+  2817, // world
+  2823, // Yemen
+  2829, // Zambia
+  2836, // Zimbabwe
 };
 
 constexpr std::array<LanguageCodeEntry, 341> languageCodeList {
