@@ -100,6 +100,13 @@ private slots:
     void monthName();
     void standaloneMonthName();
 
+    void languageToString_data();
+    void languageToString();
+    void scriptToString_data();
+    void scriptToString();
+    void territoryToString_data();
+    void territoryToString();
+
     void defaultNumberingSystem_data();
     void defaultNumberingSystem();
 
@@ -3367,6 +3374,66 @@ void tst_QLocale::standaloneMonthName()
     QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat),
              QString::fromUtf8("\xd1\x8f\xd0\xbd\xd0\xb2."));
     QCOMPARE(ru.standaloneMonthName(1, QLocale::NarrowFormat), QString::fromUtf8("\xd0\xaf"));
+}
+
+void tst_QLocale::languageToString_data()
+{
+    QTest::addColumn<QLocale::Language>("language");
+    QTest::addColumn<QString>("name");
+
+    // Prone to change at CLDR updates.
+    QTest::newRow("dyo") << QLocale::JolaFonyi << u"Jola-Fonyi"_s;
+    QTest::newRow("lu") << QLocale::LubaKatanga << u"Luba-Katanga"_s;
+    QTest::newRow("mgh") << QLocale::MakhuwaMeetto << u"Makhuwa-Meetto"_s;
+}
+
+void tst_QLocale::languageToString()
+{
+    QFETCH(const QLocale::Language, language);
+    QFETCH(const QString, name);
+
+    QCOMPARE(QLocale::languageToString(language), name);
+}
+
+void tst_QLocale::scriptToString_data()
+{
+    QTest::addColumn<QLocale::Script>("script");
+    QTest::addColumn<QString>("name");
+
+    // Prone to change at CLDR updates.
+    QTest::newRow("Egyp") << QLocale::EgyptianHieroglyphsScript << u"Egyptian hieroglyphs"_s;
+    QTest::newRow("Phag") << QLocale::PhagsPaScript << u"Phags-pa"_s;
+    QTest::newRow("Sgnw") << QLocale::SignWritingScript << u"SignWriting"_s;
+}
+
+void tst_QLocale::scriptToString()
+{
+    QFETCH(const QLocale::Script, script);
+    QFETCH(const QString, name);
+
+    QCOMPARE(QLocale::scriptToString(script), name);
+}
+
+void tst_QLocale::territoryToString_data()
+{
+    QTest::addColumn<QLocale::Territory>("territory");
+    QTest::addColumn<QString>("name");
+    // Prone to change at CLDR updates.
+
+    QTest::newRow("CD") << QLocale::CongoKinshasa << u"Congo - Kinshasa"_s;
+    QTest::newRow("CG") << QLocale::CongoBrazzaville << u"Congo - Brazzaville"_s;
+    QTest::newRow("GW") << QLocale::GuineaBissau << u"Guinea-Bissau"_s;
+    QTest::newRow("IM") << QLocale::IsleOfMan << u"Isle of Man"_s;
+    QTest::newRow("TA") << QLocale::TristanDaCunha << u"Tristan da Cunha"_s;
+    QTest::newRow("001") << QLocale::World << u"world"_s;
+}
+
+void tst_QLocale::territoryToString()
+{
+    QFETCH(const QLocale::Territory, territory);
+    QFETCH(const QString, name);
+
+    QCOMPARE(QLocale::territoryToString(territory), name);
 }
 
 void tst_QLocale::currency()
