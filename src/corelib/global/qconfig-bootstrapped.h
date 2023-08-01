@@ -82,11 +82,6 @@
 #endif
 #define QT_FEATURE_shortcut -1
 #define QT_FEATURE_slog2 -1
-#ifdef __GLIBC_PREREQ
-# define QT_FEATURE_statx (__GLIBC_PREREQ(2, 28) ? 1 : -1)
-#else
-# define QT_FEATURE_statx -1
-#endif
 #define QT_FEATURE_syslog -1
 #define QT_NO_SYSTEMLOCALE
 #define QT_FEATURE_temporaryfile 1

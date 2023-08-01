@@ -414,27 +414,6 @@ renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEO
 }
 ")
 
-# statx
-qt_config_compile_test(statx
-    LABEL "statx() in libc"
-    CODE
-"#define _ATFILE_SOURCE 1
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-struct statx statxbuf;
-unsigned int mask = STATX_BASIC_STATS;
-return statx(AT_FDCWD, \"\", AT_STATX_SYNC_AS_STAT, mask, &statxbuf);
-    /* END TEST: */
-    return 0;
-}
-")
-
 # syslog
 qt_config_compile_test(syslog
     LABEL "syslog"
@@ -664,10 +643,6 @@ qt_feature("renameat2" PRIVATE
 qt_feature("slog2" PRIVATE
     LABEL "slog2"
     CONDITION Slog2_FOUND
-)
-qt_feature("statx" PRIVATE
-    LABEL "statx() in libc"
-    CONDITION ( LINUX OR HURD ) AND TEST_statx
 )
 qt_feature("syslog" PRIVATE
     LABEL "syslog"
