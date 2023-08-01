@@ -411,40 +411,6 @@ int main(void)
 }
 ")
 
-# xlocalescanprint
-qt_config_compile_test(xlocalescanprint
-    LABEL "xlocale.h (or equivalents)"
-    CODE
-"#define QT_BEGIN_NAMESPACE
-#define QT_END_NAMESPACE
-
-#ifdef _MSVC_VER
-#define Q_CC_MSVC _MSVC_VER
-#endif
-
-#define QT_NO_DOUBLECONVERSION
-
-#include QDSP_P_H
-
-int main(void)
-{
-    /* BEGIN TEST: */
-#ifdef _MSVC_VER
-_locale_t invalidLocale = NULL;
-#else
-locale_t invalidLocale = NULL;
-#endif
-double a = 3.4;
-qDoubleSnprintf(argv[0], 1, invalidLocale, \"invalid format\", a);
-qDoubleSscanf(argv[0], invalidLocale, \"invalid format\", &a, &argc);
-    /* END TEST: */
-    return 0;
-}
-"# FIXME: qmake: DEFINES += QDSP_P_H=$$shell_quote(\"@PWD@/text/qdoublescanprint_p.h\")
-)
-
-
-
 #### Features
 
 qt_feature("clock-gettime" PRIVATE
@@ -935,11 +901,6 @@ qt_configure_add_report_entry(
     TYPE NOTE
     MESSAGE "journald, syslog or slog2 integration is enabled.  If your users intend to develop applications against this build, ensure that the IDEs they use either set QT_FORCE_STDERR_LOGGING to 1 or are able to read the logged output from journald, syslog or slog2."
     CONDITION QT_FEATURE_journald OR QT_FEATURE_syslog OR ( QNX AND QT_FEATURE_slog2 )
-)
-qt_configure_add_report_entry(
-    TYPE ERROR
-    MESSAGE "Your C library does not provide sscanf_l or snprintf_l.  You need to use libdouble-conversion for double/string conversion."
-    CONDITION INPUT_doubleconversion STREQUAL 'no' AND NOT TEST_xlocalescanprint
 )
 qt_configure_add_report_entry(
     TYPE ERROR
