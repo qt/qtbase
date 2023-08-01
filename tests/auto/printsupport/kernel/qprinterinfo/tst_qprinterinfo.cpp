@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
 #  include <unistd.h>
 #  include <sys/types.h>
 #  include <sys/wait.h>
