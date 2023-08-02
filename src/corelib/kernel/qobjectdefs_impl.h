@@ -366,7 +366,7 @@ namespace QtPrivate {
             static void cleanup(QSlotObjectBase *p) noexcept { Deleter{}(p); }
         };
 
-        inline int ref() noexcept { return m_ref.ref(); }
+        bool ref() noexcept { return m_ref.ref(); }
         inline void destroyIfLastRef() noexcept
         { if (!m_ref.deref()) m_impl(Destroy, this, nullptr, nullptr, nullptr); }
 
