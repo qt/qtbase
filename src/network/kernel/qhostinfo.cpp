@@ -819,13 +819,6 @@ int QHostInfo::lookupHostImpl(const QString &name,
 }
 
 QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
-                                     QtPrivate::QSlotObjectBase *slotObj) :
-    toBeLookedUp(hn), id(i), resultEmitter(receiver, slotObj)
-{
-    setAutoDelete(true);
-}
-
-QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
                                      QtPrivate::SlotObjUniquePtr slotObj)
     : toBeLookedUp{hn}, id{i}, resultEmitter{receiver, std::move(slotObj)}
 {
