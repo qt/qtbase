@@ -2685,6 +2685,28 @@ void tst_QFile::virtualFile()
         lines += std::move(data);
     }
 
+    if (!QT_CONFIG(static) && !QTestPrivate::isRunningArmOnX86()) {
+        // we must be able to find QtCore and QtTest somewhere
+        static const char corelib[] = "libQt" QT_STRINGIFY(QT_VERSION_MAJOR) "Core";
+        static const char testlib[] = "libQt" QT_STRINGIFY(QT_VERSION_MAJOR) "Test";
+        auto contains = [&](QByteArrayView text, quintptr ptr = 0) {
+            // this is not the same a QList::contains()
+            return std::any_of(lines.constBegin(), lines.constEnd(), [=](QByteArrayView entry) {
+                if (!entry.contains(text))
+                    return false;
+                if (!ptr)
+                    return true;
+                qsizetype dash = entry.indexOf('-');
+                qsizetype space = entry.indexOf(' ', dash);
+                quintptr start = entry.left(dash).toULong(nullptr, 16);
+                quintptr end = entry.left(space).mid(dash + 1).toULong(nullptr, 16);
+                return start <= ptr && ptr <= end;
+            });
+        };
+        QVERIFY(contains(corelib, quintptr(f.metaObject())));
+        QVERIFY(contains(testlib));
+    }
+
     // read all:
     QVERIFY(f.seek(0));
     data = f.readAll();
