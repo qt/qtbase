@@ -6,6 +6,10 @@
 
 #if defined(Q_OS_MACOS)
 #  include <AppKit/AppKit.h>
+#  define VIEW_BASE NSView
+#elif defined(Q_OS_IOS)
+#  include <UIKit/UIKit.h>
+#  define VIEW_BASE UIView
 #elif defined(Q_OS_WIN)
 #  include <winuser.h>
 #endif
@@ -24,16 +28,16 @@ public:
     QRect geometry() const;
 
 private:
-#if defined(Q_OS_MACOS)
-    NSView *m_handle = nullptr;
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+    VIEW_BASE *m_handle = nullptr;
 #elif defined(Q_OS_WIN)
     HWND m_handle = nullptr;
 #endif
 };
 
-#if defined(Q_OS_MACOS)
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 
-@interface View : NSView
+@interface View : VIEW_BASE
 @end
 
 @implementation View
