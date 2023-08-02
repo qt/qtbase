@@ -72,6 +72,9 @@ Q_APPLICATION_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
 
 }
 
+QHostInfoResult::~QHostInfoResult()
+    = default;
+
 /*
     The calling thread is likely the one that executes the lookup via
     QHostInfoRunnable. Unless we operate with a queued connection already,
@@ -817,6 +820,9 @@ QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *re
 {
     setAutoDelete(true);
 }
+
+QHostInfoRunnable::~QHostInfoRunnable()
+    = default;
 
 // the QHostInfoLookupManager will at some point call this via a QThreadPool
 void QHostInfoRunnable::run()
