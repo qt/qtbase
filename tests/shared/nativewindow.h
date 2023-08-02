@@ -18,6 +18,7 @@ public:
     ~NativeWindow();
 
     operator WId() const { return reinterpret_cast<WId>(m_handle); }
+    WId parentWinId() const;
 
     void setGeometry(const QRect &rect);
     QRect geometry() const;
@@ -69,6 +70,11 @@ QRect NativeWindow::geometry() const
     return QRectF::fromCGRect(m_handle.frame).toRect();
 }
 
+WId NativeWindow::parentWinId() const
+{
+    return WId(m_handle.superview);
+}
+
 #elif defined(Q_OS_WIN)
 
 NativeWindow::NativeWindow()
@@ -105,6 +111,11 @@ QRect NativeWindow::geometry() const
         return QRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
     }
     return {};
+}
+
+WId NativeWindow::parentWinId() const
+{
+    return WId(GetAncestor(m_handle, GA_PARENT));
 }
 
 #endif
