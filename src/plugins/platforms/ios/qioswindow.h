@@ -56,6 +56,8 @@ public:
 
     void requestUpdate() override;
 
+    void setMask(const QRegion &region) override;
+
 #if QT_CONFIG(opengl)
     CAEAGLLayer *eaglLayer() const;
 #endif

@@ -11,7 +11,10 @@
 #include "quiview.h"
 #include "qiosinputcontext.h"
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <QtGui/private/qwindow_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <qpa/qplatformintegration.h>
 
 #if QT_CONFIG(opengl)
@@ -54,6 +57,7 @@ QIOSWindow::QIOSWindow(QWindow *window)
 
     setWindowState(window->windowStates());
     setOpacity(window->opacity());
+    setMask(QHighDpi::toNativeLocalRegion(window->mask(), window));
 
     Qt::ScreenOrientation initialOrientation = window->contentOrientation();
     if (initialOrientation != Qt::PrimaryOrientation) {
@@ -353,6 +357,20 @@ void QIOSWindow::clearAccessibleCache()
 void QIOSWindow::requestUpdate()
 {
     static_cast<QIOSScreen *>(screen())->setUpdatesPaused(false);
+}
+
+void QIOSWindow::setMask(const QRegion &region)
+{
+    if (!region.isEmpty()) {
+        QCFType<CGMutablePathRef> maskPath = CGPathCreateMutable();
+        for (const QRect &r : region)
+            CGPathAddRect(maskPath, nullptr, r.toCGRect());
+        CAShapeLayer *maskLayer = [CAShapeLayer layer];
+        maskLayer.path = maskPath;
+        m_view.layer.mask = maskLayer;
+    } else {
+        m_view.layer.mask = nil;
+    }
 }
 
 #if QT_CONFIG(opengl)
