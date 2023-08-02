@@ -11,9 +11,30 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
-qt_internal_add_test(tst_qguieventdispatcher
-    SOURCES
-        ../../../corelib/kernel/qeventdispatcher/tst_qeventdispatcher.cpp
-    LIBRARIES
-        Qt::Gui
+set(test_names "tst_qguieventdispatcher")
+if(QT_FEATURE_glib AND UNIX)
+    list(APPEND test_names "tst_qguieventdispatcher_no_glib")
+endif()
+
+foreach(test ${test_names})
+    qt_internal_add_test(${test}
+        NO_BATCH
+        SOURCES
+            ../../../corelib/kernel/qeventdispatcher/tst_qeventdispatcher.cpp
+        LIBRARIES
+            Qt::Gui
+    )
+endforeach()
+
+qt_internal_extend_target(tst_qguieventdispatcher
+    DEFINES
+        tst_QEventDispatcher=tst_qguieventdispatcher
 )
+
+if (TARGET tst_qeventdispatcher_no_glib)
+    qt_internal_extend_target(tst_qguieventdispatcher_no_glib
+        DEFINES
+            DISABLE_GLIB
+            tst_QEventDispatcher=tst_qguieventdispatcher_no_glib
+    )
+endif()

@@ -3,7 +3,6 @@
 
 #ifdef QT_GUI_LIB
 #  include <QtGui/QGuiApplication>
-#  define tst_QEventDispatcher tst_QGuiEventDispatcher
 #else
 #  include <QtCore/QCoreApplication>
 #endif
@@ -11,6 +10,13 @@
 #include <QAbstractEventDispatcher>
 #include <QTimer>
 #include <QThreadPool>
+
+#ifdef DISABLE_GLIB
+static bool glibDisabled = []() {
+    qputenv("QT_NO_GLIB", "1");
+    return true;
+}();
+#endif
 
 enum {
     PreciseTimerInterval    =   10,
