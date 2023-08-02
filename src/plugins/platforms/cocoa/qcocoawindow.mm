@@ -174,8 +174,7 @@ QCocoaWindow::~QCocoaWindow()
         object:m_view];
 
     [m_view release];
-    [m_nsWindow close];
-    [m_nsWindow release];
+    [m_nsWindow closeAndRelease];
 }
 
 QSurfaceFormat QCocoaWindow::format() const
