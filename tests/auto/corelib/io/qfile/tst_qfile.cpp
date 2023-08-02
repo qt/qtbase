@@ -52,7 +52,9 @@ QT_END_NAMESPACE
 #ifdef Q_OS_DARWIN
 # include <sys/mount.h>
 #elif defined(Q_OS_LINUX)
+# include <sys/eventfd.h>
 # include <sys/vfs.h>
+# include <sys/wait.h>
 #elif defined(Q_OS_FREEBSD)
 # include <sys/param.h>
 # include <sys/mount.h>
@@ -2613,8 +2615,29 @@ void tst_QFile::writeToReadOnlyFile()
 // This platform have 0-sized virtual files
 void tst_QFile::virtualFile()
 {
-    // test if QFile works with virtual files
-    QString fname = "/proc/self/maps";
+    // We need to test a large-ish /proc file on Linux, one that is usually
+    // over 4 kB (because the kernel writes in chunks of that), has a
+    // cross-platform file format, and is definitely readable. The best
+    // candidate and the one we can verify anything in is /proc/<PID>/maps.
+    // However, our act of reading may change the map because we allocate
+    // memory, so we fork() here so we have a frozen snapshot of the file.
+
+    int efd = eventfd(0, EFD_CLOEXEC);
+    pid_t pid = fork();
+    if (pid == 0) {
+        // child
+        uint64_t val;
+        eventfd_read(efd, &val);
+        _exit(0);
+    }
+    QVERIFY2(pid > 0, "fork failed: " + qt_error_string().toLocal8Bit());
+    auto waitForChild = qScopeGuard([=] {
+        eventfd_write(efd, 1);
+        close(efd);
+        waitpid(pid, nullptr, 0);
+    });
+
+    QString fname = u"/proc/%1/maps"_s.arg(pid);
 
     // consistency check
     QFileInfo fi(fname);
@@ -2625,11 +2648,7 @@ void tst_QFile::virtualFile()
     // open the file
     QFile f(fname);
     QVERIFY2(f.open(QIODevice::ReadOnly), msgOpenFailed(f).constData());
-    if (QTestPrivate::isRunningArmOnX86())
-        QEXPECT_FAIL("","QEMU does not read /proc/self/maps size correctly", Continue);
     QCOMPARE(f.size(), Q_INT64_C(0));
-    if (QTestPrivate::isRunningArmOnX86())
-        QEXPECT_FAIL("","QEMU does not read /proc/self/maps size correctly", Continue);
     QVERIFY(f.atEnd());
 
     // read data
@@ -2637,18 +2656,27 @@ void tst_QFile::virtualFile()
     QCOMPARE(data.size(), 16);
     QCOMPARE(f.pos(), Q_INT64_C(16));
 
+    // seeking
+    QVERIFY(f.seek(1));
+    QCOMPARE(f.pos(), Q_INT64_C(1));
+    QVERIFY(f.seek(0));
+    QCOMPARE(f.pos(), Q_INT64_C(0));
+
     // line-reading
-    data = f.readLine();
-    QVERIFY(!data.isEmpty());
+    QList<QByteArray> lines;
+    for (data = f.readLine(); !data.isEmpty(); data = f.readLine()) {
+        // chop the newline -- not using .trimmed() so cut exactly one byte
+        data.chop(1);
+        lines += std::move(data);
+    }
 
     // read all:
+    QVERIFY(f.seek(0));
     data = f.readAll();
     QVERIFY(f.pos() != 0);
     QVERIFY(!data.isEmpty());
 
-    // seeking
-    QVERIFY(f.seek(1));
-    QCOMPARE(f.pos(), Q_INT64_C(1));
+    QCOMPARE(data, lines.join('\n') + '\n');
 }
 #endif // defined(Q_OS_LINUX) || defined(Q_OS_AIX) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
 
