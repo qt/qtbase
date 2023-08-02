@@ -23,6 +23,8 @@ private slots:
 
     void fromWinId();
     void initialState();
+
+    void embedForeignWindow();
 };
 
 void tst_ForeignWindow::fromWinId()
@@ -65,6 +67,23 @@ void tst_ForeignWindow::initialState()
     // For extra bonus points, the foreign window should actually
     // reflect the state of the native window.
     QCOMPARE(foreignWindow->geometry(), initialGeometry);
+}
+
+void tst_ForeignWindow::embedForeignWindow()
+{
+    // A foreign window embedded into a Qt UI requires that the rest of Qt
+    // is to be able to treat the foreign child window as any other window
+    // that it can show, hide, stack, and move around.
+
+    QWindow parentWindow;
+
+    NativeWindow nativeWindow;
+    QVERIFY(nativeWindow);
+
+    // As a prerequisite to that, we must be able to reparent the foreign window
+    std::unique_ptr<QWindow> foreignWindow(QWindow::fromWinId(nativeWindow));
+    foreignWindow.release()->setParent(&parentWindow);
+    QCOMPARE(nativeWindow.parentWinId(), parentWindow.winId());
 }
 
 #include <tst_foreignwindow.moc>
