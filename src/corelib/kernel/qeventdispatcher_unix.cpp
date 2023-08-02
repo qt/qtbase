@@ -426,6 +426,9 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     if (d->interrupt.loadRelaxed())
         return false;
 
+    // If canWait is true, and include_timers is false or there are no pending
+    // timers, call qt_safe_poll() with a nullptr so that it waits until there
+    // are events to process (see QEventLoop::WaitForMoreEvents).
     timespec *tm = nullptr;
     timespec wait_tm = { 0, 0 };
 
