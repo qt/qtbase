@@ -228,6 +228,7 @@ private slots:
     void readFromWriteOnlyFile();
     void writeToReadOnlyFile();
 #if defined(Q_OS_LINUX)
+    void virtualFile_data();
     void virtualFile();
 #endif
 #ifdef Q_OS_UNIX
@@ -2613,8 +2614,17 @@ void tst_QFile::writeToReadOnlyFile()
 
 #if defined(Q_OS_LINUX)
 // This platform have 0-sized virtual files
+void tst_QFile::virtualFile_data()
+{
+    QTest::addColumn<QIODevice::OpenMode>("mode");
+    QTest::newRow("buffered") << QIODevice::OpenMode();
+    QTest::newRow("unbuffered") << QIODevice::OpenMode(QIODevice::Unbuffered);
+}
+
 void tst_QFile::virtualFile()
 {
+    QFETCH(QIODevice::OpenMode, mode);
+
     // We need to test a large-ish /proc file on Linux, one that is usually
     // over 4 kB (because the kernel writes in chunks of that), has a
     // cross-platform file format, and is definitely readable. The best
@@ -2647,7 +2657,7 @@ void tst_QFile::virtualFile()
 
     // open the file
     QFile f(fname);
-    QVERIFY2(f.open(QIODevice::ReadOnly), msgOpenFailed(f).constData());
+    QVERIFY2(f.open(QIODevice::ReadOnly | mode), msgOpenFailed(f).constData());
     QCOMPARE(f.size(), Q_INT64_C(0));
     QVERIFY(f.atEnd());
 
