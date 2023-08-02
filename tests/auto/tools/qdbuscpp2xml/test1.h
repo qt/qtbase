@@ -17,6 +17,7 @@ class Test1 : public QObject
     Q_CLASSINFO("D-Bus Interface", "org.qtProject.qdbuscpp2xmlTests.Test1")
     Q_PROPERTY(int numProperty1 READ numProperty1 CONSTANT)
     Q_PROPERTY(int numProperty2 READ numProperty2 WRITE setNumProperty2)
+    Q_PROPERTY(int numProperty3 MEMBER m_numProperty3)
     Q_ENUMS(Salaries)
 public:
     // C++1y allows use of single quote as a digit separator, useful for large
@@ -97,6 +98,9 @@ protected:
 private:
     Q_SCRIPTABLE void neverExported11() {}
     Q_SCRIPTABLE int neverExported12() { return 42; }
+
+private:
+    int m_numProperty3;
 };
 
 #endif

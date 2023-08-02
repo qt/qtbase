@@ -184,6 +184,8 @@ static QString generateInterfaceXml(const ClassDef *mo)
                 access |= 1;
             if (!mp.write.isEmpty())
                 access |= 2;
+            if (!mp.member.isEmpty())
+                access |= 3;
 
             int typeId = QMetaType::fromName(mp.type).id();
             if (!typeId) {
