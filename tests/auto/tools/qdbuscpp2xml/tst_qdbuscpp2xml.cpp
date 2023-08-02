@@ -125,9 +125,6 @@ void tst_qdbuscpp2xml::qdbuscpp2xml()
         QFAIL("UNEXPECTED STDERR CONTENTS");
     }
 
-    const QChar nl = QLatin1Char('\n');
-    const QStringList actualLines = out.split(nl);
-
     QObject *testObject = m_tests.value(inputfile);
 
     if (flags == 0)
