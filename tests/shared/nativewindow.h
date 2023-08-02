@@ -44,6 +44,10 @@ private:
 - (instancetype)init
 {
     if ((self = [super init])) {
+#if defined(Q_OS_MACOS)
+        self.wantsLayer = YES;
+#endif
+        self.layer.backgroundColor = CGColorCreateGenericRGB(1.0, 0.5, 1.0, 1.0);
     }
     return self;
 }
@@ -88,6 +92,7 @@ NativeWindow::NativeWindow()
         wc.lpfnWndProc = DefWindowProc;
         wc.hInstance = GetModuleHandle(nullptr);
         wc.lpszClassName = L"Native Window";
+        wc.hbrBackground = CreateSolidBrush(RGB(255, 128, 255));
         RegisterClass(&wc);
         return wc.lpszClassName;
     }();
