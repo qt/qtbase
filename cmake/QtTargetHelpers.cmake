@@ -119,6 +119,10 @@ function(qt_internal_extend_target target)
             # heuristic way of building the dependency tree between the _sync_headers targets of
             # different Qt modules.
             if(TARGET "${lib}")
+                get_target_property(is_private ${lib} _qt_is_private_module)
+                if(is_private)
+                    get_target_property(lib ${lib} _qt_public_module_target_name)
+                endif()
                 set(out_genex "$<TARGET_PROPERTY:${lib},_qt_internal_sync_headers_target>")
                 set_property(TARGET ${target}
                     APPEND PROPERTY _qt_internal_sync_headers_deps "${out_genex}")
