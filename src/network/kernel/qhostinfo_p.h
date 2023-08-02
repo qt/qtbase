@@ -51,6 +51,8 @@ public:
             moveToThread(receiver->thread());
     }
 
+    ~QHostInfoResult() override;
+
     void postResultsReady(const QHostInfo &info);
 
 Q_SIGNALS:
@@ -143,6 +145,8 @@ class QHostInfoRunnable : public QRunnable
 public:
     QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
                       QtPrivate::QSlotObjectBase *slotObj);
+    ~QHostInfoRunnable() override;
+
     void run() override;
 
     QString toBeLookedUp;
