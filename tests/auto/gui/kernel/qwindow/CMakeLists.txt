@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qwindow
 
 if(APPLE OR WIN32)
     qt_internal_add_test(tst_foreignwindow
+        LOWDPI
         SOURCES
             tst_foreignwindow.cpp
         LIBRARIES
