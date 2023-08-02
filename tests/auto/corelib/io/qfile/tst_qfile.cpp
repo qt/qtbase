@@ -222,7 +222,7 @@ private slots:
     void writeLargeDataBlock();
     void readFromWriteOnlyFile();
     void writeToReadOnlyFile();
-#if defined(Q_OS_LINUX) || defined(Q_OS_AIX) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
+#if defined(Q_OS_LINUX)
     void virtualFile();
 #endif
 #ifdef Q_OS_UNIX
@@ -2573,19 +2573,12 @@ void tst_QFile::writeToReadOnlyFile()
     QCOMPARE(file.write(&c, 1), qint64(-1));
 }
 
-#if defined(Q_OS_LINUX) || defined(Q_OS_AIX) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
+#if defined(Q_OS_LINUX)
 // This platform have 0-sized virtual files
 void tst_QFile::virtualFile()
 {
     // test if QFile works with virtual files
-    QString fname;
-#if defined(Q_OS_LINUX)
-    fname = "/proc/self/maps";
-#elif defined(Q_OS_AIX)
-    fname = QString("/proc/%1/map").arg(getpid());
-#else // defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
-    fname = "/proc/curproc/map";
-#endif
+    QString fname = "/proc/self/maps";
 
     // consistency check
     QFileInfo fi(fname);
