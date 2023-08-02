@@ -306,7 +306,11 @@ macro(qt_internal_setup_build_examples)
         "Install example sources as part of the default 'install' target" ON)
 
     # FIXME: Support prefix builds as well QTBUG-96232
-    if(QT_WILL_INSTALL)
+    # We don't want to enable EP examples with -debug-and-release because starting with CMake 3.24
+    # ExternalProject_Add ends up creating build rules twice, once for each configuration, in the
+    # same build dir, which ends up causing various issues due to concurrent builds as well as
+    # clobbered CMakeCache.txt and ninja files.
+    if(QT_WILL_INSTALL OR QT_FEATURE_debug_and_release)
         set(_qt_build_examples_as_external OFF)
     else()
         set(_qt_build_examples_as_external ON)
