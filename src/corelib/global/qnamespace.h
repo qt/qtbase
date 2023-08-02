@@ -212,7 +212,7 @@ namespace Qt {
         ToolTip = Popup | Sheet,
         SplashScreen = ToolTip | Dialog,
         Desktop = 0x00000010 | Window,
-        SubWindow = 0x00000012,
+        SubWindow = 0x00000012, // Note QTBUG-115729 before using
         ForeignWindow = 0x00000020 | Window,
         CoverWindow = 0x00000040 | Window,
 
