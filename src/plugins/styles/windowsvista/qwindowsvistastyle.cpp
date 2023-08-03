@@ -4680,6 +4680,7 @@ void QWindowsVistaStyle::polish(QWidget *widget)
             QPalette pal = widget->palette();
             pal.setColor(QPalette::ButtonText, QColor(21, 28, 85));
             pal.setColor(QPalette::BrightText, QColor(7, 64, 229));
+            pal.setResolveMask(0);
             widget->setPalette(pal);
         }
 #endif // QT_CONFIG(commandlinkbutton)
@@ -4693,6 +4694,7 @@ void QWindowsVistaStyle::polish(QWidget *widget)
                 QColor textColor = QColor::fromRgb(bgRef);
                 QPalette pal;
                 pal.setColor(QPalette::All, QPalette::ToolTipText, textColor);
+                pal.setResolveMask(0);
                 widget->setPalette(pal);
             }
         } else if (qobject_cast<QMessageBox *> (widget)) {
