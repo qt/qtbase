@@ -2702,12 +2702,17 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
               const QString destination = dataPath + u'/' + QStringView{fileInfo.filePath()}.mid(resourcePath.size());
               QFileInfo destinationFileInfo(destination);
               QDir().mkpath(destinationFileInfo.path());
-              if (!QFile::copy(fileInfo.filePath(), destination)) {
-                  qWarning("Failed to copy '%s'.", qPrintable(fileInfo.filePath()));
+              QFile file(fileInfo.filePath());
+              if (!file.copy(destination)) {
+                  qWarning("Failed to copy '%ls': %ls.", qUtf16Printable(fileInfo.filePath()),
+                           qUtf16Printable(file.errorString()));
                   return result;
               }
-              if (!QFile::setPermissions(destination, QFile::ReadUser | QFile::WriteUser | QFile::ReadGroup)) {
-                  qWarning("Failed to set permissions on '%s'.", qPrintable(destination));
+
+              file.setFileName(destination);
+              if (!file.setPermissions(QFile::ReadUser | QFile::WriteUser | QFile::ReadGroup)) {
+                  qWarning("Failed to set permissions on '%ls': %ls.", qUtf16Printable(destination),
+                           qUtf16Printable(file.errorString()));
                   return result;
               }
           }
