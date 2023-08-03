@@ -496,8 +496,11 @@ void QApplicationPrivate::init()
 void qt_init_tooltip_palette()
 {
 #if QT_CONFIG(tooltip)
-    if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette))
-        QToolTip::setPalette(*toolTipPalette);
+    if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette)) {
+        QPalette toolTipPal = *toolTipPalette;
+        toolTipPal.setResolveMask(0);
+        QToolTip::setPalette(toolTipPal);
+    }
 #endif
 }
 
