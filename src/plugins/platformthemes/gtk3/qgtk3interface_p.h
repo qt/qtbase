@@ -135,7 +135,7 @@ public:
     QIcon fileIcon(const QFileInfo &fileInfo) const;
 
     // Return current GTK theme name
-    const QString themeName() const;
+    QString themeName() const;
 
     // Derive color scheme from default colors
     Qt::ColorScheme colorSchemeByColors() const;

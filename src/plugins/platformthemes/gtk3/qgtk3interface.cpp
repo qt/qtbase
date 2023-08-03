@@ -475,15 +475,18 @@ QBrush QGtk3Interface::brush(QGtkWidget wtype, QGtkColorSource source, GtkStateF
     \internal
     \brief Returns the name of the current GTK theme.
  */
-const QString QGtk3Interface::themeName() const
+QString QGtk3Interface::themeName() const
 {
-    gchar *theme_name;
-    GtkSettings *settings = gtk_settings_get_default();
-    if (!settings)
-        return QString();
+    QString name;
 
-    g_object_get(settings, "gtk-theme-name", &theme_name, nullptr);
-    return QLatin1StringView(theme_name);
+    if (GtkSettings *settings = gtk_settings_get_default()) {
+        gchar *theme_name;
+        g_object_get(settings, "gtk-theme-name", &theme_name, nullptr);
+        name = QLatin1StringView(theme_name);
+        g_free(theme_name);
+    }
+
+    return name;
 }
 
 /*!
