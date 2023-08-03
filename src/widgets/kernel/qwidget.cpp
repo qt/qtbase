@@ -10819,11 +10819,19 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         // problematic when it comes to large widget trees.
         if (q_evaluateRhiConfig(this, nullptr, &surfaceType)) {
             newtlw->d_func()->usesRhiFlush = true;
+            bool recreate = false;
             if (QWindow *w = newtlw->windowHandle()) {
-                if (w->surfaceType() != surfaceType) {
-                    newtlw->destroy();
-                    newtlw->create();
-                }
+                if (w->surfaceType() != surfaceType)
+                    recreate = true;
+            }
+            // QTBUG-115652: Besides the toplevel the nativeParentWidget()'s QWindow must be checked as well.
+            if (QWindow *w = d->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)) {
+                if (w->surfaceType() != surfaceType)
+                    recreate = true;
+            }
+            if (recreate) {
+                newtlw->destroy();
+                newtlw->create();
             }
         }
     }
