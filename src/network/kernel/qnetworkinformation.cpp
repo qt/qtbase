@@ -47,11 +47,6 @@ static void networkInfoCleanup()
     if (!instance)
         return;
 
-    auto needsReinvoke = instance->thread() && instance->thread() != QThread::currentThread();
-    if (needsReinvoke) {
-        QMetaObject::invokeMethod(dataHolder->instanceHolder.get(), []() { networkInfoCleanup(); });
-        return;
-    }
     dataHolder->instanceHolder.reset();
 }
 
@@ -492,6 +487,14 @@ QNetworkInformation::QNetworkInformation(QNetworkInformationBackend *backend)
             &QNetworkInformation::transportMediumChanged);
     connect(backend, &QNetworkInformationBackend::isMeteredChanged, this,
            &QNetworkInformation::isMeteredChanged);
+
+    QThread *main = nullptr;
+
+    if (QCoreApplication::instance())
+        main = QCoreApplication::instance()->thread();
+
+    if (main && thread() != main)
+        moveToThread(main);
 }
 
 /*!

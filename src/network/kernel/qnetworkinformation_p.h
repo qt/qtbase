@@ -20,6 +20,7 @@
 #include <QtNetwork/qnetworkinformation.h>
 
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qreadwritelock.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -48,10 +49,29 @@ public:
     virtual QString name() const = 0;
     virtual QNetworkInformation::Features featuresSupported() const = 0;
 
-    Reachability reachability() const { return m_reachability; }
-    bool behindCaptivePortal() const { return m_behindCaptivePortal; }
-    TransportMedium transportMedium() const { return m_transportMedium; }
-    bool isMetered() const { return m_metered; }
+    Reachability reachability() const
+    {
+        QReadLocker locker(&m_lock);
+        return m_reachability;
+    }
+
+    bool behindCaptivePortal() const
+    {
+        QReadLocker locker(&m_lock);
+        return m_behindCaptivePortal;
+    }
+
+    TransportMedium transportMedium() const
+    {
+        QReadLocker locker(&m_lock);
+        return m_transportMedium;
+    }
+
+    bool isMetered() const
+    {
+        QReadLocker locker(&m_lock);
+        return m_metered;
+    }
 
 Q_SIGNALS:
     void reachabilityChanged(Reachability reachability);
@@ -62,37 +82,46 @@ Q_SIGNALS:
 protected:
     void setReachability(QNetworkInformation::Reachability reachability)
     {
+        QWriteLocker locker(&m_lock);
         if (m_reachability != reachability) {
             m_reachability = reachability;
+            locker.unlock();
             emit reachabilityChanged(reachability);
         }
     }
 
     void setBehindCaptivePortal(bool behindPortal)
     {
+        QWriteLocker locker(&m_lock);
         if (m_behindCaptivePortal != behindPortal) {
             m_behindCaptivePortal = behindPortal;
+            locker.unlock();
             emit behindCaptivePortalChanged(behindPortal);
         }
     }
 
     void setTransportMedium(TransportMedium medium)
     {
+        QWriteLocker locker(&m_lock);
         if (m_transportMedium != medium) {
             m_transportMedium = medium;
+            locker.unlock();
             emit transportMediumChanged(medium);
         }
     }
 
     void setMetered(bool isMetered)
     {
+        QWriteLocker locker(&m_lock);
         if (m_metered != isMetered) {
             m_metered = isMetered;
+            locker.unlock();
             emit isMeteredChanged(isMetered);
         }
     }
 
 private:
+    mutable QReadWriteLock m_lock;
     Reachability m_reachability = Reachability::Unknown;
     TransportMedium m_transportMedium = TransportMedium::Unknown;
     bool m_behindCaptivePortal = false;
