@@ -146,9 +146,10 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTextProvider::RangeFromPoint(UiaPoint point
     nativeUiaPointToPoint(point, window, &pt);
 
     int offset = textInterface->offsetAtPoint(pt);
-    if ((offset >= 0) && (offset < textInterface->characterCount())) {
-        *pRetVal = new QWindowsUiaTextRangeProvider(id(), offset, offset);
-    }
+    if (offset < 0 || offset >= textInterface->characterCount())
+        return UIA_E_ELEMENTNOTAVAILABLE;
+
+    *pRetVal = new QWindowsUiaTextRangeProvider(id(), offset, offset);
     return S_OK;
 }
 
