@@ -29,8 +29,6 @@ qt_internal_add_plugin(QAndroidNetworkInformationPlugin
         wrapper/androidconnectivitymanager.cpp wrapper/androidconnectivitymanager.h
     LIBRARIES
         Qt::NetworkPrivate
-    DEFINES
-        QT_USE_QSTRINGBUILDER
 )
 
 set_property(

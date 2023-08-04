@@ -54,8 +54,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         # Conflicting JNI classes, and types
         androidcontentfileengine.cpp
         qandroidplatformintegration.cpp
-    DEFINES
-        QT_USE_QSTRINGBUILDER
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${QtBase_SOURCE_DIR}/src/3rdparty/android
