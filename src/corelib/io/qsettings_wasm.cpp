@@ -18,7 +18,9 @@
 #include <QSet>
 
 #include <emscripten.h>
-#include <emscripten/val.h>
+#  include <emscripten/proxying.h>
+#  include <emscripten/threading.h>
+#  include <emscripten/val.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,7 +60,6 @@ public:
     QString fileName() const final;
 
 private:
-    val m_localStorage = val::global("window")["localStorage"];
     QStringList m_keyPrefixes;
 };
 
@@ -108,89 +109,106 @@ void QWasmLocalStorageSettingsPrivate::remove(const QString &key)
 {
     const std::string removed = QString(m_keyPrefixes.first() + key).toStdString();
 
-    std::vector<std::string> children = { removed };
-    const int length = m_localStorage["length"].as<int>();
-    for (int i = 0; i < length; ++i) {
-        const QString storedKeyWithPrefix =
-                QString::fromStdString(m_localStorage.call<val>("key", i).as<std::string>());
+    qstdweb::runTaskOnMainThread<void>([this, &removed, &key]() {
+        std::vector<std::string> children = { removed };
+        const int length = val::global("window")["localStorage"]["length"].as<int>();
+        for (int i = 0; i < length; ++i) {
+            const QString storedKeyWithPrefix = QString::fromStdString(
+                    val::global("window")["localStorage"].call<val>("key", i).as<std::string>());
 
-        const QStringView storedKey = keyNameFromPrefixedStorageName(
-                m_keyPrefixes.first(), QStringView(storedKeyWithPrefix));
-        if (storedKey.isEmpty() || !storedKey.startsWith(key))
-            continue;
+            const QStringView storedKey = keyNameFromPrefixedStorageName(
+                    m_keyPrefixes.first(), QStringView(storedKeyWithPrefix));
+            if (storedKey.isEmpty() || !storedKey.startsWith(key))
+                continue;
 
-        children.push_back(storedKeyWithPrefix.toStdString());
-    }
+            children.push_back(storedKeyWithPrefix.toStdString());
+        }
 
-    for (const auto &child : children)
-        m_localStorage.call<val>("removeItem", child);
+        for (const auto &child : children)
+            val::global("window")["localStorage"].call<val>("removeItem", child);
+    });
 }
 
 void QWasmLocalStorageSettingsPrivate::set(const QString &key, const QVariant &value)
 {
-    const std::string keyString = QString(m_keyPrefixes.first() + key).toStdString();
-    const std::string valueString = QSettingsPrivate::variantToString(value).toStdString();
-    m_localStorage.call<void>("setItem", keyString, valueString);
+    qstdweb::runTaskOnMainThread<void>([this, &key, &value]() {
+        const std::string keyString = QString(m_keyPrefixes.first() + key).toStdString();
+        const std::string valueString = QSettingsPrivate::variantToString(value).toStdString();
+        val::global("window")["localStorage"].call<void>("setItem", keyString, valueString);
+    });
 }
 
 std::optional<QVariant> QWasmLocalStorageSettingsPrivate::get(const QString &key) const
 {
-    for (const auto &prefix : m_keyPrefixes) {
-        const std::string keyString = QString(prefix + key).toStdString();
-        const emscripten::val value = m_localStorage.call<val>("getItem", keyString);
-        if (!value.isNull())
-            return QSettingsPrivate::stringToVariant(
-                    QString::fromStdString(value.as<std::string>()));
-        if (!fallbacks)
-            return std::nullopt;
-    }
-    return std::nullopt;
+    return qstdweb::runTaskOnMainThread<std::optional<QVariant>>(
+            [this, &key]() -> std::optional<QVariant> {
+                for (const auto &prefix : m_keyPrefixes) {
+                    const std::string keyString = QString(prefix + key).toStdString();
+                    const emscripten::val value =
+                            val::global("window")["localStorage"].call<val>("getItem", keyString);
+                    if (!value.isNull()) {
+                        return QSettingsPrivate::stringToVariant(
+                                QString::fromStdString(value.as<std::string>()));
+                    }
+                    if (!fallbacks) {
+                        return std::nullopt;
+                    }
+                }
+                return std::nullopt;
+            });
 }
 
 QStringList QWasmLocalStorageSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
 {
-    QSet<QString> nodes;
-    // Loop through all keys on window.localStorage, return Qt keys belonging to
-    // this application, with the correct prefix, and according to ChildSpec.
-    QStringList children;
-    const int length = m_localStorage["length"].as<int>();
-    for (int i = 0; i < length; ++i) {
-        for (const auto &storagePrefix : m_keyPrefixes) {
-            const QString keyString =
-                    QString::fromStdString(m_localStorage.call<val>("key", i).as<std::string>());
+    return qstdweb::runTaskOnMainThread<QStringList>([this, &prefix, &spec]() -> QStringList {
+        QSet<QString> nodes;
+        // Loop through all keys on window.localStorage, return Qt keys belonging to
+        // this application, with the correct prefix, and according to ChildSpec.
+        QStringList children;
+        const int length = val::global("window")["localStorage"]["length"].as<int>();
+        for (int i = 0; i < length; ++i) {
+            for (const auto &storagePrefix : m_keyPrefixes) {
+                const QString keyString =
+                        QString::fromStdString(val::global("window")["localStorage"]
+                                                       .call<val>("key", i)
+                                                       .as<std::string>());
 
-            const QStringView key =
-                    keyNameFromPrefixedStorageName(storagePrefix, QStringView(keyString));
-            if (!key.isEmpty() && key.startsWith(prefix)) {
-                QStringList children;
-                QSettingsPrivate::processChild(key.sliced(prefix.length()), spec, children);
-                if (!children.isEmpty())
-                    nodes.insert(children.first());
+                const QStringView key =
+                        keyNameFromPrefixedStorageName(storagePrefix, QStringView(keyString));
+                if (!key.isEmpty() && key.startsWith(prefix)) {
+                    QStringList children;
+                    QSettingsPrivate::processChild(key.sliced(prefix.length()), spec, children);
+                    if (!children.isEmpty())
+                        nodes.insert(children.first());
+                }
+                if (!fallbacks)
+                    break;
             }
-            if (!fallbacks)
-                break;
         }
-    }
 
-    return QStringList(nodes.begin(), nodes.end());
+        return QStringList(nodes.begin(), nodes.end());
+    });
 }
 
 void QWasmLocalStorageSettingsPrivate::clear()
 {
-    // Get all Qt keys from window.localStorage
-    const int length = m_localStorage["length"].as<int>();
-    QStringList keys;
-    keys.reserve(length);
-    for (int i = 0; i < length; ++i)
-        keys.append(QString::fromStdString((m_localStorage.call<val>("key", i).as<std::string>())));
+    qstdweb::runTaskOnMainThread<void>([this]() {
+        // Get all Qt keys from window.localStorage
+        const int length = val::global("window")["localStorage"]["length"].as<int>();
+        QStringList keys;
+        keys.reserve(length);
+        for (int i = 0; i < length; ++i)
+            keys.append(QString::fromStdString(
+                    (val::global("window")["localStorage"].call<val>("key", i).as<std::string>())));
 
-    // Remove all Qt keys. Note that localStorage does not guarantee a stable
-    // iteration order when the storage is mutated, which is why removal is done
-    // in a second step after getting all keys.
-    for (const QString &key : keys) {
-        if (!keyNameFromPrefixedStorageName(m_keyPrefixes.first(), key).isEmpty())
-            m_localStorage.call<val>("removeItem", key.toStdString());
-    }
+        // Remove all Qt keys. Note that localStorage does not guarantee a stable
+        // iteration order when the storage is mutated, which is why removal is done
+        // in a second step after getting all keys.
+        for (const QString &key : keys) {
+            if (!keyNameFromPrefixedStorageName(m_keyPrefixes.first(), key).isEmpty())
+                val::global("window")["localStorage"].call<val>("removeItem", key.toStdString());
+        }
+    });
 }
 
 void QWasmLocalStorageSettingsPrivate::sync() { }
@@ -361,9 +379,12 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::
         format = QSettings::WebLocalStorageFormat;
 
     // Check if cookies are enabled (required for using persistent storage)
-    const bool cookiesEnabled = val::global("navigator")["cookieEnabled"].as<bool>();
-    constexpr QLatin1StringView cookiesWarningMessage
-        ("QSettings::%1 requires cookies, falling back to IniFormat with temporary file");
+
+    const bool cookiesEnabled = qstdweb::runTaskOnMainThread<bool>(
+            []() { return val::global("navigator")["cookieEnabled"].as<bool>(); });
+
+    constexpr QLatin1StringView cookiesWarningMessage(
+            "QSettings::%1 requires cookies, falling back to IniFormat with temporary file");
     if (!cookiesEnabled) {
         if (format == QSettings::WebLocalStorageFormat) {
             qWarning() << cookiesWarningMessage.arg("WebLocalStorageFormat");

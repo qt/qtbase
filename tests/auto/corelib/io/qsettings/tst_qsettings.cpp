@@ -10,6 +10,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
+#include <QtCore/QEventLoop>
 #include <QtCore/QtGlobal>
 #include <QtCore/QThread>
 #include <QtCore/QSysInfo>
@@ -44,6 +45,7 @@
 #if defined(Q_OS_WASM)
 #include <QtCore/private/qstdweb_p.h>
 
+#include "emscripten/threading.h"
 #include "emscripten/val.h"
 #endif
 
@@ -2136,6 +2138,12 @@ void tst_QSettings::testThreadSafety()
 #if !QT_CONFIG(thread)
     QSKIP("This test requires threads to be enabled.");
 #endif // !QT_CONFIG(thread)
+#if defined(Q_OS_WASM)
+    if (!qstdweb::haveJspi())
+        QSKIP("Test needs jspi on WASM. Calls are proxied to the main thread from SettingsThreads, "
+              "which necessitates the use of an event loop to yield to the main loop. Event loops "
+              "require jspi.");
+#endif
 
     SettingsThread threads[NumThreads];
     int i, j;
@@ -2144,6 +2152,19 @@ void tst_QSettings::testThreadSafety()
 
     for (i = 0; i < NumThreads; ++i)
         threads[i].start(i + 1);
+
+#if defined(Q_OS_WASM) && QT_CONFIG(thread)
+    QEventLoop loop;
+    int remaining = NumThreads;
+    for (int i = 0; i < NumThreads; ++i) {
+        QObject::connect(&threads[i], &QThread::finished, this, [&remaining, &loop]() {
+            if (!--remaining)
+                loop.quit();
+        });
+    }
+    loop.exec();
+#endif // defined(Q_OS_WASM) && QT_CONFIG(thread)
+
     for (i = 0; i < NumThreads; ++i)
         threads[i].wait();
 
