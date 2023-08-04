@@ -53,6 +53,7 @@ qt_internal_add_module(Widgets
     DEFINES
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_USING_NAMESPACE
+        QT_NO_FOREACH # mostly...
     INCLUDE_DIRECTORIES
         dialogs
     LIBRARIES
@@ -68,6 +69,8 @@ qt_internal_add_module(Widgets
         "kernel/qt_widgets_pch.h"
     NO_PCH_SOURCES
         compat/removed_api.cpp
+        kernel/qgesturemanager.cpp # undef QT_NO_FOREACH
+        kernel/qwidgetrepaintmanager.cpp # undef QT_NO_FOREACH
     GENERATE_CPP_EXPORTS
 )
 
@@ -470,6 +473,8 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_mdiarea
     SOURCES
         widgets/qmdiarea.cpp widgets/qmdiarea.h widgets/qmdiarea_p.h
         widgets/qmdisubwindow.cpp widgets/qmdisubwindow.h widgets/qmdisubwindow_p.h
+    NO_PCH_SOURCES
+        widgets/qmdiarea.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_menu
@@ -480,6 +485,8 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_menu
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_menubar
     SOURCES
         widgets/qmenubar.cpp widgets/qmenubar.h widgets/qmenubar_p.h
+    NO_PCH_SOURCES
+        widgets/qmenubar.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_progressbar
@@ -726,6 +733,8 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_itemviews
         itemviews/qitemeditorfactory.cpp itemviews/qitemeditorfactory.h itemviews/qitemeditorfactory_p.h
         itemviews/qstyleditemdelegate.cpp itemviews/qstyleditemdelegate.h
         itemviews/qwidgetitemdata_p.h
+    NO_PCH_SOURCES
+        itemviews/qabstractitemview.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_columnview
@@ -752,6 +761,8 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_listwidget
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tableview
     SOURCES
         itemviews/qtableview.cpp itemviews/qtableview.h itemviews/qtableview_p.h
+    NO_PCH_SOURCES
+        itemviews/qtableview.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tablewidget
@@ -793,6 +804,8 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_graphicsview
         graphicsview/qgraphicsview.cpp graphicsview/qgraphicsview.h graphicsview/qgraphicsview_p.h
         graphicsview/qgraphicswidget.cpp graphicsview/qgraphicswidget.h graphicsview/qgraphicswidget_p.cpp graphicsview/qgraphicswidget_p.h
         graphicsview/qsimplex_p.cpp graphicsview/qsimplex_p.h
+    NO_PCH_SOURCES
+        graphicsview/qgraphicsanchorlayout_p.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_easingcurve AND QT_FEATURE_graphicsview
