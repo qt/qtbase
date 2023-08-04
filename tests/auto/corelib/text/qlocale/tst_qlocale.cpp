@@ -130,6 +130,8 @@ private slots:
     void systemLocaleDayAndMonthNames();
 #endif
 
+    void numberGrouping_data();
+    void numberGrouping();
     void numberGroupingIndia();
     void numberFormatChakma();
 
@@ -1149,7 +1151,9 @@ void tst_QLocale::doubleToString_data()
     QTest::newRow("de_DE 1245678900 g -")  << QString("de_DE") << QString("1.245.678.900") << 12456789e2 << 'g' << shortest;
     QTest::newRow("de_DE 12456789100 g -") << QString("de_DE") << QString("12.456.789.100") << 124567891e2 << 'g' << shortest;
     QTest::newRow("de_DE 12456789000 g -") << QString("de_DE") << QString("1,2456789E+10")  << 12456789e3 << 'g' << shortest;
-    QTest::newRow("de_DE 120000 g -")  << QString("de_DE") << QString("120.000") << 12e4 << 'g' << shortest;
+    QTest::newRow("de_DE 12000 g -")
+        << QString("de_DE") << QString("12.000") << 12e3 << 'g' << shortest;
+    // 12e4 has "120.000" and "1.2E+05" of equal length; which shortest picks is unspecified.
     QTest::newRow("de_DE 1200000 g -") << QString("de_DE") << QString("1,2E+06") << 12e5 << 'g' << shortest;
     QTest::newRow("de_DE 1000 g -")  << QString("de_DE") << QString("1.000") << 1e3 << 'g' << shortest;
     QTest::newRow("de_DE 10000 g -") << QString("de_DE") << QString("1E+04") << 1e4 << 'g' << shortest;
@@ -3909,6 +3913,90 @@ void tst_QLocale::systemLocaleDayAndMonthNames()
 }
 
 #endif // QT_NO_SYSTEMLOCALE
+
+void tst_QLocale::numberGrouping_data()
+{
+    QTest::addColumn<QLocale>("locale");
+    QTest::addColumn<int>("number");
+    QTest::addColumn<QString>("string");
+    // Number options set here are expected to be default, but set for the
+    // avoidance of uncertainty or susceptibility to changed defaults.
+
+    QLocale c(QLocale::C); // English-style, without separators.
+    c.setNumberOptions(c.numberOptions() | QLocale::OmitGroupSeparator);
+    QTest::newRow("c:1") << c << 1 << u"1"_s;
+    QTest::newRow("c:12") << c << 12 << u"12"_s;
+    QTest::newRow("c:123") << c << 123 << u"123"_s;
+    QTest::newRow("c:1234") << c << 1234 << u"1234"_s;
+    QTest::newRow("c:12345") << c << 12345 << u"12345"_s;
+    QTest::newRow("c:123456") << c << 123456 << u"123456"_s;
+    QTest::newRow("c:1234567") << c << 1234567 << u"1234567"_s;
+    QTest::newRow("c:12345678") << c << 12345678 << u"12345678"_s;
+    QTest::newRow("c:123456789") << c << 123456789 << u"123456789"_s;
+    QTest::newRow("c:1234567890") << c << 1234567890 << u"1234567890"_s;
+
+    QLocale en(QLocale::English); // English-style, with separators:
+    en.setNumberOptions(en.numberOptions() & ~QLocale::OmitGroupSeparator);
+    QTest::newRow("en:1") << en << 1 << u"1"_s;
+    QTest::newRow("en:12") << en << 12 << u"12"_s;
+    QTest::newRow("en:123") << en << 123 << u"123"_s;
+    QTest::newRow("en:1,234") << en << 1234 << u"1,234"_s;
+    QTest::newRow("en:12,345") << en << 12345 << u"12,345"_s;
+    QTest::newRow("en:123,456") << en << 123456 << u"123,456"_s;
+    QTest::newRow("en:1,234,567") << en << 1234567 << u"1,234,567"_s;
+    QTest::newRow("en:12,345,678") << en << 12345678 << u"12,345,678"_s;
+    QTest::newRow("en:123,456,789") << en << 123456789 << u"123,456,789"_s;
+    QTest::newRow("en:1,234,567,890") << en << 1234567890 << u"1,234,567,890"_s;
+
+    QLocale es(QLocale::Spanish); // Spanish-style, with separators
+    es.setNumberOptions(es.numberOptions() & ~QLocale::OmitGroupSeparator);
+    QTest::newRow("es:1") << es << 1 << u"1"_s;
+    QTest::newRow("es:12") << es << 12 << u"12"_s;
+    QTest::newRow("es:123") << es << 123 << u"123"_s;
+    // First split doesn't happen unless first group has at least two digits:
+    QTest::newRow("es:1234") << es << 1234 << u"1234"_s;
+    QTest::newRow("es:12.345") << es << 12345 << u"12.345"_s;
+    QTest::newRow("es:123.456") << es << 123456 << u"123.456"_s;
+    // Later splits aren't limited to two digits (QTBUG-115740):
+    QTest::newRow("es:1.234.567") << es << 1234567 << u"1.234.567"_s;
+    QTest::newRow("es:12.345.678") << es << 12345678 << u"12.345.678"_s;
+    QTest::newRow("es:123.456.789") << es << 123456789 << u"123.456.789"_s;
+    QTest::newRow("es:1.234.567.890") << es << 1234567890 << u"1.234.567.890"_s;
+
+    QLocale hi(QLocale::Hindi, QLocale::India);
+    hi.setNumberOptions(hi.numberOptions() & ~QLocale::OmitGroupSeparator);
+    QTest::newRow("hi:1") << hi << 1 << u"1"_s;
+    QTest::newRow("hi:12") << hi << 12 << u"12"_s;
+    QTest::newRow("hi:123") << hi << 123 << u"123"_s;
+    QTest::newRow("hi:1,234") << hi << 1234 << u"1,234"_s;
+    QTest::newRow("hi:12,345") << hi << 12345 << u"12,345"_s;
+    QTest::newRow("hi:1,23,456") << hi << 123456 << u"1,23,456"_s;
+    QTest::newRow("hi:12,34,567") << hi << 1234567 << u"12,34,567"_s;
+    QTest::newRow("hi:1,23,45,678") << hi << 12345678 << u"1,23,45,678"_s;
+    QTest::newRow("hi:12,34,56,789") << hi << 123456789 << u"12,34,56,789"_s;
+    QTest::newRow("hi:1,23,45,67,890") << hi << 1234567890 << u"1,23,45,67,890"_s;
+}
+
+void tst_QLocale::numberGrouping()
+{
+    QFETCH(const QLocale, locale);
+    QFETCH(const int, number);
+    QFETCH(const QString, string);
+
+    QCOMPARE(locale.toString(number), string);
+    QLocale sys = QLocale::system();
+    if (sys.language() == locale.language()
+            && sys.script() == locale.script()
+            && sys.territory() == locale.territory()) {
+        sys.setNumberOptions(locale.numberOptions());
+
+        QCOMPARE(sys.toString(number), string);
+        if (QLocale() == sys) { // This normally should be the case.
+            QCOMPARE(u"%L1"_s.arg(number), string);
+            QCOMPARE(u"%L1"_s.arg(double(number), 0, 'f', 0), string);
+        }
+    }
+}
 
 void tst_QLocale::numberGroupingIndia()
 {

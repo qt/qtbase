@@ -360,7 +360,7 @@ public:
     quint8 m_first_day_of_week : 3;
     quint8 m_weekend_start : 3;
     quint8 m_weekend_end : 3;
-    quint8 m_grouping_top : 2; // Must have this many before the first grouping separator
+    quint8 m_grouping_top : 2; // Don't group until more significant group has this many digits.
     quint8 m_grouping_higher : 3; // Number of digits between grouping separators
     quint8 m_grouping_least : 3; // Number of digits after last grouping separator (before decimal).
 };

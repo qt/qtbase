@@ -307,9 +307,9 @@ void tst_QIntValidator::fixup_data()
     // Normally the groups contain three digits, but the leftmost group should
     // have at least two digits.
     QTest::newRow("es no digit grouping 1000") << "es" << "1000" << "1000";
-    QTest::newRow("es no digit grouping 10000") << "es" << "10000" << "10.000";
-    QTest::newRow("es with digit grouping") << "es" << "1000.000" << "1000.000";
-    QTest::newRow("es invalid digit grouping") << "es" << "1.000.000" << "1000.000";
+    QTest::newRow("es with digit grouping 10000") << "es" << "10000" << "10.000";
+    QTest::newRow("es with digit grouping million") << "es" << "1.000.000" << "1.000.000";
+    QTest::newRow("es invalid digit grouping") << "es" << "1000.000" << "1.000.000";
 }
 
 QTEST_APPLESS_MAIN(tst_QIntValidator)
