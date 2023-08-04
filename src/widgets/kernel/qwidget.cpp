@@ -1338,11 +1338,6 @@ void QWidgetPrivate::create()
 #endif
     usesRhiFlush = false;
 
-    // Re-use backing store, in case a new platform window was created and doesn't know about it.
-    // (e.g. QAndroidPlatformWindow)
-    if (store && q->windowHandle())
-        q->windowHandle()->handle()->setBackingStore(store->handle());
-
     if (!store) {
         if (q->windowType() != Qt::Desktop) {
             if (q->isWindow()) {

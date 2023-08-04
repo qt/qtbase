@@ -32,7 +32,6 @@ class QScreen;
 class QWindow;
 class QIcon;
 class QRegion;
-class QPlatformBackingStore;
 
 class Q_GUI_EXPORT QPlatformWindow : public QPlatformSurface
 {
@@ -118,8 +117,6 @@ public:
     virtual void requestUpdate();
     bool hasPendingUpdateRequest() const;
     virtual void deliverUpdateRequest();
-#define QT_PLATFORM_WINDOW_HAS_VIRTUAL_SET_BACKING_STORE // remove when all modules have migrated
-    virtual void setBackingStore(QPlatformBackingStore *) {}
 
     // Window property accessors. Platform plugins should use these
     // instead of accessing QWindow directly.

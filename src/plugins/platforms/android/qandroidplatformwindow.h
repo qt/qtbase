@@ -50,7 +50,7 @@ public:
 
     virtual void applicationStateChanged(Qt::ApplicationState);
 
-    void setBackingStore(QPlatformBackingStore *store) override;
+    void setBackingStore(QAndroidPlatformBackingStore *store) { m_backingStore = store; }
     QAndroidPlatformBackingStore *backingStore() const { return m_backingStore; }
 
     virtual void repaint(const QRegion &) { }
