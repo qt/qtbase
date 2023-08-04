@@ -80,6 +80,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
 
     get_target_property(qpa_filter_regex ${target} _qt_module_qpa_headers_filter_regex)
     get_target_property(rhi_filter_regex ${target} _qt_module_rhi_headers_filter_regex)
+    get_target_property(ssg_filter_regex ${target} _qt_module_ssg_headers_filter_regex)
     get_target_property(private_filter_regex ${target} _qt_module_private_headers_filter_regex)
 
     # We need to use the real paths since otherwise it may lead to the invalid work of the
@@ -103,6 +104,12 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         )
     endif()
 
+    if(ssg_filter_regex)
+        set(ssg_filter_argument
+            -ssgHeadersFilter "${ssg_filter_regex}"
+        )
+    endif()
+
     set(common_syncqt_arguments
         -module "${module}"
         -sourceDir "${source_dir_real}"
@@ -112,9 +119,11 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         -privateIncludeDir "${module_build_interface_private_include_dir}"
         -qpaIncludeDir "${module_build_interface_qpa_include_dir}"
         -rhiIncludeDir "${module_build_interface_rhi_include_dir}"
+        -ssgIncludeDir "${module_build_interface_ssg_include_dir}"
         -generatedHeaders ${module_headers_generated}
         ${qpa_filter_argument}
         ${rhi_filter_argument}
+        ${ssg_filter_argument}
         ${public_namespaces_filter}
         ${non_qt_module_argument}
         ${internal_module_argument}

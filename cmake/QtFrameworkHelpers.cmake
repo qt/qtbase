@@ -72,7 +72,7 @@ function(qt_copy_framework_headers target)
 
     set(options)
     set(oneValueArgs)
-    set(multiValueArgs PUBLIC PRIVATE QPA RHI)
+    set(multiValueArgs PUBLIC PRIVATE QPA RHI SSG)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     qt_internal_get_framework_info(fw ${target})
@@ -81,10 +81,11 @@ function(qt_copy_framework_headers target)
     set(output_dir_PRIVATE "${output_dir}/${fw_private_module_header_dir}/private")
     set(output_dir_QPA "${output_dir}/${fw_private_module_header_dir}/qpa")
     set(output_dir_RHI "${output_dir}/${fw_private_module_header_dir}/rhi")
+    set(output_dir_SSG "${output_dir}/${fw_private_module_header_dir}/ssg")
 
 
     set(out_files)
-    foreach(type IN ITEMS PUBLIC PRIVATE QPA RHI)
+    foreach(type IN ITEMS PUBLIC PRIVATE QPA RHI SSG)
         set(fw_output_header_dir "${output_dir_${type}}")
         foreach(hdr IN LISTS arg_${type})
             get_filename_component(in_file_path ${hdr} ABSOLUTE)
