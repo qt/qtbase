@@ -66,6 +66,8 @@ qt_internal_add_module(Widgets
         Qt::GuiPrivate
     PRECOMPILED_HEADER
         "kernel/qt_widgets_pch.h"
+    NO_PCH_SOURCES
+        compat/removed_api.cpp
     GENERATE_CPP_EXPORTS
 )
 
@@ -244,15 +246,6 @@ set(qstyle_resource_files
     "styles/images/viewlist-16.png"
     "styles/images/viewlist-32.png"
 )
-
-set(widgets_no_pch_sources
-    compat/removed_api.cpp
-)
-
-foreach(src ${widgets_no_pch_sources})
-    qt_update_ignore_pch_source(Widgets ${src})
-endforeach()
-
 
 qt_internal_add_resource(Widgets "qstyle"
     PREFIX
