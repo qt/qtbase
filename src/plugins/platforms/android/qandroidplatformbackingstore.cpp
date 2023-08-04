@@ -61,10 +61,11 @@ void QAndroidPlatformBackingStore::flush(QWindow *window, const QRegion &region,
 {
     Q_UNUSED(offset);
 
-    if (!m_backingStoreSet)
+    auto *platformWindow = static_cast<QAndroidPlatformWindow *>(window->handle());
+    if (!platformWindow->backingStore())
         setBackingStore(window);
 
-    (static_cast<QAndroidPlatformWindow *>(window->handle()))->repaint(region);
+    platformWindow->repaint(region);
 }
 
 void QAndroidPlatformBackingStore::resize(const QSize &size, const QRegion &staticContents)
@@ -79,7 +80,6 @@ void QAndroidPlatformBackingStore::setBackingStore(QWindow *window)
 {
     if (window->surfaceType() == QSurface::RasterSurface || window->surfaceType() == QSurface::RasterGLSurface) {
         (static_cast<QAndroidPlatformWindow *>(window->handle()))->setBackingStore(this);
-        m_backingStoreSet = true;
     } else {
         qWarning("QAndroidPlatformBackingStore does not support OpenGL-only windows.");
     }
