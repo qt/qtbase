@@ -208,8 +208,8 @@ void tst_QLocale::ctor()
     QLocale::Language default_lang = default_locale.language();
     QLocale::Territory default_country = default_locale.territory();
 
-    qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toLatin1().constData(),
-            QLocale::territoryToString(default_country).toLatin1().constData());
+    qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toUtf8().constData(),
+            QLocale::territoryToString(default_country).toUtf8().constData());
 
     {
         QLocale l;
@@ -313,8 +313,8 @@ void tst_QLocale::defaulted_ctor()
     QLocale::Language default_lang = default_locale.language();
     QLocale::Territory default_country = default_locale.territory();
 
-    qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toLatin1().constData(),
-            QLocale::territoryToString(default_country).toLatin1().constData());
+    qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toUtf8().constData(),
+            QLocale::territoryToString(default_country).toUtf8().constData());
 
     {
         QLocale l(QLocale::C, QLocale::AnyTerritory);
@@ -436,7 +436,7 @@ void tst_QLocale::defaulted_ctor()
                 QString("requested: \"" + QString(req_lc) + "\", got: " \
                         + QLocale::languageToString(l.language())       \
                         + QLatin1Char('/')                              \
-                        + QLocale::territoryToString(l.territory())).toLatin1().constData()); \
+                        + QLocale::territoryToString(l.territory())).toUtf8().constData()); \
         QCOMPARE(l, QLocale(QLocale::exp_lang, QLocale::exp_country)); \
         QCOMPARE(qHash(l), qHash(QLocale(QLocale::exp_lang, QLocale::exp_country))); \
     }
@@ -500,7 +500,7 @@ void tst_QLocale::defaulted_ctor()
         QString("requested: \"" + QString(req_lc) + "\", got: " \
         + QLocale::languageToString(l.language()) \
         + QLatin1Char('/') + QLocale::scriptToString(l.script()) \
-        + QLatin1Char('/') + QLocale::territoryToString(l.territory())).toLatin1().constData()); \
+        + QLatin1Char('/') + QLocale::territoryToString(l.territory())).toUtf8().constData()); \
     }
 
     TEST_CTOR("zh_CN", Chinese, SimplifiedHanScript, China)
@@ -688,7 +688,7 @@ void tst_QLocale::legacyNames()
                 QString("requested: \"" + QString(req_lc) + "\", got: " \
                         + QLocale::languageToString(l.language())       \
                         + QLatin1Char('/')                              \
-                        + QLocale::territoryToString(l.territory())).toLatin1().constData()); \
+                        + QLocale::territoryToString(l.territory())).toUtf8().constData()); \
     }
 
     TEST_CTOR("mo_MD", Romanian, Moldova)
@@ -1432,7 +1432,7 @@ void tst_QLocale::strtod()
     QFETCH(int, processed);
     QFETCH(bool, ok);
 
-    QByteArray numData = num_str.toLatin1();
+    QByteArray numData = num_str.toUtf8();
     const char *end = nullptr;
     bool actualOk = false;
     double result = qstrtod(numData.constData(), &end, &actualOk);
@@ -2992,9 +2992,9 @@ void tst_QLocale::testNames_data()
     for (int i = 0; i < locale_data_count; ++i) {
         const QLocaleData &item = locale_data[i];
         const QByteArray lang =
-                QLocale::languageToString(QLocale::Language(item.m_language_id)).toLatin1();
+                QLocale::languageToString(QLocale::Language(item.m_language_id)).toUtf8();
         const QByteArray land =
-                QLocale::territoryToString(QLocale::Territory(item.m_territory_id)).toLatin1();
+                QLocale::territoryToString(QLocale::Territory(item.m_territory_id)).toUtf8();
 
         QTest::addRow("data_%d (%s/%s)", i, lang.constData(), land.constData())
                 << QLocale::Language(item.m_language_id) << QLocale::Territory(item.m_territory_id);
@@ -4045,7 +4045,7 @@ void tst_QLocale::systemLocaleDayAndMonthNames()
 #if !QT_CONFIG(icu)
     // setlocale() does not really change locale on Windows and macOS, we
     // need to actually set the locale manually to run the test
-    if (!locale.startsWith(sys.name().toLatin1()))
+    if (!locale.startsWith(sys.name().toUtf8()))
         QSKIP(("Set locale to " + locale + " manually to run this test.").constData());
 #endif
 
