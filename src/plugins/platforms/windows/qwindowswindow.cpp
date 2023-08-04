@@ -468,14 +468,21 @@ static bool shouldShowMaximizeButton(const QWindow *w, Qt::WindowFlags flags)
         w->maximumSize() == QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX);
 }
 
+bool QWindowsWindow::hasNoNativeFrame(HWND hwnd, Qt::WindowFlags flags)
+{
+    const LONG_PTR style = GetWindowLongPtr(hwnd, GWL_STYLE);
+    return (style & WS_CHILD) || (flags & Qt::FramelessWindowHint);
+}
+
 // Set the WS_EX_LAYERED flag on a HWND if required. This is required for
 // translucent backgrounds, not fully opaque windows and for
 // Qt::WindowTransparentForInput (in combination with WS_EX_TRANSPARENT).
 bool QWindowsWindow::setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal opacity)
 {
     const LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+    // Native children are frameless by nature, so check for that as well.
     const bool needsLayered = (flags & Qt::WindowTransparentForInput)
-        || (hasAlpha && (flags & Qt::FramelessWindowHint)) || opacity < 1.0;
+        || (hasAlpha && hasNoNativeFrame(hwnd, flags)) || opacity < 1.0;
     const bool isLayered = (exStyle & WS_EX_LAYERED);
     if (needsLayered != isLayered) {
         if (needsLayered) {
@@ -491,7 +498,7 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bo
 {
     if (QWindowsWindow::setWindowLayered(hwnd, flags, hasAlpha, level)) {
         const BYTE alpha = BYTE(qRound(255.0 * level));
-        if (hasAlpha && !accelerated && (flags & Qt::FramelessWindowHint)) {
+        if (hasAlpha && !accelerated && QWindowsWindow::hasNoNativeFrame(hwnd, flags)) {
             // Non-GL windows with alpha: Use blend function to update.
             BLENDFUNCTION blend = {AC_SRC_OVER, 0, alpha, AC_SRC_ALPHA};
             UpdateLayeredWindow(hwnd, nullptr, nullptr, nullptr, nullptr, nullptr, 0, &blend, ULW_ALPHA);

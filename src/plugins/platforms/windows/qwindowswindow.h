@@ -305,6 +305,7 @@ public:
     static inline void *userDataOf(HWND hwnd);
     static inline void setUserDataOf(HWND hwnd, void *ud);
 
+    static bool hasNoNativeFrame(HWND hwnd, Qt::WindowFlags flags);
     static bool setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal opacity);
     bool isLayered() const;
 
