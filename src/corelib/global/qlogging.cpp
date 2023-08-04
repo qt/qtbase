@@ -1896,7 +1896,7 @@ static bool wasm_default_message_handler(QtMsgType type,
         return false; // Leave logging up to stderr handler
 
     QString formattedMessage = qFormatLogMessage(type, context, message);
-    int emOutputFlags = (EM_LOG_CONSOLE | EM_LOG_DEMANGLE);
+    int emOutputFlags = EM_LOG_CONSOLE;
     QByteArray localMsg = message.toLocal8Bit();
     switch (type) {
     case QtDebugMsg:
