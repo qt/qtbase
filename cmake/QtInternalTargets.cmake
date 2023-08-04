@@ -160,7 +160,7 @@ qt_internal_add_global_definition(QT_NO_AS_CONST)
 qt_internal_add_global_definition(QT_NO_QEXCHANGE)
 qt_internal_add_global_definition(QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 qt_internal_add_global_definition(QT_EXPLICIT_QFILE_CONSTRUCTION_FROM_PATH)
-qt_internal_add_global_definition(QT_USE_QSTRINGBUILDER SCOPE PLUGIN)
+qt_internal_add_global_definition(QT_USE_QSTRINGBUILDER SCOPE PLUGIN TOOL)
 
 if(WARNINGS_ARE_ERRORS)
     qt_internal_set_warnings_are_errors_flags(PlatformModuleInternal INTERFACE)

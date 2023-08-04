@@ -119,7 +119,6 @@ function(qt_internal_add_tool target_name)
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES
-            QT_USE_QSTRINGBUILDER
             ${arg_DEFINES}
             ${deprecation_define}
         ${corelib}
