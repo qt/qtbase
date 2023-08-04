@@ -43,7 +43,7 @@ public:
     }
 
 private:
-    QElapsedTimer m_timer;
+    QTime m_timer;
     QString m_msg;
 };
 

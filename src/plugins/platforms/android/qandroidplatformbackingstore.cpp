@@ -25,10 +25,11 @@ void QAndroidPlatformBackingStore::flush(QWindow *window, const QRegion &region,
 {
     Q_UNUSED(offset);
 
-    if (!m_backingStoreSet)
+    auto *platformWindow = static_cast<QAndroidPlatformWindow *>(window->handle());
+    if (!platformWindow->backingStore())
         setBackingStore(window);
 
-    (static_cast<QAndroidPlatformWindow *>(window->handle()))->repaint(region);
+    platformWindow->repaint(region);
 }
 
 void QAndroidPlatformBackingStore::resize(const QSize &size, const QRegion &staticContents)
@@ -42,7 +43,6 @@ void QAndroidPlatformBackingStore::resize(const QSize &size, const QRegion &stat
 void QAndroidPlatformBackingStore::setBackingStore(QWindow *window)
 {
     (static_cast<QAndroidPlatformWindow *>(window->handle()))->setBackingStore(this);
-    m_backingStoreSet = true;
 }
 
 QT_END_NAMESPACE
