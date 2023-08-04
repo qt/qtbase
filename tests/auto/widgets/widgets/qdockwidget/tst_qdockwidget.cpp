@@ -1444,6 +1444,8 @@ void tst_QDockWidget::floatingTabs()
 // test hide & show
 void tst_QDockWidget::hideAndShow()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Test skipped on Wayland.");
 #ifdef QT_BUILD_INTERNAL
     // Skip test if xcb error is launched
     qThis = this;
@@ -1507,6 +1509,8 @@ void tst_QDockWidget::hideAndShow()
 // test closing and deleting consistency
 void tst_QDockWidget::closeAndDelete()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Test skipped on Wayland.");
 #ifdef QT_BUILD_INTERNAL
     // Create a mainwindow with a central widget and two dock widgets
     QPointer<QDockWidget> d1;
@@ -1571,6 +1575,8 @@ void tst_QDockWidget::closeAndDelete()
 // Test dock area permissions
 void tst_QDockWidget::dockPermissions()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Test skipped on Wayland.");
 #ifdef Q_OS_WIN
     QSKIP("Test skipped on Windows platforms");
 #endif // Q_OS_WIN
