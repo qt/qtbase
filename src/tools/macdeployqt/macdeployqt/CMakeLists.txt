@@ -14,6 +14,8 @@ qt_internal_add_tool(${target_name}
     SOURCES
         ../shared/shared.cpp
         main.cpp
+    DEFINES
+        QT_NO_FOREACH
     LIBRARIES
         ${FWCoreFoundation}
 )
