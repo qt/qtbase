@@ -1358,12 +1358,13 @@ void tst_QMainWindow::restoreState()
 //tests the restoration of the previous versions of window settings
 void tst_QMainWindow::restoreStateFromPreviousVersion()
 {
-    QList<QByteArray> restoreData;
-    restoreData << QByteArray((char*)restoreData41, sizeof(restoreData41))
-         << QByteArray((char*)restoreData42, sizeof(restoreData42))
-         << QByteArray((char*)restoreData43, sizeof(restoreData43));
+    const QByteArray restoreData[] = {
+        QByteArray((char*)restoreData41, sizeof(restoreData41)),
+        QByteArray((char*)restoreData42, sizeof(restoreData42)),
+        QByteArray((char*)restoreData43, sizeof(restoreData43)),
+    };
 
-    foreach(QByteArray ba, restoreData) {
+    for (const QByteArray &ba : restoreData) {
 
         QMainWindow win;
         win.setCentralWidget(new QTextEdit);
@@ -1671,8 +1672,8 @@ void MoveSeparator::apply(QMainWindow *mw) const
 QMap<QString, QRect> dockWidgetGeometries(QMainWindow *mw)
 {
     QMap<QString, QRect> result;
-    QList<QDockWidget*> dockWidgets = mw->findChildren<QDockWidget*>();
-    foreach (QDockWidget *dw, dockWidgets)
+    const QList<QDockWidget*> dockWidgets = mw->findChildren<QDockWidget*>();
+    for (QDockWidget *dw : dockWidgets)
         result.insert(dw->objectName(), dw->geometry());
     return result;
 }
@@ -1682,8 +1683,8 @@ QMap<QString, QRect> dockWidgetGeometries(QMainWindow *mw)
     QMap<QString, QRect> _v_oldGeos = _oldGeos; \
     QMap<QString, QRect> _v_newGeos = _newGeos; \
     QCOMPARE(_v_newGeos.keys(), _v_oldGeos.keys()); \
-    QStringList _v_keys = _v_newGeos.keys(); \
-    foreach (const QString &key, _v_keys) { \
+    const QStringList _v_keys = _v_newGeos.keys(); \
+    for (const QString &key : _v_keys) { \
         QRect _v_r1 = _v_oldGeos[key]; \
         QRect _v_r2 = _v_newGeos[key]; \
         if (_v_r1 != _v_r2) \
@@ -1735,8 +1736,8 @@ void tst_QMainWindow::saveRestore_data()
 #ifdef QT_BUILD_INTERNAL
 void tst_QMainWindow::saveRestore()
 {
-    QFETCH(AddList, addList);
-    QFETCH(MoveList, moveList);
+    QFETCH(const AddList, addList);
+    QFETCH(const MoveList, moveList);
 
     QByteArray stateData;
     QMap<QString, QRect> dockWidgetGeos;
@@ -1748,12 +1749,12 @@ void tst_QMainWindow::saveRestore()
         QTextEdit centralWidget("The rain in Spain falls mainly on the plains");
         mainWindow.setCentralWidget(&centralWidget);
 
-        foreach (const AddDockWidget &adw, addList)
+        for (const AddDockWidget &adw : addList)
             adw.apply(&mainWindow);
 
         mainWindow.show();
 
-        foreach (const MoveSeparator &ms, moveList)
+        for (const MoveSeparator &ms : moveList)
             ms.apply(&mainWindow);
 
         dockWidgetGeos = dockWidgetGeometries(&mainWindow);
@@ -1771,7 +1772,7 @@ void tst_QMainWindow::saveRestore()
         QTextEdit centralWidget("The rain in Spain falls mainly on the plains");
         mainWindow.setCentralWidget(&centralWidget);
 
-        foreach (const AddDockWidget &adw, addList)
+        for (const AddDockWidget &adw : addList)
             adw.apply(&mainWindow);
 
         mainWindow.show();
@@ -1788,7 +1789,7 @@ void tst_QMainWindow::saveRestore()
         QTextEdit centralWidget("The rain in Spain falls mainly on the plains");
         mainWindow.setCentralWidget(&centralWidget);
 
-        foreach (const AddDockWidget &adw, addList)
+        for (const AddDockWidget &adw : addList)
             adw.apply(&mainWindow);
         mainWindow.resize(size);
         mainWindow.restoreState(stateData);
@@ -2096,10 +2097,11 @@ void tst_QMainWindow::resizeDocks()
     mw.setDockNestingEnabled(true);
     mw.resize(1800, 600);
 
-    foreach (const AddDockWidget &i, addList)
+    for (const AddDockWidget &i : std::as_const(addList))
         i.apply(&mw);
 
-    foreach (QDockWidget *dw, mw.findChildren<QDockWidget *>())
+    const auto dockWidgets = mw.findChildren<QDockWidget *>();
+    for (QDockWidget *dw : dockWidgets)
         dw->setStyleSheet( "* { background-color: " + dw->objectName() +" }");
 
     mw.setCentralWidget(new QTextEdit);
@@ -2108,11 +2110,11 @@ void tst_QMainWindow::resizeDocks()
     QVERIFY(QTest::qWaitForWindowExposed(&mw));
 
     QFETCH(Qt::Orientation, orientation);
-    QFETCH(QStringList, docks);
+    QFETCH(const QStringList, docks);
     QFETCH(QList<int>, sizes);
 
     QList<QDockWidget *> list;
-    foreach (const QString &name, docks) {
+    for (const QString &name : docks) {
         QDockWidget *d = mw.findChild<QDockWidget *>(name);
         QVERIFY(d);
         list << d;
