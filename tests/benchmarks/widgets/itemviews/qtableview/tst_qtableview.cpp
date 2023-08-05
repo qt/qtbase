@@ -233,13 +233,13 @@ void tst_QTableView::rowInsertion_data()
 
 void tst_QTableView::rowInsertion()
 {
-    QFETCH(SpanList, spans);
+    QFETCH(const SpanList, spans);
 
     QtTestTableModel model(10, 10);
     QTableView view;
     view.setModel(&model);
 
-    foreach (QRect span, spans)
+    for (QRect span : spans)
         view.setSpan(span.top(), span.left(), span.height(), span.width());
     view.show();
     QTest::qWait(50);
@@ -259,13 +259,13 @@ void tst_QTableView::rowRemoval_data()
 
 void tst_QTableView::rowRemoval()
 {
-    QFETCH(SpanList, spans);
+    QFETCH(const SpanList, spans);
 
     QtTestTableModel model(10, 10);
     QTableView view;
     view.setModel(&model);
 
-    foreach (QRect span, spans)
+    for (QRect span : spans)
         view.setSpan(span.top(), span.left(), span.height(), span.width());
     view.show();
     QTest::qWait(50);
@@ -282,14 +282,14 @@ void tst_QTableView::columnInsertion_data()
 
 void tst_QTableView::columnInsertion()
 {
-    QFETCH(SpanList, spans);
+    QFETCH(const SpanList, spans);
 
     QtTestTableModel model(10, 10);
     QTableView view;
     view.setModel(&model);
 
     // Same set as for rowInsertion, just swapping columns and rows.
-    foreach (QRect span, spans)
+    for (QRect span : spans)
         view.setSpan(span.left(), span.top(), span.width(), span.height());
     view.show();
     QTest::qWait(50);
@@ -309,14 +309,14 @@ void tst_QTableView::columnRemoval_data()
 
 void tst_QTableView::columnRemoval()
 {
-    QFETCH(SpanList, spans);
+    QFETCH(const SpanList, spans);
 
     QtTestTableModel model(10, 10);
     QTableView view;
     view.setModel(&model);
 
     // Same set as for rowRemoval, just swapping columns and rows.
-    foreach (QRect span, spans)
+    for (QRect span : spans)
         view.setSpan(span.left(), span.top(), span.width(), span.height());
     view.show();
     QTest::qWait(50);
