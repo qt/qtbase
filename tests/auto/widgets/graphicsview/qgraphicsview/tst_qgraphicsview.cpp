@@ -1049,9 +1049,9 @@ void tst_QGraphicsView::rotated_rubberBand()
     sendMouseMove(view.viewport(), QPoint(midWidth + 2, view.viewport()->height()),
                   Qt::LeftButton, Qt::LeftButton);
     QCOMPARE(scene.selectedItems().size(), dim);
-    foreach (const QGraphicsItem *item, scene.items()) {
+    const auto items = scene.items();
+    for (const QGraphicsItem *item : items)
         QCOMPARE(item->isSelected(), item->data(0).toBool());
-    }
     sendMouseRelease(view.viewport(), QPoint(), Qt::LeftButton);
 }
 
@@ -2739,7 +2739,8 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
     rectB->setTransform(QTransform::fromTranslate(200, 200));
     rectB->setPen(QPen(Qt::black, 0));
 
-    foreach (QGraphicsItem *item, scene.items())
+    const auto items = scene.items();
+    for (QGraphicsItem *item : items)
         item->setOpacity(0.6);
 
     CustomView view(&scene);
@@ -3258,7 +3259,8 @@ protected:
     {
         ++mouseMoves;
         QGraphicsView::mouseMoveEvent(event);
-        foreach (QGraphicsItem *item, scene()->items()) {
+        const auto items = scene()->items();
+        for (QGraphicsItem *item : items) {
             scene()->removeItem(item);
             delete item;
         }

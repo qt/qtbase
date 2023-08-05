@@ -2476,7 +2476,8 @@ void tst_QGraphicsProxyWidget::tooltip_basic()
 
         bool foundView = false;
         bool foundTipLabel = false;
-        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+        const auto widgets = QApplication::topLevelWidgets();
+        for (QWidget *widget : widgets) {
             if (widget == &view)
                 foundView = true;
             if (widget->inherits("QTipLabel"))
