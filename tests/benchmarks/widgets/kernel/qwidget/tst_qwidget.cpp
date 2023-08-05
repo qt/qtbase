@@ -49,7 +49,7 @@ public:
     void setOpaqueChildren(bool enable)
     {
         if (opaqueChildren != enable) {
-            foreach (QWidget *w, children)
+            for (QWidget *w : std::as_const(children))
                 w->setAttribute(Qt::WA_OpaquePaintEvent, enable);
             opaqueChildren = enable;
             processEvents();
