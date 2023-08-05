@@ -58,7 +58,8 @@ private slots:
 static inline int visibleTopLevelWidgetCount()
 {
     int result= 0;
-    foreach (const QWidget *topLevel, QApplication::topLevelWidgets()) {
+    const auto topLevels = QApplication::topLevelWidgets();
+    for (const QWidget *topLevel : topLevels) {
         if (topLevel->isVisible())
             ++result;
     }

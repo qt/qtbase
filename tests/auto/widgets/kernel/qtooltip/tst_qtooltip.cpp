@@ -117,7 +117,8 @@ void tst_QToolTip::keyEvent()
 
 static QWidget *findWhatsThat()
 {
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+    const auto widgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : widgets) {
         if (widget->inherits("QWhatsThat"))
             return widget;
     }
