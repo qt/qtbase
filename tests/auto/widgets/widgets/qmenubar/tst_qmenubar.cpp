@@ -1361,8 +1361,8 @@ void tst_QMenuBar::menubarSizeHint()
 
     mb.setStyle(&style);
     //this is a list of arbitrary strings so that we check the geometry
-    QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";
-    foreach(QString str, list)
+    const auto list = QStringList{"trer", "ezrfgtgvqd", "sdgzgzerzerzer", "eerzertz", "er"};
+    for (const QString &str : list)
         mb.addAction(str);
 
     const int panelWidth = style.pixelMetric(QStyle::PM_MenuBarPanelWidth);
@@ -1373,7 +1373,8 @@ void tst_QMenuBar::menubarSizeHint()
     centerOnScreen(&mb);
     mb.show();
     QRect result;
-    foreach(QAction *action, mb.actions()) {
+    const auto actions = mb.actions();
+    for (QAction *action : actions) {
         const QRect actionRect = mb.actionGeometry(action);
         if (!result.isNull()) //this is the first item
             QCOMPARE(actionRect.left() - result.right() - 1, spacing);

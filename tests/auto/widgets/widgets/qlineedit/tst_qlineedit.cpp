@@ -4717,7 +4717,8 @@ void tst_QLineEdit::sideWidgets()
     testWidget.move(300, 300);
     testWidget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
-    foreach (QToolButton *button, lineEdit->findChildren<QToolButton *>())
+    const auto buttons = lineEdit->findChildren<QToolButton *>();
+    for (QToolButton *button : buttons)
         QCOMPARE(button->cursor().shape(), Qt::ArrowCursor);
     // Arbitrarily add/remove actions, trying to detect crashes. Add QTRY_VERIFY(false) to view the result.
     delete label3Action;
@@ -4732,7 +4733,8 @@ void tst_QLineEdit::sideWidgets()
 
 template <class T> T *findAssociatedWidget(const QAction *a)
 {
-    foreach (QObject *w, a->associatedObjects()) {
+    const auto associatedObjects = a->associatedObjects();
+    for (QObject *w : associatedObjects) {
         if (T *result = qobject_cast<T *>(w))
             return result;
     }

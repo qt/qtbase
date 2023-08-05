@@ -1352,7 +1352,7 @@ void tst_QTextEdit::copyAvailable_data()
 //Tests the copyAvailable slot for several cases
 void tst_QTextEdit::copyAvailable()
 {
-    QFETCH(pairListType,keystrokes);
+    QFETCH(const pairListType, keystrokes);
     QFETCH(QList<bool>, copyAvailable);
     QFETCH(QString, function);
 
@@ -1365,9 +1365,8 @@ void tst_QTextEdit::copyAvailable()
     QSignalSpy spyCopyAvailabe(ed, SIGNAL(copyAvailable(bool)));
 
     //Execute Keystrokes
-    foreach(keyPairType keyPair, keystrokes) {
+    for (keyPairType keyPair : keystrokes)
         QTest::keyClick(ed, keyPair.first, keyPair.second );
-    }
 
     //Execute ed->"function"
     if (function == "cut")

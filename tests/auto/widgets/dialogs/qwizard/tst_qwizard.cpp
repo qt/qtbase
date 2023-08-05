@@ -565,9 +565,9 @@ void tst_QWizard::addPage()
 
 #define CHECK_VISITED(wizard, list) \
     do { \
-        QList<int> myList = list; \
+        const QList<int> myList = list; \
         QCOMPARE((wizard).visitedIds(), myList); \
-        Q_FOREACH(int id, myList) \
+        for (int id : myList) \
             QVERIFY((wizard).hasVisitedPage(id)); \
     } while (0)
 
@@ -1837,7 +1837,8 @@ public:
 #define OPT(option, on) OptionInfo::instance().operation(option, on)
 #define CLROPT(option) OPT(option, false)
 #define SETOPT(option) OPT(option, true)
-        foreach (QWizard::WizardOption option, OptionInfo::instance().options()) {
+        const auto options = OptionInfo::instance().options();
+        for (QWizard::WizardOption option : options) {
             setAllOptions[false] << CLROPT(option);
             setAllOptions[true]  << SETOPT(option);
         }
@@ -1924,7 +1925,8 @@ public:
                 testGroup.add() << pageOp << optionOps;
                 testGroup.createTestRows();
 
-                foreach (QWizard::WizardOption option, OptionInfo::instance().options()) {
+                const auto options = OptionInfo::instance().options();
+                for (QWizard::WizardOption option : options) {
                     QSharedPointer<Operation> optionOp = OPT(option, i == 1);
                     testGroup.reset("testAll 4.3");
                     testGroup.add() << optionOp << pageOp;
@@ -1947,7 +1949,8 @@ public:
                 testGroup.add() << styleOp << optionOps;
                 testGroup.createTestRows();
 
-                foreach (QWizard::WizardOption option, OptionInfo::instance().options()) {
+                const auto options = OptionInfo::instance().options();
+                for (QWizard::WizardOption option : options) {
                     QSharedPointer<Operation> optionOp = OPT(option, i == 1);
                     testGroup.reset("testAll 5.3");
                     testGroup.add() << optionOp << styleOp;
@@ -1986,7 +1989,8 @@ public:
                     testGroup.add() << styleOp << pageOp << optionOps;
                     testGroup.createTestRows();
 
-                    foreach (QWizard::WizardOption option, OptionInfo::instance().options()) {
+                    const auto options = OptionInfo::instance().options();
+                    for (QWizard::WizardOption option : options) {
                         QSharedPointer<Operation> optionOp = OPT(option, i == 1);
                         testGroup.reset("testAll 6.5");
                         testGroup.add() << optionOp << pageOp << styleOp;
@@ -2570,7 +2574,8 @@ void tst_QWizard::task161658_alignments()
     wizard.show();
     QVERIFY(QTest::qWaitForWindowExposed(&wizard));
 
-    foreach (QLabel *subtitleLabel, wizard.findChildren<QLabel *>()) {
+    const auto subtitleLabels = wizard.findChildren<QLabel *>();
+    for (QLabel *subtitleLabel : subtitleLabels) {
         if (subtitleLabel->text().startsWith("SUBTITLE#")) {
             QCOMPARE(lineEdit1.mapToGlobal(lineEdit1.contentsRect().bottomRight()).x(),
                      subtitleLabel->mapToGlobal(subtitleLabel->contentsRect().bottomRight()).x());
