@@ -2033,8 +2033,8 @@ void tst_QComboBox::flaggedItems()
         QSKIP("Wayland: This fails. Figure out why.");
 
     QFETCH(QStringList, itemList);
-    QFETCH(IntList, deselectFlagList);
-    QFETCH(IntList, disableFlagList);
+    QFETCH(const IntList, deselectFlagList);
+    QFETCH(const IntList, disableFlagList);
     QFETCH(KeyList, keyMovementList);
     QFETCH(bool, editable);
     QFETCH(int, expectedIndex);
@@ -2045,10 +2045,10 @@ void tst_QComboBox::flaggedItems()
     listWidget.addItems(itemList);
 
     comboBox.setEditable(editable);
-    foreach (int index, deselectFlagList)
+    for (int index : deselectFlagList)
         listWidget.item(index)->setFlags(listWidget.item(index)->flags() & ~Qt::ItemIsSelectable);
 
-    foreach (int index, disableFlagList)
+    for (int index : disableFlagList)
         listWidget.item(index)->setFlags(listWidget.item(index)->flags() & ~Qt::ItemIsEnabled);
 
     comboBox.setModel(listWidget.model());
@@ -2131,7 +2131,7 @@ void tst_QComboBox::mouseWheel_data()
 
 void tst_QComboBox::mouseWheel()
 {
-    QFETCH(IntList, disabledItems);
+    QFETCH(const IntList, disabledItems);
     QFETCH(int, startIndex);
     QFETCH(int, wheelDirection);
     QFETCH(int, expectedIndex);
@@ -2146,7 +2146,7 @@ void tst_QComboBox::mouseWheel()
     QListWidget listWidget;
     listWidget.addItems(list);
 
-    foreach (int index, disabledItems)
+    for (int index : disabledItems)
         listWidget.item(index)->setFlags(listWidget.item(index)->flags() & ~Qt::ItemIsEnabled);
 
     box.setModel(listWidget.model());
@@ -2280,11 +2280,11 @@ void tst_QComboBox::separatorItem_data()
 void tst_QComboBox::separatorItem()
 {
     QFETCH(QStringList, items);
-    QFETCH(IntList, separators);
+    QFETCH(const IntList, separators);
 
     QComboBox box;
     box.addItems(items);
-    foreach(int index, separators)
+    for (int index : separators)
         box.insertSeparator(index);
     QCOMPARE(box.count(), (items.size() + separators.size()));
     for (int i = 0, s = 0; i < box.count(); ++i) {
@@ -2405,7 +2405,8 @@ void tst_QComboBox::task191329_size()
     QFrame *container = tableCombo.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
     QCOMPARE(static_cast<QAbstractItemView *>(table), container->findChild<QAbstractItemView *>());
-    foreach (QWidget *button, container->findChildren<QComboBoxPrivateScroller *>()) {
+    const auto buttons = container->findChildren<QComboBoxPrivateScroller *>();
+    for (QWidget *button : buttons) {
         //the popup should be large enough to contains everithing so the top and left button are hidden
         QVERIFY(!button->isVisible());
     }
@@ -3305,10 +3306,10 @@ void tst_QComboBox::task_QTBUG_49831_scrollerNotActivated()
     QVERIFY(container);
     QVERIFY(QTest::qWaitForWindowExposed(container));
 
-    QList<QComboBoxPrivateScroller *> scrollers = container->findChildren<QComboBoxPrivateScroller *>();
+    const QList<QComboBoxPrivateScroller *> scrollers = container->findChildren<QComboBoxPrivateScroller *>();
     // Not all styles support scrollers. We rely only on those platforms that do to catch any regression.
     if (!scrollers.isEmpty()) {
-        Q_FOREACH (QComboBoxPrivateScroller *scroller, scrollers) {
+        for (QComboBoxPrivateScroller *scroller : scrollers) {
             if (scroller->isVisible()) {
                 QSignalSpy doScrollSpy(scroller, SIGNAL(doScroll(int)));
                 QTest::mouseMove(scroller, QPoint(5, 5), 500);
