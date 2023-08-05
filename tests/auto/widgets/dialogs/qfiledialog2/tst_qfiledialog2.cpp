@@ -682,13 +682,13 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
 #if defined(Q_OS_WIN)
     fd.setDirectory("C:/");
     QDir current = fd.directory();
-    QStringList entryList = current.entryList(QStringList(), QDir::Dirs);
+    const QStringList entryList = current.entryList(QStringList(), QDir::Dirs);
     // Find a suitable test dir under c:-root:
     // - At least 6 characters long
     // - Ascii, letters only
     // - No another dir with same start
     QString testDir;
-    foreach (const QString &entry, entryList) {
+    for (const QString &entry : entryList) {
         if (entry.size() > 5 && QString(entry.toLatin1()).compare(entry) == 0) {
             bool invalid = false;
             for (int i = 0; i < 5; i++) {
@@ -698,7 +698,7 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
                 }
             }
             if (!invalid) {
-                foreach (const QString &check, entryList) {
+                for (const QString &check : entryList) {
                     if (check.startsWith(entry.left(5), Qt::CaseInsensitive) && check != entry) {
                         invalid = true;
                         break;
@@ -948,9 +948,9 @@ void tst_QFileDialog2::task239706_editableFilterCombo()
     d.show();
     QVERIFY(QTest::qWaitForWindowExposed(&d));
 
-    QList<QComboBox *> comboList = d.findChildren<QComboBox *>();
+    const QList<QComboBox *> comboList = d.findChildren<QComboBox *>();
     QComboBox *filterCombo = nullptr;
-    foreach (QComboBox *combo, comboList) {
+    for (QComboBox *combo : comboList) {
         if (combo->objectName() == QString("fileTypeCombo")) {
             filterCombo = combo;
             break;

@@ -517,7 +517,6 @@ void tst_QFiledialog::completer()
     for (int i = 0; i < input.size(); ++i)
         QTest::keyPress(lineEdit, input[i].toLatin1());
 
-    QStringList expectedFiles;
     if (expected == -1) {
         QString fullPath = startPath;
         if (!fullPath.endsWith(QLatin1Char('/')))
@@ -530,11 +529,11 @@ void tst_QFiledialog::completer()
 
         QFileInfo fi(fullPath);
         QDir x(fi.absolutePath());
-        expectedFiles = x.entryList(model->filter());
+        const QStringList expectedFiles = x.entryList(model->filter());
         expected = 0;
         if (input.startsWith(".."))
             input.clear();
-        foreach (const QString &expectedFile, expectedFiles) {
+        for (const QString &expectedFile : expectedFiles) {
             if (expectedFile.startsWith(input, caseSensitivity))
                 ++expected;
         }
