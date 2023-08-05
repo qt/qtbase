@@ -90,9 +90,9 @@ void AbstractScrollArea::setViewport(QGraphicsWidget *viewport)
     if (m_viewport) {
         m_viewport->setParentItem(0);
 
-        QList<QGraphicsItem*> children = m_viewport->childItems();
+        const QList<QGraphicsItem*> children = m_viewport->childItems();
 
-        foreach (QGraphicsItem *child, children)
+        for (QGraphicsItem *child : children)
             child->setParentItem(0);
 
         delete m_viewport;
