@@ -541,23 +541,11 @@ void tst_GraphicsViewBenchmark::update_data()
     QTest::addColumn<bool>("subtreeCache");
     QTest::addColumn<int>("rotationAngle");
 
-    QList<ListType> listTypes;
-    listTypes << Simple << Recycling;
-
-    QList<int> listSizes;
-    listSizes << 10 << 50 << 500;
-
-    QList<Theme::Themes> themes;
-    themes << Theme::Blue << Theme::Lime;
-
-    QList<int> rotationAngles;
-    rotationAngles << 0 << 90;
-
     // Generate rows:
-    foreach (ListType listType, listTypes) {
-        foreach (int listSize, listSizes) {
-            foreach (int angle, rotationAngles) {
-                foreach (Theme::Themes theme, themes) {
+    for (ListType listType : {Simple, Recycling}) {
+        for (int listSize : {10, 50, 500}) {
+            for (int angle : {0, 90}) {
+                for (Theme::Themes theme : {Theme::Blue, Theme::Lime}) {
                     for (int toImage = 0; toImage < 2; ++toImage) {
                         for (int cache = 0; cache < 2; ++cache) {
                             QString string = rowString(listSize, listType, theme, toImage, cache, angle);
@@ -613,27 +601,12 @@ void tst_GraphicsViewBenchmark::scroll_data()
     QTest::addColumn<int>("rotationAngle");
     QTest::addColumn<ScrollStep>("scrollStep");
 
-    QList<ListType> listTypes;
-    listTypes << Simple << Recycling;
-
-    QList<int> listSizes;
-    listSizes << 10 << 50 << 500;
-
-    QList<Theme::Themes> themes;
-    themes << Theme::Blue << Theme::Lime;
-
-    QList<int> rotationAngles;
-    rotationAngles << 0 << 90;
-
-    QList<ScrollStep> scrollSteps;
-    scrollSteps << Slow << Normal << Fast;
-
     // Generate rows:
-    foreach (ListType listType, listTypes) {
-        foreach (int listSize, listSizes) {
-            foreach (int angle, rotationAngles) {
-                foreach (ScrollStep step, scrollSteps) {
-                    foreach (Theme::Themes theme, themes) {
+    for (ListType listType : {Simple, Recycling}) {
+        for (int listSize : {10, 50, 500}) {
+            for (int angle : {0, 90}) {
+                for (ScrollStep step : {Slow, Normal, Fast}) {
+                    for (Theme::Themes theme : {Theme::Blue, Theme::Lime}) {
                         for (int cache = 0; cache < 2; ++cache) {
                             QString string = rowString(listSize, listType, theme, cache, angle, step);
                             QTest::newRow(string.toLatin1()) << listSize << listType << theme
