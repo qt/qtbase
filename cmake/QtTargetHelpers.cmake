@@ -51,7 +51,6 @@ function(qt_internal_extend_target target)
         CONDITION
         CONDITION_INDEPENDENT_SOURCES
         COMPILE_FLAGS
-        NO_PCH_SOURCES
     )
 
     cmake_parse_arguments(PARSE_ARGV 1 arg

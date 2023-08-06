@@ -53,6 +53,7 @@ function(qt_internal_add_app target)
         ${arg_NO_UNITY_BUILD}
         ${forward_install_dir}
         SOURCES ${arg_SOURCES}
+        NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
         NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}

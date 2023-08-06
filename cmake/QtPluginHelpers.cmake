@@ -336,6 +336,8 @@ function(qt_internal_add_plugin target)
     qt_internal_extend_target("${target}"
         ${arg_NO_UNITY_BUILD}
         SOURCES ${arg_SOURCES}
+        NO_PCH_SOURCES
+            ${arg_NO_PCH_SOURCES}
         NO_UNITY_BUILD_SOURCES
             ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES
