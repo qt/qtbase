@@ -114,6 +114,7 @@ function(qt_internal_add_tool target_name)
         NO_INSTALL
         ${arg_NO_UNITY_BUILD}
         SOURCES ${arg_SOURCES}
+        NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
         NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
