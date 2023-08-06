@@ -467,6 +467,7 @@ set(__default_private_args
     DISABLE_AUTOGEN_TOOLS
     ENABLE_AUTOGEN_TOOLS
     PLUGIN_TYPES
+    NO_PCH_SOURCES
     NO_UNITY_BUILD_SOURCES
 )
 set(__default_public_args

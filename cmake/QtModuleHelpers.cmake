@@ -37,7 +37,6 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         QMAKE_MODULE_CONFIG
         EXTRA_CMAKE_FILES
         EXTRA_CMAKE_INCLUDES
-        NO_PCH_SOURCES
         EXTERNAL_HEADERS
         POLICIES
         ${__default_private_args}
