@@ -172,6 +172,13 @@ QDebug operator<<(QDebug str, const QSpanCollection::Span &span)
     str << '(' << span.top() << ',' << span.left() << ',' << span.bottom() << ',' << span.right() << ')';
     return str;
 }
+
+QDebug operator<<(QDebug debug, const QSpanCollection::SpanList &spans)
+{
+    for (const auto *span : spans)
+        debug << span << *span;
+    return debug;
+}
 #endif
 
 /** \internal
@@ -202,8 +209,7 @@ void QSpanCollection::updateInsertedRows(int start, int end)
 
 #ifdef DEBUG_SPAN_UPDATE
     qDebug("After");
-    foreach (QSpanCollection::Span *span, spans)
-        qDebug() << span << *span;
+    qDebug() << spans;
 #endif
 
     for (Index::iterator it_y = index.begin(); it_y != index.end(); ) {
@@ -249,8 +255,7 @@ void QSpanCollection::updateInsertedColumns(int start, int end)
 
 #ifdef DEBUG_SPAN_UPDATE
     qDebug("After");
-    foreach (QSpanCollection::Span *span, spans)
-        qDebug() << span << *span;
+    qDebug() << spans;
 #endif
 
     for (Index::iterator it_y = index.begin(); it_y != index.end(); ++it_y) {
@@ -354,8 +359,7 @@ void QSpanCollection::updateRemovedRows(int start, int end)
 
 #ifdef DEBUG_SPAN_UPDATE
     qDebug("After");
-    foreach (QSpanCollection::Span *span, spans)
-        qDebug() << span << *span;
+    qDebug() << spans;
 #endif
     if (spans.empty()) {
         qDeleteAll(spansToBeDeleted);
@@ -422,8 +426,7 @@ void QSpanCollection::updateRemovedRows(int start, int end)
 #ifdef DEBUG_SPAN_UPDATE
     qDebug() << index;
     qDebug("Deleted");
-    foreach (QSpanCollection::Span *span, spansToBeDeleted)
-        qDebug() << span << *span;
+    qDebug() << spansToBeDeleted;
 #endif
     qDeleteAll(spansToBeDeleted);
 }
@@ -481,8 +484,7 @@ void QSpanCollection::updateRemovedColumns(int start, int end)
 
 #ifdef DEBUG_SPAN_UPDATE
     qDebug("After");
-    foreach (QSpanCollection::Span *span, spans)
-        qDebug() << span << *span;
+    qDebug() << spans;
 #endif
     if (spans.empty()) {
         qDeleteAll(toBeDeleted);
@@ -501,8 +503,7 @@ void QSpanCollection::updateRemovedColumns(int start, int end)
 #ifdef DEBUG_SPAN_UPDATE
     qDebug() << index;
     qDebug("Deleted");
-    foreach (QSpanCollection::Span *span, toBeDeleted)
-        qDebug() << span << *span;
+    qDebug() << toBeDeleted;
 #endif
     qDeleteAll(toBeDeleted);
 }
