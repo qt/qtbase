@@ -28,6 +28,13 @@ qt_internal_add_plugin(QIOSIntegrationPlugin
         quiaccessibilityelement.h quiaccessibilityelement.mm
         quiview.h quiview.mm
         uistrings_p.h uistrings.cpp
+    NO_PCH_SOURCES
+        qioscontext.mm # undef QT_NO_FOREACH
+        qiosintegration.mm # undef QT_NO_FOREACH
+        qiosplatformaccessibility.mm # undef QT_NO_FOREACH
+        qiosscreen.mm # undef QT_NO_FOREACH
+    DEFINES
+        QT_NO_FOREACH
     LIBRARIES
         ${FWAudioToolbox}
         ${FWFoundation}
