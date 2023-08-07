@@ -2329,7 +2329,9 @@ void QMdiArea::showEvent(QShowEvent *showEvent)
     Q_D(QMdiArea);
     if (!d->pendingRearrangements.isEmpty()) {
         bool skipPlacement = false;
-        foreach (Rearranger *rearranger, d->pendingRearrangements) {
+        // Take a copy because d->rearrange() may modify d->pendingRearrangements
+        const auto pendingRearrange = d->pendingRearrangements;
+        for (Rearranger *rearranger : pendingRearrange) {
             // If this is the case, we don't have to lay out pending child windows
             // since the rearranger will find a placement for them.
             if (rearranger->type() != Rearranger::IconTiler && !skipPlacement)
