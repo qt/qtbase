@@ -33,8 +33,6 @@ qt_internal_add_plugin(QIOSIntegrationPlugin
         qiosintegration.mm # undef QT_NO_FOREACH
         qiosplatformaccessibility.mm # undef QT_NO_FOREACH
         qiosscreen.mm # undef QT_NO_FOREACH
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         ${FWAudioToolbox}
         ${FWFoundation}

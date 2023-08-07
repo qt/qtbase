@@ -10,6 +10,8 @@ qt_internal_add_manual_test(clipboard
     SOURCES
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
+    NO_PCH_SOURCES
+        main.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::Gui

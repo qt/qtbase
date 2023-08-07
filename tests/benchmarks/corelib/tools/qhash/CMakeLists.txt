@@ -9,6 +9,8 @@ qt_internal_add_benchmark(tst_bench_qhash
     SOURCES
         tst_bench_qhash.cpp
         outofline.cpp
+    NO_PCH_SOURCES
+        tst_bench_qhash.cpp # undef QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         .
     LIBRARIES

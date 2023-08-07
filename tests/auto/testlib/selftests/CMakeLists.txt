@@ -27,6 +27,8 @@ qt_internal_add_test(tst_selftests
     SOURCES
         tst_selftests.cpp
         catch.cpp
+    NO_PCH_SOURCES
+        tst_selftests.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::TestPrivate
     TESTDATA ${qmake_expected_files_resource_files}

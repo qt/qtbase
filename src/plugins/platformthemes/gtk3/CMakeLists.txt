@@ -27,7 +27,6 @@ qt_internal_add_plugin(QGtk3ThemePlugin
         qgtk3dialoghelpers.cpp # undef QT_NO_FOREACH
     DEFINES
         GDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_6
-        QT_NO_FOREACH
     LIBRARIES
         PkgConfig::GTK3
         Qt::Core

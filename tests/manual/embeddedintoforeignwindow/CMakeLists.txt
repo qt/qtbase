@@ -13,6 +13,8 @@ qt_internal_add_manual_test(embeddedintoforeignwindow
         ../diaglib/textdump.cpp ../diaglib/textdump.h
         itemwindow.cpp itemwindow.h
         main.cpp
+    NO_PCH_SOURCES
+        itemwindow.cpp # undef QT_NO_FOREACH
     DEFINES
         QT_DIAG_LIB
     INCLUDE_DIRECTORIES

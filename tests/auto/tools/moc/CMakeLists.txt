@@ -72,6 +72,8 @@ qt_internal_add_test(tst_moc
         cxx-attributes.h
         tst_moc.cpp
         ${comparison_relevant_moc_list}
+    NO_PCH_SOURCES
+        tst_moc.cpp # undef QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         testproject
         testproject/include

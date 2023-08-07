@@ -11,6 +11,8 @@ qt_internal_add_manual_test(Menurama
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
         menuramaapplication.cpp menuramaapplication.h
+    NO_PCH_SOURCES
+        menuramaapplication.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::Gui
         Qt::Widgets

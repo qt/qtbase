@@ -10,6 +10,8 @@ qt_internal_add_manual_test(qscreen
         main.cpp
         propertyfield.cpp propertyfield.h
         propertywatcher.cpp propertywatcher.h
+    NO_PCH_SOURCES
+        main.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::Gui
         Qt::Widgets

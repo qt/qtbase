@@ -2,6 +2,8 @@
 // Copyright (C) 2020 Olivier Goffart <ogoffart@woboq.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
+
 #include <QTest>
 #include <QSignalSpy>
 #include <stdio.h>

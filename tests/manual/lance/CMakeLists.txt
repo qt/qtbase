@@ -11,6 +11,8 @@ qt_internal_add_manual_test(lance
         interactivewidget.cpp interactivewidget.h
         main.cpp
         widgets.h
+    NO_PCH_SOURCES
+        interactivewidget.cpp # undef QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         .
         ../../baseline/shared

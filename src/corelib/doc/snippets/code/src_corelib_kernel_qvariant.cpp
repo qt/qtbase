@@ -1,6 +1,8 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
+
 //! [0]
 QDataStream out(...);
 QVariant v(123);                // The variant now contains an int

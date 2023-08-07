@@ -2,6 +2,8 @@
 // Copyright (C) 2021 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
+
 #define _CRT_SECURE_NO_WARNINGS 1
 
 #include <QTest>

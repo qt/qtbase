@@ -17,6 +17,8 @@ qt_internal_add_test(tst_baseline_painting
         ../shared/qbaselinetest.cpp ../shared/qbaselinetest.h
         ../shared/paintcommands.cpp ../shared/paintcommands.h
         tst_baseline_painting.cpp
+    NO_PCH_SOURCES
+        tst_baseline_painting.cpp # undef QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ../shared
     LIBRARIES

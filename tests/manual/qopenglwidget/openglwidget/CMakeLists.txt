@@ -10,6 +10,8 @@ qt_internal_add_manual_test(openglwidget
     SOURCES
         main.cpp
         openglwidget.cpp openglwidget.h
+    NO_PCH_SOURCES
+        main.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
         Qt::Gui

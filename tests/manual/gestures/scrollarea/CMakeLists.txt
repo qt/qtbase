@@ -10,6 +10,8 @@ qt_internal_add_manual_test(scrollarea
     SOURCES
         main.cpp
         mousepangesturerecognizer.cpp mousepangesturerecognizer.h
+    NO_PCH_SOURCES
+        main.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::Gui
         Qt::Widgets

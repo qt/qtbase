@@ -1,6 +1,8 @@
 // Copyright (C) 2014 Ivan Komissarov
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
+
 //! [0]
     QStorageInfo storage(qApp->applicationDirPath());
     if (storage.isValid() && storage.isReady()) {

@@ -17,6 +17,8 @@ qt_internal_add_manual_test(qlocale
         miscellaneous.cpp miscellaneous.h
         numberformats.cpp numberformats.h
         window.cpp window.h
+    NO_PCH_SOURCES
+        languages.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::Gui
         Qt::Widgets

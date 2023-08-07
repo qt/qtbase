@@ -12,6 +12,8 @@ qt_internal_add_manual_test(tst_manual_windowflags
         controls.cpp controls.h
         main.cpp
         previewwindow.cpp previewwindow.h
+    NO_PCH_SOURCES
+        controls.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::Gui
         Qt::Widgets

@@ -17,6 +17,8 @@ qt_internal_add_test(tst_qmake
     SOURCES
         testcompiler.cpp testcompiler.h
         tst_qmake.cpp
+    NO_PCH_SOURCES
+        testcompiler.cpp # undef QT_NO_FOREACH
     TESTDATA ${test_data}
 )
 

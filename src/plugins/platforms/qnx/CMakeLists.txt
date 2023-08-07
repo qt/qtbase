@@ -37,8 +37,6 @@ qt_internal_add_plugin(QQnxIntegrationPlugin
         qqnxscreen.cpp # undef QT_NO_FOREACH
         qqnxscreeneventhandler.cpp # undef QT_NO_FOREACH
         qqnxwindow.cpp # undef QT_NO_FOREACH
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::CorePrivate

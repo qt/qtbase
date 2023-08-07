@@ -11,6 +11,8 @@ qt_internal_add_manual_test(qgraphicsitemgroup
         customitem.cpp customitem.h
         main.cpp
         widget.cpp widget.h widget.ui
+    NO_PCH_SOURCES
+        widget.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::Gui
         Qt::Widgets

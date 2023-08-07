@@ -15,6 +15,8 @@ qt_internal_add_test(tst_qabstractitemmodeltester
     SOURCES
         ../../other/qabstractitemmodelutils/dynamictreemodel.cpp ../../other/qabstractitemmodelutils/dynamictreemodel.h
         tst_qabstractitemmodeltester.cpp
+    NO_PCH_SOURCES
+        tst_qabstractitemmodeltester.cpp # undef QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ../../other/qabstractitemmodelutils
     LIBRARIES

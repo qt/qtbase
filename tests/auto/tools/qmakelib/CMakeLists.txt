@@ -24,6 +24,9 @@ qt_internal_add_test(tst_qmakelib
         evaltest.cpp
         parsertest.cpp
         tst_qmakelib.cpp tst_qmakelib.h
+    NO_PCH_SOURCES
+        evaltest.cpp # undef QT_NO_FOREACH
+        parsertest.cpp # undef QT_NO_FOREACH
     DEFINES
         PROEVALUATOR_FULL
         PROEVALUATOR_SETENV

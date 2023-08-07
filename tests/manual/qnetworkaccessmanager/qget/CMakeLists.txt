@@ -10,6 +10,9 @@ qt_internal_add_manual_test(qget
         downloadmanager.cpp
         qget.cpp qget.h
         transferitem.cpp
+    NO_PCH_SOURCES
+        downloadmanager.cpp # undef QT_NO_FOREACH
+        qget.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::Network
 )

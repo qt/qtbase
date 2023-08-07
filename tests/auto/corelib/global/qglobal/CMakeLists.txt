@@ -15,6 +15,8 @@ qt_internal_add_test(tst_qglobal
     SOURCES
         qglobal.c
         tst_qglobal.cpp
+    NO_PCH_SOURCES
+        tst_qglobal.cpp # undef QT_NO_FOREACH
 )
 
 ## Scopes:
