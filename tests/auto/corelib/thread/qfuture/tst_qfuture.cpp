@@ -4540,7 +4540,7 @@ void tst_QFuture::whenAllIteratorsWithFailed()
     p1.finish();
     QVERIFY(finished);
 #else
-    QSKIP("Exceptions are disabled, skipping the test")
+    QSKIP("Exceptions are disabled, skipping the test");
 #endif
 }
 
