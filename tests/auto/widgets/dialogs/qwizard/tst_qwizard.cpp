@@ -1794,7 +1794,7 @@ public:
 
     void applyOperations(const QList<QSharedPointer<Operation>> &operations)
     {
-        foreach (const QSharedPointer<Operation> &op, operations) {
+        for (const QSharedPointer<Operation> &op : operations) {
             if (op) {
                 op->apply(this);
                 opsDescr += QLatin1Char('(') + op->describe() + QLatin1String(") ");
@@ -2044,7 +2044,7 @@ void tst_QWizard::combinations()
 {
     QFETCH(bool, ref);
     QFETCH(bool, testEquality);
-    QFETCH(QList<QSharedPointer<Operation>>, operations);
+    QFETCH(const QList<QSharedPointer<Operation>>, operations);
 
     TestWizard wizard;
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
