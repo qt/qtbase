@@ -1814,8 +1814,16 @@ public:
 class CombinationsTestData
 {
     TestGroup testGroup;
-    QList<QSharedPointer<Operation>> pageOps;
-    QList<QSharedPointer<Operation>> styleOps;
+    const QSharedPointer<Operation> pageOps[3] = {
+        SetPage::create(0),
+        SetPage::create(1),
+        SetPage::create(2),
+    };
+    const QSharedPointer<Operation> styleOps[3] = {
+        SetStyle::create(QWizard::ClassicStyle),
+        SetStyle::create(QWizard::ModernStyle),
+        SetStyle::create(QWizard::MacStyle),
+    };
     QMap<bool, QList<QSharedPointer<Operation>>> setAllOptions;
 
 public:
@@ -1824,11 +1832,8 @@ public:
         QTest::addColumn<bool>("ref");
         QTest::addColumn<bool>("testEquality");
         QTest::addColumn<QList<QSharedPointer<Operation>>>("operations");
-        pageOps << SetPage::create(0) << SetPage::create(1) << SetPage::create(2);
-        styleOps << SetStyle::create(QWizard::ClassicStyle) << SetStyle::create(QWizard::ModernStyle)
-                 << SetStyle::create(QWizard::MacStyle);
-#define SETPAGE(page) pageOps.at(page)
-#define SETSTYLE(style) styleOps.at(style)
+#define SETPAGE(page) pageOps[page]
+#define SETSTYLE(style) styleOps[style]
 #define OPT(option, on) OptionInfo::instance().operation(option, on)
 #define CLROPT(option) OPT(option, false)
 #define SETOPT(option) OPT(option, true)
@@ -1906,7 +1911,7 @@ public:
             testGroup.createTestRows();
         }
 
-        foreach (const QSharedPointer<Operation> &pageOp, pageOps) {
+        for (const QSharedPointer<Operation> &pageOp : pageOps) {
             testGroup.reset("testAll 4.1");
             testGroup.add() << pageOp;
             testGroup.add() << pageOp << pageOp;
@@ -1929,7 +1934,7 @@ public:
             }
         }
 
-        foreach (const QSharedPointer<Operation> &styleOp, styleOps) {
+        for (const QSharedPointer<Operation> &styleOp : styleOps) {
             testGroup.reset("testAll 5.1");
             testGroup.add() << styleOp;
             testGroup.add() << styleOp << styleOp;
@@ -1952,8 +1957,8 @@ public:
             }
         }
 
-        foreach (const QSharedPointer<Operation> &pageOp, pageOps) {
-            foreach (const QSharedPointer<Operation> &styleOp, styleOps) {
+        for (const QSharedPointer<Operation> &pageOp : pageOps) {
+            for (const QSharedPointer<Operation> &styleOp : styleOps) {
 
                 testGroup.reset("testAll 6.1");
                 testGroup.add() << pageOp;
