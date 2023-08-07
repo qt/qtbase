@@ -45,6 +45,7 @@ Q_SIGNALS:
     void errorOccurred(QRestReply *reply);
     void readyRead(QRestReply *reply);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal, QRestReply *reply);
+    void uploadProgress(qint64 bytesSent, qint64 bytesTotal, QRestReply* reply);
 
 private:
     friend class QRestAccessManagerPrivate;

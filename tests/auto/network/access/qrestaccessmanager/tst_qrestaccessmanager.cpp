@@ -39,6 +39,7 @@ private slots:
     void json();
     void text();
     void download();
+    void upload();
 
 private:
     void memberHandler(QRestReply *reply);
@@ -860,6 +861,36 @@ void tst_QRestAccessManager::download()
     // Checks specific for downloadProgress()
     QCOMPARE(totalBytes, expectedData.size());
     QCOMPARE(receivedBytes, expectedData.size());
+}
+
+void tst_QRestAccessManager::upload()
+{
+    // This test tests uploadProgress signal
+    QRestAccessManager manager;
+    manager.setDeletesRepliesOnFinished(false);
+    HttpTestServer server;
+    QTRY_VERIFY(server.isListening());
+    QNetworkRequest request(server.url());
+    request.setRawHeader("Content-Type"_ba, "text/plain"); // To silence missing content-type warn
+    QByteArray expectedData{1 * 1024 * 1024, 0}; // 1 MB
+    server.setHandler([&](HttpData, HttpData &, ResponseControl &) {});
+
+    QRestReply* reply = manager.post(request, expectedData);
+    QSignalSpy uploadProgressSpy(reply, &QRestReply::uploadProgress);
+    QTRY_VERIFY(reply->isFinished());
+    QVERIFY(!uploadProgressSpy.isEmpty());
+    reply->deleteLater();
+
+    // Check that bytesTotal is correct already in the first signal
+    const QList<QVariant> first = uploadProgressSpy.first();
+    QCOMPARE(first.size(), 3);
+    QCOMPARE(first.at(1).toLongLong(), expectedData.size());
+
+    // Check that we sent all bytes
+    const QList<QVariant> last = uploadProgressSpy.last();
+    QCOMPARE(last.size(), 3);
+    QEXPECT_FAIL("", "Fails due to QTBUG-44782", Continue);
+    QCOMPARE(last.at(0).toLongLong(), expectedData.size());
 }
 
 QTEST_MAIN(tst_QRestAccessManager)

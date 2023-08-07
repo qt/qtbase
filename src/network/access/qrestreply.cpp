@@ -57,7 +57,24 @@ Q_DECLARE_LOGGING_CATEGORY(lcQrest)
 
     See \l QNetworkReply::downloadProgress() documentation for more details.
 
-    \sa bytesAvailable(), readyRead()
+    \sa bytesAvailable(), readyRead(), uploadProgress()
+*/
+
+/*!
+    \fn void QRestReply::uploadProgress(qint64 bytesSent, qint64 bytesTotal,
+                                        QRestReply* reply)
+
+    This signal is emitted to indicate the progress of the upload part of
+    \a reply.
+
+    The \a bytesSent parameter indicates the number of bytes already uploaded,
+    while \a bytesTotal indicates the total number of bytes still to upload.
+
+    If the number of bytes to upload is not known, \a bytesTotal will be -1.
+
+    See \l QNetworkReply::uploadProgress() documentation for more details.
+
+    \sa QNetworkReply::uploadProgress(), downloadProgress()
 */
 
 /*!
@@ -97,6 +114,10 @@ QRestReply::QRestReply(QNetworkReply *reply, QObject *parent)
     QObject::connect(reply, &QNetworkReply::downloadProgress, this,
                      [this](qint64 bytesReceived, qint64 bytesTotal) {
                          emit downloadProgress(bytesReceived, bytesTotal, this);
+                     });
+    QObject::connect(reply, &QNetworkReply::uploadProgress, this,
+                     [this] (qint64 bytesSent, qint64 bytesTotal) {
+                         emit uploadProgress(bytesSent, bytesTotal, this);
                      });
 }
 
