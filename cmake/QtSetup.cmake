@@ -364,6 +364,9 @@ enable_testing()
 
 option(QT_BUILD_EXAMPLES "Build Qt examples" OFF)
 option(QT_BUILD_EXAMPLES_BY_DEFAULT "Should examples be built as part of the default 'all' target." ON)
+option(QT_INSTALL_EXAMPLES_SOURCES "Install example sources" OFF)
+option(QT_INSTALL_EXAMPLES_SOURCES_BY_DEFAULT
+    "Install example sources as part of the default 'install' target" ON)
 
 # FIXME: Support prefix builds as well QTBUG-96232
 if(QT_WILL_INSTALL)

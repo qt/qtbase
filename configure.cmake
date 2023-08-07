@@ -1133,6 +1133,13 @@ qt_configure_add_summary_entry(ARGS "sanitize_fuzzer_no_link")
 qt_configure_add_summary_entry(ARGS "sanitize_undefined")
 qt_configure_end_summary_section() # end of "Sanitizers" section
 qt_configure_add_summary_build_parts("Build parts")
+if(QT_INSTALL_EXAMPLES_SOURCES)
+    set(_examples_sources_entry_message "yes")
+else()
+    set(_examples_sources_entry_message "no")
+endif()
+qt_configure_add_summary_entry(ARGS "Install examples sources" TYPE "message"
+    MESSAGE "${_examples_sources_entry_message}")
 qt_configure_add_summary_entry(
     ARGS "appstore-compliant"
     CONDITION APPLE OR ANDROID OR WIN32

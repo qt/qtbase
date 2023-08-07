@@ -1000,19 +1000,118 @@ set(CMAKE_INSTALL_PREFIX \"\${_qt_internal_examples_cmake_install_prefix_backup}
     set(CMAKE_UNITY_BUILD ${QT_UNITY_BUILD})
 endmacro()
 
+# Allows building an example either as an ExternalProject or in-tree with the Qt build.
+# Also allows installing the example sources.
 function(qt_internal_add_example subdir)
-    if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD)
-        qt_internal_add_example_in_tree(${ARGV})
-    else()
-        qt_internal_add_example_external_project(${ARGV})
+    # Pre-compute unique example name based on the subdir, in case of target name clashes.
+    qt_internal_get_example_unique_name(unique_example_name "${subdir}")
+
+    # QT_INTERNAL_NO_CONFIGURE_EXAMPLES is not meant to be used by Qt builders, it's here for faster
+    # testing of the source installation code path for build system engineers.
+    if(NOT QT_INTERNAL_NO_CONFIGURE_EXAMPLES)
+        if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD)
+            qt_internal_add_example_in_tree("${subdir}")
+        else()
+            qt_internal_add_example_external_project("${subdir}"
+                NAME "${unique_example_name}")
+        endif()
     endif()
+
+    if(QT_INSTALL_EXAMPLES_SOURCES)
+        string(TOLOWER ${PROJECT_NAME} project_name_lower)
+
+        qt_internal_install_example_sources("${subdir}"
+            NAME "${unique_example_name}"
+            REPO_NAME "${project_name_lower}")
+    endif()
+endfunction()
+
+# Gets the install prefix where an example should be installed.
+# Used for computing the final installation path.
+function(qt_internal_get_example_install_prefix out_var)
+    # Allow customizing the installation path of the examples. Will be used in CI.
+    if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
+        set(qt_example_install_prefix "${QT_INTERNAL_EXAMPLES_INSTALL_PREFIX}")
+    else()
+        set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
+    endif()
+    file(TO_CMAKE_PATH "${qt_example_install_prefix}" qt_example_install_prefix)
+    set(${out_var} "${qt_example_install_prefix}" PARENT_SCOPE)
+endfunction()
+
+# Gets the install prefix where an example's sources should be installed.
+# Used for computing the final installation path.
+function(qt_internal_get_examples_sources_install_prefix out_var)
+    # Allow customizing the installation path of the examples source specifically.
+    if(QT_INTERNAL_EXAMPLES_SOURCES_INSTALL_PREFIX)
+        set(qt_example_install_prefix "${QT_INTERNAL_EXAMPLES_SOURCES_INSTALL_PREFIX}")
+    else()
+        qt_internal_get_example_install_prefix(qt_example_install_prefix)
+    endif()
+    file(TO_CMAKE_PATH "${qt_example_install_prefix}" qt_example_install_prefix)
+    set(${out_var} "${qt_example_install_prefix}" PARENT_SCOPE)
+endfunction()
+
+# Gets the relative path of an example, relative to the current repo's examples source dir.
+# QT_EXAMPLE_BASE_DIR is meant to be already set in a parent scope.
+function(qt_internal_get_example_rel_path out_var subdir)
+    file(RELATIVE_PATH example_rel_path
+         "${QT_EXAMPLE_BASE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
+    set(${out_var} "${example_rel_path}" PARENT_SCOPE)
+endfunction()
+
+# Gets the install path where an example should be installed.
+function(qt_internal_get_example_install_path out_var subdir)
+    qt_internal_get_example_install_prefix(qt_example_install_prefix)
+    qt_internal_get_example_rel_path(example_rel_path "${subdir}")
+    set(example_install_path "${qt_example_install_prefix}/${example_rel_path}")
+
+    set(${out_var} "${example_install_path}" PARENT_SCOPE)
+endfunction()
+
+# Gets the install path where an example's sources should be installed.
+function(qt_internal_get_examples_sources_install_path out_var subdir)
+    qt_internal_get_examples_sources_install_prefix(qt_example_install_prefix)
+    qt_internal_get_example_rel_path(example_rel_path "${subdir}")
+    set(example_install_path "${qt_example_install_prefix}/${example_rel_path}")
+
+    set(${out_var} "${example_install_path}" PARENT_SCOPE)
+endfunction()
+
+# Get the unique name of an example project based on its subdir or explicitly given name.
+# Makes the name unique by appending a short sha1 hash of the relative path of the example
+# if a target of the same name already exist.
+function(qt_internal_get_example_unique_name out_var subdir)
+    qt_internal_get_example_rel_path(example_rel_path "${subdir}")
+
+    set(name "${subdir}")
+
+    # qtdeclarative has calls like qt_internal_add_example(imagine/automotive)
+    # so passing a nested subdirectory. Custom targets (and thus ExternalProjects) can't contain
+    # slashes, so extract the last part of the path to be used as a name.
+    if(name MATCHES "/")
+        string(REPLACE "/" ";" exploded_path "${name}")
+        list(POP_BACK exploded_path last_dir)
+        if(NOT last_dir)
+            message(FATAL_ERROR "Example subdirectory must have a name.")
+        else()
+            set(name "${last_dir}")
+        endif()
+    endif()
+
+    # Likely a clash with an example subdir ExternalProject custom target of the same name in a
+    # top-level build.
+    if(TARGET "${name}")
+        string(SHA1 rel_path_hash "${example_rel_path}")
+        string(SUBSTRING "${rel_path_hash}" 0 4 short_hash)
+        set(name "${name}-${short_hash}")
+    endif()
+
+    set(${out_var} "${name}" PARENT_SCOPE)
 endfunction()
 
 # Use old non-ExternalProject approach, aka build in-tree with the Qt build.
 function(qt_internal_add_example_in_tree subdir)
-    file(RELATIVE_PATH example_rel_path
-         "${QT_EXAMPLE_BASE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
-
     # Unset the default CMAKE_INSTALL_PREFIX that's generated in
     #   ${CMAKE_CURRENT_BINARY_DIR}/cmake_install.cmake
     # so we can override it with a different value in
@@ -1026,15 +1125,8 @@ unset(CMAKE_INSTALL_PREFIX)
 
     # Override the install prefix in the subdir cmake_install.cmake, so that
     # relative install(TARGETS DESTINATION) calls in example projects install where we tell them to.
-    # Allow customizing the installation path of the examples. Will be used in CI.
-    if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
-        set(qt_example_install_prefix "${QT_INTERNAL_EXAMPLES_INSTALL_PREFIX}")
-    else()
-        set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
-    endif()
-    file(TO_CMAKE_PATH "${qt_example_install_prefix}" qt_example_install_prefix)
-
-    set(CMAKE_INSTALL_PREFIX "${qt_example_install_prefix}/${example_rel_path}")
+    qt_internal_get_example_install_path(example_install_path "${subdir}")
+    set(CMAKE_INSTALL_PREFIX "${example_install_path}")
 
     # Make sure unclean example projects have their INSTALL_EXAMPLEDIR set to "."
     # Won't have any effect on example projects that don't use INSTALL_EXAMPLEDIR.
@@ -1044,7 +1136,7 @@ unset(CMAKE_INSTALL_PREFIX)
     # TODO: Remove once all repositories use qt_internal_add_example instead of add_subdirectory.
     set(QT_INTERNAL_SET_EXAMPLE_INSTALL_DIR_TO_DOT ON)
 
-    add_subdirectory(${subdir} ${ARGN})
+    add_subdirectory(${subdir})
 endfunction()
 
 function(qt_internal_add_example_external_project subdir)
@@ -1053,33 +1145,6 @@ function(qt_internal_add_example_external_project subdir)
     set(multiOpts "")
 
     cmake_parse_arguments(PARSE_ARGV 1 arg "${options}" "${singleOpts}" "${multiOpts}")
-
-    file(RELATIVE_PATH example_rel_path
-         "${QT_EXAMPLE_BASE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
-
-    if(NOT arg_NAME)
-        set(arg_NAME "${subdir}")
-
-        # qtdeclarative has calls like qt_internal_add_example(imagine/automotive)
-        # so passing a nested subdirectory. Custom targets (and thus ExternalProjects) can't contain
-        # slashes, so extract the last part of the path to be used as a name.
-        if(arg_NAME MATCHES "/")
-            string(REPLACE "/" ";" exploded_path "${arg_NAME}")
-            list(POP_BACK exploded_path last_dir)
-            if(NOT last_dir)
-                message(FATAL_ERROR "Example subdirectory must have a name.")
-            else()
-                set(arg_NAME "${last_dir}")
-            endif()
-        endif()
-    endif()
-
-    # Likely a clash with an example subdir ExternalProject custom target of the same name.
-    if(TARGET "${arg_NAME}")
-        string(SHA1 rel_path_hash "${example_rel_path}")
-        string(SUBSTRING "${rel_path_hash}" 0 4 short_hash)
-        set(arg_NAME "${arg_NAME}-${short_hash}")
-    endif()
 
     # TODO: Fix example builds when using Conan / install prefixes are different for each repo.
     if(QT_SUPERBUILD OR QtBase_BINARY_DIR)
@@ -1301,15 +1366,7 @@ function(qt_internal_add_example_external_project subdir)
     #    example_source_dir, use _qt_internal_override_example_install_dir_to_dot to ensure
     #    INSTALL_EXAMPLEDIR does not interfere.
 
-    # Allow customizing the installation path of the examples. Will be used in CI.
-    if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
-        set(qt_example_install_prefix "${QT_INTERNAL_EXAMPLES_INSTALL_PREFIX}")
-    else()
-        set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
-    endif()
-    file(TO_CMAKE_PATH "${qt_example_install_prefix}" qt_example_install_prefix)
-
-    set(example_install_prefix "${qt_example_install_prefix}/${example_rel_path}")
+    qt_internal_get_example_install_path(example_install_path "${subdir}")
 
     set(ep_binary_dir    "${CMAKE_CURRENT_BINARY_DIR}/${subdir}")
 
@@ -1324,7 +1381,7 @@ function(qt_internal_add_example_external_project subdir)
         PREFIX           "${CMAKE_CURRENT_BINARY_DIR}/${subdir}-ep"
         STAMP_DIR        "${CMAKE_CURRENT_BINARY_DIR}/${subdir}-ep/stamp"
         BINARY_DIR       "${ep_binary_dir}"
-        INSTALL_DIR      "${example_install_prefix}"
+        INSTALL_DIR      "${example_install_path}"
         INSTALL_COMMAND  ""
         ${build_command}
         TEST_COMMAND     ""
@@ -1376,6 +1433,54 @@ execute_process(
     string(TOLOWER ${PROJECT_NAME} project_name_lower)
     add_dependencies(examples_${project_name_lower} ${arg_NAME})
 
+endfunction()
+
+function(qt_internal_install_example_sources subdir)
+    set(options "")
+    set(single_args NAME REPO_NAME)
+    set(multi_args "")
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${options}" "${single_args}" "${multi_args}")
+
+    qt_internal_get_examples_sources_install_path(example_install_path "${subdir}")
+
+    # The trailing slash is important to avoid duplicate nested directory names.
+    set(example_source_dir "${subdir}/")
+
+    # Allow controlling whether sources should be part of the default install target.
+    if(QT_INSTALL_EXAMPLES_SOURCES_BY_DEFAULT)
+        set(exclude_from_all "")
+    else()
+        set(exclude_from_all "EXCLUDE_FROM_ALL")
+    endif()
+
+    # Create an install component for all example sources. Can also be part of the default
+    # install target if EXCLUDE_FROM_ALL is not passed.
+    install(
+        DIRECTORY "${example_source_dir}"
+        DESTINATION "${example_install_path}"
+        COMPONENT "examples_sources"
+        USE_SOURCE_PERMISSIONS
+        ${exclude_from_all}
+    )
+
+    # Also create a specific install component just for this repo's examples.
+    install(
+        DIRECTORY "${example_source_dir}"
+        DESTINATION "${example_install_path}"
+        COMPONENT "examples_sources_${arg_REPO_NAME}"
+        USE_SOURCE_PERMISSIONS
+        EXCLUDE_FROM_ALL
+    )
+
+    # Also create a specific install component just for the current example's sources.
+    install(
+        DIRECTORY "${example_source_dir}"
+        DESTINATION "${example_install_path}"
+        COMPONENT "examples_sources_${arg_NAME}"
+        USE_SOURCE_PERMISSIONS
+        EXCLUDE_FROM_ALL
+    )
 endfunction()
 
 if ("STANDALONE_TEST" IN_LIST Qt6BuildInternals_FIND_COMPONENTS)

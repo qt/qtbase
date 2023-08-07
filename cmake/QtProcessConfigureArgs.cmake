@@ -907,6 +907,7 @@ endif()
 
 drop_input(make)
 drop_input(nomake)
+translate_boolean_input(install-examples-sources QT_INSTALL_EXAMPLES_SOURCES)
 
 check_qt_build_parts(nomake)
 check_qt_build_parts(make)
