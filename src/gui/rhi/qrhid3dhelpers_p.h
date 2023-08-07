@@ -18,6 +18,8 @@
 #include <QtCore/private/qsystemlibrary_p.h>
 #include <QtCore/private/qsystemerror_p.h>
 
+#include <QtGui/qwindow.h>
+
 #include <dxgi1_6.h>
 #include <dcomp.h>
 #include <d3dcompiler.h>
