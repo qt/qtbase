@@ -29,6 +29,19 @@
 #include <qfloat16.h>
 #endif
 
+#include <utility>
+namespace t17 {
+#ifdef __cpp_lib_as_const
+    using std::as_const;
+#else
+    template <typename T>
+    constexpr typename std::add_const<T>::type &as_const(T &t) noexcept { return t; }
+    // prevent rvalue arguments:
+    template <typename T>
+    void as_const(const T &&) = delete;
+#endif // __cpp_lib_as_const
+} // namespace t17
+
 Q_DECLARE_METATYPE(CborError)
 namespace QTest {
 template<> char *toString<CborError>(const CborError &err)
@@ -153,7 +166,7 @@ CborError encodeVariant(CborEncoder *encoder, const QVariant &v)
             CborError err = cbor_encoder_create_array(encoder, &sub, len);
             if (err && !isOomError(err))
                 return err;
-            foreach (const QVariant &v2, list) {
+            for (const QVariant &v2 : t17::as_const(list)) {
                 err = static_cast<CborError>(err | encodeVariant(&sub, v2));
                 if (err && !isOomError(err))
                     return err;
