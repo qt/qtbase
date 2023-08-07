@@ -2113,7 +2113,7 @@ public:
     QList<WizardPage *> shown() const
     {
         QList<WizardPage *> result;
-        foreach (WizardPage *page, pages)
+        for (WizardPage *page : pages)
             if (page->shown())
                 result << page;
         return result;
