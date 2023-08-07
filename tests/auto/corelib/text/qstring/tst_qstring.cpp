@@ -1061,8 +1061,8 @@ void tst_QString::length_data()
     QTest::newRow("null") << QString() << qsizetype(0);
     QTest::newRow("empty") << u""_s << qsizetype(0);
     QTest::newRow("data0") << u"Test"_s << qsizetype(4);
-    QTest::newRow("data1") << u"The quick brown fox jumps over the lazy dog"_s
-                           << qsizetype(43);
+    QTest::newRow("data1") << u"The quick brown fox jumps over the lazy dog"_s << qsizetype(43);
+    QTest::newRow("data2") << u"Sphinx of black quartz, judge my vow!"_s << qsizetype(37);
     QTest::newRow("data3") << u"A"_s << qsizetype(1);
     QTest::newRow("data4") << u"AB"_s << qsizetype(2);
     QTest::newRow("data5") << u"AB\n"_s << qsizetype(3);
