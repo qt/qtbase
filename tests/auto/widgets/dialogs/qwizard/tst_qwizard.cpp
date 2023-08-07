@@ -1642,7 +1642,7 @@ class OptionInfo
 
         for (int i = 0; i < 2; ++i) {
             QMap<QWizard::WizardOption, QSharedPointer<Operation> > operations_;
-            foreach (QWizard::WizardOption option, tags.keys())
+            for (const auto &[option, _] : std::as_const(tags).asKeyValueRange())
                 operations_[option] = SetOption::create(option, i == 1);
             operations << operations_;
         }
