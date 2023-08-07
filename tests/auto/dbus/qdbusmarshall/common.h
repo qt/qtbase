@@ -206,12 +206,14 @@ inline const char* mapName(const PropertyMap&)
 QString printable(const QDBusIntrospection::Method& m)
 {
     QString result = "method " + m.name + "(";
-    foreach (QDBusIntrospection::Argument arg, m.inputArgs)
+    for (QDBusIntrospection::Argument arg : m.inputArgs) {
         result += QString("in %1 %2, ")
         .arg(arg.type, arg.name);
-    foreach (QDBusIntrospection::Argument arg, m.outputArgs)
+    }
+    for (QDBusIntrospection::Argument arg : m.outputArgs) {
         result += QString("out %1 %2, ")
         .arg(arg.type, arg.name);
+    }
     AnnotationsMap::const_iterator it = m.annotations.begin();
     for ( ; it != m.annotations.end(); ++it)
         result += QString("%1 \"%2\", ").arg(it.key()).arg(it.value().value);
@@ -223,9 +225,10 @@ QString printable(const QDBusIntrospection::Method& m)
 QString printable(const QDBusIntrospection::Signal& s)
 {
     QString result = "signal " + s.name + "(";
-    foreach (QDBusIntrospection::Argument arg, s.outputArgs)
+    for (QDBusIntrospection::Argument arg : s.outputArgs) {
         result += QString("out %1 %2, ")
         .arg(arg.type, arg.name);
+    }
     AnnotationsMap::const_iterator it = s.annotations.begin();
     for ( ; it != s.annotations.end(); ++it)
         result += QString("%1 \"%2\", ").arg(it.key()).arg(it.value().value);

@@ -164,7 +164,8 @@ public:
 
     bool registerObject()
     {
-        Q_FOREACH (const QString &name, m_connections) {
+        const auto copy = m_connections; // needed? Loop doesn't modify, but handleConnection() does
+        for (const QString &name : copy) {
             if (!registerObject(QDBusConnection(name)))
                 return false;
         }
@@ -173,7 +174,8 @@ public:
 
     void unregisterObject()
     {
-        Q_FOREACH (const QString &name, m_connections) {
+        const auto copy = m_connections; // needed? Loop doesn't modify, but handleConnection() does
+        for (const QString &name : copy) {
             QDBusConnection c(name);
             c.unregisterObject(m_path);
         }
