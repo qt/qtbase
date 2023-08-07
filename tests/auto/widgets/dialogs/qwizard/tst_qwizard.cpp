@@ -1785,7 +1785,7 @@ public:
 
     ~TestWizard()
     {
-        foreach (int id, pageIds) {
+        for (int id : std::as_const(pageIds)) {
             QWizardPage *page_to_delete = page(id);
             removePage(id);
             delete page_to_delete;
