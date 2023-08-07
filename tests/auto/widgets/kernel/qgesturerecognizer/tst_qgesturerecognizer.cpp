@@ -71,7 +71,7 @@ TestWidget::TestWidget(const GestureTypeVector &gestureTypes)
 {
     setAttribute(Qt::WA_AcceptTouchEvents);
 
-    foreach (Qt::GestureType gestureType, gestureTypes) {
+    for (Qt::GestureType gestureType : gestureTypes) {
         grabGesture(gestureType);
         m_receivedGestures.insert(gestureType, false);
     }
