@@ -1270,7 +1270,8 @@ QSql::NumericalPrecisionPolicy QSqlQuery::numericalPrecisionPolicy() const
 }
 
 /*!
-  Enables or disables the positional binding for this query.
+  Enables or disables the positional binding for this query, depending
+  on \a enable.
   This is useful when the query contains a '?' which must not be handled
   as a positional binding parameter but, for example, as a JSON operator
   for a Postgres database.
