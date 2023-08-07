@@ -244,7 +244,15 @@ function(qt_auto_detect_ios)
 endfunction()
 
 function(qt_auto_detect_cmake_config)
-    if(CMAKE_CONFIGURATION_TYPES)
+    # If CMAKE_CONFIGURATION_TYPES are not set for the multi-config generator use Release and
+    # Debug configurations by default, instead of those are proposed by the CMake internal logic.
+    get_property(is_multi GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi)
+        if(NOT CMAKE_CONFIGURATION_TYPES)
+            set(CMAKE_CONFIGURATION_TYPES Release Debug)
+            set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" PARENT_SCOPE)
+        endif()
+
         # Allow users to specify this option.
         if(NOT QT_MULTI_CONFIG_FIRST_CONFIG)
             list(GET CMAKE_CONFIGURATION_TYPES 0 first_config_type)
