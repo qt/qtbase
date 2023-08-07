@@ -23,8 +23,11 @@ qt_internal_add_plugin(QGtk3ThemePlugin
         qgtk3interface.cpp qgtk3interface_p.h
         qgtk3storage.cpp qgtk3storage_p.h
         qgtk3json.cpp qgtk3json_p.h
+    NO_PCH_SOURCES
+        qgtk3dialoghelpers.cpp # undef QT_NO_FOREACH
     DEFINES
         GDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_6
+        QT_NO_FOREACH
     LIBRARIES
         PkgConfig::GTK3
         Qt::Core
