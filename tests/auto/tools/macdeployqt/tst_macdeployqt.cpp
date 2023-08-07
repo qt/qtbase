@@ -203,7 +203,7 @@ void runVerifyDeployment(const QString &name)
         part = part.trimmed();
         if (part.isEmpty())
             continue;
-        QVERIFY(!parts.startsWith(qtPath));
+        QVERIFY(!part.startsWith(qtPath));
     }
 }
 
