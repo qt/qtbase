@@ -222,7 +222,7 @@ Qt::HANDLE TlsKeyOpenSSL::handle() const
 #else
     qCWarning(lcTlsBackend,
               "This version of OpenSSL disabled direct manipulation with RSA/DSA/DH/EC_KEY structures, consider using QSsl::Opaque instead.");
-    return Qt::HANDLE(nullptr);
+    return Qt::HANDLE(genericKey);
 #endif
 }
 
