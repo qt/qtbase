@@ -97,9 +97,13 @@ void QDBusMetaTypeId::init()
     }
 }
 
-using QDBusCustomTypeHash = QHash<int, QDBusCustomTypeInfo>;
-Q_GLOBAL_STATIC(QDBusCustomTypeHash, customTypes)
-Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
+struct QDBusCustomTypes
+{
+    QReadWriteLock lock;
+    QHash<int, QDBusCustomTypeInfo> hash;
+};
+
+Q_GLOBAL_STATIC(QDBusCustomTypes, customTypes)
 
 /*!
     \class QDBusMetaType
@@ -180,12 +184,15 @@ void QDBusMetaType::registerMarshallOperators(QMetaType metaType, MarshallFuncti
                                               DemarshallFunction df)
 {
     int id = metaType.id();
-    auto *ct = customTypes();
-    if (id < 0 || !mf || !df || !ct)
+    if (id < 0 || !mf || !df)
         return;                 // error!
 
-    QWriteLocker locker(customTypesLock());
-    QDBusCustomTypeInfo &info = (*ct)[id];
+    auto *ct = customTypes();
+    if (!ct)
+        return;
+
+    QWriteLocker locker(&ct->lock);
+    QDBusCustomTypeInfo &info = ct->hash[id];
     info.marshall = mf;
     info.demarshall = df;
 }
@@ -198,15 +205,19 @@ void QDBusMetaType::registerMarshallOperators(QMetaType metaType, MarshallFuncti
 */
 bool QDBusMetaType::marshall(QDBusArgument &arg, QMetaType metaType, const void *data)
 {
+    auto *ct = customTypes();
+    if (!ct)
+        return false;
+
     int id = metaType.id();
     QDBusMetaTypeId::init();
 
     MarshallFunction mf;
     {
-        QReadLocker locker(customTypesLock());
-        auto *ct = customTypes();
-        auto it = ct->constFind(id);
-        if (it == ct->cend())
+        QReadLocker locker(&ct->lock);
+
+        auto it = ct->hash.constFind(id);
+        if (it == ct->hash.cend())
             return false;       // non-existent
 
         const QDBusCustomTypeInfo &info = *it;
@@ -229,15 +240,19 @@ bool QDBusMetaType::marshall(QDBusArgument &arg, QMetaType metaType, const void 
 */
 bool QDBusMetaType::demarshall(const QDBusArgument &arg, QMetaType metaType, void *data)
 {
+    auto *ct = customTypes();
+    if (!ct)
+        return false;
+
     int id = metaType.id();
     QDBusMetaTypeId::init();
 
     DemarshallFunction df;
     {
-        QReadLocker locker(customTypesLock());
-        auto *ct = customTypes();
-        auto it = ct->constFind(id);
-        if (it == ct->cend())
+        QReadLocker locker(&ct->lock);
+
+        auto it = ct->hash.constFind(id);
+        if (it == ct->hash.cend())
             return false;       // non-existent
 
         const QDBusCustomTypeInfo &info = *it;
@@ -355,8 +370,11 @@ QMetaType QDBusMetaType::signatureToMetaType(const char *signature)
 void QDBusMetaType::registerCustomType(QMetaType type, const QByteArray &signature)
 {
     auto *ct = customTypes();
-    QWriteLocker locker(customTypesLock());
-    auto &info = (*ct)[type.id()];
+    if (!ct)
+        return;
+
+    QWriteLocker locker(&ct->lock);
+    auto &info = ct->hash[type.id()];
     info.signature = signature;
     // note how marshall/demarshall are not set, the type is never used at runtime
 }
@@ -428,10 +446,13 @@ const char *QDBusMetaType::typeToSignature(QMetaType type)
 
     // try the database
     auto *ct = customTypes();
+    if (!ct)
+        return nullptr;
+
     {
-        QReadLocker locker(customTypesLock());
-        auto it = ct->constFind(type.id());
-        if (it == ct->end())
+        QReadLocker locker(&ct->lock);
+        auto it = ct->hash.constFind(type.id());
+        if (it == ct->hash.end())
             return nullptr;
 
         const QDBusCustomTypeInfo &info = *it;
@@ -451,8 +472,8 @@ const char *QDBusMetaType::typeToSignature(QMetaType type)
         QByteArray signature = QDBusArgumentPrivate::createSignature(type.id());
 
         // re-acquire lock
-        QWriteLocker locker(customTypesLock());
-        info = &(*ct)[type.id()];
+        QWriteLocker locker(&ct->lock);
+        info = &ct->hash[type.id()];
         info->signature = signature;
     }
     return info->signature;
