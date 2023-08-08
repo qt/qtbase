@@ -101,8 +101,30 @@ void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *
 qdbusThreadDebugFunc qdbusThreadDebug = nullptr;
 #endif
 
-struct QDBusSpyHookList
+class QDBusSpyHookList
 {
+public:
+    void add(QDBusSpyCallEvent::Hook hook)
+    {
+        const auto locker = qt_scoped_lock(lock);
+        list.append(hook);
+    }
+
+    void invoke(const QDBusMessage &msg)
+    {
+        // Create a copy of the hook list here, so that the hooks can be called
+        // without holding the lock.
+        QList<QDBusSpyCallEvent::Hook> hookListCopy;
+        {
+            const auto locker = qt_scoped_lock(lock);
+            hookListCopy = list;
+        }
+
+        for (auto hook : std::as_const(hookListCopy))
+            hook(msg);
+    }
+
+private:
     QBasicMutex lock;
     QList<QDBusSpyCallEvent::Hook> list;
 };
@@ -464,8 +486,7 @@ void qDBusAddSpyHook(QDBusSpyCallEvent::Hook hook)
     if (!hooks)
         return;
 
-    const auto locker = qt_scoped_lock(hooks->lock);
-    hooks->list.append(hook);
+    hooks->add(hook);
 }
 
 QDBusSpyCallEvent::~QDBusSpyCallEvent()
@@ -488,17 +509,7 @@ inline void QDBusSpyCallEvent::invokeSpyHooks(const QDBusMessage &msg)
     if (!qDBusSpyHookList.exists())
         return;
 
-    // Create a copy of the hook list here, so that the hooks can be called
-    // without holding the lock.
-    QList<Hook> hookListCopy;
-    {
-        auto *hooks = qDBusSpyHookList();
-        const auto locker = qt_scoped_lock(hooks->lock);
-        hookListCopy = hooks->list;
-    }
-
-    for (auto hook : std::as_const(hookListCopy))
-        hook(msg);
+    qDBusSpyHookList->invoke(msg);
 }
 
 extern "C" {
