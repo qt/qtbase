@@ -101,7 +101,12 @@ void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *
 qdbusThreadDebugFunc qdbusThreadDebug = nullptr;
 #endif
 
-typedef QVarLengthArray<QDBusSpyCallEvent::Hook, 4> QDBusSpyHookList;
+struct QDBusSpyHookList
+{
+    QBasicMutex lock;
+    QList<QDBusSpyCallEvent::Hook> list;
+};
+
 Q_GLOBAL_STATIC(QDBusSpyHookList, qDBusSpyHookList)
 
 extern "C" {
@@ -455,7 +460,12 @@ static QDBusConnectionPrivate::ArgMatchRules matchArgsForService(const QString &
 extern Q_DBUS_EXPORT void qDBusAddSpyHook(QDBusSpyCallEvent::Hook);
 void qDBusAddSpyHook(QDBusSpyCallEvent::Hook hook)
 {
-    qDBusSpyHookList()->append(hook);
+    auto *hooks = qDBusSpyHookList();
+    if (!hooks)
+        return;
+
+    const auto locker = qt_scoped_lock(hooks->lock);
+    hooks->list.append(hook);
 }
 
 QDBusSpyCallEvent::~QDBusSpyCallEvent()
@@ -470,14 +480,25 @@ QDBusSpyCallEvent::~QDBusSpyCallEvent()
 
 void QDBusSpyCallEvent::placeMetaCall(QObject *)
 {
-    invokeSpyHooks(msg, hooks, hookCount);
+    invokeSpyHooks(msg);
 }
 
-inline void QDBusSpyCallEvent::invokeSpyHooks(const QDBusMessage &msg, const Hook *hooks, int hookCount)
+inline void QDBusSpyCallEvent::invokeSpyHooks(const QDBusMessage &msg)
 {
-    // call the spy hook list
-    for (int i = 0; i < hookCount; ++i)
-        hooks[i](msg);
+    if (!qDBusSpyHookList.exists())
+        return;
+
+    // Create a copy of the hook list here, so that the hooks can be called
+    // without holding the lock.
+    QList<Hook> hookListCopy;
+    {
+        auto *hooks = qDBusSpyHookList();
+        const auto locker = qt_scoped_lock(hooks->lock);
+        hookListCopy = hooks->list;
+    }
+
+    for (auto hook : std::as_const(hookListCopy))
+        hook(msg);
 }
 
 extern "C" {
@@ -526,15 +547,14 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
         // a) if it's a local message, we're in the caller's thread, so invoke the filter directly
         // b) if it's an external message, post to the main thread
         if (Q_UNLIKELY(qDBusSpyHookList.exists()) && qApp) {
-            const QDBusSpyHookList &list = *qDBusSpyHookList;
             if (isLocal) {
                 Q_ASSERT(QThread::currentThread() != thread());
                 qDBusDebug() << this << "invoking message spies directly";
-                QDBusSpyCallEvent::invokeSpyHooks(amsg, list.constData(), list.size());
+                QDBusSpyCallEvent::invokeSpyHooks(amsg);
             } else {
                 qDBusDebug() << this << "invoking message spies via event";
-                QCoreApplication::postEvent(qApp, new QDBusSpyCallEvent(this, QDBusConnection(this),
-                                                                        amsg, list.constData(), list.size()));
+                QCoreApplication::postEvent(
+                        qApp, new QDBusSpyCallEvent(this, QDBusConnection(this), amsg));
 
                 // we'll be called back, so return
                 return true;

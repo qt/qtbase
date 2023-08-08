@@ -117,18 +117,15 @@ class QDBusSpyCallEvent : public QAbstractMetaCallEvent
 {
 public:
     typedef void (*Hook)(const QDBusMessage&);
-    QDBusSpyCallEvent(QDBusConnectionPrivate *cp, const QDBusConnection &c, const QDBusMessage &msg,
-                      const Hook *hooks, int count)
-        : QAbstractMetaCallEvent(cp, 0), conn(c), msg(msg), hooks(hooks), hookCount(count)
+    QDBusSpyCallEvent(QDBusConnectionPrivate *cp, const QDBusConnection &c, const QDBusMessage &msg)
+        : QAbstractMetaCallEvent(cp, 0), conn(c), msg(msg)
     {}
     ~QDBusSpyCallEvent() override;
     void placeMetaCall(QObject *) override;
-    static inline void invokeSpyHooks(const QDBusMessage &msg, const Hook *hooks, int hookCount);
+    static inline void invokeSpyHooks(const QDBusMessage &msg);
 
     QDBusConnection conn;   // keeps the refcount in QDBusConnectionPrivate up
     QDBusMessage msg;
-    const Hook *hooks;
-    int hookCount;
 };
 
 QT_END_NAMESPACE
