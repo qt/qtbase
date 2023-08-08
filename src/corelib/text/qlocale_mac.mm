@@ -639,7 +639,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case CurrencySymbol:
         return macCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt()));
     case CurrencyToString:
-        return macFormatCurrency(in.value<QSystemLocale::CurrencyToStringArgument>());
+        return macFormatCurrency(in.value<CurrencyToStringArgument>());
     case UILanguages: {
         QStringList result;
         QCFType<CFArrayRef> languages = CFLocaleCopyPreferredLanguages();

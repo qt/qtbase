@@ -1070,7 +1070,7 @@ QLocale::QLocale()
 */
 
 QLocale::QLocale(Language language, Territory territory)
-    : d(findLocalePrivate(language, QLocale::AnyScript, territory))
+    : d(findLocalePrivate(language, AnyScript, territory))
 {
 }
 
@@ -1197,10 +1197,10 @@ QString QLocale::quoteString(QStringView str, QuotationStyle style) const
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == &systemLocaleData) {
         QVariant res;
-        if (style == QLocale::AlternateQuotation)
+        if (style == AlternateQuotation)
             res = systemLocale()->query(QSystemLocale::StringToAlternateQuotation,
                                         QVariant::fromValue(str));
-        if (res.isNull() || style == QLocale::StandardQuotation)
+        if (res.isNull() || style == StandardQuotation)
             res = systemLocale()->query(QSystemLocale::StringToStandardQuotation,
                                         QVariant::fromValue(str));
         if (!res.isNull())
@@ -1209,7 +1209,7 @@ QString QLocale::quoteString(QStringView str, QuotationStyle style) const
 #endif
 
     QLocaleData::DataRange start, end;
-    if (style == QLocale::StandardQuotation) {
+    if (style == StandardQuotation) {
         start = d->m_data->quoteStart();
         end = d->m_data->quoteEnd();
     } else {
@@ -1566,7 +1566,7 @@ QLocale::Script QLocale::codeToScript(QStringView scriptCode) noexcept
 
 QString QLocale::languageToString(Language language)
 {
-    if (language > QLocale::LastLanguage)
+    if (language > LastLanguage)
         return "Unknown"_L1;
     return QString::fromUtf8(language_name_list + language_name_index[language]);
 }
@@ -1578,9 +1578,9 @@ QString QLocale::languageToString(Language language)
 
     \sa languageToString(), scriptToString(), territory(), bcp47Name()
 */
-QString QLocale::territoryToString(QLocale::Territory territory)
+QString QLocale::territoryToString(Territory territory)
 {
-    if (territory > QLocale::LastTerritory)
+    if (territory > LastTerritory)
         return "Unknown"_L1;
     return QString::fromUtf8(territory_name_list + territory_name_index[territory]);
 }
@@ -1606,9 +1606,9 @@ QString QLocale::countryToString(Country country)
 
     \sa languageToString(), territoryToString(), script(), bcp47Name()
 */
-QString QLocale::scriptToString(QLocale::Script script)
+QString QLocale::scriptToString(Script script)
 {
-    if (script > QLocale::LastScript)
+    if (script > LastScript)
         return "Unknown"_L1;
     return QString::fromUtf8(script_name_list + script_name_index[script]);
 }
@@ -2795,15 +2795,14 @@ QLocale QLocale::system()
     QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript,
                                                       QLocale::Russia);
 */
-QList<QLocale> QLocale::matchingLocales(QLocale::Language language, QLocale::Script script,
-                                        QLocale::Territory territory)
+QList<QLocale> QLocale::matchingLocales(Language language, Script script, Territory territory)
 {
     const QLocaleId filter { language, script, territory };
     if (!filter.isValid())
         return QList<QLocale>();
 
-    if (language == QLocale::C)
-        return QList<QLocale>() << QLocale(QLocale::C);
+    if (language == C)
+        return QList<QLocale>{QLocale(C)};
 
     QList<QLocale> result;
     if (filter.matchesAll())
@@ -2826,7 +2825,7 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language, QLocale::Scr
     if (filter.acceptLanguage(syslocaledata->m_language_id)) {
         const QLocaleId id = syslocaledata->id();
         if (filter.acceptScriptTerritory(id))
-            result.append(QLocale::system());
+            result.append(system());
     }
 
     return result;
@@ -2846,7 +2845,7 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language, QLocale::Scr
 QList<QLocale::Country> QLocale::countriesForLanguage(Language language)
 {
     const auto locales = matchingLocales(language, AnyScript, AnyCountry);
-    QList<QLocale::Country> result;
+    QList<Country> result;
     result.reserve(locales.size());
     for (const auto &locale : locales)
         result.append(locale.territory());
@@ -3240,34 +3239,34 @@ QLocale::MeasurementSystem QLocale::measurementSystem() const
 Qt::LayoutDirection QLocale::textDirection() const
 {
     switch (script()) {
-    case QLocale::AdlamScript:
-    case QLocale::ArabicScript:
-    case QLocale::AvestanScript:
-    case QLocale::CypriotScript:
-    case QLocale::HatranScript:
-    case QLocale::HebrewScript:
-    case QLocale::ImperialAramaicScript:
-    case QLocale::InscriptionalPahlaviScript:
-    case QLocale::InscriptionalParthianScript:
-    case QLocale::KharoshthiScript:
-    case QLocale::LydianScript:
-    case QLocale::MandaeanScript:
-    case QLocale::ManichaeanScript:
-    case QLocale::MendeKikakuiScript:
-    case QLocale::MeroiticCursiveScript:
-    case QLocale::MeroiticScript:
-    case QLocale::NabataeanScript:
-    case QLocale::NkoScript:
-    case QLocale::OldHungarianScript:
-    case QLocale::OldNorthArabianScript:
-    case QLocale::OldSouthArabianScript:
-    case QLocale::OrkhonScript:
-    case QLocale::PalmyreneScript:
-    case QLocale::PhoenicianScript:
-    case QLocale::PsalterPahlaviScript:
-    case QLocale::SamaritanScript:
-    case QLocale::SyriacScript:
-    case QLocale::ThaanaScript:
+    case AdlamScript:
+    case ArabicScript:
+    case AvestanScript:
+    case CypriotScript:
+    case HatranScript:
+    case HebrewScript:
+    case ImperialAramaicScript:
+    case InscriptionalPahlaviScript:
+    case InscriptionalParthianScript:
+    case KharoshthiScript:
+    case LydianScript:
+    case MandaeanScript:
+    case ManichaeanScript:
+    case MendeKikakuiScript:
+    case MeroiticCursiveScript:
+    case MeroiticScript:
+    case NabataeanScript:
+    case NkoScript:
+    case OldHungarianScript:
+    case OldNorthArabianScript:
+    case OldSouthArabianScript:
+    case OrkhonScript:
+    case PalmyreneScript:
+    case PhoenicianScript:
+    case PsalterPahlaviScript:
+    case SamaritanScript:
+    case SyriacScript:
+    case ThaanaScript:
         return Qt::RightToLeft;
     default:
         break;
@@ -4421,7 +4420,7 @@ QSimpleParsedNumber<quint64> QLocaleData::bytearrayToUnsLongLong(QByteArrayView 
     \since 4.8
     Returns a currency symbol according to the \a format.
 */
-QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
+QString QLocale::currencySymbol(CurrencySymbolFormat format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == &systemLocaleData) {
@@ -4472,7 +4471,7 @@ QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
     QString str = toString(value);
     QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
-        sym = currencySymbol(QLocale::CurrencyIsoCode);
+        sym = currencySymbol(CurrencyIsoCode);
     return range.viewData(currency_format_data).arg(str, sym);
 }
 
@@ -4494,7 +4493,7 @@ QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
     QString str = toString(value);
     QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
-        sym = currencySymbol(QLocale::CurrencyIsoCode);
+        sym = currencySymbol(CurrencyIsoCode);
     return d->m_data->currencyFormat().getData(currency_format_data).arg(str, sym);
 }
 
@@ -4527,7 +4526,7 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
     QString str = toString(value, 'f', precision == -1 ? d->m_data->m_currency_digits : precision);
     QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
-        sym = currencySymbol(QLocale::CurrencyIsoCode);
+        sym = currencySymbol(CurrencyIsoCode);
     return range.viewData(currency_format_data).arg(str, sym);
 }
 

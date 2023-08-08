@@ -187,25 +187,25 @@ QSystemLocalePrivate::SubstitutionType QSystemLocalePrivate::substitution()
     if (substitutionType == SUnknown) {
         wchar_t buf[8];
         if (!getLocaleInfo(LOCALE_IDIGITSUBSTITUTION, buf, 8)) {
-            substitutionType = QSystemLocalePrivate::SNever;
+            substitutionType = SNever;
             return substitutionType;
         }
         if (buf[0] == '1')
-            substitutionType = QSystemLocalePrivate::SNever;
+            substitutionType = SNever;
         else if (buf[0] == '0')
-            substitutionType = QSystemLocalePrivate::SContext;
+            substitutionType = SContext;
         else if (buf[0] == '2')
-            substitutionType = QSystemLocalePrivate::SAlways;
+            substitutionType = SAlways;
         else {
             wchar_t digits[11]; // See zeroDigit() for why 11.
             if (!getLocaleInfo(LOCALE_SNATIVEDIGITS, digits, 11)) {
-                substitutionType = QSystemLocalePrivate::SNever;
+                substitutionType = SNever;
                 return substitutionType;
             }
             if (buf[0] == digits[0] + 2)
-                substitutionType = QSystemLocalePrivate::SAlways;
+                substitutionType = SAlways;
             else
-                substitutionType = QSystemLocalePrivate::SNever;
+                substitutionType = SNever;
         }
     }
     return substitutionType;
@@ -869,7 +869,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case CurrencySymbol:
         return d->currencySymbol(QLocale::CurrencySymbolFormat(in.toUInt()));
     case CurrencyToString:
-        return d->toCurrencyString(in.value<QSystemLocale::CurrencyToStringArgument>());
+        return d->toCurrencyString(in.value<CurrencyToStringArgument>());
     case UILanguages:
         return d->uiLanguages();
     case LocaleChanged:
