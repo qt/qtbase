@@ -37,6 +37,7 @@
 #include <QImageWriter>
 #include <QPixmap>
 #include <QSet>
+#include <QScopeGuard>
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QTimer>
@@ -1619,43 +1620,56 @@ void tst_QImageReader::supportsOption_data()
     QTest::addColumn<QIntList>("options");
 
     QTest::newRow("png") << QString("black.png")
-                         << (QIntList() << QImageIOHandler::Gamma
-                              << QImageIOHandler::Description
-                              << QImageIOHandler::Quality
-                              << QImageIOHandler::CompressionRatio
-                              << QImageIOHandler::Size
-                              << QImageIOHandler::ScaledSize);
+                         << QIntList{
+                                QImageIOHandler::Gamma,
+                                QImageIOHandler::Description,
+                                QImageIOHandler::Quality,
+                                QImageIOHandler::CompressionRatio,
+                                QImageIOHandler::Size,
+                                QImageIOHandler::ScaledSize,
+                                QImageIOHandler::ImageFormat,
+                            };
 }
 
 void tst_QImageReader::supportsOption()
 {
     QFETCH(QString, fileName);
-    QFETCH(QIntList, options);
-
-    QSet<QImageIOHandler::ImageOption> allOptions;
-    allOptions << QImageIOHandler::Size
-               << QImageIOHandler::ClipRect
-               << QImageIOHandler::Description
-               << QImageIOHandler::ScaledClipRect
-               << QImageIOHandler::ScaledSize
-               << QImageIOHandler::CompressionRatio
-               << QImageIOHandler::Gamma
-               << QImageIOHandler::Quality
-               << QImageIOHandler::Name
-               << QImageIOHandler::SubType
-               << QImageIOHandler::IncrementalReading
-               << QImageIOHandler::Endianness
-               << QImageIOHandler::Animation
-               << QImageIOHandler::BackgroundColor;
+    QFETCH(const QIntList, options);
 
     QImageReader reader(prefix + fileName);
-    for (int i = 0; i < options.size(); ++i) {
-        QVERIFY(reader.supportsOption(QImageIOHandler::ImageOption(options.at(i))));
-        allOptions.remove(QImageIOHandler::ImageOption(options.at(i)));
-    }
 
-    foreach (QImageIOHandler::ImageOption option, allOptions)
-        QVERIFY(!reader.supportsOption(option));
+    for (int i = 0; ; ++i) {
+        // this switch ensures the compiler warns when we miss an enumerator [-Wswitch]
+        // do _not_ add a default case!
+        switch (const auto o = QImageIOHandler::ImageOption(i)) {
+        case QImageIOHandler::Size:
+        case QImageIOHandler::ClipRect:
+        case QImageIOHandler::Description:
+        case QImageIOHandler::ScaledClipRect:
+        case QImageIOHandler::ScaledSize:
+        case QImageIOHandler::CompressionRatio:
+        case QImageIOHandler::Gamma:
+        case QImageIOHandler::Quality:
+        case QImageIOHandler::Name:
+        case QImageIOHandler::SubType:
+        case QImageIOHandler::IncrementalReading:
+        case QImageIOHandler::Endianness:
+        case QImageIOHandler::Animation:
+        case QImageIOHandler::BackgroundColor:
+        case QImageIOHandler::ImageFormat:
+        case QImageIOHandler::SupportedSubTypes:
+        case QImageIOHandler::OptimizedWrite:
+        case QImageIOHandler::ProgressiveScanWrite:
+        case QImageIOHandler::ImageTransformation:
+            {
+                auto printOnFailure = qScopeGuard([&] { qDebug("failed at %d", i); });
+                QCOMPARE(reader.supportsOption(o), options.contains(i));
+                printOnFailure.dismiss();
+                continue; // ... as long as `i` represents a valid ImageOption value
+            }
+        }
+        break; // ... once `i` no longer represents a valid ImageOption value
+    }
 }
 
 void tst_QImageReader::autoDetectImageFormat()
