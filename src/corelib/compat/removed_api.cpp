@@ -625,6 +625,16 @@ QStringList QLocale::uiLanguages() const
     return uiLanguages(TagSeparator::Dash);
 }
 
+QString QLocale::name() const
+{
+    return name(TagSeparator::Underscore);
+}
+
+QString QLocale::bcp47Name() const
+{
+    return bcp47Name(TagSeparator::Dash);
+}
+
 #include "qurl.h"
 
 QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)

@@ -705,7 +705,7 @@ static QLocalePrivate *c_private()
     system locale. This is only intended as a way to let a platform plugin
     install its own system locale, overriding what might otherwise be provided
     for its class of platform (as Android does, differing from Linux), and to
-    let tests transiently over-ride the system or plugin-supplied one. As such,
+    let tests transiently override the system or plugin-supplied one. As such,
     there should not be diverse threads creating and destroying QSystemLocale
     instances concurrently, so no attempt is made at thread-safety in managing
     the stack.
@@ -1367,6 +1367,12 @@ QLocale::Country QLocale::country() const
     with an arbitrary Unicode character or string.
 */
 
+Q_DECL_COLD_FUNCTION static void badSeparatorWarning(const char *method, char sep)
+{
+    qWarning("QLocale::%s(): Using non-ASCII separator '%c' (%02x) is unsupported",
+             method, sep, uint(uchar(sep)));
+}
+
 /*!
     \brief The short name of this locale.
 
@@ -1385,8 +1391,13 @@ QLocale::Country QLocale::country() const
     \sa QLocale(), language(), script(), territory(), bcp47Name(), uiLanguages()
 */
 
-QString QLocale::name() const
+QString QLocale::name(TagSeparator separator) const
 {
+    const char sep = char(separator);
+    if (uchar(sep) > 0x7f) {
+        badSeparatorWarning("name", sep);
+        return {};
+    }
     const auto code = d->languageCode();
     QLatin1StringView view{code.data()};
 
@@ -1398,7 +1409,7 @@ QString QLocale::name() const
     if (c == AnyTerritory)
         return view;
 
-    return view + u'_' + d->territoryCode();
+    return view + QLatin1Char(sep) + d->territoryCode();
 }
 
 template <typename T> static inline
@@ -1442,13 +1453,22 @@ T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
     locale name of the QLocale data; this need not be the language the
     user-interface should be in.
 
-    This function tries to conform the locale name to BCP47.
+    This function tries to conform the locale name to the IETF Best Common
+    Practice 47, defined by RFC 5646. It supports an optional \a separator
+    parameter which can be used to override the BCP47-specified use of a hyphen
+    to separate the tags. For use in IETF-defined protocols, however, the
+    default, QLocale::TagSeparator::Dash, should be retained.
 
     \sa name(), language(), territory(), script(), uiLanguages()
 */
-QString QLocale::bcp47Name() const
+QString QLocale::bcp47Name(TagSeparator separator) const
 {
-    return QString::fromLatin1(d->bcp47Name());
+    const char sep = char(separator);
+    if (uchar(sep) > 0x7f) {
+        badSeparatorWarning("bcp47Name", sep);
+        return {};
+    }
+    return QString::fromLatin1(d->bcp47Name(sep));
 }
 
 /*!
@@ -4652,8 +4672,7 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
     const char sep = char(separator);
     QStringList uiLanguages;
     if (uchar(sep) > 0x7f) {
-        qWarning("QLocale::uiLanguages(): Using non-ASCII separator '%c' (%02x) is unsupported",
-                 sep, uint(uchar(sep)));
+        badSeparatorWarning("uiLanguages", sep);
         return uiLanguages;
     }
     QList<QLocaleId> localeIds;
@@ -4674,7 +4693,7 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         // first. (Known issue, QTBUG-104930, on some macOS versions when in
         // locale en_DE.) Our translation system might have a translation for a
         // locale the platform doesn't believe in.
-        const QString name = QString::fromLatin1(d->bcp47Name(sep));
+        const QString name = bcp47Name(separator);
         if (!name.isEmpty() && language() != C && !uiLanguages.contains(name)) {
             // That uses contains(name) as a cheap pre-test, but there may be an
             // entry that matches this on purging likely subtags.

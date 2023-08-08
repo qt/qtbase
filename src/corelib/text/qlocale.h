@@ -926,9 +926,14 @@ public:
     QT_DEPRECATED_VERSION_X_6_6("Use territory() instead")
     Country country() const;
 #endif
-    QString name() const;
 
+#if QT_CORE_REMOVED_SINCE(6, 7)
+    QString name() const;
     QString bcp47Name() const;
+#endif
+    QString name(TagSeparator separator = TagSeparator::Underscore) const;
+    QString bcp47Name(TagSeparator separator = TagSeparator::Dash) const;
+
     QString nativeLanguageName() const;
     QString nativeTerritoryName() const;
 #if QT_DEPRECATED_SINCE(6, 6)

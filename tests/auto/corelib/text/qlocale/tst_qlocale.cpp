@@ -770,14 +770,24 @@ void tst_QLocale::unixLocaleName_data()
 
 void tst_QLocale::unixLocaleName()
 {
-    QFETCH(QLocale::Language, lang);
-    QFETCH(QLocale::Territory, land);
-    QFETCH(QString, expect);
+    QFETCH(const QLocale::Language, lang);
+    QFETCH(const QLocale::Territory, land);
+    QFETCH(const QString, expect);
+    const auto expected = [expect](QChar ch) {
+        // Kludge around QString::replace() not being const.
+        QString copy = expect;
+        return copy.replace(u'_', ch);
+    };
 
     QLocale::setDefault(QLocale(QLocale::C));
 
-    QLocale locale(lang, land);
+    const QLocale locale(lang, land);
     QCOMPARE(locale.name(), expect);
+    QCOMPARE(locale.name(QLocale::TagSeparator::Dash), expected(u'-'));
+    QCOMPARE(locale.name(QLocale::TagSeparator{'|'}), expected(u'|'));
+    QTest::ignoreMessage(QtWarningMsg, "QLocale::name(): "
+                         "Using non-ASCII separator '\u00ff' (ff) is unsupported");
+    QCOMPARE(locale.name(QLocale::TagSeparator{'\xff'}), QString());
 }
 
 void tst_QLocale::toReal_data()
@@ -3923,8 +3933,20 @@ void tst_QLocale::bcp47Name_data()
 
 void tst_QLocale::bcp47Name()
 {
-    QFETCH(QString, expect);
-    QCOMPARE(QLocale(QLatin1String(QTest::currentDataTag())).bcp47Name(), expect);
+    QFETCH(const QString, expect);
+    const auto expected = [expect](QChar ch) {
+        // Kludge around QString::replace() not being const.
+        QString copy = expect;
+        return copy.replace(u'-', ch);
+    };
+
+    const auto locale = QLocale(QLatin1String(QTest::currentDataTag()));
+    QCOMPARE(locale.bcp47Name(), expect);
+    QCOMPARE(locale.bcp47Name(QLocale::TagSeparator::Underscore), expected(u'_'));
+    QCOMPARE(locale.bcp47Name(QLocale::TagSeparator{'|'}), expected(u'|'));
+    QTest::ignoreMessage(QtWarningMsg, "QLocale::bcp47Name(): "
+                         "Using non-ASCII separator '\u00ff' (ff) is unsupported");
+    QCOMPARE(locale.bcp47Name(QLocale::TagSeparator{'\xff'}), QString());
 }
 
 #ifndef QT_NO_SYSTEMLOCALE
