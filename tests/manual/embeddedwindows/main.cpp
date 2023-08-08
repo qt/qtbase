@@ -3,7 +3,10 @@
 
 #include <QtGui>
 
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS) || defined(Q_OS_WIN)
 #include "../../shared/nativewindow.h"
+#define HAVE_NATIVE_WINDOW
+#endif
 
 #include <QDebug>
 
@@ -69,6 +72,7 @@ int main(int argc, char *argv[])
     transparentChildWindow->setGeometry(350, 50, 100, 100);
     transparentChildWindow->showNormal();
 
+#if defined(HAVE_NATIVE_WINDOW)
     NativeWindow nativeWindow;
     if (QWindow *foreignWindow = QWindow::fromWinId(nativeWindow)) {
         foreignWindow->setParent(&window);
@@ -95,6 +99,7 @@ int main(int argc, char *argv[])
         maskedChildWindowOfNativeWindow->setGeometry(25, 25, 50, 50);
         maskedChildWindowOfNativeWindow->showNormal();
     }
+#endif
 
     window.show();
 
