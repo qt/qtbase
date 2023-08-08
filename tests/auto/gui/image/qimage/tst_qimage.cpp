@@ -1133,10 +1133,9 @@ void tst_QImage::rotate_data()
     QTest::addColumn<QImage::Format>("format");
     QTest::addColumn<int>("degrees");
 
-    QList<int> degrees;
-    degrees << 0 << 90 << 180 << 270;
+    constexpr int degrees[] = {0, 90, 180, 270};
 
-    foreach (int d, degrees) {
+    for (int d : degrees) {
         const QString dB = QString::number(d);
         for (int i = QImage::Format_Indexed8; i < QImage::NImageFormats; i++) {
             QImage::Format format = static_cast<QImage::Format>(i);
