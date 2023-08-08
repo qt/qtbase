@@ -84,8 +84,8 @@ void DragWidget::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasText()) {
         const QMimeData *mime = event->mimeData();
-        QStringList pieces = mime->text().split(QRegularExpression("\\s+"),
-                             Qt::SkipEmptyParts);
+        const QStringList pieces = mime->text().split(QRegularExpression("\\s+"),
+                                                      Qt::SkipEmptyParts);
         QPoint position = event->pos();
         QPoint hotSpot;
 
@@ -98,7 +98,7 @@ void DragWidget::dropEvent(QDropEvent *event)
         dropTimer.start(500, this);
         update();
 
-        foreach (QString piece, pieces) {
+        for (const QString &piece : pieces) {
             FramedLabel *newLabel = new FramedLabel(piece, this);
             newLabel->move(position - hotSpot);
             newLabel->show();

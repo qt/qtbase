@@ -143,8 +143,8 @@ MainWindow::MainWindow()
 void MainWindow::setDirectory(const QString &path)
 {
     QDir dir(path);
-    QStringList files = dir.entryList(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
-    foreach(const QString &file, files) {
+    const QStringList files = dir.entryList(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
+    for (const QString &file : files) {
         QImageReader img(path + QLatin1Char('/') +file);
         QImage image = img.read();
         if (!image.isNull()) {

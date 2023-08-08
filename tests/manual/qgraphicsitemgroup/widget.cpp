@@ -95,15 +95,15 @@ void Widget::on_scaleItem_valueChanged(int value)
 
 void Widget::on_group_clicked()
 {
-    QList<QGraphicsItem*> all = scene->selectedItems();
+    const QList<QGraphicsItem*> all = scene->selectedItems();
     if (all.size() < 2)
         return;
 
-    QList<CustomItem*> items = scene->selectedCustomItems();
+    const QList<CustomItem*> items = scene->selectedCustomItems();
     QList<CustomGroup*> groups = scene->selectedCustomGroups();
 
     if (groups.size() == 1) {
-        foreach (CustomItem *item, items) {
+        for (CustomItem *item : items) {
             item->setSelected(false);
             groups[0]->addToGroup(item);
         }
@@ -113,7 +113,7 @@ void Widget::on_group_clicked()
 
     CustomGroup* group = new CustomGroup;
     scene->addItem(group);
-    foreach (QGraphicsItem *item, all) {
+    for (QGraphicsItem *item : all) {
         item->setSelected(false);
         group->addToGroup(item);
     }
@@ -124,9 +124,9 @@ void Widget::on_group_clicked()
 
 void Widget::on_dismantle_clicked()
 {
-    QList<CustomGroup*> groups = scene->selectedCustomGroups();
+    const QList<CustomGroup*> groups = scene->selectedCustomGroups();
 
-    foreach (CustomGroup *group, groups) {
+    for (CustomGroup *group : groups) {
         foreach (QGraphicsItem *item, group->childItems())
             group->removeFromGroup(item);
 

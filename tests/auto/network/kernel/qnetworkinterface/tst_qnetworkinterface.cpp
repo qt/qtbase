@@ -71,8 +71,8 @@ void tst_QNetworkInterface::initTestCase()
 void tst_QNetworkInterface::dump()
 {
     // This is for manual testing:
-    QList<QNetworkInterface> allInterfaces = QNetworkInterface::allInterfaces();
-    foreach (const QNetworkInterface &i, allInterfaces) {
+    const QList<QNetworkInterface> allInterfaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &i : allInterfaces) {
         QString flags;
         if (i.flags() & QNetworkInterface::IsUp) flags += "Up,";
         if (i.flags() & QNetworkInterface::IsRunning) flags += "Running,";

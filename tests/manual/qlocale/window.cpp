@@ -16,8 +16,8 @@ Window::Window()
 
     localeCombo->addItem("System", QLocale::system());
 
-    QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyTerritory);
-    foreach (const QLocale &locale, locales) {
+    const QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyTerritory);
+    for (const QLocale &locale : locales) {
         QString label = QLocale::languageToString(locale.language());
         label += QLatin1Char('/');
         if (locale.script() != QLocale::AnyScript) {
