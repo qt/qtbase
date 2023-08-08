@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     QStringList args = a.arguments();
     args.takeFirst();   // skip application name
 
-    foreach (const QString &path, args) {
+    for (const QString &path : std::as_const(args)) {
         QStorageInfo info(path);
         if (!info.isValid()) {
             // no error string...
