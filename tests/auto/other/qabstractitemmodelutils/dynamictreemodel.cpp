@@ -191,7 +191,7 @@ void ModelMoveCommand::doCommand()
         return;
 
     for (int column = 0; column < m_numCols; ++column) {
-        QList<qint64> l = m_model->m_childItems.value(srcParent.internalId())[column].mid(
+        const QList<qint64> l = m_model->m_childItems.value(srcParent.internalId())[column].mid(
             m_startRow, m_endRow - m_startRow + 1);
 
         for (int i = m_startRow; i <= m_endRow; i++)
@@ -206,7 +206,7 @@ void ModelMoveCommand::doCommand()
                 d = m_destRow;
         }
 
-        foreach (const qint64 id, l)
+        for (qint64 id : l)
             m_model->m_childItems[destParent.internalId()][column].insert(d++, id);
     }
 
@@ -283,9 +283,7 @@ void ModelChangeChildrenLayoutsCommand::doCommand()
     const QPersistentModelIndex parent1 = findIndex(m_rowNumbers);
     const QPersistentModelIndex parent2 = findIndex(m_secondRowNumbers);
 
-    QList<QPersistentModelIndex> parents;
-    parents << parent1;
-    parents << parent2;
+    const QList<QPersistentModelIndex> parents = { parent1, parent2 };
 
     emit m_model->layoutAboutToBeChanged(parents);
 
@@ -309,13 +307,13 @@ void ModelChangeChildrenLayoutsCommand::doCommand()
     // changing any children of that parent. The reason is that we're keeping parent1 and parent2
     // around as QPersistentModelIndex instances, and we query idx.parent() in the loop.
     QModelIndexList persistent = m_model->persistentIndexList();
-    foreach (const QModelIndex &parent, parents) {
+    for (const QModelIndex &parent : parents) {
         int idx = persistent.indexOf(parent);
         if (idx != -1)
             persistent.move(idx, 0);
     }
 
-    foreach (const QModelIndex &idx, persistent) {
+    for (const QModelIndex &idx : std::as_const(persistent)) {
         if (idx.parent() == parent1) {
             if (idx.row() == rowSize1 - 1) {
                 m_model->changePersistentIndex(idx,
