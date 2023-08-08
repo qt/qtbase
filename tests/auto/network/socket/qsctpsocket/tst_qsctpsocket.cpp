@@ -127,12 +127,13 @@ void tst_QSctpSocket::bind_data()
     // these ranges are guaranteed to be reserved for 'documentation purposes',
     // and thus, should be unused in the real world. Not that I'm assuming the
     // world is full of competent administrators, or anything.
-    QStringList knownBad;
-    knownBad << "198.51.100.1";
-    knownBad << "2001:0DB8::1";
-    foreach (const QString &badAddress, knownBad) {
+    const QString knownBad[] = {
+        "198.51.100.1",
+        "2001:0DB8::1",
+    };
+
+    for (const QString &badAddress : knownBad)
         QTest::newRow(badAddress.toLatin1().constData()) << badAddress << false << QString();
-    }
 }
 
 // Testing bind function
