@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include "tst_qmimedatabase.h"
 #include <qmimedatabase.h>
 
@@ -265,7 +263,7 @@ static inline QByteArray msgMimeTypeForFileNameFailed(const QList<QMimeType> &ac
                                                       const QString &expected)
 {
     QByteArray result = "Actual (";
-    foreach (const QMimeType &m, actual) {
+    for (const QMimeType &m : actual) {
         result += m.name().toLocal8Bit();
         result +=  ' ';
     }
@@ -283,7 +281,7 @@ void tst_QMimeDatabase::mimeTypeForFileName()
     QVERIFY(mime.isValid());
     QCOMPARE(mime.name(), expectedMimeType);
 
-    QList<QMimeType> mimes = db.mimeTypesForFileName(fileName);
+    const QList<QMimeType> mimes = db.mimeTypesForFileName(fileName);
     if (expectedMimeType == "application/octet-stream") {
         QVERIFY(mimes.isEmpty());
     } else {
@@ -745,7 +743,7 @@ void tst_QMimeDatabase::allMimeTypes()
     // Hardcoding this is the only way to check both providers find the same number of mimetypes.
     QCOMPARE(lst.size(), 851);
 
-    foreach (const QMimeType &mime, lst) {
+    for (const QMimeType &mime : lst) {
         const QString name = mime.name();
         QVERIFY(!name.isEmpty());
         QCOMPARE(name.count(QLatin1Char('/')), 1);
@@ -1052,7 +1050,8 @@ static void checkHasMimeType(const QString &mimeType)
     QVERIFY(db.mimeTypeForName(mimeType).isValid());
 
     bool found = false;
-    foreach (const QMimeType &mt, db.allMimeTypes()) {
+    const auto all = db.allMimeTypes();
+    for (const QMimeType &mt : all) {
         if (mt.name() == mimeType) {
             found = true;
             break;
