@@ -269,8 +269,11 @@ void QWasmWindow::setGeometry(const QRect &rect)
         const auto screenGeometry = screen()->geometry();
 
         QRect result(rect);
-        result.moveTop(std::max(std::min(rect.y(), screenGeometry.bottom()),
+        if (!parent()) {
+            // Clamp top level windows top position to the screen bounds
+            result.moveTop(std::max(std::min(rect.y(), screenGeometry.bottom()),
                                 screenGeometry.y() + margins.top()));
+        }
         result.setSize(
                 result.size().expandedTo(windowMinimumSize()).boundedTo(windowMaximumSize()));
         return result;
