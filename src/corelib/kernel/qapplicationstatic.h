@@ -51,6 +51,8 @@ template <typename QAS> struct ApplicationHolder
         if (guard.loadRelaxed() == QtGlobalStatic::Uninitialized) {
             QAS::innerFunction(&storage);
             const auto *app = QCoreApplication::instance();
+            Q_ASSERT_X(app, Q_FUNC_INFO,
+                       "The application static was used without a QCoreApplication instance");
             QObject::connect(app, &QObject::destroyed, app, reset, Qt::DirectConnection);
             guard.storeRelease(QtGlobalStatic::Initialized);
         }
