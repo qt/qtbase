@@ -606,7 +606,7 @@ bool QWasmWindow::hasFrame() const
 bool QWasmWindow::hasBorder() const
 {
     return hasFrame() && !m_state.testFlag(Qt::WindowFullScreen) && !m_flags.testFlag(Qt::SubWindow)
-            && !windowIsPopupType(m_flags);
+            && !windowIsPopupType(m_flags) && !parent();
 }
 
 bool QWasmWindow::hasTitleBar() const
