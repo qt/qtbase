@@ -6,6 +6,7 @@
 #include <QtNetwork/qtcpsocket.h>
 
 #include <QtCore/qcoreapplication.h>
+
 #include <private/qlocale_p.h>
 
 using namespace Qt::StringLiterals;

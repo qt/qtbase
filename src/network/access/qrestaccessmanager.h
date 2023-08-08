@@ -6,6 +6,8 @@
 
 #include <QtNetwork/qnetworkaccessmanager.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 class QRestReply;
@@ -68,6 +70,9 @@ public:
 
     bool deletesRepliesOnFinished() const;
     void setDeletesRepliesOnFinished(bool autoDelete);
+
+    void setTransferTimeout(std::chrono::milliseconds timeout);
+    std::chrono::milliseconds transferTimeout() const;
 
     void abortRequests();
 

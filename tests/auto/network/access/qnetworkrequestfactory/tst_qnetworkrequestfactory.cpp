@@ -10,6 +10,7 @@
 #include <QtCore/qurl.h>
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 class tst_QNetworkRequestFactory : public QObject
 {
@@ -23,6 +24,7 @@ private Q_SLOTS:
     void headers();
     void bearerToken();
     void operators();
+    void timeout();
 
 private:
     const QUrl url1{u"http://foo.io"_s};
@@ -308,6 +310,22 @@ void tst_QNetworkRequestFactory::operators()
     QNetworkRequestFactory factory5{std::move(factory4)};
     QVERIFY(factory5 == factory2); // the moved factory4 originates from factory2
     QCOMPARE(factory5.baseUrl(), url1);
+}
+
+void tst_QNetworkRequestFactory::timeout()
+{
+    constexpr auto defaultTimeout = 0ms;
+    constexpr auto timeout = 150ms;
+
+    QNetworkRequestFactory factory;
+    QNetworkRequest request = factory.request();
+    QCOMPARE(factory.transferTimeout(), defaultTimeout);
+    QCOMPARE(request.transferTimeoutAsDuration(), defaultTimeout);
+
+    factory.setTransferTimeout(timeout);
+    request = factory.request();
+    QCOMPARE(factory.transferTimeout(), timeout);
+    QCOMPARE(request.transferTimeoutAsDuration(), timeout);
 }
 
 QTEST_MAIN(tst_QNetworkRequestFactory)

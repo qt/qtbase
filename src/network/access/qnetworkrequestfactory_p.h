@@ -43,6 +43,7 @@ public:
     QHttpHeaders headers;
     QByteArray bearerToken;
     QUrlQuery queryParameters;
+    std::chrono::milliseconds transferTimeout{0};
 };
 
 QT_END_NAMESPACE

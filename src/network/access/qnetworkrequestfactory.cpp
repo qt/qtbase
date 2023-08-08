@@ -350,6 +350,32 @@ void QNetworkRequestFactory::clearBearerToken()
 }
 
 /*!
+    Sets \a timeout used for transfers.
+
+    \sa transferTimeout(), QNetworkRequest::setTransferTimeout(),
+        QRestAccessManager::setTransferTimeout()
+*/
+void QNetworkRequestFactory::setTransferTimeout(std::chrono::milliseconds timeout)
+{
+    if (d->transferTimeout == timeout)
+        return;
+
+    d.detach();
+    d->transferTimeout = timeout;
+}
+
+/*!
+    Returns the timeout used for transfers.
+
+    \sa setTransferTimeout(), QNetworkRequest::transferTimeout(),
+        QRestAccessManager::transferTimeout()
+*/
+std::chrono::milliseconds QNetworkRequestFactory::transferTimeout() const
+{
+    return d->transferTimeout;
+}
+
+/*!
     Returns query parameters that are added to individual requests' query
     parameters. The query parameters are added to any potential query
     parameters provided with the individual \l request() calls.
@@ -426,6 +452,7 @@ QNetworkRequest QNetworkRequestFactoryPrivate::newRequest(const QUrl &url) const
     if (!bearerToken.isEmpty())
         request.setRawHeader("Authorization"_ba, Bearer + bearerToken);
 
+    request.setTransferTimeout(transferTimeout);
     return request;
 }
 
@@ -485,6 +512,7 @@ bool QNetworkRequestFactoryPrivate::equals(
         const QNetworkRequestFactoryPrivate &other) const noexcept
 {
     return
+            transferTimeout == other.transferTimeout &&
 #if QT_CONFIG(ssl)
             sslConfig == other.sslConfig &&
 #endif

@@ -543,6 +543,30 @@ void QRestAccessManager::abortRequests()
 }
 
 /*!
+    Sets \a timeout used for transfers.
+
+    \sa QNetworkAccessManager::setTransferTimeout(), transferTimeout(),
+    QNetworkRequestFactory::setTransferTimeout()
+*/
+void QRestAccessManager::setTransferTimeout(std::chrono::milliseconds timeout)
+{
+    Q_D(QRestAccessManager);
+    d->qnam->setTransferTimeout(timeout);
+}
+
+/*!
+    Returns the timeout used for transfers.
+
+    \sa setTransferTimeout(), QNetworkAccessManager::transferTimeoutAsDuration(),
+    QNetworkRequestFactory::transferTimeout()
+*/
+std::chrono::milliseconds QRestAccessManager::transferTimeout() const
+{
+    Q_D(const QRestAccessManager);
+    return d->qnam->transferTimeoutAsDuration();
+}
+
+/*!
     Returns the underlying QNetworkAccessManager instance. The instance
     can be used for accessing less-frequently used features and configurations.
 

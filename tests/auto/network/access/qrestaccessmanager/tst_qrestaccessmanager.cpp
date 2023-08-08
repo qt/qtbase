@@ -19,6 +19,7 @@
 #include <QtCore/qstringconverter.h>
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 class tst_QRestAccessManager : public QObject
 {
@@ -40,6 +41,7 @@ private slots:
     void text();
     void download();
     void upload();
+    void timeout();
 
 private:
     void memberHandler(QRestReply *reply);
@@ -891,6 +893,20 @@ void tst_QRestAccessManager::upload()
     QCOMPARE(last.size(), 3);
     QEXPECT_FAIL("", "Fails due to QTBUG-44782", Continue);
     QCOMPARE(last.at(0).toLongLong(), expectedData.size());
+}
+
+void tst_QRestAccessManager::timeout()
+{
+    constexpr auto defaultTimeout = 0ms;
+    constexpr auto timeout = 150ms;
+
+    QRestAccessManager manager;
+    QCOMPARE(manager.transferTimeout(), defaultTimeout);
+    QCOMPARE(manager.networkAccessManager()->transferTimeoutAsDuration(), defaultTimeout);
+
+    manager.setTransferTimeout(timeout);
+    QCOMPARE(manager.transferTimeout(), timeout);
+    QCOMPARE(manager.networkAccessManager()->transferTimeoutAsDuration(), timeout);
 }
 
 QTEST_MAIN(tst_QRestAccessManager)

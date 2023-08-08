@@ -12,6 +12,8 @@
 #include <QtCore/qurlquery.h>
 #include <QtCore/qurl.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(ssl)
@@ -55,6 +57,9 @@ public:
     Q_NETWORK_EXPORT QByteArray bearerToken() const;
     Q_NETWORK_EXPORT void setBearerToken(const QByteArray &token);
     Q_NETWORK_EXPORT void clearBearerToken();
+
+    Q_NETWORK_EXPORT void setTransferTimeout(std::chrono::milliseconds timeout);
+    Q_NETWORK_EXPORT std::chrono::milliseconds transferTimeout() const;
 
     Q_NETWORK_EXPORT QUrlQuery queryParameters() const;
     Q_NETWORK_EXPORT void setQueryParameters(const QUrlQuery &query);
