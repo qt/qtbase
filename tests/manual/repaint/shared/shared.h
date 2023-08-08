@@ -28,20 +28,20 @@ public:
         const int rectSize = 10;
         QRect rect(pos.x() - rectSize, pos.y() - rectSize, rectSize *2, rectSize * 2);
 
-        QList<QRect> updateRects;
-        updateRects.append(rect.translated(rectSize * 2, rectSize * 2));
-        updateRects.append(rect.translated(rectSize * 2, -rectSize * 2));
-        updateRects.append(rect.translated(-rectSize * 2, rectSize * 2));
-        updateRects.append(rect.translated(-rectSize * 2, -rectSize * 2));
-
+        const QRect updateRects[] = {
+            rect.translated(rectSize * 2, rectSize * 2),
+            rect.translated(rectSize * 2, -rectSize * 2),
+            rect.translated(-rectSize * 2, rectSize * 2),
+            rect.translated(-rectSize * 2, -rectSize * 2),
+        };
 
         bool useRegion = false;
         if (useRegion) {
             QRegion region;
-            region.setRects(updateRects.data(), 4);
+            region.setRects(updateRects, 4);
             update(region);
         } else {
-            foreach (QRect rect, updateRects)
+            for (QRect rect : updateRects)
                 update(rect);
         }
     }
