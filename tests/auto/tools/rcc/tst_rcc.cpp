@@ -211,8 +211,8 @@ static QStringMap readExpectedFiles(const QString &fileName)
 {
     QStringMap expectedFiles;
 
-    QStringList lines = readLinesFromFile(fileName, Qt::SkipEmptyParts);
-    foreach (const QString &line, lines) {
+    const QStringList lines = readLinesFromFile(fileName, Qt::SkipEmptyParts);
+    for (const QString &line : lines) {
         QString resourceFileName = line.section(QLatin1Char(' '), 0, 0, QString::SectionSkipEmpty);
         QString actualFileName = line.section(QLatin1Char(' '), 1, 1, QString::SectionSkipEmpty);
         expectedFiles[resourceFileName] = actualFileName;
@@ -276,8 +276,8 @@ void tst_rcc::binary_data()
         QString localeFileName = absoluteBaseName + QLatin1String(".locale");
         QFile localeFile(localeFileName);
         if (localeFile.exists()) {
-            QStringList locales = readLinesFromFile(localeFileName, Qt::SkipEmptyParts);
-            foreach (const QString &locale, locales) {
+            const QStringList locales = readLinesFromFile(localeFileName, Qt::SkipEmptyParts);
+            for (const QString &locale : locales) {
                 QString expectedFileName = QString::fromLatin1("%1.%2.%3").arg(absoluteBaseName, locale, QLatin1String("expected"));
                 QStringMap expectedFiles = readExpectedFiles(expectedFileName);
                 QTest::newRow(qPrintable(qrcFileInfo.baseName() + QLatin1Char('_') + locale)) << rccFileName
@@ -473,7 +473,7 @@ void tst_rcc::cleanupTestCase()
     QFileInfoList entries = dataDir.entryInfoList(QStringList() << QLatin1String("*.rcc"));
     QDir dataDepDir(m_dataPath + QLatin1String("/depfile"));
     entries += dataDepDir.entryInfoList({QLatin1String("*.d"), QLatin1String("*.qrc.cpp")});
-    foreach (const QFileInfo &entry, entries)
+    for (const QFileInfo &entry : std::as_const(entries))
         QFile::remove(entry.absoluteFilePath());
 }
 
