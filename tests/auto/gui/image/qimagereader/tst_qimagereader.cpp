@@ -11,7 +11,6 @@
 #include <QImageReader>
 #include <QImageWriter>
 #include <QPixmap>
-#include <QSet>
 #include <QScopeGuard>
 #include <QTcpSocket>
 #include <QTcpServer>
@@ -595,41 +594,31 @@ void tst_QImageReader::multiWordNamedColorXPM()
     QCOMPARE(image.pixel(0, 2), qRgb(255, 250, 205)); // lemon chiffon
 }
 
+namespace {
+template <typename ForwardIterator>
+bool is_sorted_unique(ForwardIterator first, ForwardIterator last)
+{
+    // a range is sorted with no dups iff each *i < *(i+1), so check that none are >=:
+    return std::adjacent_find(first, last, std::greater_equal<>{}) == last;
+}
+}
+
 void tst_QImageReader::supportedFormats()
 {
-    QList<QByteArray> formats = QImageReader::supportedImageFormats();
-    QList<QByteArray> sortedFormats = formats;
-    std::sort(sortedFormats.begin(), sortedFormats.end());
-
-    // check that the list is sorted
-    QCOMPARE(formats, sortedFormats);
-
-    QSet<QByteArray> formatSet;
-    foreach (QByteArray format, formats)
-        formatSet << format;
-
-    // check that the list does not contain duplicates
-    QCOMPARE(formatSet.size(), formats.size());
+    const QList<QByteArray> formats = QImageReader::supportedImageFormats();
+    auto printOnFailure = qScopeGuard([&] { qDebug() << formats; });
+    QVERIFY(is_sorted_unique(formats.begin(), formats.end()));
+    printOnFailure.dismiss();
 }
 
 void tst_QImageReader::supportedMimeTypes()
 {
-    QList<QByteArray> mimeTypes = QImageReader::supportedMimeTypes();
-    QList<QByteArray> sortedMimeTypes = mimeTypes;
-    std::sort(sortedMimeTypes.begin(), sortedMimeTypes.end());
-
-    // check that the list is sorted
-    QCOMPARE(mimeTypes, sortedMimeTypes);
-
-    QSet<QByteArray> mimeTypeSet;
-    foreach (QByteArray mimeType, mimeTypes)
-        mimeTypeSet << mimeType;
-
+    const QList<QByteArray> mimeTypes = QImageReader::supportedMimeTypes();
+    auto printOnFailure = qScopeGuard([&] { qDebug() << mimeTypes; });
+    QVERIFY(is_sorted_unique(mimeTypes.begin(), mimeTypes.end()));
     // check the list as a minimum contains image/bmp
-    QVERIFY(mimeTypeSet.contains("image/bmp"));
-
-    // check that the list does not contain duplicates
-    QCOMPARE(mimeTypeSet.size(), mimeTypes.size());
+    QVERIFY(mimeTypes.contains("image/bmp"));
+    printOnFailure.dismiss();
 }
 
 void tst_QImageReader::setBackgroundColor_data()
