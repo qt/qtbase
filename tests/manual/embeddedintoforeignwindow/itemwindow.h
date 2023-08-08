@@ -65,7 +65,8 @@ private:
 #define PROPAGATE_EVENT(windowHandler, eventClass, itemHandler) \
 void windowHandler(eventClass *e) override \
 {  \
-   foreach (Item *i, m_items) \
+   const auto copy = m_items; /* needed? */ \
+   for (Item *i : copy) \
         i->itemHandler(e); \
 }
 
