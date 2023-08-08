@@ -1846,23 +1846,10 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         math(EXPR resource_count "${resource_count} + 1")
         set_target_properties(${target} PROPERTIES _qt_generated_resource_target_count ${resource_count})
 
-        __qt_internal_generate_init_resource_source_file(
-            resource_init_file ${target} ${resource_name})
-
         set(resource_target "${target}_resources_${resource_count}")
-        add_library("${resource_target}" OBJECT "${resource_init_file}")
-        # Needed so that qtsymbolmacros.h and its dependent headers are already created / syncqt'ed.
-        if(TARGET Core_sync_headers)
-            set(headers_available_target "Core_sync_headers")
-        else()
-            set(headers_available_target "${QT_CMAKE_EXPORT_NAMESPACE}::Core")
-        endif()
-        add_dependencies(${resource_target} ${headers_available_target})
+        add_library("${resource_target}" OBJECT "${generated_source_code}")
         target_compile_definitions("${resource_target}" PRIVATE
             "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Core,INTERFACE_COMPILE_DEFINITIONS>"
-        )
-        target_include_directories("${resource_target}" PRIVATE
-            "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Core,INTERFACE_INCLUDE_DIRECTORIES>"
         )
         _qt_internal_set_up_static_runtime_library("${resource_target}")
 
@@ -1882,7 +1869,7 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         #    .rcc/qrc_qprintdialog.cpp
         file(RELATIVE_PATH generated_cpp_file_relative_path
             "${CMAKE_CURRENT_BINARY_DIR}"
-            "${resource_init_file}")
+            "${generated_source_code}")
         set_property(TARGET ${resource_target} APPEND PROPERTY
             _qt_resource_generated_cpp_relative_path "${generated_cpp_file_relative_path}")
 
@@ -1896,31 +1883,8 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         set(${output_generated_target} "${resource_target}" PARENT_SCOPE)
     else()
         set(${output_generated_target} "" PARENT_SCOPE)
+        target_sources(${target} PRIVATE ${generated_source_code})
     endif()
-
-    target_sources(${target} PRIVATE ${generated_source_code})
-endfunction()
-
-function(__qt_internal_generate_init_resource_source_file out_var target resource_name)
-    set(template_file "${__qt_core_macros_module_base_dir}/Qt6CoreResourceInit.in.cpp")
-
-    # Gets replaced in the template
-    set(RESOURCE_NAME "${resource_name}")
-    set(resource_init_path "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${resource_name}_init.cpp")
-
-    configure_file("${template_file}" "${resource_init_path}" @ONLY)
-
-    set(scope_args "")
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
-        set(scope_args TARGET_DIRECTORY ${target})
-    endif()
-    set_source_files_properties(${resource_init_path} ${scope_args} PROPERTIES
-        SKIP_AUTOGEN TRUE
-        SKIP_UNITY_BUILD_INCLUSION TRUE
-        SKIP_PRECOMPILE_HEADERS TRUE
-    )
-
-    set(${out_var} "${resource_init_path}" PARENT_SCOPE)
 endfunction()
 
 # Make file visible in IDEs.
