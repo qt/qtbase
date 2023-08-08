@@ -53,22 +53,27 @@ void tst_QMimeDatabase::inheritsPerformance()
 {
     // Check performance of inherits().
     // This benchmark (which started in 2009 in kmimetypetest.cpp) uses 40 mimetypes.
-    QStringList mimeTypes;
-    mimeTypes << QLatin1String("image/jpeg") << QLatin1String("image/png") << QLatin1String("image/tiff") << QLatin1String("text/plain") << QLatin1String("text/html");
-    mimeTypes += mimeTypes;
-    mimeTypes += mimeTypes;
-    mimeTypes += mimeTypes;
-    QCOMPARE(mimeTypes.size(), 40);
+    // (eight groups of five unique ones)
+    const QString uniqueMimeTypes[] = {
+        u"image/jpeg"_s,
+        u"image/png"_s,
+        u"image/tiff"_s,
+        u"text/plain"_s,
+        u"text/html"_s,
+    };
+    constexpr size_t NumOuterLoops = 40 / std::size(uniqueMimeTypes);
     QMimeDatabase db;
-    QMimeType mime = db.mimeTypeForName(QString::fromLatin1("text/x-chdr"));
+    const QMimeType mime = db.mimeTypeForName(u"text/x-chdr"_s);
     QVERIFY(mime.isValid());
     QString match;
     QBENCHMARK {
-        for (const QString &mt : std::as_const(mimeTypes)) {
-            if (mime.inherits(mt)) {
-                match = mt;
-                // of course there would normally be a "break" here, but we're testing worse-case
-                // performance here
+        for (size_t i = 0; i < NumOuterLoops; ++i) {
+            for (const QString &mt : uniqueMimeTypes) {
+                if (mime.inherits(mt)) {
+                    match = mt;
+                    // of course there would normally be a "break" here, but
+                    // we're testing worse-case performance here
+                }
             }
         }
     }
