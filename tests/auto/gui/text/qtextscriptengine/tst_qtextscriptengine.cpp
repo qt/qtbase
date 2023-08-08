@@ -1097,11 +1097,12 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675_data()
 
     bool hasTests = false;
 
-    QStringList families;
-    families << QStringLiteral("Monaco");
-    families << QStringLiteral("DejaVu Sans Mono");
+    const QString families[] = {
+        QStringLiteral("Monaco"),
+        QStringLiteral("DejaVu Sans Mono"),
+    };
 
-    foreach (const QString &family, families) {
+    for (const QString &family : families) {
         QFont font(family);
         font.setStyleStrategy(QFont::NoFontMerging);
         if (QFontInfo(font).family() != family)
