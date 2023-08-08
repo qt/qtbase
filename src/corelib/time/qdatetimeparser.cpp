@@ -2165,22 +2165,22 @@ bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, QSt
 QString QDateTimeParser::SectionNode::name(QDateTimeParser::Section s)
 {
     switch (s) {
-    case QDateTimeParser::AmPmSection: return "AmPmSection"_L1;
-    case QDateTimeParser::DaySection: return "DaySection"_L1;
-    case QDateTimeParser::DayOfWeekSectionShort: return "DayOfWeekSectionShort"_L1;
-    case QDateTimeParser::DayOfWeekSectionLong: return "DayOfWeekSectionLong"_L1;
-    case QDateTimeParser::Hour24Section: return "Hour24Section"_L1;
-    case QDateTimeParser::Hour12Section: return "Hour12Section"_L1;
-    case QDateTimeParser::MSecSection: return "MSecSection"_L1;
-    case QDateTimeParser::MinuteSection: return "MinuteSection"_L1;
-    case QDateTimeParser::MonthSection: return "MonthSection"_L1;
-    case QDateTimeParser::SecondSection: return "SecondSection"_L1;
-    case QDateTimeParser::TimeZoneSection: return "TimeZoneSection"_L1;
-    case QDateTimeParser::YearSection: return "YearSection"_L1;
-    case QDateTimeParser::YearSection2Digits: return "YearSection2Digits"_L1;
-    case QDateTimeParser::NoSection: return "NoSection"_L1;
-    case QDateTimeParser::FirstSection: return "FirstSection"_L1;
-    case QDateTimeParser::LastSection: return "LastSection"_L1;
+    case AmPmSection: return "AmPmSection"_L1;
+    case DaySection: return "DaySection"_L1;
+    case DayOfWeekSectionShort: return "DayOfWeekSectionShort"_L1;
+    case DayOfWeekSectionLong: return "DayOfWeekSectionLong"_L1;
+    case Hour24Section: return "Hour24Section"_L1;
+    case Hour12Section: return "Hour12Section"_L1;
+    case MSecSection: return "MSecSection"_L1;
+    case MinuteSection: return "MinuteSection"_L1;
+    case MonthSection: return "MonthSection"_L1;
+    case SecondSection: return "SecondSection"_L1;
+    case TimeZoneSection: return "TimeZoneSection"_L1;
+    case YearSection: return "YearSection"_L1;
+    case YearSection2Digits: return "YearSection2Digits"_L1;
+    case NoSection: return "NoSection"_L1;
+    case FirstSection: return "FirstSection"_L1;
+    case LastSection: return "LastSection"_L1;
     default: return "Unknown section "_L1 + QString::number(int(s));
     }
 }
