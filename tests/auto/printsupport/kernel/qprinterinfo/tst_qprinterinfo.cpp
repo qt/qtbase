@@ -336,11 +336,11 @@ void tst_QPrinterInfo::testAssignment()
 
 void tst_QPrinterInfo::namedPrinter()
 {
-    QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
+    const QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
 
     QStringList printerNames;
 
-    foreach (const QPrinterInfo &pi, printers) {
+    for (const QPrinterInfo &pi : printers) {
         QPrinterInfo pi2 = QPrinterInfo::printerInfo(pi.printerName());
         QCOMPARE(pi2.printerName(),             pi.printerName());
         QCOMPARE(pi2.description(),             pi.description());

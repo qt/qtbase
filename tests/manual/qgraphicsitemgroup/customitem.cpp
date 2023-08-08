@@ -9,10 +9,10 @@
 
 QList<CustomGroup*> CustomScene::selectedCustomGroups() const
 {
-    QList<QGraphicsItem*> all = selectedItems();
+    const QList<QGraphicsItem*> all = selectedItems();
     QList<CustomGroup*> groups;
 
-    foreach (QGraphicsItem *item, all) {
+    for (QGraphicsItem *item : all) {
         CustomGroup* group = qgraphicsitem_cast<CustomGroup*>(item);
         if (group)
             groups.append(group);
@@ -23,10 +23,10 @@ QList<CustomGroup*> CustomScene::selectedCustomGroups() const
 
 QList<CustomItem*> CustomScene::selectedCustomItems() const
 {
-    QList<QGraphicsItem*> all = selectedItems();
+    const QList<QGraphicsItem*> all = selectedItems();
     QList<CustomItem*> items;
 
-    foreach (QGraphicsItem *item, all) {
+    for (QGraphicsItem *item : all) {
         CustomItem* citem = qgraphicsitem_cast<CustomItem*>(item);
         if (citem)
             items.append(citem);

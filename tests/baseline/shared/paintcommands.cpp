@@ -745,8 +745,8 @@ void PaintCommands::runCommand(const QString &scriptLine)
         return;
     }
     QString firstWord = scriptLine.section(separators, 0, 0);
-    QList<int> indices = s_commandHash.values(firstWord);
-    foreach(int idx, indices) {
+    const QList<int> indices = s_commandHash.values(firstWord);
+    for (int idx : indices) {
         PaintCommandInfos command = s_commandInfoTable.at(idx);
         Q_ASSERT(command.regExp.isValid());
         QRegularExpressionMatch match = command.regExp.match(scriptLine);

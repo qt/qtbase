@@ -166,11 +166,11 @@ void tst_QNetworkRequest::rawHeaderList_data()
 
 void tst_QNetworkRequest::rawHeaderList()
 {
-    QFETCH(QList<QByteArray>, set);
+    QFETCH(const QList<QByteArray>, set);
     QFETCH(QList<QByteArray>, expected);
 
     QNetworkRequest request;
-    foreach (QByteArray header, set)
+    for (const QByteArray &header : set)
         request.setRawHeader(header, "a value");
 
     QList<QByteArray> got = request.rawHeaderList();

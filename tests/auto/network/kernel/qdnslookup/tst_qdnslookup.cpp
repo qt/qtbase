@@ -62,9 +62,9 @@ QString tst_QDnsLookup::domainName(const QString &input)
 
 QString tst_QDnsLookup::domainNameList(const QString &input)
 {
-    QStringList list = input.split(QLatin1Char(';'));
+    const QStringList list = input.split(QLatin1Char(';'));
     QString result;
-    foreach (const QString &s, list) {
+    for (const QString &s : list) {
         if (!result.isEmpty())
             result += ';';
         result += domainName(s);

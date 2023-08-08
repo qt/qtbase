@@ -487,8 +487,8 @@ void tst_QTcpSocket::bind_data()
     bool testIpv6 = false;
 
     // iterate all interfaces, add all addresses on them as test data
-    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
-    foreach (const QNetworkInterface &netinterface, interfaces) {
+    const QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &netinterface : interfaces) {
         if (!netinterface.isValid())
             continue;
 

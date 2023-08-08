@@ -85,8 +85,8 @@ void  PropertyWatcher::setSubject(QObject *s, const QString &annotation)
 
 void PropertyWatcher::updateAllFields()
 {
-    QList<PropertyField *> fields = findChildren<PropertyField*>();
-    foreach (PropertyField *field, fields)
+    const QList<PropertyField *> fields = findChildren<PropertyField*>();
+    for (PropertyField *field : fields)
         field->propertyChanged();
     emit updatedAllFields(this);
 }

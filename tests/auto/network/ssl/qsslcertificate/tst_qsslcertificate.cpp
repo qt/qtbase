@@ -116,13 +116,13 @@ void tst_QSslCertificate::initTestCase()
     isNonOpenSslTls = QSslSocket::activeBackend() != QStringLiteral("openssl");
 
     QDir dir(testDataDir + "certificates");
-    QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
+    const QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
     QRegularExpression rxCert(QLatin1String("^.+\\.(pem|der)$"));
     QRegularExpression rxSan(QLatin1String("^(.+\\.(?:pem|der))\\.san$"));
     QRegularExpression rxPubKey(QLatin1String("^(.+\\.(?:pem|der))\\.pubkey$"));
     QRegularExpression rxDigest(QLatin1String("^(.+\\.(?:pem|der))\\.digest-(md5|sha1)$"));
     QRegularExpressionMatch match;
-    foreach (QFileInfo fileInfo, fileInfoList) {
+    for (const QFileInfo &fileInfo : fileInfoList) {
         if ((match = rxCert.match(fileInfo.fileName())).hasMatch())
             certInfoList <<
                 CertInfo(fileInfo,

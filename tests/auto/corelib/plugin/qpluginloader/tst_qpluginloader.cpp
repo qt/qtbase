@@ -856,8 +856,8 @@ void tst_QPluginLoader::loadMachO_data()
     QTest::newRow("machtest/good.fat.stub-i386.dylib") << false;
 
     QDir d(QFINDTESTDATA("machtest"));
-    QStringList badlist = d.entryList(QStringList() << "bad*.dylib");
-    foreach (const QString &bad, badlist)
+    const QStringList badlist = d.entryList(QStringList() << "bad*.dylib");
+    for (const QString &bad : badlist)
         QTest::newRow(qPrintable("machtest/" + bad)) << false;
 #endif
 }

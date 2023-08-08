@@ -490,7 +490,7 @@ void tst_QRawFont::supportedWritingSystems_data()
 void tst_QRawFont::supportedWritingSystems()
 {
     QFETCH(QString, fileName);
-    QFETCH(WritingSystemList, writingSystems);
+    QFETCH(const WritingSystemList, writingSystems);
     QFETCH(QFont::HintingPreference, hintingPreference);
 
     QRawFont font(fileName, 10, hintingPreference);
@@ -499,7 +499,7 @@ void tst_QRawFont::supportedWritingSystems()
     WritingSystemList actualWritingSystems = font.supportedWritingSystems();
     QCOMPARE(actualWritingSystems.size(), writingSystems.size());
 
-    foreach (QFontDatabase::WritingSystem writingSystem, writingSystems)
+    for (QFontDatabase::WritingSystem writingSystem : writingSystems)
         QVERIFY(actualWritingSystems.contains(writingSystem));
 }
 
