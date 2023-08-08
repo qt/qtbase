@@ -103,7 +103,7 @@ QStringList tst_QAccessibilityLinux::getChildren(QDBusInterface *interface)
 
     Q_ASSERT(interface->property("ChildCount").toInt() == list.count());
     QStringList children;
-    Q_FOREACH (const QSpiObjectReference &ref, list)
+    for (const QSpiObjectReference &ref : std::as_const(list))
         children << ref.path.path();
 
     return children;
