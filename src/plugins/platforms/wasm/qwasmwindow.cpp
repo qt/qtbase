@@ -278,9 +278,12 @@ void QWasmWindow::setGeometry(const QRect &rect)
         auto rectInViewport = QRect(containerGeometryInViewport.topLeft() + offset, rect.size());
 
         QRect cappedGeometry(rectInViewport);
-        cappedGeometry.moveTop(
+        if (!parent()) {
+            // Clamp top level windows top position to the screen bounds
+            cappedGeometry.moveTop(
                 std::max(std::min(rectInViewport.y(), containerGeometryInViewport.bottom()),
                          containerGeometryInViewport.y() + margins.top()));
+        }
         cappedGeometry.setSize(
                 cappedGeometry.size().expandedTo(windowMinimumSize()).boundedTo(windowMaximumSize()));
         return QRect(QPoint(rect.x(), rect.y() + cappedGeometry.y() - rectInViewport.y()),
