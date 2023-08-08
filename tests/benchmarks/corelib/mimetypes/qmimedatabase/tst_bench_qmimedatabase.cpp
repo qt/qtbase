@@ -5,6 +5,8 @@
 #include <QTest>
 #include <QMimeDatabase>
 
+using namespace Qt::StringLiterals;
+
 namespace {
 struct MatchModeInfo
 {
@@ -60,17 +62,17 @@ void tst_QMimeDatabase::inheritsPerformance()
     QMimeDatabase db;
     QMimeType mime = db.mimeTypeForName(QString::fromLatin1("text/x-chdr"));
     QVERIFY(mime.isValid());
+    QString match;
     QBENCHMARK {
-        QString match;
-        foreach (const QString &mt, mimeTypes) {
+        for (const QString &mt : std::as_const(mimeTypes)) {
             if (mime.inherits(mt)) {
                 match = mt;
                 // of course there would normally be a "break" here, but we're testing worse-case
                 // performance here
             }
         }
-        QCOMPARE(match, QString::fromLatin1("text/plain"));
     }
+    QCOMPARE(match, u"text/plain"_s);
     // Numbers from 2011, in release mode:
     // KDE 4.7 numbers: 0.21 msec / 494,000 ticks / 568,345 instr. loads per iteration
     // QMimeBinaryProvider (with Qt 5): 0.16 msec / NA / 416,049 instr. reads per iteration
