@@ -5,6 +5,7 @@
 #include <private/qguiapplication_p.h>
 #include <QtCore/qfile.h>
 #include <QtGui/private/qwindow_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <private/qpixmapcache_p.h>
 #include <QtGui/qopenglfunctions.h>
 #include <QBuffer>
@@ -214,6 +215,8 @@ void QWasmWindow::initialize()
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
     setWindowTitle(window()->title());
+    setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
+
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
     m_normalGeometry = rect;
