@@ -319,8 +319,8 @@ void tst_QFontDatabase::fallbackFonts()
     layout.createLine();
     layout.endLayout();
 
-    QList<QGlyphRun> runs = layout.glyphRuns(0, 1);
-    foreach (QGlyphRun run, runs) {
+    const QList<QGlyphRun> runs = layout.glyphRuns(0, 1);
+    for (QGlyphRun run : runs) {
         QRawFont rawFont = run.rawFont();
         QVERIFY(rawFont.isValid());
 

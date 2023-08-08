@@ -1028,11 +1028,12 @@ void tst_QFileSystemModel::drives()
     QFileSystemModel model;
     model.setRootPath(path);
     model.fetchMore(QModelIndex());
-    QFileInfoList drives = QDir::drives();
+    const QFileInfoList drives = QDir::drives();
     int driveCount = 0;
-    foreach(const QFileInfo& driveRoot, drives)
+    for (const QFileInfo& driveRoot : drives) {
         if (driveRoot.exists())
             driveCount++;
+    }
     QTRY_COMPARE(model.rowCount(), driveCount);
 }
 
