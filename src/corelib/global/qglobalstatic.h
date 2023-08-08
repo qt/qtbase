@@ -6,6 +6,7 @@
 #ifndef QGLOBALSTATIC_H
 #define QGLOBALSTATIC_H
 
+#include <QtCore/qassert.h>
 #include <QtCore/qatomic.h>
 
 #include <atomic>           // for bootstrapped (no thread) builds
