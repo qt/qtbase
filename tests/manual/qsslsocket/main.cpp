@@ -30,14 +30,15 @@ void tst_QSslSocket::nextProtocolNegotiation_data()
     QTest::addColumn<QByteArray>("expectedProtocol");
     QTest::addColumn<QSslConfiguration::NextProtocolNegotiationStatus>("expectedStatus");
 
-    QList<QString> hosts = QList<QString>()
-            << QStringLiteral("www.google.com")
-            << QStringLiteral("www.facebook.com")
-            << QStringLiteral("www.twitter.com")
-            << QStringLiteral("graph.facebook.com")
-            << QStringLiteral("api.twitter.com");
+    const QString hosts[] = {
+        QStringLiteral("www.google.com"),
+        QStringLiteral("www.facebook.com"),
+        QStringLiteral("www.twitter.com"),
+        QStringLiteral("graph.facebook.com"),
+        QStringLiteral("api.twitter.com"),
+    };
 
-    foreach (QString host, hosts) {
+    for (const QString &host : hosts) {
         QByteArray tag = host.toLocal8Bit();
         tag.append("-none");
         QTest::newRow(tag)
