@@ -438,7 +438,7 @@ QPropertyBindingError QUntypedPropertyBinding::error() const
 
 /*!
     Returns the meta-type of the binding.
-    If the QUntypedProperyBinding is null, an invalid QMetaType is returned.
+    If the QUntypedPropertyBinding is null, an invalid QMetaType is returned.
 */
 QMetaType QUntypedPropertyBinding::valueMetaType() const
 {
