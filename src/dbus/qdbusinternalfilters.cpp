@@ -73,7 +73,7 @@ static const char peerInterfaceXml[] =
     "    </method>\n"
     "  </interface>\n";
 
-static QString generateSubObjectXml(QObject *object)
+static QString generateSubObjectXml(const QObject *object)
 {
     QString retval;
     for (const QObject *child : object->children()) {
