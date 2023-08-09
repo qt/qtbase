@@ -2058,6 +2058,14 @@ void tst_QSettings::testChildKeysAndGroups()
         l.sort();
         QCOMPARE(l, QStringList() << "bar" << "foo");
     }
+
+#if defined(Q_OS_WASM)
+    // WebIndexedDBFormat does not use the cached settings file on creation, but instead always uses
+    // the file from the indexed DB anew.
+    if (format == QSettings::Format::WebIndexedDBFormat)
+        settings1.sync();
+#endif
+
     {
         QSettings settings3(format, QSettings::UserScope, "software.org", "application");
         settings3.setFallbacksEnabled(false);
@@ -3542,6 +3550,8 @@ void tst_QSettings::rainersSyncBugOnMac()
 #if defined(Q_OS_WASM)
     if (format == QSettings::NativeFormat)
         QSKIP("WASM's localStorage backend recognizes no concept of file");
+    if (format == QSettings::WebIndexedDBFormat)
+        QSKIP("WASM's indexedDB backend uses the virtual FS file only as a backing store");
 #endif  // Q_OS_WASM
 
     QString fileName;

@@ -238,10 +238,11 @@ public:
 
     void clear() override;
     void sync() override;
-    void flush() override;
 
 private:
     bool writeSettingsToTemporaryFile(const QString &fileName, void *dataPtr, int size);
+    void loadIndexedDBFiles();
+
 
     QString databaseName;
     QString id;
@@ -264,22 +265,7 @@ QWasmIDBSettingsPrivate::QWasmIDBSettingsPrivate(QSettings::Scope scope,
     databaseName = organization;
     id = application;
 
-    int exists = 0;
-    int error = 0;
-    emscripten_idb_exists(DbName, fileName().toLocal8Bit(), &exists, &error);
-    if (error) {
-        setStatus(QSettings::AccessError);
-        return;
-    }
-    if (exists) {
-        void *contents;
-        int size;
-        emscripten_idb_load(DbName, fileName().toLocal8Bit(), &contents, &size, &error);
-        if (error || !writeSettingsToTemporaryFile(fileName(), contents, size)) {
-            setStatus(QSettings::AccessError);
-            return;
-        }
-    }
+    loadIndexedDBFiles();
 
     QConfFileSettingsPrivate::initAccess();
 }
@@ -288,7 +274,6 @@ QWasmIDBSettingsPrivate::~QWasmIDBSettingsPrivate() = default;
 
 bool QWasmIDBSettingsPrivate::writeSettingsToTemporaryFile(const QString &fileName, void *dataPtr,
                                                            int size)
-
 {
     QFile file(fileName);
     QFileInfo fileInfo(fileName);
@@ -313,6 +298,10 @@ void QWasmIDBSettingsPrivate::clear()
 
 void QWasmIDBSettingsPrivate::sync()
 {
+    // Reload the files, in case there were any changes in IndexedDB, and flush them to disk.
+    // Thanks to this, QConfFileSettingsPrivate::sync will handle key merging correctly.
+    loadIndexedDBFiles();
+
     QConfFileSettingsPrivate::sync();
 
     QFile file(fileName());
@@ -327,9 +316,26 @@ void QWasmIDBSettingsPrivate::sync()
     }
 }
 
-void QWasmIDBSettingsPrivate::flush()
+void QWasmIDBSettingsPrivate::loadIndexedDBFiles()
 {
-    sync();
+    for (const auto *confFile : getConfFiles()) {
+        int exists = 0;
+        int error = 0;
+        emscripten_idb_exists(DbName, confFile->name.toLocal8Bit(), &exists, &error);
+        if (error) {
+            setStatus(QSettings::AccessError);
+            return;
+        }
+        if (exists) {
+            void *contents;
+            int size;
+            emscripten_idb_load(DbName, confFile->name.toLocal8Bit(), &contents, &size, &error);
+            if (error || !writeSettingsToTemporaryFile(confFile->name, contents, size)) {
+                setStatus(QSettings::AccessError);
+                return;
+            }
+        }
+    }
 }
 
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,

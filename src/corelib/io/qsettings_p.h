@@ -243,6 +243,9 @@ public:
                             qsizetype &lineStart, qsizetype &lineLen,
                             qsizetype &equalsPos);
 
+protected:
+    const QList<QConfFile *> &getConfFiles() const { return confFiles; }
+
 private:
     void initFormat();
     virtual void initAccess();
