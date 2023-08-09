@@ -74,13 +74,13 @@ template <typename Holder> struct QGlobalStatic
     }
     Type *operator->()
     {
-        Q_ASSERT_X(!isDestroyed(), "Q_GLOBAL_STATIC",
+        Q_ASSERT_X(!isDestroyed(), Q_FUNC_INFO,
                    "The global static was used after being destroyed");
         return instance();
     }
     Type &operator*()
     {
-        Q_ASSERT_X(!isDestroyed(), "Q_GLOBAL_STATIC",
+        Q_ASSERT_X(!isDestroyed(), Q_FUNC_INFO,
                    "The global static was used after being destroyed");
         return *instance();
     }
