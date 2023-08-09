@@ -890,7 +890,7 @@ void QMdiAreaPrivate::rearrange(Rearranger *rearranger)
     const bool reverseList = rearranger->type() == Rearranger::RegularTiler;
     const QList<QMdiSubWindow *> subWindows = subWindowList(activationOrder, reverseList);
     QSize minSubWindowSize;
-    foreach (QMdiSubWindow *child, subWindows) {
+    for (QMdiSubWindow *child : subWindows) {
         if (!sanityCheck(child, "QMdiArea::rearrange") || !child->isVisible())
             continue;
         if (rearranger->type() == Rearranger::IconTiler) {
