@@ -846,7 +846,7 @@ void QMdiAreaPrivate::place(Placer *placer, QMdiSubWindow *child)
     QList<QRect> rects;
     rects.reserve(childWindows.size());
     QRect parentRect = q->rect();
-    foreach (QMdiSubWindow *window, childWindows) {
+    for (QMdiSubWindow *window : std::as_const(childWindows)) {
         if (!sanityCheck(window, "QMdiArea::place") || window == child || !window->isVisibleTo(q)
                 || !window->testAttribute(Qt::WA_Moved)) {
             continue;
@@ -1302,7 +1302,7 @@ bool QMdiAreaPrivate::lastWindowAboutToBeDestroyed() const
 */
 void QMdiAreaPrivate::setChildActivationEnabled(bool enable, bool onlyNextActivationEvent) const
 {
-    foreach (QMdiSubWindow *subWindow, childWindows) {
+    for (QMdiSubWindow *subWindow : childWindows) {
         if (!subWindow || !subWindow->isVisible())
             continue;
         if (onlyNextActivationEvent)
@@ -1340,7 +1340,7 @@ QMdiAreaPrivate::subWindowList(QMdiArea::WindowOrder order, bool reversed) const
         return list;
 
     if (order == QMdiArea::CreationOrder) {
-        foreach (QMdiSubWindow *child, childWindows) {
+        for (QMdiSubWindow *child : childWindows) {
             if (!child)
                 continue;
             if (!reversed)
