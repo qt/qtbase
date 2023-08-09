@@ -289,10 +289,7 @@ public:
 
     QList<T> &operator=(std::initializer_list<T> args)
     {
-        d = DataPointer(Data::allocate(qsizetype(args.size())));
-        if (args.size())
-            d->copyAppend(args.begin(), args.end());
-        return *this;
+        return assign(args);
     }
 
     template <typename InputIterator, if_input_iterator<InputIterator> = true>
