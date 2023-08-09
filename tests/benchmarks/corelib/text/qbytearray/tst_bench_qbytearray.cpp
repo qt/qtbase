@@ -31,6 +31,9 @@ private slots:
 
     void toPercentEncoding_data();
     void toPercentEncoding();
+
+    void operator_assign_char();
+    void operator_assign_char_data();
 };
 
 void tst_QByteArray::initTestCase()
@@ -351,6 +354,38 @@ void tst_QByteArray::toPercentEncoding()
         encoded = plaintext.toPercentEncoding();
     }
     QTEST(encoded, "expected");
+}
+
+void tst_QByteArray::operator_assign_char()
+{
+    QFETCH(QByteArray, data);
+    QString str(data.size(), Qt::Uninitialized);
+
+    const char *tdata = data.constData();
+    QBENCHMARK {
+        str.operator=(tdata);
+    }
+}
+
+void tst_QByteArray::operator_assign_char_data()
+{
+    QTest::addColumn<QByteArray>("data");
+
+    QByteArray data;
+    data.fill('a', 5);
+    QTest::newRow("length: 5") << data;
+    data.fill('b', 10);
+    QTest::newRow("length: 10") << data;
+    data.fill('c', 20);
+    QTest::newRow("length: 20") << data;
+    data.fill('d', 50);
+    QTest::newRow("length: 50") << data;
+    data.fill('e', 100);
+    QTest::newRow("length: 100") << data;
+    data.fill('f', 500);
+    QTest::newRow("length: 500") << data;
+    data.fill('g', 1'000);
+    QTest::newRow("length: 1'000") << data;
 }
 
 QTEST_MAIN(tst_QByteArray)

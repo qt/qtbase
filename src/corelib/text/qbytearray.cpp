@@ -1342,14 +1342,7 @@ QByteArray &QByteArray::operator=(const char *str)
     } else if (!*str) {
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
-        const qsizetype len = qsizetype(strlen(str));
-        const auto capacityAtEnd = d->allocatedCapacity() - d.freeSpaceAtBegin();
-        if (d->needsDetach() || len > capacityAtEnd
-                || (len < size() && len < (capacityAtEnd >> 1)))
-            // ### inefficient! reallocData() does copy the old data and we then overwrite it in the next line
-            reallocData(len, QArrayData::KeepSize);
-        memcpy(d.data(), str, len + 1); // include null terminator
-        d.size = len;
+        assign(str);
     }
     return *this;
 }
