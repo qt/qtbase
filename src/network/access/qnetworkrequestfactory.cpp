@@ -522,4 +522,34 @@ bool QNetworkRequestFactoryPrivate::equals(
             queryParameters == other.queryParameters;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+/*!
+    \fn QDebug QNetworkRequestFactory::operator<<(QDebug debug,
+                                        const QNetworkRequestFactory &factory)
+
+    Writes \a factory into \a debug stream.
+
+    \sa {Debugging Techniques}
+*/
+QDebug operator<<(QDebug debug, const QNetworkRequestFactory &factory)
+{
+    const QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
+
+    debug << "QNetworkRequestFactory(baseUrl = " << factory.baseUrl()
+          << ", headers = " << factory.headers()
+          << ", queryParameters = " << factory.queryParameters().queryItems()
+          << ", bearerToken = " << (factory.bearerToken().isEmpty() ? "(empty)" : "(is set)")
+          << ", transferTimeout = " << factory.transferTimeout()
+#if QT_CONFIG(ssl)
+          << ", SSL configuration"
+          << (factory.sslConfiguration().isNull() ? " is not set (default)" : " is set")
+#else
+          << ", no SSL support"
+#endif
+          << ")";
+    return debug;
+}
+#endif // QT_NO_DEBUG_STREAM
+
 QT_END_NAMESPACE

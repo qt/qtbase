@@ -257,6 +257,13 @@ void tst_QNetworkRequestFactory::bearerToken()
     QVERIFY(request.hasRawHeader(authHeader));
     QCOMPARE(request.rawHeader(authHeader), "Bearer "_ba + bearerToken1);
 
+    // Verify that bearerToken is not in debug output
+    QString debugOutput;
+    QDebug debug(&debugOutput);
+    debug << factory;
+    QVERIFY(debugOutput.contains("bearerToken = (is set)"));
+    QVERIFY(!debugOutput.contains(bearerToken1));
+
     factory.setBearerToken(bearerToken2);
     QCOMPARE(factory.bearerToken(), bearerToken2);
     request = factory.request();
