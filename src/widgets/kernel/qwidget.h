@@ -432,7 +432,7 @@ public:
     void setFocusPolicy(Qt::FocusPolicy policy);
     bool hasFocus() const;
     static void setTabOrder(QWidget *, QWidget *);
-    static inline void setTabOrder(std::initializer_list<QWidget *> widgets);
+    static void setTabOrder(std::initializer_list<QWidget *> widgets);
     void setFocusProxy(QWidget *);
     QWidget *focusProxy() const;
     Qt::ContextMenuPolicy contextMenuPolicy() const;
@@ -912,19 +912,6 @@ inline bool QWidget::testAttribute(Qt::WidgetAttribute attribute) const
     if (attribute < int(8*sizeof(uint)))
         return data->widget_attributes & (1<<attribute);
     return testAttribute_helper(attribute);
-}
-
-inline void QWidget::setTabOrder(std::initializer_list<QWidget *> widgets)
-{
-    QWidget *prev = nullptr;
-    for (const auto &widget : widgets) {
-        if (!prev) {
-            prev = widget;
-        } else {
-            QWidget::setTabOrder(prev, widget);
-            prev = widget;
-        }
-    }
 }
 
 #define QWIDGETSIZE_MAX ((1<<24)-1)

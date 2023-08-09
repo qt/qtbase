@@ -7091,6 +7091,20 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
     }
 }
 
+void QWidget::setTabOrder(std::initializer_list<QWidget *> widgets)
+{
+    QWidget *prev = nullptr;
+    for (const auto &widget : widgets) {
+        if (!prev) {
+            prev = widget;
+        } else {
+            QWidget::setTabOrder(prev, widget);
+            prev = widget;
+        }
+    }
+}
+
+
 /*!\internal
 
   Moves the relevant subwidgets of this widget from the \a oldtlw's
