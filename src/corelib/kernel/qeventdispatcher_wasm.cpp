@@ -420,7 +420,9 @@ void QEventDispatcherWasm::wakeUp()
     // event loop. Make sure the thread is unblocked or make it
     // process events.
     bool wasBlocked = wakeEventDispatcherThread();
-    if (!wasBlocked && isMainThreadEventDispatcher()) {
+    // JSPI does not need a scheduled call to processPostedEvents, as the stack is not unwound
+    // at startup.
+    if (!qstdweb::haveJspi() && !wasBlocked && isMainThreadEventDispatcher()) {
         {
             LOCK_GUARD(m_mutex);
             if (m_pendingProcessEvents)
