@@ -42,7 +42,9 @@
 #endif
 
 #if defined(Q_OS_WASM)
-#include "emscripten/val.h"
+#  include <QtCore/private/qstdweb_p.h>
+
+#  include "emscripten/val.h"
 #endif
 
 Q_DECLARE_METATYPE(QSettings::Format)
@@ -106,6 +108,9 @@ private slots:
     void getSetCheck();
     void ctor_data() { populateWithFormats(); }
     void ctor();
+#ifdef Q_OS_WASM
+    void idb();
+#endif
     void beginGroup();
     void setValue();
     void remove();
@@ -329,6 +334,29 @@ void tst_QSettings::cleanupTestFiles()
 #endif
 #if defined(Q_OS_WASM)
     emscripten::val::global("window")["localStorage"].call<void>("clear");
+    if (qstdweb::haveJspi()) {
+        QSettings(QSettings::Format::WebIndexedDBFormat, QSettings::UserScope, "software.org",
+                  "KillerAPP")
+                .clear();
+        QSettings(QSettings::Format::WebIndexedDBFormat, QSettings::SystemScope, "software.org",
+                  "KillerAPP")
+                .clear();
+        QSettings(QSettings::Format::WebIndexedDBFormat, QSettings::UserScope, "other.software.org",
+                  "KillerAPP")
+                .clear();
+        QSettings(QSettings::Format::WebIndexedDBFormat, QSettings::SystemScope,
+                  "other.software.org", "KillerAPP")
+                .clear();
+        QSettings(QSettings::Format::WebIndexedDBFormat, QSettings::UserScope, "software.org")
+                .clear();
+        QSettings(QSettings::Format::WebIndexedDBFormat, QSettings::SystemScope, "software.org")
+                .clear();
+        QSettings(QSettings::Format::WebIndexedDBFormat, QSettings::UserScope, "other.software.org")
+                .clear();
+        QSettings(QSettings::Format::WebIndexedDBFormat, QSettings::SystemScope,
+                  "other.software.org")
+                .clear();
+    }
 #endif
 
     const QString foo(QLatin1String("foo"));
@@ -624,6 +652,50 @@ void tst_QSettings::ctor()
         QCOMPARE(settings2.applicationName(), QLatin1String("KillerAPP"));
     }
 }
+
+#if defined(Q_OS_WASM)
+void tst_QSettings::idb()
+{
+    if (!qstdweb::haveJspi())
+        QSKIP("JSPI needed for IndexedDB format");
+
+    QString systemScopeOrganizationWideFile;
+    {
+        QSettings settingsUserScopeAppSpecific(QSettings::Format::WebIndexedDBFormat,
+                                               QSettings::UserScope, "software.org", "KillerAPP");
+        QSettings settingsUserScopeOrganizationWide(QSettings::Format::WebIndexedDBFormat,
+                                                    QSettings::UserScope, "software.org");
+        QSettings settingsSystemScopeAppSpecific(QSettings::Format::WebIndexedDBFormat,
+                                                 QSettings::SystemScope, "software.org",
+                                                 "KillerAPP");
+        QSettings settingsSystemScopeOrganizationWide(QSettings::Format::WebIndexedDBFormat,
+                                                      QSettings::SystemScope, "software.org");
+
+        settingsSystemScopeOrganizationWide.setValue("testKey", 1);
+        systemScopeOrganizationWideFile = settingsSystemScopeOrganizationWide.fileName();
+    }
+
+    // Emscripten's memfs has a bug that makes a file appear twice in the hashmap.
+    while (QFile::exists(systemScopeOrganizationWideFile)) {
+        Q_ASSERT(QFile::remove(systemScopeOrganizationWideFile));
+    }
+
+    QEventLoop loop;
+    QTimer timer;
+    timer.setInterval(1);
+
+    connect(&timer, &QTimer::timeout, [&loop]() { loop.quit(); });
+    timer.start();
+
+    loop.exec();
+    {
+        QSettings settingsUserScopeAppSpecific(QSettings::Format::WebIndexedDBFormat,
+                                               QSettings::UserScope, "software.org", "KillerAPP");
+
+        QCOMPARE(settingsUserScopeAppSpecific.value("testKey").toInt(), 1);
+    }
+}
+#endif // Q_OS_WASM
 
 void tst_QSettings::testByteArray_data()
 {
