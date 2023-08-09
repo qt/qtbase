@@ -1,6 +1,8 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 #include <QStringList>
+#include <QByteArray>
+#include <QLatin1StringView>
 #include <QFile>
 #include <QTest>
 #include <limits>
@@ -43,10 +45,22 @@ private slots:
     void toDouble_data();
     void toDouble();
 
+    // operator=(~)
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    void operator_assign_BA() { operator_assign<QByteArray>(); }
+    void operator_assign_BA_data() { operator_assign_data(); }
+    void operator_assign_char() { operator_assign<const char*>(); };
+    void operator_assign_char_data() { operator_assign_data();}
+#endif
+    void operator_assign_L1SV() { operator_assign<QLatin1StringView>(); }
+    void operator_assign_L1SV_data() { operator_assign_data(); }
+
 private:
     void section_data_impl(bool includeRegExOnly = true);
     template <typename RX> void section_impl();
     template <typename Integer> void number_impl();
+    template <typename T> void operator_assign();
+    void operator_assign_data();
 };
 
 tst_QString::tst_QString()
@@ -448,6 +462,47 @@ void tst_QString::toDouble()
     }
     QCOMPARE(ok, good);
     QCOMPARE(actual, expected);
+}
+
+template <typename T> void tst_QString::operator_assign()
+{
+    QFETCH(QByteArray, data);
+    QString str(data.size(), Qt::Uninitialized);
+
+    T tdata;
+    if constexpr (std::is_same_v<T, const char*>) {
+        tdata = data.constData();
+    } else if constexpr (std::is_same_v<T, QLatin1String>) {
+        tdata = T(data.constData(), data.size());
+    } else {
+        tdata = T(data.constData(), data.size());
+        tdata.detach();
+    }
+
+    QBENCHMARK {
+        str.operator=(tdata);
+    }
+}
+
+void tst_QString::operator_assign_data()
+{
+    QTest::addColumn<QByteArray>("data");
+
+    QByteArray data;
+    data.fill('a', 5);
+    QTest::newRow("length: 5") << data;
+    data.fill('b', 10);
+    QTest::newRow("length: 10") << data;
+    data.fill('c', 20);
+    QTest::newRow("length: 20") << data;
+    data.fill('d', 50);
+    QTest::newRow("length: 50") << data;
+    data.fill('e', 100);
+    QTest::newRow("length: 100") << data;
+    data.fill('f', 500);
+    QTest::newRow("length: 500") << data;
+    data.fill('g', 1'000);
+    QTest::newRow("length: 1'000") << data;
 }
 
 QTEST_APPLESS_MAIN(tst_QString)

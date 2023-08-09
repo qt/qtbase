@@ -2873,16 +2873,7 @@ QString &QString::operator=(QLatin1StringView other)
 */
 QString &QString::operator=(QChar ch)
 {
-    const qsizetype capacityAtEnd = capacity() - d.freeSpaceAtBegin();
-    if (isDetached() && capacityAtEnd >= 1) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
-        // re-use existing capacity:
-        d.data()[0] = ch.unicode();
-        d.data()[1] = 0;
-        d.size = 1;
-    } else {
-        operator=(QString(ch));
-    }
-    return *this;
+    return assign(1, ch);
 }
 
 /*!

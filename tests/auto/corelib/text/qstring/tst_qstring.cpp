@@ -486,6 +486,7 @@ private slots:
     void operator_pluseq_qbytearray_data()    { operator_pluseq_data(); }
     void operator_pluseq_charstar()           { operator_pluseq_impl<const char *, QString &(QString::*)(const char *)>(); }
     void operator_pluseq_charstar_data()      { operator_pluseq_data(); }
+    void operator_assign_symmetry();
 #endif // !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)
 
     void operator_pluseq_special_cases();
@@ -3704,6 +3705,29 @@ void tst_QString::operator_eqeq_bytearray()
     if (!src.contains('\0') && src.constData()[src.size()] == '\0') {
         QVERIFY(expected == src.constData());
         QVERIFY(!(expected != src.constData()));
+    }
+}
+
+void tst_QString::operator_assign_symmetry()
+{
+    {
+        QString str("DATA");
+        str.operator=(QString());
+        QCOMPARE_EQ(str.capacity(), 0);
+        QVERIFY(str.isNull());
+    }
+    {
+        QString str("DATA");
+        str.operator=(QByteArray());
+        QCOMPARE_EQ(str.capacity(), 0);
+        QVERIFY(str.isNull());
+    }
+    {
+        QString str("DATA");
+        const char *data = nullptr;
+        str.operator=(data);
+        QCOMPARE_EQ(str.capacity(), 0);
+        QVERIFY(str.isNull());
     }
 }
 #endif // !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)
@@ -8552,12 +8576,14 @@ void tst_QString::assignQChar()
     // assign to null QString:
     s = sp;
     QCOMPARE(s, QString(sp));
-    QCOMPARE(s.capacity(), 1);
 
     // assign to non-null QString with enough capacity:
+    s.clear();
+    s.squeeze();
+    s.reserve(3);
     s = QLatin1String("foo");
     const int capacity = s.capacity();
-    QCOMPARE(capacity, 3);
+    QCOMPARE(s.capacity(), 3);
     s = sp;
     QCOMPARE(s, QString(sp));
     QCOMPARE(s.capacity(), capacity);
@@ -8567,7 +8593,6 @@ void tst_QString::assignQChar()
     QString s2 = s;
     s = sp;
     QCOMPARE(s, QString(sp));
-    QCOMPARE(s.capacity(), 1);
 
     // assign to empty QString:
     s = QString(u""_s);
@@ -8575,7 +8600,6 @@ void tst_QString::assignQChar()
     QCOMPARE(s.capacity(), 0);
     s = sp;
     QCOMPARE(s, QString(sp));
-    QCOMPARE(s.capacity(), 1);
 }
 
 void tst_QString::isRightToLeft_data()

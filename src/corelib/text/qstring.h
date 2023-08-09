@@ -786,10 +786,21 @@ public:
         : QString(fromUtf8(a))
     {}
     QT_ASCII_CAST_WARN inline QString &operator=(const char *ch)
-    { return (*this = fromUtf8(ch)); }
+    {
+        if (!ch) {
+            clear();
+            return *this;
+        }
+        return assign(ch);
+    }
     QT_ASCII_CAST_WARN inline QString &operator=(const QByteArray &a)
-    { return (*this = fromUtf8(a)); }
-
+    {
+        if (a.isNull()) {
+            clear();
+            return *this;
+        }
+        return assign(a);
+    }
     // these are needed, so it compiles with STL support enabled
     QT_ASCII_CAST_WARN inline QString &prepend(const char *s)
     { return prepend(QUtf8StringView(s)); }
