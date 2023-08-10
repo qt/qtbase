@@ -418,7 +418,7 @@ QPlainTextEditControl::QPlainTextEditControl(QPlainTextEdit *parent)
     setAcceptRichText(false);
 }
 
-void QPlainTextEditPrivate::_q_cursorPositionChanged()
+void QPlainTextEditPrivate::cursorPositionChanged()
 {
     pageUpDownLastCursorYIsValid = false;
     Q_Q(QPlainTextEdit);
@@ -429,7 +429,7 @@ void QPlainTextEditPrivate::_q_cursorPositionChanged()
     emit q->cursorPositionChanged();
 }
 
-void QPlainTextEditPrivate::_q_verticalScrollbarActionTriggered(int action) {
+void QPlainTextEditPrivate::verticalScrollbarActionTriggered(int action) {
 
     const auto a = static_cast<QAbstractSlider::SliderAction>(action);
     switch (a) {
@@ -744,15 +744,15 @@ void QPlainTextEditPrivate::init(const QString &txt)
     control->setPalette(q->palette());
 
     QObjectPrivate::connect(vbar, &QAbstractSlider::actionTriggered,
-                            this, &QPlainTextEditPrivate::_q_verticalScrollbarActionTriggered);
+                            this, &QPlainTextEditPrivate::verticalScrollbarActionTriggered);
     QObject::connect(control, &QWidgetTextControl::microFocusChanged, q,
                      [q](){q->updateMicroFocus(); });
     QObjectPrivate::connect(control, &QWidgetTextControl::documentSizeChanged,
-                            this, &QPlainTextEditPrivate::_q_adjustScrollbars);
+                            this, &QPlainTextEditPrivate::adjustScrollbars);
     QObject::connect(control, &QWidgetTextControl::blockCountChanged,
                      q, &QPlainTextEdit::blockCountChanged);
     QObjectPrivate::connect(control, &QWidgetTextControl::updateRequest,
-                            this, &QPlainTextEditPrivate::_q_repaintContents);
+                            this, &QPlainTextEditPrivate::repaintContents);
     QObject::connect(control, &QWidgetTextControl::modificationChanged,
                      q, &QPlainTextEdit::modificationChanged);
     QObject::connect(control, &QWidgetTextControl::textChanged, q, &QPlainTextEdit::textChanged);
@@ -761,9 +761,9 @@ void QPlainTextEditPrivate::init(const QString &txt)
     QObject::connect(control, &QWidgetTextControl::copyAvailable, q, &QPlainTextEdit::copyAvailable);
     QObject::connect(control, &QWidgetTextControl::selectionChanged, q, &QPlainTextEdit::selectionChanged);
     QObjectPrivate::connect(control, &QWidgetTextControl::cursorPositionChanged,
-                            this, &QPlainTextEditPrivate::_q_cursorPositionChanged);
+                            this, &QPlainTextEditPrivate::cursorPositionChanged);
     QObjectPrivate::connect(control, &QWidgetTextControl::textChanged,
-                            this, &QPlainTextEditPrivate::_q_updatePlaceholderVisibility);
+                            this, &QPlainTextEditPrivate::updatePlaceholderVisibility);
     QObject::connect(control, &QWidgetTextControl::textChanged, q, [q](){q->updateMicroFocus(); });
 
     // set a null page size initially to avoid any relayouting until the textedit
@@ -792,12 +792,12 @@ void QPlainTextEditPrivate::init(const QString &txt)
 #endif
 }
 
-void QPlainTextEditPrivate::_q_updatePlaceholderVisibility()
+void QPlainTextEditPrivate::updatePlaceholderVisibility()
 {
     Q_Q(QPlainTextEdit);
 
     // We normally only repaint the part of view that contains text in the
-    // document that has changed (in _q_repaintContents). But the placeholder
+    // document that has changed (in repaintContents). But the placeholder
     // text is not a part of the document, but is drawn on separately. So whenever
     // we either show or hide the placeholder text, we issue a full update.
     bool placeholderCurrentyVisible = placeholderVisible;
@@ -811,7 +811,7 @@ void QPlainTextEditPrivate::_q_updatePlaceholderVisibility()
         viewport->update();
 }
 
-void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
+void QPlainTextEditPrivate::repaintContents(const QRectF &contentsRect)
 {
     Q_Q(QPlainTextEdit);
     if (!contentsRect.isValid()) {
@@ -944,7 +944,7 @@ void QPlainTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCurso
 
 #if QT_CONFIG(scrollbar)
 
-void QPlainTextEditPrivate::_q_adjustScrollbars()
+void QPlainTextEditPrivate::adjustScrollbars()
 {
     Q_Q(QPlainTextEdit);
     QTextDocument *doc = control->document();
@@ -1299,7 +1299,7 @@ void QPlainTextEdit::setDocument(QTextDocument *document)
     d->documentLayoutPtr = documentLayout;
     d->updateDefaultTextOption();
     d->relayoutDocument();
-    d->_q_adjustScrollbars();
+    d->adjustScrollbars();
 }
 
 /*!
@@ -1331,7 +1331,7 @@ void QPlainTextEdit::setPlaceholderText(const QString &placeholderText)
     Q_D(QPlainTextEdit);
     if (d->placeholderText != placeholderText) {
         d->placeholderText = placeholderText;
-        d->_q_updatePlaceholderVisibility();
+        d->updatePlaceholderVisibility();
     }
 }
 
@@ -1844,7 +1844,7 @@ void QPlainTextEdit::resizeEvent(QResizeEvent *e)
     Q_D(QPlainTextEdit);
     if (e->oldSize().width() != e->size().width())
         d->relayoutDocument();
-    d->_q_adjustScrollbars();
+    d->adjustScrollbars();
 }
 
 void QPlainTextEditPrivate::relayoutDocument()
@@ -2284,7 +2284,7 @@ void QPlainTextEdit::showEvent(QShowEvent *)
         d->showCursorOnInitialShow = false;
         ensureCursorVisible();
     }
-    d->_q_adjustScrollbars();
+    d->adjustScrollbars();
 }
 
 /*! \reimp
@@ -2787,7 +2787,7 @@ void QPlainTextEdit::setLineWrapMode(LineWrapMode wrap)
     d->lineWrap = wrap;
     d->updateDefaultTextOption();
     d->relayoutDocument();
-    d->_q_adjustScrollbars();
+    d->adjustScrollbars();
     ensureCursorVisible();
 }
 
@@ -2873,7 +2873,7 @@ void QPlainTextEdit::setCenterOnScroll(bool enabled)
     if (enabled == d->centerOnScroll)
         return;
     d->centerOnScroll = enabled;
-    d->_q_adjustScrollbars();
+    d->adjustScrollbars();
 }
 
 
@@ -3033,7 +3033,7 @@ void QPlainTextEditPrivate::append(const QString &text, Qt::TextFormat format)
     }
 
     documentLayout->priv()->blockDocumentSizeChanged = documentSizeChangedBlocked;
-    _q_adjustScrollbars();
+    adjustScrollbars();
 
 
     if (atBottom) {

@@ -240,11 +240,6 @@ protected:
 
 private:
     Q_DISABLE_COPY(QPlainTextEdit)
-    Q_PRIVATE_SLOT(d_func(), void _q_repaintContents(const QRectF &r))
-    Q_PRIVATE_SLOT(d_func(), void _q_updatePlaceholderVisibility())
-    Q_PRIVATE_SLOT(d_func(), void _q_adjustScrollbars())
-    Q_PRIVATE_SLOT(d_func(), void _q_verticalScrollbarActionTriggered(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_cursorPositionChanged())
 
     friend class QPlainTextEditControl;
 };
