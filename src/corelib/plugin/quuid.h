@@ -102,6 +102,8 @@ public:
 
 #ifdef QT_SUPPORTS_INT128
     constexpr explicit QUuid(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
+    static constexpr QUuid fromUInt128(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept
+    { return QUuid{uuid, order}; }
     constexpr quint128 toUInt128(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
 #endif
 
