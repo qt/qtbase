@@ -102,8 +102,7 @@ public:
     inline Id128Bytes toBytes(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
     QByteArray toRfc4122() const;
 
-    static inline
-    QUuid fromBytes(const void *bytes, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
+    static inline QUuid fromBytes(const void *bytes, QSysInfo::Endian order = QSysInfo::BigEndian);
 #if QT_CORE_REMOVED_SINCE(6, 3)
     static QUuid fromRfc4122(const QByteArray &);
 #endif
@@ -235,7 +234,7 @@ QUuid::Id128Bytes QUuid::toBytes(QSysInfo::Endian order) const noexcept
     return result;
 }
 
-QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcept
+QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order)
 {
     Id128Bytes result = {};
     memcpy(result.data, bytes, sizeof(result));
