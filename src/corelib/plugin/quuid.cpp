@@ -311,19 +311,6 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 */
 
 /*!
-    \fn QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
-    \since 6.6
-
-    Creates a QUuid based on the integral \a uuid parameter and respecting the
-    byte order \a order.
-
-    \note This function is only present on platforms that offer a 128-bit
-    integer type.
-
-    \sa toUInt128(), fromUInt128(), fromBytes(), toBytes(), toRfc4122()
-*/
-
-/*!
     \fn QUuid::fromUInt128(quint128 uuid, QSysInfo::Endian order) noexcept
     \since 6.6
 

@@ -101,9 +101,7 @@ public:
     bool isNull() const noexcept;
 
 #ifdef QT_SUPPORTS_INT128
-    constexpr explicit QUuid(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
-    static constexpr QUuid fromUInt128(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept
-    { return QUuid{uuid, order}; }
+    static constexpr QUuid fromUInt128(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
     constexpr quint128 toUInt128(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
 #endif
 
@@ -245,22 +243,23 @@ inline QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcep
 }
 
 #ifdef QT_SUPPORTS_INT128
-constexpr QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
-    : QUuid()
+constexpr QUuid QUuid::fromUInt128(quint128 uuid, QSysInfo::Endian order) noexcept
 {
+    QUuid result = {};
     if (order == QSysInfo::BigEndian) {
-        data1 = qFromBigEndian<quint32>(int(uuid));
-        data2 = qFromBigEndian<quint16>(ushort(uuid >> 32));
-        data3 = qFromBigEndian<quint16>(ushort(uuid >> 48));
+        result.data1 = qFromBigEndian<quint32>(int(uuid));
+        result.data2 = qFromBigEndian<quint16>(ushort(uuid >> 32));
+        result.data3 = qFromBigEndian<quint16>(ushort(uuid >> 48));
         for (int i = 0; i < 8; ++i)
-            data4[i] = uchar(uuid >> (64 + i * 8));
+            result.data4[i] = uchar(uuid >> (64 + i * 8));
     } else {
-        data1 = qFromLittleEndian<quint32>(uint(uuid >> 96));
-        data2 = qFromLittleEndian<quint16>(ushort(uuid >> 80));
-        data3 = qFromLittleEndian<quint16>(ushort(uuid >> 64));
+        result.data1 = qFromLittleEndian<quint32>(uint(uuid >> 96));
+        result.data2 = qFromLittleEndian<quint16>(ushort(uuid >> 80));
+        result.data3 = qFromLittleEndian<quint16>(ushort(uuid >> 64));
         for (int i = 0; i < 8; ++i)
-            data4[i] = uchar(uuid >> (56 - i * 8));
+            result.data4[i] = uchar(uuid >> (56 - i * 8));
     }
+    return result;
 }
 
 constexpr quint128 QUuid::toUInt128(QSysInfo::Endian order) const noexcept
