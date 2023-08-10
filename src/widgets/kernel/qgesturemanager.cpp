@@ -550,7 +550,7 @@ void QGestureManager::getGestureTargets(const QSet<QGesture*> &gestures,
     GestureByTypes gestureByTypes;
 
     // sort gestures by types
-    foreach (QGesture *gesture, gestures) {
+    for (QGesture *gesture : gestures) {
         QWidget *receiver = m_gestureTargets.value(gesture, nullptr);
         Q_ASSERT(receiver);
         if (receiver)
