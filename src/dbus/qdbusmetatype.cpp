@@ -53,14 +53,14 @@ void QDBusMetaTypeId::init()
     // reentrancy is not a problem since everything else is locked on their own
     // set the guard variable at the end
     if (!initialized.loadRelaxed()) {
-        // register our types with Qt Core (calling qMetaTypeId<T>() does this implicitly)
-        (void)message();
-        (void)argument();
-        (void)variant();
-        (void)objectpath();
-        (void)signature();
-        (void)error();
-        (void)unixfd();
+        // register our types with Qt Core
+        message().registerType();
+        argument().registerType();
+        variant().registerType();
+        objectpath().registerType();
+        signature().registerType();
+        error().registerType();
+        unixfd().registerType();
 
 #ifndef QDBUS_NO_SPECIALTYPES
         // and register Qt Core's with us
@@ -78,7 +78,6 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QVariantList>();
         qDBusRegisterMetaType<QVariantMap>();
         qDBusRegisterMetaType<QVariantHash>();
-        qDBusRegisterMetaType<QDBusObjectPath>();
 
         qDBusRegisterMetaType<QList<bool> >();
         qDBusRegisterMetaType<QList<short> >();
@@ -88,6 +87,9 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QList<qlonglong> >();
         qDBusRegisterMetaType<QList<qulonglong> >();
         qDBusRegisterMetaType<QList<double> >();
+
+        // plus lists of our own types
+        qDBusRegisterMetaType<QList<QDBusVariant> >();
         qDBusRegisterMetaType<QList<QDBusObjectPath> >();
         qDBusRegisterMetaType<QList<QDBusSignature> >();
         qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();

@@ -5,9 +5,11 @@
 #include <QLibraryInfo>
 #include <QProcess>
 
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/private/dbus_minimal_p.h>
+
 #include "test1.h"
 
-#include <QtDBus/QDBusConnection>
 
 // in qdbusxmlgenerator.cpp
 QT_BEGIN_NAMESPACE
@@ -32,6 +34,8 @@ class tst_qdbuscpp2xml : public QObject
 private slots:
     void qdbuscpp2xml_data();
     void qdbuscpp2xml();
+    void qtdbusTypes_data();
+    void qtdbusTypes();
 
     void initTestCase();
     void cleanupTestCase();
@@ -139,6 +143,77 @@ void tst_qdbuscpp2xml::qdbuscpp2xml()
     expected = addXmlHeader(expected);
 
     QCOMPARE(out, expected);
+}
+
+void tst_qdbuscpp2xml::qtdbusTypes_data()
+{
+    QTest::addColumn<QByteArray>("type");
+    QTest::addColumn<QByteArray>("expectedSignature");
+    auto addRow = [](QByteArray type, QByteArray signature) {
+        QTest::addRow("%s", type.constData()) << type << signature;
+
+        // lists and vectors
+        QTest::addRow("QList-%s", type.constData())
+                << "QList<" + type + '>' << DBUS_TYPE_ARRAY + signature;
+        QTest::addRow("QVector-%s", type.constData())
+                << "QVector<" + type + '>' << DBUS_TYPE_ARRAY + signature;
+    };
+    addRow("QDBusVariant", DBUS_TYPE_VARIANT_AS_STRING);
+    addRow("QDBusObjectPath", DBUS_TYPE_OBJECT_PATH_AS_STRING);
+    addRow("QDBusSignature", DBUS_TYPE_SIGNATURE_AS_STRING);
+    addRow("QDBusUnixFileDescriptor", DBUS_TYPE_UNIX_FD_AS_STRING);
+
+    // QDBusMessage is not a type, but must be recognized
+    QTest::newRow("QDBusMessage") << QByteArray("QDBusMessage") << QByteArray();
+}
+
+void tst_qdbuscpp2xml::qtdbusTypes()
+{
+    static const char cppSkeleton[] = R"(
+class QDBusVariantBugRepro : public QDBusAbstractAdaptor
+{
+   Q_OBJECT
+   Q_CLASSINFO("D-Bus Interface", "org.qtproject.test")
+public Q_SLOTS:
+   void method(const @TYPE@ &);
+};)";
+    static const char methodXml[] = R"(<method name="method")";
+    static const char expectedSkeleton[] = R"(<arg type="@S@" direction="in"/>)";
+
+    QFETCH(QByteArray, type);
+    QFETCH(QByteArray, expectedSignature);
+
+    const QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
+    const QString command = binpath + QLatin1String("/qdbuscpp2xml");
+    QProcess process;
+    process.start(command);
+
+    process.write(QByteArray(cppSkeleton).replace("@TYPE@", type));
+    process.closeWriteChannel();
+
+    if (!process.waitForStarted()) {
+        const QString path = QString::fromLocal8Bit(qgetenv("PATH"));
+        QString message = QString::fromLatin1("'%1' could not be found when run from '%2'. Path: '%3' ").
+                          arg(command, QDir::currentPath(), path);
+        QFAIL(qPrintable(message));
+    }
+    QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
+
+    // verify nothing was printed on stderr
+    QCOMPARE(process.readAllStandardError(), QString());
+
+    // we don't do a full XML parsing here...
+    QByteArray output = process.readAll().simplified();
+    QVERIFY2(output.contains("<node>") && output.contains("</node>"), "Output was: " + output);
+    output = output.mid(output.indexOf("<node>") + strlen("<node>"));
+    output = output.left(output.indexOf("</node>"));
+
+    QVERIFY2(output.contains(methodXml), "Output was: " + output);
+
+    if (!expectedSignature.isEmpty()) {
+        QByteArray expected = QByteArray(expectedSkeleton).replace("@S@", expectedSignature);
+        QVERIFY2(output.contains(expected), "Expected: '" + expected + "'; got: '" + output + '\'');
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_qdbuscpp2xml)
