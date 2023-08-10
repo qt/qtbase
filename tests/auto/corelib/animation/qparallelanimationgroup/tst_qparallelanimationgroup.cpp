@@ -29,6 +29,7 @@
 #include <QtTest/QtTest>
 
 #include <QtCore/qparallelanimationgroup.h>
+#include <QtCore/qscopeguard.h>
 
 Q_DECLARE_METATYPE(QAbstractAnimation::State)
 
@@ -950,6 +951,7 @@ void tst_QParallelAnimationGroup::autoAdd()
 
     test = static_cast<TestAnimation2*>(group.animationAt(0));
     test->setParent(0);    // remove the last one (with duration = 250)
+    const auto deleteParentlessObject = qScopeGuard([test] { delete test; });
     QCOMPARE(test->group(), static_cast<QAnimationGroup*>(0));
     QCOMPARE(group.duration(), 0);
 }

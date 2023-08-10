@@ -464,8 +464,8 @@ bool QWindowsScreenManager::handleDisplayChange(WPARAM wParam, LPARAM lParam)
         m_lastVerticalResolution = newVerticalResolution;
         qCDebug(lcQpaWindows) << __FUNCTION__ << "Depth=" << newDepth
             << ", resolution " << newHorizontalResolution << 'x' << newVerticalResolution;
-        handleScreenChanges();
     }
+    handleScreenChanges();
     return false;
 }
 

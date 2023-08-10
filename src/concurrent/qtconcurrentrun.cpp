@@ -80,6 +80,10 @@
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 2
 
+    If you don't need the result (for example, because the function returns
+    \c{void}), using the QThreadPool::start() overload taking a function object
+    is more efficient.
+
     As documented above, passing arguments is done like this:
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 3
@@ -143,7 +147,7 @@
     canceling or pausing can be issued only if the computations behind the future
     has not been started.
 
-    \sa {Concurrent Run}
+    \sa {Concurrent Run}, QThreadPool::start()
 */
 
 /*!
@@ -161,5 +165,5 @@
     canceling or pausing can be issued only if the computations behind the future
     has not been started.
 
-    \sa {Concurrent Run}
+    \sa {Concurrent Run}, QThreadPool::start()
 */
