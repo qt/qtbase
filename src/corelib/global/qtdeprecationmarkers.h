@@ -40,6 +40,8 @@ QT_BEGIN_NAMESPACE
 #  define QT_DEPRECATED_CONSTRUCTOR
 #  undef Q_DECL_ENUMERATOR_DEPRECATED
 #  define Q_DECL_ENUMERATOR_DEPRECATED
+#  undef Q_DECL_ENUMERATOR_DEPRECATED_X
+#  define Q_DECL_ENUMERATOR_DEPRECATED_X(ignored)
 #endif
 
 // If the deprecated macro is defined, use its value
