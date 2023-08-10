@@ -101,7 +101,7 @@ public:
     bool isNull() const noexcept;
 
 #ifdef QT_SUPPORTS_INT128
-    constexpr QUuid(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
+    constexpr explicit QUuid(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
     constexpr quint128 toUInt128(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
 #endif
 
