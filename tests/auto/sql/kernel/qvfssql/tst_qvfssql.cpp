@@ -90,5 +90,5 @@ void tst_QVfsSql::testRwDb()
     QFile::remove(dbPath);
 }
 
-QTEST_APPLESS_MAIN(tst_QVfsSql)
+QTEST_MAIN(tst_QVfsSql)
 #include "tst_qvfssql.moc"
