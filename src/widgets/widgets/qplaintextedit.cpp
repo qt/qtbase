@@ -726,8 +726,7 @@ void QPlainTextEditPrivate::updateViewport()
 
 QPlainTextEditPrivate::QPlainTextEditPrivate()
     : tabChangesFocus(false), showCursorOnInitialShow(false), backgroundVisible(false),
-      centerOnScroll(false), inDrag(false), clickCausedFocus(false), placeholderVisible(true),
-      pageUpDownLastCursorYIsValid(false)
+      centerOnScroll(false), inDrag(false), clickCausedFocus(false), pageUpDownLastCursorYIsValid(false)
 {
 }
 
@@ -800,14 +799,7 @@ void QPlainTextEditPrivate::updatePlaceholderVisibility()
     // document that has changed (in repaintContents). But the placeholder
     // text is not a part of the document, but is drawn on separately. So whenever
     // we either show or hide the placeholder text, we issue a full update.
-    bool placeholderCurrentyVisible = placeholderVisible;
-
-    placeholderVisible = !placeholderText.isEmpty()
-            && q->document()->isEmpty()
-            && (!q->firstVisibleBlock().isValid() ||
-                 q->firstVisibleBlock().layout()->preeditAreaText().isEmpty());
-
-    if (placeholderCurrentyVisible != placeholderVisible)
+    if (q->document()->isEmpty())
         viewport->update();
 }
 
@@ -1910,7 +1902,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
     er.setRight(qMin(er.right(), maxX));
     painter.setClipRect(er);
 
-    if (d->placeholderVisible) {
+    if (d->isPlaceHolderTextVisible()) {
         const QColor col = d->control->palette().placeholderText().color();
         painter.setPen(col);
         painter.setClipRect(e->rect());
