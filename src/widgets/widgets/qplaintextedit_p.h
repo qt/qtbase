@@ -84,14 +84,14 @@ public:
     QPlainTextEditPrivate();
 
     void init(const QString &txt = QString());
-    void _q_repaintContents(const QRectF &contentsRect);
-    void _q_updatePlaceholderVisibility();
+    void repaintContents(const QRectF &contentsRect);
+    void updatePlaceholderVisibility();
 
     inline QPoint mapToContents(const QPoint &point) const
         { return QPoint(point.x() + horizontalOffset(), point.y() + verticalOffset()); }
 
-    void _q_adjustScrollbars();
-    void _q_verticalScrollbarActionTriggered(int action);
+    void adjustScrollbars();
+    void verticalScrollbarActionTriggered(int action);
     void ensureViewportLayouted();
     void relayoutDocument();
 
@@ -142,8 +142,8 @@ public:
 
     void append(const QString &text, Qt::TextFormat format = Qt::AutoText);
 
-    void _q_cursorPositionChanged();
-    void _q_modificationChanged(bool);
+    void cursorPositionChanged();
+    void modificationChanged(bool);
 };
 
 QT_END_NAMESPACE
