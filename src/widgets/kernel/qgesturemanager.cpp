@@ -651,7 +651,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
     for (GesturesPerWidget::const_iterator it = conflictedGestures.constBegin(),
         e = conflictedGestures.constEnd(); it != e; ++it) {
         QWidget *receiver = it.key();
-        QList<QGesture *> gestures = it.value();
+        const QList<QGesture *> &gestures = it.value();
         qCDebug(lcGestureManager) << "QGestureManager::deliverEvents: sending GestureOverride to"
                 << receiver
                 << "gestures:" << gestures;
@@ -659,7 +659,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
         event.t = QEvent::GestureOverride;
         // mark event and individual gestures as ignored
         event.ignore();
-        foreach(QGesture *g, gestures)
+        for (QGesture *g : gestures)
             event.setAccepted(g, false);
 
         QCoreApplication::sendEvent(receiver, &event);
