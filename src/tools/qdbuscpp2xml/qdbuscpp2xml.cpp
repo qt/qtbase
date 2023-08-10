@@ -431,12 +431,20 @@ int main(int argc, char **argv)
 
     QList<ClassDef> classes;
 
+    if (args.isEmpty())
+        args << u"-"_s;
     for (const auto &arg: std::as_const(args)) {
-        if (arg.startsWith(u'-'))
+        if (arg.startsWith(u'-') && arg.size() > 1)
             continue;
 
-        QFile f(arg);
-        if (!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QFile f;
+        if (arg == u'-') {
+            f.open(stdin, QIODevice::ReadOnly | QIODevice::Text);
+        } else {
+            f.setFileName(arg);
+            f.open(QIODevice::ReadOnly | QIODevice::Text);
+        }
+        if (!f.isOpen()) {
             fprintf(stderr, PROGRAMNAME ": could not open '%s': %s\n",
                     qPrintable(arg), qPrintable(f.errorString()));
             return 1;
