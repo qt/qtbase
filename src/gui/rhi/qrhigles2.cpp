@@ -492,19 +492,31 @@ QT_BEGIN_NAMESPACE
 #endif
 
 #ifndef GL_TEXTURE_1D
-#  define GL_TEXTURE_1D 0x0DE0
+#  define GL_TEXTURE_1D                   0x0DE0
 #endif
 
 #ifndef GL_TEXTURE_1D_ARRAY
-#  define GL_TEXTURE_1D_ARRAY 0x8C18
+#  define GL_TEXTURE_1D_ARRAY             0x8C18
 #endif
 
 #ifndef GL_HALF_FLOAT
-#define GL_HALF_FLOAT 0x140B
+#define GL_HALF_FLOAT                     0x140B
 #endif
 
 #ifndef GL_MAX_VERTEX_OUTPUT_COMPONENTS
 #define GL_MAX_VERTEX_OUTPUT_COMPONENTS   0x9122
+#endif
+
+#ifndef GL_TIMESTAMP
+#define GL_TIMESTAMP                      0x8E28
+#endif
+
+#ifndef GL_QUERY_RESULT
+#define GL_QUERY_RESULT                   0x8866
+#endif
+
+#ifndef GL_QUERY_RESULT_AVAILABLE
+#define GL_QUERY_RESULT_AVAILABLE         0x8867
 #endif
 
 /*!
@@ -1026,6 +1038,17 @@ bool QRhiGles2::create(QRhi::Flags flags)
                 ctx->getProcAddress(QByteArrayLiteral("glFramebufferTextureMultiviewOVR")));
     }
 
+    // Only do timestamp queries on OpenGL 3.3+.
+    caps.timestamps = !caps.gles && (caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 3));
+    if (caps.timestamps) {
+        glQueryCounter = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLuint, GLenum)>(
+            ctx->getProcAddress(QByteArrayLiteral("glQueryCounter")));
+        glGetQueryObjectui64v = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLuint, GLenum, quint64 *)>(
+            ctx->getProcAddress(QByteArrayLiteral("glGetQueryObjectui64v")));
+        if (!glQueryCounter || !glGetQueryObjectui64v)
+            caps.timestamps = false;
+    }
+
     nativeHandlesStruct.context = ctx;
 
     contextLost = false;
@@ -1040,6 +1063,11 @@ void QRhiGles2::destroy()
 
     ensureContext();
     executeDeferredReleases();
+
+    if (ofr.tsQueries[0]) {
+        f->glDeleteQueries(2, ofr.tsQueries);
+        ofr.tsQueries[0] = ofr.tsQueries[1] = 0;
+    }
 
     if (vao) {
         f->glDeleteVertexArrays(1, &vao);
@@ -1315,7 +1343,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::DebugMarkers:
         return false;
     case QRhi::Timestamps:
-        return false;
+        return caps.timestamps;
     case QRhi::Instancing:
         return caps.instancing;
     case QRhi::CustomInstanceStepRate:
@@ -1964,10 +1992,14 @@ const QRhiNativeHandles *QRhiGles2::nativeHandles(QRhiCommandBuffer *cb)
     return nullptr;
 }
 
-static inline void addBoundaryCommand(QGles2CommandBuffer *cbD, QGles2CommandBuffer::Command::Cmd type)
+static inline void addBoundaryCommand(QGles2CommandBuffer *cbD, QGles2CommandBuffer::Command::Cmd type, GLuint tsQuery = 0)
 {
     QGles2CommandBuffer::Command &cmd(cbD->commands.get());
     cmd.cmd = type;
+    if (type == QGles2CommandBuffer::Command::BeginFrame)
+        cmd.args.beginFrame.timestampQuery = tsQuery;
+    else if (type == QGles2CommandBuffer::Command::EndFrame)
+        cmd.args.endFrame.timestampQuery = tsQuery;
 }
 
 void QRhiGles2::beginExternal(QRhiCommandBuffer *cb)
@@ -2029,8 +2061,8 @@ void QRhiGles2::endExternal(QRhiCommandBuffer *cb)
 
 double QRhiGles2::lastCompletedGpuTime(QRhiCommandBuffer *cb)
 {
-    Q_UNUSED(cb);
-    return 0;
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
+    return cbD->lastGpuTime;
 }
 
 QRhi::FrameOpResult QRhiGles2::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags)
@@ -2046,7 +2078,17 @@ QRhi::FrameOpResult QRhiGles2::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     executeDeferredReleases();
     swapChainD->cb.resetState();
 
-    addBoundaryCommand(&swapChainD->cb, QGles2CommandBuffer::Command::BeginFrame);
+    if (swapChainD->timestamps.active[swapChainD->currentTimestampPairIndex]) {
+        double elapsedSec = 0;
+        if (swapChainD->timestamps.tryQueryTimestamps(swapChainD->currentTimestampPairIndex, this, &elapsedSec))
+            swapChainD->cb.lastGpuTime = elapsedSec;
+    }
+
+    GLuint tsStart = swapChainD->timestamps.query[swapChainD->currentTimestampPairIndex * 2];
+    GLuint tsEnd = swapChainD->timestamps.query[swapChainD->currentTimestampPairIndex * 2 + 1];
+    const bool recordTimestamps = tsStart && tsEnd && !swapChainD->timestamps.active[swapChainD->currentTimestampPairIndex];
+
+    addBoundaryCommand(&swapChainD->cb, QGles2CommandBuffer::Command::BeginFrame, recordTimestamps ? tsStart : 0);
 
     return QRhi::FrameOpSuccess;
 }
@@ -2056,7 +2098,15 @@ QRhi::FrameOpResult QRhiGles2::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     QGles2SwapChain *swapChainD = QRHI_RES(QGles2SwapChain, swapChain);
     Q_ASSERT(currentSwapChain == swapChainD);
 
-    addBoundaryCommand(&swapChainD->cb, QGles2CommandBuffer::Command::EndFrame);
+    GLuint tsStart = swapChainD->timestamps.query[swapChainD->currentTimestampPairIndex * 2];
+    GLuint tsEnd = swapChainD->timestamps.query[swapChainD->currentTimestampPairIndex * 2 + 1];
+    const bool recordTimestamps = tsStart && tsEnd && !swapChainD->timestamps.active[swapChainD->currentTimestampPairIndex];
+    if (recordTimestamps) {
+        swapChainD->timestamps.active[swapChainD->currentTimestampPairIndex] = true;
+        swapChainD->currentTimestampPairIndex = (swapChainD->currentTimestampPairIndex + 1) % QGles2SwapChainTimestamps::TIMESTAMP_PAIRS;
+    }
+
+    addBoundaryCommand(&swapChainD->cb, QGles2CommandBuffer::Command::EndFrame, recordTimestamps ? tsEnd : 0);
 
     if (!ensureContext(swapChainD->surface))
         return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
@@ -2088,7 +2138,12 @@ QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     executeDeferredReleases();
     ofr.cbWrapper.resetState();
 
-    addBoundaryCommand(&ofr.cbWrapper, QGles2CommandBuffer::Command::BeginFrame);
+    if (rhiFlags.testFlag(QRhi::EnableTimestamps) && caps.timestamps) {
+        if (!ofr.tsQueries[0])
+            f->glGenQueries(2, ofr.tsQueries);
+    }
+
+    addBoundaryCommand(&ofr.cbWrapper, QGles2CommandBuffer::Command::BeginFrame, ofr.tsQueries[0]);
     *cb = &ofr.cbWrapper;
 
     return QRhi::FrameOpSuccess;
@@ -2100,7 +2155,7 @@ QRhi::FrameOpResult QRhiGles2::endOffscreenFrame(QRhi::EndFrameFlags flags)
     Q_ASSERT(ofr.active);
     ofr.active = false;
 
-    addBoundaryCommand(&ofr.cbWrapper, QGles2CommandBuffer::Command::EndFrame);
+    addBoundaryCommand(&ofr.cbWrapper, QGles2CommandBuffer::Command::EndFrame, ofr.tsQueries[1]);
 
     if (!ensureContext())
         return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
@@ -2112,6 +2167,16 @@ QRhi::FrameOpResult QRhiGles2::endOffscreenFrame(QRhi::EndFrameFlags flags)
     // to a texture from a context and then consuming that texture from
     // another, sharing context.
     f->glFlush();
+
+    if (ofr.tsQueries[0]) {
+        quint64 timestamps[2];
+        glGetQueryObjectui64v(ofr.tsQueries[1], GL_QUERY_RESULT, &timestamps[1]);
+        glGetQueryObjectui64v(ofr.tsQueries[0], GL_QUERY_RESULT, &timestamps[0]);
+        if (timestamps[1] >= timestamps[0]) {
+            const quint64 nanoseconds = timestamps[1] - timestamps[0];
+            ofr.cbWrapper.lastGpuTime = nanoseconds / 1000000000.0; // seconds
+        }
+    }
 
     return QRhi::FrameOpSuccess;
 }
@@ -2867,6 +2932,8 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         const QGles2CommandBuffer::Command &cmd(*it);
         switch (cmd.cmd) {
         case QGles2CommandBuffer::Command::BeginFrame:
+            if (cmd.args.beginFrame.timestampQuery)
+                glQueryCounter(cmd.args.beginFrame.timestampQuery, GL_TIMESTAMP);
             if (caps.coreProfile) {
                 if (!vao)
                     f->glGenVertexArrays(1, &vao);
@@ -2893,6 +2960,8 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
 #endif
             if (vao)
                 f->glBindVertexArray(0);
+            if (cmd.args.endFrame.timestampQuery)
+                glQueryCounter(cmd.args.endFrame.timestampQuery, GL_TIMESTAMP);
             break;
         case QGles2CommandBuffer::Command::ResetFrame:
             if (vao)
@@ -6210,15 +6279,56 @@ bool QGles2SwapChain::createOrResize()
 
     frameCount = 0;
 
+    QRHI_RES_RHI(QRhiGles2);
+    if (rhiD->rhiFlags.testFlag(QRhi::EnableTimestamps) && rhiD->caps.timestamps)
+        timestamps.prepare(rhiD);
+
     // The only reason to register this fairly fake gl swapchain
     // object with no native resources underneath is to be able to
     // implement a safe destroy().
-    if (needsRegistration) {
-        QRHI_RES_RHI(QRhiGles2);
+    if (needsRegistration)
         rhiD->registerResource(this, false);
-    }
 
     return true;
+}
+
+void QGles2SwapChainTimestamps::prepare(QRhiGles2 *rhiD)
+{
+    rhiD->f->glGenQueries(TIMESTAMP_PAIRS * 2, query);
+}
+
+void QGles2SwapChainTimestamps::destroy(QRhiGles2 *rhiD)
+{
+    rhiD->f->glDeleteQueries(TIMESTAMP_PAIRS * 2, query);
+}
+
+bool QGles2SwapChainTimestamps::tryQueryTimestamps(int pairIndex, QRhiGles2 *rhiD, double *elapsedSec)
+{
+    if (!active[pairIndex])
+        return false;
+
+    GLuint tsStart = query[pairIndex * 2];
+    GLuint tsEnd = query[pairIndex * 2 + 1];
+
+    GLuint ready = GL_FALSE;
+    rhiD->f->glGetQueryObjectuiv(tsEnd, GL_QUERY_RESULT_AVAILABLE, &ready);
+
+    if (!ready)
+        return false;
+
+    bool result = false;
+    quint64 timestamps[2];
+    rhiD->glGetQueryObjectui64v(tsStart, GL_QUERY_RESULT, &timestamps[0]);
+    rhiD->glGetQueryObjectui64v(tsEnd, GL_QUERY_RESULT, &timestamps[1]);
+
+    if (timestamps[1] >= timestamps[0]) {
+        const quint64 nanoseconds = timestamps[1] - timestamps[0];
+        *elapsedSec = nanoseconds / 1000000000.0;
+        result = true;
+    }
+
+    active[pairIndex] = false;
+    return result;
 }
 
 QT_END_NAMESPACE

@@ -27,6 +27,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpenGLExtensions;
+class QRhiGles2;
 
 struct QGles2Buffer : public QRhiBuffer
 {
@@ -344,6 +345,12 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         // QRhiTexture/Buffer/etc. pointers).
         union Args {
             struct {
+                GLuint timestampQuery;
+            } beginFrame;
+            struct {
+                GLuint timestampQuery;
+            } endFrame;
+            struct {
                 float x, y, w, h;
                 float d0, d1;
             } viewport;
@@ -544,6 +551,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
 
     PassType recordingPass;
     bool passNeedsResourceTracking;
+    double lastGpuTime = 0;
     QRhiRenderTarget *currentTarget;
     QRhiGraphicsPipeline *currentGraphicsPipeline;
     QRhiComputePipeline *currentComputePipeline;
@@ -639,6 +647,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     void resetState() {
         recordingPass = NoPass;
         passNeedsResourceTracking = true;
+        // do not zero lastGpuTime
         currentTarget = nullptr;
         resetCommands();
         resetCachedState();
@@ -700,6 +709,18 @@ inline bool operator!=(const QGles2CommandBuffer::GraphicsPassState::Blend &a,
     return !(a == b);
 }
 
+struct QGles2SwapChainTimestamps
+{
+    static const int TIMESTAMP_PAIRS = 2;
+
+    bool active[TIMESTAMP_PAIRS] = {};
+    GLuint query[TIMESTAMP_PAIRS * 2] = {};
+
+    void prepare(QRhiGles2 *rhiD);
+    void destroy(QRhiGles2 *rhiD);
+    bool tryQueryTimestamps(int pairIndex, QRhiGles2 *rhiD, double *elapsedSec);
+};
+
 struct QGles2SwapChain : public QRhiSwapChain
 {
     QGles2SwapChain(QRhiImplementation *rhi);
@@ -725,6 +746,8 @@ struct QGles2SwapChain : public QRhiSwapChain
     QGles2SwapChainRenderTarget rtRight;
     QGles2CommandBuffer cb;
     int frameCount = 0;
+    QGles2SwapChainTimestamps timestamps;
+    int currentTimestampPairIndex = 0;
 };
 
 class QRhiGles2 : public QRhiImplementation
@@ -924,6 +947,8 @@ public:
                                                     GLint) = nullptr;
     void(QOPENGLF_APIENTRYP glFramebufferTextureMultiviewOVR)(GLenum, GLenum, GLuint, GLint,
                                                               GLint, GLsizei) = nullptr;
+    void (QOPENGLF_APIENTRYP glQueryCounter)(GLuint, GLenum) = nullptr;
+    void (QOPENGLF_APIENTRYP glGetQueryObjectui64v)(GLuint, GLenum, quint64 *) = nullptr;
 
     uint vao = 0;
     struct Caps {
@@ -978,7 +1003,8 @@ public:
               texture1D(false),
               hasDrawBuffersFunc(false),
               halfAttributes(false),
-              multiView(false)
+              multiView(false),
+              timestamps(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1033,6 +1059,7 @@ public:
         uint hasDrawBuffersFunc : 1;
         uint halfAttributes : 1;
         uint multiView : 1;
+        uint timestamps : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;
@@ -1075,6 +1102,7 @@ public:
         OffscreenFrame(QRhiImplementation *rhi) : cbWrapper(rhi) { }
         bool active = false;
         QGles2CommandBuffer cbWrapper;
+        GLuint tsQueries[2] = {};
     } ofr;
 
     QHash<QRhiShaderStage, uint> m_shaderCache;

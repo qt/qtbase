@@ -702,9 +702,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     QRhiCommandBuffer::debugMarkBegin()) are supported.
 
     \value Timestamps Indicates that command buffer timestamps are supported.
-    Relevant for QRhiCommandBuffer::lastCompletedGpuTime(). Can be expected to
-    be supported on Metal, Vulkan, and Direct 3D, assuming the underlying
-    implementation supports timestamp queries or similar.
+    Relevant for QRhiCommandBuffer::lastCompletedGpuTime(). This can be
+    expected to be supported on Metal, Vulkan, Direct 3D 11 and 12, and OpenGL
+    contexts of version 3.3 or newer. However, with some of these APIs support
+    for timestamp queries is technically optional, and therefore it cannot be
+    guaranteed that this feature is always supported with every implementation
+    of them.
 
     \value Instancing Indicates that instanced drawing is supported. In
     practice this feature will be unsupported with OpenGL ES 2.0 and OpenGL
