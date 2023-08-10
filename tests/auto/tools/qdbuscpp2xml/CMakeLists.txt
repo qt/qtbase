@@ -16,7 +16,7 @@ qt_internal_add_test(tst_qdbuscpp2xml
         test1.h
         tst_qdbuscpp2xml.cpp
     LIBRARIES
-        Qt::DBus
+        Qt::DBusPrivate
 )
 
 # Resources:
