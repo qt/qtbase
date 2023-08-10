@@ -1143,6 +1143,10 @@ void tst_QXmlStream::readNextStartElement() const
     }
 
     QCOMPARE(amountOfB, 2);
+
+    // well-formed document end follows
+    QVERIFY(!reader.readNextStartElement());
+    QCOMPARE(reader.error(), QXmlStreamReader::NoError);
 }
 
 void tst_QXmlStream::readElementText() const
