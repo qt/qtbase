@@ -680,7 +680,7 @@ QXmlStreamReader::TokenType QXmlStreamReader::tokenType() const
 bool QXmlStreamReader::readNextStartElement()
 {
     while (readNext() != Invalid) {
-        if (isEndElement())
+        if (isEndElement() || isEndDocument())
             return false;
         else if (isStartElement())
             return true;
