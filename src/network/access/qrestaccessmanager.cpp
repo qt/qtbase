@@ -566,6 +566,28 @@ std::chrono::milliseconds QRestAccessManager::transferTimeout() const
     return d->qnam->transferTimeoutAsDuration();
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+/*!
+    \fn QDebug QRestAccessManager::operator<<(QDebug debug,
+                                             const QRestAccessManager &manager)
+
+    Writes \a manager into \a debug stream.
+
+    \sa {Debugging Techniques}
+*/
+QDebug operator<<(QDebug debug, const QRestAccessManager &manager)
+{
+    const QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
+
+    debug << "QRestAccessManager(deletesRepliesOnFinished = " << manager.deletesRepliesOnFinished()
+          << ", transferTimeout = " << manager.transferTimeout()
+          << ", active requests = " << manager.d_func()->activeRequests.size()
+          << ")";
+    return debug;
+}
+#endif // QT_NO_DEBUG_STREAM
+
 /*!
     Returns the underlying QNetworkAccessManager instance. The instance
     can be used for accessing less-frequently used features and configurations.

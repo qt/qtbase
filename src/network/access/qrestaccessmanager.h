@@ -10,6 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
 class QRestReply;
 
 #define QREST_METHOD_WITH_DATA(METHOD, DATA)                                                     \
@@ -103,6 +104,9 @@ Q_SIGNALS:
     void requestFinished(QRestReply *reply);
 
 private:
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QRestAccessManager &manager);
+#endif
     Q_DECLARE_PRIVATE(QRestAccessManager)
     Q_DISABLE_COPY(QRestAccessManager)
 };
