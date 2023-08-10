@@ -1121,7 +1121,11 @@ void QAbstractItemView::reset()
 {
     Q_D(QAbstractItemView);
     d->delayedReset.stop(); //make sure we stop the timer
-    foreach (const QEditorInfo &info, d->indexEditorHash) {
+    // Taking a copy because releaseEditor() eventurally calls deleteLater() on the
+    // editor, which calls QCoreApplication::postEvent(), the latter may invoke unknown
+    // code that may modify d->indexEditorHash.
+    const auto copy = d->indexEditorHash;
+    for (const auto &[index, info] : copy.asKeyValueRange()) {
         if (info.widget)
             d->releaseEditor(info.widget.data(), d->indexForEditor(info.widget.data()));
     }
