@@ -5,18 +5,59 @@
 # FindMimer
 # ---------
 # Try to locate the Mimer SQL client library
+if(NOT DEFINED MimerSQL_ROOT)
+    if(DEFINED ENV{MIMERSQL_DEV_ROOT})
+        set(MimerSQL_ROOT "$ENV{MIMERSQL_DEV_ROOT}")
+    endif()
+endif()
 
-find_package(PkgConfig QUIET)
-pkg_check_modules(PC_Mimer QUIET mimctrl)
+if(NOT DEFINED MimerSQL_ROOT)
+    find_package(PkgConfig QUIET)
+endif()
+if(PkgConfig_FOUND AND NOT DEFINED MimerSQL_ROOT)
+    pkg_check_modules(PC_Mimer QUIET mimcontrol)
+    set(MimerSQL_include_dir_hints "${PC_MimerSQL_INCLUDEDIR}")
+    set(MimerSQL_library_hints "${PC_MimerSQL_LIBDIR}")
+else()
+    if(DEFINED MimerSQL_ROOT)
+        if(WIN32)
+            set(MimerSQL_include_dir_hints "${MimerSQL_ROOT}\\include")
+            if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86|X86)$")
+                set(MimerSQL_library_hints "${MimerSQL_ROOT}\\lib\\x86")
+             elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(amd64|AMD64)$")
+                set(MimerSQL_library_hints "${MimerSQL_ROOT}\\lib\\amd64")
+            else()
+                set(MimerSQL_library_hints "")
+            endif()
+        else()
+            set(MimerSQL_include_dir_hints "${MimerSQL_ROOT}/include")
+            set(MimerSQL_library_hints "${MimerSQL_ROOT}/lib")
+        endif()
+    else()
+        if(WIN32)
+            set(MimerSQL_include_dir_hints "C:\\MimerSQLDev\\include")
+            if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86|X86)$")
+                set(MimerSQL_library_hints "C:\\MimerSQLDev\\lib\\x86")
+            elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(amd64|AMD64)$")
+                set(MimerSQL_library_hints "C:\\MimerSQLDev\\lib\\amd64")
+            else()
+                set(MimerSQL_library_hints "")
+            endif()
+        else()
+            set(MimerSQL_include_dir_hints "")
+            set(MimerSQL_library_hints "")
+        endif()
+    endif()
+endif()
 
 find_path(Mimer_INCLUDE_DIR
     NAMES mimerapi.h
-    HINTS ${PC_Mimer_INCLUDEDIR})
+    HINTS ${MimerSQL_include_dir_hints})
 
 if(WIN32)
-  if("$ENV{PROCESSOR_ARCHITECTURE}" STREQUAL "x86")
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86|X86)$")
     set(MIMER_LIBS_NAMES mimapi32)
-  else()
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(amd64|AMD64)$")
     set(MIMER_LIBS_NAMES mimapi64)
   endif()
 else()
@@ -25,7 +66,7 @@ endif()
 
 find_library(Mimer_LIBRARIES
     NAMES ${MIMER_LIBS_NAMES}
-    HINTS ${PC_Mimer_LIBDIR})
+    HINTS ${MimerSQL_library_hints})
 
 include(FindPackageHandleStandardArgs)
 
