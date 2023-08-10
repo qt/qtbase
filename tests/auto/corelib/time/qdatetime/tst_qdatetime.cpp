@@ -10,7 +10,14 @@
 #include <private/qtenvironmentvariables_p.h> // for qTzSet(), qTzName()
 
 #ifdef Q_OS_WIN
-#   include <qt_windows.h>
+#  include <qt_windows.h>
+#  if !QT_CONFIG(icu)
+// The native MS back-end for time-zones lacks info about historic transitions:
+#    define INADEQUATE_TZ_DATA
+#  endif
+#endif
+#ifdef Q_OS_ANDROID // Also seems to lack full-day zone transitions:
+#  define INADEQUATE_TZ_DATA
 #endif
 
 using namespace Qt::StringLiterals;
@@ -1289,7 +1296,50 @@ void tst_QDateTime::addDays()
         QCOMPARE(dt2.timeSpec(), Qt::TimeZone);
         QCOMPARE(dt2.timeZone(), cet);
     }
-#endif
+#  ifndef INADEQUATE_TZ_DATA
+    if (const QTimeZone lint("Pacific/Kiritimati"); lint.isValid()) {
+        // Line Islands Time skipped Sat 1994-12-31:
+        dt1 = QDateTime(QDate(1994, 12, 30), QTime(12, 0), lint);
+        dt2 = QDateTime(QDate(1995, 1, 1), QTime(12, 0), lint);
+        // Trying to step into the hole gets the other side:
+        QCOMPARE(dt1.addDays(1), dt2);
+        QCOMPARE(dt2.addDays(-1), dt1);
+        // But the other side is in fact two days away:
+        QCOMPARE(dt1.addDays(2), dt2);
+        QCOMPARE(dt2.addDays(-2), dt1);
+        QCOMPARE(dt1.daysTo(dt2), 2);
+    }
+#    ifndef Q_OS_DARWIN
+    if (const QTimeZone alaska("America/Anchorage"); alaska.isValid()) {
+        // On Julian date 1867, Sat Oct 7 (at 14:31 local solar mean time for
+        // Anchorage, 15:30 LMT in Sitka, which hosted the transfer ceremony)
+        // Russia sold Alaska to the USA, which changed the calendar to
+        // Gregorian, hence the date to Fri Oct 18. Compare addSecs:Alaska-Day.
+        // Friday evening and Saturday morning were repeated, with different dates.
+        // Friday noon, as described by the Russians:
+        dt1 = QDateTime(QDate(1867, 10, 6, QCalendar(QCalendar::System::Julian)),
+                        QTime(12, 0), alaska);
+        // Sunday noon, as described by the Americans:
+        dt2 = QDateTime(QDate(1867, 10, 20), QTime(12, 0), alaska);
+        // Three elapsed days, but daysTo() and addDays only see two:
+        QCOMPARE(dt1.addDays(2), dt2);
+        QCOMPARE(dt2.addDays(-2), dt1);
+        QCOMPARE(dt1.daysTo(dt2), 2);
+        // Stepping into the duplicated day (Julian 7th, Gregorian 19th) gets
+        // the nearer side, with the same nominal date (and time):
+        QCOMPARE(dt1.addDays(1).date(), dt2.addDays(-1).date());
+        QCOMPARE(dt1.addDays(1).time(), dt2.addDays(-1).time());
+        QCOMPARE(dt1.addDays(1).daysTo(dt2.addDays(-1)), 0);
+        // Yet they differ by a day:
+        QCOMPARE_NE(dt1.addDays(1), dt2.addDays(-1));
+        QCOMPARE(dt1.addDays(1).secsTo(dt2.addDays(-1)), 24 * 60 * 60);
+        // Stepping from one duplicate one day towards the other jumps it:
+        QCOMPARE(dt1, dt2.addDays(-1).addDays(-1));
+        QCOMPARE(dt1.addDays(1).addDays(1), dt2);
+    }
+#    endif // Darwin
+#  endif // inadequate zone data
+#endif // timezone
 
     // Baja Mexico has a transition at the epoch, see fromStringDateFormat_data().
     if (QDateTime(QDate(1969, 12, 30), QTime(0, 0)).secsTo(
@@ -1578,6 +1628,43 @@ void tst_QDateTime::addMSecs_data()
     QTest::newRow("to-first")
         << QDateTime::fromSecsSinceEpoch(1 - maxSeconds, UTC) << qint64(-1)
         << QDateTime::fromSecsSinceEpoch(-maxSeconds, UTC);
+
+#if QT_CONFIG(timezone)
+    if (const QTimeZone cet("Europe/Oslo"); cet.isValid()) {
+        QTest::newRow("CET-spring-forward")
+            << QDateTime(QDate(2023, 3, 26), QTime(1, 30), cet) << qint64(60 * 60)
+            << QDateTime(QDate(2023, 3, 26), QTime(3, 30), cet);
+        QTest::newRow("CET-fall-back")
+            << QDateTime(QDate(2023, 10, 29), QTime(1, 30), cet) << qint64(3 * 60 * 60)
+            << QDateTime(QDate(2023, 10, 29), QTime(3, 30), cet);
+    }
+#  ifndef INADEQUATE_TZ_DATA
+    const QTimeZone lint("Pacific/Kiritimati");
+    if (lint.isValid()) {
+        // Line Islands Time skipped Sat 1994-12-31:
+        QTest::newRow("Kiritimati-day-off")
+            << QDateTime(QDate(1994, 12, 30), QTime(23, 30), lint) << qint64(60 * 60)
+            << QDateTime(QDate(1995, 1, 1), QTime(0, 30), lint);
+    }
+#    ifndef Q_OS_DARWIN
+    if (const QTimeZone alaska("America/Anchorage"); alaska.isValid()) {
+        // On Julian date 1867, Sat Oct 7 (at 14:31 local solar mean time for
+        // Anchorage, 15:30 LMT in Sitka, which hosted the transfer ceremony)
+        // Russia sold Alaska to the USA, which changed the calendar to
+        // Gregorian, hence the date to Fri Oct 18. Contrast addDays().
+        const QDate sat(1867, 10, 19);
+        Q_ASSERT(sat == QDate(1867, 10, 7, QCalendar(QCalendar::System::Julian)));
+        // At the start of the day, it was Sat 7th; by evening it was Fri 18th;
+        // then the next day was Sat 19th.
+        QTest::newRow("Alaska-Day")
+            // The actual morning of the hand-over:
+            << QDateTime(sat, QTime(6, 0), alaska) << qint64(12 * 60 * 60)
+            // The evening of the same day.
+            << QDateTime(sat, QTime(18, 0), alaska).addDays(-1);
+    }
+#    endif // Darwin
+#  endif // inadequate zone data
+#endif // timezone
 }
 
 void tst_QDateTime::addSecs_data()
@@ -1621,6 +1708,7 @@ void tst_QDateTime::addSecs()
         QCOMPARE(result - std::chrono::seconds(nsecs), dt);
         test3 -= std::chrono::seconds(nsecs);
         QCOMPARE(test3, dt);
+        QCOMPARE(dt.secsTo(result), nsecs);
     }
 }
 

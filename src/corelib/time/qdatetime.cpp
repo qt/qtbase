@@ -3533,7 +3533,7 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     possible. On Windows, where the system doesn't support historical timezone
     data, historical accuracy is not maintained with respect to timezone
     transitions, notably including DST. However, building Qt with the ICU
-    library will equipe QTimeZone with the same timezone database as is used on
+    library will equip QTimeZone with the same timezone database as is used on
     Unix.
 
     \section2 Timezone transitions
@@ -3597,6 +3597,25 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     and may be incomplete or, for past times, historically
     inaccurate. Furthermore, for future dates, the local time zone's offsets and
     DST rules may change before that date comes around.
+
+    \section3 Whole day transitions
+
+    A small number of zones have skipped or repeated entire days as part of
+    moving The International Date Line across themselves. For these, daysTo()
+    will be unaware of the duplication or gap, simply using the difference in
+    calendar date; in contrast, msecsTo() and secsTo() know the true time
+    interval. Likewise, addMSecs() and addSecs() correspond directly to elapsed
+    time, where addDays(), addMonths() and addYears() follow the nominal
+    calendar, aside from where landing in a gap or duplication requires
+    resolving an ambiguity or invalidity due to a duplication or omission.
+
+    \note Days "lost" during a change of calendar, such as from Julian to
+    Gregorian, do not affect QDateTime. Although the two calendars describe
+    dates differently, the successive days across the change are described by
+    consecutive QDate instances, each one day later than the previous, as
+    described by either calendar or by their toJulianDay() values. In contrast,
+    a zone skipping or duplicating a day is changing its description of \e time,
+    not date, for all that it does so by a whole 24 hours.
 
     \section2 Offsets From UTC
 
