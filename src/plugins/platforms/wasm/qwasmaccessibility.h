@@ -48,6 +48,7 @@ private:
     void setHtmlElementGeometry(emscripten::val element, QRect geometry);
     void setHtmlElementTextName(QAccessibleInterface *iface);
     void setHtmlElementTextNameLE(QAccessibleInterface *iface);
+    void setHtmlElementDescription(QAccessibleInterface *iface);
 
     void handleStaticTextUpdate(QAccessibleEvent *event);
     void handleButtonUpdate(QAccessibleEvent *event);
