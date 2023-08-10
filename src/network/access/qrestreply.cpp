@@ -367,6 +367,60 @@ QRestReplyPrivate::QRestReplyPrivate()
 QRestReplyPrivate::~QRestReplyPrivate()
     = default;
 
+#ifndef QT_NO_DEBUG_STREAM
+static QLatin1StringView operationName(QNetworkAccessManager::Operation operation)
+{
+    switch (operation) {
+    case QNetworkAccessManager::Operation::GetOperation:
+        return "GET"_L1;
+    case QNetworkAccessManager::Operation::HeadOperation:
+        return "HEAD"_L1;
+    case QNetworkAccessManager::Operation::PostOperation:
+        return "POST"_L1;
+    case QNetworkAccessManager::Operation::PutOperation:
+        return "PUT"_L1;
+    case QNetworkAccessManager::Operation::DeleteOperation:
+        return "DELETE"_L1;
+    case QNetworkAccessManager::Operation::CustomOperation:
+        return "CUSTOM"_L1;
+    case QNetworkAccessManager::Operation::UnknownOperation:
+        return "UNKNOWN"_L1;
+    }
+    Q_UNREACHABLE_RETURN({});
+}
+
+/*!
+    \fn QDebug QRestReply::operator<<(QDebug debug, const QRestReply *reply)
+
+    Writes the \a reply into the \a debug object for debugging purposes.
+
+    \sa {Debugging Techniques}
+*/
+QDebug operator<<(QDebug debug, const QRestReply *reply)
+{
+    const QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
+    if (!reply) {
+        debug << "QRestReply(nullptr)";
+        return debug;
+    }
+
+    debug << "QRestReply(isSuccess = " << reply->isSuccess()
+          << ", httpStatus = " << reply->httpStatus()
+          << ", isHttpStatusSuccess = " << reply->isHttpStatusSuccess()
+          << ", hasError = " << reply->hasError()
+          << ", errorString = " << reply->errorString()
+          << ", error = " << reply->error()
+          << ", isFinished = " << reply->isFinished()
+          << ", bytesAvailable = " << reply->bytesAvailable()
+          << ", url " << reply->networkReply()->url()
+          << ", operation = " << operationName(reply->networkReply()->operation())
+          << ", reply headers = " << reply->networkReply()->rawHeaderPairs()
+          << ")";
+    return debug;
+}
+#endif // QT_NO_DEBUG_STREAM
+
 QByteArray QRestReplyPrivate::contentCharset() const
 {
     // Content-type consists of mimetype and optional parameters, of which one may be 'charset'

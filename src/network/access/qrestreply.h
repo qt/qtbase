@@ -8,6 +8,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
 class QRestReplyPrivate;
 class Q_NETWORK_EXPORT QRestReply : public QObject
 {
@@ -49,6 +50,9 @@ Q_SIGNALS:
 
 private:
     friend class QRestAccessManagerPrivate;
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QRestReply *reply);
+#endif
     explicit QRestReply(QNetworkReply *reply, QObject *parent = nullptr);
     Q_DECLARE_PRIVATE(QRestReply)
     Q_DISABLE_COPY_MOVE(QRestReply)
