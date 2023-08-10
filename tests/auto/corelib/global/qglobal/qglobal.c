@@ -14,6 +14,11 @@
  * everything works.
  */
 
+#if defined(Q_OS_VXWORKS) && !defined(thread_local)
+// threads.h forgot to define this (should be fixed for version 23.11)
+#  define thread_local _Thread_local
+#endif
+
 /* Types and Q_UNUSED */
 void tst_GlobalTypes()
 {
