@@ -2,8 +2,6 @@
 // Copyright (C) 2017 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 #include <QTemporaryFile>
 #if QT_CONFIG(process)
@@ -1867,9 +1865,9 @@ void tst_QDir::searchPaths()
     }
 
     for (int i = 0; i < searchPathPrefixList.size(); ++i) {
-        foreach (QString path, searchPathsList.at(i).split(",")) {
+        const auto parts = searchPathsList.at(i).split(",");
+        for (const QString &path : parts)
             QDir::addSearchPath(searchPathPrefixList.at(i), path);
-        }
     }
     for (int i = 0; i < searchPathPrefixList.size(); ++i) {
         QCOMPARE(QDir::searchPaths(searchPathPrefixList.at(i)), searchPathsList.at(i).split(","));
@@ -2195,7 +2193,7 @@ void tst_QDir::match()
 
 void tst_QDir::drives()
 {
-    QFileInfoList list(QDir::drives());
+    const QFileInfoList list(QDir::drives());
 #if defined(Q_OS_WIN)
     QVERIFY(list.count() >= 1); //system
     QLatin1Char systemdrive('c');
@@ -2203,7 +2201,7 @@ void tst_QDir::drives()
 #if defined(Q_OS_WIN)
     QVERIFY(list.count() <= 26);
     bool foundsystem = false;
-    foreach (QFileInfo fi, list) {
+    for (const QFileInfo &fi : list) {
         QCOMPARE(fi.absolutePath().size(), 3); //"x:/"
         QCOMPARE(fi.absolutePath().at(1), QChar(QLatin1Char(':')));
         QCOMPARE(fi.absolutePath().at(2), QChar(QLatin1Char('/')));
@@ -2327,9 +2325,9 @@ void tst_QDir::isRelative_data()
     QTest::newRow("homepath") << QDir::homePath() << false;
     QTest::newRow("temppath") << QDir::tempPath() << false;
     QTest::newRow("rootpath") << QDir::rootPath() << false;
-    foreach (QFileInfo root, QDir::drives()) {
+    const auto drives = QDir::drives();
+    for (const QFileInfo &root : drives)
         QTest::newRow(root.absolutePath().toLocal8Bit()) << root.absolutePath() << false;
-    }
 
     QTest::newRow("resource") << ":/prefix" << false;
 }
