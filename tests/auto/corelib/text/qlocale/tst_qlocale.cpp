@@ -201,7 +201,8 @@ void tst_QLocale::initTestCase()
 
     // Get an environment free of any locale-related variables
     cleanEnv.clear();
-    foreach (QString const& entry, QProcess::systemEnvironment()) {
+    const QStringList sysenv = QProcess::systemEnvironment();
+    for (const QString &entry : sysenv) {
         if (entry.startsWith("LANG=") || entry.startsWith("LC_") || entry.startsWith("LANGUAGE="))
             continue;
         cleanEnv << entry;
