@@ -717,18 +717,13 @@ void tst_QDir::compare()
     QVERIFY(QDir("../") == QDir(QDir::currentPath() + "/.."));
 }
 
-static QStringList filterLinks(const QStringList &list)
+static QStringList filterLinks(QStringList &&list)
 {
-#ifndef Q_NO_SYMLINKS
-    return list;
-#else
-    QStringList result;
-    foreach (QString str, list) {
-        if (!str.endsWith(QLatin1String(".lnk")))
-            result.append(str);
-    }
-    return result;
+#ifdef Q_NO_SYMLINKS
+    auto isDotLnk = [](const auto &s) { return s.endsWith(".lnk"_L1); };
+    list.removeIf(isDotLnk);
 #endif
+    return std::move(list);
 }
 
 void tst_QDir::entryList_data()
