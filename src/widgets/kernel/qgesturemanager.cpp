@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include "private/qgesturemanager_p.h"
 #include "private/qstandardgestures_p.h"
 #include "private/qwidget_p.h"
@@ -332,9 +330,9 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
         // set the proper gesture state on each gesture
         for (QGesture *gesture : startedGestures)
             gesture->d_func()->state = Qt::GestureStarted;
-        foreach (QGesture *gesture, triggeredGestures)
+        for (QGesture *gesture : std::as_const(triggeredGestures))
             gesture->d_func()->state = Qt::GestureUpdated;
-        foreach (QGesture *gesture, finishedGestures)
+        for (QGesture *gesture : std::as_const(finishedGestures))
             gesture->d_func()->state = Qt::GestureFinished;
         for (QGesture *gesture : canceledGestures)
             gesture->d_func()->state = Qt::GestureCanceled;
