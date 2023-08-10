@@ -356,6 +356,8 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
 
     struct Command {
         enum Cmd {
+            BeginFrame,
+            EndFrame,
             ResetShaderResources,
             SetRenderTarget,
             Clear,
@@ -385,6 +387,15 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         // QRhi*/QD3D11* references should be kept at minimum (so no
         // QRhiTexture/Buffer/etc. pointers).
         union Args {
+            struct {
+                ID3D11Query *tsQuery;
+                ID3D11Query *tsDisjointQuery;
+                QD3D11RenderTargetData *swapchainData;
+            } beginFrame;
+            struct {
+                ID3D11Query *tsQuery;
+                ID3D11Query *tsDisjointQuery;
+            } endFrame;
             struct {
                 QRhiRenderTarget *rt;
             } setRenderTarget;
@@ -556,17 +567,15 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     }
 };
 
-static const int QD3D11_SWAPCHAIN_BUFFER_COUNT = 2;
-
-struct QD3D11Timestamps
+struct QD3D11SwapChainTimestamps
 {
-    static const int MAX_TIMESTAMP_PAIRS = QD3D11_SWAPCHAIN_BUFFER_COUNT;
-    bool active[MAX_TIMESTAMP_PAIRS] = {};
-    ID3D11Query *disjointQuery[MAX_TIMESTAMP_PAIRS] = {};
-    ID3D11Query *query[MAX_TIMESTAMP_PAIRS * 2] = {};
-    int pairCount = 0;
+    static const int TIMESTAMP_PAIRS = 2;
 
-    bool prepare(int pairCount, QRhiD3D11 *rhiD);
+    bool active[TIMESTAMP_PAIRS] = {};
+    ID3D11Query *disjointQuery[TIMESTAMP_PAIRS] = {};
+    ID3D11Query *query[TIMESTAMP_PAIRS * 2] = {};
+
+    bool prepare(QRhiD3D11 *rhiD);
     void destroy();
     bool tryQueryTimestamps(int idx, ID3D11DeviceContext *context, double *elapsedSec);
 };
@@ -604,7 +613,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
     ID3D11Texture2D *backBufferTex;
     ID3D11RenderTargetView *backBufferRtv;
     ID3D11RenderTargetView *backBufferRtvRight = nullptr;
-    static const int BUFFER_COUNT = QD3D11_SWAPCHAIN_BUFFER_COUNT;
+    static const int BUFFER_COUNT = 2;
     ID3D11Texture2D *msaaTex[BUFFER_COUNT];
     ID3D11RenderTargetView *msaaRtv[BUFFER_COUNT];
     DXGI_SAMPLE_DESC sampleDesc;
@@ -614,7 +623,8 @@ struct QD3D11SwapChain : public QRhiSwapChain
     UINT swapInterval = 1;
     IDCompositionTarget *dcompTarget = nullptr;
     IDCompositionVisual *dcompVisual = nullptr;
-    QD3D11Timestamps timestamps;
+    QD3D11SwapChainTimestamps timestamps;
+    int currentTimestampPairIndex = 0;
 };
 
 class QRhiD3D11 : public QRhiImplementation
@@ -739,7 +749,7 @@ public:
                              const uint *dynOfsPairs, int dynOfsPairCount,
                              bool offsetOnlyChange);
     void resetShaderResources();
-    void executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *timestampSwapChain = nullptr);
+    void executeCommandBuffer(QD3D11CommandBuffer *cbD);
     DXGI_SAMPLE_DESC effectiveSampleCount(int sampleCount) const;
     void finishActiveReadbacks();
     void reportLiveObjects(ID3D11Device *device);
@@ -781,8 +791,8 @@ public:
         OffscreenFrame(QRhiImplementation *rhi) : cbWrapper(rhi) { }
         bool active = false;
         QD3D11CommandBuffer cbWrapper;
-        QD3D11Timestamps timestamps;
-        int timestampIdx = 0;
+        ID3D11Query *tsQueries[2] = {};
+        ID3D11Query *tsDisjointQuery = nullptr;
     } ofr;
 
     struct TextureReadback {
