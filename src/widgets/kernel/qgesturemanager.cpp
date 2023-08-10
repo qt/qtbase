@@ -100,8 +100,7 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
 {
     QList<QGestureRecognizer *> list = m_recognizers.values(type);
     m_recognizers.remove(type);
-    foreach (QGesture *g, m_gestureToRecognizer.keys()) {
-        QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g);
+    for (const auto &[g, recognizer] : std::as_const(m_gestureToRecognizer).asKeyValueRange()) {
         if (list.contains(recognizer)) {
             m_deletedRecognizers.insert(g, recognizer);
         }
