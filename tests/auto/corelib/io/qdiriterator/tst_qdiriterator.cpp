@@ -1,8 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 
 #include <qcoreapplication.h>
@@ -194,10 +192,10 @@ void tst_QDirIterator::initTestCase()
 
 void tst_QDirIterator::cleanupTestCase()
 {
-    Q_FOREACH(QString fileName, createdFiles)
+    for (const QString &fileName : std::as_const(createdFiles))
         QFile::remove(fileName);
 
-    Q_FOREACH(QString dirName, createdDirectories)
+    for (const QString &dirName : std::as_const(createdDirectories))
         currentDir.rmdir(dirName);
 }
 
@@ -325,7 +323,7 @@ void tst_QDirIterator::iterateRelativeDirectory()
     QFETCH(QDirIterator::IteratorFlags, flags);
     QFETCH(QDir::Filters, filters);
     QFETCH(QStringList, nameFilters);
-    QFETCH(QStringList, entries);
+    QFETCH(const QStringList, entries);
 
     QDirIterator it(dirName, nameFilters, filters, flags);
     QStringList list;
@@ -353,7 +351,7 @@ void tst_QDirIterator::iterateRelativeDirectory()
     list.sort();
 
     QStringList sortedEntries;
-    foreach(QString item, entries)
+    for (const QString &item : entries)
         sortedEntries.append(QFileInfo(item).canonicalFilePath());
     sortedEntries.sort();
 
