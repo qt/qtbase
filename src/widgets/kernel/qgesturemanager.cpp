@@ -282,18 +282,18 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
     }
     if (!triggeredGestures.isEmpty() || !finishedGestures.isEmpty()
         || !newMaybeGestures.isEmpty() || !notGestures.isEmpty()) {
-        QSet<QGesture *> startedGestures = triggeredGestures - m_activeGestures;
+        const QSet<QGesture *> startedGestures = triggeredGestures - m_activeGestures;
         triggeredGestures &= m_activeGestures;
 
         // check if a running gesture switched back to maybe state
-        QSet<QGesture *> activeToMaybeGestures = m_activeGestures & newMaybeGestures;
+        const QSet<QGesture *> activeToMaybeGestures = m_activeGestures & newMaybeGestures;
 
         // check if a maybe gesture switched to canceled - reset it but don't send an event
         QSet<QGesture *> maybeToCanceledGestures = m_maybeGestures & notGestures;
 
         // check if a running gesture switched back to not gesture state,
         // i.e. were canceled
-        QSet<QGesture *> canceledGestures = m_activeGestures & notGestures;
+        const QSet<QGesture *> canceledGestures = m_activeGestures & notGestures;
 
         // new gestures in maybe state
         m_maybeGestures += newMaybeGestures;
@@ -311,11 +311,11 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
         Q_ASSERT((finishedGestures & canceledGestures).isEmpty());
         Q_ASSERT((canceledGestures & newMaybeGestures).isEmpty());
 
-        QSet<QGesture *> notStarted = finishedGestures - m_activeGestures;
+        const QSet<QGesture *> notStarted = finishedGestures - m_activeGestures;
         if (!notStarted.isEmpty()) {
             // there are some gestures that claim to be finished, but never started.
             // probably those are "singleshot" gestures so we'll fake the started state.
-            foreach (QGesture *gesture, notStarted)
+            for (QGesture *gesture : notStarted)
                 gesture->d_func()->state = Qt::GestureStarted;
             QSet<QGesture *> undeliveredGestures;
             deliverEvents(notStarted, &undeliveredGestures);
@@ -330,15 +330,15 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
         m_activeGestures -= canceledGestures;
 
         // set the proper gesture state on each gesture
-        foreach (QGesture *gesture, startedGestures)
+        for (QGesture *gesture : startedGestures)
             gesture->d_func()->state = Qt::GestureStarted;
         foreach (QGesture *gesture, triggeredGestures)
             gesture->d_func()->state = Qt::GestureUpdated;
         foreach (QGesture *gesture, finishedGestures)
             gesture->d_func()->state = Qt::GestureFinished;
-        foreach (QGesture *gesture, canceledGestures)
+        for (QGesture *gesture : canceledGestures)
             gesture->d_func()->state = Qt::GestureCanceled;
-        foreach (QGesture *gesture, activeToMaybeGestures)
+        for (QGesture *gesture : activeToMaybeGestures)
             gesture->d_func()->state = Qt::GestureFinished;
 
         if (!m_activeGestures.isEmpty() || !m_maybeGestures.isEmpty() ||
@@ -358,7 +358,7 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
         deliverEvents(startedGestures+triggeredGestures+finishedGestures+canceledGestures,
                       &undeliveredGestures);
 
-        foreach (QGesture *g, startedGestures) {
+        for (QGesture *g : startedGestures) {
             if (undeliveredGestures.contains(g))
                 continue;
             if (g->gestureCancelPolicy() == QGesture::CancelAllInContext) {
@@ -371,9 +371,9 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
         m_activeGestures -= undeliveredGestures;
 
         // reset gestures that ended
-        QSet<QGesture *> endedGestures =
+        const QSet<QGesture *> endedGestures =
                 finishedGestures + canceledGestures + undeliveredGestures + maybeToCanceledGestures;
-        foreach (QGesture *gesture, endedGestures) {
+        for (QGesture *gesture : endedGestures) {
             recycle(gesture);
             m_gestureTargets.remove(gesture);
         }
