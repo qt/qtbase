@@ -25,7 +25,7 @@ private slots:
     void toggle();
     void pressed();
     void toggled();
-    void stateChanged();
+    void checkStateChanged();
     void foregroundRole();
     void minimumSizeHint();
 };
@@ -188,34 +188,38 @@ void tst_QCheckBox::toggled()
     QCOMPARE(click_count, 0);
 }
 
-void tst_QCheckBox::stateChanged()
+void tst_QCheckBox::checkStateChanged()
 {
     QCheckBox testWidget;
     QCOMPARE(testWidget.checkState(), Qt::Unchecked);
 
     Qt::CheckState cur_state = Qt::Unchecked;
+    QSignalSpy checkStateChangedSpy(&testWidget, &QCheckBox::checkStateChanged);
+    QT_IGNORE_DEPRECATIONS(
     QSignalSpy stateChangedSpy(&testWidget, &QCheckBox::stateChanged);
-    connect(&testWidget, &QCheckBox::stateChanged, this, [&](auto state) { cur_state = Qt::CheckState(state); });
+    )
+    connect(&testWidget, &QCheckBox::checkStateChanged, this, [&](auto state) { cur_state = state; });
     testWidget.setChecked(true);
-    QVERIFY(QTest::qWaitFor([&]() { return stateChangedSpy.size() == 1; }));
+    QTRY_COMPARE(checkStateChangedSpy.size(), 1);
     QCOMPARE(stateChangedSpy.size(), 1);
     QCOMPARE(cur_state, Qt::Checked);
     QCOMPARE(testWidget.checkState(), Qt::Checked);
 
     testWidget.setChecked(false);
-    QVERIFY(QTest::qWaitFor([&]() { return stateChangedSpy.size() == 2; }));
+    QTRY_COMPARE(checkStateChangedSpy.size(), 2);
     QCOMPARE(stateChangedSpy.size(), 2);
     QCOMPARE(cur_state, Qt::Unchecked);
     QCOMPARE(testWidget.checkState(), Qt::Unchecked);
 
     testWidget.setCheckState(Qt::PartiallyChecked);
-    QVERIFY(QTest::qWaitFor([&]() { return stateChangedSpy.size() == 3; }));
+    QTRY_COMPARE(checkStateChangedSpy.size(), 3);
     QCOMPARE(stateChangedSpy.size(), 3);
     QCOMPARE(cur_state, Qt::PartiallyChecked);
     QCOMPARE(testWidget.checkState(), Qt::PartiallyChecked);
 
     testWidget.setCheckState(Qt::PartiallyChecked);
     QCoreApplication::processEvents();
+    QCOMPARE(checkStateChangedSpy.size(), 3);
     QCOMPARE(stateChangedSpy.size(), 3);
 }
 

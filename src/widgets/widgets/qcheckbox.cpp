@@ -59,7 +59,7 @@ public:
     \endtable
 
     Whenever a checkbox is checked or cleared, it emits the signal
-    stateChanged(). Connect to this signal if you want to trigger an action
+    checkStateChanged(). Connect to this signal if you want to trigger an action
     each time the checkbox changes state. You can use isChecked() to query
     whether or not a checkbox is checked.
 
@@ -84,14 +84,22 @@ public:
     setPixmap(), accel(), setAccel(), isToggleButton(), setDown(), isDown(),
     isOn(), checkState(), autoRepeat(), isExclusiveToggle(), group(),
     setAutoRepeat(), toggle(), pressed(), released(), clicked(), toggled(),
-    checkState(), and stateChanged().
+    checkState(), and checkStateChanged().
 
     \sa QAbstractButton, QRadioButton
 */
 
 /*!
     \fn void QCheckBox::stateChanged(int state)
-    //! Qt 7: \fn void QCheckBox::stateChanged(Qt::CheckState state)
+
+    \obsolete
+
+    Use checkStateChanged(Qt::CheckState) instead.
+*/
+
+/*!
+    \fn void QCheckBox::checkStateChanged(Qt::CheckState state)
+    \since 6.7
 
     This signal is emitted whenever the checkbox's state changes, i.e.,
     whenever the user checks or unchecks it.
@@ -227,6 +235,7 @@ void QCheckBox::setCheckState(Qt::CheckState state)
     d->refresh();
     if (state != d->publishedState) {
         d->publishedState = state;
+        emit checkStateChanged(state);
         emit stateChanged(state);
     }
 
@@ -322,6 +331,7 @@ void QCheckBox::checkStateSet()
     Qt::CheckState state = checkState();
     if (state != d->publishedState) {
         d->publishedState = state;
+        emit checkStateChanged(state);
         emit stateChanged(state);
     }
 }
