@@ -78,20 +78,19 @@ public:
    check errno, but we call mktime from within a qt_scoped_lock(QBasicMutex),
    whose unlocking and destruction of the locker might frob errno.)
 
-   We can assume the zone offset is a multiple of five minutes and less than a
-   day, so this can only arise for the last second of a minute that differs from
-   59 by a multiple of 5 on the last day of 1969 or the first day of 1970.  That
-   makes for a cheap pre-test; if it holds, we can ask mktime about the
-   preceding second; if it gives us -2, then the -1 we originally saw is not an
-   error (or was an error, but needn't have been).
+   We can assume time-zone offsets are less than a day, so this can only arise
+   if the struct tm describes either the last day of 1969 or the first day of
+   1970. That makes for a cheap pre-test; if it holds, we can ask mktime about
+   the preceding second; if it gives us -2, then the -1 we originally saw is not
+   an error (or was an error, but needn't have been). We can then synthesize a
+   corrected value for local using the -2 result.
 */
 inline bool MkTimeResult::meansEnd1969()
 {
 #ifdef Q_OS_WIN
     return false;
 #else
-    if (local.tm_sec < 59 || local.tm_year < 69 || local.tm_year > 70
-        || local.tm_min % 5 != 4 // Assume zone offset is a multiple of 5 mins
+    if (local.tm_year < 69 || local.tm_year > 70
         || (local.tm_year == 69 // ... and less than a day:
             ? local.tm_mon < 11 || local.tm_mday < 31
             : local.tm_mon > 0 || local.tm_mday > 1)) {
