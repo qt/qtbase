@@ -1,8 +1,6 @@
 // Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 #include <QStorageInfo>
 #include <QTemporaryFile>
@@ -156,7 +154,7 @@ void tst_QStorageInfo::storageList()
     volumes.removeOne(root);
     QVERIFY(!volumes.contains(root));
 
-    foreach (const QStorageInfo &storage, volumes) {
+    for (const QStorageInfo &storage : std::as_const(volumes)) {
         if (!storage.isReady())
             continue;
 
