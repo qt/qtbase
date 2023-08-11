@@ -18,6 +18,8 @@
      // by-one bug in the kernel) the usable bytes are only 30.
 #    define SHM_NAME_MAX 30
 #  endif
+#elif defined(Q_OS_WINDOWS)
+#  include "qt_windows.h"
 #endif
 
 #if QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
@@ -194,7 +196,7 @@ QString QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcType ip
             }
 
             QString result = prefix + mid + payload;
-#ifdef MAX_PATH
+#ifdef Q_OS_WINDOWS
             result.truncate(MAX_PATH);
 #endif
             return result;
