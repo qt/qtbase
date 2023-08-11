@@ -251,7 +251,7 @@ void tst_QSslKey::createPlainTestRows(bool pemOnly)
     QTest::addColumn<QSsl::KeyType>("type");
     QTest::addColumn<int>("length");
     QTest::addColumn<QSsl::EncodingFormat>("format");
-    foreach (KeyInfo keyInfo, keyInfoList) {
+    for (const KeyInfo &keyInfo : std::as_const(keyInfoList)) {
         if (pemOnly && keyInfo.format != QSsl::EncodingFormat::Pem)
             continue;
 
@@ -472,7 +472,7 @@ void tst_QSslKey::toEncryptedPemOrDer_data()
     QStringList passwords;
     passwords << " " << "foobar" << "foo bar"
               << "aAzZ`1234567890-=~!@#$%^&*()_+[]{}\\|;:'\",.<>/?"; // ### add more (?)
-    foreach (KeyInfo keyInfo, keyInfoList) {
+    for (const KeyInfo &keyInfo : std::as_const(keyInfoList)) {
         if (keyInfo.fileInfo.fileName().contains("pkcs8"))
             continue; // pkcs8 keys are encrypted in a different way than the other keys
         foreach (QString password, passwords) {

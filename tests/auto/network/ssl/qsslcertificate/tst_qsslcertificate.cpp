@@ -209,7 +209,7 @@ void tst_QSslCertificate::createTestRows()
 {
     QTest::addColumn<QString>("absFilePath");
     QTest::addColumn<QSsl::EncodingFormat>("format");
-    foreach (CertInfo certInfo, certInfoList) {
+    for (const CertInfo &certInfo : std::as_const(certInfoList)) {
         QTest::newRow(certInfo.fileInfo.fileName().toLatin1())
             << certInfo.fileInfo.absoluteFilePath() << certInfo.format;
     }
@@ -340,7 +340,7 @@ void tst_QSslCertificate::digest_data()
     QTest::addColumn<QSsl::EncodingFormat>("format");
     QTest::addColumn<QString>("absFilePath_digest_md5");
     QTest::addColumn<QString>("absFilePath_digest_sha1");
-    foreach (CertInfo certInfo, certInfoList) {
+    for (const CertInfo &certInfo : std::as_const(certInfoList)) {
         QString certName = certInfo.fileInfo.fileName();
         QTest::newRow(certName.toLatin1())
             << certInfo.fileInfo.absoluteFilePath()
@@ -393,7 +393,7 @@ void tst_QSslCertificate::subjectAlternativeNames_data()
     QTest::addColumn<QSsl::EncodingFormat>("format");
     QTest::addColumn<QString>("subjAltNameFilePath");
 
-    foreach (CertInfo certInfo, certInfoList) {
+    for (const CertInfo &certInfo : std::as_const(certInfoList)) {
         QString certName = certInfo.fileInfo.fileName();
         if (subjAltNameMap.contains(certName))
             QTest::newRow(certName.toLatin1())
@@ -531,7 +531,7 @@ void tst_QSslCertificate::publicKey_data()
     QTest::addColumn<QSsl::EncodingFormat>("format");
     QTest::addColumn<QString>("pubkeyFilePath");
 
-    foreach (CertInfo certInfo, certInfoList) {
+    for (const CertInfo &certInfo : std::as_const(certInfoList)) {
         QString certName = certInfo.fileInfo.fileName();
         if (pubkeyMap.contains(certName))
             QTest::newRow(certName.toLatin1())
