@@ -1362,8 +1362,6 @@ void tst_QDockWidget::floatingTabs()
 
     // Both dock widgets must no longer be floating
     // disabled due to flakiness on macOS and Windows
-    //QTRY_VERIFY(!d1->isFloating());
-    //QTRY_VERIFY(!d2->isFloating());
     if (d1->isFloating())
         qWarning("OS flakiness: D1 is docked and reports being floating");
     if (d2->isFloating())
@@ -1371,7 +1369,18 @@ void tst_QDockWidget::floatingTabs()
 
     // Now MainWindow has to have a floatingTab child
     QPointer<QDockWidgetGroupWindow> ftabs;
-    QTRY_VERIFY(checkFloatingTabs(mainWindow, ftabs, QList<QDockWidget*>() << d1 << d2));
+    QTRY_VERIFY(checkFloatingTabs(mainWindow, ftabs, QList<QDockWidget *>() << d1 << d2));
+
+    // Hide both dock widgets. Verify that the group window is also hidden.
+    qCDebug(lcTestDockWidget) << "*** Hide and show tabbed dock widgets ***";
+    d1->hide();
+    d2->hide();
+    QTRY_VERIFY(ftabs->isHidden());
+
+    // Show both dockwidgets again. Verify that the group window is visible.
+    d1->show();
+    d2->show();
+    QTRY_VERIFY(ftabs->isVisible());
 
     /*
      * replug both dock widgets into their initial position
