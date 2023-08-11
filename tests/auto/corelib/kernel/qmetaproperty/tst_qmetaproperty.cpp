@@ -22,7 +22,14 @@ struct CustomType
 
 Q_DECLARE_METATYPE(CustomType)
 
-class tst_QMetaProperty : public QObject
+class Base : public QObject
+{
+    Q_OBJECT
+signals:
+    void baseSignal(int);
+};
+
+class tst_QMetaProperty : public Base
 {
     Q_OBJECT
     Q_PROPERTY(EnumType value WRITE setValue READ getValue)
@@ -33,6 +40,7 @@ class tst_QMetaProperty : public QObject
     Q_PROPERTY(int value10 READ value10 FINAL)
     Q_PROPERTY(QMap<int, int> map MEMBER map)
     Q_PROPERTY(CustomType custom MEMBER custom)
+    Q_PROPERTY(int propWithInheritedSig READ propWithInheritedSig NOTIFY baseSignal)
 
 private slots:
     void hasStdCppSet();
@@ -43,6 +51,7 @@ private slots:
     void mapProperty();
     void conversion();
     void enumsFlags();
+    void notifySignalIndex();
 
 public:
     enum EnumType { EnumType1 };
@@ -56,6 +65,8 @@ public:
     int value8() const { return 1; }
     int value9() const { return 1; }
     int value10() const { return 1; }
+
+    int propWithInheritedSig() const { return 0; }
 
     QString value7;
     QMap<int, int> map;
@@ -272,6 +283,21 @@ void tst_QMetaProperty::enumsFlags()
     QVERIFY(flagsProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
     QVERIFY(flagsProperty.write(&t, QVariant(int(EnumFlagsTester::flag2))));
     QCOMPARE(t.flagProperty(), EnumFlagsTester::flag2);
+}
+
+
+void tst_QMetaProperty::notifySignalIndex()
+{
+    auto mo = this->metaObject();
+    auto propIndex = mo->indexOfProperty("propWithInheritedSig");
+    auto propWithInheritedSig = mo->property(propIndex);
+    QVERIFY(propWithInheritedSig.isValid());
+    QVERIFY(propWithInheritedSig.hasNotifySignal());
+    QVERIFY(propWithInheritedSig.notifySignalIndex() != -1);
+    QMetaMethod notifySignal = propWithInheritedSig.notifySignal();
+    QVERIFY(notifySignal.isValid());
+    QCOMPARE(notifySignal.name(), "baseSignal");
+    QCOMPARE(notifySignal.parameterCount(), 1);
 }
 
 QTEST_MAIN(tst_QMetaProperty)

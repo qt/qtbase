@@ -3973,20 +3973,23 @@ int QMetaProperty::notifySignalIndex() const
     if (!mobj || data.notifyIndex() == std::numeric_limits<uint>::max())
         return -1;
     uint methodIndex = data.notifyIndex();
-    if (methodIndex & IsUnresolvedSignal) {
-        methodIndex &= ~IsUnresolvedSignal;
-        const QByteArray signalName = stringData(mobj, methodIndex);
-        const QMetaObject *m = mobj;
-        const int idx = QMetaObjectPrivate::indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
-        if (idx >= 0) {
-            return idx + m->methodOffset();
-        } else {
-            qWarning("QMetaProperty::notifySignal: cannot find the NOTIFY signal %s in class %s for property '%s'",
-                     signalName.constData(), mobj->className(), name());
-            return -1;
-        }
-    }
-    return methodIndex + mobj->methodOffset();
+    if (!(methodIndex & IsUnresolvedSignal))
+        return methodIndex + mobj->methodOffset();
+    methodIndex &= ~IsUnresolvedSignal;
+    const QByteArray signalName = stringData(mobj, methodIndex);
+    const QMetaObject *m = mobj;
+    // try 0-arg signal
+    int idx = QMetaObjectPrivate::indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
+    if (idx >= 0)
+        return idx + m->methodOffset();
+    // try 1-arg signal
+    QArgumentType argType(typeId());
+    idx = QMetaObjectPrivate::indexOfMethodRelative<MethodSignal>(&m, signalName, 1, &argType);
+    if (idx >= 0)
+        return idx + m->methodOffset();
+    qWarning("QMetaProperty::notifySignal: cannot find the NOTIFY signal %s in class %s for property '%s'",
+             signalName.constData(), mobj->className(), name());
+    return -1;
 }
 
 // This method has been around for a while, but the documentation was marked \internal until 5.1

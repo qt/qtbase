@@ -1167,6 +1167,7 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     fprintf(out, "\n#include <QtCore/qtmochelpers.h>\n");
 
     fprintf(out, "\n#include <memory>\n\n");  // For std::addressof
+    fprintf(out, "\n#include <QtCore/qxptype_traits.h>\n"); // is_detected
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
             "#error \"The header file '%s' doesn't include <QObject>.\"\n", fn.constData());
