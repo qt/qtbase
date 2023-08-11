@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QtCore/QCoreApplication>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QList>
@@ -117,7 +115,7 @@ public:
             needToRelease << i;
         } while (t.elapsed() < TimeLimit);
 
-        foreach (int x, needToRelease)
+        for (int x : std::as_const(needToRelease))
             freelist.release(x);
     }
 };
