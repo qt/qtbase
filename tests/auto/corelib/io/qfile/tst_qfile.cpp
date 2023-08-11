@@ -2,8 +2,6 @@
 // Copyright (C) 2021 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #define _CRT_SECURE_NO_WARNINGS 1
 
 #include <QTest>
@@ -3673,11 +3671,16 @@ void tst_QFile::caseSensitivity()
         QVERIFY(f.write(testData));
         f.close();
     }
-    QStringList alternates;
     QFileInfo fi(filename);
     QVERIFY(fi.exists());
-    alternates << "file.txt" << "File.TXT" << "fIlE.TxT" << fi.absoluteFilePath().toUpper() << fi.absoluteFilePath().toLower();
-    foreach (QString alt, alternates) {
+    const auto alternates = {
+        u"file.txt"_s,
+        u"File.TXT"_s,
+        u"fIlE.TxT"_s,
+        fi.absoluteFilePath().toUpper(),
+        fi.absoluteFilePath().toLower(),
+    };
+    for (const QString &alt : alternates) {
         QFileInfo fi2(alt);
         QCOMPARE(fi2.exists(), !caseSensitive);
         QCOMPARE(fi.size() == fi2.size(), !caseSensitive);

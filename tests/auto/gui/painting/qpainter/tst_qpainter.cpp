@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 #include <qpainter.h>
 #ifndef QT_NO_WIDGETS
@@ -2083,21 +2081,22 @@ void tst_QPainter::clippedLines_data()
     QPen pen2(QColor(223, 223, 0, 223));
     pen2.setWidth(2);
 
-    QList<QLineF> lines;
-    lines << QLineF(15, 15, 65, 65)
-          << QLineF(14, 14, 66, 66)
-          << QLineF(16, 16, 64, 64)
-          << QLineF(65, 65, 15, 15)
-          << QLineF(66, 66, 14, 14)
-          << QLineF(64, 64, 14, 14)
-          << QLineF(15, 50, 15, 64)
-          << QLineF(15, 50, 15, 65)
-          << QLineF(15, 50, 15, 66)
-          << QLineF(15, 50, 64, 50)
-          << QLineF(15, 50, 65, 50)
-          << QLineF(15, 50, 66, 50);
+    const auto lines = {
+        QLineF(15, 15, 65, 65),
+        QLineF(14, 14, 66, 66),
+        QLineF(16, 16, 64, 64),
+        QLineF(65, 65, 15, 15),
+        QLineF(66, 66, 14, 14),
+        QLineF(64, 64, 14, 14),
+        QLineF(15, 50, 15, 64),
+        QLineF(15, 50, 15, 65),
+        QLineF(15, 50, 15, 66),
+        QLineF(15, 50, 64, 50),
+        QLineF(15, 50, 65, 50),
+        QLineF(15, 50, 66, 50),
+    };
 
-    foreach (QLineF line, lines) {
+    for (QLineF line : lines) {
         const QByteArray desc = "line (" + QByteArray::number(line.x1())
             + ", " + QByteArray::number(line.y1()) + ", "
             + QByteArray::number(line.x2()) + ", " + QByteArray::number(line.y2())
@@ -2498,6 +2497,12 @@ void tst_QPainter::drawhelper_blend_untransformed_data()
     setOpacity_data();
 }
 
+static const auto &defaultOpacities()
+{
+    static const std::array opacities = {qreal(0.0), 0.1 , 0.01, 0.4, 0.5, 0.6, 0.9, 1.0};
+    return opacities;
+}
+
 void tst_QPainter::drawhelper_blend_untransformed()
 {
     QFETCH(QImage::Format, destFormat);
@@ -2518,9 +2523,7 @@ void tst_QPainter::drawhelper_blend_untransformed()
     p.fillRect(paintRect, srcColor);
     p.end();
 
-    QList<qreal> opacities = (QList<qreal>() << 0.0 << 0.1  << 0.01 << 0.4
-                              << 0.5 << 0.6 << 0.9 << 1.0);
-    foreach (qreal opacity, opacities) {
+    for (qreal opacity : defaultOpacities()) {
         p.begin(&dest);
         p.fillRect(paintRect, destColor);
 
@@ -2575,9 +2578,7 @@ void tst_QPainter::drawhelper_blend_tiled_untransformed()
 
     const QBrush brush(src);
 
-    QList<qreal> opacities = (QList<qreal>() << 0.0 << 0.1  << 0.01 << 0.4
-                              << 0.5 << 0.6 << 0.9 << 1.0);
-    foreach (qreal opacity, opacities) {
+    for (qreal opacity : defaultOpacities()) {
         p.begin(&dest);
         p.fillRect(paintRect, destColor);
 
@@ -4898,10 +4899,7 @@ void tst_QPainter::QTBUG25153_drawLine()
 {
     QImage image(2, 2, QImage::Format_RGB32);
 
-    QList<Qt::PenCapStyle> styles;
-    styles << Qt::FlatCap << Qt::SquareCap << Qt::RoundCap;
-
-    foreach (Qt::PenCapStyle style, styles) {
+    for (Qt::PenCapStyle style : {Qt::FlatCap, Qt::SquareCap, Qt::RoundCap}) {
         image.fill(0xffffffff);
         QPainter p(&image);
         p.setPen(QPen(Qt::black, 0, Qt::SolidLine, style));
