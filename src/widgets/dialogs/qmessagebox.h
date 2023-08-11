@@ -34,7 +34,7 @@ class Q_WIDGETS_EXPORT QMessageBox : public QDialog
     Q_PROPERTY(Options options READ options WRITE setOptions)
 public:
     // Keep in sync with MessageBoxOption in qplatformdialoghelper.h
-    enum class Option : quint8 {
+    enum class Option {
         DontUseNativeDialog = 0x00000001
     };
     Q_FLAG(Option)
