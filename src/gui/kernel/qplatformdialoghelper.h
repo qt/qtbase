@@ -404,7 +404,9 @@ protected:
 
 public:
     // Keep in sync with QMessageBox Option
-    enum class Option : quint8 { DontUseNativeDialog = 0x00000001 };
+    enum class Option {
+        DontUseNativeDialog = 0x00000001,
+    };
     Q_DECLARE_FLAGS(Options, Option);
     Q_FLAG(Options);
 
