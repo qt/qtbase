@@ -1130,9 +1130,8 @@ QString tst_QSslCertificate::toString(const QList<QSslError>& errors)
 {
     QStringList errorStrings;
 
-    foreach (const QSslError& error, errors) {
+    for (const QSslError &error : errors)
         errorStrings.append(QLatin1Char('"') + error.errorString() + QLatin1Char('"'));
-    }
 
     return QLatin1String("[ ") + errorStrings.join(QLatin1String(", ")) + QLatin1String(" ]");
 }
