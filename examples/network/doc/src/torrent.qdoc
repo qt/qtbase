@@ -4,6 +4,7 @@
 /*!
     \example torrent
     \title Torrent Example
+    \examplecategory {Networking}
     \ingroup examples-network
     \brief Demonstrates complex TCP/IP operations.
 
