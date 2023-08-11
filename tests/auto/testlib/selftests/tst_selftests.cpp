@@ -1233,6 +1233,7 @@ SCENARIO("Exit code is as expected")
         { 0, "globaldata  testGlobal:global=true" },
         { 0, "globaldata  testGlobal:local=true" },
         { 0, "globaldata  testGlobal:global=true:local=true" },
+        { 0, "globaldata  testGlobal  -repeat  2" },
         { 1, "globaldata  testGlobal:local=true:global=true" },
         { 1, "globaldata  testGlobal:global=true:blah" },
         { 1, "globaldata  testGlobal:blah:local=true" },
@@ -1244,6 +1245,15 @@ SCENARIO("Exit code is as expected")
         { 1, "globaldata  testGlobal:blah         skipSingle:global=true:local=true" },
         { 1, "globaldata  testGlobal:global=true  skipSingle:blah" },
         { 2, "globaldata  testGlobal:blah         skipSingle:blue" },
+    // Passing -repeat argument
+        { 1, "pass  testNumber1  -repeat" },
+        { 0, "pass  testNumber1  -repeat  1" },
+        { 0, "pass  testNumber1  -repeat  1  -o  out.xml,xml" },
+        { 0, "pass  testNumber1  -repeat  2" },
+        { 0, "pass  testNumber1  -repeat  2  -o  -,txt" },
+        { 0, "pass  testNumber1  -repeat  2  -o  -,txt  -o  log.txt,txt" },
+        { 1, "pass  testNumber1  -repeat  2  -o  log.xml,xml" },
+        { 1, "pass  testNumber1  -repeat  2  -o  -,txt  -o  -,xml" },
     };
 
     size_t n_testCases = sizeof(testCases) / sizeof(*testCases);

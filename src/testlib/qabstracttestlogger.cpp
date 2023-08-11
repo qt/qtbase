@@ -148,6 +148,19 @@ QAbstractTestLogger::~QAbstractTestLogger()
 }
 
 /*!
+    Returns true if the logger supports repeated test runs.
+
+    Repetition of test runs is disabled by default, and can be enabled only for
+    test loggers that support it. Even if the logger may create syntactically
+    correct test reports, log-file analyzers may assume that test names are
+    unique within one report file.
+*/
+bool QAbstractTestLogger::isRepeatSupported() const
+{
+    return false;
+}
+
+/*!
     Returns true if the \c output stream is standard output.
 */
 bool QAbstractTestLogger::isLoggingToStdout() const

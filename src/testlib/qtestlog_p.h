@@ -91,6 +91,7 @@ public:
     static void addLogger(QAbstractTestLogger *logger);
 
     static bool hasLoggers();
+    static bool isRepeatSupported();
     static bool loggerUsingStdout();
 
     static void setVerboseLevel(int level);

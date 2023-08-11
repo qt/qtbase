@@ -539,6 +539,8 @@ static int eventDelay = -1;
 static int timeout = -1;
 #endif
 static bool noCrashHandler = false;
+static int repetitions = 1;
+static bool repeatForever = false;
 
 /*! \internal
     Invoke a method of the object without generating warning if the method does not exist
@@ -710,6 +712,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
     int logFormat = -1; // Not set
     const char *logFilename = nullptr;
 
+    repetitions = 1;
+    repeatForever = false;
+
     QTest::testFunctions.clear();
     QTest::testTags.clear();
 
@@ -764,6 +769,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          " -maxwarnings n      : Sets the maximum amount of messages to output.\n"
          "                       0 means unlimited, default: 2000\n"
          " -nocrashhandler     : Disables the crash handler. Useful for debugging crashes.\n"
+         " -repeat n           : Run the testsuite n times or until the test fails.\n"
+         "                       Useful for finding flaky tests. If negative, the tests are\n"
+         "                       repeated forever. This is intended as a developer tool, and\n"
+         "                       is only supported with the plain text logger.\n"
          "\n"
          " Benchmarking options:\n"
 #if QT_CONFIG(valgrind)
@@ -912,6 +921,14 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                 exit(1);
             } else {
                 QTestLog::setMaxWarnings(qToInt(argv[++i]));
+            }
+        } else if (strcmp(argv[i], "-repeat") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "-repeat needs an extra parameter for the number of repetitions\n");
+                exit(1);
+            } else {
+                repetitions = qToInt(argv[++i]);
+                repeatForever = repetitions < 0;
             }
         } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
             QTest::noCrashHandler = true;
@@ -1066,6 +1083,11 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
 
     if (addFallbackLogger)
         QTestLog::addLogger(QTestLog::Plain, logFilename);
+
+    if (repetitions != 1 && !QTestLog::isRepeatSupported()) {
+        fprintf(stderr, "-repeat is only supported with plain text logger\n");
+        exit(1);
+    }
 }
 
 // Temporary, backwards compatibility, until qtdeclarative's use of it is converted
@@ -2330,10 +2352,7 @@ void QTest::qInit(QObject *testObject, int argc, char **argv)
 #if QT_CONFIG(valgrind)
     if (QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindParentProcess)
 #endif
-    {
-        QTestTable::globalTestTable();
         QTestLog::startLogging();
-    }
 }
 
 /*! \internal
@@ -2398,7 +2417,12 @@ int QTest::qRun()
                 return 1;
         }
         TestMethods test(currentTestObject, std::move(commandLineMethods));
-        test.invokeTests(currentTestObject);
+
+        while (QTestLog::failCount() == 0 && (repeatForever || repetitions-- > 0)) {
+            QTestTable::globalTestTable();
+            test.invokeTests(currentTestObject);
+            QTestTable::clearGlobalTestTable();
+        }
     }
 
 #ifndef QT_NO_EXCEPTIONS
@@ -2435,10 +2459,7 @@ void QTest::qCleanup()
 #if QT_CONFIG(valgrind)
     if (QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindParentProcess)
 #endif
-    {
         QTestLog::stopLogging();
-        QTestTable::clearGlobalTestTable();
-    }
 
     delete QBenchmarkGlobalData::current;
     QBenchmarkGlobalData::current = nullptr;

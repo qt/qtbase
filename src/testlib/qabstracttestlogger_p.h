@@ -76,6 +76,8 @@ public:
     virtual void addMessage(MessageTypes type, const QString &message,
                             const char *file = nullptr, int line = 0) = 0;
 
+    virtual bool isRepeatSupported() const;
+
     bool isLoggingToStdout() const;
 
     void outputString(const char *msg);

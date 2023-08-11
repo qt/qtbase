@@ -348,6 +348,10 @@
     Disables the crash handler on Unix platforms.
     On Windows, it re-enables the Windows Error Reporting dialog, which is
     turned off by default. This is useful for debugging crashes.
+    \li \c -repeat \e n \br
+    Run the testsuite n times or until the test fails. Useful for finding
+    flaky tests. If negative, the tests are repeated forever. This is intended
+    as a developer tool, and is only supported with the plain text logger.
 
     \li \c -platform \e name \br
     This command line argument applies to all Qt applications, but might be

@@ -43,6 +43,8 @@ public:
     void addMessage(MessageTypes type, const QString &message,
                     const char *file = nullptr, int line = 0) override;
 
+    bool isRepeatSupported() const override;
+
 private:
     enum class MessageSource {
         Incident,
