@@ -164,8 +164,7 @@ public:
 
     bool registerObject()
     {
-        const auto copy = m_connections; // needed? Loop doesn't modify, but handleConnection() does
-        for (const QString &name : copy) {
+        for (const QString &name : std::as_const(m_connections)) {
             if (!registerObject(QDBusConnection(name)))
                 return false;
         }
@@ -174,8 +173,7 @@ public:
 
     void unregisterObject()
     {
-        const auto copy = m_connections; // needed? Loop doesn't modify, but handleConnection() does
-        for (const QString &name : copy) {
+        for (const QString &name : std::as_const(m_connections)) {
             QDBusConnection c(name);
             c.unregisterObject(m_path);
         }
