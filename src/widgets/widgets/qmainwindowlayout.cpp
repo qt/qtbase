@@ -460,6 +460,25 @@ void QDockWidgetGroupWindow::destroyOrHideIfEmpty()
     deleteLater();
 }
 
+/*!
+   \internal
+   \return \c true if the group window has at least one visible QDockWidget child,
+   otherwise false.
+ */
+bool QDockWidgetGroupWindow::hasVisibleDockWidgets() const
+{
+    const auto &children = findChildren<QDockWidget *>(QString(), Qt::FindChildrenRecursively);
+    for (auto child : children) {
+        // WA_WState_Visible is set on the dock widget, associated to the active tab
+        // and unset on all others.
+        // WA_WState_Hidden is set if the dock widgets have been explicitly hidden.
+        // This is the relevant information to check (equivalent to !child->isHidden()).
+        if (!child->testAttribute(Qt::WA_WState_Hidden))
+            return true;
+    }
+    return false;
+}
+
 /*! \internal
     Sets the flags of this window in accordance to the capabilities of the dock widgets
  */
@@ -508,7 +527,7 @@ void QDockWidgetGroupWindow::adjustFlags()
             m_removedFrameSize = QSize();
         }
 
-        show(); // setWindowFlags hides the window
+        setVisible(hasVisibleDockWidgets());
     }
 
     QWidget *titleBarOf = top ? top : parentWidget();

@@ -350,6 +350,7 @@ public:
     QDockWidget *activeTabbedDockWidget() const;
 #endif
     void destroyOrHideIfEmpty();
+    bool hasVisibleDockWidgets() const;
     void adjustFlags();
     bool hasNativeDecos() const;
 
