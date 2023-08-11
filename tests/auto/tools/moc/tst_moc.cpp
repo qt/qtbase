@@ -257,6 +257,24 @@ public:
 
 CreatableGadget creatableGadget; // Force the compiler to use the constructor
 
+struct ParentWithSignalWithArgument : QObject {
+    Q_OBJECT
+    Q_PROPERTY(int i READ i WRITE setI NOTIFY iChanged)
+
+public:
+    int i() const {return 0;}
+    void setI(int) {}
+
+signals:
+    void iChanged(int);
+};
+
+struct SignalWithArgumentInParent : ParentWithSignalWithArgument
+{
+    Q_OBJECT
+    Q_PROPERTY(int otherI READ i WRITE setI NOTIFY iChanged)
+};
+
 struct MyStruct {};
 struct MyStruct2 {};
 
