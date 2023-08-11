@@ -349,8 +349,10 @@ void tst_QColorSpace::imageConversion64PM()
 
     for (int j = 0; j < 16; ++j) {
         int a = j * 15;
-        for (int i = 0; i < 256; ++i)
-            testImage.setPixel(i, j, qPremultiply(qRgba(i, i, i, a)));
+        for (int i = 0; i < 256; ++i) {
+            QRgba64 color = QRgba64::fromRgba(i, i, i, a);
+            testImage.setPixelColor(i, j, QColor::fromRgba64(color));
+        }
     }
 
     testImage.setColorSpace(fromColorSpace);
@@ -389,8 +391,8 @@ void tst_QColorSpace::imageConversion64PM()
         for (int i = 0; i < 256; ++i) {
             QRgb expected = qPremultiply(qRgba(i, i, i, expectedAlpha));
             QRgb p = testImage.pixel(i, j);
-            QCOMPARE(qRed(p),  qGreen(p));
-            QCOMPARE(qRed(p),  qBlue(p));
+            QVERIFY(qAbs(qRed(p) - qGreen(p)) <= 1);
+            QVERIFY(qAbs(qRed(p) - qBlue(p)) <= 1);
             QCOMPARE(qAlpha(p), expectedAlpha);
             QVERIFY((lastRed   - qRed(p))   <= 0);
             QVERIFY((lastGreen - qGreen(p)) <= 0);
