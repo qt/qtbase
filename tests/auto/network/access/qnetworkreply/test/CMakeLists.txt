@@ -24,8 +24,6 @@ qt_internal_add_test(tst_qnetworkreply
         ../tst_qnetworkreply.cpp
         ../data/gzip.rcc.cpp
         ../data/zstandard.rcc.cpp
-    NO_PCH_SOURCES
-        ../tst_qnetworkreply.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
