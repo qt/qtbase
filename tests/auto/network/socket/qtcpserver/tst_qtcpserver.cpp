@@ -867,10 +867,12 @@ void tst_QTcpServer::serverAddress_data()
     QTest::newRow("AnyIPv4") << QHostAddress(QHostAddress::AnyIPv4) << QHostAddress(QHostAddress::AnyIPv4);
     if (QtNetworkSettings::hasIPv6())
         QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << QHostAddress(QHostAddress::AnyIPv6);
-    foreach (const QNetworkInterface &iface, QNetworkInterface::allInterfaces()) {
+    const auto ifaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : ifaces) {
         if ((iface.flags() & QNetworkInterface::IsUp) == 0)
             continue;
-        foreach (const QNetworkAddressEntry &entry, iface.addressEntries()) {
+        const auto entries = iface.addressEntries();
+        for (const QNetworkAddressEntry &entry : entries) {
             QTest::newRow(qPrintable(entry.ip().toString())) << entry.ip() << entry.ip();
         }
     }
@@ -924,7 +926,8 @@ void tst_QTcpServer::linkLocal()
     QSet <QString> scopes;
     QHostAddress localMaskv4("169.254.0.0");
     QHostAddress localMaskv6("fe80::");
-    foreach (const QNetworkInterface& iface, QNetworkInterface::allInterfaces()) {
+    const auto ifaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : ifaces) {
         //Windows preallocates link local addresses to interfaces that are down.
         //These may or may not work depending on network driver (they do not work for the Bluetooth PAN driver)
         if (iface.flags() & QNetworkInterface::IsUp) {
@@ -944,7 +947,8 @@ void tst_QTcpServer::linkLocal()
             if (iface.name().startsWith("awdl"))
                 continue;
 #endif
-            foreach (QNetworkAddressEntry addressEntry, iface.addressEntries()) {
+            const auto entries = iface.addressEntries();
+            for (const QNetworkAddressEntry &addressEntry : entries) {
                 QHostAddress addr = addressEntry.ip();
                 if (addr.isInSubnet(localMaskv4, 16)) {
                     addresses << addr;

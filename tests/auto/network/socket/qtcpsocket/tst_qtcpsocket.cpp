@@ -494,7 +494,8 @@ void tst_QTcpSocket::bind_data()
         if (!netinterface.isValid())
             continue;
 
-        foreach (const QNetworkAddressEntry &entry, netinterface.addressEntries()) {
+        const auto entries = netinterface.addressEntries();
+        for (const QNetworkAddressEntry &entry : entries) {
             if (entry.ip().isInSubnet(QHostAddress::parseSubnet("fe80::/10"))
                 || entry.ip().isInSubnet(QHostAddress::parseSubnet("169.254/16")))
                 continue; // link-local bind will fail, at least on Linux, so skip it.

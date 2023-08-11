@@ -379,7 +379,8 @@ void tst_QDnsLookup::lookup()
     // host addresses
     const QString hostName = cname.isEmpty() ? domain : cname;
     QStringList addresses;
-    foreach (const QDnsHostAddressRecord &record, lookup.hostAddressRecords()) {
+    const auto records = lookup.hostAddressRecords();
+    for (const QDnsHostAddressRecord &record : records) {
         //reply may include A & AAAA records for nameservers, ignore them and only look at records matching the query
         if (record.name() == hostName)
             addresses << record.value().toString().toLower();
@@ -389,7 +390,8 @@ void tst_QDnsLookup::lookup()
 
     // mail exchanges
     QStringList mailExchanges;
-    foreach (const QDnsMailExchangeRecord &record, lookup.mailExchangeRecords()) {
+    const auto mailRecords = lookup.mailExchangeRecords();
+    for (const QDnsMailExchangeRecord &record : mailRecords) {
         QCOMPARE(record.name(), domain);
         mailExchanges << QString::number(record.preference()) + QLatin1Char(' ') + record.exchange();
     }
@@ -398,7 +400,8 @@ void tst_QDnsLookup::lookup()
 
     // name servers
     QStringList nameServers;
-    foreach (const QDnsDomainNameRecord &record, lookup.nameServerRecords()) {
+    const auto nameServerRecords = lookup.nameServerRecords();
+    for (const QDnsDomainNameRecord &record : nameServerRecords) {
         //reply may include NS records for authoritative nameservers, ignore them and only look at records matching the query
         if (record.name() == domain)
             nameServers << record.value();
@@ -418,7 +421,8 @@ void tst_QDnsLookup::lookup()
 
     // services
     QStringList services;
-    foreach (const QDnsServiceRecord &record, lookup.serviceRecords()) {
+    const auto serviceRecords = lookup.serviceRecords();
+    for (const QDnsServiceRecord &record : serviceRecords) {
         QCOMPARE(record.name(), domain);
         services << (QString::number(record.priority()) + QLatin1Char(' ')
                      + QString::number(record.weight()) + QLatin1Char(' ')
@@ -429,10 +433,12 @@ void tst_QDnsLookup::lookup()
 
     // text
     QStringList texts;
-    foreach (const QDnsTextRecord &record, lookup.textRecords()) {
+    const auto textRecords = lookup.textRecords();
+    for (const QDnsTextRecord &record : textRecords) {
         QCOMPARE(record.name(), domain);
         QString text;
-        foreach (const QByteArray &ba, record.values()) {
+        const auto values = record.values();
+        for (const QByteArray &ba : values) {
             if (!text.isEmpty())
                 text += '\0';
             text += QString::fromLatin1(ba);

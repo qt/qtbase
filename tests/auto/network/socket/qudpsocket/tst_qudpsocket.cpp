@@ -384,7 +384,8 @@ void tst_QUdpSocket::broadcasting()
     const char *message[] = {"Yo mista", "", "Yo", "Wassap"};
 
     QList<QHostAddress> broadcastAddresses;
-    foreach (QNetworkInterface iface, QNetworkInterface::allInterfaces()) {
+    const auto ifaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : ifaces) {
         if ((iface.flags() & QNetworkInterface::CanBroadcast)
             && iface.flags() & QNetworkInterface::IsUp) {
             for (int i=0;i<iface.addressEntries().size();i++) {
@@ -1392,11 +1393,12 @@ void tst_QUdpSocket::setMulticastInterface_data()
 {
     QTest::addColumn<QNetworkInterface>("iface");
     QTest::addColumn<QHostAddress>("address");
-    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
-    foreach (const QNetworkInterface &iface, interfaces) {
+    const QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : interfaces) {
         if ((iface.flags() & QNetworkInterface::IsUp) == 0)
             continue;
-        foreach (const QNetworkAddressEntry &entry, iface.addressEntries()) {
+        const auto entries = iface.addressEntries();
+        for (const QNetworkAddressEntry &entry : entries) {
             const QByteArray testName = iface.name().toLatin1() + ':' + entry.ip().toString().toLatin1();
             QTest::newRow(testName.constData()) << iface << entry.ip();
         }
@@ -1601,7 +1603,8 @@ void tst_QUdpSocket::linkLocalIPv6()
     QList <QHostAddress> addresses;
     QSet <QString> scopes;
     QHostAddress localMask("fe80::");
-    foreach (const QNetworkInterface& iface, QNetworkInterface::allInterfaces()) {
+    const auto ifaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : ifaces) {
         //Windows preallocates link local addresses to interfaces that are down.
         //These may or may not work depending on network driver
         if (iface.flags() & QNetworkInterface::IsUp) {
@@ -1616,7 +1619,8 @@ void tst_QUdpSocket::linkLocalIPv6()
                 continue;
 #endif
 
-            foreach (QNetworkAddressEntry addressEntry, iface.addressEntries()) {
+            const auto entries = iface.addressEntries();
+            for (const QNetworkAddressEntry &addressEntry : entries) {
                 QHostAddress addr(addressEntry.ip());
                 if (!addr.scopeId().isEmpty() && addr.isInSubnet(localMask, 64)) {
                     scopes << addr.scopeId();
@@ -1687,7 +1691,8 @@ void tst_QUdpSocket::linkLocalIPv4()
 
     QList <QHostAddress> addresses;
     QHostAddress localMask("169.254.0.0");
-    foreach (const QNetworkInterface& iface, QNetworkInterface::allInterfaces()) {
+    const auto ifaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : ifaces) {
         //Windows preallocates link local addresses to interfaces that are down.
         //These may or may not work depending on network driver (they do not work for the Bluetooth PAN driver)
         if (iface.flags() & QNetworkInterface::IsUp) {
@@ -1701,7 +1706,8 @@ void tst_QUdpSocket::linkLocalIPv4()
             if (iface.name().startsWith("utun"))
                 continue;
 #endif
-            foreach (QNetworkAddressEntry addr, iface.addressEntries()) {
+            const auto entries = iface.addressEntries();
+            for (const QNetworkAddressEntry &addr : entries) {
                 if (addr.ip().isInSubnet(localMask, 16)) {
                     addresses << addr.ip();
                     qDebug() << "Found IPv4 link local address" << addr.ip();

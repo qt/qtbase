@@ -95,7 +95,8 @@ void tst_QNetworkProxyFactory::systemProxyForQuery_data()
     QTest::newRow("autobind-server") << (int)QNetworkProxyQuery::TcpServer << QUrl() << QString() << QString() << 0 << (int)QNetworkProxy::ListeningCapability;
     QTest::newRow("web-server") << (int)QNetworkProxyQuery::TcpServer << QUrl() << QString() << QString() << 80 << (int)QNetworkProxy::ListeningCapability;
     //windows: these should be bypassed  if "bypass proxy server for local addresses" is ticked
-    foreach (QHostAddress address, QNetworkInterface::allAddresses()) {
+    const auto addresses = QNetworkInterface::allAddresses();
+    for (const QHostAddress &address : addresses) {
         QTest::newRow(qPrintable(address.toString())) << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString() << address.toString() << 0 << 0;
     }
 

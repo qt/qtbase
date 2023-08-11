@@ -100,7 +100,8 @@ void tst_QNetworkInterface::dump()
         qDebug() << "    MTU:       " << i.maximumTransmissionUnit();
 
         int count = 0;
-        foreach (const QNetworkAddressEntry &e, i.addressEntries()) {
+        const auto entries = i.addressEntries();
+        for (const QNetworkAddressEntry &e : entries) {
             QDebug s = qDebug();
             s.nospace() <<    "    address "
                         << qSetFieldWidth(2) << count++ << qSetFieldWidth(0);
@@ -126,11 +127,11 @@ void tst_QNetworkInterface::dump()
 
 void tst_QNetworkInterface::consistencyCheck()
 {
-    QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
+    const QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
     QSet<QString> interfaceNames;
     QList<int> interfaceIndexes;
 
-    foreach (const QNetworkInterface &iface, ifaces) {
+    for (const QNetworkInterface &iface : ifaces) {
         QVERIFY(iface.isValid());
         QVERIFY2(!interfaceNames.contains(iface.name()),
                  "duplicate name = " + iface.name().toLocal8Bit());
@@ -251,10 +252,10 @@ void tst_QNetworkInterface::interfaceFromXXX_data()
 {
     QTest::addColumn<QNetworkInterface>("iface");
 
-    QList<QNetworkInterface> allInterfaces = QNetworkInterface::allInterfaces();
+    const QList<QNetworkInterface> allInterfaces = QNetworkInterface::allInterfaces();
     if (allInterfaces.size() == 0)
         QSKIP("No interfaces to test!");
-    foreach (QNetworkInterface iface, allInterfaces)
+    for (const QNetworkInterface &iface : allInterfaces)
         QTest::newRow(iface.name().toLocal8Bit()) << iface;
 }
 
@@ -268,7 +269,8 @@ void tst_QNetworkInterface::interfaceFromXXX()
         QCOMPARE(QNetworkInterface::interfaceNameFromIndex(idx), iface.name());
         QCOMPARE(QNetworkInterface::interfaceIndexFromName(iface.name()), idx);
     }
-    foreach (QNetworkAddressEntry entry, iface.addressEntries()) {
+    const auto entries = iface.addressEntries();
+    for (const QNetworkAddressEntry &entry : entries) {
         QVERIFY(!entry.ip().isNull());
 
         if (!entry.netmask().isNull()) {
