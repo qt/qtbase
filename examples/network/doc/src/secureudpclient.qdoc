@@ -4,6 +4,7 @@
 /*!
     \example secureudpclient
     \title DTLS client
+    \examplecategory {Networking}
     \ingroup examples-network
     \brief This example demonstrates how to implement client-side DTLS connections.
 
