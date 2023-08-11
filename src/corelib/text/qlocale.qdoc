@@ -818,7 +818,7 @@
     \value GujaratiScript
     \value GurmukhiScript
     \value [since 5.1] HangulScript
-    \value [since 6.7] Hanifi
+    \value [since 6.7] HanifiScript
     \value [since 5.1] HanScript
     \value [since 5.1] HanunooScript
     \value [since 5.7] HanWithBopomofoScript
