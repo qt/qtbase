@@ -2290,13 +2290,8 @@ void tst_QDateTime::springForward()
         QCOMPARE(direct.date(), day);
         QCOMPARE(direct.time().minute(), time.minute());
         QCOMPARE(direct.time().second(), time.second());
-        // Note: function doc claims always +1, but this should be reviewed !
-        int off = direct.time().hour() - time.hour();
-        auto report = qScopeGuard([off]() {
-            qDebug("Offset %d found where 1 or -1 expected", off);
-        });
-        QVERIFY(off == 1 || off == -1);
-        report.dismiss();
+        const int off = step < 0 ? -1 : 1;
+        QCOMPARE(direct.time().hour() - time.hour(), off);
         // adjust is the offset on the other side of the gap:
         QCOMPARE(direct.offsetFromUtc(), (adjust + off * 60) * 60);
     }

@@ -4296,11 +4296,12 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
     later than the datetime of this object (or earlier if \a ndays is
     negative).
 
-    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and the resulting
-    date and time fall in the Standard Time to Daylight-Saving Time transition
-    hour then the result will be adjusted accordingly, i.e. if the transition
-    is at 2am and the clock goes forward to 3am and the result falls between
-    2am and 3am then the result will be adjusted to fall after 3am.
+    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and the resulting date
+    and time fall in the Standard Time to Daylight-Saving Time transition hour
+    then the result will be just beyond this gap, in the direction of change.
+    If the transition is at 2am and the clock goes forward to 3am, the result of
+    aiming between 2am and 3am will be adjusted to fall before 2am (if \c{ndays
+    < 0}) or after 3am (otherwise).
 
     \sa daysTo(), addMonths(), addYears(), addSecs()
 */
@@ -4321,11 +4322,12 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     later than the datetime of this object (or earlier if \a nmonths
     is negative).
 
-    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and the resulting
-    date and time fall in the Standard Time to Daylight-Saving Time transition
-    hour then the result will be adjusted accordingly, i.e. if the transition
-    is at 2am and the clock goes forward to 3am and the result falls between
-    2am and 3am then the result will be adjusted to fall after 3am.
+    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and the resulting date
+    and time fall in the Standard Time to Daylight-Saving Time transition hour
+    then the result will be just beyond this gap, in the direction of change.
+    If the transition is at 2am and the clock goes forward to 3am, the result of
+    aiming between 2am and 3am will be adjusted to fall before 2am (if
+    \c{nmonths < 0}) or after 3am (otherwise).
 
     \sa daysTo(), addDays(), addYears(), addSecs()
 */
@@ -4346,11 +4348,12 @@ QDateTime QDateTime::addMonths(int nmonths) const
     later than the datetime of this object (or earlier if \a nyears is
     negative).
 
-    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and the resulting
-    date and time fall in the Standard Time to Daylight-Saving Time transition
-    hour then the result will be adjusted accordingly, i.e. if the transition
-    is at 2am and the clock goes forward to 3am and the result falls between
-    2am and 3am then the result will be adjusted to fall after 3am.
+    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and the resulting date
+    and time fall in the Standard Time to Daylight-Saving Time transition hour
+    then the result will be just beyond this gap, in the direction of change.
+    If the transition is at 2am and the clock goes forward to 3am, the result of
+    aiming between 2am and 3am will be adjusted to fall before 2am (if \c{nyears
+    < 0}) or after 3am (otherwise).
 
     \sa daysTo(), addDays(), addMonths(), addSecs()
 */
