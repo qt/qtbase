@@ -850,7 +850,7 @@ public:
     qint64 cacheSize() const override
     {
         qint64 total = 0;
-        foreach (const CachedContent &entry, cache)
+        for (const auto &[_, entry] : cache.asKeyValueRange())
             total += entry.second.size();
         return total;
     }
