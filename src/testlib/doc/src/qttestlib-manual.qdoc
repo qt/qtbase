@@ -986,7 +986,7 @@
 
     \section2 Using QSKIP(\a description) in a test function
 
-    If the QSKIP() macro is called from a test function, it stops
+    If the \l QSKIP() macro is called from a test function, it stops
     the execution of the test without adding a failure to the test log.
     It can be used to skip tests that are certain to fail. The text in
     the QSKIP \a description parameter is appended to the test log,
@@ -994,7 +994,7 @@
 
     QSKIP can be used to skip testing when the implementation is not yet
     complete or not supported on a certain platform. When there are known
-    failures, it is recommended to use QEXPECT_FAIL, so that the test is
+    failures, it is recommended to use \l QEXPECT_FAIL, so that the test is
     always completely executed.
 
     Example of QSKIP in a test function:
@@ -1019,4 +1019,6 @@
 
     If called from \c initTestCase() or \c initTestCase_data(), the
     QSKIP() macro will skip all test and _data functions.
+
+    \sa {Select Appropriate Mechanisms to Exclude Tests}
 */
