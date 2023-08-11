@@ -1,8 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 #include <QStandardPaths>
 #include <qcoreapplication.h>
@@ -481,7 +479,7 @@ void tst_QTemporaryDir::QTBUG_4796() // unicode support
     {
         ~CleanOnReturn()
         {
-            foreach (const QString &tempName, tempNames)
+            for (const QString &tempName : std::as_const(tempNames))
                 QVERIFY(QDir(tempName).removeRecursively());
         }
 
@@ -551,7 +549,7 @@ void tst_QTemporaryDir::QTBUG_4796() // unicode support
 #ifdef Q_OS_WIN
     QTest::qWait(20);
 #endif
-    foreach (const QString &tempName, cleaner.tempNames)
+    for (const QString &tempName : std::as_const(cleaner.tempNames))
         QVERIFY2(!QDir(tempName).exists(), qPrintable(tempName));
 
     cleaner.reset();

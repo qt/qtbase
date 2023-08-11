@@ -2,8 +2,6 @@
 // Copyright (C) 2017 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 #include <qcoreapplication.h>
 #include <qstring.h>
@@ -860,7 +858,7 @@ void tst_QTemporaryFile::QTBUG_4796()
     {
         ~CleanOnReturn()
         {
-            Q_FOREACH(QString tempName, tempNames)
+            for (const QString &tempName : std::as_const(tempNames))
                 QFile::remove(tempName);
         }
 
@@ -948,7 +946,7 @@ void tst_QTemporaryFile::QTBUG_4796()
         }
     }
 
-    Q_FOREACH(QString const &tempName, cleaner.tempNames)
+    for (const QString &tempName : std::as_const(cleaner.tempNames))
         QVERIFY( !QFile::exists(tempName) );
 
     cleaner.reset();
