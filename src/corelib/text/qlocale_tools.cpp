@@ -729,7 +729,7 @@ static T dtoString(double d, QLocaleData::DoubleForm form, int precision, bool u
             result.append(Char(uppercase ? 'E' : 'e'));
             result.append(Char(exponent < 0 ? '-' : '+'));
             exponent = std::abs(exponent);
-            Q_ASSUME(exponent <= D::max_exponent10 + D::max_digits10);
+            Q_ASSERT(exponent <= D::max_exponent10 + D::max_digits10);
             int exponentDigits = digits(exponent);
             // C's printf guarantees a two-digit exponent, and so do we:
             if (exponentDigits == 1)

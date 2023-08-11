@@ -481,7 +481,7 @@ void QNetworkDatagram::makeReply_helper_inplace(const QByteArray &data)
 
 void QNetworkDatagram::destroy(QNetworkDatagramPrivate *d)
 {
-    Q_ASSUME(d);
+    Q_ASSERT(d);
     delete d;
 }
 

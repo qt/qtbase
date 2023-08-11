@@ -902,7 +902,7 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
 
 void QPaintEngineEx::drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode)
 {
-    Q_ASSUME(pointCount >= 2);
+    Q_ASSERT(pointCount >= 2);
     QVectorPath path((const qreal *) points, pointCount, nullptr, QVectorPath::polygonFlags(mode));
 
     if (mode == PolylineMode)
@@ -913,7 +913,7 @@ void QPaintEngineEx::drawPolygon(const QPointF *points, int pointCount, PolygonD
 
 void QPaintEngineEx::drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
 {
-    Q_ASSUME(pointCount >= 2);
+    Q_ASSERT(pointCount >= 2);
     int count = pointCount<<1;
     QVarLengthArray<qreal> pts(count);
 

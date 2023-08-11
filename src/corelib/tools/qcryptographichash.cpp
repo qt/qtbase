@@ -1289,9 +1289,9 @@ using HashBlock = QSmallByteArray<maxHashBlockSize()>;
 static HashBlock xored(const HashBlock &block, quint8 val) noexcept
 {
     // some hints for the optimizer:
-    Q_ASSUME(block.size() >= minHashBlockSize());
-    Q_ASSUME(block.size() <= maxHashBlockSize());
-    Q_ASSUME(block.size() % gcdHashBlockSize() == 0);
+    Q_ASSERT(block.size() >= minHashBlockSize());
+    Q_ASSERT(block.size() <= maxHashBlockSize());
+    Q_ASSERT(block.size() % gcdHashBlockSize() == 0);
     HashBlock result;
     result.resizeForOverwrite(block.size());
     for (qsizetype i = 0; i < block.size(); ++i)

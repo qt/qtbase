@@ -276,7 +276,7 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
     if constexpr (moveOption == ForceMove)
         Q_ASSERT(isMoveConstructible(iface));
     if constexpr (nullability == NonNull)
-        Q_ASSUME(copy != nullptr);
+        Q_ASSERT(copy != nullptr);
 
     // need to check for nullptr_t here, as this can get called by fromValue(nullptr). fromValue() uses
     // std::addressof(value) which in this case returns the address of the nullptr object.

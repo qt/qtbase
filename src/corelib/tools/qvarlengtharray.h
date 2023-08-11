@@ -823,7 +823,7 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::reallocate_impl(qsizetype prealloc, void 
     qsizetype osize = size();
 
     const qsizetype copySize = qMin(asize, osize);
-    Q_ASSUME(copySize >= 0);
+    Q_ASSERT(copySize >= 0);
 
     if (aalloc != capacity()) {
         QVLABaseBase::malloced_ptr guard;

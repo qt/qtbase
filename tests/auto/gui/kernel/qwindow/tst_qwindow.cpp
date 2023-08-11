@@ -2803,11 +2803,11 @@ void tst_QWindow::stateChangeSignal()
           "On other operating systems, the signal may be emitted twice.");
 #endif
     QWindow w;
-    Q_ASSUME(connect (&w, &QWindow::windowStateChanged, [](Qt::WindowState s){qCDebug(lcTests) << "State change to" << s;}));
+    Q_ASSERT(connect (&w, &QWindow::windowStateChanged, [](Qt::WindowState s){qCDebug(lcTests) << "State change to" << s;}));
     QSignalSpy spy(&w, SIGNAL(windowStateChanged(Qt::WindowState)));
     unsigned short signalCount = 0;
     QList<Qt::WindowState> effectiveStates;
-    Q_ASSUME(connect(&w, &QWindow::windowStateChanged, [&effectiveStates](Qt::WindowState state)
+    Q_ASSERT(connect(&w, &QWindow::windowStateChanged, [&effectiveStates](Qt::WindowState state)
             { effectiveStates.append(state); }));
     // Part 1:
     // => test signal emission on programmatic state changes

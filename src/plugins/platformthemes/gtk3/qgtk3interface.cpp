@@ -289,8 +289,8 @@ QImage QGtk3Interface::qt_convert_gdk_pixbuf(GdkPixbuf *buf) const
     const guint8 *gdata = gdk_pixbuf_read_pixels(buf);
     static_assert(std::is_same<decltype(gdata), const uchar *>::value,
             "guint8 has diverted from uchar. Code needs fixing.");
-    Q_ASSUME(gdk_pixbuf_get_bits_per_sample(buf) == 8);
-    Q_ASSUME(gdk_pixbuf_get_n_channels(buf) == 4);
+    Q_ASSERT(gdk_pixbuf_get_bits_per_sample(buf) == 8);
+    Q_ASSERT(gdk_pixbuf_get_n_channels(buf) == 4);
     const uchar *data = static_cast<const uchar *>(gdata);
 
     const int width = gdk_pixbuf_get_width(buf);

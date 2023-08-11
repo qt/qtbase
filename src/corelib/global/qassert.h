@@ -79,11 +79,14 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #  endif
 #endif
 
+Q_DECL_DEPRECATED_X("Q_ASSUME() is deprecated because it can produce worse code than when it's absent; "
+                    "use C++23 [[assume]] instead")
+inline bool qt_assume_is_deprecateed(bool cond) noexcept { return cond; }
 #define Q_ASSUME(Expr) \
     [] (bool valueOfExpression) {\
         Q_ASSERT_X(valueOfExpression, "Q_ASSUME()", "Assumption in Q_ASSUME(\"" #Expr "\") was not correct");\
         Q_ASSUME_IMPL(valueOfExpression);\
-    }(Expr)
+    }(qt_assume_is_deprecated(Expr))
 
 // Don't use these in C++ mode, use static_assert directly.
 // These are here only to keep old code compiling.

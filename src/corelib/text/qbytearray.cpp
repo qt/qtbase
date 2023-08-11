@@ -276,7 +276,7 @@ int qstricmp(const char *str1, const char *str2)
                 // yes, find out where
                 uint start = qCountTrailingZeroBits(mask);
                 uint end = sizeof(mask) * 8 - qCountLeadingZeroBits(mask);
-                Q_ASSUME(end >= start);
+                Q_ASSERT(end >= start);
                 offset += start;
                 n = end - start;
                 break;

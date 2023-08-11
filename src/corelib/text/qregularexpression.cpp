@@ -1104,7 +1104,7 @@ void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
                                         const QRegularExpressionMatchPrivate *previous) const
 {
     Q_ASSERT(priv);
-    Q_ASSUME(priv != previous);
+    Q_ASSERT(priv != previous);
 
     const qsizetype subjectLength = priv->subject.size();
 

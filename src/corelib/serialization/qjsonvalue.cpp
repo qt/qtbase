@@ -1011,7 +1011,7 @@ QJsonValue QJsonValueConstRef::concrete(QJsonValueConstRef self) noexcept
 QString QJsonValueConstRef::objectKey(QJsonValueConstRef self)
 {
     Q_ASSERT(self.is_object);
-    Q_ASSUME(self.is_object);
+    Q_ASSERT(self.is_object);
     const QCborContainerPrivate *d = QJsonPrivate::Value::container(self);
     qsizetype index = QJsonPrivate::Value::indexHelper(self);
 

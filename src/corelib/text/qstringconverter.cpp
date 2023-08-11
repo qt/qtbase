@@ -203,7 +203,7 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
             continue;
 
         uint n = _mm256_movemask_epi8(data);
-        Q_ASSUME(n);
+        Q_ASSERT(n);
 
         // find the next probable ASCII character
         // we don't want to load 32 bytes again in this loop if we know there are non-ASCII

@@ -9755,7 +9755,7 @@ qsizetype QtPrivate::findString(QLatin1StringView haystack, qsizetype from, QLat
     if (cs == Qt::CaseSensitive) {
 
         if (needle.size() == 1) {
-            Q_ASSUME(haystack.data() != nullptr); // see size check above
+            Q_ASSERT(haystack.data() != nullptr); // see size check above
             if (auto it = memchr(haystack.data() + from, needle.front().toLatin1(), adjustedSize))
                 return static_cast<const char *>(it) - haystack.data();
             return -1;
