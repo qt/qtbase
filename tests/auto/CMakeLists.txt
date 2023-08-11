@@ -4,6 +4,29 @@
 # Order by dependency [*], then alphabetic. [*] If bugs in part A of
 # our source would break tests of part B, then test A before B.
 
+set(run_dbus_tests OFF)
+if (QT_FEATURE_dbus)
+    set(run_dbus_tests ON)
+    if(NOT CMAKE_CROSSCOMPILING AND TARGET Qt::DBus)
+        execute_process(COMMAND dbus-send --session --type=signal / local.AutotestCheck.Hello
+            TIMEOUT 5
+            RESULT_VARIABLE dbus_session_test
+            OUTPUT_QUIET ERROR_QUIET)
+        if(NOT "${dbus_session_test}" STREQUAL "0")
+            set(run_dbus_tests OFF)
+            if(QT_FEATURE_dbus_linked)
+                message(WARNING
+                    " QtDBus is enabled but session bus is not available for testing.\n"
+                    " Please check the installation. Skipping QtDBus tests.")
+            else()
+                message(WARNING
+                    " QtDBus is enabled with runtime support, but session bus is not available.\n"
+                    " Skipping QtDBus tests.")
+            endif()
+        endif()
+    endif()
+endif()
+
 if(UIKIT)
     # For now, only build CMake auto tests when QT_BUILD_MINIMAL_STATIC_TEST
     # is a requested (which is basically what CI will build).
@@ -58,29 +81,8 @@ if (TARGET Qt::Concurrent)
      add_subdirectory(concurrent)
 endif()
 
-if (QT_FEATURE_dbus)
-    set(run_dbus_tests ON)
-    if(NOT CMAKE_CROSSCOMPILING AND TARGET Qt::DBus)
-        execute_process(COMMAND dbus-send --session --type=signal / local.AutotestCheck.Hello
-            TIMEOUT 5
-            RESULT_VARIABLE dbus_session_test
-            OUTPUT_QUIET ERROR_QUIET)
-        if(NOT "${dbus_session_test}" STREQUAL "0")
-            set(run_dbus_tests OFF)
-            if(QT_FEATURE_dbus_linked)
-                message(WARNING
-                    " QtDBus is enabled but session bus is not available for testing.\n"
-                    " Please check the installation. Skipping QtDBus tests.")
-            else()
-                message(WARNING
-                    " QtDBus is enabled with runtime support, but session bus is not available.\n"
-                    " Skipping QtDBus tests.")
-            endif()
-        endif()
-    endif()
-    if(run_dbus_tests)
-        add_subdirectory(dbus)
-    endif()
+if(run_dbus_tests)
+    add_subdirectory(dbus)
 endif()
 
 if (TARGET Qt::Gui)
