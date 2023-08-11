@@ -177,12 +177,13 @@ QDebug operator<<(QDebug dbg, const QDockAreaLayoutItem &item)
     QDebugStateSaver saver(dbg);
     dbg.nospace();
     dbg << "QDockAreaLayoutItem(" << static_cast<const void *>(&item) << "->";
-    if (item.widgetItem)
+    if (item.widgetItem) {
         dbg << "widgetItem(" << item.widgetItem->widget() << ")";
-    else if (item.subinfo)
-        dbg << "subInfo(" << item.subinfo << ")";
-    else if (item.placeHolderItem)
+    } else if (item.subinfo) {
+        dbg << "subInfo(" << item.subinfo << "->(" << item.subinfo->item_list << ")";
+    } else if (item.placeHolderItem) {
         dbg << "placeHolderItem(" << item.placeHolderItem << ")";
+    }
     dbg << ")";
     return dbg;
 }
