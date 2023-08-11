@@ -62,6 +62,8 @@
 
 #include "../../../network-settings.h"
 
+using namespace Qt::StringLiterals;
+
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
 class SocketPair;
 
@@ -525,12 +527,12 @@ void tst_QTcpSocket::bind_data()
     // these ranges are guaranteed to be reserved for 'documentation purposes',
     // and thus, should be unused in the real world. Not that I'm assuming the
     // world is full of competent administrators, or anything.
-    QStringList knownBad;
-    knownBad << "198.51.100.1";
-    knownBad << "2001:0DB8::1";
-    foreach (const QString &badAddress, knownBad) {
+    const QString knownBad[] = {
+        u"198.51.100.1"_s,
+        u"2001:0DB8::1"_s
+    };
+    for (const QString &badAddress : knownBad)
         QTest::addRow("%s:0", badAddress.toLatin1().constData()) << badAddress << 0 << false << QString();
-    }
 
     // try to bind to a privileged ports
     // we should fail if we're not root (unless the ports are in use!)

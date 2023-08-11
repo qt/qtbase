@@ -47,6 +47,8 @@
 #  define RELIABLE_BYTES_AVAILABLE
 #endif
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_METATYPE(QHostAddress)
 
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
@@ -1243,11 +1245,12 @@ void tst_QUdpSocket::multicastTtlOption_data()
     QTest::addColumn<int>("ttl");
     QTest::addColumn<int>("expected");
 
-    QList<QHostAddress> addresses;
-    addresses += QHostAddress(QHostAddress::AnyIPv4);
-    addresses += QHostAddress(QHostAddress::AnyIPv6);
+    const QHostAddress addresses[] = {
+        QHostAddress(QHostAddress::AnyIPv4),
+        QHostAddress(QHostAddress::AnyIPv6),
+    };
 
-    foreach (const QHostAddress &address, addresses) {
+    for (const QHostAddress &address : addresses) {
         const QByteArray addressB = address.toString().toLatin1();
         QTest::newRow((addressB + " 0").constData()) << address << 0 << 0;
         QTest::newRow((addressB + " 1").constData()) << address << 1 << 1;
@@ -1289,11 +1292,12 @@ void tst_QUdpSocket::multicastLoopbackOption_data()
     QTest::addColumn<int>("loopback");
     QTest::addColumn<int>("expected");
 
-    QList<QHostAddress> addresses;
-    addresses += QHostAddress(QHostAddress::AnyIPv4);
-    addresses += QHostAddress(QHostAddress::AnyIPv6);
+    const QHostAddress addresses[] = {
+        QHostAddress(QHostAddress::AnyIPv4),
+        QHostAddress(QHostAddress::AnyIPv6),
+    };
 
-    foreach (const QHostAddress &address, addresses) {
+    for (const QHostAddress &address : addresses) {
         const QByteArray addressB = address.toString().toLatin1();
         QTest::newRow((addressB + " 0").constData()) << address << 0 << 0;
         QTest::newRow((addressB + " 1").constData()) << address << 1 << 1;
@@ -1502,15 +1506,16 @@ void tst_QUdpSocket::multicast()
     if (!joinResult)
         return;
 
-    QList<QByteArray> datagrams = QList<QByteArray>()
-                                  << QByteArray("0123")
-                                  << QByteArray("4567")
-                                  << QByteArray("89ab")
-                                  << QByteArray("cdef");
+    const QByteArray datagrams[] = {
+        "0123"_ba,
+        "4567"_ba,
+        "89ab"_ba,
+        "cdef"_ba,
+    };
 
     QUdpSocket sender;
     sender.bind();
-    foreach (const QByteArray &datagram, datagrams) {
+    for (const QByteArray &datagram : datagrams) {
         QNetworkDatagram dgram(datagram, groupAddress, receiver.localPort());
         dgram.setInterfaceIndex(interfaceForGroup(groupAddress).index());
         QCOMPARE(int(sender.writeDatagram(dgram)),

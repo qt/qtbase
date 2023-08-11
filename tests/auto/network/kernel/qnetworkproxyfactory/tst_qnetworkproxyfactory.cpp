@@ -149,16 +149,15 @@ void tst_QNetworkProxyFactory::systemProxyForQuery() const
 
     QElapsedTimer sw;
     sw.start();
-    QList<QNetworkProxy> systemProxyList = QNetworkProxyFactory::systemProxyForQuery(query);
+    const QList<QNetworkProxy> systemProxyList = QNetworkProxyFactory::systemProxyForQuery(query);
     qDebug() << sw.elapsed() << "ms";
     QVERIFY(!systemProxyList.isEmpty());
 
     // for manual comparison with system
     qDebug() << systemProxyList;
 
-    foreach (const QNetworkProxy &proxy, systemProxyList) {
+    for (const QNetworkProxy &proxy : systemProxyList)
         QVERIFY((requiredCapabilities == 0) || (proxy.capabilities() & requiredCapabilities));
-    }
 }
 
 void tst_QNetworkProxyFactory::systemProxyForQuery_local()

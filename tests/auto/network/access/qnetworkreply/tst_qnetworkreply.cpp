@@ -5386,13 +5386,9 @@ void tst_QNetworkReply::emitAllUploadProgressSignals()
     QNetworkRequest catchAllSignalsRequest(normalRequest);
     catchAllSignalsRequest.setAttribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute, true);
 
-    QList<QNetworkRequest> requests;
-    requests << normalRequest << catchAllSignalsRequest;
-
     QList<int> signalCount;
 
-    foreach (const QNetworkRequest &request, requests) {
-
+    for (const QNetworkRequest &request : {normalRequest, catchAllSignalsRequest}) {
         sourceFile.seek(0);
         QNetworkReplyPtr reply(manager.post(request, &sourceFile));
         QSignalSpy spy(reply.data(), SIGNAL(uploadProgress(qint64,qint64)));
