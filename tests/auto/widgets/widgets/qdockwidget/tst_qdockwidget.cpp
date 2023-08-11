@@ -1442,10 +1442,10 @@ void tst_QDockWidget::floatingTabs()
     qCDebug(lcTestDockWidget) << "Checking path consistency" << layout->layoutState.indexOf(d1) << layout->layoutState.indexOf(d2);
 
     // Path1 must be identical
-    QTRY_VERIFY(path1 == layout->layoutState.indexOf(d1));
+    QTRY_COMPARE(path1, layout->layoutState.indexOf(d1));
 
     // d1 must have a gap item due to size change
-    QTRY_VERIFY(layout->layoutState.indexOf(d2) == QList<int>() << path2 << 0);
+    QTRY_COMPARE(layout->layoutState.indexOf(d2), QList<int>() << path2 << 0);
 #else
     QSKIP("test requires -developer-build option");
 #endif // QT_BUILD_INTERNAL
