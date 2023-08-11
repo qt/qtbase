@@ -967,7 +967,7 @@ void tst_QTcpServer::linkLocal()
 
     QList<QTcpServer*> servers;
     quint16 port = 0;
-    foreach (const QHostAddress& addr, addresses) {
+    for (const QHostAddress &addr : std::as_const(addresses)) {
         QTcpServer *server = new QTcpServer;
         QVERIFY(server->listen(addr, port));
         port = server->serverPort(); //listen to same port on different interfaces
@@ -975,7 +975,7 @@ void tst_QTcpServer::linkLocal()
     }
 
     QList<QTcpSocket*> clients;
-    foreach (const QHostAddress& addr, addresses) {
+    for (const QHostAddress &addr : std::as_const(addresses)) {
         //unbound socket
         QTcpSocket *socket = new QTcpSocket;
         socket->connectToHost(addr, port);
@@ -990,7 +990,7 @@ void tst_QTcpServer::linkLocal()
     }
 
     //each server should have two connections
-    foreach (QTcpServer* server, servers) {
+    for (QTcpServer *server : std::as_const(servers)) {
         //qDebug() << "checking for connections" << server->serverAddress() << ":" << server->serverPort();
         QVERIFY(server->waitForNewConnection(5000));
         QTcpSocket* remote = server->nextPendingConnection();

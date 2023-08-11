@@ -1084,7 +1084,7 @@ void tst_QSslCertificate::verify()
     toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-addons-mozilla-org-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     errors = QSslCertificate::verify(toVerify);
     bool foundBlack = false;
-    foreach (const QSslError &error, errors) {
+    for (const QSslError &error : std::as_const(errors)) {
         if (error.error() == QSslError::CertificateBlacklisted) {
             foundBlack = true;
             break;

@@ -413,7 +413,7 @@ void tst_QUdpSocket::broadcasting()
             for (int k = 0; k < 4; k++) {
                 broadcastSocket.writeDatagram(message[i], strlen(message[i]),
                     QHostAddress::Broadcast, serverPort);
-                foreach (QHostAddress addr, broadcastAddresses)
+                for (const QHostAddress &addr : std::as_const(broadcastAddresses))
                     broadcastSocket.writeDatagram(message[i], strlen(message[i]), addr, serverPort);
             }
             QTestEventLoop::instance().enterLoop(15);
@@ -1635,7 +1635,7 @@ void tst_QUdpSocket::linkLocalIPv6()
 
     QList <QUdpSocket*> sockets;
     quint16 port = 0;
-    foreach (const QHostAddress& addr, addresses) {
+    for (const QHostAddress &addr : std::as_const(addresses)) {
         QUdpSocket *s = new QUdpSocket;
         QVERIFY2(s->bind(addr, port), addr.toString().toLatin1()
                  + '/' + QByteArray::number(port) + ": " + qPrintable(s->errorString()));
@@ -1644,7 +1644,7 @@ void tst_QUdpSocket::linkLocalIPv6()
     }
 
     QByteArray testData("hello");
-    foreach (QUdpSocket *s, sockets) {
+    for (QUdpSocket *s : std::as_const(sockets)) {
         QUdpSocket neutral;
         QVERIFY(neutral.bind(QHostAddress(QHostAddress::AnyIPv6)));
         QSignalSpy neutralReadSpy(&neutral, SIGNAL(readyRead()));
@@ -1670,9 +1670,8 @@ void tst_QUdpSocket::linkLocalIPv6()
         QCOMPARE(dgram.data(), testData);
 
         //sockets bound to other interfaces shouldn't have received anything
-        foreach (QUdpSocket *s2, sockets) {
+        for (QUdpSocket *s2 : std::as_const(sockets))
             QCOMPARE((int)s2->bytesAvailable(), 0);
-        }
 
         //Sending to the same address with different scope should normally fail
         //However it will pass if there is a route between two interfaces,
@@ -1720,7 +1719,7 @@ void tst_QUdpSocket::linkLocalIPv4()
 
     QList <QUdpSocket*> sockets;
     quint16 port = 0;
-    foreach (const QHostAddress& addr, addresses) {
+    for (const QHostAddress &addr : std::as_const(addresses)) {
         QUdpSocket *s = new QUdpSocket;
         QVERIFY2(s->bind(addr, port), qPrintable(s->errorString()));
         port = s->localPort(); //bind same port, different networks
@@ -1731,7 +1730,7 @@ void tst_QUdpSocket::linkLocalIPv4()
     QVERIFY(neutral.bind(QHostAddress(QHostAddress::AnyIPv4)));
 
     QByteArray testData("hello");
-    foreach (QUdpSocket *s, sockets) {
+    for (QUdpSocket *s : std::as_const(sockets)) {
         QVERIFY(s->writeDatagram(testData, s->localAddress(), neutral.localPort()));
         QVERIFY2(neutral.waitForReadyRead(10000), QtNetworkSettings::msgSocketError(neutral).constData());
 
@@ -1763,9 +1762,8 @@ void tst_QUdpSocket::linkLocalIPv4()
         QCOMPARE(dgram.data(), testData);
 
         //sockets bound to other interfaces shouldn't have received anything
-        foreach (QUdpSocket *s2, sockets) {
+        for (QUdpSocket *s2 : std::as_const(sockets))
             QCOMPARE((int)s2->bytesAvailable(), 0);
-        }
     }
     qDeleteAll(sockets);
 }
