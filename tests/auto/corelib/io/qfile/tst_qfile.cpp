@@ -410,7 +410,8 @@ void tst_QFile::cleanup()
 
     // Clean out everything except the readonly-files.
     const QDir dir(m_temporaryDir.path());
-    foreach (const QFileInfo &fi, dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot)) {
+    const auto entries = dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+    for (const QFileInfo &fi : entries) {
         const QString fileName = fi.fileName();
         if (fileName != QLatin1String(noReadFile) && fileName != QLatin1String(readOnlyFile)) {
             const QString absoluteFilePath = fi.absoluteFilePath();

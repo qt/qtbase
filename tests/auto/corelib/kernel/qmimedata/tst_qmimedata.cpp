@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 
 #include <QMimeData>
@@ -312,7 +310,8 @@ void tst_QMimeData::setUrls() const
     QCOMPARE(mimeData.text(), QString("http://qt-project.org\nhttp://www.google.com\n"));
 
     // test and verify that setData doesn't corrupt url content
-    foreach (const QString &format, mimeData.formats()) {
+    const auto allFormats = mimeData.formats();
+    for (const QString &format : allFormats) {
          QVariant before = mimeData.retrieveData(format, QMetaType(QMetaType::QByteArray));
          mimeData.setData(format, mimeData.data(format));
          QVariant after = mimeData.retrieveData(format, QMetaType(QMetaType::QByteArray));

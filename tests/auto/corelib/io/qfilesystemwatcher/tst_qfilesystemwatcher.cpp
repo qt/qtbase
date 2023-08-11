@@ -739,7 +739,8 @@ public slots:
         QCOMPARE(finfo.absolutePath(), moveSrcDir.absolutePath());
 
         if (!added) {
-            foreach (const QFileInfo &fi, moveDestination.entryInfoList(QDir::Files | QDir::NoSymLinks))
+            const auto entries = moveDestination.entryInfoList(QDir::Files | QDir::NoSymLinks);
+            for (const QFileInfo &fi : entries)
                 watcher->addPath(fi.absoluteFilePath());
             added = true;
         }
@@ -793,7 +794,7 @@ void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
     QCOMPARE(changedSpy.count(), 0);
 
     // move files to second directory
-    foreach (const QFileInfo &finfo, files)
+    for (const QFileInfo &finfo : files)
         QVERIFY(testDir.rename(finfo.fileName(), QString("movehere/%2").arg(finfo.fileName())));
 
     QCoreApplication::processEvents();

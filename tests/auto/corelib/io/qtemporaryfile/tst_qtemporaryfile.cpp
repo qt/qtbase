@@ -524,7 +524,8 @@ void tst_QTemporaryFile::openOnRootDrives()
 #endif
     // If it's possible to create a file in the root directory, it
     // must be possible to create a temp file there too.
-    foreach (QFileInfo driveInfo, QDir::drives()) {
+    const auto drives = QDir::drives();
+    for (const QFileInfo &driveInfo : drives) {
         QFile testFile(driveInfo.filePath() + "XXXXXX.txt");
         if (testFile.open(QIODevice::ReadWrite)) {
             testFile.remove();

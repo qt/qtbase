@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 #include <QtXml/QtXml>
 #include <QtGui/QFontInfo>
@@ -72,7 +70,8 @@ void tst_QCssParser::scanner_data()
 #endif
     d.cd("testdata");
     d.cd("scanner");
-    foreach (QFileInfo test, d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+    const auto entries = d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QFileInfo &test : entries) {
         QString dir = test.absoluteFilePath() + QDir::separator();
         QTest::newRow(qPrintable(test.baseName()))
             << dir + "input"

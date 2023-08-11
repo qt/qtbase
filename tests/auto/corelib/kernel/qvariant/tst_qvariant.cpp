@@ -3,8 +3,6 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <qvariant.h>
 
 // don't assume <type_traits>
@@ -4375,7 +4373,8 @@ void tst_QVariant::dataStream_data(QDataStream::Version version)
     path = path.prepend(":/stream/").append("/");
     QDir dir(path);
     uint i = 0;
-    foreach (const QFileInfo &fileInfo, dir.entryInfoList(QStringList() << "*.bin")) {
+    const auto entries = dir.entryInfoList(QStringList{u"*.bin"_s});
+    for (const QFileInfo &fileInfo : entries) {
         QTest::newRow((path + fileInfo.fileName()).toLatin1()) << fileInfo.filePath();
         i += 1;
     }
