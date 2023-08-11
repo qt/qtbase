@@ -9652,8 +9652,17 @@ void QRhiCommandBuffer::endExternal()
 }
 
 /*!
-    \return the last available timestamp, in seconds. The value indicates the
-    elapsed time on the GPU during the last completed frame.
+    \return the last available timestamp, in seconds, when
+    \l QRhi::EnableTimestamps was enabled when creating the QRhi. The value
+    indicates the elapsed time on the GPU during the last completed frame.
+
+    \note Do not expect results other than 0 when the QRhi::Timestamps feature
+    is not reported as supported, or when QRhi::EnableTimestamps was not passed
+    to QRhi::create(). There are exceptions to this, because with some graphics
+    APIs (Metal) timings are available without having to perform extra
+    operations (timestamp queries), but portable applications should always
+    consciously opt-in to timestamp collection when they know it is needed, and
+    call this function accordingly.
 
     Care must be exercised with the interpretation of the value, as its
     precision and granularity is often not controlled by Qt, and depends on the
@@ -9661,25 +9670,47 @@ void QRhiCommandBuffer::endExternal()
     the values between different graphics APIs and hardware is discouraged and
     may be meaningless.
 
-    The timing values may become available asynchronously. The returned value
-    may therefore be 0 or the last known value referring to some previous
-    frame. The value my also become 0 again under certain conditions, such as
-    when resizing the window. It can be expected that the most up-to-date
-    available value is retrieved in beginFrame() and becomes queriable via this
-    function once beginFrame() returns.
+    When the frame was recorded with \l{QRhi::beginFrame()}{beginFrame()} and
+    \l{QRhi::endFrame()}{endFrame()}, i.e., with a swapchain, the timing values
+    will likely become available asynchronously. The returned value may
+    therefore be 0 (e.g., for the first 1-2 frames) or the last known value
+    referring to some previous frame. The value my also
+    become 0 again under certain conditions, such as when resizing the window.
+    It can be expected that the most up-to-date available value is retrieved in
+    beginFrame() and becomes queriable via this function once beginFrame()
+    returns.
 
     \note Do not assume that the value refers to the previous
     (\c{currently_recorded - 1}) frame. It may refer to \c{currently_recorded -
     2} or \c{currently_recorded - 3} as well. The exact behavior may depend on
     the graphics API and its implementation.
 
-    \note The result is always 0 when the QRhi::Timestamps feature is not
-    reported as supported, or when QRhi::EnableTimestamps was not passed to
-    QRhi::create(). There are exceptions to the latter, because with some
-    graphics APIs timings are available without having to perform extra
-    operations, but portable applications should always consciously opt-in to
-    timestamp collection when they know it is needed, and call this function
-    accordingly.
+    On the other hand, with offscreen frames the returned value is up-to-date
+    once \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} returns, because
+    offscreen frames reduce GPU pipelining and wait the the commands to be
+    complete.
+
+    \note This means that, unlike with swapchain frames, with offscreen frames
+    the returned value is guaranteed to refer to the frame that has just been
+    submitted and completed. (assuming this function is called after
+    endOffscreenFrame() but before the next beginOffscreenFrame())
+
+    Watch out for the consequences of GPU frequency scaling and GPU clock
+    changes, depending on the platform. For example, on Windows the returned
+    timing may vary in a quite wide range between frames with modern graphics
+    cards, even when submitting frames with a similar, or the same workload.
+    This is out of scope for Qt to control and solve, generally speaking.
+    However, the D3D12 backend automatically calls
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-id3d12device-setstablepowerstate}{ID3D12Device::SetStablePowerState()}
+    whenever the environment variable \c QT_D3D_STABLE_POWER_STATE is set to a
+    non-zero value. This can greatly stabilize the result. It can also have a
+    non-insignificant effect on the CPU-side timings measured via QElapsedTimer
+    for example, especially when offscreen frames are involved.
+
+    \note Do not and never ship applications to production with
+    \c QT_D3D_STABLE_POWER_STATE set. See the Windows API documentation for details.
+
+    \sa QRhi::Timestamps, QRhi::EnableTimestamps
  */
 double QRhiCommandBuffer::lastCompletedGpuTime()
 {
