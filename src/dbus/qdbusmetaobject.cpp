@@ -116,11 +116,8 @@ static int registerComplexDBusType(const QByteArray &typeName)
     {
         ~Hash()
         {
-            for (QMetaType entry : std::as_const(*this)) {
-                auto iface = static_cast<const QDBusRawTypeHandler *>(entry.iface());
+            for (QMetaType entry : *this)
                 QMetaType::unregisterMetaType(std::move(entry));
-                delete iface;
-            }
         }
     } hash;
     QMutexLocker lock(&mutex);
