@@ -4,6 +4,7 @@
 /*!
     \example secureudpserver
     \title DTLS server
+    \examplecategory {Networking}
     \ingroup examples-network
     \brief This examples demonstrates how to implement a simple DTLS server.
 
