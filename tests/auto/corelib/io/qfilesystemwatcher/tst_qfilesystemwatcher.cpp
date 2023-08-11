@@ -1,8 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 
 #include <QCoreApplication>
@@ -780,9 +778,9 @@ void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
     QVERIFY(watcher.addPath(movePath));
 
     // add files to watcher
-    QFileInfoList files = testDir.entryInfoList(QDir::Files | QDir::NoSymLinks);
+    const QFileInfoList files = testDir.entryInfoList(QDir::Files | QDir::NoSymLinks);
     QCOMPARE(files.size(), fileCount);
-    foreach (const QFileInfo &finfo, files)
+    for (const QFileInfo &finfo : files)
         QVERIFY(watcher.addPath(finfo.absoluteFilePath()));
 
     // create the signal receiver

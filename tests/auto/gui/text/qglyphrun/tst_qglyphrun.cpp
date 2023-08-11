@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 
 #include <qglyphrun.h>
@@ -410,7 +408,7 @@ void tst_QGlyphRun::drawMultiScriptText1()
     QPixmap drawGlyphs(1000, 1000);
     drawGlyphs.fill(Qt::white);
 
-    QList<QGlyphRun> glyphsList = textLayout.glyphRuns();
+    const QList<QGlyphRun> glyphsList = textLayout.glyphRuns();
     QCOMPARE(glyphsList.size(), 1);
 
     {
@@ -420,8 +418,7 @@ void tst_QGlyphRun::drawMultiScriptText1()
 
     {
         QPainter p(&drawGlyphs);
-        foreach (QGlyphRun glyphs, glyphsList)
-            p.drawGlyphRun(QPointF(50, 50), glyphs);
+        p.drawGlyphRun(QPointF(50, 50), glyphsList.first());
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -451,7 +448,7 @@ void tst_QGlyphRun::drawMultiScriptText2()
     QPixmap drawGlyphs(1000, 1000);
     drawGlyphs.fill(Qt::white);
 
-    QList<QGlyphRun> glyphsList = textLayout.glyphRuns();
+    const QList<QGlyphRun> glyphsList = textLayout.glyphRuns();
     QCOMPARE(glyphsList.size(), 2);
 
     {
@@ -461,7 +458,7 @@ void tst_QGlyphRun::drawMultiScriptText2()
 
     {
         QPainter p(&drawGlyphs);
-        foreach (QGlyphRun glyphs, glyphsList)
+        for (const QGlyphRun &glyphs : glyphsList)
             p.drawGlyphRun(QPointF(50, 50), glyphs);
     }
 

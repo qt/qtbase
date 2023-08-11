@@ -1,8 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 #include <QAtomicInt>
 #include <QThread>
@@ -562,25 +560,22 @@ void tst_QList::constructors_reserveAndInitialize() const
 {
     // default-initialise items
 
-    QList<int> myInt(5, 42);
+    const QList<int> myInt(5, 42);
     QVERIFY(myInt.capacity() == 5);
-    foreach (int meaningoflife, myInt) {
+    for (int meaningoflife : myInt)
         QCOMPARE(meaningoflife, 42);
-    }
 
-    QList<QString> myString(5, QString::fromLatin1("c++"));
+    const QList<QString> myString(5, QString::fromLatin1("c++"));
     QVERIFY(myString.capacity() == 5);
     // make sure all items are initialised ok
-    foreach (QString meaningoflife, myString) {
+    for (const QString &meaningoflife : myString)
         QCOMPARE(meaningoflife, QString::fromLatin1("c++"));
-    }
 
-    QList<Custom> myCustom(5, Custom('n'));
+    const QList<Custom> myCustom(5, Custom('n'));
     QVERIFY(myCustom.capacity() == 5);
     // make sure all items are initialised ok
-    foreach (Custom meaningoflife, myCustom) {
+    for (Custom meaningoflife : myCustom)
         QCOMPARE(meaningoflife.i, 'n');
-    }
 }
 
 template<typename T>

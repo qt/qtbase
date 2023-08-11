@@ -2,8 +2,6 @@
 // Copyright (C) 2020 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <qstandardpaths.h>
 #include <QTest>
 #include <QOperatingSystemVersion>
@@ -409,7 +407,7 @@ static inline QFileInfo findSh()
     QByteArray pEnv = qgetenv("PATH");
     const QLatin1Char pathSep(':');
     const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(pathSep, Qt::SkipEmptyParts);
-    foreach (const QString &path, rawPaths) {
+    for (const QString &path : rawPaths) {
         if (QFile::exists(path + sh))
             return QFileInfo(path + sh);
     }

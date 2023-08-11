@@ -107,8 +107,8 @@ void tst_QArrayData::simpleVector()
     SimpleVector<int> v4(nullptr, data, 0);
     SimpleVector<int> v5(nullptr, data, 1);
     SimpleVector<int> v6(nullptr, data, 7);
-    SimpleVector<int> v7(10, 5);
-    SimpleVector<int> v8(array, array + sizeof(array)/sizeof(*array));
+    const SimpleVector<int> v7(10, 5);
+    const SimpleVector<int> v8(array, array + sizeof(array)/sizeof(*array));
 
     v3 = v1;
     v1.swap(v3);
@@ -236,7 +236,7 @@ void tst_QArrayData::simpleVector()
 
     {
         int count = 0;
-        Q_FOREACH (int value, v7) {
+        for (int value : v7) {
             QCOMPARE(value, 5);
             ++count;
         }
@@ -246,7 +246,7 @@ void tst_QArrayData::simpleVector()
 
     {
         int count = 0;
-        Q_FOREACH (int value, v8) {
+        for (int value : v8) {
             QCOMPARE(value, count);
             ++count;
         }

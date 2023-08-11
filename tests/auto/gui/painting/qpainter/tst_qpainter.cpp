@@ -3786,10 +3786,10 @@ static QLinearGradient inverseGradient(QLinearGradient g)
 {
     QLinearGradient g2 = g;
 
-    QGradientStops stops = g.stops();
+    const QGradientStops stops = g.stops();
 
     QGradientStops inverse;
-    foreach (QGradientStop stop, stops)
+    for (const QGradientStop &stop : stops)
         inverse << QGradientStop(1 - stop.first, stop.second);
 
     g2.setStops(inverse);

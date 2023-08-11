@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QCoreApplication>
 #include <QDomDocument>
 #include <QMetaType>
@@ -110,7 +108,7 @@ void tst_QDBusXmlParser::parsing_data()
 
 void tst_QDBusXmlParser::parsing_common(const QString &xmlData)
 {
-    QDBusIntrospection::Object obj =
+    const QDBusIntrospection::Object obj =
         QDBusIntrospection::parseObject(xmlData, "local.testing", "/");
     QFETCH(int, interfaceCount);
     QFETCH(int, objectCount);
@@ -124,7 +122,7 @@ void tst_QDBusXmlParser::parsing_common(const QString &xmlData)
 
     // also verify the naming
     int i = 0;
-    foreach (QString name, obj.interfaces) {
+    for (const QString &name : obj.interfaces) {
         const QString expectedName = QString("iface.iface%1").arg(i+1);
         QCOMPARE(name, expectedName);
 
@@ -134,7 +132,7 @@ void tst_QDBusXmlParser::parsing_common(const QString &xmlData)
     }
 
     i = 0;
-    foreach (QString name, obj.childObjects)
+    for (const QString &name : obj.childObjects)
         QCOMPARE(name, QString("obj%1").arg(++i));
 }
 

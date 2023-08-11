@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 
 #include <qeasingcurve.h>
@@ -576,10 +574,10 @@ void tst_QEasingCurve::bezierSpline_data()
 
 static inline void setupBezierSpline(QEasingCurve *easingCurve, const QString &string)
 {
-    QStringList pointStr = string.split(QLatin1Char(' '));
+    const QStringList pointStr = string.split(QLatin1Char(' '));
 
     QList<QPointF> points;
-    foreach (const QString &str, pointStr) {
+    for (const QString &str : pointStr) {
         QStringList coordStr = str.split(QLatin1Char(','));
         QPointF point(coordStr.first().toDouble(), coordStr.last().toDouble());
         points.append(point);
@@ -644,9 +642,9 @@ void tst_QEasingCurve::tcbSpline_data()
 
 static inline void setupTCBSpline(QEasingCurve *easingCurve, const QString &string)
 {
-    QStringList pointStr = string.split(QLatin1Char(' '));
+    const QStringList pointStr = string.split(QLatin1Char(' '));
 
-    foreach (const QString &str, pointStr) {
+    for (const QString &str : pointStr) {
         QStringList coordStr = str.split(QLatin1Char(','));
         Q_ASSERT(coordStr.size() == 5);
         QPointF point(coordStr.first().toDouble(), coordStr.at(1).toDouble());

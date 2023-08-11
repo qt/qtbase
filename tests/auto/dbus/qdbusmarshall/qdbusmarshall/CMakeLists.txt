@@ -9,8 +9,6 @@ qt_internal_add_test(tst_qdbusmarshall
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_qdbusmarshall.cpp
-    NO_PCH_SOURCES
-        ../tst_qdbusmarshall.cpp # undef QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate

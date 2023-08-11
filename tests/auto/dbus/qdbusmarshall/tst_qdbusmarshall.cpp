@@ -2,8 +2,6 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QtCore/QtCore>
 #include <QTest>
 #include <QTestEventLoop>
@@ -1310,7 +1308,7 @@ void tst_QDBusMarshall::demarshallStrings_data()
             << ValSigPair(QVariant::fromValue(QString()), 's')
             << ValSigPair(QVariant::fromValue(QDBusObjectPath()), 'o')
             << ValSigPair(QVariant::fromValue(QDBusSignature()), 'g');
-    foreach (ValSigPair valSigPair, nullStringTypes) {
+    for (const ValSigPair &valSigPair : nullStringTypes) {
         QTest::newRow("bool(false)") << QVariant(false) << valSigPair.second << valSigPair.first;
         QTest::newRow("bool(true)") << QVariant(true) << valSigPair.second << valSigPair.first;
         QTest::newRow("byte") << QVariant::fromValue(uchar(1)) << valSigPair.second << valSigPair.first;
