@@ -41,9 +41,14 @@ instructions:
         - condition: property
           property: host.os
           equals_value: Windows
-        - condition: property
-          property: target.osVersion
-          not_in_values: [WebAssembly, Android_ANY]
+        - condition: and
+          conditions:
+            - condition: property
+              property: target.os
+              not_equals_value: QNX
+            - condition: property
+              property: target.osVersion
+              not_in_values: [WebAssembly, Android_ANY]
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_BUILD_LIBEXEC_DIR
     variableValue: "{{.Env.COIN_CMAKE_BUILD_DIR}}{{.Env.CI_PATH_SEP}}bin"
@@ -53,9 +58,14 @@ instructions:
         - condition: property
           property: host.os
           equals_value: Windows
-        - condition: property
-          property: target.osVersion
-          not_in_values: [WebAssembly, Android_ANY]
+        - condition: and
+          conditions:
+            - condition: property
+              property: target.os
+              not_equals_value: QNX
+            - condition: property
+              property: target.osVersion
+              not_in_values: [WebAssembly, Android_ANY]
   - !include "{{qt/qtbase}}/call_host_install.yaml"
   - type: EnvironmentVariable
     variableName: DESTDIR
