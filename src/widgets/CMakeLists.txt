@@ -805,8 +805,6 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_graphicsview
         graphicsview/qgraphicsview.cpp graphicsview/qgraphicsview.h graphicsview/qgraphicsview_p.h
         graphicsview/qgraphicswidget.cpp graphicsview/qgraphicswidget.h graphicsview/qgraphicswidget_p.cpp graphicsview/qgraphicswidget_p.h
         graphicsview/qsimplex_p.cpp graphicsview/qsimplex_p.h
-    NO_PCH_SOURCES
-        graphicsview/qgraphicsanchorlayout_p.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_easingcurve AND QT_FEATURE_graphicsview

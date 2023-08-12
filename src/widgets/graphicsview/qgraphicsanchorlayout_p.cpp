@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include "qgraphicsanchorlayout_p.h"
 
 #include <QtWidgets/qwidget.h>
@@ -461,9 +459,7 @@ void SequentialAnchorData::updateChildrenSizes()
     // "from" or "to", that _contains_ one of them.
     AnchorVertex *prev = from;
 
-    for (int i = 0; i < m_edges.size(); ++i) {
-        AnchorData *e = m_edges.at(i);
-
+    for (AnchorData *e : std::as_const(m_edges)) {
         const bool edgeIsForward = (e->from == prev);
         if (edgeIsForward) {
             e->sizeAtMinimum = interpolate(minFactor, e->minSize, e->minPrefSize,
@@ -498,9 +494,7 @@ void SequentialAnchorData::calculateSizeHints()
 
     AnchorVertex *prev = from;
 
-    for (int i = 0; i < m_edges.size(); ++i) {
-        AnchorData *edge = m_edges.at(i);
-
+    for (AnchorData *edge : std::as_const(m_edges)) {
         const bool edgeIsForward = (edge->from == prev);
         if (edgeIsForward) {
             minSize += edge->minSize;
@@ -534,12 +528,10 @@ void AnchorData::dump(int indent) {
         p->firstEdge->dump(indent+2);
         p->secondEdge->dump(indent+2);
     } else if (type == Sequential) {
-        SequentialAnchorData *s = static_cast<SequentialAnchorData *>(this);
-        int kids = s->m_edges.count();
-        qDebug("%*s type: sequential(%d):", indent, "", kids);
-        for (int i = 0; i < kids; ++i) {
-            s->m_edges.at(i)->dump(indent+2);
-        }
+        const auto *s = static_cast<SequentialAnchorData *>(this);
+        qDebug("%*s type: sequential(%lld):", indent, "", s->m_edges.size());
+        for (AnchorData *e : s->m_edges)
+            e->dump(indent + 2);
     } else {
         qDebug("%*s type: Normal:", indent, "");
     }
@@ -1155,12 +1147,10 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedAnchor(AnchorData *edge)
         g.createEdge(edge->from, edge->to, edge);
 
     } else if (edge->type == AnchorData::Sequential) {
-        SequentialAnchorData *sequence = static_cast<SequentialAnchorData *>(edge);
+        const auto *sequence = static_cast<SequentialAnchorData *>(edge);
 
-        for (int i = 0; i < sequence->m_edges.size(); ++i) {
-            AnchorData *data = sequence->m_edges.at(i);
+        for (AnchorData *data : sequence->m_edges)
             restoreSimplifiedAnchor(data);
-        }
 
         delete sequence;
 
@@ -2556,7 +2546,7 @@ void QGraphicsAnchorLayoutPrivate::identifyNonFloatItems_helper(const AnchorData
             nonFloatingItemsIdentifiedSoFar->insert(ad->item);
         break;
     case AnchorData::Sequential:
-        foreach (const AnchorData *d, static_cast<const SequentialAnchorData *>(ad)->m_edges)
+        for (const AnchorData *d : static_cast<const SequentialAnchorData *>(ad)->m_edges)
             identifyNonFloatItems_helper(d, nonFloatingItemsIdentifiedSoFar);
         break;
     case AnchorData::Parallel:
