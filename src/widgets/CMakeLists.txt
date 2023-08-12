@@ -486,8 +486,6 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_menu
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_menubar
     SOURCES
         widgets/qmenubar.cpp widgets/qmenubar.h widgets/qmenubar_p.h
-    NO_PCH_SOURCES
-        widgets/qmenubar.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_progressbar
