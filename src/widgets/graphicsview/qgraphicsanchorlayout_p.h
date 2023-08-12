@@ -168,7 +168,7 @@ struct SequentialAnchorData : public AnchorData
     void calculateSizeHints();
 
     QList<AnchorVertex *> m_children; // list of vertices in the sequence
-    QList<AnchorData *> m_edges; // keep the list of edges too.
+    const QList<AnchorData *> m_edges; // keep the list of edges too.
 };
 
 struct ParallelAnchorData : public AnchorData

@@ -459,7 +459,7 @@ void SequentialAnchorData::updateChildrenSizes()
     // "from" or "to", that _contains_ one of them.
     AnchorVertex *prev = from;
 
-    for (AnchorData *e : std::as_const(m_edges)) {
+    for (AnchorData *e : m_edges) {
         const bool edgeIsForward = (e->from == prev);
         if (edgeIsForward) {
             e->sizeAtMinimum = interpolate(minFactor, e->minSize, e->minPrefSize,
@@ -494,7 +494,7 @@ void SequentialAnchorData::calculateSizeHints()
 
     AnchorVertex *prev = from;
 
-    for (AnchorData *edge : std::as_const(m_edges)) {
+    for (AnchorData *edge : m_edges) {
         const bool edgeIsForward = (edge->from == prev);
         if (edgeIsForward) {
             minSize += edge->minSize;
