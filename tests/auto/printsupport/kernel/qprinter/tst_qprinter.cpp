@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 
 #include <qprinter.h>
@@ -905,7 +903,8 @@ void tst_QPrinter::duplex()
         QPrinter::DuplexMode expected = printerInfo.defaultDuplexMode();
         QCOMPARE(native.duplex(), expected);
         // Test set/get (skipping Auto as that will return something different)
-        foreach (QPrinter::DuplexMode mode, printerInfo.supportedDuplexModes()) {
+        const auto supported = printerInfo.supportedDuplexModes();
+        for (QPrinter::DuplexMode mode : supported) {
             if (mode != expected && mode != QPrinter::DuplexAuto) {
                 expected = mode;
                 break;
@@ -1195,7 +1194,8 @@ void tst_QPrinter::paperSource()
         QPrinter::PaperSource expected = QPrinter::Manual;
 #ifdef Q_OS_WIN
         expected = QPrinter::Auto;
-        foreach (QPrinter::PaperSource supported, native.supportedPaperSources()) {
+        const auto sources = native.supportedPaperSources();
+        for (QPrinter::PaperSource supported : sources) {
             if (supported != QPrinter::Auto) {
                 expected = supported;
                 break;
@@ -1317,7 +1317,8 @@ void tst_QPrinter::printerName()
 
         // Test set/get
         QString expected = QPrinterInfo::defaultPrinter().printerName();
-        foreach (const QPrinterInfo &available, QPrinterInfo::availablePrinters()) {
+        const auto allAvailable = QPrinterInfo::availablePrinters();
+        for (const QPrinterInfo &available : allAvailable) {
             if (available.printerName() != expected) {
                 expected = available.printerName();
                 break;
@@ -1410,7 +1411,7 @@ void tst_QPrinter::resolution()
 #ifdef Q_OS_MAC
         // QMacPrintEngine chooses the closest supported resolution.
         const QList<int> all_supported = native.supportedResolutions();
-        foreach (int supported, all_supported) {
+        for (int supported : all_supported) {
             // Test setting a supported resolution
             int requested = supported;
             native.setResolution(requested);
