@@ -139,14 +139,8 @@ class AccessibleProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    AccessibleProxyModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent)
-    {
-    }
-
-    QModelIndexList persistent()
-    {
-        return persistentIndexList();
-    }
+    using QSortFilterProxyModel::QSortFilterProxyModel;
+    using QSortFilterProxyModel::persistentIndexList;
 };
 
 class ObservingObject : public QObject
@@ -159,15 +153,18 @@ public:
         storePersistentFailureCount(0),
         checkPersistentFailureCount(0)
     {
-        connect(m_proxy, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-                SLOT(storePersistent()));
-        connect(m_proxy, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
-                SLOT(checkPersistent()));
+        // moveRows signals can not come through because the proxy might sort/filter
+        // out some of the moved rows. therefore layoutChanged signals are sent from
+        // the QSFPM and we have to listen to them here to get properly notified
+        connect(m_proxy, &QAbstractProxyModel::layoutAboutToBeChanged, this,
+                &ObservingObject::storePersistent);
+        connect(m_proxy, &QAbstractProxyModel::layoutChanged, this,
+                &ObservingObject::checkPersistent);
     }
 
 public slots:
 
-    void storePersistent(const QModelIndex &parent)
+    void storePersistentRecursive(const QModelIndex &parent)
     {
         for (int row = 0; row < m_proxy->rowCount(parent); ++row) {
             QModelIndex proxyIndex = m_proxy->index(row, 0, parent);
@@ -183,26 +180,27 @@ public slots:
             m_persistentSourceIndexes.append(sourceIndex);
             m_persistentProxyIndexes.append(proxyIndex);
             if (m_proxy->hasChildren(proxyIndex))
-                storePersistent(proxyIndex);
+                storePersistentRecursive(proxyIndex);
         }
     }
 
-    void storePersistent()
+    void storePersistent(const QList<QPersistentModelIndex> &parents = {})
     {
-        // This method is called from rowsAboutToBeMoved. Persistent indexes should be valid
+        // This method is called from source model rowsAboutToBeMoved. Persistent indexes should be valid
         foreach (const QModelIndex &idx, m_persistentProxyIndexes)
             if (!idx.isValid()) {
                 qWarning("%s: persistentProxyIndexes contains invalid index", Q_FUNC_INFO);
                 ++storePersistentFailureCount;
             }
-
-        if (!m_proxy->persistent().isEmpty()) {
-            qWarning("%s: proxy should have no persistent indexes when storePersistent called",
+        const auto validCount = std::count_if(parents.begin(), parents.end(),
+                                              [](const auto &idx) { return idx.isValid(); });
+        if (m_proxy->persistentIndexList().size() != validCount) {
+            qWarning("%s: proxy should have no additional persistent indexes when storePersistent called",
                      Q_FUNC_INFO);
             ++storePersistentFailureCount;
         }
-        storePersistent(QModelIndex());
-        if (m_proxy->persistent().isEmpty()) {
+        storePersistentRecursive(QModelIndex());
+        if (m_proxy->persistentIndexList().isEmpty()) {
             qWarning("%s: proxy should have persistent index after storePersistent called",
                      Q_FUNC_INFO);
             ++storePersistentFailureCount;
@@ -211,6 +209,9 @@ public slots:
 
     void checkPersistent()
     {
+        QVERIFY(!m_persistentProxyIndexes.isEmpty());
+        QVERIFY(!m_persistentSourceIndexes.isEmpty());
+
         for (int row = 0; row < m_persistentProxyIndexes.size(); ++row) {
             m_persistentProxyIndexes.at(row);
             m_persistentSourceIndexes.at(row);
