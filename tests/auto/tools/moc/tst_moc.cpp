@@ -2,8 +2,6 @@
 // Copyright (C) 2020 Olivier Goffart <ogoffart@woboq.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 #include <QSignalSpy>
 #include <stdio.h>
@@ -1573,7 +1571,8 @@ public:
 static StaticPluginInstance staticInstance;
 
 void tst_Moc::specifyMetaTagsFromCmdline() {
-    foreach (const QStaticPlugin &plugin, QPluginLoader::staticPlugins()) {
+    const auto staticPlugins = QPluginLoader::staticPlugins();
+    for (const QStaticPlugin &plugin : staticPlugins) {
         const QString iid = plugin.metaData().value(QLatin1String("IID")).toString();
         if (iid == QLatin1String("test.meta.tags")) {
             const QJsonArray metaTagsUriList = plugin.metaData().value("uri").toArray();
@@ -3910,7 +3909,7 @@ void tst_Moc::relatedMetaObjectsNameConflict()
 {
     typedef QList<const QMetaObject *> QMetaObjects;
     QFETCH(const QMetaObject*, dependingObject);
-    QFETCH(QMetaObjects, relatedMetaObjects);
+    QFETCH(const QMetaObjects, relatedMetaObjects);
 
     // load all specified metaobjects int a set
     QSet<const QMetaObject*> dependency;
@@ -3921,7 +3920,7 @@ void tst_Moc::relatedMetaObjectsNameConflict()
     }
 
     // check if all required metaobjects are specified
-    foreach (const QMetaObject *mo, relatedMetaObjects)
+    for (const QMetaObject *mo : relatedMetaObjects)
         QVERIFY(dependency.contains(mo));
 
     // check if no additional metaobjects ara specified
