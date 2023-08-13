@@ -1588,14 +1588,44 @@ void tst_QLineEdit::textMask()
     QCOMPARE( testWidget->text(), insertString );
 }
 
+class LineEditChangingText : public QLineEdit
+{
+    Q_OBJECT
+
+public:
+    LineEditChangingText(QWidget *parent) : QLineEdit(parent)
+    {
+        connect(this, &QLineEdit::textEdited, this, &LineEditChangingText::onTextEdited);
+    }
+
+public slots:
+    void onTextEdited(const QString &text)
+    {
+        if (text.length() == 3)
+            setText(text + "-");
+    }
+};
+
 void tst_QLineEdit::setText()
 {
     QLineEdit *testWidget = ensureTestWidget();
-    QSignalSpy editedSpy(testWidget, SIGNAL(textEdited(QString)));
-    QSignalSpy changedSpy(testWidget, SIGNAL(textChanged(QString)));
-    testWidget->setText("hello");
-    QCOMPARE(editedSpy.size(), 0);
-    QCOMPARE(changedSpy.value(0).value(0).toString(), QString("hello"));
+    {
+        QSignalSpy editedSpy(testWidget, &QLineEdit::textEdited);
+        QSignalSpy changedSpy(testWidget, &QLineEdit::textChanged);
+        testWidget->setText("hello");
+        QCOMPARE(editedSpy.size(), 0);
+        QCOMPARE(changedSpy.value(0).value(0).toString(), QString("hello"));
+    }
+
+    QTestEventList keys;
+    keys.addKeyClick(Qt::Key_A);
+    keys.addKeyClick(Qt::Key_B);
+    keys.addKeyClick(Qt::Key_C);
+
+    LineEditChangingText lineEdit(nullptr);
+    keys.simulate(&lineEdit);
+    QCOMPARE(lineEdit.text(), "abc-");
+    QCOMPARE(lineEdit.cursorPosition(), 4);
 }
 
 void tst_QLineEdit::displayText_data()
