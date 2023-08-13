@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include "tst_qmakelib.h"
 
 #include <proitems.h>
@@ -2748,7 +2746,7 @@ static QString formatValue(const ProStringList &vals)
 {
     QString ret;
 
-    foreach (const ProString &str, vals) {
+    for (const ProString &str : vals) {
         ret += QLatin1Char(' ');
         ret += QMakeEvaluator::quoteValue(str);
     }
@@ -2866,9 +2864,9 @@ void tst_qmakelib::proEval()
         qWarning("Got unexpected message(s)");
         verified = false;
     }
-    QStringList missingMsgs = handler.expectedMessages();
+    const QStringList missingMsgs = handler.expectedMessages();
     if (!missingMsgs.isEmpty()) {
-        foreach (const QString &msg, missingMsgs)
+        for (const QString &msg : missingMsgs)
             qWarning("Missing message: %s", qPrintable(msg));
         verified = false;
     }
