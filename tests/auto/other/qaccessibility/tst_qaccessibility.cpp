@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QtCore/qglobal.h>
 #ifdef Q_OS_WIN
 # include <QtCore/qt_windows.h>
@@ -3453,7 +3451,7 @@ void tst_QAccessibility::calendarWidgetTest()
     QCOMPARE(interface->rect(), globalGeometry);
 
     QWidget *navigationBar = 0;
-    foreach (QObject *child, calendarWidget.children()) {
+    for (QObject *child : calendarWidget.children()) {
         if (child->objectName() == QLatin1String("qt_calendar_navigationbar")) {
             navigationBar = static_cast<QWidget *>(child);
             break;
@@ -3463,7 +3461,7 @@ void tst_QAccessibility::calendarWidgetTest()
     QVERIFY(verifyChild(navigationBar, interface, 0, globalGeometry));
 
     QAbstractItemView *calendarView = 0;
-    foreach (QObject *child, calendarWidget.children()) {
+    for (QObject *child : calendarWidget.children()) {
         if (child->objectName() == QLatin1String("qt_calendar_calendarview")) {
             calendarView = static_cast<QAbstractItemView *>(child);
             break;
