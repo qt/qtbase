@@ -1,8 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QtCore/QCoreApplication>
 #include <QtCore/QStringList>
 #include <QTest>
@@ -81,9 +79,9 @@ void tst_BadXml::badDataTag_data() const
 {
     QTest::addColumn<bool>("shouldFail");
 
-    foreach (char const* str, badStrings()) {
-        QTest::newRow(qPrintable(QString("fail %1").arg(str))) << true;
-        QTest::newRow(qPrintable(QString("pass %1").arg(str))) << false;
+    for (const QByteArray &ba: badStrings()) {
+        QTest::addRow("fail %s", ba.constData()) << true;
+        QTest::addRow("pass %s", ba.constData()) << false;
     }
 }
 
@@ -124,9 +122,8 @@ void tst_BadXml::badMessage_data() const
     QTest::addColumn<QByteArray>("message");
 
     int i = 0;
-    foreach (QByteArray const& str, badStrings()) {
+    for (const QByteArray &str : badStrings())
         QTest::newRow(qPrintable(QString::fromLatin1("string %1").arg(i++))) << str;
-    }
 }
 
 /*
@@ -134,13 +131,12 @@ void tst_BadXml::badMessage_data() const
 */
 QList<QByteArray> const& tst_BadXml::badStrings()
 {
-    static QList<QByteArray> out;
-    if (out.isEmpty()) {
-        out << "end cdata ]]> text ]]> more text";
-        out << "quotes \" text\" more text";
-        out << "xml close > open < tags < text";
-        out << "all > \" mixed ]]> up > \" in < the ]]> hopes < of triggering \"< ]]> bugs";
-    }
+    static const QList<QByteArray> out = {
+        "end cdata ]]> text ]]> more text",
+        "quotes \" text\" more text",
+        "xml close > open < tags < text",
+        "all > \" mixed ]]> up > \" in < the ]]> hopes < of triggering \"< ]]> bugs",
+    };
     return out;
 }
 
