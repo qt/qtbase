@@ -7228,10 +7228,9 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     is backed by two color buffers, one for each eye, instead of just one.
 
     When stereoscopic rendering is not supported, the return value will be
-    the default target. For the time being the only backends and 3D API where traditional
-    stereoscopic rendering is supported are OpenGL (excluding OpenGL ES) and Direct3D 11, in
+    the default target. It is supported by all hardware backends except for Metal, in
     combination with \l QSurfaceFormat::StereoBuffers, assuming it is supported
-    by the graphics and display driver stack at run time. All other backends
+    by the graphics and display driver stack at run time. Metal and Null backends
     are going to return the default render target from this overload.
 
     \note the value must not be cached and reused between frames

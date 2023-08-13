@@ -11,17 +11,19 @@
 class Window : public QWindow
 {
 public:
-    Window();
+    Window(QRhi::Implementation graphicsApi);
 
     void releaseSwapChain();
 
 protected:
+    QVulkanInstance instance;
     std::unique_ptr<QOffscreenSurface> m_fallbackSurface;
     std::unique_ptr<QRhi> m_rhi;
     std::unique_ptr<QRhiSwapChain> m_sc;
     std::unique_ptr<QRhiRenderBuffer> m_ds;
     std::unique_ptr<QRhiRenderPassDescriptor> m_rp;
 
+    QRhi::Implementation m_graphicsApi;
     bool m_hasSwapChain = false;
     QMatrix4x4 m_proj;
 

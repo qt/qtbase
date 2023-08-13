@@ -8,9 +8,25 @@
 #include <rhi/qshader.h>
 #include "../shared/cube.h"
 
-Window::Window()
+Window::Window(QRhi::Implementation graphicsApi)
+    :m_graphicsApi(graphicsApi)
 {
-    setSurfaceType(OpenGLSurface);
+    switch (graphicsApi) {
+    default:
+    case QRhi::OpenGLES2:
+        setSurfaceType(OpenGLSurface);
+        break;
+    case QRhi::Vulkan:
+        instance.setLayers({ "VK_LAYER_KHRONOS_validation" });
+        instance.create();
+        setVulkanInstance(&instance);
+        setSurfaceType(VulkanSurface);
+        break;
+    case QRhi::D3D11:
+    case QRhi::D3D12:
+        setSurfaceType(Direct3DSurface);
+        break;
+    }
 }
 
 void Window::exposeEvent(QExposeEvent *)
@@ -57,11 +73,42 @@ void Window::init()
 {
     QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers;
 
-    m_fallbackSurface.reset(QRhiGles2InitParams::newFallbackSurface());
-    QRhiGles2InitParams params;
-    params.fallbackSurface = m_fallbackSurface.get();
-    params.window = this;
-    m_rhi.reset(QRhi::create(QRhi::OpenGLES2, &params, rhiFlags));
+    switch (m_graphicsApi) {
+    case QRhi::Vulkan:
+    {
+        QRhiVulkanInitParams params;
+        params.window = this;
+        params.inst = vulkanInstance();
+        m_rhi.reset(QRhi::create(QRhi::Vulkan, &params, rhiFlags));
+        break;
+    }
+    case QRhi::Null:
+    case QRhi::Metal:
+    case QRhi::OpenGLES2:
+    {
+        m_fallbackSurface.reset(QRhiGles2InitParams::newFallbackSurface());
+        QRhiGles2InitParams params;
+        params.fallbackSurface = m_fallbackSurface.get();
+        params.window = this;
+        m_rhi.reset(QRhi::create(QRhi::OpenGLES2, &params, rhiFlags));
+        break;
+    }
+    case QRhi::D3D11:
+    {
+        QRhiD3D11InitParams params;
+        m_rhi.reset(QRhi::create(QRhi::D3D11, &params, rhiFlags));
+        break;
+    }
+    case QRhi::D3D12:
+    {
+        QRhiD3D12InitParams params;
+        params.enableDebugLayer = true;
+        m_rhi.reset(QRhi::create(QRhi::D3D12, &params, rhiFlags));
+        break;
+    }
+    default:
+        break;
+    }
 
     m_sc.reset(m_rhi->newSwapChain());
     m_ds.reset(m_rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil,

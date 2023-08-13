@@ -572,6 +572,7 @@ struct QVkSwapChain : public QRhiSwapChain
 
     QRhiCommandBuffer *currentFrameCommandBuffer() override;
     QRhiRenderTarget *currentFrameRenderTarget() override;
+    QRhiRenderTarget *currentFrameRenderTarget(StereoTargetBuffer targetBuffer) override;
 
     QSize surfacePixelSize() override;
     bool isFormatSupported(Format f) override;
@@ -586,6 +587,7 @@ struct QVkSwapChain : public QRhiSwapChain
     QWindow *window = nullptr;
     QSize pixelSize;
     bool supportsReadback = false;
+    bool stereo = false;
     VkSwapchainKHR sc = VK_NULL_HANDLE;
     int bufferCount = 0;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -597,6 +599,7 @@ struct QVkSwapChain : public QRhiSwapChain
     QVarLengthArray<VkPresentModeKHR, 8> supportedPresentationModes;
     VkDeviceMemory msaaImageMem = VK_NULL_HANDLE;
     QVkSwapChainRenderTarget rtWrapper;
+    QVkSwapChainRenderTarget rtWrapperRight;
     QVkCommandBuffer cbWrapper;
 
     struct ImageResources {

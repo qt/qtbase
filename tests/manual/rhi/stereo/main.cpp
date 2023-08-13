@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 
     QSurfaceFormat::setDefaultFormat(fmt);
 
-    Window w;
+    Window w{QRhi::Vulkan};
     w.resize(1280, 720);
     w.setTitle(QCoreApplication::applicationName());
     w.show();

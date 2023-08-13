@@ -1497,6 +1497,16 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     swapChainD->rtWrapper.d.dsv = swapChainD->ds ? swapChainD->ds->dsv.cpuHandle
                                                  : D3D12_CPU_DESCRIPTOR_HANDLE { 0 };
 
+    if (swapChainD->stereo) {
+        swapChainD->rtWrapperRight.d.rtv[0] = swapChainD->sampleDesc.Count > 1
+                ? swapChainD->msaaRtvs[swapChainD->currentBackBufferIndex].cpuHandle
+                : swapChainD->rtvsRight[swapChainD->currentBackBufferIndex].cpuHandle;
+
+        swapChainD->rtWrapperRight.d.dsv =
+                swapChainD->ds ? swapChainD->ds->dsv.cpuHandle : D3D12_CPU_DESCRIPTOR_HANDLE{ 0 };
+    }
+
+
     // Time to release things that are marked for currentFrameSlot since due to
     // the wait above we know that the previous commands on the GPU for this
     // slot must have finished already.
@@ -5970,6 +5980,7 @@ int QD3D12SwapChainRenderTarget::sampleCount() const
 QD3D12SwapChain::QD3D12SwapChain(QRhiImplementation *rhi)
     : QRhiSwapChain(rhi),
       rtWrapper(rhi, this),
+      rtWrapperRight(rhi, this),
       cbWrapper(rhi)
 {
 }
@@ -6026,6 +6037,8 @@ void QD3D12SwapChain::releaseBuffers()
     for (UINT i = 0; i < BUFFER_COUNT; ++i) {
         rhiD->resourcePool.remove(colorBuffers[i]);
         rhiD->rtvPool.release(rtvs[i], 1);
+        if (stereo)
+            rhiD->rtvPool.release(rtvsRight[i], 1);
         if (!msaaBuffers[i].isNull())
             rhiD->resourcePool.remove(msaaBuffers[i]);
         if (msaaRtvs[i].isValid())
@@ -6058,6 +6071,11 @@ QRhiCommandBuffer *QD3D12SwapChain::currentFrameCommandBuffer()
 QRhiRenderTarget *QD3D12SwapChain::currentFrameRenderTarget()
 {
     return &rtWrapper;
+}
+
+QRhiRenderTarget *QD3D12SwapChain::currentFrameRenderTarget(StereoTargetBuffer targetBuffer)
+{
+    return !stereo || targetBuffer == StereoTargetBuffer::LeftBuffer ? &rtWrapper : &rtWrapperRight;
 }
 
 QSize QD3D12SwapChain::surfacePixelSize()
@@ -6191,6 +6209,7 @@ bool QD3D12SwapChain::createOrResize()
     HWND hwnd = reinterpret_cast<HWND>(window->winId());
     HRESULT hr;
     QRHI_RES_RHI(QRhiD3D12);
+    stereo = m_window->format().stereo() && rhiD->dxgiFactory->IsWindowedStereoEnabled();
 
     if (m_flags.testFlag(SurfaceHasPreMulAlpha) || m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
         if (rhiD->ensureDirectCompositionDevice()) {
@@ -6233,6 +6252,7 @@ bool QD3D12SwapChain::createOrResize()
         desc.Flags = swapChainFlags;
         desc.Scaling = DXGI_SCALING_NONE;
         desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        desc.Stereo = stereo;
 
         if (dcompVisual) {
             // With DirectComposition setting AlphaMode to STRAIGHT fails the
@@ -6342,6 +6362,16 @@ bool QD3D12SwapChain::createOrResize()
         rtvDesc.Format = srgbAdjustedColorFormat;
         rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
         rhiD->dev->CreateRenderTargetView(colorBuffer, &rtvDesc, rtvs[i].cpuHandle);
+
+        if (stereo) {
+            rtvsRight[i] = rhiD->rtvPool.allocate(1);
+            D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+            rtvDesc.Format = srgbAdjustedColorFormat;
+            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+            rtvDesc.Texture2DArray.ArraySize = 1;
+            rtvDesc.Texture2DArray.FirstArraySlice = 1;
+            rhiD->dev->CreateRenderTargetView(colorBuffer, &rtvDesc, rtvsRight[i].cpuHandle);
+        }
     }
 
     if (m_depthStencil && m_depthStencil->sampleCount() != m_sampleCount) {
@@ -6413,6 +6443,15 @@ bool QD3D12SwapChain::createOrResize()
     rtD->d.sampleCount = int(sampleDesc.Count);
     rtD->d.colorAttCount = 1;
     rtD->d.dsAttCount = m_depthStencil ? 1 : 0;
+
+    rtWrapperRight.setRenderPassDescriptor(m_renderPassDesc);
+    QD3D12SwapChainRenderTarget *rtDr = QRHI_RES(QD3D12SwapChainRenderTarget, &rtWrapperRight);
+    rtDr->d.rp = QRHI_RES(QD3D12RenderPassDescriptor, m_renderPassDesc);
+    rtDr->d.pixelSize = pixelSize;
+    rtDr->d.dpr = float(window->devicePixelRatio());
+    rtDr->d.sampleCount = int(sampleDesc.Count);
+    rtDr->d.colorAttCount = 1;
+    rtDr->d.dsAttCount = m_depthStencil ? 1 : 0;
 
     if (needsRegistration) {
         rhiD->swapchains.insert(this);

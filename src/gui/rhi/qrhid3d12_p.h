@@ -972,6 +972,7 @@ struct QD3D12SwapChain : public QRhiSwapChain
 
     QRhiCommandBuffer *currentFrameCommandBuffer() override;
     QRhiRenderTarget *currentFrameRenderTarget() override;
+    QRhiRenderTarget *currentFrameRenderTarget(StereoTargetBuffer targetBuffer) override;
 
     QSize surfacePixelSize() override;
     bool isFormatSupported(Format f) override;
@@ -991,6 +992,7 @@ struct QD3D12SwapChain : public QRhiSwapChain
     QSize pixelSize;
     UINT swapInterval = 1;
     UINT swapChainFlags = 0;
+    BOOL stereo = false;
     DXGI_FORMAT colorFormat;
     DXGI_FORMAT srgbAdjustedColorFormat;
     DXGI_COLOR_SPACE_TYPE hdrColorSpace;
@@ -999,12 +1001,14 @@ struct QD3D12SwapChain : public QRhiSwapChain
     static const UINT BUFFER_COUNT = 3;
     QD3D12ObjectHandle colorBuffers[BUFFER_COUNT];
     QD3D12Descriptor rtvs[BUFFER_COUNT];
+    QD3D12Descriptor rtvsRight[BUFFER_COUNT];
     DXGI_SAMPLE_DESC sampleDesc;
     QD3D12ObjectHandle msaaBuffers[BUFFER_COUNT];
     QD3D12Descriptor msaaRtvs[BUFFER_COUNT];
     QD3D12RenderBuffer *ds = nullptr;
     UINT currentBackBufferIndex = 0;
     QD3D12SwapChainRenderTarget rtWrapper;
+    QD3D12SwapChainRenderTarget rtWrapperRight;
     QD3D12CommandBuffer cbWrapper;
 
     struct FrameResources {

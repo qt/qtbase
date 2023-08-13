@@ -1592,9 +1592,16 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
     if (swapChainD->supportsReadback && swapChainD->m_flags.testFlag(QRhiSwapChain::UsedAsTransferSource))
         usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
+    const bool stereo = bool(swapChainD->m_window) && (swapChainD->m_window->format().stereo())
+            && surfaceCaps.maxImageArrayLayers > 1;
+    swapChainD->stereo = stereo;
+
     VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
     if (swapChainD->m_flags.testFlag(QRhiSwapChain::NoVSync)) {
-        if (swapChainD->supportedPresentationModes.contains(VK_PRESENT_MODE_MAILBOX_KHR))
+        // Stereo has a weird bug, when using VK_PRESENT_MODE_MAILBOX_KHR,
+        // black screen is shown, but there is no validation error.
+        // Detected on Windows, with NVidia RTX A series (at least 4000 and 6000) driver 535.98
+        if (swapChainD->supportedPresentationModes.contains(VK_PRESENT_MODE_MAILBOX_KHR) && !stereo)
             presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
         else if (swapChainD->supportedPresentationModes.contains(VK_PRESENT_MODE_IMMEDIATE_KHR))
             presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
@@ -1618,7 +1625,7 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
     swapChainInfo.imageFormat = swapChainD->colorFormat;
     swapChainInfo.imageColorSpace = swapChainD->colorSpace;
     swapChainInfo.imageExtent = VkExtent2D { uint32_t(swapChainD->pixelSize.width()), uint32_t(swapChainD->pixelSize.height()) };
-    swapChainInfo.imageArrayLayers = 1;
+    swapChainInfo.imageArrayLayers = stereo ? 2u : 1u;
     swapChainInfo.imageUsage = usage;
     swapChainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapChainInfo.preTransform = preTransform;
@@ -1680,7 +1687,9 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    swapChainD->imageRes.resize(swapChainD->bufferCount);
+    // Double up for stereo
+    swapChainD->imageRes.resize(swapChainD->bufferCount * (stereo ? 2u : 1u));
+
     for (int i = 0; i < swapChainD->bufferCount; ++i) {
         QVkSwapChain::ImageResources &image(swapChainD->imageRes[i]);
         image.image = swapChainImages[i];
@@ -1707,6 +1716,36 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         }
 
         image.lastUse = QVkSwapChain::ImageResources::ScImageUseNone;
+    }
+    if (stereo) {
+        for (int i = 0; i < swapChainD->bufferCount; ++i) {
+            QVkSwapChain::ImageResources &image(swapChainD->imageRes[i + swapChainD->bufferCount]);
+            image.image = swapChainImages[i];
+            if (swapChainD->samples > VK_SAMPLE_COUNT_1_BIT) {
+                image.msaaImage = msaaImages[i];
+                image.msaaImageView = msaaViews[i];
+            }
+
+            VkImageViewCreateInfo imgViewInfo = {};
+            imgViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            imgViewInfo.image = swapChainImages[i];
+            imgViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            imgViewInfo.format = swapChainD->colorFormat;
+            imgViewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+            imgViewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
+            imgViewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+            imgViewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+            imgViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            imgViewInfo.subresourceRange.baseArrayLayer = 1;
+            imgViewInfo.subresourceRange.levelCount = imgViewInfo.subresourceRange.layerCount = 1;
+            err = df->vkCreateImageView(dev, &imgViewInfo, nullptr, &image.imageView);
+            if (err != VK_SUCCESS) {
+                qWarning("Failed to create swapchain image view %d: %d", i, err);
+                return false;
+            }
+
+            image.lastUse = QVkSwapChain::ImageResources::ScImageUseNone;
+        }
     }
 
     swapChainD->currentImageIndex = 0;
@@ -1775,7 +1814,7 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
         }
     }
 
-    for (int i = 0; i < swapChainD->bufferCount; ++i) {
+    for (int i = 0; i < swapChainD->bufferCount * (swapChainD->stereo ? 2 : 1); ++i) {
         QVkSwapChain::ImageResources &image(swapChainD->imageRes[i]);
         if (image.fb) {
             df->vkDestroyFramebuffer(dev, image.fb, nullptr);
@@ -1906,6 +1945,12 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
 
     QVkSwapChain::ImageResources &image(swapChainD->imageRes[swapChainD->currentImageIndex]);
     swapChainD->rtWrapper.d.fb = image.fb;
+
+    if (swapChainD->stereo) {
+        QVkSwapChain::ImageResources &image(
+                swapChainD->imageRes[swapChainD->currentImageIndex + swapChainD->bufferCount]);
+        swapChainD->rtWrapperRight.d.fb = image.fb;
+    }
 
     prepareNewFrame(&swapChainD->cbWrapper);
 
@@ -7443,6 +7488,7 @@ const QRhiNativeHandles *QVkCommandBuffer::nativeHandles()
 QVkSwapChain::QVkSwapChain(QRhiImplementation *rhi)
     : QRhiSwapChain(rhi),
       rtWrapper(rhi, this),
+      rtWrapperRight(rhi, this),
       cbWrapper(rhi)
 {
 }
@@ -7483,6 +7529,11 @@ QRhiCommandBuffer *QVkSwapChain::currentFrameCommandBuffer()
 QRhiRenderTarget *QVkSwapChain::currentFrameRenderTarget()
 {
     return &rtWrapper;
+}
+
+QRhiRenderTarget *QVkSwapChain::currentFrameRenderTarget(StereoTargetBuffer targetBuffer)
+{
+    return !stereo || targetBuffer == StereoTargetBuffer::LeftBuffer ? &rtWrapper : &rtWrapperRight;
 }
 
 QSize QVkSwapChain::surfacePixelSize()
@@ -7732,6 +7783,55 @@ bool QVkSwapChain::createOrResize()
         if (err != VK_SUCCESS) {
             qWarning("Failed to create framebuffer: %d", err);
             return false;
+        }
+    }
+
+    if (stereo) {
+        rtWrapperRight.setRenderPassDescriptor(
+                m_renderPassDesc); // for the public getter in QRhiRenderTarget
+        rtWrapperRight.d.rp = QRHI_RES(QVkRenderPassDescriptor, m_renderPassDesc);
+        Q_ASSERT(rtWrapperRight.d.rp && rtWrapperRight.d.rp->rp);
+
+        rtWrapperRight.d.pixelSize = pixelSize;
+        rtWrapperRight.d.dpr = float(window->devicePixelRatio());
+        rtWrapperRight.d.sampleCount = samples;
+        rtWrapperRight.d.colorAttCount = 1;
+        if (m_depthStencil) {
+            rtWrapperRight.d.dsAttCount = 1;
+            ds = QRHI_RES(QVkRenderBuffer, m_depthStencil);
+        } else {
+            rtWrapperRight.d.dsAttCount = 0;
+            ds = nullptr;
+        }
+        if (samples > VK_SAMPLE_COUNT_1_BIT)
+            rtWrapperRight.d.resolveAttCount = 1;
+        else
+            rtWrapperRight.d.resolveAttCount = 0;
+
+        for (int i = 0; i < bufferCount; ++i) {
+            QVkSwapChain::ImageResources &image(imageRes[i + bufferCount]);
+            VkImageView views[3] = {
+                // color, ds, resolve
+                samples > VK_SAMPLE_COUNT_1_BIT ? image.msaaImageView : image.imageView,
+                ds ? ds->imageView : VK_NULL_HANDLE,
+                samples > VK_SAMPLE_COUNT_1_BIT ? image.imageView : VK_NULL_HANDLE
+            };
+
+            VkFramebufferCreateInfo fbInfo = {};
+            fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            fbInfo.renderPass = rtWrapperRight.d.rp->rp;
+            fbInfo.attachmentCount = uint32_t(rtWrapperRight.d.colorAttCount + rtWrapperRight.d.dsAttCount
+                                              + rtWrapperRight.d.resolveAttCount);
+            fbInfo.pAttachments = views;
+            fbInfo.width = uint32_t(pixelSize.width());
+            fbInfo.height = uint32_t(pixelSize.height());
+            fbInfo.layers = 1;
+
+            VkResult err = rhiD->df->vkCreateFramebuffer(rhiD->dev, &fbInfo, nullptr, &image.fb);
+            if (err != VK_SUCCESS) {
+                qWarning("Failed to create framebuffer: %d", err);
+                return false;
+            }
         }
     }
 
