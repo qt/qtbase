@@ -1,8 +1,6 @@
 // Copyright (C) 2014 John Layt <jlayt@kde.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QTest>
 #include <QMimeType>
 
@@ -27,16 +25,17 @@ void tst_QPrintDevice::basics()
         QSKIP("Could not load platform plugin");
 
     QString defaultId = ps->defaultPrintDeviceId();
+    const QStringList availableIds = ps->availablePrintDeviceIds();
     if (defaultId.isEmpty()) {
         qDebug() << "No default printer found";
     } else {
-        QVERIFY(ps->availablePrintDeviceIds().contains(defaultId));
+        QVERIFY(availableIds.contains(defaultId));
     }
 
-    qDebug() << "Available Printer IDs :" << ps->availablePrintDeviceIds();
+    qDebug() << "Available Printer IDs :" << availableIds;
 
     // Just exercise the api for now as we don't know what is installed
-    foreach (const QString id, ps->availablePrintDeviceIds()) {
+    for (const QString &id : availableIds) {
         QPrintDevice printDevice = ps->createPrintDevice(id);
         const char quote = id == defaultId ? '*' : '"';
         qDebug().noquote().nospace() << "\nCreated printer " << quote << id
