@@ -2,8 +2,6 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include <QtCore/QCoreApplication>
 
 QT_REQUIRE_CONFIG(process);
@@ -934,7 +932,8 @@ static QProcessEnvironment testEnvironment()
     if (environment.isEmpty()) {
         const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
         const bool preserveLibPath = qEnvironmentVariableIsSet("QT_PRESERVE_TESTLIB_PATH");
-        foreach (const QString &key, systemEnvironment.keys()) {
+        const auto envKeys = systemEnvironment.keys();
+        for (const QString &key : envKeys) {
             const bool useVariable = key == "PATH" || key == "QT_QPA_PLATFORM"
 #if defined(Q_OS_QNX)
                 || key == "GRAPHICS_ROOT" || key == "TZ"
