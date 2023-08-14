@@ -4,6 +4,10 @@
 cmake_minimum_required(VERSION 3.16)
 project(pingpong LANGUAGES CXX)
 
+if (ANDROID)
+    message(FATAL_ERROR "This project cannot be built on Android.")
+endif()
+
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
