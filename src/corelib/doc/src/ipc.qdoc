@@ -274,7 +274,10 @@
     file names, in particular those that separate path components (slash and
     backslash), with the exception of sandboxed applications on Apple operating
     systems. The following are good examples of cross-platform keys: "myapp",
-    "org.example.myapp", "org.example.myapp-12345".
+    "org.example.myapp", "org.example.myapp-12345". Note that it is up to the
+    caller to prevent oversized keys, and to ensure that the key contains legal
+    characters on the respective platform. Qt will silently truncate keys that
+    are too long.
 
     \b{Apple sandbox limitations:} if the application is running inside of a
     sandbox in an Apple operating system, the key must be in a very specific
