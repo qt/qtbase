@@ -456,6 +456,8 @@ private slots:
     void append_bytearray_special_cases();
 #endif
 
+    void appendFromRawData();
+
     void operator_pluseq_qstring()            { operator_pluseq_impl<QString>(); }
     void operator_pluseq_qstring_data()       { operator_pluseq_data(); }
     void operator_pluseq_qstringview()        { operator_pluseq_impl<QStringView, QString &(QString::*)(QStringView)>(); }
@@ -3275,6 +3277,21 @@ void tst_QString::append_bytearray_special_cases()
     }
 }
 #endif // !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)
+
+void tst_QString::appendFromRawData()
+{
+    const char16_t utf[] = u"Hello World!";
+    auto *rawData = reinterpret_cast<const QChar *>(utf);
+    QString str = QString::fromRawData(rawData, std::size(utf) - 1);
+
+    QString copy;
+    copy.append(str);
+    QCOMPARE(copy, str);
+    // We make an _actual_ copy, because appending a byte array
+    // created with fromRawData() might be optimized to copy the DataPointer,
+    // which means we may point to temporary stack data.
+    QCOMPARE_NE((void *)copy.constData(), (void *)str.constData());
+}
 
 void tst_QString::operator_pluseq_special_cases()
 {
