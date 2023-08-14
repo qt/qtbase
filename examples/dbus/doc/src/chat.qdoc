@@ -4,6 +4,7 @@
 /*!
     \example chat
     \title D-Bus Chat
+    \examplecategory {Connectivity}
     \ingroup examples-dbus
     \brief Demonstrates communication among instances of an application.
 
