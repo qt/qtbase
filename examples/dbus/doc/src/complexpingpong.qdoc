@@ -4,6 +4,7 @@
 /*!
     \example complexpingpong
     \title D-Bus Complex Ping Pong
+    \examplecategory {Connectivity}
     \ingroup examples-dbus
     \brief Demonstrates usage of the Qt D-Bus typesystem.
 
