@@ -91,7 +91,7 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
     Example:
     \snippet code/src_gui_text_qfontmetrics.cpp 0
 
-    \sa QFont, QFontInfo, QFontDatabase, {Character Map Example}
+    \sa QFont, QFontInfo, QFontDatabase
 */
 
 /*!

@@ -1201,7 +1201,7 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
     each combination of family and style, displaying this information
     in a tree view.
 
-    \sa QFont, QFontInfo, QFontMetrics, {Character Map Example}
+    \sa QFont, QFontInfo, QFontMetrics
 */
 
 /*!
