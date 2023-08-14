@@ -685,7 +685,8 @@ int QKdPointTree::build(int begin, int end, int depth)
         }
     }
 
-    qSwap(m_nodes.at(last), m_nodes.at(begin));
+    if (last != begin)
+        qSwap(m_nodes.at(last), m_nodes.at(begin));
 
     if (last > begin)
         m_nodes.at(last).left = &m_nodes.at(build(begin, last, depth + 1));
