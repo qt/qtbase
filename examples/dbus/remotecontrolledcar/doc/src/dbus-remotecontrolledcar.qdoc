@@ -4,6 +4,7 @@
 /*!
     \example remotecontrolledcar
     \title D-Bus Remote Controlled Car
+    \examplecategory {Connectivity}
     \ingroup examples-dbus
     \brief Shows how to use Qt D-Bus to control a car from another application.
 
