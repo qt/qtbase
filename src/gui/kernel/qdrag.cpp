@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
     required.
 
     \sa {Drag and Drop}, QClipboard, QMimeData, {Draggable Icons Example},
-        {Draggable Text Example}, {Drop Site Example}, {Fridge Magnets Example}
+        {Draggable Text Example}, {Drop Site Example}
 */
 
 /*!

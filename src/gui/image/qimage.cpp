@@ -616,8 +616,8 @@ bool QImageData::checkForAlphaPixels() const
 
     \endtable
 
-    \sa QImageReader, QImageWriter, QPixmap, QSvgRenderer, {Image Composition Example},
-        {Image Viewer Example}, {Scribble Example}, {Pixelator Example}
+    \sa QImageReader, QImageWriter, QPixmap, QSvgRenderer,
+        {Image Composition Example}, {Scribble Example}
 */
 
 /*!
