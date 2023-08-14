@@ -529,7 +529,7 @@ QFontEngineData::~QFontEngineData()
     Information on encodings can be found from the
     \l{UTR17} page.
 
-    \sa QFontMetrics, QFontInfo, QFontDatabase, {Character Map Example}
+    \sa QFontMetrics, QFontInfo, QFontDatabase
 */
 
 /*!

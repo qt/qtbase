@@ -637,8 +637,6 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
     │       └── appointment-new.png
     └── index.theme
   \endcode
-
-  \sa {Icons Example}
 */
 
 
