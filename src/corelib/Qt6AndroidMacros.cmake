@@ -913,7 +913,7 @@ function(_qt_internal_android_format_deployment_paths target)
         # empty or -NOTFOUND
         set(has_android_paths FALSE)
         foreach(prop_name IN LISTS policy_path_properties)
-            get_target_property(prop_value ${target} prop_name)
+            get_target_property(prop_value ${target} ${prop_name})
             if(prop_value)
                 set(has_android_paths TRUE)
                 break()
