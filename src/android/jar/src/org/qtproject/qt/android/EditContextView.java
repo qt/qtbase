@@ -5,6 +5,7 @@ package org.qtproject.qt.android;
 
 
 import android.content.Context;
+import android.graphics.Point;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -72,6 +73,23 @@ public class EditContextView extends LinearLayout implements View.OnClickListene
         m_buttons.get(R.string.copy).setVisibility((buttonsLayout & COPY_BUTTON) != 0 ? View.VISIBLE : View.GONE);
         m_buttons.get(R.string.paste).setVisibility((buttonsLayout & PASTE_BUTTON) != 0 ? View.VISIBLE : View.GONE);
         m_buttons.get(R.string.selectAll).setVisibility((buttonsLayout & SALL_BUTTON) != 0 ? View.VISIBLE : View.GONE);
+    }
+
+    public Point getCalculatedSize()
+    {
+        Point size = new Point(0, 0);
+        for (ContextButton b : m_buttons.values()) {
+            if (b.getVisibility() == View.VISIBLE) {
+                b.measure(0, 0);
+                size.x += b.getMeasuredWidth();
+                size.y = Math.max(size.y, b.getMeasuredHeight());
+            }
+        }
+
+        size.x += getPaddingLeft() + getPaddingRight();
+        size.y += getPaddingTop() + getPaddingBottom();
+
+        return size;
     }
 
     public EditContextView(Context context, OnClickListener onClickListener) {
