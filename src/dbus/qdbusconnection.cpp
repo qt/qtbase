@@ -22,6 +22,7 @@
 #include "qdbuspendingcall_p.h"
 
 #include "qdbusthreaddebug_p.h"
+#include "qdbusmetatype_p.h"
 
 #include <algorithm>
 
@@ -82,6 +83,13 @@ void QDBusConnectionManager::removeConnection(const QString &name)
 
 QDBusConnectionManager::QDBusConnectionManager()
 {
+    // Ensure that the custom metatype registry is created before the instance
+    // of this class. This will ensure that the registry is not destroyed before
+    // the connection manager at application exit (see also QTBUG-58732). This
+    // works with compilers that use mechanism similar to atexit() to call
+    // destructurs for global statics.
+    QDBusMetaTypeId::init();
+
     connect(this, &QDBusConnectionManager::connectionRequested,
             this, &QDBusConnectionManager::executeConnectionRequest, Qt::BlockingQueuedConnection);
     connect(this, &QDBusConnectionManager::serverRequested,
