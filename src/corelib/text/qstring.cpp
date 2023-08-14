@@ -3144,7 +3144,10 @@ QString &QString::append(const QString &str)
 {
     if (!str.isNull()) {
         if (isNull()) {
-            operator=(str);
+            if (Q_UNLIKELY(!str.d.isMutable()))
+                assign(str); // fromRawData, so we do a deep copy
+            else
+                operator=(str);
         } else if (str.size()) {
             append(str.constData(), str.size());
         }

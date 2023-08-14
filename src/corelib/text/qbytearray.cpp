@@ -2039,7 +2039,10 @@ QByteArray &QByteArray::append(const QByteArray &ba)
 {
     if (!ba.isNull()) {
         if (isNull()) {
-            operator=(ba);
+            if (Q_UNLIKELY(!ba.d.isMutable()))
+                assign(ba); // fromRawData, so we do a deep copy
+            else
+                operator=(ba);
         } else if (ba.size()) {
             append(QByteArrayView(ba));
         }
