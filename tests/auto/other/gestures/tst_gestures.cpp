@@ -210,7 +210,7 @@ protected:
             QGestureEvent *e = static_cast<QGestureEvent*>(event);
             ++gestureEventsReceived;
             eventsPtr = &events;
-            foreach(Qt::GestureType type, ignoredGestures)
+            for (Qt::GestureType type : std::as_const(ignoredGestures))
                 e->ignore(e->gesture(type));
         } else if (event->type() == QEvent::GestureOverride) {
             ++gestureOverrideEventsReceived;
@@ -744,7 +744,7 @@ public:
             ++gestureEventsReceived;
             eventsPtr = &events;
             QGestureEvent *e = static_cast<QGestureEvent *>(event);
-            foreach(Qt::GestureType type, ignoredGestures)
+            for (Qt::GestureType type : std::as_const(ignoredGestures))
                 e->ignore(e->gesture(type));
             foreach(QGesture *g, e->gestures()) {
                 switch (g->state()) {
