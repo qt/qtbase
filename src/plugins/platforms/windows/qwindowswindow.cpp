@@ -2570,26 +2570,26 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowStates newState)
             if (testFlag(HasBorderInFullScreen))
                 newStyle |= WS_BORDER;
             setStyle(newStyle);
-            // Use geometry of QWindow::screen() within creation or the virtual screen the
-            // window is in (QTBUG-31166, QTBUG-30724).
-            const QScreen *screen = window()->screen();
-            if (!screen)
-                screen = QGuiApplication::primaryScreen();
-            const QRect r = screen ? QHighDpi::toNativePixels(screen->geometry(), window()) : m_savedFrameGeometry;
-
+            const HMONITOR monitor = MonitorFromWindow(m_data.hwnd, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO monitorInfo = {};
+            monitorInfo.cbSize = sizeof(MONITORINFO);
+            GetMonitorInfoW(monitor, &monitorInfo);
+            const QRect screenGeometry(monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top,
+                                       monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                                       monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top);
             if (newState & Qt::WindowMinimized) {
-                setMinimizedGeometry(m_data.hwnd, r);
+                setMinimizedGeometry(m_data.hwnd, screenGeometry);
                 if (stateChange & Qt::WindowMaximized)
                     setRestoreMaximizedFlag(m_data.hwnd, newState & Qt::WindowMaximized);
             } else {
                 const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
                 const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
                 setFlag(SynchronousGeometryChangeEvent);
-                SetWindowPos(m_data.hwnd, HWND_TOP, r.left(), r.top(), r.width(), r.height(), swpf);
+                SetWindowPos(m_data.hwnd, HWND_TOP, screenGeometry.left(), screenGeometry.top(), screenGeometry.width(), screenGeometry.height(), swpf);
                 if (!wasSync)
                     clearFlag(SynchronousGeometryChangeEvent);
                 clearFlag(MaximizeToFullScreen);
-                QWindowSystemInterface::handleGeometryChange(window(), r);
+                QWindowSystemInterface::handleGeometryChange(window(), screenGeometry);
                 QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
             }
         } else {
