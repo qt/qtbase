@@ -4,7 +4,7 @@
 if(NOT TARGET Qt6::Network)
     return()
 endif()
-if(NOT INTEGRITY)
+if(NOT INTEGRITY AND NOT ANDROID)
     qt_internal_add_example(dnslookup)
 endif()
 if(TARGET Qt6::Widgets)
