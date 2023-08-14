@@ -2882,6 +2882,10 @@ QString &QString::append(const QString &str)
     if (!str.isNull()) {
         if (isNull()) {
             operator=(str);
+            if (Q_UNLIKELY(!d.isMutable() && d.size > 0)) {
+                d.detach(); // fromRawData, so we do a deep copy
+                d.data()[d.size] = u'\0';
+            }
         } else if (str.size()) {
             append(str.constData(), str.size());
         }
