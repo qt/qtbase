@@ -5,6 +5,7 @@
 #include <QVarLengthArray>
 
 #include <qhash.h>
+#include <qfloat16.h>
 
 #include <iterator>
 #include <sstream>
@@ -65,6 +66,60 @@ void tst_QHashFunctions::consistent()
     // QString-like
     const QString s = QStringLiteral("abcdefghijklmnopqrstuvxyz").repeated(16);
     QCOMPARE(qHash(s, seed), qHash(QStringView(s), seed));
+
+    // unsigned integers
+    {
+        constexpr unsigned char ae = 0xE4; // LATIN SMALL LETTER A WITH DIAERESIS
+        const auto h8   = qHash(quint8(ae), seed);
+        const auto h16  = qHash(quint16(ae), seed);
+        const auto h32  = qHash(quint32(ae), seed);
+        const auto h64  = qHash(quint64(ae), seed);
+        QCOMPARE(h8, h16);
+        QCOMPARE(h16, h32);
+        QCOMPARE(h32, h64);
+       // there are a few more unsigned types:
+#ifdef __cpp_char8_t
+        const auto hc8 = qHash(char8_t(ae), seed);
+#endif
+        const auto hc16  = qHash(char16_t(ae), seed);
+        const auto hc32  = qHash(char32_t(ae), seed);
+#ifdef __cpp_char8_t
+        QCOMPARE(hc8, h8);
+#endif
+        QCOMPARE(hc16, h16);
+        QCOMPARE(hc32, h32);
+    }
+
+    // signed integers
+    {
+        constexpr signed char ae = 0xE4; // LATIN SMALL LETTER A WITH DIAERESIS
+        const auto h8   = qHash(qint8(ae), seed);
+        const auto h16  = qHash(qint16(ae), seed);
+        const auto h32  = qHash(qint32(ae), seed);
+        const auto h64  = qHash(qint64(ae), seed);
+        QCOMPARE(h8, h16);
+        QCOMPARE(h16, h32);
+        if constexpr (sizeof(size_t) == sizeof(int)) // 32-bit
+            QEXPECT_FAIL("", "QTBUG-116080", Continue);
+        QCOMPARE(h32, h64);
+    }
+
+    // floats
+    {
+        const/*expr broken: QTBUG-116079*/ qfloat16 f16 = -42.f;
+#if !QFLOAT16_IS_NATIVE // QTBUG-116064
+        const auto h16 = qHash(f16, seed);
+#endif
+        const auto h32 = qHash(float(f16), seed);
+        const auto h64 = qHash(double(f16), seed);
+#if !QFLOAT16_IS_NATIVE // QTBUG-116064
+        if (seed != 0)
+            QEXPECT_FAIL("", "QTBUG-116076", Continue);
+        QCOMPARE(h16, h32);
+#endif
+        QEXPECT_FAIL("", "QTBUG-116077", Continue);
+        QCOMPARE(h32, h64);
+    }
 }
 
 void tst_QHashFunctions::initTestCase()
