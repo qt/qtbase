@@ -1379,6 +1379,26 @@ uint qt_hash(QStringView key, uint chained) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
+/*! \fn size_t qHash(quint128 key, size_t seed = 0)
+    \relates QHash
+    \since 6.8
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+
+    \note This function is only available on platforms that support a native
+    128-bit integer type.
+*/
+
+/*! \fn size_t qHash(qint128 key, size_t seed = 0)
+    \relates QHash
+    \since 6.8
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+
+    \note This function is only available on platforms that support a native
+    128-bit integer type.
+ */
+
 /*! \fn size_t qHash(char8_t key, size_t seed = 0)
     \relates QHash
     \since 6.0

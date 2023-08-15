@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
+// Copyright (C) 2024 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QHASHFUNCTIONS_H
@@ -102,7 +103,26 @@ Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(quint64 key, size_t seed = 0
         key ^= (key >> 32);
     return QHashPrivate::hash(size_t(key), seed);
 }
-Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(qint64 key, size_t seed = 0) noexcept { return qHash(quint64(key), seed); }
+Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(qint64 key, size_t seed = 0) noexcept
+{ return qHash(quint64(key), seed); }
+#if QT_SUPPORTS_INT128
+constexpr size_t qHash(quint128 key, size_t seed = 0) noexcept
+{
+    return qHash(quint64(key + (key >> 64)), seed);
+}
+constexpr size_t qHash(qint128 key, size_t seed = 0) noexcept
+{
+    // Avoid QTBUG-116080: we XOR the top half with its own sign bit:
+    // - if the qint128 is in range of qint64, then signmask ^ high == 0
+    // - if the qint128 is in range of quint64, then signmask == 0 and we
+    //   do the same as the quint128 overload above
+    quint64 high = quint64(quint128(key) >> 64);
+    quint64 low = quint64(quint128(key));
+    quint64 signmask = qint64(high) >> 63; // all zeroes or all ones
+    low += signmask ^ high;
+    return qHash(low, seed);
+}
+#endif // QT_SUPPORTS_INT128
 Q_DECL_CONST_FUNCTION inline size_t qHash(float key, size_t seed = 0) noexcept
 {
     // ensure -0 gets mapped to 0

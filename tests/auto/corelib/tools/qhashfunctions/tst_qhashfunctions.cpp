@@ -35,6 +35,7 @@ private Q_SLOTS:
     void unsignedIntegerConsistency();
     void signedIntegerConsistency_data();
     void signedIntegerConsistency();
+    void extendedIntegerConsistency();
     void floatingPointConsistency_data();
     void floatingPointConsistency();
     void stringConsistency_data();
@@ -151,6 +152,11 @@ static void unsignedIntegerConsistency(quint64 value, size_t seed)
     if (v32 == value)
         QCOMPARE(hu64, hu32);
 
+#if QT_SUPPORTS_INT128
+    const auto hu128 = qHash(quint128(value), seed);
+    QCOMPARE(hu128, hu64);
+#endif
+
     // there are a few more unsigned types:
 #ifdef __cpp_char8_t
      const auto hc8 = qHash(char8_t(value), seed);
@@ -193,6 +199,11 @@ void tst_QHashFunctions::signedIntegerConsistency()
             QCOMPARE(hs64, hs32);
     }
 
+#if QT_SUPPORTS_INT128
+    const auto hs128 = qHash(qint128(value), seed);
+    QCOMPARE(hs128, hs64);
+#endif
+
     if (value > 0) {
         quint64 u64 = quint64(value);
         const auto hu64 = qHash(u64, seed);
@@ -200,6 +211,20 @@ void tst_QHashFunctions::signedIntegerConsistency()
         ::unsignedIntegerConsistency(u64, seed);
         // by A == B && B == C -> A == C, we've shown hsXX == huXX for all XX
     }
+}
+
+void tst_QHashFunctions::extendedIntegerConsistency()
+{
+#ifdef QT_SUPPORTS_INT128
+    // We only need to check qint128 and quint128 consistency here.
+    qint128 v65bit = Q_INT128_C(0x1'abea'06b7'dcf5'106a);
+    qint128 v127bit = Q_INT128_C(0x387c'ac7a'22a0'5242'9ee9'bcaa'6a53'13af);
+
+    QCOMPARE(qHash(quint128(v65bit), seed), qHash(v65bit, seed));
+    QCOMPARE(qHash(quint128(v127bit), seed), qHash(v127bit, seed));
+#else
+    QSKIP("This platform does not support extended integer types.");
+#endif
 }
 
 void tst_QHashFunctions::floatingPointConsistency_data()
