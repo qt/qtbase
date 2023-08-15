@@ -52,6 +52,15 @@ Q_CONSTINIT const int QtTimerIdFreeListConstants::Sizes[QtTimerIdFreeListConstan
 typedef QFreeList<void, QtTimerIdFreeListConstants> QtTimerIdFreeList;
 Q_GLOBAL_STATIC(QtTimerIdFreeList, timerIdFreeList)
 
+QAbstractEventDispatcherPrivate::QAbstractEventDispatcherPrivate()
+{
+    // Create the timer ID free list here to make sure that it is destroyed
+    // after any global static thread that may be using it.
+    // See also QTBUG-58732.
+    if (!timerIdFreeList.isDestroyed())
+        (void)timerIdFreeList();
+}
+
 QAbstractEventDispatcherPrivate::~QAbstractEventDispatcherPrivate()
     = default;
 
