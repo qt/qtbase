@@ -2009,7 +2009,7 @@ QSortFilterProxyModel::QSortFilterProxyModel(QObject *parent)
     : QAbstractProxyModel(*new QSortFilterProxyModelPrivate, parent)
 {
     Q_D(QSortFilterProxyModel);
-    QObjectPrivate::connect(this, &QSortFilterProxyModel::modelReset, d,
+    QObjectPrivate::connect(this, &QAbstractItemModel::modelReset, d,
                             &QSortFilterProxyModelPrivate::_q_clearMapping);
 }
 
@@ -2047,58 +2047,58 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     QAbstractProxyModel::setSourceModel(sourceModel);
 
     d->sourceConnections = std::array<QMetaObject::Connection, 18>{
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::dataChanged, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::dataChanged, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceDataChanged),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::headerDataChanged, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::headerDataChanged, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceHeaderDataChanged),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::rowsAboutToBeInserted, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsAboutToBeInserted, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeInserted),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::rowsInserted, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsInserted, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceRowsInserted),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::columnsAboutToBeInserted, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsAboutToBeInserted, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeInserted),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::columnsInserted, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsInserted, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceColumnsInserted),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::rowsAboutToBeRemoved, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsAboutToBeRemoved, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeRemoved),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::rowsRemoved, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsRemoved, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceRowsRemoved),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::columnsAboutToBeRemoved, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsAboutToBeRemoved, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeRemoved),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::columnsRemoved, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsRemoved, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceColumnsRemoved),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::rowsAboutToBeMoved, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsAboutToBeMoved, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeMoved),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::rowsMoved, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsMoved, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceRowsMoved),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::columnsAboutToBeMoved, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsAboutToBeMoved, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeMoved),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::columnsMoved, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsMoved, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceColumnsMoved),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::layoutAboutToBeChanged, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::layoutAboutToBeChanged, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::layoutChanged, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::layoutChanged, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceLayoutChanged),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::modelAboutToBeReset, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::modelAboutToBeReset, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceAboutToBeReset),
 
-        QObjectPrivate::connect(d->model, &QSortFilterProxyModel::modelReset, d,
+        QObjectPrivate::connect(d->model, &QAbstractItemModel::modelReset, d,
                                 &QSortFilterProxyModelPrivate::_q_sourceReset)
     };
     endResetModel();
