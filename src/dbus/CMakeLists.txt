@@ -15,7 +15,7 @@ qt_internal_add_module(DBus
         qdbusargument.cpp qdbusargument.h qdbusargument_p.h
         qdbusconnection.cpp qdbusconnection.h qdbusconnection_p.h
         qdbusconnectioninterface.cpp qdbusconnectioninterface.h
-        qdbusconnectionmanager_p.h
+        qdbusconnectionmanager.cpp qdbusconnectionmanager_p.h
         qdbuscontext.cpp qdbuscontext.h qdbuscontext_p.h
         qdbuserror.cpp qdbuserror.h
         qdbusextratypes.cpp qdbusextratypes.h
