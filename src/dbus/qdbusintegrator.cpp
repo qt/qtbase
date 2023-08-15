@@ -291,7 +291,8 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     Q_ASSERT(connection);
     Q_ASSERT(data);
 
-    if (!QDBusConnectionManager::instance())
+    auto *manager = QDBusConnectionManager::instance();
+    if (!manager)
         return;
 
     // keep the connection alive
@@ -303,8 +304,10 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
         q_dbus_connection_set_allow_anonymous(connection, true);
 
     QDBusConnectionPrivate *newConnection = new QDBusConnectionPrivate(serverConnection->parent());
-    const auto locker = qt_scoped_lock(QDBusConnectionManager::instance()->mutex);
-    QDBusConnectionManager::instance()->setConnection("QDBusServer-"_L1 + QString::number(reinterpret_cast<qulonglong>(newConnection), 16), newConnection);
+
+    manager->addConnection(
+            "QDBusServer-"_L1 + QString::number(reinterpret_cast<qulonglong>(newConnection), 16),
+            newConnection);
     serverConnection->serverConnectionNames << newConnection->name;
 
     // setPeer does the error handling for us

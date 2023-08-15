@@ -6,6 +6,7 @@
 
 #include <qcoreapplication.h>
 #include <qthread.h>
+#include <qstringlist.h>
 #include <QtCore/private/qlocking_p.h>
 
 #include "qdbuserror.h"
@@ -49,6 +50,15 @@ QDBusConnectionPrivate *QDBusConnectionManager::connection(const QString &name) 
     return connectionHash.value(name, nullptr);
 }
 
+QDBusConnectionPrivate *QDBusConnectionManager::existingConnection(const QString &name) const
+{
+    const auto locker = qt_scoped_lock(mutex);
+    auto *conn = connection(name);
+    if (conn)
+        conn->ref.ref();
+    return conn;
+}
+
 void QDBusConnectionManager::removeConnection(const QString &name)
 {
     QDBusConnectionPrivate *d = nullptr;
@@ -61,6 +71,25 @@ void QDBusConnectionManager::removeConnection(const QString &name)
     // closing as long as those references will be soon dropped without being used.
 
     // ### Output a warning if connections are being used after they have been removed.
+}
+
+void QDBusConnectionManager::removeConnections(const QStringList &names)
+{
+    const auto locker = qt_scoped_lock(mutex);
+
+    for (const auto &name : names)
+        removeConnection(name);
+}
+
+void QDBusConnectionManager::disconnectFrom(const QString &name,
+                                            QDBusConnectionPrivate::ConnectionMode mode)
+{
+    const auto locker = qt_scoped_lock(mutex);
+
+    QDBusConnectionPrivate *d = connection(name);
+    if (d && d->mode != mode)
+        return;
+    removeConnection(name);
 }
 
 QDBusConnectionManager::QDBusConnectionManager()
@@ -102,6 +131,12 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 {
     connectionHash[name] = c;
     c->name = name;
+}
+
+void QDBusConnectionManager::addConnection(const QString &name, QDBusConnectionPrivate *c)
+{
+    const auto locker = qt_scoped_lock(mutex);
+    setConnection(name, c);
 }
 
 void QDBusConnectionManager::run()

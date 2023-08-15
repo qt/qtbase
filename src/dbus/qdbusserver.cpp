@@ -86,12 +86,9 @@ QDBusServer::~QDBusServer()
     if (!manager)
         return;
 
-    QMutexLocker locker(&manager->mutex);
     QWriteLocker writeLocker(&d->lock);
-    for (const QString &name : std::as_const(d->serverConnectionNames))
-        manager->removeConnection(name);
+    manager->removeConnections(d->serverConnectionNames);
     d->serverConnectionNames.clear();
-    locker.unlock();
 
     d->serverObject = nullptr;
     d->ref.storeRelaxed(0);

@@ -36,16 +36,17 @@ public:
     static QDBusConnectionManager* instance();
 
     QDBusConnectionPrivate *busConnection(QDBusConnection::BusType type);
-    QDBusConnectionPrivate *connection(const QString &name) const;
-    void removeConnection(const QString &name);
-    void setConnection(const QString &name, QDBusConnectionPrivate *c);
+    QDBusConnectionPrivate *existingConnection(const QString &name) const;
+
+    void removeConnections(const QStringList &names);
+    void disconnectFrom(const QString &name, QDBusConnectionPrivate::ConnectionMode mode);
+    void addConnection(const QString &name, QDBusConnectionPrivate *c);
+
     QDBusConnectionPrivate *connectToBus(QDBusConnection::BusType type, const QString &name, bool suspendedDelivery);
     QDBusConnectionPrivate *connectToBus(const QString &address, const QString &name);
     QDBusConnectionPrivate *connectToPeer(const QString &address, const QString &name);
 
     void createServer(const QString &address, QDBusServer *server);
-
-    mutable QMutex mutex;
 
 protected:
     void run() override;
@@ -56,7 +57,11 @@ private:
     QDBusConnectionPrivate *doConnectToBus(const QString &address, const QString &name);
     QDBusConnectionPrivate *doConnectToPeer(const QString &address, const QString &name);
 
+    mutable QMutex mutex;
     QHash<QString, QDBusConnectionPrivate *> connectionHash;
+    QDBusConnectionPrivate *connection(const QString &name) const;
+    void removeConnection(const QString &name);
+    void setConnection(const QString &name, QDBusConnectionPrivate *c);
 
     QMutex defaultBusMutex;
     QDBusConnectionPrivate *defaultBuses[2];

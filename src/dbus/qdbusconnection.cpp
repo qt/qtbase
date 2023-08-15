@@ -7,7 +7,6 @@
 
 #include <qdebug.h>
 #include <qstringlist.h>
-#include <QtCore/private/qlocking_p.h>
 
 #include "qdbusconnectioninterface.h"
 #include "qdbuserror.h"
@@ -161,10 +160,7 @@ QDBusConnection::QDBusConnection(const QString &name)
     if (!manager) {
         d = nullptr;
     } else {
-        const auto locker = qt_scoped_lock(manager->mutex);
-        d = manager->connection(name);
-        if (d)
-            d->ref.ref();
+        d = manager->existingConnection(name);
     }
 }
 
@@ -276,14 +272,10 @@ QDBusConnection QDBusConnection::connectToPeer(const QString &address,
 void QDBusConnection::disconnectFromBus(const QString &name)
 {
     auto *manager = QDBusConnectionManager::instance();
+    if (!manager)
+        return;
 
-    if (manager) {
-        const auto locker = qt_scoped_lock(manager->mutex);
-        QDBusConnectionPrivate *d = manager->connection(name);
-        if (d && d->mode != QDBusConnectionPrivate::ClientMode)
-            return;
-        manager->removeConnection(name);
-    }
+    manager->disconnectFrom(name, QDBusConnectionPrivate::ClientMode);
 }
 
 /*!
@@ -299,14 +291,10 @@ void QDBusConnection::disconnectFromBus(const QString &name)
 void QDBusConnection::disconnectFromPeer(const QString &name)
 {
     auto *manager = QDBusConnectionManager::instance();
+    if (!manager)
+        return;
 
-    if (manager) {
-        const auto locker = qt_scoped_lock(manager->mutex);
-        QDBusConnectionPrivate *d = manager->connection(name);
-        if (d && d->mode != QDBusConnectionPrivate::PeerMode)
-            return;
-        manager->removeConnection(name);
-    }
+    manager->disconnectFrom(name, QDBusConnectionPrivate::PeerMode);
 }
 
 /*!
