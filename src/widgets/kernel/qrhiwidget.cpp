@@ -31,31 +31,33 @@ QT_BEGIN_NAMESPACE
     is implicitly created and managed by the QRhiWidget, subclasses should
     reimplement the virtual functions initialize() and render().
 
-    The size of the texture will by default adapt to the size of the item. If a
-    fixed size is preferred, set an explicit size specified in pixels by
+    The size of the texture will by default adapt to the size of the widget. If
+    a fixed size is preferred, set an explicit size specified in pixels by
     calling setExplicitSize().
 
     In addition to the texture serving as the color buffer, a depth/stencil
     buffer and a render target binding these together is maintained implicitly
     as well.
 
-    The QRhi for the widget's top-level window is configured to use a platform
-    specific backend and graphics API by default: Metal on macOS and iOS,
-    Direct 3D 11 on Windows, OpenGL otherwise. Call setApi() to override this.
+    The QRhi for the widget's top-level window is configured to use a
+    platform-specific backend and graphics API by default: Metal on macOS and
+    iOS, Direct 3D 11 on Windows, OpenGL otherwise. Call setApi() to override
+    this.
 
-    \note A single widget window can only use one QRhi backend, and so graphics
-    API. If two QRhiWidget or QQuickWidget widgets in the window's widget
-    hierarchy request different APIs, only one of them will function correctly.
+    \note A single widget window can only use one QRhi backend, and so one
+    single 3D graphics API. If two QRhiWidget or QQuickWidget widgets in the
+    window's widget hierarchy request different APIs, only one of them will
+    function correctly.
 
     \note While QRhiWidget is a public Qt API, the QRhi family of classes in
-    the Qt Gui module, including QShader and QShaderDescription, offer limited
-    compatibility guarantees. There are no source or binary compatibility
-    guarantees for these classes, meaning the API is only guaranteed to work
-    with the Qt version the application was developed against. Source
-    incompatible changes are however aimed to be kept at a minimum and will
-    only be made in minor releases (6.7, 6.8, and so on). \c{qrhiwidget.h} does
-    not directly include any QRhi-related headers. To use those classes when
-    implementing a QRhiWidget subclass, link to
+    the Qt Gui module, including QRhi, QShader and QShaderDescription, offer
+    limited compatibility guarantees. There are no source or binary
+    compatibility guarantees for these classes, meaning the API is only
+    guaranteed to work with the Qt version the application was developed
+    against. Source incompatible changes are however aimed to be kept at a
+    minimum and will only be made in minor releases (6.7, 6.8, and so on).
+    \c{qrhiwidget.h} does not directly include any QRhi-related headers. To use
+    those classes when implementing a QRhiWidget subclass, link to
     \c{Qt::GuiPrivate} (if using CMake), and include the appropriate headers
     with the \c rhi prefix, for example \c{#include <rhi/qrhi.h>}.
 
@@ -66,17 +68,20 @@ QT_BEGIN_NAMESPACE
 
     This is a widget that continuously requests updates, throttled by the
     presentation rate (vsync, depending on the screen refresh rate). If
-    continuously rendering is not desired, the update() call in render() should
-    be removed and rather issued when updating the rendered content is
-    necessary. For example, if the rotation should be tied to the value of a
-    QSlider, then connecting the slider's value change signal to a slot or
-    lambda that forwards the new value and calls update() is sufficient.
+    rendering continuously is not desired, the update() call in render() should
+    be removed, and rather issued only when updating the rendered content is
+    necessary. For example, if the rotation of the cube should be tied to the
+    value of a QSlider, then connecting the slider's value change signal to a
+    slot or lambda that forwards the new value and calls update() is
+    sufficient.
 
     The vertex and fragment shaders are provided as Vulkan-style GLSL and must
     be processed first by the Qt shader infrastructure first. This is achieved
     either by running the \c qsb command-line tool manually, or by using the
-    qt_add_shaders() function in CMake. The QRhiWidget implementation loads
-    these pre-processed \c{.qsb} files that are shipped with the application.
+    \l{Qt Shader Tools Build System Integration}{qt_add_shaders()} function in
+    CMake. The QRhiWidget implementation loads these pre-processed \c{.qsb}
+    files that are shipped with the application. See \l{Qt Shader Tools} for
+    more information about Qt's shader translation infrastructure.
 
     The source code for these shaders could be the following:
 
@@ -96,7 +101,7 @@ QT_BEGIN_NAMESPACE
     Widget Example}.
 
     For an example with more functionality and demonstration of further
-    concepts, check the \l{Cube RHI Widget Example}.
+    concepts, see the \l{Cube RHI Widget Example}.
 
     QRhiWidget always involves rendering into a backing texture, not
     directly to the window (the surface or layer provided by the windowing
