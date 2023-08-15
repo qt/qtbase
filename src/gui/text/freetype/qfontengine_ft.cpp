@@ -278,6 +278,13 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         }
 #endif
         newFreetype->face = face;
+        newFreetype->mm_var = nullptr;
+        if (FT_IS_NAMED_INSTANCE(newFreetype->face)) {
+            FT_Error ftresult;
+            ftresult = FT_Get_MM_Var(face, &newFreetype->mm_var);
+            if (ftresult != FT_Err_Ok)
+                newFreetype->mm_var = nullptr;
+        }
 
         newFreetype->ref.storeRelaxed(1);
         newFreetype->xsize = 0;
@@ -351,6 +358,9 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
 void QFreetypeFace::cleanup()
 {
     hbFace.reset();
+    if (mm_var && face && face->glyph)
+        FT_Done_MM_Var(face->glyph->library, mm_var);
+    mm_var = nullptr;
     FT_Done_Face(face);
     face = nullptr;
 }
@@ -818,16 +828,13 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
 
 static void dont_delete(void*) {}
 
-static FT_UShort calculateActualWeight(FT_Face face, QFontEngine::FaceId faceId)
+static FT_UShort calculateActualWeight(QFreetypeFace *freetypeFace, FT_Face face, QFontEngine::FaceId faceId)
 {
-    if (faceId.instanceIndex >= 0) {
-        FT_MM_Var *var = nullptr;
-        FT_Get_MM_Var(face, &var);
-        if (var != nullptr && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
-            for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
-                if (var->axis[axis].tag == QFont::Tag("wght").value()) {
-                    return var->namedstyle[faceId.instanceIndex].coords[axis] >> 16;
-                }
+    FT_MM_Var *var = freetypeFace->mm_var;
+    if (var != nullptr && faceId.instanceIndex >= 0 && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
+        for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
+            if (var->axis[axis].tag == QFont::Tag("wght").value()) {
+                return var->namedstyle[faceId.instanceIndex].coords[axis] >> 16;
             }
         }
     }
@@ -838,16 +845,13 @@ static FT_UShort calculateActualWeight(FT_Face face, QFontEngine::FaceId faceId)
     return 700;
 }
 
-static bool calculateActualItalic(FT_Face face, QFontEngine::FaceId faceId)
+static bool calculateActualItalic(QFreetypeFace *freetypeFace, FT_Face face, QFontEngine::FaceId faceId)
 {
-    if (faceId.instanceIndex >= 0) {
-        FT_MM_Var *var = nullptr;
-        FT_Get_MM_Var(face, &var);
-        if (var != nullptr && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
-            for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
-                if (var->axis[axis].tag == QFont::Tag("ital").value()) {
-                    return (var->namedstyle[faceId.instanceIndex].coords[axis] >> 16) == 1;
-                }
+    FT_MM_Var *var = freetypeFace->mm_var;
+    if (var != nullptr && faceId.instanceIndex >= 0 && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
+        for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
+            if (var->axis[axis].tag == QFont::Tag("ital").value()) {
+                return (var->namedstyle[faceId.instanceIndex].coords[axis] >> 16) == 1;
             }
         }
     }
@@ -886,7 +890,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     FT_Face face = lockFace();
 
     if (FT_IS_SCALABLE(face)) {
-        bool isItalic = calculateActualItalic(face, faceId);
+        bool isItalic = calculateActualItalic(freetype, face, faceId);
         bool fake_oblique = (fontDef.style != QFont::StyleNormal) && !isItalic && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_ITALIC");
         if (fake_oblique)
             obliquen = true;
@@ -894,7 +898,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         freetype->matrix = matrix;
         // fake bold
         if ((fontDef.weight >= QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face)  && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD")) {
-            FT_UShort actualWeight = calculateActualWeight(face, faceId);
+            FT_UShort actualWeight = calculateActualWeight(freetype, face, faceId);
             if (actualWeight < 700 &&
                 (fontDef.pixelSize < 64 || qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD_LIMIT"))) {
                 embolden = true;
