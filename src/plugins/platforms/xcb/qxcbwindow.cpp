@@ -472,6 +472,18 @@ QXcbWindow::~QXcbWindow()
     destroy();
 }
 
+QXcbForeignWindow::QXcbForeignWindow(QWindow *window, WId nativeHandle)
+    : QXcbWindow(window)
+{
+    m_window = nativeHandle;
+
+    // Reflect the foreign window's geometry as our own
+    if (auto geometry = Q_XCB_REPLY(xcb_get_geometry, xcb_connection(), m_window)) {
+        QRect nativeGeometry(geometry->x, geometry->y, geometry->width, geometry->height);
+        QPlatformWindow::setGeometry(nativeGeometry);
+    }
+}
+
 QXcbForeignWindow::~QXcbForeignWindow()
 {
     // Clear window so that destroy() does not affect it

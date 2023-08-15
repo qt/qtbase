@@ -67,8 +67,6 @@ void tst_ForeignWindow::initialState()
 
     // For extra bonus points, the foreign window should actually
     // reflect the state of the native window.
-    if (!QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive))
-        QEXPECT_FAIL("", "QXcbWindow does not pick up foreign window geometry", Continue);
     QCOMPARE(foreignWindow->geometry(), initialGeometry);
 }
 

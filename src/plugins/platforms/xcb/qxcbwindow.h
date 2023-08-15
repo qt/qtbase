@@ -258,8 +258,7 @@ protected:
 class QXcbForeignWindow : public QXcbWindow
 {
 public:
-    QXcbForeignWindow(QWindow *window, WId nativeHandle)
-        : QXcbWindow(window) { m_window = nativeHandle; }
+    QXcbForeignWindow(QWindow *window, WId nativeHandle);
     ~QXcbForeignWindow();
     bool isForeignWindow() const override { return true; }
 
