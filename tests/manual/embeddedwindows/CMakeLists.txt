@@ -8,6 +8,10 @@ qt_internal_add_manual_test(embeddedwindows
         Qt::Gui
 )
 
+if(QT_FEATURE_xcb)
+    target_link_libraries(embeddedwindows PRIVATE XCB::XCB)
+endif()
+
 if(APPLE)
     enable_language(OBJCXX)
     set_source_files_properties(main.cpp PROPERTIES LANGUAGE OBJCXX)
