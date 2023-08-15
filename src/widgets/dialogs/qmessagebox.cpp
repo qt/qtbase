@@ -1292,8 +1292,8 @@ QMessageBox::Options QMessageBox::options() const
 
 /*!
     \property QMessageBox::options
-    \brief options that affect the look and feel of the dialog
-    \since 6.6.
+    \brief Options that affect the look and feel of the dialog.
+    \since 6.6
 
     By default, these options are disabled.
 
