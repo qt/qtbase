@@ -7064,10 +7064,14 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     (same as SDR/sRGB) and linear colors. Conversion to the display's native
     color space (such as, HDR10) is performed by the windowing system. On
     Windows this is the canonical color space of the system compositor, and is
-    the recommended format for HDR swapchains in general.
+    the recommended format for HDR swapchains in general on desktop platforms.
 
     \value HDR10 10-bit unsigned int RGB or BGR with 2 bit alpha, high dynamic
     range, HDR10 (Rec. 2020) color space with an ST2084 PQ transfer function.
+
+    \value HDRExtendedDisplayP3Linear 16-bit float RGBA, high dynamic range,
+    extended linear Display P3 color space. The primary choice for HDR on
+    platforms such as iOS and VisionOS.
  */
 
 /*!

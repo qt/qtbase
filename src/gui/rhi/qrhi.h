@@ -1532,7 +1532,8 @@ public:
     enum Format {
         SDR,
         HDRExtendedSrgbLinear,
-        HDR10
+        HDR10,
+        HDRExtendedDisplayP3Linear
     };
 
     enum StereoTargetBuffer {

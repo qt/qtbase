@@ -188,6 +188,9 @@ void preInit()
     if (args.contains("scrgb")) {
         d.usingHDRWindow = true;
         swapchainFormat = QRhiSwapChain::HDRExtendedSrgbLinear;
+    } else if (args.contains("p3")) {
+        d.usingHDRWindow = true;
+        swapchainFormat = QRhiSwapChain::HDRExtendedDisplayP3Linear;
     } else if (args.contains("sdr")) {
         d.usingHDRWindow = false;
         swapchainFormat = QRhiSwapChain::SDR;
@@ -365,9 +368,15 @@ void Window::customGui()
     ImGui::Begin("HDR test");
 
     if (d.usingHDRWindow) {
-        ImGui::Text("The window is now scRGB (extended *linear* sRGB) + FP16 color buffer,\n"
-                    "the ImGui UI and the green background are considered SDR content,\n"
-                    "the cube is using a HDR texture.");
+        if (swapchainFormat == QRhiSwapChain::HDRExtendedDisplayP3Linear) {
+            ImGui::Text("The window is now Extended Linear Display P3 + FP16 color buffer,\n"
+                        "the ImGui UI and the green background are considered SDR content,\n"
+                        "the cube is using a HDR texture.");
+        } else {
+            ImGui::Text("The window is now scRGB (Extended Linear sRGB) + FP16 color buffer,\n"
+                        "the ImGui UI and the green background are considered SDR content,\n"
+                        "the cube is using a HDR texture.");
+        }
         ImGui::Checkbox("Adjust SDR content", &d.adjustSDR);
         addTip("Multiplies fragment colors for non-HDR content with sdr_white_level / 80. "
                "Not relevant with macOS (due to EDR being display-referred).");

@@ -6180,6 +6180,11 @@ bool QMetalSwapChain::isFormatSupported(Format f)
             return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
         else
             return false;
+    } else if (f == HDRExtendedDisplayP3Linear) {
+        if (@available(macOS 11.0, iOS 14.0, *))
+            return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
+        else
+            return false;
     }
     return f == SDR;
 }
@@ -6215,7 +6220,7 @@ void QMetalSwapChain::chooseFormats()
     QRHI_RES_RHI(QRhiMetal);
     samples = rhiD->effectiveSampleCount(m_sampleCount);
     // pick a format that is allowed for CAMetalLayer.pixelFormat
-    if (m_format == HDRExtendedSrgbLinear) {
+    if (m_format == HDRExtendedSrgbLinear || m_format == HDRExtendedDisplayP3Linear) {
         d->colorFormat = MTLPixelFormatRGBA16Float;
         d->rhiColorFormat = QRhiTexture::RGBA16F;
         return;
@@ -6266,6 +6271,11 @@ bool QMetalSwapChain::createOrResize()
     if (m_format == HDRExtendedSrgbLinear) {
         if (@available(macOS 10.11, iOS 16.0, *)) {
             d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+            d->layer.wantsExtendedDynamicRangeContent = YES;
+        }
+    } else if (m_format == HDRExtendedDisplayP3Linear) {
+        if (@available(macOS 11.0, iOS 14.0, *)) {
+            d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearDisplayP3);
             d->layer.wantsExtendedDynamicRangeContent = YES;
         }
     }
