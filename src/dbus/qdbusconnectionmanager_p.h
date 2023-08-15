@@ -30,7 +30,6 @@ class QDBusServer;
 class QDBusConnectionManager : public QDaemonThread
 {
     Q_OBJECT
-    struct ConnectionRequestData;
 public:
     QDBusConnectionManager();
     ~QDBusConnectionManager();
@@ -48,14 +47,14 @@ public:
 
     mutable QMutex mutex;
 
-signals:
-    void connectionRequested(ConnectionRequestData *);
-
 protected:
     void run() override;
 
 private:
-    void executeConnectionRequest(ConnectionRequestData *data);
+    QDBusConnectionPrivate *doConnectToBus(QDBusConnection::BusType type, const QString &name,
+                                           bool suspendedDelivery);
+    QDBusConnectionPrivate *doConnectToBus(const QString &address, const QString &name);
+    QDBusConnectionPrivate *doConnectToPeer(const QString &address, const QString &name);
 
     QHash<QString, QDBusConnectionPrivate *> connectionHash;
 
@@ -64,26 +63,6 @@ private:
 
     mutable QMutex senderMutex;
     QString senderName; // internal; will probably change
-};
-
-// TODO: move into own header and use Q_MOC_INCLUDE
-struct QDBusConnectionManager::ConnectionRequestData
-{
-    enum RequestType {
-        ConnectToStandardBus,
-        ConnectToBusByAddress,
-        ConnectToPeerByAddress
-    } type;
-
-    union {
-        QDBusConnection::BusType busType;
-        const QString *busAddress;
-    };
-    const QString *name;
-
-    QDBusConnectionPrivate *result;
-
-    bool suspendedDelivery;
 };
 
 QT_END_NAMESPACE

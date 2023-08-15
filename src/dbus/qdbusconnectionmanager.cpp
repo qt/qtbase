@@ -72,8 +72,6 @@ QDBusConnectionManager::QDBusConnectionManager()
     // destructurs for global statics.
     QDBusMetaTypeId::init();
 
-    connect(this, &QDBusConnectionManager::connectionRequested,
-            this, &QDBusConnectionManager::executeConnectionRequest, Qt::BlockingQueuedConnection);
     moveToThread(this);         // ugly, don't do this in other projects
 
 #ifdef Q_OS_WIN
@@ -129,96 +127,133 @@ void QDBusConnectionManager::run()
 QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(QDBusConnection::BusType type, const QString &name,
                                                              bool suspendedDelivery)
 {
-    ConnectionRequestData data;
-    data.type = ConnectionRequestData::ConnectToStandardBus;
-    data.busType = type;
-    data.name = &name;
-    data.suspendedDelivery = suspendedDelivery;
+    QDBusConnectionPrivate *result = nullptr;
 
-    emit connectionRequested(&data);
-    if (suspendedDelivery && data.result->connection)
-        data.result->enableDispatchDelayed(qApp); // qApp was checked in the caller
+    QMetaObject::invokeMethod(
+            this,
+            [this, type, &name, suspendedDelivery] {
+                return doConnectToBus(type, name, suspendedDelivery);
+            },
+            Qt::BlockingQueuedConnection, &result);
 
-    return data.result;
+    if (suspendedDelivery && result && result->connection)
+        result->enableDispatchDelayed(qApp); // qApp was checked in the caller
+
+    return result;
 }
 
 QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(const QString &address, const QString &name)
 {
-    ConnectionRequestData data;
-    data.type = ConnectionRequestData::ConnectToBusByAddress;
-    data.busAddress = &address;
-    data.name = &name;
-    data.suspendedDelivery = false;
+    QDBusConnectionPrivate *result = nullptr;
 
-    emit connectionRequested(&data);
-    return data.result;
+    QMetaObject::invokeMethod(
+            this, [this, &address, &name] { return doConnectToBus(address, name); },
+            Qt::BlockingQueuedConnection, &result);
+
+    return result;
 }
 
 QDBusConnectionPrivate *QDBusConnectionManager::connectToPeer(const QString &address, const QString &name)
 {
-    ConnectionRequestData data;
-    data.type = ConnectionRequestData::ConnectToPeerByAddress;
-    data.busAddress = &address;
-    data.name = &name;
-    data.suspendedDelivery = false;
+    QDBusConnectionPrivate *result = nullptr;
 
-    emit connectionRequested(&data);
-    return data.result;
+    QMetaObject::invokeMethod(
+            this, [this, &address, &name] { return doConnectToPeer(address, name); },
+            Qt::BlockingQueuedConnection, &result);
+
+    return result;
 }
 
-void QDBusConnectionManager::executeConnectionRequest(QDBusConnectionManager::ConnectionRequestData *data)
+QDBusConnectionPrivate *QDBusConnectionManager::doConnectToBus(QDBusConnection::BusType type,
+                                                               const QString &name,
+                                                               bool suspendedDelivery)
 {
     const auto locker = qt_scoped_lock(mutex);
-    const QString &name = *data->name;
-    QDBusConnectionPrivate *&d = data->result;
 
     // check if the connection exists by name
-    d = connection(name);
+    QDBusConnectionPrivate *d = connection(name);
     if (d || name.isEmpty())
-        return;
+        return d;
 
     d = new QDBusConnectionPrivate;
     DBusConnection *c = nullptr;
     QDBusErrorInternal error;
-    switch (data->type) {
-    case ConnectionRequestData::ConnectToStandardBus:
-        switch (data->busType) {
-        case QDBusConnection::SystemBus:
-            c = q_dbus_bus_get_private(DBUS_BUS_SYSTEM, error);
-            break;
-        case QDBusConnection::SessionBus:
-            c = q_dbus_bus_get_private(DBUS_BUS_SESSION, error);
-            break;
-        case QDBusConnection::ActivationBus:
-            c = q_dbus_bus_get_private(DBUS_BUS_STARTER, error);
-            break;
-        }
-        break;
 
-    case ConnectionRequestData::ConnectToBusByAddress:
-    case ConnectionRequestData::ConnectToPeerByAddress:
-        c = q_dbus_connection_open_private(data->busAddress->toUtf8().constData(), error);
-        if (c && data->type == ConnectionRequestData::ConnectToBusByAddress) {
-            // register on the bus
-            if (!q_dbus_bus_register(c, error)) {
-                q_dbus_connection_unref(c);
-                c = nullptr;
-            }
-        }
+    switch (type) {
+    case QDBusConnection::SystemBus:
+        c = q_dbus_bus_get_private(DBUS_BUS_SYSTEM, error);
+        break;
+    case QDBusConnection::SessionBus:
+        c = q_dbus_bus_get_private(DBUS_BUS_SESSION, error);
+        break;
+    case QDBusConnection::ActivationBus:
+        c = q_dbus_bus_get_private(DBUS_BUS_STARTER, error);
         break;
     }
 
     setConnection(name, d);
-    if (data->type == ConnectionRequestData::ConnectToPeerByAddress) {
-        d->setPeer(c, error);
-    } else {
-        // create the bus service
-        // will lock in QDBusConnectionPrivate::connectRelay()
-        d->setConnection(c, error);
-        d->createBusService();
-        if (c && data->suspendedDelivery)
-            d->setDispatchEnabled(false);
+
+    // create the bus service
+    // will lock in QDBusConnectionPrivate::connectRelay()
+    d->setConnection(c, error);
+    d->createBusService();
+    if (c && suspendedDelivery)
+        d->setDispatchEnabled(false);
+
+    return d;
+}
+
+QDBusConnectionPrivate *QDBusConnectionManager::doConnectToBus(const QString &address,
+                                                               const QString &name)
+{
+    const auto locker = qt_scoped_lock(mutex);
+
+    // check if the connection exists by name
+    QDBusConnectionPrivate *d = connection(name);
+    if (d || name.isEmpty())
+        return d;
+
+    d = new QDBusConnectionPrivate;
+    QDBusErrorInternal error;
+
+    DBusConnection *c = q_dbus_connection_open_private(address.toUtf8().constData(), error);
+    if (c) {
+        // register on the bus
+        if (!q_dbus_bus_register(c, error)) {
+            q_dbus_connection_unref(c);
+            c = nullptr;
+        }
     }
+
+    setConnection(name, d);
+
+    // create the bus service
+    // will lock in QDBusConnectionPrivate::connectRelay()
+    d->setConnection(c, error);
+    d->createBusService();
+
+    return d;
+}
+
+QDBusConnectionPrivate *QDBusConnectionManager::doConnectToPeer(const QString &address,
+                                                                const QString &name)
+{
+    const auto locker = qt_scoped_lock(mutex);
+
+    // check if the connection exists by name
+    QDBusConnectionPrivate *d = connection(name);
+    if (d || name.isEmpty())
+        return d;
+
+    d = new QDBusConnectionPrivate;
+    QDBusErrorInternal error;
+
+    DBusConnection *c = q_dbus_connection_open_private(address.toUtf8().constData(), error);
+
+    setConnection(name, d);
+    d->setPeer(c, error);
+
+    return d;
 }
 
 void QDBusConnectionManager::createServer(const QString &address, QDBusServer *server)
