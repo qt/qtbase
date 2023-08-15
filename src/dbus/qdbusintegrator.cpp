@@ -1050,10 +1050,6 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
             this, &QDBusConnectionPrivate::handleObjectCall, Qt::QueuedConnection);
     connect(this, &QDBusConnectionPrivate::messageNeedsSending,
             this, &QDBusConnectionPrivate::sendInternal);
-    connect(this, &QDBusConnectionPrivate::signalNeedsConnecting,
-            this, &QDBusConnectionPrivate::addSignalHook, Qt::BlockingQueuedConnection);
-    connect(this, &QDBusConnectionPrivate::signalNeedsDisconnecting,
-            this, &QDBusConnectionPrivate::removeSignalHook, Qt::BlockingQueuedConnection);
 
     rootNode.flags = 0;
 
@@ -2250,10 +2246,20 @@ bool QDBusConnectionPrivate::connectSignal(const QString &service,
     }
 
     Q_ASSERT(thread() != QThread::currentThread());
-    return emit signalNeedsConnecting(key, hook);
+    return addSignalHook(key, hook);
 }
 
 bool QDBusConnectionPrivate::addSignalHook(const QString &key, const SignalHook &hook)
+{
+    bool result = false;
+
+    QMetaObject::invokeMethod(this, &QDBusConnectionPrivate::addSignalHookImpl,
+                              Qt::BlockingQueuedConnection, qReturnArg(result), key, hook);
+
+    return result;
+}
+
+bool QDBusConnectionPrivate::addSignalHookImpl(const QString &key, const SignalHook &hook)
 {
     QDBusWriteLocker locker(ConnectAction, this);
 
@@ -2343,10 +2349,20 @@ bool QDBusConnectionPrivate::disconnectSignal(const QString &service,
     }
 
     Q_ASSERT(thread() != QThread::currentThread());
-    return emit signalNeedsDisconnecting(key, hook);
+    return removeSignalHook(key, hook);
 }
 
 bool QDBusConnectionPrivate::removeSignalHook(const QString &key, const SignalHook &hook)
+{
+    bool result = false;
+
+    QMetaObject::invokeMethod(this, &QDBusConnectionPrivate::removeSignalHookImpl,
+                              Qt::BlockingQueuedConnection, qReturnArg(result), key, hook);
+
+    return result;
+}
+
+bool QDBusConnectionPrivate::removeSignalHookImpl(const QString &key, const SignalHook &hook)
 {
     // remove it from our list:
     QDBusWriteLocker locker(ConnectAction, this);
@@ -2475,7 +2491,7 @@ void QDBusConnectionPrivate::connectRelay(const QString &service,
     }
 
     Q_ASSERT(thread() != QThread::currentThread());
-    emit signalNeedsConnecting(key, hook);
+    addSignalHook(key, hook);
 }
 
 void QDBusConnectionPrivate::disconnectRelay(const QString &service,
@@ -2499,7 +2515,7 @@ void QDBusConnectionPrivate::disconnectRelay(const QString &service,
     }
 
     Q_ASSERT(thread() != QThread::currentThread());
-    emit signalNeedsDisconnecting(key, hook);
+    removeSignalHook(key, hook);
 }
 
 bool QDBusConnectionPrivate::shouldWatchService(const QString &service)

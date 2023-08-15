@@ -245,6 +245,12 @@ private:
 
     void handleAuthentication();
 
+    bool addSignalHook(const QString &key, const SignalHook &hook);
+    bool removeSignalHook(const QString &key, const SignalHook &hook);
+
+    bool addSignalHookImpl(const QString &key, const SignalHook &hook);
+    bool removeSignalHookImpl(const QString &key, const SignalHook &hook);
+
 protected:
     void timerEvent(QTimerEvent *e) override;
 
@@ -256,8 +262,6 @@ public slots:
     void socketWrite(qintptr);
     void objectDestroyed(QObject *o);
     void relaySignal(QObject *obj, const QMetaObject *, int signalId, const QVariantList &args);
-    bool addSignalHook(const QString &key, const SignalHook &hook);
-    bool removeSignalHook(const QString &key, const SignalHook &hook);
 
 private slots:
     void serviceOwnerChangedNoLock(const QString &name, const QString &oldOwner, const QString &newOwner);
@@ -269,8 +273,6 @@ signals:
     void dispatchStatusChanged();
     void spyHooksFinished(const QDBusMessage &msg);
     void messageNeedsSending(QDBusPendingCallPrivate *pcall, void *msg, int timeout = -1);
-    bool signalNeedsConnecting(const QString &key, const QDBusConnectionPrivate::SignalHook &hook);
-    bool signalNeedsDisconnecting(const QString &key, const QDBusConnectionPrivate::SignalHook &hook);
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
     void callWithCallbackFailed(const QDBusError &error, const QDBusMessage &message);
     void newServerConnection(QDBusConnectionPrivate *newConnection);
