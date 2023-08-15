@@ -104,6 +104,25 @@ void tst_QHashFunctions::consistent()
         QCOMPARE(h32, h64);
     }
 
+    // mixed signed/unsigned
+    {
+        const auto hu8 = qHash(quint8(42), seed);
+        const auto hs8 = qHash(qint8(42),  seed);
+        QCOMPARE(hu8, hs8);
+
+        const auto hu16 = qHash(quint16(4242), seed);
+        const auto hs16 = qHash(qint16(4242),  seed);
+        QCOMPARE(hu16, hs16);
+
+        const auto hu32 = qHash(quint32(4242'4242), seed);
+        const auto hs32 = qHash(qint32(4242'4242),  seed);
+        QCOMPARE(hu32, hs32);
+
+        const auto hu64 = qHash(quint64(4242'424242), seed);
+        const auto hs64 = qHash(qint64(4242'424242),  seed);
+        QCOMPARE(hu64, hs64);
+    }
+
     // floats
     {
         const/*expr broken: QTBUG-116079*/ qfloat16 f16 = qfloat16(-42.f);
