@@ -75,7 +75,7 @@ public:
     constexpr QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
                            uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
         : data1(l), data2(w1), data3(w2), data4{b1, b2, b3, b4, b5, b6, b7, b8} {}
-    explicit QUuid(Id128Bytes id128, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
+    explicit inline QUuid(Id128Bytes id128, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
 
     explicit QUuid(QAnyStringView string) noexcept
         : QUuid{fromString(string)} {}
@@ -89,10 +89,11 @@ public:
 #endif
     QString toString(StringFormat mode = WithBraces) const;
     QByteArray toByteArray(StringFormat mode = WithBraces) const;
-    Id128Bytes toBytes(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
+    inline Id128Bytes toBytes(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
     QByteArray toRfc4122() const;
 
-    static QUuid fromBytes(const void *bytes, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
+    static inline
+    QUuid fromBytes(const void *bytes, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
 #if QT_CORE_REMOVED_SINCE(6, 3)
     static QUuid fromRfc4122(const QByteArray &);
 #endif
@@ -213,7 +214,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QUuid &);
 
 Q_CORE_EXPORT size_t qHash(const QUuid &uuid, size_t seed = 0) noexcept;
 
-inline QUuid::QUuid(Id128Bytes uuid, QSysInfo::Endian order) noexcept
+QUuid::QUuid(Id128Bytes uuid, QSysInfo::Endian order) noexcept
 {
     if (order == QSysInfo::LittleEndian)
         uuid = bswap(uuid);
@@ -223,7 +224,7 @@ inline QUuid::QUuid(Id128Bytes uuid, QSysInfo::Endian order) noexcept
     memcpy(data4, &uuid.data[8], sizeof(data4));
 }
 
-inline QUuid::Id128Bytes QUuid::toBytes(QSysInfo::Endian order) const noexcept
+QUuid::Id128Bytes QUuid::toBytes(QSysInfo::Endian order) const noexcept
 {
     Id128Bytes result = {};
     qToBigEndian(data1, &result.data[0]);
@@ -235,7 +236,7 @@ inline QUuid::Id128Bytes QUuid::toBytes(QSysInfo::Endian order) const noexcept
     return result;
 }
 
-inline QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcept
+QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcept
 {
     Id128Bytes result = {};
     memcpy(result.data, bytes, sizeof(result));
