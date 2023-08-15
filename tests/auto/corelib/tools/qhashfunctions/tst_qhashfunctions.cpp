@@ -40,11 +40,11 @@ class tst_QHashFunctions : public QObject
 {
     Q_OBJECT
 public:
-    enum {
-        // random value
-        RandomSeed = 1045982819
-    };
-    uint seed;
+    // random values
+    static constexpr quint64 ZeroSeed = 0;
+    static constexpr quint64 RandomSeed32 = 1045982819;
+    static constexpr quint64 RandomSeed64 = QtPrivate::QHashCombine{}(RandomSeed32, RandomSeed32);
+    size_t seed;
 
     template <typename T1, typename T2> void stdPair_template(const T1 &t1, const T2 &t2);
 
@@ -89,17 +89,23 @@ void tst_QHashFunctions::consistent()
 
 void tst_QHashFunctions::initTestCase()
 {
-    static_assert(int(RandomSeed) > 0);
+    QTest::addColumn<quint64>("seedValue");
 
-    QTest::addColumn<uint>("seedValue");
-    QTest::newRow("zero-seed") << 0U;
-    QTest::newRow("non-zero-seed") << uint(RandomSeed);
+    QTest::newRow("zero-seed") << ZeroSeed;
+    QTest::newRow("zero-seed-negated") << ~ZeroSeed;
+    QTest::newRow("non-zero-seed-32bit") << RandomSeed32;
+    QTest::newRow("non-zero-seed-32bit-negated")
+            << quint64{~quint32(RandomSeed32)}; // ensure this->seed gets same value on 32/64-bit
+    if constexpr (sizeof(size_t) == sizeof(quint64)) {
+        QTest::newRow("non-zero-seed-64bit") << RandomSeed64;
+        QTest::newRow("non-zero-seed-64bit-negated") << ~RandomSeed64;
+    }
 }
 
 void tst_QHashFunctions::init()
 {
-    QFETCH_GLOBAL(uint, seedValue);
-    seed = seedValue;
+    QFETCH_GLOBAL(quint64, seedValue);
+    seed = size_t(seedValue);
 }
 
 void tst_QHashFunctions::qhash()
