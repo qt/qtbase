@@ -118,6 +118,9 @@
     For more information about the environment variables that qmake uses when
     configuring the build process, see \l{Configuring qmake}.
 
+    \note Add your project build directory to the list of excluded directories
+      of any anti-virus application that runs on your system.
+
     \section1 Using Third Party Libraries
 
     The guide to \l{Third Party Libraries} shows you how to use simple third
