@@ -301,6 +301,54 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 */
 
 /*!
+    \fn QUuid::Id128Bytes qFromBigEndian(QUuid::Id128Bytes src)
+    \since 6.6
+    \relates QUuid::Id128Bytes
+    \overload
+
+    Converts \a src from big-endian byte order and returns the struct holding
+    the binary representation of UUID in host byte order.
+
+    \sa <QtEndian>
+*/
+
+/*!
+    \fn QUuid::Id128Bytes qFromLittleEndian(QUuid::Id128Bytes src)
+    \since 6.6
+    \relates QUuid::Id128Bytes
+    \overload
+
+    Converts \a src from little-endian byte order and returns the struct holding
+    the binary representation of UUID in host byte order.
+
+    \sa <QtEndian>
+*/
+
+/*!
+    \fn QUuid::Id128Bytes qToBigEndian(QUuid::Id128Bytes src)
+    \since 6.6
+    \relates QUuid::Id128Bytes
+    \overload
+
+    Converts \a src from host byte order and returns the struct holding the
+    binary representation of UUID in big-endian byte order.
+
+    \sa <QtEndian>
+*/
+
+/*!
+    \fn QUuid::Id128Bytes qToLittleEndian(QUuid::Id128Bytes src)
+    \since 6.6
+    \relates QUuid::Id128Bytes
+    \overload
+
+    Converts \a src from host byte order and returns the struct holding the
+    binary representation of UUID in little-endian byte order.
+
+    \sa <QtEndian>
+*/
+
+/*!
     \fn QUuid::QUuid(Id128Bytes id128, QSysInfo::Endian order) noexcept
     \since 6.6
 

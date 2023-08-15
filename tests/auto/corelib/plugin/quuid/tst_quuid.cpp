@@ -244,6 +244,23 @@ void tst_QUuid::id128()
         leBytesA.data[15 - i] = bytesA.data[i];
     QCOMPARE(QUuid(leBytesA, QSysInfo::LittleEndian), uuidA);
     QVERIFY(memcmp(uuidA.toBytes(QSysInfo::LittleEndian).data, leBytesA.data, sizeof(leBytesA)) == 0);
+
+    // check the new q{To,From}{Big,Little}Endian() overloads
+    QUuid::Id128Bytes roundtrip = qFromLittleEndian(qToLittleEndian(bytesA));
+    QVERIFY(memcmp(roundtrip.data, bytesA.data, sizeof(bytesA)) == 0);
+    roundtrip = qFromBigEndian(qToBigEndian(bytesA));
+    QVERIFY(memcmp(roundtrip.data, bytesA.data, sizeof(bytesA)) == 0);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    const QUuid::Id128Bytes beBytesA = qToBigEndian(leBytesA);
+    QVERIFY(memcmp(beBytesA.data, bytesA.data, sizeof(beBytesA)) == 0);
+    const QUuid::Id128Bytes otherLeBytesA = qFromBigEndian(bytesA);
+    QVERIFY(memcmp(otherLeBytesA.data, leBytesA.data, sizeof(leBytesA)) == 0);
+#else // Q_BIG_ENDIAN
+    const QUuid::Id128Bytes otherLeBytesA = qToLittleEndian(bytesA);
+    QVERIFY(memcmp(otherLeBytesA.data, leBytesA.data, sizeof(leBytesA)) == 0);
+    const QUuid::Id128Bytes beBytesA = qFromLittleEndian(leBytesA);
+    QVERIFY(memcmp(beBytesA.data, bytesA.data, sizeof(beBytesA)) == 0);
+#endif // Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 }
 
 void tst_QUuid::uint128()

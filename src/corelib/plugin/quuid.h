@@ -68,6 +68,16 @@ public:
         {
             return QByteArrayView(data, sizeof(data));
         }
+
+        friend constexpr Id128Bytes qbswap(Id128Bytes b) noexcept
+        {
+            // 128-bit byte swap
+            auto b0 = qbswap(b.data64[0]);
+            auto b1 = qbswap(b.data64[1]);
+            b.data64[0] = b1;
+            b.data64[1] = b0;
+            return b;
+        }
     };
 
     constexpr QUuid() noexcept : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
@@ -188,17 +198,6 @@ public:
     ushort  data2;
     ushort  data3;
     uchar   data4[8];
-
-private:
-    static constexpr Id128Bytes bswap(Id128Bytes b)
-    {
-        // 128-bit byte swap
-        auto b0 = qbswap(b.data64[0]);
-        auto b1 = qbswap(b.data64[1]);
-        b.data64[0] = b1;
-        b.data64[1] = b0;
-        return b;
-    }
 };
 
 Q_DECLARE_TYPEINFO(QUuid, Q_PRIMITIVE_TYPE);
@@ -217,7 +216,7 @@ Q_CORE_EXPORT size_t qHash(const QUuid &uuid, size_t seed = 0) noexcept;
 QUuid::QUuid(Id128Bytes uuid, QSysInfo::Endian order) noexcept
 {
     if (order == QSysInfo::LittleEndian)
-        uuid = bswap(uuid);
+        uuid = qbswap(uuid);
     data1 = qFromBigEndian<quint32>(&uuid.data[0]);
     data2 = qFromBigEndian<quint16>(&uuid.data[4]);
     data3 = qFromBigEndian<quint16>(&uuid.data[6]);
@@ -232,7 +231,7 @@ QUuid::Id128Bytes QUuid::toBytes(QSysInfo::Endian order) const noexcept
     qToBigEndian(data3, &result.data[6]);
     memcpy(&result.data[8], data4, sizeof(data4));
     if (order == QSysInfo::LittleEndian)
-        return bswap(result);
+        return qbswap(result);
     return result;
 }
 
@@ -290,6 +289,15 @@ inline bool operator<=(const QUuid &lhs, const QUuid &rhs) noexcept
 { return !(rhs < lhs); }
 inline bool operator>=(const QUuid &lhs, const QUuid &rhs) noexcept
 { return !(lhs < rhs); }
+
+#if defined(Q_QDOC)
+// provide fake declarations of qXXXEndian() functions, so that qDoc could
+// distinguish them from the general template
+QUuid::Id128Bytes qFromBigEndian(QUuid::Id128Bytes src);
+QUuid::Id128Bytes qFromLittleEndian(QUuid::Id128Bytes src);
+QUuid::Id128Bytes qToBigEndian(QUuid::Id128Bytes src);
+QUuid::Id128Bytes qToLittleEndian(QUuid::Id128Bytes src);
+#endif
 
 QT_END_NAMESPACE
 
