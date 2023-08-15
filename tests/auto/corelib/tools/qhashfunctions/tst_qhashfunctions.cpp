@@ -34,6 +34,7 @@ public slots:
     void init();
 
 private Q_SLOTS:
+    void pointerConsistency();
     void boolIntegerConsistency();
     void unsignedIntegerConsistency_data();
     void unsignedIntegerConsistency();
@@ -76,6 +77,51 @@ private Q_SLOTS:
     void setGlobalQHashSeed();
 #endif
 };
+
+void tst_QHashFunctions::pointerConsistency()
+{
+    // const/mutable
+    {
+        int i = 0;
+        const auto h = qHash(&i, seed);
+        if (seed != 0) QEXPECT_FAIL("", "QTBUG-116074", Continue);
+        QCOMPARE(h, qHash(&std::as_const(i), seed));
+    }
+
+    // QObject base/derived (should all hash like a QObject*):
+    {
+        QFile file;
+        QObject *o = &file;
+        const QObject *co = &file;
+        const auto h = qHash(&file, seed);
+        QCOMPARE(h, qHash( o, seed));
+        if (seed != 0) QEXPECT_FAIL("", "QTBUG-116074", Continue);
+        QCOMPARE(h, qHash(co, seed));
+    }
+
+    // multiple inheritance (there is nothing we can do anything about this):
+    {
+        struct Base1 { int i; virtual ~Base1() = default; };
+        struct Base2 { long long i; virtual ~Base2() = default; };
+        struct MultipleInheritance : Base1, Base2 {};
+
+        MultipleInheritance mi;
+        Base1 *b1 = &mi;
+        Base2 *b2 = &mi;
+        const Base1 *cb1 = &mi;
+        const Base2 *cb2 = &mi;
+        const auto h = qHash(&mi, seed);
+        QCOMPARE(&mi, b1);
+        QCOMPARE(h, qHash( b1, seed));
+        QCOMPARE(&mi, b2);
+        //QCOMPARE(h, qHash( b2, seed)); // requires pointer adjustment
+        QCOMPARE(&mi, cb1);
+        if (seed != 0) QEXPECT_FAIL("", "QTBUG-116074", Continue);
+        QCOMPARE(h, qHash(cb1, seed));
+        QCOMPARE(&mi, cb2);
+        // QCOMPARE(h, qHash(cb2, seed)); // requires pointer adjustment
+    }
+}
 
 void tst_QHashFunctions::initTestCase()
 {
