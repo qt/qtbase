@@ -200,10 +200,10 @@ void runVerifyDeployment(const QString &name)
     const QString qtPath = QLibraryInfo::path(QLibraryInfo::PrefixPath);
     // Let assume Qt is not installed in system
     for (const QString &part : parts) {
-        part = part.trimmed();
-        if (part.isEmpty())
+        const auto trimmed = part.trimmed();
+        if (trimmed.isEmpty())
             continue;
-        QVERIFY(!part.startsWith(qtPath));
+        QVERIFY(!trimmed.startsWith(qtPath));
     }
 }
 
