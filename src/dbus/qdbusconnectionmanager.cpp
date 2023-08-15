@@ -74,8 +74,6 @@ QDBusConnectionManager::QDBusConnectionManager()
 
     connect(this, &QDBusConnectionManager::connectionRequested,
             this, &QDBusConnectionManager::executeConnectionRequest, Qt::BlockingQueuedConnection);
-    connect(this, &QDBusConnectionManager::serverRequested,
-            this, &QDBusConnectionManager::createServer, Qt::BlockingQueuedConnection);
     moveToThread(this);         // ugly, don't do this in other projects
 
 #ifdef Q_OS_WIN
@@ -223,12 +221,17 @@ void QDBusConnectionManager::executeConnectionRequest(QDBusConnectionManager::Co
     }
 }
 
-void QDBusConnectionManager::createServer(const QString &address, void *server)
+void QDBusConnectionManager::createServer(const QString &address, QDBusServer *server)
 {
-    QDBusErrorInternal error;
-    QDBusConnectionPrivate *d = new QDBusConnectionPrivate;
-    d->setServer(static_cast<QDBusServer *>(server),
-                 q_dbus_server_listen(address.toUtf8().constData(), error), error);
+    QMetaObject::invokeMethod(
+            this,
+            [&address, server] {
+                QDBusErrorInternal error;
+                QDBusConnectionPrivate *d = new QDBusConnectionPrivate;
+                d->setServer(server, q_dbus_server_listen(address.toUtf8().constData(), error),
+                             error);
+            },
+            Qt::BlockingQueuedConnection);
 }
 
 QT_END_NAMESPACE

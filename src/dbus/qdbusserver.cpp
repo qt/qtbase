@@ -38,7 +38,7 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
     if (!instance)
         return;
 
-    emit instance->serverRequested(address, this);
+    instance->createServer(address, this);
     Q_ASSERT(d != nullptr);
 
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
@@ -67,7 +67,7 @@ QDBusServer::QDBusServer(QObject *parent)
     if (!instance)
         return;
 
-    emit instance->serverRequested(address, this);
+    instance->createServer(address, this);
     Q_ASSERT(d != nullptr);
 
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
