@@ -65,9 +65,6 @@ private:
 
     QMutex defaultBusMutex;
     QDBusConnectionPrivate *defaultBuses[2];
-
-    mutable QMutex senderMutex;
-    QString senderName; // internal; will probably change
 };
 
 QT_END_NAMESPACE
