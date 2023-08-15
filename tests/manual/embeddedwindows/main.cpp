@@ -33,6 +33,8 @@ protected:
     {
         QPainter painter(this);
         painter.setCompositionMode(QPainter::CompositionMode_Source);
+        if (!mask().isNull())
+            painter.setClipRegion(mask());
         painter.fillRect(QRect(0, 0, width(), height()),
             m_pressed ? QGradient(QGradient::JuicyPeach) : m_brush);
     }
