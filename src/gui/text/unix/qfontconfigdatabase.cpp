@@ -575,6 +575,12 @@ void QFontconfigDatabase::populateFontDatabase()
             FcObjectSetAdd(os, *p);
             ++p;
         }
+
+#ifdef FC_VARIABLE
+        /* Support the named instance of Variable Fonts. */
+        FcPatternAddBool(pattern, FC_VARIABLE, FcFalse);
+#endif
+
         fonts = FcFontList(nullptr, pattern, os);
         FcObjectSetDestroy(os);
         FcPatternDestroy(pattern);
@@ -974,6 +980,7 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
     QFontEngine::GlyphFormat format;
     // try and get the pattern
     FcPattern *pattern = FcPatternCreate();
+    FcPattern *match = nullptr;
 
     FcValue value;
     value.type = FcTypeString;
@@ -992,7 +999,7 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
         FcPatternAdd(pattern,FC_INDEX,value,true);
     }
 
-    if (fontDef.pixelSize > 0.1)
+    if (!qFuzzyIsNull(fontDef.pixelSize))
         FcPatternAddDouble(pattern, FC_PIXEL_SIZE, fontDef.pixelSize);
 
     FcResult result;
@@ -1000,7 +1007,55 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
     FcConfigSubstitute(nullptr, pattern, FcMatchPattern);
     FcDefaultSubstitute(pattern);
 
-    FcPattern *match = FcFontMatch(nullptr, pattern, &result);
+#ifdef FC_VARIABLE
+    if (!fid.filename.isEmpty()) {
+        // FC_INDEX is ignored during processing in FcFontMatch.
+        // So iterate FcPatterns directly and find it out.
+        FcFontSet *fcsets[2], *fcfs;
+
+        fcsets[0] = FcConfigGetFonts(nullptr, FcSetSystem);
+        fcsets[1] = FcConfigGetFonts(nullptr, FcSetApplication);
+        for (int nset = 0; nset < 2; nset++) {
+            fcfs = fcsets[nset];
+            if (fcfs == nullptr)
+                continue;
+            for (int fnum = 0; fnum < fcfs->nfont; fnum++) {
+                FcPattern *fcpat = fcfs->fonts[fnum];
+                FcChar8 *fcfile;
+                FcBool variable;
+                double fcpixelsize;
+                int fcindex;
+
+                // Skip the variable font itself, only to use the named instances and normal fonts here
+                if (FcPatternGetBool(fcpat, FC_VARIABLE, 0, &variable) == FcResultMatch &&
+                    variable == FcTrue)
+                    continue;
+
+                if (!qFuzzyIsNull(fontDef.pixelSize)) {
+                    if (FcPatternGetDouble(fcpat, FC_PIXEL_SIZE, 0, &fcpixelsize) == FcResultMatch &&
+                        fontDef.pixelSize != fcpixelsize)
+                    continue;
+                }
+
+                if (FcPatternGetString(fcpat, FC_FILE, 0, &fcfile) == FcResultMatch &&
+                    FcPatternGetInteger(fcpat, FC_INDEX, 0, &fcindex) == FcResultMatch) {
+                    QByteArray f = QByteArray::fromRawData((const char *)fcfile,
+                                                           qstrlen((const char *)fcfile));
+                    if (f == fid.filename && fcindex == fid.index) {
+                        // We found it.
+                        match = FcFontRenderPrepare(nullptr, pattern, fcpat);
+                        goto bail;
+                    }
+                }
+            }
+        }
+    }
+bail:
+#endif
+
+    if (!match)
+        match = FcFontMatch(nullptr, pattern, &result);
+
     if (match) {
         engine->setDefaultHintStyle(defaultHintStyleFromMatch((QFont::HintingPreference)fontDef.hintingPreference, match, useXftConf));
 

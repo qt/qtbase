@@ -19,6 +19,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_MULTIPLE_MASTERS_H
 
 
 #ifndef Q_OS_WIN
@@ -62,6 +63,7 @@ public:
     }
 
     FT_Face face;
+    FT_MM_Var *mm_var;
     int xsize; // 26.6
     int ysize; // 26.6
     FT_Matrix matrix;
