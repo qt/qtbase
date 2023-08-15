@@ -323,13 +323,13 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     newConnection->enableDispatchDelayed(serverConnection->serverObject);
 }
 
+} // extern "C"
+
 void QDBusConnectionPrivate::_q_newConnection(QDBusConnectionPrivate *newConnection)
 {
     Q_ASSERT(mode == ServerMode);
     emit serverObject->newConnection(QDBusConnectionPrivate::q(newConnection));
 }
-
-} // extern "C"
 
 static QByteArray buildMatchRule(const QString &service,
                                  const QString &objectPath, const QString &interface,
