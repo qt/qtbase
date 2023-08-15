@@ -29,11 +29,12 @@ protected:
         update();
     }
 
-    void paintEvent(QPaintEvent *event) override
+    void paintEvent(QPaintEvent *) override
     {
         QPainter painter(this);
         painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.fillRect(event->rect(), m_pressed ? QGradient(QGradient::JuicyPeach) : m_brush);
+        painter.fillRect(QRect(0, 0, width(), height()),
+            m_pressed ? QGradient(QGradient::JuicyPeach) : m_brush);
     }
 
 private:
