@@ -763,6 +763,14 @@ QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::SlotObjUniquePtr slotObj,
 */
 
 /*!
+    \fn void QSignalBlocker::dismiss()
+    \since 6.7
+    Dismisses the QSignalBlocker. It will no longer access the QObject
+    passed to its constructor. unblock(), reblock(), as well as
+    ~QSignalBlocker() will have no effect.
+*/
+
+/*!
     \class QObject
     \inmodule QtCore
     \brief The QObject class is the base class of all Qt objects.

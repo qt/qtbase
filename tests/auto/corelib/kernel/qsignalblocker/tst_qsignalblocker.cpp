@@ -11,6 +11,7 @@ class tst_QSignalBlocker : public QObject
 private slots:
     void signalBlocking();
     void moveAssignment();
+    void dismiss();
 };
 
 void tst_QSignalBlocker::signalBlocking()
@@ -131,6 +132,16 @@ void tst_QSignalBlocker::moveAssignment()
 
     QVERIFY(!o1.signalsBlocked());
     QVERIFY(!o2.signalsBlocked());
+}
+
+void tst_QSignalBlocker::dismiss()
+{
+    QObject obj;
+    {
+        QSignalBlocker blocker(obj);
+        blocker.dismiss();
+    }
+    QVERIFY(obj.signalsBlocked());
 }
 
 QTEST_MAIN(tst_QSignalBlocker)

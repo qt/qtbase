@@ -454,6 +454,7 @@ public:
 
     inline void reblock() noexcept;
     inline void unblock() noexcept;
+    inline void dismiss() noexcept;
 
 private:
     Q_DISABLE_COPY(QSignalBlocker)
@@ -516,6 +517,11 @@ void QSignalBlocker::unblock() noexcept
     if (m_o)
         m_o->blockSignals(m_blocked);
     m_inhibited = true;
+}
+
+void QSignalBlocker::dismiss() noexcept
+{
+    m_o = nullptr;
 }
 
 namespace QtPrivate {
