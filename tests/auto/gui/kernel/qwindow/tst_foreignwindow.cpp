@@ -60,12 +60,15 @@ void tst_ForeignWindow::initialState()
 
     const QRect initialGeometry(123, 456, 321, 654);
     nativeWindow.setGeometry(initialGeometry);
+    QTRY_COMPARE(nativeWindow.geometry(), initialGeometry);
 
     std::unique_ptr<QWindow> foreignWindow(QWindow::fromWinId(nativeWindow));
     QCOMPARE(nativeWindow.geometry(), initialGeometry);
 
     // For extra bonus points, the foreign window should actually
     // reflect the state of the native window.
+    if (!QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive))
+        QEXPECT_FAIL("", "QXcbWindow does not pick up foreign window geometry", Continue);
     QCOMPARE(foreignWindow->geometry(), initialGeometry);
 }
 
@@ -83,7 +86,7 @@ void tst_ForeignWindow::embedForeignWindow()
     // As a prerequisite to that, we must be able to reparent the foreign window
     std::unique_ptr<QWindow> foreignWindow(QWindow::fromWinId(nativeWindow));
     foreignWindow.release()->setParent(&parentWindow);
-    QCOMPARE(nativeWindow.parentWinId(), parentWindow.winId());
+    QTRY_COMPARE(nativeWindow.parentWinId(), parentWindow.winId());
 }
 
 #include <tst_foreignwindow.moc>

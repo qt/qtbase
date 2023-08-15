@@ -20,7 +20,7 @@ qt_internal_add_test(tst_qwindow
         Qt::GuiPrivate
 )
 
-if(APPLE OR WIN32)
+if(APPLE OR WIN32 OR QT_FEATURE_xcb)
     qt_internal_add_test(tst_foreignwindow
         LOWDPI
         SOURCES
@@ -35,6 +35,10 @@ if(APPLE OR WIN32)
         enable_language(OBJCXX)
         set_source_files_properties(tst_foreignwindow.cpp PROPERTIES LANGUAGE OBJCXX)
         set_property(TARGET tst_foreignwindow PROPERTY PROPERTY MACOSX_BUNDLE TRUE)
+    endif()
+
+    if(QT_FEATURE_xcb)
+        target_link_libraries(tst_foreignwindow PRIVATE XCB::XCB)
     endif()
 endif()
 

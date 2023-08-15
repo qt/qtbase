@@ -3,7 +3,7 @@
 
 #include <QtGui>
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS) || defined(Q_OS_WIN)
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS) || defined(Q_OS_WIN) || QT_CONFIG(xcb)
 #include "../../shared/nativewindow.h"
 #define HAVE_NATIVE_WINDOW
 #endif
