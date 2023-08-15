@@ -306,7 +306,8 @@ QVulkanInstance::QVulkanInstance()
 /*!
     Destructor.
 
-    \note current() will return \nullptr once the instance is destroyed.
+    \note \l {QVulkanInstance::}{vkInstance()} will return \nullptr once the
+    instance is destroyed.
  */
 QVulkanInstance::~QVulkanInstance()
 {
@@ -593,8 +594,8 @@ void QVulkanInstance::setApiVersion(const QVersionNumber &vulkanVersion)
 
     \return true if successful, false on error or when Vulkan is not supported.
 
-    When successful, the pointer to this QVulkanInstance is retrievable via the
-    static function current().
+    When successful, the pointer to this QVulkanInstance is retrievable via
+    \l {QVulkanInstance::}{vkInstance()}.
 
     The Vulkan instance and library is available as long as this
     QVulkanInstance exists, or until destroy() is called.
