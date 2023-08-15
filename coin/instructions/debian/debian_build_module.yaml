@@ -39,7 +39,7 @@ instructions:
       env_var:  COIN_SKIP_DEBIAN
       contains_value: "MISSING_DEBIAN_INST"
   - type: ExecuteCommand
-    command: "git checkout {{.Env.DEBIAN_RULES_REF}"
+    command: "git checkout {{.Env.DEBIAN_RULES_REF}}"
     maxTimeInSeconds: 900
     maxTimeBetweenOutput: 900
     userMessageOnFailure: "Failed to checkout debian rules branch"
