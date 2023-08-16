@@ -99,6 +99,7 @@ private slots:
     void resizeKeepsScroll_data();
     void resizeKeepsScroll();
     void changeTabTextKeepsScroll();
+    void settingCurrentTabBeforeShowDoesntScroll();
 
 private:
     void checkPositions(const TabBar &tabbar, const QList<int> &positions);
@@ -1450,6 +1451,35 @@ void tst_QTabBar::changeTabTextKeepsScroll()
     const int scrollOffset = getScrollOffset();
     tabBar.setTabText(3, "New title");
     QCOMPARE(getScrollOffset(), scrollOffset);
+}
+
+void tst_QTabBar::settingCurrentTabBeforeShowDoesntScroll()
+{
+    QTabBar tabBar;
+    TabBarScrollingProxyStyle proxyStyle;
+    tabBar.setStyle(&proxyStyle);
+
+    for (int i = 0; i < 6; ++i)
+        tabBar.addTab(u"Tab Number %1"_s.arg(i));
+
+    const auto getScrollOffset = [&]() -> int {
+        return static_cast<QTabBarPrivate *>(QObjectPrivate::get(&tabBar))->scrollOffset;
+    };
+
+    tabBar.setCurrentIndex(5);
+
+    // changing the current index while the tab bar isn't visible shouldn't scroll yet
+    QCOMPARE(getScrollOffset(), 0);
+
+    // now show the tab bar with a size that's too small to fit the current index
+    const QSize fullSize = tabBar.sizeHint();
+    tabBar.resize(fullSize.width() / 2, fullSize.height());
+
+    tabBar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tabBar));
+
+    // this should scroll
+    QCOMPARE_GT(getScrollOffset(), 0);
 }
 
 QTEST_MAIN(tst_QTabBar)
