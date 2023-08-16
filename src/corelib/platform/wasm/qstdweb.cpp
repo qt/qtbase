@@ -34,7 +34,7 @@ static void usePotentialyUnusedSymbols()
     // called at runtime.
     volatile bool doIt = false;
     if (doIt)
-        emscripten_set_wheel_callback("", 0, 0, NULL);
+        emscripten_set_wheel_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 0, NULL);
 }
 
 Q_CONSTRUCTOR_FUNCTION(usePotentialyUnusedSymbols)
