@@ -550,50 +550,53 @@ void QItemSelection::split(const QItemSelectionRange &range,
 
 void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
 {
-    static constexpr auto connections = qOffsetStringArray(
-        QT_STRINGIFY_SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-        QT_STRINGIFY_SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)),
-        QT_STRINGIFY_SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-        QT_STRINGIFY_SLOT(_q_columnsAboutToBeRemoved(QModelIndex,int,int)),
-        QT_STRINGIFY_SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-        QT_STRINGIFY_SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)),
-        QT_STRINGIFY_SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
-        QT_STRINGIFY_SLOT(_q_columnsAboutToBeInserted(QModelIndex,int,int)),
-        QT_STRINGIFY_SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-        QT_STRINGIFY_SLOT(_q_layoutAboutToBeChanged()),
-        QT_STRINGIFY_SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-        QT_STRINGIFY_SLOT(_q_layoutAboutToBeChanged()),
-        QT_STRINGIFY_SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
-        QT_STRINGIFY_SLOT(_q_layoutChanged()),
-        QT_STRINGIFY_SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
-        QT_STRINGIFY_SLOT(_q_layoutChanged()),
-        QT_STRINGIFY_SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
-        QT_STRINGIFY_SLOT(_q_layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
-        QT_STRINGIFY_SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
-        QT_STRINGIFY_SLOT(_q_layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
-        QT_STRINGIFY_SIGNAL(modelReset()),
-        QT_STRINGIFY_SLOT(reset()),
-        QT_STRINGIFY_SIGNAL(destroyed(QObject*)),
-        QT_STRINGIFY_SLOT(_q_modelDestroyed())
-    );
-
+    Q_Q(QItemSelectionModel);
     if (model == m)
         return;
 
-    Q_Q(QItemSelectionModel);
-    if (model.value()) {
-        for (int i = 0; i < connections.count(); i += 2)
-            QObject::disconnect(model.value(), connections.at(i), q, connections.at(i + 1));
-        q->reset();
-    }
+    if (model)
+        disconnectModel();
 
     // Caller has to call notify(), unless calling during construction (the common case).
     model.setValueBypassingBindings(m);
 
     if (model.value()) {
-        for (int i = 0; i < connections.count(); i += 2)
-            QObject::connect(model.value(), connections.at(i), q, connections.at(i + 1));
+        connections = std::array<QMetaObject::Connection, 12> {
+        QObjectPrivate::connect(model, &QAbstractItemModel::rowsAboutToBeRemoved,
+                                this, &QItemSelectionModelPrivate::rowsAboutToBeRemoved),
+        QObjectPrivate::connect(model, &QAbstractItemModel::columnsAboutToBeRemoved,
+                                this, &QItemSelectionModelPrivate::columnsAboutToBeRemoved),
+        QObjectPrivate::connect(model, &QAbstractItemModel::rowsAboutToBeInserted,
+                         this, &QItemSelectionModelPrivate::rowsAboutToBeInserted),
+        QObjectPrivate::connect(model, &QAbstractItemModel::columnsAboutToBeInserted,
+                         this, &QItemSelectionModelPrivate::columnsAboutToBeInserted),
+        QObjectPrivate::connect(model, &QAbstractItemModel::rowsAboutToBeMoved,
+                         this, &QItemSelectionModelPrivate::triggerLayoutToBeChanged),
+        QObjectPrivate::connect(model, &QAbstractItemModel::columnsAboutToBeMoved,
+                         this, &QItemSelectionModelPrivate::triggerLayoutToBeChanged),
+        QObjectPrivate::connect(model, &QAbstractItemModel::rowsMoved,
+                         this, &QItemSelectionModelPrivate::triggerLayoutChanged),
+        QObjectPrivate::connect(model, &QAbstractItemModel::columnsMoved,
+                         this, &QItemSelectionModelPrivate::triggerLayoutChanged),
+        QObjectPrivate::connect(model, &QAbstractItemModel::layoutAboutToBeChanged,
+                         this, &QItemSelectionModelPrivate::layoutAboutToBeChanged),
+        QObjectPrivate::connect(model, &QAbstractItemModel::layoutChanged,
+                         this, &QItemSelectionModelPrivate::layoutChanged),
+        QObject::connect(model, &QAbstractItemModel::modelReset,
+                         q, &QItemSelectionModel::reset),
+        QObjectPrivate::connect(model, &QAbstractItemModel::destroyed,
+                         this, &QItemSelectionModelPrivate::modelDestroyed)};
     }
+}
+
+void QItemSelectionModelPrivate::disconnectModel()
+{
+    Q_Q(QItemSelectionModel);
+    for (auto &connection : connections) {
+        QObject::disconnect(connection);
+        connection = QMetaObject::Connection();
+    }
+    q->reset();
 }
 
 /*!
@@ -638,7 +641,7 @@ QItemSelection QItemSelectionModelPrivate::expandSelection(const QItemSelection 
 /*!
     \internal
 */
-void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &parent,
+void QItemSelectionModelPrivate::rowsAboutToBeRemoved(const QModelIndex &parent,
                                                          int start, int end)
 {
     Q_Q(QItemSelectionModel);
@@ -721,7 +724,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
 /*!
     \internal
 */
-void QItemSelectionModelPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &parent,
+void QItemSelectionModelPrivate::columnsAboutToBeRemoved(const QModelIndex &parent,
                                                             int start, int end)
 {
     Q_Q(QItemSelectionModel);
@@ -758,7 +761,7 @@ void QItemSelectionModelPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &p
 
     Split selection ranges if columns are about to be inserted in the middle.
 */
-void QItemSelectionModelPrivate::_q_columnsAboutToBeInserted(const QModelIndex &parent,
+void QItemSelectionModelPrivate::columnsAboutToBeInserted(const QModelIndex &parent,
                                                              int start, int end)
 {
     Q_UNUSED(end);
@@ -788,7 +791,7 @@ void QItemSelectionModelPrivate::_q_columnsAboutToBeInserted(const QModelIndex &
 
     Split selection ranges if rows are about to be inserted in the middle.
 */
-void QItemSelectionModelPrivate::_q_rowsAboutToBeInserted(const QModelIndex &parent,
+void QItemSelectionModelPrivate::rowsAboutToBeInserted(const QModelIndex &parent,
                                                           int start, int end)
 {
     Q_Q(QItemSelectionModel);
@@ -829,7 +832,8 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeInserted(const QModelIndex &par
     preparation for the layoutChanged() signal, where the indexes can be
     merged again.
 */
-void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged(const QList<QPersistentModelIndex> &, QAbstractItemModel::LayoutChangeHint hint)
+void QItemSelectionModelPrivate::layoutAboutToBeChanged(const QList<QPersistentModelIndex> &,
+                                                        QAbstractItemModel::LayoutChangeHint hint)
 {
     savedPersistentIndexes.clear();
     savedPersistentCurrentIndexes.clear();
@@ -976,7 +980,7 @@ static QItemSelection mergeIndexes(const QList<QPersistentModelIndex> &indexes)
 /*!
     \internal
 
-    Sort predicate function for QItemSelectionModelPrivate::_q_layoutChanged(),
+    Sort predicate function for QItemSelectionModelPrivate::layoutChanged(),
     sorting by parent first in addition to operator<(). This is to prevent
     fragmentation of the selection by grouping indexes with the same row, column
     of different parents next to each other, which may happen when a selection
@@ -994,7 +998,7 @@ static bool qt_PersistentModelIndexLessThan(const QPersistentModelIndex &i1, con
 
     Merge the selected indexes into selection ranges again.
 */
-void QItemSelectionModelPrivate::_q_layoutChanged(const QList<QPersistentModelIndex> &, QAbstractItemModel::LayoutChangeHint hint)
+void QItemSelectionModelPrivate::layoutChanged(const QList<QPersistentModelIndex> &, QAbstractItemModel::LayoutChangeHint hint)
 {
     // special case for when all indexes are selected
     if (tableSelected && tableColCount == model->columnCount(tableParent)
@@ -1078,9 +1082,10 @@ void QItemSelectionModelPrivate::_q_layoutChanged(const QList<QPersistentModelIn
     We decide to break the new rule, imposed by bindable properties, and not break the old
     rule, because that may break existing code.
 */
-void QItemSelectionModelPrivate::_q_modelDestroyed()
+void QItemSelectionModelPrivate::modelDestroyed()
 {
     model.setValueBypassingBindings(nullptr);
+    disconnectModel();
     model.notify();
 }
 
@@ -1289,7 +1294,7 @@ void QItemSelectionModel::select(const QItemSelection &selection, QItemSelection
     // If d->ranges is non-empty when the source model is reset the persistent indexes
     // it contains will be invalid. We can't clear them in a modelReset slot because that might already
     // be too late if another model observer is connected to the same modelReset slot and is invoked first
-    // it might call select() on this selection model before any such QItemSelectionModelPrivate::_q_modelReset() slot
+    // it might call select() on this selection model before any such QItemSelectionModelPrivate::modelReset() slot
     // is invoked, so it would not be cleared yet. We clear it invalid ranges in it here.
     d->ranges.removeIf(QtFunctionObjects::IsNotValid());
 
@@ -1883,7 +1888,6 @@ void QItemSelectionModel::setModel(QAbstractItemModel *model)
     d->model.removeBindingUnlessInWrapper();
     if (d->model == model)
         return;
-
     d->initModel(model);
     d->model.notify();
 }

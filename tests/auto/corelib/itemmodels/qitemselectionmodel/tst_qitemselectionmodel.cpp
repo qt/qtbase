@@ -80,7 +80,10 @@ private slots:
 
     void QTBUG93305();
 
+    void testSignalsDisconnection();
+
 private:
+    static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
     QAbstractItemModel *model;
     QItemSelectionModel *selection;
 };
@@ -2915,6 +2918,38 @@ void tst_QItemSelectionModel::QTBUG93305()
     model->insertRows(0, 6, QModelIndex());
     QVERIFY(selection->hasSelection());
     QCOMPARE(spy.size(), 4);
+}
+
+static void (*oldMessageHandler)(QtMsgType, const QMessageLogContext&, const QString&);
+static bool signalError = false;
+
+// detect disconnect warning:
+// qt.core.qobject.connect: QObject::disconnect: No such signal
+void tst_QItemSelectionModel::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Q_ASSERT(oldMessageHandler);
+
+    if (type == QtWarningMsg
+            && QString(context.category) == "qt.core.qobject.connect"
+            && msg.contains("No such")) {
+        signalError = true;
+    }
+
+    return oldMessageHandler(type, context, msg);
+}
+
+void tst_QItemSelectionModel::testSignalsDisconnection()
+{
+    oldMessageHandler = qInstallMessageHandler(messageHandler);
+    auto resetMessageHandler = qScopeGuard([] { qInstallMessageHandler(oldMessageHandler); });
+    auto *newModel = new QStandardItemModel(model);
+    selection->setModel(newModel);
+    QSignalSpy spy(newModel, &QObject::destroyed);
+    delete newModel;
+    QTRY_COMPARE(spy.count(), 1);
+    qDebug() << spy;
+    selection->setModel(nullptr);
+    QVERIFY(!signalError);
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)
