@@ -17,6 +17,7 @@
 
 #include "private/qobject_p.h"
 #include "private/qproperty_p.h"
+#include <array>
 
 QT_REQUIRE_CONFIG(itemmodel);
 
@@ -35,13 +36,23 @@ public:
 
     void initModel(QAbstractItemModel *model);
 
-    void _q_rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
-    void _q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
-    void _q_rowsAboutToBeInserted(const QModelIndex &parent, int start, int end);
-    void _q_columnsAboutToBeInserted(const QModelIndex &parent, int start, int end);
-    void _q_layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
-    void _q_layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
-    void _q_modelDestroyed();
+    void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
+    void columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
+    void rowsAboutToBeInserted(const QModelIndex &parent, int start, int end);
+    void columnsAboutToBeInserted(const QModelIndex &parent, int start, int end);
+    void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents, QAbstractItemModel::LayoutChangeHint hint);
+    void triggerLayoutToBeChanged()
+    {
+        layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::NoLayoutChangeHint);
+    }
+
+    void layoutChanged(const QList<QPersistentModelIndex> &parents, QAbstractItemModel::LayoutChangeHint hint);
+    void triggerLayoutChanged()
+    {
+        layoutChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::NoLayoutChangeHint);
+    }
+
+    void modelDestroyed();
 
     inline void remove(QList<QItemSelectionRange> &r)
     {
@@ -58,7 +69,8 @@ public:
     }
 
     void setModel(QAbstractItemModel *mod) { q_func()->setModel(mod); }
-    void modelChanged(QAbstractItemModel *mod) { q_func()->modelChanged(mod); }
+    void disconnectModel();
+    void modelChanged(QAbstractItemModel *mod) { emit q_func()->modelChanged(mod); }
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QItemSelectionModelPrivate, QAbstractItemModel *, model,
                                        &QItemSelectionModelPrivate::setModel,
                                        &QItemSelectionModelPrivate::modelChanged, nullptr)
@@ -75,6 +87,7 @@ public:
     bool tableSelected;
     QPersistentModelIndex tableParent;
     int tableColCount, tableRowCount;
+    std::array<QMetaObject::Connection, 12> connections;
 };
 
 QT_END_NAMESPACE
