@@ -8,8 +8,7 @@
     \ingroup qt-basic-concepts
     \brief An overview of Qt's signals and slots inter-object
     communication mechanism.
-    \ingroup explanation
-
+    \ingroup explanations-basics
     Signals and slots are used for communication between objects. The
     signals and slots mechanism is a central feature of Qt and
     probably the part that differs most from the features provided by
