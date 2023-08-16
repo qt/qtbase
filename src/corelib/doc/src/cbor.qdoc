@@ -6,6 +6,7 @@
     \title CBOR Support in Qt
     \ingroup qt-basic-concepts
     \brief An overview of CBOR support in Qt.
+    \ingroup explanations-dataprocessingandio
 
     \ingroup frameworks-technologies
 

@@ -11,7 +11,7 @@
     \page richtext.html
     \title Rich Text Processing
     \brief An overview of Qt's rich text processing, editing and display features.
-
+    \ingroup explanations-ui
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts
     \ingroup best-practices

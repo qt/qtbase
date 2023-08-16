@@ -6,7 +6,7 @@
     \title JSON Support in Qt
     \ingroup qt-basic-concepts
     \brief An overview of JSON support in Qt.
-
+    \ingroup explanations-dataprocessingandio
     \ingroup frameworks-technologies
 
     \keyword JSON

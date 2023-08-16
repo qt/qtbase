@@ -5,6 +5,7 @@
     \page qtdbus-overview.html
     \title Qt D-Bus Overview
     \brief Provides insight into the Qt Qt D-Bus module.
+    \ingroup explanations-networkingandconnectivity
 
     D-Bus is an Inter-Process Communication (IPC) and Remote Procedure
     Calling (RPC) mechanism originally developed for Linux to replace

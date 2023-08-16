@@ -5,7 +5,7 @@
     \page metaobjects.html
     \title The Meta-Object System
     \brief An overview of Qt's meta-object system and introspection capabilities.
-
+    \ingroup explanations-basics
     \ingroup qt-basic-concepts
     \keyword meta-object
     \keyword Meta-Object System

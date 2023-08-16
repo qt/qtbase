@@ -15,6 +15,7 @@
 /*!
     \page xml-processing.html
     \title XML Processing
+    \ingroup explanations-dataprocessingandio
 
     \brief An Overview of the XML processing facilities in Qt.
 
