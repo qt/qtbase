@@ -217,6 +217,7 @@ static bool isMouseEvent(NSEvent *ev)
     m_platformWindow->setWindowFilePath(window->filePath()); // Also sets window icon
     m_platformWindow->setWindowState(window->windowState());
     m_platformWindow->setOpacity(window->opacity());
+    m_platformWindow->setVisible(window->isVisible());
 }
 
 - (NSString *)description
