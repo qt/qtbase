@@ -542,7 +542,7 @@ void tst_QDnsLookup::setNameserverLoopback()
     QByteArray data = dgram.data();
     QCOMPARE_GT(data.size(), HeaderSize);
 
-    quint8 opcode = (quint8(data.at(3)) >> 4) & 0xF;
+    quint8 opcode = (quint8(data.at(2)) >> 3) & 0xF;
     QCOMPARE(opcode, 0);        // standard query
 
     // send an NXDOMAIN reply to release the lookup thread
