@@ -55,8 +55,8 @@ public:
                      NoRole,
                      ToolTipBase, ToolTipText,
                      PlaceholderText,
-                     AccentColor,
-                     NColorRoles = AccentColor + 1,
+                     Accent,
+                     NColorRoles = Accent + 1,
                    };
     Q_ENUM(ColorRole)
 
@@ -99,7 +99,7 @@ public:
     inline const QBrush &link() const { return brush(Link); }
     inline const QBrush &linkVisited() const { return brush(LinkVisited); }
     inline const QBrush &placeholderText() const { return brush(PlaceholderText); }
-    inline const QBrush &accentColor() const { return brush(AccentColor); }
+    inline const QBrush &accent() const { return brush(Accent); }
 
     bool operator==(const QPalette &p) const;
     inline bool operator!=(const QPalette &p) const { return !(operator==(p)); }

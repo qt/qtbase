@@ -277,7 +277,7 @@ static void populateLightSystemBasePalette(QPalette &result)
     result.setColor(QPalette::Midlight, getSysColor(COLOR_3DLIGHT));
     result.setColor(QPalette::Shadow, getSysColor(COLOR_3DDKSHADOW));
     result.setColor(QPalette::HighlightedText, getSysColor(COLOR_HIGHLIGHTTEXT));
-    result.setColor(QPalette::AccentColor, accent);
+    result.setColor(QPalette::Accent, accent);
 
     result.setColor(QPalette::Link, linkColor);
     result.setColor(QPalette::LinkVisited, accentDarkest);
@@ -351,7 +351,7 @@ static void populateDarkSystemBasePalette(QPalette &result)
     result.setColor(QPalette::All, QPalette::ToolTipBase, buttonColor);
     result.setColor(QPalette::All, QPalette::ToolTipText, foreground.darker(120));
     result.setColor(QPalette::All, QPalette::PlaceholderText, placeHolderColor(foreground));
-    result.setColor(QPalette::All, QPalette::AccentColor, accent);
+    result.setColor(QPalette::All, QPalette::Accent, accent);
 }
 
 static inline QPalette toolTipPalette(const QPalette &systemPalette, bool light)
@@ -591,7 +591,7 @@ QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
                         result.color(QPalette::Inactive, QPalette::Window));
         result.setColor(QPalette::Inactive, QPalette::HighlightedText,
                         result.color(QPalette::Inactive, QPalette::Text));
-        result.setColor(QPalette::Inactive, QPalette::AccentColor,
+        result.setColor(QPalette::Inactive, QPalette::Accent,
                         result.color(QPalette::Inactive, QPalette::Window));
     }
 
@@ -606,7 +606,7 @@ QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
     result.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Highlight, result.color(QPalette::Highlight));
     result.setColor(QPalette::Disabled, QPalette::HighlightedText, result.color(QPalette::HighlightedText));
-    result.setColor(QPalette::Disabled, QPalette::AccentColor, disabled);
+    result.setColor(QPalette::Disabled, QPalette::Accent, disabled);
     result.setColor(QPalette::Disabled, QPalette::Base, result.window().color());
     return result;
 }

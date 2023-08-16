@@ -295,7 +295,7 @@ static int NColorRoles[] = {
     QPalette::PlaceholderText + 1, // Qt_5_12
     QPalette::PlaceholderText + 1, // Qt_5_13, Qt_5_14, Qt_5_15
     QPalette::PlaceholderText + 1, // Qt_6_0
-    QPalette::AccentColor + 1,     // Qt_6_6
+    QPalette::Accent + 1,     // Qt_6_6
     0                              // add the correct value for Qt_5_14 here later
 };
 
@@ -2393,7 +2393,7 @@ void tst_QDataStream::setVersion()
     */
 
     // revise the test if new color roles or color groups are added
-    QCOMPARE(QPalette::NColorRoles, QPalette::AccentColor + 1);
+    QCOMPARE(QPalette::NColorRoles, QPalette::Accent + 1);
     QCOMPARE(static_cast<int>(QPalette::NColorGroups), 3);
 
     QByteArray ba2;
