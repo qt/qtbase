@@ -80,20 +80,17 @@ public:
     HRESULT hostProviderFromHwnd(HWND hwnd, IRawElementProviderSimple **ppProvider);
     HRESULT raiseAutomationPropertyChangedEvent(IRawElementProviderSimple *pProvider, PROPERTYID id, VARIANT oldValue, VARIANT newValue);
     HRESULT raiseAutomationEvent(IRawElementProviderSimple *pProvider, EVENTID id);
-    HRESULT raiseNotificationEvent(IRawElementProviderSimple *provider, NotificationKind notificationKind, NotificationProcessing notificationProcessing, BSTR displayString, BSTR activityId);
 
 private:
     typedef LRESULT (WINAPI *PtrUiaReturnRawElementProvider)(HWND, WPARAM, LPARAM, IRawElementProviderSimple *);
     typedef HRESULT (WINAPI *PtrUiaHostProviderFromHwnd)(HWND, IRawElementProviderSimple **);
     typedef HRESULT (WINAPI *PtrUiaRaiseAutomationPropertyChangedEvent)(IRawElementProviderSimple *, PROPERTYID, VARIANT, VARIANT);
     typedef HRESULT (WINAPI *PtrUiaRaiseAutomationEvent)(IRawElementProviderSimple *, EVENTID);
-    typedef HRESULT (WINAPI *PtrUiaRaiseNotificationEvent)(IRawElementProviderSimple *, NotificationKind, NotificationProcessing, BSTR, BSTR);
     typedef BOOL (WINAPI *PtrUiaClientsAreListening)();
     PtrUiaReturnRawElementProvider             m_pUiaReturnRawElementProvider = nullptr;
     PtrUiaHostProviderFromHwnd                 m_pUiaHostProviderFromHwnd = nullptr;
     PtrUiaRaiseAutomationPropertyChangedEvent  m_pUiaRaiseAutomationPropertyChangedEvent = nullptr;
     PtrUiaRaiseAutomationEvent                 m_pUiaRaiseAutomationEvent = nullptr;
-    PtrUiaRaiseNotificationEvent               m_pUiaRaiseNotificationEvent = nullptr;
     PtrUiaClientsAreListening                  m_pUiaClientsAreListening = nullptr;
 };
 
