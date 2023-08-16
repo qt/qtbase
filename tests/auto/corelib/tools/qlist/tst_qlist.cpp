@@ -231,6 +231,7 @@ private slots:
     void appendCustom() const { append<Custom>(); }
     void appendRvalue() const;
     void appendList() const;
+    void assignEmpty() const;
     void assignInt() const { assign<int>(); }
     void assignMovable() const { assign<Movable>(); }
     void assignCustom() const { assign<Custom>(); }
@@ -760,6 +761,25 @@ void tst_QList::append() const
         QVERIFY(!emptyVec.isDetached());
         QCOMPARE(myvec, QList<T>({ SimpleValue<T>::at(0), SimpleValue<T>::at(1) }));
     }
+}
+
+void tst_QList::assignEmpty() const
+{
+    // Test that the realloc branch in assign(it, it) doesn't crash.
+    using T = int;
+    QList<T> list;
+    QList<T> ref1 = list;
+    QVERIFY(list.d.needsDetach());
+    list.assign(list.begin(), list.begin());
+
+#if !defined Q_OS_QNX // QNX has problems with the empty istream_iterator
+    auto empty = std::istream_iterator<T>{};
+    list.squeeze();
+    QCOMPARE_EQ(list.capacity(), 0);
+    ref1 = list;
+    QVERIFY(list.d.needsDetach());
+    list.assign(empty, empty);
+#endif
 }
 
 template <typename T>
