@@ -17,7 +17,6 @@ QWindowsUiaWrapper::QWindowsUiaWrapper()
         m_pUiaHostProviderFromHwnd = reinterpret_cast<PtrUiaHostProviderFromHwnd>(uiaLib.resolve("UiaHostProviderFromHwnd"));
         m_pUiaRaiseAutomationPropertyChangedEvent = reinterpret_cast<PtrUiaRaiseAutomationPropertyChangedEvent>(uiaLib.resolve("UiaRaiseAutomationPropertyChangedEvent"));
         m_pUiaRaiseAutomationEvent = reinterpret_cast<PtrUiaRaiseAutomationEvent>(uiaLib.resolve("UiaRaiseAutomationEvent"));
-        m_pUiaRaiseNotificationEvent = reinterpret_cast<PtrUiaRaiseNotificationEvent>(uiaLib.resolve("UiaRaiseNotificationEvent"));
         m_pUiaClientsAreListening = reinterpret_cast<PtrUiaClientsAreListening>(uiaLib.resolve("UiaClientsAreListening"));
     }
 }
@@ -33,7 +32,7 @@ QWindowsUiaWrapper *QWindowsUiaWrapper::instance()
     return &wrapper;
 }
 
-// True if most symbols resolved (UiaRaiseNotificationEvent is optional).
+// True if all symbols resolved.
 BOOL QWindowsUiaWrapper::ready()
 {
     return m_pUiaReturnRawElementProvider
@@ -76,13 +75,6 @@ HRESULT QWindowsUiaWrapper::raiseAutomationEvent(IRawElementProviderSimple *pPro
     if (!m_pUiaRaiseAutomationEvent)
         return UIA_E_NOTSUPPORTED;
     return m_pUiaRaiseAutomationEvent(pProvider, id);
-}
-
-HRESULT QWindowsUiaWrapper::raiseNotificationEvent(IRawElementProviderSimple *provider, NotificationKind notificationKind, NotificationProcessing notificationProcessing, BSTR displayString, BSTR activityId)
-{
-    if (!m_pUiaRaiseNotificationEvent)
-        return UIA_E_NOTSUPPORTED;
-    return m_pUiaRaiseNotificationEvent(provider, notificationKind, notificationProcessing, displayString, activityId);
 }
 
 QT_END_NAMESPACE
