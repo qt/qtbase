@@ -1413,7 +1413,10 @@ void QTabBar::setCurrentIndex(int index)
         if (tabRect(index).size() != tabSizeHint(index))
             d->layoutTabs();
         update();
-        d->makeVisible(index);
+        if (!isVisible())
+            d->layoutDirty = true;
+        else
+            d->makeVisible(index);
         if (d->validIndex(oldIndex)) {
             tab->lastTab = oldIndex;
             d->layoutTab(oldIndex);
