@@ -17,6 +17,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 namespace qstdweb {
 
 static void usePotentialyUnusedSymbols()
@@ -420,7 +422,7 @@ private:
                 QByteArray fileContent(file.size(), Qt::Uninitialized);
                 file.stream(fileContent.data(), [this, itemMimeType, fileContent]() {
                     if (!fileContent.isEmpty()) {
-                        if (itemMimeType.startsWith("image/")) {
+                        if (itemMimeType.startsWith("image/"_L1)) {
                             mimeData->setImageData(imageReader(fileContent));
                         } else {
                             mimeData->setData(itemMimeType, fileContent.data());
@@ -432,8 +434,8 @@ private:
                 break;
             }
             case ItemKind::String:
-                if (itemMimeType.contains("STRING", Qt::CaseSensitive)
-                    || itemMimeType.contains("TEXT", Qt::CaseSensitive)) {
+                if (itemMimeType.contains("STRING"_L1, Qt::CaseSensitive)
+                    || itemMimeType.contains("TEXT"_L1, Qt::CaseSensitive)) {
                     break;
                 }
                 QString a;
@@ -441,9 +443,9 @@ private:
                         "getData", emscripten::val(itemMimeType.toStdString())));
 
                 if (!data.isEmpty()) {
-                    if (itemMimeType == "text/html")
+                    if (itemMimeType == "text/html"_L1)
                         mimeData->setHtml(data);
-                    else if (itemMimeType.isEmpty() || itemMimeType == "text/plain")
+                    else if (itemMimeType.isEmpty() || itemMimeType == "text/plain"_L1)
                         mimeData->setText(data); // the type can be empty
                     else
                         mimeData->setData(itemMimeType, data.toLocal8Bit());
