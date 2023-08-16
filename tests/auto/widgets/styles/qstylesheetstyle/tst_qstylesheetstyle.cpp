@@ -106,7 +106,7 @@ private slots:
     void QTBUG36933_brokenPseudoClassLookup();
     void styleSheetChangeBeforePolish();
     void placeholderColor();
-    void accentColor();
+    void accent();
     void enumPropertySelector_data();
     void enumPropertySelector();
     //at the end because it mess with the style.
@@ -2363,13 +2363,13 @@ void tst_QStyleSheetStyle::placeholderColor()
     QCOMPARE(le1.palette().placeholderText().color(), QColor(phSpec));
 }
 
-void tst_QStyleSheetStyle::accentColor()
+void tst_QStyleSheetStyle::accent()
 {
     QLineEdit lineEdit;
     const QColor universe(42, 42, 42);
     lineEdit.setStyleSheet(QString("QLineEdit { accent-color: %1; }").arg(universe.name()));
     lineEdit.ensurePolished();
-    QCOMPARE(lineEdit.palette().accentColor().color(), universe);
+    QCOMPARE(lineEdit.palette().accent().color(), universe);
 }
 
 void tst_QStyleSheetStyle::enumPropertySelector_data()

@@ -52,7 +52,7 @@ void tst_QPalette::roleValues_data()
     QTest::newRow("QPalette::ToolTipBase") << int(QPalette::ToolTipBase) << 18;
     QTest::newRow("QPalette::ToolTipText") << int(QPalette::ToolTipText) << 19;
     QTest::newRow("QPalette::PlaceholderText") << int(QPalette::PlaceholderText) << 20;
-    QTest::newRow("QPalette::AccentColor") << int(QPalette::AccentColor) << 21;
+    QTest::newRow("QPalette::Accent") << int(QPalette::Accent) << 21;
 
     // Change this value as you add more roles.
     QTest::newRow("QPalette::NColorRoles") << int(QPalette::NColorRoles) << 22;
@@ -355,9 +355,9 @@ void tst_QPalette::dataStream()
     const QColor accent(13, 13, 13);
     QPalette palette;
     palette.setBrush(QPalette::Highlight, highlight);
-    palette.setBrush(QPalette::AccentColor, accent);
+    palette.setBrush(QPalette::Accent, accent);
 
-    // When saved with Qt_6_5 or earlier, AccentColor defaults to Highlight
+    // When saved with Qt_6_5 or earlier, Accent defaults to Highlight
     {
         QByteArray b;
         {
@@ -369,10 +369,10 @@ void tst_QPalette::dataStream()
         QDataStream stream (&b, QIODevice::ReadOnly);
         stream.setVersion(QDataStream::Qt_6_5);
         stream >> test;
-        QCOMPARE(test.accentColor().color(), highlight);
+        QCOMPARE(test.accent().color(), highlight);
     }
 
-    // When saved with Qt_6_6 or later, AccentColor is saved explicitly
+    // When saved with Qt_6_6 or later, Accent is saved explicitly
     {
         QByteArray b;
         {
@@ -384,7 +384,7 @@ void tst_QPalette::dataStream()
         QDataStream stream (&b, QIODevice::ReadOnly);
         stream.setVersion(QDataStream::Qt_6_6);
         stream >> test;
-        QCOMPARE(test.accentColor().color(), accent);
+        QCOMPARE(test.accent().color(), accent);
     }
 }
 

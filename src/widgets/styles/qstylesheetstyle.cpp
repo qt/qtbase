@@ -439,13 +439,13 @@ struct QStyleSheetPaletteData : public QSharedData
                             const QBrush &selectedBackground,
                             const QBrush &alternateBackground,
                             const QBrush &placeHolderTextForeground,
-                            const QBrush &accentColor)
+                            const QBrush &accent)
         : foreground(foreground)
         , selectionForeground(selectedForeground)
         , selectionBackground(selectedBackground)
         , alternateBackground(alternateBackground)
         , placeholderForeground(placeHolderTextForeground)
-        , accentColor(accentColor)
+        , accent(accent)
      { }
 
     QBrush foreground;
@@ -453,7 +453,7 @@ struct QStyleSheetPaletteData : public QSharedData
     QBrush selectionBackground;
     QBrush alternateBackground;
     QBrush placeholderForeground;
-    QBrush accentColor;
+    QBrush accent;
 };
 
 struct QStyleSheetGeometryData : public QSharedData
@@ -970,11 +970,11 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
     QBrush selectedBackground;
     QBrush alternateBackground;
     QBrush placeHolderTextForeground;
-    QBrush accentColor;
+    QBrush accent;
     if (v.extractPalette(&foreground, &selectedForeground, &selectedBackground,
-                         &alternateBackground, &placeHolderTextForeground, &accentColor)) {
+                         &alternateBackground, &placeHolderTextForeground, &accent)) {
         pal = new QStyleSheetPaletteData(foreground, selectedForeground, selectedBackground,
-                                         alternateBackground, placeHolderTextForeground, accentColor);
+                                         alternateBackground, placeHolderTextForeground, accent);
     }
 
     QIcon imgIcon;
@@ -1514,8 +1514,8 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
         p->setBrush(cg, QPalette::AlternateBase, pal->alternateBackground);
     if (pal->placeholderForeground.style() != Qt::NoBrush)
         p->setBrush(cg, QPalette::PlaceholderText, pal->placeholderForeground);
-    if (pal->accentColor.style() != Qt::NoBrush)
-        p->setBrush(cg, QPalette::AccentColor, pal->accentColor);
+    if (pal->accent.style() != Qt::NoBrush)
+        p->setBrush(cg, QPalette::Accent, pal->accent);
 }
 
 bool QRenderRule::hasModification() const

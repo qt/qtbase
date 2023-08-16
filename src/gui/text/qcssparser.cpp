@@ -47,7 +47,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "-qt-style-features", QtStyleFeatures },
     { "-qt-table-type", QtTableType },
     { "-qt-user-state", QtUserState },
-    { "accent-color", QtAccentColor },
+    { "accent-color", QtAccent },
     { "alternate-background-color", QtAlternateBackground },
     { "background", Background },
     { "background-attachment", BackgroundAttachment },
@@ -1347,7 +1347,7 @@ bool ValueExtractor::extractPalette(QBrush *foreground,
                                     QBrush *selectedBackground,
                                     QBrush *alternateBackground,
                                     QBrush *placeHolderTextForeground,
-                                    QBrush *accentColor)
+                                    QBrush *accent)
 {
     bool hit = false;
     for (int i = 0; i < declarations.size(); ++i) {
@@ -1358,7 +1358,7 @@ bool ValueExtractor::extractPalette(QBrush *foreground,
         case QtSelectionBackground: *selectedBackground = decl.brushValue(pal); break;
         case QtAlternateBackground: *alternateBackground = decl.brushValue(pal); break;
         case QtPlaceHolderTextColor: *placeHolderTextForeground = decl.brushValue(pal); break;
-        case QtAccentColor: *accentColor = decl.brushValue(pal); break;
+        case QtAccent: *accent = decl.brushValue(pal); break;
         default: continue;
         }
         hit = true;

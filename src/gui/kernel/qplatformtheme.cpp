@@ -395,9 +395,9 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
     fusionPalette.setBrush(QPalette::Inactive, QPalette::Highlight, highlight);
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Highlight, disabledHighlight);
 
-    fusionPalette.setBrush(QPalette::Active, QPalette::AccentColor, highlight);
-    fusionPalette.setBrush(QPalette::Inactive, QPalette::AccentColor, highlight);
-    fusionPalette.setBrush(QPalette::Disabled, QPalette::AccentColor, disabledHighlight);
+    fusionPalette.setBrush(QPalette::Active, QPalette::Accent, highlight);
+    fusionPalette.setBrush(QPalette::Inactive, QPalette::Accent, highlight);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Accent, disabledHighlight);
 
     fusionPalette.setBrush(QPalette::PlaceholderText, placeholder);
 

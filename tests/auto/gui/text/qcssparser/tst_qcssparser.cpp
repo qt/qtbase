@@ -1548,9 +1548,9 @@ void tst_QCssParser::gradient()
     QBrush selectedBackground;
     QBrush alternateBackground;
     QBrush placeHolderTextForeground;
-    QBrush accentColor;
+    QBrush accent;
     QVERIFY(ve.extractPalette(&foreground, &selectedForeground, &selectedBackground,
-                              &alternateBackground, &placeHolderTextForeground, &accentColor));
+                              &alternateBackground, &placeHolderTextForeground, &accent));
 
     if (type == "linear") {
         QCOMPARE(selectedBackground.style(), Qt::LinearGradientPattern);

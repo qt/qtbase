@@ -13,15 +13,15 @@ QT_BEGIN_NAMESPACE
 
 constexpr QPalette::ResolveMask QPalettePrivate::colorRoleOffset(QPalette::ColorGroup colorGroup)
 {
-    // Exclude NoRole; that bit is used for AccentColor
+    // Exclude NoRole; that bit is used for Accent
     return (qToUnderlying(QPalette::NColorRoles) - 1) * qToUnderlying(colorGroup);
 }
 
 constexpr QPalette::ResolveMask QPalettePrivate::bitPosition(QPalette::ColorGroup colorGroup,
                                                              QPalette::ColorRole colorRole)
 {
-    // Map AccentColor into NoRole for resolving purposes
-    if (colorRole == QPalette::AccentColor)
+    // Map Accent into NoRole for resolving purposes
+    if (colorRole == QPalette::Accent)
         colorRole = QPalette::NoRole;
 
     return colorRole + colorRoleOffset(colorGroup);
@@ -74,12 +74,12 @@ static void qt_ensure_default_accent_color(QPalette &pal)
     // Act only for color groups where no accent color is set
     for (int i = 0; i < QPalette::NColorGroups; ++i) {
         const QPalette::ColorGroup group = static_cast<QPalette::ColorGroup>(i);
-        if (!pal.isBrushSet(group, QPalette::AccentColor)) {
+        if (!pal.isBrushSet(group, QPalette::Accent)) {
             // Default to highlight if available, otherwise use a shade of base
             const QBrush accentBrush = pal.isBrushSet(group, QPalette::Highlight)
                                      ? pal.brush(group, QPalette::Highlight)
                                      : pal.brush(group, QPalette::Base).color().lighter(lighter);
-            pal.setBrush(group, QPalette::AccentColor, accentBrush);
+            pal.setBrush(group, QPalette::Accent, accentBrush);
         }
     }
 }
@@ -509,7 +509,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
                        item. By default, the highlight color is
                        Qt::darkBlue.
 
-    \value [since 6.6] AccentColor
+    \value [since 6.6] Accent
                        A color that typically contrasts or complements
                        Base, Window and Button colors. It usually represents
                        the users' choice of desktop personalisation.
@@ -983,7 +983,7 @@ QPalette QPalette::resolve(const QPalette &other) const
     palette.detach();
 
     for (int role = 0; role < int(NColorRoles); ++role) {
-        // Don't resolve NoRole, its bits are needed for AccentColor (see bitPosition)
+        // Don't resolve NoRole, its bits are needed for Accent (see bitPosition)
         if (role == NoRole)
             continue;
 
@@ -1122,9 +1122,9 @@ QDataStream &operator>>(QDataStream &s, QPalette &p)
                 p.setBrush(group, (QPalette::ColorRole)role, tmp);
             }
 
-            // AccentColor defaults to Highlight for stream versions that don't have it.
+            // Accent defaults to Highlight for stream versions that don't have it.
             if (s.version() < QDataStream::Qt_6_6)
-                p.setBrush(group, QPalette::AccentColor, p.brush(group, QPalette::Highlight));
+                p.setBrush(group, QPalette::Accent, p.brush(group, QPalette::Highlight));
         }
 
     }

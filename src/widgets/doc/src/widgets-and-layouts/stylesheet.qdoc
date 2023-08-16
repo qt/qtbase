@@ -1345,7 +1345,7 @@
     \row
         \li \b{\c accent-color}
         \li \l{#Brush}{Brush} \br
-        \li The property sets the \c AccentColor, which is used to emphasize
+        \li The property sets the \c Accent, which is used to emphasize
            interactive UI elements.
            If this property is not set, it defaults to the \c highlight color.
 
@@ -3056,7 +3056,7 @@
     \row
         \li \b{PaletteRole} \target PaletteRole
         \li \c alternate-base \br
-              | \c accentColor \br
+              | \c accent \br
               | \c base \br
               | \c bright-text \br
               | \c button \br
