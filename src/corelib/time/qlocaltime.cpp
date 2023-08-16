@@ -20,6 +20,11 @@
 #  include <qt_windows.h>
 #endif
 
+#ifdef __GLIBC__ // Extends struct tm with some extra fields:
+#define HAVE_TM_GMTOFF // tm_gmtoff is the UTC offset.
+#define HAVE_TM_ZONE // tm_zone is the zone abbreviation.
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace QtPrivate::DateTimeConstants;
@@ -80,10 +85,12 @@ public:
 
    We can assume time-zone offsets are less than a day, so this can only arise
    if the struct tm describes either the last day of 1969 or the first day of
-   1970. That makes for a cheap pre-test; if it holds, we can ask mktime about
-   the preceding second; if it gives us -2, then the -1 we originally saw is not
-   an error (or was an error, but needn't have been). We can then synthesize a
-   corrected value for local using the -2 result.
+   1970. When we do know the offset (a glibc extension supplies it as a member
+   of struct tm), we can determine whether we're on the last second of the day,
+   refining that check. That makes for a cheap pre-test; if it holds, we can ask
+   mktime() about the preceding second; if it gives us -2, then the -1 we
+   originally saw is not (or at least didn't need to be) an error. We can then
+   synthesize a corrected value for local using the -2 result.
 */
 inline bool MkTimeResult::meansEnd1969()
 {
@@ -91,6 +98,12 @@ inline bool MkTimeResult::meansEnd1969()
     return false;
 #else
     if (local.tm_year < 69 || local.tm_year > 70
+#  ifdef HAVE_TM_GMTOFF
+        // Africa/Monrovia had offset 00:44:30 at the epoch, so (although all
+        // other zones' offsets were round multiples of five minutes) we need
+        // the offset to determine whether the time might match:
+        || (tmSecsWithinDay(local) - local.tm_gmtoff + 1) % SECS_PER_DAY
+#  endif
         || (local.tm_year == 69 // ... and less than a day:
             ? local.tm_mon < 11 || local.tm_mday < 31
             : local.tm_mon > 0 || local.tm_mday > 1)) {
@@ -555,7 +568,10 @@ QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::DaylightStatus 
     auto use = resolveLocalTime(QRoundingDown::qDiv<MSECS_PER_SEC>(local), dst);
     if (!use.good)
         return {};
-    // TODO: for glibc, use.local.tm_zone is the zone abbreviation.
+#ifdef HAVE_TM_ZONE
+    if (use.local.tm_zone)
+        return QString::fromLocal8Bit(use.local.tm_zone);
+#endif
     return qTzName(use.local.tm_isdst > 0 ? 1 : 0);
 }
 
@@ -572,12 +588,14 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
     Q_ASSERT(local < 0 ? (millis <= 0 && millis > -MSECS_PER_SEC)
                        : (millis >= 0 && millis < MSECS_PER_SEC));
 
-    // TODO: for glibc, use.local.tm_gmtoff is the offset
-    // That would give us offset directly, hence localSecs = offset + use.utcSecs
-    // Provisional offset, until we have a revised localSecs:
-    int offset = localSecs - use.utcSecs;
     // Revise our original hint-dst to what it resolved to:
     dst = use.local.tm_isdst > 0 ? QDateTimePrivate::DaylightTime : QDateTimePrivate::StandardTime;
+#ifdef HAVE_TM_GMTOFF
+    const int offset = use.local.tm_gmtoff;
+    localSecs = offset + use.utcSecs;
+#else
+    // Provisional offset, until we have a revised localSecs:
+    int offset = localSecs - use.utcSecs;
     auto jd = tmToJd(use.local);
     if (Q_UNLIKELY(!jd))
         return {local, offset, dst, false};
@@ -593,6 +611,7 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
 
     // Use revised localSecs to refine offset:
     offset = localSecs - use.utcSecs;
+#endif // HAVE_TM_GMTOFF
 
     // The only way localSecs and millis can now have opposite sign is for
     // resolution of the local time to have kicked us across the epoch, in which
