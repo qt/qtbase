@@ -41,34 +41,7 @@ instructions:
       conditions:
         - condition: runtime
           env_var: TESTED_MODULE_COIN
-          equals_value: "qtquick3dphysics"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtquickeffectmaker"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtspeech"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtlocation"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qthttpserver"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
           equals_value: "qtactiveqt"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtcoap"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtmqtt"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtopcua"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtgrpc"
         - condition: runtime
           env_var: TESTED_MODULE_COIN
           equals_value: "qtqa"
