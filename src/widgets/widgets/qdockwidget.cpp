@@ -780,7 +780,9 @@ void QDockWidgetPrivate::startDrag(bool group)
     QMainWindowLayout *layout = qt_mainwindow_layout_from_dock(q);
     Q_ASSERT(layout != nullptr);
 
+#if QT_CONFIG(draganddrop)
     bool wasFloating = q->isFloating();
+#endif
 
     state->widgetItem = layout->unplug(q, group);
     if (state->widgetItem == nullptr) {
@@ -1056,10 +1058,12 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
 bool QDockWidgetPrivate::mouseReleaseEvent(QMouseEvent *event)
 {
 #if QT_CONFIG(mainwindow)
+#if QT_CONFIG(draganddrop)
     // if we are peforming a platform drag ignore the release here and end the drag when the actual
     // drag ends.
     if (QMainWindowLayout::needsPlatformDrag())
         return false;
+#endif
 
     if (event->button() == Qt::LeftButton && state && !state->nca) {
         endDrag();
@@ -1207,10 +1211,12 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
         flags |= Qt::FramelessWindowHint;
     }
 
+#if QT_CONFIG(draganddrop)
     // If we are performing a platform drag the flag is not needed and we want to avoid recreating
     // the platform window when it would be removed later
     if (unplug && !QMainWindowLayout::needsPlatformDrag())
         flags |= Qt::X11BypassWindowManagerHint;
+#endif
 
     q->setWindowFlags(flags);
 

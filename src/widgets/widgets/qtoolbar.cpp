@@ -111,10 +111,12 @@ void QToolBarPrivate::updateWindowFlags(bool floating, bool unplug)
 
     flags |= Qt::FramelessWindowHint;
 
+#if QT_CONFIG(draganddrop)
     // If we are performing a platform drag the flag is not needed and we want to avoid recreating
     // the platform window when it would be removed later
     if (unplug && !QMainWindowLayout::needsPlatformDrag())
         flags |= Qt::X11BypassWindowManagerHint;
+#endif
 
     q->setWindowFlags(flags);
 }
@@ -178,7 +180,9 @@ void QToolBarPrivate::startDrag(bool moving)
     QMainWindowLayout *layout = qt_mainwindow_layout(win);
     Q_ASSERT(layout != nullptr);
 
+#if QT_CONFIG(draganddrop)
     const bool wasFloating = q->isFloating();
+#endif
 
     if (!moving) {
         state->widgetItem = layout->unplug(q);
@@ -264,10 +268,12 @@ bool QToolBarPrivate::mousePressEvent(QMouseEvent *event)
 
 bool QToolBarPrivate::mouseReleaseEvent(QMouseEvent*)
 {
+#if QT_CONFIG(draganddrop)
     // if we are peforming a platform drag ignore the release here and  end the drag when the actual
     // drag ends.
     if (QMainWindowLayout::needsPlatformDrag())
         return false;
+#endif
 
     if (state != nullptr) {
         endDrag();
