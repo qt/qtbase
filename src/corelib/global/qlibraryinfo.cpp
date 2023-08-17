@@ -475,9 +475,7 @@ QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo
         "Examples", "examples",
         "Tests", "tests"
     );
-    static constexpr QByteArrayView dot = qtConfEntries.viewAt(1);
-    static_assert(dot.size() == 1);
-    static_assert(dot[0] == '.');
+    constexpr QByteArrayView dot{"."};
 
     LocationInfo result;
 
