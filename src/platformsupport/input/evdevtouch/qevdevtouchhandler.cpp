@@ -150,12 +150,12 @@ QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, co
       m_filtered(false), m_prediction(0)
 {
     for (const QString &arg : args) {
-        if (arg == QStringLiteral("force_window"))
+        if (arg == u"force_window")
             m_forceToActiveWindow = true;
-        else if (arg == QStringLiteral("filtered"))
+        else if (arg == u"filtered")
             m_filtered = true;
-        else if (arg.startsWith(QStringLiteral("prediction=")))
-            m_prediction = arg.mid(11).toInt();
+        else if (const QStringView prefix = u"prediction="; arg.startsWith(prefix))
+            m_prediction = QStringView(arg).mid(prefix.size()).toInt();
     }
 }
 
