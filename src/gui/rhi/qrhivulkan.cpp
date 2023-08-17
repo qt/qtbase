@@ -7512,6 +7512,9 @@ static inline bool hdrFormatMatchesVkSurfaceFormat(QRhiSwapChain::Format f, cons
     case QRhiSwapChain::HDR10:
         return (s.format == VK_FORMAT_A2B10G10R10_UNORM_PACK32 || s.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32)
                 && s.colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT;
+    case QRhiSwapChain::HDRExtendedDisplayP3Linear:
+        return s.format == VK_FORMAT_R16G16B16A16_SFLOAT
+               && s.colorSpace == VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT;
     default:
         break;
     }
