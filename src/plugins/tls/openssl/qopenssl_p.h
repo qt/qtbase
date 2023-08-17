@@ -67,6 +67,8 @@
 #include <openssl/crypto.h>
 #include <openssl/tls1.h>
 #include <openssl/dh.h>
+#include <openssl/provider.h>
+
 
 QT_BEGIN_NAMESPACE
 
