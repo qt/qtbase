@@ -15,18 +15,17 @@ project = QtOpenGL
 # <rootdir>/examples.
 # Paths are relative to the  location of this file.
 
-headerdirs += .. \
-              ../../openglwidgets
-sourcedirs  += .. \
-               ../../openglwidgets \
-               ../../../examples/opengl/doc/src
+{sourcedirs,headerdirs} += \
+               .. \
+               ../../openglwidgets
+
 exampledirs += ../../../examples/opengl \
                . \
                snippets \
                .. \
                ../../gui/doc/snippets
-imagedirs   += images \
-               ../../../examples/opengl/doc/images
+
+imagedirs   += images
 
 depends += qtcore qtgui qtwidgets qtdoc qmake qtcmake qtquick
 
