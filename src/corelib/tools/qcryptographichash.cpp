@@ -1246,7 +1246,7 @@ static constexpr int qt_hash_block_size(QCryptographicHash::Algorithm method)
         return BLAKE2S_BLOCKBYTES;
 #endif // QT_CRYPTOGRAPHICHASH_ONLY_SHA1
     case QCryptographicHash::NumAlgorithms:
-#if !defined(Q_GCC_ONLY) || Q_CC_GCC >= 900
+#if !defined(Q_CC_GNU_ONLY) || Q_CC_GNU >= 900
         // GCC 8 has trouble with Q_UNREACHABLE() in constexpr functions
         Q_UNREACHABLE();
 #endif
