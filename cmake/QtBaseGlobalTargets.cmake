@@ -336,6 +336,7 @@ set(__public_cmake_helpers
     cmake/QtPublicAppleHelpers.cmake
     cmake/QtPublicCMakeHelpers.cmake
     cmake/QtPublicCMakeVersionHelpers.cmake
+    cmake/QtPublicExternalProjectHelpers.cmake
     cmake/QtPublicFinalizerHelpers.cmake
     cmake/QtPublicPluginHelpers.cmake
     cmake/QtPublicTargetHelpers.cmake

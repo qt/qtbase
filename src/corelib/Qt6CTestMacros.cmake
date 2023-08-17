@@ -142,17 +142,18 @@ function(_qt_internal_get_cmake_test_configure_options out_var)
         )
     endforeach()
 
-    set(prefixes "")
-    foreach(prefix_path IN LISTS CMAKE_PREFIX_PATH)
-      file(TO_CMAKE_PATH "${prefix_path}" prefix_path)
-      list(APPEND prefixes "${prefix_path}")
-    endforeach()
+    _qt_internal_get_build_vars_for_external_projects(
+        PREFIXES_VAR prefixes
+        ADDITIONAL_PACKAGES_PREFIXES_VAR additional_prefixes
+    )
+
     if(arg_OUT_PREFIX_PATH)
       set(${arg_OUT_PREFIX_PATH} "${prefixes}" PARENT_SCOPE)
     endif()
 
     string(REPLACE ";" "\;" prefixes "${prefixes}")
     list(APPEND option_list "-DCMAKE_PREFIX_PATH=${prefixes}")
+    list(APPEND option_list "-DQT_ADDITIONAL_PACKAGES_PREFIX_PATH=${additional_prefixes}")
 
     set(${out_var} "${option_list}" PARENT_SCOPE)
 endfunction()
