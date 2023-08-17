@@ -92,7 +92,7 @@ QSslCertificate findCertificateToFetch(const QList<QSslError> &tlsErrors, bool c
     if (checkAIA) {
         const auto extensions = certToFetch.extensions();
         for (const auto &ext : extensions) {
-            if (ext.oid() == QStringLiteral("1.3.6.1.5.5.7.1.1")) // See RFC 4325
+            if (ext.oid() == u"1.3.6.1.5.5.7.1.1") // See RFC 4325
                 return certToFetch;
         }
         //The only reason we check this extensions is because an application set trusted

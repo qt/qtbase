@@ -225,7 +225,7 @@ QDateTime QAsn1Element::toDateTime() const
 
     if (mType == UtcTimeType && mValue.size() == 13) {
         result = QDateTime::fromString(QString::fromLatin1(mValue),
-                                       QStringLiteral("yyMMddHHmmsst"));
+                                       u"yyMMddHHmmsst");
         if (!result.isValid())
             return result;
 
@@ -248,7 +248,7 @@ QDateTime QAsn1Element::toDateTime() const
         Q_ASSERT(result.date().year() <= 2049);
     } else if (mType == GeneralizedTimeType && mValue.size() == 15) {
         result = QDateTime::fromString(QString::fromLatin1(mValue),
-                                       QStringLiteral("yyyyMMddHHmmsst"));
+                                       u"yyyyMMddHHmmsst");
     }
 
     return result;

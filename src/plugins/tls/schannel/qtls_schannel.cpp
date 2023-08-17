@@ -805,8 +805,7 @@ bool netscapeWrongCertType(const QList<QSslCertificateExtension> &extensions, bo
     const auto netscapeIt = std::find_if(
             extensions.cbegin(), extensions.cend(),
             [](const QSslCertificateExtension &extension) {
-                const auto netscapeCertType = QStringLiteral("2.16.840.1.113730.1.1");
-                return extension.oid() == netscapeCertType;
+                return extension.oid() == u"2.16.840.1.113730.1.1";
             });
     if (netscapeIt != extensions.cend()) {
         const QByteArray netscapeCertTypeByte = netscapeIt->value().toByteArray();
