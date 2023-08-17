@@ -30,6 +30,10 @@ static const char traceMetadataTemplate[] =
 ;
 static const size_t traceMetadataSize = sizeof(traceMetadataTemplate);
 
+static inline QString allLiteral() { return QStringLiteral("all"); }
+static inline QString defaultLiteral() { return QStringLiteral("default"); }
+
+
 template <typename T>
 static QByteArray &operator<<(QByteArray &arr, T val)
 {
@@ -103,7 +107,7 @@ QCtfLibImpl::QCtfLibImpl()
         return;
     }
 
-    if (location.startsWith(QStringLiteral("tcp"))) {
+    if (location.startsWith(u"tcp")) {
         QUrl url(location);
         m_server.reset(new QCtfServer());
         m_server->setCallback(this);
@@ -111,22 +115,22 @@ QCtfLibImpl::QCtfLibImpl()
         m_server->setPort(url.port());
         m_server->startServer();
         m_streaming = true;
-        m_session.tracepoints.append(QStringLiteral("all"));
-        m_session.name = QStringLiteral("default");
+        m_session.tracepoints.append(allLiteral());
+        m_session.name = defaultLiteral();
     } else {
         // Check if the location is writable
         if (QT_ACCESS(qPrintable(location), W_OK) != 0) {
             qCWarning(lcDebugTrace) << "Unable to write to location";
             return;
         }
-        const QString filename = location + QStringLiteral("/session.json");
+        const QString filename = location + u"/session.json";
         FILE *file = openFile(qPrintable(filename), "rb"_L1);
         if (!file) {
             qCWarning(lcDebugTrace) << "unable to open session file: "
                                     << filename << ", " << qt_error_string();
             m_location = location;
-            m_session.tracepoints.append(QStringLiteral("all"));
-            m_session.name = QStringLiteral("default");
+            m_session.tracepoints.append(allLiteral());
+            m_session.name = defaultLiteral();
         } else {
             QT_STATBUF stat;
             if (QT_FSTAT(QT_FILENO(file), &stat) != 0) {
@@ -153,16 +157,16 @@ QCtfLibImpl::QCtfLibImpl()
             }
             if (!valid) {
                 qCWarning(lcDebugTrace) << "Session file is not valid";
-                m_session.tracepoints.append(QStringLiteral("all"));
-                m_session.name = QStringLiteral("default");
+                m_session.tracepoints.append(allLiteral());
+                m_session.name = defaultLiteral();
             }
-            m_location = location + QStringLiteral("/ust");
+            m_location = location + u"/ust";
             std::filesystem::create_directory(qPrintable(m_location), qPrintable(location));
         }
         clearLocation();
     }
 
-    m_session.all = m_session.tracepoints.contains(QStringLiteral("all"));
+    m_session.all = m_session.tracepoints.contains(allLiteral());
     // Get datetime to when the timer was started to store the offset to epoch time for the traces
     m_datetime = QDateTime::currentDateTime().toUTC();
     m_timer.start();
@@ -280,7 +284,7 @@ bool QCtfLibImpl::tracepointEnabled(const QCtfTracePointEvent &point)
         buildMetadata();
         m_session.name = m_server->sessionName();
         m_session.tracepoints = m_server->sessionTracepoints().split(';');
-        m_session.all = m_session.tracepoints.contains(QStringLiteral("all"));
+        m_session.all = m_session.tracepoints.contains(allLiteral());
         m_sessionChanged = false;
         for (const auto &meta : m_additionalMetadata)
             writeMetadata(meta->metadata);
@@ -312,12 +316,10 @@ event {
     };
 };
 */
-    QString ret;
-    ret  = QStringLiteral("event {\n    name = \"") + provider + QLatin1Char(':') + name + QStringLiteral("\";\n");
-    ret += QStringLiteral("    id = ") + QString::number(eventId) + QStringLiteral(";\n");
-    ret += QStringLiteral("    stream_id = 0;\n    loglevel = 13;\n    fields := struct {\n        ");
-    ret += metadata + QStringLiteral("\n    };\n};\n");
-    return ret;
+    return QStringView(u"event {\n    name = \"") + provider + QLatin1Char(':') + name + u"\";\n"
+           + u"    id = " + QString::number(eventId) + u";\n"
+           + u"    stream_id = 0;\n    loglevel = 13;\n    fields := struct {\n        "
+           + metadata + u"\n    };\n};\n"
 }
 
 QCtfTracePointPrivate *QCtfLibImpl::initializeTracepoint(const QCtfTracePointEvent &point)
