@@ -398,7 +398,7 @@ inline char *toString(const std::tuple<Types...> &tuple)
 
 inline char *toString(std::nullptr_t)
 {
-    return toString(QStringLiteral("nullptr"));
+    return toString(QStringView(u"nullptr"));
 }
 
 template<>
