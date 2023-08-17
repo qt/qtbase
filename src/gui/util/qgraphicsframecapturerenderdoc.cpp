@@ -19,6 +19,7 @@ RENDERDOC_API_1_6_0 *QGraphicsFrameCaptureRenderDoc::s_rdocApi = nullptr;
 QBasicMutex QGraphicsFrameCaptureRenderDoc::s_frameCaptureMutex;
 #endif
 
+#if QT_CONFIG(opengl)
 static void *glNativeContext(QOpenGLContext *context) {
     void *nctx = nullptr;
     if (context != nullptr && context->isValid()) {
@@ -46,6 +47,8 @@ static void *glNativeContext(QOpenGLContext *context) {
     }
     return nctx;
 }
+#endif // QT_CONFIG(opengl)
+
 /*!
     \class QGraphicsFrameCaptureRenderDoc
     \internal
