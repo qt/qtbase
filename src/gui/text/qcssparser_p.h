@@ -165,7 +165,7 @@ enum Property {
     LetterSpacing,
     WordSpacing,
     TextDecorationColor,
-    QtPlaceHolderTextColor,
+    QtPlaceHolderText,
     QtAccent,
     QtStrokeWidth,
     QtStrokeColor,
