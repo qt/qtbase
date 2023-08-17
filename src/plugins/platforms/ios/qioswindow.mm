@@ -29,19 +29,24 @@
 
 QT_BEGIN_NAMESPACE
 
-QIOSWindow::QIOSWindow(QWindow *window)
+QIOSWindow::QIOSWindow(QWindow *window, WId nativeHandle)
     : QPlatformWindow(window)
     , m_windowLevel(0)
 {
+    if (nativeHandle) {
+        m_view = reinterpret_cast<UIView *>(nativeHandle);
+        [m_view retain];
+    } else {
 #ifdef Q_OS_IOS
-    if (window->surfaceType() == QSurface::RasterSurface)
-        window->setSurfaceType(QSurface::MetalSurface);
+        if (window->surfaceType() == QSurface::RasterSurface)
+            window->setSurfaceType(QSurface::MetalSurface);
 
-    if (window->surfaceType() == QSurface::MetalSurface)
-        m_view = [[QUIMetalView alloc] initWithQIOSWindow:this];
-    else
+        if (window->surfaceType() == QSurface::MetalSurface)
+            m_view = [[QUIMetalView alloc] initWithQIOSWindow:this];
+        else
 #endif
-        m_view = [[QUIView alloc] initWithQIOSWindow:this];
+            m_view = [[QUIView alloc] initWithQIOSWindow:this];
+    }
 
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QIOSWindow::applicationStateChanged);
 
@@ -80,7 +85,7 @@ QIOSWindow::~QIOSWindow()
 
     clearAccessibleCache();
 
-    m_view.platformWindow = 0;
+    quiview_cast(m_view).platformWindow = 0;
     [m_view removeFromSuperview];
     [m_view release];
 }
@@ -120,7 +125,7 @@ void QIOSWindow::setVisible(bool visible)
     if (visible && shouldAutoActivateWindow()) {
         if (!window()->property("_q_showWithoutActivating").toBool())
             requestActivateWindow();
-    } else if (!visible && [m_view isActiveWindow]) {
+    } else if (!visible && [quiview_cast(m_view) isActiveWindow]) {
         // Our window was active/focus window but now hidden, so relinquish
         // focus to the next possible window in the stack.
         NSArray<UIView *> *subviews = m_view.viewController.view.subviews;
@@ -340,8 +345,11 @@ void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientatio
 
 void QIOSWindow::applicationStateChanged(Qt::ApplicationState)
 {
+    if (isForeignWindow())
+        return;
+
     if (window()->isExposed() != isExposed())
-        [m_view sendUpdatedExposeEvent];
+        [quiview_cast(m_view) sendUpdatedExposeEvent];
 }
 
 qreal QIOSWindow::devicePixelRatio() const
@@ -351,7 +359,10 @@ qreal QIOSWindow::devicePixelRatio() const
 
 void QIOSWindow::clearAccessibleCache()
 {
-    [m_view clearAccessibleCache];
+    if (isForeignWindow())
+        return;
+
+    [quiview_cast(m_view) clearAccessibleCache];
 }
 
 void QIOSWindow::requestUpdate()
@@ -393,6 +404,27 @@ QDebug operator<<(QDebug debug, const QIOSWindow *window)
     return debug;
 }
 #endif // !QT_NO_DEBUG_STREAM
+
+/*!
+    Returns the view cast to a QUIview if possible.
+
+    If the view is not a QUIview, nil is returned, which is safe to
+    send messages to, effectively making [quiview_cast(view) message]
+    a no-op.
+
+    For extra verbosity and clearer code, please consider checking
+    that the platform window is not a foreign window before using
+    this cast, via QPlatformWindow::isForeignWindow().
+
+    Do not use this method solely to check for foreign windows, as
+    that will make the code harder to read for people not working
+    primarily on iOS, who do not know the difference between the
+    UIView and QUIView cases.
+*/
+QUIView *quiview_cast(UIView *view)
+{
+    return qt_objc_cast<QUIView *>(view);
+}
 
 QT_END_NAMESPACE
 

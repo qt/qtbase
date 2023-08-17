@@ -148,6 +148,8 @@ bool QIOSIntegration::hasCapability(Capability cap) const
         return false;
     case ApplicationState:
         return true;
+    case ForeignWindows:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
@@ -156,6 +158,11 @@ bool QIOSIntegration::hasCapability(Capability cap) const
 QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
 {
     return new QIOSWindow(window);
+}
+
+QPlatformWindow *QIOSIntegration::createForeignWindow(QWindow *window, WId nativeHandle) const
+{
+    return new QIOSWindow(window, nativeHandle);
 }
 
 QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *window) const
