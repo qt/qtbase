@@ -6274,7 +6274,7 @@ bool QMetalSwapChain::createOrResize()
             d->layer.wantsExtendedDynamicRangeContent = YES;
         }
     } else if (m_format == HDRExtendedDisplayP3Linear) {
-        if (@available(macOS 11.0, iOS 14.0, *)) {
+        if (@available(macOS 11.0, iOS 16.0, *)) {
             d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearDisplayP3);
             d->layer.wantsExtendedDynamicRangeContent = YES;
         }
