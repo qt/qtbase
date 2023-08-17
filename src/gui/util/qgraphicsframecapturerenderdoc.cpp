@@ -15,7 +15,9 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcGraphicsFrameCapture, "qt.gui.graphicsframecapture")
 
 RENDERDOC_API_1_6_0 *QGraphicsFrameCaptureRenderDoc::s_rdocApi = nullptr;
+#if QT_CONFIG(thread)
 QBasicMutex QGraphicsFrameCaptureRenderDoc::s_frameCaptureMutex;
+#endif
 
 static void *glNativeContext(QOpenGLContext *context) {
     void *nctx = nullptr;
@@ -166,8 +168,10 @@ void QGraphicsFrameCaptureRenderDoc::startCaptureFrame()
         return;
     }
 
+#if QT_CONFIG(thread)
     // There is a single instance of RenderDoc library and it needs mutex for multithreading access.
     QMutexLocker locker(&s_frameCaptureMutex);
+#endif
     if (s_rdocApi->IsFrameCapturing()) {
         qCWarning(lcGraphicsFrameCapture) << "A frame capture is already in progress, "
                                              "will not initiate another one until"
@@ -195,8 +199,10 @@ void QGraphicsFrameCaptureRenderDoc::endCaptureFrame()
         return;
     }
 
+#if QT_CONFIG(thread)
     // There is a single instance of RenderDoc library and it needs mutex for multithreading access.
     QMutexLocker locker(&s_frameCaptureMutex);
+#endif
     if (!s_rdocApi->IsFrameCapturing()) {
         qCWarning(lcGraphicsFrameCapture) << "A call to QGraphicsFrameCapture::endCaptureFrame can not be done"
                                              " without a call to QGraphicsFrameCapture::startCaptureFrame";
@@ -247,8 +253,10 @@ void QGraphicsFrameCaptureRenderDoc::openCapture()
         return;
     }
 
+#if QT_CONFIG(thread)
     // There is a single instance of RenderDoc library and it needs mutex for multithreading access.
     QMutexLocker locker(&s_frameCaptureMutex);
+#endif
     if (s_rdocApi->IsTargetControlConnected())
         s_rdocApi->ShowReplayUI();
     else
@@ -257,9 +265,10 @@ void QGraphicsFrameCaptureRenderDoc::openCapture()
 
 void QGraphicsFrameCaptureRenderDoc::init()
 {
-
+#if QT_CONFIG(thread)
     // There is a single instance of RenderDoc library and it needs mutex for multithreading access.
     QMutexLocker locker(&s_frameCaptureMutex);
+#endif
 
     QLibrary renderDocLib(QStringLiteral("renderdoc"));
     pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI) renderDocLib.resolve("RENDERDOC_GetAPI");

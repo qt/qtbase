@@ -21,7 +21,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(thread)
 class QBasicMutex;
+#endif
 
 class QGraphicsFrameCaptureRenderDoc : public QGraphicsFrameCapturePrivate
 {
@@ -40,7 +42,9 @@ private:
     void init();
     void updateCapturePathAndTemplate();
     static RENDERDOC_API_1_5_0 *s_rdocApi;
+#if QT_CONFIG(thread)
     static QBasicMutex s_frameCaptureMutex;
+#endif
     bool m_nativeHandlesSet;
 };
 
