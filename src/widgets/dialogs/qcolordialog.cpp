@@ -1398,8 +1398,8 @@ void QColorShower::htmlEd()
     if (t.isEmpty())
         return;
 
-    if (!t.startsWith(QStringLiteral("#"))) {
-        t = QStringLiteral("#") + t;
+    if (!t.startsWith(u"#")) {
+        t.prepend(u"#");
         QSignalBlocker blocker(htEd);
         htEd->setText(t);
     }

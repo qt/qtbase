@@ -509,7 +509,7 @@ void QFontDialogPrivate::updateFamilies()
 
         //and try some fall backs
         match_t type = MATCH_NONE;
-        if (bestFamilyType <= MATCH_NONE && familyName2 == QStringLiteral("helvetica"))
+        if (bestFamilyType <= MATCH_NONE && familyName2 == "helvetica"_L1)
             type = MATCH_LAST_RESORT;
         if (bestFamilyType <= MATCH_LAST_RESORT && familyName2 == f.families().constFirst())
             type = MATCH_APP;

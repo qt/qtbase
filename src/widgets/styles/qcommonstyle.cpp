@@ -5501,8 +5501,8 @@ static inline QPixmap titleBarMenuCachedPixmapFromXPM() { return cachedPixmapFro
 #endif // QT_CONFIG(imageformat_xpm)
 
 #if QT_CONFIG(imageformat_png)
-static inline QString iconResourcePrefix() { return QStringLiteral(":/qt-project.org/styles/commonstyle/images/"); }
-static inline QString iconPngSuffix() { return QStringLiteral(".png"); }
+static constexpr QLatin1StringView iconResourcePrefix() noexcept { return ":/qt-project.org/styles/commonstyle/images/"_L1; }
+static constexpr QLatin1StringView iconPngSuffix() noexcept { return ".png"_L1; }
 
 template <typename T>
 static void addIconFiles(QStringView prefix, std::initializer_list<T> sizes, QIcon &icon,
@@ -5817,14 +5817,15 @@ QIcon QCommonStylePrivate::iconFromMacTheme(QCommonStyle::StandardPixmap standar
         case QStyle::SP_TitleBarNormalButton:
         case QStyle::SP_TitleBarCloseButton: {
             QIcon titleBarIcon;
-            QString prefix = standardIcon == QStyle::SP_TitleBarCloseButton
-                            ? QStringLiteral(":/qt-project.org/styles/macstyle/images/closedock-")
-                            : QStringLiteral(":/qt-project.org/styles/macstyle/images/dockdock-");
+            constexpr auto imagesPrefix = ":/qt-project.org/styles/macstyle/images/"_L1;
+            const auto namePrefix = standardIcon == QStyle::SP_TitleBarCloseButton
+                              ? "closedock-"_L1
+                              : "dockdock-"_L1;
             for (const auto size : dockTitleIconSizes) {
-                titleBarIcon.addFile(prefix + QStringLiteral("macstyle-") + QString::number(size) + iconPngSuffix(),
-                                     QSize(size, size), QIcon::Normal, QIcon::Off);
-                titleBarIcon.addFile(prefix + QStringLiteral("down-macstyle-") + QString::number(size) + iconPngSuffix(),
-                                     QSize(size, size), QIcon::Normal, QIcon::On);
+                titleBarIcon.addFile(imagesPrefix + namePrefix + "macstyle-"_L1 + QString::number(size)
+                                     + iconPngSuffix(), QSize(size, size), QIcon::Normal, QIcon::Off);
+                titleBarIcon.addFile(imagesPrefix + namePrefix + "down-macstyle-"_L1 + QString::number(size)
+                                     + iconPngSuffix(), QSize(size, size), QIcon::Normal, QIcon::On);
             }
             return titleBarIcon;
         }

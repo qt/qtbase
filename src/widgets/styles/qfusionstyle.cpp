@@ -800,7 +800,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         if (isDefault)
             buttonColor = mergedColors(buttonColor, highlightedOutline.lighter(130), 90);
 
-        BEGIN_STYLE_PIXMAPCACHE(QStringLiteral("pushbutton-") + buttonColor.name(QColor::HexArgb))
+        BEGIN_STYLE_PIXMAPCACHE(u"pushbutton-" + buttonColor.name(QColor::HexArgb))
         r = rect.adjusted(0, 1, -1, 0);
 
         p->setRenderHint(QPainter::Antialiasing, true);
