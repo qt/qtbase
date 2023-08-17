@@ -109,9 +109,9 @@ QCUPSSupport::JobHoldUntilWithTime QCUPSSupport::parseJobHoldUntil(const QString
     }
 
 
-    QTime parsedTime = QTime::fromString(jobHoldUntil, QStringLiteral("h:m:s"));
+    QTime parsedTime = QTime::fromString(jobHoldUntil, u"h:m:s");
     if (!parsedTime.isValid())
-        parsedTime = QTime::fromString(jobHoldUntil, QStringLiteral("h:m"));
+        parsedTime = QTime::fromString(jobHoldUntil, u"h:m");
     if (parsedTime.isValid()) {
         // CUPS time is in UTC, user expects local time, so get the equivalent
         QDateTime dateTimeUtc = QDateTime::currentDateTimeUtc();

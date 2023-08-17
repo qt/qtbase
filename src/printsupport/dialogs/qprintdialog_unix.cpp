@@ -1328,9 +1328,9 @@ QUnixPrintWidget::QUnixPrintWidget(QPrinter *printer, QWidget *parent)
             cur = home;
         else if (!cur.endsWith(u'/'))
             cur += u'/';
-        if (QGuiApplication::platformName() == QStringLiteral("xcb")) {
+        if (QGuiApplication::platformName() == "xcb"_L1) {
             if (printer->docName().isEmpty()) {
-                cur += QStringLiteral("print.pdf");
+                cur += "print.pdf"_L1;
             } else {
 #if QT_CONFIG(regularexpression)
                 const QRegularExpression re(QStringLiteral("(.*)\\.\\S+"));
@@ -1340,7 +1340,7 @@ QUnixPrintWidget::QUnixPrintWidget(QPrinter *printer, QWidget *parent)
                 else
 #endif
                     cur += printer->docName();
-                cur += QStringLiteral(".pdf");
+                cur += ".pdf"_L1;
             }
         } // xcb
 
