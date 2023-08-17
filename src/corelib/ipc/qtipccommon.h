@@ -170,7 +170,7 @@ private:
             return true;
         if (lhs.isSlowPath() && rhs.isSlowPath())
             return compare_internal(lhs, rhs) == 0;
-        return lhs.d == rhs.d;
+        return false;
     }
     friend bool operator!=(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
     {
