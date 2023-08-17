@@ -104,10 +104,12 @@ private:
     // move a dock widget
     void moveDockWidget(QDockWidget* dw, QPoint to, QPoint from = QPoint()) const;
 
+#ifdef QT_BUILD_INTERNAL
     // Message handling for xcb error QTBUG 82059
     static void xcbMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 public:
     bool xcbError = false;
+#endif
 private:
 
 #ifdef QT_DEBUG
@@ -127,11 +129,6 @@ private:
 #endif // QT_BUILD_INTERNAL
 
 };
-
-// Statics for xcb error / msg handler
-static tst_QDockWidget *qThis = nullptr;
-static void (*oldMessageHandler)(QtMsgType, const QMessageLogContext&, const QString&);
-#define QXCBVERIFY(cond) do { if (xcbError) QSKIP("Test skipped due to XCB error"); QVERIFY(cond); } while (0)
 
 // Testing get/set functions
 void tst_QDockWidget::getSetCheck()
@@ -1307,20 +1304,6 @@ bool tst_QDockWidget::checkFloatingTabs(QMainWindow* mainWindow, QPointer<QDockW
     return true;
 }
 
-// detect xcb error
-// qt.qpa.xcb: internal error:  void QXcbWindow::setNetWmStateOnUnmappedWindow() called on mapped window
-void tst_QDockWidget::xcbMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
-    Q_ASSERT(oldMessageHandler);
-
-    if (type == QtWarningMsg && QString(context.category) == "qt.qpa.xcb" && msg.contains("internal error")) {
-        Q_ASSERT(qThis);
-        qThis->xcbError = true;
-    }
-
-    return oldMessageHandler(type, context, msg);
-}
-
 #endif // QT_BUILD_INTERNAL
 
 // test floating tabs and item_tree consistency
@@ -1449,6 +1432,27 @@ void tst_QDockWidget::floatingTabs()
     QSKIP("test requires -developer-build option");
 #endif // QT_BUILD_INTERNAL
 }
+
+#ifdef QT_BUILD_INTERNAL
+// Statics for xcb error / msg handler
+static tst_QDockWidget *qThis = nullptr;
+static void (*oldMessageHandler)(QtMsgType, const QMessageLogContext&, const QString&);
+#define QXCBVERIFY(cond) do { if (xcbError) QSKIP("Test skipped due to XCB error"); QVERIFY(cond); } while (0)
+
+// detect xcb error
+// qt.qpa.xcb: internal error:  void QXcbWindow::setNetWmStateOnUnmappedWindow() called on mapped window
+void tst_QDockWidget::xcbMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Q_ASSERT(oldMessageHandler);
+
+    if (type == QtWarningMsg && QString(context.category) == "qt.qpa.xcb" && msg.contains("internal error")) {
+        Q_ASSERT(qThis);
+        qThis->xcbError = true;
+    }
+
+    return oldMessageHandler(type, context, msg);
+}
+#endif // QT_BUILD_INTERNAL
 
 // test hide & show
 void tst_QDockWidget::hideAndShow()
