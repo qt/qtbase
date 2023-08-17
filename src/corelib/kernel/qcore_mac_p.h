@@ -441,6 +441,20 @@ private:
 
 // -------------------------------------------------------------------------
 
+#ifdef __OBJC__
+template <typename T>
+typename std::enable_if<std::is_pointer<T>::value, T>::type
+qt_objc_cast(id object)
+{
+    if ([object isKindOfClass:[typename std::remove_pointer<T>::type class]])
+        return static_cast<T>(object);
+
+    return nil;
+}
+#endif
+
+// -------------------------------------------------------------------------
+
 QT_END_NAMESPACE
 
 #endif // QCORE_MAC_P_H

@@ -31,6 +31,7 @@ public:
     bool hasCapability(Capability cap) const override;
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformWindow *createForeignWindow(QWindow *window, WId nativeHandle) const override;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
 
 #if QT_CONFIG(opengl)

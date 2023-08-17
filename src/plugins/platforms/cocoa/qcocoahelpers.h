@@ -56,16 +56,6 @@ NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
 Qt::DropAction qt_mac_mapNSDragOperation(NSDragOperation nsActions);
 Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions);
 
-template <typename T>
-typename std::enable_if<std::is_pointer<T>::value, T>::type
-qt_objc_cast(id object)
-{
-    if ([object isKindOfClass:[typename std::remove_pointer<T>::type class]])
-        return static_cast<T>(object);
-
-    return nil;
-}
-
 QT_MANGLE_NAMESPACE(QNSView) *qnsview_cast(NSView *view);
 
 // Misc
