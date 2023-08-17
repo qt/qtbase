@@ -453,7 +453,7 @@ the property value overrides the runtime path where the resource file is found.
 
 \summary {Specifies that the given files should be empty in the resource file system}
 
-\cmakepropertysince 6.5
+\cmakepropertysince 6.6
 \preliminarycmakeproperty
 
 When using the target-based variant of \l{qt6_add_resources}{qt_add_resources}
