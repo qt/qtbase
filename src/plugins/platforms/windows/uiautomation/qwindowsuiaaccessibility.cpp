@@ -21,6 +21,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QWindowsUiAutomation;
+using namespace Qt::Literals::StringLiterals;
 
 bool QWindowsUiaAccessibility::m_accessibleActive = false;
 
@@ -78,8 +79,8 @@ static QString alertSound(const QObject *object)
 
 static QString soundFileName(const QString &soundName)
 {
-    const QString key = QStringLiteral("AppEvents\\Schemes\\Apps\\.Default\\")
-        + soundName + QStringLiteral("\\.Current");
+    const QString key = "AppEvents\\Schemes\\Apps\\.Default\\"_L1
+        + soundName + "\\.Current"_L1;
     return QWinRegistryKey(HKEY_CURRENT_USER, key).stringValue(L"");
 }
 

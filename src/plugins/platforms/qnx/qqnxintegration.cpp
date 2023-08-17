@@ -100,7 +100,7 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
 
 static inline int getContextCapabilities(const QStringList &paramList)
 {
-    QString contextCapabilitiesPrefix = QStringLiteral("screen-context-capabilities=");
+    constexpr auto contextCapabilitiesPrefix = "screen-context-capabilities="_L1;
     int contextCapabilities = SCREEN_APPLICATION_CONTEXT;
     for (const QString &param : paramList) {
         if (param.startsWith(contextCapabilitiesPrefix)) {

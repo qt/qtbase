@@ -566,7 +566,7 @@ QUrl QWindowsShellItem::url() const
     if (urlV.isValid())
         return urlV;
     // Last resort: encode the absolute desktop parsing id as data URL
-    const QString data = QStringLiteral("data:text/plain;base64,")
+    const QString data = "data:text/plain;base64,"_L1
         + QLatin1StringView(desktopAbsoluteParsing().toLatin1().toBase64());
     return QUrl(data);
 }
@@ -1359,7 +1359,7 @@ QString tempFilePattern(QString name)
     int lastDot = name.lastIndexOf(u'.');
     if (lastDot < 0)
         lastDot = name.size();
-    name.insert(lastDot, QStringLiteral("_XXXXXX"));
+    name.insert(lastDot, "_XXXXXX"_L1);
 
     for (int i = lastDot - 1; i >= 0; --i) {
         if (!validFileNameCharacter(name.at(i)))

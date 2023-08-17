@@ -30,6 +30,8 @@ static bool initResources()
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 /*!
     \class QWindowsCursorCacheKey
     \brief Cache key for storing values in a QHash with a QCursor as key.
@@ -436,8 +438,8 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
     if (!bestFit)
         return PixmapCursor();
 
-    const QPixmap rawImage(QStringLiteral(":/qt-project.org/windows/cursors/images/") +
-                           QString::fromLatin1(bestFit->fileName));
+    const QPixmap rawImage(":/qt-project.org/windows/cursors/images/"_L1 +
+                           QLatin1StringView(bestFit->fileName));
     return PixmapCursor(rawImage, QPoint(bestFit->hotSpotX, bestFit->hotSpotY));
 }
 #endif // !QT_NO_IMAGEFORMAT_PNG

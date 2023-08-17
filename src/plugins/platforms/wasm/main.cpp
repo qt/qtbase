@@ -6,6 +6,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 class QWasmIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -17,7 +19,7 @@ public:
 QPlatformIntegration *QWasmIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (!system.compare(QStringLiteral("wasm"), Qt::CaseInsensitive))
+    if (!system.compare("wasm"_L1, Qt::CaseInsensitive))
         return new QWasmIntegration;
 
     return nullptr;

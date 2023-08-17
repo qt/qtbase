@@ -15,6 +15,8 @@
 
 QT_USE_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 #if QT_CONFIG(accessibility)
 
 /**
@@ -742,7 +744,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         QRectF rect;
         if (range.length > 0) {
             NSUInteger position = range.location + range.length - 1;
-            if (position > range.location && iface->textInterface()->text(position, position + 1) == QStringLiteral("\n"))
+            if (position > range.location && iface->textInterface()->text(position, position + 1) == "\n"_L1)
                 --position;
             QRect lastRect = iface->textInterface()->characterRect(position);
             rect = firstRect.united(lastRect);

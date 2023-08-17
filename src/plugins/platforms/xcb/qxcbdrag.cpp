@@ -27,6 +27,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 const int xdnd_version = 5;
 
 static inline xcb_window_t xcb_window(QPlatformWindow *w)
@@ -459,7 +461,7 @@ void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
     static const bool isUnity = qgetenv("XDG_CURRENT_DESKTOP").toLower() == "unity";
     if (isUnity && xdndCollectionWindow == XCB_NONE) {
         QString name = QXcbWindow::windowTitle(connection(), target);
-        if (name == QStringLiteral("XdndCollectionWindowImp"))
+        if (name == "XdndCollectionWindowImp"_L1)
             xdndCollectionWindow = target;
     }
     if (target == xdndCollectionWindow) {

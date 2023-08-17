@@ -155,14 +155,14 @@ static inline bool launchMail(const QUrl &url)
         return false;
     }
     // Fix mail launch if no param is expected in this command.
-    if (command.indexOf(QStringLiteral("%1")) < 0) {
+    if (command.indexOf("%1"_L1) < 0) {
         qWarning() << "The mail command lacks the '%1' parameter.";
         return false;
     }
     //Make sure the path for the process is in quotes
     const QChar doubleQuote = u'"';
     if (!command.startsWith(doubleQuote)) {
-        const int exeIndex = command.indexOf(QStringLiteral(".exe "), 0, Qt::CaseInsensitive);
+        const int exeIndex = command.indexOf(".exe "_L1, 0, Qt::CaseInsensitive);
         if (exeIndex != -1) {
             command.insert(exeIndex + 4, doubleQuote);
             command.prepend(doubleQuote);

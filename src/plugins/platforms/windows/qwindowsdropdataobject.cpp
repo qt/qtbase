@@ -9,6 +9,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 /*!
     \class QWindowsDropDataObject
     \brief QWindowsOleDataObject subclass specialized for handling Drag&Drop.
@@ -56,8 +58,8 @@ bool QWindowsDropDataObject::shouldIgnore(LPFORMATETC pformatetc) const
         QString formatName = QWindowsMimeRegistry::clipboardFormatName(pformatetc->cfFormat);
         if (pformatetc->cfFormat == CF_UNICODETEXT
                 || pformatetc->cfFormat == CF_TEXT
-                || formatName == QStringLiteral("UniformResourceLocator")
-                || formatName == QStringLiteral("UniformResourceLocatorW")) {
+                || formatName == "UniformResourceLocator"_L1
+                || formatName == "UniformResourceLocatorW"_L1) {
             const auto urls = dropData->urls();
             return std::all_of(urls.cbegin(), urls.cend(), [] (const QUrl &u) { return u.isLocalFile(); });
         }

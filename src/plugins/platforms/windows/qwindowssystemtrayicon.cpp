@@ -24,6 +24,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 static const UINT q_uNOTIFYICONID = 0;
 
 static uint MYWM_TASKBARCREATED = 0;
@@ -116,7 +118,7 @@ static inline HWND createTrayIconMessageWindow()
         return nullptr;
     // Register window class in the platform plugin.
     const QString className =
-        ctx->registerWindowClass(QWindowsContext::classNamePrefix() + QStringLiteral("TrayIconMessageWindowClass"),
+        ctx->registerWindowClass(QWindowsContext::classNamePrefix() + "TrayIconMessageWindowClass"_L1,
                                  qWindowsTrayIconWndProc);
     const wchar_t windowName[] = L"QTrayIconMessageWindow";
     return CreateWindowEx(0, reinterpret_cast<const wchar_t *>(className.utf16()),
