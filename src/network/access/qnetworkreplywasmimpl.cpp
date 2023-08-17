@@ -291,7 +291,7 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     attr.timeoutMSecs = request.transferTimeout();
     attr.userData = reinterpret_cast<void *>(this);
 
-    QString dPath = QStringLiteral("/home/web_user/") + request.url().fileName();
+    QString dPath = "/home/web_user/"_L1 + request.url().fileName();
     QByteArray destinationPath = dPath.toUtf8();
     attr.destinationPath = destinationPath.constData();
 

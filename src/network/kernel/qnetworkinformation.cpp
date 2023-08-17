@@ -196,7 +196,7 @@ QNetworkInformation *QNetworkInformationPrivate::create(QStringView name)
             QString listNames;
             listNames.reserve(8 * dataHolder->factories.count());
             for (const auto *factory : std::as_const(dataHolder->factories))
-                listNames += factory->name() + QStringLiteral(", ");
+                listNames += factory->name() + ", "_L1;
             listNames.chop(2);
             qDebug().nospace() << "Couldn't find " << name << " in list with names: { "
                                 << listNames << " }";

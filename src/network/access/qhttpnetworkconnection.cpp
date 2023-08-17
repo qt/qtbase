@@ -918,7 +918,7 @@ QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError e
     case QNetworkReply::SslHandshakeFailedError:
         errorString = QCoreApplication::translate("QHttp", "SSL handshake failed");
         if (socket)
-            errorString += QStringLiteral(": ") + socket->errorString();
+            errorString += ": "_L1 + socket->errorString();
         break;
     case QNetworkReply::TooManyRedirectsError:
         errorString = QCoreApplication::translate("QHttp", "Too many redirects");
