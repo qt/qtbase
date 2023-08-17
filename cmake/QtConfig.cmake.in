@@ -40,6 +40,7 @@ endif()
 # Public helpers available to all Qt packages.
 include("${CMAKE_CURRENT_LIST_DIR}/QtFeature.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicAppleHelpers.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/QtPublicExternalProjectHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicFinalizerHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicPluginHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicTargetHelpers.cmake")
