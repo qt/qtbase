@@ -7,56 +7,56 @@ ubuntu-22.04 ci
 
 # QTBUG-108402
 [gestureOverChildGraphicsItem]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [conflictingGesturesInGraphicsView]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [graphicsItemGesture]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [graphicsView]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [graphicsItemTreeGesture]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [explicitGraphicsObjectTarget]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [gestureOverChildGraphicsItem]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [autoCancelGestures2]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [graphicsViewParentPropagation]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [panelPropagation]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [panelStacksBehindParent]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [viewportCoordinates]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [partialGesturePropagation]
-macOS arm
+macos arm
 
 # QTBUG-108402
 [testReuseCanceledGestures]
-macOS arm
+macos arm
