@@ -568,7 +568,7 @@ inline const QMetaObject *QMetaObject::superClass() const
 { return d.superdata; }
 
 namespace QtPrivate {
-    /* Trait that tells is a the Object has a Q_OBJECT macro */
+    // Trait that tells if a QObject has a Q_OBJECT macro
     template <typename Object> struct HasQ_OBJECT_Macro {
         template <typename T>
         static char test(int (T::*)(QMetaObject::Call, int, void **));
