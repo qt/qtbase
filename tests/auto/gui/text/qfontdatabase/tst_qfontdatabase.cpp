@@ -12,6 +12,9 @@
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
 #include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformintegration.h>
+
+#include <QtGui/private/qguiapplication_p.h>
 
 using namespace Qt::StringLiterals;
 
@@ -513,11 +516,9 @@ void tst_QFontDatabase::findCourier()
 void tst_QFontDatabase::variableFont()
 {
     {
-        QFont f;
-        f.setStyleStrategy(QFont::NoFontMerging);
-        QFontPrivate *font_d = QFontPrivate::get(f);
-        if (!font_d->engineForScript(QChar::Script_Common)->supportsVariableApplicationFonts())
-            QSKIP("Variable application fonts only supported on Freetype currently");
+        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+        if (!pfdb->supportsVariableApplicationFonts())
+            QSKIP("Variable application fonts not supported on this platform");
     }
 
     int id = QFontDatabase::addApplicationFont(m_testFontVariable);

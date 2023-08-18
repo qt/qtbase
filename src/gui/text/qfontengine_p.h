@@ -213,7 +213,6 @@ public:
 
     inline bool canRender(uint ucs4) const { return glyphIndex(ucs4) != 0; }
     virtual bool canRender(const QChar *str, int len) const;
-    virtual bool supportsVariableApplicationFonts() const;
 
     virtual bool supportsTransformation(const QTransform &transform) const;
 

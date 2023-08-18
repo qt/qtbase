@@ -646,6 +646,18 @@ bool QPlatformFontDatabase::isFamilyPopulated(const QString &familyName)
 }
 
 /*!
+    Returns true if this font database supports loading named instances from variable application
+    fonts.
+
+    \since 6.7
+*/
+bool QPlatformFontDatabase::supportsVariableApplicationFonts() const
+{
+    return false;
+}
+
+
+/*!
     \class QPlatformFontDatabase
     \since 5.0
     \internal

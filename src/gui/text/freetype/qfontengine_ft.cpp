@@ -2241,15 +2241,6 @@ Qt::HANDLE QFontEngineFT::handle() const
     return non_locked_face();
 }
 
-bool QFontEngineFT::supportsVariableApplicationFonts() const
-{
-#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20900
-    return true;
-#else
-    return false;
-#endif
-}
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_FREETYPE

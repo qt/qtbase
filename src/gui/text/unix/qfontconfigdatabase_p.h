@@ -28,6 +28,7 @@ public:
     ~QFontconfigDatabase() override;
     void populateFontDatabase() override;
     void invalidate() override;
+    bool supportsVariableApplicationFonts() const override;
     QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;

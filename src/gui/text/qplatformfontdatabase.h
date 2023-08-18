@@ -89,6 +89,8 @@ public:
     virtual bool fontsAlwaysScalable() const;
     virtual QList<int> standardSizes() const;
 
+    virtual bool supportsVariableApplicationFonts() const;
+
     // helper
     static QSupportedWritingSystems writingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
     static QSupportedWritingSystems writingSystemsFromOS2Table(const char *os2Table, size_t length);

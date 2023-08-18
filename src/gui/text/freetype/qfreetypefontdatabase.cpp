@@ -335,4 +335,13 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
     return families;
 }
 
+bool QFreeTypeFontDatabase::supportsVariableApplicationFonts() const
+{
+#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20900
+    return true;
+#else
+    return false;
+#endif
+}
+
 QT_END_NAMESPACE

@@ -91,7 +91,9 @@ public:
 protected:
 
 #if QT_CONFIG(directwrite)
-    IDWriteFontFace *createDirectWriteFace(const QByteArray &fontData) const;
+    QList<IDWriteFontFace *> createDirectWriteFaces(const QByteArray &fontData,
+                                                    bool queryVariations = true) const;
+    IDWriteFontFace *createDirectWriteFace(const QByteArray &fontData);
 #endif
 
 private:
