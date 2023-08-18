@@ -73,7 +73,7 @@ Q_LOGGING_CATEGORY(lcQnam, "qt.network.access.manager")
 
 Q_APPLICATION_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 
-#ifdef QT_BUILD_INTERNAL
+#if QT_CONFIG(private_tests)
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
@@ -153,7 +153,7 @@ bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& 
 
 static void ensureInitialized()
 {
-#ifdef QT_BUILD_INTERNAL
+#if QT_CONFIG(private_tests)
     (void) debugpipeBackend();
 #endif
 
