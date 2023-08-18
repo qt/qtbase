@@ -20,4 +20,5 @@ qt_build_repo_begin()
 add_subdirectory(test_autogenerating_cpp_exports)
 add_subdirectory(test_autogenerating_cpp_exports_custom_name)
 
+qt_build_repo_post_process()
 qt_build_repo_end()
