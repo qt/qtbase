@@ -408,6 +408,7 @@ macro(qt_internal_prepare_single_repo_target_set_build)
 endmacro()
 
 macro(qt_build_repo_begin)
+    set(QT_INTERNAL_REPO_POST_PROCESS_CALLED FALSE)
     list(APPEND CMAKE_MESSAGE_CONTEXT "${PROJECT_NAME}")
 
     qt_build_internals_set_up_private_api()
@@ -543,10 +544,21 @@ macro(qt_build_repo_begin)
     endif()
 endmacro()
 
+# Runs delayed actions on some of the Qt targets.
+# Can be called either explicitly or as part of qt_build_repo_end().
+macro(qt_build_repo_post_process)
+    if(QT_INTERNAL_REPO_POST_PROCESS_CALLED)
+        return()
+    endif()
+    if(NOT QT_BUILD_STANDALONE_TESTS)
+        include(QtPostProcess)
+    endif()
+    set(QT_INTERNAL_REPO_POST_PROCESS_CALLED TRUE)
+endmacro()
+
 macro(qt_build_repo_end)
     if(NOT QT_BUILD_STANDALONE_TESTS)
-        # Delayed actions on some of the Qt targets:
-        include(QtPostProcess)
+        qt_build_repo_post_process()
 
         # Install the repo-specific cmake find modules.
         qt_path_join(__qt_repo_install_dir ${QT_CONFIG_INSTALL_DIR} ${INSTALL_CMAKE_NAMESPACE})
@@ -601,6 +613,8 @@ macro(qt_build_repo)
     qt_build_repo_impl_find_package_tests()
     qt_build_repo_impl_src()
     qt_build_repo_impl_tools()
+
+    qt_build_repo_post_process()
     qt_build_repo_impl_tests()
 
     qt_build_repo_end()
