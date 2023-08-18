@@ -7,6 +7,8 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qfont.h>
 
+#include <QtCore/qshareddata.h>
+
 QT_BEGIN_NAMESPACE
 
 
