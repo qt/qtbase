@@ -2812,18 +2812,13 @@ QDateTimePrivate::ZoneState QDateTimePrivate::zoneStateAtMillis(const QTimeZone 
     if (data.offsetFromUtc == QTimeZonePrivate::invalidSeconds())
         return {millis};
     Q_ASSERT(zone.d->offsetFromUtc(data.atMSecsSinceEpoch) == data.offsetFromUtc);
-    ZoneState state(data.atMSecsSinceEpoch + data.offsetFromUtc * MSECS_PER_SEC,
-                    data.offsetFromUtc,
-                    data.daylightTimeOffset ? DaylightTime : StandardTime);
-    // Revise offset, when stepping out of a spring-forward, to what makes a
-    // fromMSecsSinceEpoch(toMSecsSinceEpoch()) of the resulting QDT work:
-    if (millis != state.when)
-        state.offset += (millis - state.when) / MSECS_PER_SEC;
-    return state;
+    return ZoneState(data.atMSecsSinceEpoch + data.offsetFromUtc * MSECS_PER_SEC,
+                     data.offsetFromUtc,
+                     data.daylightTimeOffset ? DaylightTime : StandardTime);
 }
 #endif // timezone
 
-static inline QDateTimePrivate::ZoneState stateAtMillis(QTimeZone zone, qint64 millis,
+static inline QDateTimePrivate::ZoneState stateAtMillis(const QTimeZone &zone, qint64 millis,
                                                         QDateTimePrivate::DaylightStatus dst)
 {
     if (zone.timeSpec() == Qt::LocalTime)
@@ -2949,6 +2944,15 @@ static void refreshZonedDateTime(QDateTimeData &d, const QTimeZone &zone)
     auto status = getStatus(d);
     Q_ASSERT(extractSpec(status) == zone.timeSpec());
     int offsetFromUtc = 0;
+    /* Callers are:
+       * QDTP::create(), where d is too new to be shared yet
+       * reviseTimeZone(), which detach()es if not short before calling this
+       * checkValidDateTime(), always follows a setDateTime() that detach()ed if not short
+
+       So we can assume d is not shared. We only need to detach() if we convert
+       from short to pimpled to accommodate an oversize msecs, which can only be
+       needed in the unlikely event we revise it.
+    */
 
     // If not valid date and time then is invalid
     if (!status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime)) {
@@ -2961,14 +2965,33 @@ static void refreshZonedDateTime(QDateTimeData &d, const QTimeZone &zone)
         QDateTimePrivate::ZoneState state = stateAtMillis(zone, msecs,
                                                           extractDaylightStatus(status));
         // Save the offset to use in offsetFromUtc() &c., even if the next check
-        // marks invalid; this lets fromMSecsSinceEpoch() give a useful fallback
+        // marks invalid; this lets toMSecsSinceEpoch() give a useful fallback
         // for times in spring-forward gaps.
         offsetFromUtc = state.offset;
         Q_ASSERT(!state.valid || (state.offset >= -SECS_PER_DAY && state.offset <= SECS_PER_DAY));
-        if (state.valid && msecs == state.when)
+        if (Q_LIKELY(state.valid && msecs == state.when)) {
             status = mergeDaylightStatus(status | QDateTimePrivate::ValidDateTime, state.dst);
-        else // msecs changed or failed to convert (e.g. overflow)
+        } else { // msecs changed: gap, or failed to convert (e.g. overflow)
             status.setFlag(QDateTimePrivate::ValidDateTime, false);
+            if (state.valid) { // gap
+                /* Make sure our offset and msecs do produce the selected UTC
+                   secs, if queried. When d isn't short, we record offset, so
+                   need msecs to match; when d is short, consistency demands we
+                   also update msecs, which will at least mean we don't hit the
+                   gap again, if we ever recompute offset. */
+                if (status.testFlag(QDateTimePrivate::ShortData)) {
+                    if (msecsCanBeSmall(state.when)) {
+                        d.data.msecs = qintptr(state.when);
+                    } else {
+                        // Convert to long-form so we can hold the revised msecs:
+                        status.setFlag(QDateTimePrivate::ShortData, false);
+                        d.detach();
+                    }
+                }
+                if (!status.testFlag(QDateTimePrivate::ShortData))
+                    d->m_msecs = state.when;
+            }
+        }
     }
 
     if (status.testFlag(QDateTimePrivate::ShortData)) {

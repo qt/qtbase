@@ -2297,6 +2297,8 @@ void tst_QDateTime::springForward()
         });
         QVERIFY(off == 1 || off == -1);
         report.dismiss();
+        // adjust is the offset on the other side of the gap:
+        QCOMPARE(direct.offsetFromUtc(), (adjust + off * 60) * 60);
     }
 
     // Repeat, but getting there via .toTimeZone(). Apply adjust to datetime,
@@ -2306,10 +2308,12 @@ void tst_QDateTime::springForward()
     QCOMPARE(detour.time(), time);
     detour = detour.addDays(step);
     // Insist on consistency:
-    if (direct.isValid())
+    if (direct.isValid()) {
         QCOMPARE(detour, direct);
-    else
+        QCOMPARE(detour.offsetFromUtc(), direct.offsetFromUtc());
+    } else {
         QVERIFY(!detour.isValid());
+    }
 }
 
 void tst_QDateTime::operator_eqeq_data()
@@ -3129,8 +3133,8 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTimeZone southBrazil("America/Sao_Paulo");
     if (southBrazil.isValid()) {
         QTest::newRow("spring-forward-midnight")
-            // NB: no hour field, so hour takes its default, so that default can
-            // be over-ridden:
+            // NB: no hour field, so hour takes its default, 0, so that default
+            // can be over-ridden:
             << QString("2008-10-19 23:45.678 America/Sao_Paulo")
             << QString("yyyy-MM-dd mm:ss.zzz t")
             // That's in the hour skipped - expect the matching time after the
@@ -3706,7 +3710,7 @@ void tst_QDateTime::daylightTransitions() const
     QDateTime missing(QDate(2012, 3, 25), QTime(2, 0));
     QVERIFY(!missing.isValid());
     QCOMPARE(missing.date(), QDate(2012, 3, 25));
-    QCOMPARE(missing.time(), QTime(2, 0));
+    QCOMPARE(missing.time(), QTime(3, 0));
     // datetimeparser relies on toMSecsSinceEpoch to still work:
     QCOMPARE(missing.toMSecsSinceEpoch(), spring2012);
 
@@ -3739,11 +3743,11 @@ void tst_QDateTime::daylightTransitions() const
     utc.setTimeZone(QTimeZone::LocalTime);
     QVERIFY(!utc.isValid());
     QCOMPARE(utc.date(), QDate(2012, 3, 25));
-    QCOMPARE(utc.time(), QTime(2, 0));
+    QCOMPARE(utc.time(), QTime(3, 0));
     utc.setTimeZone(UTC);
     QVERIFY(utc.isValid());
     QCOMPARE(utc.date(), QDate(2012, 3, 25));
-    QCOMPARE(utc.time(), QTime(2, 0));
+    QCOMPARE(utc.time(), QTime(3, 0));
 
     // Test date maths, if result falls in missing hour then becomes next
     // hour (or is always invalid; mktime() may reject gap-times).
@@ -4212,12 +4216,50 @@ void tst_QDateTime::timeZones() const
     QDateTime inGap = QDateTime(QDate(2013, 3, 31), QTime(2, 0), cet);
     QVERIFY(!inGap.isValid());
     QCOMPARE(inGap.date(), QDate(2013, 3, 31));
-    QCOMPARE(inGap.time(), QTime(2, 0));
+    QCOMPARE(inGap.time(), QTime(3, 0));
+    QCOMPARE(inGap.offsetFromUtc(), 7200);
     // - Test transition hole, setting 02:59:59.999 is invalid
     inGap = QDateTime(QDate(2013, 3, 31), QTime(2, 59, 59, 999), cet);
     QVERIFY(!inGap.isValid());
     QCOMPARE(inGap.date(), QDate(2013, 3, 31));
-    QCOMPARE(inGap.time(), QTime(2, 59, 59, 999));
+    QCOMPARE(inGap.time(), QTime(3, 59, 59, 999));
+    QCOMPARE(inGap.offsetFromUtc(), 7200);
+    // Test similar for local time, if it's CET:
+    if (zoneIsCET) {
+        inGap = QDateTime(QDate(2013, 3, 31), QTime(2, 30));
+        QVERIFY(!inGap.isValid());
+        QCOMPARE(inGap.date(), QDate(2013, 3, 31));
+        QCOMPARE(inGap.time(), QTime(3, 30));
+    }
+
+    // Test a gap more than 1'141'707.91-years from 1970, outside ShortData's range,
+    // The zone version is non-short in any case, but check it anyway.
+    // However, we can only test this if the underlying OS believes CET continues
+    // exercising DST indefinitely; Darwin, for example, assumes we'll have all
+    // kicked the habit by the end of 2100.
+    constexpr int longYear = 1'143'678;
+    constexpr qint64 millisInWeek = qint64(7) * 24 * 60 * 60 * 1000;
+    if (QDateTime(QDate(longYear, 3, 24), QTime(12, 0), cet).msecsTo(
+            QDateTime(QDate(longYear, 3, 31), QTime(12, 0), cet)) < millisInWeek) {
+        inGap = QDateTime(QDate(longYear, 3, 27), QTime(2, 30), cet);
+        QVERIFY(!inGap.isValid());
+        QCOMPARE(inGap.date(), QDate(longYear, 3, 27));
+        QCOMPARE(inGap.time(), QTime(3, 30));
+        QCOMPARE(inGap.offsetFromUtc(), 7200);
+    } else {
+        qDebug("Skipping far-future check beyond zoned end of DST");
+    }
+    if (zoneIsCET && QDateTime(QDate(longYear, 3, 24), QTime(12, 0)).msecsTo(
+            QDateTime(QDate(longYear, 3, 31), QTime(12, 0))) < millisInWeek) {
+        inGap = QDateTime(QDate(longYear, 3, 27), QTime(2, 30));
+        QVERIFY(!inGap.isValid());
+        QCOMPARE(inGap.date(), QDate(longYear, 3, 27));
+        QCOMPARE(inGap.offsetFromUtc(), 7200);
+        QCOMPARE(inGap.time(), QTime(3, 30));
+    } else {
+        qDebug(zoneIsCET ? "Skipping far-future check beyond local end of DST"
+               : "Skipping CET-specific test");
+    }
 
     // Standard Time to Daylight Time 2013 on 2013-10-27 is 3:00 local time / 1:00 UTC
     const qint64 replayMSecs = 1382835600000;
