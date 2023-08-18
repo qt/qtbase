@@ -236,25 +236,16 @@ public:
                             const QString &application);
     ~QWasmIDBSettingsPrivate();
 
-    std::optional<QVariant> get(const QString &key) const override;
-    QStringList children(const QString &prefix, ChildSpec spec) const override;
     void clear() override;
     void sync() override;
     void flush() override;
-    bool isWritable() const override;
-    void initAccess() override;
-
-    void loadLocal();
-    void setReady();
 
 private:
-    bool writeSettingsToTemporaryFile(void *dataPtr, int size);
+    bool writeSettingsToTemporaryFile(const QString &fileName, void *dataPtr, int size);
 
     QString databaseName;
     QString id;
 };
-
-static bool isReadReady = false;
 
 constexpr char DbName[] = "/home/web_user";
 
@@ -270,7 +261,6 @@ QWasmIDBSettingsPrivate::QWasmIDBSettingsPrivate(QSettings::Scope scope,
         return;
     }
 
-    setStatus(QSettings::AccessError); // access error until sandbox gets loaded
     databaseName = organization;
     id = application;
 
@@ -285,35 +275,23 @@ QWasmIDBSettingsPrivate::QWasmIDBSettingsPrivate(QSettings::Scope scope,
         void *contents;
         int size;
         emscripten_idb_load(DbName, fileName().toLocal8Bit(), &contents, &size, &error);
-        if (error || !writeSettingsToTemporaryFile(contents, size)) {
+        if (error || !writeSettingsToTemporaryFile(fileName(), contents, size)) {
             setStatus(QSettings::AccessError);
             return;
         }
     }
 
-    setReady();
+    QConfFileSettingsPrivate::initAccess();
 }
 
 QWasmIDBSettingsPrivate::~QWasmIDBSettingsPrivate() = default;
 
-void QWasmIDBSettingsPrivate::initAccess()
-{
-     if (isReadReady)
-         QConfFileSettingsPrivate::initAccess();
-}
+bool QWasmIDBSettingsPrivate::writeSettingsToTemporaryFile(const QString &fileName, void *dataPtr,
+                                                           int size)
 
-std::optional<QVariant> QWasmIDBSettingsPrivate::get(const QString &key) const
 {
-    if (isReadReady)
-        return QConfFileSettingsPrivate::get(key);
-
-    return std::nullopt;
-}
-
-bool QWasmIDBSettingsPrivate::writeSettingsToTemporaryFile(void *dataPtr, int size)
-{
-    QFile file(fileName());
-    QFileInfo fileInfo(fileName());
+    QFile file(fileName);
+    QFileInfo fileInfo(fileName);
     QDir dir(fileInfo.path());
     if (!dir.exists())
         dir.mkpath(fileInfo.path());
@@ -322,11 +300,6 @@ bool QWasmIDBSettingsPrivate::writeSettingsToTemporaryFile(void *dataPtr, int si
         return false;
 
     return size == file.write(reinterpret_cast<char *>(dataPtr), size);
-}
-
-QStringList QWasmIDBSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
-{
-    return QConfFileSettingsPrivate::children(prefix, spec);
 }
 
 void QWasmIDBSettingsPrivate::clear()
@@ -357,18 +330,6 @@ void QWasmIDBSettingsPrivate::sync()
 void QWasmIDBSettingsPrivate::flush()
 {
     sync();
-}
-
-bool QWasmIDBSettingsPrivate::isWritable() const
-{
-    return isReadReady && QConfFileSettingsPrivate::isWritable();
-}
-
-void QWasmIDBSettingsPrivate::setReady()
-{
-    isReadReady = true;
-    setStatus(QSettings::NoError);
-    QConfFileSettingsPrivate::initAccess();
 }
 
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
