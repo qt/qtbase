@@ -47,6 +47,7 @@ static bool useJspi()
     return qstdweb::haveJspi();
 }
 
+// clang-format off
 EM_ASYNC_JS(void, qt_jspi_suspend_js, (), {
     ++Module.qtJspiSuspensionCounter;
 
@@ -76,6 +77,7 @@ EM_JS(void, init_jspi_support_js, (), {
     Module.qtAsyncifyWakeUp = [];
     Module.qtJspiSuspensionCounter = 0;
 });
+// clang-format on
 
 void initJspiSupport() {
     init_jspi_support_js();
@@ -83,6 +85,7 @@ void initJspiSupport() {
 
 Q_CONSTRUCTOR_FUNCTION(initJspiSupport);
 
+// clang-format off
 EM_JS(void, qt_asyncify_suspend_js, (), {
     if (Module.qtSuspendId === undefined)
         Module.qtSuspendId = 0;
@@ -109,6 +112,7 @@ EM_JS(void, qt_asyncify_resume_js, (), {
         wakeUp();
     });
 });
+// clang-format on
 
 #else
 
