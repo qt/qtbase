@@ -26,7 +26,8 @@ public:
     enum class ForeverConstant { Forever };
     static constexpr ForeverConstant Forever = ForeverConstant::Forever;
 
-    constexpr QDeadlineTimer(Qt::TimerType type_ = Qt::CoarseTimer) noexcept
+    constexpr QDeadlineTimer() noexcept = default;
+    constexpr explicit QDeadlineTimer(Qt::TimerType type_) noexcept
         : type(type_) {}
     constexpr QDeadlineTimer(ForeverConstant, Qt::TimerType type_ = Qt::CoarseTimer) noexcept
         : t1((std::numeric_limits<qint64>::max)()), type(type_) {}
@@ -142,7 +143,7 @@ private:
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     unsigned t2 = 0;
 #endif
-    unsigned type;
+    unsigned type = Qt::CoarseTimer;
 
     qint64 rawRemainingTimeNSecs() const noexcept;
 };

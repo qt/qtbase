@@ -131,10 +131,12 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
 */
 
 /*!
+    \fn QDeadlineTimer::QDeadlineTimer()
     \fn QDeadlineTimer::QDeadlineTimer(Qt::TimerType timerType)
 
     Constructs an expired QDeadlineTimer object. For this object,
-    remainingTime() will return 0.
+    remainingTime() will return 0. If \a timerType is not set, then the object
+    will use the \l{Qt::CoarseTimer}{coarse} \l{QDeadlineTimer#Timer types}{timer type}.
 
     The timer type \a timerType may be ignored, since the timer is already
     expired. Similarly, for optimization purposes, this function will not
