@@ -29,4 +29,5 @@ add_subdirectory(mock4plugin)
 add_subdirectory(mock5plugin)
 add_subdirectory(mock6plugin)
 
+qt_build_repo_post_process()
 qt_build_repo_end()
