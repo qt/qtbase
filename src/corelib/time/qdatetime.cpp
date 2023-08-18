@@ -4387,14 +4387,8 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
                 dt.d.detach();
                 dt.d->m_status &= ~QDateTimePrivate::ValidityMask;
             }
-        } else if (d.isShort()) {
-            // need to check if we need to enlarge first
-            if (msecsCanBeSmall(msecs)) {
-                dt.d.data.msecs = qintptr(msecs);
-            } else {
-                dt.d.detach();
-                dt.d->m_msecs = msecs;
-            }
+        } else if (d.isShort() && msecsCanBeSmall(msecs)) {
+            dt.d.data.msecs = qintptr(msecs);
         } else {
             dt.d.detach();
             dt.d->m_msecs = msecs;
