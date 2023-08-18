@@ -3744,16 +3744,18 @@ QTimeZone QDateTime::timeZone() const
 
 int QDateTime::offsetFromUtc() const
 {
+    const auto status = getStatus(d);
+    if (!status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime))
+        return 0;
+    // But allow invalid date-time (e.g. gap's resolution) to report its offset.
     if (!d.isShort())
         return d->m_offsetFromUtc;
-    if (!isValid())
-        return 0;
 
-    auto spec = getSpec(d);
+    auto spec = extractSpec(status);
     if (spec == Qt::LocalTime) {
-        // we didn't cache the value, so we need to calculate it now...
-        qint64 msecs = getMSecs(d);
-        return (msecs - toMSecsSinceEpoch()) / MSECS_PER_SEC;
+        // We didn't cache the value, so we need to calculate it:
+        auto dst = extractDaylightStatus(status);
+        return QDateTimePrivate::localStateAtMillis(getMSecs(d), dst).offset;
     }
 
     Q_ASSERT(spec == Qt::UTC);
@@ -3964,8 +3966,13 @@ qint64 QDateTime::toMSecsSinceEpoch() const
     // Note: QDateTimeParser relies on this producing a useful result, even when
     // !isValid(), at least when the invalidity is a time in a fall-back (that
     // we'll have adjusted to lie outside it, but marked invalid because it's
-    // not what was asked for). Other things may be doing similar.
-    switch (getSpec(d)) {
+    // not what was asked for). Other things may be doing similar. But that's
+    // only relevant when we got enough data for resolution to find it invalid.
+    const auto status = getStatus(d);
+    if (!status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime))
+        return 0;
+
+    switch (extractSpec(status)) {
     case Qt::UTC:
         return getMSecs(d);
 
@@ -3974,9 +3981,9 @@ qint64 QDateTime::toMSecsSinceEpoch() const
         return d->m_msecs - d->m_offsetFromUtc * MSECS_PER_SEC;
 
     case Qt::LocalTime:
-        if (d.isShort()) {
+        if (status.testFlag(QDateTimePrivate::ShortData)) {
             // Short form has nowhere to cache the offset, so recompute.
-            auto dst = extractDaylightStatus(getStatus(d));
+            auto dst = extractDaylightStatus(status);
             auto state = QDateTimePrivate::localStateAtMillis(getMSecs(d), dst);
             return state.when - state.offset * MSECS_PER_SEC;
         }

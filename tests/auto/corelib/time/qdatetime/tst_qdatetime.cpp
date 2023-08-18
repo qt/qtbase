@@ -4229,6 +4229,7 @@ void tst_QDateTime::timeZones() const
         inGap = QDateTime(QDate(2013, 3, 31), QTime(2, 30));
         QVERIFY(!inGap.isValid());
         QCOMPARE(inGap.date(), QDate(2013, 3, 31));
+        QCOMPARE(inGap.offsetFromUtc(), 7200);
         QCOMPARE(inGap.time(), QTime(3, 30));
     }
 
