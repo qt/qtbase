@@ -717,6 +717,10 @@ endfunction()
 macro(qt_build_tests)
     set(CMAKE_UNITY_BUILD OFF)
 
+    # Prepending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
+    # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
+    list(PREPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
+
     if(QT_BUILD_STANDALONE_TESTS)
         # Find location of TestsConfig.cmake. These contain the modules that need to be
         # find_package'd when testing.
