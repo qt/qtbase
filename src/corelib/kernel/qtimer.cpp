@@ -200,7 +200,13 @@ void QTimer::start()
     If the timer is already running, it will be
     \l{QTimer::stop()}{stopped} and restarted.
 
-    If \l singleShot is true, the timer will be activated only once.
+    If \l singleShot is true, the timer will be activated only once. This is
+    equivalent to:
+
+    \code
+        timer.setInterval(msec);
+        timer.start();
+    \endcode
 
     \note   Keeping the event loop busy with a zero-timer is bound to
             cause trouble and highly erratic behavior of the UI.
@@ -551,7 +557,13 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     If the timer is already running, it will be
     \l{QTimer::stop()}{stopped} and restarted.
 
-    If \l singleShot is true, the timer will be activated only once.
+    If \l singleShot is true, the timer will be activated only once. This is
+    equivalent to:
+
+    \code
+        timer.setInterval(msec);
+        timer.start();
+    \endcode
 */
 
 /*!
