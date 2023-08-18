@@ -531,9 +531,15 @@ bool QEventDispatcherWasm::wakeEventDispatcherThread()
 #endif
     Q_ASSERT(isMainThreadEventDispatcher());
     if (useJspi()) {
-        if (!qt_jspi_can_resume_js())
-            return false;
-        runOnMainThread([]() { qt_jspi_resume_js(); });
+
+#if QT_CONFIG(thread)
+        return qstdweb::runTaskOnMainThread<bool>(
+                []() { return qt_jspi_can_resume_js() && qt_jspi_resume_js(); }, &g_proxyingQueue);
+#else
+        return qstdweb::runTaskOnMainThread<bool>(
+                []() { return qt_jspi_can_resume_js() && qt_jspi_resume_js(); });
+#endif
+
     } else {
         if (!g_is_asyncify_suspended)
             return false;
