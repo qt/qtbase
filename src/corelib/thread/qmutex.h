@@ -181,8 +181,8 @@ public:
     void lock() QT_MUTEX_LOCK_NOEXCEPT
     { tryLock(QDeadlineTimer(QDeadlineTimer::Forever)); }
     QT_CORE_INLINE_SINCE(6, 6)
-    bool tryLock(int timeout = 0) QT_MUTEX_LOCK_NOEXCEPT;
-    bool tryLock(QDeadlineTimer timer) QT_MUTEX_LOCK_NOEXCEPT;
+    bool tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
+    bool tryLock(QDeadlineTimer timer = {}) QT_MUTEX_LOCK_NOEXCEPT;
     // BasicLockable concept
     void unlock() noexcept;
 
