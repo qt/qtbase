@@ -299,21 +299,23 @@ function(qt_build_internals_add_toplevel_targets)
 
             # Create special dependency target for External Project examples excluding targets
             # marked as skipped.
-            set(qt_repo_target_name
-                "${qt_repo_targets_name}_${qt_repo_target_basename}_for_examples")
-            add_custom_target("${qt_repo_target_name}")
+            if(qt_repo_target_basename STREQUAL "src")
+                set(qt_repo_target_name
+                    "${qt_repo_targets_name}_${qt_repo_target_basename}_for_examples")
+                add_custom_target("${qt_repo_target_name}")
 
-            set(unskipped_targets "")
-            foreach(target IN LISTS qt_repo_targets)
-                if(TARGET "${target}")
-                    qt_internal_is_target_skipped_for_examples("${target}" is_skipped)
-                    if(NOT is_skipped)
-                        list(APPEND unskipped_targets "${target}")
+                set(unskipped_targets "")
+                foreach(target IN LISTS qt_repo_targets)
+                    if(TARGET "${target}")
+                        qt_internal_is_target_skipped_for_examples("${target}" is_skipped)
+                        if(NOT is_skipped)
+                            list(APPEND unskipped_targets "${target}")
+                        endif()
                     endif()
+                endforeach()
+                if(unskipped_targets)
+                    add_dependencies("${qt_repo_target_name}" ${unskipped_targets})
                 endif()
-            endforeach()
-            if(unskipped_targets)
-                add_dependencies("${qt_repo_target_name}" ${unskipped_targets})
             endif()
         endif()
 
