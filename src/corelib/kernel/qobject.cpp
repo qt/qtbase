@@ -1321,7 +1321,7 @@ void QObject::doSetObjectName(const QString &name)
 
     d->extraData->objectName.removeBindingUnlessInWrapper();
 
-    if (d->extraData->objectName != name) {
+    if (d->extraData->objectName.valueBypassingBindings() != name) {
         d->extraData->objectName.setValueBypassingBindings(name);
         d->extraData->objectName.notify(); // also emits a signal
     }
@@ -1339,7 +1339,7 @@ void QObject::setObjectName(QAnyStringView name)
 
     d->extraData->objectName.removeBindingUnlessInWrapper();
 
-    if (d->extraData->objectName != name) {
+    if (d->extraData->objectName.valueBypassingBindings() != name) {
         d->extraData->objectName.setValueBypassingBindings(name.toString());
         d->extraData->objectName.notify(); // also emits a signal
     }

@@ -8191,6 +8191,16 @@ void tst_QObject::objectNameBinding()
     QObject obj;
     QTestPrivate::testReadWritePropertyBasics<QObject, QString>(obj, "test1", "test2",
                                                                 "objectName");
+
+    const QPropertyBinding<QString> binding([]() {
+        QObject obj2;
+        obj2.setObjectName(QLatin1String("no loop"));
+        return obj2.objectName();
+    }, {});
+    obj.bindableObjectName().setBinding(binding);
+
+    QCOMPARE(obj.objectName(), QLatin1String("no loop"));
+    QVERIFY2(!binding.error().hasError(), qPrintable(binding.error().description()));
 }
 
 namespace EmitToDestroyedClass {
