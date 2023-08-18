@@ -72,7 +72,7 @@ private:
     Data *request;
 };
 
-Q_GLOBAL_STATIC(QLibProxyWrapper, libProxyWrapper);
+Q_APPLICATION_STATIC(QLibProxyWrapper, libProxyWrapper)
 
 QLibProxyWrapper::QLibProxyWrapper()
 {
