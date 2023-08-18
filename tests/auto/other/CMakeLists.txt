@@ -46,3 +46,7 @@ endif()
 if(QT_FEATURE_xkbcommon AND TARGET Qt::Gui)
     add_subdirectory(xkbkeyboard)
 endif()
+
+if(ANDROID)
+    add_subdirectory(android_deployment_settings)
+endif()
