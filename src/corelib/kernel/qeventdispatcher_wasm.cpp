@@ -16,6 +16,12 @@
 
 using namespace std::chrono_literals;
 
+#if QT_CONFIG(thread)
+#define PROXYING_QUEUE_PARAM , &g_proxyingQueue
+#else
+#define PROXYING_QUEUE_PARAM
+#endif  // QT_CONFIG(thread)
+
 QT_BEGIN_NAMESPACE
 
 // using namespace emscripten;
@@ -315,8 +321,10 @@ void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)
 
     bool wasEmpty = g_socketNotifiers.empty();
     g_socketNotifiers.insert({notifier->socket(), notifier});
-    if (wasEmpty)
-        runOnMainThread([]{ setEmscriptenSocketCallbacks(); });
+    if (wasEmpty) {
+        qstdweb::runTaskOnMainThread<void>([] { setEmscriptenSocketCallbacks(); }
+                                           PROXYING_QUEUE_PARAM);
+    }
 }
 
 void QEventDispatcherWasm::unregisterSocketNotifier(QSocketNotifier *notifier)
@@ -331,8 +339,10 @@ void QEventDispatcherWasm::unregisterSocketNotifier(QSocketNotifier *notifier)
         }
     }
 
-    if (g_socketNotifiers.empty())
-        runOnMainThread([]{ clearEmscriptenSocketCallbacks(); });
+    if (g_socketNotifiers.empty()) {
+        qstdweb::runTaskOnMainThread<void>([] { clearEmscriptenSocketCallbacks(); }
+                                           PROXYING_QUEUE_PARAM);
+    }
 }
 
 void QEventDispatcherWasm::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
@@ -528,14 +538,16 @@ bool QEventDispatcherWasm::wakeEventDispatcherThread()
     if (useJspi()) {
         if (!qt_jspi_can_resume_js())
             return false;
-        runOnMainThread([]{ qt_jspi_resume_js(); });
-        return true;
+        return qstdweb::runTaskOnMainThread<bool>([]() { return qt_jspi_resume_js(); }
+                                                  PROXYING_QUEUE_PARAM);
     }
-    if (g_is_asyncify_suspended) {
-        runOnMainThread([]{ qt_asyncify_resume(); });
-        return true;
-    }
-    return false;
+    return g_is_asyncify_suspended
+            && qstdweb::runTaskOnMainThread<bool>(
+                    [] {
+                        qt_asyncify_resume();
+                        return true;
+                    }
+                    PROXYING_QUEUE_PARAM);
 }
 
 // Process event activation callbacks for the main thread event dispatcher.
@@ -620,17 +632,19 @@ void QEventDispatcherWasm::updateNativeTimer()
 
     // Update the native timer for this thread/dispatcher. This must be
     // done on the main thread where we have access to native API.
-    runOnMainThread([this, maintainNativeTimer]() {
-        Q_ASSERT(emscripten_is_main_runtime_thread());
+    qstdweb::runTaskOnMainThread<void>(
+            [this, maintainNativeTimer]() {
+                Q_ASSERT(emscripten_is_main_runtime_thread());
 
-        // "this" may have been deleted, or may be about to be deleted.
-        // Check if the pointer we have is still a valid event dispatcher,
-        // and keep the mutex locked while updating the native timer to
-        // prevent it from being deleted.
-        LOCK_GUARD(g_staticDataMutex);
-        if (isValidEventDispatcherPointer(this))
-            maintainNativeTimer();
-    });
+                // "this" may have been deleted, or may be about to be deleted.
+                // Check if the pointer we have is still a valid event dispatcher,
+                // and keep the mutex locked while updating the native timer to
+                // prevent it from being deleted.
+                LOCK_GUARD(g_staticDataMutex);
+                if (isValidEventDispatcherPointer(this))
+                    maintainNativeTimer();
+            }
+            PROXYING_QUEUE_PARAM);
 }
 
 // Static timer activation callback. Must be called on the main thread
@@ -894,22 +908,6 @@ void QEventDispatcherWasm::run(std::function<void(void)> fn)
 void QEventDispatcherWasm::runAsync(std::function<void(void)> fn)
 {
     trampoline(new std::function<void(void)>(fn));
-}
-
-// Runs a function on the main thread. The function runs synchronusly if
-// the calling thread is then main thread.
-void QEventDispatcherWasm::runOnMainThread(std::function<void(void)> fn)
-{
-#if QT_CONFIG(thread)
-    if (!emscripten_is_main_runtime_thread()) {
-        void *context = new std::function<void(void)>(fn);
-        g_proxyingQueue.proxyAsync(g_mainThread, [context]{
-            trampoline(context);
-        });
-        return;
-    }
-#endif
-    fn();
 }
 
 // Runs a function on the main thread. The function always runs asynchronously,

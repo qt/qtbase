@@ -28,6 +28,11 @@
 #include <string>
 #include <utility>
 
+#if QT_CONFIG(thread)
+#include <emscripten/proxying.h>
+#include <emscripten/threading.h>
+#endif  // #if QT_CONFIG(thread)
+
 QT_BEGIN_NAMESPACE
 
 class QMimeData;
@@ -218,6 +223,43 @@ namespace qstdweb {
     Q_CORE_EXPORT std::shared_ptr<CancellationFlag>
     readDataTransfer(emscripten::val webObject, std::function<QVariant(QByteArray)> imageReader,
                      std::function<void(std::unique_ptr<QMimeData>)> onDone);
+
+#if QT_CONFIG(thread)
+    template<class T>
+    T proxyCall(std::function<T()> task, emscripten::ProxyingQueue *queue)
+    {
+        T result;
+        queue->proxySync(emscripten_main_browser_thread_id(),
+                         [task, result = &result]() { *result = task(); });
+        return result;
+    }
+
+    template<>
+    inline void proxyCall<void>(std::function<void()> task, emscripten::ProxyingQueue *queue)
+    {
+        queue->proxySync(emscripten_main_browser_thread_id(), task);
+    }
+
+    template<class T>
+    T runTaskOnMainThread(std::function<T()> task, emscripten::ProxyingQueue *queue)
+    {
+        return emscripten_is_main_runtime_thread() ? task() : proxyCall<T>(std::move(task), queue);
+    }
+
+    template<class T>
+    T runTaskOnMainThread(std::function<T()> task)
+    {
+        emscripten::ProxyingQueue singleUseQueue;
+        return runTaskOnMainThread<T>(task, &singleUseQueue);
+    }
+
+#else
+    template<class T>
+    T runTaskOnMainThread(std::function<T()> task)
+    {
+        return task();
+    }
+#endif // QT_CONFIG(thread)
 }
 
 QT_END_NAMESPACE
