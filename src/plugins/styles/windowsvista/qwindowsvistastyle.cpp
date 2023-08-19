@@ -4514,8 +4514,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
 #endif // QT_CONFIG(mdiarea)
 
     default:
-        return visualRect(option->direction, option->rect,
-                          QWindowsStyle::subControlRect(control, option, subControl, widget));
+        return QWindowsStyle::subControlRect(control, option, subControl, widget);
     }
 
     return visualRect(option->direction, option->rect, rect);
