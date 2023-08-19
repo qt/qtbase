@@ -434,7 +434,8 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
                 return;
             }
             QByteArray methodName(member+1, bracketPosition - 1 - member); // extract method name
-            QMetaObject::invokeMethod(const_cast<QObject *>(receiver), methodName.constData(), Qt::QueuedConnection);
+            QMetaObject::invokeMethod(const_cast<QObject *>(receiver), methodName.trimmed().constData(),
+                                      Qt::QueuedConnection);
             return;
         }
         (void) new QSingleShotTimer(msec, timerType, receiver, member);

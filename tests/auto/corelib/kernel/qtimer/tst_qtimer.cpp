@@ -46,6 +46,8 @@ private slots:
     void zeroTimer();
     void singleShotTimeout();
     void timeout();
+    void singleShotNormalizes_data();
+    void singleShotNormalizes();
     void sequentialTimers_data();
     void sequentialTimers();
     void singleShotSequentialTimers_data();
@@ -136,6 +138,61 @@ void tst_QTimer::timeout()
     int oldCount = timeoutSpy.size();
 
     QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.size() > oldCount, TIMEOUT_TIMEOUT);
+}
+
+void tst_QTimer::singleShotNormalizes_data()
+{
+    QTest::addColumn<QByteArray>("slotName");
+
+    QTest::newRow("normalized") << QByteArray(SLOT(exitLoop()));
+
+    QTest::newRow("space-before") << QByteArray(SLOT( exitLoop()));
+    QTest::newRow("space-after") << QByteArray(SLOT(exitLoop ()));
+    QTest::newRow("space-around") << QByteArray(SLOT( exitLoop ()));
+    QTest::newRow("spaces-before") << QByteArray(SLOT(  exitLoop()));
+    QTest::newRow("spaces-after") << QByteArray(SLOT(exitLoop  ()));
+    QTest::newRow("spaces-around") << QByteArray(SLOT(  exitLoop  ()));
+
+    QTest::newRow("space-in-parens") << QByteArray(SLOT(exitLoop( )));
+    QTest::newRow("spaces-in-parens") << QByteArray(SLOT(exitLoop(  )));
+    QTest::newRow("space-after-parens") << QByteArray(SLOT(exitLoop() ));
+    QTest::newRow("spaces-after-parens") << QByteArray(SLOT(exitLoop()  ));
+}
+
+void tst_QTimer::singleShotNormalizes()
+{
+    using namespace std::chrono_literals;
+    static constexpr auto TestTimeout = 250ms;
+    QFETCH(QByteArray, slotName);
+    QEventLoop loop;
+
+    // control test: regular connection
+    {
+        QTimer timer;
+        QVERIFY(QObject::connect(&timer, SIGNAL(timeout()), &QTestEventLoop::instance(), slotName));
+        timer.setSingleShot(true);
+        timer.start(1);
+        QTestEventLoop::instance().enterLoop(TestTimeout);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    }
+
+    // non-zero time
+    QTimer::singleShot(1, &QTestEventLoop::instance(), slotName);
+    QTestEventLoop::instance().enterLoop(TestTimeout);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QTimer::singleShot(1ms, &QTestEventLoop::instance(), slotName);
+    QTestEventLoop::instance().enterLoop(TestTimeout);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // zero time
+    QTimer::singleShot(0, &QTestEventLoop::instance(), slotName);
+    QTestEventLoop::instance().enterLoop(TestTimeout);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QTimer::singleShot(0ms, &QTestEventLoop::instance(), slotName);
+    QTestEventLoop::instance().enterLoop(TestTimeout);
+    QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
 void tst_QTimer::sequentialTimers_data()
