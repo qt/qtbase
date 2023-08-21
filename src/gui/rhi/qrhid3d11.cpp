@@ -1378,6 +1378,8 @@ QRhi::FrameOpResult QRhiD3D11::endOffscreenFrame(QRhi::EndFrameFlags flags)
 
     finishActiveReadbacks();
 
+    context->Flush();
+
     return QRhi::FrameOpSuccess;
 }
 
