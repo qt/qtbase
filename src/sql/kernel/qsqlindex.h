@@ -20,7 +20,14 @@ public:
     QSqlIndex(QSqlIndex &&other) noexcept = default;
     ~QSqlIndex();
     QSqlIndex &operator=(const QSqlIndex &other);
-    QSqlIndex &operator=(QSqlIndex &&other) = default;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QSqlIndex)
+
+    void swap(QSqlIndex &other) noexcept {
+        QSqlRecord::swap(other);
+        cursor.swap(other.cursor);
+        nm.swap(other.nm);
+        sorts.swap(other.sorts);
+    };
 
     void setCursorName(const QString &cursorName);
     inline QString cursorName() const { return cursor; }
@@ -40,6 +47,8 @@ private:
     QString nm;
     QList<bool> sorts;
 };
+
+Q_DECLARE_SHARED(QSqlIndex)
 
 QT_END_NAMESPACE
 
