@@ -1358,8 +1358,9 @@ qreal QWindow::devicePixelRatio() const
 /*
     Updates the cached devicePixelRatio value by polling for a new value.
     Sends QEvent::DevicePixelRatioChange to the window if the DPR has changed.
+    Returns true if the DPR was changed.
 */
-void QWindowPrivate::updateDevicePixelRatio()
+bool QWindowPrivate::updateDevicePixelRatio()
 {
     Q_Q(QWindow);
 
@@ -1370,11 +1371,12 @@ void QWindowPrivate::updateDevicePixelRatio()
         platformWindow->devicePixelRatio() * QHighDpiScaling::factor(q) : q->screen()->devicePixelRatio();
 
     if (newDevicePixelRatio == devicePixelRatio)
-        return;
+        return false;
 
     devicePixelRatio = newDevicePixelRatio;
     QEvent dprChangeEvent(QEvent::DevicePixelRatioChange);
     QGuiApplication::sendEvent(q, &dprChangeEvent);
+    return true;
 }
 
 Qt::WindowState QWindowPrivate::effectiveState(Qt::WindowStates state)
