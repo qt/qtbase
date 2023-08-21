@@ -19,6 +19,7 @@
 #include <qdialogbuttonbox.h>
 
 QT_BEGIN_NAMESPACE
+
 class Q_AUTOTEST_EXPORT QDialogButtonBoxPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QDialogButtonBox)
@@ -46,8 +47,9 @@ public:
     Qt::Orientation orientation;
     QDialogButtonBox::ButtonLayout layoutPolicy;
     QBoxLayout *buttonLayout;
+    std::unique_ptr<QObject> filter;
     bool center;
-    bool byPassEventFilter = false;
+    bool ignoreShowAndHide = false;
 
     void createStandardButtons(QDialogButtonBox::StandardButtons buttons);
 

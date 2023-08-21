@@ -115,6 +115,22 @@ QT_BEGIN_NAMESPACE
 QDialogButtonBoxPrivate::QDialogButtonBoxPrivate(Qt::Orientation orient)
     : orientation(orient), buttonLayout(nullptr), center(false)
 {
+    struct EventFilter : public QObject
+    {
+        EventFilter(QDialogButtonBoxPrivate *d) : d(d) {};
+
+        bool eventFilter(QObject *obj, QEvent *event) override
+        {
+            QAbstractButton *button = qobject_cast<QAbstractButton *>(obj);
+            return button ? d->handleButtonShowAndHide(button, event) : false;
+        }
+
+    private:
+        QDialogButtonBoxPrivate *d;
+
+    };
+
+    filter.reset(new EventFilter(this));
 }
 
 void QDialogButtonBoxPrivate::initLayout()
@@ -171,7 +187,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
     Q_Q(QDialogButtonBox);
     const int MacGap = 36 - 8;    // 8 is the default gap between a widget and a spacer item
 
-    QBoolBlocker blocker(byPassEventFilter);
+    QBoolBlocker blocker(ignoreShowAndHide);
     for (int i = buttonLayout->count() - 1; i >= 0; --i) {
         QLayoutItem *item = buttonLayout->takeAt(i);
         if (QWidget *widget = item->widget())
@@ -369,7 +385,6 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
 void QDialogButtonBoxPrivate::addButton(QAbstractButton *button, QDialogButtonBox::ButtonRole role,
                                         LayoutRule layoutRule, AddRule addRule)
 {
-    Q_Q(QDialogButtonBox);
     buttonLists[role].append(button);
     switch (addRule) {
     case AddRule::Connect:
@@ -377,7 +392,7 @@ void QDialogButtonBoxPrivate::addButton(QAbstractButton *button, QDialogButtonBo
                                this, &QDialogButtonBoxPrivate::handleButtonClicked);
         QObjectPrivate::connect(button, &QAbstractButton::destroyed,
                                this, &QDialogButtonBoxPrivate::handleButtonDestroyed);
-        button->installEventFilter(q);
+        button->installEventFilter(filter.get());
         break;
     case AddRule::SkipConnect:
         break;
@@ -466,7 +481,7 @@ QDialogButtonBox::~QDialogButtonBox()
 {
     Q_D(QDialogButtonBox);
 
-    d->byPassEventFilter = true;
+    d->ignoreShowAndHide = true;
 
     // QObjectPrivate::connect requires explicit disconnect in destructor
     // otherwise the connection may kick in on child destruction and reach
@@ -694,7 +709,6 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
 
 void QDialogButtonBoxPrivate::removeButton(QAbstractButton *button, RemoveRule rule)
 {
-    Q_Q(QDialogButtonBox);
     if (!button)
         return;
 
@@ -713,7 +727,7 @@ void QDialogButtonBoxPrivate::removeButton(QAbstractButton *button, RemoveRule r
                                    this, &QDialogButtonBoxPrivate::handleButtonClicked);
         QObjectPrivate::disconnect(button, &QAbstractButton::destroyed,
                                    this, &QDialogButtonBoxPrivate::handleButtonDestroyed);
-        button->removeEventFilter(q);
+        button->removeEventFilter(filter.get());
         break;
     case RemoveRule::KeepConnections:
         break;
@@ -870,29 +884,14 @@ void QDialogButtonBoxPrivate::handleButtonDestroyed()
         removeButton(reinterpret_cast<QAbstractButton *>(object), RemoveRule::KeepConnections);
 }
 
-bool QDialogButtonBox::eventFilter(QObject *object, QEvent *event)
-{
-    Q_D(QDialogButtonBox);
-    if (d->byPassEventFilter)
-        return false;
-
-    QAbstractButton *button = qobject_cast<QAbstractButton *>(object);
-    if (!button)
-        return false;
-
-
-    const QEvent::Type type = event->type();
-    if (type == QEvent::HideToParent || type == QEvent::ShowToParent)
-        return d->handleButtonShowAndHide(button, event);
-
-    return false;
-}
-
 bool QDialogButtonBoxPrivate::handleButtonShowAndHide(QAbstractButton *button, QEvent *event)
 {
     Q_Q(QDialogButtonBox);
 
     const QEvent::Type type = event->type();
+
+    if ((type != QEvent::HideToParent && type != QEvent::ShowToParent) || ignoreShowAndHide)
+        return false;
 
     switch (type) {
     case QEvent::HideToParent: {
