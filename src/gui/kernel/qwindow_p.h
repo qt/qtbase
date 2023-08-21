@@ -89,7 +89,7 @@ public:
     void setAutomaticPositionAndResizeEnabled(bool a)
     { positionAutomatic = resizeAutomatic = a; }
 
-    void updateDevicePixelRatio();
+    bool updateDevicePixelRatio();
 
     static QWindowPrivate *get(QWindow *window) { return window->d_func(); }
 
