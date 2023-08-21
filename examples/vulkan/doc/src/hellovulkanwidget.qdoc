@@ -7,6 +7,7 @@
     \ingroup examples-vulkan
     \title Hello Vulkan Widget Example
     \brief Shows the usage of QVulkanWindow in QWidget applications.
+    \examplecategory {Graphics & Multimedia}
 
     The \e{Hello Vulkan Widget Example} is a variant of \l hellovulkantriangle
     that embeds the QVulkanWindow into a QWidget-based user interface using

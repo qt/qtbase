@@ -7,6 +7,7 @@
     \ingroup examples-vulkan
     \title Hello Vulkan Triangle Example
     \brief Shows the basics of rendering with QVulkanWindow and the Vulkan API.
+    \examplecategory {Graphics & Multimedia}
 
     The \e{Hello Vulkan Triangle Example} creates a full graphics pipeline,
     including a vertex and fragment shader, to render a triangle.
