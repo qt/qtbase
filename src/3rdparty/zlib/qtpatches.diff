@@ -1,50 +1,23 @@
-diff -ruN orig/ChangeLog src/ChangeLog
---- orig/ChangeLog
-+++ src/ChangeLog
+diff --git a/src/ChangeLog b/src/ChangeLog
+index 8707988ac1..c107a78b5d 100644
+--- a/src/ChangeLog
++++ b/src/ChangeLog
 @@ -1,6 +1,10 @@
  
                  ChangeLog file for zlib
  
-+Changes in 1.2.13 (Qt) (14 Nov 2022)
++Changes in 1.3 (Qt) (23 Aug 2023)
 +- This is a stripped down copy of zlib that contains patches to
 +  make it compile as part of Qt. See also "qtpatches.diff".
 +
- Changes in 1.2.13 (13 Oct 2022)
- - Fix configure issue that discarded provided CC definition
- - Correct incorrect inputs provided to the CRC functions
-diff -ruN orig/gzguts.h src/gzguts.h
---- orig/gzguts.h
-+++ src/gzguts.h
-@@ -3,6 +3,25 @@
-  * For conditions of distribution and use, see copyright notice in zlib.h
-  */
- 
-+#ifdef _MSC_VER
-+#  ifndef _CRT_SECURE_NO_DEPRECATE
-+#    define _CRT_SECURE_NO_DEPRECATE
-+#  endif
-+#  ifndef _CRT_NONSTDC_NO_DEPRECATE
-+#    define _CRT_NONSTDC_NO_DEPRECATE
-+#  endif
-+// disable warnings like '=': conversion from 'size_t' to 'unsigned int', possible loss of data
-+#  pragma warning(disable: 4267; disable: 4244)
-+#endif
-+
-+#ifndef QT_BOOTSTRAPPED
-+#  include <qconfig.h>
-+#endif
-+
-+#ifdef QT_VISIBILITY_AVAILABLE
-+#define HAVE_HIDDEN
-+#endif
-+
- #ifdef _LARGEFILE64_SOURCE
- #  ifndef _LARGEFILE_SOURCE
- #    define _LARGEFILE_SOURCE 1
-diff -ruN orig/README src/README
---- orig/README
-+++ src/README
-@@ -6,6 +6,9 @@
+ Changes in 1.3 (18 Aug 2023)
+ - Remove K&R function definitions and zlib2ansi
+ - Fix bug in deflateBound() for level 0 and memLevel 9
+diff --git a/src/README b/src/README
+index e02fc5aa20..f9c16220b2 100644
+--- a/src/README
++++ b/src/README
+@@ -6,6 +6,9 @@ thread safe.  The data format used by the zlib library is described by RFCs
  http://tools.ietf.org/html/rfc1950 (zlib format), rfc1951 (deflate format) and
  rfc1952 (gzip format).
  
@@ -54,9 +27,27 @@ diff -ruN orig/README src/README
  All functions of the compression library are documented in the file zlib.h
  (volunteer to write man pages welcome, contact zlib@gzip.org).  A usage example
  of the library is given in the file test/example.c which also tests that
-diff -ruN orig/zconf.h src/zconf.h
---- orig/zconf.h
-+++ src/zconf.h
+diff --git a/src/gzguts.h b/src/gzguts.h
+index f9375047e8..4c7c9f1225 100644
+--- a/src/gzguts.h
++++ b/src/gzguts.h
+@@ -3,6 +3,12 @@
+  * For conditions of distribution and use, see copyright notice in zlib.h
+  */
+ 
++#include <qconfig.h>
++
++#ifdef QT_VISIBILITY_AVAILABLE
++#define HAVE_HIDDEN
++#endif
++
+ #ifdef _LARGEFILE64_SOURCE
+ #  ifndef _LARGEFILE_SOURCE
+ #    define _LARGEFILE_SOURCE 1
+diff --git a/src/zconf.h b/src/zconf.h
+index fb76ffe312..18be576f50 100644
+--- a/src/zconf.h
++++ b/src/zconf.h
 @@ -8,6 +8,9 @@
  #ifndef ZCONF_H
  #define ZCONF_H
@@ -67,17 +58,7 @@ diff -ruN orig/zconf.h src/zconf.h
  /*
   * If you *really* need a unique prefix for all types and library functions,
   * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.
-@@ -38,6 +41,9 @@
- #  define crc32                 z_crc32
- #  define crc32_combine         z_crc32_combine
- #  define crc32_combine64       z_crc32_combine64
-+#  define crc32_combine_gen     z_crc32_combine_gen
-+#  define crc32_combine_gen64   z_crc32_combine_gen64
-+#  define crc32_combine_op      z_crc32_combine_op
- #  define crc32_z               z_crc32_z
- #  define deflate               z_deflate
- #  define deflateBound          z_deflateBound
-@@ -136,6 +142,7 @@
+@@ -139,6 +142,7 @@
  #  endif
  #  define zlibCompileFlags      z_zlibCompileFlags
  #  define zlibVersion           z_zlibVersion
@@ -85,7 +66,7 @@ diff -ruN orig/zconf.h src/zconf.h
  
  /* all zlib typedefs in zlib.h and zconf.h */
  #  define Byte                  z_Byte
-@@ -431,7 +438,7 @@
+@@ -441,7 +445,7 @@ typedef uLong FAR uLongf;
     typedef unsigned long z_crc_t;
  #endif
  
@@ -94,9 +75,10 @@ diff -ruN orig/zconf.h src/zconf.h
  #  define Z_HAVE_UNISTD_H
  #endif
  
-diff -ruN orig/zlib.h src/zlib.h
---- orig/zlib.h
-+++ src/zlib.h
+diff --git a/src/zlib.h b/src/zlib.h
+index 6b7244f994..ffe3b177e2 100644
+--- a/src/zlib.h
++++ b/src/zlib.h
 @@ -33,11 +33,15 @@
  
  #include "zconf.h"
@@ -109,21 +91,20 @@ diff -ruN orig/zlib.h src/zlib.h
  extern "C" {
  #endif
  
--#define ZLIB_VERSION "1.2.13"
-+#define ZLIB_VERSION "1.2.13 (Qt)"
- #define ZLIB_VERNUM 0x12c0
+-#define ZLIB_VERSION "1.3"
++#define ZLIB_VERSION "1.3 (Qt)"
+ #define ZLIB_VERNUM 0x1300
  #define ZLIB_VER_MAJOR 1
- #define ZLIB_VER_MINOR 2
-diff -ruN orig/zutil.h src/zutil.h
---- orig/zutil.h
-+++ src/zutil.h
-@@ -13,6 +13,14 @@
+ #define ZLIB_VER_MINOR 3
+diff --git a/src/zutil.h b/src/zutil.h
+index 902a304cc2..3ea777b0f4 100644
+--- a/src/zutil.h
++++ b/src/zutil.h
+@@ -13,6 +13,12 @@
  #ifndef ZUTIL_H
  #define ZUTIL_H
  
-+#ifndef QT_BOOTSTRAPPED
-+#  include <qconfig.h>
-+#endif
++#include <qconfig.h>
 +
 +#ifdef QT_VISIBILITY_AVAILABLE
 +#define HAVE_HIDDEN
@@ -132,7 +113,7 @@ diff -ruN orig/zutil.h src/zutil.h
  #ifdef HAVE_HIDDEN
  #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
  #else
-@@ -143,6 +151,11 @@
+@@ -143,6 +149,11 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
  #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os
  #      include <unix.h> /* for fdopen */
  #    else
@@ -144,7 +125,7 @@ diff -ruN orig/zutil.h src/zutil.h
  #      ifndef fdopen
  #        define fdopen(fd,mode) NULL /* No fdopen() */
  #      endif
-@@ -166,7 +179,7 @@
+@@ -166,7 +177,7 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
  #  define OS_CODE 18
  #endif
  
