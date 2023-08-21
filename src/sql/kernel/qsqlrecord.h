@@ -69,6 +69,8 @@ private:
     QExplicitlySharedDataPointer<QSqlRecordPrivate> d;
 };
 
+Q_DECLARE_SHARED(QSqlRecord)
+
 #ifndef QT_NO_DEBUG_STREAM
 Q_SQL_EXPORT QDebug operator<<(QDebug, const QSqlRecord &);
 #endif
