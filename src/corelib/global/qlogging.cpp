@@ -1350,8 +1350,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 inIf = false;
             } else {
                 tokens[i] = emptyTokenC;
-                error += QStringLiteral("QT_MESSAGE_PATTERN: Unknown placeholder %1\n")
-                        .arg(lexeme);
+                error += "QT_MESSAGE_PATTERN: Unknown placeholder "_L1 + lexeme + '\n'_L1;
             }
         } else {
             using UP = std::unique_ptr<char[]>;
