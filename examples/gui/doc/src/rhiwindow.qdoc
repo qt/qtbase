@@ -4,6 +4,7 @@
 /*!
     \example rhiwindow
     \title RHI Window Example
+    \examplecategory {Graphics & Multimedia}
 
     \brief This example shows how to create a minimal QWindow-based
     application using QRhi.
