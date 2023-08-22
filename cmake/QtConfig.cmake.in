@@ -134,9 +134,9 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
             ${@INSTALL_CMAKE_NAMESPACE@_FIND_VERSION}
             ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_QUIET}
             PATHS
+                ${QT_BUILD_CMAKE_PREFIX_PATH}
                 ${_qt_cmake_dir}
                 ${_qt_additional_packages_prefix_paths}
-                ${QT_BUILD_CMAKE_PREFIX_PATH}
                 ${__qt_find_package_host_qt_path}
                 ${_qt_additional_host_packages_prefix_paths}
             ${__qt_use_no_default_path_for_qt_packages}
