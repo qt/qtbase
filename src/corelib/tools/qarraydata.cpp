@@ -151,21 +151,19 @@ namespace {
 struct alignas(std::max_align_t) AlignedQArrayData : QArrayData
 {
 };
+
+struct AllocationResult {
+    void *data;
+    QArrayData *header;
+};
 }
 
-
-void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype alignment,
-        qsizetype capacity, QArrayData::AllocationOption option) noexcept
+static inline AllocationResult
+allocateHelper(qsizetype objectSize, qsizetype alignment, qsizetype capacity,
+               QArrayData::AllocationOption option) noexcept
 {
-    Q_ASSERT(dptr);
-    // Alignment is a power of two
-    Q_ASSERT(alignment >= qsizetype(alignof(QArrayData))
-            && !(alignment & (alignment - 1)));
-
-    if (capacity == 0) {
-        *dptr = nullptr;
-        return nullptr;
-    }
+    if (capacity == 0)
+        return {};
 
     qsizetype headerSize = sizeof(AlignedQArrayData);
     const qsizetype headerAlignment = alignof(AlignedQArrayData);
@@ -181,10 +179,8 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
     auto blockSize = calculateBlockSize(capacity, objectSize, headerSize, option);
     capacity = blockSize.elementCount;
     qsizetype allocSize = blockSize.size;
-    if (Q_UNLIKELY(allocSize < 0)) {  // handle overflow. cannot allocate reliably
-        *dptr = nullptr;
-        return nullptr;
-    }
+    if (Q_UNLIKELY(allocSize < 0))      // handle overflow. cannot allocate reliably
+        return {};
 
     QArrayData *header = allocateData(allocSize);
     void *data = nullptr;
@@ -194,8 +190,40 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
         header->alloc = qsizetype(capacity);
     }
 
-    *dptr = header;
-    return data;
+    return { data, header };
+}
+
+// Generic size and alignment allocation function
+void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype alignment,
+                           qsizetype capacity, AllocationOption option) noexcept
+{
+    Q_ASSERT(dptr);
+    // Alignment is a power of two
+    Q_ASSERT(alignment >= qsizetype(alignof(QArrayData))
+            && !(alignment & (alignment - 1)));
+
+    auto r = allocateHelper(objectSize, alignment, capacity, option);
+    *dptr = r.header;
+    return r.data;
+}
+
+// Fixed size and alignment allocation functions
+void *QArrayData::allocate1(QArrayData **dptr, qsizetype capacity, AllocationOption option) noexcept
+{
+    Q_ASSERT(dptr);
+
+    auto r = allocateHelper(1, alignof(AlignedQArrayData), capacity, option);
+    *dptr = r.header;
+    return r.data;
+}
+
+void *QArrayData::allocate2(QArrayData **dptr, qsizetype capacity, AllocationOption option) noexcept
+{
+    Q_ASSERT(dptr);
+
+    auto r = allocateHelper(2, alignof(AlignedQArrayData), capacity, option);
+    *dptr = r.header;
+    return r.data;
 }
 
 QPair<QArrayData *, void *>
