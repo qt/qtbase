@@ -123,17 +123,16 @@ static inline qsizetype reserveExtraBytes(qsizetype allocSize)
     return allocSize;
 }
 
-static inline qsizetype calculateBlockSize(qsizetype &capacity, qsizetype objectSize, qsizetype headerSize, QArrayData::AllocationOption option)
+static inline CalculateGrowingBlockSizeResult
+calculateBlockSize(qsizetype capacity, qsizetype objectSize, qsizetype headerSize, QArrayData::AllocationOption option)
 {
     // Calculate the byte size
     // allocSize = objectSize * capacity + headerSize, but checked for overflow
     // plus padded to grow in size
     if (option == QArrayData::Grow) {
-        auto r = qCalculateGrowingBlockSize(capacity, objectSize, headerSize);
-        capacity = r.elementCount;
-        return r.size;
+        return qCalculateGrowingBlockSize(capacity, objectSize, headerSize);
     } else {
-        return qCalculateBlockSize(capacity, objectSize, headerSize);
+        return { qCalculateBlockSize(capacity, objectSize, headerSize), capacity };
     }
 }
 
@@ -181,8 +180,9 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
     }
     Q_ASSERT(headerSize > 0);
 
-    qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, option);
-    allocSize = reserveExtraBytes(allocSize);
+    auto blockSize = calculateBlockSize(capacity, objectSize, headerSize, option);
+    capacity = blockSize.elementCount;
+    qsizetype allocSize = reserveExtraBytes(blockSize.size);
     if (Q_UNLIKELY(allocSize < 0)) {  // handle overflow. cannot allocate reliably
         *dptr = nullptr;
         return nullptr;
@@ -207,7 +207,9 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
     Q_ASSERT(!data || !data->isShared());
 
     const qsizetype headerSize = sizeof(AlignedQArrayData);
-    qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, option);
+    auto r = calculateBlockSize(capacity, objectSize, headerSize, option);
+    qsizetype allocSize = r.size;
+    capacity = r.elementCount;
     if (Q_UNLIKELY(allocSize < 0))
         return qMakePair<QArrayData *, void *>(nullptr, nullptr);
 
