@@ -28,7 +28,7 @@ public:
     }
 
     explicit SimpleVector(size_t n, bool capacityReserved = false)
-        : d(Data::allocate(n))
+        : d(n)
     {
         if (n)
             d->appendInitialize(n);
@@ -37,7 +37,7 @@ public:
     }
 
     SimpleVector(size_t n, const T &t, bool capacityReserved = false)
-        : d(Data::allocate(n))
+        : d(n)
     {
         if (n)
             d->copyAppend(n, t);
@@ -46,7 +46,7 @@ public:
     }
 
     SimpleVector(const T *begin, const T *end, bool capacityReserved = false)
-        : d(Data::allocate(end - begin))
+        : d(end - begin)
     {
         if (end - begin)
             d->copyAppend(begin, end);
@@ -56,11 +56,6 @@ public:
 
     SimpleVector(Data *header, T *data, size_t len = 0)
         : d(header, data, len)
-    {
-    }
-
-    explicit SimpleVector(QPair<Data*, T*> ptr, size_t len = 0)
-        : d(ptr, len)
     {
     }
 
@@ -135,7 +130,7 @@ public:
             }
         }
 
-        SimpleVector detached(Data::allocate(qMax(n, size())));
+        SimpleVector detached(DataPointer(qMax(n, size())));
         if (size()) {
             detached.d->copyAppend(constBegin(), constEnd());
             detached.d->setFlag(QArrayData::CapacityReserved);
@@ -149,7 +144,7 @@ public:
             return;
 
         if (d->needsDetach() || newSize > capacity()) {
-            SimpleVector detached(Data::allocate(d->detachCapacity(newSize)));
+            SimpleVector detached(DataPointer(d->detachCapacity(newSize)));
             if (newSize) {
                 if (newSize < size()) {
                     const T *const begin = constBegin();
@@ -223,7 +218,7 @@ public:
         const T *const end = begin + d->size;
 
         if (d->needsDetach()) {
-            SimpleVector detached(Data::allocate(d->detachCapacity(size() - (last - first))));
+            SimpleVector detached(DataPointer(d->detachCapacity(size() - (last - first))));
             if (first != begin)
                 detached.d->copyAppend(begin, first);
             detached.d->copyAppend(last, end);

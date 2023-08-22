@@ -1116,8 +1116,7 @@ void tst_QArrayData::arrayOpsExtra()
 
     const auto cloneArrayDataPointer = [] (auto &dataPointer, size_t capacity) {
         using ArrayPointer = std::decay_t<decltype(dataPointer)>;
-        using Type = std::decay_t<typename ArrayPointer::parameter_type>;
-        ArrayPointer copy(QTypedArrayData<Type>::allocate(qsizetype(capacity)));
+        ArrayPointer copy{qsizetype(capacity)};
         copy->copyAppend(dataPointer.begin(), dataPointer.end());
         return copy;
     };
@@ -2037,7 +2036,7 @@ void tst_QArrayData::dataPointerAllocate()
     const auto createDataPointer = [] (qsizetype capacity, auto initValue) {
         using Type = std::decay_t<decltype(initValue)>;
         Q_UNUSED(initValue);
-        return QArrayDataPointer<Type>(QTypedArrayData<Type>::allocate(capacity));
+        return QArrayDataPointer<Type>(capacity);
     };
 
     const auto testRealloc = [&] (qsizetype capacity, qsizetype newSize, auto initValue) {
@@ -2453,7 +2452,7 @@ void tst_QArrayData::relocateWithExceptions()
     };
 
     const auto createDataPointer = [](qsizetype capacity, qsizetype initSize) {
-        QArrayDataPointer<ThrowingType> qadp(QTypedArrayData<ThrowingType>::allocate(capacity));
+        QArrayDataPointer<ThrowingType> qadp(capacity);
         qadp->appendInitialize(initSize);
         int i = 0;
         std::generate(qadp.begin(), qadp.end(), [&i]() { return ThrowingType(i++); });

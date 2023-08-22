@@ -2492,7 +2492,7 @@ QString::QString(const QChar *unicode, qsizetype size)
         if (!size) {
             d = DataPointer::fromRawData(&_empty, 0);
         } else {
-            d = DataPointer(Data::allocate(size), size);
+            d = DataPointer(size, size);
             Q_CHECK_PTR(d.data());
             memcpy(d.data(), unicode, size * sizeof(QChar));
             d.data()[size] = '\0';
@@ -2511,7 +2511,7 @@ QString::QString(qsizetype size, QChar ch)
     if (size <= 0) {
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
-        d = DataPointer(Data::allocate(size), size);
+        d = DataPointer(size, size);
         Q_CHECK_PTR(d.data());
         d.data()[size] = '\0';
         char16_t *b = d.data();
@@ -2532,7 +2532,7 @@ QString::QString(qsizetype size, Qt::Initialization)
     if (size <= 0) {
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
-        d = DataPointer(Data::allocate(size), size);
+        d = DataPointer(size, size);
         Q_CHECK_PTR(d.data());
         d.data()[size] = '\0';
     }
@@ -2550,7 +2550,7 @@ QString::QString(qsizetype size, Qt::Initialization)
 */
 QString::QString(QChar ch)
 {
-    d = DataPointer(Data::allocate(1), 1);
+    d = DataPointer(1, 1);
     Q_CHECK_PTR(d.data());
     d.data()[0] = ch.unicode();
     d.data()[1] = '\0';
@@ -2768,7 +2768,7 @@ void QString::reallocData(qsizetype alloc, QArrayData::AllocationOption option)
     const bool cannotUseReallocate = d.freeSpaceAtBegin() > 0;
 
     if (d->needsDetach() || cannotUseReallocate) {
-        DataPointer dd(Data::allocate(alloc, option), qMin(alloc, d.size));
+        DataPointer dd(alloc, qMin(alloc, d.size), option);
         Q_CHECK_PTR(dd.data());
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
@@ -5717,7 +5717,7 @@ QString QString::fromLatin1(QByteArrayView ba)
     } else if (ba.size() == 0) {
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
-        d = DataPointer(Data::allocate(ba.size()), ba.size());
+        d = DataPointer(ba.size(), ba.size());
         Q_CHECK_PTR(d.data());
         d.data()[ba.size()] = '\0';
         char16_t *dst = d.data();

@@ -52,6 +52,13 @@ public:
     {
     }
 
+    Q_NODISCARD_CTOR explicit
+    QArrayDataPointer(qsizetype alloc, qsizetype n = 0,
+                      QArrayData::AllocationOption option = QArrayData::KeepSize)
+        : QArrayDataPointer(Data::allocate(alloc, option), n)
+    {
+    }
+
     Q_NODISCARD_CTOR
     static QArrayDataPointer fromRawData(const T *rawData, qsizetype length) noexcept
     {
@@ -326,11 +333,11 @@ public:
         if constexpr (IsFwdIt) {
             const qsizetype n = std::distance(first, last);
             if (needsDetach() || n > constAllocatedCapacity()) {
-                QArrayDataPointer allocated(Data::allocate(detachCapacity(n)));
+                QArrayDataPointer allocated(detachCapacity(n));
                 swap(allocated);
             }
         } else if (needsDetach()) {
-            QArrayDataPointer allocated(Data::allocate(allocatedCapacity()));
+            QArrayDataPointer allocated(allocatedCapacity());
             swap(allocated);
             // We don't want to copy data that we know we'll overwrite
         }

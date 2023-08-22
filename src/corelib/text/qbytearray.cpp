@@ -685,7 +685,7 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
         if (nbytes < SingleAllocLimit) {
             // use maximum size
             capacity += compressBound(uLong(nbytes)); // cannot overflow (both times)!
-            return QArrayDataPointer{QTypedArrayData<char>::allocate(capacity)};
+            return QArrayDataPointer<char>(capacity);
         }
 
         // for larger buffers, assume it compresses optimally, and
@@ -695,7 +695,7 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
                                                          // but use a nearby power-of-two (faster)
         capacity += std::max(qsizetype(compressBound(uLong(SingleAllocLimit))),
                              nbytes / MaxCompressionFactor);
-        return QArrayDataPointer{QTypedArrayData<char>::allocate(capacity, QArrayData::Grow)};
+        return QArrayDataPointer<char>(capacity, 0, QArrayData::Grow);
     }();
 
     if (out.data() == nullptr) // allocation failed
@@ -783,7 +783,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     qsizetype capacity = std::max(qsizetype(expectedSize), // cannot overflow!
                                   nbytes);
 
-    QArrayDataPointer d(QTypedArrayData<char>::allocate(capacity, QArrayData::KeepSize));
+    QArrayDataPointer<char> d(capacity);
     return xxflate(ZLibOp::Decompression, std::move(d), {data + HeaderSize, nbytes - HeaderSize},
                    [] (z_stream *zs) { return inflateInit(zs); },
                    [] (z_stream *zs, size_t) { return inflate(zs, Z_NO_FLUSH); },
@@ -1793,7 +1793,7 @@ QByteArray::QByteArray(const char *data, qsizetype size)
         if (!size) {
             d = DataPointer::fromRawData(&_empty, 0);
         } else {
-            d = DataPointer(Data::allocate(size), size);
+            d = DataPointer(size, size);
             Q_CHECK_PTR(d.data());
             memcpy(d.data(), data, size);
             d.data()[size] = '\0';
@@ -1812,7 +1812,7 @@ QByteArray::QByteArray(qsizetype size, char ch)
     if (size <= 0) {
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
-        d = DataPointer(Data::allocate(size), size);
+        d = DataPointer(size, size);
         Q_CHECK_PTR(d.data());
         memset(d.data(), ch, size);
         d.data()[size] = '\0';
@@ -1828,7 +1828,7 @@ QByteArray::QByteArray(qsizetype size, Qt::Initialization)
     if (size <= 0) {
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
-        d = DataPointer(Data::allocate(size), size);
+        d = DataPointer(size, size);
         Q_CHECK_PTR(d.data());
         d.data()[size] = '\0';
     }
@@ -1917,7 +1917,7 @@ void QByteArray::reallocData(qsizetype alloc, QArrayData::AllocationOption optio
     const bool cannotUseReallocate = d.freeSpaceAtBegin() > 0;
 
     if (d->needsDetach() || cannotUseReallocate) {
-        DataPointer dd(Data::allocate(alloc, option), qMin(alloc, d.size));
+        DataPointer dd(alloc, qMin(alloc, d.size), option);
         Q_CHECK_PTR(dd.data());
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size);
