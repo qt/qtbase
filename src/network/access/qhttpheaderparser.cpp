@@ -133,7 +133,7 @@ const QList<QPair<QByteArray, QByteArray> >& QHttpHeaderParser::headers() const
     return fields;
 }
 
-QByteArray QHttpHeaderParser::firstHeaderField(const QByteArray &name,
+QByteArray QHttpHeaderParser::firstHeaderField(QByteArrayView name,
                                                const QByteArray &defaultValue) const
 {
     for (auto it = fields.constBegin(); it != fields.constEnd(); ++it) {
@@ -143,7 +143,7 @@ QByteArray QHttpHeaderParser::firstHeaderField(const QByteArray &name,
     return defaultValue;
 }
 
-QByteArray QHttpHeaderParser::combinedHeaderValue(const QByteArray &name, const QByteArray &defaultValue) const
+QByteArray QHttpHeaderParser::combinedHeaderValue(QByteArrayView name, const QByteArray &defaultValue) const
 {
     const QList<QByteArray> allValues = headerFieldValues(name);
     if (allValues.isEmpty())
@@ -151,7 +151,7 @@ QByteArray QHttpHeaderParser::combinedHeaderValue(const QByteArray &name, const 
     return allValues.join(", ");
 }
 
-QList<QByteArray> QHttpHeaderParser::headerFieldValues(const QByteArray &name) const
+QList<QByteArray> QHttpHeaderParser::headerFieldValues(QByteArrayView name) const
 {
     QList<QByteArray> result;
     for (auto it = fields.constBegin(); it != fields.constEnd(); ++it)
@@ -161,9 +161,9 @@ QList<QByteArray> QHttpHeaderParser::headerFieldValues(const QByteArray &name) c
     return result;
 }
 
-void QHttpHeaderParser::removeHeaderField(const QByteArray &name)
+void QHttpHeaderParser::removeHeaderField(QByteArrayView name)
 {
-    auto firstEqualsName = [&name](const QPair<QByteArray, QByteArray> &header) {
+    auto firstEqualsName = [name](const QPair<QByteArray, QByteArray> &header) {
         return name.compare(header.first, Qt::CaseInsensitive) == 0;
     };
     fields.removeIf(firstEqualsName);

@@ -62,15 +62,15 @@ public:
     QString getReasonPhrase() const;
     void setReasonPhrase(const QString &reason);
 
-    QByteArray firstHeaderField(const QByteArray &name,
+    QByteArray firstHeaderField(QByteArrayView name,
                                 const QByteArray &defaultValue = QByteArray()) const;
-    QByteArray combinedHeaderValue(const QByteArray &name,
+    QByteArray combinedHeaderValue(QByteArrayView name,
                                    const QByteArray &defaultValue = QByteArray()) const;
-    QList<QByteArray> headerFieldValues(const QByteArray &name) const;
+    QList<QByteArray> headerFieldValues(QByteArrayView name) const;
     void setHeaderField(const QByteArray &name, const QByteArray &data);
     void prependHeaderField(const QByteArray &name, const QByteArray &data);
     void appendHeaderField(const QByteArray &name, const QByteArray &data);
-    void removeHeaderField(const QByteArray &name);
+    void removeHeaderField(QByteArrayView name);
     void clearHeaders();
 
     void setMaxHeaderFieldSize(qsizetype size) { maxFieldSize = size; }
