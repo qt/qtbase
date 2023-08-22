@@ -1100,7 +1100,8 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
     QString text;
     QString usage;
     // executable name
-    usage += qApp ? QCoreApplication::arguments().constFirst() : QStringLiteral("<executable_name>");
+    usage += qApp ? QStringView(QCoreApplication::arguments().constFirst())
+                  : QStringView(u"<executable_name>");
     QList<QCommandLineOption> options = commandLineOptionList;
     if (includeQtOptions && qApp)
         qApp->d_func()->addQtOptions(&options);
