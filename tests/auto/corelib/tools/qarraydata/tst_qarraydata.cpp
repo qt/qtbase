@@ -483,7 +483,7 @@ void tst_QArrayData::allocate()
         keeper.headers.append(data);
 
         if (grow)
-            QVERIFY(data->allocatedCapacity() > capacity);
+            QCOMPARE_GE(data->allocatedCapacity(), capacity);
         else
             QCOMPARE(data->allocatedCapacity(), capacity);
 

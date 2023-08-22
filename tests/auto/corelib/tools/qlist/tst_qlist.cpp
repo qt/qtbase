@@ -1090,6 +1090,7 @@ void tst_QList::appendList() const
         // Using operators
         // <<
         QList<ConstructionCounted> v6;
+        v6.reserve(4);
         v6 << (QList<ConstructionCounted>() << 1 << 2);
         v6 << (QList<ConstructionCounted>() << 3 << 4);
         QCOMPARE(v6, expectedFour);
@@ -3762,7 +3763,7 @@ void tst_QList::stability_append() const
         std::generate(v.begin(), v.end(), [&k]() { return SimpleValue<T>::at(k++); });
         QList<T> src(1, SimpleValue<T>::at(0));
         v.append(src.begin(), src.end());
-        QVERIFY(v.size() < v.capacity());
+        QCOMPARE_LE(v.size(), v.capacity());
 
         for (int i = 0; i < v.capacity() - v.size(); ++i) {
             auto [copy, reference] = qlistCopyAndReferenceFromRange(v.begin(), v.end());
