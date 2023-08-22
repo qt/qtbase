@@ -61,6 +61,10 @@ class Q_CORE_EXPORT QCoreApplication
 
     Q_DECLARE_PRIVATE(QCoreApplication)
     friend class QEventLoopLocker;
+#if QT_CONFIG(permissions)
+    using RequestPermissionPrototype = void(*)(QPermission);
+#endif
+
 public:
     enum { ApplicationFlags = QT_VERSION
     };
@@ -124,21 +128,25 @@ public:
 # else
     // requestPermission with context or receiver object; need to require here that receiver is the
     // right type to avoid ambiguity with the private implementation function.
-    template <typename Functor>
+    template <typename Functor,
+              std::enable_if_t<
+                    QtPrivate::AreFunctionsCompatible<RequestPermissionPrototype, Functor>::value,
+                    bool> = true>
     void requestPermission(const QPermission &permission,
                            const typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType *receiver,
                            Functor &&func)
     {
-        using Prototype = void(*)(QPermission);
-        QtPrivate::AssertCompatibleFunctions<Prototype, Functor>();
         requestPermission(permission,
-                          QtPrivate::makeCallableObject<Prototype>(std::forward<Functor>(func)),
+                          QtPrivate::makeCallableObject<RequestPermissionPrototype>(std::forward<Functor>(func)),
                           receiver);
     }
 # endif // Q_QDOC
 
     // requestPermission to a functor or function pointer (without context)
-    template <typename Functor>
+    template <typename Functor,
+              std::enable_if_t<
+                    QtPrivate::AreFunctionsCompatible<RequestPermissionPrototype, Functor>::value,
+                    bool> = true>
     void requestPermission(const QPermission &permission, Functor &&func)
     {
         requestPermission(permission, nullptr, std::forward<Functor>(func));
