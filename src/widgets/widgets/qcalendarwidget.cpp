@@ -2511,8 +2511,7 @@ void QCalendarWidget::showToday()
     \snippet code/src_gui_widgets_qcalendarwidget.cpp 1
     \endtable
 
-    By default, the minimum date is the earliest date that the QDate
-    class can handle.
+    The default minimum date is November 25, 4714 BCE.
 
     When setting a minimum date, the maximumDate and selectedDate
     properties are adjusted if the selection range becomes invalid. If
@@ -2562,8 +2561,7 @@ void QCalendarWidget::setMinimumDate(QDate date)
     \snippet code/src_gui_widgets_qcalendarwidget.cpp 2
     \endtable
 
-    By default, the maximum date is the last day the QDate class can
-    handle.
+    The default maximum date is December 31, 9999 CE.
 
     When setting a maximum date, the minimumDate and selectedDate
     properties are adjusted if the selection range becomes invalid. If
