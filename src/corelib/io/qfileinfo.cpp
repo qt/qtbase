@@ -1819,6 +1819,13 @@ QDebug operator<<(QDebug dbg, const QFileInfo &fi)
     \sa symLinkTarget()
 */
 /*!
+    \fn std::filesystem::path QFileInfo::filesystemReadSymLink() const
+    \since 6.6
+
+    Returns readSymLink() as a \c{std::filesystem::path}.
+    \sa readSymLink()
+*/
+/*!
     \fn std::filesystem::path QFileInfo::filesystemJunctionTarget() const
     \since 6.2
 
