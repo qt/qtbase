@@ -561,8 +561,9 @@ const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSVentura;
 /*!
     \variable QOperatingSystemVersion::MacOSSonoma
     \brief a version corresponding to macOS Sonoma (version 14).
+    \since 6.5
 */
-const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSVentura;
+const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSSonoma;
 
 /*!
     \variable QOperatingSystemVersion::AndroidJellyBean
