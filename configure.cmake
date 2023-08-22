@@ -899,7 +899,7 @@ qt_feature("zstd" PUBLIC
 qt_feature("stdlib-libcpp" PRIVATE
     LABEL "Using stdlib=libc++"
     AUTODETECT OFF
-    CONDITION LINUX AND NOT ANDROID
+    CONDITION MINGW OR (LINUX AND NOT ANDROID)
 )
 # Check whether CMake was built with zstd support.
 # See https://gitlab.kitware.com/cmake/cmake/-/issues/21552
