@@ -75,7 +75,7 @@ bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
             line = line.trimmed();
             if (!line.empty()) {
                 if (value.size())
-                    value += ' ' + line.toByteArray();
+                    value += ' ' + line;
                 else
                     value = line.toByteArray();
             }
