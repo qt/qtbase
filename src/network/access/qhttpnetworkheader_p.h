@@ -41,7 +41,7 @@ public:
     virtual void setContentLength(qint64 length) = 0;
 
     virtual QList<QPair<QByteArray, QByteArray> > header() const = 0;
-    virtual QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const = 0;
+    virtual QByteArray headerField(QByteArrayView name, const QByteArray &defaultValue = QByteArray()) const = 0;
     virtual void setHeaderField(const QByteArray &name, const QByteArray &data) = 0;
 };
 

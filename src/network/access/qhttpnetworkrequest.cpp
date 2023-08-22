@@ -240,7 +240,7 @@ QList<QPair<QByteArray, QByteArray> > QHttpNetworkRequest::header() const
     return d->parser.headers();
 }
 
-QByteArray QHttpNetworkRequest::headerField(const QByteArray &name, const QByteArray &defaultValue) const
+QByteArray QHttpNetworkRequest::headerField(QByteArrayView name, const QByteArray &defaultValue) const
 {
     return d->headerField(name, defaultValue);
 }

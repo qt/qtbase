@@ -72,7 +72,7 @@ QList<QPair<QByteArray, QByteArray> > QHttpNetworkReply::header() const
     return d_func()->parser.headers();
 }
 
-QByteArray QHttpNetworkReply::headerField(const QByteArray &name, const QByteArray &defaultValue) const
+QByteArray QHttpNetworkReply::headerField(QByteArrayView name, const QByteArray &defaultValue) const
 {
     return d_func()->headerField(name, defaultValue);
 }
