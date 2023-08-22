@@ -52,8 +52,8 @@ protected:
     void run() override;
 
 private:
-    QDBusConnectionPrivate *doConnectToBus(QDBusConnection::BusType type, const QString &name,
-                                           bool suspendedDelivery);
+    QDBusConnectionPrivate *doConnectToStandardBus(QDBusConnection::BusType type,
+                                                   const QString &name, bool suspendedDelivery);
     QDBusConnectionPrivate *doConnectToBus(const QString &address, const QString &name);
     QDBusConnectionPrivate *doConnectToPeer(const QString &address, const QString &name);
 

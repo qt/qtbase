@@ -2714,8 +2714,8 @@ void QDBusConnectionPrivate::enableDispatchDelayed(QObject *context)
                 // This call cannot race with something disabling dispatch only
                 // because dispatch is never re-disabled from Qt code on an
                 // in-use connection once it has been enabled.
-                QMetaObject::invokeMethod(
-                        this, [this] { setDispatchEnabled(true); }, Qt::QueuedConnection);
+                QMetaObject::invokeMethod(this, &QDBusConnectionPrivate::setDispatchEnabled,
+                                          Qt::QueuedConnection, true);
                 if (!ref.deref())
                     deleteLater();
             },

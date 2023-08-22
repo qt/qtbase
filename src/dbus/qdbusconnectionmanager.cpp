@@ -164,12 +164,9 @@ QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(QDBusConnection::Bu
 {
     QDBusConnectionPrivate *result = nullptr;
 
-    QMetaObject::invokeMethod(
-            this,
-            [this, type, &name, suspendedDelivery] {
-                return doConnectToBus(type, name, suspendedDelivery);
-            },
-            Qt::BlockingQueuedConnection, &result);
+    QMetaObject::invokeMethod(this, &QDBusConnectionManager::doConnectToStandardBus,
+                              Qt::BlockingQueuedConnection, qReturnArg(result), type, name,
+                              suspendedDelivery);
 
     if (suspendedDelivery && result && result->connection)
         result->enableDispatchDelayed(qApp); // qApp was checked in the caller
@@ -181,9 +178,8 @@ QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(const QString &addr
 {
     QDBusConnectionPrivate *result = nullptr;
 
-    QMetaObject::invokeMethod(
-            this, [this, &address, &name] { return doConnectToBus(address, name); },
-            Qt::BlockingQueuedConnection, &result);
+    QMetaObject::invokeMethod(this, &QDBusConnectionManager::doConnectToBus,
+                              Qt::BlockingQueuedConnection, qReturnArg(result), address, name);
 
     return result;
 }
@@ -192,16 +188,15 @@ QDBusConnectionPrivate *QDBusConnectionManager::connectToPeer(const QString &add
 {
     QDBusConnectionPrivate *result = nullptr;
 
-    QMetaObject::invokeMethod(
-            this, [this, &address, &name] { return doConnectToPeer(address, name); },
-            Qt::BlockingQueuedConnection, &result);
+    QMetaObject::invokeMethod(this, &QDBusConnectionManager::doConnectToPeer,
+                              Qt::BlockingQueuedConnection, qReturnArg(result), address, name);
 
     return result;
 }
 
-QDBusConnectionPrivate *QDBusConnectionManager::doConnectToBus(QDBusConnection::BusType type,
-                                                               const QString &name,
-                                                               bool suspendedDelivery)
+QDBusConnectionPrivate *
+QDBusConnectionManager::doConnectToStandardBus(QDBusConnection::BusType type, const QString &name,
+                                               bool suspendedDelivery)
 {
     const auto locker = qt_scoped_lock(mutex);
 
