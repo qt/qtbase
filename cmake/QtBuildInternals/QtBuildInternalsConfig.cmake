@@ -718,6 +718,7 @@ macro(qt_build_tests)
 
     # Prepending to QT_BUILD_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
+    list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
     list(PREPEND QT_BUILD_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
 
     if(QT_BUILD_STANDALONE_TESTS)
