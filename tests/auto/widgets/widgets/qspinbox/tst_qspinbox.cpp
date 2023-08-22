@@ -1830,10 +1830,6 @@ void tst_QSpinBox::stepModifierPressAndHold()
     spin.setStyle(stepModifierStyle.data());
 
     QSignalSpy spy(&spin, &SpinBox::valueChanged);
-    // TODO: remove debug output when QTBUG-69492 is fixed
-    connect(&spin, &SpinBox::valueChanged, [=]() {
-        qDebug() << QTime::currentTime() << "valueChanged emitted";
-    });
 
     spin.show();
     QVERIFY(QTest::qWaitForWindowActive(&spin));
