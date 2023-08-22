@@ -674,7 +674,6 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
     needsParsing = false;
     bool error = false;
 
-    const QString     doubleDashString(QStringLiteral("--"));
     const QLatin1Char dashChar('-');
     const QLatin1Char assignChar('=');
 
@@ -698,7 +697,7 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
 
         if (forcePositional) {
             positionalArgumentList.append(argument);
-        } else if (argument.startsWith(doubleDashString)) {
+        } else if (argument.startsWith("--"_L1)) {
             if (argument.size() > 2) {
                 QString optionName = argument.mid(2).section(assignChar, 0, 0);
                 if (registerFoundOption(optionName)) {
