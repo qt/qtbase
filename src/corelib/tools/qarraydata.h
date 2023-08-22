@@ -11,6 +11,12 @@
 
 QT_BEGIN_NAMESPACE
 
+#if __has_cpp_attribute(gnu::malloc)
+#  define Q_DECL_MALLOCLIKE [[nodiscard, gnu::malloc]]
+#else
+#  define Q_DECL_MALLOCLIKE [[nodiscard]]
+#endif
+
 template <class T> struct QTypedArrayData;
 
 struct QArrayData
@@ -78,12 +84,16 @@ struct QArrayData
         return newSize;
     }
 
-    [[nodiscard]]
-#if defined(Q_CC_GNU)
-    __attribute__((__malloc__))
-#endif
+    Q_DECL_MALLOCLIKE
     static Q_CORE_EXPORT void *allocate(QArrayData **pdata, qsizetype objectSize, qsizetype alignment,
             qsizetype capacity, AllocationOption option = QArrayData::KeepSize) noexcept;
+    Q_DECL_MALLOCLIKE
+    static Q_CORE_EXPORT void *allocate1(QArrayData **pdata, qsizetype capacity,
+                                         AllocationOption option = QArrayData::KeepSize) noexcept;
+    Q_DECL_MALLOCLIKE
+    static Q_CORE_EXPORT void *allocate2(QArrayData **pdata, qsizetype capacity,
+                                         AllocationOption option = QArrayData::KeepSize) noexcept;
+
     [[nodiscard]] static Q_CORE_EXPORT QPair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
             qsizetype objectSize, qsizetype newCapacity, AllocationOption option) noexcept;
     static Q_CORE_EXPORT void deallocate(QArrayData *data, qsizetype objectSize,
@@ -102,8 +112,18 @@ struct QTypedArrayData
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayData *d;
-        void *result = QArrayData::allocate(&d, sizeof(T), alignof(AlignmentDummy), capacity, option);
+        void *result;
+        if constexpr (sizeof(T) == 1) {
+            // necessarily, alignof(T) == 1
+            result = allocate1(&d, capacity, option);
+        } else if constexpr (sizeof(T) == 2) {
+            // alignof(T) may be 1, but that makes no difference
+            result = allocate2(&d, capacity, option);
+        } else {
+            result = QArrayData::allocate(&d, sizeof(T), alignof(AlignmentDummy), capacity, option);
+        }
 #if __has_builtin(__builtin_assume_aligned)
+        // and yet we do offer results that have stricter alignment
         result = __builtin_assume_aligned(result, Q_ALIGNOF(AlignmentDummy));
 #endif
         return qMakePair(static_cast<QTypedArrayData *>(d), static_cast<T *>(result));
@@ -171,6 +191,8 @@ struct Q_CORE_EXPORT QContainerImplHelper
     }
 };
 }
+
+#undef Q_DECL_MALLOCLIKE
 
 QT_END_NAMESPACE
 
