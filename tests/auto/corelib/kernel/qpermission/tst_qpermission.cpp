@@ -146,6 +146,19 @@ void tst_QPermission::conversionMaintainsState() const
     }
 }
 
+template <typename Func,
+          typename T = std::void_t<decltype(qApp->requestPermission(std::declval<DummyPermission>(),
+                                                                    std::declval<Func>()))>
+         >
+void wrapRequestPermission(const QPermission &p, Func &&f)
+{
+    qApp->requestPermission(p, std::forward<Func>(f));
+}
+
+template <typename Functor>
+using CompatibleTest = decltype(wrapRequestPermission(std::declval<QPermission>(), std::declval<Functor>()));
+
+
 // Compile test for context-less functor overloads
 void tst_QPermission::functorWithoutContext()
 {
@@ -161,6 +174,17 @@ void tst_QPermission::functorWithoutContext()
     qApp->requestPermission(dummy, [](const QPermission &permission){
         QVERIFY(permission.value<DummyPermission>());
     });
+    wrapRequestPermission(dummy, [](const QPermission &permission){
+        QVERIFY(permission.value<DummyPermission>());
+    });
+
+    auto compatible = [](const QPermission &) {};
+    using Compatible = decltype(compatible);
+    auto incompatible = [](const QString &) {};
+    using Incompatible = decltype(incompatible);
+
+    static_assert(qxp::is_detected_v<CompatibleTest, Compatible>);
+    static_assert(!qxp::is_detected_v<CompatibleTest, Incompatible>);
 }
 
 void tst_QPermission::functorWithContextInThread()
