@@ -2486,11 +2486,8 @@ QString::QString(const QChar *unicode, qsizetype size)
     if (!unicode) {
         d.clear();
     } else {
-        if (size < 0) {
-            size = 0;
-            while (!unicode[size].isNull())
-                ++size;
-        }
+        if (size < 0)
+            size = QtPrivate::qustrlen(reinterpret_cast<const char16_t *>(unicode));
         if (!size) {
             d = DataPointer::fromRawData(&_empty, 0);
         } else {
