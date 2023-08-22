@@ -29,7 +29,7 @@ void QHttpNetworkHeaderPrivate::setContentLength(qint64 length)
     setHeaderField("Content-Length", QByteArray::number(length));
 }
 
-QByteArray QHttpNetworkHeaderPrivate::headerField(const QByteArray &name, const QByteArray &defaultValue) const
+QByteArray QHttpNetworkHeaderPrivate::headerField(QByteArrayView name, const QByteArray &defaultValue) const
 {
     QList<QByteArray> allValues = headerFieldValues(name);
     if (allValues.isEmpty())
@@ -38,7 +38,7 @@ QByteArray QHttpNetworkHeaderPrivate::headerField(const QByteArray &name, const 
         return allValues.join(", ");
 }
 
-QList<QByteArray> QHttpNetworkHeaderPrivate::headerFieldValues(const QByteArray &name) const
+QList<QByteArray> QHttpNetworkHeaderPrivate::headerFieldValues(QByteArrayView name) const
 {
     return parser.headerFieldValues(name);
 }
