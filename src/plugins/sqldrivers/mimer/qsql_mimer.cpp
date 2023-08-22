@@ -1281,7 +1281,7 @@ bool QMimerSQLResult::execBatch(bool arrayBind)
         if (bindValueType(i) == QSql::Out || bindValueType(i) == QSql::InOut) {
             setLastError(qMakeError(QCoreApplication::translate(
                                             "QMimerSQLResult",
-                                            "Only input parameter can be used in batch operations"),
+                                            "Only input parameters can be used in batch operations"),
                                     genericError, QSqlError::StatementError, nullptr));
             d->execBatch = false;
             return false;
@@ -1295,6 +1295,7 @@ bool QMimerSQLResult::execBatch(bool arrayBind)
             err = MimerAddBatch(d->statementhandle);
             if (!MIMER_SUCCEEDED(err)) {
                 setLastError(qMakeError(
+                        //: %1 is the batch number
                         QCoreApplication::translate("QMimerSQLResult", "Could not add batch %1")
                                 .arg(i),
                         err, QSqlError::StatementError, d->drv_d_func()));
