@@ -76,12 +76,10 @@ void appendProtocolUpgradeHeaders(const QHttp2Configuration &config, QHttpNetwor
     Q_ASSERT(request);
     // RFC 2616, 14.10
     // RFC 7540, 3.2
-    QByteArray value(request->headerField("Connection"));
+    const QByteArray connectionHeader = request->headerField("Connection");
+    const auto separator = connectionHeader.isEmpty() ? QByteArrayView() : QByteArrayView(", ");
     // We _append_ 'Upgrade':
-    if (value.size())
-        value += ", ";
-
-    value += "Upgrade, HTTP2-Settings";
+    QByteArray value = connectionHeader + separator + "Upgrade, HTTP2-Settings";
     request->setHeaderField("Connection", value);
     // This we just (re)write.
     request->setHeaderField("Upgrade", "h2c");
