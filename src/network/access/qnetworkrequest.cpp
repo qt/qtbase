@@ -1208,9 +1208,9 @@ static QVariant parseCookieHeader(const QByteArray &raw)
     return QVariant::fromValue(result);
 }
 
-static QVariant parseETag(const QByteArray &raw)
+static QVariant parseETag(QByteArrayView raw)
 {
-    const QByteArray trimmed = raw.trimmed();
+    const QByteArrayView trimmed = raw.trimmed();
     if (!trimmed.startsWith('"') && !trimmed.startsWith(R"(W/")"))
         return QVariant();
 
@@ -1276,7 +1276,7 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
 
     case QNetworkRequest::ContentLengthHeader: {
         bool ok;
-        qint64 result = value.trimmed().toLongLong(&ok);
+        qint64 result = QByteArrayView(value).trimmed().toLongLong(&ok);
         if (ok)
             return result;
         return QVariant();
