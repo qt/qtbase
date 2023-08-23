@@ -2579,28 +2579,30 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
 
 void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterfacePrivate::WindowScreenChangedEvent *wse)
 {
-    if (QWindow *window  = wse->window.data()) {
-        if (window->screen() == wse->screen.data())
-            return;
+    QWindow *window = wse->window.data();
+    if (!window)
+        return;
 
-        if (QWindow *topLevelWindow = window->d_func()->topLevelWindow(QWindow::ExcludeTransients)) {
-            if (QScreen *screen = wse->screen.data())
-                topLevelWindow->d_func()->setTopLevelScreen(screen, false /* recreate */);
-            else // Fall back to default behavior, and try to find some appropriate screen
-                topLevelWindow->setScreen(nullptr);
-        }
+    if (window->screen() == wse->screen.data())
+        return;
 
-        // We may have changed scaling; trigger resize event if needed,
-        // except on Windows, where we send resize events during WM_DPICHANGED
-        // event handling. FIXME: unify DPI change handling across all platforms.
-#ifndef Q_OS_WIN
-        if (window->handle()) {
-            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window));
-            processGeometryChangeEvent(&gce);
-        }
-#endif
-        QWindowPrivate::get(window)->updateDevicePixelRatio();
+    if (QWindow *topLevelWindow = window->d_func()->topLevelWindow(QWindow::ExcludeTransients)) {
+        if (QScreen *screen = wse->screen.data())
+            topLevelWindow->d_func()->setTopLevelScreen(screen, false /* recreate */);
+        else // Fall back to default behavior, and try to find some appropriate screen
+            topLevelWindow->setScreen(nullptr);
     }
+
+    // We may have changed scaling; trigger resize event if needed,
+    // except on Windows, where we send resize events during WM_DPICHANGED
+    // event handling. FIXME: unify DPI change handling across all platforms.
+#ifndef Q_OS_WIN
+    if (window->handle()) {
+        QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window));
+        processGeometryChangeEvent(&gce);
+    }
+#endif
+    QWindowPrivate::get(window)->updateDevicePixelRatio();
 }
 
 void QGuiApplicationPrivate::processWindowDevicePixelRatioChangedEvent(QWindowSystemInterfacePrivate::WindowDevicePixelRatioChangedEvent *wde)
