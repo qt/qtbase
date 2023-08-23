@@ -177,15 +177,20 @@ function(qt_evaluate_config_expression resultVar)
     set(${resultVar} ${result} PARENT_SCOPE)
 endfunction()
 
+function(_qt_internal_get_feature_condition_keywords out_var)
+    set(keywords "EQUAL" "LESS" "LESS_EQUAL" "GREATER" "GREATER_EQUAL" "STREQUAL" "STRLESS"
+        "STRLESS_EQUAL" "STRGREATER" "STRGREATER_EQUAL" "VERSION_EQUAL" "VERSION_LESS"
+        "VERSION_LESS_EQUAL" "VERSION_GREATER" "VERSION_GREATER_EQUAL" "MATCHES"
+        "EXISTS" "COMMAND" "DEFINED" "NOT" "AND" "OR" "TARGET" "EXISTS" "IN_LIST" "(" ")")
+    set(${out_var} "${keywords}" PARENT_SCOPE)
+endfunction()
+
 function(_qt_internal_dump_expression_values expression_dump expression)
     set(dump "")
     set(skipNext FALSE)
     set(isTargetExpression FALSE)
 
-    set(keywords "EQUAL" "LESS" "LESS_EQUAL" "GREATER" "GREATER_EQUAL" "STREQUAL" "STRLESS"
-        "STRLESS_EQUAL" "STRGREATER" "STRGREATER_EQUAL" "VERSION_EQUAL" "VERSION_LESS"
-        "VERSION_LESS_EQUAL" "VERSION_GREATER" "VERSION_GREATER_EQUAL" "MATCHES"
-        "EXISTS" "COMMAND" "DEFINED" "NOT" "AND" "OR" "TARGET" "EXISTS" "IN_LIST" "(" ")")
+    _qt_internal_get_feature_condition_keywords(keywords)
 
     list(LENGTH expression length)
     math(EXPR length "${length}-1")
@@ -239,19 +244,44 @@ endfunction()
 # ${computed} is also stored when reconfiguring and the condition does not align with the user
 # provided value.
 #
-function(qt_feature_check_and_save_user_provided_value resultVar feature condition computed label)
+function(qt_feature_check_and_save_user_provided_value
+        resultVar feature condition condition_expression computed label)
     if (DEFINED "FEATURE_${feature}")
         # Revisit new user provided value
         set(user_value "${FEATURE_${feature}}")
-        string(TOUPPER "${user_value}" result)
+        string(TOUPPER "${user_value}" user_value_upper)
+        set(result "${user_value_upper}")
 
-        # If the build is marked as dirty and the user_value doesn't meet the new condition,
-        # reset it to the computed one.
+        # If ${feature} depends on another dirty feature, reset the ${feature} value to
+        # ${computed}.
         get_property(dirty_build GLOBAL PROPERTY _qt_dirty_build)
-        if(NOT condition AND result AND dirty_build)
-            set(result "${computed}")
-            message(WARNING "Reset FEATURE_${feature} value to ${result}, because it doesn't \
-meet its condition after reconfiguration.")
+        if(dirty_build)
+            _qt_internal_feature_compute_feature_dependencies(deps "${feature}")
+            if(deps)
+                get_property(dirty_features GLOBAL PROPERTY _qt_dirty_features)
+                foreach(dirty_feature ${dirty_features})
+                    if(dirty_feature IN_LIST deps AND NOT "${result}" STREQUAL "${computed}")
+                        set(result "${computed}")
+                        message(WARNING
+                            "Auto-resetting 'FEATURE_${feature}' from '${user_value_upper}' to "
+                            "'${computed}', "
+                            "because the dependent feature '${dirty_feature}' was marked dirty.")
+
+                        # Append ${feature} as a new dirty feature.
+                        set_property(GLOBAL APPEND PROPERTY _qt_dirty_features "${feature}")
+                        break()
+                    endif()
+                endforeach()
+            endif()
+
+            # If the build is marked as dirty and the feature doesn't meet its condition,
+            # reset its value to the computed one, which is likely OFF.
+            if(NOT condition AND result)
+                set(result "${computed}")
+                message(WARNING "Resetting 'FEATURE_${feature}' from '${user_value_upper}' to "
+                    "'${computed}' because it doesn't meet its condition after reconfiguration. "
+                    "Condition expression is: '${condition_expression}'")
+            endif()
         endif()
 
         set(bool_values OFF NO FALSE N ON YES TRUE Y)
@@ -299,6 +329,14 @@ condition:\n    ${conditionString}\nCondition values dump:\n    ${conditionDump}
     set(QT_KNOWN_FEATURES "${QT_KNOWN_FEATURES}" CACHE INTERNAL "" FORCE)
 endmacro()
 
+macro(_qt_internal_parse_feature_definition feature)
+    cmake_parse_arguments(arg
+        "PRIVATE;PUBLIC"
+        "LABEL;PURPOSE;SECTION;"
+        "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF"
+        ${_QT_FEATURE_DEFINITION_${feature}})
+endmacro()
+
 
 # The build system stores 2 CMake cache variables for each feature, to allow detecting value changes
 # during subsequent reconfigurations.
@@ -334,9 +372,7 @@ function(qt_evaluate_feature feature)
         message(FATAL_ERROR "Attempting to evaluate feature ${feature} but its definition is missing. Either the feature does not exist or a dependency to the module that defines it is missing")
     endif()
 
-    cmake_parse_arguments(arg
-        "PRIVATE;PUBLIC"
-        "LABEL;PURPOSE;SECTION;" "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF" ${_QT_FEATURE_DEFINITION_${feature}})
+    _qt_internal_parse_feature_definition("${feature}")
 
     if("${arg_ENABLE}" STREQUAL "")
         set(arg_ENABLE OFF)
@@ -401,7 +437,8 @@ function(qt_evaluate_feature feature)
     # Only save the user provided value if the feature was emitted.
     if(emit_if)
         qt_feature_check_and_save_user_provided_value(
-            saved_user_value "${feature}" "${condition}" "${computed}" "${arg_LABEL}")
+            saved_user_value
+            "${feature}" "${condition}" "${arg_CONDITION}" "${computed}" "${arg_LABEL}")
     else()
         # Make sure the feature internal value is OFF if not emitted.
         set(saved_user_value OFF)
@@ -412,6 +449,60 @@ function(qt_evaluate_feature feature)
 
     # Store each feature's label for summary info.
     set(QT_FEATURE_LABEL_${feature} "${arg_LABEL}" CACHE INTERNAL "")
+endfunction()
+
+# Collect feature names that ${feature} depends on, by inspecting the given expression.
+function(_qt_internal_feature_extract_feature_dependencies_from_expression out_var expression)
+    list(LENGTH expression length)
+    math(EXPR length "${length}-1")
+
+    if(length LESS 0)
+        set(${out_var} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(deps "")
+
+    foreach(memberIdx RANGE ${length})
+        list(GET expression ${memberIdx} member)
+        if(member MATCHES "^QT_FEATURE_(.+)")
+            list(APPEND deps "${CMAKE_MATCH_1}")
+        endif()
+    endforeach()
+    set(${out_var} "${deps}" PARENT_SCOPE)
+endfunction()
+
+# Collect feature names that ${feature} depends on, based on feature names that appear
+# in the ${feature}'s condition expressions.
+function(_qt_internal_feature_compute_feature_dependencies out_var feature)
+    # Only compute the deps once per feature.
+    get_property(deps_computed GLOBAL PROPERTY _qt_feature_deps_computed_${feature})
+    if(deps_computed)
+        get_property(deps GLOBAL PROPERTY _qt_feature_deps_${feature})
+        set(${out_var} "${deps}" PARENT_SCOPE)
+        return()
+    endif()
+
+    _qt_internal_parse_feature_definition("${feature}")
+
+    set(options_to_check AUTODETECT CONDITION ENABLE DISABLE EMIT_IF)
+    set(deps "")
+
+    # Go through each option that takes condition expressions and collect the feature names.
+    foreach(option ${options_to_check})
+        set(option_value "${arg_${option}}")
+        if(option_value)
+            _qt_internal_feature_extract_feature_dependencies_from_expression(
+                option_deps "${option_value}")
+            if(option_deps)
+                list(APPEND deps ${option_deps})
+            endif()
+        endif()
+    endforeach()
+
+    set_property(GLOBAL PROPERTY _qt_feature_deps_computed_${feature} TRUE)
+    set_property(GLOBAL PROPERTY _qt_feature_deps_${feature} "${deps}")
+    set(${out_var} "${deps}" PARENT_SCOPE)
 endfunction()
 
 function(qt_feature_config feature config_var_name)
@@ -789,15 +880,16 @@ endfunction()
 function(qt_internal_detect_dirty_features)
     # We need to clean up QT_FEATURE_*, but only once per configuration cycle
     get_property(qt_feature_clean GLOBAL PROPERTY _qt_feature_clean)
-    if(NOT qt_feature_clean)
-        message(STATUS "Check for feature set changes")
+    if(NOT qt_feature_clean AND NOT QT_NO_FEATURE_AUTO_RESET)
+        message(STATUS "Checking for feature set changes")
         set_property(GLOBAL PROPERTY _qt_feature_clean TRUE)
         foreach(feature ${QT_KNOWN_FEATURES})
             if(DEFINED "FEATURE_${feature}" AND
                 NOT "${QT_FEATURE_${feature}}" STREQUAL "${FEATURE_${feature}}")
-                message("    '${feature}' is changed from ${QT_FEATURE_${feature}} \
-to ${FEATURE_${feature}}")
+                message("    '${feature}' was changed from ${QT_FEATURE_${feature}} "
+                    "to ${FEATURE_${feature}}")
                 set(dirty_build TRUE)
+                set_property(GLOBAL APPEND PROPERTY _qt_dirty_features "${feature}")
             endif()
             unset("QT_FEATURE_${feature}" CACHE)
         endforeach()
@@ -806,8 +898,10 @@ to ${FEATURE_${feature}}")
 
         if(dirty_build)
             set_property(GLOBAL PROPERTY _qt_dirty_build TRUE)
-            message(WARNING "Re-configuring in existing build folder. \
-Some features will be re-evaluated automatically.")
+            message(WARNING
+                "Due to detected feature set changes, dependent features "
+                "will be re-computed automatically. This might cause a lot of files to be rebuilt. "
+                "To disable this behavior, configure with -DQT_NO_FEATURE_AUTO_RESET=ON")
         endif()
     endif()
 endfunction()
