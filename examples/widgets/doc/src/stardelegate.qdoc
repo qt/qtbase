@@ -4,6 +4,7 @@
 /*!
     \example itemviews/stardelegate
     \title Star Delegate Example
+    \examplecategory {User Interface Components}
     \ingroup examples-itemviews
     \brief The Star Delegate example shows how to create a delegate that
     can paint itself and that supports editing.

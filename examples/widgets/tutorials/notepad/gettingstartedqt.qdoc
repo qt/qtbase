@@ -4,6 +4,7 @@
 /*!
     \example tutorials/notepad
     \title Getting Started Programming with Qt Widgets
+    \examplecategory {User Interface Components}
     \brief A tutorial for Qt Widgets based notepad application.
 
     In this topic, we teach basic Qt knowledge by implementing a simple

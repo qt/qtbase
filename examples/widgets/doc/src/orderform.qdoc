@@ -4,6 +4,7 @@
 /*!
     \example richtext/orderform
     \title Order Form Example
+    \examplecategory {User Interface Components}
     \ingroup examples-richtext
     \brief The Order Form example shows how to generate rich text
     documents by combining a simple template with data input by the

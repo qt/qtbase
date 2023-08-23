@@ -4,6 +4,7 @@
 /*!
     \example widgets/tablet
     \title Tablet Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \brief This example shows how to use a Wacom tablet in Qt applications.
 
@@ -13,7 +14,7 @@
     generated. You need to reimplement the \l{QWidget::}{tabletEvent()} event
     handler if you want to handle tablet events. Events are generated when the
     tool (stylus) used for drawing enters and leaves the proximity of the
-    tablet (i.e., when it is close but not pressed down on it), when the tool
+    tablet (i.e., when it is closed but not pressed down on it), when the tool
     is pressed down and released from it, when the tool is moved across the
     tablet, and when one of the buttons on the tool is pressed or released.
 
@@ -31,7 +32,7 @@
     draw on the tablet as you use a pencil on paper. When you draw with the
     airbrush you get a spray of virtual paint; the finger wheel is used to
     change the density of the spray. When you draw with the art pen, you get a
-    a line whose width and endpoint angle depend on the rotation of the pen.
+    line whose width and endpoint angle depend on the rotation of the pen.
     The pressure and tilt can also be assigned to change the alpha and
     saturation values of the color and the width of the stroke.
 

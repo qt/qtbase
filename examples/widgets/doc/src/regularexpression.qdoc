@@ -4,6 +4,7 @@
 /*!
     \example tools/regularexpression
     \title QRegularExpression Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets-tools
 
     \brief The QRegularExpression example shows how regular expressions in Qt are

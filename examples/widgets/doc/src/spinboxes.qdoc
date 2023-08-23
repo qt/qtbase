@@ -4,6 +4,7 @@
 /*!
     \example widgets/spinboxes
     \title Spin Boxes Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \brief The Spin Boxes example shows how to use the many different types of
     spin boxes available in Qt, from a simple QSpinBox widget to more complex

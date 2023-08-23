@@ -5,6 +5,7 @@
     \example gallery
     \meta {tag} {gallery}
     \title Widgets Gallery Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \brief The Widgets Gallery example shows widgets relevant for designing UIs.
 

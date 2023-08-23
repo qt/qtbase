@@ -4,6 +4,7 @@
 /*!
     \example painting/basicdrawing
     \title Basic Drawing Example
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-painting
     \brief The Basic Drawing example shows how to display basic
     graphics primitives in a variety of styles using the QPainter

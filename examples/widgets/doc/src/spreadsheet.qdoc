@@ -4,6 +4,7 @@
 /*!
     \example itemviews/spreadsheet
     \title Spreadsheet
+    \examplecategory {User Interface Components}
     \ingroup examples-itemviews
     \brief The Spreadsheet example shows how to create a simple spreadsheet application.
 

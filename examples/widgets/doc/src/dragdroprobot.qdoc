@@ -4,6 +4,7 @@
 /*!
     \example graphicsview/dragdroprobot
     \title Drag and Drop Robot Example
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-graphicsview
     \brief Demonstrates how to drag and drop items in a graphics view.
 

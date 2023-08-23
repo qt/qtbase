@@ -4,6 +4,7 @@
 /*!
     \example graphicsview/chip
     \title 40000 Chips
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-graphicsview
     \brief Visualizes a huge graphic view scene with 40000 chip items.
 

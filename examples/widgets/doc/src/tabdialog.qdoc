@@ -4,6 +4,7 @@
 /*!
     \example dialogs/tabdialog
     \title Tab Dialog Example
+    \examplecategory {User Interface Components}
     \ingroup examples-dialogs
 
     \brief The Tab Dialog example shows how to construct a tab dialog using the

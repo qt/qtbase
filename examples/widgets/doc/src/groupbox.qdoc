@@ -4,6 +4,7 @@
 /*!
     \example widgets/groupbox
     \title Group Box Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \brief The Group Box example shows how to use the different kinds of group
     boxes in Qt.

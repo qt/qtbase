@@ -4,6 +4,7 @@
 /*!
     \example painting/painterpaths
     \title Painter Paths Example
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-painting
     \brief The Painter Paths example shows how painter paths can be
     used to beuild complex shapes for rendering.

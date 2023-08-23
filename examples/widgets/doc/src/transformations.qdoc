@@ -4,6 +4,7 @@
 /*!
     \example painting/transformations
     \title Transformations Example
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-painting
     \brief The Transformations example shows how transformations
     influence the way that QPainter renders graphics primitives.

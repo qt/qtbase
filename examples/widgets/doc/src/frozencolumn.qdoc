@@ -4,6 +4,7 @@
 /*!
     \example itemviews/frozencolumn
     \title Frozen Column Example
+    \examplecategory {User Interface Components}
     \ingroup examples-itemviews
     \brief This example demonstrates how to freeze a column within a QTableView.
 

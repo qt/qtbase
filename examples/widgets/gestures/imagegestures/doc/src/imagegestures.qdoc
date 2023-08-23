@@ -4,6 +4,7 @@
 /*!
     \example gestures/imagegestures
     \title Image Gestures Example
+    \examplecategory {User Interface Components}
     \brief Demonstrates the use of simple gestures in a widget.
 
     This example shows how to enable gestures for a widget and use gesture input
