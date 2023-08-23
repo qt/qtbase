@@ -441,8 +441,9 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
                 qWarning("QTimer::singleShot: Invalid slot specification");
                 return;
             }
-            QByteArray methodName(member+1, bracketPosition - 1 - member); // extract method name
-            QMetaObject::invokeMethod(const_cast<QObject *>(receiver), methodName.trimmed().constData(),
+            const auto methodName = QByteArrayView(member + 1, // extract method name
+                                                   bracketPosition - 1 - member).trimmed();
+            QMetaObject::invokeMethod(const_cast<QObject *>(receiver), methodName.toByteArray().constData(),
                                       Qt::QueuedConnection);
             return;
         }
