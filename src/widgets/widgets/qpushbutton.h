@@ -62,14 +62,9 @@ protected:
     bool hitButton(const QPoint &pos) const override;
     QPushButton(QPushButtonPrivate &dd, QWidget* parent = nullptr);
 
-public:
-
 private:
     Q_DISABLE_COPY(QPushButton)
     Q_DECLARE_PRIVATE(QPushButton)
-#if QT_CONFIG(menu)
-    Q_PRIVATE_SLOT(d_func(), void _q_popupPressed())
-#endif
 };
 
 QT_END_NAMESPACE

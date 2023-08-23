@@ -43,7 +43,7 @@ public:
     QPoint adjustedMenuPosition();
 #endif
     void resetLayoutItemMargins();
-    void _q_popupPressed();
+    void popupPressed();
 #if QT_CONFIG(dialog)
     QDialog *dialogParent() const;
 #else

@@ -525,7 +525,8 @@ void QPushButton::setMenu(QMenu* menu)
         return;
 
     if (menu && !d->menu) {
-        connect(this, SIGNAL(pressed()), this, SLOT(_q_popupPressed()), Qt::UniqueConnection);
+        QObjectPrivate::connect(this, &QPushButton::pressed,
+                                d, &QPushButtonPrivate::popupPressed, Qt::UniqueConnection);
     }
     if (d->menu)
         removeAction(d->menu->menuAction());
@@ -562,10 +563,10 @@ void QPushButton::showMenu()
     if (!d || !d->menu)
         return;
     setDown(true);
-    d->_q_popupPressed();
+    d->popupPressed();
 }
 
-void QPushButtonPrivate::_q_popupPressed()
+void QPushButtonPrivate::popupPressed()
 {
     Q_Q(QPushButton);
     if (!down || !menu)
