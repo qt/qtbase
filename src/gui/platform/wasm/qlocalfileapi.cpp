@@ -12,25 +12,14 @@ std::string qtFilterListToFileInputAccept(const QStringList &filterList)
 {
     QStringList transformed;
     for (const auto &filter : filterList) {
-
-        emscripten::val::global("console").call<void>("log", filter.toStdString());
-
         const auto type = Type::fromQt(filter);
         if (type && type->accept()) {
             const auto &extensions = type->accept()->mimeType().extensions();
-            for (const auto &ext : extensions) {
-                emscripten::val::global("console").call<void>("log",
-                                                              ext.value().toString().toStdString());
-            }
-
             std::transform(extensions.begin(), extensions.end(), std::back_inserter(transformed),
                            [](const Type::Accept::MimeType::Extension &extension) {
                                return extension.value().toString();
                            });
         }
-    }
-    for (const QString &tran : transformed) {
-        emscripten::val::global("console").call<void>("log", tran.toStdString());
     }
     return transformed.join(QStringLiteral(",")).toStdString();
 }
@@ -39,13 +28,12 @@ std::optional<emscripten::val> qtFilterListToTypes(const QStringList &filterList
 {
     using namespace qstdweb;
     using namespace emscripten;
-
     auto types = emscripten::val::array();
 
     for (const auto &fileFilter : filterList) {
         auto type = Type::fromQt(fileFilter);
         if (type) {
-            auto jsType = val::object();
+            auto jsType = emscripten::val::object();
             jsType.set("description", type->description().toString().toStdString());
             if (type->accept()) {
                 jsType.set("accept", ([&mimeType = type->accept()->mimeType()]() {
@@ -190,7 +178,7 @@ Type::Accept::MimeType::Extension::fromQt(QStringView qtRepresentation)
 emscripten::val makeOpenFileOptions(const QStringList &filterList, bool acceptMultiple)
 {
     auto options = emscripten::val::object();
-    if (auto typeList = qtFilterListToTypes(filterList)) {
+    if (auto typeList = qtFilterListToTypes(filterList); typeList) {
         options.set("types", std::move(*typeList));
         options.set("excludeAcceptAllOption", true);
     }
