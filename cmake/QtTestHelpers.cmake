@@ -600,18 +600,33 @@ function(qt_internal_add_test name)
 
     if (ANDROID)
         if(arg_BUNDLE_ANDROID_OPENSSL_LIBS)
-            if(NOT OPENSSL_ROOT_DIR)
-                message(WARNING "The argument BUNDLE_ANDROID_OPENSSL_LIBS is set "
-                "but OPENSSL_ROOT_DIR parameter is not set.")
-            else()
-                if(EXISTS "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libcrypto_3.so")
-                    set_property(TARGET ${name} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS
-                        "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libcrypto_3.so"
-                        "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libssl_3.so")
-                else()
-                    message(STATUS "Test should bundle OpenSSL libraries but they are not found."
-                                    " This is fine if OpenSSL was built statically.")
+            if(EXISTS "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libcrypto_3.so")
+                message(STATUS "Looking for OpenSSL in ${OPENSSL_ROOT_DIR}")
+                set_property(TARGET ${name} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS
+                    "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libcrypto_3.so"
+                    "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}/libssl_3.so")
+            elseif(QT_USE_VCPKG AND DEFINED ENV{VCPKG_ROOT})
+                message(STATUS "Looking for OpenSSL in $ENV{VCPKG_ROOT}")
+                if (CMAKE_ANDROID_ARCH_ABI MATCHES "arm64-v8a")
+                    set(coin_vcpkg_target_triplet "arm64-android-dynamic")
+                elseif(CMAKE_ANDROID_ARCH_ABI MATCHES "armeabi-v7a")
+                    set(coin_vcpkg_target_triplet "arm-neon-android-dynamic")
+                elseif(CMAKE_ANDROID_ARCH_ABI MATCHES "x86_64")
+                    set(coin_vcpkg_target_triplet "x64-android-dynamic")
+                elseif(CMAKE_ANDROID_ARCH_ABI MATCHES "x86")
+                    set(coin_vcpkg_target_triplet "x86-android-dynamic")
                 endif()
+                if(EXISTS "$ENV{VCPKG_ROOT}/installed/${coin_vcpkg_target_triplet}/lib/libcrypto.so")
+                    message(STATUS "Found OpenSSL in $ENV{VCPKG_ROOT}/installed/${coin_vcpkg_target_triplet}/lib")
+                    set_property(TARGET ${name} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS
+                        "$ENV{VCPKG_ROOT}/installed/${coin_vcpkg_target_triplet}/lib/libcrypto.so"
+                        "$ENV{VCPKG_ROOT}/installed/${coin_vcpkg_target_triplet}/lib/libssl.so")
+                endif()
+            else()
+                message(STATUS "The argument BUNDLE_ANDROID_OPENSSL_LIBS is set "
+                               "but OPENSSL_ROOT_DIR parameter is not set."
+                               "Test should bundle OpenSSL libraries but they are not found."
+                               "This is fine if OpenSSL was built statically.")
             endif()
         endif()
         qt_internal_android_test_arguments("${name}" test_executable extra_test_args)
