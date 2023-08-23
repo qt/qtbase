@@ -8,29 +8,62 @@
 QT_BEGIN_NAMESPACE
 namespace LocalFileApi {
 namespace {
+std::string qtFilterListToFileInputAccept(const QStringList &filterList)
+{
+    QStringList transformed;
+    for (const auto &filter : filterList) {
+        const auto type = Type::fromQt(filter);
+        if (type && type->accept()) {
+            const auto &extensions = type->accept()->mimeType().extensions();
+            std::transform(extensions.begin(), extensions.end(), std::back_inserter(transformed),
+                           [](const Type::Accept::MimeType::Extension &extension) {
+                               return extension.value().toString();
+                           });
+        }
+    }
+    return transformed.join(QStringLiteral(",")).toStdString();
+}
+
 std::optional<emscripten::val> qtFilterListToTypes(const QStringList &filterList)
 {
     using namespace qstdweb;
     using namespace emscripten;
-
     auto types = emscripten::val::array();
 
     for (const auto &fileFilter : filterList) {
         auto type = Type::fromQt(fileFilter);
-        if (type)
-            types.call<void>("push", type->asVal());
+        if (type) {
+            auto jsType = emscripten::val::object();
+            jsType.set("description", type->description().toString().toStdString());
+            if (type->accept()) {
+                jsType.set("accept", ([&mimeType = type->accept()->mimeType()]() {
+                               val acceptDict = val::object();
+
+                               QList<emscripten::val> extensions;
+                               extensions.reserve(mimeType.extensions().size());
+                               std::transform(
+                                       mimeType.extensions().begin(), mimeType.extensions().end(),
+                                       std::back_inserter(extensions),
+                                       [](const Type::Accept::MimeType::Extension &extension) {
+                                           return val(extension.value().toString().toStdString());
+                                       });
+                               acceptDict.set("application/octet-stream",
+                                              emscripten::val::array(extensions.begin(),
+                                                                     extensions.end()));
+                               return acceptDict;
+                           })());
+            }
+            types.call<void>("push", std::move(jsType));
+        }
     }
 
     return types["length"].as<int>() == 0 ? std::optional<emscripten::val>() : types;
 }
-}
+} // namespace
 
 Type::Type(QStringView description, std::optional<Accept> accept)
-    : m_storage(emscripten::val::object())
+    : m_description(description.trimmed()), m_accept(std::move(accept))
 {
-    m_storage.set("description", description.trimmed().toString().toStdString());
-    if (accept)
-        m_storage.set("accept", accept->asVal());
 }
 
 Type::~Type() = default;
@@ -69,12 +102,7 @@ std::optional<Type> Type::fromQt(QStringView type)
     return Type(description, std::move(*accept));
 }
 
-emscripten::val Type::asVal() const
-{
-    return m_storage;
-}
-
-Type::Accept::Accept() : m_storage(emscripten::val::object()) { }
+Type::Accept::Accept() = default;
 
 Type::Accept::~Accept() = default;
 
@@ -100,39 +128,25 @@ std::optional<Type::Accept> Type::Accept::fromQt(QStringView qtRepresentation)
         internalMatch = internalRegex.matchView(qtRepresentation, internalMatch.capturedEnd());
     }
 
-    accept.addMimeType(mimeType);
+    accept.setMimeType(mimeType);
     return accept;
 }
 
-void Type::Accept::addMimeType(MimeType mimeType)
+void Type::Accept::setMimeType(MimeType mimeType)
 {
-    // The mime type provided here does not seem to have any effect at the result at all.
-    m_storage.set("application/octet-stream", mimeType.asVal());
+    m_mimeType = std::move(mimeType);
 }
 
-emscripten::val Type::Accept::asVal() const
-{
-    return m_storage;
-}
-
-Type::Accept::MimeType::MimeType() : m_storage(emscripten::val::array()) { }
+Type::Accept::MimeType::MimeType() = default;
 
 Type::Accept::MimeType::~MimeType() = default;
 
 void Type::Accept::MimeType::addExtension(Extension extension)
 {
-    m_storage.call<void>("push", extension.asVal());
+    m_extensions.push_back(std::move(extension));
 }
 
-emscripten::val Type::Accept::MimeType::asVal() const
-{
-    return m_storage;
-}
-
-Type::Accept::MimeType::Extension::Extension(QStringView extension)
-    : m_storage(extension.toString().toStdString())
-{
-}
+Type::Accept::MimeType::Extension::Extension(QStringView extension) : m_value(extension) { }
 
 Type::Accept::MimeType::Extension::~Extension() = default;
 
@@ -161,15 +175,10 @@ Type::Accept::MimeType::Extension::fromQt(QStringView qtRepresentation)
     return std::nullopt;
 }
 
-emscripten::val Type::Accept::MimeType::Extension::asVal() const
-{
-    return m_storage;
-}
-
 emscripten::val makeOpenFileOptions(const QStringList &filterList, bool acceptMultiple)
 {
     auto options = emscripten::val::object();
-    if (auto typeList = LocalFileApi::qtFilterListToTypes(filterList)) {
+    if (auto typeList = qtFilterListToTypes(filterList); typeList) {
         options.set("types", std::move(*typeList));
         options.set("excludeAcceptAllOption", true);
     }
@@ -190,6 +199,11 @@ emscripten::val makeSaveFileOptions(const QStringList &filterList, const std::st
         options.set("types", emscripten::val(std::move(*typeList)));
 
     return options;
+}
+
+std::string makeFileInputAccept(const QStringList &filterList)
+{
+    return qtFilterListToFileInputAccept(filterList);
 }
 
 }  // namespace LocalFileApi
