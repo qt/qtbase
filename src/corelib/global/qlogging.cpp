@@ -168,7 +168,8 @@ Q_NORETURN
 #endif
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, String &&message);
 static void qt_message_print(QtMsgType, const QMessageLogContext &context, const QString &message);
-static void qt_message_print(const QString &message);
+static void preformattedMessageHandler(QtMsgType type, const QMessageLogContext &context,
+                                       const QString &formattedMessage);
 
 static int checked_var_value(const char *varname)
 {
@@ -1329,8 +1330,14 @@ void QMessagePattern::setPattern(const QString &pattern)
     else if (inIf)
         error += "QT_MESSAGE_PATTERN: missing %{endif}\n"_L1;
 
-    if (!error.isEmpty())
-        qt_message_print(error);
+    if (!error.isEmpty()) {
+        // remove the last '\n' because the sinks deal with that on their own
+        error.chop(1);
+
+        QMessageLogContext ctx(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE,
+                               "QMessagePattern::setPattern", nullptr);
+        preformattedMessageHandler(QtWarningMsg, ctx, error);
+    }
 
     literals.reset(new std::unique_ptr<const char[]>[literalsVar.size() + 1]);
     std::move(literalsVar.begin(), literalsVar.end(), &literals[0]);
@@ -1927,6 +1934,18 @@ static constexpr SystemMessageSink systemMessageSink = {
 #endif
 };
 
+static void preformattedMessageHandler(QtMsgType type, const QMessageLogContext &context,
+                                       const QString &formattedMessage)
+{
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Waddress") // "the address of ~~ will never be NULL
+    if (systemMessageSink.sink && systemMessageSink.sink(type, context, formattedMessage))
+        return;
+QT_WARNING_POP
+
+    stderr_message_handler(type, context, formattedMessage);
+}
+
 /*!
     \internal
 */
@@ -1942,13 +1961,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
             return;
     }
 
-    QString formattedMessage = qFormatLogMessage(type, context, message);
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_GCC("-Waddress") // "the address of ~~ will never be NULL
-    if (systemMessageSink.sink && systemMessageSink.sink(type, context, formattedMessage))
-        return;
-QT_WARNING_POP
-    stderr_message_handler(type, context, formattedMessage);
+    preformattedMessageHandler(type, context, qFormatLogMessage(type, context, message));
 }
 
 #if defined(Q_COMPILER_THREAD_LOCAL)
@@ -1995,20 +2008,8 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
         auto msgHandler = messageHandler.loadAcquire();
         (msgHandler ? msgHandler : qDefaultMessageHandler)(msgType, context, message);
     } else {
-        stderr_message_handler(msgType, context, message.toLocal8Bit());
+        stderr_message_handler(msgType, context, message);
     }
-}
-
-static void qt_message_print(const QString &message)
-{
-#if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
-    if (!shouldLogToStderr()) {
-        win_outputDebugString_helper(message);
-        return;
-    }
-#endif
-    fprintf(stderr, "%s", message.toLocal8Bit().constData());
-    fflush(stderr);
 }
 
 template <typename String>
