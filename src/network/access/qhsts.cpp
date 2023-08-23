@@ -400,7 +400,7 @@ bool QHstsHeaderParser::parseDirective()
     if (token == ";") // That's a weird grammar, but that's what it is.
         return true;
 
-    if (!isTOKEN(token[0])) // Not a valid directive-name.
+    if (!isTOKEN(token.at(0))) // Not a valid directive-name.
         return false;
 
     const QByteArray directiveName = token;
@@ -481,13 +481,13 @@ bool QHstsHeaderParser::nextToken()
 
     // Fortunately enough, by this point qhttpnetworkreply already got rid of
     // [CRLF] parts, but we can have 1*(SP|HT) yet.
-    while (tokenPos < header.size() && isLWS(header[tokenPos]))
+    while (tokenPos < header.size() && isLWS(header.at(tokenPos)))
         ++tokenPos;
 
     if (tokenPos == header.size())
         return true;
 
-    const char ch = header[tokenPos];
+    const char ch = header.at(tokenPos);
     if (ch == ';' || ch == '=') {
         token.append(ch);
         ++tokenPos;
@@ -501,17 +501,17 @@ bool QHstsHeaderParser::nextToken()
     if (ch == '"') {
         int last = tokenPos + 1;
         while (last < header.size()) {
-            if (header[last] == '"') {
+            if (header.at(last) == '"') {
                 // The end of a quoted-string.
                 break;
-            } else if (header[last] == '\\') {
+            } else if (header.at(last) == '\\') {
                 // quoted-pair    = "\" CHAR
-                if (last + 1 < header.size() && isCHAR(header[last + 1]))
+                if (last + 1 < header.size() && isCHAR(header.at(last + 1)))
                     last += 2;
                 else
                     return false;
             } else {
-                if (!isTEXT(header[last]))
+                if (!isTEXT(header.at(last)))
                     return false;
                 ++last;
             }
@@ -532,7 +532,7 @@ bool QHstsHeaderParser::nextToken()
         return false;
 
     int last = tokenPos + 1;
-    while (last < header.size() && isTOKEN(header[last]))
+    while (last < header.size() && isTOKEN(header.at(last)))
         ++last;
 
     token = header.mid(tokenPos, last - tokenPos);
