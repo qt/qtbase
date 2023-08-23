@@ -116,7 +116,7 @@
     \value Azerbaijani
     \value Bafia
     \value [since 5.1] Balinese
-    \value [since 6.7] Baluchi
+    \value [since 6.6] Baluchi
     \value Bambara
     \value [since 5.1] Bamun
     \value [since 6.0] Bangla
@@ -262,7 +262,7 @@
     \value [since 5.5] Lezghian
     \value Limburgish
     \value Lingala
-    \value [since 6.7] Ligurian
+    \value [since 6.6] Ligurian
     \value [since 5.7] LiteraryChinese
     \value Lithuanian
     \value [since 5.12] Lojban
@@ -348,7 +348,7 @@
     \value Quechua
     \value [since 6.5] Rajasthani
     \value RhaetoRomance Obsolete, please use Romansh
-    \value [since 6.7] Rohingya
+    \value [since 6.6] Rohingya
     \value Romanian
     \value Romansh
     \value Rombo
@@ -411,7 +411,7 @@
     \value [since 6.5] TokiPona
     \value [since 5.7] TokPisin
     \value Tongan
-    \value [since 6.7] Torwali
+    \value [since 6.6] Torwali
     \value Tsonga
     \value Tswana
     \value Turkish
@@ -818,7 +818,7 @@
     \value GujaratiScript
     \value GurmukhiScript
     \value [since 5.1] HangulScript
-    \value [since 6.7] HanifiScript
+    \value [since 6.6] HanifiScript
     \value [since 5.1] HanScript
     \value [since 5.1] HanunooScript
     \value [since 5.7] HanWithBopomofoScript
