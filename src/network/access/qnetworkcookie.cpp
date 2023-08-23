@@ -576,7 +576,7 @@ static inline bool isValueSeparator(char c)
 static inline bool isWhitespace(char c)
 { return c == ' '  || c == '\t'; }
 
-static bool checkStaticArray(int &val, const QByteArray &dateString, int at, const char *array, int size)
+static bool checkStaticArray(int &val, QByteArrayView dateString, int at, const char *array, int size)
 {
     if (dateString[at] < 'a' || dateString[at] > 'z')
         return false;
@@ -623,7 +623,7 @@ static bool checkStaticArray(int &val, const QByteArray &dateString, int at, con
     Or in their own words:
         "} // else what the hell is this."
 */
-static QDateTime parseDateString(const QByteArray &dateString)
+static QDateTime parseDateString(QByteArrayView dateString)
 {
     QTime time;
     // placeholders for values when we are not sure it is a year, month or day
@@ -686,13 +686,13 @@ static QDateTime parseDateString(const QByteArray &dateString)
             int hours = 0;
             switch (end - 1) {
             case 4:
-                minutes = atoi(dateString.mid(at + 3, 2).constData());
+                minutes = dateString.mid(at + 3, 2).toInt();
                 Q_FALLTHROUGH();
             case 2:
-                hours = atoi(dateString.mid(at + 1, 2).constData());
+                hours = dateString.mid(at + 1, 2).toInt();
                 break;
             case 1:
-                hours = atoi(dateString.mid(at + 1, 1).constData());
+                hours = dateString.mid(at + 1, 1).toInt();
                 break;
             default:
                 at += end;
@@ -743,7 +743,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
             if (isNumber(dateString[at + 1])
                 && isNumber(dateString[at + 2])
                 && isNumber(dateString[at + 3])) {
-                year = atoi(dateString.mid(at, 4).constData());
+                year = dateString.mid(at, 4).toInt();
                 at += 4;
 #ifdef PARSEDATESTRINGDEBUG
                 qDebug() << "Year:" << year;
@@ -759,7 +759,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
             if (dateString.size() > at + 1
                 && isNumber(dateString[at + 1]))
                 ++length;
-            int x = atoi(dateString.mid(at, length).constData());
+            int x = dateString.mid(at, length).toInt();
             if (year == -1 && (x > 31 || x == 0)) {
                 year = x;
             } else {
