@@ -218,29 +218,31 @@ asm(
 // x86-64 sub-architecture version 3
 //
 // The Intel Core 4th generation was codenamed "Haswell" and introduced AVX2,
-// BMI1, BMI2, FMA, LZCNT, MOVBE, which makes it a good divider for a
-// sub-target for us. The first AMD processor with AVX2 support (Zen) has the
-// same features, but had already introduced BMI1 in the previous generation.
-// This feature set was chosen as the version 3 of the x86-64 ISA (x86-64-v3)
-// and is supported by GCC and Clang.
-//
-// macOS's fat binaries support the "x86_64h" sub-architecture and the GNU libc
-// ELF loader also supports a "haswell/" subdir (e.g., /usr/lib/haswell).
-#  define ARCH_HASWELL_MACROS       (__AVX2__ + __FMA__)
-#  if ARCH_HASWELL_MACROS != 0
-#    if ARCH_HASWELL_MACROS != 2
+// BMI1, BMI2, FMA, LZCNT, MOVBE. This feature set was chosen as the version 3
+// of the x86-64 ISA (x86-64-v3) and is supported by GCC and Clang. On systems
+// with the GNU libc, libraries with this feature can be installed on a
+// "glibc-hwcaps/x86-64-v3" subdir. macOS's fat binaries support the "x86_64h"
+// sub-architecture too.
+
+#  if defined(__AVX2__)
+// List of features present with -march=x86-64-v3 and not architecturally
+// implied by __AVX2__
+#    define ARCH_HASWELL_MACROS     \
+    (__AVX2__ && __BMI__ && __BMI2__ && __F16C__ && __FMA__ && __LZCNT__ && __POPCNT__)
+#    if ARCH_HASWELL_MACROS == 0
 #      error "Please enable all x86-64-v3 extensions; you probably want to use -march=haswell or -march=x86-64-v3 instead of -mavx2"
 #    endif
 static_assert(ARCH_HASWELL_MACROS, "Undeclared identifiers indicate which features are missing.");
 #    define __haswell__       1
+#    undef ARCH_HASWELL_MACROS
 #  endif
-#  undef ARCH_HASWELL_MACROS
 
 // x86-64 sub-architecture version 4
 //
 // Similar to the above, x86-64-v4 matches the AVX512 variant of the Intel Core
 // 6th generation (codename "Skylake"). AMD Zen4 is the their first processor
-// with AVX512 support and it includes all of these too.
+// with AVX512 support and it includes all of these too. The GNU libc subdir for
+// this is "glibc-hwcaps/x86-64-v4".
 //
 #  define ARCH_SKX_MACROS           (__AVX512F__ + __AVX512BW__ + __AVX512CD__ + __AVX512DQ__ + __AVX512VL__)
 #  if ARCH_SKX_MACROS != 0
