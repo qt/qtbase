@@ -4,9 +4,10 @@
 /*!
     \example itemviews/editabletreemodel
     \title Editable Tree Model Example
+    \examplecategory {User Interface Components}
     \ingroup examples-itemviews
     \brief This example shows how to implement a simple item-based tree model that can
-    be used with other classes the model/view framework.
+    be used with other classes in the model/view framework.
 
     \image itemviews-editabletreemodel.png
 

@@ -4,6 +4,7 @@
 /*!
     \example itemviews/basicsortfiltermodel
     \title Basic Sort/Filter Model Example
+    \examplecategory {User Interface Components}
     \ingroup examples-itemviews
     \brief The Basic Sort/Filter Model example illustrates how to use
     QSortFilterProxyModel to perform basic sorting and filtering.

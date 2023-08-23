@@ -4,6 +4,7 @@
 /*!
     \example itemviews/simpletreemodel
     \title Simple Tree Model Example
+    \examplecategory {User Interface Components}
     \ingroup examples-itemviews
     \ingroup examples-layout
     \brief The Simple Tree Model example shows how to use a hierarchical model

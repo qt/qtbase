@@ -4,6 +4,7 @@
 /*!
     \example painting/deform
     \title Vector Deformation
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-painting
     \brief Demonstrates how to manipulate the elements of a QPainterPath.
 

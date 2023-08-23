@@ -4,6 +4,7 @@
 /*!
     \example widgets/windowflags
     \title Window Flags Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \brief The Window Flags example shows how to use the window flags
     available in Qt.

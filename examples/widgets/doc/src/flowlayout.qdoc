@@ -4,6 +4,7 @@
 /*!
     \example layouts/flowlayout
     \title Flow Layout Example
+    \examplecategory {User Interface Components}
     \ingroup examples-layout
     \brief Shows how to arrange widgets for different window sizes.
 

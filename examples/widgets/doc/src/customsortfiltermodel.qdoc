@@ -4,6 +4,7 @@
 /*!
     \example itemviews/customsortfiltermodel
     \title Custom Sort/Filter Model Example
+    \examplecategory {User Interface Components}
     \ingroup examples-itemviews
     \brief The Custom Sort/Filter Model example illustrates how to subclass
     QSortFilterProxyModel to perform advanced sorting and filtering.

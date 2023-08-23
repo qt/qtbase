@@ -4,6 +4,7 @@
 /*!
     \example widgets/shapedclock
     \title Translucent Background
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \brief The example shows how to make a round window with a translucent
     background.

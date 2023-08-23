@@ -4,6 +4,7 @@
 /*!
     \example graphicsview/basicgraphicslayouts
     \title Basic Graphics Layouts Example
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-graphicsview-layout
     \brief Demonstrates how to create basic graphics layout.
 

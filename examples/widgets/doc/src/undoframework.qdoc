@@ -4,6 +4,7 @@
 /*!
     \example tools/undoframework
     \title Undo Framework Example
+    \examplecategory {Data Processing & I/O}
     \ingroup examples-widgets-tools
 
     \brief This example shows how to implement undo/redo functionality

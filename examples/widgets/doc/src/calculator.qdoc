@@ -4,6 +4,7 @@
 /*!
     \example widgets/calculator
     \title Calculator Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \ingroup examples-layout
     \brief The example shows how to use signals and slots to implement the

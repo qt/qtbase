@@ -4,6 +4,7 @@
 /*!
     \example rhi/cuberhiwidget
     \title Cube RHI Widget Example
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-widgets
     \brief Shows how to render a textured cube and integrate with QPainter and widgets, using QRhi Qt's 3D API and shading language abstraction layer.
 

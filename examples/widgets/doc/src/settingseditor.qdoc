@@ -4,6 +4,7 @@
 /*!
     \example tools/settingseditor
     \title Settings Editor Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets-tools
 
     \brief The Settings Editor example shows how Qt's standard settings support is used in an

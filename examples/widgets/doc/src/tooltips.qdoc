@@ -4,6 +4,7 @@
 /*!
     \example widgets/tooltips
     \title Tool Tips Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \brief The Tool Tips example shows how to provide static and dynamic tool
     tips for an application's widgets.

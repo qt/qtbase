@@ -4,6 +4,7 @@
 /*!
     \example painting/gradients
     \title Gradients
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-painting
     \brief Shows how gradients can be used with QPainter.
 
