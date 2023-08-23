@@ -4,6 +4,7 @@
 /*!
     \example dialogs/standarddialogs
     \title Standard Dialogs Example
+    \examplecategory {User Interface Components}
     \ingroup examples-dialogs
 
     \brief The Standard Dialogs example shows the standard dialogs that are provided by Qt.

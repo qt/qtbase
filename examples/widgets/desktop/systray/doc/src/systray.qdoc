@@ -4,6 +4,7 @@
 /*!
     \example desktop/systray
     \title System Tray Icon Example
+    \examplecategory {Desktop}
     \ingroup examples-widgets
     \brief The System Tray Icon example shows how to add an icon with a menu
     and popup messages to a desktop environment's system tray.

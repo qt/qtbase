@@ -4,6 +4,7 @@
 /*!
     \example widgets/shortcuteditor
     \title Shortcut Editor Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \brief The Shortcut Editor example shows how to create a basic, read-write
     hierarchical model to use with Qt's standard view and QKeySequenceEdit

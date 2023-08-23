@@ -4,6 +4,7 @@
 /*!
     \example graphicsview/collidingmice
     \title Colliding Mice Example
+    \examplecategory {Graphics & Multimedia}
     \brief Demonstrates how to animate items on a graphics view.
     \ingroup examples-graphicsview
 

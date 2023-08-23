@@ -3,6 +3,7 @@
 
 /*!
     \title Calendar Widget Example
+    \examplecategory {Graphics & Multimedia}
     \example widgets/calendarwidget
     \ingroup examples-widgets
     \ingroup examples-layout

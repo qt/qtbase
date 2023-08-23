@@ -4,6 +4,7 @@
 /*!
     \example richtext/syntaxhighlighter
     \title Syntax Highlighter Example
+    \examplecategory {User Interface Components}
     \ingroup examples-richtext
     \brief The Syntax Highlighter example shows how to perform
     simple syntax highlighting.

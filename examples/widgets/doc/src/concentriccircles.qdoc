@@ -4,6 +4,7 @@
 /*!
     \example painting/concentriccircles
     \title Concentric Circles Example
+    \examplecategory {Graphics & Multimedia}
     \ingroup examples-painting
     \brief Demonstrates the improved quality that antialiasing and floating point precision gives.
 
@@ -13,7 +14,7 @@
     how to do simple animations.
 
     The application's main window displays several widgets which are
-    drawn using the various combinations of precision and
+    drawn using various combinations of precision and
     anti-aliasing.
 
     \image concentriccircles-example.png

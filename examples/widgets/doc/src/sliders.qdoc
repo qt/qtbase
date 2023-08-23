@@ -4,6 +4,7 @@
 /*!
     \example widgets/sliders
     \title Sliders Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets
     \brief The Sliders example shows how to use the different types of sliders
     available in Qt: QSlider, QScrollBar and QDial.

@@ -4,6 +4,7 @@
 /*!
     \example desktop/screenshot
     \title Taking a Screenshot
+    \examplecategory {Desktop}
     \ingroup examples-desktop
     \brief The Screenshot example shows how to take a screenshot of the
     desktop.

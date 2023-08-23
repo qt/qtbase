@@ -4,6 +4,7 @@
 /*!
     \example dialogs/trivialwizard
     \title Trivial Wizard Example
+    \examplecategory {User Interface Components}
     \ingroup examples-dialogs
 
     \brief The Trivial Wizard example illustrates how to create a linear three-page

@@ -4,6 +4,7 @@
 /*!
     \example layouts/basiclayouts
     \title Basic Layouts Example
+    \examplecategory {User Interface Components}
     \brief Shows how to use the standard layout managers.
 
     \e{Basic Layouts} shows how to use the standard layout managers that are

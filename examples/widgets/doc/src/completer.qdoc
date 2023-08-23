@@ -4,6 +4,7 @@
 /*!
     \example tools/completer
     \title Completer Example
+    \examplecategory {User Interface Components}
     \ingroup examples-widgets-tools
 
     \brief The Completer example shows how to provide string-completion facilities
@@ -45,7 +46,7 @@
     \snippet tools/completer/fsmodel.cpp 0
 
     As mentioned earlier, the \c data() function is reimplemented in order to
-    get it to return the entire file parth for the display role. For example,
+    get it to return the entire file path for the display role. For example,
     with a QFileSystemModel, you will see "Program Files" in the view. However, with
     \c FileSystemModel, you will see "C:\\Program Files".
 
@@ -201,7 +202,7 @@
 
     \snippet tools/completer/mainwindow.cpp 14
 
-    The \c changeMaxVisible() update the maximum number of visible items in
+    The \c changeMaxVisible() updates the maximum number of visible items in
     the completer.
 
     \snippet tools/completer/mainwindow.cpp 15

@@ -101,6 +101,7 @@
 /*!
     \example tutorials/widgets/toplevel
     \title Widgets Tutorial - Creating a Window
+    \examplecategory {User Interface Components}
 
     If a widget is created without a parent, it is treated as a window, or
     \e{top-level widget}, when it is shown. Since it has no parent object to
@@ -127,6 +128,7 @@
 /*!
     \example tutorials/widgets/childwidget
     \title Widgets Tutorial - Child Widgets
+    \examplecategory {User Interface Components}
 
     We can add a child widget to the window created in the previous example by
     passing \c window as the parent to its constructor. In this case, we add a
@@ -149,6 +151,7 @@
 /*!
     \example tutorials/widgets/windowlayout
     \title Widgets Tutorial - Using Layouts
+    \examplecategory {User Interface Components}
 
     Usually, child widgets are arranged inside a window using layout objects
     rather than by specifying positions and sizes explicitly. Here, we
@@ -183,6 +186,7 @@
 /*!
     \example tutorials/widgets/nestedlayouts
     \title Widgets Tutorial - Nested Layouts
+    \examplecategory {User Interface Components}
 
     Just as widgets can contain other widgets, layouts can be used to provide
     different levels of grouping for widgets. Here, we want to display a

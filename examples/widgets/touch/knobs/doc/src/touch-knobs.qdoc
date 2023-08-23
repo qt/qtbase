@@ -4,6 +4,7 @@
 /*!
     \example touch/knobs
     \title Touch Knobs Example
+    \examplecategory {User Interface Components}
     \ingroup touchinputexamples
     \brief Shows how to create custom controls that accept touch input.
 
