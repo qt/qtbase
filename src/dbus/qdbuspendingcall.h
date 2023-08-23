@@ -57,7 +57,6 @@ private:
 
 Q_DECLARE_SHARED(QDBusPendingCall)
 
-class QDBusPendingCallWatcherPrivate;
 class Q_DBUS_EXPORT QDBusPendingCallWatcher: public QObject, public QDBusPendingCall
 {
     Q_OBJECT
@@ -73,10 +72,6 @@ public:
 
 Q_SIGNALS:
     void finished(QDBusPendingCallWatcher *self = nullptr);
-
-private:
-    Q_DECLARE_PRIVATE(QDBusPendingCallWatcher)
-    Q_PRIVATE_SLOT(d_func(), void _q_finished())
 };
 
 QT_END_NAMESPACE
