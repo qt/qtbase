@@ -215,11 +215,6 @@ static bool isFatal(QtMsgType msgType)
     return false;
 }
 
-static bool isDefaultCategory(const char *category)
-{
-    return !category || strcmp(category, "default") == 0;
-}
-
 /*!
     Returns true if writing to \c stderr is supported.
 
@@ -952,6 +947,12 @@ QDebug QMessageLogger::fatal(QMessageLogger::CategoryFunction catFunc) const
 }
 #endif // QT_NO_DEBUG_STREAM
 
+#if !defined(QT_BOOTSTRAPPED)
+static bool isDefaultCategory(const char *category)
+{
+    return !category || strcmp(category, "default") == 0;
+}
+
 /*!
     \internal
 */
@@ -1344,7 +1345,7 @@ void QMessagePattern::setPattern(const QString &pattern)
     std::move(literalsVar.begin(), literalsVar.end(), &literals[0]);
 }
 
-#if defined(QLOGGING_HAVE_BACKTRACE) && !defined(QT_BOOTSTRAPPED)
+#if defined(QLOGGING_HAVE_BACKTRACE)
 // make sure the function has "Message" in the name so the function is removed
 /*
   A typical backtrace in debug mode looks like:
@@ -1547,11 +1548,9 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
 
     bool skip = false;
 
-#ifndef QT_BOOTSTRAPPED
     int timeArgsIdx = 0;
 #ifdef QLOGGING_HAVE_BACKTRACE
     int backtraceArgsIdx = 0;
-#endif
 #endif
 
     // we do not convert file, function, line literals to local encoding due to overhead
@@ -1562,13 +1561,11 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
         } else if (skip) {
             // we skip adding messages, but we have to iterate over
             // timeArgsIdx and backtraceArgsIdx anyway
-#ifndef QT_BOOTSTRAPPED
             if (token == timeTokenC)
                 timeArgsIdx++;
 #ifdef QLOGGING_HAVE_BACKTRACE
             else if (token == backtraceTokenC)
                 backtraceArgsIdx++;
-#endif
 #endif
         } else if (token == messageTokenC) {
             message.append(str);
@@ -1597,7 +1594,6 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
                 message.append(QString::fromLatin1(qCleanupFuncinfo(context.function)));
             else
                 message.append("unknown"_L1);
-#ifndef QT_BOOTSTRAPPED
         } else if (token == pidTokenC) {
             message.append(QString::number(QCoreApplication::applicationPid()));
         } else if (token == appnameTokenC) {
@@ -1632,7 +1628,6 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
                 message.append(QDateTime::currentDateTime().toString(timeFormat));
 #endif // QT_CONFIG(datestring)
             }
-#endif // !QT_BOOTSTRAPPED
         } else if (token == ifCategoryTokenC) {
             if (isDefaultCategory(context.category))
                 skip = true;
@@ -1651,6 +1646,14 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
     }
     return message;
 }
+#else // QT_BOOTSTRAPPED
+static QString formatLogMessage(QtMsgType type, const QMessageLogContext &context, const QString &str)
+{
+    Q_UNUSED(type);
+    Q_UNUSED(context);
+    return str;
+}
+#endif
 
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &buf);
 
@@ -1973,7 +1976,12 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     preformattedMessageHandler(type, context, formatLogMessage(type, context, message));
 }
 
-#if defined(Q_COMPILER_THREAD_LOCAL)
+#if defined(QT_BOOTSTRAPPED)
+// there's no message handler in bootstrapped mode; force everything to stderr
+static bool grabMessageHandler() { return false; }
+static void ungrabMessageHandler() { }
+
+#elif defined(Q_COMPILER_THREAD_LOCAL)
 
 Q_CONSTINIT static thread_local bool msgHandlerGrabbed = false;
 
@@ -2250,6 +2258,7 @@ QtMessageHandler qInstallMessageHandler(QtMessageHandler h)
         return qDefaultMessageHandler;
 }
 
+#ifndef QT_BOOTSTRAPPED
 void qSetMessagePattern(const QString &pattern)
 {
     const auto locker = qt_scoped_lock(QMessagePattern::mutex);
@@ -2257,7 +2266,7 @@ void qSetMessagePattern(const QString &pattern)
     if (!qMessagePattern()->fromEnvironment)
         qMessagePattern()->setPattern(pattern);
 }
-
+#endif
 
 /*!
     Copies context information from \a logContext into this QMessageLogContext.
