@@ -286,7 +286,7 @@ static bool isSeparator(char c)
     return isLWS(c) || std::find(separators, end, c) != end;
 }
 
-static QByteArray unescapeMaxAge(const QByteArray &value)
+static QByteArrayView unescapeMaxAge(QByteArrayView value)
 {
     if (value.size() < 2 || value[0] != '"')
         return value;
@@ -445,7 +445,7 @@ bool QHstsHeaderParser::processDirective(const QByteArray &name, const QByteArra
             return false;
         }
 
-        const QByteArray unescapedValue = unescapeMaxAge(value);
+        const QByteArrayView unescapedValue = unescapeMaxAge(value);
         if (!unescapedValue.size())
             return false;
 
