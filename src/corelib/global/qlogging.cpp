@@ -170,6 +170,7 @@ static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, Strin
 static void qt_message_print(QtMsgType, const QMessageLogContext &context, const QString &message);
 static void preformattedMessageHandler(QtMsgType type, const QMessageLogContext &context,
                                        const QString &formattedMessage);
+static QString formatLogMessage(QtMsgType type, const QMessageLogContext &context, const QString &str);
 
 static int checked_var_value(const char *varname)
 {
@@ -1349,10 +1350,10 @@ void QMessagePattern::setPattern(const QString &pattern)
   A typical backtrace in debug mode looks like:
     #0  backtraceFramesForLogMessage (frameCount=0) at qlogging.cpp:1398
     #1  formatBacktraceForLogMessage (backtraceParams=..., function=0x5555555580b0 "virtual void MyClass::myFunction(int)") at qlogging.cpp:1525
-    #2  qFormatLogMessage (type=QtDebugMsg, context=..., str=...) at qlogging.cpp:1637
-    #3  qDefaultMessageHandler (type=QtDebugMsg, context=..., message=...) at qlogging.cpp:1992
-    #4  qt_message_print (msgType=QtDebugMsg, context=..., message=...) at qlogging.cpp:2038
-    #5  qt_message_output (msgType=QtDebugMsg, context=..., message=...) at qlogging.cpp:2077
+    #2  formatLogMessage (type=QtDebugMsg, context=..., str=...) at qlogging.cpp:1642
+    #3  qDefaultMessageHandler (type=QtDebugMsg, context=..., message=...) at qlogging.cpp:1997
+    #4  qt_message_print (msgType=QtDebugMsg, context=..., message=...) at qlogging.cpp:2043
+    #5  qt_message_output (msgType=QtDebugMsg, context=..., message=...) at qlogging.cpp:2082
     #6  QDebug::~QDebug (this=0x7fffffffd9b8, __in_chrg=<optimized out>) at qdebug.cpp:166
 */
 static constexpr int TypicalBacktraceFrameCount = 7;
@@ -1524,6 +1525,14 @@ Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
     \sa qInstallMessageHandler(), qSetMessagePattern()
  */
 QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, const QString &str)
+{
+    return formatLogMessage(type, context, str);
+}
+
+// Separate function so the default message handler can bypass the public,
+// exported function above. Static functions can't get added to the dynamic
+// symbol tables, so they never show up in backtrace_symbols() or equivalent.
+static QString formatLogMessage(QtMsgType type, const QMessageLogContext &context, const QString &str)
 {
     QString message;
 
@@ -1961,7 +1970,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
             return;
     }
 
-    preformattedMessageHandler(type, context, qFormatLogMessage(type, context, message));
+    preformattedMessageHandler(type, context, formatLogMessage(type, context, message));
 }
 
 #if defined(Q_COMPILER_THREAD_LOCAL)
