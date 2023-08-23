@@ -1901,40 +1901,46 @@ static void stderr_message_handler(QtMsgType type, const QMessageLogContext &con
     fflush(stderr);
 }
 
+using SystemMessageSink = bool(QtMsgType, const QMessageLogContext &, const QString &);
+static constexpr SystemMessageSink *systemMessageSink =
+#if defined(QT_BOOTSTRAPPED)
+        nullptr
+#elif defined(Q_OS_WIN)
+        win_message_handler
+#elif QT_CONFIG(slog2)
+        slog2_default_handler
+#elif QT_CONFIG(journald)
+        systemd_default_message_handler
+#elif QT_CONFIG(syslog)
+        syslog_default_message_handler
+#elif defined(Q_OS_ANDROID)
+        android_default_message_handler
+#elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
+        AppleUnifiedLogger::messageHandler
+#elif defined Q_OS_WASM
+        wasm_default_message_handler
+#else
+        nullptr
+#endif
+        ;
+
 /*!
     \internal
 */
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context,
                                    const QString &message)
 {
-    bool handledStderr = false;
-
     // A message sink logs the message to a structured or unstructured destination,
     // optionally formatting the message if the latter, and returns true if the sink
     // handled stderr output as well, which will shortcut our default stderr output.
-    // In the future, if we allow multiple/dynamic sinks, this will be iterating
-    // a list of sinks.
 
-#if !defined(QT_BOOTSTRAPPED)
-# if defined(Q_OS_WIN)
-    handledStderr |= win_message_handler(type, context, message);
-# elif QT_CONFIG(slog2)
-    handledStderr |= slog2_default_handler(type, context, message);
-# elif QT_CONFIG(journald)
-    handledStderr |= systemd_default_message_handler(type, context, message);
-# elif QT_CONFIG(syslog)
-    handledStderr |= syslog_default_message_handler(type, context, message);
-# elif defined(Q_OS_ANDROID)
-    handledStderr |= android_default_message_handler(type, context, message);
-# elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
-    handledStderr |= AppleUnifiedLogger::messageHandler(type, context, message);
-# elif defined Q_OS_WASM
-    handledStderr |= wasm_default_message_handler(type, context, message);
-# endif
-#endif
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Waddress") // "the address of ~~ will never be NULL
+    if (systemMessageSink && systemMessageSink(type, context, message))
+        return;
+QT_WARNING_POP
 
-    if (!handledStderr)
-        stderr_message_handler(type, context, message);
+    stderr_message_handler(type, context, message);
 }
 
 #if defined(Q_COMPILER_THREAD_LOCAL)
