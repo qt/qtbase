@@ -22,6 +22,7 @@ qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpen
 # openssl_headers
 # OPENSSL_VERSION_MAJOR is not defined for OpenSSL 1.1.1
 qt_config_compile_test(opensslv11_headers
+    LABEL "opensslv11_headers"
     LIBRARIES
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
     CODE
@@ -46,6 +47,7 @@ qt_find_package(WrapOpenSSL PROVIDED_TARGETS WrapOpenSSL::WrapOpenSSL MODULE_NAM
 # openssl
 # OPENSSL_VERSION_MAJOR is not defined for OpenSSL 1.1.1
 qt_config_compile_test(opensslv11
+    LABEL "opensslv11"
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
     CODE
@@ -70,6 +72,7 @@ SSL_free(SSL_new(0));
 # opensslv30
 # openssl_headers
 qt_config_compile_test(opensslv30_headers
+    LABEL "opensslv30_headers"
     LIBRARIES
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
     CODE
@@ -87,6 +90,7 @@ int main(void)
 }
 ")
 qt_config_compile_test(opensslv30
+    LABEL "opensslv30"
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
     CODE
