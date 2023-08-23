@@ -3434,6 +3434,11 @@ void tst_QString::assign()
         QCOMPARE(str.assign(tstr.begin(), tstr.end()), u"(ノಠ益ಠ)\0ノ彡┻━┻");
         QCOMPARE(str.size(), 6);
 
+        auto oldCap = str.capacity();
+        str.assign(tstr.begin(), tstr.begin()); // empty range
+        QCOMPARE_EQ(str.capacity(), oldCap);
+        QCOMPARE_EQ(str.size(), 0);
+
         const char16_t c16[] = u"٩(⁎❛ᴗ❛⁎)۶ 🤷";
         str.assign(std::begin(c16), std::end(c16) - 1);
         QCOMPARE(str, c16);
@@ -3442,6 +3447,11 @@ void tst_QString::assign()
         str.assign(c16str.begin(), c16str.end());
         QCOMPARE(str, c16);
 
+        oldCap = str.capacity();
+        str.assign(c16str.begin(), c16str.begin()); // empty range
+        QCOMPARE_EQ(str.capacity(), oldCap);
+        QCOMPARE_EQ(str.size(), 0);
+
         const char32_t c32[] = U"٩(⁎❛ᴗ❛⁎)۶ 🤷";
         str.assign(std::begin(c32), std::end(c32) - 1);
         QCOMPARE(str, c16);
@@ -3449,6 +3459,11 @@ void tst_QString::assign()
         std::u32string c32str(c32);
         str.assign(c32str.begin(), c32str.end());
         QCOMPARE(str, c16);
+
+        oldCap = str.capacity();
+        str.assign(c32str.begin(), c32str.begin()); // empty range
+        QCOMPARE_EQ(str.capacity(), oldCap);
+        QCOMPARE_EQ(str.size(), 0);
 
         QVarLengthArray<QLatin1Char, 5> l1ch = {'F'_L1, 'G'_L1, 'H'_L1, 'I'_L1, 'J'_L1};
         str.assign(l1ch.begin(), l1ch.end());
@@ -3468,6 +3483,11 @@ void tst_QString::assign()
         std::stringstream ss("50 51 52 53 54");
         str.assign(std::istream_iterator<ushort>{ss}, std::istream_iterator<ushort>{});
         QCOMPARE(str, u"23456");
+
+        oldCap = str.capacity();
+        str.assign(std::istream_iterator<ushort>{}, std::istream_iterator<ushort>{}); // empty range
+        QCOMPARE_EQ(str.capacity(), oldCap);
+        QCOMPARE_EQ(str.size(), 0);
     }
     // Test chaining
     {
