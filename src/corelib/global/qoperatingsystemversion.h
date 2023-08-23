@@ -9,6 +9,12 @@
 
 QT_BEGIN_NAMESPACE
 
+#if 0
+#  pragma qt_class(QOperatingSystemVersionBase)
+#  pragma qt_class(QOperatingSystemVersion)
+#  pragma qt_sync_stop_processing       // we have some ifdef'ery fooling syncqt
+#endif
+
 class QString;
 
 class QOperatingSystemVersionBase
@@ -85,6 +91,7 @@ public:
     friend bool operator<=(QOperatingSystemVersionBase lhs, QOperatingSystemVersionBase rhs)
     { return lhs.type() == rhs.type() && QOperatingSystemVersionBase::compare(lhs, rhs) <= 0; }
 
+
 protected:
     static Q_CORE_EXPORT int compare(QOperatingSystemVersionBase v1,
                                      QOperatingSystemVersionBase v2);
@@ -93,16 +100,32 @@ protected:
 private:
     static QOperatingSystemVersionBase current_impl();
 
-
     OSType m_os;
     int m_major;
     int m_minor;
     int m_micro;
 };
 
-// ### Qt 7: Un-export the class, export relevant functions. Remove the enum.
-class Q_CORE_EXPORT QOperatingSystemVersion : public QOperatingSystemVersionBase
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED) && !defined(Q_QDOC)
+class QOperatingSystemVersionUnexported : public QOperatingSystemVersionBase
 {
+public:
+    using QOperatingSystemVersionBase::QOperatingSystemVersionBase;
+#else
+class QOperatingSystemVersion : public QOperatingSystemVersionBase
+{
+    using QOperatingSystemVersionUnexported = QOperatingSystemVersionBase;
+#endif
+
+    // ### Qt7: Regroup with the rest below
+    static constexpr QOperatingSystemVersionBase MacOSSonoma { QOperatingSystemVersionBase::MacOS, 14, 0 };
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED) && !defined(Q_QDOC)
+};
+
+class Q_CORE_EXPORT QOperatingSystemVersion : public QOperatingSystemVersionUnexported
+{
+#endif
 public:
     // ### Qt7: Remove. Keep synchronized with QOperatingSystemVersionBase::OSType until then!
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
@@ -117,11 +140,9 @@ public:
     };
 #endif
 
-    // ### Qt7: remove the branch with static const variables. Then group and sort the inline ones.
-    // Since the exported variables emit symbols they cannot be cherry-picked back to patch-releases
-    // without breaking our BC promises. They must be fully inline but we cannot make that change
-    // until Qt7
-    // @note: New entries should be added after the if-def-ery until Qt 7!!
+    // ### Qt7: remove the branch with static const variables. Then group and
+    // sort the inline ones. Until then, new entries should be added to
+    // QOperatingSystemVersionUnexported.
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     static const QOperatingSystemVersion Windows7;
     static const QOperatingSystemVersion Windows8;
@@ -182,7 +203,7 @@ public:
     static constexpr QOperatingSystemVersionBase AndroidPie { QOperatingSystemVersionBase::Android, 9, 0 };
     static constexpr QOperatingSystemVersionBase Android10 { QOperatingSystemVersionBase::Android, 10, 0 };
     static constexpr QOperatingSystemVersionBase Android11 { QOperatingSystemVersionBase::Android, 11, 0 };
-#endif // New (static constexpr) entries go here, only cherry-pick as far back as 6.3 (QTBUG-97808):
+#endif
 
     static constexpr QOperatingSystemVersionBase Windows10_1809 { QOperatingSystemVersionBase::Windows, 10, 0, 17763 }; // RS5
     static constexpr QOperatingSystemVersionBase Windows10_1903 { QOperatingSystemVersionBase::Windows, 10, 0, 18362 }; // 19H1
@@ -201,13 +222,12 @@ public:
     static constexpr QOperatingSystemVersionBase Android13 { QOperatingSystemVersionBase::Android, 13, 0 };
 
     static constexpr QOperatingSystemVersionBase MacOSVentura { QOperatingSystemVersionBase::MacOS, 13, 0 };
-    static constexpr QOperatingSystemVersionBase MacOSSonoma { QOperatingSystemVersionBase::MacOS, 14, 0 };
 
     constexpr QOperatingSystemVersion(const QOperatingSystemVersionBase &osversion)
-        : QOperatingSystemVersionBase(osversion) {}
+        : QOperatingSystemVersionUnexported(static_cast<const QOperatingSystemVersionUnexported &>(osversion)) {}
 
     constexpr QOperatingSystemVersion(OSType osType, int vmajor, int vminor = -1, int vmicro = -1)
-        : QOperatingSystemVersionBase(QOperatingSystemVersionBase::OSType(osType), vmajor, vminor,
+        : QOperatingSystemVersionUnexported(QOperatingSystemVersionBase::OSType(osType), vmajor, vminor,
                                       vmicro)
     {
     }
@@ -229,8 +249,8 @@ public:
     { return QOperatingSystemVersionBase::segmentCount(); }
 
     constexpr OSType type() const { return OSType(QOperatingSystemVersionBase::type()); }
-    bool isAnyOfType(std::initializer_list<OSType> types) const;
-    QString name() const;
+    QT7_ONLY(Q_CORE_EXPORT) bool isAnyOfType(std::initializer_list<OSType> types) const;
+    QT7_ONLY(Q_CORE_EXPORT) QString name() const;
 
 private:
     QOperatingSystemVersion() = default;
