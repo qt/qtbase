@@ -1194,14 +1194,26 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
         \li \c xcb is a plugin for the X11 window system, used on some desktop Linux platforms.
     \endlist
 
+    \note Calling this function without a QGuiApplication will return the default
+    platform name, if available. The default platform name is not affected by the
+    \c{-platform} command line option, or the \c QT_QPA_PLATFORM environment variable.
+
     For more information about the platform plugins for embedded Linux devices,
     see \l{Qt for Embedded Linux}.
 */
 
 QString QGuiApplication::platformName()
 {
-    return QGuiApplicationPrivate::platform_name ?
-           *QGuiApplicationPrivate::platform_name : QString();
+    if (!QGuiApplication::instance()) {
+#ifdef QT_QPA_DEFAULT_PLATFORM_NAME
+        return QStringLiteral(QT_QPA_DEFAULT_PLATFORM_NAME);
+#else
+        return QString();
+#endif
+    } else {
+        return QGuiApplicationPrivate::platform_name ?
+            *QGuiApplicationPrivate::platform_name : QString();
+    }
 }
 
 Q_LOGGING_CATEGORY(lcQpaPluginLoading, "qt.qpa.plugin");
