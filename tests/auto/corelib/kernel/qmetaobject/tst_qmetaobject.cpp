@@ -516,6 +516,8 @@ public slots:
     qlonglong *sl15(qlonglong *);
     MyForwardDeclaredType *sl16(MyForwardDeclaredType *);
 
+    void sl17(int *i) { *i = 242; }
+
     void overloadedSlot();
     void overloadedSlot(int, int);
     void overloadedSlot(int);
@@ -1174,6 +1176,24 @@ void tst_QMetaObject::invokePointer()
         auto variadic = [](const QString &s, auto... a) { return s + (QString::number(a) + ...); };
         QVERIFY(QMetaObject::invokeMethod(&obj, variadic, qReturnArg(result), u"bu"_s, 1, 2, 3, 4, 5, 6));
         QCOMPARE(result, u"bu123456");
+    }
+    {
+        // Testing a functor returning void and accepting a pointer,
+        // this may trigger the pointer to be interpreted as the old void*
+        // return parameter.
+        bool invoked = false;
+        auto lambda = [&invoked](void *ptr) -> void {
+            Q_UNUSED(ptr);
+            invoked = true;
+        };
+        int i = 242;
+        QVERIFY(QMetaObject::invokeMethod(&obj, lambda, &i));
+        QVERIFY(invoked);
+
+        // member fn
+        i = 0;
+        QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl17, &i));
+        QCOMPARE(i, 242);
     }
 }
 
