@@ -376,7 +376,7 @@ void QNetworkCookie::setValue(const QByteArray &value)
 }
 
 // ### move this to qnetworkcookie_p.h and share with qnetworkaccesshttpbackend
-static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &position, bool isNameValue)
+static QPair<QByteArray, QByteArray> nextField(QByteArrayView text, int &position, bool isNameValue)
 {
     // format is one of:
     //    (1)  token
@@ -396,11 +396,11 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         equalsPosition = semiColonPosition; //no '=' means there is an attribute-name but no attribute-value
     }
 
-    QByteArray first = text.mid(position, equalsPosition - position).trimmed();
+    QByteArray first = text.mid(position, equalsPosition - position).trimmed().toByteArray();
     QByteArray second;
     int secondLength = semiColonPosition - equalsPosition - 1;
     if (secondLength > 0)
-        second = text.mid(equalsPosition + 1, secondLength).trimmed();
+        second = text.mid(equalsPosition + 1, secondLength).trimmed().toByteArray();
 
     position = semiColonPosition;
     return qMakePair(first, second);
@@ -940,7 +940,7 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
     return cookies;
 }
 
-QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByteArray &cookieString)
+QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(QByteArrayView cookieString)
 {
     // According to http://wp.netscape.com/newsref/std/cookie_spec.html,<
     // the Set-Cookie response header is of the format:
@@ -982,14 +982,14 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                         if (isValueSeparator(cookieString.at(end)))
                             break;
 
-                    QByteArray dateString = cookieString.mid(position, end - position).trimmed();
+                    QByteArray dateString = cookieString.mid(position, end - position).trimmed().toByteArray().toLower();
                     position = end;
-                    QDateTime dt = parseDateString(dateString.toLower());
+                    QDateTime dt = parseDateString(dateString);
                     if (dt.isValid())
                         cookie.setExpirationDate(dt);
                     //if unparsed, ignore the attribute but not the whole cookie (RFC6265 section 5.2.1)
                 } else if (field.first == "domain") {
-                    QByteArray rawDomain = field.second;
+                    QByteArrayView rawDomain = field.second;
                     //empty domain should be ignored (RFC6265 section 5.2.3)
                     if (!rawDomain.isEmpty()) {
                         QLatin1StringView maybeLeadingDot;

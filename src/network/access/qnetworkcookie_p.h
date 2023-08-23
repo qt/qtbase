@@ -25,7 +25,7 @@ class QNetworkCookiePrivate: public QSharedData
 {
 public:
     QNetworkCookiePrivate() = default;
-    static QList<QNetworkCookie> parseSetCookieHeaderLine(const QByteArray &cookieString);
+    static QList<QNetworkCookie> parseSetCookieHeaderLine(QByteArrayView cookieString);
 
     QDateTime expirationDate;
     QString domain;
@@ -43,7 +43,7 @@ static inline bool isLWS(char c)
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
-static int nextNonWhitespace(const QByteArray &text, int from)
+static int nextNonWhitespace(QByteArrayView text, int from)
 {
     // RFC 2616 defines linear whitespace as:
     //  LWS = [CRLF] 1*( SP | HT )
