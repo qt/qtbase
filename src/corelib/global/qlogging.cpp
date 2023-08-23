@@ -1995,7 +1995,7 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
         auto msgHandler = messageHandler.loadAcquire();
         (msgHandler ? msgHandler : qDefaultMessageHandler)(msgType, context, message);
     } else {
-        fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
+        stderr_message_handler(msgType, context, message.toLocal8Bit());
     }
 }
 
