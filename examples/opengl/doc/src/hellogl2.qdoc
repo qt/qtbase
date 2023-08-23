@@ -5,6 +5,7 @@
     \example hellogl2
     \title Hello GL2 Example
     \ingroup examples-widgets-opengl
+    \examplecategory {Data Visualization & 3D}
 
     \brief The Hello GL2 example demonstrates the basic use of the OpenGL-related classes
     provided with Qt.
