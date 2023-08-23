@@ -76,6 +76,7 @@ public:
     void normalize(const QUrl &url);
 
     static QList<QNetworkCookie> parseCookies(const QByteArray &cookieString);
+    static QList<QNetworkCookie> parseCookies(QByteArrayView cookieString);
 
 private:
     QSharedDataPointer<QNetworkCookiePrivate> d;

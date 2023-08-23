@@ -931,12 +931,20 @@ static QDateTime parseDateString(QByteArrayView dateString)
 */
 QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieString)
 {
+    return parseCookies(QByteArrayView(cookieString));
+}
+
+/*!
+    \overload
+    \since 6.7
+*/
+QList<QNetworkCookie> QNetworkCookie::parseCookies(QByteArrayView cookieString)
+{
     // cookieString can be a number of set-cookie header strings joined together
     // by \n, parse each line separately.
     QList<QNetworkCookie> cookies;
-    QList<QByteArray> list = cookieString.split('\n');
-    for (int a = 0; a < list.size(); a++)
-        cookies += QNetworkCookiePrivate::parseSetCookieHeaderLine(list.at(a));
+    for (auto s : QLatin1StringView(cookieString).tokenize('\n'_L1))
+        cookies += QNetworkCookiePrivate::parseSetCookieHeaderLine(s);
     return cookies;
 }
 
