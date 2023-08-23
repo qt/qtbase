@@ -316,7 +316,8 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     newConnection->setDispatchEnabled(false);
 
     // this is a queued connection and will resume in the QDBusServer's thread
-    emit serverConnection->newServerConnection(newConnection);
+    QMetaObject::invokeMethod(serverConnection, &QDBusConnectionPrivate::_q_newConnection,
+                              Qt::QueuedConnection, newConnection);
 
     // we've disabled dispatching of events, so now we post an event to the
     // QDBusServer's thread in order to enable it after the

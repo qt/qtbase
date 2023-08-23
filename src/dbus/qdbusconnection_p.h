@@ -214,6 +214,8 @@ public:
 
     void enableDispatchDelayed(QObject *context);
 
+    void _q_newConnection(QDBusConnectionPrivate *newConnection);
+
 private:
     void checkThread();
     bool handleError(const QDBusErrorInternal &error);
@@ -240,8 +242,6 @@ private:
     QString getNameOwnerNoCache(const QString &service);
 
     void watchForDBusDisconnection();
-
-    void _q_newConnection(QDBusConnectionPrivate *newConnection);
 
     void handleAuthentication();
 
@@ -275,7 +275,6 @@ signals:
     void messageNeedsSending(QDBusPendingCallPrivate *pcall, void *msg, int timeout = -1);
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
     void callWithCallbackFailed(const QDBusError &error, const QDBusMessage &message);
-    void newServerConnection(QDBusConnectionPrivate *newConnection);
 
 public:
     QAtomicInt ref;

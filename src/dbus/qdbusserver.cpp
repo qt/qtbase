@@ -40,9 +40,6 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
 
     instance->createServer(address, this);
     Q_ASSERT(d != nullptr);
-
-    QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
-                     this, SLOT(_q_newConnection(QDBusConnectionPrivate*)), Qt::QueuedConnection);
 }
 
 /*!

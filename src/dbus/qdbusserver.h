@@ -37,7 +37,6 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QDBusServer)
-    Q_PRIVATE_SLOT(d, void _q_newConnection(QDBusConnectionPrivate*))
     QDBusConnectionPrivate *d;
     friend class QDBusConnectionPrivate;
 };
