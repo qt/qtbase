@@ -1127,13 +1127,13 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
     return QByteArray();
 }
 
-static int parseHeaderName(const QByteArray &headerName)
+static int parseHeaderName(QByteArrayView headerName)
 {
     if (headerName.isEmpty())
         return -1;
 
-    auto is = [&](const char *what) {
-        return qstrnicmp(headerName.data(), headerName.size(), what) == 0;
+    auto is = [headerName](QByteArrayView what) {
+        return headerName.compare(what, Qt::CaseInsensitive) == 0;
     };
 
     switch (QtMiscUtils::toAsciiLower(headerName.front())) {
