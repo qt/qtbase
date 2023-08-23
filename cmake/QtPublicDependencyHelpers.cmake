@@ -114,7 +114,7 @@ macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_p
                 PATHS
                     ${${find_dependency_path_list}}
                     ${_qt_additional_packages_prefix_paths}
-                    ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
+                    ${QT_BUILD_CMAKE_PREFIX_PATH}
                 ${__qt_use_no_default_path_for_qt_packages}
             )
         endif()

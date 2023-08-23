@@ -717,9 +717,9 @@ endfunction()
 macro(qt_build_tests)
     set(CMAKE_UNITY_BUILD OFF)
 
-    # Prepending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
+    # Prepending to QT_BUILD_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
-    list(PREPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
+    list(PREPEND QT_BUILD_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
 
     if(QT_BUILD_STANDALONE_TESTS)
         # Find location of TestsConfig.cmake. These contain the modules that need to be
@@ -952,14 +952,14 @@ macro(qt_examples_build_begin)
     # Examples that are built as part of the Qt build need to use the CMake config files from the
     # build dir, because they are not installed yet in a prefix build.
     # Prepending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
-    # Prepending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
+    # Prepending to QT_BUILD_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
     # Prepending to CMAKE_FIND_ROOT_PATH ensures the components are found while cross-compiling
     # without setting CMAKE_FIND_ROOT_PATH_MODE_PACKAGE to BOTH.
     if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD OR NOT __qt_all_examples_ported_to_external_projects)
         qt_internal_set_up_build_dir_package_paths()
         list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
-        list(PREPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
+        list(PREPEND QT_BUILD_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
     endif()
 
     # Because CMAKE_INSTALL_RPATH is empty by default in the repo project, examples need to have
@@ -1256,7 +1256,7 @@ function(qt_internal_add_example_external_project subdir)
         CMAKE_BUILD_TYPE:STRING
         CMAKE_CONFIGURATION_TYPES:STRING
         CMAKE_PREFIX_PATH:STRING
-        QT_EXAMPLES_CMAKE_PREFIX_PATH:STRING
+        QT_BUILD_CMAKE_PREFIX_PATH:STRING
         QT_ADDITIONAL_PACKAGES_PREFIX_PATH:STRING
         CMAKE_FIND_ROOT_PATH:STRING
         BUILD_SHARED_LIBS:BOOL
