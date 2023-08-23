@@ -992,9 +992,9 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     QByteArray rawDomain = field.second;
                     //empty domain should be ignored (RFC6265 section 5.2.3)
                     if (!rawDomain.isEmpty()) {
-                        QString maybeLeadingDot;
+                        QLatin1StringView maybeLeadingDot;
                         if (rawDomain.startsWith('.')) {
-                            maybeLeadingDot = u'.';
+                            maybeLeadingDot = "."_L1;
                             rawDomain = rawDomain.mid(1);
                         }
 
