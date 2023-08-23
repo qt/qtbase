@@ -1219,7 +1219,8 @@ static QVariant parseETag(QByteArrayView raw)
     return QString::fromLatin1(trimmed);
 }
 
-static QVariant parseIfMatch(const QByteArray &raw)
+template<typename T>
+static QVariant parseMatchImpl(const QByteArray &raw, T op)
 {
     const QByteArray trimmedRaw = raw.trimmed();
     if (trimmedRaw == "*")
@@ -1229,36 +1230,25 @@ static QVariant parseIfMatch(const QByteArray &raw)
     const QList<QByteArray> split = trimmedRaw.split(',');
     for (const QByteArray &element : split) {
         const QByteArray trimmed = element.trimmed();
-        if (!trimmed.startsWith('"'))
+        if (!op(trimmed))
             continue;
-
-        if (!trimmed.endsWith('"'))
-            continue;
-
         tags += QString::fromLatin1(trimmed);
     }
     return tags;
 }
 
+static QVariant parseIfMatch(const QByteArray &raw)
+{
+    return parseMatchImpl(raw, [](QByteArrayView element) {
+        return element.startsWith('"') && element.endsWith('"');
+    });
+}
+
 static QVariant parseIfNoneMatch(const QByteArray &raw)
 {
-    const QByteArray trimmedRaw = raw.trimmed();
-    if (trimmedRaw == "*")
-        return QStringList(QStringLiteral("*"));
-
-    QStringList tags;
-    const QList<QByteArray> split = trimmedRaw.split(',');
-    for (const QByteArray &element : split) {
-        const QByteArray trimmed = element.trimmed();
-        if (!trimmed.startsWith('"') && !trimmed.startsWith(R"(W/")"))
-            continue;
-
-        if (!trimmed.endsWith('"'))
-            continue;
-
-        tags += QString::fromLatin1(trimmed);
-    }
-    return tags;
+    return parseMatchImpl(raw, [](QByteArrayView element) {
+        return (element.startsWith('"') || element.startsWith(R"(W/")")) && element.endsWith('"');
+    });
 }
 
 
