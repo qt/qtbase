@@ -1193,11 +1193,10 @@ static QVariant parseHttpDate(const QByteArray &raw)
     return QVariant();          // transform an invalid QDateTime into a null QVariant
 }
 
-static QVariant parseCookieHeader(const QByteArray &raw)
+static QVariant parseCookieHeader(QByteArrayView raw)
 {
     QList<QNetworkCookie> result;
-    const QList<QByteArray> cookieList = raw.split(';');
-    for (const QByteArray &cookie : cookieList) {
+    for (auto cookie : QLatin1StringView(raw).tokenize(';'_L1)) {
         QList<QNetworkCookie> parsed = QNetworkCookie::parseCookies(cookie.trimmed());
         if (parsed.size() != 1)
             return QVariant();  // invalid Cookie: header
