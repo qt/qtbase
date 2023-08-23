@@ -1259,7 +1259,7 @@ QRhiRenderBuffer *QRhiWidget::depthStencilBuffer() const
 
     \sa colorTexture(), depthStencilBuffer()
  */
-QRhiTextureRenderTarget *QRhiWidget::renderTarget() const
+QRhiRenderTarget *QRhiWidget::renderTarget() const
 {
     Q_D(const QRhiWidget);
     return d->renderTarget;

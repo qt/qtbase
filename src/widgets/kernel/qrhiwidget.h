@@ -12,7 +12,7 @@ class QRhiWidgetPrivate;
 class QRhi;
 class QRhiTexture;
 class QRhiRenderBuffer;
-class QRhiTextureRenderTarget;
+class QRhiRenderTarget;
 class QRhiCommandBuffer;
 
 class Q_WIDGETS_EXPORT QRhiWidget : public QWidget
@@ -80,7 +80,7 @@ public:
     QRhiRenderBuffer *msaaColorBuffer() const;
     QRhiTexture *resolveTexture() const;
     QRhiRenderBuffer *depthStencilBuffer() const;
-    QRhiTextureRenderTarget *renderTarget() const;
+    QRhiRenderTarget *renderTarget() const;
 
 Q_SIGNALS:
     void frameSubmitted();
