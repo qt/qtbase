@@ -88,7 +88,9 @@ namespace QTestPrivate {
     \c TestedClass. This instance is used to test for binding loops. By default,
     the method returns a default-constructed \c TestedClass. A custom
     \a helperConstructor should be provided if \c TestedClass is not
-    default-constructible. (NOTE: The parameter is currently unused!)
+    default-constructible. Some very specific properties cannot be tested for
+    binding loops. Pass a lambda that returns an \c {std::nullptr} as
+    \a helperConstructor in such case.
 
     \note Any test calling this method will need to call
     \code
@@ -108,12 +110,7 @@ void testReadWritePropertyBasics(
         std::function<char *(const PropertyType &)> represent =
                 [](const PropertyType &val) { return QTest::toString(val); },
         std::function<std::unique_ptr<TestedClass>(void)> helperConstructor =
-                []() {
-                    if constexpr (std::is_default_constructible_v<TestedClass>)
-                        return std::make_unique<TestedClass>();
-                    else
-                        return std::unique_ptr<TestedClass>();
-                })
+                []() { return std::make_unique<TestedClass>(); })
 {
     // get the property
     const QMetaObject *metaObject = instance.metaObject();
@@ -203,7 +200,23 @@ void testReadWritePropertyBasics(
     if (spy)
         QCOMPARE(spy->size(), 4);
 
-    Q_UNUSED(helperConstructor);
+    // test binding loop
+    if (std::unique_ptr<TestedClass> helperObj = std::move(helperConstructor())) {
+        // Reset to 'initial', so that the binding loop test could check the
+        // 'changed' value, because some tests already rely on the 'instance' to
+        // have the 'changed' value once this test passes
+        testedObj.setProperty(propertyName, QVariant::fromValue(initial));
+        const QPropertyBinding<PropertyType> binding([&]() {
+            QObject *obj = static_cast<QObject *>(helperObj.get());
+            obj->setProperty(propertyName, QVariant::fromValue(changed));
+            return obj->property(propertyName).template value<PropertyType>();
+        }, {});
+        bindable.setBinding(binding);
+        QPROPERTY_TEST_COMPARISON_HELPER(
+                testedObj.property(propertyName).template value<PropertyType>(), changed,
+                comparator, represent);
+        QVERIFY2(!binding.error().hasError(), qPrintable(binding.error().description()));
+    }
 }
 
 /*!
@@ -264,7 +277,9 @@ void testReadWritePropertyBasics(
     \c TestedClass. This instance is used to test for binding loops. By default,
     the method returns a default-constructed \c TestedClass. A custom
     \a helperConstructor should be provided if \c TestedClass is not
-    default-constructible. (NOTE: The parameter is currently unused!)
+    default-constructible. Some very specific properties cannot be tested for
+    binding loops. Pass a lambda that returns an \c {std::nullptr} as
+    \a helperConstructor in such case.
 
     \note Any test calling this method will need to call
     \code
@@ -286,15 +301,8 @@ void testWriteOncePropertyBasics(
         std::function<char *(const PropertyType &)> represent =
                 [](const PropertyType &val) { return QTest::toString(val); },
         std::function<std::unique_ptr<TestedClass>(void)> helperConstructor =
-                []() {
-                    if constexpr (std::is_default_constructible_v<TestedClass>)
-                        return std::make_unique<TestedClass>();
-                    else
-                        return std::unique_ptr<TestedClass>();
-                })
+                []() { return std::make_unique<TestedClass>(); })
 {
-    Q_UNUSED(helperConstructor);
-
     // get the property
     const QMetaObject *metaObject = instance.metaObject();
     QMetaProperty metaProperty = metaObject->property(metaObject->indexOfProperty(propertyName));
@@ -327,10 +335,19 @@ void testWriteOncePropertyBasics(
     propObserver.setBinding(bindable.makeBinding());
     QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), prior, comparator, represent);
 
-    // Create a binding that sets the 'changed' value to the property
-    QProperty<PropertyType> propSetter(changed);
+    // Create a binding that sets the 'changed' value to the property.
+    // This also tests binding loops.
     QVERIFY(!bindable.hasBinding());
-    bindable.setBinding(Qt::makePropertyBinding(propSetter));
+    std::unique_ptr<TestedClass> helperObj(std::move(helperConstructor()));
+    QProperty<PropertyType> propSetter(changed); // if the helperConstructor() returns nullptr
+    const QPropertyBinding<PropertyType> binding = helperObj
+            ? Qt::makePropertyBinding([&]() {
+                  QObject *obj = static_cast<QObject *>(helperObj.get());
+                  obj->setProperty(propertyName, QVariant::fromValue(changed));
+                  return obj->property(propertyName).template value<PropertyType>();
+              })
+            : Qt::makePropertyBinding(propSetter);
+    bindable.setBinding(binding);
     QVERIFY(bindable.hasBinding());
 
     QPROPERTY_TEST_COMPARISON_HELPER(
