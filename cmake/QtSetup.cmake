@@ -15,16 +15,28 @@ if(NOT QT_INTERNAL_IS_STANDALONE_TEST)
 endif()
 
 # Pre-calculate the developer_build feature if it's set by the user via INPUT_developer_build
-if(NOT FEATURE_developer_build AND INPUT_developer_build
-        AND NOT "${INPUT_developer_build}" STREQUAL "undefined")
-    set(FEATURE_developer_build ON)
+if(NOT DEFINED FEATURE_developer_build
+        AND DEFINED INPUT_developer_build
+        AND NOT "${INPUT_developer_build}" STREQUAL "undefined"
+        AND NOT "${INPUT_developer_build}" STREQUAL "")
+    if(INPUT_developer_build)
+        set(FEATURE_developer_build ON)
+    else()
+        set(FEATURE_developer_build OFF)
+    endif()
 endif()
 
 # Pre-calculate the no_prefix feature if it's set by configure via INPUT_no_prefix.
 # This needs to be done before qtbase/configure.cmake is processed.
-if(NOT FEATURE_no_prefix AND INPUT_no_prefix
-        AND NOT "${INPUT_no_prefix}" STREQUAL "undefined")
-    set(FEATURE_no_prefix ON)
+if(NOT DEFINED FEATURE_no_prefix
+        AND DEFINED INPUT_no_prefix
+        AND NOT "${INPUT_no_prefix}" STREQUAL "undefined"
+        AND NOT "${INPUT_no_prefix}" STREQUAL "")
+    if(INPUT_no_prefix)
+        set(FEATURE_no_prefix ON)
+    else()
+        set(FEATURE_no_prefix OFF)
+    endif()
 endif()
 
 set(_default_build_type "Release")
