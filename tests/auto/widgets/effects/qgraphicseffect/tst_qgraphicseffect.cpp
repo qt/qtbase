@@ -354,7 +354,9 @@ void tst_QGraphicsEffect::draw()
 
     // Effect is already enabled; nothing should happen.
     effect->setEnabled(true);
-    QTest::qWait(50);
+    // Send only posted events, not window system events,
+    // so that we don't get any spontaneous paint events.
+    QCoreApplication::sendPostedEvents();
     QCOMPARE(effect->numRepaints, 0);
     QCOMPARE(item->numRepaints, 0);
 
