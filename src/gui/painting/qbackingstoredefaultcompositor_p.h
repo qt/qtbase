@@ -50,7 +50,7 @@ private:
       NeedsAlphaRotate = 0x02,
     };
 
-    void ensureResources(QRhiSwapChain *swapchain, QRhiResourceUpdateBatch *resourceUpdates);
+    void ensureResources(QRhiResourceUpdateBatch *resourceUpdates, QRhiRenderPassDescriptor *rpDesc);
     QRhiTexture *toTexture(const QImage &image,
                            QRhi *rhi,
                            QRhiResourceUpdateBatch *resourceUpdates,

@@ -280,7 +280,7 @@ enum class PipelineBlend {
 
 static QRhiGraphicsPipeline *createGraphicsPipeline(QRhi *rhi,
                                                     QRhiShaderResourceBindings *srb,
-                                                    QRhiSwapChain *swapchain,
+                                                    QRhiRenderPassDescriptor *rpDesc,
                                                     PipelineBlend blend)
 {
     QRhiGraphicsPipeline *ps = rhi->newGraphicsPipeline();
@@ -324,7 +324,7 @@ static QRhiGraphicsPipeline *createGraphicsPipeline(QRhi *rhi,
     });
     ps->setVertexInputLayout(inputLayout);
     ps->setShaderResourceBindings(srb);
-    ps->setRenderPassDescriptor(swapchain->renderPassDescriptor());
+    ps->setRenderPassDescriptor(rpDesc);
 
     if (!ps->create()) {
         qWarning("QBackingStoreDefaultCompositor: Failed to build graphics pipeline");
@@ -407,7 +407,7 @@ void QBackingStoreDefaultCompositor::updateUniforms(PerQuadData *d, QRhiResource
     resourceUpdates->updateDynamicBuffer(d->ubuf, 116, 4, &textureSwizzle);
 }
 
-void QBackingStoreDefaultCompositor::ensureResources(QRhiSwapChain *swapchain, QRhiResourceUpdateBatch *resourceUpdates)
+void QBackingStoreDefaultCompositor::ensureResources(QRhiResourceUpdateBatch *resourceUpdates, QRhiRenderPassDescriptor *rpDesc)
 {
     static const float vertexData[] = {
         -1, -1, 0,   0, 0,
@@ -438,11 +438,11 @@ void QBackingStoreDefaultCompositor::ensureResources(QRhiSwapChain *swapchain, Q
 
     QRhiShaderResourceBindings *srb = m_widgetQuadData.srb; // just for the layout
     if (!m_psNoBlend)
-        m_psNoBlend = createGraphicsPipeline(m_rhi, srb, swapchain, PipelineBlend::None);
+        m_psNoBlend = createGraphicsPipeline(m_rhi, srb, rpDesc, PipelineBlend::None);
     if (!m_psBlend)
-        m_psBlend = createGraphicsPipeline(m_rhi, srb, swapchain, PipelineBlend::Alpha);
+        m_psBlend = createGraphicsPipeline(m_rhi, srb, rpDesc, PipelineBlend::Alpha);
     if (!m_psPremulBlend)
-        m_psPremulBlend = createGraphicsPipeline(m_rhi, srb, swapchain, PipelineBlend::PremulAlpha);
+        m_psPremulBlend = createGraphicsPipeline(m_rhi, srb, rpDesc, PipelineBlend::PremulAlpha);
 }
 
 QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatformBackingStore *backingStore,
@@ -511,7 +511,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
     if (!gotTextureFromGraphicsBuffer)
         toTexture(backingStore, rhi, resourceUpdates, scaledRegion(region, sourceDevicePixelRatio, offset), &flags);
 
-    ensureResources(swapchain, resourceUpdates);
+    ensureResources(resourceUpdates, swapchain->renderPassDescriptor());
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     const UpdateUniformOption uniformOption = (flags & QPlatformBackingStore::TextureSwizzle) != 0? NeedsRedBlueSwap : NoOption;
