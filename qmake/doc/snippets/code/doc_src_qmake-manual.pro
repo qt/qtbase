@@ -961,3 +961,25 @@ translations_de.files = $$PWD/de.lproj/InfoPlist.strings
 
 QMAKE_BUNDLE_DATA += translations_en translations_de
 #! [189]
+
+#! [TR_EXCLUDE sources]
+SOURCES += main.cpp \
+    excluded.cpp \
+    3rdparty/sqlite3.h \
+    3rdparty/sqlite3.c
+TR_EXCLUDE += excluded.cpp 3rdparty/*
+#! [TR_EXCLUDE sources]
+
+#! [TR_EXCLUDE SUBDIRS]
+SUBDIRS += \
+    libs \
+    apps \
+    tests
+TR_EXCLUDE += tests
+#! [TR_EXCLUDE SUBDIRS]
+
+#! [TR_EXCLUDE include paths]
+linux {
+    TR_EXCLUDE += /usr/include/boost/*
+}
+#! [TR_EXCLUDE include paths]

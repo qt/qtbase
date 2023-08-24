@@ -3146,6 +3146,25 @@
     See the \l{Qt Linguist Manual} for more information about
     internationalization (i18n) and localization (l10n) with Qt.
 
+    \section1 TR_EXCLUDE
+
+    Specifies a list of paths (source files, subdirectories, and C++ include
+    paths) to be excluded from handling in \c{lupdate}. The paths may contain
+    wildcards. Relative paths are considered to be relative to
+    \l{_PRO_FILE_PWD_}.
+
+    For example, to exclude source files:
+
+    \snippet code/doc_src_qmake-manual.pro TR_EXCLUDE sources
+
+    To exclude subdirectories of a \c SUBDIRS project:
+
+    \snippet code/doc_src_qmake-manual.pro TR_EXCLUDE SUBDIRS
+
+    To speed up lupdate's C++ parser, exclude include paths:
+
+    \snippet code/doc_src_qmake-manual.pro TR_EXCLUDE include paths
+
     \section1 UI_DIR
 
     Specifies the directory where all intermediate files from uic
