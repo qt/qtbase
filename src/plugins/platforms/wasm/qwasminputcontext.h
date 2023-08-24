@@ -29,7 +29,7 @@ public:
     bool isValid() const override { return true; }
 
     void focusWindowChanged(QWindow *focusWindow);
-    void inputStringChanged(QString &, QWasmInputContext *context);
+    void inputStringChanged(QString &, int eventType, QWasmInputContext *context);
 
 private:
     emscripten::val inputHandlerElementForFocusedWindow();
