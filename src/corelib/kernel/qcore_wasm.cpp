@@ -49,9 +49,9 @@ emscripten::val QRectF::toDOMRect() const
     \since 6.6
     \ingroup platform-type-conversions
 
-    \sa toJsString()
+    \sa toEcmaString()
 */
-QString QString::fromJsString(emscripten::val jsString)
+QString QString::fromEcmaString(emscripten::val jsString)
 {
     Q_ASSERT_X(jsString.isString(), Q_FUNC_INFO, "Passed object is not a string");
 
@@ -86,9 +86,9 @@ QString QString::fromJsString(emscripten::val jsString)
     \since 6.6
     \ingroup platform-type-conversions
 
-    \sa fromJsString()
+    \sa fromEcmaString()
 */
-emscripten::val QString::toJsString() const
+emscripten::val QString::toEcmaString() const
 {
     static const emscripten::val UTF16ToString(emscripten::val::module_property("UTF16ToString"));
     return UTF16ToString(emscripten::val(quintptr(utf16())));

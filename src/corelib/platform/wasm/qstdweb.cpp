@@ -440,7 +440,7 @@ private:
                     break;
                 }
                 QString a;
-                const QString data = QString::fromJsString(webDataTransfer.call<emscripten::val>(
+                const QString data = QString::fromEcmaString(webDataTransfer.call<emscripten::val>(
                         "getData", emscripten::val(itemMimeType.toStdString())));
 
                 if (!data.isEmpty()) {

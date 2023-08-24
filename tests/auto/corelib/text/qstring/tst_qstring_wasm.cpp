@@ -12,18 +12,18 @@ void tst_QString_wasmTypes()
     // QString <-> emscripten::val
     {
         QString qtString = testString;
-        const emscripten::val jsString = qtString.toJsString();
+        const emscripten::val jsString = qtString.toEcmaString();
         QString qtStringCopy(qtString);
         qtString = qtString.toUpper(); // modify
-        QCOMPARE(QString::fromJsString(jsString), qtStringCopy);
+        QCOMPARE(QString::fromEcmaString(jsString), qtStringCopy);
     }
     {
         QString longString;
         for (uint64_t i = 0; i < 1000; ++i)
             longString += testString;
-        const emscripten::val jsString = longString.toJsString();
+        const emscripten::val jsString = longString.toEcmaString();
         QString qtStringCopy(longString);
         longString = longString.toUpper(); // modify
-        QCOMPARE(QString::fromJsString(jsString), qtStringCopy);
+        QCOMPARE(QString::fromEcmaString(jsString), qtStringCopy);
     }
 }

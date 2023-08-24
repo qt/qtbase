@@ -373,7 +373,7 @@ void QWasmIntegration::resizeScreen(const emscripten::val &element)
         [&] (const ScreenMapping &candidate) { return candidate.emscriptenVal.equals(element); });
     if (it == m_screens.end()) {
         qWarning() << "Attempting to resize non-existing screen for element"
-                   << QString::fromJsString(element["id"]);
+                   << QString::fromEcmaString(element["id"]);
         return;
     }
     it->wasmScreen->updateQScreenAndCanvasRenderSize();
