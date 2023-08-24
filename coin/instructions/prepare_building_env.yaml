@@ -305,6 +305,14 @@ instructions:
         condition: property
         property: target.osVersion
         in_values: [QEMU]
+    # This fixes an issue where binfmts is sometimes disabled on the test VMs
+    - type: ExecuteCommand
+      command: sudo update-binfmts --enable
+      userMessageOnFailure: "Failed to enable binfmts"
+      enable_if:
+        condition: property
+        property: target.osVersion
+        equals_value: QEMU
 
   # Windows on Arm, cross-compilation with MSVC
   - type: Group
