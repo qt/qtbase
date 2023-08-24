@@ -80,6 +80,7 @@ private slots:
     void signalBlocking();
     void blockingQueuedConnection();
     void childEvents();
+    void parentEvents();
     void installEventFilter();
     void deleteSelfInSlot();
     void disconnectSelfInSlotAndDeleteAfterEmit();
@@ -3198,6 +3199,78 @@ void tst_QObject::childEvents()
             << qMakePair(&object, QEvent::Type(QEvent::User + 2));
         QCOMPARE(spy.eventList(), expected);
     }
+}
+
+void tst_QObject::parentEvents()
+{
+#ifdef QT_BUILD_INTERNAL
+    EventSpy::EventList expected;
+
+    {
+        // Parent events not enabled
+        QObject parent;
+        QObject child;
+
+        EventSpy spy;
+        child.installEventFilter(&spy);
+
+        QCoreApplication::postEvent(&child, new QEvent(QEvent::Type(QEvent::User + 1)));
+
+        child.setParent(&parent);
+
+        QCoreApplication::postEvent(&child, new QEvent(QEvent::Type(QEvent::User + 2)));
+
+        expected =
+            EventSpy::EventList();
+        QCOMPARE(spy.eventList(), expected);
+        spy.clear();
+
+        QCoreApplication::processEvents();
+
+        expected =
+            EventSpy::EventList()
+            << qMakePair(&child, QEvent::Type(QEvent::User + 1))
+            << qMakePair(&child, QEvent::Type(QEvent::User + 2));
+        QCOMPARE(spy.eventList(), expected);
+    }
+
+    {
+        // Parent events enabled
+        QObject parent;
+        QObject child;
+        auto *childPrivate = QObjectPrivate::get(&child);
+        childPrivate->receiveParentEvents = true;
+
+        EventSpy spy;
+        child.installEventFilter(&spy);
+
+        QCoreApplication::postEvent(&child, new QEvent(QEvent::Type(QEvent::User + 1)));
+
+        child.setParent(&parent);
+        child.setParent(nullptr);
+
+        QCoreApplication::postEvent(&child, new QEvent(QEvent::Type(QEvent::User + 2)));
+
+        expected =
+            EventSpy::EventList()
+            << qMakePair(&child, QEvent::ParentAboutToChange)
+            << qMakePair(&child, QEvent::ParentChange)
+            << qMakePair(&child, QEvent::ParentAboutToChange)
+            << qMakePair(&child, QEvent::ParentChange);
+        QCOMPARE(spy.eventList(), expected);
+        spy.clear();
+
+        QCoreApplication::processEvents();
+
+        expected =
+            EventSpy::EventList()
+            << qMakePair(&child, QEvent::Type(QEvent::User + 1))
+            << qMakePair(&child, QEvent::Type(QEvent::User + 2));
+        QCOMPARE(spy.eventList(), expected);
+    }
+#else
+    QSKIP("Needs QT_BUILD_INTERNAL");
+#endif
 }
 
 void tst_QObject::installEventFilter()

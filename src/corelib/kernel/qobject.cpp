@@ -179,6 +179,7 @@ QObjectPrivate::QObjectPrivate(int version)
     isQuickItem = false;
     willBeWidget = false;
     wasWidget = false;
+    receiveParentEvents = false;                // If object wants ParentAboutToChange and ParentChange
 }
 
 QObjectPrivate::~QObjectPrivate()
@@ -2249,7 +2250,15 @@ void QObjectPrivate::setParent_helper(QObject *o)
             }
         }
     }
+
+    if (receiveParentEvents) {
+        Q_ASSERT(!isWidget); // Handled in QWidget
+        QEvent e(QEvent::ParentAboutToChange);
+        QCoreApplication::sendEvent(q, &e);
+    }
+
     parent = o;
+
     if (parent) {
         // object hierarchies are constrained to a single thread
         if (threadData.loadRelaxed() != parent->d_func()->threadData.loadRelaxed()) {
@@ -2264,6 +2273,12 @@ void QObjectPrivate::setParent_helper(QObject *o)
                 QCoreApplication::sendEvent(parent, &e);
             }
         }
+    }
+
+    if (receiveParentEvents) {
+        Q_ASSERT(!isWidget); // Handled in QWidget
+        QEvent e(QEvent::ParentChange);
+        QCoreApplication::sendEvent(q, &e);
     }
 }
 

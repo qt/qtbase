@@ -72,7 +72,8 @@ public:
     uint isQuickItem : 1;
     uint willBeWidget : 1; // for handling widget-specific bits in QObject's ctor
     uint wasWidget : 1; // for properly cleaning up in QObject's dtor
-    uint unused : 21;
+    uint receiveParentEvents: 1;
+    uint unused : 20;
     QAtomicInt postedEvents;
     QDynamicMetaObjectData *metaObject;
     QBindingStorage bindingStorage;

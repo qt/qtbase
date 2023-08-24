@@ -159,8 +159,10 @@ Q_TRACE_POINT(qtcore, QEvent_dtor, QEvent *event, QEvent::Type type);
     \value OrientationChange                The screens orientation has changes (QScreenOrientationChangeEvent).
     \value Paint                            Screen update necessary (QPaintEvent).
     \value PaletteChange                    Palette of the widget changed.
-    \value ParentAboutToChange              The widget parent is about to change.
-    \value ParentChange                     The widget parent has changed.
+    \value ParentAboutToChange              The object parent is about to change.
+                                            Only sent to some object types, such as QWidget.
+    \value ParentChange                     The object parent has changed.
+                                            Only sent to some object types, such as QWidget.
     \value PlatformPanel                    A platform specific panel has been requested.
     \value PlatformSurface                  A native platform surface has been created or is about to be destroyed (QPlatformSurfaceEvent).
     \omitvalue Pointer

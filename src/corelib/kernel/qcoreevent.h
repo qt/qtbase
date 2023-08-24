@@ -77,7 +77,7 @@ public:
         Hide = 18,                              // widget is hidden
         Close = 19,                             // request to close widget
         Quit = 20,                              // request to quit application
-        ParentChange = 21,                      // widget has been reparented
+        ParentChange = 21,                      // object has been reparented
         ParentAboutToChange = 131,              // sent just before the parent change is done
         ThreadChange = 22,                      // object has changed threads
         WindowActivate = 24,                    // window was activated
