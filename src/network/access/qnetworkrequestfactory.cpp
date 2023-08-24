@@ -350,6 +350,86 @@ void QNetworkRequestFactory::clearBearerToken()
 }
 
 /*!
+    Returns the username set to this factory.
+
+    \sa setUserName(), clearUserName(), password()
+*/
+QString QNetworkRequestFactory::userName() const
+{
+    return d->userName;
+}
+
+/*!
+    Sets the username of this factory to \a userName.
+
+    The username is set in the request URL when \l request() is called.
+    The QRestAccessManager / QNetworkAccessManager will attempt to use
+    these credentials when the server indicates that authentication
+    is required.
+
+    \sa userName(), clearUserName(), password()
+*/
+void QNetworkRequestFactory::setUserName(const QString &userName)
+{
+    if (d->userName == userName)
+        return;
+    d.detach();
+    d->userName = userName;
+}
+
+/*!
+    Clears the username set to this factory.
+*/
+void QNetworkRequestFactory::clearUserName()
+{
+    if (d->userName.isEmpty())
+        return;
+    d.detach();
+    d->userName.clear();
+}
+
+/*!
+    Returns the password set to this factory.
+
+    \sa password(), clearPassword(), userName()
+*/
+QString QNetworkRequestFactory::password() const
+{
+    return d->password;
+}
+
+/*!
+    Sets the password of this factory to \a password.
+
+    The password is set in the request URL when \l request() is called.
+    The QRestAccessManager / QNetworkAccessManager will attempt to use
+    these credentials when the server indicates that authentication
+    is required.
+
+    \sa password(), clearPassword(), userName()
+*/
+void QNetworkRequestFactory::setPassword(const QString &password)
+{
+    if (d->password == password)
+        return;
+    d.detach();
+    d->password = password;
+}
+
+/*!
+    Clears the password set to this factory.
+
+    \sa password(), setPassword(), userName()
+*/
+void QNetworkRequestFactory::clearPassword()
+{
+    if (d->password.isEmpty())
+        return;
+    d.detach();
+    d->password.clear();
+}
+
+/*!
     Sets \a timeout used for transfers.
 
     \sa transferTimeout(), QNetworkRequest::setTransferTimeout(),
@@ -471,6 +551,10 @@ QUrl QNetworkRequestFactoryPrivate::requestUrl(const QString *path,
     QUrl resultUrl = baseUrl;
     QUrlQuery resultQuery(providedQuery);
     QString basePath = baseUrl.path();
+
+    resultUrl.setUserName(userName);
+    resultUrl.setPassword(password);
+
     // Separate the path and query parameters components on the application-provided path
     const QString requestPath{providedPath.path()};
     const QUrlQuery pathQueryItems{providedPath};
@@ -518,6 +602,8 @@ bool QNetworkRequestFactoryPrivate::equals(
 #endif
             baseUrl == other.baseUrl &&
             bearerToken == other.bearerToken &&
+            userName == other.userName &&
+            password == other.password &&
             headers.equals(other.headers) &&
             queryParameters == other.queryParameters;
 }
@@ -541,6 +627,8 @@ QDebug operator<<(QDebug debug, const QNetworkRequestFactory &factory)
           << ", queryParameters = " << factory.queryParameters().queryItems()
           << ", bearerToken = " << (factory.bearerToken().isEmpty() ? "(empty)" : "(is set)")
           << ", transferTimeout = " << factory.transferTimeout()
+          << ", userName = " << (factory.userName().isEmpty() ? "(empty)" : "(is set)")
+          << ", password = " << (factory.password().isEmpty() ? "(empty)" : "(is set)")
 #if QT_CONFIG(ssl)
           << ", SSL configuration"
           << (factory.sslConfiguration().isNull() ? " is not set (default)" : " is set")

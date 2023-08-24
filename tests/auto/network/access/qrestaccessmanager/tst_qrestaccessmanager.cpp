@@ -7,6 +7,7 @@
 #include <QtNetwork/qrestaccessmanager.h>
 #include <QtNetwork/qauthenticator.h>
 #include <QtNetwork/qnetworkreply.h>
+#include <QtNetwork/qnetworkrequestfactory.h>
 #include <QtNetwork/qrestreply.h>
 
 #include <QTest>
@@ -35,6 +36,7 @@ private slots:
     void networkRequestReply();
     void abort();
     void authentication();
+    void userInfo();
     void errors();
     void body();
     void json();
@@ -511,6 +513,45 @@ void tst_QRestAccessManager::authentication()
     // Server and QRestAM/QNAM exchange req/res twice, but finished() should be emitted just once
     QCOMPARE(finishedCount, 1);
     QCOMPARE(serverSideRequest.headers["Authorization"_ba], "Basic YV91c2VyOmFfcGFzc3dvcmQ="_ba);
+}
+
+void tst_QRestAccessManager::userInfo()
+{
+    // Tests setting of username and password into the request factory
+    using ReplyPtr = std::unique_ptr<QRestReply, QScopedPointerDeleteLater>;
+    QRestAccessManager manager;
+    manager.setDeletesRepliesOnFinished(false);
+    HttpTestServer server;
+    QTRY_VERIFY(server.isListening());
+
+    QNetworkRequestFactory factory(server.url());
+    factory.setUserName(u"a_user"_s);
+    const auto password = u"a_password"_s;
+    factory.setPassword(password);
+
+    HttpData serverSideRequest;
+    server.setHandler([&](HttpData request, HttpData& response, ResponseControl&) {
+        if (!request.headers.contains("Authorization"_ba)) {
+            response.status = 401;
+            response.headers.insert("WWW-Authenticate: "_ba, "Basic realm=\"secret_place\""_ba);
+        } else {
+            response.status = 200;
+        }
+        serverSideRequest = request; // store for checking later the 'Authorization' header value
+    });
+
+    ReplyPtr reply(manager.get(factory.request()));
+    QTRY_VERIFY(reply.get()->isFinished());
+    QVERIFY(reply.get()->isSuccess());
+    QCOMPARE(reply.get()->httpStatus(), 200);
+    QCOMPARE(serverSideRequest.headers["Authorization"_ba], "Basic YV91c2VyOmFfcGFzc3dvcmQ="_ba);
+
+    // Verify that debug output does not contain password
+    QString debugOutput;
+    QDebug debug(&debugOutput);
+    debug << factory;
+    QVERIFY(debugOutput.contains("password = (is set)"));
+    QVERIFY(!debugOutput.contains(password));
 }
 
 #define VERIFY_HTTP_ERROR_STATUS(STATUS) \

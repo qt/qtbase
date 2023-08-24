@@ -25,6 +25,7 @@ private Q_SLOTS:
     void bearerToken();
     void operators();
     void timeout();
+    void userInfo();
 
 private:
     const QUrl url1{u"http://foo.io"_s};
@@ -333,6 +334,32 @@ void tst_QNetworkRequestFactory::timeout()
     request = factory.request();
     QCOMPARE(factory.transferTimeout(), timeout);
     QCOMPARE(request.transferTimeoutAsDuration(), timeout);
+}
+
+void tst_QNetworkRequestFactory::userInfo()
+{
+    QNetworkRequestFactory factory;
+    QVERIFY(factory.userName().isEmpty());
+    QVERIFY(factory.password().isEmpty());
+
+    const auto uname = u"a_username"_s;
+    const auto password = u"a_password"_s;
+    factory.setUserName(uname);
+    QCOMPARE(factory.userName(), uname);
+    factory.setPassword(password);
+    QCOMPARE(factory.password(), password);
+
+    // Verify that debug output does not contain password
+    QString debugOutput;
+    QDebug debug(&debugOutput);
+    debug << factory;
+    QVERIFY(debugOutput.contains("password = (is set)"));
+    QVERIFY(!debugOutput.contains(password));
+
+    factory.clearUserName();
+    factory.clearPassword();
+    QVERIFY(factory.userName().isEmpty());
+    QVERIFY(factory.password().isEmpty());
 }
 
 QTEST_MAIN(tst_QNetworkRequestFactory)

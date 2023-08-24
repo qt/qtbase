@@ -42,6 +42,8 @@ public:
     QUrl baseUrl;
     QHttpHeaders headers;
     QByteArray bearerToken;
+    QString userName;
+    QString password;
     QUrlQuery queryParameters;
     std::chrono::milliseconds transferTimeout{0};
 };

@@ -59,6 +59,14 @@ public:
     Q_NETWORK_EXPORT void setBearerToken(const QByteArray &token);
     Q_NETWORK_EXPORT void clearBearerToken();
 
+    Q_NETWORK_EXPORT QString userName() const;
+    Q_NETWORK_EXPORT void setUserName(const QString &userName);
+    Q_NETWORK_EXPORT void clearUserName();
+
+    Q_NETWORK_EXPORT QString password() const;
+    Q_NETWORK_EXPORT void setPassword(const QString &password);
+    Q_NETWORK_EXPORT void clearPassword();
+
     Q_NETWORK_EXPORT void setTransferTimeout(std::chrono::milliseconds timeout);
     Q_NETWORK_EXPORT std::chrono::milliseconds transferTimeout() const;
 
