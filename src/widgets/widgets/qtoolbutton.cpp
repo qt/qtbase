@@ -39,14 +39,14 @@ class QToolButtonPrivate : public QAbstractButtonPrivate
 public:
     void init();
 #if QT_CONFIG(menu)
-    void _q_buttonPressed();
-    void _q_buttonReleased();
+    void onButtonPressed();
+    void onButtonReleased();
     void popupTimerDone();
-    void _q_updateButtonDown();
-    void _q_menuTriggered(QAction *);
+    void updateButtonDown();
+    void onMenuTriggered(QAction *);
 #endif
     bool updateHoverControl(const QPoint &pos);
-    void _q_actionTriggered();
+    void onActionTriggered();
     QStyle::SubControl newHoverControl(const QPoint &pos);
     QStyle::SubControl hoverControl;
     QRect hoverRect;
@@ -187,8 +187,10 @@ void QToolButtonPrivate::init()
                                  QSizePolicy::ToolButton));
 
 #if QT_CONFIG(menu)
-    QObject::connect(q, SIGNAL(pressed()), q, SLOT(_q_buttonPressed()));
-    QObject::connect(q, SIGNAL(released()), q, SLOT(_q_buttonReleased()));
+    QObjectPrivate::connect(q, &QAbstractButton::pressed,
+                            this, &QToolButtonPrivate::onButtonPressed);
+    QObjectPrivate::connect(q, &QAbstractButton::released,
+                            this, &QToolButtonPrivate::onButtonReleased);
 #endif
 
     setLayoutItemMargins(QStyle::SE_ToolButtonLayoutItem);
@@ -435,7 +437,8 @@ void QToolButton::actionEvent(QActionEvent *event)
             setDefaultAction(action); // update button state
         break;
     case QEvent::ActionAdded:
-        connect(action, SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
+        QObjectPrivate::connect(action, &QAction::triggered, d,
+                                &QToolButtonPrivate::onActionTriggered);
         break;
     case QEvent::ActionRemoved:
         if (d->defaultAction == action)
@@ -480,7 +483,7 @@ bool QToolButtonPrivate::updateHoverControl(const QPoint &pos)
     return !doesHover;
 }
 
-void QToolButtonPrivate::_q_actionTriggered()
+void QToolButtonPrivate::onActionTriggered()
 {
     Q_Q(QToolButton);
     if (QAction *action = qobject_cast<QAction *>(q->sender()))
@@ -667,7 +670,7 @@ void QToolButton::showMenu()
     d->popupTimerDone();
 }
 
-void QToolButtonPrivate::_q_buttonPressed()
+void QToolButtonPrivate::onButtonPressed()
 {
     Q_Q(QToolButton);
     if (!hasMenu())
@@ -680,7 +683,7 @@ void QToolButtonPrivate::_q_buttonPressed()
         q->showMenu();
 }
 
-void QToolButtonPrivate::_q_buttonReleased()
+void QToolButtonPrivate::onButtonReleased()
 {
     popupTimer.stop();
 }
@@ -757,9 +760,12 @@ void QToolButtonPrivate::popupTimerDone()
 #endif
     QPointer<QToolButton> that = q;
     actualMenu->setNoReplayFor(q);
-    if (!mustDeleteActualMenu) //only if action are not in this widget
-        QObject::connect(actualMenu, SIGNAL(triggered(QAction*)), q, SLOT(_q_menuTriggered(QAction*)));
-    QObject::connect(actualMenu, SIGNAL(aboutToHide()), q, SLOT(_q_updateButtonDown()));
+    if (!mustDeleteActualMenu) { //only if action are not in this widget
+        QObjectPrivate::connect(actualMenu, &QMenu::triggered,
+                                this, &QToolButtonPrivate::onMenuTriggered);
+    }
+    QObjectPrivate::connect(actualMenu, &QMenu::aboutToHide,
+                            this, &QToolButtonPrivate::updateButtonDown);
     actualMenu->d_func()->causedPopup.widget = q;
     actualMenu->d_func()->causedPopup.action = defaultAction;
     actionsCopy = q->actions(); //(the list of action may be modified in slots)
@@ -773,11 +779,14 @@ void QToolButtonPrivate::popupTimerDone()
     if (!that)
         return;
 
-    QObject::disconnect(actualMenu, SIGNAL(aboutToHide()), q, SLOT(_q_updateButtonDown()));
-    if (mustDeleteActualMenu)
+    QObjectPrivate::disconnect(actualMenu, &QMenu::aboutToHide,
+                               this, &QToolButtonPrivate::updateButtonDown);
+    if (mustDeleteActualMenu) {
         delete actualMenu;
-    else
-        QObject::disconnect(actualMenu, SIGNAL(triggered(QAction*)), q, SLOT(_q_menuTriggered(QAction*)));
+    } else {
+        QObjectPrivate::disconnect(actualMenu, &QMenu::triggered,
+                                   this, &QToolButtonPrivate::onMenuTriggered);
+    }
 
     actionsCopy.clear();
 
@@ -785,7 +794,7 @@ void QToolButtonPrivate::popupTimerDone()
         q->setAutoRepeat(true);
 }
 
-void QToolButtonPrivate::_q_updateButtonDown()
+void QToolButtonPrivate::updateButtonDown()
 {
     Q_Q(QToolButton);
     menuButtonDown = false;
@@ -795,7 +804,7 @@ void QToolButtonPrivate::_q_updateButtonDown()
         q->repaint();
 }
 
-void QToolButtonPrivate::_q_menuTriggered(QAction *action)
+void QToolButtonPrivate::onMenuTriggered(QAction *action)
 {
     Q_Q(QToolButton);
     if (action && !actionsCopy.contains(action))
