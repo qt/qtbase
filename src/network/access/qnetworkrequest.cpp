@@ -1096,14 +1096,14 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
         if (cookies.isEmpty() && value.userType() == qMetaTypeId<QNetworkCookie>())
             cookies << qvariant_cast<QNetworkCookie>(value);
 
+        constexpr QByteArrayView separator = "; ";
         QByteArray result;
-        bool first = true;
         for (const QNetworkCookie &cookie : std::as_const(cookies)) {
-            if (!first)
-                result += "; ";
-            first = false;
             result += cookie.toRawForm(QNetworkCookie::NameAndValueOnly);
+            result += separator;
         }
+        if (!result.isEmpty())
+            result.chop(separator.size());
         return result;
     }
 
@@ -1111,15 +1111,15 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
         QList<QNetworkCookie> cookies = qvariant_cast<QList<QNetworkCookie> >(value);
         if (cookies.isEmpty() && value.userType() == qMetaTypeId<QNetworkCookie>())
             cookies << qvariant_cast<QNetworkCookie>(value);
-
+\
+        constexpr QByteArrayView separator = ", ";
         QByteArray result;
-        bool first = true;
         for (const QNetworkCookie &cookie : std::as_const(cookies)) {
-            if (!first)
-                result += ", ";
-            first = false;
             result += cookie.toRawForm(QNetworkCookie::Full);
+            result += separator;
         }
+        if (!result.isEmpty())
+            result.chop(separator.size());
         return result;
     }
     }
