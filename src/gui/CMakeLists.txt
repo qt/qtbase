@@ -441,9 +441,15 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl
         EGL::EGL
 )
 
-qt_internal_extend_target(Gui CONDITION QT_FEATURE_accessibility
-    CONDITION_INDEPENDENT_SOURCES
+# These two headers are always installed, their contents are guarded with
+# "#if QT_CONFIG(accessibility)", so if QT_FEATURE_accessibility is not
+# enabled, they are just duds.
+qt_internal_extend_target(Gui
+    SOURCES
         accessible/qaccessible.h accessible/qplatformaccessibility.h
+)
+
+qt_internal_extend_target(Gui CONDITION QT_FEATURE_accessibility
     SOURCES
         accessible/qaccessible.cpp accessible/qaccessible_base.h
         accessible/qaccessiblebridge.cpp accessible/qaccessiblebridge.h
