@@ -1315,7 +1315,7 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
 }
 
 QNetworkHeadersPrivate::RawHeadersList::ConstIterator
-QNetworkHeadersPrivate::findRawHeader(const QByteArray &key) const
+QNetworkHeadersPrivate::findRawHeader(QByteArrayView key) const
 {
     RawHeadersList::ConstIterator it = rawHeaders.constBegin();
     RawHeadersList::ConstIterator end = rawHeaders.constEnd();
