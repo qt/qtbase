@@ -547,13 +547,12 @@ endmacro()
 # Runs delayed actions on some of the Qt targets.
 # Can be called either explicitly or as part of qt_build_repo_end().
 macro(qt_build_repo_post_process)
-    if(QT_INTERNAL_REPO_POST_PROCESS_CALLED)
-        return()
+    if(NOT QT_INTERNAL_REPO_POST_PROCESS_CALLED)
+        set(QT_INTERNAL_REPO_POST_PROCESS_CALLED TRUE)
+        if(NOT QT_BUILD_STANDALONE_TESTS)
+            include(QtPostProcess)
+        endif()
     endif()
-    if(NOT QT_BUILD_STANDALONE_TESTS)
-        include(QtPostProcess)
-    endif()
-    set(QT_INTERNAL_REPO_POST_PROCESS_CALLED TRUE)
 endmacro()
 
 macro(qt_build_repo_end)
