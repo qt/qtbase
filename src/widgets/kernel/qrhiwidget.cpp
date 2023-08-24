@@ -348,6 +348,90 @@ void QRhiWidgetPrivate::endCompose()
     }
 }
 
+// This is reimplemented to enable calling QWidget::grab() on the widget or an
+// ancestor of it. At the same time, QRhiWidget provides its own
+// grabFramebuffer() as well, mirroring QQuickWidget and QOpenGLWidget for
+// consistency. In both types of grabs we end up in here.
+QImage QRhiWidgetPrivate::grabFramebuffer()
+{
+    Q_Q(QRhiWidget);
+    if (noSize)
+        return QImage();
+
+    ensureRhi();
+    if (!rhi) {
+        // The widget (and its parent chain, if any) may not be shown at
+        // all, yet one may still want to use it for grabs. This is
+        // ridiculous of course because the rendering infrastructure is
+        // tied to the top-level widget that initializes upon expose, but
+        // it has to be supported.
+        offscreenRenderer.setConfig(config);
+        // no window passed in, so no swapchain, but we get a functional QRhi which we own
+        offscreenRenderer.create();
+        rhi = offscreenRenderer.rhi();
+        if (!rhi) {
+            qWarning("QRhiWidget: Failed to create dedicated QRhi for grabbing");
+            emit q->renderFailed();
+            return QImage();
+        }
+    }
+
+    QRhiCommandBuffer *cb = nullptr;
+    if (rhi->beginOffscreenFrame(&cb) != QRhi::FrameOpSuccess)
+        return QImage();
+
+    QRhiReadbackResult readResult;
+    bool readCompleted = false;
+    bool needsInit = false;
+    ensureTexture(&needsInit);
+
+    if (colorTexture || msaaColorBuffer) {
+        bool canRender = true;
+        if (needsInit)
+            canRender = invokeInitialize(cb);
+        if (canRender)
+            q->render(cb);
+
+        QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        readbackBatch->readBackTexture(resolveTexture ? resolveTexture : colorTexture, &readResult);
+        cb->resourceUpdate(readbackBatch);
+    }
+
+    rhi->endOffscreenFrame();
+
+    if (readCompleted) {
+        QImage::Format imageFormat = QImage::Format_RGBA8888;
+        switch (widgetTextureFormat) {
+        case QRhiWidget::TextureFormat::RGBA8:
+            break;
+        case QRhiWidget::TextureFormat::RGBA16F:
+            imageFormat = QImage::Format_RGBA16FPx4;
+            break;
+        case QRhiWidget::TextureFormat::RGBA32F:
+            imageFormat = QImage::Format_RGBA32FPx4;
+            break;
+        case QRhiWidget::TextureFormat::RGB10A2:
+            imageFormat = QImage::Format_BGR30;
+            break;
+        }
+        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            imageFormat);
+        QImage result;
+        if (rhi->isYUpInFramebuffer())
+            result = wrapperImage.mirrored();
+        else
+            result = wrapperImage.copy();
+        result.setDevicePixelRatio(q->devicePixelRatio());
+        return result;
+    } else {
+        Q_UNREACHABLE();
+    }
+
+    return QImage();
+}
+
 void QRhiWidgetPrivate::resetColorBufferObjects()
 {
     if (colorTexture) {
@@ -907,90 +991,24 @@ void QRhiWidget::setAutoRenderTarget(bool enabled)
     appropriate. It is up to the caller to reinterpret the resulting data as it
     sees fit.
 
-    This function can also be called when the QRhiWidget is not added to a
-    widget hierarchy belonging to an on-screen top-level window. This allows
+    \note This function can also be called when the QRhiWidget is not added to
+    a widget hierarchy belonging to an on-screen top-level window. This allows
     generating an image from a 3D rendering off-screen.
+
+    The function is named grabFramebuffer() for consistency with QOpenGLWidget
+    and QQuickWidget. It is not the only way to get CPU-side image data out of
+    the QRhiWidget's content: calling \l QWidget::grab() on a QRhiWidget, or an
+    ancestor of it, is functional as well (returning a QPixmap). Besides
+    working directly with QImage, another advantage of grabFramebuffer() is
+    that it may be slightly more performant, simply because it does not have to
+    go through the rest of QWidget infrastructure but can right away trigger
+    rendering a new frame and then do the readback.
 
     \sa setTextureFormat()
  */
-QImage QRhiWidget::grab()
+QImage QRhiWidget::grabFramebuffer() const
 {
-    Q_D(QRhiWidget);
-    if (d->noSize)
-        return QImage();
-
-    d->ensureRhi();
-    if (!d->rhi) {
-        // The widget (and its parent chain, if any) may not be shown at
-        // all, yet one may still want to use it for grabs. This is
-        // ridiculous of course because the rendering infrastructure is
-        // tied to the top-level widget that initializes upon expose, but
-        // it has to be supported.
-        d->offscreenRenderer.setConfig(d->config);
-        // no window passed in, so no swapchain, but we get a functional QRhi which we own
-        d->offscreenRenderer.create();
-        d->rhi = d->offscreenRenderer.rhi();
-        if (!d->rhi) {
-            qWarning("QRhiWidget: Failed to create dedicated QRhi for grabbing");
-            emit renderFailed();
-            return QImage();
-        }
-    }
-
-    QRhiCommandBuffer *cb = nullptr;
-    if (d->rhi->beginOffscreenFrame(&cb) != QRhi::FrameOpSuccess)
-        return QImage();
-
-    QRhiReadbackResult readResult;
-    bool readCompleted = false;
-    bool needsInit = false;
-    d->ensureTexture(&needsInit);
-
-    if (d->colorTexture || d->msaaColorBuffer) {
-        bool canRender = true;
-        if (needsInit)
-            canRender = d->invokeInitialize(cb);
-        if (canRender)
-            render(cb);
-
-        QRhiResourceUpdateBatch *readbackBatch = d->rhi->nextResourceUpdateBatch();
-        readResult.completed = [&readCompleted] { readCompleted = true; };
-        readbackBatch->readBackTexture(d->resolveTexture ? d->resolveTexture : d->colorTexture, &readResult);
-        cb->resourceUpdate(readbackBatch);
-    }
-
-    d->rhi->endOffscreenFrame();
-
-    if (readCompleted) {
-        QImage::Format imageFormat = QImage::Format_RGBA8888;
-        switch (d->widgetTextureFormat) {
-        case TextureFormat::RGBA8:
-            break;
-        case TextureFormat::RGBA16F:
-            imageFormat = QImage::Format_RGBA16FPx4;
-            break;
-        case TextureFormat::RGBA32F:
-            imageFormat = QImage::Format_RGBA32FPx4;
-            break;
-        case TextureFormat::RGB10A2:
-            imageFormat = QImage::Format_BGR30;
-            break;
-        }
-        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
-                            readResult.pixelSize.width(), readResult.pixelSize.height(),
-                            imageFormat);
-        QImage result;
-        if (d->rhi->isYUpInFramebuffer())
-            result = wrapperImage.mirrored();
-        else
-            result = wrapperImage.copy();
-        result.setDevicePixelRatio(devicePixelRatio());
-        return result;
-    } else {
-        Q_UNREACHABLE();
-    }
-
-    return QImage();
+    return const_cast<QRhiWidgetPrivate *>(d_func())->grabFramebuffer();
 }
 
 /*!
@@ -1013,7 +1031,7 @@ QImage QRhiWidget::grab()
     Reimplementations should also be prepared that the QRhi object and the
     color buffer texture may change between invocations of this function. One
     special case where the objects will be different is when performing a
-    grab() with a widget that is not yet shown, and then making the
+    grabFramebuffer() with a widget that is not yet shown, and then making the
     widget visible on-screen within a top-level widget. There the grab will
     happen with a dedicated QRhi that is then replaced with the top-level
     window's associated QRhi in subsequent initialize() and render()
@@ -1107,7 +1125,7 @@ void QRhiWidget::render(QRhiCommandBuffer *cb)
     implies an early-release of the associated resources managed by the
     still-alive QRhiWidget.
 
-    Another case when this function is called is when grab() is used
+    Another case when this function is called is when grabFramebuffer() is used
     with a QRhiWidget that is not added to a visible window, i.e. the rendering
     is performed offscreen. If later on this QRhiWidget is made visible, or
     added to a visible widget hierarchy, the associated QRhi will change from
@@ -1277,7 +1295,7 @@ QRhiRenderTarget *QRhiWidget::renderTarget() const
 
     This signal is emitted whenever the widget is supposed to render to its
     backing texture (either due to a \l{QWidget::update()}{widget update} or
-    due to a call to grab()), but there is no \l QRhi for the widget to
+    due to a call to grabFramebuffer()), but there is no \l QRhi for the widget to
     use, likely due to issues related to graphics configuration.
 
     This signal may be emitted multiple times when a problem arises. Do not

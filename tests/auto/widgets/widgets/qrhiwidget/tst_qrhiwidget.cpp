@@ -12,6 +12,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QVBoxLayout>
+#include <QScrollArea>
 
 #if QT_CONFIG(vulkan)
 #include <private/qvulkandefaultinstance_p.h>
@@ -36,8 +37,10 @@ private slots:
     void autoRt();
     void reparent_data();
     void reparent();
-    void grab_data();
-    void grab();
+    void grabFramebufferWhileStillInvisible_data();
+    void grabFramebufferWhileStillInvisible();
+    void grabViaQWidgetGrab_data();
+    void grabViaQWidgetGrab();
     void mirror_data();
     void mirror();
 
@@ -409,10 +412,10 @@ void tst_QRhiWidget::simple()
         QVERIFY(qBlue(c) <= maxFuzz);
     }
 
-    // Now through grab().
+    // Now through grabFramebuffer().
     QImage resultTwo;
     if (rhi->backend() != QRhi::Null) {
-        resultTwo = rhiWidget->grab();
+        resultTwo = rhiWidget->grabFramebuffer();
         QCOMPARE(errorSpy.count(), 0);
         QVERIFY(!resultTwo.isNull());
         QRgb c = resultTwo.pixel(resultTwo.width() / 2, resultTwo.height() / 2);
@@ -422,7 +425,7 @@ void tst_QRhiWidget::simple()
     }
 
     // Check we got the same result from our manual readback and when the
-    // texture was rendered to again and grab() was called.
+    // texture was rendered to again and grabFramebuffer() was called.
     QVERIFY(imageRGBAEquals(resultOne, resultTwo, maxFuzz));
 }
 
@@ -668,12 +671,12 @@ void tst_QRhiWidget::reparent()
     QCOMPARE(errorSpy.count(), 0);
 }
 
-void tst_QRhiWidget::grab_data()
+void tst_QRhiWidget::grabFramebufferWhileStillInvisible_data()
 {
     testData();
 }
 
-void tst_QRhiWidget::grab()
+void tst_QRhiWidget::grabFramebufferWhileStillInvisible()
 {
     QFETCH(QRhiWidget::Api, api);
 
@@ -684,7 +687,7 @@ void tst_QRhiWidget::grab()
     w.resize(1280, 720);
     QSignalSpy errorSpy(&w, &QRhiWidget::renderFailed);
 
-    QImage image = w.grab(); // creates its own QRhi just to render offscreen
+    QImage image = w.grabFramebuffer(); // creates its own QRhi just to render offscreen
     QVERIFY(!image.isNull());
     QVERIFY(w.rhi());
     QVERIFY(w.colorTexture());
@@ -718,6 +721,36 @@ void tst_QRhiWidget::grab()
         else
             image = wrapperImage.copy();
         QRgb c = image.pixel(image.width() / 2, image.height() / 2);
+        QVERIFY(qRed(c) >= 255 - maxFuzz);
+        QVERIFY(qGreen(c) <= maxFuzz);
+        QVERIFY(qBlue(c) <= maxFuzz);
+    }
+}
+
+void tst_QRhiWidget::grabViaQWidgetGrab_data()
+{
+    testData();
+}
+
+void tst_QRhiWidget::grabViaQWidgetGrab()
+{
+    QFETCH(QRhiWidget::Api, api);
+
+    SimpleRhiWidget w;
+    w.setApi(api);
+    w.resize(1280, 720);
+    QSignalSpy frameSpy(&w, &QRhiWidget::frameSubmitted);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    QTRY_VERIFY(frameSpy.count() > 0);
+
+    QImage image = w.grab().toImage();
+
+    if (w.rhi()->backend() != QRhi::Null) {
+        // It's upside down with Vulkan (Y is not corrected, clipSpaceCorrMatrix() is not used),
+        // but that won't matter for the test.
+        QRgb c = image.pixel(image.width() / 2, image.height() / 2);
+        const int maxFuzz = 1;
         QVERIFY(qRed(c) >= 255 - maxFuzz);
         QVERIFY(qGreen(c) <= maxFuzz);
         QVERIFY(qBlue(c) <= maxFuzz);

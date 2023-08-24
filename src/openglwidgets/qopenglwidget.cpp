@@ -972,6 +972,11 @@ void QOpenGLWidgetPrivate::render()
 #endif
 
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbos[currentTargetBuffer]->handle();
+
+    f->glUseProgram(0);
+    f->glBindBuffer(GL_ARRAY_BUFFER, 0);
+    f->glEnable(GL_BLEND);
+
     q->paintGL();
     if (updateBehavior == QOpenGLWidget::NoPartialUpdate)
         invalidateFboAfterPainting();

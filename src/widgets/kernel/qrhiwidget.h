@@ -69,7 +69,7 @@ public:
     bool isMirrorVerticallyEnabled() const;
     void setMirrorVertically(bool enabled);
 
-    QImage grab();
+    QImage grabFramebuffer() const;
 
     virtual void initialize(QRhiCommandBuffer *cb);
     virtual void render(QRhiCommandBuffer *cb);

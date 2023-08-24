@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
     QPushButton *btn = new QPushButton(QLatin1String("Grab to image"));
     QObject::connect(btn, &QPushButton::clicked, btn, [rhiWidget] {
-        QImage image = rhiWidget->grab();
+        QImage image = rhiWidget->grabFramebuffer();
         qDebug() << "Got image" << image;
         if (!image.isNull()) {
             QFileDialog fd(rhiWidget->parentWidget());

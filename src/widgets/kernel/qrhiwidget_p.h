@@ -30,6 +30,7 @@ public:
     QPlatformTextureList::Flags textureListFlags() override;
     QPlatformBackingStoreRhiConfig rhiConfig() const override;
     void endCompose() override;
+    QImage grabFramebuffer() override;
 
     void ensureRhi();
     void ensureTexture(bool *changed);
