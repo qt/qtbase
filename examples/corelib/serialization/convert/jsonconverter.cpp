@@ -13,8 +13,7 @@ using namespace Qt::StringLiterals;
 
 static JsonConverter jsonConverter;
 
-static const char jsonOptionHelp[] =
-        "compact=no|yes              Use compact JSON form.\n";
+static const char jsonOptionHelp[] = "compact=no|yes              Use compact JSON form.\n";
 
 static QJsonDocument convertFromVariant(const QVariant &v)
 {
@@ -24,10 +23,6 @@ static QJsonDocument convertFromVariant(const QVariant &v)
         exit(EXIT_FAILURE);
     }
     return doc;
-}
-
-JsonConverter::JsonConverter()
-{
 }
 
 QString JsonConverter::name()

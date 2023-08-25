@@ -45,7 +45,8 @@ QVariant NullConverter::loadFile(QIODevice *f, Converter *&outputConverter)
 void NullConverter::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
 {
     if (!options.isEmpty()) {
-        fprintf(stderr, "Unknown option '%s' to null output. This format has no options.\n", qPrintable(options.first()));
+        fprintf(stderr, "Unknown option '%s' to null output. This format has no options.\n",
+                qPrintable(options.first()));
         exit(EXIT_FAILURE);
     }
 

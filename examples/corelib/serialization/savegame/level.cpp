@@ -6,9 +6,7 @@
 #include <QJsonArray>
 #include <QTextStream>
 
-Level::Level(const QString &name) : mName(name)
-{
-}
+Level::Level(const QString &name) : mName(name) { }
 
 QString Level::name() const
 {
@@ -61,8 +59,7 @@ void Level::print(QTextStream &s, int indentation) const
 {
     const QString indent(indentation * 2, ' ');
 
-    s << indent << "Name:\t" << mName << "\n"
-      << indent << "NPCs:\n";
+    s << indent << "Name:\t" << mName << "\n" << indent << "NPCs:\n";
     for (const Character &character : mNpcs)
         character.print(s, indentation + 1);
 }

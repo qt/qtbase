@@ -8,9 +8,6 @@
 
 class JsonConverter : public Converter
 {
-public:
-    JsonConverter();
-
     // Converter interface
 public:
     QString name() override;
