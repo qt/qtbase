@@ -76,7 +76,7 @@ QVariant TextConverter::loadFile(QIODevice *f, Converter *&outputConverter)
 
     QVariantList list;
     QTextStream in(f);
-    QString line ;
+    QString line;
     while (!in.atEnd()) {
         in.readLineInto(&line);
         bool ok;

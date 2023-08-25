@@ -76,8 +76,8 @@ bool Game::loadGame(Game::SaveFormat saveFormat)
     QByteArray saveData = loadFile.readAll();
 
     QJsonDocument loadDoc(saveFormat == Json
-        ? QJsonDocument::fromJson(saveData)
-        : QJsonDocument(QCborValue::fromCbor(saveData).toMap().toJsonObject()));
+                          ? QJsonDocument::fromJson(saveData)
+                          : QJsonDocument(QCborValue::fromCbor(saveData).toMap().toJsonObject()));
 
     read(loadDoc.object());
 

@@ -56,11 +56,11 @@ static QString dumpVariant(const QVariant &v, const QString &indent = QLatin1Str
         result = QLatin1String("Map {");
         for (const auto &pair : map) {
             result += indented + dumpVariant(pair.first, indented);
-            result.chop(1);         // remove comma
+            result.chop(1); // remove comma
             result += QLatin1String(" => ") + dumpVariant(pair.second, indented);
 
         }
-        result.chop(1);             // remove comma
+        result.chop(1); // remove comma
         result += indent + QLatin1String("},");
     } else if (type == QMetaType::QVariantList) {
         const QVariantList list = v.toList();
@@ -68,7 +68,7 @@ static QString dumpVariant(const QVariant &v, const QString &indent = QLatin1Str
         result = QLatin1String("List [");
         for (const auto &item : list)
             result += indented + dumpVariant(item, indented);
-        result.chop(1);             // remove comma
+        result.chop(1); // remove comma
         result += indent + QLatin1String("],");
     } else {
         QDebug debug(&result);
@@ -115,7 +115,7 @@ void DataStreamDumper::saveFile(QIODevice *f, const QVariant &contents, const QS
 {
     Q_UNUSED(options);
     QString s = dumpVariant(contents);
-    s[s.size() - 1] = QLatin1Char('\n');    // replace the comma with newline
+    s[s.size() - 1] = QLatin1Char('\n'); // replace the comma with newline
 
     QTextStream out(f);
     out << s;
@@ -213,7 +213,7 @@ void DataStreamConverter::saveFile(QIODevice *f, const QVariant &contents, const
         exit(EXIT_FAILURE);
     }
 
-    char c = order == QDataStream::LittleEndian ? 'l'  : 'B';
+    char c = order == QDataStream::LittleEndian ? 'l' : 'B';
     f->write(signature);
     f->write(&c, 1);
 
