@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qsequentialanimationgroup
     SOURCES
         tst_qsequentialanimationgroup.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )
