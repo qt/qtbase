@@ -5,6 +5,7 @@
 #include <QTest>
 #include <QTestEventLoop>
 #include <QSignalSpy>
+#include <QtTest/private/qpropertytesthelper_p.h>
 
 #include <QIODevice>
 #ifndef QT_NO_WIDGETS
@@ -41,6 +42,7 @@ private slots:
 #endif
     void emptyMovie();
     void bindings();
+    void automatedBindings();
 };
 
 // Testing get/set functions
@@ -237,6 +239,24 @@ void tst_QMovie::bindings()
     cacheModeObserver.setBinding([&] { return movie.cacheMode(); });
     movie.setCacheMode(QMovie::CacheAll);
     QCOMPARE(cacheModeObserver, QMovie::CacheAll);
+}
+
+void tst_QMovie::automatedBindings()
+{
+    QMovie movie;
+
+    QTestPrivate::testReadWritePropertyBasics(movie, 50, 100, "speed");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QMovie::speed");
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics(movie, QMovie::CacheAll, QMovie::CacheNone,
+                                              "cacheMode");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QMovie::cacheMode");
+        return;
+    }
 }
 
 QTEST_MAIN(tst_QMovie)
