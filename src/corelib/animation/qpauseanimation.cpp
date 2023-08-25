@@ -94,11 +94,10 @@ void QPauseAnimation::setDuration(int msecs)
     }
     Q_D(QPauseAnimation);
 
-    if (msecs != d->duration) {
-        d->duration = msecs;
+    d->duration.removeBindingUnlessInWrapper();
+    if (msecs != d->duration.valueBypassingBindings()) {
+        d->duration.setValueBypassingBindings(msecs);
         d->duration.notify();
-    } else {
-        d->duration.removeBindingUnlessInWrapper();
     }
 }
 
