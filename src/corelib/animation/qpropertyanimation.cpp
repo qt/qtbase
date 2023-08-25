@@ -60,7 +60,8 @@ QT_BEGIN_NAMESPACE
 
 void QPropertyAnimationPrivate::updateMetaProperty()
 {
-    if (!targetObject || propertyName.value().isEmpty()) {
+    const QObject *target = targetObject.valueBypassingBindings();
+    if (!target || propertyName.value().isEmpty()) {
         propertyType = QMetaType::UnknownType;
         propertyIndex = -1;
         return;
@@ -68,19 +69,19 @@ void QPropertyAnimationPrivate::updateMetaProperty()
 
     //propertyType will be set to a valid type only if there is a Q_PROPERTY
     //otherwise it will be set to QVariant::Invalid at the end of this function
-    propertyType = targetObject->property(propertyName.value()).userType();
-    propertyIndex = targetObject->metaObject()->indexOfProperty(propertyName.value());
+    propertyType = target->property(propertyName.value()).userType();
+    propertyIndex = target->metaObject()->indexOfProperty(propertyName.value());
 
     if (propertyType != QMetaType::UnknownType)
         convertValues(propertyType);
     if (propertyIndex == -1) {
         //there is no Q_PROPERTY on the object
         propertyType = QMetaType::UnknownType;
-        if (!targetObject->dynamicPropertyNames().contains(propertyName))
+        if (!target->dynamicPropertyNames().contains(propertyName))
             qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of "
                      "your QObject",
                      propertyName.value().constData());
-    } else if (!targetObject->metaObject()->property(propertyIndex).isWritable()) {
+    } else if (!target->metaObject()->property(propertyIndex).isWritable()) {
         qWarning("QPropertyAnimation: you're trying to animate the non-writable property %s of "
                  "your QObject",
                  propertyName.value().constData());
@@ -163,15 +164,16 @@ void QPropertyAnimation::setTargetObject(QObject *target)
     }
 
     d->targetObject.removeBindingUnlessInWrapper();
-    if (d->targetObject == target)
+    const QObject *oldTarget = d->targetObject.valueBypassingBindings();
+    if (oldTarget == target)
         return;
 
-    if (d->targetObject != nullptr)
-        QObject::disconnect(d->targetObject, &QObject::destroyed, this, nullptr);
+    if (oldTarget != nullptr)
+        QObject::disconnect(oldTarget, &QObject::destroyed, this, nullptr);
     d->targetObject.setValueBypassingBindings(target);
 
-    if (d->targetObject != nullptr) {
-        QObject::connect(d->targetObject, &QObject::destroyed, this,
+    if (target != nullptr) {
+        QObject::connect(target, &QObject::destroyed, this,
                          [d] { d->targetObjectDestroyed(); });
     }
     d->updateMetaProperty();
@@ -201,7 +203,7 @@ void QPropertyAnimation::setPropertyName(const QByteArray &propertyName)
 
     d->propertyName.removeBindingUnlessInWrapper();
 
-    if (d->propertyName == propertyName)
+    if (d->propertyName.valueBypassingBindings() == propertyName)
         return;
 
     d->propertyName.setValueBypassingBindings(propertyName);
