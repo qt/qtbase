@@ -1317,13 +1317,11 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
 QNetworkHeadersPrivate::RawHeadersList::ConstIterator
 QNetworkHeadersPrivate::findRawHeader(QByteArrayView key) const
 {
-    RawHeadersList::ConstIterator it = rawHeaders.constBegin();
-    RawHeadersList::ConstIterator end = rawHeaders.constEnd();
-    for ( ; it != end; ++it)
-        if (it->first.compare(key, Qt::CaseInsensitive) == 0)
-            return it;
-
-    return end;                 // not found
+    auto isKeyEqual = [key](const auto &headerPair)
+    {
+        return headerPair.first.compare(key, Qt::CaseInsensitive) == 0;
+    };
+    return std::find_if(rawHeaders.begin(), rawHeaders.end(), isKeyEqual);
 }
 
 QNetworkHeadersPrivate::RawHeadersList QNetworkHeadersPrivate::allRawHeaders() const
