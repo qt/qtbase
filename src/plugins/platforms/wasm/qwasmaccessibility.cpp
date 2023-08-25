@@ -240,12 +240,21 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
         case QAccessible::Dialog: {
             element = document.call<emscripten::val>("createElement", std::string("dialog"));
         }break;
-        case QAccessible::ToolBar:
-        case QAccessible::ButtonMenu: {
+        case QAccessible::ToolBar:{
             element = document.call<emscripten::val>("createElement", std::string("div"));
             QString text = iface->text(QAccessible::Name);
 
-            element.call<void>("setAttribute", std::string("role"), std::string("widget"));
+            element.call<void>("setAttribute", std::string("role"), std::string("toolbar"));
+            element.call<void>("setAttribute", std::string("title"), text.toStdString());
+            element.call<void>("addEventListener", emscripten::val("click"),
+                               emscripten::val::module_property("qtEventReceived"), true);
+        }break;
+        case QAccessible::MenuItem:
+        case QAccessible::ButtonMenu: {
+            element = document.call<emscripten::val>("createElement", std::string("button"));
+            QString text = iface->text(QAccessible::Name);
+
+            element.call<void>("setAttribute", std::string("role"), std::string("menuitem"));
             element.call<void>("setAttribute", std::string("title"), text.toStdString());
             element.call<void>("addEventListener", emscripten::val("click"),
                                emscripten::val::module_property("qtEventReceived"), true);
@@ -254,12 +263,14 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
         case QAccessible::PopupMenu: {
           element = document.call<emscripten::val>("createElement",std::string("div"));
           QString text = iface->text(QAccessible::Name);
-          element.call<void>("setAttribute", std::string("role"), std::string("widget"));
+          element.call<void>("setAttribute", std::string("role"), std::string("menubar"));
           element.call<void>("setAttribute", std::string("title"), text.toStdString());
           for (int i = 0; i < iface->childCount(); ++i) {
-              ensureHtmlElement(iface->child(i));
-              setHtmlElementTextName(iface->child(i));
-              setHtmlElementGeometry(iface->child(i));
+                emscripten::val childElement = emscripten::val::undefined();
+                childElement= ensureHtmlElement(iface->child(i));
+                childElement.call<void>("setAttribute", std::string("aria-owns"), text.toStdString());
+                setHtmlElementTextName(iface->child(i));
+                setHtmlElementGeometry(iface->child(i));
           }
         }break;
         case QAccessible::EditableText: {
@@ -493,6 +504,7 @@ void QWasmAccessibility::handleMenuUpdate(QAccessibleEvent *event)
     QString text = iface->text(QAccessible::Name);
     QString desc = iface->text(QAccessible::Description);
     switch (event->type()) {
+    case QAccessible::Focus:
     case QAccessible::NameChanged:
     case QAccessible::MenuStart  ://"TODO: To implement later
     case QAccessible::PopupMenuStart://"TODO: To implement later
