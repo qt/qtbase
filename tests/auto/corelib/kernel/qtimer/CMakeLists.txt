@@ -14,6 +14,7 @@ qt_internal_add_test(tst_qtimer
         tst_qtimer.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )
 
 ## Scopes:
