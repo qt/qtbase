@@ -1676,9 +1676,9 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
 
     // add MIME-Version header if not there already (we must include the header
     // if the message conforms to RFC 2045, see section 4 of that RFC)
-    QByteArray mimeHeader("MIME-Version");
+    auto mimeHeader = "MIME-Version"_ba;
     if (!request.hasRawHeader(mimeHeader))
-        newRequest.setRawHeader(mimeHeader, QByteArray("1.0"));
+        newRequest.setRawHeader(mimeHeader, "1.0"_ba);
 
     QIODevice *device = multiPart->d_func()->device;
     if (!device->isReadable()) {
