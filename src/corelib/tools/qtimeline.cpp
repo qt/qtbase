@@ -55,16 +55,16 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
 {
     Q_Q(QTimeLine);
     currentTime.removeBindingUnlessInWrapper();
-    auto previousCurrentTime = currentTime.value();
+    const auto previousCurrentTime = currentTime.valueBypassingBindings();
 
-    qreal lastValue = q->currentValue();
-    int lastFrame = q->currentFrame();
+    const qreal lastValue = q->valueForTime(previousCurrentTime);
+    const int lastFrame = q->frameForTime(previousCurrentTime);
 
     // Determine if we are looping.
-    int elapsed = (direction == QTimeLine::Backward) ? (-msecs + duration) : msecs;
-    int loopCountNow = elapsed / duration;
+    const int elapsed = (direction == QTimeLine::Backward) ? (-msecs + duration) : msecs;
+    const int loopCountNow = elapsed / duration;
 
-    bool looping = (loopCountNow != currentLoopCount);
+    const bool looping = (loopCountNow != currentLoopCount);
 #ifdef QTIMELINE_DEBUG
     qDebug() << "QTimeLinePrivate::setCurrentTime:" << msecs << duration << "with loopCountNow"
              << loopCountNow << "currentLoopCount" << currentLoopCount << "looping" << looping;
@@ -75,7 +75,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
     // Normalize msecs to be between 0 and duration, inclusive.
     currentTime.setValueBypassingBindings(elapsed % duration);
     if (direction.value() == QTimeLine::Backward)
-        currentTime.setValueBypassingBindings(duration - currentTime);
+        currentTime.setValueBypassingBindings(duration - currentTime.valueBypassingBindings());
 
     // Check if we have reached the end of loopcount.
     bool finished = false;
@@ -85,12 +85,14 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
         currentLoopCount = loopCount - 1;
     }
 
-    int currentFrame = q->frameForTime(currentTime);
+    const int currentFrame = q->frameForTime(currentTime.valueBypassingBindings());
 #ifdef QTIMELINE_DEBUG
-    qDebug() << "QTimeLinePrivate::setCurrentTime: frameForTime" << currentTime << currentFrame;
+    qDebug() << "QTimeLinePrivate::setCurrentTime: frameForTime"
+             << currentTime.valueBypassingBindings() << currentFrame;
 #endif
-    if (!qFuzzyCompare(lastValue, q->currentValue()))
-        emit q->valueChanged(q->currentValue(), QTimeLine::QPrivateSignal());
+    const qreal currentValue = q->valueForTime(currentTime.valueBypassingBindings());
+    if (!qFuzzyCompare(lastValue, currentValue))
+        emit q->valueChanged(currentValue, QTimeLine::QPrivateSignal());
     if (lastFrame != currentFrame) {
         const int transitionframe = (direction == QTimeLine::Forward ? endFrame : startFrame);
         if (looping && !finished && transitionframe != currentFrame) {
@@ -123,7 +125,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
         q->stop();
         emit q->finished(QTimeLine::QPrivateSignal());
     }
-    if (currentTime.value() != previousCurrentTime)
+    if (currentTime.valueBypassingBindings() != previousCurrentTime)
         currentTime.notify();
 }
 QBindable<int> QTimeLine::bindableCurrentTime()
@@ -334,11 +336,12 @@ QTimeLine::Direction QTimeLine::direction() const
 void QTimeLine::setDirection(Direction direction)
 {
     Q_D(QTimeLine);
-    auto previousDirection = d->direction.value();
-    d->direction.setValue(direction);
+    d->direction.removeBindingUnlessInWrapper();
+    const auto previousDirection = d->direction.valueBypassingBindings();
+    d->direction.setValueBypassingBindings(direction);
     d->startTime = d->currentTime;
     d->timer.start();
-    if (previousDirection != d->direction.value())
+    if (previousDirection != d->direction.valueBypassingBindings())
         d->direction.notify();
 }
 
@@ -372,12 +375,11 @@ void QTimeLine::setDuration(int duration)
         qWarning("QTimeLine::setDuration: cannot set duration <= 0");
         return;
     }
-    if (duration == d->duration) {
-        d->duration.removeBindingUnlessInWrapper();
-        return;
+    d->duration.removeBindingUnlessInWrapper();
+    if (duration != d->duration.valueBypassingBindings()) {
+        d->duration.setValueBypassingBindings(duration);
+        d->duration.notify();
     }
-    d->duration.setValue(duration);
-    d->duration.notify();
 }
 
 QBindable<int> QTimeLine::bindableDuration()
