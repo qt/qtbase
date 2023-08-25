@@ -16,6 +16,8 @@
 
 #include <stdio.h>
 
+using namespace Qt::StringLiterals;
+
 static CborConverter cborConverter;
 static CborDiagnosticDumper cborDiagnosticDumper;
 
@@ -120,7 +122,7 @@ static QCborValue convertFromVariant(const QVariant &v, TrimFloatingPoint fpTrim
 
 QString CborDiagnosticDumper::name()
 {
-    return QStringLiteral("cbor-dump");
+    return "cbor-dump"_L1;
 }
 
 Converter::Direction CborDiagnosticDumper::directions()
@@ -213,7 +215,7 @@ const char *CborConverter::optionsHelp()
 bool CborConverter::probeFile(QIODevice *f)
 {
     if (QFile *file = qobject_cast<QFile *>(f)) {
-        if (file->fileName().endsWith(QLatin1String(".cbor")))
+        if (file->fileName().endsWith(".cbor"_L1))
             return true;
     }
     return f->isReadable() && f->peek(3) == QByteArray("\xd9\xd9\xf7", 3);

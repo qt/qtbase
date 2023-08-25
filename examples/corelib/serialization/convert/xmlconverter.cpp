@@ -13,6 +13,8 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
+using namespace Qt::StringLiterals;
+
 static const char xmlOptionHelp[] =
         "compact=no|yes              Use compact XML form.\n";
 
@@ -23,7 +25,7 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
 static QVariantList listFromXml(QXmlStreamReader &xml, Converter::Options options)
 {
     QVariantList list;
-    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == QLatin1String("list"))) {
+    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == "list"_L1)) {
         xml.readNext();
         switch (xml.tokenType()) {
         case QXmlStreamReader::StartElement:
@@ -60,7 +62,7 @@ static QVariantList listFromXml(QXmlStreamReader &xml, Converter::Options option
 static VariantOrderedMap::value_type mapEntryFromXml(QXmlStreamReader &xml, Converter::Options options)
 {
     QVariant key, value;
-    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == QLatin1String("entry"))) {
+    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == "entry"_L1)) {
         xml.readNext();
         switch (xml.tokenType()) {
         case QXmlStreamReader::StartElement:
@@ -103,11 +105,11 @@ static QVariant mapFromXml(QXmlStreamReader &xml, Converter::Options options)
     QVariantMap map1;
     VariantOrderedMap map2;
 
-    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == QLatin1String("map"))) {
+    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == "map"_L1)) {
         xml.readNext();
         switch (xml.tokenType()) {
         case QXmlStreamReader::StartElement:
-            if (xml.name() == QLatin1String("entry")) {
+            if (xml.name() == "entry"_L1) {
                 auto pair = mapEntryFromXml(xml, options);
                 if (options & Converter::SupportsArbitraryMapKeys)
                     map2.append(pair);
@@ -149,18 +151,18 @@ static QVariant mapFromXml(QXmlStreamReader &xml, Converter::Options options)
 static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options)
 {
     QStringView name = xml.name();
-    if (name == QLatin1String("list"))
+    if (name == "list"_L1)
         return listFromXml(xml, options);
-    if (name == QLatin1String("map"))
+    if (name == "map"_L1)
         return mapFromXml(xml, options);
-    if (name != QLatin1String("value")) {
+    if (name != "value"_L1) {
         fprintf(stderr, "%lld:%lld: Invalid XML key '%s'.\n",
                 xml.lineNumber(), xml.columnNumber(), qPrintable(name.toString()));
         exit(EXIT_FAILURE);
     }
 
     QXmlStreamAttributes attrs = xml.attributes();
-    QStringView type = attrs.value(QLatin1String("type"));
+    QStringView type = attrs.value("type"_L1);
 
     forever {
         xml.readNext();
@@ -182,7 +184,7 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
     QVariant result;
     if (type.isEmpty()) {
         // ok
-    } else if (type == QLatin1String("number")) {
+    } else if (type == "number"_L1) {
         // try integer first
         bool ok;
         qint64 v = text.toLongLong(&ok);
@@ -198,27 +200,27 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
             }
             result = d;
         }
-    } else if (type == QLatin1String("bytes")) {
+    } else if (type == "bytes"_L1) {
         QByteArray data = text.toLatin1();
         QStringView encoding = attrs.value("encoding");
-        if (encoding == QLatin1String("base64url")) {
+        if (encoding == "base64url"_L1) {
             result = QByteArray::fromBase64(data, QByteArray::Base64UrlEncoding);
-        } else if (encoding == QLatin1String("hex")) {
+        } else if (encoding == "hex"_L1) {
             result = QByteArray::fromHex(data);
-        } else if (encoding.isEmpty() || encoding == QLatin1String("base64")) {
+        } else if (encoding.isEmpty() || encoding == "base64"_L1) {
             result = QByteArray::fromBase64(data);
         } else {
             fprintf(stderr, "%lld:%lld: Invalid XML: unknown encoding '%s' for bytes.\n",
                     xml.lineNumber(), xml.columnNumber(), qPrintable(encoding.toString()));
             exit(EXIT_FAILURE);
         }
-    } else if (type == QLatin1String("string")) {
+    } else if (type == "string"_L1) {
         result = text.toString();
-    } else if (type == QLatin1String("null")) {
+    } else if (type == "null"_L1) {
         result = QVariant::fromValue(nullptr);
-    } else if (type == QLatin1String("CBOR simple type")) {
+    } else if (type == "CBOR simple type"_L1) {
         result = QVariant::fromValue(QCborSimpleType(text.toShort()));
-    } else if (type == QLatin1String("bits")) {
+    } else if (type == "bits"_L1) {
         QBitArray ba;
         ba.resize(text.size());
         qsizetype n = 0;
@@ -238,13 +240,13 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
         result = ba;
     } else {
         int id = QMetaType::UnknownType;
-        if (type == QLatin1String("datetime"))
+        if (type == "datetime"_L1)
             id = QMetaType::QDateTime;
-        else if (type == QLatin1String("url"))
+        else if (type == "url"_L1)
             id = QMetaType::QUrl;
-        else if (type == QLatin1String("uuid"))
+        else if (type == "uuid"_L1)
             id = QMetaType::QUuid;
-        else if (type == QLatin1String("regex"))
+        else if (type == "regex"_L1)
             id = QMetaType::QRegularExpression;
         else
             id = QMetaType::fromName(type.toLatin1()).id();
@@ -301,7 +303,7 @@ static void variantToXml(QXmlStreamWriter &xml, const QVariant &v)
         xml.writeEndElement();
     } else {
         xml.writeStartElement("value");
-        QString typeString = QStringLiteral("type");
+        QString typeString = "type"_L1;
         switch (type) {
         case QMetaType::Short:
         case QMetaType::UShort:
@@ -401,7 +403,7 @@ static void variantToXml(QXmlStreamWriter &xml, const QVariant &v)
 
 QString XmlConverter::name()
 {
-    return QStringLiteral("xml");
+    return "xml"_L1;
 }
 
 Converter::Direction XmlConverter::directions()
@@ -422,7 +424,7 @@ const char *XmlConverter::optionsHelp()
 bool XmlConverter::probeFile(QIODevice *f)
 {
     if (QFile *file = qobject_cast<QFile *>(f)) {
-        if (file->fileName().endsWith(QLatin1String(".xml")))
+        if (file->fileName().endsWith(".xml"_L1))
             return true;
     }
 
@@ -449,9 +451,9 @@ void XmlConverter::saveFile(QIODevice *f, const QVariant &contents, const QStrin
 {
     bool compact = false;
     for (const QString &s : options) {
-        if (s == QLatin1String("compact=no")) {
+        if (s == "compact=no"_L1) {
             compact = false;
-        } else if (s == QLatin1String("compact=yes")) {
+        } else if (s == "compact=yes"_L1) {
             compact = true;
         } else {
             fprintf(stderr, "Unknown option '%s' to XML output. Valid options are:\n%s",

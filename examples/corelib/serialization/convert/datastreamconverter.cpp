@@ -7,6 +7,8 @@
 #include <QDebug>
 #include <QTextStream>
 
+using namespace Qt::StringLiterals;
+
 static const char dataStreamOptionHelp[] =
         "byteorder=host|big|little      Byte order to use.\n"
         "version=<n>                    QDataStream version (default: Qt 6.0).\n"
@@ -43,33 +45,33 @@ QDataStream &operator>>(QDataStream &ds, VariantOrderedMap &map)
 }
 
 
-static QString dumpVariant(const QVariant &v, const QString &indent = QLatin1String("\n"))
+static QString dumpVariant(const QVariant &v, const QString &indent = "\n"_L1)
 {
     QString result;
-    QString indented = indent + QLatin1String("  ");
+    QString indented = indent + "  "_L1;
 
     int type = v.userType();
     if (type == qMetaTypeId<VariantOrderedMap>() || type == QMetaType::QVariantMap) {
         const auto map = (type == QMetaType::QVariantMap) ?
                     VariantOrderedMap(v.toMap()) : qvariant_cast<VariantOrderedMap>(v);
 
-        result = QLatin1String("Map {");
+        result = "Map {"_L1;
         for (const auto &pair : map) {
             result += indented + dumpVariant(pair.first, indented);
             result.chop(1); // remove comma
-            result += QLatin1String(" => ") + dumpVariant(pair.second, indented);
+            result += " => "_L1 + dumpVariant(pair.second, indented);
 
         }
         result.chop(1); // remove comma
-        result += indent + QLatin1String("},");
+        result += indent + "},"_L1;
     } else if (type == QMetaType::QVariantList) {
         const QVariantList list = v.toList();
 
-        result = QLatin1String("List [");
+        result = "List ["_L1;
         for (const auto &item : list)
             result += indented + dumpVariant(item, indented);
         result.chop(1); // remove comma
-        result += indent + QLatin1String("],");
+        result += indent + "],"_L1;
     } else {
         QDebug debug(&result);
         debug.nospace() << v << ',';
@@ -79,7 +81,7 @@ static QString dumpVariant(const QVariant &v, const QString &indent = QLatin1Str
 
 QString DataStreamDumper::name()
 {
-    return QStringLiteral("datastream-dump");
+    return "datastream-dump"_L1;
 }
 
 Converter::Direction DataStreamDumper::directions()
@@ -128,7 +130,7 @@ DataStreamConverter::DataStreamConverter()
 
 QString DataStreamConverter::name()
 {
-    return QStringLiteral("datastream");
+    return "datastream"_L1;
 }
 
 Converter::Direction DataStreamConverter::directions()
