@@ -59,6 +59,7 @@ endif()
 if(WASM)
     add_subdirectory(corelib/serialization)
     add_subdirectory(corelib/text)
+    add_subdirectory(wasm)
     return()
 endif()
 
