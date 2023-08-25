@@ -410,10 +410,15 @@ function(qt_evaluate_feature feature)
         qt_evaluate_config_expression(emit_if ${arg_EMIT_IF})
     endif()
 
-    # If FEATURE_ is not defined trying to use INPUT_ variable to enable/disable feature.
-    if ((NOT DEFINED "FEATURE_${feature}") AND (DEFINED "INPUT_${feature}")
-        AND (NOT "${INPUT_${feature}}" STREQUAL "undefined")
-        AND (NOT "${INPUT_${feature}}" STREQUAL ""))
+    # If FEATURE_ is not defined try to use the INPUT_ variable to enable/disable feature.
+    # If FEATURE_ is defined and the configure script is being used (so
+    # QT_INTERNAL_CALLED_FROM_CONFIGURE is TRUE), ignore the FEATURE_ variable, and take into
+    # account the INPUT_ variable instead, because a command line argument takes priority over
+    # a pre-cached FEATURE_ variable.
+    if((NOT DEFINED FEATURE_${feature} OR QT_INTERNAL_CALLED_FROM_CONFIGURE)
+        AND DEFINED INPUT_${feature}
+        AND NOT "${INPUT_${feature}}" STREQUAL "undefined"
+        AND NOT "${INPUT_${feature}}" STREQUAL "")
         if(INPUT_${feature})
             set(FEATURE_${feature} ON)
         else()
@@ -904,6 +909,18 @@ function(qt_internal_detect_dirty_features)
                 "To disable this behavior, configure with -DQT_NO_FEATURE_AUTO_RESET=ON")
         endif()
     endif()
+endfunction()
+
+function(qt_internal_clean_feature_inputs)
+    foreach(feature IN LISTS QT_KNOWN_FEATURES)
+        # Unset the INPUT_foo cache variables after they were used in feature evaluation, to
+        # ensure stale values don't influence features upon reconfiguration when
+        # QT_INTERNAL_CALLED_FROM_CONFIGURE is TRUE and the INPUT_foo variable is not passed.
+        # e.g. first configure -no-gui, then manually toggle FEATURE_gui to ON in
+        # CMakeCache.txt, then reconfigure (with the configure script) without -no-gui.
+        # Without this unset(), we'd have switched FEATURE_gui to OFF again.
+        unset(INPUT_${feature} CACHE)
+    endforeach()
 endfunction()
 
 function(qt_config_compile_test name)

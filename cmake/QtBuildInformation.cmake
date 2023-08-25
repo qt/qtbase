@@ -111,6 +111,12 @@ from the build directory")
     if(QT_SUPERBUILD)
         qt_internal_save_previously_visited_packages()
     endif()
+
+    # TODO: Abuse qt_print_build_instructions being called as the last command in a top-level build.
+    # Instead we should call this explicitly at the end of the top-level project.
+    if(QT_SUPERBUILD)
+        qt_internal_qt_configure_end()
+    endif()
 endfunction()
 
 function(qt_configure_print_summary_helper summary_reports force_show)
