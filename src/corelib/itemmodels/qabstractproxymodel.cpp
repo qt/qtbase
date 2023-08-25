@@ -159,7 +159,8 @@ void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     d->model.removeBindingUnlessInWrapper();
     // Special case to handle nullptr models. Otherwise we will have unwanted
     // notifications.
-    if (!sourceModel && d->model == QAbstractItemModelPrivate::staticEmptyModel())
+    const QAbstractItemModel *currentModel = d->model.valueBypassingBindings();
+    if (!sourceModel && currentModel == QAbstractItemModelPrivate::staticEmptyModel())
         return;
     static const struct {
         const char *signalName;
@@ -176,16 +177,16 @@ void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
         // clang-format on
     };
 
-    if (sourceModel != d->model) {
-        if (d->model) {
+    if (sourceModel != currentModel) {
+        if (currentModel) {
             for (const auto &c : connectionTable)
-                disconnect(d->model, c.signalName, this, c.slotName);
+                disconnect(currentModel, c.signalName, this, c.slotName);
         }
 
         if (sourceModel) {
             d->model.setValueBypassingBindings(sourceModel);
             for (const auto &c : connectionTable)
-                connect(d->model, c.signalName, this, c.slotName);
+                connect(sourceModel, c.signalName, this, c.slotName);
         } else {
             d->model.setValueBypassingBindings(QAbstractItemModelPrivate::staticEmptyModel());
         }
