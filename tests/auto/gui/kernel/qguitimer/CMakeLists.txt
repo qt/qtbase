@@ -11,4 +11,5 @@ qt_internal_add_test(tst_qguitimer
     LIBRARIES
         Qt::CorePrivate
         Qt::Gui
+        Qt::TestPrivate
 )

@@ -11,6 +11,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QTest>
 #include <QSignalSpy>
+#include <QtTest/private/qpropertytesthelper_p.h>
 
 #include <qtimer.h>
 #include <qthread.h>
@@ -75,6 +76,7 @@ private slots:
 
     void bindToTimer();
     void bindTimer();
+    void automatedBindingTests();
 };
 
 void tst_QTimer::zeroTimer()
@@ -1299,6 +1301,42 @@ void tst_QTimer::bindTimer()
     QCOMPARE(timer.timerType(), Qt::PreciseTimer);
     timerType = Qt::VeryCoarseTimer;
     QCOMPARE(timer.timerType(), Qt::VeryCoarseTimer);
+}
+
+void tst_QTimer::automatedBindingTests()
+{
+    QTimer timer;
+
+    QVERIFY(!timer.isSingleShot());
+    QTestPrivate::testReadWritePropertyBasics(timer, true, false, "singleShot");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QTimer::singleShot");
+        return;
+    }
+
+    QCOMPARE_NE(timer.interval(), 10);
+    QTestPrivate::testReadWritePropertyBasics(timer, 10, 20, "interval");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QTimer::interval");
+        return;
+    }
+
+    QCOMPARE_NE(timer.timerType(), Qt::PreciseTimer);
+    QTestPrivate::testReadWritePropertyBasics(timer, Qt::PreciseTimer, Qt::CoarseTimer,
+                                              "timerType");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QTimer::timerType");
+        return;
+    }
+
+    timer.start(1000);
+    QVERIFY(timer.isActive());
+    QTestPrivate::testReadOnlyPropertyBasics(timer, true, false, "active",
+                                             [&timer]() { timer.stop(); });
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QTimer::active");
+        return;
+    }
 }
 
 class OrderHelper : public QObject

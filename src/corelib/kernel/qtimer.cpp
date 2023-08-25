@@ -700,8 +700,9 @@ QBindable<bool> QTimer::bindableSingleShot()
 void QTimer::setInterval(int msec)
 {
     Q_D(QTimer);
-    const bool intervalChanged = msec != d->inter;
-    d->inter.setValue(msec);
+    d->inter.removeBindingUnlessInWrapper();
+    const bool intervalChanged = msec != d->inter.valueBypassingBindings();
+    d->inter.setValueBypassingBindings(msec);
     if (d->id != QTimerPrivate::INV_TIMER) { // create new timer
         QObject::killTimer(d->id);                        // restart timer
         d->id = QObject::startTimer(msec, d->type);
