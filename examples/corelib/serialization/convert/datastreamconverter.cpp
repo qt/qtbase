@@ -44,7 +44,6 @@ QDataStream &operator>>(QDataStream &ds, VariantOrderedMap &map)
     return ds;
 }
 
-
 static QString dumpVariant(const QVariant &v, const QString &indent = "\n"_L1)
 {
     QString result;
@@ -52,15 +51,14 @@ static QString dumpVariant(const QVariant &v, const QString &indent = "\n"_L1)
 
     int type = v.userType();
     if (type == qMetaTypeId<VariantOrderedMap>() || type == QMetaType::QVariantMap) {
-        const auto map = (type == QMetaType::QVariantMap) ?
-                    VariantOrderedMap(v.toMap()) : qvariant_cast<VariantOrderedMap>(v);
+        const auto map = (type == QMetaType::QVariantMap) ? VariantOrderedMap(v.toMap())
+                                                          : qvariant_cast<VariantOrderedMap>(v);
 
         result = "Map {"_L1;
         for (const auto &pair : map) {
             result += indented + dumpVariant(pair.first, indented);
             result.chop(1); // remove comma
             result += " => "_L1 + dumpVariant(pair.second, indented);
-
         }
         result.chop(1); // remove comma
         result += indent + "},"_L1;
@@ -159,8 +157,7 @@ QVariant DataStreamConverter::loadFile(QIODevice *f, Converter *&outputConverter
         outputConverter = &dataStreamDumper;
 
     char c;
-    if (f->read(sizeof(signature) -1) != signature ||
-            !f->getChar(&c) || (c != 'l' && c != 'B')) {
+    if (f->read(sizeof(signature) - 1) != signature || !f->getChar(&c) || (c != 'l' && c != 'B')) {
         fprintf(stderr, "Could not load QDataStream file: invalid signature.\n");
         exit(EXIT_FAILURE);
     }
@@ -177,7 +174,8 @@ QVariant DataStreamConverter::loadFile(QIODevice *f, Converter *&outputConverter
     return result;
 }
 
-void DataStreamConverter::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
+void DataStreamConverter::saveFile(QIODevice *f, const QVariant &contents,
+                                   const QStringList &options)
 {
     QDataStream::Version version = QDataStream::Qt_6_0;
     auto order = QDataStream::ByteOrder(QSysInfo::ByteOrder);

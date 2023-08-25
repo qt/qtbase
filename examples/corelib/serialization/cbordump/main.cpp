@@ -144,11 +144,7 @@ enum {
 //! [0]
 struct CborDumper
 {
-    enum DumpOption {
-        ShowCompact             = 0x01,
-        ShowWidthIndicators     = 0x02,
-        ShowAnnotated           = 0x04
-    };
+    enum DumpOption { ShowCompact = 0x01, ShowWidthIndicators = 0x02, ShowAnnotated = 0x04 };
     Q_DECLARE_FLAGS(DumpOptions, DumpOption)
 
     CborDumper(QFile *f, DumpOptions opts_);
@@ -185,8 +181,7 @@ static int cborNumberSize(quint64 value)
     return normalSize;
 }
 
-CborDumper::CborDumper(QFile *f, DumpOptions opts_)
-    : opts(opts_)
+CborDumper::CborDumper(QFile *f, DumpOptions opts_) : opts(opts_)
 {
     // try to mmap the file, this is faster
     char *ptr = reinterpret_cast<char *>(f->map(0, f->size(), QFile::MapPrivateOption));
@@ -233,7 +228,8 @@ QCborError CborDumper::dump()
     return err;
 }
 
-template <typename T> static inline bool canConvertTo(double v)
+template<typename T>
+static inline bool canConvertTo(double v)
 {
     using TypeInfo = std::numeric_limits<T>;
     // The [conv.fpint] (7.10 Floating-integral conversions) section of the
@@ -688,7 +684,9 @@ void CborDumper::printByteArray(const QByteArray &ba)
         break;
 
     case quint8(QCborKnownTags::ExpectedBase64url):
-        printf("b64'%s'", ba.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals).constData());
+        printf("b64'%s'",
+               ba.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals)
+                       .constData());
         break;
     }
 }

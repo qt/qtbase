@@ -8,7 +8,6 @@
 
 class TextConverter : public Converter
 {
-
     // Converter interface
 public:
     QString name() override;

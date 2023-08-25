@@ -89,10 +89,12 @@ int main(int argc, char *argv[])
         for (Converter *conv : std::as_const(*availableConverters)) {
             if (conv->name() == format) {
                 const char *help = conv->optionsHelp();
-                if (help)
-                    printf("The following options are available for format '%s':\n\n%s", qPrintable(format), help);
-                else
+                if (help) {
+                    printf("The following options are available for format '%s':\n\n%s",
+                           qPrintable(format), help);
+                } else {
                     printf("Format '%s' supports no options.\n", qPrintable(format));
+                }
                 return EXIT_SUCCESS;
             }
         }

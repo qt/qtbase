@@ -32,13 +32,9 @@ protected:
 public:
     static Converter *null;
 
-    enum Direction {
-        In = 1, Out = 2, InOut = 3
-    };
+    enum Direction { In = 1, Out = 2, InOut = 3 };
 
-    enum Option {
-        SupportsArbitraryMapKeys = 0x01
-    };
+    enum Option { SupportsArbitraryMapKeys = 0x01 };
     Q_DECLARE_FLAGS(Options, Option)
 
     virtual ~Converter() = 0;

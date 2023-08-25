@@ -27,6 +27,7 @@ public:
     QJsonObject toJson() const;
 
     void print(QTextStream &s, int indentation = 0) const;
+
 private:
     QString mName;
     QList<Character> mNpcs;

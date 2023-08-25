@@ -38,11 +38,9 @@ void Game::newGame()
     QList<Character> villageNpcs;
     villageNpcs.reserve(2);
     villageNpcs.append(Character("Barry the Blacksmith"_L1,
-                                 QRandomGenerator::global()->bounded(8, 11),
-                                 Character::Warrior));
+                                 QRandomGenerator::global()->bounded(8, 11), Character::Warrior));
     villageNpcs.append(Character("Terry the Trader"_L1,
-                                 QRandomGenerator::global()->bounded(6, 8),
-                                 Character::Warrior));
+                                 QRandomGenerator::global()->bounded(6, 8), Character::Warrior));
     village.setNpcs(villageNpcs);
     mLevels.append(village);
 
@@ -50,14 +48,11 @@ void Game::newGame()
     QList<Character> dungeonNpcs;
     dungeonNpcs.reserve(3);
     dungeonNpcs.append(Character("Eric the Evil"_L1,
-                                 QRandomGenerator::global()->bounded(18, 26),
-                                 Character::Mage));
+                                 QRandomGenerator::global()->bounded(18, 26), Character::Mage));
     dungeonNpcs.append(Character("Eric's Left Minion"_L1,
-                                 QRandomGenerator::global()->bounded(5, 7),
-                                 Character::Warrior));
+                                 QRandomGenerator::global()->bounded(5, 7), Character::Warrior));
     dungeonNpcs.append(Character("Eric's Right Minion"_L1,
-                                 QRandomGenerator::global()->bounded(4, 9),
-                                 Character::Warrior));
+                                 QRandomGenerator::global()->bounded(4, 9), Character::Warrior));
     dungeon.setNpcs(dungeonNpcs);
     mLevels.append(dungeon);
 }
@@ -81,10 +76,8 @@ bool Game::loadGame(Game::SaveFormat saveFormat)
 
     read(loadDoc.object());
 
-    QTextStream(stdout) << "Loaded save for "
-                        << loadDoc["player"]["name"].toString()
-                        << " using "
-                        << (saveFormat != Json ? "CBOR" : "JSON") << "...\n";
+    QTextStream(stdout) << "Loaded save for " << loadDoc["player"]["name"].toString()
+                        << " using " << (saveFormat != Json ? "CBOR" : "JSON") << "...\n";
     return true;
 }
 //! [loadGame]
@@ -100,9 +93,8 @@ bool Game::saveGame(Game::SaveFormat saveFormat) const
     }
 
     QJsonObject gameObject = toJson();
-    saveFile.write(saveFormat == Json
-        ? QJsonDocument(gameObject).toJson()
-        : QCborValue::fromJsonValue(gameObject).toCbor());
+    saveFile.write(saveFormat == Json ? QJsonDocument(gameObject).toJson()
+                                      : QCborValue::fromJsonValue(gameObject).toCbor());
 
     return true;
 }
