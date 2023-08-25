@@ -245,22 +245,6 @@ enum CustomConstructNullabilityOption {
     // future option: AlwaysNull?
 };
 
-
-template <typename F> static QVariant::PrivateShared *
-customConstructShared(size_t size, size_t align, F &&construct)
-{
-    struct Deleter {
-        void operator()(QVariant::PrivateShared *p) const
-        { QVariant::PrivateShared::free(p); }
-    };
-
-    // this is exception-safe
-    std::unique_ptr<QVariant::PrivateShared, Deleter> ptr;
-    ptr.reset(QVariant::PrivateShared::create(size, align));
-    construct(ptr->data());
-    return ptr.release();
-}
-
 // the type of d has already been set, but other field are not set
 template <CustomConstructMoveOptions moveOption = UseCopy, CustomConstructNullabilityOption nullability = MaybeNull>
 static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant::Private *d,
