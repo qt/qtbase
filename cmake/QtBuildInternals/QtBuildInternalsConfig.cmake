@@ -131,9 +131,10 @@ function(qt_build_internals_disable_pkg_config_if_needed)
     endif()
 
     # Features won't have been evaluated yet if this is the first run, have to evaluate this here
-    if ((NOT DEFINED "FEATURE_pkg_config") AND (DEFINED "INPUT_pkg_config")
-            AND (NOT "${INPUT_pkg_config}" STREQUAL "undefined")
-            AND (NOT "${INPUT_pkg_config}" STREQUAL ""))
+    if((NOT DEFINED "FEATURE_pkg_config" OR QT_INTERNAL_CALLED_FROM_CONFIGURE)
+            AND DEFINED INPUT_pkg_config
+            AND NOT "${INPUT_pkg_config}" STREQUAL "undefined"
+            AND NOT "${INPUT_pkg_config}" STREQUAL "")
         if(INPUT_pkg_config)
             set(FEATURE_pkg_config ON)
         else()
@@ -590,8 +591,26 @@ macro(qt_build_repo_end)
         set(QT_INTERNAL_FRESH_REQUESTED "FALSE" CACHE INTERNAL "")
     endif()
 
+    if(NOT QT_SUPERBUILD)
+        qt_internal_qt_configure_end()
+    endif()
+
     list(POP_BACK CMAKE_MESSAGE_CONTEXT)
 endmacro()
+
+# Function called either at the end of per-repo configuration, or at the end of configuration of
+# a super build.
+# At the moment it is called before examples are configured in a per-repo build. We might want
+# to change that at some point if needed.
+function(qt_internal_qt_configure_end)
+    # If Qt is configued via the configure script, remove the marker variable, so that any future
+    # reconfigurations that are done by calling cmake directly don't trigger configure specific
+    # logic.
+    unset(QT_INTERNAL_CALLED_FROM_CONFIGURE CACHE)
+
+    # Clean up stale feature input values.
+    qt_internal_clean_feature_inputs()
+endfunction()
 
 macro(qt_build_repo)
     qt_build_repo_begin(${ARGN})
