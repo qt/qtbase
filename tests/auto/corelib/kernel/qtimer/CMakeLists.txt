@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qtimer
         tst_qtimer.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )
 
 if(QT_FEATURE_glib AND UNIX)
@@ -26,5 +27,6 @@ if(QT_FEATURE_glib AND UNIX)
             DISABLE_GLIB
         LIBRARIES
             Qt::CorePrivate
+            Qt::TestPrivate
     )
 endif()

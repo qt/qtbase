@@ -17,6 +17,7 @@ qt_internal_add_test(tst_qguitimer
     LIBRARIES
         Qt::CorePrivate
         Qt::Gui
+        Qt::TestPrivate
 )
 
 if(QT_FEATURE_glib AND UNIX)
@@ -29,5 +30,6 @@ if(QT_FEATURE_glib AND UNIX)
         LIBRARIES
             Qt::CorePrivate
             Qt::Gui
+            Qt::TestPrivate
     )
 endif()
