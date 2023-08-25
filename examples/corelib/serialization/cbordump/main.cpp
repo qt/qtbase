@@ -27,7 +27,7 @@
 struct CborTagDescription
 {
     QCborTag tag;
-    const char *description;    // with space and parentheses
+    const char *description; // with space and parentheses
 };
 
 // Concise Binary Object Representation (CBOR) Tags
@@ -131,12 +131,12 @@ static const CborTagDescription tagDescriptions[] = {
 
 enum {
     // See RFC 7049 section 2.
-    SmallValueBitLength     = 5,
-    SmallValueMask          = (1 << SmallValueBitLength) - 1,      /* 0x1f */
-    Value8Bit               = 24,
-    Value16Bit              = 25,
-    Value32Bit              = 26,
-    Value64Bit              = 27
+    SmallValueBitLength = 5,
+    SmallValueMask = (1 << SmallValueBitLength) - 1, /* 0x1f */
+    Value8Bit = 24,
+    Value16Bit = 25,
+    Value32Bit = 26,
+    Value64Bit = 27
 };
 
 //! [0]
@@ -381,7 +381,7 @@ void CborDumper::dumpOne(int nestingLevel)
         if (reader.next()) {
             printWidthIndicator(quint64(tag));
             printf("(");
-            dumpOne(nestingLevel);  // same level!
+            dumpOne(nestingLevel); // same level!
             printf(")");
         }
 
@@ -489,7 +489,7 @@ void CborDumper::dumpOneDetailed(int nestingLevel)
 
         qsizetype size = reader.currentStringChunkSize();
         if (size < 0)
-            return;         // error
+            return; // error
         if (size >= ChunkSizeLimit) {
             fprintf(stderr, "String length too big, %lli\n", qint64(size));
             exit(EXIT_FAILURE);
@@ -534,7 +534,7 @@ void CborDumper::dumpOneDetailed(int nestingLevel)
                 printf("  %s%s", indent.constData(), section.toHex(' ').constData());
 
                 // print the decode
-                QByteArray spaces(width > 0 ? width - section.size() * 3 + 1: 0, ' ');
+                QByteArray spaces(width > 0 ? width - section.size() * 3 + 1 : 0, ' ');
                 printf("%s # \"", spaces.constData());
                 auto ptr = reinterpret_cast<const uchar *>(section.constData());
                 for (int j = 0; j < section.size(); ++j)
@@ -546,7 +546,7 @@ void CborDumper::dumpOneDetailed(int nestingLevel)
             // get the next chunk
             size = reader.currentStringChunkSize();
             if (size < 0)
-                return;         // error
+                return; // error
             if (size >= ChunkSizeLimit) {
                 fprintf(stderr, "String length too big, %lli\n", qint64(size));
                 exit(EXIT_FAILURE);

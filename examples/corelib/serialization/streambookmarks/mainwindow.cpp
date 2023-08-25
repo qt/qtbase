@@ -27,7 +27,7 @@ MainWindow::MainWindow()
     : treeWidget(new QTreeWidget)
 {
     treeWidget->header()->setSectionResizeMode(QHeaderView::Stretch);
-    treeWidget->setHeaderLabels(QStringList{ tr("Title"), tr("Location") });
+    treeWidget->setHeaderLabels(QStringList{tr("Title"), tr("Location")});
 #if QT_CONFIG(clipboard) && QT_CONFIG(contextmenu)
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(treeWidget, &QWidget::customContextMenuRequested,
@@ -148,8 +148,8 @@ void MainWindow::saveAs()
 //! [5]
 void MainWindow::about()
 {
-   QMessageBox::about(this, tr("About QXmlStream Bookmarks"),
-            tr("The <b>QXmlStream Bookmarks</b> example demonstrates how to use Qt's "
-               "QXmlStream classes to read and write XML documents."));
+    QMessageBox::about(this, tr("About QXmlStream Bookmarks"),
+                       tr("The <b>QXmlStream Bookmarks</b> example demonstrates how to use Qt's "
+                          "QXmlStream classes to read and write XML documents."));
 }
 //! [5]
