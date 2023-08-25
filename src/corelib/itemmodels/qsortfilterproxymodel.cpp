@@ -254,7 +254,7 @@ public:
      */
     void set_filter_pattern(const QString &pattern)
     {
-        QRegularExpression re = filter_regularexpression.value();
+        QRegularExpression re = filter_regularexpression.valueBypassingBindings();
         const auto cs = re.patternOptions() & QRegularExpression::CaseInsensitiveOption;
         re.setPattern(pattern);
         re.setPatternOptions(cs);
@@ -1265,7 +1265,7 @@ void QSortFilterProxyModelPrivate::update_persistent_indexes(
 */
 void QSortFilterProxyModelPrivate::filter_about_to_be_changed(const QModelIndex &source_parent)
 {
-    if (!filter_regularexpression.value().pattern().isEmpty()
+    if (!filter_regularexpression.valueBypassingBindings().pattern().isEmpty()
         && source_index_mapping.constFind(source_parent) == source_index_mapping.constEnd()) {
         create_mapping(source_parent);
     }
@@ -2621,10 +2621,11 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QRegularExpression 
 {
     Q_D(QSortFilterProxyModel);
     Qt::beginPropertyUpdateGroup();
-    const bool regExpChanged = regularExpression != d->filter_regularexpression.value();
+    const bool regExpChanged =
+            regularExpression != d->filter_regularexpression.valueBypassingBindings();
     d->filter_regularexpression.removeBindingUnlessInWrapper();
     d->filter_casesensitive.removeBindingUnlessInWrapper();
-    const Qt::CaseSensitivity cs = filterCaseSensitivity();
+    const Qt::CaseSensitivity cs = d->filter_casesensitive.valueBypassingBindings();
     d->filter_about_to_be_changed();
     const Qt::CaseSensitivity updatedCs =
             regularExpression.patternOptions() & QRegularExpression::CaseInsensitiveOption
@@ -2666,7 +2667,7 @@ void QSortFilterProxyModel::setFilterKeyColumn(int column)
     Q_D(QSortFilterProxyModel);
     d->filter_column.removeBindingUnlessInWrapper();
     d->filter_about_to_be_changed();
-    const auto oldColumn = d->filter_column.value();
+    const auto oldColumn = d->filter_column.valueBypassingBindings();
     d->filter_column.setValueBypassingBindings(column);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
     if (oldColumn != column)
@@ -2965,7 +2966,7 @@ void QSortFilterProxyModel::setSortRole(int role)
 {
     Q_D(QSortFilterProxyModel);
     d->sort_role.removeBindingUnlessInWrapper();
-    if (d->sort_role == role)
+    if (d->sort_role.valueBypassingBindings() == role)
         return;
     d->sort_role.setValueBypassingBindings(role);
     d->sort();
@@ -3004,7 +3005,7 @@ void QSortFilterProxyModel::setFilterRole(int role)
 {
     Q_D(QSortFilterProxyModel);
     d->filter_role.removeBindingUnlessInWrapper();
-    if (d->filter_role == role)
+    if (d->filter_role.valueBypassingBindings() == role)
         return;
     d->filter_about_to_be_changed();
     d->filter_role.setValueBypassingBindings(role);
