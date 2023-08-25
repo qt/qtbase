@@ -165,7 +165,7 @@ def main(argv, speak):
 struct CborTagDescription
 {{
     QCborTag tag;
-    const char *description;    // with space and parentheses
+    const char *description; // with space and parentheses
 }};
 
 // {title}

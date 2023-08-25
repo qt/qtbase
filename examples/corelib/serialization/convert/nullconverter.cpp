@@ -4,7 +4,7 @@
 #include "nullconverter.h"
 
 static NullConverter nullConverter;
-Converter* Converter::null = &nullConverter;
+Converter *Converter::null = &nullConverter;
 
 QString NullConverter::name()
 {
