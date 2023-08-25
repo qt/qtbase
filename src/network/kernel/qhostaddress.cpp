@@ -706,7 +706,7 @@ QString QHostAddress::toString() const
     } else if (d->protocol == QHostAddress::IPv6Protocol) {
         QIPAddressUtils::toString(s, d->a6.c);
         if (!d->scopeId.isEmpty())
-            s.append(u'%' + d->scopeId);
+            s += u'%' + d->scopeId;
     }
     return s;
 }
