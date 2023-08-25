@@ -9,15 +9,13 @@
 using namespace Qt::StringLiterals;
 
 //! [0]
-XbelReader::XbelReader(QTreeWidget *treeWidget)
-    : treeWidget(treeWidget)
+XbelReader::XbelReader(QTreeWidget *treeWidget) : treeWidget(treeWidget)
 {
     QStyle *style = treeWidget->style();
 
-    folderIcon.addPixmap(style->standardPixmap(QStyle::SP_DirClosedIcon),
-                         QIcon::Normal, QIcon::Off);
-    folderIcon.addPixmap(style->standardPixmap(QStyle::SP_DirOpenIcon),
-                         QIcon::Normal, QIcon::On);
+    folderIcon.addPixmap(style->standardPixmap(QStyle::SP_DirClosedIcon), QIcon::Normal,
+                         QIcon::Off);
+    folderIcon.addPixmap(style->standardPixmap(QStyle::SP_DirOpenIcon), QIcon::Normal, QIcon::On);
     bookmarkIcon.addPixmap(style->standardPixmap(QStyle::SP_FileIcon));
 }
 //! [0]
@@ -28,12 +26,10 @@ bool XbelReader::read(QIODevice *device)
     xml.setDevice(device);
 
     if (xml.readNextStartElement()) {
-        if (xml.name() == "xbel"_L1
-            && xml.attributes().value("version"_L1) == "1.0"_L1) {
+        if (xml.name() == "xbel"_L1 && xml.attributes().value("version"_L1) == "1.0"_L1)
             readXBEL();
-        } else {
+        else
             xml.raiseError(QObject::tr("The file is not an XBEL version 1.0 file."));
-        }
     }
 
     return !xml.error();

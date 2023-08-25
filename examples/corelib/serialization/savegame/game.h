@@ -16,9 +16,7 @@ QT_FORWARD_DECLARE_CLASS(QTextStream)
 class Game
 {
 public:
-    enum SaveFormat {
-        Json, Binary
-    };
+    enum SaveFormat { Json, Binary };
 
     Character player() const;
     QList<Level> levels() const;
@@ -31,6 +29,7 @@ public:
     QJsonObject toJson() const;
 
     void print(QTextStream &s, int indentation = 0) const;
+
 private:
     Character mPlayer;
     QList<Level> mLevels;

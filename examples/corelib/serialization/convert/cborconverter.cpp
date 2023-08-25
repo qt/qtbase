@@ -154,7 +154,8 @@ QVariant CborDiagnosticDumper::loadFile(QIODevice *f, Converter *&outputConverte
     return QVariant();
 }
 
-void CborDiagnosticDumper::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
+void CborDiagnosticDumper::saveFile(QIODevice *f, const QVariant &contents,
+                                    const QStringList &options)
 {
     QCborValue::DiagnosticNotationOptions opts = QCborValue::LineWrapped;
     for (const QString &s : options) {
@@ -183,8 +184,7 @@ void CborDiagnosticDumper::saveFile(QIODevice *f, const QVariant &contents, cons
     }
 
     QTextStream out(f);
-    out << convertFromVariant(contents, Double).toDiagnosticNotation(opts)
-        << Qt::endl;
+    out << convertFromVariant(contents, Double).toDiagnosticNotation(opts) << Qt::endl;
 }
 
 CborConverter::CborConverter()
@@ -320,8 +320,9 @@ void CborConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
         exit(EXIT_FAILURE);
     }
     //! [4]
-    QCborValue v = convertFromVariant(contents,
-                                      useFloat16 == Always ? Float16 : useFloat == Always ? Float : Double);
+    QCborValue v =
+        convertFromVariant(contents,
+                           useFloat16 == Always ? Float16 : useFloat == Always ? Float : Double);
     QCborStreamWriter writer(f);
     if (useSignature)
         writer.append(QCborKnownTags::Signature);

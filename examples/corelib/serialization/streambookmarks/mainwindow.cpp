@@ -23,8 +23,7 @@
 using namespace Qt::StringLiterals;
 
 //! [0]
-MainWindow::MainWindow()
-    : treeWidget(new QTreeWidget)
+MainWindow::MainWindow() : treeWidget(new QTreeWidget)
 {
     treeWidget->header()->setSectionResizeMode(QHeaderView::Stretch);
     treeWidget->setHeaderLabels(QStringList{tr("Title"), tr("Location")});
@@ -101,21 +100,19 @@ void MainWindow::open()
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("QXmlStream Bookmarks"),
                              tr("Cannot read file %1:\n%2.")
-                             .arg(QDir::toNativeSeparators(fileName),
-                                  file.errorString()));
+                                     .arg(QDir::toNativeSeparators(fileName), file.errorString()));
         return;
     }
 
     XbelReader reader(treeWidget);
     if (!reader.read(&file)) {
-        QMessageBox::warning(this, tr("QXmlStream Bookmarks"),
-                             tr("Parse error in file %1:\n\n%2")
-                             .arg(QDir::toNativeSeparators(fileName),
-                                  reader.errorString()));
+        QMessageBox::warning(
+                this, tr("QXmlStream Bookmarks"),
+                tr("Parse error in file %1:\n\n%2")
+                        .arg(QDir::toNativeSeparators(fileName), reader.errorString()));
     } else {
         statusBar()->showMessage(tr("File loaded"), 2000);
     }
-
 }
 //! [3]
 
@@ -134,8 +131,7 @@ void MainWindow::saveAs()
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("QXmlStream Bookmarks"),
                              tr("Cannot write file %1:\n%2.")
-                             .arg(QDir::toNativeSeparators(fileName),
-                                  file.errorString()));
+                                     .arg(QDir::toNativeSeparators(fileName), file.errorString()));
         return;
     }
 

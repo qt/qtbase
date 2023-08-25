@@ -6,15 +6,10 @@
 #include <QMetaEnum>
 #include <QTextStream>
 
-Character::Character()
-    = default;
+Character::Character() = default;
 
-Character::Character(const QString &name,
-                     int level,
-                     Character::ClassType classType) :
-    mName(name),
-    mLevel(level),
-    mClassType(classType)
+Character::Character(const QString &name, int level, Character::ClassType classType)
+    : mName(name), mLevel(level), mClassType(classType)
 {
 }
 

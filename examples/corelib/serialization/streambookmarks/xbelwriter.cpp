@@ -9,8 +9,7 @@
 using namespace Qt::StringLiterals;
 
 //! [0]
-XbelWriter::XbelWriter(const QTreeWidget *treeWidget)
-    : treeWidget(treeWidget)
+XbelWriter::XbelWriter(const QTreeWidget *treeWidget) : treeWidget(treeWidget)
 {
     xml.setAutoFormatting(true);
 }

@@ -16,9 +16,7 @@ class Character
     Q_GADGET
 
 public:
-    enum ClassType {
-        Warrior, Mage, Archer
-    };
+    enum ClassType { Warrior, Mage, Archer };
     Q_ENUM(ClassType)
 
     Character();
@@ -37,6 +35,7 @@ public:
     QJsonObject toJson() const;
 
     void print(QTextStream &s, int indentation = 0) const;
+
 private:
     QString mName;
     int mLevel = 0;
