@@ -955,7 +955,11 @@ void QTextFormat::merge(const QTextFormat &other)
     p->props.reserve(p->props.size() + otherProps.size());
     for (int i = 0; i < otherProps.size(); ++i) {
         const QT_PREPEND_NAMESPACE(Property) &prop = otherProps.at(i);
-        p->insertProperty(prop.key, prop.value);
+        if (prop.value.isValid()) {
+            p->insertProperty(prop.key, prop.value);
+        } else {
+            p->clearProperty(prop.key);
+        }
     }
 }
 
@@ -1212,10 +1216,8 @@ void QTextFormat::setProperty(int propertyId, const QVariant &value)
 {
     if (!d)
         d = new QTextFormatPrivate;
-    if (!value.isValid())
-        clearProperty(propertyId);
-    else
-        d->insertProperty(propertyId, value);
+
+    d->insertProperty(propertyId, value);
 }
 
 /*!
