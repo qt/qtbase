@@ -179,6 +179,10 @@ else()
     set(multi_config OFF)
 endif()
 
+# Tell the build system we are configuring via the configure script so we can act on that.
+# The cache variable is unset at the end of configuration.
+push("-DQT_INTERNAL_CALLED_FROM_CONFIGURE:BOOL=TRUE")
+
 if(FRESH_REQUESTED)
     push("-DQT_INTERNAL_FRESH_REQUESTED:BOOL=TRUE")
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
