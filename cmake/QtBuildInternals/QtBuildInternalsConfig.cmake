@@ -105,6 +105,30 @@ endif()
 # build.
 include(QtPlatformSupport)
 
+# Set FEATURE_${feature} if INPUT_${feature} is set in certain circumstances.
+#
+# Needs to be in QtBuildInternalsConfig.cmake instead of QtFeature.cmake because it's used in
+# qt_build_internals_disable_pkg_config_if_needed.
+function(qt_internal_compute_feature_value_from_possible_input feature)
+    # If FEATURE_ is not defined try to use the INPUT_ variable to enable/disable feature.
+    # If FEATURE_ is defined and the configure script is being used (so
+    # QT_INTERNAL_CALLED_FROM_CONFIGURE is TRUE), ignore the FEATURE_ variable, and take into
+    # account the INPUT_ variable instead, because a command line argument takes priority over
+    # a pre-cached FEATURE_ variable.
+    if((NOT DEFINED FEATURE_${feature} OR QT_INTERNAL_CALLED_FROM_CONFIGURE)
+        AND DEFINED INPUT_${feature}
+        AND NOT "${INPUT_${feature}}" STREQUAL "undefined"
+        AND NOT "${INPUT_${feature}}" STREQUAL "")
+        if(INPUT_${feature})
+            set(FEATURE_${feature} ON)
+        else()
+            set(FEATURE_${feature} OFF)
+        endif()
+
+        set(FEATURE_${feature} "${FEATURE_${feature}}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(qt_build_internals_disable_pkg_config_if_needed)
     # pkg-config should not be used by default on Darwin and Windows platforms (and QNX), as defined
     # in the qtbase/configure.json. Unfortunately by the time the feature is evaluated there are
@@ -131,16 +155,7 @@ function(qt_build_internals_disable_pkg_config_if_needed)
     endif()
 
     # Features won't have been evaluated yet if this is the first run, have to evaluate this here
-    if((NOT DEFINED "FEATURE_pkg_config" OR QT_INTERNAL_CALLED_FROM_CONFIGURE)
-            AND DEFINED INPUT_pkg_config
-            AND NOT "${INPUT_pkg_config}" STREQUAL "undefined"
-            AND NOT "${INPUT_pkg_config}" STREQUAL "")
-        if(INPUT_pkg_config)
-            set(FEATURE_pkg_config ON)
-        else()
-            set(FEATURE_pkg_config OFF)
-        endif()
-    endif()
+    qt_internal_compute_feature_value_from_possible_input(pkg_config)
 
     # If user explicitly specified a value for the feature, honor it, even if it might break
     # the build.

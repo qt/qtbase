@@ -17,29 +17,11 @@ endif()
 # Pre-calculate the developer_build feature if it's set by the user via the INPUT_developer_build
 # variable when using the configure script. When not using configure, don't take the INPUT variable
 # into account, so that users can toggle the feature directly in the cache or via IDE.
-if((NOT DEFINED FEATURE_developer_build OR QT_INTERNAL_CALLED_FROM_CONFIGURE)
-        AND DEFINED INPUT_developer_build
-        AND NOT "${INPUT_developer_build}" STREQUAL "undefined"
-        AND NOT "${INPUT_developer_build}" STREQUAL "")
-    if(INPUT_developer_build)
-        set(FEATURE_developer_build ON)
-    else()
-        set(FEATURE_developer_build OFF)
-    endif()
-endif()
+qt_internal_compute_feature_value_from_possible_input(developer_build)
 
 # Pre-calculate the no_prefix feature if it's set by configure via INPUT_no_prefix.
 # This needs to be done before qtbase/configure.cmake is processed.
-if((NOT DEFINED FEATURE_no_prefix OR QT_INTERNAL_CALLED_FROM_CONFIGURE)
-        AND DEFINED INPUT_no_prefix
-        AND NOT "${INPUT_no_prefix}" STREQUAL "undefined"
-        AND NOT "${INPUT_no_prefix}" STREQUAL "")
-    if(INPUT_no_prefix)
-        set(FEATURE_no_prefix ON)
-    else()
-        set(FEATURE_no_prefix OFF)
-    endif()
-endif()
+qt_internal_compute_feature_value_from_possible_input(no_prefix)
 
 set(_default_build_type "Release")
 if(FEATURE_developer_build)
