@@ -617,8 +617,9 @@ void QNetworkRequest::setHeader(KnownHeaders header, const QVariant &value)
     network request.
 
     \sa rawHeader(), setRawHeader()
+    \note In Qt versions prior to 6.7, this function took QByteArray only.
 */
-bool QNetworkRequest::hasRawHeader(const QByteArray &headerName) const
+bool QNetworkRequest::hasRawHeader(QByteArrayView headerName) const
 {
     return d->findRawHeader(headerName) != d->rawHeaders.constEnd();
 }
@@ -632,12 +633,11 @@ bool QNetworkRequest::hasRawHeader(const QByteArray &headerName) const
     Raw headers can be set with setRawHeader() or with setHeader().
 
     \sa header(), setRawHeader()
+    \note In Qt versions prior to 6.7, this function took QByteArray only.
 */
-QByteArray QNetworkRequest::rawHeader(const QByteArray &headerName) const
+QByteArray QNetworkRequest::rawHeader(QByteArrayView headerName) const
 {
-    QNetworkHeadersPrivate::RawHeadersList::ConstIterator it =
-        d->findRawHeader(headerName);
-    if (it != d->rawHeaders.constEnd())
+    if (const auto it = d->findRawHeader(headerName); it != d->rawHeaders.constEnd())
         return it->second;
     return QByteArray();
 }

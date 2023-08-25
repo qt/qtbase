@@ -26,6 +26,7 @@ qt_internal_add_module(Network
         access/qnetworkreplyfileimpl.cpp access/qnetworkreplyfileimpl_p.h
         access/qnetworkreplyimpl.cpp access/qnetworkreplyimpl_p.h
         access/qnetworkrequest.cpp access/qnetworkrequest.h access/qnetworkrequest_p.h
+        compat/removed_api.cpp
         kernel/qauthenticator.cpp kernel/qauthenticator.h kernel/qauthenticator_p.h
         kernel/qhostaddress.cpp kernel/qhostaddress.h kernel/qhostaddress_p.h
         kernel/qhostinfo.cpp kernel/qhostinfo.h kernel/qhostinfo_p.h
@@ -64,6 +65,8 @@ qt_internal_add_module(Network
         Qt::Core
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
+    NO_PCH_SOURCES
+        compat/removed_api.cpp
     PRECOMPILED_HEADER
         "../corelib/global/qt_pch.h"
     GENERATE_CPP_EXPORTS

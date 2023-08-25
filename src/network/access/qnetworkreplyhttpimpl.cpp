@@ -1314,7 +1314,7 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
         // What do we do about the caching of the HTML note?
         // The response to a 303 MUST NOT be cached, while the response to
         // all of the others is cacheable if the headers indicate it to be
-        QByteArray header = q->rawHeader("location"_ba);
+        QByteArray header = q->rawHeader("location");
         QUrl url = QUrl(QString::fromUtf8(header));
         if (!url.isValid())
             url = QUrl(QLatin1StringView(header));
@@ -1358,7 +1358,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
     // A user having manually defined which encodings they accept is, for
     // somwehat unknown (presumed legacy compatibility) reasons treated as
     // disabling our decompression:
-    const bool autoDecompress = request.rawHeader("accept-encoding"_ba).isEmpty();
+    const bool autoDecompress = request.rawHeader("accept-encoding").isEmpty();
     const bool shouldDecompress = isCompressed && autoDecompress;
     // reconstruct the HTTP header
     for (const auto &[key, originValue] : hm) {
@@ -1859,7 +1859,7 @@ bool QNetworkReplyHttpImplPrivate::canResume() const
         return false;
 
     // Can only resume if server/resource supports Range header.
-    const auto acceptRangesheaderName = "Accept-Ranges"_ba;
+    constexpr auto acceptRangesheaderName = QByteArrayView("Accept-Ranges");
     if (!q->hasRawHeader(acceptRangesheaderName) || q->rawHeader(acceptRangesheaderName) == "none")
         return false;
 

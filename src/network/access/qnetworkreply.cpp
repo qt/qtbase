@@ -612,8 +612,9 @@ QVariant QNetworkReply::header(QNetworkRequest::KnownHeaders header) const
     the remote server
 
     \sa rawHeader()
+    \note In Qt versions prior to 6.7, this function took QByteArray only.
 */
-bool QNetworkReply::hasRawHeader(const QByteArray &headerName) const
+bool QNetworkReply::hasRawHeader(QByteArrayView headerName) const
 {
     Q_D(const QNetworkReply);
     return d->findRawHeader(headerName) != d->rawHeaders.constEnd();
@@ -627,13 +628,12 @@ bool QNetworkReply::hasRawHeader(const QByteArray &headerName) const
     header field.
 
     \sa setRawHeader(), hasRawHeader(), header()
+    \note In Qt versions prior to 6.7, this function took QByteArray only.
 */
-QByteArray QNetworkReply::rawHeader(const QByteArray &headerName) const
+QByteArray QNetworkReply::rawHeader(QByteArrayView headerName) const
 {
     Q_D(const QNetworkReply);
-    QNetworkHeadersPrivate::RawHeadersList::ConstIterator it =
-        d->findRawHeader(headerName);
-    if (it != d->rawHeaders.constEnd())
+    if (const auto it = d->findRawHeader(headerName); it != d->rawHeaders.constEnd())
         return it->second;
     return QByteArray();
 }
