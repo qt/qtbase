@@ -721,7 +721,16 @@ public:
                  std::filesystem::recursive_directory_iterator(outputDirectory)) {
                 if (m_producedHeaders.find(entry.path().filename().generic_string())
                     == m_producedHeaders.end()) {
-                    std::filesystem::remove(entry.path());
+                    // Check if header file came from another module as result of the cross-module
+                    // deprecation before removing it.
+                    std::ifstream input(entry.path(), std::ifstream::in);
+                    std::string firstLine;
+                    std::getline(input, firstLine);
+                    if (firstLine.find("#ifndef DEPRECATED_HEADER_"
+                                       + m_commandLineArgs->moduleName())
+                                == 0
+                        || firstLine.find("#ifndef DEPRECATED_HEADER_") != 0)
+                        std::filesystem::remove(entry.path());
                 }
             }
         }
@@ -1026,12 +1035,14 @@ public:
         //    - 'qt_class(<symbol>)' manually declares the 'symbol' that should be used to generate
         //      the CaMeL case header alias.
         //
-        //    - 'qt_deprecates(<deprecated header file>[,<major.minor>])' indicates that this header
-        //      file replaces the 'deprecated header file'. syncqt will create the deprecated header
-        //      file' with the special deprecation content. Pragma optionally accepts the Qt version
-        //      where file should be removed. If the current Qt version is higher than the
-        //      deprecation version, syncqt displays deprecation warning and skips generating the
-        //      deprecated header.
+        //    - 'qt_deprecates([module/]<deprecated header file>[,<major.minor>])' indicates that
+        //      this header file replaces the 'deprecated header file'. syncqt will create the
+        //      deprecated header file' with the special deprecation content. Pragma optionally
+        //      accepts the Qt version where file should be removed. If the current Qt version is
+        //      higher than the deprecation version, syncqt displays deprecation warning and skips
+        //      generating the deprecated header. If the module is specified and is different from
+        //      the one this header file belongs to, syncqt attempts to generate header files
+        //      for the specified module. Cross-module deprecation only works within the same repo.
         //      See the 'generateDeprecatedHeaders' function for details.
         //
         //    - 'qt_no_master_include' indicates that syncqt should avoid including this header
@@ -1464,7 +1475,7 @@ public:
             const std::string &replacement = it->second;
 
             const auto separatorPos = descriptor.find(',');
-            std::string headerName = descriptor.substr(0, separatorPos);
+            std::string headerPath = descriptor.substr(0, separatorPos);
             std::string versionDisclaimer;
             if (separatorPos != std::string::npos) {
                 std::string version = descriptor.substr(separatorPos + 1);
@@ -1474,7 +1485,7 @@ public:
                 if (!utils::parseVersion(version, minor, major)) {
                     std::cerr << ErrorMessagePreamble
                               << "Invalid version format specified for the deprecated header file "
-                              << headerName << ": '" << version
+                              << headerPath << ": '" << version
                               << "'. Expected format: 'major.minor'.\n";
                     result = false;
                     continue;
@@ -1482,7 +1493,7 @@ public:
 
                 if (QT_VERSION_MAJOR > major
                     || (QT_VERSION_MAJOR == major && QT_VERSION_MINOR >= minor)) {
-                    std::cerr << WarningMessagePreamble << headerName
+                    std::cerr << WarningMessagePreamble << headerPath
                               << " is marked as deprecated and will not be generated in Qt "
                               << QT_VERSION_STR
                               << ". The respective qt_deprecates pragma needs to be removed.\n";
@@ -1490,12 +1501,21 @@ public:
                 }
             }
 
+            const auto moduleSeparatorPos = headerPath.find('/');
+            std::string headerName = moduleSeparatorPos != std::string::npos
+                    ? headerPath.substr(moduleSeparatorPos + 1)
+                    : headerPath;
+            const std::string moduleName = moduleSeparatorPos != std::string::npos
+                    ? headerPath.substr(0, moduleSeparatorPos)
+                    : m_commandLineArgs->moduleName();
+
+            bool isCrossModuleDeprecation = moduleName != m_commandLineArgs->moduleName();
+
             std::string qualifiedHeaderName =
                     std::regex_replace(headerName, cIdentifierSymbolsRegex, "_");
             std::string guard = guard_base + "_" + qualifiedHeaderName;
-            std::string warningText = "Header <" + m_commandLineArgs->moduleName() + "/"
-                    + headerName + "> is deprecated" + versionDisclaimer + ". Please include <"
-                    + replacement + "> instead.";
+            std::string warningText = "Header <" + moduleName + "/" + headerName + "> is deprecated"
+                    + versionDisclaimer + ". Please include <" + replacement + "> instead.";
             std::stringstream buffer;
             buffer << "#ifndef " << guard << "\n"
                    << "#define " << guard << "\n"
@@ -1506,7 +1526,15 @@ public:
                    << "#endif\n"
                    << "#include <" << replacement << ">\n"
                    << "#endif\n";
-            writeIfDifferent(m_commandLineArgs->includeDir() + '/' + headerName, buffer.str());
+
+            const std::string outputDir = isCrossModuleDeprecation
+                    ? m_commandLineArgs->includeDir() + "/../" + moduleName
+                    : m_commandLineArgs->includeDir();
+            writeIfDifferent(outputDir + '/' + headerName, buffer.str());
+
+            // Add header file to staging installation directory for cross-module deprecation case.
+            if (isCrossModuleDeprecation)
+                writeIfDifferent(outputDir + "/.syncqt_staging/" + headerName, buffer.str());
             m_producedHeaders.insert(headerName);
         }
         return result;
