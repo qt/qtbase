@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
 
 #include <QtCore/qpauseanimation.h>
 #include <QtCore/qpropertyanimation.h>
@@ -456,6 +457,12 @@ void tst_QPauseAnimation::bindings()
                          "QPauseAnimation::setDuration: cannot set a negative duration");
     animation.setDuration(-1);
     QCOMPARE(durationObserver, 46);
+
+    QTestPrivate::testReadWritePropertyBasics(animation, 10, 20, "duration");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QPauseAnimation::duration");
+        return;
+    }
 }
 
 QTEST_MAIN(tst_QPauseAnimation)
