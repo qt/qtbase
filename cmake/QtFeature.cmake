@@ -410,21 +410,7 @@ function(qt_evaluate_feature feature)
         qt_evaluate_config_expression(emit_if ${arg_EMIT_IF})
     endif()
 
-    # If FEATURE_ is not defined try to use the INPUT_ variable to enable/disable feature.
-    # If FEATURE_ is defined and the configure script is being used (so
-    # QT_INTERNAL_CALLED_FROM_CONFIGURE is TRUE), ignore the FEATURE_ variable, and take into
-    # account the INPUT_ variable instead, because a command line argument takes priority over
-    # a pre-cached FEATURE_ variable.
-    if((NOT DEFINED FEATURE_${feature} OR QT_INTERNAL_CALLED_FROM_CONFIGURE)
-        AND DEFINED INPUT_${feature}
-        AND NOT "${INPUT_${feature}}" STREQUAL "undefined"
-        AND NOT "${INPUT_${feature}}" STREQUAL "")
-        if(INPUT_${feature})
-            set(FEATURE_${feature} ON)
-        else()
-            set(FEATURE_${feature} OFF)
-        endif()
-    endif()
+    qt_internal_compute_feature_value_from_possible_input("${feature}")
 
     # Warn about a feature which is not emitted, but the user explicitly provided a value for it.
     if(NOT emit_if AND DEFINED FEATURE_${feature})
@@ -889,6 +875,8 @@ function(qt_internal_detect_dirty_features)
         message(STATUS "Checking for feature set changes")
         set_property(GLOBAL PROPERTY _qt_feature_clean TRUE)
         foreach(feature ${QT_KNOWN_FEATURES})
+            qt_internal_compute_feature_value_from_possible_input("${feature}")
+
             if(DEFINED "FEATURE_${feature}" AND
                 NOT "${QT_FEATURE_${feature}}" STREQUAL "${FEATURE_${feature}}")
                 message("    '${feature}' was changed from ${QT_FEATURE_${feature}} "
