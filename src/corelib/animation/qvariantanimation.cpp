@@ -353,8 +353,9 @@ QEasingCurve QVariantAnimation::easingCurve() const
 void QVariantAnimation::setEasingCurve(const QEasingCurve &easing)
 {
     Q_D(QVariantAnimation);
-    const bool valueChanged = easing != d->easing;
-    d->easing = easing;
+    d->easing.removeBindingUnlessInWrapper();
+    const bool valueChanged = easing != d->easing.valueBypassingBindings();
+    d->easing.setValueBypassingBindings(easing);
     d->recalculateCurrentInterval();
     if (valueChanged)
         d->easing.notify();
@@ -482,13 +483,12 @@ void QVariantAnimation::setDuration(int msecs)
         qWarning("QVariantAnimation::setDuration: cannot set a negative duration");
         return;
     }
-    if (d->duration == msecs) {
-        d->duration.removeBindingUnlessInWrapper();
-        return;
+    d->duration.removeBindingUnlessInWrapper();
+    if (d->duration.valueBypassingBindings() != msecs) {
+        d->duration.setValueBypassingBindings(msecs);
+        d->recalculateCurrentInterval();
+        d->duration.notify();
     }
-    d->duration = msecs;
-    d->recalculateCurrentInterval();
-    d->duration.notify();
 }
 
 QBindable<int> QVariantAnimation::bindableDuration()
