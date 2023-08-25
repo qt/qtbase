@@ -610,7 +610,7 @@ void tst_QAbstractProxyModel::sourceModelBinding()
     SubQAbstractProxyModel proxy;
     QStandardItemModel model1;
     QStandardItemModel model2;
-    QTestPrivate::testReadWritePropertyBasics<QAbstractProxyModel, QAbstractItemModel *>(
+    QTestPrivate::testReadWritePropertyBasics<SubQAbstractProxyModel, QAbstractItemModel *>(
             proxy, &model1, &model2, "sourceModel");
     if (QTest::currentTestFailed()) {
         qDebug("Failed model - model test");
@@ -618,7 +618,7 @@ void tst_QAbstractProxyModel::sourceModelBinding()
     }
 
     proxy.setSourceModel(&model2);
-    QTestPrivate::testReadWritePropertyBasics<QAbstractProxyModel, QAbstractItemModel *>(
+    QTestPrivate::testReadWritePropertyBasics<SubQAbstractProxyModel, QAbstractItemModel *>(
             proxy, &model1, nullptr, "sourceModel");
     if (QTest::currentTestFailed()) {
         qDebug("Failed model - nullptr test");
@@ -626,7 +626,7 @@ void tst_QAbstractProxyModel::sourceModelBinding()
     }
 
     proxy.setSourceModel(&model1);
-    QTestPrivate::testReadWritePropertyBasics<QAbstractProxyModel, QAbstractItemModel *>(
+    QTestPrivate::testReadWritePropertyBasics<SubQAbstractProxyModel, QAbstractItemModel *>(
             proxy, nullptr, &model2, "sourceModel");
     if (QTest::currentTestFailed()) {
         qDebug("Failed nullptr - model test");
