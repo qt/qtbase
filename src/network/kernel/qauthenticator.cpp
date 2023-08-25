@@ -651,6 +651,15 @@ QByteArray QAuthenticatorPrivate::calculateResponse(QByteArrayView requestMethod
 
 // ---------------------------- Digest Md5 code ----------------------------------------
 
+static bool containsAuth(QByteArrayView data)
+{
+    for (auto element : QLatin1StringView(data).tokenize(','_L1)) {
+        if (element == "auth"_L1)
+            return true;
+    }
+    return false;
+}
+
 QHash<QByteArray, QByteArray>
 QAuthenticatorPrivate::parseDigestAuthenticationChallenge(QByteArrayView challenge)
 {
@@ -700,8 +709,7 @@ QAuthenticatorPrivate::parseDigestAuthenticationChallenge(QByteArrayView challen
 
     QByteArray qop = options.value("qop");
     if (!qop.isEmpty()) {
-        QList<QByteArray> qopoptions = qop.split(',');
-        if (!qopoptions.contains("auth"))
+        if (!containsAuth(qop))
             return QHash<QByteArray, QByteArray>();
         // #### can't do auth-int currently
 //         if (qop.contains("auth-int"))
