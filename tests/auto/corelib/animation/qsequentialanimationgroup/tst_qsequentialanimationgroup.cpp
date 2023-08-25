@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
+
 #include <QVariantAnimation>
 #include <QProperty>
 #include <QPropertyAnimation>
@@ -1685,6 +1687,15 @@ void tst_QSequentialAnimationGroup::bindings()
     group.bindableCurrentAnimation().setBinding([&]() { return leader.value(); });
 
     QCOMPARE(group.currentAnimation(), anim3.get());
+
+    QTestPrivate::testReadOnlyPropertyBasics(group, anim3.get(), anim2.get(), "currentAnimation",
+                                             [&group, totalDuration]() {
+                                                 group.setCurrentTime(int(totalDuration * 1.5 / 3));
+                                             });
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QSequentialAnimationGroup::currentAnimation");
+        return;
+    }
 }
 
 QTEST_MAIN(tst_QSequentialAnimationGroup)
