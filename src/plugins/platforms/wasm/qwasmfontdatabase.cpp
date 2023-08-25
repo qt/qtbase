@@ -23,6 +23,41 @@ using namespace Qt::StringLiterals;
 
 namespace {
 
+class FontData
+{
+public:
+    FontData(val fontData)
+        :m_fontData(fontData) {}
+
+    QString family() const
+    {
+        return QString::fromStdString(m_fontData["family"].as<std::string>());
+    }
+
+    QString fullName() const
+    {
+        return QString::fromStdString(m_fontData["fullName"].as<std::string>());
+    }
+
+    QString postscriptName() const
+    {
+        return QString::fromStdString(m_fontData["postscriptName"].as<std::string>());
+    }
+
+    QString style() const
+    {
+        return QString::fromStdString(m_fontData["style"].as<std::string>());
+    }
+
+    val value() const
+    {
+        return m_fontData;
+    }
+
+private:
+    val m_fontData;
+};
+
 bool isLocalFontsAPISupported()
 {
     return val::global("window")["queryLocalFonts"].isUndefined() == false;
@@ -35,13 +70,11 @@ val makeObject(const char *key, const char *value)
     return obj;
 }
 
-std::multimap<QString, emscripten::val> makeFontFamilyMap(const QList<val> &fonts)
+std::multimap<QString, FontData> makeFontFamilyMap(const QList<FontData> &fonts)
 {
-    std::multimap<QString, emscripten::val> fontFamilies;
-    for (auto font : fonts) {
-        QString family = QString::fromStdString(font["family"].as<std::string>());
-        fontFamilies.insert(std::make_pair(family, font));
-    }
+    std::multimap<QString, FontData> fontFamilies;
+    for (auto font : fonts)
+        fontFamilies.insert(std::make_pair(font.family(), font));
     return fontFamilies;
 }
 
@@ -71,16 +104,16 @@ void checkFontAccessPermitted(std::function<void()> callback)
     }, makeObject("name", "local-fonts"));
 }
 
-void queryLocalFonts(std::function<void(const QList<val> &)> callback)
+void queryLocalFonts(std::function<void(const QList<FontData> &)> callback)
 {
     emscripten::val window = emscripten::val::global("window");
     qstdweb::Promise::make(window, "queryLocalFonts", {
         .thenFunc = [callback](emscripten::val fontArray) {
-            QList<val> fonts;
+            QList<FontData> fonts;
             const int count = fontArray["length"].as<int>();
             fonts.reserve(count);
             for (int i = 0; i < count; ++i)
-                fonts.append(fontArray.call<emscripten::val>("at", i));
+                fonts.append(FontData(fontArray.call<emscripten::val>("at", i)));
             callback(fonts);
         },
         .catchFunc = printError
@@ -98,9 +131,9 @@ void readBlob(val blob, std::function<void(const QByteArray &)> callback)
     });
 }
 
-void readFont(val font, std::function<void(const QByteArray &)> callback)
+void readFont(FontData font, std::function<void(const QByteArray &)> callback)
 {
-    qstdweb::Promise::make(font, "blob", {
+    qstdweb::Promise::make(font.value(), "blob", {
         .thenFunc = [callback](val blob) {
             readBlob(blob, [callback](const QByteArray &data) {
                 callback(data);
@@ -122,7 +155,7 @@ void QWasmFontDatabase::populateLocalfonts()
     // starting up and should not display a permission request dialog at
     // this point.
     checkFontAccessPermitted([](){
-        queryLocalFonts([](const QList<val> &fonts){
+        queryLocalFonts([](const QList<FontData> &fonts){
             auto fontFamilies = makeFontFamilyMap(fonts);
             // Populate some font families. We can't populate _all_ fonts as in-memory fonts,
             // since that would require several gigabytes of memory. Instead, populate
@@ -133,7 +166,7 @@ void QWasmFontDatabase::populateLocalfonts()
                     QFreeTypeFontDatabase::registerFontFamily(family);
 
                 for (auto it = fontsRange.first; it != fontsRange.second; ++it) {
-                    const val font = it->second;
+                    const FontData &font = it->second;
                     readFont(font, [](const QByteArray &fontData){
                         QFreeTypeFontDatabase::addTTFile(fontData, QByteArray());
                         QWasmFontDatabase::notifyFontsChanged();
