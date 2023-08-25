@@ -9,6 +9,8 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
+using namespace Qt::StringLiterals;
+
 static JsonConverter jsonConverter;
 
 static const char jsonOptionHelp[] =
@@ -30,7 +32,7 @@ JsonConverter::JsonConverter()
 
 QString JsonConverter::name()
 {
-    return "json";
+    return "json"_L1;
 }
 
 Converter::Direction JsonConverter::directions()
@@ -51,7 +53,7 @@ const char *JsonConverter::optionsHelp()
 bool JsonConverter::probeFile(QIODevice *f)
 {
     if (QFile *file = qobject_cast<QFile *>(f)) {
-        if (file->fileName().endsWith(QLatin1String(".json")))
+        if (file->fileName().endsWith(".json"_L1))
             return true;
     }
 
@@ -91,9 +93,9 @@ void JsonConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
 {
     QJsonDocument::JsonFormat format = QJsonDocument::Indented;
     for (const QString &s : options) {
-        if (s == QLatin1String("compact=no")) {
+        if (s == "compact=no"_L1) {
             format = QJsonDocument::Indented;
-        } else if (s == QLatin1String("compact=yes")) {
+        } else if (s == "compact=yes"_L1) {
             format = QJsonDocument::Compact;
         } else {
             fprintf(stderr, "Unknown option '%s' to JSON output. Valid options are:\n%s",

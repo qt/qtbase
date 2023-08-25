@@ -3,12 +3,14 @@
 
 #include "nullconverter.h"
 
+using namespace Qt::StringLiterals;
+
 static NullConverter nullConverter;
 Converter *Converter::null = &nullConverter;
 
 QString NullConverter::name()
 {
-    return QLatin1String("null");
+    return "null"_L1;
 }
 
 Converter::Direction NullConverter::directions()
