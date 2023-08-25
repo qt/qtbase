@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qmovie
         tst_qmovie.cpp
     LIBRARIES
         Qt::Gui
+        Qt::TestPrivate
     TESTDATA ${test_data}
 )
 
