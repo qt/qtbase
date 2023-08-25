@@ -6,6 +6,8 @@
 #include <QFile>
 #include <QTextStream>
 
+using namespace Qt::StringLiterals;
+
 static void dumpVariant(QTextStream &out, const QVariant &v)
 {
     switch (v.userType()) {
@@ -44,7 +46,7 @@ static void dumpVariant(QTextStream &out, const QVariant &v)
 
 QString TextConverter::name()
 {
-    return QStringLiteral("text");
+    return "text"_L1;
 }
 
 Converter::Direction TextConverter::directions()
@@ -65,7 +67,7 @@ const char *TextConverter::optionsHelp()
 bool TextConverter::probeFile(QIODevice *f)
 {
     if (QFile *file = qobject_cast<QFile *>(f))
-        return file->fileName().endsWith(QLatin1String(".txt"));
+        return file->fileName().endsWith(".txt"_L1);
     return false;
 }
 
