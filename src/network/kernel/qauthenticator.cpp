@@ -555,7 +555,7 @@ QByteArray QAuthenticatorPrivate::calculateResponse(QByteArrayView requestMethod
         break;
     case QAuthenticatorPrivate::Basic:
         methodString = "Basic";
-        response = user.toLatin1() + ':' + password.toLatin1();
+        response = (user + ':'_L1 + password).toLatin1();
         response = response.toBase64();
         phase = Done;
         break;
