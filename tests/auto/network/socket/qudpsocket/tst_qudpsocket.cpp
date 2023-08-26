@@ -121,6 +121,7 @@ private:
     QList<QHostAddress> allAddresses;
     QHostAddress multicastGroup4, multicastGroup6;
     QList<QHostAddress> linklocalMulticastGroups;
+    QNetworkInterface ifaceWithIPv6;
     QUdpSocket *m_asyncSender;
     QUdpSocket *m_asyncReceiver;
 };
@@ -171,26 +172,7 @@ QNetworkInterface tst_QUdpSocket::interfaceForGroup(const QHostAddress &multicas
     if (!scope.isEmpty())
         return QNetworkInterface::interfaceFromName(scope);
 
-    static QNetworkInterface ipv6if = [&]() {
-        // find any link local address in the allAddress list
-        for (const QHostAddress &addr: std::as_const(allAddresses)) {
-            if (addr.isLoopback())
-                continue;
-
-            QString scope = addr.scopeId();
-            if (!scope.isEmpty()) {
-                QNetworkInterface iface = QNetworkInterface::interfaceFromName(scope);
-                qDebug() << "Will bind IPv6 sockets to" << iface;
-                return iface;
-            }
-        }
-
-        qWarning("interfaceForGroup(%s) could not find any link-local IPv6 address! "
-                 "Make sure this test is behind a check of QtNetworkSettings::hasIPv6().",
-                 qUtf8Printable(multicastGroup.toString()));
-        return QNetworkInterface();
-    }();
-    return ipv6if;
+    return ifaceWithIPv6;
 }
 
 bool tst_QUdpSocket::shouldWorkaroundLinuxKernelBug()
@@ -275,9 +257,16 @@ void tst_QUdpSocket::initTestCase()
             continue;
         llbase.setScopeId(scope);
         linklocalMulticastGroups << llbase;
+        if (!ifaceWithIPv6.isValid()) {
+            // Remember the first interface we've found that has IPv6 so we can
+            // bind non-link-local sockets to it (the first is least likely to
+            // be some weird virtual interface).
+            ifaceWithIPv6 = QNetworkInterface::interfaceFromName(scope);
+        }
     }
 
     qDebug() << "Will use multicast groups" << multicastGroup4 << multicastGroup6 << linklocalMulticastGroups;
+    qDebug() << "Will bind IPv6 sockets to" << ifaceWithIPv6;
 
     m_workaroundLinuxKernelBug = shouldWorkaroundLinuxKernelBug();
     if (QTestPrivate::isRunningArmOnX86())
