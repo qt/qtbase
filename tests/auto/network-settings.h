@@ -92,8 +92,11 @@ public:
 
     static bool hasIPv6()
     {
-#ifdef Q_OS_UNIX
-  #if !defined(QT_NO_GETIFADDRS) && !defined(QT_NO_IPV6IFNAME)
+#if defined(Q_OS_QNX)
+        // Qt's support for IPv6 on QNX appears to be broken.
+        // This is an unaccepable situation after 2011-01-31.
+        return false;
+#elif defined(Q_OS_UNIX)
         int s = ::socket(AF_INET6, SOCK_DGRAM, 0);
         if (s == -1)
             return false;
@@ -108,9 +111,6 @@ public:
             }
         }
         ::close(s);
-  #else
-        return false;
-  #endif
 #endif
         return true;
     }
