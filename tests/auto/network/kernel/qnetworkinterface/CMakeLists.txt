@@ -9,6 +9,6 @@ qt_internal_add_test(tst_qnetworkinterface
     SOURCES
         tst_qnetworkinterface.cpp
     LIBRARIES
-        Qt::Network
+        Qt::NetworkPrivate
     QT_TEST_SERVER_LIST "apache2"
 )
