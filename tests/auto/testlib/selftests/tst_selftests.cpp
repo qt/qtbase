@@ -699,7 +699,8 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
             || test == "benchliboptions"
             || test == "printdatatags"
             || test == "printdatatagswithglobaltags"
-            || test == "silent")
+            || test == "silent"
+            || test == "silent_fatal")
             return true;
 
         // These tests produce variable output (callgrind because of #if-ery,
@@ -764,11 +765,6 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
         || test == "benchlibcallgrind")
         return;
 
-#ifdef Q_CC_MINGW
-    if (test == "silent") // calls qFatal()
-        return;
-#endif
-
 #ifdef Q_OS_WIN
     if (test == "crashes")
         return; // Complains about uncaught exception
@@ -782,12 +778,17 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
     return; // Outputs "Received signal 6 (SIGABRT)"
 #endif
 
-#ifdef Q_OS_LINUX
-    if (test == "silent") {
+    if (test == "silent_fatal") {
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+        // Under ASan, this test is not silent
+        return;
+#elif defined(Q_CC_MINGW)
+        // Originally QTBUG-29014 (I can't reproduce this -Thiago)
+        return;
+#endif
         if (QTestPrivate::isRunningArmOnX86())
             return;         // QEMU outputs to stderr about uncaught signals
     }
-#endif
 
     INFO(errorOutput.toStdString());
     REQUIRE(errorOutput.isEmpty());
@@ -974,7 +975,7 @@ TestProcessResult runTestProcess(const QString &test, const QStringList &argumen
     const bool expectedCrash = test == "assert" || test == "exceptionthrow"
         || test == "fetchbogus" || test == "crashedterminate"
         || test == "faildatatype" || test == "failfetchtype"
-        || test == "crashes" || test == "silent" || test == "watchdog";
+        || test == "crashes" || test == "silent_fatal" || test == "watchdog";
 
     if (expectedCrash) {
         environment.insert("QTEST_DISABLE_CORE_DUMP", "1");

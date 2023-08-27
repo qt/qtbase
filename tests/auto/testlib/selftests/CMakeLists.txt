@@ -91,6 +91,7 @@ set(subprograms
     printdatatagswithglobaltags
     qexecstringlist
     silent
+    silent_fatal
     signaldumper
     singleskip
     skip

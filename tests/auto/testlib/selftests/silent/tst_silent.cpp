@@ -15,8 +15,6 @@ private slots:
     void fail();
     void xfail();
     void xpass();
-
-    // This test function must be last, as it calls qFatal().
     void messages();
 };
 
@@ -55,7 +53,6 @@ void tst_Silent::messages()
     qCritical("This is a critical message that should not appear in silent test output");
     qInfo("This is an info message that should not appear in silent test output");
     QTestLog::info("This is an internal testlib info message that should not appear in silent test output", __FILE__, __LINE__);
-    qFatal("This is a fatal error message that should still appear in silent test output");
 }
 
 QTEST_MAIN_WRAPPER(tst_Silent,

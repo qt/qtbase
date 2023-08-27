@@ -1,0 +1,5 @@
+Testing tst_SilentFatal
+QFATAL : tst_SilentFatal::fatalmessages() This is a fatal error message that should still appear in silent test output
+FAIL!  : tst_SilentFatal::fatalmessages() Received a fatal error.
+   Loc: [qtbase/tests/auto/testlib/selftests/silent_fatal/tst_silent_fatal.cpp(0)]
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
