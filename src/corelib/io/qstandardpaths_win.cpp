@@ -105,8 +105,10 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_LocalAppData,  // AppConfigLocation ("Local" path)
         FOLDERID_Public,        // PublicShareLocation
         FOLDERID_Templates,     // TemplatesLocation
+        GUID(),                  // StateLocation
+        GUID(),                  // GenericStateLocation
     };
-    static_assert(sizeof(folderIds) / sizeof(folderIds[0]) == size_t(QStandardPaths::TemplatesLocation + 1));
+    static_assert(sizeof(folderIds) / sizeof(folderIds[0]) == size_t(QStandardPaths::GenericStateLocation + 1));
 
     // folders for low integrity processes
     static const GUID folderIds_li[] = {
@@ -130,6 +132,8 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_LocalAppDataLow,// AppConfigLocation ("Local" path)
         FOLDERID_Public,         // PublicShareLocation
         FOLDERID_Templates,      // TemplatesLocation
+        GUID(),                  // StateLocation
+        GUID(),                  // GenericStateLocation
     };
     static_assert(sizeof(folderIds_li) == sizeof(folderIds));
 
@@ -182,6 +186,23 @@ QString QStandardPaths::writableLocation(StandardLocation type)
 
     case TempLocation:
         result = QDir::tempPath();
+        break;
+
+    case StateLocation:
+        result = sHGetKnownFolderPath(writableSpecialFolderId(AppLocalDataLocation));
+        if (!result.isEmpty()) {
+            appendTestMode(result);
+            appendOrganizationAndApp(result);
+            result += "/State"_L1;
+        }
+        break;
+
+    case GenericStateLocation:
+        result = sHGetKnownFolderPath(writableSpecialFolderId(GenericDataLocation));
+        if (!result.isEmpty()) {
+            appendTestMode(result);
+            result += "/State"_L1;
+        }
         break;
 
     default:

@@ -126,6 +126,12 @@ using namespace Qt::StringLiterals;
            template files can be stored. This is a generic value. Note that the returned path may be
            empty if the system has no concept of a templates location.
            This enum value was added in Qt 6.4.
+    \value [since 6.7] StateLocation Returns a directory location where user-specific application
+           state data files should be written. This is an application-specific directory,
+           and the returned path is never empty.
+    \value [since 6.7] GenericStateLocation Returns a directory location where shared state data files
+           across applications should be written. This value might be generic or application-specific,
+           but the returned path is never empty.
 
     The following table gives examples of paths on different operating systems.
     The first path is the writable path (unless noted). Other, additional
@@ -166,6 +172,9 @@ using namespace Qt::StringLiterals;
     \row \li CacheLocation
          \li "~/Library/Caches/<APPNAME>", "/Library/Caches/<APPNAME>"
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>/cache"
+    \row \li StateLocation
+         \li "~/Library/Preferences/<APPNAME>/State"
+         \li "C:/Users/<USER>/AppData/Local/<APPNAME>/State", "C:/ProgramData/<APPNAME>/State"
     \row \li GenericDataLocation
          \li "~/Library/Application Support", "/Library/Application Support"
          \li "C:/Users/<USER>/AppData/Local", "C:/ProgramData", "<APPDIR>", "<APPDIR>/data"
@@ -184,6 +193,9 @@ using namespace Qt::StringLiterals;
     \row \li GenericCacheLocation
          \li "~/Library/Caches", "/Library/Caches"
          \li "C:/Users/<USER>/AppData/Local/cache"
+    \row \li GenericStateLocation
+         \li "~/Library/Preferences/State"
+         \li "C:/Users/<USER>/AppData/Local/State", "C:/ProgramData/State"
     \row \li AppDataLocation
          \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
          \li "C:/Users/<USER>/AppData/Roaming/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data", "<APPDIR>/data/<APPNAME>"
@@ -222,6 +234,8 @@ using namespace Qt::StringLiterals;
          \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
     \row \li CacheLocation
          \li "~/.cache/<APPNAME>"
+    \row \li StateLocation
+         \li "~/.local/state/<APPNAME>"
     \row \li GenericDataLocation
          \li "~/.local/share", "/usr/local/share", "/usr/share"
     \row \li RuntimeLocation
@@ -234,6 +248,8 @@ using namespace Qt::StringLiterals;
          \li "~/Downloads"
     \row \li GenericCacheLocation
          \li "~/.cache"
+    \row \li GenericStateLocation
+         \li "~/.local/state"
     \row \li AppDataLocation
          \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
     \row \li AppConfigLocation
@@ -279,6 +295,10 @@ using namespace Qt::StringLiterals;
     \row \li CacheLocation
          \li "<APPROOT>/cache", "<USER>/<APPNAME>/cache"
          \li "<APPROOT>/Library/Caches"
+    \row \li StateLocation
+         \li "<APPROOT>/files/state"
+    \row \li GenericStateLocation (there is shared state)
+         \li "<APPROOT>/files/state"
     \row \li GenericDataLocation
          \li "<USER>" [*] or "<USER>/<APPNAME>/files"
          \li "<APPROOT>/Library/Application Support"
@@ -549,6 +569,8 @@ QString QStandardPaths::displayName(StandardLocation type)
         return QCoreApplication::translate("QStandardPaths", "Application Data");
     case CacheLocation:
         return QCoreApplication::translate("QStandardPaths", "Cache");
+    case StateLocation:
+        return QCoreApplication::translate("QStandardPaths", "State");
     case GenericDataLocation:
         return QCoreApplication::translate("QStandardPaths", "Shared Data");
     case RuntimeLocation:
@@ -559,6 +581,8 @@ QString QStandardPaths::displayName(StandardLocation type)
         return QCoreApplication::translate("QStandardPaths", "Shared Configuration");
     case GenericCacheLocation:
         return QCoreApplication::translate("QStandardPaths", "Shared Cache");
+    case GenericStateLocation:
+        return QCoreApplication::translate("QStandardPaths", "Shared State");
     case DownloadLocation:
         return QCoreApplication::translate("QStandardPaths", "Download");
     case AppDataLocation:

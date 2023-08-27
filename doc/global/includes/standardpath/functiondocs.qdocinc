@@ -71,11 +71,13 @@
     It affects the locations into which test programs might write
     files: \c GenericDataLocation, \c AppDataLocation, \c ConfigLocation,
     \c GenericConfigLocation, \c AppConfigLocation,
+    \c StateLocation, \c GenericStateLocation,
     \c GenericCacheLocation, and \c CacheLocation. Other locations
     are not affected.
 
     On Unix, \c XDG_DATA_HOME is set to \c{~/.qttest/share},
-    \c XDG_CONFIG_HOME is set to \c{~/.qttest/config}, and
+    \c XDG_CONFIG_HOME is set to \c{~/.qttest/config},
+    \c XDG_STATE_HOME is set \c{~/.qttest/state} and
     \c XDG_CACHE_HOME is set to \c{~/.qttest/cache}.
 
     On macOS, data goes to \c{~/.qttest/Application Support},

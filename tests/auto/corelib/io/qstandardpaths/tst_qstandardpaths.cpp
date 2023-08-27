@@ -27,7 +27,7 @@
 using namespace Qt::StringLiterals;
 
 // Update this when adding new enum values; update enumNames too
-static const int MaxStandardLocation = QStandardPaths::AppConfigLocation;
+static const int MaxStandardLocation = QStandardPaths::GenericStateLocation;
 
 static QString genericCacheLoc()
 {
@@ -36,6 +36,15 @@ static QString genericCacheLoc()
 static QString cacheLoc()
 {
     return QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+}
+
+static QString genericStateLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::GenericStateLocation);
+}
+static QString stateLoc()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::StateLocation);
 }
 
 static QString genericDataLoc()
@@ -98,14 +107,17 @@ private:
         qputenv("XDG_CONFIG_DIRS", QFile::encodeName(m_globalConfigDir));
         m_localAppDir = m_localAppTempDir.path();
         m_globalAppDir = m_globalAppTempDir.path();
+        m_stateDir = m_stateTempDir.path();
         qputenv("XDG_DATA_HOME", QFile::encodeName(m_localAppDir));
         qputenv("XDG_DATA_DIRS", QFile::encodeName(m_globalAppDir));
+        qputenv("XDG_STATE_HOME", QFile::encodeName(m_stateDir));
     }
     void setDefaultLocations() {
         qputenv("XDG_CONFIG_HOME", nullptr);
         qputenv("XDG_CONFIG_DIRS", nullptr);
         qputenv("XDG_DATA_HOME", nullptr);
         qputenv("XDG_DATA_DIRS", nullptr);
+        qputenv("XDG_STATE_HOME", nullptr);
     }
 #endif
 
@@ -120,6 +132,8 @@ private:
     QTemporaryDir m_localAppTempDir;
     QString m_globalAppDir;
     QTemporaryDir m_globalAppTempDir;
+    QString m_stateDir;
+    QTemporaryDir m_stateTempDir;
 };
 
 static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths::DesktopLocation)] = {
@@ -141,7 +155,11 @@ static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths
     "GenericCacheLocation",
     "GenericConfigLocation",
     "AppDataLocation",
-    "AppConfigLocation"
+    "AppConfigLocation",
+    "PublicShareLocation",
+    "TemplatesLocation",
+    "StateLocation",
+    "GenericStateLocation"
 };
 
 void tst_qstandardpaths::initTestCase()
@@ -160,6 +178,7 @@ void tst_qstandardpaths::initTestCase()
     QVERIFY2(m_globalConfigTempDir.isValid(), qPrintable(m_globalConfigTempDir.errorString()));
     QVERIFY2(m_localAppTempDir.isValid(), qPrintable(m_localAppTempDir.errorString()));
     QVERIFY2(m_globalAppTempDir.isValid(), qPrintable(m_globalAppTempDir.errorString()));
+    QVERIFY2(m_stateTempDir.isValid(), qPrintable(m_stateTempDir.errorString()));
 }
 
 void tst_qstandardpaths::dump()
@@ -205,6 +224,8 @@ void tst_qstandardpaths::testDefaultLocations()
     QCOMPARE(genericDataDirs.at(0), expectedDataHome);
     QCOMPARE(genericDataDirs.at(1), QString::fromLatin1("/usr/local/share"));
     QCOMPARE(genericDataDirs.at(2), QString::fromLatin1("/usr/share"));
+    const QString expectedGenericStateLocation = QDir::homePath() + QString::fromLatin1("/.local/state");
+    QCOMPARE(genericStateLoc(), expectedGenericStateLocation);
 #endif
 }
 
@@ -283,25 +304,34 @@ void tst_qstandardpaths::enableTestMode()
     // CacheLocation should be "GenericCacheLocation/organization-name/app-name"
     QCOMPARE(cacheLoc(), cacheDir + "/tst_qstandardpaths"_L1);
 
+    // *StateLocation
+    const QString stateDir = qttestDir + QLatin1String("/state");
+    QCOMPARE(genericStateLoc(), stateDir);
+    const QStringList stateDirs = QStandardPaths::standardLocations(QStandardPaths::GenericStateLocation);
+    QCOMPARE(stateDirs, QStringList() << stateDir);
+    // StateLocation should be "GenericStateLocation/organization-name/app-name"
+    QCOMPARE(stateLoc(), stateDir + "/tst_qstandardpaths"_L1);
+
     QCoreApplication::setOrganizationName("Qt");
     QCOMPARE(appConfigLoc(), configDir + "/Qt/tst_qstandardpaths"_L1);
     QCOMPARE(appDataLoc(), dataDir + "/Qt/tst_qstandardpaths"_L1);
     QCOMPARE(appLocalDataLoc(), dataDir + "/Qt/tst_qstandardpaths"_L1);
     QCOMPARE(cacheLoc(), cacheDir + "/Qt/tst_qstandardpaths"_L1);
-    QCOMPARE(cacheLoc(), cacheDir + "/Qt/tst_qstandardpaths"_L1);
+    QCOMPARE(stateLoc(), stateDir + "/Qt/tst_qstandardpaths"_L1);
 
     QCoreApplication::setApplicationName("QtTest");
     QCOMPARE(appConfigLoc(), configDir + "/Qt/QtTest"_L1);
     QCOMPARE(appDataLoc(), dataDir + "/Qt/QtTest"_L1);
     QCOMPARE(appLocalDataLoc(), dataDir + "/Qt/QtTest"_L1);
-    QCoreApplication::setApplicationName("QtTest");
     QCOMPARE(cacheLoc(), cacheDir + "/Qt/QtTest"_L1);
+    QCOMPARE(stateLoc(), stateDir + "/Qt/QtTest"_L1);
 
     // Check these are unaffected by org/app names
     QCOMPARE(genericConfigLoc(), configDir);
     QCOMPARE(configLoc(), configDir);
     QCOMPARE(genericDataLoc(), dataDir);
     QCOMPARE(genericCacheLoc(), cacheDir);
+    QCOMPARE(genericStateLoc(), stateDir);
 #endif
 
     // On all platforms, we want to ensure that the writableLocation is different in test mode and real mode.
@@ -315,6 +345,8 @@ void tst_qstandardpaths::enableTestMode()
     testLocations.insert(QStandardPaths::GenericConfigLocation, genericConfigLoc());
     testLocations.insert(QStandardPaths::CacheLocation, cacheLoc());
     testLocations.insert(QStandardPaths::GenericCacheLocation, genericCacheLoc());
+    testLocations.insert(QStandardPaths::StateLocation, stateLoc());
+    testLocations.insert(QStandardPaths::GenericStateLocation, genericStateLoc());
     // On Windows, what should "Program Files" become, in test mode?
     //testLocations.insert(QStandardPaths::ApplicationsLocation, QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
 
@@ -806,6 +838,10 @@ void tst_qstandardpaths::testXdgPathCleanup()
     qputenv("XDG_CACHE_HOME", relative.toLatin1());
     const QString cacheDir = cacheLoc();
     QCOMPARE_NE(cacheDir, relative);
+
+    qputenv("XDG_STATE_HOME", relative.toLatin1());
+    const QString stateDir = stateLoc();
+    QCOMPARE_NE(stateDir, relative);
 
     qputenv("XDG_DATA_HOME", relative.toLatin1());
     const QString localDataDir = genericDataLoc();

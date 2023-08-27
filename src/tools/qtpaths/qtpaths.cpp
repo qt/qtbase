@@ -71,12 +71,14 @@ static const StringEnum lookupTableData[] = {
     { "GenericCacheLocation", QStandardPaths::GenericCacheLocation, false },
     { "GenericConfigLocation", QStandardPaths::GenericConfigLocation, false },
     { "GenericDataLocation", QStandardPaths::GenericDataLocation, false },
+    { "GenericStateLocation", QStandardPaths::GenericStateLocation, false },
     { "HomeLocation", QStandardPaths::HomeLocation, false },
     { "MoviesLocation", QStandardPaths::MoviesLocation, false },
     { "MusicLocation", QStandardPaths::MusicLocation, false },
     { "PicturesLocation", QStandardPaths::PicturesLocation, false },
     { "PublicShareLocation", QStandardPaths::PublicShareLocation, false },
     { "RuntimeLocation", QStandardPaths::RuntimeLocation, false },
+    { "StateLocation", QStandardPaths::StateLocation, true },
     { "TemplatesLocation", QStandardPaths::TemplatesLocation, false },
     { "TempLocation", QStandardPaths::TempLocation, false }
 };

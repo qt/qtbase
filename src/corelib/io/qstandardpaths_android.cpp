@@ -195,6 +195,9 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case QStandardPaths::ConfigLocation:
     case QStandardPaths::AppConfigLocation:
         return getFilesDir() + testDir() + "/settings"_L1;
+    case QStandardPaths::StateLocation:
+    case QStandardPaths::GenericStateLocation:
+        return getFilesDir() + testDir() + "/state"_L1;
     case QStandardPaths::GenericDataLocation:
     {
         return QAndroidApplication::sdkVersion() >= 30 ?

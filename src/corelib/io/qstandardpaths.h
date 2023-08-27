@@ -38,7 +38,9 @@ public:
         AppDataLocation,
         AppConfigLocation,
         PublicShareLocation,
-        TemplatesLocation
+        TemplatesLocation,
+        StateLocation,
+        GenericStateLocation
     };
     Q_ENUM(StandardLocation)
 

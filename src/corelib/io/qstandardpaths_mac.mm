@@ -120,6 +120,12 @@ static QString baseWritableLocation(QStandardPaths::StandardLocation type,
     case QStandardPaths::AppConfigLocation:
         path = pathForDirectory(NSLibraryDirectory, mask) + "/Preferences"_L1;
         break;
+    case QStandardPaths::StateLocation:
+        if (appendOrgAndApp) { break; }
+        Q_FALLTHROUGH();
+    case QStandardPaths::GenericStateLocation:
+        path = pathForDirectory(NSLibraryDirectory, mask) + "/Preferences/State"_L1;
+        break;
     default:
         path = pathForDirectory(dir, mask);
         break;
@@ -132,6 +138,11 @@ static QString baseWritableLocation(QStandardPaths::StandardLocation type,
         case QStandardPaths::AppConfigLocation:
         case QStandardPaths::CacheLocation:
             appendOrganizationAndApp(path);
+            break;
+        case QStandardPaths::StateLocation:
+            path = pathForDirectory(NSLibraryDirectory, mask) + "/Preferences"_L1;
+            appendOrganizationAndApp(path);
+            path += "/State"_L1;
             break;
         default:
             break;

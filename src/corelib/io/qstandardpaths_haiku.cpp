@@ -120,8 +120,10 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         return haikuAppStandardPath(B_USER_CACHE_DIRECTORY);
     case GenericCacheLocation:
         return haikuStandardPath(B_USER_CACHE_DIRECTORY);
-    case ConfigLocation: // fall through
+    case ConfigLocation:
     case AppConfigLocation:
+    case StateLocation:
+    case GenericStateLocation:
         return haikuAppStandardPath(B_USER_SETTINGS_DIRECTORY);
     case GenericConfigLocation:
         return haikuStandardPath(B_USER_SETTINGS_DIRECTORY);

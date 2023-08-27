@@ -196,6 +196,25 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             appendOrganizationAndApp(xdgCacheHome);
         return xdgCacheHome;
     }
+    case StateLocation:
+    case GenericStateLocation:
+    {
+        QString xdgStateHome;
+        if (isTestModeEnabled()) {
+            xdgStateHome = QDir::homePath() + "/.qttest/state"_L1;
+        } else {
+            // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.8.html
+            xdgStateHome = QFile::decodeName(qgetenv("XDG_STATE_HOME"));
+            if (!xdgStateHome.startsWith(u'/'))
+                xdgStateHome.clear(); // spec says relative paths should be ignored
+
+            if (xdgStateHome.isEmpty())
+                xdgStateHome = QDir::homePath() + "/.local/state"_L1;
+        }
+        if (type == QStandardPaths::StateLocation)
+            appendOrganizationAndApp(xdgStateHome);
+        return xdgStateHome;
+    }
     case AppDataLocation:
     case AppLocalDataLocation:
     case GenericDataLocation:
