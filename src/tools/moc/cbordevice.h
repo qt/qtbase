@@ -4,6 +4,8 @@
 #ifndef CBORDEVICE_H
 #define CBORDEVICE_H
 
+#include <QtCore/qtypes.h>
+
 #include <memory>
 #include <stdio.h>
 
