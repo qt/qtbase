@@ -2492,12 +2492,13 @@ void QCalendarWidget::showToday()
     \snippet code/src_gui_widgets_qcalendarwidget.cpp 1
     \endtable
 
-    The default minimum date is November 25, 4714 BCE.
-
     When setting a minimum date, the maximumDate and selectedDate
     properties are adjusted if the selection range becomes invalid. If
     the provided date is not a valid QDate object, the
     setMinimumDate() function does nothing.
+
+    The default minimum date is November 25, 4714 BCE.
+    You can restore this default by calling clearMinimumDate() (since Qt 6.6).
 
     \sa setDateRange()
 */
@@ -2547,12 +2548,13 @@ void QCalendarWidget::clearMinimumDate()
     \snippet code/src_gui_widgets_qcalendarwidget.cpp 2
     \endtable
 
-    The default maximum date is December 31, 9999 CE.
-
     When setting a maximum date, the minimumDate and selectedDate
     properties are adjusted if the selection range becomes invalid. If
     the provided date is not a valid QDate object, the
     setMaximumDate() function does nothing.
+
+    The default maximum date is December 31, 9999 CE.
+    You can restore this default by calling clearMaximumDate() (since Qt 6.6).
 
     \sa setDateRange()
 */
