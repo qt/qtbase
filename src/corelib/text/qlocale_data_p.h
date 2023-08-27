@@ -15,9 +15,11 @@
 // We mean it.
 //
 
-#include <array>
 #include <QtCore/qendian.h>
-#include <QtCore/private/qglobal_p.h>
+#include <QtCore/private/qlocale_p.h>
+
+#include <array>
+#include <cstring> // std::memcmp
 
 QT_BEGIN_NAMESPACE
 
