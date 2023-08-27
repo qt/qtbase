@@ -74,11 +74,11 @@ inline void qPQfreemem(void *buffer)
 
 /* Missing declaration of PGRES_SINGLE_TUPLE for PSQL below 9.2 */
 #if !defined PG_VERSION_NUM || PG_VERSION_NUM-0 < 90200
-static const int PGRES_SINGLE_TUPLE = 9;
+static constexpr int PGRES_SINGLE_TUPLE = 9;
 #endif
 
 typedef int StatementId;
-static const StatementId InvalidStatementId = 0;
+static constexpr StatementId InvalidStatementId = 0;
 
 class QPSQLResultPrivate;
 
@@ -122,7 +122,7 @@ public:
     QSocketNotifier *sn = nullptr;
     QPSQLDriver::Protocol pro = QPSQLDriver::Version6;
     StatementId currentStmtId = InvalidStatementId;
-    int stmtCount = 0;
+    StatementId stmtCount = InvalidStatementId;
     mutable bool pendingNotifyCheck = false;
     bool hasBackslashEscape = false;
 
@@ -232,7 +232,7 @@ void QPSQLDriverPrivate::discardResults() const
 
 StatementId QPSQLDriverPrivate::generateStatementId()
 {
-    int stmtId = ++stmtCount;
+    StatementId stmtId = ++stmtCount;
     if (stmtId <= 0)
         stmtId = stmtCount = 1;
     return stmtId;
@@ -243,7 +243,7 @@ void QPSQLDriverPrivate::checkPendingNotifications() const
     Q_Q(const QPSQLDriver);
     if (seid.size() && !pendingNotifyCheck) {
         pendingNotifyCheck = true;
-        QMetaObject::invokeMethod(const_cast<QPSQLDriver*>(q), "_q_handleNotification", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(const_cast<QPSQLDriver*>(q), &QPSQLDriver::_q_handleNotification, Qt::QueuedConnection);
     }
 }
 
@@ -1101,8 +1101,7 @@ QPSQLDriver::QPSQLDriver(PGconn *conn, QObject *parent)
 QPSQLDriver::~QPSQLDriver()
 {
     Q_D(QPSQLDriver);
-    if (d->connection)
-        PQfinish(d->connection);
+    PQfinish(d->connection);
 }
 
 QVariant QPSQLDriver::handle() const
@@ -1211,13 +1210,12 @@ void QPSQLDriver::close()
 
     d->seid.clear();
     if (d->sn) {
-        disconnect(d->sn, SIGNAL(activated(QSocketDescriptor)), this, SLOT(_q_handleNotification()));
+        disconnect(d->sn, &QSocketNotifier::activated, this, &QPSQLDriver::_q_handleNotification);
         delete d->sn;
         d->sn = nullptr;
     }
 
-    if (d->connection)
-        PQfinish(d->connection);
+    PQfinish(d->connection);
     d->connection = nullptr;
     setOpen(false);
     setOpenError(false);
@@ -1565,8 +1563,8 @@ bool QPSQLDriver::subscribeToNotification(const QString &name)
         PQclear(result);
 
         if (!d->sn) {
-            d->sn = new QSocketNotifier(socket, QSocketNotifier::Read);
-            connect(d->sn, SIGNAL(activated(QSocketDescriptor)), this, SLOT(_q_handleNotification()));
+            d->sn = new QSocketNotifier(socket, QSocketNotifier::Read, this);
+            connect(d->sn, &QSocketNotifier::activated, this, &QPSQLDriver::_q_handleNotification);
         }
     } else {
         qWarning("QPSQLDriver::subscribeToNotificationImplementation: PQsocket didn't return a valid socket to listen on");
@@ -1602,7 +1600,7 @@ bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
     d->seid.removeAll(name);
 
     if (d->seid.isEmpty()) {
-        disconnect(d->sn, SIGNAL(activated(QSocketDescriptor)), this, SLOT(_q_handleNotification()));
+        disconnect(d->sn, &QSocketNotifier::activated, this, &QPSQLDriver::_q_handleNotification);
         delete d->sn;
         d->sn = nullptr;
     }
