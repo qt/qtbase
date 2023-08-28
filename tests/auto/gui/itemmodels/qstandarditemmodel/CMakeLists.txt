@@ -20,4 +20,5 @@ qt_internal_add_test(tst_qstandarditemmodel
         Qt::GuiPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
+        Qt::TestPrivate
 )
