@@ -6,6 +6,7 @@
     \meta tags {widgets, threads, network}
     \title Image Scaling
     \ingroup qtconcurrentexamples
+    \examplecategory {Networking}
     \brief Demonstrates how to asynchronously download and scale images.
 
     This example shows how to use the QFuture, QPromise, and QFutureWatcher
