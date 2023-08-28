@@ -1475,30 +1475,40 @@ quint32 QHttp2ProtocolHandler::allocateStreamID()
 
 static std::optional<QUrl> makeUrl(const HPack::HttpHeader &requestHeader)
 {
-    QMap<QByteArray, QByteArray> pseudoHeaders;
+    constexpr QByteArrayView names[] = { ":authority", ":method", ":path", ":scheme" };
+    enum PseudoHeaderEnum
+    {
+        Authority,
+        Method,
+        Path,
+        Scheme
+    };
+    std::array<std::optional<QByteArrayView>, std::size(names)> pseudoHeaders{};
     for (const auto &field : requestHeader) {
-        if (field.name == ":scheme" || field.name == ":path"
-            || field.name == ":authority" || field.name == ":method") {
-            if (field.value.isEmpty() || pseudoHeaders.contains(field.name))
+        const auto it = std::find(std::begin(names), std::end(names), QByteArrayView(field.name));
+        if (it != std::end(names)) {
+            const auto index = std::distance(std::begin(names), it);
+            if (field.value.isEmpty() || pseudoHeaders.at(index).has_value())
                 return {};
-            pseudoHeaders[field.name] = field.value;
+            pseudoHeaders[index] = field.value;
         }
     }
 
-    if (pseudoHeaders.size() != 4) {
+    if (!std::all_of(pseudoHeaders.begin(), pseudoHeaders.end(), [](const auto &x) { return x.has_value();})) {
         // All four required, HTTP/2 8.1.2.3.
         return {};
     }
 
-    const QByteArray method = pseudoHeaders[":method"];
+    const QByteArrayView method = pseudoHeaders[Method].value();
     if (method.compare("get", Qt::CaseInsensitive) != 0 &&
-        method.compare("head", Qt::CaseInsensitive) != 0)
+        method.compare("head", Qt::CaseInsensitive) != 0) {
         return {};
+    }
 
     QUrl url;
-    url.setScheme(QLatin1StringView(pseudoHeaders[":scheme"]));
-    url.setAuthority(QLatin1StringView(pseudoHeaders[":authority"]));
-    url.setPath(QLatin1StringView(pseudoHeaders[":path"]));
+    url.setScheme(QLatin1StringView(pseudoHeaders[Scheme].value()));
+    url.setAuthority(QLatin1StringView(pseudoHeaders[Authority].value()));
+    url.setPath(QLatin1StringView(pseudoHeaders[Path].value()));
 
     if (!url.isValid())
         return {};
