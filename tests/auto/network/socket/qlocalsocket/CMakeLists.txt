@@ -11,5 +11,6 @@ qt_internal_add_test(tst_qlocalsocket
         QLOCALSOCKET_DEBUG
     LIBRARIES
         Qt::Network
+        Qt::TestPrivate
 )
 add_dependencies(tst_qlocalsocket socketprocess)
