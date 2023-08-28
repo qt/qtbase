@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+    <mime-type type="text/x-microdvd">
+        <comment>MicroDVD subtitles</comment>
+        <sub-class-of type="text/plain"/>
+        <magic priority="50">
+            <match type="string" value="{1}" offset="0"/>
+            <match type="string" value="{0}" offset="0"/>
+            <match type="string" value="}{" offset="0:6"/>
+        </magic>
+        <generic-icon name="text-x-generic"/>
+        <glob pattern="*.sub"/>
+        <glob pattern="*.txt"/>
+    </mime-type>
+</mime-info>

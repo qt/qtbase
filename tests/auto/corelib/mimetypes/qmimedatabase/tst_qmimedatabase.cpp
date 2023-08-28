@@ -30,16 +30,15 @@
 
 using namespace Qt::StringLiterals;
 
-static const char *const additionalMimeFiles[] = {
-    "yast2-metapackage-handler-mimetypes.xml",
-    "qml-again.xml",
-    "text-x-objcsrc.xml",
-    "invalid-magic1.xml",
-    "invalid-magic2.xml",
-    "invalid-magic3.xml",
-    "magic-and-hierarchy.xml",
-    0
-};
+static const char *const additionalMimeFiles[] = { "yast2-metapackage-handler-mimetypes.xml",
+                                                   "qml-again.xml",
+                                                   "text-x-objcsrc.xml",
+                                                   "text-plain-subclass.xml",
+                                                   "invalid-magic1.xml",
+                                                   "invalid-magic2.xml",
+                                                   "invalid-magic3.xml",
+                                                   "magic-and-hierarchy.xml",
+                                                   0 };
 
 static const auto s_resourcePrefix = ":/qt-project.org/qmime/"_L1;
 static const auto s_inodeMimetype = "inode/directory"_L1;
@@ -1201,6 +1200,8 @@ void tst_QMimeDatabase::installNewLocalMimeType()
         QVERIFY(objcsrc.isValid());
         QCOMPARE(objcsrc.globPatterns(), QStringList());
     }
+    QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.txt"), QMimeDatabase::MatchExtension).name(),
+             QString::fromLatin1("text/plain"));
 
     // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").
     const QString qmlTestFile = s_resourcePrefix + "test.qml"_L1;
