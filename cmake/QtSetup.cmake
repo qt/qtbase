@@ -387,29 +387,7 @@ endif()
 
 option(QT_ALLOW_SYMLINK_IN_PATHS "Allows symlinks in paths." OFF)
 
-# We need to clean up QT_FEATURE_*, but only once per configuration cycle
-get_property(qt_feature_clean GLOBAL PROPERTY _qt_feature_clean)
-if(NOT qt_feature_clean)
-    message(STATUS "Check for feature set changes")
-    set_property(GLOBAL PROPERTY _qt_feature_clean TRUE)
-    foreach(feature ${QT_KNOWN_FEATURES})
-        if(DEFINED "FEATURE_${feature}" AND
-            NOT "${QT_FEATURE_${feature}}" STREQUAL "${FEATURE_${feature}}")
-            message("    '${feature}' is changed from ${QT_FEATURE_${feature}} \
-to ${FEATURE_${feature}}")
-            set(dirty_build TRUE)
-        endif()
-        unset("QT_FEATURE_${feature}" CACHE)
-    endforeach()
-
-    set(QT_KNOWN_FEATURES "" CACHE INTERNAL "" FORCE)
-
-    if(dirty_build)
-        set_property(GLOBAL PROPERTY _qt_dirty_build TRUE)
-        message(WARNING "Re-configuring in existing build folder. \
-Some features will be re-evaluated automatically.")
-    endif()
-endif()
+qt_internal_detect_dirty_features()
 
 if(NOT QT_BUILD_EXAMPLES)
     # Disable deployment setup to avoid warnings about missing patchelf with CMake < 3.21.
