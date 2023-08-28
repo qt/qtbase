@@ -18,20 +18,13 @@ QBackingStoreDefaultCompositor::~QBackingStoreDefaultCompositor()
 void QBackingStoreDefaultCompositor::reset()
 {
     m_rhi = nullptr;
-    delete m_psNoBlend;
-    m_psNoBlend = nullptr;
-    delete m_psBlend;
-    m_psBlend = nullptr;
-    delete m_psPremulBlend;
-    m_psPremulBlend = nullptr;
-    delete m_samplerNearest;
-    m_samplerNearest = nullptr;
-    delete m_samplerLinear;
-    m_samplerLinear = nullptr;
-    delete m_vbuf;
-    m_vbuf = nullptr;
-    delete m_texture;
-    m_texture = nullptr;
+    m_psNoBlend.reset();
+    m_psBlend.reset();
+    m_psPremulBlend.reset();
+    m_samplerNearest.reset();
+    m_samplerLinear.reset();
+    m_vbuf.reset();
+    m_texture.reset();
     m_widgetQuadData.reset();
     for (PerQuadData &d : m_textureQuadData)
         d.reset();
@@ -102,7 +95,7 @@ QRhiTexture *QBackingStoreDefaultCompositor::toTexture(const QImage &sourceImage
 
     const bool resized = !m_texture || m_texture->pixelSize() != image.size();
     if (dirtyRegion.isEmpty() && !resized)
-        return m_texture;
+        return m_texture.get();
 
     if (needsConversion)
         image = image.convertToFormat(QImage::Format_RGBA8888);
@@ -111,11 +104,11 @@ QRhiTexture *QBackingStoreDefaultCompositor::toTexture(const QImage &sourceImage
 
     if (resized) {
         if (!m_texture)
-            m_texture = rhi->newTexture(QRhiTexture::RGBA8, image.size());
+            m_texture.reset(rhi->newTexture(QRhiTexture::RGBA8, image.size()));
         else
             m_texture->setPixelSize(image.size());
         m_texture->create();
-        resourceUpdates->uploadTexture(m_texture, image);
+        resourceUpdates->uploadTexture(m_texture.get(), image);
     } else {
         QRect imageRect = image.rect();
         QRect rect = dirtyRegion.boundingRect() & imageRect;
@@ -124,10 +117,10 @@ QRhiTexture *QBackingStoreDefaultCompositor::toTexture(const QImage &sourceImage
         subresDesc.setSourceSize(rect.size());
         subresDesc.setDestinationTopLeft(rect.topLeft());
         QRhiTextureUploadDescription uploadDesc(QRhiTextureUploadEntry(0, 0, subresDesc));
-        resourceUpdates->uploadTexture(m_texture, uploadDesc);
+        resourceUpdates->uploadTexture(m_texture.get(), uploadDesc);
     }
 
-    return m_texture;
+    return m_texture.get();
 }
 
 static inline QRect scaledRect(const QRect &rect, qreal factor)
@@ -349,7 +342,7 @@ QBackingStoreDefaultCompositor::PerQuadData QBackingStoreDefaultCompositor::crea
     d.srb = m_rhi->newShaderResourceBindings();
     d.srb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf, 0, UBUF_SIZE),
-        QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, texture, m_samplerNearest)
+        QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, texture, m_samplerNearest.get())
     });
     if (!d.srb->create())
         qWarning("QBackingStoreDefaultCompositor: Failed to create srb");
@@ -359,7 +352,7 @@ QBackingStoreDefaultCompositor::PerQuadData QBackingStoreDefaultCompositor::crea
         d.srbExtra = m_rhi->newShaderResourceBindings();
         d.srbExtra->setBindings({
             QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf, 0, UBUF_SIZE),
-            QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, textureExtra, m_samplerNearest)
+            QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, textureExtra, m_samplerNearest.get())
         });
         if (!d.srbExtra->create())
             qWarning("QBackingStoreDefaultCompositor: Failed to create srb");
@@ -381,7 +374,7 @@ void QBackingStoreDefaultCompositor::updatePerQuadData(PerQuadData *d, QRhiTextu
     if ((d->lastUsedTexture == texture && d->lastUsedFilter == filter) || !d->srb)
         return;
 
-    QRhiSampler *sampler = filter == QRhiSampler::Linear ? m_samplerLinear : m_samplerNearest;
+    QRhiSampler *sampler = filter == QRhiSampler::Linear ? m_samplerLinear.get() : m_samplerNearest.get();
     d->srb->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d->ubuf, 0, UBUF_SIZE),
         QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, texture, sampler)
@@ -426,37 +419,37 @@ void QBackingStoreDefaultCompositor::ensureResources(QRhiResourceUpdateBatch *re
     };
 
     if (!m_vbuf) {
-        m_vbuf = m_rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertexData));
+        m_vbuf.reset(m_rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertexData)));
         if (m_vbuf->create())
-            resourceUpdates->uploadStaticBuffer(m_vbuf, vertexData);
+            resourceUpdates->uploadStaticBuffer(m_vbuf.get(), vertexData);
         else
             qWarning("QBackingStoreDefaultCompositor: Failed to create vertex buffer");
     }
 
     if (!m_samplerNearest) {
-        m_samplerNearest = m_rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
-                                             QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
+        m_samplerNearest.reset(m_rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
+                                                 QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
         if (!m_samplerNearest->create())
             qWarning("QBackingStoreDefaultCompositor: Failed to create sampler (Nearest filtering)");
     }
 
     if (!m_samplerLinear) {
-        m_samplerLinear = m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
-                                            QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
+        m_samplerLinear.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
+                                                QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
         if (!m_samplerLinear->create())
             qWarning("QBackingStoreDefaultCompositor: Failed to create sampler (Linear filtering)");
     }
 
     if (!m_widgetQuadData.isValid())
-        m_widgetQuadData = createPerQuadData(m_texture);
+        m_widgetQuadData = createPerQuadData(m_texture.get());
 
     QRhiShaderResourceBindings *srb = m_widgetQuadData.srb; // just for the layout
     if (!m_psNoBlend)
-        m_psNoBlend = createGraphicsPipeline(m_rhi, srb, rpDesc, PipelineBlend::None);
+        m_psNoBlend.reset(createGraphicsPipeline(m_rhi, srb, rpDesc, PipelineBlend::None));
     if (!m_psBlend)
-        m_psBlend = createGraphicsPipeline(m_rhi, srb, rpDesc, PipelineBlend::Alpha);
+        m_psBlend.reset(createGraphicsPipeline(m_rhi, srb, rpDesc, PipelineBlend::Alpha));
     if (!m_psPremulBlend)
-        m_psPremulBlend = createGraphicsPipeline(m_rhi, srb, rpDesc, PipelineBlend::PremulAlpha);
+        m_psPremulBlend.reset(createGraphicsPipeline(m_rhi, srb, rpDesc, PipelineBlend::PremulAlpha));
 }
 
 QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatformBackingStore *backingStore,
@@ -566,7 +559,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
         if (sourceWindowRect.width() > deviceWindowRect.width()
             && sourceWindowRect.height() > deviceWindowRect.height())
         {
-            updatePerQuadData(&m_widgetQuadData, m_texture, nullptr, NeedsLinearFiltering);
+            updatePerQuadData(&m_widgetQuadData, m_texture.get(), nullptr, NeedsLinearFiltering);
         }
     }
 
@@ -619,9 +612,9 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
 
         cb->beginPass(target, clearColor, { 1.0f, 0 });
 
-        cb->setGraphicsPipeline(m_psNoBlend);
+        cb->setGraphicsPipeline(m_psNoBlend.get());
         cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
-        QRhiCommandBuffer::VertexInput vbufBinding(m_vbuf, 0);
+        QRhiCommandBuffer::VertexInput vbufBinding(m_vbuf.get(), 0);
         cb->setVertexInput(0, 1, &vbufBinding);
 
         // Textures for renderToTexture widgets.
@@ -639,7 +632,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
             }
         }
 
-        cb->setGraphicsPipeline(premultiplied ? m_psPremulBlend : m_psBlend);
+        cb->setGraphicsPipeline(premultiplied ? m_psPremulBlend.get() : m_psBlend.get());
 
         // Backingstore texture with the normal widgets.
         if (m_texture) {
@@ -653,9 +646,9 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
             if (flags.testFlag(QPlatformTextureList::StacksOnTop)) {
                 if (m_textureQuadData[i].isValid()) {
                     if (flags.testFlag(QPlatformTextureList::NeedsPremultipliedAlphaBlending))
-                        cb->setGraphicsPipeline(m_psPremulBlend);
+                        cb->setGraphicsPipeline(m_psPremulBlend.get());
                     else
-                        cb->setGraphicsPipeline(m_psBlend);
+                        cb->setGraphicsPipeline(m_psBlend.get());
 
                     QRhiShaderResourceBindings* srb = m_textureQuadData[i].srb;
                     if (buffer == QRhiSwapChain::RightBuffer && m_textureQuadData[i].srbExtra)

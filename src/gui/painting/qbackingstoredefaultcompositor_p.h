@@ -62,14 +62,14 @@ private:
                            QPlatformBackingStore::TextureFlags *flags) const;
 
     mutable QRhi *m_rhi = nullptr;
-    mutable QRhiTexture *m_texture = nullptr;
+    mutable std::unique_ptr<QRhiTexture> m_texture;
 
-    QRhiBuffer *m_vbuf = nullptr;
-    QRhiSampler *m_samplerNearest = nullptr;
-    QRhiSampler *m_samplerLinear = nullptr;
-    QRhiGraphicsPipeline *m_psNoBlend = nullptr;
-    QRhiGraphicsPipeline *m_psBlend = nullptr;
-    QRhiGraphicsPipeline *m_psPremulBlend = nullptr;
+    std::unique_ptr<QRhiBuffer> m_vbuf;
+    std::unique_ptr<QRhiSampler> m_samplerNearest;
+    std::unique_ptr<QRhiSampler> m_samplerLinear;
+    std::unique_ptr<QRhiGraphicsPipeline> m_psNoBlend;
+    std::unique_ptr<QRhiGraphicsPipeline> m_psBlend;
+    std::unique_ptr<QRhiGraphicsPipeline> m_psPremulBlend;
 
     struct PerQuadData {
         QRhiBuffer *ubuf = nullptr;
