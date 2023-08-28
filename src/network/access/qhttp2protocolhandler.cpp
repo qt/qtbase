@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -1472,30 +1473,27 @@ quint32 QHttp2ProtocolHandler::allocateStreamID()
     return streamID;
 }
 
-bool QHttp2ProtocolHandler::tryReserveStream(const Http2::Frame &pushPromiseFrame,
-                                             const HPack::HttpHeader &requestHeader)
+static std::optional<QUrl> makeUrl(const HPack::HttpHeader &requestHeader)
 {
-    Q_ASSERT(pushPromiseFrame.type() == FrameType::PUSH_PROMISE);
-
     QMap<QByteArray, QByteArray> pseudoHeaders;
     for (const auto &field : requestHeader) {
         if (field.name == ":scheme" || field.name == ":path"
             || field.name == ":authority" || field.name == ":method") {
             if (field.value.isEmpty() || pseudoHeaders.contains(field.name))
-                return false;
+                return {};
             pseudoHeaders[field.name] = field.value;
         }
     }
 
     if (pseudoHeaders.size() != 4) {
         // All four required, HTTP/2 8.1.2.3.
-        return false;
+        return {};
     }
 
     const QByteArray method = pseudoHeaders[":method"];
     if (method.compare("get", Qt::CaseInsensitive) != 0 &&
-            method.compare("head", Qt::CaseInsensitive) != 0)
-        return false;
+        method.compare("head", Qt::CaseInsensitive) != 0)
+        return {};
 
     QUrl url;
     url.setScheme(QLatin1StringView(pseudoHeaders[":scheme"]));
@@ -1503,16 +1501,27 @@ bool QHttp2ProtocolHandler::tryReserveStream(const Http2::Frame &pushPromiseFram
     url.setPath(QLatin1StringView(pseudoHeaders[":path"]));
 
     if (!url.isValid())
+        return {};
+    return url;
+}
+
+bool QHttp2ProtocolHandler::tryReserveStream(const Http2::Frame &pushPromiseFrame,
+                                             const HPack::HttpHeader &requestHeader)
+{
+    Q_ASSERT(pushPromiseFrame.type() == FrameType::PUSH_PROMISE);
+
+    const auto url = makeUrl(requestHeader);
+    if (!url.has_value())
         return false;
 
     Q_ASSERT(activeStreams.contains(pushPromiseFrame.streamID()));
     const Stream &associatedStream = activeStreams[pushPromiseFrame.streamID()];
 
     const auto associatedUrl = urlkey_from_request(associatedStream.request());
-    if (url.adjusted(QUrl::RemovePath) != associatedUrl.adjusted(QUrl::RemovePath))
+    if (url->adjusted(QUrl::RemovePath) != associatedUrl.adjusted(QUrl::RemovePath))
         return false;
 
-    const auto urlKey = url.toString();
+    const auto urlKey = url->toString();
     if (promisedData.contains(urlKey)) // duplicate push promise
         return false;
 
