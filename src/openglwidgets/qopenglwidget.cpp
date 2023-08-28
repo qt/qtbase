@@ -1457,6 +1457,10 @@ void QOpenGLWidget::resizeGL(int w, int h)
   other state is set and no clearing or drawing is performed by the
   framework.
 
+  The default implementation performs a glClear(). Subclasses are not expected
+  to invoke the base class implementation and should perform clearing on their
+  own.
+
   \note To ensure portability, do not expect that state set in initializeGL()
   persists. Rather, set all necessary state, for example, by calling
   glEnable(), in paintGL(). This is because some platforms, such as WebAssembly
@@ -1476,6 +1480,9 @@ void QOpenGLWidget::resizeGL(int w, int h)
 */
 void QOpenGLWidget::paintGL()
 {
+    Q_D(QOpenGLWidget);
+    if (d->initialized)
+        d->context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 /*!
