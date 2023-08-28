@@ -10,4 +10,5 @@ qt_internal_add_test(tst_qdnslookup
         tst_qdnslookup.cpp
     LIBRARIES
         Qt::Network
+        Qt::TestPrivate
 )
