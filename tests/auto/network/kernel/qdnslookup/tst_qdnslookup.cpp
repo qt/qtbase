@@ -5,6 +5,7 @@
 
 #include <QTest>
 #include <QSignalSpy>
+#include <QtTest/private/qpropertytesthelper_p.h>
 
 #include <QtNetwork/QDnsLookup>
 
@@ -52,6 +53,7 @@ private slots:
     void setNameserver_data();
     void setNameserver();
     void bindingsAndProperties();
+    void automatedBindings();
 };
 
 static constexpr qsizetype HeaderSize = 6 * sizeof(quint16);
@@ -636,6 +638,38 @@ void tst_QDnsLookup::bindingsAndProperties()
     QCOMPARE(nameserverProp.value(), QHostAddress::LocalHostIPv6);
     QCOMPARE(nameserverChangeSpy.size(), 3);
     QCOMPARE(nameserverPortChangeSpy.size(), 1);
+}
+
+void tst_QDnsLookup::automatedBindings()
+{
+    QDnsLookup lookup;
+
+    QTestPrivate::testReadWritePropertyBasics(lookup, u"aaaa"_s, u"txt"_s, "name");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QDnsLookup::name");
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics(lookup, QDnsLookup::AAAA, QDnsLookup::TXT, "type");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QDnsLookup::type");
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics(lookup, QHostAddress{QHostAddress::Any},
+                                              QHostAddress{QHostAddress::LocalHost},
+                                              "nameserver");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QDnsLookup::nameserver");
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics(lookup, quint16(123), quint16(456),
+                                              "nameserverPort");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QDnsLookup::nameserverPort");
+        return;
+    }
 }
 
 QTEST_MAIN(tst_QDnsLookup)
