@@ -229,7 +229,7 @@ namespace qstdweb {
     T proxyCall(std::function<T()> task, emscripten::ProxyingQueue *queue)
     {
         T result;
-        queue->proxySync(emscripten_main_browser_thread_id(),
+        queue->proxySync(emscripten_main_runtime_thread_id(),
                          [task, result = &result]() { *result = task(); });
         return result;
     }
@@ -237,7 +237,7 @@ namespace qstdweb {
     template<>
     inline void proxyCall<void>(std::function<void()> task, emscripten::ProxyingQueue *queue)
     {
-        queue->proxySync(emscripten_main_browser_thread_id(), task);
+        queue->proxySync(emscripten_main_runtime_thread_id(), task);
     }
 
     template<class T>
