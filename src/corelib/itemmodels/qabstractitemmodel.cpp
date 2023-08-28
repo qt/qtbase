@@ -1499,8 +1499,8 @@ void QAbstractItemModel::resetInternalData()
 
     \sa {Model Classes}, {Model Subclassing Reference}, QModelIndex,
         QAbstractItemView, {Using drag and drop with item views},
-        {Simple DOM Model Example}, {Simple Tree Model Example},
-        {Editable Tree Model Example}, {Fetch More Example}
+        {Simple Tree Model Example}, {Editable Tree Model Example},
+        {Fetch More Example}
 */
 
 /*!
@@ -3728,8 +3728,7 @@ void QAbstractItemModel::multiData(const QModelIndex &index, QModelRoleDataSpan 
 
     \note
 
-    \sa {Model Classes}, QAbstractItemModel, QAbstractListModel,
-    {Pixelator Example}
+    \sa {Model Classes}, QAbstractItemModel, QAbstractListModel
 */
 
 /*!
@@ -3880,7 +3879,7 @@ Qt::ItemFlags QAbstractTableModel::flags(const QModelIndex &index) const
     \l{Model Subclassing Reference}.
 
     \sa {Model Classes}, {Model Subclassing Reference}, QAbstractItemView,
-        QAbstractTableModel, {Item Views Puzzle Example}
+        QAbstractTableModel
 */
 
 /*!
