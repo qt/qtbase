@@ -173,7 +173,7 @@ static QMatrix4x4 targetTransform(const QRectF &target, const QRect &viewport, b
     matrix(1,3) = y_translate;
 
     matrix(0,0) = x_scale;
-    matrix(1,1) = y_scale;
+    matrix(1,1) = (invertY ? -1.0 : 1.0) * y_scale;
 
     return matrix;
 }
@@ -543,8 +543,9 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
     const qreal dpr = window->devicePixelRatio();
     const QRect deviceWindowRect = scaledRect(QRect(QPoint(), window->size()), dpr);
 
-    const bool invertTargetY = rhi->clipSpaceCorrMatrix().data()[5] < 0.0f;
-    const bool invertSource = rhi->isYUpInFramebuffer() != rhi->isYUpInNDC();
+    const bool invertTargetY = !rhi->isYUpInNDC();
+    const bool invertSource = !rhi->isYUpInFramebuffer();
+
     if (m_texture) {
         // The backingstore is for the entire tlw. In case of native children, offset tells the position
         // relative to the tlw. The window rect is scaled by the source device pixel ratio to get
