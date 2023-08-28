@@ -91,7 +91,7 @@ bool read_bit_pattern(const BitPattern &pattern, BitIStream &inputStream)
     return true;
 }
 
-bool is_request_pseudo_header(const QByteArray &name)
+bool is_request_pseudo_header(QByteArrayView name)
 {
     return name == ":method" || name == ":scheme" ||
            name == ":authority" || name == ":path";
@@ -194,8 +194,8 @@ bool Encoder::encodeRequestPseudoHeaders(BitOStream &outputStream,
     using size_type = decltype(header.size());
 
     bool methodFound = false;
-    const char *headerName[] = {":authority", ":scheme", ":path"};
-    const size_type nHeaders = sizeof headerName / sizeof headerName[0];
+    constexpr QByteArrayView headerName[] = {":authority", ":scheme", ":path"};
+    constexpr size_type nHeaders = std::size(headerName);
     bool headerFound[nHeaders] = {};
 
     for (const auto &field : header) {
