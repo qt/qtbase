@@ -32,6 +32,7 @@ set(testdata_resource_files
     "../qml-again.xml"
     "../test.qml"
     "../text-x-objcsrc.xml"
+    "../text-plain-subclass.xml"
     "../yast2-metapackage-handler-mimetypes.xml"
 )
 

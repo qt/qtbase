@@ -111,7 +111,8 @@ public:
 private:
     struct CacheFile;
 
-    void matchGlobList(QMimeGlobMatchResult &result, CacheFile *cacheFile, int offset, const QString &fileName);
+    int matchGlobList(QMimeGlobMatchResult &result, CacheFile *cacheFile, int offset,
+                      const QString &fileName);
     bool matchSuffixTree(QMimeGlobMatchResult &result, CacheFile *cacheFile, int numEntries,
                          int firstOffset, const QString &fileName, qsizetype charPos,
                          bool caseSensitiveCheck);
