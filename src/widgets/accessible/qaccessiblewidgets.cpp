@@ -868,7 +868,7 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
             underlineStyleValue = QStringLiteral("wave"); // this is not correct, but provides good approximation at least
             break;
         default:
-            qWarning() << "Unknown QTextCharFormat::​UnderlineStyle value " << underlineStyle << " could not be translated to IAccessible2 value";
+            qWarning() << "Unknown QTextCharFormat::UnderlineStyle value " << underlineStyle << " could not be translated to IAccessible2 value";
             break;
     }
     if (!underlineStyleValue.isNull()) {
