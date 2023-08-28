@@ -1443,8 +1443,10 @@ bool TestMethods::invokeTest(int index, QLatin1StringView tag, WatchDog *watchDo
             if (dataTagMatches(tag, QLatin1StringView(dataTag(curDataIndex)),
                                QLatin1StringView(globalDataTag(curGlobalDataIndex)))) {
                 foundFunction = true;
-                QTestPrivate::checkBlackLists(name.constData(), dataTag(curDataIndex),
-                                              globalDataTag(curGlobalDataIndex));
+                if (QTestPrivate::checkBlackLists(name.constData(), dataTag(curDataIndex),
+                                                  globalDataTag(curGlobalDataIndex))) {
+                    QTestResult::setBlacklistCurrentTest(true);
+                 }
 
                 QTestDataSetter s(curDataIndex >= dataCount ? nullptr : table.testData(curDataIndex));
 

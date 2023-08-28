@@ -302,7 +302,6 @@ bool checkBlackLists(const char *slot, const char *data, const char *global)
         }
     }
 
-    QTestResult::setBlacklistCurrentTest(ignore);
     return ignore;
 }
 
