@@ -97,12 +97,14 @@ QList<QByteArray> supportedImageFormats(Capability cap)
     return formats;
 }
 
+static constexpr QByteArrayView imagePrefix() noexcept { return "image/"; }
+
 QList<QByteArray> supportedMimeTypes(Capability cap)
 {
     QList<QByteArray> mimeTypes;
     mimeTypes.reserve(_qt_NumFormats);
     for (const auto &fmt : _qt_BuiltInFormats)
-        mimeTypes.append(QByteArrayLiteral("image/") + fmt.mimeType);
+        mimeTypes.append(imagePrefix() + fmt.mimeType);
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
     appendImagePluginMimeTypes(irhLoader(), pluginCapability(cap), &mimeTypes);
@@ -116,8 +118,8 @@ QList<QByteArray> supportedMimeTypes(Capability cap)
 QList<QByteArray> imageFormatsForMimeType(QByteArrayView mimeType, Capability cap)
 {
     QList<QByteArray> formats;
-    if (mimeType.startsWith("image/")) {
-        const QByteArrayView type = mimeType.mid(sizeof("image/") - 1);
+    if (mimeType.startsWith(imagePrefix())) {
+        const QByteArrayView type = mimeType.mid(imagePrefix().size());
         for (const auto &fmt : _qt_BuiltInFormats) {
             if (fmt.mimeType == type && !formats.contains(fmt.extension))
                 formats << fmt.extension;
