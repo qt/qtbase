@@ -26,12 +26,14 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
     // reality often differs from the specification. People have
     // data: URIs with ? and #
     //QByteArray data = QByteArray::fromPercentEncoding(uri.path(QUrl::FullyEncoded).toLatin1());
-    QByteArray data = QByteArray::fromPercentEncoding(uri.url(QUrl::FullyEncoded | QUrl::RemoveScheme).toLatin1());
+    const QByteArray dataArray =
+            QByteArray::fromPercentEncoding(uri.url(QUrl::FullyEncoded | QUrl::RemoveScheme).toLatin1());
+    QByteArrayView data = dataArray;
 
     // parse it:
     const qsizetype pos = data.indexOf(',');
     if (pos != -1) {
-        payload = data.mid(pos + 1);
+        payload = data.mid(pos + 1).toByteArray();
         data.truncate(pos);
         data = data.trimmed();
 
@@ -41,17 +43,17 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
             data.chop(7);
         }
 
+        QByteArrayView textPlain;
         if (QLatin1StringView{data}.startsWith("charset"_L1, Qt::CaseInsensitive)) {
             qsizetype i = 7;      // strlen("charset")
             while (data.at(i) == ' ')
                 ++i;
             if (data.at(i) == '=')
-                data.prepend("text/plain;");
+                textPlain = "text/plain;";
         }
 
         if (!data.isEmpty())
-            mimeType = QString::fromLatin1(data.trimmed());
-
+            mimeType = QString::fromLatin1(textPlain + data.trimmed());
     }
 
     return true;
