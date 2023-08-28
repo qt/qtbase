@@ -890,6 +890,7 @@ public:
         CurrencySymbol,
         CurrencyDisplayName
     };
+    Q_ENUM(CurrencySymbolFormat)
 
     enum DataSizeFormat {
         // Single-bit values, for internal use.
@@ -1119,6 +1120,7 @@ public:
     NumberOptions numberOptions() const;
 
     enum QuotationStyle { StandardQuotation, AlternateQuotation };
+    Q_ENUM(QuotationStyle)
     QString quoteString(const QString &str, QuotationStyle style = StandardQuotation) const
     { return quoteString(QStringView(str), style); }
     QString quoteString(QStringView str, QuotationStyle style = StandardQuotation) const;
