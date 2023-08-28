@@ -279,7 +279,8 @@ void parseBlackList()
     }
 }
 
-void checkBlackLists(const char *slot, const char *data, const char *global)
+// Returns \c true if this test-case is blacklisted.
+bool checkBlackLists(const char *slot, const char *data, const char *global)
 {
     bool ignore = ignoreAll;
 
@@ -302,6 +303,7 @@ void checkBlackLists(const char *slot, const char *data, const char *global)
     }
 
     QTestResult::setBlacklistCurrentTest(ignore);
+    return ignore;
 }
 
 } // QTestPrivate
