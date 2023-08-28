@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qdnslookup
         tst_qdnslookup.cpp
     LIBRARIES
         Qt::Network
+        Qt::TestPrivate
 )
 
 qt_internal_extend_target(tst_qdnslookup CONDITION WIN32
