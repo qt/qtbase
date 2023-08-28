@@ -113,11 +113,11 @@ QList<QByteArray> supportedMimeTypes(Capability cap)
     return mimeTypes;
 }
 
-QList<QByteArray> imageFormatsForMimeType(const QByteArray &mimeType, Capability cap)
+QList<QByteArray> imageFormatsForMimeType(QByteArrayView mimeType, Capability cap)
 {
     QList<QByteArray> formats;
     if (mimeType.startsWith("image/")) {
-        const QByteArray type = mimeType.mid(sizeof("image/") - 1);
+        const QByteArrayView type = mimeType.mid(sizeof("image/") - 1);
         for (const auto &fmt : _qt_BuiltInFormats) {
             if (fmt.mimeType == type && !formats.contains(fmt.extension))
                 formats << fmt.extension;
