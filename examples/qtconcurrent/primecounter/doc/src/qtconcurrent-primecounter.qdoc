@@ -6,6 +6,7 @@
     \meta tags {widgets, threads}
     \title Prime Counter
     \ingroup qtconcurrentexamples
+    \examplecategory {Data Processing & I/O}
     \brief Demonstrates how to monitor the progress of concurrent operations.
 
     The following example demonstrates how to create an interactive and

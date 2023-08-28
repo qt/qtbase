@@ -6,6 +6,7 @@
     \meta tags {threads, console}
     \title Word Count
     \ingroup qtconcurrentexamples
+    \examplecategory {Data Processing & I/O}
     \brief Demonstrates how to use the map-reduce algorithm.
 
     The Qt Concurrent \e {Word Count} example demonstrates the use of the
