@@ -10,6 +10,7 @@
 #include <QAbstractItemModelTester>
 
 #include <private/qabstractitemmodel_p.h>
+#include <private/qpropertytesthelper_p.h>
 #include <private/qtreeview_p.h>
 
 #include <algorithm>
@@ -902,6 +903,9 @@ void tst_QStandardItemModel::sortRoleBindings()
     sortRoleObserver.setBinding([&] { return model.sortRole(); });
     model.setSortRole(Qt::EditRole);
     QCOMPARE(sortRoleObserver, Qt::EditRole);
+
+    QTestPrivate::testReadWritePropertyBasics(model, static_cast<int>(Qt::DisplayRole),
+                                              static_cast<int>(Qt::EditRole), "sortRole");
 }
 
 void tst_QStandardItemModel::findItems()
