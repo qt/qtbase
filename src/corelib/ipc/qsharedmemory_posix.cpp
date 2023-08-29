@@ -10,6 +10,7 @@
 
 #include <errno.h>
 
+#if QT_CONFIG(sharedmemory)
 #if QT_CONFIG(posix_shm)
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -192,3 +193,4 @@ bool QSharedMemoryPosix::detach(QSharedMemoryPrivate *self)
 QT_END_NAMESPACE
 
 #endif // QT_CONFIG(posix_shm)
+#endif // QT_CONFIG(sharedmemory)
