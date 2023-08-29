@@ -60,7 +60,7 @@
     \section1 The DataStreamConverter Class
 
     The DataStreamConverter class is used to serialize to and from the
-    QDataStream format. There is also the DataStreamDumper class for outputting
+    QDataStream format. There is also the DebugTextDumper class for outputting
     the data lossless in a non-standardized human readable format.
 
     \section1 The JsonConverter Class
