@@ -59,7 +59,7 @@ struct QDBusSlotCache
     struct Key
     {
         QString memberWithSignature;
-        int flags;
+        QDBusConnection::RegisterOptions flags;
 
         friend bool operator==(const Key &lhs, const Key &rhs) noexcept
         {

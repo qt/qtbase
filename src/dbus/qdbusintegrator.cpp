@@ -590,7 +590,7 @@ static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNo
 
     if (needle == haystack.obj) {
         haystack.obj = nullptr;
-        haystack.flags = 0;
+        haystack.flags = {};
     }
 }
 
@@ -601,7 +601,7 @@ static void huntAndUnregister(const QList<QStringView> &pathComponents, int i,
     if (pathComponents.size() == i) {
         // found it
         node->obj = nullptr;
-        node->flags = 0;
+        node->flags = {};
 
         if (mode == QDBusConnection::UnregisterTree) {
             // clear the sub-tree as well
@@ -817,7 +817,8 @@ void QDBusConnectionPrivate::activateSignal(const QDBusConnectionPrivate::Signal
         postEventToThread(ActivateSignalAction, hook.obj, call);
 }
 
-bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBusMessage &msg)
+bool QDBusConnectionPrivate::activateCall(QObject *object, QDBusConnection::RegisterOptions flags,
+                                          const QDBusMessage &msg)
 {
     // This is called by QDBusConnectionPrivate::handleObjectCall to place a call
     // to a slot on the object.
@@ -1042,7 +1043,7 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     connect(this, &QDBusConnectionPrivate::messageNeedsSending,
             this, &QDBusConnectionPrivate::sendInternal);
 
-    rootNode.flags = 0;
+    rootNode.flags = {};
 
     // prepopulate watchedServices:
     // we know that the owner of org.freedesktop.DBus is itself
@@ -1453,7 +1454,7 @@ void QDBusConnectionPrivate::activateObject(ObjectTreeNode &node, const QDBusMes
     QDBusAdaptorConnector *connector;
     if (node.flags & QDBusConnection::ExportAdaptors &&
         (connector = qDBusFindAdaptorConnector(node.obj))) {
-        int newflags = node.flags | QDBusConnection::ExportAllSlots;
+        auto newflags = node.flags | QDBusConnection::ExportAllSlots;
 
         if (msg.interface().isEmpty()) {
             // place the call in all interfaces

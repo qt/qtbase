@@ -115,9 +115,11 @@ public:
     {
         typedef QList<ObjectTreeNode> DataList;
 
-        inline ObjectTreeNode() : obj(nullptr), flags(0) { }
+        inline ObjectTreeNode() : obj(nullptr) { }
         inline ObjectTreeNode(const QString &n) // intentionally implicit
-            : name(n), obj(nullptr), flags(0) { }
+            : name(n), obj(nullptr)
+        {
+        }
         inline bool operator<(const QString &other) const
             { return name < other; }
         inline bool operator<(QStringView other) const
@@ -131,7 +133,7 @@ public:
             QObject *obj;
             QDBusVirtualObject *treeNode;
         };
-        int flags;
+        QDBusConnection::RegisterOptions flags;
 
         DataList children;
     };
@@ -223,7 +225,8 @@ private:
     void activateSignal(const SignalHook& hook, const QDBusMessage &msg);
     void activateObject(ObjectTreeNode &node, const QDBusMessage &msg, int pathStartPos);
     bool activateInternalFilters(const ObjectTreeNode &node, const QDBusMessage &msg);
-    bool activateCall(QObject *object, int flags, const QDBusMessage &msg);
+    bool activateCall(QObject *object, QDBusConnection::RegisterOptions flags,
+                      const QDBusMessage &msg);
 
     void sendInternal(QDBusPendingCallPrivate *pcall, void *msg, int timeout);
     void sendError(const QDBusMessage &msg, QDBusError::ErrorType code);
