@@ -4,6 +4,7 @@
 #ifndef IMAGEWIDGET_H
 #define IMAGEWIDGET_H
 
+#include <QFileInfo>
 #include <QImage>
 #include <QLoggingCategory>
 #include <QWidget>
@@ -40,14 +41,14 @@ private:
     void swipeTriggered(QSwipeGesture*);
 //! [class definition begin]
 
-    QImage loadImage(const QString &fileName) const;
+    QImage loadImage(const QFileInfo &fileInfo) const;
     void loadImage();
     void goNextImage();
     void goPrevImage();
     void goToImage(int index);
 
     QString path;
-    QStringList files;
+    QFileInfoList files;
     int position;
 
     QImage prevImage, nextImage;
