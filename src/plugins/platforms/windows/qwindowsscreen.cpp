@@ -695,19 +695,19 @@ bool QWindowsScreenManager::isSingleScreen()
 }
 
 static inline int indexOfMonitor(const QWindowsScreenManager::WindowsScreenList &screens,
-                                 const QString &serialNumberIn)
+                                 const QString &deviceName)
 {
-    for (int i = 0; i < screens.size(); ++i)
-        if (screens.at(i)->data().serialNumber == serialNumberIn)
+    for (int i= 0; i < screens.size(); ++i)
+        if (screens.at(i)->data().deviceName == deviceName)
             return i;
     return -1;
 }
 
 static inline int indexOfMonitor(const WindowsScreenDataList &screenData,
-                                 const QString &serialNumberIn)
+                                 const QString &deviceName)
 {
     for (int i = 0; i < screenData.size(); ++i)
-        if (screenData.at(i).serialNumber == serialNumberIn)
+        if (screenData.at(i).deviceName == deviceName)
             return i;
     return -1;
 }
@@ -773,7 +773,7 @@ bool QWindowsScreenManager::handleScreenChanges()
     const bool lockScreen = newDataList.size() == 1 && (newDataList.front().flags & QWindowsScreenData::LockScreen);
     bool primaryScreenChanged = false;
     for (const QWindowsScreenData &newData : newDataList) {
-        const int existingIndex = indexOfMonitor(m_screens, newData.serialNumber);
+        const int existingIndex = indexOfMonitor(m_screens, newData.deviceName);
         if (existingIndex != -1) {
             m_screens.at(existingIndex)->handleChanges(newData);
             if (existingIndex == 0)
@@ -790,7 +790,7 @@ bool QWindowsScreenManager::handleScreenChanges()
     // temporary lock screen to avoid window recreation (QTBUG-33062).
     if (!lockScreen) {
         for (int i = m_screens.size() - 1; i >= 0; --i) {
-            if (indexOfMonitor(newDataList, m_screens.at(i)->data().serialNumber) == -1)
+            if (indexOfMonitor(newDataList, m_screens.at(i)->data().deviceName) == -1)
                 removeScreen(i);
         }     // for existing screens
     }     // not lock screen
