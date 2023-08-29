@@ -1191,6 +1191,8 @@ TEST_CASE("All loggers can be enabled at the same time")
 SCENARIO("Test output of the loggers is as expected")
 {
     static QStringList tests = QString(QT_STRINGIFY(SUBPROGRAMS)).split(' ');
+    if (QString override = qEnvironmentVariable("TST_SELFTEST_SUBPROGRAMS"); !override.isEmpty())
+        tests = override.split(' ', Qt::SkipEmptyParts);
 
     auto logger = GENERATE(filter(isGenericCommandLineLogger, enums<QTestLog::LogMode>()));
 
