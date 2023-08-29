@@ -9,7 +9,7 @@
 
 static const char dataStreamOptionHelp[] =
         "byteorder=host|big|little      Byte order to use.\n"
-        "version=<n>                    QDataStream version (default: Qt 5.0).\n"
+        "version=<n>                    QDataStream version (default: Qt 6.0).\n"
         ;
 
 static const char signature[] = "qds";
@@ -177,7 +177,7 @@ QVariant DataStreamConverter::loadFile(QIODevice *f, Converter *&outputConverter
 
 void DataStreamConverter::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
 {
-    QDataStream::Version version = QDataStream::Qt_5_0;
+    QDataStream::Version version = QDataStream::Qt_6_0;
     auto order = QDataStream::ByteOrder(QSysInfo::ByteOrder);
     for (const QString &option : options) {
         const QStringList pair = option.split('=');
