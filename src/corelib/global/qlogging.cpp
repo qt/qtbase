@@ -162,10 +162,11 @@ Q_TRACE_POINT(qtcore, qt_message_print, int type, const char *category, const ch
     \snippet code/src_corelib_global_qglobal.cpp 4
 */
 
+template <typename String>
 #if !defined(Q_CC_MSVC_ONLY)
 Q_NORETURN
 #endif
-static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message);
+static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, String &&message);
 static void qt_message_print(QtMsgType, const QMessageLogContext &context, const QString &message);
 static void qt_message_print(const QString &message);
 
@@ -1996,7 +1997,8 @@ static void qt_message_print(const QString &message)
     fflush(stderr);
 }
 
-static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message)
+template <typename String>
+static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, String &&message)
 {
 #if defined(Q_CC_MSVC_ONLY) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
     wchar_t contextFileL[256];
@@ -2017,12 +2019,14 @@ static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const
         _CrtDbgBreak();
 #else
     Q_UNUSED(context);
-    Q_UNUSED(message);
 #endif
 
+    if constexpr (std::is_class_v<String> && !std::is_const_v<String>)
+        message.clear();
+    else
+        Q_UNUSED(message);
     qAbort();
 }
-
 
 /*!
     \internal
