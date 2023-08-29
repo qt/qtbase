@@ -22,6 +22,7 @@ qt_add_executable(convert
     cborconverter.cpp cborconverter.h
     converter.h
     datastreamconverter.cpp datastreamconverter.h
+    debugtextdumper.cpp debugtextdumper.h
     jsonconverter.cpp jsonconverter.h
     main.cpp
     nullconverter.cpp nullconverter.h

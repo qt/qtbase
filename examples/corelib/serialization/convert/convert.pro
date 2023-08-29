@@ -12,17 +12,19 @@ INSTALLS += target
 
 SOURCES += main.cpp \
     cborconverter.cpp \
-    jsonconverter.cpp \
     datastreamconverter.cpp \
+    debugtextdumper.cpp \
+    jsonconverter.cpp \
+    nullconverter.cpp \
     textconverter.cpp \
-    xmlconverter.cpp \
-    nullconverter.cpp
+    xmlconverter.cpp
 
 HEADERS += \
     converter.h \
     cborconverter.h \
-    jsonconverter.h \
     datastreamconverter.h \
+    debugtextdumper.h \
+    jsonconverter.h \
+    nullconverter.h \
     textconverter.h \
-    xmlconverter.h \
-    nullconverter.h
+    xmlconverter.h
