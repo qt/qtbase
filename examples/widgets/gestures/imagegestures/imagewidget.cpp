@@ -196,15 +196,23 @@ void ImageWidget::openDirectory(const QString &path)
     this->path = path;
     QDir dir(path);
     const QStringList nameFilters{"*.jpg", "*.png"};
-    files = dir.entryList(nameFilters, QDir::Files|QDir::Readable, QDir::Name);
+    files = dir.entryInfoList(nameFilters, QDir::Files|QDir::Readable, QDir::Name);
 
     position = 0;
     goToImage(0);
     update();
 }
 
-QImage ImageWidget::loadImage(const QString &fileName) const
+/*
+    With Android's content scheme paths, it might not be possible to simply
+    append a file name to the chosen directory path to be able to open the image,
+    because usually paths are returned by an Android file provider and handling those
+    paths manually is not guaranteed to work. For that reason, it's better to keep
+    around QFileInfo objects and use absoluteFilePath().
+*/
+QImage ImageWidget::loadImage(const QFileInfo &fileInfo) const
 {
+    const QString fileName = fileInfo.absoluteFilePath();
     QImageReader reader(fileName);
     reader.setAutoTransform(true);
     qCDebug(lcExample) << "loading" << QDir::toNativeSeparators(fileName) << position << '/' << files.size();
@@ -234,7 +242,7 @@ void ImageWidget::goNextImage()
         prevImage = currentImage;
         currentImage = nextImage;
         if (position+1 < files.size())
-            nextImage = loadImage(path + QLatin1Char('/') + files.at(position+1));
+            nextImage = loadImage(files.at(position + 1));
         else
             nextImage = QImage();
     }
@@ -251,7 +259,7 @@ void ImageWidget::goPrevImage()
         nextImage = currentImage;
         currentImage = prevImage;
         if (position > 0)
-            prevImage = loadImage(path + QLatin1Char('/') + files.at(position-1));
+            prevImage = loadImage(files.at(position - 1));
         else
             prevImage = QImage();
     }
@@ -281,12 +289,12 @@ void ImageWidget::goToImage(int index)
     position = index;
 
     if (index > 0)
-        prevImage = loadImage(path + QLatin1Char('/') + files.at(position-1));
+        prevImage = loadImage(files.at(position - 1));
     else
         prevImage = QImage();
-    currentImage = loadImage(path + QLatin1Char('/') + files.at(position));
+    currentImage = loadImage(files.at(position));
     if (position+1 < files.size())
-        nextImage = loadImage(path + QLatin1Char('/') + files.at(position+1));
+        nextImage = loadImage(files.at(position + 1));
     else
         nextImage = QImage();
     update();
