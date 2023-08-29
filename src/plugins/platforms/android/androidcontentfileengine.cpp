@@ -616,7 +616,7 @@ DocumentFilePtr DocumentFile::parseFromAnyUri(const QString &fileName)
 
     const int treeIndex = encodedUri.indexOf(treeType);
     const int documentIndex = encodedUri.indexOf(documentType);
-    const int index = encodedUri.lastIndexOf(QUrl::toPercentEncoding("/"));
+    const int index = fileName.lastIndexOf("/");
 
     if (index <= treeIndex + treeType.size() || index <= documentIndex + documentType.size())
         return fromTreeUri(uri);
