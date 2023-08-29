@@ -111,7 +111,7 @@ instructions:
       "--extra-package={{.AgentWorkingDir}}/debian_packages/",
       "qt-{{.Env.QT_REPO_MODULE_VERSION}}-{{.Env.TESTED_MODULE_PLAIN_COIN}}-src_{{.Env.QT_REPO_MODULE_VERSION}}-1.dsc"]
     maxTimeInSeconds: 18000
-    maxTimeBetweenOutput: 1800
+    maxTimeBetweenOutput: 18000
     userMessageOnFailure: "Failed build debian packages"
     disable_if:
       condition: runtime
