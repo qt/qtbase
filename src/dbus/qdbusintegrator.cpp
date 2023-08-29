@@ -857,19 +857,15 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
         cacheKey += signature;
     }
 
-    QDBusSlotCache::Hash::ConstIterator cacheIt = slotCache.hash.constFind(cacheKey);
-    while (cacheIt != slotCache.hash.constEnd() && cacheIt->flags != flags &&
-           cacheIt.key() == cacheKey)
-        ++cacheIt;
-    if (cacheIt == slotCache.hash.constEnd() || cacheIt.key() != cacheKey)
-    {
+    QDBusSlotCache::Key compoundKey{ std::move(cacheKey), flags };
+    QDBusSlotCache::Hash::ConstIterator cacheIt = slotCache.hash.constFind(compoundKey);
+    if (cacheIt == slotCache.hash.constEnd()) {
         // not cached, analyze the meta object
         const QMetaObject *mo = object->metaObject();
         QByteArray memberName = msg.member().toUtf8();
 
         // find a slot that matches according to the rules above
         QDBusSlotCache::Data slotData;
-        slotData.flags = flags;
         slotData.slotIdx = ::findSlot(mo, memberName, flags, msg.signature(), slotData.metaTypes);
         if (slotData.slotIdx == -1) {
             // ### this is where we want to add the connection as an arg too
@@ -881,7 +877,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
                 // save the negative lookup
                 slotData.slotIdx = -1;
                 slotData.metaTypes.clear();
-                slotCache.hash.insert(cacheKey, slotData);
+                slotCache.hash.insert(compoundKey, slotData);
                 object->setProperty(cachePropertyName, QVariant::fromValue(slotCache));
 
                 qCWarning(dbusIntegration).nospace() << "Could not find slot " << mo->className()
@@ -891,7 +887,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
         }
 
         // save to the cache
-        slotCache.hash.insert(cacheKey, slotData);
+        slotCache.hash.insert(compoundKey, slotData);
         object->setProperty(cachePropertyName, QVariant::fromValue(slotCache));
 
         // found the slot to be called

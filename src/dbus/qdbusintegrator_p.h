@@ -46,18 +46,34 @@ struct QDBusSlotCache
 {
     struct Data
     {
-        int flags;
         int slotIdx;
         QList<QMetaType> metaTypes;
 
         void swap(Data &other) noexcept
         {
-            qSwap(flags,     other.flags);
             qSwap(slotIdx,   other.slotIdx);
             qSwap(metaTypes, other.metaTypes);
         }
     };
-    typedef QMultiHash<QString, Data> Hash;
+
+    struct Key
+    {
+        QString memberWithSignature;
+        int flags;
+
+        friend bool operator==(const Key &lhs, const Key &rhs) noexcept
+        {
+            return lhs.memberWithSignature == rhs.memberWithSignature && lhs.flags == rhs.flags;
+        }
+
+        friend size_t qHash(const QDBusSlotCache::Key &key, size_t seed = 0) noexcept
+        {
+            return qHashMulti(seed, key.memberWithSignature, key.flags);
+        }
+    };
+
+    using Hash = QHash<Key, Data>;
+
     Hash hash;
 
     void swap(QDBusSlotCache &other) noexcept { qSwap(hash, other.hash); }
