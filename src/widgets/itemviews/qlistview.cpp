@@ -1622,6 +1622,12 @@ void QListView::setModelColumn(int column)
         return;
     d->column = column;
     d->doDelayedItemsLayout();
+#if QT_CONFIG(accessibility)
+    if (QAccessible::isActive()) {
+        QAccessibleTableModelChangeEvent event(this, QAccessibleTableModelChangeEvent::ModelReset);
+        QAccessible::updateAccessibility(&event);
+    }
+#endif
 }
 
 int QListView::modelColumn() const

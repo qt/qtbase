@@ -1159,6 +1159,12 @@ void QAbstractItemView::setRootIndex(const QModelIndex &index)
         return;
     }
     d->root = index;
+#if QT_CONFIG(accessibility)
+    if (QAccessible::isActive()) {
+        QAccessibleTableModelChangeEvent accessibleEvent(this, QAccessibleTableModelChangeEvent::ModelReset);
+        QAccessible::updateAccessibility(&accessibleEvent);
+    }
+#endif
     d->doDelayedItemsLayout();
     d->updateGeometry();
 }

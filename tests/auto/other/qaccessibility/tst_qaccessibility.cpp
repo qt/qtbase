@@ -39,6 +39,7 @@
 #include <QtTest/private/qtesthelpers_p.h>
 
 using namespace QTestPrivate;
+using namespace Qt::StringLiterals;
 
 static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
                                int index, const QRect &domain)
@@ -213,6 +214,7 @@ private slots:
     void listTest();
     void treeTest();
     void tableTest();
+    void rootIndexView();
 
     void uniqueIdTest();
     void calendarWidgetTest();
@@ -3402,6 +3404,51 @@ void tst_QAccessibility::tableTest()
     }
     tvHolder.reset();
     QVERIFY(!QAccessible::accessibleInterface(id00));
+    QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::rootIndexView()
+{
+    QStandardItemModel model;
+    for (int i = 0; i < 2; ++i) {
+        QStandardItem *item = new QStandardItem(u"root %1"_s.arg(i));
+        for (int j = 0; j < 5 * (i + 1); ++j) {
+            switch (i) {
+            case 0:
+                item->appendRow(new QStandardItem(u"child0/%1"_s.arg(j)));
+                break;
+            case 1:
+                item->appendRow({new QStandardItem(u"column0 1/%1"_s.arg(j)),
+                                 new QStandardItem(u"column1 1/%1"_s.arg(j))
+                                });
+                break;
+            }
+        }
+        model.appendRow(item);
+    }
+
+    QListView view;
+    view.setModel(&model);
+    QTestAccessibility::clearEvents();
+
+    QAccessibleInterface *accView = QAccessible::queryAccessibleInterface(&view);
+    QVERIFY(accView);
+    QAccessibleTableInterface *accTable = accView->tableInterface();
+    QVERIFY(accTable);
+    QCOMPARE(accTable->rowCount(), 2);
+    QCOMPARE(accTable->columnCount(), 1);
+
+    view.setRootIndex(model.index(0, 0));
+    QAccessibleTableModelChangeEvent resetEvent(&view, QAccessibleTableModelChangeEvent::ModelReset);
+    QVERIFY(QTestAccessibility::containsEvent(&resetEvent));
+
+    QCOMPARE(accTable->rowCount(), 5);
+    QCOMPARE(accTable->columnCount(), 1);
+
+    view.setRootIndex(model.index(1, 0));
+    QCOMPARE(accTable->rowCount(), 10);
+    QCOMPARE(accTable->columnCount(), 2);
+
     QTestAccessibility::clearEvents();
 }
 
