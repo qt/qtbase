@@ -368,11 +368,13 @@ static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const cha
     \internal
 */
 Q_NEVER_INLINE
-static QString qt_message(QtMsgType msgType, const QMessageLogContext &context, const char *msg, va_list ap)
+static void qt_message(QtMsgType msgType, const QMessageLogContext &context, const char *msg, va_list ap)
 {
     QString buf = QString::vasprintf(msg, ap);
     qt_message_print(msgType, context, buf);
-    return buf;
+
+    if (isFatal(msgType))
+        qt_message_fatal(msgType, context, buf);
 }
 
 #undef qDebug
@@ -386,11 +388,8 @@ void QMessageLogger::debug(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtDebugMsg, context, msg, ap);
+    qt_message(QtDebugMsg, context, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtDebugMsg))
-        qt_message_fatal(QtDebugMsg, context, message);
 }
 
 
@@ -406,11 +405,8 @@ void QMessageLogger::info(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtInfoMsg, context, msg, ap);
+    qt_message(QtInfoMsg, context, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtInfoMsg))
-        qt_message_fatal(QtInfoMsg, context, message);
 }
 
 /*!
@@ -445,11 +441,8 @@ void QMessageLogger::debug(const QLoggingCategory &cat, const char *msg, ...) co
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtDebugMsg, ctxt, msg, ap);
+    qt_message(QtDebugMsg, ctxt, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtDebugMsg))
-        qt_message_fatal(QtDebugMsg, ctxt, message);
 }
 
 /*!
@@ -472,11 +465,8 @@ void QMessageLogger::debug(QMessageLogger::CategoryFunction catFunc,
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtDebugMsg, ctxt, msg, ap);
+    qt_message(QtDebugMsg, ctxt, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtDebugMsg))
-        qt_message_fatal(QtDebugMsg, ctxt, message);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -556,11 +546,8 @@ void QMessageLogger::info(const QLoggingCategory &cat, const char *msg, ...) con
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtInfoMsg, ctxt, msg, ap);
+    qt_message(QtInfoMsg, ctxt, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtInfoMsg))
-        qt_message_fatal(QtInfoMsg, ctxt, message);
 }
 
 /*!
@@ -583,11 +570,8 @@ void QMessageLogger::info(QMessageLogger::CategoryFunction catFunc,
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtInfoMsg, ctxt, msg, ap);
+    qt_message(QtInfoMsg, ctxt, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtInfoMsg))
-        qt_message_fatal(QtInfoMsg, ctxt, message);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -649,11 +633,8 @@ void QMessageLogger::warning(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtWarningMsg, context, msg, ap);
+    qt_message(QtWarningMsg, context, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtWarningMsg))
-        qt_message_fatal(QtWarningMsg, context, message);
 }
 
 /*!
@@ -674,11 +655,8 @@ void QMessageLogger::warning(const QLoggingCategory &cat, const char *msg, ...) 
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtWarningMsg, ctxt, msg, ap);
+    qt_message(QtWarningMsg, ctxt, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtWarningMsg))
-        qt_message_fatal(QtWarningMsg, ctxt, message);
 }
 
 /*!
@@ -701,11 +679,8 @@ void QMessageLogger::warning(QMessageLogger::CategoryFunction catFunc,
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtWarningMsg, ctxt, msg, ap);
+    qt_message(QtWarningMsg, ctxt, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtWarningMsg))
-        qt_message_fatal(QtWarningMsg, ctxt, message);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -765,11 +740,8 @@ void QMessageLogger::critical(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtCriticalMsg, context, msg, ap);
+    qt_message(QtCriticalMsg, context, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtCriticalMsg))
-        qt_message_fatal(QtCriticalMsg, context, message);
 }
 
 /*!
@@ -790,11 +762,8 @@ void QMessageLogger::critical(const QLoggingCategory &cat, const char *msg, ...)
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtCriticalMsg, ctxt, msg, ap);
+    qt_message(QtCriticalMsg, ctxt, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtCriticalMsg))
-        qt_message_fatal(QtCriticalMsg, ctxt, message);
 }
 
 /*!
@@ -817,11 +786,8 @@ void QMessageLogger::critical(QMessageLogger::CategoryFunction catFunc,
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtCriticalMsg, ctxt, msg, ap);
+    qt_message(QtCriticalMsg, ctxt, msg, ap);
     va_end(ap);
-
-    if (isFatal(QtCriticalMsg))
-        qt_message_fatal(QtCriticalMsg, ctxt, message);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -885,14 +851,14 @@ void QMessageLogger::fatal(const QLoggingCategory &cat, const char *msg, ...) co
     ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
-    QString message;
-
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    QT_TERMINATE_ON_EXCEPTION(message = qt_message(QtFatalMsg, ctxt, msg, ap));
+    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, ctxt, msg, ap));
     va_end(ap);
 
-    qt_message_fatal(QtCriticalMsg, ctxt, message);
+#ifndef Q_CC_MSVC_ONLY
+    Q_UNREACHABLE();
+#endif
 }
 
 /*!
@@ -911,14 +877,14 @@ void QMessageLogger::fatal(QMessageLogger::CategoryFunction catFunc,
     ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
-    QString message;
-
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    QT_TERMINATE_ON_EXCEPTION(message = qt_message(QtFatalMsg, ctxt, msg, ap));
+    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, ctxt, msg, ap));
     va_end(ap);
 
-    qt_message_fatal(QtFatalMsg, ctxt, message);
+#ifndef Q_CC_MSVC_ONLY
+    Q_UNREACHABLE();
+#endif
 }
 
 /*!
@@ -929,14 +895,14 @@ void QMessageLogger::fatal(QMessageLogger::CategoryFunction catFunc,
 */
 void QMessageLogger::fatal(const char *msg, ...) const noexcept
 {
-    QString message;
-
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    QT_TERMINATE_ON_EXCEPTION(message = qt_message(QtFatalMsg, context, msg, ap));
+    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, context, msg, ap));
     va_end(ap);
 
-    qt_message_fatal(QtFatalMsg, context, message);
+#ifndef Q_CC_MSVC_ONLY
+    Q_UNREACHABLE();
+#endif
 }
 
 #ifndef QT_NO_DEBUG_STREAM
