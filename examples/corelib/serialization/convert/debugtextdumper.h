@@ -1,16 +1,13 @@
 // Copyright (C) 2018 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#ifndef DATASTREAMCONVERTER_H
-#define DATASTREAMCONVERTER_H
+#ifndef DEBUGTEXTDUMPER_H
+#define DEBUGTEXTDUMPER_H
 
 #include "converter.h"
 
-class DataStreamConverter : public Converter
+class DebugTextDumper : public Converter
 {
-public:
-    DataStreamConverter();
-
     // Converter interface
 public:
     QString name() override;
@@ -22,4 +19,4 @@ public:
     void saveFile(QIODevice *f, const QVariant &contents, const QStringList &options) override;
 };
 
-#endif // DATASTREAMCONVERTER_H
+#endif // DEBUGTEXTDUMPER_H

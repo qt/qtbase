@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "datastreamconverter.h"
+#include "debugtextdumper.h"
 
 #include <QDataStream>
-#include <QDebug>
-#include <QTextStream>
 
 using namespace Qt::StringLiterals;
 
@@ -16,8 +15,8 @@ static const char dataStreamOptionHelp[] =
 
 static const char signature[] = "qds";
 
-static DataStreamDumper dataStreamDumper;
-static DataStreamConverter DataStreamConverter;
+static DataStreamConverter dataStreamConverter;
+static DebugTextDumper debugTextDumper;
 
 QDataStream &operator<<(QDataStream &ds, const VariantOrderedMap &map)
 {
@@ -42,83 +41,6 @@ QDataStream &operator>>(QDataStream &ds, VariantOrderedMap &map)
     }
 
     return ds;
-}
-
-static QString dumpVariant(const QVariant &v, const QString &indent = "\n"_L1)
-{
-    QString result;
-    QString indented = indent + "  "_L1;
-
-    int type = v.userType();
-    if (type == qMetaTypeId<VariantOrderedMap>() || type == QMetaType::QVariantMap) {
-        const auto map = (type == QMetaType::QVariantMap) ? VariantOrderedMap(v.toMap())
-                                                          : qvariant_cast<VariantOrderedMap>(v);
-
-        result = "Map {"_L1;
-        for (const auto &pair : map) {
-            result += indented + dumpVariant(pair.first, indented);
-            result.chop(1); // remove comma
-            result += " => "_L1 + dumpVariant(pair.second, indented);
-        }
-        result.chop(1); // remove comma
-        result += indent + "},"_L1;
-    } else if (type == QMetaType::QVariantList) {
-        const QVariantList list = v.toList();
-
-        result = "List ["_L1;
-        for (const auto &item : list)
-            result += indented + dumpVariant(item, indented);
-        result.chop(1); // remove comma
-        result += indent + "],"_L1;
-    } else {
-        QDebug debug(&result);
-        debug.nospace() << v << ',';
-    }
-    return result;
-}
-
-QString DataStreamDumper::name()
-{
-    return "datastream-dump"_L1;
-}
-
-Converter::Direction DataStreamDumper::directions()
-{
-    return Out;
-}
-
-Converter::Options DataStreamDumper::outputOptions()
-{
-    return SupportsArbitraryMapKeys;
-}
-
-const char *DataStreamDumper::optionsHelp()
-{
-    return nullptr;
-}
-
-bool DataStreamDumper::probeFile(QIODevice *f)
-{
-    Q_UNUSED(f);
-    return false;
-}
-
-QVariant DataStreamDumper::loadFile(QIODevice *f, Converter *&outputConverter)
-{
-    Q_UNREACHABLE();
-    Q_UNUSED(f);
-    Q_UNUSED(outputConverter);
-    return QVariant();
-}
-
-void DataStreamDumper::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
-{
-    Q_UNUSED(options);
-    QString s = dumpVariant(contents);
-    s[s.size() - 1] = QLatin1Char('\n'); // replace the comma with newline
-
-    QTextStream out(f);
-    out << s;
 }
 
 DataStreamConverter::DataStreamConverter()
@@ -154,7 +76,7 @@ bool DataStreamConverter::probeFile(QIODevice *f)
 QVariant DataStreamConverter::loadFile(QIODevice *f, Converter *&outputConverter)
 {
     if (!outputConverter)
-        outputConverter = &dataStreamDumper;
+        outputConverter = &debugTextDumper;
 
     char c;
     if (f->read(sizeof(signature) - 1) != signature || !f->getChar(&c) || (c != 'l' && c != 'B')) {
