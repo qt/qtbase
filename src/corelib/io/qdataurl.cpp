@@ -43,17 +43,17 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
             data.chop(7);
         }
 
-        QByteArrayView textPlain;
+        QLatin1StringView textPlain;
         if (QLatin1StringView{data}.startsWith("charset"_L1, Qt::CaseInsensitive)) {
             qsizetype i = 7;      // strlen("charset")
             while (data.at(i) == ' ')
                 ++i;
             if (data.at(i) == '=')
-                textPlain = "text/plain;";
+                textPlain = "text/plain;"_L1;
         }
 
         if (!data.isEmpty())
-            mimeType = QString::fromLatin1(textPlain + data.trimmed());
+            mimeType = textPlain + QLatin1StringView(data.trimmed());
     }
 
     return true;
