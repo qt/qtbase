@@ -229,8 +229,8 @@ private:
 
     void sendInternal(QDBusPendingCallPrivate *pcall, void *msg, int timeout);
     void sendError(const QDBusMessage &msg, QDBusError::ErrorType code);
-    void deliverCall(QObject *object, int flags, const QDBusMessage &msg,
-                     const QList<QMetaType> &metaTypes, int slotIdx);
+    void deliverCall(QObject *object, const QDBusMessage &msg, const QList<QMetaType> &metaTypes,
+                     int slotIdx);
 
     SignalHookHash::Iterator removeSignalHookNoLock(SignalHookHash::Iterator it);
     void collectAllObjects(ObjectTreeNode &node, QSet<QObject *> &set);

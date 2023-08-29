@@ -69,19 +69,14 @@ class QDBusCallDeliveryEvent: public QAbstractMetaCallEvent
 {
 public:
     QDBusCallDeliveryEvent(const QDBusConnection &c, int id, QObject *sender,
-                           const QDBusMessage &msg, const QList<QMetaType> &types, int f = 0)
-        : QAbstractMetaCallEvent(sender, -1),
-          connection(c),
-          message(msg),
-          metaTypes(types),
-          id(id),
-          flags(f)
+                           const QDBusMessage &msg, const QList<QMetaType> &types)
+        : QAbstractMetaCallEvent(sender, -1), connection(c), message(msg), metaTypes(types), id(id)
     {
     }
 
     void placeMetaCall(QObject *object) override
     {
-        QDBusConnectionPrivate::d(connection)->deliverCall(object, flags, message, metaTypes, id);
+        QDBusConnectionPrivate::d(connection)->deliverCall(object, message, metaTypes, id);
     }
 
 private:
@@ -89,7 +84,6 @@ private:
     QDBusMessage message;
     QList<QMetaType> metaTypes;
     int id;
-    int flags;
 };
 
 class QDBusActivateObjectEvent: public QAbstractMetaCallEvent

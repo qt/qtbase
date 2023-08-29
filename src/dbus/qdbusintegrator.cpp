@@ -810,7 +810,7 @@ void QDBusConnectionPrivate::activateSignal(const QDBusConnectionPrivate::Signal
     if (call == DIRECT_DELIVERY) {
         // short-circuit delivery
         Q_ASSERT(this == hook.obj);
-        deliverCall(this, 0, msg, hook.params, hook.midx);
+        deliverCall(this, msg, hook.params, hook.midx);
         return;
     }
     if (call)
@@ -895,20 +895,20 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
         object->setProperty(cachePropertyName, QVariant::fromValue(slotCache));
 
         // found the slot to be called
-        deliverCall(object, flags, msg, slotData.metaTypes, slotData.slotIdx);
+        deliverCall(object, msg, slotData.metaTypes, slotData.slotIdx);
         return true;
     } else if (cacheIt->slotIdx == -1) {
         // negative cache
         return false;
     } else {
         // use the cache
-        deliverCall(object, flags, msg, cacheIt->metaTypes, cacheIt->slotIdx);
+        deliverCall(object, msg, cacheIt->metaTypes, cacheIt->slotIdx);
         return true;
     }
     return false;
 }
 
-void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const QDBusMessage &msg,
+void QDBusConnectionPrivate::deliverCall(QObject *object, const QDBusMessage &msg,
                                          const QList<QMetaType> &metaTypes, int slotIdx)
 {
     Q_ASSERT_X(!object || QThread::currentThread() == object->thread(),
