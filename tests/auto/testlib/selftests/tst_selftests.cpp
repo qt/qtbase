@@ -783,15 +783,10 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
 #endif
 
 #ifdef Q_OS_LINUX
-    // QEMU outputs to stderr about uncaught signals
-    if (QTestPrivate::isRunningArmOnX86() &&
-        (test == "assert"
-         || test == "crashes"
-         || test == "faildatatype"
-         || test == "failfetchtype"
-         || test == "silent"
-        ))
-        return;
+    if (test == "silent") {
+        if (QTestPrivate::isRunningArmOnX86())
+            return;         // QEMU outputs to stderr about uncaught signals
+    }
 #endif
 
     INFO(errorOutput.toStdString());
