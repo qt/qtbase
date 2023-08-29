@@ -11,6 +11,7 @@
 
 #include <errno.h>
 
+#if QT_CONFIG(sharedmemory)
 #if QT_CONFIG(sysv_shm)
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -205,3 +206,4 @@ bool QSharedMemorySystemV::detach(QSharedMemoryPrivate *self)
 QT_END_NAMESPACE
 
 #endif // QT_CONFIG(sysv_shm)
+#endif // QT_CONFIG(sharedmemory)
