@@ -1310,6 +1310,7 @@ void tst_QSslSocket::privateKey()
 #if QT_CONFIG(openssl)
 void tst_QSslSocket::privateKeyOpaque()
 {
+#ifndef OPENSSL_NO_DEPRECATED_3_0
     if (!isTestingOpenSsl)
         QSKIP("The active TLS backend does not support private opaque keys");
 
@@ -1343,6 +1344,7 @@ void tst_QSslSocket::privateKeyOpaque()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy && !socket->waitForEncrypted(10000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
+#endif // OPENSSL_NO_DEPRECATED_3_0
 }
 #endif // Feature 'openssl'.
 
