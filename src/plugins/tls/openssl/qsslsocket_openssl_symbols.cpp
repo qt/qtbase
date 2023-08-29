@@ -158,7 +158,6 @@ DEFINEFUNC3(void, CRYPTO_free, void *str, str, const char *file, file, int line,
 DEFINEFUNC(long, OpenSSL_version_num, void, DUMMYARG, return 0, return)
 DEFINEFUNC(const char *, OpenSSL_version, int a, a, return nullptr, return)
 DEFINEFUNC(unsigned long, SSL_SESSION_get_ticket_lifetime_hint, const SSL_SESSION *session, session, return 0, return)
-DEFINEFUNC4(void, DH_get0_pqg, const DH *dh, dh, const BIGNUM **p, p, const BIGNUM **q, q, const BIGNUM **g, g, return, DUMMYARG)
 
 #if QT_CONFIG(dtls)
 DEFINEFUNC2(int, DTLSv1_listen, SSL *s, s, BIO_ADDR *c, c, return -1, return)
@@ -262,7 +261,6 @@ DEFINEFUNC4(int, OBJ_obj2txt, char *a, a, int b, b, ASN1_OBJECT *c, c, int d, d,
 DEFINEFUNC(int, OBJ_obj2nid, const ASN1_OBJECT *a, a, return NID_undef, return)
 DEFINEFUNC4(EVP_PKEY *, PEM_read_bio_PrivateKey, BIO *a, a, EVP_PKEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 
-DEFINEFUNC4(DH *, PEM_read_bio_DHparams, BIO *a, a, DH **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 DEFINEFUNC7(int, PEM_write_bio_PrivateKey, BIO *a, a, EVP_PKEY *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
 DEFINEFUNC7(int, PEM_write_bio_PrivateKey_traditional, BIO *a, a, EVP_PKEY *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
 DEFINEFUNC4(EVP_PKEY *, PEM_read_bio_PUBKEY, BIO *a, a, EVP_PKEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
@@ -428,12 +426,20 @@ DEFINEFUNC2(void *, BIO_get_ex_data, BIO *b, b, int idx, idx, return nullptr, re
 DEFINEFUNC3(int, BIO_set_ex_data, BIO *b, b, int idx, idx, void *data, data, return -1, return)
 
 DEFINEFUNC3(void *, CRYPTO_malloc, size_t num, num, const char *file, file, int line, line, return nullptr, return)
+
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 DEFINEFUNC(DH *, DH_new, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(void, DH_free, DH *dh, dh, return, DUMMYARG)
+DEFINEFUNC2(int, DH_check, DH *dh, dh, int *codes, codes, return 0, return)
+DEFINEFUNC4(void, DH_get0_pqg, const DH *dh, dh, const BIGNUM **p, p, const BIGNUM **q, q, const BIGNUM **g, g, return, DUMMYARG)
+
 DEFINEFUNC3(DH *, d2i_DHparams, DH**a, a, const unsigned char **pp, pp, long length, length, return nullptr, return)
 DEFINEFUNC2(int, i2d_DHparams, DH *a, a, unsigned char **p, p, return -1, return)
-DEFINEFUNC2(int, DH_check, DH *dh, dh, int *codes, codes, return 0, return)
+
+DEFINEFUNC4(DH *, PEM_read_bio_DHparams, BIO *a, a, DH **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
+#endif
 DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM *ret, ret, return nullptr, return)
+
 
 #ifndef OPENSSL_NO_EC
 DEFINEFUNC2(size_t, EC_get_builtin_curves, EC_builtin_curve * r, r, size_t nitems, nitems, return 0, return)
@@ -855,7 +861,6 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(OPENSSL_sk_num)
         RESOLVEFUNC(OPENSSL_sk_pop_free)
         RESOLVEFUNC(OPENSSL_sk_value)
-        RESOLVEFUNC(DH_get0_pqg)
         RESOLVEFUNC(SSL_CTX_set_options)
         RESOLVEFUNC(SSL_set_info_callback)
         RESOLVEFUNC(SSL_alert_type_string)
@@ -1013,7 +1018,6 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(OBJ_obj2txt)
         RESOLVEFUNC(OBJ_obj2nid)
         RESOLVEFUNC(PEM_read_bio_PrivateKey)
-        RESOLVEFUNC(PEM_read_bio_DHparams)
         RESOLVEFUNC(PEM_write_bio_PrivateKey)
         RESOLVEFUNC(PEM_write_bio_PrivateKey_traditional)
         RESOLVEFUNC(PEM_read_bio_PUBKEY)
@@ -1064,6 +1068,16 @@ bool q_resolveOpenSslSymbols()
 #endif // OPENSSL_VERSION_MAJOR >= 3
 
 #ifndef OPENSSL_NO_DEPRECATED_3_0
+        RESOLVEFUNC(DH_new)
+        RESOLVEFUNC(DH_free)
+        RESOLVEFUNC(DH_check)
+        RESOLVEFUNC(DH_get0_pqg)
+
+        RESOLVEFUNC(d2i_DHparams)
+        RESOLVEFUNC(i2d_DHparams)
+
+        RESOLVEFUNC(PEM_read_bio_DHparams)
+
         RESOLVEFUNC(EVP_PKEY_assign)
         RESOLVEFUNC(EVP_PKEY_cmp)
 
@@ -1208,11 +1222,6 @@ bool q_resolveOpenSslSymbols()
 #endif // dtls
 
         RESOLVEFUNC(CRYPTO_malloc)
-        RESOLVEFUNC(DH_new)
-        RESOLVEFUNC(DH_free)
-        RESOLVEFUNC(d2i_DHparams)
-        RESOLVEFUNC(i2d_DHparams)
-        RESOLVEFUNC(DH_check)
         RESOLVEFUNC(BN_bin2bn)
 
 #ifndef OPENSSL_NO_EC

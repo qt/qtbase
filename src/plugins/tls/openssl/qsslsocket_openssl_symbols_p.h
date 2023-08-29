@@ -233,7 +233,6 @@ void q_X509_STORE_set_verify_cb(X509_STORE *ctx, X509_STORE_CTX_verify_cb verify
 int q_X509_STORE_set_ex_data(X509_STORE *ctx, int idx, void *data);
 void *q_X509_STORE_get_ex_data(X509_STORE *r, int idx);
 STACK_OF(X509) *q_X509_STORE_CTX_get0_chain(X509_STORE_CTX *ctx);
-void q_DH_get0_pqg(const DH *dh, const BIGNUM **p, const BIGNUM **q, const BIGNUM **g);
 
 # define q_SSL_load_error_strings() q_OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS \
                                                        | OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL)
@@ -391,7 +390,6 @@ int q_OBJ_obj2nid(const ASN1_OBJECT *a);
 #define q_EVP_get_digestbynid(a) q_EVP_get_digestbyname(q_OBJ_nid2sn(a))
 EVP_PKEY *q_PEM_read_bio_PrivateKey(BIO *a, EVP_PKEY **b, pem_password_cb *c, void *d);
 
-DH *q_PEM_read_bio_DHparams(BIO *a, DH **b, pem_password_cb *c, void *d);
 int q_PEM_write_bio_PrivateKey(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
                                int e, pem_password_cb *f, void *g);
 int q_PEM_write_bio_PrivateKey_traditional(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
@@ -504,11 +502,17 @@ X509 *q_X509_STORE_CTX_get_current_cert(X509_STORE_CTX *ctx);
 X509_STORE *q_X509_STORE_CTX_get0_store(X509_STORE_CTX *ctx);
 
 // Diffie-Hellman support
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 DH *q_DH_new();
 void q_DH_free(DH *dh);
+int q_DH_check(DH *dh, int *codes);
+void q_DH_get0_pqg(const DH *dh, const BIGNUM **p, const BIGNUM **q, const BIGNUM **g);
+
 DH *q_d2i_DHparams(DH **a, const unsigned char **pp, long length);
 int q_i2d_DHparams(DH *a, unsigned char **p);
-int q_DH_check(DH *dh, int *codes);
+
+DH *q_PEM_read_bio_DHparams(BIO *a, DH **b, pem_password_cb *c, void *d);
+#endif // OPENSSL_NO_DEPRECATED_3_0
 
 BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
 #define q_SSL_CTX_set_tmp_dh(ctx, dh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_DH, 0, (char *)dh)
