@@ -130,7 +130,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
                     if (tableInterface) {
                         auto *tableElement = [QMacAccessibilityElement elementWithInterface:table];
                         Q_ASSERT(tableElement);
-                        Q_ASSERT(tableElement->rows && int(tableElement->rows.count) > m_rowIndex);
+                        Q_ASSERT(tableElement->rows);
+                        Q_ASSERT(int(tableElement->rows.count) > m_rowIndex);
                         auto *rowElement = tableElement->rows[m_rowIndex];
                         if (!rowElement->columns) {
                             rowElement->columns = [rowElement populateTableRow:rowElement->columns
@@ -466,7 +467,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         // a synthetic cell without interface - shortcut to the row
         QMacAccessibilityElement *tableElement =
                     [QMacAccessibilityElement elementWithId:axid];
-        Q_ASSERT(tableElement && tableElement->rows && int(tableElement->rows.count) > m_rowIndex);
+        Q_ASSERT(tableElement && tableElement->rows);
+        Q_ASSERT(int(tableElement->rows.count) > m_rowIndex);
         QMacAccessibilityElement *rowElement = tableElement->rows[m_rowIndex];
         return rowElement;
     }
@@ -496,7 +498,9 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
                 rowIndex = m_rowIndex;
             else if (QAccessibleTableCellInterface *cell = iface->tableCellInterface())
                 rowIndex = cell->rowIndex();
-            Q_ASSERT(tableElement->rows && int([tableElement->rows count]) > rowIndex);
+            Q_ASSERT(tableElement->rows);
+            if (rowIndex > int([tableElement->rows count]))
+                return nil;
             QMacAccessibilityElement *rowElement = tableElement->rows[rowIndex];
             return NSAccessibilityUnignoredAncestor(rowElement);
         }
