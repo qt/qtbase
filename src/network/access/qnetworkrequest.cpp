@@ -1310,10 +1310,8 @@ QList<QByteArray> QNetworkHeadersPrivate::rawHeadersKeys() const
 {
     QList<QByteArray> result;
     result.reserve(rawHeaders.size());
-    RawHeadersList::ConstIterator it = rawHeaders.constBegin(),
-                                 end = rawHeaders.constEnd();
-    for ( ; it != end; ++it)
-        result << it->first;
+    for (const auto &pair : rawHeaders)
+        result << pair.first;
 
     return result;
 }
@@ -1341,10 +1339,8 @@ void QNetworkHeadersPrivate::setAllRawHeaders(const RawHeadersList &list)
     cookedHeaders.clear();
     rawHeaders = list;
 
-    RawHeadersList::ConstIterator it = rawHeaders.constBegin();
-    RawHeadersList::ConstIterator end = rawHeaders.constEnd();
-    for ( ; it != end; ++it)
-        parseAndSetHeader(it->first, it->second);
+    for (const auto &[key, value] : std::as_const(rawHeaders))
+        parseAndSetHeader(key, value);
 }
 
 void QNetworkHeadersPrivate::setCookedHeader(QNetworkRequest::KnownHeaders header,
