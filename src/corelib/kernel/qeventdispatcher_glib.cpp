@@ -11,7 +11,6 @@
 #include "qsocketnotifier.h"
 
 #include <QtCore/qlist.h>
-#include <QtCore/qpair.h>
 
 #include <glib.h>
 

@@ -7,7 +7,6 @@
 #include "qtwindowsglobal.h"
 
 #include <QtCore/qlist.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qscopedpointer.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformscreen_p.h>

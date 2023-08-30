@@ -8,7 +8,6 @@
 #include <QtPrintSupport/qprinter.h>
 
 #include <QtCore/QList>
-#include <QtCore/QPair>
 #include <QtGui/qpagesize.h>
 
 QT_BEGIN_NAMESPACE

@@ -23,7 +23,6 @@
 #include "QtGui/qevent.h"
 #include "QtCore/qmimedata.h"
 #include "QtGui/qpainter.h"
-#include "QtCore/qpair.h"
 #include "QtGui/qregion.h"
 #include "QtCore/qdebug.h"
 #include "QtCore/qbasictimer.h"

@@ -18,7 +18,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtWidgets/qlayout.h"
 #include "QtCore/qlist.h"
-#include "QtCore/qpair.h"
 #include "QtCore/qrect.h"
 
 QT_REQUIRE_CONFIG(dockwidget);

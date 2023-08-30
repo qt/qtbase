@@ -9,7 +9,6 @@
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qglobal.h>
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)

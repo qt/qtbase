@@ -21,7 +21,6 @@
 #if QT_CONFIG(accessibility)
 
 #include <QtCore/QPointer>
-#include <QtCore/QPair>
 
 QT_BEGIN_NAMESPACE
 

@@ -18,7 +18,6 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qline.h"
 #include "QtCore/qlist.h"
-#include "QtCore/qpair.h"
 #include "QtCore/qpoint.h"
 #include "QtCore/qrect.h"
 #include "QtGui/qtransform.h"

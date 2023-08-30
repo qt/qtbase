@@ -7,7 +7,6 @@
 #include "qhttp2configuration.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 
-#include <qpair.h>
 #include <qdebug.h>
 
 #include <private/qhttp2protocolhandler_p.h>

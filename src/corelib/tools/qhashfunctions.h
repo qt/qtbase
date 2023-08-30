@@ -7,10 +7,10 @@
 
 #include <QtCore/qstring.h>
 #include <QtCore/qstringfwd.h>
-#include <QtCore/qpair.h>
 
 #include <numeric> // for std::accumulate
 #include <functional> // for std::hash
+#include <utility> // For std::pair
 
 #if 0
 #pragma qt_class(QHashFunctions)

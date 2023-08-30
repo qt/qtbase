@@ -5,7 +5,6 @@
 #define CPPWRITEINITIALIZATION_H
 
 #include "treewalker.h"
-#include <qpair.h>
 #include <qhash.h>
 #include <qset.h>
 #include <qmap.h>

@@ -3,8 +3,6 @@
 
 #include "qappletestlogger_p.h"
 
-#include <QPair>
-
 QT_BEGIN_NAMESPACE
 
 #if defined(QT_USE_APPLE_UNIFIED_LOGGING)

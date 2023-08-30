@@ -7,7 +7,6 @@
 #include "qcoreapplication.h"
 #include <private/qsystemlibrary_p.h>
 #include "qoperatingsystemversion.h"
-#include "qpair.h"
 #include "qset.h"
 #include "qsocketnotifier.h"
 #include "qvarlengtharray.h"

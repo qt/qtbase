@@ -18,7 +18,6 @@
 #include <QtDBus/private/qtdbusglobal_p.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>

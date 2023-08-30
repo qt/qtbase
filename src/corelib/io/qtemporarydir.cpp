@@ -8,7 +8,6 @@
 
 #include "qdebug.h"
 #include "qdiriterator.h"
-#include "qpair.h"
 #include "qplatformdefs.h"
 #include "qrandom.h"
 #include "private/qtemporaryfile_p.h"

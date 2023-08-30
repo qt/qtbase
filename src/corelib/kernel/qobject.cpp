@@ -22,7 +22,6 @@
 #include <qthread.h>
 #include <private/qthread_p.h>
 #include <qdebug.h>
-#include <qpair.h>
 #include <qvarlengtharray.h>
 #include <qscopeguard.h>
 #include <qset.h>

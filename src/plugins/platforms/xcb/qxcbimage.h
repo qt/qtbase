@@ -5,7 +5,6 @@
 #define QXCBIMAGE_H
 
 #include "qxcbscreen.h"
-#include <QtCore/QPair>
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
 #include <xcb/xcb_image.h>

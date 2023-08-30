@@ -7,7 +7,6 @@
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qnamespace.h>
-#include <QtCore/qpair.h>
 
 #ifdef max
 // un-pollute the namespace. We need std::numeric_limits::max() and std::chrono::duration::max()

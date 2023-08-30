@@ -144,7 +144,6 @@
 #include "qrect.h"
 #include "qelapsedtimer.h"
 #include "qtimer.h"
-#include "qpair.h"
 #include "qmap.h"
 #include "qlist.h"
 #include "qbuffer.h"

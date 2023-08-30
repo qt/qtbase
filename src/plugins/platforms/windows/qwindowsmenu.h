@@ -9,7 +9,6 @@
 #include <qpa/qplatformmenu.h>
 
 #include <QtCore/qlist.h>
-#include <QtCore/qpair.h>
 
 QT_BEGIN_NAMESPACE
 
