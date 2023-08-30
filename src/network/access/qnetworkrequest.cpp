@@ -1011,43 +1011,43 @@ static QByteArray headerName(QNetworkRequest::KnownHeaders header)
 {
     switch (header) {
     case QNetworkRequest::ContentTypeHeader:
-        return "Content-Type";
+        return "Content-Type"_ba;
 
     case QNetworkRequest::ContentLengthHeader:
-        return "Content-Length";
+        return "Content-Length"_ba;
 
     case QNetworkRequest::LocationHeader:
-        return "Location";
+        return "Location"_ba;
 
     case QNetworkRequest::LastModifiedHeader:
-        return "Last-Modified";
+        return "Last-Modified"_ba;
 
     case QNetworkRequest::IfModifiedSinceHeader:
-        return "If-Modified-Since";
+        return "If-Modified-Since"_ba;
 
     case QNetworkRequest::ETagHeader:
-        return "ETag";
+        return "ETag"_ba;
 
     case QNetworkRequest::IfMatchHeader:
-        return "If-Match";
+        return "If-Match"_ba;
 
     case QNetworkRequest::IfNoneMatchHeader:
-        return "If-None-Match";
+        return "If-None-Match"_ba;
 
     case QNetworkRequest::CookieHeader:
-        return "Cookie";
+        return "Cookie"_ba;
 
     case QNetworkRequest::SetCookieHeader:
-        return "Set-Cookie";
+        return "Set-Cookie"_ba;
 
     case QNetworkRequest::ContentDispositionHeader:
-        return "Content-Disposition";
+        return "Content-Disposition"_ba;
 
     case QNetworkRequest::UserAgentHeader:
-        return "User-Agent";
+        return "User-Agent"_ba;
 
     case QNetworkRequest::ServerHeader:
-        return "Server";
+        return "Server"_ba;
 
     // no default:
     // if new values are added, this will generate a compiler warning
