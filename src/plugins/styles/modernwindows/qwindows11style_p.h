@@ -45,6 +45,7 @@ public:
                            const QSize &size, const QWidget *widget) const override;
     int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr,
                     const QWidget *widget = nullptr) const override;
+    void polish(QPalette &pal) override;
 protected:
     QWindows11Style(QWindows11StylePrivate &dd);
 private:
@@ -52,6 +53,8 @@ private:
     Q_DECLARE_PRIVATE(QWindows11Style)
     friend class QStyleFactory;
 
+    bool highContrastTheme = false;
+    int colorSchemeIndex = 0;
     const QFont assetFont = QFont("Segoe Fluent Icons"); //Font to load icons from
 };
 

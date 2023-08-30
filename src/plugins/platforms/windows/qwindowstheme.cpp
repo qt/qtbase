@@ -286,6 +286,54 @@ static QColor placeHolderColor(QColor textColor)
 */
 static void populateLightSystemBasePalette(QPalette &result)
 {
+    const QColor textColor = QColor(0x00,0x00,0x00,0xE4);
+
+    const QColor accent = qt_accentColor(AccentColorNormal);
+    const QColor accentDarkest = qt_accentColor(AccentColorDarkest);
+
+    const QColor linkColor = accent;
+    const QColor btnFace = QColor(0xFF,0xFF,0xFF,0xB3);
+    const QColor btnHighlight = getSysColor(COLOR_HIGHLIGHT);
+
+    result.setColor(QPalette::Highlight, getSysColor(COLOR_HIGHLIGHT));
+    result.setColor(QPalette::WindowText, textColor);
+    result.setColor(QPalette::Button, btnFace);
+    result.setColor(QPalette::Light, result.button().color().lighter(150));
+    result.setColor(QPalette::Dark, result.button().color().darker(200));
+    result.setColor(QPalette::Mid, result.button().color().darker(150));
+    result.setColor(QPalette::Text, textColor);
+    result.setColor(QPalette::PlaceholderText, placeHolderColor(textColor));
+    result.setColor(QPalette::BrightText, btnHighlight);
+    result.setColor(QPalette::Base, btnFace);
+    result.setColor(QPalette::Window, QColor(0xF3,0xF3,0xF3,0xFF));
+    result.setColor(QPalette::ButtonText, textColor);
+    result.setColor(QPalette::Midlight, result.button().color().lighter(125));
+    result.setColor(QPalette::Shadow, Qt::black);
+    result.setColor(QPalette::HighlightedText, getSysColor(COLOR_HIGHLIGHTTEXT));
+    result.setColor(QPalette::Accent, accent);
+    result.setColor(QPalette::ToolTipBase, getSysColor(COLOR_WINDOW));
+    result.setColor(QPalette::ToolTipText, getSysColor(COLOR_WINDOWTEXT));
+
+    result.setColor(QPalette::Link, linkColor);
+    result.setColor(QPalette::LinkVisited, accentDarkest);
+    result.setColor(QPalette::Inactive, QPalette::Button, result.button().color());
+    result.setColor(QPalette::Inactive, QPalette::Window, result.window().color());
+    result.setColor(QPalette::Inactive, QPalette::Light, result.light().color());
+    result.setColor(QPalette::Inactive, QPalette::Dark, result.dark().color());
+
+    if (result.midlight() == result.button())
+        result.setColor(QPalette::Midlight, result.button().color().lighter(110));
+}
+
+/*
+  This is used when the theme is light mode, and when the theme is dark but the
+  application doesn't support dark mode. In the latter case, we need to check.
+
+The colors for Windows 11 are taken from the official WinUI3 Figma style at
+https://www.figma.com/community/file/1159947337437047524
+*/
+static void populateHighContrastSystemBasePalette(QPalette &result)
+{
     const QColor textColor = getSysColor(COLOR_WINDOWTEXT);
 
     const QColor accent = qt_accentColor(AccentColorNormal);
@@ -361,8 +409,7 @@ static void populateDarkSystemBasePalette(QPalette &result)
     const QColor accentLightest = accentLighter.lighter(120);
 #endif
     const QColor linkColor = accent;
-    const QColor buttonColor = background.lighter(200);
-
+    const QColor buttonColor = background.lighter();
     result.setColor(QPalette::All, QPalette::WindowText, foreground);
     result.setColor(QPalette::All, QPalette::Text, foreground);
     result.setColor(QPalette::All, QPalette::BrightText, accentLightest);
@@ -387,6 +434,17 @@ static void populateDarkSystemBasePalette(QPalette &result)
     result.setColor(QPalette::All, QPalette::ToolTipText, foreground.darker(120));
     result.setColor(QPalette::All, QPalette::PlaceholderText, placeHolderColor(foreground));
     result.setColor(QPalette::All, QPalette::Accent, accent);
+
+    result.setColor(QPalette::Inactive, QPalette::Button, result.button().color());
+    result.setColor(QPalette::Inactive, QPalette::Window, result.window().color());
+    result.setColor(QPalette::Inactive, QPalette::Light, result.light().color());
+    result.setColor(QPalette::Inactive, QPalette::Dark, result.dark().color());
+    result.setColor(QPalette::Disabled, QPalette::Text, result.text().color().darker());
+    result.setColor(QPalette::Disabled, QPalette::WindowText, result.windowText().color().darker());
+
+
+    if (result.midlight() == result.button())
+        result.setColor(QPalette::Midlight, result.button().color().lighter(110));
 }
 
 static inline QPalette toolTipPalette(const QPalette &systemPalette, bool light)
@@ -425,13 +483,10 @@ static inline QPalette toolTipPalette(const QPalette &systemPalette, bool light)
 */
 static inline QPalette menuPalette(const QPalette &systemPalette, bool light)
 {
-    if (!light)
-        return systemPalette;
-
     QPalette result(systemPalette);
-    const QColor menuColor = getSysColor(COLOR_3DFACE);
-    const QColor menuTextColor = getSysColor(COLOR_WINDOWTEXT);
-    const QColor disabled = getSysColor(COLOR_GRAYTEXT);
+    const QColor menuColor = light ? getSysColor(COLOR_3DFACE) : QColor(0x00,0x00,0x00,0xFF);
+    const QColor menuTextColor = light ? getSysColor(COLOR_WINDOWTEXT) : QColor(0xFF,0xFF,0xFF,0xFF);
+    const QColor disabled = light ? getSysColor(COLOR_GRAYTEXT) : menuTextColor.darker();
     // we might need a special color group for the result.
     result.setColor(QPalette::Active, QPalette::Button, menuColor);
     result.setColor(QPalette::Active, QPalette::Text, menuTextColor);
@@ -470,11 +525,11 @@ static inline QPalette menuPalette(const QPalette &systemPalette, bool light)
 static inline QPalette *menuBarPalette(const QPalette &menuPalette, bool light)
 {
     QPalette *result = nullptr;
-    if (!light || !booleanSystemParametersInfo(SPI_GETFLATMENU, false))
+    if (!booleanSystemParametersInfo(SPI_GETFLATMENU, false))
         return result;
 
     result = new QPalette(menuPalette);
-    const QColor menubar = getSysColor(COLOR_WINDOW);
+    const QColor menubar = light ? getSysColor(COLOR_WINDOW) : QColor(0x00,0x00,0x00,0x00);
     result->setColor(QPalette::Active, QPalette::Button, menubar);
     result->setColor(QPalette::Disabled, QPalette::Button, menubar);
     result->setColor(QPalette::Inactive, QPalette::Button, menubar);
@@ -576,6 +631,8 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
 
 Qt::ColorScheme QWindowsTheme::colorScheme() const
 {
+    if (queryHighContrast())
+        return Qt::ColorScheme::Unknown;
     return QWindowsContext::isDarkMode() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
 }
 
@@ -623,6 +680,9 @@ QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
             qFatal("Unknown color scheme");
             break;
     }
+    if (highContrastMode) {
+        populateHighContrastSystemBasePalette(result);
+    }
 
     if (result.window() != result.base() && (!isWin11OrUpward || highContrastMode)) {
         result.setColor(QPalette::Inactive, QPalette::Highlight,
@@ -637,7 +697,8 @@ QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
         }
     }
 
-    const QColor disabled = mixColors(result.windowText().color(), result.button().color());
+    const QColor disabled = (isWin11OrUpward && !highContrastMode) ? result.text().color().darker()
+                                                                   : mixColors(result.windowText().color(), result.button().color());
 
     result.setColorGroup(QPalette::Disabled, result.windowText(), result.button(),
                          result.light(), result.dark(), result.mid(),
