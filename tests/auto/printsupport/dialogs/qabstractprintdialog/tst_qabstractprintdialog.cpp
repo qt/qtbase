@@ -49,6 +49,8 @@ private slots:
     void getSetCheck();
     void setMinMax();
     void setFromTo();
+
+    void hideNativeByDestruction();
 #endif
 };
 
@@ -158,6 +160,20 @@ void tst_QAbstractPrintDialog::setFromTo()
     QCOMPARE(obj1.toPage(), 50);
     QCOMPARE(obj1.minPage(), 1);
     QCOMPARE(obj1.maxPage(), 50);
+}
+
+void tst_QAbstractPrintDialog::hideNativeByDestruction()
+{
+#ifdef Q_OS_WINDOWS
+    QSKIP("This test fails on windows, the QPrintDialog::setVisible implementation blocks");
+#endif
+
+    QWidget window;
+    QWidget *child = new QWidget(&window);
+    QPointer<QPrintDialog> dialog = new QPrintDialog(child);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    dialog->open();
 }
 
 #endif
