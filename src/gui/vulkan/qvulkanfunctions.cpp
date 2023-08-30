@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
     \wrapper
 
     \brief The QVulkanFunctions class provides cross-platform access to the
-    instance level core Vulkan 1.2 API.
+    instance level core Vulkan 1.3 API.
 
     Qt and Qt applications do not link to any Vulkan libraries by default.
     Instead, all functions are resolved dynamically at run time. Each
@@ -45,17 +45,17 @@ QT_BEGIN_NAMESPACE
     \l{https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkGetInstanceProcAddr.html}{the
     man page for vkGetInstanceProcAddr} for more information.
 
-    \note The member function prototypes for Vulkan 1.1 and 1.2 commands are
-    ifdefed with the appropriate \c{VK_VERSION_1_x} that is defined by the
-    Vulkan headers. Therefore these functions will only be callable by an
+    \note The member function prototypes for Vulkan 1.1, 1.2, and 1.3 commands
+    are \c ifdefed with the appropriate \c{VK_VERSION_1_x} that is defined by
+    the Vulkan headers. As such, these functions will only be callable by an
     application when the system's (on which the application is built) Vulkan
-    header is new enough and it contains 1.1 and 1.2 Vulkan API definitions.
-    When building Qt from source, this has an additional consequence: the
-    Vulkan headers on the build environment must also be 1.1 and 1.2 capable in
-    order to get a Qt build that supports resolving the 1.1 and 1.2 API
-    commands. If either of these conditions is not met, applications will only
-    be able to call the Vulkan 1.0 commands through QVulkanFunctions and
-    QVulkanDeviceFunctions.
+    header is new enough and it contains 1.1, 1.2, or 1.3 Vulkan API
+    definitions. When building Qt from source, this has an additional
+    consequence: the Vulkan headers on the build environment must also be 1.1,
+    1.2, and 1.3 compatible to get a Qt build that supports resolving
+    the 1.1, 1.2, and 1.3 API commands. If neither of these conditions is met,
+    applications will only be able to call the Vulkan 1.0 commands through
+    QVulkanFunctions and QVulkanDeviceFunctions.
 
     \sa QVulkanInstance, QVulkanDeviceFunctions, QWindow::setVulkanInstance(), QWindow::setSurfaceType()
 */
@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
     \wrapper
 
     \brief The QVulkanDeviceFunctions class provides cross-platform access to
-    the device level core Vulkan 1.2 API.
+    the device level core Vulkan 1.3 API.
 
     Qt and Qt applications do not link to any Vulkan libraries by default.
     Instead, all functions are resolved dynamically at run time. Each
