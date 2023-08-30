@@ -901,13 +901,13 @@ QAbstractAnimationPrivate::~QAbstractAnimationPrivate() { }
 void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
 {
     Q_Q(QAbstractAnimation);
-    if (state == newState)
+    const QAbstractAnimation::State oldState = state.valueBypassingBindings();
+    if (oldState == newState)
         return;
 
     if (loopCount == 0)
         return;
 
-    QAbstractAnimation::State oldState = state;
     int oldCurrentTime = currentTime;
     int oldCurrentLoop = currentLoop;
     QAbstractAnimation::Direction oldDirection = direction;
@@ -941,13 +941,15 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     }
 
     q->updateState(newState, oldState);
-    if (!guard || newState != state) //this is to be safe if updateState changes the state
+    //this is to be safe if updateState changes the state
+    if (!guard || newState != state.valueBypassingBindings())
         return;
 
     // Notify state change
     state.notify();
     emit q->stateChanged(newState, oldState);
-    if (!guard || newState != state) //this is to be safe if updateState changes the state
+    //this is to be safe if updateState changes the state
+    if (!guard || newState != state.valueBypassingBindings())
         return;
 
     switch (state) {
@@ -1378,7 +1380,7 @@ void QAbstractAnimation::setCurrentTime(int msecs)
 void QAbstractAnimation::start(DeletionPolicy policy)
 {
     Q_D(QAbstractAnimation);
-    if (d->state == Running)
+    if (d->state.valueBypassingBindings() == Running)
         return;
     d->deleteWhenStopped = policy;
     d->setState(Running);
@@ -1398,7 +1400,7 @@ void QAbstractAnimation::stop()
 {
     Q_D(QAbstractAnimation);
 
-    if (d->state == Stopped)
+    if (d->state.valueBypassingBindings() == Stopped)
         return;
 
     d->setState(Stopped);
@@ -1414,7 +1416,7 @@ void QAbstractAnimation::stop()
 void QAbstractAnimation::pause()
 {
     Q_D(QAbstractAnimation);
-    if (d->state == Stopped) {
+    if (d->state.valueBypassingBindings() == Stopped) {
         qWarning("QAbstractAnimation::pause: Cannot pause a stopped animation");
         return;
     }
@@ -1432,7 +1434,7 @@ void QAbstractAnimation::pause()
 void QAbstractAnimation::resume()
 {
     Q_D(QAbstractAnimation);
-    if (d->state != Paused) {
+    if (d->state.valueBypassingBindings() != Paused) {
         qWarning("QAbstractAnimation::resume: "
                  "Cannot resume an animation that is not paused");
         return;
