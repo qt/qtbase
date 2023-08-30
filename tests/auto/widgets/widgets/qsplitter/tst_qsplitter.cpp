@@ -1032,7 +1032,7 @@ void tst_QSplitter::taskQTBUG_4101_ensureOneNonCollapsedWidget()
     QFETCH(bool, testingHide);
 
     MyFriendlySplitter s;
-    QLabel *l;
+    QLabel *l = nullptr;
     for (int i = 0; i < 5; ++i) {
         l = new QLabel(QString("Label ") + QChar('A' + i));
         l->setAlignment(Qt::AlignCenter);
