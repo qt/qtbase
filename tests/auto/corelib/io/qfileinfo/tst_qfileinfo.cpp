@@ -2329,6 +2329,18 @@ void tst_QFileInfo::stdfilesystem()
         COMPARE_CONSTRUCTION("./filæ.txt");
 #endif
 
+        // Test unicode strings
+        QCOMPARE(QFileInfo(fs::path(u"./filæ.txt")).absoluteFilePath(),
+                 QFileInfo(u"./filæ.txt"_s).absoluteFilePath());
+        QCOMPARE(QFileInfo(base, fs::path(u"./filæ.txt")).absoluteFilePath(),
+                 QFileInfo(base, u"./filæ.txt"_s).absoluteFilePath());
+#ifdef __cpp_char8_t
+        QCOMPARE(QFileInfo(fs::path(u8"./filæ.txt")).absoluteFilePath(),
+                 QFileInfo(u8"./filæ.txt").absoluteFilePath());
+        QCOMPARE(QFileInfo(base, fs::path(u8"./filæ.txt")).absoluteFilePath(),
+                 QFileInfo(base, u8"./filæ.txt").absoluteFilePath());
+#endif
+
 #undef COMPARE_CONSTRUCTION
         {
             // One proper comparison with operator== for each ctor
