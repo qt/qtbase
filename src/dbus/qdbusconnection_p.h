@@ -325,7 +325,6 @@ public:
                             const ArgMatchRules &argMatch,
                             QObject *receiver, const char *signal, int minMIdx,
                             bool buildSignature);
-    static DBusHandlerResult messageFilter(DBusConnection *, DBusMessage *, void *);
     static QDBusCallDeliveryEvent *prepareReply(QDBusConnectionPrivate *target, QObject *object,
                                                 int idx, const QList<QMetaType> &metaTypes,
                                                 const QDBusMessage &msg);
