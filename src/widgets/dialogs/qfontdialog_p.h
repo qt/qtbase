@@ -105,6 +105,7 @@ public:
     QByteArray memberToDisconnectOnClose;
 
     bool canBeNativeDialog() const override;
+    void setVisible(bool visible) override;
     void _q_runNativeAppModalPanel();
 
 private:

@@ -128,9 +128,10 @@ private slots:
     void QTBUG49600_nativeIconProviderCrash();
     void focusObjectDuringDestruction();
 
-    // NOTE: Please keep widgetlessNativeDialog() as the LAST test!
+    // NOTE: Please keep widgetlessNativeDialog() and
+    // hideNativeByDestruction() as the LAST tests!
     //
-    // widgetlessNativeDialog() is the only test function that creates
+    // widgetlessNativeDialog() are the only test functions that create
     // a native file dialog instance. GTK+ versions prior 3.15.5 have
     // a nasty bug (https://bugzilla.gnome.org/show_bug.cgi?id=725164)
     // in GtkFileChooserWidget, which makes it leak its folder change
@@ -141,6 +142,7 @@ private slots:
     // The crash has been fixed in GTK+ 3.15.5, but the RHEL 7.2 CI has
     // GTK+ 3.14.13 installed (QTBUG-55276).
     void widgetlessNativeDialog();
+    void hideNativeByDestruction();
 
 private:
     void cleanupSettingsFile();
@@ -1437,7 +1439,7 @@ void tst_QFiledialog::widgetlessNativeDialog()
         QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
 #ifdef Q_OS_ANDROID
     // QTBUG-101194
-    QSKIP("Android: This keeeps the window open. Figure out why.");
+    QSKIP("Android: This keeps the window open. Figure out why.");
 #endif
     QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, false);
     QFileDialog fd;
@@ -1449,6 +1451,46 @@ void tst_QFiledialog::widgetlessNativeDialog()
     QPushButton *button = fd.findChild<QPushButton*>();
     QVERIFY(!button);
     QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, true);
+}
+
+void tst_QFiledialog::hideNativeByDestruction()
+{
+    if (!QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(QPlatformTheme::FileDialog))
+        QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
+
+#ifdef Q_OS_ANDROID
+    // QTBUG-101194
+    QSKIP("Android: This keeps the native window open. Figure out why.");
+#endif
+
+    QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, false);
+    auto resetAttribute = qScopeGuard([]{
+        QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, true);
+    });
+
+    QWidget window;
+    QWidget *child = new QWidget(&window);
+    QPointer<QFileDialog> dialog = new QFileDialog(child);
+    // Make it application modal so that we don't end up with a sheet on macOS
+    dialog->setWindowModality(Qt::ApplicationModal);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    dialog->open();
+
+    // We test that the dialog opens and closes by watching the activation of the
+    // transient parent window. If it doesn't deactivate, then we have to skip.
+    const auto windowActive = [&window]{ return window.isActiveWindow(); };
+    const auto windowInactive = [&window]{ return !window.isActiveWindow(); };
+    if (!QTest::qWaitFor(windowInactive, 2000))
+        QSKIP("Dialog didn't activate");
+
+    // This should destroy the dialog and close the native window
+    child->deleteLater();
+    QTRY_VERIFY(!dialog);
+    // If the native window is still open, then the transient parent can't become
+    // active
+    window.activateWindow();
+    QVERIFY(QTest::qWaitFor(windowActive, 2000));
 }
 
 void tst_QFiledialog::selectedFilesWithoutWidgets()

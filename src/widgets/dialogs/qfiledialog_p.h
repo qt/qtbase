@@ -221,6 +221,7 @@ public:
     // dialog. Returning false means that a non-native dialog must be
     // used instead.
     bool canBeNativeDialog() const override;
+    void setVisible(bool visible) override;
     inline bool usingWidgets() const;
 
     inline void setDirectory_sys(const QUrl &directory);

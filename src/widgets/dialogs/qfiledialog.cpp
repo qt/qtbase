@@ -835,41 +835,53 @@ void QFileDialog::open(QObject *receiver, const char *member)
 */
 void QFileDialog::setVisible(bool visible)
 {
-    Q_D(QFileDialog);
+    // will call QFileDialogPrivate::setVisible override
+    QDialog::setVisible(visible);
+}
+
+/*!
+    \internal
+
+    The logic has to live here so that the call to hide() in ~QDialog calls
+    this function; it wouldn't call an override of QDialog::setVisible().
+*/
+void QFileDialogPrivate::setVisible(bool visible)
+{
+    Q_Q(QFileDialog);
     if (visible){
-        if (testAttribute(Qt::WA_WState_ExplicitShowHide) && !testAttribute(Qt::WA_WState_Hidden))
+        if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && !q->testAttribute(Qt::WA_WState_Hidden))
             return;
-    } else if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden))
+    } else if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden))
         return;
 
-    if (d->canBeNativeDialog()){
-        if (d->setNativeDialogVisible(visible)){
-            // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
+    if (canBeNativeDialog()){
+        if (setNativeDialogVisible(visible)){
+            // Set WA_DontShowOnScreen so that QDialogPrivate::setVisible(visible) below
             // updates the state correctly, but skips showing the non-native version:
-            setAttribute(Qt::WA_DontShowOnScreen);
+            q->setAttribute(Qt::WA_DontShowOnScreen);
 #if QT_CONFIG(fscompleter)
             // So the completer doesn't try to complete and therefore show a popup
-            if (!d->nativeDialogInUse)
-                d->completer->setModel(nullptr);
+            if (!nativeDialogInUse)
+                completer->setModel(nullptr);
 #endif
         } else {
-            d->createWidgets();
-            setAttribute(Qt::WA_DontShowOnScreen, false);
+            createWidgets();
+            q->setAttribute(Qt::WA_DontShowOnScreen, false);
 #if QT_CONFIG(fscompleter)
-            if (!d->nativeDialogInUse) {
-                if (d->proxyModel != nullptr)
-                    d->completer->setModel(d->proxyModel);
+            if (!nativeDialogInUse) {
+                if (proxyModel != nullptr)
+                    completer->setModel(proxyModel);
                 else
-                    d->completer->setModel(d->model);
+                    completer->setModel(model);
             }
 #endif
         }
     }
 
-    if (visible && d->usingWidgets())
-        d->qFileDialogUi->fileNameEdit->setFocus();
+    if (visible && usingWidgets())
+        qFileDialogUi->fileNameEdit->setFocus();
 
-    QDialog::setVisible(visible);
+    QDialogPrivate::setVisible(visible);
 }
 
 /*!
