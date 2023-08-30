@@ -12,6 +12,9 @@
 #ifndef PATH_MAX
 #  define PATH_MAX FILENAME_MAX
 #endif
+#if SQLITE_VERSION_NUMBER < 3040000
+typedef const char *sqlite3_filename;
+#endif
 
 namespace {
 struct Vfs : sqlite3_vfs {
