@@ -6,6 +6,7 @@ if(UIKIT)
     return()
 endif()
 
+add_subdirectory(corelib)
 add_subdirectory(filetest)
 # diaglib is broken in dev due to missing
 # QtOpenGL/QGLFunctions headers

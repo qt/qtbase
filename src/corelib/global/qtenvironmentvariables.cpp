@@ -353,6 +353,10 @@ void qTzSet()
 time_t qMkTime(struct tm *when)
 {
     const auto locker = qt_scoped_lock(environmentMutex);
+#if defined(Q_OS_WIN)
+    // QTBUG-83881 MS's mktime() seems to need _tzset() called first.
+    _tzset();
+#endif
     return mktime(when);
 }
 
