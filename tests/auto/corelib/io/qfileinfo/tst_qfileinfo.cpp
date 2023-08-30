@@ -2303,13 +2303,15 @@ void tst_QFileInfo::stdfilesystem()
         // We compare using absoluteFilePath since QFileInfo::operator== ends up using
         // canonicalFilePath which evaluates to empty-string for non-existent paths causing
         // these tests to always succeed.
-#define COMPARE_CONSTRUCTION(filepath)                                                 \
-        QCOMPARE(QFileInfo(fs::path(filepath)).absoluteFilePath(),                     \
-                 QFileInfo(QString::fromLocal8Bit(filepath)).absoluteFilePath());      \
-        QCOMPARE(QFileInfo(base, fs::path(filepath)).absoluteFilePath(),               \
-                 QFileInfo(base, QString::fromLocal8Bit(filepath)).absoluteFilePath())
-
         QDir base{ "../" }; // Used for the QFileInfo(QDir, <path>) ctor
+        auto doCompare = [&base](const char *filepath) {
+            QCOMPARE(QFileInfo(fs::path(filepath)).absoluteFilePath(),
+                     QFileInfo(QString::fromLocal8Bit(filepath)).absoluteFilePath());
+            QCOMPARE(QFileInfo(base, fs::path(filepath)).absoluteFilePath(),
+                     QFileInfo(base, QString::fromLocal8Bit(filepath)).absoluteFilePath());
+        };
+#define COMPARE_CONSTRUCTION(filepath)                                                 \
+    doCompare(filepath); if (QTest::currentTestFailed()) return
 
         COMPARE_CONSTRUCTION("./file");
 
