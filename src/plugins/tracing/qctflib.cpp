@@ -379,6 +379,7 @@ void QCtfLibImpl::doTracepoint(const QCtfTracePointEvent &point, const QByteArra
         ch.impl = this;
         m_channels.append(&ch);
         m_threadIndices.insert(thread, m_threadIndices.size());
+        sprintf(ch.channelName, "%s/channel_%d", qPrintable(m_location), m_threadIndices[thread]);
         ch.minTimestamp = ch.maxTimestamp = timestamp;
         ch.thread = thread;
         ch.threadIndex = m_threadIndices[thread];
