@@ -1056,6 +1056,22 @@ static QByteArray headerName(QNetworkRequest::KnownHeaders header)
     return QByteArray();
 }
 
+static QByteArray makeCookieHeader(const QVariant &value, QNetworkCookie::RawForm type, QByteArrayView separator)
+{
+    QList<QNetworkCookie> cookies = qvariant_cast<QList<QNetworkCookie> >(value);
+    if (cookies.isEmpty() && value.userType() == qMetaTypeId<QNetworkCookie>())
+        cookies << qvariant_cast<QNetworkCookie>(value);
+
+    QByteArray result;
+    for (const QNetworkCookie &cookie : std::as_const(cookies)) {
+        result += cookie.toRawForm(type);
+        result += separator;
+    }
+    if (!result.isEmpty())
+        result.chop(separator.size());
+    return result;
+}
+
 static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVariant &value)
 {
     switch (header) {
@@ -1091,37 +1107,11 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
             return value.toByteArray();
         }
 
-    case QNetworkRequest::CookieHeader: {
-        QList<QNetworkCookie> cookies = qvariant_cast<QList<QNetworkCookie> >(value);
-        if (cookies.isEmpty() && value.userType() == qMetaTypeId<QNetworkCookie>())
-            cookies << qvariant_cast<QNetworkCookie>(value);
+    case QNetworkRequest::CookieHeader:
+        return makeCookieHeader(value, QNetworkCookie::NameAndValueOnly, "; ");
 
-        constexpr QByteArrayView separator = "; ";
-        QByteArray result;
-        for (const QNetworkCookie &cookie : std::as_const(cookies)) {
-            result += cookie.toRawForm(QNetworkCookie::NameAndValueOnly);
-            result += separator;
-        }
-        if (!result.isEmpty())
-            result.chop(separator.size());
-        return result;
-    }
-
-    case QNetworkRequest::SetCookieHeader: {
-        QList<QNetworkCookie> cookies = qvariant_cast<QList<QNetworkCookie> >(value);
-        if (cookies.isEmpty() && value.userType() == qMetaTypeId<QNetworkCookie>())
-            cookies << qvariant_cast<QNetworkCookie>(value);
-\
-        constexpr QByteArrayView separator = ", ";
-        QByteArray result;
-        for (const QNetworkCookie &cookie : std::as_const(cookies)) {
-            result += cookie.toRawForm(QNetworkCookie::Full);
-            result += separator;
-        }
-        if (!result.isEmpty())
-            result.chop(separator.size());
-        return result;
-    }
+    case QNetworkRequest::SetCookieHeader:
+        return makeCookieHeader(value, QNetworkCookie::Full, ", ");
     }
 
     return QByteArray();
