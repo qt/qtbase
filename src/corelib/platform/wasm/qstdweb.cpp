@@ -499,7 +499,7 @@ uint32_t ArrayBuffer::byteLength() const
     return m_arrayBuffer["byteLength"].as<uint32_t>();
 }
 
-emscripten::val ArrayBuffer::val()
+emscripten::val ArrayBuffer::val() const
 {
     return m_arrayBuffer;
 }
@@ -532,7 +532,7 @@ Blob Blob::copyFrom(const char *buffer, uint32_t size)
     return copyFrom(buffer, size, "application/octet-stream");
 }
 
-emscripten::val Blob::val()
+emscripten::val Blob::val() const
 {
     return m_blob;
 }
@@ -583,7 +583,7 @@ std::string File::type() const
     return m_file["type"].as<std::string>();
 }
 
-emscripten::val File::val()
+emscripten::val File::val() const
 {
     return m_file;
 }
@@ -642,7 +642,7 @@ void FileReader::onAbort(const std::function<void(emscripten::val)> &onAbort)
     m_onAbort = std::make_unique<EventCallback>(m_fileReader, "abort", onAbort);
 }
 
-emscripten::val FileReader::val()
+emscripten::val FileReader::val() const
 {
     return m_fileReader;
 }
@@ -740,7 +740,7 @@ Uint8Array Uint8Array::copyFrom(const QByteArray &buffer)
     return copyFrom(buffer.constData(), buffer.size());
 }
 
-emscripten::val Uint8Array::val()
+emscripten::val Uint8Array::val() const
 {
     return m_uint8Array;
 }

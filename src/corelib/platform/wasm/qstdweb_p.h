@@ -58,7 +58,7 @@ namespace qstdweb {
         explicit ArrayBuffer(uint32_t size);
         explicit ArrayBuffer(const emscripten::val &arrayBuffer);
         uint32_t byteLength() const;
-        emscripten::val val();
+        emscripten::val val() const;
 
     private:
         friend class Uint8Array;
@@ -71,7 +71,7 @@ namespace qstdweb {
         uint32_t size() const;
         static Blob copyFrom(const char *buffer, uint32_t size, std::string mimeType);
         static Blob copyFrom(const char *buffer, uint32_t size);
-        emscripten::val val();
+        emscripten::val val() const;
         std::string type() const;
 
     private:
@@ -91,7 +91,7 @@ namespace qstdweb {
         void stream(uint32_t offset, uint32_t length, char *buffer,
                     std::function<void()> completed) const;
         void stream(char *buffer, std::function<void()> completed) const;
-        emscripten::val val();
+        emscripten::val val() const;
 
     private:
         emscripten::val m_file = emscripten::val::undefined();
@@ -119,7 +119,7 @@ namespace qstdweb {
         void onLoad(const std::function<void(emscripten::val)> &onLoad);
         void onError(const std::function<void(emscripten::val)> &onError);
         void onAbort(const std::function<void(emscripten::val)> &onAbort);
-        emscripten::val val();
+        emscripten::val val() const;
 
     private:
         emscripten::val m_fileReader = emscripten::val::global("FileReader").new_();
@@ -147,7 +147,7 @@ namespace qstdweb {
         static void copy(char *destination, const Uint8Array &source);
         static Uint8Array copyFrom(const char *buffer, uint32_t size);
         static Uint8Array copyFrom(const QByteArray &buffer);
-        emscripten::val val();
+        emscripten::val val() const;
 
     private:
         static emscripten::val heap_();
