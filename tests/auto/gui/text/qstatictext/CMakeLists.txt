@@ -15,7 +15,7 @@ qt_internal_add_test(tst_qstatictext
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_qstatictext CONDITION QT_FEATURE_private_tests
+qt_internal_extend_target(tst_qstatictext CONDITION QT_FEATURE_developer_build
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
