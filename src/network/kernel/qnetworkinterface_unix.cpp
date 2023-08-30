@@ -52,7 +52,18 @@ static QHostAddress addressFromSockaddr(sockaddr *sa, int ifindex = 0, const QSt
         }
     }
     return address;
+}
 
+template <typename Req> [[maybe_unused]]
+static auto &ifreq_index(Req &req, std::enable_if_t<sizeof(std::declval<Req>().ifr_index) != 0, int> = 0)
+{
+    return req.ifr_index;
+}
+
+template <typename Req> [[maybe_unused]]
+static auto &ifreq_index(Req &req, std::enable_if_t<sizeof(std::declval<Req>().ifr_ifindex) != 0, int> = 0)
+{
+    return req.ifr_ifindex;
 }
 
 uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
@@ -71,11 +82,7 @@ uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
 
     uint id = 0;
     if (qt_safe_ioctl(socket, SIOCGIFINDEX, &req) >= 0)
-#  if QT_CONFIG(ifr_index)
-        id = req.ifr_index;
-#  else
-        id = req.ifr_ifindex;
-#  endif
+        id = ifreq_index(req);
     qt_safe_close(socket);
     return id;
 #else
@@ -95,12 +102,7 @@ QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
     int socket = qt_safe_socket(AF_INET, SOCK_STREAM, 0);
     if (socket >= 0) {
         memset(&req, 0, sizeof(ifreq));
-#  if QT_CONFIG(ifr_index)
-        req.ifr_index = index;
-#  else
-        req.ifr_ifindex = index;
-#  endif
-
+        ifreq_index(req) = index;
         if (qt_safe_ioctl(socket, SIOCGIFNAME, &req) >= 0) {
             qt_safe_close(socket);
             return QString::fromLatin1(req.ifr_name);
@@ -185,11 +187,7 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
     // Get the interface index
 #  ifdef SIOCGIFINDEX
     if (qt_safe_ioctl(socket, SIOCGIFINDEX, &req) >= 0)
-#    if QT_CONFIG(ifr_index)
-        ifindex = req.ifr_index;
-#    else
-        ifindex = req.ifr_ifindex;
-#    endif
+        ifindex = ifreq_index(req);
 #  else
     ifindex = if_nametoindex(req.ifr_name);
 #  endif
