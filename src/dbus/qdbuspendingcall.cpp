@@ -224,7 +224,6 @@ QDBusPendingCall::QDBusPendingCall(QDBusPendingCallPrivate *dd)
     if (dd) {
         bool r = dd->ref.deref();
         Q_ASSERT(r);
-        Q_UNUSED(r);
     }
 }
 

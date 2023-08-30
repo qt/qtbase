@@ -277,7 +277,6 @@ static void qDBusToggleWatch(DBusWatch *watch, void *data)
 static void qDBusUpdateDispatchStatus(DBusConnection *connection, DBusDispatchStatus new_status, void *data)
 {
     Q_ASSERT(connection);
-    Q_UNUSED(connection);
     QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
     if (new_status == DBUS_DISPATCH_DATA_REMAINS)
         emit d->dispatchStatusChanged();
@@ -287,7 +286,6 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
 {
     // ### We may want to separate the server from the QDBusConnectionPrivate
     Q_ASSERT(server);
-    Q_UNUSED(server);
     Q_ASSERT(connection);
     Q_ASSERT(data);
 
@@ -774,7 +772,6 @@ QDBusCallDeliveryEvent *QDBusConnectionPrivate::prepareReply(QDBusConnectionPriv
                                                              const QDBusMessage &msg)
 {
     Q_ASSERT(object);
-    Q_UNUSED(object);
 
     int n = metaTypes.size() - 1;
     if (metaTypes[n] == QDBusMetaTypeId::message())
@@ -1279,7 +1276,6 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
 void QDBusConnectionPrivate::serviceOwnerChangedNoLock(const QString &name,
                                                        const QString &oldOwner, const QString &newOwner)
 {
-    Q_UNUSED(oldOwner);
 //    QDBusWriteLocker locker(UpdateSignalHookOwnerAction, this);
     WatchedServicesHash::Iterator it = watchedServices.find(name);
     if (it == watchedServices.end())
@@ -1848,7 +1844,6 @@ static void qDBusResultReceived(DBusPendingCall *pending, void *user_data)
 {
     QDBusPendingCallPrivate *call = reinterpret_cast<QDBusPendingCallPrivate *>(user_data);
     Q_ASSERT(call->pending == pending);
-    Q_UNUSED(pending);
     QDBusConnectionPrivate::processFinishedCall(call);
 }
 }
