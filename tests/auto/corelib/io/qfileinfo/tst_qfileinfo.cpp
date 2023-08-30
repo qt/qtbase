@@ -2324,7 +2324,10 @@ void tst_QFileInfo::stdfilesystem()
         COMPARE_CONSTRUCTION("/path/TO/file.txt");
         COMPARE_CONSTRUCTION("./path/TO/file.txt");
         COMPARE_CONSTRUCTION("../file.txt");
+#if !(defined(__GLIBCXX__) && defined(Q_OS_WIN32))
+        // libstdc++ bug on Windows - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111244
         COMPARE_CONSTRUCTION("./filæ.txt");
+#endif
 
         // Test unicode strings
         QCOMPARE(QFileInfo(fs::path(u"./filæ.txt")).absoluteFilePath(),
