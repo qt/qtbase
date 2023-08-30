@@ -136,7 +136,6 @@ public:
         DataList children;
     };
 
-public:
     // typedefs
     typedef QMultiHash<qintptr, Watcher> WatcherHash;
     typedef QHash<int, DBusTimeout *> TimeoutHash;
@@ -157,7 +156,6 @@ public:
     };
     typedef QHash<QString, WatchedServiceData> WatchedServicesHash;
 
-public:
     // public methods are entry points from other objects
     explicit QDBusConnectionPrivate(QObject *parent = nullptr);
     ~QDBusConnectionPrivate();
@@ -315,7 +313,6 @@ public:
     bool dispatchEnabled;               // protected by the dispatch lock, not the main lock
     bool isAuthenticated;
 
-public:
     // static methods
     static int findSlot(QObject *obj, const QByteArray &normalizedName, QList<QMetaType> &params,
                         QString &errorMsg);
