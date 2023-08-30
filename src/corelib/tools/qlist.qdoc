@@ -422,12 +422,13 @@
 */
 
 /*! \fn template <typename T> void QList<T>::resize(qsizetype size)
+    \fn template <typename T> void QList<T>::resize(qsizetype size, parameter_type c)
     \since 6.0
 
     Sets the size of the list to \a size. If \a size is greater than the
     current size, elements are added to the end; the new elements are
-    initialized with a \l{default-constructed value}. If \a size is less
-    than the current size, elements are removed from the end.
+    initialized with either a \l{default-constructed value} or \a c. If \a size
+    is less than the current size, elements are removed from the end.
 
     If this list is not shared, the capacity() is preserved. Use squeeze()
     to shed excess capacity.
