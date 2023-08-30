@@ -30,7 +30,7 @@ qt_internal_add_test(tst_qsslkey
     BUNDLE_ANDROID_OPENSSL_LIBS
 )
 
-qt_internal_extend_target(tst_qsslkey CONDITION QT_FEATURE_private_tests AND QT_FEATURE_openssl_linked
+qt_internal_extend_target(tst_qsslkey CONDITION QT_FEATURE_developer_build AND QT_FEATURE_openssl_linked
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
 )
@@ -38,7 +38,7 @@ qt_internal_extend_target(tst_qsslkey CONDITION QT_FEATURE_private_tests AND QT_
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_qsslkey CONDITION QT_FEATURE_private_tests
+qt_internal_extend_target(tst_qsslkey CONDITION QT_FEATURE_developer_build
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
