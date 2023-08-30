@@ -45,6 +45,7 @@ private slots:
     void qtbug_41513_stylesheetStyle();
 #endif
 
+    void hideNativeByDestruction();
 
 private:
     void runSlotWithFailsafeTimer(const char *member);
@@ -236,6 +237,33 @@ void tst_QFontDialog::testNonStandardFontSize()
         QCOMPARE(testFont.pointSize(), resultFont.pointSize());
     else
         qWarning("Fail using a non-standard font size.");
+}
+
+void tst_QFontDialog::hideNativeByDestruction()
+{
+    QWidget window;
+    QWidget *child = new QWidget(&window);
+    QPointer<QFontDialog> dialog = new QFontDialog(child);
+    // Make it application modal so that we don't end up with a sheet on macOS
+    dialog->setWindowModality(Qt::ApplicationModal);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    dialog->open();
+
+    // We test that the dialog opens and closes by watching the activation of the
+    // transient parent window. If it doesn't deactivate, then we have to skip.
+    const auto windowActive = [&window]{ return window.isActiveWindow(); };
+    const auto windowInactive = [&window]{ return !window.isActiveWindow(); };
+    if (!QTest::qWaitFor(windowInactive, 2000))
+        QSKIP("Dialog didn't activate");
+
+    // This should destroy the dialog and close the native window
+    child->deleteLater();
+    QTRY_VERIFY(!dialog);
+    // If the native window is still open, then the transient parent can't become
+    // active
+    window.activateWindow();
+    QVERIFY(QTest::qWaitFor(windowActive));
 }
 
 QTEST_MAIN(tst_QFontDialog)

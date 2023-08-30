@@ -120,6 +120,7 @@ public:
     bool handleColorPickingKeyPress(QKeyEvent *e);
 
     bool canBeNativeDialog() const override;
+    void setVisible(bool visible) override;
 
     QWellArray *custom;
     QWellArray *standard;
@@ -2136,30 +2137,42 @@ QColorDialog::ColorDialogOptions QColorDialog::options() const
 */
 void QColorDialog::setVisible(bool visible)
 {
-    Q_D(QColorDialog);
+    // will call QColorDialogPrivate::setVisible override
+    QDialog::setVisible(visible);
+}
 
+/*!
+    \internal
+
+    The implementation of QColorDialog::setVisible() has to live here so that the call
+    to hide() in ~QDialog calls this function; it wouldn't call the override of
+    QDialog::setVisible().
+*/
+void QColorDialogPrivate::setVisible(bool visible)
+{
+    Q_Q(QColorDialog);
     if (visible){
-        if (testAttribute(Qt::WA_WState_ExplicitShowHide) && !testAttribute(Qt::WA_WState_Hidden))
+        if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && !q->testAttribute(Qt::WA_WState_Hidden))
             return;
-    } else if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden))
+    } else if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden))
         return;
 
     if (visible)
-        d->selectedQColor = QColor();
+        selectedQColor = QColor();
 
-    if (d->nativeDialogInUse) {
-        if (d->setNativeDialogVisible(visible)) {
+    if (nativeDialogInUse) {
+        if (setNativeDialogVisible(visible)) {
             // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
             // updates the state correctly, but skips showing the non-native version:
-            setAttribute(Qt::WA_DontShowOnScreen);
+            q->setAttribute(Qt::WA_DontShowOnScreen);
         } else {
-            d->initWidgets();
+            initWidgets();
         }
     } else {
-        setAttribute(Qt::WA_DontShowOnScreen, false);
+        q->setAttribute(Qt::WA_DontShowOnScreen, false);
     }
 
-    QDialog::setVisible(visible);
+    QDialogPrivate::setVisible(visible);
 }
 
 /*!
@@ -2207,7 +2220,6 @@ QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QStr
 
 QColorDialog::~QColorDialog()
 {
-
 }
 
 /*!
