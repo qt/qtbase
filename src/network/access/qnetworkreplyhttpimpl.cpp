@@ -1343,25 +1343,22 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
     const bool autoDecompress = request.rawHeader("accept-encoding").isEmpty();
     const bool shouldDecompress = isCompressed && autoDecompress;
     // reconstruct the HTTP header
-    QList<QPair<QByteArray, QByteArray> > headerMap = hm;
-    QList<QPair<QByteArray, QByteArray> >::ConstIterator it = headerMap.constBegin(),
-                                                        end = headerMap.constEnd();
-    for (; it != end; ++it) {
-        QByteArray value = q->rawHeader(it->first);
+    for (const auto &[key, originValue] : hm) {
+        QByteArray value = q->rawHeader(key);
 
         // Reset any previous "location" header set in the reply. In case of
         // redirects, we don't want to 'append' multiple location header values,
         // rather we keep only the latest one
-        if (it->first.toLower() == "location")
+        if (key.toLower() == "location")
             value.clear();
 
         if (shouldDecompress && !decompressHelper.isValid()
-            && it->first.compare("content-encoding", Qt::CaseInsensitive) == 0) {
+            && key.compare("content-encoding", Qt::CaseInsensitive) == 0) {
 
             if (!synchronous) // with synchronous all the data is expected to be handled at once
                 decompressHelper.setCountingBytesEnabled(true);
 
-            if (!decompressHelper.setEncoding(it->second)) {
+            if (!decompressHelper.setEncoding(originValue)) {
                 error(QNetworkReplyImpl::NetworkError::UnknownContentError,
                       QCoreApplication::translate("QHttp", "Failed to initialize decompression: %1")
                               .arg(decompressHelper.errorString()));
@@ -1374,13 +1371,13 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
         if (!value.isEmpty()) {
             // Why are we appending values for headers which are already
             // present?
-            if (it->first.compare("set-cookie", Qt::CaseInsensitive) == 0)
+            if (key.compare("set-cookie", Qt::CaseInsensitive) == 0)
                 value += '\n';
             else
                 value += ", ";
         }
-        value += it->second;
-        q->setRawHeader(it->first, value);
+        value += originValue;
+        q->setRawHeader(key, value);
     }
 
     q->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, statusCode);
