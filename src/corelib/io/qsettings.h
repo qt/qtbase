@@ -54,7 +54,7 @@ public:
         Registry64Format,
 #endif
 
-#if defined(Q_OS_WASM)
+#if defined(Q_OS_WASM) || defined(Q_QDOC)
         WebLocalStorageFormat,
         WebIndexedDBFormat,
 #endif
