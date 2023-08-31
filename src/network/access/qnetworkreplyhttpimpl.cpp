@@ -1686,6 +1686,27 @@ bool QNetworkReplyHttpImplPrivate::sendCacheContents(const QNetworkCacheMetaData
     return true;
 }
 
+static auto caseInsensitiveCompare(QByteArrayView value)
+{
+    return [value](QByteArrayView element)
+    {
+        return value.compare(element, Qt::CaseInsensitive) == 0;
+    };
+}
+
+static bool isHopByHop(QByteArrayView header)
+{
+    constexpr QByteArrayView headers[] = { "connection",
+                                           "keep-alive",
+                                           "proxy-authenticate",
+                                           "proxy-authorization",
+                                           "te",
+                                           "trailers",
+                                           "transfer-encoding",
+                                           "upgrade"};
+    return std::any_of(std::begin(headers), std::end(headers), caseInsensitiveCompare(header));
+}
+
 QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNetworkCacheMetaData &oldMetaData) const
 {
     Q_Q(const QNetworkReplyHttpImpl);
@@ -1697,22 +1718,11 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
     QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
 
     const QList<QByteArray> newHeaders = q->rawHeaderList();
-    for (QByteArray header : newHeaders) {
-        QByteArray originalHeader = header;
-        header = header.toLower();
-        bool hop_by_hop =
-            (header == "connection"
-             || header == "keep-alive"
-             || header == "proxy-authenticate"
-             || header == "proxy-authorization"
-             || header == "te"
-             || header == "trailers"
-             || header == "transfer-encoding"
-             || header ==  "upgrade");
-        if (hop_by_hop)
+    for (const QByteArray& header : newHeaders) {
+        if (isHopByHop(header))
             continue;
 
-        if (header == "set-cookie")
+        if (header.compare("set-cookie", Qt::CaseInsensitive) == 0)
             continue;
 
         // for 4.6.0, we were planning to not store the date header in the
@@ -1725,7 +1735,7 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
             //continue;
 
         // Don't store Warning 1xx headers
-        if (header == "warning") {
+        if (header.compare("warning", Qt::CaseInsensitive) == 0) {
             const QByteArray v = q->rawHeader(header);
             if (v.size() == 3
                 && v[0] == '1'
@@ -1737,15 +1747,15 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
         it = cacheHeaders.findRawHeader(header);
         if (it != cacheHeaders.rawHeaders.constEnd()) {
             // Match the behavior of Firefox and assume Cache-Control: "no-transform"
-            if (header == "content-encoding"
-                || header == "content-range"
-                || header == "content-type")
+            constexpr QByteArrayView headers[]=
+                    {"content-encoding", "content-range", "content-type"};
+            if (std::any_of(std::begin(headers), std::end(headers), caseInsensitiveCompare(header)))
                 continue;
         }
 
         // IIS has been known to send "Content-Length: 0" on 304 responses, so
         // ignore this too
-        if (header == "content-length" && statusCode == 304)
+        if (statusCode == 304 && header.compare("content-length", Qt::CaseInsensitive) == 0)
             continue;
 
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
@@ -1753,13 +1763,13 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
         QByteArray o;
         if (it != cacheHeaders.rawHeaders.constEnd())
             o = (*it).second;
-        if (n != o && header != "date") {
+        if (n != o && headerheader.compare("date", Qt::CaseInsensitive) != 0) {
             qDebug() << "replacing" << header;
             qDebug() << "new" << n;
             qDebug() << "old" << o;
         }
 #endif
-        cacheHeaders.setRawHeader(originalHeader, q->rawHeader(header));
+        cacheHeaders.setRawHeader(header, q->rawHeader(header));
     }
     metaData.setRawHeaders(cacheHeaders.rawHeaders);
 
