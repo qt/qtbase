@@ -41,7 +41,7 @@ static inline QByteArray rangeName() { return "Range"_ba; }
 static inline QByteArray cacheControlName() { return "Cache-Control"_ba; }
 
 // ### merge with nextField in cookiejar.cpp
-static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &header)
+static QHash<QByteArray, QByteArray> parseHttpOptionHeader(QByteArrayView header)
 {
     // The HTTP header is of the form:
     // header          = #1(directives)
@@ -70,7 +70,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
             end = header.size();
         if (equal != -1 && end > equal)
             end = equal;        // equal sign comes before comma/end
-        QByteArray key = QByteArray(header.constData() + pos, end - pos).trimmed().toLower();
+        const auto key = header.sliced(pos, end - pos).trimmed();
         pos = end + 1;
 
         if (uint(equal) < uint(comma)) {
@@ -121,7 +121,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
                 }
             }
 
-            result.insert(key, value);
+            result.insert(key.toByteArray().toLower(), value);
 
             // find the comma now:
             comma = header.indexOf(',', pos);
@@ -131,7 +131,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
         } else {
             // case: token
             // key is already set
-            result.insert(key, QByteArray());
+            result.insert(key.toByteArray().toLower(), QByteArray());
         }
     }
 }
