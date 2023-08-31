@@ -427,7 +427,7 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::
     case QSettings::Format::InvalidFormat:
         return nullptr;
     case QSettings::Format::NativeFormat:
-        /* NOTREACHED */ assert(0);
+        Q_UNREACHABLE();
         break;
     }
 }
