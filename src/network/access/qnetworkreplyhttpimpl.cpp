@@ -37,6 +37,9 @@ using namespace QtMiscUtils;
 
 class QNetworkProxy;
 
+static inline QByteArray rangeName() { return "Range"_ba; }
+static inline QByteArray cacheControlName() { return "Cache-Control"_ba; }
+
 // ### merge with nextField in cookiejar.cpp
 static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &header)
 {
@@ -476,16 +479,17 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
     if (CacheLoadControlAttribute == QNetworkRequest::AlwaysNetwork) {
         // If the request does not already specify preferred cache-control
         // force reload from the network and tell any caching proxy servers to reload too
-        if (!request.rawHeaderList().contains("Cache-Control")) {
-            httpRequest.setHeaderField("Cache-Control", "no-cache");
-            httpRequest.setHeaderField("Pragma", "no-cache");
+        if (!request.rawHeaderList().contains(cacheControlName())) {
+            const auto noCache = "no-cache"_ba;
+            httpRequest.setHeaderField(cacheControlName(), noCache);
+            httpRequest.setHeaderField("Pragma"_ba, noCache);
         }
         return false;
     }
 
     // The disk cache API does not currently support partial content retrieval.
     // That is why we don't use the disk cache for any such requests.
-    if (request.hasRawHeader("Range"))
+    if (request.hasRawHeader(rangeName()))
         return false;
 
     QAbstractNetworkCache *nc = managerPrivate->networkCache;
@@ -511,18 +515,18 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
 
     it = cacheHeaders.findRawHeader("etag");
     if (it != cacheHeaders.rawHeaders.constEnd())
-        httpRequest.setHeaderField("If-None-Match", it->second);
+        httpRequest.setHeaderField("If-None-Match"_ba, it->second);
 
     QDateTime lastModified = metaData.lastModified();
     if (lastModified.isValid())
-        httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
+        httpRequest.setHeaderField("If-Modified-Since"_ba, QNetworkHeadersPrivate::toHttpDate(lastModified));
 
-    it = cacheHeaders.findRawHeader("Cache-Control");
+    it = cacheHeaders.findRawHeader(cacheControlName());
     if (it != cacheHeaders.rawHeaders.constEnd()) {
         QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
-        if (cacheControl.contains("must-revalidate"))
+        if (cacheControl.contains("must-revalidate"_ba))
             return false;
-        if (cacheControl.contains("no-cache"))
+        if (cacheControl.contains("no-cache"_ba))
             return false;
     }
 
@@ -577,10 +581,11 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
         if (lastModified.isValid() && dateHeader.isValid()) {
             qint64 diff = lastModified.secsTo(dateHeader);
             freshness_lifetime = diff / 10;
-            if (httpRequest.headerField("Warning").isEmpty()) {
+            const auto warningHeader = "Warning"_ba;
+            if (httpRequest.headerField(warningHeader).isEmpty()) {
                 QDateTime dt = currentDateTime.addSecs(current_age);
                 if (currentDateTime.daysTo(dt) > 1)
-                    httpRequest.setHeaderField("Warning", "113");
+                    httpRequest.setHeaderField(warningHeader, "113"_ba);
             }
         }
 
@@ -733,14 +738,14 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
 
     QList<QByteArray> headers = newHttpRequest.rawHeaderList();
     if (resumeOffset != 0) {
-        const int rangeIndex = headers.indexOf("Range");
+        const int rangeIndex = headers.indexOf(rangeName());
         if (rangeIndex != -1) {
             // Need to adjust resume offset for user specified range
 
             headers.removeAt(rangeIndex);
 
             // We've already verified that requestRange starts with "bytes=", see canResume.
-            QByteArray requestRange = newHttpRequest.rawHeader("Range").mid(6);
+            QByteArray requestRange = newHttpRequest.rawHeader(rangeName()).mid(6);
 
             int index = requestRange.indexOf('-');
 
@@ -751,9 +756,9 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
             requestRange = "bytes=" + QByteArray::number(resumeOffset + requestStartOffset) +
                            '-' + (requestEndOffset ? QByteArray::number(requestEndOffset) : QByteArray());
 
-            httpRequest.setHeaderField("Range", requestRange);
+            httpRequest.setHeaderField(rangeName(), requestRange);
         } else {
-            httpRequest.setHeaderField("Range", "bytes=" + QByteArray::number(resumeOffset) + '-');
+            httpRequest.setHeaderField(rangeName(), "bytes=" + QByteArray::number(resumeOffset) + '-');
         }
     }
 
@@ -1296,7 +1301,7 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
         // What do we do about the caching of the HTML note?
         // The response to a 303 MUST NOT be cached, while the response to
         // all of the others is cacheable if the headers indicate it to be
-        QByteArray header = q->rawHeader("location");
+        QByteArray header = q->rawHeader("location"_ba);
         QUrl url = QUrl(QString::fromUtf8(header));
         if (!url.isValid())
             url = QUrl(QLatin1StringView(header));
@@ -1340,7 +1345,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
     // A user having manually defined which encodings they accept is, for
     // somwehat unknown (presumed legacy compatibility) reasons treated as
     // disabling our decompression:
-    const bool autoDecompress = request.rawHeader("accept-encoding").isEmpty();
+    const bool autoDecompress = request.rawHeader("accept-encoding"_ba).isEmpty();
     const bool shouldDecompress = isCompressed && autoDecompress;
     // reconstruct the HTTP header
     for (const auto &[key, originValue] : hm) {
@@ -1396,11 +1401,11 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
             QNetworkHeadersPrivate cacheHeaders;
             cacheHeaders.setAllRawHeaders(metaData.rawHeaders());
             QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
-            it = cacheHeaders.findRawHeader("Cache-Control");
+            it = cacheHeaders.findRawHeader(cacheControlName());
             bool mustReValidate = false;
             if (it != cacheHeaders.rawHeaders.constEnd()) {
                 QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
-                if (cacheControl.contains("must-revalidate"))
+                if (cacheControl.contains("must-revalidate"_ba))
                     mustReValidate = true;
             }
             if (!mustReValidate && sendCacheContents(metaData))
@@ -1761,10 +1766,10 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
     bool checkExpired = true;
 
     QHash<QByteArray, QByteArray> cacheControl;
-    it = cacheHeaders.findRawHeader("Cache-Control");
+    it = cacheHeaders.findRawHeader(cacheControlName());
     if (it != cacheHeaders.rawHeaders.constEnd()) {
         cacheControl = parseHttpOptionHeader(it->second);
-        QByteArray maxAge = cacheControl.value("max-age");
+        QByteArray maxAge = cacheControl.value("max-age"_ba);
         if (!maxAge.isEmpty()) {
             checkExpired = false;
             QDateTime dt = QDateTime::currentDateTimeUtc();
@@ -1791,7 +1796,7 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
 
         canDiskCache = true;
         // HTTP/1.1. Check the Cache-Control header
-        if (cacheControl.contains("no-store"))
+        if (cacheControl.contains("no-store"_ba))
             canDiskCache = false;
 
     // responses to POST might be cacheable
@@ -1800,7 +1805,7 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
         canDiskCache = false;
         // some pages contain "expires:" and "cache-control: no-cache" field,
         // so we only might cache POST requests if we get "cache-control: max-age ..."
-        if (cacheControl.contains("max-age"))
+        if (cacheControl.contains("max-age"_ba))
             canDiskCache = true;
 
     // responses to PUT and DELETE are not cacheable
@@ -1831,13 +1836,13 @@ bool QNetworkReplyHttpImplPrivate::canResume() const
         return false;
 
     // Can only resume if server/resource supports Range header.
-    QByteArray acceptRangesheaderName("Accept-Ranges");
+    const auto acceptRangesheaderName = "Accept-Ranges"_ba;
     if (!q->hasRawHeader(acceptRangesheaderName) || q->rawHeader(acceptRangesheaderName) == "none")
         return false;
 
     // We only support resuming for byte ranges.
-    if (request.hasRawHeader("Range")) {
-        QByteArray range = request.rawHeader("Range");
+    if (request.hasRawHeader(rangeName())) {
+        QByteArray range = request.rawHeader(rangeName());
         if (!range.startsWith("bytes="))
             return false;
     }
