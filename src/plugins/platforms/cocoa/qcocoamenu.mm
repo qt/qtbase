@@ -42,6 +42,8 @@ QCocoaMenu::~QCocoaMenu()
             item->setMenuParent(nullptr);
     }
 
+    if (isOpen())
+        dismiss();
     [m_nativeMenu release];
 }
 
@@ -320,6 +322,8 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
 {
     QMacAutoReleasePool pool;
 
+    QPointer<QCocoaMenu> guard = this;
+
     QPoint pos =  QPoint(targetRect.left(), targetRect.top() + targetRect.height());
     QCocoaWindow *cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : nullptr;
     NSView *view = cocoaWindow ? cocoaWindow->view() : nil;
@@ -402,6 +406,11 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
         } else {
             [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:nil];
         }
+    }
+
+    if (!guard) {
+        menuParentGuard.dismiss();
+        return;
     }
 
     // The calls above block, and also swallow any mouse release event,
