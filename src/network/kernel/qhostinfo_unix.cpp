@@ -124,17 +124,20 @@ QString QHostInfo::localDomainName()
 
     QString domainName;
     while (!resolvconf.atEnd()) {
-        QByteArray line = resolvconf.readLine().trimmed();
-        if (line.startsWith("domain "))
-            return QUrl::fromAce(line.mid(sizeof "domain " - 1).trimmed());
+        const QByteArray lineArray = resolvconf.readLine();
+        QByteArrayView line = QByteArrayView(lineArray).trimmed();
+        constexpr QByteArrayView domainWithSpace = "domain ";
+        if (line.startsWith(domainWithSpace))
+            return QUrl::fromAce(line.mid(domainWithSpace.size()).trimmed().toByteArray());
 
         // in case there's no "domain" line, fall back to the first "search" entry
-        if (domainName.isEmpty() && line.startsWith("search ")) {
-            QByteArray searchDomain = line.mid(sizeof "search " - 1).trimmed();
+        constexpr QByteArrayView searchWithSpace = "search ";
+        if (domainName.isEmpty() && line.startsWith(searchWithSpace)) {
+            QByteArrayView searchDomain = line.mid(searchWithSpace.size()).trimmed();
             int pos = searchDomain.indexOf(' ');
             if (pos != -1)
                 searchDomain.truncate(pos);
-            domainName = QUrl::fromAce(searchDomain);
+            domainName = QUrl::fromAce(searchDomain.toByteArray());
         }
     }
 
