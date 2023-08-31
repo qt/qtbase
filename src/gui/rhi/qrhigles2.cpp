@@ -6294,12 +6294,15 @@ bool QGles2SwapChain::createOrResize()
 
 void QGles2SwapChainTimestamps::prepare(QRhiGles2 *rhiD)
 {
-    rhiD->f->glGenQueries(TIMESTAMP_PAIRS * 2, query);
+    if (!query[0])
+        rhiD->f->glGenQueries(TIMESTAMP_PAIRS * 2, query);
 }
 
 void QGles2SwapChainTimestamps::destroy(QRhiGles2 *rhiD)
 {
     rhiD->f->glDeleteQueries(TIMESTAMP_PAIRS * 2, query);
+    memset(active, 0, sizeof(active));
+    memset(query, 0, sizeof(query));
 }
 
 bool QGles2SwapChainTimestamps::tryQueryTimestamps(int pairIndex, QRhiGles2 *rhiD, double *elapsedSec)
