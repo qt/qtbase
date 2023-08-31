@@ -1726,7 +1726,7 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
 
         // Don't store Warning 1xx headers
         if (header == "warning") {
-            QByteArray v = q->rawHeader(header);
+            const QByteArray v = q->rawHeader(header);
             if (v.size() == 3
                 && v[0] == '1'
                 && isAsciiDigit(v[1])
