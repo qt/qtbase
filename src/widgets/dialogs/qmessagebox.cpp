@@ -1936,12 +1936,7 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
     // should perhaps be a style hint
 #ifdef Q_OS_MAC
     oldMsgBox = msgBox;
-#if 0
-    // ### doesn't work until close button is enabled in title bar
-    msgBox->d_func()->autoAddOkButton = false;
-#else
     msgBox->d_func()->buttonBox->setCenterButtons(true);
-#endif
     msgBox->setModal(false);
     msgBox->show();
 #else
@@ -2022,12 +2017,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     // should perhaps be a style hint
 #ifdef Q_OS_MAC
     oldMsgBox = msgBox;
-#if 0
-    // ### doesn't work until close button is enabled in title bar
-    msgBox->d_func()->autoAddOkButton = false;
-#else
     msgBox->d_func()->buttonBox->setCenterButtons(true);
-#endif
     msgBox->setModal(false);
     msgBox->show();
 #else
