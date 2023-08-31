@@ -39,6 +39,7 @@ class QNetworkProxy;
 
 static inline QByteArray rangeName() { return "Range"_ba; }
 static inline QByteArray cacheControlName() { return "Cache-Control"_ba; }
+static constexpr QByteArrayView bytesEqualPrefix() noexcept { return "bytes="; }
 
 // ### merge with nextField in cookiejar.cpp
 static QHash<QByteArray, QByteArray> parseHttpOptionHeader(QByteArrayView header)
@@ -746,7 +747,8 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
             headers.removeAt(rangeIndex);
 
             // We've already verified that requestRange starts with "bytes=", see canResume.
-            QByteArray requestRange = newHttpRequest.rawHeader(rangeName()).mid(6);
+            const auto rangeHeader = newHttpRequest.rawHeader(rangeName());
+            const auto requestRange = QByteArrayView(rangeHeader).mid(bytesEqualPrefix().size());
 
             int index = requestRange.indexOf('-');
 
@@ -754,12 +756,12 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
             quint64 requestEndOffset = requestRange.mid(index + 1).toULongLong();
 
             // In case an end offset is not given it is skipped from the request range
-            requestRange = "bytes=" + QByteArray::number(resumeOffset + requestStartOffset) +
+            QByteArray newRange = bytesEqualPrefix() + QByteArray::number(resumeOffset + requestStartOffset) +
                            '-' + (requestEndOffset ? QByteArray::number(requestEndOffset) : QByteArray());
 
-            httpRequest.setHeaderField(rangeName(), requestRange);
+            httpRequest.setHeaderField(rangeName(), newRange);
         } else {
-            httpRequest.setHeaderField(rangeName(), "bytes=" + QByteArray::number(resumeOffset) + '-');
+            httpRequest.setHeaderField(rangeName(), bytesEqualPrefix() + QByteArray::number(resumeOffset) + '-');
         }
     }
 
@@ -1854,7 +1856,7 @@ bool QNetworkReplyHttpImplPrivate::canResume() const
     // We only support resuming for byte ranges.
     if (request.hasRawHeader(rangeName())) {
         QByteArray range = request.rawHeader(rangeName());
-        if (!range.startsWith("bytes="))
+        if (!range.startsWith(bytesEqualPrefix()))
             return false;
     }
 
