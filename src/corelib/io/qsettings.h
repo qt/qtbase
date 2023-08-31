@@ -46,17 +46,17 @@ public:
 #endif
 
     enum Format {
-        NativeFormat,
-        IniFormat,
+        NativeFormat = 0,
+        IniFormat = 1,
 
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
-        Registry32Format,
-        Registry64Format,
+        Registry32Format = 2,
+        Registry64Format = 3,
 #endif
 
 #if defined(Q_OS_WASM) || defined(Q_QDOC)
-        WebLocalStorageFormat,
-        WebIndexedDBFormat,
+        WebLocalStorageFormat = 4,
+        WebIndexedDBFormat = 5,
 #endif
 
         InvalidFormat = 16,
