@@ -12,7 +12,7 @@ QT_BEGIN_NAMESPACE
 
 bool QWasmServices::openUrl(const QUrl &url)
 {
-    emscripten::val::global("window").call<void>("open", url.toString().toJsString(),
+    emscripten::val::global("window").call<void>("open", url.toString().toEcmaString(),
                                                  emscripten::val("_blank"));
     return true;
 }

@@ -182,7 +182,7 @@ qreal QWasmScreen::devicePixelRatio() const
 
 QString QWasmScreen::name() const
 {
-    return QString::fromJsString(m_shadowContainer["id"]);
+    return QString::fromEcmaString(m_shadowContainer["id"]);
 }
 
 QPlatformCursor *QWasmScreen::cursor() const

@@ -27,10 +27,10 @@ static void commonCopyEvent(val event)
     // doing it this way seems to sanitize the text better that calling data() like down below
     if (_mimes->hasText()) {
         event["clipboardData"].call<void>("setData", val("text/plain"),
-                                          _mimes->text().toJsString());
+                                          _mimes->text().toEcmaString());
     }
     if (_mimes->hasHtml()) {
-        event["clipboardData"].call<void>("setData", val("text/html"), _mimes->html().toJsString());
+        event["clipboardData"].call<void>("setData", val("text/html"), _mimes->html().toEcmaString());
     }
 
     for (auto mimetype : _mimes->formats()) {
@@ -38,7 +38,7 @@ static void commonCopyEvent(val event)
             continue;
         QByteArray ba = _mimes->data(mimetype);
         if (!ba.isEmpty())
-            event["clipboardData"].call<void>("setData", mimetype.toJsString(),
+            event["clipboardData"].call<void>("setData", mimetype.toEcmaString(),
                                               val(ba.constData()));
     }
 
@@ -261,12 +261,12 @@ void QWasmClipboard::writeToClipboardApi()
 
         // we have a blob, now create a ClipboardItem
         emscripten::val type = emscripten::val::array();
-        type.set("type", mimetype.toJsString());
+        type.set("type", mimetype.toEcmaString());
 
         emscripten::val contentBlob = emscripten::val::global("Blob").new_(contentArray, type);
 
         emscripten::val clipboardItemObject = emscripten::val::object();
-        clipboardItemObject.set(mimetype.toJsString(), contentBlob);
+        clipboardItemObject.set(mimetype.toEcmaString(), contentBlob);
 
         val clipboardItemData = val::global("ClipboardItem").new_(clipboardItemObject);
 

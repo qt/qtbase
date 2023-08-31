@@ -891,8 +891,8 @@ public:
 #endif
 
 #if defined(Q_OS_WASM) || defined(Q_QDOC)
-    static QString fromJsString(emscripten::val jsString);
-    emscripten::val toJsString() const;
+    static QString fromEcmaString(emscripten::val jsString);
+    emscripten::val toEcmaString() const;
 #endif
 
     inline bool isNull() const { return d->isNull(); }
