@@ -46,21 +46,6 @@ public:
 private:
     Q_DECLARE_PRIVATE(QConcatenateTablesProxyModel)
     Q_DISABLE_COPY(QConcatenateTablesProxyModel)
-
-    Q_PRIVATE_SLOT(d_func(), void _q_slotRowsAboutToBeInserted(const QModelIndex &, int start, int end))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotRowsInserted(const QModelIndex &, int start, int end))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotRowsAboutToBeRemoved(const QModelIndex &, int start, int end))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotRowsRemoved(const QModelIndex &, int start, int end))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotColumnsAboutToBeInserted(const QModelIndex &parent, int start, int end))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotColumnsInserted(const QModelIndex &parent, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotColumnsAboutToBeRemoved(const QModelIndex &parent, int start, int end))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotColumnsRemoved(const QModelIndex &parent, int, int))
-    Q_PRIVATE_SLOT(d_func(),
-                   void _q_slotDataChanged(const QModelIndex &from, const QModelIndex &to, const QList<int> &roles))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotSourceLayoutAboutToBeChanged(QList<QPersistentModelIndex>, QAbstractItemModel::LayoutChangeHint))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotSourceLayoutChanged(const QList<QPersistentModelIndex> &, QAbstractItemModel::LayoutChangeHint))
-    Q_PRIVATE_SLOT(d_func(), void _q_slotModelAboutToBeReset())
-    Q_PRIVATE_SLOT(d_func(), void _q_slotModelReset())
 };
 
 QT_END_NAMESPACE
