@@ -1242,7 +1242,7 @@ QCheckBox* QMessageBox::checkBox() const
     Sets the given \a option to be enabled if \a on is true; otherwise,
     clears the given \a option.
 
-    Options (particularly the DontUseNativeDialogs option) should be set
+    Options (particularly the \l Option::DontUseNativeDialog option) should be set
     before showing the dialog.
 
     Setting options while the dialog is visible is not guaranteed to have
@@ -1297,7 +1297,7 @@ QMessageBox::Options QMessageBox::options() const
 
     By default, these options are disabled.
 
-    The option DontUseNativeDialog should be set
+    The option \l Option::DontUseNativeDialog should be set
     before changing dialog properties or showing the dialog.
 
     Setting options while the dialog is visible is not guaranteed to have
