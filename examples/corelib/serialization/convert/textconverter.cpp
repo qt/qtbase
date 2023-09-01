@@ -44,34 +44,34 @@ static void dumpVariant(QTextStream &out, const QVariant &v)
     }
 }
 
-QString TextConverter::name()
+QString TextConverter::name() const
 {
     return "text"_L1;
 }
 
-Converter::Direction TextConverter::directions()
+Converter::Direction TextConverter::directions() const
 {
     return InOut;
 }
 
-Converter::Options TextConverter::outputOptions()
+Converter::Options TextConverter::outputOptions() const
 {
     return {};
 }
 
-const char *TextConverter::optionsHelp()
+const char *TextConverter::optionsHelp() const
 {
     return nullptr;
 }
 
-bool TextConverter::probeFile(QIODevice *f)
+bool TextConverter::probeFile(QIODevice *f) const
 {
     if (QFile *file = qobject_cast<QFile *>(f))
         return file->fileName().endsWith(".txt"_L1);
     return false;
 }
 
-QVariant TextConverter::loadFile(QIODevice *f, Converter *&outputConverter)
+QVariant TextConverter::loadFile(QIODevice *f, const Converter *&outputConverter) const
 {
     if (!outputConverter)
         outputConverter = this;
@@ -94,7 +94,8 @@ QVariant TextConverter::loadFile(QIODevice *f, Converter *&outputConverter)
     return list;
 }
 
-void TextConverter::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
+void TextConverter::saveFile(QIODevice *f, const QVariant &contents,
+                             const QStringList &options) const
 {
     if (!options.isEmpty()) {
         fprintf(stderr, "Unknown option '%s' to text output. This format has no options.\n",

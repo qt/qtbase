@@ -43,33 +43,33 @@ static QString dumpVariant(const QVariant &v, const QString &indent = "\n"_L1)
     return result;
 }
 
-QString DebugTextDumper::name()
+QString DebugTextDumper::name() const
 {
     return "debugtext-dump"_L1;
 }
 
-Converter::Direction DebugTextDumper::directions()
+Converter::Direction DebugTextDumper::directions() const
 {
     return Out;
 }
 
-Converter::Options DebugTextDumper::outputOptions()
+Converter::Options DebugTextDumper::outputOptions() const
 {
     return SupportsArbitraryMapKeys;
 }
 
-const char *DebugTextDumper::optionsHelp()
+const char *DebugTextDumper::optionsHelp() const
 {
     return nullptr;
 }
 
-bool DebugTextDumper::probeFile(QIODevice *f)
+bool DebugTextDumper::probeFile(QIODevice *f) const
 {
     Q_UNUSED(f);
     return false;
 }
 
-QVariant DebugTextDumper::loadFile(QIODevice *f, Converter *&outputConverter)
+QVariant DebugTextDumper::loadFile(QIODevice *f, const Converter *&outputConverter) const
 {
     Q_UNREACHABLE();
     Q_UNUSED(f);
@@ -77,7 +77,8 @@ QVariant DebugTextDumper::loadFile(QIODevice *f, Converter *&outputConverter)
     return QVariant();
 }
 
-void DebugTextDumper::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
+void DebugTextDumper::saveFile(QIODevice *f, const QVariant &contents,
+                               const QStringList &options) const
 {
     Q_UNUSED(options);
     QString s = dumpVariant(contents);
