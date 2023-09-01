@@ -8,6 +8,5 @@
     "Description": "MD5 message-digest algorithm.",
     "License": "Public Domain",
     "LicenseId": "CC0-1.0",
-    "Copyright": "Written by Colin Plumb in 1993, no copyright is claimed.
-Ian Jackson <ian@chiark.greenend.org.uk>."
+    "Copyright": "Written by Colin Plumb in 1993, no copyright is claimed. Ian Jackson <ian@chiark.greenend.org.uk>."
 }

@@ -13,8 +13,8 @@
     "License": "BSD 3-clause \"New\" or \"Revised\" License with PCRE2 binary-like Packages Exception",
     "LicenseId": "LicenseRef-BSD-3-Clause-with-PCRE2-Binary-Like-Packages-Exception",
     "LicenseFile": "LICENCE",
-    "Copyright": "Copyright (c) 1997-2022 University of Cambridge
-Copyright (c) 2010-2022 Zoltan Herczeg"
+    "Copyright": ["Copyright (c) 1997-2022 University of Cambridge",
+    "Copyright (c) 2010-2022 Zoltan Herczeg"]
 },
 {
     "Id": "pcre2-sljit",

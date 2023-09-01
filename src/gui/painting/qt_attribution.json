@@ -24,9 +24,9 @@
         "LicenseId": "BSD-2-Clause AND Imlib2",
         "License": "BSD 2-clause \"Simplified\" License and Imlib2 License",
         "LicenseFile": "QIMAGETRANSFORM_LICENSE.txt",
-        "Copyright": "Copyright (C) 2004, 2005 Daniel M. Duley.
-    (C) Carsten Haitzler and various contributors.
-    (C) Willem Monsuwe <willem@stack.nl>"
+        "Copyright": ["Copyright (C) 2004, 2005 Daniel M. Duley.",
+        "(C) Carsten Haitzler and various contributors.",
+        "(C) Willem Monsuwe <willem@stack.nl>"]
     },
     {
         "Id": "xserverhelper",
@@ -40,7 +40,7 @@
         "License": "X11 License and Historical Permission Notice and Disclaimer",
         "LicenseId": "X11 AND HPND",
         "LicenseFile": "XCONSORTIUM_LICENSE.txt",
-        "Copyright": "Copyright (c) 1987, 1988 X Consortium
-Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts."
+        "Copyright": ["Copyright (c) 1987, 1988 X Consortium",
+        "Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts."]
     }
 ]
