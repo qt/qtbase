@@ -723,9 +723,14 @@ public:
                     == m_producedHeaders.end()) {
                     // Check if header file came from another module as result of the cross-module
                     // deprecation before removing it.
-                    std::ifstream input(entry.path(), std::ifstream::in);
                     std::string firstLine;
-                    std::getline(input, firstLine);
+                    {
+                        std::ifstream input(entry.path(), std::ifstream::in);
+                        if (input.is_open()) {
+                            std::getline(input, firstLine);
+                            input.close();
+                        }
+                    }
                     if (firstLine.find("#ifndef DEPRECATED_HEADER_"
                                        + m_commandLineArgs->moduleName())
                                 == 0
