@@ -316,8 +316,8 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     newConnection->setDispatchEnabled(false);
 
     // this is a queued connection and will resume in the QDBusServer's thread
-    QMetaObject::invokeMethod(serverConnection, &QDBusConnectionPrivate::_q_newConnection,
-                              Qt::QueuedConnection, newConnection);
+    QMetaObject::invokeMethod(serverConnection->serverObject, &QDBusServer::newConnection,
+                              Qt::QueuedConnection, QDBusConnectionPrivate::q(newConnection));
 
     // we've disabled dispatching of events, so now we post an event to the
     // QDBusServer's thread in order to enable it after the
@@ -328,12 +328,6 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
 }
 
 } // extern "C"
-
-void QDBusConnectionPrivate::_q_newConnection(QDBusConnectionPrivate *newConnection)
-{
-    Q_ASSERT(mode == ServerMode);
-    emit serverObject->newConnection(QDBusConnectionPrivate::q(newConnection));
-}
 
 static QByteArray buildMatchRule(const QString &service,
                                  const QString &objectPath, const QString &interface,

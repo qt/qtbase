@@ -214,8 +214,6 @@ public:
 
     void enableDispatchDelayed(QObject *context);
 
-    void _q_newConnection(QDBusConnectionPrivate *newConnection);
-
 private:
     void checkThread();
     bool handleError(const QDBusErrorInternal &error);
