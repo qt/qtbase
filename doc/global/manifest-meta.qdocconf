@@ -202,7 +202,7 @@ manifestmeta.thumbnail.attributes  = "imageUrl:qthelp\://org.qt-project.qtdoc.$Q
 
 manifestmeta.thumbnail.names    =      "QtCore/Contiguous Cache Example" \
                                        "QtCore/Custom Type Example" \
-                                       "QtCore/JSON Save Game Example" \
+                                       "QtCore/Saving and Loading a Game" \
                                        "QtCore/Producer and Consumer using Semaphores" \
                                        "QtCore/Producer and Consumer using Wait Conditions" \
                                        "QtConcurrent/Word Count" \

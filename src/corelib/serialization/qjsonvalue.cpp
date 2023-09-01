@@ -96,7 +96,7 @@ static QJsonValue::Type convertFromCborType(QCborValue::Type type) noexcept
     \li \l {QJsonObject}::operator[](const QString & key) const
     \endlist
 
-    \sa {JSON Support in Qt}, {JSON Save Game Example}
+    \sa {JSON Support in Qt}, {Saving and Loading a Game}
 */
 
 /*!

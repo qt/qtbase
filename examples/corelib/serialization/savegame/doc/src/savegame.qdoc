@@ -4,7 +4,7 @@
 /*!
     \example serialization/savegame
     \examplecategory {Data Processing & I/O}
-    \title JSON Save Game Example
+    \title Saving and Loading a Game
 
     \brief How to save and load a game using Qt's JSON or CBOR classes.
 
