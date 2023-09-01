@@ -450,7 +450,8 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
 #if !QT_CONFIG(gssapi)
     Q_UNUSED(host);
 #endif
-    const char *search = isProxy ? "proxy-authenticate" : "www-authenticate";
+    const auto search = isProxy ?
+            QByteArrayView("proxy-authenticate") : QByteArrayView("www-authenticate");
 
     method = None;
     /*
@@ -463,26 +464,25 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
       authentication parameters.
     */
 
-    QByteArray headerVal;
-    for (int i = 0; i < values.size(); ++i) {
-        const QPair<QByteArray, QByteArray> &current = values.at(i);
+    QByteArrayView headerVal;
+    for (const auto &current : values) {
         if (current.first.compare(search, Qt::CaseInsensitive) != 0)
             continue;
-        QByteArray str = current.second.toLower();
-        if (method < Basic && str.startsWith("basic")) {
+        const QLatin1StringView str(current.second);
+        if (method < Basic && str.startsWith("basic"_L1, Qt::CaseInsensitive)) {
             method = Basic;
-            headerVal = current.second.mid(6);
-        } else if (method < Ntlm && str.startsWith("ntlm")) {
+            headerVal = QByteArrayView(current.second).mid(6);
+        } else if (method < Ntlm && str.startsWith("ntlm"_L1, Qt::CaseInsensitive)) {
             method = Ntlm;
-            headerVal = current.second.mid(5);
-        } else if (method < DigestMd5 && str.startsWith("digest")) {
+            headerVal = QByteArrayView(current.second).mid(5);
+        } else if (method < DigestMd5 && str.startsWith("digest"_L1, Qt::CaseInsensitive)) {
             // Make sure the algorithm is actually MD5 before committing to it:
             if (!verifyDigestMD5(QByteArrayView(current.second).sliced(7)))
                 continue;
 
             method = DigestMd5;
-            headerVal = current.second.mid(7);
-        } else if (method < Negotiate && str.startsWith("negotiate")) {
+            headerVal = QByteArrayView(current.second).mid(7);
+        } else if (method < Negotiate && str.startsWith("negotiate"_L1, Qt::CaseInsensitive)) {
 #if QT_CONFIG(sspi) || QT_CONFIG(gssapi) // if it's not supported then we shouldn't try to use it
 #if QT_CONFIG(gssapi)
             // For GSSAPI there needs to be a KDC set up for the host (afaict).
@@ -492,14 +492,14 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
                 continue;
 #endif
             method = Negotiate;
-            headerVal = current.second.mid(10);
+            headerVal = QByteArrayView(current.second).mid(10);
 #endif
         }
     }
 
     // Reparse credentials since we know the method now
     updateCredentials();
-    challenge = headerVal.trimmed();
+    challenge = headerVal.trimmed().toByteArray();
     QHash<QByteArray, QByteArray> options = parseDigestAuthenticationChallenge(challenge);
 
     // Sets phase to Start if this updates our realm and sets the two locations where we store
