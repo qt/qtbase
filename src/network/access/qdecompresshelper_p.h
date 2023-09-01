@@ -37,7 +37,7 @@ public:
     QDecompressHelper() = default;
     ~QDecompressHelper();
 
-    bool setEncoding(const QByteArray &contentEncoding);
+    bool setEncoding(QByteArrayView contentEncoding);
 
     bool isCountingBytes() const;
     void setCountingBytesEnabled(bool shouldCount);
@@ -57,7 +57,7 @@ public:
 
     void setDecompressedSafetyCheckThreshold(qint64 threshold);
 
-    static bool isSupportedEncoding(const QByteArray &encoding);
+    static bool isSupportedEncoding(QByteArrayView encoding);
     static QByteArrayList acceptedEncoding();
 
     QString errorString() const;
