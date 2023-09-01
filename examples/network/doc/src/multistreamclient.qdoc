@@ -7,7 +7,7 @@
     \examplecategory {Networking}
     \meta tags {network,sctp}
     \ingroup examples-network
-    \brief Demonstrates how to use SCTP on the client side
+    \brief Demonstrates how to use SCTP on the client side.
 
     This example demonstrates how to use SCTP, with multiple channels,
     to interact with other clients through a server.
