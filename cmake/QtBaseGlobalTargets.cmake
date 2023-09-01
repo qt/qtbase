@@ -216,6 +216,7 @@ qt_copy_or_install(FILES
                    cmake/QtAndroidHelpers.cmake
                    cmake/QtAppHelpers.cmake
                    cmake/QtAutogenHelpers.cmake
+                   cmake/QtBaseTopLevelHelpers.cmake
                    cmake/QtBuild.cmake
                    cmake/QtBuildInformation.cmake
                    cmake/QtCMakeHelpers.cmake
