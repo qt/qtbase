@@ -124,6 +124,7 @@ public class QtActivityDelegate
     private static final String APPLICATION_PARAMETERS_KEY = "application.parameters";
     private static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
 
+    // Keep in sync with QtAndroid::SystemUiVisibility in androidjnimain.h
     public static final int SYSTEM_UI_VISIBILITY_NORMAL = 0;
     public static final int SYSTEM_UI_VISIBILITY_FULLSCREEN = 1;
     public static final int SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2;
@@ -170,13 +171,13 @@ public class QtActivityDelegate
             return;
 
         m_systemUiVisibility = systemUiVisibility;
-        setLayoutInDisplayCutoutMode();
 
         int systemUiVisibilityFlags = View.SYSTEM_UI_FLAG_VISIBLE;
         switch (m_systemUiVisibility) {
         case SYSTEM_UI_VISIBILITY_NORMAL:
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            setDisplayCutoutLayout(WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER);
             break;
         case SYSTEM_UI_VISIBILITY_FULLSCREEN:
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -188,12 +189,14 @@ public class QtActivityDelegate
                     | View.SYSTEM_UI_FLAG_FULLSCREEN
                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     | View.INVISIBLE;
+            setDisplayCutoutLayout(WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
             break;
         case SYSTEM_UI_VISIBILITY_TRANSLUCENT:
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN
                     | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
                     | WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            setDisplayCutoutLayout(WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS);
             break;
         };
 
@@ -202,15 +205,10 @@ public class QtActivityDelegate
         m_layout.requestLayout();
     }
 
-    private void setLayoutInDisplayCutoutMode()
+    private void setDisplayCutoutLayout(int cutoutLayout)
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            int cutOutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-            if (SYSTEM_UI_VISIBILITY_FULLSCREEN == m_systemUiVisibility)
-                cutOutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-
-            m_activity.getWindow().getAttributes().layoutInDisplayCutoutMode = cutOutMode;
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+            m_activity.getWindow().getAttributes().layoutInDisplayCutoutMode = cutoutLayout;
     }
 
     public void updateFullScreen()
