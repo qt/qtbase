@@ -253,9 +253,15 @@ static_assert(CanConvert<const winrt::hstring&>);
 
 #endif // QT_CONFIG(cpp_winrt)
 
+// In bootstrapped build and in Qt 7+, two lower bits of size() are used as a
+// mask, so check that it is handled correctly, and the mask does not break the
+// actual size
 template <typename Char> struct SampleStrings
 {
     static constexpr char emptyString[] = "";
+    static constexpr char oneChar[] = "a";
+    static constexpr char twoChars[] = "ab";
+    static constexpr char threeChars[] = "abc";
     static constexpr char regularString[] = "Hello World!";
     static constexpr char regularLongString[] = R"(Lorem ipsum dolor sit amet, consectetur
 adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
@@ -271,6 +277,9 @@ id est laborum.)";
 template <> struct SampleStrings<char16_t>
 {
     static constexpr char16_t emptyString[] = u"";
+    static constexpr char16_t oneChar[] = u"a";
+    static constexpr char16_t twoChars[] = u"ab";
+    static constexpr char16_t threeChars[] = u"abc";
     static constexpr char16_t regularString[] = u"Hello World!";
     static constexpr char16_t regularLongString[] = uR"(Lorem ipsum dolor sit amet, consectetur
 adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
@@ -286,11 +295,20 @@ id est laborum.)";
 template <> struct SampleStrings<QChar>
 {
     static constexpr QChar emptyString[] = { {} };  // this one is easy
+    static const QChar *const oneChar;
+    static const QChar *const twoChars;
+    static const QChar *const threeChars;
     static const QChar *const regularString;
     static const QChar *const regularLongString;
     static const QChar *const stringWithNulls;
     static constexpr qsizetype stringWithNullsLength = SampleStrings<char16_t>::stringWithNullsLength;
 };
+const QChar *const SampleStrings<QChar>::oneChar =
+        reinterpret_cast<const QChar *>(SampleStrings<char16_t>::oneChar);
+const QChar *const SampleStrings<QChar>::twoChars =
+        reinterpret_cast<const QChar *>(SampleStrings<char16_t>::twoChars);
+const QChar *const SampleStrings<QChar>::threeChars =
+        reinterpret_cast<const QChar *>(SampleStrings<char16_t>::threeChars);
 const QChar *const SampleStrings<QChar>::regularString =
         reinterpret_cast<const QChar *>(SampleStrings<char16_t>::regularString);
 const QChar *const SampleStrings<QChar>::regularLongString =
@@ -312,6 +330,7 @@ private Q_SLOTS:
     void fromQByteArray() const { fromQStringOrByteArray<QByteArray>(); }
     void fromQStringView() const { fromQStringOrByteArray<QStringView>(); }
     void fromQUtf8StringView() const { fromQStringOrByteArray<QUtf8StringView>(); }
+    void fromQLatin1StringView() const { fromQStringOrByteArray<QLatin1StringView>(); }
 
     void fromCharArray() const { fromArray<char>(); }
     void fromChar8Array() const { ONLY_IF_CHAR_8_T(fromArray<char8_t>()); }
@@ -616,6 +635,15 @@ void tst_QAnyStringView::fromQStringOrByteArray() const
     QVERIFY( QAnyStringView(empty).isEmpty());
     QVERIFY(!QAnyStringView(empty).isNull());
 
+    conversion_tests(QStringOrByteArray(Strings::oneChar));
+    if (QTest::currentTestFailed())
+        return;
+    conversion_tests(QStringOrByteArray(Strings::twoChars));
+    if (QTest::currentTestFailed())
+        return;
+    conversion_tests(QStringOrByteArray(Strings::threeChars));
+    if (QTest::currentTestFailed())
+        return;
     conversion_tests(QStringOrByteArray(Strings::regularString));
     if (QTest::currentTestFailed())
         return;
