@@ -410,7 +410,7 @@ qsizetype QStringView::count(QLatin1StringView s, Qt::CaseSensitivity cs) const
 //
 
 constexpr QAnyStringView::QAnyStringView(QLatin1StringView str) noexcept
-    : m_data{str.data()}, m_size{size_t(str.size()) | Tag::Latin1} {}
+    : m_data{str.data()}, m_size{size_t(str.size() << SizeShift) | Tag::Latin1} {}
 
 constexpr QLatin1StringView QAnyStringView::asLatin1StringView() const
 {
