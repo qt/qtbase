@@ -443,29 +443,33 @@ static QPair<QByteArray, QByteArray> nextField(QByteArrayView text, int &positio
 */
 
 namespace {
-QByteArray sameSiteToRawString(QNetworkCookie::SameSite samesite)
+
+constexpr QByteArrayView sameSiteNone() noexcept { return "None"; }
+constexpr QByteArrayView sameSiteLax() noexcept { return "Lax"; }
+constexpr QByteArrayView sameSiteStrict() noexcept { return "Strict"; }
+
+QByteArrayView sameSiteToRawString(QNetworkCookie::SameSite samesite) noexcept
 {
     switch (samesite) {
     case QNetworkCookie::SameSite::None:
-        return QByteArrayLiteral("None");
+        return sameSiteNone();
     case QNetworkCookie::SameSite::Lax:
-        return QByteArrayLiteral("Lax");
+        return sameSiteLax();
     case QNetworkCookie::SameSite::Strict:
-        return QByteArrayLiteral("Strict");
+        return sameSiteStrict();
     case QNetworkCookie::SameSite::Default:
         break;
     }
-    return QByteArray();
+    return QByteArrayView();
 }
 
-QNetworkCookie::SameSite sameSiteFromRawString(QByteArray str)
+QNetworkCookie::SameSite sameSiteFromRawString(QByteArrayView str) noexcept
 {
-    str = str.toLower();
-    if (str == QByteArrayLiteral("none"))
+    if (str.compare(sameSiteNone(), Qt::CaseInsensitive) == 0)
         return QNetworkCookie::SameSite::None;
-    if (str == QByteArrayLiteral("lax"))
+    if (str.compare(sameSiteLax(), Qt::CaseInsensitive) == 0)
         return QNetworkCookie::SameSite::Lax;
-    if (str == QByteArrayLiteral("strict"))
+    if (str.compare(sameSiteStrict(), Qt::CaseInsensitive) == 0)
         return QNetworkCookie::SameSite::Strict;
     return QNetworkCookie::SameSite::Default;
 }
