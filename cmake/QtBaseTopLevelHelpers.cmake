@@ -18,10 +18,6 @@ macro(qt_internal_top_level_setup_autodetect)
 endmacro()
 
 macro(qt_internal_top_level_setup_after_project)
-    # TODO: Remove this variable once the top-level calls this function and
-    # qt_internal_qt_configure_end is not called in qt_print_build_instructions anymore.
-    set(__qt6_top_level_after_project_called TRUE)
-
     qt_internal_top_level_setup_testing()
 endmacro()
 
