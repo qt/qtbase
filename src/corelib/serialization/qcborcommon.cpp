@@ -181,7 +181,7 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
 
    \sa QCborStreamReader, QCborValue, QCborParserError,
        {Parsing and displaying CBOR data}, {Convert Example},
-       {JSON Save Game Example}
+       {Saving and Loading a Game}
  */
 
 /*!

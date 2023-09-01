@@ -73,8 +73,7 @@
     A valid JSON document is either an array or an object, so a document always starts
     with a square or curly bracket.
 
-    \sa {JSON Save Game Example}
-
+    \sa {Saving and Loading a Game}
 
     \section1 The JSON Classes
 
@@ -82,5 +81,4 @@
     \l{Implicit Sharing}{implicitly shared classes}.
 
     JSON support in Qt consists of these classes:
-
 */

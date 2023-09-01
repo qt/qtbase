@@ -59,7 +59,7 @@ using namespace QtMiscUtils;
 
     \brief The QJsonParseError class is used to report errors during JSON parsing.
 
-    \sa {JSON Support in Qt}, {JSON Save Game Example}
+    \sa {JSON Support in Qt}, {Saving and Loading a Game}
 */
 
 /*!

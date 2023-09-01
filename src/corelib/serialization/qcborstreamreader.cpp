@@ -152,7 +152,7 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
 
    \sa QCborStreamWriter, QCborValue, QXmlStreamReader,
        {Parsing and displaying CBOR data}, {Convert Example},
-       {JSON Save Game Example}
+       {Saving and Loading a Game}
  */
 
 /*!

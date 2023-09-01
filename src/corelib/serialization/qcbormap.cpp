@@ -49,7 +49,7 @@ using namespace QtCbor;
 
     \sa QCborArray, QCborValue, QJsonDocument, QVariantMap,
         {Parsing and displaying CBOR data}, {Convert Example},
-        {JSON Save Game Example}
+        {Saving and Loading a Game}
  */
 
 /*!
