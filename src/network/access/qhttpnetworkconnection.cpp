@@ -226,6 +226,17 @@ qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailableNextBlock(const 
     return reply.d_func()->responseData.sizeNextBlock();
 }
 
+static QByteArray makeAcceptLanguage()
+{
+    QString systemLocale = QLocale::system().name();
+    if (systemLocale == "C"_L1)
+        return "en,*"_ba;
+    systemLocale.replace('_'_L1, '-'_L1);
+    if (systemLocale.startsWith("en-"_L1))
+        return (systemLocale + ",*"_L1).toLatin1();
+    return (systemLocale + ",en,*"_L1).toLatin1();
+}
+
 void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 {
     QHttpNetworkRequest &request = messagePair.first;
@@ -290,17 +301,8 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
     // not with us, but we work around this by setting
     // one always.
     value = request.headerField("accept-language");
-    if (value.isEmpty()) {
-        QString systemLocale = QLocale::system().name().replace(QChar::fromLatin1('_'),QChar::fromLatin1('-'));
-        QString acceptLanguage;
-        if (systemLocale == "C"_L1)
-            acceptLanguage = QString::fromLatin1("en,*");
-        else if (systemLocale.startsWith("en-"_L1))
-            acceptLanguage = systemLocale + ",*"_L1;
-        else
-            acceptLanguage = systemLocale + ",en,*"_L1;
-        request.setHeaderField("Accept-Language", std::move(acceptLanguage).toLatin1());
-    }
+    if (value.isEmpty())
+        request.setHeaderField("Accept-Language", makeAcceptLanguage());
 
     // set the User Agent
     value = request.headerField("user-agent");
