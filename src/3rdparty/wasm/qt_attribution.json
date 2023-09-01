@@ -27,8 +27,8 @@
     "License": "Bitstream Vera Font License",
     "LicenseId": "urn:dje:license:bitstream",
     "LicenseFile": "DEJAVU-LICENSE",
-    "Copyright": "Copyright (c) 2003 by Bitstream, Inc
-Copyright (c) 2006 by Tavmjong Bah
-(c) American Mathematical Society"
+    "Copyright": ["Copyright (c) 2003 by Bitstream, Inc",
+    "Copyright (c) 2006 by Tavmjong Bah",
+    "(c) American Mathematical Society"]
 }
 ]
