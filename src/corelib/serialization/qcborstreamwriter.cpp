@@ -176,7 +176,7 @@ Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
    \endlist
 
    \sa QCborStreamReader, QCborValue, QXmlStreamWriter
-       {Parsing and displaying CBOR data}, {Convert Example},
+       {Parsing and displaying CBOR data}, {Serialization Converter},
        {Saving and Loading a Game}
  */
 

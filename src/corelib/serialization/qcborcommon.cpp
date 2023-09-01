@@ -180,7 +180,7 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
    validating a CBOR stream.
 
    \sa QCborStreamReader, QCborValue, QCborParserError,
-       {Parsing and displaying CBOR data}, {Convert Example},
+       {Parsing and displaying CBOR data}, {Serialization Converter},
        {Saving and Loading a Game}
  */
 
