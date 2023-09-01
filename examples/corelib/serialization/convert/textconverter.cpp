@@ -79,21 +79,14 @@ QVariant TextConverter::loadFile(QIODevice *f, Converter *&outputConverter)
     QString line;
     while (!in.atEnd()) {
         in.readLineInto(&line);
-
         bool ok;
-        qint64 v = line.toLongLong(&ok);
-        if (ok) {
+
+        if (qint64 v = line.toLongLong(&ok); ok)
             list.append(v);
-            continue;
-        }
-
-        double d = line.toDouble(&ok);
-        if (ok) {
+        else if (double d = line.toDouble(&ok); ok)
             list.append(d);
-            continue;
-        }
-
-        list.append(line);
+        else
+            list.append(line);
     }
 
     return list;
