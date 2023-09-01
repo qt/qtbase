@@ -6,8 +6,7 @@
     \examplecategory {Data Processing & I/O}
     \title JSON Save Game Example
 
-    \brief The JSON Save Game example demonstrates how to save and load a
-    small game using QJsonDocument, QJsonObject and QJsonArray.
+    \brief How to save and load a game using Qt's JSON or CBOR classes.
 
     Many games provide save functionality, so that the player's progress through
     the game can be saved and loaded at a later time. The process of saving a
