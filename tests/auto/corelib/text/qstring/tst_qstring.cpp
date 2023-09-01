@@ -4351,18 +4351,18 @@ void tst_QString::toNum_base_data()
     QTest::newRow("77") << u"77"_s << 8 << 63;
     QTest::newRow("077") << u"077"_s << 8 << 63;
 
-    QTest::newRow("0xFF") << u"0xFF"_s << 0 << 255;
-    QTest::newRow("077") << u"077"_s << 0 << 63;
-    QTest::newRow("255") << u"255"_s << 0 << 255;
+    QTest::newRow("0xFF - deduced base") << u"0xFF"_s << 0 << 255;
+    QTest::newRow("077 - deduced base") << u"077"_s << 0 << 63;
+    QTest::newRow("255 - deduced base") << u"255"_s << 0 << 255;
 
     QTest::newRow(" FF") << u" FF"_s << 16 << 255;
     QTest::newRow(" 0xFF") << u" 0xFF"_s << 16 << 255;
     QTest::newRow(" 77") << u" 77"_s << 8 << 63;
     QTest::newRow(" 077") << u" 077"_s << 8 << 63;
 
-    QTest::newRow(" 0xFF") << u" 0xFF"_s << 0 << 255;
-    QTest::newRow(" 077") << u" 077"_s << 0 << 63;
-    QTest::newRow(" 255") << u" 255"_s << 0 << 255;
+    QTest::newRow(" 0xFF - deduced base") << u" 0xFF"_s << 0 << 255;
+    QTest::newRow(" 077 - deduced base") << u" 077"_s << 0 << 63;
+    QTest::newRow(" 255 - deduced base") << u" 255"_s << 0 << 255;
 
     QTest::newRow("\tFF\t") << u"\tFF\t"_s << 16 << 255;
     QTest::newRow("\t0xFF  ") << u"\t0xFF  "_s << 16 << 255;
@@ -4413,9 +4413,9 @@ void tst_QString::toNum_base_neg_data()
     QTest::newRow("-77") << u"-77"_s << 8 << -63;
     QTest::newRow("-077") << u"-077"_s << 8 << -63;
 
-    QTest::newRow("-0xFE") << u"-0xFE"_s << 0 << -254;
-    QTest::newRow("-077") << u"-077"_s << 0 << -63;
-    QTest::newRow("-254") << u"-254"_s << 0 << -254;
+    QTest::newRow("-0xFE - deduced base") << u"-0xFE"_s << 0 << -254;
+    QTest::newRow("-077 - deduced base") << u"-077"_s << 0 << -63;
+    QTest::newRow("-254 - deduced base") << u"-254"_s << 0 << -254;
 }
 
 void tst_QString::toNum_base_neg()
