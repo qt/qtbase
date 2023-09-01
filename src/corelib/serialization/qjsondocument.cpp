@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
     and isObject(). The array or object contained in the document can be retrieved using
     array() or object() and then read or manipulated.
 
-    \sa {JSON Support in Qt}, {JSON Save Game Example}
+    \sa {JSON Support in Qt}, {Saving and Loading a Game}
 */
 
 
