@@ -136,7 +136,7 @@ determineOptFilePath "$@"
 optfilepath=${outpathPrefix}/config.opt
 opttmpfilepath=${outpathPrefix}/config.opt.in
 
-redofilepath=${outpathPrefix}/config.redo
+redofilepath=${outpathPrefix}/config.redo.last
 redotmpfilepath=${outpathPrefix}/config.redo.in
 
 fresh_requested_arg=

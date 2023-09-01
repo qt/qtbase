@@ -209,6 +209,7 @@ function(qt_internal_create_wrapper_scripts)
 
     qt_internal_create_qt_configure_tests_wrapper_script()
     qt_internal_install_android_helper_scripts()
+    qt_internal_create_qt_configure_redo_script()
 endfunction()
 
 function(qt_internal_create_qt_configure_tests_wrapper_script)
@@ -261,4 +262,42 @@ function(qt_internal_install_android_helper_scripts)
     qt_path_join(destination "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
     qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/util/android/android_emulator_launcher.sh"
                        DESTINATION "${destination}")
+endfunction()
+
+# Create a shell wrapper script to reconfigure Qt with the original configure arguments and
+# any additional ones passed.
+#
+# Removes CMakeCache.txt and friends, either manually, or using CMake's --fresh.
+#
+# The script is created in the root of the build dir and is called config.redo
+# It has the same contents as the 'config.status' script we created in qt 5.
+function(qt_internal_create_qt_configure_redo_script)
+    set(input_script_name "qt-internal-config.redo")
+    set(input_script_path "${CMAKE_CURRENT_SOURCE_DIR}/libexec/${input_script_name}")
+
+    # We don't use QT_BUILD_DIR because we want the file in the root of the build dir in a top-level
+    # build.
+    set(output_script_name "config.redo")
+    set(output_path "${CMAKE_BINARY_DIR}/${output_script_name}")
+
+    if(QT_SUPERBUILD)
+        set(configure_script_path "${Qt_SOURCE_DIR}")
+    else()
+        set(configure_script_path "${QtBase_SOURCE_DIR}")
+    endif()
+    string(APPEND configure_script_path "/configure")
+
+    # Used in the file contents.
+    file(TO_NATIVE_PATH "${configure_script_path}" configure_path)
+
+    if(CMAKE_HOST_UNIX)
+        string(APPEND input_script_path ".in")
+        set(newline_style "LF")
+    else()
+        string(APPEND input_script_path ".bat.in")
+        string(APPEND output_path ".bat")
+        set(newline_style "CRLF")
+    endif()
+
+    configure_file("${input_script_path}" "${output_path}" @ONLY NEWLINE_STYLE ${newline_style})
 endfunction()

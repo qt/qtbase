@@ -79,7 +79,7 @@ cd "%TOPQTDIR%"
 rem Write config.opt if we're not currently -redo'ing
 set OPT_FILE_PATH=%TOPQTDIR%\config.opt
 set OPT_TMP_FILE_PATH=%TOPQTDIR%\config.opt.in
-set REDO_FILE_PATH=%TOPQTDIR%\config.redo
+set REDO_FILE_PATH=%TOPQTDIR%\config.redo.last
 set REDO_TMP_FILE_PATH=%TOPQTDIR%\config.redo.in
 set FRESH_REQUESTED_ARG=
 if not defined redoing (
