@@ -50,6 +50,18 @@ static void networkInfoCleanup()
     dataHolder->instanceHolder.reset();
 }
 
+using namespace Qt::Literals::StringLiterals;
+
+class QNetworkInformationDummyBackend : public QNetworkInformationBackend {
+    Q_OBJECT
+public:
+    QString name() const override { return u"dummy"_s; }
+    QNetworkInformation::Features featuresSupported() const override
+    {
+        return {};
+    }
+};
+
 class QNetworkInformationPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QNetworkInformation)
@@ -60,6 +72,7 @@ public:
 
     static QNetworkInformation *create(QNetworkInformation::Features features);
     static QNetworkInformation *create(QStringView name);
+    static QNetworkInformation *createDummy();
     static QNetworkInformation *instance()
     {
         if (!dataHolder())
@@ -264,6 +277,20 @@ QNetworkInformation *QNetworkInformationPrivate::create(QNetworkInformation::Fea
     qDebug() << "Couldn't find/create an appropriate backend.";
 #endif
     return nullptr;
+}
+
+QNetworkInformation *QNetworkInformationPrivate::createDummy()
+{
+    if (!dataHolder())
+        return nullptr;
+
+    QMutexLocker locker(&dataHolder->instanceMutex);
+    if (dataHolder->instanceHolder)
+        return dataHolder->instanceHolder.get();
+
+    QNetworkInformationBackend *backend =  new QNetworkInformationDummyBackend;
+    dataHolder->instanceHolder.reset(new QNetworkInformation(backend));
+    return dataHolder->instanceHolder.get();
 }
 
 /*!
@@ -644,7 +671,8 @@ bool QNetworkInformation::loadDefaultBackend()
     index = QNetworkInformationBackend::PluginNamesLinuxIndex;
 #endif
     if (index == -1)
-        return false;
+        return loadBackendByName(u"dummy");
+
     return loadBackendByName(QNetworkInformationBackend::PluginNames[index]);
 }
 
@@ -661,6 +689,9 @@ bool QNetworkInformation::loadDefaultBackend()
 */
 bool QNetworkInformation::loadBackendByName(QStringView backend)
 {
+    if (backend == u"dummy")
+        return QNetworkInformationPrivate::createDummy() != nullptr;
+
     auto loadedBackend = QNetworkInformationPrivate::create(backend);
     return loadedBackend && loadedBackend->backendName().compare(backend, Qt::CaseInsensitive) == 0;
 }
@@ -727,3 +758,4 @@ QT_END_NAMESPACE
 
 #include "moc_qnetworkinformation.cpp"
 #include "moc_qnetworkinformation_p.cpp"
+#include "qnetworkinformation.moc"
