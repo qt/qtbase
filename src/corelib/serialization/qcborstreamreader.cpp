@@ -151,7 +151,7 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    a the QIDOevice that now has more data available (see setDevice()).
 
    \sa QCborStreamWriter, QCborValue, QXmlStreamReader,
-       {Parsing and displaying CBOR data}, {Convert Example},
+       {Parsing and displaying CBOR data}, {Serialization Converter},
        {Saving and Loading a Game}
  */
 

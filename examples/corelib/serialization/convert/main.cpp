@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     outputFormats.prepend("auto"_L1);
 
     QCommandLineParser parser;
-    parser.setApplicationDescription("Qt file format conversion tool"_L1);
+    parser.setApplicationDescription("Qt serialization format conversion tool"_L1);
     parser.addHelpOption();
 
     QCommandLineOption inputFormatOption(QStringList{ "I"_L1, "input-format"_L1 });
@@ -154,9 +154,9 @@ int main(int argc, char *argv[])
     const Converter *outconv = prepareConverter(parser.value(outputFormatOption),
                                                 Converter::Direction::Out, &output);
 
-    // now finally perform the conversion
+    // Now finally perform the conversion:
     QVariant data = inconv->loadFile(&input, outconv);
-    Q_ASSERT_X(outconv, "Converter Tool",
+    Q_ASSERT_X(outconv, "Serialization Converter",
                "Internal error: converter format did not provide default");
     outconv->saveFile(&output, data, parser.values(optionOption));
     return EXIT_SUCCESS;

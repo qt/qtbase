@@ -32,7 +32,7 @@ using namespace QtCbor;
     conversions.
 
     \sa QCborValue, QCborMap, QJsonArray, QList, {Parsing and displaying CBOR data},
-        {Convert Example}, {Saving and Loading a Game}
+        {Serialization Converter}, {Saving and Loading a Game}
  */
 
 /*!
