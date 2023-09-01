@@ -1007,6 +1007,12 @@ QMessageBox::StandardButton QMessageBox::standardButton(QAbstractButton *button)
     Returns a pointer corresponding to the standard button \a which,
     or \nullptr if the standard button doesn't exist in this message box.
 
+    \note Modifying the properties of the returned button may not be reflected
+    in native implementations of the message dialog. To customize dialog
+    buttons add a \l{addButton(QAbstractButton *button, QMessageBox::ButtonRole role)}
+    {custom button} or \l{addButton(const QString &text, QMessageBox::ButtonRole role)}
+    {button title} instead, or set the \l Option::DontUseNativeDialog option.
+
     \sa standardButtons, standardButton()
 */
 QAbstractButton *QMessageBox::button(StandardButton which) const
