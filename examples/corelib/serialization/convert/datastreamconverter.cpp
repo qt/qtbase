@@ -48,32 +48,32 @@ DataStreamConverter::DataStreamConverter()
     qRegisterMetaType<VariantOrderedMap>();
 }
 
-QString DataStreamConverter::name()
+QString DataStreamConverter::name() const
 {
     return "datastream"_L1;
 }
 
-Converter::Direction DataStreamConverter::directions()
+Converter::Direction DataStreamConverter::directions() const
 {
     return InOut;
 }
 
-Converter::Options DataStreamConverter::outputOptions()
+Converter::Options DataStreamConverter::outputOptions() const
 {
     return SupportsArbitraryMapKeys;
 }
 
-const char *DataStreamConverter::optionsHelp()
+const char *DataStreamConverter::optionsHelp() const
 {
     return dataStreamOptionHelp;
 }
 
-bool DataStreamConverter::probeFile(QIODevice *f)
+bool DataStreamConverter::probeFile(QIODevice *f) const
 {
     return f->isReadable() && f->peek(sizeof(signature) - 1) == signature;
 }
 
-QVariant DataStreamConverter::loadFile(QIODevice *f, Converter *&outputConverter)
+QVariant DataStreamConverter::loadFile(QIODevice *f, const Converter *&outputConverter) const
 {
     if (!outputConverter)
         outputConverter = &debugTextDumper;
@@ -97,7 +97,7 @@ QVariant DataStreamConverter::loadFile(QIODevice *f, Converter *&outputConverter
 }
 
 void DataStreamConverter::saveFile(QIODevice *f, const QVariant &contents,
-                                   const QStringList &options)
+                                   const QStringList &options) const
 {
     QDataStream::Version version = QDataStream::Qt_6_0;
     auto order = QDataStream::ByteOrder(QSysInfo::ByteOrder);

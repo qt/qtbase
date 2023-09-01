@@ -25,27 +25,27 @@ static QJsonDocument convertFromVariant(const QVariant &v)
     return doc;
 }
 
-QString JsonConverter::name()
+QString JsonConverter::name() const
 {
     return "json"_L1;
 }
 
-Converter::Direction JsonConverter::directions()
+Converter::Direction JsonConverter::directions() const
 {
     return InOut;
 }
 
-Converter::Options JsonConverter::outputOptions()
+Converter::Options JsonConverter::outputOptions() const
 {
     return {};
 }
 
-const char *JsonConverter::optionsHelp()
+const char *JsonConverter::optionsHelp() const
 {
     return jsonOptionHelp;
 }
 
-bool JsonConverter::probeFile(QIODevice *f)
+bool JsonConverter::probeFile(QIODevice *f) const
 {
     if (QFile *file = qobject_cast<QFile *>(f)) {
         if (file->fileName().endsWith(".json"_L1))
@@ -59,7 +59,7 @@ bool JsonConverter::probeFile(QIODevice *f)
     return false;
 }
 
-QVariant JsonConverter::loadFile(QIODevice *f, Converter *&outputConverter)
+QVariant JsonConverter::loadFile(QIODevice *f, const Converter *&outputConverter) const
 {
     if (!outputConverter)
         outputConverter = this;
@@ -84,7 +84,8 @@ QVariant JsonConverter::loadFile(QIODevice *f, Converter *&outputConverter)
     return doc.toVariant();
 }
 
-void JsonConverter::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
+void JsonConverter::saveFile(QIODevice *f, const QVariant &contents,
+                             const QStringList &options) const
 {
     QJsonDocument::JsonFormat format = QJsonDocument::Indented;
     for (const QString &s : options) {
