@@ -45,6 +45,7 @@ public:
     operator QVariant() const;
 
     // Do not change the order, the serialization format depends on it
+    // Ensure these values are kept in sync with QQuickColorGroup's properties.
     enum ColorGroup { Active, Disabled, Inactive, NColorGroups, Current, All, Normal = Active };
     Q_ENUM(ColorGroup)
     enum ColorRole { WindowText, Button, Light, Midlight, Dark, Mid,
