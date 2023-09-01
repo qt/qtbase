@@ -547,10 +547,9 @@ QByteArray QAuthenticatorPrivate::calculateResponse(QByteArrayView requestMethod
     Q_UNUSED(host);
 #endif
     QByteArray response;
-    const char* methodString = nullptr;
+    QByteArrayView methodString;
     switch(method) {
     case QAuthenticatorPrivate::None:
-        methodString = "";
         phase = Done;
         break;
     case QAuthenticatorPrivate::Basic:
@@ -645,7 +644,7 @@ QByteArray QAuthenticatorPrivate::calculateResponse(QByteArrayView requestMethod
         break;
     }
 
-    return QByteArray::fromRawData(methodString, qstrlen(methodString)) + ' ' + response;
+    return methodString + ' ' + response;
 }
 
 
