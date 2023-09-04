@@ -73,12 +73,14 @@ public:
     }
 #endif // Q_QDOC
 
+#ifndef QT_NO_CONTEXTLESS_CONNECT
     // lookupHost to a callable (without context)
     template <typename Functor>
     static inline int lookupHost(const QString &name, Functor &&slot)
     {
         return lookupHost(name, nullptr, std::forward<Functor>(slot));
     }
+#endif // QT_NO_CONTEXTLESS_CONNECT
 
 private:
     QHostInfoPrivate *d_ptr;
