@@ -160,7 +160,7 @@ QBitmap QPlatformPixmap::mask() const
         }
     }
 
-    return QBitmap::fromImage(mask);
+    return QBitmap::fromImage(std::move(mask));
 }
 
 void QPlatformPixmap::setMask(const QBitmap &mask)
@@ -168,7 +168,7 @@ void QPlatformPixmap::setMask(const QBitmap &mask)
     QImage image = toImage();
     if (mask.size().isEmpty()) {
         if (image.depth() != 1) { // hw: ????
-            image = image.convertToFormat(QImage::Format_RGB32);
+            image = std::move(image).convertToFormat(QImage::Format_RGB32);
         }
     } else {
         const int w = image.width();
