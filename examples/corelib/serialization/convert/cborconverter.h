@@ -11,7 +11,7 @@ class CborDiagnosticDumper : public Converter
     // Converter interface
 public:
     QString name() const override;
-    Direction directions() const override;
+    Directions directions() const override;
     Options outputOptions() const override;
     const char *optionsHelp() const override;
     bool probeFile(QIODevice *f) const override;
@@ -28,7 +28,7 @@ public:
     // Converter interface
 public:
     QString name() const override;
-    Direction directions() const override;
+    Directions directions() const override;
     Options outputOptions() const override;
     const char *optionsHelp() const override;
     bool probeFile(QIODevice *f) const override;
