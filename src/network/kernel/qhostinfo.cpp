@@ -998,6 +998,9 @@ void QHostInfoLookupManager::abortLookup(int id)
     if (wasDeleted)
         return;
 
+    if (id == -1)
+        return;
+
 #if QT_CONFIG(thread)
     // is postponed? delete and return
     for (int i = 0; i < postponedLookups.size(); i++) {
