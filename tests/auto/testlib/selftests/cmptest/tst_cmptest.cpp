@@ -7,6 +7,7 @@
 #ifdef QT_GUI_LIB
 #include <QtGui/QColor>
 #include <QtGui/QImage>
+#include <QtGui/QPalette>
 #include <QtGui/QPixmap>
 #include <QtGui/QVector2D>
 #include <QtGui/QVector3D>
@@ -142,6 +143,8 @@ private slots:
     void compareQVector2D();
     void compareQVector3D();
     void compareQVector4D();
+    void compareQPalettes_data();
+    void compareQPalettes();
 #endif
     void tryCompare();
     void verify();
@@ -652,6 +655,54 @@ void tst_Cmptest::compareQVector4D()
     QCOMPARE(v4a, v4b);
     v4b.setY(3);
     QCOMPARE(v4a, v4b);
+}
+
+void tst_Cmptest::compareQPalettes_data()
+{
+    QTest::addColumn<QPalette>("actualPalette");
+    QTest::addColumn<QPalette>("expectedPalette");
+
+    // Initialize both to black, as the default palette values change
+    // depending on whether the test is run directly from a shell
+    // vs through generate_expected_output.py. We're not testing
+    // the defaults, we're testing that the full output is printed
+    // (QTBUG-5903 and QTBUG-87039).
+    QPalette actualPalette;
+    for (int i = 0; i < QPalette::NColorRoles; ++i) {
+        const auto role = QPalette::ColorRole(i);
+        actualPalette.setColor(QPalette::All, role, QColorConstants::Black);
+    }
+    QPalette expectedPalette;
+    for (int i = 0; i < QPalette::NColorRoles; ++i) {
+        const auto role = QPalette::ColorRole(i);
+        expectedPalette.setColor(QPalette::All, role, QColorConstants::Black);
+    }
+
+    for (int i = 0; i < QPalette::NColorRoles; ++i) {
+        const auto role = QPalette::ColorRole(i);
+        const auto color = QColor::fromRgb(i);
+        actualPalette.setColor(role, color);
+    }
+    QTest::newRow("all roles are different") << actualPalette << expectedPalette;
+
+    for (int i = 0; i < QPalette::NColorRoles - 1; ++i) {
+        const auto role = QPalette::ColorRole(i);
+        const auto color = QColor::fromRgb(i);
+        expectedPalette.setColor(role, color);
+    }
+    QTest::newRow("one role is different") << actualPalette << expectedPalette;
+
+    const auto lastRole = QPalette::ColorRole(QPalette::NColorRoles - 1);
+    expectedPalette.setColor(lastRole, QColor::fromRgb(lastRole));
+    QTest::newRow("all roles are the same") << actualPalette << expectedPalette;
+}
+
+void tst_Cmptest::compareQPalettes()
+{
+    QFETCH(QPalette, actualPalette);
+    QFETCH(QPalette, expectedPalette);
+
+    QCOMPARE(actualPalette, expectedPalette);
 }
 #endif // QT_GUI_LIB
 
