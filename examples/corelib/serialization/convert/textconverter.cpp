@@ -49,7 +49,7 @@ QString TextConverter::name() const
     return "text"_L1;
 }
 
-Converter::Direction TextConverter::directions() const
+Converter::Directions TextConverter::directions() const
 {
     return InOut;
 }
