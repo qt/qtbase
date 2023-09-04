@@ -113,8 +113,9 @@ int main(int argc, char *argv[])
             }
         }
 
-        if (!inconv) {
-            fprintf(stderr, "Unknown file format \"%s\"\n", qPrintable(format));
+        if (!inconv || !inconv->directions().testFlag(Converter::Direction::In)) {
+            fprintf(stderr, inconv ? "File format \"%s\" cannot be used for input\n"
+                    : "Unknown input file format \"%s\"\n", qPrintable(format));
             return EXIT_FAILURE;
         }
     }
@@ -129,8 +130,9 @@ int main(int argc, char *argv[])
             }
         }
 
-        if (!outconv) {
-            fprintf(stderr, "Unknown file format \"%s\"\n", qPrintable(format));
+        if (!outconv || !outconv->directions().testFlag(Converter::Direction::Out)) {
+            fprintf(stderr, outconv ? "File format \"%s\" cannot be used for output\n"
+                    : "Unknown output file format \"%s\"\n", qPrintable(format));
             return EXIT_FAILURE;
         }
     }
@@ -184,6 +186,7 @@ int main(int argc, char *argv[])
                 break;
             }
         }
+        // If that failed, loadFile() shall supply a fallback.
     }
 
     // now finally perform the conversion
