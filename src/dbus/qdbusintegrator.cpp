@@ -301,7 +301,7 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     if (serverConnection->anonymousAuthenticationAllowed)
         q_dbus_connection_set_allow_anonymous(connection, true);
 
-    QDBusConnectionPrivate *newConnection = new QDBusConnectionPrivate(serverConnection->parent());
+    QDBusConnectionPrivate *newConnection = new QDBusConnectionPrivate;
 
     manager->addConnection(
             "QDBusServer-"_L1 + QString::number(reinterpret_cast<qulonglong>(newConnection), 16),
@@ -1011,9 +1011,8 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, const QDBusMessage &ms
     return;
 }
 
-QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
-    : QObject(p),
-      ref(1),
+QDBusConnectionPrivate::QDBusConnectionPrivate()
+    : ref(1),
       mode(InvalidMode),
       busService(nullptr),
       connection(nullptr),
