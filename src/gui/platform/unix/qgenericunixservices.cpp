@@ -421,6 +421,7 @@ void runWithXdgActivationToken(F &&functionToCall)
     QWindow *window = qGuiApp->focusWindow();
 
     if (!window) {
+        functionToCall({});
         return;
     }
 
@@ -430,13 +431,14 @@ void runWithXdgActivationToken(F &&functionToCall)
             dynamic_cast<QNativeInterface::Private::QWaylandWindow *>(window->handle());
 
     if (!waylandWindow || !waylandApp) {
+        functionToCall({});
         return;
     }
 
-    waylandWindow->requestXdgActivationToken(waylandApp->lastInputSerial());
     QObject::connect(waylandWindow,
                      &QNativeInterface::Private::QWaylandWindow::xdgActivationTokenCreated,
                      waylandWindow, functionToCall, Qt::SingleShotConnection);
+    waylandWindow->requestXdgActivationToken(waylandApp->lastInputSerial());
 }
 
 bool QGenericUnixServices::openUrl(const QUrl &url)
