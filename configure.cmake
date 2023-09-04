@@ -541,7 +541,7 @@ qt_feature("developer-build" PRIVATE
     LABEL "Developer build"
     AUTODETECT OFF
 )
-qt_feature("no-prefix" PRIVATE
+qt_feature("no-prefix"
     LABEL "No prefix build"
     AUTODETECT NOT QT_WILL_INSTALL
     CONDITION NOT QT_WILL_INSTALL
