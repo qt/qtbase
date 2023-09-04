@@ -227,6 +227,19 @@ void QWindowPrivate::init(QScreen *targetScreen)
 
     requestedFormat = QSurfaceFormat::defaultFormat();
     devicePixelRatio = connectScreen->devicePixelRatio();
+
+    QObject::connect(q, &QWindow::screenChanged, q, [q, this](QScreen *){
+        // We may have changed scaling; trigger resize event if needed,
+        // except on Windows, where we send resize events during WM_DPICHANGED
+        // event handling. FIXME: unify DPI change handling across all platforms.
+#ifndef Q_OS_WIN
+        if (q->handle()) {
+            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(q, QHighDpi::fromNativePixels(q->handle()->geometry(), q));
+            QGuiApplicationPrivate::processGeometryChangeEvent(&gce);
+        }
+#endif
+        updateDevicePixelRatio();
+    });
 }
 
 /*!
