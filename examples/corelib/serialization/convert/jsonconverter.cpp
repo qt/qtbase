@@ -33,11 +33,6 @@ Converter::Directions JsonConverter::directions() const
     return Direction::InOut;
 }
 
-Converter::Options JsonConverter::outputOptions() const
-{
-    return {};
-}
-
 const char *JsonConverter::optionsHelp() const
 {
     return jsonOptionHelp;
