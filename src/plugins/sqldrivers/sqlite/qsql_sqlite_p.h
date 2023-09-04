@@ -54,9 +54,12 @@ public:
     QStringList tables(QSql::TableType) const override;
 
     QSqlRecord record(const QString& tablename) const override;
-    QSqlIndex primaryIndex(const QString &table) const override;
+    QSqlIndex primaryIndex(const QString &tablename) const override;
     QVariant handle() const override;
-    QString escapeIdentifier(const QString &identifier, IdentifierType) const override;
+
+    QString escapeIdentifier(const QString &identifier, IdentifierType type) const override;
+    bool isIdentifierEscaped(const QString &identifier, IdentifierType type) const override;
+    QString stripDelimiters(const QString &identifier, IdentifierType type) const override;
 
     bool subscribeToNotification(const QString &name) override;
     bool unsubscribeFromNotification(const QString &name) override;

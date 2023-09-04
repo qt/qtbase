@@ -116,6 +116,8 @@ private slots:
     void submitAllOnInvalidTable();
     void insertRecordsInLoop_data() { generic_data(); }
     void insertRecordsInLoop();
+    void sqlite_escaped_delimiters_data() { generic_data("QSQLITE"); }
+    void sqlite_escaped_delimiters();
     void sqlite_attachedDatabase_data() { generic_data("QSQLITE"); }
     void sqlite_attachedDatabase(); // For task 130799
     void tableModifyWithBlank_data() { generic_data(); }
@@ -1920,6 +1922,75 @@ void tst_QSqlTableModel::insertRecordsInLoop()
     QCOMPARE(model.columnCount(), 3);
 }
 
+void tst_QSqlTableModel::sqlite_escaped_delimiters()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    if (db.databaseName() == ":memory:")
+        QSKIP(":memory: database, skipping test");
+
+    auto attachedDb = QSqlDatabase::cloneDatabase(db, db.driverName() + QLatin1String("attached"));
+    attachedDb.setDatabaseName(db.databaseName() + QLatin1String("attached.dat"));
+    QVERIFY_SQL(attachedDb, open());
+    QSqlQuery q(attachedDb);
+    TableScope tsAttached(attachedDb, "attachedTestTable", __FILE__);
+    QVERIFY_SQL(q,
+                exec("CREATE TABLE attachedTestTable("
+                     "id int, \"attachedCol [unit]\" varchar(20))"));
+    QVERIFY_SQL(q,
+                exec("INSERT INTO attachedTestTable VALUES("
+                     "1, 'attachTestData')"));
+
+    QSqlQuery q2(db);
+    TableScope ts(db, "testTable", __FILE__);
+    QVERIFY_SQL(q2, exec("CREATE TABLE testTable(id int, \"col [unit]\" varchar(20))"));
+    QVERIFY_SQL(q2, exec("INSERT INTO testTable VALUES(2, 'testData')"));
+    QVERIFY_SQL(q2, exec("ATTACH DATABASE \"" + attachedDb.databaseName() + "\" AS attachedDb"));
+
+    const std::array<std::pair<QLatin1Char, QLatin1Char>, 3> escapingPairs{
+        std::make_pair(QLatin1Char{'"'}, QLatin1Char{'"'}),
+        std::make_pair(QLatin1Char{'`'}, QLatin1Char{'`'}),
+        std::make_pair(QLatin1Char{'['}, QLatin1Char{']'})
+    };
+
+    QSqlTableModel model(nullptr, db);
+    model.setTable("testTable");
+    QVERIFY_SQL(model, select());
+    for (const auto &escapingPair : escapingPairs) {
+        model.setTable(escapingPair.first + "testTable" + escapingPair.second);
+        QVERIFY_SQL(model, select());
+    }
+
+    model.setTable("attachedDb.attachedTestTable");
+    QFAIL_SQL(model, select());
+    for (const auto &escapingPair : escapingPairs) {
+        model.setTable(escapingPair.first + "attachedDb.attachedTestTable" + escapingPair.second);
+        QFAIL_SQL(model, select());
+        model.setTable(escapingPair.first + "attachedDb" + escapingPair.first + ".a"
+                       + escapingPair.second + "ttachedTestTable" + escapingPair.second);
+        QFAIL_SQL(model, select());
+    }
+
+    for (std::size_t i = 0; i <= escapingPairs.size(); ++i) {
+        for (std::size_t j = 0; j <= escapingPairs.size(); ++j) {
+            if (i == escapingPairs.size() && j == escapingPairs.size())
+                continue;
+
+            QString leftName = "attachedDb";
+            if (i != escapingPairs.size())
+                leftName = escapingPairs.at(i).first + leftName + escapingPairs.at(i).second;
+            QString rightName = "attachedTestTable";
+            if (j != escapingPairs.size())
+                rightName = escapingPairs.at(j).first + rightName + escapingPairs.at(j).second;
+            model.setTable(leftName + "." + rightName);
+            QVERIFY_SQL(model, select());
+        }
+    }
+
+    attachedDb.close();
+}
+
 void tst_QSqlTableModel::sqlite_attachedDatabase()
 {
     QFETCH(QString, dbName);
@@ -1948,7 +2019,7 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
 
     // This should query the table in the attached database (schema supplied)
     QSqlTableModel model(0, db);
-    model.setTable("adb.atest");
+    model.setTable("\"adb\".\"atest\"");
     QVERIFY_SQL(model, select());
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 1);
