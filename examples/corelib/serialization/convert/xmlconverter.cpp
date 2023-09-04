@@ -180,23 +180,23 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
         text = text.trimmed();
 
     QVariant result;
-    bool ok;
     if (type.isEmpty()) {
         // ok
     } else if (type == QLatin1String("number")) {
         // try integer first
+        bool ok;
         qint64 v = text.toLongLong(&ok);
         if (ok) {
             result = v;
         } else {
             // let's see floating point
             double d = text.toDouble(&ok);
-            result = d;
             if (!ok) {
                 fprintf(stderr, "%lld:%lld: Invalid XML: could not interpret '%s' as a number.\n",
                         xml.lineNumber(), xml.columnNumber(), qPrintable(text.toString()));
                 exit(EXIT_FAILURE);
             }
+            result = d;
         }
     } else if (type == QLatin1String("bytes")) {
         QByteArray data = text.toLatin1();
