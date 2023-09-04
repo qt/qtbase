@@ -608,7 +608,7 @@ bool qt_write_dib(QDataStream &s, const QImage &image, int bpl, int bpl_bmp, int
     if (image.depth() != 32) {                // write color table
         uchar *color_table = new uchar[4*image.colorCount()];
         uchar *rgb = color_table;
-        QList<QRgb> c = image.colorTable();
+        const QList<QRgb> c = image.colorTable();
         for (int i = 0; i < image.colorCount(); i++) {
             *rgb++ = qBlue (c[i]);
             *rgb++ = qGreen(c[i]);
