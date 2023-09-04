@@ -750,6 +750,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
 #endif
     Q_ASSERT(!member != !slotObj); // one of these must be set, but not both
     Q_ASSERT(receiver || slotObj);
+    Q_ASSERT(!member || receiver); // if member is set, also is receiver
 
     if (!QAbstractEventDispatcher::instance(QThread::currentThread())) {
         qWarning("QHostInfo::lookupHost() called with no event dispatcher");
