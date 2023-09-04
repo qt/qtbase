@@ -751,6 +751,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
     Q_ASSERT(!member != !slotObj); // one of these must be set, but not both
     Q_ASSERT(receiver || slotObj);
     Q_ASSERT(!member || receiver); // if member is set, also is receiver
+    const bool isUsingStringBasedSlot = static_cast<bool>(member);
 
     if (!QAbstractEventDispatcher::instance(QThread::currentThread())) {
         qWarning("QHostInfo::lookupHost() called with no event dispatcher");
@@ -767,9 +768,10 @@ int QHostInfo::lookupHostImpl(const QString &name,
         hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
 
         QHostInfoResult result(receiver, std::move(slotObj));
-        if (receiver && member)
+        if (isUsingStringBasedSlot) {
             QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
                             receiver, member, Qt::QueuedConnection);
+        }
         result.postResultsReady(hostInfo);
 
         return id;
@@ -784,9 +786,10 @@ int QHostInfo::lookupHostImpl(const QString &name,
     hostInfo.setLookupId(id);
 
     QHostInfoResult result(receiver, std::move(slotObj));
-    if (receiver && member)
+    if (isUsingStringBasedSlot) {
         QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
                         receiver, member, Qt::QueuedConnection);
+    }
     result.postResultsReady(hostInfo);
 #else
     QHostInfoLookupManager *manager = theHostInfoLookupManager();
@@ -800,9 +803,10 @@ int QHostInfo::lookupHostImpl(const QString &name,
             if (valid) {
                 info.setLookupId(id);
                 QHostInfoResult result(receiver, std::move(slotObj));
-                if (receiver && member)
+                if (isUsingStringBasedSlot) {
                     QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
                                     receiver, member, Qt::QueuedConnection);
+                }
                 result.postResultsReady(info);
                 return id;
             }
@@ -810,9 +814,10 @@ int QHostInfo::lookupHostImpl(const QString &name,
 
         // cache is not enabled or it was not in the cache, do normal lookup
         QHostInfoRunnable *runnable = new QHostInfoRunnable(name, id, receiver, std::move(slotObj));
-        if (receiver && member)
+        if (isUsingStringBasedSlot) {
             QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)),
                                 receiver, member, Qt::QueuedConnection);
+        }
         manager->scheduleLookup(runnable);
     }
 #endif // Q_OS_WASM
