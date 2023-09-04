@@ -517,7 +517,32 @@ not ok 64 - compareQVector4D()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 65 - tryCompare()
+not ok 65 - compareQPalettes(all roles are different)
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: QPalette(resolve=0x7fffffffffffffff,"WindowText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Button:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Light:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Midlight:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Dark:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Mid:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Text:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],BrightText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],ButtonText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Base:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Window:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Shadow:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Highlight:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],HighlightedText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Link:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],LinkVisited:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],AlternateBase:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],ToolTipBase:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],ToolTipText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],PlaceholderText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Accent:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000]") (expectedPalette)
+  found: QPalette(resolve=0x7fffffffffffffff,"WindowText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Button:[Active:#ff000001,Disabled:#ff000001,Inactive:#ff000001],Light:[Active:#ff000002,Disabled:#ff000002,Inactive:#ff000002],Midlight:[Active:#ff000003,Disabled:#ff000003,Inactive:#ff000003],Dark:[Active:#ff000004,Disabled:#ff000004,Inactive:#ff000004],Mid:[Active:#ff000005,Disabled:#ff000005,Inactive:#ff000005],Text:[Active:#ff000006,Disabled:#ff000006,Inactive:#ff000006],BrightText:[Active:#ff000007,Disabled:#ff000007,Inactive:#ff000007],ButtonText:[Active:#ff000008,Disabled:#ff000008,Inactive:#ff000008],Base:[Active:#ff000009,Disabled:#ff000009,Inactive:#ff000009],Window:[Active:#ff00000a,Disabled:#ff00000a,Inactive:#ff00000a],Shadow:[Active:#ff00000b,Disabled:#ff00000b,Inactive:#ff00000b],Highlight:[Active:#ff00000c,Disabled:#ff00000c,Inactive:#ff00000c],HighlightedText:[Active:#ff00000d,Disabled:#ff00000d,Inactive:#ff00000d],Link:[Active:#ff00000e,Disabled:#ff00000e,Inactive:#ff00000e],LinkVisited:[Active:#ff00000f,Disabled:#ff00000f,Inactive:#ff00000f],AlternateBase:[Active:#ff000010,Disabled:#ff000010,Inactive:#ff000010],ToolTipBase:[Active:#ff000012,Disabled:#ff000012,Inactive:#ff000012],ToolTipText:[Active:#ff000013,Disabled:#ff000013,Inactive:#ff000013],PlaceholderText:[Active:#ff000014,Disabled:#ff000014,Inactive:#ff000014],Accent:[Active:#ff000015,Disabled:#ff000015,Inactive:#ff000015]") (actualPalette)
+  expected: QPalette(resolve=0x7fffffffffffffff,"WindowText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Button:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Light:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Midlight:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Dark:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Mid:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Text:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],BrightText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],ButtonText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Base:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Window:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Shadow:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Highlight:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],HighlightedText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Link:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],LinkVisited:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],AlternateBase:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],ToolTipBase:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],ToolTipText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],PlaceholderText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Accent:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000]") (expectedPalette)
+  actual: QPalette(resolve=0x7fffffffffffffff,"WindowText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Button:[Active:#ff000001,Disabled:#ff000001,Inactive:#ff000001],Light:[Active:#ff000002,Disabled:#ff000002,Inactive:#ff000002],Midlight:[Active:#ff000003,Disabled:#ff000003,Inactive:#ff000003],Dark:[Active:#ff000004,Disabled:#ff000004,Inactive:#ff000004],Mid:[Active:#ff000005,Disabled:#ff000005,Inactive:#ff000005],Text:[Active:#ff000006,Disabled:#ff000006,Inactive:#ff000006],BrightText:[Active:#ff000007,Disabled:#ff000007,Inactive:#ff000007],ButtonText:[Active:#ff000008,Disabled:#ff000008,Inactive:#ff000008],Base:[Active:#ff000009,Disabled:#ff000009,Inactive:#ff000009],Window:[Active:#ff00000a,Disabled:#ff00000a,Inactive:#ff00000a],Shadow:[Active:#ff00000b,Disabled:#ff00000b,Inactive:#ff00000b],Highlight:[Active:#ff00000c,Disabled:#ff00000c,Inactive:#ff00000c],HighlightedText:[Active:#ff00000d,Disabled:#ff00000d,Inactive:#ff00000d],Link:[Active:#ff00000e,Disabled:#ff00000e,Inactive:#ff00000e],LinkVisited:[Active:#ff00000f,Disabled:#ff00000f,Inactive:#ff00000f],AlternateBase:[Active:#ff000010,Disabled:#ff000010,Inactive:#ff000010],ToolTipBase:[Active:#ff000012,Disabled:#ff000012,Inactive:#ff000012],ToolTipText:[Active:#ff000013,Disabled:#ff000013,Inactive:#ff000013],PlaceholderText:[Active:#ff000014,Disabled:#ff000014,Inactive:#ff000014],Accent:[Active:#ff000015,Disabled:#ff000015,Inactive:#ff000015]") (actualPalette)
+  at: tst_Cmptest::compareQPalettes() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 0
+  ...
+not ok 66 - compareQPalettes(one role is different)
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: QPalette(resolve=0x7fffffffffffffff,"WindowText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Button:[Active:#ff000001,Disabled:#ff000001,Inactive:#ff000001],Light:[Active:#ff000002,Disabled:#ff000002,Inactive:#ff000002],Midlight:[Active:#ff000003,Disabled:#ff000003,Inactive:#ff000003],Dark:[Active:#ff000004,Disabled:#ff000004,Inactive:#ff000004],Mid:[Active:#ff000005,Disabled:#ff000005,Inactive:#ff000005],Text:[Active:#ff000006,Disabled:#ff000006,Inactive:#ff000006],BrightText:[Active:#ff000007,Disabled:#ff000007,Inactive:#ff000007],ButtonText:[Active:#ff000008,Disabled:#ff000008,Inactive:#ff000008],Base:[Active:#ff000009,Disabled:#ff000009,Inactive:#ff000009],Window:[Active:#ff00000a,Disabled:#ff00000a,Inactive:#ff00000a],Shadow:[Active:#ff00000b,Disabled:#ff00000b,Inactive:#ff00000b],Highlight:[Active:#ff00000c,Disabled:#ff00000c,Inactive:#ff00000c],HighlightedText:[Active:#ff00000d,Disabled:#ff00000d,Inactive:#ff00000d],Link:[Active:#ff00000e,Disabled:#ff00000e,Inactive:#ff00000e],LinkVisited:[Active:#ff00000f,Disabled:#ff00000f,Inactive:#ff00000f],AlternateBase:[Active:#ff000010,Disabled:#ff000010,Inactive:#ff000010],ToolTipBase:[Active:#ff000012,Disabled:#ff000012,Inactive:#ff000012],ToolTipText:[Active:#ff000013,Disabled:#ff000013,Inactive:#ff000013],PlaceholderText:[Active:#ff000014,Disabled:#ff000014,Inactive:#ff000014],Accent:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000]") (expectedPalette)
+  found: QPalette(resolve=0x7fffffffffffffff,"WindowText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Button:[Active:#ff000001,Disabled:#ff000001,Inactive:#ff000001],Light:[Active:#ff000002,Disabled:#ff000002,Inactive:#ff000002],Midlight:[Active:#ff000003,Disabled:#ff000003,Inactive:#ff000003],Dark:[Active:#ff000004,Disabled:#ff000004,Inactive:#ff000004],Mid:[Active:#ff000005,Disabled:#ff000005,Inactive:#ff000005],Text:[Active:#ff000006,Disabled:#ff000006,Inactive:#ff000006],BrightText:[Active:#ff000007,Disabled:#ff000007,Inactive:#ff000007],ButtonText:[Active:#ff000008,Disabled:#ff000008,Inactive:#ff000008],Base:[Active:#ff000009,Disabled:#ff000009,Inactive:#ff000009],Window:[Active:#ff00000a,Disabled:#ff00000a,Inactive:#ff00000a],Shadow:[Active:#ff00000b,Disabled:#ff00000b,Inactive:#ff00000b],Highlight:[Active:#ff00000c,Disabled:#ff00000c,Inactive:#ff00000c],HighlightedText:[Active:#ff00000d,Disabled:#ff00000d,Inactive:#ff00000d],Link:[Active:#ff00000e,Disabled:#ff00000e,Inactive:#ff00000e],LinkVisited:[Active:#ff00000f,Disabled:#ff00000f,Inactive:#ff00000f],AlternateBase:[Active:#ff000010,Disabled:#ff000010,Inactive:#ff000010],ToolTipBase:[Active:#ff000012,Disabled:#ff000012,Inactive:#ff000012],ToolTipText:[Active:#ff000013,Disabled:#ff000013,Inactive:#ff000013],PlaceholderText:[Active:#ff000014,Disabled:#ff000014,Inactive:#ff000014],Accent:[Active:#ff000015,Disabled:#ff000015,Inactive:#ff000015]") (actualPalette)
+  expected: QPalette(resolve=0x7fffffffffffffff,"WindowText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Button:[Active:#ff000001,Disabled:#ff000001,Inactive:#ff000001],Light:[Active:#ff000002,Disabled:#ff000002,Inactive:#ff000002],Midlight:[Active:#ff000003,Disabled:#ff000003,Inactive:#ff000003],Dark:[Active:#ff000004,Disabled:#ff000004,Inactive:#ff000004],Mid:[Active:#ff000005,Disabled:#ff000005,Inactive:#ff000005],Text:[Active:#ff000006,Disabled:#ff000006,Inactive:#ff000006],BrightText:[Active:#ff000007,Disabled:#ff000007,Inactive:#ff000007],ButtonText:[Active:#ff000008,Disabled:#ff000008,Inactive:#ff000008],Base:[Active:#ff000009,Disabled:#ff000009,Inactive:#ff000009],Window:[Active:#ff00000a,Disabled:#ff00000a,Inactive:#ff00000a],Shadow:[Active:#ff00000b,Disabled:#ff00000b,Inactive:#ff00000b],Highlight:[Active:#ff00000c,Disabled:#ff00000c,Inactive:#ff00000c],HighlightedText:[Active:#ff00000d,Disabled:#ff00000d,Inactive:#ff00000d],Link:[Active:#ff00000e,Disabled:#ff00000e,Inactive:#ff00000e],LinkVisited:[Active:#ff00000f,Disabled:#ff00000f,Inactive:#ff00000f],AlternateBase:[Active:#ff000010,Disabled:#ff000010,Inactive:#ff000010],ToolTipBase:[Active:#ff000012,Disabled:#ff000012,Inactive:#ff000012],ToolTipText:[Active:#ff000013,Disabled:#ff000013,Inactive:#ff000013],PlaceholderText:[Active:#ff000014,Disabled:#ff000014,Inactive:#ff000014],Accent:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000]") (expectedPalette)
+  actual: QPalette(resolve=0x7fffffffffffffff,"WindowText:[Active:#ff000000,Disabled:#ff000000,Inactive:#ff000000],Button:[Active:#ff000001,Disabled:#ff000001,Inactive:#ff000001],Light:[Active:#ff000002,Disabled:#ff000002,Inactive:#ff000002],Midlight:[Active:#ff000003,Disabled:#ff000003,Inactive:#ff000003],Dark:[Active:#ff000004,Disabled:#ff000004,Inactive:#ff000004],Mid:[Active:#ff000005,Disabled:#ff000005,Inactive:#ff000005],Text:[Active:#ff000006,Disabled:#ff000006,Inactive:#ff000006],BrightText:[Active:#ff000007,Disabled:#ff000007,Inactive:#ff000007],ButtonText:[Active:#ff000008,Disabled:#ff000008,Inactive:#ff000008],Base:[Active:#ff000009,Disabled:#ff000009,Inactive:#ff000009],Window:[Active:#ff00000a,Disabled:#ff00000a,Inactive:#ff00000a],Shadow:[Active:#ff00000b,Disabled:#ff00000b,Inactive:#ff00000b],Highlight:[Active:#ff00000c,Disabled:#ff00000c,Inactive:#ff00000c],HighlightedText:[Active:#ff00000d,Disabled:#ff00000d,Inactive:#ff00000d],Link:[Active:#ff00000e,Disabled:#ff00000e,Inactive:#ff00000e],LinkVisited:[Active:#ff00000f,Disabled:#ff00000f,Inactive:#ff00000f],AlternateBase:[Active:#ff000010,Disabled:#ff000010,Inactive:#ff000010],ToolTipBase:[Active:#ff000012,Disabled:#ff000012,Inactive:#ff000012],ToolTipText:[Active:#ff000013,Disabled:#ff000013,Inactive:#ff000013],PlaceholderText:[Active:#ff000014,Disabled:#ff000014,Inactive:#ff000014],Accent:[Active:#ff000015,Disabled:#ff000015,Inactive:#ff000015]") (actualPalette)
+  at: tst_Cmptest::compareQPalettes() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 0
+  ...
+ok 67 - compareQPalettes(all roles are the same)
+not ok 68 - tryCompare()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -533,7 +558,7 @@ not ok 65 - tryCompare()
     - severity: info
       message: Should now time out and fail
   ...
-not ok 66 - verify()
+not ok 69 - verify()
   ---
   type: QVERIFY
   message: Verification failed
@@ -545,7 +570,7 @@ not ok 66 - verify()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 67 - verify2()
+not ok 70 - verify2()
   ---
   type: QVERIFY
   message: 42 >= 2 (as expected, in fact)
@@ -557,7 +582,7 @@ not ok 67 - verify2()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 68 - tryVerify()
+not ok 71 - tryVerify()
   ---
   type: QVERIFY
   message: Verification failed
@@ -573,7 +598,7 @@ not ok 68 - tryVerify()
     - severity: info
       message: Should now time out and fail
   ...
-not ok 69 - tryVerify2()
+not ok 72 - tryVerify2()
   ---
   type: QVERIFY
   message: Should time out and fail
@@ -585,9 +610,9 @@ not ok 69 - tryVerify2()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 70 - verifyExplicitOperatorBool()
-ok 71 - cleanupTestCase()
-1..71
-# tests 71
-# pass 22
-# fail 49
+ok 73 - verifyExplicitOperatorBool()
+ok 74 - cleanupTestCase()
+1..74
+# tests 74
+# pass 23
+# fail 51

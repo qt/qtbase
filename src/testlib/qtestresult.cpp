@@ -289,21 +289,27 @@ void QTestResult::fail(const char *msg, const char *file, int line)
     checkStatement(false, msg, file, line);
 }
 
+// QPalette's << operator produces 1363 characters. A comparison failure
+// involving two palettes can therefore require 2726 characters, not including
+// the other output produced by QTest. Users might also have their own types
+// with large amounts of output, so use a sufficiently high value here.
+static constexpr size_t maxMsgLen = 4096;
+
 bool QTestResult::verify(bool statement, const char *statementStr,
                          const char *description, const char *file, int line)
 {
     QTEST_ASSERT(statementStr);
 
-    char msg[1024];
+    char msg[maxMsgLen];
     msg[0] = '\0';
 
     if (QTestLog::verboseLevel() >= 2) {
-        qsnprintf(msg, 1024, "QVERIFY(%s)", statementStr);
+        qsnprintf(msg, maxMsgLen, "QVERIFY(%s)", statementStr);
         QTestLog::info(msg, file, line);
     }
 
     if (statement == !!QTest::expectFailMode) {
-        qsnprintf(msg, 1024,
+        qsnprintf(msg, maxMsgLen,
                   statement ? "'%s' returned TRUE unexpectedly. (%s)" : "'%s' returned FALSE. (%s)",
                   statementStr, description ? description : "");
     }
@@ -371,7 +377,6 @@ static bool compareHelper(bool success, const char *failureMsg,
                           const char *file, int line,
                           bool hasValues = true)
 {
-    const size_t maxMsgLen = 1024;
     char msg[maxMsgLen];
     msg[0] = '\0';
 
@@ -631,7 +636,6 @@ bool QTestResult::reportResult(bool success, qxp::function_ref<const char *()> l
                                QTest::ComparisonOperation op, const char *file, int line,
                                const char *failureMessage)
 {
-    const size_t maxMsgLen = 1024;
     char msg[maxMsgLen];
     msg[0] = '\0';
 
