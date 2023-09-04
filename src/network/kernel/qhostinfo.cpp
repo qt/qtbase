@@ -234,7 +234,7 @@ static int nextId()
 
     \sa abortHostLookup(), addresses(), error(), fromName()
 */
-int QHostInfo::lookupHost(const QString &name, QObject *receiver, const char *member)
+int QHostInfo::lookupHost(const QString &name, QT7_ONLY(const) QObject *receiver, const char *member)
 {
     return QHostInfo::lookupHostImpl(name, receiver, nullptr, member);
 }
