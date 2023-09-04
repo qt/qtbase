@@ -90,8 +90,8 @@ QHostInfoResult::~QHostInfoResult()
     the thread that made the call to lookupHost. That QHostInfoResult object
     then calls the user code in the correct thread.
 
-    The 'result' object deletes itself (via deleteLater) when the metacall
-    event is received.
+    The 'result' object deletes itself (via deleteLater) when
+    finalizePostResultsReady is called.
 */
 void QHostInfoResult::postResultsReady(const QHostInfo &info)
 {
@@ -104,43 +104,30 @@ void QHostInfoResult::postResultsReady(const QHostInfo &info)
     if (!receiver)
         return;
 
-    static const int signal_index = []() -> int {
-        auto senderMetaObject = &QHostInfoResult::staticMetaObject;
-        auto signal = &QHostInfoResult::resultsReady;
-        int signal_index = -1;
-        void *args[] = { &signal_index, &signal };
-        senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
-        return signal_index + QMetaObjectPrivate::signalOffset(senderMetaObject);
-    }();
-
     // a long-living version of this
     auto result = new QHostInfoResult(this);
     Q_CHECK_PTR(result);
 
-    auto metaCallEvent = QMetaCallEvent::create(std::move(slotObj), nullptr, signal_index, info);
-    Q_CHECK_PTR(metaCallEvent);
-    qApp->postEvent(result, metaCallEvent);
+    QMetaObject::invokeMethod(result,
+                              &QHostInfoResult::finalizePostResultsReady,
+                              Qt::QueuedConnection,
+                              info);
 }
 
 /*
-    Receives the event posted by postResultsReady, and calls the functor.
+    Receives the info from postResultsReady, and calls the functor.
 */
-bool QHostInfoResult::event(QEvent *event)
+void QHostInfoResult::finalizePostResultsReady(const QHostInfo &info)
 {
-    if (event->type() == QEvent::MetaCall) {
-        Q_ASSERT(slotObj);
+    Q_ASSERT(slotObj);
 
-        // we used to have a context object, but it's already destroyed
-        if (receiver) {
-            auto metaCallEvent = static_cast<QMetaCallEvent *>(event);
-            auto args = metaCallEvent->args();
-            slotObj->call(const_cast<QObject*>(receiver.data()), args);
-        }
-
-        deleteLater();
-        return true;
+    // we used to have a context object, but it's already destroyed
+    if (receiver) {
+        void *args[] = { nullptr, const_cast<QHostInfo *>(&info) };
+        slotObj->call(const_cast<QObject *>(receiver.data()), args);
     }
-    return QObject::event(event);
+
+    deleteLater();
 }
 
 /*!

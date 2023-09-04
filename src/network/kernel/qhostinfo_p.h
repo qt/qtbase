@@ -51,13 +51,13 @@ public:
 Q_SIGNALS:
     void resultsReady(const QHostInfo &info);
 
-protected:
-    bool event(QEvent *event) override;
+private Q_SLOTS:
+    void finalizePostResultsReady(const QHostInfo &info);
 
 private:
-    QHostInfoResult(const QHostInfoResult *other)
+    QHostInfoResult(QHostInfoResult *other)
         : receiver(other->receiver.get() != other ? other->receiver.get() : this),
-          slotObj{copy(other->slotObj)}
+          slotObj{std::move(other->slotObj)}
     {
         // cleanup if the application terminates before results are delivered
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
