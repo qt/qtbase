@@ -2955,11 +2955,11 @@ static inline bool prevCharJoins(const QString &string, int pos)
     return joining == QChar::Joining_Dual || joining == QChar::Joining_Causing;
 }
 
-static inline bool isRetainableControlCode(QChar c)
+static constexpr bool isRetainableControlCode(char16_t c) noexcept
 {
-    return (c.unicode() >= 0x202a && c.unicode() <= 0x202e) // LRE, RLE, PDF, LRO, RLO
-            || (c.unicode() >= 0x200e && c.unicode() <= 0x200f) // LRM, RLM
-            || (c.unicode() >= 0x2066 && c.unicode() <= 0x2069); // LRI, RLI, FSI, PDI
+    return (c >= 0x202a && c <= 0x202e) // LRE, RLE, PDF, LRO, RLO
+            || (c >= 0x200e && c <= 0x200f) // LRM, RLM
+            || (c >= 0x2066 && c <= 0x2069); // LRI, RLI, FSI, PDI
 }
 
 static QString stringMidRetainingBidiCC(const QString &string,
@@ -2972,14 +2972,14 @@ static QString stringMidRetainingBidiCC(const QString &string,
 {
     QString prefix;
     for (int i=subStringFrom; i<midStart; ++i) {
-        QChar c = string.at(i);
+        char16_t c = string.at(i).unicode();
         if (isRetainableControlCode(c))
             prefix += c;
     }
 
     QString suffix;
     for (int i=midStart + midLength; i<subStringTo; ++i) {
-        QChar c = string.at(i);
+        char16_t c = string.at(i).unicode();
         if (isRetainableControlCode(c))
             suffix += c;
     }
@@ -3036,7 +3036,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, QFixed width, int flags,
     {
         QFontEngine *engine = fnt.d->engineForScript(QChar::Script_Common);
 
-        QChar ellipsisChar = u'\x2026';
+        constexpr char16_t ellipsisChar = u'\x2026';
 
         // We only want to use the ellipsis character if it is from the main
         // font (not one of the fallbacks), since using a fallback font
@@ -3048,7 +3048,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, QFixed width, int flags,
             engine = multiEngine->engine(0);
         }
 
-        glyph_t glyph = engine->glyphIndex(ellipsisChar.unicode());
+        glyph_t glyph = engine->glyphIndex(ellipsisChar);
 
         QGlyphLayout glyphs;
         glyphs.numGlyphs = 1;
@@ -3068,7 +3068,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, QFixed width, int flags,
                 ellipsisText = QStringLiteral("...");
             } else {
                 engine = fnt.d->engineForScript(QChar::Script_Common);
-                glyph = engine->glyphIndex(ellipsisChar.unicode());
+                glyph = engine->glyphIndex(ellipsisChar);
                 engine->recalcAdvances(&glyphs, { });
                 ellipsisText = ellipsisChar;
             }
