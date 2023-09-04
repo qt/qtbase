@@ -2884,57 +2884,41 @@ Qt::PermissionStatus QCoreApplication::checkPermission(const QPermission &permis
 void QCoreApplication::requestPermission(const QPermission &requestedPermission,
     QtPrivate::QSlotObjectBase *slotObjRaw, const QObject *context)
 {
-    QtPrivate::SlotObjSharedPtr slotObj(QtPrivate::SlotObjUniquePtr{slotObjRaw}); // adopts
+    QtPrivate::SlotObjUniquePtr slotObj{slotObjRaw}; // adopts
+    Q_ASSERT(slotObj);
+
     if (QThread::currentThread() != QCoreApplicationPrivate::mainThread()) {
         qWarning(lcPermissions, "Permissions can only be requested from the GUI (main) thread");
         return;
     }
 
-    Q_ASSERT(slotObj);
-
-    // Used as the signalID in the metacall event and only used to
-    // verify that we are not processing an unrelated event, not to
-    // emit the right signal. So using a value that can never clash
-    // with any signal index. Clang doesn't like this to be a static
-    // member of the PermissionReceiver.
-    static constexpr ushort PermissionReceivedID = 0xffff;
-
-    // If we have a context object, then we dispatch the permission response
-    // asynchronously through a received object that lives in the same thread
-    // as the context object. Otherwise we call the functor synchronously when
-    // we get a response (which might still be asynchronous for the caller).
     class PermissionReceiver : public QObject
     {
     public:
-        explicit PermissionReceiver(const QtPrivate::SlotObjSharedPtr &slotObject, const QObject *context)
-            : slotObject(slotObject), context(context)
-        {}
-
-    protected:
-        bool event(QEvent *event) override {
-            if (event->type() == QEvent::MetaCall) {
-                auto metaCallEvent = static_cast<QMetaCallEvent *>(event);
-                if (metaCallEvent->id() == PermissionReceivedID) {
-                    Q_ASSERT(slotObject);
-                    // only execute if context object is still alive
-                    if (context)
-                        slotObject->call(const_cast<QObject*>(context.data()), metaCallEvent->args());
-                    deleteLater();
-
-                    return true;
-                }
-            }
-            return QObject::event(event);
+        explicit PermissionReceiver(QtPrivate::SlotObjUniquePtr &&slotObject, const QObject *context)
+            : slotObject(std::move(slotObject)), context(context ? context : this)
+        {
+            Q_ASSERT(this->context);
+            moveToThread(this->context->thread());
         }
+
+        void finalizePermissionRequest(const QPermission &permission)
+        {
+            Q_ASSERT(slotObject);
+            // only execute if context object is still alive
+            if (context) {
+                void *args[] = { nullptr, const_cast<QPermission *>(&permission) };
+                slotObject->call(const_cast<QObject *>(context.data()), args);
+            }
+            deleteLater();
+        }
+
     private:
         QtPrivate::SlotObjSharedPtr slotObject;
         QPointer<const QObject> context;
     };
-    PermissionReceiver *receiver = nullptr;
-    if (context) {
-        receiver = new PermissionReceiver(slotObj, context);
-        receiver->moveToThread(context->thread());
-    }
+
+    PermissionReceiver *receiver = new PermissionReceiver(std::move(slotObj), context);
 
     QPermissions::Private::requestPermission(requestedPermission, [=](Qt::PermissionStatus status) {
         Q_ASSERT_X(status != Qt::PermissionStatus::Undetermined, "QPermission",
@@ -2945,15 +2929,10 @@ void QCoreApplication::requestPermission(const QPermission &requestedPermission,
         if (QCoreApplication::self) {
             QPermission permission = requestedPermission;
             permission.m_status = status;
-
-            if (receiver) {
-                auto metaCallEvent = QMetaCallEvent::create(slotObj.get(), qApp,
-                                                            PermissionReceivedID, permission);
-                qApp->postEvent(receiver, metaCallEvent);
-            } else {
-                void *argv[] = { nullptr, &permission };
-                slotObj->call(const_cast<QObject*>(context), argv);
-            }
+            QMetaObject::invokeMethod(receiver,
+                                      &PermissionReceiver::finalizePermissionRequest,
+                                      Qt::QueuedConnection,
+                                      permission);
         }
     });
 }
