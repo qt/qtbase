@@ -3248,18 +3248,42 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
             for (int layer = 0, maxLayer = u.subresDesc.size(); layer < maxLayer; ++layer) {
                 for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
                     for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level])) {
-                        const UINT subresource = calcSubresource(UINT(level), is3D ? 0u : UINT(layer), texD->mipLevelCount);
-                        D3D12_PLACED_SUBRESOURCE_FOOTPRINT layout;
-                        UINT64 totalBytes = 0;
-                        D3D12_RESOURCE_DESC desc = res->desc;
-                        if (is3D) {
-                            desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-                            desc.DepthOrArraySize = 1;
-                        }
-                        dev->GetCopyableFootprints(&desc, subresource, 1, 0,
-                                                   &layout, nullptr, nullptr, &totalBytes);
+                        D3D12_SUBRESOURCE_FOOTPRINT footprint = {};
+                        footprint.Format = res->desc.Format;
+                        footprint.Depth = 1;
+                        quint32 totalBytes = 0;
 
-                        const quint32 allocSize = QD3D12StagingArea::allocSizeForArray(quint32(totalBytes), 1);
+                        const QSize subresSize = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
+                                                                                   : subresDesc.sourceSize();
+                        const QPoint srcPos = subresDesc.sourceTopLeft();
+                        QPoint dstPos = subresDesc.destinationTopLeft();
+
+                        if (!subresDesc.image().isNull()) {
+                            const QImage img = subresDesc.image();
+                            const int bpl = img.bytesPerLine();
+                            footprint.RowPitch = aligned<UINT>(bpl, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+                            totalBytes = footprint.RowPitch * img.height();
+                        } else if (!subresDesc.data().isEmpty() && isCompressedFormat(texD->m_format)) {
+                            QSize blockDim;
+                            quint32 bpl = 0;
+                            compressedFormatInfo(texD->m_format, subresSize, &bpl, nullptr, &blockDim);
+                            footprint.RowPitch = aligned<UINT>(bpl, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+                            const int rowCount = aligned(subresSize.height(), blockDim.height()) / blockDim.height();
+                            totalBytes = footprint.RowPitch * rowCount;
+                        } else if (!subresDesc.data().isEmpty()) {
+                            quint32 bpl = 0;
+                            if (subresDesc.dataStride())
+                                bpl = subresDesc.dataStride();
+                            else
+                                textureFormatInfo(texD->m_format, subresSize, &bpl, nullptr, nullptr);
+                            footprint.RowPitch = aligned<UINT>(bpl, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+                            totalBytes = footprint.RowPitch * subresSize.height();
+                        } else {
+                            qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
+                            continue;
+                        }
+
+                        const quint32 allocSize = QD3D12StagingArea::allocSizeForArray(totalBytes, 1);
                         QD3D12StagingArea::Allocation stagingAlloc;
                         if (smallStagingAreas[currentFrameSlot].remainingCapacity() >= allocSize)
                             stagingAlloc = smallStagingAreas[currentFrameSlot].get(allocSize);
@@ -3276,32 +3300,29 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                             }
                         }
 
-                        const UINT requiredBytesPerLine = layout.Footprint.RowPitch; // multiple of 256
-                        const QSize subresSize = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
-                                                                                   : subresDesc.sourceSize();
-                        const QPoint srcPos = subresDesc.sourceTopLeft();
-                        QPoint dstPos = subresDesc.destinationTopLeft();
-
                         D3D12_TEXTURE_COPY_LOCATION dst;
                         dst.pResource = res->resource;
                         dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-                        dst.SubresourceIndex = subresource;
+                        dst.SubresourceIndex = calcSubresource(UINT(level), is3D ? 0u : UINT(layer), texD->mipLevelCount);
                         D3D12_TEXTURE_COPY_LOCATION src;
                         src.pResource = stagingAlloc.buffer;
                         src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
                         src.PlacedFootprint.Offset = stagingAlloc.bufferOffset;
-                        src.PlacedFootprint.Footprint = layout.Footprint;
 
                         D3D12_BOX srcBox; // back, right, bottom are exclusive
 
                         if (!subresDesc.image().isNull()) {
-                            QImage img = subresDesc.image();
+                            const QImage img = subresDesc.image();
                             const int bpc = qMax(1, img.depth() / 8);
                             const int bpl = img.bytesPerLine();
 
                             QSize size = subresDesc.sourceSize().isEmpty() ? img.size() : subresDesc.sourceSize();
                             size.setWidth(qMin(size.width(), img.width() - srcPos.x()));
                             size.setHeight(qMin(size.height(), img.height() - srcPos.y()));
+
+                            footprint.Width = size.width();
+                            footprint.Height = size.height();
+
                             srcBox.left = 0;
                             srcBox.top = 0;
                             srcBox.right = UINT(size.width());
@@ -3312,7 +3333,7 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                             const uchar *imgPtr = img.constBits();
                             const quint32 lineBytes = size.width() * bpc;
                             for (int y = 0, h = size.height(); y < h; ++y) {
-                                memcpy(stagingAlloc.p + y * requiredBytesPerLine,
+                                memcpy(stagingAlloc.p + y * footprint.RowPitch,
                                        imgPtr + srcPos.x() * bpc + (y + srcPos.y()) * bpl,
                                        lineBytes);
                             }
@@ -3329,15 +3350,19 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                             // width and height must be multiples of the block width and height
                             srcBox.right = aligned(subresSize.width(), blockDim.width());
                             srcBox.bottom = aligned(subresSize.height(), blockDim.height());
+
                             srcBox.front = 0;
                             srcBox.back = 1;
 
-                            const quint32 copyBytes = qMin(bpl, requiredBytesPerLine);
+                            footprint.Width = aligned(subresSize.width(), blockDim.width());
+                            footprint.Height = aligned(subresSize.height(), blockDim.height());
+
+                            const quint32 copyBytes = qMin(bpl, footprint.RowPitch);
                             const QByteArray imgData = subresDesc.data();
                             const char *imgPtr = imgData.constData();
                             const int rowCount = aligned(subresSize.height(), blockDim.height()) / blockDim.height();
                             for (int y = 0; y < rowCount; ++y)
-                                memcpy(stagingAlloc.p + y * requiredBytesPerLine, imgPtr + y * bpl, copyBytes);
+                                memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + y * bpl, copyBytes);
                         } else if (!subresDesc.data().isEmpty()) {
                             srcBox.left = 0;
                             srcBox.top = 0;
@@ -3346,23 +3371,23 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                             srcBox.front = 0;
                             srcBox.back = 1;
 
+                            footprint.Width = subresSize.width();
+                            footprint.Height = subresSize.height();
+
                             quint32 bpl = 0;
                             if (subresDesc.dataStride())
                                 bpl = subresDesc.dataStride();
                             else
                                 textureFormatInfo(texD->m_format, subresSize, &bpl, nullptr, nullptr);
 
-                            const quint32 copyBytes = qMin(bpl, requiredBytesPerLine);
+                            const quint32 copyBytes = qMin(bpl, footprint.RowPitch);
                             const QByteArray data = subresDesc.data();
                             const char *imgPtr = data.constData();
                             for (int y = 0, h = subresSize.height(); y < h; ++y)
-                                memcpy(stagingAlloc.p + y * requiredBytesPerLine, imgPtr + y * bpl, copyBytes);
-                        } else {
-                            qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
-                            if (ownStagingArea.has_value())
-                                ownStagingArea->destroyWithDeferredRelease(&releaseQueue);
-                            continue;
+                                memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + y * bpl, copyBytes);
                         }
+
+                        src.PlacedFootprint.Footprint = footprint;
 
                         cbD->cmdList->CopyTextureRegion(&dst,
                                                         UINT(dstPos.x()),
