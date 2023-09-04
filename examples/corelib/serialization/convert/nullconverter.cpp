@@ -26,25 +26,6 @@ Converter::Options NullConverter::outputOptions() const
     return SupportsArbitraryMapKeys;
 }
 
-const char *NullConverter::optionsHelp() const
-{
-    return nullptr;
-}
-
-bool NullConverter::probeFile(QIODevice *f) const
-{
-    Q_UNUSED(f);
-    return false;
-}
-
-QVariant NullConverter::loadFile(QIODevice *f, const Converter *&outputConverter) const
-{
-    Q_UNUSED(f);
-    Q_UNUSED(outputConverter);
-    outputConverter = this;
-    return QVariant();
-}
-
 void NullConverter::saveFile(QIODevice *f, const QVariant &contents,
                              const QStringList &options) const
 {
