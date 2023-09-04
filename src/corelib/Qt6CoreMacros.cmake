@@ -2969,7 +2969,9 @@ macro(qt6_standard_project_setup)
             REQUIRES
             SUPPORTS_UP_TO
         )
-        set(__qt_sps_args_multi)
+        set(__qt_sps_args_multi
+            I18N_LANGUAGES
+        )
         cmake_parse_arguments(__qt_sps_arg
             "${__qt_sps_args_option}"
             "${__qt_sps_args_single}"
@@ -3067,6 +3069,11 @@ macro(qt6_standard_project_setup)
             if("${__qt_autogen_targets_folder}" STREQUAL "")
                 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER ${__qt_qt_targets_folder})
             endif()
+        endif()
+
+        # I18N support.
+        if(DEFINED __qt_sps_arg_I18N_LANGUAGES AND NOT DEFINED QT_I18N_LANGUAGES)
+            set(QT_I18N_LANGUAGES ${__qt_sps_arg_I18N_LANGUAGES})
         endif()
     endif()
 endmacro()

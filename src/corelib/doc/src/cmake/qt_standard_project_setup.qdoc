@@ -20,6 +20,7 @@
 qt_standard_project_setup(
     [REQUIRES <version>]
     [SUPPORTS_UP_TO <version>]
+    [I18N_LANGUAGES <language...>]
 )
 \endcode
 
@@ -80,6 +81,12 @@ setting the \l{QT_NO_STANDARD_PROJECT_SETUP} variable to true.
 
 \sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()}
 \sa qt_policy
+
+\section1 Internationalization
+
+Since Qt 6.7, it is possible to specify the languages that are used for project
+internationalization with the \c I18N_LANGUAGES argument. See \l
+QT_I18N_LANGUAGES for details.
 
 \section1 Example
 
