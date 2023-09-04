@@ -27,6 +27,7 @@ qt_add_executable(convert
     main.cpp
     nullconverter.cpp nullconverter.h
     textconverter.cpp textconverter.h
+    variantorderedmap.h
     xmlconverter.cpp xmlconverter.h
 )
 
