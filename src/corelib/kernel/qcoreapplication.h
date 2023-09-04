@@ -142,6 +142,7 @@ public:
     }
 # endif // Q_QDOC
 
+#ifndef QT_NO_CONTEXTLESS_CONNECT
     // requestPermission to a functor or function pointer (without context)
     template <typename Functor,
               std::enable_if_t<
@@ -151,6 +152,7 @@ public:
     {
         requestPermission(permission, nullptr, std::forward<Functor>(func));
     }
+#endif // QT_NO_CONTEXTLESS_CONNECT
 
 private:
     // ### Qt 7: rename to requestPermissionImpl to avoid ambiguity
