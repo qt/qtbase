@@ -5764,8 +5764,7 @@ QMap<QString, QString> qt_getImageText(const QImage &image, const QString &descr
 QMap<QString, QString> qt_getImageTextFromDescription(const QString &description)
 {
     QMap<QString, QString> text;
-    const auto pairs = QStringView{description}.split(u"\n\n");
-    for (const auto &pair : pairs) {
+    for (const auto &pair : QStringView{description}.tokenize(u"\n\n")) {
         int index = pair.indexOf(u':');
         if (index >= 0 && pair.indexOf(u' ') < index) {
             if (!pair.trimmed().isEmpty())
