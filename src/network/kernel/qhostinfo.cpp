@@ -225,6 +225,10 @@ static int nextId()
 */
 int QHostInfo::lookupHost(const QString &name, QT7_ONLY(const) QObject *receiver, const char *member)
 {
+    if (!receiver || !member) {
+        qWarning("QHostInfo::lookupHost: both the receiver and the member to invoke must be non-null");
+        return -1;
+    }
     return QHostInfo::lookupHostImpl(name, receiver, nullptr, member);
 }
 
