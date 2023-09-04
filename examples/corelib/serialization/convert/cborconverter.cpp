@@ -142,20 +142,6 @@ const char *CborDiagnosticDumper::optionsHelp() const
     return diagnosticHelp;
 }
 
-bool CborDiagnosticDumper::probeFile(QIODevice *f) const
-{
-    Q_UNUSED(f);
-    return false;
-}
-
-QVariant CborDiagnosticDumper::loadFile(QIODevice *f, const Converter *&outputConverter) const
-{
-    Q_UNREACHABLE();
-    Q_UNUSED(f);
-    Q_UNUSED(outputConverter);
-    return QVariant();
-}
-
 void CborDiagnosticDumper::saveFile(QIODevice *f, const QVariant &contents,
                                     const QStringList &options) const
 {

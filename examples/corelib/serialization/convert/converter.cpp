@@ -23,3 +23,20 @@ const QList<const Converter *> &Converter::allConverters()
 {
     return converters();
 }
+
+// Some virtual methods that Converter classes needn't override, when not relevant:
+Converter::Options Converter::outputOptions() const { return {}; }
+const char *Converter::optionsHelp() const { return nullptr; }
+bool Converter::probeFile(QIODevice *) const { return false; }
+
+// The virtual method they should override if they claim to support In:
+QVariant Converter::loadFile(QIODevice *, const Converter *&outputConverter) const
+{
+    Q_ASSERT(!directions().testFlag(Converter::Direction::In));
+    // For those that don't, this should never be called.
+    Q_UNIMPLEMENTED();
+    // But every implementation should at least do this:
+    if (!outputConverter)
+        outputConverter = this;
+    return QVariant();
+}

@@ -13,9 +13,6 @@ public:
     QString name() const override;
     Directions directions() const override;
     Options outputOptions() const override;
-    const char *optionsHelp() const override;
-    bool probeFile(QIODevice *f) const override;
-    QVariant loadFile(QIODevice *f, const Converter *&outputConverter) const override;
     void saveFile(QIODevice *f, const QVariant &contents,
                   const QStringList &options) const override;
 };

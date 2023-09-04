@@ -54,16 +54,6 @@ Converter::Directions TextConverter::directions() const
     return Direction::InOut;
 }
 
-Converter::Options TextConverter::outputOptions() const
-{
-    return {};
-}
-
-const char *TextConverter::optionsHelp() const
-{
-    return nullptr;
-}
-
 bool TextConverter::probeFile(QIODevice *f) const
 {
     if (QFile *file = qobject_cast<QFile *>(f))

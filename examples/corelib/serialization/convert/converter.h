@@ -29,10 +29,10 @@ public:
 
     virtual QString name() const = 0;
     virtual Directions directions() const = 0;
-    virtual Options outputOptions() const = 0;
-    virtual const char *optionsHelp() const = 0;
-    virtual bool probeFile(QIODevice *f) const = 0;
-    virtual QVariant loadFile(QIODevice *f, const Converter *&outputConverter) const = 0;
+    virtual Options outputOptions() const;
+    virtual const char *optionsHelp() const;
+    virtual bool probeFile(QIODevice *f) const;
+    virtual QVariant loadFile(QIODevice *f, const Converter *&outputConverter) const;
     virtual void saveFile(QIODevice *f, const QVariant &contents,
                           const QStringList &options) const = 0;
 };
