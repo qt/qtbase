@@ -5,22 +5,8 @@
 #define CONVERTER_H
 
 #include <QIODevice>
-#include <QList>
-#include <QPair>
+#include <QStringList>
 #include <QVariant>
-#include <QVariantMap>
-
-class VariantOrderedMap : public QList<QPair<QVariant, QVariant>>
-{
-public:
-    VariantOrderedMap() = default;
-    VariantOrderedMap(const QVariantMap &map)
-    {
-        reserve(map.size());
-        for (auto it = map.begin(); it != map.end(); ++it)
-            append({it.key(), it.value()});
-    }
-};
 
 class Converter
 {

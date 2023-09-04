@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "cborconverter.h"
+#include "variantorderedmap.h"
 
 #include <QCborArray>
 #include <QCborMap>
