@@ -27,4 +27,5 @@ HEADERS += \
     jsonconverter.h \
     nullconverter.h \
     textconverter.h \
+    variantorderedmap.h \
     xmlconverter.h

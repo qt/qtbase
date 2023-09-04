@@ -3,6 +3,7 @@
 
 #include "datastreamconverter.h"
 #include "debugtextdumper.h"
+#include "variantorderedmap.h"
 
 #include <QDataStream>
 

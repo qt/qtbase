@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "xmlconverter.h"
+#include "variantorderedmap.h"
 
 #include <QBitArray>
 #include <QtCborCommon>
