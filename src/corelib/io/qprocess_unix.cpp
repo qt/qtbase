@@ -141,6 +141,7 @@ DECLARE_FUNCTIONS(sigaction)
 static void change_sigpipe(decltype(SIG_DFL) new_handler)
 {
     struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
     sa.sa_handler = new_handler;
     sigaction(SIGPIPE, &sa, nullptr);
 }
