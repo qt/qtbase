@@ -36,9 +36,9 @@ int main(int argc, char *argv[])
     for (const Converter *conv : std::as_const(*availableConverters)) {
         auto direction = conv->directions();
         QString name = conv->name();
-        if (direction & Converter::In)
+        if (direction.testFlag(Converter::In))
             inputFormats << name;
-        if (direction & Converter::Out)
+        if (direction.testFlag(Converter::Out))
             outputFormats << name;
     }
     inputFormats.sort();
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
     if (!inconv) {
         // probe the input to find a file format
         for (const Converter *conv : std::as_const(*availableConverters)) {
-            if (conv->directions() & Converter::In && conv->probeFile(&input)) {
+            if (conv->directions().testFlag(Converter::In) && conv->probeFile(&input)) {
                 inconv = conv;
                 break;
             }
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
     if (!outconv) {
         // probe the output to find a file format
         for (const Converter *conv : std::as_const(*availableConverters)) {
-            if (conv->directions() & Converter::Out && conv->probeFile(&output)) {
+            if (conv->directions().testFlag(Converter::Out) && conv->probeFile(&output)) {
                 outconv = conv;
                 break;
             }

@@ -13,7 +13,7 @@ QString NullConverter::name() const
     return "null"_L1;
 }
 
-Converter::Direction NullConverter::directions() const
+Converter::Directions NullConverter::directions() const
 {
     return Out;
 }

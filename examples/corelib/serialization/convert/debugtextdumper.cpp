@@ -48,7 +48,7 @@ QString DebugTextDumper::name() const
     return "debugtext-dump"_L1;
 }
 
-Converter::Direction DebugTextDumper::directions() const
+Converter::Directions DebugTextDumper::directions() const
 {
     return Out;
 }

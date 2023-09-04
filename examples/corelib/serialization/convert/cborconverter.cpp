@@ -125,7 +125,7 @@ QString CborDiagnosticDumper::name() const
     return "cbor-dump"_L1;
 }
 
-Converter::Direction CborDiagnosticDumper::directions() const
+Converter::Directions CborDiagnosticDumper::directions() const
 {
     return Out;
 }
@@ -197,7 +197,7 @@ QString CborConverter::name() const
     return "cbor";
 }
 
-Converter::Direction CborConverter::directions() const
+Converter::Directions CborConverter::directions() const
 {
     return InOut;
 }

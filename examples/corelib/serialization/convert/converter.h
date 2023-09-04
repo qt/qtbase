@@ -32,7 +32,8 @@ protected:
 public:
     static Converter *null;
 
-    enum Direction { In = 1, Out = 2, InOut = 3 };
+    enum Direction { In = 1, Out = 2, InOut = In | Out };
+    Q_DECLARE_FLAGS(Directions, Direction)
 
     enum Option { SupportsArbitraryMapKeys = 0x01 };
     Q_DECLARE_FLAGS(Options, Option)
@@ -40,7 +41,7 @@ public:
     virtual ~Converter() = 0;
 
     virtual QString name() const = 0;
-    virtual Direction directions() const = 0;
+    virtual Directions directions() const = 0;
     virtual Options outputOptions() const = 0;
     virtual const char *optionsHelp() const = 0;
     virtual bool probeFile(QIODevice *f) const = 0;
@@ -49,6 +50,7 @@ public:
                           const QStringList &options) const = 0;
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(Converter::Directions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Converter::Options)
 
 #endif // CONVERTER_H

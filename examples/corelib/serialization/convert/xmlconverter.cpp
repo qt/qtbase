@@ -401,7 +401,7 @@ QString XmlConverter::name() const
     return "xml"_L1;
 }
 
-Converter::Direction XmlConverter::directions() const
+Converter::Directions XmlConverter::directions() const
 {
     return InOut;
 }

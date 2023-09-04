@@ -53,7 +53,7 @@ QString DataStreamConverter::name() const
     return "datastream"_L1;
 }
 
-Converter::Direction DataStreamConverter::directions() const
+Converter::Directions DataStreamConverter::directions() const
 {
     return InOut;
 }

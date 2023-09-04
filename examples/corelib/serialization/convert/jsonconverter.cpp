@@ -30,7 +30,7 @@ QString JsonConverter::name() const
     return "json"_L1;
 }
 
-Converter::Direction JsonConverter::directions() const
+Converter::Directions JsonConverter::directions() const
 {
     return InOut;
 }
