@@ -56,8 +56,8 @@ protected:
 
 private:
     QHostInfoResult(const QHostInfoResult *other)
-        : receiver(other->receiver), slotObj{copy(other->slotObj)},
-          withContextObject(other->withContextObject)
+        : receiver(other->receiver.get() != other ? other->receiver.get() : this),
+          slotObj{copy(other->slotObj)}
     {
         // cleanup if the application terminates before results are delivered
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
@@ -66,9 +66,10 @@ private:
         moveToThread(other->thread());
     }
 
+    // receiver is either a QObject provided by the user,
+    // or it's set to `this` (to emulate the behavior of the contextless connect())
     QPointer<const QObject> receiver = nullptr;
     QtPrivate::SlotObjUniquePtr slotObj;
-    const bool withContextObject = false;
 };
 
 class QHostInfoAgent

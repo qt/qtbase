@@ -73,10 +73,10 @@ Q_APPLICATION_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
 }
 
 QHostInfoResult::QHostInfoResult(const QObject *receiver, QtPrivate::SlotObjUniquePtr slot)
-    : receiver{receiver}, slotObj{std::move(slot)}, withContextObject{slotObj && receiver}
+    : receiver{receiver ? receiver : this}, slotObj{std::move(slot)}
 {
-    if (receiver)
-        moveToThread(receiver->thread());
+    Q_ASSERT(this->receiver);
+    moveToThread(this->receiver->thread());
 }
 
 QHostInfoResult::~QHostInfoResult()
@@ -101,7 +101,7 @@ void QHostInfoResult::postResultsReady(const QHostInfo &info)
         return;
     }
     // we used to have a context object, but it's already destroyed
-    if (withContextObject && !receiver)
+    if (!receiver)
         return;
 
     static const int signal_index = []() -> int {
@@ -129,11 +129,13 @@ bool QHostInfoResult::event(QEvent *event)
 {
     if (event->type() == QEvent::MetaCall) {
         Q_ASSERT(slotObj);
-        auto metaCallEvent = static_cast<QMetaCallEvent *>(event);
-        auto args = metaCallEvent->args();
-        // we didn't have a context object, or it's still alive
-        if (!withContextObject || receiver)
+
+        // we used to have a context object, but it's already destroyed
+        if (receiver) {
+            auto metaCallEvent = static_cast<QMetaCallEvent *>(event);
+            auto args = metaCallEvent->args();
             slotObj->call(const_cast<QObject*>(receiver.data()), args);
+        }
 
         deleteLater();
         return true;
