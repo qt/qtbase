@@ -75,15 +75,12 @@ bool QDecompressHelper::isSupportedEncoding(QByteArrayView encoding)
 
 QByteArrayList QDecompressHelper::acceptedEncoding()
 {
-    static QByteArrayList accepted = []() {
-        QByteArrayList list;
-        list.reserve(std::size(contentEncodingMapping));
-        for (const auto &mapping : contentEncodingMapping) {
-            list << mapping.name.toByteArray();
-        }
-        return list;
-    }();
-    return accepted;
+    QByteArrayList list;
+    list.reserve(std::size(contentEncodingMapping));
+    for (const auto &mapping : contentEncodingMapping) {
+        list << mapping.name.toByteArray();
+    }
+    return list;
 }
 
 QDecompressHelper::~QDecompressHelper()
