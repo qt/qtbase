@@ -51,7 +51,7 @@ QString TextConverter::name() const
 
 Converter::Directions TextConverter::directions() const
 {
-    return InOut;
+    return Direction::InOut;
 }
 
 Converter::Options TextConverter::outputOptions() const

@@ -50,7 +50,7 @@ QString DebugTextDumper::name() const
 
 Converter::Directions DebugTextDumper::directions() const
 {
-    return Out;
+    return Direction::Out;
 }
 
 Converter::Options DebugTextDumper::outputOptions() const

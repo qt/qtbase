@@ -55,7 +55,7 @@ QString DataStreamConverter::name() const
 
 Converter::Directions DataStreamConverter::directions() const
 {
-    return InOut;
+    return Direction::InOut;
 }
 
 Converter::Options DataStreamConverter::outputOptions() const
