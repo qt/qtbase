@@ -299,6 +299,11 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     processPostedEvents();
 
+    // The processPostedEvents() call above may process an event which deletes the
+    // application object and the event dispatcher; stop event processing in that case.
+    if (!isValidEventDispatcherPointer(this))
+        return false;
+
     if (m_interrupted) {
         m_interrupted = false;
         return false;
