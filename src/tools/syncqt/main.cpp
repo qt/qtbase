@@ -140,6 +140,12 @@ std::filesystem::path normilizedPath(const std::string &path)
     return std::filesystem::path(std::filesystem::weakly_canonical(path).generic_string());
 }
 
+void printFilesystemError(const std::filesystem::filesystem_error &fserr, std::string_view errorMsg)
+{
+    std::cerr << errorMsg << ": " << fserr.path1() << ".\n"
+              << fserr.what() << "(" << fserr.code().value() << ")" << std::endl;
+}
+
 bool createDirectories(const std::string &path, std::string_view errorMsg, bool *exists = nullptr)
 {
     bool result = true;
@@ -723,26 +729,31 @@ public:
             return false;
 
         if (outDirExists && !skipCleanup) {
-            for (const auto &entry :
-                 std::filesystem::recursive_directory_iterator(outputDirectory)) {
-                if (m_producedHeaders.find(entry.path().filename().generic_string())
-                    == m_producedHeaders.end()) {
-                    // Check if header file came from another module as result of the cross-module
-                    // deprecation before removing it.
-                    std::string firstLine;
-                    {
-                        std::ifstream input(entry.path(), std::ifstream::in);
-                        if (input.is_open()) {
-                            std::getline(input, firstLine);
-                            input.close();
+            try {
+                for (const auto &entry :
+                     std::filesystem::recursive_directory_iterator(outputDirectory)) {
+                    if (m_producedHeaders.find(entry.path().filename().generic_string())
+                        == m_producedHeaders.end()) {
+                        // Check if header file came from another module as result of the
+                        // cross-module deprecation before removing it.
+                        std::string firstLine;
+                        {
+                            std::ifstream input(entry.path(), std::ifstream::in);
+                            if (input.is_open()) {
+                                std::getline(input, firstLine);
+                                input.close();
+                            }
                         }
+                        if (firstLine.find("#ifndef DEPRECATED_HEADER_"
+                                           + m_commandLineArgs->moduleName())
+                                    == 0
+                            || firstLine.find("#ifndef DEPRECATED_HEADER_") != 0)
+                            std::filesystem::remove(entry.path());
                     }
-                    if (firstLine.find("#ifndef DEPRECATED_HEADER_"
-                                       + m_commandLineArgs->moduleName())
-                                == 0
-                        || firstLine.find("#ifndef DEPRECATED_HEADER_") != 0)
-                        std::filesystem::remove(entry.path());
                 }
+            } catch (const std::filesystem::filesystem_error &fserr) {
+                utils::printFilesystemError(fserr, "Unable to clean the staging directory");
+                return false;
             }
         }
 
