@@ -15,7 +15,7 @@ QString NullConverter::name() const
 
 Converter::Directions NullConverter::directions() const
 {
-    return Out;
+    return Direction::Out;
 }
 
 Converter::Options NullConverter::outputOptions() const

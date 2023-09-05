@@ -127,7 +127,7 @@ QString CborDiagnosticDumper::name() const
 
 Converter::Directions CborDiagnosticDumper::directions() const
 {
-    return Out;
+    return Direction::Out;
 }
 
 Converter::Options CborDiagnosticDumper::outputOptions() const
@@ -199,7 +199,7 @@ QString CborConverter::name() const
 
 Converter::Directions CborConverter::directions() const
 {
-    return InOut;
+    return Direction::InOut;
 }
 
 Converter::Options CborConverter::outputOptions() const
