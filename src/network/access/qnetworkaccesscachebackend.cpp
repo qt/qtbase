@@ -12,6 +12,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QNetworkAccessCacheBackend::QNetworkAccessCacheBackend()
     : QNetworkAccessBackend(QNetworkAccessBackend::TargetType::Local)
 {
@@ -51,10 +53,10 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
     // set the raw headers
     const QNetworkCacheMetaData::RawHeaderList rawHeaders = item.rawHeaders();
     for (const auto &header : rawHeaders) {
-        if (header.first.toLower() == "cache-control") {
-            const QByteArray cacheControlValue = header.second.toLower();
-            if (cacheControlValue.contains("must-revalidate")
-                || cacheControlValue.contains("no-cache")) {
+        if (header.first.compare("cache-control", Qt::CaseInsensitive) == 0) {
+            const QLatin1StringView cacheControlValue(header.second);
+            if (cacheControlValue.contains("must-revalidate"_L1, Qt::CaseInsensitive)
+                || cacheControlValue.contains("no-cache"_L1, Qt::CaseInsensitive)) {
                 return false;
             }
         }
