@@ -1105,9 +1105,10 @@ void addCompletionHandlersImpl(const std::shared_ptr<ContextType> &context,
 {
     auto future = std::get<Index>(t);
     using ResultType = typename ContextType::ValueType;
-    future.then([context](const std::tuple_element_t<Index, std::tuple<Ts...>> &f) {
+    // Need context=context so that the compiler does not infer the captured variable's type as 'const'
+    future.then([context=context](const std::tuple_element_t<Index, std::tuple<Ts...>> &f) {
         context->checkForCompletion(Index, ResultType { std::in_place_index<Index>, f });
-    }).onCanceled([context, future]() {
+    }).onCanceled([context=context, future]() {
         context->checkForCompletion(Index, ResultType { std::in_place_index<Index>, future });
     });
 
@@ -1135,9 +1136,10 @@ QFuture<OutputSequence> whenAllImpl(InputIt first, InputIt last)
 
     qsizetype idx = 0;
     for (auto it = first; it != last; ++it, ++idx) {
-        it->then([context, idx](const ValueType &f) {
+        // Need context=context so that the compiler does not infer the captured variable's type as 'const'
+        it->then([context=context, idx](const ValueType &f) {
             context->checkForCompletion(idx, f);
-        }).onCanceled([context, idx, f = *it] {
+        }).onCanceled([context=context, idx, f = *it] {
             context->checkForCompletion(idx, f);
         });
     }
@@ -1175,9 +1177,10 @@ QFuture<QtFuture::WhenAnyResult<typename Future<ValueType>::type>> whenAnyImpl(I
 
     qsizetype idx = 0;
     for (auto it = first; it != last; ++it, ++idx) {
-        it->then([context, idx](const ValueType &f) {
+        // Need context=context so that the compiler does not infer the captured variable's type as 'const'
+        it->then([context=context, idx](const ValueType &f) {
             context->checkForCompletion(idx, QtFuture::WhenAnyResult { idx, f });
-        }).onCanceled([context, idx, f = *it] {
+        }).onCanceled([context=context, idx, f = *it] {
             context->checkForCompletion(idx, QtFuture::WhenAnyResult { idx, f });
         });
     }
