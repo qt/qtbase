@@ -36,15 +36,10 @@ public:
     Itemizer(const QString &string, const QScriptAnalysis *analysis, QScriptItemArray &items)
         : m_string(string),
         m_analysis(analysis),
-        m_items(items),
-        m_splitter(nullptr)
+        m_items(items)
     {
     }
-    ~Itemizer()
-    {
-        delete m_splitter;
-    }
-
+    ~Itemizer() = default;
     /// generate the script items
     /// The caps parameter is used to choose the algorithm of splitting text and assigning roles to the textitems
     void generate(int start, int length, QFont::Capitalization caps)
@@ -101,7 +96,7 @@ private:
             return;
 
         if (!m_splitter)
-            m_splitter = new QTextBoundaryFinder(QTextBoundaryFinder::Word,
+            m_splitter = std::make_unique<QTextBoundaryFinder>(QTextBoundaryFinder::Word,
                                                  m_string.constData(), m_string.size(),
                                                  /*buffer*/nullptr, /*buffer size*/0);
 
@@ -171,7 +166,7 @@ private:
     const QString &m_string;
     const QScriptAnalysis * const m_analysis;
     QScriptItemArray &m_items;
-    QTextBoundaryFinder *m_splitter;
+    std::unique_ptr<QTextBoundaryFinder> m_splitter;
 };
 
 // -----------------------------------------------------------------------------------------------------
