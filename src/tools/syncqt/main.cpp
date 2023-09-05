@@ -1628,7 +1628,7 @@ public:
         return writeIfDifferent(m_commandLineArgs->versionScriptFile(), buffer.str());
     }
 
-    bool updateOrCopy(const std::filesystem::path &src, const std::filesystem::path &dst);
+    bool updateOrCopy(const std::filesystem::path &src, const std::filesystem::path &dst) noexcept;
     void updateSymbolDescriptor(const std::string &symbol, const std::string &file,
                                 SymbolDescriptor::SourceType type);
 };
@@ -1654,7 +1654,8 @@ SyncScanner::makeHeaderAbsolute(const std::string &filename) const
     return utils::normilizedPath(filename);
 }
 
-bool SyncScanner::updateOrCopy(const std::filesystem::path &src, const std::filesystem::path &dst)
+bool SyncScanner::updateOrCopy(const std::filesystem::path &src,
+                               const std::filesystem::path &dst) noexcept
 {
     if (m_commandLineArgs->showOnly())
         return true;
