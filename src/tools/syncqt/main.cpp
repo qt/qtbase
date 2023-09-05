@@ -412,6 +412,7 @@ private:
                     if (!parseArgument(argFromFile))
                         return false;
                 }
+                ifs.close();
                 continue;
             }
 
@@ -1326,6 +1327,7 @@ public:
                 }
             }
         }
+        input.close();
 
         // Error out if namespace checks are failed.
         if (!(skipChecks & NamespaceChecks)) {
