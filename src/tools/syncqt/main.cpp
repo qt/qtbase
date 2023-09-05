@@ -140,7 +140,29 @@ std::filesystem::path normilizedPath(const std::string &path)
 {
     return std::filesystem::path(std::filesystem::weakly_canonical(path).generic_string());
 }
+
+bool createDirectories(const std::string &path, std::string_view errorMsg, bool *exists = nullptr)
+{
+    bool result = true;
+    try {
+        if (!std::filesystem::exists(path)) {
+            if (exists)
+                *exists = false;
+            std::filesystem::create_directories(path);
+        } else {
+            if (exists)
+                *exists = true;
+        }
+    } catch (const std::filesystem::filesystem_error &fserr) {
+        result = false;
+        std::cerr << errorMsg << ": " << path << ".\n"
+                  << fserr.code().message() << "(" << fserr.code().value() << "):" << fserr.what()
+                  << std::endl;
+    }
+    return result;
 }
+
+} // namespace utils
 
 using FileStamp = std::filesystem::file_time_type;
 
@@ -732,9 +754,12 @@ public:
                                                               bool skipCleanup = false)
     {
         bool result = true;
-        if (!std::filesystem::exists(outputDirectory)) {
-            std::filesystem::create_directories(outputDirectory);
-        } else if (!skipCleanup) {
+        bool outDirExists = false;
+        if (!utils::createDirectories(outputDirectory, "Unable to create staging directory",
+                                      &outDirExists))
+            return false;
+
+        if (outDirExists && !skipCleanup) {
             for (const auto &entry :
                  std::filesystem::recursive_directory_iterator(outputDirectory)) {
                 if (m_producedHeaders.find(entry.path().filename().generic_string())
@@ -845,8 +870,8 @@ public:
         else if (isPrivate)
             outputDir = m_commandLineArgs->privateIncludeDir();
 
-        if (!std::filesystem::exists(outputDir))
-            std::filesystem::create_directories(outputDir);
+        if (!utils::createDirectories(outputDir, "Unable to create output directory"))
+            return false;
 
         bool headerFileExists = std::filesystem::exists(headerFile);
 
@@ -1718,8 +1743,9 @@ bool SyncScanner::writeIfDifferent(const std::string &outputFile, const std::str
     std::filesystem::path outputFilePath(outputFile);
 
     std::string outputDirectory = outputFilePath.parent_path().string();
-    if (!std::filesystem::exists(outputDirectory))
-        std::filesystem::create_directories(outputDirectory);
+
+    if (!utils::createDirectories(outputDirectory, "Unable to create output directory"))
+        return false;
 
     auto expectedSize = buffer.size();
 #ifdef _WINDOWS
