@@ -1634,8 +1634,16 @@ public:
             writeIfDifferent(outputDir + '/' + headerName, buffer.str());
 
             // Add header file to staging installation directory for cross-module deprecation case.
-            if (isCrossModuleDeprecation)
-                writeIfDifferent(outputDir + "/.syncqt_staging/" + headerName, buffer.str());
+            if (isCrossModuleDeprecation) {
+                const std::string stagingDir = outputDir + "/.syncqt_staging/";
+                writeIfDifferent(stagingDir + headerName, buffer.str());
+                if (m_commandLineArgs->isFramework()) {
+                    const std::string frameworkStagingDir = stagingDir + moduleName
+                            + ".framework/Versions/A/Headers/" QT_VERSION_STR "/"
+                            + moduleName.substr(2) + '/';
+                    writeIfDifferent(frameworkStagingDir + headerName, buffer.str());
+                }
+            }
             m_producedHeaders.insert(headerName);
         }
         return result;
