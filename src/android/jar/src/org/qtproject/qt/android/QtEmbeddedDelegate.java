@@ -1,4 +1,4 @@
-// Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 package org.qtproject.qt.android;
@@ -22,7 +22,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppStateDetailsListener {
+    // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
+    private QtView m_view;
+    private long m_rootWindowRef = 0L;
     private QtNative.ApplicationStateDetails m_stateDetails;
+
+    private static native void createRootWindow(View rootView);
+    static native void deleteWindow(long windowReference);
 
     public QtEmbeddedDelegate(Activity context) {
         super(context);
@@ -71,6 +77,7 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
                 if (m_activity == activity && m_stateDetails.isStarted) {
                     m_activity.getApplication().unregisterActivityLifecycleCallbacks(this);
                     QtNative.unregisterAppStateListener(QtEmbeddedDelegate.this);
+                    QtEmbeddedDelegateFactory.remove(m_activity);
                     QtNative.terminateQt();
                     QtNative.setActivity(null);
                     QtNative.getQtThread().exit();
@@ -89,6 +96,8 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
                 QtDisplayManager.setApplicationDisplayMetrics(m_activity,
                                                               metrics.widthPixels,
                                                               metrics.heightPixels);
+              if (m_view != null)
+                  createRootWindow(m_view);
             });
         }
     }
@@ -111,11 +120,30 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
     @Override
     QtLayout getQtLayout()
     {
-        // TODO could probably use QtView here when it's added?
-        return null;
+        // TODO verify if returning m_view here works, this is used by the androidjniinput
+        // when e.g. showing a keyboard, so depends on getting the keyboard focus working
+        // QTBUG-118873
+        return m_view;
+    }
+
+    public void queueLoadWindow()
+    {
+        if (m_stateDetails.nativePluginIntegrationReady)  {
+            createRootWindow(m_view);
+        }
+    }
+
+    void setView(QtView view) {
+        m_view = view;
+    }
+
+    public void setRootWindowRef(long ref) {
+        m_rootWindowRef = ref;
     }
 
     public void onDestroy() {
-        // TODO delete the window once it's added
+        if (m_rootWindowRef != 0L)
+            deleteWindow(m_rootWindowRef);
+        m_rootWindowRef = 0L;
     }
 }
