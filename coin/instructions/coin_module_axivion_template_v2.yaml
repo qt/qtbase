@@ -92,7 +92,7 @@ instructions:
   - *build_environment_axivion
   - *analysis_instructions_axivion
 enable_if:
-  condition: property
-  property: features
-  contains_value: Axivion
+  condition: runtime
+  env_var: AXIVION_ANALYSIS
+  equals_value: "1"
 

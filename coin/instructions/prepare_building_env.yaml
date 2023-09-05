@@ -26,6 +26,16 @@ instructions:
       property: host.os
       equals_value: Windows
 
+  # Enable Axivion_analysis for Qt
+  - type: EnvironmentVariable
+    variableName: AXIVION_ANALYSIS
+    variableValue: "1"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: Axivion
+
+
   # Export ICC specific env. variables
   - type: Group
     instructions:
