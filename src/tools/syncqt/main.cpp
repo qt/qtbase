@@ -1780,6 +1780,10 @@ bool SyncScanner::writeIfDifferent(const std::string &outputFile, const std::str
         memset(rdBuffer, 0, bufferSize);
 
         std::ifstream ifs(outputFile, std::fstream::in);
+        if (!ifs.is_open()) {
+            std::cerr << "Unable to open " << outputFile << " for comparison." << std::endl;
+            return false;
+        }
         std::streamsize currentPos = 0;
 
         std::size_t bytesRead = 0;
