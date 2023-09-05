@@ -12,6 +12,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/private/qeventdispatcher_unix_p.h>
 #include <QtCore/private/qthread_p.h>
+#include <QtCore/qapplicationstatic.h>
 
 #include <proxy.h>
 #include <dlfcn.h>
