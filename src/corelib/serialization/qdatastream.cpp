@@ -960,10 +960,11 @@ QDataStream &QDataStream::operator>>(double &f)
 /*!
     \overload
 
-    Reads the '\\0'-terminated string \a s from the stream and returns
-    a reference to the stream.
+    Reads string \a s from the stream and returns a reference to the stream.
 
-    The string is deserialized using \c{readBytes()}.
+    The string is deserialized using \c{readBytes()} where the serialization
+    format is a \c quint32 length specifier first, followed by that many bytes
+    of data. The resulting string is always '\\0'-terminated.
 
     Space for the string is allocated using \c{new []} -- the caller must
     destroy it with \c{delete []}.
