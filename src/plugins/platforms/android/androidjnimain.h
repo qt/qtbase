@@ -28,7 +28,6 @@ class QBasicMutex;
 
 Q_DECLARE_JNI_CLASS(QtActivityDelegate, "org/qtproject/qt/android/QtActivityDelegate")
 Q_DECLARE_JNI_CLASS(QtInputDelegate, "org/qtproject/qt/android/QtInputDelegate")
-Q_DECLARE_JNI_CLASS(View, "android/view/View");
 
 namespace QtAndroid
 {
@@ -36,14 +35,7 @@ namespace QtAndroid
     QAndroidPlatformIntegration *androidPlatformIntegration();
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration);
     void setQtThread(QThread *thread);
-
-    int createSurface(QAndroidPlatformWindow *window, const QRect &geometry, bool onTop, int imageDepth);
-    int insertNativeView(QtJniTypes::View view, const QRect &geometry);
     void setViewVisibility(jobject view, bool visible);
-    void setSurfaceGeometry(int surfaceId, const QRect &geometry);
-    void destroySurface(int surfaceId);
-    void bringChildToFront(int surfaceId);
-    void bringChildToBack(int surfaceId);
 
     QWindow *topLevelWindowAt(const QPoint &globalPos);
     int availableWidthPixels();

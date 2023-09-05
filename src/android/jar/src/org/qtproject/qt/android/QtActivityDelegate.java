@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
@@ -36,9 +37,8 @@ class QtActivityDelegate
 {
     private Activity m_activity;
 
-    private HashMap<Integer, QtSurface> m_surfaces = null;
-    private HashMap<Integer, View> m_nativeViews = null;
     private QtLayout m_layout = null;
+    private HashMap<Integer, QtWindow> m_topLevelWindows;
     private ImageView m_splashScreen = null;
     private boolean m_splashScreenSticky = false;
 
@@ -48,6 +48,7 @@ class QtActivityDelegate
     private QtDisplayManager m_displayManager = null;
 
     private QtInputDelegate m_inputDelegate = null;
+    private boolean m_membersInitialized = false;
 
     QtActivityDelegate(Activity activity)
     {
@@ -55,6 +56,7 @@ class QtActivityDelegate
         QtNative.setActivity(m_activity);
 
         setActionBarVisibility(false);
+        setActivityBackgroundDrawable();
     }
 
     QtDisplayManager displayManager() {
@@ -116,7 +118,7 @@ class QtActivityDelegate
 
     public void startNativeApplication(String appParams, String mainLib)
     {
-        if (m_surfaces != null)
+        if (m_membersInitialized)
             return;
 
         initMembers();
@@ -134,6 +136,8 @@ class QtActivityDelegate
     private void initMembers()
     {
         m_layout = new QtLayout(m_activity);
+        m_membersInitialized = true;
+        m_topLevelWindows = new HashMap<Integer, QtWindow>();
 
         m_displayManager = new QtDisplayManager(m_activity);
         m_displayManager.registerDisplayListener();
@@ -173,8 +177,6 @@ class QtActivityDelegate
             e.printStackTrace();
         }
 
-        m_surfaces = new HashMap<>();
-        m_nativeViews = new HashMap<>();
         m_activity.registerForContextMenu(m_layout);
         m_activity.setContentView(m_layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -293,9 +295,7 @@ class QtActivityDelegate
     @UsedFromNativeCode
     public void initializeAccessibility()
     {
-        final QtActivityDelegate currentDelegate = this;
-        QtNative.runAction(() -> m_accessibilityDelegate = new QtAccessibilityDelegate(m_activity,
-                m_layout, currentDelegate));
+        QtNative.runAction(() -> m_accessibilityDelegate = new QtAccessibilityDelegate(m_layout));
     }
 
     void handleUiModeChange(int uiMode)
@@ -377,135 +377,52 @@ class QtActivityDelegate
     }
 
     @UsedFromNativeCode
-    public void insertNativeView(int id, View view, int x, int y, int w, int h) {
-    QtNative.runAction(() -> {
-        if (m_dummyView != null) {
-            m_layout.removeView(m_dummyView);
-            m_dummyView = null;
-        }
-
-        if (m_nativeViews.containsKey(id))
-            m_layout.removeView(m_nativeViews.remove(id));
-
-        if (w < 0 || h < 0) {
-            view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT));
-        } else {
-            view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-        }
-
-        view.setId(id);
-        m_layout.addView(view);
-        m_nativeViews.put(id, view);
-    });
-    }
-
-    @UsedFromNativeCode
-    public void createSurface(int id, boolean onTop, int x, int y, int w, int h, int imageDepth) {
-        QtNative.runAction(() -> {
-            if (m_surfaces.size() == 0) {
-                TypedValue attr = new TypedValue();
-                m_activity.getTheme().resolveAttribute(android.R.attr.windowBackground, attr, true);
-                if (attr.type >= TypedValue.TYPE_FIRST_COLOR_INT && attr.type <= TypedValue.TYPE_LAST_COLOR_INT) {
-                    m_activity.getWindow().setBackgroundDrawable(new ColorDrawable(attr.data));
-                } else {
-                    m_activity.getWindow().setBackgroundDrawable(m_activity.getResources().getDrawable(attr.resourceId, m_activity.getTheme()));
-                }
+    public void addTopLevelWindow(final QtWindow window)
+    {
+        QtNative.runAction(()-> {
+            if (m_topLevelWindows.size() == 0) {
                 if (m_dummyView != null) {
                     m_layout.removeView(m_dummyView);
                     m_dummyView = null;
                 }
             }
 
-            if (m_surfaces.containsKey(id))
-                m_layout.removeView(m_surfaces.remove(id));
+            window.setLayoutParams(new ViewGroup.LayoutParams(
+                                            ViewGroup.LayoutParams.MATCH_PARENT,
+                                            ViewGroup.LayoutParams.MATCH_PARENT));
 
-            QtSurface surface = new QtSurface(m_activity, id, onTop, imageDepth);
-            if (w < 0 || h < 0) {
-                surface.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT));
-            } else {
-                surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-            }
-
-            // Native views are always inserted in the end of the stack (i.e., on top).
-            // All other views are stacked based on the order they are created.
-            final int surfaceCount = getSurfaceCount();
-            m_layout.addView(surface, surfaceCount);
-
-            m_surfaces.put(id, surface);
+            m_layout.addView(window, m_topLevelWindows.size());
+            m_topLevelWindows.put(window.getId(), window);
             if (!m_splashScreenSticky)
                 hideSplashScreen();
         });
     }
 
     @UsedFromNativeCode
-    public void setSurfaceGeometry(int id, int x, int y, int w, int h) {
-        QtNative.runAction(() -> {
-            if (m_surfaces.containsKey(id)) {
-                QtSurface surface = m_surfaces.get(id);
-                if (surface != null)
-                    surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-                else
-                    Log.e(QtNative.QtTAG, "setSurfaceGeometry(): surface is null!");
-            } else if (m_nativeViews.containsKey(id)) {
-                View view = m_nativeViews.get(id);
-                if (view != null)
-                    view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-                else
-                    Log.e(QtNative.QtTAG, "setSurfaceGeometry(): view is null!");
-            } else {
-                Log.e(QtNative.QtTAG, "Surface " + id + " not found!");
+    public void removeTopLevelWindow(final int id)
+    {
+        QtNative.runAction(()-> {
+            if (m_topLevelWindows.containsKey(id)) {
+                QtWindow window = m_topLevelWindows.remove(id);
+                if (m_topLevelWindows.isEmpty()) {
+                   // Keep last frame in stack until it is replaced to get correct
+                   // shutdown transition
+                   m_dummyView = window;
+               } else {
+                   m_layout.removeView(window);
+               }
             }
         });
     }
 
     @UsedFromNativeCode
-    public void destroySurface(int id) {
-        QtNative.runAction(() -> {
-            View view = null;
-
-            if (m_surfaces.containsKey(id)) {
-                view = m_surfaces.remove(id);
-            } else if (m_nativeViews.containsKey(id)) {
-                view = m_nativeViews.remove(id);
-            } else {
-                Log.e(QtNative.QtTAG, "Surface " + id + " not found!");
-            }
-
-            if (view == null)
-                return;
-
-            // Keep last frame in stack until it is replaced to get correct
-            // shutdown transition
-            if (m_surfaces.size() == 0 && m_nativeViews.size() == 0) {
-                m_dummyView = view;
-            } else {
-                m_layout.removeView(view);
-            }
-        });
-    }
-
-    public int getSurfaceCount()
-    {
-        return m_surfaces.size();
-    }
-
-    @UsedFromNativeCode
-    public void bringChildToFront(int id)
+    public void bringChildToFront(final int id)
     {
         QtNative.runAction(() -> {
-            View view = m_surfaces.get(id);
-            if (view != null) {
-                final int surfaceCount = getSurfaceCount();
-                if (surfaceCount > 0)
-                    m_layout.moveChild(view, surfaceCount - 1);
-                return;
+            QtWindow window = m_topLevelWindows.get(id);
+            if (window != null) {
+                m_layout.moveChild(window, m_topLevelWindows.size() - 1);
             }
-
-            view = m_nativeViews.get(id);
-            if (view != null)
-                m_layout.moveChild(view, -1);
         });
     }
 
@@ -513,17 +430,26 @@ class QtActivityDelegate
     public void bringChildToBack(int id)
     {
         QtNative.runAction(() -> {
-            View view = m_surfaces.get(id);
-            if (view != null) {
-                m_layout.moveChild(view, 0);
-                return;
-            }
-
-            view = m_nativeViews.get(id);
-            if (view != null) {
-                final int index = getSurfaceCount();
-                m_layout.moveChild(view, index);
-            }
+            QtWindow window = m_topLevelWindows.get(id);
+            if (window != null)
+                m_layout.moveChild(window, 0);
         });
+    }
+
+    private void setActivityBackgroundDrawable()
+    {
+        TypedValue attr = new TypedValue();
+        m_activity.getTheme().resolveAttribute(android.R.attr.windowBackground,
+                                               attr, true);
+        Drawable backgroundDrawable;
+        if (attr.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
+            attr.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                backgroundDrawable = new ColorDrawable(attr.data);
+        } else {
+            backgroundDrawable = m_activity.getResources().
+                                    getDrawable(attr.resourceId, m_activity.getTheme());
+        }
+
+        m_activity.getWindow().setBackgroundDrawable(backgroundDrawable);
     }
 }

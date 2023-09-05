@@ -132,16 +132,16 @@ QAndroidPlatformScreen::~QAndroidPlatformScreen()
 {
 }
 
-QWindow *QAndroidPlatformScreen::topWindow() const
+QWindow *QAndroidPlatformScreen::topVisibleWindow() const
 {
     for (QAndroidPlatformWindow *w : m_windowStack) {
-        if (w->window()->type() == Qt::Window ||
-                w->window()->type() == Qt::Popup ||
-                w->window()->type() == Qt::Dialog) {
+        Qt::WindowType type = w->window()->type();
+        if (w->window()->isVisible() &&
+                (type == Qt::Window || type == Qt::Popup || type == Qt::Dialog)) {
             return w->window();
         }
     }
-    return 0;
+    return nullptr;
 }
 
 QWindow *QAndroidPlatformScreen::topLevelAt(const QPoint &p) const
@@ -162,37 +162,34 @@ void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
         return;
 
     m_windowStack.prepend(window);
+    QtAndroid::qtActivityDelegate().callMethod<void>("addTopLevelWindow", window->nativeWindow());
 
-    QWindow *w = topWindow();
-    QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
-    topWindowChanged(w);
+    if (window->window()->isVisible())
+        topVisibleWindowChanged();
 }
 
 void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
 {
-    if (window->parent() && window->isRaster())
-        return;
-
     m_windowStack.removeOne(window);
 
     if (m_windowStack.contains(window))
         qWarning() << "Failed to remove window";
 
-    QWindow *w = topWindow();
-    QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
-    topWindowChanged(w);
+    QtAndroid::qtActivityDelegate().callMethod<void>("removeTopLevelWindow", window->nativeViewId());
+
+    topVisibleWindowChanged();
 }
 
 void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
 {
     int index = m_windowStack.indexOf(window);
-    if (index <= 0)
+    if (index < 0)
         return;
-    m_windowStack.move(index, 0);
-
-    QWindow *w = topWindow();
-    QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
-    topWindowChanged(w);
+    if (index > 0) {
+        m_windowStack.move(index, 0);
+        QtAndroid::qtActivityDelegate().callMethod<void>("bringChildToFront", window->nativeViewId());
+    }
+    topVisibleWindowChanged();
 }
 
 void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
@@ -201,10 +198,9 @@ void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
     if (index == -1 || index == (m_windowStack.size() - 1))
         return;
     m_windowStack.move(index, m_windowStack.size() - 1);
+    QtAndroid::qtActivityDelegate().callMethod<void>("bringChildToBack", window->nativeViewId());
 
-    QWindow *w = topWindow();
-    QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
-    topWindowChanged(w);
+    topVisibleWindowChanged();
 }
 
 void QAndroidPlatformScreen::setPhysicalSize(const QSize &size)
@@ -284,13 +280,14 @@ void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
         w->applicationStateChanged(state);
 }
 
-void QAndroidPlatformScreen::topWindowChanged(QWindow *w)
+void QAndroidPlatformScreen::topVisibleWindowChanged()
 {
+    QWindow *w = topVisibleWindow();
+    QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
     QtAndroidMenu::setActiveTopLevelWindow(w);
-
-    if (w != 0) {
+    if (w && w->handle()) {
         QAndroidPlatformWindow *platformWindow = static_cast<QAndroidPlatformWindow *>(w->handle());
-        if (platformWindow != 0)
+        if (platformWindow)
             platformWindow->updateSystemUiVisibility();
     }
 }

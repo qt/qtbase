@@ -94,7 +94,7 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
         clearSurface();
 
         QMutexLocker lock(&m_surfaceMutex);
-        if (m_nativeSurfaceId == -1) {
+        if (!m_surfaceCreated) {
             AndroidDeadlockProtector protector;
             if (!protector.acquire())
                 return &m_vkSurface;
@@ -102,7 +102,7 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
             m_surfaceWaitCondition.wait(&m_surfaceMutex);
         }
 
-        if (m_nativeSurfaceId == -1 || !m_androidSurfaceObject.isValid())
+        if (!m_surfaceCreated || !m_androidSurfaceObject.isValid())
             return &m_vkSurface;
 
         QJniEnvironment env;

@@ -36,9 +36,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     private View m_view = null;
     private final AccessibilityManager m_manager;
-    private final QtActivityDelegate m_activityDelegate;
-    private final Activity m_activity;
-    private final ViewGroup m_layout;
+    private final QtLayout m_layout;
 
     // The accessible object that currently has the "accessibility focus"
     // usually indicated by a yellow rectangle on screen.
@@ -62,13 +60,11 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         }
     }
 
-    public QtAccessibilityDelegate(Activity activity, ViewGroup layout, QtActivityDelegate activityDelegate)
+    public QtAccessibilityDelegate(QtLayout layout)
     {
-        m_activity = activity;
         m_layout = layout;
-        m_activityDelegate = activityDelegate;
 
-        m_manager = (AccessibilityManager) m_activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        m_manager = (AccessibilityManager) m_layout.getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
         if (m_manager != null) {
             AccessibilityManagerListener accServiceListener = new AccessibilityManagerListener();
             if (!m_manager.addAccessibilityStateChangeListener(accServiceListener))
@@ -89,7 +85,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
                 try {
                         View view = m_view;
                         if (view == null) {
-                            view = new View(m_activity);
+                            view = new View(m_layout.getContext());
                             view.setId(View.NO_ID);
                         }
 
@@ -105,7 +101,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
                         // if all is fine, add it to the layout
                         if (m_view == null) {
                             //m_layout.addAccessibilityView(view);
-                            m_layout.addView(view, m_activityDelegate.getSurfaceCount(),
+                            m_layout.addView(view, m_layout.getChildCount(),
                                              new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         }
                         m_view = view;
@@ -289,7 +285,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
             return null;
         }
 
-        if (m_activityDelegate.getSurfaceCount() == 0)
+        if (m_layout.getChildCount() == 0)
             return null;
 
         final AccessibilityEvent event = AccessibilityEvent.obtain(eventType);
@@ -356,7 +352,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         // Spit out the entire hierarchy for debugging purposes
         // dumpNodes(-1);
 
-        if (m_activityDelegate.getSurfaceCount() != 0) {
+        if (m_layout.getChildCount() == 0) {
             int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);
             for (int id : ids)
                 result.addChild(m_view, id);
@@ -388,7 +384,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         node.setClassName(m_view.getClass().getName() + DEFAULT_CLASS_NAME);
         node.setPackageName(m_view.getContext().getPackageName());
 
-        if (m_activityDelegate.getSurfaceCount() == 0 || !QtNativeAccessibility.populateNode(virtualViewId, node)) {
+        if (m_layout.getChildCount() == 0 || !QtNativeAccessibility.populateNode(virtualViewId, node)) {
             return node;
         }
 
@@ -439,7 +435,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         @Override
         public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId)
         {
-            if (virtualViewId == View.NO_ID || m_activityDelegate.getSurfaceCount() == 0) {
+            if (virtualViewId == View.NO_ID || m_layout.getChildCount() == 0) {
                 return getNodeForView();
             }
             return getNodeForVirtualViewId(virtualViewId);

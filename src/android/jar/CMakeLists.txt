@@ -29,6 +29,7 @@ set(java_sources
     src/org/qtproject/qt/android/QtClipboardManager.java
     src/org/qtproject/qt/android/QtDisplayManager.java
     src/org/qtproject/qt/android/UsedFromNativeCode.java
+    src/org/qtproject/qt/android/QtWindow.java
 )
 
 qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android

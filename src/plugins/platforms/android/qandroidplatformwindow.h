@@ -17,6 +17,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcQpaWindow)
+Q_DECLARE_JNI_CLASS(QtWindow, "org/qtproject/qt/android/QtWindow")
 Q_DECLARE_JNI_CLASS(Surface, "android/view/Surface")
 
 class QAndroidPlatformScreen;
@@ -25,7 +27,7 @@ class QAndroidPlatformWindow: public QPlatformWindow
 {
 public:
     explicit QAndroidPlatformWindow(QWindow *window);
-
+    ~QAndroidPlatformWindow();
     void lower() override;
     void raise() override;
 
@@ -49,9 +51,12 @@ public:
     void updateSystemUiVisibility();
     inline bool isRaster() const { return m_isRaster; }
     bool isExposed() const override;
+    QtJniTypes::QtWindow nativeWindow() const { return m_nativeQtWindow; }
 
     virtual void applicationStateChanged(Qt::ApplicationState);
+    int nativeViewId() const { return m_nativeViewId; }
 
+    static bool registerNatives(QJniEnvironment &env);
     void onSurfaceChanged(QtJniTypes::Surface surface);
 
 protected:
@@ -60,20 +65,27 @@ protected:
     void unlockSurface() { m_surfaceMutex.unlock(); }
     void createSurface();
     void destroySurface();
-    void setSurfaceGeometry(const QRect &rect);
-    void sendExpose();
+    void setSurfaceGeometry(const QRect &geometry);
+    void sendExpose() const;
+    bool blockedByModal() const;
 
-protected:
     Qt::WindowFlags m_windowFlags;
     Qt::WindowStates m_windowState;
     bool m_isRaster;
 
     WId m_windowId;
+
+    QtJniTypes::QtWindow m_nativeQtWindow;
     // The Android Surface, accessed from multiple threads, guarded by m_surfaceMutex
     QtJniTypes::Surface m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;
-    int m_nativeSurfaceId = -1;
+    int m_nativeViewId = -1;
+    bool m_surfaceCreated = false;
     QMutex m_surfaceMutex;
+
+private:
+    static void setSurface(JNIEnv *env, jobject obj, jint windowId, QtJniTypes::Surface surface);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(setSurface)
 };
 
 QT_END_NAMESPACE

@@ -37,7 +37,7 @@ public:
     int currentMode() const override { return m_currentMode; }
     int preferredMode() const override { return m_currentMode; }
     qreal refreshRate() const override { return m_refreshRate; }
-    inline QWindow *topWindow() const;
+    inline QWindow *topVisibleWindow() const;
     QWindow *topLevelAt(const QPoint & p) const override;
 
     void addWindow(QAndroidPlatformWindow *window);
@@ -45,7 +45,7 @@ public:
     void raise(QAndroidPlatformWindow *window);
     void lower(QAndroidPlatformWindow *window);
 
-    void topWindowChanged(QWindow *w);
+    void topVisibleWindowChanged();
     int displayId() const override;
 
 public slots:
@@ -60,7 +60,6 @@ public slots:
 protected:
     typedef QList<QAndroidPlatformWindow *> WindowStackType;
     WindowStackType m_windowStack;
-
     QRect m_availableGeometry;
     int m_depth;
     QImage::Format m_format;

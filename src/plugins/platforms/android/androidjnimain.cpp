@@ -70,10 +70,6 @@ static void *m_mainLibraryHnd = nullptr;
 static QList<QByteArray> m_applicationParams;
 static sem_t m_exitSemaphore, m_terminateSemaphore;
 
-QHash<int, QAndroidPlatformWindow *> m_surfaces;
-
-Q_CONSTINIT static QBasicMutex m_surfacesMutex;
-
 
 static QAndroidPlatformIntegration *m_androidPlatformIntegration = nullptr;
 
@@ -319,56 +315,6 @@ namespace QtAndroid
         return manufacturer + u' ' + model;
     }
 
-    jint generateViewId()
-    {
-        return QJniObject::callStaticMethod<jint>("android/view/View", "generateViewId", "()I");
-    }
-
-    int createSurface(QAndroidPlatformWindow *window, const QRect &geometry, bool onTop, int imageDepth)
-    {
-        QJniEnvironment env;
-        if (!env.jniEnv())
-            return -1;
-
-        m_surfacesMutex.lock();
-        jint surfaceId = generateViewId();
-        m_surfaces[surfaceId] = window;
-        m_surfacesMutex.unlock();
-
-        jint x = 0, y = 0, w = -1, h = -1;
-        if (!geometry.isNull()) {
-            x = geometry.x();
-            y = geometry.y();
-            w = std::max(geometry.width(), 1);
-            h = std::max(geometry.height(), 1);
-        }
-        qtActivityDelegate().callMethod<void>("createSurface", surfaceId, jboolean(onTop),
-                                              x, y, w, h, imageDepth);
-        return surfaceId;
-    }
-
-    int insertNativeView(QtJniTypes::View view, const QRect &geometry)
-    {
-        m_surfacesMutex.lock();
-        jint surfaceId = generateViewId();
-        m_surfaces[surfaceId] = nullptr; // dummy
-        m_surfacesMutex.unlock();
-
-        jint x = 0, y = 0, w = -1, h = -1;
-        if (!geometry.isNull())
-            geometry.getRect(&x, &y, &w, &h);
-
-        qtActivityDelegate().callMethod<void>("insertNativeView",
-                                           surfaceId,
-                                           view,
-                                           x,
-                                           y,
-                                           qMax(w, 1),
-                                           qMax(h, 1));
-
-        return surfaceId;
-    }
-
     void setViewVisibility(jobject view, bool visible)
     {
         QJniObject::callStaticMethod<void>(m_applicationClass,
@@ -376,56 +322,6 @@ namespace QtAndroid
                                            "(Landroid/view/View;Z)V",
                                            view,
                                            visible);
-    }
-
-    void setSurfaceGeometry(int surfaceId, const QRect &geometry)
-    {
-        if (surfaceId == -1)
-            return;
-
-        QJniEnvironment env;
-        if (!env.jniEnv())
-            return;
-        jint x = 0, y = 0, w = -1, h = -1;
-        if (!geometry.isNull()) {
-            x = geometry.x();
-            y = geometry.y();
-            w = geometry.width();
-            h = geometry.height();
-        }
-        qtActivityDelegate().callMethod<void>("setSurfaceGeometry", surfaceId, x, y, w, h);
-    }
-
-
-    void destroySurface(int surfaceId)
-    {
-        if (surfaceId == -1)
-            return;
-
-        {
-            QMutexLocker lock(&m_surfacesMutex);
-            const auto &it = m_surfaces.find(surfaceId);
-            if (it != m_surfaces.end())
-                m_surfaces.erase(it);
-        }
-
-        qtActivityDelegate().callMethod<void>("destroySurface", surfaceId);
-    }
-
-    void bringChildToFront(int surfaceId)
-    {
-        if (surfaceId == -1)
-            return;
-
-        qtActivityDelegate().callMethod<void>("bringChildToFront", surfaceId);
-    }
-
-    void bringChildToBack(int surfaceId)
-    {
-        if (surfaceId == -1)
-            return;
-
-        qtActivityDelegate().callMethod<void>("bringChildToBack", surfaceId);
     }
 
     bool blockEventLoopsWhenSuspended()
@@ -593,21 +489,6 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
     sem_post(&m_exitSemaphore);
-}
-
-static void setSurface(JNIEnv *env, jobject thiz, jint id, jobject jSurface)
-{
-    Q_UNUSED(env);
-    Q_UNUSED(thiz);
-
-    QMutexLocker lock(&m_surfacesMutex);
-    const auto &it = m_surfaces.find(id);
-    if (it == m_surfaces.end())
-        return;
-
-    auto surfaceClient = it.value();
-    if (surfaceClient)
-        surfaceClient->onSurfaceChanged(jSurface);
 }
 
 static void setDisplayMetrics(JNIEnv * /*env*/, jclass /*clazz*/, jint screenWidthPixels,
@@ -802,7 +683,6 @@ static JNINativeMethod methods[] = {
     { "quitQtCoreApplication", "()V", (void *)quitQtCoreApplication },
     { "terminateQt", "()V", (void *)terminateQt },
     { "waitForServiceSetup", "()V", (void *)waitForServiceSetup },
-    { "setSurface", "(ILjava/lang/Object;)V", (void *)setSurface },
     { "updateWindow", "()V", (void *)updateWindow },
     { "updateApplicationState", "(I)V", (void *)updateApplicationState },
     { "onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult },
@@ -948,7 +828,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
             || !QtAndroidMenu::registerNatives(env)
             || !QtAndroidAccessibility::registerNatives(env)
             || !QtAndroidDialogHelpers::registerNatives(env)
-            || !QAndroidPlatformClipboard::registerNatives(env)) {
+            || !QAndroidPlatformClipboard::registerNatives(env)
+            || !QAndroidPlatformWindow::registerNatives(env)) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "registerNatives failed");
         return -1;
     }
