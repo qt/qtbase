@@ -2921,10 +2921,11 @@ void QCoreApplication::requestPermission(const QPermission &requestedPermission,
     PermissionReceiver *receiver = new PermissionReceiver(std::move(slotObj), context);
 
     QPermissions::Private::requestPermission(requestedPermission, [=](Qt::PermissionStatus status) {
-        Q_ASSERT_X(status != Qt::PermissionStatus::Undetermined, "QPermission",
-            "QCoreApplication::requestPermission() should never return Undetermined");
-        if (status == Qt::PermissionStatus::Undetermined)
+        if (status == Qt::PermissionStatus::Undetermined) {
+            Q_ASSERT_X(false, "QPermission",
+                "Internal error: requestPermission() should never return Undetermined");
             status = Qt::PermissionStatus::Denied;
+        }
 
         if (QCoreApplication::self) {
             QPermission permission = requestedPermission;
