@@ -40,6 +40,7 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         qandroidplatformtheme.cpp qandroidplatformtheme.h
         qandroidplatformwindow.cpp qandroidplatformwindow.h
         qandroidsystemlocale.cpp qandroidsystemlocale.h
+        androidwindowembedding.cpp androidwindowembedding.h
     NO_UNITY_BUILD_SOURCES
         # Conflicting symbols and macros with androidjnimain.cpp
         # TODO: Unify the usage of FIND_AND_CHECK_CLASS, and similar

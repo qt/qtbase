@@ -140,7 +140,8 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
         QtNative.runAction(new Runnable() {
             @Override
             public void run() {
-                m_layout.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                if (m_layout.getContext() instanceof QtActivityBase)
+                    m_layout.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
             }
         });
     }
