@@ -5011,6 +5011,40 @@ void tst_QFuture::continuationsDontLeak()
         QVERIFY(continuationIsRun);
     }
     QCOMPARE(InstanceCounter::count, 0);
+
+    {
+        // QTBUG-116731: Must pass with ASan enabled
+        bool continuationIsRun = false;
+        auto f = QtFuture::makeReadyValueFuture(42);
+        QtFuture::whenAll(f).then([&](auto) { continuationIsRun = true; });
+        QVERIFY(continuationIsRun);
+    }
+
+    {
+        // QTBUG-116731: Must pass with ASan enabled
+        bool continuationIsRun = false;
+        auto f = QtFuture::makeReadyValueFuture(42);
+        QList fs{f};
+        QtFuture::whenAll(fs.begin(), fs.end()).then([&](auto) { continuationIsRun = true; });
+        QVERIFY(continuationIsRun);
+    }
+
+    {
+        // QTBUG-116731: Must pass with ASan enabled
+        bool continuationIsRun = false;
+        auto f = QtFuture::makeReadyValueFuture(42);
+        QtFuture::whenAny(f).then([&](auto) { continuationIsRun = true; });
+        QVERIFY(continuationIsRun);
+    }
+
+    {
+        // QTBUG-116731: Must pass with ASan enabled
+        bool continuationIsRun = false;
+        auto f = QtFuture::makeReadyValueFuture(42);
+        QList fs{f};
+        QtFuture::whenAny(fs.begin(), fs.end()).then([&](auto) { continuationIsRun = true; });
+        QVERIFY(continuationIsRun);
+    }
 }
 
 // This test checks that we do not get use-after-free
