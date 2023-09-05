@@ -2170,8 +2170,8 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     following files are used by default:
 
     \list 1
-    \li \c{$HOME/.config/MySoft/Star Runner.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.conf})
-    \li \c{$HOME/.config/MySoft.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.conf})
+    \li \c{$HOME/.config/MySoft/Star Runner.conf}
+    \li \c{$HOME/.config/MySoft.conf}
     \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft/Star Runner.conf}
     \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft.conf}
     \endlist
@@ -2208,8 +2208,8 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     used on Unix, \macos, and iOS:
 
     \list 1
-    \li \c{$HOME/.config/MySoft/Star Runner.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.ini})
-    \li \c{$HOME/.config/MySoft.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.ini})
+    \li \c{$HOME/.config/MySoft/Star Runner.ini}
+    \li \c{$HOME/.config/MySoft.ini}
     \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft/Star Runner.ini}
     \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft.ini}
     \endlist
@@ -3379,8 +3379,6 @@ QSettings::Format QSettings::defaultFormat()
     \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c FOLDERID_RoamingAppData
     \row                                                        \li SystemScope \li \c FOLDERID_ProgramData
     \row    \li{1,2} Unix        \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/.config
-    \row                                                        \li SystemScope \li \c /etc/xdg
-    \row    \li{1,2} Qt for Embedded Linux \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/Settings
     \row                                                        \li SystemScope \li \c /etc/xdg
     \row    \li{1,2} \macos and iOS   \li{1,2} IniFormat               \li UserScope   \li \c $HOME/.config
     \row                                                        \li SystemScope \li \c /etc/xdg
