@@ -39,10 +39,18 @@ private:
     template <typename Type>
     void doKeyLookup();
 
+    template <typename Type>
+    void doConstruct();
+
 private slots:
     void keyLookupLatin1() { doKeyLookup<QLatin1StringView>(); }
     void keyLookupString() { doKeyLookup<QString>(); }
     void keyLookupConstCharPtr() { doKeyLookup<char>(); };
+
+    void constructLatin1() { doConstruct<QLatin1StringView>(); }
+    void constructString() { doConstruct<QString>(); }
+    void constructStringView() { doConstruct<QStringView>(); }
+    void constructConstCharPtr() { doConstruct<char>(); }
 };
 
 template <typename Type>
@@ -56,13 +64,28 @@ void tst_QCborValue::doKeyLookup()
         using Strings = SampleStrings<Char>;
         const Type s(Strings::key);
         QBENCHMARK {
-            const QCborValue r = v[s];
-            Q_UNUSED(r);
+            [[maybe_unused]] const QCborValue r = v[s];
         }
     } else {
         QBENCHMARK {
-            const QCborValue r = v[SampleStrings<Type>::key];
-            Q_UNUSED(r);
+            [[maybe_unused]] const QCborValue r = v[SampleStrings<Type>::key];
+        }
+    }
+}
+
+template<typename Type>
+void tst_QCborValue::doConstruct()
+{
+    if constexpr (hasValueType<Type>) {
+        using Char = std::remove_cv_t<typename Type::value_type>;
+        using Strings = SampleStrings<Char>;
+        const Type s(Strings::key);
+        QBENCHMARK {
+            [[maybe_unused]] const auto v = QCborValue{s};
+        }
+    } else {
+        QBENCHMARK {
+            [[maybe_unused]] const auto v = QCborValue{SampleStrings<Type>::key};
         }
     }
 }
