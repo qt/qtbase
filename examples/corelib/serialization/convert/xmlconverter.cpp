@@ -403,7 +403,7 @@ QString XmlConverter::name() const
 
 Converter::Directions XmlConverter::directions() const
 {
-    return InOut;
+    return Direction::InOut;
 }
 
 Converter::Options XmlConverter::outputOptions() const

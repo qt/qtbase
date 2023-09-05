@@ -32,7 +32,7 @@ protected:
 public:
     static Converter *null;
 
-    enum Direction { In = 1, Out = 2, InOut = In | Out };
+    enum class Direction { In = 1, Out = 2, InOut = In | Out };
     Q_DECLARE_FLAGS(Directions, Direction)
 
     enum Option { SupportsArbitraryMapKeys = 0x01 };
