@@ -91,6 +91,13 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     if (!options())
         return false;
 
+    if (Qt::mightBeRichText(options()->text()) ||
+        Qt::mightBeRichText(options()->informativeText())) {
+        // Let's fallback to non-native message box,
+        // we only have plain NSString/text in NSAlert.
+        qCDebug(lcQpaDialogs, "Message box contains text in rich text format");
+        return false;
+    }
 
     Q_ASSERT(!m_alert);
     m_alert = [NSAlert new];
