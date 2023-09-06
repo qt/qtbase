@@ -624,7 +624,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     QString sourcePath = QDir::fromNativeSeparators(path);
 
     // Find the path without the filename
-    QString pathPrefix = sourcePath.left(sourcePath.lastIndexOf(u'/'));
+    QStringView pathPrefix = QStringView(sourcePath).left(sourcePath.lastIndexOf(u'/'));
 
     // Check if the path contains any special chars
     int pos = -1;
@@ -647,7 +647,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
         if (lastIndexOfSlash != -1)
             pathPrefix = pathPrefix.left(lastIndexOfSlash);
         else
-            pathPrefix.clear();
+            pathPrefix = {};
     } else {
         // Check if the path is a file.
         if (QFileInfo(sourcePath).isFile()) {
@@ -664,9 +664,11 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     // Special case - if the prefix ends up being nothing, use "." instead.
     int startIndex = 0;
     if (pathPrefix.isEmpty()) {
-        pathPrefix = "."_L1;
+        pathPrefix = u".";
         startIndex = 2;
     }
+
+    const QString pathPrefixString = pathPrefix.toString();
 
     // The path can be a file or directory.
     QList<QSslCertificate> certs;
@@ -678,7 +680,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     QRegularExpression pattern(QRegularExpression::anchoredPattern(sourcePath));
 #endif
 
-    QDirIterator it(pathPrefix, QDir::Files, QDirIterator::FollowSymlinks | QDirIterator::Subdirectories);
+    QDirIterator it(pathPrefixString, QDir::Files, QDirIterator::FollowSymlinks | QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QString filePath = startIndex == 0 ? it.next() : it.next().mid(startIndex);
 
