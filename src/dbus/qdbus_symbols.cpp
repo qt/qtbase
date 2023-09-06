@@ -88,7 +88,7 @@ bool qdbus_loadLibDBus()
 #endif
 }
 
-void (*qdbus_resolve_conditionally(const char *name))()
+QFunctionPointer qdbus_resolve_conditionally(const char *name)
 {
 #if QT_CONFIG(library)
     if (qdbus_loadLibDBus())
@@ -99,7 +99,7 @@ void (*qdbus_resolve_conditionally(const char *name))()
     return nullptr;
 }
 
-void (*qdbus_resolve_me(const char *name))()
+QFunctionPointer qdbus_resolve_me(const char *name)
 {
 #if QT_CONFIG(library)
     if (Q_UNLIKELY(!qdbus_loadLibDBus()))

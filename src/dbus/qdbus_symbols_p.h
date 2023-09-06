@@ -35,8 +35,8 @@ QT_BEGIN_NAMESPACE
 
 #if !defined QT_LINKED_LIBDBUS
 
-void (*qdbus_resolve_conditionally(const char *name))(); // doesn't print a warning
-void (*qdbus_resolve_me(const char *name))(); // prints a warning
+QFunctionPointer qdbus_resolve_conditionally(const char *name); // doesn't print a warning
+QFunctionPointer qdbus_resolve_me(const char *name); // prints a warning
 bool qdbus_loadLibDBus();
 
 //# define TRACE_DBUS_CALLS
