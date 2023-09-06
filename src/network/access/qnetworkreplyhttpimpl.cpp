@@ -509,7 +509,8 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
 
     it = cacheHeaders.findRawHeader("content-length");
     if (it != cacheHeaders.rawHeaders.constEnd()) {
-        if (nc->data(httpRequest.url())->size() < it->second.toLongLong())
+        QIODevice *data = nc->data(httpRequest.url());
+        if (!data || data->size() < it->second.toLongLong())
             return false; // The data is smaller than the content-length specified
     }
 
