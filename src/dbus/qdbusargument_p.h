@@ -55,7 +55,6 @@ public:
     static inline QDBusArgumentPrivate *d(QDBusArgument &q)
     { return q.d; }
 
-public:
     DBusMessage *message;
     QAtomicInt ref;
     int capabilities;
@@ -109,7 +108,6 @@ public:
     bool appendRegisteredType(const QVariant &arg);
     bool appendCrossMarshalling(QDBusDemarshaller *arg);
 
-public:
     DBusMessageIter iterator;
     QDBusMarshaller *parent;
     QByteArray *ba;
@@ -168,7 +166,6 @@ public:
     QDBusArgument::ElementType currentType();
     bool isCurrentTypeStringLike();
 
-public:
     DBusMessageIter iterator;
     QDBusDemarshaller *parent;
 
