@@ -4,7 +4,6 @@
 /*!
     \title Qt Android Notifier
     \example platform/androidnotifier
-    \examplecategory {Mobile}
     \meta tag {widgets,android,notification}
     \brief Demonstrates calling Java code from Qt in an Android application.
 

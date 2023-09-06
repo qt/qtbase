@@ -6,6 +6,7 @@
     \title Hello GLES3 Example
     \ingroup examples-widgets-opengl
     \examplecategory {Graphics & Multimedia}
+    \examplecategory {Mobile}
 
     \brief Demonstrates OpenGL ES 3.0 functions via QOpenGLExtraFunctions.
 
