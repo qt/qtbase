@@ -63,6 +63,7 @@ public:
     void sourceModelReset();
 
 private:
+    bool m_handleLayoutChanges = true;
     QVarLengthArray<QMetaObject::Connection, 18> m_sourceModelConnections;
 };
 

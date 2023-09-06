@@ -44,8 +44,11 @@ public:
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
     bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
+    bool isHandleSourceLayoutChanges() const;
+
 protected:
     QIdentityProxyModel(QIdentityProxyModelPrivate &dd, QObject* parent);
+    void setHandleSourceLayoutChanges(bool);
 
 private:
     Q_DECLARE_PRIVATE(QIdentityProxyModel)

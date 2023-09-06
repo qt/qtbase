@@ -335,14 +335,50 @@ void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
                                     &QIdentityProxyModelPrivate::sourceDataChanged),
             QObjectPrivate::connect(m, &QAbstractItemModel::headerDataChanged, d,
                                     &QIdentityProxyModelPrivate::sourceHeaderDataChanged),
-            QObjectPrivate::connect(m, &QAbstractItemModel::layoutAboutToBeChanged, d,
-                                    &QIdentityProxyModelPrivate::sourceLayoutAboutToBeChanged),
-            QObjectPrivate::connect(m, &QAbstractItemModel::layoutChanged, d,
-                                    &QIdentityProxyModelPrivate::sourceLayoutChanged),
         };
+
+        if (d->m_handleLayoutChanges) {
+            d->m_sourceModelConnections.emplace_back(
+                QObjectPrivate::connect(m, &QAbstractItemModel::layoutAboutToBeChanged, d,
+                                        &QIdentityProxyModelPrivate::sourceLayoutAboutToBeChanged));
+            d->m_sourceModelConnections.emplace_back(
+                QObjectPrivate::connect(m, &QAbstractItemModel::layoutChanged, d,
+                                        &QIdentityProxyModelPrivate::sourceLayoutChanged));
+        }
     }
 
     endResetModel();
+}
+
+/*!
+    \since 6.7
+
+    If \a b is \c true, this proxy model will handle the source model layout
+    changes (by connecting to \c QAbstractItemModel::layoutAboutToBeChanged
+    and \c QAbstractItemModel::layoutChanged singals).
+
+    The default is for this proxy model to handle the source model layout
+    changes.
+
+    In sub-classes of QIdentityProxyModel, it may be useful to set this to
+    \c false if you need to specially handle the source model layout changes.
+
+    \note Calling this method will only have an effect after calling setSourceModel().
+*/
+void QIdentityProxyModel::setHandleSourceLayoutChanges(bool b)
+{
+    d_func()->m_handleLayoutChanges = b;
+}
+
+/*!
+    \since 6.7
+
+    Returns \c true if this proxy model handles the source model layout
+    changes, otherwise returns \c false.
+*/
+bool QIdentityProxyModel::isHandleSourceLayoutChanges() const
+{
+    return d_func()->m_handleLayoutChanges;
 }
 
 void QIdentityProxyModelPrivate::sourceColumnsAboutToBeInserted(const QModelIndex &parent, int start, int end)
