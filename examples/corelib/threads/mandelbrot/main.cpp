@@ -9,16 +9,18 @@
 #include <QCommandLineOption>
 #include <QDebug>
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
     QCommandLineParser parser;
-    parser.setApplicationDescription("Qt Mandelbrot Example");
+    parser.setApplicationDescription(u"Qt Mandelbrot Example"_s);
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption passesOption("passes", "Number of passes (1-8)", "passes");
+    QCommandLineOption passesOption(u"passes"_s, u"Number of passes (1-8)"_s, u"passes"_s);
     parser.addOption(passesOption);
     parser.process(app);
 
