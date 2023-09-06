@@ -1342,7 +1342,6 @@ QLocale::Country QLocale::country() const
 
 /*!
     \since 6.7
-
     \enum QLocale::TagSeparator
 
     Indicate how to combine the parts that make up a locale identifier.
@@ -1380,8 +1379,9 @@ Q_DECL_COLD_FUNCTION static void badSeparatorWarning(const char *method, char se
     "language_territory", where language is a lowercase, two-letter ISO 639
     language code, and territory is an uppercase, two- or three-letter ISO 3166
     territory code. If the locale has no specified territory, only the language
-    name is returned. An optional \a separator parameter overrides the default
-    underscore character separating the two tags.
+    name is returned. Since Qt 6.7 an optional \a separator parameter can be
+    supplied to override the default underscore character separating the two
+    tags.
 
     Even if the QLocale object was constructed with an explicit script, name()
     will not contain it for compatibility reasons. Use \l bcp47Name() instead if
@@ -1455,10 +1455,10 @@ T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
     user-interface should be in.
 
     This function tries to conform the locale name to the IETF Best Common
-    Practice 47, defined by RFC 5646. It supports an optional \a separator
-    parameter which can be used to override the BCP47-specified use of a hyphen
-    to separate the tags. For use in IETF-defined protocols, however, the
-    default, QLocale::TagSeparator::Dash, should be retained.
+    Practice 47, defined by RFC 5646. Since Qt 6.7, it supports an optional \a
+    separator parameter which can be used to override the BCP47-specified use of
+    a hyphen to separate the tags. For use in IETF-defined protocols, however,
+    the default, QLocale::TagSeparator::Dash, should be retained.
 
     \sa name(), language(), territory(), script(), uiLanguages()
 */
@@ -4653,7 +4653,7 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     Each entry in the returned list is the name of a locale suitable to the
     user's preferences for what to translate the UI into. Where a name in the
     list is composed of several tags, they are joined as indicated by \a
-    separator.
+    separator. Prior to Qt 6.7 a dash was used as separator.
 
     For example, using the default separator QLocale::TagSeparator::Dash, if the
     user has configured their system to use English as used in the USA, the list
