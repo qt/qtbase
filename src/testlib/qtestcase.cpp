@@ -217,6 +217,8 @@ static std::string asyncSafeToString(int n)
 #endif // defined(Q_OS_UNIX)
 } // unnamed namespace
 
+[[maybe_unused]] static void blockUnixSignals();
+
 static bool alreadyDebugging()
 {
 #if defined(Q_OS_LINUX)
@@ -1287,6 +1289,7 @@ public:
 
     void run() override
     {
+        blockUnixSignals();
         auto locker = qt_unique_lock(mutex);
         expecting.store(TestFunctionStart, std::memory_order_release);
         waitCondition.notify_all();
@@ -1783,9 +1786,8 @@ bool reportResult(bool success, qxp::function_ref<const char *()> lhs,
 
 } // namespace QTest
 
-namespace {
 #if defined(Q_OS_WIN)
-
+namespace {
 // Helper class for resolving symbol names by dynamically loading "dbghelp.dll".
 class DebugSymbolResolver
 {
@@ -1939,9 +1941,17 @@ private:
         return EXCEPTION_EXECUTE_HANDLER;
     }
 };
+} // unnamed namespace
 using FatalSignalHandler = WindowsFaultHandler;
 
+inline void blockUnixSignals()
+{
+    // Windows does have C signals, but doesn't use them for the purposes we're
+    // talking about here
+}
+
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+namespace {
 class FatalSignalHandler
 {
 public:
@@ -2192,11 +2202,25 @@ private:
     static bool pauseOnCrash;
 };
 bool FatalSignalHandler::pauseOnCrash = false;
+} // unnamed namespace
+
+inline void blockUnixSignals()
+{
+    // Block most Unix signals so the WatchDog thread won't be called when
+    // external signals are delivered, thus avoiding interfering with the test
+    sigset_t set;
+    sigfillset(&set);
+
+    // we allow the crashing signals, in case we have bugs
+    for (int signo : FatalSignalHandler::fatalSignals)
+        sigdelset(&set, signo);
+
+    pthread_sigmask(SIG_BLOCK, &set, nullptr);
+}
 #else // Q_OS_WASM or weird systems
 class FatalSignalHandler {};
+inline void blockUnixSignals() {}
 #endif // Q_OS_* choice
-
-} // unnamed namespace
 
 static void initEnvironment()
 {
