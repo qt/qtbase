@@ -247,9 +247,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             if (!activeAdapter && (requestedAdapterIndex < 0 || requestedAdapterIndex == adapterIndex)) {
                 activeAdapter = adapter;
                 adapterLuid = desc.AdapterLuid;
-                driverInfoStruct.deviceName = name.toUtf8();
-                driverInfoStruct.deviceId = desc.DeviceId;
-                driverInfoStruct.vendorId = desc.VendorId;
+                QRhiD3D::fillDriverInfo(&driverInfoStruct, desc);
                 qCDebug(QRHI_LOG_INFO, "  using this adapter");
             } else {
                 adapter->Release();
@@ -330,12 +328,14 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         if (SUCCEEDED(dev->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void **>(&dxgiDev)))) {
             IDXGIAdapter *adapter = nullptr;
             if (SUCCEEDED(dxgiDev->GetAdapter(&adapter))) {
-                DXGI_ADAPTER_DESC desc;
-                adapter->GetDesc(&desc);
-                adapterLuid = desc.AdapterLuid;
-                driverInfoStruct.deviceName = QString::fromUtf16(reinterpret_cast<char16_t *>(desc.Description)).toUtf8();
-                driverInfoStruct.deviceId = desc.DeviceId;
-                driverInfoStruct.vendorId = desc.VendorId;
+                IDXGIAdapter1 *adapter1 = nullptr;
+                if (SUCCEEDED(adapter->QueryInterface(__uuidof(IDXGIAdapter1), reinterpret_cast<void **>(&adapter1)))) {
+                    DXGI_ADAPTER_DESC1 desc;
+                    adapter1->GetDesc1(&desc);
+                    adapterLuid = desc.AdapterLuid;
+                    QRhiD3D::fillDriverInfo(&driverInfoStruct, desc);
+                    adapter1->Release();
+                }
                 adapter->Release();
             }
             dxgiDev->Release();

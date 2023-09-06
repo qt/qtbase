@@ -8419,9 +8419,11 @@ const char *QRhi::backendName() const
 
 /*!
     \enum QRhiDriverInfo::DeviceType
-    Specifies the graphics device's type, when the information is available. In
-    practice this is only applicable with Vulkan and Metal. With others the
-    value will always be UnknownDevice.
+    Specifies the graphics device's type, when the information is available.
+
+    In practice this is only applicable with Vulkan and Metal. With Direct 3D
+    11 and 12, using an adapter with the software flag set leads to the value
+    \c CpuDevice. Otherwise, and with OpenGL, the value is always UnknownDevice.
 
     \value UnknownDevice
     \value IntegratedDevice

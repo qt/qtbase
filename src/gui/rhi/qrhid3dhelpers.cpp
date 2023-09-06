@@ -155,6 +155,16 @@ std::pair<IDxcCompiler *, IDxcLibrary *> createDxcCompiler()
 }
 #endif
 
+void fillDriverInfo(QRhiDriverInfo *info, const DXGI_ADAPTER_DESC1 &desc)
+{
+    const QString name = QString::fromUtf16(reinterpret_cast<const char16_t *>(desc.Description));
+    info->deviceName = name.toUtf8();
+    info->deviceId = desc.DeviceId;
+    info->vendorId = desc.VendorId;
+    info->deviceType = (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) ? QRhiDriverInfo::CpuDevice
+                                                                 : QRhiDriverInfo::UnknownDevice;
+}
+
 } // namespace
 
 QT_END_NAMESPACE

@@ -17,6 +17,7 @@
 
 #include <QtCore/private/qsystemlibrary_p.h>
 #include <QtCore/private/qsystemerror_p.h>
+#include <rhi/qrhi.h>
 
 #include <QtGui/qwindow.h>
 
@@ -44,6 +45,8 @@ IDCompositionDevice *createDirectCompositionDevice();
 #ifdef QRHI_D3D12_HAS_DXC
 std::pair<IDxcCompiler *, IDxcLibrary *> createDxcCompiler();
 #endif
+
+void fillDriverInfo(QRhiDriverInfo *info, const DXGI_ADAPTER_DESC1 &desc);
 
 } // namespace
 

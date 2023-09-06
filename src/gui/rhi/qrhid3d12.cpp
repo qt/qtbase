@@ -254,9 +254,7 @@ bool QRhiD3D12::create(QRhi::Flags flags)
             if (!activeAdapter && (requestedAdapterIndex < 0 || requestedAdapterIndex == adapterIndex)) {
                 activeAdapter = adapter;
                 adapterLuid = desc.AdapterLuid;
-                driverInfoStruct.deviceName = name.toUtf8();
-                driverInfoStruct.deviceId = desc.DeviceId;
-                driverInfoStruct.vendorId = desc.VendorId;
+                QRhiD3D::fillDriverInfo(&driverInfoStruct, desc);
                 qCDebug(QRHI_LOG_INFO, "  using this adapter");
             } else {
                 adapter->Release();
@@ -290,9 +288,7 @@ bool QRhiD3D12::create(QRhi::Flags flags)
             if (desc.AdapterLuid.LowPart == adapterLuid.LowPart
                     && desc.AdapterLuid.HighPart == adapterLuid.HighPart)
             {
-                driverInfoStruct.deviceName = QString::fromUtf16(reinterpret_cast<char16_t *>(desc.Description)).toUtf8();
-                driverInfoStruct.deviceId = desc.DeviceId;
-                driverInfoStruct.vendorId = desc.VendorId;
+                QRhiD3D::fillDriverInfo(&driverInfoStruct, desc);
                 break;
             }
         }
