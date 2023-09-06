@@ -35,8 +35,11 @@ class QDBusDemarshaller;
 class QDBusArgumentPrivate
 {
 public:
-    explicit QDBusArgumentPrivate(QDBusConnection::ConnectionCapabilities flags = {})
-        : capabilities(flags)
+    enum class Direction { Marshalling, Demarshalling };
+
+    explicit QDBusArgumentPrivate(Direction direction,
+                                  QDBusConnection::ConnectionCapabilities flags = {})
+        : capabilities(flags), direction(direction)
     {
     }
     virtual ~QDBusArgumentPrivate();
@@ -60,19 +63,15 @@ public:
     DBusMessage *message = nullptr;
     QAtomicInt ref = 1;
     QDBusConnection::ConnectionCapabilities capabilities;
-    enum Direction {
-        Marshalling,
-        Demarshalling
-    } direction;
+    Direction direction;
 };
 
 class QDBusMarshaller: public QDBusArgumentPrivate
 {
 public:
     explicit QDBusMarshaller(QDBusConnection::ConnectionCapabilities flags = {})
-        : QDBusArgumentPrivate(flags)
+        : QDBusArgumentPrivate(Direction::Marshalling, flags)
     {
-        direction = Marshalling;
     }
     ~QDBusMarshaller();
 
@@ -130,9 +129,8 @@ class QDBusDemarshaller: public QDBusArgumentPrivate
 {
 public:
     explicit QDBusDemarshaller(QDBusConnection::ConnectionCapabilities flags = {})
-        : QDBusArgumentPrivate(flags)
+        : QDBusArgumentPrivate(Direction::Demarshalling, flags)
     {
-        direction = Demarshalling;
     }
     ~QDBusDemarshaller();
 

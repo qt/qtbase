@@ -360,7 +360,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
         QDBusDemarshaller demarshaller(capabilities);
         demarshaller.message = q_dbus_message_ref(d->message);
 
-        if (d->direction == Demarshalling) {
+        if (d->direction == Direction::Demarshalling) {
             // it's demarshalling; just copy
             demarshaller.iterator = static_cast<QDBusDemarshaller *>(d)->iterator;
         } else {

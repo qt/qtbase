@@ -71,7 +71,7 @@ bool QDBusArgumentPrivate::checkWrite(QDBusArgumentPrivate *&d)
 {
     if (!d)
         return false;
-    if (d->direction == Marshalling) {
+    if (d->direction == Direction::Marshalling) {
         if (!d->marshaller()->ok)
             return false;
 
@@ -99,7 +99,7 @@ bool QDBusArgumentPrivate::checkRead(QDBusArgumentPrivate *d)
 {
     if (!d)
         return false;
-    if (d->direction == Demarshalling)
+    if (d->direction == Direction::Demarshalling)
         return true;
 
 #ifdef QT_DEBUG
@@ -537,7 +537,7 @@ QString QDBusArgument::currentSignature() const
 {
     if (!d)
         return QString();
-    if (d->direction == QDBusArgumentPrivate::Demarshalling)
+    if (d->direction == QDBusArgumentPrivate::Direction::Demarshalling)
         return d->demarshaller()->currentSignature();
     else
         return d->marshaller()->currentSignature();
@@ -556,7 +556,7 @@ QDBusArgument::ElementType QDBusArgument::currentType() const
 {
     if (!d)
         return UnknownType;
-    if (d->direction == QDBusArgumentPrivate::Demarshalling)
+    if (d->direction == QDBusArgumentPrivate::Direction::Demarshalling)
         return d->demarshaller()->currentType();
     return UnknownType;
 }
