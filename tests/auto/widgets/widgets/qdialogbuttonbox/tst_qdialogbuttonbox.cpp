@@ -55,6 +55,7 @@ private slots:
 #ifdef QT_BUILD_INTERNAL
     void hideAndShowButton();
 #endif
+    void hideAndShowStandardButton();
     void buttonRole_data();
     void buttonRole();
     void setStandardButtons_data();
@@ -425,6 +426,22 @@ void tst_QDialogButtonBox::hideAndShowButton()
     QCOMPARE(spy.count(), 1);
 }
 #endif
+
+void tst_QDialogButtonBox::hideAndShowStandardButton()
+{
+    QDialogButtonBox buttonBox;
+    buttonBox.setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    buttonBox.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&buttonBox));
+    auto *button = buttonBox.button(QDialogButtonBox::Cancel);
+    QVERIFY(button);
+    button->hide();
+    QVERIFY(QTest::qWaitFor([button](){ return !button->isVisible(); }));
+    QCOMPARE(button, buttonBox.button(QDialogButtonBox::Cancel));
+    button->show();
+    QVERIFY(QTest::qWaitForWindowExposed(button));
+    QCOMPARE(button, buttonBox.button(QDialogButtonBox::Cancel));
+}
 
 void tst_QDialogButtonBox::testDelete()
 {
