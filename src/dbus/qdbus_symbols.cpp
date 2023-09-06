@@ -54,7 +54,7 @@ bool qdbus_loadLibDBus()
     lib->setLoadHints(QLibrary::ExportExternalSymbolsHint); // make libdbus symbols available for apps that need more advanced control over the dbus
     triedToLoadLibrary = true;
 
-    static int majorversions[] = { 3, 2, -1 };
+    static constexpr int majorversions[] = { 3, 2, -1 };
     const QString baseNames[] = {
 #ifdef Q_OS_WIN
         "dbus-1"_L1,
