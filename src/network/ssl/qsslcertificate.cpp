@@ -891,19 +891,18 @@ bool QSslCertificatePrivate::isBlacklisted(const QSslCertificate &certificate)
 
 QByteArray QSslCertificatePrivate::subjectInfoToString(QSslCertificate::SubjectInfo info)
 {
-    QByteArray str;
     switch (info) {
-    case QSslCertificate::Organization: str = QByteArray("O"); break;
-    case QSslCertificate::CommonName: str = QByteArray("CN"); break;
-    case QSslCertificate::LocalityName: str = QByteArray("L"); break;
-    case QSslCertificate::OrganizationalUnitName: str = QByteArray("OU"); break;
-    case QSslCertificate::CountryName: str = QByteArray("C"); break;
-    case QSslCertificate::StateOrProvinceName: str = QByteArray("ST"); break;
-    case QSslCertificate::DistinguishedNameQualifier: str = QByteArray("dnQualifier"); break;
-    case QSslCertificate::SerialNumber: str = QByteArray("serialNumber"); break;
-    case QSslCertificate::EmailAddress: str = QByteArray("emailAddress"); break;
+    case QSslCertificate::Organization: return "O"_ba;
+    case QSslCertificate::CommonName: return "CN"_ba;
+    case QSslCertificate::LocalityName: return"L"_ba;
+    case QSslCertificate::OrganizationalUnitName: return "OU"_ba;
+    case QSslCertificate::CountryName: return "C"_ba;
+    case QSslCertificate::StateOrProvinceName: return "ST"_ba;
+    case QSslCertificate::DistinguishedNameQualifier: return "dnQualifier"_ba;
+    case QSslCertificate::SerialNumber: return "serialNumber"_ba;
+    case QSslCertificate::EmailAddress: return "emailAddress"_ba;
     }
-    return str;
+    return QByteArray();
 }
 
 /*!
