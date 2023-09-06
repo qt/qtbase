@@ -17,6 +17,7 @@
 
 #include <QtDBus/private/qtdbusglobal_p.h>
 #include <qdbusargument.h>
+#include "qdbusconnection.h"
 #include "qdbusunixfiledescriptor.h"
 #include "qdbus_symbols_p.h"
 
@@ -34,7 +35,10 @@ class QDBusDemarshaller;
 class QDBusArgumentPrivate
 {
 public:
-    inline QDBusArgumentPrivate(int flags = 0) : capabilities(flags) { }
+    explicit QDBusArgumentPrivate(QDBusConnection::ConnectionCapabilities flags = {})
+        : capabilities(flags)
+    {
+    }
     virtual ~QDBusArgumentPrivate();
 
     static bool checkRead(QDBusArgumentPrivate *d);
@@ -55,7 +59,7 @@ public:
 
     DBusMessage *message = nullptr;
     QAtomicInt ref = 1;
-    int capabilities;
+    QDBusConnection::ConnectionCapabilities capabilities;
     enum Direction {
         Marshalling,
         Demarshalling
@@ -65,7 +69,11 @@ public:
 class QDBusMarshaller: public QDBusArgumentPrivate
 {
 public:
-    QDBusMarshaller(int flags) : QDBusArgumentPrivate(flags) { direction = Marshalling; }
+    explicit QDBusMarshaller(QDBusConnection::ConnectionCapabilities flags = {})
+        : QDBusArgumentPrivate(flags)
+    {
+        direction = Marshalling;
+    }
     ~QDBusMarshaller();
 
     QString currentSignature();
@@ -121,7 +129,11 @@ private:
 class QDBusDemarshaller: public QDBusArgumentPrivate
 {
 public:
-    inline QDBusDemarshaller(int flags) : QDBusArgumentPrivate(flags) { direction = Demarshalling; }
+    explicit QDBusDemarshaller(QDBusConnection::ConnectionCapabilities flags = {})
+        : QDBusArgumentPrivate(flags)
+    {
+        direction = Demarshalling;
+    }
     ~QDBusDemarshaller();
 
     QString currentSignature();

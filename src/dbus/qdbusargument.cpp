@@ -37,7 +37,7 @@ QByteArray QDBusArgumentPrivate::createSignature(QMetaType type)
         return "";
 
     QByteArray signature;
-    QDBusMarshaller *marshaller = new QDBusMarshaller(0);
+    QDBusMarshaller *marshaller = new QDBusMarshaller;
     marshaller->ba = &signature;
 
     // run it
@@ -260,7 +260,7 @@ QDBusArgument::QDBusArgument()
         return;
     }
 
-    QDBusMarshaller *dd = new QDBusMarshaller(0);
+    QDBusMarshaller *dd = new QDBusMarshaller;
     d = dd;
 
     // create a new message with any type, we won't sent it anyways
