@@ -31,7 +31,7 @@
     \li The contents of the QRhiWidget \l{QRhiWidget::grab()}{can be
     read back} and saved to an image file (e.g. a PNG file).
 
-    \li 4x multisample antialiasing \l{QRhiWidget::sampleConut}{can be toggled}
+    \li 4x multisample antialiasing \l{QRhiWidget::sampleCount()}{can be toggled}
     at run time. The QRhiWidget subclass is prepared to handle the changing
     sample count correctly.
 

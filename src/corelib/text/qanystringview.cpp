@@ -606,8 +606,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QAnyStringView::operator<<(QDebug d, QAnyStringView s)
     \since 6.7
-    \relates QAnyStringView
-    \relatesalso QDebug
+    \relates QDebug
 
     Outputs \a s to debug stream \a d.
 

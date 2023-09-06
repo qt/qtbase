@@ -1284,7 +1284,7 @@ QRhiRenderTarget *QRhiWidget::renderTarget() const
 }
 
 /*!
-    \fn void QRhiWidget::framePresented()
+    \fn void QRhiWidget::frameSubmitted()
 
     This signal is emitted after the widget's top-level window has finished
     composition and has \l{QRhi::endFrame()}{submitted a frame}.

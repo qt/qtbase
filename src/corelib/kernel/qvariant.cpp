@@ -2722,6 +2722,14 @@ QT_WARNING_POP
     \sa QVariant::value()
 */
 
+/*!
+    \fn template<typename T> T QVariant::qvariant_cast(QVariant &&value)
+    \overload
+    \since 6.7
+
+    Returns the given \a value converted to the template type \c{T}.
+*/
+
 /*! \fn template<typename T> T qVariantValue(const QVariant &value)
     \relates QVariant
     \deprecated

@@ -1359,7 +1359,7 @@
 
     \endlist
 
-    \sa QAtomicInteger
+    \sa QAtomicInteger, qYieldCpu()
 */
 
 /*!

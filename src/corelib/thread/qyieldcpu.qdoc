@@ -7,7 +7,7 @@
     \inmodule QtCore
     \ingroup thread
     \relates QAtomicInteger
-    \relatesalso QAtomicPointer
+    //! \relatesalso QAtomicPointer
     \since 6.7
 
     Pauses the execution of the current thread for an unspecified time, using

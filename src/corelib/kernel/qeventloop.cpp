@@ -403,7 +403,6 @@ QEventLoopLocker::QEventLoopLocker(QThread *thread) noexcept
 
 /*!
     \fn QEventLoopLocker::swap(QEventLoopLocker &lhs, QEventLoopLocker &rhs)
-    \relates QEventLoopLocker
     \since 6.7
 
     Swaps the object and the state of \a lhs with \a rhs.

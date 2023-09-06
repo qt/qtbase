@@ -421,7 +421,7 @@
 
     \brief Expand to \c{[[nodiscard(message)]]} on compilers that support the feature.
 
-    Otherwise they expand to [[nodiscard]] and Q_NODISCARD_CTOR, respectively.
+    Otherwise they expand to \c {[[nodiscard]]} and Q_NODISCARD_CTOR, respectively.
 
-    \sa`Q_NODISCARD_CTOR
+    \sa Q_NODISCARD_CTOR
 */

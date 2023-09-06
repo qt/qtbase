@@ -1380,7 +1380,8 @@ Q_DECL_COLD_FUNCTION static void badSeparatorWarning(const char *method, char se
     "language_territory", where language is a lowercase, two-letter ISO 639
     language code, and territory is an uppercase, two- or three-letter ISO 3166
     territory code. If the locale has no specified territory, only the language
-    name is returned.
+    name is returned. An optional \a separator parameter overrides the default
+    underscore character separating the two tags.
 
     Even if the QLocale object was constructed with an explicit script, name()
     will not contain it for compatibility reasons. Use \l bcp47Name() instead if
