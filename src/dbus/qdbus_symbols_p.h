@@ -27,6 +27,8 @@
 #  include "dbus_minimal_p.h"
 #endif
 
+#include <atomic>
+
 #ifdef interface
 #  undef interface
 #endif
@@ -114,28 +116,34 @@ template <>           struct TraceReturn<void> { typedef void Type; };
 #  define DEBUGRET(ret)
 # endif
 
-# define DEFINEFUNC(ret, func, args, argcall, funcret)          \
-    typedef ret (* _q_PTR_##func) args;                         \
-    static inline ret q_##func args                             \
-    {                                                           \
-        static _q_PTR_##func ptr;                               \
-        DEBUGCALL(#func, argcall);                              \
-        if (!ptr)                                               \
-            ptr = (_q_PTR_##func) qdbus_resolve_me(#func);      \
-        funcret DEBUGRET(ret) ptr argcall;                      \
+# define DEFINEFUNC(ret, func, args, argcall, funcret)                 \
+    static inline ret q_##func args                                    \
+    {                                                                  \
+        using func_ptr = ret (*) args;                                 \
+        static std::atomic<func_ptr> atomic_ptr;                       \
+        func_ptr ptr = atomic_ptr.load(std::memory_order_relaxed);     \
+        DEBUGCALL(#func, argcall);                                     \
+        if (!ptr) {                                                    \
+            ptr = reinterpret_cast<func_ptr>(qdbus_resolve_me(#func)); \
+            atomic_ptr.store(ptr, std::memory_order_relaxed);          \
+        }                                                              \
+        funcret DEBUGRET(ret) ptr argcall;                             \
     }
 
-# define DEFINEFUNC_CONDITIONALLY(ret, func, args, argcall, funcret, failret)  \
-    typedef ret (* _q_PTR_##func) args;                               \
-    static inline ret q_##func args                                   \
-    {                                                                 \
-        static _q_PTR_##func ptr;                                     \
-        DEBUGCALL(#func, argcall);                                    \
-        if (!ptr)                                                     \
-            ptr = (_q_PTR_##func) qdbus_resolve_conditionally(#func); \
-        if (!ptr)                                                     \
-            failret;                                                  \
-        funcret DEBUGRET(ret) ptr argcall;                            \
+# define DEFINEFUNC_CONDITIONALLY(ret, func, args, argcall, funcret, failret)     \
+    static inline ret q_##func args                                               \
+    {                                                                             \
+        using func_ptr = ret (*) args;                                            \
+        static std::atomic<func_ptr> atomic_ptr;                                  \
+        func_ptr ptr = atomic_ptr.load(std::memory_order_relaxed);                \
+        DEBUGCALL(#func, argcall);                                                \
+        if (!ptr) {                                                               \
+            ptr = reinterpret_cast<func_ptr>(qdbus_resolve_conditionally(#func)); \
+            atomic_ptr.store(ptr, std::memory_order_relaxed);                     \
+        }                                                                         \
+        if (!ptr)                                                                 \
+            failret;                                                              \
+        funcret DEBUGRET(ret) ptr argcall;                                        \
     }
 
 #else // defined QT_LINKED_LIBDBUS
