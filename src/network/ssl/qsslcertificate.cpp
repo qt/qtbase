@@ -186,7 +186,7 @@ QSslCertificate::QSslCertificate(const QByteArray &data, QSsl::EncodingFormat fo
         return;
     }
 
-    QList<QSslCertificate> certs = X509Reader(data, 1);
+    const QList<QSslCertificate> certs = X509Reader(data, 1);
     if (!certs.isEmpty())
         d = certs.first().d;
 }
@@ -918,13 +918,13 @@ QString QSslCertificate::issuerDisplayName() const
     QStringList names;
     names = issuerInfo(QSslCertificate::CommonName);
     if (!names.isEmpty())
-        return names.first();
+        return names.constFirst();
     names = issuerInfo(QSslCertificate::Organization);
     if (!names.isEmpty())
-        return names.first();
+        return names.constFirst();
     names = issuerInfo(QSslCertificate::OrganizationalUnitName);
     if (!names.isEmpty())
-        return names.first();
+        return names.constFirst();
 
     return QString();
 }
@@ -943,13 +943,13 @@ QString QSslCertificate::subjectDisplayName() const
     QStringList names;
     names = subjectInfo(QSslCertificate::CommonName);
     if (!names.isEmpty())
-        return names.first();
+        return names.constFirst();
     names = subjectInfo(QSslCertificate::Organization);
     if (!names.isEmpty())
-        return names.first();
+        return names.constFirst();
     names = subjectInfo(QSslCertificate::OrganizationalUnitName);
     if (!names.isEmpty())
-        return names.first();
+        return names.constFirst();
 
     return QString();
 }
