@@ -25,9 +25,10 @@ class Q_AUTOTEST_EXPORT QDialogButtonBoxPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QDialogButtonBox)
 
 public:
-    enum class RemoveRule {
-        KeepConnections,
-        Disconnect,
+    enum class RemoveReason {
+        HideEvent,
+        ManualRemove,
+        Destroyed,
     };
     enum class LayoutRule {
         DoLayout,
@@ -53,7 +54,7 @@ public:
 
     void createStandardButtons(QDialogButtonBox::StandardButtons buttons);
 
-    void removeButton(QAbstractButton *button, RemoveRule rule);
+    void removeButton(QAbstractButton *button, RemoveReason reason);
     void layoutButtons();
     void initLayout();
     void resetLayout();
