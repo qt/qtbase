@@ -46,7 +46,7 @@ public:
     QDBusMarshaller *marshaller();
     QDBusDemarshaller *demarshaller();
 
-    static QByteArray createSignature(int id);
+    static QByteArray createSignature(QMetaType type);
     static inline QDBusArgument create(QDBusArgumentPrivate *d)
     {
         QDBusArgument q(d);
