@@ -2,7 +2,7 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qglobal.h>
+#include "qdbus_symbols_p.h"
 #include <QtCore/qlatin1stringview.h>
 #if QT_CONFIG(library)
 #include <QtCore/qlibrary.h>
@@ -12,13 +12,9 @@
 
 #ifndef QT_NO_DBUS
 
-extern "C" void dbus_shutdown();
-
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
-
-void (*qdbus_resolve_me(const char *name))();
 
 #if !defined QT_LINKED_LIBDBUS
 
