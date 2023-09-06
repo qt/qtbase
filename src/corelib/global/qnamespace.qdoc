@@ -980,8 +980,7 @@
 
     \value WA_Hover Forces Qt to generate paint events when the mouse
     enters or leaves the widget. This feature is typically used when
-    implementing custom styles; see the \l{widgets/styles}{Styles}
-    example for details.
+    implementing custom styles.
 
     \value WA_InputMethodEnabled Enables input methods for Asian languages.
     Must be set when creating custom text editing widgets.

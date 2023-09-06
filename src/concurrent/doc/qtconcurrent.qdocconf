@@ -42,3 +42,6 @@ imagedirs   += images
 
 navigation.landingpage = "Qt Concurrent"
 navigation.cppclassespage = "Qt Concurrent C++ Classes"
+
+# Enforce zero documentation warnings
+warninglimit = 0

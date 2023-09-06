@@ -59,3 +59,6 @@ excludefiles += ../kernel/qtestsupport_core.cpp
 
 navigation.landingpage = "Qt Core"
 navigation.cppclassespage = "Qt Core C++ Classes"
+
+# Enforce zero documentation warnings
+warninglimit = 0

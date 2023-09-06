@@ -335,7 +335,9 @@
     For example, we can copy the contents of a QLineEdit to the clipboard
     with the following code:
 
-    \snippet ../widgets/widgets/charactermap/mainwindow.cpp 11
+    \code
+    QGuiApplication::clipboard()->setText(lineEdit->text(), QClipboard::Clipboard);
+    \endcode
 
     Data with different MIME types can also be put on the clipboard.
     Construct a QMimeData object and set data with setData() function in
@@ -364,8 +366,6 @@
     \li \l{draganddrop/draggableicons}{Draggable Icons}
     \li \l{draganddrop/draggabletext}{Draggable Text}
     \li \l{draganddrop/dropsite}{Drop Site}
-    \li \l{draganddrop/fridgemagnets}{Fridge Magnets}
-    \li \l{draganddrop/puzzle}{Drag and Drop Puzzle}
     \endlist
 
     \section1 Interoperating with Other Applications

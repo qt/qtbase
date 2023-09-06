@@ -74,3 +74,6 @@ spurious += "Undocumented enum item '.*' in QGradient::Preset"
 # \svgcolor {#ffdead}
 macro.svgcolor.HTML = "<div style=\"padding:10px;color:#fff;background:\1;\"></div>"
 macro.svgcolor.DocBook = "<db:phrase role=\"color:\1\">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</db:phrase>"
+
+# Enforce zero documentation warnings
+warninglimit = 0

@@ -39,3 +39,6 @@ imagedirs   += images \
 
 navigation.landingpage = "Qt Network"
 navigation.cppclassespage = "Qt Network C++ Classes"
+
+# Enforce zero documentation warnings
+warninglimit = 0

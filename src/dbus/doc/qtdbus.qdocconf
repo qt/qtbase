@@ -65,3 +65,6 @@ navigation.cppclassespage = "Qt D-Bus C++ Classes"
 
 manifestmeta.thumbnail.names    =   "QtDBus/D-Bus Ping Pong" \
                                     "QtDBus/D-Bus Complex Ping Pong"
+
+# Enforce zero documentation warnings
+warninglimit = 0

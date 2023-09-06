@@ -63,3 +63,6 @@ qhp.QtOpenGL.subprojects.classes.sortPages = true
 
 navigation.landingpage = "Qt OpenGL"
 navigation.cppclassespage = "Qt OpenGL C++ Classes"
+
+# Enforce zero documentation warnings
+warninglimit = 0

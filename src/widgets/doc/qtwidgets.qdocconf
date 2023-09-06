@@ -26,7 +26,20 @@ qhp.QtWidgets.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtwidgets/qtwidgets.tags
 
-depends                 += qtcore qtgui qtdoc qtsql qtdesigner qtquick qmake qtcmake qtsvg qtlinguist qthelp
+depends += \
+    qtcore \
+    qtgui \
+    qtdoc \
+    qtsql \
+    qtdesigner \
+    qtquick \
+    qmake \
+    qtcmake \
+    qtsvg \
+    qtlinguist \
+    qthelp \
+    qtopengl \
+    qtshadertools
 
 headerdirs  += ..
 
@@ -64,3 +77,6 @@ navigation.cppclassespage = "Qt Widgets C++ Classes"
 manifestmeta.highlighted.names = \
     "QtWidgets/Editable Tree Model Example" \
     "QtWidgets/Menus Example"
+
+# Enforce zero documentation warnings
+warninglimit = 0

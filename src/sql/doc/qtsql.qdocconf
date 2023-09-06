@@ -39,3 +39,6 @@ imagedirs   += images \
 
 navigation.landingpage = "Qt SQL"
 navigation.cppclassespage = "Qt SQL C++ Classes"
+
+# Enforce zero documentation warnings
+warninglimit = 0
