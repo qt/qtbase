@@ -1743,7 +1743,13 @@ QAbstractItemModel::~QAbstractItemModel()
 
     For example:
 
-    \snippet ../widgets/itemviews/simpledommodel/dommodel.cpp 2
+    \code
+    int MyModel::columnCount(const QModelIndex &parent) const
+    {
+        Q_UNUSED(parent);
+        return 3;
+    }
+    \endcode
 
     \note When implementing a table based model, columnCount() should return 0
     when the parent is valid.

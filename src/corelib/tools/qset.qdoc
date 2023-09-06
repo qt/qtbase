@@ -887,11 +887,9 @@
     any.
 */
 
-/*! \fn template <class T> template <class Predicate> qsizetype QSet<T>::removeIf(Predicate pred)
-    \relates QSet
+/*! \fn template <class T> template <class Pred> qsizetype QSet<T>::removeIf(Pred pred)
     \since 6.1
 
-    Removes all elements for which the predicate \a pred returns true
-    from the set \a set. Returns the number of elements removed, if
-    any.
+    Removes, from this set, all elements for which the predicate \a pred
+    returns \c true. Returns the number of elements removed, if any.
 */

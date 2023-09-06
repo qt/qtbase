@@ -130,9 +130,6 @@
 
     \snippet resource-system/main.cpp url
 
-    See the \l{mainwindows/mainwindow}{Mainwindow} example for an actual
-    application that uses Qt's resource system to store its icons.
-
     \section1 Advanced Topics
 
     \section2 Prefixes

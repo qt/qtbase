@@ -1154,7 +1154,7 @@ QStringList QIcon::themeSearchPaths()
 
     The fallback search paths are consulted for standalone
     icon files if the \l{themeName()}{current icon theme}
-    or \l{fallbackIconTheme()}{fallback icon theme} do
+    or \l{fallbackThemeName()}{fallback icon theme} do
     not provide results for an icon lookup.
 
     If not set, the fallback search paths will be defined
@@ -1174,7 +1174,7 @@ QStringList QIcon::fallbackSearchPaths()
 
     The fallback search paths are consulted for standalone
     icon files if the \l{themeName()}{current icon theme}
-    or \l{fallbackIconTheme()}{fallback icon theme} do
+    or \l{fallbackThemeName()}{fallback icon theme} do
     not provide results for an icon lookup.
 
     For example:
