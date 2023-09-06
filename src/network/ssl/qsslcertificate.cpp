@@ -878,7 +878,7 @@ static const char *const certificate_blacklist[] = {
 bool QSslCertificatePrivate::isBlacklisted(const QSslCertificate &certificate)
 {
     for (int a = 0; certificate_blacklist[a] != nullptr; a++) {
-        QString blacklistedCommonName = QString::fromUtf8(certificate_blacklist[(a+1)]);
+        auto blacklistedCommonName = QAnyStringView(QUtf8StringView(certificate_blacklist[(a+1)]));
         if (certificate.serialNumber() == certificate_blacklist[a++] &&
             (certificate.subjectInfo(QSslCertificate::CommonName).contains(blacklistedCommonName) ||
              certificate.issuerInfo(QSslCertificate::CommonName).contains(blacklistedCommonName)))
