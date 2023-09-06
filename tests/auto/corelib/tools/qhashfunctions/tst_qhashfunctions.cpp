@@ -415,13 +415,9 @@ void tst_QHashFunctions::stdPair_template(const T1 &t1, const T2 &t2)
     std::pair<T1, T2> dpair{};
     std::pair<T1, T2> vpair{t1, t2};
 
-    size_t seed = QHashSeed::globalSeed();
-
     // confirm proper working of the pair and of the underlying types
     QVERIFY(t1 == t1);
     QVERIFY(t2 == t2);
-    QCOMPARE(qHash(t1), qHash(t1));
-    QCOMPARE(qHash(t2), qHash(t2));
     QCOMPARE(qHash(t1, seed), qHash(t1, seed));
     QCOMPARE(qHash(t2, seed), qHash(t2, seed));
 
@@ -429,9 +425,7 @@ void tst_QHashFunctions::stdPair_template(const T1 &t1, const T2 &t2)
     QVERIFY(vpair == vpair);
 
     // therefore their hashes should be equal
-    QCOMPARE(qHash(dpair), qHash(dpair));
     QCOMPARE(qHash(dpair, seed), qHash(dpair, seed));
-    QCOMPARE(qHash(vpair), qHash(vpair));
     QCOMPARE(qHash(vpair, seed), qHash(vpair, seed));
 }
 
