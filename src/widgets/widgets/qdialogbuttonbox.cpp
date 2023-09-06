@@ -704,32 +704,43 @@ QDialogButtonBox::ButtonRole QDialogButtonBox::buttonRole(QAbstractButton *butto
 void QDialogButtonBox::removeButton(QAbstractButton *button)
 {
     Q_D(QDialogButtonBox);
-    d->removeButton(button, QDialogButtonBoxPrivate::RemoveRule::Disconnect);
+    d->removeButton(button, QDialogButtonBoxPrivate::RemoveReason::ManualRemove);
 }
 
-void QDialogButtonBoxPrivate::removeButton(QAbstractButton *button, RemoveRule rule)
+/*!
+   \internal
+   Removes \param button.
+   \param reason determines the behavior following the removal:
+   \list
+   \li \c ManualRemove disconnects all signals and removes the button from standardButtonHash.
+   \li \c HideEvent keeps connections alive, standard buttons remain in standardButtonHash.
+   \li \c Destroyed removes the button from standardButtonHash. Signals remain untouched, because
+          the button might already be only a QObject, the destructor of which handles disconnecting.
+   \endlist
+ */
+void QDialogButtonBoxPrivate::removeButton(QAbstractButton *button, RemoveReason reason)
 {
     if (!button)
         return;
 
-    // Remove it from hidden buttons
+    // Remove button from hidden buttons and roles
     hiddenButtons.remove(button);
-
-    // Remove it from the standard button hash first and then from the roles
-    standardButtonHash.remove(reinterpret_cast<QPushButton *>(button));
     for (int i = 0; i < QDialogButtonBox::NRoles; ++i)
         buttonLists[i].removeOne(button);
 
-    switch (rule) {
-    case RemoveRule::Disconnect:
+    switch (reason) {
+    case RemoveReason::ManualRemove:
         button->setParent(nullptr);
         QObjectPrivate::disconnect(button, &QAbstractButton::clicked,
                                    this, &QDialogButtonBoxPrivate::handleButtonClicked);
         QObjectPrivate::disconnect(button, &QAbstractButton::destroyed,
                                    this, &QDialogButtonBoxPrivate::handleButtonDestroyed);
         button->removeEventFilter(filter.get());
+        Q_FALLTHROUGH();
+    case RemoveReason::Destroyed:
+        standardButtonHash.remove(reinterpret_cast<QPushButton *>(button));
         break;
-    case RemoveRule::KeepConnections:
+    case RemoveReason::HideEvent:
         break;
     }
 }
@@ -881,7 +892,7 @@ void QDialogButtonBoxPrivate::handleButtonDestroyed()
 {
     Q_Q(QDialogButtonBox);
     if (QObject *object = q->sender())
-        removeButton(reinterpret_cast<QAbstractButton *>(object), RemoveRule::KeepConnections);
+        removeButton(reinterpret_cast<QAbstractButton *>(object), RemoveReason::Destroyed);
 }
 
 bool QDialogButtonBoxPrivate::handleButtonShowAndHide(QAbstractButton *button, QEvent *event)
@@ -897,7 +908,7 @@ bool QDialogButtonBoxPrivate::handleButtonShowAndHide(QAbstractButton *button, Q
     case QEvent::HideToParent: {
         const QDialogButtonBox::ButtonRole role = q->buttonRole(button);
         if (role != QDialogButtonBox::ButtonRole::InvalidRole) {
-            removeButton(button, RemoveRule::KeepConnections);
+            removeButton(button, RemoveReason::HideEvent);
             hiddenButtons.insert(button, role);
             layoutButtons();
         }
