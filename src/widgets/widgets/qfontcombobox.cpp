@@ -3,6 +3,7 @@
 
 #include "qfontcombobox.h"
 
+#include <qaccessible.h>
 #include <qstringlistmodel.h>
 #include <qitemdelegate.h>
 #include <qlistview.h>
@@ -328,6 +329,13 @@ void QFontComboBoxPrivate::_q_updateModel()
     {
         const QSignalBlocker blocker(m);
         m->setStringList(list);
+        // Since the modelReset signal is blocked the view will not emit an accessibility event
+    #if QT_CONFIG(accessibility)
+        if (QAccessible::isActive()) {
+            QAccessibleTableModelChangeEvent accessibleEvent(q->view(), QAccessibleTableModelChangeEvent::ModelReset);
+            QAccessible::updateAccessibility(&accessibleEvent);
+        }
+    #endif
     }
 
     if (list.isEmpty()) {
