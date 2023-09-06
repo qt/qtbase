@@ -745,13 +745,15 @@ QByteArray QUuid::toRfc4122() const
 */
 QDataStream &operator<<(QDataStream &s, const QUuid &id)
 {
-    QByteArray bytes;
+    constexpr int NumBytes = sizeof(QUuid);
+    static_assert(NumBytes == 16, "Change the serialization format when this ever hits");
+    char bytes[NumBytes];
     if (s.byteOrder() == QDataStream::BigEndian) {
-        bytes = id.toRfc4122();
+        const auto id128 = id.toBytes();
+        static_assert(sizeof(id128) == NumBytes);
+        memcpy(bytes, &id128, NumBytes);
     } else {
-        // we know how many bytes a UUID has, I hope :)
-        bytes = QByteArray(16, Qt::Uninitialized);
-        uchar *data = reinterpret_cast<uchar *>(bytes.data());
+        auto *data = bytes;
 
         // for historical reasons, our little-endian serialization format
         // stores each of the UUID fields in little endian, instead of storing
@@ -769,9 +771,9 @@ QDataStream &operator<<(QDataStream &s, const QUuid &id)
         }
     }
 
-    if (s.writeRawData(bytes.data(), 16) != 16) {
+    if (s.writeRawData(bytes, NumBytes) != NumBytes)
         s.setStatus(QDataStream::WriteFailed);
-    }
+
     return s;
 }
 
