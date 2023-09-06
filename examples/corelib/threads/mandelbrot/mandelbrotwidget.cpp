@@ -46,7 +46,8 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
 
     if (pixmap.isNull()) {
         painter.setPen(Qt::white);
-        painter.drawText(rect(), Qt::AlignCenter|Qt::TextWordWrap, tr("Rendering initial image, please wait..."));
+        painter.drawText(rect(), Qt::AlignCenter|Qt::TextWordWrap,
+                         tr("Rendering initial image, please wait..."));
 //! [2] //! [3]
         return;
 //! [3] //! [4]
@@ -100,7 +101,8 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
     painter.setPen(Qt::NoPen);
     painter.setBrush(QColor(0, 0, 0, 127));
     helpHeight = (helpWidth/width()+1) * (helpHeight + 5);
-    painter.drawRect((width() - helpWidth) / 2 - 5, height()-helpHeight, helpWidth + 10, helpHeight);
+    painter.drawRect((width() - helpWidth) / 2 - 5, height()-helpHeight, helpWidth + 10,
+                     helpHeight);
 
     painter.setPen(Qt::white);
     painter.drawText(rect(), Qt::AlignHCenter|Qt::AlignBottom|Qt::TextWordWrap, help);
