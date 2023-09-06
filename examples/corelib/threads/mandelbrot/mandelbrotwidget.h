@@ -4,11 +4,14 @@
 #ifndef MANDELBROTWIDGET_H
 #define MANDELBROTWIDGET_H
 
-#include <QGestureEvent>
-#include <QPixmap>
-#include <QWidget>
 #include "renderthread.h"
 
+#include <QPixmap>
+#include <QWidget>
+
+QT_BEGIN_NAMESPACE
+class QGestureEvent;
+QT_END_NAMESPACE
 
 //! [0]
 class MandelbrotWidget : public QWidget

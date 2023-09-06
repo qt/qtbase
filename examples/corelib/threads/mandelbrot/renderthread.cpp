@@ -4,7 +4,6 @@
 #include "renderthread.h"
 
 #include <QImage>
-
 #include <QElapsedTimer>
 #include <QTextStream>
 
