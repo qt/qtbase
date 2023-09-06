@@ -585,41 +585,43 @@ void QItemSelection::split(const QItemSelectionRange &range,
 void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
 {
     Q_Q(QItemSelectionModel);
-    if (model == m)
+    const QAbstractItemModel *oldModel = model.valueBypassingBindings();
+    if (oldModel == m)
         return;
 
-    if (model)
+    if (oldModel)
         disconnectModel();
 
     // Caller has to call notify(), unless calling during construction (the common case).
     model.setValueBypassingBindings(m);
 
-    if (model.value()) {
+    if (m) {
         connections = std::array<QMetaObject::Connection, 12> {
-        QObjectPrivate::connect(model, &QAbstractItemModel::rowsAboutToBeRemoved,
-                                this, &QItemSelectionModelPrivate::rowsAboutToBeRemoved),
-        QObjectPrivate::connect(model, &QAbstractItemModel::columnsAboutToBeRemoved,
-                                this, &QItemSelectionModelPrivate::columnsAboutToBeRemoved),
-        QObjectPrivate::connect(model, &QAbstractItemModel::rowsAboutToBeInserted,
-                         this, &QItemSelectionModelPrivate::rowsAboutToBeInserted),
-        QObjectPrivate::connect(model, &QAbstractItemModel::columnsAboutToBeInserted,
-                         this, &QItemSelectionModelPrivate::columnsAboutToBeInserted),
-        QObjectPrivate::connect(model, &QAbstractItemModel::rowsAboutToBeMoved,
-                         this, &QItemSelectionModelPrivate::triggerLayoutToBeChanged),
-        QObjectPrivate::connect(model, &QAbstractItemModel::columnsAboutToBeMoved,
-                         this, &QItemSelectionModelPrivate::triggerLayoutToBeChanged),
-        QObjectPrivate::connect(model, &QAbstractItemModel::rowsMoved,
-                         this, &QItemSelectionModelPrivate::triggerLayoutChanged),
-        QObjectPrivate::connect(model, &QAbstractItemModel::columnsMoved,
-                         this, &QItemSelectionModelPrivate::triggerLayoutChanged),
-        QObjectPrivate::connect(model, &QAbstractItemModel::layoutAboutToBeChanged,
-                         this, &QItemSelectionModelPrivate::layoutAboutToBeChanged),
-        QObjectPrivate::connect(model, &QAbstractItemModel::layoutChanged,
-                         this, &QItemSelectionModelPrivate::layoutChanged),
-        QObject::connect(model, &QAbstractItemModel::modelReset,
-                         q, &QItemSelectionModel::reset),
-        QObjectPrivate::connect(model, &QAbstractItemModel::destroyed,
-                         this, &QItemSelectionModelPrivate::modelDestroyed)};
+            QObjectPrivate::connect(m, &QAbstractItemModel::rowsAboutToBeRemoved,
+                                    this, &QItemSelectionModelPrivate::rowsAboutToBeRemoved),
+            QObjectPrivate::connect(m, &QAbstractItemModel::columnsAboutToBeRemoved,
+                                    this, &QItemSelectionModelPrivate::columnsAboutToBeRemoved),
+            QObjectPrivate::connect(m, &QAbstractItemModel::rowsAboutToBeInserted,
+                                    this, &QItemSelectionModelPrivate::rowsAboutToBeInserted),
+            QObjectPrivate::connect(m, &QAbstractItemModel::columnsAboutToBeInserted,
+                                    this, &QItemSelectionModelPrivate::columnsAboutToBeInserted),
+            QObjectPrivate::connect(m, &QAbstractItemModel::rowsAboutToBeMoved,
+                                    this, &QItemSelectionModelPrivate::triggerLayoutToBeChanged),
+            QObjectPrivate::connect(m, &QAbstractItemModel::columnsAboutToBeMoved,
+                                    this, &QItemSelectionModelPrivate::triggerLayoutToBeChanged),
+            QObjectPrivate::connect(m, &QAbstractItemModel::rowsMoved,
+                                    this, &QItemSelectionModelPrivate::triggerLayoutChanged),
+            QObjectPrivate::connect(m, &QAbstractItemModel::columnsMoved,
+                                    this, &QItemSelectionModelPrivate::triggerLayoutChanged),
+            QObjectPrivate::connect(m, &QAbstractItemModel::layoutAboutToBeChanged,
+                                    this, &QItemSelectionModelPrivate::layoutAboutToBeChanged),
+            QObjectPrivate::connect(m, &QAbstractItemModel::layoutChanged,
+                                    this, &QItemSelectionModelPrivate::layoutChanged),
+            QObject::connect(m, &QAbstractItemModel::modelReset,
+                             q, &QItemSelectionModel::reset),
+            QObjectPrivate::connect(m, &QAbstractItemModel::destroyed,
+                                    this, &QItemSelectionModelPrivate::modelDestroyed)
+        };
     }
 }
 
@@ -1920,7 +1922,7 @@ void QItemSelectionModel::setModel(QAbstractItemModel *model)
 {
     Q_D(QItemSelectionModel);
     d->model.removeBindingUnlessInWrapper();
-    if (d->model == model)
+    if (d->model.valueBypassingBindings() == model)
         return;
     d->initModel(model);
     d->model.notify();
