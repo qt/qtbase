@@ -4,6 +4,7 @@
 #include "mandelbrotwidget.h"
 
 #include <QGesture>
+#include <QGestureEvent>
 #include <QKeyEvent>
 #include <QPainter>
 

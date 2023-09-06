@@ -2,15 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "mandelbrotwidget.h"
+#include "renderthread.h"
 
 #include <QApplication>
-
-#include <QScreen>
-
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include <QDebug>
-#include <QRect>
 
 //! [0]
 int main(int argc, char *argv[])
