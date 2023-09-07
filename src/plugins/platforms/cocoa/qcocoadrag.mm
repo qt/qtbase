@@ -244,9 +244,9 @@ QPixmap QCocoaDrag::dragPixmap(QDrag *drag, QPoint &hotSpot) const
         QFontMetrics fm(f);
 
         if (data->hasImage()) {
-            const QImage img = data->imageData().value<QImage>();
+            QImage img = data->imageData().value<QImage>();
             if (!img.isNull()) {
-                pm = QPixmap::fromImage(img).scaledToWidth(dragImageMaxChars *fm.averageCharWidth());
+                pm = QPixmap::fromImage(std::move(img)).scaledToWidth(dragImageMaxChars *fm.averageCharWidth());
             }
         }
 
