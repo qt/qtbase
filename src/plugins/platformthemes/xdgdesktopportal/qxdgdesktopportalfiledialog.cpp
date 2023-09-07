@@ -176,10 +176,10 @@ void QXdgDesktopPortalFileDialog::openPortal(Qt::WindowFlags windowFlags, Qt::Wi
         // current_file for the file to be pre-selected, current_name for the file name to be
         // pre-filled current_file accepts absolute path and requires the file to exist while
         // current_name accepts just file name
-        QFileInfo selectedFileInfo(d->selectedFiles.first());
+        QFileInfo selectedFileInfo(d->selectedFiles.constFirst());
         if (selectedFileInfo.exists())
             options.insert("current_file"_L1,
-                           QFile::encodeName(d->selectedFiles.first()).append('\0'));
+                           QFile::encodeName(d->selectedFiles.constFirst()).append('\0'));
         options.insert("current_name"_L1, selectedFileInfo.fileName());
     }
 
