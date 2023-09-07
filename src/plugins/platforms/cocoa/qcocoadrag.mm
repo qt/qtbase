@@ -251,7 +251,7 @@ QPixmap QCocoaDrag::dragPixmap(QDrag *drag, QPoint &hotSpot) const
         }
 
         if (pm.isNull() && (data->hasText() || data->hasUrls()) ) {
-            QString s = data->hasText() ? data->text() : data->urls().first().toString();
+            QString s = data->hasText() ? data->text() : data->urls().constFirst().toString();
             if (s.length() > dragImageMaxChars)
                 s = s.left(dragImageMaxChars -3) + QChar(0x2026);
             if (!s.isEmpty()) {
