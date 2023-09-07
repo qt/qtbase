@@ -1287,14 +1287,13 @@ int QDBusConnectionPrivate::findSlot(QObject *obj, const QByteArray &normalizedN
 }
 
 bool QDBusConnectionPrivate::prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
-                                         const QString &service,
-                                         const QString &path, const QString &interface, const QString &name,
-                                         const ArgMatchRules &argMatch,
-                                         QObject *receiver, const char *signal, int minMIdx,
-                                         bool buildSignature)
+                                         const QString &service, const QString &path,
+                                         const QString &interface, const QString &name,
+                                         const ArgMatchRules &argMatch, QObject *receiver,
+                                         const char *signal, int minMIdx, bool buildSignature,
+                                         QString &errorMsg)
 {
     QByteArray normalizedName = signal + 1;
-    QString errorMsg;
     hook.midx = findSlot(receiver, signal + 1, hook.params, errorMsg);
     if (hook.midx == -1) {
         normalizedName = QMetaObject::normalizedSignature(signal + 1);
@@ -2210,9 +2209,11 @@ bool QDBusConnectionPrivate::connectSignal(const QString &service,
     QString key;
 
     hook.signature = signature;
+    QString errorMsg;
     if (!prepareHook(hook, key, service, path, interface, name, argumentMatch, receiver, slot, 0,
-                     false)) {
-        qCWarning(dbusIntegration) << "Could not connect" << interface << "to" << slot + 1;
+                     false, errorMsg)) {
+        qCWarning(dbusIntegration)
+                << "Could not connect" << interface << "to" << slot + 1 << ":" << qPrintable(errorMsg);
         return false;           // don't connect
     }
 
@@ -2303,9 +2304,11 @@ bool QDBusConnectionPrivate::disconnectSignal(const QString &service,
         name2.detach();
 
     hook.signature = signature;
+    QString errorMsg;
     if (!prepareHook(hook, key, service, path, interface, name, argumentMatch, receiver, slot, 0,
-                     false)) {
-        qCWarning(dbusIntegration) << "Could not disconnect" << interface << "to" << slot + 1;
+                     false, errorMsg)) {
+        qCWarning(dbusIntegration)
+                << "Could not disconnect" << interface << "to" << slot + 1 << ":" << qPrintable(errorMsg);
         return false;           // don't disconnect
     }
 
@@ -2435,9 +2438,11 @@ void QDBusConnectionPrivate::connectRelay(const QString &service,
     QByteArray sig;
     sig.append(QSIGNAL_CODE + '0');
     sig.append(signal.methodSignature());
+    QString errorMsg;
     if (!prepareHook(hook, key, service, path, interface, QString(), ArgMatchRules(), receiver, sig,
-                     QDBusAbstractInterface::staticMetaObject.methodCount(), true)) {
-        qCWarning(dbusIntegration) << "Could not connect" << interface << "to" << signal.name();
+                     QDBusAbstractInterface::staticMetaObject.methodCount(), true, errorMsg)) {
+        qCWarning(dbusIntegration)
+                << "Could not connect" << interface << "to" << signal.name() << ":" << qPrintable(errorMsg);
         return;                 // don't connect
     }
 
@@ -2458,10 +2463,11 @@ void QDBusConnectionPrivate::disconnectRelay(const QString &service,
     QByteArray sig;
     sig.append(QSIGNAL_CODE + '0');
     sig.append(signal.methodSignature());
+    QString errorMsg;
     if (!prepareHook(hook, key, service, path, interface, QString(), ArgMatchRules(), receiver, sig,
-                     QDBusAbstractInterface::staticMetaObject.methodCount(), true)) {
-        qCWarning(dbusIntegration)
-                << "Could not disconnect" << interface << "to" << signal.methodSignature();
+                     QDBusAbstractInterface::staticMetaObject.methodCount(), true, errorMsg)) {
+        qCWarning(dbusIntegration) << "Could not disconnect" << interface << "to"
+                                   << signal.methodSignature() << ":" << qPrintable(errorMsg);
         return;                 // don't disconnect
     }
 
