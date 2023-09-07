@@ -725,7 +725,7 @@ void QWindowsFontDatabase::populateFontDatabase()
     EnumFontFamiliesEx(dummy, &lf, populateFontFamilies, 0, 0);
     ReleaseDC(0, dummy);
     // Work around EnumFontFamiliesEx() not listing the system font.
-    const QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().families().first();
+    const QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().families().constFirst();
     if (QPlatformFontDatabase::resolveFontFamilyAlias(systemDefaultFamily) == systemDefaultFamily)
         QPlatformFontDatabase::registerFontFamily(systemDefaultFamily);
     addDefaultEUDCFont();
@@ -820,7 +820,7 @@ QT_WARNING_POP
             if (fontEngine) {
                 if (request.families != fontEngine->fontDef.families) {
                     qWarning("%s: Failed to load font. Got fallback instead: %s", __FUNCTION__,
-                             qPrintable(fontEngine->fontDef.families.first()));
+                             qPrintable(fontEngine->fontDef.families.constFirst()));
                     if (fontEngine->ref.loadRelaxed() == 0)
                         delete fontEngine;
                     fontEngine = 0;

@@ -1205,8 +1205,8 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
         if (decl.d->values.isEmpty()) continue;
 
         QCss::KnownValue identifier = QCss::UnknownValue;
-        if (decl.d->values.first().type == QCss::Value::KnownIdentifier)
-            identifier = static_cast<QCss::KnownValue>(decl.d->values.first().variant.toInt());
+        if (decl.d->values.constFirst().type == QCss::Value::KnownIdentifier)
+            identifier = static_cast<QCss::KnownValue>(decl.d->values.constFirst().variant.toInt());
 
         switch (decl.d->propertyId) {
         case QCss::BorderColor: borderBrush = QBrush(decl.colorValue()); break;
@@ -1233,10 +1233,10 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             }
             break;
         case QCss::QtBlockIndent:
-            blockFormat.setIndent(decl.d->values.first().variant.toInt());
+            blockFormat.setIndent(decl.d->values.constFirst().variant.toInt());
             break;
         case QCss::QtLineHeightType: {
-            QString lineHeightTypeName = decl.d->values.first().variant.toString();
+            QString lineHeightTypeName = decl.d->values.constFirst().variant.toString();
             QTextBlockFormat::LineHeightTypes lineHeightType;
             if (lineHeightTypeName.compare("proportional"_L1, Qt::CaseInsensitive) == 0)
                 lineHeightType = QTextBlockFormat::ProportionalHeight;
@@ -1265,7 +1265,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
                 lineHeightType = QTextBlockFormat::MinimumHeight;
             } else {
                 bool ok;
-                QCss::Value cssValue = decl.d->values.first();
+                QCss::Value cssValue = decl.d->values.constFirst();
                 QString value = cssValue.toString();
                 lineHeight = value.toDouble(&ok);
                 if (ok) {
@@ -1297,19 +1297,19 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
                 hasCssListIndent = true;
             break;
         case QCss::QtParagraphType:
-            if (decl.d->values.first().variant.toString().compare("empty"_L1, Qt::CaseInsensitive) == 0)
+            if (decl.d->values.constFirst().variant.toString().compare("empty"_L1, Qt::CaseInsensitive) == 0)
                 isEmptyParagraph = true;
             break;
         case QCss::QtTableType:
-            if (decl.d->values.first().variant.toString().compare("frame"_L1, Qt::CaseInsensitive) == 0)
+            if (decl.d->values.constFirst().variant.toString().compare("frame"_L1, Qt::CaseInsensitive) == 0)
                 isTextFrame = true;
-            else if (decl.d->values.first().variant.toString().compare("root"_L1, Qt::CaseInsensitive) == 0) {
+            else if (decl.d->values.constFirst().variant.toString().compare("root"_L1, Qt::CaseInsensitive) == 0) {
                 isTextFrame = true;
                 isRootFrame = true;
             }
             break;
         case QCss::QtUserState:
-            userState = decl.d->values.first().variant.toInt();
+            userState = decl.d->values.constFirst().variant.toInt();
             break;
         case QCss::Whitespace:
             switch (identifier) {
@@ -1363,10 +1363,10 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             setListStyle(decl.d->values);
             break;
         case QCss::QtListNumberPrefix:
-            textListNumberPrefix = decl.d->values.first().variant.toString();
+            textListNumberPrefix = decl.d->values.constFirst().variant.toString();
             break;
         case QCss::QtListNumberSuffix:
-            textListNumberSuffix = decl.d->values.first().variant.toString();
+            textListNumberSuffix = decl.d->values.constFirst().variant.toString();
             break;
         case QCss::TextAlignment:
             switch (identifier) {
@@ -1381,7 +1381,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
         {
             if (resourceProvider != nullptr && QTextDocumentPrivate::get(resourceProvider) != nullptr) {
                 bool ok;
-                qint64 searchKey = decl.d->values.first().variant.toLongLong(&ok);
+                qint64 searchKey = decl.d->values.constFirst().variant.toLongLong(&ok);
                 if (ok)
                     applyForegroundImage(searchKey, resourceProvider);
             }
@@ -2080,7 +2080,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->propertyId = QCss::FontFamily;
         QList<QCss::Value> values;
         val.type = QCss::Value::String;
-        val.variant = QFontDatabase::systemFont(QFontDatabase::FixedFont).families().first();
+        val.variant = QFontDatabase::systemFont(QFontDatabase::FixedFont).families().constFirst();
         values << val;
         decl.d->values = values;
         decl.d->inheritable = true;

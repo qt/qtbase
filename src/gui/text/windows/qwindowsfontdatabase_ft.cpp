@@ -378,7 +378,7 @@ void QWindowsFontDatabaseFT::populateFontDatabase()
     EnumFontFamiliesEx(dummy, &lf, populateFontFamilies, 0, 0);
     ReleaseDC(0, dummy);
     // Work around EnumFontFamiliesEx() not listing the system font
-    const QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().families().first();
+    const QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().families().constFirst();
     if (QPlatformFontDatabase::resolveFontFamilyAlias(systemDefaultFamily) == systemDefaultFamily)
         QPlatformFontDatabase::registerFontFamily(systemDefaultFamily);
 }
@@ -386,7 +386,7 @@ void QWindowsFontDatabaseFT::populateFontDatabase()
 QFontEngine * QWindowsFontDatabaseFT::fontEngine(const QFontDef &fontDef, void *handle)
 {
     QFontEngine *fe = QFreeTypeFontDatabase::fontEngine(fontDef, handle);
-    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef.families.first() << fe << handle;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef.families.constFirst() << fe << handle;
     return fe;
 }
 

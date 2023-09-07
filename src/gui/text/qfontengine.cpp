@@ -1727,7 +1727,7 @@ void QFontEngineMulti::ensureFallbackFamiliesQueried()
     if (styleHint == QFont::AnyStyle && fontDef.fixedPitch)
         styleHint = QFont::TypeWriter;
 
-    setFallbackFamiliesList(qt_fallbacksForFamily(fontDef.families.first(),
+    setFallbackFamiliesList(qt_fallbacksForFamily(fontDef.families.constFirst(),
                                                   QFont::Style(fontDef.style), styleHint,
                                                   QChar::Script(m_script)));
 }
@@ -1743,7 +1743,7 @@ void QFontEngineMulti::setFallbackFamiliesList(const QStringList &fallbackFamili
         QFontEngine *engine = m_engines.at(0);
         engine->ref.ref();
         m_engines[1] = engine;
-        m_fallbackFamilies << fontDef.families.first();
+        m_fallbackFamilies << fontDef.families.constFirst();
     } else {
         m_engines.resize(m_fallbackFamilies.size() + 1);
     }

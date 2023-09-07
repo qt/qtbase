@@ -733,7 +733,7 @@ QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
                 // Also check for OpenType tables when using complex scripts
                 if (Q_UNLIKELY(!engine->supportsScript(QChar::Script(script)))) {
                     qWarning("  OpenType support missing for \"%s\", script %d",
-                             qPrintable(def.families.first()), script);
+                             qPrintable(def.families.constFirst()), script);
                     return nullptr;
                 }
 
@@ -758,7 +758,7 @@ QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
             // Also check for OpenType tables when using complex scripts
             if (!engine->supportsScript(QChar::Script(script))) {
                 qWarning("  OpenType support missing for \"%s\", script %d",
-                         +qPrintable(def.families.first()), script);
+                         +qPrintable(def.families.constFirst()), script);
                 if (engine->ref.loadRelaxed() == 0)
                     delete engine;
                 return nullptr;
@@ -2465,7 +2465,7 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
                 if (!engine) {
                     QtFontDesc desc;
                     do {
-                        index = match(multi ? QChar::Script_Common : script, def, def.families.first(), ""_L1, &desc, blackListed);
+                        index = match(multi ? QChar::Script_Common : script, def, def.families.constFirst(), ""_L1, &desc, blackListed);
                         if (index >= 0) {
                             QFontDef loadDef = def;
                             if (loadDef.families.isEmpty())
@@ -2541,7 +2541,7 @@ void QFontDatabasePrivate::load(const QFontPrivate *d, int script)
         family_list << req.families.at(0);
 
         // add the default family
-        auto families = QGuiApplication::font().families();
+        const auto families = QGuiApplication::font().families();
         if (!families.isEmpty()) {
             QString defaultFamily = families.first();
             if (! family_list.contains(defaultFamily))

@@ -402,7 +402,7 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
         break;
     }
     m_spanFormatStack.push(charFmt);
-    qCDebug(lcMD) << spanType << "setCharFormat" << charFmt.font().families().first()
+    qCDebug(lcMD) << spanType << "setCharFormat" << charFmt.font().families().constFirst()
                   << charFmt.fontWeight() << (charFmt.fontItalic() ? "italic" : "")
                   << charFmt.foreground().color().name();
     m_cursor.setCharFormat(charFmt);
@@ -419,7 +419,7 @@ int QTextMarkdownImporter::cbLeaveSpan(int spanType, void *detail)
             charFmt = m_spanFormatStack.top();
     }
     m_cursor.setCharFormat(charFmt);
-    qCDebug(lcMD) << spanType << "setCharFormat" << charFmt.font().families().first()
+    qCDebug(lcMD) << spanType << "setCharFormat" << charFmt.font().families().constFirst()
                   << charFmt.fontWeight() << (charFmt.fontItalic() ? "italic" : "")
                   << charFmt.foreground().color().name();
     if (spanType == int(MD_SPAN_IMG))

@@ -368,8 +368,8 @@ void QWindowsDirectWriteFontDatabase::populateFontDatabase()
     bool hasDefaultLocale = GetUserDefaultLocaleName(defaultLocale, LOCALE_NAME_MAX_LENGTH) != 0;
     wchar_t englishLocale[] = L"en-us";
 
-    const QString defaultFontName = defaultFont().families().first();
-    const QString systemDefaultFontName = systemDefaultFont().families().first();
+    const QString defaultFontName = defaultFont().families().constFirst();
+    const QString systemDefaultFontName = systemDefaultFont().families().constFirst();
 
     IDWriteFontCollection *fontCollection;
     if (SUCCEEDED(data()->directWriteFactory->GetSystemFontCollection(&fontCollection))) {
