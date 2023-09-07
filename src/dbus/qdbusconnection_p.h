@@ -320,11 +320,10 @@ public:
     static int findSlot(QObject *obj, const QByteArray &normalizedName, QList<QMetaType> &params,
                         QString &errorMsg);
     static bool prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
-                            const QString &service,
-                            const QString &path, const QString &interface, const QString &name,
-                            const ArgMatchRules &argMatch,
-                            QObject *receiver, const char *signal, int minMIdx,
-                            bool buildSignature);
+                            const QString &service, const QString &path, const QString &interface,
+                            const QString &name, const ArgMatchRules &argMatch, QObject *receiver,
+                            const char *signal, int minMIdx, bool buildSignature,
+                            QString &errorMsg);
     static QDBusCallDeliveryEvent *prepareReply(QDBusConnectionPrivate *target, QObject *object,
                                                 int idx, const QList<QMetaType> &metaTypes,
                                                 const QDBusMessage &msg);
