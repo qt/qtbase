@@ -70,8 +70,8 @@ public:
     bool isRaster() const;
 
 #ifndef QT_NO_OPENGL
-    QOpenGLCompositorBackingStore *backingStore() { return m_backingStore; }
-    void setBackingStore(QOpenGLCompositorBackingStore *backingStore);
+    QOpenGLCompositorBackingStore *backingStore() const override { return m_backingStore; }
+    void setBackingStore(QOpenGLCompositorBackingStore *backingStore) override;
     QWindow *sourceWindow() const override;
     const QPlatformTextureList *textures() const override;
     void endCompositing() override;

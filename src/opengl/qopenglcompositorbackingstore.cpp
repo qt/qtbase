@@ -137,6 +137,9 @@ void QOpenGLCompositorBackingStore::updateTexture()
 void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     // Called for ordinary raster windows.
+    auto *handle = dynamic_cast<QOpenGLCompositorWindow *>(window->handle());
+    if (handle && !handle->backingStore())
+        handle->setBackingStore(this);
 
     Q_UNUSED(region);
     Q_UNUSED(offset);

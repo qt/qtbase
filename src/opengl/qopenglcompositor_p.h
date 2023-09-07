@@ -29,6 +29,7 @@ class QOpenGLFramebufferObject;
 class QWindow;
 class QPlatformTextureList;
 
+class QOpenGLCompositorBackingStore;
 class QOpenGLCompositorWindow
 {
 public:
@@ -37,6 +38,8 @@ public:
     virtual const QPlatformTextureList *textures() const = 0;
     virtual void beginCompositing() { }
     virtual void endCompositing() { }
+    virtual void setBackingStore(QOpenGLCompositorBackingStore *backingStore) = 0;
+    virtual QOpenGLCompositorBackingStore *backingStore() const = 0;
 };
 
 class Q_OPENGL_EXPORT QOpenGLCompositor : public QObject
