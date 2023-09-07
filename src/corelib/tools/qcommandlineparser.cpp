@@ -508,7 +508,7 @@ QString QCommandLineParser::errorText() const
     if (!d->errorText.isEmpty())
         return d->errorText;
     if (d->unknownOptionNames.size() == 1)
-        return tr("Unknown option '%1'.").arg(d->unknownOptionNames.first());
+        return tr("Unknown option '%1'.").arg(d->unknownOptionNames.constFirst());
     if (d->unknownOptionNames.size() > 1)
         return tr("Unknown options: %1.").arg(d->unknownOptionNames.join(QStringLiteral(", ")));
     return QString();
