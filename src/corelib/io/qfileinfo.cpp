@@ -1533,7 +1533,8 @@ qint64 QFileInfo::size() const
     (not the symlink).
 
     \since 6.6
-    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime time, const QTimeZone &)
+    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), lastRead(const QTimeZone &),
+    fileTime(QFile::FileTime time, const QTimeZone &)
 */
 
 /*!
