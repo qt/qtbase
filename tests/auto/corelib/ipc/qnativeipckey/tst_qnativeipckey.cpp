@@ -280,11 +280,13 @@ void tst_QNativeIpcKey::fromString_data()
             << "posix:%C4%80.%E2%80%80.%F0%90%80%80"
             << QNativeIpcKey(u"\u0100.\u2000.\U00010000"_s, QNativeIpcKey::Type::PosixRealtime);
 
-    // query and fragment are ignored
-    QTest::addRow("with-query") << "posix:/foo?bar" << valid;
+    // fragments are ignored
     QTest::addRow("with-fragment") << "posix:/foo#bar" << valid;
-    QTest::addRow("with-queryfragment") << "posix:/foo?bar#baz" << valid;
     QTest::addRow("with-fragmentquery") << "posix:/foo#bar?baz" << valid;
+
+    // but unknown query items are not
+    QTest::addRow("with-query") << "posix:/foo?bar" << invalid;
+    QTest::addRow("with-queryfragment") << "posix:/foo?bar#baz" << invalid;
 
     // add some ones that won't parse well
     QTest::addRow("positive-number") << "81" << invalid;

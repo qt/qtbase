@@ -553,7 +553,7 @@ QNativeIpcKey QNativeIpcKey::fromString(const QString &text)
     Type invalidType = {};
     Type type = stringToType(u.scheme());
     if (type == invalidType || !u.isValid() || !u.userInfo().isEmpty() || !u.host().isEmpty()
-            || u.port() != -1)
+            || u.port() != -1 || u.hasQuery())
         return QNativeIpcKey(invalidType);
 
     QNativeIpcKey result(QString(), type);
@@ -562,6 +562,7 @@ QNativeIpcKey QNativeIpcKey::fromString(const QString &text)
 
     // decode the payload
     result.setNativeKey(u.path());
+
     return result;
 }
 
