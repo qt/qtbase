@@ -54,6 +54,9 @@ private:
     QMacNotificationObserver m_systemColorObserver;
     mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
     QMacKeyValueObserver m_appearanceObserver;
+
+    Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
+    void updateColorScheme();
 };
 
 QT_END_NAMESPACE
