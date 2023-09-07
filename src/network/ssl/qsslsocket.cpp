@@ -97,8 +97,7 @@
 
     \list
     \li The socket's cryptographic cipher suite can be customized before
-    the handshake phase with QSslConfiguration::setCiphers()
-    and QSslConfiguration::setDefaultCiphers().
+    the handshake phase with QSslConfiguration::setCiphers().
     \li The socket's local certificate and private key can be customized
     before the handshake phase with setLocalCertificate() and
     setPrivateKey().
