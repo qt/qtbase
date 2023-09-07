@@ -98,10 +98,10 @@ bool Qt::mightBeRichText(const QString& text)
     if (open < text.size() && text.at(open) == u'<') {
         const int close = text.indexOf(u'>', open);
         if (close > -1) {
-            QString tag;
-            for (int i = open+1; i < close; ++i) {
+            QVarLengthArray<char16_t> tag;
+            for (qsizetype i = open + 1; i < close; ++i) {
                 if (text[i].isDigit() || text[i].isLetter())
-                    tag += text[i];
+                    tag.append(text[i].toLower().unicode());
                 else if (!tag.isEmpty() && text[i].isSpace())
                     break;
                 else if (!tag.isEmpty() && text[i] == u'/' && i + 1 == close)
@@ -110,7 +110,7 @@ bool Qt::mightBeRichText(const QString& text)
                     return false; // that's not a tag
             }
 #ifndef QT_NO_TEXTHTMLPARSER
-            return QTextHtmlParser::lookupElement(std::move(tag).toLower()) != -1;
+            return QTextHtmlParser::lookupElement(tag) != -1;
 #else
             return false;
 #endif // QT_NO_TEXTHTMLPARSER
