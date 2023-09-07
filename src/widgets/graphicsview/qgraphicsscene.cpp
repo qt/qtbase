@@ -1004,7 +1004,7 @@ void QGraphicsScenePrivate::ungrabMouse(QGraphicsItem *item, bool itemIsDying)
 void QGraphicsScenePrivate::clearMouseGrabber()
 {
     if (!mouseGrabberItems.isEmpty())
-        mouseGrabberItems.first()->ungrabMouse();
+        mouseGrabberItems.constFirst()->ungrabMouse();
     lastMouseGrabberItem = nullptr;
 }
 
