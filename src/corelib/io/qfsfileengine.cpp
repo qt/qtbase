@@ -273,7 +273,7 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
 
         if (ret != 0) {
             q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
-                        QSystemError::stdString());
+                        QSystemError::stdString(errno));
 
             this->openMode = QIODevice::NotOpen;
             this->fh = nullptr;
@@ -335,7 +335,7 @@ bool QFSFileEnginePrivate::openFd(QIODevice::OpenMode openMode, int fd)
 
         if (ret == -1) {
             q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
-                        QSystemError::stdString());
+                        QSystemError::stdString(errno));
 
             this->openMode = QIODevice::NotOpen;
             this->fd = -1;
@@ -394,7 +394,7 @@ bool QFSFileEnginePrivate::closeFdFh()
     if (!flushed || !closed) {
         if (flushed) {
             // If not flushed, we want the flush error to fall through.
-            q->setError(QFile::UnspecifiedError, QSystemError::stdString());
+            q->setError(QFile::UnspecifiedError, QSystemError::stdString(errno));
         }
         return false;
     }
@@ -446,7 +446,7 @@ bool QFSFileEnginePrivate::flushFh()
 
     if (ret != 0) {
         q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError,
-                    QSystemError::stdString());
+                    QSystemError::stdString(errno));
         return false;
     }
     return true;
@@ -561,14 +561,14 @@ bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
         } while (ret != 0 && errno == EINTR);
 
         if (ret != 0) {
-            q->setError(QFile::ReadError, QSystemError::stdString());
+            q->setError(QFile::ReadError, QSystemError::stdString(errno));
             return false;
         }
     } else {
         // Unbuffered stdio mode.
         if (QT_LSEEK(fd, QT_OFF_T(pos), SEEK_SET) == -1) {
+            q->setError(QFile::PositionError, QSystemError::stdString(errno));
             qWarning("QFile::at: Cannot set file position %lld", pos);
-            q->setError(QFile::PositionError, QSystemError::stdString());
             return false;
         }
     }
@@ -623,7 +623,7 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
         size_t result;
         do {
             result = fread(data + readBytes, 1, size_t(len - readBytes), fh);
-            eof = feof(fh);
+            eof = feof(fh); // Doesn't change errno
             if (eof && result == 0) {
                 // On OS X, this is needed, e.g., if a file was written to
                 // through another stream since our last read. See test
@@ -654,7 +654,7 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
 
     if (!eof && readBytes == 0) {
         readBytes = -1;
-        q->setError(QFile::ReadError, QSystemError::stdString());
+        q->setError(QFile::ReadError, QSystemError::stdString(errno));
     }
 
     return readBytes;
@@ -699,8 +699,8 @@ qint64 QFSFileEnginePrivate::readLineFdFh(char *data, qint64 maxlen)
     // does the same, so we'd get two '\0' at the end - passing maxlen + 1
     // solves this.
     if (!fgets(data, int(maxlen + 1), fh)) {
-        if (!feof(fh))
-            q->setError(QFile::ReadError, QSystemError::stdString());
+        if (!feof(fh)) // Doesn't change errno
+            q->setError(QFile::ReadError, QSystemError::stdString(errno));
         return -1;              // error
     }
 
@@ -777,7 +777,8 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
 
     if (len &&  writtenBytes == 0) {
         writtenBytes = -1;
-        q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError, QSystemError::stdString());
+        q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError,
+                    QSystemError::stdString(errno));
     } else {
         // reset the cached size, if any
         metaData.clearFlags(QFileSystemMetaData::SizeAttribute);
