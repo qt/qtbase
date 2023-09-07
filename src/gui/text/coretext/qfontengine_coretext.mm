@@ -12,6 +12,8 @@
 #include <QtGui/qpainterpath.h>
 #include <private/qcoregraphics_p.h>
 #include <private/qimage_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformtheme.h>
 
 #include <cmath>
 
@@ -716,10 +718,12 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, const QFixedPoint &subP
             // draw with white or black fill, and then invert the glyph image in the latter case,
             // producing an alpha map. This covers the most common use-cases, but longer term we
             // should propagate the fill color all the way from the paint engine, and include it
-            //in the key for the glyph cache.
+            // in the key for the glyph cache.
 
-            if (!qt_mac_applicationIsInDarkMode())
-                return kCGColorBlack;
+            if (auto *platformTheme = QGuiApplicationPrivate::platformTheme()) {
+                if (platformTheme->colorScheme() != Qt::ColorScheme::Dark)
+                    return kCGColorBlack;
+            }
         }
         return kCGColorWhite;
     }();
