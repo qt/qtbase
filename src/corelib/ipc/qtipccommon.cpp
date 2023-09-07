@@ -367,8 +367,7 @@ QNativeIpcKey::Type QNativeIpcKey::defaultTypeForOs_internal() noexcept
 */
 void QNativeIpcKey::copy_internal(const QNativeIpcKey &other)
 {
-    auto copy = new QNativeIpcKeyPrivate(*other.d_func());
-    d = quintptr(copy) & 1;
+    d = new QNativeIpcKeyPrivate(*other.d);
 }
 
 void QNativeIpcKey::move_internal(QNativeIpcKey &&) noexcept
@@ -378,21 +377,13 @@ void QNativeIpcKey::move_internal(QNativeIpcKey &&) noexcept
 
 QNativeIpcKey &QNativeIpcKey::assign_internal(const QNativeIpcKey &other)
 {
-    QNativeIpcKeyPrivate *us = (d & 1) ? d_func() : nullptr;
-    const QNativeIpcKeyPrivate *them = (other.d & 1) ? other.d_func() : nullptr;
-    if (us && !them) {
-        // don't need the extra info, reset to skinny object
-        typeAndFlags = {};
-        typeAndFlags.type = us->type;
-        delete us;
-    } else {
-        // do need the extra info, so create if necessary
-        if (us)
-            *us = *them;
-        else
-            us = new QNativeIpcKeyPrivate(*them);
-        d = quintptr(us) | 1;
-    }
+    Q_ASSERT(d || other.d);     // only 3 cases to handle
+    if (d && !other.d)
+        *d = {};
+    else if (d)
+        *d = *other.d;
+    else
+        d = new QNativeIpcKeyPrivate(*other.d);
     return *this;
 }
 
@@ -403,7 +394,6 @@ QNativeIpcKey &QNativeIpcKey::assign_internal(const QNativeIpcKey &other)
 */
 void QNativeIpcKey::destroy_internal() noexcept
 {
-    Q_D(QNativeIpcKey);
     delete d;
 }
 
@@ -450,11 +440,6 @@ void QNativeIpcKey::destroy_internal() noexcept
 
     \sa nativeKey(), setType()
 */
-QNativeIpcKey::Type QNativeIpcKey::type_internal() const noexcept
-{
-    Q_D(const QNativeIpcKey);
-    return d->type;
-}
 
 /*!
     \fn QNativeIpcKey::setType(Type type)
@@ -465,8 +450,7 @@ QNativeIpcKey::Type QNativeIpcKey::type_internal() const noexcept
 */
 void QNativeIpcKey::setType_internal(Type type)
 {
-    Q_D(QNativeIpcKey);
-    d->type = type;
+    Q_UNUSED(type);
 }
 
 /*!
@@ -512,7 +496,8 @@ size_t qHash(const QNativeIpcKey &ipcKey, size_t seed) noexcept
 */
 int QNativeIpcKey::compare_internal(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
 {
-    return *lhs.d_func() == *rhs.d_func() ? 0 : 1;
+    Q_UNUSED(lhs); Q_UNUSED(rhs);
+    return 0;
 }
 
 /*!
