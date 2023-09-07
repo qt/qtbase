@@ -413,17 +413,17 @@ static const QTextHtmlElement elements[Html_NumElements]= {
     { "var",        Html_var,        QTextHtmlElement::DisplayInline },
 };
 
-static bool operator<(const QString &str, const QTextHtmlElement &e)
+static bool operator<(QStringView str, const QTextHtmlElement &e)
 {
     return str < QLatin1StringView(e.name);
 }
 
-static bool operator<(const QTextHtmlElement &e, const QString &str)
+static bool operator<(const QTextHtmlElement &e, QStringView str)
 {
     return QLatin1StringView(e.name) < str;
 }
 
-static const QTextHtmlElement *lookupElementHelper(const QString &element)
+static const QTextHtmlElement *lookupElementHelper(QStringView element)
 {
     const QTextHtmlElement *start = &elements[0];
     const QTextHtmlElement *end = &elements[Html_NumElements];
@@ -433,7 +433,7 @@ static const QTextHtmlElement *lookupElementHelper(const QString &element)
     return e;
 }
 
-int QTextHtmlParser::lookupElement(const QString &element)
+int QTextHtmlParser::lookupElement(QStringView element)
 {
     const QTextHtmlElement *e = lookupElementHelper(element);
     if (!e)
