@@ -1631,7 +1631,7 @@ QString QFileDialog::selectedMimeTypeFilter() const
         for (const auto &mimeType: mimeTypes) {
             QString filter = nameFilterForMime(mimeType);
             if (testOption(HideNameFilterDetails))
-                filter = qt_strip_filters({ filter }).first();
+                filter = qt_strip_filters({ filter }).constFirst();
             if (filter == nameFilter) {
                 mimeTypeFilter = mimeType;
                 break;
