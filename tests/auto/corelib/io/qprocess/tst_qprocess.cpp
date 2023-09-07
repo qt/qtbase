@@ -1807,10 +1807,6 @@ void tst_QProcess::unixProcessParameters()
     QVERIFY(process.waitForFinished(5000));
 
     const QString stdErr = process.readAllStandardError();
-#ifdef Q_OS_QNX
-    if (stdErr != QString())
-        QEXPECT_FAIL("ignore-sigpipe", "QTBUG-114720: flag is sometimes ignored", Abort);
-#endif
     QCOMPARE(stdErr, QString());
     QCOMPARE(process.readAll(), QString());
     QCOMPARE(process.exitCode(), 0);
