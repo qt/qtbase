@@ -1594,10 +1594,9 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                     node->charFormat.setProperty(QTextFormat::FontSizeAdjustment, n);
                 } else if (key == "face"_L1) {
                     if (value.contains(u',')) {
-                        const QStringList values = value.split(u',');
                         QStringList families;
-                        for (const QString &family : values)
-                            families << family.trimmed();
+                        for (auto family : value.tokenize(u','))
+                            families << family.trimmed().toString();
                         node->charFormat.setFontFamilies(families);
                     } else {
                         node->charFormat.setFontFamilies(QStringList(value));
