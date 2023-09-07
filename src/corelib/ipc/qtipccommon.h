@@ -18,7 +18,7 @@ class QNativeIpcKey
 {
     Q_GADGET_EXPORT(Q_CORE_EXPORT)
 public:
-    enum class Type : quintptr {
+    enum class Type : quint16 {
         // 0 is reserved for the invalid type
         // keep 1 through 0xff free, except for SystemV
         SystemV = 0x51,         // 'Q'
@@ -37,31 +37,28 @@ public:
             ;
     static Type legacyDefaultTypeForOs() noexcept;
 
-    constexpr QNativeIpcKey() noexcept
-        : QNativeIpcKey(DefaultTypeForOs)
-    {}
+    constexpr QNativeIpcKey() noexcept = default;
 
     explicit constexpr QNativeIpcKey(Type type) noexcept
-        : d()
+        : typeAndFlags{type}
     {
-        typeAndFlags.type = type;
     }
 
     Q_IMPLICIT QNativeIpcKey(const QString &k, Type type = DefaultTypeForOs)
-        : d(), key(k)
+        : key(k), typeAndFlags{type}
     {
-        typeAndFlags.type = type;
     }
 
     QNativeIpcKey(const QNativeIpcKey &other)
-        : d(other.d), key(other.key)
+        : d(other.d), key(other.key), typeAndFlags(other.typeAndFlags)
     {
         if (isSlowPath())
             copy_internal(other);
     }
 
     QNativeIpcKey(QNativeIpcKey &&other) noexcept
-        : d(std::exchange(other.d, 0)), key(std::move(other.key))
+        : d(std::exchange(other.d, nullptr)), key(std::move(other.key)),
+          typeAndFlags(std::move(other.typeAndFlags))
     {
         if (isSlowPath())
             move_internal(std::move(other));
@@ -75,10 +72,11 @@ public:
 
     QNativeIpcKey &operator=(const QNativeIpcKey &other)
     {
+        typeAndFlags = other.typeAndFlags;
         key = other.key;
         if (isSlowPath() || other.isSlowPath())
             return assign_internal(other);
-        d = other.d;
+        Q_ASSERT(!d);
         return *this;
     }
 
@@ -87,6 +85,7 @@ public:
     {
         std::swap(d, other.d);
         key.swap(other.key);
+        typeAndFlags.swap(other.typeAndFlags);
     }
 
     bool isEmpty() const noexcept
@@ -101,8 +100,6 @@ public:
 
     constexpr Type type() const noexcept
     {
-        if (isSlowPath())
-            return type_internal();
         return typeAndFlags.type;
     }
 
@@ -114,7 +111,9 @@ public:
     }
 
     QString nativeKey() const noexcept
-    { return key; }
+    {
+        return key;
+    }
     void setNativeKey(const QString &newKey)
     {
         key = newKey;
@@ -127,36 +126,32 @@ public:
 
 private:
     struct TypeAndFlags {
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        // this is the LSB
-        quintptr isExtended : 1;
-        Type type : 15;
-#endif
+        Type type = DefaultTypeForOs;
+        quint16 reserved1 = {};
+        quint32 reserved2 = {};
 
-        quintptr reserved : sizeof(quintptr) * 8 - 16;
+        void swap(TypeAndFlags &other) noexcept
+        {
+            std::swap(type, other.type);
+            std::swap(reserved1, other.reserved1);
+            std::swap(reserved2, other.reserved2);
+        }
 
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        Type type : 15;
-        quint16 isExtended : 1;
-        // this was the LSB
-#endif
+        friend constexpr bool operator==(const TypeAndFlags &lhs, const TypeAndFlags &rhs) noexcept
+        {
+            return lhs.type == rhs.type &&
+                    lhs.reserved1 == rhs.reserved1 &&
+                    lhs.reserved2 == rhs.reserved2;
+        }
     };
 
-    // Bit 0: if set, holds a pointer (with the LSB set); if clear, holds the
-    // the TypeAndFlags structure.
-    union {
-        quintptr d = 0;
-        TypeAndFlags typeAndFlags;
-        static_assert(sizeof(typeAndFlags) == sizeof(d));
-    };
-
+    QNativeIpcKeyPrivate *d = nullptr;
     QString key;
+    TypeAndFlags typeAndFlags;
 
     friend class QNativeIpcKeyPrivate;
-    QNativeIpcKeyPrivate *d_func();
-    const QNativeIpcKeyPrivate *d_func() const;
     constexpr bool isSlowPath() const noexcept
-    { return Q_UNLIKELY(typeAndFlags.isExtended); }
+    { return Q_UNLIKELY(d); }
 
     friend Q_CORE_EXPORT size_t qHash(const QNativeIpcKey &ipcKey, size_t seed) noexcept;
     friend size_t qHash(const QNativeIpcKey &ipcKey) noexcept
@@ -164,13 +159,13 @@ private:
 
     friend bool operator==(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
     {
+        if (!(lhs.typeAndFlags == rhs.typeAndFlags))
+            return false;
         if (lhs.key != rhs.key)
             return false;
         if (lhs.d == rhs.d)
             return true;
-        if (lhs.isSlowPath() && rhs.isSlowPath())
-            return compare_internal(lhs, rhs) == 0;
-        return false;
+        return compare_internal(lhs, rhs) == 0;
     }
     friend bool operator!=(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
     {
@@ -181,7 +176,6 @@ private:
     Q_CORE_EXPORT void move_internal(QNativeIpcKey &&other) noexcept;
     Q_CORE_EXPORT QNativeIpcKey &assign_internal(const QNativeIpcKey &other);
     Q_CORE_EXPORT void destroy_internal() noexcept;
-    Q_DECL_PURE_FUNCTION Q_CORE_EXPORT Type type_internal() const noexcept;
     Q_CORE_EXPORT void setType_internal(Type);
     Q_CORE_EXPORT void setNativeKey_internal(const QString &);
     Q_DECL_PURE_FUNCTION Q_CORE_EXPORT static int
