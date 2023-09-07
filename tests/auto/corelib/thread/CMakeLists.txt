@@ -1,6 +1,19 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+if(WASM) # not all tests currently work in WebAssembly
+    add_subdirectory(qatomicint)
+    add_subdirectory(qatomicinteger)
+    add_subdirectory(qatomicpointer)
+    add_subdirectory(qfuturesynchronizer)
+    add_subdirectory(qfuturewatcher)
+    add_subdirectory(qmutexlocker)
+    add_subdirectory(qreadlocker)
+    add_subdirectory(qresultstore)
+    add_subdirectory(qwritelocker)
+    return()
+endif()
+
 if(QT_FEATURE_thread)
     add_subdirectory(qatomicint)
     add_subdirectory(qatomicinteger)

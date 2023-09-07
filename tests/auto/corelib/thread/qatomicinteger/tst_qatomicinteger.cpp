@@ -75,6 +75,8 @@ template <>     struct LargeIntTemplate<true>  { typedef quint64 Type; };
 template <>     struct LargeIntTemplate<false> { typedef qint64 Type; };
 typedef LargeIntTemplate<TypeIsUnsigned>::Type LargeInt;
 
+namespace {
+
 class tst_QAtomicIntegerXX : public QObject
 {
     Q_OBJECT
@@ -672,8 +674,9 @@ void tst_QAtomicIntegerXX::fetchAndXor()
     QCOMPARE(atomic ^= minusOne, T(~value));
     QCOMPARE(atomic ^= minusOne, T(value));
 }
-
-#include "tst_qatomicinteger.moc"
+}
 
 QTEST_APPLESS_MAIN(tst_QAtomicIntegerXX)
+
+#include "tst_qatomicinteger.moc"
 

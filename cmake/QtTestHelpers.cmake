@@ -315,6 +315,34 @@ function(qt_internal_add_test_to_batch batch_name name)
     list(PREPEND batched_test_list ${name})
     set_property(GLOBAL PROPERTY _qt_batched_test_list_property ${batched_test_list})
 
+    # Test batching produces single executable which can result in one source file being added
+    # multiple times (with different definitions) to one translation unit. This is not supported by
+    # CMake so instead we try to detect such situation and rename file every time it's added
+    # to the build more than once. This avoids filenames collisions in one translation unit.
+    get_property(batched_test_sources_list GLOBAL PROPERTY _qt_batched_test_sources_list_property)
+    if(NOT batched_test_sources_list)
+        set_property(GLOBAL PROPERTY _qt_batched_test_sources_list_property "")
+        set(batched_test_sources_list "")
+    endif()
+    foreach(source ${arg_SOURCES})
+        set(source_path ${source})
+        if(${source} IN_LIST batched_test_sources_list)
+            set(new_filename ${name}.cpp)
+            configure_file(${source} ${new_filename})
+            set(source_path ${CMAKE_CURRENT_BINARY_DIR}/${new_filename})
+            set(skip_automoc ON)
+            list(APPEND arg_SOURCES ${source_path})
+        else()
+            set(skip_automoc OFF)
+            list(APPEND batched_test_sources_list ${source})
+        endif()
+        set_source_files_properties(${source_path}
+            TARGET_DIRECTORY ${target} PROPERTIES
+                SKIP_AUTOMOC ${skip_automoc}
+                COMPILE_DEFINITIONS "BATCHED_TEST_NAME=\"${name}\";${arg_DEFINES}")
+    endforeach()
+    set_property(GLOBAL PROPERTY _qt_batched_test_sources_list_property ${batched_test_sources_list})
+
     # Merge the current test with the rest of the batch
     qt_internal_extend_target(${target}
         INCLUDE_DIRECTORIES ${arg_INCLUDE_DIRECTORIES}
@@ -330,15 +358,6 @@ function(qt_internal_add_test_to_batch batch_name name)
         NO_UNITY_BUILD # Tests should not be built using UNITY_BUILD
         )
 
-    foreach(source ${arg_SOURCES})
-        # We define the test name which is later used to launch this test using
-        # commandline parameters. Target directory is that of the target test_batch,
-        # otherwise the batch won't honor our choices of compile definitions.
-        set_source_files_properties(${source}
-                                    TARGET_DIRECTORY ${target}
-                                    PROPERTIES COMPILE_DEFINITIONS
-                                        "BATCHED_TEST_NAME=\"${name}\";${arg_DEFINES}" )
-    endforeach()
     set(${batch_name} ${target} PARENT_SCOPE)
 
     # Add a dummy target so that new tests don't have problems with a nonexistent
@@ -616,7 +635,7 @@ function(qt_internal_add_test name)
         # TODO: Add functionality to specify browser
         list(APPEND extra_test_args "--browser=chrome")
         list(APPEND extra_test_args "--browser_args=\"--password-store=basic\"")
-        list(APPEND extra_test_args "--kill_exit")
+        #list(APPEND extra_test_args "--kill_exit")
 
         # Tests may require asyncify if they use exec(). Enable asyncify for
         # batched tests since this is the configuration used on the CI system.

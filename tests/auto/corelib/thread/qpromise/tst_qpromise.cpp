@@ -574,10 +574,14 @@ static inline void testCancelWhenDestroyedWithFailureHandler()
 
 void tst_QPromise::cancelWhenDestroyedWithFailureHandler()
 {
+#ifndef QT_NO_EXCEPTIONS
     testCancelWhenDestroyedWithFailureHandler<void>();
     testCancelWhenDestroyedWithFailureHandler<int>();
     testCancelWhenDestroyedWithFailureHandler<CopyOnlyType>();
     testCancelWhenDestroyedWithFailureHandler<MoveOnlyType>();
+#else
+    QSKIP("Exceptions are disabled, skipping the test");
+#endif
 }
 
 template <typename T>
