@@ -172,7 +172,7 @@ OtoolInfo findDependencyInfo(const QString &binaryPath)
 
     outputLines.removeFirst(); // remove line containing the binary path
     if (binaryPath.contains(".framework/") || binaryPath.endsWith(".dylib")) {
-        const auto match = regexp.match(outputLines.first());
+        const auto match = regexp.match(outputLines.constFirst());
         if (match.hasMatch()) {
             QString installname = match.captured(1);
             if (QFileInfo(binaryPath).fileName() == QFileInfo(installname).fileName()) {
@@ -184,7 +184,7 @@ OtoolInfo findDependencyInfo(const QString &binaryPath)
                 info.installName = binaryPath;
             }
         } else {
-            LogDebug() << "Could not parse otool output line:" << outputLines.first();
+            LogDebug() << "Could not parse otool output line:" << outputLines.constFirst();
             outputLines.removeFirst();
         }
     }

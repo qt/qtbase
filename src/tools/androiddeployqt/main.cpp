@@ -808,7 +808,7 @@ QString detectLatestAndroidPlatform(const QString &sdkPath)
 
     std::sort(fileInfos.begin(), fileInfos.end(), quasiLexicographicalReverseLessThan);
 
-    QFileInfo latestPlatform = fileInfos.first();
+    const QFileInfo& latestPlatform = fileInfos.constFirst();
     return latestPlatform.baseName();
 }
 

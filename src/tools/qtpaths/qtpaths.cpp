@@ -347,7 +347,7 @@ int main(int argc, char **argv)
     if (results.isEmpty()) {
         parser.showHelp();
     } else if (results.size() == 1) {
-        const QString &item = results.first();
+        const QString &item = results.constFirst();
         message(item);
         if (item.isEmpty())
             return EXIT_FAILURE;
