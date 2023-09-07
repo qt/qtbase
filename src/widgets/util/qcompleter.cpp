@@ -840,8 +840,8 @@ void QCompleterPrivate::setCurrentIndex(QModelIndex index, bool select)
 void QCompleterPrivate::_q_completionSelected(const QItemSelection& selection)
 {
     QModelIndex index;
-    if (!selection.indexes().isEmpty())
-        index = selection.indexes().first();
+    if (const auto indexes = selection.indexes(); !indexes.isEmpty())
+        index = indexes.first();
 
     _q_complete(index, true);
 }
