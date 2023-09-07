@@ -108,7 +108,7 @@ public:
             qWarning("Timeout waiting for accessibility event.");
             return false;
         }
-        const bool res = *eventList().first() == *ev;
+        const bool res = *eventList().constFirst() == *ev;
         if (!res)
             qWarning("%s", qPrintable(msgAccessibilityEventListMismatch(eventList(), ev)));
         delete eventList().takeFirst();
