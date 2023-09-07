@@ -1491,7 +1491,7 @@ QRectF QPainterPath::controlPointRect() const
 
 bool QPainterPath::isEmpty() const
 {
-    return !d_ptr || (d_ptr->elements.size() == 1 && d_ptr->elements.first().type == MoveToElement);
+    return !d_ptr || (d_ptr->elements.size() == 1 && d_ptr->elements.constFirst().type == MoveToElement);
 }
 
 /*!

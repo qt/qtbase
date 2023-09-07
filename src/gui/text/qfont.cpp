@@ -2514,9 +2514,9 @@ void QFont::setFamilies(const QStringList &families)
 QDataStream &operator<<(QDataStream &s, const QFont &font)
 {
     if (s.version() == 1) {
-        s << font.d->request.families.first().toLatin1();
+        s << font.d->request.families.constFirst().toLatin1();
     } else {
-        s << font.d->request.families.first();
+        s << font.d->request.families.constFirst();
         if (s.version() >= QDataStream::Qt_5_4)
             s << font.d->request.styleName;
     }
@@ -2809,7 +2809,7 @@ QString QFontInfo::family() const
 {
     QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != nullptr);
-    return engine->fontDef.families.isEmpty() ? QString() : engine->fontDef.families.first();
+    return engine->fontDef.families.isEmpty() ? QString() : engine->fontDef.families.constFirst();
 }
 
 /*!

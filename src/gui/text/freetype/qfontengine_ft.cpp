@@ -770,7 +770,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     PS_FontInfoRec psrec;
     // don't assume that type1 fonts are symbol fonts by default
     if (FT_Get_PS_Font_Info(freetype->face, &psrec) == FT_Err_Ok) {
-        symbol = !fontDef.families.isEmpty() && bool(fontDef.families.first().contains("symbol"_L1, Qt::CaseInsensitive));
+        symbol = !fontDef.families.isEmpty() && bool(fontDef.families.constFirst().contains("symbol"_L1, Qt::CaseInsensitive));
     }
 
     freetype->computeSize(fontDef, &xsize, &ysize, &defaultGlyphSet.outline_drawing, &scalableBitmapScaleFactor);
@@ -1253,7 +1253,7 @@ QFontEngine::Properties QFontEngineFT::properties() const
 {
     Properties p = freetype->properties();
     if (p.postscriptName.isEmpty()) {
-        p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(fontDef.families.first().toUtf8());
+        p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(fontDef.families.constFirst().toUtf8());
     }
 
     return freetype->properties();

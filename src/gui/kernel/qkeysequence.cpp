@@ -784,8 +784,8 @@ QKeySequence::QKeySequence(StandardKey key)
 {
     const QList <QKeySequence> bindings = keyBindings(key);
     //pick only the first/primary shortcut from current bindings
-    if (bindings.size() > 0) {
-        d = bindings.first().d;
+    if (!bindings.isEmpty()) {
+        d = bindings.constFirst().d;
         d->ref.ref();
     }
     else

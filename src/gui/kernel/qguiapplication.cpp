@@ -829,7 +829,7 @@ QWindow *QGuiApplication::modalWindow()
     CHECK_QAPP_INSTANCE(nullptr)
     if (QGuiApplicationPrivate::self->modalWindowList.isEmpty())
         return nullptr;
-    return QGuiApplicationPrivate::self->modalWindowList.first();
+    return QGuiApplicationPrivate::self->modalWindowList.constFirst();
 }
 
 static void updateBlockedStatusRecursion(QWindow *window, bool shouldBeBlocked)

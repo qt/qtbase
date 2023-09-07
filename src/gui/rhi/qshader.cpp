@@ -777,7 +777,7 @@ size_t qHash(const QShader &s, size_t seed) noexcept
         seed = hash(seed, s.stage());
         if (!s.d->shaders.isEmpty()) {
             seed = hash(seed, s.d->shaders.firstKey());
-            seed = hash(seed, s.d->shaders.first());
+            seed = hash(seed, std::as_const(s.d->shaders).first());
         }
     }
     return seed;

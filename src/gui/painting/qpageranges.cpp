@@ -255,7 +255,7 @@ int QPageRanges::firstPage() const
 {
     if (isEmpty())
         return 0;
-    return d->intervals.first().from;
+    return d->intervals.constFirst().from;
 }
 
 /*!
@@ -266,7 +266,7 @@ int QPageRanges::lastPage() const
 {
     if (isEmpty())
         return 0;
-    return d->intervals.last().to;
+    return d->intervals.constLast().to;
 }
 
 /*!

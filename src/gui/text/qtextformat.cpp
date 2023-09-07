@@ -425,7 +425,7 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextFormat &fmt
 
         it = properties.find(QTextFormat::FontFamilies);
         if (it != properties.end()) {
-            properties[QTextFormat::OldFontFamily] = QVariant(it.value().toStringList().first());
+            properties[QTextFormat::OldFontFamily] = QVariant(it.value().toStringList().constFirst());
             properties.erase(it);
         }
     }
