@@ -87,7 +87,7 @@ void QThreadPoolThread::run()
             if (manager->queue.isEmpty())
                 break;
 
-            QueuePage *page = manager->queue.first();
+            QueuePage *page = manager->queue.constFirst();
             r = page->pop();
 
             if (page->isFinished()) {
@@ -210,7 +210,7 @@ void QThreadPoolPrivate::tryToStartMoreThreads()
 {
     // try to push tasks on the queue to any available threads
     while (!queue.isEmpty()) {
-        QueuePage *page = queue.first();
+        QueuePage *page = queue.constFirst();
         if (!tryStart(page->first()))
             break;
 
