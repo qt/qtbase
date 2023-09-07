@@ -621,17 +621,15 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
         // Buffered stdlib mode.
 
         size_t result;
-        bool retry = true;
         do {
             result = fread(data + readBytes, 1, size_t(len - readBytes), fh);
             eof = feof(fh);
-            if (retry && eof && result == 0) {
+            if (eof && result == 0) {
                 // On OS X, this is needed, e.g., if a file was written to
                 // through another stream since our last read. See test
                 // tst_QFile::appendAndRead
                 QT_FSEEK(fh, QT_FTELL(fh), SEEK_SET); // re-sync stream.
-                retry = false;
-                continue;
+                break;
             }
             readBytes += result;
         } while (!eof && (result == 0 ? errno == EINTR : readBytes < len));
