@@ -2343,7 +2343,7 @@ QGraphicsItem *QGraphicsView::itemAt(const QPoint &pos) const
     if (!d->scene)
         return nullptr;
     const QList<QGraphicsItem *> itemsAtPos = items(pos);
-    return itemsAtPos.isEmpty() ? 0 : itemsAtPos.first();
+    return itemsAtPos.isEmpty() ? nullptr : itemsAtPos.first();
 }
 
 /*!
