@@ -1447,7 +1447,7 @@ qint64 QSocks5SocketEngine::bytesAvailable() const
 #ifndef QT_NO_UDPSOCKET
     else if (d->mode == QSocks5SocketEnginePrivate::UdpAssociateMode
              && !d->udpData->pendingDatagrams.isEmpty())
-        return d->udpData->pendingDatagrams.first().data.size();
+        return d->udpData->pendingDatagrams.constFirst().data.size();
 #endif
     return 0;
 }
