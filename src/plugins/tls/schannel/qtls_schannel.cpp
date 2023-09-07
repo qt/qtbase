@@ -2562,7 +2562,7 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
     }
 
     if (!peerCertificateChain.isEmpty())
-        QTlsBackend::storePeerCertificate(d, peerCertificateChain.first());
+        QTlsBackend::storePeerCertificate(d, peerCertificateChain.constFirst());
 
     const auto &configuration = q->sslConfiguration(); // Probably, updated by QTlsBackend::storePeerCertificate etc.
     // @Note: Somewhat copied from qsslsocket_mac.cpp
