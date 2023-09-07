@@ -219,9 +219,9 @@ void QMacPrintEnginePrivate::initialize()
     if (!resolutions.isEmpty() && mode != QPrinter::ScreenResolution) {
         std::sort(resolutions.begin(), resolutions.end());
         if (resolutions.count() > 1 && mode == QPrinter::HighResolution)
-            resolution.hRes = resolution.vRes = resolutions.last();
+            resolution.hRes = resolution.vRes = resolutions.constLast();
         else
-            resolution.hRes = resolution.vRes = resolutions.first();
+            resolution.hRes = resolution.vRes = resolutions.constFirst();
         if (resolution.hRes == 0)
             resolution.hRes = resolution.vRes = 600;
     } else {
