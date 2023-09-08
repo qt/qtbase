@@ -3,7 +3,7 @@
 
 /*!
     \example threads/mandelbrot
-    \title Mandelbrot Example
+    \title Mandelbrot
     \ingroup qtconcurrent-mtexamples
 
     \brief The Mandelbrot example demonstrates multi-thread programming
@@ -151,7 +151,7 @@
     it needs to access \c{RenderThread}'s member variables (e.g., in
     \c render()).
 
-    The \c forever keyword is, like \c foreach, a Qt pseudo-keyword.
+    The \c forever keyword is a Qt pseudo-keyword.
 
     \snippet threads/mandelbrot/renderthread.cpp 4
     \snippet threads/mandelbrot/renderthread.cpp 5
