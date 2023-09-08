@@ -352,7 +352,7 @@ namespace Qt {
 inline namespace Literals {
 inline namespace StringLiterals {
 
-constexpr inline QLatin1StringView operator"" _L1(const char *str, size_t size) noexcept
+constexpr inline QLatin1StringView operator""_L1(const char *str, size_t size) noexcept
 {
     return {str, qsizetype(size)};
 }
