@@ -4678,9 +4678,8 @@ void QWindowsVistaStyle::polish(QWidget *widget)
             buttonFont.setFamilies(QStringList{QLatin1String("Segoe UI")});
             widget->setFont(buttonFont);
             QPalette pal = widget->palette();
-            pal.setColor(QPalette::ButtonText, QColor(21, 28, 85));
-            pal.setColor(QPalette::BrightText, QColor(7, 64, 229));
-            pal.setResolveMask(0);
+            pal.setColor(QPalette::Active, QPalette::ButtonText, QColor(21, 28, 85));
+            pal.setColor(QPalette::Active, QPalette::BrightText, QColor(7, 64, 229));
             widget->setPalette(pal);
         }
 #endif // QT_CONFIG(commandlinkbutton)
