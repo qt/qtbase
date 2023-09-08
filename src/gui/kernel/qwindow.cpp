@@ -237,6 +237,8 @@ void QWindowPrivate::init(QScreen *targetScreen)
             QWindowSystemInterfacePrivate::GeometryChangeEvent gce(q, QHighDpi::fromNativePixels(q->handle()->geometry(), q));
             QGuiApplicationPrivate::processGeometryChangeEvent(&gce);
         }
+#else
+        Q_UNUSED(q);
 #endif
         updateDevicePixelRatio();
     });
