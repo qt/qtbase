@@ -507,6 +507,12 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
 
     switch (element) {
+    case PE_FrameTabWidget:
+        if (const QStyleOptionTabWidgetFrame *frame = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option)) {
+            painter->setPen(frameColorLight);
+            painter->setBrush(frame->palette.base());
+            painter->drawRoundedRect(frame->rect.marginsRemoved(QMargins(1,1,1,1)), secondLevelRoundingRadius, secondLevelRoundingRadius);
+        }
     case PE_FrameGroupBox:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             painter->setPen(frameColorStrong);
@@ -714,6 +720,26 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
     switch (element) {
+    case QStyle::CE_TabBarTabShape:
+        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
+            painter->setPen(frameColorLight);
+            painter->setBrush(tab->palette.base());
+            if (tab->state & State_MouseOver){
+                painter->setBrush(subtleHighlightColor);
+                painter->drawRoundedRect(tab->rect.marginsRemoved(QMargins(2,2,0,0)),2,2);
+            }
+            else if (tab->state & State_Selected) {
+                painter->setPen(frameColorLight);
+                painter->setBrush(tab->palette.base());
+                painter->drawRoundedRect(tab->rect.marginsRemoved(QMargins(2,2,0,0)),2,2);
+            }
+            else {
+                painter->setPen(frameColorLight);
+                painter->setBrush(tab->palette.window());
+                painter->drawRoundedRect(tab->rect.marginsRemoved(QMargins(2,2,0,0)),2,2);
+            }
+        }
+        break;
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *toolbutton
             = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
