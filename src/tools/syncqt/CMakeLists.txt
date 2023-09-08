@@ -60,7 +60,7 @@ else()
         INSTALL_DIRECTORY "${INSTALL_LIBEXECDIR}"
         CMAKE_FLAGS
             -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=TRUE
-            -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
+            -DCMAKE_CXX_STANDARD:STRING=17
             # std::filesystem API is only available in macOS 10.15+
             -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.15
             "${osx_architectures}"
