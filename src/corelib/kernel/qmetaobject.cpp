@@ -3082,15 +3082,14 @@ const char *QMetaEnum::enumName() const
 /*!
     Returns the meta type of the enum.
 
-    If the QMetaObject this enum is part of was generated with Qt 6.5 or
-    earlier this will be the invalid metatype.
+    If the QMetaObject that this enum is part of was generated with Qt 6.5 or
+    earlier, this will be an invalid meta type.
 
     \note This is the meta type of the enum itself, not of its underlying
-    numeric type. You can retrieve the meta type of the underlying type of the
+    integral type. You can retrieve the meta type of the underlying type of the
     enum using \l{QMetaType::underlyingType()}.
 
     \since 6.6
-    \sa QMetaType::underlyingType()
 */
 QMetaType QMetaEnum::metaType() const
 {
