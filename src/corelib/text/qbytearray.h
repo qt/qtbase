@@ -683,7 +683,7 @@ namespace Qt {
 inline namespace Literals {
 inline namespace StringLiterals {
 
-inline QByteArray operator"" _ba(const char *str, size_t size) noexcept
+inline QByteArray operator""_ba(const char *str, size_t size) noexcept
 {
     return QByteArray(QByteArrayData(nullptr, const_cast<char *>(str), qsizetype(size)));
 }
@@ -696,7 +696,7 @@ inline namespace QtLiterals {
 #if QT_DEPRECATED_SINCE(6, 8)
 
 QT_DEPRECATED_VERSION_X_6_8("Use _ba from Qt::StringLiterals namespace instead.")
-inline QByteArray operator"" _qba(const char *str, size_t size) noexcept
+inline QByteArray operator""_qba(const char *str, size_t size) noexcept
 {
     return Qt::StringLiterals::operator""_ba(str, size);
 }

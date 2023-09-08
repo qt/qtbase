@@ -1702,12 +1702,12 @@ namespace Qt {
 inline namespace Literals {
 inline namespace StringLiterals {
 
-constexpr inline QLatin1StringView operator"" _L1(const char *str, size_t size) noexcept
+constexpr inline QLatin1StringView operator""_L1(const char *str, size_t size) noexcept
 {
     return {str, qsizetype(size)};
 }
 
-inline QString operator"" _s(const char16_t *str, size_t size) noexcept
+inline QString operator""_s(const char16_t *str, size_t size) noexcept
 {
     return QString(QStringPrivate(nullptr, const_cast<char16_t *>(str), qsizetype(size)));
 }
@@ -1720,7 +1720,7 @@ inline namespace QtLiterals {
 #if QT_DEPRECATED_SINCE(6, 8)
 
 QT_DEPRECATED_VERSION_X_6_8("Use _s from Qt::StringLiterals namespace instead.")
-inline QString operator"" _qs(const char16_t *str, size_t size) noexcept
+inline QString operator""_qs(const char16_t *str, size_t size) noexcept
 {
     return Qt::StringLiterals::operator""_s(str, size);
 }
