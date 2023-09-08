@@ -1656,7 +1656,7 @@ void QDBusConnectionPrivate::handleSignal(const QDBusMessage& msg)
     key += u':';
     key += msg.interface();
 
-    QDBusReadLocker locker(HandleSignalAction, this);
+    QDBusWriteLocker locker(HandleSignalAction, this);
     handleSignal(key, msg);                  // one try
 
     key.truncate(msg.member().size() + 1); // keep the ':'
