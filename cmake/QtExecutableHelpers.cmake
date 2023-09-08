@@ -422,7 +422,8 @@ function(qt_internal_add_configure_time_executable target)
     )
 
     set(should_build_at_configure_time TRUE)
-    if(EXISTS "${target_binary_path}" AND EXISTS "${timestamp_file}")
+    if(QT_INTERNAL_HAVE_CONFIGURE_TIME_${target} AND
+        EXISTS "${target_binary_path}" AND EXISTS "${timestamp_file}")
         set(last_ts 0)
         foreach(source IN LISTS sources)
             file(TIMESTAMP "${source}" ts "%s")
@@ -488,6 +489,10 @@ function(qt_internal_add_configure_time_executable target)
             endif()
         endforeach()
 
+        if(EXISTS "${target_binary_dir}/CMakeCache.txt")
+            file(REMOVE "${target_binary_dir}/CMakeCache.txt")
+        endif()
+
         try_compile(result
             "${target_binary_dir}"
             "${target_binary_dir}"
@@ -497,6 +502,8 @@ function(qt_internal_add_configure_time_executable target)
         )
 
         file(WRITE "${timestamp_file}" "")
+        set(QT_INTERNAL_HAVE_CONFIGURE_TIME_${target} ${result} CACHE INTERNAL
+            "Indicates that the configure-time target ${target} was built")
         if(NOT result)
             message(FATAL_ERROR "Unable to build ${target}: ${try_compile_output}")
         endif()
