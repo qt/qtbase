@@ -344,6 +344,12 @@ QNativeIpcKey::Type QNativeIpcKey::defaultTypeForOs_internal() noexcept
 #endif
 
 /*!
+    \fn QNativeIpcKey::QNativeIpcKey() noexcept
+
+    Constructs a QNativeIpcKey object of type \l DefaultTypeForOs with an empty key.
+*/
+
+/*!
     \fn QNativeIpcKey::QNativeIpcKey(Type type) noexcept
     \fn QNativeIpcKey::QNativeIpcKey(const QString &key, Type type)
 
