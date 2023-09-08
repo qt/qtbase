@@ -284,11 +284,11 @@ QThreadPrivate::~QThreadPrivate()
     If you don't call \l{QObject::setObjectName()}{setObjectName()},
     the name given to your thread will be the class name of the runtime
     type of your thread object (for example, \c "RenderThread" in the case of the
-    \l{Mandelbrot Example}, as that is the name of the QThread subclass).
+    \l{Mandelbrot} example, as that is the name of the QThread subclass).
     Note that this is currently not available with release builds on Windows.
 
     \sa {Thread Support in Qt}, QThreadStorage, {Synchronizing Threads},
-        {Mandelbrot Example}, {Semaphores Example}, {Wait Conditions Example}
+        Mandelbrot, {Semaphores Example}, {Wait Conditions Example}
 */
 
 /*!
