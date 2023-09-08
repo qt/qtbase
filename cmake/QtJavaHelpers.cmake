@@ -4,6 +4,10 @@
 # This function can be used to compile java sources into a jar package.
 
 function(qt_internal_add_jar target)
+    set(options)
+    set(oneValueArgs OUTPUT_DIR)
+    set(multiValueArgs INCLUDE_JARS SOURCES)
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     set(javac_target_version "${QT_ANDROID_JAVAC_TARGET}")
     if (NOT javac_target_version)
@@ -17,5 +21,9 @@ function(qt_internal_add_jar target)
 
     set(CMAKE_JAVA_COMPILE_FLAGS -source "${javac_source_version}" -target "${javac_target_version}" -Xlint:unchecked -bootclasspath "${QT_ANDROID_JAR}")
     add_jar(${ARGV})
+
+    foreach(f IN LISTS arg_SOURCES)
+        _qt_internal_expose_source_file_to_ide(${target} "${f}")
+    endforeach()
 
 endfunction()
