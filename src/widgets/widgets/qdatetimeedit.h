@@ -5,7 +5,7 @@
 #define QDATETIMEEDIT_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-#include <QtCore/qdatetime.h>
+#include <QtCore/qtimezone.h>
 #include <QtCore/qcalendar.h>
 #include <QtCore/qvariant.h>
 #include <QtWidgets/qabstractspinbox.h>
@@ -39,7 +39,10 @@ class Q_WIDGETS_EXPORT QDateTimeEdit : public QAbstractSpinBox
     Q_PROPERTY(bool calendarPopup READ calendarPopup WRITE setCalendarPopup)
     Q_PROPERTY(int currentSectionIndex READ currentSectionIndex WRITE setCurrentSectionIndex)
     Q_PROPERTY(int sectionCount READ sectionCount)
+#if QT_DEPRECATED_SINCE(6, 10)
     Q_PROPERTY(Qt::TimeSpec timeSpec READ timeSpec WRITE setTimeSpec)
+#endif
+    Q_PROPERTY(QTimeZone timeZone READ timeZone WRITE setTimeZone)
 public:
     enum Section { // a sub-type of QDateTimeParser's like-named enum.
         NoSection = 0x0000,
@@ -125,8 +128,14 @@ public:
     bool calendarPopup() const;
     void setCalendarPopup(bool enable);
 
+#if QT_DEPRECATED_SINCE(6, 10)
+    QT_DEPRECATED_VERSION_X_6_10("Use timeZone() instead")
     Qt::TimeSpec timeSpec() const;
+    QT_DEPRECATED_VERSION_X_6_10("Use setTimeZone() instead")
     void setTimeSpec(Qt::TimeSpec spec);
+#endif
+    QTimeZone timeZone() const;
+    void setTimeZone(const QTimeZone &zone);
 
     QSize sizeHint() const override;
 

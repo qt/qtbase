@@ -219,7 +219,7 @@ QDateTimeEdit::~QDateTimeEdit()
   widget's date-range to start and end on the date of the new value of this
   property.
 
-  \sa date, time, minimumDateTime, maximumDateTime
+  \sa date, time, minimumDateTime, maximumDateTime, timeZone
 */
 
 QDateTime QDateTimeEdit::dateTime() const
@@ -984,10 +984,16 @@ void QDateTimeEdit::setCalendarPopup(bool enable)
     update();
 }
 
+#if QT_DEPRECATED_SINCE(6, 10)
 /*!
     \property QDateTimeEdit::timeSpec
-    \brief The current timespec used by the date time edit.
     \since 4.4
+    \deprecated[6.10] Use QDateTimeEdit::timeZone instead.
+    \brief The current timespec used by the date time edit.
+
+    Since Qt 6.7 this is an indirect accessor for the timeZone property.
+
+    \sa QDateTimeEdit::timeZone
 */
 
 Qt::TimeSpec QDateTimeEdit::timeSpec() const
@@ -1002,17 +1008,45 @@ void QDateTimeEdit::setTimeSpec(Qt::TimeSpec spec)
     if (spec != d->timeZone.timeSpec()) {
         switch (spec) {
         case Qt::UTC:
-            d->timeZone = QTimeZone::UTC;
+            setTimeZone(QTimeZone::UTC);
             break;
         case Qt::LocalTime:
-            d->timeZone = QTimeZone::LocalTime;
+            setTimeZone(QTimeZone::LocalTime);
             break;
         default:
             qWarning() << "Ignoring attempt to set time-spec" << spec
-                       << "which is not yet supported by QDateTimeEdit";
-            // TODO: fix that QTBUG-80417.
+                       << "which needs ancillary data: see setTimeZone()";
             return;
         }
+    }
+}
+#endif // 6.10 deprecation
+
+// TODO: enable user input to control timeZone, when the format includes it.
+/*!
+    \property QDateTimeEdit::timeZone
+    \since 6.7
+    \brief The current timezone used by the datetime editing widget
+
+    If the datetime format in use includes a timezone indicator - that is, a
+    \c{t}, \c{tt}, \c{ttt} or \c{tttt} format specifier - the user's input is
+    re-expressed in this timezone whenever it is parsed, overriding any timezone
+    the user may have specified.
+
+    \sa QDateTimeEdit::displayFormat
+*/
+
+QTimeZone QDateTimeEdit::timeZone() const
+{
+    Q_D(const QDateTimeEdit);
+    return d->timeZone;
+}
+
+void QDateTimeEdit::setTimeZone(const QTimeZone &zone)
+{
+    Q_D(QDateTimeEdit);
+    if (zone != d->timeZone) {
+        d->timeZone = zone;
         d->updateTimeZone();
     }
 }
@@ -1421,8 +1455,6 @@ QDateTime QDateTimeEdit::dateTimeFromText(const QString &text) const
     QString copy = text;
     int pos = d->edit->cursorPosition();
     QValidator::State state = QValidator::Acceptable;
-    // TODO: if the format specifies time-zone, d->timeZone should change as
-    // determined by the parsed text.
     return d->validateAndInterpret(copy, pos, state);
 }
 
@@ -2004,6 +2036,8 @@ QDateTime QDateTimeEditPrivate::validateAndInterpret(QString &input, int &positi
     StateNode tmp = parse(input, position, value.toDateTime(), fixup);
     // Take note of any corrections imposed during parsing:
     input = m_text;
+    // TODO: if the format specifies time-zone, update timeZone to match the
+    // parsed text; but we're in const context, so can't - QTBUG-118393.
     // Impose this widget's time system:
     tmp.value = tmp.value.toTimeZone(timeZone);
     // ... but that might turn a valid datetime into an invalid one:

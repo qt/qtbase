@@ -233,10 +233,12 @@ private slots:
     void nextPrevSection();
 
     void dateEditTimeEditFormats();
+#if QT_DEPRECATED_SINCE(6, 10)
     void timeSpec_data();
     void timeSpec();
-    void timeSpecBug();
-    void timeSpecInit();
+#endif
+    void timeZoneBug();
+    void timeZoneInit();
     void setDateTime_data();
     void setDateTime();
 
@@ -252,7 +254,7 @@ private slots:
     void task196924();
     void focusNextPrevChild();
 
-    void taskQTBUG_12384_timeSpecShowTimeOnly();
+    void taskQTBUG_12384_timeZoneShowTimeOnly();
 
     void deleteCalendarWidget();
 
@@ -436,7 +438,7 @@ void tst_QDateTimeEdit::cleanup()
 {
     testWidget->clearMinimumDateTime();
     testWidget->clearMaximumDateTime();
-    testWidget->setTimeSpec(Qt::LocalTime);
+    testWidget->setTimeZone(QTimeZone::LocalTime);
     testWidget->setSpecialValueText(QString());
     testWidget->setWrapping(false);
     // Restore the default.
@@ -3491,6 +3493,7 @@ void tst_QDateTimeEdit::dateEditTimeEditFormats()
     QCOMPARE(d.displayedSections(), QDateTimeEdit::YearSection);
 }
 
+#if QT_DEPRECATED_SINCE(6, 10)
 void tst_QDateTimeEdit::timeSpec_data()
 {
     QTest::addColumn<bool>("useSetProperty");
@@ -3538,10 +3541,11 @@ void tst_QDateTimeEdit::timeSpec()
         QSKIP("Not tested in the GMT timezone");
     }
 }
+#endif // test deprecated timeSpec property
 
-void tst_QDateTimeEdit::timeSpecBug()
+void tst_QDateTimeEdit::timeZoneBug()
 {
-    testWidget->setTimeSpec(Qt::UTC);
+    testWidget->setTimeZone(QTimeZone::UTC);
     testWidget->setDisplayFormat("hh:mm");
     testWidget->setTime(QTime(2, 2));
     const QString oldText = testWidget->text();
@@ -3551,7 +3555,7 @@ void tst_QDateTimeEdit::timeSpecBug()
     QCOMPARE(oldText, testWidget->text());
 }
 
-void tst_QDateTimeEdit::timeSpecInit()
+void tst_QDateTimeEdit::timeZoneInit()
 {
     QDateTime utc(QDate(2000, 1, 1), QTime(12, 0), QTimeZone::UTC);
     QDateTimeEdit widget(utc);
@@ -3560,28 +3564,24 @@ void tst_QDateTimeEdit::timeSpecInit()
 
 void tst_QDateTimeEdit::setDateTime_data()
 {
-    QDateTime localNoon(QDate(2019, 12, 24), QTime(12, 0));
-    // TODO QTBUG-80417: port away from spec, to use QTimeZone instead.
-    QTest::addColumn<Qt::TimeSpec>("spec");
+    const QDateTime localNoon(QDate(2019, 12, 24), QTime(12, 0));
+    const QTimeZone UTC(QTimeZone::UTC), local(QTimeZone::LocalTime);
+    QTest::addColumn<QTimeZone>("zone");
     QTest::addColumn<QDateTime>("store");
     QTest::addColumn<QDateTime>("expect");
-    QTest::newRow("LocalTime/LocalTime")
-        << Qt::LocalTime << localNoon << localNoon;
-    QTest::newRow("LocalTime/UTC")
-        << Qt::LocalTime << localNoon.toUTC() << localNoon;
-    QTest::newRow("UTC/LocalTime")
-        << Qt::UTC << localNoon << localNoon.toUTC();
-    QTest::newRow("UTC/UTC")
-        << Qt::UTC << localNoon.toUTC() << localNoon.toUTC();
+    QTest::newRow("LocalTime/LocalTime") << local << localNoon << localNoon;
+    QTest::newRow("LocalTime/UTC") << local << localNoon.toUTC() << localNoon;
+    QTest::newRow("UTC/LocalTime") << UTC << localNoon << localNoon.toUTC();
+    QTest::newRow("UTC/UTC") << UTC << localNoon.toUTC() << localNoon.toUTC();
 }
 
 void tst_QDateTimeEdit::setDateTime()
 {
-    QFETCH(const Qt::TimeSpec, spec);
+    QFETCH(const QTimeZone, zone);
     QFETCH(const QDateTime, store);
     QFETCH(const QDateTime, expect);
     QDateTimeEdit editor;
-    editor.setTimeSpec(spec);
+    editor.setTimeZone(zone);
     editor.setDateTime(store);
     QCOMPARE(editor.dateTime(), expect);
 }
@@ -3775,14 +3775,14 @@ void tst_QDateTimeEdit::focusNextPrevChild()
     QCOMPARE(edit.currentSection(), QDateTimeEdit::MonthSection);
 }
 
-void tst_QDateTimeEdit::taskQTBUG_12384_timeSpecShowTimeOnly()
+void tst_QDateTimeEdit::taskQTBUG_12384_timeZoneShowTimeOnly()
 {
     QDateTime time = QDateTime::fromString("20100723 04:02:40", "yyyyMMdd hh:mm:ss");
     time.setTimeZone(QTimeZone::UTC);
 
     EditorDateEdit edit;
     edit.setDisplayFormat("hh:mm:ss");
-    edit.setTimeSpec(Qt::UTC);
+    edit.setTimeZone(QTimeZone::UTC);
     edit.setDateTime(time);
 
     QCOMPARE(edit.minimumTime(), QTime(0, 0, 0, 0));
