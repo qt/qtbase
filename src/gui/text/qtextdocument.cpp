@@ -1200,10 +1200,18 @@ QString QTextDocument::toPlainText() const
     Q_D(const QTextDocument);
     QString txt = d->plainText();
 
-    QChar *uc = txt.data();
-    QChar *e = uc + txt.size();
+    constexpr char16_t delims[] = { 0xfdd0, 0xfdd1,
+                                    QChar::ParagraphSeparator, QChar::LineSeparator, QChar::Nbsp };
 
-    for (; uc != e; ++uc) {
+    const size_t pos = std::u16string_view(txt).find_first_of(
+                              std::u16string_view(delims, std::size(delims)));
+    if (pos == std::u16string_view::npos)
+        return txt;
+
+    QChar *uc = txt.data();
+    QChar *const e = uc + txt.size();
+
+    for (uc += pos; uc != e; ++uc) {
         switch (uc->unicode()) {
         case 0xfdd0: // QTextBeginningOfFrame
         case 0xfdd1: // QTextEndOfFrame
