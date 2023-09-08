@@ -313,6 +313,10 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     newConnection->setPeer(connection, error);
     newConnection->setDispatchEnabled(false);
 
+    QReadLocker serverLock(&serverConnection->lock);
+    if (!serverConnection->serverObject)
+        return;
+
     // this is a queued connection and will resume in the QDBusServer's thread
     QMetaObject::invokeMethod(serverConnection->serverObject, &QDBusServer::newConnection,
                               Qt::QueuedConnection, QDBusConnectionPrivate::q(newConnection));
@@ -321,7 +325,7 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     // QDBusServer's thread in order to enable it after the
     // QDBusServer::newConnection() signal has been received by the
     // application's code
-    QReadLocker serverLock(&serverConnection->lock);
+
     newConnection->enableDispatchDelayed(serverConnection->serverObject);
 }
 
