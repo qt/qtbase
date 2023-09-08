@@ -527,7 +527,7 @@ QFuture<std::variant<std::decay_t<Futures>...>> whenAny(Futures &&... futures);
 static QFuture<void> makeReadyFuture()
 #else
 template<typename T = void>
-QT_DEPRECATED_VERSION_X(6, 10, "Use makeReadyVoidFuture() instead")
+QT_DEPRECATED_VERSION_X(6, 10, "Use makeReadyVoidFuture() instead.")
 static QFuture<T> makeReadyFuture()
 #endif
 {
