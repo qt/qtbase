@@ -649,7 +649,8 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
             result = QT_READ(fd, data + readBytes, chunkSize);
         } while (result > 0 && (readBytes += result) < len);
 
-        eof = !(result == -1);
+        // QT_READ (::read()) returns 0 to indicate end-of-file
+        eof = result == 0;
     }
 
     if (!eof && readBytes == 0) {
