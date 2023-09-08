@@ -11,13 +11,13 @@
 #include <math.h>
 
 //! [0]
-const double DefaultCenterX = -0.637011;
-const double DefaultCenterY = -0.0395159;
-const double DefaultScale = 0.00403897;
+constexpr double DefaultCenterX = -0.637011;
+constexpr double DefaultCenterY = -0.0395159;
+constexpr double DefaultScale = 0.00403897;
 
-const double ZoomInFactor = 0.8;
-const double ZoomOutFactor = 1 / ZoomInFactor;
-const int ScrollStep = 20;
+constexpr double ZoomInFactor = 0.8;
+constexpr double ZoomOutFactor = 1 / ZoomInFactor;
+constexpr int ScrollStep = 20;
 //! [0]
 
 //! [1]
@@ -62,46 +62,45 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
 //! [6] //! [7]
     } else {
 //! [7] //! [8]
-        auto previewPixmap = qFuzzyCompare(pixmap.devicePixelRatio(), qreal(1))
+        const auto previewPixmap = qFuzzyCompare(pixmap.devicePixelRatio(), qreal(1))
             ? pixmap
             : pixmap.scaled(pixmap.deviceIndependentSize().toSize(), Qt::KeepAspectRatio,
                             Qt::SmoothTransformation);
-        double scaleFactor = pixmapScale / curScale;
-        int newWidth = int(previewPixmap.width() * scaleFactor);
-        int newHeight = int(previewPixmap.height() * scaleFactor);
-        int newX = pixmapOffset.x() + (previewPixmap.width() - newWidth) / 2;
-        int newY = pixmapOffset.y() + (previewPixmap.height() - newHeight) / 2;
+        const double scaleFactor = pixmapScale / curScale;
+        const int newWidth = int(previewPixmap.width() * scaleFactor);
+        const int newHeight = int(previewPixmap.height() * scaleFactor);
+        const int newX = pixmapOffset.x() + (previewPixmap.width() - newWidth) / 2;
+        const int newY = pixmapOffset.y() + (previewPixmap.height() - newHeight) / 2;
 
         painter.save();
         painter.translate(newX, newY);
         painter.scale(scaleFactor, scaleFactor);
 
-        QRectF exposed = painter.transform().inverted().mapRect(rect()).adjusted(-1, -1, 1, 1);
+        const QRectF exposed = painter.transform().inverted().mapRect(rect())
+                                       .adjusted(-1, -1, 1, 1);
         painter.drawPixmap(exposed, previewPixmap, exposed);
         painter.restore();
     }
 //! [8] //! [9]
 
-    QFontMetrics metrics = painter.fontMetrics();
+    const QFontMetrics metrics = painter.fontMetrics();
     if (!info.isEmpty()){
-        int infoWidth = metrics.horizontalAdvance(info);
-        int infoHeight = metrics.height();
+        const int infoWidth = metrics.horizontalAdvance(info);
+        const int infoHeight = (infoWidth/width() + 1) * (metrics.height() + 5);
 
         painter.setPen(Qt::NoPen);
         painter.setBrush(QColor(0, 0, 0, 127));
-        infoHeight = (infoWidth/width()+1) * (infoHeight + 5);
         painter.drawRect((width() - infoWidth) / 2 - 5, 0, infoWidth + 10, infoHeight);
 
         painter.setPen(Qt::white);
         painter.drawText(rect(), Qt::AlignHCenter|Qt::AlignTop|Qt::TextWordWrap, info);
     }
 
-    int helpWidth = metrics.horizontalAdvance(help);
-    int helpHeight = metrics.height();
+    const int helpWidth = metrics.horizontalAdvance(help);
+    const int helpHeight = (helpWidth/width() + 1) * (metrics.height() + 5);
 
     painter.setPen(Qt::NoPen);
     painter.setBrush(QColor(0, 0, 0, 127));
-    helpHeight = (helpWidth/width()+1) * (helpHeight + 5);
     painter.drawRect((width() - helpWidth) / 2 - 5, height()-helpHeight, helpWidth + 10,
                      helpHeight);
 
@@ -187,8 +186,8 @@ void MandelbrotWidget::mouseReleaseEvent(QMouseEvent *event)
         lastDragPos = QPoint();
 
         const auto pixmapSize = pixmap.deviceIndependentSize().toSize();
-        int deltaX = (width() - pixmapSize.width()) / 2 - pixmapOffset.x();
-        int deltaY = (height() - pixmapSize.height()) / 2 - pixmapOffset.y();
+        const int deltaX = (width() - pixmapSize.width()) / 2 - pixmapOffset.x();
+        const int deltaY = (height() - pixmapSize.height()) / 2 - pixmapOffset.y();
         scroll(deltaX, deltaY);
     }
 }

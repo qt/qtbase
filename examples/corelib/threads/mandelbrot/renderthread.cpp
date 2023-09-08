@@ -69,16 +69,16 @@ void RenderThread::run()
 //! [3]
 
 //! [4]
-        int halfWidth = resultSize.width() / 2;
+        const int halfWidth = resultSize.width() / 2;
 //! [4] //! [5]
-        int halfHeight = resultSize.height() / 2;
+        const int halfHeight = resultSize.height() / 2;
         QImage image(resultSize, QImage::Format_RGB32);
         image.setDevicePixelRatio(devicePixelRatio);
 
         int pass = 0;
         while (pass < numPasses) {
             const int MaxIterations = (1 << (2 * pass + 6)) + 32;
-            const int Limit = 4;
+            constexpr int Limit = 4;
             bool allBlack = true;
 
             timer.restart();
