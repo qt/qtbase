@@ -592,7 +592,10 @@ void QWindowPrivate::setMinOrMaxSize(QSize *oldSizeMember, const QSize &size,
     // resize window if current size is outside of min and max limits
     if (minimumSize.width() <= maximumSize.width()
         || minimumSize.height() <= maximumSize.height()) {
-        q->resize(q->geometry().size().expandedTo(minimumSize).boundedTo(maximumSize));
+        const QSize currentSize = q->size();
+        const QSize boundedSize = currentSize.expandedTo(minimumSize).boundedTo(maximumSize);
+        if (currentSize != boundedSize)
+            q->resize(boundedSize);
     }
 }
 
