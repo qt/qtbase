@@ -614,8 +614,7 @@ void QWindowPrivate::setMinOrMaxSize(QSize *oldSizeMember, const QSize &size,
         || minimumSize.height() <= maximumSize.height()) {
         const QSize currentSize = q->size();
         const QSize boundedSize = currentSize.expandedTo(minimumSize).boundedTo(maximumSize);
-        if (currentSize != boundedSize)
-            q->resize(boundedSize);
+        q->resize(boundedSize);
     }
 }
 
@@ -1646,20 +1645,18 @@ void QWindow::setY(int arg)
     \property QWindow::width
     \brief the width of the window's geometry
 */
-void QWindow::setWidth(int arg)
+void QWindow::setWidth(int w)
 {
-    if (width() != arg)
-        resize(arg, height());
+    resize(w, height());
 }
 
 /*!
     \property QWindow::height
     \brief the height of the window's geometry
 */
-void QWindow::setHeight(int arg)
+void QWindow::setHeight(int h)
 {
-    if (height() != arg)
-        resize(width(), arg);
+    resize(width(), h);
 }
 
 /*!
@@ -1981,12 +1978,16 @@ void QWindow::resize(int w, int h)
 void QWindow::resize(const QSize &newSize)
 {
     Q_D(QWindow);
+
+    const QSize oldSize = size();
+    if (newSize == oldSize)
+        return;
+
     d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
         d->platformWindow->setGeometry(
             QHighDpi::toNativeWindowGeometry(QRect(position(), newSize), this));
     } else {
-        const QSize oldSize = d->geometry.size();
         d->geometry.setSize(newSize);
         if (newSize.width() != oldSize.width())
             emit widthChanged(newSize.width());
