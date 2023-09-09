@@ -202,6 +202,16 @@ bool QElapsedTimer::isMonotonic() noexcept
 }
 
 /*!
+    \typealias QElapsedTimer::Duration
+    Synonym for \c std::chrono::nanoseconds.
+*/
+
+/*!
+    \typealias QElapsedTimer::TimePoint
+    Synonym for \c {std::chrono::time_point<std::chrono::steady_clock, Duration>}.
+*/
+
+/*!
     Starts this timer. Once started, a timer value can be checked with elapsed() or msecsSinceReference().
 
     Normally, a timer is started just before a lengthy operation, such as:
