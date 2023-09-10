@@ -186,16 +186,14 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                 if (itemNumber < 1) {
                     result = QString::number(itemNumber);
                 } else if (itemNumber < 5000) {
-                    QByteArray romanNumeral;
+                    QString romanNumeral;
 
                     // works for up to 4999 items
-                    static const char romanSymbolsLower[] = "iiivixxxlxcccdcmmmm";
-                    static const char romanSymbolsUpper[] = "IIIVIXXXLXCCCDCMMMM";
-                    QByteArray romanSymbols; // wrap to have "mid"
+                    QLatin1StringView romanSymbols;
                     if (style == QTextListFormat::ListLowerRoman)
-                        romanSymbols = QByteArray::fromRawData(romanSymbolsLower, sizeof(romanSymbolsLower));
+                        romanSymbols = "iiivixxxlxcccdcmmmm"_L1;
                     else
-                        romanSymbols = QByteArray::fromRawData(romanSymbolsUpper, sizeof(romanSymbolsUpper));
+                        romanSymbols = "IIIVIXXXLXCCCDCMMMM"_L1;
 
                     int c[] = { 1, 4, 5, 9, 10, 40, 50, 90, 100, 400, 500, 900, 1000 };
                     int n = itemNumber;
@@ -220,10 +218,10 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                                 numDigits = q;
                             }
 
-                            romanNumeral.append(romanSymbols.mid(startDigit, numDigits));
+                            romanNumeral.append(romanSymbols.sliced(startDigit, numDigits));
                         }
                     }
-                    result = QString::fromLatin1(romanNumeral);
+                    result = std::move(romanNumeral);
                 } else {
                     result = u"?"_s;
                 }
