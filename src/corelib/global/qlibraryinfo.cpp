@@ -475,6 +475,7 @@ QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo
         "Examples", "examples",
         "Tests", "tests"
     );
+    [[maybe_unused]]
     constexpr QByteArrayView dot{"."};
 
     LocationInfo result;
