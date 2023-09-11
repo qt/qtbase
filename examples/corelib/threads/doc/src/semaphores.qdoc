@@ -3,13 +3,12 @@
 
 /*!
     \example threads/semaphores
-    \title Semaphores Example
-    \brief Demonstrates multi-thread programming using Qt.
+    \title Producer and Consumer using Semaphores
     \ingroup qtconcurrent-mtexamples
 
-    \brief The Semaphores example shows how to use QSemaphore to control
-    access to a circular buffer shared by a producer thread and a
-    consumer thread.
+    \brief The Producer and Consumer using Semaphores example shows how
+    to use QSemaphore to control access to a circular buffer shared
+    by a producer thread and a consumer thread.
 
     The producer writes data to the buffer until it reaches the end
     of the buffer, at which point it restarts from the beginning,

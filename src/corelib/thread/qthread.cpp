@@ -288,7 +288,8 @@ QThreadPrivate::~QThreadPrivate()
     Note that this is currently not available with release builds on Windows.
 
     \sa {Thread Support in Qt}, QThreadStorage, {Synchronizing Threads},
-        Mandelbrot, {Semaphores Example}, {Wait Conditions Example}
+        Mandelbrot, {Producer and Consumer using Semaphores},
+        {Wait Conditions Example}
 */
 
 /*!
