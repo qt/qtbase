@@ -1531,7 +1531,13 @@ void QDockWidget::closeEvent(QCloseEvent *event)
     Q_D(QDockWidget);
     if (d->state)
         d->endDrag(true);
-    QWidget::closeEvent(event);
+
+    // For non-closable widgets, don't allow closing, except when the mainwindow
+    // is hidden, as otherwise an application wouldn't be able to be shut down.
+    const QMainWindow *win = qobject_cast<QMainWindow*>(parentWidget());
+    const bool canClose = (d->features & DockWidgetClosable)
+                       || (!win || !win->isVisible());
+    event->setAccepted(canClose);
 }
 
 /*! \reimp */
