@@ -73,6 +73,7 @@ private slots:
 
     // test closing and deleting consistency
     void closeAndDelete();
+    void closeUnclosable();
 
     // test save and restore consistency
     void saveAndRestore();
@@ -1583,6 +1584,24 @@ void tst_QDockWidget::closeAndDelete()
 #else
     QSKIP("test requires -developer-build option");
 #endif // QT_BUILD_INTERNAL
+}
+
+void tst_QDockWidget::closeUnclosable()
+{
+    QDockWidget *dockWidget = new QDockWidget("dock");
+    dockWidget->setWidget(new QScrollArea);
+    dockWidget->setFeatures(QDockWidget::DockWidgetFloatable);
+
+    QMainWindow mw;
+    mw.addDockWidget(Qt::TopDockWidgetArea, dockWidget);
+    mw.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
+    dockWidget->setFloating(true);
+
+    QCOMPARE(dockWidget->close(), false);
+    mw.close();
+    QCOMPARE(dockWidget->close(), true);
 }
 
 // Test dock area permissions
