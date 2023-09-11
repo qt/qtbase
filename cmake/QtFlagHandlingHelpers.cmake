@@ -83,6 +83,11 @@ function(qt_internal_add_link_flags_no_undefined target)
     if (NOT QT_BUILD_SHARED_LIBS OR WASM)
         return()
     endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+        # ld64 defaults to -undefined,error, and in Xcode 15
+        # passing this option is deprecated, causing a warning.
+        return()
+    endif()
     if ((GCC OR CLANG) AND NOT MSVC)
         if(CLANG AND QT_FEATURE_sanitizer)
             return()
