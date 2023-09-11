@@ -88,6 +88,7 @@ private:
                             bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
 
     static void run(std::function<void(void)> fn);
+    static void runOnMainThread(std::function<void(void)> fn);
     static void runAsync(std::function<void(void)> fn);
     static void runOnMainThreadAsync(std::function<void(void)> fn);
 

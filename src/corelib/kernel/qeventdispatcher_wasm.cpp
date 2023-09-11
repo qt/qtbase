@@ -16,12 +16,6 @@
 
 using namespace std::chrono_literals;
 
-#if QT_CONFIG(thread)
-#define PROXYING_QUEUE_PARAM , &g_proxyingQueue
-#else
-#define PROXYING_QUEUE_PARAM
-#endif  // QT_CONFIG(thread)
-
 QT_BEGIN_NAMESPACE
 
 // using namespace emscripten;
@@ -326,10 +320,8 @@ void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)
 
     bool wasEmpty = g_socketNotifiers.empty();
     g_socketNotifiers.insert({notifier->socket(), notifier});
-    if (wasEmpty) {
-        qstdweb::runTaskOnMainThread<void>([] { setEmscriptenSocketCallbacks(); }
-                                           PROXYING_QUEUE_PARAM);
-    }
+    if (wasEmpty)
+        runOnMainThread([] { setEmscriptenSocketCallbacks(); });
 }
 
 void QEventDispatcherWasm::unregisterSocketNotifier(QSocketNotifier *notifier)
@@ -344,10 +336,8 @@ void QEventDispatcherWasm::unregisterSocketNotifier(QSocketNotifier *notifier)
         }
     }
 
-    if (g_socketNotifiers.empty()) {
-        qstdweb::runTaskOnMainThread<void>([] { clearEmscriptenSocketCallbacks(); }
-                                           PROXYING_QUEUE_PARAM);
-    }
+    if (g_socketNotifiers.empty())
+        runOnMainThread([] { clearEmscriptenSocketCallbacks(); });
 }
 
 void QEventDispatcherWasm::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
@@ -543,16 +533,13 @@ bool QEventDispatcherWasm::wakeEventDispatcherThread()
     if (useJspi()) {
         if (!qt_jspi_can_resume_js())
             return false;
-        return qstdweb::runTaskOnMainThread<bool>([]() { return qt_jspi_resume_js(); }
-                                                  PROXYING_QUEUE_PARAM);
+        runOnMainThread([]() { qt_jspi_resume_js(); });
+    } else {
+        if (!g_is_asyncify_suspended)
+            return false;
+        runOnMainThread([]() { qt_asyncify_resume(); });
     }
-    return g_is_asyncify_suspended
-            && qstdweb::runTaskOnMainThread<bool>(
-                    [] {
-                        qt_asyncify_resume();
-                        return true;
-                    }
-                    PROXYING_QUEUE_PARAM);
+    return true;
 }
 
 // Process event activation callbacks for the main thread event dispatcher.
@@ -637,19 +624,17 @@ void QEventDispatcherWasm::updateNativeTimer()
 
     // Update the native timer for this thread/dispatcher. This must be
     // done on the main thread where we have access to native API.
-    qstdweb::runTaskOnMainThread<void>(
-            [this, maintainNativeTimer]() {
-                Q_ASSERT(emscripten_is_main_runtime_thread());
+    runOnMainThread([this, maintainNativeTimer]() {
+        Q_ASSERT(emscripten_is_main_runtime_thread());
 
-                // "this" may have been deleted, or may be about to be deleted.
-                // Check if the pointer we have is still a valid event dispatcher,
-                // and keep the mutex locked while updating the native timer to
-                // prevent it from being deleted.
-                LOCK_GUARD(g_staticDataMutex);
-                if (isValidEventDispatcherPointer(this))
-                    maintainNativeTimer();
-            }
-            PROXYING_QUEUE_PARAM);
+        // "this" may have been deleted, or may be about to be deleted.
+        // Check if the pointer we have is still a valid event dispatcher,
+        // and keep the mutex locked while updating the native timer to
+        // prevent it from being deleted.
+        LOCK_GUARD(g_staticDataMutex);
+            if (isValidEventDispatcherPointer(this))
+                maintainNativeTimer();
+    });
 }
 
 // Static timer activation callback. Must be called on the main thread
@@ -907,6 +892,15 @@ namespace {
 void QEventDispatcherWasm::run(std::function<void(void)> fn)
 {
     fn();
+}
+
+void QEventDispatcherWasm::runOnMainThread(std::function<void(void)> fn)
+{
+#if QT_CONFIG(thread)
+    qstdweb::runTaskOnMainThread<void>(fn, &g_proxyingQueue);
+#else
+    qstdweb::runTaskOnMainThread<void>(fn);
+#endif
 }
 
 // Runs a function asynchronously. Main thread only.
