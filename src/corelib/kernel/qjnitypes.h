@@ -5,6 +5,7 @@
 #define QJNITYPES_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/q20type_traits.h>
 
 #if defined(Q_QDOC) || defined(Q_OS_ANDROID)
 #include <jni.h>
@@ -213,11 +214,12 @@ constexpr auto typeSignature()
         return String("D");
     } else if constexpr (std::is_same_v<T, void>) {
         return String("V");
-    } else if constexpr (IsStringType<T>::value) {
-        static_assert(!IsStringType<T>::value, "Don't use a literal type, call data!");
-    } else {
-        staticAssertTypeMismatch();
     }
+
+    // else: The return type becomes void, indicating that the typeSignature
+    // template is not implemented for the respective type. We use this to
+    // detect invalid types in the ValidSignatureTypes and ValidFieldType
+    // predicates below.
 }
 
 template<bool flag = false>
@@ -261,12 +263,6 @@ static constexpr bool isArrayType()
 }
 
 template<typename T>
-static constexpr void assertPrimitiveType()
-{
-    static_assert(isPrimitiveType<T>(), "Type needs to be a primitive JNI type!");
-}
-
-template<typename T>
 static constexpr void assertObjectType()
 {
     static_assert(isObjectType<T>(),
@@ -274,41 +270,51 @@ static constexpr void assertObjectType()
                   "an object type signature registered)!");
 }
 
-template<typename T>
-static constexpr void assertType()
-{
-    static_assert(isPrimitiveType<T>() || isObjectType<T>(),
-                  "Type needs to be a JNI type!");
-}
+// A set of types is valid if typeSignature is implemented for all of them
+template<typename ...Types>
+constexpr bool ValidSignatureTypesDetail = !std::disjunction<std::is_same<
+                                                    decltype(QtJniTypes::typeSignature<Types>()),
+                                                    void>...,
+                                                    IsStringType<Types>...>::value;
+template<typename ...Types>
+using ValidSignatureTypes = std::enable_if_t<
+    ValidSignatureTypesDetail<q20::remove_cvref_t<Types>...>, bool>;
 
-template<typename R, typename ...Args>
+template<typename Type>
+constexpr bool ValidFieldTypeDetail = isObjectType<Type>() || isPrimitiveType<Type>();
+template<typename Type>
+using ValidFieldType = std::enable_if_t<
+    ValidFieldTypeDetail<q20::remove_cvref_t<Type>>, bool>;
+
+
+template<typename R, typename ...Args, ValidSignatureTypes<R, Args...> = true>
 static constexpr auto methodSignature()
 {
     return (String("(") +
-                ... + typeSignature<std::decay_t<Args>>())
+                ... + typeSignature<q20::remove_cvref_t<Args>>())
             + String(")")
             + typeSignature<R>();
 }
 
-template<typename T>
+template<typename T, ValidSignatureTypes<T> = true>
 static constexpr auto fieldSignature()
 {
     return QtJniTypes::typeSignature<T>();
 }
 
-template<typename ...Args>
+template<typename ...Args, ValidSignatureTypes<Args...> = true>
 static constexpr auto constructorSignature()
 {
     return methodSignature<void, Args...>();
 }
 
-template<typename Ret, typename ...Args>
+template<typename Ret, typename ...Args, ValidSignatureTypes<Ret, Args...> = true>
 static constexpr auto nativeMethodSignature(Ret (*)(JNIEnv *, jobject, Args...))
 {
     return methodSignature<Ret, Args...>();
 }
 
-template<typename Ret, typename ...Args>
+template<typename Ret, typename ...Args, ValidSignatureTypes<Ret, Args...> = true>
 static constexpr auto nativeMethodSignature(Ret (*)(JNIEnv *, jclass, Args...))
 {
     return methodSignature<Ret, Args...>();
