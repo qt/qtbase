@@ -2562,12 +2562,11 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
 
 QByteArray &QByteArray::replace(char before, char after)
 {
-    if (!isEmpty()) {
-        char *i = data();
-        char *e = i + size();
-        for (; i != e; ++i)
-            if (*i == before)
-                * i = after;
+    if (before != after) {
+        if (const auto pos = indexOf(before); pos >= 0) {
+            const auto detachedData = data();
+            std::replace(detachedData + pos, detachedData + size(), before, after);
+        }
     }
     return *this;
 }
