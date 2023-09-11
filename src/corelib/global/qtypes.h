@@ -7,6 +7,7 @@
 
 #include <QtCore/qprocessordetection.h>
 #include <QtCore/qtconfigmacros.h>
+#include <QtCore/qassert.h>
 
 #ifdef __cplusplus
 #  include <cstddef>
@@ -80,6 +81,77 @@ __extension__ typedef __uint128_t quint128;
 #  define Q_INT128_MAX QT_C_STYLE_CAST(qint128, (Q_UINT128_MAX / 2))
 #  define Q_INT128_MIN (-Q_INT128_MAX - 1)
 
+#  ifdef __cplusplus
+    namespace QtPrivate::NumberLiterals {
+    namespace detail {
+        template <quint128 accu, int base>
+        constexpr quint128 construct() { return accu; }
+
+        template <quint128 accu, int base, char C, char...Cs>
+        constexpr quint128 construct()
+        {
+            if constexpr (C != '\'') { // ignore digit separators
+                const int digitValue = '0' <= C && C <= '9' ? C - '0'      :
+                                       'a' <= C && C <= 'z' ? C - 'a' + 10 :
+                                       'A' <= C && C <= 'Z' ? C - 'A' + 10 :
+                                       /* else */        -1 ;
+                static_assert(digitValue >= 0 && digitValue < base,
+                              "Invalid character");
+                // accu * base + digitValue <= MAX, but without overflow:
+                static_assert(accu <= (Q_UINT128_MAX - digitValue) / base,
+                              "Overflow occurred");
+                return construct<accu * base + digitValue, base, Cs...>();
+            } else {
+                return construct<accu, base, Cs...>();
+            }
+        }
+
+        template <char C, char...Cs>
+        constexpr quint128 parse0xb()
+        {
+            constexpr quint128 accu = 0;
+            if constexpr (C == 'x' || C == 'X')
+                return construct<accu, 16,   Cs...>(); // base 16, skip 'x'
+            else if constexpr (C == 'b' || C == 'B')
+                return construct<accu, 2,    Cs...>(); // base 2, skip 'b'
+            else
+                return construct<accu, 8, C, Cs...>(); // base 8, include C
+        }
+
+        template <char...Cs>
+        constexpr quint128 parse0()
+        {
+            if constexpr (sizeof...(Cs) == 0) // this was just a literal 0
+                return 0;
+            else
+                return parse0xb<Cs...>();
+        }
+
+        template <char C, char...Cs>
+        constexpr quint128 parse()
+        {
+            if constexpr (C == '0')
+                return parse0<Cs...>(); // base 2, 8, or 16 (or just a literal 0), skip '0'
+            else
+                return construct<0, 10, C, Cs...>(); // initial accu 0, base 10, include C
+        }
+    } // namespace detail
+    template <char...Cs>
+    constexpr quint128 operator""_quint128() noexcept
+    { return QtPrivate::NumberLiterals::detail::parse<Cs...>(); }
+    template <char...Cs>
+    constexpr qint128 operator""_qint128() noexcept
+    { return qint128(QtPrivate::NumberLiterals::detail::parse<Cs...>()); }
+
+    #ifndef Q_UINT128_C // allow qcompilerdetection.h/user override
+    #  define Q_UINT128_C(c) ([]{ using namespace QtPrivate::NumberLiterals; return c ## _quint128; }())
+    #endif
+    #ifndef Q_INT128_C // allow qcompilerdetection.h/user override
+    #  define Q_INT128_C(c)  ([]{ using namespace QtPrivate::NumberLiterals; return c ## _qint128;  }())
+    #endif
+
+    } // namespace QtPrivate::NumberLiterals
+#  endif // __cplusplus
 #endif // QT_SUPPORTS_INT128
 
 #ifndef __cplusplus
