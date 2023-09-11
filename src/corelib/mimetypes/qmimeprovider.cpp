@@ -62,6 +62,25 @@ QMimeProviderBase::QMimeProviderBase(QMimeDatabasePrivate *db, const QString &di
 {
 }
 
+QMimeProviderBase *QMimeProviderBase::overrideProvider() const
+{
+    return m_overrideProvider;
+}
+
+void QMimeProviderBase::setOverrideProvider(QMimeProviderBase *provider)
+{
+    m_overrideProvider = provider;
+}
+
+bool QMimeProviderBase::isMimeTypeGlobsExcluded(const QString &name) const
+{
+    if (m_overrideProvider) {
+        if (m_overrideProvider->hasGlobDeleteAll(name))
+            return true;
+        return m_overrideProvider->isMimeTypeGlobsExcluded(name);
+    }
+    return false;
+}
 
 QMimeBinaryProvider::QMimeBinaryProvider(QMimeDatabasePrivate *db, const QString &directory)
     : QMimeProviderBase(db, directory), m_mimetypeListLoaded(false)
@@ -222,17 +241,6 @@ void QMimeBinaryProvider::addFileNameMatches(const QString &fileName, QMimeGlobM
                       fileName);
 }
 
-bool QMimeBinaryProvider::isMimeTypeGlobsExcluded(const char *mimeTypeName)
-{
-    return m_mimeTypesWithExcludedGlobs.contains(QLatin1StringView(mimeTypeName));
-}
-
-void QMimeBinaryProvider::excludeMimeTypeGlobs(const QStringList &toExclude)
-{
-    for (const auto &mt : toExclude)
-        appendIfNew(m_mimeTypesWithExcludedGlobs, mt);
-}
-
 int QMimeBinaryProvider::matchGlobList(QMimeGlobMatchResult &result, CacheFile *cacheFile, int off,
                                        const QString &fileName)
 {
@@ -248,14 +256,14 @@ int QMimeBinaryProvider::matchGlobList(QMimeGlobMatchResult &result, CacheFile *
         const Qt::CaseSensitivity qtCaseSensitive = caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
         const QString pattern = QLatin1StringView(cacheFile->getCharStar(globOffset));
 
-        const char *mimeType = cacheFile->getCharStar(mimeTypeOffset);
+        const QLatin1StringView mimeType(cacheFile->getCharStar(mimeTypeOffset));
         //qDebug() << pattern << mimeType << weight << caseSensitive;
         if (isMimeTypeGlobsExcluded(mimeType))
             continue;
 
         QMimeGlobPattern glob(pattern, QString() /*unused*/, weight, qtCaseSensitive);
         if (glob.matchFileName(fileName)) {
-            result.addMatch(QLatin1StringView(mimeType), weight, pattern);
+            result.addMatch(mimeType, weight, pattern);
             ++numMatches;
         }
     }
@@ -292,15 +300,15 @@ bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result,
                     if (mch != 0)
                         break;
                     const int mimeTypeOffset = cacheFile->getUint32(childOff + 4);
-                    const char *mimeType = cacheFile->getCharStar(mimeTypeOffset);
+                    const QLatin1StringView mimeType(cacheFile->getCharStar(mimeTypeOffset));
                     if (isMimeTypeGlobsExcluded(mimeType))
                         continue;
                     const int flagsAndWeight = cacheFile->getUint32(childOff + 8);
                     const int weight = flagsAndWeight & 0xff;
                     const bool caseSensitive = flagsAndWeight & 0x100;
                     if (caseSensitiveCheck || !caseSensitive) {
-                        result.addMatch(QLatin1StringView(mimeType), weight,
-                                        u'*' + QStringView{fileName}.mid(charPos + 1),
+                        result.addMatch(mimeType, weight,
+                                        u'*' + QStringView{ fileName }.mid(charPos + 1),
                                         fileName.size() - charPos - 2);
                         success = true;
                     }
@@ -706,7 +714,8 @@ bool QMimeXMLProvider::knowsMimeType(const QString &name)
 
 void QMimeXMLProvider::addFileNameMatches(const QString &fileName, QMimeGlobMatchResult &result)
 {
-    m_mimeTypeGlobs.matchingGlobs(fileName, result);
+    auto filterFunc = [this](const QString &name) { return !isMimeTypeGlobsExcluded(name); };
+    m_mimeTypeGlobs.matchingGlobs(fileName, result, filterFunc);
 }
 
 void QMimeXMLProvider::findByMagic(const QByteArray &data, int *accuracyPtr, QString *candidate)
@@ -741,7 +750,6 @@ void QMimeXMLProvider::ensureLoaded()
     m_parents.clear();
     m_mimeTypeGlobs.clear();
     m_magicMatchers.clear();
-    m_mimeTypesWithDeletedGlobs.clear();
 
     //qDebug() << "Loading" << m_allFiles;
 
@@ -817,27 +825,7 @@ void QMimeXMLProvider::addGlobPattern(const QMimeGlobPattern &glob)
 
 void QMimeXMLProvider::addMimeType(const QMimeTypeXMLData &mt)
 {
-    if (mt.hasGlobDeleteAll)
-        appendIfNew(m_mimeTypesWithDeletedGlobs, mt.name);
     m_nameMimeTypeMap.insert(mt.name, mt);
-}
-
-/*
-    \a toExclude is a list of mime type names that should have the the glob patterns
-    associated with them cleared (because there are mime types with the same names
-    in a higher precedence Provider that have glob-deleteall tags).
-
-    This method is called from QMimeDatabasePrivate::loadProviders() to exclude mime
-    type glob patterns in lower precedence Providers.
-*/
-void QMimeXMLProvider::excludeMimeTypeGlobs(const QStringList &toExclude)
-{
-    for (const auto &mt : toExclude) {
-        auto it = m_nameMimeTypeMap.find(mt);
-        if (it != m_nameMimeTypeMap.end())
-            it->globPatterns.clear();
-        m_mimeTypeGlobs.removeMimeType(mt);
-    }
 }
 
 void QMimeXMLProvider::addParents(const QString &mime, QStringList &result)

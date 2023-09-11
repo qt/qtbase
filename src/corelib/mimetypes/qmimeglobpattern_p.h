@@ -87,6 +87,8 @@ private:
 };
 Q_DECLARE_SHARED(QMimeGlobPattern)
 
+using AddMatchFilterFunc = std::function<bool(const QString &)>;
+
 class QMimeGlobPatternList : public QList<QMimeGlobPattern>
 {
 public:
@@ -111,7 +113,8 @@ public:
         removeIf(isMimeTypeEqual);
     }
 
-    void match(QMimeGlobMatchResult &result, const QString &fileName) const;
+    void match(QMimeGlobMatchResult &result, const QString &fileName,
+               const AddMatchFilterFunc &filterFunc) const;
 };
 
 /*!
@@ -128,7 +131,8 @@ public:
 
     void addGlob(const QMimeGlobPattern &glob);
     void removeMimeType(const QString &mimeType);
-    void matchingGlobs(const QString &fileName, QMimeGlobMatchResult &result) const;
+    void matchingGlobs(const QString &fileName, QMimeGlobMatchResult &result,
+                       const AddMatchFilterFunc &filterFunc) const;
     void clear();
 
     PatternsMap m_fastPatterns; // example: "doc" -> "application/msword", "text/plain"

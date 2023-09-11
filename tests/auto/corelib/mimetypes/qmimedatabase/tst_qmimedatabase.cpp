@@ -1218,10 +1218,6 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     { // QTBUG-101755
         QList<QMimeType> mimes = db.mimeTypesForFileName(u"foo.webm"_s);
         // "*.webm" glob pattern is deleted with "glob-deleteall"
-        if (m_isUsingCacheProvider && useLocalBinaryCache)
-            QEXPECT_FAIL("with_binary_cache",
-                         "BUG, glob-deleteall isn't handled correctly between binary providers",
-                         Continue);
         QVERIFY2(mimes.isEmpty(), qPrintable(mimeTypeNames(mimes).join(u',')));
         mimes = db.mimeTypesForFileName(u"foo.videowebm"_s);
         QCOMPARE(mimes.size(), 1);
