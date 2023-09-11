@@ -6,6 +6,7 @@
 
 #include <QDialog>
 #include <QSharedMemory>
+
 #include "ui_dialog.h"
 
 //! [0]
