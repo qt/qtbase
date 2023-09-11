@@ -14,21 +14,21 @@ class Dialog : public QDialog
 {
     Q_OBJECT
 
-  public:
+public:
     Dialog(QWidget *parent = nullptr);
 
-  public slots:
+public slots:
     void loadFromFile();
     void loadFromMemory();
 
- private:
+private:
     void detach();
 
-  private:
+private:
     Ui::Dialog ui;
     QSharedMemory sharedMemory;
 };
 //! [0]
 
-#endif
+#endif // DIALOG_H
 
