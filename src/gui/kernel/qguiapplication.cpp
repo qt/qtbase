@@ -1248,6 +1248,10 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
         QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, arguments, argc, argv, platformPluginPath);
         if (Q_UNLIKELY(!QGuiApplicationPrivate::platform_integration)) {
             if (availablePlugins.contains(name)) {
+                if (name == QStringLiteral("xcb") && QVersionNumber::compare(QLibraryInfo::version(), QVersionNumber(6, 5, 0)) >= 0) {
+                    qCWarning(lcQpaPluginLoading).nospace().noquote()
+                            << "From 6.5.0, xcb-cursor0 or libxcb-cursor0 is needed to load the Qt xcb platform plugin.";
+                }
                 qCInfo(lcQpaPluginLoading).nospace().noquote()
                         << "Could not load the Qt platform plugin \"" << name << "\" in \""
                         << QDir::toNativeSeparators(platformPluginPath) << "\" even though it was found.";
