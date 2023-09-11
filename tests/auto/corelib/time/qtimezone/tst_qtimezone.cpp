@@ -1274,7 +1274,7 @@ void tst_QTimeZone::tzTest()
 
     // Test invalid constructor
     QTzTimeZonePrivate tzpi("Gondwana/Erewhon");
-    QCOMPARE(tzpi.isValid(), false);
+    QVERIFY(!tzpi.isValid());
 
     // Test named constructor
     QTzTimeZonePrivate tzp("Europe/Berlin");
@@ -1441,9 +1441,12 @@ void tst_QTimeZone::tzTest()
     QCOMPARE(datatz1.offsetFromUtc, datautc1.offsetFromUtc);
 
     // Test TZ timezone vs UTC timezone for non-whole-hour positive offset:
-    QTzTimeZonePrivate  tztz2("Asia/Calcutta");
+    QTzTimeZonePrivate tztz2k("Asia/Kolkata"); // New name
+    QTzTimeZonePrivate tztz2c("Asia/Calcutta"); // Legacy name
+    // Can't assign QtzTZP, so use a reference; prefer new name.
+    QTzTimeZonePrivate &tztz2 = tztz2k.isValid() ? tztz2k : tztz2c;
     QUtcTimeZonePrivate tzutc2("UTC+05:30");
-    QVERIFY(tztz2.isValid());
+    QVERIFY2(tztz2.isValid(), tztz2.id().constData());
     QVERIFY(tzutc2.isValid());
     QTzTimeZonePrivate::Data datatz2 = tztz2.data(std);
     QTzTimeZonePrivate::Data datautc2 = tzutc2.data(std);
