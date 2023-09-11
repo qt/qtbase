@@ -29,6 +29,7 @@
     \title Qt Android Notifier
     \example platform/androidnotifier
     \brief Demonstrates calling Java code from Qt in an Android application.
+    \ingroup androidplatform
 
     \image androidnotifier.png
 
