@@ -1426,8 +1426,8 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
 }
 
 /*!
-    \fn template <typename ReturnArg, typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Qt::ConnectionType type, QTemplatedMetaMethodReturnArgument<ReturnArg> r, Args &&... args)
-    \fn template <typename ReturnArg, typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, QTemplatedMetaMethodReturnArgument<ReturnArg> r, Args &&... args)
+    \fn template <typename ReturnArg, typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Qt::ConnectionType type, QTemplatedMetaMethodReturnArgument<ReturnArg> ret, Args &&... args)
+    \fn template <typename ReturnArg, typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, QTemplatedMetaMethodReturnArgument<ReturnArg> ret, Args &&... args)
     \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Qt::ConnectionType type, Args &&... args)
     \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Args &&... args)
     \since 6.5
