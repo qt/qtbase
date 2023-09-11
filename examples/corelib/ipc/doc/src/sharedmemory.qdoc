@@ -3,10 +3,10 @@
 
 /*!
   \example ipc/sharedmemory
-  \title Shared Memory Example
+  \title Shared Memory
   \ingroup examples-ipc
-  \brief Demonstrates doing inter-process communication using shared memory with
-  the QSharedMemory class.
+  \brief Demonstrates how to share image data between different processes
+  using the Shared Memory IPC mechanism.
 
   The Shared Memory example shows how to use the QSharedMemory class
   to implement inter-process communication using shared memory. To
