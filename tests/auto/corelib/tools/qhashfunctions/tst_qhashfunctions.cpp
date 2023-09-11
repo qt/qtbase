@@ -107,16 +107,10 @@ void tst_QHashFunctions::consistent()
     // floats
     {
         const/*expr broken: QTBUG-116079*/ qfloat16 f16 = -42.f;
-#if !QFLOAT16_IS_NATIVE // QTBUG-116064
         const auto h16 = qHash(f16, seed);
-#endif
         const auto h32 = qHash(float(f16), seed);
         const auto h64 = qHash(double(f16), seed);
-#if !QFLOAT16_IS_NATIVE // QTBUG-116064
-        if (seed != 0)
-            QEXPECT_FAIL("", "QTBUG-116076", Continue);
         QCOMPARE(h16, h32);
-#endif
         QEXPECT_FAIL("", "QTBUG-116077", Continue);
         QCOMPARE(h32, h64);
     }
