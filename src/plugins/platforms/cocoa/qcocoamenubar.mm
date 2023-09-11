@@ -327,7 +327,21 @@ void QCocoaMenuBar::updateMenuBarImmediately()
     }
 
     [mergedItems release];
-    [NSApp setMainMenu:mb->nsMenu()];
+
+    NSMenu *newMainMenu = mb->nsMenu();
+    if (NSApp.mainMenu == newMainMenu) {
+        // NSApplication triggers _customizeMainMenu when the menu
+        // changes, which takes care of adding text input items to
+        // the edit menu e.g., but this doesn't happen if the menu
+        // is the same. In our case we might be re-using an existing
+        // menu, but the menu might have new sub menus that need to
+        // be customized. To ensure NSApplication does the right
+        // thing we reset the main menu first.
+        qCDebug(lcQpaMenus) << "Clearing main menu temporarily";
+        NSApp.mainMenu = nil;
+    }
+    NSApp.mainMenu = newMainMenu;
+
     insertWindowMenu();
     [loader qtTranslateApplicationMenu];
 }
