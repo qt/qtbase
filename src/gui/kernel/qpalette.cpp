@@ -350,6 +350,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
 /*!
     \fn const QBrush & QPalette::accent() const
+    \since 6.6
 
     Returns the accent brush of the current color group.
 
