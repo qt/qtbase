@@ -1165,8 +1165,15 @@ function(qt6_extract_metatypes target)
 
         set (use_dep_files FALSE)
         if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.17") # Requires automoc changes present only in 3.17
-            if(CMAKE_GENERATOR STREQUAL "Ninja" OR CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
-                set(use_dep_files TRUE)
+            if(CMAKE_GENERATOR STREQUAL "Ninja" OR
+               CMAKE_GENERATOR STREQUAL "Ninja Multi-Config" OR
+               (CMAKE_GENERATOR MATCHES "Makefiles" AND
+                CMAKE_VERSION VERSION_GREATER_EQUAL "3.28"))
+                if(DEFINED QT_USE_CMAKE_DEPFILES)
+                    set(use_dep_files ${QT_USE_CMAKE_DEPFILES})
+                else()
+                    set(use_dep_files TRUE)
+                endif()
             endif()
         endif()
 
