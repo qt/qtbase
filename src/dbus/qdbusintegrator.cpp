@@ -306,7 +306,10 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     manager->addConnection(
             "QDBusServer-"_L1 + QString::number(reinterpret_cast<qulonglong>(newConnection), 16),
             newConnection);
-    serverConnection->serverConnectionNames << newConnection->name;
+    {
+        QWriteLocker locker(&serverConnection->lock);
+        serverConnection->serverConnectionNames << newConnection->name;
+    }
 
     // setPeer does the error handling for us
     QDBusErrorInternal error;
