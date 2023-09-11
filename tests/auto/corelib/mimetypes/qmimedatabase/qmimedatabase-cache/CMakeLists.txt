@@ -40,6 +40,7 @@ set(testdata_resource_files
     "../test.qml"
     "../text-x-objcsrc.xml"
     "../text-plain-subclass.xml"
+    "../webm-glob-deleteall.xml"
     "../yast2-metapackage-handler-mimetypes.xml"
 )
 
