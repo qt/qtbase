@@ -115,6 +115,14 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QSqlFieldPrivate)
 */
 
 /*!
+    \fn void QSqlField::swap(QSqlField &other)
+    \since 6.6
+
+    Swaps this field with \a other. This function is very fast and
+    never fails.
+*/
+
+/*!
     \since 6.0
 
     \overload
