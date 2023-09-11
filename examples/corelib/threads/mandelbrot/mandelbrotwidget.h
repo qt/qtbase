@@ -6,6 +6,7 @@
 
 #include "renderthread.h"
 
+#include <QCoreApplication>
 #include <QPixmap>
 #include <QWidget>
 
@@ -16,7 +17,7 @@ QT_END_NAMESPACE
 //! [0]
 class MandelbrotWidget : public QWidget
 {
-    Q_OBJECT
+    Q_DECLARE_TR_FUNCTIONS(MandelbrotWidget)
 
 public:
     MandelbrotWidget(QWidget *parent = nullptr);
@@ -36,11 +37,9 @@ protected:
     bool event(QEvent *event) override;
 #endif
 
-private slots:
+private:
     void updatePixmap(const QImage &image, double scaleFactor);
     void zoom(double zoomFactor);
-
-private:
     void scroll(int deltaX, int deltaY);
 #ifndef QT_NO_GESTURES
     bool gestureEvent(QGestureEvent *event);
