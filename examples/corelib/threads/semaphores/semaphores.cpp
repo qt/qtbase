@@ -7,9 +7,9 @@
 #include <stdlib.h>
 
 //! [0]
-const int DataSize = 100000;
+constexpr int DataSize = 100000;
 
-const int BufferSize = 8192;
+constexpr int BufferSize = 8192;
 char buffer[BufferSize];
 
 QSemaphore freeBytes(BufferSize);
