@@ -6,8 +6,10 @@
 #define QFLOAT16_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qnamespace.h>
+
 #include <limits>
 #include <string.h>
 
@@ -143,6 +145,9 @@ private:
     friend inline qfloat16 operator-(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<NearestFloat>(a) - static_cast<NearestFloat>(b)); }
     friend inline qfloat16 operator*(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<NearestFloat>(a) * static_cast<NearestFloat>(b)); }
     friend inline qfloat16 operator/(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<NearestFloat>(a) / static_cast<NearestFloat>(b)); }
+
+    friend size_t qHash(qfloat16 key, size_t seed = 0) noexcept
+    { return qHash(float(key), seed); } // 6.4 algorithm, so keep using it; ### Qt 7: fix QTBUG-116077
 
 #define QF16_MAKE_ARITH_OP_FP(FP, OP) \
     friend inline FP operator OP(qfloat16 lhs, FP rhs) noexcept { return static_cast<FP>(lhs) OP rhs; } \
