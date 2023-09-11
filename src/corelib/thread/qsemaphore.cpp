@@ -50,7 +50,7 @@ using namespace QtFutex;
 
     A typical application of semaphores is for controlling access to
     a circular buffer shared by a producer thread and a consumer
-    thread. The \l{Semaphores Example} shows how
+    thread. The \l{Producer and Consumer using Semaphores} example shows how
     to use QSemaphore to solve that problem.
 
     A non-computing example of a semaphore would be dining at a
@@ -63,7 +63,8 @@ using namespace QtFutex;
     seated (taking the available seats to 5, making the party of 10
     people wait longer).
 
-    \sa QSemaphoreReleaser, QMutex, QWaitCondition, QThread, {Semaphores Example}
+    \sa QSemaphoreReleaser, QMutex, QWaitCondition, QThread,
+        {Producer and Consumer using Semaphores}
 */
 
 /*
