@@ -310,6 +310,14 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 */
 
 /*!
+    \fn const QBrush & QPalette::accent() const
+
+    Returns the accent brush of the current color group.
+
+    \sa ColorRole, brush()
+*/
+
+/*!
     \fn const QBrush & QPalette::link() const
 
     Returns the unvisited link text brush of the current color group.
