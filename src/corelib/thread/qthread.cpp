@@ -289,7 +289,7 @@ QThreadPrivate::~QThreadPrivate()
 
     \sa {Thread Support in Qt}, QThreadStorage, {Synchronizing Threads},
         Mandelbrot, {Producer and Consumer using Semaphores},
-        {Wait Conditions Example}
+        {Producer and Consumer using Wait Conditions}
 */
 
 /*!
