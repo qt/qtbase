@@ -348,7 +348,7 @@ bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFi
     return false;
 }
 
-void QMimeBinaryProvider::findByMagic(const QByteArray &data, int *accuracyPtr, QString *candidate)
+void QMimeBinaryProvider::findByMagic(const QByteArray &data, QMimeMagicResult &result)
 {
     const int magicListOffset = m_cacheFile->getUint32(PosMagicListOffset);
     const int numMatches = m_cacheFile->getUint32(magicListOffset);
@@ -362,11 +362,13 @@ void QMimeBinaryProvider::findByMagic(const QByteArray &data, int *accuracyPtr, 
         if (matchMagicRule(m_cacheFile.get(), numMatchlets, firstMatchletOffset, data)) {
             const int mimeTypeOffset = m_cacheFile->getUint32(off + 4);
             const char *mimeType = m_cacheFile->getCharStar(mimeTypeOffset);
-            *accuracyPtr = m_cacheFile->getUint32(off);
-            // Return the first match. We have no rules for conflicting magic data...
-            // (mime.cache itself is sorted, but what about local overrides with a lower prio?)
-            *candidate = QString::fromLatin1(mimeType);
-            return;
+            const int accuracy = static_cast<int>(m_cacheFile->getUint32(off));
+            if (accuracy > result.accuracy) {
+                result.accuracy = accuracy;
+                result.candidate = QString::fromLatin1(mimeType);
+                // Return the first match, mime.cache is sorted
+                return;
+            }
         }
     }
 }
@@ -718,14 +720,14 @@ void QMimeXMLProvider::addFileNameMatches(const QString &fileName, QMimeGlobMatc
     m_mimeTypeGlobs.matchingGlobs(fileName, result, filterFunc);
 }
 
-void QMimeXMLProvider::findByMagic(const QByteArray &data, int *accuracyPtr, QString *candidate)
+void QMimeXMLProvider::findByMagic(const QByteArray &data, QMimeMagicResult &result)
 {
     for (const QMimeMagicRuleMatcher &matcher : std::as_const(m_magicMatchers)) {
         if (matcher.matches(data)) {
             const int priority = matcher.priority();
-            if (priority > *accuracyPtr) {
-                *accuracyPtr = priority;
-                *candidate = matcher.mimetype();
+            if (priority > result.accuracy) {
+                result.accuracy = priority;
+                result.candidate = matcher.mimetype();
             }
         }
     }

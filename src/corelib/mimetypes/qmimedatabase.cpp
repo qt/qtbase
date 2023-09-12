@@ -337,13 +337,14 @@ QMimeType QMimeDatabasePrivate::findByData(const QByteArray &data, int *accuracy
         return mimeTypeForName(QStringLiteral("application/x-zerosize"));
     }
 
-    *accuracyPtr = 0;
-    QString candidate;
+    QMimeMagicResult result;
     for (const auto &provider : providers())
-        provider->findByMagic(data, accuracyPtr, &candidate);
+        provider->findByMagic(data, result);
 
-    if (!candidate.isEmpty())
-        return QMimeType(QMimeTypePrivate(candidate));
+    if (result.isValid()) {
+        *accuracyPtr = result.accuracy;
+        return QMimeType(QMimeTypePrivate(result.candidate));
+    }
 
     if (isTextFile(data)) {
         *accuracyPtr = 5;
