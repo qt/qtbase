@@ -2342,9 +2342,16 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
                 }
                 SrcOverScaleFunc func = qScaleFunctions[d->rasterBuffer->format][img.format()];
                 if (func && (!clip || clip->hasRectClip)) {
+                    QRectF tr = qt_mapRect_non_normalizing(r, s->matrix);
+                    if (!s->flags.antialiased) {
+                        tr.setX(qRound(tr.x()));
+                        tr.setY(qRound(tr.y()));
+                        tr.setWidth(qRound(tr.width()));
+                        tr.setHeight(qRound(tr.height()));
+                    }
                     func(d->rasterBuffer->buffer(), d->rasterBuffer->bytesPerLine(),
                          img.bits(), img.bytesPerLine(), img.height(),
-                         qt_mapRect_non_normalizing(r, s->matrix), sr,
+                         tr, sr,
                          !clip ? d->deviceRect : clip->clipRect,
                          s->intOpacity);
                     return;
