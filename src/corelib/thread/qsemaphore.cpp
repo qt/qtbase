@@ -400,8 +400,10 @@ void QSemaphore::release(int n)
         return;
     }
 
-    const auto locker = qt_scoped_lock(d->mutex);
-    d->avail += n;
+    {
+        const auto locker = qt_scoped_lock(d->mutex);
+        d->avail += n;
+    }
     d->cond.notify_all();
 }
 
