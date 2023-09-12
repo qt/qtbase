@@ -26,6 +26,8 @@ private slots:
     void dockUndock();
 
 private:
+    void dock();
+    void undock();
     QSlider *createSlider();
 
     GLWidget *glWidget;

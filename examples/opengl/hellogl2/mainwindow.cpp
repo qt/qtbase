@@ -3,19 +3,19 @@
 
 #include "mainwindow.h"
 #include "window.h"
+#include <QApplication>
+#include <QKeySequence>
 #include <QMenuBar>
 #include <QMenu>
 #include <QMessageBox>
 
 MainWindow::MainWindow()
 {
-    QMenuBar *menuBar = new QMenuBar;
-    QMenu *menuWindow = menuBar->addMenu(tr("&Window"));
-    QAction *addNew = new QAction(menuWindow);
-    addNew->setText(tr("Add new"));
-    menuWindow->addAction(addNew);
-    connect(addNew, &QAction::triggered, this, &MainWindow::onAddNew);
-    setMenuBar(menuBar);
+    QMenu *menuWindow = menuBar()->addMenu(tr("&Window"));
+    menuWindow->addAction(tr("Add new"), QKeySequence(Qt::CTRL | Qt::Key_N),
+                          this, &MainWindow::onAddNew);
+    menuWindow->addAction(tr("Quit"), QKeySequence(Qt::CTRL | Qt::Key_Q),
+                          qApp, QApplication::closeAllWindows);
 
     onAddNew();
 }
@@ -25,6 +25,6 @@ void MainWindow::onAddNew()
     if (!centralWidget())
         setCentralWidget(new Window(this));
     else
-        QMessageBox::information(nullptr, tr("Cannot add new window"),
+        QMessageBox::information(this, tr("Cannot Add New Window"),
                                  tr("Already occupied. Undock first."));
 }
