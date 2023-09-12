@@ -10,21 +10,26 @@
 #endif
 
 #include <QtNetwork/qtnetworkglobal.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/QFlags>
 
 QT_BEGIN_NAMESPACE
 
 
 namespace QSsl {
+    Q_NAMESPACE_EXPORT(Q_NETWORK_EXPORT)
+
     enum KeyType {
         PrivateKey,
         PublicKey
     };
+    Q_ENUM_NS(KeyType)
 
     enum EncodingFormat {
         Pem,
         Der
     };
+    Q_ENUM_NS(EncodingFormat)
 
     enum KeyAlgorithm {
         Opaque,
@@ -33,12 +38,14 @@ namespace QSsl {
         Ec,
         Dh,
     };
+    Q_ENUM_NS(KeyAlgorithm)
 
     enum AlternativeNameEntryType {
         EmailEntry,
         DnsEntry,
         IpAddressEntry
     };
+    Q_ENUM_NS(AlternativeNameEntryType)
 
     enum SslProtocol {
         TlsV1_0 QT_DEPRECATED_VERSION_X_6_3("Use TlsV1_2OrLater instead."),
@@ -61,6 +68,7 @@ namespace QSsl {
 
         UnknownProtocol = -1
     };
+    Q_ENUM_NS(SslProtocol)
 
     enum SslOption {
         SslOptionDisableEmptyFragments = 0x01,
@@ -72,6 +80,7 @@ namespace QSsl {
         SslOptionDisableSessionPersistence = 0x40,
         SslOptionDisableServerCipherPreference = 0x80
     };
+    Q_ENUM_NS(SslOption)
     Q_DECLARE_FLAGS(SslOptions, SslOption)
 
     enum class AlertLevel {
@@ -79,6 +88,7 @@ namespace QSsl {
         Fatal,
         Unknown
     };
+    Q_ENUM_NS(AlertLevel)
 
     enum class AlertType {
         CloseNotify,
@@ -116,6 +126,7 @@ namespace QSsl {
         NoApplicationProtocol = 120,
         UnknownAlertMessage = 255
     };
+    Q_ENUM_NS(AlertType)
 
     enum class ImplementedClass
     {
@@ -127,6 +138,7 @@ namespace QSsl {
         Dtls,
         DtlsCookie
     };
+    Q_ENUM_NS(ImplementedClass)
 
     enum class SupportedFeature
     {
@@ -138,6 +150,7 @@ namespace QSsl {
         SessionTicket,
         Alerts
     };
+    Q_ENUM_NS(SupportedFeature)
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSsl::SslOptions)

@@ -35,6 +35,7 @@ public:
         SslClientMode,
         SslServerMode
     };
+    Q_ENUM(SslMode)
 
     enum PeerVerifyMode {
         VerifyNone,
@@ -42,6 +43,7 @@ public:
         VerifyPeer,
         AutoVerifyPeer
     };
+    Q_ENUM(PeerVerifyMode)
 
     explicit QSslSocket(QObject *parent = nullptr);
     ~QSslSocket();
