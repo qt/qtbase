@@ -23,10 +23,36 @@ function(qt_internal_add_linker_version_script target)
     endif()
 
     if(TEST_ld_version_script)
-        set(contents "NonQt { local:\n")
-        string(APPEND contents "    _ZT?S*;\n")   # {typeinfo {,name},vtable,VTT} for std::
-        string(APPEND contents "    extern \"C++\" { std::*; };\n")
-        string(APPEND contents "};\nQt_${PROJECT_VERSION_MAJOR}_PRIVATE_API { qt_private_api_tag*;\n")
+        # Create a list of mangled symbol matches for all "std::" symbols. This
+        # list will catch most symbols, but will miss global-namespace symbols
+        # that only have std parameters.
+        # See https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangle.name for reference
+        set(contents "NonQt {\nlocal:")
+
+        # For types: vtable, VTT, typeinfo, typeinfo name
+        foreach(ptrqualifier "" "P" "PK")       # T, T *, const T * (volatile ignored)
+            string(APPEND contents "\n    _ZT[VTIS]${ptrqualifier}S*;"
+                "_ZT[VTIS]${ptrqualifier}NS*;")
+        endforeach()
+
+        # For functions and variables
+        foreach(special ""
+                "G[VR]"             # guard variables, extended-lifetime references
+                "GTt")              # transaction entry points
+            foreach(cvqualifier "" "[VK]" "VK")     # plain, const|volatile, const volatile
+                string(APPEND contents "\n   ")
+                foreach(refqualifier "" "[RO]")    # plain, & or &&
+                    # For names in the std:: namespace, compression applies
+                    # (https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangling-compression)
+                    string(APPEND contents
+                        " _Z${special}${cvqualifier}${refqualifier}S*;"     # plain
+                        " _Z${special}N${cvqualifier}${refqualifier}S*;"    # nested name
+                    )
+                endforeach()
+            endforeach()
+        endforeach()
+
+        string(APPEND contents "\n};\nQt_${PROJECT_VERSION_MAJOR}_PRIVATE_API { qt_private_api_tag*;\n")
         if(arg_PRIVATE_HEADERS)
             foreach(ph ${arg_PRIVATE_HEADERS})
                 string(APPEND contents "    @FILE:${ph}@\n")
