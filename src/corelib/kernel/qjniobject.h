@@ -531,6 +531,21 @@ private:
     friend bool operator==(const QJniObject &, const QJniObject &);
     friend bool operator!=(const QJniObject&, const QJniObject&);
 
+    template<typename T, typename = void>
+    struct IntegerTypeDetail
+    {
+        using type = T;
+    };
+    template<typename T>
+    struct IntegerTypeDetail<T, typename std::enable_if_t<std::is_enum_v<T>>>
+    {
+        using type = std::underlying_type_t<T>;
+    };
+
+    template<typename Have, typename Want>
+    static constexpr bool likeIntegerType = std::is_same_v<Have, Want>
+                                         || std::is_same_v<typename IntegerTypeDetail<Have>::type, Want>;
+
     template<typename T>
     static constexpr void callMethodForType(JNIEnv *env, T &res, jobject obj,
                                             jmethodID id, ...)
@@ -540,16 +555,16 @@ private:
 
         if constexpr (std::is_same_v<T, jboolean>)
             res = env->CallBooleanMethodV(obj, id, args);
-        else if constexpr (std::is_same_v<T, jbyte>)
-            res = env->CallByteMethodV(obj, id, args);
-        else if constexpr (std::is_same_v<T, jchar>)
-            res = env->CallCharMethodV(obj, id, args);
-        else if constexpr (std::is_same_v<T, jshort>)
-            res = env->CallShortMethodV(obj, id, args);
-        else if constexpr (std::is_same_v<T, jint>)
-            res = env->CallIntMethodV(obj, id, args);
-        else if constexpr (std::is_same_v<T, jlong>)
-            res = env->CallLongMethodV(obj, id, args);
+        else if constexpr (likeIntegerType<T, jbyte>)
+            res = T{env->CallByteMethodV(obj, id, args)};
+        else if constexpr (likeIntegerType<T, jchar>)
+            res = T{env->CallCharMethodV(obj, id, args)};
+        else if constexpr (likeIntegerType<T, jshort>)
+            res = T{env->CallShortMethodV(obj, id, args)};
+        else if constexpr (likeIntegerType<T, jint>)
+            res = T{env->CallIntMethodV(obj, id, args)};
+        else if constexpr (likeIntegerType<T, jlong>)
+            res = T{env->CallLongMethodV(obj, id, args)};
         else if constexpr (std::is_same_v<T, jfloat>)
             res = env->CallFloatMethodV(obj, id, args);
         else if constexpr (std::is_same_v<T, jdouble>)
@@ -569,16 +584,16 @@ private:
         va_start(args, id);
         if constexpr (std::is_same_v<T, jboolean>)
             res = env->CallStaticBooleanMethodV(clazz, id, args);
-        else if constexpr (std::is_same_v<T, jbyte>)
-            res = env->CallStaticByteMethodV(clazz, id, args);
-        else if constexpr (std::is_same_v<T, jchar>)
-            res = env->CallStaticCharMethodV(clazz, id, args);
-        else if constexpr (std::is_same_v<T, jshort>)
-            res = env->CallStaticShortMethodV(clazz, id, args);
-        else if constexpr (std::is_same_v<T, jint>)
-            res = env->CallStaticIntMethodV(clazz, id, args);
-        else if constexpr (std::is_same_v<T, jlong>)
-            res = env->CallStaticLongMethodV(clazz, id, args);
+        else if constexpr (likeIntegerType<T, jbyte>)
+            res = T{env->CallStaticByteMethodV(clazz, id, args)};
+        else if constexpr (likeIntegerType<T, jchar>)
+            res = T{env->CallStaticCharMethodV(clazz, id, args)};
+        else if constexpr (likeIntegerType<T, jshort>)
+            res = T{env->CallStaticShortMethodV(clazz, id, args)};
+        else if constexpr (likeIntegerType<T, jint>)
+            res = T{env->CallStaticIntMethodV(clazz, id, args)};
+        else if constexpr (likeIntegerType<T, jlong>)
+            res = T{env->CallStaticLongMethodV(clazz, id, args)};
         else if constexpr (std::is_same_v<T, jfloat>)
             res = env->CallStaticFloatMethodV(clazz, id, args);
         else if constexpr (std::is_same_v<T, jdouble>)
@@ -605,16 +620,16 @@ private:
     {
         if constexpr (std::is_same_v<T, jboolean>)
             res = env->GetBooleanField(obj, id);
-        else if constexpr (std::is_same_v<T, jbyte>)
-            res = env->GetByteField(obj, id);
-        else if constexpr (std::is_same_v<T, jchar>)
-            res = env->GetCharField(obj, id);
-        else if constexpr (std::is_same_v<T, jshort>)
-            res = env->GetShortField(obj, id);
-        else if constexpr (std::is_same_v<T, jint>)
-            res = env->GetIntField(obj, id);
-        else if constexpr (std::is_same_v<T, jlong>)
-            res = env->GetLongField(obj, id);
+        else if constexpr (likeIntegerType<T, jbyte>)
+            res = T{env->GetByteField(obj, id)};
+        else if constexpr (likeIntegerType<T, jchar>)
+            res = T{env->GetCharField(obj, id)};
+        else if constexpr (likeIntegerType<T, jshort>)
+            res = T{env->GetShortField(obj, id)};
+        else if constexpr (likeIntegerType<T, jint>)
+            res = T{env->GetIntField(obj, id)};
+        else if constexpr (likeIntegerType<T, jlong>)
+            res = T{env->GetLongField(obj, id)};
         else if constexpr (std::is_same_v<T, jfloat>)
             res = env->GetFloatField(obj, id);
         else if constexpr (std::is_same_v<T, jdouble>)
@@ -629,16 +644,16 @@ private:
     {
         if constexpr (std::is_same_v<T, jboolean>)
             res = env->GetStaticBooleanField(clazz, id);
-        else if constexpr (std::is_same_v<T, jbyte>)
-            res = env->GetStaticByteField(clazz, id);
-        else if constexpr (std::is_same_v<T, jchar>)
-            res = env->GetStaticCharField(clazz, id);
-        else if constexpr (std::is_same_v<T, jshort>)
-            res = env->GetStaticShortField(clazz, id);
-        else if constexpr (std::is_same_v<T, jint>)
-            res = env->GetStaticIntField(clazz, id);
-        else if constexpr (std::is_same_v<T, jlong>)
-            res = env->GetStaticLongField(clazz, id);
+        else if constexpr (likeIntegerType<T, jbyte>)
+            res = T{env->GetStaticByteField(clazz, id)};
+        else if constexpr (likeIntegerType<T, jchar>)
+            res = T{env->GetStaticCharField(clazz, id)};
+        else if constexpr (likeIntegerType<T, jshort>)
+            res = T{env->GetStaticShortField(clazz, id)};
+        else if constexpr (likeIntegerType<T, jint>)
+            res = T{env->GetStaticIntField(clazz, id)};
+        else if constexpr (likeIntegerType<T, jlong>)
+            res = T{env->GetStaticLongField(clazz, id)};
         else if constexpr (std::is_same_v<T, jfloat>)
             res = env->GetStaticFloatField(clazz, id);
         else if constexpr (std::is_same_v<T, jdouble>)
@@ -653,16 +668,16 @@ private:
     {
         if constexpr (std::is_same_v<T, jboolean>)
             env->SetBooleanField(obj, id, value);
-        else if constexpr (std::is_same_v<T, jbyte>)
-            env->SetByteField(obj, id, value);
-        else if constexpr (std::is_same_v<T, jchar>)
-            env->SetCharField(obj, id, value);
-        else if constexpr (std::is_same_v<T, jshort>)
-            env->SetShortField(obj, id, value);
-        else if constexpr (std::is_same_v<T, jint>)
-            env->SetIntField(obj, id, value);
-        else if constexpr (std::is_same_v<T, jlong>)
-            env->SetLongField(obj, id, value);
+        else if constexpr (likeIntegerType<T, jbyte>)
+            env->SetByteField(obj, id, static_cast<jbyte>(value));
+        else if constexpr (likeIntegerType<T, jchar>)
+            env->SetCharField(obj, id, static_cast<jchar>(value));
+        else if constexpr (likeIntegerType<T, jshort>)
+            env->SetShortField(obj, id, static_cast<jshort>(value));
+        else if constexpr (likeIntegerType<T, jint>)
+            env->SetIntField(obj, id, static_cast<jint>(value));
+        else if constexpr (likeIntegerType<T, jlong>)
+            env->SetLongField(obj, id, static_cast<jlong>(value));
         else if constexpr (std::is_same_v<T, jfloat>)
             env->SetFloatField(obj, id, value);
         else if constexpr (std::is_same_v<T, jdouble>)
@@ -679,16 +694,16 @@ private:
     {
         if constexpr (std::is_same_v<T, jboolean>)
             env->SetStaticBooleanField(clazz, id, value);
-        else if constexpr (std::is_same_v<T, jbyte>)
-            env->SetStaticByteField(clazz, id, value);
-        else if constexpr (std::is_same_v<T, jchar>)
-            env->SetStaticCharField(clazz, id, value);
-        else if constexpr (std::is_same_v<T, jshort>)
-            env->SetStaticShortField(clazz, id, value);
-        else if constexpr (std::is_same_v<T, jint>)
-            env->SetStaticIntField(clazz, id, value);
-        else if constexpr (std::is_same_v<T, jlong>)
-            env->SetStaticLongField(clazz, id, value);
+        else if constexpr (likeIntegerType<T, jbyte>)
+            env->SetStaticByteField(clazz, id, static_cast<jbyte>(value));
+        else if constexpr (likeIntegerType<T, jchar>)
+            env->SetStaticCharField(clazz, id, static_cast<jchar>(value));
+        else if constexpr (likeIntegerType<T, jshort>)
+            env->SetStaticShortField(clazz, id, static_cast<jshort>(value));
+        else if constexpr (likeIntegerType<T, jint>)
+            env->SetStaticIntField(clazz, id, static_cast<jint>(value));
+        else if constexpr (likeIntegerType<T, jlong>)
+            env->SetStaticLongField(clazz, id, static_cast<jlong>(value));
         else if constexpr (std::is_same_v<T, jfloat>)
             env->SetStaticFloatField(clazz, id, value);
         else if constexpr (std::is_same_v<T, jdouble>)

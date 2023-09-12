@@ -237,6 +237,8 @@ struct Traits {
             return CTString("D");
         } else if constexpr (std::is_same_v<T, void>) {
             return CTString("V");
+        } else if constexpr (std::is_enum_v<T>) {
+            return Traits<std::underlying_type_t<T>>::signature();
         }
         // else: return void -> not implemented
     }

@@ -115,6 +115,23 @@ static_assert(!QtJniTypes::CTString("ABCDE").endsWith("ABCDEF"));
 static_assert(QtJniTypes::CTString("ABCDE").endsWith('E'));
 static_assert(!QtJniTypes::CTString("ABCDE").endsWith('F'));
 
+enum UnscopedEnum {};
+enum class ScopedEnum {};
+enum class IntEnum : int {};
+enum class UnsignedEnum : unsigned {};
+enum class Int8Enum : int8_t {};
+enum class ShortEnum : short {};
+enum class LongEnum : long {};
+enum class JIntEnum : jint {};
+
+static_assert(QtJniTypes::Traits<UnscopedEnum>::signature() == "I");
+static_assert(QtJniTypes::Traits<ScopedEnum>::signature() == "I");
+static_assert(QtJniTypes::Traits<IntEnum>::signature() == "I");
+static_assert(QtJniTypes::Traits<UnsignedEnum>::signature() == "I");
+static_assert(QtJniTypes::Traits<Int8Enum>::signature() == "B");
+static_assert(QtJniTypes::Traits<LongEnum>::signature() == "J");
+static_assert(QtJniTypes::Traits<JIntEnum>::signature() == "I");
+
 void tst_QJniTypes::initTestCase()
 {
 

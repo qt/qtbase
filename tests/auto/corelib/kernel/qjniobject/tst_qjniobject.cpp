@@ -847,6 +847,10 @@ void tst_QJniObject::getStaticIntField()
 
     jint i = QJniObject::getStaticField<jint>(cls, "SIZE");
     QCOMPARE(i, 64);
+
+    enum class Enum { SIZE = 64 };
+    Enum e = QJniObject::getStaticField<Enum>(cls, "SIZE");
+    QCOMPARE(e, Enum::SIZE);
 }
 
 void tst_QJniObject::getStaticByteFieldClassName()
@@ -863,6 +867,10 @@ void tst_QJniObject::getStaticByteField()
 
     jbyte i = QJniObject::getStaticField<jbyte>(cls, "MAX_VALUE");
     QCOMPARE(i, jbyte(127));
+
+    enum class Enum : jbyte { MAX_VALUE = 127 };
+    Enum e = QJniObject::getStaticField<Enum>(cls, "MAX_VALUE");
+    QCOMPARE(e, Enum::MAX_VALUE);
 }
 
 void tst_QJniObject::getStaticLongFieldClassName()
@@ -879,6 +887,10 @@ void tst_QJniObject::getStaticLongField()
 
     jlong i = QJniObject::getStaticField<jlong>(cls, "MAX_VALUE");
     QCOMPARE(i, jlong(9223372036854775807L));
+
+    enum class Enum : jlong { MAX_VALUE = 9223372036854775807L };
+    Enum e = QJniObject::getStaticField<Enum>(cls, "MAX_VALUE");
+    QCOMPARE(e, Enum::MAX_VALUE);
 }
 
 void tst_QJniObject::getStaticDoubleFieldClassName()
@@ -931,6 +943,9 @@ void tst_QJniObject::getStaticShortField()
 
     jshort i = QJniObject::getStaticField<jshort>(cls, "MAX_VALUE");
     QCOMPARE(i, jshort(32767));
+    enum class Enum : jshort { MAX_VALUE = 32767 };
+    Enum e = QJniObject::getStaticField<Enum>(cls, "MAX_VALUE");
+    QCOMPARE(e, Enum::MAX_VALUE);
 }
 
 void tst_QJniObject::getStaticCharFieldClassName()
@@ -947,6 +962,10 @@ void tst_QJniObject::getStaticCharField()
 
     jchar i = QJniObject::getStaticField<jchar>(cls, "MAX_VALUE");
     QCOMPARE(i, jchar(0xffff));
+
+    enum class Enum : jchar { MAX_VALUE = 0xffff };
+    Enum e = QJniObject::getStaticField<Enum>(cls, "MAX_VALUE");
+    QCOMPARE(e, Enum::MAX_VALUE);
 }
 
 
@@ -982,16 +1001,22 @@ void setField(const char *fieldName, T testValue)
 void tst_QJniObject::setIntField()
 {
     setField("INT_VAR", 555);
+    enum class Enum : jint { VALUE = 555 };
+    setField("INT_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setByteField()
 {
-    setField("BYTE_VAR", jbyte(555));
+    setField("BYTE_VAR", jbyte(123));
+    enum class Enum : jbyte { VALUE = 123 };
+    setField("BYTE_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setLongField()
 {
     setField("LONG_VAR", jlong(9223372036847758232L));
+    enum class Enum : jlong { VALUE = 9223372036847758232L };
+    setField("LONG_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setDoubleField()
@@ -1006,12 +1031,16 @@ void tst_QJniObject::setFloatField()
 
 void tst_QJniObject::setShortField()
 {
-    setField("SHORT_VAR", jshort(123));
+    setField("SHORT_VAR", jshort(555));
+    enum class Enum : jshort { VALUE = 555 };
+    setField("SHORT_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setCharField()
 {
     setField("CHAR_VAR", jchar('A'));
+    enum class Enum : jchar { VALUE = 'A' };
+    setField("CHAR_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setBooleanField()
@@ -1049,16 +1078,22 @@ void setStaticField(const char *fieldName, T testValue)
 void tst_QJniObject::setStaticIntField()
 {
     setStaticField("S_INT_VAR", 555);
+    enum class Enum : jint { VALUE = 555 };
+    setStaticField("S_INT_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setStaticByteField()
 {
-    setStaticField("S_BYTE_VAR", jbyte(555));
+    setStaticField("S_BYTE_VAR", jbyte(123));
+    enum class Enum : jbyte { VALUE = 123 };
+    setStaticField("S_BYTE_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setStaticLongField()
 {
     setStaticField("S_LONG_VAR", jlong(9223372036847758232L));
+    enum class Enum : jlong { VALUE = 9223372036847758232L };
+    setStaticField("S_LONG_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setStaticDoubleField()
@@ -1073,12 +1108,16 @@ void tst_QJniObject::setStaticFloatField()
 
 void tst_QJniObject::setStaticShortField()
 {
-    setStaticField("S_SHORT_VAR", jshort(123));
+    setStaticField("S_SHORT_VAR", jshort(555));
+    enum class Enum : jshort { VALUE = 555 };
+    setStaticField("S_SHORT_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setStaticCharField()
 {
     setStaticField("S_CHAR_VAR", jchar('A'));
+    enum class Enum : jchar { VALUE = 'A' };
+    setStaticField("S_CHAR_VAR", Enum::VALUE);
 }
 
 void tst_QJniObject::setStaticBooleanField()
