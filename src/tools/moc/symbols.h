@@ -7,7 +7,7 @@
 
 #include "token.h"
 #include <qdebug.h>
-#include <qhash.h>
+#include <qhashfunctions.h>
 #include <qlist.h>
 #include <qstack.h>
 #include <qstring.h>
@@ -39,9 +39,9 @@ struct SubArray
     }
 };
 
-inline size_t qHash(const SubArray &key)
+inline size_t qHash(const SubArray &key, size_t seed = 0)
 {
-    return qHash(QLatin1StringView(key.array.constData() + key.from, key.len));
+    return qHash(QLatin1StringView(key.array.constData() + key.from, key.len), seed);
 }
 
 
