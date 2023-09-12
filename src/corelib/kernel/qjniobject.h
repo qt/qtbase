@@ -9,7 +9,6 @@
 #if defined(Q_QDOC) || defined(Q_OS_ANDROID)
 #include <jni.h>
 #include <QtCore/qjnienvironment.h>
-#include <QtCore/qjnitypes.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -42,7 +41,6 @@ public:
                      std::forward<Args>(args)...)
     {}
     QJniObject(jobject globalRef);
-    inline QJniObject(QtJniTypes::Object wrapper) noexcept : QJniObject(jobject(wrapper)) {}
     ~QJniObject();
 
     template<typename Class, typename ...Args>

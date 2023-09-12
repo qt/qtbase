@@ -8,7 +8,7 @@
 
 #if defined(Q_QDOC) || defined(Q_OS_ANDROID)
 #include <jni.h>
-#include <QtCore/qjnitypes.h>
+#include <QtCore/qjnitypes_impl.h>
 
 QT_BEGIN_NAMESPACE
 
