@@ -45,6 +45,8 @@ private slots:
     void suffixes_data();
     void suffixes();
     void knownSuffix();
+    void filterString_data();
+    void filterString();
     void symlinkToFifo();
     void fromThreads();
 

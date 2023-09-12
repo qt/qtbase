@@ -782,6 +782,26 @@ void tst_QMimeDatabase::knownSuffix()
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.anim2")), QString()); // the glob is anim[0-9], no way to extract the extension without expensive regexp capturing
 }
 
+void tst_QMimeDatabase::filterString_data()
+{
+    QTest::addColumn<QString>("mimeType");
+    QTest::addColumn<QString>("expectedFilterString");
+
+    QTest::newRow("single-pattern") << "application/pdf"
+                                    << "PDF document (*.pdf)";
+    QTest::newRow("multiple-patterns-text-plain") << "text/plain"
+                                                  << "plain text document (*.txt *.asc *,v)";
+}
+
+void tst_QMimeDatabase::filterString()
+{
+    QFETCH(QString, mimeType);
+    QFETCH(QString, expectedFilterString);
+
+    QMimeDatabase db;
+    QCOMPARE(db.mimeTypeForName(mimeType).filterString(), expectedFilterString);
+}
+
 void tst_QMimeDatabase::symlinkToFifo() // QTBUG-48529
 {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
