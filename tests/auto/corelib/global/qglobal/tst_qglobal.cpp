@@ -422,11 +422,17 @@ void tst_QGlobal::integerForSize()
     static_assert(sizeof(QIntegerForSize<2>::Signed) == 2);
     static_assert(sizeof(QIntegerForSize<4>::Signed) == 4);
     static_assert(sizeof(QIntegerForSize<8>::Signed) == 8);
+#ifdef QT_SUPPORTS_INT128
+    static_assert(sizeof(QIntegerForSize<16>::Signed) == 16);
+#endif
 
     static_assert(sizeof(QIntegerForSize<1>::Unsigned) == 1);
     static_assert(sizeof(QIntegerForSize<2>::Unsigned) == 2);
     static_assert(sizeof(QIntegerForSize<4>::Unsigned) == 4);
     static_assert(sizeof(QIntegerForSize<8>::Unsigned) == 8);
+#ifdef QT_SUPPORTS_INT128
+    static_assert(sizeof(QIntegerForSize<16>::Unsigned) == 16);
+#endif
 }
 
 typedef QPair<const char *, const char *> stringpair;
