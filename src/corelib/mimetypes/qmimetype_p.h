@@ -16,13 +16,14 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
-#include "qmimetype.h"
+#include <QtCore/qshareddata.h>
 
 QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qhash.h>
 #include <QtCore/qstringlist.h>
 
+class QMimeBinaryProvider;
 QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QMimeTypePrivate : public QSharedData
@@ -30,42 +31,12 @@ class Q_AUTOTEST_EXPORT QMimeTypePrivate : public QSharedData
 public:
     typedef QHash<QString, QString> LocaleHash;
 
-    QMimeTypePrivate();
-    explicit QMimeTypePrivate(const QMimeType &other);
+    QMimeTypePrivate() { }
+    explicit QMimeTypePrivate(const QString &name) : name(name) { }
 
-    void clear();
-
-    void addGlobPattern(const QString &pattern);
-
-    bool loaded; // QSharedData leaves a 4 byte gap, so don't put 8 byte members first
-    bool fromCache; // true if this comes from the binary provider
-    bool hasGlobDeleteAll = false; // true if the mimetype has a glob-deleteall tag
     QString name;
-    LocaleHash localeComments;
-    QString genericIconName;
-    QString iconName;
-    QStringList globPatterns;
 };
 
 QT_END_NAMESPACE
 
-#define QMIMETYPE_BUILDER_FROM_RVALUE_REFS \
-    QT_BEGIN_NAMESPACE \
-    static QMimeType buildQMimeType ( \
-                         QString &&name, \
-                         QString &&genericIconName, \
-                         QString &&iconName, \
-                         QStringList &&globPatterns \
-                     ) \
-    { \
-        QMimeTypePrivate qMimeTypeData; \
-        qMimeTypeData.loaded = true; \
-        qMimeTypeData.name = std::move(name); \
-        qMimeTypeData.genericIconName = std::move(genericIconName); \
-        qMimeTypeData.iconName = std::move(iconName); \
-        qMimeTypeData.globPatterns = std::move(globPatterns); \
-        return QMimeType(qMimeTypeData); \
-    } \
-    QT_END_NAMESPACE
-
-#endif   // QMIMETYPE_P_H
+#endif // QMIMETYPE_P_H

@@ -6,9 +6,6 @@
 
 #include "qmimetype_p.h"
 #include "qmimedatabase_p.h"
-#include "qmimeprovider_p.h"
-
-#include "qmimeglobpattern_p.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QLocale>
@@ -19,33 +16,6 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
-
-QMimeTypePrivate::QMimeTypePrivate()
-    : loaded(false), fromCache(false)
-{}
-
-QMimeTypePrivate::QMimeTypePrivate(const QMimeType &other)
-      : loaded(other.d->loaded),
-        name(other.d->name),
-        localeComments(other.d->localeComments),
-        genericIconName(other.d->genericIconName),
-        iconName(other.d->iconName),
-        globPatterns(other.d->globPatterns)
-{}
-
-void QMimeTypePrivate::clear()
-{
-    name.clear();
-    localeComments.clear();
-    genericIconName.clear();
-    iconName.clear();
-    globPatterns.clear();
-}
-
-void QMimeTypePrivate::addGlobPattern(const QString &pattern)
-{
-    globPatterns.append(pattern);
-}
 
 /*!
     \class QMimeType
@@ -219,7 +189,7 @@ QString QMimeType::name() const
  */
 QString QMimeType::comment() const
 {
-    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<QMimeTypePrivate&>(*d));
+    const auto localeComments = QMimeDatabasePrivate::instance()->localeComments(d->name);
 
     QStringList languageList = QLocale().uiLanguages(QLocale::TagSeparator::Underscore);
     qsizetype defaultIndex = languageList.indexOf(u"en_US"_s);
@@ -242,13 +212,13 @@ QString QMimeType::comment() const
 
     for (const QString &language : std::as_const(languageList)) {
         const QString lang = language == "C"_L1 ? u"en_US"_s : language;
-        QString comm = d->localeComments.value(lang);
+        QString comm = localeComments.value(lang);
         if (!comm.isEmpty())
             return comm;
         const qsizetype cut = lang.indexOf(u'_');
         // If "de_CH" is missing, check for "de" (and similar):
         if (cut != -1) {
-            comm = d->localeComments.value(lang.left(cut));
+            comm = localeComments.value(lang.left(cut));
             if (!comm.isEmpty())
                 return comm;
         }
@@ -274,8 +244,8 @@ QString QMimeType::comment() const
  */
 QString QMimeType::genericIconName() const
 {
-    QMimeDatabasePrivate::instance()->loadGenericIcon(const_cast<QMimeTypePrivate&>(*d));
-    if (d->genericIconName.isEmpty()) {
+    QString genericIconName = QMimeDatabasePrivate::instance()->genericIcon(d->name);
+    if (genericIconName.isEmpty()) {
         // From the spec:
         // If the generic icon name is empty (not specified by the mimetype definition)
         // then the mimetype is used to generate the generic icon by using the top-level
@@ -288,7 +258,7 @@ QString QMimeType::genericIconName() const
             groupRef = groupRef.left(slashindex);
         return groupRef + "-x-generic"_L1;
     }
-    return d->genericIconName;
+    return genericIconName;
 }
 
 static QString make_default_icon_name_from_mimetype_name(QString iconName)
@@ -310,11 +280,11 @@ static QString make_default_icon_name_from_mimetype_name(QString iconName)
  */
 QString QMimeType::iconName() const
 {
-    QMimeDatabasePrivate::instance()->loadIcon(const_cast<QMimeTypePrivate&>(*d));
-    if (d->iconName.isEmpty()) {
+    QString iconName = QMimeDatabasePrivate::instance()->icon(d->name);
+    if (iconName.isEmpty()) {
         return make_default_icon_name_from_mimetype_name(name());
     }
-    return d->iconName;
+    return iconName;
 }
 
 /*!
@@ -326,8 +296,7 @@ QString QMimeType::iconName() const
  */
 QStringList QMimeType::globPatterns() const
 {
-    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<QMimeTypePrivate&>(*d));
-    return d->globPatterns;
+    return QMimeDatabasePrivate::instance()->globPatterns(d->name);
 }
 
 /*!
@@ -421,10 +390,11 @@ QStringList QMimeType::aliases() const
  */
 QStringList QMimeType::suffixes() const
 {
-    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<QMimeTypePrivate&>(*d));
+    const QStringList patterns = globPatterns();
 
     QStringList result;
-    for (const QString &pattern : std::as_const(d->globPatterns)) {
+    result.reserve(patterns.size());
+    for (const QString &pattern : patterns) {
         // Not a simple suffix if it looks like: README or *. or *.* or *.JP*G or *.JP?
         if (pattern.startsWith("*."_L1) &&
             pattern.size() > 2 &&
@@ -464,15 +434,15 @@ QString QMimeType::preferredSuffix() const
 */
 QString QMimeType::filterString() const
 {
-    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<QMimeTypePrivate&>(*d));
+    const QStringList patterns = globPatterns();
     QString filter;
 
-    if (!d->globPatterns.empty()) {
+    if (!patterns.empty()) {
         filter += comment() + " ("_L1;
-        for (int i = 0; i < d->globPatterns.size(); ++i) {
+        for (int i = 0; i < patterns.size(); ++i) {
             if (i != 0)
                 filter += u' ';
-            filter += d->globPatterns.at(i);
+            filter += patterns.at(i);
         }
         filter +=  u')';
     }

@@ -30,6 +30,7 @@ qt_internal_add_test(tst_qmimedatabase-cache
     #"mime/packages/freedesktop.org.xml"
 #)
 set(testdata_resource_files
+    "../add-extension.xml"
     "../invalid-magic1.xml"
     "../invalid-magic2.xml"
     "../invalid-magic3.xml"

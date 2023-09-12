@@ -38,6 +38,7 @@ static const std::array additionalGlobalMimeFiles = {
 };
 
 static const std::array additionalLocalMimeFiles = {
+    "add-extension.xml", // adds *.jnewext to image/jpeg
     "yast2-metapackage-handler-mimetypes.xml",
     "qml-again.xml",
     "text-x-objcsrc.xml",
@@ -1228,6 +1229,11 @@ void tst_QMimeDatabase::installNewLocalMimeType()
         // Custom "*.videowebm" pattern is used instead
         QCOMPARE(mimes.at(0).name(), u"video/webm");
     }
+
+    // QTBUG-116905: globPatterns() should merge all locations
+    // add-extension.xml adds *.jnewext
+    const QStringList expectedJpegPatterns{ "*.jpg", "*.jpeg", "*.jpe", "*.jnewext" };
+    QCOMPARE(db.mimeTypeForName(QStringLiteral("image/jpeg")).globPatterns(), expectedJpegPatterns);
 
     // Now that we have two directories with mime definitions, check that everything still works
     inheritance();
