@@ -152,7 +152,7 @@ QT_BEGIN_NAMESPACE
     Typedef for \c{__int128} on platforms that support it (Qt defines the macro
     \l QT_SUPPORTS_INT128 if this is the case).
 
-    \sa quint128, QT_SUPPORTS_INT128
+    \sa Q_INT128_MIN, Q_INT128_MAX, quint128, QT_SUPPORTS_INT128
 */
 
 /*!
@@ -163,7 +163,7 @@ QT_BEGIN_NAMESPACE
     Typedef for \c{unsigned __int128} on platforms that support it (Qt defines
     the macro \l QT_SUPPORTS_INT128 if this is the case).
 
-    \sa qint128, QT_SUPPORTS_INT128
+    \sa Q_UINT128_MAX, qint128, QT_SUPPORTS_INT128
 */
 
 /*!
@@ -174,7 +174,7 @@ QT_BEGIN_NAMESPACE
     Qt defines this macro as well as the \l qint128 and \l quint128 types if
     the platform has support for 128-bit integer types.
 
-    \sa qint128, quint128
+    \sa qint128, quint128, Q_INT128_MIN, Q_INT128_MAX, Q_UINT128_MAX
 */
 
 /*!
@@ -376,6 +376,48 @@ QT_BEGIN_NAMESPACE
     \sa quint64, Q_INT64_C()
 */
 
+/*!
+    \macro Q_UINT128_MAX
+    \relates <QtTypes>
+    \since 6.6
+
+    This macro expands to a compile-time constant representing the
+    maximum value representable in a \l quint128.
+
+    This macro is available in both C++ and C modes.
+
+    The minimum of \l quint128 is 0 (zero), so a \c{Q_UINT128_MIN} is neither
+    needed nor provided.
+
+    \sa Q_INT128_MAX, quint128, QT_SUPPORTS_INT128
+*/
+
+/*!
+    \macro Q_INT128_MIN
+    \relates <QtTypes>
+    \since 6.6
+
+    This macro expands to a compile-time constant representing the
+    minimum value representable in a \l qint128.
+
+    This macro is available in both C++ and C modes.
+
+    \sa Q_INT128_MAX, qint128, QT_SUPPORTS_INT128
+*/
+
+/*!
+    \macro Q_INT128_MAX
+    \relates <QtTypes>
+    \since 6.6
+
+    This macro expands to a compile-time constant representing the
+    maximum value representable in a \l qint128.
+
+    This macro is available in both C++ and C modes.
+
+    \sa Q_INT128_MIN, Q_UINT128_MAX, qint128, QT_SUPPORTS_INT128
+*/
+
 // Statically check assumptions about the environment we're running
 // in. The idea here is to error or warn if otherwise implicit Qt
 // assumptions are not fulfilled on new hardware or compilers
@@ -439,9 +481,10 @@ static_assert(sizeof(qint128) == 16, "Internal error, qint128 is misdefined");
 #ifdef QT_SUPPORTS_INT128
 // check that numeric_limits works:
 // This fails here for GCC 9, but succeeds on Clang and GCC >= 11
+// However, all tests in tst_qglobal::int128Literals() pass for GCC 9, too,
 // so just suppress the check for older GCC:
 #  if !defined(Q_CC_GNU_ONLY) || Q_CC_GNU >= 1100
-static_assert(std::numeric_limits<quint128>::max() == qint128(-1));
+static_assert(std::numeric_limits<quint128>::max() == Q_UINT128_MAX);
 #  endif
 #endif
 

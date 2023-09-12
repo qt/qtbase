@@ -67,7 +67,20 @@ typedef quint64 qulonglong;
 #if defined(QT_SUPPORTS_INT128)
 __extension__ typedef __int128_t qint128;
 __extension__ typedef __uint128_t quint128;
-#endif
+
+// limits:
+#  ifdef __cplusplus /* need to avoid c-style-casts in C++ mode */
+#    define QT_C_STYLE_CAST(type, x) static_cast<type>(x)
+#  else /* but C doesn't have constructor-style casts */
+#    define QT_C_STYLE_CAST(type, x) ((type)x)
+#  endif
+#  ifndef Q_UINT128_MAX /* allow qcompilerdetection.h/user override */
+#    define Q_UINT128_MAX QT_C_STYLE_CAST(quint128, -1)
+#  endif
+#  define Q_INT128_MAX QT_C_STYLE_CAST(qint128, (Q_UINT128_MAX / 2))
+#  define Q_INT128_MIN (-Q_INT128_MAX - 1)
+
+#endif // QT_SUPPORTS_INT128
 
 #ifndef __cplusplus
 // In C++ mode, we define below using QIntegerForSize template

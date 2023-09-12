@@ -12,7 +12,48 @@
 #include <QString>
 #include <QtVersion>
 
+#include <array>
 #include <cmath>
+
+QT_BEGIN_NAMESPACE
+namespace QTest {
+#ifdef QT_SUPPORTS_INT128
+namespace detail {
+    char *i128ToStringHelper(std::array<char, 64> &buffer, quint128 n)
+    {
+        auto dst = buffer.data() + buffer.size();
+        *--dst = '\0'; // NUL-terminate
+        if (n == 0) {
+            *--dst = '0'; // and done
+        } else {
+            while (n != 0) {
+                *--dst = "0123456789"[n % 10];
+                n /= 10;
+            }
+        }
+        return dst;
+    }
+}
+template <>
+char *toString(const qint128 &i)
+{
+    if (i == std::numeric_limits<qint128>::min()) // -i is not representable, hardcode:
+        return qstrdup("-170141183460469231731687303715884105728");
+    std::array<char, 64> buffer;
+    auto dst = detail::i128ToStringHelper(buffer, i < 0 ? -i : i);
+    if (i < 0)
+        *--dst = '-';
+    return qstrdup(dst);
+}
+template <>
+char *toString(const quint128 &i)
+{
+    std::array<char, 64> buffer;
+    return qstrdup(detail::i128ToStringHelper(buffer, i));
+}
+#endif // QT_SUPPORTS_INT128
+} // namespace QTest
+QT_END_NAMESPACE
 
 class tst_QGlobal: public QObject
 {
@@ -30,6 +71,7 @@ private slots:
     void qCoreAppStartupFunction();
     void qCoreAppStartupFunctionRestart();
     void integerForSize();
+    void int128Literals();
     void buildAbiEndianness();
     void testqOverload();
     void testqMinMax();
@@ -46,6 +88,12 @@ extern "C" {        // functions in qglobal.c
 void tst_GlobalTypes();
 int tst_QtVersion();
 const char *tst_qVersion();
+#if QT_SUPPORTS_INT128
+qint128 tst_qint128_min();
+qint128 tst_qint128_max();
+quint128 tst_quint128_max();
+#endif
+
 }
 
 void tst_QGlobal::cMode()
@@ -434,6 +482,26 @@ void tst_QGlobal::integerForSize()
     static_assert(sizeof(QIntegerForSize<8>::Unsigned) == 8);
 #ifdef QT_SUPPORTS_INT128
     static_assert(sizeof(QIntegerForSize<16>::Unsigned) == 16);
+#endif
+}
+
+void tst_QGlobal::int128Literals()
+{
+#ifdef QT_SUPPORTS_INT128
+#define COMPARE_EQ(lhs, rhs, Expected128) do { \
+        constexpr auto lhs_ = lhs; \
+        static_assert(std::is_same_v<std::remove_cv_t<decltype(lhs_)>, Expected128>); \
+        QCOMPARE_EQ(lhs_, rhs); \
+    } while (0)
+    COMPARE_EQ(Q_INT128_MIN, std::numeric_limits<qint128>::min(), qint128);
+    COMPARE_EQ(Q_INT128_MAX, std::numeric_limits<qint128>::max(), qint128);
+    COMPARE_EQ(Q_UINT128_MAX, std::numeric_limits<quint128>::max(), quint128);
+    QCOMPARE_EQ(tst_qint128_min(), Q_INT128_MIN);
+    QCOMPARE_EQ(tst_qint128_max(), Q_INT128_MAX);
+    QCOMPARE_EQ(tst_quint128_max(), Q_UINT128_MAX);
+#undef COMPARE_EQ
+#else
+    QSKIP("This test requires 128-bit integer support enabled in the compiler.");
 #endif
 }
 
