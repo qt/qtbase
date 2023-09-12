@@ -207,6 +207,7 @@ public:
     void setHintingPreference(HintingPreference hintingPreference);
     HintingPreference hintingPreference() const;
 
+    // Note: The following set of APIs are preliminary and may change in future releases
     void setFeature(const char *feature, quint32 value);
     void setFeature(quint32 tag, quint32 value);
     void unsetFeature(quint32 tag);
@@ -218,6 +219,7 @@ public:
 
     static QByteArray tagToString(quint32 tag);
     static quint32 stringToTag(const char *tagString);
+    // --
 
     // dupicated from QFontInfo
     bool exactMatch() const;
