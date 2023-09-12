@@ -2233,6 +2233,7 @@ void QFont::cacheStatistics()
 /*!
     \since 6.6
     \overload
+    \preliminary
 
     Applies an integer value to a specific typographical feature when shaping the text. This
     provides advanced access to the font shaping process, and can be used to support font features
@@ -2278,6 +2279,7 @@ void QFont::setFeature(quint32 tag, quint32 value)
 /*!
     \since 6.6
     \overload
+    \preliminary
 
     Sets the \a value of a specific \a feature. This is an advanced feature which can be used to
     enable or disable specific OpenType features if they are available in the font.
@@ -2296,6 +2298,7 @@ void QFont::setFeature(const char *feature, quint32 value)
 /*!
     \since 6.6
     \overload
+    \preliminary
 
     Unsets the \a tag from the map of explicitly enabled/disabled features.
 
@@ -2320,6 +2323,7 @@ void QFont::unsetFeature(quint32 tag)
 /*!
     \since 6.6
     \overload
+    \preliminary
 
     Unsets the \a feature from the map of explicitly enabled/disabled features.
 
@@ -2341,6 +2345,7 @@ void QFont::unsetFeature(const char *feature)
 
 /*!
    \since 6.6
+   \preliminary
 
    Returns a list of tags for all font features currently set on this QFont.
 
@@ -2355,6 +2360,7 @@ QList<quint32> QFont::featureTags() const
 
 /*!
    \since 6.6
+   \preliminary
 
    Returns the value set for a specific feature \a tag. If the tag has not been set, 0 will be
    returned instead.
@@ -2370,6 +2376,7 @@ quint32 QFont::featureValue(quint32 tag) const
 
 /*!
    \since 6.6
+   \preliminary
 
    Returns true if a value for the feature given by \a tag has been set on the QFont, otherwise
    returns false.
@@ -2385,6 +2392,7 @@ bool QFont::isFeatureSet(quint32 tag) const
 
 /*!
    \since 6.6
+   \preliminary
 
    Clears any previously set features on the QFont.
 
@@ -2399,6 +2407,7 @@ void QFont::clearFeatures()
 
 /*!
     \since 6.6
+    \preliminary
 
     Returns the decoded name for \a tag as defined in the OpenType font specification. The tag
     is decoded into four 8 bit characters. For valid tags, each will be in the basic Latin range of
@@ -2418,6 +2427,7 @@ QByteArray QFont::tagToString(quint32 tag)
 
 /*!
     \since 6.6
+    \preliminary
 
     Returns the encoded tag for \a name as defined in the OpenType font specification. The name
     must be a null-terminated string of four characters exactly, and in order to be a valid tag,
