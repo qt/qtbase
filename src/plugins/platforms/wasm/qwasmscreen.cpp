@@ -28,6 +28,7 @@ const char *QWasmScreen::m_canvasResizeObserverCallbackContextPropertyName =
 
 QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     : m_container(containerOrCanvas),
+      m_intermediateContainer(emscripten::val::undefined()),
       m_shadowContainer(emscripten::val::undefined()),
       m_compositor(new QWasmCompositor(this)),
       m_deadKeySupport(std::make_unique<QWasmDeadKeySupport>())
@@ -43,9 +44,20 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
         m_container["parentNode"].call<void>("replaceChild", container, m_container);
         m_container = container;
     }
+
+    // Create an intermediate container which we can remove during cleanup in ~QWasmScreen().
+    // This is required due to the attachShadow() call below; there is no corresponding
+    // "detachShadow()" API to return the container to its previous state.
+    m_intermediateContainer = document.call<emscripten::val>("createElement", emscripten::val("div"));
+    m_intermediateContainer.set("id", std::string("qt-shadow-container"));
+    emscripten::val intermediateContainerStyle = m_intermediateContainer["style"];
+    intermediateContainerStyle.set("width", std::string("100%"));
+    intermediateContainerStyle.set("height", std::string("100%"));
+    m_container.call<void>("appendChild", m_intermediateContainer);
+
     auto shadowOptions = emscripten::val::object();
     shadowOptions.set("mode", "open");
-    auto shadow = m_container.call<emscripten::val>("attachShadow", shadowOptions);
+    auto shadow = m_intermediateContainer.call<emscripten::val>("attachShadow", shadowOptions);
 
     m_shadowContainer = document.call<emscripten::val>("createElement", emscripten::val("div"));
 
@@ -86,6 +98,8 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
 
 QWasmScreen::~QWasmScreen()
 {
+    m_intermediateContainer.call<void>("remove");
+
     emscripten::val::module_property("specialHTMLTargets")
             .set(eventTargetId().toStdString(), emscripten::val::undefined());
 
