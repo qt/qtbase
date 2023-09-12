@@ -78,6 +78,7 @@ private:
                           QWasmWindow *child) final;
 
     emscripten::val m_container;
+    emscripten::val m_intermediateContainer;
     emscripten::val m_shadowContainer;
     std::unique_ptr<QWasmCompositor> m_compositor;
     std::unique_ptr<QPointingDevice> m_touchDevice;
