@@ -23,7 +23,7 @@ MainWindow::MainWindow()
 void MainWindow::onAddNew()
 {
     if (!centralWidget())
-        setCentralWidget(new Window(this));
+        setCentralWidget(new Window);
     else
         QMessageBox::information(this, tr("Cannot Add New Window"),
                                  tr("Already occupied. Undock first."));

@@ -1,9 +1,8 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include "glwidget.h"
 #include "window.h"
-#include "mainwindow.h"
+#include "glwidget.h"
 #include <QSlider>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -11,9 +10,18 @@
 #include <QPushButton>
 #include <QApplication>
 #include <QMessageBox>
+#include <QMainWindow>
 
-Window::Window(MainWindow *mw)
-    : mainWindow(mw)
+static QMainWindow *findMainWindow()
+{
+    for (auto *w : QApplication::topLevelWidgets()) {
+        if (auto *mw = qobject_cast<QMainWindow *>(w))
+            return mw;
+    }
+    return nullptr;
+}
+
+Window::Window()
 {
     glWidget = new GLWidget;
 
@@ -77,7 +85,8 @@ void Window::dockUndock()
 
 void Window::dock()
 {
-    if (!mainWindow->isVisible()) {
+    auto *mainWindow = findMainWindow();
+    if (mainWindow == nullptr || !mainWindow->isVisible()) {
         QMessageBox::information(this, tr("Cannot Dock"),
                                  tr("Main window already closed"));
         return;
