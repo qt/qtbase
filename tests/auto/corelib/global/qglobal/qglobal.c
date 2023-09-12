@@ -3,6 +3,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qtversion.h>
+#include <QtCore/qtypes.h>
 
 #ifdef Q_COMPILER_THREAD_LOCAL
 #  include <threads.h>
@@ -44,6 +45,12 @@ void tst_GlobalTypes()
     qintptr qip;
     quintptr qup;
     Q_UNUSED(qs); Q_UNUSED(qp); Q_UNUSED(qip); Q_UNUSED(qup);
+
+#ifdef QT_SUPPORTS_INT128
+    qint128 s128;
+    quint128 u128;
+    Q_UNUSED(s128); Q_UNUSED(u128);
+#endif /* QT_SUPPORTS_INT128 */
 }
 
 /* Qt version */

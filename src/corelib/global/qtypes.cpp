@@ -399,5 +399,17 @@ static_assert(sizeof(qint8) == 1, "Internal error, qint8 is misdefined");
 static_assert(sizeof(qint16)== 2, "Internal error, qint16 is misdefined");
 static_assert(sizeof(qint32) == 4, "Internal error, qint32 is misdefined");
 static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
+#ifdef QT_SUPPORTS_INT128
+static_assert(sizeof(qint128) == 16, "Internal error, qint128 is misdefined");
+#endif
+
+#ifdef QT_SUPPORTS_INT128
+// check that numeric_limits works:
+// This fails here for GCC 9, but succeeds on Clang and GCC >= 11
+// so just suppress the check for older GCC:
+#  if !defined(Q_CC_GNU_ONLY) || Q_CC_GNU >= 1100
+static_assert(std::numeric_limits<quint128>::max() == quint128(-1));
+#  endif
+#endif
 
 QT_END_NAMESPACE
