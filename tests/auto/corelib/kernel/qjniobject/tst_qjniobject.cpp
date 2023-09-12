@@ -8,6 +8,8 @@
 #include <QtCore/QJniObject>
 #include <QtTest>
 
+using namespace Qt::StringLiterals;
+
 static const char testClassName[] = "org/qtproject/qt/android/testdatapackage/QtJniObjectTestClass";
 Q_DECLARE_JNI_CLASS(QtJniObjectTestClass, testClassName)
 
@@ -310,7 +312,8 @@ void tst_QJniObject::callStaticObjectMethod()
     jclass cls = env->FindClass("java/lang/String");
     QVERIFY(cls != 0);
 
-    QJniObject formatString = QJniObject::fromString(QLatin1String("test format"));
+    const QString string = u"test format"_s;
+    QJniObject formatString = QJniObject::fromString(string);
     QVERIFY(formatString.isValid());
 
     QJniObject returnValue = QJniObject::callStaticObjectMethod(cls,
@@ -319,20 +322,14 @@ void tst_QJniObject::callStaticObjectMethod()
                                                                 formatString.object<jstring>(),
                                                                 jobjectArray(0));
     QVERIFY(returnValue.isValid());
-
-    QString returnedString = returnValue.toString();
-
-    QCOMPARE(returnedString, QString::fromLatin1("test format"));
+    QCOMPARE(returnValue.toString(), string);
 
     returnValue = QJniObject::callStaticObjectMethod<jstring>(cls,
                                                               "format",
                                                               formatString.object<jstring>(),
                                                               jobjectArray(0));
     QVERIFY(returnValue.isValid());
-
-    returnedString = returnValue.toString();
-
-    QCOMPARE(returnedString, QString::fromLatin1("test format"));
+    QCOMPARE(returnValue.toString(), string);
 
     // from 6.4 on we can use callStaticMethod
     returnValue = QJniObject::callStaticMethod<jstring>(cls,
@@ -340,10 +337,15 @@ void tst_QJniObject::callStaticObjectMethod()
                                                         formatString.object<jstring>(),
                                                         jobjectArray(0));
     QVERIFY(returnValue.isValid());
+    QCOMPARE(returnValue.toString(), string);
 
-    returnedString = returnValue.toString();
+    // from 6.7 we can use callStaticMethod without specifying the class string
+    returnValue = QJniObject::callStaticMethod<jstring, jstring>("format",
+                                                                 formatString.object<jstring>(),
+                                                                 jobjectArray(0));
+    QVERIFY(returnValue.isValid());
+    QCOMPARE(returnValue.toString(), string);
 
-    QCOMPARE(returnedString, QString::fromLatin1("test format"));
 }
 
 void tst_QJniObject::callStaticObjectMethodById()

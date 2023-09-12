@@ -970,7 +970,7 @@ QByteArray QJniObject::className() const
     \since 6.4
 
     Calls the static method \a methodName on \a clazz and returns the value of type \c Ret
-    (unless c Ret is \c void).  If \c Ret if a jobject type, then the returned value will
+    (unless \c Ret is \c void).  If \c Ret is a jobject type, then the returned value will
     be a QJniObject.
 
     \code
@@ -980,6 +980,18 @@ QByteArray QJniObject::className() const
     \endcode
 
     The method signature is deduced at compile time from \c Ret and the types of \a args.
+*/
+
+/*!
+    \fn template <typename Klass, typename Ret, typename ...Args> auto QJniObject::callStaticMethod(const char *methodName, Args &&...args)
+    \since 6.7
+
+    Calls the static method \a methodName on the class \c Klass and returns the value of type
+    \c Ret (unless \c Ret is \c void).  If \c Ret is a jobject type, then the returned value will
+    be a QJniObject.
+
+    The method signature is deduced at compile time from \c Ret and the types of \a args.
+    \c Klass needs to be a C++ type with a registered type mapping to a Java type.
 */
 
 /*!

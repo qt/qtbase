@@ -127,7 +127,8 @@ public:
     static auto callStaticMethod(jclass clazz, const char *methodName, const char *signature, Args &&...args)
     {
         QJniEnvironment env;
-        jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true);
+        jmethodID id = clazz ? getMethodID(env.jniEnv(), clazz, methodName, signature, true)
+                             : 0;
         return callStaticMethod<Ret>(clazz, id, std::forward<Args>(args)...);
     }
 
@@ -180,6 +181,21 @@ public:
     {
         constexpr auto signature = QtJniTypes::methodSignature<Ret, Args...>();
         return callStaticMethod<Ret>(clazz, methodName, signature.data(), std::forward<Args>(args)...);
+    }
+    template <typename Klass, typename Ret, typename ...Args
+#ifndef Q_QDOC
+        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+#endif
+    >
+    static auto callStaticMethod(const char *methodName, Args &&...args)
+    {
+        QJniEnvironment env;
+        const jclass clazz = QJniObject::loadClass(QtJniTypes::className<Klass>().data(),
+                                                   env.jniEnv());
+        const jmethodID id = clazz ? getMethodID(env.jniEnv(), clazz, methodName,
+                                         QtJniTypes::methodSignature<Ret, Args...>().data(), true)
+                                   : 0;
+        return callStaticMethod<Ret>(clazz, id, std::forward<Args>(args)...);
     }
 
     static QJniObject callStaticObjectMethod(const char *className, const char *methodName,
@@ -547,6 +563,8 @@ private:
     static constexpr void callStaticMethodForType(JNIEnv *env, T &res, jclass clazz,
                                                   jmethodID id, ...)
     {
+        if (!clazz || !id)
+            return;
         va_list args = {};
         va_start(args, id);
         if constexpr (std::is_same_v<T, jboolean>)
@@ -572,6 +590,8 @@ private:
 
     static void callStaticMethodForVoid(JNIEnv *env, jclass clazz, jmethodID id, ...)
     {
+        if (!clazz || !id)
+            return;
         va_list args;
         va_start(args, id);
         env->CallStaticVoidMethodV(clazz, id, args);
