@@ -2968,6 +2968,7 @@ macro(qt6_standard_project_setup)
         set(__qt_sps_args_single
             REQUIRES
             SUPPORTS_UP_TO
+            I18N_NATIVE_LANGUAGE
         )
         set(__qt_sps_args_multi
             I18N_LANGUAGES
@@ -3074,6 +3075,9 @@ macro(qt6_standard_project_setup)
         # I18N support.
         if(DEFINED __qt_sps_arg_I18N_LANGUAGES AND NOT DEFINED QT_I18N_LANGUAGES)
             set(QT_I18N_LANGUAGES ${__qt_sps_arg_I18N_LANGUAGES})
+        endif()
+        if(DEFINED __qt_sps_arg_I18N_NATIVE_LANGUAGE AND NOT DEFINED QT_I18N_NATIVE_LANGUAGE)
+            set(QT_I18N_NATIVE_LANGUAGE ${__qt_sps_arg_I18N_NATIVE_LANGUAGE})
         endif()
     endif()
 endmacro()

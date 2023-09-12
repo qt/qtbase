@@ -21,6 +21,7 @@ qt_standard_project_setup(
     [REQUIRES <version>]
     [SUPPORTS_UP_TO <version>]
     [I18N_LANGUAGES <language...>]
+    [I18N_NATIVE_LANGUAGE <language>]
 )
 \endcode
 
@@ -87,6 +88,9 @@ setting the \l{QT_NO_STANDARD_PROJECT_SETUP} variable to true.
 Since Qt 6.7, it is possible to specify the languages that are used for project
 internationalization with the \c I18N_LANGUAGES argument. See \l
 QT_I18N_LANGUAGES for details.
+
+Use I18N_NATIVE_LANGUAGE to specify the native language that translatable
+strings are written in. See \l QT_I18N_NATIVE_LANGUAGE for details.
 
 \section1 Example
 

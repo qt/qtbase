@@ -507,6 +507,30 @@ This variable can be conveniently set with the
 */
 
 /*!
+\page cmake-variable-qt-i18n-native-language.html
+\ingroup cmake-variables-qtcore
+
+\title QT_I18N_NATIVE_LANGUAGE
+\target cmake-variable-QT_I18N_NATIVE_LANGUAGE
+
+\summary {Specifies the language of translatable strings}
+
+\cmakevariablesince 6.7
+
+This variable specifies the language of translatable strings in the source code.
+The language must be compatible with the string-based \l QLocale constructor.
+
+Together with \c{QT_I18N_LANGUAGES}, this variable is used to determine the
+names of \c{.ts} files for \l{qt6_add_translations}{qt_add_translations()}.
+
+This variable can be conveniently set with the
+{qt6_standard_project_setup}{qt_standard_project_setup()} command.
+
+\sa {qt6_standard_project_setup}{qt_standard_project_setup()}
+\sa {qt6_add_translations}{qt_add_translations()}
+*/
+
+/*!
 \page cmake-variable-qt-ios-launch-screen.html
 \ingroup cmake-variables-qtcore
 
