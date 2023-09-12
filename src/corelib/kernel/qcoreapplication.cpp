@@ -748,7 +748,8 @@ void QCoreApplicationPrivate::initLocale()
     to reset the locale that is used for number formatting to "C"-locale.
 
     \sa QGuiApplication, QAbstractEventDispatcher, QEventLoop,
-    {Producer and Consumer using Semaphores}, {Wait Conditions Example}
+    {Producer and Consumer using Semaphores},
+    {Producer and Consumer using Wait Conditions}
 */
 
 /*!
