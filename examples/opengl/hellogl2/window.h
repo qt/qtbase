@@ -10,14 +10,13 @@ QT_FORWARD_DECLARE_CLASS(QSlider)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 class GLWidget;
-class MainWindow;
 
 class Window : public QWidget
 {
     Q_OBJECT
 
 public:
-    Window(MainWindow *mw);
+    Window();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -35,7 +34,6 @@ private:
     QSlider *ySlider;
     QSlider *zSlider;
     QPushButton *dockBtn;
-    MainWindow *mainWindow;
 };
 
 #endif
