@@ -21,6 +21,7 @@ qt_internal_add_test(tst_qmimedatabase-xml
         tst_qmimedatabase-xml.cpp
     LIBRARIES
         Qt::Concurrent
+        Qt::CorePrivate
 )
 
 # Resources:

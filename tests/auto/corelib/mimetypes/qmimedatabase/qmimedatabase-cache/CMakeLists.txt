@@ -20,6 +20,7 @@ qt_internal_add_test(tst_qmimedatabase-cache
         ../tst_qmimedatabase.h
         tst_qmimedatabase-cache.cpp
     LIBRARIES
+        Qt::CorePrivate
         Qt::Concurrent
 )
 
