@@ -145,6 +145,39 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \typedef qint128
+    \relates <QtTypes>
+    \since 6.6
+
+    Typedef for \c{__int128} on platforms that support it (Qt defines the macro
+    \l QT_SUPPORTS_INT128 if this is the case).
+
+    \sa quint128, QT_SUPPORTS_INT128
+*/
+
+/*!
+    \typedef quint128
+    \relates <QtTypes>
+    \since 6.6
+
+    Typedef for \c{unsigned __int128} on platforms that support it (Qt defines
+    the macro \l QT_SUPPORTS_INT128 if this is the case).
+
+    \sa qint128, QT_SUPPORTS_INT128
+*/
+
+/*!
+    \macro QT_SUPPORTS_INT128
+    \relates <QtTypes>
+    \since 6.6
+
+    Qt defines this macro as well as the \l qint128 and \l quint128 types if
+    the platform has support for 128-bit integer types.
+
+    \sa qint128, quint128
+*/
+
+/*!
     \typedef qintptr
     \relates <QtTypes>
 
