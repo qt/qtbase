@@ -142,11 +142,12 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface(EGLConfig eglConfig)
             }
         }
 
+        const uint32_t gbmFormat = drmFormatToGbmFormat(m_output.drm_format);
+
         // Fallback for older drivers, and when "format" is explicitly specified
         // in the output config. (not guaranteed that the requested format works
         // of course, but do what we are told to)
         if (!m_gbm_surface) {
-            uint32_t gbmFormat = drmFormatToGbmFormat(m_output.drm_format);
             if (queryFromEgl)
                 qCDebug(qLcEglfsKmsDebug, "Could not create surface with EGL_NATIVE_VISUAL_ID, falling back to format %x", gbmFormat);
             m_gbm_surface = gbm_surface_create(gbmDevice,
@@ -155,6 +156,20 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface(EGLConfig eglConfig)
                                            gbmFormat,
                                            gbmFlags());
         }
+
+        // Fallback for some drivers, its required to request with modifiers
+        if (!m_gbm_surface) {
+            uint64_t modifier = DRM_FORMAT_MOD_LINEAR;
+
+            m_gbm_surface = gbm_surface_create_with_modifiers(gbmDevice,
+                                    rawGeometry().width(),
+                                    rawGeometry().height(),
+                                    gbmFormat,
+                                    &modifier, 1);
+        }
+        // Fail here, as it would fail with the next usage of the GBM surface, which is very unexpected
+        if (!m_gbm_surface)
+            qFatal("Could not create GBM surface!");
     }
     return m_gbm_surface; // not owned, gets destroyed in QEglFSKmsGbmIntegration::destroyNativeWindow() via QEglFSKmsGbmWindow::invalidateSurface()
 }
