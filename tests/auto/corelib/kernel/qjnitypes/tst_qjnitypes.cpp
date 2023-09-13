@@ -5,6 +5,8 @@
 
 #include <QtCore/qjnitypes.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_QJniTypes : public QObject
 {
     Q_OBJECT
@@ -15,6 +17,7 @@ public:
 private slots:
     void initTestCase();
     void nativeMethod();
+    void construct();
 };
 
 struct QtJavaWrapper {};
@@ -157,6 +160,35 @@ void tst_QJniTypes::nativeMethod()
     QVERIFY(method.fnPtr == nativeFunction);
     QCOMPARE(method.name, "nativeFunction");
     QCOMPARE(method.signature, "(ILjava/lang/String;J)Z");
+}
+
+void tst_QJniTypes::construct()
+{
+    using namespace QtJniTypes;
+
+    const QString text = u"Java String"_s;
+    String str(text);
+    QVERIFY(str.isValid());
+    QCOMPARE(str.toString(), text);
+
+    jobject jref = nullptr; // must be jobject, not jstring
+    {
+        // if jref would be a jstring, then this would call the
+        // Java String copy constructor!
+        String jstr(jref);
+        QVERIFY(!jstr.isValid());
+    }
+    jref = str.object<jstring>();
+    {
+        String jstr(jref);
+        QVERIFY(jstr.isValid());
+        QCOMPARE(jstr.toString(), text);
+    }
+
+    String str2 = str;
+    QCOMPARE(str.toString(), text);
+    String str3 = std::move(str2);
+    QCOMPARE(str3.toString(), text);
 }
 
 QTEST_MAIN(tst_QJniTypes)

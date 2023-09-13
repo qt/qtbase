@@ -1386,7 +1386,7 @@ bool QJniObject::isSameObject(const QJniObject &other) const
 
 void QJniObject::assign(jobject obj)
 {
-    if (isSameObject(obj))
+    if (d && isSameObject(obj))
         return;
 
     jobject jobj = static_cast<jobject>(obj);

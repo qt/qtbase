@@ -42,6 +42,8 @@ class Q_CORE_EXPORT QJniObject
             using Type = q20::remove_cvref_t<T>;
             if constexpr (std::is_same_v<Type, QString>) {
                 return newLocalRef<jstring>(QJniObject::fromString(value));
+            } else if constexpr (std::is_base_of_v<QJniObject, Type>) {
+                return value.object();
             } else {
                 return static_cast<T &&>(value);
             }
@@ -52,8 +54,11 @@ class Q_CORE_EXPORT QJniObject
             using Type = q20::remove_cvref_t<T>;
             if constexpr (std::is_same_v<Type, QString>) {
                 return object.toString();
+            } else if constexpr (std::is_base_of_v<QJniObject, Type>
+                              && !std::is_same_v<QJniObject, Type>) {
+                return T{std::move(object)};
             } else {
-                return object;
+                return std::move(object);
             }
         }
     };
@@ -67,9 +72,12 @@ public:
 #endif
         >
     explicit QJniObject(const char *className, Args &&...args)
-        : QJniObject(className, QtJniTypes::constructorSignature<Args...>().data(),
-                     std::forward<Args>(args)...)
-    {}
+        : QJniObject(Qt::Uninitialized)
+    {
+        LocalFrame<Args...> localFrame;
+        *this = QJniObject(className, QtJniTypes::constructorSignature<Args...>().data(),
+                           localFrame.convertToJni(std::forward<Args>(args))...);
+    }
     explicit QJniObject(jclass clazz);
     explicit QJniObject(jclass clazz, const char *signature, ...);
     template<typename ...Args
@@ -82,6 +90,12 @@ public:
                      std::forward<Args>(args)...)
     {}
     QJniObject(jobject globalRef);
+
+    QJniObject(const QJniObject &other) noexcept = default;
+    QJniObject(QJniObject &&other) noexcept = default;
+    QJniObject &operator=(const QJniObject &other) noexcept = default;
+    QJniObject &operator=(QJniObject &&other) noexcept = default;
+
     ~QJniObject();
 
     template<typename Class, typename ...Args>
@@ -526,6 +540,9 @@ public:
         assign(static_cast<T>(obj));
         return *this;
     }
+
+protected:
+    QJniObject(Qt::Initialization) {}
 
 private:
     static jclass loadClass(const QByteArray &className, JNIEnv *env);

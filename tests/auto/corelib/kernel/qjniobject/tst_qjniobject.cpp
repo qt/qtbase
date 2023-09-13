@@ -12,6 +12,7 @@ using namespace Qt::StringLiterals;
 
 static const char testClassName[] = "org/qtproject/qt/android/testdatapackage/QtJniObjectTestClass";
 Q_DECLARE_JNI_CLASS(QtJniObjectTestClass, testClassName)
+using TestClass = QtJniTypes::QtJniObjectTestClass;
 
 static const jbyte A_BYTE_VALUE = 127;
 static const jshort A_SHORT_VALUE = 32767;
@@ -150,6 +151,16 @@ void tst_QJniObject::ctor()
     {
         QJniObject object = QJniObject::construct<jstring>();
         QVERIFY(object.isValid());
+    }
+
+    {
+        // from Qt 6.7 on we can construct declared classes through the helper type
+        QJniObject object = TestClass::construct();
+        QVERIFY(object.isValid());
+
+        // or even directly
+        TestClass testObject;
+        QVERIFY(testObject.isValid());
     }
 
     {
@@ -311,9 +322,14 @@ void tst_QJniObject::className()
     }
 
     {
-        QJniObject strObject = QJniObject("java/lang/String", jString.object<jstring>());
+        QJniObject strObject = QJniObject("java/lang/String", str);
         QCOMPARE(strObject.className(), "java/lang/String");
         QCOMPARE(strObject.toString(), str);
+    }
+
+    {
+        TestClass test;
+        QCOMPARE(test.className(), testClassName);
     }
 }
 
@@ -1119,8 +1135,8 @@ void setStaticField(const char *fieldName, T testValue)
 
     // use template overload to reset to default
     T defaultValue = {};
-    QJniObject::setStaticField<QtJniTypes::QtJniObjectTestClass, T>(fieldName, defaultValue);
-    res = QJniObject::getStaticField<QtJniTypes::QtJniObjectTestClass, T>(fieldName);
+    TestClass::setStaticField(fieldName, defaultValue);
+    res = TestClass::getStaticField<T>(fieldName);
     QCOMPARE(res, defaultValue);
 }
 
@@ -1185,8 +1201,8 @@ void tst_QJniObject::setStaticObjectField()
 
     // as of Qt 6.7, we can set and get strings directly
     using namespace QtJniTypes;
-    QJniObject::setStaticField<QtJniObjectTestClass>("S_STRING_OBJECT_VAR", qString);
-    QCOMPARE((QJniObject::getStaticField<QtJniObjectTestClass, QString>("S_STRING_OBJECT_VAR")), qString);
+    QtJniObjectTestClass::setStaticField("S_STRING_OBJECT_VAR", qString);
+    QCOMPARE(QtJniObjectTestClass::getStaticField<QString>("S_STRING_OBJECT_VAR"), qString);
 }
 
 void tst_QJniObject::templateApiCheck()
@@ -1473,11 +1489,17 @@ void tst_QJniObject::templateApiCheck()
         QJniObject res = QJniObject::callStaticObjectMethod<jobjectArray>(testClassName,
                                                                           "staticObjectArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = TestClass::callStaticMethod<jobject[]>("staticObjectArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     {
         QJniObject res = testClass.callObjectMethod<jobjectArray>("objectArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = testClass.callMethod<jobject[]>("objectArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     // jbooleanArray ------------------------------------------------------------------------------
@@ -1485,11 +1507,17 @@ void tst_QJniObject::templateApiCheck()
         QJniObject res = QJniObject::callStaticObjectMethod<jbooleanArray>(testClassName,
                                                                            "staticBooleanArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = TestClass::callStaticMethod<jboolean[]>("staticBooleanArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     {
         QJniObject res = testClass.callObjectMethod<jbooleanArray>("booleanArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = testClass.callMethod<jboolean[]>("booleanArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     // jbyteArray ---------------------------------------------------------------------------------
@@ -1497,11 +1525,17 @@ void tst_QJniObject::templateApiCheck()
         QJniObject res = QJniObject::callStaticObjectMethod<jbyteArray>(testClassName,
                                                                         "staticByteArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = TestClass::callStaticMethod<jbyte[]>("staticByteArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     {
         QJniObject res = testClass.callObjectMethod<jbyteArray>("byteArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = testClass.callMethod<jbyte[]>("byteArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     // jcharArray ---------------------------------------------------------------------------------
@@ -1509,11 +1543,17 @@ void tst_QJniObject::templateApiCheck()
         QJniObject res = QJniObject::callStaticObjectMethod<jcharArray>(testClassName,
                                                                         "staticCharArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = TestClass::callStaticMethod<jchar[]>("staticCharArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     {
         QJniObject res = testClass.callObjectMethod<jcharArray>("charArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = testClass.callMethod<jchar[]>("charArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     // jshortArray --------------------------------------------------------------------------------
@@ -1521,11 +1561,17 @@ void tst_QJniObject::templateApiCheck()
         QJniObject res = QJniObject::callStaticObjectMethod<jshortArray>(testClassName,
                                                                          "staticShortArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = TestClass::callStaticMethod<jshort[]>("staticShortArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     {
         QJniObject res = testClass.callObjectMethod<jshortArray>("shortArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = testClass.callMethod<jshort[]>("shortArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     // jintArray ----------------------------------------------------------------------------------
@@ -1533,11 +1579,17 @@ void tst_QJniObject::templateApiCheck()
         QJniObject res = QJniObject::callStaticObjectMethod<jintArray>(testClassName,
                                                                        "staticIntArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = TestClass::callStaticMethod<jint[]>("staticIntArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     {
         QJniObject res = testClass.callObjectMethod<jintArray>("intArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = testClass.callMethod<jint[]>("intArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     // jlongArray ---------------------------------------------------------------------------------
@@ -1545,11 +1597,17 @@ void tst_QJniObject::templateApiCheck()
         QJniObject res = QJniObject::callStaticObjectMethod<jlongArray>(testClassName,
                                                                         "staticLongArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = TestClass::callStaticMethod<jlong[]>("staticLongArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     {
         QJniObject res = testClass.callObjectMethod<jlongArray>("longArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = testClass.callMethod<jlong[]>("longArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     // jfloatArray --------------------------------------------------------------------------------
@@ -1557,11 +1615,17 @@ void tst_QJniObject::templateApiCheck()
         QJniObject res = QJniObject::callStaticObjectMethod<jfloatArray>(testClassName,
                                                                          "staticFloatArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = TestClass::callStaticMethod<jfloat[]>("staticFloatArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     {
         QJniObject res = testClass.callObjectMethod<jfloatArray>("floatArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = testClass.callMethod<jfloat[]>("floatArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     // jdoubleArray -------------------------------------------------------------------------------
@@ -1569,11 +1633,17 @@ void tst_QJniObject::templateApiCheck()
         QJniObject res = QJniObject::callStaticObjectMethod<jdoubleArray>(testClassName,
                                                                           "staticDoubleArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = TestClass::callStaticMethod<jdouble[]>("staticDoubleArrayMethod");
+        QVERIFY(array.isValid());
     }
 
     {
         QJniObject res = testClass.callObjectMethod<jdoubleArray>("doubleArrayMethod");
         QVERIFY(res.isValid());
+
+        const auto array = testClass.callMethod<jdouble[]>("doubleArrayMethod");
+        QVERIFY(array.isValid());
     }
 
 }
