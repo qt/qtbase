@@ -564,7 +564,7 @@ void QMimeData::setData(const QString &mimeType, const QByteArray &data)
     Q_D(QMimeData);
 
     if (mimeType == "text/uri-list"_L1) {
-        QByteArray ba = data;
+        auto ba = QByteArrayView(data);
         if (ba.endsWith('\0'))
             ba.chop(1);
         d->setData(mimeType, dataToUrls(ba));
