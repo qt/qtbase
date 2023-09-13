@@ -19,6 +19,7 @@ endif()
 add_subdirectory(highdpi)
 add_subdirectory(inputmethodhints)
 add_subdirectory(keypadnavigation)
+add_subdirectory(keyevents)
 #add_subdirectory(lance) # qgl.h missing
 add_subdirectory(qcursor)
 add_subdirectory(qdesktopservices)

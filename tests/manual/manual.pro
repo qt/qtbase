@@ -10,6 +10,7 @@ gestures \
 highdpi \
 inputmethodhints \
 keypadnavigation \
+keyevents \
 lance \
 network_remote_stresstest \
 network_stresstest \
