@@ -1453,9 +1453,23 @@ function(qt6_extract_metatypes target)
             )
             add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
         else()
-            set(cmake_autogen_timestamp_file
-                "${target_binary_dir}/${target}_autogen/timestamp"
-            )
+            set(use_better_automoc_graph FALSE)
+            if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.28.0"
+                AND CMAKE_CROSS_CONFIGS)
+                if(DEFINED QT_USE_BETTER_AUTOMOC_GRAPH)
+                    set(use_better_automoc_graph ${QT_USE_BETTER_AUTOMOC_GRAPH})
+                else()
+                    set(use_better_automoc_graph TRUE)
+                endif()
+            endif()
+
+            if(use_better_automoc_graph)
+                set(cmake_autogen_timestamp_file
+                    "${target_binary_dir}/${target}_autogen/timestamp_$<CONFIG>")
+            else()
+                set(cmake_autogen_timestamp_file
+                    "${target_binary_dir}/${target}_autogen/timestamp")
+            endif()
 
             add_custom_command(OUTPUT ${type_list_file}
                 DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
