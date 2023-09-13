@@ -452,6 +452,11 @@ void QOpenGLContext::destroy()
 
     If you wish to make the context current in order to do clean-up, make sure
     to only connect to the signal using a direct connection.
+
+    \note In Qt for Python, this signal will not be received when emitted
+    from the destructor of QOpenGLWidget or QOpenGLWindow due to the Python
+    instance already being destroyed. We recommend doing cleanups
+    in QWidget::hideEvent() instead.
 */
 
 /*!
