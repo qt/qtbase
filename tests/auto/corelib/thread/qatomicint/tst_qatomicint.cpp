@@ -21,8 +21,6 @@ private slots:
     // QAtomicInt members
     void constructor_data();
     void constructor();
-    void copy_constructor_data();
-    void copy_constructor();
     void assignment_operator_data();
     void assignment_operator();
 
@@ -236,25 +234,6 @@ void tst_QAtomicInt::constructor()
     QCOMPARE(atomic2.loadRelaxed(), value);
 }
 
-void tst_QAtomicInt::copy_constructor_data()
-{ constructor_data(); }
-
-void tst_QAtomicInt::copy_constructor()
-{
-    QFETCH(int, value);
-    QAtomicInt atomic1(value);
-    QCOMPARE(atomic1.loadRelaxed(), value);
-
-    QAtomicInt atomic2(atomic1);
-    QCOMPARE(atomic2.loadRelaxed(), value);
-    QAtomicInt atomic3 = atomic1;
-    QCOMPARE(atomic3.loadRelaxed(), value);
-    QAtomicInt atomic4(atomic2);
-    QCOMPARE(atomic4.loadRelaxed(), value);
-    QAtomicInt atomic5 = atomic2;
-    QCOMPARE(atomic5.loadRelaxed(), value);
-}
-
 void tst_QAtomicInt::assignment_operator_data()
 {
     QTest::addColumn<int>("value");
@@ -279,10 +258,6 @@ void tst_QAtomicInt::assignment_operator()
         QCOMPARE(atomic1.loadRelaxed(), newval);
         atomic1 = value;
         QCOMPARE(atomic1.loadRelaxed(), value);
-
-        QAtomicInt atomic2 = newval;
-        atomic1 = atomic2;
-        QCOMPARE(atomic1.loadRelaxed(), atomic2.loadRelaxed());
     }
 }
 

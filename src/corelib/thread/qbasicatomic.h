@@ -39,7 +39,7 @@ public:
     T loadAcquire() const noexcept { return Ops::loadAcquire(_q_value); }
     void storeRelease(T newValue) noexcept { Ops::storeRelease(_q_value, newValue); }
     operator T() const noexcept { return loadAcquire(); }
-    T operator=(T newValue) noexcept { storeRelease(newValue); return newValue; }
+    QBasicAtomicInteger &operator=(T newValue) noexcept { storeRelease(newValue); return *this; }
 
     static constexpr bool isReferenceCountingNative() noexcept { return Ops::isReferenceCountingNative(); }
     static constexpr bool isReferenceCountingWaitFree() noexcept { return Ops::isReferenceCountingWaitFree(); }
@@ -171,7 +171,7 @@ public:
     void storeRelaxed(Type newValue) noexcept { Ops::storeRelaxed(_q_value, newValue); }
 
     operator Type() const noexcept { return loadAcquire(); }
-    Type operator=(Type newValue) noexcept { storeRelease(newValue); return newValue; }
+    QBasicAtomicPointer &operator=(Type newValue) noexcept { storeRelease(newValue); return *this; }
 
     // Atomic API, implemented in qatomic_XXX.h
     Type loadAcquire() const noexcept { return Ops::loadAcquire(_q_value); }
