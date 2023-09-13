@@ -792,6 +792,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     const QEvent::Type type = event->type();
     switch (type) {
     case QEvent::UpdateRequest:
+    case QEvent::UpdateLater:
     case QEvent::LayoutRequest:
     case QEvent::Resize:
     case QEvent::Move:
@@ -819,6 +820,10 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
         case QEvent::Move:
             static_cast<QMoveEvent *>(postedEvent.event)->m_pos =
                 static_cast<const QMoveEvent *>(event)->pos();
+            break;
+        case QEvent::UpdateLater:
+            static_cast<QUpdateLaterEvent *>(postedEvent.event)->m_region +=
+                static_cast<const QUpdateLaterEvent *>(event)->region();
             break;
         case QEvent::UpdateRequest:
         case QEvent::LanguageChange:
