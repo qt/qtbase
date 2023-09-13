@@ -75,10 +75,6 @@ public:
     {
     }
 
-    ~QUpdateLaterEvent()
-    {
-    }
-
     inline const QRegion &region() const { return m_region; }
 
 protected:
