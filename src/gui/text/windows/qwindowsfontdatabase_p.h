@@ -87,7 +87,7 @@ private:
 
     struct UniqueFontData {
         HANDLE handle;
-        QAtomicInt refCount;
+        int refCount;
     };
 
     QMutex m_uniqueFontDataMutex; // protects m_uniqueFontData

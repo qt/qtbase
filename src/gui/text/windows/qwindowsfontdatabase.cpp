@@ -846,9 +846,9 @@ QT_WARNING_POP
                         Q_ASSERT_X(false, Q_FUNC_INFO, "Unhandled font engine.");
                     }
 
-                    UniqueFontData uniqueData;
+                    UniqueFontData uniqueData{};
                     uniqueData.handle = fontHandle;
-                    uniqueData.refCount.ref();
+                    ++uniqueData.refCount;
                     {
                         const std::scoped_lock lock(m_uniqueFontDataMutex);
                         m_uniqueFontData[uniqueFamilyName] = uniqueData;
@@ -1150,7 +1150,7 @@ void QWindowsFontDatabase::derefUniqueFont(const QString &uniqueFont)
     const std::scoped_lock lock(m_uniqueFontDataMutex);
     const auto it = m_uniqueFontData.find(uniqueFont);
     if (it != m_uniqueFontData.end()) {
-        if (!it->refCount.deref()) {
+        if (--it->refCount == 0) {
             RemoveFontMemResourceEx(it->handle);
             m_uniqueFontData.erase(it);
         }
@@ -1162,7 +1162,7 @@ void QWindowsFontDatabase::refUniqueFont(const QString &uniqueFont)
     const std::scoped_lock lock(m_uniqueFontDataMutex);
     const auto it = m_uniqueFontData.find(uniqueFont);
     if (it != m_uniqueFontData.end())
-        it->refCount.ref();
+        ++it->refCount;
 }
 
 QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
