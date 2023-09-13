@@ -8,6 +8,7 @@
 #include <QTimeZone>
 #include <private/qdatetime_p.h>
 #include <private/qtenvironmentvariables_p.h> // for qTzSet(), qTzName()
+#include <private/qcomparisontesthelper_p.h>
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -99,8 +100,11 @@ private Q_SLOTS:
     void secsTo();
     void msecsTo_data() { addMSecs_data(); }
     void msecsTo();
+    void orderingCompiles();
     void operator_eqeq_data();
     void operator_eqeq();
+    void ordering_data();
+    void ordering();
     void operator_insert_extract_data();
     void operator_insert_extract();
     void currentDateTime();
@@ -1985,6 +1989,11 @@ void tst_QDateTime::msecsTo()
     }
 }
 
+void tst_QDateTime::orderingCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QDateTime>();
+}
+
 void tst_QDateTime::currentDateTime()
 {
     time_t buf1, buf2;
@@ -2463,29 +2472,88 @@ void tst_QDateTime::operator_eqeq()
     QFETCH(bool, expectEqual);
     QFETCH(bool, checkEuro);
 
-    QVERIFY(dt1 == dt1);
-    QVERIFY(!(dt1 != dt1));
+    QTestPrivate::testEqualityOperators(dt1, dt1, true);
+    if (QTest::currentTestFailed())
+        return;
 
-    QVERIFY(dt2 == dt2);
-    QVERIFY(!(dt2 != dt2));
+    QTestPrivate::testEqualityOperators(dt2, dt2, true);
+    if (QTest::currentTestFailed())
+        return;
+
+    QTestPrivate::testEqualityOperators(dt1, dt2, expectEqual);
+    if (QTest::currentTestFailed())
+        return;
 
     QVERIFY(dt1 != QDateTime::currentDateTime());
     QVERIFY(dt2 != QDateTime::currentDateTime());
 
     QVERIFY(dt1.toUTC() == dt1.toUTC());
 
-    bool equal = dt1 == dt2;
-    QCOMPARE(equal, expectEqual);
-    bool notEqual = dt1 != dt2;
-    QCOMPARE(notEqual, !expectEqual);
-
-    if (equal)
+    if (expectEqual)
         QVERIFY(qHash(dt1) == qHash(dt2));
 
     if (checkEuro && zoneIsCET) {
         QVERIFY(dt1.toUTC() == dt2);
         QVERIFY(dt1 == dt2.toLocalTime());
     }
+}
+
+void tst_QDateTime::ordering_data()
+{
+    QTest::addColumn<QDateTime>("left");
+    QTest::addColumn<QDateTime>("right");
+    QTest::addColumn<QWeakOrdering>("expectedOrdering");
+
+    Q_CONSTINIT static const auto constructName = [](const QDateTime &dt) -> QByteArray {
+        if (dt.isNull())
+            return "null";
+        if (!dt.isValid())
+            return "invalid";
+        return dt.toString(Qt::ISODateWithMs).toLatin1();
+    };
+
+    Q_CONSTINIT static const auto generateRow =
+            [](const QDateTime &left, const QDateTime &right, QWeakOrdering ordering) {
+        const QByteArray leftStr = constructName(left);
+        const QByteArray rightStr = constructName(right);
+        QTest::addRow("%s_vs_%s", leftStr.constData(), rightStr.constData())
+                << left << right << ordering;
+    };
+
+    QDateTime june(QDate(2012, 6, 20), QTime(14, 33, 2, 500));
+    QDateTime juneLater = june.addMSecs(1);
+    QDateTime badDay(QDate(2012, 20, 6), QTime(14, 33, 2, 500)); // Invalid
+    QDateTime epoch(QDate(1970, 1, 1), QTime(0, 0), UTC); // UTC epoch
+    QDateTime nextDay = epoch.addDays(1);
+    QDateTime prevDay = epoch.addDays(-1);
+    // Ensure that different times may be equal when considering timezone.
+    QDateTime epochEast1h(epoch.addSecs(3600));
+    epochEast1h.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(3600));
+    QDateTime epochWest1h(epoch.addSecs(-3600));
+    epochWest1h.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(-3600));
+    QDateTime local1970(epoch.date(), epoch.time()); // Local time's epoch
+
+    generateRow(june, june, QWeakOrdering::Equivalent);
+    generateRow(june, juneLater, QWeakOrdering::Less);
+    generateRow(june, badDay, QWeakOrdering::Greater);
+    generateRow(badDay, QDateTime(), QWeakOrdering::Equivalent);
+    generateRow(june, QDateTime(), QWeakOrdering::Greater);
+    generateRow(epoch, nextDay, QWeakOrdering::Less);
+    generateRow(epoch, prevDay, QWeakOrdering::Greater);
+    generateRow(epoch, epochEast1h, QWeakOrdering::Equivalent);
+    generateRow(epoch, epochWest1h, QWeakOrdering::Equivalent);
+    generateRow(epochEast1h, epochWest1h, QWeakOrdering::Equivalent);
+    if (epochTimeType == LocalTimeIsUtc)
+        generateRow(epoch, local1970, QWeakOrdering::Equivalent);
+}
+
+void tst_QDateTime::ordering()
+{
+    QFETCH(QDateTime, left);
+    QFETCH(QDateTime, right);
+    QFETCH(QWeakOrdering, expectedOrdering);
+
+    QTestPrivate::testAllComparisonOperators(left, right, expectedOrdering);
 }
 
 Q_DECLARE_METATYPE(QDataStream::Version)

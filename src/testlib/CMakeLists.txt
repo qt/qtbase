@@ -21,6 +21,7 @@ qt_internal_add_module(Test
         qbenchmarkmetric.cpp qbenchmarkmetric.h qbenchmarkmetric_p.h
         qbenchmarkperfevents.cpp qbenchmarkperfevents_p.h
         qbenchmarktimemeasurers_p.h
+        qcomparisontesthelper.cpp qcomparisontesthelper_p.h
         qcsvbenchmarklogger.cpp qcsvbenchmarklogger_p.h
         qemulationdetector_p.h
         qjunittestlogger.cpp qjunittestlogger_p.h

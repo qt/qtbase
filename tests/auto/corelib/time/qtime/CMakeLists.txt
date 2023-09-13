@@ -19,4 +19,5 @@ qt_internal_add_test(tst_qtime
         QT_NO_KEYWORDS
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )

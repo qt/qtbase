@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <private/qglobal_p.h>
+#include <private/qcomparisontesthelper_p.h>
 #include <QTest>
 #include "qdatetime.h"
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -27,12 +28,11 @@ private Q_SLOTS:
     void addMSecs();
     void addSecs_data();
     void addSecs();
+    void orderingCompiles();
     void operator_eq_eq_data();
     void operator_eq_eq();
-    void operator_lt();
-    void operator_gt();
-    void operator_lt_eq();
-    void operator_gt_eq();
+    void ordering_data();
+    void ordering();
 #if QT_CONFIG(datestring)
 # if QT_CONFIG(datetimeparser)
     void fromStringFormat_data();
@@ -320,6 +320,11 @@ void tst_QTime::msecsTo()
     QCOMPARE( t1.msecsTo( t2 ), delta );
 }
 
+void tst_QTime::orderingCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QTime>();
+}
+
 void tst_QTime::operator_eq_eq_data()
 {
     QTest::addColumn<QTime>("t1");
@@ -345,169 +350,44 @@ void tst_QTime::operator_eq_eq()
     QFETCH(QTime, t2);
     QFETCH(bool, expectEqual);
 
-    bool equal = t1 == t2;
-    QCOMPARE(equal, expectEqual);
-    bool notEqual = t1 != t2;
-    QCOMPARE(notEqual, !expectEqual);
+    QTestPrivate::testEqualityOperators(t1, t2, expectEqual);
+    if (QTest::currentTestFailed())
+        return;
 
-    if (equal)
+    if (expectEqual)
         QVERIFY(qHash(t1) == qHash(t2));
 }
 
-void tst_QTime::operator_lt()
+void tst_QTime::ordering_data()
 {
-    QTime t1(0,0,0,0);
-    QTime t2(0,0,0,0);
-    QVERIFY( !(t1 < t2) );
+    QTest::addColumn<QTime>("left");
+    QTest::addColumn<QTime>("right");
+    QTest::addColumn<QStrongOrdering>("expectedOrdering");
 
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(12,34,56,30);
-    QVERIFY( t1 < t2 );
+    auto generateRow = [](QTime t1, QTime t2, QStrongOrdering ordering) {
+        const QByteArray t1Str = t1.toString("hh:mm:ss.zz").toLatin1();
+        const QByteArray t2Str = t2.toString("hh:mm:ss.zz").toLatin1();
+        QTest::addRow("%s_vs_%s", t1Str.constData(), t2Str.constData()) << t1 << t2 << ordering;
+    };
 
-    t1 = QTime(13,34,46,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 < t2 );
-
-    t1 = QTime(13,24,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 < t2 );
-
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 < t2 );
-
-    t1 = QTime(14,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 < t2) );
-
-    t1 = QTime(13,44,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 < t2) );
-
-    t1 = QTime(13,34,56,20);
-    t2 = QTime(13,34,46,20);
-    QVERIFY( !(t1 < t2) );
-
-    t1 = QTime(13,44,56,30);
-    t2 = QTime(13,44,56,20);
-    QVERIFY( !(t1 < t2) );
+    generateRow(QTime(0, 0), QTime(0, 0), QStrongOrdering::Equivalent);
+    generateRow(QTime(12, 34, 56, 20), QTime(12, 34, 56, 30), QStrongOrdering::Less);
+    generateRow(QTime(13, 34, 46, 20), QTime(13, 34, 56, 20), QStrongOrdering::Less);
+    generateRow(QTime(13, 24, 56, 20), QTime(13, 34, 56, 20), QStrongOrdering::Less);
+    generateRow(QTime(12, 34, 56, 20), QTime(13, 34, 56, 20), QStrongOrdering::Less);
+    generateRow(QTime(14, 34, 56, 20), QTime(13, 34, 56, 20), QStrongOrdering::Greater);
+    generateRow(QTime(13, 44, 56, 20), QTime(13, 34, 56, 20), QStrongOrdering::Greater);
+    generateRow(QTime(13, 34, 56, 20), QTime(13, 34, 46, 20), QStrongOrdering::Greater);
+    generateRow(QTime(13, 34, 56, 30), QTime(13, 34, 56, 20), QStrongOrdering::Greater);
 }
 
-void tst_QTime::operator_gt()
+void tst_QTime::ordering()
 {
-    QTime t1(0,0,0,0);
-    QTime t2(0,0,0,0);
-    QVERIFY( !(t1 > t2) );
+    QFETCH(QTime, left);
+    QFETCH(QTime, right);
+    QFETCH(QStrongOrdering, expectedOrdering);
 
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(12,34,56,30);
-    QVERIFY( !(t1 > t2) );
-
-    t1 = QTime(13,34,46,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 > t2) );
-
-    t1 = QTime(13,24,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 > t2) );
-
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 > t2) );
-
-    t1 = QTime(14,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 > t2 );
-
-    t1 = QTime(13,44,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 > t2 );
-
-    t1 = QTime(13,34,56,20);
-    t2 = QTime(13,34,46,20);
-    QVERIFY( t1 > t2 );
-
-    t1 = QTime(13,44,56,30);
-    t2 = QTime(13,44,56,20);
-    QVERIFY( t1 > t2 );
-}
-
-void tst_QTime::operator_lt_eq()
-{
-    QTime t1(0,0,0,0);
-    QTime t2(0,0,0,0);
-    QVERIFY( t1 <= t2 );
-
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(12,34,56,30);
-    QVERIFY( t1 <= t2 );
-
-    t1 = QTime(13,34,46,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 <= t2 );
-
-    t1 = QTime(13,24,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 <= t2 );
-
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 <= t2 );
-
-    t1 = QTime(14,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 <= t2) );
-
-    t1 = QTime(13,44,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 <= t2) );
-
-    t1 = QTime(13,34,56,20);
-    t2 = QTime(13,34,46,20);
-    QVERIFY( !(t1 <= t2) );
-
-    t1 = QTime(13,44,56,30);
-    t2 = QTime(13,44,56,20);
-    QVERIFY( !(t1 <= t2) );
-}
-
-void tst_QTime::operator_gt_eq()
-{
-    QTime t1(0,0,0,0);
-    QTime t2(0,0,0,0);
-    QVERIFY( t1 >= t2 );
-
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(12,34,56,30);
-    QVERIFY( !(t1 >= t2) );
-
-    t1 = QTime(13,34,46,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 >= t2) );
-
-    t1 = QTime(13,24,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 >= t2) );
-
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 >= t2) );
-
-    t1 = QTime(14,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 >= t2 );
-
-    t1 = QTime(13,44,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 >= t2 );
-
-    t1 = QTime(13,34,56,20);
-    t2 = QTime(13,34,46,20);
-    QVERIFY( t1 >= t2 );
-
-    t1 = QTime(13,44,56,30);
-    t2 = QTime(13,44,56,20);
-    QVERIFY( t1 >= t2 );
+    QTestPrivate::testAllComparisonOperators(left, right, expectedOrdering);
 }
 
 #if QT_CONFIG(datestring)
