@@ -9,9 +9,11 @@
 #include <QMessageBox>
 #include <QTimer>
 
+using namespace Qt::StringLiterals;
+
 Client::Client(QWidget *parent)
     : QDialog(parent),
-      hostLineEdit(new QLineEdit("fortune")),
+      hostLineEdit(new QLineEdit(u"fortune"_s)),
       getFortuneButton(new QPushButton(tr("Get Fortune"))),
       statusLabel(new QLabel(tr("This examples requires that you run the "
                                 "Local Fortune Server example as well."))),
