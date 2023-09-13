@@ -374,7 +374,9 @@ function(qtConfValidateValue opt val out_var)
     endforeach()
 
     set(${out_var} FALSE PARENT_SCOPE)
-    qtConfAddError("Invalid value '${val}' supplied to command line option '${opt}'.")
+    list(JOIN valid_values " " valid_values_str)
+    qtConfAddError("Invalid value '${val}' supplied to command line option '${opt}'."
+        "\nAllowed values: ${valid_values_str}\n")
 endfunction()
 
 function(qt_commandline_mapped_enum_value opt key out_var)
