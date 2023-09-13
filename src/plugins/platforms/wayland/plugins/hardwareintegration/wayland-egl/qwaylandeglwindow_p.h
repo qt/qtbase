@@ -5,7 +5,6 @@
 #pragma once
 
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
-#include "qwaylandeglinclude_p.h"
 #include "qwaylandeglclientbufferintegration_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -24,8 +23,10 @@ public:
     ~QWaylandEglWindow();
     WindowType windowType() const override;
     void ensureSize() override;
+    QSize bufferSize() const;
 
-    void updateSurface(bool create);
+    void createSurface(const QSize &initialSize);
+    void updateSurfaceSize(const QSize &bufferSize);
     QRect contentsRect() const;
 
     EGLSurface eglSurface() const;
@@ -49,13 +50,13 @@ private:
     mutable bool m_resize = false;
     mutable QOpenGLFramebufferObject *m_contentFBO = nullptr;
 
-    // Size used in the last call to wl_egl_window_resize
-    QSize m_requestedSize;
-
     // Size of the buffer used by QWaylandWindow
     // This is always written to from the main thread, potentially read from the rendering thread
-    QReadWriteLock m_bufferSizeLock;
+    mutable QReadWriteLock m_bufferSizeLock;
     QSize m_bufferSize;
+
+    // Size used in the last call to wl_egl_window_resize, only updated from the rendering thread
+    QSize m_appliedBufferSize;
 };
 
 }

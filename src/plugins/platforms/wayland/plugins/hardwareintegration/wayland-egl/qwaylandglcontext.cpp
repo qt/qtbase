@@ -428,22 +428,25 @@ bool QWaylandGLContext::makeCurrent(QPlatformSurface *surface)
 
     m_currentWindow = static_cast<QWaylandEglWindow *>(surface);
 
-    QMutexLocker lock(m_currentWindow->eglSurfaceLock());
-    EGLSurface eglSurface = m_currentWindow->eglSurface();
-
     if (!checkGraphicsReset())
         return false;
 
-    if (!m_currentWindow->needToUpdateContentFBO() && (eglSurface != EGL_NO_SURFACE)) {
-        if (!eglMakeCurrent(eglDisplay(), eglSurface, eglSurface, eglContext())) {
-            qWarning("QWaylandGLContext::makeCurrent: eglError: %#x, this: %p \n", eglGetError(), this);
-            return false;
-        }
+    QMutexLocker lock(m_currentWindow->eglSurfaceLock());
+
+    EGLSurface eglSurface = m_currentWindow->eglSurface();
+    QSize size = m_currentWindow->bufferSize();
+
+    // wl_egl_windows must have both width and height > 0
+    // mesa's egl returns NULL if we try to create a, invalid wl_egl_window, however not all EGL
+    // implementations may do that, so check the size ourself. Besides, we must deal with resizing
+    // a valid window to 0x0, which would make it invalid. Hence, destroy it.
+    if (size.isEmpty()) {
+        lock.unlock();
+        m_currentWindow->invalidateSurface();
         return true;
     }
-
     if (eglSurface == EGL_NO_SURFACE) {
-        m_currentWindow->updateSurface(true);
+        m_currentWindow->createSurface(size);
         eglSurface = m_currentWindow->eglSurface();
     }
 
@@ -451,11 +454,16 @@ bool QWaylandGLContext::makeCurrent(QPlatformSurface *surface)
         qWarning("QWaylandGLContext::makeCurrent: eglError: %#x, this: %p \n", eglGetError(), this);
         return false;
     }
+    // Nvidia requires that the surface is current and on the render thread at the time of doing the actual resizing
+    m_currentWindow->updateSurfaceSize(size);
 
-    //### setCurrentContext will be called in QOpenGLContext::makeCurrent after this function
-    // returns, but that's too late, as we need a current context in order to bind the content FBO.
-    QOpenGLContextPrivate::setCurrentContext(context());
-    m_currentWindow->bindContentFBO();
+    if (m_currentWindow->needToUpdateContentFBO()) {
+        // ### setCurrentContext will be called in QOpenGLContext::makeCurrent after this function
+        //  returns, but that's too late, as we need a current context in order to bind the content
+        //  FBO.
+        QOpenGLContextPrivate::setCurrentContext(context());
+        m_currentWindow->bindContentFBO();
+    }
 
     return true;
 }

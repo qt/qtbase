@@ -94,13 +94,6 @@ void QWaylandEglClientBufferIntegration::initialize(QWaylandDisplay *display)
             break;
         }
     }
-
-    // On desktop NVIDIA resizing QtQuick freezes them when using threaded rendering QTBUG-95817
-    // In order to support threaded rendering on embedded platforms where resizing is not needed
-    // we check if XDG_CURRENT_DESKTOP is set which desktop environments should set
-    if (qstrcmp(vendor, "NVIDIA") == 0 && qEnvironmentVariableIsSet("XDG_CURRENT_DESKTOP")) {
-        m_supportsThreading = false;
-    }
 }
 
 bool QWaylandEglClientBufferIntegration::isValid() const
