@@ -1068,12 +1068,12 @@ typedef QScopedPointer<DBusConnection, DisconnectRawDBus> ScopedDBusConnection;
 typedef QScopedPointer<DBusMessage, UnrefDBusMessage> ScopedDBusMessage;
 typedef QScopedPointer<DBusPendingCall, UnrefDBusPendingCall> ScopedDBusPendingCall;
 
-template <typename T> struct SetResetValue
+template <typename T, typename T2 = T> struct SetResetValue
 {
-    const T oldValue;
+    const T2 oldValue;
     T &value;
 public:
-    SetResetValue(T &v, T newValue) : oldValue(v), value(v)
+    SetResetValue(T &v, T2 newValue) : oldValue(v), value(v)
     {
         value = newValue;
     }
@@ -1120,8 +1120,8 @@ void tst_QDBusMarshall::receiveUnknownType()
 
     // make sure this QDBusConnection won't handle Unix file descriptors
     QAtomicInt &capabRef = QDBusConnectionPrivate::d(con)->capabilities;
-    SetResetValue<QAtomicInt> resetter(capabRef,
-                                       capabRef & ~QDBusConnection::UnixFileDescriptorPassing);
+    SetResetValue<QAtomicInt, int> resetter(capabRef,
+                                            capabRef & ~QDBusConnection::UnixFileDescriptorPassing);
 
     if (qstrcmp(QTest::currentDataTag(), "in-call") == 0) {
         // create a call back to us containing a file descriptor
