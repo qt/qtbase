@@ -34,9 +34,7 @@ class QDBusDemarshaller;
 class QDBusArgumentPrivate
 {
 public:
-    inline QDBusArgumentPrivate(int flags = 0)
-        : message(nullptr), ref(1), capabilities(flags)
-    { }
+    inline QDBusArgumentPrivate(int flags = 0) : capabilities(flags) { }
     virtual ~QDBusArgumentPrivate();
 
     static bool checkRead(QDBusArgumentPrivate *d);
@@ -55,8 +53,8 @@ public:
     static inline QDBusArgumentPrivate *d(QDBusArgument &q)
     { return q.d; }
 
-    DBusMessage *message;
-    QAtomicInt ref;
+    DBusMessage *message = nullptr;
+    QAtomicInt ref = 1;
     int capabilities;
     enum Direction {
         Marshalling,
@@ -67,8 +65,7 @@ public:
 class QDBusMarshaller: public QDBusArgumentPrivate
 {
 public:
-    QDBusMarshaller(int flags) : QDBusArgumentPrivate(flags), parent(nullptr), ba(nullptr), closeCode(0), ok(true), skipSignature(false)
-    { direction = Marshalling; }
+    QDBusMarshaller(int flags) : QDBusArgumentPrivate(flags) { direction = Marshalling; }
     ~QDBusMarshaller();
 
     QString currentSignature();
@@ -109,12 +106,12 @@ public:
     bool appendCrossMarshalling(QDBusDemarshaller *arg);
 
     DBusMessageIter iterator;
-    QDBusMarshaller *parent;
-    QByteArray *ba;
+    QDBusMarshaller *parent = nullptr;
+    QByteArray *ba = nullptr;
     QString errorString;
-    char closeCode;
-    bool ok;
-    bool skipSignature;
+    char closeCode = 0;
+    bool ok = true;
+    bool skipSignature = false;
 
 private:
     Q_DECL_COLD_FUNCTION void unregisteredTypeError(QMetaType t);
@@ -124,8 +121,7 @@ private:
 class QDBusDemarshaller: public QDBusArgumentPrivate
 {
 public:
-    inline QDBusDemarshaller(int flags) : QDBusArgumentPrivate(flags), parent(nullptr)
-    { direction = Demarshalling; }
+    inline QDBusDemarshaller(int flags) : QDBusArgumentPrivate(flags) { direction = Demarshalling; }
     ~QDBusDemarshaller();
 
     QString currentSignature();
@@ -167,7 +163,7 @@ public:
     bool isCurrentTypeStringLike();
 
     DBusMessageIter iterator;
-    QDBusDemarshaller *parent;
+    QDBusDemarshaller *parent = nullptr;
 
 private:
     Q_DISABLE_COPY_MOVE(QDBusDemarshaller)
