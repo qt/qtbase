@@ -1,10 +1,13 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtWidgets>
-#include <QtNetwork>
-
 #include "client.h"
+
+#include <QDialogButtonBox>
+#include <QGridLayout>
+#include <QGuiApplication>
+#include <QMessageBox>
+#include <QTimer>
 
 Client::Client(QWidget *parent)
     : QDialog(parent),
