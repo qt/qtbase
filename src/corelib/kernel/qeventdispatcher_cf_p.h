@@ -204,6 +204,25 @@ protected:
          , processedPostedEvents(false), processedTimers(false)
          , deferredWakeUp(false), deferredUpdateTimers(false) {}
 
+        ProcessEventsState(const ProcessEventsState &other)
+            : flags(other.flags)
+            , wasInterrupted(other.wasInterrupted.loadAcquire())
+            , processedPostedEvents(other.processedPostedEvents.loadAcquire())
+            , processedTimers(other.processedTimers.loadAcquire())
+            , deferredWakeUp(other.deferredWakeUp.loadAcquire())
+            , deferredUpdateTimers(other.deferredUpdateTimers) {}
+
+        ProcessEventsState &operator=(const ProcessEventsState &other)
+        {
+            flags = other.flags;
+            wasInterrupted.storeRelease(other.wasInterrupted.loadAcquire());
+            processedPostedEvents.storeRelease(other.processedPostedEvents.loadAcquire());
+            processedTimers.storeRelease(other.processedTimers.loadAcquire());
+            deferredWakeUp.storeRelease(other.deferredWakeUp.loadAcquire());
+            deferredUpdateTimers = other.deferredUpdateTimers;
+            return *this;
+        }
+
         QAtomicInt flags;
         QAtomicInteger<char> wasInterrupted;
         QAtomicInteger<char> processedPostedEvents;
