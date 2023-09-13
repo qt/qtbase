@@ -10,7 +10,7 @@
 
     The Local Fortune Server example shows how to create a server for a simple
     local service. It is intended to be run alongside the
-    \l{Local Fortune Client Example}
+    \l{Local Fortune Client} example.
 
     \image localfortuneserver-example.png Screenshot of the Local Fortune Server example
  */
