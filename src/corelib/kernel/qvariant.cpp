@@ -516,7 +516,7 @@ void QVariant::create(int type, const void *copy)
 */
 void QVariant::create(QMetaType type, const void *copy)
 {
-    *this = QVariant(type, copy);
+    *this = QVariant::fromMetaType(type, copy);
 }
 
 /*!
@@ -910,27 +910,27 @@ void *QVariant::prepareForEmplace(QMetaType type)
 */
 
 /*!
-    Constructs variant of type \a type, and initializes with
-    \a copy if \a copy is not \nullptr.
+    Constructs a variant of type \a type, and initializes it with
+    a copy of \c{*copy} if \a copy is not \nullptr (in which case, \a copy
+    must point to an object of type \a type).
 
-    Note that you have to pass the address of the variable you want stored.
+    Note that you have to pass the address of the object you want stored.
 
     Usually, you never have to use this constructor, use QVariant::fromValue()
     instead to construct variants from the pointer types represented by
     \c QMetaType::VoidStar, and \c QMetaType::QObjectStar.
 
-    If \a type does not support copy and default construction, the variant will
-    be invalid.
+    If \a type does not support copy construction and \a copy is not \nullptr,
+    the variant will be invalid. Similarly, if \a copy is \nullptr and
+    \a type does not support default construction, the variant will be
+    invalid.
 
-    \sa QVariant::fromValue(), QMetaType::Type
+    \sa QVariant::fromMetaType, QVariant::fromValue(), QMetaType::Type
 */
-QVariant::QVariant(QMetaType type, const void *copy) : d(type.iface())
+QVariant::QVariant(QMetaType type, const void *copy)
+    : d()
 {
-    type.registerType();
-    if (isValidMetaTypeForVariant(type.iface(), copy))
-        customConstruct(type.iface(), &d, copy);
-    else
-        d = {};
+    *this = fromMetaType(type, copy);
 }
 
 QVariant::QVariant(int val) noexcept : d(std::piecewise_construct_t{}, val) {}
@@ -2710,6 +2710,41 @@ QT_WARNING_POP
     \since 6.6
     \overload
 */
+
+
+/*!
+    \since 6.7
+
+    Creates a variant of type \a type, and initializes it with
+    a copy of \c{*copy} if \a copy is not \nullptr (in which case, \a copy
+    must point to an object of type \a type).
+
+    Note that you have to pass the address of the object you want stored.
+
+    Usually, you never have to use this constructor, use QVariant::fromValue()
+    instead to construct variants from the pointer types represented by
+    \c QMetaType::VoidStar, and \c QMetaType::QObjectStar.
+
+    If \a type does not support copy construction and \a copy is not \nullptr,
+    the variant will be invalid. Similarly, if \a copy is \nullptr and
+    \a type does not support default construction, the variant will be
+    invalid.
+
+    Returns the QVariant created as described above.
+
+    \sa QVariant::fromValue(), QMetaType::Type
+*/
+QVariant QVariant::fromMetaType(QMetaType type, const void *copy)
+{
+    QVariant result;
+    type.registerType();
+    const auto iface = type.iface();
+    if (isValidMetaTypeForVariant(iface, copy)) {
+        result.d = Private(iface);
+        customConstruct(iface, &result.d, copy);
+    }
+    return result;
+}
 
 /*!
     \fn template<typename T> T qvariant_cast(const QVariant &value)

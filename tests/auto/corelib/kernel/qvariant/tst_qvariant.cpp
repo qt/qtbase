@@ -442,10 +442,20 @@ void tst_QVariant::constructor()
     QVERIFY(var3.isNull());
     QVERIFY(var3.isValid());
 
+    QVariant var3a = QVariant::fromMetaType(QMetaType::fromType<QString>());
+    QCOMPARE(var3a.typeName(), "QString");
+    QVERIFY(var3a.isNull());
+    QVERIFY(var3a.isValid());
+
     QVariant var4 {QMetaType()};
     QCOMPARE(var4.typeId(), QMetaType::UnknownType);
     QVERIFY(var4.isNull());
     QVERIFY(!var4.isValid());
+
+    QVariant var4a = QVariant::fromMetaType(QMetaType());
+    QCOMPARE(var4a.typeId(), QMetaType::UnknownType);
+    QVERIFY(var4a.isNull());
+    QVERIFY(!var4a.isValid());
 
     QVariant var5(QLatin1String("hallo"));
     QCOMPARE(var5.typeId(), QMetaType::QString);
@@ -482,6 +492,14 @@ void tst_QVariant::constructor_invalid()
     {
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type"));
         QVariant variant {QMetaType(typeId)};
+        QVERIFY(!variant.isValid());
+        QVERIFY(variant.isNull());
+        QCOMPARE(variant.typeId(), int(QMetaType::UnknownType));
+        QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
+    }
+    {
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type"));
+        QVariant variant = QVariant::fromMetaType(QMetaType(typeId));
         QVERIFY(!variant.isValid());
         QVERIFY(variant.isNull());
         QCOMPARE(variant.typeId(), int(QMetaType::UnknownType));

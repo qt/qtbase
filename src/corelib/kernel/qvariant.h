@@ -539,7 +539,7 @@ public:
         // handle special cases
         using Type = std::remove_cv_t<T>;
         if constexpr (std::is_null_pointer_v<Type>)
-            return QVariant(QMetaType::fromType<std::nullptr_t>());
+            return QVariant::fromMetaType(QMetaType::fromType<std::nullptr_t>());
         else if constexpr (std::is_same_v<Type, QVariant>)
             return std::forward<T>(value);
         else if constexpr (std::is_same_v<Type, std::monostate>)
@@ -585,6 +585,8 @@ public:
     {
         return fromStdVariantImpl(std::move(value));
     }
+
+    static QVariant fromMetaType(QMetaType type, const void *copy = nullptr);
 
     template<typename T>
     bool canConvert() const
