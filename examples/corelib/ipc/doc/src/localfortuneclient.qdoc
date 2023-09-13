@@ -3,7 +3,8 @@
 
 /*!
     \example ipc/localfortuneclient
-    \title Local Fortune Client Example
+    \examplecategory {Connectivity}
+    \title Local Fortune Client
     \ingroup examples-ipc
     \brief Demonstrates using QLocalSocket for a simple local service client.
 
@@ -11,6 +12,7 @@
     local service using QLocalSocket. It is intended to be run alongside the
     \l{Local Fortune Server Example}.
 
-    \image localfortuneclient-example.png Screenshot of the Local Fortune Client example
+    \image localfortuneclient-example.png Screenshot of the Local Fortune Client
+    example
 
 */
