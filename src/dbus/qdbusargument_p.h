@@ -34,14 +34,10 @@ class QDBusMarshaller;
 class QDBusDemarshaller;
 class QDBusArgumentPrivate
 {
+    Q_DISABLE_COPY_MOVE(QDBusArgumentPrivate)
 public:
     enum class Direction { Marshalling, Demarshalling };
 
-    explicit QDBusArgumentPrivate(Direction direction,
-                                  QDBusConnection::ConnectionCapabilities flags = {})
-        : capabilities(flags), direction(direction)
-    {
-    }
     virtual ~QDBusArgumentPrivate();
 
     static bool checkRead(QDBusArgumentPrivate *d);
@@ -64,9 +60,16 @@ public:
     QAtomicInt ref = 1;
     QDBusConnection::ConnectionCapabilities capabilities;
     Direction direction;
+
+protected:
+    explicit QDBusArgumentPrivate(Direction direction,
+                                  QDBusConnection::ConnectionCapabilities flags = {})
+        : capabilities(flags), direction(direction)
+    {
+    }
 };
 
-class QDBusMarshaller: public QDBusArgumentPrivate
+class QDBusMarshaller final : public QDBusArgumentPrivate
 {
 public:
     explicit QDBusMarshaller(QDBusConnection::ConnectionCapabilities flags = {})
@@ -125,7 +128,7 @@ private:
     Q_DISABLE_COPY_MOVE(QDBusMarshaller)
 };
 
-class QDBusDemarshaller: public QDBusArgumentPrivate
+class QDBusDemarshaller final : public QDBusArgumentPrivate
 {
 public:
     explicit QDBusDemarshaller(QDBusConnection::ConnectionCapabilities flags = {})
