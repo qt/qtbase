@@ -1049,6 +1049,33 @@ qt_feature("intelcet" PRIVATE
     LABEL "Using Intel CET"
     CONDITION ( INPUT_intelcet STREQUAL yes ) OR TEST_intelcet
 )
+
+if("${INPUT_coverage}" STREQUAL "gcov")
+    qt_config_compile_test(gcov
+        LABEL "gcov compiler flags"
+        COMPILE_OPTIONS "-fprofile-arcs -ftest-coverage"
+        CODE
+    "int main(void)
+    {
+        /* BEGIN TEST: */
+        /* END TEST: */
+        return 0;
+    }
+    ")
+endif()
+
+qt_feature("coverage-gcov"
+    LABEL "Gcov"
+    ENABLE INPUT_coverage STREQUAL "gcov"
+    CONDITION TEST_gcov AND
+        ( QT_FEATURE_debug OR QT_FEATURE_debug_and_release )
+)
+
+qt_feature("coverage"
+    LABEL "Coverage"
+    CONDITION QT_FEATURE_coverage_gcov
+)
+
 qt_configure_add_summary_build_type_and_config()
 qt_configure_add_summary_section(NAME "Build options")
 qt_configure_add_summary_build_mode(Mode)

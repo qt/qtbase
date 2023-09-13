@@ -361,6 +361,15 @@ if(QT_FEATURE_enable_new_dtags)
     qt_internal_platform_link_options(PlatformCommonInternal INTERFACE "-Wl,--enable-new-dtags")
 endif()
 
+function(qt_internal_apply_coverage_flags)
+    if(QT_FEATURE_coverage_gcov)
+        target_compile_options(PlatformCommonInternal INTERFACE
+            "$<$<CONFIG:Debug>:-fprofile-arcs;-ftest-coverage>")
+        target_link_options(PlatformCommonInternal INTERFACE "$<$<CONFIG:Debug>:-lgcov;--coverage>")
+    endif()
+endfunction()
+qt_internal_apply_coverage_flags()
+
 function(qt_get_implicit_sse2_genex_condition out_var)
     set(is_shared_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>")
     set(is_static_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>")
