@@ -11,6 +11,8 @@
 
 #include <algorithm>
 
+using namespace Qt::StringLiterals;
+
 class tst_QStringList : public QObject
 {
     Q_OBJECT
@@ -151,23 +153,22 @@ void tst_QStringList::lastIndexOf()
 
 void tst_QStringList::filter()
 {
-    QStringList list1, list2;
-    list1 << "Bill Gates" << "Joe Blow" << "Bill Clinton";
-    list1 = list1.filter( "Bill" );
-    list2 << "Bill Gates" << "Bill Clinton";
-    QCOMPARE( list1, list2 );
+    const QStringList list = {u"Bill Gates"_s, u"Joe Blow"_s, u"Bill Clinton"_s, u"bIll"_s};
 
-    QStringList list5, list6;
-    list5 << "Bill Gates" << "Joe Blow" << "Bill Clinton";
-    list5 = list5.filter( QRegularExpression("[i]ll") );
-    list6 << "Bill Gates" << "Bill Clinton";
-    QCOMPARE( list5, list6 );
+    { // CaseSensitive
+        const QStringList expected{u"Bill Gates"_s, u"Bill Clinton"_s};
+        QCOMPARE(list.filter(u"Bill"_s), expected);
+        QCOMPARE(list.filter(u"Bill"), expected);
+        QCOMPARE(list.filter(QRegularExpression(u"[i]ll"_s)), expected);
+    }
 
-    QStringList list7, list8;
-    list7 << "Bill Gates" << "Joe Blow" << "Bill Clinton";
-    list7 = list7.filter( QStringView(QString("Bill")) );
-    list8 << "Bill Gates" << "Bill Clinton";
-    QCOMPARE( list7, list8 );
+    { // CaseInsensitive
+        const QStringList expected = {u"Bill Gates"_s, u"Bill Clinton"_s, u"bIll"_s};
+        QCOMPARE(list.filter(u"bill"_s, Qt::CaseInsensitive), expected);
+        QCOMPARE(list.filter(u"bill", Qt::CaseInsensitive), expected);
+        QCOMPARE(list.filter(QRegularExpression(u"[i]ll"_s, QRegularExpression::CaseInsensitiveOption)),
+                             expected);
+    }
 }
 
 void tst_QStringList::sort()
