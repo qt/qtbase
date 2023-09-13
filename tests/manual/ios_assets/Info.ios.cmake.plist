@@ -41,7 +41,7 @@
     <true/>
 
     <key>UILaunchStoryboardName</key>
-    <string>CustomLaunchScreen.storyboard</string>
+    <string>CustomLaunchScreen</string>
 
     <key>UISupportedInterfaceOrientations</key>
     <array>
