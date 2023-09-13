@@ -4,15 +4,12 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include <QDialog>
 #include <QDataStream>
+#include <QDialog>
+#include <QLabel>
+#include <QLineEdit>
 #include <QLocalSocket>
-
-QT_BEGIN_NAMESPACE
-class QLabel;
-class QLineEdit;
-class QPushButton;
-QT_END_NAMESPACE
+#include <QPushButton>
 
 class Client : public QDialog
 {
