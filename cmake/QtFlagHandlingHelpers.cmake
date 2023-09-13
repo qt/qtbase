@@ -138,6 +138,12 @@ function(qt_internal_add_link_flags_no_undefined target)
     if (NOT QT_BUILD_SHARED_LIBS OR WASM)
         return()
     endif()
+    if (VXWORKS)
+        # VxWorks requires thread_local-related symbols to be found at
+        # runtime, resulting in linker error when no-undefined flag is
+        # set and thread_local is used
+        return()
+    endif()
     if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
         # ld64 defaults to -undefined,error, and in Xcode 15
         # passing this option is deprecated, causing a warning.
