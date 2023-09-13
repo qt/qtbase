@@ -82,6 +82,7 @@ public:
     inline const QRegion &region() const { return m_region; }
 
 protected:
+    friend class QApplication;
     QRegion m_region;
 };
 
