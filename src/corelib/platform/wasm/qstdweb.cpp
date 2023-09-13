@@ -10,6 +10,8 @@
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
+#include <emscripten/threading.h>
+
 #include <cstdint>
 #include <iostream>
 
@@ -854,16 +856,31 @@ namespace Promise {
     }
 }
 
-bool haveAsyncify()
-{
-    static bool HaveAsyncify = jsHaveAsyncify();
-    return HaveAsyncify;
-}
-
+//  Asyncify and thread blocking: Normally, it's not possible to block the main
+//  thread, except if asyncify is enabled. Secondary threads can always block.
+//
+//  haveAsyncify(): returns true if the main thread can block on QEventLoop::exec(),
+//      if either asyncify 1 or 2 (JSPI) is available.
+//
+//  haveJspi(): returns true if asyncify 2 (JSPI) is available.
+//
+//  canBlockCallingThread(): returns true if the calling thread can block on 
+//      QEventLoop::exec(), using either asyncify or as a seconarday thread.
 bool haveJspi()
 {
     static bool HaveJspi = jsHaveJspi();
     return HaveJspi;
+}
+
+bool haveAsyncify()
+{
+    static bool HaveAsyncify = jsHaveAsyncify() || haveJspi();
+    return HaveAsyncify;
+}
+
+bool canBlockCallingThread()
+{
+    return haveAsyncify() || !emscripten_is_main_runtime_thread();
 }
 
 std::shared_ptr<CancellationFlag>
