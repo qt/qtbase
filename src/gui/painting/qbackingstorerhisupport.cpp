@@ -56,6 +56,11 @@ bool QBackingStoreRhiSupport::create()
     QOffscreenSurface *surface = nullptr;
     QRhi::Flags flags;
 
+    // This must be the same env.var. Qt Quick uses, to ensure symmetry in the
+    // behavior between a QQuickWindow and a (QRhi-based) widget top-level window.
+    if (qEnvironmentVariableIntValue("QSG_RHI_PREFER_SOFTWARE_RENDERER"))
+        flags |= QRhi::PreferSoftwareRenderer;
+
     if (m_config.api() == QPlatformBackingStoreRhiConfig::Null) {
         QRhiNullInitParams params;
         rhi = QRhi::create(QRhi::Null, &params, flags);
