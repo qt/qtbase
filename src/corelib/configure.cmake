@@ -481,7 +481,7 @@ qt_feature("ipc_posix"
     LABEL "Defaulting legacy IPC to POSIX"
     CONDITION TEST_posix_shm AND TEST_posix_sem AND (
         FEATURE_ipc_posix OR (APPLE AND QT_FEATURE_appstore_compliant)
-        OR NOT (TEST_sysv_shm AND TEST_sysv_sem)
+        OR NOT TEST_sysv_shm OR NOT TEST_sysv_sem
     )
 )
 qt_feature_definition("ipc_posix" "QT_POSIX_IPC")
