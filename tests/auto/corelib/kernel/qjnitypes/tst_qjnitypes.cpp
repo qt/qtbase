@@ -4,6 +4,7 @@
 #include <QtTest>
 
 #include <QtCore/qjnitypes.h>
+#include <QtCore/qjniarray.h>
 
 using namespace Qt::StringLiterals;
 
@@ -59,8 +60,7 @@ static_assert(!(QtJniTypes::Traits<QtJavaWrapper>::signature() == "X"));
 
 Q_DECLARE_JNI_CLASS(JavaType, "org/qtproject/qt/JavaType");
 static_assert(QtJniTypes::Traits<QtJniTypes::JavaType>::signature() == "Lorg/qtproject/qt/JavaType;");
-Q_DECLARE_JNI_TYPE(ArrayType, "[Lorg/qtproject/qt/ArrayType;")
-static_assert(QtJniTypes::Traits<QtJniTypes::ArrayType>::signature() == "[Lorg/qtproject/qt/ArrayType;");
+static_assert(QtJniTypes::Traits<QtJniTypes::JavaType[]>::signature() == "[Lorg/qtproject/qt/JavaType;");
 
 Q_DECLARE_JNI_CLASS(String, "java/lang/String");
 static_assert(QtJniTypes::Traits<jstring>::className() == "java/lang/String");
@@ -118,6 +118,10 @@ static_assert(!QtJniTypes::CTString("ABCDE").startsWith("ABCDEF"));
 static_assert(!QtJniTypes::CTString("ABCDE").startsWith("9AB"));
 static_assert(QtJniTypes::CTString("ABCDE").startsWith('A'));
 static_assert(!QtJniTypes::CTString("ABCDE").startsWith('B'));
+
+static_assert(QtJniTypes::Traits<QJniArray<jobject>>::signature() == "[Ljava/lang/Object;");
+static_assert(QtJniTypes::Traits<QJniArray<jbyte>>::signature() == "[B");
+static_assert(QtJniTypes::isObjectType<QJniArray<jbyte>>());
 
 static_assert(QtJniTypes::CTString("ABCDE").endsWith("CDE"));
 static_assert(QtJniTypes::CTString("ABCDE").endsWith("E"));

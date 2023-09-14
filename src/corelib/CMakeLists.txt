@@ -1000,6 +1000,7 @@ qt_internal_extend_target(Core CONDITION ANDROID
     SOURCES
         io/qstandardpaths_android.cpp
         io/qstorageinfo_linux.cpp io/qstorageinfo_linux_p.h
+        kernel/qjniarray.h
         kernel/qjnitypes.h kernel/qjnitypes_impl.h
         kernel/qjnienvironment.cpp kernel/qjnienvironment.h
         kernel/qjniobject.cpp kernel/qjniobject.h

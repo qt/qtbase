@@ -37,30 +37,9 @@ class Q_CORE_EXPORT QJniObject
         bool checkAndClearExceptions() { return env.checkAndClearExceptions(); }
 
         template <typename T>
-        auto convertToJni(T &&value)
-        {
-            using Type = q20::remove_cvref_t<T>;
-            if constexpr (std::is_same_v<Type, QString>) {
-                return newLocalRef<jstring>(QJniObject::fromString(value));
-            } else if constexpr (std::is_base_of_v<QJniObject, Type>) {
-                return value.object();
-            } else {
-                return static_cast<T &&>(value);
-            }
-        }
+        auto convertToJni(T &&value);
         template <typename T>
-        auto convertFromJni(QJniObject &&object)
-        {
-            using Type = q20::remove_cvref_t<T>;
-            if constexpr (std::is_same_v<Type, QString>) {
-                return object.toString();
-            } else if constexpr (std::is_base_of_v<QJniObject, Type>
-                              && !std::is_same_v<QJniObject, Type>) {
-                return T{std::move(object)};
-            } else {
-                return std::move(object);
-            }
-        }
+        auto convertFromJni(QJniObject &&object);
     };
 public:
     QJniObject();
@@ -778,6 +757,58 @@ inline bool operator!=(const QJniObject &obj1, const QJniObject &obj2)
 {
     return !obj1.isSameObject(obj2);
 }
+
+// This cannot be included earlier as QJniArray is a QJniObject subclass, but it
+// must be included so that we can implement QJniObject::LocalFrame conversion.
+#include <QtCore/qjniarray.h>
+
+template <typename ...Args>
+template <typename T>
+auto QJniObject::LocalFrame<Args...>::convertToJni(T &&value)
+{
+    using Type = q20::remove_cvref_t<T>;
+    if constexpr (std::is_same_v<Type, QString>) {
+        return newLocalRef<jstring>(QJniObject::fromString(value));
+    } else if constexpr (QtJniTypes::IsJniArray<Type>::value) {
+        return value.arrayObject();
+    } else if constexpr (QJniArrayBase::CanConvert<T>) {
+        using QJniArrayType = decltype(QJniArrayBase::fromContainer(std::forward<T>(value)));
+        using ArrayType = decltype(std::declval<QJniArrayType>().arrayObject());
+        return newLocalRef<ArrayType>(QJniArrayBase::fromContainer(std::forward<T>(value)).template object<jobject>());
+    } else if constexpr (std::is_base_of_v<QJniObject, Type>) {
+        return value.object();
+    } else {
+        return static_cast<T &&>(value);
+    }
+}
+
+template <typename ...Args>
+template <typename T>
+auto QJniObject::LocalFrame<Args...>::convertFromJni(QJniObject &&object)
+{
+    using Type = q20::remove_cvref_t<T>;
+    if constexpr (std::is_same_v<Type, QString>) {
+        return object.toString();
+    } else if constexpr (QtJniTypes::IsJniArray<Type>::value) {
+        return T{object};
+    } else if constexpr (QJniArrayBase::CanConvert<Type>) {
+        // if we were to create a QJniArray from Type...
+        using QJniArrayType = decltype(QJniArrayBase::fromContainer(std::declval<Type>()));
+        // then that QJniArray would have elements of type
+        using ElementType = typename QJniArrayType::Type;
+        // construct a QJniArray from a jobject pointer of that type
+        return QJniArray<ElementType>(object.template object<jarray>()).asContainer();
+    } else if constexpr (std::is_array_v<Type>) {
+        using ElementType = std::remove_extent_t<Type>;
+        return QJniArray<ElementType>{object};
+    } else if constexpr (std::is_base_of_v<QJniObject, Type>
+                        && !std::is_same_v<QJniObject, Type>) {
+        return T{std::move(object)};
+    } else {
+        return std::move(object);
+    }
+}
+
 
 QT_END_NAMESPACE
 
