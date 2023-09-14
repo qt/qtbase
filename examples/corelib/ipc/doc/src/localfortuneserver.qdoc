@@ -3,7 +3,8 @@
 
 /*!
     \example ipc/localfortuneserver
-    \title Local Fortune Server Example
+    \examplecategory {Connectivity}
+    \title Local Fortune Server
     \ingroup examples-ipc
     \brief Demonstrates using QLocalServer and QLocalSocket for serving a simple local service.
 
