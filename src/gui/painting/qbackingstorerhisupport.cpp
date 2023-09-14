@@ -85,7 +85,7 @@ bool QBackingStoreRhiSupport::create()
             params.enableDebugLayer = m_config.isDebugLayerEnabled();
             rhi = QRhi::create(QRhi::D3D11, &params, flags);
             if (!rhi && !flags.testFlag(QRhi::PreferSoftwareRenderer)) {
-                qCDebug(lcQpaBackingStore, "Failed to create a D3D device with default settings; "
+                qCDebug(lcQpaBackingStore, "Failed to create a D3D11 device with default settings; "
                                            "attempting to get a software rasterizer backed device instead");
                 flags |= QRhi::PreferSoftwareRenderer;
                 rhi = QRhi::create(QRhi::D3D11, &params, flags);
@@ -94,6 +94,12 @@ bool QBackingStoreRhiSupport::create()
             QRhiD3D12InitParams params;
             params.enableDebugLayer = m_config.isDebugLayerEnabled();
             rhi = QRhi::create(QRhi::D3D12, &params, flags);
+            if (!rhi && !flags.testFlag(QRhi::PreferSoftwareRenderer)) {
+                qCDebug(lcQpaBackingStore, "Failed to create a D3D12 device with default settings; "
+                                           "attempting to get a software rasterizer backed device instead");
+                flags |= QRhi::PreferSoftwareRenderer;
+                rhi = QRhi::create(QRhi::D3D12, &params, flags);
+            }
         }
     }
 #endif
