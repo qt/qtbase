@@ -98,11 +98,7 @@ public:
     auto callMethod(const char *methodName, Args &&...args) const
     {
         constexpr auto signature = QtJniTypes::methodSignature<Ret, Args...>();
-        if constexpr (std::is_same_v<Ret, void>) {
-            callMethod<void>(methodName, signature.data(), std::forward<Args>(args)...);
-        } else {
-            return callMethod<Ret>(methodName, signature.data(), std::forward<Args>(args)...);
-        }
+        return callMethod<Ret>(methodName, signature.data(), std::forward<Args>(args)...);
     }
 
     template <typename Ret, typename ...Args
@@ -132,7 +128,7 @@ public:
     {
         QJniEnvironment env;
         jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true);
-        return callStaticMethod<Ret, Args...>(clazz, id, std::forward<Args>(args)...);
+        return callStaticMethod<Ret>(clazz, id, std::forward<Args>(args)...);
     }
 
     template <typename Ret, typename ...Args
@@ -172,7 +168,7 @@ public:
     {
         QJniEnvironment env;
         jclass clazz = QJniObject::loadClass(className, env.jniEnv());
-        return callStaticMethod<Ret, Args...>(clazz, methodName, std::forward<Args>(args)...);
+        return callStaticMethod<Ret>(clazz, methodName, std::forward<Args>(args)...);
     }
 
     template <typename Ret, typename ...Args
