@@ -573,6 +573,7 @@ void tst_QDate::startOfDay_endOfDay_data()
 
 #if QT_CONFIG(timezone)
     const QTimeZone sys = QTimeZone::systemTimeZone();
+    QVERIFY2(sys.isValid(), "Test depends on properly configured system");
     for (const auto &tran : transitions) {
         if (QTimeZone zone(tran.zone); zone.isValid()) {
             QTest::newRow(tran.test)
@@ -728,7 +729,9 @@ void tst_QDate::startOfDay_endOfDay_bounds()
     QCOMPARE(qdteMin.startOfDay(UTC).date(), qdteMin);
     QCOMPARE(qdteMin.startOfDay().date(), qdteMin);
 #if QT_CONFIG(timezone)
-    QCOMPARE(qdteMin.startOfDay(QTimeZone::systemTimeZone()).date(), qdteMin);
+    const QTimeZone sys = QTimeZone::systemTimeZone();
+    QVERIFY2(sys.isValid(), "Test depends on properly configured system");
+    QCOMPARE(qdteMin.startOfDay(sys).date(), qdteMin);
     QTimeZone berlin("Europe/Berlin");
     if (berlin.isValid())
         QCOMPARE(qdteMin.startOfDay(berlin).date(), qdteMin);

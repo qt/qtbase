@@ -507,7 +507,9 @@ void tst_QTimeZone::asBackendZone()
 void tst_QTimeZone::systemZone()
 {
     const QTimeZone zone = QTimeZone::systemTimeZone();
-    QVERIFY2(zone.isValid(), "Invalid system zone setting, tests are doomed.");
+    QVERIFY2(zone.isValid(),
+             "Invalid system zone setting, tests are doomed on misconfigured system.");
+    // This may fail on Windows if CLDR data doesn't map system MS ID to IANA ID:
     QCOMPARE(zone.id(), QTimeZone::systemTimeZoneId());
     QCOMPARE(zone, QTimeZone(QTimeZone::systemTimeZoneId()));
     // Check it behaves the same as local-time:

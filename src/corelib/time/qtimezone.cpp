@@ -556,15 +556,11 @@ QTimeZone::QTimeZone(QTimeZonePrivate &dd)
 
     In all cases, the result's \l timeSpec() is Qt::TimeZone. When this
     QTimeZone's timeSpec() is Qt::TimeZone, this QTimeZone itself is returned.
+    If timeSpec() is Qt::LocalTime then systemTimeZone() is returned.
 
     If timeSpec() is Qt::UTC, QTimeZone::utc() is returned. If it is
     Qt::OffsetFromUTC then QTimeZone(int) is passed its offset and the result is
     returned.
-
-    If timeSpec() is Qt::LocalTime then an instance of the current system time
-    zone will be returned. This will not change to reflect any subsequent change
-    to the system time zone. It represents the local time that was in effect
-    when asBackendZone() was called.
 
     When using a lightweight time representation - local time, UTC time or time
     at a fixed offset from UTC - using methods only supported when feature \c
@@ -1353,11 +1349,29 @@ QByteArray QTimeZone::systemTimeZoneId()
     representation \c {QTimeZone(QTimeZone::LocalTime)}, albeit implemented as a
     time zone.
 
+    The returned object will not change to reflect any subsequent change to the
+    system time zone. It represents the local time that was in effect when
+    asBackendZone() was called. On misconfigured systems, such as those that
+    lack the timezone data relied on by the backend for which Qt was compiled,
+    it may be invalid. In such a case, a warning is output.
+
     \sa utc(), Initialization, asBackendZone()
 */
 QTimeZone QTimeZone::systemTimeZone()
 {
-    return QTimeZone(global_tz->backend->systemTimeZoneId());
+    // Use ID even if empty, as default constructor is invalid but empty-ID
+    // constructor goes to backend's default constructor, which may succeed.
+    const auto sys = QTimeZone(global_tz->backend->systemTimeZoneId());
+    if (!sys.isValid()) {
+        static bool neverWarned = true;
+        if (neverWarned) {
+            // Racey but, at worst, merely repeats the warning.
+            neverWarned = false;
+            qWarning("Unable to determine system time zone: "
+                     "please check your system configuration.");
+        }
+    }
+    return sys;
 }
 
 /*!
