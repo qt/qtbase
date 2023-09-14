@@ -4,6 +4,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <QApplication>
 #include <QDialog>
 
 QT_BEGIN_NAMESPACE
@@ -14,15 +15,13 @@ QT_END_NAMESPACE
 
 class Server : public QDialog
 {
-    Q_OBJECT
+    Q_DECLARE_TR_FUNCTIONS(Server)
 
 public:
     explicit Server(QWidget *parent = nullptr);
 
-private slots:
-    void sendFortune();
-
 private:
+    void sendFortune();
     QLocalServer *server;
     QStringList fortunes;
 };
