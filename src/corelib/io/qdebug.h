@@ -11,6 +11,7 @@
 
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qtextstream.h>
+#include <QtCore/qtypes.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qcontiguouscache.h>
 #include <QtCore/qsharedpointer.h>
@@ -69,6 +70,8 @@ class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
     QT7_ONLY(Q_CORE_EXPORT) void putString(const QChar *begin, size_t length);
     QT7_ONLY(Q_CORE_EXPORT) void putByteArray(const char *begin, size_t length, Latin1Content content);
     QT7_ONLY(Q_CORE_EXPORT) void putTimeUnit(qint64 num, qint64 den);
+    QT7_ONLY(Q_CORE_EXPORT) void putInt128(const void *i);
+    QT7_ONLY(Q_CORE_EXPORT) void putUInt128(const void *i);
 public:
     explicit QDebug(QIODevice *device) : stream(new Stream(device)) {}
     explicit QDebug(QString *string) : stream(new Stream(string)) {}
@@ -202,6 +205,21 @@ public:
         putTimeUnit(Period::num, Period::den);
         return maybeSpace();
     }
+
+#ifdef QT_SUPPORTS_INT128
+private:
+    // Constrained templates so they only match q(u)int128 without conversions.
+    // Also keeps these operators out of the ABI.
+    template <typename T>
+    using if_qint128 = std::enable_if_t<std::is_same_v<T, qint128>, bool>;
+    template <typename T>
+    using if_quint128 = std::enable_if_t<std::is_same_v<T, quint128>, bool>;
+public:
+    template <typename T, if_qint128<T> = true>
+    QDebug &operator<<(T i128) { putInt128(&i128); return maybeSpace(); }
+    template <typename T, if_quint128<T> = true>
+    QDebug &operator<<(T u128) { putUInt128(&u128); return maybeSpace(); }
+#endif // QT_SUPPORTS_INT128
 
     template <typename T>
     static QString toString(T &&object)

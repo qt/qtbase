@@ -15,46 +15,6 @@
 #include <array>
 #include <cmath>
 
-QT_BEGIN_NAMESPACE
-namespace QTest {
-#ifdef QT_SUPPORTS_INT128
-namespace detail {
-    char *i128ToStringHelper(std::array<char, 64> &buffer, quint128 n)
-    {
-        auto dst = buffer.data() + buffer.size();
-        *--dst = '\0'; // NUL-terminate
-        if (n == 0) {
-            *--dst = '0'; // and done
-        } else {
-            while (n != 0) {
-                *--dst = "0123456789"[n % 10];
-                n /= 10;
-            }
-        }
-        return dst;
-    }
-}
-template <>
-char *toString(const qint128 &i)
-{
-    if (i == Q_INT128_MIN) // -i is not representable, hardcode:
-        return qstrdup("-170141183460469231731687303715884105728");
-    std::array<char, 64> buffer;
-    auto dst = detail::i128ToStringHelper(buffer, i < 0 ? -i : i);
-    if (i < 0)
-        *--dst = '-';
-    return qstrdup(dst);
-}
-template <>
-char *toString(const quint128 &i)
-{
-    std::array<char, 64> buffer;
-    return qstrdup(detail::i128ToStringHelper(buffer, i));
-}
-#endif // QT_SUPPORTS_INT128
-} // namespace QTest
-QT_END_NAMESPACE
-
 class tst_QGlobal: public QObject
 {
     Q_OBJECT

@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QTest>
+
+#include <QtCore/qtypes.h>
+
 #include <memory>
 
 #include <q20chrono.h>
@@ -14,6 +17,8 @@ private:
     void addColumns();
     void testRows();
 private slots:
+    void int128();
+
     void chrono_duration_data();
     void chrono_duration() { testRows(); }
 };
@@ -56,6 +61,57 @@ template <typename T> void addRow(QByteArrayView name, T &&value, QByteArrayView
 
 #define ADD_ROW(name, expr, expected)         \
     ::addRow(name, expr, #expr, expected, __FILE__, __LINE__)
+
+void tst_toString::int128()
+{
+#ifndef QT_SUPPORTS_INT128
+    QSKIP("This test requires int128 support enabled in the compiler.");
+#else
+    // ### port to data-driven once QVariant has support for qint128/quint128
+    std::unique_ptr<char[]> s;
+
+    {
+        // build Q_INT128_MIN without using Q_INT128_ macros,
+        // because we use Q_INT128_MIN in the impl
+        qint128 accu = 1701411834604692317LL;
+        accu *= 1000000000000000000LL;
+        accu +=  316873037158841057LL;
+        accu *= -100;
+        accu -= 28;
+        QCOMPARE_EQ(accu, Q_INT128_MIN);
+        s.reset(QTest::toString(accu));
+        QCOMPARE(s.get(), "-170141183460469231731687303715884105728");
+    }
+
+    // now test with the macro, too:
+    s.reset(QTest::toString(Q_INT128_MIN));
+    QCOMPARE(s.get(), "-170141183460469231731687303715884105728");
+
+    s.reset(QTest::toString(Q_INT128_MIN + 1));
+    QCOMPARE(s.get(), "-170141183460469231731687303715884105727");
+
+    s.reset(QTest::toString(Q_INT128_MAX));
+    QCOMPARE(s.get(), "170141183460469231731687303715884105727");
+
+    s.reset(QTest::toString(Q_INT128_MAX - 1));
+    QCOMPARE(s.get(), "170141183460469231731687303715884105726");
+
+    s.reset(QTest::toString(Q_UINT128_MAX));
+    QCOMPARE(s.get(), "340282366920938463463374607431768211455");
+
+    s.reset(QTest::toString(Q_UINT128_MAX - 1));
+    QCOMPARE(s.get(), "340282366920938463463374607431768211454");
+
+    s.reset(QTest::toString(quint128{0}));
+    QCOMPARE(s.get(), "0");
+
+    s.reset(QTest::toString(qint128{0}));
+    QCOMPARE(s.get(), "0");
+
+    s.reset(QTest::toString(qint128{-1}));
+    QCOMPARE(s.get(), "-1");
+#endif // QT_SUPPORTS_INT128
+}
 
 void tst_toString::chrono_duration_data()
 {
