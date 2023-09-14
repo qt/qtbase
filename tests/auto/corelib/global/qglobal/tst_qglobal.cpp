@@ -35,7 +35,7 @@ namespace detail {
 template <>
 char *toString(const qint128 &i)
 {
-    if (i == std::numeric_limits<qint128>::min()) // -i is not representable, hardcode:
+    if (i == Q_INT128_MIN) // -i is not representable, hardcode:
         return qstrdup("-170141183460469231731687303715884105728");
     std::array<char, 64> buffer;
     auto dst = detail::i128ToStringHelper(buffer, i < 0 ? -i : i);
