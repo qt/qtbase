@@ -392,7 +392,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
         return QKeySequence::NoMatch;
 
     createNewSequences(e, d->newEntries, ignoredModifiers);
-    qCDebug(lcShortcutMap) << "Possible shortcut key sequences:" << d->newEntries;
+    qCDebug(lcShortcutMap) << "Possible input sequences:" << d->newEntries;
 
     // Should never happen
     if (d->newEntries == d->currentSequences) {
@@ -407,15 +407,15 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
     bool partialFound = false;
     bool identicalDisabledFound = false;
     QList<QKeySequence> okEntries;
-    int result = QKeySequence::NoMatch;
+    QKeySequence::SequenceMatch result = QKeySequence::NoMatch;
     for (int i = d->newEntries.size()-1; i >= 0 ; --i) {
         QShortcutEntry entry(d->newEntries.at(i)); // needed for searching
         qCDebug(lcShortcutMap) << "- checking entry" << entry.id << entry.keyseq;
         const auto itEnd = d->sequences.constEnd();
         auto it = std::lower_bound(d->sequences.constBegin(), itEnd, entry);
 
-        int oneKSResult = QKeySequence::NoMatch;
-        int tempRes = QKeySequence::NoMatch;
+        QKeySequence::SequenceMatch oneKSResult = QKeySequence::NoMatch;
+        QKeySequence::SequenceMatch tempRes = QKeySequence::NoMatch;
         do {
             if (it == itEnd)
                 break;
@@ -469,7 +469,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
     if (result != QKeySequence::NoMatch)
         d->currentSequences = okEntries;
     qCDebug(lcShortcutMap) << "Returning shortcut match == " << result;
-    return QKeySequence::SequenceMatch(result);
+    return result;
 }
 
 /*! \internal
