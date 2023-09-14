@@ -803,8 +803,8 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
         if (check.isValid) {
             ret.m_hasDst = check.hasDst;
             ret.m_posixRule = ianaId;
-            return ret;
         }
+        return ret;
     }
 
     QDataStream ds(&tzif);
