@@ -1315,12 +1315,24 @@ QTimeZone::OffsetDataList QTimeZone::transitions(const QDateTime &fromDateTime,
 /*!
     Returns the current system time zone IANA ID.
 
-    On Windows this ID is translated from the Windows ID using an internal
-    translation table and the user's selected country.  As a consequence there
-    is a small chance any Windows install may have IDs not known by Qt, in
-    which case "UTC" will be returned.
+    Equivalent to calling systemTimeZone().id(), but may bypass some computation
+    to obtain it. Constructing a QTimeZone from the returned byte array will
+    produce the same result as systemTimeZone().
+
+    If the backend is unable to determine the correct system zone, the result is
+    empty. In this case, systemTimeZone().isValid() is false and a warning is
+    output if either this method of systemTimeZone() is called.
+
+    If the backend is able to determine the correct system zone but not its
+    name, an empty byte array is returned. For example, on Windows, the system
+    native ID is converted to an IANA ID - if the system ID isn't known to the
+    internal translation code, the result shall be empty. In this case,
+    systemTimeZone().isValid() shall be true.
 
     This method is only available when feature \c timezone is enabled.
+
+    \note Prior to Qt 6.7, when the result could not be determined, the
+    misleading result "UTC" was returned.
 
     \sa systemTimeZone()
 */
@@ -1331,12 +1343,7 @@ QByteArray QTimeZone::systemTimeZoneId()
     if (!sys.isEmpty())
         return sys;
     // The system zone, despite the empty ID, may know its real ID anyway:
-    auto zone = systemTimeZone();
-    if (zone.isValid() && !zone.id().isEmpty())
-        return zone.id();
-    // TODO: "-00:00", meaning "unspecified local zone" in some RFC, may be more apt.
-    // If all else fails, guess UTC.
-    return QTimeZonePrivate::utcQByteArray();
+    return systemTimeZone().id();
 }
 
 /*!
@@ -1355,7 +1362,7 @@ QByteArray QTimeZone::systemTimeZoneId()
     lack the timezone data relied on by the backend for which Qt was compiled,
     it may be invalid. In such a case, a warning is output.
 
-    \sa utc(), Initialization, asBackendZone()
+    \sa utc(), Initialization, asBackendZone(), systemTimeZoneId()
 */
 QTimeZone QTimeZone::systemTimeZone()
 {
