@@ -235,6 +235,8 @@ struct Traits {
             return CTString("V");
         } else if constexpr (std::is_enum_v<T>) {
             return Traits<std::underlying_type_t<T>>::signature();
+        } else if constexpr (std::is_same_v<T, QString>) {
+            return CTString("Ljava/lang/String;");
         }
         // else: return void -> not implemented
     }

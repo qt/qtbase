@@ -187,8 +187,10 @@ void tst_QJniObject::ctor()
 void tst_QJniObject::callMethodTest()
 {
     {
-        QJniObject jString1 = QJniObject::fromString(QLatin1String("Hello, Java"));
-        QJniObject jString2 = QJniObject::fromString(QLatin1String("hELLO, jAVA"));
+        const QString qString1 = u"Hello, Java"_s;
+        const QString qString2 = u"hELLO, jAVA"_s;
+        QJniObject jString1 = QJniObject::fromString(qString1);
+        QJniObject jString2 = QJniObject::fromString(qString2);
         QVERIFY(jString1 != jString2);
 
         const jboolean isEmpty = jString1.callMethod<jboolean>("isEmpty");
@@ -200,6 +202,10 @@ void tst_QJniObject::callMethodTest()
         QVERIFY(0 == ret);
 
         ret = jString1.callMethod<jint>("compareToIgnoreCase", jString2.object<jstring>());
+        QVERIFY(0 == ret);
+
+        // as of Qt 6.7, we can pass QString directly
+        ret = jString1.callMethod<jint>("compareToIgnoreCase", qString2);
         QVERIFY(0 == ret);
     }
 
@@ -219,6 +225,13 @@ void tst_QJniObject::callMethodTest()
 
         QJniObject subString = jString.callMethod<jstring>("substring", 0, 4);
         QCOMPARE(subString.toString(), qString.mid(0, 4));
+
+        // and as of Qt 6.7, we can return and take QString directly
+        QCOMPARE(jString.callMethod<QString>("substring", 0, 4), qString.mid(0, 4));
+
+        QCOMPARE(jString.callMethod<jstring>("substring", 0, 7)
+                        .callMethod<jstring>("toUpperCase")
+                        .callMethod<QString>("concat", u"C++"_s), u"HELLO, C++"_s);
     }
 }
 
@@ -346,6 +359,11 @@ void tst_QJniObject::callStaticObjectMethod()
     QVERIFY(returnValue.isValid());
     QCOMPARE(returnValue.toString(), string);
 
+    // from 6.7 we can pass QString directly, both as parameters and return type
+    QString result = QJniObject::callStaticMethod<jstring, QString>("format",
+                                                                    string,
+                                                                    jobjectArray(0));
+    QCOMPARE(result, string);
 }
 
 void tst_QJniObject::callStaticObjectMethodById()
@@ -1053,11 +1071,16 @@ void tst_QJniObject::setObjectField()
     QJniObject obj(testClassName);
     QVERIFY(obj.isValid());
 
-    QJniObject testValue = QJniObject::fromString(QStringLiteral("Hello"));
+    const QString qString = u"Hello"_s;
+    QJniObject testValue = QJniObject::fromString(qString);
     obj.setField("STRING_OBJECT_VAR", testValue.object<jstring>());
 
     QJniObject res = obj.getObjectField<jstring>("STRING_OBJECT_VAR");
     QCOMPARE(res.toString(), testValue.toString());
+
+    // as of Qt 6.7, we can set and get strings directly
+    obj.setField("STRING_OBJECT_VAR", qString);
+    QCOMPARE(obj.getField<QString>("STRING_OBJECT_VAR"), qString);
 }
 
 template <typename T>
@@ -1127,11 +1150,17 @@ void tst_QJniObject::setStaticBooleanField()
 
 void tst_QJniObject::setStaticObjectField()
 {
-    QJniObject testValue = QJniObject::fromString(QStringLiteral("Hello"));
+    const QString qString = u"Hello"_s;
+    QJniObject testValue = QJniObject::fromString(qString);
     QJniObject::setStaticField(testClassName, "S_STRING_OBJECT_VAR", testValue.object<jstring>());
 
     QJniObject res = QJniObject::getStaticObjectField<jstring>(testClassName, "S_STRING_OBJECT_VAR");
     QCOMPARE(res.toString(), testValue.toString());
+
+    // as of Qt 6.7, we can set and get strings directly
+    using namespace QtJniTypes;
+    QJniObject::setStaticField<QtJniObjectTestClass>("S_STRING_OBJECT_VAR", qString);
+    QCOMPARE((QJniObject::getStaticField<QtJniObjectTestClass, QString>("S_STRING_OBJECT_VAR")), qString);
 }
 
 void tst_QJniObject::templateApiCheck()
