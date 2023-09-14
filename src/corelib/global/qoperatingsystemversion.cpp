@@ -701,6 +701,12 @@ const QOperatingSystemVersionBase QOperatingSystemVersion::Android12L;
  */
 const QOperatingSystemVersionBase QOperatingSystemVersion::Android13;
 
+/*!
+    \variable QOperatingSystemVersion::Android14
+    \brief a version corresponding to Android 14 (version 14.0, API level 34).
+    \since 6.7
+ */
+
 #endif // !QT_BOOTSTRAPPED
 
 #ifndef QT_NO_DEBUG_STREAM
