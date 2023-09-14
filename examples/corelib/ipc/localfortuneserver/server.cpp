@@ -3,8 +3,13 @@
 
 #include "server.h"
 
-#include <QtWidgets>
-#include <QtNetwork>
+#include <QGuiApplication>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QLocalSocket>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QRandomGenerator>
 
 Server::Server(QWidget *parent)
     : QDialog(parent)

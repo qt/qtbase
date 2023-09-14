@@ -6,12 +6,7 @@
 
 #include <QApplication>
 #include <QDialog>
-
-QT_BEGIN_NAMESPACE
-class QLabel;
-class QPushButton;
-class QLocalServer;
-QT_END_NAMESPACE
+#include <QLocalServer>
 
 class Server : public QDialog
 {
