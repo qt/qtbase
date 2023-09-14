@@ -242,22 +242,21 @@ static constexpr bool isPrimitiveType()
 }
 
 template<typename T>
-static constexpr bool isObjectType()
-{
-    if constexpr(std::is_convertible<T, jobject>::value) {
-        return true;
-    } else {
-        constexpr auto signature = typeSignature<T>();
-        return (signature.startsWith('L') || signature.startsWith('['))
-             && signature.endsWith(';');
-    }
-}
-
-template<typename T>
 static constexpr bool isArrayType()
 {
     constexpr auto signature = typeSignature<T>();
-    return signature.startsWith('[');
+    return signature.startsWith('[') && signature.size() > 2;
+}
+
+template<typename T>
+static constexpr bool isObjectType()
+{
+    if constexpr (std::is_convertible_v<T, jobject>) {
+        return true;
+    } else {
+        constexpr auto signature = typeSignature<T>();
+        return (signature.startsWith('L') && signature.endsWith(';')) || isArrayType<T>();
+    }
 }
 
 template<typename T>
