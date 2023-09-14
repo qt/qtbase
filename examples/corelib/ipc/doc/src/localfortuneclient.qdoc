@@ -10,7 +10,7 @@
 
     The Local Fortune Client example shows how to create a client for a simple
     local service using QLocalSocket. It is intended to be run alongside the
-    \l{Local Fortune Server Example}.
+    \l{Local Fortune Server} example.
 
     \image localfortuneclient-example.png Screenshot of the Local Fortune Client
     example
