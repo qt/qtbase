@@ -1058,7 +1058,7 @@ QImage QDistanceField::toImage(QImage::Format format) const
         }
 
         if (image.format() != format)
-            image = image.convertToFormat(format);
+            image = std::move(image).convertToFormat(format);
     }
 
     return image;
