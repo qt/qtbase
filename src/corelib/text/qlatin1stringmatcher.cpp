@@ -162,8 +162,11 @@ qsizetype QLatin1StringMatcher::indexIn(QLatin1StringView haystack, qsizetype fr
 {
     if (m_pattern.isEmpty() && from == haystack.size())
         return from;
+    if (from < 0) // Historical behavior (see QString::indexOf and co.)
+        from += haystack.size();
     if (from >= haystack.size())
         return -1;
+
     auto begin = haystack.begin() + from;
     auto end = haystack.end();
     auto found = begin;
