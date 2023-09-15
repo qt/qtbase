@@ -157,6 +157,7 @@ public:
     QDataStream &operator<<(const char *str);
     QDataStream &operator<<(char16_t c);
     QDataStream &operator<<(char32_t c);
+    QDataStream &operator<<(const volatile void *) = delete;
 
 
     QDataStream &readBytes(char *&, uint &len);
