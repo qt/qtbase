@@ -30,6 +30,7 @@
 #endif
 
 #include <private/qfunctions_p.h>
+#include <private/qspan_p.h>
 
 #include <limits.h>
 #include <string.h>
@@ -5045,7 +5046,7 @@ public:
 };
 Q_DECLARE_TYPEINFO(qt_section_chunk, Q_RELOCATABLE_TYPE);
 
-static QString extractSections(const QList<qt_section_chunk> &sections, qsizetype start, qsizetype end,
+static QString extractSections(QSpan<qt_section_chunk> sections, qsizetype start, qsizetype end,
                                QString::SectionFlags flags)
 {
     const qsizetype sectionsSize = sections.size();
@@ -5058,7 +5059,7 @@ static QString extractSections(const QList<qt_section_chunk> &sections, qsizetyp
     } else {
         qsizetype skip = 0;
         for (qsizetype k = 0; k < sectionsSize; ++k) {
-            const qt_section_chunk &section = sections.at(k);
+            const qt_section_chunk &section = sections[k];
             if (section.length == section.string.size())
                 skip++;
         }
@@ -5074,7 +5075,7 @@ static QString extractSections(const QList<qt_section_chunk> &sections, qsizetyp
     qsizetype x = 0;
     qsizetype first_i = start, last_i = end;
     for (qsizetype i = 0; x <= end && i < sectionsSize; ++i) {
-        const qt_section_chunk &section = sections.at(i);
+        const qt_section_chunk &section = sections[i];
         const bool empty = (section.length == section.string.size());
         if (x >= start) {
             if (x == start)
@@ -5091,13 +5092,13 @@ static QString extractSections(const QList<qt_section_chunk> &sections, qsizetyp
     }
 
     if ((flags & QString::SectionIncludeLeadingSep) && first_i >= 0) {
-        const qt_section_chunk &section = sections.at(first_i);
+        const qt_section_chunk &section = sections[first_i];
         ret.prepend(section.string.left(section.length));
     }
 
     if ((flags & QString::SectionIncludeTrailingSep)
         && last_i < sectionsSize - 1) {
-        const qt_section_chunk &section = sections.at(last_i+1);
+        const qt_section_chunk &section = sections[last_i + 1];
         ret += section.string.left(section.length);
     }
 
@@ -5133,7 +5134,7 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
     if (flags & SectionCaseInsensitiveSeps)
         sep.setPatternOptions(sep.patternOptions() | QRegularExpression::CaseInsensitiveOption);
 
-    QList<qt_section_chunk> sections;
+    QVarLengthArray<qt_section_chunk> sections;
     qsizetype n = size(), m = 0, last_m = 0, last_len = 0;
     QRegularExpressionMatchIterator iterator = sep.globalMatch(*this);
     while (iterator.hasNext()) {
