@@ -9926,10 +9926,14 @@ qsizetype QtPrivate::count(QStringView haystack, const QRegularExpression &re)
 */
 QString QString::toHtmlEscaped() const
 {
+    const auto pos = std::u16string_view(*this).find_first_of(u"<>&\"");
+    if (pos == std::u16string_view::npos)
+        return *this;
     QString rich;
     const qsizetype len = size();
     rich.reserve(qsizetype(len * 1.1));
-    for (QChar ch : *this) {
+    rich += qToStringViewIgnoringNull(*this).first(pos);
+    for (auto ch : qToStringViewIgnoringNull(*this).sliced(pos)) {
         if (ch == u'<')
             rich += "&lt;"_L1;
         else if (ch == u'>')
