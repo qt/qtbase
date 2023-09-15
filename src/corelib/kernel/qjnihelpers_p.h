@@ -22,8 +22,8 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_JNI_TYPE(Activity, "Landroid/app/Activity;")
-Q_DECLARE_JNI_TYPE(Service, "Landroid/app/Service;")
+Q_DECLARE_JNI_CLASS(Activity, "android/app/Activity")
+Q_DECLARE_JNI_CLASS(Service, "android/app/Service")
 
 namespace QtAndroidPrivate
 {

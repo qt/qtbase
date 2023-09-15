@@ -59,7 +59,7 @@ static bool m_running = false;
 Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
 Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
 
-Q_DECLARE_JNI_TYPE(List, "Ljava/util/List;")
+Q_DECLARE_JNI_CLASS(List, "java/util/List")
 
 namespace {
 

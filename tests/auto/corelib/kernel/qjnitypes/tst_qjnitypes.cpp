@@ -41,7 +41,7 @@ static_assert(QtJniTypes::typeSignature<QtJavaWrapper>() == "Lorg/qtproject/qt/a
 static_assert(QtJniTypes::typeSignature<QtJavaWrapper>() != "Ljava/lang/Object;");
 static_assert(!(QtJniTypes::typeSignature<QtJavaWrapper>() == "X"));
 
-Q_DECLARE_JNI_TYPE(JavaType, "Lorg/qtproject/qt/JavaType;");
+Q_DECLARE_JNI_CLASS(JavaType, "org/qtproject/qt/JavaType");
 static_assert(QtJniTypes::typeSignature<QtJniTypes::JavaType>() == "Lorg/qtproject/qt/JavaType;");
 Q_DECLARE_JNI_TYPE(ArrayType, "[Lorg/qtproject/qt/ArrayType;")
 static_assert(QtJniTypes::typeSignature<QtJniTypes::ArrayType>() == "[Lorg/qtproject/qt/ArrayType;");

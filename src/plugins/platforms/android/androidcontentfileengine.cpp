@@ -16,11 +16,11 @@ QT_BEGIN_NAMESPACE
 using namespace QNativeInterface;
 using namespace Qt::StringLiterals;
 
-Q_DECLARE_JNI_TYPE(ContentResolverType, "Landroid/content/ContentResolver;");
-Q_DECLARE_JNI_TYPE(UriType, "Landroid/net/Uri;");
+Q_DECLARE_JNI_CLASS(ContentResolverType, "android/content/ContentResolver");
+Q_DECLARE_JNI_CLASS(UriType, "android/net/Uri");
 Q_DECLARE_JNI_CLASS(Uri, "android/net/Uri");
-Q_DECLARE_JNI_TYPE(ParcelFileDescriptorType, "Landroid/os/ParcelFileDescriptor;");
-Q_DECLARE_JNI_TYPE(CursorType, "Landroid/database/Cursor;");
+Q_DECLARE_JNI_CLASS(ParcelFileDescriptorType, "android/os/ParcelFileDescriptor");
+Q_DECLARE_JNI_CLASS(CursorType, "android/database/Cursor");
 Q_DECLARE_JNI_TYPE(StringArray, "[Ljava/lang/String;");
 
 static QJniObject &contentResolverInstance()

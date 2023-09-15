@@ -48,7 +48,7 @@ static void transportMediumChanged(JNIEnv *env, jobject obj, jint enumValue)
 }
 Q_DECLARE_JNI_NATIVE_METHOD(transportMediumChanged)
 
-Q_DECLARE_JNI_TYPE(ConnectivityManager, "Landroid/net/ConnectivityManager;")
+Q_DECLARE_JNI_CLASS(ConnectivityManager, "android/net/ConnectivityManager")
 
 AndroidConnectivityManager::AndroidConnectivityManager()
 {

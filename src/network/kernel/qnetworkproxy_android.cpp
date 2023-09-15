@@ -24,7 +24,7 @@ Q_GLOBAL_STATIC(ProxyInfoObject, proxyInfoInstance)
 
 static const char networkClass[] = "org/qtproject/qt/android/network/QtNetwork";
 
-Q_DECLARE_JNI_TYPE(ProxyInfo, "Landroid/net/ProxyInfo;")
+Q_DECLARE_JNI_CLASS(ProxyInfo, "android/net/ProxyInfo")
 Q_DECLARE_JNI_TYPE(JStringArray, "[Ljava/lang/String;")
 
 ProxyInfoObject::ProxyInfoObject()

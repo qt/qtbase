@@ -35,8 +35,8 @@ QAndroidPlatformServices::QAndroidPlatformServices()
             Qt::QueuedConnection);
 }
 
-Q_DECLARE_JNI_TYPE(UriType, "Landroid/net/Uri;")
-Q_DECLARE_JNI_TYPE(FileType, "Ljava/io/File;")
+Q_DECLARE_JNI_CLASS(UriType, "android/net/Uri")
+Q_DECLARE_JNI_CLASS(FileType, "java/io/File")
 Q_DECLARE_JNI_CLASS(File, "java/io/File")
 Q_DECLARE_JNI_CLASS(FileProvider, "androidx/core/content/FileProvider");
 

@@ -58,7 +58,7 @@ Q_DECLARE_JNI_CLASS(Resources, "android/content/res/Resources")
 Q_DECLARE_JNI_CLASS(Size, "android/util/Size")
 Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
 
-Q_DECLARE_JNI_TYPE(DisplayMode, "Landroid/view/Display$Mode;")
+Q_DECLARE_JNI_CLASS(DisplayMode, "android/view/Display$Mode")
 
 QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
     : QObject(), QPlatformScreen()

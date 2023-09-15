@@ -13,7 +13,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_JNI_CLASS(Environment, "android/os/Environment");
-Q_DECLARE_JNI_TYPE(File, "Ljava/io/File;");
+Q_DECLARE_JNI_CLASS(File, "java/io/File");
 
 using namespace QNativeInterface;
 using namespace Qt::StringLiterals;
