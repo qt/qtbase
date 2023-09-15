@@ -410,26 +410,30 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
     QKeySequence::SequenceMatch result = QKeySequence::NoMatch;
     for (int i = d->newEntries.size()-1; i >= 0 ; --i) {
         QShortcutEntry entry(d->newEntries.at(i)); // needed for searching
-        qCDebug(lcShortcutMap) << "- checking entry" << entry.id << entry.keyseq;
+        qCDebug(lcShortcutMap) << "Looking for shortcuts matching" << entry.keyseq;
+
+        QKeySequence::SequenceMatch bestMatchForEntry = QKeySequence::NoMatch;
+
         const auto itEnd = d->sequences.constEnd();
         auto it = std::lower_bound(d->sequences.constBegin(), itEnd, entry);
+        for (; it != itEnd; ++it) {
+            QKeySequence::SequenceMatch match = matches(entry.keyseq, (*it).keyseq);
+            qCDebug(lcShortcutMap) << " -" << match << "for shortcut" << it->keyseq;
 
-        QKeySequence::SequenceMatch oneKSResult = QKeySequence::NoMatch;
-        QKeySequence::SequenceMatch tempRes = QKeySequence::NoMatch;
-        do {
-            if (it == itEnd)
+            // If we got a valid match, there might still be more keys to check against,
+            // but if we get no match, we know that there are no more possible matches.
+            if (match == QKeySequence::NoMatch)
                 break;
-            tempRes = matches(entry.keyseq, (*it).keyseq);
-            oneKSResult = qMax(oneKSResult, tempRes);
-            qCDebug(lcShortcutMap) << "  - matches returned" << tempRes << "for" << entry.keyseq << it->keyseq
-                << "- correctContext()?" << it->correctContext();
-            if (tempRes != QKeySequence::NoMatch && (*it).correctContext()) {
-                if (tempRes == QKeySequence::ExactMatch) {
+
+            bestMatchForEntry = qMax(bestMatchForEntry, match);
+
+            if ((*it).correctContext()) {
+                if (match == QKeySequence::ExactMatch) {
                     if ((*it).enabled)
                         d->identicals.append(&*it);
                     else
                         identicalDisabledFound = true;
-                } else if (tempRes == QKeySequence::PartialMatch) {
+                } else if (match == QKeySequence::PartialMatch) {
                     // We don't need partials, if we have identicals
                     if (d->identicals.size())
                         break;
@@ -437,20 +441,18 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
                     // key events when all partials are disabled!
                     partialFound |= (*it).enabled;
                 }
+            } else {
+                qCDebug(lcShortcutMap) << "  - But context was not correct";
             }
-            ++it;
-            // If we got a valid match on this run, there might still be more keys to check against,
-            // so we'll loop once more. If we get NoMatch, there's guaranteed no more possible
-            // matches in the shortcutmap.
-        } while (tempRes != QKeySequence::NoMatch);
+        }
 
         // If the type of match improves (ergo, NoMatch->Partial, or Partial->Exact), clear the
         // previous list. If this match is equal or better than the last match, append to the list
-        if (oneKSResult > result) {
+        if (bestMatchForEntry > result) {
             okEntries.clear();
             qCDebug(lcShortcutMap) << "Found better match (" << d->newEntries << "), clearing key sequence list";
         }
-        if (oneKSResult && oneKSResult >= result) {
+        if (bestMatchForEntry && bestMatchForEntry >= result) {
             okEntries << d->newEntries.at(i);
             qCDebug(lcShortcutMap) << "Added ok key sequence" << d->newEntries;
         }
