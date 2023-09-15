@@ -263,7 +263,7 @@ bool qt_starts_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity c
     if (needleLen > haystackLen)
         return false;
 
-    return QtPrivate::compareStrings(haystack.left(needleLen), needle, cs) == 0;
+    return QtPrivate::compareStrings(haystack.first(needleLen), needle, cs) == 0;
 }
 
 template <typename Haystack, typename Needle>
@@ -278,7 +278,7 @@ bool qt_ends_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs)
     if (haystackLen < needleLen)
         return false;
 
-    return QtPrivate::compareStrings(haystack.right(needleLen), needle, cs) == 0;
+    return QtPrivate::compareStrings(haystack.last(needleLen), needle, cs) == 0;
 }
 
 template <typename T>
