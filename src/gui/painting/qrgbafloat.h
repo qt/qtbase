@@ -61,19 +61,19 @@ public:
     constexpr bool isOpaque() const { return a >= FastType(1.0f); }
     constexpr bool isTransparent() const { return a <= FastType(0.0f); }
 
-    constexpr FastType red()   const { return r; }
-    constexpr FastType green() const { return g; }
-    constexpr FastType blue()  const { return b; }
-    constexpr FastType alpha() const { return a; }
-    void setRed(FastType _red)     { r = F(_red); }
-    void setGreen(FastType _green) { g = F(_green); }
-    void setBlue(FastType _blue)   { b = F(_blue); }
-    void setAlpha(FastType _alpha) { a = F(_alpha); }
+    constexpr float red()   const { return r; }
+    constexpr float green() const { return g; }
+    constexpr float blue()  const { return b; }
+    constexpr float alpha() const { return a; }
+    void setRed(float _red)     { r = F(_red); }
+    void setGreen(float _green) { g = F(_green); }
+    void setBlue(float _blue)   { b = F(_blue); }
+    void setAlpha(float _alpha) { a = F(_alpha); }
 
-    constexpr FastType redNormalized()   const { return clamp01(r); }
-    constexpr FastType greenNormalized() const { return clamp01(g); }
-    constexpr FastType blueNormalized()  const { return clamp01(b); }
-    constexpr FastType alphaNormalized() const { return clamp01(a); }
+    constexpr float redNormalized()   const { return clamp01(r); }
+    constexpr float greenNormalized() const { return clamp01(g); }
+    constexpr float blueNormalized()  const { return clamp01(b); }
+    constexpr float alphaNormalized() const { return clamp01(a); }
 
     constexpr quint8 red8()   const { return qRound(redNormalized()   * FastType(255.0f)); }
     constexpr quint8 green8() const { return qRound(greenNormalized() * FastType(255.0f)); }
