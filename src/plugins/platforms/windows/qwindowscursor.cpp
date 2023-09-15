@@ -138,8 +138,8 @@ static HCURSOR createBitmapCursor(const QCursor &cursor, qreal scaleFactor = 1)
         bbits = bbits.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         mbits = mbits.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
-    bbits = bbits.convertToFormat(QImage::Format_Mono);
-    mbits = mbits.convertToFormat(QImage::Format_Mono);
+    bbits = std::move(bbits).convertToFormat(QImage::Format_Mono);
+    mbits = std::move(mbits).convertToFormat(QImage::Format_Mono);
     const bool invb = bbits.colorCount() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
     const bool invm = mbits.colorCount() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
     return createBitmapCursor(bbits, mbits, cursor.hotSpot(), invb, invm);

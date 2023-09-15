@@ -154,7 +154,7 @@ static bool qt_write_dibv5(QDataStream &s, QImage image)
         return false;
 
     if (image.format() != QImage::Format_ARGB32)
-        image = image.convertToFormat(QImage::Format_ARGB32);
+        image = std::move(image).convertToFormat(QImage::Format_ARGB32);
 
     auto *buf = new uchar[bpl_bmp];
 
@@ -870,7 +870,7 @@ bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeD
         QByteArray ba;
         if (cf == CF_DIB) {
             if (img.format() > QImage::Format_ARGB32)
-                img = img.convertToFormat(QImage::Format_RGB32);
+                img = std::move(img).convertToFormat(QImage::Format_RGB32);
             const QByteArray ba = writeDib(img);
             if (!ba.isEmpty())
                 return setData(ba, pmedium);
@@ -883,7 +883,7 @@ bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeD
         } else {
             QDataStream s(&ba, QIODevice::WriteOnly);
             s.setByteOrder(QDataStream::LittleEndian);// Intel byte order ####
-            if (qt_write_dibv5(s, img))
+            if (qt_write_dibv5(s, std::move(img)))
                 return setData(ba, pmedium);
         }
     }
