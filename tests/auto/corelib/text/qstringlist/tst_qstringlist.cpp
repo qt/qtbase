@@ -169,6 +169,7 @@ void tst_QStringList::filter()
         const QStringList expected{u"Bill Gates"_s, u"Bill Clinton"_s};
         QCOMPARE(list.filter(u"Bill"_s), expected);
         QCOMPARE(list.filter(u"Bill"), expected);
+        QCOMPARE(list.filter("Bill"_L1), expected);
         QCOMPARE(list.filter(QRegularExpression(u"[i]ll"_s)), expected);
         QCOMPARE(list.filter(QStringMatcher(u"Bill")), expected);
     }
@@ -177,6 +178,7 @@ void tst_QStringList::filter()
         const QStringList expected = {u"Bill Gates"_s, u"Bill Clinton"_s, u"bIll"_s};
         QCOMPARE(list.filter(u"bill"_s, Qt::CaseInsensitive), expected);
         QCOMPARE(list.filter(u"bill", Qt::CaseInsensitive), expected);
+        QCOMPARE(list.filter("bill"_L1, Qt::CaseInsensitive), expected);
         QCOMPARE(list.filter(QRegularExpression(u"[i]ll"_s, QRegularExpression::CaseInsensitiveOption)),
                              expected);
         QCOMPARE(list.filter(QStringMatcher(u"Bill", Qt::CaseInsensitive)), expected);

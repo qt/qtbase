@@ -286,6 +286,18 @@ QStringList QtPrivate::QStringList_filter(const QStringList &that, const QString
     return res;
 }
 
+/*!
+    \fn QStringList QStringList::filter(QLatin1StringView str, Qt::CaseSensitivity cs) const
+    \since 6.7
+    \overload
+*/
+
+QStringList QtPrivate::QStringList_filter(const QStringList &that, QLatin1StringView needle,
+                                          Qt::CaseSensitivity cs)
+{
+    return filter_helper(that, needle, cs);
+}
+
 template<typename T>
 static bool stringList_contains(const QStringList &stringList, const T &str, Qt::CaseSensitivity cs)
 {
