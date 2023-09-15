@@ -14,6 +14,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QLatin1StringMatcher;
 class QRegularExpression;
 
 #if !defined(QT_NO_JAVA_STYLE_ITERATORS)
@@ -34,6 +35,8 @@ namespace QtPrivate {
                                                  Qt::CaseSensitivity cs);
     Q_CORE_EXPORT QStringList QStringList_filter(const QStringList &that,
                                                  const QStringMatcher &matcher);
+    Q_CORE_EXPORT QStringList QStringList_filter(const QStringList &that,
+                                                 const QLatin1StringMatcher &matcher);
 
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QStringView str, Qt::CaseSensitivity cs);
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QLatin1StringView str, Qt::CaseSensitivity cs);
@@ -95,6 +98,9 @@ public:
 
     QStringList filter(const QStringMatcher &matcher) const
     { return QtPrivate::QStringList_filter(*self(), matcher); }
+    QStringList filter(const QLatin1StringMatcher &matcher) const
+    { return QtPrivate::QStringList_filter(*self(), matcher); }
+
     QStringList filter(QLatin1StringView needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     { return QtPrivate::QStringList_filter(*self(), needle, cs); }
     inline QStringList filter(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const

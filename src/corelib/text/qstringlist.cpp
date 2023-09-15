@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <qstringlist.h>
-#include <qset.h>
 #if QT_CONFIG(regularexpression)
 #  include <qregularexpression.h>
 #endif
 #include <private/qduplicatetracker_p.h>
+#include <QtCore/qlatin1stringmatcher.h>
 
 #include <algorithm>
 QT_BEGIN_NAMESPACE
@@ -273,10 +273,36 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, QStringView s
     For example:
     \snippet qstringlist/main.cpp 18
 
-    \sa contains()
+    \sa contains(), filter(const QLatin1StringMatcher &)
 */
 
+/*!
+    \fn QStringList QStringList::filter(const QLatin1StringMatcher &matcher) const
+    \since 6.9
+
+    Returns a list of all the strings matched by \a matcher (i.e. for which
+    \c matcher.indexIn() returns an index >= 0).
+
+    Using QLatin1StringMatcher may be faster when searching in large
+    lists and/or in lists with long strings (the best way to find out is
+    benchmarking).
+
+    For example:
+    \snippet qstringlist/main.cpp 19
+
+    \sa contains(), filter(const QStringMatcher &)
+*/
 QStringList QtPrivate::QStringList_filter(const QStringList &that, const QStringMatcher &matcher)
+{
+    QStringList res;
+    for (const auto &s : that) {
+        if (matcher.indexIn(s) != -1)
+            res.append(s);
+    }
+    return res;
+}
+
+QStringList QtPrivate::QStringList_filter(const QStringList &that, const QLatin1StringMatcher &matcher)
 {
     QStringList res;
     for (const auto &s : that) {

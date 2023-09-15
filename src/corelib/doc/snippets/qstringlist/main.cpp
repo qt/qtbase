@@ -4,6 +4,7 @@
 #include <QtGui>
 #include <iostream>
 using namespace std;
+using namespace Qt::StringLiterals;
 
 class Widget : public QWidget
 {
@@ -99,6 +100,14 @@ Widget::Widget(QWidget *parent)
     QStringMatcher matcher(u"Straße", Qt::CaseInsensitive);
     QStringList filtered = veryLongList.filter(matcher);
 //! [18]
+    }
+
+    {
+//! [19]
+    QStringList veryLargeList;
+    QLatin1StringMatcher matcher("Street"_L1, Qt::CaseInsensitive);
+    QStringList filtered = veryLargeList.filter(matcher);
+//! [19]
     }
 }
 

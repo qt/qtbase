@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <qlatin1stringmatcher.h>
 #include <qlist.h>
 #include <qregularexpression.h>
 #include <qstringlist.h>
@@ -181,6 +182,7 @@ void tst_QStringList::filter()
         QCOMPARE(list.filter("Bill"_L1), expected);
         QCOMPARE(list.filter(QRegularExpression(u"[i]ll"_s)), expected);
         QCOMPARE(list.filter(QStringMatcher(u"Bill")), expected);
+        QCOMPARE(list.filter(QLatin1StringMatcher("Bill"_L1)), expected);
     }
 
     { // CaseInsensitive
@@ -191,6 +193,7 @@ void tst_QStringList::filter()
         QCOMPARE(list.filter(QRegularExpression(u"[i]ll"_s, QRegularExpression::CaseInsensitiveOption)),
                              expected);
         QCOMPARE(list.filter(QStringMatcher(u"Bill", Qt::CaseInsensitive)), expected);
+        QCOMPARE(list.filter(QLatin1StringMatcher("bill"_L1, Qt::CaseInsensitive)), expected);
     }
 }
 
