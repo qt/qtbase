@@ -1129,18 +1129,21 @@ void QXcbWindow::setWindowState(Qt::WindowStates state)
     if (state == m_windowState)
         return;
 
+    Qt::WindowStates unsetState = m_windowState & ~state;
+    Qt::WindowStates newState =  state & ~m_windowState;
+
     // unset old state
-    if (m_windowState & Qt::WindowMinimized)
+    if (unsetState & Qt::WindowMinimized)
         xcb_map_window(xcb_connection(), m_window);
-    if (m_windowState & Qt::WindowMaximized)
+    if (unsetState & Qt::WindowMaximized)
         setNetWmState(false,
                       atom(QXcbAtom::Atom_NET_WM_STATE_MAXIMIZED_HORZ),
                       atom(QXcbAtom::Atom_NET_WM_STATE_MAXIMIZED_VERT));
-    if (m_windowState & Qt::WindowFullScreen)
+    if (unsetState & Qt::WindowFullScreen)
         setNetWmState(false, atom(QXcbAtom::Atom_NET_WM_STATE_FULLSCREEN));
 
     // set new state
-    if (state & Qt::WindowMinimized) {
+    if (newState & Qt::WindowMinimized) {
         {
             xcb_client_message_event_t event;
 
@@ -1161,13 +1164,8 @@ void QXcbWindow::setWindowState(Qt::WindowStates state)
         }
         m_minimized = true;
     }
-    if (state & Qt::WindowMaximized)
-        setNetWmState(true,
-                      atom(QXcbAtom::Atom_NET_WM_STATE_MAXIMIZED_HORZ),
-                      atom(QXcbAtom::Atom_NET_WM_STATE_MAXIMIZED_VERT));
-    if (state & Qt::WindowFullScreen)
-        setNetWmState(true, atom(QXcbAtom::Atom_NET_WM_STATE_FULLSCREEN));
 
+    // set Maximized && FullScreen state if need
     setNetWmState(state);
 
     xcb_get_property_cookie_t cookie = xcb_icccm_get_wm_hints_unchecked(xcb_connection(), m_window);
