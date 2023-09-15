@@ -266,19 +266,16 @@ void tst_QUuid::id128()
 void tst_QUuid::uint128()
 {
 #ifdef QT_SUPPORTS_INT128
-    constexpr quint128 u = quint128(Q_UINT64_C(0xfc69b59ecc344436)) << 64
-                            | Q_UINT64_C(0xa43cee95d128b8c5); // This is LE
+    constexpr quint128 u = Q_UINT128_C(0xfc69b59e'cc344436'a43cee95'd128b8c5); // This is LE
     constexpr quint128 be = qToBigEndian(u);
     constexpr QUuid uuid = QUuid::fromUInt128(be);
     static_assert(uuid.toUInt128() == be, "Round-trip through QUuid failed");
 
     QCOMPARE(uuid, uuidA);
-    QCOMPARE(quint64(uuid.toUInt128() >> 64), quint64(be >> 64));
-    QCOMPARE(quint64(uuid.toUInt128()), quint64(be));
+    QCOMPARE(uuid.toUInt128(), be);
 
     quint128 le = qFromBigEndian(be);
-    QCOMPARE(quint64(uuid.toUInt128(QSysInfo::LittleEndian) >> 64), quint64(le >> 64));
-    QCOMPARE(quint64(uuid.toUInt128(QSysInfo::LittleEndian)), quint64(le));
+    QCOMPARE(uuid.toUInt128(QSysInfo::LittleEndian), le);
     QCOMPARE(QUuid::fromUInt128(le, QSysInfo::LittleEndian), uuidA);
 
     QUuid::Id128Bytes bytes = { .data128 = { qToBigEndian(u) } };
