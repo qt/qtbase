@@ -265,13 +265,12 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
     return true;
 }
 
-static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QByteArray &sourceFormat)
+static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, QByteArrayView sourceFormat)
 {
     QByteArray str;
     QImage image = sourceImage;
-    QByteArray format = sourceFormat;
+    const QByteArrayView format = sourceFormat.left(3); // ignore RAW part
 
-    format = format.left(3);                        // ignore RAW part
     bool gray = format == "pgm";
 
     if (format == "pbm") {
