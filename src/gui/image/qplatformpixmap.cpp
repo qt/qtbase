@@ -65,10 +65,10 @@ QPlatformPixmap *QPlatformPixmap::createCompatiblePlatformPixmap() const
     return d;
 }
 
-static QImage makeBitmapCompliantIfNeeded(QPlatformPixmap *d, const QImage &image, Qt::ImageConversionFlags flags)
+static QImage makeBitmapCompliantIfNeeded(QPlatformPixmap *d, QImage image, Qt::ImageConversionFlags flags)
 {
     if (d->pixelType() == QPlatformPixmap::BitmapType) {
-        QImage img = image.convertToFormat(QImage::Format_MonoLSB, flags);
+        QImage img = std::move(image).convertToFormat(QImage::Format_MonoLSB, flags);
 
         // make sure image.color(0) == Qt::color0 (white)
         // and image.color(1) == Qt::color1 (black)
@@ -98,7 +98,7 @@ bool QPlatformPixmap::fromFile(const QString &fileName, const char *format,
     QImage image = QImageReader(fileName, format).read();
     if (image.isNull())
         return false;
-    fromImage(makeBitmapCompliantIfNeeded(this, image, flags), flags);
+    fromImage(makeBitmapCompliantIfNeeded(this, std::move(image), flags), flags);
     return !isNull();
 }
 
@@ -110,7 +110,7 @@ bool QPlatformPixmap::fromData(const uchar *buf, uint len, const char *format, Q
     QImage image = QImageReader(&b, format).read();
     if (image.isNull())
         return false;
-    fromImage(makeBitmapCompliantIfNeeded(this, image, flags), flags);
+    fromImage(makeBitmapCompliantIfNeeded(this, std::move(image), flags), flags);
     return !isNull();
 }
 
@@ -132,9 +132,9 @@ QBitmap QPlatformPixmap::mask() const
     if (!hasAlphaChannel())
         return QBitmap();
 
-    const QImage img = toImage();
+    QImage img = toImage();
     bool shouldConvert = (img.format() != QImage::Format_ARGB32 && img.format() != QImage::Format_ARGB32_Premultiplied);
-    const QImage image = (shouldConvert ? img.convertToFormat(QImage::Format_ARGB32_Premultiplied) : img);
+    const QImage image = (shouldConvert ? std::move(img).convertToFormat(QImage::Format_ARGB32_Premultiplied) : img);
     const int w = image.width();
     const int h = image.height();
 
@@ -188,7 +188,7 @@ void QPlatformPixmap::setMask(const QBitmap &mask)
         }
         default: {
             const QImage imageMask = mask.toImage().convertToFormat(QImage::Format_MonoLSB);
-            image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+            image = std::move(image).convertToFormat(QImage::Format_ARGB32_Premultiplied);
             for (int y = 0; y < h; ++y) {
                 const uchar *mscan = imageMask.scanLine(y);
                 QRgb *tscan = (QRgb *)image.scanLine(y);
