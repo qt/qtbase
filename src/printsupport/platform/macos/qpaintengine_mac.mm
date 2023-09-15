@@ -48,7 +48,7 @@ CGImageRef qt_mac_create_imagemask(const QPixmap &pixmap, const QRectF &sr)
 {
     QImage image = pixmap.toImage();
     if (image.format() != QImage::Format_ARGB32_Premultiplied)
-        image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        image = std::move(image).convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     const int sx = qRound(sr.x()), sy = qRound(sr.y()), sw = qRound(sr.width()), sh = qRound(sr.height());
     const qsizetype sbpr = image.bytesPerLine();
