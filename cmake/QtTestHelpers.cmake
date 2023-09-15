@@ -782,15 +782,27 @@ function(qt_internal_add_test name)
             endif()
         endif()
     else()
-        # Install test data
-        file(RELATIVE_PATH relative_path_to_test_project
-            "${QT_TOP_LEVEL_SOURCE_DIR}"
-            "${CMAKE_CURRENT_SOURCE_DIR}")
-        qt_path_join(testdata_install_dir ${QT_INSTALL_DIR}
-                     "${relative_path_to_test_project}")
-        if (testdata_install_dir)
+        # Install test data, when tests are built in-tree or as standalone tests, but not as a
+        # single standalone test, which is checked by the existence of the QT_TOP_LEVEL_SOURCE_DIR
+        # variable.
+        # TODO: Shouldn't we also handle the single standalone test case?
+        # TODO: Does installing even makes sense, given where QFINDTESTDATA looks for installed
+        # test data, and where we end up installing it? See QTBUG-117098.
+        if(QT_TOP_LEVEL_SOURCE_DIR)
             foreach(testdata IN LISTS arg_TESTDATA)
                 set(testdata "${CMAKE_CURRENT_SOURCE_DIR}/${testdata}")
+
+                # Get the relative source dir for each test data entry, because it might contain a
+                # subdirectory.
+                file(RELATIVE_PATH relative_path_to_test_project
+                    "${QT_TOP_LEVEL_SOURCE_DIR}"
+                    "${testdata}")
+                get_filename_component(relative_path_to_test_project
+                    "${relative_path_to_test_project}" DIRECTORY)
+
+                qt_path_join(testdata_install_dir ${QT_INSTALL_DIR}
+                             "${relative_path_to_test_project}")
+
                 if (IS_DIRECTORY "${testdata}")
                     qt_install(
                         DIRECTORY "${testdata}"
