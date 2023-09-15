@@ -167,6 +167,12 @@ QNetworkConnectionEvents::~QNetworkConnectionEvents()
 
 ComPtr<INetworkConnection> QNetworkConnectionEvents::getNetworkConnectionFromAdapterGuid(QUuid guid)
 {
+    if (!networkListManager) {
+        qCDebug(lcNetMon) << "Failed to enumerate network connections:"
+                          << "NetworkListManager was not instantiated";
+        return nullptr;
+    }
+
     ComPtr<IEnumNetworkConnections> connections;
     auto hr = networkListManager->GetNetworkConnections(connections.GetAddressOf());
     if (FAILED(hr)) {
