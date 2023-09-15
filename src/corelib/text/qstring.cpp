@@ -4610,7 +4610,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
 
     // 1. build the backreferences list, holding where the backreferences
     // are in the replacement string
-    QList<QStringCapture> backReferences;
+    QVarLengthArray<QStringCapture> backReferences;
     const qsizetype al = after.size();
     const QChar *ac = after.unicode();
 
@@ -4642,7 +4642,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
 
     qsizetype newLength = 0; // length of the new string, with all the replacements
     qsizetype lastEnd = 0;
-    QList<QStringView> chunks;
+    QVarLengthArray<QStringView> chunks;
     const QStringView copyView{ copy }, afterView{ after };
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
