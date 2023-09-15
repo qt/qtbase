@@ -54,6 +54,10 @@ static Q_LOGGING_CATEGORY(lcElfParser, "qt.core.plugin.elfparser")
 #  define PT_GNU_PROPERTY   0x6474e553
 #endif
 
+#ifndef PN_XNUM
+#  define PN_XNUM 0xffff
+#endif
+
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wunused-const-variable")
 
