@@ -831,7 +831,7 @@ Q_WIDGETS_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage, qreal radius,
     if (blurImage.format() != QImage::Format_ARGB32_Premultiplied
         && blurImage.format() != QImage::Format_RGB32)
     {
-        blurImage = blurImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        blurImage = std::move(blurImage).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     }
 
     qreal scale = 1;
