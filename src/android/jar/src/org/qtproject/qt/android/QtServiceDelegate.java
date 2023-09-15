@@ -1,5 +1,5 @@
 // Copyright (C) 2016 BogDan Vatra <bogdan@kde.org>
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 package org.qtproject.qt.android;
@@ -57,6 +57,11 @@ public class QtServiceDelegate
     private String m_mainLib = null;
     private Service m_service = null;
     private static String m_applicationParameters = null;
+
+    QtServiceDelegate(Service service)
+    {
+        m_service = service;
+    }
 
     public boolean loadApplication(Service service, ClassLoader classLoader, Bundle loaderParams)
     {
@@ -134,22 +139,6 @@ public class QtServiceDelegate
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        }
-    }
-
-    public void onDestroy()
-    {
-        QtNative.quitQtCoreApplication();
-        QtNative.terminateQt();
-        QtNative.setService(null, null);
-        QtNative.m_qtThread.exit();
-        System.exit(0);
-    }
-
-    public IBinder onBind(Intent intent)
-    {
-        synchronized (this) {
-            return QtNative.onBind(intent);
         }
     }
 }

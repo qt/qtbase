@@ -4,30 +4,12 @@
 
 package org.qtproject.qt.android.bindings;
 
-import android.app.Application;
-import org.qtproject.qt.android.QtLoader;
+import org.qtproject.qt.android.QtApplicationBase;
 
-public class QtApplication extends Application
+public class QtApplication extends QtApplicationBase
 {
-    public final static String QtTAG = "Qt";
-
     @Override
     public void onTerminate() {
-        if (QtLoader.m_delegateObject != null && QtLoader.m_delegateMethods.containsKey("onTerminate"))
-            QtLoader.invokeDelegateMethod(QtLoader.m_delegateMethods.get("onTerminate").get(0));
         super.onTerminate();
-    }
-
-    // TODO: only keep around for avoid build errors, will be removed.
-    public static class InvokeResult
-    {
-        public boolean invoked = false;
-        public Object methodReturns = null;
-    }
-
-    public static InvokeResult invokeDelegate(Object... args)
-    {
-        InvokeResult result = new InvokeResult();
-        return result;
     }
 }

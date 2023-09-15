@@ -8,7 +8,11 @@ set(java_sources
     src/org/qtproject/qt/android/EditContextView.java
     src/org/qtproject/qt/android/EditPopupMenu.java
     src/org/qtproject/qt/android/ExtractStyle.java
+    src/org/qtproject/qt/android/QtApplicationBase.java
+    src/org/qtproject/qt/android/QtActivityBase.java
+    src/org/qtproject/qt/android/QtServiceBase.java
     src/org/qtproject/qt/android/QtActivityDelegate.java
+    src/org/qtproject/qt/android/QtServiceDelegate.java
     src/org/qtproject/qt/android/QtLoader.java
     src/org/qtproject/qt/android/QtActivityLoader.java
     src/org/qtproject/qt/android/QtServiceLoader.java
@@ -20,7 +24,6 @@ set(java_sources
     src/org/qtproject/qt/android/QtNativeLibrariesDir.java
     src/org/qtproject/qt/android/QtSurface.java
     src/org/qtproject/qt/android/QtThread.java
-    src/org/qtproject/qt/android/QtServiceDelegate.java
     src/org/qtproject/qt/android/extras//QtAndroidBinder.java
     src/org/qtproject/qt/android/extras/QtAndroidServiceConnection.java
     src/org/qtproject/qt/android/extras/QtNative.java

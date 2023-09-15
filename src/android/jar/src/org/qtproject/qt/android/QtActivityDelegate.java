@@ -1,5 +1,5 @@
 // Copyright (C) 2017 BogDan Vatra <bogdan@kde.org>
-// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
@@ -71,16 +71,6 @@ import static org.qtproject.qt.android.QtConstants.*;
 public class QtActivityDelegate
 {
     private Activity m_activity = null;
-    private Method m_super_dispatchKeyEvent = null;
-    private Method m_super_onRestoreInstanceState = null;
-    private Method m_super_onRetainNonConfigurationInstance = null;
-    private Method m_super_onSaveInstanceState = null;
-    private Method m_super_onKeyDown = null;
-    private Method m_super_onKeyUp = null;
-    private Method m_super_onConfigurationChanged = null;
-    private Method m_super_onActivityResult = null;
-    private Method m_super_dispatchGenericMotionEvent = null;
-    private Method m_super_onWindowFocusChanged = null;
 
     // Keep in sync with QtAndroid::SystemUiVisibility in androidjnimain.h
     public static final int SYSTEM_UI_VISIBILITY_NORMAL = 0;
@@ -93,8 +83,6 @@ public class QtActivityDelegate
     private int m_nativeOrientation = Configuration.ORIENTATION_UNDEFINED;
 
     private String m_mainLib;
-    private long m_metaState;
-    private int m_lastChar = 0;
     private int m_softInputMode = 0;
     private int m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
     private boolean m_started = false;
@@ -108,7 +96,6 @@ public class QtActivityDelegate
     private boolean m_quitApp = true;
     private View m_dummyView = null;
     private boolean m_keyboardIsVisible = false;
-    public boolean m_backKeyPressedSent = false;
     private long m_showHideTimeStamp = System.nanoTime();
     private int m_portraitKeyboardHeight = 0;
     private int m_landscapeKeyboardHeight = 0;
@@ -120,6 +107,9 @@ public class QtActivityDelegate
     private boolean m_isPluginRunning = false;
 
     private QtAccessibilityDelegate m_accessibilityDelegate = null;
+
+
+    QtActivityDelegate() { }
 
 
     public void setSystemUiVisibility(int systemUiVisibility)
@@ -442,6 +432,46 @@ public class QtActivityDelegate
         });
     }
 
+    void setStarted(boolean started)
+    {
+        m_started = started;
+    }
+
+    boolean isStarted()
+    {
+        return m_started;
+    }
+
+    void setQuitApp(boolean quitApp)
+    {
+        m_quitApp = quitApp;
+    }
+
+    boolean isQuitApp()
+    {
+        return m_quitApp;
+    }
+
+    boolean isPluginRunning()
+    {
+        return m_isPluginRunning;
+    }
+
+    int systemUiVisibility()
+    {
+        return m_systemUiVisibility;
+    }
+
+    void setContextMenuVisible(boolean contextMenuVisible)
+    {
+        m_contextMenuVisible = contextMenuVisible;
+    }
+
+    boolean isContextMenuVisible()
+    {
+        return m_contextMenuVisible;
+    }
+
     int getAppIconSize(Activity a)
     {
         int size = a.getResources().getDimensionPixelSize(android.R.dimen.app_icon_size);
@@ -624,28 +654,6 @@ public class QtActivityDelegate
 
         QtNative.setActivity(m_activity, this);
         setActionBarVisibility(false);
-
-        Class<?> activityClass = m_activity.getClass();
-        m_super_dispatchKeyEvent =
-                activityClass.getMethod("super_dispatchKeyEvent", KeyEvent.class);
-        m_super_onRestoreInstanceState =
-                activityClass.getMethod("super_onRestoreInstanceState", Bundle.class);
-        m_super_onRetainNonConfigurationInstance =
-                activityClass.getMethod("super_onRetainNonConfigurationInstance");
-        m_super_onSaveInstanceState =
-                activityClass.getMethod("super_onSaveInstanceState", Bundle.class);
-        m_super_onKeyDown =
-                activityClass.getMethod("super_onKeyDown", Integer.TYPE, KeyEvent.class);
-        m_super_onKeyUp =
-                activityClass.getMethod("super_onKeyUp", Integer.TYPE, KeyEvent.class);
-        m_super_onConfigurationChanged =
-                activityClass.getMethod("super_onConfigurationChanged", Configuration.class);
-        m_super_onActivityResult =
-                activityClass.getMethod("super_onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
-        m_super_onWindowFocusChanged =
-                activityClass.getMethod("super_onWindowFocusChanged", Boolean.TYPE);
-        m_super_dispatchGenericMotionEvent =
-                activityClass.getMethod("super_dispatchGenericMotionEvent", MotionEvent.class);
 
         m_softInputMode = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), 0).softInputMode;
 
@@ -948,7 +956,6 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyScrolledEvent(viewId);
     }
 
-
     public void notifyQtAndroidPluginRunning(boolean running)
     {
         m_isPluginRunning = running;
@@ -959,22 +966,12 @@ public class QtActivityDelegate
         m_accessibilityDelegate = new QtAccessibilityDelegate(m_activity, m_layout, this);
     }
 
-    public void onWindowFocusChanged(boolean hasFocus) {
-        try {
-            m_super_onWindowFocusChanged.invoke(m_activity, hasFocus);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (hasFocus)
-            updateFullScreen();
-    }
-
     boolean isUiModeDark(Configuration config)
     {
         return (config.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
 
-    private void handleUiModeChange(int uiMode)
+    void handleUiModeChange(int uiMode)
     {
         // QTBUG-108365
         if (Build.VERSION.SDK_INT >= 30) {
@@ -1001,234 +998,17 @@ public class QtActivityDelegate
         }
     }
 
-    public void onConfigurationChanged(Configuration configuration)
-    {
-        try {
-            m_super_onConfigurationChanged.invoke(m_activity, configuration);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        handleUiModeChange(configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK);
-    }
-
-    public void onDestroy()
-    {
-        if (m_quitApp) {
-            QtNative.terminateQt();
-            QtNative.setActivity(null, null);
-            QtNative.m_qtThread.exit();
-            System.exit(0);
-        }
-    }
-
-    public void onPause()
-    {
-        if (Build.VERSION.SDK_INT < 24 || !m_activity.isInMultiWindowMode())
-            QtNative.setApplicationState(ApplicationState.ApplicationInactive);
-    }
-
-    public void onResume()
-    {
-        QtNative.setApplicationState(ApplicationState.ApplicationActive);
-        if (m_started) {
-            QtNative.updateWindow();
-            updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
-        }
-    }
-
-    public void onNewIntent(Intent data)
-    {
-        QtNative.onNewIntent(data);
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        try {
-            m_super_onActivityResult.invoke(m_activity, requestCode, resultCode, data);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        QtNative.onActivityResult(requestCode, resultCode, data);
-    }
-
-
-    public void onStop()
-    {
-        QtNative.setApplicationState(ApplicationState.ApplicationSuspended);
-    }
-
-    public Object onRetainNonConfigurationInstance()
-    {
-        try {
-            m_super_onRetainNonConfigurationInstance.invoke(m_activity);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        m_quitApp = false;
-        return true;
-    }
-
-    public void onSaveInstanceState(Bundle outState) {
-        try {
-            m_super_onSaveInstanceState.invoke(m_activity, outState);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        outState.putInt("SystemUiVisibility", m_systemUiVisibility);
-        outState.putBoolean("Started", m_started);
-        // It should never
-    }
-
-    public void onRestoreInstanceState(Bundle savedInstanceState)
-    {
-        try {
-            m_super_onRestoreInstanceState.invoke(m_activity, savedInstanceState);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        m_started = savedInstanceState.getBoolean("Started");
-        // FIXME restore all surfaces
-
-    }
-
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-        if (!m_started || !m_isPluginRunning)
-            return false;
-
-        m_metaState = MetaKeyKeyListener.handleKeyDown(m_metaState, keyCode, event);
-        int c = event.getUnicodeChar(MetaKeyKeyListener.getMetaState(m_metaState) | event.getMetaState());
-        int lc = c;
-        m_metaState = MetaKeyKeyListener.adjustMetaAfterKeypress(m_metaState);
-
-        if ((c & KeyCharacterMap.COMBINING_ACCENT) != 0) {
-            c = c & KeyCharacterMap.COMBINING_ACCENT_MASK;
-            int composed = KeyEvent.getDeadChar(m_lastChar, c);
-            c = composed;
-        }
-
-        if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP
-            || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
-            || keyCode == KeyEvent.KEYCODE_MUTE)
-            && System.getenv("QT_ANDROID_VOLUME_KEYS") == null) {
-            return false;
-        }
-
-        m_lastChar = lc;
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            m_backKeyPressedSent = !m_keyboardIsVisible;
-            if (!m_backKeyPressedSent)
-                return true;
-        }
-        QtNative.keyDown(keyCode, c, event.getMetaState(), event.getRepeatCount() > 0);
-
-        return true;
-    }
-
-    public boolean onKeyUp(int keyCode, KeyEvent event)
-    {
-        if (!m_started || !m_isPluginRunning)
-            return false;
-
-        if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP
-            || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
-            || keyCode == KeyEvent.KEYCODE_MUTE)
-            && System.getenv("QT_ANDROID_VOLUME_KEYS") == null) {
-            return false;
-        }
-
-        if (keyCode == KeyEvent.KEYCODE_BACK && !m_backKeyPressedSent) {
-            hideSoftwareKeyboard();
-            setKeyboardVisibility(false, System.nanoTime());
-            return true;
-        }
-
-        m_metaState = MetaKeyKeyListener.handleKeyUp(m_metaState, keyCode, event);
-        QtNative.keyUp(keyCode, event.getUnicodeChar(), event.getMetaState(), event.getRepeatCount() > 0);
-        return true;
-    }
-
-    public boolean dispatchKeyEvent(KeyEvent event)
-    {
-        if (m_started
-                && event.getAction() == KeyEvent.ACTION_MULTIPLE
-                && event.getCharacters() != null
-                && event.getCharacters().length() == 1
-                && event.getKeyCode() == 0) {
-            QtNative.keyDown(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
-            QtNative.keyUp(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
-        }
-
-        if (QtNative.dispatchKeyEvent(event))
-            return true;
-
-        try {
-            return (Boolean) m_super_dispatchKeyEvent.invoke(m_activity, event);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private boolean m_optionsMenuIsVisible = false;
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        menu.clear();
-        return true;
-    }
-    public boolean onPrepareOptionsMenu(Menu menu)
-    {
-        m_optionsMenuIsVisible = true;
-        boolean res = QtNative.onPrepareOptionsMenu(menu);
-        setActionBarVisibility(res && menu.size() > 0);
-        return res;
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        return QtNative.onOptionsItemSelected(item.getItemId(), item.isChecked());
-    }
-
-    public void onOptionsMenuClosed(Menu menu)
-    {
-        m_optionsMenuIsVisible = false;
-        QtNative.onOptionsMenuClosed(menu);
-    }
-
     public void resetOptionsMenu()
     {
         m_activity.invalidateOptionsMenu();
     }
 
     private boolean m_contextMenuVisible = false;
-    public void onCreateContextMenu(ContextMenu menu,
-                                    View v,
-                                    ContextMenuInfo menuInfo)
-    {
-        menu.clearHeader();
-        QtNative.onCreateContextMenu(menu);
-        m_contextMenuVisible = true;
-    }
 
     public void onCreatePopupMenu(Menu menu)
     {
         QtNative.fillContextMenu(menu);
         m_contextMenuVisible = true;
-    }
-
-    public void onContextMenuClosed(Menu menu)
-    {
-        if (!m_contextMenuVisible)
-            return;
-        m_contextMenuVisible = false;
-        QtNative.onContextMenuClosed(menu);
-    }
-
-    public boolean onContextItemSelected(MenuItem item)
-    {
-        m_contextMenuVisible = false;
-        return QtNative.onContextItemSelected(item.getItemId(), item.isChecked());
     }
 
     public void openContextMenu(final int x, final int y, final int w, final int h)
@@ -1242,13 +1022,13 @@ public class QtActivityDelegate
                     popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem menuItem) {
-                            return QtActivityDelegate.this.onContextItemSelected(menuItem);
+                            return m_activity.onContextItemSelected(menuItem);
                         }
                     });
                     popup.setOnDismissListener(new PopupMenu.OnDismissListener() {
                         @Override
                         public void onDismiss(PopupMenu popupMenu) {
-                            QtActivityDelegate.this.onContextMenuClosed(popupMenu.getMenu());
+                            m_activity.onContextMenuClosed(popupMenu.getMenu());
                         }
                     });
                     popup.show();
@@ -1261,7 +1041,7 @@ public class QtActivityDelegate
         m_activity.closeContextMenu();
     }
 
-    private void setActionBarVisibility(boolean visible)
+    void setActionBarVisibility(boolean visible)
     {
         if (m_activity.getActionBar() == null)
             return;
@@ -1397,23 +1177,5 @@ public class QtActivityDelegate
             final int index = getSurfaceCount();
             m_layout.moveChild(view, index);
         }
-    }
-
-    public boolean dispatchGenericMotionEvent (MotionEvent ev)
-    {
-        if (m_started && QtNative.dispatchGenericMotionEvent(ev))
-            return true;
-
-        try {
-            return (Boolean) m_super_dispatchGenericMotionEvent.invoke(m_activity, ev);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
-    {
-        QtNative.sendRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

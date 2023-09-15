@@ -14,8 +14,8 @@ import java.security.Provider;
 public class QtServiceLoader extends QtLoader {
     Service m_service;
 
-    public QtServiceLoader(Service service, Class<?> clazz) {
-        super(service, clazz);
+    public QtServiceLoader(Service service) {
+        super(service);
         m_service = service;
     }
 
@@ -29,25 +29,11 @@ public class QtServiceLoader extends QtLoader {
             return;
         }
 
-        if (m_delegateObject != null && onCreate != null) {
-            Bundle bundle = null;
-            invokeDelegateMethod(onCreate, bundle);
-        }
         startApp(true);
     }
 
     @Override
     protected void finish() {
         m_service.stopSelf();
-    }
-
-    @Override
-    protected String loaderClassName() {
-        return "org.qtproject.qt.android.QtServiceDelegate";
-    }
-
-    @Override
-    protected Class<?> contextClassName() {
-        return android.app.Service.class;
     }
 }

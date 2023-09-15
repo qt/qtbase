@@ -36,163 +36,23 @@ public abstract class QtLoader {
     // These parameters matter in case of deploying application as system (embedded into firmware)
     public static final String SYSTEM_LIB_PATH = "/system/lib/";
 
-    public String APPLICATION_PARAMETERS = null; // use this variable to pass any parameters to your application,
-    // the parameters must not contain any white spaces
-    // and must be separated with "\t"
-    // e.g "-param1\t-param2=value2\t-param3\tvalue3"
-
+    public String APPLICATION_PARAMETERS = null;
     public String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_DIALOGS=1";
-    // use this variable to add any environment variables to your application.
-    // the env vars must be separated with "\t"
-    // e.g. "ENV_VAR1=1\tENV_VAR2=2\t"
-    // Currently the following vars are used by the android plugin:
-    // * QT_USE_ANDROID_NATIVE_DIALOGS -1 to use the android native dialogs.
-
-    public String[] QT_ANDROID_THEMES = null;     // A list with all themes that your application want to use.
-    // The name of the theme must be the same with any theme from
-    // http://developer.android.com/reference/android/R.style.html
-    // The most used themes are:
-    //  * "Theme" - (fallback) check http://developer.android.com/reference/android/R.style.html#Theme
-    //  * "Theme_Black" - check http://developer.android.com/reference/android/R.style.html#Theme_Black
-    //  * "Theme_Light" - (default for API <=10) check http://developer.android.com/reference/android/R.style.html#Theme_Light
-    //  * "Theme_Holo" - check http://developer.android.com/reference/android/R.style.html#Theme_Holo
-    //  * "Theme_Holo_Light" - (default for API 11-13) check http://developer.android.com/reference/android/R.style.html#Theme_Holo_Light
-    //  * "Theme_DeviceDefault" - check http://developer.android.com/reference/android/R.style.html#Theme_DeviceDefault
-    //  * "Theme_DeviceDefault_Light" - (default for API 14+) check http://developer.android.com/reference/android/R.style.html#Theme_DeviceDefault_Light
-
+    public String[] QT_ANDROID_THEMES = null;
     public String QT_ANDROID_DEFAULT_THEME = null; // sets the default theme.
 
     public ArrayList<String> m_qtLibs = null; // required qt libs
     public int m_displayDensity = -1;
     private ContextWrapper m_context;
     protected ComponentInfo m_contextInfo;
-    private Class<?> m_delegateClass;
 
-    private static ArrayList<FileOutputStream> m_fileOutputStreams = new ArrayList<FileOutputStream>();
-    // List of open file streams associated with files copied during installation.
-
-    public static Object m_delegateObject = null;
-    public static HashMap<String, ArrayList<Method>> m_delegateMethods= new HashMap<String, ArrayList<Method>>();
-    public static Method dispatchKeyEvent = null;
-    public static Method dispatchPopulateAccessibilityEvent = null;
-    public static Method dispatchTouchEvent = null;
-    public static Method dispatchTrackballEvent = null;
-    public static Method onKeyDown = null;
-    public static Method onKeyMultiple = null;
-    public static Method onKeyUp = null;
-    public static Method onTouchEvent = null;
-    public static Method onTrackballEvent = null;
-    public static Method onActivityResult = null;
-    public static Method onCreate = null;
-    public static Method onKeyLongPress = null;
-    public static Method dispatchKeyShortcutEvent = null;
-    public static Method onKeyShortcut = null;
-    public static Method dispatchGenericMotionEvent = null;
-    public static Method onGenericMotionEvent = null;
-    public static Method onRequestPermissionsResult = null;
-    private static String activityClassName;
-    private static Class qtApplicationClass = null;
-
-    public QtLoader(ContextWrapper context, Class<?> clazz) {
+    public QtLoader(ContextWrapper context) {
         m_context = context;
-        m_delegateClass = clazz;
-    }
-
-    public static void setQtApplicationClass(Class qtAppClass)
-    {
-        qtApplicationClass = qtAppClass;
     }
 
     public static void setQtTAG(String tag)
     {
         QtTAG = tag;
-    }
-
-    public static void setQtContextDelegate(Class<?> clazz, Object listener)
-    {
-        m_delegateObject = listener;
-        activityClassName = clazz.getCanonicalName();
-
-        ArrayList<Method> delegateMethods = new ArrayList<Method>();
-        for (Method m : listener.getClass().getMethods()) {
-            if (m.getDeclaringClass().getName().startsWith("org.qtproject.qt.android"))
-                delegateMethods.add(m);
-        }
-
-        ArrayList<Field> applicationFields = new ArrayList<Field>();
-        for (Field f : qtApplicationClass.getFields()) {
-            if (f.getDeclaringClass().getName().equals(qtApplicationClass.getName()))
-                applicationFields.add(f);
-        }
-
-        for (Method delegateMethod : delegateMethods) {
-            try {
-                clazz.getDeclaredMethod(delegateMethod.getName(), delegateMethod.getParameterTypes());
-                if (m_delegateMethods.containsKey(delegateMethod.getName())) {
-                    m_delegateMethods.get(delegateMethod.getName()).add(delegateMethod);
-                } else {
-                    ArrayList<Method> delegateSet = new ArrayList<Method>();
-                    delegateSet.add(delegateMethod);
-                    m_delegateMethods.put(delegateMethod.getName(), delegateSet);
-                }
-                for (Field applicationField:applicationFields) {
-                    if (applicationField.getName().equals(delegateMethod.getName())) {
-                        try {
-                            applicationField.set(null, delegateMethod);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            } catch (Exception e) { }
-        }
-    }
-
-    public static class InvokeResult
-    {
-        public boolean invoked = false;
-        public Object methodReturns = null;
-    }
-
-    private static int stackDeep=-1;
-    public static InvokeResult invokeDelegate(Object... args)
-    {
-        InvokeResult result = new InvokeResult();
-        if (m_delegateObject == null)
-            return result;
-        StackTraceElement[] elements = Thread.currentThread().getStackTrace();
-        if (-1 == stackDeep) {
-            for (int it=0;it<elements.length;it++)
-                if (elements[it].getClassName().equals(activityClassName)) {
-                    stackDeep = it;
-                    break;
-                }
-        }
-        if (-1 == stackDeep)
-            return result;
-
-        final String methodName=elements[stackDeep].getMethodName();
-        if (!m_delegateMethods.containsKey(methodName))
-            return result;
-
-        for (Method m : m_delegateMethods.get(methodName)) {
-            if (m.getParameterTypes().length == args.length) {
-                result.methodReturns = invokeDelegateMethod(m, args);
-                result.invoked = true;
-                return result;
-            }
-        }
-        return result;
-    }
-
-    public static Object invokeDelegateMethod(Method m, Object... args)
-    {
-        try {
-            return m.invoke(m_delegateObject, args);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     // Implement in subclass
@@ -205,9 +65,6 @@ public abstract class QtLoader {
     protected void runOnUiThread(Runnable run) {
         run.run();
     }
-
-    protected abstract String loaderClassName();
-    protected abstract Class<?> contextClassName();
 
     Intent getIntent()
     {
@@ -288,21 +145,21 @@ public abstract class QtLoader {
                     loaderParams.containsKey(LIB_PATH_KEY) ? loaderParams.getString(LIB_PATH_KEY) : null, // libs folder (if exists)
                     m_context.getClassLoader()); // parent loader
 
-            Class<?> loaderClass = classLoader.loadClass(loaderParams.getString(LOADER_CLASS_NAME_KEY)); // load QtLoader class
-            Object qtLoader = loaderClass.newInstance(); // create an instance
-            Method prepareAppMethod = qtLoader.getClass().getMethod("loadApplication",
-                    contextClassName(),
-                    ClassLoader.class,
-                    Bundle.class);
-            if (!(Boolean)prepareAppMethod.invoke(qtLoader, m_context, classLoader, loaderParams))
-                throw new Exception("");
-
-            setQtContextDelegate(m_delegateClass, qtLoader);
-
-            Method startAppMethod=qtLoader.getClass().getMethod("startApplication");
-            if (!(Boolean)startAppMethod.invoke(qtLoader))
-                throw new Exception("");
-
+            if (m_context instanceof QtActivityBase) {
+                QtActivityBase activityBase = (QtActivityBase)m_context;
+                QtActivityDelegate activityDelegate = activityBase.getActivityDelegate();
+                if (!activityDelegate.loadApplication(activityBase, classLoader, loaderParams))
+                    throw new Exception("");
+                if (!activityDelegate.startApplication())
+                    throw new Exception("");
+            } else if (m_context instanceof QtServiceBase) {
+                QtServiceBase serviceBase = (QtServiceBase)m_context;
+                QtServiceDelegate serviceDelegate = serviceBase.getServiceDelegate();
+                if (!serviceDelegate.loadApplication(serviceBase, classLoader, loaderParams))
+                    throw new Exception("");
+                if (!serviceDelegate.startApplication())
+                    throw new Exception("");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             AlertDialog errorDialog = new AlertDialog.Builder(m_context).create();
@@ -412,7 +269,6 @@ public abstract class QtLoader {
                 Bundle loaderParams = new Bundle();
                 loaderParams.putInt(ERROR_CODE_KEY, 0);
                 loaderParams.putString(DEX_PATH_KEY, new String());
-                loaderParams.putString(LOADER_CLASS_NAME_KEY, loaderClassName());
 
                 id = resources.getIdentifier("static_init_classes", "string", packageName);
                 loaderParams.putStringArray(STATIC_INIT_CLASSES_KEY, resources.getString(id)

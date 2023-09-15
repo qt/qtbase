@@ -1034,19 +1034,19 @@ void tst_QJniObject::getStaticCharField()
 
 void tst_QJniObject::getBooleanField()
 {
-    QJniObject obj("org/qtproject/qt/android/QtActivityDelegate");
+    QJniObject obj(testClassName);
 
     QVERIFY(obj.isValid());
-    QVERIFY(!obj.getField<jboolean>("m_backKeyPressedSent"));
+    QVERIFY(obj.getField<jboolean>("BOOL_FIELD"));
 }
 
 void tst_QJniObject::getIntField()
 {
-    QJniObject obj("org/qtproject/qt/android/QtActivityDelegate");
+    QJniObject obj(testClassName);
 
     QVERIFY(obj.isValid());
-    jint res = obj.getField<jint>("m_currentRotation");
-    QCOMPARE(res, -1);
+    jint res = obj.getField<jint>("INT_FIELD");
+    QCOMPARE(res, 123);
 }
 
 template <typename T>

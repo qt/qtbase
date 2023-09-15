@@ -20,6 +20,9 @@ public class QtJniObjectTestClass
 
     // --------------------------------------------------------------------------------------------
 
+    final int INT_FIELD = 123;
+    final boolean BOOL_FIELD = true;
+
     byte BYTE_VAR;
     short SHORT_VAR;
     int INT_VAR;

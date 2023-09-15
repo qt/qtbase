@@ -16,20 +16,10 @@ import java.lang.reflect.Field;
 public class QtActivityLoader extends QtLoader {
     Activity m_activity;
 
-    public QtActivityLoader(Activity activity, Class<?> clazz)
+    public QtActivityLoader(Activity activity)
     {
-        super(activity, clazz);
+        super(activity);
         m_activity = activity;
-    }
-
-    @Override
-    protected String loaderClassName() {
-        return "org.qtproject.qt.android.QtActivityDelegate";
-    }
-
-    @Override
-    protected Class<?> contextClassName() {
-        return android.app.Activity.class;
     }
 
     @Override
@@ -88,9 +78,7 @@ public class QtActivityLoader extends QtLoader {
                 Runtime.getRuntime().exit(0);
             }
 
-            // there can only be a valid delegate object if the QtNative was started.
-            if (m_delegateObject != null && onCreate != null)
-                invokeDelegateMethod(onCreate, savedInstanceState);
+            ((QtActivityBase)m_activity).getActivityDelegate().onCreate(savedInstanceState);
 
             return;
         }
