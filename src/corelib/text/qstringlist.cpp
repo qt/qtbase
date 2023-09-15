@@ -189,8 +189,11 @@ QT_BEGIN_NAMESPACE
     \fn void QStringList::sort(Qt::CaseSensitivity cs)
 
     Sorts the list of strings in ascending order.
+
+//! [comparison-case-sensitivity]
     If \a cs is \l Qt::CaseSensitive (the default), the string comparison
     is case sensitive; otherwise the comparison is case insensitive.
+//! [comparison-case-sensitivity]
 
     Sorting is performed using the STL's std::sort() algorithm,
     which averages \l{linear-logarithmic time}, i.e. O(\e{n} log \e{n}).
@@ -221,9 +224,7 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
 
     Returns a list of all the strings containing the substring \a str.
 
-    If \a cs is \l Qt::CaseSensitive (the default), the string
-    comparison is case sensitive; otherwise the comparison is case
-    insensitive.
+    \include qstringlist.cpp comparison-case-sensitivity
 
     \snippet qstringlist/main.cpp 5
     \snippet qstringlist/main.cpp 10
@@ -268,8 +269,9 @@ static bool stringList_contains(const QStringList &stringList, const T &str, Qt:
     \fn bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
 
     Returns \c true if the list contains the string \a str; otherwise
-    returns \c false. The search is case insensitive if \a cs is
-    Qt::CaseInsensitive; the search is case sensitive by default.
+    returns \c false.
+
+    \include qstringlist.cpp comparison-case-sensitivity
 
     \sa indexOf(), lastIndexOf(), QString::contains()
  */
@@ -280,8 +282,9 @@ static bool stringList_contains(const QStringList &stringList, const T &str, Qt:
     \since 5.12
 
     Returns \c true if the list contains the string \a str; otherwise
-    returns \c false. The search is case insensitive if \a cs is
-    Qt::CaseInsensitive; the search is case sensitive by default.
+    returns \c false.
+
+    \include qstringlist.cpp comparison-case-sensitivity
  */
 bool QtPrivate::QStringList_contains(const QStringList *that, QStringView str,
                                      Qt::CaseSensitivity cs)
@@ -295,8 +298,9 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QStringView str,
     \since 5.10
 
     Returns \c true if the list contains the Latin-1 string viewed by \a str; otherwise
-    returns \c false. The search is case insensitive if \a cs is Qt::CaseInsensitive;
-    the search is case sensitive by default.
+    returns \c false.
+
+    \include qstringlist.cpp comparison-case-sensitivity
 
     \sa indexOf(), lastIndexOf(), QString::contains()
  */
@@ -332,8 +336,9 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
 
     Returns a string list where every string has had the \a before
     text replaced with the \a after text wherever the \a before text
-    is found. The \a before text is matched case-sensitively or not
-    depending on the \a cs flag.
+    is found.
+
+    \include qstringlist.cpp comparison-case-sensitivity
 
     For example:
 
