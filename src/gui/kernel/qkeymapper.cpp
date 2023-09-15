@@ -35,16 +35,6 @@ QKeyMapper::~QKeyMapper()
 {
 }
 
-static QList<int> extractKeyFromEvent(QKeyEvent *e)
-{
-    QList<int> result;
-    if (e->key() && (e->key() != Qt::Key_unknown))
-        result << e->keyCombination().toCombined();
-    else if (!e->text().isEmpty())
-        result << int(e->text().at(0).unicode() + (int)e->modifiers());
-    return result;
-}
-
 QList<int> QKeyMapper::possibleKeys(QKeyEvent *e)
 {
     return instance()->d_func()->possibleKeys(e);
@@ -96,7 +86,11 @@ QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
     if (!result.isEmpty())
         return result;
 
-    return extractKeyFromEvent(e);
+    if (e->key() && (e->key() != Qt::Key_unknown))
+        result << e->keyCombination().toCombined();
+    else if (!e->text().isEmpty())
+        result << int(e->text().at(0).unicode() + (int)e->modifiers());
+    return result;
 }
 
 void *QKeyMapper::resolveInterface(const char *name, int revision) const
