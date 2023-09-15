@@ -369,7 +369,7 @@ bool QShortcutMap::hasShortcutForKeySequence(const QKeySequence &seq) const
     auto it = std::lower_bound(d->shortcuts.cbegin(), itEnd, entry);
 
     for (;it != itEnd; ++it) {
-        if (matches(entry.keySequence, (*it).keySequence) == QKeySequence::ExactMatch
+        if (entry.keySequence.matches(it->keySequence) == QKeySequence::ExactMatch
                 && (*it).correctContext() && (*it).enabled) {
             return true;
         }
@@ -418,7 +418,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
         const auto itEnd = d->shortcuts.constEnd();
         auto it = std::lower_bound(d->shortcuts.constBegin(), itEnd, entry);
         for (; it != itEnd; ++it) {
-            QKeySequence::SequenceMatch match = matches(entry.keySequence, (*it).keySequence);
+            QKeySequence::SequenceMatch match = entry.keySequence.matches(it->keySequence);
             qCDebug(lcShortcutMap) << " -" << match << "for shortcut" << it->keySequence;
 
             // If we got a valid match, there might still be more keys to check against,
@@ -526,40 +526,6 @@ void QShortcutMap::createNewSequences(QKeyEvent *e, QList<QKeySequence> &ksl, in
         }
     }
 }
-
-/*! \internal
-    Basically the same function as QKeySequence::matches(const QKeySequence &seq) const
-    only that is specially handles Key_hyphen as Key_Minus, as people mix these up all the time and
-    they conceptually the same.
-*/
-QKeySequence::SequenceMatch QShortcutMap::matches(const QKeySequence &seq1,
-                                                  const QKeySequence &seq2) const
-{
-    uint userN = seq1.count(),
-        seqN = seq2.count();
-
-    if (userN > seqN)
-        return QKeySequence::NoMatch;
-
-    // If equal in length, we have a potential ExactMatch sequence,
-    // else we already know it can only be partial.
-    QKeySequence::SequenceMatch match = (userN == seqN
-                                            ? QKeySequence::ExactMatch
-                                            : QKeySequence::PartialMatch);
-
-    for (uint i = 0; i < userN; ++i) {
-        int userKey = seq1[i].toCombined(),
-            sequenceKey = seq2[i].toCombined();
-        if ((userKey & Qt::Key_unknown) == Qt::Key_hyphen)
-            userKey = (userKey & Qt::KeyboardModifierMask) | Qt::Key_Minus;
-        if ((sequenceKey & Qt::Key_unknown) == Qt::Key_hyphen)
-            sequenceKey = (sequenceKey & Qt::KeyboardModifierMask) | Qt::Key_Minus;
-        if (userKey != sequenceKey)
-            return QKeySequence::NoMatch;
-    }
-    return match;
-}
-
 
 /*! \internal
     Converts keyboard button states into modifier states

@@ -62,7 +62,6 @@ private:
     void dispatchEvent(QKeyEvent *e);
 
     QKeySequence::SequenceMatch find(QKeyEvent *e, int ignoredModifiers = 0);
-    QKeySequence::SequenceMatch matches(const QKeySequence &seq1, const QKeySequence &seq2) const;
     QList<const QShortcutEntry *> matches() const;
     void createNewSequences(QKeyEvent *e, QList<QKeySequence> &ksl, int ignoredModifiers);
     void clearSequence(QList<QKeySequence> &ksl);
