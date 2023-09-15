@@ -215,7 +215,7 @@ namespace QtAndroid
             return 0;
 
         if (img.format() != QImage::Format_RGBA8888 && img.format() != QImage::Format_RGB16)
-            img = img.convertToFormat(QImage::Format_RGBA8888);
+            img = std::move(img).convertToFormat(QImage::Format_RGBA8888);
 
         jobject bitmap = env->CallStaticObjectMethod(m_bitmapClass,
                                                      m_createBitmapMethodID,
