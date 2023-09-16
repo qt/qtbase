@@ -219,7 +219,6 @@ public class QtActivityBase extends Activity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu)
     {
-        m_optionsMenuIsVisible = true;
         boolean res = QtNative.onPrepareOptionsMenu(menu);
         m_delegate.setActionBarVisibility(res && menu.size() > 0);
         return res;
@@ -234,7 +233,6 @@ public class QtActivityBase extends Activity
     @Override
     public void onOptionsMenuClosed(Menu menu)
     {
-        m_optionsMenuIsVisible = false;
         QtNative.onOptionsMenuClosed(menu);
     }
 
