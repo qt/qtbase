@@ -22,9 +22,6 @@ import android.view.View;
 
 public class QtActivityBase extends Activity
 {
-    private long m_metaState;
-    public boolean m_backKeyPressedSent = false;
-
     private boolean m_optionsMenuIsVisible = false;
 
     // use this variable to pass any parameters to your application,
@@ -145,24 +142,6 @@ public class QtActivityBase extends Activity
     }
 
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event)
-    {
-        if (m_delegate.isStarted()
-                && event.getAction() == KeyEvent.ACTION_MULTIPLE
-                && event.getCharacters() != null
-                && event.getCharacters().length() == 1
-                && event.getKeyCode() == 0) {
-            QtNative.keyDown(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
-            QtNative.keyUp(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
-        }
-
-        if (QtNative.dispatchKeyEvent(event))
-            return true;
-
-        return super.dispatchKeyEvent(event);
-    }
-
-    @Override
     public void onConfigurationChanged(Configuration newConfig)
     {
         super.onConfigurationChanged(newConfig);
@@ -193,7 +172,24 @@ public class QtActivityBase extends Activity
         m_delegate.setContextMenuVisible(true);
     }
 
-    private int m_lastChar = 0;
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event)
+    {
+        if (m_delegate.isStarted() && m_delegate.getInputDelegate().handleDispatchKeyEvent(event))
+            return true;
+
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent event)
+    {
+        boolean handled = m_delegate.getInputDelegate().handleDispatchGenericMotionEvent(event);
+        if (m_delegate.isStarted() && handled)
+            return true;
+
+        return super.dispatchGenericMotionEvent(event);
+    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
@@ -201,32 +197,7 @@ public class QtActivityBase extends Activity
         if (!m_delegate.isStarted() || !m_delegate.isPluginRunning())
             return false;
 
-        m_metaState = MetaKeyKeyListener.handleKeyDown(m_metaState, keyCode, event);
-        int c = event.getUnicodeChar(MetaKeyKeyListener.getMetaState(m_metaState) | event.getMetaState());
-        int lc = c;
-        m_metaState = MetaKeyKeyListener.adjustMetaAfterKeypress(m_metaState);
-
-        if ((c & KeyCharacterMap.COMBINING_ACCENT) != 0) {
-            c = c & KeyCharacterMap.COMBINING_ACCENT_MASK;
-            c = KeyEvent.getDeadChar(m_lastChar, c);
-        }
-
-        if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP
-                || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
-                || keyCode == KeyEvent.KEYCODE_MUTE)
-                && System.getenv("QT_ANDROID_VOLUME_KEYS") == null) {
-            return false;
-        }
-
-        m_lastChar = lc;
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            m_backKeyPressedSent = !m_delegate.isKeyboardVisible();
-            if (!m_backKeyPressedSent)
-                return true;
-        }
-        QtNative.keyDown(keyCode, c, event.getMetaState(), event.getRepeatCount() > 0);
-
-        return true;
+        return m_delegate.getInputDelegate().onKeyDown(keyCode, event);
     }
 
     @Override
@@ -235,22 +206,7 @@ public class QtActivityBase extends Activity
         if (!m_delegate.isStarted() || !m_delegate.isPluginRunning())
             return false;
 
-        if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP
-                || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
-                || keyCode == KeyEvent.KEYCODE_MUTE)
-                && System.getenv("QT_ANDROID_VOLUME_KEYS") == null) {
-            return false;
-        }
-
-        if (keyCode == KeyEvent.KEYCODE_BACK && !m_backKeyPressedSent) {
-            m_delegate.hideSoftwareKeyboard();
-            m_delegate.setKeyboardVisibility(false, System.nanoTime());
-            return true;
-        }
-
-        m_metaState = MetaKeyKeyListener.handleKeyUp(m_metaState, keyCode, event);
-        QtNative.keyUp(keyCode, event.getUnicodeChar(), event.getMetaState(), event.getRepeatCount() > 0);
-        return true;
+        return m_delegate.getInputDelegate().onKeyUp(keyCode, event);
     }
 
     @Override
@@ -313,15 +269,6 @@ public class QtActivityBase extends Activity
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus)
             m_delegate.updateFullScreen();
-    }
-
-    @Override
-    public boolean dispatchGenericMotionEvent(MotionEvent ev)
-    {
-        if (m_delegate.isStarted() && QtNative.dispatchGenericMotionEvent(ev))
-            return true;
-
-        return super.dispatchGenericMotionEvent(ev);
     }
 
     @Override

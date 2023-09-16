@@ -938,7 +938,7 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
 
     JNIEnv *env = uenv.nativeEnvironment;
     if (!registerNatives(env)
-            || !QtAndroidInput::registerNatives(env)
+            || !QtAndroidInput::registerNatives()
             || !QtAndroidMenu::registerNatives(env)
             || !QtAndroidAccessibility::registerNatives(env)
             || !QtAndroidDialogHelpers::registerNatives(env)) {

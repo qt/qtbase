@@ -1,5 +1,5 @@
 // Copyright (C) 2016 BogDan Vatra <bogdan@kde.org>
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 package org.qtproject.qt.android;
@@ -32,9 +32,7 @@ import android.content.ClipDescription;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.InputDevice;
 import android.view.Display;
@@ -69,7 +67,6 @@ public class QtNative
     public static final String QtTAG = "Qt JAVA"; // string used for Log.x
     private static ArrayList<Runnable> m_lostActions = new ArrayList<Runnable>(); // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
     private static boolean m_started = false;
-    private static boolean m_isKeyboardHiding = false;
     private static int m_displayMetricsScreenWidthPixels = 0;
     private static int m_displayMetricsScreenHeightPixels = 0;
     private static int m_displayMetricsAvailableLeftPixels = 0;
@@ -81,14 +78,12 @@ public class QtNative
     private static double m_displayMetricsYDpi = .0;
     private static double m_displayMetricsScaledDensity = 1.0;
     private static double m_displayMetricsDensity = 1.0;
-    private static int m_oldx, m_oldy;
     private static final int m_moveThreshold = 0;
     private static ClipboardManager m_clipboardManager = null;
     private static Method m_checkSelfPermissionMethod = null;
-    private static Boolean m_tabletEventSupported = null;
     private static boolean m_usePrimaryClip = false;
+
     public static QtThread m_qtThread = new QtThread();
-    private static final int KEYBOARD_HEIGHT_THRESHOLD = 100;
 
     private static final String INVALID_OR_NULL_URI_ERROR_MESSAGE = "Received invalid/null Uri";
 
@@ -353,7 +348,7 @@ public class QtNative
         updateApplicationState(state);
     }
 
-    private static void runAction(Runnable action)
+    static void runAction(Runnable action)
     {
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
@@ -505,8 +500,6 @@ public class QtNative
         }
     }
 
-
-
     // application methods
     public static native boolean startQtAndroidPlugin(String params);
     public static native void startQtApplication();
@@ -533,141 +526,6 @@ public class QtNative
         });
     }
 
-    //@ANDROID-9
-    static private int getAction(int index, MotionEvent event)
-    {
-        int action = event.getActionMasked();
-        if (action == MotionEvent.ACTION_MOVE) {
-            int hsz = event.getHistorySize();
-            if (hsz > 0) {
-                float x = event.getX(index);
-                float y = event.getY(index);
-                for (int h = 0; h < hsz; ++h) {
-                    if ( event.getHistoricalX(index, h) != x ||
-                         event.getHistoricalY(index, h) != y )
-                        return 1;
-                }
-                return 2;
-            }
-            return 1;
-        }
-        if (action == MotionEvent.ACTION_DOWN
-            || action == MotionEvent.ACTION_POINTER_DOWN && index == event.getActionIndex()) {
-            return 0;
-        } else if (action == MotionEvent.ACTION_UP
-            || action == MotionEvent.ACTION_POINTER_UP && index == event.getActionIndex()) {
-            return 3;
-        }
-        return 2;
-    }
-    //@ANDROID-9
-
-    static public void sendTouchEvent(MotionEvent event, int id)
-    {
-        int pointerType = 0;
-
-        if (m_tabletEventSupported == null)
-            m_tabletEventSupported = isTabletEventSupported();
-
-        switch (event.getToolType(0)) {
-        case MotionEvent.TOOL_TYPE_STYLUS:
-            pointerType = 1; // QTabletEvent::Pen
-            break;
-        case MotionEvent.TOOL_TYPE_ERASER:
-            pointerType = 3; // QTabletEvent::Eraser
-            break;
-        }
-
-        if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
-            sendMouseEvent(event, id);
-        } else if (m_tabletEventSupported && pointerType != 0) {
-            tabletEvent(id, event.getDeviceId(), event.getEventTime(), event.getActionMasked(), pointerType,
-                event.getButtonState(), event.getX(), event.getY(), event.getPressure());
-        } else {
-            touchBegin(id);
-            for (int i = 0; i < event.getPointerCount(); ++i) {
-                    touchAdd(id,
-                             event.getPointerId(i),
-                             getAction(i, event),
-                             i == 0,
-                             (int)event.getX(i),
-                             (int)event.getY(i),
-                             event.getTouchMajor(i),
-                             event.getTouchMinor(i),
-                             event.getOrientation(i),
-                             event.getPressure(i));
-            }
-
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    touchEnd(id, 0);
-                    break;
-
-                case MotionEvent.ACTION_UP:
-                    touchEnd(id, 2);
-                    break;
-
-                case MotionEvent.ACTION_CANCEL:
-                    touchCancel(id);
-                    break;
-
-                default:
-                    touchEnd(id, 1);
-            }
-        }
-    }
-
-    static public void sendTrackballEvent(MotionEvent event, int id)
-    {
-        sendMouseEvent(event,id);
-    }
-
-    static public boolean sendGenericMotionEvent(MotionEvent event, int id)
-    {
-        if (((event.getAction() & (MotionEvent.ACTION_SCROLL | MotionEvent.ACTION_HOVER_MOVE)) == 0)
-                || (event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != InputDevice.SOURCE_CLASS_POINTER) {
-            return false;
-        }
-
-        return sendMouseEvent(event, id);
-    }
-
-    static public boolean sendMouseEvent(MotionEvent event, int id)
-    {
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_UP:
-                mouseUp(id, (int) event.getX(), (int) event.getY());
-                break;
-
-            case MotionEvent.ACTION_DOWN:
-                mouseDown(id, (int) event.getX(), (int) event.getY());
-                m_oldx = (int) event.getX();
-                m_oldy = (int) event.getY();
-                break;
-            case MotionEvent.ACTION_HOVER_MOVE:
-            case MotionEvent.ACTION_MOVE:
-                if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
-                    mouseMove(id, (int) event.getX(), (int) event.getY());
-                } else {
-                    int dx = (int) (event.getX() - m_oldx);
-                    int dy = (int) (event.getY() - m_oldy);
-                    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        mouseMove(id, (int) event.getX(), (int) event.getY());
-                        m_oldx = (int) event.getX();
-                        m_oldy = (int) event.getY();
-                    }
-                }
-                break;
-            case MotionEvent.ACTION_SCROLL:
-                mouseWheel(id, (int) event.getX(), (int) event.getY(),
-                        event.getAxisValue(MotionEvent.AXIS_HSCROLL), event.getAxisValue(MotionEvent.AXIS_VSCROLL));
-                break;
-            default:
-                return false;
-        }
-        return true;
-    }
-
     public static Context getContext() {
         if (m_activity != null)
             return m_activity;
@@ -686,82 +544,7 @@ public class QtNative
         return perm;
     }
 
-    private static void updateSelection(final int selStart,
-                                        final int selEnd,
-                                        final int candidatesStart,
-                                        final int candidatesEnd)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.updateSelection(selStart, selEnd, candidatesStart, candidatesEnd);
-            }
-        });
-    }
-
-    private static int getSelectHandleWidth()
-    {
-        return m_activityDelegate.getSelectHandleWidth();
-    }
-
-    private static void updateHandles(final int mode,
-                                      final int editX,
-                                      final int editY,
-                                      final int editButtons,
-                                      final int x1,
-                                      final int y1,
-                                      final int x2,
-                                      final int y2,
-                                      final boolean rtl)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                m_activityDelegate.updateHandles(mode, editX, editY, editButtons, x1, y1, x2, y2, rtl);
-            }
-        });
-    }
-
-    private static void showSoftwareKeyboard(final int x,
-                                             final int y,
-                                             final int width,
-                                             final int height,
-                                             final int inputHints,
-                                             final int enterKeyType)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.showSoftwareKeyboard(x, y, width, height, inputHints, enterKeyType);
-            }
-        });
-    }
-
-    private static void resetSoftwareKeyboard()
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.resetSoftwareKeyboard();
-            }
-        });
-    }
-
-    private static void hideSoftwareKeyboard()
-    {
-        m_isKeyboardHiding = true;
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.hideSoftwareKeyboard();
-            }
-        });
-    }
-
+    // TODO get rid of the delegation from QtNative, call directly the Activity in c++
     private static void setSystemUiVisibility(final int systemUiVisibility)
     {
         runAction(new Runnable() {
@@ -773,11 +556,6 @@ public class QtNative
                 updateWindow();
             }
         });
-    }
-
-    public static boolean isSoftwareKeyboardVisible()
-    {
-        return m_activityDelegate.isKeyboardVisible() && !m_isKeyboardHiding;
     }
 
     private static void notifyAccessibilityLocationChange(final int viewId)
@@ -842,7 +620,8 @@ public class QtNative
 
     public static void notifyQtAndroidPluginRunning(final boolean running)
     {
-        m_activityDelegate.notifyQtAndroidPluginRunning(running);
+        if (m_activityDelegate != null)
+            m_activityDelegate.notifyQtAndroidPluginRunning(running);
     }
 
     private static void registerClipboardManager()
@@ -1153,7 +932,8 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.initializeAccessibility();
+                if (m_activityDelegate != null)
+                    m_activityDelegate.initializeAccessibility();
             }
         });
     }
@@ -1167,12 +947,6 @@ public class QtNative
                     m_activityDelegate.hideSplashScreen(duration);
             }
         });
-    }
-
-    public static void keyboardVisibilityUpdated(boolean visibility)
-    {
-        m_isKeyboardHiding = false;
-        keyboardVisibilityChanged(visibility);
     }
 
     private static String[] listAssetContent(android.content.res.AssetManager asset, String path) {
@@ -1245,42 +1019,6 @@ public class QtNative
     public static native void handleScreenRemoved(int displayId);
     // screen methods
     public static native void handleUiDarkModeChanged(int newUiMode);
-
-    // pointer methods
-    public static native void mouseDown(int winId, int x, int y);
-    public static native void mouseUp(int winId, int x, int y);
-    public static native void mouseMove(int winId, int x, int y);
-    public static native void mouseWheel(int winId, int x, int y, float hdelta, float vdelta);
-    public static native void touchBegin(int winId);
-    public static native void touchAdd(int winId, int pointerId, int action, boolean primary, int x, int y, float major, float minor, float rotation, float pressure);
-    public static native void touchEnd(int winId, int action);
-    public static native void touchCancel(int winId);
-    public static native void longPress(int winId, int x, int y);
-    // pointer methods
-
-    // tablet methods
-    public static native boolean isTabletEventSupported();
-    public static native void tabletEvent(int winId, int deviceId, long time, int action, int pointerType, int buttonState, float x, float y, float pressure);
-    // tablet methods
-
-    // keyboard methods
-    public static native void keyDown(int key, int unicode, int modifier, boolean autoRepeat);
-    public static native void keyUp(int key, int unicode, int modifier, boolean autoRepeat);
-    public static native void keyboardVisibilityChanged(boolean visibility);
-    public static native void keyboardGeometryChanged(int x, int y, int width, int height);
-    // keyboard methods
-
-    // handle methods
-    public static final int IdCursorHandle = 1;
-    public static final int IdLeftHandle = 2;
-    public static final int IdRightHandle = 3;
-    public static native void handleLocationChanged(int id, int x, int y);
-    // handle methods
-
-    // dispatch events methods
-    public static native boolean dispatchGenericMotionEvent(MotionEvent ev);
-    public static native boolean dispatchKeyEvent(KeyEvent event);
-    // dispatch events methods
 
     // surface methods
     public static native void setSurface(int id, Object surface, int w, int h);

@@ -1,3 +1,4 @@
+// Copyright (C) 2023 The Qt Company Ltd.
 // Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
 // Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
@@ -22,6 +23,10 @@ Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods");
 
 using namespace QtAndroid;
 
+Q_DECLARE_JNI_CLASS(QtInputDelegate, "org/qtproject/qt/android/QtInputDelegate")
+Q_DECLARE_JNI_CLASS(QtActivityDelegate, "org/qtproject/qt/android/QtActivityDelegate")
+Q_DECLARE_JNI_CLASS(QtLayout, "org/qtproject/qt/android/QtLayout")
+
 namespace QtAndroidInput
 {
     static bool m_ignoreMouseEvents = false;
@@ -31,12 +36,87 @@ namespace QtAndroidInput
 
     static QPointer<QWindow> m_mouseGrabber;
 
+    GenericMotionEventListener::~GenericMotionEventListener() {}
+    namespace {
+    struct GenericMotionEventListeners {
+        QMutex mutex;
+        QList<QtAndroidInput::GenericMotionEventListener *> listeners;
+    };
+    }
+    Q_GLOBAL_STATIC(GenericMotionEventListeners, g_genericMotionEventListeners)
+
+    static jboolean dispatchGenericMotionEvent(JNIEnv *, jclass, jobject event)
+    {
+        jboolean ret = JNI_FALSE;
+        QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
+        for (auto *listener : std::as_const(g_genericMotionEventListeners()->listeners))
+            ret |= listener->handleGenericMotionEvent(event);
+        return ret;
+    }
+
+    KeyEventListener::~KeyEventListener() {}
+    namespace {
+    struct KeyEventListeners {
+        QMutex mutex;
+        QList<QtAndroidInput::KeyEventListener *> listeners;
+    };
+    }
+    Q_GLOBAL_STATIC(KeyEventListeners, g_keyEventListeners)
+
+    static jboolean dispatchKeyEvent(JNIEnv *, jclass, jobject event)
+    {
+        jboolean ret = JNI_FALSE;
+        QMutexLocker locker(&g_keyEventListeners()->mutex);
+        for (auto *listener : std::as_const(g_keyEventListeners()->listeners))
+            ret |= listener->handleKeyEvent(event);
+        return ret;
+    }
+
+    void registerGenericMotionEventListener(QtAndroidInput::GenericMotionEventListener *listener)
+    {
+        QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
+        g_genericMotionEventListeners()->listeners.push_back(listener);
+    }
+
+    void unregisterGenericMotionEventListener(QtAndroidInput::GenericMotionEventListener *listener)
+    {
+        QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
+        g_genericMotionEventListeners()->listeners.removeOne(listener);
+    }
+
+    void registerKeyEventListener(QtAndroidInput::KeyEventListener *listener)
+    {
+        QMutexLocker locker(&g_keyEventListeners()->mutex);
+        g_keyEventListeners()->listeners.push_back(listener);
+    }
+
+    void unregisterKeyEventListener(QtAndroidInput::KeyEventListener *listener)
+    {
+        QMutexLocker locker(&g_keyEventListeners()->mutex);
+        g_keyEventListeners()->listeners.removeOne(listener);
+    }
+
+    // FIXME: avoid direct access to QtActivityDelegate
+    QJniObject qtActivityDelegate()
+    {
+        return QtAndroidPrivate::activity().callMethod<QtJniTypes::QtActivityDelegate>(
+                "getActivityDelegate");
+    }
+
+    QJniObject qtInputDelegate()
+    {
+        return qtActivityDelegate().callMethod<QtJniTypes::QtInputDelegate>("getInputDelegate");
+    }
+
+    QJniObject qtLayout()
+    {
+        return qtActivityDelegate().callMethod<QtJniTypes::QtLayout>("getQtLayout");
+    }
+
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
     {
         qCDebug(lcQpaInputMethods) << ">>> UPDATESELECTION" << selStart << selEnd << candidatesStart << candidatesEnd;
-        QJniObject::callStaticMethod<void>(applicationClass(),
-                                           "updateSelection",
-                                           "(IIII)V",
+        qtInputDelegate().callMethod<void>("updateSelection",
                                            selStart,
                                            selEnd,
                                            candidatesStart,
@@ -45,9 +125,9 @@ namespace QtAndroidInput
 
     void showSoftwareKeyboard(int left, int top, int width, int height, int inputHints, int enterKeyType)
     {
-        QJniObject::callStaticMethod<void>(applicationClass(),
-                                           "showSoftwareKeyboard",
-                                           "(IIIIII)V",
+        qtInputDelegate().callMethod<void>("showSoftwareKeyboard",
+                                           QtAndroidPrivate::activity(),
+                                           qtLayout().object<QtJniTypes::QtLayout>(),
                                            left,
                                            top,
                                            width,
@@ -59,19 +139,19 @@ namespace QtAndroidInput
 
     void resetSoftwareKeyboard()
     {
-        QJniObject::callStaticMethod<void>(applicationClass(), "resetSoftwareKeyboard");
+        qtInputDelegate().callMethod<void>("resetSoftwareKeyboard");
         qCDebug(lcQpaInputMethods) << "@@@ RESETSOFTWAREKEYBOARD";
     }
 
     void hideSoftwareKeyboard()
     {
-        QJniObject::callStaticMethod<void>(applicationClass(), "hideSoftwareKeyboard");
+        qtInputDelegate().callMethod<void>("hideSoftwareKeyboard");
         qCDebug(lcQpaInputMethods) << "@@@ HIDESOFTWAREKEYBOARD";
     }
 
     bool isSoftwareKeyboardVisible()
     {
-        return QJniObject::callStaticMethod<jboolean>(applicationClass(), "isSoftwareKeyboardVisible");
+        return qtInputDelegate().callMethod<jboolean>("isSoftwareKeyboardVisible");
     }
 
     QRect softwareKeyboardRect()
@@ -81,12 +161,14 @@ namespace QtAndroidInput
 
     int getSelectHandleWidth()
     {
-        return QJniObject::callStaticMethod<jint>(applicationClass(), "getSelectHandleWidth");
+        return qtInputDelegate().callMethod<jint>("getSelectHandleWidth");
     }
 
     void updateHandles(int mode, QPoint editMenuPos, uint32_t editButtons, QPoint cursor, QPoint anchor, bool rtl)
     {
-        QJniObject::callStaticMethod<void>(applicationClass(), "updateHandles", "(IIIIIIIIZ)V",
+        qtInputDelegate().callMethod<void>("updateHandles",
+                                           QtAndroidPrivate::activity(),
+                                           qtLayout().object<QtJniTypes::QtLayout>(),
                                            mode, editMenuPos.x(), editMenuPos.y(), editButtons,
                                            cursor.x(), cursor.y(),
                                            anchor.x(), anchor.y(), rtl);
@@ -817,7 +899,8 @@ namespace QtAndroidInput
 
     }
 
-    static JNINativeMethod methods[] = {
+
+    static const JNINativeMethod methods[] = {
         {"touchBegin","(I)V",(void*)touchBegin},
         {"touchAdd","(IIIZIIFFFF)V",(void*)touchAdd},
         {"touchEnd","(II)V",(void*)touchEnd},
@@ -833,14 +916,16 @@ namespace QtAndroidInput
         {"keyUp", "(IIIZ)V", (void *)keyUp},
         {"keyboardVisibilityChanged", "(Z)V", (void *)keyboardVisibilityChanged},
         {"keyboardGeometryChanged", "(IIII)V", (void *)keyboardGeometryChanged},
-        {"handleLocationChanged", "(III)V", (void *)handleLocationChanged}
+        {"handleLocationChanged", "(III)V", (void *)handleLocationChanged},
+        {"dispatchGenericMotionEvent", "(Landroid/view/MotionEvent;)Z", reinterpret_cast<void *>(dispatchGenericMotionEvent)},
+        {"dispatchKeyEvent", "(Landroid/view/KeyEvent;)Z", reinterpret_cast<void *>(dispatchKeyEvent)},
     };
 
-    bool registerNatives(JNIEnv *env)
+    bool registerNatives()
     {
-        jclass appClass = QtAndroid::applicationClass();
-
-        if (env->RegisterNatives(appClass, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
+        QJniEnvironment qenv;
+        if (!qenv.registerNativeMethods(QtJniTypes::Traits<QtJniTypes::QtInputDelegate>::className(),
+                                        methods, sizeof(methods) / sizeof(methods[0]))) {
             __android_log_print(ANDROID_LOG_FATAL,"Qt", "RegisterNatives failed");
             return false;
         }

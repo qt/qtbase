@@ -72,7 +72,7 @@ class HideKeyboardRunnable implements Runnable {
         }
         final int kbHeight = screenHeight - r.bottom;
         if (kbHeight < 100)
-            QtNative.activityDelegate().setKeyboardVisibility(false, m_hideTimeStamp);
+            QtNative.activityDelegate().getInputDelegate().setKeyboardVisibility(false, m_hideTimeStamp);
     }
 }
 
@@ -93,7 +93,7 @@ public class QtInputConnection extends BaseInputConnection
         if (closing) {
             m_view.postDelayed(new HideKeyboardRunnable(), 100);
         } else {
-            QtNative.activityDelegate().setKeyboardVisibility(true, System.nanoTime());
+            QtNative.activityDelegate().getInputDelegate().setKeyboardVisibility(true, System.nanoTime());
         }
     }
 
@@ -256,7 +256,7 @@ public class QtInputConnection extends BaseInputConnection
                     break;
 
                 default:
-                   QtNative.activityDelegate().hideSoftwareKeyboard();
+                   QtNative.activityDelegate().getInputDelegate().hideSoftwareKeyboard();
                    break;
             }
         }

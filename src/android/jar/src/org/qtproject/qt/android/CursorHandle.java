@@ -134,9 +134,9 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         int x2 = x + layoutLocation[0] - activityLocation[0];
         int y2 = y + layoutLocation[1] + m_yShift + (activityLocationInWindow[1] - activityLocation[1]);
 
-        if (m_id == QtNative.IdCursorHandle) {
+        if (m_id == QtInputDelegate.IdCursorHandle) {
             x2 -= m_popup.getWidth() / 2 ;
-        } else if ((m_id == QtNative.IdLeftHandle && !m_rtl) || (m_id == QtNative.IdRightHandle && m_rtl)) {
+        } else if ((m_id == QtInputDelegate.IdLeftHandle && !m_rtl) || (m_id == QtInputDelegate.IdRightHandle && m_rtl)) {
             x2 -= m_popup.getWidth() * 3 / 4;
         } else {
             x2 -= m_popup.getWidth() / 4;
@@ -176,7 +176,7 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
     public void updatePosition(int x, int y) {
         y -= m_yShift;
         if (Math.abs(m_lastX - x) > tolerance || Math.abs(m_lastY - y) > tolerance) {
-            QtNative.handleLocationChanged(m_id, x + m_posX, y + m_posY);
+            QtInputDelegate.handleLocationChanged(m_id, x + m_posX, y + m_posY);
             m_lastX = x;
             m_lastY = y;
         }

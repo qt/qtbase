@@ -16,7 +16,6 @@ public class QtEditText extends View
     int m_imeOptions = 0;
     int m_inputType = InputType.TYPE_CLASS_TEXT;
     boolean m_optionsChanged = false;
-    QtActivityDelegate m_activityDelegate;
 
     public void setImeOptions(int m_imeOptions)
     {
@@ -43,16 +42,11 @@ public class QtEditText extends View
         m_optionsChanged = true;
     }
 
-    public QtEditText(Context context, QtActivityDelegate activityDelegate)
+    public QtEditText(Context context)
     {
         super(context);
         setFocusable(true);
         setFocusableInTouchMode(true);
-        m_activityDelegate = activityDelegate;
-    }
-    public QtActivityDelegate getActivityDelegate()
-    {
-        return m_activityDelegate;
     }
 
     @Override
