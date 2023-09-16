@@ -23,6 +23,7 @@ private slots:
     void replaceInStrings();
     void removeDuplicates();
     void removeDuplicates_data();
+    void contains_data();
     void contains();
     void indexOf_data();
     void indexOf();
@@ -241,37 +242,35 @@ void tst_QStringList::replaceInStrings()
     QCOMPARE(copy, (QStringList{"ylphy", "bety", "gymmy"}));
 }
 
+void tst_QStringList::contains_data()
+{
+    QTest::addColumn<QString>("needle");
+    QTest::addColumn<Qt::CaseSensitivity>("cs");
+    QTest::addColumn<bool>("expected");
+
+    QTest::newRow("arthur") << u"arthur"_s << Qt::CaseSensitive << true;
+    QTest::newRow("ArthuR") << u"ArthuR"_s << Qt::CaseSensitive << false;
+    QTest::newRow("arthur") << u"arthur"_s << Qt::CaseInsensitive << true;
+    QTest::newRow("ArthuR") << u"ArthuR"_s << Qt::CaseInsensitive << true;
+    QTest::newRow("ARTHUR") << u"ARTHUR"_s << Qt::CaseInsensitive << true;
+    QTest::newRow("Hans") << u"Hans"_s << Qt::CaseSensitive << false;
+    QTest::newRow("hans") << u"hans"_s << Qt::CaseInsensitive << false;
+    QTest::newRow("dent") << u"dent"_s << Qt::CaseInsensitive << true;
+}
+
 void tst_QStringList::contains()
 {
-    QStringList list;
-    list << "arthur" << "Arthur" << "arthuR" << "ARTHUR" << "Dent" << "Hans Dent";
+    QFETCH(QString, needle);
+    QFETCH(Qt::CaseSensitivity, cs);
+    QFETCH(bool, expected);
 
-    QVERIFY(list.contains("arthur"));
-    QVERIFY(!list.contains("ArthuR"));
-    QVERIFY(!list.contains("Hans"));
-    QVERIFY(list.contains("arthur", Qt::CaseInsensitive));
-    QVERIFY(list.contains("ArthuR", Qt::CaseInsensitive));
-    QVERIFY(list.contains("ARTHUR", Qt::CaseInsensitive));
-    QVERIFY(list.contains("dent", Qt::CaseInsensitive));
-    QVERIFY(!list.contains("hans", Qt::CaseInsensitive));
+    const QStringList list = {
+        u"arthur"_s, u"Arthur"_s, u"arthuR"_s, u"ARTHUR"_s, u"Dent"_s, u"Hans Dent"_s
+    };
 
-    QVERIFY(list.contains(QLatin1String("arthur")));
-    QVERIFY(!list.contains(QLatin1String("ArthuR")));
-    QVERIFY(!list.contains(QLatin1String("Hans")));
-    QVERIFY(list.contains(QLatin1String("arthur"), Qt::CaseInsensitive));
-    QVERIFY(list.contains(QLatin1String("ArthuR"), Qt::CaseInsensitive));
-    QVERIFY(list.contains(QLatin1String("ARTHUR"), Qt::CaseInsensitive));
-    QVERIFY(list.contains(QLatin1String("dent"), Qt::CaseInsensitive));
-    QVERIFY(!list.contains(QLatin1String("hans"), Qt::CaseInsensitive));
-
-    QVERIFY(list.contains(QStringView(QString("arthur"))));
-    QVERIFY(!list.contains(QStringView(QString("ArthuR"))));
-    QVERIFY(!list.contains(QStringView(QString("Hans"))));
-    QVERIFY(list.contains(QStringView(QString("arthur")), Qt::CaseInsensitive));
-    QVERIFY(list.contains(QStringView(QString("ArthuR")), Qt::CaseInsensitive));
-    QVERIFY(list.contains(QStringView(QString("ARTHUR")), Qt::CaseInsensitive));
-    QVERIFY(list.contains(QStringView(QString("dent")), Qt::CaseInsensitive));
-    QVERIFY(!list.contains(QStringView(QString("hans")), Qt::CaseInsensitive));
+    QCOMPARE(list.contains(needle, cs), expected);
+    QCOMPARE(list.contains(QStringView(needle), cs), expected);
+    QCOMPARE(list.contains(QLatin1StringView(needle.toLatin1()), cs), expected);
 }
 
 void tst_QStringList::removeDuplicates_data()
