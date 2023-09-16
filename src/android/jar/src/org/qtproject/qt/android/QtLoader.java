@@ -109,23 +109,6 @@ public abstract class QtLoader {
         final Resources resources = m_context.getResources();
         final String packageName = m_context.getPackageName();
         try {
-            final int errorCode = loaderParams.getInt(ERROR_CODE_KEY);
-            if (errorCode != 0) {
-                // fatal error, show the error and quit
-                AlertDialog errorDialog = new AlertDialog.Builder(m_context).create();
-                errorDialog.setMessage(loaderParams.getString(ERROR_MESSAGE_KEY));
-                errorDialog.setButton(Dialog.BUTTON_POSITIVE,
-                        resources.getString(android.R.string.ok),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish();
-                            }
-                        });
-                errorDialog.show();
-                return;
-            }
-
             // add all bundled Qt libs to loader params
             int id = resources.getIdentifier("bundled_libs", "array", packageName);
             final String[] bundledLibs = resources.getStringArray(id);
@@ -267,7 +250,6 @@ public abstract class QtLoader {
                 }
 
                 Bundle loaderParams = new Bundle();
-                loaderParams.putInt(ERROR_CODE_KEY, 0);
                 loaderParams.putString(DEX_PATH_KEY, new String());
 
                 id = resources.getIdentifier("static_init_classes", "string", packageName);

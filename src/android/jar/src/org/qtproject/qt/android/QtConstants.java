@@ -4,8 +4,6 @@
 package org.qtproject.qt.android;
 
 public class QtConstants {
-    public static final String ERROR_CODE_KEY = "error.code";
-    public static final String ERROR_MESSAGE_KEY = "error.message";
     public static final String DEX_PATH_KEY = "dex.path";
     public static final String LIB_PATH_KEY = "lib.path";
     public static final String LOADER_CLASS_NAME_KEY = "loader.class.name";
