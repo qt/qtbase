@@ -18,13 +18,13 @@ namespace QtJniTypes
 // a constexpr type for string literals of any character width, aware of the length
 // of the string.
 template<size_t N_WITH_NULL, typename BaseType = char>
-struct String
+struct CTString
 {
     BaseType m_data[N_WITH_NULL] = {};
 
-    constexpr String() noexcept {}
+    constexpr CTString() noexcept {}
     // Can be instantiated (only) with a string literal
-    constexpr explicit String(const BaseType (&data)[N_WITH_NULL]) noexcept
+    constexpr explicit CTString(const BaseType (&data)[N_WITH_NULL]) noexcept
     {
         for (size_t i = 0; i < N_WITH_NULL - 1; ++i)
             m_data[i] = data[i];
@@ -71,8 +71,8 @@ struct String
     }
 
     template<size_t N2_WITH_NULL>
-    friend inline constexpr bool operator==(const String<N_WITH_NULL> &lhs,
-                                            const String<N2_WITH_NULL> &rhs) noexcept
+    friend inline constexpr bool operator==(const CTString<N_WITH_NULL> &lhs,
+                                            const CTString<N2_WITH_NULL> &rhs) noexcept
     {
         if constexpr (N_WITH_NULL != N2_WITH_NULL) {
             return false;
@@ -86,57 +86,60 @@ struct String
     }
 
     template<size_t N2_WITH_NULL>
-    friend inline constexpr bool operator!=(const String<N_WITH_NULL> &lhs,
-                                            const String<N2_WITH_NULL> &rhs) noexcept
+    friend inline constexpr bool operator!=(const CTString<N_WITH_NULL> &lhs,
+                                            const CTString<N2_WITH_NULL> &rhs) noexcept
     {
         return !operator==(lhs, rhs);
     }
 
     template<size_t N2_WITH_NULL>
-    friend inline constexpr bool operator==(const String<N_WITH_NULL> &lhs,
+    friend inline constexpr bool operator==(const CTString<N_WITH_NULL> &lhs,
                                             const BaseType (&rhs)[N2_WITH_NULL]) noexcept
     {
-        return operator==(lhs, String<N2_WITH_NULL>(rhs));
+        return operator==(lhs, CTString<N2_WITH_NULL>(rhs));
     }
     template<size_t N2_WITH_NULL>
     friend inline constexpr bool operator==(const BaseType (&lhs)[N2_WITH_NULL],
-                                            const String<N_WITH_NULL> &rhs) noexcept
+                                            const CTString<N_WITH_NULL> &rhs) noexcept
     {
-        return operator==(String<N2_WITH_NULL>(lhs), rhs);
+        return operator==(CTString<N2_WITH_NULL>(lhs), rhs);
     }
 
     template<size_t N2_WITH_NULL>
-    friend inline constexpr bool operator!=(const String<N_WITH_NULL> &lhs,
+    friend inline constexpr bool operator!=(const CTString<N_WITH_NULL> &lhs,
                                             const BaseType (&rhs)[N2_WITH_NULL]) noexcept
     {
-        return operator!=(lhs, String<N2_WITH_NULL>(rhs));
+        return operator!=(lhs, CTString<N2_WITH_NULL>(rhs));
     }
     template<size_t N2_WITH_NULL>
     friend inline constexpr bool operator!=(const BaseType (&lhs)[N2_WITH_NULL],
-                                            const String<N_WITH_NULL> &rhs) noexcept
+                                            const CTString<N_WITH_NULL> &rhs) noexcept
     {
-        return operator!=(String<N2_WITH_NULL>(lhs), rhs);
+        return operator!=(CTString<N2_WITH_NULL>(lhs), rhs);
     }
 
     template<size_t N2_WITH_NULL>
-    friend inline constexpr auto operator+(const String<N_WITH_NULL> &lhs,
-                                           const String<N2_WITH_NULL> &rhs) noexcept
+    friend inline constexpr auto operator+(const CTString<N_WITH_NULL> &lhs,
+                                           const CTString<N2_WITH_NULL> &rhs) noexcept
     {
         char data[N_WITH_NULL + N2_WITH_NULL - 1] = {};
         for (size_t i = 0; i < N_WITH_NULL - 1; ++i)
             data[i] = lhs[i];
         for (size_t i = 0; i < N2_WITH_NULL - 1; ++i)
             data[N_WITH_NULL - 1 + i] = rhs[i];
-        return String<N_WITH_NULL + N2_WITH_NULL - 1>(data);
+        return CTString<N_WITH_NULL + N2_WITH_NULL - 1>(data);
     }
 };
 
+// compatibility alias until submodules are ported
+template<size_t N_WITH_NULL, typename BaseType = char>
+using String = CTString<N_WITH_NULL, BaseType>;
 
 // Helper types that allow us to disable variadic overloads that would conflict
 // with overloads that take a const char*.
 template<typename T, size_t N = 0> struct IsStringType : std::false_type {};
 template<> struct IsStringType<const char*, 0> : std::true_type {};
-template<size_t N> struct IsStringType<String<N>> : std::true_type {};
+template<size_t N> struct IsStringType<CTString<N>> : std::true_type {};
 template<size_t N> struct IsStringType<const char[N]> : std::true_type {};
 
 template<bool flag = false>
@@ -153,67 +156,67 @@ constexpr auto typeSignature()
         using UnderlyingType = typename std::remove_extent_t<T>;
         static_assert(!std::is_array_v<UnderlyingType>,
                     "typeSignature() does not handle multi-dimensional arrays");
-        return String("[") + typeSignature<UnderlyingType>();
+        return CTString("[") + typeSignature<UnderlyingType>();
     } else if constexpr (std::is_same_v<T, jobject>) {
-        return String("Ljava/lang/Object;");
+        return CTString("Ljava/lang/Object;");
     } else if constexpr (std::is_same_v<T, jclass>) {
-        return String("Ljava/lang/Class;");
+        return CTString("Ljava/lang/Class;");
     } else if constexpr (std::is_same_v<T, jstring>) {
-        return String("Ljava/lang/String;");
+        return CTString("Ljava/lang/String;");
     } else if constexpr (std::is_same_v<T, jobjectArray>) {
-        return String("[Ljava/lang/Object;");
+        return CTString("[Ljava/lang/Object;");
     } else if constexpr (std::is_same_v<T, jthrowable>) {
-        return String("Ljava/lang/Throwable;");
+        return CTString("Ljava/lang/Throwable;");
     } else if constexpr (std::is_same_v<T, jbooleanArray>) {
-        return String("[Z");
+        return CTString("[Z");
     } else if constexpr (std::is_same_v<T, jbyteArray>) {
-        return String("[B");
+        return CTString("[B");
     } else if constexpr (std::is_same_v<T, jshortArray>) {
-        return String("[S");
+        return CTString("[S");
     } else if constexpr (std::is_same_v<T, jintArray>) {
-        return String("[I");
+        return CTString("[I");
     } else if constexpr (std::is_same_v<T, jlongArray>) {
-        return String("[J");
+        return CTString("[J");
     } else if constexpr (std::is_same_v<T, jfloatArray>) {
-        return String("[F");
+        return CTString("[F");
     } else if constexpr (std::is_same_v<T, jdoubleArray>) {
-        return String("[D");
+        return CTString("[D");
     } else if constexpr (std::is_same_v<T, jcharArray>) {
-        return String("[C");
+        return CTString("[C");
     } else if constexpr (std::is_same_v<T, jboolean>) {
-        return String("Z");
+        return CTString("Z");
     } else if constexpr (std::is_same_v<T, bool>) {
-        return String("Z");
+        return CTString("Z");
     } else if constexpr (std::is_same_v<T, jbyte>) {
-        return String("B");
+        return CTString("B");
     } else if constexpr (std::is_same_v<T, jchar>) {
-        return String("C");
+        return CTString("C");
     } else if constexpr (std::is_same_v<T, char>) {
-        return String("C");
+        return CTString("C");
     } else if constexpr (std::is_same_v<T, jshort>) {
-        return String("S");
+        return CTString("S");
     } else if constexpr (std::is_same_v<T, short>) {
-        return String("S");
+        return CTString("S");
     } else if constexpr (std::is_same_v<T, jint>) {
-        return String("I");
+        return CTString("I");
     } else if constexpr (std::is_same_v<T, int>) {
-        return String("I");
+        return CTString("I");
     } else if constexpr (std::is_same_v<T, uint>) {
-        return String("I");
+        return CTString("I");
     } else if constexpr (std::is_same_v<T, jlong>) {
-        return String("J");
+        return CTString("J");
     } else if constexpr (std::is_same_v<T, long>) {
-        return String("J");
+        return CTString("J");
     } else if constexpr (std::is_same_v<T, jfloat>) {
-        return String("F");
+        return CTString("F");
     } else if constexpr (std::is_same_v<T, float>) {
-        return String("F");
+        return CTString("F");
     } else if constexpr (std::is_same_v<T, jdouble>) {
-        return String("D");
+        return CTString("D");
     } else if constexpr (std::is_same_v<T, double>) {
-        return String("D");
+        return CTString("D");
     } else if constexpr (std::is_same_v<T, void>) {
-        return String("V");
+        return CTString("V");
     }
 
     // else: The return type becomes void, indicating that the typeSignature
@@ -232,7 +235,7 @@ template<typename T>
 constexpr auto className()
 {
     if constexpr (std::is_same_v<T, jstring>)
-        return String("java/lang/String");
+        return CTString("java/lang/String");
     else
         staticAssertClassNotRegistered();
 }
@@ -289,9 +292,9 @@ using ValidFieldType = std::enable_if_t<
 template<typename R, typename ...Args, ValidSignatureTypes<R, Args...> = true>
 static constexpr auto methodSignature()
 {
-    return (String("(") +
+    return (CTString("(") +
                 ... + typeSignature<q20::remove_cvref_t<Args>>())
-            + String(")")
+            + CTString(")")
             + typeSignature<R>();
 }
 

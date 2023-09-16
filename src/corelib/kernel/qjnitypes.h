@@ -45,7 +45,7 @@ constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
                 && Signature[sizeof(Signature) - 2] == ';',     \
                 "Type signature needs to start with 'L' or '['" \
                 " and end with ';'");                           \
-    return QtJniTypes::String(Signature);                       \
+    return QtJniTypes::CTString(Signature);                     \
 }                                                               \
 
 #define Q_DECLARE_JNI_CLASS(Type, Signature)                    \
@@ -53,14 +53,14 @@ Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
 template<>                                                      \
 constexpr auto QtJniTypes::className<QtJniTypes::Type>()        \
 {                                                               \
-    return QtJniTypes::String(Signature);                       \
+    return QtJniTypes::CTString(Signature);                     \
 }                                                               \
 template<>                                                      \
 constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
 {                                                               \
-    return QtJniTypes::String("L")                              \
-         + QtJniTypes::String(Signature)                        \
-         + QtJniTypes::String(";");                             \
+    return QtJniTypes::CTString("L")                            \
+         + QtJniTypes::CTString(Signature)                      \
+         + QtJniTypes::CTString(";");                           \
 }                                                               \
 
 #define Q_DECLARE_JNI_NATIVE_METHOD(...)                           \

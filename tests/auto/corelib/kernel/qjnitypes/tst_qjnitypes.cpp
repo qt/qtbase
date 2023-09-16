@@ -21,20 +21,20 @@ struct QtJavaWrapper {};
 template<>
 constexpr auto QtJniTypes::typeSignature<QtJavaWrapper>()
 {
-    return QtJniTypes::String("Lorg/qtproject/qt/android/QtJavaWrapper;");
+    return QtJniTypes::CTString("Lorg/qtproject/qt/android/QtJavaWrapper;");
 }
 
 template<>
 constexpr auto QtJniTypes::typeSignature<QJniObject>()
 {
-    return QtJniTypes::String("Ljava/lang/Object;");
+    return QtJniTypes::CTString("Ljava/lang/Object;");
 }
 
 struct QtCustomJniObject : QJniObject {};
 template<>
 constexpr auto QtJniTypes::typeSignature<QtCustomJniObject>()
 {
-    return QtJniTypes::String("Lorg/qtproject/qt/android/QtCustomJniObject;");
+    return QtJniTypes::CTString("Lorg/qtproject/qt/android/QtCustomJniObject;");
 }
 
 static_assert(QtJniTypes::typeSignature<QtJavaWrapper>() == "Lorg/qtproject/qt/android/QtJavaWrapper;");
@@ -45,8 +45,6 @@ Q_DECLARE_JNI_CLASS(JavaType, "org/qtproject/qt/JavaType");
 static_assert(QtJniTypes::typeSignature<QtJniTypes::JavaType>() == "Lorg/qtproject/qt/JavaType;");
 Q_DECLARE_JNI_TYPE(ArrayType, "[Lorg/qtproject/qt/ArrayType;")
 static_assert(QtJniTypes::typeSignature<QtJniTypes::ArrayType>() == "[Lorg/qtproject/qt/ArrayType;");
-
-static_assert(QtJniTypes::className<jstring>() == "java/lang/String");
 
 Q_DECLARE_JNI_CLASS(QtTextToSpeech, "org/qtproject/qt/android/speech/QtTextToSpeech")
 static_assert(QtJniTypes::className<QtJniTypes::QtTextToSpeech>() == "org/qtproject/qt/android/speech/QtTextToSpeech");
@@ -91,21 +89,21 @@ static_assert(QtJniTypes::isArrayType<jobject[]>());
 static_assert(QtJniTypes::isArrayType<jobjectArray>());
 static_assert(QtJniTypes::isArrayType<QtJavaWrapper[]>());
 
-static_assert(QtJniTypes::String("ABCDE").startsWith("ABC"));
-static_assert(QtJniTypes::String("ABCDE").startsWith("A"));
-static_assert(QtJniTypes::String("ABCDE").startsWith("ABCDE"));
-static_assert(!QtJniTypes::String("ABCDE").startsWith("ABCDEF"));
-static_assert(!QtJniTypes::String("ABCDE").startsWith("9AB"));
-static_assert(QtJniTypes::String("ABCDE").startsWith('A'));
-static_assert(!QtJniTypes::String("ABCDE").startsWith('B'));
+static_assert(QtJniTypes::CTString("ABCDE").startsWith("ABC"));
+static_assert(QtJniTypes::CTString("ABCDE").startsWith("A"));
+static_assert(QtJniTypes::CTString("ABCDE").startsWith("ABCDE"));
+static_assert(!QtJniTypes::CTString("ABCDE").startsWith("ABCDEF"));
+static_assert(!QtJniTypes::CTString("ABCDE").startsWith("9AB"));
+static_assert(QtJniTypes::CTString("ABCDE").startsWith('A'));
+static_assert(!QtJniTypes::CTString("ABCDE").startsWith('B'));
 
-static_assert(QtJniTypes::String("ABCDE").endsWith("CDE"));
-static_assert(QtJniTypes::String("ABCDE").endsWith("E"));
-static_assert(QtJniTypes::String("ABCDE").endsWith("ABCDE"));
-static_assert(!QtJniTypes::String("ABCDE").endsWith("DEF"));
-static_assert(!QtJniTypes::String("ABCDE").endsWith("ABCDEF"));
-static_assert(QtJniTypes::String("ABCDE").endsWith('E'));
-static_assert(!QtJniTypes::String("ABCDE").endsWith('F'));
+static_assert(QtJniTypes::CTString("ABCDE").endsWith("CDE"));
+static_assert(QtJniTypes::CTString("ABCDE").endsWith("E"));
+static_assert(QtJniTypes::CTString("ABCDE").endsWith("ABCDE"));
+static_assert(!QtJniTypes::CTString("ABCDE").endsWith("DEF"));
+static_assert(!QtJniTypes::CTString("ABCDE").endsWith("ABCDEF"));
+static_assert(QtJniTypes::CTString("ABCDE").endsWith('E'));
+static_assert(!QtJniTypes::CTString("ABCDE").endsWith('F'));
 
 void tst_QJniTypes::initTestCase()
 {
