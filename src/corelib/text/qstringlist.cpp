@@ -569,6 +569,54 @@ QString QtPrivate::QStringList_join(const QStringList *that, QStringView sep)
     the latter string list.
 */
 
+/*!
+    \fn qsizetype QStringList::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringList::indexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringList::indexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensitivity cs) const
+
+    Returns the index position of the first match of \a str in the list,
+    searching forward from index position \a from. Returns -1 if no item
+    matched.
+
+    \include qstringlist.cpp comparison-case-sensitivity
+
+    \note The \a cs parameter was added in Qt 6.7, i.e. these methods now overload
+    the methods inherited from the base class. Prior to that these methods only
+    had two parameters. This change is source compatible and existing code should
+    continue to work.
+
+    \sa lastIndexOf()
+*/
+
+template <typename String>
+qsizetype indexOf_helper(const QStringList &that, String needle, qsizetype from,
+                         Qt::CaseSensitivity cs)
+{
+    if (from < 0) // Historical behavior
+        from = qMax(from + that.size(), 0);
+
+    if (from >= that.size())
+        return -1;
+
+    for (qsizetype i = from; i < that.size(); ++i) {
+        if (needle.compare(that.at(i), cs) == 0)
+            return i;
+    }
+    return -1;
+}
+
+qsizetype QtPrivate::QStringList_indexOf(const QStringList &that, QStringView needle,
+                                         qsizetype from, Qt::CaseSensitivity cs)
+{
+    return indexOf_helper(that, needle, from, cs);
+}
+
+qsizetype QtPrivate::QStringList_indexOf(const QStringList &that, QLatin1StringView needle,
+                                         qsizetype from, Qt::CaseSensitivity cs)
+{
+    return indexOf_helper(that, needle, from, cs);
+}
+
 #if QT_CONFIG(regularexpression)
 /*!
     \fn qsizetype QStringList::indexOf(const QRegularExpression &re, qsizetype from) const
