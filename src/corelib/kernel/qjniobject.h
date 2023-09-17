@@ -46,7 +46,7 @@ public:
     template<typename Class, typename ...Args>
     static inline QJniObject construct(Args &&...args)
     {
-        return QJniObject(QtJniTypes::className<Class>().data(),
+        return QJniObject(QtJniTypes::Traits<Class>::className().data(),
                           QtJniTypes::constructorSignature<Args...>().data(),
                           std::forward<Args>(args)...);
     }
@@ -190,7 +190,7 @@ public:
     static auto callStaticMethod(const char *methodName, Args &&...args)
     {
         QJniEnvironment env;
-        const jclass clazz = QJniObject::loadClass(QtJniTypes::className<Klass>().data(),
+        const jclass clazz = QJniObject::loadClass(QtJniTypes::Traits<Klass>::className().data(),
                                                    env.jniEnv());
         const jmethodID id = clazz ? getMethodID(env.jniEnv(), clazz, methodName,
                                          QtJniTypes::methodSignature<Ret, Args...>().data(), true)
@@ -315,7 +315,7 @@ public:
     >
     static auto getStaticField(const char *fieldName)
     {
-        return getStaticField<T>(QtJniTypes::className<Klass>(), fieldName);
+        return getStaticField<T>(QtJniTypes::Traits<Klass>::className(), fieldName);
     }
 
     template <typename T
@@ -475,7 +475,7 @@ public:
     >
     static void setStaticField(const char *fieldName, T value)
     {
-        setStaticField(QtJniTypes::className<Klass>(), fieldName, value);
+        setStaticField(QtJniTypes::Traits<Klass>::className(), fieldName, value);
     }
 
     static QJniObject fromString(const QString &string);

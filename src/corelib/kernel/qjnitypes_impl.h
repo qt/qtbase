@@ -240,30 +240,16 @@ struct Traits {
     }
 };
 
-// compatibility until submodules are ported
-template <typename T>
-constexpr auto typeSignature()
-{
-    return Traits<T>::signature();
-}
-
-template <typename T>
-constexpr auto className()
-{
-    return Traits<T>::className();
-}
-
-// have to use the compatibility functions here until porting is complete
 template<typename T>
 static constexpr bool isPrimitiveType()
 {
-    return typeSignature<T>().size() == 2;
+    return Traits<T>::signature().size() == 2;
 }
 
 template<typename T>
 static constexpr bool isArrayType()
 {
-    constexpr auto signature = typeSignature<T>();
+    constexpr auto signature = Traits<T>::signature();
     return signature.startsWith('[') && signature.size() > 2;
 }
 
@@ -273,7 +259,7 @@ static constexpr bool isObjectType()
     if constexpr (std::is_convertible_v<T, jobject>) {
         return true;
     } else {
-        constexpr auto signature = typeSignature<T>();
+        constexpr auto signature = Traits<T>::signature();
         return (signature.startsWith('L') && signature.endsWith(';')) || isArrayType<T>();
     }
 }
@@ -286,10 +272,10 @@ static constexpr void assertObjectType()
                   "an object type signature registered)!");
 }
 
-// A set of types is valid if typeSignature is implemented for all of them
+// A set of types is valid if Traits::signature is implemented for all of them
 template<typename ...Types>
 constexpr bool ValidSignatureTypesDetail = !std::disjunction<std::is_same<
-                                                    decltype(QtJniTypes::typeSignature<Types>()),
+                                                    decltype(Traits<Types>::signature()),
                                                     void>...,
                                                     IsStringType<Types>...>::value;
 template<typename ...Types>
@@ -307,15 +293,15 @@ template<typename R, typename ...Args, ValidSignatureTypes<R, Args...> = true>
 static constexpr auto methodSignature()
 {
     return (CTString("(") +
-                ... + typeSignature<q20::remove_cvref_t<Args>>())
+                ... + Traits<q20::remove_cvref_t<Args>>::signature())
             + CTString(")")
-            + typeSignature<R>();
+            + Traits<R>::signature();
 }
 
 template<typename T, ValidSignatureTypes<T> = true>
 static constexpr auto fieldSignature()
 {
-    return QtJniTypes::typeSignature<T>();
+    return QtJniTypes::Traits<T>::signature();
 }
 
 template<typename ...Args, ValidSignatureTypes<Args...> = true>
