@@ -13,14 +13,14 @@
     This class is useful when your code needs to search efficiently
     in Latin-1 strings for a substring that's known at compile-time.
     This is common, for example, in parsers. Using a matcher
-    object's IndexIn() is faster than using the indexOf() method of
+    object's indexIn() is faster than using the indexOf() member method of
     the string you are searching in, especially when the string to
     be found will be searched for repeatedly or within a large
     Latin-1 string that may contain many matches to prefixes of the
     substring to be found.
 
     Unlike QLatin1StringMatcher, this class calculates the internal
-    representation at \e{compile-time}, so it can even benefit if you
+    representation at \e{compile-time}, so it can be beneficial even if you
     are doing one-off Latin-1 string matches.
 
     Create the QStaticLatin1StringMatcher by calling
@@ -37,7 +37,7 @@
     compile-time, it does not offer setPattern() or setCaseSensitivity()
     methods.
 
-    Integrity is currently not supported.
+    \note INTEGRITY operating system is currently not supported.
 
     \sa QLatin1StringMatcher, QStaticByteArrayMatcher, QByteArrayMatcher
 */
