@@ -54,11 +54,10 @@ import android.graphics.Rect;
 
 public class QtNative
 {
+    // TODO get rid of the delegation from QtNative, call directly the Activity in c++
     private static Activity m_activity = null;
     private static boolean m_activityPaused = false;
     private static Service m_service = null;
-    private static QtActivityDelegate m_activityDelegate = null;
-    private static QtServiceDelegate m_serviceDelegate = null;
     public static Object m_mainActivityMutex = new Object(); // mutex used to synchronize runnable operations
 
     public static final String QtTAG = "Qt JAVA"; // string used for Log.x
@@ -81,8 +80,8 @@ public class QtNative
 
     public static boolean isStarted()
     {
-        boolean hasActivity = m_activity != null && m_activityDelegate != null;
-        boolean hasService = m_service != null && m_serviceDelegate != null;
+        boolean hasActivity = m_activity != null;
+        boolean hasService = m_service != null;
         return m_started && (hasActivity || hasService);
     }
 
@@ -108,21 +107,6 @@ public class QtNative
     {
         synchronized (m_mainActivityMutex) {
             return m_service;
-        }
-    }
-
-
-    public static QtActivityDelegate activityDelegate()
-    {
-        synchronized (m_mainActivityMutex) {
-            return m_activityDelegate;
-        }
-    }
-
-    public static QtServiceDelegate serviceDelegate()
-    {
-        synchronized (m_mainActivityMutex) {
-            return m_serviceDelegate;
         }
     }
 
@@ -204,19 +188,17 @@ public class QtNative
         return m_qtThread;
     }
 
-    public static void setActivity(Activity qtMainActivity, QtActivityDelegate qtActivityDelegate)
+    public static void setActivity(Activity qtMainActivity)
     {
         synchronized (m_mainActivityMutex) {
             m_activity = qtMainActivity;
-            m_activityDelegate = qtActivityDelegate;
         }
     }
 
-    public static void setService(Service qtMainService, QtServiceDelegate qtServiceDelegate)
+    public static void setService(Service qtMainService)
     {
         synchronized (m_mainActivityMutex) {
             m_service = qtMainService;
-            m_serviceDelegate = qtServiceDelegate;
         }
     }
 
@@ -349,72 +331,6 @@ public class QtNative
         return perm;
     }
 
-    // TODO get rid of the delegation from QtNative, call directly the Activity in c++
-    private static void setSystemUiVisibility(final int systemUiVisibility)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null) {
-                    m_activityDelegate.setSystemUiVisibility(systemUiVisibility);
-                }
-                updateWindow();
-            }
-        });
-    }
-
-    public static void notifyQtAndroidPluginRunning(final boolean running)
-    {
-        if (m_activityDelegate != null)
-            m_activityDelegate.notifyQtAndroidPluginRunning(running);
-    }
-
-
-
-    private static void openContextMenu(final int x, final int y, final int w, final int h)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.openContextMenu(x, y, w, h);
-            }
-        });
-    }
-
-    private static void closeContextMenu()
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.closeContextMenu();
-            }
-        });
-    }
-
-    private static void resetOptionsMenu()
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.resetOptionsMenu();
-            }
-        });
-    }
-
-    private static void openOptionsMenu()
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activity != null)
-                    m_activity.openOptionsMenu();
-            }
-        });
-    }
-
     private static byte[][] getSSLCertificates()
     {
         ArrayList<byte[]> certificateList = new ArrayList<byte[]>();
@@ -440,83 +356,6 @@ public class QtNative
         byte[][] certificateArray = new byte[certificateList.size()][];
         certificateArray = certificateList.toArray(certificateArray);
         return certificateArray;
-    }
-
-    private static void createSurface(final int id, final boolean onTop, final int x, final int y, final int w, final int h, final int imageDepth)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.createSurface(id, onTop, x, y, w, h, imageDepth);
-            }
-        });
-    }
-
-    private static void insertNativeView(final int id, final View view, final int x, final int y, final int w, final int h)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.insertNativeView(id, view, x, y, w, h);
-            }
-        });
-    }
-
-    private static void setSurfaceGeometry(final int id, final int x, final int y, final int w, final int h)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.setSurfaceGeometry(id, x, y, w, h);
-            }
-        });
-    }
-
-    private static void bringChildToFront(final int id)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.bringChildToFront(id);
-            }
-        });
-    }
-
-    private static void bringChildToBack(final int id)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.bringChildToBack(id);
-            }
-        });
-    }
-
-    private static void destroySurface(final int id)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.destroySurface(id);
-            }
-        });
-    }
-
-    private static void hideSplashScreen(final int duration)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.hideSplashScreen(duration);
-            }
-        });
     }
 
     private static String[] listAssetContent(android.content.res.AssetManager asset, String path) {

@@ -12,7 +12,6 @@ set(java_sources
     src/org/qtproject/qt/android/QtActivityBase.java
     src/org/qtproject/qt/android/QtServiceBase.java
     src/org/qtproject/qt/android/QtActivityDelegate.java
-    src/org/qtproject/qt/android/QtServiceDelegate.java
     src/org/qtproject/qt/android/QtInputDelegate.java
     src/org/qtproject/qt/android/QtLoader.java
     src/org/qtproject/qt/android/QtActivityLoader.java

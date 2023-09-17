@@ -4,6 +4,7 @@
 package org.qtproject.qt.android;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +17,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+
+import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
 public class QtInputDelegate {
 
@@ -96,7 +99,7 @@ public class QtInputDelegate {
     private int m_lastChar = 0;
     private boolean m_backKeyPressedSent = false;
 
-    // Note: because of the circular call to updateFullScreen() from QtActivityDelegate, we need
+    // Note: because of the circular call to updateFullScreen() from the delegate, we need
     // a listener to be able to do that call from the delegate, because that's where that
     // logic lives
     public interface KeyboardVisibilityListener {
@@ -105,9 +108,29 @@ public class QtInputDelegate {
 
     private final KeyboardVisibilityListener m_keyboardVisibilityListener;
 
-    QtInputDelegate(KeyboardVisibilityListener listener)
+    QtInputDelegate(Activity activity, KeyboardVisibilityListener listener)
     {
         this.m_keyboardVisibilityListener = listener;
+        m_editText = new QtEditText(activity);
+        m_imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        QtInputConnectionListener inputConnectionListener = new QtInputConnectionListener() {
+            @Override
+            public void onSetClosing(boolean closing) {
+                if (!closing)
+                    setKeyboardVisibility(true, System.nanoTime());
+            }
+
+            @Override
+            public void onHideKeyboardRunnableDone(boolean visibility, long hideTimeStamp) {
+                setKeyboardVisibility(visibility, hideTimeStamp);
+            }
+
+            @Override
+            public void onSendKeyEventDefaultCase() {
+                hideSoftwareKeyboard();
+            }
+        };
+        m_editText.setQtInputConnectionListener(inputConnectionListener);
     }
 
     public boolean isKeyboardVisible()
@@ -129,16 +152,6 @@ public class QtInputDelegate {
     QtEditText getQtEditText()
     {
         return m_editText;
-    }
-
-    void setEditText(QtEditText editText)
-    {
-        m_editText = editText;
-    }
-
-    void setInputMethodManager(InputMethodManager inputMethodManager)
-    {
-        m_imm = inputMethodManager;
     }
 
     void setEditPopupMenu(EditPopupMenu editPopupMenu)

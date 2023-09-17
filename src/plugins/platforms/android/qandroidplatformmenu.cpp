@@ -119,7 +119,7 @@ void QAndroidPlatformMenu::showPopup(const QWindow *parentWindow, const QRect &t
     Q_UNUSED(parentWindow);
     Q_UNUSED(item);
     setVisible(true);
-    QtAndroidMenu::showContextMenu(this, targetRect, QJniEnvironment().jniEnv());
+    QtAndroidMenu::showContextMenu(this, targetRect);
 }
 
 QPlatformMenuItem *QAndroidPlatformMenu::menuItemForTag(quintptr tag) const

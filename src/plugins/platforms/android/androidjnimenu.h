@@ -21,7 +21,7 @@ namespace QtAndroidMenu
 {
     // Menu support
     void openOptionsMenu();
-    void showContextMenu(QAndroidPlatformMenu *menu, const QRect &anchorRect, JNIEnv *env);
+    void showContextMenu(QAndroidPlatformMenu *menu, const QRect &anchorRect);
     void hideContextMenu(QAndroidPlatformMenu *menu);
     void syncMenu(QAndroidPlatformMenu *menu);
     void androidPlatformMenuDestroyed(QAndroidPlatformMenu *menu);

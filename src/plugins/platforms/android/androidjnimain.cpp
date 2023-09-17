@@ -45,9 +45,6 @@ static jmethodID m_loadClassMethodID = nullptr;
 static AAssetManager *m_assetManager = nullptr;
 static jobject m_assets = nullptr;
 static jobject m_resourcesObj = nullptr;
-static jmethodID m_createSurfaceMethodID = nullptr;
-static jmethodID m_setSurfaceGeometryMethodID = nullptr;
-static jmethodID m_destroySurfaceMethodID = nullptr;
 
 static QtJniTypes::QtActivityDelegate m_activityDelegate = nullptr;
 static QtJniTypes::QtInputDelegate m_inputDelegate = nullptr;
@@ -165,7 +162,7 @@ namespace QtAndroid
     // TODO move calls from here to where they logically belong
     void setSystemUiVisibility(SystemUiVisibility uiVisibility)
     {
-        QJniObject::callStaticMethod<void>(m_applicationClass, "setSystemUiVisibility", "(I)V", jint(uiVisibility));
+        qtActivityDelegate().callMethod<void>("setSystemUiVisibility", jint(uiVisibility));
     }
 
     // FIXME: avoid direct access to QtActivityDelegate
@@ -218,7 +215,7 @@ namespace QtAndroid
 
     void notifyQtAndroidPluginRunning(bool running)
     {
-        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyQtAndroidPluginRunning","(Z)V", running);
+        qtActivityDelegate().callMethod<void>("notifyQtAndroidPluginRunning", running);
     }
 
     jobject createBitmap(QImage img, JNIEnv *env)
@@ -338,12 +335,8 @@ namespace QtAndroid
             w = std::max(geometry.width(), 1);
             h = std::max(geometry.height(), 1);
         }
-        env->CallStaticVoidMethod(m_applicationClass,
-                                     m_createSurfaceMethodID,
-                                     surfaceId,
-                                     jboolean(onTop),
-                                     x, y, w, h,
-                                     imageDepth);
+        qtActivityDelegate().callMethod<void>("createSurface", surfaceId, jboolean(onTop),
+                                              x, y, w, h, imageDepth);
         return surfaceId;
     }
 
@@ -358,9 +351,7 @@ namespace QtAndroid
         if (!geometry.isNull())
             geometry.getRect(&x, &y, &w, &h);
 
-        QJniObject::callStaticMethod<void>(m_applicationClass,
-                                           "insertNativeView",
-                                           "(ILandroid/view/View;IIII)V",
+        qtActivityDelegate().callMethod<void>("insertNativeView",
                                            surfaceId,
                                            view,
                                            x,
@@ -395,10 +386,7 @@ namespace QtAndroid
             w = geometry.width();
             h = geometry.height();
         }
-        env->CallStaticVoidMethod(m_applicationClass,
-                                  m_setSurfaceGeometryMethodID,
-                                  surfaceId,
-                                  x, y, w, h);
+        qtActivityDelegate().callMethod<void>("setSurfaceGeometry", surfaceId, x, y, w, h);
     }
 
 
@@ -414,11 +402,7 @@ namespace QtAndroid
                 m_surfaces.erase(it);
         }
 
-        QJniEnvironment env;
-        if (env.jniEnv())
-            env->CallStaticVoidMethod(m_applicationClass,
-                                      m_destroySurfaceMethodID,
-                                      surfaceId);
+        qtActivityDelegate().callMethod<void>("destroySurface", surfaceId);
     }
 
     void bringChildToFront(int surfaceId)
@@ -426,10 +410,7 @@ namespace QtAndroid
         if (surfaceId == -1)
             return;
 
-        QJniObject::callStaticMethod<void>(m_applicationClass,
-                                           "bringChildToFront",
-                                           "(I)V",
-                                           surfaceId);
+        qtActivityDelegate().callMethod<void>("bringChildToFront", surfaceId);
     }
 
     void bringChildToBack(int surfaceId)
@@ -437,10 +418,7 @@ namespace QtAndroid
         if (surfaceId == -1)
             return;
 
-        QJniObject::callStaticMethod<void>(m_applicationClass,
-                                           "bringChildToBack",
-                                           "(I)V",
-                                           surfaceId);
+        qtActivityDelegate().callMethod<void>("bringChildToBack", surfaceId);
     }
 
     bool blockEventLoopsWhenSuspended()
@@ -892,10 +870,6 @@ static bool registerNatives(QJniEnvironment &env)
         qCritical() << "QtDisplayManager: registerNativeMethods() failed";
         return JNI_FALSE;
     }
-
-    GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IZIIIII)V");
-    GET_AND_CHECK_STATIC_METHOD(m_setSurfaceGeometryMethodID, m_applicationClass, "setSurfaceGeometry", "(IIIII)V");
-    GET_AND_CHECK_STATIC_METHOD(m_destroySurfaceMethodID, m_applicationClass, "destroySurface", "(I)V");
 
     jmethodID methodID;
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "activity", "()Landroid/app/Activity;");

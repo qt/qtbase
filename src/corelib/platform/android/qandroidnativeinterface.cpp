@@ -94,8 +94,7 @@ int QNativeInterface::QAndroidApplication::sdkVersion()
 */
 void QNativeInterface::QAndroidApplication::hideSplashScreen(int duration)
 {
-    QJniObject::callStaticMethod<void>("org/qtproject/qt/android/QtNative",
-                                       "hideSplashScreen", "(I)V", duration);
+    QtAndroidPrivate::activity().callMethod<void>("hideSplashScreen", duration);
 }
 
 /*!

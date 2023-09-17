@@ -9,14 +9,10 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class QtServiceBase extends Service {
-    private QtServiceDelegate m_delegate;
-
     @Override
     public void onCreate()
     {
         super.onCreate();
-
-        m_delegate = new QtServiceDelegate(this);
 
         // the application has already started, do not reload everything again
         if (QtNative.isStarted()) {
@@ -38,7 +34,7 @@ public class QtServiceBase extends Service {
         super.onDestroy();
         QtNative.quitQtCoreApplication();
         QtNative.terminateQt();
-        QtNative.setService(null, null);
+        QtNative.setService(null);
         QtNative.m_qtThread.exit();
         System.exit(0);
     }
@@ -48,10 +44,5 @@ public class QtServiceBase extends Service {
         synchronized (this) {
             return QtNative.onBind(intent);
         }
-    }
-
-    QtServiceDelegate getServiceDelegate()
-    {
-        return m_delegate;
     }
 }

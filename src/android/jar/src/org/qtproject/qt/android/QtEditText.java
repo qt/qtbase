@@ -10,12 +10,21 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
+
 public class QtEditText extends View
 {
     int m_initialCapsMode = 0;
     int m_imeOptions = 0;
     int m_inputType = InputType.TYPE_CLASS_TEXT;
     boolean m_optionsChanged = false;
+
+    private QtInputConnectionListener m_qtInputConnectionListener;
+
+    public void setQtInputConnectionListener(QtInputConnectionListener listener)
+    {
+        m_qtInputConnectionListener = listener;
+    }
 
     public void setImeOptions(int m_imeOptions)
     {
@@ -56,7 +65,7 @@ public class QtEditText extends View
         outAttrs.imeOptions = m_imeOptions;
         outAttrs.initialCapsMode = m_initialCapsMode;
         outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_EXTRACT_UI;
-        return new QtInputConnection(this);
+        return new QtInputConnection(this, m_qtInputConnectionListener);
     }
 
 // // DEBUG CODE

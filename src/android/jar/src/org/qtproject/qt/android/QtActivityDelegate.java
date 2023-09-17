@@ -6,7 +6,6 @@
 package org.qtproject.qt.android;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -27,7 +26,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsetsController;
-import android.view.inputmethod.InputMethodManager;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -56,34 +54,36 @@ public class QtActivityDelegate
     private QtAccessibilityDelegate m_accessibilityDelegate = null;
     private final QtDisplayManager m_displayManager = new QtDisplayManager();
 
-    private QtInputDelegate.KeyboardVisibilityListener m_keyboardVisibilityListener =
-            new QtInputDelegate.KeyboardVisibilityListener() {
-        @Override
-        public void onKeyboardVisibilityChange() {
-            m_displayManager.updateFullScreen(m_activity);
-        }
-    };
-    private final QtInputDelegate m_inputDelegate = new QtInputDelegate(m_keyboardVisibilityListener);
+    private QtInputDelegate m_inputDelegate = null;
 
     QtActivityDelegate(Activity activity)
     {
         m_activity = activity;
-        QtNative.setActivity(m_activity, this);
+        QtNative.setActivity(m_activity);
 
         setActionBarVisibility(false);
 
+        m_displayManager.registerDisplayListener(m_activity, m_layout);
+
+        QtInputDelegate.KeyboardVisibilityListener keyboardVisibilityListener =
+                new QtInputDelegate.KeyboardVisibilityListener() {
+            @Override
+            public void onKeyboardVisibilityChange() {
+                m_displayManager.updateFullScreen(m_activity);
+            }
+        };
+        m_inputDelegate = new QtInputDelegate(m_activity, keyboardVisibilityListener);
+
         try {
-            m_inputDelegate.setSoftInputMode(m_activity.getPackageManager()
-                    .getActivityInfo(m_activity.getComponentName(), 0).softInputMode);
+            PackageManager pm = m_activity.getPackageManager();
+            ActivityInfo activityInfo =  pm.getActivityInfo(m_activity.getComponentName(), 0);
+            m_inputDelegate.setSoftInputMode(activityInfo.softInputMode);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-
-        m_displayManager.registerDisplayListener(m_activity, m_layout);
     }
 
-    QtDisplayManager displayManager()
-    {
+    QtDisplayManager displayManager() {
         return m_displayManager;
     }
 
@@ -147,7 +147,7 @@ public class QtActivityDelegate
         try {
             // set new activity
             m_activity = activity;
-            QtNative.setActivity(m_activity, this);
+            QtNative.setActivity(m_activity);
 
             // update the new activity content view to old layout
             ViewGroup layoutParent = (ViewGroup) m_layout.getParent();
@@ -220,8 +220,6 @@ public class QtActivityDelegate
             e.printStackTrace();
         }
 
-        m_inputDelegate.setEditText(new QtEditText(m_activity));
-        m_inputDelegate.setInputMethodManager((InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE));
         m_surfaces =  new HashMap<Integer, QtSurface>();
         m_nativeViews = new HashMap<Integer, View>();
         m_activity.registerForContextMenu(m_layout);
@@ -273,31 +271,40 @@ public class QtActivityDelegate
 
     public void hideSplashScreen(final int duration)
     {
-        if (m_splashScreen == null)
-            return;
-
-        if (duration <= 0) {
-            m_layout.removeView(m_splashScreen);
-            m_splashScreen = null;
-            return;
-        }
-
-        final Animation fadeOut = new AlphaAnimation(1, 0);
-        fadeOut.setInterpolator(new AccelerateInterpolator());
-        fadeOut.setDuration(duration);
-
-        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+        QtNative.runAction(new Runnable() {
             @Override
-            public void onAnimationEnd(Animation animation) { hideSplashScreen(0); }
+            public void run() {
+                if (m_splashScreen == null)
+                    return;
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
+                if (duration <= 0) {
+                    m_layout.removeView(m_splashScreen);
+                    m_splashScreen = null;
+                    return;
+                }
 
-            @Override
-            public void onAnimationStart(Animation animation) {}
+                final Animation fadeOut = new AlphaAnimation(1, 0);
+                fadeOut.setInterpolator(new AccelerateInterpolator());
+                fadeOut.setDuration(duration);
+
+                fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        hideSplashScreen(0);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                    }
+
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                    }
+                });
+
+                m_splashScreen.startAnimation(fadeOut);
+            }
         });
-
-        m_splashScreen.startAnimation(fadeOut);
     }
 
     public void notifyLocationChange(int viewId)
@@ -381,7 +388,22 @@ public class QtActivityDelegate
 
     public void resetOptionsMenu()
     {
-        m_activity.invalidateOptionsMenu();
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activity.invalidateOptionsMenu();
+            }
+        });
+    }
+
+    public void openOptionsMenu()
+    {
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activity.openOptionsMenu();
+            }
+        });
     }
 
     private boolean m_contextMenuVisible = false;
@@ -395,31 +417,36 @@ public class QtActivityDelegate
     public void openContextMenu(final int x, final int y, final int w, final int h)
     {
         m_layout.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    m_layout.setLayoutParams(m_inputDelegate.getQtEditText(), new QtLayout.LayoutParams(w, h, x, y), false);
-                    PopupMenu popup = new PopupMenu(m_activity, m_inputDelegate.getQtEditText());
-                    QtActivityDelegate.this.onCreatePopupMenu(popup.getMenu());
-                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem menuItem) {
-                            return m_activity.onContextItemSelected(menuItem);
-                        }
-                    });
-                    popup.setOnDismissListener(new PopupMenu.OnDismissListener() {
-                        @Override
-                        public void onDismiss(PopupMenu popupMenu) {
-                            m_activity.onContextMenuClosed(popupMenu.getMenu());
-                        }
-                    });
-                    popup.show();
-                }
-            }, 100);
+            @Override
+            public void run() {
+                m_layout.setLayoutParams(m_inputDelegate.getQtEditText(), new QtLayout.LayoutParams(w, h, x, y), false);
+                PopupMenu popup = new PopupMenu(m_activity, m_inputDelegate.getQtEditText());
+                QtActivityDelegate.this.onCreatePopupMenu(popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        return m_activity.onContextItemSelected(menuItem);
+                    }
+                });
+                popup.setOnDismissListener(new PopupMenu.OnDismissListener() {
+                    @Override
+                    public void onDismiss(PopupMenu popupMenu) {
+                        m_activity.onContextMenuClosed(popupMenu.getMenu());
+                    }
+                });
+                popup.show();
+            }
+        }, 100);
     }
 
     public void closeContextMenu()
     {
-        m_activity.closeContextMenu();
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activity.closeContextMenu();
+            }
+        });
     }
 
     void setActionBarVisibility(boolean visible)
@@ -433,96 +460,116 @@ public class QtActivityDelegate
     }
 
     public void insertNativeView(int id, View view, int x, int y, int w, int h) {
-        if (m_dummyView != null) {
-            m_layout.removeView(m_dummyView);
-            m_dummyView = null;
-        }
+    QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_dummyView != null) {
+                    m_layout.removeView(m_dummyView);
+                    m_dummyView = null;
+                }
 
-        if (m_nativeViews.containsKey(id))
-            m_layout.removeView(m_nativeViews.remove(id));
+                if (m_nativeViews.containsKey(id))
+                    m_layout.removeView(m_nativeViews.remove(id));
 
-        if (w < 0 || h < 0) {
-            view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                 ViewGroup.LayoutParams.MATCH_PARENT));
-        } else {
-            view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-        }
+                if (w < 0 || h < 0) {
+                    view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT));
+                } else {
+                    view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                }
 
-        view.setId(id);
-        m_layout.addView(view);
-        m_nativeViews.put(id, view);
+                view.setId(id);
+                m_layout.addView(view);
+                m_nativeViews.put(id, view);
+            }
+        });
     }
 
     public void createSurface(int id, boolean onTop, int x, int y, int w, int h, int imageDepth) {
-        if (m_surfaces.size() == 0) {
-            TypedValue attr = new TypedValue();
-            m_activity.getTheme().resolveAttribute(android.R.attr.windowBackground, attr, true);
-            if (attr.type >= TypedValue.TYPE_FIRST_COLOR_INT && attr.type <= TypedValue.TYPE_LAST_COLOR_INT) {
-                m_activity.getWindow().setBackgroundDrawable(new ColorDrawable(attr.data));
-            } else {
-                m_activity.getWindow().setBackgroundDrawable(m_activity.getResources().getDrawable(attr.resourceId, m_activity.getTheme()));
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_surfaces.size() == 0) {
+                    TypedValue attr = new TypedValue();
+                    m_activity.getTheme().resolveAttribute(android.R.attr.windowBackground, attr, true);
+                    if (attr.type >= TypedValue.TYPE_FIRST_COLOR_INT && attr.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                        m_activity.getWindow().setBackgroundDrawable(new ColorDrawable(attr.data));
+                    } else {
+                        m_activity.getWindow().setBackgroundDrawable(m_activity.getResources().getDrawable(attr.resourceId, m_activity.getTheme()));
+                    }
+                    if (m_dummyView != null) {
+                        m_layout.removeView(m_dummyView);
+                        m_dummyView = null;
+                    }
+                }
+
+                if (m_surfaces.containsKey(id))
+                    m_layout.removeView(m_surfaces.remove(id));
+
+                QtSurface surface = new QtSurface(m_activity, id, onTop, imageDepth);
+                if (w < 0 || h < 0) {
+                    surface.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT));
+                } else {
+                    surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                }
+
+                // Native views are always inserted in the end of the stack (i.e., on top).
+                // All other views are stacked based on the order they are created.
+                final int surfaceCount = getSurfaceCount();
+                m_layout.addView(surface, surfaceCount);
+
+                m_surfaces.put(id, surface);
+                if (!m_splashScreenSticky)
+                    hideSplashScreen();
             }
-            if (m_dummyView != null) {
-                m_layout.removeView(m_dummyView);
-                m_dummyView = null;
-            }
-        }
-
-        if (m_surfaces.containsKey(id))
-            m_layout.removeView(m_surfaces.remove(id));
-
-        QtSurface surface = new QtSurface(m_activity, id, onTop, imageDepth);
-        if (w < 0 || h < 0) {
-            surface.setLayoutParams( new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT));
-        } else {
-            surface.setLayoutParams( new QtLayout.LayoutParams(w, h, x, y));
-        }
-
-        // Native views are always inserted in the end of the stack (i.e., on top).
-        // All other views are stacked based on the order they are created.
-        final int surfaceCount = getSurfaceCount();
-        m_layout.addView(surface, surfaceCount);
-
-        m_surfaces.put(id, surface);
-        if (!m_splashScreenSticky)
-            hideSplashScreen();
+        });
     }
 
     public void setSurfaceGeometry(int id, int x, int y, int w, int h) {
-        if (m_surfaces.containsKey(id)) {
-            QtSurface surface = m_surfaces.get(id);
-            surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-        } else if (m_nativeViews.containsKey(id)) {
-            View view = m_nativeViews.get(id);
-            view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-        } else {
-            Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
-            return;
-        }
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_surfaces.containsKey(id)) {
+                    QtSurface surface = m_surfaces.get(id);
+                    surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                } else if (m_nativeViews.containsKey(id)) {
+                    View view = m_nativeViews.get(id);
+                    view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                } else {
+                    Log.e(QtNative.QtTAG, "Surface " + id + " not found!");
+                    return;
+                }
+            }
+        });
     }
 
     public void destroySurface(int id) {
-        View view = null;
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                View view = null;
 
-        if (m_surfaces.containsKey(id)) {
-            view = m_surfaces.remove(id);
-        } else if (m_nativeViews.containsKey(id)) {
-            view = m_nativeViews.remove(id);
-        } else {
-            Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
-        }
+                if (m_surfaces.containsKey(id)) {
+                    view = m_surfaces.remove(id);
+                } else if (m_nativeViews.containsKey(id)) {
+                    view = m_nativeViews.remove(id);
+                } else {
+                    Log.e(QtNative.QtTAG, "Surface " + id + " not found!");
+                }
 
-        if (view == null)
-            return;
+                if (view == null)
+                    return;
 
-        // Keep last frame in stack until it is replaced to get correct
-        // shutdown transition
-        if (m_surfaces.size() == 0 && m_nativeViews.size() == 0) {
-            m_dummyView = view;
-        } else {
-            m_layout.removeView(view);
-        }
+                // Keep last frame in stack until it is replaced to get correct
+                // shutdown transition
+                if (m_surfaces.size() == 0 && m_nativeViews.size() == 0) {
+                    m_dummyView = view;
+                } else {
+                    m_layout.removeView(view);
+                }
+            }
+        });
     }
 
     public int getSurfaceCount()
@@ -532,31 +579,41 @@ public class QtActivityDelegate
 
     public void bringChildToFront(int id)
     {
-        View view = m_surfaces.get(id);
-        if (view != null) {
-            final int surfaceCount = getSurfaceCount();
-            if (surfaceCount > 0)
-                m_layout.moveChild(view, surfaceCount - 1);
-            return;
-        }
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                View view = m_surfaces.get(id);
+                if (view != null) {
+                    final int surfaceCount = getSurfaceCount();
+                    if (surfaceCount > 0)
+                        m_layout.moveChild(view, surfaceCount - 1);
+                    return;
+                }
 
-        view = m_nativeViews.get(id);
-        if (view != null)
-            m_layout.moveChild(view, -1);
+                view = m_nativeViews.get(id);
+                if (view != null)
+                    m_layout.moveChild(view, -1);
+            }
+        });
     }
 
     public void bringChildToBack(int id)
     {
-        View view = m_surfaces.get(id);
-        if (view != null) {
-            m_layout.moveChild(view, 0);
-            return;
-        }
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                View view = m_surfaces.get(id);
+                if (view != null) {
+                    m_layout.moveChild(view, 0);
+                    return;
+                }
 
-        view = m_nativeViews.get(id);
-        if (view != null) {
-            final int index = getSurfaceCount();
-            m_layout.moveChild(view, index);
-        }
+                view = m_nativeViews.get(id);
+                if (view != null) {
+                    final int index = getSurfaceCount();
+                    m_layout.moveChild(view, index);
+                }
+            }
+        });
     }
 }

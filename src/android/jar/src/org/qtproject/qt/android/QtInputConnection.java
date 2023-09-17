@@ -51,31 +51,6 @@ class QtNativeInputConnection
     static native boolean updateCursorPosition();
 }
 
-class HideKeyboardRunnable implements Runnable {
-    private long m_hideTimeStamp = System.nanoTime();
-
-    @Override
-    public void run() {
-        // Check that the keyboard is really no longer there.
-        Activity activity = QtNative.activity();
-        Rect r = new Rect();
-        activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
-
-        int screenHeight = 0;
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            DisplayMetrics metrics = new DisplayMetrics();
-            activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            screenHeight = metrics.heightPixels;
-        } else {
-            final WindowMetrics maximumWindowMetrics = activity.getWindowManager().getMaximumWindowMetrics();
-            screenHeight = maximumWindowMetrics.getBounds().height();
-        }
-        final int kbHeight = screenHeight - r.bottom;
-        if (kbHeight < 100)
-            QtNative.activityDelegate().getInputDelegate().setKeyboardVisibility(false, m_hideTimeStamp);
-    }
-}
-
 public class QtInputConnection extends BaseInputConnection
 {
     private static final int ID_SELECT_ALL = android.R.id.selectAll;
@@ -86,21 +61,52 @@ public class QtInputConnection extends BaseInputConnection
     private static final int ID_SWITCH_INPUT_METHOD = android.R.id.switchInputMethod;
     private static final int ID_ADD_TO_DICTIONARY = android.R.id.addToDictionary;
 
+    private final QtInputConnectionListener m_qtInputConnectionListener;
+
+    class HideKeyboardRunnable implements Runnable {
+        @Override
+        public void run() {
+            // Check that the keyboard is really no longer there.
+            Activity activity = QtNative.activity();
+            Rect r = new Rect();
+            activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+
+            int screenHeight = 0;
+            if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                screenHeight = metrics.heightPixels;
+            } else {
+                final WindowMetrics maximumWindowMetrics = activity.getWindowManager().getMaximumWindowMetrics();
+                screenHeight = maximumWindowMetrics.getBounds().height();
+            }
+            final int kbHeight = screenHeight - r.bottom;
+            if (kbHeight < 100)
+                m_qtInputConnectionListener.onHideKeyboardRunnableDone(false, System.nanoTime());
+        }
+    }
+
+    public interface QtInputConnectionListener {
+        void onSetClosing(boolean closing);
+        void onHideKeyboardRunnableDone(boolean visibility, long hideTimeStamp);
+        void onSendKeyEventDefaultCase();
+    }
+
     private QtEditText m_view = null;
 
     private void setClosing(boolean closing)
     {
-        if (closing) {
+        if (closing)
             m_view.postDelayed(new HideKeyboardRunnable(), 100);
-        } else {
-            QtNative.activityDelegate().getInputDelegate().setKeyboardVisibility(true, System.nanoTime());
-        }
+        else
+            m_qtInputConnectionListener.onSetClosing(false);
     }
 
-    public QtInputConnection(QtEditText targetView)
+    public QtInputConnection(QtEditText targetView, QtInputConnectionListener listener)
     {
         super(targetView, true);
         m_view = targetView;
+        m_qtInputConnectionListener = listener;
     }
 
     @Override
@@ -256,7 +262,7 @@ public class QtInputConnection extends BaseInputConnection
                     break;
 
                 default:
-                   QtNative.activityDelegate().getInputDelegate().hideSoftwareKeyboard();
+                    m_qtInputConnectionListener.onSendKeyEventDefaultCase();
                    break;
             }
         }

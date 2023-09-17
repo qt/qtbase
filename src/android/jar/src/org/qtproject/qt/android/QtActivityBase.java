@@ -173,7 +173,7 @@ public class QtActivityBase extends Activity
         super.onDestroy();
         if (m_delegate.isQuitApp()) {
             QtNative.terminateQt();
-            QtNative.setActivity(null, null);
+            QtNative.setActivity(null);
             QtNative.m_qtThread.exit();
             System.exit(0);
         }
@@ -323,6 +323,11 @@ public class QtActivityBase extends Activity
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
         QtNative.sendRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    public void hideSplashScreen(final int duration)
+    {
+        m_delegate.hideSplashScreen(duration);
     }
 
     QtActivityDelegate getActivityDelegate()
