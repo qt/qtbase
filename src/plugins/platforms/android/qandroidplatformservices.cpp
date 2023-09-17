@@ -78,11 +78,11 @@ bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
     const auto providerName = QJniObject::fromString(appId + ".qtprovider"_L1);
 
     const auto urlPath = QJniObject::fromString(url.path());
-    const auto urlFile = QJniObject(QtJniTypes::className<QtJniTypes::File>(),
+    const auto urlFile = QJniObject(QtJniTypes::Traits<QtJniTypes::File>::className(),
                                     urlPath.object<jstring>());
 
     const auto fileProviderUri = QJniObject::callStaticMethod<QtJniTypes::UriType>(
-            QtJniTypes::className<QtJniTypes::FileProvider>(), "getUriForFile",
+            QtJniTypes::Traits<QtJniTypes::FileProvider>::className(), "getUriForFile",
             QAndroidApplication::context(), providerName.object<jstring>(),
             urlFile.object<QtJniTypes::FileType>());
 

@@ -31,7 +31,7 @@ QAndroidTimeZonePrivate::QAndroidTimeZonePrivate()
 {
     // Keep in sync with systemTimeZoneId():
     androidTimeZone = QJniObject::callStaticMethod<QtJniTypes::TimeZone>(
-                          QtJniTypes::className<QtJniTypes::TimeZone>(), "getDefault");
+                          QtJniTypes::Traits<QtJniTypes::TimeZone>::className(), "getDefault");
     const QJniObject id = androidTimeZone.callMethod<jstring>("getID");
     m_id = id.toString().toUtf8();
 }
@@ -59,7 +59,7 @@ static QString getDisplayName(QJniObject zone, jint style, jboolean dst,
 {
     QJniObject jbcpTag = QJniObject::fromString(locale.bcp47Name());
     QJniObject jlocale = QJniObject::callStaticMethod<QtJniTypes::Locale>(
-                QtJniTypes::className<QtJniTypes::Locale>(), "forLanguageTag",
+                QtJniTypes::Traits<QtJniTypes::Locale>::className(), "forLanguageTag",
                 jbcpTag.object<jstring>());
 
     return zone.callMethod<jstring>("getDisplayName", dst, style,
@@ -70,7 +70,7 @@ void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
 {
     const QString iana = QString::fromUtf8(ianaId);
     androidTimeZone = QJniObject::callStaticMethod<QtJniTypes::TimeZone>(
-        QtJniTypes::className<QtJniTypes::TimeZone>(), "getTimeZone",
+        QtJniTypes::Traits<QtJniTypes::TimeZone>::className(), "getTimeZone",
         QJniObject::fromString(iana).object<jstring>());
 
     // The ID or display name of the zone we've got, if it looks like what we asked for:
@@ -200,7 +200,7 @@ QByteArray QAndroidTimeZonePrivate::systemTimeZoneId() const
 {
     // Keep in sync with default constructor:
     QJniObject androidSystemTimeZone = QJniObject::callStaticMethod<QtJniTypes::TimeZone>(
-                              QtJniTypes::className<QtJniTypes::TimeZone>(), "getDefault");
+                              QtJniTypes::Traits<QtJniTypes::TimeZone>::className(), "getDefault");
     const QJniObject id = androidSystemTimeZone.callMethod<jstring>("getID");
     return id.toString().toUtf8();
 }
@@ -209,7 +209,7 @@ QList<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
 {
     QList<QByteArray> availableTimeZoneIdList;
     QJniObject androidAvailableIdList = QJniObject::callStaticMethod<QtJniTypes::StringArray>(
-                             QtJniTypes::className<QtJniTypes::TimeZone>(), "getAvailableIDs");
+                             QtJniTypes::Traits<QtJniTypes::TimeZone>::className(), "getAvailableIDs");
 
     QJniEnvironment jniEnv;
     int androidTZcount = jniEnv->GetArrayLength(androidAvailableIdList.object<jarray>());

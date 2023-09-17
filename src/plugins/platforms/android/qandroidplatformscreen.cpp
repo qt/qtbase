@@ -92,7 +92,7 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
                                                 displayObject.object<QtJniTypes::Display>());
 
     const auto sizeObj = QJniObject::callStaticMethod<QtJniTypes::Size>(
-                                                QtJniTypes::className<QtJniTypes::QtNative>(),
+                                                QtJniTypes::Traits<QtJniTypes::QtNative>::className(),
                                                 "getDisplaySize",
                                                 displayContext.object<QtJniTypes::Context>(),
                                                 displayObject.object<QtJniTypes::Display>());

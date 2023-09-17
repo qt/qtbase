@@ -39,31 +39,35 @@ struct Type : Object                                            \
 #define Q_DECLARE_JNI_TYPE(Type, Signature)                     \
 Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
 template<>                                                      \
-constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
-{                                                               \
-    static_assert((Signature[0] == 'L' || Signature[0] == '[')  \
-                && Signature[sizeof(Signature) - 2] == ';',     \
-                "Type signature needs to start with 'L' or '['" \
-                " and end with ';'");                           \
-    return QtJniTypes::CTString(Signature);                     \
-}                                                               \
+struct QtJniTypes::Traits<QtJniTypes::Type> {                   \
+    static constexpr auto signature()                           \
+    {                                                           \
+        static_assert((Signature[0] == 'L'                      \
+                    || Signature[0] == '[')                     \
+                    && Signature[sizeof(Signature) - 2] == ';', \
+                    "Type signature needs to start with 'L' or" \
+                    " '[' and end with ';'");                   \
+        return QtJniTypes::CTString(Signature);                 \
+    }                                                           \
+};                                                              \
 
 #define Q_DECLARE_JNI_CLASS(Type, Signature)                    \
 Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
 template<>                                                      \
-constexpr auto QtJniTypes::className<QtJniTypes::Type>()        \
-{                                                               \
-    return QtJniTypes::CTString(Signature);                     \
-}                                                               \
-template<>                                                      \
-constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
-{                                                               \
-    return QtJniTypes::CTString("L")                            \
-         + QtJniTypes::CTString(Signature)                      \
-         + QtJniTypes::CTString(";");                           \
-}                                                               \
+struct QtJniTypes::Traits<QtJniTypes::Type> {                   \
+    static constexpr auto className()                           \
+    {                                                           \
+        return QtJniTypes::CTString(Signature);                 \
+    }                                                           \
+    static constexpr auto signature()                           \
+    {                                                           \
+        return QtJniTypes::CTString("L")                        \
+            + className()                                       \
+            + QtJniTypes::CTString(";");                        \
+    }                                                           \
+};                                                              \
 
-#define Q_DECLARE_JNI_NATIVE_METHOD(...)                           \
+#define Q_DECLARE_JNI_NATIVE_METHOD(...)                        \
     QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD, __VA_ARGS__) \
 
 #define QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Name)            \

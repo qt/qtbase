@@ -19,35 +19,45 @@ private slots:
 
 struct QtJavaWrapper {};
 template<>
-constexpr auto QtJniTypes::typeSignature<QtJavaWrapper>()
+struct QtJniTypes::Traits<QtJavaWrapper>
 {
-    return QtJniTypes::CTString("Lorg/qtproject/qt/android/QtJavaWrapper;");
-}
+    static constexpr auto signature()
+    {
+        return QtJniTypes::CTString("Lorg/qtproject/qt/android/QtJavaWrapper;");
+    }
+};
 
 template<>
-constexpr auto QtJniTypes::typeSignature<QJniObject>()
+struct QtJniTypes::Traits<QJniObject>
 {
-    return QtJniTypes::CTString("Ljava/lang/Object;");
-}
+    static constexpr auto signature()
+    {
+        return QtJniTypes::CTString("Ljava/lang/Object;");
+    }
+};
 
 struct QtCustomJniObject : QJniObject {};
-template<>
-constexpr auto QtJniTypes::typeSignature<QtCustomJniObject>()
-{
-    return QtJniTypes::CTString("Lorg/qtproject/qt/android/QtCustomJniObject;");
-}
 
-static_assert(QtJniTypes::typeSignature<QtJavaWrapper>() == "Lorg/qtproject/qt/android/QtJavaWrapper;");
-static_assert(QtJniTypes::typeSignature<QtJavaWrapper>() != "Ljava/lang/Object;");
-static_assert(!(QtJniTypes::typeSignature<QtJavaWrapper>() == "X"));
+template<>
+struct QtJniTypes::Traits<QtCustomJniObject>
+{
+    static constexpr auto signature()
+    {
+        return QtJniTypes::CTString("Lorg/qtproject/qt/android/QtCustomJniObject;");
+    }
+};
+
+static_assert(QtJniTypes::Traits<QtJavaWrapper>::signature() == "Lorg/qtproject/qt/android/QtJavaWrapper;");
+static_assert(QtJniTypes::Traits<QtJavaWrapper>::signature() != "Ljava/lang/Object;");
+static_assert(!(QtJniTypes::Traits<QtJavaWrapper>::signature() == "X"));
 
 Q_DECLARE_JNI_CLASS(JavaType, "org/qtproject/qt/JavaType");
-static_assert(QtJniTypes::typeSignature<QtJniTypes::JavaType>() == "Lorg/qtproject/qt/JavaType;");
+static_assert(QtJniTypes::Traits<QtJniTypes::JavaType>::signature() == "Lorg/qtproject/qt/JavaType;");
 Q_DECLARE_JNI_TYPE(ArrayType, "[Lorg/qtproject/qt/ArrayType;")
-static_assert(QtJniTypes::typeSignature<QtJniTypes::ArrayType>() == "[Lorg/qtproject/qt/ArrayType;");
+static_assert(QtJniTypes::Traits<QtJniTypes::ArrayType>::signature() == "[Lorg/qtproject/qt/ArrayType;");
 
 Q_DECLARE_JNI_CLASS(QtTextToSpeech, "org/qtproject/qt/android/speech/QtTextToSpeech")
-static_assert(QtJniTypes::className<QtJniTypes::QtTextToSpeech>() == "org/qtproject/qt/android/speech/QtTextToSpeech");
+static_assert(QtJniTypes::Traits<QtJniTypes::QtTextToSpeech>::className() == "org/qtproject/qt/android/speech/QtTextToSpeech");
 
 static_assert(QtJniTypes::fieldSignature<jint>() == "I");
 static_assert(QtJniTypes::fieldSignature<jint[]>() == "[I");

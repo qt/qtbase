@@ -149,97 +149,113 @@ static void staticAssertTypeMismatch()
                         "Use a JNI based type instead.");
 }
 
-template<typename T>
-constexpr auto typeSignature()
-{
-    if constexpr (std::is_array_v<T>) {
-        using UnderlyingType = typename std::remove_extent_t<T>;
-        static_assert(!std::is_array_v<UnderlyingType>,
-                    "typeSignature() does not handle multi-dimensional arrays");
-        return CTString("[") + typeSignature<UnderlyingType>();
-    } else if constexpr (std::is_same_v<T, jobject>) {
-        return CTString("Ljava/lang/Object;");
-    } else if constexpr (std::is_same_v<T, jclass>) {
-        return CTString("Ljava/lang/Class;");
-    } else if constexpr (std::is_same_v<T, jstring>) {
-        return CTString("Ljava/lang/String;");
-    } else if constexpr (std::is_same_v<T, jobjectArray>) {
-        return CTString("[Ljava/lang/Object;");
-    } else if constexpr (std::is_same_v<T, jthrowable>) {
-        return CTString("Ljava/lang/Throwable;");
-    } else if constexpr (std::is_same_v<T, jbooleanArray>) {
-        return CTString("[Z");
-    } else if constexpr (std::is_same_v<T, jbyteArray>) {
-        return CTString("[B");
-    } else if constexpr (std::is_same_v<T, jshortArray>) {
-        return CTString("[S");
-    } else if constexpr (std::is_same_v<T, jintArray>) {
-        return CTString("[I");
-    } else if constexpr (std::is_same_v<T, jlongArray>) {
-        return CTString("[J");
-    } else if constexpr (std::is_same_v<T, jfloatArray>) {
-        return CTString("[F");
-    } else if constexpr (std::is_same_v<T, jdoubleArray>) {
-        return CTString("[D");
-    } else if constexpr (std::is_same_v<T, jcharArray>) {
-        return CTString("[C");
-    } else if constexpr (std::is_same_v<T, jboolean>) {
-        return CTString("Z");
-    } else if constexpr (std::is_same_v<T, bool>) {
-        return CTString("Z");
-    } else if constexpr (std::is_same_v<T, jbyte>) {
-        return CTString("B");
-    } else if constexpr (std::is_same_v<T, jchar>) {
-        return CTString("C");
-    } else if constexpr (std::is_same_v<T, char>) {
-        return CTString("C");
-    } else if constexpr (std::is_same_v<T, jshort>) {
-        return CTString("S");
-    } else if constexpr (std::is_same_v<T, short>) {
-        return CTString("S");
-    } else if constexpr (std::is_same_v<T, jint>) {
-        return CTString("I");
-    } else if constexpr (std::is_same_v<T, int>) {
-        return CTString("I");
-    } else if constexpr (std::is_same_v<T, uint>) {
-        return CTString("I");
-    } else if constexpr (std::is_same_v<T, jlong>) {
-        return CTString("J");
-    } else if constexpr (std::is_same_v<T, long>) {
-        return CTString("J");
-    } else if constexpr (std::is_same_v<T, jfloat>) {
-        return CTString("F");
-    } else if constexpr (std::is_same_v<T, float>) {
-        return CTString("F");
-    } else if constexpr (std::is_same_v<T, jdouble>) {
-        return CTString("D");
-    } else if constexpr (std::is_same_v<T, double>) {
-        return CTString("D");
-    } else if constexpr (std::is_same_v<T, void>) {
-        return CTString("V");
-    }
-
-    // else: The return type becomes void, indicating that the typeSignature
-    // template is not implemented for the respective type. We use this to
-    // detect invalid types in the ValidSignatureTypes and ValidFieldType
-    // predicates below.
-}
-
 template<bool flag = false>
 static void staticAssertClassNotRegistered()
 {
     static_assert(flag, "Class not registered, use Q_DECLARE_JNI_CLASS");
 }
 
-template<typename T>
-constexpr auto className()
+template <typename T>
+struct Traits {
+    // The return type of className/signature becomes void for any type
+    // not handled here. This indicates that the Traits type is not specialized
+    // for the respective type, which we use to detect invalid types in the
+    // ValidSignatureTypes and ValidFieldType predicates below.
+
+    static constexpr auto className()
+    {
+        if constexpr (std::is_same_v<T, jstring>)
+            return CTString("java/lang/String");
+        else if constexpr (std::is_same_v<T, jobject>)
+            return CTString("java/lang/Object");
+        else if constexpr (std::is_same_v<T, jclass>)
+            return CTString("java/lang/Class");
+        else if constexpr (std::is_same_v<T, jthrowable>)
+            return CTString("java/lang/Throwable");
+        // else: return void -> not implemented
+    }
+
+    static constexpr auto signature()
+    {
+        if constexpr (!std::is_same_v<decltype(className()), void>) {
+            // the type signature of any object class is L<className>;
+            return CTString("L") + className() + CTString(";");
+        } else if constexpr (std::is_array_v<T>) {
+            using UnderlyingType = typename std::remove_extent_t<T>;
+            static_assert(!std::is_array_v<UnderlyingType>,
+                        "Traits::signature() does not handle multi-dimensional arrays");
+            return CTString("[") + Traits<UnderlyingType>::signature();
+        } else if constexpr (std::is_same_v<T, jobjectArray>) {
+            return CTString("[Ljava/lang/Object;");
+        } else if constexpr (std::is_same_v<T, jbooleanArray>) {
+            return CTString("[Z");
+        } else if constexpr (std::is_same_v<T, jbyteArray>) {
+            return CTString("[B");
+        } else if constexpr (std::is_same_v<T, jshortArray>) {
+            return CTString("[S");
+        } else if constexpr (std::is_same_v<T, jintArray>) {
+            return CTString("[I");
+        } else if constexpr (std::is_same_v<T, jlongArray>) {
+            return CTString("[J");
+        } else if constexpr (std::is_same_v<T, jfloatArray>) {
+            return CTString("[F");
+        } else if constexpr (std::is_same_v<T, jdoubleArray>) {
+            return CTString("[D");
+        } else if constexpr (std::is_same_v<T, jcharArray>) {
+            return CTString("[C");
+        } else if constexpr (std::is_same_v<T, jboolean>) {
+            return CTString("Z");
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return CTString("Z");
+        } else if constexpr (std::is_same_v<T, jbyte>) {
+            return CTString("B");
+        } else if constexpr (std::is_same_v<T, jchar>) {
+            return CTString("C");
+        } else if constexpr (std::is_same_v<T, char>) {
+            return CTString("C");
+        } else if constexpr (std::is_same_v<T, jshort>) {
+            return CTString("S");
+        } else if constexpr (std::is_same_v<T, short>) {
+            return CTString("S");
+        } else if constexpr (std::is_same_v<T, jint>) {
+            return CTString("I");
+        } else if constexpr (std::is_same_v<T, int>) {
+            return CTString("I");
+        } else if constexpr (std::is_same_v<T, uint>) {
+            return CTString("I");
+        } else if constexpr (std::is_same_v<T, jlong>) {
+            return CTString("J");
+        } else if constexpr (std::is_same_v<T, long>) {
+            return CTString("J");
+        } else if constexpr (std::is_same_v<T, jfloat>) {
+            return CTString("F");
+        } else if constexpr (std::is_same_v<T, float>) {
+            return CTString("F");
+        } else if constexpr (std::is_same_v<T, jdouble>) {
+            return CTString("D");
+        } else if constexpr (std::is_same_v<T, double>) {
+            return CTString("D");
+        } else if constexpr (std::is_same_v<T, void>) {
+            return CTString("V");
+        }
+        // else: return void -> not implemented
+    }
+};
+
+// compatibility until submodules are ported
+template <typename T>
+constexpr auto typeSignature()
 {
-    if constexpr (std::is_same_v<T, jstring>)
-        return CTString("java/lang/String");
-    else
-        staticAssertClassNotRegistered();
+    return Traits<T>::signature();
 }
 
+template <typename T>
+constexpr auto className()
+{
+    return Traits<T>::className();
+}
+
+// have to use the compatibility functions here until porting is complete
 template<typename T>
 static constexpr bool isPrimitiveType()
 {

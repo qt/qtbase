@@ -66,7 +66,7 @@ namespace {
 QAndroidPlatformScreen* createScreenForDisplayId(int displayId)
 {
     const QJniObject display = QJniObject::callStaticObjectMethod<QtJniTypes::Display>(
-        QtJniTypes::className<QtJniTypes::QtNative>(),
+        QtJniTypes::Traits<QtJniTypes::QtNative>::className(),
         "getDisplay",
         displayId);
     if (!display.isValid())
@@ -184,10 +184,10 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
         qFatal("Could not bind GL_ES API");
 
     m_primaryDisplayId = QJniObject::getStaticField<jint>(
-        QtJniTypes::className<QtJniTypes::Display>(), "DEFAULT_DISPLAY");
+        QtJniTypes::Traits<QtJniTypes::Display>::className(), "DEFAULT_DISPLAY");
 
     const QJniObject nativeDisplaysList = QJniObject::callStaticObjectMethod<QtJniTypes::List>(
-                QtJniTypes::className<QtJniTypes::QtNative>(),
+                QtJniTypes::Traits<QtJniTypes::QtNative>::className(),
                 "getAvailableDisplays");
 
     const int numberOfAvailableDisplays = nativeDisplaysList.callMethod<jint>("size");

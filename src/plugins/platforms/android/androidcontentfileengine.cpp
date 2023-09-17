@@ -465,7 +465,7 @@ const QLatin1String MIME_TYPE_DIR("vnd.android.document/directory");
 QString documentId(const QJniObject &uri)
 {
     return QJniObject::callStaticMethod<jstring, QtJniTypes::UriType>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "getDocumentId",
                 uri.object()).toString();
 }
@@ -473,7 +473,7 @@ QString documentId(const QJniObject &uri)
 QString treeDocumentId(const QJniObject &uri)
 {
     return QJniObject::callStaticMethod<jstring, QtJniTypes::UriType>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "getTreeDocumentId",
                 uri.object()).toString();
 }
@@ -481,7 +481,7 @@ QString treeDocumentId(const QJniObject &uri)
 QJniObject buildChildDocumentsUriUsingTree(const QJniObject &uri, const QString &parentDocumentId)
 {
     return QJniObject::callStaticMethod<QtJniTypes::UriType>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "buildChildDocumentsUriUsingTree",
                 uri.object<QtJniTypes::UriType>(),
                 QJniObject::fromString(parentDocumentId).object<jstring>());
@@ -491,7 +491,7 @@ QJniObject buildChildDocumentsUriUsingTree(const QJniObject &uri, const QString 
 QJniObject buildDocumentUriUsingTree(const QJniObject &treeUri, const QString &documentId)
 {
     return QJniObject::callStaticMethod<QtJniTypes::UriType>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "buildDocumentUriUsingTree",
                 treeUri.object<QtJniTypes::UriType>(),
                 QJniObject::fromString(documentId).object<jstring>());
@@ -500,7 +500,7 @@ QJniObject buildDocumentUriUsingTree(const QJniObject &treeUri, const QString &d
 bool isDocumentUri(const QJniObject &uri)
 {
     return QJniObject::callStaticMethod<jboolean>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "isDocumentUri",
                 QNativeInterface::QAndroidApplication::context(),
                 uri.object<QtJniTypes::UriType>());
@@ -509,7 +509,7 @@ bool isDocumentUri(const QJniObject &uri)
 bool isTreeUri(const QJniObject &uri)
 {
     return QJniObject::callStaticMethod<jboolean>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "isTreeUri",
                 uri.object<QtJniTypes::UriType>());
 }
@@ -518,7 +518,7 @@ QJniObject createDocument(const QJniObject &parentDocumentUri, const QString &mi
                           const QString &displayName)
 {
     return QJniObject::callStaticMethod<QtJniTypes::UriType>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "createDocument",
                 contentResolverInstance().object<QtJniTypes::ContentResolverType>(),
                 parentDocumentUri.object<QtJniTypes::UriType>(),
@@ -533,7 +533,7 @@ bool deleteDocument(const QJniObject &documentUri)
         return {};
 
     return QJniObject::callStaticMethod<jboolean>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "deleteDocument",
                 contentResolverInstance().object<QtJniTypes::ContentResolverType>(),
                 documentUri.object<QtJniTypes::UriType>());
@@ -548,7 +548,7 @@ QJniObject moveDocument(const QJniObject &sourceDocumentUri,
         return {};
 
     return QJniObject::callStaticMethod<QtJniTypes::UriType>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "moveDocument",
                 contentResolverInstance().object<QtJniTypes::ContentResolverType>(),
                 sourceDocumentUri.object<QtJniTypes::UriType>(),
@@ -563,7 +563,7 @@ QJniObject renameDocument(const QJniObject &documentUri, const QString &displayN
         return {};
 
     return QJniObject::callStaticMethod<QtJniTypes::UriType>(
-                QtJniTypes::className<QtJniTypes::DocumentsContract>(),
+                QtJniTypes::Traits<QtJniTypes::DocumentsContract>::className(),
                 "renameDocument",
                 contentResolverInstance().object<QtJniTypes::ContentResolverType>(),
                 documentUri.object<QtJniTypes::UriType>(),
@@ -598,7 +598,7 @@ QJniObject parseUri(const QString &uri)
         uriToParse.replace(' ', QUrl::toPercentEncoding(" "));
 
     return QJniObject::callStaticMethod<QtJniTypes::UriType>(
-                QtJniTypes::className<QtJniTypes::Uri>(),
+                QtJniTypes::Traits<QtJniTypes::Uri>::className(),
                 "parse",
                 QJniObject::fromString(uriToParse).object<jstring>());
 }
