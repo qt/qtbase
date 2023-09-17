@@ -25,6 +25,7 @@ class tst_QLatin1StringMatcher : public QObject
 private slots:
     void overloads();
     void staticOverloads();
+    void staticOverloads_QStringViewHaystack();
     void interface();
     void indexIn();
     void haystacksWithMoreThan4GiBWork();
@@ -233,6 +234,129 @@ void tst_QLatin1StringMatcher::staticOverloads()
         QCOMPARE(m.indexIn("b\xF8lle"_L1), 0);
         QCOMPARE(m.indexIn("m\xF8lle"_L1), -1);
         QCOMPARE(m.indexIn("Si b\xF8"_L1), 3);
+    }
+#endif
+}
+
+void tst_QLatin1StringMatcher::staticOverloads_QStringViewHaystack()
+{
+#ifdef QT_STATIC_BOYER_MOORE_NOT_SUPPORTED
+    QSKIP("Test is only valid on an OS that supports static latin1 string matcher");
+#else
+    constexpr QStringView hello = u"hello";
+    QString hello2B = QStringView(hello).toString().repeated(2);
+    hello2B += QStringView(u"🍉");
+    QStringView hello2(hello2B);
+    {
+        static constexpr auto m = qMakeStaticCaseSensitiveLatin1StringMatcher("hel");
+        QCOMPARE(m.indexIn(QStringView(u"hello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"Hello🍉")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"Hellohello🍉")), 5);
+        QCOMPARE(m.indexIn(QStringView(u"helloHello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"he🍉")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"hel🍉")), 0);
+        QCOMPARE(m.indexIn(hello), 0);
+        QCOMPARE(m.indexIn(hello, 1), -1); // from is 1
+        QCOMPARE(m.indexIn(hello2, 2), hello.size()); // from is 2
+        QCOMPARE(m.indexIn(hello2, 3), hello.size()); // from is 3
+        QCOMPARE(m.indexIn(hello2, 6), -1); // from is 6
+        static_assert(m.indexIn(QStringView(u"hello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"Hello🍉")) == -1);
+        static_assert(m.indexIn(QStringView(u"Hellohello🍉")) == 5);
+        static_assert(m.indexIn(QStringView(u"helloHello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"he🍉")) == -1);
+        static_assert(m.indexIn(QStringView(u"hel🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 2) == 5); // from is 2
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 3) == 5); // from is 3
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 6) == -1); // from is 6
+    }
+    {
+        static constexpr auto m = qMakeStaticCaseSensitiveLatin1StringMatcher("Hel");
+        QCOMPARE(m.indexIn(QStringView(u"hello🍉")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"Hello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"Hellohello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"helloHello🍉")), 5);
+        QCOMPARE(m.indexIn(QStringView(u"helloHello🍉"), 6), -1);
+        QCOMPARE(m.indexIn(QStringView(u"He🍉")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"Hel🍉")), 0);
+        QCOMPARE(m.indexIn(hello), -1);
+        QCOMPARE(m.indexIn(hello2, 2), -1); // from is 2
+        QCOMPARE(m.indexIn(hello2, 6), -1); // from is 6
+        static_assert(m.indexIn(QStringView(u"hello🍉")) == -1);
+        static_assert(m.indexIn(QStringView(u"Hello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"Hellohello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"helloHello🍉")) == 5);
+        static_assert(m.indexIn(QStringView(u"helloHello🍉"), 6) == -1);
+        static_assert(m.indexIn(QStringView(u"He🍉")) == -1);
+        static_assert(m.indexIn(QStringView(u"Hel🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 2) == -1); // from is 2
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 6) == -1); // from is 6
+    }
+    {
+        static constexpr auto m = qMakeStaticCaseInsensitiveLatin1StringMatcher("hel");
+        QCOMPARE(m.indexIn(QStringView(u"hello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"Hello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"Hellohello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"helloHello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"he🍉")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"hel🍉")), 0);
+        QCOMPARE(m.indexIn(hello), 0);
+        QCOMPARE(m.indexIn(hello, 1), -1);
+        QCOMPARE(m.indexIn(hello2, 2), hello.size()); // from is 2
+        QCOMPARE(m.indexIn(hello2, 3), hello.size()); // from is 3
+        QCOMPARE(m.indexIn(hello2, 6), -1); // from is 6
+        static_assert(m.indexIn(QStringView(u"hello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"Hello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"Hellohello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"helloHello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"he🍉")) == -1);
+        static_assert(m.indexIn(QStringView(u"hel🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 2) == 5); // from is 2
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 3) == 5); // from is 3
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 6) == -1); // from is 6
+    }
+    {
+        static constexpr auto m = qMakeStaticCaseInsensitiveLatin1StringMatcher("Hel");
+        QCOMPARE(m.indexIn(QStringView(u"hello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"Hello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"Hellohello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"helloHello🍉")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"he🍉")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"hel🍉")), 0);
+        QCOMPARE(m.indexIn(hello), 0);
+        QCOMPARE(m.indexIn(hello, 1), -1);
+        QCOMPARE(m.indexIn(hello2, 2), hello.size()); // from is 2
+        QCOMPARE(m.indexIn(hello2, 3), hello.size()); // from is 3
+        QCOMPARE(m.indexIn(hello2, 6), -1); // from is 6
+        static_assert(m.indexIn(QStringView(u"hello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"Hello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"Hellohello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"helloHello🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"he🍉")) == -1);
+        static_assert(m.indexIn(QStringView(u"hel🍉")) == 0);
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 2) == 5); // from is 2
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 3) == 5); // from is 3
+        static_assert(m.indexIn(QStringView(u"hellohello🍉"), 6) == -1); // from is 6
+    }
+    {
+        static constexpr auto m = qMakeStaticCaseInsensitiveLatin1StringMatcher("b\xF8");
+        QCOMPARE(m.indexIn(QStringView(u"B\xD8")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"B\xF8")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"b\xD8")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"b\xF8")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"b\xF8lle")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"m\xF8lle")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"Si b\xF8")), 3);
+    }
+    {
+        static constexpr auto m = qMakeStaticCaseSensitiveLatin1StringMatcher("b\xF8");
+        QCOMPARE(m.indexIn(QStringView(u"B\xD8")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"B\xF8")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"b\xD8")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"b\xF8")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"b\xF8lle")), 0);
+        QCOMPARE(m.indexIn(QStringView(u"m\xF8lle")), -1);
+        QCOMPARE(m.indexIn(QStringView(u"Si b\xF8")), 3);
     }
 #endif
 }

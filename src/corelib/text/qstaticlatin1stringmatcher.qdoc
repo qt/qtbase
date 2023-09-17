@@ -44,6 +44,7 @@
 
 /*!
     \fn template<Qt::CaseSensitivity CS, size_t N> constexpr qsizetype QStaticLatin1StringMatcher<CS, N>::indexIn(QLatin1StringView haystack, qsizetype from) const
+    \fn template<Qt::CaseSensitivity CS, size_t N> constexpr qsizetype QStaticLatin1StringMatcher<CS, N>::indexIn(QStringView haystack, qsizetype from) const
 
     Searches the QLatin1StringView \a haystack, from byte position \a from
     (default 0, i.e. from the first byte), for QLatin1StringView pattern()
