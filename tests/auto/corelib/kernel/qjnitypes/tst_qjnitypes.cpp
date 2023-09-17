@@ -56,6 +56,12 @@ static_assert(QtJniTypes::Traits<QtJniTypes::JavaType>::signature() == "Lorg/qtp
 Q_DECLARE_JNI_TYPE(ArrayType, "[Lorg/qtproject/qt/ArrayType;")
 static_assert(QtJniTypes::Traits<QtJniTypes::ArrayType>::signature() == "[Lorg/qtproject/qt/ArrayType;");
 
+Q_DECLARE_JNI_CLASS(String, "java/lang/String");
+static_assert(QtJniTypes::Traits<jstring>::className() == "java/lang/String");
+static_assert(QtJniTypes::Traits<QtJniTypes::String>::className() == "java/lang/String");
+static_assert(QtJniTypes::Traits<QtJniTypes::String>::signature() == "Ljava/lang/String;");
+static_assert(QtJniTypes::Traits<QtJniTypes::String[]>::signature() == "[Ljava/lang/String;");
+
 Q_DECLARE_JNI_CLASS(QtTextToSpeech, "org/qtproject/qt/android/speech/QtTextToSpeech")
 static_assert(QtJniTypes::Traits<QtJniTypes::QtTextToSpeech>::className() == "org/qtproject/qt/android/speech/QtTextToSpeech");
 

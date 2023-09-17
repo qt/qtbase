@@ -131,10 +131,6 @@ struct CTString
     }
 };
 
-// compatibility alias until submodules are ported
-template<size_t N_WITH_NULL, typename BaseType = char>
-using String = CTString<N_WITH_NULL, BaseType>;
-
 // Helper types that allow us to disable variadic overloads that would conflict
 // with overloads that take a const char*.
 template<typename T, size_t N = 0> struct IsStringType : std::false_type {};
