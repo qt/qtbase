@@ -22,7 +22,6 @@ set(java_sources
     src/org/qtproject/qt/android/QtLayout.java
     src/org/qtproject/qt/android/QtMessageDialogHelper.java
     src/org/qtproject/qt/android/QtNative.java
-    src/org/qtproject/qt/android/QtNativeLibrariesDir.java
     src/org/qtproject/qt/android/QtSurface.java
     src/org/qtproject/qt/android/QtThread.java
     src/org/qtproject/qt/android/extras//QtAndroidBinder.java
