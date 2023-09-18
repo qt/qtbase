@@ -6,7 +6,6 @@ if(WASM) # not all tests currently work in WebAssembly
     add_subdirectory(qatomicinteger)
     add_subdirectory(qatomicpointer)
     add_subdirectory(qfuturesynchronizer)
-    add_subdirectory(qfuturewatcher)
     add_subdirectory(qmutexlocker)
     add_subdirectory(qreadlocker)
     add_subdirectory(qresultstore)

@@ -115,6 +115,10 @@
 #include <CoreFoundation/CFPreferences.h>
 #endif
 
+#if defined(Q_OS_WASM)
+#include <emscripten.h>
+#endif
+
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -2274,6 +2278,14 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     qInit(testObject, argc, argv);
     int ret = qRun();
     qCleanup();
+
+#if defined(Q_OS_WASM)
+    EM_ASM({
+        if (typeof Module != "undefined" && typeof Module.notifyTestFinished != "undefined")
+            Module.notifyTestFinished($0);
+    }, ret);
+#endif // Q_OS_WASM
+
     return ret;
 }
 
