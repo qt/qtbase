@@ -45,7 +45,8 @@ MainWindow::MainWindow(QWidget *parent)
     findAction->setShortcuts(QKeySequence::Find);
     m_findNextAction = findMenu->addAction(tr("Find &Next"), this, &MainWindow::findNext);
     m_findNextAction->setShortcuts(QKeySequence::FindNext);
-    m_findPreviousAction = findMenu->addAction(tr("Find &Previous"), this, &MainWindow::findPrevious);
+    m_findPreviousAction = findMenu->addAction(tr("Find &Previous"), this,
+                                               &MainWindow::findPrevious);
     m_findPreviousAction->setShortcuts(QKeySequence::FindPrevious);
 
     menuBar()->addMenu(tr("&About"))->addAction(tr("&About Qt"), qApp, &QApplication::aboutQt);
@@ -54,8 +55,8 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(centralSplitter);
     m_treeView->setUniformRowHeights(true);
     m_treeView->setModel(m_model);
-
-    const auto items = m_model->findItems("application/octet-stream", Qt::MatchContains | Qt::MatchFixedString | Qt::MatchRecursive);
+    const auto flags = Qt::MatchContains | Qt::MatchFixedString | Qt::MatchRecursive;
+    const auto items = m_model->findItems("application/octet-stream", flags);
     if (!items.isEmpty())
         m_treeView->expand(m_model->indexFromItem(items.constFirst()));
 
@@ -93,7 +94,8 @@ void MainWindow::detectFile()
     const QModelIndex index = mimeType.isValid()
         ? m_model->indexForMimeType(mimeType.name()) : QModelIndex();
     if (index.isValid()) {
-        statusBar()->showMessage(tr("\"%1\" is of type \"%2\"").arg(fi.fileName(), mimeType.name()));
+        statusBar()->showMessage(tr("\"%1\" is of type \"%2\"").arg(fi.fileName(),
+                                 mimeType.name()));
         selectAndGoTo(index);
     } else {
         QMessageBox::information(this, tr("Unknown File Type"),
@@ -138,8 +140,8 @@ void MainWindow::find()
 
     m_findMatches.clear();
     m_findIndex = 0;
-    const QList<QStandardItem *> items =
-            m_model->findItems(value, Qt::MatchContains | Qt::MatchFixedString | Qt::MatchRecursive);
+    const auto flags = Qt::MatchContains | Qt::MatchFixedString | Qt::MatchRecursive;
+    const QList<QStandardItem *> items = m_model->findItems(value, flags);
     for (const QStandardItem *item : items)
         m_findMatches.append(m_model->indexFromItem(item));
     statusBar()->showMessage(tr("%n mime types match \"%1\".", 0, m_findMatches.size()).arg(value));
