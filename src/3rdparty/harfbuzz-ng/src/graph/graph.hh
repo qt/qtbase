@@ -290,7 +290,7 @@ struct graph_t
 	new_parents.set (id_map[_.first], _.second);
       }
 
-      if (new_parents.in_error ())
+      if (parents.in_error() || new_parents.in_error ())
         return false;
 
       parents = std::move (new_parents);
@@ -310,8 +310,15 @@ struct graph_t
       if (parents.has (old_index, &pv))
       {
         unsigned v = *pv;
-	parents.set (new_index, v);
+	if (!parents.set (new_index, v))
+          incoming_edges_ -= v;
 	parents.del (old_index);
+
+        if (incoming_edges_ == 1)
+	{
+	  single_parent = *parents.keys ();
+	  parents.reset ();
+	}
       }
     }
 
@@ -465,6 +472,18 @@ struct graph_t
   bool operator== (const graph_t& other) const
   {
     return root ().equals (other.root (), *this, other, 0);
+  }
+
+  void print () const {
+    for (int i = vertices_.length - 1; i >= 0; i--)
+    {
+      const auto& v = vertices_[i];
+      printf("%d: %lu [", i, v.table_size());
+      for (const auto &l : v.obj.real_links) {
+        printf("%u, ", l.objidx);
+      }
+      printf("]\n");
+    }
   }
 
   // Sorts links of all objects in a consistent manner and zeroes all offsets.
