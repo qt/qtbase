@@ -3,8 +3,9 @@
 
 /*!
     \example mimetypes/mimetypebrowser
+    \examplecategory {Data Processing & I/O}
     \ingroup examples-mimetype
-    \title MIME Type Browser Example
+    \title MIME Type Browser
 
     \brief Shows the hierarchy of MIME types and
     can be used to determine the MIME type of a file.
