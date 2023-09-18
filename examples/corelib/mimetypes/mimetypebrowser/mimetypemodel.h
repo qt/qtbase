@@ -4,10 +4,9 @@
 #ifndef MIMETYPEMODEL_H
 #define MIMETYPEMODEL_H
 
-#include <QStandardItemModel>
 #include <QHash>
-
-QT_FORWARD_DECLARE_CLASS(QMimeType)
+#include <QMimeType>
+#include <QStandardItemModel>
 
 class MimetypeModel : public QStandardItemModel
 {
