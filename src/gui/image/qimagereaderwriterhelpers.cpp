@@ -104,7 +104,7 @@ QList<QByteArray> supportedMimeTypes(Capability cap)
     QList<QByteArray> mimeTypes;
     mimeTypes.reserve(_qt_NumFormats);
     for (const auto &fmt : _qt_BuiltInFormats)
-        mimeTypes.append(imagePrefix() + fmt.mimeType);
+        mimeTypes.emplace_back(imagePrefix() + fmt.mimeType);
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
     appendImagePluginMimeTypes(irhLoader(), pluginCapability(cap), &mimeTypes);
