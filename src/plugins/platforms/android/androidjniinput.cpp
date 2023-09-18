@@ -312,6 +312,7 @@ namespace QtAndroidInput
         Qt::MouseButtons buttons = Qt::NoButton;
         switch (action) {
         case 1:     // ACTION_UP
+        case 6:     // ACTION_POINTER_UP, happens if stylus is not the primary pointer
         case 212:   // stylus release while side-button held on Galaxy Note 4
             buttons = Qt::NoButton;
             break;
