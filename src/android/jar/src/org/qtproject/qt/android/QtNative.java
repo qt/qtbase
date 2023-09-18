@@ -26,9 +26,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.system.Os;
-import android.content.ClipboardManager;
-import android.content.ClipData;
-import android.content.ClipDescription;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -79,9 +76,7 @@ public class QtNative
     private static double m_displayMetricsScaledDensity = 1.0;
     private static double m_displayMetricsDensity = 1.0;
     private static final int m_moveThreshold = 0;
-    private static ClipboardManager m_clipboardManager = null;
     private static Method m_checkSelfPermissionMethod = null;
-    private static boolean m_usePrimaryClip = false;
 
     public static QtThread m_qtThread = new QtThread();
 
@@ -525,171 +520,7 @@ public class QtNative
             m_activityDelegate.notifyQtAndroidPluginRunning(running);
     }
 
-    private static void registerClipboardManager()
-    {
-        if (m_service == null || m_activity != null) { // Avoid freezing if only service
-            final Semaphore semaphore = new Semaphore(0);
-            runAction(new Runnable() {
-                @Override
-                public void run() {
-                    if (m_activity != null)
-                        m_clipboardManager = (android.content.ClipboardManager) m_activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                    if (m_clipboardManager != null) {
-                        m_clipboardManager.addPrimaryClipChangedListener(new ClipboardManager.OnPrimaryClipChangedListener() {
-                            public void onPrimaryClipChanged() {
-                                onClipboardDataChanged();
-                            }
-                        });
-                    }
-                    semaphore.release();
-                }
-            });
-            try {
-                semaphore.acquire();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
-    private static void clearClipData()
-    {
-        if (m_clipboardManager != null) {
-            if (Build.VERSION.SDK_INT >= 28) {
-                m_clipboardManager.clearPrimaryClip();
-            } else {
-                String[] mimeTypes = { ClipDescription.MIMETYPE_UNKNOWN };
-                ClipData data = new ClipData("", mimeTypes, new ClipData.Item(new Intent()));
-                m_clipboardManager.setPrimaryClip(data);
-            }
-        }
-        m_usePrimaryClip = false;
-    }
-    private static void setClipboardText(String text)
-    {
-        if (m_clipboardManager != null) {
-            ClipData clipData = ClipData.newPlainText("text/plain", text);
-            updatePrimaryClip(clipData);
-        }
-    }
-
-    public static boolean hasClipboardText()
-    {
-       return hasClipboardMimeType("text/(.*)");
-    }
-
-    private static String getClipboardText()
-    {
-        try {
-            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-                for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                    if (primaryClip.getItemAt(i).getText() != null)
-                        return primaryClip.getItemAt(i).getText().toString();
-            }
-        } catch (Exception e) {
-            Log.e(QtTAG, "Failed to get clipboard data", e);
-        }
-        return "";
-    }
-
-    private static void updatePrimaryClip(ClipData clipData)
-    {
-        try {
-            if (m_usePrimaryClip) {
-                ClipData clip = m_clipboardManager.getPrimaryClip();
-                if (Build.VERSION.SDK_INT >= 26) {
-                    Objects.requireNonNull(clip).addItem(m_activity.getContentResolver(), clipData.getItemAt(0));
-                } else {
-                    Objects.requireNonNull(clip).addItem(clipData.getItemAt(0));
-                }
-                m_clipboardManager.setPrimaryClip(clip);
-            } else {
-                m_clipboardManager.setPrimaryClip(clipData);
-                m_usePrimaryClip = true;
-            }
-        } catch (Exception e) {
-            Log.e(QtTAG, "Failed to set clipboard data", e);
-        }
-    }
-
-    private static void setClipboardHtml(String text, String html)
-    {
-        if (m_clipboardManager != null) {
-            ClipData clipData = ClipData.newHtmlText("text/html", text, html);
-            updatePrimaryClip(clipData);
-        }
-    }
-
-    private static boolean hasClipboardMimeType(String mimeType)
-    {
-        if (m_clipboardManager == null)
-            return false;
-
-        ClipDescription description = m_clipboardManager.getPrimaryClipDescription();
-        // getPrimaryClipDescription can fail if the app does not have input focus
-        if (description == null)
-            return false;
-
-        for (int i = 0; i < description.getMimeTypeCount(); ++i) {
-            String itemMimeType = description.getMimeType(i);
-            if (itemMimeType.matches(mimeType))
-                return true;
-        }
-        return false;
-    }
-
-    public static boolean hasClipboardHtml()
-    {
-       return hasClipboardMimeType("text/html");
-    }
-
-    private static String getClipboardHtml()
-    {
-        try {
-            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-                for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                    if (primaryClip.getItemAt(i).getHtmlText() != null)
-                        return primaryClip.getItemAt(i).getHtmlText().toString();
-            }
-        } catch (Exception e) {
-            Log.e(QtTAG, "Failed to get clipboard data", e);
-        }
-        return "";
-    }
-
-    private static void setClipboardUri(String uriString)
-    {
-        if (m_clipboardManager != null) {
-            ClipData clipData = ClipData.newUri(m_activity.getContentResolver(), "text/uri-list",
-                                                Uri.parse(uriString));
-            updatePrimaryClip(clipData);
-        }
-    }
-
-    public static boolean hasClipboardUri()
-    {
-       return hasClipboardMimeType("text/uri-list");
-    }
-
-    private static String[] getClipboardUris()
-    {
-        ArrayList<String> uris = new ArrayList<String>();
-        try {
-            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-                for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                    if (primaryClip.getItemAt(i).getUri() != null)
-                        uris.add(primaryClip.getItemAt(i).getUri().toString());
-            }
-        } catch (Exception e) {
-            Log.e(QtTAG, "Failed to get clipboard data", e);
-        }
-        String[] strings = new String[uris.size()];
-        strings = uris.toArray(strings);
-        return strings;
-    }
 
     private static void openContextMenu(final int x, final int y, final int w, final int h)
     {
@@ -908,10 +739,6 @@ public class QtNative
     public static native boolean onContextItemSelected(int itemId, boolean checked);
     public static native void onContextMenuClosed(Menu menu);
     // menu methods
-
-    // clipboard methods
-    public static native void onClipboardDataChanged();
-    // clipboard methods
 
     // activity methods
     public static native void onActivityResult(int requestCode, int resultCode, Intent data);

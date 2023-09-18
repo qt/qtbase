@@ -1,4 +1,4 @@
-# Copyright (C) 2022 The Qt Company Ltd.
+# Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
 #####################################################################
@@ -14,7 +14,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         androidcontentfileengine.cpp androidcontentfileengine.h
         androiddeadlockprotector.h
         androidjniaccessibility.cpp androidjniaccessibility.h
-        androidjniclipboard.cpp androidjniclipboard.h
         androidjniinput.cpp androidjniinput.h
         androidjnimain.cpp androidjnimain.h
         androidjnimenu.cpp androidjnimenu.h

@@ -10,7 +10,6 @@
 #include "androidcontentfileengine.h"
 #include "androiddeadlockprotector.h"
 #include "androidjniaccessibility.h"
-#include "androidjniclipboard.h"
 #include "androidjniinput.h"
 #include "androidjnimain.h"
 #include "androidjnimenu.h"
@@ -18,6 +17,7 @@
 #include "qandroideventdispatcher.h"
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformintegration.h"
+#include "qandroidplatformclipboard.h"
 
 #include <android/api-level.h>
 #include <android/asset_manager_jni.h>
@@ -927,7 +927,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
             || !QtAndroidInput::registerNatives()
             || !QtAndroidMenu::registerNatives(env)
             || !QtAndroidAccessibility::registerNatives(env)
-            || !QtAndroidDialogHelpers::registerNatives(env)) {
+            || !QtAndroidDialogHelpers::registerNatives(env)
+            || !QAndroidPlatformClipboard::registerNatives()) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "registerNatives failed");
         return -1;
     }

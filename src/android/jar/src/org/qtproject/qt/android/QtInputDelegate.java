@@ -537,7 +537,7 @@ public class QtInputDelegate {
                 break;
         }
 
-        if (!QtNative.hasClipboardText())
+        if (!QtClipboardManager.hasClipboardText(activity))
             editButtons &= ~EditContextView.PASTE_BUTTON;
 
         if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
