@@ -4,10 +4,8 @@
 #include "mainwindow.h"
 
 #include <QApplication>
-#include <QScreen>
-
 #include <QCommandLineParser>
-#include <QCommandLineOption>
+#include <QScreen>
 
 int main(int argc, char *argv[])
 {
