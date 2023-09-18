@@ -635,7 +635,7 @@ function(qt_internal_add_test name)
         # TODO: Add functionality to specify browser
         list(APPEND extra_test_args "--browser=chrome")
         list(APPEND extra_test_args "--browser_args=\"--password-store=basic\"")
-        #list(APPEND extra_test_args "--kill_exit")
+        list(APPEND extra_test_args "--kill_exit")
 
         # Tests may require asyncify if they use exec(). Enable asyncify for
         # batched tests since this is the configuration used on the CI system.
