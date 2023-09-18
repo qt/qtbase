@@ -8,16 +8,26 @@ instructions:
     variableName: COIN_SBUILD_CHROOT
     variableValue: "stable-arm64-sbuild"
     enable_if:
-      condition: property
-      property: target.arch
-      equals_value: AARCH64
+      condition: and
+      conditions:
+        - condition: runtime
+          env_var:  COIN_SBUILD_CHROOT
+          equals_value: null
+        - condition: property
+          property: target.arch
+          equals_value: AARCH64
   - type: EnvironmentVariable
     variableName: COIN_SBUILD_CHROOT
     variableValue: "stable-amd64-sbuild"
-    disable_if:
-      condition: property
-      property: target.arch
-      equals_value: AARCH64
+    enable_if:
+      condition: and
+      conditions:
+        - condition: runtime
+          env_var:  COIN_SBUILD_CHROOT
+          equals_value: null
+        - condition: property
+          property: target.arch
+          equals_value: X86_64
   - type: EnvironmentVariable
     variableName: COIN_SBUILD_DISTRO
     variableValue: "arm64-focal"
