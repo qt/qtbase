@@ -820,7 +820,7 @@ bool QCommandLineParser::isSet(const QString &name) const
     that option is returned. If the option wasn't specified on the command line,
     the default value is returned.
 
-    An empty string is returned if the option does not take a value.
+    If the option does not take a value, a warning is printed, and an empty string is returned.
 
     \sa values(), QCommandLineOption::setDefaultValue(), QCommandLineOption::setDefaultValues()
  */
@@ -861,8 +861,14 @@ QStringList QCommandLineParser::values(const QString &optionName) const
     if (it != d->nameHash.cend()) {
         const qsizetype optionOffset = *it;
         QStringList values = d->optionValuesHash.value(optionOffset);
-        if (values.isEmpty())
-            values = d->commandLineOptionList.at(optionOffset).defaultValues();
+        if (values.isEmpty()) {
+            const auto &option = d->commandLineOptionList.at(optionOffset);
+            if (option.valueName().isEmpty()) {
+                qWarning("QCommandLineParser: option not expecting values: \"%ls\"",
+                         qUtf16Printable(optionName));
+            }
+            values = option.defaultValues();
+        }
         return values;
     }
 

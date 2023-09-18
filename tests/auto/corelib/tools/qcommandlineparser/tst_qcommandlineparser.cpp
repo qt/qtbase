@@ -126,6 +126,7 @@ void tst_QCommandLineParser::testBooleanOption()
     QVERIFY(parser.parse(args));
     QCOMPARE(parser.optionNames(), expectedOptionNames);
     QCOMPARE(parser.isSet("b"), expectedIsSet);
+    QTest::ignoreMessage(QtWarningMsg, "QCommandLineParser: option not expecting values: \"b\"");
     QCOMPARE(parser.values("b"), QStringList());
     QCOMPARE(parser.positionalArguments(), QStringList());
     // Should warn on typos
@@ -163,6 +164,7 @@ void tst_QCommandLineParser::testOptionsAndPositional()
     QVERIFY(parser.parse(args));
     QCOMPARE(parser.optionNames(), expectedOptionNames);
     QCOMPARE(parser.isSet("b"), expectedIsSet);
+    QTest::ignoreMessage(QtWarningMsg, "QCommandLineParser: option not expecting values: \"b\"");
     QCOMPARE(parser.values("b"), QStringList());
     QCOMPARE(parser.positionalArguments(), expectedPositionalArguments);
 }
@@ -361,6 +363,7 @@ void tst_QCommandLineParser::testProcessNotCalled()
     QTest::ignoreMessage(QtWarningMsg, "QCommandLineParser: call process() or parse() before isSet");
     QVERIFY(!parser.isSet("b"));
     QTest::ignoreMessage(QtWarningMsg, "QCommandLineParser: call process() or parse() before values");
+    QTest::ignoreMessage(QtWarningMsg, "QCommandLineParser: option not expecting values: \"b\"");
     QCOMPARE(parser.values("b"), QStringList());
 }
 
@@ -448,37 +451,40 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes_data()
     QTest::addColumn<QStringList>("commandLine");
     QTest::addColumn<QStringList>("expectedOptionNames");
     QTest::addColumn<QStringList>("expectedOptionValues");
+    QTest::addColumn<QStringList>("invalidOptionValues");
 
     QTest::newRow("collapsed") << QCommandLineParser::ParseAsCompactedShortOptions << (QStringList() << "-abc" << "val")
-                               << (QStringList() << "a" << "b" << "c") << (QStringList() << QString() << QString() << "val");
+                               << (QStringList() << "a" << "b" << "c") << (QStringList() << QString() << QString() << "val")
+                               << (QStringList() << "a" << "b");
     QTest::newRow("collapsed_with_equalsign_value") << QCommandLineParser::ParseAsCompactedShortOptions << (QStringList() << "-abc=val")
-                               << (QStringList() << "a" << "b" << "c") << (QStringList() << QString() << QString() << "val");
+                               << (QStringList() << "a" << "b" << "c") << (QStringList() << QString() << QString() << "val")
+                               << (QStringList() << "a" << "b");
     QTest::newRow("collapsed_explicit_longoption") << QCommandLineParser::ParseAsCompactedShortOptions << QStringList("--nn")
-                               << QStringList("nn") << QStringList();
+                               << QStringList("nn") << QStringList() << QStringList();
     QTest::newRow("collapsed_longoption_value") << QCommandLineParser::ParseAsCompactedShortOptions << (QStringList() << "--abc" << "val")
-                               << QStringList("abc") << QStringList("val");
+                               << QStringList("abc") << QStringList("val") << QStringList();
     QTest::newRow("compiler")  << QCommandLineParser::ParseAsCompactedShortOptions << QStringList("-cab")
-                               << QStringList("c") << QStringList("ab");
+                               << QStringList("c") << QStringList("ab") << QStringList();
     QTest::newRow("compiler_with_space") << QCommandLineParser::ParseAsCompactedShortOptions << (QStringList() << "-c" << "val")
-                               << QStringList("c") << QStringList("val");
+                               << QStringList("c") << QStringList("val") << QStringList();
 
     QTest::newRow("implicitlylong") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "-abc" << "val")
-                               << QStringList("abc") << QStringList("val");
+                               << QStringList("abc") << QStringList("val") << QStringList();
     QTest::newRow("implicitlylong_equal") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "-abc=val")
-                               << QStringList("abc") << QStringList("val");
+                               << QStringList("abc") << QStringList("val") << QStringList();
     QTest::newRow("implicitlylong_longoption") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "--nn")
-                               << QStringList("nn") << QStringList();
+                               << QStringList("nn") << QStringList() << QStringList();
     QTest::newRow("implicitlylong_longoption_value") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "--abc" << "val")
-                               << QStringList("abc") << QStringList("val");
+                               << QStringList("abc") << QStringList("val") << QStringList();
     QTest::newRow("implicitlylong_with_space") << QCommandLineParser::ParseAsCompactedShortOptions << (QStringList() << "-c" << "val")
-                               << QStringList("c") << QStringList("val");
+                               << QStringList("c") << QStringList("val") << QStringList();
 
     QTest::newRow("forceshort_detached") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "-I" << "45")
-                               << QStringList("I") << QStringList("45");
+                               << QStringList("I") << QStringList("45") << QStringList();
     QTest::newRow("forceshort_attached") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "-I46")
-                               << QStringList("I") << QStringList("46");
+                               << QStringList("I") << QStringList("46") << QStringList();
     QTest::newRow("forceshort_mixed") << QCommandLineParser::ParseAsLongOptions << (QStringList() << "-I45" << "-nn")
-                               << (QStringList() << "I" << "nn") << QStringList("45");
+                               << (QStringList() << "I" << "nn") << QStringList("45") << QStringList();
 }
 
 void tst_QCommandLineParser::testSingleDashWordOptionModes()
@@ -487,6 +493,7 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes()
     QFETCH(QStringList, commandLine);
     QFETCH(QStringList, expectedOptionNames);
     QFETCH(QStringList, expectedOptionValues);
+    QFETCH(QStringList, invalidOptionValues);
 
     commandLine.prepend("tst_QCommandLineParser");
 
@@ -503,8 +510,14 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes()
     QVERIFY(parser.addOption(forceShort));
     QVERIFY(parser.parse(commandLine));
     QCOMPARE(parser.optionNames(), expectedOptionNames);
-    for (int i = 0; i < expectedOptionValues.size(); ++i)
-        QCOMPARE(parser.value(parser.optionNames().at(i)), expectedOptionValues.at(i));
+    for (int i = 0; i < expectedOptionValues.size(); ++i) {
+        const QString option = parser.optionNames().at(i);
+        if (invalidOptionValues.contains(option)) {
+            QByteArray msg = QLatin1String("QCommandLineParser: option not expecting values: \"%1\"").arg(option).toLatin1();
+            QTest::ignoreMessage(QtWarningMsg, msg.data());
+        }
+        QCOMPARE(parser.value(option), expectedOptionValues.at(i));
+    }
     QCOMPARE(parser.unknownOptionNames(), QStringList());
 }
 
