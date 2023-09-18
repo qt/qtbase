@@ -33,7 +33,7 @@ Client::Client(QWidget *parent)
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
     in.setDevice(socket);
-    in.setVersion(QDataStream::Qt_5_10);
+    in.setVersion(QDataStream::Qt_6_0);
 
     connect(hostLineEdit, &QLineEdit::textChanged,
             this, &Client::enableGetFortuneButton);
