@@ -4,23 +4,18 @@
 #include "mainwindow.h"
 #include "mimetypemodel.h"
 
-#include <QAction>
 #include <QApplication>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QInputDialog>
+#include <QItemSelectionModel>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QPlainTextEdit>
-#include <QSplitter>
-#include <QStatusBar>
-#include <QTextEdit>
-#include <QTreeView>
-
-#include <QFileInfo>
-#include <QItemSelectionModel>
 #include <QMimeDatabase>
 #include <QMimeType>
+#include <QSplitter>
+#include <QStatusBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

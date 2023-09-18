@@ -4,12 +4,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QAction>
 #include <QMainWindow>
 #include <QModelIndexList>
-
-QT_FORWARD_DECLARE_CLASS(QAction)
-QT_FORWARD_DECLARE_CLASS(QTextEdit)
-QT_FORWARD_DECLARE_CLASS(QTreeView)
+#include <QTextEdit>
+#include <QTreeView>
 
 class MimetypeModel;
 
