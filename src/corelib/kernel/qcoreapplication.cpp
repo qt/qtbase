@@ -1728,7 +1728,6 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
     Q_ASSERT(receiver);
     Q_ASSERT(postedEvents);
 
-#ifdef Q_OS_WIN
     // compress posted timers to this object.
     if (event->type() == QEvent::Timer && receiver->d_func()->postedEvents > 0) {
         int timerId = ((QTimerEvent *) event)->timerId();
@@ -1741,7 +1740,6 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
         }
         return false;
     }
-#endif
 
     if (event->type() == QEvent::DeferredDelete) {
         if (receiver->d_ptr->deleteLaterCalled) {
