@@ -2,6 +2,14 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QtTypeTraits>
+    \inmodule QtCore
+    \since 6.5
+    \title Qt Type Traits
+    \brief Functionality for type traits and transformations.
+*/
+
+/*!
     \fn template <typename Enum> std::underlying_type_t<Enum> qToUnderlying(Enum e)
     \relates <QtTypeTraits>
     \since 6.2
