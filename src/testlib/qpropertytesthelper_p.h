@@ -84,6 +84,12 @@ namespace QTestPrivate {
     allocate its returned string using \c {new char[]}, so that it can be used
     in place of \l {QTest::toString()}.
 
+    The \a helperConstructor method is used to create another instance of
+    \c TestedClass. This instance is used to test for binding loops. By default,
+    the method returns a default-constructed \c TestedClass. A custom
+    \a helperConstructor should be provided if \c TestedClass is not
+    default-constructible. (NOTE: The parameter is currently unused!)
+
     \note Any test calling this method will need to call
     \code
     if (QTest::currentTestFailed())
@@ -100,7 +106,9 @@ void testReadWritePropertyBasics(
         std::function<bool(const PropertyType &, const PropertyType &)> comparator =
                 [](const PropertyType &lhs, const PropertyType &rhs) { return lhs == rhs; },
         std::function<char *(const PropertyType &)> represent =
-                [](const PropertyType &val) { return QTest::toString(val); })
+                [](const PropertyType &val) { return QTest::toString(val); },
+        std::function<std::unique_ptr<TestedClass>(void)> helperConstructor =
+                []() { return std::make_unique<TestedClass>(); })
 {
     // get the property
     const QMetaObject *metaObject = instance.metaObject();
@@ -189,6 +197,29 @@ void testReadWritePropertyBasics(
     // value didn't change -> the signal should not be emitted
     if (spy)
         QCOMPARE(spy->size(), 4);
+
+    Q_UNUSED(helperConstructor);
+}
+
+/*!
+    \internal
+    \overload
+
+    This overload supports the case where the caller only needs to override
+    the default for \a helperConstructor. It uses the defaults for all the other
+    parameters.
+*/
+template<typename TestedClass, typename PropertyType>
+void testReadWritePropertyBasics(
+        TestedClass &instance, const PropertyType &initial, const PropertyType &changed,
+        const char *propertyName,
+        std::function<std::unique_ptr<TestedClass>(void)> helperConstructor)
+{
+    testReadWritePropertyBasics<TestedClass, PropertyType>(
+            instance, initial, changed, propertyName,
+            [](const PropertyType &lhs, const PropertyType &rhs) { return lhs == rhs; },
+            [](const PropertyType &val) { return QTest::toString(val); },
+            helperConstructor);
 }
 
 /*!
@@ -224,6 +255,12 @@ void testReadWritePropertyBasics(
     allocate its returned string using \c {new char[]}, so that it can be used
     in place of \l {QTest::toString()}.
 
+    The \a helperConstructor method is used to create another instance of
+    \c TestedClass. This instance is used to test for binding loops. By default,
+    the method returns a default-constructed \c TestedClass. A custom
+    \a helperConstructor should be provided if \c TestedClass is not
+    default-constructible. (NOTE: The parameter is currently unused!)
+
     \note Any test calling this method will need to call
     \code
     if (QTest::currentTestFailed())
@@ -242,8 +279,12 @@ void testWriteOncePropertyBasics(
         std::function<bool(const PropertyType &, const PropertyType &)> comparator =
                 [](const PropertyType &lhs, const PropertyType &rhs) { return lhs == rhs; },
         std::function<char *(const PropertyType &)> represent =
-                [](const PropertyType &val) { return QTest::toString(val); })
+                [](const PropertyType &val) { return QTest::toString(val); },
+        std::function<std::unique_ptr<TestedClass>(void)> helperConstructor =
+                []() { return std::make_unique<TestedClass>(); })
 {
+    Q_UNUSED(helperConstructor);
+
     // get the property
     const QMetaObject *metaObject = instance.metaObject();
     QMetaProperty metaProperty = metaObject->property(metaObject->indexOfProperty(propertyName));
@@ -303,6 +344,27 @@ void testWriteOncePropertyBasics(
         QVERIFY(!bindable.hasBinding());
 }
 
+/*!
+    \internal
+    \overload
+
+    This overload supports the case where the caller only needs to override
+    the default for \a helperConstructor. It uses the defaults for all the other
+    parameters.
+*/
+template<typename TestedClass, typename PropertyType>
+void testWriteOncePropertyBasics(
+        TestedClass &instance, const PropertyType &prior, const PropertyType &changed,
+        const char *propertyName,
+        bool bindingPreservedOnWrite,
+        std::function<std::unique_ptr<TestedClass>(void)> helperConstructor)
+{
+    testWriteOncePropertyBasics<TestedClass, PropertyType>(
+            instance, prior, changed, propertyName, bindingPreservedOnWrite,
+            [](const PropertyType &lhs, const PropertyType &rhs) { return lhs == rhs; },
+            [](const PropertyType &val) { return QTest::toString(val); },
+            helperConstructor);
+}
 
 /*!
     \internal
