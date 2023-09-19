@@ -93,7 +93,8 @@ private:
 template <Qt::CaseSensitivity CS, size_t N>
 class QStaticLatin1StringMatcher
 {
-    static_assert(N > 2, "QStaticLatin1Matcher makes no sense for finding a single-char pattern");
+    static_assert(N > 2,
+                  "QStaticLatin1StringMatcher makes no sense for finding a single-char pattern");
 
     QLatin1StringView m_pattern;
     using Hasher = std::conditional_t<CS == Qt::CaseSensitive, QtPrivate::QCaseSensitiveLatin1Hash,
