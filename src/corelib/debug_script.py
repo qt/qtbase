@@ -34,10 +34,6 @@ def import_bridge(path, debugger, session_dict, reload_module=False):
 
     return bridge
 
-def report_success(bridge):
-    print("Using Qt summary providers from Creator {} in '{}'".format(
-          bridge.CREATOR_VERSION, bridge.CREATOR_PATH))
-
 def __lldb_init_module(debugger, session_dict):
     # Check if the module has already been imported globally. This ensures
     # that the Qt Creator application search is only performed once per
@@ -48,7 +44,6 @@ def __lldb_init_module(debugger, session_dict):
         bridge = import_bridge(module.__file__, debugger, session_dict,
             reload_module = True)
         if bridge:
-            report_success(bridge)
             return
 
     versions = {}
@@ -61,15 +56,14 @@ def __lldb_init_module(debugger, session_dict):
         (p, v) = install.split('=')
         versions[v] = p
 
+    if not len(versions):
+        print("Could not find Qt Creator installation. No Qt summary providers installed.")
+        return
+
     for version in sorted(versions, key=LooseVersion, reverse=True):
         path = versions[version]
-
+        print(f"Loading Qt summary providers from Creator {version} in '{path}'")
         bridge_path = '{}/Contents/Resources/debugger/lldbbridge.py'.format(path)
         bridge = import_bridge(bridge_path, debugger, session_dict)
         if bridge:
-            bridge.CREATOR_VERSION = version
-            bridge.CREATOR_PATH = path
-            report_success(bridge)
             return
-
-    print("Could not find Qt Creator installation, no Qt summary providers installed")
