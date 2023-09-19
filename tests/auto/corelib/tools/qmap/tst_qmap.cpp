@@ -3,7 +3,11 @@
 
 #include <qmap.h>
 #include <QTest>
+
 #include <QDebug>
+#include <QScopeGuard>
+
+using namespace Qt::StringLiterals;
 
 QT_WARNING_DISABLE_DEPRECATED
 
@@ -60,6 +64,8 @@ private slots:
     void eraseValidIteratorOnSharedMap();
     void removeElementsInMap();
     void toStdMap();
+
+    void multiMapStoresInReverseInsertionOrder();
 
     // Tests for deprecated APIs.
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -2546,6 +2552,24 @@ void tst_QMap::toStdMap()
     const std::multimap<int, QString> expectedMultiMap {
         {1, "value0"}, {1, "value1"}, {2, "value2"}, {3, "value3"} };
     toStdMapTestMethod<QMultiMap<int, QString>>(expectedMultiMap);
+}
+
+void tst_QMap::multiMapStoresInReverseInsertionOrder()
+{
+    const QString strings[] = {
+        u"zero"_s,
+        u"null"_s,
+        u"nada"_s,
+    };
+    {
+        QMultiMap<int, QString> map;
+        for (const QString &string : strings)
+            map.insert(0, string);
+        auto printOnFailure = qScopeGuard([&] { qDebug() << map; });
+        QVERIFY(std::equal(map.begin(), map.end(),
+                           std::rbegin(strings), std::rend(strings)));
+        printOnFailure.dismiss();
+    }
 }
 
 #if QT_DEPRECATED_SINCE(6, 0)
