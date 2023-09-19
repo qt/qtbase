@@ -2658,14 +2658,18 @@ void tst_QProcess::startStopStartStopBuffers()
     }
 
     // We want to test that the write buffer still has bytes after the child
-    // exiting. We do that by writing to a child process that never reads. We
-    // just have to write more data than a pipe can hold, so that even if
-    // QProcess finds the pipe writable (during waitForFinished() or in the
-    // QWindowsPipeWriter thread), some data will remain. The worst case I know
-    // of is Linux, which defaults to 64 kB of buffer.
+    // exits. We can do that by writing data until the OS stops consuming data,
+    // indicating that the pipe buffers are full. The initial value of 128 kB
+    // should make this loop typicall run only once; the worst case I know of
+    // is Linux, which defaults to 64 kB of buffer.
 
-    process.write(QByteArray(128 * 1024, 'a'));
-    QVERIFY(process.bytesToWrite() > 0);
+    QByteArray chunk(128 * 1024, 'a');
+    do {
+        process.write(chunk);
+        QVERIFY(process.bytesToWrite() > 0);
+        process.waitForBytesWritten(1);
+    } while (process.bytesToWrite() == 0);
+    chunk = {};
     process.kill();
 
     QVERIFY(process.waitForFinished());
@@ -2673,7 +2677,8 @@ void tst_QProcess::startStopStartStopBuffers()
 #ifndef Q_OS_WIN
     // confirm that our buffers are still full
     // Note: this doesn't work on Windows because our buffers are drained into
-    // QWindowsPipeWriter before being sent to the child process.
+    // QWindowsPipeWriter before being sent to the child process and are lost
+    // in waitForFinished() -> processFinished() -> cleanup().
     QVERIFY(process.bytesToWrite() > 0);
     QVERIFY(process.bytesAvailable() > 0); // channelMode1 is not ForwardedChannels
     if (channelMode1 == QProcess::SeparateChannels || channelMode1 == QProcess::ForwardedOutputChannel) {
