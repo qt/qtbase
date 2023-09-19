@@ -47,14 +47,24 @@ def __lldb_init_module(debugger, session_dict):
             return
 
     versions = {}
-    for install in os.popen(
-        'mdfind kMDItemCFBundleIdentifier=org.qt-project.qtcreator'
-            '| while read p;'
-                'do echo $p=$(mdls "$p" -name kMDItemVersion -raw);'
-            'done'):
-        install = install.strip()
-        (p, v) = install.split('=')
-        versions[v] = p
+    for path in os.popen('mdfind kMDItemCFBundleIdentifier=org.qt-project.qtcreator'):
+        path = path.strip()
+        file = open(os.path.join(path, 'Contents', 'Info.plist'), "rb")
+
+        import plistlib
+        plist = plistlib.load(file)
+
+        version = None
+        for key in ["CFBundleVersion", "CFBundleShortVersionString"]:
+            if key in plist:
+                version = plist[key]
+                break
+
+        if not version:
+            print(f"Could not resolve version for '{path}'. Ignoring.")
+            continue
+
+        versions[version] = path
 
     if not len(versions):
         print("Could not find Qt Creator installation. No Qt summary providers installed.")
