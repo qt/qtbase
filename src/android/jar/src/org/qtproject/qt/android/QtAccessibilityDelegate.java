@@ -59,7 +59,8 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
             return dispatchHoverEvent(event);
         }
     }
-
+    // TODO do we want to have one QtAccessibilityDelegate for the whole app (QtRootLayout) or
+    // e.g. one per window?
     public QtAccessibilityDelegate(QtLayout layout)
     {
         m_layout = layout;

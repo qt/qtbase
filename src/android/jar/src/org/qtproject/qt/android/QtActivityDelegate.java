@@ -37,13 +37,12 @@ class QtActivityDelegate
 {
     private Activity m_activity;
 
-    private QtLayout m_layout = null;
+    private QtRootLayout m_layout = null;
     private HashMap<Integer, QtWindow> m_topLevelWindows;
     private ImageView m_splashScreen = null;
     private boolean m_splashScreenSticky = false;
 
     private View m_dummyView = null;
-
     private QtAccessibilityDelegate m_accessibilityDelegate = null;
     private QtDisplayManager m_displayManager = null;
 
@@ -135,7 +134,7 @@ class QtActivityDelegate
 
     private void initMembers()
     {
-        m_layout = new QtLayout(m_activity);
+        m_layout = new QtRootLayout(m_activity);
         m_membersInitialized = true;
         m_topLevelWindows = new HashMap<Integer, QtWindow>();
 

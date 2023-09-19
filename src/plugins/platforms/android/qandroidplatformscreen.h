@@ -44,7 +44,6 @@ public:
     void removeWindow(QAndroidPlatformWindow *window);
     void raise(QAndroidPlatformWindow *window);
     void lower(QAndroidPlatformWindow *window);
-
     void topVisibleWindowChanged();
     int displayId() const override;
 

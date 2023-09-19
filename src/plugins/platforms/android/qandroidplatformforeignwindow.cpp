@@ -32,7 +32,7 @@ void QAndroidPlatformForeignWindow::setGeometry(const QRect &rect)
     QAndroidPlatformWindow::setGeometry(rect);
 
     if (m_nativeViewInserted)
-        setSurfaceGeometry(rect);
+        setNativeGeometry(rect);
 }
 
 void QAndroidPlatformForeignWindow::setVisible(bool visible)
@@ -61,11 +61,6 @@ void QAndroidPlatformForeignWindow::applicationStateChanged(Qt::ApplicationState
     }
 
     QAndroidPlatformWindow::applicationStateChanged(state);
-}
-
-void QAndroidPlatformForeignWindow::setParent(const QPlatformWindow *window)
-{
-    Q_UNUSED(window);
 }
 
 void QAndroidPlatformForeignWindow::addViewToWindow()

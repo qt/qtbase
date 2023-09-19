@@ -19,10 +19,9 @@ Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window")
 Q_CONSTINIT static QBasicAtomicInt winIdGenerator = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
-    : QPlatformWindow(window), m_nativeQtWindow(QNativeInterface::QAndroidApplication::context()),
+    : QPlatformWindow(window), m_nativeQtWindow(nullptr), m_nativeParentQtWindow(nullptr),
       m_androidSurfaceObject(nullptr)
 {
-    m_nativeViewId = m_nativeQtWindow.callMethod<jint>("getId");
     m_windowFlags = Qt::Widget;
     m_windowState = Qt::WindowNoState;
     // the surfaceType is overwritten in QAndroidPlatformOpenGLWindow ctor so let's save
@@ -48,22 +47,44 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
         if (requestedNativeGeometry != finalNativeGeometry)
             setGeometry(finalNativeGeometry);
     }
-    platformScreen()->addWindow(this);
+
+    if (parent())
+        m_nativeParentQtWindow = static_cast<QAndroidPlatformWindow*>(parent())->nativeWindow();
+
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([this]() {
+        m_nativeQtWindow = QJniObject::construct<QtJniTypes::QtWindow>(
+            QNativeInterface::QAndroidApplication::context(),
+            m_nativeParentQtWindow);
+        m_nativeViewId = m_nativeQtWindow.callMethod<jint>("getId");
+    }).waitForFinished();
+
+    if (window->isTopLevel())
+        platformScreen()->addWindow(this);
 }
 
 QAndroidPlatformWindow::~QAndroidPlatformWindow()
 {
-    platformScreen()->removeWindow(this);
+    if (window()->isTopLevel())
+        platformScreen()->removeWindow(this);
 }
 
 
 void QAndroidPlatformWindow::lower()
 {
+    if (m_nativeParentQtWindow.isValid()) {
+        m_nativeParentQtWindow.callMethod<void>("bringChildToBack", nativeViewId());
+        return;
+    }
     platformScreen()->lower(this);
 }
 
 void QAndroidPlatformWindow::raise()
 {
+    if (m_nativeParentQtWindow.isValid()) {
+        m_nativeParentQtWindow.callMethod<void>("bringChildToFront", nativeViewId());
+        QWindowSystemInterface::handleFocusWindowChanged(window(), Qt::ActiveWindowFocusReason);
+        return;
+    }
     updateSystemUiVisibility();
     platformScreen()->raise(this);
 }
@@ -87,16 +108,20 @@ void QAndroidPlatformWindow::setGeometry(const QRect &rect)
 
 void QAndroidPlatformWindow::setVisible(bool visible)
 {
+    m_nativeQtWindow.callMethod<void>("setVisible", visible);
+
     if (visible) {
-        updateSystemUiVisibility();
-        if ((m_windowState & Qt::WindowFullScreen)
-                || ((m_windowState & Qt::WindowMaximized) && (window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint))) {
-            setGeometry(platformScreen()->geometry());
-        } else if (m_windowState & Qt::WindowMaximized) {
-            setGeometry(platformScreen()->availableGeometry());
+        if (window()->isTopLevel()) {
+            updateSystemUiVisibility();
+            if ((m_windowState & Qt::WindowFullScreen)
+                    || ((m_windowState & Qt::WindowMaximized) && (window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint))) {
+                setGeometry(platformScreen()->geometry());
+            } else if (m_windowState & Qt::WindowMaximized) {
+                setGeometry(platformScreen()->availableGeometry());
+            }
+            requestActivateWindow();
         }
-        requestActivateWindow();
-    } else if (window() == qGuiApp->focusWindow()) {
+    } else if (window()->isTopLevel() && window() == qGuiApp->focusWindow()) {
         platformScreen()->topVisibleWindowChanged();
     }
 
@@ -132,13 +157,22 @@ Qt::WindowFlags QAndroidPlatformWindow::windowFlags() const
 
 void QAndroidPlatformWindow::setParent(const QPlatformWindow *window)
 {
-    // even though we do not yet support child windows properly, any windows getting a parent
-    // should be removed from screen's window stack which is only for top level windows,
-    // and respectively any window becoming top level should go in there
+    using namespace QtJniTypes;
     if (window) {
-        platformScreen()->removeWindow(this);
+        // If we were a top level window, remove from screen
+        if (!m_nativeParentQtWindow.isValid())
+            platformScreen()->removeWindow(this);
+
+        const QAndroidPlatformWindow *androidWindow =
+                                                static_cast<const QAndroidPlatformWindow*>(window);
+        const QtWindow parentWindow = androidWindow->nativeWindow();
+        // If this was a child window of another window, the java method takes care of that
+        m_nativeQtWindow.callMethod<void, QtWindow>("setParent", parentWindow.object());
+        m_nativeParentQtWindow = parentWindow;
     } else {
+        m_nativeQtWindow.callMethod<void, QtWindow>("setParent", nullptr);
         platformScreen()->addWindow(this);
+        m_nativeParentQtWindow = QJniObject();
     }
 }
 
@@ -154,6 +188,7 @@ void QAndroidPlatformWindow::propagateSizeHints()
 
 void QAndroidPlatformWindow::requestActivateWindow()
 {
+    // raise() will handle differences between top level and child windows, and requesting focus
     if (!blockedByModal())
         raise();
 }
@@ -214,7 +249,7 @@ void QAndroidPlatformWindow::destroySurface()
     }
 }
 
-void QAndroidPlatformWindow::setSurfaceGeometry(const QRect &geometry)
+void QAndroidPlatformWindow::setNativeGeometry(const QRect &geometry)
 {
     if (!m_surfaceCreated)
         return;
@@ -229,7 +264,7 @@ void QAndroidPlatformWindow::setSurfaceGeometry(const QRect &geometry)
         w = geometry.width();
         h = geometry.height();
     }
-    m_nativeQtWindow.callMethod<void>("setSurfaceGeometry", x, y, w, h);
+    m_nativeQtWindow.callMethod<void>("setGeometry", x, y, w, h);
 }
 
 void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)

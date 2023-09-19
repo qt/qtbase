@@ -45,7 +45,9 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
     m_oldGeometry = geometry();
 
     QAndroidPlatformWindow::setGeometry(rect);
-    setSurfaceGeometry(rect);
+
+
+    setNativeGeometry(rect);
 
     QRect availableGeometry = screen()->availableGeometry();
     if (rect.width() > 0
@@ -59,7 +61,7 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 {
     if (QAndroidEventDispatcherStopper::stopped() ||
-        QGuiApplication::applicationState() == Qt::ApplicationSuspended || !window()->isTopLevel()) {
+        QGuiApplication::applicationState() == Qt::ApplicationSuspended) {
         return m_eglSurface;
     }
 

@@ -65,7 +65,7 @@ protected:
     void unlockSurface() { m_surfaceMutex.unlock(); }
     void createSurface();
     void destroySurface();
-    void setSurfaceGeometry(const QRect &geometry);
+    void setNativeGeometry(const QRect &geometry);
     void sendExpose() const;
     bool blockedByModal() const;
 
@@ -76,6 +76,7 @@ protected:
     WId m_windowId;
 
     QtJniTypes::QtWindow m_nativeQtWindow;
+    QtJniTypes::QtWindow m_nativeParentQtWindow;
     // The Android Surface, accessed from multiple threads, guarded by m_surfaceMutex
     QtJniTypes::Surface m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;

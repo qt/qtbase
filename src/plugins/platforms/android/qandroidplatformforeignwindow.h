@@ -20,7 +20,6 @@ public:
     void setGeometry(const QRect &rect) override;
     void setVisible(bool visible) override;
     void applicationStateChanged(Qt::ApplicationState state) override;
-    void setParent(const QPlatformWindow *window) override;
     bool isForeignWindow() const override { return true; }
 
 private:

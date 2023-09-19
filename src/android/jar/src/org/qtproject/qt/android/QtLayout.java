@@ -31,37 +31,6 @@ class QtLayout extends ViewGroup
     }
 
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh)
-    {
-        Activity activity = (Activity)getContext();
-        if (activity == null)
-            return;
-
-        DisplayMetrics realMetrics = new DisplayMetrics();
-        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-                ? activity.getWindowManager().getDefaultDisplay()
-                : activity.getDisplay();
-
-        if (display == null)
-            return;
-
-        display.getRealMetrics(realMetrics);
-        if ((realMetrics.widthPixels > realMetrics.heightPixels) != (w > h)) {
-            // This is an intermediate state during display rotation.
-            // The new size is still reported for old orientation, while
-            // realMetrics contain sizes for new orientation. Setting
-            // such parameters will produce inconsistent results, so
-            // we just skip them.
-            // We will have another onSizeChanged() with normal values
-            // a bit later.
-            return;
-        }
-
-        QtDisplayManager.setApplicationDisplayMetrics(activity, w, h);
-        QtDisplayManager.handleOrientationChanges(activity, true);
-    }
-
-    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
         int count = getChildCount();
@@ -79,11 +48,15 @@ class QtLayout extends ViewGroup
                 int childRight;
                 int childBottom;
 
-                QtLayout.LayoutParams lp
-                        = (QtLayout.LayoutParams) child.getLayoutParams();
-
-                childRight = lp.x + child.getMeasuredWidth();
-                childBottom = lp.y + child.getMeasuredHeight();
+                if (child.getLayoutParams() instanceof QtLayout.LayoutParams) {
+                    QtLayout.LayoutParams lp
+                            = (QtLayout.LayoutParams) child.getLayoutParams();
+                    childRight = lp.x + child.getMeasuredWidth();
+                    childBottom = lp.y + child.getMeasuredHeight();
+                } else {
+                    childRight = child.getMeasuredWidth();
+                    childBottom = child.getMeasuredHeight();
+                }
 
                 maxWidth = Math.max(maxWidth, childRight);
                 maxHeight = Math.max(maxHeight, childBottom);
@@ -179,6 +152,11 @@ class QtLayout extends ViewGroup
             super(width, height);
             this.x = x;
             this.y = y;
+        }
+
+        public LayoutParams(int width, int height)
+        {
+            super(width, height);
         }
 
         /**

@@ -4,8 +4,6 @@
 package org.qtproject.qt.android;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
@@ -18,20 +16,38 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
 
     private QtSurface m_surface;
     private View m_nativeView;
-    private Handler m_androidHandler;
+    private HashMap<Integer, QtWindow> m_childWindows = new HashMap<Integer, QtWindow>();
+    private QtWindow m_parentWindow;
 
     private static native void setSurface(int windowId, Surface surface);
 
-    public QtWindow(Context context)
+    public QtWindow(Context context, QtWindow parentWindow)
     {
         super(context);
         setId(View.generateViewId());
+
+        setParent(parentWindow);
+    }
+
+    void setVisible(boolean visible) {
+        QtNative.runAction(() -> {
+            if (visible)
+                setVisibility(View.VISIBLE);
+            else
+                setVisibility(View.INVISIBLE);
+        });
     }
 
     @Override
     public void onSurfaceChanged(Surface surface)
     {
         setSurface(getId(), surface);
+    }
+
+    public void removeWindow()
+    {
+        if (m_parentWindow != null)
+            m_parentWindow.removeChildWindow(getId());
     }
 
     public void createSurface(final boolean onTop,
@@ -44,11 +60,20 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
                 if (m_surface != null)
                     removeView(m_surface);
 
-                QtSurface surface = new QtSurface(getContext(),
-                                                  QtWindow.this, QtWindow.this.getId(),
-                                                  onTop, imageDepth);
-                surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                // TODO currently setting child windows to onTop, since their surfaces
+                // now get created earlier than the parents -> they are behind the parent window
+                // without this, and SurfaceView z-ordering is limited
+                boolean tempOnTop = onTop || (m_parentWindow != null);
 
+                QtSurface surface = new QtSurface(getContext(), QtWindow.this,
+                                                  QtWindow.this.getId(), tempOnTop, imageDepth);
+                surface.setLayoutParams(new QtLayout.LayoutParams(
+                                                            ViewGroup.LayoutParams.MATCH_PARENT,
+                                                            ViewGroup.LayoutParams.MATCH_PARENT));
+
+                // The QtSurface of this window will be added as the first of the stack.
+                // All other views are stacked based on the order they are created.
                 addView(surface, 0);
                 m_surface = surface;
             }
@@ -68,16 +93,34 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
         });
     }
 
-    public void setSurfaceGeometry(final int x, final int y, final int w, final int h)
+    public void setGeometry(final int x, final int y, final int w, final int h)
     {
         QtNative.runAction(new Runnable() {
             @Override
             public void run() {
-                QtLayout.LayoutParams lp = new QtLayout.LayoutParams(w, h, x, y);
-                if (m_surface != null)
-                    m_surface.setLayoutParams(lp);
-                else if (m_nativeView != null)
-                    m_nativeView.setLayoutParams(lp);
+                QtWindow.this.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+            }
+        });
+    }
+
+    public void addChildWindow(QtWindow window)
+    {
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_childWindows.put(window.getId(), window);
+                addView(window, getChildCount());
+            }
+        });
+    }
+
+    public void removeChildWindow(int id)
+    {
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_childWindows.containsKey(id))
+                    removeView(m_childWindows.remove(id));
             }
         });
     }
@@ -92,9 +135,31 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
                     removeView(m_nativeView);
 
                 m_nativeView = view;
-                m_nativeView.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-
+                QtWindow.this.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                m_nativeView.setLayoutParams(new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                       ViewGroup.LayoutParams.MATCH_PARENT));
                 addView(m_nativeView);
+            }
+        });
+    }
+
+    public void bringChildToFront(int id)
+    {
+        View view = m_childWindows.get(id);
+        if (view != null) {
+            if (getChildCount() > 0)
+                moveChild(view, getChildCount() - 1);
+        }
+    }
+
+    public void bringChildToBack(int id) {
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                View view = m_childWindows.get(id);
+                if (view != null) {
+                    moveChild(view, 0);
+                }
             }
         });
     }
@@ -110,5 +175,23 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
                 }
             }
         });
+    }
+
+    void setParent(QtWindow parentWindow)
+    {
+        if (m_parentWindow == parentWindow)
+            return;
+
+        if (m_parentWindow != null)
+            m_parentWindow.removeChildWindow(getId());
+
+        m_parentWindow = parentWindow;
+        if (m_parentWindow != null)
+            m_parentWindow.addChildWindow(this);
+    }
+
+    QtWindow parent()
+    {
+        return m_parentWindow;
     }
 }
