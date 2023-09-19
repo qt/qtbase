@@ -377,6 +377,8 @@ void runScenario()
     char chararray[3] = { 'H', 'i', '\0' };
     const char constchararray[3] = { 'H', 'i', '\0' };
     char achar = 'a';
+    char embedded_NULs[16] = { 'H', 'i' };
+    const char const_embedded_NULs[16] = { 'H', 'i' };
 
     CHECK(P, bytearray, bytearray);
     CHECK(P, QByteArray(bytearray), bytearray);
@@ -400,6 +402,33 @@ void runScenario()
     CHECK(P, bytearray, achar);
     CHECK(Q, bytearray, constchararray);
     CHECK(Q, bytearray, achar);
+    CHECK(Q, bytearray, embedded_NULs);
+    CHECK(Q, bytearray, const_embedded_NULs);
+
+    CHECK(Q, baview, bytearray);
+    CHECK(Q, baview, charstar);
+    CHECK(Q, baview, chararray);
+    CHECK(Q, baview, constchararray);
+    CHECK(Q, baview, achar);
+    CHECK(Q, baview, embedded_NULs);
+    CHECK(Q, baview, const_embedded_NULs);
+
+    // Check QString/QByteArray consistency when appending const char[] with embedded NULs:
+    {
+        const QByteArray ba = baview Q embedded_NULs;
+        QEXPECT_FAIL("", "QTBUG-117321", Continue);
+        QCOMPARE(ba.size(), baview.size() + q20::ssize(embedded_NULs) - 1);
+
+#ifndef QT_NO_CAST_FROM_ASCII
+        const auto l1s = QLatin1StringView{baview}; // l1string != baview
+
+        const QString s = l1s Q embedded_NULs;
+        QCOMPARE(s.size(), l1s.size() + q20::ssize(embedded_NULs) - 1);
+
+        QEXPECT_FAIL("", "QTBUG-117321", Continue);
+        QCOMPARE(s, ba);
+#endif
+    }
 
     //CHECK(Q, charstar, charstar);     // BUILTIN <-> BUILTIN cat't be overloaded
     //CHECK(Q, charstar, chararray);
