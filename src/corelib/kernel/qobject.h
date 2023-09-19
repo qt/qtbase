@@ -384,6 +384,8 @@ bool QObject::setProperty(const char *name, QVariant &&value)
 template <class T>
 inline T qobject_cast(QObject *object)
 {
+    static_assert(std::is_pointer_v<T>,
+                  "qobject_cast requires to cast towards a pointer type");
     typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
     static_assert(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
                     "qobject_cast requires the type to have a Q_OBJECT macro");
@@ -393,6 +395,10 @@ inline T qobject_cast(QObject *object)
 template <class T>
 inline T qobject_cast(const QObject *object)
 {
+    static_assert(std::is_pointer_v<T>,
+                  "qobject_cast requires to cast towards a pointer type");
+    static_assert(std::is_const_v<std::remove_pointer_t<T>>,
+                  "qobject_cast cannot cast away constness (use const_cast)");
     typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
     static_assert(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
                       "qobject_cast requires the type to have a Q_OBJECT macro");
