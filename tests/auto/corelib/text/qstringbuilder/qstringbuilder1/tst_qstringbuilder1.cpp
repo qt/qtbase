@@ -15,6 +15,8 @@
 #include <QtCore/QStringBuilder>
 #include <QtTest/QTest>
 
+#include <QtCore/q20iterator.h>
+
 #define LITERAL "some literal"
 
 namespace {
