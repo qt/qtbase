@@ -13,12 +13,13 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QRandomGenerator>
-#include <QTemporaryDir>
-#include <QTemporaryFile>
 #include <QOperatingSystemVersion>
+#include <QRandomGenerator>
 #include <QStorageInfo>
 #include <QScopeGuard>
+#include <QStandardPaths>
+#include <QTemporaryDir>
+#include <QTemporaryFile>
 
 #include <private/qabstractfileengine_p.h>
 #include <private/qfsfileengine_p.h>
@@ -428,6 +429,8 @@ void tst_QFile::cleanup()
 
 tst_QFile::tst_QFile() : m_oldDir(QDir::currentPath())
 {
+    QStandardPaths::setTestModeEnabled(true);
+    QDir().mkpath(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
 }
 
 static QByteArray msgOpenFailed(QIODevice::OpenMode om, const QFile &file)

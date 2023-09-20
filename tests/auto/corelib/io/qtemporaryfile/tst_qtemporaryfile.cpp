@@ -4,13 +4,14 @@
 
 #include <QTest>
 #include <qcoreapplication.h>
-#include <qstring.h>
-#include <qtemporarydir.h>
-#include <qtemporaryfile.h>
 #include <qfile.h>
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qset.h>
+#include <qstandardpaths.h>
+#include <qstring.h>
+#include <qtemporarydir.h>
+#include <qtemporaryfile.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
 
@@ -81,6 +82,9 @@ private:
 
 void tst_QTemporaryFile::initTestCase()
 {
+    QStandardPaths::setTestModeEnabled(true);
+    QDir().mkpath(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
+
     QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
     m_previousCurrent = QDir::currentPath();
     QVERIFY(QDir::setCurrent(m_temporaryDir.path()));
