@@ -400,14 +400,9 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
     return QPlatformIntegration::styleHint(hint);
 }
 
-Qt::KeyboardModifiers QCocoaIntegration::queryKeyboardModifiers() const
+QPlatformKeyMapper *QCocoaIntegration::keyMapper() const
 {
-    return QAppleKeyMapper::queryKeyboardModifiers();
-}
-
-QList<int> QCocoaIntegration::possibleKeys(const QKeyEvent *event) const
-{
-    return mKeyboardMapper->possibleKeys(event);
+    return mKeyboardMapper.data();
 }
 
 void QCocoaIntegration::setApplicationIcon(const QIcon &icon) const

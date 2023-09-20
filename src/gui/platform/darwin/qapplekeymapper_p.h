@@ -29,11 +29,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QAppleKeyMapper
+class Q_GUI_EXPORT QAppleKeyMapper : public QPlatformKeyMapper
 {
 public:
-    static Qt::KeyboardModifiers queryKeyboardModifiers();
-    QList<int> possibleKeys(const QKeyEvent *event) const;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const override;
+    QList<QKeyCombination> possibleKeyCombinations(const QKeyEvent *event) const override;
+
     static Qt::Key fromNSString(Qt::KeyboardModifiers qtMods, NSString *characters,
                                 NSString *charactersIgnoringModifiers, QString &text);
 #ifdef Q_OS_MACOS

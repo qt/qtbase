@@ -383,7 +383,7 @@ Qt::Key QAppleKeyMapper::fromCocoaKey(QChar keyCode)
 
 // ------------------------------------------------
 
-Qt::KeyboardModifiers QAppleKeyMapper::queryKeyboardModifiers()
+Qt::KeyboardModifiers QAppleKeyMapper::queryKeyboardModifiers() const
 {
     return fromCocoaModifiers(NSEvent.modifierFlags);
 }
@@ -537,9 +537,9 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
     where each modifier-key combination has been mapped to the
     key it will produce.
 */
-QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
+QList<QKeyCombination> QAppleKeyMapper::possibleKeyCombinations(const QKeyEvent *event) const
 {
-    QList<int> ret;
+    QList<QKeyCombination> ret;
 
     qCDebug(lcQpaKeyMapper) << "Computing possible keys for" << event;
 
@@ -557,7 +557,7 @@ QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
     // The complete set of event modifiers, along with the
     // unmodified key, is always a valid key combination,
     // and the first priority.
-    ret << int(eventModifiers) + int(unmodifiedKey);
+    ret << QKeyCombination::fromCombined(int(eventModifiers) + int(unmodifiedKey));
 
     // FIXME: We only compute the first 8 combinations. Why?
     for (int i = 1; i < 8; ++i) {
@@ -574,14 +574,14 @@ QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
             // If the event includes more modifiers than the candidate they
             // will need to be included in the resulting key combination.
             auto additionalModifiers = eventModifiers & ~candidateModifiers;
-            ret << int(additionalModifiers) + int(keyAfterApplyingModifiers);
+            ret << QKeyCombination::fromCombined(
+                int(additionalModifiers) + int(keyAfterApplyingModifiers));
         }
     }
 
     if (lcQpaKeyMapper().isDebugEnabled()) {
         qCDebug(lcQpaKeyMapper) << "Possible keys:";
-        for (int keyAndModifiers : ret) {
-            auto keyCombination = QKeyCombination::fromCombined(keyAndModifiers);
+        for (auto keyCombination : ret) {
             auto keySequence = QKeySequence(keyCombination);
             qCDebug(lcQpaKeyMapper).verbosity(0) << "\t-"
                 << keyCombination << "/" << keySequence << "/"

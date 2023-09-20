@@ -84,8 +84,7 @@ public:
     QCocoaServices *services() const override;
     QVariant styleHint(StyleHint hint) const override;
 
-    Qt::KeyboardModifiers queryKeyboardModifiers() const override;
-    QList<int> possibleKeys(const QKeyEvent *event) const override;
+    QPlatformKeyMapper *keyMapper() const override;
 
     void setApplicationIcon(const QIcon &icon) const override;
     void setApplicationBadge(qint64 number) override;
