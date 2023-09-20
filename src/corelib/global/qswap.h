@@ -7,6 +7,8 @@
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qcompilerdetection.h>
 
+#include <utility>
+
 #if 0
 #pragma qt_class(QtSwap)
 #pragma qt_sync_stop_processing
