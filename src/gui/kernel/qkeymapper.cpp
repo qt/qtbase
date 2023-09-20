@@ -35,21 +35,17 @@ QKeyMapper::~QKeyMapper()
 {
 }
 
-QList<int> QKeyMapper::possibleKeys(const QKeyEvent *e)
+QList<QKeyCombination> QKeyMapper::possibleKeys(const QKeyEvent *e)
 {
-    QList<int> result;
-
     const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
     const auto *platformKeyMapper = platformIntegration->keyMapper();
-    const auto keyCombinations = platformKeyMapper->possibleKeyCombinations(e);
-    for (auto keyCombination : keyCombinations)
-        result << keyCombination.toCombined();
+    QList<QKeyCombination> result = platformKeyMapper->possibleKeyCombinations(e);
 
     if (result.isEmpty()) {
         if (e->key() && (e->key() != Qt::Key_unknown))
-            result << e->keyCombination().toCombined();
+            result << e->keyCombination();
         else if (!e->text().isEmpty())
-            result << int(e->text().at(0).unicode() + (int)e->modifiers());
+            result << (Qt::Key(e->text().at(0).unicode()) | e->modifiers());
     }
 
     return result;

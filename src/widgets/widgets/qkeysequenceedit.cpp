@@ -344,22 +344,23 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
         return;
 
     if (e->modifiers() & Qt::ShiftModifier) {
-        const QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
+        const QList<QKeyCombination> possibleKeys = QKeyMapper::possibleKeys(e);
         int pkTotal = possibleKeys.size();
         if (!pkTotal)
             return;
         bool found = false;
         for (int i = 0; i < possibleKeys.size(); ++i) {
-            if (possibleKeys.at(i) - nextKey == int(e->modifiers())
-                || (possibleKeys.at(i) == nextKey && e->modifiers() == Qt::ShiftModifier)) {
-                nextKey = possibleKeys.at(i);
+            const int key = possibleKeys.at(i).toCombined();
+            if (key - nextKey == int(e->modifiers())
+                || (key == nextKey && e->modifiers() == Qt::ShiftModifier)) {
+                nextKey = key;
                 found = true;
                 break;
             }
         }
         // Use as fallback
         if (!found)
-            nextKey = possibleKeys.first();
+            nextKey = possibleKeys.first().toCombined();
     } else {
         nextKey |= d->translateModifiers(e->modifiers(), e->text());
     }

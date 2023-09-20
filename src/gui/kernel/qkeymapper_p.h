@@ -33,7 +33,7 @@ public:
     ~QKeyMapper();
 
     static QKeyMapper *instance();
-    static QList<int> possibleKeys(const QKeyEvent *e);
+    static QList<QKeyCombination> possibleKeys(const QKeyEvent *e);
 
     QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QKeyMapper)
 

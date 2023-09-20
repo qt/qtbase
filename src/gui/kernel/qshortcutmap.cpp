@@ -493,7 +493,7 @@ void QShortcutMap::clearSequence(QList<QKeySequence> &ksl)
 void QShortcutMap::createNewSequences(QKeyEvent *e, QList<QKeySequence> &ksl, int ignoredModifiers)
 {
     Q_D(QShortcutMap);
-    QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
+    QList<QKeyCombination> possibleKeys = QKeyMapper::possibleKeys(e);
     qCDebug(lcShortcutMap) << "Creating new sequences for" << e
         << "with ignoredModifiers=" << Qt::KeyboardModifiers(ignoredModifiers);
     int pkTotal = possibleKeys.size();
@@ -522,7 +522,8 @@ void QShortcutMap::createNewSequences(QKeyEvent *e, QList<QKeySequence> &ksl, in
                 curKsl.setKey(QKeyCombination::fromCombined(0), 2);
                 curKsl.setKey(QKeyCombination::fromCombined(0), 3);
             }
-            curKsl.setKey(QKeyCombination::fromCombined(possibleKeys.at(pkNum) & ~ignoredModifiers), index);
+            const int key = possibleKeys.at(pkNum).toCombined();
+            curKsl.setKey(QKeyCombination::fromCombined(key & ~ignoredModifiers), index);
         }
     }
 }
