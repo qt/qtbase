@@ -82,24 +82,41 @@ function(qt_copy_framework_headers target)
     set(output_dir_QPA "${output_dir}/${fw_private_module_header_dir}/qpa")
     set(output_dir_RHI "${output_dir}/${fw_private_module_header_dir}/rhi")
 
+    qt_internal_module_info(module "${target}")
 
-    set(out_files)
+    set(out_files "")
+    set(in_files "")
+    set(copy_commands "")
     foreach(type IN ITEMS PUBLIC PRIVATE QPA RHI)
+        set(in_files_${type} "")
         set(fw_output_header_dir "${output_dir_${type}}")
         foreach(hdr IN LISTS arg_${type})
             get_filename_component(in_file_path ${hdr} ABSOLUTE)
             get_filename_component(in_file_name ${hdr} NAME)
             set(out_file_path "${fw_output_header_dir}/${in_file_name}")
-            add_custom_command(
-                OUTPUT ${out_file_path}
-                DEPENDS ${in_file_path}
-                COMMAND ${CMAKE_COMMAND} -E make_directory "${fw_output_header_dir}"
-                COMMAND ${CMAKE_COMMAND} -E copy "${in_file_path}" "${fw_output_header_dir}"
-                VERBATIM)
             list(APPEND out_files ${out_file_path})
+            list(APPEND in_files_${type} "${in_file_path}")
         endforeach()
+        if(in_files_${type})
+            list(APPEND copy_commands
+                COMMAND ${CMAKE_COMMAND} -E copy ${in_files_${type}} "${fw_output_header_dir}")
+            list(APPEND in_files ${in_files_${type}})
+        endif()
     endforeach()
 
+    list(REMOVE_DUPLICATES out_files)
+    list(REMOVE_DUPLICATES in_files)
+    add_custom_command(
+        OUTPUT "${output_dir}/${fw_versioned_header_dir}" ${out_files}
+        DEPENDS ${in_files} ${target}_sync_headers
+        COMMAND
+            ${CMAKE_COMMAND} -E copy_directory
+            "${module_build_interface_include_dir}/.syncqt_staging"
+            "${output_dir}/${fw_versioned_header_dir}"
+        ${copy_commands}
+        VERBATIM
+        COMMENT "Copy the ${target} header files to the framework directory"
+    )
     set_property(TARGET ${target} APPEND PROPERTY
         QT_COPIED_FRAMEWORK_HEADERS "${out_files}")
 endfunction()

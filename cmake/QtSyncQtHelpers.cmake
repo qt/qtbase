@@ -61,13 +61,6 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     set(is_framework FALSE)
     if(NOT is_interface_lib)
         get_target_property(is_framework ${target} FRAMEWORK)
-        if(is_framework)
-            qt_internal_get_framework_info(fw ${target})
-            get_target_property(fw_output_base_dir ${target} LIBRARY_OUTPUT_DIRECTORY)
-            set(framework_args "-framework"
-                "-frameworkIncludeDir" "${fw_output_base_dir}/${fw_versioned_header_dir}"
-            )
-        endif()
     endif()
 
     qt_internal_get_qt_all_known_modules(known_modules)
@@ -151,7 +144,6 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         -headers ${module_headers}
         -stagingDir "${syncqt_staging_dir}"
         -knownModules ${known_modules}
-        ${framework_args}
         ${version_script_args}
     )
     list(JOIN syncqt_args "\n" syncqt_args_string)
