@@ -4,13 +4,14 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include <QImage>
+#include <QLabel>
+#include <QPixmap>
+#include <QPushButton>
 #include <QWidget>
-#include "renderthread.h"
 
-QT_BEGIN_NAMESPACE
-class QLabel;
-class QPushButton;
-QT_END_NAMESPACE
+class Block;
+class RenderThread;
 
 //! [Window class definition]
 class Window : public QWidget
