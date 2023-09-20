@@ -7,8 +7,7 @@
  *     - Header file that contains the module version information, and named as <module>Vesion
  *     - LD version script if applicable
  *     - Aliases or copies of the header files sorted by the generic Qt-types: public/private/qpa
- * and stored in the corresponding directories. Also copies the aliases to the framework-specific
- *       directories.
+ * and stored in the corresponding directories.
  * Also the tool executes conformity checks on each header file if applicable, to make sure they
  * follow rules that are relevant for their header type.
  * The tool can be run in two modes: with either '-all' or '-headers' options specified. Depending
@@ -195,8 +194,6 @@ public:
 
     const std::string &privateIncludeDir() const { return m_privateIncludeDir; }
 
-    const std::string &frameworkIncludeDir() const { return m_frameworkIncludeDir; }
-
     const std::string &qpaIncludeDir() const { return m_qpaIncludeDir; }
 
     const std::string &stagingDir() const { return m_stagingDir; }
@@ -216,8 +213,6 @@ public:
     const std::set<std::string> &generatedHeaders() const { return m_generatedHeaders; }
 
     bool scanAllMode() const { return m_scanAllMode; }
-
-    bool isFramework() const { return m_isFramework; }
 
     bool isInternal() const { return m_isInternal; }
 
@@ -241,7 +236,6 @@ public:
                      " -includeDir <dir> -privateIncludeDir <dir> -qpaIncludeDir <dir>"
                      " -stagingDir <dir> <-headers <header list>|-all> [-debug]"
                      " [-versionScript <path>] [-qpaHeadersFilter <regex>]"
-                     " [-framework [-frameworkIncludeDir <dir>]]"
                      " [-knownModules <module1> <module2>... <moduleN>]"
                      " [-nonQt] [-internal] [-copy]\n"
                      ""
@@ -281,10 +275,6 @@ public:
                      "  -versionScript                  Generate linker version script by\n"
                      "                                  provided path.\n"
                      "  -debug                          Enable debug output.\n"
-                     "  -framework                      Indicates that module is framework.\n"
-                     "  -frameworkIncludeDir            The directory to store the framework\n"
-                     "                                  header files.\n"
-                     "                                  E.g. QtCore.framework/Versions/A/Headers\n"
                      "  -copy                           Copy header files instead of creating\n"
                      "                                  aliases.\n"
                      "  -minimal                        Do not create CaMeL case headers for the\n"
@@ -325,7 +315,6 @@ private:
             { "-qpaIncludeDir", { &m_qpaIncludeDir } },
             { "-stagingDir", { &m_stagingDir, true } },
             { "-versionScript", { &m_versionScriptFile, true } },
-            { "-frameworkIncludeDir", { &m_frameworkIncludeDir, true } },
             { "-publicNamespaceFilter", { &publicNamespaceFilter, true } },
         };
 
@@ -338,7 +327,7 @@ private:
 
         static const std::unordered_map<std::string, CommandLineOption<bool>> boolArgumentMap = {
             { "-nonQt", { &m_isNonQtModule, true } }, { "-debug", { &m_debug, true } },
-            { "-help", { &m_printHelpOnly, true } },  { "-framework", { &m_isFramework, true } },
+            { "-help", { &m_printHelpOnly, true } },
             { "-internal", { &m_isInternal, true } }, { "-all", { &m_scanAllMode, true } },
             { "-copy", { &m_copy, true } },           { "-minimal", { &m_minimal, true } },
             { "-showonly", { &m_showOnly, true } },   { "-showOnly", { &m_showOnly, true } },
@@ -469,9 +458,9 @@ private:
     // Convert all paths from command line to a generic one.
     void normilizePaths()
     {
-        static std::array<std::string *, 8> paths = {
+        static std::array<std::string *, 7> paths = {
             &m_sourceDir,     &m_binaryDir,  &m_includeDir,        &m_privateIncludeDir,
-            &m_qpaIncludeDir, &m_stagingDir, &m_versionScriptFile, &m_frameworkIncludeDir
+            &m_qpaIncludeDir, &m_stagingDir, &m_versionScriptFile
         };
         for (auto path : paths) {
             if (!path->empty())
@@ -487,13 +476,11 @@ private:
     std::string m_qpaIncludeDir;
     std::string m_stagingDir;
     std::string m_versionScriptFile;
-    std::string m_frameworkIncludeDir;
     std::set<std::string> m_knownModules;
     std::set<std::string> m_headers;
     std::set<std::string> m_generatedHeaders;
     bool m_scanAllMode = false;
     bool m_copy = false;
-    bool m_isFramework = false;
     bool m_isNonQtModule = false;
     bool m_isInternal = false;
     bool m_printHelpOnly = false;
@@ -720,13 +707,6 @@ public:
             // process eaiser.
             if (!copyGeneratedHeadersToStagingDirectory(m_commandLineArgs->stagingDir()))
                 error = SyncFailed;
-            // We also need to have a copy of the generated header files in framework include
-            // directories when building with '-framework'.
-            if (m_commandLineArgs->isFramework()) {
-                if (!copyGeneratedHeadersToStagingDirectory(
-                            m_commandLineArgs->frameworkIncludeDir(), true))
-                    error = SyncFailed;
-            }
         }
         return error;
     }
@@ -1568,12 +1548,6 @@ public:
             if (isCrossModuleDeprecation) {
                 const std::string stagingDir = outputDir + "/.syncqt_staging/";
                 writeIfDifferent(stagingDir + headerName, buffer.str());
-                if (m_commandLineArgs->isFramework()) {
-                    const std::string frameworkStagingDir = stagingDir + moduleName
-                            + ".framework/Versions/A/Headers/" QT_VERSION_STR "/"
-                            + moduleName.substr(2) + '/';
-                    writeIfDifferent(frameworkStagingDir + headerName, buffer.str());
-                }
             }
             m_producedHeaders.insert(headerName);
         }
