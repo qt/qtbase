@@ -9,6 +9,7 @@
 
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformkeymapper.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -36,14 +37,21 @@ QKeyMapper::~QKeyMapper()
 
 QList<int> QKeyMapper::possibleKeys(const QKeyEvent *e)
 {
-    QList<int> result = QGuiApplicationPrivate::platformIntegration()->possibleKeys(e);
-    if (!result.isEmpty())
-        return result;
+    QList<int> result;
 
-    if (e->key() && (e->key() != Qt::Key_unknown))
-        result << e->keyCombination().toCombined();
-    else if (!e->text().isEmpty())
-        result << int(e->text().at(0).unicode() + (int)e->modifiers());
+    const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    const auto *platformKeyMapper = platformIntegration->keyMapper();
+    const auto keyCombinations = platformKeyMapper->possibleKeyCombinations(e);
+    for (auto keyCombination : keyCombinations)
+        result << keyCombination.toCombined();
+
+    if (result.isEmpty()) {
+        if (e->key() && (e->key() != Qt::Key_unknown))
+            result << e->keyCombination().toCombined();
+        else if (!e->text().isEmpty())
+            result << int(e->text().at(0).unicode() + (int)e->modifiers());
+    }
+
     return result;
 }
 

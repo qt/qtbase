@@ -19,6 +19,8 @@
 #include <Carbon/Carbon.h>
 #endif
 
+#include <qpa/qplatformkeymapper.h>
+
 #include <QtCore/QList>
 #include <QtCore/QHash>
 #include <QtGui/QKeyEvent>

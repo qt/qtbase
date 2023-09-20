@@ -33,6 +33,7 @@ class QPlatformOpenGLContext;
 class QGuiGLFormat;
 class QAbstractEventDispatcher;
 class QPlatformInputContext;
+class QPlatformKeyMapper;
 class QPlatformAccessibility;
 class QPlatformTheme;
 class QPlatformDialogHelper;
@@ -171,8 +172,12 @@ public:
     virtual QVariant styleHint(StyleHint hint) const;
     virtual Qt::WindowState defaultWindowState(Qt::WindowFlags) const;
 
+protected:
     virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
     virtual QList<int> possibleKeys(const QKeyEvent *) const;
+    friend class QPlatformKeyMapper;
+public:
+    virtual QPlatformKeyMapper *keyMapper() const;
 
     virtual QStringList themeNames() const;
     virtual QPlatformTheme *createPlatformTheme(const QString &name) const;

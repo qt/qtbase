@@ -6,6 +6,7 @@
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformclipboard.h>
 #include <qpa/qplatformaccessibility.h>
+#include <qpa/qplatformkeymapper.h>
 #include <qpa/qplatformtheme.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
@@ -340,6 +341,21 @@ void QPlatformIntegration::destroy()
 QPlatformInputContext *QPlatformIntegration::inputContext() const
 {
     return nullptr;
+}
+
+/*!
+    Accessor for the platform integration's key mapper.
+
+    Default implementation returns a default QPlatformKeyMapper.
+
+    \sa QPlatformKeyMapper
+*/
+QPlatformKeyMapper *QPlatformIntegration::keyMapper() const
+{
+    static QPlatformKeyMapper *keyMapper = nullptr;
+    if (!keyMapper)
+        keyMapper = new QPlatformKeyMapper;
+    return keyMapper;
 }
 
 #if QT_CONFIG(accessibility)

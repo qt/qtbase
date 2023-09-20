@@ -114,6 +114,7 @@ qt_internal_add_module(Gui
         kernel/qplatformintegration.cpp kernel/qplatformintegration.h
         kernel/qplatformintegrationfactory.cpp kernel/qplatformintegrationfactory_p.h
         kernel/qplatformintegrationplugin.cpp kernel/qplatformintegrationplugin.h
+        kernel/qplatformkeymapper.cpp kernel/qplatformkeymapper.h
         kernel/qplatformmenu.cpp kernel/qplatformmenu.h kernel/qplatformmenu_p.h
         kernel/qplatformnativeinterface.cpp kernel/qplatformnativeinterface.h
         kernel/qplatformoffscreensurface.cpp kernel/qplatformoffscreensurface.h

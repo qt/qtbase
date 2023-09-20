@@ -17,6 +17,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformkeymapper.h>
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QFileInfo>
@@ -1847,7 +1848,7 @@ Qt::KeyboardModifiers QGuiApplication::queryKeyboardModifiers()
 {
     CHECK_QAPP_INSTANCE(Qt::KeyboardModifiers{})
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    return pi->queryKeyboardModifiers();
+    return pi->keyMapper()->queryKeyboardModifiers();
 }
 
 /*!
