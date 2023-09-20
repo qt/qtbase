@@ -68,6 +68,7 @@ public:
     ~QDBusPendingCallPrivate();
     bool setReplyCallback(QObject *target, const char *member);
     void waitForFinished();
+    void waitForFinishedWithGui();
     void setMetaTypes(int count, const QMetaType *types);
     void checkReceivedSignature();
 };

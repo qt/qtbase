@@ -2056,20 +2056,10 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
     QDBusPendingCallPrivate *pcall = sendWithReplyAsync(message, nullptr, nullptr, nullptr, timeout);
     Q_ASSERT(pcall);
 
-    if (pcall->replyMessage.type() == QDBusMessage::InvalidMessage) {
-        // need to wait for the reply
-        if (mode == QDBus::BlockWithGui) {
-            pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
-            QEventLoop loop;
-            loop.connect(pcall->watcherHelper, &QDBusPendingCallWatcherHelper::reply, &loop, &QEventLoop::quit);
-            loop.connect(pcall->watcherHelper, &QDBusPendingCallWatcherHelper::error, &loop, &QEventLoop::quit);
-
-            // enter the event loop and wait for a reply
-            loop.exec(QEventLoop::ExcludeUserInputEvents | QEventLoop::WaitForMoreEvents);
-        } else {
-            pcall->waitForFinished();
-        }
-    }
+    if (mode == QDBus::BlockWithGui)
+        pcall->waitForFinishedWithGui();
+    else
+        pcall->waitForFinished();
 
     QDBusMessage reply = pcall->replyMessage;
     lastError = QDBusError(reply);      // set or clear error
@@ -2130,6 +2120,7 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
         pcall->setReplyCallback(receiver, returnMethod);
 
     if (errorMethod) {
+        Q_ASSERT(!pcall->watcherHelper);
         pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
         connect(pcall->watcherHelper, SIGNAL(error(QDBusError,QDBusMessage)), receiver, errorMethod,
                 Qt::QueuedConnection);

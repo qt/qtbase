@@ -206,6 +206,26 @@ void QDBusPendingCallPrivate::waitForFinished()
     waitForFinishedCondition.wait(&mutex);
 }
 
+void QDBusPendingCallPrivate::waitForFinishedWithGui()
+{
+    QEventLoop loop;
+
+    {
+        const auto locker = qt_scoped_lock(mutex);
+        if (replyMessage.type() != QDBusMessage::InvalidMessage)
+            return; // already finished
+
+        Q_ASSERT(!watcherHelper);
+        watcherHelper = new QDBusPendingCallWatcherHelper;
+        loop.connect(watcherHelper, &QDBusPendingCallWatcherHelper::reply, &loop,
+                     &QEventLoop::quit);
+        loop.connect(watcherHelper, &QDBusPendingCallWatcherHelper::error, &loop,
+                     &QEventLoop::quit);
+    }
+
+    loop.exec(QEventLoop::ExcludeUserInputEvents | QEventLoop::WaitForMoreEvents);
+}
+
 /*!
     Creates a copy of the \a other pending asynchronous call. Note
     that both objects will refer to the same pending call.
