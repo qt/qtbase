@@ -150,11 +150,18 @@ void QCocoaInputContext::updateLocale()
 
     QString language = QString::fromNSString(languages.firstObject);
     QLocale locale(language);
-    if (m_locale != locale) {
+
+    bool localeUpdated = m_locale != locale;
+    static bool firstUpdate = true;
+
+    m_locale = locale;
+
+    if (localeUpdated && !firstUpdate) {
         qCDebug(lcQpaInputMethods) << "Reporting new locale" << locale;
-        m_locale = locale;
         emitLocaleChanged();
     }
+
+    firstUpdate = false;
 }
 
 QT_END_NAMESPACE
