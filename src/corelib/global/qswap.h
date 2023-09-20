@@ -7,6 +7,7 @@
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qcompilerdetection.h>
 
+#include <type_traits>
 #include <utility>
 
 #if 0
@@ -20,20 +21,9 @@ QT_WARNING_PUSH
 // warning: noexcept-expression evaluates to 'false' because of a call to 'void swap(..., ...)'
 QT_WARNING_DISABLE_GCC("-Wnoexcept")
 
-namespace QtPrivate
-{
-namespace SwapExceptionTester { // insulate users from the "using std::swap" below
-    using std::swap; // import std::swap
-    template <typename T>
-    void checkSwap(T &t)
-        noexcept(noexcept(swap(t, t)));
-    // declared, but not implemented (only to be used in unevaluated contexts (noexcept operator))
-}
-} // namespace QtPrivate
-
 template <typename T>
 constexpr void qSwap(T &value1, T &value2)
-    noexcept(noexcept(QtPrivate::SwapExceptionTester::checkSwap(value1)))
+    noexcept(std::is_nothrow_swappable_v<T>)
 {
     using std::swap;
     swap(value1, value2);
