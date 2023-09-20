@@ -49,6 +49,9 @@ static jmethodID m_createSurfaceMethodID = nullptr;
 static jmethodID m_setSurfaceGeometryMethodID = nullptr;
 static jmethodID m_destroySurfaceMethodID = nullptr;
 
+static QtJniTypes::QtActivityDelegate m_activityDelegate = nullptr;
+static QtJniTypes::QtInputDelegate m_inputDelegate = nullptr;
+
 static int m_pendingApplicationState = -1;
 static QBasicMutex m_platformMutex;
 
@@ -165,33 +168,52 @@ namespace QtAndroid
         QJniObject::callStaticMethod<void>(m_applicationClass, "setSystemUiVisibility", "(I)V", jint(uiVisibility));
     }
 
+    // FIXME: avoid direct access to QtActivityDelegate
+    QtJniTypes::QtActivityDelegate qtActivityDelegate()
+    {
+        if (!m_activityDelegate.isValid()) {
+            auto activity = QtAndroidPrivate::activity();
+            m_activityDelegate = activity.callMethod<QtJniTypes::QtActivityDelegate>(
+                    "getActivityDelegate");
+        }
+
+        return m_activityDelegate;
+    }
+
+    QtJniTypes::QtInputDelegate qtInputDelegate()
+    {
+        if (!m_inputDelegate.isValid()) {
+            m_inputDelegate = qtActivityDelegate().callMethod<QtJniTypes::QtInputDelegate>(
+                    "getInputDelegate");
+        }
+
+        return m_inputDelegate;
+    }
+
     void notifyAccessibilityLocationChange(uint accessibilityObjectId)
     {
-        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyAccessibilityLocationChange",
-                                           "(I)V", accessibilityObjectId);
+        qtActivityDelegate().callMethod<void>("notifyLocationChange", accessibilityObjectId);
     }
 
     void notifyObjectHide(uint accessibilityObjectId, uint parentObjectId)
     {
-        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyObjectHide", "(II)V",
-                                           accessibilityObjectId, parentObjectId);
+        qtActivityDelegate().callMethod<void>("notifyObjectHide",
+                                              accessibilityObjectId, parentObjectId);
     }
 
     void notifyObjectFocus(uint accessibilityObjectId)
     {
-        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyObjectFocus","(I)V", accessibilityObjectId);
+        qtActivityDelegate().callMethod<void>("notifyObjectFocus", accessibilityObjectId);
     }
 
     void notifyValueChanged(uint accessibilityObjectId, jstring value)
     {
-        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyValueChanged",
-                                           "(ILjava/lang/String;)V", accessibilityObjectId, value);
+        qtActivityDelegate().callMethod<void>("notifyValueChanged", accessibilityObjectId, value);
     }
 
     void notifyScrolledEvent(uint accessibilityObjectId)
     {
-        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyScrolledEvent", "(I)V",
-                                           accessibilityObjectId);
+        qtActivityDelegate().callMethod<void>("notifyScrolledEvent", accessibilityObjectId);
     }
 
     void notifyQtAndroidPluginRunning(bool running)

@@ -239,7 +239,7 @@ public class QtNative
         updateApplicationState(state);
     }
 
-    static void runAction(Runnable action)
+    public static void runAction(Runnable action)
     {
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
@@ -360,66 +360,6 @@ public class QtNative
                     m_activityDelegate.setSystemUiVisibility(systemUiVisibility);
                 }
                 updateWindow();
-            }
-        });
-    }
-
-    private static void notifyAccessibilityLocationChange(final int viewId)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null) {
-                    m_activityDelegate.notifyAccessibilityLocationChange(viewId);
-                }
-            }
-        });
-    }
-
-    private static void notifyObjectHide(final int viewId, final int parentId)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null) {
-                    m_activityDelegate.notifyObjectHide(viewId, parentId);
-                }
-            }
-        });
-    }
-
-    private static void notifyObjectFocus(final int viewId)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null) {
-                    m_activityDelegate.notifyObjectFocus(viewId);
-                }
-            }
-        });
-    }
-
-    private static void notifyValueChanged(int viewId, String value)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null) {
-                    m_activityDelegate.notifyValueChanged(viewId, value);
-                }
-            }
-        });
-    }
-
-    private static void notifyScrolledEvent(final int viewId)
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null) {
-                    m_activityDelegate.notifyScrolledEvent(viewId);
-                }
             }
         });
     }
@@ -565,17 +505,6 @@ public class QtNative
             public void run() {
                 if (m_activityDelegate != null)
                     m_activityDelegate.destroySurface(id);
-            }
-        });
-    }
-
-    private static void initializeAccessibility()
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_activityDelegate != null)
-                    m_activityDelegate.initializeAccessibility();
             }
         });
     }

@@ -82,8 +82,7 @@ namespace QtAndroidAccessibility
 
     void initialize()
     {
-        QJniObject::callStaticMethod<void>(QtAndroid::applicationClass(),
-                                           "initializeAccessibility");
+        QtAndroid::qtActivityDelegate().callMethod<void>("initializeAccessibility");
     }
 
     bool isActive()

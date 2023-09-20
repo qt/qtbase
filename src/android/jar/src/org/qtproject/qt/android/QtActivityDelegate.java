@@ -342,7 +342,14 @@ public class QtActivityDelegate
 
     public void initializeAccessibility()
     {
-        m_accessibilityDelegate = new QtAccessibilityDelegate(m_activity, m_layout, this);
+        final QtActivityDelegate currentDelegate = this;
+        QtNative.runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_accessibilityDelegate = new QtAccessibilityDelegate(m_activity, m_layout,
+                        currentDelegate);
+            }
+        });
     }
 
     void handleUiModeChange(int uiMode)

@@ -23,8 +23,6 @@ Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods");
 
 using namespace QtAndroid;
 
-Q_DECLARE_JNI_CLASS(QtInputDelegate, "org/qtproject/qt/android/QtInputDelegate")
-Q_DECLARE_JNI_CLASS(QtActivityDelegate, "org/qtproject/qt/android/QtActivityDelegate")
 Q_DECLARE_JNI_CLASS(QtLayout, "org/qtproject/qt/android/QtLayout")
 
 namespace QtAndroidInput
@@ -94,18 +92,6 @@ namespace QtAndroidInput
     {
         QMutexLocker locker(&g_keyEventListeners()->mutex);
         g_keyEventListeners()->listeners.removeOne(listener);
-    }
-
-    // FIXME: avoid direct access to QtActivityDelegate
-    QJniObject qtActivityDelegate()
-    {
-        return QtAndroidPrivate::activity().callMethod<QtJniTypes::QtActivityDelegate>(
-                "getActivityDelegate");
-    }
-
-    QJniObject qtInputDelegate()
-    {
-        return qtActivityDelegate().callMethod<QtJniTypes::QtInputDelegate>("getInputDelegate");
     }
 
     QJniObject qtLayout()

@@ -12,6 +12,7 @@
 
 #include <QImage>
 #include <private/qjnihelpers_p.h>
+#include <QtCore/QJniObject>
 
 QT_BEGIN_NAMESPACE
 
@@ -25,13 +26,15 @@ class QWindow;
 class AndroidSurfaceClient;
 class QBasicMutex;
 
+Q_DECLARE_JNI_CLASS(QtActivityDelegate, "org/qtproject/qt/android/QtActivityDelegate")
+Q_DECLARE_JNI_CLASS(QtInputDelegate, "org/qtproject/qt/android/QtInputDelegate")
+
 namespace QtAndroid
 {
     QBasicMutex *platformInterfaceMutex();
     QAndroidPlatformIntegration *androidPlatformIntegration();
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration);
     void setQtThread(QThread *thread);
-
 
     int createSurface(AndroidSurfaceClient * client, const QRect &geometry, bool onTop, int imageDepth);
     int insertNativeView(jobject view, const QRect &geometry);
@@ -50,6 +53,9 @@ namespace QtAndroid
     jobject assets();
     AAssetManager *assetManager();
     jclass applicationClass();
+
+    QtJniTypes::QtActivityDelegate qtActivityDelegate();
+    QtJniTypes::QtInputDelegate qtInputDelegate();
 
     // Keep synchronized with flags in ActivityDelegate.java
     enum SystemUiVisibility {
