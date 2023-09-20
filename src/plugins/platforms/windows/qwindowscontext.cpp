@@ -481,9 +481,9 @@ bool QWindowsContext::useRTLExtensions() const
     return d->m_keyMapper.useRTLExtensions();
 }
 
-QList<int> QWindowsContext::possibleKeys(const QKeyEvent *e) const
+QPlatformKeyMapper *QWindowsContext::keyMapper() const
 {
-    return d->m_keyMapper.possibleKeys(e);
+    return &d->m_keyMapper;
 }
 
 QWindowsContext::HandleBaseWindowHash &QWindowsContext::windows()
@@ -1441,7 +1441,7 @@ bool QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
     }
 
     QWindowSystemInterface::handleContextMenuEvent(window, mouseTriggered, pos, globalPos,
-                                                   QWindowsKeyMapper::queryKeyboardModifiers());
+                                                   keyMapper()->queryKeyboardModifiers());
     return true;
 }
 #endif
@@ -1462,7 +1462,7 @@ void QWindowsContext::handleExitSizeMove(QWindow *window)
     const Qt::MouseButtons appButtons = QGuiApplication::mouseButtons();
     if (currentButtons == appButtons)
         return;
-    const Qt::KeyboardModifiers keyboardModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
+    const Qt::KeyboardModifiers keyboardModifiers = keyMapper()->queryKeyboardModifiers();
     const QPoint globalPos = QWindowsCursor::mousePosition();
     const QPlatformWindow *platWin = window->handle();
     const QPoint localPos = platWin->mapFromGlobal(globalPos);

@@ -268,7 +268,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         }
     }
 
-    const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
+    const auto *keyMapper = QWindowsContext::instance()->keyMapper();
+    const Qt::KeyboardModifiers keyModifiers = keyMapper->queryKeyboardModifiers();
     const MouseEvent mouseEvent = eventFromMsg(msg);
     Qt::MouseButtons buttons;
 
@@ -629,10 +630,11 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     if (allStates == QEventPoint::State::Released)
         m_touchInputIDToTouchPointID.clear();
 
+    const auto *keyMapper = QWindowsContext::instance()->keyMapper();
     QWindowSystemInterface::handleTouchEvent(window,
                                              m_touchDevice.data(),
                                              touchPoints,
-                                             QWindowsKeyMapper::queryKeyboardModifiers());
+                                             keyMapper->queryKeyboardModifiers());
     return true;
 }
 

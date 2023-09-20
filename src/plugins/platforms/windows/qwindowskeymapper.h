@@ -8,6 +8,8 @@
 
 #include <QtCore/qlocale.h>
 
+#include <qpa/qplatformkeymapper.h>
+
 QT_BEGIN_NAMESPACE
 
 class QKeyEvent;
@@ -33,7 +35,7 @@ struct KeyboardLayoutItem {
     quint32 qtKey[NumQtKeys]; // Can by any Qt::Key_<foo>, or unicode character
 };
 
-class QWindowsKeyMapper
+class QWindowsKeyMapper : public QPlatformKeyMapper
 {
     Q_DISABLE_COPY_MOVE(QWindowsKeyMapper)
 public:
@@ -53,8 +55,8 @@ public:
     QWindow *keyGrabber() const      { return m_keyGrabber; }
     void setKeyGrabber(QWindow *w)   { m_keyGrabber = w; }
 
-    static Qt::KeyboardModifiers queryKeyboardModifiers();
-    QList<int> possibleKeys(const QKeyEvent *e) const;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const override;
+    QList<QKeyCombination> possibleKeyCombinations(const QKeyEvent *e) const override;
 
 private:
     bool translateKeyEventInternal(QWindow *receiver, MSG msg, bool grab, LRESULT *lResult);

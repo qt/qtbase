@@ -565,14 +565,9 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     return QPlatformIntegration::styleHint(hint);
 }
 
-Qt::KeyboardModifiers QWindowsIntegration::queryKeyboardModifiers() const
+QPlatformKeyMapper *QWindowsIntegration::keyMapper() const
 {
-    return QWindowsKeyMapper::queryKeyboardModifiers();
-}
-
-QList<int> QWindowsIntegration::possibleKeys(const QKeyEvent *e) const
-{
-    return d->m_context.possibleKeys(e);
+    return d->m_context.keyMapper();
 }
 
 #if QT_CONFIG(clipboard)

@@ -595,7 +595,8 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
             << "mode=" << m_mode;
     }
 
-    const Qt::KeyboardModifiers keyboardModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
+    const auto *keyMapper = QWindowsContext::instance()->keyMapper();
+    const Qt::KeyboardModifiers keyboardModifiers = keyMapper->queryKeyboardModifiers();
 
     for (int i = 0; i < packetCount ; ++i) {
         const PACKET &packet = localPacketBuf[i];

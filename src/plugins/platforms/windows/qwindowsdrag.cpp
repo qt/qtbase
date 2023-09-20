@@ -526,7 +526,8 @@ QWindowsOleDropTarget::DragLeave()
 
     qCDebug(lcQpaMime) << __FUNCTION__ << ' ' << m_window;
 
-    lastModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
+    const auto *keyMapper = QWindowsContext::instance()->keyMapper();
+    lastModifiers = keyMapper->queryKeyboardModifiers();
     lastButtons = QWindowsMouseHandler::queryMouseButtons();
 
     QWindowSystemInterface::handleDrag(m_window, nullptr, QPoint(), Qt::IgnoreAction,

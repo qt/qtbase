@@ -540,33 +540,6 @@ QDebug operator<<(QDebug d, const KeyboardLayoutItem &k)
     d << ')';
     return d;
 }
-
-// Helpers to format a list of int as Qt key sequence
-class formatKeys
-{
-public:
-    explicit formatKeys(const QList<int> &keys) : m_keys(keys) {}
-
-private:
-    friend QDebug operator<<(QDebug d, const formatKeys &keys);
-    const QList<int> &m_keys;
-};
-
-QDebug operator<<(QDebug d, const formatKeys &k)
-{
-    QDebugStateSaver saver(d);
-    d.nospace();
-    d << '(';
-    for (int i =0, size = k.m_keys.size(); i < size; ++i) {
-        if (i)
-            d << ", ";
-        d << QKeySequence(k.m_keys.at(i));
-    }
-    d << ')';
-    return d;
-}
-#else // !QT_NO_DEBUG_STREAM
-static int formatKeys(const QList<int> &) { return 0; }
 #endif // QT_NO_DEBUG_STREAM
 
 /**
@@ -1347,7 +1320,7 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, MSG msg,
     return result;
 }
 
-Qt::KeyboardModifiers QWindowsKeyMapper::queryKeyboardModifiers()
+Qt::KeyboardModifiers QWindowsKeyMapper::queryKeyboardModifiers() const
 {
     Qt::KeyboardModifiers modifiers = Qt::NoModifier;
     if (GetKeyState(VK_SHIFT) < 0)
@@ -1361,9 +1334,9 @@ Qt::KeyboardModifiers QWindowsKeyMapper::queryKeyboardModifiers()
     return modifiers;
 }
 
-QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
+QList<QKeyCombination> QWindowsKeyMapper::possibleKeyCombinations(const QKeyEvent *e) const
 {
-    QList<int> result;
+    QList<QKeyCombination> result;
 
 
     const quint32 nativeVirtualKey = e->nativeVirtualKey();
@@ -1377,31 +1350,34 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
     quint32 baseKey = kbItem.qtKey[0];
     Qt::KeyboardModifiers keyMods = e->modifiers();
     if (baseKey == Qt::Key_Return && (e->nativeModifiers() & ExtendedKey)) {
-        result << (Qt::Key_Enter | keyMods).toCombined();
+        result << (Qt::Key_Enter | keyMods);
         return result;
     }
-    result << int(baseKey) + int(keyMods); // The base key is _always_ valid, of course
+
+    // The base key is _always_ valid, of course
+    result << QKeyCombination::fromCombined(int(baseKey) + int(keyMods));
 
     for (size_t i = 1; i < NumMods; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         quint32 key = kbItem.qtKey[i];
         if (key && key != baseKey && ((keyMods & neededMods) == neededMods)) {
             const Qt::KeyboardModifiers missingMods = keyMods & ~neededMods;
-            const int matchedKey = int(key) + int(missingMods);
-            const auto it =
-                std::find_if(result.begin(), result.end(),
-                             [key] (int k) { return (k & ~Qt::KeyboardModifierMask) == key; });
+            const auto matchedKey = QKeyCombination::fromCombined(int(key) + int(missingMods));
+            const auto it = std::find_if(result.begin(), result.end(),
+                [key](auto keyCombination) {
+                    return keyCombination.key() == key;
+                });
             // QTBUG-67200: Use the match with the least modifiers (prefer
             // Shift+9 over Alt + Shift + 9) resulting in more missing modifiers.
             if (it == result.end())
                 result << matchedKey;
-            else if (missingMods > Qt::KeyboardModifiers(*it & Qt::KeyboardModifierMask))
+            else if (missingMods > it->keyboardModifiers())
                 *it = matchedKey;
         }
     }
     qCDebug(lcQpaEvents) << __FUNCTION__  << e << "nativeVirtualKey="
         << Qt::showbase << Qt::hex << e->nativeVirtualKey() << Qt::dec << Qt::noshowbase
-        << e->modifiers() << kbItem << "\n  returns" << formatKeys(result);
+        << e->modifiers() << kbItem << "\n  returns" << result;
     return result;
 }
 

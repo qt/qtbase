@@ -428,8 +428,9 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
         return false;
 
     if (msg.message == WM_POINTERCAPTURECHANGED) {
+        const auto *keyMapper = QWindowsContext::instance()->keyMapper();
         QWindowSystemInterface::handleTouchCancelEvent(window, m_touchDevice.data(),
-                                                       QWindowsKeyMapper::queryKeyboardModifiers());
+                                                       keyMapper->queryKeyboardModifiers());
         m_lastTouchPoints.clear();
         return true;
     }
@@ -539,8 +540,9 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (allStates == QEventPoint::State::Released)
         m_touchInputIDToTouchPointID.clear();
 
+    const auto *keyMapper = QWindowsContext::instance()->keyMapper();
     QWindowSystemInterface::handleTouchEvent(window, m_touchDevice.data(), touchPoints,
-                                             QWindowsKeyMapper::queryKeyboardModifiers());
+                                             keyMapper->queryKeyboardModifiers());
     return false; // Allow mouse messages to be generated.
 }
 
@@ -673,7 +675,8 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
                     wumPlatformWindow->applyCursor();
             }
         }
-        const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
+        const auto *keyMapper = QWindowsContext::instance()->keyMapper();
+        const Qt::KeyboardModifiers keyModifiers = keyMapper->queryKeyboardModifiers();
 
         QWindowSystemInterface::handleTabletEvent(target, device.data(),
                                                   localPos, hiResGlobalPos, mouseButtons,
@@ -762,7 +765,8 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
             : QWindowsGeometryHint::mapFromGlobal(targetHwnd, globalPos);
     }
 
-    const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
+    const auto *keyMapper = QWindowsContext::instance()->keyMapper();
+    const Qt::KeyboardModifiers keyModifiers = keyMapper->queryKeyboardModifiers();
     QWindow *currentWindowUnderPointer = getWindowUnderPointer(window, globalPos);
 
     if (et == QtWindows::MouseWheelEvent)
