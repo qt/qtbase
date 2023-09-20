@@ -34,7 +34,7 @@ QKeyMapper::~QKeyMapper()
 {
 }
 
-QList<int> QKeyMapper::possibleKeys(QKeyEvent *e)
+QList<int> QKeyMapper::possibleKeys(const QKeyEvent *e)
 {
     QList<int> result = QGuiApplicationPrivate::platformIntegration()->possibleKeys(e);
     if (!result.isEmpty())
