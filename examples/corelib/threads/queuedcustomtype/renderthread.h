@@ -7,7 +7,8 @@
 #include <QImage>
 #include <QMutex>
 #include <QThread>
-#include "block.h"
+
+class Block;
 
 //! [RenderThread class definition]
 class RenderThread : public QThread
