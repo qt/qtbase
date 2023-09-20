@@ -5,7 +5,6 @@
 #define QTCORE_QSWAP_H
 
 #include <QtCore/qtconfigmacros.h>
-#include <QtCore/qcompilerdetection.h>
 
 #include <type_traits>
 #include <utility>
@@ -16,10 +15,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-QT_WARNING_PUSH
-// warning: noexcept-expression evaluates to 'false' because of a call to 'void swap(..., ...)'
-QT_WARNING_DISABLE_GCC("-Wnoexcept")
 
 template <typename T>
 constexpr void qSwap(T &value1, T &value2)
@@ -37,8 +32,6 @@ constexpr inline void qt_ptr_swap(T* &lhs, T* &rhs) noexcept
     lhs = rhs;
     rhs = tmp;
 }
-
-QT_WARNING_POP
 
 QT_END_NAMESPACE
 
