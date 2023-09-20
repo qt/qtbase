@@ -47,21 +47,6 @@ QList<int> QKeyMapper::possibleKeys(QKeyEvent *e)
     return result;
 }
 
-extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event); // in qapplication_*.cpp
-void QKeyMapper::changeKeyboard()
-{
-    // ## TODO: Support KeyboardLayoutChange on QPA
-#if 0
-    // inform all toplevel widgets of the change
-    QEvent e(QEvent::KeyboardLayoutChange);
-    QWidgetList list = QApplication::topLevelWidgets();
-    for (int i = 0; i < list.size(); ++i) {
-        QWidget *w = list.at(i);
-        qt_sendSpontaneousEvent(w, &e);
-    }
-#endif
-}
-
 Q_GLOBAL_STATIC(QKeyMapper, keymapper)
 /*!
     Returns the pointer to the single instance of QKeyMapper in the application.

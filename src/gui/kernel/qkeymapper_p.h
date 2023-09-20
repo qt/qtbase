@@ -33,7 +33,6 @@ public:
     ~QKeyMapper();
 
     static QKeyMapper *instance();
-    static void changeKeyboard();
     static QList<int> possibleKeys(QKeyEvent *e);
 
     QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QKeyMapper)
