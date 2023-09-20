@@ -618,6 +618,27 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 
 #if QT_CORE_REMOVED_SINCE(6, 7)
 
+#if defined(Q_OS_ANDROID)
+
+#include "qjniobject.h"
+
+jclass QJniObject::loadClass(const QByteArray &className, JNIEnv *env, bool /*binEncoded*/)
+{
+    return QJniObject::loadClass(className, env);
+}
+
+QByteArray QJniObject::toBinaryEncClassName(const QByteArray &className)
+{
+    return QByteArray(className).replace('/', '.');
+}
+
+void QJniObject::callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const
+{
+    env->CallVoidMethodV(javaObject(), id, args);
+}
+
+#endif // Q_OS_ANDROID
+
 #include "qlocale.h"
 
 QStringList QLocale::uiLanguages() const

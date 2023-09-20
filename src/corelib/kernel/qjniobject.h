@@ -528,9 +528,14 @@ public:
     }
 
 private:
-    static jclass loadClass(const QByteArray &className, JNIEnv *env, bool binEncoded = false);
+    static jclass loadClass(const QByteArray &className, JNIEnv *env);
+
+#if QT_CORE_REMOVED_SINCE(6, 7)
+    // these need to stay in the ABI as they were used in inline methods before 6.7
+    static jclass loadClass(const QByteArray &className, JNIEnv *env, bool binEncoded);
     static QByteArray toBinaryEncClassName(const QByteArray &className);
-    static QJniObject getCleanJniObject(jobject obj);
+    void callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const;
+#endif
 
     static jfieldID getCachedFieldID(JNIEnv *env, jclass clazz, const QByteArray &className,
                                      const char *name, const char *signature,
@@ -549,8 +554,6 @@ private:
                                  const char *signature, bool isStatic = false);
 
     void callVoidMethodV(JNIEnv *env, jmethodID id, ...) const;
-    // ### Qt 7: merge into ... overload
-    void callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const;
 
     bool isSameObject(jobject obj) const;
     bool isSameObject(const QJniObject &other) const;

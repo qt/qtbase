@@ -309,9 +309,27 @@ static jclass getCachedClass(const QByteArray &className)
     return it != cachedClasses->constEnd() ? it.value() : nullptr;
 }
 
-QByteArray QJniObject::toBinaryEncClassName(const QByteArray &className)
+/*!
+    \internal
+
+    Get a JNI object from a jobject variant and do the necessary
+    exception clearing and delete the local reference before returning.
+    The JNI object can be null if there was an exception.
+*/
+static QJniObject getCleanJniObject(jobject object)
 {
-    return QByteArray(className).replace('/', '.');
+    if (!object)
+        return QJniObject();
+
+    QJniEnvironment env;
+    if (env.checkAndClearExceptions()) {
+        env->DeleteLocalRef(object);
+        return QJniObject();
+    }
+
+    QJniObject res(object);
+    env->DeleteLocalRef(object);
+    return res;
 }
 
 /*!
@@ -370,7 +388,7 @@ jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
     return clazz;
 }
 
-jclass QJniObject::loadClass(const QByteArray &className, JNIEnv *env, bool /*binEncoded*/)
+jclass QJniObject::loadClass(const QByteArray &className, JNIEnv *env)
 {
     return QtAndroidPrivate::findClass(className, env);
 }
@@ -398,13 +416,8 @@ void QJniObject::callVoidMethodV(JNIEnv *env, jmethodID id, ...) const
 {
     va_list args;
     va_start(args, id);
-    callVoidMethodV(env, id, args);
-    va_end(args);
-}
-
-void QJniObject::callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const
-{
     env->CallVoidMethodV(d->m_jobject, id, args);
+    va_end(args);
 }
 
 jmethodID QJniObject::getCachedMethodID(JNIEnv *env,
@@ -710,27 +723,6 @@ QJniObject::QJniObject(jobject object)
 
     This function is only available if all \a args are known \l {JNI Types}.
 */
-
-/*!
-    \brief Get a JNI object from a jobject variant and do the necessary
-    exception clearing and delete the local reference before returning.
-    The JNI object can be null if there was an exception.
-*/
-QJniObject QJniObject::getCleanJniObject(jobject object)
-{
-    if (!object)
-        return QJniObject();
-
-    QJniEnvironment env;
-    if (env.checkAndClearExceptions()) {
-        env->DeleteLocalRef(object);
-        return QJniObject();
-    }
-
-    QJniObject res(object);
-    env->DeleteLocalRef(object);
-    return res;
-}
 
 /*!
     \fn QJniObject::~QJniObject()
