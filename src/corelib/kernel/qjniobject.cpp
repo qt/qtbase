@@ -308,15 +308,6 @@ static inline QLatin1StringView keyBase()
     return "%1%2:%3"_L1;
 }
 
-static QString qt_convertJString(jstring string)
-{
-    QJniEnvironment env;
-    int strLength = env->GetStringLength(string);
-    QString res(strLength, Qt::Uninitialized);
-    env->GetStringRegion(string, 0, strLength, reinterpret_cast<jchar *>(res.data()));
-    return res;
-}
-
 typedef QHash<QString, jclass> JClassHash;
 Q_GLOBAL_STATIC(JClassHash, cachedClasses)
 Q_GLOBAL_STATIC(QReadWriteLock, cachedClassesLock)
@@ -1349,7 +1340,11 @@ QString QJniObject::toString() const
         return QString();
 
     QJniObject string = callObjectMethod<jstring>("toString");
-    return qt_convertJString(static_cast<jstring>(string.object()));
+    QJniEnvironment env;
+    const int strLength = env->GetStringLength(string.object<jstring>());
+    QString res(strLength, Qt::Uninitialized);
+    env->GetStringRegion(string.object<jstring>(), 0, strLength, reinterpret_cast<jchar *>(res.data()));
+    return res;
 }
 
 /*!
