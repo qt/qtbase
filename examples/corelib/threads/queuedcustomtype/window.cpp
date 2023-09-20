@@ -1,8 +1,17 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#include "block.h"
+#include "renderthread.h"
 #include "window.h"
-#include <QtWidgets>
+
+#include <QFileDialog>
+#include <QGuiApplication>
+#include <QHBoxLayout>
+#include <QImageReader>
+#include <QPainter>
+#include <QScreen>
+#include <QVBoxLayout>
 
 //! [Window constructor start]
 Window::Window(QWidget *parent)
