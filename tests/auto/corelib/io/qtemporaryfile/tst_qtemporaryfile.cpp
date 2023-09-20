@@ -63,6 +63,7 @@ private slots:
     void stressTest();
     void rename();
     void renameFdLeak();
+    void moveToTrash();
     void reOpenThroughQFile();
     void keepOpenMode();
     void resetTemplateAfterError();
@@ -619,6 +620,55 @@ void tst_QTemporaryFile::renameFdLeak()
     // check if QTemporaryFile closed the file
     QVERIFY(::close(fd) == -1 && errno == EBADF);
 #endif
+}
+
+void tst_QTemporaryFile::moveToTrash()
+{
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
+    QSKIP("This platform doesn't implement a trash bin");
+#endif
+#ifdef Q_OS_WIN
+    // QTemporaryFile won't really close the file with close(), so this is
+    // expected to fail with a sharing violation error.
+    constexpr bool expectSuccess = false;
+#else
+    constexpr bool expectSuccess = true;
+#endif
+    const QByteArrayView contents = "Hello, World\n";
+
+    QTemporaryFile f(QDir::homePath() + "/tst_qtemporaryfile.moveToTrash.XXXXXX");
+    QString origFileName;
+    auto cleanup = qScopeGuard([&] {
+        if (!origFileName.isEmpty())
+            QFile::remove(origFileName);
+        if (QString fn = f.fileName(); !fn.isEmpty() && fn != origFileName)
+            QFile::remove(fn);
+    });
+
+    if (!f.open())
+        QSKIP("Failed to create temporary file");
+    f.write(contents.data(), contents.size());
+
+    // we need an actual file name:
+    // 1) so we can delete it in the clean-up guard in case we fail to trash
+    // 2) so that the file exists on Linux in the first place (no sense in
+    //    trashing an unnamed file)
+    origFileName = f.fileName();
+
+    if (expectSuccess) {
+        QVERIFY2(f.moveToTrash(), qPrintable(f.errorString()));
+        QCOMPARE_NE(f.fileName(), origFileName);        // must have changed!
+        QCOMPARE_NE(f.fileName(), QString());
+        QVERIFY(!QFile::exists(origFileName));
+        QVERIFY(QFile::exists(f.fileName()));
+        QCOMPARE(QFileInfo(f.fileName()).size(), contents.size());
+    } else {
+        QVERIFY(!f.moveToTrash());
+        QCOMPARE(f.fileName(), origFileName);           // mustn't have changed!
+        QCOMPARE_NE(f.error(), QFile::NoError);
+        QCOMPARE_NE(f.errorString(), "Unknown error");
+        QVERIFY(QFile::exists(origFileName));
+    }
 }
 
 void tst_QTemporaryFile::reOpenThroughQFile()
