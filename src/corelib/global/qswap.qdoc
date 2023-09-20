@@ -1,14 +1,38 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
-/*! \fn template <typename T> void qSwap(T &var1, T &var2)
+/*!
+    \fn template <typename T> void qSwap(T &lhs, T &rhs)
     \relates <QtSwap>
-    \deprecated
 
-    Use \c std::swap instead.
+    Exchanges the values of variables \a lhs and \a rhs,
+    taking type-specific \c{swap()} overloads into account.
 
-    Exchanges the values of variables \a var1 and \a var2.
+    This function is Qt's version of
+    \l{https://www.boost.org/doc/libs/release/libs/core/doc/html/core/swap.html}{\c{boost::swap()}},
+    and is equivalent to
+    \code
+    using std::swap;   // bring std::swap into scope (for built-in types)
+    swap(lhs, rhs);    // unqualified call (picks up type-specific overloads
+                       // via Argument-Dependent Lookup, or falls back to std::swap)
+    \endcode
 
-    Example:
-    \snippet code/doc_src_qalgorithms.cpp 0
+    Use this function primarily in generic code, where you would traditionally
+    have written the above two lines, because you don't know anything about \c{T}.
+
+    If you already know what \c{T} is, then use one of the following options, in
+    order of preference:
+
+    \list
+    \li \c{lhs.swap(rhs);} if such a member-swap exists
+    \li \c{std::swap(lhs, rhs);} if no type-specific \c{swap()} exists
+    \endlist
+
+    See
+    \l{https://www.boost.org/doc/libs/release/libs/core/doc/html/core/swap.html}{\c{boost::swap()} on boost.org}
+    for more details.
+
+    See also
+    \l{https://en.cppreference.com/w/cpp/algorithm/swap}{\c{std::swap} on cppreference.com},
+    \l{https://en.cppreference.com/w/cpp/named_req/Swappable}{\c{Swappable} on cppreference.com}.
 */
