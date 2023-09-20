@@ -1161,7 +1161,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         if (wParam == DBT_DEVNODES_CHANGED)
             initTouch();
         break;
-    case QtWindows::KeyboardLayoutChangeEvent:
+    case QtWindows::InputLanguageChangeEvent:
         if (QWindowsInputContext *wic = windowsInputContext())
             wic->handleInputLanguageChanged(wParam, lParam);
         Q_FALLTHROUGH();
