@@ -926,12 +926,16 @@ qt_internal_extend_target(Gui CONDITION WASM
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
 
+qt_internal_extend_target(Gui CONDITION UNIX
+    SOURCES
+        platform/unix/qunixnativeinterface.cpp
+)
+
 qt_internal_extend_target(Gui CONDITION UNIX AND NOT WASM
     SOURCES
         platform/unix/qgenericunixeventdispatcher.cpp platform/unix/qgenericunixeventdispatcher_p.h
         platform/unix/qunixeventdispatcher.cpp
         platform/unix/qunixeventdispatcher_qpa_p.h
-        platform/unix/qunixnativeinterface.cpp
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_glib AND UNIX
