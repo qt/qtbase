@@ -72,6 +72,8 @@ private:
     friend class QGuiApplication;
     friend class QGuiApplicationPrivate;
     friend class QInputMethod;
+
+    Qt::LayoutDirection m_inputDirection;
 };
 
 QT_END_NAMESPACE
