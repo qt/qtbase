@@ -23,8 +23,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs a new key mapper.
 */
-QKeyMapper::QKeyMapper()
-    : QObject(*new QKeyMapperPrivate, nullptr)
+QKeyMapper::QKeyMapper() : QObject()
 {
 }
 
@@ -71,21 +70,6 @@ Q_GLOBAL_STATIC(QKeyMapper, keymapper)
 QKeyMapper *QKeyMapper::instance()
 {
     return keymapper();
-}
-
-QKeyMapperPrivate *qt_keymapper_private()
-{
-    return QKeyMapper::instance()->d_func();
-}
-
-QKeyMapperPrivate::QKeyMapperPrivate()
-{
-    keyboardInputLocale = QLocale::system();
-    keyboardInputDirection = keyboardInputLocale.textDirection();
-}
-
-QKeyMapperPrivate::~QKeyMapperPrivate()
-{
 }
 
 void *QKeyMapper::resolveInterface(const char *name, int revision) const

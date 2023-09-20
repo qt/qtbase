@@ -25,7 +25,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QKeyMapperPrivate;
 class Q_GUI_EXPORT QKeyMapper : public QObject
 {
     Q_OBJECT
@@ -40,26 +39,8 @@ public:
     QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QKeyMapper)
 
 private:
-    friend QKeyMapperPrivate *qt_keymapper_private();
-    Q_DECLARE_PRIVATE(QKeyMapper)
     Q_DISABLE_COPY_MOVE(QKeyMapper)
 };
-
-struct KeyboardLayoutItem;
-class QKeyEvent;
-
-class QKeyMapperPrivate : public QObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QKeyMapper)
-public:
-    QKeyMapperPrivate();
-    ~QKeyMapperPrivate();
-
-    QLocale keyboardInputLocale;
-    Qt::LayoutDirection keyboardInputDirection;
-};
-
-QKeyMapperPrivate *qt_keymapper_private(); // from qkeymapper.cpp
 
 // ----------------- QNativeInterface -----------------
 
