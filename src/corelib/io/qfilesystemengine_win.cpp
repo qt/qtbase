@@ -840,9 +840,10 @@ public:
         return (dwFlags & TSF_DELETE_RECYCLE_IF_POSSIBLE) ? S_OK : E_FAIL;
     }
     HRESULT STDMETHODCALLTYPE PostDeleteItem(DWORD /* dwFlags */, IShellItem * /* psiItem */,
-                                             HRESULT /* hrDelete */,
+                                             HRESULT hrDelete,
                                              IShellItem *psiNewlyCreated) override
     {
+        deleteResult = hrDelete;
         if (psiNewlyCreated) {
             wchar_t *pszName = nullptr;
             psiNewlyCreated->GetDisplayName(SIGDN_FILESYSPATH, &pszName);
@@ -863,6 +864,7 @@ public:
     HRESULT STDMETHODCALLTYPE ResumeTimer() override { return S_OK; }
 
     QString targetPath;
+    HRESULT deleteResult = S_OK;
 private:
     ULONG ref;
 };
@@ -1833,8 +1835,12 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     hres = pfo->PerformOperations();
     if (!SUCCEEDED(hres))
         return false;
-    newLocation = QFileSystemEntry(sink->targetPath);
 
+    if (!SUCCEEDED(sink->deleteResult)) {
+        error = QSystemError(sink->deleteResult, QSystemError::NativeError);
+        return false;
+    }
+    newLocation = QFileSystemEntry(sink->targetPath);
     return true;
 }
 

@@ -288,6 +288,8 @@ private slots:
 
     void moveToTrash_data();
     void moveToTrash();
+    void moveToTrashOpenFile_data();
+    void moveToTrashOpenFile();
 
     void stdfilesystem();
 
@@ -4054,6 +4056,86 @@ void tst_QFile::moveToTrash()
                     QFile::remove(pathInTrash);
             }
         }
+    }
+}
+
+void tst_QFile::moveToTrashOpenFile_data()
+{
+    QTest::addColumn<bool>("useStatic");
+    QTest::addColumn<bool>("success");
+
+    // QFile::moveToTrash() non-static member closes the file before trashing,
+    // so this must always succeed.
+    QTest::newRow("member") << false << true;
+
+    // QFile::moveToTrash() static member cannot close the file because it
+    // operates on another QFile, so this operation will fail on OSes that do
+    // not permit deleting open files.
+    QTest::newRow("static") << true
+#ifdef Q_OS_WIN
+                            << false;
+#else
+                            << true;
+#endif
+}
+
+void tst_QFile::moveToTrashOpenFile()
+{
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
+    QSKIP("This platform doesn't implement a trash bin");
+#endif
+    QFETCH(bool, useStatic);
+    QFETCH(bool, success);
+    const QByteArrayView contents = "Hello, World\n";
+
+    QString newFileName, origFileName;
+    auto cleanup = qScopeGuard([&] {
+        if (!origFileName.isEmpty())
+            QFile::remove(origFileName);
+        if (!newFileName.isEmpty() && newFileName != origFileName)
+            QFile::remove(newFileName);
+    });
+
+    origFileName = []() {
+        QTemporaryFile temp(QDir::homePath() + "/tst_qfile.moveToTrashOpenFile.XXXXXX");
+        temp.setAutoRemove(false);
+        if (!temp.open())
+            qWarning("Failed to create temporary file: %ls", qUtf16Printable(temp.errorString()));
+        return temp.fileName();
+    }();
+
+    QFile f;
+    f.setFileName(origFileName);
+    QVERIFY2(f.open(QIODevice::ReadWrite | QIODevice::Unbuffered), qPrintable(f.errorString()));
+    f.write(contents.data(), contents.size());
+
+    QString errorString;
+    auto doMoveToTrash = [&](QFile *f) {
+        if (!f->moveToTrash())
+            errorString = f->errorString();
+        newFileName = f->fileName();
+    };
+    if (useStatic) {
+        // it's the same as the static QFile::moveToTrash(), but gives us
+        // the error string
+        QFile other(origFileName);
+        doMoveToTrash(&other);
+    } else {
+        doMoveToTrash(&f);
+    }
+    QCOMPARE_NE(f.fileName(), QString());
+
+    if (success) {
+        QCOMPARE(errorString, QString());
+        QCOMPARE_NE(newFileName, origFileName);         // must have changed!
+        QVERIFY(!QFile::exists(origFileName));
+        QVERIFY(QFile::exists(newFileName));
+        QCOMPARE(QFileInfo(newFileName).size(), contents.size());
+    } else {
+        QCOMPARE_NE(errorString, QString());
+        QCOMPARE(newFileName, origFileName);            // mustn't have changed!
+        QVERIFY(QFile::exists(origFileName));
+        QCOMPARE(QFileInfo(origFileName).size(), contents.size());
     }
 }
 
