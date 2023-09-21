@@ -143,7 +143,7 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
                    j, (void *) mode.displayMode,
                    mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
                    mode.parameters.refreshRate);
-            if (j == wantedModeIndex) {
+            if (j == wantedModeIndex && i == wantedDisplayIndex) {
                 m_displayMode = mode.displayMode;
                 m_width = mode.parameters.visibleRegion.width;
                 m_height = mode.parameters.visibleRegion.height;
