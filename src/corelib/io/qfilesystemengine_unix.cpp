@@ -1194,6 +1194,47 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEnt
     Implementing as per https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
 */
 
+namespace {
+struct FreeDesktopTrashOperation
+{
+    QString infoDir;
+    QFileSystemEntry infoFilePath;
+    int infoFileFd = -1;
+
+    ~FreeDesktopTrashOperation()
+    {
+        close();
+    }
+
+    void close()
+    {
+        if (infoFileFd != -1) {
+            QT_CLOSE(infoFileFd);
+            QSystemError ignoredError;
+            QFileSystemEngine::removeFile(infoFilePath, ignoredError);
+        }
+    }
+
+    bool tryCreateInfoFile(const QString &filePath, QSystemError &error)
+    {
+        Q_ASSERT(filePath.startsWith(u'/'));
+        QFileSystemEntry p(infoDir + filePath + ".trashinfo"_L1);
+        infoFileFd = QT_OPEN(p.nativeFilePath(), QT_OPEN_RDWR | QT_OPEN_CREAT | QT_OPEN_EXCL, 0666);
+        if (infoFileFd < 0) {
+            error = QSystemError(errno, QSystemError::StandardLibraryError);
+            return false;
+        }
+        infoFilePath = std::move(p);
+        return true;
+    }
+
+    void commit()
+    {
+        QT_CLOSE(infoFileFd);
+        infoFileFd = -1;
+    }
+};
+
 static auto freeDesktopTrashLocation(const QFileSystemEntry &source, QSystemError &error)
 {
     auto makeTrashDir = [](const QDir &topDir, const QString &trashDir, QSystemError &error) {
@@ -1321,6 +1362,7 @@ static auto freeDesktopTrashLocation(const QFileSystemEntry &source, QSystemErro
 
     return r;
 }
+} // unnamed namespace
 
 //static
 bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
@@ -1334,6 +1376,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         return absoluteName(source);
     }();
     auto [trashPath, volumePrefixLength] = freeDesktopTrashLocation(sourcePath, error);
+    FreeDesktopTrashOperation op;
     if (trashPath.isEmpty())
         return false;
     QDir trashDir(trashPath);
@@ -1351,47 +1394,38 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         error = QSystemError(savedErrno, QSystemError::StandardLibraryError);
         return false;
     }
+    op.infoDir = trashDir.filePath(infoDir);
+
     /*
         "The $trash/files directory contains the files and directories that were trashed.
          The names of files in this directory are to be determined by the implementation;
          the only limitation is that they must be unique within the directory. Even if a
          file with the same name and location gets trashed many times, each subsequent
          trashing must not overwrite a previous copy."
+
+         We first try the unchanged base name, then try something different if it collides.
+
+        "The $trash/info directory contains an "information file" for every file and directory
+         in $trash/files. This file MUST have exactly the same name as the file or directory in
+         $trash/files, plus the extension ".trashinfo"
+         [...]
+         When trashing a file or directory, the implementation MUST create the corresponding
+         file in $trash/info first. Moreover, it MUST try to do this in an atomic fashion,
+         so that if two processes try to trash files with the same filename this will result
+         in two different trash files. On Unix-like systems this is done by generating a
+         filename, and then opening with O_EXCL. If that succeeds the creation was atomic
+         (at least on the same machine), if it fails you need to pick another filename."
     */
     QString uniqueTrashedName = u'/' + sourcePath.fileName();
-    QString infoFileName;
-    QFile infoFile;
-    auto openMode = QIODevice::NewOnly | QIODevice::WriteOnly | QIODevice::Text;
-    for (int counter = 0; !infoFile.open(openMode); ++counter) {
-        /*
-            "The $trash/info directory contains an "information file" for every file and directory
-             in $trash/files. This file MUST have exactly the same name as the file or directory in
-             $trash/files, plus the extension ".trashinfo"
-             [...]
-             When trashing a file or directory, the implementation MUST create the corresponding
-             file in $trash/info first. Moreover, it MUST try to do this in an atomic fashion,
-             so that if two processes try to trash files with the same filename this will result
-             in two different trash files. On Unix-like systems this is done by generating a
-             filename, and then opening with O_EXCL. If that succeeds the creation was atomic
-             (at least on the same machine), if it fails you need to pick another filename."
-        */
-        uniqueTrashedName = QString::asprintf("/%ls-%04d", qUtf16Printable(sourcePath.fileName()),
-                                              counter);
-        QString infoFileName = trashDir.filePath(infoDir)
-                     + uniqueTrashedName + ".trashinfo"_L1;
-        infoFile.setFileName(infoFileName);
-    }
-
-    /*
-        We might fail to rename if source and target are on different file systems.
-        In that case, we don't try further, i.e. copying and removing the original
-        is usually not what the user would expect to happen.
-    */
-    QFileSystemEntry target(trashDir.filePath(filesDir) + uniqueTrashedName);
-    if (!renameFile(source, target, error)) {
-        infoFile.close();
-        infoFile.remove();
-        return false;
+    if (!op.tryCreateInfoFile(uniqueTrashedName, error) && error.errorCode == EEXIST) {
+        for (int counter = 0; op.infoFileFd == -1; ++counter) {
+            uniqueTrashedName = QString::asprintf("/%ls-%04d", qUtf16Printable(sourcePath.fileName()),
+                                                  counter);
+            if (op.tryCreateInfoFile(uniqueTrashedName, error))
+                break;
+            if (error.errorCode != EEXIST)
+                return false;
+          }
     }
 
     QByteArray info =
@@ -1399,9 +1433,20 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
             "Path=" + QUrl::toPercentEncoding(sourcePath.filePath().mid(volumePrefixLength), "/") + "\n"
             "DeletionDate=" + QDateTime::currentDateTime().toString(Qt::ISODate).toUtf8()
             + "\n";
-    infoFile.write(info);
-    infoFile.close();
+    if (QT_WRITE(op.infoFileFd, info.data(), info.size()) < 0) {
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+        return false;
+    }
+    /*
+        We might fail to rename if source and target are on different file systems.
+        In that case, we don't try further, i.e. copying and removing the original
+        is usually not what the user would expect to happen.
+    */
+    QFileSystemEntry target(trashDir.filePath(filesDir) + uniqueTrashedName);
+    if (!renameFile(source, target, error))
+        return false;
 
+    op.commit();
     newLocation = std::move(target);
     return true;
 }

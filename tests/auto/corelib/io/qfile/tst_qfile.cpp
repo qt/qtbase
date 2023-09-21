@@ -4273,11 +4273,25 @@ void tst_QFile::moveToTrashXdgSafety()
     QVERIFY(genericTrashDir.entryList(QDir::NoDotAndDotDot).isEmpty());
 
     QFile::remove(genericTrashDir.path());
-    genericTrashDir.mkpath(".");
+    genericTrashDir.mkdir(genericTrashDir.path(), QFile::ExeOwner | QFile::ReadOwner);
     QTest::ignoreMessage(QtCriticalMsg, "Warning: '" + QFile::encodeName(genericTrashDir.absolutePath())
                          + "' doesn't have sticky bit set!");
     QVERIFY(tryTrashing());
     QVERIFY(genericTrashDir.entryList(QDir::NoDotAndDotDot).isEmpty());
+
+    if (geteuid() != 0) {
+        // set the sticky bit, but make the dir unwritable; there'll be no
+        // warning and we should just fall back to the next option
+        chmod(QFile::encodeName(genericTrashDir.path()), 01555);
+        QVERIFY(tryTrashing());
+        QVERIFY(genericTrashDir.entryList(QDir::NoDotAndDotDot).isEmpty());
+
+        // ditto for our user's subdir now
+        chmod(QFile::encodeName(genericTrashDir.path()), 01755);
+        genericTrashDir.mkdir(QString::number(getuid()), QFile::ReadOwner);
+        QEXPECT_FAIL("", "Fall back not working", Continue);
+        QVERIFY(tryTrashing());
+    }
 #endif
 }
 
