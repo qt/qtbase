@@ -4,7 +4,7 @@
 #ifndef BINDABLESUBSCRIPTION_H
 #define BINDABLESUBSCRIPTION_H
 
-#include <QPointer>
+#include <QBindable>
 #include <QProperty>
 
 class BindableUser;

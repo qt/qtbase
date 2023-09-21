@@ -4,6 +4,7 @@
 #ifndef BINDABLEUSER_H
 #define BINDABLEUSER_H
 
+#include <QBindable>
 #include <QLocale>
 #include <QProperty>
 
