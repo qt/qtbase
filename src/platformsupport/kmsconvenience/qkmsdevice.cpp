@@ -716,6 +716,7 @@ void QKmsDevice::createScreens()
         // virtualIndex. This is not only handy but also required since for instance
         // evdevtouch relies on it when performing touch device - screen mapping.
         if (!m_screenConfig->separateScreens()) {
+            qCDebug(qLcKmsDebug) << "  virtual position is" << virtualPos;
             siblings.append(s);
             virtualPositions.append(virtualPos);
             if (orderedScreen.vinfo.isPrimary)
