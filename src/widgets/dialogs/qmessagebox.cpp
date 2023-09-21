@@ -2928,7 +2928,7 @@ QPixmap QMessageBox::standardIcon(Icon icon)
 
 /*!
     \macro QT_REQUIRE_VERSION(int argc, char **argv, const char *version)
-    \relates <QMessageBox>
+    \relates QMessageBox
 
     This macro can be used to ensure that the application is run
     with a recent enough version of Qt. This is especially useful
