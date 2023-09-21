@@ -1194,9 +1194,9 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEnt
     Implementing as per https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
 */
 
-static QString freeDesktopTrashLocation(const QString &sourcePath)
+static QString freeDesktopTrashLocation(const QFileSystemEntry &source, QSystemError &error)
 {
-    auto makeTrashDir = [](const QDir &topDir, const QString &trashDir = QString()) {
+    auto makeTrashDir = [](const QDir &topDir, const QString &trashDir, QSystemError &error) {
         auto ownerPerms = QFileDevice::ReadOwner
                         | QFileDevice::WriteOwner
                         | QFileDevice::ExeOwner;
@@ -1205,13 +1205,22 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
         bool created = QFileSystemEngine::createDirectory(QFileSystemEntry(targetDir), false, ownerPerms);
         if (created)
             return targetDir;
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+
         // maybe it already exists and is a directory
         if (QFileInfo(targetDir).isDir())
             return targetDir;
         return QString();
     };
 
+    if (QFileSystemMetaData md; !QFileSystemEngine::fillMetaData(source, md, QFileSystemMetaData::ExistsAttribute)
+            || !md.exists()) {
+        error = QSystemError(ENOENT, QSystemError::StandardLibraryError);
+        return QString();
+    }
+
     QString trash;
+    const QString sourcePath = source.filePath();
     const QStorageInfo sourceStorage(sourcePath);
     const QStorageInfo homeStorage(QDir::home());
     // We support trashing of files outside the users home partition
@@ -1238,10 +1247,12 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
                 qCritical("Warning: '%s' is a symlink to '%s'",
                           dotTrashDir.nativeFilePath().constData(),
                           qt_readlink(dotTrashDir.nativeFilePath()).constData());
+                error = QSystemError(ELOOP, QSystemError::StandardLibraryError);
             } else if ((st.st_mode & S_ISVTX) == 0) {
                 // we SHOULD report the failed check to the administrator
                 qCritical("Warning: '%s' doesn't have sticky bit set!",
                           dotTrashDir.nativeFilePath().constData());
+                error = QSystemError(EPERM, QSystemError::StandardLibraryError);
             } else if (S_ISDIR(st.st_mode)) {
                 /*
                     "If the directory exists and passes the checks, a subdirectory of the
@@ -1252,7 +1263,7 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
                      the implementation MUST immediately create it, without any warnings or
                      delays for the user."
                 */
-                trash = makeTrashDir(dotTrashDir.filePath(), userID);
+                trash = makeTrashDir(dotTrashDir.filePath(), userID, error);
             }
         }
         /*
@@ -1264,7 +1275,7 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
         */
         if (trash.isEmpty()) {
             const QString userTrashDir = dotTrash + u'-' + userID;
-            trash = makeTrashDir(QDir(sourceStorage.rootPath() + userTrashDir));
+            trash = makeTrashDir(QDir(sourceStorage.rootPath() + userTrashDir), QString(), error);
         }
     }
     /*
@@ -1279,8 +1290,8 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
     */
     if (trash.isEmpty()) {
         QDir topDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-        trash = makeTrashDir(topDir, "Trash"_L1);
-        if (!QFileInfo(trash).isDir()) {
+        trash = makeTrashDir(topDir, "Trash"_L1, error);
+        if (trash.isEmpty()) {
             qWarning("Unable to establish trash directory in %s",
                      topDir.path().toLocal8Bit().constData());
         }
@@ -1293,11 +1304,6 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
 bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
                                         QFileSystemEntry &newLocation, QSystemError &error)
 {
-    const QFileInfo sourceInfo(source.filePath());
-    if (!sourceInfo.exists()) {
-        error = QSystemError(ENOENT, QSystemError::StandardLibraryError);
-        return false;
-    }
     const QFileSystemEntry sourcePath = [&] {
         if (QString path = source.filePath(); path.size() > 1 && path.endsWith(u'/')) {
             path.chop(1);
@@ -1305,10 +1311,10 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         }
         return absoluteName(source);
     }();
-
-    QDir trashDir(freeDesktopTrashLocation(sourcePath.filePath()));
-    if (!trashDir.exists())
+    QString trashPath = freeDesktopTrashLocation(sourcePath, error);
+    if (trashPath.isEmpty())
         return false;
+    QDir trashDir(trashPath);
     /*
         "A trash directory contains two subdirectories, named info and files."
     */
