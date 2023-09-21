@@ -595,10 +595,8 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
 
 void QItemSelectionModelPrivate::disconnectModel()
 {
-    for (auto &connection : connections) {
+    for (auto &connection : connections)
         QObject::disconnect(connection);
-        connection = QMetaObject::Connection();
-    }
 }
 
 /*!
