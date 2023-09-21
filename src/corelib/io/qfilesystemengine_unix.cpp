@@ -1192,8 +1192,10 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
                         | QFileDevice::ExeOwner;
         QString targetDir = topDir.filePath(trashDir);
         // deliberately not using mkpath, since we want to fail if topDir doesn't exist
-        if (topDir.mkdir(trashDir))
-            QFile::setPermissions(targetDir, ownerPerms);
+        bool created = QFileSystemEngine::createDirectory(QFileSystemEntry(targetDir), false, ownerPerms);
+        if (created)
+            return targetDir;
+        // maybe it already exists and is a directory
         if (QFileInfo(targetDir).isDir())
             return targetDir;
         return QString();
