@@ -1362,9 +1362,6 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
             uniqueTrashedName = makeUniqueTrashedName();
     } while (!infoFile.isOpen());
 
-    const QString targetPath = trashDir.filePath(filesDir) + uniqueTrashedName;
-    const QFileSystemEntry target(targetPath);
-
     QString pathForInfo;
     const QStorageInfo storageInfo(sourcePath);
     if (storageInfo.isValid() && storageInfo.rootPath() != rootPath() && storageInfo != QStorageInfo(QDir::home())) {
@@ -1380,6 +1377,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         In that case, we don't try further, i.e. copying and removing the original
         is usually not what the user would expect to happen.
     */
+    QFileSystemEntry target(trashDir.filePath(filesDir) + uniqueTrashedName);
     if (!renameFile(source, target, error)) {
         infoFile.close();
         infoFile.remove();
@@ -1394,7 +1392,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     infoFile.write(info);
     infoFile.close();
 
-    newLocation = QFileSystemEntry(targetPath);
+    newLocation = std::move(target);
     return true;
 #endif // QT_BOOTSTRAPPED
 }
