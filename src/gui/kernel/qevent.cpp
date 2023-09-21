@@ -4125,6 +4125,10 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
             dbg << ", text=" << ke->text();
         if (ke->isAutoRepeat())
             dbg << ", autorepeat, count=" << ke->count();
+        if (dbg.verbosity() > QDebug::DefaultVerbosity) {
+            dbg << ", nativeScanCode=" << ke->nativeScanCode();
+            dbg << ", nativeVirtualKey=" << ke->nativeVirtualKey();
+        }
         dbg << ')';
     }
         break;
