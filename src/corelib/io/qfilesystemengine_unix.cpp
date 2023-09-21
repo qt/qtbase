@@ -1364,14 +1364,14 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     const QString targetPath = trashDir.filePath(filesDir) + uniqueTrashedName;
     const QFileSystemEntry target(targetPath);
 
-    QString infoPath;
+    QString pathForInfo;
     const QStorageInfo storageInfo(sourcePath);
     if (storageInfo.isValid() && storageInfo.rootPath() != rootPath() && storageInfo != QStorageInfo(QDir::home())) {
-        infoPath = sourcePath.mid(storageInfo.rootPath().length());
-        if (infoPath.front() == u'/')
-            infoPath = infoPath.mid(1);
+        pathForInfo = sourcePath.mid(storageInfo.rootPath().length());
+        if (pathForInfo.front() == u'/')
+            pathForInfo = pathForInfo.mid(1);
     } else {
-        infoPath = sourcePath;
+        pathForInfo = sourcePath;
     }
 
     /*
@@ -1387,7 +1387,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
 
     QByteArray info =
             "[Trash Info]\n"
-            "Path=" + QUrl::toPercentEncoding(infoPath, "/") + "\n"
+            "Path=" + QUrl::toPercentEncoding(pathForInfo, "/") + "\n"
             "DeletionDate=" + QDateTime::currentDateTime().toString(Qt::ISODate).toUtf8()
             + "\n";
     infoFile.write(info);
