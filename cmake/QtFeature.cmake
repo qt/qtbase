@@ -84,17 +84,13 @@ endfunction()
 function(qt_evaluate_config_expression resultVar)
     set(result "")
     set(nestingLevel 0)
-    set(skipNext OFF)
     set(expression "${ARGN}")
     list(LENGTH expression length)
 
+    set(memberIdx -1)
     math(EXPR length "${length}-1")
-    foreach(memberIdx RANGE ${length})
-        if(${skipNext})
-            set(skipNext OFF)
-            continue()
-        endif()
-
+    while(memberIdx LESS ${length})
+        math(EXPR memberIdx "${memberIdx} + 1")
         list(GET expression ${memberIdx} member)
 
         if("${member}" STREQUAL "(")
@@ -140,7 +136,7 @@ function(qt_evaluate_config_expression resultVar)
             set(lhs "${${lhs}}")
 
             math(EXPR rhsIndex "${memberIdx}+1")
-            set(skipNext ON)
+            set(memberIdx ${rhsIndex})
 
             list(GET expression ${rhsIndex} rhs)
             # We can't pass through an empty string with double quotes through various
@@ -160,7 +156,7 @@ function(qt_evaluate_config_expression resultVar)
 
             list(APPEND result ${member})
         endif()
-    endforeach()
+    endwhile()
     # The 'TARGET Gui' case is handled by qt_evaluate_to_boolean, by passing those tokens verbatim
     # to if().
 
