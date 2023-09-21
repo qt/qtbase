@@ -303,19 +303,20 @@ public:
     QByteArray m_className;
 };
 
-static inline QLatin1StringView keyBase()
+template <typename ...Args>
+static inline QByteArray cacheKey(Args &&...args)
 {
-    return "%1%2:%3"_L1;
+    return (QByteArrayView(":") + ... + QByteArrayView(args));
 }
 
-typedef QHash<QString, jclass> JClassHash;
+typedef QHash<QByteArray, jclass> JClassHash;
 Q_GLOBAL_STATIC(JClassHash, cachedClasses)
 Q_GLOBAL_STATIC(QReadWriteLock, cachedClassesLock)
 
 static jclass getCachedClass(const QByteArray &classBinEnc, bool *isCached = nullptr)
 {
     QReadLocker locker(cachedClassesLock);
-    const QHash<QString, jclass>::const_iterator &it = cachedClasses->constFind(QString::fromLatin1(classBinEnc));
+    const auto &it = cachedClasses->constFind(classBinEnc);
     const bool found = (it != cachedClasses->constEnd());
 
     if (isCached)
@@ -344,12 +345,11 @@ jclass QJniObject::loadClass(const QByteArray &className, JNIEnv *env, bool binE
 
     QWriteLocker locker(cachedClassesLock);
     // did we lose the race?
-    const QLatin1StringView key(binEncClassName);
-    const QHash<QString, jclass>::const_iterator &it = cachedClasses->constFind(key);
+    const auto &it = cachedClasses->constFind(binEncClassName);
     if (it != cachedClasses->constEnd())
         return it.value();
 
-    QJniObject stringName = QJniObject::fromString(key);
+    QJniObject stringName = QJniObject::fromString(QString::fromLatin1(binEncClassName));
     QJniObject classObject = classLoader.callObjectMethod("loadClass",
                                                           "(Ljava/lang/String;)Ljava/lang/Class;",
                                                           stringName.object());
@@ -357,11 +357,11 @@ jclass QJniObject::loadClass(const QByteArray &className, JNIEnv *env, bool binE
     if (!QJniEnvironment::checkAndClearExceptions(env) && classObject.isValid())
         clazz = static_cast<jclass>(env->NewGlobalRef(classObject.object()));
 
-    cachedClasses->insert(key, clazz);
+    cachedClasses->insert(binEncClassName, clazz);
     return clazz;
 }
 
-typedef QHash<QString, jmethodID> JMethodIDHash;
+typedef QHash<QByteArray, jmethodID> JMethodIDHash;
 Q_GLOBAL_STATIC(JMethodIDHash, cachedMethodID)
 Q_GLOBAL_STATIC(QReadWriteLock, cachedMethodIDLock)
 
@@ -403,10 +403,8 @@ jmethodID QJniObject::getCachedMethodID(JNIEnv *env,
     if (className.isEmpty())
         return getMethodID(env, clazz, name, signature, isStatic);
 
-    const QString key = keyBase().arg(QLatin1StringView(className),
-                                      QLatin1StringView(name),
-                                      QLatin1StringView(signature));
-    QHash<QString, jmethodID>::const_iterator it;
+    const QByteArray key = cacheKey(className, name, signature);
+    QHash<QByteArray, jmethodID>::const_iterator it;
 
     {
         QReadLocker locker(cachedMethodIDLock);
@@ -434,7 +432,7 @@ jmethodID QJniObject::getCachedMethodID(JNIEnv *env, const char *name,
     return QJniObject::getCachedMethodID(env, d->m_jclass, d->m_className, name, signature, isStatic);
 }
 
-typedef QHash<QString, jfieldID> JFieldIDHash;
+typedef QHash<QByteArray, jfieldID> JFieldIDHash;
 Q_GLOBAL_STATIC(JFieldIDHash, cachedFieldID)
 Q_GLOBAL_STATIC(QReadWriteLock, cachedFieldIDLock)
 
@@ -463,10 +461,8 @@ jfieldID QJniObject::getCachedFieldID(JNIEnv *env,
     if (className.isNull())
         return getFieldID(env, clazz, name, signature, isStatic);
 
-    const QString key = keyBase().arg(QLatin1StringView(className),
-                                      QLatin1StringView(name),
-                                      QLatin1StringView(signature));
-    QHash<QString, jfieldID>::const_iterator it;
+    const QByteArray key = cacheKey(className, name, signature);
+    QHash<QByteArray, jfieldID>::const_iterator it;
 
     {
         QReadLocker locker(cachedFieldIDLock);
@@ -505,10 +501,9 @@ jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
     if (clazz || isCached)
         return clazz;
 
-    const QLatin1StringView key(classDotEnc);
     if (env) { // We got an env. pointer (We expect this to be the right env. and call FindClass())
         QWriteLocker locker(cachedClassesLock);
-        const QHash<QString, jclass>::const_iterator &it = cachedClasses->constFind(key);
+        const auto &it = cachedClasses->constFind(classDotEnc);
         // Did we lose the race?
         if (it != cachedClasses->constEnd())
             return it.value();
@@ -520,7 +515,7 @@ jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
         }
 
         if (clazz)
-            cachedClasses->insert(key, clazz);
+            cachedClasses->insert(classDotEnc, clazz);
     }
 
     if (!clazz) // We didn't get an env. pointer or we got one with the WRONG class loader...
