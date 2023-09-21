@@ -589,8 +589,10 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
     if (oldModel == m)
         return;
 
-    if (oldModel)
+    if (oldModel) {
+        q->reset();
         disconnectModel();
+    }
 
     // Caller has to call notify(), unless calling during construction (the common case).
     model.setValueBypassingBindings(m);
@@ -627,12 +629,10 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
 
 void QItemSelectionModelPrivate::disconnectModel()
 {
-    Q_Q(QItemSelectionModel);
     for (auto &connection : connections) {
         QObject::disconnect(connection);
         connection = QMetaObject::Connection();
     }
-    q->reset();
 }
 
 /*!
