@@ -37,6 +37,8 @@ QKeyMapper::~QKeyMapper()
 
 QList<QKeyCombination> QKeyMapper::possibleKeys(const QKeyEvent *e)
 {
+    qCDebug(lcQpaKeyMapper).verbosity(3) << "Computing possible key combinations for" << e;
+
     const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
     const auto *platformKeyMapper = platformIntegration->keyMapper();
     QList<QKeyCombination> result = platformKeyMapper->possibleKeyCombinations(e);
@@ -46,6 +48,16 @@ QList<QKeyCombination> QKeyMapper::possibleKeys(const QKeyEvent *e)
             result << e->keyCombination();
         else if (!e->text().isEmpty())
             result << (Qt::Key(e->text().at(0).unicode()) | e->modifiers());
+    }
+
+    if (lcQpaKeyMapper().isDebugEnabled()) {
+        qCDebug(lcQpaKeyMapper) << "Resulting possible key combinations:";
+        for (auto keyCombination : result) {
+            auto keySequence = QKeySequence(keyCombination);
+            qCDebug(lcQpaKeyMapper).verbosity(0) << "\t-"
+                << keyCombination << "/" << keySequence << "/"
+                << qUtf8Printable(keySequence.toString(QKeySequence::NativeText));
+        }
     }
 
     return result;

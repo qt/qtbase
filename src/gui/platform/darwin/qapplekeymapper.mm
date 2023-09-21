@@ -541,8 +541,6 @@ QList<QKeyCombination> QAppleKeyMapper::possibleKeyCombinations(const QKeyEvent 
 {
     QList<QKeyCombination> ret;
 
-    qCDebug(lcQpaKeyMapper) << "Computing possible keys for" << event;
-
     const auto nativeVirtualKey = event->nativeVirtualKey();
     if (!nativeVirtualKey)
         return ret;
@@ -576,16 +574,6 @@ QList<QKeyCombination> QAppleKeyMapper::possibleKeyCombinations(const QKeyEvent 
             auto additionalModifiers = eventModifiers & ~candidateModifiers;
             ret << QKeyCombination::fromCombined(
                 int(additionalModifiers) + int(keyAfterApplyingModifiers));
-        }
-    }
-
-    if (lcQpaKeyMapper().isDebugEnabled()) {
-        qCDebug(lcQpaKeyMapper) << "Possible keys:";
-        for (auto keyCombination : ret) {
-            auto keySequence = QKeySequence(keyCombination);
-            qCDebug(lcQpaKeyMapper).verbosity(0) << "\t-"
-                << keyCombination << "/" << keySequence << "/"
-                << qUtf8Printable(keySequence.toString(QKeySequence::NativeText));
         }
     }
 
