@@ -81,6 +81,7 @@ private slots:
     void QTBUG93305();
 
     void testSignalsDisconnection();
+    void destroyModel();
 
 private:
     static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
@@ -2950,6 +2951,22 @@ void tst_QItemSelectionModel::testSignalsDisconnection()
     qDebug() << spy;
     selection->setModel(nullptr);
     QVERIFY(!signalError);
+}
+
+void tst_QItemSelectionModel::destroyModel()
+{
+    auto itemModel = std::make_unique<QStandardItemModel>(5, 5);
+    auto selectionModel = std::make_unique<QItemSelectionModel>();
+    selectionModel->setModel(itemModel.get());
+    selectionModel->select(itemModel->index(0, 0), QItemSelectionModel::Select);
+    QVERIFY(!selectionModel->selection().isEmpty());
+    selectionModel->setCurrentIndex(itemModel->index(1, 0), QItemSelectionModel::Select);
+    QVERIFY(selectionModel->currentIndex().isValid());
+
+    QTest::failOnWarning(QRegularExpression(".*"));
+    itemModel.reset();
+    QVERIFY(!selectionModel->currentIndex().isValid());
+    QVERIFY(selectionModel->selection().isEmpty());
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)
