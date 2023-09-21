@@ -641,7 +641,7 @@ void QConcatenateTablesProxyModelPrivate::_q_slotSourceLayoutChanged(const QList
 void QConcatenateTablesProxyModelPrivate::_q_slotModelAboutToBeReset()
 {
     Q_Q(QConcatenateTablesProxyModel);
-    Q_ASSERT(m_models.contains(const_cast<QAbstractItemModel *>(static_cast<const QAbstractItemModel *>(q->sender()))));
+    Q_ASSERT(m_models.contains(static_cast<QAbstractItemModel *>(q->sender())));
     q->beginResetModel();
     // A reset might reduce both rowCount and columnCount, and we can't notify of both at the same time,
     // and notifying of one after the other leaves an intermediary invalid situation.
@@ -651,7 +651,7 @@ void QConcatenateTablesProxyModelPrivate::_q_slotModelAboutToBeReset()
 void QConcatenateTablesProxyModelPrivate::_q_slotModelReset()
 {
     Q_Q(QConcatenateTablesProxyModel);
-    Q_ASSERT(m_models.contains(const_cast<QAbstractItemModel *>(static_cast<const QAbstractItemModel *>(q->sender()))));
+    Q_ASSERT(m_models.contains(static_cast<QAbstractItemModel *>(q->sender())));
     m_columnCount = calculatedColumnCount();
     m_rowCount = computeRowsPrior(nullptr);
     q->endResetModel();
