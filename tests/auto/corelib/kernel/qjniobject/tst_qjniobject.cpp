@@ -35,6 +35,7 @@ public:
 
 private slots:
     void initTestCase();
+    void init();
 
     void ctor();
     void callMethodTest();
@@ -119,6 +120,14 @@ tst_QJniObject::tst_QJniObject()
 
 void tst_QJniObject::initTestCase()
 {
+}
+
+void tst_QJniObject::init()
+{
+    // Unless explicitly ignored to test error handling, warning messages
+    // in this test about a failure to look up a field, method, or class
+    // make the test fail.
+    QTest::failOnWarning(QRegularExpression("java.lang.NoSuch.*Error"));
 }
 
 void tst_QJniObject::cleanupTestCase()
@@ -992,7 +1001,7 @@ void tst_QJniObject::getBooleanField()
     QJniObject obj("org/qtproject/qt/android/QtActivityDelegate");
 
     QVERIFY(obj.isValid());
-    QVERIFY(!obj.getField<jboolean>("m_fullScreen"));
+    QVERIFY(!obj.getField<jboolean>("m_backKeyPressedSent"));
 }
 
 void tst_QJniObject::getIntField()
@@ -1555,6 +1564,7 @@ void tst_QJniObject::templateApiCheck()
 void tst_QJniObject::isClassAvailable()
 {
     QVERIFY(QJniObject::isClassAvailable("java/lang/String"));
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.ClassNotFoundException"));
     QVERIFY(!QJniObject::isClassAvailable("class/not/Available"));
     QVERIFY(QJniObject::isClassAvailable("org/qtproject/qt/android/QtActivityDelegate"));
 }
