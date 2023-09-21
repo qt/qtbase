@@ -259,8 +259,13 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         VkInstanceCreateInfo instInfo = {};
         instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instInfo.pApplicationInfo = &appInfo;
-        if (!flags.testFlag(QVulkanInstance::NoPortabilityDrivers))
-            instInfo.flags |= 0x00000001; // VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+        if (!flags.testFlag(QVulkanInstance::NoPortabilityDrivers)) {
+            // With old Vulkan SDKs setting a non-zero flags gives a validation error.
+            // Whereas from 1.3.216 on the portability bit is required for MoltenVK to function.
+            // Hence the version check.
+            if (m_supportedApiVersion >= QVersionNumber(1, 3, 216))
+                instInfo.flags |= 0x00000001; // VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+        }
 
         QList<const char *> layerNameVec;
         for (const QByteArray &ba : std::as_const(m_enabledLayers))
