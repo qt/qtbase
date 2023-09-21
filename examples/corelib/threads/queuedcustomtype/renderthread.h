@@ -20,12 +20,10 @@ public:
     ~RenderThread();
 
     void processImage(const QImage &image);
+    void stopProcess();
 
 signals:
     void sendBlock(const Block &block);
-
-public slots:
-    void stopProcess();
 
 protected:
     void run();
