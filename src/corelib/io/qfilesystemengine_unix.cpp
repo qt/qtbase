@@ -1329,14 +1329,9 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     */
     QString uniqueTrashedName = u'/' + sourcePath.fileName();
     QString infoFileName;
-    int counter = 0;
     QFile infoFile;
-    auto makeUniqueTrashedName = [sourcePath, &counter]() -> QString {
-        return QString::asprintf("/%ls-%04d", qUtf16Printable(sourcePath.fileName()), ++counter);
-    };
-    do {
-        while (QFile::exists(trashDir.filePath(filesDir) + uniqueTrashedName))
-            uniqueTrashedName = makeUniqueTrashedName();
+    auto openMode = QIODevice::NewOnly | QIODevice::WriteOnly | QIODevice::Text;
+    for (int counter = 0; !infoFile.open(openMode); ++counter) {
         /*
             "The $trash/info directory contains an "information file" for every file and directory
              in $trash/files. This file MUST have exactly the same name as the file or directory in
@@ -1349,12 +1344,12 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
              filename, and then opening with O_EXCL. If that succeeds the creation was atomic
              (at least on the same machine), if it fails you need to pick another filename."
         */
-        infoFileName = trashDir.filePath(infoDir)
+        uniqueTrashedName = QString::asprintf("/%ls-%04d", qUtf16Printable(sourcePath.fileName()),
+                                              counter);
+        QString infoFileName = trashDir.filePath(infoDir)
                      + uniqueTrashedName + ".trashinfo"_L1;
         infoFile.setFileName(infoFileName);
-        if (!infoFile.open(QIODevice::NewOnly | QIODevice::WriteOnly | QIODevice::Text))
-            uniqueTrashedName = makeUniqueTrashedName();
-    } while (!infoFile.isOpen());
+    }
 
     QString pathForInfo = sourcePath.filePath();
     const QStorageInfo storageInfo(pathForInfo);
