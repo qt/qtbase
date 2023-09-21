@@ -88,9 +88,9 @@ assert_F(A AND B)
 assert_T(A AND (B OR C))
 assert_T((A AND B) OR C)
 assert_T((A AND B) OR (NOT B AND C))
-expect_failure_F(NOT (B OR C))          # QTBUG-117053
-expect_failure_T(NOT (A AND B))         # QTBUG-117053
-expect_failure_F(NOT (B OR C))          # QTBUG-117053
+assert_F(NOT (B OR C))
+assert_T(NOT (A AND B))
+assert_F(NOT (B OR C))
 
 # target check
 set(lib1_cpp "${CMAKE_CURRENT_BINARY_DIR}/lib1.cpp")
