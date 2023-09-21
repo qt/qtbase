@@ -649,7 +649,8 @@ IDropTargetHelper* QWindowsDrag::dropHelper() {
 static HRESULT startDoDragDrop(LPDATAOBJECT pDataObj, LPDROPSOURCE pDropSource, DWORD dwOKEffects, LPDWORD pdwEffect)
 {
     QWindow *underMouse = QWindowsContext::instance()->windowUnderMouse();
-    const HWND hwnd = underMouse ? reinterpret_cast<HWND>(underMouse->winId()) : ::GetFocus();
+    const bool hasMouseCapture = underMouse && static_cast<QWindowsWindow *>(underMouse->handle())->hasMouseCapture();
+    const HWND hwnd = hasMouseCapture ? reinterpret_cast<HWND>(underMouse->winId()) : ::GetFocus();
     bool starting = false;
 
     for (;;) {
