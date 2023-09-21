@@ -286,17 +286,6 @@ public:
             env->DeleteGlobalRef(m_jclass);
     }
 
-    friend jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env);
-    static jclass loadClass(const QByteArray &className, JNIEnv *env, bool binEncoded = false)
-    {
-        return QJniObject::loadClass(className, env, binEncoded);
-    }
-
-    static QByteArray toBinaryEncClassName(const QByteArray &className)
-    {
-        return QJniObject::toBinaryEncClassName(className);
-    }
-
     jobject m_jobject = nullptr;
     jclass m_jclass = nullptr;
     bool m_own_jclass = true;
@@ -313,16 +302,11 @@ typedef QHash<QByteArray, jclass> JClassHash;
 Q_GLOBAL_STATIC(JClassHash, cachedClasses)
 Q_GLOBAL_STATIC(QReadWriteLock, cachedClassesLock)
 
-static jclass getCachedClass(const QByteArray &classBinEnc, bool *isCached = nullptr)
+static jclass getCachedClass(const QByteArray &className)
 {
     QReadLocker locker(cachedClassesLock);
-    const auto &it = cachedClasses->constFind(classBinEnc);
-    const bool found = (it != cachedClasses->constEnd());
-
-    if (isCached)
-        *isCached = found;
-
-    return found ? it.value() : 0;
+    const auto &it = cachedClasses->constFind(className);
+    return it != cachedClasses->constEnd() ? it.value() : nullptr;
 }
 
 QByteArray QJniObject::toBinaryEncClassName(const QByteArray &className)
@@ -330,35 +314,65 @@ QByteArray QJniObject::toBinaryEncClassName(const QByteArray &className)
     return QByteArray(className).replace('/', '.');
 }
 
-jclass QJniObject::loadClass(const QByteArray &className, JNIEnv *env, bool binEncoded)
+/*!
+    \internal
+    \a className must be slash-encoded
+*/
+jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
 {
-    const QByteArray &binEncClassName = binEncoded ? className : QJniObject::toBinaryEncClassName(className);
-
-    bool isCached = false;
-    jclass clazz = getCachedClass(binEncClassName, &isCached);
-    if (clazz || isCached)
+    Q_ASSERT(env);
+    const QByteArray classNameArray(className);
+    jclass clazz = getCachedClass(classNameArray);
+    if (clazz)
         return clazz;
 
-    QJniObject classLoader(QtAndroidPrivate::classLoader());
-    if (!classLoader.isValid())
-        return nullptr;
-
     QWriteLocker locker(cachedClassesLock);
-    // did we lose the race?
-    const auto &it = cachedClasses->constFind(binEncClassName);
+    // Check again; another thread might have added the class to the cache after
+    // our call to getCachedClass and before we acquired the lock.
+    const auto &it = cachedClasses->constFind(classNameArray);
     if (it != cachedClasses->constEnd())
         return it.value();
 
-    QJniObject stringName = QJniObject::fromString(QString::fromLatin1(binEncClassName));
-    QJniObject classObject = classLoader.callObjectMethod("loadClass",
-                                                          "(Ljava/lang/String;)Ljava/lang/Class;",
-                                                          stringName.object());
+    // JNIEnv::FindClass wants "a fully-qualified class name or an array type signature"
+    // which is a slash-separated class name.
+    jclass localClazz = env->FindClass(className);
+    if (localClazz) {
+        clazz = static_cast<jclass>(env->NewGlobalRef(localClazz));
+        env->DeleteLocalRef(localClazz);
+    } else {
+        // Clear the exception silently; we are going to try the ClassLoader next,
+        // so no need for warning unless that fails as well.
+        env->ExceptionClear();
+    }
 
-    if (!QJniEnvironment::checkAndClearExceptions(env) && classObject.isValid())
-        clazz = static_cast<jclass>(env->NewGlobalRef(classObject.object()));
+    if (!clazz) {
+        // We didn't get an env. pointer or we got one with the WRONG class loader...
+        QJniObject classLoader(QtAndroidPrivate::classLoader());
+        if (!classLoader.isValid())
+            return nullptr;
 
-    cachedClasses->insert(binEncClassName, clazz);
+        // ClassLoader::loadClass on the other hand wants the binary name of the class,
+        // e.g. dot-separated. In testing it works also with /, but better to stick to
+        // the specification.
+        const QString binaryClassName = QString::fromLatin1(className).replace(u'/', u'.');
+        jstring classNameObject = env->NewString(reinterpret_cast<const jchar*>(binaryClassName.constData()),
+                                                                                binaryClassName.length());
+        QJniObject classObject = classLoader.callMethod<jclass>("loadClass", classNameObject);
+        env->DeleteLocalRef(classNameObject);
+
+        if (!QJniEnvironment::checkAndClearExceptions(env) && classObject.isValid())
+            clazz = static_cast<jclass>(env->NewGlobalRef(classObject.object()));
+    }
+
+    if (clazz)
+        cachedClasses->insert(classNameArray, clazz);
+
     return clazz;
+}
+
+jclass QJniObject::loadClass(const QByteArray &className, JNIEnv *env, bool /*binEncoded*/)
+{
+    return QtAndroidPrivate::findClass(className, env);
 }
 
 typedef QHash<QByteArray, jmethodID> JMethodIDHash;
@@ -492,38 +506,6 @@ jfieldID QJniObject::getCachedFieldID(JNIEnv *env,
     return QJniObject::getCachedFieldID(env, d->m_jclass, d->m_className, name, signature, isStatic);
 }
 
-jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
-{
-    const QByteArray &classDotEnc = QJniObjectPrivate::toBinaryEncClassName(className);
-    bool isCached = false;
-    jclass clazz = getCachedClass(classDotEnc, &isCached);
-
-    if (clazz || isCached)
-        return clazz;
-
-    if (env) { // We got an env. pointer (We expect this to be the right env. and call FindClass())
-        QWriteLocker locker(cachedClassesLock);
-        const auto &it = cachedClasses->constFind(classDotEnc);
-        // Did we lose the race?
-        if (it != cachedClasses->constEnd())
-            return it.value();
-
-        jclass fclazz = env->FindClass(className);
-        if (!QJniEnvironment::checkAndClearExceptions(env)) {
-            clazz = static_cast<jclass>(env->NewGlobalRef(fclazz));
-            env->DeleteLocalRef(fclazz);
-        }
-
-        if (clazz)
-            cachedClasses->insert(classDotEnc, clazz);
-    }
-
-    if (!clazz) // We didn't get an env. pointer or we got one with the WRONG class loader...
-        clazz = QJniObjectPrivate::loadClass(classDotEnc, QJniEnvironment().jniEnv(), true);
-
-    return clazz;
-}
-
 /*!
     \fn QJniObject::QJniObject()
 
@@ -549,8 +531,8 @@ QJniObject::QJniObject(const char *className)
     : d(new QJniObjectPrivate())
 {
     QJniEnvironment env;
-    d->m_className = toBinaryEncClassName(className);
-    d->m_jclass = loadClass(d->m_className, env.jniEnv(), true);
+    d->m_className = className;
+    d->m_jclass = loadClass(d->m_className, env.jniEnv());
     d->m_own_jclass = false;
     if (d->m_jclass) {
         // get default constructor
@@ -582,8 +564,8 @@ QJniObject::QJniObject(const char *className, const char *signature, ...)
     : d(new QJniObjectPrivate())
 {
     QJniEnvironment env;
-    d->m_className = toBinaryEncClassName(className);
-    d->m_jclass = loadClass(d->m_className, env.jniEnv(), true);
+    d->m_className = className;
+    d->m_jclass = loadClass(d->m_className, env.jniEnv());
     d->m_own_jclass = false;
     if (d->m_jclass) {
         jmethodID constructorId = getCachedMethodID(env.jniEnv(), "<init>", signature);
@@ -1004,7 +986,7 @@ QJniObject QJniObject::callStaticObjectMethod(const char *className, const char 
     jclass clazz = QJniObject::loadClass(className, env.jniEnv());
     if (clazz) {
         jmethodID id = QJniObject::getCachedMethodID(env.jniEnv(), clazz,
-                                         QJniObject::toBinaryEncClassName(className),
+                                         className,
                                          methodName, signature, true);
         if (id) {
             va_list args;
@@ -1202,7 +1184,7 @@ QJniObject QJniObject::getStaticObjectField(const char *className,
     if (!clazz)
         return QJniObject();
     jfieldID id = QJniObject::getCachedFieldID(env.jniEnv(), clazz,
-                                   QJniObject::toBinaryEncClassName(className),
+                                   className,
                                    fieldName,
                                    signature, true);
     if (!id)
