@@ -1418,14 +1418,25 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     */
     QString uniqueTrashedName = u'/' + sourcePath.fileName();
     if (!op.tryCreateInfoFile(uniqueTrashedName, error) && error.errorCode == EEXIST) {
-        for (int counter = 0; op.infoFileFd == -1; ++counter) {
-            uniqueTrashedName = QString::asprintf("/%ls-%04d", qUtf16Printable(sourcePath.fileName()),
-                                                  counter);
+        // we'll use a counter, starting with the file's inode number to avoid
+        // collisions
+        qulonglong counter;
+        if (QT_STATBUF st; Q_LIKELY(QT_STAT(source.nativeFilePath(), &st) == 0)) {
+            counter = st.st_ino;
+        } else {
+            error = QSystemError(errno, QSystemError::StandardLibraryError);
+            return false;
+        }
+
+        QString uniqueTrashBase = std::move(uniqueTrashedName);
+        for (;;) {
+            uniqueTrashedName = QString::asprintf("%ls-%llu", qUtf16Printable(uniqueTrashBase),
+                                                  counter++);
             if (op.tryCreateInfoFile(uniqueTrashedName, error))
                 break;
             if (error.errorCode != EEXIST)
                 return false;
-          }
+        };
     }
 
     QByteArray info =
