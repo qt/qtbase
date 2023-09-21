@@ -1389,7 +1389,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     QByteArray info =
             "[Trash Info]\n"
             "Path=" + QUrl::toPercentEncoding(infoPath, "/") + "\n"
-            "DeletionDate=" + QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"_L1).toUtf8()
+            "DeletionDate=" + QDateTime::currentDateTime().toString(Qt::ISODate).toUtf8()
             + "\n";
     infoFile.write(info);
     infoFile.close();
