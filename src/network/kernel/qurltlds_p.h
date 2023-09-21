@@ -54,12 +54,12 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
-QT_BEGIN_NAMESPACE
-
 // note to maintainer:
 // this file should be updated before each release ->
 // for instructions see the program at
 // util/publicSuffix/
+
+QT_BEGIN_NAMESPACE
 
 static const quint16 tldCount = 9024;
 // After the tldCount "real" entries in tldIndices, include a final entry
