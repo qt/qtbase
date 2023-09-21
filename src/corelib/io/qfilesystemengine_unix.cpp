@@ -1194,7 +1194,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEnt
     Implementing as per https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
 */
 
-static QString freeDesktopTrashLocation(const QFileSystemEntry &source, QSystemError &error)
+static auto freeDesktopTrashLocation(const QFileSystemEntry &source, QSystemError &error)
 {
     auto makeTrashDir = [](const QDir &topDir, const QString &trashDir, QSystemError &error) {
         auto ownerPerms = QFileDevice::ReadOwner
@@ -1212,19 +1212,33 @@ static QString freeDesktopTrashLocation(const QFileSystemEntry &source, QSystemE
             return targetDir;
         return QString();
     };
+    struct R {
+        QString trashDir;
+        qsizetype volumePrefixLength = 0;
+    } r;
 
-    if (QFileSystemMetaData md; !QFileSystemEngine::fillMetaData(source, md, QFileSystemMetaData::ExistsAttribute)
-            || !md.exists()) {
-        error = QSystemError(ENOENT, QSystemError::StandardLibraryError);
-        return QString();
+    // first, check if they are in the same device
+    QString homePath = QFileSystemEngine::homePath();
+    const QString sourcePath = source.filePath();
+    QT_STATBUF sourceInfo, homeInfo;
+    if (QT_STAT(QFile::encodeName(sourcePath), &sourceInfo) != 0 ||
+            QT_STAT(QFile::encodeName(homePath), &homeInfo) != 0) {
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+        return r;
     }
 
-    QString trash;
-    const QString sourcePath = source.filePath();
     const QStorageInfo sourceStorage(sourcePath);
+    bool isHomeVolume = false;
+    if (sourceInfo.st_dev == homeInfo.st_dev) {
+        // being the same device is not enough for rename(): they must be the
+        // same mount, so we need QStorageInfo to compare
+        isHomeVolume = sourceStorage == QStorageInfo(QFileSystemEngine::homePath());
+    }
+
+    QString &trash = r.trashDir;
     const QStorageInfo homeStorage(QDir::home());
     // We support trashing of files outside the users home partition
-    if (sourceStorage != homeStorage) {
+    if (!isHomeVolume) {
         const auto dotTrash = "/.Trash"_L1;
         QFileSystemEntry dotTrashDir(sourceStorage.rootPath() + dotTrash);
 
@@ -1277,6 +1291,14 @@ static QString freeDesktopTrashLocation(const QFileSystemEntry &source, QSystemE
             const QString userTrashDir = dotTrash + u'-' + userID;
             trash = makeTrashDir(QDir(sourceStorage.rootPath() + userTrashDir), QString(), error);
         }
+
+        if (!trash.isEmpty()) {
+            r.volumePrefixLength = sourceStorage.rootPath().size();
+            if (r.volumePrefixLength == 1)
+                r.volumePrefixLength = 0;      // isRoot
+            else
+                ++r.volumePrefixLength;        // to include the slash
+        }
     }
     /*
         "If both (1) and (2) fail [...], the implementation MUST either trash the
@@ -1297,7 +1319,7 @@ static QString freeDesktopTrashLocation(const QFileSystemEntry &source, QSystemE
         }
     }
 
-    return trash;
+    return r;
 }
 
 //static
@@ -1311,7 +1333,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         }
         return absoluteName(source);
     }();
-    QString trashPath = freeDesktopTrashLocation(sourcePath, error);
+    auto [trashPath, volumePrefixLength] = freeDesktopTrashLocation(sourcePath, error);
     if (trashPath.isEmpty())
         return false;
     QDir trashDir(trashPath);
@@ -1360,14 +1382,6 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         infoFile.setFileName(infoFileName);
     }
 
-    QString pathForInfo = sourcePath.filePath();
-    const QStorageInfo storageInfo(pathForInfo);
-    if (storageInfo.isValid() && storageInfo.rootPath() != rootPath() && storageInfo != QStorageInfo(QDir::home())) {
-        pathForInfo = std::move(pathForInfo).mid(storageInfo.rootPath().length());
-        if (pathForInfo.front() == u'/')
-            pathForInfo = pathForInfo.mid(1);
-    }
-
     /*
         We might fail to rename if source and target are on different file systems.
         In that case, we don't try further, i.e. copying and removing the original
@@ -1382,7 +1396,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
 
     QByteArray info =
             "[Trash Info]\n"
-            "Path=" + QUrl::toPercentEncoding(pathForInfo, "/") + "\n"
+            "Path=" + QUrl::toPercentEncoding(sourcePath.filePath().mid(volumePrefixLength), "/") + "\n"
             "DeletionDate=" + QDateTime::currentDateTime().toString(Qt::ISODate).toUtf8()
             + "\n";
     infoFile.write(info);
