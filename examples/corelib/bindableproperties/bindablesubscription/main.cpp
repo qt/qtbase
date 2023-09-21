@@ -6,15 +6,13 @@
 #include "bindableuser.h"
 
 #include <QApplication>
-#include <QButtonGroup>
+#include <QBindable>
 #include <QLabel>
+#include <QLocale>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSpinBox>
-#include <QProperty>
 #include <QString>
-#include <QDateTimeEdit>
-#include <QBindable>
 
 int main(int argc, char *argv[])
 {
