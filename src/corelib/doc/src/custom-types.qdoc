@@ -77,7 +77,7 @@
     available for queued signal-slot communication as long as you call it before you
     make the first connection that uses the type.
 
-    The \l{Queued Custom Type Example} declares a \c Block class which is registered
+    The \l{Queued Custom Type} example declares a \c Block class which is registered
     in the \c{main.cpp} file:
 
     \snippet threads/queuedcustomtype/main.cpp main start
@@ -131,9 +131,8 @@
     The Q_DECLARE_METATYPE() macro and qRegisterMetaType() function documentation
     contain more detailed information about their uses and limitations.
 
-    The \l{Custom Type Example}{Custom Type} and \l{Queued Custom Type Example}
-    {Queued Custom Type} examples show how to implement a custom type with the
-    features outlined in this document.
+    The \l{Custom Type Example}{Custom Type} and \l{Queued Custom Type} examples
+    show how to implement a custom type with the features outlined in this document.
 
     The \l{Debugging Techniques} document provides an overview of the debugging
     mechanisms discussed above.
