@@ -3,6 +3,7 @@
 #include "qxcbkeyboard.h"
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
+#include "qxcbcursor.h"
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontext.h>
@@ -377,9 +378,18 @@ void QXcbKeyboard::updateKeymap()
     QXkbCommon::verifyHasLatinLayout(m_xkbKeymap.get());
 }
 
-QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
+QList<QKeyCombination> QXcbKeyboard::possibleKeyCombinations(const QKeyEvent *event) const
 {
-    return QXkbCommon::possibleKeys(m_xkbState.get(), event, m_superAsMeta, m_hyperAsMeta);
+    return QXkbCommon::possibleKeyCombinations(
+        m_xkbState.get(), event, m_superAsMeta, m_hyperAsMeta);
+}
+
+Qt::KeyboardModifiers QXcbKeyboard::queryKeyboardModifiers() const
+{
+    // FIXME: Should we base this on m_xkbState?
+    int stateMask = 0;
+    QXcbCursor::queryPointer(connection(), nullptr, nullptr, &stateMask);
+    return translateModifiers(stateMask);
 }
 
 void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)

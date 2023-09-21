@@ -5,6 +5,7 @@
 #include <xcb/xcb.h>
 #include "qxcbconnection.h"
 #include "qxcbclipboard.h"
+#include "qxcbkeyboard.h"
 #include "qxcbmime.h"
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
@@ -768,7 +769,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
     }
 
     auto buttons = currentDrag() ? b : connection()->queryMouseButtons();
-    auto modifiers = currentDrag() ? mods : connection()->queryKeyboardModifiers();
+    auto modifiers = currentDrag() ? mods : connection()->keyboard()->queryKeyboardModifiers();
 
     QPlatformDragQtResponse qt_response = QWindowSystemInterface::handleDrag(
                 w->window(), dropData, p, supported_actions, buttons, modifiers);
@@ -1008,7 +1009,7 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
         return;
 
     auto buttons = currentDrag() ? b : connection()->queryMouseButtons();
-    auto modifiers = currentDrag() ? mods : connection()->queryKeyboardModifiers();
+    auto modifiers = currentDrag() ? mods : connection()->keyboard()->queryKeyboardModifiers();
 
     QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(
                 currentWindow.data(), dropData, currentPosition, supported_drop_actions,

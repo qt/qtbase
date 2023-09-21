@@ -1141,13 +1141,6 @@ Qt::MouseButtons QXcbConnection::queryMouseButtons() const
     return translateMouseButtons(stateMask);
 }
 
-Qt::KeyboardModifiers QXcbConnection::queryKeyboardModifiers() const
-{
-    int stateMask = 0;
-    QXcbCursor::queryPointer(connection(), nullptr, nullptr, &stateMask);
-    return keyboard()->translateModifiers(stateMask);
-}
-
 QXcbGlIntegration *QXcbConnection::glIntegration() const
 {
     if (m_glIntegrationInitialized)

@@ -74,8 +74,7 @@ public:
 
     QPlatformServices *services() const override;
 
-    Qt::KeyboardModifiers queryKeyboardModifiers() const override;
-    QList<int> possibleKeys(const QKeyEvent *e) const override;
+    QPlatformKeyMapper *keyMapper() const override;
 
     QStringList themeNames() const override;
     QPlatformTheme *createPlatformTheme(const QString &name) const override;

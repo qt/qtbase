@@ -23,11 +23,11 @@
 
 #include <xkbcommon/xkbcommon.h>
 
+#include <qpa/qplatformkeymapper.h>
+
 #include <memory>
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(lcXkbcommon)
 
 class QEvent;
 class QKeyEvent;
@@ -53,8 +53,10 @@ public:
 
     static Qt::KeyboardModifiers modifiers(struct xkb_state *state, xkb_keysym_t keysym = XKB_KEY_VoidSymbol);
 
-    static QList<int> possibleKeys(xkb_state *state, const QKeyEvent *event,
-                                   bool superAsMeta = false, bool hyperAsMeta = false);
+    static QList<int> possibleKeys(xkb_state *state,
+        const QKeyEvent *event, bool superAsMeta = false, bool hyperAsMeta = false);
+    static QList<QKeyCombination> possibleKeyCombinations(xkb_state *state,
+        const QKeyEvent *event, bool superAsMeta = false, bool hyperAsMeta = false);
 
     static void verifyHasLatinLayout(xkb_keymap *keymap);
     static xkb_keysym_t lookupLatinKeysym(xkb_state *state, xkb_keycode_t keycode);

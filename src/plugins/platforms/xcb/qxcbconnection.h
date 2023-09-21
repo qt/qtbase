@@ -183,7 +183,6 @@ public:
     QXcbSystemTrayTracker *systemTrayTracker() const;
 
     Qt::MouseButtons queryMouseButtons() const;
-    Qt::KeyboardModifiers queryKeyboardModifiers() const;
 
     bool isUserInputEvent(xcb_generic_event_t *event) const;
 

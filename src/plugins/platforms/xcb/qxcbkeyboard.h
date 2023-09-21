@@ -14,11 +14,13 @@
 #include <QtGui/private/qxkbcommon_p.h>
 #include <xkbcommon/xkbcommon-x11.h>
 
+#include <qpa/qplatformkeymapper.h>
+
 #include <QEvent>
 
 QT_BEGIN_NAMESPACE
 
-class QXcbKeyboard : public QXcbObject
+class QXcbKeyboard : public QXcbObject, public QPlatformKeyMapper
 {
 public:
     QXcbKeyboard(QXcbConnection *connection);
@@ -34,7 +36,9 @@ public:
     Qt::KeyboardModifiers translateModifiers(int s) const;
     void updateKeymap(xcb_mapping_notify_event_t *event);
     void updateKeymap();
-    QList<int> possibleKeys(const QKeyEvent *event) const;
+
+    QList<QKeyCombination> possibleKeyCombinations(const QKeyEvent *event) const override;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const override;
 
     void updateXKBMods();
     xkb_mod_mask_t xkbModMask(quint16 state);
