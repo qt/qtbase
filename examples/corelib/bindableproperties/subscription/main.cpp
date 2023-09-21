@@ -6,11 +6,12 @@
 #include "user.h"
 
 #include <QApplication>
-#include <QButtonGroup>
 #include <QLabel>
+#include <QLocale>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSpinBox>
+#include <QString>
 
 int main(int argc, char *argv[])
 {
