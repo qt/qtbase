@@ -1186,7 +1186,7 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 #ifndef QT_BOOTSTRAPPED
 static QString freeDesktopTrashLocation(const QString &sourcePath)
 {
-    auto makeTrashDir = [](const QDir &topDir, const QString &trashDir) -> QString {
+    auto makeTrashDir = [](const QDir &topDir, const QString &trashDir = QString()) {
         auto ownerPerms = QFileDevice::ReadOwner
                         | QFileDevice::WriteOwner
                         | QFileDevice::ExeOwner;
@@ -1200,21 +1200,15 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
             return targetDir;
         return QString();
     };
-    auto isSticky = [](const QFileInfo &fileInfo) -> bool {
-        struct stat st;
-        if (stat(QFile::encodeName(fileInfo.absoluteFilePath()).constData(), &st) == 0)
-            return st.st_mode & S_ISVTX;
-
-        return false;
-    };
 
     QString trash;
     const QStorageInfo sourceStorage(sourcePath);
     const QStorageInfo homeStorage(QDir::home());
     // We support trashing of files outside the users home partition
     if (sourceStorage != homeStorage) {
-        const auto dotTrash = ".Trash"_L1;
-        QDir topDir(sourceStorage.rootPath());
+        const auto dotTrash = "/.Trash"_L1;
+        QFileSystemEntry dotTrashDir(sourceStorage.rootPath() + dotTrash);
+
         /*
             Method 1:
             "An administrator can create an $topdir/.Trash directory. The permissions on this
@@ -1225,21 +1219,20 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
             (if it supports trashing in top directories) MUST check for the presence
             of $topdir/.Trash."
         */
-        const QString userID = QString::number(::getuid());
-        if (topDir.cd(dotTrash)) {
-            const QFileInfo trashInfo(topDir.path());
 
+        const QString userID = QString::number(::getuid());
+        if (QT_STATBUF st; QT_LSTAT(dotTrashDir.nativeFilePath(), &st) == 0) {
             // we MUST check that the sticky bit is set, and that it is not a symlink
-            if (trashInfo.isSymLink()) {
+            if (S_ISLNK(st.st_mode)) {
                 // we SHOULD report the failed check to the administrator
                 qCritical("Warning: '%s' is a symlink to '%s'",
-                          trashInfo.absoluteFilePath().toLocal8Bit().constData(),
-                          trashInfo.symLinkTarget().toLatin1().constData());
-            } else if (!isSticky(trashInfo)) {
+                          dotTrashDir.nativeFilePath().constData(),
+                          qt_readlink(dotTrashDir.nativeFilePath()).constData());
+            } else if ((st.st_mode & S_ISVTX) == 0) {
                 // we SHOULD report the failed check to the administrator
                 qCritical("Warning: '%s' doesn't have sticky bit set!",
-                          trashInfo.absoluteFilePath().toLocal8Bit().constData());
-            } else if (trashInfo.isDir()) {
+                          dotTrashDir.nativeFilePath().constData());
+            } else if (S_ISDIR(st.st_mode)) {
                 /*
                     "If the directory exists and passes the checks, a subdirectory of the
                      $topdir/.Trash directory is to be used as the user's trash directory
@@ -1249,7 +1242,7 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
                      the implementation MUST immediately create it, without any warnings or
                      delays for the user."
                 */
-                trash = makeTrashDir(topDir, userID);
+                trash = makeTrashDir(dotTrashDir.filePath(), userID);
             }
         }
         /*
@@ -1260,9 +1253,8 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
              immediately create it, without any warnings or delays for the user."
         */
         if (trash.isEmpty()) {
-            topDir = QDir(sourceStorage.rootPath());
             const QString userTrashDir = dotTrash + u'-' + userID;
-            trash = makeTrashDir(topDir, userTrashDir);
+            trash = makeTrashDir(QDir(sourceStorage.rootPath() + userTrashDir));
         }
     }
     /*
