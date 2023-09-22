@@ -166,11 +166,10 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     for (MountInfo &info : infos) {
         QStorageInfoPrivate d(std::move(info));
         d.retrieveVolumeInfo();
-        QStorageInfo storage(*new QStorageInfoPrivate(std::move(d)));
-        if (storage.bytesTotal() == 0 && storage != root())
+        if (d.bytesTotal == 0 && d.rootPath != u'/')
             continue;
-        storage.d->name = retrieveLabel(storage.d->device);
-        volumes.push_back(storage);
+        d.name = retrieveLabel(d.device);
+        volumes.emplace_back(QStorageInfo(*new QStorageInfoPrivate(std::move(d))));
     }
     return volumes;
 }
