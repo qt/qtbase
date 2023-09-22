@@ -679,7 +679,6 @@ platform_mapping = {
     "qnx": "QNX",
     "vxworks": "VXWORKS",
     "hpux": "HPUX",
-    "nacl": "NACL",
     "android": "ANDROID",
     "uikit": "UIKIT",
     "tvos": "TVOS",

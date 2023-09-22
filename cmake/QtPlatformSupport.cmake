@@ -12,7 +12,6 @@ endfunction()
 qt_set01(LINUX CMAKE_SYSTEM_NAME STREQUAL "Linux")
 qt_set01(HPUX CMAKE_SYSTEM_NAME STREQUAL "HPUX")
 qt_set01(ANDROID CMAKE_SYSTEM_NAME STREQUAL "Android")  # FIXME: How to identify this?
-qt_set01(NACL CMAKE_SYSTEM_NAME STREQUAL "NaCl") # FIXME: How to identify this?
 qt_set01(INTEGRITY CMAKE_SYSTEM_NAME STREQUAL "Integrity") # FIXME: How to identify this?
 qt_set01(VXWORKS CMAKE_SYSTEM_NAME STREQUAL "VxWorks") # FIXME: How to identify this?
 qt_set01(QNX CMAKE_SYSTEM_NAME STREQUAL "QNX") # FIXME: How to identify this?
