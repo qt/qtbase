@@ -3919,13 +3919,13 @@ void tst_QFile::moveToTrash_data()
 
     // success cases
     {
-        QTemporaryFile temp;
+        QTemporaryFile temp("tst_qfile-moveToTrash-XXXXX");
         if (!temp.open())
             QSKIP("Failed to create temporary file!");
         QTest::newRow("temporary file") << temp.fileName() << true << true;
     }
     {
-        QTemporaryDir tempDir;
+        QTemporaryDir tempDir("tst_qfile-moveToTrash-XXXXX");
         if (!tempDir.isValid())
             QSKIP("Failed to create temporary directory!");
         tempDir.setAutoRemove(false);
@@ -3934,11 +3934,11 @@ void tst_QFile::moveToTrash_data()
             << true << true;
     }
     {
-        QTemporaryDir homeDir(QDir::homePath() + QLatin1String("/XXXXXX"));
+        QTemporaryDir homeDir(QDir::homePath() + QLatin1String("/tst_qfile.moveToTrash-XXXXXX"));
         if (!homeDir.isValid())
             QSKIP("Failed to create temporary directory in $HOME!");
         QTemporaryFile homeFile(homeDir.path()
-                              + QLatin1String("/tst_qfile-XXXXXX"));
+                              + QLatin1String("/tst_qfile-moveToTrash-XXXXX"));
         if (!homeFile.open())
             QSKIP("Failed to create temporary file in $HOME");
         homeDir.setAutoRemove(false);
@@ -3950,7 +3950,7 @@ void tst_QFile::moveToTrash_data()
             << homeDir.path() + QLatin1Char('/')
             << true << true;
     }
-    QTest::newRow("relative") << QStringLiteral("tst_qfile_moveToTrash.tmp") << true << true;
+    QTest::newRow("relative") << QStringLiteral("tst_qfile-moveToTrash.tmp") << true << true;
 
     // failure cases
     QTest::newRow("root") << QDir::rootPath() << false << false;
