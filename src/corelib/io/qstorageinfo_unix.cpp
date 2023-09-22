@@ -449,7 +449,7 @@ void QStorageInfoPrivate::initRootPath()
         const QString mountDir = it.rootPath();
         const QByteArray fsName = it.fileSystemType();
         // we try to find most suitable entry
-        if (isParentOf(mountDir, oldRootPath) && maxLength < mountDir.size()) {
+        if (maxLength < mountDir.size() && isParentOf(mountDir, oldRootPath)) {
             maxLength = mountDir.size();
             rootPath = mountDir;
             device = it.device();

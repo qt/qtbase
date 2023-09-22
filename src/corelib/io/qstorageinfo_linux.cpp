@@ -143,7 +143,7 @@ void QStorageInfoPrivate::initRootPath()
     for (const MountInfo &info : infos) {
         // we try to find most suitable entry
         qsizetype mpSize = info.mountPoint.size();
-        if (isParentOf(info.mountPoint, oldRootPath) && maxLength < mpSize) {
+        if (maxLength < mpSize && isParentOf(info.mountPoint, oldRootPath)) {
             bestInfo = &info;
             maxLength = mpSize;
         }
