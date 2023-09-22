@@ -47,13 +47,56 @@ function(qt_feature feature)
     qt_feature_normalize_name("${feature}" feature)
     set_property(GLOBAL PROPERTY QT_FEATURE_ORIGINAL_NAME_${feature} "${original_name}")
 
+    set(no_value_options
+        PRIVATE
+        PUBLIC
+        SYSTEM_LIBRARY
+    )
+    set(single_value_options
+        LABEL
+        PURPOSE
+        SECTION
+    )
+    set(multi_value_options
+        AUTODETECT
+        CONDITION
+        ENABLE
+        DISABLE
+        EMIT_IF
+    )
     cmake_parse_arguments(PARSE_ARGV 1 arg
-        "PRIVATE;PUBLIC"
-        "LABEL;PURPOSE;SECTION"
-        "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF")
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    set(_QT_FEATURE_DEFINITION_${feature} ${ARGN} PARENT_SCOPE)
+    if(arg_SYSTEM_LIBRARY)
+        # Enable SYSTEM_LIBRARY features if the 'force-system-libs' feature is enabled.
+        if(DEFINED arg_ENABLE)
+            list(PREPEND arg_ENABLE OR)
+        endif()
+        list(PREPEND arg_ENABLE QT_FEATURE_force_system_libs)
+
+        # Disable SYSTEM_LIBRARY features if the 'force-bundled-libs' feature is enabled.
+        if(DEFINED arg_DISABLE)
+            list(PREPEND arg_DISABLE OR)
+        endif()
+        list(PREPEND arg_DISABLE QT_FEATURE_force_bundled_libs)
+
+        qt_remove_args(forward_args
+            ARGS_TO_REMOVE ENABLE DISABLE
+            ALL_ARGS ${no_value_options} ${single_value_options} ${multi_value_options}
+            ARGS ${ARGN}
+        )
+
+        list(APPEND forward_args
+            ENABLE ${arg_ENABLE}
+            DISABLE ${arg_DISABLE}
+        )
+    else()
+        set(forward_args ${ARGN})
+    endif()
+
+    set(_QT_FEATURE_DEFINITION_${feature} ${forward_args} PARENT_SCOPE)
 
     # Register feature for future use:
     if (arg_PUBLIC)

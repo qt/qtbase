@@ -682,7 +682,7 @@ qt_feature("freetype" PUBLIC PRIVATE
     PURPOSE "Supports the FreeType 2 font engine (and its supported font formats)."
 )
 qt_feature_definition("freetype" "QT_NO_FREETYPE" NEGATE VALUE "1")
-qt_feature("system-freetype" PRIVATE
+qt_feature("system-freetype" PRIVATE SYSTEM_LIBRARY
     LABEL "  Using system FreeType"
     AUTODETECT NOT MSVC
     CONDITION QT_FEATURE_freetype AND WrapSystemFreetype_FOUND
@@ -704,7 +704,7 @@ qt_feature("harfbuzz" PUBLIC PRIVATE
     LABEL "HarfBuzz"
 )
 qt_feature_definition("harfbuzz" "QT_NO_HARFBUZZ" NEGATE VALUE "1")
-qt_feature("system-harfbuzz" PRIVATE
+qt_feature("system-harfbuzz" PRIVATE SYSTEM_LIBRARY
     LABEL "  Using system HarfBuzz"
     AUTODETECT NOT APPLE AND NOT WIN32
     CONDITION QT_FEATURE_harfbuzz AND WrapSystemHarfbuzz_FOUND
@@ -904,7 +904,7 @@ qt_feature("jpeg" PRIVATE
     DISABLE INPUT_libjpeg STREQUAL 'no'
 )
 qt_feature_definition("jpeg" "QT_NO_IMAGEFORMAT_JPEG" NEGATE VALUE "1")
-qt_feature("system-jpeg" PRIVATE
+qt_feature("system-jpeg" PRIVATE SYSTEM_LIBRARY
     LABEL "  Using system libjpeg"
     CONDITION QT_FEATURE_jpeg AND JPEG_FOUND
     ENABLE INPUT_libjpeg STREQUAL 'system'
@@ -915,7 +915,7 @@ qt_feature("png" PRIVATE
     DISABLE INPUT_libpng STREQUAL 'no'
 )
 qt_feature_definition("png" "QT_NO_IMAGEFORMAT_PNG" NEGATE)
-qt_feature("system-png" PRIVATE
+qt_feature("system-png" PRIVATE SYSTEM_LIBRARY
     LABEL "  Using system libpng"
     AUTODETECT QT_FEATURE_system_zlib
     CONDITION QT_FEATURE_png AND WrapSystemPNG_FOUND
@@ -982,7 +982,7 @@ qt_feature("xcb-sm" PRIVATE
     CONDITION QT_FEATURE_sessionmanager AND X11_SM_FOUND
     EMIT_IF QT_FEATURE_xcb
 )
-qt_feature("system-xcb-xinput" PRIVATE
+qt_feature("system-xcb-xinput" PRIVATE SYSTEM_LIBRARY
     LABEL "Using system-provided xcb-xinput"
     AUTODETECT OFF
     CONDITION XCB_XINPUT_FOUND
@@ -1016,7 +1016,7 @@ qt_feature("textmarkdownreader" PUBLIC
     ENABLE INPUT_libmd4c STREQUAL 'system' OR INPUT_libmd4c STREQUAL 'qt' OR INPUT_libmd4c STREQUAL 'yes'
     DISABLE INPUT_libmd4c STREQUAL 'no'
 )
-qt_feature("system-textmarkdownreader" PUBLIC
+qt_feature("system-textmarkdownreader" PUBLIC SYSTEM_LIBRARY
     SECTION "Kernel"
     LABEL "  Using system libmd4c"
     CONDITION QT_FEATURE_textmarkdownreader AND WrapSystemMd4c_FOUND

@@ -60,7 +60,7 @@ qt_feature("sql-sqlite" PRIVATE
     LABEL "SQLite"
     CONDITION QT_FEATURE_datestring
 )
-qt_feature("system-sqlite" PRIVATE
+qt_feature("system-sqlite" PRIVATE SYSTEM_LIBRARY
     LABEL "  Using system provided SQLite"
     AUTODETECT OFF
     CONDITION QT_FEATURE_sql_sqlite AND SQLite3_FOUND

@@ -515,7 +515,7 @@ qt_feature("doubleconversion" PRIVATE
     LABEL "DoubleConversion"
 )
 qt_feature_definition("doubleconversion" "QT_NO_DOUBLECONVERSION" NEGATE VALUE "1")
-qt_feature("system-doubleconversion" PRIVATE
+qt_feature("system-doubleconversion" PRIVATE SYSTEM_LIBRARY
     LABEL "  Using system DoubleConversion"
     CONDITION QT_FEATURE_doubleconversion AND WrapSystemDoubleConversion_FOUND
     ENABLE INPUT_doubleconversion STREQUAL 'system'
@@ -575,7 +575,7 @@ qt_feature("journald" PRIVATE
     CONDITION Libsystemd_FOUND
 )
 # Used by QCryptographicHash for the BLAKE2 hashing algorithms
-qt_feature("system-libb2" PRIVATE
+qt_feature("system-libb2" PRIVATE SYSTEM_LIBRARY
     LABEL "Using system libb2"
     CONDITION Libb2_FOUND
     ENABLE INPUT_libb2 STREQUAL 'system'
@@ -615,7 +615,7 @@ qt_feature("pcre2"
     DISABLE INPUT_pcre STREQUAL 'no'
 )
 qt_feature_config("pcre2" QMAKE_PRIVATE_CONFIG)
-qt_feature("system-pcre2" PRIVATE
+qt_feature("system-pcre2" PRIVATE SYSTEM_LIBRARY
     LABEL "  Using system PCRE2"
     CONDITION WrapSystemPCRE2_FOUND
     ENABLE INPUT_pcre STREQUAL 'system'

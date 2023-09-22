@@ -968,7 +968,15 @@ qt_feature("alloca" PRIVATE
     LABEL "alloca()"
     CONDITION QT_FEATURE_alloca_h OR QT_FEATURE_alloca_malloc_h OR TEST_alloca_stdlib_h
 )
-qt_feature("system-zlib" PRIVATE
+qt_feature("force-system-libs" PRIVATE
+    LABEL "Force the usage of system libraries"
+    AUTODETECT OFF
+)
+qt_feature("force-bundled-libs" PRIVATE
+    LABEL "Force the usage of bundled libraries"
+    AUTODETECT OFF
+)
+qt_feature("system-zlib" PRIVATE SYSTEM_LIBRARY
     LABEL "Using system zlib"
     CONDITION WrapSystemZLIB_FOUND
 )
@@ -1426,6 +1434,11 @@ qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "Building Qt with C++20 is not supported with MSVC 2019."
     CONDITION QT_FEATURE_cxx20 AND MSVC AND MSVC_VERSION LESS "1930"
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "You cannot force both system and bundled libraries."
+    CONDITION QT_FEATURE_force_bundled_libs AND QT_FEATURE_force_system_libs
 )
 if(WASM)
     qt_extra_definition("QT_EMCC_VERSION" "\"${EMCC_VERSION}\"" PUBLIC)

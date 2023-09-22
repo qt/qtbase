@@ -173,3 +173,5 @@ The following table describes the mapping of configure options to CMake argument
 | -disable-deprecated-up-to <hex_version> | -DQT_DISABLE_DEPRECATED_UP_TO=<hex_version>     |                                                                 |
 | -mimetype-database-compression <type> | -DINPUT_mimetype_database_compression=<type>      | Sets the compression type for mime type database. Supported     |
 |                                       |                                                   | types: gzip, zstd, none.                                        |
+| -force-bundled-libs                   | -DFEATURE_force_bundled_libs=ON                   |                                                                 |
+| -force-system-libs                    | -DFEATURE_force_system_libs=ON                    |                                                                 |
