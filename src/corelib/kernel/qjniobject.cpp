@@ -286,6 +286,27 @@ public:
             env->DeleteGlobalRef(m_jclass);
     }
 
+    template <typename ...Args>
+    void construct(JNIEnv *env, const char *signature = nullptr, Args &&...args)
+    {
+        if (m_jclass) {
+            // get default constructor
+            jmethodID constructorId = QJniObject::getCachedMethodID(env, m_jclass, m_className, "<init>",
+                                                                    signature ? signature : "()V");
+            if (constructorId) {
+                jobject obj = nullptr;
+                if constexpr (sizeof...(Args) == 0)
+                    obj = env->NewObject(m_jclass, constructorId);
+                else
+                    obj = env->NewObjectV(m_jclass, constructorId, std::forward<Args>(args)...);
+                if (obj) {
+                    m_jobject = env->NewGlobalRef(obj);
+                    env->DeleteLocalRef(obj);
+                }
+            }
+        }
+    }
+
     jobject m_jobject = nullptr;
     jclass m_jclass = nullptr;
     bool m_own_jclass = true;
@@ -547,17 +568,8 @@ QJniObject::QJniObject(const char *className)
     d->m_className = className;
     d->m_jclass = loadClass(d->m_className, env.jniEnv());
     d->m_own_jclass = false;
-    if (d->m_jclass) {
-        // get default constructor
-        jmethodID constructorId = getCachedMethodID(env.jniEnv(), "<init>", "()V");
-        if (constructorId) {
-            jobject obj = env->NewObject(d->m_jclass, constructorId);
-            if (obj) {
-                d->m_jobject = env->NewGlobalRef(obj);
-                env->DeleteLocalRef(obj);
-            }
-        }
-    }
+
+    d->construct(env.jniEnv());
 }
 
 /*!
@@ -580,19 +592,11 @@ QJniObject::QJniObject(const char *className, const char *signature, ...)
     d->m_className = className;
     d->m_jclass = loadClass(d->m_className, env.jniEnv());
     d->m_own_jclass = false;
-    if (d->m_jclass) {
-        jmethodID constructorId = getCachedMethodID(env.jniEnv(), "<init>", signature);
-        if (constructorId) {
-            va_list args;
-            va_start(args, signature);
-            jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
-            va_end(args);
-            if (obj) {
-                d->m_jobject = env->NewGlobalRef(obj);
-                env->DeleteLocalRef(obj);
-            }
-        }
-    }
+
+    va_list args;
+    va_start(args, signature);
+    d->construct(env.jniEnv(), signature, args);
+    va_end(args);
 }
 
 /*!
@@ -627,19 +631,10 @@ QJniObject::QJniObject(jclass clazz, const char *signature, ...)
     QJniEnvironment env;
     if (clazz) {
         d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
-        if (d->m_jclass) {
-            jmethodID constructorId = getMethodID(env.jniEnv(), d->m_jclass, "<init>", signature);
-            if (constructorId) {
-                va_list args;
-                va_start(args, signature);
-                jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
-                va_end(args);
-                if (obj) {
-                    d->m_jobject = env->NewGlobalRef(obj);
-                    env->DeleteLocalRef(obj);
-                }
-            }
-        }
+        va_list args;
+        va_start(args, signature);
+        d->construct(env.jniEnv(), signature, args);
+        va_end(args);
     }
 }
 
@@ -667,21 +662,8 @@ QJniObject::QJniObject(jclass clazz, const char *signature, ...)
 */
 
 QJniObject::QJniObject(jclass clazz)
-    : d(new QJniObjectPrivate())
+    : QJniObject(clazz, "()V")
 {
-    QJniEnvironment env;
-    d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
-    if (d->m_jclass) {
-        // get default constructor
-        jmethodID constructorId = getMethodID(env.jniEnv(), d->m_jclass, "<init>", "()V");
-        if (constructorId) {
-            jobject obj = env->NewObject(d->m_jclass, constructorId);
-            if (obj) {
-                d->m_jobject = env->NewGlobalRef(obj);
-                env->DeleteLocalRef(obj);
-            }
-        }
-    }
 }
 
 /*!
