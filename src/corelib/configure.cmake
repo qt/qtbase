@@ -841,7 +841,7 @@ qt_feature("library" PUBLIC
     SECTION "File I/O"
     LABEL "QLibrary"
     PURPOSE "Provides a wrapper for dynamically loaded libraries."
-    CONDITION WIN32 OR HPUX OR ( NOT NACL AND QT_FEATURE_dlopen )
+    CONDITION WIN32 OR HPUX OR QT_FEATURE_dlopen
 )
 qt_feature_definition("library" "QT_NO_LIBRARY" NEGATE VALUE "1")
 qt_feature("settings" PUBLIC

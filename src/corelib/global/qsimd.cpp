@@ -103,12 +103,7 @@ static const int features_indices[] = { 0 };
 #endif
 // end generated
 
-#if defined (Q_OS_NACL)
-static inline uint detectProcessorFeatures()
-{
-    return 0;
-}
-#elif defined(Q_PROCESSOR_ARM)
+#if defined(Q_PROCESSOR_ARM)
 static inline quint64 detectProcessorFeatures()
 {
     quint64 features = 0;
@@ -766,7 +761,7 @@ QT_FUNCTION_TARGET(RDRND) qsizetype qRandomCpu(void *buffer, qsizetype count) no
     ptr = qt_random_rdrnd(ptr, end);
     return ptr - reinterpret_cast<unsigned *>(buffer);
 }
-#elif defined(Q_PROCESSOR_X86) && !defined(Q_OS_NACL) && !defined(Q_PROCESSOR_ARM)
+#elif defined(Q_PROCESSOR_X86) && !defined(Q_PROCESSOR_ARM)
 static bool checkRdrndWorks() noexcept { return false; }
 #endif // Q_PROCESSOR_X86 && RDRND
 

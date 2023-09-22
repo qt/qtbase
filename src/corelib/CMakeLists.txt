@@ -765,12 +765,12 @@ qt_internal_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AN
         m
 )
 
-qt_internal_extend_target(Core CONDITION APPLE AND NOT NACL
+qt_internal_extend_target(Core CONDITION APPLE
     SOURCES
         text/qlocale_mac.mm
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE)
+qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE
     SOURCES
         text/qlocale_unix.cpp
 )
@@ -844,32 +844,32 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone
         time/qtimezoneprivate_data_p.h
 )
 
-qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_timezone AND NOT NACL
+qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_timezone
     SOURCES
         time/qtimezoneprivate_mac.mm
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone AND ANDROID AND (NACL OR NOT APPLE)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone AND ANDROID AND NOT APPLE
     SOURCES
         time/qtimezoneprivate_android.cpp
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone AND UNIX AND NOT ANDROID AND (NACL OR NOT APPLE)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone AND UNIX AND NOT ANDROID AND NOT APPLE
     SOURCES
         time/qtimezoneprivate_tz.cpp
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND UNIX AND NOT ANDROID AND (NACL OR NOT APPLE)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND UNIX AND NOT ANDROID AND NOT APPLE
     SOURCES
         time/qtimezoneprivate_icu.cpp
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND WIN32 AND NOT ANDROID AND (NACL OR NOT APPLE)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND WIN32 AND NOT ANDROID AND NOT APPLE
     SOURCES
         time/qtimezoneprivate_icu.cpp
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone AND WIN32 AND NOT QT_FEATURE_icu AND NOT ANDROID AND (NACL OR NOT APPLE)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone AND WIN32 AND NOT QT_FEATURE_icu AND NOT ANDROID AND NOT APPLE
     SOURCES
         time/qtimezoneprivate_win.cpp
 )
@@ -935,7 +935,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_settings AND WIN32
         io/qsettings_win.cpp
 )
 
-qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_settings AND NOT NACL
+qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_settings
     SOURCES
         io/qsettings_mac.cpp
 )
