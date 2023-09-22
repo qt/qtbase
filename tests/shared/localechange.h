@@ -27,8 +27,7 @@ namespace QTestLocaleChange {
         const int m_category;
         const QByteArray m_prior;
         const bool m_didSet;
-#if !defined(QT_NO_SYSTEMLOCALE) && defined(Q_OS_UNIX) \
-    && (!defined(Q_OS_DARWIN) || defined(Q_OS_NACL))
+#if !defined(QT_NO_SYSTEMLOCALE) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
 #define TRANSIENT_ENV
         // Unix system locale consults environment variables, so we need to set
         // the appropriate one, too.
