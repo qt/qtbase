@@ -630,25 +630,6 @@ QJniObject::QJniObject(const char *className, const char *signature, ...)
     \endcode
 */
 
-QJniObject::QJniObject(const char *className, const char *signature, const QVaListPrivate &args)
-    : d(new QJniObjectPrivate())
-{
-    QJniEnvironment env;
-    d->m_className = toBinaryEncClassName(className);
-    d->m_jclass = loadClass(d->m_className, env.jniEnv(), true);
-    d->m_own_jclass = false;
-    if (d->m_jclass) {
-        jmethodID constructorId = getCachedMethodID(env.jniEnv(), "<init>", signature);
-        if (constructorId) {
-            jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
-            if (obj) {
-                d->m_jobject = env->NewGlobalRef(obj);
-                env->DeleteLocalRef(obj);
-            }
-        }
-    }
-}
-
 /*!
     Constructs a new JNI object from \a clazz by calling the constructor with
     \a signature specifying the types of any subsequent arguments.
@@ -717,25 +698,6 @@ QJniObject::QJniObject(jclass clazz)
             if (obj) {
                 d->m_jobject = env->NewGlobalRef(obj);
                 env->DeleteLocalRef(obj);
-            }
-        }
-    }
-}
-
-QJniObject::QJniObject(jclass clazz, const char *signature, const QVaListPrivate &args)
-    : d(new QJniObjectPrivate())
-{
-    QJniEnvironment env;
-    if (clazz) {
-        d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
-        if (d->m_jclass) {
-            jmethodID constructorId = getMethodID(env.jniEnv(), d->m_jclass, "<init>", signature);
-            if (constructorId) {
-                jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
-                if (obj) {
-                    d->m_jobject = env->NewGlobalRef(obj);
-                    env->DeleteLocalRef(obj);
-                }
             }
         }
     }

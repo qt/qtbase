@@ -495,10 +495,6 @@ public:
     }
 
 private:
-    struct QVaListPrivate { operator va_list &() const { return m_args; } va_list &m_args; };
-    QJniObject(const char *className, const char *signature, const QVaListPrivate &args);
-    QJniObject(jclass clazz, const char *signature, const QVaListPrivate &args);
-
     static jclass loadClass(const QByteArray &className, JNIEnv *env, bool binEncoded = false);
     static QByteArray toBinaryEncClassName(const QByteArray &className);
     static QJniObject getCleanJniObject(jobject obj);
