@@ -1103,7 +1103,7 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
 bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
 {
     bool selfRequired = QCoreApplicationPrivate::threadRequiresCoreApplication();
-    if (!self && selfRequired)
+    if (selfRequired && !self)
         return false;
 
     // Make it possible for Qt Script to hook into events even
@@ -1256,7 +1256,9 @@ bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiv
 
 bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, QEvent *event)
 {
-    if (receiver != QCoreApplication::instance() && receiver->d_func()->extraData) {
+    if ((receiver->d_func()->threadData.loadRelaxed()->thread.loadAcquire() != mainThread()
+         || receiver != QCoreApplication::instance())
+        && receiver->d_func()->extraData) {
         for (qsizetype i = 0; i < receiver->d_func()->extraData->eventFilters.size(); ++i) {
             QObject *obj = receiver->d_func()->extraData->eventFilters.at(i);
             if (!obj)
@@ -1287,8 +1289,8 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
     Q_TRACE_EXIT(QCoreApplication_notify_exit, consumed, filtered);
 
     // send to all application event filters (only does anything in the main thread)
-    if (QCoreApplication::self
-            && receiver->d_func()->threadData.loadRelaxed()->thread.loadAcquire() == mainThread()
+    if (receiver->d_func()->threadData.loadRelaxed()->thread.loadAcquire() == mainThread()
+            && QCoreApplication::self
             && QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event)) {
         filtered = true;
         return filtered;
