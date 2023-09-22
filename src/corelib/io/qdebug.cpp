@@ -1045,7 +1045,7 @@ QDebug &QDebug::resetFormat()
 
     QDebugStateSaver is typically used in the implementation of an operator<<() for debugging:
 
-    \snippet tools/customtype/message.cpp custom type streaming operator
+    \snippet customtype/customtypeexample.cpp custom type streaming operator
 
     \since 5.1
 */
