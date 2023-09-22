@@ -116,8 +116,10 @@ namespace QtSharedPointer {
 
 #ifndef QT_NO_QOBJECT
         Q_CORE_EXPORT static ExternalRefCountData *getAndRef(const QObject *);
+        QT6_ONLY(
         Q_CORE_EXPORT void setQObjectShared(const QObject *, bool enable);
-        Q_CORE_EXPORT void checkQObjectShared(const QObject *);
+        )
+        QT6_ONLY(Q_CORE_EXPORT void checkQObjectShared(const QObject *);)
 #endif
         inline void checkQObjectShared(...) { }
         inline void setQObjectShared(...) { }
@@ -499,7 +501,6 @@ private:
 #ifdef QT_SHAREDPOINTER_TRACK_POINTERS
         internalSafetyCheckAdd(d, ptr);
 #endif
-        d->setQObjectShared(ptr, true);
         enableSharedFromThis(ptr);
     }
 
@@ -527,12 +528,10 @@ private:
                 tmp = o->strongref.loadRelaxed();  // failed, try again
             }
 
-            if (tmp > 0) {
+            if (tmp > 0)
                 o->weakref.ref();
-            } else {
-                o->checkQObjectShared(actual);
+            else
                 o = nullptr;
-            }
         }
 
         qt_ptr_swap(d, o);

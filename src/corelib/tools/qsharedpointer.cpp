@@ -1422,6 +1422,7 @@
 
 QT_BEGIN_NAMESPACE
 
+QT6_ONLY(
 /*!
     \internal
     This function is called for a just-created QObject \a obj, to enable
@@ -1429,7 +1430,9 @@ QT_BEGIN_NAMESPACE
  */
 void QtSharedPointer::ExternalRefCountData::setQObjectShared(const QObject *, bool)
 {}
+)
 
+QT6_ONLY(
 /*!
     \internal
     This function is called when a QSharedPointer is created from a QWeakPointer
@@ -1442,6 +1445,7 @@ void QtSharedPointer::ExternalRefCountData::checkQObjectShared(const QObject *)
     if (strongref.loadRelaxed() < 0)
         qWarning("QSharedPointer: cannot create a QSharedPointer from a QObject-tracking QWeakPointer");
 }
+)
 
 QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::getAndRef(const QObject *obj)
 {
