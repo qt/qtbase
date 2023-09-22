@@ -4289,7 +4289,6 @@ void tst_QFile::moveToTrashXdgSafety()
         // ditto for our user's subdir now
         chmod(QFile::encodeName(genericTrashDir.path()), 01755);
         genericTrashDir.mkdir(QString::number(getuid()), QFile::ReadOwner);
-        QEXPECT_FAIL("", "Fall back not working", Continue);
         QVERIFY(tryTrashing());
     }
 #endif

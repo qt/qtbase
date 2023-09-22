@@ -204,6 +204,16 @@ Q_CORE_EXPORT int qt_open64(const char *pathname, int flags, mode_t);
 #  endif
 #endif
 
+#ifdef AT_FDCWD
+static inline int qt_safe_openat(int dfd, const char *pathname, int flags, mode_t mode = 0777)
+{
+    // everyone already has O_CLOEXEC
+    int fd;
+    EINTR_LOOP(fd, openat(dfd, pathname, flags | O_CLOEXEC, mode));
+    return fd;
+}
+#endif
+
 // don't call QT_OPEN or ::open
 // call qt_safe_open
 static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 0777)
