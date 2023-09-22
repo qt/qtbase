@@ -37,6 +37,11 @@ QT_IMPL_METATYPE_EXTERN(QStorageInfo)
     \snippet code/src_corelib_io_qstorageinfo.cpp 2
 */
 
+QStorageInfo::QStorageInfo(QStorageInfoPrivate &dd)
+    : d(&dd)
+{
+}
+
 /*!
     Constructs an empty QStorageInfo object.
 

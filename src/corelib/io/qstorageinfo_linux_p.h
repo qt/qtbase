@@ -29,6 +29,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using MountInfo = QStorageInfoPrivate::MountInfo;
 
 static const char MountInfoPath[] = "/proc/self/mountinfo";
 
@@ -150,16 +151,6 @@ static void tokenizeLine(std::array<QByteArrayView, FieldCount> &fields, QByteAr
                FieldCount, MountInfoPath, fieldIndex, int(line.size()), line.data());
         fields.fill({});
     }
-}
-
-namespace {
-struct MountInfo {
-    QString mountPoint;
-    QByteArray fsType;
-    QByteArray device;
-    QByteArray fsRoot;
-    dev_t stDev = 0;
-};
 }
 
 // parseMountInfo() is called from:

@@ -164,12 +164,12 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 
     QList<QStorageInfo> volumes;
     for (MountInfo &info : infos) {
-        QStorageInfo storage(info.mountPoint);
-        storage.d->device = info.device;
-        storage.d->fileSystemType = info.fsType;
-        storage.d->subvolume = info.fsRoot;
+        QStorageInfoPrivate d(std::move(info));
+        d.retrieveVolumeInfo();
+        QStorageInfo storage(*new QStorageInfoPrivate(std::move(d)));
         if (storage.bytesTotal() == 0 && storage != root())
             continue;
+        storage.d->name = retrieveLabel(storage.d->device);
         volumes.push_back(storage);
     }
     return volumes;

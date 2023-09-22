@@ -56,6 +56,7 @@ public:
     static QStorageInfo root();
 
 private:
+    explicit QStorageInfo(QStorageInfoPrivate &dd);
     friend class QStorageInfoPrivate;
     friend inline bool operator==(const QStorageInfo &first, const QStorageInfo &second)
     {

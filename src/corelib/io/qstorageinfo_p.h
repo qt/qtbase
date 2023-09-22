@@ -28,10 +28,7 @@ inline Q_LOGGING_CATEGORY(lcStorageInfo, "qt.core.qstorageinfo", QtWarningMsg)
 class QStorageInfoPrivate : public QSharedData
 {
 public:
-    inline QStorageInfoPrivate() : QSharedData(),
-        bytesTotal(-1), bytesFree(-1), bytesAvailable(-1), blockSize(-1),
-        readOnly(false), ready(false), valid(false)
-    {}
+    QStorageInfoPrivate() = default;
 
     void initRootPath();
     void doStat();
@@ -59,6 +56,24 @@ protected:
     void retrieveLabel();
 #elif defined(Q_OS_UNIX)
     void retrieveVolumeInfo();
+
+#  ifdef Q_OS_LINUX
+public:
+    struct MountInfo {
+        QString mountPoint;
+        QByteArray fsType;
+        QByteArray device;
+        QByteArray fsRoot;
+        dev_t stDev = 0;
+    };
+    QStorageInfoPrivate(MountInfo &&info)
+        : rootPath(std::move(info.mountPoint)),
+          device(std::move(info.device)),
+          subvolume(std::move(info.fsRoot)),
+          fileSystemType(std::move(info.fsType))
+    {
+    }
+#  endif
 #endif
 
 public:
@@ -68,14 +83,14 @@ public:
     QByteArray fileSystemType;
     QString name;
 
-    qint64 bytesTotal;
-    qint64 bytesFree;
-    qint64 bytesAvailable;
-    ulong blockSize;
+    qint64 bytesTotal = -1;
+    qint64 bytesFree = -1;
+    qint64 bytesAvailable = -1;
+    ulong blockSize = ulong(-1);
 
-    bool readOnly;
-    bool ready;
-    bool valid;
+    bool readOnly = false;
+    bool ready = false;
+    bool valid = false;
 };
 
 // Common helper functions
