@@ -91,16 +91,41 @@ static inline quint64 retrieveDeviceId(const QByteArray &device, quint64 deviceI
     return st.st_rdev;
 }
 
-static inline QString retrieveLabel(const QByteArray &device, quint64 deviceId)
+static QDirIterator devicesByLabel()
 {
     static const char pathDiskByLabel[] = "/dev/disk/by-label";
+    static constexpr auto LabelFileFilter =
+            QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot;
 
+    return QDirIterator(QLatin1StringView(pathDiskByLabel), LabelFileFilter);
+}
+
+static inline auto retrieveLabels()
+{
+    struct Entry {
+        QString label;
+        quint64 deviceId;
+    };
+    QList<Entry> result;
+
+    QDirIterator it = devicesByLabel();
+    while (it.hasNext()) {
+        QFileInfo fileInfo = it.nextFileInfo();
+        quint64 deviceId = retrieveDeviceId(QFile::encodeName(fileInfo.filePath()));
+        if (!deviceId)
+            continue;
+        result.emplaceBack(Entry{ decodeFsEncString(fileInfo.fileName()), deviceId });
+    }
+    return result;
+}
+
+static inline QString retrieveLabel(const QByteArray &device, quint64 deviceId)
+{
     deviceId = retrieveDeviceId(device, deviceId);
     if (!deviceId)
         return QString();
 
-    auto filter = QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot;
-    QDirIterator it(QLatin1StringView(pathDiskByLabel), filter);
+    QDirIterator it = devicesByLabel();
     while (it.hasNext()) {
         QFileInfo fileInfo = it.nextFileInfo();
         QString name = fileInfo.fileName();
@@ -206,6 +231,17 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     if (infos.empty())
         return QList{root()};
 
+    auto labelForDevice = [labelMap = retrieveLabels()](const QByteArray &device, quint64 devid) {
+        devid = retrieveDeviceId(device, devid);
+        if (!devid)
+            return QString();
+        for (auto &[deviceLabel, deviceId] : labelMap) {
+            if (devid == deviceId)
+                return deviceLabel;
+        }
+        return QString();
+    };
+
     QList<QStorageInfo> volumes;
     for (MountInfo &info : infos) {
         QStorageInfoPrivate d(std::move(info));
@@ -214,7 +250,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
             continue;
         if (info.stDev != deviceIdForPath(d.rootPath))
             continue;       // probably something mounted over this mountpoint
-        d.name = retrieveLabel(d.device, info.stDev);
+        d.name = labelForDevice(d.device, info.stDev);
         volumes.emplace_back(QStorageInfo(*new QStorageInfoPrivate(std::move(d))));
     }
     return volumes;
