@@ -1,6 +1,4 @@
 requires(qtHaveModule(widgets))
 
 TEMPLATE      = subdirs
-SUBDIRS       = contiguouscache \
-                customtype \
-                customtypesending
+SUBDIRS       = contiguouscache

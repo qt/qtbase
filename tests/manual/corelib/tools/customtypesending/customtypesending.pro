@@ -4,7 +4,6 @@ SOURCES   = main.cpp \
             message.cpp \
             window.cpp
 QT += widgets
+INCLUDEPATH += .
+TARGET = customtypesending
 
-# install
-target.path = $$[QT_INSTALL_EXAMPLES]/corelib/tools/customtypesending
-INSTALLS += target

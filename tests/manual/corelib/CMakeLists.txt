@@ -2,5 +2,4 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_subdirectory(time)
-# Needs conversion from qmake:
-# add_subdirectory(tools)
+add_subdirectory(tools)

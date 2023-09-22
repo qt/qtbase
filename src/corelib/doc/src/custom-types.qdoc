@@ -37,7 +37,7 @@
 
     The following \c Message class definition includes these members:
 
-    \snippet tools/customtype/message.h custom type definition
+    \snippet customtype/customtypeexample.cpp custom type definition
 
     The class also provides a constructor for normal use and two public member functions
     that are used to obtain the private data.
@@ -53,11 +53,14 @@
     to this class, we invoke the Q_DECLARE_METATYPE() macro on the class in the header
     file where it is defined:
 
-    \snippet tools/customtype/message.h custom type meta-type declaration
+    \snippet customtype/customtypeexample.cpp custom type meta-type declaration
 
     This now makes it possible for \c Message values to be stored in QVariant objects
-    and retrieved later. See the \l{Custom Type Example} for code that demonstrates
-    this.
+    and retrieved later:
+
+    \snippet customtype/customtypeexample.cpp storing a custom value
+    \dots
+    \snippet customtype/customtypeexample.cpp retrieving a custom value
 
     The Q_DECLARE_METATYPE() macro also makes it possible for these values to be used as
     arguments to signals, but \e{only in direct signal-slot connections}.
@@ -107,18 +110,17 @@
     It is often quite useful to make a custom type printable for debugging purposes,
     as in the following code:
 
-    \snippet tools/customtype/main.cpp printing a custom type
+    \snippet customtype/customtypeexample.cpp printing a custom type
 
     This is achieved by creating a streaming operator for the type, which is often
     defined in the header file for that type:
 
-    \snippet tools/customtype/message.h custom type streaming operator
+    \snippet customtype/customtypeexample.cpp custom type streaming operator declaration
 
-    The implementation for the \c Message type in the \l{Custom Type Example}
-    goes to some effort to make the printable representation as readable as
-    possible:
+    The implementation for the \c Message type here goes to some effort to make the
+    printable representation as readable as possible:
 
-    \snippet tools/customtype/message.cpp custom type streaming operator
+    \snippet customtype/customtypeexample.cpp custom type streaming operator
 
     The output sent to the debug stream can, of course, be made as simple or as
     complicated as you like. Note that the value returned by this function is
@@ -131,8 +133,8 @@
     The Q_DECLARE_METATYPE() macro and qRegisterMetaType() function documentation
     contain more detailed information about their uses and limitations.
 
-    The \l{Custom Type Example}{Custom Type} and \l{Queued Custom Type} examples
-    show how to implement a custom type with the features outlined in this document.
+    The \l{Queued Custom Type} example shows how to implement a custom type with
+    the features outlined in this document.
 
     The \l{Debugging Techniques} document provides an overview of the debugging
     mechanisms discussed above.
