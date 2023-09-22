@@ -149,10 +149,10 @@ void QStorageInfoPrivate::initRootPath()
         }
     }
     if (bestInfo) {
-        rootPath = bestInfo->mountPoint;
-        device = bestInfo->device;
-        fileSystemType = bestInfo->fsType;
-        subvolume = bestInfo->fsRoot;
+        rootPath = std::move(bestInfo->mountPoint);
+        device = std::move(bestInfo->device);
+        fileSystemType = std::move(bestInfo->fsType);
+        subvolume = std::move(bestInfo->fsRoot);
     }
 }
 
