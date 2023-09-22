@@ -139,16 +139,20 @@ void QStorageInfoPrivate::initRootPath()
     const QString oldRootPath = rootPath;
     rootPath.clear();
 
-    for (auto &info : infos) {
+    const MountInfo *bestInfo = nullptr;
+    for (const MountInfo &info : infos) {
         // we try to find most suitable entry
         qsizetype mpSize = info.mountPoint.size();
         if (isParentOf(info.mountPoint, oldRootPath) && maxLength < mpSize) {
+            bestInfo = &info;
             maxLength = mpSize;
-            rootPath = info.mountPoint;
-            device = info.device;
-            fileSystemType = info.fsType;
-            subvolume = info.fsRoot;
         }
+    }
+    if (bestInfo) {
+        rootPath = bestInfo->mountPoint;
+        device = bestInfo->device;
+        fileSystemType = bestInfo->fsType;
+        subvolume = bestInfo->fsRoot;
     }
 }
 
