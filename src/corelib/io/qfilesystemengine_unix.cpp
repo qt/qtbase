@@ -1295,9 +1295,15 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         error = QSystemError(ENOENT, QSystemError::StandardLibraryError);
         return false;
     }
-    const QString sourcePath = sourceInfo.absoluteFilePath();
+    const QFileSystemEntry sourcePath = [&] {
+        if (QString path = source.filePath(); path.size() > 1 && path.endsWith(u'/')) {
+            path.chop(1);
+            return absoluteName(QFileSystemEntry(path));
+        }
+        return absoluteName(source);
+    }();
 
-    QDir trashDir(freeDesktopTrashLocation(sourcePath));
+    QDir trashDir(freeDesktopTrashLocation(sourcePath.filePath()));
     if (!trashDir.exists())
         return false;
     /*
@@ -1321,15 +1327,12 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
          file with the same name and location gets trashed many times, each subsequent
          trashing must not overwrite a previous copy."
     */
-    const QString trashedName = sourceInfo.isDir()
-                              ? QDir(sourcePath).dirName()
-                              : sourceInfo.fileName();
-    QString uniqueTrashedName = u'/' + trashedName;
+    QString uniqueTrashedName = u'/' + sourcePath.fileName();
     QString infoFileName;
     int counter = 0;
     QFile infoFile;
-    auto makeUniqueTrashedName = [trashedName, &counter]() -> QString {
-        return QString::asprintf("/%ls-%04d", qUtf16Printable(trashedName), ++counter);
+    auto makeUniqueTrashedName = [sourcePath, &counter]() -> QString {
+        return QString::asprintf("/%ls-%04d", qUtf16Printable(sourcePath.fileName()), ++counter);
     };
     do {
         while (QFile::exists(trashDir.filePath(filesDir) + uniqueTrashedName))
@@ -1353,14 +1356,12 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
             uniqueTrashedName = makeUniqueTrashedName();
     } while (!infoFile.isOpen());
 
-    QString pathForInfo;
-    const QStorageInfo storageInfo(sourcePath);
+    QString pathForInfo = sourcePath.filePath();
+    const QStorageInfo storageInfo(pathForInfo);
     if (storageInfo.isValid() && storageInfo.rootPath() != rootPath() && storageInfo != QStorageInfo(QDir::home())) {
-        pathForInfo = sourcePath.mid(storageInfo.rootPath().length());
+        pathForInfo = std::move(pathForInfo).mid(storageInfo.rootPath().length());
         if (pathForInfo.front() == u'/')
             pathForInfo = pathForInfo.mid(1);
-    } else {
-        pathForInfo = sourcePath;
     }
 
     /*
