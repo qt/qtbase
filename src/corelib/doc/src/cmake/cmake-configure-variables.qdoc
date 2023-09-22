@@ -484,15 +484,15 @@ methods provided by CMake.
 \title QT_I18N_LANGUAGES
 \target cmake-variable-QT_I18N_LANGUAGES
 
-\summary {List of languages to be used for project internationalization}
+\summary {List of languages to be used for project internationalization.}
 
 \cmakevariablesince 6.7
 
-This variable specifies a list of languages that are used for project
+Specifies a list of languages that are used for project
 internationalization. The single languages must be compatible with the
 string-based \l QLocale constructor.
 
-The languages in \c QT_I18N_LANGUAGES are used to
+The languages in \c QT_I18N_LANGUAGES are used to:
 \list
     \li Set up executable targets for consuming \c{.qm} files.
     \li Automatically construct \c{.ts} file names in
@@ -500,7 +500,7 @@ The languages in \c QT_I18N_LANGUAGES are used to
 \endlist
 
 This variable can be conveniently set with the
-{qt6_standard_project_setup}{qt_standard_project_setup()} command.
+\l {qt6_standard_project_setup}{qt_standard_project_setup()} command.
 
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()}
 \sa {qt6_add_translations}{qt_add_translations()}
@@ -513,18 +513,18 @@ This variable can be conveniently set with the
 \title QT_I18N_NATIVE_LANGUAGE
 \target cmake-variable-QT_I18N_NATIVE_LANGUAGE
 
-\summary {Specifies the language of translatable strings}
+\summary {Specifies the language of translatable strings.}
 
 \cmakevariablesince 6.7
 
-This variable specifies the language of translatable strings in the source code.
+Specifies the language of translatable strings in the source code.
 The language must be compatible with the string-based \l QLocale constructor.
 
 Together with \c{QT_I18N_LANGUAGES}, this variable is used to determine the
 names of \c{.ts} files for \l{qt6_add_translations}{qt_add_translations()}.
 
 This variable can be conveniently set with the
-{qt6_standard_project_setup}{qt_standard_project_setup()} command.
+\l {qt6_standard_project_setup}{qt_standard_project_setup()} command.
 
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()}
 \sa {qt6_add_translations}{qt_add_translations()}
