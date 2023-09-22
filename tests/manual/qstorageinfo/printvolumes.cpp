@@ -12,21 +12,31 @@ void printVolumes(const QList<QStorageInfo> &volumes, int (*printer)(const char 
     //                          214958080   39088272  4096                   /
     //  /dev/disk1s2 (hfs)  RW  488050672  419909696  4096  Macintosh HD2    /Volumes/Macintosh HD2
 
-    printer("Filesystem (Type)            Size  Available BSize  Label            Mounted on\n");
+    int fsColumnWidth = 25;
+    int labelColumnWidth = 20;
+    for (const QStorageInfo &info : volumes) {
+        int len = 3 + info.device().size() + info.fileSystemType().size();
+        fsColumnWidth = qMax(fsColumnWidth, len);
+        if (QString subvol = info.subvolume(); !subvol.isEmpty())
+            labelColumnWidth = qMax(labelColumnWidth, int(subvol.size() + strlen("subvol=")));
+        else
+            labelColumnWidth = qMax(labelColumnWidth, int(info.name().size()));
+    }
+
+    printer("%*s          Size  Available BSize  %*s Mounted on\n",
+            -fsColumnWidth, "Filesystem (Type)",
+            -labelColumnWidth, "Label");
     for (const QStorageInfo &info : volumes) {
         QByteArray fsAndType = info.device();
         if (info.fileSystemType() != fsAndType)
             fsAndType += " (" + info.fileSystemType() + ')';
 
-        printer("%-19s R%c ", fsAndType.constData(), info.isReadOnly() ? 'O' : 'W');
-        if (fsAndType.size() > 19)
-            printer("\n%23s", "");
-
+        printer("%*s R%c ", -fsColumnWidth, fsAndType.constData(), info.isReadOnly() ? 'O' : 'W');
         printer("%10llu %10llu %5u  ", info.bytesTotal() / 1024, info.bytesFree() / 1024, info.blockSize());
         if (!info.subvolume().isEmpty())
-            printer("subvol=%-18s ", qPrintable(info.subvolume()));
+            printer("subvol=%*s ", -labelColumnWidth + int(strlen("subvol=")), qPrintable(info.subvolume()));
         else
-            printer("%-25s ", qPrintable(info.name()));
+            printer("%*s ", -labelColumnWidth, qPrintable(info.name()));
         printer("%s\n", qPrintable(info.rootPath()));
     }
 }
