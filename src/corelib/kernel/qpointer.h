@@ -43,6 +43,13 @@ public:
     QPointer(const QPointer<X> &other) noexcept
         : wp(other.wp.internalData(), true) {}
 
+    template <typename X, if_convertible<X> = true>
+    QPointer &operator=(const QPointer<X> &other)
+    {
+        wp.assign(other.data());
+        return *this;
+    }
+
 #ifdef Q_QDOC
     // Stop qdoc from complaining about missing function
     ~QPointer();
