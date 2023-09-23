@@ -57,6 +57,19 @@ void tst_QPointer::conversion()
         QCOMPARE_EQ(pio.get(), &file);
         QCOMPARE_EQ(pio, pf);
         QCOMPARE_EQ(pio.get(), pf.get());
+
+        // reset
+        pio = nullptr;
+        QCOMPARE_EQ(pio, nullptr);
+        QCOMPARE_EQ(pio.get(), nullptr);
+
+        // copy-assignment
+        QCOMPARE_EQ(pf, &file);
+        pio = pf;
+        QCOMPARE_EQ(pio, &file);
+        QCOMPARE_EQ(pio.get(), &file);
+        QCOMPARE_EQ(pio, pf);
+        QCOMPARE_EQ(pio.get(), pf.get());
     }
     // move-conversion:
     {
@@ -65,6 +78,16 @@ void tst_QPointer::conversion()
         QCOMPARE_EQ(pf, &file);
         QPointer<const QIODevice> pio = std::move(pf);
         QCOMPARE_EQ(pf, nullptr);
+        QCOMPARE_EQ(pio, &file);
+        QCOMPARE_EQ(pio.get(), &file);
+
+        // reset
+        pio = nullptr;
+        QCOMPARE_EQ(pio, nullptr);
+        QCOMPARE_EQ(pio.get(), nullptr);
+
+        // move-assignment
+        pio = QPointer<QFile>(&file);
         QCOMPARE_EQ(pio, &file);
         QCOMPARE_EQ(pio.get(), &file);
     }
