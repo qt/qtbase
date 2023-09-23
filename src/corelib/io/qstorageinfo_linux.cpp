@@ -8,6 +8,7 @@
 
 #include "qdiriterator.h"
 #include <private/qcore_unix_p.h>
+#include <private/qtools_p.h>
 
 #if defined(Q_OS_ANDROID)
 #  include <sys/mount.h>
@@ -35,27 +36,39 @@ using namespace Qt::StringLiterals;
 // udev encodes the labels with ID_LABEL_FS_ENC which is done with
 // blkid_encode_string(). Within this function some 1-byte utf-8
 // characters not considered safe (e.g. '\' or ' ') are encoded as hex
-static QString decodeFsEncString(const QString &str)
+static QString decodeFsEncString(QString &&str)
 {
-    QString decoded;
-    decoded.reserve(str.size());
+    using namespace QtMiscUtils;
+    qsizetype start = str.indexOf(u'\\');
+    if (start < 0)
+        return std::move(str);
 
-    int i = 0;
-    while (i < str.size()) {
-        if (i <= str.size() - 4) {    // we need at least four characters \xAB
-            if (QStringView{str}.sliced(i).startsWith("\\x"_L1)) {
-                bool bOk;
-                const int code = QStringView{str}.mid(i+2, 2).toInt(&bOk, 16);
-                if (bOk && code >= 0x20 && code < 0x80) {
-                    decoded += QChar(code);
-                    i += 4;
-                    continue;
-                }
-            }
+    // decode in-place
+    QString decoded = std::move(str);
+    auto ptr = reinterpret_cast<char16_t *>(decoded.begin());
+    qsizetype in = start;
+    qsizetype out = start;
+    qsizetype size = decoded.size();
+
+    while (in < size) {
+        Q_ASSERT(ptr[in] == u'\\');
+        if (size - in >= 4 && ptr[in + 1] == u'x') {    // we need four characters: \xAB
+            int c = fromHex(ptr[in + 2]) << 4;
+            c |= fromHex(ptr[in + 3]);
+            if (Q_UNLIKELY(c < 0))
+                c = QChar::ReplacementCharacter;        // bad hex sequence
+            ptr[out++] = c;
+            in += 4;
         }
-        decoded += str.at(i);
-        ++i;
+
+        for ( ; in < size; ++in) {
+            char16_t c = ptr[in];
+            if (c == u'\\')
+                break;
+            ptr[out++] = c;
+        }
     }
+    decoded.resize(out);
     return decoded;
 }
 
