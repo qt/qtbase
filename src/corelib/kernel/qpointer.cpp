@@ -112,6 +112,17 @@
 */
 
 /*!
+    \fn template <class T> template <class X> QPointer<T> &QPointer<T>::operator=(const QPointer<X> &other)
+    \since 6.6
+
+    Conversion assignment operator. Makes this guarded pointer guard the
+    same object guarded by \a other.
+
+    \note This operator participates  in overload resolution only if \c{X*}
+    is convertible to \c{T*}.
+*/
+
+/*!
     \fn template <class T> void QPointer<T>::swap(QPointer &other)
     \since 5.6
 
