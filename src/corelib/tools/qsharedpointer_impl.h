@@ -554,7 +554,7 @@ public:
 
     template <class X, IfCompatible<X> = true>
     QWeakPointer(QWeakPointer<X> &&other) noexcept
-        : d(other.d), value(other.value)
+        : d(other.d), value(other.toStrongRef().get()) // must go through QSharedPointer, see below
     {
         other.d = nullptr;
         other.value = nullptr;
@@ -659,7 +659,7 @@ private:
 
     template <class X>
     inline QWeakPointer &assign(X *ptr)
-    { return *this = QWeakPointer<X>(ptr, true); }
+    { return *this = QWeakPointer<T>(ptr, true); }
 
 #ifndef QT_NO_QOBJECT
     template <class X, IfCompatible<X> = true>
