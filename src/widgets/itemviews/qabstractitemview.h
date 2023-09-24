@@ -326,20 +326,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QAbstractItemView)
     Q_DISABLE_COPY(QAbstractItemView)
-    Q_PRIVATE_SLOT(d_func(), void _q_columnsAboutToBeRemoved(const QModelIndex&, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_columnsRemoved(const QModelIndex&, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_columnsInserted(const QModelIndex&, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_rowsInserted(const QModelIndex&, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_rowsRemoved(const QModelIndex&, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_columnsMoved(const QModelIndex&, int, int, const QModelIndex&, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_rowsMoved(const QModelIndex&, int, int, const QModelIndex&, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_modelDestroyed())
-    Q_PRIVATE_SLOT(d_func(), void _q_layoutChanged())
-    Q_PRIVATE_SLOT(d_func(), void _q_headerDataChanged())
-#if QT_CONFIG(gestures) && QT_CONFIG(scroller)
-    Q_PRIVATE_SLOT(d_func(), void _q_scrollerStateChanged())
-#endif
-    Q_PRIVATE_SLOT(d_func(), void _q_delegateSizeHintChanged(const QModelIndex&))
 
     friend class ::tst_QAbstractItemView;
     friend class ::tst_QTreeView;

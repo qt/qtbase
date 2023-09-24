@@ -195,11 +195,6 @@ private:
 
     Q_DECLARE_PRIVATE(QTreeView)
     Q_DISABLE_COPY(QTreeView)
-#if QT_CONFIG(animation)
-    Q_PRIVATE_SLOT(d_func(), void _q_endAnimatedOperation())
-#endif // animation
-    Q_PRIVATE_SLOT(d_func(), void _q_modelAboutToBeReset())
-    Q_PRIVATE_SLOT(d_func(), void _q_sortIndicatorChanged(int column, Qt::SortOrder order))
 };
 
 QT_END_NAMESPACE

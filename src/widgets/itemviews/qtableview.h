@@ -145,13 +145,6 @@ private:
 
     Q_DECLARE_PRIVATE(QTableView)
     Q_DISABLE_COPY(QTableView)
-    Q_PRIVATE_SLOT(d_func(), void _q_selectRow(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_selectColumn(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_updateSpanInsertedRows(QModelIndex,int,int))
-    Q_PRIVATE_SLOT(d_func(), void _q_updateSpanInsertedColumns(QModelIndex,int,int))
-    Q_PRIVATE_SLOT(d_func(), void _q_updateSpanRemovedRows(QModelIndex,int,int))
-    Q_PRIVATE_SLOT(d_func(), void _q_updateSpanRemovedColumns(QModelIndex,int,int))
-    Q_PRIVATE_SLOT(d_func(), void _q_sortIndicatorChanged(int column, Qt::SortOrder order))
 };
 
 QT_END_NAMESPACE

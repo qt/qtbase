@@ -312,16 +312,6 @@ private:
 
     Q_DECLARE_PRIVATE(QTableWidget)
     Q_DISABLE_COPY(QTableWidget)
-
-    Q_PRIVATE_SLOT(d_func(), void _q_emitItemPressed(const QModelIndex &index))
-    Q_PRIVATE_SLOT(d_func(), void _q_emitItemClicked(const QModelIndex &index))
-    Q_PRIVATE_SLOT(d_func(), void _q_emitItemDoubleClicked(const QModelIndex &index))
-    Q_PRIVATE_SLOT(d_func(), void _q_emitItemActivated(const QModelIndex &index))
-    Q_PRIVATE_SLOT(d_func(), void _q_emitItemEntered(const QModelIndex &index))
-    Q_PRIVATE_SLOT(d_func(), void _q_emitItemChanged(const QModelIndex &index))
-    Q_PRIVATE_SLOT(d_func(), void _q_emitCurrentItemChanged(const QModelIndex &previous, const QModelIndex &current))
-    Q_PRIVATE_SLOT(d_func(), void _q_sort())
-    Q_PRIVATE_SLOT(d_func(), void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight))
 };
 
 inline void QTableWidget::removeCellWidget(int arow, int acolumn)
