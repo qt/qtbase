@@ -28,6 +28,7 @@ QT_END_NAMESPACE
 #include <QtCore/qatomic.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qmetatype.h> // for IsPointerToTypeDerivedFromQObject
+#include <QtCore/qxptype_traits.h>
 
 #include <memory>
 
@@ -537,6 +538,12 @@ class QWeakPointer
     template <typename X>
     using IfCompatible = typename std::enable_if<std::is_convertible<X*, T*>::value, bool>::type;
 
+    template <typename X>
+    using IfVirtualBase = typename std::enable_if<qxp::is_virtual_base_of_v<T, X>, bool>::type;
+
+    template <typename X>
+    using IfNotVirtualBase = typename std::enable_if<!qxp::is_virtual_base_of_v<T, X>, bool>::type;
+
 public:
     typedef T element_type;
     typedef T value_type;
@@ -566,7 +573,15 @@ public:
     }
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QWeakPointer)
 
-    template <class X, IfCompatible<X> = true>
+    template <class X, IfCompatible<X> = true, IfNotVirtualBase<X> = true>
+    Q_NODISCARD_CTOR
+    QWeakPointer(QWeakPointer<X> &&other) noexcept
+        : d(std::exchange(other.d, nullptr)),
+          value(std::exchange(other.value, nullptr))
+    {
+    }
+
+    template <class X, IfCompatible<X> = true, IfVirtualBase<X> = true>
     Q_NODISCARD_CTOR
     QWeakPointer(QWeakPointer<X> &&other) noexcept
         : d(other.d), value(other.toStrongRef().get()) // must go through QSharedPointer, see below
