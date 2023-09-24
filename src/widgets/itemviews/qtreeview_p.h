@@ -23,6 +23,8 @@
 #include <QtCore/qvariantanimation.h>
 #endif
 
+#include <array>
+
 QT_REQUIRE_CONFIG(treeview);
 
 QT_BEGIN_NAMESPACE
@@ -62,6 +64,7 @@ public:
 
     ~QTreeViewPrivate() {}
     void initialize();
+    void clearConnections();
     int logicalIndexForTree() const;
     inline bool isTreePosition(int logicalIndex) const
     {
@@ -254,6 +257,12 @@ public:
 
     // tree position
     int treePosition;
+
+    QMetaObject::Connection animationConnection;
+    QMetaObject::Connection selectionmodelConnection;
+    std::array<QMetaObject::Connection, 2> modelConnections;
+    std::array<QMetaObject::Connection, 5> headerConnections;
+    QMetaObject::Connection sortHeaderConnection;
 };
 
 QT_END_NAMESPACE
