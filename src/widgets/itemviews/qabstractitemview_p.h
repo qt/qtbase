@@ -28,6 +28,8 @@
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qelapsedtimer.h"
 
+#include <array>
+
 QT_REQUIRE_CONFIG(itemviews);
 
 QT_BEGIN_NAMESPACE
@@ -178,8 +180,8 @@ public:
     inline void releaseEditor(QWidget *editor, const QModelIndex &index = QModelIndex()) const {
         if (editor) {
             Q_Q(const QAbstractItemView);
-            QObject::disconnect(editor, SIGNAL(destroyed(QObject*)),
-                                q_func(), SLOT(editorDestroyed(QObject*)));
+            QObject::disconnect(editor, &QWidget::destroyed,
+                                q, &QAbstractItemView::editorDestroyed);
             editor->removeEventFilter(itemDelegate);
             editor->hide();
             QAbstractItemDelegate *delegate = q->itemDelegateForIndex(index);
@@ -418,7 +420,16 @@ public:
 
     virtual QRect visualRect(const QModelIndex &index) const { return q_func()->visualRect(index); }
 
+    std::array<QMetaObject::Connection, 14> modelConnections;
+    std::array<QMetaObject::Connection, 4> scrollbarConnections;
+#if QT_CONFIG(gestures) && QT_CONFIG(scroller)
+    QMetaObject::Connection scollerConnection;
+#endif
+
 private:
+    void connectDelegate(QAbstractItemDelegate *delegate);
+    void disconnectDelegate(QAbstractItemDelegate *delegate);
+    void disconnectAll();
     inline QAbstractItemDelegate *delegateForIndex(const QModelIndex &index) const {
         QMap<int, QPointer<QAbstractItemDelegate> >::ConstIterator it;
 
