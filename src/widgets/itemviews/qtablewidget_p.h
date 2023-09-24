@@ -22,6 +22,8 @@
 #include <private/qtableview_p.h>
 #include <private/qwidgetitemdata_p.h>
 
+#include <array>
+
 QT_REQUIRE_CONFIG(tablewidget);
 
 QT_BEGIN_NAMESPACE
@@ -150,6 +152,7 @@ public:
     QTableWidgetPrivate() : QTableViewPrivate() {}
     inline QTableModel *tableModel() const { return qobject_cast<QTableModel*>(model); }
     void setup();
+    void clearConnections();
 
     // view signals
     void _q_emitItemPressed(const QModelIndex &index);
@@ -164,6 +167,8 @@ public:
     // sorting
     void _q_sort();
     void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+
+    std::array<QMetaObject::Connection, 10> connections;
 };
 
 class QTableWidgetItemPrivate

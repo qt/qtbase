@@ -1592,25 +1592,38 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
 void QTableWidgetPrivate::setup()
 {
     Q_Q(QTableWidget);
-    // view signals
-    QObject::connect(q, SIGNAL(pressed(QModelIndex)), q, SLOT(_q_emitItemPressed(QModelIndex)));
-    QObject::connect(q, SIGNAL(clicked(QModelIndex)), q, SLOT(_q_emitItemClicked(QModelIndex)));
-    QObject::connect(q, SIGNAL(doubleClicked(QModelIndex)),
-                     q, SLOT(_q_emitItemDoubleClicked(QModelIndex)));
-    QObject::connect(q, SIGNAL(activated(QModelIndex)), q, SLOT(_q_emitItemActivated(QModelIndex)));
-    QObject::connect(q, SIGNAL(entered(QModelIndex)), q, SLOT(_q_emitItemEntered(QModelIndex)));
-    // model signals
-    QObject::connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-                     q, SLOT(_q_emitItemChanged(QModelIndex)));
-    // selection signals
-    QObject::connect(q->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                     q, SLOT(_q_emitCurrentItemChanged(QModelIndex,QModelIndex)));
-    QObject::connect(q->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-                     q, SIGNAL(itemSelectionChanged()));
-    // sorting
-    QObject::connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-                     q, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
-    QObject::connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)), q, SLOT(_q_sort()));
+    connections = {
+        // view signals
+        QObjectPrivate::connect(q, &QTableWidget::pressed,
+                                this, &QTableWidgetPrivate::_q_emitItemPressed),
+        QObjectPrivate::connect(q, &QTableWidget::clicked,
+                                this, &QTableWidgetPrivate::_q_emitItemClicked),
+        QObjectPrivate::connect(q, &QTableWidget::doubleClicked,
+                                this, &QTableWidgetPrivate::_q_emitItemDoubleClicked),
+        QObjectPrivate::connect(q, &QTableWidget::activated,
+                                this, &QTableWidgetPrivate::_q_emitItemActivated),
+        QObjectPrivate::connect(q, &QTableWidget::entered,
+                                this, &QTableWidgetPrivate::_q_emitItemEntered),
+        // model signals
+        QObjectPrivate::connect(model, &QAbstractItemModel::dataChanged,
+                                this, &QTableWidgetPrivate::_q_emitItemChanged),
+        // selection signals
+        QObjectPrivate::connect(q->selectionModel(), &QItemSelectionModel::currentChanged,
+                                this, &QTableWidgetPrivate::_q_emitCurrentItemChanged),
+        QObject::connect(q->selectionModel(), &QItemSelectionModel::selectionChanged,
+                         q, &QTableWidget::itemSelectionChanged),
+        // sorting
+        QObjectPrivate::connect(model, &QAbstractItemModel::dataChanged,
+                                this, &QTableWidgetPrivate::_q_dataChanged),
+        QObjectPrivate::connect(model, &QAbstractItemModel::columnsRemoved,
+                                this, &QTableWidgetPrivate::_q_sort)
+    };
+}
+
+void QTableWidgetPrivate::clearConnections()
+{
+    for (const QMetaObject::Connection &connection : connections)
+        QObject::disconnect(connection);
 }
 
 void QTableWidgetPrivate::_q_emitItemPressed(const QModelIndex &index)
@@ -1880,6 +1893,8 @@ QTableWidget::QTableWidget(int rows, int columns, QWidget *parent)
 */
 QTableWidget::~QTableWidget()
 {
+    Q_D(QTableWidget);
+    d->clearConnections();
 }
 
 /*!
