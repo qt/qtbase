@@ -809,6 +809,21 @@ jclass QJniObject::objectClass() const
 */
 QByteArray QJniObject::className() const
 {
+    if (d->m_className.isEmpty() && d->m_jclass && d->m_jobject) {
+        QJniEnvironment env;
+        if (env->PushLocalFrame(3) != JNI_OK) // JVM out of memory
+            return d->m_className;
+        jmethodID mid = env->GetMethodID(d->m_jclass, "getClass", "()Ljava/lang/Class;");
+        jobject classObject = env->CallObjectMethod(d->m_jobject, mid);
+        jclass classObjectClass = env->GetObjectClass(classObject);
+        mid = env->GetMethodID(classObjectClass, "getName", "()Ljava/lang/String;");
+        jstring stringObject = static_cast<jstring>(env->CallObjectMethod(classObject, mid));
+        const jsize length = env->GetStringUTFLength(stringObject);
+        const char* nameString = env->GetStringUTFChars(stringObject, NULL);
+        d->m_className = QByteArray::fromRawData(nameString, length).replace('.', '/');
+        env->ReleaseStringUTFChars(stringObject, nameString);
+        env->PopLocalFrame(nullptr);
+    }
     return d->m_className;
 }
 
@@ -1311,8 +1326,11 @@ QJniObject QJniObject::getObjectField(const char *fieldName, const char *signatu
 QJniObject QJniObject::fromString(const QString &string)
 {
     QJniEnvironment env;
-    return getCleanJniObject(env->NewString(reinterpret_cast<const jchar*>(string.constData()),
-                                                                           string.length()));
+    jstring stringRef = env->NewString(reinterpret_cast<const jchar*>(string.constData()),
+                                                                      string.length());
+    QJniObject stringObject = getCleanJniObject(stringRef);
+    stringObject.d->m_className = "java/lang/String";
+    return stringObject;
 }
 
 /*!

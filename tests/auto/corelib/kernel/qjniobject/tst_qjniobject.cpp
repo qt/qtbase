@@ -42,6 +42,7 @@ private slots:
     void callObjectMethodTest();
     void stringConvertionTest();
     void compareOperatorTests();
+    void className();
     void callStaticObjectMethodClassName();
     void callStaticObjectMethod();
     void callStaticObjectMethodById();
@@ -298,6 +299,22 @@ void tst_QJniObject::compareOperatorTests()
     QVERIFY(jstrobj != stringObject);
     QVERIFY(stringObject != jstrobj);
     QVERIFY(!invalidStringObject.isValid());
+}
+
+void tst_QJniObject::className()
+{
+    const QString str("Hello!");
+    QJniObject jString = QJniObject::fromString(str);
+    {
+        QCOMPARE(jString.className(), "java/lang/String");
+        QCOMPARE(jString.toString(), str);
+    }
+
+    {
+        QJniObject strObject = QJniObject("java/lang/String", jString.object<jstring>());
+        QCOMPARE(strObject.className(), "java/lang/String");
+        QCOMPARE(strObject.toString(), str);
+    }
 }
 
 void tst_QJniObject::callStaticObjectMethodClassName()
