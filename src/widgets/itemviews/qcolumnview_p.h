@@ -31,6 +31,8 @@
 #include <qevent.h>
 #include <qscrollbar.h>
 
+#include <vector>
+
 QT_REQUIRE_CONFIG(columnview);
 
 QT_BEGIN_NAMESPACE
@@ -116,11 +118,13 @@ public:
     QColumnViewPrivate();
     ~QColumnViewPrivate();
     void initialize();
+    void clearConnections();
 
     QAbstractItemView *createColumn(const QModelIndex &index, bool show);
 
     void updateScrollbars();
     void closeColumns(const QModelIndex &parent = QModelIndex(), bool build = false);
+    void disconnectView(QAbstractItemView *view);
     void doLayout();
     void setPreviewWidget(QWidget *widget);
     void checkColumnCreation(const QModelIndex &parent);
@@ -137,7 +141,12 @@ public:
     int offset;
 #if QT_CONFIG(animation)
     QPropertyAnimation currentAnimation;
+    QMetaObject::Connection animationConnection;
 #endif
+    std::vector<QMetaObject::Connection> gripConnections;
+    using ViewConnections = std::vector<QMetaObject::Connection>;
+    QHash<QAbstractItemView *, ViewConnections> viewConnections;
+
     QWidget *previewWidget;
     QAbstractItemView *previewColumn;
 };

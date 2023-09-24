@@ -68,7 +68,9 @@ void QColumnViewPrivate::initialize()
     Q_Q(QColumnView);
     q->setTextElideMode(Qt::ElideMiddle);
 #if QT_CONFIG(animation)
-    QObject::connect(&currentAnimation, SIGNAL(finished()), q, SLOT(_q_changeCurrentColumn()));
+    animationConnection =
+        QObjectPrivate::connect(&currentAnimation, &QPropertyAnimation::finished,
+                                this, &QColumnViewPrivate::_q_changeCurrentColumn);
     currentAnimation.setTargetObject(hbar);
     currentAnimation.setPropertyName("value");
     currentAnimation.setEasingCurve(QEasingCurve::InOutQuad);
@@ -77,11 +79,26 @@ void QColumnViewPrivate::initialize()
     q->setItemDelegate(new QColumnViewDelegate(q));
 }
 
+void QColumnViewPrivate::clearConnections()
+{
+#if QT_CONFIG(animation)
+    QObject::disconnect(animationConnection);
+#endif
+    for (const QMetaObject::Connection &connection : gripConnections)
+        QObject::disconnect(connection);
+    const auto copy = viewConnections;  // disconnectView modifies this container
+    for (auto it = copy.keyBegin(); it != copy.keyEnd(); ++it)
+        disconnectView(*it);
+}
+
+
 /*!
     Destroys the column view.
 */
 QColumnView::~QColumnView()
 {
+    Q_D(QColumnView);
+    d->clearConnections();
 }
 
 /*!
@@ -98,12 +115,15 @@ void QColumnView::setResizeGripsVisible(bool visible)
     if (d->showResizeGrips == visible)
         return;
     d->showResizeGrips = visible;
-    for (int i = 0; i < d->columns.size(); ++i) {
-        QAbstractItemView *view = d->columns[i];
+    d->gripConnections.clear();
+    for (QAbstractItemView *view : std::as_const(d->columns)) {
         if (visible) {
             QColumnViewGrip *grip = new QColumnViewGrip(view);
             view->setCornerWidget(grip);
-            connect(grip, SIGNAL(gripMoved(int)), this, SLOT(_q_gripMoved(int)));
+            d->gripConnections.push_back(
+                QObjectPrivate::connect(grip, &QColumnViewGrip::gripMoved,
+                                        d, &QColumnViewPrivate::_q_gripMoved)
+            );
         } else {
             QWidget *widget = view->cornerWidget();
             view->setCornerWidget(nullptr);
@@ -578,8 +598,10 @@ void QColumnViewPrivate::closeColumns(const QModelIndex &parent, bool build)
         QAbstractItemView* notShownAnymore = columns.at(i);
         columns.removeAt(i);
         notShownAnymore->setVisible(false);
-        if (notShownAnymore != previewColumn)
+        if (notShownAnymore != previewColumn) {
             notShownAnymore->deleteLater();
+            disconnectView(notShownAnymore);
+        }
     }
 
     if (columns.isEmpty()) {
@@ -596,6 +618,16 @@ void QColumnViewPrivate::closeColumns(const QModelIndex &parent, bool build)
 
     if (build && !alreadyExists)
         createColumn(parent, false);
+}
+
+void QColumnViewPrivate::disconnectView(QAbstractItemView *view)
+{
+    const auto it = viewConnections.find(view);
+    if (it == viewConnections.end())
+        return;
+    for (const QMetaObject::Connection &connection : it.value())
+        QObject::disconnect(connection);
+    viewConnections.erase(it);
 }
 
 void QColumnViewPrivate::_q_clicked(const QModelIndex &index)
@@ -631,10 +663,12 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
 {
     Q_Q(QColumnView);
     QAbstractItemView *view = nullptr;
+    ViewConnections connections;
     if (model->hasChildren(index)) {
         view = q->createColumn(index);
-        q->connect(view, SIGNAL(clicked(QModelIndex)),
-                   q, SLOT(_q_clicked(QModelIndex)));
+        connections.push_back(
+              QObjectPrivate::connect(view, &QAbstractItemView::clicked,
+                                      this, &QColumnViewPrivate::_q_clicked));
     } else {
         if (!previewColumn)
             setPreviewWidget(new QWidget(q));
@@ -642,16 +676,18 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
         view->setMinimumWidth(qMax(view->minimumWidth(), previewWidget->minimumWidth()));
     }
 
-    q->connect(view, SIGNAL(activated(QModelIndex)),
-            q, SIGNAL(activated(QModelIndex)));
-    q->connect(view, SIGNAL(clicked(QModelIndex)),
-            q, SIGNAL(clicked(QModelIndex)));
-    q->connect(view, SIGNAL(doubleClicked(QModelIndex)),
-            q, SIGNAL(doubleClicked(QModelIndex)));
-    q->connect(view, SIGNAL(entered(QModelIndex)),
-            q, SIGNAL(entered(QModelIndex)));
-    q->connect(view, SIGNAL(pressed(QModelIndex)),
-            q, SIGNAL(pressed(QModelIndex)));
+    connections.insert(connections.end(),
+                       {QObject::connect(view, &QAbstractItemView::activated,
+                                         q, &QColumnView::activated),
+                        QObject::connect(view, &QAbstractItemView::clicked,
+                                         q, &QColumnView::clicked),
+                        QObject::connect(view, &QAbstractItemView::doubleClicked,
+                                         q, &QColumnView::doubleClicked),
+                        QObject::connect(view, &QAbstractItemView::entered,
+                                         q, &QColumnView::entered),
+                        QObject::connect(view, &QAbstractItemView::pressed,
+                                         q, &QColumnView::pressed)});
+    viewConnections.insert(view, std::move(connections));
 
     view->setFocusPolicy(Qt::NoFocus);
     view->setParent(viewport);
@@ -661,7 +697,10 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
     if (showResizeGrips) {
         QColumnViewGrip *grip = new QColumnViewGrip(view);
         view->setCornerWidget(grip);
-        q->connect(grip, SIGNAL(gripMoved(int)), q, SLOT(_q_gripMoved(int)));
+        gripConnections.push_back(
+            QObjectPrivate::connect(grip, &QColumnViewGrip::gripMoved,
+                                    this, &QColumnViewPrivate::_q_gripMoved)
+        );
     }
 
     if (columnSizes.size() > columns.size()) {
