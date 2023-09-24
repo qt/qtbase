@@ -51,7 +51,8 @@ public:
     static QNetworkInformation::Features featuresSupportedStatic()
     {
         using Feature = QNetworkInformation::Feature;
-        return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal);
+        return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal
+                                             | Feature::Metered);
     }
 
     bool isValid() const;
@@ -59,10 +60,12 @@ public:
 private:
     Q_DISABLE_COPY_MOVE(QGlibNetworkInformationBackend)
 
-    static void updateInformation(QGlibNetworkInformationBackend *backend);
+    static void updateConnectivity(QGlibNetworkInformationBackend *backend);
+    static void updateMetered(QGlibNetworkInformationBackend *backend);
 
     GNetworkMonitor *networkMonitor = nullptr;
-    gulong handlerId = 0;
+    gulong connectivityHandlerId = 0;
+    gulong meteredHandlerId = 0;
 };
 
 class QGlibNetworkInformationBackendFactory : public QNetworkInformationBackendFactory
@@ -95,15 +98,20 @@ private:
 QGlibNetworkInformationBackend::QGlibNetworkInformationBackend()
 : networkMonitor(g_network_monitor_get_default())
 {
-    updateInformation(this);
+    updateConnectivity(this);
+    updateMetered(this);
 
-    handlerId = g_signal_connect_swapped(networkMonitor, "notify::connectivity",
-                                         G_CALLBACK(updateInformation), this);
+    connectivityHandlerId = g_signal_connect_swapped(networkMonitor, "notify::connectivity",
+                                                     G_CALLBACK(updateConnectivity), this);
+
+    meteredHandlerId = g_signal_connect_swapped(networkMonitor, "notify::network-metered",
+                                                G_CALLBACK(updateMetered), this);
 }
 
 QGlibNetworkInformationBackend::~QGlibNetworkInformationBackend()
 {
-    g_signal_handler_disconnect(networkMonitor, handlerId);
+    g_signal_handler_disconnect(networkMonitor, meteredHandlerId);
+    g_signal_handler_disconnect(networkMonitor, connectivityHandlerId);
 }
 
 bool QGlibNetworkInformationBackend::isValid() const
@@ -111,12 +119,17 @@ bool QGlibNetworkInformationBackend::isValid() const
     return G_OBJECT_TYPE_NAME(networkMonitor) != "GNetworkMonitorBase"_L1;
 }
 
-void QGlibNetworkInformationBackend::updateInformation(QGlibNetworkInformationBackend *backend)
+void QGlibNetworkInformationBackend::updateConnectivity(QGlibNetworkInformationBackend *backend)
 {
     const auto connectivityState = g_network_monitor_get_connectivity(backend->networkMonitor);
     const bool behindPortal = (connectivityState == G_NETWORK_CONNECTIVITY_PORTAL);
     backend->setReachability(reachabilityFromGNetworkConnectivity(connectivityState));
     backend->setBehindCaptivePortal(behindPortal);
+}
+
+void QGlibNetworkInformationBackend::updateMetered(QGlibNetworkInformationBackend *backend)
+{
+    backend->setMetered(g_network_monitor_get_network_metered(backend->networkMonitor));
 }
 
 QT_END_NAMESPACE
