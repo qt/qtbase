@@ -22,6 +22,8 @@
 #include <private/qlistview_p.h>
 #include <private/qwidgetitemdata_p.h>
 
+#include <array>
+
 QT_REQUIRE_CONFIG(listwidget);
 
 QT_BEGIN_NAMESPACE
@@ -113,6 +115,7 @@ public:
     QListWidgetPrivate() : QListViewPrivate(), sortOrder(Qt::AscendingOrder), sortingEnabled(false) {}
     inline QListModel *listModel() const { return qobject_cast<QListModel*>(model); }
     void setup();
+    void clearConnections();
     void _q_emitItemPressed(const QModelIndex &index);
     void _q_emitItemClicked(const QModelIndex &index);
     void _q_emitItemDoubleClicked(const QModelIndex &index);
@@ -124,6 +127,9 @@ public:
     void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     Qt::SortOrder sortOrder;
     bool sortingEnabled;
+
+    std::array<QMetaObject::Connection, 8> connections;
+    std::array<QMetaObject::Connection, 2> selectionModelConnections;
 };
 
 class QListWidgetItemPrivate
