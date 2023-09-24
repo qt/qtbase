@@ -595,8 +595,24 @@ void QTableViewPrivate::init()
 #if QT_CONFIG(abstractbutton)
     cornerWidget = new QTableCornerButton(q);
     cornerWidget->setFocusPolicy(Qt::NoFocus);
-    QObject::connect(cornerWidget, SIGNAL(clicked()), q, SLOT(selectAll()));
+    cornerWidgetConnection = QObject::connect(
+          cornerWidget, &QTableCornerButton::clicked,
+          q, &QTableView::reset);
 #endif
+}
+
+void QTableViewPrivate::clearConnections()
+{
+    for (const QMetaObject::Connection &connection : modelConnections)
+        QObject::disconnect(connection);
+    for (const QMetaObject::Connection &connection : verHeaderConnections)
+        QObject::disconnect(connection);
+    for (const QMetaObject::Connection &connection : horHeaderConnections)
+        QObject::disconnect(connection);
+    for (const QMetaObject::Connection &connection : dynHorHeaderConnections)
+        QObject::disconnect(connection);
+    QObject::disconnect(selectionmodelConnection);
+    QObject::disconnect(cornerWidgetConnection);
 }
 
 /*!
@@ -1222,6 +1238,8 @@ QTableView::QTableView(QTableViewPrivate &dd, QWidget *parent)
 */
 QTableView::~QTableView()
 {
+    Q_D(QTableView);
+    d->clearConnections();
 }
 
 /*!
@@ -1245,28 +1263,23 @@ void QTableView::setModel(QAbstractItemModel *model)
         return;
     //let's disconnect from the old model
     if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
-        disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
-                this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
-        disconnect(d->model, SIGNAL(columnsInserted(QModelIndex,int,int)),
-                this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
-        disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-                this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
-        disconnect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-                this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+        for (const QMetaObject::Connection &connection : d->modelConnections)
+              disconnect(connection);
     }
     if (d->selectionModel) { // support row editing
-        disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-                   d->model, SLOT(submit()));
+        disconnect(d->selectionmodelConnection);
     }
     if (model) { //and connect to the new one
-        connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
-                this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
-        connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
-                this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
-        connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-                this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
-        connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-                this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+        d->modelConnections = {
+            QObjectPrivate::connect(model, &QAbstractItemModel::rowsInserted,
+                                    d, &QTableViewPrivate::_q_updateSpanInsertedRows),
+            QObjectPrivate::connect(model, &QAbstractItemModel::columnsInserted,
+                                    d, &QTableViewPrivate::_q_updateSpanInsertedColumns),
+            QObjectPrivate::connect(model, &QAbstractItemModel::rowsRemoved,
+                                    d, &QTableViewPrivate::_q_updateSpanRemovedRows),
+            QObjectPrivate::connect(model, &QAbstractItemModel::columnsRemoved,
+                                    d, &QTableViewPrivate::_q_updateSpanRemovedColumns)
+        };
     }
     d->verticalHeader->setModel(model);
     d->horizontalHeader->setModel(model);
@@ -1308,8 +1321,7 @@ void QTableView::setSelectionModel(QItemSelectionModel *selectionModel)
     Q_ASSERT(selectionModel);
     if (d->selectionModel) {
         // support row editing
-        disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-                   d->model, SLOT(submit()));
+        disconnect(d->selectionmodelConnection);
     }
 
     d->verticalHeader->setSelectionModel(selectionModel);
@@ -1318,8 +1330,9 @@ void QTableView::setSelectionModel(QItemSelectionModel *selectionModel)
 
     if (d->selectionModel) {
         // support row editing
-        connect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-                d->model, SLOT(submit()));
+        d->selectionmodelConnection =
+            connect(d->selectionModel, &QItemSelectionModel::currentRowChanged,
+                    d->model, &QAbstractItemModel::submit);
     }
 }
 
@@ -1356,6 +1369,8 @@ void QTableView::setHorizontalHeader(QHeaderView *header)
 
     if (!header || header == d->horizontalHeader)
         return;
+    for (const QMetaObject::Connection &connection : d->horHeaderConnections)
+        disconnect(connection);
     if (d->horizontalHeader && d->horizontalHeader->parent() == this)
         delete d->horizontalHeader;
     d->horizontalHeader = header;
@@ -1367,18 +1382,18 @@ void QTableView::setHorizontalHeader(QHeaderView *header)
             d->horizontalHeader->setSelectionModel(d->selectionModel);
     }
 
-    connect(d->horizontalHeader,SIGNAL(sectionResized(int,int,int)),
-            this, SLOT(columnResized(int,int,int)));
-    connect(d->horizontalHeader, SIGNAL(sectionMoved(int,int,int)),
-            this, SLOT(columnMoved(int,int,int)));
-    connect(d->horizontalHeader, SIGNAL(sectionCountChanged(int,int)),
-            this, SLOT(columnCountChanged(int,int)));
-    connect(d->horizontalHeader, SIGNAL(sectionPressed(int)), this, SLOT(selectColumn(int)));
-    connect(d->horizontalHeader, SIGNAL(sectionEntered(int)), this, SLOT(_q_selectColumn(int)));
-    connect(d->horizontalHeader, SIGNAL(sectionHandleDoubleClicked(int)),
-            this, SLOT(resizeColumnToContents(int)));
-    connect(d->horizontalHeader, SIGNAL(geometriesChanged()), this, SLOT(updateGeometries()));
-
+    d->horHeaderConnections = {
+        connect(d->horizontalHeader,&QHeaderView::sectionResized,
+                this, &QTableView::columnResized),
+        connect(d->horizontalHeader, &QHeaderView::sectionMoved,
+                this, &QTableView::columnMoved),
+        connect(d->horizontalHeader, &QHeaderView::sectionCountChanged,
+                this, &QTableView::columnCountChanged),
+        connect(d->horizontalHeader, &QHeaderView::sectionHandleDoubleClicked,
+                this, &QTableView::resizeColumnToContents),
+        connect(d->horizontalHeader, &QHeaderView::geometriesChanged,
+                this, &QTableView::updateGeometries),
+    };
     //update the sorting enabled states on the new header
     setSortingEnabled(d->sortingEnabled);
 }
@@ -1394,6 +1409,8 @@ void QTableView::setVerticalHeader(QHeaderView *header)
 
     if (!header || header == d->verticalHeader)
         return;
+    for (const QMetaObject::Connection &connection : d->verHeaderConnections)
+        disconnect(connection);
     if (d->verticalHeader && d->verticalHeader->parent() == this)
         delete d->verticalHeader;
     d->verticalHeader = header;
@@ -1405,17 +1422,22 @@ void QTableView::setVerticalHeader(QHeaderView *header)
             d->verticalHeader->setSelectionModel(d->selectionModel);
     }
 
-    connect(d->verticalHeader, SIGNAL(sectionResized(int,int,int)),
-            this, SLOT(rowResized(int,int,int)));
-    connect(d->verticalHeader, SIGNAL(sectionMoved(int,int,int)),
-            this, SLOT(rowMoved(int,int,int)));
-    connect(d->verticalHeader, SIGNAL(sectionCountChanged(int,int)),
-            this, SLOT(rowCountChanged(int,int)));
-    connect(d->verticalHeader, SIGNAL(sectionPressed(int)), this, SLOT(selectRow(int)));
-    connect(d->verticalHeader, SIGNAL(sectionEntered(int)), this, SLOT(_q_selectRow(int)));
-    connect(d->verticalHeader, SIGNAL(sectionHandleDoubleClicked(int)),
-            this, SLOT(resizeRowToContents(int)));
-    connect(d->verticalHeader, SIGNAL(geometriesChanged()), this, SLOT(updateGeometries()));
+    d->verHeaderConnections = {
+        connect(d->verticalHeader, &QHeaderView::sectionResized,
+                this, &QTableView::rowResized),
+        connect(d->verticalHeader, &QHeaderView::sectionMoved,
+                this, &QTableView::rowMoved),
+        connect(d->verticalHeader, &QHeaderView::sectionCountChanged,
+                this, &QTableView::rowCountChanged),
+        connect(d->verticalHeader, &QHeaderView::sectionPressed,
+                this, &QTableView::selectRow),
+        connect(d->verticalHeader, &QHeaderView::sectionHandleDoubleClicked,
+                this, &QTableView::resizeRowToContents),
+        connect(d->verticalHeader, &QHeaderView::geometriesChanged,
+                this, &QTableView::updateGeometries),
+        QObjectPrivate::connect(d->verticalHeader, &QHeaderView::sectionEntered,
+                                d, &QTableViewPrivate::_q_selectRow)
+    };
 }
 
 /*!
@@ -2707,24 +2729,25 @@ void QTableView::setSortingEnabled(bool enable)
 {
     Q_D(QTableView);
     horizontalHeader()->setSortIndicatorShown(enable);
+    for (const QMetaObject::Connection &connection : d->dynHorHeaderConnections)
+        disconnect(connection);
+    d->dynHorHeaderConnections.clear();
     if (enable) {
-        disconnect(d->horizontalHeader, SIGNAL(sectionEntered(int)),
-                   this, SLOT(_q_selectColumn(int)));
-        disconnect(horizontalHeader(), SIGNAL(sectionPressed(int)),
-                   this, SLOT(selectColumn(int)));
         //sortByColumn has to be called before we connect or set the sortingEnabled flag
         // because otherwise it will not call sort on the model.
-        sortByColumn(horizontalHeader()->sortIndicatorSection(),
-                     horizontalHeader()->sortIndicatorOrder());
-        connect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                this, SLOT(_q_sortIndicatorChanged(int,Qt::SortOrder)), Qt::UniqueConnection);
+        sortByColumn(d->horizontalHeader->sortIndicatorSection(),
+                     d->horizontalHeader->sortIndicatorOrder());
+        d->dynHorHeaderConnections = {
+            QObjectPrivate::connect(d->horizontalHeader, &QHeaderView::sortIndicatorChanged,
+                                    d, &QTableViewPrivate::_q_sortIndicatorChanged)
+        };
     } else {
-        connect(d->horizontalHeader, SIGNAL(sectionEntered(int)),
-                this, SLOT(_q_selectColumn(int)), Qt::UniqueConnection);
-        connect(horizontalHeader(), SIGNAL(sectionPressed(int)),
-                this, SLOT(selectColumn(int)), Qt::UniqueConnection);
-        disconnect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                   this, SLOT(_q_sortIndicatorChanged(int,Qt::SortOrder)));
+        d->dynHorHeaderConnections = {
+            connect(d->horizontalHeader, &QHeaderView::sectionPressed,
+                    this, &QTableView::selectColumn),
+            QObjectPrivate::connect(d->horizontalHeader, &QHeaderView::sectionEntered,
+                                    d, &QTableViewPrivate::_q_selectColumn)
+        };
     }
     d->sortingEnabled = enable;
 }

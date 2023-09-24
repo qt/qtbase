@@ -25,7 +25,9 @@
 #include <QtCore/QDebug>
 #include "private/qabstractitemview_p.h"
 
+#include <array>
 #include <list>
+#include <vector>
 
 QT_REQUIRE_CONFIG(tableview);
 
@@ -96,7 +98,9 @@ private:
 
 Q_DECLARE_TYPEINFO ( QSpanCollection::Span, Q_RELOCATABLE_TYPE);
 
-
+#if QT_CONFIG(abstractbutton)
+class QTableCornerButton;
+#endif
 class Q_AUTOTEST_EXPORT QTableViewPrivate : public QAbstractItemViewPrivate
 {
     Q_DECLARE_PUBLIC(QTableView)
@@ -114,6 +118,7 @@ public:
 #endif
  }
     void init();
+    void clearConnections();
     void trimHiddenSelections(QItemSelectionRange *range) const;
     QRect intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const override;
 
@@ -159,8 +164,15 @@ public:
     QHeaderView *horizontalHeader;
     QHeaderView *verticalHeader;
 #if QT_CONFIG(abstractbutton)
-    QWidget *cornerWidget;
+    QTableCornerButton *cornerWidget;
+    QMetaObject::Connection cornerWidgetConnection;
 #endif
+    QMetaObject::Connection selectionmodelConnection;
+    std::array<QMetaObject::Connection, 4> modelConnections;
+    std::array<QMetaObject::Connection, 7> verHeaderConnections;
+    std::array<QMetaObject::Connection, 5> horHeaderConnections;
+    std::vector<QMetaObject::Connection> dynHorHeaderConnections;
+
     bool sortingEnabled;
     bool geometryRecursionBlock;
     QPoint visualCursor;  // (Row,column) cell coordinates to track through span navigation.
