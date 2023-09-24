@@ -25,6 +25,8 @@
 #include "QtWidgets/qlabel.h"
 #endif
 
+#include <array>
+
 QT_REQUIRE_CONFIG(itemviews);
 
 QT_BEGIN_NAMESPACE
@@ -213,6 +215,12 @@ public:
         }
     }
 
+    inline void disconnectModel()
+    {
+        for (const QMetaObject::Connection &connection : modelConnections)
+            QObject::disconnect(connection);
+    }
+
     void clear();
     void flipSortIndicator(int section);
     Qt::SortOrder defaultSortOrderForSection(int section) const;
@@ -305,6 +313,7 @@ public:
         SectionItem section;
     };
     QList<LayoutChangeItem> layoutChangePersistentSections;
+    std::array<QMetaObject::Connection, 8> modelConnections;
 
     void createSectionItems(int start, int end, int sectionSize, QHeaderView::ResizeMode mode);
     void removeSectionsFromSectionItems(int start, int end);
