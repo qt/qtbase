@@ -64,17 +64,7 @@ public class QtNative
     public static final String QtTAG = "Qt JAVA"; // string used for Log.x
     private static ArrayList<Runnable> m_lostActions = new ArrayList<Runnable>(); // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
     private static boolean m_started = false;
-    private static int m_displayMetricsScreenWidthPixels = 0;
-    private static int m_displayMetricsScreenHeightPixels = 0;
-    private static int m_displayMetricsAvailableLeftPixels = 0;
-    private static int m_displayMetricsAvailableTopPixels = 0;
-    private static int m_displayMetricsAvailableWidthPixels = 0;
-    private static int m_displayMetricsAvailableHeightPixels = 0;
-    private static float m_displayMetricsRefreshRate = 60;
-    private static double m_displayMetricsXDpi = .0;
-    private static double m_displayMetricsYDpi = .0;
-    private static double m_displayMetricsScaledDensity = 1.0;
-    private static double m_displayMetricsDensity = 1.0;
+
     private static final int m_moveThreshold = 0;
     private static Method m_checkSelfPermissionMethod = null;
 
@@ -291,46 +281,6 @@ public class QtNative
         });
     }
 
-    public static Display getDisplay(int displayId)
-    {
-        Context context = getContext();
-        DisplayManager displayManager =
-                (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
-        if (displayManager != null) {
-            return displayManager.getDisplay(displayId);
-        }
-        return null;
-    }
-
-    public static List<Display> getAvailableDisplays()
-    {
-        Context context = getContext();
-        DisplayManager displayManager =
-                (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
-        if (displayManager != null) {
-            Display[] displays = displayManager.getDisplays();
-            return Arrays.asList(displays);
-        }
-        return new ArrayList<Display>();
-    }
-
-    public static Size getDisplaySize(Context displayContext, Display display)
-    {
-        if (Build.VERSION.SDK_INT < 31) {
-            DisplayMetrics realMetrics = new DisplayMetrics();
-            display.getRealMetrics(realMetrics);
-            return new Size(realMetrics.widthPixels, realMetrics.heightPixels);
-        }
-
-        Context windowsContext = displayContext.createWindowContext(
-                                                WindowManager.LayoutParams.TYPE_APPLICATION, null);
-        WindowManager displayMgr =
-                        (WindowManager) windowsContext.getSystemService(Context.WINDOW_SERVICE);
-        WindowMetrics windowsMetrics = displayMgr.getCurrentWindowMetrics();
-        Rect bounds = windowsMetrics.getBounds();
-        return new Size(bounds.width(), bounds.height());
-    }
-
     public static boolean startApplication(ArrayList<String> params, String mainLib)
     {
         final boolean[] res = new boolean[1];
@@ -341,13 +291,7 @@ public class QtNative
                 @Override
                 public void run() {
                     res[0] = startQtAndroidPlugin(qtParams);
-                    setDisplayMetrics(
-                            m_displayMetricsScreenWidthPixels, m_displayMetricsScreenHeightPixels,
-                            m_displayMetricsAvailableLeftPixels, m_displayMetricsAvailableTopPixels,
-                            m_displayMetricsAvailableWidthPixels,
-                            m_displayMetricsAvailableHeightPixels, m_displayMetricsXDpi,
-                            m_displayMetricsYDpi, m_displayMetricsScaledDensity,
-                            m_displayMetricsDensity, m_displayMetricsRefreshRate);
+                    QtDisplayManager.setApplicationDisplayMetrics(m_activity);
                 }
             });
             m_qtThread.post(new Runnable() {
@@ -360,40 +304,6 @@ public class QtNative
             m_started = true;
         }
         return res[0];
-    }
-
-    public static void setApplicationDisplayMetrics(int screenWidthPixels, int screenHeightPixels,
-                                                    int availableLeftPixels, int availableTopPixels,
-                                                    int availableWidthPixels,
-                                                    int availableHeightPixels, double XDpi,
-                                                    double YDpi, double scaledDensity,
-                                                    double density, float refreshRate)
-    {
-        /* Fix buggy dpi report */
-        if (XDpi < android.util.DisplayMetrics.DENSITY_LOW)
-            XDpi = android.util.DisplayMetrics.DENSITY_LOW;
-        if (YDpi < android.util.DisplayMetrics.DENSITY_LOW)
-            YDpi = android.util.DisplayMetrics.DENSITY_LOW;
-
-        synchronized (m_mainActivityMutex) {
-            if (m_started) {
-                setDisplayMetrics(screenWidthPixels, screenHeightPixels, availableLeftPixels,
-                                  availableTopPixels, availableWidthPixels, availableHeightPixels,
-                                  XDpi, YDpi, scaledDensity, density, refreshRate);
-            } else {
-                m_displayMetricsScreenWidthPixels = screenWidthPixels;
-                m_displayMetricsScreenHeightPixels = screenHeightPixels;
-                m_displayMetricsAvailableLeftPixels = availableLeftPixels;
-                m_displayMetricsAvailableTopPixels = availableTopPixels;
-                m_displayMetricsAvailableWidthPixels = availableWidthPixels;
-                m_displayMetricsAvailableHeightPixels = availableHeightPixels;
-                m_displayMetricsXDpi = XDpi;
-                m_displayMetricsYDpi = YDpi;
-                m_displayMetricsScaledDensity = scaledDensity;
-                m_displayMetricsDensity = density;
-                m_displayMetricsRefreshRate = refreshRate;
-            }
-        }
     }
 
     // application methods
@@ -703,20 +613,6 @@ public class QtNative
         }
         return res.toArray(new String[res.size()]);
     }
-
-    // screen methods
-    public static native void setDisplayMetrics(int screenWidthPixels, int screenHeightPixels,
-                                                int availableLeftPixels, int availableTopPixels,
-                                                int availableWidthPixels, int availableHeightPixels,
-                                                double XDpi, double YDpi, double scaledDensity,
-                                                double density, float refreshRate);
-    public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
-    public static native void handleRefreshRateChanged(float refreshRate);
-    public static native void handleScreenAdded(int displayId);
-    public static native void handleScreenChanged(int displayId);
-    public static native void handleScreenRemoved(int displayId);
-    // screen methods
-    public static native void handleUiDarkModeChanged(int newUiMode);
 
     // surface methods
     public static native void setSurface(int id, Object surface, int w, int h);

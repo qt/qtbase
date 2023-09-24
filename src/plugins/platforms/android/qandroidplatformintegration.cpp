@@ -57,6 +57,7 @@ bool QAndroidPlatformIntegration::m_showPasswordEnabled = false;
 static bool m_running = false;
 
 Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
+Q_DECLARE_JNI_CLASS(QtDisplayManager, "org/qtproject/qt/android/QtDisplayManager")
 Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
 
 Q_DECLARE_JNI_CLASS(List, "java/util/List")
@@ -65,10 +66,8 @@ namespace {
 
 QAndroidPlatformScreen* createScreenForDisplayId(int displayId)
 {
-    const QJniObject display = QJniObject::callStaticObjectMethod<QtJniTypes::Display>(
-        QtJniTypes::Traits<QtJniTypes::QtNative>::className(),
-        "getDisplay",
-        displayId);
+    const QJniObject display = QtJniTypes::QtDisplayManager::callStaticMethod<QtJniTypes::Display>(
+            "getDisplay", QtAndroidPrivate::context(), displayId);
     if (!display.isValid())
         return nullptr;
     return new QAndroidPlatformScreen(display);
@@ -187,12 +186,10 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API)))
         qFatal("Could not bind GL_ES API");
 
-    m_primaryDisplayId = QJniObject::getStaticField<jint>(
-        QtJniTypes::Traits<QtJniTypes::Display>::className(), "DEFAULT_DISPLAY");
-
-    const QJniObject nativeDisplaysList = QJniObject::callStaticObjectMethod<QtJniTypes::List>(
-                QtJniTypes::Traits<QtJniTypes::QtNative>::className(),
-                "getAvailableDisplays");
+    using namespace QtJniTypes;
+    m_primaryDisplayId = Display::getStaticField<jint>("DEFAULT_DISPLAY");
+    const QJniObject nativeDisplaysList = QtDisplayManager::callStaticMethod<List>(
+                "getAvailableDisplays", QtAndroidPrivate::context());
 
     const int numberOfAvailableDisplays = nativeDisplaysList.callMethod<jint>("size");
     for (int i = 0; i < numberOfAvailableDisplays; ++i) {

@@ -155,7 +155,8 @@ public class QtActivityBase extends Activity
         QtNative.setApplicationState(QtConstants.ApplicationState.ApplicationActive);
         if (m_delegate.isStarted()) {
             QtNative.updateWindow();
-            m_delegate.updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
+            // Suspending the app clears the immersive mode, so we need to set it again.
+            m_delegate.displayManager().updateFullScreen(this);
         }
     }
 
@@ -294,7 +295,7 @@ public class QtActivityBase extends Activity
     protected void onSaveInstanceState(Bundle outState)
     {
         super.onSaveInstanceState(outState);
-        outState.putInt("SystemUiVisibility", m_delegate.systemUiVisibility());
+        outState.putInt("SystemUiVisibility", m_delegate.displayManager().systemUiVisibility());
         outState.putBoolean("Started", m_delegate.isStarted());
     }
 
@@ -303,7 +304,7 @@ public class QtActivityBase extends Activity
     {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus)
-            m_delegate.updateFullScreen();
+            m_delegate.displayManager().updateFullScreen(this);
     }
 
     @Override

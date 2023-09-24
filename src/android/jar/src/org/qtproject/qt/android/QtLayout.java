@@ -67,58 +67,16 @@ public class QtLayout extends ViewGroup
         if (activity == null)
             return;
 
-        final WindowManager windowManager = activity.getWindowManager();
-        Display display;
+        QtDisplayManager.setApplicationDisplayMetrics(activity, w, h);
 
-        final WindowInsets rootInsets = getRootWindowInsets();
-
-        int insetLeft = 0;
-        int insetTop = 0;
-
-        int maxWidth = 0;
-        int maxHeight = 0;
-
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            display = windowManager.getDefaultDisplay();
-
-            final DisplayMetrics maxMetrics = new DisplayMetrics();
-            display.getRealMetrics(maxMetrics);
-            maxWidth = maxMetrics.widthPixels;
-            maxHeight = maxMetrics.heightPixels;
-
-            insetLeft = rootInsets.getStableInsetLeft();
-            insetTop = rootInsets.getStableInsetTop();
-        } else {
-            display = activity.getDisplay();
-
-            final WindowMetrics maxMetrics = windowManager.getMaximumWindowMetrics();
-            maxWidth = maxMetrics.getBounds().width();
-            maxHeight = maxMetrics.getBounds().height();
-
-            insetLeft = rootInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).left;
-            insetTop = rootInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).top;
-        }
-
-        final DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
-        double xdpi = displayMetrics.xdpi;
-        double ydpi = displayMetrics.ydpi;
-        double density = displayMetrics.density;
-        double scaledDensity = displayMetrics.scaledDensity;
-        float refreshRate = display.getRefreshRate();
-
-        QtNative.setApplicationDisplayMetrics(maxWidth, maxHeight, insetLeft,
-                                              insetTop, w, h,
-                                              xdpi,ydpi,scaledDensity, density,
-                                              refreshRate);
-
-        int newRotation = display.getRotation();
+        int newRotation = QtDisplayManager.getDisplayRotation(activity);
         if (m_ownDisplayRotation != m_activityDisplayRotation
             && newRotation == m_activityDisplayRotation) {
             // If the saved rotation value does not match the one from the
             // activity, it means that we got orientation change before size
             // change, and the value was cached. So we need to notify about
             // orientation change now.
-            QtNative.handleOrientationChanged(newRotation, m_nativeOrientation);
+            QtDisplayManager.handleOrientationChanged(newRotation, m_nativeOrientation);
         }
         m_ownDisplayRotation = newRotation;
 

@@ -57,6 +57,7 @@ Q_DECLARE_JNI_CLASS(DisplayMetrics, "android/util/DisplayMetrics")
 Q_DECLARE_JNI_CLASS(Resources, "android/content/res/Resources")
 Q_DECLARE_JNI_CLASS(Size, "android/util/Size")
 Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
+Q_DECLARE_JNI_CLASS(QtDisplayManager, "org/qtproject/qt/android/QtDisplayManager")
 
 Q_DECLARE_JNI_CLASS(DisplayMode, "android/view/Display$Mode")
 
@@ -91,11 +92,9 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
     const auto displayContext = context.callMethod<QtJniTypes::Context>("createDisplayContext",
                                                 displayObject.object<QtJniTypes::Display>());
 
-    const auto sizeObj = QJniObject::callStaticMethod<QtJniTypes::Size>(
-                                                QtJniTypes::Traits<QtJniTypes::QtNative>::className(),
-                                                "getDisplaySize",
-                                                displayContext.object<QtJniTypes::Context>(),
-                                                displayObject.object<QtJniTypes::Display>());
+    const auto sizeObj = QtJniTypes::QtDisplayManager::callStaticMethod<QtJniTypes::Size>(
+                                    "getDisplaySize", displayContext,
+                                    displayObject.object<QtJniTypes::Display>());
     m_size = QSize(sizeObj.callMethod<int>("getWidth"), sizeObj.callMethod<int>("getHeight"));
 
     const auto resources = displayContext.callMethod<QtJniTypes::Resources>("getResources");

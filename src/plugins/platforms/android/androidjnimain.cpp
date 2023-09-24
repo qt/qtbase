@@ -159,6 +159,7 @@ namespace QtAndroid
         return m_applicationClass;
     }
 
+    // TODO move calls from here to where they logically belong
     void setSystemUiVisibility(SystemUiVisibility uiVisibility)
     {
         QJniObject::callStaticMethod<void>(m_applicationClass, "setSystemUiVisibility", "(I)V", jint(uiVisibility));
@@ -632,6 +633,7 @@ static void setDisplayMetrics(JNIEnv * /*env*/, jclass /*clazz*/, jint screenWid
         m_androidPlatformIntegration->setRefreshRate(refreshRate);
     }
 }
+Q_DECLARE_JNI_NATIVE_METHOD(setDisplayMetrics)
 
 static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
 {
@@ -733,36 +735,42 @@ static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint new
         }
     }
 }
+Q_DECLARE_JNI_NATIVE_METHOD(handleOrientationChanged)
 
 static void handleRefreshRateChanged(JNIEnv */*env*/, jclass /*cls*/, jfloat refreshRate)
 {
     if (m_androidPlatformIntegration)
         m_androidPlatformIntegration->setRefreshRate(refreshRate);
 }
+Q_DECLARE_JNI_NATIVE_METHOD(handleRefreshRateChanged)
 
 static void handleScreenAdded(JNIEnv */*env*/, jclass /*cls*/, jint displayId)
 {
     if (m_androidPlatformIntegration)
         m_androidPlatformIntegration->handleScreenAdded(displayId);
 }
+Q_DECLARE_JNI_NATIVE_METHOD(handleScreenAdded)
 
 static void handleScreenChanged(JNIEnv */*env*/, jclass /*cls*/, jint displayId)
 {
     if (m_androidPlatformIntegration)
         m_androidPlatformIntegration->handleScreenChanged(displayId);
 }
+Q_DECLARE_JNI_NATIVE_METHOD(handleScreenChanged)
 
 static void handleScreenRemoved(JNIEnv */*env*/, jclass /*cls*/, jint displayId)
 {
     if (m_androidPlatformIntegration)
         m_androidPlatformIntegration->handleScreenRemoved(displayId);
 }
+Q_DECLARE_JNI_NATIVE_METHOD(handleScreenRemoved)
 
 static void handleUiDarkModeChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newUiMode)
 {
     QAndroidPlatformIntegration::setColorScheme(
         (newUiMode == 1 ) ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light);
 }
+Q_DECLARE_JNI_NATIVE_METHOD(handleUiDarkModeChanged)
 
 static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,
                              jint requestCode,
@@ -789,19 +797,12 @@ static JNINativeMethod methods[] = {
     { "quitQtCoreApplication", "()V", (void *)quitQtCoreApplication },
     { "terminateQt", "()V", (void *)terminateQt },
     { "waitForServiceSetup", "()V", (void *)waitForServiceSetup },
-    { "setDisplayMetrics", "(IIIIIIDDDDF)V", (void *)setDisplayMetrics },
     { "setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface },
     { "updateWindow", "()V", (void *)updateWindow },
     { "updateApplicationState", "(I)V", (void *)updateApplicationState },
-    { "handleUiDarkModeChanged", "(I)V", (void *)handleUiDarkModeChanged },
-    { "handleOrientationChanged", "(II)V", (void *)handleOrientationChanged },
     { "onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult },
     { "onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent },
-    { "onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind },
-    { "handleRefreshRateChanged", "(F)V", (void *)handleRefreshRateChanged },
-    { "handleScreenAdded", "(I)V", (void *)handleScreenAdded },
-    { "handleScreenChanged", "(I)V", (void *)handleScreenChanged },
-    { "handleScreenRemoved", "(I)V", (void *)handleScreenRemoved }
+    { "onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind }
 };
 
 #define FIND_AND_CHECK_CLASS(CLASS_NAME) \
@@ -839,6 +840,8 @@ if (!VAR) { \
     return false; \
 }
 
+Q_DECLARE_JNI_CLASS(QtDisplayManager, "org/qtproject/qt/android/QtDisplayManager")
+
 static bool registerNatives(QJniEnvironment &env)
 {
     jclass clazz;
@@ -849,6 +852,23 @@ static bool registerNatives(QJniEnvironment &env)
                                    methods, sizeof(methods) / sizeof(methods[0]))) {
         __android_log_print(ANDROID_LOG_FATAL,"Qt", "RegisterNatives failed");
         return false;
+    }
+
+    bool success = env.registerNativeMethods(
+            QtJniTypes::Traits<QtJniTypes::QtDisplayManager>::className(),
+            {
+                    Q_JNI_NATIVE_METHOD(setDisplayMetrics),
+                    Q_JNI_NATIVE_METHOD(handleOrientationChanged),
+                    Q_JNI_NATIVE_METHOD(handleRefreshRateChanged),
+                    Q_JNI_NATIVE_METHOD(handleScreenAdded),
+                    Q_JNI_NATIVE_METHOD(handleScreenChanged),
+                    Q_JNI_NATIVE_METHOD(handleScreenRemoved),
+                    Q_JNI_NATIVE_METHOD(handleUiDarkModeChanged)
+            });
+
+    if (!success) {
+        qCritical() << "QtDisplayManager: registerNativeMethods() failed";
+        return JNI_FALSE;
     }
 
     GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IZIIIII)V");
