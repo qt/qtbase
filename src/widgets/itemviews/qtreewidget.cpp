@@ -2301,6 +2301,12 @@ QDataStream &operator>>(QDataStream &in, QTreeWidgetItem &item)
 #endif // QT_NO_DATASTREAM
 
 
+void QTreeWidgetPrivate::clearConnections()
+{
+    for (const QMetaObject::Connection &connection : connections)
+        QObject::disconnect(connection);
+}
+
 void QTreeWidgetPrivate::_q_emitItemPressed(const QModelIndex &index)
 {
     Q_Q(QTreeWidget);
@@ -2570,31 +2576,34 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
 QTreeWidget::QTreeWidget(QWidget *parent)
     : QTreeView(*new QTreeWidgetPrivate(), parent)
 {
+    Q_D(QTreeWidget);
     QTreeView::setModel(new QTreeModel(1, this));
-    connect(this, SIGNAL(pressed(QModelIndex)),
-            SLOT(_q_emitItemPressed(QModelIndex)));
-    connect(this, SIGNAL(clicked(QModelIndex)),
-            SLOT(_q_emitItemClicked(QModelIndex)));
-    connect(this, SIGNAL(doubleClicked(QModelIndex)),
-            SLOT(_q_emitItemDoubleClicked(QModelIndex)));
-    connect(this, SIGNAL(activated(QModelIndex)),
-            SLOT(_q_emitItemActivated(QModelIndex)));
-    connect(this, SIGNAL(entered(QModelIndex)),
-            SLOT(_q_emitItemEntered(QModelIndex)));
-    connect(this, SIGNAL(expanded(QModelIndex)),
-            SLOT(_q_emitItemExpanded(QModelIndex)));
-    connect(this, SIGNAL(collapsed(QModelIndex)),
-            SLOT(_q_emitItemCollapsed(QModelIndex)));
-    connect(selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-            this, SLOT(_q_emitCurrentItemChanged(QModelIndex,QModelIndex)));
-    connect(model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-            this, SLOT(_q_emitItemChanged(QModelIndex)));
-    connect(model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-            this, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
-    connect(model(), SIGNAL(columnsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_sort()));
-    connect(selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-            this, SLOT(_q_selectionChanged(QItemSelection,QItemSelection)));
+    d->connections = {
+        QObjectPrivate::connect(this, &QTreeWidget::pressed,
+                                d, &QTreeWidgetPrivate::_q_emitItemPressed),
+        QObjectPrivate::connect(this, &QTreeWidget::clicked,
+                                d, &QTreeWidgetPrivate::_q_emitItemClicked),
+        QObjectPrivate::connect(this, &QTreeWidget::doubleClicked,
+                                d, &QTreeWidgetPrivate::_q_emitItemDoubleClicked),
+        QObjectPrivate::connect(this, &QTreeWidget::activated,
+                                d, &QTreeWidgetPrivate::_q_emitItemActivated),
+        QObjectPrivate::connect(this, &QTreeWidget::entered,
+                                d, &QTreeWidgetPrivate::_q_emitItemEntered),
+        QObjectPrivate::connect(this, &QTreeWidget::expanded,
+                                d, &QTreeWidgetPrivate::_q_emitItemExpanded),
+        QObjectPrivate::connect(this, &QTreeWidget::collapsed,
+                                d, &QTreeWidgetPrivate::_q_emitItemCollapsed),
+        QObjectPrivate::connect(model(), &QAbstractItemModel::dataChanged,
+                                d, &QTreeWidgetPrivate::_q_emitItemChanged),
+        QObjectPrivate::connect(model(), &QAbstractItemModel::dataChanged,
+                                d, &QTreeWidgetPrivate::_q_dataChanged),
+        QObjectPrivate::connect(model(), &QAbstractItemModel::columnsRemoved,
+                                d, &QTreeWidgetPrivate::_q_sort),
+        QObjectPrivate::connect(selectionModel(), &QItemSelectionModel::currentChanged,
+                                d, &QTreeWidgetPrivate::_q_emitCurrentItemChanged),
+        QObjectPrivate::connect(selectionModel(), &QItemSelectionModel::selectionChanged,
+                                d, &QTreeWidgetPrivate::_q_selectionChanged)
+    };
     header()->setSectionsClickable(false);
 }
 
@@ -2604,6 +2613,8 @@ QTreeWidget::QTreeWidget(QWidget *parent)
 
 QTreeWidget::~QTreeWidget()
 {
+    Q_D(QTreeWidget);
+    d->clearConnections();
 }
 
 /*

@@ -23,6 +23,8 @@
 #include <private/qtreeview_p.h>
 #include <QtWidgets/qheaderview.h>
 
+#include <array>
+
 QT_REQUIRE_CONFIG(treewidget);
 
 QT_BEGIN_NAMESPACE
@@ -186,6 +188,7 @@ class QTreeWidgetPrivate : public QTreeViewPrivate
     Q_DECLARE_PUBLIC(QTreeWidget)
 public:
     QTreeWidgetPrivate() : QTreeViewPrivate(), explicitSortColumn(-1) {}
+    void clearConnections();
     inline QTreeModel *treeModel() const { return qobject_cast<QTreeModel*>(model); }
     inline QModelIndex index(const QTreeWidgetItem *item, int column = 0) const
         { return treeModel()->index(item, column); }
@@ -206,6 +209,8 @@ public:
 
      // used by QTreeWidgetItem::sortChildren to make sure the column argument is used
     int explicitSortColumn;
+
+    std::array<QMetaObject::Connection, 12> connections;
 };
 
 QT_END_NAMESPACE
