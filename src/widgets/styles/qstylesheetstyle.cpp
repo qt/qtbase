@@ -4127,11 +4127,13 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
             if (hasStyleRule(w, PseudoElement_HeaderViewUpArrow)
              || hasStyleRule(w, PseudoElement_HeaderViewDownArrow)) {
-                const QRect arrowRect = subElementRect(SE_HeaderArrow, opt, w);
-                if (hdr.orientation == Qt::Horizontal)
-                    hdr.rect.setWidth(hdr.rect.width() - arrowRect.width());
-                else
-                    hdr.rect.setHeight(hdr.rect.height() - arrowRect.height());
+                if (hdr.sortIndicator != QStyleOptionHeader::None) {
+                    const QRect arrowRect = subElementRect(SE_HeaderArrow, opt, w);
+                    if (hdr.orientation == Qt::Horizontal)
+                        hdr.rect.setWidth(hdr.rect.width() - arrowRect.width());
+                    else
+                        hdr.rect.setHeight(hdr.rect.height() - arrowRect.height());
+                }
             }
             subRule.configurePalette(&hdr.palette, QPalette::ButtonText, QPalette::Button);
             if (subRule.hasFont) {
@@ -6224,8 +6226,22 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 
     case SE_HeaderLabel: {
         QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
-        if (subRule.hasBox() || !subRule.hasNativeBorder())
-            return subRule.contentsRect(opt->rect);
+        if (subRule.hasBox() || !subRule.hasNativeBorder()) {
+            auto r = subRule.contentsRect(opt->rect);
+            if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
+                // Subtract width needed for arrow, if there is one
+                if (header->sortIndicator != QStyleOptionHeader::None) {
+                    const auto arrowRect = subElementRect(SE_HeaderArrow, opt, w);
+                    if (arrowRect.isValid()) {
+                        if (opt->state & State_Horizontal)
+                            r.setWidth(r.width() - arrowRect.width());
+                        else
+                            r.setHeight(r.height() - arrowRect.height());
+                    }
+                }
+            }
+            return r;
+        }
                          }
         break;
 
