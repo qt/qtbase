@@ -44,6 +44,15 @@ using namespace Qt::StringLiterals;
 
 namespace {
 
+template <typename String> String detached(String s)
+{
+    if (!s.isNull()) { // detaching loses nullness, but we need to preserve it
+        auto d = s.data();
+        Q_UNUSED(d);
+    }
+    return s;
+}
+
 // this wraps an argument to a QString function, as well as how to apply
 // the argument to a given QString member function.
 template <typename T>
@@ -697,6 +706,8 @@ private slots:
 
     void rawData();
     void clear();
+    void first();
+    void last();
     void sliced();
     void chopped();
     void removeIf();
@@ -8850,6 +8861,50 @@ void tst_QString::clear()
     QVERIFY(s.isEmpty());
 }
 
+void tst_QString::first()
+{
+    QString a;
+
+    QVERIFY(a.first(0).isEmpty());
+    QVERIFY(!a.isDetached());
+
+    a = u"ABCDEFGHIEfGEFG"_s; // 15 chars
+
+    // lvalue
+    QCOMPARE(a.first(5), u"ABCDE");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, not detached
+    QCOMPARE(QString(a).first(5), u"ABCDE");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, detached
+    QCOMPARE(detached(a).first(5), u"ABCDE");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+}
+
+void tst_QString::last()
+{
+    QString a;
+
+    QVERIFY(a.last(0).isEmpty());
+    QVERIFY(!a.isDetached());
+
+    a = u"ABCDEFGHIEfGEFG"_s; // 15 chars
+
+    // lvalue
+    QCOMPARE(a.last(10), u"FGHIEfGEFG");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, not detached
+    QCOMPARE(QString(a).last(10), u"FGHIEfGEFG");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, detached
+    QCOMPARE(detached(a).last(10), u"FGHIEfGEFG");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+}
+
 void tst_QString::sliced()
 {
     QString a;
@@ -8860,8 +8915,20 @@ void tst_QString::sliced()
 
     a = u"ABCDEFGHIEfGEFG"_s; // 15 chars
 
+    // lvalue
     QCOMPARE(a.sliced(5), u"FGHIEfGEFG");
     QCOMPARE(a.sliced(5, 3), u"FGH");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, not detached
+    QCOMPARE(QString(a).sliced(5), u"FGHIEfGEFG");
+    QCOMPARE(QString(a).sliced(5, 3), u"FGH");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, detached
+    QCOMPARE(detached(a).sliced(5), u"FGHIEfGEFG");
+    QCOMPARE(detached(a).sliced(5, 3), u"FGH");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
 }
 
 void tst_QString::chopped()
@@ -8873,7 +8940,17 @@ void tst_QString::chopped()
 
     a = u"ABCDEFGHIEfGEFG"_s; // 15 chars
 
+    // lvalue
     QCOMPARE(a.chopped(10), u"ABCDE");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, not detached
+    QCOMPARE(QString(a).chopped(10), u"ABCDE");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, detached
+    QCOMPARE(detached(a).chopped(10), u"ABCDE");
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
 }
 
 void tst_QString::removeIf()

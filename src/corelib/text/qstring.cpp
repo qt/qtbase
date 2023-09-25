@@ -5222,7 +5222,8 @@ QString QString::mid(qsizetype position, qsizetype n) const
 }
 
 /*!
-    \fn QString QString::first(qsizetype n) const
+    \fn QString QString::first(qsizetype n) const &
+    \fn QString QString::first(qsizetype n) &&
     \since 6.0
 
     Returns a string that contains the first \a n characters
@@ -5236,7 +5237,8 @@ QString QString::mid(qsizetype position, qsizetype n) const
 */
 
 /*!
-    \fn QString QString::last(qsizetype n) const
+    \fn QString QString::last(qsizetype n) const &
+    \fn QString QString::last(qsizetype n) &&
     \since 6.0
 
     Returns the string that contains the last \a n characters of this string.
@@ -5249,7 +5251,8 @@ QString QString::mid(qsizetype position, qsizetype n) const
 */
 
 /*!
-    \fn QString QString::sliced(qsizetype pos, qsizetype n) const
+    \fn QString QString::sliced(qsizetype pos, qsizetype n) const &
+    \fn QString QString::sliced(qsizetype pos, qsizetype n) &&
     \since 6.0
 
     Returns a string that contains \a n characters of this string,
@@ -5262,9 +5265,18 @@ QString QString::mid(qsizetype position, qsizetype n) const
 
     \sa first(), last(), chopped(), chop(), truncate()
 */
+QString QString::sliced_helper(QString &str, qsizetype pos, qsizetype n)
+{
+    if (n == 0)
+        return QString(DataPointer::fromRawData(&_empty, 0));
+    DataPointer d = std::move(str.d).sliced(pos, n);
+    d.data()[n] = 0;
+    return QString(std::move(d));
+}
 
 /*!
-    \fn QString QString::sliced(qsizetype pos) const
+    \fn QString QString::sliced(qsizetype pos) const &
+    \fn QString QString::sliced(qsizetype pos) &&
     \since 6.0
     \overload
 
@@ -5277,7 +5289,8 @@ QString QString::mid(qsizetype position, qsizetype n) const
 */
 
 /*!
-    \fn QString QString::chopped(qsizetype len) const
+    \fn QString QString::chopped(qsizetype len) const &
+    \fn QString QString::chopped(qsizetype len) &&
     \since 5.10
 
     Returns a string that contains the size() - \a len leftmost characters

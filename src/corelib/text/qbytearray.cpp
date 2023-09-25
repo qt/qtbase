@@ -3102,7 +3102,8 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
 }
 
 /*!
-    \fn QByteArray QByteArray::first(qsizetype n) const
+    \fn QByteArray QByteArray::first(qsizetype n) const &
+    \fn QByteArray QByteArray::first(qsizetype n) &&
     \since 6.0
 
     Returns the first \a n bytes of the byte array.
@@ -3116,7 +3117,8 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
 */
 
 /*!
-    \fn QByteArray QByteArray::last(qsizetype n) const
+    \fn QByteArray QByteArray::last(qsizetype n) const &
+    \fn QByteArray QByteArray::last(qsizetype n) &&
     \since 6.0
 
     Returns the last \a n bytes of the byte array.
@@ -3130,7 +3132,8 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
 */
 
 /*!
-    \fn QByteArray QByteArray::sliced(qsizetype pos, qsizetype n) const
+    \fn QByteArray QByteArray::sliced(qsizetype pos, qsizetype n) const &
+    \fn QByteArray QByteArray::sliced(qsizetype pos, qsizetype n) &&
     \since 6.0
 
     Returns a byte array containing the \a n bytes of this object starting
@@ -3144,9 +3147,18 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
 
     \sa first(), last(), chopped(), chop(), truncate()
 */
+QByteArray QByteArray::sliced_helper(QByteArray &a, qsizetype pos, qsizetype n)
+{
+    if (n == 0)
+        return fromRawData(&_empty, 0);
+    DataPointer d = std::move(a.d).sliced(pos, n);
+    d.data()[n] = 0;
+    return QByteArray(std::move(d));
+}
 
 /*!
-    \fn QByteArray QByteArray::sliced(qsizetype pos) const
+    \fn QByteArray QByteArray::sliced(qsizetype pos) const &
+    \fn QByteArray QByteArray::sliced(qsizetype pos) &&
     \since 6.0
     \overload
 
@@ -3159,7 +3171,8 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
 */
 
 /*!
-    \fn QByteArray QByteArray::chopped(qsizetype len) const
+    \fn QByteArray QByteArray::chopped(qsizetype len) const &
+    \fn QByteArray QByteArray::chopped(qsizetype len) &&
     \since 5.10
 
     Returns a byte array that contains the leftmost size() - \a len bytes of

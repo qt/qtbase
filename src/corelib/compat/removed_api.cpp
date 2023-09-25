@@ -618,6 +618,22 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 
 #if QT_CORE_REMOVED_SINCE(6, 7)
 
+#include "qbytearray.h"
+
+#ifdef Q_CC_MSVC
+// previously inline methods, only needed for MSVC compat
+QByteArray QByteArray::first(qsizetype n) const
+{ return sliced(0, n); }
+QByteArray QByteArray::last(qsizetype n) const
+{ return sliced(size() - n, n); }
+QByteArray QByteArray::sliced(qsizetype pos) const
+{ return sliced(pos, size() - pos); }
+QByteArray QByteArray::sliced(qsizetype pos, qsizetype n) const
+{ verify(pos, n); return QByteArray(d.data() + pos, n); }
+QByteArray QByteArray::chopped(qsizetype n) const
+{ return sliced(0, size() - n); }
+#endif
+
 #include "qdatetime.h"
 
 QDateTime::QDateTime(QDate date, QTime time, const QTimeZone &timeZone)
@@ -725,6 +741,22 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 {
     return invokeMethodImpl(object, slot, type, 1, &ret, nullptr, nullptr);
 }
+
+#include "qstring.h"
+
+#ifdef Q_CC_MSVC
+// previously inline methods, only needed for MSVC compat
+QString QString::first(qsizetype n) const
+{ return sliced(0, n); }
+QString QString::last(qsizetype n) const
+{ return sliced(size() - n, n); }
+QString QString::sliced(qsizetype pos) const
+{ return sliced(pos, size() - pos); }
+QString QString::sliced(qsizetype pos, qsizetype n) const
+{ verify(pos, n); return QString(begin() + pos, n); }
+QString QString::chopped(qsizetype n) const
+{ return sliced(0, size() - n); }
+#endif
 
 #include "qurl.h"
 

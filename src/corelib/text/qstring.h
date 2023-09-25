@@ -335,17 +335,39 @@ public:
     [[nodiscard]] QString right(qsizetype n) const;
     [[nodiscard]] QString mid(qsizetype position, qsizetype n = -1) const;
 
-    [[nodiscard]] QString first(qsizetype n) const
+#if QT_CORE_REMOVED_SINCE(6, 7)
+    QString first(qsizetype n) const;
+    QString last(qsizetype n) const;
+    QString sliced(qsizetype pos) const;
+    QString sliced(qsizetype pos, qsizetype n) const;
+    QString chopped(qsizetype n) const;
+#else
+    [[nodiscard]] QString first(qsizetype n) const &
     { verify(0, n); return sliced(0, n); }
-    [[nodiscard]] QString last(qsizetype n) const
+    [[nodiscard]] QString last(qsizetype n) const &
     { verify(0, n); return sliced(size() - n, n); }
-    [[nodiscard]] QString sliced(qsizetype pos) const
+    [[nodiscard]] QString sliced(qsizetype pos) const &
     { verify(pos, 0); return QString(data() + pos, size() - pos); }
-    [[nodiscard]] QString sliced(qsizetype pos, qsizetype n) const
+    [[nodiscard]] QString sliced(qsizetype pos, qsizetype n) const &
     { verify(pos, n); return QString(begin() + pos, n); }
-    [[nodiscard]] QString chopped(qsizetype n) const
+    [[nodiscard]] QString chopped(qsizetype n) const &
     { verify(0, n); return sliced(0, size() - n); }
 
+    [[nodiscard]] QString first(qsizetype n) &&
+    {
+        verify(0, n);
+        resize(n);      // may detach and allocate memory
+        return std::move(*this);
+    }
+    [[nodiscard]] QString last(qsizetype n) &&
+    { verify(0, n); return sliced_helper(*this, size() - n, n); }
+    [[nodiscard]] QString sliced(qsizetype pos) &&
+    { verify(pos, 0); return sliced_helper(*this, pos, size() - pos); }
+    [[nodiscard]] QString sliced(qsizetype pos, qsizetype n) &&
+    { verify(pos, n); return sliced_helper(*this, pos, n); }
+    [[nodiscard]] QString chopped(qsizetype n) &&
+    { verify(0, n); return std::move(*this).first(size() - n); }
+#endif
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
@@ -951,6 +973,7 @@ private:
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
     static int localeAwareCompare_helper(const QChar *data1, qsizetype length1,
                                          const QChar *data2, qsizetype length2);
+    static QString sliced_helper(QString &str, qsizetype pos, qsizetype n);
     static QString toLower_helper(const QString &str);
     static QString toLower_helper(QString &str);
     static QString toUpper_helper(const QString &str);

@@ -413,6 +413,26 @@ public:
         size = dst - begin();
     }
 
+    QArrayDataPointer sliced(qsizetype pos, qsizetype n) const &
+    {
+        QArrayDataPointer result(n);
+        std::uninitialized_copy_n(begin() + pos, n, result.begin());
+        result.size = n;
+        return result;
+    }
+
+    QArrayDataPointer sliced(qsizetype pos, qsizetype n) &&
+    {
+        if (needsDetach())
+            return sliced(pos, n);
+        T *newBeginning = begin() + pos;
+        std::destroy(begin(), newBeginning);
+        std::destroy(newBeginning + n, end());
+        setBegin(newBeginning);
+        size = n;
+        return std::move(*this);
+    }
+
     // forwards from QArrayData
     qsizetype allocatedCapacity() noexcept { return d ? d->allocatedCapacity() : 0; }
     qsizetype constAllocatedCapacity() const noexcept { return d ? d->constAllocatedCapacity() : 0; }

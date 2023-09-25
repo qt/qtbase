@@ -155,16 +155,39 @@ public:
     [[nodiscard]] QByteArray right(qsizetype len) const;
     [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) const;
 
-    [[nodiscard]] QByteArray first(qsizetype n) const
+#if QT_CORE_REMOVED_SINCE(6, 7)
+    QByteArray first(qsizetype n) const;
+    QByteArray last(qsizetype n) const;
+    QByteArray sliced(qsizetype pos) const;
+    QByteArray sliced(qsizetype pos, qsizetype n) const;
+    QByteArray chopped(qsizetype len) const;
+#else
+    [[nodiscard]] QByteArray first(qsizetype n) const &
     { verify(0, n); return sliced(0, n); }
-    [[nodiscard]] QByteArray last(qsizetype n) const
+    [[nodiscard]] QByteArray last(qsizetype n) const &
     { verify(0, n); return sliced(size() - n, n); }
-    [[nodiscard]] QByteArray sliced(qsizetype pos) const
+    [[nodiscard]] QByteArray sliced(qsizetype pos) const &
     { verify(pos, 0); return QByteArray(data() + pos, size() - pos); }
-    [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) const
+    [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) const &
     { verify(pos, n); return QByteArray(d.data() + pos, n); }
-    [[nodiscard]] QByteArray chopped(qsizetype len) const
+    [[nodiscard]] QByteArray chopped(qsizetype len) const &
     { verify(0, len); return sliced(0, size() - len); }
+
+    [[nodiscard]] QByteArray first(qsizetype n) &&
+    {
+        verify(0, n);
+        resize(n);      // may detach and allocate memory
+        return std::move(*this);
+    }
+    [[nodiscard]] QByteArray last(qsizetype n) &&
+    { verify(0, n); return sliced_helper(*this, size() - n, n); }
+    [[nodiscard]] QByteArray sliced(qsizetype pos) &&
+    { verify(pos, 0); return sliced_helper(*this, pos, size() - pos); }
+    [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) &&
+    { verify(pos, n); return sliced_helper(*this, pos, n); }
+    [[nodiscard]] QByteArray chopped(qsizetype len) &&
+    { verify(0, len); return std::move(*this).first(size() - len); }
+#endif
 
     bool startsWith(QByteArrayView bv) const
     { return QtPrivate::startsWith(qToByteArrayViewIgnoringNull(*this), bv); }
@@ -479,6 +502,7 @@ public:
     QT_CORE_INLINE_SINCE(6, 4)
     bool isNull() const noexcept;
 
+    inline const DataPointer &data_ptr() const { return d; }
     inline DataPointer &data_ptr() { return d; }
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     explicit inline QByteArray(const DataPointer &dd) : d(dd) {}
@@ -499,6 +523,7 @@ private:
         Q_ASSERT(n <= d.size - pos);
     }
 
+    static QByteArray sliced_helper(QByteArray &a, qsizetype pos, qsizetype n);
     static QByteArray toLower_helper(const QByteArray &a);
     static QByteArray toLower_helper(QByteArray &a);
     static QByteArray toUpper_helper(const QByteArray &a);
