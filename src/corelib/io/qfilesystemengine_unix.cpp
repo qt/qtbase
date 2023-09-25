@@ -16,6 +16,7 @@
 #include <QtCore/qvarlengtharray.h>
 #ifndef QT_BOOTSTRAPPED
 # include <QtCore/qstandardpaths.h>
+# include <QtCore/private/qtemporaryfile_p.h>
 #endif // QT_BOOTSTRAPPED
 
 #include <pwd.h>
@@ -1205,10 +1206,11 @@ struct FreeDesktopTrashOperation
     int infoDirFd = -1;
     qsizetype volumePrefixLength = 0;
 
-    // relative to infoDirFd from above
+    // relative file paths to the filesDirFd and infoDirFd from above
+    QByteArray tempTrashFileName;
     QByteArray infoFilePath;
-    int infoFileFd = -1;        // if we've already opened it
 
+    int infoFileFd = -1;        // if we've already opened it
     ~FreeDesktopTrashOperation()
     {
         close();
@@ -1227,6 +1229,10 @@ struct FreeDesktopTrashOperation
             QT_CLOSE(infoFileFd);
             unlinkat(infoDirFd, infoFilePath, 0);
             infoFileFd = -1;
+        }
+        if (!tempTrashFileName.isEmpty()) {
+            Q_ASSERT(filesDirFd != -1);
+            unlinkat(filesDirFd, tempTrashFileName, 0);
         }
         if (filesDirFd >= 0)
             QT_CLOSE(filesDirFd);
@@ -1252,6 +1258,7 @@ struct FreeDesktopTrashOperation
     {
         QT_CLOSE(infoFileFd);
         infoFileFd = -1;
+        tempTrashFileName = {};
     }
 
     // opens a directory and returns the file descriptor
@@ -1278,7 +1285,8 @@ struct FreeDesktopTrashOperation
     }
 
     // opens or makes the XDG Trash hierarchy on parentfd (may be -1) called targetDir
-    bool getTrashDir(int parentfd, QString targetDir, QSystemError &error)
+    bool getTrashDir(int parentfd, QString targetDir, const QFileSystemEntry &source,
+                     QSystemError &error)
     {
         if (parentfd == AT_FDCWD)
             trashPath = targetDir;
@@ -1293,6 +1301,7 @@ struct FreeDesktopTrashOperation
 
         // check if it is ours (even if we've just mkdirat'ed it)
         if (QT_STATBUF st; QT_FSTAT(trashfd, &st) < 0) {
+            error = QSystemError(errno, QSystemError::StandardLibraryError);
             return false;
         } else if (st.st_uid != getuid()) {
             error = QSystemError(EPERM, QSystemError::StandardLibraryError);
@@ -1300,8 +1309,29 @@ struct FreeDesktopTrashOperation
         }
 
         filesDirFd = openOrCreateDir(trashfd, "files");
-        if (filesDirFd >= 0)
-            infoDirFd = openOrCreateDir(trashfd, "info");
+        if (filesDirFd >= 0) {
+            // try to link our file-to-be-trashed here
+            QTemporaryFileName tfn("XXXXXX"_L1);
+            for (int i = 0; i < 16; ++i) {
+                QByteArray attempt = tfn.generateNext();
+                if (linkat(AT_FDCWD, source.nativeFilePath(), filesDirFd, attempt, 0) == 0) {
+                    tempTrashFileName = std::move(attempt);
+                    break;
+                }
+                if (errno != EEXIST)
+                    break;
+            }
+
+            // man 2 link on Linux has:
+            // EPERM  The filesystem containing oldpath and newpath does not
+            //        support the creation of hard links.
+            // EPERM  oldpath is a directory.
+            // EPERM  oldpath is marked immutable or append‐only.
+            // EMLINK The file referred to by oldpath already has the maximum
+            //        number of links to it.
+            if (!tempTrashFileName.isEmpty() || errno == EPERM || errno == EMLINK)
+                infoDirFd = openOrCreateDir(trashfd, "info");
+        }
         error = QSystemError(errno, QSystemError::StandardLibraryError);
         if (infoDirFd < 0)
             close();
@@ -1309,34 +1339,9 @@ struct FreeDesktopTrashOperation
         return infoDirFd >= 0;
     }
 
-    bool findTrashFor(const QFileSystemEntry &source, QSystemError &error);
-};
-
-bool FreeDesktopTrashOperation::findTrashFor(const QFileSystemEntry &source, QSystemError &error)
-{
-    // first, check if they are in the same device
-    QString homePath = QFileSystemEngine::homePath();
-    const QString sourcePath = source.filePath();
-    QT_STATBUF sourceInfo, homeInfo;
-    if (QT_STAT(QFile::encodeName(sourcePath), &sourceInfo) != 0 ||
-            QT_STAT(QFile::encodeName(homePath), &homeInfo) != 0) {
-        error = QSystemError(errno, QSystemError::StandardLibraryError);
-        return false;
-    }
-
-    const QStorageInfo sourceStorage(sourcePath);
-    bool isHomeVolume = false;
-    if (sourceInfo.st_dev == homeInfo.st_dev) {
-        // being the same device is not enough for rename(): they must be the
-        // same mount, so we need QStorageInfo to compare
-        isHomeVolume = sourceStorage == QStorageInfo(QFileSystemEngine::homePath());
-    }
-
-    // We support trashing of files outside the users home partition
-    if (!isHomeVolume) {
-        const auto dotTrash = "/.Trash"_L1;
-        QFileSystemEntry dotTrashDir(sourceStorage.rootPath() + dotTrash);
-
+    bool openMountPointTrashLocation(const QFileSystemEntry &source,
+                                     const QStorageInfo &sourceStorage, QSystemError &error)
+    {
         /*
             Method 1:
             "An administrator can create an $topdir/.Trash directory. The permissions on this
@@ -1348,7 +1353,9 @@ bool FreeDesktopTrashOperation::findTrashFor(const QFileSystemEntry &source, QSy
             of $topdir/.Trash."
         */
 
+        const auto dotTrash = "/.Trash"_L1;
         const QString userID = QString::number(::getuid());
+        QFileSystemEntry dotTrashDir(sourceStorage.rootPath() + dotTrash);
 
         // we MUST check that the sticky bit is set, and that it is not a symlink
         int genericTrashFd = openDirFd(AT_FDCWD, dotTrashDir.nativeFilePath());
@@ -1379,7 +1386,7 @@ bool FreeDesktopTrashOperation::findTrashFor(const QFileSystemEntry &source, QSy
                      the implementation MUST immediately create it, without any warnings or
                      delays for the user."
                 */
-                if (getTrashDir(genericTrashFd, userID, error)) {
+                if (getTrashDir(genericTrashFd, userID, source, error)) {
                     // recreate the resulting path
                     trashPath = dotTrashDir.filePath() + u'/' + userID;
                 }
@@ -1395,7 +1402,7 @@ bool FreeDesktopTrashOperation::findTrashFor(const QFileSystemEntry &source, QSy
              immediately create it, without any warnings or delays for the user."
         */
         if (!isTrashDirOpen())
-            getTrashDir(AT_FDCWD, sourceStorage.rootPath() + dotTrash + u'-' + userID, error);
+            getTrashDir(AT_FDCWD, sourceStorage.rootPath() + dotTrash + u'-' + userID, source, error);
 
         if (isTrashDirOpen()) {
             volumePrefixLength = sourceStorage.rootPath().size();
@@ -1404,26 +1411,35 @@ bool FreeDesktopTrashOperation::findTrashFor(const QFileSystemEntry &source, QSy
             else
                 ++volumePrefixLength;           // to include the slash
         }
+        return isTrashDirOpen();
     }
 
-    /*
-        "If both (1) and (2) fail [...], the implementation MUST either trash the
-         file into the user's “home trash” or refuse to trash it."
-
-         We trash the file into the user's home trash.
-
-        "Its name and location are $XDG_DATA_HOME/Trash"; $XDG_DATA_HOME is what
-        QStandardPaths returns for GenericDataLocation. If that doesn't exist, then
-        we are not running on a freedesktop.org-compliant environment, and give up.
-    */
-    if (!isTrashDirOpen()) {
+    bool openHomeTrashLocation(const QFileSystemEntry &source, QSystemError &error)
+    {
         QString topDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-        if (!getTrashDir(AT_FDCWD, topDir + "/Trash"_L1, error))
-            qWarning("Unable to establish trash directory in %ls", qUtf16Printable(topDir));
+        return getTrashDir(AT_FDCWD, topDir + "/Trash"_L1, source, error);
     }
 
-    return isTrashDirOpen();
-}
+    bool findTrashFor(const QFileSystemEntry &source, QSystemError &error)
+    {
+        /*
+           First, try the standard Trash in $XDG_DATA_DIRS:
+           "Its name and location are $XDG_DATA_HOME/Trash"; $XDG_DATA_HOME is what
+           QStandardPaths returns for GenericDataLocation. If that doesn't exist, then
+           we are not running on a freedesktop.org-compliant environment, and give up.
+         */
+        if (openHomeTrashLocation(source, error))
+            return true;
+        if (error.errorCode != EXDEV)
+            return false;
+
+        // didn't work, try to find the trash outside the home filesystem
+        const QStorageInfo sourceStorage(source.filePath());
+        if (!sourceStorage.isValid())
+            return false;
+        return openMountPointTrashLocation(source, sourceStorage, error);
+    }
+};
 } // unnamed namespace
 
 //static
@@ -1495,12 +1511,26 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     }
 
     /*
-        We might fail to rename if source and target are on different file systems.
-        In that case, we don't try further, i.e. copying and removing the original
-        is usually not what the user would expect to happen.
+       If we've already linked the file-to-be-trashed into the trash
+       directory, we know it's in the same mountpoint and we won't get ENOSPC
+       renaming the temporary file to the target name either.
     */
-    bool renamed = renameat(AT_FDCWD, source.nativeFilePath(), op.filesDirFd,
-                            QFile::encodeName(uniqueTrashedName)) == 0;
+    bool renamed;
+    if (op.tempTrashFileName.isEmpty()) {
+        /*
+           We did not get a link (we're trying to trash a directory or on a
+           filesystem that doesn't support hardlinking), so rename straight
+           from the original name. We might fail to rename if source and target
+           are on different file systems.
+         */
+        renamed = renameat(AT_FDCWD, source.nativeFilePath(), op.filesDirFd,
+                           QFile::encodeName(uniqueTrashedName)) == 0;
+    } else {
+        renamed = renameat(op.filesDirFd, op.tempTrashFileName, op.filesDirFd,
+                           QFile::encodeName(uniqueTrashedName)) == 0;
+        if (renamed)
+            removeFile(source, error);  // success, delete the original file
+    }
     if (!renamed) {
         error = QSystemError(errno, QSystemError::StandardLibraryError);
         return false;
