@@ -92,17 +92,17 @@ QNetworkManagerInterface::~QNetworkManagerInterface()
 
 QNetworkManagerInterface::NMState QNetworkManagerInterface::state() const
 {
-    if (propertyMap.contains(stateKey())) {
-        return static_cast<QNetworkManagerInterface::NMState>(propertyMap.value(stateKey())
-                                                                      .toUInt());
-    }
+    auto it = propertyMap.constFind(stateKey());
+    if (it != propertyMap.cend())
+        return static_cast<QNetworkManagerInterface::NMState>(it->toUInt());
     return QNetworkManagerInterface::NM_STATE_UNKNOWN;
 }
 
 QNetworkManagerInterface::NMConnectivityState QNetworkManagerInterface::connectivityState() const
 {
-    if (propertyMap.contains(connectivityKey()))
-        return static_cast<NMConnectivityState>(propertyMap.value(connectivityKey()).toUInt());
+    auto it = propertyMap.constFind(connectivityKey());
+    if (it != propertyMap.cend())
+        return static_cast<NMConnectivityState>(it->toUInt());
     return QNetworkManagerInterface::NM_CONNECTIVITY_UNKNOWN;
 }
 
