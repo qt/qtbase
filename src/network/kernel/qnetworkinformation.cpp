@@ -629,6 +629,12 @@ QNetworkInformation::Features QNetworkInformation::supportedFeatures() const
 
     Attempts to load the platform-default backend.
 
+    \note Starting with 6.7 this tries to load any backend that supports
+    \l{QNetworkInformation::Feature::Reachability}{Reachability} if the
+    platform-default backend is not available or fails to load.
+    If this also fails it will fall back to a backend that only returns
+    the default values for all properties.
+
     This platform-to-plugin mapping is as follows:
 
     \table
@@ -649,12 +655,14 @@ QNetworkInformation::Features QNetworkInformation::supportedFeatures() const
         \li networkmanager
     \endtable
 
-    This function is provided for convenience where the default for a given
-    platform is good enough. If you are not using the default plugins you must
-    use one of the other load() overloads.
+    This function is provided for convenience where the logic earlier
+    is good enough. If you require a specific plugin then you should call
+    loadBackendByName() or loadBackendByFeatures() directly instead.
 
-    Returns \c true if it managed to load the backend or if it was already
-    loaded. Returns \c false otherwise.
+    Determines a suitable backend to load and returns \c true if this backend
+    is already loaded or on successful loading of it. Returns \c false if any
+    other backend has already been loaded, or if loading of the selected
+    backend fails.
 
     \sa instance(), load()
 */
@@ -670,10 +678,15 @@ bool QNetworkInformation::loadDefaultBackend()
 #elif defined(Q_OS_LINUX)
     index = QNetworkInformationBackend::PluginNamesLinuxIndex;
 #endif
-    if (index == -1)
-        return loadBackendByName(u"dummy");
+    if (index != -1 && loadBackendByName(QNetworkInformationBackend::PluginNames[index]))
+        return true;
+    // We assume reachability is the most commonly wanted feature, and try to
+    // load the backend that advertises the most features including that:
+    if (loadBackendByFeatures(Feature::Reachability))
+        return true;
 
-    return loadBackendByName(QNetworkInformationBackend::PluginNames[index]);
+    // Fall back to the dummy backend
+    return loadBackendByName(u"dummy");
 }
 
 /*!
