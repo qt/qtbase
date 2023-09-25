@@ -67,7 +67,8 @@ static void findFileRecursion(const QDir &directory, Platform platform,
     const QFileInfoList &subDirs = directory.entryInfoList(QStringList(), QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
     for (const QFileInfo &subDirFi : subDirs) {
         QDir subDirectory(subDirFi.absoluteFilePath());
-        if (subDirectory.isReadable())
+        // Don't enter other QML modules when recursing!
+        if (subDirectory.isReadable() && !subDirectory.exists(QStringLiteral("qmldir")))
             findFileRecursion(subDirectory, platform, debugMatchMode, matches);
     }
 }
