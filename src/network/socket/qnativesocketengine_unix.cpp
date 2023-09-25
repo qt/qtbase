@@ -44,6 +44,9 @@
 #include <sys/socket.h>
 #include <netinet/sctp.h>
 #endif
+#ifdef Q_OS_BSD4
+#  include <net/if_dl.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
