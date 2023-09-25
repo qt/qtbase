@@ -46,7 +46,7 @@ class QNetworkManagerInterfaceBase : public QDBusAbstractInterface
 {
     Q_OBJECT
 public:
-    QNetworkManagerInterfaceBase(QObject *parent = nullptr);
+    explicit QNetworkManagerInterfaceBase(QObject *parent = nullptr);
     ~QNetworkManagerInterfaceBase() = default;
 
     static bool networkManagerAvailable();
@@ -128,7 +128,7 @@ public:
         NM_METERED_GUESS_NO,
     };
 
-    QNetworkManagerInterface(QObject *parent = nullptr);
+    explicit QNetworkManagerInterface(QObject *parent = nullptr);
     ~QNetworkManagerInterface();
 
     NMState state() const;
