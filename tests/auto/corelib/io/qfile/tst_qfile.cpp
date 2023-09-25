@@ -3949,6 +3949,10 @@ void tst_QFile::moveToTrash_data()
         if (!temp.open())
             QSKIP("Failed to create temporary file!");
         QTest::newRow("temporary file") << temp.fileName() << true << true;
+#ifdef Q_OS_UNIX
+        if (QDir::tempPath() == "/tmp")
+            QTest::newRow("var-temporary file") << "/var" + temp.fileName() << true << true;
+#endif
     }
     {
         QTemporaryDir tempDir(QDir::tempPath() + "/tst_qfile-moveToTrash-XXXXXX");
@@ -3958,6 +3962,10 @@ void tst_QFile::moveToTrash_data()
         QTest::newRow("temporary dir")
             << tempDir.path() + QLatin1Char('/')
             << true << true;
+#ifdef Q_OS_UNIX
+        if (QDir::tempPath() == "/tmp")
+            QTest::newRow("var-temporary dir") << "/var" + tempDir.path() << true << true;
+#endif
     }
     {
         QTemporaryDir homeDir(QDir::homePath() + QLatin1String("/tst_qfile.moveToTrash-XXXXXX"));
