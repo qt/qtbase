@@ -14,21 +14,21 @@
 #include <QtDBus/QDBusObjectPath>
 #include <QtDBus/QDBusPendingCall>
 
-#define DBUS_PROPERTIES_INTERFACE "org.freedesktop.DBus.Properties"
+#define DBUS_PROPERTIES_INTERFACE "org.freedesktop.DBus.Properties"_L1
 
-#define NM_DBUS_SERVICE "org.freedesktop.NetworkManager"
+#define NM_DBUS_INTERFACE "org.freedesktop.NetworkManager"
+#define NM_DBUS_SERVICE NM_DBUS_INTERFACE ""_L1
 
-#define NM_DBUS_PATH "/org/freedesktop/NetworkManager"
-#define NM_DBUS_INTERFACE NM_DBUS_SERVICE
-#define NM_CONNECTION_DBUS_INTERFACE NM_DBUS_SERVICE ".Connection.Active"
-#define NM_DEVICE_DBUS_INTERFACE NM_DBUS_SERVICE ".Device"
+#define NM_DBUS_PATH "/org/freedesktop/NetworkManager"_L1
+#define NM_CONNECTION_DBUS_INTERFACE NM_DBUS_SERVICE ".Connection.Active"_L1
+#define NM_DEVICE_DBUS_INTERFACE NM_DBUS_SERVICE ".Device"_L1
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
 QNetworkManagerInterfaceBase::QNetworkManagerInterfaceBase(QObject *parent)
-    : QDBusAbstractInterface(NM_DBUS_SERVICE ""_L1, NM_DBUS_PATH ""_L1,
+    : QDBusAbstractInterface(NM_DBUS_SERVICE, NM_DBUS_PATH,
                              NM_DBUS_INTERFACE, QDBusConnection::systemBus(), parent)
 {
 }
@@ -45,10 +45,10 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
         return;
 
     PropertiesDBusInterface managerPropertiesInterface(
-            NM_DBUS_SERVICE ""_L1, NM_DBUS_PATH ""_L1, DBUS_PROPERTIES_INTERFACE,
+            NM_DBUS_SERVICE, NM_DBUS_PATH, DBUS_PROPERTIES_INTERFACE,
             QDBusConnection::systemBus());
     QList<QVariant> argumentList;
-    argumentList << NM_DBUS_INTERFACE ""_L1;
+    argumentList << NM_DBUS_SERVICE;
     QDBusPendingReply<QVariantMap> propsReply = managerPropertiesInterface.callWithArgumentList(
             QDBus::Block, "GetAll"_L1, argumentList);
     if (!propsReply.isError()) {
@@ -57,15 +57,15 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
         qWarning() << "propsReply" << propsReply.error().message();
     }
 
-    QDBusConnection::systemBus().connect(NM_DBUS_SERVICE ""_L1, NM_DBUS_PATH ""_L1,
-            DBUS_PROPERTIES_INTERFACE""_L1, "PropertiesChanged"_L1, this,
+    QDBusConnection::systemBus().connect(NM_DBUS_SERVICE, NM_DBUS_PATH,
+            DBUS_PROPERTIES_INTERFACE, "PropertiesChanged"_L1, this,
             SLOT(setProperties(QString,QMap<QString,QVariant>,QList<QString>)));
 }
 
 QNetworkManagerInterface::~QNetworkManagerInterface()
 {
-    QDBusConnection::systemBus().disconnect(NM_DBUS_SERVICE ""_L1, NM_DBUS_PATH ""_L1,
-            DBUS_PROPERTIES_INTERFACE ""_L1, "PropertiesChanged"_L1, this,
+    QDBusConnection::systemBus().disconnect(NM_DBUS_SERVICE, NM_DBUS_PATH,
+            DBUS_PROPERTIES_INTERFACE, "PropertiesChanged"_L1, this,
             SLOT(setProperties(QString,QMap<QString,QVariant>,QList<QString>)));
 }
 
