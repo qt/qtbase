@@ -1026,7 +1026,7 @@ void QXcbWindow::setNetWmState(Qt::WindowFlags flags)
 void QXcbWindow::setNetWmStateOnUnmappedWindow()
 {
     if (Q_UNLIKELY(m_mapped))
-        qCWarning(lcQpaXcb()) << "internal error: " << Q_FUNC_INFO << "called on mapped window";
+        qCDebug(lcQpaXcb()) << "internal info: " << Q_FUNC_INFO << "called on mapped window";
 
     NetWmStates states;
     const Qt::WindowFlags flags = window()->flags();
