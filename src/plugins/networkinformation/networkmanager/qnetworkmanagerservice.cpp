@@ -27,6 +27,25 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+namespace {
+constexpr QLatin1StringView propertiesChangedKey = "PropertiesChanged"_L1;
+const QString &stateKey()
+{
+    static auto key = u"State"_s;
+    return key;
+}
+const QString &connectivityKey()
+{
+    static auto key = u"Connectivity"_s;
+    return key;
+}
+const QString &primaryConnectionKey()
+{
+    static auto key = u"PrimaryConnection"_s;
+    return key;
+}
+}
+
 QNetworkManagerInterfaceBase::QNetworkManagerInterfaceBase(QObject *parent)
     : QDBusAbstractInterface(NM_DBUS_SERVICE, NM_DBUS_PATH,
                              NM_DBUS_INTERFACE, QDBusConnection::systemBus(), parent)
@@ -60,28 +79,30 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
     propertyMap = propsReply.value();
 
     validDBusConnection = QDBusConnection::systemBus().connect(NM_DBUS_SERVICE, NM_DBUS_PATH,
-            DBUS_PROPERTIES_INTERFACE, "PropertiesChanged"_L1, this,
+            DBUS_PROPERTIES_INTERFACE, propertiesChangedKey, this,
             SLOT(setProperties(QString,QMap<QString,QVariant>,QList<QString>)));
 }
 
 QNetworkManagerInterface::~QNetworkManagerInterface()
 {
     QDBusConnection::systemBus().disconnect(NM_DBUS_SERVICE, NM_DBUS_PATH,
-            DBUS_PROPERTIES_INTERFACE, "PropertiesChanged"_L1, this,
+            DBUS_PROPERTIES_INTERFACE, propertiesChangedKey, this,
             SLOT(setProperties(QString,QMap<QString,QVariant>,QList<QString>)));
 }
 
 QNetworkManagerInterface::NMState QNetworkManagerInterface::state() const
 {
-    if (propertyMap.contains("State"))
-        return static_cast<QNetworkManagerInterface::NMState>(propertyMap.value("State").toUInt());
+    if (propertyMap.contains(stateKey())) {
+        return static_cast<QNetworkManagerInterface::NMState>(propertyMap.value(stateKey())
+                                                                      .toUInt());
+    }
     return QNetworkManagerInterface::NM_STATE_UNKNOWN;
 }
 
 QNetworkManagerInterface::NMConnectivityState QNetworkManagerInterface::connectivityState() const
 {
-    if (propertyMap.contains("Connectivity"))
-        return static_cast<NMConnectivityState>(propertyMap.value("Connectivity").toUInt());
+    if (propertyMap.contains(connectivityKey()))
+        return static_cast<NMConnectivityState>(propertyMap.value(connectivityKey()).toUInt());
     return QNetworkManagerInterface::NM_CONNECTIVITY_UNKNOWN;
 }
 
@@ -104,7 +125,7 @@ static std::optional<QDBusInterface> getPrimaryDevice(const QDBusObjectPath &dev
 
 std::optional<QDBusObjectPath> QNetworkManagerInterface::primaryConnectionDevicePath() const
 {
-    auto it = propertyMap.constFind(u"PrimaryConnection"_s);
+    auto it = propertyMap.constFind(primaryConnectionKey());
     if (it != propertyMap.cend())
         return it->value<QDBusObjectPath>();
     return std::nullopt;
@@ -171,13 +192,13 @@ void QNetworkManagerInterface::setProperties(const QString &interfaceName,
         }
 
         if (valueChanged) {
-            if (i.key() == "State"_L1) {
+            if (i.key() == stateKey()) {
                 quint32 state = i.value().toUInt();
                 Q_EMIT stateChanged(static_cast<NMState>(state));
-            } else if (i.key() == "Connectivity"_L1) {
+            } else if (i.key() == connectivityKey()) {
                 quint32 state = i.value().toUInt();
                 Q_EMIT connectivityChanged(static_cast<NMConnectivityState>(state));
-            } else if (i.key() == "PrimaryConnection"_L1) {
+            } else if (i.key() == primaryConnectionKey()) {
                 const QDBusObjectPath devicePath = i->value<QDBusObjectPath>();
                 Q_EMIT deviceTypeChanged(extractDeviceType(devicePath));
                 Q_EMIT meteredChanged(extractDeviceMetered(devicePath));
