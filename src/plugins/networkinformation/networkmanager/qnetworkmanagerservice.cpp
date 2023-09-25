@@ -41,7 +41,7 @@ bool QNetworkManagerInterfaceBase::networkManagerAvailable()
 QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
     : QNetworkManagerInterfaceBase(parent)
 {
-    if (!isValid())
+    if (!QDBusAbstractInterface::isValid())
         return;
 
     PropertiesDBusInterface managerPropertiesInterface(
@@ -51,13 +51,15 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
     argumentList << NM_DBUS_SERVICE;
     QDBusPendingReply<QVariantMap> propsReply = managerPropertiesInterface.callWithArgumentList(
             QDBus::Block, "GetAll"_L1, argumentList);
-    if (!propsReply.isError()) {
-        propertyMap = propsReply.value();
-    } else {
-        qWarning() << "propsReply" << propsReply.error().message();
+    if (propsReply.isError()) {
+        validDBusConnection = false;
+        if (auto error = propsReply.error(); error.type() != QDBusError::AccessDenied)
+            qWarning() << "Failed to query NetworkManager properties:" << error.message();
+        return;
     }
+    propertyMap = propsReply.value();
 
-    QDBusConnection::systemBus().connect(NM_DBUS_SERVICE, NM_DBUS_PATH,
+    validDBusConnection = QDBusConnection::systemBus().connect(NM_DBUS_SERVICE, NM_DBUS_PATH,
             DBUS_PROPERTIES_INTERFACE, "PropertiesChanged"_L1, this,
             SLOT(setProperties(QString,QMap<QString,QVariant>,QList<QString>)));
 }
