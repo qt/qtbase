@@ -238,7 +238,7 @@ QNetworkInformation *QNetworkInformationPrivate::create(QNetworkInformation::Fea
         return dataHolder->instanceHolder.get();
 
     const auto supportsRequestedFeatures = [features](QNetworkInformationBackendFactory *factory) {
-        return factory && (factory->featuresSupported() & features) == features;
+        return factory && factory->featuresSupported().testFlags(features);
     };
 
     for (auto it = dataHolder->factories.cbegin(), end = dataHolder->factories.cend(); it != end;
