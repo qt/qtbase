@@ -151,17 +151,43 @@ public:
 
     inline int compare(QByteArrayView a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
-    [[nodiscard]] QByteArray left(qsizetype len) const;
-    [[nodiscard]] QByteArray right(qsizetype len) const;
-    [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) const;
-
 #if QT_CORE_REMOVED_SINCE(6, 7)
+    QByteArray left(qsizetype len) const;
+    QByteArray right(qsizetype len) const;
+    QByteArray mid(qsizetype index, qsizetype len = -1) const;
     QByteArray first(qsizetype n) const;
     QByteArray last(qsizetype n) const;
     QByteArray sliced(qsizetype pos) const;
     QByteArray sliced(qsizetype pos, qsizetype n) const;
     QByteArray chopped(qsizetype len) const;
 #else
+    [[nodiscard]] QByteArray left(qsizetype n) const &
+    {
+        if (n >= size())
+            return *this;
+        return first(qMax(n, 0));
+    }
+    [[nodiscard]] QByteArray left(qsizetype n) &&
+    {
+        if (n >= size())
+            return std::move(*this);
+        return std::move(*this).first(qMax(n, 0));
+    }
+    [[nodiscard]] QByteArray right(qsizetype n) const &
+    {
+        if (n >= size())
+            return *this;
+        return last(qMax(n, 0));
+    }
+    [[nodiscard]] QByteArray right(qsizetype n) &&
+    {
+        if (n >= size())
+            return std::move(*this);
+        return std::move(*this).last(qMax(n, 0));
+    }
+    [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) const &;
+    [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) &&;
+
     [[nodiscard]] QByteArray first(qsizetype n) const &
     { verify(0, n); return sliced(0, n); }
     [[nodiscard]] QByteArray last(qsizetype n) const &

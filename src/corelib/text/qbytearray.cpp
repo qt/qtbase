@@ -3022,6 +3022,9 @@ bool QByteArray::isLower() const
 */
 
 /*!
+    \fn QByteArray QByteArray::left(qsizetype len) const &
+    \fn QByteArray QByteArray::left(qsizetype len) &&
+
     Returns a byte array that contains the first \a len bytes of this byte
     array.
 
@@ -3036,16 +3039,10 @@ bool QByteArray::isLower() const
     \sa first(), last(), startsWith(), chopped(), chop(), truncate()
 */
 
-QByteArray QByteArray::left(qsizetype len)  const
-{
-    if (len >= size())
-        return *this;
-    if (len < 0)
-        len = 0;
-    return QByteArray(data(), len);
-}
-
 /*!
+    \fn QByteArray QByteArray::right(qsizetype len) const &
+    \fn QByteArray QByteArray::right(qsizetype len) &&
+
     Returns a byte array that contains the last \a len bytes of this byte array.
 
     If you know that \a len cannot be out of bounds, use last() instead in new
@@ -3058,16 +3055,11 @@ QByteArray QByteArray::left(qsizetype len)  const
 
     \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate()
 */
-QByteArray QByteArray::right(qsizetype len) const
-{
-    if (len >= size())
-        return *this;
-    if (len < 0)
-        len = 0;
-    return QByteArray(end() - len, len);
-}
 
 /*!
+    \fn QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const &
+    \fn QByteArray QByteArray::mid(qsizetype pos, qsizetype len) &&
+
     Returns a byte array containing \a len bytes from this byte array,
     starting at position \a pos.
 
@@ -3081,7 +3073,7 @@ QByteArray QByteArray::right(qsizetype len) const
     \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
-QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
+QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const &
 {
     qsizetype p = pos;
     qsizetype l = len;
@@ -3096,7 +3088,26 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
     case QContainerImplHelper::Full:
         return *this;
     case QContainerImplHelper::Subset:
-        return QByteArray(d.data() + p, l);
+        return sliced(p, l);
+    }
+    Q_UNREACHABLE_RETURN(QByteArray());
+}
+
+QByteArray QByteArray::mid(qsizetype pos, qsizetype len) &&
+{
+    qsizetype p = pos;
+    qsizetype l = len;
+    using namespace QtPrivate;
+    switch (QContainerImplHelper::mid(size(), &p, &l)) {
+    case QContainerImplHelper::Null:
+        return QByteArray();
+    case QContainerImplHelper::Empty:
+        resize(0);      // keep capacity if we've reserve()d
+        [[fallthrough]];
+    case QContainerImplHelper::Full:
+        return std::move(*this);
+    case QContainerImplHelper::Subset:
+        return std::move(*this).sliced(p, l);
     }
     Q_UNREACHABLE_RETURN(QByteArray());
 }

@@ -2328,50 +2328,125 @@ void tst_QString::left()
 {
     QString a;
 
+    // lvalue
     QVERIFY(a.left(0).isNull());
     QVERIFY(a.left(5).isNull());
     QVERIFY(a.left(-4).isNull());
     QVERIFY(!a.isDetached());
 
+    // rvalue, not detached
+    QVERIFY(QString(a).left(0).isNull());
+    QVERIFY(QString(a).left(5).isNull());
+    QVERIFY(QString(a).left(-4).isNull());
+    QVERIFY(!QString(a).isDetached());
+
+    // rvalue, detached is not applicable
+
     a = u"ABCDEFGHIEfGEFG"_s;
     QCOMPARE(a.size(), 15);
 
+    // lvalue
     QCOMPARE(a.left(3), QLatin1String("ABC"));
     QVERIFY(!a.left(0).isNull());
     QCOMPARE(a.left(0), QLatin1String(""));
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, not detached
+    QCOMPARE(QString(a).left(3), QLatin1String("ABC"));
+    QVERIFY(!QString(a).left(0).isNull());
+    QCOMPARE(QString(a).left(0), QLatin1String(""));
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, detached
+    QCOMPARE(detached(a).left(3), QLatin1String("ABC"));
+    QVERIFY(!detached(a).left(0).isNull());
+    QCOMPARE(detached(a).left(0), QLatin1String(""));
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
 
     QString n;
+    QVERIFY(QString().left(3).isNull());
+    QVERIFY(QString().left(0).isNull());
+    QVERIFY(QString().left(0).isNull());
     QVERIFY(n.left(3).isNull());
     QVERIFY(n.left(0).isNull());
     QVERIFY(n.left(0).isNull());
 
     QString l = u"Left"_s;
+
+    // lvalue
     QCOMPARE(l.left(-1), l);
     QCOMPARE(l.left(100), l);
+    QCOMPARE(l, u"Left");
+
+    // rvalue, not detached
+    QCOMPARE(QString(l).left(-1), l);
+    QCOMPARE(QString(l).left(100), l);
+    QCOMPARE(l, u"Left");
+
+    // rvalue, detached
+    QCOMPARE(detached(l).left(-1), l);
+    QCOMPARE(detached(l).left(100), l);
+    QCOMPARE(l, u"Left");
 }
 
 void tst_QString::right()
 {
     QString a;
 
+    // lvalue
     QVERIFY(a.right(0).isNull());
     QVERIFY(a.right(5).isNull());
     QVERIFY(a.right(-4).isNull());
     QVERIFY(!a.isDetached());
 
+    // rvalue, not detached
+    QVERIFY(QString(a).right(0).isNull());
+    QVERIFY(QString(a).right(5).isNull());
+    QVERIFY(QString(a).right(-4).isNull());
+    QVERIFY(!QString(a).isDetached());
+
+    // rvalue, detached is not applicable
+
     a = u"ABCDEFGHIEfGEFG"_s;
     QCOMPARE(a.size(), 15);
 
+    // lvalue
     QCOMPARE(a.right(3), QLatin1String("EFG"));
     QCOMPARE(a.right(0), QLatin1String(""));
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, not detached
+    QCOMPARE(QString(a).right(3), QLatin1String("EFG"));
+    QCOMPARE(QString(a).right(0), QLatin1String(""));
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
+
+    // rvalue, detached
+    QCOMPARE(detached(a).right(3), QLatin1String("EFG"));
+    QCOMPARE(detached(a).right(0), QLatin1String(""));
+    QCOMPARE(a, u"ABCDEFGHIEfGEFG");
 
     QString n;
+    QVERIFY(QString().right(3).isNull());
+    QVERIFY(QString().right(0).isNull());
     QVERIFY(n.right(3).isNull());
     QVERIFY(n.right(0).isNull());
 
     QString r = u"Right"_s;
+
+    // lvalue
     QCOMPARE(r.right(-1), r);
     QCOMPARE(r.right(100), r);
+    QCOMPARE(r, u"Right");
+
+    // rvalue, not detached
+    QCOMPARE(QString(r).right(-1), r);
+    QCOMPARE(QString(r).right(100), r);
+    QCOMPARE(r, u"Right");
+
+    // rvalue, detached
+    QCOMPARE(detached(r).right(-1), r);
+    QCOMPARE(detached(r).right(100), r);
+    QCOMPARE(r, u"Right");
 }
 
 void tst_QString::mid()
@@ -2387,6 +2462,7 @@ void tst_QString::mid()
     a = u"ABCDEFGHIEfGEFG"_s;
     QCOMPARE(a.size(), 15);
 
+    // lvalue
     QCOMPARE(a.mid(3,3), QLatin1String("DEF"));
     QCOMPARE(a.mid(0,0), QLatin1String(""));
     QVERIFY(!a.mid(15,0).isNull());
@@ -2395,7 +2471,6 @@ void tst_QString::mid()
     QVERIFY(a.mid(15,1).isEmpty());
     QVERIFY(a.mid(9999).isNull());
     QVERIFY(a.mid(9999,1).isNull());
-
     QCOMPARE(a.mid(-1, 6), a.mid(0, 5));
     QVERIFY(a.mid(-100, 6).isEmpty());
     QVERIFY(a.mid(INT_MIN, 0).isEmpty());
@@ -2414,12 +2489,65 @@ void tst_QString::mid()
     QVERIFY(a.mid(20, INT_MAX).isNull());
     QCOMPARE(a.mid(-1, -1), a);
 
+    // rvalue, not detached
+    QCOMPARE(QString(a).mid(3,3), QLatin1String("DEF"));
+    QCOMPARE(QString(a).mid(0,0), QLatin1String(""));
+    QVERIFY(!QString(a).mid(15,0).isNull());
+    QVERIFY(QString(a).mid(15,0).isEmpty());
+    QVERIFY(!QString(a).mid(15,1).isNull());
+    QVERIFY(QString(a).mid(15,1).isEmpty());
+    QVERIFY(QString(a).mid(9999).isNull());
+    QVERIFY(QString(a).mid(9999,1).isNull());
+    QCOMPARE(QString(a).mid(-1, 6), QString(a).mid(0, 5));
+    QVERIFY(QString(a).mid(-100, 6).isEmpty());
+    QVERIFY(QString(a).mid(INT_MIN, 0).isEmpty());
+    QCOMPARE(QString(a).mid(INT_MIN, -1), a);
+    QVERIFY(QString(a).mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(QString(a).mid(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(QString(a).mid(INT_MIN + 2, INT_MAX), a.left(1));
+    QCOMPARE(QString(a).mid(INT_MIN + a.size() + 1, INT_MAX), a);
+    QVERIFY(QString(a).mid(INT_MAX).isNull());
+    QVERIFY(QString(a).mid(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(QString(a).mid(-5, INT_MAX), a);
+    QCOMPARE(QString(a).mid(-1, INT_MAX), a);
+    QCOMPARE(QString(a).mid(0, INT_MAX), a);
+    QCOMPARE(QString(a).mid(1, INT_MAX), u"BCDEFGHIEfGEFG");
+    QCOMPARE(QString(a).mid(5, INT_MAX), u"FGHIEfGEFG");
+    QVERIFY(QString(a).mid(20, INT_MAX).isNull());
+    QCOMPARE(QString(a).mid(-1, -1), a);
+
+    // rvalue, detached
+    QCOMPARE(detached(a).mid(3,3), QLatin1String("DEF"));
+    QCOMPARE(detached(a).mid(0,0), QLatin1String(""));
+    QVERIFY(!detached(a).mid(15,0).isNull());
+    QVERIFY(detached(a).mid(15,0).isEmpty());
+    QVERIFY(!detached(a).mid(15,1).isNull());
+    QVERIFY(detached(a).mid(15,1).isEmpty());
+    QVERIFY(detached(a).mid(9999).isNull());
+    QVERIFY(detached(a).mid(9999,1).isNull());
+    QCOMPARE(detached(a).mid(-1, 6), detached(a).mid(0, 5));
+    QVERIFY(detached(a).mid(-100, 6).isEmpty());
+    QVERIFY(detached(a).mid(INT_MIN, 0).isEmpty());
+    QCOMPARE(detached(a).mid(INT_MIN, -1), a);
+    QVERIFY(detached(a).mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(detached(a).mid(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(detached(a).mid(INT_MIN + 2, INT_MAX), a.left(1));
+    QCOMPARE(detached(a).mid(INT_MIN + a.size() + 1, INT_MAX), a);
+    QVERIFY(detached(a).mid(INT_MAX).isNull());
+    QVERIFY(detached(a).mid(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(detached(a).mid(-5, INT_MAX), a);
+    QCOMPARE(detached(a).mid(-1, INT_MAX), a);
+    QCOMPARE(detached(a).mid(0, INT_MAX), a);
+    QCOMPARE(detached(a).mid(1, INT_MAX), u"BCDEFGHIEfGEFG");
+    QCOMPARE(detached(a).mid(5, INT_MAX), u"FGHIEfGEFG");
+    QVERIFY(detached(a).mid(20, INT_MAX).isNull());
+    QCOMPARE(detached(a).mid(-1, -1), a);
+
     QString n;
     QVERIFY(n.mid(3,3).isNull());
     QVERIFY(n.mid(0,0).isNull());
     QVERIFY(n.mid(9999,0).isNull());
     QVERIFY(n.mid(9999,1).isNull());
-
     QVERIFY(n.mid(-1, 6).isNull());
     QVERIFY(n.mid(-100, 6).isNull());
     QVERIFY(n.mid(INT_MIN, 0).isNull());
@@ -2438,10 +2566,31 @@ void tst_QString::mid()
     QVERIFY(n.mid(20, INT_MAX).isNull());
     QVERIFY(n.mid(-1, -1).isNull());
 
+    QVERIFY(QString().mid(3,3).isNull());
+    QVERIFY(QString().mid(0,0).isNull());
+    QVERIFY(QString().mid(9999,0).isNull());
+    QVERIFY(QString().mid(9999,1).isNull());
+    QVERIFY(QString().mid(-1, 6).isNull());
+    QVERIFY(QString().mid(-100, 6).isNull());
+    QVERIFY(QString().mid(INT_MIN, 0).isNull());
+    QVERIFY(QString().mid(INT_MIN, -1).isNull());
+    QVERIFY(QString().mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(QString().mid(INT_MIN + 1, INT_MAX).isNull());
+    QVERIFY(QString().mid(INT_MIN + 2, INT_MAX).isNull());
+    QVERIFY(QString().mid(INT_MIN + QString().size() + 1, INT_MAX).isNull());
+    QVERIFY(QString().mid(INT_MAX).isNull());
+    QVERIFY(QString().mid(INT_MAX, INT_MAX).isNull());
+    QVERIFY(QString().mid(-5, INT_MAX).isNull());
+    QVERIFY(QString().mid(-1, INT_MAX).isNull());
+    QVERIFY(QString().mid(0, INT_MAX).isNull());
+    QVERIFY(QString().mid(1, INT_MAX).isNull());
+    QVERIFY(QString().mid(5, INT_MAX).isNull());
+    QVERIFY(QString().mid(20, INT_MAX).isNull());
+    QVERIFY(QString().mid(-1, -1).isNull());
+
     QString x = u"Nine pineapples"_s;
     QCOMPARE(x.mid(5, 4), u"pine");
     QCOMPARE(x.mid(5), u"pineapples");
-
     QCOMPARE(x.mid(-1, 6), x.mid(0, 5));
     QVERIFY(x.mid(-100, 6).isEmpty());
     QVERIFY(x.mid(INT_MIN, 0).isEmpty());
@@ -2459,6 +2608,51 @@ void tst_QString::mid()
     QCOMPARE(x.mid(5, INT_MAX), u"pineapples");
     QVERIFY(x.mid(20, INT_MAX).isNull());
     QCOMPARE(x.mid(-1, -1), x);
+    QCOMPARE(x, u"Nine pineapples");
+
+    // rvalue, not detached
+    QCOMPARE(QString(x).mid(5, 4), u"pine");
+    QCOMPARE(QString(x).mid(5), u"pineapples");
+    QCOMPARE(QString(x).mid(-1, 6), QString(x).mid(0, 5));
+    QVERIFY(QString(x).mid(-100, 6).isEmpty());
+    QVERIFY(QString(x).mid(INT_MIN, 0).isEmpty());
+    QCOMPARE(QString(x).mid(INT_MIN, -1), x);
+    QVERIFY(QString(x).mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(QString(x).mid(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(QString(x).mid(INT_MIN + 2, INT_MAX), x.left(1));
+    QCOMPARE(QString(x).mid(INT_MIN + x.size() + 1, INT_MAX), x);
+    QVERIFY(QString(x).mid(INT_MAX).isNull());
+    QVERIFY(QString(x).mid(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(QString(x).mid(-5, INT_MAX), x);
+    QCOMPARE(QString(x).mid(-1, INT_MAX), x);
+    QCOMPARE(QString(x).mid(0, INT_MAX), x);
+    QCOMPARE(QString(x).mid(1, INT_MAX), u"ine pineapples");
+    QCOMPARE(QString(x).mid(5, INT_MAX), u"pineapples");
+    QVERIFY(QString(x).mid(20, INT_MAX).isNull());
+    QCOMPARE(QString(x).mid(-1, -1), x);
+    QCOMPARE(x, u"Nine pineapples");
+
+    // rvalue, detached
+    QCOMPARE(detached(x).mid(5, 4), u"pine");
+    QCOMPARE(detached(x).mid(5), u"pineapples");
+    QCOMPARE(detached(x).mid(-1, 6), detached(x).mid(0, 5));
+    QVERIFY(detached(x).mid(-100, 6).isEmpty());
+    QVERIFY(detached(x).mid(INT_MIN, 0).isEmpty());
+    QCOMPARE(detached(x).mid(INT_MIN, -1), x);
+    QVERIFY(detached(x).mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(detached(x).mid(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(detached(x).mid(INT_MIN + 2, INT_MAX), x.left(1));
+    QCOMPARE(detached(x).mid(INT_MIN + x.size() + 1, INT_MAX), x);
+    QVERIFY(detached(x).mid(INT_MAX).isNull());
+    QVERIFY(detached(x).mid(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(detached(x).mid(-5, INT_MAX), x);
+    QCOMPARE(detached(x).mid(-1, INT_MAX), x);
+    QCOMPARE(detached(x).mid(0, INT_MAX), x);
+    QCOMPARE(detached(x).mid(1, INT_MAX), u"ine pineapples");
+    QCOMPARE(detached(x).mid(5, INT_MAX), u"pineapples");
+    QVERIFY(detached(x).mid(20, INT_MAX).isNull());
+    QCOMPARE(detached(x).mid(-1, -1), x);
+    QCOMPARE(x, u"Nine pineapples");
 }
 
 void tst_QString::leftJustified()

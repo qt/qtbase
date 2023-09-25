@@ -5149,6 +5149,9 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
 #endif // QT_CONFIG(regularexpression)
 
 /*!
+    \fn QString QString::left(qsizetype n) const &
+    \fn QString QString::left(qsizetype n) &&
+
     Returns a substring that contains the \a n leftmost characters
     of the string.
 
@@ -5160,14 +5163,11 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
 
     \sa first(), last(), startsWith(), chopped(), chop(), truncate()
 */
-QString QString::left(qsizetype n)  const
-{
-    if (size_t(n) >= size_t(size()))
-        return *this;
-    return QString((const QChar*) d.data(), n);
-}
 
 /*!
+    \fn QString QString::right(qsizetype n) const &
+    \fn QString QString::right(qsizetype n) &&
+
     Returns a substring that contains the \a n rightmost characters
     of the string.
 
@@ -5179,14 +5179,11 @@ QString QString::left(qsizetype n)  const
 
     \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate()
 */
-QString QString::right(qsizetype n) const
-{
-    if (size_t(n) >= size_t(size()))
-        return *this;
-    return QString(constData() + size() - n, n);
-}
 
 /*!
+    \fn QString QString::mid(qsizetype position, qsizetype n) const &
+    \fn QString QString::mid(qsizetype position, qsizetype n) &&
+
     Returns a string that contains \a n characters of this string,
     starting at the specified \a position index.
 
@@ -5199,11 +5196,9 @@ QString QString::right(qsizetype n) const
     \a n is -1 (default), the function returns all characters that
     are available from the specified \a position.
 
-
     \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
-
-QString QString::mid(qsizetype position, qsizetype n) const
+QString QString::mid(qsizetype position, qsizetype n) const &
 {
     qsizetype p = position;
     qsizetype l = n;
@@ -5216,7 +5211,26 @@ QString QString::mid(qsizetype position, qsizetype n) const
     case QContainerImplHelper::Full:
         return *this;
     case QContainerImplHelper::Subset:
-        return QString(constData() + p, l);
+        return sliced(p, l);
+    }
+    Q_UNREACHABLE_RETURN(QString());
+}
+
+QString QString::mid(qsizetype position, qsizetype n) &&
+{
+    qsizetype p = position;
+    qsizetype l = n;
+    using namespace QtPrivate;
+    switch (QContainerImplHelper::mid(size(), &p, &l)) {
+    case QContainerImplHelper::Null:
+        return QString();
+    case QContainerImplHelper::Empty:
+        resize(0);      // keep capacity if we've reserve()d
+        [[fallthrough]];
+    case QContainerImplHelper::Full:
+        return std::move(*this);
+    case QContainerImplHelper::Subset:
+        return std::move(*this).sliced(p, l);
     }
     Q_UNREACHABLE_RETURN(QString());
 }

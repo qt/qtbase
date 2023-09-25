@@ -620,6 +620,44 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 
 #include "qbytearray.h"
 
+QByteArray QByteArray::left(qsizetype len)  const
+{
+    if (len >= size())
+        return *this;
+    if (len < 0)
+        len = 0;
+    return QByteArray(data(), len);
+}
+
+QByteArray QByteArray::right(qsizetype len) const
+{
+    if (len >= size())
+        return *this;
+    if (len < 0)
+        len = 0;
+    return QByteArray(end() - len, len);
+}
+
+QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
+{
+    qsizetype p = pos;
+    qsizetype l = len;
+    using namespace QtPrivate;
+    switch (QContainerImplHelper::mid(size(), &p, &l)) {
+    case QContainerImplHelper::Null:
+        return QByteArray();
+    case QContainerImplHelper::Empty:
+    {
+        return QByteArray(DataPointer::fromRawData(&_empty, 0));
+    }
+    case QContainerImplHelper::Full:
+        return *this;
+    case QContainerImplHelper::Subset:
+        return QByteArray(d.data() + p, l);
+    }
+    Q_UNREACHABLE_RETURN(QByteArray());
+}
+
 #ifdef Q_CC_MSVC
 // previously inline methods, only needed for MSVC compat
 QByteArray QByteArray::first(qsizetype n) const
@@ -743,6 +781,38 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 }
 
 #include "qstring.h"
+
+QString QString::left(qsizetype n) const
+{
+    if (size_t(n) >= size_t(size()))
+        return *this;
+    return QString((const QChar*) d.data(), n);
+}
+
+QString QString::right(qsizetype n) const
+{
+    if (size_t(n) >= size_t(size()))
+        return *this;
+    return QString(constData() + size() - n, n);
+}
+
+QString QString::mid(qsizetype position, qsizetype n) const
+{
+    qsizetype p = position;
+    qsizetype l = n;
+    using namespace QtPrivate;
+    switch (QContainerImplHelper::mid(size(), &p, &l)) {
+    case QContainerImplHelper::Null:
+        return QString();
+    case QContainerImplHelper::Empty:
+        return QString(DataPointer::fromRawData(&_empty, 0));
+    case QContainerImplHelper::Full:
+        return *this;
+    case QContainerImplHelper::Subset:
+        return QString(constData() + p, l);
+    }
+    Q_UNREACHABLE_RETURN(QString());
+}
 
 #ifdef Q_CC_MSVC
 // previously inline methods, only needed for MSVC compat

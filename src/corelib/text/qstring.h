@@ -331,17 +331,45 @@ public:
 #if QT_CONFIG(regularexpression)
     [[nodiscard]] QString section(const QRegularExpression &re, qsizetype start, qsizetype end = -1, SectionFlags flags = SectionDefault) const;
 #endif
-    [[nodiscard]] QString left(qsizetype n) const;
-    [[nodiscard]] QString right(qsizetype n) const;
-    [[nodiscard]] QString mid(qsizetype position, qsizetype n = -1) const;
 
 #if QT_CORE_REMOVED_SINCE(6, 7)
+    QString left(qsizetype n) const;
+    QString right(qsizetype n) const;
+    QString mid(qsizetype position, qsizetype n = -1) const;
+
     QString first(qsizetype n) const;
     QString last(qsizetype n) const;
     QString sliced(qsizetype pos) const;
     QString sliced(qsizetype pos, qsizetype n) const;
     QString chopped(qsizetype n) const;
 #else
+    [[nodiscard]] QString left(qsizetype n) const &
+    {
+        if (size_t(n) >= size_t(size()))
+            return *this;
+        return first(n);
+    }
+    [[nodiscard]] QString left(qsizetype n) &&
+    {
+        if (size_t(n) >= size_t(size()))
+            return std::move(*this);
+        return std::move(*this).first(n);
+    }
+    [[nodiscard]] QString right(qsizetype n) const &
+    {
+        if (size_t(n) >= size_t(size()))
+            return *this;
+        return last(n);
+    }
+    [[nodiscard]] QString right(qsizetype n) &&
+    {
+        if (size_t(n) >= size_t(size()))
+            return std::move(*this);
+        return std::move(*this).last(n);
+    }
+    [[nodiscard]] QString mid(qsizetype position, qsizetype n = -1) const &;
+    [[nodiscard]] QString mid(qsizetype position, qsizetype n = -1) &&;
+
     [[nodiscard]] QString first(qsizetype n) const &
     { verify(0, n); return sliced(0, n); }
     [[nodiscard]] QString last(qsizetype n) const &

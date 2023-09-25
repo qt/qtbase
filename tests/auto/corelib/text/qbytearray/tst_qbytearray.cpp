@@ -145,6 +145,15 @@ static const QByteArray::DataPointer staticNotNullTerminated = {
     4
 };
 
+template <typename String> String detached(String s)
+{
+    if (!s.isNull()) { // detaching loses nullness, but we need to preserve it
+        auto d = s.data();
+        Q_UNUSED(d);
+    }
+    return s;
+}
+
 template <class T> const T &verifyZeroTermination(const T &t) { return t; }
 
 QByteArray verifyZeroTermination(const QByteArray &ba)
@@ -2733,15 +2742,37 @@ void tst_QByteArray::simplified_data()
 void tst_QByteArray::left()
 {
     QByteArray a;
+    QCOMPARE(QByteArray().left(0), QByteArray());
+    QCOMPARE(QByteArray().left(10), QByteArray());
     QCOMPARE(a.left(0), QByteArray());
     QCOMPARE(a.left(10), QByteArray());
     QVERIFY(!a.isDetached());
+    QCOMPARE(QByteArray(a).left(0), QByteArray());
+    QCOMPARE(QByteArray(a).left(10), QByteArray());
+    QCOMPARE(detached(a).left(0), QByteArray());
+    QCOMPARE(detached(a).left(10), QByteArray());
 
     a = QByteArray("abcdefgh");
     const char *ptr = a.constData();
+
+    // lvalue
     QCOMPARE(a.left(5), QByteArray("abcde"));
     QCOMPARE(a.left(20), a);
     QCOMPARE(a.left(-5), QByteArray());
+    // calling left() does not modify the source array
+    QCOMPARE(a.constData(), ptr);
+
+    // rvalue, not detached
+    QCOMPARE(QByteArray(a).left(5), QByteArray("abcde"));
+    QCOMPARE(QByteArray(a).left(20), a);
+    QCOMPARE(QByteArray(a).left(-5), QByteArray());
+    // calling left() does not modify the source array
+    QCOMPARE(a.constData(), ptr);
+
+    // rvalue, detached
+    QCOMPARE(detached(a).left(5), QByteArray("abcde"));
+    QCOMPARE(detached(a).left(20), a);
+    QCOMPARE(detached(a).left(-5), QByteArray());
     // calling left() does not modify the source array
     QCOMPARE(a.constData(), ptr);
 }
@@ -2749,15 +2780,37 @@ void tst_QByteArray::left()
 void tst_QByteArray::right()
 {
     QByteArray a;
+    QCOMPARE(QByteArray().right(0), QByteArray());
+    QCOMPARE(QByteArray().right(10), QByteArray());
     QCOMPARE(a.right(0), QByteArray());
     QCOMPARE(a.right(10), QByteArray());
     QVERIFY(!a.isDetached());
+    QCOMPARE(QByteArray(a).right(0), QByteArray());
+    QCOMPARE(QByteArray(a).right(10), QByteArray());
+    QCOMPARE(detached(a).right(0), QByteArray());
+    QCOMPARE(detached(a).right(10), QByteArray());
 
     a = QByteArray("abcdefgh");
     const char *ptr = a.constData();
+
+    // lvalue
     QCOMPARE(a.right(5), QByteArray("defgh"));
     QCOMPARE(a.right(20), a);
     QCOMPARE(a.right(-5), QByteArray());
+    // calling right() does not modify the source array
+    QCOMPARE(a.constData(), ptr);
+
+    // rvalue, not detached
+    QCOMPARE(QByteArray(a).right(5), QByteArray("defgh"));
+    QCOMPARE(QByteArray(a).right(20), a);
+    QCOMPARE(QByteArray(a).right(-5), QByteArray());
+    // calling right() does not modify the source array
+    QCOMPARE(a.constData(), ptr);
+
+    // rvalue, detached
+    QCOMPARE(detached(a).right(5), QByteArray("defgh"));
+    QCOMPARE(detached(a).right(20), a);
+    QCOMPARE(detached(a).right(-5), QByteArray());
     // calling right() does not modify the source array
     QCOMPARE(a.constData(), ptr);
 }
@@ -2765,18 +2818,46 @@ void tst_QByteArray::right()
 void tst_QByteArray::mid()
 {
     QByteArray a;
+    QCOMPARE(QByteArray().mid(0), QByteArray());
+    QCOMPARE(a.mid(0, 10), QByteArray());
     QCOMPARE(a.mid(0), QByteArray());
     QCOMPARE(a.mid(0, 10), QByteArray());
     QCOMPARE(a.mid(10), QByteArray());
     QVERIFY(!a.isDetached());
+    QCOMPARE(QByteArray(a).mid(0), QByteArray());
+    QCOMPARE(QByteArray(a).mid(0, 10), QByteArray());
+    QCOMPARE(QByteArray(a).mid(10), QByteArray());
+    QCOMPARE(detached(a).mid(0), QByteArray());
+    QCOMPARE(detached(a).mid(0, 10), QByteArray());
+    QCOMPARE(detached(a).mid(10), QByteArray());
 
     a = QByteArray("abcdefgh");
     const char *ptr = a.constData();
+
+    // lvalue
     QCOMPARE(a.mid(2), QByteArray("cdefgh"));
     QCOMPARE(a.mid(2, 3), QByteArray("cde"));
     QCOMPARE(a.mid(20), QByteArray());
     QCOMPARE(a.mid(-5), QByteArray("abcdefgh"));
     QCOMPARE(a.mid(-5, 8), QByteArray("abc"));
+    // calling mid() does not modify the source array
+    QCOMPARE(a.constData(), ptr);
+
+    // rvalue, not detached
+    QCOMPARE(QByteArray(a).mid(2), QByteArray("cdefgh"));
+    QCOMPARE(QByteArray(a).mid(2, 3), QByteArray("cde"));
+    QCOMPARE(QByteArray(a).mid(20), QByteArray());
+    QCOMPARE(QByteArray(a).mid(-5), QByteArray("abcdefgh"));
+    QCOMPARE(QByteArray(a).mid(-5, 8), QByteArray("abc"));
+    // calling mid() does not modify the source array
+    QCOMPARE(a.constData(), ptr);
+
+    // rvalue, detached
+    QCOMPARE(detached(a).mid(2), QByteArray("cdefgh"));
+    QCOMPARE(detached(a).mid(2, 3), QByteArray("cde"));
+    QCOMPARE(detached(a).mid(20), QByteArray());
+    QCOMPARE(detached(a).mid(-5), QByteArray("abcdefgh"));
+    QCOMPARE(detached(a).mid(-5, 8), QByteArray("abc"));
     // calling mid() does not modify the source array
     QCOMPARE(a.constData(), ptr);
 }
