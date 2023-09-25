@@ -2788,16 +2788,16 @@ void QWindowsWindow::calculateFullFrameMargins()
     RECT clientRect{};
     GetWindowRect(handle(), &windowRect);
     GetClientRect(handle(), &clientRect);
-    const int yDiff = (windowRect.bottom - windowRect.top) - clientRect.bottom;
+    const int yDiff = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top);
     const bool typicalFrame = (systemMargins.left() == systemMargins.right())
             && (systemMargins.right() == systemMargins.bottom());
 
     const QMargins adjustedMargins = typicalFrame ?
-          QMargins(systemMargins.left(), yDiff - systemMargins.bottom(),
+          QMargins(systemMargins.left(), (yDiff - systemMargins.bottom()),
                    systemMargins.right(), systemMargins.bottom())
-            : systemMargins;
+            : systemMargins + customMargins();
 
-    setFullFrameMargins(adjustedMargins + customMargins());
+    setFullFrameMargins(adjustedMargins);
 }
 
 QMargins QWindowsWindow::frameMargins() const
