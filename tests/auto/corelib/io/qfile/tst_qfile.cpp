@@ -3920,6 +3920,7 @@ void tst_QFile::moveToTrash()
     };
 
     ensureFile(source, create);
+    if (!QFileInfo::exists(source) && create) return;
 
     /* This test makes assumptions about the file system layout
        which might be wrong - moveToTrash may fail if the file lives
@@ -3967,6 +3968,7 @@ void tst_QFile::moveToTrash()
     // static version
     {
         ensureFile(source, create);
+        if (!QFileInfo::exists(source) && create) return;
         QString pathInTrash;
         const bool success = QFile::moveToTrash(source, &pathInTrash);
         QCOMPARE(success, result);
