@@ -107,7 +107,7 @@ function(qt6_android_generate_deployment_settings target)
         set(config_suffix "$<$<NOT:$<CONFIG:${first_config_type}>>:-$<CONFIG>>")
     endif()
     set(deploy_file
-      "${target_binary_dir}/android-${target_output_name}-deployment-settings${config_suffix}.json")
+      "${target_binary_dir}/android-${target}-deployment-settings${config_suffix}.json")
 
     set(file_contents "{\n")
     # content begin
