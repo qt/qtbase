@@ -116,7 +116,7 @@ QGlibNetworkInformationBackend::~QGlibNetworkInformationBackend()
 
 bool QGlibNetworkInformationBackend::isValid() const
 {
-    return G_OBJECT_TYPE_NAME(networkMonitor) != "GNetworkMonitorBase"_L1;
+    return QLatin1StringView(G_OBJECT_TYPE_NAME(networkMonitor)) != "GNetworkMonitorBase"_L1;
 }
 
 void QGlibNetworkInformationBackend::updateConnectivity(QGlibNetworkInformationBackend *backend)
