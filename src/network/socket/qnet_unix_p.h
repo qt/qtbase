@@ -124,15 +124,10 @@ static inline int qt_safe_connect(int sockfd, const struct sockaddr *addr, QT_SO
 # undef listen
 #endif
 
-// VxWorks' headers specify 'int' instead of '...' for the 3rd ioctl() parameter.
 template <typename T>
 static inline int qt_safe_ioctl(int sockfd, unsigned long request, T arg)
 {
-#ifdef Q_OS_VXWORKS
-    return ::ioctl(sockfd, request, (int) arg);
-#else
     return ::ioctl(sockfd, request, arg);
-#endif
 }
 
 static inline int qt_safe_sendmsg(int sockfd, const struct msghdr *msg, int flags)
