@@ -17,7 +17,7 @@
     Most commonly, the resource files are embedded into your application
     executable, or in libraries and plugins that are loaded by the application
     executable. Alternatively, the resource files can also be stored in an
-    \l{External Resource Files}{exernal resource file}.
+    \l{External Resource Files}{external resource file}.
 
     The resource system is based on tight cooperation between Qt's \l rcc
     resource compiler, the build system, and the Qt runtime API.
