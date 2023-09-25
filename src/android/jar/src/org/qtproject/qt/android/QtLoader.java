@@ -146,7 +146,8 @@ public abstract class QtLoader {
     {
         // directory where optimized DEX files should be written.
         String outDexPath = m_context.getDir("outdex", Context.MODE_PRIVATE).getAbsolutePath();
-        m_classLoader = new DexClassLoader("", outDexPath, null, m_context.getClassLoader());
+        String sourceDir = m_context.getApplicationInfo().sourceDir;
+        m_classLoader = new DexClassLoader(sourceDir, outDexPath, null, m_context.getClassLoader());
         QtNative.setClassLoader(m_classLoader);
     }
 
