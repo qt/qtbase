@@ -38,8 +38,11 @@ EGLDisplay QEglFSKmsEglDeviceIntegration::createDisplay(EGLNativeDisplayType nat
 
     EGLDisplay display;
 
+    EGLint egldevice_fd = device()->fd();
+
+    const EGLint attribs[] = { EGL_DRM_MASTER_FD_EXT, egldevice_fd, EGL_NONE };
     if (m_funcs->has_egl_platform_device) {
-        display = m_funcs->get_platform_display(EGL_PLATFORM_DEVICE_EXT, nativeDisplay, nullptr);
+        display = m_funcs->get_platform_display(EGL_PLATFORM_DEVICE_EXT, nativeDisplay, attribs);
     } else {
         qWarning("EGL_EXT_platform_device not available, falling back to legacy path!");
         display = eglGetDisplay(nativeDisplay);
