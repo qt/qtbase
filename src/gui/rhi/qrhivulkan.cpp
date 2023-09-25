@@ -3201,6 +3201,12 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
     }
 }
 
+void QRhiVulkan::printExtraErrorInfo(VkResult err)
+{
+    if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY)
+        qWarning() << "Out of device memory, current allocator statistics are" << statistics();
+}
+
 void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdateBatch *resourceUpdates)
 {
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
@@ -3238,6 +3244,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                     bufD->stagingAllocations[currentFrameSlot] = allocation;
                 } else {
                     qWarning("Failed to create staging buffer of size %u: %d", bufD->m_size, err);
+                    printExtraErrorInfo(err);
                     continue;
                 }
             }
@@ -3326,6 +3333,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                     readback.stagingAlloc = allocation;
                 } else {
                     qWarning("Failed to create readback buffer of size %u: %d", readback.byteSize, err);
+                    printExtraErrorInfo(err);
                     continue;
                 }
 
@@ -3375,6 +3383,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                                            &utexD->stagingBuffers[currentFrameSlot], &allocation, nullptr);
             if (err != VK_SUCCESS) {
                 qWarning("Failed to create image staging buffer of size %d: %d", int(stagingSize), err);
+                printExtraErrorInfo(err);
                 continue;
             }
             utexD->stagingAllocations[currentFrameSlot] = allocation;
@@ -3531,6 +3540,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 readback.stagingAlloc = allocation;
             } else {
                 qWarning("Failed to create readback buffer of size %u: %d", readback.byteSize, err);
+                printExtraErrorInfo(err);
                 continue;
             }
 
@@ -5830,7 +5840,8 @@ bool QVkBuffer::create()
     }
 
     if (err != VK_SUCCESS) {
-        qWarning("Failed to create buffer: %d", err);
+        qWarning("Failed to create buffer of size %u: %d", nonZeroSize, err);
+        rhiD->printExtraErrorInfo(err);
         return false;
     }
 
@@ -6243,7 +6254,14 @@ bool QVkTexture::create()
     VmaAllocation allocation;
     VkResult err = vmaCreateImage(toVmaAllocator(rhiD->allocator), &imageInfo, &allocInfo, &image, &allocation, nullptr);
     if (err != VK_SUCCESS) {
-        qWarning("Failed to create image: %d", err);
+        qWarning("Failed to create image (with VkImageCreateInfo %ux%u depth %u vkformat 0x%X mips %u layers %u vksamples 0x%X): %d",
+                 imageInfo.extent.width, imageInfo.extent.height, imageInfo.extent.depth,
+                 int(imageInfo.format),
+                 imageInfo.mipLevels,
+                 imageInfo.arrayLayers,
+                 int(imageInfo.samples),
+                 err);
+        rhiD->printExtraErrorInfo(err);
         return false;
     }
     imageAlloc = allocation;

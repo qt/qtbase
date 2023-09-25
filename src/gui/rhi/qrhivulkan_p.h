@@ -816,6 +816,7 @@ public:
     void updateShaderResourceBindings(QRhiShaderResourceBindings *srb, int descSetIdx = -1);
     void ensureCommandPoolForNewFrame();
     double elapsedSecondsFromTimestamp(quint64 timestamp[2], bool *ok);
+    void printExtraErrorInfo(VkResult err);
 
     QVulkanInstance *inst = nullptr;
     QWindow *maybeWindow = nullptr;
