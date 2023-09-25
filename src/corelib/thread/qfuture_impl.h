@@ -529,18 +529,18 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
 
     fi.setLaunchAsync(launchAsync);
 
-    auto continuation = [func = std::forward<F>(func), fi, promise = QPromise(fi), pool,
+    auto continuation = [func = std::forward<F>(func), fi, promise_ = QPromise(fi), pool,
                          launchAsync](const QFutureInterfaceBase &parentData) mutable {
         const auto parent = QFutureInterface<ParentResultType>(parentData).future();
         Continuation<Function, ResultType, ParentResultType> *continuationJob = nullptr;
         if (launchAsync) {
             auto asyncJob = new AsyncContinuation<Function, ResultType, ParentResultType>(
-                    std::forward<Function>(func), parent, std::move(promise), pool);
+                    std::forward<Function>(func), parent, std::move(promise_), pool);
             fi.setRunnable(asyncJob);
             continuationJob = asyncJob;
         } else {
             continuationJob = new SyncContinuation<Function, ResultType, ParentResultType>(
-                    std::forward<Function>(func), parent, std::move(promise));
+                    std::forward<Function>(func), parent, std::move(promise_));
         }
 
         bool isLaunched = continuationJob->execute();
@@ -567,11 +567,11 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
     fi.setLaunchAsync(true);
     fi.setThreadPool(pool);
 
-    auto continuation = [func = std::forward<F>(func), promise = QPromise(fi),
+    auto continuation = [func = std::forward<F>(func), promise_ = QPromise(fi),
                          pool](const QFutureInterfaceBase &parentData) mutable {
         const auto parent = QFutureInterface<ParentResultType>(parentData).future();
         auto continuationJob = new AsyncContinuation<Function, ResultType, ParentResultType>(
-                std::forward<Function>(func), parent, std::move(promise), pool);
+                std::forward<Function>(func), parent, std::move(promise_), pool);
         bool isLaunched = continuationJob->execute();
         // If continuation is successfully launched, AsyncContinuation will be deleted
         // by the QThreadPool which has started it.
@@ -671,11 +671,11 @@ void FailureHandler<Function, ResultType>::create(F &&function, QFuture<ResultTy
 {
     Q_ASSERT(future);
 
-    auto failureContinuation = [function = std::forward<F>(function), promise = QPromise(fi)](
+    auto failureContinuation = [function = std::forward<F>(function), promise_ = QPromise(fi)](
                                        const QFutureInterfaceBase &parentData) mutable {
         const auto parent = QFutureInterface<ResultType>(parentData).future();
         FailureHandler<Function, ResultType> failureHandler(std::forward<Function>(function),
-                                                            parent, std::move(promise));
+                                                            parent, std::move(promise_));
         failureHandler.run();
     };
 
