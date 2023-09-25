@@ -776,13 +776,19 @@ public:
         SkipSources = 0x2
     };
 
-    explicit QmlDirectoryFileEntryFunction(Platform platform, DebugMatchMode debugMatchMode, unsigned flags)
+    explicit QmlDirectoryFileEntryFunction(
+        const QString &moduleSourcePath, Platform platform, DebugMatchMode debugMatchMode, unsigned flags)
         : m_flags(flags), m_qmlNameFilter(QmlDirectoryFileEntryFunction::qmlNameFilters(flags))
-        , m_dllFilter(platform, debugMatchMode)
+        , m_dllFilter(platform, debugMatchMode), m_moduleSourcePath(moduleSourcePath)
     {}
 
     QStringList operator()(const QDir &dir) const
     {
+        if (moduleSourceDir(dir).canonicalPath() != m_moduleSourcePath) {
+            // If we're in a different module, return nothing.
+            return {};
+        }
+
         QStringList result;
         const QStringList &libraries = m_dllFilter(dir);
         for (const QString &library : libraries) {
@@ -798,6 +804,17 @@ public:
     }
 
 private:
+    static QDir moduleSourceDir(const QDir &dir)
+    {
+        QDir moduleSourceDir = dir;
+        while (!moduleSourceDir.exists(QStringLiteral("qmldir"))) {
+            if (!moduleSourceDir.cdUp()) {
+                return {};
+            }
+        }
+        return moduleSourceDir;
+    }
+
     static inline QStringList qmlNameFilters(unsigned flags)
     {
         QStringList result;
@@ -814,6 +831,7 @@ private:
     const unsigned m_flags;
     NameFilterFileEntryFunction m_qmlNameFilter;
     DllDirectoryFileEntryFunction m_dllFilter;
+    QString m_moduleSourcePath;
 };
 
 static qint64 qtModule(QString module, const QString &infix)
@@ -1526,7 +1544,8 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             unsigned qmlDirectoryFileFlags = 0;
             if (options.deployPdb)
                 qmlDirectoryFileFlags |= QmlDirectoryFileEntryFunction::DeployPdb;
-            if (!updateFile(module.sourcePath, QmlDirectoryFileEntryFunction(options.platform,
+            if (!updateFile(module.sourcePath, QmlDirectoryFileEntryFunction(module.sourcePath,
+                                                                             options.platform,
                                                                              debugMatchMode,
                                                                              qmlDirectoryFileFlags),
                             installPath, updateFileFlags, options.json, errorMessage)) {
