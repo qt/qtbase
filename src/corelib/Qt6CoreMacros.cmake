@@ -2539,6 +2539,18 @@ function(_qt_internal_setup_deploy_support)
         set(__QT_DEPLOY_TOOL "")
     endif()
 
+    # Determine whether this is a multi-config build with a Debug configuration.
+    set(is_multi_config_build_with_debug_config FALSE)
+    get_target_property(target_is_imported ${target} IMPORTED)
+    if(target_is_imported)
+        get_target_property(target_imported_configs ${target} IMPORTED_CONFIGURATIONS)
+        list(LENGTH target_imported_configs target_imported_configs_length)
+        if(target_imported_configs_length GREATER "1"
+                AND "DEBUG" IN_LIST target_imported_configs)
+            set(is_multi_config_build_with_debug_config TRUE)
+        endif()
+    endif()
+
     _qt_internal_add_deploy_support("${CMAKE_CURRENT_LIST_DIR}/Qt6CoreDeploySupport.cmake")
 
     set(deploy_ignored_lib_dirs "")
@@ -2636,6 +2648,8 @@ set(__QT_DEPLOY_PLUGINS \"\")
 set(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH \"${must_adjust_plugins_rpath}\")
 set(__QT_DEPLOY_USE_PATCHELF \"${QT_DEPLOY_USE_PATCHELF}\")
 set(__QT_DEPLOY_PATCHELF_EXECUTABLE \"${QT_DEPLOY_PATCHELF_EXECUTABLE}\")
+set(__QT_DEPLOY_QT_IS_MULTI_CONFIG_BUILD_WITH_DEBUG \"${is_multi_config_build_with_debug_config}\")
+set(__QT_DEPLOY_QT_DEBUG_POSTFIX \"${QT6_DEBUG_POSTFIX}\")
 
 # Define the CMake commands to be made available during deployment.
 set(__qt_deploy_support_files
