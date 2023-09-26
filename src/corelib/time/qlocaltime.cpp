@@ -154,7 +154,7 @@ struct tm timeToTm(qint64 localDay, int secs)
 // Transitions account for a small fraction of 1% of the time.
 // So mark functions only used in handling them as cold.
 Q_DECL_COLD_FUNCTION
-struct tm matchYearMonth(struct tm &&when, const struct tm &base)
+struct tm matchYearMonth(struct tm when, const struct tm &base)
 {
     // Adjust *when to be a denormal representation of the same point in time
     // but with tm_year and tm_mon the same as base. In practice this will
@@ -195,7 +195,7 @@ struct tm matchYearMonth(struct tm &&when, const struct tm &base)
 }
 
 Q_DECL_COLD_FUNCTION
-struct tm dateNormalize(struct tm &&when)
+struct tm dateNormalize(struct tm when)
 {
     int daysInMonth = 28;
     // We have to wind through months one at a time, since their lengths vary.
@@ -236,8 +236,7 @@ qint64 secondsBetween(const struct tm &start, const struct tm &stop)
     // Nominal difference between start and stop, in seconds (negative if start
     // is after stop); may differ from actual UTC difference if there's a
     // transition between them.
-    struct tm from = start;
-    from = matchYearMonth(std::move(from), stop);
+    struct tm from = matchYearMonth(start, stop);
     qint64 diff = stop.tm_mday - from.tm_mday; // in days
     diff = diff * 24 + stop.tm_hour - from.tm_hour; // in hours
     diff = diff * 60 + stop.tm_min - from.tm_min; // in minutes
@@ -269,7 +268,7 @@ MkTimeResult hopAcrossGap(const MkTimeResult &outside, const struct tm &base)
 }
 
 Q_DECL_COLD_FUNCTION
-MkTimeResult resolveRejected(struct tm &&base, MkTimeResult &&result,
+MkTimeResult resolveRejected(struct tm base, MkTimeResult result,
                              QDateTimePrivate::DaylightStatus dst)
 {
     // May result from a time outside the supported range of system time_t
@@ -281,10 +280,10 @@ MkTimeResult resolveRejected(struct tm &&base, MkTimeResult &&result,
     // Bracket base, one day each side (in case the zone skipped a whole day):
     struct tm adjust = base;
     --adjust.tm_mday;
-    MkTimeResult early(dateNormalize(std::move(adjust)));
+    MkTimeResult early(dateNormalize(adjust));
     adjust = base;
     ++adjust.tm_mday;
-    MkTimeResult later(dateNormalize(std::move(adjust)));
+    MkTimeResult later(dateNormalize(adjust));
     if (!early.good || !later.good) // Assume out of range, rather than gap.
         return {};
 
@@ -392,7 +391,7 @@ MkTimeResult resolveLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst
     // that we hit a gap, although we have to handle these cases differently:
     if (!result.good) {
         // Rejected. The tricky case: maybe mktime() doesn't resolve gaps.
-        return resolveRejected(std::move(base), std::move(result), dst);
+        return resolveRejected(base, result, dst);
     } else if (result.local.tm_isdst < 0) {
         // Apparently success without knowledge of whether this is DST or not.
         // Should not happen, but that means our usual understanding of what the
