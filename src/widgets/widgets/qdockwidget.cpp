@@ -894,11 +894,15 @@ Qt::DockWidgetArea QDockWidgetPrivate::toDockWidgetArea(QInternal::DockPosition 
 
 void QDockWidgetPrivate::setResizerActive(bool active)
 {
+#ifdef Q_OS_WINDOWS
+    Q_UNUSED(active);
+#else
     Q_Q(QDockWidget);
     if (active && !resizer)
         resizer = new QWidgetResizeHandler(q);
     if (resizer)
         resizer->setEnabled(active);
+#endif
 }
 
 bool QDockWidgetPrivate::isAnimating() const
