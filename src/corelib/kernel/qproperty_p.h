@@ -227,6 +227,33 @@ struct CompatPropertySafePoint
     QtPrivate::BindingEvaluationState *bindingState = nullptr;
 };
 
+/*!
+ * \internal
+ * While the regular QProperty notification for a compat property runs we
+ * don't want to have any currentCompatProperty set. This would be a _different_
+ * one than the one we are current evaluating. Therefore it's misleading and
+ * prevents the registering of actual dependencies.
+ */
+struct CurrentCompatPropertyThief
+{
+    Q_DISABLE_COPY_MOVE(CurrentCompatPropertyThief)
+public:
+    CurrentCompatPropertyThief(QBindingStatus *status)
+        : status(&status->currentCompatProperty)
+        , stolen(std::exchange(status->currentCompatProperty, nullptr))
+    {
+    }
+
+    ~CurrentCompatPropertyThief()
+    {
+        *status = stolen;
+    }
+
+private:
+    CompatPropertySafePoint **status = nullptr;
+    CompatPropertySafePoint *stolen = nullptr;
+};
+
 }
 
 class Q_CORE_EXPORT QPropertyBindingPrivate : public QtPrivate::RefCounted
@@ -497,13 +524,16 @@ class QObjectCompatProperty : public QPropertyData<T>
     static bool bindingWrapper(QMetaType type, QUntypedPropertyData *dataPtr, QtPrivate::QPropertyBindingFunction binding)
     {
         auto *thisData = static_cast<ThisType *>(dataPtr);
-        QPropertyData<T> copy;
-        binding.vtable->call(type, &copy, binding.functor);
-        if constexpr (QTypeTraits::has_operator_equal_v<T>)
-            if (copy.valueBypassingBindings() == thisData->valueBypassingBindings())
-                return false;
-        // ensure value and setValue know we're currently evaluating our binding
         QBindingStorage *storage = qGetBindingStorage(thisData->owner());
+        QPropertyData<T> copy;
+        {
+            QtPrivate::CurrentCompatPropertyThief thief(storage->bindingStatus);
+            binding.vtable->call(type, &copy, binding.functor);
+            if constexpr (QTypeTraits::has_operator_equal_v<T>)
+                if (copy.valueBypassingBindings() == thisData->valueBypassingBindings())
+                    return false;
+        }
+        // ensure value and setValue know we're currently evaluating our binding
         QtPrivate::CompatPropertySafePoint guardThis(storage->bindingStatus, thisData);
         (thisData->owner()->*Setter)(copy.valueBypassingBindings());
         return true;

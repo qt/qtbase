@@ -123,6 +123,8 @@ private slots:
     void scheduleNotify();
 
     void notifyAfterAllDepsGone();
+
+    void propertyUpdateViaSignaledProperty();
 };
 
 void tst_QProperty::functorBinding()
@@ -2051,6 +2053,110 @@ void tst_QProperty::notifyAfterAllDepsGone()
     jprop = 43;
     QCOMPARE(iprop.value(), 13);
     QCOMPARE(changeCounter, 2);
+}
+
+class TestObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int signaled READ signaled WRITE setSignaled NOTIFY signaledChanged FINAL)
+    Q_PROPERTY(int bindable1 READ bindable1 WRITE setBindable1 BINDABLE bindable1Bindable NOTIFY bindable1Changed FINAL)
+    Q_PROPERTY(int bindable2 READ bindable2 WRITE setBindable2 BINDABLE bindable2Bindable NOTIFY bindable2Changed FINAL)
+
+public:
+    int signaled() const
+    {
+        return m_signaled;
+    }
+
+    void setSignaled(int newSignaled)
+    {
+        if (m_signaled == newSignaled)
+            return;
+        m_signaled = newSignaled;
+        emit signaledChanged();
+    }
+
+    int bindable1() const
+    {
+        return m_bindable1;
+    }
+
+    void setBindable1(int newBindable1)
+    {
+        if (m_bindable1 == newBindable1)
+            return;
+        m_bindable1 = newBindable1;
+        emit bindable1Changed();
+    }
+
+    QBindable<int> bindable1Bindable()
+    {
+        return QBindable<int>(&m_bindable1);
+    }
+
+    int bindable2() const
+    {
+        return m_bindable2;
+    }
+
+    void setBindable2(int newBindable2)
+    {
+        if (m_bindable2 == newBindable2)
+            return;
+        m_bindable2 = newBindable2;
+        emit bindable2Changed();
+    }
+
+    QBindable<int> bindable2Bindable()
+    {
+        return QBindable<int>(&m_bindable2);
+    }
+
+signals:
+    void signaledChanged();
+    void bindable1Changed();
+    void bindable2Changed();
+
+private:
+    int m_signaled = 0;
+    Q_OBJECT_COMPAT_PROPERTY(TestObject, int, m_bindable1, &TestObject::setBindable1, &TestObject::bindable1Changed);
+    Q_OBJECT_COMPAT_PROPERTY(TestObject, int, m_bindable2, &TestObject::setBindable2, &TestObject::bindable2Changed);
+};
+
+void tst_QProperty::propertyUpdateViaSignaledProperty()
+{
+    TestObject o;
+    QProperty<int> rootTrigger;
+    QProperty<int> signalTrigger;
+
+    o.bindable1Bindable().setBinding([&]() {
+        return rootTrigger.value();
+    });
+
+    QObject::connect(&o, &TestObject::bindable1Changed, &o, [&]() {
+        // Signaled changes only once, doesn't actually depend on bindable1.
+        // In reality, there could be some complicated calculation behind this that changes
+        // on certain checkpoints, but not on every iteration.
+        o.setSignaled(40);
+    });
+
+    o.bindable2Bindable().setBinding([&]() {
+        return signalTrigger.value() - o.bindable1();
+    });
+
+    QObject::connect(&o, &TestObject::signaledChanged, &o, [&]() {
+        signalTrigger.setValue(o.signaled());
+    });
+
+    rootTrigger.setValue(2);
+    QCOMPARE(o.bindable1(), 2);
+    QCOMPARE(o.bindable2(), 38);
+    rootTrigger.setValue(3);
+    QCOMPARE(o.bindable1(), 3);
+    QCOMPARE(o.bindable2(), 37);
+    rootTrigger.setValue(4);
+    QCOMPARE(o.bindable1(), 4);
+    QCOMPARE(o.bindable2(), 36);
 }
 
 QTEST_MAIN(tst_QProperty);
