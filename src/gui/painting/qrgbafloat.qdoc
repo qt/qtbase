@@ -81,7 +81,7 @@
 */
 
 /*!
-    \fn template<typename F> void QRgbaFloat<F>::setRed(QRgbaFloat::FastType red)
+    \fn template<typename F> void QRgbaFloat<F>::setRed(float red)
 
     Sets the red color component of this color to \a red.
 
@@ -97,7 +97,7 @@
 */
 
 /*!
-    \fn template<typename F> void QRgbaFloat<F>::setGreen(QRgbaFloat::FastType green)
+    \fn template<typename F> void QRgbaFloat<F>::setGreen(float green)
 
     Sets the green color component of this color to \a green.
 
@@ -113,7 +113,7 @@
 */
 
 /*!
-    \fn template<typename F> void QRgbaFloat<F>::setBlue(QRgbaFloat::FastType blue)
+    \fn template<typename F> void QRgbaFloat<F>::setBlue(float blue)
 
     Sets the blue color component of this color to \a blue.
 
@@ -129,7 +129,7 @@
 */
 
 /*!
-    \fn template<typename F> void QRgbaFloat<F>::setAlpha(QRgbaFloat::FastType alpha)
+    \fn template<typename F> void QRgbaFloat<F>::setAlpha(float alpha)
 
     Sets the alpha of this color to \a alpha.
 
