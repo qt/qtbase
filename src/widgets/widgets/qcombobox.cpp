@@ -2167,6 +2167,12 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
         indexBeforeChange = -1;
 
     if (indexChanged || modelResetToEmpty) {
+        QItemSelectionModel::SelectionFlags selectionMode = QItemSelectionModel::ClearAndSelect;
+        if (q->view()->selectionBehavior() == QAbstractItemView::SelectRows)
+            selectionMode.setFlag(QItemSelectionModel::Rows);
+        if (auto *model = q->view()->selectionModel())
+            model->setCurrentIndex(currentIndex, selectionMode);
+
         q->update();
         emitCurrentIndexChanged(currentIndex);
     }
@@ -2600,11 +2606,6 @@ void QComboBox::showPopup()
         return;
 #endif // Q_OS_MAC
 
-    // set current item and select it
-    QItemSelectionModel::SelectionFlags selectionMode = QItemSelectionModel::ClearAndSelect;
-    if (view()->selectionBehavior() == QAbstractItemView::SelectRows)
-        selectionMode.setFlag(QItemSelectionModel::Rows);
-    view()->selectionModel()->setCurrentIndex(d->currentIndex, selectionMode);
     QComboBoxPrivateContainer* container = d->viewContainer();
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
                                          QStyle::SC_ComboBoxListBoxPopup, this));

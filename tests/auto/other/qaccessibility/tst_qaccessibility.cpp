@@ -3711,6 +3711,8 @@ void tst_QAccessibility::comboBoxTest()
     QCOMPARE(iface->text(QAccessible::Name), QLatin1String("one"));
 #endif
     QCOMPARE(iface->text(QAccessible::Value), QLatin1String("one"));
+    QCOMPARE(combo.view()->selectionModel()->currentIndex().row(), 0);
+
     combo.setCurrentIndex(2);
 #ifdef Q_OS_UNIX
     QCOMPARE(iface->text(QAccessible::Name), QLatin1String("three"));
@@ -3721,7 +3723,13 @@ void tst_QAccessibility::comboBoxTest()
     QCOMPARE(listIface->role(), QAccessible::List);
     QCOMPARE(listIface->childCount(), 3);
 
+    QAccessibleSelectionInterface *selectionIface = listIface->selectionInterface();
+    QVERIFY(selectionIface);
+    QCOMPARE(selectionIface->selectedItemCount(), 1);
+    QCOMPARE(listIface->indexOfChild(selectionIface->selectedItem(0)), 2);
+
     QVERIFY(!combo.view()->isVisible());
+    QCOMPARE(combo.view()->selectionModel()->currentIndex().row(), 2);
     QVERIFY(iface->actionInterface());
     QCOMPARE(iface->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::showMenuAction() << QAccessibleActionInterface::pressAction());
     iface->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
