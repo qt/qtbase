@@ -195,36 +195,41 @@ struct tm matchYearMonth(struct tm when, const struct tm &base)
 }
 
 Q_DECL_COLD_FUNCTION
-struct tm dateNormalize(struct tm when)
+struct tm adjacentDay(struct tm when, int dayStep)
 {
-    int daysInMonth = 28;
-    // We have to wind through months one at a time, since their lengths vary.
-    while (when.tm_mday < 1) {
-        // Month before's day-count; but tm_mon's value is one less than Qt's
-        // month numbering so, before we decrement it, it has the value we need,
-        // unless it's 0.
-        daysInMonth = when.tm_mon
-            ? QGregorianCalendar::monthLength(when.tm_mon, qYearFromTmYear(when.tm_year))
-            : QGregorianCalendar::monthLength(12, qYearFromTmYear(when.tm_year - 1));
-        when.tm_mday += daysInMonth;
-        if (--when.tm_mon < 0) {
-            ++when.tm_year;
-            when.tm_mon = 11;
+    // Before we adjust it, when is a return from timeToTm(), so in normal form.
+    Q_ASSERT(dayStep * dayStep == 1);
+    when.tm_mday += dayStep;
+    // That may have bumped us across a month boundary or even a year one.
+    // So now we normalize it.
+
+    if (dayStep < 0) {
+        if (when.tm_mday <= 0) {
+            // Month before's day-count; but tm_mon's value is one less than Qt's
+            // month numbering so, before we decrement it, it has the value we need,
+            // unless it's 0.
+            int daysInMonth = when.tm_mon
+                ? QGregorianCalendar::monthLength(when.tm_mon, qYearFromTmYear(when.tm_year))
+                : QGregorianCalendar::monthLength(12, qYearFromTmYear(when.tm_year - 1));
+            when.tm_mday += daysInMonth;
+            if (--when.tm_mon < 0) {
+                --when.tm_year;
+                when.tm_mon = 11;
+            }
+            Q_ASSERT(when.tm_mday >= 1);
         }
-    }
-    // If we came via that loop, we have set daysInMonth and when.tm_mday is <= it.
-    // Otherwise, daysInMonth is 28, so this serves as a cheap pre-test:
-    if (when.tm_mday > daysInMonth) {
-        daysInMonth = QGregorianCalendar::monthLength(
+    } else if (when.tm_mday > 28) {
+        // We have to wind through months one at a time, since their lengths vary.
+        int daysInMonth = QGregorianCalendar::monthLength(
             when.tm_mon + 1, qYearFromTmYear(when.tm_year));
-        while (when.tm_mday > daysInMonth) {
+        if (when.tm_mday > daysInMonth) {
             when.tm_mday -= daysInMonth;
             if (++when.tm_mon > 11) {
                 ++when.tm_year;
                 when.tm_mon = 0;
             }
-            daysInMonth = QGregorianCalendar::monthLength(
-                when.tm_mon + 1, qYearFromTmYear(when.tm_year));
+            Q_ASSERT(when.tm_mday <= QGregorianCalendar::monthLength(
+                         when.tm_mon + 1, qYearFromTmYear(when.tm_year)));
         }
     }
     return when;
@@ -278,12 +283,8 @@ MkTimeResult resolveRejected(struct tm base, MkTimeResult result,
 
     constexpr time_t twoDaysInSeconds = 2 * 24 * 60 * 60;
     // Bracket base, one day each side (in case the zone skipped a whole day):
-    struct tm adjust = base;
-    --adjust.tm_mday;
-    MkTimeResult early(dateNormalize(adjust));
-    adjust = base;
-    ++adjust.tm_mday;
-    MkTimeResult later(dateNormalize(adjust));
+    MkTimeResult early(adjacentDay(base, -1));
+    MkTimeResult later(adjacentDay(base, +1));
     if (!early.good || !later.good) // Assume out of range, rather than gap.
         return {};
 
