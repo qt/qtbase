@@ -4,6 +4,7 @@
 /*!
     \example http
     \examplecategory {Networking}
+    \examplecategory {Web Technologies}
     \meta tags {http,network,https,proxy}
     \title HTTP Client
     \ingroup examples-network
