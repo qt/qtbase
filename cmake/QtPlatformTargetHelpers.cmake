@@ -49,6 +49,15 @@ function(qt_internal_setup_public_platform_target)
         target_compile_options(Platform INTERFACE "$<$<CXX_COMPILER_ID:Clang>:-fno-direct-access-external-data>")
     endif()
 
+    # Qt checks if a given platform supports 128 bit integers
+    # by checking if __SIZEOF_128__ is defined
+    # VXWORKS doesn't support 128 bit integers
+    # but it uses clang which defines __SIZEOF_128__
+    # which breaks the detection mechanism
+    if(VXWORKS)
+        target_compile_definitions(Platform INTERFACE "-DQT_NO_INT128")
+    endif()
+
     qt_set_msvc_cplusplus_options(Platform INTERFACE)
 
     # Propagate minimum C++ 17 via Platform to Qt consumers (apps), after the global features
