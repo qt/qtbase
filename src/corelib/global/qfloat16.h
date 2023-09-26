@@ -9,14 +9,10 @@
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qtypes.h>
 
 #include <limits>
 #include <string.h>
-
-#if defined(__STDCPP_FLOAT16_T__) && __has_include(<stdfloat>)
-// P1467 implementation - https://wg21.link/p1467
-#  include <stdfloat>
-#endif
 
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__AVX2__) && !defined(__F16C__)
 // All processors that support AVX2 do support F16C too, so we could enable the
@@ -55,24 +51,8 @@ class qfloat16
     };
 
 public:
-#if defined(__STDCPP_FLOAT16_T__)
-#  define QFLOAT16_IS_NATIVE        1
-    using NativeType = std::float16_t;
-#elif defined(Q_CC_CLANG) && defined(__FLT16_MAX__) && 0
-    // disabled due to https://github.com/llvm/llvm-project/issues/56963
-#  define QFLOAT16_IS_NATIVE        1
-    using NativeType = decltype(__FLT16_MAX__);
-#elif defined(Q_CC_GNU_ONLY) && defined(__FLT16_MAX__)
-#  define QFLOAT16_IS_NATIVE        1
-#  ifdef __ARM_FP16_FORMAT_IEEE
-    using NativeType = __fp16;
-#  else
-    using NativeType = _Float16;
-#  endif
-#else
-#  define QFLOAT16_IS_NATIVE        0
-    using NativeType = void;
-#endif
+    using NativeType = QtPrivate::NativeFloat16Type;
+
     static constexpr bool IsNative = QFLOAT16_IS_NATIVE;
     using NearestFloat = std::conditional_t<IsNative, NativeType, float>;
 
