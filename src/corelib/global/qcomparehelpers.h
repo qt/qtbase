@@ -341,6 +341,14 @@ template <typename T>
 constexpr bool IsIntegralType_v = std::numeric_limits<std::remove_const_t<T>>::is_specialized
                                   && std::numeric_limits<std::remove_const_t<T>>::is_integer;
 
+template <typename T>
+constexpr bool IsFloatType_v = std::is_floating_point_v<T>;
+
+#if QFLOAT16_IS_NATIVE
+template <>
+constexpr bool IsFloatType_v<QtPrivate::NativeFloat16Type> = true;
+#endif
+
 } // namespace QtPrivate
 
 namespace Qt {
@@ -353,14 +361,14 @@ using if_integral =
 
 template <typename T, typename U>
 using if_floating_point =
-        std::enable_if_t<std::conjunction_v<std::is_floating_point<std::remove_reference_t<T>>,
-                                            std::is_floating_point<std::remove_reference_t<U>>>,
+        std::enable_if_t<QtPrivate::IsFloatType_v<std::remove_reference_t<T>>
+                           && QtPrivate::IsFloatType_v<std::remove_reference_t<U>>,
                          bool>;
 
 template <typename T, typename U>
 using if_integral_and_floating_point =
         std::enable_if_t<QtPrivate::IsIntegralType_v<std::remove_reference_t<T>>
-                           && std::is_floating_point_v<std::remove_reference_t<U>>,
+                           && QtPrivate::IsFloatType_v<std::remove_reference_t<U>>,
                          bool>;
 
 template <typename T, typename U>

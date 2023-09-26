@@ -663,12 +663,30 @@ void tst_QCompareHelpers::builtinOrder()
     TEST_BUILTIN(qint64, std::float16_t)
     TEST_BUILTIN(uint, std::float16_t)
 #endif
-
     TEST_BUILTIN(long double, long double)
     TEST_BUILTIN(float, long double)
     TEST_BUILTIN(double, long double)
     TEST_BUILTIN(quint64, long double)
     TEST_BUILTIN(ushort, long double)
+
+#if QFLOAT16_IS_NATIVE
+    {
+        // Cannot use TEST_BUILTIN here, because std::numeric_limits are not defined
+        // for QtPrivate::NativeFloat16Type.
+        const QtPrivate::NativeFloat16Type smaller{1.0};
+        const QtPrivate::NativeFloat16Type bigger{2.0};
+        // native vs native
+        QCOMPARE_EQ(Qt::compareThreeWay(smaller, smaller), Qt::partial_ordering::equivalent);
+        QCOMPARE_EQ(Qt::compareThreeWay(smaller, bigger), Qt::partial_ordering::less);
+        QCOMPARE_EQ(Qt::compareThreeWay(bigger, smaller), Qt::partial_ordering::greater);
+        // native vs float
+        QCOMPARE_EQ(Qt::compareThreeWay(smaller, 1.0f), Qt::partial_ordering::equivalent);
+        QCOMPARE_EQ(Qt::compareThreeWay(1.0f, bigger), Qt::partial_ordering::less);
+        QCOMPARE_EQ(Qt::compareThreeWay(bigger, 1.0f), Qt::partial_ordering::greater);
+        const auto floatNaN = std::numeric_limits<float>::quiet_NaN();
+        QCOMPARE_EQ(Qt::compareThreeWay(bigger, floatNaN), Qt::partial_ordering::unordered);
+    }
+#endif
 
     QCOMPARE_EQ(Qt::compareThreeWay(TestEnum::Smaller, TestEnum::Bigger),
                 Qt::strong_ordering::less);
