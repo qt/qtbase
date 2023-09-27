@@ -20,6 +20,7 @@ class tst_QJniEnvironment : public QObject
     Q_OBJECT
 
 private slots:
+    void init();
     void jniEnv();
     void javaVM();
     void registerNativeMethods();
@@ -29,6 +30,14 @@ private slots:
     void findField();
     void findStaticField();
 };
+
+void tst_QJniEnvironment::init()
+{
+    // Unless explicitly ignored to test error handling, warning messages
+    // in this test about a failure to look up a field, method, or class
+    // make the test fail.
+    QTest::failOnWarning(QRegularExpression("java.lang.NoSuch.*Error"));
+}
 
 void tst_QJniEnvironment::jniEnv()
 {
@@ -59,6 +68,7 @@ void tst_QJniEnvironment::jniEnv()
         QVERIFY(!QJniEnvironment::checkAndClearExceptions(env.jniEnv()));
 
         // try to find a nonexistent class
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.ClassNotFoundException: .*"));
         QVERIFY(!env->FindClass("this/doesnt/Exist"));
         QVERIFY(QJniEnvironment::checkAndClearExceptions(env.jniEnv()));
 
@@ -68,9 +78,11 @@ void tst_QJniEnvironment::jniEnv()
         QVERIFY(env.findClass<jstring>());
 
         // try to find a nonexistent class
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.ClassNotFoundException: .*"));
         QVERIFY(!env.findClass("this/doesnt/Exist"));
 
         // clear exception with member function
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.ClassNotFoundException: .*"));
         QVERIFY(!env->FindClass("this/doesnt/Exist"));
         QVERIFY(env.checkAndClearExceptions());
     }
@@ -273,6 +285,7 @@ void tst_QJniEnvironment::findMethod()
     QVERIFY(methodId != nullptr);
 
     // invalid signature
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.NoSuchMethodError: .*"));
     jmethodID invalid = env.findMethod(clazz, "unknown", "()I");
     QVERIFY(invalid == nullptr);
     // check that all exceptions are already cleared
@@ -299,8 +312,10 @@ void tst_QJniEnvironment::findStaticMethod()
     QCOMPARE(result, 123);
 
     // invalid method
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.NoSuchMethodError: .*"));
     jmethodID invalid = env.findStaticMethod(clazz, "unknown", "()I");
     QVERIFY(invalid == nullptr);
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.NoSuchMethodError: .*"));
     invalid = env.findStaticMethod<jint>(clazz, "unknown");
     QVERIFY(invalid == nullptr);
     // check that all exceptions are already cleared
@@ -328,6 +343,7 @@ void tst_QJniEnvironment::findField()
     QVERIFY(value == 123);
 
     // invalid signature
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.NoSuchFieldError: .*"));
     jfieldID invalidId = env.findField(clazz, "unknown", "I");
     QVERIFY(invalidId == nullptr);
     // check that all exceptions are already cleared
@@ -351,6 +367,7 @@ void tst_QJniEnvironment::findStaticField()
     QVERIFY(size == 321);
 
     // invalid signature
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.NoSuchFieldError: .*"));
     jfieldID invalidId = env.findStaticField(clazz, "unknown", "I");
     QVERIFY(invalidId == nullptr);
     // check that all exceptions are already cleared
