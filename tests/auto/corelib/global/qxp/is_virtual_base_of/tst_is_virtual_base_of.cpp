@@ -49,6 +49,9 @@ static_assert(!qxp::is_virtual_base_of_v<VirtualDerived1, VirtualDerived3>);
 static_assert(qxp::is_virtual_base_of_v<Base, VirtualDerived4>);
 static_assert(qxp::is_virtual_base_of_v<Base, VirtualPrivateDerived>);
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Winaccessible-base")
+QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 // Ambiguous non-virtual base
 class IntermediateDerived : public Base {};
 class AmbiguousBase1 : public IntermediateDerived, public Base {};
@@ -58,6 +61,7 @@ static_assert(!qxp::is_virtual_base_of_v<Base, AmbiguousBase1>);
 #ifndef Q_CC_MSVC_ONLY // https://developercommunity.visualstudio.com/t/c-templates-multiple-inheritance-ambiguous-access/185674
 static_assert(!qxp::is_virtual_base_of_v<Base, AmbiguousBase2>);
 #endif
+QT_WARNING_POP
 
 // Const
 static_assert(!qxp::is_virtual_base_of_v<      Base, const NonVirtualDerived>);
