@@ -1123,6 +1123,11 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
     QScopedScopeLevelCounter scopeLevelCounter(threadData);
     if (!selfRequired)
         return doNotify(receiver, event);
+
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+    if (threadData->thread.loadRelaxed() != QCoreApplicationPrivate::mainThread())
+        return false;
+#endif
     return self->notify(receiver, event);
 }
 
@@ -1181,7 +1186,7 @@ bool QCoreApplication::forwardEvent(QObject *receiver, QEvent *event, QEvent *or
   \endlist
 
   \b{Future direction:} This function will not be called for objects that live
-  outside the main thread in Qt 6. Applications that need that functionality
+  outside the main thread in Qt 7. Applications that need that functionality
   should find other solutions for their event inspection needs in the meantime.
   The change may be extended to the main thread, causing this function to be
   deprecated.
@@ -1198,6 +1203,11 @@ bool QCoreApplication::notify(QObject *receiver, QEvent *event)
 {
     Q_ASSERT(receiver);
     Q_ASSERT(event);
+
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+    Q_ASSERT(receiver->d_func()->threadData.loadAcquire()->thread.loadRelaxed()
+             == QCoreApplicationPrivate::mainThread());
+#endif
 
     // no events are delivered after ~QCoreApplication() has started
     if (QCoreApplicationPrivate::is_app_closing)
