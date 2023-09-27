@@ -280,7 +280,7 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
 }
 #endif // datestring
 
-// Return offset in [+-]HH:mm format
+// Return offset in ±HH:mm format
 static QString toOffsetString(Qt::DateFormat format, int offset)
 {
     return QString::asprintf("%c%02d%s%02d",
@@ -292,7 +292,7 @@ static QString toOffsetString(Qt::DateFormat format, int offset)
 }
 
 #if QT_CONFIG(datestring)
-// Parse offset in [+-]HH[[:]mm] format
+// Parse offset in ±HH[[:]mm] format
 static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
 {
     *valid = false;
@@ -318,7 +318,7 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     qsizetype hhLen = time.indexOf(u':');
     qsizetype mmIndex;
     if (hhLen == -1)
-        mmIndex = hhLen = 2; // [+-]HHmm or [+-]HH format
+        mmIndex = hhLen = 2; // ±HHmm or ±HH format
     else
         mmIndex = hhLen + 1;
 
@@ -1491,7 +1491,7 @@ QDate QDate::addYears(int nyears, QCalendar cal) const
     int old_y = parts.year;
     parts.year += nyears;
 
-    // If we just crossed (or hit) a missing year zero, adjust year by +/- 1:
+    // If we just crossed (or hit) a missing year zero, adjust year by ±1:
     if (!cal.hasYearZero() && ((old_y > 0) != (parts.year > 0) || !parts.year))
         parts.year += nyears > 0 ? +1 : -1;
 
@@ -1514,7 +1514,7 @@ QDate QDate::addYears(int nyears) const
     int old_y = parts.year;
     parts.year += nyears;
 
-    // If we just crossed (or hit) a missing year zero, adjust year by +/- 1:
+    // If we just crossed (or hit) a missing year zero, adjust year by ±1:
     if ((old_y > 0) != (parts.year > 0) || !parts.year)
         parts.year += nyears > 0 ? +1 : -1;
 
@@ -3393,10 +3393,10 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     The range of values that QDateTime can represent is dependent on the
     internal storage implementation. QDateTime is currently stored in a qint64
     as a serial msecs value encoding the date and time. This restricts the date
-    range to about +/- 292 million years, compared to the QDate range of +/- 2
-    billion years. Care must be taken when creating a QDateTime with extreme
-    values that you do not overflow the storage. The exact range of supported
-    values varies depending on the time representation used.
+    range to about ±292 million years, compared to the QDate range of ±2 billion
+    years. Care must be taken when creating a QDateTime with extreme values that
+    you do not overflow the storage. The exact range of supported values varies
+    depending on the time representation used.
 
     \section2 Use of Timezones
 
@@ -3445,10 +3445,10 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
 
     There is no explicit size restriction on an offset from UTC, but there is an
     implicit limit imposed when using the toString() and fromString() methods
-    which use a [+|-]hh:mm format, effectively limiting the range to +/- 99
-    hours and 59 minutes and whole minutes only. Note that currently no time
-    zone has an offset outside the range of ±14 hours and all known offsets are
-    multiples of five minutes.
+    which use a ±hh:mm format, effectively limiting the range to ± 99 hours and
+    59 minutes and whole minutes only. Note that currently no time zone has an
+    offset outside the range of ±14 hours and all known offsets are multiples of
+    five minutes.
 
     \sa QDate, QTime, QDateTimeEdit, QTimeZone
 */
@@ -3746,7 +3746,7 @@ int QDateTime::offsetFromUtc() const
 
     \list
     \li For Qt::UTC it is "UTC".
-    \li For Qt::OffsetFromUTC it will be in the format "UTC[+-]00:00".
+    \li For Qt::OffsetFromUTC it will be in the format "UTC±00:00".
     \li For Qt::LocalTime, the host system is queried.
     \li For Qt::TimeZone, the associated QTimeZone object is queried.
     \endlist
@@ -4089,15 +4089,14 @@ void QDateTime::setSecsSinceEpoch(qint64 secs)
     formatting is "Wed May 20 03:40:13 1998". For localized formatting, see
     \l{QLocale::toString()}.
 
-    If the \a format is Qt::ISODate, the string format corresponds
-    to the ISO 8601 extended specification for representations of
-    dates and times, taking the form yyyy-MM-ddTHH:mm:ss[Z|[+|-]HH:mm],
-    depending on the timeSpec() of the QDateTime. If the timeSpec()
-    is Qt::UTC, Z will be appended to the string; if the timeSpec() is
-    Qt::OffsetFromUTC, the offset in hours and minutes from UTC will
-    be appended to the string. To include milliseconds in the ISO 8601
+    If the \a format is Qt::ISODate, the string format corresponds to the ISO
+    8601 extended specification for representations of dates and times, taking
+    the form yyyy-MM-ddTHH:mm:ss[Z|±HH:mm], depending on the timeSpec() of the
+    QDateTime. If the timeSpec() is Qt::UTC, Z will be appended to the string;
+    if the timeSpec() is Qt::OffsetFromUTC, the offset in hours and minutes from
+    UTC will be appended to the string. To include milliseconds in the ISO 8601
     date, use the \a format Qt::ISODateWithMs, which corresponds to
-    yyyy-MM-ddTHH:mm:ss.zzz[Z|[+|-]HH:mm].
+    yyyy-MM-ddTHH:mm:ss.zzz[Z|±HH:mm].
 
     If the \a format is Qt::RFC2822Date, the string is formatted
     following \l{RFC 2822}.
@@ -5176,7 +5175,7 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         }
         isoString = isoString.sliced(1); // trim 'T' (or space)
 
-        // Check end of string for Time Zone definition, either Z for UTC or [+-]HH:mm for Offset
+        // Check end of string for Time Zone definition, either Z for UTC or ±HH:mm for Offset
         if (isoString.endsWith(u'Z', Qt::CaseInsensitive)) {
             zone = QTimeZone::UTC;
             isoString.chop(1); // trim 'Z'
