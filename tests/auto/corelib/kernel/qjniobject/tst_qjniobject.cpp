@@ -10,7 +10,7 @@
 
 using namespace Qt::StringLiterals;
 
-static const char testClassName[] = "org/qtproject/qt/android/testdatapackage/QtJniObjectTestClass";
+static constexpr const char testClassName[] = "org/qtproject/qt/android/testdatapackage/QtJniObjectTestClass";
 Q_DECLARE_JNI_CLASS(QtJniObjectTestClass, testClassName)
 using TestClass = QtJniTypes::QtJniObjectTestClass;
 
@@ -112,6 +112,8 @@ private slots:
     void templateApiCheck();
     void isClassAvailable();
     void fromLocalRef();
+
+    void callback();
 
     void cleanupTestCase();
 };
@@ -1662,6 +1664,31 @@ void tst_QJniObject::fromLocalRef()
     QJniEnvironment env;
     for (int i = 0; i != limit; ++i)
         QJniObject o = QJniObject::fromLocalRef(env->FindClass("java/lang/String"));
+}
+
+
+static std::optional<TestClass> calledWithObject;
+static int callbackWithObject(JNIEnv *env, jobject thiz, TestClass that)
+{
+    Q_UNUSED(env);
+    Q_UNUSED(thiz);
+    calledWithObject.emplace(that);
+    return 42;
+}
+
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithObject)
+
+void tst_QJniObject::callback()
+{
+    TestClass testObject;
+    QJniEnvironment env;
+    QVERIFY(env.registerNativeMethods(testObject.objectClass(), {
+        Q_JNI_NATIVE_METHOD(callbackWithObject)
+    }));
+    int result = testObject.callMethod<int>("callMeBackWithObject", testObject);
+    QVERIFY(calledWithObject);
+    QVERIFY(calledWithObject.value() == testObject);
+    QCOMPARE(result, 42);
 }
 
 QTEST_MAIN(tst_QJniObject)

@@ -14,6 +14,9 @@ class tst_QJniTypes : public QObject
 public:
     tst_QJniTypes() = default;
 
+    static void nativeClassMethod(JNIEnv *, jclass, int);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(nativeClassMethod);
+
 private slots:
     void initTestCase();
     void nativeMethod();
@@ -154,12 +157,32 @@ Q_DECLARE_JNI_NATIVE_METHOD(nativeFunction)
 
 static_assert(QtJniTypes::nativeMethodSignature(nativeFunction) == "(ILjava/lang/String;J)Z");
 
+static int forwardDeclaredNativeFunction(JNIEnv *, jobject, bool);
+Q_DECLARE_JNI_NATIVE_METHOD(forwardDeclaredNativeFunction)
+static int forwardDeclaredNativeFunction(JNIEnv *, jobject, bool) { return 0; }
+static_assert(QtJniTypes::nativeMethodSignature(forwardDeclaredNativeFunction) == "(Z)I");
+
+static_assert(QtJniTypes::nativeMethodSignature(tst_QJniTypes::nativeClassMethod) == "(I)V");
+void tst_QJniTypes::nativeClassMethod(JNIEnv *, jclass, int) {}
+
 void tst_QJniTypes::nativeMethod()
 {
-    const auto method = Q_JNI_NATIVE_METHOD(nativeFunction);
-    QVERIFY(method.fnPtr == nativeFunction);
-    QCOMPARE(method.name, "nativeFunction");
-    QCOMPARE(method.signature, "(ILjava/lang/String;J)Z");
+    {
+        const auto method = Q_JNI_NATIVE_METHOD(nativeFunction);
+        QVERIFY(method.fnPtr == QtJniMethods::va_nativeFunction);
+        QCOMPARE(method.name, "nativeFunction");
+        QCOMPARE(method.signature, "(ILjava/lang/String;J)Z");
+    }
+
+    {
+        const auto method = Q_JNI_NATIVE_METHOD(forwardDeclaredNativeFunction);
+        QVERIFY(method.fnPtr == QtJniMethods::va_forwardDeclaredNativeFunction);
+    }
+
+    {
+        const auto method = Q_JNI_NATIVE_SCOPED_METHOD(nativeClassMethod, tst_QJniTypes);
+        QVERIFY(method.fnPtr == va_nativeClassMethod);
+    }
 }
 
 void tst_QJniTypes::construct()

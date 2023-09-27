@@ -170,5 +170,12 @@ public class QtJniObjectTestClass
     public static double[] staticDoubleArrayMethod()
     { double[] array = { 3.0, 2.0, 1.0 }; return array; }
     public double[] doubleArrayMethod() { return staticDoubleArrayMethod(); }
-}
 
+    // --------------------------------------------------------------------------------------------
+    native public int callbackWithObject(QtJniObjectTestClass that);
+
+    public int callMeBackWithObject(QtJniObjectTestClass that)
+    {
+        return callbackWithObject(that);
+    }
+}
