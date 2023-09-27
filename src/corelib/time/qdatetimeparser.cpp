@@ -1178,7 +1178,7 @@ static QTime actualTime(QDateTimeParser::Sections known,
 /*
   \internal
 */
-static int startsWithLocalTimeZone(QStringView name, const QDateTime &when)
+static int startsWithLocalTimeZone(QStringView name, const QDateTime &when, const QLocale &locale)
 {
     // Pick longest match that we might get.
     qsizetype longest = 0;
@@ -1188,10 +1188,31 @@ static int startsWithLocalTimeZone(QStringView name, const QDateTime &when)
         if (zone.size() > longest && name.startsWith(zone))
             longest = zone.size();
     }
-    // Mimic what QLocale::toString() would have used, to ensure round-trips work:
-    const QString local = QDateTime(when.date(), when.time()).timeZoneAbbreviation();
-    if (local.size() > longest && name.startsWith(local))
-        longest = local.size();
+    // Mimic each candidate QLocale::toString() could have used, to ensure round-trips work:
+    const auto consider = [name, &longest](QStringView zone) {
+        if (name.startsWith(zone)) {
+            // UTC-based zone's displayName() only includes seconds if non-zero:
+            if (9 > longest && zone.size() == 6 && zone.startsWith("UTC"_L1)
+                && name.sliced(6, 3) == ":00"_L1) {
+                longest = 9;
+            } else if (zone.size() > longest) {
+                longest = zone.size();
+            }
+        }
+    };
+#if QT_CONFIG(timezone)
+    /* QLocale::toString would skip this if locale == QLocale::system(), but we
+       might not be using the same system locale as whoever generated the text
+       we're parsing. So consider it anyway. */
+    {
+        const auto localWhen = QDateTime(when.date(), when.time());
+        consider(localWhen.timeRepresentation().displayName(
+                     localWhen, QTimeZone::ShortName, locale));
+    }
+#else
+    Q_UNUSED(locale);
+#endif
+    consider(QDateTime(when.date(), when.time()).timeZoneAbbreviation());
     Q_ASSERT(longest <= INT_MAX); // Timezone names are not that long.
     return int(longest);
 }
@@ -1280,7 +1301,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
                 if (isUtc || isUtcOffset) {
                     timeZone = QTimeZone::fromSecondsAheadOfUtc(sect.value);
 #if QT_CONFIG(timezone)
-                } else if (startsWithLocalTimeZone(zoneName, usedDateTime) != sect.used) {
+                } else if (startsWithLocalTimeZone(zoneName, usedDateTime, locale()) != sect.used) {
                     QTimeZone namedZone = QTimeZone(zoneName.toLatin1());
                     Q_ASSERT(namedZone.isValid());
                     timeZone = namedZone;
@@ -1796,7 +1817,7 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str, i
 QDateTimeParser::ParsedSection
 QDateTimeParser::findTimeZoneName(QStringView str, const QDateTime &when) const
 {
-    const int systemLength = startsWithLocalTimeZone(str, when);
+    const int systemLength = startsWithLocalTimeZone(str, when, locale());
 #if QT_CONFIG(timezone)
     // Collect up plausibly-valid characters; let QTimeZone work out what's
     // truly valid.

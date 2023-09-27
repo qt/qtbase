@@ -2088,18 +2088,22 @@ void tst_QLocale::formatTimeZone()
     // LocalTime should vary
     if (europeanTimeZone) {
         // Time definitely in Standard Time
-        QDateTime dt4 = QDate(2013, 1, 1).startOfDay();
-#if defined(Q_OS_WIN) || defined(Q_OS_WASM)
-        QEXPECT_FAIL("", "Windows and Wasm only returns long name (QTBUG-32759)", Continue);
-#endif // Q_OS_WIN || Q_OS_WASM
-        QCOMPARE(enUS.toString(dt4, "t"), QLatin1String("CET"));
+        const QStringList knownCETus = {
+            u"GMT+1"_s, // ICU
+            u"Central Europe Standard Time"_s, // MS (lacks abbreviations)
+            u"CET"_s // Standard abbreviation
+        };
+        const QString cet = enUS.toString(QDate(2013, 1, 1).startOfDay(), u"t");
+        QVERIFY2(knownCETus.contains(cet), qPrintable(cet));
 
         // Time definitely in Daylight Time
-        QDateTime dt5 = QDate(2013, 6, 1).startOfDay();
-#if defined(Q_OS_WIN) || defined(Q_OS_WASM)
-        QEXPECT_FAIL("", "Windows and Wasm only returns long name (QTBUG-32759)", Continue);
-#endif // Q_OS_WIN || Q_OS_WASM
-        QCOMPARE(enUS.toString(dt5, "t"), QLatin1String("CEST"));
+        const QStringList knownCESTus = {
+            u"GMT+2"_s, // ICU
+            u"Central Europe Summer Time"_s, // MS (lacks abbreviations)
+            u"CEST"_s // Standard abbreviation
+        };
+        const QString cest = enUS.toString(QDate(2013, 6, 1).startOfDay(), u"t");
+        QVERIFY2(knownCESTus.contains(cest), qPrintable(cest));
     } else {
         qDebug("(Skipped some CET-only tests)");
     }
@@ -2109,17 +2113,22 @@ void tst_QLocale::formatTimeZone()
     const QDateTime jan(QDate(2010, 1, 1).startOfDay(berlin));
     const QDateTime jul(QDate(2010, 7, 1).startOfDay(berlin));
 
-    QCOMPARE(enUS.toString(jan, "t"), berlin.abbreviation(jan));
-    QCOMPARE(enUS.toString(jul, "t"), berlin.abbreviation(jul));
+    QCOMPARE(enUS.toString(jan, "t"), berlin.displayName(jan, QTimeZone::ShortName, enUS));
+    QCOMPARE(enUS.toString(jul, "t"), berlin.displayName(jul, QTimeZone::ShortName, enUS));
 #endif
 
-    // Current datetime should return current abbreviation
-    QCOMPARE(enUS.toString(QDateTime::currentDateTime(), "t"),
-             QDateTime::currentDateTime().timeZoneAbbreviation());
+    // Current datetime should use current zone's abbreviation:
+    const auto now = QDateTime::currentDateTime();
+    QString zone;
+#if QT_CONFIG(timezone) // Match logic in QDTP's startsWithLocalTimeZone() helper.
+    zone = now.timeRepresentation().displayName(now, QTimeZone::ShortName, enUS);
+    if (zone.isEmpty()) // Fall back to unlocalized from when no timezone backend:
+#endif
+        zone = now.timeZoneAbbreviation();
+    QCOMPARE(enUS.toString(now, "t"), zone);
 
-    // Time on its own will always be current local time zone
-    QCOMPARE(enUS.toString(QTime(1, 2, 3), "t"),
-             QDateTime::currentDateTime().timeZoneAbbreviation());
+    // Time on its own will always use the current local time zone:
+    QCOMPARE(enUS.toString(now.time(), "t"), zone);
 }
 
 void tst_QLocale::toDateTime_data()
