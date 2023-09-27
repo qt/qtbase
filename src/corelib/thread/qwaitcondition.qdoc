@@ -51,12 +51,12 @@
     simultaneously are unpredictable.
 
     Wait conditions are a powerful thread synchronization primitive.
-    The \l{Wait Conditions Example} example shows how
-    to use QWaitCondition as an alternative to QSemaphore for
-    controlling access to a circular buffer shared by a producer
+    The \l{Producer and Consumer using Wait Conditions} example
+    shows how to use QWaitCondition as an alternative to QSemaphore
+    for controlling access to a circular buffer shared by a producer
     thread and a consumer thread.
 
-    \sa QMutex, QSemaphore, QThread, {Wait Conditions Example}
+    \sa QMutex, QSemaphore, QThread, {Producer and Consumer using Wait Conditions}
 */
 
 /*!

@@ -366,7 +366,6 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *out, const qfloat16 *in, qsizetype l
 /*!
     \fn size_t qfloat16::qHash(qfloat16 key, size_t seed)
     \since 6.5.3
-    \relates qfloat16
 
     Returns the hash value for the \a key, using \a seed to seed the
     calculation.

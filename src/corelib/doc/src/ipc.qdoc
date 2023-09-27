@@ -86,7 +86,7 @@
     \keyword ipc
     \keyword shared memory
 
-    \brief Overview of the techniques for sharing memory between processes
+    \brief Overview of the techniques for sharing memory between processes.
 
     Qt provides two techniques to share memory with other processes in the same
     system: \l{QSharedMemory} and memory-mapped files using \l{QFile}. Memory
