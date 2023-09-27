@@ -29,7 +29,7 @@
 
     An alternative to using QSemaphore to solve the producer-consumer
     problem is to use QWaitCondition and QMutex. This is what the
-    \l{Wait Conditions Example} does.
+    \l{Producer and Consumer using Wait Conditions} example does.
 
     \section1 Global Variables
 
