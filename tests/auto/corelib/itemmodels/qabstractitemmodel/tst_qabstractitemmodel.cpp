@@ -3,6 +3,8 @@
 
 #include <QTest>
 
+#include <QtTest/private/qcomparisontesthelper_p.h>
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QSortFilterProxyModel>
 #include <QtCore/QStringListModel>
@@ -56,6 +58,7 @@ private slots:
     void reset();
 
     void complexChangesWithPersistent();
+    void modelIndexComparisons();
 
     void testMoveSameParentUp_data();
     void testMoveSameParentUp();
@@ -982,6 +985,33 @@ void tst_QAbstractItemModel::complexChangesWithPersistent()
         QVERIFY(!e[i].isValid());
     for (int i=6; i <10 ; i++)
         QVERIFY(e[i] == model.index(2, i-2 , QModelIndex()));
+}
+
+void tst_QAbstractItemModel::modelIndexComparisons()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QModelIndex>();
+    QTestPrivate::testEqualityOperatorsCompile<QPersistentModelIndex>();
+    QTestPrivate::testEqualityOperatorsCompile<QPersistentModelIndex, QModelIndex>();
+
+    QtTestModel model(3, 3);
+
+    QModelIndex mi11 = model.index(1, 1);
+    QModelIndex mi22 = model.index(2, 2);
+    QPersistentModelIndex pmi11 = mi11;
+    QPersistentModelIndex pmi22 = mi22;
+
+    QTestPrivate::testEqualityOperators(mi11, mi11, true);
+    if (QTest::currentTestFailed()) return;
+    QTestPrivate::testEqualityOperators(mi11, mi22, false);
+    if (QTest::currentTestFailed()) return;
+    QTestPrivate::testEqualityOperators(pmi11, pmi11, true);
+    if (QTest::currentTestFailed()) return;
+    QTestPrivate::testEqualityOperators(pmi11, pmi22, false);
+    if (QTest::currentTestFailed()) return;
+    QTestPrivate::testEqualityOperators(pmi11, mi11, true);
+    if (QTest::currentTestFailed()) return;
+    QTestPrivate::testEqualityOperators(pmi11, mi22, false);
+    if (QTest::currentTestFailed()) return;
 }
 
 void tst_QAbstractItemModel::testMoveSameParentDown_data()

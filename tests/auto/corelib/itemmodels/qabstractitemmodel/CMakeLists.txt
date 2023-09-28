@@ -19,4 +19,5 @@ qt_internal_add_test(tst_qabstractitemmodel
         ../../../other/qabstractitemmodelutils
     LIBRARIES
         Qt::Gui
+        Qt::TestPrivate
 )
