@@ -103,10 +103,11 @@ instructions:
       contains_value: "MISSING_DEBIAN_INST"
   - type: ExecuteCommand
     command: ["sbuild",
-      "--build-dep-resolver=aptitude",
+      "--build-dep-resolver=apt",
       "-sAd", "tqtc-focal",
       "-c", "{{.Env.COIN_SBUILD_CHROOT}}",
       "--build-dir", "output/debian_packages",
+      "--extra-repository={{.Env.COIN_EXTRA_DEBIAN_REPO}}",
       "--extra-package={{.Env.COIN_EXTRA_DEBIAN_PACKAGES}}",
       "--extra-package={{.AgentWorkingDir}}/debian_packages/",
       "qt-{{.Env.QT_REPO_MODULE_VERSION}}-{{.Env.TESTED_MODULE_PLAIN_COIN}}-src_{{.Env.QT_REPO_MODULE_VERSION}}-1.dsc"]
