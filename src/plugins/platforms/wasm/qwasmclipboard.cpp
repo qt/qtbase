@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "qwasmclipboard.h"
+#include "qwasminputcontext.h"
 #include "qwasmdom.h"
 #include "qwasmevent.h"
 #include "qwasmwindow.h"
@@ -47,6 +48,10 @@ static void commonCopyEvent(val event)
 
 static void qClipboardCutTo(val event)
 {
+    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
+    if (wasmInput && wasmInput->usingTextInput())
+        return;
+
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+X to make the app cut data to Qt's clipboard
          QWindowSystemInterface::handleKeyEvent(
@@ -58,6 +63,10 @@ static void qClipboardCutTo(val event)
 
 static void qClipboardCopyTo(val event)
 {
+    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
+    if (wasmInput && wasmInput->usingTextInput())
+        return;
+
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+C to make the app copy data to Qt's clipboard
             QWindowSystemInterface::handleKeyEvent(
@@ -68,6 +77,10 @@ static void qClipboardCopyTo(val event)
 
 static void qClipboardPasteTo(val event)
 {
+    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
+    if (wasmInput && wasmInput->usingTextInput())
+        return;
+
     event.call<void>("preventDefault"); // prevent browser from handling drop event
 
     QWasmIntegration::get()->getWasmClipboard()->sendClipboardData(event);
