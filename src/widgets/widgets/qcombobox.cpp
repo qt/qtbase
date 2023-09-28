@@ -725,6 +725,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
 #endif
             if (view->currentIndex().isValid() && view->currentIndex().flags().testFlag(Qt::ItemIsEnabled)) {
                 combo->hidePopup();
+                keyEvent->accept();
                 emit itemSelected(view->currentIndex());
             }
             return true;
@@ -734,6 +735,8 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             Q_FALLTHROUGH();
         case Qt::Key_F4:
             combo->hidePopup();
+            keyEvent->accept();
+            emit itemSelected(view->currentIndex());
             return true;
         default:
 #if QT_CONFIG(shortcut)
