@@ -1448,17 +1448,17 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                     theme = OpenThemeData(nullptr, L"Edit");
                     partId = EP_EDITBORDER_NOSCROLL;
 
-                    if (oldState & State_MouseOver)
+                    if (oldState & State_HasFocus)
+                        fromState = ETS_SELECTED;
+                    else if (oldState & State_MouseOver)
                         fromState = ETS_HOT;
-                    else if (oldState & State_HasFocus)
-                        fromState = ETS_FOCUSED;
                     else
                         fromState = ETS_NORMAL;
 
-                    if (state & State_MouseOver)
+                    if (state & State_HasFocus)
+                        toState = ETS_SELECTED;
+                    else if (state & State_MouseOver)
                         toState = ETS_HOT;
-                    else if (state & State_HasFocus)
-                        toState = ETS_FOCUSED;
                     else
                         toState = ETS_NORMAL;
 
@@ -1963,10 +1963,10 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 stateId = ETS_DISABLED;
             else if (state & State_ReadOnly)
                 stateId = ETS_READONLY;
-            else if (state & State_MouseOver)
-                stateId = ETS_HOT;
             else if (state & State_HasFocus)
                 stateId = ETS_SELECTED;
+            else if (state & State_MouseOver)
+                stateId = ETS_HOT;
             QWindowsThemeData theme(widget, painter,
                             QWindowsVistaStylePrivate::EditTheme,
                             EP_EDITBORDER_NOSCROLL, stateId, option->rect);
