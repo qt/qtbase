@@ -93,6 +93,7 @@ void Window::init()
         m_rhi.reset(QRhi::create(QRhi::OpenGLES2, &params, rhiFlags));
         break;
     }
+#ifdef Q_OS_WIN
     case QRhi::D3D11:
     {
         QRhiD3D11InitParams params;
@@ -106,6 +107,7 @@ void Window::init()
         m_rhi.reset(QRhi::create(QRhi::D3D12, &params, rhiFlags));
         break;
     }
+#endif
     default:
         break;
     }
