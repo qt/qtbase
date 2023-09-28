@@ -61,13 +61,13 @@ public:
 #endif
     void initialize() override;
     QPlatformInputContext *inputContext() const override;
+    QWasmInputContext *wasmInputContext() const { return m_wasmInputContext; }
 
 #if QT_CONFIG(draganddrop)
     QPlatformDrag *drag() const override;
 #endif
 
     QWasmClipboard *getWasmClipboard() { return m_clipboard; }
-    QWasmInputContext *getWasmInputContext() { return m_platformInputContext; }
     static QWasmIntegration *get() { return s_instance; }
 
     void setContainerElements(emscripten::val elementArray);
@@ -98,7 +98,7 @@ private:
     mutable QScopedPointer<QPlatformInputContext> m_inputContext;
     static QWasmIntegration *s_instance;
 
-    mutable QWasmInputContext *m_platformInputContext = nullptr;
+    QWasmInputContext *m_wasmInputContext = nullptr;
 
 #if QT_CONFIG(draganddrop)
     std::unique_ptr<QWasmDrag> m_drag;

@@ -30,6 +30,7 @@
 #include <emscripten/val.h>
 
 #include <QtCore/private/qstdweb_p.h>
+#include <QKeySequence>
 
 QT_BEGIN_NAMESPACE
 
@@ -106,6 +107,15 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     m_flags = window()->flags();
 
     const auto pointerCallback = std::function([this](emscripten::val event) {
+        const auto eventTypeString = event["type"].as<std::string>();
+
+        // Ideally it should not be happened but
+        // it takes place sometime with some reason
+        // without compositionend.
+        QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
+        if (wasmInput && !wasmInput->preeditString().isEmpty())
+            wasmInput->commitPreeditAndClear();
+
         if (processPointer(*PointerEvent::fromWeb(event)))
             event.call<void>("preventDefault");
     });
@@ -121,25 +131,74 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
                     event.call<void>("preventDefault");
             });
 
+    const auto keyCallbackForInputContext = std::function([this](emscripten::val event) {
+        QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
+        if (wasmInput) {
+            const auto keyString = QString::fromStdString(event["key"].as<std::string>());
+            qCDebug(qLcQpaWasmInputContext) << "Key callback" << keyString << keyString.size();
+
+            if (keyString == "Unidentified") {
+                // Android makes a bunch of KeyEvents as "Unidentified"
+                // They will be processed just in InputContext.
+                return;
+            } else if (event["ctrlKey"].as<bool>()
+                    || event["altKey"].as<bool>()
+                    || event["metaKey"].as<bool>()) {
+                if (processKeyForInputContext(*KeyEvent::fromWebWithDeadKeyTranslation(event, m_deadKeySupport)))
+                    event.call<void>("preventDefault");
+                event.call<void>("stopImmediatePropagation");
+                return;
+            } else if (keyString.size() != 1) {
+                if (!wasmInput->preeditString().isEmpty()) {
+                    if (keyString == "Process" || keyString == "Backspace") {
+                        // processed by InputContext
+                        // "Process" should be handled by InputContext but
+                        // QWasmInputContext's function is incomplete now
+                        // so, there will be some exceptions here.
+                        return;
+                    } else if (keyString != "Shift"
+                             && keyString != "Meta"
+                             && keyString != "Alt"
+                             && keyString != "Control"
+                             && !keyString.startsWith("Arrow")) {
+                        wasmInput->commitPreeditAndClear();
+                    }
+                }
+            } else if (wasmInput->inputMethodAccepted()) {
+                // processed in inputContext with skipping processKey
+                return;
+            }
+        }
+
+        qCDebug(qLcQpaWasmInputContext) << "processKey as KeyEvent";
+        if (processKeyForInputContext(*KeyEvent::fromWebWithDeadKeyTranslation(event, m_deadKeySupport)))
+            event.call<void>("preventDefault");
+        event.call<void>("stopImmediatePropagation");
+    });
+
     const auto keyCallback = std::function([this](emscripten::val event) {
+        qCDebug(qLcQpaWasmInputContext) << "processKey as KeyEvent";
         if (processKey(*KeyEvent::fromWebWithDeadKeyTranslation(event, m_deadKeySupport)))
             event.call<void>("preventDefault");
         event.call<void>("stopPropagation");
     });
 
-   emscripten::val keyFocusWindow;
-    if (QWasmInputContext *wasmContext =
-       qobject_cast<QWasmInputContext *>(QWasmIntegration::get()->inputContext())) {
-        // if there is an touchscreen input context,
-        // use that window for key input
-        keyFocusWindow = wasmContext->m_inputElement;
-    } else {
-        keyFocusWindow = m_qtWindow;
+    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
+    if (wasmInput) {
+        m_keyDownCallbackForInputContext =
+            std::make_unique<qstdweb::EventCallback>(wasmInput->m_inputElement,
+                                                     "keydown",
+                                                     keyCallbackForInputContext);
+        m_keyUpCallbackForInputContext =
+            std::make_unique<qstdweb::EventCallback>(wasmInput->m_inputElement,
+                                                     "keyup",
+                                                     keyCallbackForInputContext);
     }
 
     m_keyDownCallback =
-            std::make_unique<qstdweb::EventCallback>(keyFocusWindow, "keydown", keyCallback);
-    m_keyUpCallback = std::make_unique<qstdweb::EventCallback>(keyFocusWindow, "keyup", keyCallback);
+            std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keydown", keyCallback);
+    m_keyUpCallback =std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keyup", keyCallback);
+
 
     setParent(parent());
 }
@@ -371,8 +430,6 @@ void QWasmWindow::raise()
 {
     bringToTop();
     invalidate();
-    if (QWasmIntegration::get()->inputContext())
-        m_canvas.call<void>("focus");
 }
 
 void QWasmWindow::lower()
@@ -520,6 +577,29 @@ bool QWasmWindow::processKey(const KeyEvent &event)
     return clipboardResult == ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
             ? ProceedToNativeEvent
             : result;
+}
+
+bool QWasmWindow::processKeyForInputContext(const KeyEvent &event)
+{
+    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
+    Q_ASSERT(event.type == EventType::KeyDown || event.type == EventType::KeyUp);
+
+    QKeySequence keySeq(event.modifiers | event.key);
+
+    if (keySeq == QKeySequence::Paste) {
+        // Process it in pasteCallback and inputCallback
+        return false;
+    }
+
+    const auto result = QWindowSystemInterface::handleKeyEvent(
+            0, event.type == EventType::KeyDown ? QEvent::KeyPress : QEvent::KeyRelease, event.key,
+            event.modifiers, event.text);
+
+    // Copy/Cut callback required to copy qtClipboard to system clipboard
+    if (keySeq == QKeySequence::Copy || keySeq == QKeySequence::Cut)
+        return false;
+
+    return result;
 }
 
 bool QWasmWindow::processPointer(const PointerEvent &event)

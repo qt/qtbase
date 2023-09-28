@@ -151,8 +151,6 @@ QWasmIntegration::~QWasmIntegration()
 
     delete m_fontDb;
     delete m_desktopServices;
-    if (m_platformInputContext)
-        delete m_platformInputContext;
 #if QT_CONFIG(accessibility)
     delete m_accessibility;
 #endif
@@ -209,14 +207,14 @@ QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLCon
 
 void QWasmIntegration::initialize()
 {
-    if (qgetenv("QT_IM_MODULE").isEmpty() && touchPoints < 1)
-        return;
-
-    QString icStr = QPlatformInputContextFactory::requested();
-    if (!icStr.isNull())
-        m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
-    else
+    auto icStrs = QPlatformInputContextFactory::requested();
+    if (!icStrs.isEmpty()) {
+        m_inputContext.reset(QPlatformInputContextFactory::create(icStrs));
+        m_wasmInputContext = nullptr;
+    } else {
         m_inputContext.reset(new QWasmInputContext());
+        m_wasmInputContext = static_cast<QWasmInputContext *>(m_inputContext.data());
+    }
 }
 
 QPlatformInputContext *QWasmIntegration::inputContext() const
