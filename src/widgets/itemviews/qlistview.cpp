@@ -352,7 +352,7 @@ int QListView::spacing() const
 /*!
     \property QListView::batchSize
     \brief the number of items laid out in each batch if \l layoutMode is
-    set to \l Batched
+    set to \l Batched.
 
     The default value is 100.
 

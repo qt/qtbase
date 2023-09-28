@@ -1568,7 +1568,7 @@ QAbstractItemView::DragDropMode QAbstractItemView::dragDropMode() const
 
 /*!
     \property QAbstractItemView::defaultDropAction
-    \brief the drop action that will be used by default in QAbstractItemView::drag()
+    \brief the drop action that will be used by default in QAbstractItemView::drag().
 
     If the property is not set, the drop action is CopyAction when the supported
     actions support CopyAction.

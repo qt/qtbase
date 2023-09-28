@@ -1123,7 +1123,7 @@ void QLCDNumberPrivate::drawSegment(const QPoint &pos, char segmentNo, QPainter 
 
 /*!
     \property QLCDNumber::segmentStyle
-    \brief the style of the LCDNumber
+    \brief the style of the LCDNumber.
 
     \table
     \header \li Style \li Result

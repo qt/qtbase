@@ -1342,7 +1342,7 @@ QStyleOptionTab::QStyleOptionTab(int version)
 /*!
     \variable QStyleOptionTab::shape
     \brief the tab shape used to draw the tab; by default
-    QTabBar::RoundedNorth
+    QTabBar::RoundedNorth.
 
     \sa QTabBar::Shape
 */
@@ -1557,7 +1557,7 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
 
 /*!
     \variable QStyleOptionProgressBar::textAlignment
-    \brief the text alignment for the text in the QProgressBar
+    \brief the text alignment for the text in the QProgressBar.
 
     This can be used as a guide on where the text should be in the
     progress bar. The default value is Qt::AlignLeft.

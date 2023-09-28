@@ -748,7 +748,7 @@ void QProgressDialog::closeEvent(QCloseEvent *e)
 
 /*!
   \property QProgressDialog::autoReset
-  \brief whether the progress dialog calls reset() as soon as value() equals maximum()
+  \brief whether the progress dialog calls reset() as soon as value() equals maximum().
 
   The default is true.
 
