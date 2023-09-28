@@ -108,7 +108,12 @@ void testReadWritePropertyBasics(
         std::function<char *(const PropertyType &)> represent =
                 [](const PropertyType &val) { return QTest::toString(val); },
         std::function<std::unique_ptr<TestedClass>(void)> helperConstructor =
-                []() { return std::make_unique<TestedClass>(); })
+                []() {
+                    if constexpr (std::is_default_constructible_v<TestedClass>)
+                        return std::make_unique<TestedClass>();
+                    else
+                        return std::unique_ptr<TestedClass>();
+                })
 {
     // get the property
     const QMetaObject *metaObject = instance.metaObject();
@@ -281,7 +286,12 @@ void testWriteOncePropertyBasics(
         std::function<char *(const PropertyType &)> represent =
                 [](const PropertyType &val) { return QTest::toString(val); },
         std::function<std::unique_ptr<TestedClass>(void)> helperConstructor =
-                []() { return std::make_unique<TestedClass>(); })
+                []() {
+                    if constexpr (std::is_default_constructible_v<TestedClass>)
+                        return std::make_unique<TestedClass>();
+                    else
+                        return std::unique_ptr<TestedClass>();
+                })
 {
     Q_UNUSED(helperConstructor);
 
