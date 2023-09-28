@@ -231,6 +231,7 @@ namespace QtJniMethods {
 template <typename Arg> struct PromotedType { using Type = Arg; };
 template <> struct PromotedType<bool> { using Type = int; };
 template <> struct PromotedType<char> { using Type = int; };
+template <> struct PromotedType<signed char> { using Type = int; };
 template <> struct PromotedType<unsigned char> { using Type = unsigned int; };
 template <> struct PromotedType<short> { using Type = int; };
 template <> struct PromotedType<unsigned short> { using Type = unsigned int; };

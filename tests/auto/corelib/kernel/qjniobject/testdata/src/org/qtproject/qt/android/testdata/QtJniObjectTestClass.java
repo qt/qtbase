@@ -173,9 +173,33 @@ public class QtJniObjectTestClass
 
     // --------------------------------------------------------------------------------------------
     native public int callbackWithObject(QtJniObjectTestClass that);
+    native public int callbackWithByte(byte value);
+    native public int callbackWithBoolean(boolean value);
+    native public int callbackWithInt(int value);
+    native public int callbackWithDouble(double value);
 
     public int callMeBackWithObject(QtJniObjectTestClass that)
     {
         return callbackWithObject(that);
+    }
+
+    public int callMeBackWithByte(byte value)
+    {
+        return callbackWithByte(value);
+    }
+
+    public int callMeBackWithBoolean(boolean value)
+    {
+        return callbackWithBoolean(value);
+    }
+
+    public int callMeBackWithInt(int value)
+    {
+        return callbackWithInt(value);
+    }
+
+    public int callMeBackWithDouble(double value)
+    {
+        return callbackWithDouble(value);
     }
 }
