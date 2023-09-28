@@ -6,13 +6,14 @@
 
 
 #include <qpa/qplatforminputcontext.h>
-#include <QtCore/qpointer.h>
 #include <private/qstdweb_p.h>
 #include <emscripten/bind.h>
 #include <emscripten/html5.h>
 #include <emscripten/emscripten.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcQpaWasmInputContext)
 
 class QWasmInputContext : public QPlatformInputContext
 {
@@ -28,19 +29,24 @@ public:
     void hideInputPanel() override;
     bool isValid() const override { return true; }
 
-    void focusWindowChanged(QWindow *focusWindow);
-    void inputStringChanged(QString &, int eventType, QWasmInputContext *context);
+    const QString preeditString() { return m_preeditString; }
+    void setPreeditString(QString preeditStr, int replaceSize);
+    void insertPreedit();
+    void commitPreeditAndClear();
     emscripten::val m_inputElement = emscripten::val::null();
 
+    void insertText(QString inputStr, bool replace = false);
+
+    bool usingTextInput() { return m_usingTextInput; }
+    void setUsingTextInput(bool enable) { m_usingTextInput = enable; }
+    void setFocusObject(QObject *object) override;
+
 private:
-    emscripten::val inputHandlerElementForFocusedWindow();
+    QString m_preeditString;
+    int m_replaceSize = 0;
 
-    bool m_inputPanelVisible = false;
-
-    QPointer<QWindow> m_focusWindow;
-    std::unique_ptr<qstdweb::EventCallback> m_blurEventHandler;
-    std::unique_ptr<qstdweb::EventCallback> m_inputEventHandler;
-    bool inputPanelIsOpen = false;
+    bool m_usingTextInput = false;
+    QObject *m_focusObject = nullptr;
 };
 
 QT_END_NAMESPACE
