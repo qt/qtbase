@@ -123,6 +123,17 @@
 */
 
 /*!
+    \fn template <class T> template <class X> QPointer<T> &QPointer<T>::operator=(QPointer<X> &&other)
+    \since 6.6.1
+
+    Conversion move-assignment operator. Makes this guarded pointer guard the
+    same object guarded by \a other and resets \a other to nullptr.
+
+    \note This operator participates in overload resolution only if \c{X*}
+    is convertible to \c{T*}.
+*/
+
+/*!
     \fn template <class T> void QPointer<T>::swap(QPointer &other)
     \since 5.6
 

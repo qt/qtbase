@@ -46,7 +46,14 @@ public:
     template <typename X, if_convertible<X> = true>
     QPointer &operator=(const QPointer<X> &other)
     {
-        wp.assign(other.data());
+        QPointer(other).swap(*this);
+        return *this;
+    }
+
+    template <typename X, if_convertible<X> = true>
+    QPointer &operator=(QPointer<X> &&other)
+    {
+        QPointer(std::move(other)).swap(*this);
         return *this;
     }
 
