@@ -382,7 +382,7 @@ QPersistentModelIndex::~QPersistentModelIndex()
   model index are used when comparing with another persistent model index.
 */
 
-bool QPersistentModelIndex::operator==(const QPersistentModelIndex &other) const
+bool QPersistentModelIndex::operator==(const QPersistentModelIndex &other) const noexcept
 {
     if (d && other.d)
         return d->index == other.d->index;
@@ -399,7 +399,7 @@ bool QPersistentModelIndex::operator==(const QPersistentModelIndex &other) const
     model index are used when comparing with another persistent model index.
 */
 
-bool QPersistentModelIndex::operator<(const QPersistentModelIndex &other) const
+bool QPersistentModelIndex::operator<(const QPersistentModelIndex &other) const noexcept
 {
     if (d && other.d)
         return d->index < other.d->index;
@@ -477,7 +477,7 @@ QPersistentModelIndex::operator QModelIndex() const
     model index are used when comparing with another model index.
 */
 
-bool QPersistentModelIndex::operator==(const QModelIndex &other) const
+bool QPersistentModelIndex::operator==(const QModelIndex &other) const noexcept
 {
     if (d)
         return d->index == other;
@@ -491,7 +491,7 @@ bool QPersistentModelIndex::operator==(const QModelIndex &other) const
     location as the \a other model index; otherwise returns \c{false}.
 */
 
-bool QPersistentModelIndex::operator!=(const QModelIndex &other) const
+bool QPersistentModelIndex::operator!=(const QModelIndex &other) const noexcept
 {
     if (d)
         return d->index != other;

@@ -178,17 +178,17 @@ public:
     QPersistentModelIndex(const QModelIndex &index);
     QPersistentModelIndex(const QPersistentModelIndex &other);
     ~QPersistentModelIndex();
-    bool operator<(const QPersistentModelIndex &other) const;
-    bool operator==(const QPersistentModelIndex &other) const;
-    inline bool operator!=(const QPersistentModelIndex &other) const
+    bool operator<(const QPersistentModelIndex &other) const noexcept;
+    bool operator==(const QPersistentModelIndex &other) const noexcept;
+    inline bool operator!=(const QPersistentModelIndex &other) const noexcept
     { return !operator==(other); }
     QPersistentModelIndex &operator=(const QPersistentModelIndex &other);
     inline QPersistentModelIndex(QPersistentModelIndex &&other) noexcept
         : d(std::exchange(other.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPersistentModelIndex)
     void swap(QPersistentModelIndex &other) noexcept { qt_ptr_swap(d, other.d); }
-    bool operator==(const QModelIndex &other) const;
-    bool operator!=(const QModelIndex &other) const;
+    bool operator==(const QModelIndex &other) const noexcept;
+    bool operator!=(const QModelIndex &other) const noexcept;
     QPersistentModelIndex &operator=(const QModelIndex &other);
     operator QModelIndex() const;
     int row() const;
