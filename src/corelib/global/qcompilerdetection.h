@@ -14,6 +14,7 @@
 #define QCOMPILERDETECTION_H
 
 #include <QtCore/qprocessordetection.h>
+#include <QtCore/qtconfiginclude.h>
 
 /*
    The compiler, must be one of: (Q_CC_x)
