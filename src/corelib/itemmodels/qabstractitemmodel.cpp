@@ -54,6 +54,8 @@
 #include <qdatetime.h>
 #include <qloggingcategory.h>
 
+#include <functional>
+
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
@@ -435,7 +437,7 @@ bool QPersistentModelIndex::operator<(const QPersistentModelIndex &other) const
     if (d && other.d)
         return d->index < other.d->index;
 
-    return d < other.d;
+    return std::less<>{}(d, other.d);
 }
 
 /*!
