@@ -96,7 +96,7 @@ QT_BEGIN_NAMESPACE
     \sa activated()
 */
 
-static bool simpleContextMatcher(QObject *object, Qt::ShortcutContext context)
+bool QShortcutPrivate::simpleContextMatcher(QObject *object, Qt::ShortcutContext context)
 {
     auto guiShortcut = qobject_cast<QShortcut *>(object);
     if (QGuiApplication::applicationState() != Qt::ApplicationActive || guiShortcut == nullptr)

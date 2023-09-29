@@ -43,6 +43,8 @@ public:
     virtual QShortcutMap::ContextMatcher contextMatcher() const;
     virtual bool handleWhatsThis() { return false; }
 
+    static bool simpleContextMatcher(QObject *object, Qt::ShortcutContext context);
+
     QList<QKeySequence> sc_sequences;
     QString sc_whatsthis;
     Qt::ShortcutContext sc_context = Qt::WindowShortcut;

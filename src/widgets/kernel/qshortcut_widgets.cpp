@@ -65,9 +65,6 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
         }
     }
 
-    if (!active_window)
-        return false;
-
 #if QT_CONFIG(action)
     if (auto a = qobject_cast<QAction *>(object))
         return correctActionContext(context, a, active_window);
@@ -95,14 +92,17 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
         }
     }
 
-    if (!w)
-        return false;
+    if (w)
+        return correctWidgetContext(context, w, active_window);
 
-    return correctWidgetContext(context, w, active_window);
+    return QShortcutPrivate::simpleContextMatcher(object, context);
 }
 
 static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window)
 {
+    if (!active_window)
+        return false;
+
     bool visible = w->isVisible();
 #if QT_CONFIG(menubar)
     if (auto menuBar = qobject_cast<QMenuBar *>(w)) {
@@ -188,6 +188,9 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
 #if QT_CONFIG(graphicsview)
 static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window)
 {
+    if (!active_window)
+        return false;
+
     bool visible = w->isVisible();
 #if defined(Q_OS_DARWIN) && QT_CONFIG(menubar)
     if (!QCoreApplication::testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
@@ -247,6 +250,9 @@ static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsW
 #if QT_CONFIG(action)
 static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidget *active_window)
 {
+    if (!active_window)
+        return false;
+
     const QObjectList associatedObjects = a->associatedObjects();
 #if defined(DEBUG_QSHORTCUTMAP)
     if (associatedObjects.isEmpty())

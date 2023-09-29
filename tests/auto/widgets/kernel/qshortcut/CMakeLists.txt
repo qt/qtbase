@@ -22,3 +22,17 @@ qt_internal_add_test(tst_qshortcut
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+qt_internal_add_test(tst_qguishortcut_with_qapplication
+    SOURCES
+        ../../../gui/kernel/qshortcut/tst_qshortcut.cpp
+    DEFINES
+        tst_QShortcut=tst_QGuiShortcutWithQApplication
+    INCLUDE_DIRECTORIES
+        ..
+    LIBRARIES
+        Qt::Gui
+        Qt::GuiPrivate
+        Qt::Widgets
+        Qt::WidgetsPrivate
+)
