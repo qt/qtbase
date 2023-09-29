@@ -69,6 +69,18 @@ unix {
     }
 }
 
+# Load the entrypoint module if requested
+entrypoint {
+    win32 {
+        !console:contains(TEMPLATE, ".*app"): \
+            QT_PRIVATE += entrypoint_private
+    } else:uikit {
+        qt_depends = $$resolve_depends(QT, "QT.")
+        !watchos:equals(TEMPLATE, app):contains(qt_depends, gui(-private)?): \
+            QT_PRIVATE += entrypoint_private
+    }
+}
+
 # Will automatically add plugins, so run first
 contains(QT_CONFIG, permissions): load(permissions)
 
