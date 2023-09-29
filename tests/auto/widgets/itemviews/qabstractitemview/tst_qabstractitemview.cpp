@@ -2646,11 +2646,12 @@ void tst_QAbstractItemView::dragSelectAfterNewPress()
 
 void tst_QAbstractItemView::dragWithSecondClick_data()
 {
-    QTest::addColumn<QString>("viewClass");
+    QTest::addColumn<QByteArray>("viewClass");
     QTest::addColumn<bool>("doubleClick");
-    for (QString viewClass : {"QListView", "QTreeView"}) {
-        QTest::addRow("DoubleClick") << viewClass << true;
-        QTest::addRow("Two Single Clicks") << viewClass << false;
+    const QList<QByteArray> widgets { "QListView", "QTreeView" };
+    for (const QByteArray &widget : widgets) {
+        QTest::newRow(widget + ": DoubleClick") << widget << true;
+        QTest::newRow(widget + ": Two Single Clicks") << widget << false;
     }
 }
 
@@ -2679,7 +2680,7 @@ protected:
 
 void tst_QAbstractItemView::dragWithSecondClick()
 {
-    QFETCH(QString, viewClass);
+    QFETCH(QByteArray, viewClass);
     QFETCH(bool, doubleClick);
 
     QStandardItemModel model;
@@ -3000,7 +3001,7 @@ void tst_QAbstractItemView::mouseSelection_data()
                  SelectionEvent(SelectionEvent::Release, Qt::ControlModifier, 8)}
         << QList{2, 3, 4, 5, 6, 7, 8};
     // Extended: Ctrl+Press-dragging in a selection should not deselect #QTBUG-59888
-    QTest::addRow("Extended:Ctrl-Drag selection") << QAbstractItemView::ExtendedSelection << true
+    QTest::addRow("Extended:Ctrl-Drag selection,no deselect") << QAbstractItemView::ExtendedSelection << true
         << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Click, 2),
                  SelectionEvent(SelectionEvent::Click, Qt::ShiftModifier, 5),
