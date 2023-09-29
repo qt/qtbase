@@ -1283,7 +1283,7 @@
     \row \li qt \li The target is a Qt application or library and requires the Qt
          library and header files. The proper include and library paths for the
          Qt library will automatically be added to the project. This is defined
-         by default, and can be fine-tuned with the \c{\l{#qt}{QT}} variable.
+         by default, and can be fine-tuned with the \l{#qt}{QT} variable.
     \row \li x11 \li The target is an X11 application or library. The proper
         include paths and libraries will automatically be added to the
         project.
