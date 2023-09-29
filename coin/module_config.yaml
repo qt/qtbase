@@ -4,14 +4,6 @@ accept_configuration:
   property: features
   not_contains_value: Disable
 
-downstream_check:
-  mode: build
-  modules:
-    ../qtdeclarative:
-      ref: dev
-  configurations:
-    - rhel-8.4
-
 machine_type:
   Build:
     cores: 8
