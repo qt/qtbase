@@ -682,9 +682,82 @@ inline constexpr strong_ordering strong_ordering::greater(QtPrivate::Ordering::G
 
 } // namespace Qt
 
-QT_END_NAMESPACE
+QT_BEGIN_INCLUDE_NAMESPACE
 
-// This is intentionally included in the end of qcompare.h
+// This is intentionally included after Qt::*_ordering types and before
+// qCompareThreeWay. Do not change!
 #include <QtCore/qcomparehelpers.h>
+
+QT_END_INCLUDE_NAMESPACE
+
+namespace QtPrivate {
+
+namespace CompareThreeWayTester {
+
+    using Qt::compareThreeWay;
+
+    // Check if compareThreeWay is implemented for the (LT, RT) argument
+    // pair.
+    template <typename LT, typename RT, typename = void>
+    constexpr bool hasCompareThreeWay = false;
+
+    template <typename LT, typename RT>
+    constexpr bool hasCompareThreeWay<
+            LT, RT, std::void_t<decltype(compareThreeWay(std::declval<LT>(), std::declval<RT>()))>
+    > = true;
+
+    // Check if the operation is noexcept. We have two different overloads,
+    // depending on the available compareThreeWay() implementation.
+    // Both are declared, but not implemented. To be used only in unevaluated
+    // context.
+
+    template <typename LT, typename RT,
+             std::enable_if_t<hasCompareThreeWay<LT, RT>, bool> = true>
+    constexpr bool compareThreeWayNoexcept() noexcept
+    { return noexcept(compareThreeWay(std::declval<LT>(), std::declval<RT>())); }
+
+    template <typename LT, typename RT,
+             std::enable_if_t<!hasCompareThreeWay<LT, RT> && hasCompareThreeWay<RT, LT>,
+                              bool> = true>
+    constexpr bool compareThreeWayNoexcept() noexcept
+    { return noexcept(compareThreeWay(std::declval<RT>(), std::declval<LT>())); }
+
+} // namespace CompareThreeWayTester
+
+} // namespace QtPrivate
+
+#if defined(Q_QDOC)
+
+template <typename LeftType, typename RightType>
+auto qCompareThreeWay(const LeftType &lhs, const RightType &rhs);
+
+#else
+
+template <typename LT, typename RT,
+          std::enable_if_t<QtPrivate::CompareThreeWayTester::hasCompareThreeWay<LT, RT>
+                            || QtPrivate::CompareThreeWayTester::hasCompareThreeWay<RT, LT>,
+                           bool> = true>
+auto qCompareThreeWay(const LT &lhs, const RT &rhs)
+        noexcept(QtPrivate::CompareThreeWayTester::compareThreeWayNoexcept<LT, RT>())
+{
+    using Qt::compareThreeWay;
+    if constexpr (QtPrivate::CompareThreeWayTester::hasCompareThreeWay<LT, RT>) {
+        return compareThreeWay(lhs, rhs);
+    } else {
+        const auto retval = compareThreeWay(rhs, lhs);
+        // We can compare any ordering type with Qt::partial_ordering, but we
+        // always need to return the right type. Use Qt::strong_ordering for
+        // casting, as it can be cast to any ordering type.
+        if (retval == Qt::partial_ordering::less)
+            return static_cast<decltype(retval)>(Qt::strong_ordering::greater);
+        else if (retval == Qt::partial_ordering::greater)
+            return static_cast<decltype(retval)>(Qt::strong_ordering::less);
+        return retval;
+    }
+}
+
+#endif // defined(Q_QDOC)
+
+QT_END_NAMESPACE
 
 #endif // QCOMPARE_H

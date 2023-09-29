@@ -20,6 +20,7 @@ private slots:
     void strongOrdering();
     void conversions();
     void is_eq_overloads();
+    void compareThreeWay();
 };
 
 void tst_QCompare::legacyPartialOrdering()
@@ -645,6 +646,118 @@ void tst_QCompare::is_eq_overloads()
     QVERIFY(is_lteq(e));
     QVERIFY(is_gteq(s));
 #endif // __cpp_lib_three_way_comparison
+}
+
+class StringWrapper
+{
+public:
+    explicit StringWrapper() {}
+    explicit StringWrapper(const QString &val) : m_val(val) {}
+    QString value() const { return m_val; }
+
+private:
+    static Qt::weak_ordering compareHelper(const QString &lhs, const QString &rhs) noexcept
+    {
+        const int res = QString::compare(lhs, rhs, Qt::CaseInsensitive);
+        if (res < 0)
+            return Qt::weak_ordering::less;
+        else if (res > 0)
+            return Qt::weak_ordering::greater;
+        else
+            return Qt::weak_ordering::equivalent;
+    }
+
+    friend bool comparesEqual(const StringWrapper &lhs, const StringWrapper &rhs) noexcept
+    { return QString::compare(lhs.m_val, rhs.m_val, Qt::CaseInsensitive) == 0; }
+    friend Qt::weak_ordering
+    compareThreeWay(const StringWrapper &lhs, const StringWrapper &rhs) noexcept
+    { return compareHelper(lhs.m_val, rhs.m_val); }
+    Q_DECLARE_WEAKLY_ORDERED(StringWrapper)
+
+    // these helper functions are intentionally non-noexcept
+    friend bool comparesEqual(const StringWrapper &lhs, int rhs)
+    { return comparesEqual(lhs, StringWrapper(QString::number(rhs))); }
+    friend Qt::weak_ordering compareThreeWay(const StringWrapper &lhs, int rhs)
+    { return compareHelper(lhs.m_val, QString::number(rhs)); }
+    Q_DECLARE_WEAKLY_ORDERED(StringWrapper, int)
+
+    QString m_val;
+};
+
+void tst_QCompare::compareThreeWay()
+{
+    // test noexcept
+
+    // for custom types
+    static_assert(noexcept(qCompareThreeWay(std::declval<StringWrapper>(),
+                                            std::declval<StringWrapper>())));
+    static_assert(!noexcept(qCompareThreeWay(std::declval<StringWrapper>(),
+                                             std::declval<int>())));
+    static_assert(!noexcept(qCompareThreeWay(std::declval<int>(),
+                                             std::declval<StringWrapper>())));
+    // for built-in types
+    static_assert(noexcept(qCompareThreeWay(std::declval<int>(), std::declval<int>())));
+    static_assert(noexcept(qCompareThreeWay(std::declval<float>(), std::declval<int>())));
+    static_assert(noexcept(qCompareThreeWay(std::declval<double>(), std::declval<float>())));
+    static_assert(noexcept(qCompareThreeWay(std::declval<int>(), std::declval<int>())));
+
+    // enums
+    enum TestEnum : int {
+        Smaller,
+        Bigger
+    };
+    static_assert(noexcept(qCompareThreeWay(std::declval<TestEnum>(), std::declval<TestEnum>())));
+
+    // pointers
+    static_assert(noexcept(qCompareThreeWay(std::declval<StringWrapper *>(),
+                                            std::declval<StringWrapper *>())));
+    static_assert(noexcept(qCompareThreeWay(std::declval<StringWrapper *>(), nullptr)));
+
+    // Test some actual comparison results
+
+    // for custom types
+    QCOMPARE_EQ(qCompareThreeWay(StringWrapper("ABC"), StringWrapper("abc")),
+                Qt::weak_ordering::equivalent);
+    QVERIFY(StringWrapper("ABC") == StringWrapper("abc"));
+    QCOMPARE_EQ(qCompareThreeWay(StringWrapper("ABC"), StringWrapper("qwe")),
+                Qt::weak_ordering::less);
+    QVERIFY(StringWrapper("ABC") != StringWrapper("qwe"));
+    QCOMPARE_EQ(qCompareThreeWay(StringWrapper("qwe"), StringWrapper("ABC")),
+                Qt::weak_ordering::greater);
+    QVERIFY(StringWrapper("qwe") != StringWrapper("ABC"));
+    QCOMPARE_EQ(qCompareThreeWay(StringWrapper("10"), 10), Qt::weak_ordering::equivalent);
+    QVERIFY(StringWrapper("10") == 10);
+    QCOMPARE_EQ(qCompareThreeWay(StringWrapper("10"), 12), Qt::weak_ordering::less);
+    QVERIFY(StringWrapper("10") != 12);
+    QCOMPARE_EQ(qCompareThreeWay(StringWrapper("12"), 10), Qt::weak_ordering::greater);
+    QVERIFY(StringWrapper("12") != 10);
+
+    // reversed compareThreeWay()
+    auto result = qCompareThreeWay(10, StringWrapper("12"));
+    QCOMPARE_EQ(result, Qt::weak_ordering::less);
+    static_assert(std::is_same_v<decltype(result), Qt::weak_ordering>);
+    QVERIFY(10 != StringWrapper("12"));
+    result = qCompareThreeWay(12, StringWrapper("10"));
+    QCOMPARE_EQ(result, Qt::weak_ordering::greater);
+    static_assert(std::is_same_v<decltype(result), Qt::weak_ordering>);
+    QVERIFY(12 != StringWrapper("10"));
+    result = qCompareThreeWay(10, StringWrapper("10"));
+    QCOMPARE_EQ(result, Qt::weak_ordering::equivalent);
+    static_assert(std::is_same_v<decltype(result), Qt::weak_ordering>);
+    QVERIFY(10 == StringWrapper("10"));
+
+    // built-in types
+    QCOMPARE_EQ(qCompareThreeWay(1, 1.0), Qt::partial_ordering::equivalent);
+    QCOMPARE_EQ(qCompareThreeWay(1, 2), Qt::strong_ordering::less);
+    QCOMPARE_EQ(qCompareThreeWay(2.0f, 1.0), Qt::partial_ordering::greater);
+
+    // enums
+    QCOMPARE_EQ(qCompareThreeWay(Smaller, Bigger), Qt::strong_ordering::less);
+
+    // pointers
+    std::array<int, 2> arr{1, 0};
+    QCOMPARE_EQ(qCompareThreeWay(&arr[1], &arr[0]), Qt::strong_ordering::greater);
+    QCOMPARE_EQ(qCompareThreeWay(arr.data(), &arr[0]), Qt::strong_ordering::equivalent);
 }
 
 QTEST_MAIN(tst_QCompare)

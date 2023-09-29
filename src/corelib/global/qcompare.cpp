@@ -134,6 +134,16 @@ CHECK(strong, equivalent);
     This header introduces the \l Qt::partial_ordering, \l Qt::weak_ordering, and
     \l Qt::strong_ordering types, which are Qt's C++17 backports of
     \c {std::*_ordering} types.
+
+    This header also contains functions for implementing three-way comparison
+    in C++17.
+
+    The \c {Qt::compareThreeWay()} function overloads provide three-way
+    comparison for built-in C++ types.
+
+    The \l qCompareThreeWay() template serves as a generic three-way comparison
+    implementation. It relies on \c {Qt::compareThreeWay()} and free
+    \c {compareThreeWay()} functions in its implementation.
 */
 
 /*!
@@ -1248,6 +1258,55 @@ CHECK(strong, equivalent);
 
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
+*/
+
+/*!
+    \fn template <typename LeftType, typename RightType> qCompareThreeWay(const LeftType &lhs, const RightType &rhs)
+    \since 6.7
+    \relates <QtCompare>
+
+    Performs the three-way comparison on \a lhs and \a rhs and returns one of
+    the Qt ordering types as a result. This function is available for both
+    C++17 and C++20.
+
+    The actual returned type depends on \c LeftType and \c RightType.
+
+    \note This function template is only available when \c {compareThreeWay()}
+    is implemented for the \c {(LeftType, RightType)} pair or the reversed
+    \c {(RightType, LeftType)} pair.
+
+    This method is equivalent to
+
+    \code
+    using Qt::compareThreeWay;
+    return compareThreeWay(lhs, rhs);
+    \endcode
+
+    where \c {Qt::compareThreeWay} is the Qt implementation of three-way
+    comparison for built-in types.
+
+    The free \c {compareThreeWay} functions should provide three-way comparison
+    for custom types. The functions should return one of the Qt ordering types.
+
+    Qt provides \c {compareThreeWay} implementation for some of its types.
+
+    \note \b {Do not} re-implement \c {compareThreeWay()} for Qt types, as more
+    Qt types will get support for it in future Qt releases.
+
+    Use this function primarly in generic code, when you know nothing about
+    \c LeftType and \c RightType.
+
+    If you know the types, use
+
+    \list
+    \li \c {Qt::compareThreeWay} for built-in types
+    \li \c {compareThreeWay} for custom types
+    \endlist
+
+    Use \c {operator<=>()} directly in code that will only be compiled with
+    C++20 or later.
+
+    \sa Qt::partial_ordering, Qt::weak_ordering, Qt::strong_ordering
 */
 
 QT_END_NAMESPACE
