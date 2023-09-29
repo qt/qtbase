@@ -340,6 +340,17 @@ instructions:
         variableName: TARGET_ENV_PREFIX
         variableValue: "c:\\users\\qt\\prefix.bat"
 
+  # VxWorks
+  - type: Group
+    enable_if:
+      condition: property
+      property: target.osVersion
+      equals_value: VxWorks
+    instructions:
+      - type: EnvironmentVariable
+        variableName: TARGET_ENV_PREFIX
+        variableValue: "{{.Env.VXWORKS_HOME}}/wrenv.linux"
+
   # QNX variables
   - type: Group
     enable_if:
