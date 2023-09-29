@@ -31,7 +31,7 @@ class QAtomicScopedValueRollback
 
     Q_DISABLE_COPY_MOVE(QAtomicScopedValueRollback)
 
-    constexpr std::memory_order store_part(std::memory_order mo) noexcept
+    static constexpr std::memory_order store_part(std::memory_order mo) noexcept
     {
         switch (mo) {
         case std::memory_order_relaxed:
