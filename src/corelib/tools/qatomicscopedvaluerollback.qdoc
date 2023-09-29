@@ -1,0 +1,124 @@
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \class QAtomicScopedValueRollback
+    \internal
+    \inmodule QtCore
+    \brief Provides a QScopedValueRollback for atomic variables.
+    \ingroup misc
+    \ingroup tools
+    \since 6.5
+
+    The QAtomicScopedValueRollback class resets an atomic variable to its
+    prior value on destruction. It can be used to revert state when an
+    exception is thrown without the need to write try-catch blocks.
+
+    It can also be used to manage variables that are temporarily set, such as
+    reentrancy guards. By using this class, the variable will be reset whether the
+    function is exited normally, exited early by a return statement, or exited by
+    an exception.
+
+    The class works on std::atomic and the Qt atomic classes: QBasicAtomicInteger,
+    \l QAtomicInteger, \l QAtomicInt, QBasicAtomicPointer and \l QAtomicPointer.
+
+    \target Memory Order
+    The memory accesses to the atomic variable \a var are specified using the value
+    of \c mo. The memory order follows this mapping:
+    \br
+    \list
+    \li When writing to the atomic variable:
+        \list
+        \li An acquire ordering performs a relaxed operation instead.
+        \li A hybrid acquire-release ordering performs a release operation instead.
+        \endlist
+    \li When reading from the atomic variable:
+        \list
+        \li A release ordering performs a relaxed operation instead.
+        \li A consume ordering performs a consume operation.
+        \li A hybrid acquire-release ordering performs an acquire operation instead.
+        \endlist
+    \endlist
+    \br
+    Otherwise, the default memory order is sequential consistent ordering.
+
+    \note You should never name the template arguments explicitly, but exclusively
+    use Class Template Argument Deduction (CTAD) and let the compiler pick the
+    template argument.
+
+    \note There is a chance that other threads modify the variable too, which means
+    you may lose updates performed by other threads between the call to the
+    QAtomicScopedValueRollback constructor and commit() or between commit() and the
+    destructor.
+
+    \sa QScopedValueRollback
+*/
+
+/*!
+    \fn template <typename T> QAtomicScopedValueRollback<T>::QAtomicScopedValueRollback(std::atomic<T> &var, std::memory_order mo = std::memory_order_seq_cst)
+    \fn template <typename T> QAtomicScopedValueRollback<T>::QAtomicScopedValueRollback(QBasicAtomicInteger<T> &var, std::memory_order mo = std::memory_order_seq_cst)
+    \fn template <typename T> QAtomicScopedValueRollback<T>::QAtomicScopedValueRollback(QBasicAtomicPointer<std::remove_pointer_t<T>> &var, std::memory_order mo = std::memory_order_seq_cst)
+
+    Records the value of \a var in order to restore it on destruction.
+
+    This is equivalent to:
+    \code
+    T old_value = var.load(mo);
+    // And in the destructor: var.store(old_value, mo);
+    \endcode
+    The \c{mo} adjustment for the load is described in the \l {Memory Order} section.
+*/
+
+/*!
+    \fn template <typename T> QAtomicScopedValueRollback<T>::QAtomicScopedValueRollback(std::atomic<T> &var, T value, std::memory_order mo = std::memory_order_seq_cst)
+    \fn template <typename T> QAtomicScopedValueRollback<T>::QAtomicScopedValueRollback(QBasicAtomicInteger<T> &var, T value, std::memory_order mo = std::memory_order_seq_cst)
+    \fn template <typename T> QAtomicScopedValueRollback<T>::QAtomicScopedValueRollback(QBasicAtomicPointer<std::remove_pointer_t<T>> &var, T value, std::memory_order mo = std::memory_order_seq_cst)
+
+    Assigns \a value to \a var and stores the prior value of \a var internally for
+    reverting on destruction.
+
+    This is equivalent to:
+    \code
+    T old_value = var.exchange(new_value, mo);
+    // And in the destructor: var.store(old_value, mo);
+    \endcode
+*/
+
+/*!
+    \fn template <typename T> QAtomicScopedValueRollback<T>::~QAtomicScopedValueRollback()
+
+    Restores the stored value that was current at construction time, or
+    at the last call to commit(), to the managed variable.
+
+    This is equivalent to:
+    \code
+    // In the constructor: T old_value = var.load(mo);
+    // or: T old_value = exchange(new_value, mo);
+    var.store(old_value, mo);
+    \endcode
+    Where \c{mo} is the same as the one initially passed to the constructor.
+    See \l{Memory Order} for the meaning of \c{mo}.
+*/
+
+/*!
+    \fn template <typename T> void QAtomicScopedValueRollback<T>::commit()
+
+    Updates the stored value to the managed variable's current value, loaded
+    with the same memory order as on construction.
+
+    This updated value will be restored on destruction, instead of the original
+    prior value.
+
+    This is equivalent to:
+    \code
+    // Given constructor: T old_value = var.load(mo);
+    old_value = var.load(mo);  // referesh it
+    // And, in the destructor: var.store(old_value, mo);
+    \endcode
+    Where \c{mo} is the same as the one initially passed to the constructor.
+    See \l{Memory Order} for the meaning of \c{mo}.
+*/
+
+QT_END_NAMESPACE
