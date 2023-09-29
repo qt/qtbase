@@ -4694,9 +4694,11 @@ bool QDateTime::equals(const QDateTime &other) const
 
     Returns \c true if \a lhs is the same as \a rhs; otherwise returns \c false.
 
+//! [invalid-vs-valid-datetime]
     Two datetimes are different if either the date, the time, or the time zone
-    components are different. Since 5.14, all invalid datetime are equal (and
+    components are different. Since 5.14, all invalid datetimes are equal (and
     less than all valid datetimes).
+//! [invalid-vs-valid-datetime]
 
     \sa operator!=(), operator<(), operator<=(), operator>(), operator>=()
 */
@@ -4707,9 +4709,7 @@ bool QDateTime::equals(const QDateTime &other) const
     Returns \c true if \a lhs is different from \a rhs; otherwise returns \c
     false.
 
-    Two datetimes are different if either the date, the time, or the time zone
-    components are different. Since 5.14, all invalid datetime are equal (and
-    less than all valid datetimes).
+    \include qdatetime.cpp invalid-vs-valid-datetime
 
     \sa operator==()
 */
@@ -4742,6 +4742,8 @@ bool QDateTime::precedes(const QDateTime &other) const
     Returns \c true if \a lhs is earlier than \a rhs;
     otherwise returns \c false.
 
+    \include qdatetime.cpp invalid-vs-valid-datetime
+
     \sa operator==()
 */
 
@@ -4751,6 +4753,8 @@ bool QDateTime::precedes(const QDateTime &other) const
     Returns \c true if \a lhs is earlier than or equal to \a rhs; otherwise
     returns \c false.
 
+    \include qdatetime.cpp invalid-vs-valid-datetime
+
     \sa operator==()
 */
 
@@ -4758,6 +4762,8 @@ bool QDateTime::precedes(const QDateTime &other) const
     \fn bool QDateTime::operator>(const QDateTime &lhs, const QDateTime &rhs)
 
     Returns \c true if \a lhs is later than \a rhs; otherwise returns \c false.
+
+    \include qdatetime.cpp invalid-vs-valid-datetime
 
     \sa operator==()
 */
@@ -4767,6 +4773,8 @@ bool QDateTime::precedes(const QDateTime &other) const
 
     Returns \c true if \a lhs is later than or equal to \a rhs;
     otherwise returns \c false.
+
+    \include qdatetime.cpp invalid-vs-valid-datetime
 
     \sa operator==()
 */
