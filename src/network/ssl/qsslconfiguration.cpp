@@ -939,6 +939,9 @@ QSslDiffieHellmanParameters QSslConfiguration::diffieHellmanParameters() const
     If no Diffie-Hellman parameters have been set, the QSslConfiguration object
     defaults to using the 2048-bit MODP group from RFC 3526.
 
+    Since 6.7 you can provide an empty Diffie-Hellman parameter to use auto selection
+    (see SSL_CTX_set_dh_auto of openssl) if the tls backend supports it.
+
     \note The default parameters may change in future Qt versions.
     Please check the documentation of the \e{exact Qt version} that you
     are using in order to know what defaults that version uses.

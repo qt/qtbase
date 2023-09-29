@@ -697,7 +697,9 @@ QT_WARNING_POP
         return;
     }
 
-    if (!dhparams.isEmpty()) {
+    if (dhparams.isEmpty()) {
+        q_SSL_CTX_set_dh_auto(sslContext->ctx, 1);
+    } else {
 #ifndef OPENSSL_NO_DEPRECATED_3_0
         const QByteArray &params = dhparams.d->derData;
         const char *ptr = params.constData();

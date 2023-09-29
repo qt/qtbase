@@ -3510,9 +3510,10 @@ void tst_QSslSocket::dhServerCustomParamsNull()
     if (setProxy)
         return;
 
+    const QSslCipher cipherWithDH("DHE-RSA-AES256-SHA256");
     SslServer server;
-    server.ciphers = {QSslCipher("DHE-RSA-AES256-SHA"), QSslCipher("DHE-DSS-AES256-SHA")};
-    server.protocol = Test::TlsV1_0;
+    server.ciphers = {cipherWithDH};
+    server.protocol = QSsl::TlsV1_2;
 
     QSslConfiguration cfg = server.config;
     cfg.setDiffieHellmanParameters(QSslDiffieHellmanParameters());
@@ -3525,7 +3526,6 @@ void tst_QSslSocket::dhServerCustomParamsNull()
 
     QSslSocket client;
     QSslConfiguration config = client.sslConfiguration();
-    config.setProtocol(Test::TlsV1_0);
     client.setSslConfiguration(config);
     socket = &client;
     connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
@@ -3536,7 +3536,8 @@ void tst_QSslSocket::dhServerCustomParamsNull()
 
     loop.exec();
 
-    QVERIFY(client.state() != QAbstractSocket::ConnectedState);
+    QCOMPARE(client.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(client.sessionCipher(), cipherWithDH);
 }
 
 void tst_QSslSocket::dhServerCustomParams()
@@ -3551,7 +3552,9 @@ void tst_QSslSocket::dhServerCustomParams()
         return;
 
     SslServer server;
-    server.ciphers = {QSslCipher("DHE-RSA-AES256-SHA"), QSslCipher("DHE-DSS-AES256-SHA")};
+    const QSslCipher cipherWithDH("DHE-RSA-AES256-SHA256");
+    server.ciphers = {cipherWithDH};
+    server.protocol = QSsl::TlsV1_2;
 
     QSslConfiguration cfg = server.config;
 
@@ -3581,7 +3584,8 @@ void tst_QSslSocket::dhServerCustomParams()
 
     loop.exec();
 
-    QVERIFY(client.state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(client.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(client.sessionCipher(), cipherWithDH);
 }
 #endif // QT_CONFIG(openssl)
 
