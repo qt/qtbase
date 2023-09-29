@@ -271,7 +271,7 @@ qt_internal_add_module(Core
         tools/qarraydata.cpp tools/qarraydata.h
         tools/qarraydataops.h
         tools/qarraydatapointer.h
-        tools/qatomicscopedvaluerollback_p.h
+        tools/qatomicscopedvaluerollback.h
         tools/qbitarray.cpp tools/qbitarray.h
         tools/qcache.h
         tools/qcontainerfwd.h

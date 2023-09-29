@@ -5,7 +5,7 @@
 #include <QAtomicInt>
 #include <QThread>
 #include <QSemaphore>
-#include <private/qatomicscopedvaluerollback_p.h>
+#include <QAtomicScopedValueRollback>
 #include <qlist.h>
 
 

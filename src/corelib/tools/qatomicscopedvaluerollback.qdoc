@@ -5,12 +5,11 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAtomicScopedValueRollback
-    \internal
     \inmodule QtCore
     \brief Provides a QScopedValueRollback for atomic variables.
     \ingroup misc
     \ingroup tools
-    \since 6.5
+    \since 6.7
 
     The QAtomicScopedValueRollback class resets an atomic variable to its
     prior value on destruction. It can be used to revert state when an
