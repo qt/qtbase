@@ -41,7 +41,7 @@ class QAtomicScopedValueRollback
         case std::memory_order_acq_rel: return std::memory_order_release;
         case std::memory_order_seq_cst: return std::memory_order_seq_cst;
         }
-        // GCC 8.x does not tread __builtin_unreachable() as constexpr
+        // GCC 8.x does not treat __builtin_unreachable() as constexpr
 #if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
         // NOLINTNEXTLINE(qt-use-unreachable-return): Triggers on Clang, breaking GCC 8
         Q_UNREACHABLE();
