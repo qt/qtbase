@@ -194,18 +194,18 @@ public:
         { return treeModel()->index(item, column); }
     inline QTreeWidgetItem *item(const QModelIndex &index) const
         { return treeModel()->item(index); }
-    void _q_emitItemPressed(const QModelIndex &index);
-    void _q_emitItemClicked(const QModelIndex &index);
-    void _q_emitItemDoubleClicked(const QModelIndex &index);
-    void _q_emitItemActivated(const QModelIndex &index);
-    void _q_emitItemEntered(const QModelIndex &index);
-    void _q_emitItemChanged(const QModelIndex &index);
-    void _q_emitItemExpanded(const QModelIndex &index);
-    void _q_emitItemCollapsed(const QModelIndex &index);
-    void _q_emitCurrentItemChanged(const QModelIndex &previous, const QModelIndex &index);
-    void _q_sort();
-    void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    void _q_selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    void emitItemPressed(const QModelIndex &index);
+    void emitItemClicked(const QModelIndex &index);
+    void emitItemDoubleClicked(const QModelIndex &index);
+    void emitItemActivated(const QModelIndex &index);
+    void emitItemEntered(const QModelIndex &index);
+    void emitItemChanged(const QModelIndex &index);
+    void emitItemExpanded(const QModelIndex &index);
+    void emitItemCollapsed(const QModelIndex &index);
+    void emitCurrentItemChanged(const QModelIndex &previous, const QModelIndex &index);
+    void sort();
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
      // used by QTreeWidgetItem::sortChildren to make sure the column argument is used
     int explicitSortColumn;

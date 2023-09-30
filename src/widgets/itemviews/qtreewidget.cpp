@@ -2307,37 +2307,37 @@ void QTreeWidgetPrivate::clearConnections()
         QObject::disconnect(connection);
 }
 
-void QTreeWidgetPrivate::_q_emitItemPressed(const QModelIndex &index)
+void QTreeWidgetPrivate::emitItemPressed(const QModelIndex &index)
 {
     Q_Q(QTreeWidget);
     emit q->itemPressed(item(index), index.column());
 }
 
-void QTreeWidgetPrivate::_q_emitItemClicked(const QModelIndex &index)
+void QTreeWidgetPrivate::emitItemClicked(const QModelIndex &index)
 {
     Q_Q(QTreeWidget);
     emit q->itemClicked(item(index), index.column());
 }
 
-void QTreeWidgetPrivate::_q_emitItemDoubleClicked(const QModelIndex &index)
+void QTreeWidgetPrivate::emitItemDoubleClicked(const QModelIndex &index)
 {
     Q_Q(QTreeWidget);
     emit q->itemDoubleClicked(item(index), index.column());
 }
 
-void QTreeWidgetPrivate::_q_emitItemActivated(const QModelIndex &index)
+void QTreeWidgetPrivate::emitItemActivated(const QModelIndex &index)
 {
     Q_Q(QTreeWidget);
     emit q->itemActivated(item(index), index.column());
 }
 
-void QTreeWidgetPrivate::_q_emitItemEntered(const QModelIndex &index)
+void QTreeWidgetPrivate::emitItemEntered(const QModelIndex &index)
 {
     Q_Q(QTreeWidget);
     emit q->itemEntered(item(index), index.column());
 }
 
-void QTreeWidgetPrivate::_q_emitItemChanged(const QModelIndex &index)
+void QTreeWidgetPrivate::emitItemChanged(const QModelIndex &index)
 {
     Q_Q(QTreeWidget);
     QTreeWidgetItem *indexItem = item(index);
@@ -2345,19 +2345,19 @@ void QTreeWidgetPrivate::_q_emitItemChanged(const QModelIndex &index)
         emit q->itemChanged(indexItem, index.column());
 }
 
-void QTreeWidgetPrivate::_q_emitItemExpanded(const QModelIndex &index)
+void QTreeWidgetPrivate::emitItemExpanded(const QModelIndex &index)
 {
     Q_Q(QTreeWidget);
     emit q->itemExpanded(item(index));
 }
 
-void QTreeWidgetPrivate::_q_emitItemCollapsed(const QModelIndex &index)
+void QTreeWidgetPrivate::emitItemCollapsed(const QModelIndex &index)
 {
     Q_Q(QTreeWidget);
     emit q->itemCollapsed(item(index));
 }
 
-void QTreeWidgetPrivate::_q_emitCurrentItemChanged(const QModelIndex &current,
+void QTreeWidgetPrivate::emitCurrentItemChanged(const QModelIndex &current,
                                                 const QModelIndex &previous)
 {
     Q_Q(QTreeWidget);
@@ -2366,7 +2366,7 @@ void QTreeWidgetPrivate::_q_emitCurrentItemChanged(const QModelIndex &current,
     emit q->currentItemChanged(currentItem, previousItem);
 }
 
-void QTreeWidgetPrivate::_q_sort()
+void QTreeWidgetPrivate::sort()
 {
     if (sortingEnabled) {
         int column = header->sortIndicatorSection();
@@ -2375,7 +2375,7 @@ void QTreeWidgetPrivate::_q_sort()
     }
 }
 
-void QTreeWidgetPrivate::_q_selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+void QTreeWidgetPrivate::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     Q_Q(QTreeWidget);
     QModelIndexList indices = selected.indexes();
@@ -2395,8 +2395,8 @@ void QTreeWidgetPrivate::_q_selectionChanged(const QItemSelection &selected, con
     emit q->itemSelectionChanged();
 }
 
-void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
-                                        const QModelIndex &bottomRight)
+void QTreeWidgetPrivate::dataChanged(const QModelIndex &topLeft,
+                                     const QModelIndex &bottomRight)
 {
     if (sortingEnabled && topLeft.isValid() && bottomRight.isValid()
         && !treeModel()->sortPendingTimer.isActive()) {
@@ -2580,29 +2580,29 @@ QTreeWidget::QTreeWidget(QWidget *parent)
     QTreeView::setModel(new QTreeModel(1, this));
     d->connections = {
         QObjectPrivate::connect(this, &QTreeWidget::pressed,
-                                d, &QTreeWidgetPrivate::_q_emitItemPressed),
+                                d, &QTreeWidgetPrivate::emitItemPressed),
         QObjectPrivate::connect(this, &QTreeWidget::clicked,
-                                d, &QTreeWidgetPrivate::_q_emitItemClicked),
+                                d, &QTreeWidgetPrivate::emitItemClicked),
         QObjectPrivate::connect(this, &QTreeWidget::doubleClicked,
-                                d, &QTreeWidgetPrivate::_q_emitItemDoubleClicked),
+                                d, &QTreeWidgetPrivate::emitItemDoubleClicked),
         QObjectPrivate::connect(this, &QTreeWidget::activated,
-                                d, &QTreeWidgetPrivate::_q_emitItemActivated),
+                                d, &QTreeWidgetPrivate::emitItemActivated),
         QObjectPrivate::connect(this, &QTreeWidget::entered,
-                                d, &QTreeWidgetPrivate::_q_emitItemEntered),
+                                d, &QTreeWidgetPrivate::emitItemEntered),
         QObjectPrivate::connect(this, &QTreeWidget::expanded,
-                                d, &QTreeWidgetPrivate::_q_emitItemExpanded),
+                                d, &QTreeWidgetPrivate::emitItemExpanded),
         QObjectPrivate::connect(this, &QTreeWidget::collapsed,
-                                d, &QTreeWidgetPrivate::_q_emitItemCollapsed),
+                                d, &QTreeWidgetPrivate::emitItemCollapsed),
         QObjectPrivate::connect(model(), &QAbstractItemModel::dataChanged,
-                                d, &QTreeWidgetPrivate::_q_emitItemChanged),
+                                d, &QTreeWidgetPrivate::emitItemChanged),
         QObjectPrivate::connect(model(), &QAbstractItemModel::dataChanged,
-                                d, &QTreeWidgetPrivate::_q_dataChanged),
+                                d, &QTreeWidgetPrivate::dataChanged),
         QObjectPrivate::connect(model(), &QAbstractItemModel::columnsRemoved,
-                                d, &QTreeWidgetPrivate::_q_sort),
+                                d, &QTreeWidgetPrivate::sort),
         QObjectPrivate::connect(selectionModel(), &QItemSelectionModel::currentChanged,
-                                d, &QTreeWidgetPrivate::_q_emitCurrentItemChanged),
+                                d, &QTreeWidgetPrivate::emitCurrentItemChanged),
         QObjectPrivate::connect(selectionModel(), &QItemSelectionModel::selectionChanged,
-                                d, &QTreeWidgetPrivate::_q_selectionChanged)
+                                d, &QTreeWidgetPrivate::selectionChanged)
     };
     header()->setSectionsClickable(false);
 }
@@ -3130,7 +3130,7 @@ void QTreeWidget::setSelectionModel(QItemSelectionModel *selectionModel)
     QTreeView::setSelectionModel(selectionModel);
     QItemSelection newSelection = selectionModel->selection();
     if (!newSelection.isEmpty())
-        d->_q_selectionChanged(newSelection, QItemSelection());
+        d->selectionChanged(newSelection, QItemSelection());
 }
 
 /*!
