@@ -200,21 +200,21 @@ void QTreeView::setModel(QAbstractItemModel *model)
     if (d->model) {
         // QAbstractItemView connects to a private slot
         QObjectPrivate::disconnect(d->model, &QAbstractItemModel::rowsRemoved,
-                                   d, &QAbstractItemViewPrivate::_q_rowsRemoved);
+                                   d, &QAbstractItemViewPrivate::rowsRemoved);
         // do header layout after the tree
         QObjectPrivate::disconnect(d->model, &QAbstractItemModel::layoutChanged,
-                                   d->header->d_func(), &QAbstractItemViewPrivate::_q_layoutChanged);
+                                   d->header->d_func(), &QAbstractItemViewPrivate::layoutChanged);
 
         d->modelConnections = {
             // QTreeView has a public slot for this
             QObject::connect(d->model, &QAbstractItemModel::rowsRemoved,
                              this, &QTreeView::rowsRemoved),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::modelAboutToBeReset,
-                                    d, &QTreeViewPrivate::_q_modelAboutToBeReset)
+                                    d, &QTreeViewPrivate::modelAboutToBeReset)
         };
     }
     if (d->sortingEnabled)
-        d->_q_sortIndicatorChanged(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
+        d->sortIndicatorChanged(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
 }
 
 /*!
@@ -843,7 +843,7 @@ void QTreeView::setSortingEnabled(bool enable)
         sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
         d->sortHeaderConnection =
             QObjectPrivate::connect(header(), &QHeaderView::sortIndicatorChanged,
-                                    d, &QTreeViewPrivate::_q_sortIndicatorChanged,
+                                    d, &QTreeViewPrivate::sortIndicatorChanged,
                                     Qt::UniqueConnection);
     } else {
         QObject::disconnect(d->sortHeaderConnection);
@@ -1399,12 +1399,12 @@ bool QTreeViewPrivate::expandOrCollapseItemAtPos(const QPoint &pos)
     return false;
 }
 
-void QTreeViewPrivate::_q_modelDestroyed()
+void QTreeViewPrivate::modelDestroyed()
 {
     //we need to clear the viewItems because it contains QModelIndexes to
     //the model currently being destroyed
     viewItems.clear();
-    QAbstractItemViewPrivate::_q_modelDestroyed();
+    QAbstractItemViewPrivate::modelDestroyed();
 }
 
 QRect QTreeViewPrivate::intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const
@@ -2583,7 +2583,7 @@ void QTreeView::rowsRemoved(const QModelIndex &parent, int start, int end)
     d->viewItems.clear();
     d->doDelayedItemsLayout();
     d->hasRemovedItems = true;
-    d->_q_rowsRemoved(parent, start, end);
+    d->rowsRemoved(parent, start, end);
 }
 
 /*!
@@ -3093,7 +3093,7 @@ void QTreeViewPrivate::initialize()
     animationsEnabled = q->style()->styleHint(QStyle::SH_Widget_Animation_Duration, nullptr, q) > 0;
     animationConnection =
         QObjectPrivate::connect(&animatedOperation, &QVariantAnimation::finished,
-                                this, &QTreeViewPrivate::_q_endAnimatedOperation);
+                                this, &QTreeViewPrivate::endAnimatedOperation);
 #endif // animation
 }
 
@@ -3322,7 +3322,7 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
     return pixmap;
 }
 
-void QTreeViewPrivate::_q_endAnimatedOperation()
+void QTreeViewPrivate::endAnimatedOperation()
 {
     Q_Q(QTreeView);
     q->setState(stateBeforeAnimation);
@@ -3331,23 +3331,23 @@ void QTreeViewPrivate::_q_endAnimatedOperation()
 }
 #endif // animation
 
-void QTreeViewPrivate::_q_modelAboutToBeReset()
+void QTreeViewPrivate::modelAboutToBeReset()
 {
     viewItems.clear();
 }
 
-void QTreeViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
+void QTreeViewPrivate::columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
 {
     if (start <= 0 && 0 <= end)
         viewItems.clear();
-    QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(parent, start, end);
+    QAbstractItemViewPrivate::columnsAboutToBeRemoved(parent, start, end);
 }
 
-void QTreeViewPrivate::_q_columnsRemoved(const QModelIndex &parent, int start, int end)
+void QTreeViewPrivate::columnsRemoved(const QModelIndex &parent, int start, int end)
 {
     if (start <= 0 && 0 <= end)
         doDelayedItemsLayout();
-    QAbstractItemViewPrivate::_q_columnsRemoved(parent, start, end);
+    QAbstractItemViewPrivate::columnsRemoved(parent, start, end);
 }
 
 /** \internal
@@ -4020,7 +4020,7 @@ bool QTreeViewPrivate::hasVisibleChildren(const QModelIndex& parent) const
     return false;
 }
 
-void QTreeViewPrivate::_q_sortIndicatorChanged(int column, Qt::SortOrder order)
+void QTreeViewPrivate::sortIndicatorChanged(int column, Qt::SortOrder order)
 {
     model->sort(column, order);
 }

@@ -65,20 +65,20 @@ public:
 
     void init();
 
-    virtual void _q_rowsRemoved(const QModelIndex &parent, int start, int end);
-    virtual void _q_rowsInserted(const QModelIndex &parent, int start, int end);
-    virtual void _q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
-    virtual void _q_columnsRemoved(const QModelIndex &parent, int start, int end);
-    virtual void _q_columnsInserted(const QModelIndex &parent, int start, int end);
-    virtual void _q_modelDestroyed();
-    virtual void _q_layoutChanged();
-    virtual void _q_rowsMoved(const QModelIndex &source, int sourceStart, int sourceEnd, const QModelIndex &destination, int destinationStart);
-    virtual void _q_columnsMoved(const QModelIndex &source, int sourceStart, int sourceEnd, const QModelIndex &destination, int destinationStart);
+    virtual void rowsRemoved(const QModelIndex &parent, int start, int end);
+    virtual void rowsInserted(const QModelIndex &parent, int start, int end);
+    virtual void columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
+    virtual void columnsRemoved(const QModelIndex &parent, int start, int end);
+    virtual void columnsInserted(const QModelIndex &parent, int start, int end);
+    virtual void modelDestroyed();
+    virtual void layoutChanged();
+    virtual void rowsMoved(const QModelIndex &source, int sourceStart, int sourceEnd, const QModelIndex &destination, int destinationStart);
+    virtual void columnsMoved(const QModelIndex &source, int sourceStart, int sourceEnd, const QModelIndex &destination, int destinationStart);
     virtual QRect intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const;
 
-    void _q_headerDataChanged() { doDelayedItemsLayout(); }
-    void _q_scrollerStateChanged();
-    void _q_delegateSizeHintChanged(const QModelIndex &index);
+    void headerDataChanged() { doDelayedItemsLayout(); }
+    void scrollerStateChanged();
+    void delegateSizeHintChanged(const QModelIndex &index);
 
     void fetchMore();
 
@@ -317,7 +317,7 @@ public:
     {
         //we delay the reset of the timer because some views (QTableView)
         //with headers can't handle the fact that the model has been destroyed
-        //all _q_modelDestroyed slots must have been called
+        //all modelDestroyed() slots must have been called
         if (!delayedReset.isActive())
             delayedReset.start(0, q_func());
     }

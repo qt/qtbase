@@ -130,10 +130,10 @@ public:
     void checkColumnCreation(const QModelIndex &parent);
 
 
-    void _q_gripMoved(int offset);
-    void _q_changeCurrentColumn();
-    void _q_clicked(const QModelIndex &index);
-    void _q_columnsInserted(const QModelIndex &parent, int start, int end) override;
+    void gripMoved(int offset);
+    void changeCurrentColumn();
+    void clicked(const QModelIndex &index);
+    void columnsInserted(const QModelIndex &parent, int start, int end) override;
 
     QList<QAbstractItemView*> columns;
     QList<int> columnSizes; // used during init and corner moving

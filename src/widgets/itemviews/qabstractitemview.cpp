@@ -175,7 +175,7 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
 #if QT_CONFIG(gestures) && QT_CONFIG(scroller)
 
 // stores and restores the selection and current item when flicking
-void QAbstractItemViewPrivate::_q_scrollerStateChanged()
+void QAbstractItemViewPrivate::scrollerStateChanged()
 {
     Q_Q(QAbstractItemView);
 
@@ -211,7 +211,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
 
 #endif // QT_NO_GESTURES
 
-void QAbstractItemViewPrivate::_q_delegateSizeHintChanged(const QModelIndex &index)
+void QAbstractItemViewPrivate::delegateSizeHintChanged(const QModelIndex &index)
 {
     Q_Q(QAbstractItemView);
     if (model) {
@@ -231,7 +231,7 @@ void QAbstractItemViewPrivate::connectDelegate(QAbstractItemDelegate *delegate)
     QObject::connect(delegate, &QAbstractItemDelegate::commitData,
                      q, &QAbstractItemView::commitData);
     QObjectPrivate::connect(delegate, &QAbstractItemDelegate::sizeHintChanged,
-                            this, &QAbstractItemViewPrivate::_q_delegateSizeHintChanged);
+                            this, &QAbstractItemViewPrivate::delegateSizeHintChanged);
 }
 
 void QAbstractItemViewPrivate::disconnectDelegate(QAbstractItemDelegate *delegate)
@@ -244,7 +244,7 @@ void QAbstractItemViewPrivate::disconnectDelegate(QAbstractItemDelegate *delegat
     QObject::disconnect(delegate, &QAbstractItemDelegate::commitData,
                         q, &QAbstractItemView::commitData);
     QObjectPrivate::disconnect(delegate, &QAbstractItemDelegate::sizeHintChanged,
-                               this, &QAbstractItemViewPrivate::_q_delegateSizeHintChanged);
+                               this, &QAbstractItemViewPrivate::delegateSizeHintChanged);
 }
 
 void QAbstractItemViewPrivate::disconnectAll()
@@ -728,33 +728,33 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
     if (d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
         d->modelConnections = {
             QObjectPrivate::connect(d->model, &QAbstractItemModel::destroyed,
-                                    d, &QAbstractItemViewPrivate::_q_modelDestroyed),
+                                    d, &QAbstractItemViewPrivate::modelDestroyed),
             QObject::connect(d->model, &QAbstractItemModel::dataChanged,
                              this, &QAbstractItemView::dataChanged),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::headerDataChanged,
-                                    d, &QAbstractItemViewPrivate::_q_headerDataChanged),
+                                    d, &QAbstractItemViewPrivate::headerDataChanged),
             QObject::connect(d->model, &QAbstractItemModel::rowsInserted,
                              this, &QAbstractItemView::rowsInserted),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsInserted,
-                                    d, &QAbstractItemViewPrivate::_q_rowsInserted),
+                                    d, &QAbstractItemViewPrivate::rowsInserted),
             QObject::connect(d->model, &QAbstractItemModel::rowsAboutToBeRemoved,
                              this, &QAbstractItemView::rowsAboutToBeRemoved),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsRemoved,
-                                    d, &QAbstractItemViewPrivate::_q_rowsRemoved),
+                                    d, &QAbstractItemViewPrivate::rowsRemoved),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsMoved,
-                                    d, &QAbstractItemViewPrivate::_q_rowsMoved),
+                                    d, &QAbstractItemViewPrivate::rowsMoved),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsAboutToBeRemoved,
-                                    d, &QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved),
+                                    d, &QAbstractItemViewPrivate::columnsAboutToBeRemoved),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsRemoved,
-                                    d, &QAbstractItemViewPrivate::_q_columnsRemoved),
+                                    d, &QAbstractItemViewPrivate::columnsRemoved),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsInserted,
-                                    d, &QAbstractItemViewPrivate::_q_columnsInserted),
+                                    d, &QAbstractItemViewPrivate::columnsInserted),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::columnsMoved,
-                                    d, &QAbstractItemViewPrivate::_q_columnsMoved),
+                                    d, &QAbstractItemViewPrivate::columnsMoved),
             QObject::connect(d->model, &QAbstractItemModel::modelReset,
                              this, &QAbstractItemView::reset),
             QObjectPrivate::connect(d->model, &QAbstractItemModel::layoutChanged,
-                                    d, &QAbstractItemViewPrivate::_q_layoutChanged),
+                                    d, &QAbstractItemViewPrivate::layoutChanged),
         };
     }
 
@@ -1789,7 +1789,7 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
 #if QT_CONFIG(gestures) && QT_CONFIG(scroller)
         d->scollerConnection = QObjectPrivate::connect(
               QScroller::scroller(d->viewport), &QScroller::stateChanged,
-              d, &QAbstractItemViewPrivate::_q_scrollerStateChanged,
+              d, &QAbstractItemViewPrivate::scrollerStateChanged,
               Qt::UniqueConnection);
 #endif
         break;
@@ -3547,7 +3547,7 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
     rows are those under the given \a parent from \a start to \a end
     inclusive.
 */
-void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &index, int start, int end)
+void QAbstractItemViewPrivate::rowsRemoved(const QModelIndex &index, int start, int end)
 {
     Q_UNUSED(index);
     Q_UNUSED(start);
@@ -3575,7 +3575,7 @@ void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &index, int star
     columns are those under the given \a parent from \a start to \a end
     inclusive.
 */
-void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
+void QAbstractItemViewPrivate::columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
 {
     Q_Q(QAbstractItemView);
 
@@ -3638,7 +3638,7 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
     rows are those under the given \a parent from \a start to \a end
     inclusive.
 */
-void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int start, int end)
+void QAbstractItemViewPrivate::columnsRemoved(const QModelIndex &index, int start, int end)
 {
     Q_UNUSED(index);
     Q_UNUSED(start);
@@ -3665,7 +3665,7 @@ void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int s
 
     This slot is called when rows have been inserted.
 */
-void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int start, int end)
+void QAbstractItemViewPrivate::rowsInserted(const QModelIndex &index, int start, int end)
 {
     Q_UNUSED(index);
     Q_UNUSED(start);
@@ -3688,7 +3688,7 @@ void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int sta
 
     This slot is called when columns have been inserted.
 */
-void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &index, int start, int end)
+void QAbstractItemViewPrivate::columnsInserted(const QModelIndex &index, int start, int end)
 {
     Q_UNUSED(index);
     Q_UNUSED(start);
@@ -3711,7 +3711,7 @@ void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &index, int 
 /*!
     \internal
 */
-void QAbstractItemViewPrivate::_q_modelDestroyed()
+void QAbstractItemViewPrivate::modelDestroyed()
 {
     model = QAbstractItemModelPrivate::staticEmptyModel();
     doDelayedReset();
@@ -3722,7 +3722,7 @@ void QAbstractItemViewPrivate::_q_modelDestroyed()
 
     This slot is called when the layout is changed.
 */
-void QAbstractItemViewPrivate::_q_layoutChanged()
+void QAbstractItemViewPrivate::layoutChanged()
 {
     doDelayedItemsLayout();
 #if QT_CONFIG(accessibility)
@@ -3734,14 +3734,14 @@ void QAbstractItemViewPrivate::_q_layoutChanged()
 #endif
 }
 
-void QAbstractItemViewPrivate::_q_rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)
+void QAbstractItemViewPrivate::rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)
 {
-  _q_layoutChanged();
+    layoutChanged();
 }
 
-void QAbstractItemViewPrivate::_q_columnsMoved(const QModelIndex &, int, int, const QModelIndex &, int)
+void QAbstractItemViewPrivate::columnsMoved(const QModelIndex &, int, int, const QModelIndex &, int)
 {
-  _q_layoutChanged();
+    layoutChanged();
 }
 
 QRect QAbstractItemViewPrivate::intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const

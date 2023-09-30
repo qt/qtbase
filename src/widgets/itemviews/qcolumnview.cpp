@@ -70,7 +70,7 @@ void QColumnViewPrivate::initialize()
 #if QT_CONFIG(animation)
     animationConnection =
         QObjectPrivate::connect(&currentAnimation, &QPropertyAnimation::finished,
-                                this, &QColumnViewPrivate::_q_changeCurrentColumn);
+                                this, &QColumnViewPrivate::changeCurrentColumn);
     currentAnimation.setTargetObject(hbar);
     currentAnimation.setPropertyName("value");
     currentAnimation.setEasingCurve(QEasingCurve::InOutQuad);
@@ -122,7 +122,7 @@ void QColumnView::setResizeGripsVisible(bool visible)
             view->setCornerWidget(grip);
             d->gripConnections.push_back(
                 QObjectPrivate::connect(grip, &QColumnViewGrip::gripMoved,
-                                        d, &QColumnViewPrivate::_q_gripMoved)
+                                        d, &QColumnViewPrivate::gripMoved)
             );
         } else {
             QWidget *widget = view->cornerWidget();
@@ -287,7 +287,7 @@ void QColumnView::scrollTo(const QModelIndex &index, ScrollHint hint)
     if (leftEdge > -horizontalOffset()
         && rightEdge <= ( -horizontalOffset() + viewport()->size().width())) {
             d->columns.at(indexColumn)->scrollTo(index);
-            d->_q_changeCurrentColumn();
+            d->changeCurrentColumn();
             return;
     }
 
@@ -506,7 +506,7 @@ QSize QColumnView::sizeHint() const
     \internal
     Move all widgets from the corner grip and to the right
   */
-void QColumnViewPrivate::_q_gripMoved(int offset)
+void QColumnViewPrivate::gripMoved(int offset)
 {
     Q_Q(QColumnView);
 
@@ -630,7 +630,7 @@ void QColumnViewPrivate::disconnectView(QAbstractItemView *view)
     viewConnections.erase(it);
 }
 
-void QColumnViewPrivate::_q_clicked(const QModelIndex &index)
+void QColumnViewPrivate::clicked(const QModelIndex &index)
 {
     Q_Q(QColumnView);
     QModelIndex parent = index.parent();
@@ -668,7 +668,7 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
         view = q->createColumn(index);
         connections.push_back(
               QObjectPrivate::connect(view, &QAbstractItemView::clicked,
-                                      this, &QColumnViewPrivate::_q_clicked));
+                                      this, &QColumnViewPrivate::clicked));
     } else {
         if (!previewColumn)
             setPreviewWidget(new QWidget(q));
@@ -699,7 +699,7 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
         view->setCornerWidget(grip);
         gripConnections.push_back(
             QObjectPrivate::connect(grip, &QColumnViewGrip::gripMoved,
-                                    this, &QColumnViewPrivate::_q_gripMoved)
+                                    this, &QColumnViewPrivate::gripMoved)
         );
     }
 
@@ -954,7 +954,7 @@ void QColumnView::currentChanged(const QModelIndex &current, const QModelIndex &
     We have change the current column and need to update focus and selection models
     on the new current column.
 */
-void QColumnViewPrivate::_q_changeCurrentColumn()
+void QColumnViewPrivate::changeCurrentColumn()
 {
     Q_Q(QColumnView);
     if (columns.isEmpty())
@@ -1061,9 +1061,9 @@ QColumnViewPrivate::~QColumnViewPrivate()
     \internal
 
   */
-void QColumnViewPrivate::_q_columnsInserted(const QModelIndex &parent, int start, int end)
+void QColumnViewPrivate::columnsInserted(const QModelIndex &parent, int start, int end)
 {
-    QAbstractItemViewPrivate::_q_columnsInserted(parent, start, end);
+    QAbstractItemViewPrivate::columnsInserted(parent, start, end);
     checkColumnCreation(parent);
 }
 
