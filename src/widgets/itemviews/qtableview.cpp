@@ -975,7 +975,7 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
   \internal
   Updates spans after row insertion.
 */
-void QTableViewPrivate::_q_updateSpanInsertedRows(const QModelIndex &parent, int start, int end)
+void QTableViewPrivate::updateSpanInsertedRows(const QModelIndex &parent, int start, int end)
 {
     Q_UNUSED(parent);
     spans.updateInsertedRows(start, end);
@@ -985,7 +985,7 @@ void QTableViewPrivate::_q_updateSpanInsertedRows(const QModelIndex &parent, int
   \internal
   Updates spans after column insertion.
 */
-void QTableViewPrivate::_q_updateSpanInsertedColumns(const QModelIndex &parent, int start, int end)
+void QTableViewPrivate::updateSpanInsertedColumns(const QModelIndex &parent, int start, int end)
 {
     Q_UNUSED(parent);
     spans.updateInsertedColumns(start, end);
@@ -995,7 +995,7 @@ void QTableViewPrivate::_q_updateSpanInsertedColumns(const QModelIndex &parent, 
   \internal
   Updates spans after row removal.
 */
-void QTableViewPrivate::_q_updateSpanRemovedRows(const QModelIndex &parent, int start, int end)
+void QTableViewPrivate::updateSpanRemovedRows(const QModelIndex &parent, int start, int end)
 {
     Q_UNUSED(parent);
     spans.updateRemovedRows(start, end);
@@ -1005,7 +1005,7 @@ void QTableViewPrivate::_q_updateSpanRemovedRows(const QModelIndex &parent, int 
   \internal
   Updates spans after column removal.
 */
-void QTableViewPrivate::_q_updateSpanRemovedColumns(const QModelIndex &parent, int start, int end)
+void QTableViewPrivate::updateSpanRemovedColumns(const QModelIndex &parent, int start, int end)
 {
     Q_UNUSED(parent);
     spans.updateRemovedColumns(start, end);
@@ -1015,7 +1015,7 @@ void QTableViewPrivate::_q_updateSpanRemovedColumns(const QModelIndex &parent, i
   \internal
   Sort the model when the header sort indicator changed
 */
-void QTableViewPrivate::_q_sortIndicatorChanged(int column, Qt::SortOrder order)
+void QTableViewPrivate::sortIndicatorChanged(int column, Qt::SortOrder order)
 {
     model->sort(column, order);
 }
@@ -1272,13 +1272,13 @@ void QTableView::setModel(QAbstractItemModel *model)
     if (model) { //and connect to the new one
         d->modelConnections = {
             QObjectPrivate::connect(model, &QAbstractItemModel::rowsInserted,
-                                    d, &QTableViewPrivate::_q_updateSpanInsertedRows),
+                                    d, &QTableViewPrivate::updateSpanInsertedRows),
             QObjectPrivate::connect(model, &QAbstractItemModel::columnsInserted,
-                                    d, &QTableViewPrivate::_q_updateSpanInsertedColumns),
+                                    d, &QTableViewPrivate::updateSpanInsertedColumns),
             QObjectPrivate::connect(model, &QAbstractItemModel::rowsRemoved,
-                                    d, &QTableViewPrivate::_q_updateSpanRemovedRows),
+                                    d, &QTableViewPrivate::updateSpanRemovedRows),
             QObjectPrivate::connect(model, &QAbstractItemModel::columnsRemoved,
-                                    d, &QTableViewPrivate::_q_updateSpanRemovedColumns)
+                                    d, &QTableViewPrivate::updateSpanRemovedColumns)
         };
     }
     d->verticalHeader->setModel(model);
@@ -1435,8 +1435,8 @@ void QTableView::setVerticalHeader(QHeaderView *header)
                 this, &QTableView::resizeRowToContents),
         connect(d->verticalHeader, &QHeaderView::geometriesChanged,
                 this, &QTableView::updateGeometries),
-        QObjectPrivate::connect(d->verticalHeader, &QHeaderView::sectionEntered,
-                                d, &QTableViewPrivate::_q_selectRow)
+        connect(d->verticalHeader, &QHeaderView::sectionEntered,
+                this, [d](int row) { d->selectRow(row, false); })
     };
 }
 
@@ -2739,14 +2739,14 @@ void QTableView::setSortingEnabled(bool enable)
                      d->horizontalHeader->sortIndicatorOrder());
         d->dynHorHeaderConnections = {
             QObjectPrivate::connect(d->horizontalHeader, &QHeaderView::sortIndicatorChanged,
-                                    d, &QTableViewPrivate::_q_sortIndicatorChanged)
+                                    d, &QTableViewPrivate::sortIndicatorChanged)
         };
     } else {
         d->dynHorHeaderConnections = {
             connect(d->horizontalHeader, &QHeaderView::sectionPressed,
                     this, &QTableView::selectColumn),
-            QObjectPrivate::connect(d->horizontalHeader, &QHeaderView::sectionEntered,
-                                    d, &QTableViewPrivate::_q_selectColumn)
+            connect(d->horizontalHeader, &QHeaderView::sectionEntered,
+                    this, [d](int column) {d->selectColumn(column, false); })
         };
     }
     d->sortingEnabled = enable;
@@ -3405,16 +3405,6 @@ void QTableView::clearSpans()
     Q_D(QTableView);
     d->spans.clear();
     d->viewport->update();
-}
-
-void QTableViewPrivate::_q_selectRow(int row)
-{
-    selectRow(row, false);
-}
-
-void QTableViewPrivate::_q_selectColumn(int column)
-{
-    selectColumn(column, false);
 }
 
 void QTableViewPrivate::selectRow(int row, bool anchor)

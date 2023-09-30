@@ -225,17 +225,14 @@ public:
 
     QRect visualSpanRect(const QSpanCollection::Span &span) const;
 
-    void _q_selectRow(int row);
-    void _q_selectColumn(int column);
-
     void selectRow(int row, bool anchor);
     void selectColumn(int column, bool anchor);
 
-    void _q_updateSpanInsertedRows(const QModelIndex &parent, int start, int end);
-    void _q_updateSpanInsertedColumns(const QModelIndex &parent, int start, int end);
-    void _q_updateSpanRemovedRows(const QModelIndex &parent, int start, int end);
-    void _q_updateSpanRemovedColumns(const QModelIndex &parent, int start, int end);
-    void _q_sortIndicatorChanged(int column, Qt::SortOrder order);
+    void updateSpanInsertedRows(const QModelIndex &parent, int start, int end);
+    void updateSpanInsertedColumns(const QModelIndex &parent, int start, int end);
+    void updateSpanRemovedRows(const QModelIndex &parent, int start, int end);
+    void updateSpanRemovedColumns(const QModelIndex &parent, int start, int end);
+    void sortIndicatorChanged(int column, Qt::SortOrder order);
 };
 
 QT_END_NAMESPACE

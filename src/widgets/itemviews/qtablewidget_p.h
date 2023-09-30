@@ -155,18 +155,18 @@ public:
     void clearConnections();
 
     // view signals
-    void _q_emitItemPressed(const QModelIndex &index);
-    void _q_emitItemClicked(const QModelIndex &index);
-    void _q_emitItemDoubleClicked(const QModelIndex &index);
-    void _q_emitItemActivated(const QModelIndex &index);
-    void _q_emitItemEntered(const QModelIndex &index);
+    void emitItemPressed(const QModelIndex &index);
+    void emitItemClicked(const QModelIndex &index);
+    void emitItemDoubleClicked(const QModelIndex &index);
+    void emitItemActivated(const QModelIndex &index);
+    void emitItemEntered(const QModelIndex &index);
     // model signals
-    void _q_emitItemChanged(const QModelIndex &index);
+    void emitItemChanged(const QModelIndex &index);
     // selection signals
-    void _q_emitCurrentItemChanged(const QModelIndex &previous, const QModelIndex &current);
+    void emitCurrentItemChanged(const QModelIndex &previous, const QModelIndex &current);
     // sorting
-    void _q_sort();
-    void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void sort();
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
     std::array<QMetaObject::Connection, 10> connections;
 };
