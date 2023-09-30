@@ -11,6 +11,7 @@
 #include "private/qobject_p.h"
 #include "private/qabstractitemmodel_p.h"
 
+#include <array>
 #include <iterator>
 
 QT_BEGIN_NAMESPACE
@@ -67,11 +68,22 @@ public:
     void populate();
 
     // private slots
-    void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
-                        const QList<int> &);
-    void _q_commitData(QWidget *);
-    void _q_closeEditor(QWidget *, QAbstractItemDelegate::EndEditHint);
-    void _q_modelDestroyed();
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                     const QList<int> &);
+    void commitData(QWidget *);
+    void closeEditor(QWidget *, QAbstractItemDelegate::EndEditHint);
+    void modelDestroyed();
+
+    void disconnectModel()
+    {
+        for (const QMetaObject::Connection &connection : modelConnections)
+            QObject::disconnect(connection);
+    }
+    void disconnectDelegate()
+    {
+        for (const QMetaObject::Connection &connection : delegateConnections)
+            QObject::disconnect(connection);
+    }
 
     struct WidgetMapper
     {
@@ -87,6 +99,8 @@ public:
     bool commit(const WidgetMapper &m);
 
     std::vector<WidgetMapper> widgetMap;
+    std::array<QMetaObject::Connection, 2> modelConnections;
+    std::array<QMetaObject::Connection, 2> delegateConnections;
 };
 Q_DECLARE_TYPEINFO(QDataWidgetMapperPrivate::WidgetMapper, Q_RELOCATABLE_TYPE);
 
@@ -142,8 +156,8 @@ static bool qContainsIndex(const QModelIndex &idx, const QModelIndex &topLeft,
            && idx.column() >= topLeft.column() && idx.column() <= bottomRight.column();
 }
 
-void QDataWidgetMapperPrivate::_q_dataChanged(const QModelIndex &topLeft,
-                                              const QModelIndex &bottomRight, const QList<int> &)
+void QDataWidgetMapperPrivate::dataChanged(const QModelIndex &topLeft,
+                                           const QModelIndex &bottomRight, const QList<int> &)
 {
     if (topLeft.parent() != rootIndex)
         return; // not in our hierarchy
@@ -154,7 +168,7 @@ void QDataWidgetMapperPrivate::_q_dataChanged(const QModelIndex &topLeft,
     }
 }
 
-void QDataWidgetMapperPrivate::_q_commitData(QWidget *w)
+void QDataWidgetMapperPrivate::commitData(QWidget *w)
 {
     if (submitPolicy == QDataWidgetMapper::ManualSubmit)
         return;
@@ -166,7 +180,7 @@ void QDataWidgetMapperPrivate::_q_commitData(QWidget *w)
     commit(widgetMap[idx]);
 }
 
-void QDataWidgetMapperPrivate::_q_closeEditor(QWidget *w, QAbstractItemDelegate::EndEditHint hint)
+void QDataWidgetMapperPrivate::closeEditor(QWidget *w, QAbstractItemDelegate::EndEditHint hint)
 {
     int idx = findWidget(w);
     if (idx == -1)
@@ -189,7 +203,7 @@ void QDataWidgetMapperPrivate::_q_closeEditor(QWidget *w, QAbstractItemDelegate:
     }
 }
 
-void QDataWidgetMapperPrivate::_q_modelDestroyed()
+void QDataWidgetMapperPrivate::modelDestroyed()
 {
     Q_Q(QDataWidgetMapper);
 
@@ -299,6 +313,9 @@ QDataWidgetMapper::QDataWidgetMapper(QObject *parent)
  */
 QDataWidgetMapper::~QDataWidgetMapper()
 {
+    Q_D(QDataWidgetMapper);
+    d->disconnectModel();
+    d->disconnectDelegate();
 }
 
 /*!
@@ -314,21 +331,19 @@ void QDataWidgetMapper::setModel(QAbstractItemModel *model)
     if (d->model == model)
         return;
 
-    if (d->model) {
-        disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QList<int>)), this,
-                   SLOT(_q_dataChanged(QModelIndex,QModelIndex,QList<int>)));
-        disconnect(d->model, SIGNAL(destroyed()), this,
-                   SLOT(_q_modelDestroyed()));
-    }
+    d->disconnectModel();
     clearMapping();
     d->rootIndex = QModelIndex();
     d->currentTopLeft = QModelIndex();
 
     d->model = model;
 
-    connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QList<int>)),
-            SLOT(_q_dataChanged(QModelIndex,QModelIndex,QList<int>)));
-    connect(model, SIGNAL(destroyed()), SLOT(_q_modelDestroyed()));
+    d->modelConnections = {
+        QObjectPrivate::connect(model, &QAbstractItemModel::dataChanged,
+                                d, &QDataWidgetMapperPrivate::dataChanged),
+        QObjectPrivate::connect(model, &QAbstractItemModel::destroyed,
+                                d, &QDataWidgetMapperPrivate::modelDestroyed)
+    };
 }
 
 /*!
@@ -364,18 +379,17 @@ void QDataWidgetMapper::setItemDelegate(QAbstractItemDelegate *delegate)
 {
     Q_D(QDataWidgetMapper);
     QAbstractItemDelegate *oldDelegate = d->delegate;
-    if (oldDelegate) {
-        disconnect(oldDelegate, SIGNAL(commitData(QWidget*)), this, SLOT(_q_commitData(QWidget*)));
-        disconnect(oldDelegate, SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),
-                   this, SLOT(_q_closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)));
-    }
+    d->disconnectDelegate();
 
     d->delegate = delegate;
 
     if (delegate) {
-        connect(delegate, SIGNAL(commitData(QWidget*)), SLOT(_q_commitData(QWidget*)));
-        connect(delegate, SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),
-                SLOT(_q_closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)));
+        d->delegateConnections = {
+            QObjectPrivate::connect(delegate, &QAbstractItemDelegate::commitData,
+                                    d, &QDataWidgetMapperPrivate::commitData),
+            QObjectPrivate::connect(delegate, &QAbstractItemDelegate::closeEditor,
+                                    d, &QDataWidgetMapperPrivate::closeEditor)
+        };
     }
 
     d->flipEventFilters(oldDelegate, delegate);

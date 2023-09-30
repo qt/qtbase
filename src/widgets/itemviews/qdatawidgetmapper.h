@@ -72,12 +72,6 @@ Q_SIGNALS:
 private:
     Q_DECLARE_PRIVATE(QDataWidgetMapper)
     Q_DISABLE_COPY(QDataWidgetMapper)
-    Q_PRIVATE_SLOT(d_func(),
-                   void _q_dataChanged(const QModelIndex &, const QModelIndex &,
-                                       const QList<int> &))
-    Q_PRIVATE_SLOT(d_func(), void _q_commitData(QWidget *))
-    Q_PRIVATE_SLOT(d_func(), void _q_closeEditor(QWidget *, QAbstractItemDelegate::EndEditHint))
-    Q_PRIVATE_SLOT(d_func(), void _q_modelDestroyed())
 };
 
 QT_END_NAMESPACE
