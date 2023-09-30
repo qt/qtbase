@@ -88,13 +88,17 @@ public:
     void updateSectionIndicator(int section, int position);
     void updateHiddenSections(int logicalFirst, int logicalLast);
     void resizeSections(QHeaderView::ResizeMode globalMode, bool useGlobalMode = false);
-    void _q_sectionsRemoved(const QModelIndex &,int,int);
-    void _q_sectionsAboutToBeMoved(const QModelIndex &sourceParent, int logicalStart, int logicalEnd, const QModelIndex &destinationParent, int logicalDestination);
-    void _q_sectionsMoved(const QModelIndex &sourceParent, int logicalStart, int logicalEnd, const QModelIndex &destinationParent, int logicalDestination);
-    void _q_sectionsAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(),
-                                     QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
-    void _q_sectionsChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(),
-                            QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
+    void sectionsRemoved(const QModelIndex &,int,int);
+    void sectionsAboutToBeMoved(const QModelIndex &sourceParent, int logicalStart,
+                                int logicalEnd, const QModelIndex &destinationParent,
+                                int logicalDestination);
+    void sectionsMoved(const QModelIndex &sourceParent, int logicalStart,
+                       int logicalEnd, const QModelIndex &destinationParent,
+                       int logicalDestination);
+    void sectionsAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(),
+                                  QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
+    void sectionsChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(),
+                         QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
 
     bool isSectionSelected(int section) const;
     bool isFirstVisibleSection(int section) const;

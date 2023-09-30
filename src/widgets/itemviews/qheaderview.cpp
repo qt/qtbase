@@ -338,20 +338,20 @@ void QHeaderView::setModel(QAbstractItemModel *model)
                              this, &QHeaderView::sectionsAboutToBeRemoved),
             QObjectPrivate::connect(model, hor ? &QAbstractItemModel::columnsRemoved
                                                : &QAbstractItemModel::rowsRemoved,
-                                    d, &QHeaderViewPrivate::_q_sectionsRemoved),
+                                    d, &QHeaderViewPrivate::sectionsRemoved),
             QObjectPrivate::connect(model, hor ? &QAbstractItemModel::columnsAboutToBeMoved
                                                : &QAbstractItemModel::rowsAboutToBeMoved,
-                                    d, &QHeaderViewPrivate::_q_sectionsAboutToBeMoved),
+                                    d, &QHeaderViewPrivate::sectionsAboutToBeMoved),
             QObjectPrivate::connect(model, hor ? &QAbstractItemModel::columnsMoved
                                                : &QAbstractItemModel::columnsMoved,
-                                    d, &QHeaderViewPrivate::_q_sectionsMoved),
+                                    d, &QHeaderViewPrivate::sectionsMoved),
 
             QObject::connect(model, &QAbstractItemModel::headerDataChanged,
                              this, &QHeaderView::headerDataChanged),
             QObjectPrivate::connect(model, &QAbstractItemModel::layoutAboutToBeChanged,
-                                    d, &QHeaderViewPrivate::_q_sectionsAboutToBeChanged),
+                                    d, &QHeaderViewPrivate::sectionsAboutToBeChanged),
             QObjectPrivate::connect(model, &QAbstractItemModel::layoutChanged,
-                                    d, &QHeaderViewPrivate::_q_sectionsChanged)
+                                    d, &QHeaderViewPrivate::sectionsChanged)
         };
     }
 
@@ -1979,8 +1979,8 @@ void QHeaderViewPrivate::updateHiddenSections(int logicalFirst, int logicalLast)
     hiddenSectionSize = newHiddenSectionSize;
 }
 
-void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
-                                            int logicalFirst, int logicalLast)
+void QHeaderViewPrivate::sectionsRemoved(const QModelIndex &parent,
+                                         int logicalFirst, int logicalLast)
 {
     Q_Q(QHeaderView);
     if (parent != root)
@@ -2065,28 +2065,32 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
     viewport->update();
 }
 
-void QHeaderViewPrivate::_q_sectionsAboutToBeMoved(const QModelIndex &sourceParent, int logicalStart, int logicalEnd, const QModelIndex &destinationParent, int logicalDestination)
+void QHeaderViewPrivate::sectionsAboutToBeMoved(const QModelIndex &sourceParent, int logicalStart,
+                                                int logicalEnd, const QModelIndex &destinationParent,
+                                                int logicalDestination)
 {
     if (sourceParent != root || destinationParent != root)
         return; // we only handle changes in the root level
     Q_UNUSED(logicalStart);
     Q_UNUSED(logicalEnd);
     Q_UNUSED(logicalDestination);
-    _q_sectionsAboutToBeChanged();
+    sectionsAboutToBeChanged();
 }
 
-void QHeaderViewPrivate::_q_sectionsMoved(const QModelIndex &sourceParent, int logicalStart, int logicalEnd, const QModelIndex &destinationParent, int logicalDestination)
+void QHeaderViewPrivate::sectionsMoved(const QModelIndex &sourceParent, int logicalStart,
+                                       int logicalEnd, const QModelIndex &destinationParent,
+                                       int logicalDestination)
 {
     if (sourceParent != root || destinationParent != root)
         return; // we only handle changes in the root level
     Q_UNUSED(logicalStart);
     Q_UNUSED(logicalEnd);
     Q_UNUSED(logicalDestination);
-    _q_sectionsChanged();
+    sectionsChanged();
 }
 
-void QHeaderViewPrivate::_q_sectionsAboutToBeChanged(const QList<QPersistentModelIndex> &,
-                                                     QAbstractItemModel::LayoutChangeHint hint)
+void QHeaderViewPrivate::sectionsAboutToBeChanged(const QList<QPersistentModelIndex> &,
+                                                  QAbstractItemModel::LayoutChangeHint hint)
 {
     if ((hint == QAbstractItemModel::VerticalSortHint && orientation == Qt::Horizontal) ||
         (hint == QAbstractItemModel::HorizontalSortHint && orientation == Qt::Vertical))
@@ -2131,8 +2135,8 @@ void QHeaderViewPrivate::_q_sectionsAboutToBeChanged(const QList<QPersistentMode
     }
 }
 
-void QHeaderViewPrivate::_q_sectionsChanged(const QList<QPersistentModelIndex> &,
-                                            QAbstractItemModel::LayoutChangeHint hint)
+void QHeaderViewPrivate::sectionsChanged(const QList<QPersistentModelIndex> &,
+                                         QAbstractItemModel::LayoutChangeHint hint)
 {
     if ((hint == QAbstractItemModel::VerticalSortHint && orientation == Qt::Horizontal) ||
         (hint == QAbstractItemModel::HorizontalSortHint && orientation == Qt::Vertical))
@@ -2162,7 +2166,7 @@ void QHeaderViewPrivate::_q_sectionsChanged(const QList<QPersistentModelIndex> &
     }
 
     // Though far from perfect we here try to retain earlier/existing behavior
-    // ### See QHeaderViewPrivate::_q_layoutAboutToBeChanged()
+    // ### See QHeaderViewPrivate::layoutAboutToBeChanged()
     // When we don't have valid hasPersistantIndexes it can be due to
     // - all sections are default sections
     // - the row/column 0 which is used for persistent indexes is gone
