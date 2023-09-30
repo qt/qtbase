@@ -1086,21 +1086,21 @@ void QListWidgetPrivate::setup()
     // view signals
     connections = {
         QObjectPrivate::connect(q, &QListWidget::pressed,
-                                this, &QListWidgetPrivate::_q_emitItemPressed),
+                                this, &QListWidgetPrivate::emitItemPressed),
         QObjectPrivate::connect(q, &QListWidget::clicked,
-                                this, &QListWidgetPrivate::_q_emitItemClicked),
+                                this, &QListWidgetPrivate::emitItemClicked),
         QObjectPrivate::connect(q, &QListWidget::doubleClicked,
-                                this, &QListWidgetPrivate::_q_emitItemDoubleClicked),
+                                this, &QListWidgetPrivate::emitItemDoubleClicked),
         QObjectPrivate::connect(q, &QListWidget::activated,
-                                this, &QListWidgetPrivate::_q_emitItemActivated),
+                                this, &QListWidgetPrivate::emitItemActivated),
         QObjectPrivate::connect(q, &QListWidget::entered,
-                                this, &QListWidgetPrivate::_q_emitItemEntered),
+                                this, &QListWidgetPrivate::emitItemEntered),
         QObjectPrivate::connect(model, &QAbstractItemModel::dataChanged,
-                                this, &QListWidgetPrivate::_q_emitItemChanged),
+                                this, &QListWidgetPrivate::emitItemChanged),
         QObjectPrivate::connect(model, &QAbstractItemModel::dataChanged,
-                                this, &QListWidgetPrivate::_q_dataChanged),
+                                this, &QListWidgetPrivate::dataChanged),
         QObjectPrivate::connect(model, &QAbstractItemModel::columnsRemoved,
-                                this, &QListWidgetPrivate::_q_sort)
+                                this, &QListWidgetPrivate::sort)
     };
 }
 
@@ -1112,43 +1112,43 @@ void QListWidgetPrivate::clearConnections()
         QObject::disconnect(connection);
 }
 
-void QListWidgetPrivate::_q_emitItemPressed(const QModelIndex &index)
+void QListWidgetPrivate::emitItemPressed(const QModelIndex &index)
 {
     Q_Q(QListWidget);
     emit q->itemPressed(listModel()->at(index.row()));
 }
 
-void QListWidgetPrivate::_q_emitItemClicked(const QModelIndex &index)
+void QListWidgetPrivate::emitItemClicked(const QModelIndex &index)
 {
     Q_Q(QListWidget);
     emit q->itemClicked(listModel()->at(index.row()));
 }
 
-void QListWidgetPrivate::_q_emitItemDoubleClicked(const QModelIndex &index)
+void QListWidgetPrivate::emitItemDoubleClicked(const QModelIndex &index)
 {
     Q_Q(QListWidget);
     emit q->itemDoubleClicked(listModel()->at(index.row()));
 }
 
-void QListWidgetPrivate::_q_emitItemActivated(const QModelIndex &index)
+void QListWidgetPrivate::emitItemActivated(const QModelIndex &index)
 {
     Q_Q(QListWidget);
     emit q->itemActivated(listModel()->at(index.row()));
 }
 
-void QListWidgetPrivate::_q_emitItemEntered(const QModelIndex &index)
+void QListWidgetPrivate::emitItemEntered(const QModelIndex &index)
 {
     Q_Q(QListWidget);
     emit q->itemEntered(listModel()->at(index.row()));
 }
 
-void QListWidgetPrivate::_q_emitItemChanged(const QModelIndex &index)
+void QListWidgetPrivate::emitItemChanged(const QModelIndex &index)
 {
     Q_Q(QListWidget);
     emit q->itemChanged(listModel()->at(index.row()));
 }
 
-void QListWidgetPrivate::_q_emitCurrentItemChanged(const QModelIndex &current,
+void QListWidgetPrivate::emitCurrentItemChanged(const QModelIndex &current,
                                                 const QModelIndex &previous)
 {
     Q_Q(QListWidget);
@@ -1166,14 +1166,14 @@ void QListWidgetPrivate::_q_emitCurrentItemChanged(const QModelIndex &current,
     emit q->currentRowChanged(persistentCurrent.row());
 }
 
-void QListWidgetPrivate::_q_sort()
+void QListWidgetPrivate::sort()
 {
     if (sortingEnabled)
         model->sort(0, sortOrder);
 }
 
-void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
-                                        const QModelIndex &bottomRight)
+void QListWidgetPrivate::dataChanged(const QModelIndex &topLeft,
+                                     const QModelIndex &bottomRight)
 {
     if (sortingEnabled && topLeft.isValid() && bottomRight.isValid())
         listModel()->ensureSorted(topLeft.column(), sortOrder,
@@ -1399,7 +1399,7 @@ void QListWidget::setSelectionModel(QItemSelectionModel *selectionModel)
     if (d->selectionModel) {
         d->selectionModelConnections = {
             QObjectPrivate::connect(d->selectionModel, &QItemSelectionModel::currentChanged,
-                                    d, &QListWidgetPrivate::_q_emitCurrentItemChanged),
+                                    d, &QListWidgetPrivate::emitCurrentItemChanged),
             QObject::connect(d->selectionModel, &QItemSelectionModel::selectionChanged,
                              this, &QListWidget::itemSelectionChanged)
         };
