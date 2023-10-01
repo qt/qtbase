@@ -440,8 +440,10 @@ QT_BEGIN_NAMESPACE
     Returns a string view containing \a n code points of this string view,
     starting at position \a pos.
 
+//! [UB-sliced-index-length]
     \note The behavior is undefined when \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
+//! [UB-sliced-index-length]
 
     \sa first(), last(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
 */
@@ -453,7 +455,9 @@ QT_BEGIN_NAMESPACE
     Returns a string view starting at position \a pos in this object,
     and extending to its end.
 
+//! [UB-sliced-index-only]
     \note The behavior is undefined when \a pos < 0 or \a pos > size().
+//! [UB-sliced-index-only]
 
     \sa first(), last(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
 */
