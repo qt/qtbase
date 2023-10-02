@@ -5,16 +5,38 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qshortcut.h>
 #include <QtGui/qwindow.h>
+#include <QtTest/qsignalspy.h>
 
 class tst_QShortcut : public QObject
 {
     Q_OBJECT
 
 private slots:
-    void trigger();
+    void applicationShortcut();
+    void windowShortcut();
 };
 
-void tst_QShortcut::trigger()
+void tst_QShortcut::applicationShortcut()
+{
+    auto *shortcut = new QShortcut(Qt::CTRL | Qt::Key_A, this);
+    shortcut->setContext(Qt::ApplicationShortcut);
+    QSignalSpy activatedSpy(shortcut, &QShortcut::activated);
+
+    // Need a window to send key event to, even if the shortcut is application
+    // global. The documentation for Qt::ApplicationShortcut also says that
+    // the shortcut "is active when one of the applications windows are active",
+    // but this is only honored for Qt Widgets, not for Qt Gui. For now we
+    // activate the window just in case.
+    QWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QTRY_COMPARE(QGuiApplication::applicationState(), Qt::ApplicationActive);
+    QTest::sendKeyEvent(QTest::Shortcut, &window, Qt::Key_A, 'a', Qt::ControlModifier);
+
+    QVERIFY(activatedSpy.size() > 0);
+}
+
+void tst_QShortcut::windowShortcut()
 {
     QWindow w;
     new QShortcut(Qt::CTRL | Qt::Key_Q, &w, SLOT(close()));
