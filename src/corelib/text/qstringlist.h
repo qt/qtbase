@@ -45,6 +45,11 @@ namespace QtPrivate {
     qsizetype Q_CORE_EXPORT QStringList_indexOf(const QStringList &that, QLatin1StringView str,
                                                 qsizetype from, Qt::CaseSensitivity cs);
 
+    Q_CORE_EXPORT qsizetype QStringList_lastIndexOf(const QStringList &that, QStringView str,
+                                                    qsizetype from, Qt::CaseSensitivity cs);
+    Q_CORE_EXPORT qsizetype QStringList_lastIndexOf(const QStringList &that, QLatin1StringView str,
+                                                    qsizetype from, Qt::CaseSensitivity cs);
+
 #if QT_CONFIG(regularexpression)
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QRegularExpression &rx, const QString &after);
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QRegularExpression &re);
@@ -141,8 +146,15 @@ public:
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::QStringList_indexOf(*self(), needle, from, cs); }
 
-    qsizetype lastIndexOf(const QString &str, qsizetype from = -1) const noexcept
-    { return lastIndexOf(QStringView(str), from); }
+    qsizetype lastIndexOf(const QString &str, qsizetype from = -1,
+                          Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return lastIndexOf(QStringView(str), from, cs); }
+    qsizetype lastIndexOf(QStringView str, qsizetype from = -1,
+                          Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::QStringList_lastIndexOf(*self(), str, from, cs); }
+    qsizetype lastIndexOf(QLatin1StringView needle, qsizetype from = -1,
+                          Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::QStringList_lastIndexOf(*self(), needle, from, cs); }
 
 #if QT_CONFIG(regularexpression)
     inline QStringList filter(const QRegularExpression &re) const

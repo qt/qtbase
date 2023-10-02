@@ -592,10 +592,12 @@ QString QtPrivate::QStringList_join(const QStringList *that, QStringView sep)
 
     \include qstringlist.cpp comparison-case-sensitivity
 
+//! [overloading-base-class-methods]
     \note The \a cs parameter was added in Qt 6.7, i.e. these methods now overload
     the methods inherited from the base class. Prior to that these methods only
     had two parameters. This change is source compatible and existing code should
     continue to work.
+//! [overloading-base-class-methods]
 
     \sa lastIndexOf()
 */
@@ -627,6 +629,52 @@ qsizetype QtPrivate::QStringList_indexOf(const QStringList &that, QLatin1StringV
                                          qsizetype from, Qt::CaseSensitivity cs)
 {
     return indexOf_helper(that, needle, from, cs);
+}
+
+/*!
+    \fn qsizetype QStringList::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringList::lastIndexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringList::lastIndexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensitivity cs) const
+
+    Returns the index position of the last match of \a str in the list,
+    searching backward from index position \a from. If \a from is -1 (the
+    default), the search starts at the last item. Returns -1 if no item
+    matched.
+
+    \include qstringlist.cpp comparison-case-sensitivity
+
+    \include qstringlist.cpp overloading-base-class-methods
+
+    \sa indexOf()
+*/
+
+template <typename String>
+qsizetype lastIndexof_helper(const QStringList &that, String needle, qsizetype from,
+                             Qt::CaseSensitivity cs)
+{
+    if (from < 0)
+        from += that.size();
+    else if (from >= that.size())
+        from = that.size() - 1;
+
+     for (qsizetype i = from; i >= 0; --i) {
+        if (needle.compare(that.at(i), cs) == 0)
+            return i;
+    }
+
+    return -1;
+}
+
+qsizetype QtPrivate::QStringList_lastIndexOf(const QStringList &that, QLatin1StringView needle,
+                                            qsizetype from, Qt::CaseSensitivity cs)
+{
+    return lastIndexof_helper(that, needle, from, cs);
+}
+
+qsizetype QtPrivate::QStringList_lastIndexOf(const QStringList &that, QStringView needle,
+                                             qsizetype from, Qt::CaseSensitivity cs)
+{
+    return lastIndexof_helper(that, needle, from, cs);
 }
 
 #if QT_CONFIG(regularexpression)

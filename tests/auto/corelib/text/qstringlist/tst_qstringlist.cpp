@@ -159,6 +159,15 @@ void tst_QStringList::lastIndexOf()
     QCOMPARE(list.lastIndexOf(QStringView(search), from), expectedResult);
     QCOMPARE(list.lastIndexOf(QLatin1String(search.toLatin1()), from), expectedResult);
     QCOMPARE(list.lastIndexOf(QRegularExpression(QRegularExpression::escape(search)), from), expectedResult);
+
+    const QString searchUpper = search.toUpper();
+    QCOMPARE(list.lastIndexOf(searchUpper, from, Qt::CaseInsensitive), expectedResult);
+    QCOMPARE(list.lastIndexOf(QStringView(searchUpper), from, Qt::CaseInsensitive), expectedResult);
+    QCOMPARE(list.lastIndexOf(QLatin1String(searchUpper.toLatin1()), from, Qt::CaseInsensitive),
+             expectedResult);
+    const QRegularExpression re(QRegularExpression::escape(searchUpper),
+                                QRegularExpression::CaseInsensitiveOption);
+    QCOMPARE(list.lastIndexOf(re, from), expectedResult);
 }
 
 void tst_QStringList::filter()
