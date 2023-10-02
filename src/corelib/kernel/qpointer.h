@@ -44,14 +44,14 @@ public:
         : wp(other.wp.internalData(), true) {}
 
     template <typename X, if_convertible<X> = true>
-    QPointer &operator=(const QPointer<X> &other)
+    QPointer &operator=(const QPointer<X> &other) noexcept
     {
         QPointer(other).swap(*this);
         return *this;
     }
 
     template <typename X, if_convertible<X> = true>
-    QPointer &operator=(QPointer<X> &&other)
+    QPointer &operator=(QPointer<X> &&other) noexcept
     {
         QPointer(std::move(other)).swap(*this);
         return *this;
