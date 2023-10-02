@@ -73,7 +73,7 @@ public:
     { return data(); }
     T* operator->() const noexcept
     { return data(); }
-    inline T& operator*() const
+    T& operator*() const noexcept
     { return *data(); }
     operator T*() const noexcept
     { return data(); }
