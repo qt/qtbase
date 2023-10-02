@@ -77,6 +77,9 @@ public:
     inline void clear()
     { wp.clear(); }
 
+    friend void swap(QPointer &lhs, QPointer &rhs) noexcept
+    { lhs.swap(rhs); }
+
 #define DECLARE_COMPARE_SET(T1, A1, T2, A2) \
     friend bool operator==(T1, T2) \
     { return A1 == A2; } \
@@ -108,10 +111,6 @@ qPointerFromVariant(const QVariant &variant)
     const auto wp = QtSharedPointer::weakPointerFromVariant_internal(variant);
     return QPointer<T>{qobject_cast<T*>(QtPrivate::EnableInternalData::internalData(wp))};
 }
-
-template <class T>
-inline void swap(QPointer<T> &p1, QPointer<T> &p2) noexcept
-{ p1.swap(p2); }
 
 QT_END_NAMESPACE
 
