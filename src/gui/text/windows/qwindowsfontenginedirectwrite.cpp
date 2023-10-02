@@ -15,7 +15,12 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpainterpath.h>
 
-#include <dwrite_2.h>
+#if QT_CONFIG(directwrite3)
+#  include "qwindowsdirectwritefontdatabase_p.h"
+#  include <dwrite_3.h>
+#else
+#  include <dwrite_2.h>
+#endif
 
 #include <d2d1.h>
 
@@ -1009,6 +1014,21 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
         fontDef.pointSize = fontDef.pixelSize * 72. / dpi;
     else if (fontDef.pixelSize == -1)
         fontDef.pixelSize = qRound(fontDef.pointSize * dpi / 72.);
+
+#if QT_CONFIG(directwrite3)
+    IDWriteFontFace3 *face3 = nullptr;
+    if (SUCCEEDED(m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace3),
+                                                        reinterpret_cast<void **>(&face3)))) {
+        IDWriteLocalizedStrings *names;
+        if (SUCCEEDED(face3->GetFaceNames(&names))) {
+            wchar_t englishLocale[] = L"en-us";
+            fontDef.styleName = QWindowsDirectWriteFontDatabase::localeString(names, englishLocale);
+            names->Release();
+        }
+
+        face3->Release();
+    }
+#endif
 }
 
 QString QWindowsFontEngineDirectWrite::fontNameSubstitute(const QString &familyName)
