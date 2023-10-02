@@ -150,7 +150,7 @@ static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt:
                 return n - s;
         } else {
             c = foldCase(c);
-            auto it = std::find_if(n, e, [c](const auto &ch) { return foldAndCompare(ch, c); });
+            auto it = std::find_if(n, e, [c](auto ch) { return foldAndCompare(ch, c); });
             if (it != e)
                 return std::distance(s, it);
         }
