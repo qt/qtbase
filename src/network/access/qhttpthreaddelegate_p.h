@@ -252,6 +252,7 @@ public:
         if (b) {
             // the reset succeeded, we're at pos 0 again
             m_pos = 0;
+            m_atEnd = false;
             // the HTTP code will anyway abort the request if !b.
         }
         return b;
