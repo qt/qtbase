@@ -343,7 +343,7 @@ void QHeaderView::setModel(QAbstractItemModel *model)
                                                : &QAbstractItemModel::rowsAboutToBeMoved,
                                     d, &QHeaderViewPrivate::sectionsAboutToBeMoved),
             QObjectPrivate::connect(model, hor ? &QAbstractItemModel::columnsMoved
-                                               : &QAbstractItemModel::columnsMoved,
+                                               : &QAbstractItemModel::rowsMoved,
                                     d, &QHeaderViewPrivate::sectionsMoved),
 
             QObject::connect(model, &QAbstractItemModel::headerDataChanged,
