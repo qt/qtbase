@@ -76,6 +76,7 @@
 
 /*!
     \fn template <class T> QPointer<T>::QPointer()
+    \fn template <class T> QPointer<T>::QPointer(std::nullptr_t)
 
     Constructs a guarded pointer with value \nullptr.
 

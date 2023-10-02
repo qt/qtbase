@@ -30,6 +30,9 @@ public:
     Q_NODISCARD_CTOR
     QPointer() noexcept = default;
     Q_NODISCARD_CTOR
+    constexpr QPointer(std::nullptr_t) noexcept : QPointer{} {}
+    Q_WEAK_OVERLOAD
+    Q_NODISCARD_CTOR
     inline QPointer(T *p) : wp(p, true) { }
     // compiler-generated copy/move ctor/assignment operators are fine!
     // compiler-generated dtor is fine!
