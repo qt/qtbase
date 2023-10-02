@@ -6177,7 +6177,7 @@ static inline void unpackParseResult(const QDomDocument::ParseResult &parseResul
         if (errorLine)
             *errorLine = static_cast<int>(parseResult.errorLine);
         if (errorColumn)
-            *errorColumn = static_cast<int>(parseResult.errorLine);
+            *errorColumn = static_cast<int>(parseResult.errorColumn);
     }
 }
 
