@@ -34,6 +34,10 @@ private slots:
     void constQPointer();
 };
 
+// check that nullptr QPointer construction is Q_CONSTINIT:
+[[maybe_unused]] Q_CONSTINIT static QPointer<QFile> s_file1;
+[[maybe_unused]] Q_CONSTINIT static QPointer<QFile> s_file2 = {};
+
 void tst_QPointer::constructors()
 {
     QPointer<QObject> p1;
