@@ -864,7 +864,6 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
     } else if (!authenticationHeader.isEmpty() && !hasAuth) {
         header.push_back({ ":status", "401" });
         header.push_back(HPack::HeaderField("www-authenticate", authenticationHeader));
-        authenticationHeader.clear();
     } else {
         header.push_back({":status", "200"});
     }
