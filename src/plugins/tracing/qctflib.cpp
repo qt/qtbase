@@ -319,7 +319,7 @@ event {
     return QStringView(u"event {\n    name = \"") + provider + QLatin1Char(':') + name + u"\";\n"
            + u"    id = " + QString::number(eventId) + u";\n"
            + u"    stream_id = 0;\n    loglevel = 13;\n    fields := struct {\n        "
-           + metadata + u"\n    };\n};\n"
+           + metadata + u"\n    };\n};\n";
 }
 
 QCtfTracePointPrivate *QCtfLibImpl::initializeTracepoint(const QCtfTracePointEvent &point)
