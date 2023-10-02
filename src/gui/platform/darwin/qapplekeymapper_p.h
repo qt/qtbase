@@ -35,8 +35,6 @@ public:
     Qt::KeyboardModifiers queryKeyboardModifiers() const override;
     QList<QKeyCombination> possibleKeyCombinations(const QKeyEvent *event) const override;
 
-    static Qt::Key fromNSString(Qt::KeyboardModifiers qtMods, NSString *characters,
-                                NSString *charactersIgnoringModifiers, QString &text);
 #ifdef Q_OS_MACOS
     static Qt::KeyboardModifiers fromCocoaModifiers(NSEventModifierFlags cocoaModifiers);
     static NSEventModifierFlags toCocoaModifiers(Qt::KeyboardModifiers);
@@ -44,6 +42,9 @@ public:
     static QChar toCocoaKey(Qt::Key key);
     static Qt::Key fromCocoaKey(QChar keyCode);
 #else
+    static Qt::Key fromNSString(Qt::KeyboardModifiers qtMods, NSString *characters,
+                            NSString *charactersIgnoringModifiers, QString &text);
+
     static Qt::Key fromUIKitKey(NSString *keyCode);
     static Qt::KeyboardModifiers fromUIKitModifiers(ulong uikitModifiers);
     static ulong toUIKitModifiers(Qt::KeyboardModifiers);
