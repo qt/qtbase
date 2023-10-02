@@ -24,7 +24,7 @@ inline static void qPrintMessage(const QByteArray &ba)
 }
 
 Q_GLOBAL_STATIC(QList<QByteArray>, ignoreClasses)
-static int iLevel = 0;
+Q_CONSTINIT thread_local int iLevel = 0;
 static int ignoreLevel = 0;
 enum { IndentSpacesCount = 4 };
 
