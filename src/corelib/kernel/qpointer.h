@@ -28,7 +28,7 @@ class QPointer
     QWeakPointer<QObjectType> wp;
 public:
     Q_NODISCARD_CTOR
-    QPointer() = default;
+    QPointer() noexcept = default;
     Q_NODISCARD_CTOR
     inline QPointer(T *p) : wp(p, true) { }
     // compiler-generated copy/move ctor/assignment operators are fine!
@@ -67,30 +67,30 @@ public:
     inline QPointer<T> &operator=(T* p)
     { wp.assign(static_cast<QObjectType*>(p)); return *this; }
 
-    inline T* data() const
+    T* data() const noexcept
     { return static_cast<T*>(wp.internalData()); }
-    inline T* get() const
+    T* get() const noexcept
     { return data(); }
-    inline T* operator->() const
+    T* operator->() const noexcept
     { return data(); }
     inline T& operator*() const
     { return *data(); }
-    inline operator T*() const
+    operator T*() const noexcept
     { return data(); }
 
-    inline bool isNull() const
+    bool isNull() const noexcept
     { return wp.isNull(); }
 
-    inline void clear()
+    void clear() noexcept
     { wp.clear(); }
 
     friend void swap(QPointer &lhs, QPointer &rhs) noexcept
     { lhs.swap(rhs); }
 
 #define DECLARE_COMPARE_SET(T1, A1, T2, A2) \
-    friend bool operator==(T1, T2) \
+    friend bool operator==(T1, T2) noexcept \
     { return A1 == A2; } \
-    friend bool operator!=(T1, T2) \
+    friend bool operator!=(T1, T2) noexcept \
     { return A1 != A2; }
 
 #define DECLARE_TEMPLATE_COMPARE_SET(T1, A1, T2, A2) \
