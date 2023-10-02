@@ -530,8 +530,6 @@ QList<QKeyCombination> QAppleKeyMapper::possibleKeyCombinations(const QKeyEvent 
     // FIXME: We only compute the first 8 combinations. Why?
     for (int i = 1; i < 8; ++i) {
         auto keyAfterApplyingModifiers = keyMap[i];
-        if (keyAfterApplyingModifiers == unmodifiedKey)
-            continue;
         if (!keyAfterApplyingModifiers)
              continue;
 
@@ -542,8 +540,39 @@ QList<QKeyCombination> QAppleKeyMapper::possibleKeyCombinations(const QKeyEvent 
             // If the event includes more modifiers than the candidate they
             // will need to be included in the resulting key combination.
             auto additionalModifiers = eventModifiers & ~candidateModifiers;
-            ret << QKeyCombination::fromCombined(
+
+            auto keyCombination = QKeyCombination::fromCombined(
                 int(additionalModifiers) + int(keyAfterApplyingModifiers));
+
+            // If there's an existing key combination with the same key,
+            // but a different set of modifiers, we want to choose only
+            // one of them, by priority (see below).
+            const auto existingCombination = std::find_if(
+                ret.begin(), ret.end(), [&](auto existingCombination) {
+                    return existingCombination.key() == keyAfterApplyingModifiers;
+                });
+
+            if (existingCombination != ret.end()) {
+                // We prioritize the combination with the more specific
+                // modifiers. In the case where the number of modifiers
+                // are the same, we want to prioritize Command over Option
+                // over Control over Shift. Unfortunately the order (and
+                // hence value) of the modifiers in Qt::KeyboardModifier
+                // does not match our preferred order when Control and
+                // Meta is switched, but we can work around that by
+                // explicitly swapping the modifiers and using that
+                // for the comparison. This also works when the
+                // Qt::AA_MacDontSwapCtrlAndMeta application attribute
+                // is set, as the incoming modifiers are then left
+                // as is, and we can still trust the order.
+                auto existingModifiers = swapModifiersIfNeeded(existingCombination->keyboardModifiers());
+                auto replacementModifiers = swapModifiersIfNeeded(additionalModifiers);
+                if (replacementModifiers > existingModifiers)
+                    *existingCombination = keyCombination;
+            } else {
+                // All is good, no existing combination has this key
+                ret << keyCombination;
+            }
         }
     }
 
