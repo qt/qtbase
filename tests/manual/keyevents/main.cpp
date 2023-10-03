@@ -106,7 +106,8 @@ public:
                 QStringList keyCombinations;
                 for (auto combination : event.possibleKeyCombinations)
                     keyCombinations << QKeySequence(combination).toString(QKeySequence::NativeText);
-                return keyCombinations.join("    ");
+                constexpr auto leftToRightOverride = QChar(0x202d);
+                return leftToRightOverride + keyCombinations.join("    ");
             }
             default: {
                 QStringList matches;
