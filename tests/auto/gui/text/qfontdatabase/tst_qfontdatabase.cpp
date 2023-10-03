@@ -534,9 +534,9 @@ void tst_QFontDatabase::variableFont()
 
     {
         QFont font(family);
-        font.setWeight(QFont::ExtraBold);
+        font.setWeight(QFont::Black);
         QCOMPARE(QFontInfo(font).styleName(), u"QtExtraBold"_s);
-        QCOMPARE(QFontInfo(font).weight(), QFont::ExtraBold);
+        QCOMPARE(QFontInfo(font).weight(), int(QFont::Black));
     }
 
     {

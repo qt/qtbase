@@ -46,6 +46,7 @@ public:
     QFont defaultFont() const override;
     bool fontsAlwaysScalable() const override;
     QList<int> standardSizes() const override;
+    bool supportsVariableApplicationFonts() const override;
 
     // For iOS and macOS platform themes
     QFont *themeFont(QPlatformTheme::Font) const;

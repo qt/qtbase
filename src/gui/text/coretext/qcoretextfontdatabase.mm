@@ -714,13 +714,20 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
 
     if (!fontData.isEmpty()) {
         QCFType<CFDataRef> fontDataReference = fontData.toRawCFData();
-        if (QCFType<CTFontDescriptorRef> descriptor = CTFontManagerCreateFontDescriptorFromData(fontDataReference)) {
-            // There's no way to get the data back out of a font descriptor created with
-            // CTFontManagerCreateFontDescriptorFromData, so we attach the data manually.
-            NSDictionary *attributes = @{ kQtFontDataAttribute : [NSValue valueWithPointer:new QByteArray(fontData)] };
-            descriptor = CTFontDescriptorCreateCopyWithAttributes(descriptor, (CFDictionaryRef)attributes);
+        if (QCFType<CFArrayRef> descriptors = CTFontManagerCreateFontDescriptorsFromData(fontDataReference)) {
             CFMutableArrayRef array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
-            CFArrayAppendValue(array, descriptor);
+            const int count = CFArrayGetCount(descriptors);
+
+            for (int i = 0; i < count; ++i) {
+                CTFontDescriptorRef descriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(descriptors, i));
+
+                // There's no way to get the data back out of a font descriptor created with
+                // CTFontManagerCreateFontDescriptorFromData, so we attach the data manually.
+                NSDictionary *attributes = @{ kQtFontDataAttribute : [NSValue valueWithPointer:new QByteArray(fontData)] };
+                descriptor = CTFontDescriptorCreateCopyWithAttributes(descriptor, (CFDictionaryRef)attributes);
+                CFArrayAppendValue(array, descriptor);
+            }
+
             fonts = array;
         }
     } else {
@@ -978,6 +985,11 @@ QList<int> QCoreTextFontDatabase::standardSizes() const
     const unsigned short *sizes = standard;
     while (*sizes) ret << *sizes++;
     return ret;
+}
+
+bool QCoreTextFontDatabase::supportsVariableApplicationFonts() const
+{
+    return true;
 }
 
 QT_END_NAMESPACE
