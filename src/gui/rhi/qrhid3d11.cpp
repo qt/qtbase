@@ -1156,6 +1156,10 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
     if (!flags.testFlag(QRhi::SkipPresent)) {
         const UINT presentFlags = 0;
+        if (!swapChainD->swapChain) {
+            qWarning("Failed to present: IDXGISwapChain is unavailable");
+            return QRhi::FrameOpError;
+        }
         HRESULT hr = swapChainD->swapChain->Present(swapChainD->swapInterval, presentFlags);
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
             qWarning("Device loss detected in Present()");
