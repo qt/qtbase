@@ -2019,7 +2019,7 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns \c true if the hash contains an item with the \a key;
     otherwise returns \c false.
 
-    \sa count(), QMultiHash::contains()
+    \sa count()
 */
 
 /*! \fn template <class Key, class T> T QHash<Key, T>::value(const Key &key) const
@@ -2330,6 +2330,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If there is already an item with the \a key, that item's value
     is replaced with \a value.
+
+    Returns an iterator pointing to the new/updated element.
 */
 
 /*!
@@ -2969,6 +2971,8 @@ size_t qHash(long double key, size_t seed) noexcept
     If there are multiple items with the \a key, the most
     recently inserted item's value is replaced with \a value.
 
+    Returns an iterator pointing to the new/updated element.
+
     \sa insert()
 */
 
@@ -2980,6 +2984,8 @@ size_t qHash(long double key, size_t seed) noexcept
     function will simply create a new one. (This behavior is
     different from replace(), which overwrites the value of an
     existing item.)
+
+    Returns an iterator pointing to the new element.
 
     \sa replace()
 */

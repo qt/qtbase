@@ -817,6 +817,8 @@
     different from replace(), which overwrites the value of an
     existing item.)
 
+    Returns an iterator pointing to the new element.
+
     \sa replace()
 */
 
@@ -838,6 +840,8 @@
     When creating a multi map from sorted data inserting the largest key first with constBegin()
     is faster than inserting in sorted order with constEnd(), since constEnd() - 1 (which is needed
     to check if the hint is valid) needs \l{logarithmic time}.
+
+    Returns an iterator pointing to the new element.
 
     \b {Note:} Be careful with the hint. Providing an iterator from an older shared instance might
     crash but there is also a risk that it will silently corrupt both the multi map and the \a pos multi map.
@@ -885,6 +889,8 @@
 
     If there are multiple items with the key \a key, the most
     recently inserted item's value is replaced with \a value.
+
+    Returns an iterator pointing to the new/updated element.
 
     \sa insert()
 */

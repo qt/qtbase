@@ -390,7 +390,7 @@
     use that entails can be avoided by iterating from \l keyBegin() to
     \l keyEnd().
 
-    \sa QMultiMap::uniqueKeys(), values(), key()
+    \sa values(), key()
 */
 
 /*! \fn template <class Key, class T> QList<Key> QMap<Key, T>::keys(const T &value) const
@@ -730,7 +730,7 @@
     If there is already an item with the key \a key, that item's value
     is replaced with \a value.
 
-    \sa QMultiMap::insert()
+    Returns an iterator pointing to the new/updated element.
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::insert(const_iterator pos, const Key &key, const T &value)
@@ -756,7 +756,7 @@
     \b {Note:} Be careful with the hint. Providing an iterator from an older shared instance might
     crash but there is also a risk that it will silently corrupt both the map and the \a pos map.
 
-    \sa QMultiMap::insert()
+    Returns an iterator pointing to the new/updated element.
 */
 
 /*! \fn template <class Key, class T> void QMap<Key, T>::insert(const QMap<Key, T> &map)
@@ -766,8 +766,6 @@
 
     If a key is common to both maps, its value will be replaced with
     the value stored in \a map.
-
-    \sa QMultiMap::insert()
 */
 
 /*! \fn template <class Key, class T> void QMap<Key, T>::insert(QMap<Key, T> &&map)
