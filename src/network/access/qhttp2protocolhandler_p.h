@@ -94,6 +94,7 @@ private:
 
     bool acceptSetting(Http2::Settings identifier, quint32 newValue);
 
+    void handleAuthorization(Stream &stream);
     void updateStream(Stream &stream, const HPack::HttpHeader &headers,
                       Qt::ConnectionType connectionType = Qt::DirectConnection);
     void updateStream(Stream &stream, const Http2::Frame &dataFrame,
