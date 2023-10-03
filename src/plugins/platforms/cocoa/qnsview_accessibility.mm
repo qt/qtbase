@@ -13,6 +13,15 @@
 
 @implementation QNSView (Accessibility)
 
+- (void)activateQtAccessibility
+{
+    // Activate the Qt accessibility machinery for all entry points
+    // below that may be triggered by system accessibility queries,
+    // as otherwise Qt is not aware that the system needs to know
+    // about all accessibility state changes in Qt.
+    QCocoaIntegration::instance()->accessibility()->setActive(true);
+}
+
 - (id)childAccessibleElement
 {
     QCocoaWindow *platformWindow = self.platformWindow;
@@ -32,8 +41,7 @@
 
 - (id)accessibilityAttributeValue:(NSString *)attribute
 {
-    // activate accessibility updates
-    QCocoaIntegration::instance()->accessibility()->setActive(true);
+    [self activateQtAccessibility];
 
     if ([attribute isEqualToString:NSAccessibilityChildrenAttribute])
         return NSAccessibilityUnignoredChildrenForOnlyChild([self childAccessibleElement]);
@@ -43,11 +51,13 @@
 
 - (id)accessibilityHitTest:(NSPoint)point
 {
+    [self activateQtAccessibility];
     return [[self childAccessibleElement] accessibilityHitTest:point];
 }
 
 - (id)accessibilityFocusedUIElement
 {
+    [self activateQtAccessibility];
     return [[self childAccessibleElement] accessibilityFocusedUIElement];
 }
 
