@@ -52,9 +52,7 @@
 
 #include <limits>
 
-#if __has_include(<chrono>)
-#  include <chrono>
-#endif
+#include <chrono>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,7 +118,6 @@ public:
     QDeadlineTimer &operator-=(qint64 msecs)
     { *this = *this + (-msecs); return *this; }
 
-#if __has_include(<chrono>) || defined(Q_CLANG_QDOC)
     template <class Clock, class Duration>
     QDeadlineTimer(std::chrono::time_point<Clock, Duration> deadline_,
                    Qt::TimerType type_ = Qt::CoarseTimer) : t2(0)
@@ -178,7 +175,6 @@ public:
     template <class Rep, class Period>
     friend QDeadlineTimer operator+=(QDeadlineTimer &dt, std::chrono::duration<Rep, Period> value)
     { return dt = dt + value; }
-#endif
 
 private:
     qint64 t1;
@@ -192,7 +188,7 @@ public:
     QPair<qint64, unsigned> _q_data() const { return qMakePair(t1, t2); }
 };
 
-#if __has_include(<chrono>) && (defined(Q_OS_DARWIN) || defined(Q_OS_LINUX) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900))
+#if defined(Q_OS_DARWIN) || defined(Q_OS_LINUX) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900)
 // We know for these OS/compilers that the std::chrono::steady_clock uses the same
 // reference time as QDeadlineTimer
 

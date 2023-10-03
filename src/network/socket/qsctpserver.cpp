@@ -82,7 +82,7 @@
     between endpoints. Call nextPendingDatagramConnection() to accept
     the pending datagram-mode connection as a connected QSctpSocket.
 
-    \note This feature is not supported on the Windows platform.
+    \note This class is not supported on the Windows platform.
 
     \sa QTcpServer, QSctpSocket, QAbstractSocket
 */

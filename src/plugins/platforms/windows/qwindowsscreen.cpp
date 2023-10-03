@@ -204,11 +204,8 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
     // EnumDisplayMonitors (as opposed to EnumDisplayDevices) enumerates only
     // virtual desktop screens.
     data->flags |= QWindowsScreenData::VirtualDesktop;
-    if (info.dwFlags & MONITORINFOF_PRIMARY) {
+    if (info.dwFlags & MONITORINFOF_PRIMARY)
         data->flags |= QWindowsScreenData::PrimaryScreen;
-        if ((data->flags & QWindowsScreenData::LockScreen) == 0)
-            QWindowsFontDatabase::setDefaultVerticalDPI(data->dpi.second);
-    }
     return true;
 }
 

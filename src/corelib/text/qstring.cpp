@@ -2890,6 +2890,14 @@ QString &QString::append(const QString &str)
 }
 
 /*!
+    \fn QString &QString::append(QStringView v)
+    \overload append()
+    \since 6.0
+
+    Appends the given string view \a v to this string and returns the result.
+*/
+
+/*!
   \overload append()
   \since 5.0
 
@@ -6763,6 +6771,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         int precision = -1; // -1 means unspecified
         if (*c == '.') {
             ++c;
+            precision = 0;
             if (qIsDigit(*c)) {
                 precision = parse_field_width(c);
             } else if (*c == '*') { // can't parse this in another function, not portably, at least
@@ -8833,8 +8842,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \c{const char *} instead of QString. This includes the copy
     constructor, the assignment operator, the comparison operators,
     and various other functions such as \l{QString::insert()}{insert()},
-    \l{QString::replace()}{replace()}, and \l{QString::indexOf()}{indexOf()}.
-    These functions are usually optimized to avoid constructing a
+    \l{QString::append()}{append()}, and \l{QString::prepend()}{prepend()}.
+    Some of these functions are optimized to avoid constructing a
     QString object for the \c{const char *} data. For example,
     assuming \c str is a QString,
 
@@ -8846,6 +8855,12 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
     because it doesn't construct four temporary QString objects and
     make a deep copy of the character data.
+
+    However, that is not true for all QString member functions that take
+    \c{const char *} and therefore applications should assume a temporary will
+    be created, such as in
+
+    \snippet code/src_corelib_text_qstring.cpp 4bis
 
     Applications that define \l QT_NO_CAST_FROM_ASCII (as explained
     in the QString documentation) don't have access to QString's

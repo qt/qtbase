@@ -1,32 +1,10 @@
-[]
-rhel
-centos
-ubuntu-18.04
-ubuntu-20.04
 [customGesture]
 opensuse-leap
 # QTBUG-67254
 opensuse-42.3
-[graphicsItemGesture]
-ubuntu-18.04
+[panelPropagation]
 ubuntu-20.04
-rhel
-centos
-[graphicsItemTreeGesture]
-ubuntu-18.04
+ubuntu-22.04 ci
+[panelStacksBehindParent]
 ubuntu-20.04
-[graphicsView]
-ubuntu-18.04
-ubuntu-20.04
-rhel
-centos
-[explicitGraphicsObjectTarget]
-ubuntu-18.04
-ubuntu-20.04
-rhel
-centos
-[autoCancelGestures2]
-ubuntu-18.04
-ubuntu-20.04
-rhel
-centos
+ubuntu-22.04 ci

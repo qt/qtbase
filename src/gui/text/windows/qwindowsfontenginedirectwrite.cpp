@@ -101,7 +101,7 @@ namespace {
     };
 
     void GeometrySink::AddBeziers(const D2D1_BEZIER_SEGMENT *beziers,
-                                  UINT bezierCount)
+                                  UINT bezierCount) noexcept
     {
         for (uint i=0; i<bezierCount; ++i) {
             QPointF c1 = fromD2D1_POINT_2F(beziers[i].point1);
@@ -112,48 +112,48 @@ namespace {
         }
     }
 
-    void GeometrySink::AddLines(const D2D1_POINT_2F *points, UINT pointsCount)
+    void GeometrySink::AddLines(const D2D1_POINT_2F *points, UINT pointsCount) noexcept
     {
         for (uint i=0; i<pointsCount; ++i)
             m_path->lineTo(fromD2D1_POINT_2F(points[i]));
     }
 
     void GeometrySink::BeginFigure(D2D1_POINT_2F startPoint,
-                                   D2D1_FIGURE_BEGIN /*figureBegin*/)
+                                   D2D1_FIGURE_BEGIN /*figureBegin*/) noexcept
     {
         m_startPoint = fromD2D1_POINT_2F(startPoint);
         m_path->moveTo(m_startPoint);
     }
 
-    IFACEMETHODIMP GeometrySink::Close()
+    IFACEMETHODIMP GeometrySink::Close() noexcept
     {
         return E_NOTIMPL;
     }
 
-    void GeometrySink::EndFigure(D2D1_FIGURE_END figureEnd)
+    void GeometrySink::EndFigure(D2D1_FIGURE_END figureEnd) noexcept
     {
         if (figureEnd == D2D1_FIGURE_END_CLOSED)
             m_path->closeSubpath();
     }
 
-    void GeometrySink::SetFillMode(D2D1_FILL_MODE fillMode)
+    void GeometrySink::SetFillMode(D2D1_FILL_MODE fillMode) noexcept
     {
         m_path->setFillRule(fillMode == D2D1_FILL_MODE_ALTERNATE
                             ? Qt::OddEvenFill
                             : Qt::WindingFill);
     }
 
-    void GeometrySink::SetSegmentFlags(D2D1_PATH_SEGMENT /*vertexFlags*/)
+    void GeometrySink::SetSegmentFlags(D2D1_PATH_SEGMENT /*vertexFlags*/) noexcept
     {
         /* Not implemented */
     }
 
-    IFACEMETHODIMP_(unsigned long) GeometrySink::AddRef()
+    IFACEMETHODIMP_(unsigned long) GeometrySink::AddRef() noexcept
     {
         return InterlockedIncrement(&m_refCount);
     }
 
-    IFACEMETHODIMP_(unsigned long) GeometrySink::Release()
+    IFACEMETHODIMP_(unsigned long) GeometrySink::Release() noexcept
     {
         unsigned long newCount = InterlockedDecrement(&m_refCount);
         if (newCount == 0)
@@ -165,7 +165,7 @@ namespace {
         return newCount;
     }
 
-    IFACEMETHODIMP GeometrySink::QueryInterface(IID const &riid, void **ppvObject)
+    IFACEMETHODIMP GeometrySink::QueryInterface(IID const &riid, void **ppvObject) noexcept
     {
         if (__uuidof(IDWriteGeometrySink) == riid) {
             *ppvObject = this;
@@ -530,6 +530,53 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
     }
 }
 
+void QWindowsFontEngineDirectWrite::getUnscaledGlyph(glyph_t glyph,
+                                                     QPainterPath *path,
+                                                     glyph_metrics_t *metric)
+{
+    float advance = 0.0f;
+    UINT16 g = glyph;
+    DWRITE_GLYPH_OFFSET offset;
+    offset.advanceOffset = 0;
+    offset.ascenderOffset = 0;
+    GeometrySink geometrySink(path);
+    HRESULT hr = m_directWriteFontFace->GetGlyphRunOutline(m_unitsPerEm,
+                                                           &g,
+                                                           &advance,
+                                                           &offset,
+                                                           1,
+                                                           false,
+                                                           false,
+                                                           &geometrySink);
+    if (FAILED(hr)) {
+        qErrnoWarning("%s: GetGlyphRunOutline failed", __FUNCTION__);
+        return;
+    }
+
+    DWRITE_GLYPH_METRICS glyphMetrics;
+    hr = m_directWriteFontFace->GetDesignGlyphMetrics(&g, 1, &glyphMetrics);
+    if (FAILED(hr)) {
+        qErrnoWarning("%s: GetDesignGlyphMetrics failed", __FUNCTION__);
+        return;
+    }
+
+    QFixed advanceWidth = QFixed(int(glyphMetrics.advanceWidth));
+    QFixed leftSideBearing = QFixed(glyphMetrics.leftSideBearing);
+    QFixed rightSideBearing = QFixed(glyphMetrics.rightSideBearing);
+    QFixed advanceHeight = QFixed(int(glyphMetrics.advanceHeight));
+    QFixed verticalOriginY = QFixed(glyphMetrics.verticalOriginY);
+    QFixed topSideBearing = QFixed(glyphMetrics.topSideBearing);
+    QFixed bottomSideBearing = QFixed(glyphMetrics.bottomSideBearing);
+    QFixed width = advanceWidth - leftSideBearing - rightSideBearing;
+    QFixed height = advanceHeight - topSideBearing - bottomSideBearing;
+    *metric = glyph_metrics_t(leftSideBearing,
+                              -verticalOriginY + topSideBearing,
+                              width,
+                              height,
+                              advanceWidth,
+                              0);
+}
+
 void QWindowsFontEngineDirectWrite::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                                              QPainterPath *path, QTextItem::RenderFlags flags)
 {
@@ -649,6 +696,33 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
 bool QWindowsFontEngineDirectWrite::supportsHorizontalSubPixelPositions() const
 {
     return true;
+}
+
+QFontEngine::Properties QWindowsFontEngineDirectWrite::properties() const
+{
+    IDWriteFontFace2 *directWriteFontFace2;
+    if (SUCCEEDED(m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace2),
+                                                        reinterpret_cast<void **>(&directWriteFontFace2)))) {
+        DWRITE_FONT_METRICS1 metrics;
+        directWriteFontFace2->GetMetrics(&metrics);
+
+        Properties p = QFontEngine::properties();
+        p.emSquare = metrics.designUnitsPerEm;
+        p.boundingBox = QRectF(metrics.glyphBoxLeft,
+                               -metrics.glyphBoxTop,
+                               metrics.glyphBoxRight - metrics.glyphBoxLeft,
+                               metrics.glyphBoxTop - metrics.glyphBoxBottom);
+        p.ascent = metrics.ascent;
+        p.descent = metrics.descent;
+        p.leading = metrics.lineGap;
+        p.capHeight = metrics.capHeight;
+        p.lineWidth = metrics.underlineThickness;
+
+        directWriteFontFace2->Release();
+        return p;
+    } else {
+        return QFontEngine::properties();
+    }
 }
 
 QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,

@@ -28,6 +28,7 @@
 #include <QStringList>
 #include <QFile>
 #include <QTest>
+#include <limits>
 
 class tst_QString: public QObject
 {
@@ -47,6 +48,14 @@ private slots:
     void toLower();
     void toCaseFolded_data();
     void toCaseFolded();
+
+    // Parsing:
+    void toLongLong_data();
+    void toLongLong();
+    void toULongLong_data();
+    void toULongLong();
+    void toDouble_data();
+    void toDouble();
 
 private:
     void section_data_impl(bool includeRegExOnly = true);
@@ -185,6 +194,155 @@ void tst_QString::toCaseFolded()
     QBENCHMARK {
         s.toCaseFolded();
     }
+}
+
+template <typename Integer>
+void toWholeCommon_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<bool>("good");
+    QTest::addColumn<Integer>("expected");
+
+    QTest::newRow("empty") << QStringLiteral("") << 10 << false << Integer(0ull);
+    QTest::newRow("0") << QStringLiteral("0") << 10 << true << Integer(0ull);
+    QTest::newRow("1234") << QStringLiteral("1234") << 10 << true << Integer(1234ull);
+    QTest::newRow("1,234") << QStringLiteral("1,234") << 10 << false << Integer(0ull);
+    QTest::newRow("123456789")
+            << QStringLiteral("123456789") << 10 << true << Integer(123456789ull);
+    QTest::newRow("bad1dea, base 16")
+            << QStringLiteral("bad1dea") << 16 << true << Integer(0xBAD1DEAull);
+    QTest::newRow("bad1dea, base 10") << QStringLiteral("bad1dea") << 10 << false << Integer(0ull);
+    QTest::newRow("42, base 13") << QStringLiteral("42") << 13 << true << Integer(6ull * 9ull);
+    QTest::newRow("242, base 8") << QStringLiteral("242") << 8 << true << Integer(0242ull);
+    QTest::newRow("495, base 8") << QStringLiteral("495") << 8 << false << Integer(0ull);
+    QTest::newRow("101101, base 2")
+            << QStringLiteral("101101") << 2 << true << Integer(0b101101ull);
+    QTest::newRow("ad, base 30") << QStringLiteral("ad") << 30 << true << Integer(313ull);
+}
+
+void tst_QString::toLongLong_data()
+{
+    toWholeCommon_data<qlonglong>();
+
+    QTest::newRow("-1234") << QStringLiteral("-1234") << 10 << true << -1234ll;
+    QTest::newRow("-123456789") << QStringLiteral("-123456789") << 10 << true << -123456789ll;
+    QTest::newRow("-bad1dea, base 16") << QStringLiteral("-bad1dea") << 16 << true << -0xBAD1DEAll;
+    QTest::newRow("-242, base 8") << QStringLiteral("-242") << 8 << true << -0242ll;
+    QTest::newRow("-101101, base 2") << QStringLiteral("-101101") << 2 << true << -0b101101ll;
+    QTest::newRow("-ad, base 30") << QStringLiteral("-ad") << 30 << true << -313ll;
+
+    QTest::newRow("qlonglong-max")
+            << QStringLiteral("9223372036854775807") << 10 << true
+            << std::numeric_limits<qlonglong>::max();
+    QTest::newRow("qlonglong-min")
+            << QStringLiteral("-9223372036854775808") << 10 << true
+            << std::numeric_limits<qlonglong>::min();
+    QTest::newRow("qlonglong-max, base 2")
+            << QString(63, u'1') << 2 << true << std::numeric_limits<qlonglong>::max();
+    QTest::newRow("qlonglong-min, base 2")
+            << (QStringLiteral("-1") + QString(63, u'0')) << 2 << true
+            << std::numeric_limits<qlonglong>::min();
+    QTest::newRow("qlonglong-max, base 16")
+            << (QChar(u'7') + QString(15, u'f')) << 16 << true
+            << std::numeric_limits<qlonglong>::max();
+    QTest::newRow("qlonglong-min, base 16")
+            << (QStringLiteral("-8") + QString(15, u'0')) << 16 << true
+            << std::numeric_limits<qlonglong>::min();
+}
+
+void tst_QString::toLongLong()
+{
+    QFETCH(QString, text);
+    QFETCH(int, base);
+    QFETCH(bool, good);
+    QFETCH(qlonglong, expected);
+
+    qlonglong actual = expected;
+    bool ok = false;
+    QBENCHMARK {
+        actual = text.toLongLong(&ok, base);
+    }
+    QCOMPARE(ok, good);
+    QCOMPARE(actual, expected);
+}
+
+void tst_QString::toULongLong_data()
+{
+    toWholeCommon_data<qulonglong>();
+
+    QTest::newRow("qlonglong-max + 1")
+            << QStringLiteral("9223372036854775808") << 10 << true
+            << (qulonglong(std::numeric_limits<qlonglong>::max()) + 1);
+    QTest::newRow("qulonglong-max")
+            << QStringLiteral("18446744073709551615") << 10 << true
+            << std::numeric_limits<qulonglong>::max();
+    QTest::newRow("qulonglong-max, base 2")
+            << QString(64, u'1') << 2 << true << std::numeric_limits<qulonglong>::max();
+    QTest::newRow("qulonglong-max, base 16")
+            << QString(16, u'f') << 16 << true << std::numeric_limits<qulonglong>::max();
+}
+
+void tst_QString::toULongLong()
+{
+    QFETCH(QString, text);
+    QFETCH(int, base);
+    QFETCH(bool, good);
+    QFETCH(qulonglong, expected);
+
+    qulonglong actual = expected;
+    bool ok = false;
+    QBENCHMARK {
+        actual = text.toULongLong(&ok, base);
+    }
+    QCOMPARE(ok, good);
+    QCOMPARE(actual, expected);
+}
+
+void tst_QString::toDouble_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<bool>("good");
+    QTest::addColumn<double>("expected");
+
+    QTest::newRow("empty") << QStringLiteral("") << false << 0.0;
+    QTest::newRow("0") << QStringLiteral("0") << true << 0.0;
+    QTest::newRow("0.12340") << QStringLiteral("0.12340") << true << 0.12340;
+    QTest::newRow("-0.12340") << QStringLiteral("-0.12340") << true << -0.12340;
+    QTest::newRow("epsilon")
+        << QStringLiteral("2.220446049e-16") << true << std::numeric_limits<double>::epsilon();
+    QTest::newRow("1.0e-4") << QStringLiteral("1.0e-4") << true << 1.0e-4;
+    QTest::newRow("1.0e+4") << QStringLiteral("1.0e+4") << true << 1.0e+4;
+    QTest::newRow("10.e+3") << QStringLiteral("10.e+3") << true << 1.0e+4;
+    QTest::newRow("10e+3.") << QStringLiteral("10e+3.") << false << 0.0;
+    QTest::newRow("1e4") << QStringLiteral("1e4") << true << 1.0e+4;
+    QTest::newRow("1.0e-8") << QStringLiteral("1.0e-8") << true << 1.0e-8;
+    QTest::newRow("1.0e+8") << QStringLiteral("1.0e+8") << true << 1.0e+8;
+
+    // NaN and infinity:
+    QTest::newRow("nan") << QStringLiteral("nan") << true << qQNaN();
+    QTest::newRow("NaN") << QStringLiteral("NaN") << true << qQNaN();
+    QTest::newRow("-nan") << QStringLiteral("-nan") << false << 0.0;
+    QTest::newRow("+nan") << QStringLiteral("+nan") << false << 0.0;
+    QTest::newRow("inf") << QStringLiteral("inf") << true << qInf();
+    QTest::newRow("Inf") << QStringLiteral("Inf") << true << qInf();
+    QTest::newRow("+inf") << QStringLiteral("+inf") << true << qInf();
+    QTest::newRow("-inf") << QStringLiteral("-inf") << true << -qInf();
+}
+
+void tst_QString::toDouble()
+{
+    QFETCH(QString, text);
+    QFETCH(bool, good);
+    QFETCH(double, expected);
+
+    double actual = expected;
+    bool ok = false;
+    QBENCHMARK {
+        actual = text.toDouble(&ok);
+    }
+    QCOMPARE(ok, good);
+    QCOMPARE(actual, expected);
 }
 
 QTEST_APPLESS_MAIN(tst_QString)

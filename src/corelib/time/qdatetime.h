@@ -229,18 +229,25 @@ class QDateTimePrivate;
 class Q_CORE_EXPORT QDateTime
 {
     struct ShortData {
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        quintptr status : 8;
-#endif
 #if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+#  if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        qint64 status : 8;
+#  endif
         qint64 msecs : 56;
+
+#  if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        qint64 status : 8;
+#  endif
 #else
+#  if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        quintptr status : 8;
+#  endif
         // note: this is only 24 bits on 32-bit systems...
         qintptr msecs : sizeof(void *) * 8 - 8;
-#endif
 
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+#  if Q_BYTE_ORDER == Q_BIG_ENDIAN
         quintptr status : 8;
+#  endif
 #endif
     };
 

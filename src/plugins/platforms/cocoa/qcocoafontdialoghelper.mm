@@ -202,7 +202,17 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 {
     mDialogIsExecuting = false;
     mResultSet = false;
-    [mFontPanel makeKeyAndOrderFront:mFontPanel];
+    // Make this an asynchronous call, so the panel is made key only
+    // in the next event loop run. This is to make sure that by
+    // the time the modal loop is run in runModalForWindow below,
+    // which internally also sets the panel to key window,
+    // the panel is not yet key, and the NSApp still has the right
+    // reference to the _previousKeyWindow. Otherwise both NSApp.key
+    // and NSApp._previousKeyWindow would wrongly point to the panel,
+    // loosing any reference to the window that was key before.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [mFontPanel makeKeyAndOrderFront:mFontPanel];
+    });
 }
 
 - (BOOL)runApplicationModalPanel

@@ -1866,12 +1866,6 @@ void tst_QMap::equal_range()
     QCOMPARE(map.count(1), 2);
 }
 
-template <class T>
-const T &const_(const T &t)
-{
-    return t;
-}
-
 void tst_QMap::insert()
 {
     QMap<QString, float> map;

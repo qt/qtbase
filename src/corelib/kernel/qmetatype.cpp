@@ -43,6 +43,7 @@
 #include "qmetatype.h"
 #undef QT_QMETATYPE_BC_COMPAT
 #include "qmetatype_p.h"
+#include "qobject.h"
 #include "qobjectdefs.h"
 #include "qdatetime.h"
 #include "qbytearray.h"
@@ -393,6 +394,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \value QStringList QStringList
     \value QVariantMap QVariantMap
     \value QVariantHash QVariantHash
+    \value QVariantPair QVariantPair
     \value QIcon QIcon
     \value QPen QPen
     \value QLineF QLineF
@@ -3009,6 +3011,13 @@ static const QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 
     return iface;
 }
+
+/*!
+     \fn QMetaType::QMetaType()
+     \since 6.0
+
+     Constructs a default, invalid, QMetaType object.
+*/
 
 /*!
      \fn QMetaType::QMetaType(int typeId)

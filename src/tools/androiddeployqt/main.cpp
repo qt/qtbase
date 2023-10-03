@@ -134,7 +134,6 @@ struct Options
         , internalSf(false)
         , sectionsOnly(false)
         , protectedAuthenticationPath(false)
-        , jarSigner(false)
         , installApk(false)
         , uninstallApk(false)
         , qmlImportScannerBinaryPath()
@@ -224,7 +223,6 @@ struct Options
     bool internalSf;
     bool sectionsOnly;
     bool protectedAuthenticationPath;
-    bool jarSigner;
     QString apkPath;
 
     // Installation information
@@ -436,7 +434,6 @@ Options parseOptions()
         } else if (argument.compare(QLatin1String("--aab"), Qt::CaseInsensitive) == 0) {
             options.buildAAB = true;
             options.build = true;
-            options.jarSigner = true;
         } else if (!options.buildAAB && argument.compare(QLatin1String("--no-build"), Qt::CaseInsensitive) == 0) {
             options.build = false;
         } else if (argument.compare(QLatin1String("--install"), Qt::CaseInsensitive) == 0) {
@@ -570,8 +567,6 @@ Options parseOptions()
             options.sectionsOnly = true;
         } else if (argument.compare(QLatin1String("--protected"), Qt::CaseInsensitive) == 0) {
             options.protectedAuthenticationPath = true;
-        } else if (argument.compare(QLatin1String("--jarsigner"), Qt::CaseInsensitive) == 0) {
-            options.jarSigner = true;
         } else if (argument.compare(QLatin1String("--aux-mode"), Qt::CaseInsensitive) == 0) {
             options.auxMode = true;
         } else if (argument.compare(QLatin1String("--qml-importscanner-binary"), Qt::CaseInsensitive) == 0) {
@@ -656,8 +651,7 @@ void printHelp()
                     "         --internalsf: Include the .SF file inside the signature block.\n"
                     "         --sectionsonly: Don't compute hash of entire manifest.\n"
                     "         --protected: Keystore has protected authentication path.\n"
-                    "         --jarsigner: Force jarsigner usage, otherwise apksigner will be\n"
-                    "           used if available.\n"
+                    "         --jarsigner: Deprecated, ignored.\n"
                     "\n"
                     "       NOTE: To conceal the keystore information, the environment variables\n"
                     "         QT_ANDROID_KEYSTORE_PATH, and QT_ANDROID_KEYSTORE_ALIAS are used to\n"
@@ -2204,7 +2198,7 @@ bool readDependencies(Options *options)
         }
     }
 
-    if ((!options->rootPaths.empty() || options->qrcFiles.isEmpty()) &&
+    if ((!options->rootPaths.empty() || !options->qrcFiles.isEmpty()) &&
         !scanImports(options, &usedDependencies))
         return false;
 
@@ -2543,6 +2537,24 @@ void checkAndWarnGradleLongPaths(const QString &outputDirectory)
 }
 #endif
 
+bool gradleSetsLegacyPackagingProperty(const QString &path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    const auto lines = file.readAll().split('\n');
+    for (const auto &line : lines) {
+        if (line.contains("useLegacyPackaging")) {
+            const auto trimmed = line.trimmed();
+            if (!trimmed.startsWith("//") && !trimmed.startsWith('*') && !trimmed.startsWith("/*"))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 bool buildAndroidProject(const Options &options)
 {
     GradleProperties localProperties;
@@ -2551,9 +2563,13 @@ bool buildAndroidProject(const Options &options)
     if (!mergeGradleProperties(localPropertiesPath, localProperties))
         return false;
 
-    QString gradlePropertiesPath = options.outputDirectory + QLatin1String("gradle.properties");
+    const QString gradlePropertiesPath = options.outputDirectory + QLatin1String("gradle.properties");
     GradleProperties gradleProperties = readGradleProperties(gradlePropertiesPath);
-    gradleProperties["android.bundle.enableUncompressedNativeLibs"] = "false";
+
+    const QString gradleBuildFilePath = options.outputDirectory + QLatin1String("build.gradle");
+    if (!gradleSetsLegacyPackagingProperty(gradleBuildFilePath))
+        gradleProperties["android.bundle.enableUncompressedNativeLibs"] = "false";
+
     gradleProperties["buildDir"] = "build";
     gradleProperties["qtAndroidDir"] = (options.qtInstallDirectory + QLatin1String("/src/android/java")).toUtf8();
     // The following property "qt5AndroidDir" is only for compatibility.
@@ -2759,7 +2775,7 @@ bool copyStdCpp(Options *options)
     return copyFileIfNewer(stdCppPath, destinationFile, *options);
 }
 
-bool jarSignerSignPackage(const Options &options)
+bool signAAB(const Options &options)
 {
     if (options.verbose)
         fprintf(stdout, "Signing Android package.\n");
@@ -2818,7 +2834,7 @@ bool jarSignerSignPackage(const Options &options)
     if (options.protectedAuthenticationPath)
         jarSignerTool += QLatin1String(" -protected");
 
-    auto signPackage = [&](const QString &file) {
+    auto jarSignPackage = [&](const QString &file) {
         fprintf(stdout, "Signing file %s\n", qPrintable(file));
         fflush(stdout);
         QString command = jarSignerTool
@@ -2848,52 +2864,9 @@ bool jarSignerSignPackage(const Options &options)
         return true;
     };
 
-    if (!signPackage(packagePath(options, UnsignedAPK)))
+    if (options.buildAAB && !jarSignPackage(packagePath(options, AAB)))
         return false;
-    if (options.buildAAB && !signPackage(packagePath(options, AAB)))
-        return false;
-
-    QString zipAlignTool = options.sdkPath + QLatin1String("/tools/zipalign");
-#if defined(Q_OS_WIN32)
-    zipAlignTool += QLatin1String(".exe");
-#endif
-
-    if (!QFile::exists(zipAlignTool)) {
-        zipAlignTool = options.sdkPath + QLatin1String("/build-tools/") + options.sdkBuildToolsVersion + QLatin1String("/zipalign");
-#if defined(Q_OS_WIN32)
-        zipAlignTool += QLatin1String(".exe");
-#endif
-        if (!QFile::exists(zipAlignTool)) {
-            fprintf(stderr, "zipalign tool not found: %s\n", qPrintable(zipAlignTool));
-            return false;
-        }
-    }
-
-    zipAlignTool = QLatin1String("%1%2 -f 4 %3 %4")
-                           .arg(shellQuote(zipAlignTool),
-                                options.verbose ? QLatin1String(" -v") : QLatin1String(),
-                                shellQuote(packagePath(options, UnsignedAPK)),
-                                shellQuote(packagePath(options, SignedAPK)));
-
-    FILE *zipAlignCommand = openProcess(zipAlignTool);
-    if (zipAlignCommand == 0) {
-        fprintf(stderr, "Couldn't run zipalign.\n");
-        return false;
-    }
-
-    char buffer[512];
-    while (fgets(buffer, sizeof(buffer), zipAlignCommand) != 0)
-        fprintf(stdout, "%s", buffer);
-
-    int errorCode = pclose(zipAlignCommand);
-    if (errorCode != 0) {
-        fprintf(stderr, "zipalign command failed.\n");
-        if (!options.verbose)
-            fprintf(stderr, "  -- Run with --verbose for more information.\n");
-        return false;
-    }
-
-    return QFile::remove(packagePath(options, UnsignedAPK));
+    return true;
 }
 
 bool signPackage(const Options &options)
@@ -2902,11 +2875,6 @@ bool signPackage(const Options &options)
 #if defined(Q_OS_WIN32)
     apksignerTool += QLatin1String(".bat");
 #endif
-
-    if (options.jarSigner || !QFile::exists(apksignerTool))
-        return jarSignerSignPackage(options);
-
-    // APKs signed with apksigner must not be changed after they're signed, therefore we need to zipalign it before we sign it.
 
     QString zipAlignTool = options.sdkPath + QLatin1String("/tools/zipalign");
 #if defined(Q_OS_WIN32)
@@ -3019,6 +2987,9 @@ bool signPackage(const Options &options)
     const QString apkVerifyCommand =
             QLatin1String("%1 verify --verbose %2")
                     .arg(shellQuote(apksignerTool), shellQuote(packagePath(options, SignedAPK)));
+
+    if (options.buildAAB && !signAAB(options))
+      return false;
 
     // Verify the package and remove the unsigned apk
     return apkSignerRunner(apkVerifyCommand, true) && QFile::remove(packagePath(options, UnsignedAPK));

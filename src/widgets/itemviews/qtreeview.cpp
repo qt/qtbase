@@ -1695,8 +1695,11 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
         }
     }
 
-    // ### special case: treeviews with multiple columns draw
-    // the selections differently than with only one column
+    // ### special case: if we select entire rows, then we need to draw the
+    // selection in the first column all the way to the second column, rather
+    // than just around the item text. We abuse showDecorationSelected to
+    // indicate this to the style. Below we will reset this value temporarily
+    // to only respect the styleHint while we are rendering the decoration.
     opt.showDecorationSelected = (d->selectionBehavior & SelectRows)
                                  || option.showDecorationSelected;
 
@@ -1781,8 +1784,16 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
             }
             // draw background for the branch (selection + alternate row)
             opt.rect = branches;
-            if (style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, &opt, this))
-                style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, this);
+
+            // We use showDecorationSelected both to store the style hint, and to indicate
+            // that the entire row has to be selected (see overrides of the value if
+            // selectionBehavior == SelectRow).
+            // While we are only painting the background we don't care for the
+            // selectionBehavior factor, so respect only the style value, and reset later.
+            const bool oldShowDecorationSelected = opt.showDecorationSelected;
+            opt.showDecorationSelected = style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected,
+                                                            &opt, this);
+            style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, this);
 
             // draw background of the item (only alternate row). rest of the background
             // is provided by the delegate
@@ -1791,6 +1802,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
             opt.rect.setRect(reverse ? position : i + position, y, width - i, height);
             style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, this);
             opt.state = oldState;
+            opt.showDecorationSelected = oldShowDecorationSelected;
 
             if (d->indent != 0)
                 drawBranches(painter, branches, index);

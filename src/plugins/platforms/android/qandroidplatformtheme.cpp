@@ -192,6 +192,9 @@ QJsonObject AndroidStyle::loadStyleData()
     if (!stylePath.isEmpty() && !stylePath.endsWith(slashChar))
         stylePath += slashChar;
 
+    if (QAndroidPlatformIntegration::appearance() == QPlatformTheme::Appearance::Dark)
+        stylePath += QLatin1String("darkUiMode/");
+
     Q_ASSERT(!stylePath.isEmpty());
 
     QString androidTheme = QLatin1String(qgetenv("QT_ANDROID_THEME"));
@@ -219,13 +222,22 @@ QJsonObject AndroidStyle::loadStyleData()
     return document.object();
 }
 
-static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
+static void loadAndroidStyle(QPalette *defaultPalette, std::shared_ptr<AndroidStyle> &style)
 {
     double pixelDensity = QHighDpiScaling::isActive() ? QtAndroid::pixelDensity() : 1.0;
-    std::shared_ptr<AndroidStyle> style = std::make_shared<AndroidStyle>();
+    if (style) {
+        style->m_standardPalette = QPalette();
+        style->m_palettes.clear();
+        style->m_fonts.clear();
+        style->m_QWidgetsFonts.clear();
+    } else {
+        style = std::make_shared<AndroidStyle>();
+    }
+
     style->m_styleData = AndroidStyle::loadStyleData();
+
     if (style->m_styleData.isEmpty())
-        return std::shared_ptr<AndroidStyle>();
+        return;
 
     {
         QFont font(QLatin1String("Droid Sans Mono"), 14.0 * 100 / 72);
@@ -327,11 +339,44 @@ static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
             // Extract palette information
         }
     }
-    return style;
+}
+
+QAndroidPlatformTheme *QAndroidPlatformTheme::m_instance = nullptr;
+
+QAndroidPlatformTheme *QAndroidPlatformTheme::instance(
+    QAndroidPlatformNativeInterface *androidPlatformNativeInterface)
+{
+    if (androidPlatformNativeInterface && !m_instance) {
+        m_instance = new QAndroidPlatformTheme(androidPlatformNativeInterface);
+    }
+    return m_instance;
 }
 
 QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *androidPlatformNativeInterface)
 {
+    updateStyle();
+
+    androidPlatformNativeInterface->m_androidStyle = m_androidStyleData;
+
+    // default in case the style has not set a font
+    m_systemFont = QFont(QLatin1String("Roboto"), 14.0 * 100 / 72);
+}
+
+QAndroidPlatformTheme::~QAndroidPlatformTheme()
+{
+    m_instance = nullptr;
+}
+
+void QAndroidPlatformTheme::updateAppearance()
+{
+    updateStyle();
+    for (QWindow *w : QGuiApplication::allWindows())
+        QWindowSystemInterface::handleThemeChange(w);
+}
+
+void QAndroidPlatformTheme::updateStyle()
+{
+    QColor windowText = Qt::black;
     QColor background(229, 229, 229);
     QColor light = background.lighter(150);
     QColor mid(background.darker(130));
@@ -348,7 +393,27 @@ QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *an
     QColor highlight(148, 210, 231);
     QColor disabledShadow = shadow.lighter(150);
 
-    m_defaultPalette = QPalette(Qt::black,background,light,dark,mid,text,base);
+    if (appearance() == QPlatformTheme::Appearance::Dark) {
+        // Colors were prepared based on Theme.DeviceDefault.DayNight
+        windowText = QColor(250, 250, 250);
+        background = QColor(48, 48, 48);
+        light = background.darker(150);
+        mid = background.lighter(130);
+        midLight = mid.darker(110);
+        base = background;
+        disabledBase = background;
+        dark = background.darker(150);
+        darkDisabled = dark.darker(110);
+        text = QColor(250, 250, 250);
+        highlightedText = QColor(250, 250, 250);
+        disabledText = QColor(96, 96, 96);
+        button = QColor(48, 48, 48);
+        shadow = QColor(32, 32, 32);
+        highlight = QColor(102, 178, 204);
+        disabledShadow = shadow.darker(150);
+    }
+
+    m_defaultPalette = QPalette(windowText,background,light,dark,mid,text,base);
     m_defaultPalette.setBrush(QPalette::Midlight, midLight);
     m_defaultPalette.setBrush(QPalette::Button, button);
     m_defaultPalette.setBrush(QPalette::Shadow, shadow);
@@ -364,12 +429,8 @@ QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *an
     m_defaultPalette.setBrush(QPalette::Active, QPalette::Highlight, highlight);
     m_defaultPalette.setBrush(QPalette::Inactive, QPalette::Highlight, highlight);
     m_defaultPalette.setBrush(QPalette::Disabled, QPalette::Highlight, highlight.lighter(150));
-    m_androidStyleData = loadAndroidStyle(&m_defaultPalette);
-    QGuiApplication::setPalette(m_defaultPalette);
-    androidPlatformNativeInterface->m_androidStyle = m_androidStyleData;
 
-    // default in case the style has not set a font
-    m_systemFont = QFont(QLatin1String("Roboto"), 14.0 * 100 / 72); // keep default size the same after changing from 100 dpi to 72 dpi
+    loadAndroidStyle(&m_defaultPalette, m_androidStyleData);
 }
 
 QPlatformMenuBar *QAndroidPlatformTheme::createPlatformMenuBar() const

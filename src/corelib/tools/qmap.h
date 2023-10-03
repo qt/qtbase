@@ -359,6 +359,7 @@ public:
         if (!d)
             return T();
 
+        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
         // TODO: improve. There is no need of copying all the
         // elements (the one to be removed can be skipped).
         detach();
@@ -400,6 +401,7 @@ public:
 
     T &operator[](const Key &key)
     {
+        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
         detach();
         auto i = d->m.find(key);
         if (i == d->m.end())
@@ -669,6 +671,7 @@ public:
 
     iterator find(const Key &key)
     {
+        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
         detach();
         return iterator(d->m.find(key));
     }
@@ -687,6 +690,7 @@ public:
 
     iterator lowerBound(const Key &key)
     {
+        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
         detach();
         return iterator(d->m.lower_bound(key));
     }
@@ -700,6 +704,7 @@ public:
 
     iterator upperBound(const Key &key)
     {
+        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
         detach();
         return iterator(d->m.upper_bound(key));
     }
@@ -713,6 +718,7 @@ public:
 
     iterator insert(const Key &key, const T &value)
     {
+        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
         // TODO: improve. In case of assignment, why copying first?
         detach();
         return iterator(d->m.insert_or_assign(key, value).first);
@@ -722,6 +728,7 @@ public:
     {
         // TODO: improve. In case of assignment, why copying first?
         typename Map::const_iterator dpos;
+        const auto copy = d.isShared() ? *this : QMap(); // keep `key`/`value` alive across the detach
         if (!d || d.isShared()) {
             auto posDistance = d ? std::distance(d->m.cbegin(), pos.i) : 0;
             detach();
@@ -789,6 +796,7 @@ public:
 
     QPair<iterator, iterator> equal_range(const Key &akey)
     {
+        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
         detach();
         auto result = d->m.equal_range(akey);
         return {iterator(result.first), iterator(result.second)};
@@ -986,14 +994,14 @@ public:
         if (!d)
             return 0;
 
-        // TODO: improve. Copy over only the elements not to be removed.
-        detach();
-
         // key and value may belong to this map. As such, we need to copy
         // them to ensure they stay valid throughout the iteration below
         // (which may destroy them)
         const Key keyCopy = key;
         const T valueCopy = value;
+
+        // TODO: improve. Copy over only the elements not to be removed.
+        detach();
 
         size_type result = 0;
         const auto &keyCompare = d->m.key_comp();
@@ -1023,6 +1031,8 @@ public:
     {
         if (!d)
             return T();
+
+        const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key` alive across the detach
 
         // TODO: improve. There is no need of copying all the
         // elements (the one to be removed can be skipped).
@@ -1361,6 +1371,7 @@ public:
 
     iterator find(const Key &key)
     {
+        const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key` alive across the detach
         detach();
         return iterator(d->m.find(key));
     }
@@ -1379,6 +1390,8 @@ public:
 
     iterator find(const Key &key, const T &value)
     {
+        const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key`/`value` alive across the detach
+
         detach();
 
         auto range = d->m.equal_range(key);
@@ -1411,6 +1424,7 @@ public:
 
     iterator lowerBound(const Key &key)
     {
+        const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key` alive across the detach
         detach();
         return iterator(d->m.lower_bound(key));
     }
@@ -1424,6 +1438,7 @@ public:
 
     iterator upperBound(const Key &key)
     {
+        const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key` alive across the detach
         detach();
         return iterator(d->m.upper_bound(key));
     }
@@ -1437,6 +1452,7 @@ public:
 
     iterator insert(const Key &key, const T &value)
     {
+        const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key`/`value` alive across the detach
         detach();
         // note that std::multimap inserts at the end of an equal_range for a key,
         // QMultiMap at the beginning.
@@ -1446,6 +1462,7 @@ public:
 
     iterator insert(const_iterator pos, const Key &key, const T &value)
     {
+        const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key`/`value` alive across the detach
         typename Map::const_iterator dpos;
         if (!d || d.isShared()) {
             auto posDistance = d ? std::distance(d->m.cbegin(), pos.i) : 0;
@@ -1484,6 +1501,8 @@ public:
 
     iterator replace(const Key &key, const T &value)
     {
+        const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key`/`value` alive across the detach
+
         // TODO: improve. No need of copying and then overwriting.
         detach();
 
@@ -1503,6 +1522,7 @@ public:
 
     QPair<iterator, iterator> equal_range(const Key &akey)
     {
+        const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key` alive across the detach
         detach();
         auto result = d->m.equal_range(akey);
         return {iterator(result.first), iterator(result.second)};

@@ -62,8 +62,8 @@ public:
         CirclePath,
         NPathTypes
     };
-    Animation(QObject *target, const QByteArray &prop)
-        : QPropertyAnimation(target, prop)
+    Animation(QObject *target, const QByteArray &prop, QObject *parent = nullptr)
+        : QPropertyAnimation(target, prop, parent)
     {
         setPathType(LinearPath);
     }

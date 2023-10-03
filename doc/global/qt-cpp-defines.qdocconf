@@ -166,6 +166,7 @@ Cpp.ignoretokens        += \
                           QT_FASTCALL \
                           QT_MUTEX_LOCK_NOEXCEPT \
                           QT_POPCOUNT_CONSTEXPR \
+                          QT_POST_CXX17_API_IN_EXPORTED_CLASS \
                           QT_SIZEPOLICY_CONSTEXPR \
                           QT_WARNING_DISABLE_DEPRECATED \
                           QT_WARNING_PUSH \

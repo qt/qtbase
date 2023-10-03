@@ -189,6 +189,7 @@ private slots:
     void reverseTabOrder();
     void tabOrderWithProxy();
     void tabOrderWithProxyDisabled();
+    void tabOrderWithProxyOutOfOrder();
     void tabOrderWithCompoundWidgets();
     void tabOrderWithCompoundWidgetsNoFocusPolicy();
     void tabOrderNoChange();
@@ -387,7 +388,6 @@ private slots:
     void openModal_taskQTBUG_5804();
 
     void focusProxy();
-    void focusProxyAndInputMethods();
 #ifdef QT_BUILD_INTERNAL
     void scrollWithoutBackingStore();
 #endif
@@ -1848,8 +1848,11 @@ public:
         setObjectName(name);
 
         lineEdit1 = new QLineEdit;
+        lineEdit1->setObjectName(name + "/lineEdit1");
         lineEdit2 = new QLineEdit;
+        lineEdit2->setObjectName(name + "/lineEdit2");
         lineEdit3 = new QLineEdit;
+        lineEdit3->setObjectName(name + "/lineEdit3");
         lineEdit3->setEnabled(false);
 
         QHBoxLayout* hbox = new QHBoxLayout(this);
@@ -2095,6 +2098,24 @@ void tst_QWidget::tabOrderWithProxyDisabled()
              qPrintable(QApplication::focusWidget()->objectName()));
 }
 
+//#define DEBUG_FOCUS_CHAIN
+static void dumpFocusChain(QWidget *start, bool bForward, const char *desc = nullptr)
+{
+#ifdef DEBUG_FOCUS_CHAIN
+    qDebug() << "Dump focus chain, start:" << start << "isForward:" << bForward << desc;
+    QWidget *cur = start;
+    do {
+        qDebug() << "-" << cur;
+        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
+        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
+    } while (cur != start);
+#else
+    Q_UNUSED(start);
+    Q_UNUSED(bForward);
+    Q_UNUSED(desc);
+#endif
+}
+
 void tst_QWidget::tabOrderWithCompoundWidgets()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
@@ -2198,22 +2219,65 @@ static QList<QWidget *> getFocusChain(QWidget *start, bool bForward)
     return ret;
 }
 
-//#define DEBUG_FOCUS_CHAIN
-static void dumpFocusChain(QWidget *start, bool bForward, const char *desc = nullptr)
+void tst_QWidget::tabOrderWithProxyOutOfOrder()
 {
-#ifdef DEBUG_FOCUS_CHAIN
-    qDebug() << "Dump focus chain, start:" << start << "isForward:" << bForward << desc;
-    QWidget *cur = start;
-    do {
-        qDebug() << cur;
-        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
-        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
-    } while (cur != start);
-#else
-    Q_UNUSED(start);
-    Q_UNUSED(bForward);
-    Q_UNUSED(desc);
-#endif
+    Container container;
+    container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+
+    // important to create the widgets with parent so that they are
+    // added to the focus chain already now, and with the buttonBox
+    // before the outsideButton.
+    QWidget buttonBox(&container);
+    buttonBox.setObjectName("buttonBox");
+    QPushButton outsideButton(&container);
+    outsideButton.setObjectName("outsideButton");
+
+    container.box->addWidget(&outsideButton);
+    container.box->addWidget(&buttonBox);
+    QCOMPARE(getFocusChain(&container, true),
+             QList<QWidget*>({&container, &buttonBox, &outsideButton}));
+
+    // this now adds okButon and cancelButton to the focus chain,
+    // after the outsideButton - so the outsideButton is in between
+    // the buttonBox and the children of the buttonBox!
+    QPushButton okButton(&buttonBox);
+    okButton.setObjectName("okButton");
+    QPushButton cancelButton(&buttonBox);
+    cancelButton.setObjectName("cancelButton");
+    QCOMPARE(getFocusChain(&container, true),
+             QList<QWidget*>({&container, &buttonBox, &outsideButton, &okButton, &cancelButton}));
+
+    // by setting the okButton as the focusProxy, the outsideButton becomes
+    // unreachable when navigating the focus chain as the buttonBox is in front
+    // of, and proxies to the okButton behind the outsideButton. setFocusProxy
+    // must fix that by moving the buttonBox in front of the first sibling of
+    // the proxy.
+    buttonBox.setFocusProxy(&okButton);
+    QCOMPARE(getFocusChain(&container, true),
+             QList<QWidget*>({&container, &outsideButton, &buttonBox, &okButton, &cancelButton}));
+
+    container.show();
+    container.activateWindow();
+    QApplication::setActiveWindow(&container);
+    if (!QTest::qWaitForWindowActive(&container))
+        QSKIP("Window failed to activate, skipping test");
+
+    QCOMPARE(QApplication::focusWidget(), &outsideButton);
+    container.tab();
+    QCOMPARE(QApplication::focusWidget(), &okButton);
+    container.tab();
+    QCOMPARE(QApplication::focusWidget(), &cancelButton);
+    container.tab();
+    QCOMPARE(QApplication::focusWidget(), &outsideButton);
+
+    container.backTab();
+    QCOMPARE(QApplication::focusWidget(), &cancelButton);
+    container.backTab();
+    QCOMPARE(QApplication::focusWidget(), &okButton);
+    container.backTab();
+    QCOMPARE(QApplication::focusWidget(), &outsideButton);
+    container.backTab();
+    QCOMPARE(QApplication::focusWidget(), &cancelButton);
 }
 
 void tst_QWidget::tabOrderWithCompoundWidgetsNoFocusPolicy()
@@ -3494,7 +3558,8 @@ void tst_QWidget::raise()
 
     for (int i = 0; i < 5; ++i)
         child2->raise();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowExposed(child2));
+    QApplication::processEvents(); // process events that could be triggered by raise();
 
     for (UpdateWidget *child : qAsConst(allChildren)) {
         int expectedPaintEvents = child == child2 ? 1 : 0;
@@ -3523,6 +3588,7 @@ void tst_QWidget::raise()
     onTop->show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     QTRY_VERIFY(onTop->numPaintEvents > 0);
+    QApplication::processEvents(); // process remaining paint events if there's more than one
     onTop->reset();
 
     // Reset all the children.
@@ -3531,7 +3597,8 @@ void tst_QWidget::raise()
 
     for (int i = 0; i < 5; ++i)
         child3->raise();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowExposed(child3));
+    QApplication::processEvents(); // process events that could be triggered by raise();
 
     QCOMPARE(onTop->numPaintEvents, 0);
     QCOMPARE(onTop->numZOrderChangeEvents, 0);
@@ -3796,6 +3863,13 @@ void tst_QWidget::saveRestoreGeometry()
         widget.showNormal();
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QApplication::processEvents();
+
+
+    /* ---------------------------------------------------------------------
+     * This test function is likely to flake when debugged with Qt Creator.
+     * (29px offset making the following QTRY_VERIFY2 fail)
+     * ---------------------------------------------------------------------
+     */
 
         QTRY_VERIFY2(HighDpi::fuzzyCompare(widget.pos(), position, m_fuzz),
                      qPrintable(HighDpi::msgPointMismatch(widget.pos(), position)));
@@ -5373,8 +5447,8 @@ void tst_QWidget::setWindowGeometry_data()
 
 void tst_QWidget::setWindowGeometry()
 {
-    if (m_platform == QStringLiteral("xcb"))
-         QSKIP("X11: Skip this test due to Window manager positioning issues.");
+    if (m_platform == QStringLiteral("xcb") || m_platform.startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+         QSKIP("X11/Wayland: Skip this test due to Window manager positioning issues.");
 
     QFETCH(Rects, rects);
     QFETCH(int, windowFlags);
@@ -7295,6 +7369,9 @@ void tst_QWidget::renderInvisible()
 {
     if (m_platform == QStringLiteral("xcb"))
         QSKIP("QTBUG-26424");
+
+    if (m_platform.startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Skip this test, see also QTBUG-107157");
 
     QScopedPointer<QCalendarWidget> calendar(new QCalendarWidget);
     calendar->move(m_availableTopLeft + QPoint(100, 100));
@@ -9909,6 +9986,9 @@ void tst_QWidget::enterLeaveOnWindowShowHide_data()
 */
 void tst_QWidget::enterLeaveOnWindowShowHide()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QFETCH(Qt::WindowType, windowType);
     class Widget : public QWidget
     {
@@ -10683,34 +10763,6 @@ void tst_QWidget::focusProxy()
     QCOMPARE(container2->focusOutCount, 1);
 }
 
-void tst_QWidget::focusProxyAndInputMethods()
-{
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
-        QSKIP("Window activation is not supported.");
-    QScopedPointer<QWidget> toplevel(new QWidget(nullptr, Qt::X11BypassWindowManagerHint));
-    toplevel->setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-    toplevel->resize(200, 200);
-    toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
-
-    QWidget *child = new QWidget(toplevel.data());
-    child->setFocusProxy(toplevel.data());
-    child->setAttribute(Qt::WA_InputMethodEnabled, true);
-
-    toplevel->setFocusPolicy(Qt::WheelFocus);
-    child->setFocusPolicy(Qt::WheelFocus);
-
-    QVERIFY(!child->hasFocus());
-    QVERIFY(!toplevel->hasFocus());
-
-    toplevel->show();
-    QVERIFY(QTest::qWaitForWindowExposed(toplevel.data()));
-    QApplication::setActiveWindow(toplevel.data());
-    QVERIFY(QTest::qWaitForWindowActive(toplevel.data()));
-    QVERIFY(toplevel->hasFocus());
-    QVERIFY(child->hasFocus());
-    QCOMPARE(qApp->focusObject(), toplevel.data());
-}
-
 #ifdef QT_BUILD_INTERNAL
 class scrollWidgetWBS : public QWidget
 {
@@ -11198,6 +11250,9 @@ public:
 
 void tst_QWidget::touchEventSynthesizedMouseEvent()
 {
+    if (m_platform.startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("This test failed on Wayland. See also QTBUG-107157.");
+
     {
         // Simple case, we ignore the touch events, we get mouse events instead
         TouchMouseWidget widget;
@@ -12450,6 +12505,9 @@ void tst_QWidget::setParentChangesFocus()
 
 void tst_QWidget::activateWhileModalHidden()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QDialog dialog;
     dialog.setWindowModality(Qt::ApplicationModal);
     dialog.show();

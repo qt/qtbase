@@ -77,6 +77,7 @@ public:
             d.cancel();
             finish();  // required to finalize the state
         }
+        d.cleanContinuation();
     }
 
     // Core QPromise APIs

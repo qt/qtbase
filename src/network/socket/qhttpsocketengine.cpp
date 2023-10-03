@@ -199,7 +199,7 @@ bool QHttpSocketEngine::listen()
     return false;
 }
 
-int QHttpSocketEngine::accept()
+qintptr QHttpSocketEngine::accept()
 {
     qWarning("Operation is not supported");
     setError(QAbstractSocket::UnsupportedSocketOperationError,

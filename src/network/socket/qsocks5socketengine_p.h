@@ -82,7 +82,7 @@ public:
     bool connectToHostByName(const QString &name, quint16 port) override;
     bool bind(const QHostAddress &address, quint16 port) override;
     bool listen() override;
-    int accept() override;
+    qintptr accept() override;
     void close() override;
 
     qint64 bytesAvailable() const override;

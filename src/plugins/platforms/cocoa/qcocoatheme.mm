@@ -486,6 +486,12 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return QVariant(bool([[NSApplication sharedApplication] presentationOptions] & NSApplicationPresentationFullScreen));
     case QPlatformTheme::InteractiveResizeAcrossScreens:
         return !NSScreen.screensHaveSeparateSpaces;
+    case QPlatformTheme::MouseDoubleClickInterval:
+        return NSEvent.doubleClickInterval * 1000;
+    case QPlatformTheme::KeyboardInputInterval:
+        return NSEvent.keyRepeatDelay * 1000;
+    case QPlatformTheme::KeyboardAutoRepeatRate:
+        return 1.0 / NSEvent.keyRepeatInterval;
     default:
         break;
     }

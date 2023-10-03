@@ -120,25 +120,7 @@ QT_BEGIN_NAMESPACE
 
     \section1 Iterating Over the Strings
 
-    To iterate over a list, you can either use index positions or
-    QList's Java-style and STL-style iterator types:
-
-    Indexing:
-
-    \snippet qstringlist/main.cpp 1
-
-    Java-style iterator:
-
-    \snippet qstringlist/main.cpp 2
-
-    STL-style iterator:
-
-    \snippet qstringlist/main.cpp 3
-
-    The QStringListIterator class is simply a type definition for
-    QListIterator<QString>. QStringList also provide the
-    QMutableStringListIterator class which is a type definition for
-    QMutableListIterator<QString>.
+    See \l {Iterating over Containers}.
 
     \section1 Manipulating the Strings
 

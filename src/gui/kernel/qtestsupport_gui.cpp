@@ -53,9 +53,16 @@ QT_BEGIN_NAMESPACE
 /*!
     \since 5.0
 
-    Waits for \a timeout milliseconds or until the \a window is active.
+    Returns \c true, if \a window is active within \a timeout milliseconds. Otherwise returns \c false.
 
-    Returns \c true if \c window is active within \a timeout milliseconds, otherwise returns \c false.
+    The method is useful in tests that call QWindow::show() and rely on the window actually being
+    active (i.e. being visible and having focus) before proceeding.
+
+    \note  The method will time out and return \c false if another window prevents \a window from
+    becoming active.
+
+    \note Since focus is an exclusive property, \a window may loose its focus to another window at
+    any time - even after the method has returned \c true.
 
     \sa qWaitForWindowExposed(), QWindow::isActive()
 */
@@ -75,15 +82,14 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
 /*!
     \since 5.0
 
-    Waits for \a timeout milliseconds or until the \a window is exposed.
-    Returns \c true if \c window is exposed within \a timeout milliseconds, otherwise returns \c false.
+    Returns \c true, if \a window is exposed within \a timeout milliseconds. Otherwise returns \c false.
 
-    This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen some
-    time after being asked to show itself on the screen.
+    The method is useful in tests that call QWindow::show() and rely on the window actually being
+    being visible before proceeding.
 
-    Note that a window that is mapped to screen may still not be considered exposed if the window client
-    area is completely covered by other windows, or if the window is otherwise not visible. This function
-    will then time out when waiting for such a window.
+    \note A window mapped to screen may still not be considered exposed, if the window client area is
+    not visible, e.g. because it is completely covered by other windows.
+    In such cases, the method will time out and return \c false.
 
     \sa qWaitForWindowActive(), QWindow::isExposed()
 */

@@ -35,7 +35,7 @@ struct Qt4String : QString
 };
 
 QT_BEGIN_NAMESPACE
-uint qHash(const Qt4String &);
+size_t qHash(const Qt4String &);
 QT_END_NAMESPACE
 
 struct Qt50String : QString
@@ -45,7 +45,7 @@ struct Qt50String : QString
 };
 
 QT_BEGIN_NAMESPACE
-uint qHash(const Qt50String &, uint seed = 0);
+size_t qHash(const Qt50String &, size_t seed = 0);
 QT_END_NAMESPACE
 
 
@@ -56,6 +56,6 @@ struct JavaString : QString
 };
 
 QT_BEGIN_NAMESPACE
-uint qHash(const JavaString &);
+size_t qHash(const JavaString &);
 QT_END_NAMESPACE
 

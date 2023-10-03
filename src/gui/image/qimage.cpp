@@ -4661,6 +4661,8 @@ QImage QImage::smoothScaled(int w, int h) const
 static QImage rotated90(const QImage &image)
 {
     QImage out(image.height(), image.width(), image.format());
+    if (out.isNull())
+        return out;
     copyMetadata(&out, image);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
@@ -4689,6 +4691,8 @@ static QImage rotated180(const QImage &image)
         return image.mirrored(true, true);
 
     QImage out(image.width(), image.height(), image.format());
+    if (out.isNull())
+        return out;
     copyMetadata(&out, image);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
@@ -4701,6 +4705,8 @@ static QImage rotated180(const QImage &image)
 static QImage rotated270(const QImage &image)
 {
     QImage out(image.height(), image.width(), image.format());
+    if (out.isNull())
+        return out;
     copyMetadata(&out, image);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());

@@ -184,12 +184,16 @@ typedef QFlags<Enum> Flags;
 #endif
 
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) noexcept \
 { return QFlags<Flags::enum_type>(f1) | f2; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
 { return f2 | f1; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator&(Flags::enum_type f1, Flags::enum_type f2) noexcept \
 { return QFlags<Flags::enum_type>(f1) & f2; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator&(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
 { return f2 & f1; } \
 constexpr inline void operator+(Flags::enum_type f1, Flags::enum_type f2) noexcept = delete; \
@@ -210,6 +214,7 @@ constexpr inline void operator-(Flags::enum_type f1, int f2) noexcept = delete;
 #if __cplusplus > 201702L // assume compilers don't warn if in C++17 mode
   // in C++20 mode, provide user-defined operators to override the deprecated operations:
 # define Q_DECLARE_MIXED_ENUM_OPERATOR(op, Ret, LHS, RHS) \
+    [[maybe_unused]] \
     constexpr inline Ret operator op (LHS lhs, RHS rhs) noexcept \
     { return static_cast<Ret>(qToUnderlying(lhs) op qToUnderlying(rhs)); } \
     /* end */

@@ -1913,7 +1913,8 @@ bool QDir::isEmpty(Filters filters) const
     Returns a list of the root directories on this system.
 
     On Windows this returns a list of QFileInfo objects containing "C:/",
-    "D:/", etc. On other operating systems, it returns a list containing
+    "D:/", etc. This does not return drives with ejectable media that are empty.
+    On other operating systems, it returns a list containing
     just one root directory (i.e. "/").
 
     \sa root(), rootPath()

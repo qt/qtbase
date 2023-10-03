@@ -238,6 +238,15 @@
     Returns an STL map equivalent to this QMap.
 */
 
+/*! \fn template <class Key, class T> std::map<Key, T> QMap<Key, T>::toStdMap() &&
+
+    \overload
+    \since 6.0
+
+    \note Calling this function will leave this QMap in the partially-formed state, in which
+    the only valid operations are destruction or assignment of a new value.
+*/
+
 /*! \fn template <class Key, class T> bool QMap<Key, T>::operator==(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs)
 
     Returns \c true if \a lhs is equal to \a rhs; otherwise returns

@@ -1412,7 +1412,7 @@ bool QSocks5SocketEngine::listen()
     return false;
 }
 
-int QSocks5SocketEngine::accept()
+qintptr QSocks5SocketEngine::accept()
 {
     Q_D(QSocks5SocketEngine);
     // check we are listing ---

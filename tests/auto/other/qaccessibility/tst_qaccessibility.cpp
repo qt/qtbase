@@ -4225,6 +4225,47 @@ void tst_QAccessibility::focusChild()
         QVERIFY(child);
         QCOMPARE(child->text(QAccessible::Name), QStringLiteral("Klimt"));
     }
+    {
+        QWidget window;
+        // takes the initial focus
+        QLineEdit lineEdit;
+        QComboBox comboBox;
+        comboBox.addItems({"One", "Two", "Three"});
+        QComboBox editableComboBox;
+        editableComboBox.setEditable(true);
+        editableComboBox.addItems({"A", "B", "C"});
+        QVBoxLayout vbox;
+        vbox.addWidget(&lineEdit);
+        vbox.addWidget(&comboBox);
+        vbox.addWidget(&editableComboBox);
+        window.setLayout(&vbox);
+
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QTestAccessibility::clearEvents();
+        QAccessibleInterface *iface = nullptr;
+
+        comboBox.setFocus();
+        {
+            QAccessibleEvent focusEvent(&comboBox, QAccessible::Focus);
+            QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
+        }
+        iface = QAccessible::queryAccessibleInterface(&comboBox);
+        QVERIFY(iface);
+        QCOMPARE(iface->focusChild(), nullptr);
+
+        editableComboBox.setFocus();
+        // Qt updates about the editable combobox, not the lineedit, as the
+        // combobox is the lineedit's focus proxy.
+        {
+            QAccessibleEvent focusEvent(&editableComboBox, QAccessible::Focus);
+            QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
+        }
+        iface = QAccessible::queryAccessibleInterface(&editableComboBox);
+        QVERIFY(iface);
+        QVERIFY(iface->focusChild());
+        QCOMPARE(iface->focusChild()->role(), QAccessible::EditableText);
+    }
 }
 
 

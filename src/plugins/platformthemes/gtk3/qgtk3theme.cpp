@@ -116,6 +116,20 @@ QGtk3Theme::QGtk3Theme()
 
     /* Use our custom log handler. */
     g_log_set_handler("Gtk", G_LOG_LEVEL_MESSAGE, gtkMessageHandler, nullptr);
+
+    /* Set XCURSOR_SIZE and XCURSOR_THEME for Wayland sessions */
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"))) {
+        if (qEnvironmentVariableIsEmpty("XCURSOR_SIZE")) {
+            const int cursorSize = gtkSetting<gint>("gtk-cursor-theme-size");
+            if (cursorSize > 0)
+                qputenv("XCURSOR_SIZE", QString::number(cursorSize).toUtf8());
+        }
+        if (qEnvironmentVariableIsEmpty("XCURSOR_THEME")) {
+            const QString cursorTheme = gtkSetting("gtk-cursor-theme-name");
+            if (!cursorTheme.isEmpty())
+                qputenv("XCURSOR_THEME", cursorTheme.toUtf8());
+        }
+    }
 }
 
 static inline QVariant gtkGetLongPressTime()
@@ -190,7 +204,7 @@ QPlatformTheme::Appearance QGtk3Theme::appearance() const
         gtk-theme-name provides both light and dark variants. We can save a
         regex check by testing this property first.
     */
-    const auto preferDark = gtkSetting<bool>("gtk-application-prefer-dark-theme");
+    const auto preferDark = gtkSetting<gboolean>("gtk-application-prefer-dark-theme");
     if (preferDark)
         return Appearance::Dark;
 

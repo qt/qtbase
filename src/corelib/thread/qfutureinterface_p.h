@@ -175,7 +175,10 @@ public:
     QThreadPool *m_pool = nullptr;
     // Wrapper for continuation
     std::function<void(const QFutureInterfaceBase &)> continuation;
-    QFutureInterfaceBasePrivate *parentData = nullptr;
+    QFutureInterfaceBasePrivate *continuationData = nullptr;
+
+    enum ContinuationState : quint8 { Default, Canceled, Cleaned };
+    std::atomic<ContinuationState> continuationState { Default };
 
     RefCount refCount = 1;
     QAtomicInt state; // reads and writes can happen unprotected, both must be atomic

@@ -58,6 +58,10 @@
 
     \snippet code/src_corelib_animation_qpropertyanimation.cpp 0
 
+    \note You can also control an animation's lifespan by choosing a
+    \l{QAbstractAnimation::DeletionPolicy}{delete policy} while starting the
+    animation.
+
     The property name and the QObject instance of which property
     should be animated are passed to the constructor. You can then
     specify the start and end value of the property. The procedure is

@@ -433,14 +433,21 @@
 
     Atomic test-and-set.
 
+    \note If you use this function in a loop, consider using the overload with the
+    additional \c{T &currentValue} argument instead, which avoids the extra load() on
+    failure.
+
     If the current value of this QAtomicInteger is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicInteger and return true. If the values are \e not the same,
     this function does nothing and returns \c false.
 
+//![memory-order-relaxed]
     This function uses \e relaxed \l {QAtomicInteger#Memory
     ordering}{memory ordering} semantics, leaving the compiler and
     processor to freely reorder memory accesses.
+//![memory-order-relaxed]
+
 */
 
 /*!
@@ -448,15 +455,21 @@
 
     Atomic test-and-set.
 
+    \note If you use this function in a loop, consider using the overload with the
+    additional \c{T &currentValue} argument instead, which avoids the extra load() on
+    failure.
+
     If the current value of this QAtomicInteger is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicInteger and return true. If the values are \e not the same,
     this function does nothing and returns \c false.
 
+//![memory-order-acquire]
     This function uses \e acquire \l {QAtomicInteger#Memory
     ordering}{memory ordering} semantics, which ensures that memory
     access following the atomic operation (in program order) may not
     be re-ordered before the atomic operation.
+//![memory-order-acquire]
 */
 
 /*!
@@ -464,15 +477,21 @@
 
     Atomic test-and-set.
 
+    \note If you use this function in a loop, consider using the overload with the
+    additional \c{T &currentValue} argument instead, which avoids the extra load() on
+    failure.
+
     If the current value of this QAtomicInteger is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicInteger and return true. If the values are \e not the same,
     this function does nothing and returns \c false.
 
+//![memory-order-release]
     This function uses \e release \l {QAtomicInteger#Memory
     ordering}{memory ordering} semantics, which ensures that memory
     access before the atomic operation (in program order) may not be
     re-ordered after the atomic operation.
+//![memory-order-release]
 */
 
 /*!
@@ -480,15 +499,78 @@
 
     Atomic test-and-set.
 
+    \note If you use this function in a loop, consider using the overload with the
+    additional \c{T &currentValue} argument instead, which avoids the extra load() on
+    failure.
+
     If the current value of this QAtomicInteger is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicInteger and return true. If the values are \e not the same,
     this function does nothing and returns \c false.
 
+//![memory-order-ordered]
     This function uses \e ordered \l {QAtomicInteger#Memory
     ordering}{memory ordering} semantics, which ensures that memory
     access before and after the atomic operation (in program order)
     may not be re-ordered.
+//![memory-order-ordered]
+
+*/
+
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::testAndSetRelaxed(T expectedValue, T newValue, T &currentValue)
+    \since 5.3
+
+    Atomic test-and-set.
+
+    If the current value of this QAtomicInteger is the \a expectedValue, the
+    test-and-set functions assign the \a newValue to this QAtomicInteger and
+    return \c true. If the values are \e not the same, the functions load the
+    current value of this QAtomicInteger into \a currentValue and return \c false.
+
+    \include qatomic.cpp memory-order-relaxed
+*/
+
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::testAndSetAcquire(T expectedValue, T newValue, T &currentValue)
+    \since 5.3
+
+    Atomic test-and-set.
+
+    If the current value of this QAtomicInteger is the \a expectedValue, the
+    test-and-set functions assign the \a newValue to this QAtomicInteger and
+    return \c true. If the values are \e not the same, the functions load the
+    current value of this QAtomicInteger into \a currentValue and return \c false.
+
+    \include qatomic.cpp memory-order-acquire
+*/
+
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::testAndSetRelease(T expectedValue, T newValue, T &currentValue)
+    \since 5.3
+
+    Atomic test-and-set.
+
+    If the current value of this QAtomicInteger is the \a expectedValue, the
+    test-and-set functions assign the \a newValue to this QAtomicInteger and
+    return \c true. If the values are \e not the same, the functions loads the
+    current value of this QAtomicInteger into \a currentValue and return \c false.
+
+    \include qatomic.cpp memory-order-release
+*/
+
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::testAndSetOrdered(T expectedValue, T newValue, T &currentValue)
+    \since 5.3
+
+    Atomic test-and-set.
+
+    If the current value of this QAtomicInteger is the \a expectedValue, the
+    test-and-set functions assign the \a newValue to this QAtomicInteger and
+    return \c true. If the values are \e not the same, it loads the current
+    value of this QAtomicInteger into \a currentValue and return \c false.
+
+    \include qatomic.cpp memory-order-ordered
 */
 
 /*!

@@ -36,6 +36,7 @@ class tst_QTaggedPointer : public QObject
 private Q_SLOTS:
     void constExpr();
     void construction();
+    void assignment();
     void dereferenceOperator();
     void pointerOperator();
     void negationOperator();
@@ -103,6 +104,47 @@ void tst_QTaggedPointer::construction()
         QCOMPARE(p.data(), rawPointer.data());
         QCOMPARE(p.tag(), quintptr(0x1));
     }
+}
+
+void tst_QTaggedPointer::assignment()
+{
+    QScopedPointer<int> rawPointer(new int(5));
+    QTaggedPointer<int> p(rawPointer.data(), 0x1);
+    QTaggedPointer<int> p2(rawPointer.data(), 0x2);
+
+    QCOMPARE(p.data(), rawPointer.data());
+    QCOMPARE(p.tag(), quintptr(0x1));
+
+    QCOMPARE(p2.data(), rawPointer.data());
+    QCOMPARE(p2.tag(), quintptr(0x2));
+
+    p = nullptr;
+    QCOMPARE(p.data(), nullptr);
+    QCOMPARE(p.tag(), quintptr(0x1));
+
+    p = rawPointer.data();
+    QCOMPARE(p.data(), rawPointer.data());
+    QCOMPARE(p.tag(), quintptr(0x1));
+
+    p = {};
+    QCOMPARE(p.data(), nullptr);
+    QCOMPARE(p.tag(), quintptr(0x0));
+
+    p = p2;
+    QCOMPARE(p.data(), rawPointer.data());
+    QCOMPARE(p.tag(), quintptr(0x2));
+
+    p = nullptr;
+    QCOMPARE(p.data(), nullptr);
+    QCOMPARE(p.tag(), quintptr(0x2));
+
+    p = {};
+    QCOMPARE(p.data(), nullptr);
+    QCOMPARE(p.tag(), quintptr(0x0));
+
+    p = rawPointer.data();
+    QCOMPARE(p.data(), rawPointer.data());
+    QCOMPARE(p.tag(), quintptr(0x0));
 }
 
 class AbstractClass

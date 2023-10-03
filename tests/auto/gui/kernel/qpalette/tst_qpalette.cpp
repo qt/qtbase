@@ -47,6 +47,7 @@ private Q_SLOTS:
     void noBrushesSetForDefaultPalette();
     void cannotCheckIfInvalidBrushSet();
     void checkIfBrushForCurrentGroupSet();
+    void cacheKey();
 };
 
 void tst_QPalette::roleValues_data()
@@ -288,6 +289,62 @@ void tst_QPalette::checkIfBrushForCurrentGroupSet()
     p.setBrush(QPalette::Current, QPalette::Link, QBrush(Qt::yellow));
 
     QVERIFY(p.isBrushSet(QPalette::Current, QPalette::Link));
+}
+
+void tst_QPalette::cacheKey()
+{
+    const QPalette defaultPalette;
+    // precondition: all palettes are expected to have contrasting text on base
+    QVERIFY(defaultPalette.base() != defaultPalette.text());
+    const auto defaultCacheKey = defaultPalette.cacheKey();
+    const auto defaultSerNo = defaultCacheKey >> 32;
+    const auto defaultDetachNo = defaultCacheKey & 0xffffffff;
+
+    QPalette copyDifferentData(defaultPalette);
+    QPalette copyDifferentMask(defaultPalette);
+    QPalette copyDifferentMaskAndData(defaultPalette);
+
+    QCOMPARE(defaultPalette.cacheKey(), copyDifferentData.cacheKey());
+
+    // deep detach of both private and data
+    copyDifferentData.setBrush(QPalette::Base, defaultPalette.text());
+    const auto differentDataKey = copyDifferentData.cacheKey();
+    const auto differentDataSerNo = differentDataKey >> 32;
+    const auto differentDataDetachNo = differentDataKey & 0xffffffff;
+
+    QVERIFY(copyDifferentData.cacheKey() != defaultCacheKey);
+    QCOMPARE(defaultPalette.cacheKey(), defaultCacheKey);
+
+    // shallow detach, both privates reference the same data
+    copyDifferentMask.setResolveMask(0xffffffffffffffff);
+    const auto differentMaskKey = copyDifferentMask.cacheKey();
+    const auto differentMaskSerNo = differentMaskKey >> 32;
+    const auto differentMaskDetachNo = differentMaskKey & 0xffffffff;
+    QCOMPARE(differentMaskSerNo, defaultSerNo);
+    QVERIFY(differentMaskSerNo != defaultDetachNo);
+    QVERIFY(differentMaskKey != defaultCacheKey);
+    QVERIFY(differentMaskKey != differentDataKey);
+
+    // shallow detach, both privates reference the same data
+    copyDifferentMaskAndData.setResolveMask(0xeeeeeeeeeeeeeeee);
+    const auto modifiedCacheKey = copyDifferentMaskAndData.cacheKey();
+    QVERIFY(modifiedCacheKey != copyDifferentMask.cacheKey());
+    QVERIFY(modifiedCacheKey != defaultCacheKey);
+    QVERIFY(modifiedCacheKey != copyDifferentData.cacheKey());
+    QVERIFY(copyDifferentMask.cacheKey() != defaultCacheKey);
+
+    // full detach - both key elements are different
+    copyDifferentMaskAndData.setBrush(QPalette::Base, defaultPalette.text());
+    const auto modifiedAllKey = copyDifferentMaskAndData.cacheKey();
+    const auto modifiedAllSerNo = modifiedAllKey >> 32;
+    const auto modifiedAllDetachNo = modifiedAllKey & 0xffffffff;
+    QVERIFY(modifiedAllSerNo != defaultSerNo);
+    QVERIFY(modifiedAllDetachNo != defaultDetachNo);
+
+    QVERIFY(modifiedAllKey != copyDifferentMask.cacheKey());
+    QVERIFY(modifiedAllKey != defaultCacheKey);
+    QVERIFY(modifiedAllKey != differentDataKey);
+    QVERIFY(modifiedAllKey != modifiedCacheKey);
 }
 
 QTEST_MAIN(tst_QPalette)

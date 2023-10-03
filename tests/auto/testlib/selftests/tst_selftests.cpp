@@ -660,6 +660,11 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
         return true;
 #endif
 
+    if (!qEnvironmentVariableIsEmpty("WAYLAND_DISPLAY")) {
+        qDebug() << "TestLogger::shouldIgnoreTest() ignore" << test << "on wayland/xwayland!";
+        return true;
+    }
+
     if (test == "deleteLater" || test == "deleteLater_noApp" || test == "mouse")
         return true; // Missing expectation files
 

@@ -468,7 +468,9 @@ static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
     // NSSlider seems to cache values based on tracking and the last layout of the
     // NSView, resulting in incorrect knob rects that break the interaction with
     // multiple sliders. So completely reinitialize the slider.
+    const auto controlSize = slider.controlSize;
     [slider initWithFrame:sl->rect.toCGRect()];
+    slider.controlSize = controlSize;
 
     slider.minValue = sl->minimum;
     slider.maxValue = sl->maximum;
@@ -1828,10 +1830,6 @@ QRectF QMacStylePrivate::comboboxEditBounds(const QRectF &outerBounds, const Coc
 QMacStylePrivate::QMacStylePrivate()
     : backingStoreNSView(nil)
 {
-    if (auto *ssf = QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::SmallFont))
-        smallSystemFont = *ssf;
-    if (auto *msf = QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::MiniFont))
-        miniSystemFont = *msf;
 }
 
 QMacStylePrivate::~QMacStylePrivate()
@@ -2126,6 +2124,14 @@ void QMacStyle::unpolish(QApplication *)
 
 void QMacStyle::polish(QWidget* w)
 {
+    Q_D(QMacStyle);
+    if (!d->smallSystemFont && QGuiApplicationPrivate::platformTheme()) {
+        if (auto *ssf = QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::SmallFont))
+            d->smallSystemFont = *ssf;
+        else
+            d->smallSystemFont = QFont();
+    }
+
     if (false
 #if QT_CONFIG(menu)
         || qobject_cast<QMenu*>(w)
@@ -3996,8 +4002,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
             pb.enabled = isEnabled;
             [pb highlight:isPressed];
+
             // Set off state when inactive. See needsInactiveHack for when it's selected
-            pb.state = (isActive && isSelected && !isPressed) ? NSControlStateValueOn : NSControlStateValueOff;
+            // On macOS 12, don't set the Off state for selected tabs as it draws a gray backgorund even when highlighted
+            if (QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSBigSur)
+                pb.state = (isActive && isSelected) ? NSControlStateValueOn : NSControlStateValueOff;
+            else
+                pb.state = (isActive && isSelected && !isPressed) ? NSControlStateValueOn : NSControlStateValueOff;
 
             const auto drawBezelBlock = ^(CGContextRef ctx, const CGRect &r) {
                 CGContextClipToRect(ctx, opt->rect.toCGRect());
@@ -5746,8 +5757,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 const bool rtl = groupBox.direction == Qt::RightToLeft;
                 const int alignment = Qt::TextHideMnemonic | (rtl ? Qt::AlignRight : Qt::AlignLeft);
                 const QFont savedFont = p->font();
-                if (!flat)
-                    p->setFont(d->smallSystemFont);
+                if (!flat && d->smallSystemFont)
+                    p->setFont(*d->smallSystemFont);
                 proxy()->drawItemText(p, rect, alignment, groupBox.palette, groupBox.state & State_Enabled, groupBox.text, QPalette::WindowText);
                 if (!flat)
                     p->setFont(savedFont);
@@ -6111,7 +6122,9 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 const int margin =  flat || hasNoText ? 0 : 9;
                 ret = groupBox->rect.adjusted(margin, 0, -margin, 0);
 
-                const QFontMetricsF fm = flat || fontIsSet ? QFontMetricsF(groupBox->fontMetrics) : QFontMetricsF(d->smallSystemFont);
+                const QFontMetricsF fm = flat || fontIsSet || !d->smallSystemFont
+                                       ? QFontMetricsF(groupBox->fontMetrics)
+                                       : QFontMetricsF(*d->smallSystemFont);
                 const QSizeF s = fm.size(Qt::AlignHCenter | Qt::AlignVCenter, qt_mac_removeMnemonics(groupBox->text), 0, nullptr);
                 const int tw = qCeil(s.width());
                 const int h = qCeil(fm.height());

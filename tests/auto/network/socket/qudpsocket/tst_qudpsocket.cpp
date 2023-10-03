@@ -653,7 +653,7 @@ void tst_QUdpSocket::dualStack()
         QCOMPARE(dgram.senderAddress(), makeNonAny(v4Sock.localAddress(), QHostAddress::Null));
     if (dgram.destinationPort() != -1) {
         QCOMPARE(dgram.destinationPort(), int(dualSock.localPort()));
-        QVERIFY(dgram.destinationAddress().isEqual(dualSock.localAddress()));
+        QVERIFY(dgram.destinationAddress().isEqual(makeNonAny(dualSock.localAddress(), QHostAddress::LocalHost)));
     } else {
         qInfo("Getting IPv4 destination address failed.");
     }

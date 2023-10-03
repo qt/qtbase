@@ -87,6 +87,15 @@
 const char *string_hash_hash = STRING_HASH_HASH("baz");
 #endif
 
+#if defined(Q_MOC_RUN) || __cplusplus > 202002L
+/* Check that nested inline namespaces are at least not causing moc to break.
+   Check it even outside of C++20 mode as moc gets passed the  wrong __cplusplus version
+   and also to increase coverage, given how few C++20 configurations exist in the CI at the time
+   of writing this comment.
+*/
+namespace A::inline B {}
+#endif
+
 Q_DECLARE_METATYPE(const QMetaObject*);
 
 namespace TestNonQNamespace {

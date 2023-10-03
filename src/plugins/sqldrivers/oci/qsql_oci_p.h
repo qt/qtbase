@@ -78,7 +78,7 @@ public:
     explicit QOCIDriver(QObject *parent = nullptr);
     QOCIDriver(OCIEnv *env, OCISvcCtx *ctx, QObject *parent = nullptr);
     ~QOCIDriver();
-    bool hasFeature(DriverFeature f) const;
+    bool hasFeature(DriverFeature f) const override;
     bool open(const QString &db,
               const QString &user,
               const QString &password,

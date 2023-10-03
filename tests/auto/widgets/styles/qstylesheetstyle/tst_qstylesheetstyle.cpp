@@ -2350,11 +2350,19 @@ void tst_QStyleSheetStyle::placeholderColor()
     QLineEdit le2;
     le2.setEnabled(false);
     le1.ensurePolished();
-    QCOMPARE(le1.palette().placeholderText(), red);
+    QColor phColor = le1.palette().placeholderText().color();
+    QCOMPARE(phColor.rgb(), red.rgb());
+    QVERIFY(phColor.alpha() < red.alpha());
+
     le2.ensurePolished();
-    QCOMPARE(le2.palette().placeholderText(), red);
+    phColor = le2.palette().placeholderText().color();
+    QCOMPARE(phColor.rgb(), red.rgb());
+    QVERIFY(phColor.alpha() < red.alpha());
+
     le2.setEnabled(true);
-    QCOMPARE(le2.palette().placeholderText(), red);
+    phColor = le2.palette().placeholderText().color();
+    QCOMPARE(phColor.rgb(), red.rgb());
+    QVERIFY(phColor.alpha() < red.alpha());
 }
 
 void tst_QStyleSheetStyle::enumPropertySelector_data()

@@ -134,7 +134,7 @@ public:
     virtual bool connectToHostByName(const QString &name, quint16 port) = 0;
     virtual bool bind(const QHostAddress &address, quint16 port) = 0;
     virtual bool listen() = 0;
-    virtual int accept() = 0;
+    virtual qintptr accept() = 0;
     virtual void close() = 0;
 
     virtual qint64 bytesAvailable() const = 0;

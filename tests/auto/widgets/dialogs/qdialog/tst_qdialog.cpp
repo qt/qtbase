@@ -46,6 +46,7 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformtheme_p.h>
+#include <qpa/qplatformintegration.h>
 
 QT_FORWARD_DECLARE_CLASS(QDialog)
 
@@ -309,6 +310,10 @@ void tst_QDialog::showAsTool()
 {
     if (QStringList{"xcb", "offscreen"}.contains(QGuiApplication::platformName()))
         QSKIP("activeWindow() is not respected by all Xcb window managers and the offscreen plugin");
+
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     DummyDialog testWidget;
     testWidget.resize(200, 200);
     testWidget.setWindowTitle(QTest::currentTestFunction());

@@ -235,6 +235,9 @@ void tst_QGridLayout::badDistributionBug()
 
 void tst_QGridLayout::setMinAndMaxSize()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("This test crashes on Wayland, see also QTBUG-107184");
+
     QWidget widget;
     setFrameless(&widget);
     QGridLayout layout(&widget);

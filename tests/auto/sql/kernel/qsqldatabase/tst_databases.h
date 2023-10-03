@@ -207,6 +207,14 @@ public:
         if ( port > 0 )
             cName += QLatin1Char(':') + QString::number( port );
 
+        if (driver == "QSQLITE") {
+            // Since the database for sqlite is generated at runtime it's always
+            // available, but we use QTempDir so it's always in a different
+            // location. Thus, let's ignore the path completely.
+            cName = "SQLite";
+            qInfo("SQLite will use the database located at %ls", qUtf16Printable(dbName));
+        }
+
         db = QSqlDatabase::addDatabase( driver, cName );
 
         if ( !db.isValid() ) {
@@ -275,7 +283,7 @@ public:
         }
         QTemporaryDir *sqLiteDir = dbDir();
         if (sqLiteDir) {
-            addDb(QStringLiteral("QSQLITE"), QDir::toNativeSeparators(sqLiteDir->path() + QStringLiteral("/foo.db")));
+            addDb(QStringLiteral("QSQLITE"), QDir::toNativeSeparators(sqLiteDir->path() + QStringLiteral("/sqlite.db")));
             added = true;
         }
         return added;

@@ -64,7 +64,9 @@ class QAndroidPlatformNativeInterface;
 class QAndroidPlatformTheme: public QPlatformTheme
 {
 public:
-    QAndroidPlatformTheme(QAndroidPlatformNativeInterface * androidPlatformNativeInterface);
+    ~QAndroidPlatformTheme();
+    void updateAppearance();
+    void updateStyle();
     QPlatformMenuBar *createPlatformMenuBar() const override;
     QPlatformMenu *createPlatformMenu() const override;
     QPlatformMenuItem *createPlatformMenuItem() const override;
@@ -77,8 +79,12 @@ public:
     bool usePlatformNativeDialog(DialogType type) const override;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
+    static QAndroidPlatformTheme *instance(
+                    QAndroidPlatformNativeInterface * androidPlatformNativeInterface = nullptr);
 
 private:
+    QAndroidPlatformTheme(QAndroidPlatformNativeInterface * androidPlatformNativeInterface);
+    static QAndroidPlatformTheme * m_instance;
     std::shared_ptr<AndroidStyle> m_androidStyleData;
     QPalette m_defaultPalette;
     QFont m_systemFont;

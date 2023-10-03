@@ -437,6 +437,9 @@ void tst_QAction::disableShortcutInMenuAction_data()
 
 void tst_QAction::disableShortcutInMenuAction()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QFETCH(QByteArray, property);
 
     QMainWindow mw;

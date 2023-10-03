@@ -2312,16 +2312,15 @@ int QPdfEnginePrivate::writeCompressed(const char *src, int len)
 {
 #ifndef QT_NO_COMPRESS
     if (do_compress) {
-        uLongf destLen = len + len/100 + 13; // zlib requirement
-        Bytef* dest = new Bytef[destLen];
-        if (Z_OK == ::compress(dest, &destLen, (const Bytef*) src, (uLongf)len)) {
-            stream->writeRawData((const char*)dest, destLen);
+        const QByteArray data = qCompress(reinterpret_cast<const uchar *>(src), len);
+        constexpr qsizetype HeaderSize = 4;
+        if (!data.isNull()) {
+            stream->writeRawData(data.data() + HeaderSize, data.size() - HeaderSize);
+            len = data.size() - HeaderSize;
         } else {
             qWarning("QPdfStream::writeCompressed: Error in compress()");
-            destLen = 0;
+            len = 0;
         }
-        delete [] dest;
-        len = destLen;
     } else
 #endif
     {

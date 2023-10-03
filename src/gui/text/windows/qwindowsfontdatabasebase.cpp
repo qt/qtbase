@@ -604,16 +604,9 @@ void QWindowsFontDatabaseBase::createDirectWriteFactory(IDWriteFactory **factory
 }
 #endif // directwrite && direct2d
 
-static int s_defaultVerticalDPI = 96; // Native Pixels
-
 int QWindowsFontDatabaseBase::defaultVerticalDPI()
 {
-    return s_defaultVerticalDPI;
-}
-
-void QWindowsFontDatabaseBase::setDefaultVerticalDPI(int d)
-{
-    s_defaultVerticalDPI = d;
+    return 96;
 }
 
 LOGFONT QWindowsFontDatabaseBase::fontDefToLOGFONT(const QFontDef &request, const QString &faceName)
@@ -728,9 +721,9 @@ HFONT QWindowsFontDatabaseBase::systemFont()
 QFont QWindowsFontDatabaseBase::systemDefaultFont()
 {
     // Qt 6: Obtain default GUI font (typically "Segoe UI, 9pt", see QTBUG-58610)
-    NONCLIENTMETRICS ncm;
-    ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
-    SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize , &ncm, 0);
+    NONCLIENTMETRICS ncm = {};
+    ncm.cbSize = sizeof(ncm);
+    SystemParametersInfoForDpi(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0, defaultVerticalDPI());
     const QFont systemFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMessageFont);
     qCDebug(lcQpaFonts) << __FUNCTION__ << systemFont;
     return systemFont;
@@ -788,6 +781,13 @@ IDWriteFontFace *QWindowsFontDatabaseBase::createDirectWriteFace(const QByteArra
     return directWriteFontFace;
 }
 #endif // directwrite && direct2d
+
+QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QFontDef &fontDef, void *handle)
+{
+    // This function was apparently not used before, and probably isn't now either,
+    // call the base implementation which just prints that it's not supported.
+    return QPlatformFontDatabase::fontEngine(fontDef, handle);
+}
 
 QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {

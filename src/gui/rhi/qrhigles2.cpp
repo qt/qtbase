@@ -2902,8 +2902,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 f->glDepthMask(GL_TRUE);
                 f->glClearDepthf(cmd.args.clear.d);
             }
-            if (cmd.args.clear.mask & GL_STENCIL_BUFFER_BIT)
+            if (cmd.args.clear.mask & GL_STENCIL_BUFFER_BIT) {
+                f->glStencilMask(0xFF);
                 f->glClearStencil(GLint(cmd.args.clear.s));
+            }
             f->glClear(cmd.args.clear.mask);
             cbD->graphicsPassState.reset(); // altered depth/color write, invalidate in order to avoid confusing the state tracking
             break;

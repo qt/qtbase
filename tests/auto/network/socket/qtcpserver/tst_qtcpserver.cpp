@@ -598,9 +598,6 @@ void tst_QTcpServer::addressReusable()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
-#ifdef Q_OS_LINUX
-    QSKIP("The addressReusable test is unstable on Linux. See QTBUG-39985.");
-#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
 #ifndef QT_NO_NETWORKPROXY
@@ -611,16 +608,25 @@ void tst_QTcpServer::addressReusable()
         QSKIP("No proxy support");
 #endif // QT_NO_NETWORKPROXY
     }
+
+    QTcpServer server;
+    QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+    quint16 serverPort = server.serverPort();
+    qDebug() << "Got port" << serverPort;
+    server.close();     // cleanly close
+
+    QTest::qSleep(10);
+
     // The crashingServer process will crash once it gets a connection.
     QProcess process;
     QString processExe = crashingServerDir + "/crashingServer";
-    process.start(processExe);
+    process.start(processExe, { QString::number(serverPort) });
     QVERIFY2(process.waitForStarted(), qPrintable(
         QString::fromLatin1("Could not start %1: %2").arg(processExe, process.errorString())));
-    QVERIFY(process.waitForReadyRead(5000));
+    QVERIFY2(process.waitForReadyRead(5000), qPrintable(process.readAllStandardError()));
 
     QTcpSocket socket;
-    socket.connectToHost(QHostAddress::LocalHost, 49199);
+    socket.connectToHost(QHostAddress::LocalHost, serverPort);
     QVERIFY(socket.waitForConnected(5000));
 
     QVERIFY(process.waitForFinished(30000));
@@ -628,8 +634,9 @@ void tst_QTcpServer::addressReusable()
     // Give the system some time.
     QTest::qSleep(10);
 
-    QTcpServer server;
-    QVERIFY(server.listen(QHostAddress::LocalHost, 49199));
+    // listen again
+    QVERIFY2(server.listen(QHostAddress::LocalHost, serverPort),
+             qPrintable(server.errorString()));
 #endif
 }
 

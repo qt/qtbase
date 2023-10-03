@@ -66,6 +66,8 @@
 #include "QtCore/qbuffer.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qurl.h"
+#include "QtCore/qloggingcategory.h"
+
 #include "QtNetwork/private/qauthenticator_p.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/private/http2protocol_p.h"
@@ -83,9 +85,11 @@
 #include <QtCore/private/qfactoryloader_p.h>
 
 #if defined(Q_OS_MACOS)
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <CoreServices/CoreServices.h>
 #include <SystemConfiguration/SystemConfiguration.h>
-#include <Security/SecKeychain.h>
+#include <Security/Security.h>
 #endif
 #ifdef Q_OS_WASM
 #include "qnetworkreplywasmimpl_p.h"
@@ -101,6 +105,8 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 
+Q_LOGGING_CATEGORY(lcQnam, "qt.network.access.manager")
+
 #ifdef QT_BUILD_INTERNAL
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
@@ -111,55 +117,72 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 #if defined(Q_OS_MACOS)
 bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
 {
-    OSStatus err;
-    SecKeychainItemRef itemRef;
-    bool retValue = false;
-    SecProtocolType protocolType = kSecProtocolTypeAny;
-    if (scheme.compare(QLatin1String("ftp"),Qt::CaseInsensitive)==0) {
-        protocolType = kSecProtocolTypeFTPProxy;
-    } else if (scheme.compare(QLatin1String("http"),Qt::CaseInsensitive)==0
-               || scheme.compare(QLatin1String("preconnect-http"),Qt::CaseInsensitive)==0) {
-        protocolType = kSecProtocolTypeHTTPProxy;
-    } else if (scheme.compare(QLatin1String("https"),Qt::CaseInsensitive)==0
-               || scheme.compare(QLatin1String("preconnect-https"),Qt::CaseInsensitive)==0) {
-        protocolType = kSecProtocolTypeHTTPSProxy;
+    CFStringRef protocolType = nullptr;
+    if (scheme.compare(QStringLiteral("ftp"), Qt::CaseInsensitive) == 0) {
+        protocolType = kSecAttrProtocolFTPProxy;
+    } else if (scheme.compare(QStringLiteral("http"), Qt::CaseInsensitive) == 0
+               || scheme.compare(QStringLiteral("preconnect-http"), Qt::CaseInsensitive) == 0) {
+        protocolType = kSecAttrProtocolHTTPProxy;
+    } else if (scheme.compare(QStringLiteral("https"),Qt::CaseInsensitive)==0
+               || scheme.compare(QStringLiteral("preconnect-https"), Qt::CaseInsensitive) == 0) {
+        protocolType = kSecAttrProtocolHTTPSProxy;
+    } else {
+        qCWarning(lcQnam) << "Cannot query user name and password for a proxy, unnknown protocol:"
+                          << scheme;
+        return false;
     }
-    QByteArray proxyHostnameUtf8(proxyHostname.toUtf8());
-    err = SecKeychainFindInternetPassword(NULL,
-                                          proxyHostnameUtf8.length(), proxyHostnameUtf8.constData(),
-                                          0,NULL,
-                                          0, NULL,
-                                          0, NULL,
-                                          0,
-                                          protocolType,
-                                          kSecAuthenticationTypeAny,
-                                          0, NULL,
-                                          &itemRef);
-    if (err == noErr) {
 
-        SecKeychainAttribute attr;
-        SecKeychainAttributeList attrList;
-        UInt32 length;
-        void *outData;
+    QCFType<CFMutableDictionaryRef> query(CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                                                    0, nullptr, nullptr));
+    Q_ASSERT(query);
 
-        attr.tag = kSecAccountItemAttr;
-        attr.length = 0;
-        attr.data = NULL;
+    CFDictionaryAddValue(query, kSecClass, kSecClassInternetPassword);
+    CFDictionaryAddValue(query, kSecAttrProtocol, protocolType);
 
-        attrList.count = 1;
-        attrList.attr = &attr;
-
-        if (SecKeychainItemCopyContent(itemRef, NULL, &attrList, &length, &outData) == noErr) {
-            username = QString::fromUtf8((const char*)attr.data, attr.length);
-            password = QString::fromUtf8((const char*)outData, length);
-            SecKeychainItemFreeContent(&attrList,outData);
-            retValue = true;
-        }
-        CFRelease(itemRef);
+    QCFType<CFStringRef> serverName; // Note the scope.
+    if (proxyHostname.size()) {
+        serverName = proxyHostname.toCFString();
+        CFDictionaryAddValue(query, kSecAttrServer, serverName);
     }
-    return retValue;
+
+    // This is to get the user name in the result:
+    CFDictionaryAddValue(query, kSecReturnAttributes, kCFBooleanTrue);
+    // This one to get the password:
+    CFDictionaryAddValue(query, kSecReturnData, kCFBooleanTrue);
+
+    // The default for kSecMatchLimit key is 1 (the first match only), which is fine,
+    // so don't set this value explicitly.
+
+    QCFType<CFTypeRef> replyData;
+    if (SecItemCopyMatching(query, &replyData) != errSecSuccess) {
+        qCWarning(lcQnam, "Failed to extract user name and password from the keychain.");
+        return false;
+    }
+
+    if (!replyData || CFDictionaryGetTypeID() != CFGetTypeID(replyData)) {
+        qCWarning(lcQnam, "Query returned data in unexpected format.");
+        return false;
+    }
+
+    CFDictionaryRef accountData = replyData.as<CFDictionaryRef>();
+    const void *value = CFDictionaryGetValue(accountData, kSecAttrAccount);
+    if (!value || CFGetTypeID(value) != CFStringGetTypeID()) {
+        qCWarning(lcQnam, "Cannot find user name or its format is unknown.");
+        return false;
+    }
+    username = QString::fromCFString(static_cast<CFStringRef>(value));
+
+    value = CFDictionaryGetValue(accountData, kSecValueData);
+    if (!value || CFGetTypeID(value) != CFDataGetTypeID()) {
+        qCWarning(lcQnam, "Cannot find password or its format is unknown.");
+        return false;
+    }
+    const CFDataRef passData = static_cast<const CFDataRef>(value);
+    password = QString::fromLocal8Bit(reinterpret_cast<const char *>(CFDataGetBytePtr(passData)),
+                                      qsizetype(CFDataGetLength(passData)));
+    return true;
 }
-#endif
+#endif // Q_OS_MACOS
 
 
 

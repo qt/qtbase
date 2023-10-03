@@ -153,6 +153,7 @@ QAndroidBinder QAndroidParcelPrivate::readBinder() const
 
 /*!
     \class QAndroidParcel
+    \inheaderfile QtCore/private/qandroidextras_p.h
     \preliminary
     \inmodule QtCore
     \brief Wraps the most important methods of Android Parcel class.
@@ -269,6 +270,7 @@ QJniObject QAndroidParcel::handle() const
 
 /*!
     \class QAndroidBinder
+    \inheaderfile QtCore/private/qandroidextras_p.h
     \preliminary
     \inmodule QtCore
     \brief Wraps the most important methods of Android Binder class.
@@ -406,6 +408,7 @@ QJniObject QAndroidBinder::handle() const
 
 /*!
     \class QAndroidServiceConnection
+    \inheaderfile QtCore/private/qandroidextras_p.h
     \preliminary
     \inmodule QtCore
     \brief Wraps the most important methods of Android ServiceConnection class.
@@ -529,6 +532,7 @@ public:
 
 /*!
   \class QAndroidActivityResultReceiver
+  \inheaderfile QtCore/private/qandroidextras_p.h
   \preliminary
   \inmodule QtCore
   \since 6.2
@@ -624,6 +628,7 @@ public:
 
 /*!
     \class QAndroidService
+    \inheaderfile QtCore/private/qandroidextras_p.h
     \preliminary
     \inmodule QtCore
     \brief Wraps the most important methods of Android Service class.
@@ -693,6 +698,7 @@ QAndroidBinder* QAndroidService::onBind(const QAndroidIntent &/*intent*/)
 
 /*!
     \class QAndroidIntent
+    \inheaderfile QtCore/private/qandroidextras_p.h
     \preliminary
     \inmodule QtCore
     \brief Wraps the most important methods of Android Intent class.

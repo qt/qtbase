@@ -63,6 +63,9 @@ void foo()
 
 #include <QTest>
 #include <QVector>
+#include <QScopedPointer>
+#include <QThread>
+#include <QSemaphore>
 
 #include <algorithm>
 
@@ -123,6 +126,15 @@ private slots:
 
     void foreach_2();
     void insert_remove_loop();
+
+    void detachAssociativeContainerQMap() { detachAssociativeContainerImpl<QMap>(); }
+    void detachAssociativeContainerQMultiMap() { detachAssociativeContainerImpl<QMultiMap>(); }
+    void detachAssociativeContainerQHash() { detachAssociativeContainerImpl<QHash>(); }
+    void detachAssociativeContainerQMultiHash() { detachAssociativeContainerImpl<QMultiHash>(); }
+
+private:
+    template <template<typename, typename> typename Container>
+    void detachAssociativeContainerImpl();
 };
 
 struct LargeStatic {
@@ -3547,7 +3559,63 @@ void tst_Collections::insert_remove_loop()
     insert_remove_loop_impl<QVarLengthArray<std::string, 15>>();
 }
 
+template <template<typename, typename> typename Container>
+void tst_Collections::detachAssociativeContainerImpl()
+{
+    constexpr int RUNS = 50;
 
+    for (int run = 0; run < RUNS; ++run) {
+        Container<int, int> container;
+
+        for (int i = 0; i < 1'000; ++i) {
+            container.insert(i, i);
+            container.insert(i, i); // for multi-keyed containers
+        }
+
+        const auto it = container.constBegin();
+        const auto &key = it.key();
+        const auto &value = it.value();
+        const auto keyCopy = key;
+        const auto valueCopy = value;
+
+        QSemaphore sem1, sem2;
+        auto detachInAnotherThread = [&sem1, &sem2, copy = container]() mutable {
+            sem1.release();
+            sem2.acquire();
+            copy.clear(); // <==
+        };
+
+        QScopedPointer thread(QThread::create(std::move(detachInAnotherThread)));
+        thread->start();
+
+        sem2.release();
+        sem1.acquire();
+
+        // The following call may detach (because the container is
+        // shared), and then use key/value to search+insert.
+        //
+        // This means that key/value, as references, have to be valid
+        // throughout the insertion procedure. Note that they are
+        // references into the container *itself*; and that the
+        // insertion procedure is working on a new (detached) copy of
+        // the container's payload.
+        //
+        // There is now a possible scenario in which the clear() above
+        // finds the copy's refcount at 1, hence not perform a detach,
+        // and destroy its payload. But key/value were references into
+        // *that* payload (it's the payload that `container` itself
+        // used to share). If inside insert() we don't take extra
+        // measures to keep the payload alive, now they're dangling and
+        // the insertion will malfunction.
+
+        container.insert(key, value);
+
+        QVERIFY(container.contains(keyCopy));
+        QCOMPARE(container.value(keyCopy), valueCopy);
+
+        thread->wait();
+    }
+}
 
 QTEST_APPLESS_MAIN(tst_Collections)
 #include "tst_collections.moc"

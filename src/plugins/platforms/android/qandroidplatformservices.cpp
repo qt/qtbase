@@ -81,12 +81,13 @@ bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
     // if the file is local, we need to pass the MIME type, otherwise Android
     // does not start an Intent to view this file
     QLatin1String fileScheme("file");
-    if ((url.scheme().isEmpty() || url.scheme() == fileScheme) && QFile::exists(url.path())) {
-        // a real URL including the scheme is needed, else the Intent can not be started
+
+    // a real URL including the scheme is needed, else the Intent can not be started
+    if (url.scheme().isEmpty())
         url.setScheme(fileScheme);
-        QMimeDatabase mimeDb;
-        mime = mimeDb.mimeTypeForUrl(url).name();
-    }
+
+    if (url.scheme() == fileScheme)
+        mime = QMimeDatabase().mimeTypeForUrl(url).name();
 
     using namespace QNativeInterface;
     QJniObject urlString = QJniObject::fromString(url.toString());

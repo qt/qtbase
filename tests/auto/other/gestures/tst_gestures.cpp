@@ -342,6 +342,8 @@ private slots:
     void testQGestureRecognizerCleanup();
     void testReuseCanceledGestures();
     void bug_13501_gesture_not_accepted();
+private:
+    QPoint m_availableTopLeft;
 };
 
 void tst_Gestures::initTestCase()
@@ -349,6 +351,8 @@ void tst_Gestures::initTestCase()
     CustomGesture::GestureType = QGestureRecognizer::registerRecognizer(new CustomGestureRecognizer);
     QVERIFY(CustomGesture::GestureType != Qt::GestureType(0));
     QVERIFY(CustomGesture::GestureType != Qt::CustomGesture);
+    const QScreen *screen = QGuiApplication::primaryScreen();
+    m_availableTopLeft = screen->availableGeometry().topLeft();
 }
 
 void tst_Gestures::cleanupTestCase()
@@ -824,6 +828,7 @@ void tst_Gestures::graphicsItemGesture()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.move(m_availableTopLeft);
 
     GestureItem *item = new GestureItem("item");
     scene.addItem(item);
@@ -886,6 +891,7 @@ void tst_Gestures::graphicsView()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.move(m_availableTopLeft);
 
     GestureItem *item = new GestureItem("item");
     scene.addItem(item);
@@ -951,6 +957,7 @@ void tst_Gestures::graphicsItemTreeGesture()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.move(m_availableTopLeft);
 
     GestureItem *item1 = new GestureItem("item1");
     item1->setPos(100, 100);
@@ -1008,6 +1015,7 @@ void tst_Gestures::explicitGraphicsObjectTarget()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.move(m_availableTopLeft);
 
     GestureItem *item1 = new GestureItem("item1");
     scene.addItem(item1);
@@ -1557,6 +1565,7 @@ void tst_Gestures::autoCancelGestures2()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.move(m_availableTopLeft);
 
     MockItem *parent = new MockItem("parent");
     GestureItem *child = new GestureItem("child");
@@ -1593,6 +1602,7 @@ void tst_Gestures::graphicsViewParentPropagation()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.move(m_availableTopLeft);
 
     GestureItem *item0 = new GestureItem("item0");
     scene.addItem(item0);
@@ -1653,6 +1663,7 @@ void tst_Gestures::panelPropagation()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.move(m_availableTopLeft);
 
     GestureItem *item0 = new GestureItem("item0");
     scene.addItem(item0);
@@ -1777,6 +1788,7 @@ void tst_Gestures::panelStacksBehindParent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.move(m_availableTopLeft);
 
     GestureItem *item1 = new GestureItem("item1");
     item1->grabGesture(CustomGesture::GestureType);
@@ -1964,6 +1976,7 @@ void tst_Gestures::partialGesturePropagation()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.move(m_availableTopLeft);
 
     GestureItem *item1 = new GestureItem("item1");
     item1->grabGesture(CustomGesture::GestureType);
@@ -2176,6 +2189,7 @@ void tst_Gestures::testReuseCanceledGestures()
     mw.setWindowFlags(Qt::X11BypassWindowManagerHint);
     QGraphicsView *gv = new QGraphicsView(&mw);
     QGraphicsScene *scene = new QGraphicsScene;
+    mw.move(m_availableTopLeft);
 
     gv->setScene(scene);
     scene->setSceneRect(0,0,100,100);

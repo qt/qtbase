@@ -83,7 +83,13 @@ bool QEglFSKmsGbmDevice::open()
 
     setFd(fd);
 
-    m_eventReader.create(this);
+    if (usesEventReader()) {
+        qCDebug(qLcEglfsKmsDebug, "Using dedicated drm event reading thread");
+        m_eventReader.create(this);
+    } else {
+        qCDebug(qLcEglfsKmsDebug, "Not using dedicated drm event reading thread; "
+                "threaded multi-screen setups may experience problems");
+    }
 
     return true;
 }
@@ -92,7 +98,8 @@ void QEglFSKmsGbmDevice::close()
 {
     // Note: screens are gone at this stage.
 
-    m_eventReader.destroy();
+    if (usesEventReader())
+        m_eventReader.destroy();
 
     if (m_gbm_device) {
         gbm_device_destroy(m_gbm_device);
@@ -172,6 +179,12 @@ void QEglFSKmsGbmDevice::registerScreen(QPlatformScreen *screen,
     QEglFSKmsDevice::registerScreen(screen, isPrimary, virtualPos, virtualSiblings);
     if (screenConfig()->hwCursor() && m_globalCursor)
         m_globalCursor->reevaluateVisibilityForScreens();
+}
+
+bool QEglFSKmsGbmDevice::usesEventReader() const
+{
+    static const bool eventReaderThreadDisabled = qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_NO_EVENT_READER_THREAD");
+    return !eventReaderThreadDisabled;
 }
 
 QT_END_NAMESPACE

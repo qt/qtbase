@@ -1,4 +1,5 @@
 version: 2
+alias: qtbase
 accept_configuration:
   condition: property
   property: features
