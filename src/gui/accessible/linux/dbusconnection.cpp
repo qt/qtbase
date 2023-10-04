@@ -56,11 +56,13 @@ DBusConnection::DBusConnection(QObject *parent)
     if (c.interface()->isServiceRegistered(A11Y_SERVICE))
         serviceRegistered();
 
-    // In addition try if there is an xatom exposing the bus address, this allows applications run as root to work
-    QString address = getAddressFromXCB();
-    if (!address.isEmpty()) {
-        m_enabled = true;
-        connectA11yBus(address);
+    if (QGuiApplication::platformName().startsWith("xcb"_L1)) {
+        // In addition try if there is an xatom exposing the bus address, this allows applications run as root to work
+        QString address = getAddressFromXCB();
+        if (!address.isEmpty()) {
+            m_enabled = true;
+            connectA11yBus(address);
+        }
     }
 }
 
