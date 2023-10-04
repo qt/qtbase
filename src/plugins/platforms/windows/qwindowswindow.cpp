@@ -2775,11 +2775,6 @@ void QWindowsWindow::calculateFullFrameMargins()
 {
     if (m_data.flags & Qt::FramelessWindowHint)
         return;
-    // Normally obtained from WM_NCCALCSIZE. This calculation only works
-    // when no native menu is present.
-    const auto systemMargins = testFlag(DisableNonClientScaling)
-        ? QWindowsGeometryHint::frameOnPrimaryScreen(window(), m_data.hwnd)
-        : frameMargins_sys();
 
     // QTBUG-113736: systemMargins depends on AdjustWindowRectExForDpi. This doesn't take into
     // account possible external modifications to the titlebar, as with ExtendsContentIntoTitleBar()
@@ -2793,6 +2788,20 @@ void QWindowsWindow::calculateFullFrameMargins()
     RECT clientRect{};
     GetWindowRect(handle(), &windowRect);
     GetClientRect(handle(), &clientRect);
+
+    // QTBUG-117704 It is also possible that the user has manually removed the frame (for example
+    // by handling WM_NCCALCSIZE). If that is the case, i.e., the client area and the window area
+    // have identical sizes, we don't want to override the user-defined margins.
+
+    if (qrectFromRECT(windowRect).size() == qrectFromRECT(clientRect).size())
+        return;
+
+    // Normally obtained from WM_NCCALCSIZE. This calculation only works
+    // when no native menu is present.
+    const auto systemMargins = testFlag(DisableNonClientScaling)
+        ? QWindowsGeometryHint::frameOnPrimaryScreen(window(), m_data.hwnd)
+        : frameMargins_sys();
+
     const int yDiff = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top);
     const bool typicalFrame = (systemMargins.left() == systemMargins.right())
             && (systemMargins.right() == systemMargins.bottom());
