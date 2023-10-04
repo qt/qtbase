@@ -1810,6 +1810,11 @@ static QString absoluteFilePath(const Options *options, const QString &relativeF
     }
 
     if (relativeFileName.endsWith("-android-dependencies.xml"_L1)) {
+        for (const auto &dir : options->extraLibraryDirs) {
+            const QString path = dir + u'/' + relativeFileName;
+            if (QFile::exists(path))
+                return path;
+        }
         return options->qtInstallDirectory + u'/' + options->qtLibsDirectory +
                u'/' + relativeFileName;
     }
