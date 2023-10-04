@@ -3,6 +3,7 @@
 
 /*!
     \example threads/mandelbrot
+    \examplecategory {Data Processing & I/O}
     \title Mandelbrot
     \ingroup qtconcurrent-mtexamples
 
