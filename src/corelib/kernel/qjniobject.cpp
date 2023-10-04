@@ -360,7 +360,14 @@ static QJniObject getCleanJniObject(jobject object)
 jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
 {
     Q_ASSERT(env);
-    const QByteArray classNameArray(className);
+    QByteArray classNameArray(className);
+#ifdef QT_DEBUG
+    if (classNameArray.contains('.')) {
+        qWarning("QtAndroidPrivate::findClass: className '%s' should use slash separators!",
+                 className);
+    }
+#endif
+    classNameArray.replace('.', '/');
     jclass clazz = getCachedClass(classNameArray);
     if (clazz)
         return clazz;
@@ -374,7 +381,7 @@ jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
 
     // JNIEnv::FindClass wants "a fully-qualified class name or an array type signature"
     // which is a slash-separated class name.
-    jclass localClazz = env->FindClass(className);
+    jclass localClazz = env->FindClass(classNameArray.constData());
     if (localClazz) {
         clazz = static_cast<jclass>(env->NewGlobalRef(localClazz));
         env->DeleteLocalRef(localClazz);
