@@ -5,7 +5,6 @@
 
 #include <qheaderview.h>
 #include <qpainter.h>
-#include <qitemdelegate.h>
 #include <qstack.h>
 #include <qdebug.h>
 #include <private/qtreewidget_p.h>

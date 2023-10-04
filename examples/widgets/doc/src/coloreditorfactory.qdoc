@@ -7,13 +7,13 @@
     \examplecategory {User Interface Components}
     \ingroup examples-itemviews
     \brief This example shows how to create an editor that can be used by
-    a QItemDelegate.
+    a QStyledItemDelegate.
 
     \image coloreditorfactoryimage.png
 
     When editing data in a QListView, QTableView, or QTreeView,
     editors are created and displayed by a \l{Delegate
-    Classes}{delegate}. QItemDelegate, which is the default delegate
+    Classes}{delegate}. QStyledItemDelegate, which is the default delegate
     used by Qt's \l{View Classes}{item views}, uses a
     QItemEditorFactory to create editors for it. A unique instance
     provided by QItemEditorFactory is by default installed on all
@@ -27,7 +27,7 @@
 
     In this example, we will create an editor (implemented in the \c
     ColorListEditor class) that can edit the QColor data type and be
-    used by \l{QItemDelegate}s. We do this by creating a new
+    used by \l{QStyledItemDelegate}s. We do this by creating a new
     QItemEditorCreatorBase that produces \c ColorListEditors and
     register it with a new factory, which we set as the default editor
     item factory (the unique factory instance). To test our editor, we
@@ -67,7 +67,7 @@
 
     \snippet itemviews/coloreditorfactory/colorlisteditor.h 0
 
-    QItemDelegate manages the interaction between the editor and
+    QStyledItemDelegate manages the interaction between the editor and
     the model, i.e., it retrieves data to edit from the model and
     store data from the editor in the model. The data that is edited
     by an editor is stored in the editor's user data property, and the
@@ -106,7 +106,7 @@
     usually sufficient to provide custom editors. Further
     customization is achieved by subclassing QItemEditorFactory
     and QItemEditorCreatorBase. It is also possible to subclass
-    QItemDelegate if you don't wish to use a factory at all.
+    QStyledItemDelegate if you don't wish to use a factory at all.
 
     Possible suggestions are:
 
@@ -128,5 +128,5 @@
     In this example, we use a standard QVariant data type. You can
     also use custom types. In the \l{Star Delegate Example}, we
     show how to store a custom data type in a QVariant and paint
-    and edit it in a class that inherits QItemDelegate.
+    and edit it in a class that inherits QStyledItemDelegate.
 */

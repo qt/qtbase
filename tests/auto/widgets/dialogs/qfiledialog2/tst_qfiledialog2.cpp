@@ -11,7 +11,6 @@
 #include <qdebug.h>
 #include <qfiledialog.h>
 #include <qabstractitemdelegate.h>
-#include <qitemdelegate.h>
 #include <qlistview.h>
 #include <qcombobox.h>
 #include <qpushbutton.h>
