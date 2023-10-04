@@ -296,6 +296,7 @@ static int NColorRoles[] = {
     QPalette::PlaceholderText + 1, // Qt_5_13, Qt_5_14, Qt_5_15
     QPalette::PlaceholderText + 1, // Qt_6_0
     QPalette::Accent + 1,     // Qt_6_6
+    QPalette::Accent + 1,     // Qt_6_7
     0                              // add the correct value for Qt_5_14 here later
 };
 
@@ -2795,7 +2796,6 @@ void tst_QDataStream::status_charptr_QByteArray_data()
     QTest::newRow("badsize 1MB+1") << QByteArray("\x00\x10\x00\x01", 4) + oneMbMinus1 + QByteArray("j") << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("badsize 3MB") << QByteArray("\x00\x30\x00\x00", 4) + threeMbMinus1 << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("badsize 3MB+1") << QByteArray("\x00\x30\x00\x01", 4) + threeMbMinus1 + QByteArray("j") << (int) QDataStream::ReadPastEnd << QByteArray();
-    QTest::newRow("size -1") << QByteArray("\xff\xff\xff\xff", 4) << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("size -2") << QByteArray("\xff\xff\xff\xfe", 4) << (int) QDataStream::ReadPastEnd << QByteArray();
 }
 
@@ -2818,10 +2818,10 @@ void tst_QDataStream::status_charptr_QByteArray()
     {
         QDataStream stream(&data, QIODevice::ReadOnly);
         char *buf;
-        uint len;
+        qsizetype len;
         stream.readBytes(buf, len);
 
-        QCOMPARE((int)len, expectedString.size());
+        QCOMPARE(len, expectedString.size());
         QCOMPARE(QByteArray(buf, len), expectedString);
         QCOMPARE(int(stream.status()), expectedStatus);
         delete [] buf;
@@ -2897,12 +2897,20 @@ void tst_QDataStream::status_QString_data()
     QTest::newRow("badsize 1MB+1") << QByteArray("\x00\x20\x00\x02", 4) + oneMbMinus1Data + QByteArray("j") << (int) QDataStream::ReadPastEnd << QString();
     QTest::newRow("badsize 3MB") << QByteArray("\x00\x60\x00\x00", 4) + threeMbMinus1Data << (int) QDataStream::ReadPastEnd << QString();
     QTest::newRow("badsize 3MB+1") << QByteArray("\x00\x60\x00\x02", 4) + threeMbMinus1Data + QByteArray("j") << (int) QDataStream::ReadPastEnd << QString();
-    QTest::newRow("size -2") << QByteArray("\xff\xff\xff\xfe", 4) << (int) QDataStream::ReadPastEnd << QString();
-    QTest::newRow("size MAX") << QByteArray("\x7f\xff\xff\xfe", 4) << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("32 bit size should be 64 bit") << QByteArray("\xff\xff\xff\xfe", 4) << (int) QDataStream::ReadPastEnd << QString();
 
-    // corrupt data
+#if QT_POINTER_SIZE != 4
+    // past end on 64 bit platforms
+    QTest::newRow("32 bit size MAX string no content") << QByteArray("\xff\xff\xff\xfc", 4) << (int) QDataStream::ReadPastEnd << QString();
+#else
+    // too big for 32 bit platforms
+    QTest::newRow("32 bit size MAX string no content") << QByteArray("\xff\xff\xff\xfc", 4) << (int) QDataStream::ReadCorruptData << QString();
+#endif
+    // too big on both 32 and 64 bit platforms because qsizetype is signed
+    QTest::newRow("64 bit size MAX string no content") << QByteArray("\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe", 12) << (int) QDataStream::ReadCorruptData << QString();
+
+    // corrupt data because QChar is 16 bit => even size required
     QTest::newRow("corrupt1") << QByteArray("yyyy") << (int) QDataStream::ReadCorruptData << QString();
-    QTest::newRow("size -3") << QByteArray("\xff\xff\xff\xfd", 4) << (int) QDataStream::ReadCorruptData << QString();
 }
 
 void tst_QDataStream::status_QString()

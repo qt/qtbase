@@ -525,8 +525,8 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_6_3 Same as Qt_6_0
     \value Qt_6_4 Same as Qt_6_0
     \value Qt_6_5 Same as Qt_6_0
-    \value Qt_6_6 Same as Qt_6_0
-    \value Qt_6_7 Same as Qt_6_6
+    \value Qt_6_6 Version 21 (Qt 6.6)
+    \value Qt_6_7 Version 22 (Qt 6.7)
     \omitvalue Qt_DefaultCompiledVersion
 
     \sa setVersion(), version()
@@ -731,13 +731,13 @@ bool QDataStream::isDeviceTransactionStarted() const
     \internal
 */
 
-int QDataStream::readBlock(char *data, int len)
+qsizetype QDataStream::readBlock(char *data, qsizetype len)
 {
     // Disable reads on failure in transacted stream
     if (q_status != Ok && dev->isTransactionStarted())
         return -1;
 
-    const int readResult = dev->read(data, len);
+    const qsizetype readResult = dev->read(data, len);
     if (readResult != len)
         setStatus(ReadPastEnd);
     return readResult;
@@ -976,7 +976,7 @@ QDataStream &QDataStream::operator>>(double &f)
 
 QDataStream &QDataStream::operator>>(char *&s)
 {
-    uint len = 0;
+    qsizetype len = 0;
     return readBytes(s, len);
 }
 
@@ -1020,30 +1020,40 @@ QDataStream &QDataStream::operator>>(char32_t &c)
     The \a l parameter is set to the length of the buffer. If the
     string read is empty, \a l is set to 0 and \a s is set to \nullptr.
 
-    The serialization format is a quint32 length specifier first,
-    then \a l bytes of data.
+    The serialization format is a length specifier first, then \a l
+    bytes of data. The length specifier is one quint32 if the version
+    is less than 6.7 or if the number of elements is less than 0xfffffffe
+    (2^32 -2), otherwise there is an extend value 0xfffffffe followed by
+    one quint64 with the actual value. In addition for containers that
+    support isNull(), it is encoded as a single quint32 with all bits
+    set and no data.
 
     \sa readRawData(), writeBytes()
 */
 
-QDataStream &QDataStream::readBytes(char *&s, uint &l)
+QDataStream &QDataStream::readBytes(char *&s, qsizetype &l)
 {
     s = nullptr;
     l = 0;
     CHECK_STREAM_PRECOND(*this)
 
-    quint32 len;
-    *this >> len;
-    if (len == 0)
+    qint64 length = readQSizeType(*this);
+    if (length == 0)
         return *this;
 
-    const quint32 Step = 1024 * 1024;
-    quint32 allocated = 0;
+    qsizetype len = qsizetype(length);
+    if (length != len || length < 0) {
+        setStatus(ReadCorruptData); // Cannot store len in l
+        return *this;
+    }
+
+    constexpr qsizetype Step = 1024 * 1024;
+    qsizetype allocated = 0;
     char *prevBuf = nullptr;
     char *curBuf = nullptr;
 
     do {
-        int blockSize = qMin(Step, len - allocated);
+        qsizetype blockSize = qMin(Step, len - allocated);
         prevBuf = curBuf;
         curBuf = new char[allocated + blockSize + 1];
         if (prevBuf) {
@@ -1059,7 +1069,7 @@ QDataStream &QDataStream::readBytes(char *&s, uint &l)
 
     s = curBuf;
     s[len] = '\0';
-    l = (uint)len;
+    l = len;
     return *this;
 }
 
@@ -1072,7 +1082,7 @@ QDataStream &QDataStream::readBytes(char *&s, uint &l)
     \sa readBytes(), QIODevice::read(), writeRawData()
 */
 
-int QDataStream::readRawData(char *s, int len)
+qsizetype QDataStream::readRawData(char *s, qsizetype len)
 {
     CHECK_STREAM_PRECOND(-1)
     return readBlock(s, len);
@@ -1346,21 +1356,25 @@ QDataStream &QDataStream::operator<<(char32_t c)
     Writes the length specifier \a len and the buffer \a s to the
     stream and returns a reference to the stream.
 
-    The \a len is serialized as a quint32, followed by \a len bytes
-    from \a s. Note that the data is \e not encoded.
+    The \a len is serialized as a quint32 and an optional quint64,
+    followed by \a len bytes from \a s. Note that the data is
+    \e not encoded.
 
     \sa writeRawData(), readBytes()
 */
 
-QDataStream &QDataStream::writeBytes(const char *s, uint len)
+QDataStream &QDataStream::writeBytes(const char *s, qsizetype len)
 {
+    if (len < 0) {
+        q_status = WriteFailed;
+        return *this;
+    }
     CHECK_STREAM_WRITE_PRECOND(*this)
-    *this << (quint32)len;                        // write length specifier
-    if (len)
+    writeQSizeType(*this, len); // write length specifier
+    if (len > 0)
         writeRawData(s, len);
     return *this;
 }
-
 
 /*!
     Writes \a len bytes from \a s to the stream. Returns the
@@ -1370,10 +1384,10 @@ QDataStream &QDataStream::writeBytes(const char *s, uint len)
     \sa writeBytes(), QIODevice::write(), readRawData()
 */
 
-int QDataStream::writeRawData(const char *s, int len)
+qsizetype QDataStream::writeRawData(const char *s, qsizetype len)
 {
     CHECK_STREAM_WRITE_PRECOND(-1)
-    int ret = dev->write(s, len);
+    qsizetype ret = dev->write(s, len);
     if (ret != len)
         q_status = WriteFailed;
     return ret;
@@ -1390,13 +1404,13 @@ int QDataStream::writeRawData(const char *s, int len)
 
     \sa QIODevice::seek()
 */
-int QDataStream::skipRawData(int len)
+qint64 QDataStream::skipRawData(qint64 len)
 {
     CHECK_STREAM_PRECOND(-1)
     if (q_status != Ok && dev->isTransactionStarted())
         return -1;
 
-    const int skipResult = dev->skip(len);
+    const qint64 skipResult = dev->skip(len);
     if (skipResult != len)
         setStatus(ReadPastEnd);
     return skipResult;

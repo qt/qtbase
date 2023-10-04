@@ -3266,7 +3266,7 @@ void QByteArray::clear()
 QDataStream &operator<<(QDataStream &out, const QByteArray &ba)
 {
     if (ba.isNull() && out.version() >= 6) {
-        out << (quint32)0xffffffff;
+        QDataStream::writeQSizeType(out, -1);
         return out;
     }
     return out.writeBytes(ba.constData(), ba.size());
@@ -3283,15 +3283,21 @@ QDataStream &operator<<(QDataStream &out, const QByteArray &ba)
 QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 {
     ba.clear();
-    quint32 len;
-    in >> len;
-    if (len == 0xffffffff) { // null byte-array
+
+    qint64 size = QDataStream::readQSizeType(in);
+    qsizetype len = size;
+    if (size != len || size < -1) {
+        ba.clear();
+        in.setStatus(QDataStream::ReadCorruptData);
+        return in;
+    }
+    if (len == -1) { // null byte-array
         ba = QByteArray();
         return in;
     }
 
-    const quint32 Step = 1024 * 1024;
-    quint32 allocated = 0;
+    constexpr qsizetype Step = 1024 * 1024;
+    qsizetype allocated = 0;
 
     do {
         qsizetype blockSize = qMin(Step, len - allocated);

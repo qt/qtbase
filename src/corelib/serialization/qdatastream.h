@@ -19,12 +19,26 @@ QT_BEGIN_NAMESPACE
 class qfloat16;
 #endif
 class QByteArray;
+class QDataStream;
 class QIODevice;
+class QString;
 
 #if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 class QDataStreamPrivate;
 namespace QtPrivate {
 class StreamStateSaver;
+template <typename Container>
+QDataStream &readArrayBasedContainer(QDataStream &s, Container &c);
+template <typename Container>
+QDataStream &readListBasedContainer(QDataStream &s, Container &c);
+template <typename Container>
+QDataStream &readAssociativeContainer(QDataStream &s, Container &c);
+template <typename Container>
+QDataStream &writeSequentialContainer(QDataStream &s, const Container &c);
+template <typename Container>
+QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c);
+template <typename Container>
+QDataStream &writeAssociativeMultiContainer(QDataStream &s, const Container &c);
 }
 class Q_CORE_EXPORT QDataStream : public QIODeviceBase
 {
@@ -69,7 +83,7 @@ public:
         Qt_6_4 = Qt_6_0,
         Qt_6_5 = Qt_6_0,
         Qt_6_6 = 21,
-        Qt_6_7 = Qt_6_6,
+        Qt_6_7 = 22,
         Qt_DefaultCompiledVersion = Qt_6_7
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 #error Add the datastream version for this Qt version and update Qt_DefaultCompiledVersion
@@ -159,14 +173,20 @@ public:
     QDataStream &operator<<(char32_t c);
     QDataStream &operator<<(const volatile void *) = delete;
 
-
+#if QT_CORE_REMOVED_SINCE(6, 7)
     QDataStream &readBytes(char *&, uint &len);
-    int readRawData(char *, int len);
-
     QDataStream &writeBytes(const char *, uint len);
-    int writeRawData(const char *, int len);
-
     int skipRawData(int len);
+#endif
+#if QT_CORE_REMOVED_SINCE(6, 7) && QT_POINTER_SIZE != 4
+    int readRawData(char *, int len);
+    int writeRawData(const char *, int len);
+#endif
+    QDataStream &readBytes(char *&, qsizetype &len);
+    qsizetype readRawData(char *, qsizetype len);
+    QDataStream &writeBytes(const char *, qsizetype len);
+    qsizetype writeRawData(const char *, qsizetype len);
+    qint64 skipRawData(qint64 len);
 
     void startTransaction();
     bool commitTransaction();
@@ -185,9 +205,32 @@ private:
     ByteOrder byteorder;
     int ver;
     Status q_status;
-
+#if QT_CORE_REMOVED_SINCE(6, 7) && QT_POINTER_SIZE != 4
     int readBlock(char *data, int len);
+#endif
+    qsizetype readBlock(char *data, qsizetype len);
+    static inline qint64 readQSizeType(QDataStream &s);
+    static inline void writeQSizeType(QDataStream &s, qint64 value);
+    enum class QDataStreamSizes : quint32 { NullCode = 0xffffffffu, ExtendedSize = 0xfffffffeu };
+
     friend class QtPrivate::StreamStateSaver;
+    Q_CORE_EXPORT friend QDataStream &operator<<(QDataStream &out, const QString &str);
+    Q_CORE_EXPORT friend QDataStream &operator>>(QDataStream &in, QString &str);
+    Q_CORE_EXPORT friend QDataStream &operator<<(QDataStream &out, const QByteArray &ba);
+    Q_CORE_EXPORT friend QDataStream &operator>>(QDataStream &in, QByteArray &ba);
+    template <typename Container>
+    friend QDataStream &QtPrivate::readArrayBasedContainer(QDataStream &s, Container &c);
+    template <typename Container>
+    friend QDataStream &QtPrivate::readListBasedContainer(QDataStream &s, Container &c);
+    template <typename Container>
+    friend QDataStream &QtPrivate::readAssociativeContainer(QDataStream &s, Container &c);
+    template <typename Container>
+    friend QDataStream &QtPrivate::writeSequentialContainer(QDataStream &s, const Container &c);
+    template <typename Container>
+    friend QDataStream &QtPrivate::writeAssociativeContainer(QDataStream &s, const Container &c);
+    template <typename Container>
+    friend QDataStream &QtPrivate::writeAssociativeMultiContainer(QDataStream &s,
+                                                                  const Container &c);
 };
 
 namespace QtPrivate {
@@ -219,10 +262,14 @@ QDataStream &readArrayBasedContainer(QDataStream &s, Container &c)
     StreamStateSaver stateSaver(&s);
 
     c.clear();
-    quint32 n;
-    s >> n;
+    qint64 size = QDataStream::readQSizeType(s);
+    qsizetype n = size;
+    if (size != n || size < 0) {
+        s.setStatus(QDataStream::ReadCorruptData);
+        return s;
+    }
     c.reserve(n);
-    for (quint32 i = 0; i < n; ++i) {
+    for (qsizetype i = 0; i < n; ++i) {
         typename Container::value_type t;
         s >> t;
         if (s.status() != QDataStream::Ok) {
@@ -241,9 +288,13 @@ QDataStream &readListBasedContainer(QDataStream &s, Container &c)
     StreamStateSaver stateSaver(&s);
 
     c.clear();
-    quint32 n;
-    s >> n;
-    for (quint32 i = 0; i < n; ++i) {
+    qint64 size = QDataStream::readQSizeType(s);
+    qsizetype n = size;
+    if (size != n || size < 0) {
+        s.setStatus(QDataStream::ReadCorruptData);
+        return s;
+    }
+    for (qsizetype i = 0; i < n; ++i) {
         typename Container::value_type t;
         s >> t;
         if (s.status() != QDataStream::Ok) {
@@ -262,9 +313,13 @@ QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
     StreamStateSaver stateSaver(&s);
 
     c.clear();
-    quint32 n;
-    s >> n;
-    for (quint32 i = 0; i < n; ++i) {
+    qint64 size = QDataStream::readQSizeType(s);
+    qsizetype n = size;
+    if (size != n || size < 0) {
+        s.setStatus(QDataStream::ReadCorruptData);
+        return s;
+    }
+    for (qsizetype i = 0; i < n; ++i) {
         typename Container::key_type k;
         typename Container::mapped_type t;
         s >> k >> t;
@@ -281,7 +336,7 @@ QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
 template <typename Container>
 QDataStream &writeSequentialContainer(QDataStream &s, const Container &c)
 {
-    s << quint32(c.size());
+    QDataStream::writeQSizeType(s, c.size());
     for (const typename Container::value_type &t : c)
         s << t;
 
@@ -291,7 +346,7 @@ QDataStream &writeSequentialContainer(QDataStream &s, const Container &c)
 template <typename Container>
 QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
 {
-    s << quint32(c.size());
+    QDataStream::writeQSizeType(s, c.size());
     auto it = c.constBegin();
     auto end = c.constEnd();
     while (it != end) {
@@ -305,7 +360,7 @@ QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
 template <typename Container>
 QDataStream &writeAssociativeMultiContainer(QDataStream &s, const Container &c)
 {
-    s << quint32(c.size());
+    QDataStream::writeQSizeType(s, c.size());
     auto it = c.constBegin();
     auto end = c.constEnd();
     while (it != end) {
@@ -353,6 +408,31 @@ inline int QDataStream::version() const
 
 inline void QDataStream::setVersion(int v)
 { ver = v; }
+
+qint64 QDataStream::readQSizeType(QDataStream &s)
+{
+    quint32 first;
+    s >> first;
+    if (first == quint32(QDataStreamSizes::NullCode))
+        return -1;
+    if (first < quint32(QDataStreamSizes::ExtendedSize) || s.version() < QDataStream::Qt_6_7)
+        return qint64(first);
+    qint64 extendedLen;
+    s >> extendedLen;
+    return extendedLen;
+}
+
+void QDataStream::writeQSizeType(QDataStream &s, qint64 value)
+{
+    if (value < qint64(QDataStreamSizes::ExtendedSize))
+        s << quint32(value);
+    else if (s.version() >= QDataStream::Qt_6_7)
+        s << quint32(QDataStreamSizes::ExtendedSize) << value;
+    else if (value == qint64(QDataStreamSizes::ExtendedSize))
+        s << quint32(QDataStreamSizes::ExtendedSize);
+    else
+        s.setStatus(QDataStream::WriteFailed); // value is too big for old format
+}
 
 inline QDataStream &QDataStream::operator>>(char &i)
 { return *this >> reinterpret_cast<qint8&>(i); }

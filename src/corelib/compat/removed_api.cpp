@@ -631,6 +631,56 @@ void QDateTime::setTimeZone(const QTimeZone &toZone)
     setTimeZone(toZone, TransitionResolution::LegacyBehavior);
 }
 
+#include "qdatastream.h"
+
+QDataStream &QDataStream::readBytes(char *&s, uint &l)
+{
+    qsizetype length = 0;
+    (void)readBytes(s, length);
+    if (length != qsizetype(uint(length))) {
+        setStatus(ReadCorruptData); // Cannot store length in l
+        delete[] s;
+        l = 0;
+        return *this;
+    }
+    l = uint(length);
+    return *this;
+}
+
+QDataStream &QDataStream::writeBytes(const char *s, uint len)
+{
+    qsizetype length = qsizetype(len);
+    if (length < 0) {
+        setStatus(WriteFailed);
+        return *this;
+    }
+    return writeBytes(s, length);
+}
+
+int QDataStream::skipRawData(int len)
+{
+    return int(skipRawData(qint64(len)));
+}
+
+#if QT_POINTER_SIZE != 4
+
+int QDataStream::readBlock(char *data, int len)
+{
+    return int(readBlock(data, qsizetype(len)));
+}
+
+int QDataStream::readRawData(char *s, int len)
+{
+    return int(readRawData(s, qsizetype(len)));
+}
+
+int QDataStream::writeRawData(const char *s, int len)
+{
+    return writeRawData(s, qsizetype(len));
+}
+
+#endif // QT_POINTER_SIZE != 4
+
 #if defined(Q_OS_ANDROID)
 
 #include "qjniobject.h"

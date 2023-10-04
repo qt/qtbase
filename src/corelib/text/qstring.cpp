@@ -9327,16 +9327,15 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
         if (!str.isNull() || out.version() < 3) {
             if ((out.byteOrder() == QDataStream::BigEndian) == (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
                 out.writeBytes(reinterpret_cast<const char *>(str.unicode()),
-                               static_cast<uint>(sizeof(QChar) * str.size()));
+                               static_cast<qsizetype>(sizeof(QChar) * str.size()));
             } else {
                 QVarLengthArray<char16_t> buffer(str.size());
                 qbswap<sizeof(char16_t)>(str.constData(), str.size(), buffer.data());
                 out.writeBytes(reinterpret_cast<const char *>(buffer.data()),
-                               static_cast<uint>(sizeof(char16_t) * buffer.size()));
+                               static_cast<qsizetype>(sizeof(char16_t) * buffer.size()));
             }
         } else {
-            // write null marker
-            out << (quint32)0xffffffff;
+            QDataStream::writeQSizeType(out, -1); // write null marker
         }
     }
     return out;
@@ -9358,20 +9357,25 @@ QDataStream &operator>>(QDataStream &in, QString &str)
         in >> l;
         str = QString::fromLatin1(l);
     } else {
-        quint32 bytes = 0;
-        in >> bytes;                                  // read size of string
-        if (bytes == 0xffffffff) {                    // null string
+        qint64 size = QDataStream::readQSizeType(in);
+        qsizetype bytes = size;
+        if (size != bytes || size < -1) {
+            str.clear();
+            in.setStatus(QDataStream::ReadCorruptData);
+            return in;
+        }
+        if (bytes == -1) { // null string
             str = QString();
-        } else if (bytes > 0) {                       // not empty
+        } else if (bytes > 0) {
             if (bytes & 0x1) {
                 str.clear();
                 in.setStatus(QDataStream::ReadCorruptData);
                 return in;
             }
 
-            const quint32 Step = 1024 * 1024;
-            quint32 len = bytes / 2;
-            quint32 allocated = 0;
+            const qsizetype Step = 1024 * 1024;
+            qsizetype len = bytes / 2;
+            qsizetype allocated = 0;
 
             while (allocated < len) {
                 int blockSize = qMin(Step, len - allocated);
