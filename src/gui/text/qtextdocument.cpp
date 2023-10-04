@@ -65,7 +65,7 @@ bool Qt::mightBeRichText(const QString& text)
 {
     if (text.isEmpty())
         return false;
-    int start = 0;
+    qsizetype start = 0;
 
     while (start < text.size() && text.at(start).isSpace())
         ++start;
@@ -88,7 +88,7 @@ bool Qt::mightBeRichText(const QString& text)
 
     if (QStringView{text}.mid(start, 5).compare("<!doc"_L1, Qt::CaseInsensitive) == 0)
         return true;
-    int open = start;
+    qsizetype open = start;
     while (open < text.size() && text.at(open) != u'<'
             && text.at(open) != u'\n') {
         if (text.at(open) == u'&' &&  QStringView{text}.mid(open + 1, 3) == "lt;"_L1)
@@ -96,7 +96,7 @@ bool Qt::mightBeRichText(const QString& text)
         ++open;
     }
     if (open < text.size() && text.at(open) == u'<') {
-        const int close = text.indexOf(u'>', open);
+        const qsizetype close = text.indexOf(u'>', open);
         if (close > -1) {
             QString tag;
             for (int i = open+1; i < close; ++i) {
@@ -131,12 +131,12 @@ bool Qt::mightBeRichText(const QString& text)
 */
 QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
 {
-    int col = 0;
+    qsizetype col = 0;
     QString rich;
     rich += "<p>"_L1;
-    for (int i = 0; i < plain.size(); ++i) {
+    for (qsizetype i = 0; i < plain.size(); ++i) {
         if (plain[i] == u'\n'){
-            int c = 1;
+            qsizetype c = 1;
             while (i+1 < plain.size() && plain[i+1] == u'\n') {
                 i++;
                 c++;
@@ -3445,7 +3445,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
 {
     const auto styleAttribute = " style=\""_L1;
     html += styleAttribute;
-    const int originalHtmlLength = html.size();
+    const qsizetype originalHtmlLength = html.size();
 
     if (frameType == TextFrame)
         html += "-qt-table-type: frame;"_L1;
