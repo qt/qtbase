@@ -3,6 +3,7 @@
 
 /*!
   \example ipc/sharedmemory
+  \examplecategory {Data Processing & I/O}
   \title IPC: Shared Memory
   \ingroup examples-ipc
   \brief Demonstrates how to share image data between different processes
