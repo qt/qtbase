@@ -3,7 +3,8 @@
 
 /*!
     \example bindableproperties
-    \title Bindable Properties Example
+    \examplecategory {Data Processing & I/O}
+    \title Bindable Properties
     \brief Demonstrates how the usage of bindable properties can simplify
     your C++ code.
 
