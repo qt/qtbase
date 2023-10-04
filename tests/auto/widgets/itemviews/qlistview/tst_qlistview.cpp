@@ -68,8 +68,14 @@ public:
     {
         return QListView::visualRegionForSelection(selectionModel()->selection());
     }
+    void moveEvent(QMoveEvent *e) override
+    {
+      QListView::moveEvent(e);
+      m_gotValidResizeEvent = !e->pos().isNull();
+    }
 
     friend class tst_QListView;
+    bool m_gotValidResizeEvent = false;
 };
 
 class tst_QListView : public QObject
@@ -2995,6 +3001,7 @@ void tst_QListView::internalDragDropMove()
     // The test relies on the global position of mouse events; make sure
     // the window is properly mapped on X11.
     QVERIFY(QTest::qWaitForWindowActive(&list));
+    QVERIFY(QTest::qWaitFor([&]() { return list.m_gotValidResizeEvent; }));
     // execute as soon as the eventloop is running again
     // which is the case inside list.startDrag()
     QTimer::singleShot(0, [&]()
