@@ -19,6 +19,7 @@
 #include "QtCore/qmutex.h"
 #include "QtCore/qrunnable.h"
 #include "QtCore/qsharedpointer.h"
+#include "QtCore/qatomic.h"
 #if QT_CONFIG(thread)
 #include "QtCore/qthreadpool.h"
 #endif
@@ -133,7 +134,7 @@ private slots:
 
 private:
     QMutex signalsMutex;
-    bool signalsConnected;
+    QAtomicInteger<bool> signalsConnected = false;
 };
 #endif // QT_CONFIG(thread)
 

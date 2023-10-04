@@ -999,7 +999,6 @@ void QDnsLookupRunnable::run()
 
 #if QT_CONFIG(thread)
 QDnsLookupThreadPool::QDnsLookupThreadPool()
-    : signalsConnected(false)
 {
     // Run up to 5 lookups in parallel.
     setMaxThreadCount(5);
@@ -1008,9 +1007,9 @@ QDnsLookupThreadPool::QDnsLookupThreadPool()
 void QDnsLookupThreadPool::start(QRunnable *runnable)
 {
     // Ensure threads complete at application destruction.
-    if (!signalsConnected) {
+    if (!signalsConnected.loadAcquire()) {
         QMutexLocker signalsLocker(&signalsMutex);
-        if (!signalsConnected) {
+        if (!signalsConnected.loadRelaxed()) {
             QCoreApplication *app = QCoreApplication::instance();
             if (!app) {
                 qWarning("QDnsLookup requires a QCoreApplication");
@@ -1020,8 +1019,8 @@ void QDnsLookupThreadPool::start(QRunnable *runnable)
 
             moveToThread(app->thread());
             connect(app, SIGNAL(destroyed()),
-                SLOT(_q_applicationDestroyed()), Qt::DirectConnection);
-            signalsConnected = true;
+                    SLOT(_q_applicationDestroyed()), Qt::DirectConnection);
+            signalsConnected.storeRelease(true);
         }
     }
 
@@ -1031,7 +1030,8 @@ void QDnsLookupThreadPool::start(QRunnable *runnable)
 void QDnsLookupThreadPool::_q_applicationDestroyed()
 {
     waitForDone();
-    signalsConnected = false;
+    QMutexLocker signalsLocker(&signalsMutex);
+    signalsConnected.storeRelease(false);
 }
 #endif // QT_CONFIG(thread)
 QT_END_NAMESPACE
