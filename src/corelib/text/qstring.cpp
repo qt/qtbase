@@ -6262,9 +6262,9 @@ QString& QString::fill(QChar ch, qsizetype size)
     \fn int QString::compare(const QString &s1, const QString &s2, Qt::CaseSensitivity cs)
     \since 4.2
 
-    Compares \a s1 with \a s2 and returns an integer less than, equal
-    to, or greater than zero if \a s1 is less than, equal to, or
-    greater than \a s2.
+    Compares the string \a s1 with the string \a s2 and returns a negative integer
+    if \a s1 is less than \a s2, a positive integer if it is greater than \a s2,
+    and zero if they are equal.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
@@ -6326,10 +6326,9 @@ QString& QString::fill(QChar ch, qsizetype size)
     \overload compare()
     \since 4.2
 
-    Lexically compares this string with the \a other string and
-    returns an integer less than, equal to, or greater than zero if
-    this string is less than, equal to, or greater than the other
-    string.
+    Lexically compares this string with the string \a other and returns
+    a negative integer if this string is less than \a other, a positive
+    integer if it is greater than \a other, and zero if they are equal.
 
     Same as compare(*this, \a other, \a cs).
 */
@@ -9535,9 +9534,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn int QLatin1StringView::compare(QChar ch, Qt::CaseSensitivity cs) const
     \since 5.14
 
-    Returns an integer that compares to zero as this string view compares
-    to the UTF-16 string viewed by \a str, the Latin-1 string viewed by \a l1,
-    or the character \a ch, respectively.
+    Compares this string view with UTF-16 string view \a str, Latin-1 string view
+    \a l1, or the character \a ch, respectively. Returns a negative integer if this
+    string is less than \a str, \a l1 or \a ch, returns a positive integer if it
+    is greater than \a str, \a l1 or \a ch, and zero if they are equal.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
