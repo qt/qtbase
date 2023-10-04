@@ -13,7 +13,7 @@
 #include <qsharedpointer.h>
 #include <qfiledialog.h>
 #include <qabstractitemdelegate.h>
-#include <qitemdelegate.h>
+#include <qstyleditemdelegate.h>
 #include <qlistview.h>
 #include <qcombobox.h>
 #include <qpushbutton.h>
@@ -806,7 +806,7 @@ void tst_QFiledialog::itemDelegate()
 {
     QFileDialog fd;
     QVERIFY(fd.itemDelegate() != 0);
-    QItemDelegate *id = new QItemDelegate(&fd);
+    QStyledItemDelegate *id = new QStyledItemDelegate(&fd);
     fd.setItemDelegate(id);
     QCOMPARE(fd.itemDelegate(), (QAbstractItemDelegate *)id);
 }

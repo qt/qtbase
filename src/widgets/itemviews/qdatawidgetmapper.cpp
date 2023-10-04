@@ -4,7 +4,6 @@
 #include "qdatawidgetmapper.h"
 
 #include "qabstractitemmodel.h"
-#include "qitemdelegate.h"
 #include "qmetaobject.h"
 #include "qwidget.h"
 #include "qstyleditemdelegate.h"
@@ -220,7 +219,7 @@ void QDataWidgetMapperPrivate::_q_modelDestroyed()
     instead of the default user property.
 
     It is possible to set an item delegate to support custom widgets. By default,
-    a QItemDelegate is used to synchronize the model with the widgets.
+    a QStyledItemDelegate is used to synchronize the model with the widgets.
 
     Let us assume that we have an item model named \c{model} with the following contents:
 
