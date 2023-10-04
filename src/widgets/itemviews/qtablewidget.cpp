@@ -3,7 +3,6 @@
 
 #include "qtablewidget.h"
 
-#include <qitemdelegate.h>
 #include <qpainter.h>
 #include <private/qtablewidget_p.h>
 

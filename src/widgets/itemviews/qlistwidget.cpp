@@ -3,7 +3,6 @@
 
 #include "qlistwidget.h"
 
-#include <qitemdelegate.h>
 #include <private/qlistview_p.h>
 #include <private/qwidgetitemdata_p.h>
 #include <private/qlistwidget_p.h>
