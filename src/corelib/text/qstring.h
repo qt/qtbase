@@ -1437,6 +1437,13 @@ inline QString &&asString(QString &&s)              { return std::move(s); }
 #endif
 
 //
+// QStringView::QStringView(const QString &) implementation
+//
+
+inline QStringView::QStringView(const QString &str) noexcept
+    : QStringView(str.isNull() ? nullptr : str.data(), qsizetype(str.size())) {}
+
+//
 // QStringView::arg() implementation
 //
 
