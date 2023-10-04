@@ -9780,7 +9780,7 @@ qsizetype QtPrivate::findString(QLatin1StringView haystack, qsizetype from, QLat
         const auto end = haystack.end() - needle.size() + 1;
         auto ciMatch = CaseInsensitiveL1::matcher(needle[0].toLatin1());
         const qsizetype nlen1 = needle.size() - 1;
-        for (auto it = std::find_if(begin + from, end, ciMatch); it < end;
+        for (auto it = std::find_if(begin + from, end, ciMatch); it != end;
              it = std::find_if(it + 1, end, ciMatch)) {
             // In this comparison we skip the first character because we know it's a match
             if (!nlen1 || QLatin1StringView(it + 1, nlen1).compare(needle.sliced(1), cs) == 0)
