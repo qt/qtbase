@@ -317,8 +317,8 @@ bool QCollator::ignorePunctuation() const
 
     Compares \a s1 with \a s2.
 
-    Returns an integer less than, equal to, or greater than zero depending on
-    whether \a s1 sorts before, with or after \a s2.
+    Returns a negative integer if \a s1 is less than \a s2, a positive integer
+    if it is greater than \a s2, and zero if they are equal.
 */
 
 /*!
@@ -341,8 +341,9 @@ bool QCollator::ignorePunctuation() const
     Compares \a s1 with \a s2. \a len1 and \a len2 specify the lengths of the
     QChar arrays pointed to by \a s1 and \a s2.
 
-    Returns an integer less than, equal to, or greater than zero depending on
-    whether \a s1 sorts before, with or after \a s2.
+    Returns a negative integer if \a s1 is less than \a s2, a positive integer
+    if it is greater than \a s2, and zero if they are equal.
+
 
     \note In Qt versions prior to 6.4, the length arguments were of type
     \c{int}, not \c{qsizetype}.

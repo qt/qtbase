@@ -404,9 +404,10 @@
     \fn int QLatin1StringView::compare(QChar ch, Qt::CaseSensitivity cs) const
     \since 5.14
 
-    Returns an integer that compares to zero as this string view compares
-    to the UTF-16 string viewed by \a str, the Latin-1 string viewed by \a l1,
-    or the character \a ch, respectively.
+    Compares this string view with UTF-16 string view \a str, Latin-1 string view \a l1,
+    or the character \a ch, respectively. Returns a negative integer if this
+    string is less than \a str, \a l1 or \a ch, returns a positive integer if it
+    is greater than \a str, \a l1 or \a ch, and zero if they are equal.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -417,8 +418,9 @@
     \fn int QLatin1StringView::compare(QUtf8StringView str, Qt::CaseSensitivity cs) const
     \since 6.5
 
-    Returns an integer that compares to zero as this string view compares to the
-    string view \a str.
+    Compares this string view with \a str and returns a negative integer if
+    this string view is less than \a str, a positive integer if it is greater than
+    \a str, and zero if they are equal.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
