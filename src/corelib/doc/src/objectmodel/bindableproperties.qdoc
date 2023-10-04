@@ -32,7 +32,7 @@
     different objects.
 
     The \l {Introductory Example} below demonstrates the usage of bindable
-    properties in C++ code. You can also check \l {Bindable Properties Example}
+    properties in C++ code. You can also check \l {Bindable Properties} example
     to see how the bindable properties can help to improve your code.
 
     \section1 Introductory Example
