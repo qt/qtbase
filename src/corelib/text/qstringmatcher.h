@@ -40,6 +40,9 @@ public:
     { return indexIn(QStringView(str, length), from); }
     qsizetype indexIn(QStringView str, qsizetype from = 0) const;
     QString pattern() const;
+    QStringView patternView() const noexcept
+    { return q_sv; }
+
     inline Qt::CaseSensitivity caseSensitivity() const { return q_cs; }
 
 private:

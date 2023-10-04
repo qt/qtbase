@@ -243,6 +243,15 @@ QString QStringMatcher::pattern() const
 }
 
 /*!
+    \fn QStringView QStringMatcher::patternView() const noexcept
+    \since 6.7
+
+    Returns a string view of the pattern that this string matcher will search for.
+
+    \sa setPattern()
+*/
+
+/*!
     Sets the case sensitivity setting of this string matcher to \a
     cs.
 
