@@ -329,6 +329,23 @@ QT_USE_NAMESPACE
     else
         QWindowSystemInterface::handleFileOpenEvent(qurlString);
 }
+
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)application
+{
+    if (@available(macOS 12, *)) {
+        if ([reflectionDelegate respondsToSelector:_cmd])
+            return [reflectionDelegate applicationSupportsSecureRestorableState:application];
+    }
+
+    // We don't support or implement state restorations via the AppKit
+    // state restoration APIs, but if we did, we would/should support
+    // secure state restoration. This is the default for apps linked
+    // against the macOS 14 SDK, but as we target versions below that
+    // as well we need to return YES here explicitly to silence a runtime
+    // warning.
+    return YES;
+}
+
 @end
 
 @implementation QCocoaApplicationDelegate (Menus)
