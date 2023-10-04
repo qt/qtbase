@@ -561,7 +561,9 @@
 /*!
     \fn QAnyStringView::compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSensitivity cs)
 
-    Returns an integer that compares to zero as \a lhs compares to \a rhs.
+    Compares the string view \a lhs with the string view \a rhs and returns a
+    negative integer if \a lhs is less than \a rhs, a positive integer if it is
+    greater than \a rhs, and zero if they are equal.
 
     If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
     otherwise the comparison is case-insensitive.
