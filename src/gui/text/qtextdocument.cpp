@@ -2374,11 +2374,14 @@ QString QTextHtmlExporter::toHtml(ExportMode mode)
 
     fragmentMarkers = (mode == ExportFragment);
 
-    html += QString::fromLatin1("<meta charset=\"utf-8\" />");
+    html += "<meta charset=\"utf-8\" />"_L1;
 
     QString title  = doc->metaInformation(QTextDocument::DocumentTitle);
-    if (!title.isEmpty())
-        html += QString::fromLatin1("<title>") + title + QString::fromLatin1("</title>");
+    if (!title.isEmpty()) {
+        html += "<title>"_L1;
+        html += title;
+        html += "</title>"_L1;
+    }
     html += "<style type=\"text/css\">\n"_L1;
     html += "p, li { white-space: pre-wrap; }\n"_L1;
     html += "hr { height: 1px; border-width: 0; }\n"_L1;
@@ -3023,7 +3026,8 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
                 html += u'"';
             }
 
-            QString styleString = QString::fromLatin1("margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");
+            QString styleString;
+            styleString += "margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;"_L1;
 
             if (format.hasProperty(QTextFormat::ListIndent)) {
                 styleString += " -qt-list-indent: "_L1;
