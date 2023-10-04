@@ -618,7 +618,7 @@ int main(int, char **)
 
 qt_feature("accessibility-atspi-bridge" PUBLIC PRIVATE
     LABEL "ATSPI Bridge"
-    CONDITION QT_FEATURE_accessibility AND QT_FEATURE_xcb AND QT_FEATURE_dbus AND ATSPI2_FOUND
+    CONDITION QT_FEATURE_accessibility AND QT_FEATURE_dbus AND ATSPI2_FOUND
 )
 qt_feature_definition("accessibility-atspi-bridge" "QT_NO_ACCESSIBILITY_ATSPI_BRIDGE" NEGATE VALUE "1")
 qt_feature("directfb" PRIVATE
