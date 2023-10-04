@@ -35,7 +35,10 @@ class QTextCursor;
 
 namespace Qt
 {
+#if QT_GUI_REMOVED_SINCE(6, 7)
     Q_GUI_EXPORT bool mightBeRichText(const QString&);
+#endif
+    Q_GUI_EXPORT bool mightBeRichText(QAnyStringView);
     Q_GUI_EXPORT QString convertFromPlainText(const QString &plain, WhiteSpaceMode mode = WhiteSpacePre);
 }
 
