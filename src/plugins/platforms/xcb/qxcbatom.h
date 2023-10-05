@@ -112,6 +112,7 @@ public:
         Atom_NET_WM_WINDOW_TYPE_NORMAL,
         Atom_KDE_NET_WM_WINDOW_TYPE_OVERRIDE,
 
+        Atom_KDE_NET_WM_DESKTOP_FILE,
         Atom_KDE_NET_WM_FRAME_STRUT,
         Atom_NET_FRAME_EXTENTS,
 
@@ -199,6 +200,7 @@ public:
         Atom_COMPIZ_DECOR_REQUEST,
         Atom_COMPIZ_DECOR_DELETE_PIXMAP,
         Atom_COMPIZ_TOOLKIT_ACTION,
+        Atom_GTK_APPLICATION_ID,
         Atom_GTK_LOAD_ICONTHEMES,
 
         AtomAT_SPI_BUS,
