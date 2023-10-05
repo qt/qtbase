@@ -2300,7 +2300,7 @@ void QTextCursor::insertImage(const QTextImageFormat &format, QTextFrameFormat::
     d->priv->beginEditBlock();
     d->remove();
     const int idx = d->priv->formatCollection()->indexForFormat(fmt);
-    d->priv->insert(d->position, QString(QChar(QChar::ObjectReplacementCharacter)), idx);
+    d->priv->insert(d->position, QChar(QChar::ObjectReplacementCharacter), idx);
     d->priv->endEditBlock();
 }
 

@@ -99,21 +99,21 @@ void tst_QTextPieceTable::cleanup()
 
 void tst_QTextPieceTable::insertion1()
 {
-    table->insert(0, "aacc", charFormatIndex);
+    table->insert(0, u"aacc", charFormatIndex);
     QCOMPARE(table->plainText(), QString("aacc"));
-    table->insert(2, "bb", charFormatIndex);
+    table->insert(2, u"bb", charFormatIndex);
     QCOMPARE(table->plainText(), QString("aabbcc"));
-    table->insert(1, "1", charFormatIndex);
+    table->insert(1, u"1", charFormatIndex);
     QCOMPARE(table->plainText(), QString("a1abbcc"));
-    table->insert(6, "d", charFormatIndex);
+    table->insert(6, u"d", charFormatIndex);
     QCOMPARE(table->plainText(), QString("a1abbcdc"));
-    table->insert(8, "z", charFormatIndex);
+    table->insert(8, u"z", charFormatIndex);
     QCOMPARE(table->plainText(), QString("a1abbcdcz"));
 }
 
 void tst_QTextPieceTable::insertion2()
 {
-    table->insert(0, "bb", charFormatIndex);
+    table->insert(0, u"bb", charFormatIndex);
     QCOMPARE(table->plainText(), QString("bb"));
 }
 
@@ -176,21 +176,21 @@ void tst_QTextPieceTable::insertion5()
 
 void tst_QTextPieceTable::removal1()
 {
-    table->insert(0, "abbccc", charFormatIndex);
+    table->insert(0, u"abbccc", charFormatIndex);
     QCOMPARE(table->plainText(), QString("abbccc"));
     table->remove(1, 2);
     QCOMPARE(table->plainText(), QString("accc"));
-    table->insert(1, "1", charFormatIndex);
+    table->insert(1, u"1", charFormatIndex);
     QCOMPARE(table->plainText(), QString("a1ccc"));
     table->remove(4, 1);
     QCOMPARE(table->plainText(), QString("a1cc"));
-    table->insert(4, "z", charFormatIndex);
+    table->insert(4, u"z", charFormatIndex);
     QCOMPARE(table->plainText(), QString("a1ccz"));
 }
 
 void tst_QTextPieceTable::removal2()
 {
-    table->insert(0, "bb", charFormatIndex);
+    table->insert(0, u"bb", charFormatIndex);
     QCOMPARE(table->plainText(), QString("bb"));
     table->remove(0, 2);
     QCOMPARE(table->plainText(), QString(""));
@@ -199,7 +199,7 @@ void tst_QTextPieceTable::removal2()
     table->remove(0, 1);
     QCOMPARE(table->plainText(), QString(""));
 
-    table->insert(0, "bb", charFormatIndex);
+    table->insert(0, u"bb", charFormatIndex);
     QCOMPARE(table->plainText(), QString("bb"));
     table->insertBlock(1, blockFormatIndex, charFormatIndex);
     QCOMPARE(table->plainText(), QString("b") + QString(QChar(QChar::ParagraphSeparator)) + QString("b"));
@@ -270,16 +270,16 @@ void tst_QTextPieceTable::removal4()
 
 void tst_QTextPieceTable::undoRedo1()
 {
-    table->insert(0, "01234567", charFormatIndex);
-    table->insert(0, "a", charFormatIndex);
-    table->insert(1, "b", charFormatIndex);
+    table->insert(0, u"01234567", charFormatIndex);
+    table->insert(0, u"a", charFormatIndex);
+    table->insert(1, u"b", charFormatIndex);
     QCOMPARE(table->plainText(), QString("ab01234567"));
     table->undo();
     QCOMPARE(table->plainText(), QString("01234567"));
     table->redo();
     QCOMPARE(table->plainText(), QString("ab01234567"));
     table->undo();
-    table->insert(1, "c", charFormatIndex);
+    table->insert(1, u"c", charFormatIndex);
     QCOMPARE(table->plainText(), QString("0c1234567"));
     table->undo();
     QCOMPARE(table->plainText(), QString("01234567"));
@@ -289,8 +289,8 @@ void tst_QTextPieceTable::undoRedo1()
 
 void tst_QTextPieceTable::undoRedo2()
 {
-    table->insert(0, "01", charFormatIndex);
-    table->insert(1, "a", charFormatIndex);
+    table->insert(0, u"01", charFormatIndex);
+    table->insert(1, u"a", charFormatIndex);
     QCOMPARE(table->plainText(), QString("0a1"));
     table->undo();
     QCOMPARE(table->plainText(), QString("01"));
@@ -304,8 +304,8 @@ void tst_QTextPieceTable::undoRedo2()
 
 void tst_QTextPieceTable::undoRedo3()
 {
-    table->insert(0, "01", charFormatIndex);
-    table->insert(2, "ab", charFormatIndex);
+    table->insert(0, u"01", charFormatIndex);
+    table->insert(2, u"ab", charFormatIndex);
     table->remove(2, 1);
     QCOMPARE(table->plainText(), QString("01b"));
     table->undo();
@@ -320,8 +320,8 @@ void tst_QTextPieceTable::undoRedo3()
 
 void tst_QTextPieceTable::undoRedo4()
 {
-    table->insert(0, "01", charFormatIndex);
-    table->insert(0, "ab", charFormatIndex);
+    table->insert(0, u"01", charFormatIndex);
+    table->insert(0, u"ab", charFormatIndex);
     table->remove(0, 1);
     QCOMPARE(table->plainText(), QString("b01"));
     table->undo();
@@ -341,7 +341,7 @@ void tst_QTextPieceTable::undoRedo4()
 void tst_QTextPieceTable::undoRedo5()
 {
     table->beginEditBlock();
-    table->insert(0, "01", charFormatIndex);
+    table->insert(0, u"01", charFormatIndex);
     table->remove(1, 1);
     table->endEditBlock();
     QCOMPARE(table->plainText(), QString("0"));
@@ -384,8 +384,8 @@ void tst_QTextPieceTable::undoRedo6()
 
 void tst_QTextPieceTable::undoRedo7()
 {
-    table->insert(0, "a", charFormatIndex);
-    table->insert(1, "b", charFormatIndex);
+    table->insert(0, u"a", charFormatIndex);
+    table->insert(1, u"b", charFormatIndex);
     QCOMPARE(table->plainText(), QString("ab"));
 
     table->undo();
@@ -394,8 +394,8 @@ void tst_QTextPieceTable::undoRedo7()
 
 void tst_QTextPieceTable::undoRedo8()
 {
-    table->insert(0, "a", charFormatIndex);
-    table->insert(1, "b", charFormatIndex);
+    table->insert(0, u"a", charFormatIndex);
+    table->insert(1, u"b", charFormatIndex);
     QCOMPARE(table->plainText(), QString("ab"));
 
     table->remove(0, 1);
@@ -408,8 +408,8 @@ void tst_QTextPieceTable::undoRedo8()
 
 void tst_QTextPieceTable::undoRedo9()
 {
-    table->insert(0, "a", charFormatIndex);
-    table->insert(1, "b", charFormatIndex);
+    table->insert(0, u"a", charFormatIndex);
+    table->insert(1, u"b", charFormatIndex);
     QCOMPARE(table->plainText(), QString("ab"));
 
     table->remove(1, 1);
@@ -430,9 +430,9 @@ void tst_QTextPieceTable::undoRedo10()
     QTextBlockFormat f;
     int idx = table->formatCollection()->indexForFormat(f);
 
-    table->insert(0, "a", cfIdx);
+    table->insert(0, u"a", cfIdx);
     table->insertBlock(1, idx, cfIdx);
-    table->insert(1, "b", cfIdx);
+    table->insert(1, u"b", cfIdx);
 
     cf.setForeground(Qt::red);
     int newCfIdx = table->formatCollection()->indexForFormat(cf);
@@ -485,7 +485,7 @@ void tst_QTextPieceTable::checkDocumentChanged()
 
     // single insert
     layout->expect(0, 0, 15);
-    table->insert(0, "012345678901234", charFormatIndex);
+    table->insert(0, u"012345678901234", charFormatIndex);
     QVERIFY(!layout->error);
 
     // single remove
@@ -496,7 +496,7 @@ void tst_QTextPieceTable::checkDocumentChanged()
     // symmetric insert/remove
     layout->expect(0, 0, 0);
     table->beginEditBlock();
-    table->insert(0, "01234", charFormatIndex);
+    table->insert(0, u"01234", charFormatIndex);
     table->remove(0, 5);
     table->endEditBlock();
     QVERIFY(!layout->error);
@@ -504,7 +504,7 @@ void tst_QTextPieceTable::checkDocumentChanged()
     layout->expect(0, 5, 5);
     table->beginEditBlock();
     table->remove(0, 5);
-    table->insert(0, "01234", charFormatIndex);
+    table->insert(0, u"01234", charFormatIndex);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
@@ -512,13 +512,13 @@ void tst_QTextPieceTable::checkDocumentChanged()
     layout->expect(0, 3, 5);
     table->beginEditBlock();
     table->remove(0, 3);
-    table->insert(0, "01234", charFormatIndex);
+    table->insert(0, u"01234", charFormatIndex);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
     layout->expect(0, 0, 2);
     table->beginEditBlock();
-    table->insert(0, "01234", charFormatIndex);
+    table->insert(0, u"01234", charFormatIndex);
     table->remove(0, 3);
     table->endEditBlock();
     QVERIFY(!layout->error);
@@ -526,14 +526,14 @@ void tst_QTextPieceTable::checkDocumentChanged()
     // insert + remove inside insert block
     layout->expect(0, 0, 2);
     table->beginEditBlock();
-    table->insert(0, "01234", charFormatIndex);
+    table->insert(0, u"01234", charFormatIndex);
     table->remove(1, 3);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
     layout->expect(0, 0, 2);
     table->beginEditBlock();
-    table->insert(0, "01234", charFormatIndex);
+    table->insert(0, u"01234", charFormatIndex);
     table->remove(2, 3);
     table->endEditBlock();
     QVERIFY(!layout->error);
@@ -541,42 +541,42 @@ void tst_QTextPieceTable::checkDocumentChanged()
     // insert + remove partly outside
     layout->expect(0, 1, 0);
     table->beginEditBlock();
-    table->insert(1, "0", charFormatIndex);
+    table->insert(1, u"0", charFormatIndex);
     table->remove(0, 2);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
     layout->expect(0, 1, 1);
     table->beginEditBlock();
-    table->insert(1, "01", charFormatIndex);
+    table->insert(1, u"01", charFormatIndex);
     table->remove(0, 2);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
     layout->expect(0, 1, 2);
     table->beginEditBlock();
-    table->insert(1, "012", charFormatIndex);
+    table->insert(1, u"012", charFormatIndex);
     table->remove(0, 2);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
     layout->expect(1, 1, 0);
     table->beginEditBlock();
-    table->insert(1, "0", charFormatIndex);
+    table->insert(1, u"0", charFormatIndex);
     table->remove(1, 2);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
     layout->expect(1, 1, 1);
     table->beginEditBlock();
-    table->insert(1, "01", charFormatIndex);
+    table->insert(1, u"01", charFormatIndex);
     table->remove(2, 2);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
     layout->expect(1, 1, 2);
     table->beginEditBlock();
-    table->insert(1, "012", charFormatIndex);
+    table->insert(1, u"012", charFormatIndex);
     table->remove(3, 2);
     table->endEditBlock();
     QVERIFY(!layout->error);
@@ -584,14 +584,14 @@ void tst_QTextPieceTable::checkDocumentChanged()
     // insert + remove non overlapping
     layout->expect(0, 1, 1);
     table->beginEditBlock();
-    table->insert(1, "0", charFormatIndex);
+    table->insert(1, u"0", charFormatIndex);
     table->remove(0, 1);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
     layout->expect(0, 2, 2);
     table->beginEditBlock();
-    table->insert(2, "1", charFormatIndex);
+    table->insert(2, u"1", charFormatIndex);
     table->remove(0, 1);
     table->endEditBlock();
     QVERIFY(!layout->error);
@@ -599,14 +599,14 @@ void tst_QTextPieceTable::checkDocumentChanged()
     layout->expect(0, 2, 2);
     table->beginEditBlock();
     table->remove(0, 1);
-    table->insert(1, "0", charFormatIndex);
+    table->insert(1, u"0", charFormatIndex);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
     layout->expect(0, 3, 3);
     table->beginEditBlock();
     table->remove(0, 1);
-    table->insert(2, "1", charFormatIndex);
+    table->insert(2, u"1", charFormatIndex);
     table->endEditBlock();
 
 
@@ -631,9 +631,9 @@ void tst_QTextPieceTable::checkDocumentChanged2()
 
     layout->expect(0, 0, 12);
     table->beginEditBlock();
-    table->insert(0, "0123", charFormatIndex);
-    table->insert(4, "4567", anotherCharFormatIndex);
-    table->insert(8, "8901", charFormatIndex);
+    table->insert(0, u"0123", charFormatIndex);
+    table->insert(4, u"4567", anotherCharFormatIndex);
+    table->insert(8, u"8901", charFormatIndex);
     table->endEditBlock();
     QVERIFY(!layout->error);
 
@@ -696,7 +696,7 @@ void tst_QTextPieceTable::blockInsertion2()
     int pos = 0;
     table->insertBlock(pos, blockFormatIndex, charFormatIndex);
     pos += 1;
-    table->insert(pos, "a", charFormatIndex);
+    table->insert(pos, u"a", charFormatIndex);
     pos += 1;
 
     pos -= 1;
@@ -719,11 +719,11 @@ void tst_QTextPieceTable::blockRemoval1()
     int idx1 = table->formatCollection()->indexForFormat(fmt1);
     int idx2 = table->formatCollection()->indexForFormat(fmt2);
 
-    table->insert(0, "0123", charFormatIndex);
+    table->insert(0, u"0123", charFormatIndex);
     table->insertBlock(4, idx1, charFormatIndex);
-    table->insert(5, "5678", charFormatIndex);
+    table->insert(5, u"5678", charFormatIndex);
     table->insertBlock(9, idx2, charFormatIndex);
-    table->insert(10, "0123", charFormatIndex);
+    table->insert(10, u"0123", charFormatIndex);
 
     QCOMPARE(table->blocksFind(0).blockFormat(), QTextBlockFormat());
     QCOMPARE(table->blocksFind(4).blockFormat(), QTextBlockFormat());
@@ -767,11 +767,11 @@ void tst_QTextPieceTable::blockRemoval2()
     int idx1 = table->formatCollection()->indexForFormat(fmt1);
     int idx2 = table->formatCollection()->indexForFormat(fmt2);
 
-    table->insert(0, "0123", charFormatIndex);
+    table->insert(0, u"0123", charFormatIndex);
     table->insertBlock(4, idx1, charFormatIndex);
-    table->insert(5, "5678", charFormatIndex);
+    table->insert(5, u"5678", charFormatIndex);
     table->insertBlock(9, idx2, charFormatIndex);
-    table->insert(10, "0123", charFormatIndex);
+    table->insert(10, u"0123", charFormatIndex);
 
     QCOMPARE(table->blocksFind(0).blockFormat(), QTextBlockFormat());
     QCOMPARE(table->blocksFind(4).blockFormat(), QTextBlockFormat());
@@ -813,11 +813,11 @@ void tst_QTextPieceTable::blockRemoval3()
     int idx1 = table->formatCollection()->indexForFormat(fmt1);
     int idx2 = table->formatCollection()->indexForFormat(fmt2);
 
-    table->insert(0, "0123", charFormatIndex);
+    table->insert(0, u"0123", charFormatIndex);
     table->insertBlock(4, idx1, charFormatIndex);
-    table->insert(5, "5678", charFormatIndex);
+    table->insert(5, u"5678", charFormatIndex);
     table->insertBlock(9, idx2, charFormatIndex);
-    table->insert(10, "0123", charFormatIndex);
+    table->insert(10, u"0123", charFormatIndex);
 
     QCOMPARE(table->blocksFind(0).blockFormat(), QTextBlockFormat());
     QCOMPARE(table->blocksFind(4).blockFormat(), QTextBlockFormat());
@@ -910,11 +910,11 @@ void tst_QTextPieceTable::blockRemoval5()
     int idx1 = table->formatCollection()->indexForFormat(fmt1);
     int idx2 = table->formatCollection()->indexForFormat(fmt2);
 
-    table->insert(0, "0123", charFormatIndex);
+    table->insert(0, u"0123", charFormatIndex);
     table->insertBlock(4, idx1, charFormatIndex);
-    table->insert(5, "5678", charFormatIndex);
+    table->insert(5, u"5678", charFormatIndex);
     table->insertBlock(9, idx2, charFormatIndex);
-    table->insert(10, "0123", charFormatIndex);
+    table->insert(10, u"0123", charFormatIndex);
 
     QCOMPARE(table->blocksFind(0).blockFormat(), QTextBlockFormat());
     QCOMPARE(table->blocksFind(4).blockFormat(), QTextBlockFormat());
@@ -962,7 +962,7 @@ void tst_QTextPieceTable::checkBlockSeparation()
 void tst_QTextPieceTable::checkFrames1()
 {
     QTextFrameFormat ffmt;
-    table->insert(0, "Hello", charFormatIndex);
+    table->insert(0, u"Hello", charFormatIndex);
     QPointer<QTextFrame> frame = table->insertFrame(1, 3, ffmt);
     QTextFrame *root = table->rootFrame();
 
@@ -1031,7 +1031,7 @@ void tst_QTextPieceTable::checkFrames1()
 void tst_QTextPieceTable::removeFrameDirect()
 {
     QTextFrameFormat ffmt;
-    table->insert(0, "Hello", charFormatIndex);
+    table->insert(0, u"Hello", charFormatIndex);
 
     QTextFrame *frame = table->insertFrame(1, 5, ffmt);
 
@@ -1065,7 +1065,7 @@ void tst_QTextPieceTable::removeWithChildFrame()
        In this case frameAt(2) != frameAt(6), so the assertion in remove() needed an adjustement.
      */
     QTextFrameFormat ffmt;
-    table->insert(0, "Hello World", charFormatIndex);
+    table->insert(0, u"Hello World", charFormatIndex);
 
     QTextFrame *frame = table->insertFrame(1, 6, ffmt);
     QTextFrame *childFrame = table->insertFrame(3, 5, ffmt);
@@ -1095,7 +1095,7 @@ void tst_QTextPieceTable::clearWithFrames()
        The idea is to remove from [1] until [7].
      */
     QTextFrameFormat ffmt;
-    table->insert(0, "Hello World", charFormatIndex);
+    table->insert(0, u"Hello World", charFormatIndex);
 
     QTextFrame *firstFrame = table->insertFrame(1, 2, ffmt);
     QTextFrame *secondFrame = table->insertFrame(4, 6, ffmt);

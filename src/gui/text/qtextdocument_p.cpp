@@ -443,7 +443,7 @@ void QTextDocumentPrivate::insert(int pos, int strPos, int strLength, int format
     finishEdit();
 }
 
-void QTextDocumentPrivate::insert(int pos, const QString &str, int format)
+void QTextDocumentPrivate::insert(int pos, QStringView str, int format)
 {
     if (str.size() == 0)
         return;
