@@ -16,6 +16,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPoint;
+class QRect;
 
 namespace dom {
 inline emscripten::val document()
@@ -26,6 +27,9 @@ inline emscripten::val document()
 void syncCSSClassWith(emscripten::val element, std::string cssClassName, bool flag);
 
 QPointF mapPoint(emscripten::val source, emscripten::val target, const QPointF &point);
+
+void drawImageToWebImageDataArray(const QImage &source, emscripten::val destinationImageData,
+                                  const QRect &sourceRect);
 } // namespace dom
 
 QT_END_NAMESPACE

@@ -4,6 +4,7 @@
 #include "qwasmbackingstore.h"
 #include "qwasmwindow.h"
 #include "qwasmcompositor.h"
+#include "qwasmdom.h"
 
 #include <QtGui/qpainter.h>
 #include <QtGui/qbackingstore.h>
@@ -75,39 +76,8 @@ void QWasmBackingStore::updateTexture(QWasmWindow *window)
         clippedDpiScaledRegion |= r;
     }
 
-    for (const QRect &dirtyRect : clippedDpiScaledRegion) {
-        constexpr int BytesPerColor = 4;
-        if (dirtyRect.width() == imageRect.width()) {
-            // Copy a contiguous chunk of memory
-            // ...............
-            // OOOOOOOOOOOOOOO
-            // OOOOOOOOOOOOOOO -> image data
-            // OOOOOOOOOOOOOOO
-            // ...............
-            auto imageMemory = emscripten::typed_memory_view(dirtyRect.width() * dirtyRect.height()
-                                                                     * BytesPerColor,
-                                                             m_image.constScanLine(dirtyRect.y()));
-            m_webImageDataArray["data"].call<void>("set", imageMemory,
-                                                   dirtyRect.y() * m_image.width() * BytesPerColor);
-        } else {
-            // Go through the scanlines manually to set the individual lines in bulk. This is
-            // marginally less performant than the above.
-            // ...............
-            // ...OOOOOOOOO... r = 0  -> image data
-            // ...OOOOOOOOO... r = 1  -> image data
-            // ...OOOOOOOOO... r = 2  -> image data
-            // ...............
-            for (int r = 0; r < dirtyRect.height(); ++r) {
-                auto scanlineMemory = emscripten::typed_memory_view(
-                        dirtyRect.width() * BytesPerColor,
-                        m_image.constScanLine(r + dirtyRect.y()) + BytesPerColor * dirtyRect.x());
-                m_webImageDataArray["data"].call<void>("set", scanlineMemory,
-                                                       (dirtyRect.y() + r) * m_image.width()
-                                                                       * BytesPerColor
-                                                               + dirtyRect.x() * BytesPerColor);
-            }
-        }
-    }
+    for (const QRect &dirtyRect : clippedDpiScaledRegion)
+        dom::drawImageToWebImageDataArray(m_image, m_webImageDataArray, dirtyRect);
 
     m_dirty = QRegion();
 }

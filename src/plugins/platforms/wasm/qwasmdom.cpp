@@ -36,6 +36,46 @@ QPointF mapPoint(emscripten::val source, emscripten::val target, const QPointF &
     return point + offset;
 }
 
+void drawImageToWebImageDataArray(const QImage &sourceImage, emscripten::val destinationImageData,
+                                  const QRect &sourceRect)
+{
+    Q_ASSERT_X(destinationImageData["constructor"]["name"].as<std::string>() == "ImageData",
+               Q_FUNC_INFO, "The destination should be an ImageData instance");
+
+    constexpr int BytesPerColor = 4;
+    if (sourceRect.width() == sourceImage.width()) {
+        // Copy a contiguous chunk of memory
+        // ...............
+        // OOOOOOOOOOOOOOO
+        // OOOOOOOOOOOOOOO -> image data
+        // OOOOOOOOOOOOOOO
+        // ...............
+        auto imageMemory = emscripten::typed_memory_view(sourceRect.width() * sourceRect.height()
+                                                                 * BytesPerColor,
+                                                         sourceImage.constScanLine(sourceRect.y()));
+        destinationImageData["data"].call<void>(
+                "set", imageMemory, sourceRect.y() * sourceImage.width() * BytesPerColor);
+    } else {
+        // Go through the scanlines manually to set the individual lines in bulk. This is
+        // marginally less performant than the above.
+        // ...............
+        // ...OOOOOOOOO... r = 0  -> image data
+        // ...OOOOOOOOO... r = 1  -> image data
+        // ...OOOOOOOOO... r = 2  -> image data
+        // ...............
+        for (int row = 0; row < sourceRect.height(); ++row) {
+            auto scanlineMemory =
+                    emscripten::typed_memory_view(sourceRect.width() * BytesPerColor,
+                                                  sourceImage.constScanLine(row + sourceRect.y())
+                                                          + BytesPerColor * sourceRect.x());
+            destinationImageData["data"].call<void>("set", scanlineMemory,
+                                                    (sourceRect.y() + row) * sourceImage.width()
+                                                                    * BytesPerColor
+                                                            + sourceRect.x() * BytesPerColor);
+        }
+    }
+}
+
 } // namespace dom
 
 QT_END_NAMESPACE
