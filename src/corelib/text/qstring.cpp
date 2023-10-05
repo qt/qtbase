@@ -3055,11 +3055,10 @@ QString &QString::insert(qsizetype i, QUtf8StringView s)
     } else {
         // Optimal insertion of Utf8 data is at the end, anywhere else could
         // potentially lead to moving characters twice if Utf8 data size
-        // (variable-width) is less than the equiavalent Utf16 data size
+        // (variable-width) is less than the equivalent Utf16 data size
         QVarLengthArray<char16_t> buffer(insert_size); // ### optimize (QTBUG-108546)
         char16_t *b = QUtf8::convertToUnicode(buffer.data(), s);
-        buffer.resize(std::distance(buffer.begin(), b));
-        insert_helper(*this, i, buffer);
+        insert_helper(*this, i, QStringView(buffer.data(), b));
     }
 
     return *this;
