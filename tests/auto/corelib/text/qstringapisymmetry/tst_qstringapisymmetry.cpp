@@ -3615,6 +3615,8 @@ void tst_QStringApiSymmetry::isValidUtf8_data()
     row = 0;
     QTest::addRow("overlong-%02d", row++) << QByteArray("\xc0\x00") << false;
     QTest::addRow("overlong-%02d", row++) << QByteArray("\xc1\xff") << false;
+    QTest::addRow("overlong-%02d", row++) << QByteArray("\xc1\xbf") << false;
+    QTest::addRow("overlong-%02d", row++) << QByteArray("\xc1\x01") << false;
     QTest::addRow("overlong-%02d", row++) << QByteArray("\xe0\x00\x00") << false;
     QTest::addRow("overlong-%02d", row++) << QByteArray("\xe0\xa0\x7f") << false;
     QTest::addRow("overlong-%02d", row++) << QByteArray("\xf0\x00\x00\x00") << false;
