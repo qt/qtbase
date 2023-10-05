@@ -205,7 +205,7 @@ protected:
          , deferredWakeUp(false), deferredUpdateTimers(false) {}
 
         ProcessEventsState(const ProcessEventsState &other)
-            : flags(other.flags)
+            : flags(other.flags.loadAcquire())
             , wasInterrupted(other.wasInterrupted.loadAcquire())
             , processedPostedEvents(other.processedPostedEvents.loadAcquire())
             , processedTimers(other.processedTimers.loadAcquire())
@@ -214,7 +214,7 @@ protected:
 
         ProcessEventsState &operator=(const ProcessEventsState &other)
         {
-            flags = other.flags;
+            flags.storeRelease(other.flags.loadAcquire());
             wasInterrupted.storeRelease(other.wasInterrupted.loadAcquire());
             processedPostedEvents.storeRelease(other.processedPostedEvents.loadAcquire());
             processedTimers.storeRelease(other.processedTimers.loadAcquire());
