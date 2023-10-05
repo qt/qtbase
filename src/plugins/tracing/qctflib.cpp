@@ -14,7 +14,10 @@
 #include <qendian.h>
 #include <qplatformdefs.h>
 #include "qctflib_p.h"
+
+#ifndef Q_OS_INTEGRITY
 #include <filesystem>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -118,6 +121,10 @@ QCtfLibImpl::QCtfLibImpl()
         m_session.tracepoints.append(allLiteral());
         m_session.name = defaultLiteral();
     } else {
+#ifdef Q_OS_INTEGRITY
+        qCWarning(lcDebugTrace) << "Unable to use filesystem";
+        return;
+#endif
         // Check if the location is writable
         if (QT_ACCESS(qPrintable(location), W_OK) != 0) {
             qCWarning(lcDebugTrace) << "Unable to write to location";
@@ -161,7 +168,9 @@ QCtfLibImpl::QCtfLibImpl()
                 m_session.name = defaultLiteral();
             }
             m_location = location + u"/ust";
+#ifndef Q_OS_INTEGRITY
             std::filesystem::create_directory(qPrintable(m_location), qPrintable(location));
+#endif
         }
         clearLocation();
     }
@@ -176,6 +185,7 @@ QCtfLibImpl::QCtfLibImpl()
 
 void QCtfLibImpl::clearLocation()
 {
+#ifndef Q_OS_INTEGRITY
     const std::filesystem::path location{qUtf16Printable(m_location)};
     for (auto const& dirEntry : std::filesystem::directory_iterator{location})
     {
@@ -196,6 +206,7 @@ void QCtfLibImpl::clearLocation()
             }
         }
     }
+#endif
 }
 
 void QCtfLibImpl::writeMetadata(const QString &metadata, bool overwrite)
