@@ -4108,12 +4108,12 @@ auto QtPrivate::toFloat(QByteArrayView a) noexcept -> ParsedNumber<float>
 */
 QByteArray QByteArray::toBase64(Base64Options options) const
 {
-    const char alphabet_base64[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
-                                   "ghijklmn" "opqrstuv" "wxyz0123" "456789+/";
-    const char alphabet_base64url[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
-                                      "ghijklmn" "opqrstuv" "wxyz0123" "456789-_";
+    constexpr char alphabet_base64[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
+                                       "ghijklmn" "opqrstuv" "wxyz0123" "456789+/";
+    constexpr char alphabet_base64url[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
+                                          "ghijklmn" "opqrstuv" "wxyz0123" "456789-_";
     const char *const alphabet = options & Base64UrlEncoding ? alphabet_base64url : alphabet_base64;
-    const char padchar = '=';
+    constexpr char padchar = '=';
     qsizetype padlen = 0;
 
     const qsizetype sz = size();
@@ -4225,7 +4225,7 @@ static char *qulltoa2(char *p, qulonglong n, int base)
         base = 10;
     }
 #endif
-    const char b = 'a' - 10;
+    constexpr char b = 'a' - 10;
     do {
         const int c = n % base;
         n /= base;
@@ -4242,7 +4242,7 @@ static char *qulltoa2(char *p, qulonglong n, int base)
 */
 QByteArray &QByteArray::setNum(qlonglong n, int base)
 {
-    const int buffsize = 66; // big enough for MAX_ULLONG in base 2
+    constexpr int buffsize = 66; // big enough for MAX_ULLONG in base 2
     char buff[buffsize];
     char *p;
 
@@ -4267,7 +4267,7 @@ QByteArray &QByteArray::setNum(qlonglong n, int base)
 
 QByteArray &QByteArray::setNum(qulonglong n, int base)
 {
-    const int buffsize = 66; // big enough for MAX_ULLONG in base 2
+    constexpr int buffsize = 66; // big enough for MAX_ULLONG in base 2
     char buff[buffsize];
     char *p = qulltoa2(buff + buffsize, n, base);
 
