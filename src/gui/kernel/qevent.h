@@ -14,7 +14,6 @@
 #include <QtCore/qiodevice.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qnamespace.h>
-#include <QtCore/qpointer.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
@@ -34,6 +33,7 @@ QT_BEGIN_NAMESPACE
 class QFile;
 class QAction;
 class QMouseEvent;
+template <typename T> class QPointer;
 class QPointerEvent;
 class QScreen;
 #if QT_CONFIG(shortcut)
