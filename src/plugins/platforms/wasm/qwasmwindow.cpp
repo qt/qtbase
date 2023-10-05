@@ -117,7 +117,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 
     m_dropCallback = std::make_unique<qstdweb::EventCallback>(
             m_qtWindow, "drop", [this](emscripten::val event) {
-                if (processDrop(*DragEvent::fromWeb(event)))
+                if (processDrop(*DragEvent::fromWeb(event, window())))
                     event.call<void>("preventDefault");
             });
 
@@ -188,7 +188,7 @@ void QWasmWindow::onNonClientAreaInteraction()
 bool QWasmWindow::onNonClientEvent(const PointerEvent &event)
 {
     QPointF pointInScreen = platformScreen()->mapFromLocal(
-            dom::mapPoint(event.target, platformScreen()->element(), event.localPoint));
+        dom::mapPoint(event.target(), platformScreen()->element(), event.localPoint));
     return QWindowSystemInterface::handleMouseEvent(
             window(), QWasmIntegration::getTimestamp(), window()->mapFromGlobal(pointInScreen),
             pointInScreen, event.mouseButtons, event.mouseButton,
@@ -521,7 +521,7 @@ bool QWasmWindow::processPointer(const PointerEvent &event)
     switch (event.type) {
     case EventType::PointerEnter: {
         const auto pointInScreen = platformScreen()->mapFromLocal(
-                dom::mapPoint(event.target, platformScreen()->element(), event.localPoint));
+            dom::mapPoint(event.target(), platformScreen()->element(), event.localPoint));
         QWindowSystemInterface::handleEnterEvent(
                 window(), m_window->mapFromGlobal(pointInScreen), pointInScreen);
         break;
@@ -575,7 +575,7 @@ bool QWasmWindow::processWheel(const WheelEvent &event)
     })();
 
     const auto pointInScreen = platformScreen()->mapFromLocal(
-            dom::mapPoint(event.target, platformScreen()->element(), event.localPoint));
+        dom::mapPoint(event.target(), platformScreen()->element(), event.localPoint));
 
     return QWindowSystemInterface::handleWheelEvent(
             window(), QWasmIntegration::getTimestamp(), window()->mapFromGlobal(pointInScreen),
