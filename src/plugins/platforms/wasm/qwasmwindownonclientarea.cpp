@@ -208,7 +208,7 @@ void Resizer::startResize(Qt::Edges resizeEdges, const PointerEvent &event)
     m_currentResizeData.reset(new ResizeData{
             .edges = resizeEdges,
             .originInScreenCoords = dom::mapPoint(
-                    event.target, m_window->platformScreen()->element(), event.localPoint),
+            event.target(), m_window->platformScreen()->element(), event.localPoint),
     });
 
     const auto resizeConstraints = getResizeConstraints();
@@ -225,7 +225,7 @@ void Resizer::startResize(Qt::Edges resizeEdges, const PointerEvent &event)
 void Resizer::continueResize(const PointerEvent &event)
 {
     const auto pointInScreen =
-            dom::mapPoint(event.target, m_window->platformScreen()->element(), event.localPoint);
+        dom::mapPoint(event.target(), m_window->platformScreen()->element(), event.localPoint);
     const auto amount = (pointInScreen - m_currentResizeData->originInScreenCoords).toPoint();
     const QPoint cappedGrowVector(
             std::min(m_currentResizeData->maxGrow.x(),

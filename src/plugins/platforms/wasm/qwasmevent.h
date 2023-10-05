@@ -18,8 +18,12 @@
 QT_BEGIN_NAMESPACE
 
 class QWasmDeadKeySupport;
+class QWindow;
 
 enum class EventType {
+    DragEnd,
+    DragOver,
+    DragStart,
     Drop,
     KeyDown,
     KeyUp,
@@ -119,15 +123,16 @@ QFlags<Qt::KeyboardModifier> getForEvent<EmscriptenKeyboardEvent>(
 
 struct Event
 {
-    Event(EventType type, emscripten::val target);
+    Event(EventType type, emscripten::val webEvent);
     ~Event();
     Event(const Event &other);
     Event(Event &&other);
     Event &operator=(const Event &other);
     Event &operator=(Event &&other);
 
+    emscripten::val webEvent;
     EventType type;
-    emscripten::val target = emscripten::val::undefined();
+    emscripten::val target() const { return webEvent["target"]; }
 };
 
 struct KeyEvent : public Event
@@ -221,17 +226,22 @@ struct PointerEvent : public MouseEvent
 
 struct DragEvent : public MouseEvent
 {
-    static std::optional<DragEvent> fromWeb(emscripten::val webEvent);
+    static std::optional<DragEvent> fromWeb(emscripten::val webEvent, QWindow *targetQWindow);
 
-    DragEvent(EventType type, emscripten::val webEvent);
+    DragEvent(EventType type, emscripten::val webEvent, QWindow *targetQWindow);
     ~DragEvent();
     DragEvent(const DragEvent &other);
     DragEvent(DragEvent &&other);
     DragEvent &operator=(const DragEvent &other);
     DragEvent &operator=(DragEvent &&other);
 
+    void cancelDragStart();
+    void acceptDragOver();
+    void acceptDrop();
+
     Qt::DropAction dropAction;
     emscripten::val dataTransfer;
+    QWindow *targetWindow;
 };
 
 struct WheelEvent : public MouseEvent

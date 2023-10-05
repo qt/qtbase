@@ -57,7 +57,7 @@ bool ClientArea::processPointer(const PointerEvent &event)
 bool ClientArea::deliverEvent(const PointerEvent &event)
 {
     const auto pointInScreen = m_screen->mapFromLocal(
-            dom::mapPoint(event.target, m_screen->element(), event.localPoint));
+        dom::mapPoint(event.target(), m_screen->element(), event.localPoint));
 
     const auto geometryF = m_screen->geometry().toRectF();
     const QPointF targetPointClippedToScreen(

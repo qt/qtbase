@@ -86,7 +86,10 @@ QFlags<Qt::KeyboardModifier> getForEvent<EmscriptenKeyboardEvent>(
 }
 }  // namespace KeyboardModifier
 
-Event::Event(EventType type, emscripten::val target) : type(type), target(target) { }
+Event::Event(EventType type, emscripten::val webEvent)
+    : webEvent(webEvent), type(type)
+{
+}
 
 Event::~Event() = default;
 
@@ -98,7 +101,7 @@ Event &Event::operator=(const Event &other) = default;
 
 Event &Event::operator=(Event &&other) = default;
 
-KeyEvent::KeyEvent(EventType type, emscripten::val event) : Event(type, event["target"])
+KeyEvent::KeyEvent(EventType type, emscripten::val event) : Event(type, event)
 {
     const auto code = event["code"].as<std::string>();
     const auto webKey = event["key"].as<std::string>();
@@ -143,7 +146,7 @@ std::optional<KeyEvent> KeyEvent::fromWebWithDeadKeyTranslation(emscripten::val 
     return result;
 }
 
-MouseEvent::MouseEvent(EventType type, emscripten::val event) : Event(type, event["target"])
+MouseEvent::MouseEvent(EventType type, emscripten::val event) : Event(type, event)
 {
     mouseButton = MouseEvent::buttonFromWeb(event["button"].as<int>());
     mouseButtons = MouseEvent::buttonsFromWeb(event["buttons"].as<unsigned short>());
@@ -218,8 +221,8 @@ std::optional<PointerEvent> PointerEvent::fromWeb(emscripten::val event)
     return PointerEvent(*eventType, event);
 }
 
-DragEvent::DragEvent(EventType type, emscripten::val event)
-    : MouseEvent(type, event), dataTransfer(event["dataTransfer"])
+DragEvent::DragEvent(EventType type, emscripten::val event, QWindow *window)
+    : MouseEvent(type, event), dataTransfer(event["dataTransfer"]), targetWindow(window)
 {
     dropAction = ([event]() {
         const std::string effect = event["dataTransfer"]["dropEffect"].as<std::string>();
@@ -244,18 +247,42 @@ DragEvent &DragEvent::operator=(const DragEvent &other) = default;
 
 DragEvent &DragEvent::operator=(DragEvent &&other) = default;
 
-std::optional<DragEvent> DragEvent::fromWeb(emscripten::val event)
+std::optional<DragEvent> DragEvent::fromWeb(emscripten::val event, QWindow *targetWindow)
 {
     const auto eventType = ([&event]() -> std::optional<EventType> {
         const auto eventTypeString = event["type"].as<std::string>();
 
+        if (eventTypeString == "dragend")
+            return EventType::DragEnd;
+        if (eventTypeString == "dragover")
+            return EventType::DragOver;
+        if (eventTypeString == "dragstart")
+            return EventType::DragStart;
         if (eventTypeString == "drop")
             return EventType::Drop;
         return std::nullopt;
     })();
     if (!eventType)
         return std::nullopt;
-    return DragEvent(*eventType, event);
+    return DragEvent(*eventType, event, targetWindow);
+}
+
+void DragEvent::cancelDragStart()
+{
+    Q_ASSERT_X(type == EventType::DragStart, Q_FUNC_INFO, "Only supported for DragStart");
+    webEvent.call<void>("preventDefault");
+}
+
+void DragEvent::acceptDragOver()
+{
+    Q_ASSERT_X(type == EventType::DragOver, Q_FUNC_INFO, "Only supported for DragOver");
+   webEvent.call<void>("preventDefault");
+}
+
+void DragEvent::acceptDrop()
+{
+    Q_ASSERT_X(type == EventType::Drop, Q_FUNC_INFO, "Only supported for Drop");
+    webEvent.call<void>("preventDefault");
 }
 
 WheelEvent::WheelEvent(EventType type, emscripten::val event) : MouseEvent(type, event)
