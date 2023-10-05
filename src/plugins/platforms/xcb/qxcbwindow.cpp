@@ -42,6 +42,7 @@
 #include <QtDebug>
 #include <QMetaEnum>
 #include <QScreen>
+#include <QtCore/QFileInfo>
 #include <QtGui/QIcon>
 #include <QtGui/QRegion>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -418,6 +419,31 @@ void QXcbWindow::create()
         xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE,
                             m_window, atom(QXcbAtom::WM_CLASS),
                             XCB_ATOM_STRING, 8, wmClass.size(), wmClass.constData());
+    }
+
+    QString desktopFileName = QGuiApplication::desktopFileName();
+    if (QGuiApplication::desktopFileName().isEmpty()) {
+        QFileInfo fi = QFileInfo(QCoreApplication::instance()->applicationFilePath());
+        QStringList domainName =
+                QCoreApplication::instance()->organizationDomain().split(QLatin1Char('.'),
+                                                                         Qt::SkipEmptyParts);
+
+        if (domainName.isEmpty()) {
+            desktopFileName = fi.baseName();
+        } else {
+            for (int i = 0; i < domainName.size(); ++i)
+                desktopFileName.prepend(QLatin1Char('.')).prepend(domainName.at(i));
+            desktopFileName.append(fi.baseName());
+        }
+    }
+    if (!desktopFileName.isEmpty()) {
+        const QByteArray dfName = desktopFileName.toUtf8();
+        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE,
+                            m_window, atom(QXcbAtom::_KDE_NET_WM_DESKTOP_FILE),
+                            atom(QXcbAtom::UTF8_STRING), 8, dfName.size(), dfName.constData());
+        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE,
+                            m_window, atom(QXcbAtom::_GTK_APPLICATION_ID),
+                            atom(QXcbAtom::UTF8_STRING), 8, dfName.size(), dfName.constData());
     }
 
     if (connection()->hasXSync()) {
