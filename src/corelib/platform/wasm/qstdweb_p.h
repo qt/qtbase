@@ -88,6 +88,12 @@ namespace qstdweb {
     public:
         File() = default;
         explicit File(const emscripten::val &file);
+        ~File();
+
+        File(const File &other);
+        File(File &&other);
+        File &operator=(const File &other);
+        File &operator=(File &&other);
 
         Blob slice(uint64_t begin, uint64_t end) const;
         std::string name() const;
@@ -97,10 +103,33 @@ namespace qstdweb {
                     std::function<void()> completed) const;
         void stream(char *buffer, std::function<void()> completed) const;
         emscripten::val val() const;
+        void fileUrlRegistration() const;
+        const QString &fileUrlPath() const { return m_urlPath; }
+        emscripten::val file() const { return m_file; }
 
     private:
         emscripten::val m_file = emscripten::val::undefined();
+        QString m_urlPath;
     };
+
+    class Q_CORE_EXPORT FileUrlRegistration
+    {
+    public:
+        explicit FileUrlRegistration(File file);
+        ~FileUrlRegistration();
+
+        FileUrlRegistration(const FileUrlRegistration &other) = delete;
+        FileUrlRegistration(FileUrlRegistration &&other);
+        FileUrlRegistration &operator=(const FileUrlRegistration &other) = delete;
+        FileUrlRegistration &operator=(FileUrlRegistration &&other);
+
+        const QString &path() const { return m_path; }
+
+    private:
+        QString m_path;
+    };
+
+    using FileUrlRegistrations = std::vector<std::unique_ptr<FileUrlRegistration>>;
 
     class Q_CORE_EXPORT FileList {
     public:
