@@ -2255,12 +2255,14 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 */
 
 /*!
-    \fn QByteArray QStringEncoder::encode(const QString &in)
-    \fn QByteArray QStringEncoder::encode(QStringView in)
-    \fn QByteArray QStringEncoder::operator()(const QString &in)
-    \fn QByteArray QStringEncoder::operator()(QStringView in)
+    \fn QStringEncoder::DecodedData<const QString &> QStringEncoder::encode(const QString &in)
+    \fn QStringEncoder::DecodedData<QStringView> QStringEncoder::encode(QStringView in)
+    \fn QStringEncoder::DecodedData<const QString &> QStringEncoder::operator()(const QString &in)
+    \fn QStringEncoder::DecodedData<QStringView> QStringEncoder::operator()(QStringView in)
 
-    Converts \a in and returns the data as a byte array.
+    Converts \a in and returns a struct that is implicitly convertible to QByteArray.
+
+    \snippet code/src_corelib_text_qstringconverter.cpp 5
 */
 
 /*!
@@ -2344,12 +2346,15 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 */
 
 /*!
-    \fn QString QStringDecoder::operator()(const QByteArray &ba)
-    \fn QString QStringDecoder::decode(const QByteArray &ba)
-    \fn QString QStringDecoder::operator()(QByteArrayView ba)
-    \fn QString QStringDecoder::decode(QByteArrayView ba)
+    \fn QStringDecoder::EncodedData<const QByteArray &> QStringDecoder::operator()(const QByteArray &ba)
+    \fn QStringDecoder::EncodedData<const QByteArray &> QStringDecoder::decode(const QByteArray &ba)
+    \fn QStringDecoder::EncodedData<QByteArrayView> QStringDecoder::operator()(QByteArrayView ba)
+    \fn QStringDecoder::EncodedData<QByteArrayView> QStringDecoder::decode(QByteArrayView ba)
 
-    Converts \a ba and returns the data as a QString.
+    Converts \a ba and returns a struct that is implicitly convertible to QString.
+
+
+    \snippet code/src_corelib_text_qstringconverter.cpp 4
 */
 
 /*!
