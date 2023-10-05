@@ -43,6 +43,8 @@
 #include <qpa/qplatformservices.h>
 #include <private/qguiapplication_p.h>
 
+#include <QtCore/qpointer.h>
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE

@@ -21,6 +21,8 @@
 #include <qendian.h>
 #include <qnetworkinterface.h>
 
+#include <QtCore/qpointer.h>
+
 #include <memory>
 
 QT_BEGIN_NAMESPACE

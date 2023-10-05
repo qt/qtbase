@@ -9,6 +9,8 @@
 #include <qpoint.h>
 #include "qdnd_p.h"
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!

@@ -7,8 +7,10 @@
 #include "qmetaobject.h"
 #include "qwidget.h"
 #include "qstyleditemdelegate.h"
+
 #include "private/qobject_p.h"
 #include "private/qabstractitemmodel_p.h"
+#include <QtCore/qpointer.h>
 
 #include <array>
 #include <iterator>

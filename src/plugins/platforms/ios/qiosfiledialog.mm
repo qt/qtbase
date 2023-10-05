@@ -16,6 +16,8 @@
 #include "qiosoptionalplugininterface.h"
 #include "qiosdocumentpickercontroller.h"
 
+#include <QtCore/qpointer.h>
+
 using namespace Qt::StringLiterals;
 
 QIOSFileDialog::QIOSFileDialog()

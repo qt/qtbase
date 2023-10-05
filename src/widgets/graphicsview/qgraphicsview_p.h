@@ -25,6 +25,8 @@
 #include <private/qabstractscrollarea_p.h>
 #include <private/qapplication_p.h>
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE

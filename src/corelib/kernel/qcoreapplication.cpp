@@ -36,6 +36,7 @@
 #endif
 #endif
 #include <qlibraryinfo.h>
+#include <qpointer.h>
 #include <qvarlengtharray.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>

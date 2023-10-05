@@ -17,6 +17,9 @@
 #include "qelapsedtimer.h"
 #include "qscopedvaluerollback.h"
 #include <private/qdialog_p.h>
+
+#include <QtCore/qpointer.h>
+
 #include <limits.h>
 
 using namespace std::chrono_literals;

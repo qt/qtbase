@@ -25,7 +25,9 @@
 #include "qcompleter.h"
 #include "qstyleditemdelegate.h"
 #include "QtGui/qpainter.h"
+
 #include "private/qabstractproxymodel_p.h"
+#include <QtCore/qpointer.h>
 
 QT_REQUIRE_CONFIG(completer);
 

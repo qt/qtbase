@@ -15,6 +15,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpointingdevice_p.h>
 
+#include <QtCore/qpointer.h>
+
 #include <mutex>
 
 #ifdef Q_OS_FREEBSD

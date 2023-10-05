@@ -21,6 +21,8 @@
 #if QT_CONFIG(shortcut)
 #  include <QtGui/private/qshortcutmap_p.h>
 #endif
+
+#include <QtCore/qpointer.h>
 #include "private/qobject_p.h"
 
 QT_REQUIRE_CONFIG(action);

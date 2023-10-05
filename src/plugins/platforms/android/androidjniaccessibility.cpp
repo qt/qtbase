@@ -15,7 +15,9 @@
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/QJniObject>
 #include <QtGui/private/qhighdpiscaling_p.h>
+
 #include <QtCore/QObject>
+#include <QtCore/qpointer.h>
 #include <QtCore/qvarlengtharray.h>
 
 static const char m_qtTag[] = "Qt A11Y";

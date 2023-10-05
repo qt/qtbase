@@ -26,6 +26,7 @@
 # include <qaccessible.h>
 #endif
 
+#include <QtCore/qpointer.h>
 
 //#define QABSTRACTSPINBOX_QSBDEBUG
 #ifdef QABSTRACTSPINBOX_QSBDEBUG

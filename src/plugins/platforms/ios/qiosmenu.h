@@ -11,6 +11,8 @@
 
 #import "quiview.h"
 
+#include <QtCore/qpointer.h>
+
 class QIOSMenu;
 @class QUIMenuController;
 @class QUIPickerView;

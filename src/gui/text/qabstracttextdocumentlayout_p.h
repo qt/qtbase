@@ -19,7 +19,9 @@
 #include "private/qobject_p.h"
 #include "qtextdocument_p.h"
 #include "qabstracttextdocumentlayout.h"
+
 #include "QtCore/qhash.h"
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 

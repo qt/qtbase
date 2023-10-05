@@ -28,6 +28,8 @@
 #include <QtWidgets/qformlayout.h>
 #include <QtWidgets/qlabel.h>
 
+#include <QtCore/qpointer.h>
+
 static void _q_ppd_initResources()
 {
     static bool resourcesInitialized = false;

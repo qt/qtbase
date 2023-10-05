@@ -8,6 +8,8 @@
 #include "private/qwidget_p.h"
 #include "private/qlayoutengine_p.h"
 
+#include <QtCore/qpointer.h>
+
 #include <memory>
 
 QT_BEGIN_NAMESPACE

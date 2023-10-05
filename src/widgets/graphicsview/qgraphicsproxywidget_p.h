@@ -19,6 +19,8 @@
 #include "qgraphicsproxywidget.h"
 #include "private/qgraphicswidget_p.h"
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE

@@ -12,6 +12,7 @@
 #include <QtCore/qset.h>
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qfileselector.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 

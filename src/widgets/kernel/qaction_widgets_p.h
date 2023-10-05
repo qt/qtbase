@@ -20,6 +20,8 @@
 #include <QtWidgets/qmenu.h>
 #endif
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(action);
 
 QT_BEGIN_NAMESPACE

@@ -20,6 +20,8 @@
 #include "qcommonstyle_p.h"
 #include "qproxystyle.h"
 
+#include <QtCore/qpointer.h>
+
 #ifndef QT_NO_STYLE_PROXY
 
 QT_BEGIN_NAMESPACE

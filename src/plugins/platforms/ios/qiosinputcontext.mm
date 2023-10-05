@@ -18,6 +18,8 @@
 #include <QGuiApplication>
 #include <QtGui/private/qwindow_p.h>
 
+#include <QtCore/qpointer.h>
+
 // -------------------------------------------------------------------------
 
 static QUIView *focusView()

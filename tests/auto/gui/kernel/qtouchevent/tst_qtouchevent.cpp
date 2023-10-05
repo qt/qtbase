@@ -20,6 +20,8 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 
+#include <QtCore/qpointer.h>
+
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
 class tst_QTouchEventWidget : public QWidget

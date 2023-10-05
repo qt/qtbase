@@ -7,6 +7,8 @@
 #include <qwindow.h>
 #include <QtGui/private/qpointingdevice_p.h>
 
+#include <QtCore/qpointer.h>
+
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
 class MouseEventWidget : public QWindow

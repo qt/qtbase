@@ -16,6 +16,8 @@
 #include "qdialogbuttonbox.h"
 #include "qdialogbuttonbox_p.h"
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!

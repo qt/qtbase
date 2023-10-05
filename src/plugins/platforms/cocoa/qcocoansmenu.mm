@@ -16,6 +16,8 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qapplekeymapper_p.h>
 
+#include <QtCore/qpointer.h>
+
 static NSString *qt_mac_removePrivateUnicode(NSString *string)
 {
     if (const int len = string.length) {

@@ -20,6 +20,8 @@
 #include <private/qmenu_p.h> // Mac needs what in this file!
 #include <qpa/qplatformmenu.h>
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(menubar);
 
 QT_BEGIN_NAMESPACE

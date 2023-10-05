@@ -9,6 +9,8 @@
 #include <qpa/qplatformmenu.h>
 #include "qcocoamenu.h"
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 class QCocoaWindow;

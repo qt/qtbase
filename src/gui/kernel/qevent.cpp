@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qevent.h"
+
 #include "qcursor.h"
 #include "private/qguiapplication_p.h"
 #include "private/qinputdevice_p.h"
@@ -9,6 +10,7 @@
 #include "qpa/qplatformintegration.h"
 #include "private/qevent_p.h"
 #include "private/qeventpoint_p.h"
+
 #include "qfile.h"
 #include "qhashfunctions.h"
 #include "qmetaobject.h"
@@ -16,6 +18,7 @@
 #include "qevent_p.h"
 #include "qmath.h"
 #include "qloggingcategory.h"
+#include "qpointer.h"
 
 #if QT_CONFIG(draganddrop)
 #include <qpa/qplatformdrag.h>

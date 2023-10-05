@@ -6,6 +6,8 @@
 #include "qdeadlinetimer.h"
 #include "qcoreapplication.h"
 
+#include <QtCore/qpointer.h>
+
 #include <algorithm>
 #include <memory>
 

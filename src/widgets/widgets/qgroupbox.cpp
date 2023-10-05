@@ -22,6 +22,7 @@
 #include <qpa/qplatformtheme.h>
 
 #include "qdebug.h"
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 

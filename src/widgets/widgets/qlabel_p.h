@@ -33,6 +33,8 @@
 #include "qmenu.h"
 #endif
 
+#include <QtCore/qpointer.h>
+
 #include <optional>
 
 QT_BEGIN_NAMESPACE

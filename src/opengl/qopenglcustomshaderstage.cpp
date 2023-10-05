@@ -6,6 +6,8 @@
 #include "qopenglpaintengine_p.h"
 #include <private/qpainter_p.h>
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 class QOpenGLCustomShaderStagePrivate

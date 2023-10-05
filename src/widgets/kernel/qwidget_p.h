@@ -42,6 +42,8 @@
 #include <qpa/qplatformbackingstore.h>
 #include <QtGui/private/qbackingstorerhisupport_p.h>
 
+#include <QtCore/qpointer.h>
+
 #include <vector>
 #include <memory>
 

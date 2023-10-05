@@ -7,6 +7,8 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qabstractbutton_p.h"
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(pushbutton);
 
 //

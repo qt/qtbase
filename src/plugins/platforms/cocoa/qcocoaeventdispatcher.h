@@ -56,6 +56,7 @@
 #include <QtCore/private/qcfsocketnotifier_p.h>
 #include <QtCore/private/qtimerinfo_unix_p.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qpointer.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 

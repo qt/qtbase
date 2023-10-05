@@ -32,6 +32,7 @@
 
 #include <QtCore/qanystringview.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/qversionnumber.h>
 
 #ifdef Q_OS_WIN

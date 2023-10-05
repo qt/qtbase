@@ -37,7 +37,9 @@
 #if QT_CONFIG(toolbar)
 #include "qtoolbararealayout_p.h"
 #endif
+
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qpointer.h>
 
 QT_REQUIRE_CONFIG(mainwindow);
 

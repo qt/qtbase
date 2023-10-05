@@ -42,6 +42,8 @@ Q_MOC_INCLUDE(<QtNetwork/QAuthenticator>)
 
 #include <private/qdecompresshelper_p.h>
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE

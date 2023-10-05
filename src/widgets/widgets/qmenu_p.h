@@ -29,6 +29,8 @@
 
 #include <qpa/qplatformmenu.h>
 
+#include <QtCore/qpointer.h>
+
 #include <functional>
 
 QT_REQUIRE_CONFIG(menu);

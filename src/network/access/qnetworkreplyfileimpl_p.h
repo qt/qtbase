@@ -19,7 +19,9 @@
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
 #include "qnetworkaccessmanager.h"
+
 #include <QFile>
+#include <QtCore/qpointer.h>
 #include <private/qabstractfileengine_p.h>
 
 QT_BEGIN_NAMESPACE

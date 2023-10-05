@@ -34,6 +34,8 @@
 #  include "private/qshortcutmap_p.h"
 #endif
 
+#include <QtCore/qpointer.h>
+
 #include <memory>
 
 QT_BEGIN_NAMESPACE

@@ -29,6 +29,8 @@ QT_REQUIRE_CONFIG(mdiarea);
 #include <private/qmdisubwindow_p.h>
 #include <private/qabstractscrollarea_p.h>
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 namespace QMdi {

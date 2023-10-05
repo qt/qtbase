@@ -26,6 +26,8 @@
 #include <QtGui/qicon.h>
 #include <QtGui/qpalette.h>
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QWindowPrivate : public QObjectPrivate

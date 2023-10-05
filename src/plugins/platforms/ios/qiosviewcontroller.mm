@@ -21,6 +21,8 @@
 #include "qioswindow.h"
 #include "quiview.h"
 
+#include <QtCore/qpointer.h>
+
 // -------------------------------------------------------------------------
 
 @interface QIOSViewController ()

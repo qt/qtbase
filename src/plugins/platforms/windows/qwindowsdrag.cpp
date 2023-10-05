@@ -28,6 +28,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qbuffer.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qpointer.h>
 
 #include <shlobj.h>
 

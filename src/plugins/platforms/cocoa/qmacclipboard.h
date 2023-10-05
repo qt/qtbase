@@ -7,6 +7,8 @@
 #include <QtGui>
 #include <QtGui/qutimimeconverter.h>
 
+#include <QtCore/qpointer.h>
+
 #include <ApplicationServices/ApplicationServices.h>
 
 QT_BEGIN_NAMESPACE

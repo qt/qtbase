@@ -216,6 +216,8 @@
 #include <private/qgesturemanager_p.h>
 #include <private/qpathclipper_p.h>
 
+#include <QtCore/qpointer.h>
+
 // #define GESTURE_DEBUG
 #ifndef GESTURE_DEBUG
 # define DEBUG if (0) qDebug

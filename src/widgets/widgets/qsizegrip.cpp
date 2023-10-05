@@ -18,6 +18,8 @@
 #include <qpa/qplatformtheme.h>
 #include <QtWidgets/qabstractscrollarea.h>
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 static QWidget *qt_sizegrip_topLevelWidget(QWidget* w)

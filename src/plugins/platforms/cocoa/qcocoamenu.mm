@@ -19,6 +19,7 @@
 #include "qcocoaapplicationdelegate.h"
 
 #include <QtCore/private/qcore_mac_p.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 

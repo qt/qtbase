@@ -21,6 +21,8 @@
 #include "private/qwidget_p.h"
 #include "qgesturerecognizer.h"
 
+#include <QtCore/qpointer.h>
+
 #ifndef QT_NO_GESTURES
 
 #include <functional>

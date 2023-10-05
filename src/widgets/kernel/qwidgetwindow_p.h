@@ -22,6 +22,8 @@
 #include <QtGui/private/qevent_p.h>
 #include <QtWidgets/qwidget.h>
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 

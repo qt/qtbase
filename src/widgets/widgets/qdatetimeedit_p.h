@@ -28,6 +28,7 @@
 #include "private/qdatetimeparser_p.h"
 
 #include "qdebug.h"
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 

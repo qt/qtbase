@@ -40,6 +40,7 @@
 #   include <QtNetwork/qtcpsocket.h>
 #endif
 
+#include <QtCore/qpointer.h>
 #include <QtCore/qscopedpointer.h>
 
 #include <memory>

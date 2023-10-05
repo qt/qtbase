@@ -20,6 +20,8 @@
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/private/qinputdevice_p.h>
+
+#include <QtCore/qpointer.h>
 #include <QtCore/private/qflatmap_p.h>
 
 QT_BEGIN_NAMESPACE

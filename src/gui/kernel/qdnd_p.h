@@ -27,6 +27,8 @@
 #include "private/qobject_p.h"
 #include "QtGui/qbackingstore.h"
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(draganddrop);
 
 QT_BEGIN_NAMESPACE

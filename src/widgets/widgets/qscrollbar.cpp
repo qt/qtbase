@@ -12,7 +12,10 @@
 #if QT_CONFIG(menu)
 #include "qmenu.h"
 #endif
+
 #include <QtCore/qelapsedtimer.h>
+#include <QtCore/qpointer.h>
+
 
 #if QT_CONFIG(accessibility)
 #include "qaccessible.h"

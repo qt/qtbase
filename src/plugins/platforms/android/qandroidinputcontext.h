@@ -9,6 +9,8 @@
 #include <functional>
 #include <jni.h>
 #include <qevent.h>
+
+#include <QtCore/qpointer.h>
 #include <QTimer>
 
 QT_BEGIN_NAMESPACE

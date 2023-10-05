@@ -25,6 +25,7 @@
 #include <qbasictimer.h>
 #include "private/qfunctions_p.h"
 #include <qloggingcategory.h>
+#include <QtCore/qpointer.h>
 
 #include <algorithm>
 

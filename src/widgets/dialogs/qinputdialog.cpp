@@ -18,6 +18,8 @@
 #include "qevent.h"
 #include "qdialog_p.h"
 
+#include <QtCore/qpointer.h>
+
 QT_USE_NAMESPACE
 
 enum CandidateSignal {

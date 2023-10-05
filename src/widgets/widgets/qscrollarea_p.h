@@ -20,6 +20,8 @@
 #include "private/qabstractscrollarea_p.h"
 #include <QtWidgets/qscrollbar.h>
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(scrollarea);
 
 QT_BEGIN_NAMESPACE

@@ -17,7 +17,9 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qevent.h>
+
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 

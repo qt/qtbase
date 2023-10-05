@@ -32,6 +32,8 @@
 
 #include "private/qwidgettextcontrol_p.h"
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(textedit);
 
 QT_BEGIN_NAMESPACE

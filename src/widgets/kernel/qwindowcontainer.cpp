@@ -14,6 +14,8 @@
 #include <QAbstractScrollArea>
 #include <QPainter>
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;

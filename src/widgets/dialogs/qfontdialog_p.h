@@ -21,6 +21,8 @@
 #include "qfontdatabase.h"
 #include "qfontdialog.h"
 #include <qpa/qplatformdialoghelper.h>
+
+#include <QtCore/qpointer.h>
 #include "qsharedpointer.h"
 
 QT_REQUIRE_CONFIG(fontdialog);

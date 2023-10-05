@@ -21,6 +21,8 @@
 #endif
 #include <qpa/qplatformtheme.h>
 
+#include <QtCore/qpointer.h>
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE

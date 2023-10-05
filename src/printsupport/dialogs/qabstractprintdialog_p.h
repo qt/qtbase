@@ -20,6 +20,8 @@
 #include "private/qdialog_p.h"
 #include "QtPrintSupport/qabstractprintdialog.h"
 
+#include <QtCore/qpointer.h>
+
 QT_REQUIRE_CONFIG(printdialog);
 
 QT_BEGIN_NAMESPACE

@@ -24,9 +24,12 @@
 #include "QtCore/qmimedata.h"
 #include "QtGui/qpainter.h"
 #include "QtGui/qregion.h"
+
 #include "QtCore/qdebug.h"
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qelapsedtimer.h"
+#include <QtCore/qpointer.h>
+
 
 #include <array>
 

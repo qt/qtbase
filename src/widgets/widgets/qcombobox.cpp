@@ -50,6 +50,8 @@
 #endif
 #include <array>
 
+#include <QtCore/qpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;

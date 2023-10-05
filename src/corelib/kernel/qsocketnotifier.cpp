@@ -16,6 +16,7 @@
 #include <private/qthread_p.h>
 
 #include <QtCore/QLoggingCategory>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 

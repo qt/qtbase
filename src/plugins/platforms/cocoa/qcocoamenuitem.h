@@ -8,6 +8,8 @@
 #include <qpa/qplatformmenu.h>
 #include <QtGui/QImage>
 
+#include <QtCore/qpointer.h>
+
 Q_FORWARD_DECLARE_OBJC_CLASS(NSMenuItem);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
