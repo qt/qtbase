@@ -48,7 +48,7 @@ namespace QtAndroidAccessibility
     // Because of that almost every method here is split into two parts.
     // The _helper part is executed in the context of m_accessibilityContext
     // on the main thread. The other part is executed in Java thread.
-    static QPointer<QObject> m_accessibilityContext = nullptr;
+    Q_CONSTINIT static QPointer<QObject> m_accessibilityContext = {};
 
     // This method is called from the Qt main thread, and normally a
     // QGuiApplication instance will be used as a parent.
