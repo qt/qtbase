@@ -268,7 +268,7 @@ static int parseEarlyArguments(const QStringList &arguments, Options *options,
     }
 
     if (parser.isSet(qmakeOption) && optVerboseLevel >= 1)
-        std::wcerr << "Warning: -qmake option is deprecated. Use -qpaths instead.\n";
+        std::wcerr << "Warning: -qmake option is deprecated. Use -qtpaths instead.\n";
 
     if (parser.isSet(qtpathsOption) || parser.isSet(qmakeOption)) {
         const QString qtpathsArg = parser.isSet(qtpathsOption) ? parser.value(qtpathsOption)
