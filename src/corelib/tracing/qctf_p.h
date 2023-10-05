@@ -19,8 +19,6 @@
 #include <qtcoreexports.h>
 #include <qobject.h>
 
-QT_REQUIRE_CONFIG(library);
-
 QT_BEGIN_NAMESPACE
 
 struct QCtfTraceMetadata;

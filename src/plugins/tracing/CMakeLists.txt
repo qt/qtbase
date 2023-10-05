@@ -12,14 +12,13 @@ endfunction(make_includable)
 make_includable(metadata_template.txt metadata_template.h)
 
 qt_internal_add_plugin(QCtfTracePlugin
-    SHARED
     CLASS_NAME QCtfTracePlugin
     PLUGIN_TYPE tracing
     SOURCES
         qctflib_p.h qctflib.cpp metadata_template.txt qctfplugin.cpp qctfplugin_p.h
         qctfserver_p.h qctfserver.cpp
     LIBRARIES
-        Qt6::Core Qt6::CorePrivate Qt6::Network
+        Qt::Core Qt::CorePrivate Qt::Network
 )
 
 qt_internal_extend_target(QCtfTracePlugin CONDITION QT_FEATURE_zstd

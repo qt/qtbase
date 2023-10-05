@@ -7,6 +7,7 @@
 #include <qpluginloader.h>
 #include <qfileinfo.h>
 #include <qdir.h>
+#include <qjsonarray.h>
 
 #include "qctf_p.h"
 
@@ -17,6 +18,8 @@ static bool s_triedLoading = false;
 static bool s_prevent_recursion = false;
 static bool s_shutdown = false;
 static QCtfLib* s_plugin = nullptr;
+
+#if QT_CONFIG(library) && defined(QT_SHARED)
 
 #if defined(Q_OS_ANDROID)
 static QString findPlugin(const QString &plugin)
@@ -63,6 +66,30 @@ static bool loadPlugin(bool &retry)
     s_plugin->shutdown(&s_shutdown);
     return true;
 }
+
+#else
+
+#define QCtfPluginIID QStringLiteral("org.qt-project.Qt.QCtfLib")
+
+static bool loadPlugin(bool &retry)
+{
+    retry = false;
+    const auto &plugins = QPluginLoader::staticPlugins();
+    for (const auto &plugin : plugins) {
+        const auto json = plugin.metaData();
+        const auto IID = json[QStringLiteral("IID")];
+        if (IID.toString() == QCtfPluginIID) {
+            s_plugin = qobject_cast<QCtfLib *>(plugin.instance());
+            if (!s_plugin)
+                return false;
+            s_plugin->shutdown(&s_shutdown);
+            return true;
+        }
+    }
+    return false;
+}
+
+#endif
 
 static bool initialize()
 {
