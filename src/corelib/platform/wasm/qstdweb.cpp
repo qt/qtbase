@@ -578,6 +578,17 @@ File::File(const emscripten::val &file)
 
 }
 
+File::~File() = default;
+
+File::File(const File &other) = default;
+
+File::File(File &&other) = default;
+
+File &File::operator=(const File &other) = default;
+
+File &File::operator=(File &&other) = default;
+
+
 Blob File::slice(uint64_t begin, uint64_t end) const
 {
     return Blob(m_file.call<emscripten::val>("slice", uint53_t(begin), uint53_t(end)));
@@ -622,6 +633,22 @@ emscripten::val File::val() const
 {
     return m_file;
 }
+
+FileUrlRegistration::FileUrlRegistration(File file)
+{
+    m_path = QString::fromStdString(emscripten::val::global("window")["URL"].call<std::string>(
+        "createObjectURL", file.file()));
+}
+
+FileUrlRegistration::~FileUrlRegistration()
+{
+    emscripten::val::global("window")["URL"].call<void>("revokeObjectURL",
+                                                        emscripten::val(m_path.toStdString()));
+}
+
+FileUrlRegistration::FileUrlRegistration(FileUrlRegistration &&other) = default;
+
+FileUrlRegistration &FileUrlRegistration::operator=(FileUrlRegistration &&other) = default;
 
 FileList::FileList(const emscripten::val &fileList)
     :m_fileList(fileList)
@@ -902,7 +929,7 @@ namespace Promise {
 //
 //  haveJspi(): returns true if asyncify 2 (JSPI) is available.
 //
-//  canBlockCallingThread(): returns true if the calling thread can block on 
+//  canBlockCallingThread(): returns true if the calling thread can block on
 //      QEventLoop::exec(), using either asyncify or as a seconarday thread.
 bool haveJspi()
 {
