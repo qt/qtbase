@@ -285,7 +285,7 @@ void tst_Http2::singleRequest()
     runEventLoop();
     STOP_ON_FAILURE
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 
@@ -326,7 +326,7 @@ void tst_Http2::multipleRequests()
     runEventLoop();
     STOP_ON_FAILURE
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 }
@@ -371,7 +371,7 @@ void tst_Http2::flowControlClientSide()
     runEventLoop(120000);
     STOP_ON_FAILURE
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
     QVERIFY(windowUpdates > 0);
@@ -412,7 +412,7 @@ void tst_Http2::flowControlServerSide()
     runEventLoop(120000);
     STOP_ON_FAILURE
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 }
@@ -456,7 +456,7 @@ void tst_Http2::pushPromise()
     runEventLoop();
     STOP_ON_FAILURE
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 
@@ -582,7 +582,7 @@ void tst_Http2::earlyResponse()
     runEventLoop();
     STOP_ON_FAILURE
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 }
@@ -713,7 +713,7 @@ void tst_Http2::connectToHost()
     runEventLoop();
     STOP_ON_FAILURE
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 
@@ -784,7 +784,7 @@ void tst_Http2::maxFrameSize()
     // a response into 3 'DATA' frames (16kb + 16kb + 0|END_STREAM).
     QCOMPARE(frameCounter.size(), 1);
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 }
@@ -936,7 +936,7 @@ void tst_Http2::moreActivitySignals()
     runEventLoop();
     STOP_ON_FAILURE
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 
@@ -1049,7 +1049,7 @@ void tst_Http2::contentEncoding()
     runEventLoop();
     STOP_ON_FAILURE
 
-    QVERIFY(nRequests == 0);
+    QCOMPARE(nRequests, 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 
