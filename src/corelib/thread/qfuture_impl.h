@@ -14,7 +14,6 @@
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qthreadpool.h>
 #include <QtCore/qexception.h>
-#include <QtCore/qpointer.h>
 #include <QtCore/qpromise.h>
 
 #include <memory>
