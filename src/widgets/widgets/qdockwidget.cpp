@@ -1502,7 +1502,7 @@ void QDockWidget::changeEvent(QEvent *event)
 
     switch (event->type()) {
     case QEvent::WindowTitleChange:
-        if (isFloating() && windowHandle() && d->topData()) {
+        if (isFloating() && windowHandle() && d->topData() && windowHandle()->isVisible()) {
             // From QWidget::setWindowTitle(): Propagate window title without signal emission
             d->topData()->caption = windowHandle()->title();
             d->setWindowTitle_helper(windowHandle()->title());
