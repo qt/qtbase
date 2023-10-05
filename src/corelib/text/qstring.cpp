@@ -3668,7 +3668,7 @@ static void replace_with_copy(QString &str, size_t *indices, qsizetype nIndices,
     QString copy{ newSize, Qt::Uninitialized };
     QString::DataPointer &copy_d = copy.data_ptr();
     auto dst = copy_d.begin();
-    for (int i = 0; i < nIndices; ++i) {
+    for (qsizetype i = 0; i < nIndices; ++i) {
         auto hit = str_d.begin() + indices[i];
         dst = std::copy(src_start, hit, dst);
         dst = std::copy_n(after_b, alen, dst);
