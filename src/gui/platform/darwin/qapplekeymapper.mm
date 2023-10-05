@@ -522,13 +522,48 @@ QList<QKeyCombination> QAppleKeyMapper::possibleKeyCombinations(const QKeyEvent 
 
     auto eventModifiers = event->modifiers();
 
-    // The complete set of event modifiers, along with the
-    // unmodified key, is always a valid key combination,
-    // and the first priority.
-    ret << QKeyCombination::fromCombined(int(eventModifiers) + int(unmodifiedKey));
+    int startingModifierLayer = 0;
+    if (toCocoaModifiers(eventModifiers) & NSEventModifierFlagCommand) {
+        // When the Command key is pressed AppKit seems to do key equivalent
+        // matching using a Latin/Roman interpretation of the current keyboard
+        // layout. For example, for a Greek layout, pressing Option+Command+C
+        // produces a key event with chars="ç" and unmodchars="ψ", but AppKit
+        // still treats this as a match for a key equivalent of Option+Command+C.
+        // We can't do the same by just applying the modifiers to our key map,
+        // as that too contains "ψ" for the Option+Command combination. What we
+        // can do instead is take advantage of the fact that the Command
+        // modifier layer in all/most keyboard layouts contains a Latin
+        // layer. We then combine that with the modifiers of the event
+        // to produce the resulting "Latin" key combination.
+        static constexpr int kCommandLayer = 2;
+        ret << QKeyCombination::fromCombined(
+            int(eventModifiers) + int(keyMap[kCommandLayer]));
+
+        // If the unmodified key is outside of Latin1, we also treat
+        // that as a valid key combination, even if AppKit natively
+        // does not. For example, for a Greek layout, we still want
+        // to support Option+Command+ψ as a key combination, as it's
+        // unlikely to clash with the Latin key combination we added
+        // above.
+
+        // However, if the unmodified key is within Latin1, we skip
+        // it, to avoid these types of conflicts. For example, in
+        // the same Greek layout, pressing the key next to Tab will
+        // produce a Latin ';' symbol, but we've already treated that
+        // as 'q' above, thanks to the Command modifier, so we skip
+        // the potential Command+; key combination. This is also in
+        // line with what AppKit natively does.
+
+        // Skipping Latin1 unmodified keys also handles the case of
+        // a Latin layout, where the unmodified and modified keys
+        // are the same.
+
+        if (unmodifiedKey <= 0xff)
+            startingModifierLayer = 1;
+    }
 
     // FIXME: We only compute the first 8 combinations. Why?
-    for (int i = 1; i < 8; ++i) {
+    for (int i = startingModifierLayer; i < 15; ++i) {
         auto keyAfterApplyingModifiers = keyMap[i];
         if (!keyAfterApplyingModifiers)
              continue;
