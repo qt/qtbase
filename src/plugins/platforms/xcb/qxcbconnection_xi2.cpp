@@ -766,7 +766,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     if (auto device = QPointingDevicePrivate::pointingDeviceById(sourceDeviceId))
         xi2HandleScrollEvent(event, device);
     else
-        qCWarning(lcQpaXInputEvents) << "scroll event from unregistered device" << sourceDeviceId;
+        qCDebug(lcQpaXInputEvents) << "scroll event from unregistered device" << sourceDeviceId;
 
     if (xiDeviceEvent) {
         switch (xiDeviceEvent->event_type) {
