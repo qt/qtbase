@@ -99,7 +99,7 @@ static void removeTransparencyFromBrush(QBrush &brush)
 const char *qt_real_to_string(qreal val, char *buf) {
     const char *ret = buf;
 
-    if (qIsNaN(val)) {
+    if (!qIsFinite(val) || std::abs(val) > std::numeric_limits<quint32>::max()) {
         *(buf++) = '0';
         *(buf++) = ' ';
         *buf = 0;
@@ -110,8 +110,8 @@ const char *qt_real_to_string(qreal val, char *buf) {
         *(buf++) = '-';
         val = -val;
     }
-    unsigned int ival = (unsigned int) val;
-    qreal frac = val - (qreal)ival;
+    qreal frac = std::modf(val, &val);
+    quint32 ival(val);
 
     int ifrac = (int)(frac * 1000000000);
     if (ifrac == 1000000000) {
