@@ -1,6 +1,23 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+# Sets '${var}' to a genex that extracts the target's property.
+# Sets 'have_${var}' to a genex that checks that the property has a
+# non-empty value.
+macro(qt_internal_genex_get_property var target property)
+    set(${var} "$<TARGET_PROPERTY:${target},${property}>")
+    set(have_${var} "$<BOOL:${${var}}>")
+endmacro()
+
+# Sets '${var}' to a genex that will join the given property values
+# using '${glue}' and will surround the entire output with '${prefix}'
+# and '${suffix}'.
+macro(qt_internal_genex_get_joined_property var target property prefix suffix glue)
+    qt_internal_genex_get_property("${var}" "${target}" "${property}")
+    set(${var}
+        "$<${have_${var}}:${prefix}$<JOIN:${${var}},${glue}>${suffix}>")
+endmacro()
+
 # This function generates LD version script for the target and uses it in the target linker line.
 # Function has two modes dependending on the specified arguments.
 # Arguments:
@@ -33,9 +50,21 @@ function(qt_internal_add_linker_version_script target)
         endif()
         string(APPEND contents "};\n")
         set(current "Qt_${PROJECT_VERSION_MAJOR}")
-        string(APPEND contents "${current} { *; };\n")
+        string(APPEND contents "${current} {\n    *;")
 
-        get_target_property(type ${target} TYPE)
+        get_target_property(target_type ${target} TYPE)
+        if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+            set(genex_prefix "\n    ")
+            set(genex_glue "$<SEMICOLON>\n    ")
+            set(genex_suffix "$<SEMICOLON>")
+            qt_internal_genex_get_joined_property(
+                linker_exports "${target}" _qt_extra_linker_script_exports
+                "${genex_prefix}" "${genex_suffix}" "${genex_glue}"
+            )
+            string(APPEND contents "${linker_exports}")
+        endif()
+        string(APPEND contents "\n};\n")
+
         if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
             set(property_genex "$<TARGET_PROPERTY:${target},_qt_extra_linker_script_content>")
             set(check_genex "$<BOOL:${property_genex}>")

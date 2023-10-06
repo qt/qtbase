@@ -1415,4 +1415,10 @@ foreach(minor_version RANGE ${PROJECT_VERSION_MINOR})
 endforeach()
 qt_internal_extend_target(Core
     EXTRA_LINKER_SCRIPT_CONTENT "${linker_script_contents}"
+
+    # Workaround for QTBUG-117514:
+    # Function called by inline methods taking a pointer to a private class as a parameter
+    EXTRA_LINKER_SCRIPT_EXPORTS
+        # QFutureInterfaceBase::setContinuation(std::function<void (QFutureInterfaceBase const&)>, QFutureInterfaceBasePrivate*)
+        "_ZN20QFutureInterfaceBase15setContinuationE*P27QFutureInterfaceBasePrivate"
 )

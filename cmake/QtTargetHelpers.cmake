@@ -16,6 +16,8 @@
 #     Custom compilation flags.
 #   EXTRA_LINKER_SCRIPT_CONTENT
 #     Extra content that should be appended to a target linker script. Applicable for ld only.
+#   EXTRA_LINKER_SCRIPT_EXPORTS
+#     Extra content that should be added to export section of the linker script.
 #   NO_PCH_SOURCES
 #     Skip the specified source files by PRECOMPILE_HEADERS feature.
 function(qt_internal_extend_target target)
@@ -51,6 +53,7 @@ function(qt_internal_extend_target target)
         CONDITION
         CONDITION_INDEPENDENT_SOURCES
         COMPILE_FLAGS
+        EXTRA_LINKER_SCRIPT_EXPORTS
     )
 
     cmake_parse_arguments(PARSE_ARGV 1 arg
@@ -259,6 +262,10 @@ function(qt_internal_extend_target target)
     if(arg_EXTRA_LINKER_SCRIPT_CONTENT)
         set_target_properties(${target} PROPERTIES
             _qt_extra_linker_script_content "${arg_EXTRA_LINKER_SCRIPT_CONTENT}")
+    endif()
+    if(arg_EXTRA_LINKER_SCRIPT_EXPORTS)
+        set_target_properties(${target} PROPERTIES
+            _qt_extra_linker_script_exports "${arg_EXTRA_LINKER_SCRIPT_EXPORTS}")
     endif()
 endfunction()
 
