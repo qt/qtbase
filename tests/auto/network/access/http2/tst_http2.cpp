@@ -1244,7 +1244,7 @@ void tst_Http2::redirect()
 
     QVERIFY(serverPort != 0);
 
-    nRequests = 1 + maxRedirects;
+    nRequests = 1;
 
     auto originalUrl = requestUrl(defaultConnectionType());
     auto url = originalUrl;
@@ -1272,6 +1272,7 @@ void tst_Http2::redirect()
     runEventLoop();
     STOP_ON_FAILURE
 
+    QCOMPARE(nRequests, 0);
     if (success) {
         QCOMPARE(reply->error(), QNetworkReply::NoError);
         QCOMPARE(reply->url().toString(),
