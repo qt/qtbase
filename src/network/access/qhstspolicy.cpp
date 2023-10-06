@@ -21,8 +21,8 @@ QT_BEGIN_NAMESPACE
     RFC6797.
 
     You can set expiry time and host name for this policy, and control whether it
-    applies to subdomains, either in the constructor or by calling setExpiry(),
-    setHost() and setIncludesSubdomains().
+    applies to subdomains, either in the constructor or by calling \l setExpiry(),
+    \l setHost() and \l setIncludesSubDomains().
 
     \sa QNetworkAccessManager::setStrictTransportSecurityEnabled()
 */
