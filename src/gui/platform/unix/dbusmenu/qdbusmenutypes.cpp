@@ -217,19 +217,19 @@ QDBusMenuShortcut QDBusMenuItem::convertKeySequence(const QKeySequence &sequence
     QDBusMenuShortcut shortcut;
     for (int i = 0; i < sequence.count(); ++i) {
         QStringList tokens;
-        int key = sequence[i].toCombined();
-        if (key & Qt::MetaModifier)
+        auto modifiers = sequence[i].keyboardModifiers();
+        if (modifiers & Qt::MetaModifier)
             tokens << QStringLiteral("Super");
-        if (key & Qt::ControlModifier)
+        if (modifiers & Qt::ControlModifier)
             tokens << QStringLiteral("Control");
-        if (key & Qt::AltModifier)
+        if (modifiers & Qt::AltModifier)
             tokens << QStringLiteral("Alt");
-        if (key & Qt::ShiftModifier)
+        if (modifiers & Qt::ShiftModifier)
             tokens << QStringLiteral("Shift");
-        if (key & Qt::KeypadModifier)
+        if (modifiers & Qt::KeypadModifier)
             tokens << QStringLiteral("Num");
 
-        QString keyName = QKeySequencePrivate::keyName(key, QKeySequence::PortableText);
+        QString keyName = QKeySequencePrivate::keyName(sequence[i].key(), QKeySequence::PortableText);
         if (keyName == "+"_L1)
             tokens << QStringLiteral("plus");
         else if (keyName == "-"_L1)

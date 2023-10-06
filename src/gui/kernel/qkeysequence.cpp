@@ -1018,7 +1018,7 @@ int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
         }
         QString part = keyseq.left(-1 == p ? keyseq.size() : p - diff);
         keyseq = keyseq.right(-1 == p ? 0 : keyseq.size() - (p + 1));
-        d->key[n] = QKeySequencePrivate::decodeString(std::move(part), format);
+        d->key[n] = QKeySequencePrivate::decodeString(std::move(part), format).toCombined();
         ++n;
     }
     return n;
@@ -1036,7 +1036,7 @@ Q_DECLARE_TYPEINFO(QModifKeyName, Q_RELOCATABLE_TYPE);
 Q_GLOBAL_STATIC(QList<QModifKeyName>, globalModifs)
 Q_GLOBAL_STATIC(QList<QModifKeyName>, globalPortableModifs)
 
-int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceFormat format)
+QKeyCombination QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceFormat format)
 {
     Q_ASSERT(!accel.isEmpty());
 
@@ -1181,7 +1181,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         if (!found)
             return Qt::Key_unknown;
     }
-    return ret;
+    return QKeyCombination::fromCombined(ret);
 }
 
 static inline void addKey(QString &str, const QString &theKey, QKeySequence::SequenceFormat format)
@@ -1198,14 +1198,18 @@ static inline void addKey(QString &str, const QString &theKey, QKeySequence::Seq
     str += theKey;
 }
 
-QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat format)
+QString QKeySequencePrivate::encodeString(QKeyCombination keyCombination, QKeySequence::SequenceFormat format)
 {
     bool nativeText = (format == QKeySequence::NativeText);
     QString s;
 
+    int key = keyCombination.toCombined();
+
     // Handle -1 (Invalid Key) and Qt::Key_unknown gracefully
     if (key == -1 || key == Qt::Key_unknown)
         return s;
+
+    const auto modifiers = keyCombination.keyboardModifiers();
 
 #if defined(Q_OS_APPLE)
     if (nativeText) {
@@ -1230,33 +1234,33 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
         }
 
         for (int i = 0; modifierOrder[i] != 0; ++i) {
-            if (key & modifierOrder[i])
+            if (modifiers & modifierOrder[i])
                 s += appleSymbolForQtKey(qtkeyOrder[i]);
         }
     } else
 #endif
     {
         // On other systems the order is Meta, Control, Alt, Shift
-        if ((key & Qt::META) == Qt::META)
+        if (modifiers & Qt::MetaModifier)
             s = nativeText ? QCoreApplication::translate("QShortcut", "Meta") : QString::fromLatin1("Meta");
-        if ((key & Qt::CTRL) == Qt::CTRL)
+        if (modifiers & Qt::ControlModifier)
             addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Ctrl") : QString::fromLatin1("Ctrl"), format);
-        if ((key & Qt::ALT) == Qt::ALT)
+        if (modifiers & Qt::AltModifier)
             addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Alt") : QString::fromLatin1("Alt"), format);
-        if ((key & Qt::SHIFT) == Qt::SHIFT)
+        if (modifiers & Qt::ShiftModifier)
             addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Shift") : QString::fromLatin1("Shift"), format);
     }
-    if ((key & Qt::KeypadModifier) == Qt::KeypadModifier)
+    if (modifiers & Qt::KeypadModifier)
         addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Num") : QString::fromLatin1("Num"), format);
 
-    QString p = keyName(key, format);
+    QString keyName = QKeySequencePrivate::keyName(keyCombination.key(), format);
 
 #if defined(Q_OS_APPLE)
     if (nativeText)
-        s += p;
+        s += keyName;
     else
 #endif
-    addKey(s, p, format);
+    addKey(s, keyName, format);
     return s;
 }
 
@@ -1268,10 +1272,9 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
 
     This static method is used by encodeString() and by the D-Bus menu exporter.
 */
-QString QKeySequencePrivate::keyName(int key, QKeySequence::SequenceFormat format)
+QString QKeySequencePrivate::keyName(Qt::Key key, QKeySequence::SequenceFormat format)
 {
     bool nativeText = (format == QKeySequence::NativeText);
-    key &= ~(Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier | Qt::KeypadModifier);
     QString p;
 
     if (key && key < Qt::Key_Escape && key != Qt::Key_Space) {
@@ -1500,7 +1503,7 @@ QString QKeySequence::toString(SequenceFormat format) const
     // look like our latin case on Windows and X11
     int end = count();
     for (int i = 0; i < end; ++i) {
-        finalString += d->encodeString(d->key[i], format);
+        finalString += d->encodeString(QKeyCombination::fromCombined(d->key[i]), format);
         finalString += ", "_L1;
     }
     finalString.truncate(finalString.size() - 2);

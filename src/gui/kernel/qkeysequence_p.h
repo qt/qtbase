@@ -44,10 +44,10 @@ public:
     }
     QAtomicInt ref;
     int key[MaxKeyCount];
-    static QString encodeString(int key, QKeySequence::SequenceFormat format);
+    static QString encodeString(QKeyCombination keyCombination, QKeySequence::SequenceFormat format);
     // used in dbusmenu
-    Q_GUI_EXPORT static QString keyName(int key, QKeySequence::SequenceFormat format);
-    static int decodeString(QString accel, QKeySequence::SequenceFormat format);
+    Q_GUI_EXPORT static QString keyName(Qt::Key key, QKeySequence::SequenceFormat format);
+    static QKeyCombination decodeString(QString accel, QKeySequence::SequenceFormat format);
 };
 
 QT_END_NAMESPACE
