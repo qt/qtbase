@@ -277,8 +277,19 @@ using namespace Qt::StringLiterals;
 class QJniObjectPrivate
 {
 public:
-    QJniObjectPrivate() = default;
+    // This is safe and necessary - the JNIEnv is attached to the current thread
+    // and the pointer remains valid for as long as the thread is alive. And if the
+    // QJniObject outlives the thread that it lives in, and gets called for
+    // anything other than destruction, then we have a data race anyway.
+    // And it's necessary, because the QJniEnvironment destructor calls
+    // checkAndClearExceptions, and since we have QJniObjects that get destroyed from
+    // a different thread than the one "owning" it, this triggers JNI assertions.
+    QJniObjectPrivate()
+        : m_env(QJniEnvironment().jniEnv())
+    {
+    }
     ~QJniObjectPrivate() {
+        // use the environment of the current thread here
         QJniEnvironment env;
         if (m_jobject)
             env->DeleteGlobalRef(m_jobject);
@@ -286,10 +297,16 @@ public:
             env->DeleteGlobalRef(m_jclass);
     }
 
+    JNIEnv *jniEnv() const noexcept
+    {
+        return m_env;
+    }
+
     template <typename ...Args>
-    void construct(JNIEnv *env, const char *signature = nullptr, Args &&...args)
+    void construct(const char *signature = nullptr, Args &&...args)
     {
         if (m_jclass) {
+            JNIEnv *env = jniEnv();
             // get default constructor
             jmethodID constructorId = QJniObject::getCachedMethodID(env, m_jclass, m_className, "<init>",
                                                                     signature ? signature : "()V");
@@ -307,10 +324,11 @@ public:
         }
     }
 
+    QByteArray m_className;
+    JNIEnv * const m_env;
     jobject m_jobject = nullptr;
     jclass m_jclass = nullptr;
     bool m_own_jclass = true;
-    QByteArray m_className;
 };
 
 template <typename ...Args>
@@ -337,13 +355,12 @@ static jclass getCachedClass(const QByteArray &className)
     exception clearing and delete the local reference before returning.
     The JNI object can be null if there was an exception.
 */
-static QJniObject getCleanJniObject(jobject object)
+static QJniObject getCleanJniObject(jobject object, JNIEnv *env)
 {
     if (!object)
         return QJniObject();
 
-    QJniEnvironment env;
-    if (env.checkAndClearExceptions()) {
+    if (QJniEnvironment::checkAndClearExceptions(env)) {
         env->DeleteLocalRef(object);
         return QJniObject();
     }
@@ -392,7 +409,7 @@ jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
     }
 
     if (!clazz) {
-        // We didn't get an env. pointer or we got one with the WRONG class loader...
+        // Wrong class loader, try our own
         QJniObject classLoader(QtAndroidPrivate::classLoader());
         if (!classLoader.isValid())
             return nullptr;
@@ -571,12 +588,11 @@ QJniObject::QJniObject()
 QJniObject::QJniObject(const char *className)
     : d(new QJniObjectPrivate())
 {
-    QJniEnvironment env;
     d->m_className = className;
-    d->m_jclass = loadClass(d->m_className, env.jniEnv());
+    d->m_jclass = loadClass(d->m_className, jniEnv());
     d->m_own_jclass = false;
 
-    d->construct(env.jniEnv());
+    d->construct();
 }
 
 /*!
@@ -595,14 +611,13 @@ QJniObject::QJniObject(const char *className)
 QJniObject::QJniObject(const char *className, const char *signature, ...)
     : d(new QJniObjectPrivate())
 {
-    QJniEnvironment env;
     d->m_className = className;
-    d->m_jclass = loadClass(d->m_className, env.jniEnv());
+    d->m_jclass = loadClass(d->m_className, jniEnv());
     d->m_own_jclass = false;
 
     va_list args;
     va_start(args, signature);
-    d->construct(env.jniEnv(), signature, args);
+    d->construct(signature, args);
     va_end(args);
 }
 
@@ -635,12 +650,11 @@ QJniObject::QJniObject(const char *className, const char *signature, ...)
 QJniObject::QJniObject(jclass clazz, const char *signature, ...)
     : d(new QJniObjectPrivate())
 {
-    QJniEnvironment env;
     if (clazz) {
-        d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
+        d->m_jclass = static_cast<jclass>(jniEnv()->NewGlobalRef(clazz));
         va_list args;
         va_start(args, signature);
-        d->construct(env.jniEnv(), signature, args);
+        d->construct(signature, args);
         va_end(args);
     }
 }
@@ -691,7 +705,7 @@ QJniObject::QJniObject(jobject object)
     if (!object)
         return;
 
-    QJniEnvironment env;
+    JNIEnv *env = d->jniEnv();
     d->m_jobject = env->NewGlobalRef(object);
     jclass cls = env->GetObjectClass(object);
     d->m_jclass = static_cast<jclass>(env->NewGlobalRef(cls));
@@ -720,6 +734,13 @@ QJniObject::QJniObject(jobject object)
 */
 QJniObject::~QJniObject()
 {}
+
+/*! \internal
+*/
+JNIEnv *QJniObject::jniEnv() const noexcept
+{
+    return d->jniEnv();
+}
 
 /*!
     \fn template <typename T> T QJniObject::object() const
@@ -773,7 +794,7 @@ jclass QJniObject::objectClass() const
 QByteArray QJniObject::className() const
 {
     if (d->m_className.isEmpty() && d->m_jclass && d->m_jobject) {
-        QJniEnvironment env;
+        JNIEnv *env = jniEnv();
         if (env->PushLocalFrame(3) != JNI_OK) // JVM out of memory
             return d->m_className;
         jmethodID mid = env->GetMethodID(d->m_jclass, "getClass", "()Ljava/lang/Class;");
@@ -934,12 +955,11 @@ QByteArray QJniObject::className() const
 */
 QJniObject QJniObject::callObjectMethod(const char *methodName, const char *signature, ...) const
 {
-    QJniEnvironment env;
-    jmethodID id = getCachedMethodID(env.jniEnv(), methodName, signature);
+    jmethodID id = getCachedMethodID(jniEnv(), methodName, signature);
     if (id) {
         va_list args;
         va_start(args, signature);
-        QJniObject res = getCleanJniObject(env->CallObjectMethodV(d->m_jobject, id, args));
+        QJniObject res = getCleanJniObject(jniEnv()->CallObjectMethodV(d->m_jobject, id, args), jniEnv());
         va_end(args);
         return res;
     }
@@ -972,7 +992,7 @@ QJniObject QJniObject::callStaticObjectMethod(const char *className, const char 
         if (id) {
             va_list args;
             va_start(args, signature);
-            QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args));
+            QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args), env.jniEnv());
             va_end(args);
             return res;
         }
@@ -990,13 +1010,13 @@ QJniObject QJniObject::callStaticObjectMethod(const char *className, const char 
 QJniObject QJniObject::callStaticObjectMethod(jclass clazz, const char *methodName,
                                               const char *signature, ...)
 {
-    QJniEnvironment env;
     if (clazz) {
+        QJniEnvironment env;
         jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true);
         if (id) {
             va_list args;
             va_start(args, signature);
-            QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args));
+            QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args), env.jniEnv());
             va_end(args);
             return res;
         }
@@ -1022,11 +1042,11 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, const char *methodNa
 */
 QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, ...)
 {
-    QJniEnvironment env;
     if (clazz && methodId) {
+        QJniEnvironment env;
         va_list args;
         va_start(args, methodId);
-        QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, methodId, args));
+        QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, methodId, args), env.jniEnv());
         va_end(args);
         return res;
     }
@@ -1171,7 +1191,7 @@ QJniObject QJniObject::getStaticObjectField(const char *className,
     if (!id)
         return QJniObject();
 
-    return getCleanJniObject(env->GetStaticObjectField(clazz, id));
+    return getCleanJniObject(env->GetStaticObjectField(clazz, id), env.jniEnv());
 }
 
 /*!
@@ -1194,7 +1214,7 @@ QJniObject QJniObject::getStaticObjectField(jclass clazz, const char *fieldName,
     if (!id)
         return QJniObject();
 
-    return getCleanJniObject(env->GetStaticObjectField(clazz, id));
+    return getCleanJniObject(env->GetStaticObjectField(clazz, id), env.jniEnv());
 }
 
 /*!
@@ -1233,12 +1253,11 @@ QJniObject QJniObject::getStaticObjectField(jclass clazz, const char *fieldName,
 */
 QJniObject QJniObject::getObjectField(const char *fieldName, const char *signature) const
 {
-    QJniEnvironment env;
-    jfieldID id = getCachedFieldID(env.jniEnv(), fieldName, signature);
+    jfieldID id = getCachedFieldID(jniEnv(), fieldName, signature);
     if (!id)
         return QJniObject();
 
-    return getCleanJniObject(env->GetObjectField(d->m_jobject, id));
+    return getCleanJniObject(jniEnv()->GetObjectField(d->m_jobject, id), jniEnv());
 }
 
 /*!
@@ -1291,7 +1310,7 @@ QJniObject QJniObject::fromString(const QString &string)
     QJniEnvironment env;
     jstring stringRef = env->NewString(reinterpret_cast<const jchar*>(string.constData()),
                                                                       string.length());
-    QJniObject stringObject = getCleanJniObject(stringRef);
+    QJniObject stringObject = getCleanJniObject(stringRef, env.jniEnv());
     stringObject.d->m_className = "java/lang/String";
     return stringObject;
 }
@@ -1316,10 +1335,9 @@ QString QJniObject::toString() const
         return QString();
 
     QJniObject string = callObjectMethod<jstring>("toString");
-    QJniEnvironment env;
-    const int strLength = env->GetStringLength(string.object<jstring>());
+    const int strLength = string.jniEnv()->GetStringLength(string.object<jstring>());
     QString res(strLength, Qt::Uninitialized);
-    env->GetStringRegion(string.object<jstring>(), 0, strLength, reinterpret_cast<jchar *>(res.data()));
+    string.jniEnv()->GetStringRegion(string.object<jstring>(), 0, strLength, reinterpret_cast<jchar *>(res.data()));
     return res;
 }
 
@@ -1377,13 +1395,17 @@ bool QJniObject::isValid() const
 QJniObject QJniObject::fromLocalRef(jobject lref)
 {
     QJniObject obj(lref);
-    QJniEnvironment()->DeleteLocalRef(lref);
+    obj.jniEnv()->DeleteLocalRef(lref);
     return obj;
 }
 
 bool QJniObject::isSameObject(jobject obj) const
 {
-    return QJniEnvironment()->IsSameObject(d->m_jobject, obj);
+    if (d->m_jobject == obj)
+        return true;
+    if (!d->m_jobject || !obj)
+        return false;
+    return jniEnv()->IsSameObject(d->m_jobject, obj);
 }
 
 bool QJniObject::isSameObject(const QJniObject &other) const
@@ -1398,7 +1420,7 @@ void QJniObject::assign(jobject obj)
 
     d = QSharedPointer<QJniObjectPrivate>::create();
     if (obj) {
-        QJniEnvironment env;
+        JNIEnv *env = d->jniEnv();
         d->m_jobject = env->NewGlobalRef(obj);
         jclass objectClass = env->GetObjectClass(obj);
         d->m_jclass = static_cast<jclass>(env->NewGlobalRef(objectClass));

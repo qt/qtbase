@@ -307,7 +307,7 @@ void tst_QJniObject::compareOperatorTests()
     QJniObject stringObject2 = QJniObject::fromString(str);
     QVERIFY(stringObject != stringObject2);
 
-    jstring jstrobj = 0;
+    jstring jstrobj = nullptr;
     QJniObject invalidStringObject;
     QVERIFY(invalidStringObject == jstrobj);
 
