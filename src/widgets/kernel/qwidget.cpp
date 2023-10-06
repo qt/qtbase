@@ -357,14 +357,14 @@ void QWidget::setAutoFillBackground(bool enabled)
             If not, it will be a child of \e parent, and be constrained by
             \e parent's geometry (unless you specify Qt::Window as window flag).
         \li  \c{Qt::WindowFlags f = { }} (where available) sets the window flags;
-            the default is suitable for almost all widgets, but to get, for
+            the default is suitable for most widgets, but to get, for
             example, a window without a window system frame, you must use
             special flags.
     \endlist
 
     QWidget has many member functions, but some of them have little direct
     functionality; for example, QWidget has a font property, but never uses
-    this itself. There are many subclasses which provide real functionality,
+    this itself. There are many subclasses that provide real functionality,
     such as QLabel, QPushButton, QListWidget, and QTabWidget.
 
 
@@ -372,7 +372,7 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     A widget without a parent widget is always an independent window (top-level
     widget). For these widgets, setWindowTitle() and setWindowIcon() set the
-    title bar and icon respectively.
+    title bar and icon, respectively.
 
     Non-window widgets are child widgets, displayed within their parent
     widgets. Most widgets in Qt are mainly useful as child widgets. For
@@ -385,7 +385,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     widgets in a layout provided by QGridLayout. The QLabel child widgets have
     been outlined to indicate their full sizes.
 
-    If you want to use a QWidget to hold child widgets you will usually want to
+    If you want to use a QWidget to hold child widgets, you will usually want to
     add a layout to the parent QWidget. See \l{Layout Management} for more
     information.
 
@@ -395,8 +395,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     When a widget is used as a container to group a number of child widgets, it
     is known as a composite widget. These can be created by constructing a
     widget with the required visual properties - a QFrame, for example - and
-    adding child widgets to it, usually managed by a layout. The above diagram
-    shows such a composite widget that was created using Qt Designer.
+    adding child widgets to it, usually managed by a layout.
 
     Composite widgets can also be created by subclassing a standard widget,
     such as QWidget or QFrame, and adding the necessary layout and child
@@ -416,7 +415,7 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     Each widget performs all painting operations from within its paintEvent()
     function. This is called whenever the widget needs to be redrawn, either
-    as a result of some external change or when requested by the application.
+    because of some external change or when requested by the application.
 
     The \l{widgets/analogclock}{Analog Clock example} shows how a simple widget
     can handle paint events.
@@ -428,7 +427,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     sizeHint() to provide a reasonable default size for the widget and to set
     the correct size policy with setSizePolicy().
 
-    By default, composite widgets which do not provide a size hint will be
+    By default, composite widgets that do not provide a size hint will be
     sized according to the space requirements of their child widgets.
 
     The size policy lets you supply good default behavior for the layout
@@ -448,9 +447,9 @@ void QWidget::setAutoFillBackground(bool enabled)
     delivers events to widgets by calling specific event handler functions with
     instances of QEvent subclasses containing information about each event.
 
-    If your widget only contains child widgets, you probably do not need to
+    If your widget only contains child widgets, you probably don't need to
     implement any event handlers. If you want to detect a mouse click in a
-    child widget call the child's underMouse() function inside the widget's
+    child widget, call the child's underMouse() function inside the widget's
     mousePressEvent().
 
     The \l{widgets/scribble}{Scribble example} implements a wider set of
@@ -529,7 +528,7 @@ void QWidget::setAutoFillBackground(bool enabled)
             space. (This excludes screen space owned by any of the widget's
             children.)
         \li  leaveEvent() is called when the mouse leaves the widget's screen
-            space. If the mouse enters a child widget it will not cause a
+            space. If the mouse enters a child widget, it will not cause a
             leaveEvent().
         \li  moveEvent() is called when the widget has been moved relative to
             its parent.
@@ -667,11 +666,11 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \section1 Transparency and Double Buffering
 
-    Since Qt 4.0, QWidget automatically double-buffers its painting, so there
+    QWidget automatically double-buffers its painting, so there
     is no need to write double-buffering code in paintEvent() to avoid
     flicker.
 
-    Since Qt 4.1, the contents of parent widgets are propagated by
+    The contents of parent widgets are propagated by
     default to each of their children as long as Qt::WA_PaintOnScreen is not
     set. Custom widgets can be written to take advantage of this feature by
     updating irregular regions (to create non-rectangular child widgets), or
@@ -688,7 +687,7 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \list
         \li  The left widget has no additional properties or widget attributes
-            set. This default state suits most custom widgets using
+            set. This default state suits most custom widgets that have
             transparency, are irregularly-shaped, or do not paint over their
             entire area with an opaque brush.
         \li  The center widget has the \l autoFillBackground property set. This
@@ -699,10 +698,7 @@ void QWidget::setAutoFillBackground(bool enabled)
             set. This indicates that the widget will paint over its entire area
             with opaque colors. The widget's area will initially be
             \e{uninitialized}, represented in the diagram with a red diagonal
-            grid pattern that shines through the overpainted area. The
-            Qt::WA_OpaquePaintArea attribute is useful for widgets that need to
-            paint their own specialized contents quickly and do not need a
-            default filled background.
+            grid pattern that shines through the overpainted area.
     \endlist
 
     To rapidly update custom widgets with simple background colors, such as
@@ -712,19 +708,18 @@ void QWidget::setAutoFillBackground(bool enabled)
     implement the necessary drawing functionality in the widget's paintEvent().
 
     To rapidly update custom widgets that constantly paint over their entire
-    areas with opaque content, e.g., video streaming widgets, it is better to
-    set the widget's Qt::WA_OpaquePaintEvent, avoiding any unnecessary overhead
-    associated with repainting the widget's background.
+    areas with opaque content, for example, video streaming widgets, it is
+    better to set the widget's Qt::WA_OpaquePaintEvent, avoiding any unnecessary
+    overhead associated with repainting the widget's background.
 
     If a widget has both the Qt::WA_OpaquePaintEvent widget attribute \e{and}
     the \l autoFillBackground property set, the Qt::WA_OpaquePaintEvent
     attribute takes precedence. Depending on your requirements, you should
     choose either one of them.
 
-    Since Qt 4.1, the contents of parent widgets are also propagated to
-    standard Qt widgets. This can lead to some unexpected results if the
-    parent widget is decorated in a non-standard way, as shown in the diagram
-    below.
+    The contents of parent widgets are also propagated to standard Qt widgets.
+    This can lead to some unexpected results if the parent widget is decorated
+    in a non-standard way, as shown in the diagram below.
 
     \image propagation-standard.png
 
@@ -736,8 +731,8 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \section1 Creating Translucent Windows
 
-    Since Qt 4.5, it has been possible to create windows with translucent regions
-    on window systems that support compositing.
+    You can create windows with translucent regions on window systems that
+    support compositing.
 
     To enable this feature in a top-level widget, set its Qt::WA_TranslucentBackground
     attribute with setAttribute() and ensure that its background is painted with
@@ -757,19 +752,19 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \section1 Native Widgets vs Alien Widgets
 
-    Introduced in Qt 4.4, alien widgets are widgets unknown to the windowing
-    system. They do not have a native window handle associated with them. This
-    feature significantly speeds up widget painting, resizing, and removes flicker.
+    Alien widgets are widgets unknown to the windowing system. They do not have
+    a native window handle associated with them. This feature significantly
+    speeds up widget painting, resizing, and removes flicker.
 
-    Should you require the old behavior with native windows, you can choose
-    one of the following options:
+    Should you require the old behavior with native windows, choose one of the
+    following options:
 
     \list 1
         \li  Use the \c{QT_USE_NATIVE_WINDOWS=1} in your environment.
         \li  Set the Qt::AA_NativeWindows attribute on your application. All
             widgets will be native widgets.
         \li  Set the Qt::WA_NativeWindow attribute on widgets: The widget itself
-            and all of its ancestors will become native (unless
+            and all its ancestors will become native (unless
             Qt::WA_DontCreateNativeAncestors is set).
         \li  Call QWidget::winId to enforce a native window (this implies 3).
         \li  Set the Qt::WA_PaintOnScreen attribute to enforce a native window
@@ -2931,7 +2926,7 @@ void QWidget::overrideWindowState(Qt::WindowStates newstate)
 
     \snippet code/src_gui_kernel_qwidget.cpp 0
 
-    In order to restore and activate a minimized window (while
+    To restore and activate a minimized window (while
     preserving its maximized and/or full-screen state), use the following:
 
     \snippet code/src_gui_kernel_qwidget.cpp 1
@@ -3007,7 +3002,7 @@ bool QWidget::isFullScreen() const
     ICCCM protocol that specifies the communication between X11
     clients and the window manager. ICCCM simply does not understand
     the concept of non-decorated full-screen windows. Therefore, the
-    best we can do is to request a borderless window and place and
+    best you can do is to request a borderless window and place and
     resize it to fill the entire screen. Depending on the window
     manager, this may or may not work. The borderless window is
     requested using MOTIF hints, which are at least partially
@@ -3015,7 +3010,7 @@ bool QWidget::isFullScreen() const
 
     An alternative would be to bypass the window manager entirely and
     create a window with the Qt::X11BypassWindowManagerHint flag. This
-    has other severe problems though, like totally broken keyboard focus
+    has other severe problems though, like broken keyboard focus
     and very strange effects on desktop changes or when the user raises
     other windows.
 
@@ -3115,7 +3110,7 @@ bool QWidget::isEnabledTo(const QWidget *ancestor) const
 /*!
     Appends the action \a action to this widget's list of actions.
 
-    All QWidgets have a list of \l{QAction}s, however they can be
+    All QWidgets have a list of \l{QAction}s. However, they can be
     represented graphically in many different ways. The default use of
     the QAction list (as returned by actions()) is to create a context
     QMenu.
@@ -3754,7 +3749,7 @@ QRegion QWidget::childrenRegion() const
     the current size is smaller.
 
     The minimum size set by this function will override the minimum size
-    defined by QLayout. In order to unset the minimum size, use a
+    defined by QLayout. To unset the minimum size, use a
     value of \c{QSize(0, 0)}.
 
     By default, this property contains a size with zero width and height.
@@ -4509,7 +4504,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     QWidget's palette propagation is similar to its font propagation.
 
     The current style, which is used to render the content of all standard Qt
-    widgets, is free to choose colors and brushes from the widget palette, or
+    widgets, is free to choose colors and brushes from the widget palette, or,
     in some cases, to ignore the palette (partially, or completely). In
     particular, certain styles like GTK style, Mac style, and Windows Vista
     style, depend on third party APIs to render the content of widgets,
@@ -6702,8 +6697,8 @@ void QWidgetPrivate::updateFocusChild()
     If the widget has active focus, a \l{focusOutEvent()}{focus out event} is sent to this widget to tell it that it has
     lost the focus.
 
-    This widget must enable focus setting in order to get the keyboard
-    input focus, i.e. it must call setFocusPolicy().
+    This widget must enable focus setting to get the keyboard
+    input focus; that is, it must call setFocusPolicy().
 
     \sa hasFocus(), setFocus(), focusInEvent(), focusOutEvent(),
     setFocusPolicy(), QApplication::focusWidget()
@@ -8680,7 +8675,7 @@ bool QWidgetPrivate::close()
     when the user minimizes the window, and a spontaneous show event
     when the window is restored again.
 
-    You almost never have to reimplement the setVisible() function. If
+    You seldom have to reimplement the setVisible() function. If
     you need to change some settings before a widget is shown, use
     showEvent() instead. If you need to do some delayed initialization
     use the Polish event delivered to the event() function.
@@ -9717,7 +9712,7 @@ void QWidget::keyReleaseEvent(QKeyEvent *event)
     is passed in the \a event parameter
 
     A widget normally must setFocusPolicy() to something other than
-    Qt::NoFocus in order to receive focus events. (Note that the
+    Qt::NoFocus to receive focus events. (Note that the
     application programmer can call setFocus() on any widget, even
     those that do not normally accept focus.)
 
@@ -9743,7 +9738,7 @@ void QWidget::focusInEvent(QFocusEvent *)
     passed in the \a event parameter.
 
     A widget normally must setFocusPolicy() to something other than
-    Qt::NoFocus in order to receive focus events. (Note that the
+    Qt::NoFocus to receive focus events. (Note that the
     application programmer can call setFocus() on any widget, even
     those that do not normally accept focus.)
 
@@ -10005,7 +10000,7 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
     is set, the input method may change its visual components to reflect
     that only numbers can be entered.
 
-    \warning Some widgets require certain flags in order to work as
+    \warning Some widgets require certain flags to work as
     intended. To set a flag, do \c{w->setInputMethodHints(w->inputMethodHints()|f)}
     instead of \c{w->setInputMethodHints(f)}.
 
@@ -11071,7 +11066,7 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
     unless updates are disabled or the widget is hidden.
 
     We suggest only using repaint() if you need an immediate repaint,
-    for example during animation. In almost all circumstances update()
+    for example during animation. In most circumstances update()
     is better, as it permits Qt to optimize for speed and minimize
     flicker.
 
@@ -12694,7 +12689,7 @@ static void releaseMouseGrabOfWidget(QWidget *widget)
     terminal. Use this function with extreme caution, and consider
     using the \c -nograb command line option while debugging.
 
-    It is almost never necessary to grab the mouse when using Qt, as
+    It is seldom necessary to grab the mouse when using Qt, as
     Qt grabs and releases it sensibly. In particular, Qt grabs the
     mouse when a mouse button is pressed and keeps it until the last
     button is released.
