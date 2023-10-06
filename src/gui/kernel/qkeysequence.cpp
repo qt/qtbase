@@ -1036,14 +1036,6 @@ Q_DECLARE_TYPEINFO(QModifKeyName, Q_RELOCATABLE_TYPE);
 Q_GLOBAL_STATIC(QList<QModifKeyName>, globalModifs)
 Q_GLOBAL_STATIC(QList<QModifKeyName>, globalPortableModifs)
 
-/*!
-  Constructs a single key from the string \a str.
-*/
-int QKeySequence::decodeString(const QString &str)
-{
-    return QKeySequencePrivate::decodeString(str, NativeText);
-}
-
 int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceFormat format)
 {
     Q_ASSERT(!accel.isEmpty());
@@ -1190,16 +1182,6 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
             return Qt::Key_unknown;
     }
     return ret;
-}
-
-/*!
-    Creates a shortcut string for \a key. For example,
-    Qt::CTRL+Qt::Key_O gives "Ctrl+O". The strings, "Ctrl", "Shift", etc. are
-    translated (using QObject::tr()) in the "QShortcut" context.
- */
-QString QKeySequence::encodeString(int key)
-{
-    return QKeySequencePrivate::encodeString(key, NativeText);
 }
 
 static inline void addKey(QString &str, const QString &theKey, QKeySequence::SequenceFormat format)

@@ -167,8 +167,6 @@ public:
 
     bool isDetached() const;
 private:
-    static int decodeString(const QString &ks);
-    static QString encodeString(int key);
     int assign(const QString &str);
     int assign(const QString &str, SequenceFormat format);
     void setKey(QKeyCombination key, int index);
