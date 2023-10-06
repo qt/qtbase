@@ -22,11 +22,10 @@ interfaces
     \image parent-child-widgets.png A parent widget containing various child widgets.
 
     The QWidget class provides the basic capability to render to the
-    screen, and to handle user input events. All UI elements that Qt
-    provides are either subclasses of QWidget, or are used in connection
-    with a QWidget subclass. Creating custom widgets is done by
-    subclassing QWidget or a suitable subclass and reimplementing the
-    virtual event handlers.
+    screen and to handle user input events. All UI elements that Qt
+    provides are either subclasses of QWidget or are used in connection
+    with a QWidget subclass. To create custom widgets, subclass QWidget or a
+    suitable subclass and reimplement the virtual event handlers.
 
     \list
     \li \l{Window and Dialog Widgets}
@@ -49,8 +48,9 @@ interfaces
     \li \image macos-tabwidget.png
     \endtable
 
-    \l{Qt Style Sheets} are a powerful mechanism that allows you to customize the
-    appearance of widgets, in addition to what is already possible by subclassing QStyle.
+    \l{Qt Style Sheets} are a powerful mechanism that lets you customize
+    the appearance of widgets, in addition to what is already possible by
+    subclassing QStyle.
 
 
     \section1 Layouts
