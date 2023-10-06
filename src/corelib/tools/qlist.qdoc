@@ -1539,7 +1539,7 @@
     \sa erase
 */
 
-/*! \fn template <typename T> QList<T>::assign(qsizetype n, parameter_type t)
+/*! \fn template <typename T> QList<T>& QList<T>::assign(qsizetype n, parameter_type t)
     \since 6.6
 
     Replaces the contents of this list with \a n copies of \a t.
@@ -1550,7 +1550,7 @@
     list or this list is shared.
 */
 
-/*! \fn template <typename T> template <typename InputIterator, if_input_iterator<InputIterator>> QList<T>::assign(InputIterator first, InputIterator last)
+/*! \fn template <typename T> template <typename InputIterator, if_input_iterator<InputIterator>> QList<T>& QList<T>::assign(InputIterator first, InputIterator last)
     \since 6.6
 
     Replaces the contents of this list with a copy of the elements in the
@@ -1570,7 +1570,7 @@
     *this.
 */
 
-/*! \fn template <typename T> QList<T>::assign(std::initializer_list<T> l)
+/*! \fn template <typename T> QList<T>& QList<T>::assign(std::initializer_list<T> l)
     \since 6.6
 
     Replaces the contents of this list with a copy of the elements of
