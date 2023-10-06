@@ -1982,7 +1982,7 @@ void QObject::killTimer(int id)
 
 
 /*!
-    \fn template<typename T> T *QObject::findChild(const QString &name, Qt::FindChildOptions options) const
+    \fn template<typename T> T *QObject::findChild(QAnyStringView name, Qt::FindChildOptions options) const
 
     Returns the child of this object that can be cast into type T and
     that is called \a name, or \nullptr if there is no such object.
@@ -2016,11 +2016,14 @@ void QObject::killTimer(int id)
 
     \snippet code/src_corelib_kernel_qobject.cpp 42
 
+    \note In Qt versions prior to 6.7, this function took \a name as
+    \c{QString}, not \c{QAnyStringView}.
+
     \sa findChildren()
 */
 
 /*!
-    \fn template<typename T> QList<T> QObject::findChildren(const QString &name, Qt::FindChildOptions options) const
+    \fn template<typename T> QList<T> QObject::findChildren(QAnyStringView name, Qt::FindChildOptions options) const
 
     Returns all children of this object with the given \a name that can be
     cast to type T, or an empty list if there are no such objects.
@@ -2041,6 +2044,9 @@ void QObject::killTimer(int id)
     This example returns all \c{QPushButton}s that are immediate children of \c{parentWidget}:
 
     \snippet code/src_corelib_kernel_qobject.cpp 43
+
+    \note In Qt versions prior to 6.7, this function took \a name as
+    \c{QString}, not \c{QAnyStringView}.
 
     \sa findChild()
 */
@@ -2103,46 +2109,26 @@ void QObject::killTimer(int id)
     \sa QObject::findChildren()
 */
 
-static void qt_qFindChildren_with_name(const QObject *parent, const QString &name,
-                                       const QMetaObject &mo, QList<void *> *list,
-                                       Qt::FindChildOptions options)
+static bool matches_objectName_non_null(QObject *obj, QAnyStringView name)
 {
-    Q_ASSERT(parent);
-    Q_ASSERT(list);
-    Q_ASSERT(!name.isNull());
-    for (QObject *obj : parent->children()) {
-        if (mo.cast(obj) && obj->objectName() == name)
-            list->append(obj);
-        if (options & Qt::FindChildrenRecursively)
-            qt_qFindChildren_with_name(obj, name, mo, list, options);
-    }
+    if (auto ext = QObjectPrivate::get(obj)->extraData)
+        return ext ->objectName.valueBypassingBindings() == name;
+    return name.isEmpty();
 }
 
 /*!
     \internal
 */
-void qt_qFindChildren_helper(const QObject *parent, const QString &name,
+void qt_qFindChildren_helper(const QObject *parent, QAnyStringView name,
                              const QMetaObject &mo, QList<void*> *list, Qt::FindChildOptions options)
 {
-    if (name.isNull())
-        return qt_qFindChildren_helper(parent, mo, list, options);
-    else
-        return qt_qFindChildren_with_name(parent, name, mo, list, options);
-}
-
-/*!
-    \internal
-*/
-void qt_qFindChildren_helper(const QObject *parent, const QMetaObject &mo,
-                             QList<void*> *list, Qt::FindChildOptions options)
-{
     Q_ASSERT(parent);
     Q_ASSERT(list);
     for (QObject *obj : parent->children()) {
-        if (mo.cast(obj))
+        if (mo.cast(obj) && (name.isNull() || matches_objectName_non_null(obj, name)))
             list->append(obj);
         if (options & Qt::FindChildrenRecursively)
-            qt_qFindChildren_helper(obj, mo, list, options);
+            qt_qFindChildren_helper(obj, name, mo, list, options);
     }
 }
 
@@ -2169,13 +2155,13 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re
 
 /*!
     \internal
- */
-QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options)
+*/
+QObject *qt_qFindChild_helper(const QObject *parent, QAnyStringView name, const QMetaObject &mo, Qt::FindChildOptions options)
 {
     Q_ASSERT(parent);
     for (QObject *obj : parent->children()) {
-        if (mo.cast(obj) && (name.isNull() || obj->objectName() == name))
-            return obj;
+        if (mo.cast(obj) && (name.isNull() || matches_objectName_non_null(obj, name)))
+           return obj;
     }
     if (options & Qt::FindChildrenRecursively) {
         for (QObject *child : parent->children()) {

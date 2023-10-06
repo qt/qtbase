@@ -43,13 +43,22 @@ struct QDynamicMetaObjectData;
 
 typedef QList<QObject*> QObjectList;
 
+#if QT_CORE_REMOVED_SINCE(6, 7)
 Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString &name,
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
+#endif
+Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, QAnyStringView name,
+                                           const QMetaObject &mo, QList<void *> *list,
+                                           Qt::FindChildOptions options);
 Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QMetaObject &mo,
                                            QList<void *> *list, Qt::FindChildOptions options);
 Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re,
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
+#if QT_CORE_REMOVED_SINCE(6, 7)
 Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
+#endif
+Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, QAnyStringView name,
+                                            const QMetaObject &mo, Qt::FindChildOptions options);
 
 class Q_CORE_EXPORT QObjectData
 {
@@ -131,14 +140,14 @@ public:
     void killTimer(int id);
 
     template<typename T>
-    inline T findChild(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+    T findChild(QAnyStringView aName = {}, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
         return static_cast<T>(qt_qFindChild_helper(this, aName, ObjType::staticMetaObject, options));
     }
 
     template<typename T>
-    inline QList<T> findChildren(const QString &aName, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+    QList<T> findChildren(QAnyStringView aName, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
         QList<T> list;
@@ -150,11 +159,7 @@ public:
     template<typename T>
     QList<T> findChildren(Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
-        typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
-        QList<T> list;
-        qt_qFindChildren_helper(this, ObjType::staticMetaObject,
-                                reinterpret_cast<QList<void *> *>(&list), options);
-        return list;
+        return findChildren<T>(QAnyStringView{}, options);
     }
 
 #if QT_CONFIG(regularexpression)

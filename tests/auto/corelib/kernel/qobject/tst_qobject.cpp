@@ -39,6 +39,8 @@
 
 #include <math.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_QObject : public QObject
 {
     Q_OBJECT
@@ -520,6 +522,10 @@ void tst_QObject::findChildren()
     QTimer t1(&o);
     QTimer t121(&o12);
     QTimer emptyname(&o);
+    QObject oo;
+    QObject o21(&oo);
+    QObject o22(&oo);
+    QObject o23(&oo);
 
     Q_SET_OBJECT_NAME(o);
     Q_SET_OBJECT_NAME(o1);
@@ -530,6 +536,13 @@ void tst_QObject::findChildren()
     Q_SET_OBJECT_NAME(t1);
     Q_SET_OBJECT_NAME(t121);
     emptyname.setObjectName("");
+    Q_SET_OBJECT_NAME(oo);
+    const QUtf8StringView utf8_name = u8"utf8 ⁎ obj";
+    o21.setObjectName(utf8_name);
+    const QStringView utf16_name = u"utf16 ⁎ obj";
+    o22.setObjectName(utf16_name);
+    constexpr QLatin1StringView L1_name("L1 ⁎ obj");
+    o23.setObjectName(L1_name);
 
     QObject *op = nullptr;
 
@@ -559,6 +572,27 @@ void tst_QObject::findChildren()
     QCOMPARE(op, static_cast<QObject *>(0));
     op = o.findChild<QObject*>("o1");
     QCOMPARE(op, &o1);
+
+    op = oo.findChild<QObject*>(utf8_name);
+    QCOMPARE(op, &o21);
+    op = oo.findChild<QObject*>(utf8_name.chopped(1));
+    QCOMPARE(op, nullptr);
+    const QUtf8StringView utf8_name_with_trailing_data = u8"utf8 ⁎ obj_data";
+    op = oo.findChild<QObject*>(utf8_name_with_trailing_data.chopped(5));
+    QCOMPARE(op, &o21);
+    op = oo.findChild<QObject*>(utf16_name);
+    QCOMPARE(op, &o22);
+    op = oo.findChild<QObject*>(utf16_name.chopped(1));
+    QCOMPARE(op, nullptr);
+    const QStringView utf16_name_with_trailing_data = u"utf16 ⁎ obj_data";
+    op = oo.findChild<QObject*>(utf16_name_with_trailing_data.chopped(5));
+    QCOMPARE(op, &o22);
+    op = oo.findChild<QObject*>(L1_name);
+    QCOMPARE(op, &o23);
+    op = oo.findChild<QObject*>(L1_name.chopped(1));
+    QCOMPARE(op, nullptr);
+    op = oo.findChild<QObject*>((L1_name + "_data"_L1).chopped(5));
+    QCOMPARE(op, &o23);
 
     QList<QObject*> l;
     QList<QTimer*> tl;

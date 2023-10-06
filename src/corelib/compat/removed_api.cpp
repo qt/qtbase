@@ -773,6 +773,20 @@ QString QLocale::bcp47Name() const
     return bcp47Name(TagSeparator::Dash);
 }
 
+#include "qobject.h"
+
+void qt_qFindChildren_helper(const QObject *parent, const QString &name, const QMetaObject &mo,
+                             QList<void*> *list, Qt::FindChildOptions options)
+{
+    qt_qFindChildren_helper(parent, QAnyStringView{name}, mo, list, options);
+}
+
+QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo,
+                              Qt::FindChildOptions options)
+{
+    return qt_qFindChild_helper(parent, QAnyStringView{name}, mo, options);
+}
+
 #include "qobjectdefs.h"
 
 int QMetaObject::indexOfEnumerator(const char *name) const
