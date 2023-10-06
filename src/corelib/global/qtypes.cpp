@@ -513,11 +513,14 @@ static_assert(sizeof(qint128) == 16, "Internal error, qint128 is misdefined");
 #endif
 
 #ifdef QT_SUPPORTS_INT128
-// check that numeric_limits works:
-// This fails here for GCC 9, but succeeds on Clang and GCC >= 11
-// However, all tests in tst_qglobal::int128Literals() pass for GCC 9, too,
-// so just suppress the check for older GCC:
-#  if !defined(Q_CC_GNU_ONLY) || Q_CC_GNU >= 1100
+// Standard Library supports for 128-bit integers:
+//  Implementation      | Version | Note
+// ---------------------|---------|------
+//  GNU libstdc++       | 11.1.0  |
+//  LLVM libc++         | 3.5     | May change if compiler has __is_integral()
+//  MS STL              | none    |
+
+#  if defined(_LIBCPP_VERSION) || (defined(_GLIBCXX_RELEASE) && _GLIBCXX_RELEASE >= 11)
 static_assert(std::numeric_limits<quint128>::max() == Q_UINT128_MAX);
 #  endif
 #endif
