@@ -1203,10 +1203,10 @@ QString QKeySequencePrivate::encodeString(QKeyCombination keyCombination, QKeySe
     bool nativeText = (format == QKeySequence::NativeText);
     QString s;
 
-    int key = keyCombination.toCombined();
+    const auto key = keyCombination.key();
 
     // Handle -1 (Invalid Key) and Qt::Key_unknown gracefully
-    if (key == -1 || key == Qt::Key_unknown)
+    if (keyCombination.toCombined() == -1 || key == Qt::Key_unknown)
         return s;
 
     const auto modifiers = keyCombination.keyboardModifiers();
@@ -1253,7 +1253,7 @@ QString QKeySequencePrivate::encodeString(QKeyCombination keyCombination, QKeySe
     if (modifiers & Qt::KeypadModifier)
         addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Num") : QString::fromLatin1("Num"), format);
 
-    QString keyName = QKeySequencePrivate::keyName(keyCombination.key(), format);
+    QString keyName = QKeySequencePrivate::keyName(key, format);
 
 #if defined(Q_OS_APPLE)
     if (nativeText)
