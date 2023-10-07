@@ -250,6 +250,10 @@ function(qt_internal_set_exceptions_flags target exceptions_on)
         if(MSVC)
             set(_flag "/EHsc")
             if((MSVC_VERSION GREATER_EQUAL 1929) AND NOT CLANG)
+                # Use the undocumented compiler flag to make our binary smaller on x64.
+                # https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/
+                # NOTE: It seems we'll use this new exception handling model unconditionally without
+                # this hack since some unknown MSVC version.
                 set(_flag ${_flag} "/d2FH4")
             endif()
         endif()
