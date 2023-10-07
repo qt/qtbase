@@ -256,7 +256,7 @@ if(WASM AND QT_FEATURE_sse2)
 endif()
 
 # Taken from mkspecs/common/msvc-version.conf and mkspecs/common/msvc-desktop.conf
-if (MSVC)
+if (MSVC AND NOT CLANG)
     if (MSVC_VERSION GREATER_EQUAL 1799)
         target_compile_options(PlatformCommonInternal INTERFACE
             -FS
@@ -267,20 +267,16 @@ if (MSVC)
     if (MSVC_VERSION GREATER_EQUAL 1899)
         target_compile_options(PlatformCommonInternal INTERFACE
             -Zc:strictStrings
+            -Zc:throwingNew
         )
-        if (NOT CLANG)
-            target_compile_options(PlatformCommonInternal INTERFACE
-                -Zc:throwingNew
-            )
-        endif()
     endif()
-    if (MSVC_VERSION GREATER_EQUAL 1909 AND NOT CLANG) # MSVC 2017
+    if (MSVC_VERSION GREATER_EQUAL 1909) # MSVC 2017
         target_compile_options(PlatformCommonInternal INTERFACE
             -Zc:referenceBinding
             -Zc:ternary
         )
     endif()
-    if (MSVC_VERSION GREATER_EQUAL 1919 AND NOT CLANG) # MSVC 2019
+    if (MSVC_VERSION GREATER_EQUAL 1919) # MSVC 2019
         target_compile_options(PlatformCommonInternal INTERFACE
             -Zc:externConstexpr
             #-Zc:lambda # Buggy. TODO: Enable again when stable enough.
