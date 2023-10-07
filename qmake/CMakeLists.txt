@@ -125,12 +125,6 @@ qt_internal_extend_target(${target_name} CONDITION WIN32
         _SCL_SECURE_NO_WARNINGS
 )
 
-qt_internal_extend_target(${target_name} CONDITION CLANG AND WIN32
-    COMPILE_OPTIONS
-        "-fms-compatibility-version=19.00.23506"
-        "-Wno-microsoft-enum-value"
-)
-
 set_target_properties(${target_name} PROPERTIES
     AUTOMOC OFF
     AUTORCC OFF
