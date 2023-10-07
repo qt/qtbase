@@ -8,18 +8,16 @@
 # property checked below, and is equivalent to qmake's CONFIG += warn_off.
 
 set(_qt_compiler_warning_flags_on "")
-set(_qt_compiler_warning_flags_off "")
+set(_qt_compiler_warning_flags_off -w)
 
 if (MSVC)
     list(APPEND _qt_compiler_warning_flags_on /W3)
-    list(APPEND _qt_compiler_warning_flags_off -W0)
 else()
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GHS") # There is no -Wextra flag for GHS compiler.
         list(APPEND _qt_compiler_warning_flags_on -Wall)
     else()
         list(APPEND _qt_compiler_warning_flags_on -Wall -Wextra)
     endif()
-    list(APPEND _qt_compiler_warning_flags_off -w)
 endif()
 
 set(_qt_compiler_warning_flags_condition
