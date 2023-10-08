@@ -45,7 +45,9 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/quuid.h>
 #include <QtCore/private/qwinregistry_p.h>
-#include <QtCore/private/qfactorycacheregistration_p.h>
+#if QT_CONFIG(cpp_winrt)
+#  include <QtCore/private/qfactorycacheregistration_p.h>
+#endif
 #include <QtCore/private/qsystemerror_p.h>
 
 #include <QtGui/private/qwindowsguieventdispatcher_p.h>

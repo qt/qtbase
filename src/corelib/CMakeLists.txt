@@ -1013,7 +1013,7 @@ qt_internal_extend_target(Core CONDITION ANDROID
         # place to put them.
 )
 
-qt_internal_extend_target(Core CONDITION WIN32
+qt_internal_extend_target(Core CONDITION QT_FEATURE_cpp_winrt
     SOURCES
         platform/windows/qfactorycacheregistration_p.h
         platform/windows/qfactorycacheregistration.cpp
