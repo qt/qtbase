@@ -54,7 +54,7 @@ qt_internal_add_module(Widgets
     DEFINES
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_USING_NAMESPACE
-        QT_NO_FOREACH # mostly...
+        QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         dialogs
     LIBRARIES
@@ -472,8 +472,6 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_mdiarea
     SOURCES
         widgets/qmdiarea.cpp widgets/qmdiarea.h widgets/qmdiarea_p.h
         widgets/qmdisubwindow.cpp widgets/qmdisubwindow.h widgets/qmdisubwindow_p.h
-    NO_PCH_SOURCES
-        widgets/qmdiarea.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_menu
@@ -730,8 +728,6 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_itemviews
         itemviews/qitemeditorfactory.cpp itemviews/qitemeditorfactory.h itemviews/qitemeditorfactory_p.h
         itemviews/qstyleditemdelegate.cpp itemviews/qstyleditemdelegate.h
         itemviews/qwidgetitemdata_p.h
-    NO_PCH_SOURCES
-        itemviews/qabstractitemview.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_columnview
@@ -758,8 +754,6 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_listwidget
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tableview
     SOURCES
         itemviews/qtableview.cpp itemviews/qtableview.h itemviews/qtableview_p.h
-    NO_PCH_SOURCES
-        itemviews/qtableview.cpp # undef QT_NO_FOREACH
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tablewidget
