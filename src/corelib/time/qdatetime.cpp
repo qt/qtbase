@@ -297,7 +297,7 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
 {
     *valid = false;
 
-    const int size = offsetString.size();
+    const qsizetype size = offsetString.size();
     if (size < 2 || size > 6)
         return 0;
 
@@ -2308,7 +2308,7 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     // TextDate restricts fractional parts to the seconds field.
 
     QStringView tail;
-    const int dot = string.indexOf(u'.'), comma = string.indexOf(u',');
+    const qsizetype dot = string.indexOf(u'.'), comma = string.indexOf(u',');
     if (dot != -1) {
         tail = string.sliced(dot + 1);
         if (tail.indexOf(u'.') != -1) // Forbid second dot:
@@ -2328,7 +2328,7 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     Q_ASSERT(frac.ok() ^ tail.isEmpty());
     double fraction = frac.ok() ? frac.result * std::pow(0.1, tail.size()) : 0.0;
 
-    const int size = string.size();
+    const qsizetype size = string.size();
     if (size < 2 || size > 8)
         return QTime();
 
