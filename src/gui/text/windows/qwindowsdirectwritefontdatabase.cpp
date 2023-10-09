@@ -153,7 +153,7 @@ void QWindowsDirectWriteFontDatabase::populateFamily(const QString &familyName)
                             UINT32 tableSize;
                             void *tableContext = nullptr;
                             BOOL exists;
-                            HRESULT hr = face->TryGetFontTable(qbswap<quint32>(MAKE_TAG('O','S','/','2')),
+                            HRESULT hr = face->TryGetFontTable(qFromBigEndian(QFont::Tag("OS/2").value()),
                                                                &tableData,
                                                                &tableSize,
                                                                &tableContext,

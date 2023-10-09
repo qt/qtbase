@@ -192,17 +192,6 @@ static inline QFontDatabase::WritingSystem writingSystemFromCharSet(uchar charSe
     return QFontDatabase::Any;
 }
 
-#ifdef MAKE_TAG
-#undef MAKE_TAG
-#endif
-// GetFontData expects the tags in little endian ;(
-#define MAKE_TAG(ch1, ch2, ch3, ch4) (\
-    (((quint32)(ch4)) << 24) | \
-    (((quint32)(ch3)) << 16) | \
-    (((quint32)(ch2)) << 8) | \
-    ((quint32)(ch1)) \
-    )
-
 bool qt_localizedName(const QString &name)
 {
     const QChar *c = name.unicode();
@@ -380,7 +369,7 @@ QString qt_getEnglishName(const QString &familyName, bool includeStyle)
 
     HGDIOBJ oldobj = SelectObject( hdc, hfont );
 
-    const DWORD name_tag = MAKE_TAG( 'n', 'a', 'm', 'e' );
+    const DWORD name_tag = qFromBigEndian(QFont::Tag("name").value());
 
     // get the name table
     unsigned char *table = 0;
@@ -429,7 +418,7 @@ QFontNames qt_getCanonicalFontNames(const LOGFONT &lf)
 
     // get the name table
     QByteArray table;
-    const DWORD name_tag = MAKE_TAG('n', 'a', 'm', 'e');
+    const DWORD name_tag = qFromBigEndian(QFont::Tag("name").value());
     DWORD bytes = GetFontData(hdc, name_tag, 0, 0, 0);
     if (bytes != GDI_ERROR) {
         table.resize(bytes);
@@ -882,11 +871,11 @@ static QList<quint32> getTrueTypeFontOffsets(const uchar *fontData, const uchar 
     }
 
     const quint32 headerTag = qFromUnaligned<quint32>(fontData);
-    if (headerTag != MAKE_TAG('t', 't', 'c', 'f')) {
-        if (headerTag != MAKE_TAG(0, 1, 0, 0)
-            && headerTag != MAKE_TAG('O', 'T', 'T', 'O')
-            && headerTag != MAKE_TAG('t', 'r', 'u', 'e')
-            && headerTag != MAKE_TAG('t', 'y', 'p', '1')) {
+    if (headerTag != qFromBigEndian(QFont::Tag("ttcf").value())) {
+        if (headerTag != qFromBigEndian(QFont::Tag("\0\1\0\0").value())
+            && headerTag != qFromBigEndian(QFont::Tag("OTTO").value())
+            && headerTag != qFromBigEndian(QFont::Tag("true").value())
+            && headerTag != qFromBigEndian(QFont::Tag("typ1").value())) {
             return offsets;
         }
         offsets << 0;
@@ -959,7 +948,9 @@ static void getFamiliesAndSignatures(const QByteArray &fontData,
         const uchar *font = data + offsets.at(i);
         const uchar *table;
         quint32 length;
-        getFontTable(data, dataEndSentinel, font, MAKE_TAG('n', 'a', 'm', 'e'), &table, &length);
+        getFontTable(data, dataEndSentinel, font,
+                     qFromBigEndian(QFont::Tag("name").value()),
+                     &table, &length);
         if (!table)
             continue;
         QFontNames names = qt_getCanonicalFontNames(table, length);
@@ -968,8 +959,11 @@ static void getFamiliesAndSignatures(const QByteArray &fontData,
 
         families->append(std::move(names));
 
-        if (values || signatures)
-            getFontTable(data, dataEndSentinel, font, MAKE_TAG('O', 'S', '/', '2'), &table, &length);
+        if (values || signatures) {
+            getFontTable(data, dataEndSentinel, font,
+                         qFromBigEndian(QFont::Tag("OS/2").value()),
+                         &table, &length);
+        }
 
         if (values) {
             QFontValues fontValues;
