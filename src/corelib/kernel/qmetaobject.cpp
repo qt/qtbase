@@ -3992,8 +3992,11 @@ bool QMetaProperty::isBindable() const
 
     \snippet code/src_corelib_kernel_qmetaobject.cpp 5
 
-    This mechanism is free for you to use in your Qt applications. Qt
-    doesn't use it for any of its classes.
+    This mechanism is free for you to use in your Qt applications.
+
+    \note It's also used by the \l[ActiveQt]{Active Qt},
+    \l[QtDBus]{Qt D-Bus}, \l[QtQml]{Qt QML}, and \l{Qt Remote Objects}
+    modules. Some keys might be set when using these modules.
 
     \sa QMetaObject
 */
