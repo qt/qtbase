@@ -510,6 +510,12 @@ void tst_QObject::qobject_castTemplate()
     QVERIFY(!::qobject_cast<ReceiverObject*>(o.data()));
 }
 
+class DerivedObj : public QObject {
+    Q_OBJECT
+public:
+    using QObject::QObject;
+};
+
 void tst_QObject::findChildren()
 {
     QObject o;
@@ -769,7 +775,20 @@ void tst_QObject::findChildren()
     l = o.findChildren<QObject*>(QRegularExpression("^harry$"), Qt::FindDirectChildrenOnly);
     QCOMPARE(l.size(), 0);
 
+    DerivedObj dr1(&o111);
+    DerivedObj dr2(&o111);
+    Q_SET_OBJECT_NAME(dr1);
+    Q_SET_OBJECT_NAME(dr2);
+
     // empty and null string check
+    op = o.findChild<QObject*>(Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, &o1);
+    op = o.findChild<QTimer*>(Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, &t1);
+    op = o.findChild<DerivedObj*>(Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, nullptr);
+    op = o.findChild<DerivedObj*>(Qt::FindChildrenRecursively);
+    QCOMPARE(op, &dr1);
     op = o.findChild<QObject*>(QString(), Qt::FindDirectChildrenOnly);
     QCOMPARE(op, &o1);
     op = o.findChild<QObject*>("", Qt::FindDirectChildrenOnly);

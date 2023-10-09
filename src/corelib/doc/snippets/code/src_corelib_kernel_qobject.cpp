@@ -366,7 +366,7 @@ QPushButton *button = parentWidget->findChild<QPushButton *>("button1", Qt::Find
 
 
 //! [42]
-QListWidget *list = parentWidget->findChild<QListWidget *>(QString(), Qt::FindDirectChildrenOnly);
+QListWidget *list = parentWidget->findChild<QListWidget *>(Qt::FindDirectChildrenOnly);
 //! [42]
 
 

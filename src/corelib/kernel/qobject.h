@@ -140,7 +140,7 @@ public:
     void killTimer(int id);
 
     template<typename T>
-    T findChild(QAnyStringView aName = {}, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+    T findChild(QAnyStringView aName, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
         return static_cast<T>(qt_qFindChild_helper(this, aName, ObjType::staticMetaObject, options));
@@ -154,6 +154,12 @@ public:
         qt_qFindChildren_helper(this, aName, ObjType::staticMetaObject,
                                 reinterpret_cast<QList<void *> *>(&list), options);
         return list;
+    }
+
+    template<typename T>
+    T findChild(Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+    {
+        return findChild<T>({}, options);
     }
 
     template<typename T>

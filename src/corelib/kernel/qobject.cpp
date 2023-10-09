@@ -2023,6 +2023,24 @@ void QObject::killTimer(int id)
 */
 
 /*!
+    \fn template<typename T> T *QObject::findChild(Qt::FindChildOptions options) const
+    \overload
+    \since 6.7
+
+    Returns the child of this object that can be cast into type T, or
+    \nullptr if there is no such object.
+    The search is performed recursively, unless \a options specifies the
+    option FindDirectChildrenOnly.
+
+    If there is more than one child matching the search, the most-direct ancestor
+    is returned. If there are several most-direct ancestors, the first child in
+    children() will be returned. In that case, it's better to use findChildren()
+    to get the complete list of all children.
+
+    \sa findChildren()
+*/
+
+/*!
     \fn template<typename T> QList<T> QObject::findChildren(QAnyStringView name, Qt::FindChildOptions options) const
 
     Returns all children of this object with the given \a name that can be
