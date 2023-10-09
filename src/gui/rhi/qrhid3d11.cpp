@@ -291,21 +291,24 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             return false;
         }
 
+        const bool supports11_1 = SUCCEEDED(ctx->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void **>(&context)));
+        ctx->Release();
+        if (!supports11_1) {
+            qWarning("ID3D11DeviceContext1 not supported");
+            return false;
+        }
+
         // Test if creating a Shader Model 5.0 vertex shader works; we want to
         // fail already in create() if that's not the case.
         ID3D11VertexShader *testShader = nullptr;
         if (SUCCEEDED(dev->CreateVertexShader(g_testVertexShader, sizeof(g_testVertexShader), nullptr, &testShader))) {
             testShader->Release();
         } else {
-            qWarning("D3D11 smoke test failed (failed to create vertex shader)");
-            ctx->Release();
-            return false;
-        }
-
-        const bool supports11_1 = SUCCEEDED(ctx->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void **>(&context)));
-        ctx->Release();
-        if (!supports11_1) {
-            qWarning("ID3D11DeviceContext1 not supported");
+            static const char *msg = "D3D11 smoke test: Failed to create vertex shader";
+            if (flags.testFlag(QRhi::SuppressSmokeTestWarnings))
+                qCDebug(QRHI_LOG_INFO, "%s", msg);
+            else
+                qWarning("%s", msg);
             return false;
         }
 
@@ -315,11 +318,19 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             // still not support this D3D_FEATURE_LEVEL_11_1 feature. (e.g.
             // because it only does 11_0)
             if (!features.ConstantBufferOffsetting) {
-                qWarning("Constant buffer offsetting is not supported by the driver");
+                static const char *msg = "D3D11 smoke test: Constant buffer offsetting is not supported by the driver";
+                if (flags.testFlag(QRhi::SuppressSmokeTestWarnings))
+                    qCDebug(QRHI_LOG_INFO, "%s", msg);
+                else
+                    qWarning("%s", msg);
                 return false;
             }
         } else {
-            qWarning("Failed to query D3D11_FEATURE_D3D11_OPTIONS");
+            static const char *msg = "D3D11 smoke test: Failed to query D3D11_FEATURE_D3D11_OPTIONS";
+            if (flags.testFlag(QRhi::SuppressSmokeTestWarnings))
+                qCDebug(QRHI_LOG_INFO, "%s", msg);
+            else
+                qWarning("%s", msg);
             return false;
         }
     } else {

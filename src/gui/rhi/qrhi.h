@@ -1787,7 +1787,8 @@ public:
         EnableDebugMarkers = 1 << 0,
         PreferSoftwareRenderer = 1 << 1,
         EnablePipelineCacheDataSave = 1 << 2,
-        EnableTimestamps = 1 << 3
+        EnableTimestamps = 1 << 3,
+        SuppressSmokeTestWarnings = 1 << 4
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

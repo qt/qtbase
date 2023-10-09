@@ -665,6 +665,17 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     mechanisms for shader/program binaries provided by Qt. Writing to those may
     get disabled whenever this flag is set since storing program binaries to
     multiple caches is not sensible.
+
+    \value SuppressSmokeTestWarnings Indicates that, with backends where this
+    is relevant, certain, non-fatal QRhi::create() failures should not
+    produce qWarning() calls. For example, with D3D11, passing this flag
+    makes a number of warning messages (that appear due to QRhi::create()
+    failing) to become categorized debug prints instead under the commonly used
+    \c{qt.rhi.general} logging category. This can be used by engines, such as
+    Qt Quick, that feature fallback logic, i.e. they retry calling create()
+    with a different set of flags (such as, \l PreferSoftwareRenderer), in order
+    to hide the unconditional warnings from the output that would be printed
+    when the first create() attempt had failed.
  */
 
 /*!
