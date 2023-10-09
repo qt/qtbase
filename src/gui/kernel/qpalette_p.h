@@ -19,7 +19,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QPalettePrivate
+class Q_GUI_EXPORT QPalettePrivate
 {
 public:
     class Data : public QSharedData {
