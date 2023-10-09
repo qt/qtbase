@@ -531,6 +531,8 @@ void QGtk3Storage::createMapping()
     ADD(Normal, Base);
     ADD(Inactive, Base);
     ADD(Inactive, Window);
+    ADD(Disabled, Button);
+    ADD(Disabled, Window);
     LIGHTER(Normal, Window, 125);
     ADD(Normal, Light);
     LIGHTER(Normal, Window, 70);
@@ -543,6 +545,7 @@ void QGtk3Storage::createMapping()
     ADD(Disabled, Text);
     ADD(Disabled, WindowText);
     ADD(Inactive, ButtonText);
+    ADD(Disabled, ButtonText);
     GTK(button, Text, NORMAL);
     ADD(Disabled, ButtonText);
     // special background colors
