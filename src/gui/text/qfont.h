@@ -4,6 +4,7 @@
 #ifndef QFONT_H
 #define QFONT_H
 
+#include <QtCore/qendian.h>
 #include <QtCore/qshareddata.h>
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qwindowdefs.h>
@@ -208,13 +209,68 @@ public:
     HintingPreference hintingPreference() const;
 
     // Note: The following set of APIs are preliminary and may change in future releases
-    void setFeature(const char *feature, quint32 value);
-    void setFeature(quint32 tag, quint32 value);
-    void unsetFeature(quint32 tag);
-    void unsetFeature(const char *feature);
-    quint32 featureValue(quint32 tag) const;
-    bool isFeatureSet(quint32 tag) const;
-    QList<quint32> featureTags() const;
+
+    struct Tag
+    {
+        constexpr Tag() = default;
+
+        template <size_t N>
+        constexpr Q_IMPLICIT Tag(const char (&str)[N]) noexcept
+            :  m_value((quint32(str[0]) << 24) | (quint32(str[1]) << 16)
+                     | (quint32(str[2]) << 8) | quint32(str[3]))
+        {
+            static_assert(N == 5, "The tag name must be exactly 4 characters long!");
+        }
+
+        friend inline bool operator==(Tag lhs, Tag rhs) noexcept
+        { return lhs.m_value == rhs.m_value; }
+        friend inline bool operator!=(Tag lhs, Tag rhs) noexcept
+        { return lhs.m_value != rhs.m_value; }
+        friend inline bool operator<(Tag lhs, Tag rhs) noexcept
+        { return lhs.m_value < rhs.m_value; }
+        constexpr bool isValid() const noexcept { return m_value != 0; }
+        constexpr quint32 value() const noexcept { return m_value; }
+
+        QByteArray toString() const
+        {
+            const char data[] = {
+                char((m_value & 0xff000000) >> 24),
+                char((m_value & 0x00ff0000) >> 16),
+                char((m_value & 0x0000ff00) >> 8),
+                char((m_value & 0x000000ff)),
+                0 };
+            return QByteArray(data);
+        }
+
+        static constexpr std::optional<Tag> fromValue(quint32 value) noexcept
+        {
+            Tag maybeTag;
+            maybeTag.m_value = value;
+            return maybeTag.isValid() ? std::optional<Tag>(maybeTag) : std::nullopt;
+        }
+        Q_GUI_EXPORT static std::optional<Tag> fromString(QAnyStringView view) noexcept;
+
+#ifndef QT_NO_DATASTREAM
+        friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, Tag);
+        friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, Tag &);
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+        friend Q_GUI_EXPORT QDebug operator<<(QDebug debug, Tag tag);
+#endif
+
+        friend constexpr size_t qHash(Tag key, size_t seed = 0) noexcept
+        { return qHash(key.value(), seed); }
+
+    private:
+        quint32 m_value = 0;
+    };
+
+    void setFeature(Tag tag, quint32 value);
+    void unsetFeature(Tag tag);
+    quint32 featureValue(Tag tag) const;
+    bool isFeatureSet(Tag tag) const;
+    QList<Tag> featureTags() const;
     void clearFeatures();
 
     static QByteArray tagToString(quint32 tag);

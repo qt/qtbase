@@ -22,6 +22,8 @@
 #include <qlist.h>
 #include <QtTest/private/qemulationdetector_p.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_QFont : public QObject
 {
 Q_OBJECT
@@ -846,34 +848,55 @@ void tst_QFont::setFamiliesAndFamily()
 
 void tst_QFont::featureAccessors()
 {
+    const QFont::Tag abcdTag("abcd");
+    QCOMPARE(abcdTag.toString(), "abcd");
+    QVERIFY(abcdTag.isValid());
+
     QFont font;
     QVERIFY(font.featureTags().isEmpty());
     font.setFeature("abcd", 0xc0ffee);
 
-    quint32 abcdTag = QFont::stringToTag("abcd");
-    quint32 bcdeTag = QFont::stringToTag("bcde");
     QVERIFY(font.isFeatureSet(abcdTag));
-    QVERIFY(!font.isFeatureSet(bcdeTag));
+    QVERIFY(!font.isFeatureSet("bcde"));
     QCOMPARE(font.featureTags().size(), 1);
     QCOMPARE(font.featureTags().first(), abcdTag);
-    QCOMPARE(QFont::tagToString(font.featureTags().first()), QByteArray("abcd"));
+    QCOMPARE(font.featureTags().first(), "abcd");
     QCOMPARE(font.featureValue(abcdTag), 0xc0ffeeU);
-    QCOMPARE(font.featureValue(bcdeTag), 0U);
+    QCOMPARE(font.featureValue("bcde"), 0U);
     font.setFeature(abcdTag, 0xf00d);
     QCOMPARE(font.featureTags().size(), 1);
     QCOMPARE(font.featureValue(abcdTag), 0xf00dU);
-    font.setFeature("abcde", 0xcaca0);
-    QVERIFY(!font.isFeatureSet(QFont::stringToTag("abcde")));
+
+    QFont::Tag invalidTag;
+    QVERIFY(!invalidTag.isValid());
+    font.setFeature(invalidTag, 0xcaca0);
+    QVERIFY(!font.isFeatureSet(invalidTag));
     QCOMPARE(font.featureTags().size(), 1);
     QFont font2 = font;
 
     font.unsetFeature("abcd");
-    QVERIFY(!font.isFeatureSet(QFont::stringToTag("abcd")));
+    QVERIFY(!font.isFeatureSet("abcd"));
     QVERIFY(font.featureTags().isEmpty());
 
-    QVERIFY(font2.isFeatureSet(QFont::stringToTag("abcd")));
+    QVERIFY(font2.isFeatureSet("abcd"));
     font2.clearFeatures();
     QVERIFY(font.featureTags().isEmpty());
+
+    // various constructor compile tests
+    QFont::Tag tag;
+    tag = QFont::Tag("1234");
+    QVERIFY(QFont::Tag::fromString(QByteArray("abcd")));
+    QVERIFY(QFont::Tag::fromString(u"frac"_s));
+
+    // named constructors with invalid input
+    QTest::ignoreMessage(QtWarningMsg, "The tag name must be exactly 4 characters long!");
+    QVERIFY(!QFont::Tag::fromString(u"fraction"_s));
+    QVERIFY(!QFont::Tag::fromValue(0));
+    QVERIFY(QFont::Tag::fromValue(abcdTag.value()));
+
+    enum Features {
+        Frac = QFont::Tag("frac").value()
+    };
 }
 
 QTEST_MAIN(tst_QFont)

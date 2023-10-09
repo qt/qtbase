@@ -348,12 +348,12 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
         features = other->features;
 }
 
-void QFontPrivate::setFeature(quint32 tag, quint32 value)
+void QFontPrivate::setFeature(QFont::Tag tag, quint32 value)
 {
     features.insert(tag, value);
 }
 
-void QFontPrivate::unsetFeature(quint32 tag)
+void QFontPrivate::unsetFeature(QFont::Tag tag)
 {
     features.remove(tag);
 }
@@ -2231,20 +2231,153 @@ void QFont::cacheStatistics()
 }
 
 /*!
+    \class QFont::Tag
+    \brief The QFont::Tag type provides access to advanced font features.
+    \since 6.7
+    \inmodule QtGui
+
+    QFont provides access to advanced features when shaping text. A feature is defined
+    by a tag, which can be represented as a four-character string, or as a 32bit integer
+    value. This type represents such a tag in a type-safe way. It can be constructed from
+    a four-character, 8bit string literal, or from a corresponding 32bit integer value.
+    Using a shorter or longer string literal will result in a compile-time error.
+
+    \code
+    QFont font;
+    // Correct
+    font.setFeature("frac");
+
+    // Wrong - won't compile
+    font.setFeature("fraction");
+
+    // Wrong - will produce runtime warning and fail
+    font.setFeature(u"fraction"_s);
+    \endcode
+
+    The named constructors allow to create a tag from an 32bit integer or string value,
+    and will return a \c std::nullopt when the input is invalid.
+
+    \sa QFont::setFeature(), QFont::featureTags()
+*/
+
+/*!
+    \fn QFont::Tag::Tag()
+
+    Default constructor, producing an invalid tag.
+*/
+
+/*!
+    \fn template <size_t N> QFont::Tag::Tag(const char (&str)[N]) noexcept
+
+    Constructs a tag from a string literal, \a str. The literal must be exactly four
+    characters long.
+
+    \code
+    font.setFeature("frac", 1);
+    \endcode
+
+    \sa fromString(), fromValue()
+*/
+
+/*!
+    \fn bool QFont::Tag::operator==(QFont::Tag::Tag lhs, QFont::Tag::Tag rhs) noexcept
+    \fn bool QFont::Tag::operator!=(QFont::Tag::Tag lhs, QFont::Tag::Tag rhs) noexcept
+    \fn bool QFont::Tag::operator<(QFont::Tag::Tag lhs, QFont::Tag::Tag rhs) noexcept
+
+    Compare \a lhs with \a rhs for equality and ordering.
+*/
+
+/*!
+    \fn size_t QFont::Tag::qHash(QFont::Tag key, size_t seed) noexcept
+
+    Returns the hash value for \a key, using \a seed to seed the calculation.
+*/
+
+/*!
+    \fn quint32 QFont::Tag::value() const noexcept
+
+    Returns the numerical value of this tag.
+
+    \sa isValid(), fromValue()
+*/
+
+/*!
+    \fn bool QFont::Tag::isValid() const noexcept
+
+    Returns whether the tag is valid. A tag is valid if its value is not zero.
+
+    \sa value(), fromValue(), fromString()
+*/
+
+/*!
+    \fn QByteArray QFont::Tag::toString() const noexcept
+
+    Returns the string representation of this tag as a byte array.
+
+    \sa fromString()
+*/
+
+/*!
+    \fn std::optional<QFont::Tag> QFont::Tag::fromValue(quint32 value) noexcept
+
+    Returns a tag constructed from \a value, or \c std::nullopt if the tag produced
+    would be invalid.
+
+    \sa isValid()
+*/
+
+/*!
+    Returns a tag constructed from the string in \a view. The string must be exactly
+    four characters long.
+
+    Returns \c std::nullopt if the input is not four characters long, or if the tag
+    produced would be invalid.
+
+    \sa isValid(), fromValue()
+*/
+std::optional<QFont::Tag> QFont::Tag::fromString(QAnyStringView view) noexcept
+{
+    if (view.size() != 4) {
+        qWarning("The tag name must be exactly 4 characters long!");
+        return std::nullopt;
+    }
+    const QFont::Tag maybeTag = view.visit([](auto view) {
+        using CharType = decltype(view.at(0));
+        if constexpr (std::is_same_v<CharType, char>) {
+            const char bytes[5] = { view.at(0), view.at(1), view.at(2), view.at(3), 0 };
+            return Tag(bytes);
+        } else {
+            const char bytes[5] = { view.at(0).toLatin1(), view.at(1).toLatin1(),
+                                    view.at(2).toLatin1(), view.at(3).toLatin1(), 0 };
+            return Tag(bytes);
+        }
+    });
+    return maybeTag.isValid() ? std::optional<Tag>(maybeTag) : std::nullopt;
+}
+
+/*!
+    \fn QDataStream &operator<<(QDataStream &, QFont::Tag)
+    \fn QDataStream &operator>>(QDataStream &, QFont::Tag &)
+    \relates QFont::Tag
+
+    Data stream operators for QFont::Tag.
+*/
+
+/*!
     \since 6.6
     \overload
     \preliminary
 
-    Applies an integer value to a specific typographical feature when shaping the text. This
-    provides advanced access to the font shaping process, and can be used to support font features
-    that are otherwise not covered in the API.
+    Applies an integer value to the typographical feature specified by \a tag when shaping the
+    text. This provides advanced access to the font shaping process, and can be used to support
+    font features that are otherwise not covered in the API.
 
-    A feature is defined by a 32-bit \a tag (encoded from the four-character name of the table by
-    using the stringToTag() function), as well as an integer value.
+    The feature is specified by a \l{QFont::Tag}{tag}, which is typically encoded from the
+    four-character feature name in the font feature map.
 
     This integer \a value passed along with the tag in most cases represents a boolean value: A zero
     value means the feature is disabled, and a non-zero value means it is enabled. For certain
-    font features, however, it may have other intepretations. For example, when applied to the
+    font features, however, it may have other interpretations. For example, when applied to the
     \c salt feature, the value is an index that specifies the stylistic alternative to use.
 
     For example, the \c frac font feature will convert diagonal fractions separated with a slash
@@ -2252,7 +2385,7 @@ void QFont::cacheStatistics()
     fraction into a single character width (such as \c ½).
 
     If a font supports the \c frac feature, then it can be enabled in the shaper by setting
-    \c{features[stringToTag("frac")] = 1} in the font feature map.
+    \c{features["frac"] = 1} in the font feature map.
 
     \note By default, Qt will enable and disable certain font features based on other font
     properties. In particular, the \c kern feature will be enabled/disabled depending on the
@@ -2265,34 +2398,15 @@ void QFont::cacheStatistics()
     kerning property is set to false. Similarly, if it is set to 0, then it will always be disabled.
     To reset a font feature to its default behavior, you can unset it using unsetFeature().
 
-    \sa clearFeatures(), setFeature(), unsetFeature(), featureTags(), stringToTag()
+    \sa QFont::Tag, clearFeatures(), setFeature(), unsetFeature(), featureTags()
 */
-void QFont::setFeature(quint32 tag, quint32 value)
+void QFont::setFeature(Tag tag, quint32 value)
 {
-    if (tag != 0) {
+    if (tag.isValid()) {
         d->detachButKeepEngineData(this);
         d->setFeature(tag, value);
         resolve_mask |= QFont::FeaturesResolved;
     }
-}
-
-/*!
-    \since 6.6
-    \overload
-    \preliminary
-
-    Sets the \a value of a specific \a feature. This is an advanced feature which can be used to
-    enable or disable specific OpenType features if they are available in the font.
-
-    See \l setFeature(quint32, quint32) for more details on font features.
-
-    \note This is equivalent to calling setFeature(stringToTag(feature), value).
-
-    \sa clearFeatures(), unsetFeature(), featureTags(), featureValue(), stringToTag()
-*/
-void QFont::setFeature(const char *feature, quint32 value)
-{
-    setFeature(stringToTag(feature), value);
 }
 
 /*!
@@ -2307,40 +2421,17 @@ void QFont::setFeature(const char *feature, quint32 value)
 
     Unsetting an existing feature on the QFont reverts behavior to the default.
 
-    See \l setFeature(quint32, quint32) for more details on font features.
+    See \l setFeature() for more details on font features.
 
-    \sa clearFeatures(), setFeature(), featureTags(), featureValue(), stringToTag()
+    \sa QFont::Tag, clearFeatures(), setFeature(), featureTags(), featureValue()
 */
-void QFont::unsetFeature(quint32 tag)
+void QFont::unsetFeature(Tag tag)
 {
-    if (tag != 0) {
+    if (tag.isValid()) {
         d->detachButKeepEngineData(this);
         d->unsetFeature(tag);
         resolve_mask |= QFont::FeaturesResolved;
     }
-}
-
-/*!
-    \since 6.6
-    \overload
-    \preliminary
-
-    Unsets the \a feature from the map of explicitly enabled/disabled features.
-
-    \note Even if the feature has not previously been added, this will mark the font features map
-    as modified in this QFont, so that it will take precedence when resolving against other fonts.
-
-    Unsetting an existing feature on the QFont reverts behavior to the default.
-
-    See \l setFeature(quint32, quint32) for more details on font features.
-
-    \note This is equivalent to calling unsetFeature(stringToTag(feature)).
-
-    \sa clearFeatures(), setFeature(), featureTags(), featureValue(), stringToTag()
-*/
-void QFont::unsetFeature(const char *feature)
-{
-    unsetFeature(stringToTag(feature));
 }
 
 /*!
@@ -2349,11 +2440,11 @@ void QFont::unsetFeature(const char *feature)
 
    Returns a list of tags for all font features currently set on this QFont.
 
-   See \l setFeature(quint32, quint32) for more details on font features.
+   See \l{QFont::}{setFeature()} for more details on font features.
 
-   \sa setFeature(), unsetFeature(), isFeatureSet(), clearFeatures(), tagToString()
+   \sa QFont::Tag, setFeature(), unsetFeature(), isFeatureSet(), clearFeatures()
 */
-QList<quint32> QFont::featureTags() const
+QList<QFont::Tag> QFont::featureTags() const
 {
     return d->features.keys();
 }
@@ -2365,11 +2456,11 @@ QList<quint32> QFont::featureTags() const
    Returns the value set for a specific feature \a tag. If the tag has not been set, 0 will be
    returned instead.
 
-   See \l setFeature(quint32, quint32) for more details on font features.
+   See \l{QFont::}{setFeature()} for more details on font features.
 
-   \sa setFeature(), unsetFeature(), featureTags(), isFeatureSet(), stringToTag()
+   \sa QFont::Tag, setFeature(), unsetFeature(), featureTags(), isFeatureSet()
 */
-quint32 QFont::featureValue(quint32 tag) const
+quint32 QFont::featureValue(Tag tag) const
 {
     return d->features.value(tag);
 }
@@ -2381,11 +2472,11 @@ quint32 QFont::featureValue(quint32 tag) const
    Returns true if a value for the feature given by \a tag has been set on the QFont, otherwise
    returns false.
 
-   See \l setFeature(quint32, quint32) for more details on font features.
+   See \l{QFont::}{setFeature()} for more details on font features.
 
-   \sa setFeature(), unsetFeature(), featureTags(), featureValue(), stringToTag()
+   \sa QFont::Tag, setFeature(), unsetFeature(), featureTags(), featureValue()
 */
-bool QFont::isFeatureSet(quint32 tag) const
+bool QFont::isFeatureSet(Tag tag) const
 {
     return d->features.contains(tag);
 }
@@ -2396,9 +2487,9 @@ bool QFont::isFeatureSet(quint32 tag) const
 
    Clears any previously set features on the QFont.
 
-   See \l setFeature(quint32, quint32) for more details on font features.
+   See \l{QFont::}{setFeature()} for more details on font features.
 
-   \sa setFeature(), unsetFeature(), featureTags(), featureValue()
+   \sa QFont::Tag, setFeature(), unsetFeature(), featureTags(), featureValue()
 */
 void QFont::clearFeatures()
 {
@@ -2407,13 +2498,13 @@ void QFont::clearFeatures()
 
 /*!
     \since 6.6
-    \preliminary
+    \internal
 
     Returns the decoded name for \a tag as defined in the OpenType font specification. The tag
     is decoded into four 8 bit characters. For valid tags, each will be in the basic Latin range of
     0x20 to 0x7E.
 
-    \sa setFeature(), unsetFeature(), featureTags(), featureValue(), stringToTag()
+    \sa setFeature(), unsetFeature(), featureTags(), featureValue()
 */
 QByteArray QFont::tagToString(quint32 tag)
 {
@@ -2427,7 +2518,7 @@ QByteArray QFont::tagToString(quint32 tag)
 
 /*!
     \since 6.6
-    \preliminary
+    \internal
 
     Returns the encoded tag for \a name as defined in the OpenType font specification. The name
     must be a null-terminated string of four characters exactly, and in order to be a valid tag,
@@ -2436,7 +2527,7 @@ QByteArray QFont::tagToString(quint32 tag)
     The function returns 0 for strings of the wrong length, but does not otherwise check the input
     for validity.
 
-    \sa setFeature(), unsetFeature(), featureTags(), featureValue(), tagToString()
+    \sa setFeature(), unsetFeature(), featureTags(), featureValue()
 */
 quint32 QFont::stringToTag(const char *name)
 {
@@ -2704,6 +2795,23 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     }
 
     return s;
+}
+
+QDataStream &operator<<(QDataStream &stream, QFont::Tag tag)
+{
+    stream << tag.value();
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QFont::Tag &tag)
+{
+    quint32 value;
+    stream >> value;
+    if (const auto maybeTag = QFont::Tag::fromValue(value))
+        tag = *maybeTag;
+    else
+        stream.setStatus(QDataStream::ReadCorruptData);
+    return stream;
 }
 
 #endif // QT_NO_DATASTREAM
@@ -3550,6 +3658,13 @@ QDebug operator<<(QDebug stream, const QFont &font)
     stream << fontDescription << ')';
 
     return stream;
+}
+
+QDebug operator<<(QDebug debug, QFont::Tag tag)
+{
+    QDebugStateSaver saver(debug);
+    debug.noquote() << tag.toString();
+    return debug;
 }
 #endif
 

@@ -1399,7 +1399,7 @@ void QTextEngine::shapeText(int item) const
     bool kerningEnabled;
     bool letterSpacingIsAbsolute;
     bool shapingEnabled = false;
-    QHash<quint32, quint32> features;
+    QHash<QFont::Tag, quint32> features;
     QFixed letterSpacing, wordSpacing;
 #ifndef QT_NO_RAWFONT
     if (useRawFont) {
@@ -1600,7 +1600,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                                          const QList<uint> &itemBoundaries,
                                          bool kerningEnabled,
                                          bool hasLetterSpacing,
-                                         const QHash<quint32, quint32> &fontFeatures) const
+                                         const QHash<QFont::Tag, quint32> &fontFeatures) const
 {
     uint glyphs_shaped = 0;
 
@@ -1655,19 +1655,19 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
 
             bool dontLigate = hasLetterSpacing && !scriptRequiresOpenType;
 
-            QHash<quint32, quint32> features;
-            features.insert(HB_TAG('k','e','r','n'), !!kerningEnabled);
+            QHash<QFont::Tag, quint32> features;
+            features.insert(QFont::Tag("kern"), !!kerningEnabled);
             if (dontLigate) {
-                features.insert(HB_TAG('l','i','g','a'), false);
-                features.insert(HB_TAG('c','l','i','g'), false);
-                features.insert(HB_TAG('d','l','i','g'), false);
-                features.insert(HB_TAG('h','l','i','g'), false);
+                features.insert(QFont::Tag("liga"), false);
+                features.insert(QFont::Tag("clig"), false);
+                features.insert(QFont::Tag("dlig"), false);
+                features.insert(QFont::Tag("hlig"), false);
             }
             features.insert(fontFeatures);
 
             QVarLengthArray<hb_feature_t, 16> featureArray;
             for (auto it = features.constBegin(); it != features.constEnd(); ++it) {
-                featureArray.append({ it.key(),
+                featureArray.append({ it.key().value(),
                                       it.value(),
                                       HB_FEATURE_GLOBAL_START,
                                       HB_FEATURE_GLOBAL_END });
