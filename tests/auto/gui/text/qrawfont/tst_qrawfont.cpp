@@ -398,13 +398,13 @@ void tst_QRawFont::textLayout()
 
 void tst_QRawFont::fontTable_data()
 {
-    QTest::addColumn<QByteArray>("tagName");
+    QTest::addColumn<QFont::Tag>("tag");
     QTest::addColumn<QFont::HintingPreference>("hintingPreference");
     QTest::addColumn<int>("offset");
     QTest::addColumn<quint32>("expectedValue");
 
     QTest::newRow("Head table, magic number, default hinting")
-            << QByteArray("head")
+            << QFont::Tag("head")
             << QFont::PreferDefaultHinting
             << 12
             << (QSysInfo::ByteOrder == QSysInfo::BigEndian
@@ -412,7 +412,7 @@ void tst_QRawFont::fontTable_data()
                 : 0xF53C0F5F);
 
     QTest::newRow("Head table, magic number, no hinting")
-            << QByteArray("head")
+            << QFont::Tag("head")
             << QFont::PreferNoHinting
             << 12
             << (QSysInfo::ByteOrder == QSysInfo::BigEndian
@@ -420,7 +420,7 @@ void tst_QRawFont::fontTable_data()
                 : 0xF53C0F5F);
 
     QTest::newRow("Head table, magic number, vertical hinting")
-            << QByteArray("head")
+            << QFont::Tag("head")
             << QFont::PreferVerticalHinting
             << 12
             << (QSysInfo::ByteOrder == QSysInfo::BigEndian
@@ -428,7 +428,7 @@ void tst_QRawFont::fontTable_data()
                 : 0xF53C0F5F);
 
     QTest::newRow("Head table, magic number, full hinting")
-            << QByteArray("head")
+            << QFont::Tag("head")
             << QFont::PreferFullHinting
             << 12
             << (QSysInfo::ByteOrder == QSysInfo::BigEndian
@@ -438,7 +438,7 @@ void tst_QRawFont::fontTable_data()
 
 void tst_QRawFont::fontTable()
 {
-    QFETCH(QByteArray, tagName);
+    QFETCH(QFont::Tag, tag);
     QFETCH(QFont::HintingPreference, hintingPreference);
     QFETCH(int, offset);
     QFETCH(quint32, expectedValue);
@@ -446,11 +446,13 @@ void tst_QRawFont::fontTable()
     QRawFont font(testFont, 10, hintingPreference);
     QVERIFY(font.isValid());
 
-    QByteArray table = font.fontTable(tagName);
+    QByteArray table = font.fontTable(tag);
     QVERIFY(!table.isEmpty());
 
     const quint32 *value = reinterpret_cast<const quint32 *>(table.constData() + offset);
     QCOMPARE(*value, expectedValue);
+
+    QCOMPARE(font.fontTable(tag.toString()), table);
 }
 
 typedef QList<QFontDatabase::WritingSystem> WritingSystemList;

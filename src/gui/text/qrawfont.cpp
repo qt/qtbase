@@ -632,19 +632,33 @@ QFont::HintingPreference QRawFont::hintingPreference() const
 }
 
 /*!
-   Retrieves the sfnt table named \a tagName from the underlying physical font, or an empty
-   byte array if no such table was found. The returned font table's byte order is Big Endian, like
-   the sfnt format specifies. The \a tagName must be four characters long and should be formatted
-   in the default endianness of the current platform.
+    \fn QByteArray QRawFont::fontTable(const char *tag) const
+    \overload fontTable(QFont::Tag)
+
+    The name must be a four-character string.
 */
-QByteArray QRawFont::fontTable(const char *tagName) const
+
+/*!
+    \fn QByteArray QRawFont::fontTable(QFont::Tag tag) const
+    \since 6.7
+
+    Retrieves the sfnt table specified by \a tag from the underlying physical font,
+    or an empty byte array if no such table was found. The returned font table's byte order is
+    Big Endian, like the sfnt format specifies.
+*/
+QByteArray QRawFont::fontTable(const char *tag) const
+{
+    if (auto maybeTag = QFont::Tag::fromString(tag))
+        return fontTable(*maybeTag);
+    return QByteArray();
+}
+
+QByteArray QRawFont::fontTable(QFont::Tag tag) const
 {
     if (!d->isValid())
         return QByteArray();
 
-    if (auto maybeTag = QFont::Tag::fromString(tagName))
-        return d->fontEngine->getSfntTable(maybeTag->value());
-    return {};
+    return d->fontEngine->getSfntTable(tag.value());
 }
 
 /*!

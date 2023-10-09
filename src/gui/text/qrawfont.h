@@ -105,6 +105,7 @@ public:
     QList<QFontDatabase::WritingSystem> supportedWritingSystems() const;
 
     QByteArray fontTable(const char *tagName) const;
+    QByteArray fontTable(QFont::Tag tag) const;
 
     static QRawFont fromFont(const QFont &font,
                              QFontDatabase::WritingSystem writingSystem = QFontDatabase::Any);
