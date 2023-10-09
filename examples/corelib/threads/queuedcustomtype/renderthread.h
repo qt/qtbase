@@ -7,7 +7,8 @@
 #include <QImage>
 #include <QMutex>
 #include <QThread>
-#include "block.h"
+
+class Block;
 
 //! [RenderThread class definition]
 class RenderThread : public QThread
@@ -19,12 +20,10 @@ public:
     ~RenderThread();
 
     void processImage(const QImage &image);
+    void stopProcess();
 
 signals:
     void sendBlock(const Block &block);
-
-public slots:
-    void stopProcess();
 
 protected:
     void run();

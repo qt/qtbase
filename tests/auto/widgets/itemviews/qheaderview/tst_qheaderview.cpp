@@ -227,6 +227,7 @@ private slots:
     void statusTips();
     void testRemovingColumnsViaLayoutChanged();
     void testModelMovingColumns();
+    void testModelMovingRows();
 
 protected:
     void setupTestData(bool use_reset_model = false);
@@ -305,6 +306,12 @@ public:
         beginRemoveRows(QModelIndex(), 0, rows - 1);
         rows = 0;
         endRemoveRows();
+    }
+
+    void moveRow(int from, int to)
+    {
+        beginMoveRows(QModelIndex(), from, from, QModelIndex(), to);
+        endMoveRows();
     }
 
     void removeOneColumn(int col)
@@ -3644,10 +3651,33 @@ void tst_QHeaderView::testModelMovingColumns()
     hv.setModel(&model);
     hv.resizeSections(QHeaderView::ResizeToContents);
     hv.show();
+    hv.hideSection(3);
+    QVERIFY(!hv.isSectionHidden(1));
+    QVERIFY(hv.isSectionHidden(3));
 
     QPersistentModelIndex index3 = model.index(0, 3);
     model.moveColumn(3, 1);
     QCOMPARE(index3.column(), 1);
+    QVERIFY(hv.isSectionHidden(1));
+    QVERIFY(!hv.isSectionHidden(3));
+}
+
+void tst_QHeaderView::testModelMovingRows()
+{
+    QtTestModel model(10, 10);
+    QHeaderView hv(Qt::Vertical);
+    hv.setModel(&model);
+    hv.resizeSections(QHeaderView::ResizeToContents);
+    hv.show();
+    hv.hideSection(3);
+    QVERIFY(!hv.isSectionHidden(1));
+    QVERIFY(hv.isSectionHidden(3));
+
+    QPersistentModelIndex index3 = model.index(3, 0);
+    model.moveRow(3, 1);
+    QCOMPARE(index3.row(), 1);
+    QVERIFY(hv.isSectionHidden(1));
+    QVERIFY(!hv.isSectionHidden(3));
 }
 
 QTEST_MAIN(tst_QHeaderView)

@@ -1,11 +1,16 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QApplication>
-#include <QPainter>
-#include <QTime>
 #include "block.h"
 #include "window.h"
+
+#include <QApplication>
+#include <QBrush>
+#include <QImage>
+#include <QPainter>
+#include <QPen>
+#include <QPointF>
+#include <QRect>
 
 QImage createImage(int width, int height)
 {
@@ -43,8 +48,8 @@ QImage createImage(int width, int height)
 
     int x = 0;
     int y = 0;
-    int starWidth = image.width()/3;
-    int starHeight = image.height()/3;
+    const int starWidth = image.width()/3;
+    const int starHeight = image.height()/3;
 
     QRect rect(x, y, starWidth, starHeight);
 

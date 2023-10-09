@@ -17,6 +17,9 @@ public:
     QPlatformCursor *cursor() const override;
 
     void waitForFlip() override;
+private:
+    uint32_t m_default_fb_handle;
+    uint32_t m_default_fb_id;
 };
 
 QT_END_NAMESPACE

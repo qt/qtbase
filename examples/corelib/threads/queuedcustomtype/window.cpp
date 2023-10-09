@@ -1,8 +1,17 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#include "block.h"
+#include "renderthread.h"
 #include "window.h"
-#include <QtWidgets>
+
+#include <QFileDialog>
+#include <QGuiApplication>
+#include <QHBoxLayout>
+#include <QImageReader>
+#include <QPainter>
+#include <QScreen>
+#include <QVBoxLayout>
 
 //! [Window constructor start]
 Window::Window(QWidget *parent)
@@ -51,13 +60,13 @@ void Window::loadImage()
         if (format.toLower() == format)
             formats.append(QLatin1String("*.") + QString::fromLatin1(format));
 
-    QString newPath = QFileDialog::getOpenFileName(this, tr("Open Image"),
+    const QString newPath = QFileDialog::getOpenFileName(this, tr("Open Image"),
         path, tr("Image files (%1)").arg(formats.join(' ')));
 
     if (newPath.isEmpty())
         return;
 
-    QImage image(newPath);
+    const QImage image(newPath);
     if (!image.isNull()) {
         loadImage(image);
         path = newPath;
@@ -67,7 +76,7 @@ void Window::loadImage()
 void Window::loadImage(const QImage &image)
 {
     QImage useImage;
-    QRect space = QGuiApplication::primaryScreen()->availableGeometry();
+    const QRect space = QGuiApplication::primaryScreen()->availableGeometry();
     if (image.width() > 0.75*space.width() || image.height() > 0.75*space.height())
         useImage = image.scaled(0.75*space.width(), 0.75*space.height(),
                                 Qt::KeepAspectRatio, Qt::SmoothTransformation);

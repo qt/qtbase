@@ -326,11 +326,20 @@ public:
             EVP_MD_free(md);
         }
     };
+    struct OSSL_PROVIDER_deleter {
+        void operator()(OSSL_PROVIDER *provider) const noexcept {
+            OSSL_PROVIDER_unload(provider);
+        }
+    };
+
     using EVP_MD_CTX_ptr = std::unique_ptr<EVP_MD_CTX, EVP_MD_CTX_deleter>;
     using EVP_MD_ptr = std::unique_ptr<EVP_MD, EVP_MD_deleter>;
+    using OSSL_PROVIDER_ptr = std::unique_ptr<OSSL_PROVIDER, OSSL_PROVIDER_deleter>;
     struct EVP {
         EVP_MD_ptr algorithm;
         EVP_MD_CTX_ptr context;
+        OSSL_PROVIDER_ptr defaultProvider;
+        OSSL_PROVIDER_ptr legacyProvider;
         bool initializationFailed;
 
         explicit EVP(QCryptographicHash::Algorithm method);
@@ -583,9 +592,10 @@ QCryptographicHashPrivate::EVP::EVP(QCryptographicHash::Algorithm method)
          * We need to load the legacy provider in order to have the MD4
          * algorithm available.
          */
-        if (!OSSL_PROVIDER_load(nullptr, "legacy"))
-            return;
-        if (!OSSL_PROVIDER_load(nullptr, "default"))
+        legacyProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "legacy"));
+        defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "default"));
+
+        if (!legacyProvider || !defaultProvider)
             return;
     }
 
@@ -1163,8 +1173,8 @@ bool QCryptographicHashPrivate::supportsAlgorithm(QCryptographicHash::Algorithm 
     if (useNonOpenSSLFallback(method))
         return true;
 
-    OSSL_PROVIDER_load(nullptr, "legacy");
-    OSSL_PROVIDER_load(nullptr, "default");
+    auto legacyProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "legacy"));
+    auto defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "default"));
 
     const char *restriction = "-fips";
     EVP_MD_ptr algorithm = EVP_MD_ptr(EVP_MD_fetch(nullptr, methodToName(method), restriction));

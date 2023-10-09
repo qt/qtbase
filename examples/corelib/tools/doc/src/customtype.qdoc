@@ -104,7 +104,7 @@
 
     To register a custom type for use with queued signals and slots, such as
     those used in cross-thread communication, see the
-    \l{Queued Custom Type Example}.
+    \l{Queued Custom Type} example.
 
     More information on using custom types with Qt can be found in the
     \l{Creating Custom Qt Types} document.
