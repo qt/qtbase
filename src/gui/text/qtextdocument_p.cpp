@@ -1305,14 +1305,10 @@ void QTextDocumentPrivate::adjustDocumentChangesAndCursors(int from, int addedOr
 QString QTextDocumentPrivate::plainText() const
 {
     QString result;
-    result.resize(length());
-    const QChar *text_unicode = text.unicode();
-    QChar *data = result.data();
-    for (QTextDocumentPrivate::FragmentIterator it = begin(); it != end(); ++it) {
-        const QTextFragmentData *f = *it;
-        ::memcpy(data, text_unicode + f->stringPosition, f->size_array[0] * sizeof(QChar));
-        data += f->size_array[0];
-    }
+    result.reserve(length());
+    const auto view = QStringView(text);
+    for (auto f : *this)
+        result += view.sliced(f->stringPosition, f->size_array[0]);
     // remove trailing block separator
     result.chop(1);
     return result;
