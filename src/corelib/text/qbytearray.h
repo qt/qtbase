@@ -167,7 +167,7 @@ public:
     [[nodiscard]] QByteArray last(qsizetype n) const &
     { verify(0, n); return sliced(size() - n, n); }
     [[nodiscard]] QByteArray sliced(qsizetype pos) const &
-    { verify(pos, 0); return QByteArray(data() + pos, size() - pos); }
+    { verify(pos, 0); return sliced(pos, size() - pos); }
     [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) const &
     { verify(pos, n); return QByteArray(d.data() + pos, n); }
     [[nodiscard]] QByteArray chopped(qsizetype len) const &

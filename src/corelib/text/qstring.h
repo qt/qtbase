@@ -347,7 +347,7 @@ public:
     [[nodiscard]] QString last(qsizetype n) const &
     { verify(0, n); return sliced(size() - n, n); }
     [[nodiscard]] QString sliced(qsizetype pos) const &
-    { verify(pos, 0); return QString(data() + pos, size() - pos); }
+    { verify(pos, 0); return sliced(pos, size() - pos); }
     [[nodiscard]] QString sliced(qsizetype pos, qsizetype n) const &
     { verify(pos, n); return QString(begin() + pos, n); }
     [[nodiscard]] QString chopped(qsizetype n) const &
