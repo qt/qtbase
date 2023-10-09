@@ -2938,7 +2938,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
                     handlePainter.setPen(Qt::NoPen);
                     handlePainter.setBrush(QColor(0, 0, 0, 40));
-                    handlePainter.drawRect(r.adjusted(-1, 2, 1, -2));
+                    handlePainter.drawRect(horizontal ? r.adjusted(-1, 2, 1, -2) : r.adjusted(2, -1, -2, 1));
 
                     handlePainter.setPen(QPen(d->outline(option->palette)));
                     if (option->state & State_HasFocus && option->state & State_KeyboardFocusChange)
