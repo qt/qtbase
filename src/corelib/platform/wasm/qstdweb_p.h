@@ -290,11 +290,6 @@ namespace qstdweb {
     {
     };
 
-    Q_CORE_EXPORT std::shared_ptr<CancellationFlag>
-    readDataTransfer(emscripten::val webObject, std::function<QVariant(QByteArray)> imageReader,
-                     std::function<void(std::unique_ptr<QMimeData>)> onDone);
-
-
 #if QT_CONFIG(thread)
     template<class T>
     T proxyCall(std::function<T()> task, emscripten::ProxyingQueue *queue)

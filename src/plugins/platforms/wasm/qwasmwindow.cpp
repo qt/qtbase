@@ -114,7 +114,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
             std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerenter", pointerCallback);
     m_pointerLeaveCallback =
             std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerleave", pointerCallback);
-
     m_dropCallback = std::make_unique<qstdweb::EventCallback>(
             m_qtWindow, "drop", [this](emscripten::val event) {
                 if (processDrop(*DragEvent::fromWeb(event, window())))
@@ -538,25 +537,19 @@ bool QWasmWindow::processPointer(const PointerEvent &event)
 
 bool QWasmWindow::processDrop(const DragEvent &event)
 {
-    m_dropDataReadCancellationFlag = qstdweb::readDataTransfer(
-            event.dataTransfer,
-            [](QByteArray fileContent) {
-                QImage image;
-                image.loadFromData(fileContent, nullptr);
-                return image;
-            },
-            [this, event](std::unique_ptr<QMimeData> data) {
-                QWindowSystemInterface::handleDrag(window(), data.get(),
-                                                   event.pointInPage.toPoint(), event.dropAction,
-                                                   event.mouseButton, event.modifiers);
+    dom::DataTransfer transfer(event.dataTransfer.webDataTransfer["clipboardData"]);
+    QMimeData *data = transfer.toMimeDataWithFile();
+    // TODO handle file
+    QWindowSystemInterface::handleDrag(window(), data,
+                                       event.pointInPage.toPoint(), event.dropAction,
+                                       event.mouseButton, event.modifiers);
 
-                QWindowSystemInterface::handleDrop(window(), data.get(),
-                                                   event.pointInPage.toPoint(), event.dropAction,
-                                                   event.mouseButton, event.modifiers);
+    QWindowSystemInterface::handleDrop(window(), data,
+                                       event.pointInPage.toPoint(), event.dropAction,
+                                       event.mouseButton, event.modifiers);
 
-                QWindowSystemInterface::handleDrag(window(), nullptr, QPoint(), Qt::IgnoreAction,
-                                                   {}, {});
-            });
+    QWindowSystemInterface::handleDrag(window(), nullptr, QPoint(), Qt::IgnoreAction,
+                                       {}, {});
     return true;
 }
 

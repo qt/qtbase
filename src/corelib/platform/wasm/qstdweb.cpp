@@ -376,112 +376,6 @@ bool jsHaveAsyncify() { return false; }
 bool jsHaveJspi() { return false; }
 
 #endif
-
-struct DataTransferReader
-{
-public:
-    using DoneCallback = std::function<void(std::unique_ptr<QMimeData>)>;
-
-    static std::shared_ptr<CancellationFlag> read(emscripten::val webDataTransfer,
-                                                  std::function<QVariant(QByteArray)> imageReader,
-                                                  DoneCallback onCompleted)
-    {
-        auto cancellationFlag = std::make_shared<CancellationFlag>();
-        (new DataTransferReader(std::move(onCompleted), std::move(imageReader), cancellationFlag))
-                ->read(webDataTransfer);
-        return cancellationFlag;
-    }
-
-    ~DataTransferReader() = default;
-
-private:
-    DataTransferReader(DoneCallback onCompleted, std::function<QVariant(QByteArray)> imageReader,
-                       std::shared_ptr<CancellationFlag> cancellationFlag)
-        : mimeData(std::make_unique<QMimeData>()),
-          imageReader(std::move(imageReader)),
-          onCompleted(std::move(onCompleted)),
-          cancellationFlag(cancellationFlag)
-    {
-    }
-
-    void read(emscripten::val webDataTransfer)
-    {
-        enum class ItemKind {
-            File,
-            String,
-        };
-
-        const auto items = webDataTransfer["items"];
-        for (int i = 0; i < items["length"].as<int>(); ++i) {
-            const auto item = items[i];
-            const auto itemKind =
-                    item["kind"].as<std::string>() == "string" ? ItemKind::String : ItemKind::File;
-            const auto itemMimeType = QString::fromStdString(item["type"].as<std::string>());
-
-            switch (itemKind) {
-            case ItemKind::File: {
-                ++fileCount;
-
-                qstdweb::File file(item.call<emscripten::val>("getAsFile"));
-
-                QByteArray fileContent(file.size(), Qt::Uninitialized);
-                file.stream(fileContent.data(), [this, itemMimeType, fileContent]() {
-                    if (!fileContent.isEmpty()) {
-                        if (itemMimeType.startsWith("image/"_L1)) {
-                            mimeData->setImageData(imageReader(fileContent));
-                        } else {
-                            mimeData->setData(itemMimeType, fileContent.data());
-                        }
-                    }
-                    ++doneCount;
-                    onFileRead();
-                });
-                break;
-            }
-            case ItemKind::String:
-                if (itemMimeType.contains("STRING"_L1, Qt::CaseSensitive)
-                    || itemMimeType.contains("TEXT"_L1, Qt::CaseSensitive)) {
-                    break;
-                }
-                QString a;
-                const QString data = QString::fromEcmaString(webDataTransfer.call<emscripten::val>(
-                        "getData", emscripten::val(itemMimeType.toStdString())));
-
-                if (!data.isEmpty()) {
-                    if (itemMimeType == "text/html"_L1)
-                        mimeData->setHtml(data);
-                    else if (itemMimeType.isEmpty() || itemMimeType == "text/plain"_L1)
-                        mimeData->setText(data); // the type can be empty
-                    else
-                        mimeData->setData(itemMimeType, data.toLocal8Bit());
-                }
-                break;
-            }
-        }
-
-        onFileRead();
-    }
-
-    void onFileRead()
-    {
-        Q_ASSERT(doneCount <= fileCount);
-        if (doneCount < fileCount)
-            return;
-
-        std::unique_ptr<DataTransferReader> deleteThisLater(this);
-        if (!cancellationFlag.expired())
-            onCompleted(std::move(mimeData));
-    }
-
-    int fileCount = 0;
-    int doneCount = 0;
-    std::unique_ptr<QMimeData> mimeData;
-    std::function<QVariant(QByteArray)> imageReader;
-    DoneCallback onCompleted;
-
-    std::weak_ptr<CancellationFlag> cancellationFlag;
-};
-
 } // namespace
 
 ArrayBuffer::ArrayBuffer(uint32_t size)
@@ -946,13 +840,6 @@ bool haveAsyncify()
 bool canBlockCallingThread()
 {
     return haveAsyncify() || !emscripten_is_main_runtime_thread();
-}
-
-std::shared_ptr<CancellationFlag>
-readDataTransfer(emscripten::val webDataTransfer, std::function<QVariant(QByteArray)> imageReader,
-                 std::function<void(std::unique_ptr<QMimeData>)> onDone)
-{
-    return DataTransferReader::read(webDataTransfer, std::move(imageReader), std::move(onDone));
 }
 
 BlobIODevice::BlobIODevice(Blob blob)
