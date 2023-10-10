@@ -151,8 +151,7 @@ protected:
     static constexpr qsizetype m_size = qsizetype(E);
 
     // types and constants:
-
-    static constexpr size_t extent = E;
+    // (in QSpan only)
 
     // constructors (need to be public d/t the way ctor inheriting works):
 public:
