@@ -368,7 +368,7 @@ void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
 {
     // The header "Content-Encoding  = gzip" is retained.
     // Content-Length is removed since the actual one sent by the server is for compressed data
-    QByteArray name("content-length");
+    constexpr auto name = QByteArrayView("content-length");
     QByteArray contentLength = parser.firstHeaderField(name);
     bool parseOk = false;
     qint64 value = contentLength.toLongLong(&parseOk);
@@ -382,7 +382,7 @@ bool QHttpNetworkReplyPrivate::findChallenge(bool forProxy, QByteArray &challeng
 {
     challenge.clear();
     // find out the type of authentication protocol requested.
-    QByteArray header = forProxy ? "proxy-authenticate" : "www-authenticate";
+    const auto header = QByteArrayView(forProxy ? "proxy-authenticate" : "www-authenticate");
     // pick the best protocol (has to match parsing in QAuthenticatorPrivate)
     QList<QByteArray> challenges = headerFieldValues(header);
     for (int i = 0; i<challenges.size(); i++) {
@@ -717,8 +717,8 @@ qint64 QHttpNetworkReplyPrivate::getChunkSize(QAbstractSocket *socket, qint64 *c
                 bytes += socket->read(crlf, 1); // read the \n
             bool ok = false;
             // ignore the chunk-extension
-            fragment = fragment.mid(0, fragment.indexOf(';')).trimmed();
-            *chunkSize = fragment.toLong(&ok, 16);
+            const auto fragmentView = QByteArrayView(fragment).mid(0, fragment.indexOf(';')).trimmed();
+            *chunkSize = fragmentView.toLong(&ok, 16);
             fragment.clear();
             break; // size done
         } else {
