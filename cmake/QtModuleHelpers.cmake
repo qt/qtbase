@@ -1235,7 +1235,7 @@ function(qt_internal_install_module_headers target)
             PRIVATE ${arg_PRIVATE}
             QPA ${arg_QPA}
             RHI ${arg_RHI}
-            SSG ${arg_ssg}
+            SSG ${arg_SSG}
         )
     else()
         if(arg_PUBLIC)
