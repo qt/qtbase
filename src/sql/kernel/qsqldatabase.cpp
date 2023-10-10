@@ -19,6 +19,17 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+#define CHECK_QCOREAPPLICATION \
+    if (Q_UNLIKELY(!QCoreApplication::instance())) { \
+        qWarning("QSqlDatabase requires a QCoreApplication"); \
+        return; \
+    }
+#define CHECK_QCOREAPPLICATION_RETVAL \
+    if (Q_UNLIKELY(!QCoreApplication::instance())) { \
+        qWarning("QSqlDatabase requires a QCoreApplication"); \
+        return {}; \
+    }
+
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QSqlDriverFactoryInterface_iid, "/sqldrivers"_L1))
 
@@ -132,6 +143,7 @@ void QSqlDatabasePrivate::invalidateDb(const QSqlDatabase &db, const QString &na
 
 void QSqlDatabasePrivate::removeDatabase(const QString &name)
 {
+    CHECK_QCOREAPPLICATION
     QtSqlGlobals *sqlGlobals = s_sqlGlobals();
     QWriteLocker locker(&sqlGlobals->lock);
 
@@ -143,6 +155,7 @@ void QSqlDatabasePrivate::removeDatabase(const QString &name)
 
 void QSqlDatabasePrivate::addDatabase(const QSqlDatabase &db, const QString &name)
 {
+    CHECK_QCOREAPPLICATION
     QtSqlGlobals *sqlGlobals = s_sqlGlobals();
     QWriteLocker locker(&sqlGlobals->lock);
 
@@ -159,6 +172,7 @@ void QSqlDatabasePrivate::addDatabase(const QSqlDatabase &db, const QString &nam
 */
 QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
 {
+    CHECK_QCOREAPPLICATION_RETVAL
     QSqlDatabase db = s_sqlGlobals()->connection(name);
     if (!db.isValid())
         return db;
@@ -460,6 +474,7 @@ void QSqlDatabase::removeDatabase(const QString& connectionName)
 
 QStringList QSqlDatabase::drivers()
 {
+    CHECK_QCOREAPPLICATION_RETVAL
     QStringList list;
 
     if (QFactoryLoader *fl = loader()) {
@@ -498,6 +513,7 @@ QStringList QSqlDatabase::drivers()
 */
 void QSqlDatabase::registerSqlDriver(const QString& name, QSqlDriverCreatorBase *creator)
 {
+    CHECK_QCOREAPPLICATION
     QtSqlGlobals *sqlGlobals = s_sqlGlobals();
     QWriteLocker locker(&sqlGlobals->lock);
     delete sqlGlobals->registeredDrivers.take(name);
@@ -516,6 +532,7 @@ void QSqlDatabase::registerSqlDriver(const QString& name, QSqlDriverCreatorBase 
 
 bool QSqlDatabase::contains(const QString& connectionName)
 {
+    CHECK_QCOREAPPLICATION_RETVAL
     return s_sqlGlobals()->connectionExists(connectionName);
 }
 
@@ -528,6 +545,7 @@ bool QSqlDatabase::contains(const QString& connectionName)
 */
 QStringList QSqlDatabase::connectionNames()
 {
+    CHECK_QCOREAPPLICATION_RETVAL
     return s_sqlGlobals()->connectionNames();
 }
 
@@ -612,6 +630,7 @@ QSqlDatabase &QSqlDatabase::operator=(const QSqlDatabase &other)
 
 void QSqlDatabasePrivate::init(const QString &type)
 {
+    CHECK_QCOREAPPLICATION
     drvName = type;
 
     if (!driver) {
@@ -1257,6 +1276,7 @@ QSqlDatabase QSqlDatabase::cloneDatabase(const QSqlDatabase &other, const QStrin
 
 QSqlDatabase QSqlDatabase::cloneDatabase(const QString &other, const QString &connectionName)
 {
+    CHECK_QCOREAPPLICATION_RETVAL
     return cloneDatabase(s_sqlGlobals()->connection(other), connectionName);
 }
 
