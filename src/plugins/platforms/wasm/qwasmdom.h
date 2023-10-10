@@ -6,6 +6,8 @@
 
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/QPointF>
+#include <private/qstdweb_p.h>
+#include <QtCore/qnamespace.h>
 
 #include <emscripten/val.h>
 
@@ -15,10 +17,36 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace qstdweb {
+    struct CancellationFlag;
+}
+
+class QMimeData;
 class QPoint;
 class QRect;
 
 namespace dom {
+struct DataTransfer
+{
+    explicit DataTransfer(emscripten::val webDataTransfer);
+    ~DataTransfer();
+    DataTransfer(const DataTransfer &other);
+    DataTransfer(DataTransfer &&other);
+    DataTransfer &operator=(const DataTransfer &other);
+    DataTransfer &operator=(DataTransfer &&other);
+
+    QMimeData *toMimeDataWithFile() ;
+    QMimeData *toMimeDataPreview();
+    void setDragImage(emscripten::val element, const QPoint &hotspot);
+    void setData(std::string format, std::string data);
+    void setDropAction(Qt::DropAction dropAction);
+    void setDataFromMimeData(const QMimeData &mimeData);
+
+    emscripten::val webDataTransfer;
+    emscripten::val m_webFile = emscripten::val::undefined();
+    qstdweb::File m_file;
+};
+
 inline emscripten::val document()
 {
     return emscripten::val::global("document");

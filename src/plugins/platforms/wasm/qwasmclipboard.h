@@ -7,6 +7,7 @@
 #include <QObject>
 
 #include <qpa/qplatformclipboard.h>
+#include <private/qstdweb_p.h>
 #include <QMimeData>
 
 #include <emscripten/bind.h>

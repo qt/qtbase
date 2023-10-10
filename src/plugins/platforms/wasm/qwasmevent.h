@@ -5,6 +5,7 @@
 #define QWASMEVENT_H
 
 #include "qwasmplatform.h"
+#include "qwasmdom.h"
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qnamespace.h>
@@ -241,7 +242,7 @@ struct DragEvent : public MouseEvent
     void acceptDrop();
 
     Qt::DropAction dropAction;
-    emscripten::val dataTransfer;
+    dom::DataTransfer dataTransfer;
     QWindow *targetWindow;
 };
 
