@@ -139,8 +139,8 @@ void QStorageInfoPrivate::initRootPath()
     const QString oldRootPath = rootPath;
     rootPath.clear();
 
-    const MountInfo *bestInfo = nullptr;
-    for (const MountInfo &info : infos) {
+    MountInfo *bestInfo = nullptr;
+    for (MountInfo &info : infos) {
         // we try to find most suitable entry
         qsizetype mpSize = info.mountPoint.size();
         if (maxLength < mpSize && isParentOf(info.mountPoint, oldRootPath)) {
