@@ -1043,6 +1043,11 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     //resend the necessary ones.
     for (int i = 0; i < activeChannelCount; ++i) {
         if (channels[i].resendCurrent && (channels[i].state != QHttpNetworkConnectionChannel::ClosingState)) {
+            if (!channels[i].socket
+                || channels[i].socket->state() == QAbstractSocket::UnconnectedState) {
+                if (!channels[i].ensureConnection())
+                    continue;
+            }
             channels[i].resendCurrent = false;
 
             // if this is not possible, error will be emitted and connection terminated
