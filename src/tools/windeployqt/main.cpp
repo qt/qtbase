@@ -993,7 +993,7 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir, const boo
         *usedQtModules |= missingModules;
         if (optVerboseLevel) {
             std::wcout << "Adding " << formatQtModules(missingModules).constData()
-                << " for " << plugin << '\n';
+                << " for " << plugin << " from plugin type: " << subDirName << '\n';
         }
     }
     return pluginPath;
@@ -1036,7 +1036,7 @@ QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disab
                 ? MatchDebugOrRelease // QTBUG-44331: Debug detection does not work for webengine, deploy all.
                 : debugMatchModeIn;
             QDir subDir(subDirFi.absoluteFilePath());
-
+            std::wcout << "Adding in plugin type " << subDirFi.baseName() << " for module: " << qtModuleEntries.moduleById(module).name << '\n';
             // Filter for platform or any.
             QString filter;
             const bool isPlatformPlugin = subDirName == "platforms"_L1;
