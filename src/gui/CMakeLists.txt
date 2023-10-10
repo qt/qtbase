@@ -336,7 +336,8 @@ if(QT_FEATURE_opengl)
         target_link_libraries(Gui PUBLIC GLESv2::GLESv2)
 
         if(INTEGRITY AND _qt_igy_gui_libs)
-            find_package(IntegrityPlatformGraphics)
+            qt_find_package(IntegrityPlatformGraphics
+                PROVIDED_TARGETS IntegrityPlatformGraphics::IntegrityPlatformGraphics)
             target_link_libraries(Gui
                 INTERFACE $<LINK_ONLY:IntegrityPlatformGraphics::IntegrityPlatformGraphics>)
         endif()
