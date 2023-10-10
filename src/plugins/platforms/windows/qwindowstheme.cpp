@@ -591,8 +591,12 @@ QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
                         result.color(QPalette::Inactive, QPalette::Window));
         result.setColor(QPalette::Inactive, QPalette::HighlightedText,
                         result.color(QPalette::Inactive, QPalette::Text));
-        result.setColor(QPalette::Inactive, QPalette::Accent,
-                        result.color(QPalette::Inactive, QPalette::Window));
+        // Only set this if it hasn't been set.
+        if (!result.isBrushSet(QPalette::Inactive, QPalette::Accent)) {
+            // We set Accent to Window to match the behavior of Windows 11.
+            result.setColor(QPalette::Inactive, QPalette::Accent,
+                            result.color(QPalette::Inactive, QPalette::Window));
+        }
     }
 
     const QColor disabled = mixColors(result.windowText().color(), result.button().color());
