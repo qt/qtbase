@@ -814,6 +814,11 @@ void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen, const Q
 
 void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal dpiX, qreal dpiY)
 {
+    // Keep QHighDpiScaling::m_active in sync with platform screen state, in
+    // order to make scaling calls made during DPI change use the new state.
+    // FIXME: Remove when QHighDpiScaling::m_active has been removed.
+    QHighDpiScaling::updateHighDpiScaling();
+
     const QDpi effectiveDpi = QPlatformScreen::overrideDpi(QDpi{dpiX, dpiY});
     handleWindowSystemEvent<QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent>(screen,
                     effectiveDpi.first, effectiveDpi.second);
