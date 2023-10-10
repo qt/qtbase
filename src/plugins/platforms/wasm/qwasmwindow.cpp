@@ -114,11 +114,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
             std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerenter", pointerCallback);
     m_pointerLeaveCallback =
             std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerleave", pointerCallback);
-    m_dropCallback = std::make_unique<qstdweb::EventCallback>(
-            m_qtWindow, "drop", [this](emscripten::val event) {
-                if (processDrop(*DragEvent::fromWeb(event, window())))
-                    event.call<void>("preventDefault");
-            });
 
     m_wheelEventCallback = std::make_unique<qstdweb::EventCallback>(
             m_qtWindow, "wheel", [this](emscripten::val event) {
@@ -155,6 +150,11 @@ QWasmWindow::~QWasmWindow()
 QSurfaceFormat QWasmWindow::format() const
 {
     return window()->requestedFormat();
+}
+
+QWasmWindow *QWasmWindow::fromWindow(QWindow *window)
+{
+    return static_cast<QWasmWindow *>(window->handle());
 }
 
 void QWasmWindow::onRestoreClicked()
@@ -533,24 +533,6 @@ bool QWasmWindow::processPointer(const PointerEvent &event)
     }
 
     return false;
-}
-
-bool QWasmWindow::processDrop(const DragEvent &event)
-{
-    dom::DataTransfer transfer(event.dataTransfer.webDataTransfer["clipboardData"]);
-    QMimeData *data = transfer.toMimeDataWithFile();
-    // TODO handle file
-    QWindowSystemInterface::handleDrag(window(), data,
-                                       event.pointInPage.toPoint(), event.dropAction,
-                                       event.mouseButton, event.modifiers);
-
-    QWindowSystemInterface::handleDrop(window(), data,
-                                       event.pointInPage.toPoint(), event.dropAction,
-                                       event.mouseButton, event.modifiers);
-
-    QWindowSystemInterface::handleDrag(window(), nullptr, QPoint(), Qt::IgnoreAction,
-                                       {}, {});
-    return true;
 }
 
 bool QWasmWindow::processWheel(const WheelEvent &event)

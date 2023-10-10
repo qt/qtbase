@@ -36,6 +36,7 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmwindownonclientarea.cpp qwasmwindownonclientarea.h
         qwasminputcontext.cpp qwasminputcontext.h
         qwasmwindowstack.cpp qwasmwindowstack.h
+        qwasmdrag.cpp qwasmdrag.h
     DEFINES
         QT_EGL_NO_X11
         QT_NO_FOREACH

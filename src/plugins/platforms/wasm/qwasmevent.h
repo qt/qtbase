@@ -10,7 +10,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qnamespace.h>
 #include <QtGui/qevent.h>
-
+#include <private/qstdweb_p.h>
 #include <QPoint>
 
 #include <emscripten/html5.h>
