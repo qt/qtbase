@@ -439,8 +439,7 @@ QCursor::QCursor()
 QCursor::QCursor(Qt::CursorShape shape)
     : d(nullptr)
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     setShape(shape);
 }
 
@@ -498,8 +497,7 @@ bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept
 */
 Qt::CursorShape QCursor::shape() const
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     return d->cshape;
 }
 
@@ -512,8 +510,7 @@ Qt::CursorShape QCursor::shape() const
 */
 void QCursor::setShape(Qt::CursorShape shape)
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     QCursorData *c = uint(shape) <= Qt::LastCursor ? qt_cursorTable[shape] : nullptr;
     if (!c)
         c = qt_cursorTable[0];
@@ -547,8 +544,7 @@ void QCursor::setShape(Qt::CursorShape shape)
 */
 QBitmap QCursor::bitmap() const
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     if (d->bm)
         return *(d->bm);
     return QBitmap();
@@ -574,8 +570,7 @@ QBitmap QCursor::bitmap() const
 */
 QBitmap QCursor::mask() const
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     if (d->bmm)
         return *(d->bmm);
     return QBitmap();
@@ -588,8 +583,7 @@ QBitmap QCursor::mask() const
 
 QPixmap QCursor::pixmap() const
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     return d->pixmap;
 }
 
@@ -600,8 +594,7 @@ QPixmap QCursor::pixmap() const
 
 QPoint QCursor::hotSpot() const
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     return QPoint(d->hx, d->hy);
 }
 
@@ -611,8 +604,7 @@ QPoint QCursor::hotSpot() const
 
 QCursor::QCursor(const QCursor &c)
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     d = c.d;
     d->ref.ref();
 }
@@ -635,8 +627,7 @@ QCursor::~QCursor()
 
 QCursor &QCursor::operator=(const QCursor &c)
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     if (c.d)
         c.d->ref.ref();
     if (d && !d->ref.deref())
@@ -707,8 +698,7 @@ void QCursorData::initialize()
 
 QCursorData *QCursorData::setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY, qreal devicePixelRatio)
 {
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
+    QCursorData::initialize();
     if (bitmap.depth() != 1 || mask.depth() != 1 || bitmap.size() != mask.size()) {
         qWarning("QCursor: Cannot create bitmap cursor; invalid bitmap(s)");
         QCursorData *c = qt_cursorTable[0];
