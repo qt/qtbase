@@ -16,8 +16,6 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window")
 
-Q_CONSTINIT static QBasicAtomicInt winIdGenerator = Q_BASIC_ATOMIC_INITIALIZER(0);
-
 QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     : QPlatformWindow(window), m_nativeQtWindow(nullptr), m_nativeParentQtWindow(nullptr),
       m_androidSurfaceObject(nullptr)
@@ -27,7 +25,6 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     // the surfaceType is overwritten in QAndroidPlatformOpenGLWindow ctor so let's save
     // the fact that it's a raster window for now
     m_isRaster = window->surfaceType() == QSurface::RasterSurface;
-    m_windowId = winIdGenerator.fetchAndAddRelaxed(1) + 1;
     setWindowState(window->windowStates());
 
     // the following is in relation to the virtual geometry
@@ -172,6 +169,11 @@ void QAndroidPlatformWindow::setParent(const QPlatformWindow *window)
         platformScreen()->addWindow(this);
         m_nativeParentQtWindow = QJniObject();
     }
+}
+
+WId QAndroidPlatformWindow::winId() const
+{
+    return m_nativeQtWindow.isValid() ? reinterpret_cast<WId>(m_nativeQtWindow.object()) : 0L;
 }
 
 QAndroidPlatformScreen *QAndroidPlatformWindow::platformScreen() const

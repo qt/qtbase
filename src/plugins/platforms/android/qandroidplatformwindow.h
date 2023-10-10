@@ -37,7 +37,8 @@ public:
     void setWindowFlags(Qt::WindowFlags flags) override;
     Qt::WindowFlags windowFlags() const;
     void setParent(const QPlatformWindow *window) override;
-    WId winId() const override { return m_windowId; }
+
+    WId winId() const override;
 
     bool setMouseGrabEnabled(bool grab) override { Q_UNUSED(grab); return false; }
     bool setKeyboardGrabEnabled(bool grab) override { Q_UNUSED(grab); return false; }
@@ -73,14 +74,12 @@ protected:
     Qt::WindowStates m_windowState;
     bool m_isRaster;
 
-    WId m_windowId;
-
+    int m_nativeViewId = -1;
     QtJniTypes::QtWindow m_nativeQtWindow;
     QtJniTypes::QtWindow m_nativeParentQtWindow;
     // The Android Surface, accessed from multiple threads, guarded by m_surfaceMutex
     QtJniTypes::Surface m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;
-    int m_nativeViewId = -1;
     bool m_surfaceCreated = false;
     QMutex m_surfaceMutex;
 
