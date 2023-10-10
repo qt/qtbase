@@ -524,93 +524,129 @@ void QGtk3Storage::createMapping()
 
 
     // System palette
-    // background color and calculate derivates
-    GTK(Default, Background, INSENSITIVE);
-    ADD(Normal, Window);
-    ADD(Normal, Button);
-    ADD(Normal, Base);
-    ADD(Inactive, Base);
-    ADD(Inactive, Window);
-    ADD(Disabled, Button);
-    ADD(Disabled, Window);
-    LIGHTER(Normal, Window, 125);
-    ADD(Normal, Light);
-    LIGHTER(Normal, Window, 70);
-    ADD(Normal, Shadow);
-    LIGHTER(Normal, Window, 80);
-    ADD(Normal, Dark);
-    GTK(button, Foreground, ACTIVE);
-    ADD(Inactive, WindowText);
-    LIGHTER(Normal, WindowText, 50);
-    ADD(Disabled, Text);
-    ADD(Disabled, WindowText);
-    ADD(Inactive, ButtonText);
-    ADD(Disabled, ButtonText);
-    GTK(button, Text, NORMAL);
-    ADD(Disabled, ButtonText);
-    // special background colors
-    GTK(Default, Background, SELECTED);
-    ADD(Disabled, Highlight);
-    ADD(Normal, Highlight);
-    GTK(entry, Foreground, SELECTED);
-    ADD(Normal, HighlightedText);
-    GTK(entry, Background, ACTIVE);
-    ADD(Inactive, HighlightedText);
-    // text color and friends
-    GTK(entry, Text, NORMAL);
-    ADD(Normal, ButtonText);
-    ADD(Normal, WindowText);
-    ADD(Disabled, WindowText);
-    ADD(Disabled, HighlightedText);
-    GTK(Default, Text, NORMAL);
-    ADD(Normal, Text);
-    ADD(Normal, WindowText);
-    ADD(Inactive, Text);
-    ADD(Normal, HighlightedText);
-    LIGHTER(Normal, Base, 93);
-    ADD(All, AlternateBase);
-    GTK(Default, Foreground, NORMAL);
-    ADD(All, ToolTipText);
-    MODIFY(Normal, Text, 100, 100, 100);
-    ADD(All, PlaceholderText, Light);
-    MODIFY(Normal, Text, -100, -100, -100);
-    ADD(All, PlaceholderText, Dark);
-    SAVE(SystemPalette);
-    CLEAR;
+    {
+        // background color and calculate derivates
+        GTK(Default, Background, INSENSITIVE);
+        ADD(All, Window);
+        ADD(All, Button);
+        ADD(All, Base);
+        LIGHTER(Normal, Window, 125);
+        ADD(Normal, Light);
+        ADD(Inactive, Light);
+        LIGHTER(Normal, Window, 70);
+        ADD(Normal, Shadow);
+        LIGHTER(Normal, Window, 80);
+        ADD(Normal, Dark);
+        ADD(Inactive, Dark)
 
-    // Checkbox and Radio Button
-    GTK(button, Text, ACTIVE);
-    ADD(Normal, Base, Dark);
-    GTK(Default, Background, NORMAL);
-    ADD(All, Base);
-    GTK(button, Text, NORMAL);
-    ADD(Normal, Base, Light);
-    SAVE(CheckBoxPalette);
-    SAVE(RadioButtonPalette);
-    CLEAR;
+        GTK(button, Foreground, ACTIVE);
+        ADD(Inactive, WindowText);
+        LIGHTER(Normal, WindowText, 50);
+        ADD(Disabled, Text);
+        ADD(Disabled, WindowText);
+        ADD(Disabled, ButtonText);
 
-    // ComboBox, GroupBox, Frame
-    GTK(combo_box, Text, NORMAL);
-    ADD(Normal, ButtonText, Dark);
-    ADD(Normal, Text, Dark);
-    GTK(combo_box, Text, ACTIVE);
-    ADD(Normal, ButtonText, Light);
-    ADD(Normal, Text, Light);
-    SAVE(ComboBoxPalette);
-    SAVE(GroupBoxPalette);
-    CLEAR;
+        GTK(button, Text, NORMAL);
+        ADD(Inactive, ButtonText);
 
-    // Menu bar
-    GTK(Default, Text, ACTIVE);
-    ADD(Normal, ButtonText);
-    SAVE(MenuPalette);
-    CLEAR;
+        // special background colors
+        GTK(Default, Background, SELECTED);
+        ADD(Disabled, Highlight);
+        ADD(Normal, Highlight);
+        ADD(Inactive, Highlight);
 
-    // LineEdit
-    GTK(Default, Background, NORMAL);
-    ADD(All, Base);
-    SAVE(TextLineEditPalette);
-    CLEAR;
+        GTK(entry, Foreground, SELECTED);
+        ADD(Normal, HighlightedText);
+        ADD(Inactive, HighlightedText);
+
+        // text color and friends
+        GTK(entry, Text, NORMAL);
+        ADD(Normal, ButtonText);
+        ADD(Normal, WindowText);
+        ADD(Disabled, HighlightedText);
+
+        GTK(Default, Text, NORMAL);
+        ADD(Normal, Text);
+        ADD(Inactive, Text);
+        ADD(Normal, HighlightedText);
+        LIGHTER(Normal, Base, 93);
+        ADD(All, AlternateBase);
+
+        GTK(Default, Foreground, NORMAL);
+        ADD(All, ToolTipText);
+        MODIFY(Normal, Text, 100, 100, 100);
+        ADD(All, PlaceholderText, Light);
+        MODIFY(Normal, Text, -100, -100, -100);
+        ADD(All, PlaceholderText, Dark);
+
+        SAVE(SystemPalette);
+        CLEAR;
+    }
+
+    // Label and TabBar Palette
+    {
+        GTK(entry, Text, NORMAL);
+        ADD(Normal, WindowText);
+        ADD(Inactive, WindowText);
+
+        SAVE(LabelPalette);
+        SAVE(TabBarPalette);
+        CLEAR;
+    }
+
+    // Checkbox and RadioButton Palette
+    {
+        GTK(button, Text, ACTIVE);
+        ADD(Normal, Base, Dark);
+        ADD(Inactive, WindowText, Dark);
+
+        GTK(Default, Foreground, NORMAL);
+        ADD(All, Text);
+
+        GTK(Default, Background, NORMAL);
+        ADD(All, Base);
+
+        GTK(button, Text, NORMAL);
+        ADD(Normal, Base, Light);
+        ADD(Inactive, WindowText, Light);
+
+        SAVE(CheckBoxPalette);
+        SAVE(RadioButtonPalette);
+        CLEAR;
+    }
+
+    // ComboBox, GroupBox & Frame Palette
+    {
+        GTK(combo_box, Text, NORMAL);
+        ADD(Normal, ButtonText, Dark);
+        ADD(Normal, Text, Dark);
+        ADD(Inactive, WindowText, Dark);
+
+        GTK(combo_box, Text, ACTIVE);
+        ADD(Normal, ButtonText, Light);
+        ADD(Normal, Text, Light);
+        ADD(Inactive, WindowText, Light);
+
+        SAVE(ComboBoxPalette);
+        SAVE(GroupBoxPalette);
+        CLEAR;
+    }
+
+    // MenuBar Palette
+    {
+        GTK(Default, Text, ACTIVE);
+        ADD(Normal, ButtonText);
+        SAVE(MenuPalette);
+        CLEAR;
+    }
+
+    // LineEdit Palette
+    {
+        GTK(Default, Background, NORMAL);
+        ADD(All, Base);
+        SAVE(TextLineEditPalette);
+        CLEAR;
+    }
 
 #undef GTK
 #undef REC
