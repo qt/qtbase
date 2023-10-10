@@ -26,15 +26,10 @@
 QT_BEGIN_NAMESPACE
 
 namespace qstdweb {
-struct CancellationFlag;
-}
-
-namespace qstdweb {
 class EventCallback;
 }
 
 class ClientArea;
-struct DragEvent;
 struct KeyEvent;
 struct PointerEvent;
 class QWasmDeadKeySupport;
@@ -49,6 +44,7 @@ public:
                 QWasmBackingStore *backingStore);
     ~QWasmWindow() final;
 
+    static QWasmWindow *fromWindow(QWindow *window);
     QSurfaceFormat format() const override;
 
     void paint();
@@ -127,7 +123,6 @@ private:
 
     bool processKey(const KeyEvent &event);
     bool processPointer(const PointerEvent &event);
-    bool processDrop(const DragEvent &event);
     bool processWheel(const WheelEvent &event);
 
     QWindow *m_window = nullptr;
@@ -174,8 +169,6 @@ private:
     friend class QWasmCompositor;
     friend class QWasmEventTranslator;
     bool windowIsPopupType(Qt::WindowFlags flags) const;
-
-    std::shared_ptr<qstdweb::CancellationFlag> m_dropDataReadCancellationFlag;
 };
 
 QT_END_NAMESPACE

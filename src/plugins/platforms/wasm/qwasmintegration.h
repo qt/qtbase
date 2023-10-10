@@ -14,7 +14,6 @@
 
 #include <QtCore/qhash.h>
 
-#include <private/qsimpledrag_p.h>
 #include <private/qstdweb_p.h>
 
 #include <emscripten.h>
@@ -33,6 +32,7 @@ class QWasmBackingStore;
 class QWasmClipboard;
 class QWasmAccessibility;
 class QWasmServices;
+class QWasmDrag;
 
 class QWasmIntegration : public QObject, public QPlatformIntegration
 {
@@ -101,7 +101,7 @@ private:
     mutable QWasmInputContext *m_platformInputContext = nullptr;
 
 #if QT_CONFIG(draganddrop)
-    std::unique_ptr<QSimpleDrag> m_drag;
+    std::unique_ptr<QWasmDrag> m_drag;
 #endif
 
 };
