@@ -29,13 +29,6 @@ class QFontEngineGlyphCache;
 
 struct QGlyphLayout;
 
-#define MAKE_TAG(ch1, ch2, ch3, ch4) (\
-    (((quint32)(ch1)) << 24) | \
-    (((quint32)(ch2)) << 16) | \
-    (((quint32)(ch3)) << 8) | \
-    ((quint32)(ch4)) \
-   )
-
 // ### this only used in getPointInOutline(), refactor it and then remove these magic numbers
 enum HB_Compat_Error {
     Err_Ok                           = 0x0000,

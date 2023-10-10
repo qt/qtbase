@@ -114,11 +114,11 @@ void QFreeTypeFontDatabase::addNamedInstancesForFace(void *face_,
            QFont::Stretch instanceStretch = stretch;
            QFont::Style instanceStyle = style;
            for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
-               if (var->axis[axis].tag == MAKE_TAG('w', 'g', 'h', 't')) {
+               if (var->axis[axis].tag == QFont::Tag("wght").value()) {
                    instanceWeight = QFont::Weight(var->namedstyle[i].coords[axis] >> 16);
-               } else if (var->axis[axis].tag == MAKE_TAG('w', 'd', 't', 'h')) {
+               } else if (var->axis[axis].tag == QFont::Tag("wdth").value()) {
                    instanceStretch = QFont::Stretch(var->namedstyle[i].coords[axis] >> 16);
-               }  else if (var->axis[axis].tag == MAKE_TAG('i', 't', 'a', 'l')) {
+               }  else if (var->axis[axis].tag == QFont::Tag("ital").value()) {
                    FT_UInt ital = var->namedstyle[i].coords[axis] >> 16;
                    if (ital == 1)
                        instanceStyle = QFont::StyleItalic;

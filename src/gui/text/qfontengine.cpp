@@ -182,8 +182,10 @@ bool QFontEngine::supportsScript(QChar::Script script) const
 #if QT_CONFIG(harfbuzz)
     // in AAT fonts, 'gsub' table is effectively replaced by 'mort'/'morx' table
     uint lenMort = 0, lenMorx = 0;
-    if (getSfntTableData(MAKE_TAG('m','o','r','t'), nullptr, &lenMort) || getSfntTableData(MAKE_TAG('m','o','r','x'), nullptr, &lenMorx))
+    if (getSfntTableData(QFont::Tag("mort").value(), nullptr, &lenMort)
+     || getSfntTableData(QFont::Tag("morx").value(), nullptr, &lenMorx)) {
         return true;
+    }
 
     if (hb_face_t *face = hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this))) {
         unsigned int script_count = HB_OT_MAX_TAGS_PER_SCRIPT;
@@ -381,7 +383,7 @@ void QFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rig
 
 bool QFontEngine::processHheaTable() const
 {
-    QByteArray hhea = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
+    QByteArray hhea = getSfntTable(QFont::Tag("hhea").value());
     if (hhea.size() >= 10) {
         auto ptr = hhea.constData();
         qint16 ascent = qFromBigEndian<qint16>(ptr + 4);
@@ -407,9 +409,9 @@ bool QFontEngine::processHheaTable() const
 void QFontEngine::initializeHeightMetrics() const
 {
     bool hasEmbeddedBitmaps =
-            !getSfntTable(MAKE_TAG('E', 'B', 'L', 'C')).isEmpty()
-            || !getSfntTable(MAKE_TAG('C', 'B', 'L', 'C')).isEmpty()
-            || !getSfntTable(MAKE_TAG('b', 'd', 'a', 't')).isEmpty();
+            !getSfntTable(QFont::Tag("EBLC").value()).isEmpty()
+            || !getSfntTable(QFont::Tag("CBLC").value()).isEmpty()
+            || !getSfntTable(QFont::Tag("bdat").value()).isEmpty();
     if (!hasEmbeddedBitmaps) {
         // Get HHEA table values if available
         processHheaTable();
@@ -429,7 +431,7 @@ void QFontEngine::initializeHeightMetrics() const
 
 bool QFontEngine::processOS2Table() const
 {
-    QByteArray os2 = getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
+    QByteArray os2 = getSfntTable(QFont::Tag("OS/2").value());
     if (os2.size() >= 78) {
         auto ptr = os2.constData();
         quint16 fsSelection = qFromBigEndian<quint16>(ptr + 62);
@@ -505,7 +507,7 @@ qreal QFontEngine::minRightBearing() const
     if (m_minRightBearing == kBearingNotInitialized) {
 
         // Try the 'hhea' font table first, which covers the entire font
-        QByteArray hheaTable = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
+        QByteArray hheaTable = getSfntTable(QFont::Tag("hhea").value());
         if (hheaTable.size() >= int(kMinRightSideBearingOffset + sizeof(qint16))) {
             const uchar *tableData = reinterpret_cast<const uchar *>(hheaTable.constData());
             Q_ASSERT(q16Dot16ToFloat(qFromBigEndian<quint32>(tableData)) == 1.0);
@@ -1045,7 +1047,7 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
 {
     kerning_pairs.clear();
 
-    QByteArray tab = getSfntTable(MAKE_TAG('k', 'e', 'r', 'n'));
+    QByteArray tab = getSfntTable(QFont::Tag("kern").value());
     if (tab.isEmpty())
         return;
 
@@ -1134,7 +1136,7 @@ end:
 
 int QFontEngine::glyphCount() const
 {
-    QByteArray maxpTable = getSfntTable(MAKE_TAG('m', 'a', 'x', 'p'));
+    QByteArray maxpTable = getSfntTable(QFont::Tag("maxp").value());
     if (maxpTable.size() < 6)
         return 0;
 

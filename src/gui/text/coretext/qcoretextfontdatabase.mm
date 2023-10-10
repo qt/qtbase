@@ -361,7 +361,7 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
     fd->fixedPitch = false;
 
     if (QCFType<CTFontRef> tempFont = CTFontCreateWithFontDescriptor(font, 0.0, 0)) {
-        uint tag = MAKE_TAG('O', 'S', '/', '2');
+        uint tag = QFont::Tag("OS/2").value();
         CTFontRef tempFontRef = tempFont;
         void *userData = reinterpret_cast<void *>(&tempFontRef);
         uint length = 128;

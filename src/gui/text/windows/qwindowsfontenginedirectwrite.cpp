@@ -359,7 +359,7 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
         fontFile->Release();
     }
 
-    QByteArray table = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
+    QByteArray table = getSfntTable(QFont::Tag("hhea").value());
     const int advanceWidthMaxLocation = 10;
     if (table.size() >= advanceWidthMaxLocation + int(sizeof(quint16))) {
         quint16 advanceWidthMax = qFromBigEndian<quint16>(table.constData() + advanceWidthMaxLocation);

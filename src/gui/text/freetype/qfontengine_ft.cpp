@@ -767,7 +767,7 @@ static FT_UShort calculateActualWeight(FT_Face face, QFontEngine::FaceId faceId)
         FT_Get_MM_Var(face, &var);
         if (var != nullptr && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
             for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
-                if (var->axis[axis].tag == MAKE_TAG('w', 'g', 'h', 't')) {
+                if (var->axis[axis].tag == QFont::Tag("wght").value()) {
                     return var->namedstyle[faceId.instanceIndex].coords[axis] >> 16;
                 }
             }
@@ -787,7 +787,7 @@ static bool calculateActualItalic(FT_Face face, QFontEngine::FaceId faceId)
         FT_Get_MM_Var(face, &var);
         if (var != nullptr && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
             for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
-                if (var->axis[axis].tag == MAKE_TAG('i', 't', 'a', 'l')) {
+                if (var->axis[axis].tag == QFont::Tag("ital").value()) {
                     return (var->namedstyle[faceId.instanceIndex].coords[axis] >> 16) == 1;
                 }
             }

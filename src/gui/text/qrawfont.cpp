@@ -642,7 +642,9 @@ QByteArray QRawFont::fontTable(const char *tagName) const
     if (!d->isValid())
         return QByteArray();
 
-    return d->fontEngine->getSfntTable(MAKE_TAG(tagName[0], tagName[1], tagName[2], tagName[3]));
+    if (auto maybeTag = QFont::Tag::fromString(tagName))
+        return d->fontEngine->getSfntTable(maybeTag->value());
+    return {};
 }
 
 /*!

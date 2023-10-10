@@ -2508,12 +2508,9 @@ void QFont::clearFeatures()
 */
 QByteArray QFont::tagToString(quint32 tag)
 {
-    char str[4] =
-        { char((tag & 0xff000000) >> 24),
-          char((tag & 0x00ff0000) >> 16),
-          char((tag & 0x0000ff00) >> 8),
-          char((tag & 0x000000ff)) };
-    return QByteArray(str, 4);
+    if (auto maybeTag = QFont::Tag::fromValue(tag))
+        return maybeTag->toString();
+    return {};
 }
 
 /*!
@@ -2531,10 +2528,9 @@ QByteArray QFont::tagToString(quint32 tag)
 */
 quint32 QFont::stringToTag(const char *name)
 {
-    if (qstrlen(name) != 4)
-        return 0;
-
-    return MAKE_TAG(name[0], name[1], name[2], name[3]);
+    if (auto maybeTag = QFont::Tag::fromString(name))
+        return maybeTag->value();
+    return 0;
 }
 
 extern QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style,
