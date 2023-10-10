@@ -48,9 +48,22 @@ public:
         : QPalettePrivate(QExplicitlySharedDataPointer<Data>(new Data))
     { }
 
-    static constexpr QPalette::ResolveMask colorRoleOffset(QPalette::ColorGroup colorGroup);
+    static constexpr QPalette::ResolveMask colorRoleOffset(QPalette::ColorGroup colorGroup)
+    {
+        // Exclude NoRole; that bit is used for Accent
+        return (qToUnderlying(QPalette::NColorRoles) - 1) * qToUnderlying(colorGroup);
+    }
+
     static constexpr QPalette::ResolveMask bitPosition(QPalette::ColorGroup colorGroup,
-                                                       QPalette::ColorRole colorRole);
+                                                       QPalette::ColorRole colorRole)
+    {
+        // Map Accent into NoRole for resolving purposes
+        if (colorRole == QPalette::Accent)
+            colorRole = QPalette::NoRole;
+
+        return colorRole + colorRoleOffset(colorGroup);
+    }
+
     QAtomicInt ref;
     QPalette::ResolveMask resolveMask = {0};
     static inline int qt_palette_count = 0;
