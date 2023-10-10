@@ -89,7 +89,7 @@ void QHttpNetworkReply::appendHeaderField(const QByteArray &name, const QByteArr
     d->appendHeaderField(name, data);
 }
 
-void QHttpNetworkReply::parseHeader(const QByteArray &header)
+void QHttpNetworkReply::parseHeader(QByteArrayView header)
 {
     Q_D(QHttpNetworkReply);
     d->parseHeader(header);
@@ -443,7 +443,7 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
     return bytes;
 }
 
-bool QHttpNetworkReplyPrivate::parseStatus(const QByteArray &status)
+bool QHttpNetworkReplyPrivate::parseStatus(QByteArrayView status)
 {
     return parser.parseStatus(status);
 }
@@ -510,7 +510,7 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
     return bytes;
 }
 
-void QHttpNetworkReplyPrivate::parseHeader(const QByteArray &header)
+void QHttpNetworkReplyPrivate::parseHeader(QByteArrayView header)
 {
     parser.parseHeaders(header);
 }
