@@ -21,8 +21,6 @@ public:
             append({it.key(), it.value()});
     }
 };
-using Map = VariantOrderedMap;
-Q_DECLARE_METATYPE(Map)
 
 class Converter
 {
