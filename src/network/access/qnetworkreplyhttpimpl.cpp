@@ -1302,6 +1302,8 @@ void QNetworkReplyHttpImplPrivate::followRedirect()
             q, [this]() { postRequest(redirectRequest); }, Qt::QueuedConnection);
 }
 
+static constexpr QByteArrayView locationHeader() noexcept { return "location"; }
+
 void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
 {
     Q_Q(QNetworkReplyHttpImpl);
@@ -1314,7 +1316,7 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
         // What do we do about the caching of the HTML note?
         // The response to a 303 MUST NOT be cached, while the response to
         // all of the others is cacheable if the headers indicate it to be
-        QByteArray header = q->rawHeader("location");
+        QByteArray header = q->rawHeader(locationHeader());
         QUrl url = QUrl(QString::fromUtf8(header));
         if (!url.isValid())
             url = QUrl(QLatin1StringView(header));
@@ -1367,7 +1369,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
         // Reset any previous "location" header set in the reply. In case of
         // redirects, we don't want to 'append' multiple location header values,
         // rather we keep only the latest one
-        if (key.toLower() == "location")
+        if (key.compare(locationHeader(), Qt::CaseInsensitive) == 0)
             value.clear();
 
         if (shouldDecompress && !decompressHelper.isValid()
@@ -1662,7 +1664,7 @@ bool QNetworkReplyHttpImplPrivate::sendCacheContents(const QNetworkCacheMetaData
     QUrl redirectUrl;
     for ( ; it != end; ++it) {
         if (httpRequest.isFollowRedirects() &&
-            !it->first.compare("location", Qt::CaseInsensitive))
+            !it->first.compare(locationHeader(), Qt::CaseInsensitive))
             redirectUrl = QUrl::fromEncoded(it->second);
         setRawHeader(it->first, it->second);
     }
