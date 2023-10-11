@@ -159,13 +159,19 @@ void tst_QSpan::check_nonempty_span(QSpan<T, N> s, qsizetype expectedSize) const
 
     QCOMPARE_NE(s.begin(), s.end());
     QCOMPARE_NE(s.rbegin(), s.rend());
+    QCOMPARE_NE(s.cbegin(), s.cend());
+    QCOMPARE_NE(s.crbegin(), s.crend());
 
     QCOMPARE_EQ(s.end() - s.begin(), s.size());
+    QCOMPARE_EQ(s.cend() - s.cbegin(), s.size());
     QCOMPARE_EQ(s.rend() - s.rbegin(), s.size());
+    QCOMPARE_EQ(s.crend() - s.crbegin(), s.size());
 
     QCOMPARE_EQ(std::addressof(s.front()), std::addressof(*s.begin()));
+    QCOMPARE_EQ(std::addressof(s.front()), std::addressof(*s.cbegin()));
     QCOMPARE_EQ(std::addressof(s.front()), std::addressof(s[0]));
     QCOMPARE_EQ(std::addressof(s.back()), std::addressof(*s.rbegin()));
+    QCOMPARE_EQ(std::addressof(s.back()), std::addressof(*s.crbegin()));
     QCOMPARE_EQ(std::addressof(s.back()), std::addressof(s[s.size() - 1]));
 
     // ### more?
@@ -198,7 +204,9 @@ void tst_QSpan::check_empty_span(QSpan<T, N> s) const
     QCOMPARE_EQ(s.size(), 0);
 
     QCOMPARE_EQ(s.begin(), s.end());
+    QCOMPARE_EQ(s.cbegin(), s.cend());
     QCOMPARE_EQ(s.rbegin(), s.rend());
+    QCOMPARE_EQ(s.crbegin(), s.crend());
 }
 
 template <typename T, std::size_t N>
@@ -264,6 +272,7 @@ void tst_QSpan::check_null_span(QSpan<T, N> s) const
 {
     QCOMPARE_EQ(s.data(), nullptr);
     QCOMPARE_EQ(s.begin(), nullptr);
+    QCOMPARE_EQ(s.cbegin(), nullptr);
     QCOMPARE_EQ(s.end(), nullptr);
     check_empty_span_incl_subspans(s);
 }

@@ -277,7 +277,9 @@ public:
     using reference = element_type&;
     using const_reference = const element_type&;
     using iterator = pointer;                  // implementation-defined choice
+    using const_iterator = const_pointer;      // implementation-defined choice
     using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
     static constexpr size_type extent = E;
 
     // [span.cons], constructors, copy, and assignment
@@ -298,8 +300,12 @@ public:
     // [span.iterators]
     [[nodiscard]] constexpr auto begin() const noexcept { return data(); }
     [[nodiscard]] constexpr auto end() const noexcept { return data() + size(); }
+    [[nodiscard]] constexpr auto cbegin() const noexcept { return const_iterator{begin()}; }
+    [[nodiscard]] constexpr auto cend() const noexcept { return const_iterator{end()}; }
     [[nodiscard]] constexpr auto rbegin() const noexcept { return reverse_iterator{end()}; }
     [[nodiscard]] constexpr auto rend() const noexcept { return reverse_iterator{begin()}; }
+    [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator{end()}; }
+    [[nodiscard]] constexpr auto crend() const noexcept { return const_reverse_iterator{begin()}; }
 
     // [span.sub]
     template <std::size_t Count>
