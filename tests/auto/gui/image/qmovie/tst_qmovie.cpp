@@ -272,8 +272,8 @@ void tst_QMovie::multiFrameImage()
     QMovie movie(QFINDTESTDATA("multiframe/Obj_N2_Internal_Mem.ico"));
     const int expectedFrameCount = 9;
 
-    QVERIFY(movie.isValid());
     QCOMPARE(movie.frameCount(), expectedFrameCount);
+    QVERIFY(movie.isValid());
     movie.setSpeed(1000); // speed up the test: play at 10 FPS (1000% of normal)
     QElapsedTimer playTimer;
     QSignalSpy frameChangedSpy(&movie, &QMovie::frameChanged);
