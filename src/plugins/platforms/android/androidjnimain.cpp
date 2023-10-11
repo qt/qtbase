@@ -583,10 +583,6 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     env->DeleteGlobalRef(m_classLoaderObject);
     if (m_resourcesObj)
         env->DeleteGlobalRef(m_resourcesObj);
-    if (m_activityObject)
-        env->DeleteGlobalRef(m_activityObject);
-    if (m_serviceObject)
-        env->DeleteGlobalRef(m_serviceObject);
     if (m_bitmapClass)
         env->DeleteGlobalRef(m_bitmapClass);
     if (m_ARGB_8888_BitmapConfigValue)
@@ -879,10 +875,10 @@ static int registerNatives(JNIEnv *env)
     clazz = env->GetObjectClass(m_classLoaderObject);
     GET_AND_CHECK_METHOD(m_loadClassMethodID, clazz, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
     if (serviceObject)
-        m_serviceObject = env->NewGlobalRef(serviceObject);
+        m_serviceObject = serviceObject; // m_serviceObject creates and manages as global ref
 
     if (activityObject)
-        m_activityObject = env->NewGlobalRef(activityObject);
+        m_activityObject = activityObject; // m_activityObject creates and manages as global ref
 
     jobject object = activityObject ? activityObject : serviceObject;
     if (object) {
