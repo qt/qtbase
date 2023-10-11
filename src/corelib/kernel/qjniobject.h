@@ -148,7 +148,9 @@ public:
     {
         QtJniTypes::assertObjectType<Ret>();
         constexpr auto signature = QtJniTypes::methodSignature<Ret, Args...>();
-        return callObjectMethod(methodName, signature.data(), std::forward<Args>(args)...);
+        LocalFrame<Args...> frame;
+        return frame.template convertFromJni<Ret>(callObjectMethod(methodName, signature,
+                                            frame.convertToJni(std::forward<Args>(args))...));
     }
 
     QJniObject callObjectMethod(const char *methodName, const char *signature, ...) const;
