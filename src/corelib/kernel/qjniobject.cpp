@@ -736,9 +736,20 @@ QJniObject::~QJniObject()
 {}
 
 /*! \internal
+
+    While we can synchronize concurrent access to a QJniObject on the C++ side,
+    we cannot synchronize access across C++ and Java, so any concurrent access to
+    a QJniObject, except the most basic ref-counting operations (destructor and
+    assignment) is wrong. All calls must happen from the thread that created the
+    QJniObject.
 */
 JNIEnv *QJniObject::jniEnv() const noexcept
 {
+    Q_ASSERT_X([this]{
+        QJniEnvironment currentThreadEnv;
+        return currentThreadEnv.jniEnv() == d->jniEnv();
+    }(), __FUNCTION__, "QJniEnvironment mismatch, probably accessing this Java object"
+                       " from the wrong thread!");
     return d->jniEnv();
 }
 
