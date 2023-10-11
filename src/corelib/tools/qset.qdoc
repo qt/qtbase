@@ -567,29 +567,30 @@
 */
 
 /*!
-    \fn template <class T> QSet<T> QSet<T>::operator|(const QSet<T> &other) const
-    \fn template <class T> QSet<T> QSet<T>::operator+(const QSet<T> &other) const
+    \fn template <class T> QSet<T> QSet<T>::operator|(const QSet &lhs, const QSet &rhs)
+    \fn template <class T> QSet<T> QSet<T>::operator|(QSet &&lhs, const QSet &rhs)
+    \fn template <class T> QSet<T> QSet<T>::operator+(const QSet &lhs, const QSet &rhs)
+    \fn template <class T> QSet<T> QSet<T>::operator+(QSet &&lhs, const QSet &rhs)
 
-    Returns a new QSet that is the union of this set and the
-    \a other set.
+    Returns a new QSet that is the union of sets \a lhs and \a rhs.
 
     \sa unite(), operator|=(), operator&(), operator-()
 */
 
 /*!
-    \fn template <class T> QSet<T> QSet<T>::operator&(const QSet<T> &other) const
+    \fn template <class T> QSet<T> QSet<T>::operator&(const QSet &lhs, const QSet &rhs)
+    \fn template <class T> QSet<T> QSet<T>::operator&(QSet &&lhs, const QSet &rhs)
 
-    Returns a new QSet that is the intersection of this set and the
-    \a other set.
+    Returns a new QSet that is the intersection of sets \a lhs and \a rhs.
 
     \sa intersect(), operator&=(), operator|(), operator-()
 */
 
 /*!
-    \fn template <class T> QSet<T> QSet<T>::operator-(const QSet<T> &other) const
+    \fn template <class T> QSet<T> QSet<T>::operator-(const QSet &lhs, const QSet &rhs)
+    \fn template <class T> QSet<T> QSet<T>::operator-(QSet &&lhs, const QSet &rhs)
 
-    Returns a new QSet that is the set difference of this set and
-    the \a other set, i.e., this set - \a other set.
+    Returns a new QSet that is the set difference of sets \a lhs and \a rhs.
 
     \sa subtract(), operator-=(), operator|(), operator&()
 */

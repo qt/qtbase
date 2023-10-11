@@ -189,14 +189,18 @@ public:
     inline QSet<T> &operator+=(const T &value) { insert(value); return *this; }
     inline QSet<T> &operator-=(const QSet<T> &other) { subtract(other); return *this; }
     inline QSet<T> &operator-=(const T &value) { remove(value); return *this; }
-    inline QSet<T> operator|(const QSet<T> &other) const
-        { QSet<T> result = *this; result |= other; return result; }
-    inline QSet<T> operator&(const QSet<T> &other) const
-        { QSet<T> result = *this; result &= other; return result; }
-    inline QSet<T> operator+(const QSet<T> &other) const
-        { QSet<T> result = *this; result += other; return result; }
-    inline QSet<T> operator-(const QSet<T> &other) const
-        { QSet<T> result = *this; result -= other; return result; }
+
+    friend QSet operator|(const QSet &lhs, const QSet &rhs) { return QSet(lhs) |= rhs; }
+    friend QSet operator|(QSet &&lhs, const QSet &rhs) { lhs |= rhs; return std::move(lhs); }
+
+    friend QSet operator&(const QSet &lhs, const QSet &rhs) { return QSet(lhs) &= rhs; }
+    friend QSet operator&(QSet &&lhs, const QSet &rhs) { lhs &= rhs; return std::move(lhs); }
+
+    friend QSet operator+(const QSet &lhs, const QSet &rhs) { return QSet(lhs) += rhs; }
+    friend QSet operator+(QSet &&lhs, const QSet &rhs) { lhs += rhs; return std::move(lhs); }
+
+    friend QSet operator-(const QSet &lhs, const QSet &rhs) { return QSet(lhs) -= rhs; }
+    friend QSet operator-(QSet &&lhs, const QSet &rhs) { lhs -= rhs; return std::move(lhs); }
 
     QList<T> values() const;
 
