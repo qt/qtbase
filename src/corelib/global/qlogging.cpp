@@ -2088,34 +2088,61 @@ void qErrnoWarning(int code, const char *msg, ...)
     \relates <QtLogging>
     \since 5.0
 
-    Installs a Qt message \a handler which has been defined
-    previously. Returns a pointer to the previous message handler.
+    Installs a Qt message \a handler.
+    Returns a pointer to the previously installed message handler.
 
-    The message handler is a function that prints out debug messages,
-    warnings, critical and fatal error messages. The Qt library (debug
-    mode) contains hundreds of warning messages that are printed
-    when internal errors (usually invalid function arguments)
-    occur. Qt built in release mode also contains such warnings unless
-    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during
-    compilation. If you implement your own message handler, you get total
-    control of these messages.
+    A message handler is a function that prints out debug, info,
+    warning, critical, and fatal messages from Qt's logging infrastructure.
+    By default, Qt uses a standard message handler that formats and
+    prints messages to different sinks specific to the operating system
+    and Qt configuration. Installing your own message handler allows you
+    to assume full control, and for instance log messages to the
+    file system.
 
-    The default message handler prints the message to the standard output
-    under X11 or to the debugger under Windows. If it is a fatal message, the
-    application aborts immediately after handling that message. Custom
-    message handlers should not attempt to exit an application on their own.
+    Note that Qt supports \l{QLoggingCategory}{logging categories} for
+    grouping related messages in semantic categories. You can use these
+    to enable or disable logging per category and \l{QtMsgType}{message type}.
+    As the filtering for logging categories is done even before a message
+    is created, messages for disabled types and categories will not reach
+    the message handler.
 
-    Only one message handler can be defined, since this is usually
-    done on an application-wide basis to control debug output.
+    A message handler needs to be
+    \l{Reentrancy and Thread-Safety}{reentrant}. That is, it might be called
+    from different threads, in parallel. Therefore, writes to common sinks
+    (like a database, or a file) often need to be synchronized.
 
-    To restore the message handler, call \c qInstallMessageHandler(0).
+    Qt allows to enrich logging messages with further meta-information
+    by calling \l qSetMessagePattern(), or setting the \c QT_MESSAGE_PATTERN
+    environment variable. To keep this formatting, a custom message handler
+    can use \l qFormatLogMessage().
 
-    Example:
+    Try to keep the code in the message handler itself minimal, as expensive
+    operations might block the application. Also, to avoid recursion, any
+    logging messages generated in the message handler itself will be ignored.
+
+    The message handler should always return. For
+    \l{QtFatalMsg}{fatal messages}, the application aborts immediately after
+    handling that message.
+
+    Only one message handler can be installed at a time, for the whole application.
+    If there was a previous custom message handler installed,
+    the function will return a pointer to it. This handler can then
+    be later reinstalled by another call to the method. Also, calling
+    \c qInstallMessageHandler(nullptr) will restore the default
+    message handler.
+
+    Here is an example of a message handler that logs to a local file
+    before calling the default handler:
 
     \snippet code/src_corelib_global_qglobal.cpp 23
 
+    Note that the C++ standard guarantees that \c{static FILE *f} is
+    initialized in a thread-safe way. We can also expect \c{fprintf()}
+    and \c{fflush()} to be thread-safe, so no further synchronization
+    is necessary.
+
     \sa QtMessageHandler, QtMsgType, qDebug(), qInfo(), qWarning(), qCritical(), qFatal(),
-    {Debugging Techniques}
+    {Debugging Techniques}, qFormatLogMessage()
 */
 
 /*!
