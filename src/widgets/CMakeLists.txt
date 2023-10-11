@@ -71,7 +71,6 @@ qt_internal_add_module(Widgets
     NO_PCH_SOURCES
         compat/removed_api.cpp
         kernel/qgesturemanager.cpp # undef QT_NO_FOREACH
-        kernel/qwidgetrepaintmanager.cpp # undef QT_NO_FOREACH
     GENERATE_CPP_EXPORTS
 )
 
