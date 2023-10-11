@@ -735,6 +735,8 @@ bool QtIcoHandler::supportsOption(ImageOption option) const
  */
 bool QtIcoHandler::canRead() const
 {
+    if (knownCanRead)
+        return true;
     bool bCanRead = false;
     QIODevice *device = QImageIOHandler::device();
     if (device) {
@@ -744,6 +746,7 @@ bool QtIcoHandler::canRead() const
     } else {
         qCWarning(lcIco, "QtIcoHandler::canRead() called with no device");
     }
+    knownCanRead = bCanRead;
     return bCanRead;
 }
 
