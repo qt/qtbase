@@ -663,12 +663,11 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
 {
     Q_Q(QColumnView);
     QAbstractItemView *view = nullptr;
-    ViewConnections connections;
+    QMetaObject::Connection clickedConnection;
     if (model->hasChildren(index)) {
         view = q->createColumn(index);
-        connections.push_back(
-              QObjectPrivate::connect(view, &QAbstractItemView::clicked,
-                                      this, &QColumnViewPrivate::clicked));
+        clickedConnection = QObjectPrivate::connect(view, &QAbstractItemView::clicked,
+                                                    this, &QColumnViewPrivate::clicked);
     } else {
         if (!previewColumn)
             setPreviewWidget(new QWidget(q));
@@ -676,18 +675,14 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
         view->setMinimumWidth(qMax(view->minimumWidth(), previewWidget->minimumWidth()));
     }
 
-    connections.insert(connections.end(),
-                       {QObject::connect(view, &QAbstractItemView::activated,
-                                         q, &QColumnView::activated),
-                        QObject::connect(view, &QAbstractItemView::clicked,
-                                         q, &QColumnView::clicked),
-                        QObject::connect(view, &QAbstractItemView::doubleClicked,
-                                         q, &QColumnView::doubleClicked),
-                        QObject::connect(view, &QAbstractItemView::entered,
-                                         q, &QColumnView::entered),
-                        QObject::connect(view, &QAbstractItemView::pressed,
-                                         q, &QColumnView::pressed)});
-    viewConnections.insert(view, std::move(connections));
+    viewConnections[view] = {
+        QObject::connect(view, &QAbstractItemView::activated, q, &QColumnView::activated),
+        QObject::connect(view, &QAbstractItemView::clicked, q, &QColumnView::clicked),
+        QObject::connect(view, &QAbstractItemView::doubleClicked, q, &QColumnView::doubleClicked),
+        QObject::connect(view, &QAbstractItemView::entered, q, &QColumnView::entered),
+        QObject::connect(view, &QAbstractItemView::pressed, q, &QColumnView::pressed),
+        clickedConnection
+    };
 
     view->setFocusPolicy(Qt::NoFocus);
     view->setParent(viewport);
