@@ -106,11 +106,9 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
         }
     }
 
-    QMap<ObjectGesture, QList<QGesture *> >::const_iterator iter = m_objectGestures.constBegin();
-    while (iter != m_objectGestures.constEnd()) {
-        ObjectGesture objectGesture = iter.key();
+    for (const auto &[objectGesture, gestures] : std::as_const(m_objectGestures).asKeyValueRange()) {
         if (objectGesture.gesture == type) {
-            foreach (QGesture *g, iter.value()) {
+            for (QGesture *g : gestures) {
                 auto it = m_gestureToRecognizer.constFind(g);
                 if (it != m_gestureToRecognizer.cend() && it.value()) {
                     QGestureRecognizer *recognizer = it.value();
@@ -119,7 +117,6 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
                 }
             }
         }
-        ++iter;
     }
 }
 
