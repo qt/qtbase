@@ -208,8 +208,6 @@ public:
     void setHintingPreference(HintingPreference hintingPreference);
     HintingPreference hintingPreference() const;
 
-    // Note: The following set of APIs are preliminary and may change in future releases
-
     struct Tag
     {
         constexpr Tag() = default;
@@ -272,10 +270,6 @@ public:
     bool isFeatureSet(Tag tag) const;
     QList<Tag> featureTags() const;
     void clearFeatures();
-
-    static QByteArray tagToString(quint32 tag);
-    static quint32 stringToTag(const char *tagString);
-    // --
 
     // dupicated from QFontInfo
     bool exactMatch() const;

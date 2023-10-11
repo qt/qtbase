@@ -2364,9 +2364,8 @@ std::optional<QFont::Tag> QFont::Tag::fromString(QAnyStringView view) noexcept
 */
 
 /*!
-    \since 6.6
+    \since 6.7
     \overload
-    \preliminary
 
     Applies an integer value to the typographical feature specified by \a tag when shaping the
     text. This provides advanced access to the font shaping process, and can be used to support
@@ -2410,9 +2409,8 @@ void QFont::setFeature(Tag tag, quint32 value)
 }
 
 /*!
-    \since 6.6
+    \since 6.7
     \overload
-    \preliminary
 
     Unsets the \a tag from the map of explicitly enabled/disabled features.
 
@@ -2435,8 +2433,7 @@ void QFont::unsetFeature(Tag tag)
 }
 
 /*!
-   \since 6.6
-   \preliminary
+   \since 6.7
 
    Returns a list of tags for all font features currently set on this QFont.
 
@@ -2450,8 +2447,7 @@ QList<QFont::Tag> QFont::featureTags() const
 }
 
 /*!
-   \since 6.6
-   \preliminary
+   \since 6.7
 
    Returns the value set for a specific feature \a tag. If the tag has not been set, 0 will be
    returned instead.
@@ -2466,8 +2462,7 @@ quint32 QFont::featureValue(Tag tag) const
 }
 
 /*!
-   \since 6.6
-   \preliminary
+   \since 6.7
 
    Returns true if a value for the feature given by \a tag has been set on the QFont, otherwise
    returns false.
@@ -2482,8 +2477,7 @@ bool QFont::isFeatureSet(Tag tag) const
 }
 
 /*!
-   \since 6.6
-   \preliminary
+   \since 6.7
 
    Clears any previously set features on the QFont.
 
@@ -2494,43 +2488,6 @@ bool QFont::isFeatureSet(Tag tag) const
 void QFont::clearFeatures()
 {
     d->features.clear();
-}
-
-/*!
-    \since 6.6
-    \internal
-
-    Returns the decoded name for \a tag as defined in the OpenType font specification. The tag
-    is decoded into four 8 bit characters. For valid tags, each will be in the basic Latin range of
-    0x20 to 0x7E.
-
-    \sa setFeature(), unsetFeature(), featureTags(), featureValue()
-*/
-QByteArray QFont::tagToString(quint32 tag)
-{
-    if (auto maybeTag = QFont::Tag::fromValue(tag))
-        return maybeTag->toString();
-    return {};
-}
-
-/*!
-    \since 6.6
-    \internal
-
-    Returns the encoded tag for \a name as defined in the OpenType font specification. The name
-    must be a null-terminated string of four characters exactly, and in order to be a valid tag,
-    each character must be in the basic Latin range of 0x20 to 0x7E.
-
-    The function returns 0 for strings of the wrong length, but does not otherwise check the input
-    for validity.
-
-    \sa setFeature(), unsetFeature(), featureTags(), featureValue()
-*/
-quint32 QFont::stringToTag(const char *name)
-{
-    if (auto maybeTag = QFont::Tag::fromString(name))
-        return maybeTag->value();
-    return 0;
 }
 
 extern QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style,
