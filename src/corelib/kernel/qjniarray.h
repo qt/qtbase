@@ -86,7 +86,7 @@ public:
     qsizetype size() const
     {
         if (jarray array = object<jarray>())
-            return QJniEnvironment()->GetArrayLength(array);
+            return jniEnv()->GetArrayLength(array);
         return 0;
     }
 
@@ -193,7 +193,7 @@ public:
     const T operator[](qsizetype i) const { return at(i); } // const return value to disallow assignment
     T at(qsizetype i) const
     {
-        QJniEnvironment env;
+        JNIEnv *env = jniEnv();
         if constexpr (std::is_convertible_v<jobject, T>) {
             return T{env->GetObjectArrayElement(object<jobjectArray>(), i)};
         } else {
@@ -219,7 +219,7 @@ public:
     }
     auto asContainer() const
     {
-        QJniEnvironment env;
+        JNIEnv *env = jniEnv();
         if constexpr (std::is_same_v<T, jobject>) {
             QList<jobject> res;
             res.reserve(size());
