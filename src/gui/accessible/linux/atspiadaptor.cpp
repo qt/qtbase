@@ -2175,9 +2175,9 @@ namespace
         QString name = ia2Name;
         QString value = ia2Value;
 
-        // IAccessible2: http://www.linuxfoundation.org/collaborate/workgroups/accessibility/iaccessible2/textattributes
-        // ATK attribute names: https://git.gnome.org/browse/orca/tree/src/orca/text_attribute_names.py
-        // ATK attribute values: https://developer.gnome.org/atk/unstable/AtkText.html#AtkTextAttribute
+        // IAccessible2: https://wiki.linuxfoundation.org/accessibility/iaccessible2/textattributes
+        // ATK attribute names: https://gitlab.gnome.org/GNOME/orca/-/blob/master/src/orca/text_attribute_names.py
+        // ATK attribute values: https://gnome.pages.gitlab.gnome.org/atk/AtkText.html#AtkTextAttribute
 
         // https://bugzilla.gnome.org/show_bug.cgi?id=744553 "ATK docs provide no guidance for allowed values of some text attributes"
         // specifically for "weight", "invalid", "language" and value range for colors
