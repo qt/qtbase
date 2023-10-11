@@ -2160,7 +2160,7 @@ namespace
     QString atspiColor(const QString &ia2Color)
     {
         // "rgb(%u,%u,%u)" -> "%u,%u,%u"
-        return ia2Color.mid(4, ia2Color.size() - (4+1));
+        return ia2Color.mid(4, ia2Color.size() - (4+1)).replace(u"\\,"_s, u","_s);
     }
 
     QString atspiSize(const QString &ia2Size)
