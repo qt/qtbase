@@ -61,7 +61,7 @@ function(_qt_internal_wasm_add_target_helpers target)
             endif()
 
             configure_file("${WASM_BUILD_DIR}/plugins/platforms/wasm_shell.html"
-                "${_target_directory}/${_target_output_name}.html")
+                "${_target_directory}/${_target_output_name}.html" @ONLY)
             configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtloader.js"
                 ${_target_directory}/qtloader.js COPYONLY)
             configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtlogo.svg"
