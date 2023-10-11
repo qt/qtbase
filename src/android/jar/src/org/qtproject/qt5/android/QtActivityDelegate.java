@@ -1325,7 +1325,14 @@ public class QtActivityDelegate
     public void setSurfaceGeometry(int id, int x, int y, int w, int h) {
         if (m_surfaces.containsKey(id)) {
             QtSurface surface = m_surfaces.get(id);
-            surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+            QtLayout.LayoutParams params = new QtLayout.LayoutParams(w, h, x, y);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                if (m_activity.isInMultiWindowMode()) {
+                    params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                }
+            }
+            surface.setLayoutParams(params);
         } else if (m_nativeViews.containsKey(id)) {
             View view = m_nativeViews.get(id);
             view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));

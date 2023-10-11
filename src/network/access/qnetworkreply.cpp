@@ -76,7 +76,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     itself.
 
     QNetworkReply is a sequential-access QIODevice, which means that
-    once data is read from the object, it no longer kept by the
+    once data is read from the object, it is no longer kept by the
     device. It is therefore the application's responsibility to keep
     this data if it needs to. Whenever more data is received from the
     network and processed, the readyRead() signal is emitted.
@@ -344,7 +344,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     processing. After this signal is emitted, there will be no more
     updates to the reply's data or metadata.
 
-    Unless close() or abort() have been called, the reply will be still be opened
+    Unless close() or abort() have been called, the reply will still be opened
     for reading, so the data can be retrieved by calls to read() or
     readAll(). In particular, if no calls to read() were made as a
     result of readyRead(), a call to readAll() will retrieve the full

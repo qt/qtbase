@@ -11,7 +11,11 @@ MODULE_EXT_HEADERS = png.h pngconf.h
 
 load(qt_helper_lib)
 
-DEFINES += PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0
+DEFINES += PNG_ARM_NEON_OPT=0 \
+           PNG_POWERPC_VSX_OPT=0 \
+           PNG_IMPEXP= \
+           _CRT_SECURE_NO_DEPRECATE
+
 SOURCES += \
     png.c \
     pngerror.c \

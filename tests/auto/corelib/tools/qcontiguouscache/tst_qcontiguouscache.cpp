@@ -75,10 +75,12 @@ void tst_QContiguousCache::empty()
 {
     QContiguousCache<int> c(10);
     QCOMPARE(c.capacity(), 10);
+    QCOMPARE(c.size(), 0);
     QCOMPARE(c.count(), 0);
     QVERIFY(c.isEmpty());
     c.append(1);
     QCOMPARE(c.count(), 1);
+    QCOMPARE(c.size(), 1);
     QVERIFY(!c.isEmpty());
     c.clear();
     QCOMPARE(c.capacity(), 10);

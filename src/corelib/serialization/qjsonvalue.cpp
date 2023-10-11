@@ -705,10 +705,13 @@ QString QJsonValue::toString() const
  */
 QJsonArray QJsonValue::toArray(const QJsonArray &defaultValue) const
 {
-    if (t != QCborValue::Array || n >= 0 || !d)
+    if (!isArray())
         return defaultValue;
-
-    return QJsonArray(d.data());
+    QCborContainerPrivate *dd = nullptr;
+    Q_ASSERT(n == -1 || d == nullptr);
+    if (n < 0)
+        dd = d.data();
+    return QJsonArray(dd);
 }
 
 /*!
@@ -730,10 +733,13 @@ QJsonArray QJsonValue::toArray() const
  */
 QJsonObject QJsonValue::toObject(const QJsonObject &defaultValue) const
 {
-    if (t != QCborValue::Map || n >= 0 || !d)
+    if (!isObject())
         return defaultValue;
-
-    return QJsonObject(d.data());
+    QCborContainerPrivate *dd = nullptr;
+    Q_ASSERT(n == -1 || d == nullptr);
+    if (n < 0)
+        dd = d.data();
+    return QJsonObject(dd);
 }
 
 /*!

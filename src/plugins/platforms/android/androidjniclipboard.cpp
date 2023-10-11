@@ -70,18 +70,6 @@ namespace QtAndroidClipboard
     void setClipboardMimeData(QMimeData *data)
     {
         clearClipboardData();
-        if (data->hasText()) {
-            QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
-                                                      "setClipboardText", "(Ljava/lang/String;)V",
-                                                      QJNIObjectPrivate::fromString(data->text()).object());
-        }
-        if (data->hasHtml()) {
-            QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
-                                                      "setClipboardHtml",
-                                                      "(Ljava/lang/String;Ljava/lang/String;)V",
-                                                      QJNIObjectPrivate::fromString(data->text()).object(),
-                                                      QJNIObjectPrivate::fromString(data->html()).object());
-        }
         if (data->hasUrls()) {
             QList<QUrl> urls = data->urls();
             for (const auto &u : qAsConst(urls)) {
@@ -89,6 +77,16 @@ namespace QtAndroidClipboard
                                                           "(Ljava/lang/String;)V",
                                                           QJNIObjectPrivate::fromString(u.toEncoded()).object());
             }
+        } else if (data->hasText()) { // hasText || hasUrls, so the order matter here.
+            QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
+                                                      "setClipboardText", "(Ljava/lang/String;)V",
+                                                      QJNIObjectPrivate::fromString(data->text()).object());
+        } else if (data->hasHtml()) {
+            QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
+                                                      "setClipboardHtml",
+                                                      "(Ljava/lang/String;Ljava/lang/String;)V",
+                                                      QJNIObjectPrivate::fromString(data->text()).object(),
+                                                      QJNIObjectPrivate::fromString(data->html()).object());
         }
     }
 

@@ -921,7 +921,7 @@ bool QHostAddress::isEqual(const QHostAddress &other, ConversionMode mode) const
             return memcmp(&d->a6, &other.d->a6, sizeof(Q_IPV6ADDR)) == 0;
         case QAbstractSocket::AnyIPProtocol:
             return (mode & QHostAddress::ConvertUnspecifiedAddress)
-                    && (other.d->a6_64.c[0] == 0) && (other.d->a6_64.c[1] == 0);
+                    && (d->a6_64.c[0] == 0) && (d->a6_64.c[1] == 0);
         case QAbstractSocket::UnknownNetworkLayerProtocol:
             return false;
         }

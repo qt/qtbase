@@ -70,6 +70,8 @@ DEFINES += QT_BUILD_XCB_PLUGIN
 
 qtConfig(xcb-xlib) {
     QMAKE_USE += xcb_xlib
+    SOURCES += qt_xlib_wrapper.c
+    HEADERS += qt_xlib_wrapper.h
 }
 
 qtConfig(xcb-sm) {

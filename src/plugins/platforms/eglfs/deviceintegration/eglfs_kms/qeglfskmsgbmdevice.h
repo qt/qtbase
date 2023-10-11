@@ -44,6 +44,7 @@
 
 #include "qeglfskmsgbmcursor.h"
 #include <qeglfskmsdevice.h>
+#include <qeglfskmseventreader.h>
 
 #include <gbm.h>
 
@@ -75,11 +76,14 @@ public:
                         const QPoint &virtualPos,
                         const QList<QPlatformScreen *> &virtualSiblings) override;
 
+    bool usesEventReader() const;
+    QEglFSKmsEventReader *eventReader() { return &m_eventReader; }
+
 private:
     Q_DISABLE_COPY(QEglFSKmsGbmDevice)
 
     gbm_device *m_gbm_device;
-
+    QEglFSKmsEventReader m_eventReader;
     QEglFSKmsGbmCursor *m_globalCursor;
 };
 
