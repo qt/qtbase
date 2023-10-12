@@ -38,6 +38,7 @@ namespace QtAndroid
     void setViewVisibility(jobject view, bool visible);
 
     QWindow *topLevelWindowAt(const QPoint &globalPos);
+    QWindow *windowFromId(int windowId);
     int availableWidthPixels();
     int availableHeightPixels();
     double scaledDensity();
