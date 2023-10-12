@@ -14,6 +14,7 @@ qt_internal_add_tool(${target_name}
     SOURCES
         qmlutils.cpp qmlutils.h
         qtmoduleinfo.cpp qtmoduleinfo.h
+        qtplugininfo.cpp qtplugininfo.h
         utils.cpp utils.h
         main.cpp
     DEFINES
