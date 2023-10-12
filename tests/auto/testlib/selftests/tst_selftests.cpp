@@ -931,6 +931,7 @@ static QProcessEnvironment testEnvironment()
         const auto envKeys = systemEnvironment.keys();
         for (const QString &key : envKeys) {
             const bool useVariable = key == "PATH" || key == "QT_QPA_PLATFORM"
+                || key == "ASAN_OPTIONS"
 #if defined(Q_OS_QNX)
                 || key == "GRAPHICS_ROOT" || key == "TZ"
 #elif defined(Q_OS_UNIX)
