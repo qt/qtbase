@@ -929,6 +929,7 @@ static QProcessEnvironment testEnvironment()
         const bool preserveLibPath = qEnvironmentVariableIsSet("QT_PRESERVE_TESTLIB_PATH");
         foreach (const QString &key, systemEnvironment.keys()) {
             const bool useVariable = key == "PATH" || key == "QT_QPA_PLATFORM"
+                || key == "ASAN_OPTIONS"
 #if defined(Q_OS_QNX)
                 || key == "GRAPHICS_ROOT" || key == "TZ"
 #elif defined(Q_OS_UNIX)
