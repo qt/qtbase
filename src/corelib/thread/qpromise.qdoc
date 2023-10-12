@@ -106,8 +106,8 @@
 */
 
 /*!
-    \fn template <typename T> template <typename...Args, std::enable_if_t<std::is_constructible_v<T, Args...>, bool> = true> QPromise<T>::emplaceResultAt(int index, Args&&...args)
-    \fn template <typename T> template <typename...Args, std::enable_if_t<std::is_constructible_v<T, Args...>, bool> = true> QPromise<T>::emplaceResult(Args&&...args)
+    \fn template <typename T> template <typename...Args, std::enable_if_t<std::is_constructible_v<T, Args...>, bool> = true> bool QPromise<T>::emplaceResultAt(int index, Args&&...args)
+    \fn template <typename T> template <typename...Args, std::enable_if_t<std::is_constructible_v<T, Args...>, bool> = true> bool QPromise<T>::emplaceResult(Args&&...args)
     \since 6.6
 
     Adds a result constructed from \a args... to the internal result collection
