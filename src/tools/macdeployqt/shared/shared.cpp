@@ -598,6 +598,10 @@ QStringList getBinaryDependencies(const QString executablePath,
             QString binary = QDir::cleanPath(executablePath + trimmedLine.mid(QStringLiteral("@executable_path/").length()));
             if (binary != path)
                 binaries.append(binary);
+        } else if (trimmedLine.startsWith("@loader_path/")) {
+            QString binary = QDir::cleanPath(QFileInfo(path).path() + "/" + trimmedLine.mid(QStringLiteral("@loader_path/").length()));
+            if (binary != path)
+                binaries.append(binary);
         } else if (trimmedLine.startsWith("@rpath/")) {
             if (!rpathsLoaded) {
                 rpaths = getBinaryRPaths(path, true, executablePath);
