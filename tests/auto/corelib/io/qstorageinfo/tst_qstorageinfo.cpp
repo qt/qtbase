@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QTest>
+#include <QStandardPaths>
 #include <QStorageInfo>
 #include <QTemporaryFile>
 
@@ -156,16 +157,44 @@ void tst_QStorageInfo::storageList()
     }
 }
 
+static bool checkFilesystemGoodForWriting(QTemporaryFile &file, QStorageInfo &storage)
+{
+#ifdef Q_OS_LINUX
+    auto reconstructAt = [](auto *where, auto &&... how) {
+        // it's very difficult to convince QTemporaryFile to change the path...
+        std::destroy_at(where);
+        q20::construct_at(where, std::forward<decltype(how)>(how)...);
+    };
+    if (storage.fileSystemType() == "btrfs") {
+        // let's see if we can find another, writable FS
+        QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+        if (!runtimeDir.isEmpty()) {
+            reconstructAt(&file, runtimeDir + "/XXXXXX");
+            if (file.open()) {
+                storage.setPath(file.fileName());
+                if (storage.fileSystemType() != "btrfs")
+                    return true;
+            }
+        }
+        QTest::qSkip("btrfs does not synchronously update free space; this test would fail",
+                     __FILE__, __LINE__);
+        return false;
+    }
+#else
+    Q_UNUSED(file);
+    Q_UNUSED(storage);
+#endif
+    return true;
+}
+
 void tst_QStorageInfo::tempFile()
 {
     QTemporaryFile file;
     QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QStorageInfo storage1(file.fileName());
-#ifdef Q_OS_LINUX
-    if (storage1.fileSystemType() == "btrfs")
-        QSKIP("This test doesn't work on btrfs, probably due to a btrfs bug");
-#endif
+    if (!checkFilesystemGoodForWriting(file, storage1))
+        return;
 
     qint64 free = storage1.bytesFree();
     QCOMPARE_NE(free, -1);
@@ -188,10 +217,8 @@ void tst_QStorageInfo::caching()
     QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QStorageInfo storage1(file.fileName());
-#ifdef Q_OS_LINUX
-    if (storage1.fileSystemType() == "btrfs")
-        QSKIP("This test doesn't work on btrfs, probably due to a btrfs bug");
-#endif
+    if (!checkFilesystemGoodForWriting(file, storage1))
+        return;
 
     qint64 free = storage1.bytesFree();
     QStorageInfo storage2(storage1);
