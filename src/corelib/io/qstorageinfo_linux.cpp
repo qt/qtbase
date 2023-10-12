@@ -259,7 +259,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     for (MountInfo &info : infos) {
         QStorageInfoPrivate d(std::move(info));
         d.retrieveVolumeInfo();
-        if (d.bytesTotal == 0 && d.rootPath != u'/')
+        if (d.bytesTotal <= 0 && d.rootPath != u'/')
             continue;
         if (info.stDev != deviceIdForPath(d.rootPath))
             continue;       // probably something mounted over this mountpoint
