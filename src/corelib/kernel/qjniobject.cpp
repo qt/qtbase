@@ -108,7 +108,7 @@ using namespace Qt::StringLiterals;
                                                                 string2.object<jstring>());
     \endcode
 
-    Note that while he first template parameter specifies the return type of the Java
+    Note that while the first template parameter specifies the return type of the Java
     function, the method will still return a QJniObject.
 
     \section1 Handling Java Exception
