@@ -53,10 +53,20 @@ Q_GLOBAL_STATIC(QThreadStorage<QJniEnvironmentPrivateTLS *>, jniEnvTLS)
 QJniEnvironment::QJniEnvironment()
     : d(new QJniEnvironmentPrivate{})
 {
+    d->jniEnv = getJniEnv();
+}
+
+/*!
+    Returns the JNIEnv pointer for the current thread.
+
+    The current thread will be attached to the Java VM.
+*/
+JNIEnv *QJniEnvironment::getJniEnv()
+{
+    JNIEnv *jniEnv = nullptr;
+
     JavaVM *vm = QtAndroidPrivate::javaVM();
-    const jint ret = vm->GetEnv((void**)&d->jniEnv, JNI_VERSION_1_6);
-    if (ret == JNI_OK) // Already attached
-        return;
+    const jint ret = vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6);
 
     if (ret == JNI_EDETACHED) { // We need to (re-)attach
         const QByteArray threadName = QThread::currentThread()->objectName().toUtf8();
@@ -64,12 +74,12 @@ QJniEnvironment::QJniEnvironment()
                                   threadName.isEmpty() ? "QtThread" : threadName.constData(),
                                   nullptr
                                 };
-        if (vm->AttachCurrentThread(&d->jniEnv, &args) != JNI_OK)
-            return;
-
-        if (!jniEnvTLS->hasLocalData()) // If we attached the thread we own it.
-            jniEnvTLS->setLocalData(new QJniEnvironmentPrivateTLS);
+        if (vm->AttachCurrentThread(&jniEnv, &args) == JNI_OK) {
+            if (!jniEnvTLS->hasLocalData()) // If we attached the thread we own it.
+                jniEnvTLS->setLocalData(new QJniEnvironmentPrivateTLS);
+        }
     }
+    return jniEnv;
 }
 
 /*!

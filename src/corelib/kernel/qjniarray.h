@@ -278,16 +278,15 @@ template <typename ElementType, typename List, typename NewFn, typename SetFn>
 auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
 {
     const int length = int(list.size());
-    QJniEnvironment env;
-    JNIEnv *jenv = env.jniEnv();
-    auto localArray = (jenv->*newArray)(length);
-    if (env.checkAndClearExceptions())
+    JNIEnv *env = QJniEnvironment::getJniEnv();
+    auto localArray = (env->*newArray)(length);
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return QJniArray<ElementType>();
 
     // can't use static_cast here because we have signed/unsigned mismatches
     if (length) {
-        (jenv->*setRegion)(localArray, 0, length,
-                           reinterpret_cast<const ElementType *>(std::as_const(list).data()));
+        (env->*setRegion)(localArray, 0, length,
+                          reinterpret_cast<const ElementType *>(std::as_const(list).data()));
     }
     return QJniArray<ElementType>(localArray);
 };
@@ -299,7 +298,7 @@ auto QJniArrayBase::makeObjectArray(List &&list)
     if (list.isEmpty())
         return QJniArray<jobject>();
 
-    QJniEnvironment env;
+    JNIEnv *env = QJniEnvironment::getJniEnv();
     const int length = int(list.size());
 
     // this assumes that all objects in the list have the same class
@@ -309,7 +308,7 @@ auto QJniArrayBase::makeObjectArray(List &&list)
     else
         elementClass = env->GetObjectClass(list.first());
     auto localArray = env->NewObjectArray(length, elementClass, nullptr);
-    if (env.checkAndClearExceptions())
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return QJniArray<jobject>();
     for (int i = 0; i < length; ++i) {
         jobject object;

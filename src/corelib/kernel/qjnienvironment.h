@@ -78,6 +78,8 @@ public:
     bool checkAndClearExceptions(OutputMode outputMode = OutputMode::Verbose);
     static bool checkAndClearExceptions(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose);
 
+    static JNIEnv *getJniEnv();
+
 private:
     Q_DISABLE_COPY_MOVE(QJniEnvironment)
     QScopedPointer<QJniEnvironmentPrivate> d;

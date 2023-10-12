@@ -47,7 +47,7 @@ class Q_CORE_EXPORT QJniObject
         JNIEnv *jniEnv() const
         {
             if (!env)
-                env = QJniEnvironment().jniEnv();
+                env = QJniEnvironment::getJniEnv();
             return env;
         }
         bool checkAndClearExceptions()
@@ -176,16 +176,16 @@ public:
     template <typename Ret, typename ...Args>
     static auto callStaticMethod(const char *className, const char *methodName, const char *signature, Args &&...args)
     {
-        QJniEnvironment env;
-        jclass clazz = QJniObject::loadClass(className, env.jniEnv());
+        JNIEnv *env = QJniEnvironment::getJniEnv();
+        jclass clazz = QJniObject::loadClass(className, env);
         return callStaticMethod<Ret>(clazz, methodName, signature, std::forward<Args>(args)...);
     }
 
     template <typename Ret, typename ...Args>
     static auto callStaticMethod(jclass clazz, const char *methodName, const char *signature, Args &&...args)
     {
-        QJniEnvironment env;
-        jmethodID id = clazz ? getMethodID(env.jniEnv(), clazz, methodName, signature, true)
+        JNIEnv *env = QJniEnvironment::getJniEnv();
+        jmethodID id = clazz ? getMethodID(env, clazz, methodName, signature, true)
                              : 0;
         return callStaticMethod<Ret>(clazz, id, std::forward<Args>(args)...);
     }
@@ -228,9 +228,9 @@ public:
     >
     static auto callStaticMethod(const char *className, const char *methodName, Args &&...args)
     {
-        QJniEnvironment env;
-        jclass clazz = QJniObject::loadClass(className, env.jniEnv());
-        const jmethodID id = clazz ? getMethodID(env.jniEnv(), clazz, methodName,
+        JNIEnv *env = QJniEnvironment::getJniEnv();
+        jclass clazz = QJniObject::loadClass(className, env);
+        const jmethodID id = clazz ? getMethodID(env, clazz, methodName,
                                          QtJniTypes::methodSignature<Ret, Args...>().data(), true)
                                    : 0;
         return callStaticMethod<Ret>(clazz, id, std::forward<Args>(args)...);
@@ -253,10 +253,10 @@ public:
     >
     static auto callStaticMethod(const char *methodName, Args &&...args)
     {
-        QJniEnvironment env;
+        JNIEnv *env = QJniEnvironment::getJniEnv();
         const jclass clazz = QJniObject::loadClass(QtJniTypes::Traits<Klass>::className().data(),
-                                                   env.jniEnv());
-        const jmethodID id = clazz ? getMethodID(env.jniEnv(), clazz, methodName,
+                                                   env);
+        const jmethodID id = clazz ? getMethodID(env, clazz, methodName,
                                          QtJniTypes::methodSignature<Ret, Args...>().data(), true)
                                    : 0;
         return callStaticMethod<Ret>(clazz, id, std::forward<Args>(args)...);
@@ -474,17 +474,17 @@ public:
     static void setStaticField(const char *className, const char *fieldName,
                                const char *signature, T value)
     {
-        QJniEnvironment env;
-        jclass clazz = QJniObject::loadClass(className, env.jniEnv());
+        JNIEnv *env = QJniEnvironment::getJniEnv();
+        jclass clazz = QJniObject::loadClass(className, env);
 
         if (!clazz)
             return;
 
-        jfieldID id = getCachedFieldID(env.jniEnv(), clazz, className, fieldName,
+        jfieldID id = getCachedFieldID(env, clazz, className, fieldName,
                                        signature, true);
         if (id) {
-            setStaticFieldForType<T>(env.jniEnv(), clazz, id, value);
-            env.checkAndClearExceptions();
+            setStaticFieldForType<T>(env, clazz, id, value);
+            QJniEnvironment::checkAndClearExceptions(env);
         }
     }
 
@@ -496,12 +496,12 @@ public:
     static void setStaticField(jclass clazz, const char *fieldName,
                                const char *signature, T value)
     {
-        QJniEnvironment env;
-        jfieldID id = getFieldID(env.jniEnv(), clazz, fieldName, signature, true);
+        JNIEnv *env = QJniEnvironment::getJniEnv();
+        jfieldID id = getFieldID(env, clazz, fieldName, signature, true);
 
         if (id) {
-            setStaticFieldForType<T>(env.jniEnv(), clazz, id, value);
-            env.checkAndClearExceptions();
+            setStaticFieldForType<T>(env, clazz, id, value);
+            QJniEnvironment::checkAndClearExceptions(env);
         }
     }
 

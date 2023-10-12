@@ -24,7 +24,7 @@ using namespace Qt::StringLiterals;
     \brief A convenience wrapper around the Java Native Interface (JNI).
 
     The QJniObject class wraps a reference to a Java object, ensuring it isn't
-    gargage-collected and providing access to most \c JNIEnv method calls
+    garbage-collected and providing access to most \c JNIEnv method calls
     (member, static) and fields (setter, getter).  It eliminates much
     boiler-plate that would normally be needed, with direct JNI access, for
     every operation, including exception-handling.
@@ -281,20 +281,17 @@ using namespace Qt::StringLiterals;
 class QJniObjectPrivate
 {
 public:
-    // This is safe and necessary - the JNIEnv is attached to the current thread
-    // and the pointer remains valid for as long as the thread is alive. And if the
-    // QJniObject outlives the thread that it lives in, and gets called for
-    // anything other than destruction, then we have a data race anyway.
-    // And it's necessary, because the QJniEnvironment destructor calls
-    // checkAndClearExceptions, and since we have QJniObjects that get destroyed from
-    // a different thread than the one "owning" it, this triggers JNI assertions.
+    // The JNIEnv is attached to the current thread, and the pointer remains
+    // valid for as long as the thread is alive. If the QJniObject were to
+    // outlive the thread that it lives in, and gets called for anything other
+    // than destruction, then we have a data race anyway.
     QJniObjectPrivate()
-        : m_env(QJniEnvironment().jniEnv())
+        : m_env(QJniEnvironment::getJniEnv())
     {
     }
     ~QJniObjectPrivate() {
         // use the environment of the current thread here
-        QJniEnvironment env;
+        JNIEnv *env = QJniEnvironment::getJniEnv();
         if (m_jobject)
             env->DeleteGlobalRef(m_jobject);
         if (m_jclass && m_own_jclass)
@@ -1035,16 +1032,16 @@ QJniObject QJniObject::callObjectMethod(const char *methodName, const char *sign
 QJniObject QJniObject::callStaticObjectMethod(const char *className, const char *methodName,
                                               const char *signature, ...)
 {
-    QJniEnvironment env;
-    jclass clazz = QJniObject::loadClass(className, env.jniEnv());
+    JNIEnv *env = QJniEnvironment::getJniEnv();
+    jclass clazz = QJniObject::loadClass(className, env);
     if (clazz) {
-        jmethodID id = QJniObject::getCachedMethodID(env.jniEnv(), clazz,
+        jmethodID id = QJniObject::getCachedMethodID(env, clazz,
                                          className,
                                          methodName, signature, true);
         if (id) {
             va_list args;
             va_start(args, signature);
-            QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args), env.jniEnv());
+            QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args), env);
             va_end(args);
             return res;
         }
@@ -1232,18 +1229,18 @@ QJniObject QJniObject::getStaticObjectField(const char *className,
                                             const char *fieldName,
                                             const char *signature)
 {
-    QJniEnvironment env;
-    jclass clazz = QJniObject::loadClass(className, env.jniEnv());
+    JNIEnv *env = QJniEnvironment::getJniEnv();
+    jclass clazz = QJniObject::loadClass(className, env);
     if (!clazz)
         return QJniObject();
-    jfieldID id = QJniObject::getCachedFieldID(env.jniEnv(), clazz,
+    jfieldID id = QJniObject::getCachedFieldID(env, clazz,
                                    className,
                                    fieldName,
                                    signature, true);
     if (!id)
         return QJniObject();
 
-    return getCleanJniObject(env->GetStaticObjectField(clazz, id), env.jniEnv());
+    return getCleanJniObject(env->GetStaticObjectField(clazz, id), env);
 }
 
 /*!
@@ -1261,12 +1258,9 @@ QJniObject QJniObject::getStaticObjectField(const char *className,
 QJniObject QJniObject::getStaticObjectField(jclass clazz, const char *fieldName,
                                             const char *signature)
 {
-    QJniEnvironment env;
-    jfieldID id = getFieldID(env.jniEnv(), clazz, fieldName, signature, true);
-    if (!id)
-        return QJniObject();
-
-    return getCleanJniObject(env->GetStaticObjectField(clazz, id), env.jniEnv());
+    JNIEnv *env = QJniEnvironment::getJniEnv();
+    jfieldID id = getFieldID(env, clazz, fieldName, signature, true);
+    return getCleanJniObject(env->GetStaticObjectField(clazz, id), env);
 }
 
 /*!
