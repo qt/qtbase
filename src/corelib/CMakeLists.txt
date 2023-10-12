@@ -540,6 +540,7 @@ qt_internal_extend_target(Core CONDITION WIN32
         kernel/qwinregistry.cpp kernel/qwinregistry_p.h
         plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
         thread/qthread_win.cpp
+        platform/windows/qcomobject_p.h
     LIBRARIES
         advapi32
         authz
