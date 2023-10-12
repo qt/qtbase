@@ -1396,12 +1396,11 @@ void QJniObject::assign(jobject obj)
     if (d && isSameObject(obj))
         return;
 
-    jobject jobj = static_cast<jobject>(obj);
     d = QSharedPointer<QJniObjectPrivate>::create();
     if (obj) {
         QJniEnvironment env;
-        d->m_jobject = env->NewGlobalRef(jobj);
-        jclass objectClass = env->GetObjectClass(jobj);
+        d->m_jobject = env->NewGlobalRef(obj);
+        jclass objectClass = env->GetObjectClass(obj);
         d->m_jclass = static_cast<jclass>(env->NewGlobalRef(objectClass));
         env->DeleteLocalRef(objectClass);
     }
