@@ -1299,8 +1299,16 @@ public:
     }
     void registerSocketNotifier(QSocketNotifier *) override {}
     void unregisterSocketNotifier(QSocketNotifier *) override {}
-    void registerTimer(Qt::TimerId, Duration, Qt::TimerType, QObject *) override {}
-    bool unregisterTimer(Qt::TimerId) override { return false; }
+    void registerTimer(Qt::TimerId id, Duration, Qt::TimerType, QObject *) override
+    {
+        if (registeredTimerId <= Qt::TimerId::Invalid)
+            registeredTimerId = id;
+    }
+    bool unregisterTimer(Qt::TimerId id) override
+    {
+        Qt::TimerId oldId = std::exchange(registeredTimerId, Qt::TimerId::Invalid);
+        return id == oldId;
+    }
     bool unregisterTimers(QObject *) override { return false; }
     QList<TimerInfoV2> timersForObject(QObject *) const override { return {}; }
     Duration remainingTime(Qt::TimerId) const override { return 0s; }
@@ -1313,25 +1321,47 @@ public:
 #endif
 
     QBasicAtomicInt visited; // bool
+    Qt::TimerId registeredTimerId = Qt::TimerId::Invalid;
 };
 
-class ThreadObj : public QObject
+struct ThreadLocalContent
 {
-    Q_OBJECT
-public slots:
-    void visit() {
-        emit visited();
+    static inline const QMetaObject *atStart;
+    static inline const QMetaObject *atEnd;
+    QSemaphore *sem;
+    QBasicTimer timer;
+
+    ThreadLocalContent(QObject *obj, QSemaphore *sem)
+        : sem(sem)
+    {
+        ensureEventDispatcher();
+        atStart = QAbstractEventDispatcher::instance()->metaObject();
+        timer.start(10s, obj);
     }
-signals:
-    void visited();
+    ~ThreadLocalContent()
+    {
+        ensureEventDispatcher();
+        atEnd = QAbstractEventDispatcher::instance()->metaObject();
+        timer.stop();
+        sem->release();
+    }
+
+    void ensureEventDispatcher()
+    {
+        // QEventLoop's constructor has a call to QThreadData::ensureEventDispatcher()
+        QEventLoop dummy;
+    }
 };
 
 void tst_QThread::customEventDispatcher()
 {
+    ThreadLocalContent::atStart = ThreadLocalContent::atEnd = nullptr;
+
     QThread thr;
     // there should be no ED yet
     QVERIFY(!thr.eventDispatcher());
     DummyEventDispatcher *ed = new DummyEventDispatcher;
+    QPointer<DummyEventDispatcher> weak_ed(ed);
     thr.setEventDispatcher(ed);
     // the new ED should be set
     QCOMPARE(thr.eventDispatcher(), ed);
@@ -1340,25 +1370,39 @@ void tst_QThread::customEventDispatcher()
     thr.start();
     // start() should not overwrite the ED
     QCOMPARE(thr.eventDispatcher(), ed);
+    QVERIFY(!weak_ed.isNull());
 
-    ThreadObj obj;
+    QObject obj;
     obj.moveToThread(&thr);
     // move was successful?
     QCOMPARE(obj.thread(), &thr);
-    QEventLoop loop;
-    connect(&obj, SIGNAL(visited()), &loop, SLOT(quit()), Qt::QueuedConnection);
-    QMetaObject::invokeMethod(&obj, "visit", Qt::QueuedConnection);
-    loop.exec();
+
+    QSemaphore threadLocalSemaphore;
+    QMetaObject::invokeMethod(&obj, [&]() {
+#ifndef Q_OS_WIN
+        // On Windows, the thread_locals are unsequenced between DLLs, so this
+        // could run after QThreadPrivate::finish()
+        static thread_local
+#endif
+                ThreadLocalContent d(&obj, &threadLocalSemaphore);
+    }, Qt::BlockingQueuedConnection);
+
     // test that the ED has really been used
     QVERIFY(ed->visited.loadRelaxed());
+    // and it's ours
+    QCOMPARE(ThreadLocalContent::atStart->className(), "DummyEventDispatcher");
 
-    QPointer<DummyEventDispatcher> weak_ed(ed);
     QVERIFY(!weak_ed.isNull());
     thr.quit();
+
     // wait for thread to be stopped
     QVERIFY(thr.wait(30000));
+    QVERIFY(threadLocalSemaphore.tryAcquire(1, 30s));
+
     // test that ED has been deleted
     QVERIFY(weak_ed.isNull());
+    // test that ED was ours
+    QCOMPARE(ThreadLocalContent::atEnd->className(), "DummyEventDispatcher");
 }
 
 class Job : public QObject

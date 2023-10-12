@@ -282,8 +282,12 @@ void *QThreadPrivate::start(void *arg)
 #ifdef PTHREAD_CANCEL_DISABLE
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
 #endif
-    pthread_cleanup_push(QThreadPrivate::finish, arg);
-
+#if !defined(Q_OS_QNX)
+    // On QNX, calling finish() from a thread_local destructor causes the C
+    // library to hang.
+    static thread_local
+#endif
+            auto cleanup = qScopeGuard([=] { finish(arg); });
     terminate_on_exception([&] {
         QThread *thr = reinterpret_cast<QThread *>(arg);
         QThreadData *data = QThreadData::get2(thr);
@@ -328,11 +332,7 @@ void *QThreadPrivate::start(void *arg)
         thr->run();
     });
 
-    // This pop runs finish() below. It's outside the try/catch (and has its
-    // own try/catch) to prevent finish() to be run in case an exception is
-    // thrown.
-    pthread_cleanup_pop(1);
-
+    // The qScopeGuard above call runs finish() below.
     return nullptr;
 }
 
