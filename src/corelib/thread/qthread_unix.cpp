@@ -275,7 +275,7 @@ void terminate_on_exception(T &&t)
 
 void *QThreadPrivate::start(void *arg)
 {
-#if !defined(Q_OS_ANDROID)
+#ifdef PTHREAD_CANCEL_DISABLE
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
 #endif
     pthread_cleanup_push(QThreadPrivate::finish, arg);
@@ -317,7 +317,7 @@ void *QThreadPrivate::start(void *arg)
 #endif
 
         emit thr->started(QThread::QPrivateSignal());
-#if !defined(Q_OS_ANDROID)
+#ifdef PTHREAD_CANCEL_DISABLE
         pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
         pthread_testcancel();
 #endif
