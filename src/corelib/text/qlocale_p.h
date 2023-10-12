@@ -25,6 +25,9 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
+#ifdef Q_OS_WASM
+#include <private/qstdweb_p.h>
+#endif
 
 #include <limits>
 #include <cmath>
@@ -103,6 +106,10 @@ struct QLocaleData;
 class Q_CORE_EXPORT QSystemLocale
 {
     QSystemLocale *next = nullptr; // Maintains a stack.
+#ifdef Q_OS_WASM
+    std::unique_ptr<qstdweb::EventCallback> onLanguageChanged;
+#endif
+
 public:
     QSystemLocale();
     virtual ~QSystemLocale();

@@ -720,6 +720,17 @@ QSystemLocale::QSystemLocale() : next(_systemLocale)
     _systemLocale = this;
 
     systemLocaleData.m_language_id = 0;
+
+#ifdef Q_OS_WASM
+    onLanguageChanged = std::make_unique<qstdweb::EventCallback>(
+        emscripten::val::global("window"), "languagechange", [](emscripten::val) {
+            systemLocaleData.m_language_id = 0;
+            QEvent languageChangeEvent(QEvent::LanguageChange);
+            QCoreApplication::sendEvent(qApp, &languageChangeEvent);
+            QEvent localeChangeEvent(QEvent::LocaleChange);
+            QCoreApplication::sendEvent(qApp, &localeChangeEvent);
+    });
+#endif
 }
 
 /*!

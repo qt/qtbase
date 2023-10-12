@@ -797,7 +797,7 @@ qt_internal_extend_target(Core CONDITION APPLE
         text/qlocale_mac.mm
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE
+qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE AND NOT WASM
     SOURCES
         text/qlocale_unix.cpp
 )
@@ -805,6 +805,11 @@ qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE
 qt_internal_extend_target(Core CONDITION WIN32
     SOURCES
         text/qlocale_win.cpp
+)
+
+qt_internal_extend_target(Core CONDITION WASM
+    SOURCES
+        text/qlocale_wasm.cpp
 )
 
 # On MS-Win, clang has two flavors, one of which immitates MSVC (so claims to be it)
