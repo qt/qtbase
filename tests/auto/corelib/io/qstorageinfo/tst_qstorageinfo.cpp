@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QTest>
+#include <QSet>
 #include <QStandardPaths>
 #include <QStorageInfo>
 #include <QTemporaryFile>
@@ -24,6 +25,7 @@ private slots:
     void operatorNotEqual();
     void root();
     void currentStorage();
+    void storageList_data();
     void storageList();
     void tempFile();
     void caching();
@@ -144,7 +146,7 @@ void tst_QStorageInfo::currentStorage()
     QCOMPARE_GE(storage.bytesAvailable(), 0);
 }
 
-void tst_QStorageInfo::storageList()
+void tst_QStorageInfo::storageList_data()
 {
     QStorageInfo root = QStorageInfo::root();
 
@@ -155,9 +157,26 @@ void tst_QStorageInfo::storageList()
     volumes.removeOne(root);
     QVERIFY(!volumes.contains(root));
 
+    if (volumes.isEmpty())
+        QSKIP("Only the root volume was mounted on this system");
+
+    QTest::addColumn<QStorageInfo>("storage");
+    QSet<QString> seenRoots;
     for (const QStorageInfo &storage : std::as_const(volumes)) {
         if (!storage.isReady())
             continue;
+        QString rootPath = storage.rootPath();
+        if (seenRoots.contains(rootPath))
+            qInfo() << rootPath << "is mounted over; QStorageInfo may be unpredictable";
+        else
+            QTest::newRow(qUtf8Printable(rootPath)) << storage;
+        seenRoots.insert(rootPath);
+    }
+}
+
+void tst_QStorageInfo::storageList()
+{
+        QFETCH(QStorageInfo, storage);
 
         QVERIFY(storage.isValid());
         QVERIFY(!storage.isRoot());
@@ -165,7 +184,6 @@ void tst_QStorageInfo::storageList()
         QVERIFY(!storage.device().isEmpty());
         QVERIFY(!storage.fileSystemType().isEmpty());
 #endif
-    }
 }
 
 static bool checkFilesystemGoodForWriting(QTemporaryFile &file, QStorageInfo &storage)
