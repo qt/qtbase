@@ -125,6 +125,21 @@ namespace QtAndroid
                : 0;
     }
 
+    QWindow *windowFromId(int windowId)
+    {
+        if (!qGuiApp)
+            return nullptr;
+
+        for (QWindow *w : qGuiApp->allWindows()) {
+            if (!w->handle())
+                continue;
+            QAndroidPlatformWindow *window = static_cast<QAndroidPlatformWindow *>(w->handle());
+            if (window->nativeViewId() == windowId)
+                return w;
+        }
+        return nullptr;
+    }
+
     int availableWidthPixels()
     {
         return m_availableWidthPixels;

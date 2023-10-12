@@ -160,71 +160,75 @@ namespace QtAndroidInput
                                            anchor.x(), anchor.y(), rtl);
     }
 
-    static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
+    static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y)
     {
         if (m_ignoreMouseEvents)
             return;
 
         const QPoint globalPos(x,y);
-        QWindow *tlw = topLevelWindowAt(globalPos);
-        m_mouseGrabber = tlw;
-        const QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
-        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+        QWindow *window = windowFromId(winId);
+        m_mouseGrabber = window;
+        const QPoint localPos = window && window->handle() ?
+                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
+        QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
                                                  Qt::MouseButtons(Qt::LeftButton),
                                                  Qt::LeftButton, QEvent::MouseButtonPress);
     }
 
-    static void mouseUp(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
+    static void mouseUp(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y)
     {
         const QPoint globalPos(x,y);
-        QWindow *tlw = m_mouseGrabber.data();
-        if (!tlw)
-            tlw = topLevelWindowAt(globalPos);
+        QWindow *window = m_mouseGrabber.data();
+        if (!window)
+            window = windowFromId(winId);
 
-        const QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
-        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+        const QPoint localPos = window && window->handle() ?
+                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
+        QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
                                                  Qt::MouseButtons(Qt::NoButton),
                                                  Qt::LeftButton, QEvent::MouseButtonRelease);
         m_ignoreMouseEvents = false;
         m_mouseGrabber.clear();
     }
 
-    static void mouseMove(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
+    static void mouseMove(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y)
     {
 
         if (m_ignoreMouseEvents)
             return;
 
         const QPoint globalPos(x,y);
-        QWindow *tlw = m_mouseGrabber.data();
-        if (!tlw)
-            tlw = topLevelWindowAt(globalPos);
-        const QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
-        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+        QWindow *window = m_mouseGrabber.data();
+        if (!window)
+            window = windowFromId(winId);
+        const QPoint localPos = window && window->handle() ?
+                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
+        QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
                                                  Qt::MouseButtons(m_mouseGrabber ? Qt::LeftButton : Qt::NoButton),
                                                  Qt::NoButton, QEvent::MouseMove);
     }
 
-    static void mouseWheel(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y, jfloat hdelta, jfloat vdelta)
+    static void mouseWheel(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y, jfloat hdelta, jfloat vdelta)
     {
         if (m_ignoreMouseEvents)
             return;
 
         const QPoint globalPos(x,y);
-        QWindow *tlw = m_mouseGrabber.data();
-        if (!tlw)
-            tlw = topLevelWindowAt(globalPos);
-        const QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
+        QWindow *window = m_mouseGrabber.data();
+        if (!window)
+            window = windowFromId(winId);
+        const QPoint localPos = window && window->handle() ?
+                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
         const QPoint angleDelta(hdelta * 120, vdelta * 120);
 
-        QWindowSystemInterface::handleWheelEvent(tlw,
+        QWindowSystemInterface::handleWheelEvent(window,
                                                  localPos,
                                                  globalPos,
                                                  QPoint(),
                                                  angleDelta);
     }
 
-    static void longPress(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
+    static void longPress(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y)
     {
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
         if (inputContext && qGuiApp)
@@ -236,15 +240,16 @@ namespace QtAndroidInput
             return;
         m_ignoreMouseEvents = true;
         const QPoint globalPos(x,y);
-        QWindow *tlw = topLevelWindowAt(globalPos);
-        const QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
+        QWindow *window = windowFromId(winId);
+        const QPoint localPos = window && window->handle() ?
+                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
 
         // Click right button if no other button is already pressed.
         if (!m_mouseGrabber) {
-            QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+            QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
                                                      Qt::MouseButtons(Qt::RightButton), Qt::RightButton,
                                                      QEvent::MouseButtonPress);
-            QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+            QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
                                                      Qt::MouseButtons(Qt::NoButton), Qt::RightButton,
                                                      QEvent::MouseButtonRelease);
         }
@@ -287,7 +292,6 @@ namespace QtAndroidInput
                                  double(minor * 2),
                                  double(major * 2));
         m_touchPoints.push_back(touchPoint);
-
         if (state == QEventPoint::State::Pressed) {
             QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
             if (inputContext && qGuiApp)
@@ -318,7 +322,7 @@ namespace QtAndroidInput
         return touchDevice;
     }
 
-    static void touchEnd(JNIEnv * /*env*/, jobject /*thiz*/, jint /*winId*/, jint /*action*/)
+    static void touchEnd(JNIEnv * /*env*/, jobject /*thiz*/, jint winId, jint /*action*/)
     {
         if (m_touchPoints.isEmpty())
             return;
@@ -328,11 +332,13 @@ namespace QtAndroidInput
         if (!touchDevice)
             return;
 
-        QWindow *window = QtAndroid::topLevelWindowAt(m_touchPoints.at(0).area.center().toPoint());
+        QWindow *window = QtAndroid::windowFromId(winId);
+        if (!window)
+            return;
         QWindowSystemInterface::handleTouchEvent(window, touchDevice, m_touchPoints);
     }
 
-    static void touchCancel(JNIEnv * /*env*/, jobject /*thiz*/, jint /*winId*/)
+    static void touchCancel(JNIEnv * /*env*/, jobject /*thiz*/, jint winId)
     {
         if (m_touchPoints.isEmpty())
             return;
@@ -342,7 +348,9 @@ namespace QtAndroidInput
         if (!touchDevice)
             return;
 
-        QWindow *window = QtAndroid::topLevelWindowAt(m_touchPoints.at(0).area.center().toPoint());
+        QWindow *window = QtAndroid::windowFromId(winId);
+        if (!window)
+            return;
         QWindowSystemInterface::handleTouchCancelEvent(window, touchDevice);
     }
 
@@ -355,13 +363,14 @@ namespace QtAndroidInput
 #endif // QT_CONFIG(tabletevent)
     }
 
-    static void tabletEvent(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint deviceId, jlong time, jint action,
+    static void tabletEvent(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint deviceId, jlong time, jint action,
         jint pointerType, jint buttonState, jfloat x, jfloat y, jfloat pressure)
     {
 #if QT_CONFIG(tabletevent)
         const QPointF globalPosF(x, y);
-        QWindow *tlw = topLevelWindowAt(globalPosF.toPoint());
-        const QPointF localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobalF(globalPosF) : globalPosF;
+        QWindow *window = windowFromId(winId);
+        const QPointF localPos = window && window->handle() ?
+                                    window->handle()->mapFromGlobalF(globalPosF) : globalPosF;
 
         // Galaxy Note with plain Android:
         // 0 1 0    stylus press
@@ -395,7 +404,7 @@ namespace QtAndroidInput
 
         qCDebug(lcQpaInputMethods) << action << pointerType << buttonState << '@' << x << y << "pressure" << pressure << ": buttons" << buttons;
 
-        QWindowSystemInterface::handleTabletEvent(tlw, ulong(time),
+        QWindowSystemInterface::handleTabletEvent(window, ulong(time),
             localPos, globalPosF, int(QInputDevice::DeviceType::Stylus), pointerType,
             buttons, pressure, 0, 0, 0., 0., 0, deviceId, Qt::NoModifier);
 #endif // QT_CONFIG(tabletevent)
