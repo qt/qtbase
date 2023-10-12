@@ -2242,13 +2242,8 @@ void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
 {
     QList<QVariant> list;
     list.reserve(tabs.size());
-    QList<QTextOption::Tab>::ConstIterator iter = tabs.constBegin();
-    while (iter != tabs.constEnd()) {
-        QVariant v;
-        v.setValue(*iter);
-        list.append(v);
-        ++iter;
-    }
+    for (const auto &e : tabs)
+        list.append(QVariant::fromValue(e));
     setProperty(TabPositions, list);
 }
 
@@ -2264,13 +2259,10 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     if (variant.isNull())
         return QList<QTextOption::Tab>();
     QList<QTextOption::Tab> answer;
-    QList<QVariant> variantsList = qvariant_cast<QList<QVariant> >(variant);
-    QList<QVariant>::Iterator iter = variantsList.begin();
+    const QList<QVariant> variantsList = qvariant_cast<QList<QVariant> >(variant);
     answer.reserve(variantsList.size());
-    while(iter != variantsList.end()) {
-        answer.append( qvariant_cast<QTextOption::Tab>(*iter));
-        ++iter;
-    }
+    for (const auto &e: variantsList)
+        answer.append(qvariant_cast<QTextOption::Tab>(e));
     return answer;
 }
 
