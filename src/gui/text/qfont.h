@@ -4,6 +4,7 @@
 #ifndef QFONT_H
 #define QFONT_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qendian.h>
 #include <QtCore/qshareddata.h>
 #include <QtGui/qtguiglobal.h>
@@ -221,12 +222,6 @@ public:
             static_assert(N == 5, "The tag name must be exactly 4 characters long!");
         }
 
-        friend inline bool operator==(Tag lhs, Tag rhs) noexcept
-        { return lhs.m_value == rhs.m_value; }
-        friend inline bool operator!=(Tag lhs, Tag rhs) noexcept
-        { return lhs.m_value != rhs.m_value; }
-        friend inline bool operator<(Tag lhs, Tag rhs) noexcept
-        { return lhs.m_value < rhs.m_value; }
         constexpr bool isValid() const noexcept { return m_value != 0; }
         constexpr quint32 value() const noexcept { return m_value; }
 
@@ -262,6 +257,12 @@ public:
         { return qHash(key.value(), seed); }
 
     private:
+        friend constexpr bool comparesEqual(const Tag &lhs, const Tag &rhs) noexcept
+        { return lhs.m_value == rhs.m_value; }
+        friend constexpr Qt::strong_ordering compareThreeWay(const Tag &lhs, const Tag &rhs) noexcept
+        { return Qt::compareThreeWay(lhs.m_value, rhs.m_value); }
+        Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QFont::Tag)
+
         quint32 m_value = 0;
     };
 

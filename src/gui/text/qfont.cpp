@@ -2311,9 +2311,8 @@ void QFont::cacheStatistics()
 */
 
 /*!
-    \fn bool QFont::Tag::operator==(QFont::Tag::Tag lhs, QFont::Tag::Tag rhs) noexcept
-    \fn bool QFont::Tag::operator!=(QFont::Tag::Tag lhs, QFont::Tag::Tag rhs) noexcept
-    \fn bool QFont::Tag::operator<(QFont::Tag::Tag lhs, QFont::Tag::Tag rhs) noexcept
+    \fn bool QFont::Tag::comparesEqual(const QFont::Tag &lhs, const QFont::Tag &rhs) noexcept
+    \fn Qt::strong_ordering QFont::Tag::compareThreeWay(const QFont::Tag &lhs, const QFont::Tag &rhs) noexcept
 
     Compare \a lhs with \a rhs for equality and ordering.
 */

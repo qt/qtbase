@@ -21,6 +21,7 @@
 #endif
 #include <qlist.h>
 #include <QtTest/private/qemulationdetector_p.h>
+#include <private/qcomparisontesthelper_p.h>
 
 using namespace Qt::StringLiterals;
 
@@ -59,6 +60,8 @@ private slots:
     void setFamiliesAndFamily_data();
     void setFamiliesAndFamily();
     void featureAccessors();
+    void tagCompares_data();
+    void tagCompares();
 };
 
 // Testing get/set functions
@@ -897,6 +900,31 @@ void tst_QFont::featureAccessors()
     enum Features {
         Frac = QFont::Tag("frac").value()
     };
+}
+
+void tst_QFont::tagCompares_data()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QFont::Tag>();
+
+    QTest::addColumn<QFont::Tag>("lhs");
+    QTest::addColumn<QFont::Tag>("rhs");
+    QTest::addColumn<Qt::strong_ordering>("expectedOrder");
+
+    auto row = [](QFont::Tag left, QFont::Tag right) {
+        QTest::addRow("%s<=>%s", left.toString().constData(), right.toString().constData())
+            << left << right << Qt::compareThreeWay(left.value(), right.value());
+    };
+    row("frac", "wght");
+}
+
+void tst_QFont::tagCompares()
+{
+    QFETCH(QFont::Tag, lhs);
+    QFETCH(QFont::Tag, rhs);
+    QFETCH(Qt::strong_ordering, expectedOrder);
+
+    QVERIFY(comparesEqual(lhs, lhs));
+    QCOMPARE(compareThreeWay(lhs, rhs), expectedOrder);
 }
 
 QTEST_MAIN(tst_QFont)
