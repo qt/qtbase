@@ -141,7 +141,7 @@ using namespace Qt::StringLiterals;
 */
 
 /*!
-    \fn template <typename T> QDBusReply<T>::value() const
+    \fn template <typename T> Type QDBusReply<T>::value() const
     Returns the remote function's calls return value. If the remote call returned with an error,
     the return value of this function is undefined and may be undistinguishable from a valid return
     value.
