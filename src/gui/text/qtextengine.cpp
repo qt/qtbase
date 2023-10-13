@@ -1434,8 +1434,7 @@ void QTextEngine::shapeText(int item) const
 
     // split up the item into parts that come from different font engines
     // k * 3 entries, array[k] == index in string, array[k + 1] == index in glyphs, array[k + 2] == engine index
-    QList<uint> itemBoundaries;
-    itemBoundaries.reserve(24);
+    QVarLengthArray<uint, 24> itemBoundaries;
 
     QGlyphLayout initialGlyphs = availableGlyphs(&si);
     int nGlyphs = initialGlyphs.numGlyphs;
@@ -1455,9 +1454,9 @@ void QTextEngine::shapeText(int item) const
         for (int i = 0, glyph_pos = 0; i < itemLength; ++i, ++glyph_pos) {
             const uint engineIdx = initialGlyphs.glyphs[glyph_pos] >> 24;
             if (lastEngine != engineIdx) {
-                itemBoundaries.append(i);
-                itemBoundaries.append(glyph_pos);
-                itemBoundaries.append(engineIdx);
+                itemBoundaries.push_back(i);
+                itemBoundaries.push_back(glyph_pos);
+                itemBoundaries.push_back(engineIdx);
 
                 if (engineIdx != 0) {
                     QFontEngine *actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
@@ -1473,9 +1472,9 @@ void QTextEngine::shapeText(int item) const
                 ++i;
         }
     } else {
-        itemBoundaries.append(0);
-        itemBoundaries.append(0);
-        itemBoundaries.append(0);
+        itemBoundaries.push_back(0);
+        itemBoundaries.push_back(0);
+        itemBoundaries.push_back(0);
     }
 
 #if QT_CONFIG(harfbuzz)
@@ -1597,7 +1596,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                                          const ushort *string,
                                          int itemLength,
                                          QFontEngine *fontEngine,
-                                         const QList<uint> &itemBoundaries,
+                                         QSpan<uint> itemBoundaries,
                                          bool kerningEnabled,
                                          bool hasLetterSpacing,
                                          const QHash<QFont::Tag, quint32> &fontFeatures) const
@@ -1619,7 +1618,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
     // ### TODO get_default_for_script?
     props.language = hb_language_get_default(); // use default language from locale
 
-    for (int k = 0; k < itemBoundaries.size(); k += 3) {
+    for (qsizetype k = 0; k < itemBoundaries.size(); k += 3) {
         const uint item_pos = itemBoundaries[k];
         const uint item_length = (k + 4 < itemBoundaries.size() ? itemBoundaries[k + 3] : itemLength) - item_pos;
         const uint engineIdx = itemBoundaries[k + 2];

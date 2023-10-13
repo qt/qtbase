@@ -33,6 +33,7 @@
 #include "private/qfont_p.h"
 #include "private/qtextformat_p.h"
 #include "private/qunicodetools_p.h"
+#include "private/qspan_p.h"
 #ifndef QT_BUILD_COMPAT_LIB
 #include "private/qtextdocument_p.h"
 #endif
@@ -625,7 +626,7 @@ private:
                                 const ushort *string,
                                 int itemLength,
                                 QFontEngine *fontEngine,
-                                const QList<uint> &itemBoundaries,
+                                QSpan<uint> itemBoundaries,
                                 bool kerningEnabled,
                                 bool hasLetterSpacing,
                                 const QHash<QFont::Tag, quint32> &features) const;
