@@ -2222,6 +2222,13 @@ namespace
                 // (on which it produces traceback and fails to read any following text attributes),
                 // but that is the default value, so omit it anyway
                 value = QString();
+        } else if (((ia2Name == "text-line-through-style"_L1 || ia2Name == "text-line-through-type"_L1) && (ia2Value != "none"_L1))
+                   || (ia2Name == "text-line-through-text"_L1 && !ia2Value.isEmpty())) {
+            // if any of the above is set, set "strikethrough" to true, but don't explicitly set
+            // to false otherwise, since any of the others might still be set to indicate strikethrough
+            // and no strikethrough is assumed anyway when nothing is explicitly set
+            name = QStringLiteral("strikethrough");
+            value = QStringLiteral("true");
         } else if (ia2Name == "text-position"_L1) {
             name = QStringLiteral("vertical-align");
             if (value != "baseline"_L1 && value != "super"_L1 && value != "sub"_L1) {
