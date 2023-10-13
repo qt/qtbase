@@ -39,6 +39,7 @@ public class QtInputDelegate {
     private InputMethodManager m_imm = null;
 
     private boolean m_keyboardIsVisible = false;
+    private boolean m_isKeyboardHidingAnimationOngoing = false;
     private long m_showHideTimeStamp = System.nanoTime();
     private int m_portraitKeyboardHeight = 0;
     private int m_landscapeKeyboardHeight = 0;
@@ -73,18 +74,7 @@ public class QtInputDelegate {
     private final int ImhUrlCharactersOnly = 0x400000;
     private final int ImhLatinOnly = 0x800000;
 
-    // enter key type - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
-    private final int EnterKeyDefault = 0;
-    private final int EnterKeyReturn = 1;
-    private final int EnterKeyDone = 2;
-    private final int EnterKeyGo = 3;
-    private final int EnterKeySend = 4;
-    private final int EnterKeySearch = 5;
-    private final int EnterKeyNext = 6;
-    private final int EnterKeyPrevious = 7;
-
     private int m_softInputMode = 0;
-    private boolean m_isKeyboardHiding = false;
 
     // Values coming from QAndroidInputContext::CursorHandleShowMode
     private static final int CursorHandleNotShown       = 0;
@@ -107,7 +97,8 @@ public class QtInputDelegate {
     private boolean m_backKeyPressedSent = false;
 
     // Note: because of the circular call to updateFullScreen() from QtActivityDelegate, we need
-    // a listener to be able to do that call from the delegate, because that's where that logic lives
+    // a listener to be able to do that call from the delegate, because that's where that
+    // logic lives
     public interface KeyboardVisibilityListener {
         void onKeyboardVisibilityChange();
     }
@@ -124,9 +115,10 @@ public class QtInputDelegate {
         return m_keyboardIsVisible;
     }
 
+    // Is the keyboard fully visible i.e. visible and no ongoing animation
     public boolean isSoftwareKeyboardVisible()
     {
-        return isKeyboardVisible() && !m_isKeyboardHiding;
+        return isKeyboardVisible() && !m_isKeyboardHidingAnimationOngoing;
     }
 
     void setSoftInputMode(int inputMode)
@@ -156,7 +148,7 @@ public class QtInputDelegate {
 
     private void keyboardVisibilityUpdated(boolean visibility)
     {
-        m_isKeyboardHiding = false;
+        m_isKeyboardHidingAnimationOngoing = false;
         QtInputDelegate.keyboardVisibilityChanged(visibility);
     }
 
@@ -200,117 +192,16 @@ public class QtInputDelegate {
                 if (m_imm == null)
                     return;
 
-                DisplayMetrics metrics = new DisplayMetrics();
-                activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                if (updateSoftInputMode(activity, height))
+                    return;
 
-                // If the screen is in portrait mode than we estimate that keyboard height will not be higher than 2/5 of the screen.
-                // else than we estimate that keyboard height will not be higher than 2/3 of the screen
-                final int visibleHeight;
-                if (metrics.widthPixels < metrics.heightPixels)
-                    visibleHeight = m_portraitKeyboardHeight != 0 ? m_portraitKeyboardHeight : metrics.heightPixels * 3 / 5;
-                else
-                    visibleHeight = m_landscapeKeyboardHeight != 0 ? m_landscapeKeyboardHeight : metrics.heightPixels / 3;
+                setEditTextOptions(enterKeyType, inputHints);
 
-                if (m_softInputMode != 0) {
-                    activity.getWindow().setSoftInputMode(m_softInputMode);
-                    final boolean softInputIsHidden = (m_softInputMode & WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) != 0;
-                    if (softInputIsHidden)
-                        return;
-                } else {
-                    if (height > visibleHeight)
-                        activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-                    else
-                        activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-                }
-
-                int initialCapsMode = 0;
-
-                int imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
-
-                switch (enterKeyType) {
-                    case EnterKeyReturn:
-                        imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
-                        break;
-                    case EnterKeyGo:
-                        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
-                        break;
-                    case EnterKeySend:
-                        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND;
-                        break;
-                    case EnterKeySearch:
-                        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH;
-                        break;
-                    case EnterKeyNext:
-                        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_NEXT;
-                        break;
-                    case EnterKeyPrevious:
-                        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS;
-                        break;
-                }
-
-                int inputType = android.text.InputType.TYPE_CLASS_TEXT;
-
-                if ((inputHints & (ImhPreferNumbers | ImhDigitsOnly | ImhFormattedNumbersOnly)) != 0) {
-                    inputType = android.text.InputType.TYPE_CLASS_NUMBER;
-                    if ((inputHints & ImhFormattedNumbersOnly) != 0) {
-                        inputType |= (android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
-                                | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
-                    }
-
-                    if ((inputHints & ImhHiddenText) != 0)
-                        inputType |= android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
-                } else if ((inputHints & ImhDialableCharactersOnly) != 0) {
-                    inputType = android.text.InputType.TYPE_CLASS_PHONE;
-                } else if ((inputHints & (ImhDate | ImhTime)) != 0) {
-                    inputType = android.text.InputType.TYPE_CLASS_DATETIME;
-                    if ((inputHints & (ImhDate | ImhTime)) != (ImhDate | ImhTime)) {
-                        if ((inputHints & ImhDate) != 0)
-                            inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_DATE;
-                        else
-                            inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_TIME;
-                    } // else {  TYPE_DATETIME_VARIATION_NORMAL(0) }
-                } else { // CLASS_TEXT
-                    if ((inputHints & ImhHiddenText) != 0) {
-                        inputType |= android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
-                    } else if ((inputHints & ImhSensitiveData) != 0 ||
-                            ((inputHints & ImhNoPredictiveText) != 0 &&
-                                    System.getenv("QT_ANDROID_ENABLE_WORKAROUND_TO_DISABLE_PREDICTIVE_TEXT") != null)) {
-                        inputType |= android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
-                    } else if ((inputHints & ImhUrlCharactersOnly) != 0) {
-                        inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
-                        if (enterKeyType == 0) // not explicitly overridden
-                            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
-                    } else if ((inputHints & ImhEmailCharactersOnly) != 0) {
-                        inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
-                    }
-
-                    if ((inputHints & ImhMultiLine) != 0) {
-                        inputType |= android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
-                        // Clear imeOptions for Multi-Line Type
-                        // User should be able to insert new line in such case
-                        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
-                    }
-                    if ((inputHints & (ImhNoPredictiveText | ImhSensitiveData | ImhHiddenText)) != 0)
-                        inputType |= android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
-
-                    if ((inputHints & ImhUppercaseOnly) != 0) {
-                        initialCapsMode |= android.text.TextUtils.CAP_MODE_CHARACTERS;
-                        inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS;
-                    } else if ((inputHints & ImhLowercaseOnly) == 0 && (inputHints & ImhNoAutoUppercase) == 0) {
-                        initialCapsMode |= android.text.TextUtils.CAP_MODE_SENTENCES;
-                        inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
-                    }
-                }
-
-                if (enterKeyType == 0 && (inputHints & ImhMultiLine) != 0)
-                    imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
-
-                m_editText.setInitialCapsMode(initialCapsMode);
-                m_editText.setImeOptions(imeOptions);
-                m_editText.setInputType(inputType);
-
-                layout.setLayoutParams(m_editText, new QtLayout.LayoutParams(width, height, x, y), false);
+                // TODO: The editText is added to the QtLayout, but is it ever removed?
+                QtLayout.LayoutParams layoutParams = new QtLayout.LayoutParams(width, height, x, y);
+                layout.setLayoutParams(m_editText, layoutParams, false);
                 m_editText.requestFocus();
+
                 m_editText.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -324,36 +215,8 @@ public class QtInputDelegate {
                                     case InputMethodManager.RESULT_UNCHANGED_SHOWN:
                                         setKeyboardVisibility(true, System.nanoTime());
                                         if (m_softInputMode == 0) {
-                                            // probe for real keyboard height
-                                            layout.postDelayed(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    if (!m_keyboardIsVisible)
-                                                        return;
-                                                    DisplayMetrics metrics = new DisplayMetrics();
-                                                    activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                                                    Rect r = new Rect();
-                                                    activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
-                                                    if (metrics.heightPixels != r.bottom) {
-                                                        if (metrics.widthPixels > metrics.heightPixels) { // landscape
-                                                            if (m_landscapeKeyboardHeight != r.bottom) {
-                                                                m_landscapeKeyboardHeight = r.bottom;
-                                                                showSoftwareKeyboard(activity, layout, x, y, width, height, inputHints, enterKeyType);
-                                                            }
-                                                        } else {
-                                                            if (m_portraitKeyboardHeight != r.bottom) {
-                                                                m_portraitKeyboardHeight = r.bottom;
-                                                                showSoftwareKeyboard(activity, layout, x, y, width, height, inputHints, enterKeyType);
-                                                            }
-                                                        }
-                                                    } else {
-                                                        // no luck ?
-                                                        // maybe the delay was too short, so let's make it longer
-                                                        if (m_probeKeyboardHeightDelayMs < 1000)
-                                                            m_probeKeyboardHeightDelayMs *= 2;
-                                                    }
-                                                }
-                                            }, m_probeKeyboardHeightDelayMs);
+                                            probeForKeyboardHeight(layout, activity,
+                                                    x, y, width, height, inputHints, enterKeyType);
                                         }
                                         break;
                                     case InputMethodManager.RESULT_HIDDEN:
@@ -373,15 +236,191 @@ public class QtInputDelegate {
         });
     }
 
+    private void setEditTextOptions(int enterKeyType, int inputHints)
+    {
+        int initialCapsMode = 0;
+        int imeOptions = imeOptionsFromEnterKeyType(enterKeyType);
+        int inputType = android.text.InputType.TYPE_CLASS_TEXT;
+
+        if ((inputHints & (ImhPreferNumbers | ImhDigitsOnly | ImhFormattedNumbersOnly)) != 0) {
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER;
+            if ((inputHints & ImhFormattedNumbersOnly) != 0) {
+                inputType |= (android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+                        | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
+            }
+
+            if ((inputHints & ImhHiddenText) != 0)
+                inputType |= android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
+        } else if ((inputHints & ImhDialableCharactersOnly) != 0) {
+            inputType = android.text.InputType.TYPE_CLASS_PHONE;
+        } else if ((inputHints & (ImhDate | ImhTime)) != 0) {
+            inputType = android.text.InputType.TYPE_CLASS_DATETIME;
+            if ((inputHints & (ImhDate | ImhTime)) != (ImhDate | ImhTime)) {
+                if ((inputHints & ImhDate) != 0)
+                    inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_DATE;
+                else
+                    inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_TIME;
+            } // else {  TYPE_DATETIME_VARIATION_NORMAL(0) }
+        } else { // CLASS_TEXT
+            if ((inputHints & ImhHiddenText) != 0) {
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
+            } else if ((inputHints & ImhSensitiveData) != 0 ||
+                    isDisablePredictiveTextWorkaround(inputHints)) {
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+            } else if ((inputHints & ImhUrlCharactersOnly) != 0) {
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
+                if (enterKeyType == 0) // not explicitly overridden
+                    imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+            } else if ((inputHints & ImhEmailCharactersOnly) != 0) {
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+            }
+
+            if ((inputHints & ImhMultiLine) != 0) {
+                inputType |= android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+                // Clear imeOptions for Multi-Line Type
+                // User should be able to insert new line in such case
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
+            }
+            if ((inputHints & (ImhNoPredictiveText | ImhSensitiveData | ImhHiddenText)) != 0)
+                inputType |= android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+
+            if ((inputHints & ImhUppercaseOnly) != 0) {
+                initialCapsMode |= android.text.TextUtils.CAP_MODE_CHARACTERS;
+                inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS;
+            } else if ((inputHints & ImhLowercaseOnly) == 0
+                    && (inputHints & ImhNoAutoUppercase) == 0) {
+                initialCapsMode |= android.text.TextUtils.CAP_MODE_SENTENCES;
+                inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
+            }
+        }
+
+        if (enterKeyType == 0 && (inputHints & ImhMultiLine) != 0)
+            imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
+
+        m_editText.setInitialCapsMode(initialCapsMode);
+        m_editText.setImeOptions(imeOptions);
+        m_editText.setInputType(inputType);
+    }
+
+    private boolean isDisablePredictiveTextWorkaround(int inputHints)
+    {
+        return (inputHints & ImhNoPredictiveText) != 0 &&
+                System.getenv("QT_ANDROID_ENABLE_WORKAROUND_TO_DISABLE_PREDICTIVE_TEXT") != null;
+    }
+
+    private boolean updateSoftInputMode(Activity activity, int height)
+    {
+        DisplayMetrics metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        // If the screen is in portrait mode than we estimate that keyboard height
+        // will not be higher than 2/5 of the screen. Otherwise we estimate that keyboard height
+        // will not be higher than 2/3 of the screen
+        final int visibleHeight;
+        if (metrics.widthPixels < metrics.heightPixels) {
+            visibleHeight = m_portraitKeyboardHeight != 0 ?
+                    m_portraitKeyboardHeight : metrics.heightPixels * 3 / 5;
+        } else {
+            visibleHeight = m_landscapeKeyboardHeight != 0 ?
+                    m_landscapeKeyboardHeight : metrics.heightPixels / 3;
+        }
+
+        if (m_softInputMode != 0) {
+            activity.getWindow().setSoftInputMode(m_softInputMode);
+            int stateHidden = WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN;
+            return (m_softInputMode & stateHidden) != 0;
+        } else {
+            int stateUnchanged = WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED;
+            if (height > visibleHeight) {
+                int adjustResize = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+                activity.getWindow().setSoftInputMode(stateUnchanged | adjustResize);
+            } else {
+                int adjustPan = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
+                activity.getWindow().setSoftInputMode(stateUnchanged | adjustPan);
+            }
+        }
+        return false;
+    }
+
+    private int imeOptionsFromEnterKeyType(int enterKeyType)
+    {
+        int imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
+
+        // enter key type - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
+        switch (enterKeyType) {
+            case 0: // EnterKeyDefault
+                break;
+            case 1: // EnterKeyReturn
+                imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
+                break;
+            case 2: // EnterKeyDone
+                break;
+            case 3: // EnterKeyGo
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+                break;
+            case 4: // EnterKeySend
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND;
+                break;
+            case 5: // EnterKeySearch
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH;
+                break;
+            case 6: // EnterKeyNext
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_NEXT;
+                break;
+            case 7: // EnterKeyPrevious
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS;
+                break;
+        }
+        return imeOptions;
+    }
+
+    private void probeForKeyboardHeight(QtLayout layout, Activity activity, int x, int y,
+                                        int width, int height, int inputHints, int enterKeyType)
+    {
+        layout.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!m_keyboardIsVisible)
+                    return;
+                DisplayMetrics metrics = new DisplayMetrics();
+                activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                Rect r = new Rect();
+                activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+                if (metrics.heightPixels != r.bottom) {
+                    if (metrics.widthPixels > metrics.heightPixels) { // landscape
+                        if (m_landscapeKeyboardHeight != r.bottom) {
+                            m_landscapeKeyboardHeight = r.bottom;
+                            showSoftwareKeyboard(activity, layout, x, y, width, height,
+                                    inputHints, enterKeyType);
+                        }
+                    } else {
+                        if (m_portraitKeyboardHeight != r.bottom) {
+                            m_portraitKeyboardHeight = r.bottom;
+                            showSoftwareKeyboard(activity, layout, x, y, width, height,
+                                    inputHints, enterKeyType);
+                        }
+                    }
+                } else {
+                    // no luck ?
+                    // maybe the delay was too short, so let's make it longer
+                    if (m_probeKeyboardHeightDelayMs < 1000)
+                        m_probeKeyboardHeightDelayMs *= 2;
+                }
+            }
+        }, m_probeKeyboardHeightDelayMs);
+    }
+
     public void hideSoftwareKeyboard()
     {
-        m_isKeyboardHiding = true;
+        m_isKeyboardHidingAnimationOngoing = true;
         QtNative.runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_imm == null)
                     return;
-                m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0, new ResultReceiver(new Handler()) {
+
+                m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0,
+                        new ResultReceiver(new Handler()) {
                     @Override
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         switch (resultCode) {
@@ -502,8 +541,8 @@ public class QtInputDelegate {
             editButtons &= ~EditContextView.PASTE_BUTTON;
 
         if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
-            m_editPopupMenu.setPosition(editX, editY, editButtons, m_cursorHandle, m_leftSelectionHandle,
-                    m_rightSelectionHandle);
+            m_editPopupMenu.setPosition(editX, editY, editButtons,
+                    m_cursorHandle, m_leftSelectionHandle, m_rightSelectionHandle);
         } else {
             if (m_editPopupMenu != null)
                 m_editPopupMenu.hide();
@@ -599,7 +638,7 @@ public class QtInputDelegate {
     public static native void mouseDown(int winId, int x, int y);
     public static native void mouseUp(int winId, int x, int y);
     public static native void mouseMove(int winId, int x, int y);
-    public static native void mouseWheel(int winId, int x, int y, float hdelta, float vdelta);
+    public static native void mouseWheel(int winId, int x, int y, float hDelta, float vDelta);
     public static native void touchBegin(int winId);
     public static native void touchAdd(int winId, int pointerId, int action, boolean primary,
                                        int x, int y, float major, float minor, float rotation,
@@ -699,10 +738,12 @@ public class QtInputDelegate {
 
     static public boolean sendGenericMotionEvent(MotionEvent event, int id)
     {
-        if (((event.getAction() & (MotionEvent.ACTION_SCROLL | MotionEvent.ACTION_HOVER_MOVE)) == 0)
-                || (event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != InputDevice.SOURCE_CLASS_POINTER) {
+        int scrollOrHoverMove = MotionEvent.ACTION_SCROLL | MotionEvent.ACTION_HOVER_MOVE;
+        int pointerDeviceModifier = (event.getSource() & InputDevice.SOURCE_CLASS_POINTER);
+        boolean isPointerDevice = pointerDeviceModifier == InputDevice.SOURCE_CLASS_POINTER;
+
+        if ((event.getAction() & scrollOrHoverMove) == 0 || !isPointerDevice )
             return false;
-        }
 
         return sendMouseEvent(event, id);
     }
