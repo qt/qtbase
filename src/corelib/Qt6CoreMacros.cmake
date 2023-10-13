@@ -1226,7 +1226,7 @@ function(qt6_extract_metatypes target)
         else()
             set(use_better_automoc_graph FALSE)
             if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.28.0"
-                AND CMAKE_CROSS_CONFIGS)
+                AND is_multi_config)
                 if(DEFINED QT_USE_BETTER_AUTOMOC_GRAPH)
                     set(use_better_automoc_graph ${QT_USE_BETTER_AUTOMOC_GRAPH})
                 else()
