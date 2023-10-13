@@ -42,6 +42,8 @@ public:
 
 private:
     HRESULT unselect();
+    QString valueForIA2Attribute(QAccessibleTextInterface *textInterface, const QString &key);
+    TextDecorationLineStyle uiaLineStyleForIA2LineStyle(const QString &ia2LineStyle);
     int m_startOffset;
     int m_endOffset;
 };
