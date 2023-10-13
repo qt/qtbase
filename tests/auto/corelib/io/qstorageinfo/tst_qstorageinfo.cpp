@@ -6,6 +6,7 @@
 #include <QStandardPaths>
 #include <QStorageInfo>
 #include <QTemporaryFile>
+#include "private/qemulationdetector_p.h"
 
 #include <stdarg.h>
 
@@ -148,6 +149,9 @@ void tst_QStorageInfo::currentStorage()
 
 void tst_QStorageInfo::storageList_data()
 {
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("QEMU appears not to emulate the system calls correctly.");
+
     QStorageInfo root = QStorageInfo::root();
 
     QList<QStorageInfo> volumes = QStorageInfo::mountedVolumes();

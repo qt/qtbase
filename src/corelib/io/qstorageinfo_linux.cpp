@@ -10,24 +10,8 @@
 #include <private/qcore_unix_p.h>
 #include <private/qtools_p.h>
 
-#if defined(Q_OS_ANDROID)
-#  include <sys/mount.h>
-#  include <sys/vfs.h>
-#  define QT_STATFS    ::statfs
-#  define QT_STATFSBUF struct statfs
-#  if !defined(ST_RDONLY)
-#    define ST_RDONLY 1 // hack for missing define on Android
-#  endif
-#else
-#  include <sys/statvfs.h>
-#  if defined(QT_LARGEFILE_SUPPORT)
-#    define QT_STATFSBUF struct statvfs64
-#    define QT_STATFS    ::statvfs64
-#  else
-#    define QT_STATFSBUF struct statvfs
-#    define QT_STATFS    ::statvfs
-#  endif // QT_LARGEFILE_SUPPORT
-#endif
+#include <sys/mount.h>
+#include <sys/statfs.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -160,9 +144,9 @@ void QStorageInfoPrivate::doStat()
 
 void QStorageInfoPrivate::retrieveVolumeInfo()
 {
-    QT_STATFSBUF statfs_buf;
+    struct statfs64 statfs_buf;
     int result;
-    EINTR_LOOP(result, QT_STATFS(QFile::encodeName(rootPath).constData(), &statfs_buf));
+    EINTR_LOOP(result, statfs64(QFile::encodeName(rootPath).constData(), &statfs_buf));
     if (result == 0) {
         valid = true;
         ready = true;
@@ -171,14 +155,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
         blockSize = int(statfs_buf.f_bsize);
-
-#if defined(Q_OS_ANDROID)
-#if defined(_STATFS_F_FLAGS)
-        readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
-#endif
-#else
-        readOnly = (statfs_buf.f_flag & ST_RDONLY) != 0;
-#endif
+        readOnly = (statfs_buf.f_flags & MS_RDONLY) != 0;
     }
 }
 
