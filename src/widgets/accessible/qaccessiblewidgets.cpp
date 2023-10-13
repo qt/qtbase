@@ -839,6 +839,8 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
     QFont::Style style = charFormatFont.style();
     attrs["font-style"] = QString::fromLatin1((style == QFont::StyleItalic) ? "italic" : ((style == QFont::StyleOblique) ? "oblique": "normal"));
 
+    attrs["text-line-through-type"] = charFormatFont.strikeOut() ? "single"_L1 : "none"_L1;
+
     QTextCharFormat::UnderlineStyle underlineStyle = charFormat.underlineStyle();
     if (underlineStyle == QTextCharFormat::NoUnderline && charFormatFont.underline()) // underline could still be set in the default font
         underlineStyle = QTextCharFormat::SingleUnderline;

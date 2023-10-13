@@ -665,7 +665,7 @@ void tst_QAccessibility::textAttributes_data()
     defaultComplexFont.setStyle(QFont::StyleItalic);
     defaultComplexFont.setUnderline(true);
 
-    static QStringList defaults = QString("font-style:normal;font-weight:normal;text-align:left;text-position:baseline;font-size:13pt").split(';');
+    static QStringList defaults = QString("font-style:normal;font-weight:normal;text-align:left;text-position:baseline;font-size:13pt;text-line-through-type:none").split(';');
     static QStringList bold = defaults;
     bold[1] = QString::fromLatin1("font-weight:bold");
 
@@ -701,7 +701,7 @@ void tst_QAccessibility::textAttributes_data()
     defaultFontDifferentBoldItalic[1] = QString::fromLatin1("font-weight:bold");
 
     static QStringList defaultFontDifferentMonospace = defaultFontDifferent;
-    defaultFontDifferentMonospace[7] = (QLatin1String("font-family:\"monospace\""));
+    defaultFontDifferentMonospace[8] = (QLatin1String("font-family:\"monospace\""));
 
     static QStringList defaultFontDifferentFont8pt = defaultFontDifferent;
     defaultFontDifferentFont8pt[4] = (QLatin1String("font-size:8pt"));
