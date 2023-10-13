@@ -170,7 +170,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         bytesTotal = statfs_buf.f_blocks * statfs_buf.f_frsize;
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
-        blockSize = statfs_buf.f_bsize;
+        blockSize = int(statfs_buf.f_bsize);
 
 #if defined(Q_OS_ANDROID)
 #if defined(_STATFS_F_FLAGS)

@@ -203,7 +203,7 @@ bool QStorageInfoPrivate::queryStorageProperty()
                                   nullptr);
     CloseHandle(handle);
     if (result)
-        blockSize = saad.BytesPerPhysicalSector;
+        blockSize = int(saad.BytesPerPhysicalSector);
     return result;
 }
 

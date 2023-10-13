@@ -96,7 +96,7 @@ public:
     qint64 bytesTotal = -1;
     qint64 bytesFree = -1;
     qint64 bytesAvailable = -1;
-    ulong blockSize = ulong(-1);
+    int blockSize = -1;
 
     bool readOnly = false;
     bool ready = false;
