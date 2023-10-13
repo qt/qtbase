@@ -404,7 +404,7 @@ QString qTzName(int dstIndex)
 {
     char name[512];
     bool ok;
-#if defined(Q_CC_MSVC)
+#if defined(_UCRT)  // i.e., MSVC and MinGW-UCRT
     size_t s = 0;
     {
         const auto locker = qt_scoped_lock(environmentMutex);
