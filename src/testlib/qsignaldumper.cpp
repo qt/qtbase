@@ -24,9 +24,20 @@ inline static void qPrintMessage(const QByteArray &ba)
 }
 
 Q_GLOBAL_STATIC(QList<QByteArray>, ignoreClasses)
+Q_CONSTINIT static QBasicMutex ignoreClassesMutex;
 Q_CONSTINIT thread_local int iLevel = 0;
 Q_CONSTINIT thread_local int ignoreLevel = 0;
 enum { IndentSpacesCount = 4 };
+
+static bool classIsIgnored(const char *className)
+{
+    if (Q_LIKELY(!ignoreClasses.exists()))
+        return false;
+    QMutexLocker locker(&ignoreClassesMutex);
+    if (ignoreClasses()->isEmpty())
+        return false;
+    return ignoreClasses()->contains(QByteArrayView(className));
+}
 
 static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv)
 {
@@ -38,7 +49,7 @@ static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv
     QMetaMethod member = QMetaObjectPrivate::signal(mo, signal_index);
     Q_ASSERT(member.isValid());
 
-    if (QTest::ignoreClasses() && QTest::ignoreClasses()->contains(mo->className())) {
+    if (classIsIgnored(mo->className())) {
         ++QTest::ignoreLevel;
         return;
     }
@@ -98,8 +109,7 @@ static void qSignalDumperCallbackSlot(QObject *caller, int method_index, void **
     if (!member.isValid())
         return;
 
-    if (QTest::ignoreLevel ||
-            (QTest::ignoreClasses() && QTest::ignoreClasses()->contains(mo->className())))
+    if (QTest::ignoreLevel || classIsIgnored(mo->className()))
         return;
 
     QByteArray str;
@@ -122,8 +132,7 @@ static void qSignalDumperCallbackSlot(QObject *caller, int method_index, void **
 static void qSignalDumperCallbackEndSignal(QObject *caller, int /*signal_index*/)
 {
     Q_ASSERT(caller); Q_ASSERT(caller->metaObject());
-    if (QTest::ignoreClasses()
-            && QTest::ignoreClasses()->contains(caller->metaObject()->className())) {
+    if (classIsIgnored(caller->metaObject()->className())) {
         --QTest::ignoreLevel;
         Q_ASSERT(QTest::ignoreLevel >= 0);
         return;
@@ -156,13 +165,15 @@ void QSignalDumper::endDump()
 
 void QSignalDumper::ignoreClass(const QByteArray &klass)
 {
+    QMutexLocker locker(&QTest::ignoreClassesMutex);
     if (QTest::ignoreClasses())
         QTest::ignoreClasses()->append(klass);
 }
 
 void QSignalDumper::clearIgnoredClasses()
 {
-    if (QTest::ignoreClasses())
+    QMutexLocker locker(&QTest::ignoreClassesMutex);
+    if (QTest::ignoreClasses.exists())
         QTest::ignoreClasses()->clear();
 }
 
