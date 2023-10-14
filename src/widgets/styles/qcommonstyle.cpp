@@ -6089,9 +6089,9 @@ QIcon QCommonStylePrivate::iconFromResourceTheme(QCommonStyle::StandardPixmap st
         addIconFiles(u"toolbar-ext-v-", toolBarExtVSizes, icon);
         break;
     case QStyle::SP_TabCloseButton:
-        addIconFiles(u"standardbutton-closetab-", {16, 32}, icon, QIcon::Normal, QIcon::Off);
-        addIconFiles(u"standardbutton-closetab-down-", {16, 32}, icon, QIcon::Normal, QIcon::On);
-        addIconFiles(u"standardbutton-closetab-hover-", {16, 32}, icon, QIcon::Active, QIcon::Off);
+        addIconFiles(u"standardbutton-closetab-", pngIconSizes, icon, QIcon::Normal, QIcon::Off);
+        addIconFiles(u"standardbutton-closetab-down-", pngIconSizes, icon, QIcon::Normal, QIcon::On);
+        addIconFiles(u"standardbutton-closetab-hover-", pngIconSizes, icon, QIcon::Active, QIcon::Off);
         break;
     case QStyle::SP_LineEditClearButton:
         addIconFiles(u"cleartext-", pngIconSizes, icon);
