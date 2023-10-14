@@ -5892,16 +5892,18 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 static inline QString iconResourcePrefix() { return QStringLiteral(":/qt-project.org/styles/commonstyle/images/"); }
 static inline QString iconPngSuffix() { return QStringLiteral(".png"); }
 
-static void addIconFiles(const QString &prefix, const int sizes[], size_t count, QIcon &icon)
+template <typename T>
+static void addIconFiles(QStringView prefix, std::initializer_list<T> sizes, QIcon &icon)
 {
-    for (size_t i = 0; i < count; ++i)
-        icon.addFile(prefix + QString::number(sizes[i]) + iconPngSuffix());
+    const auto fullPrefix = iconResourcePrefix() + prefix;
+    for (int size : sizes)
+        icon.addFile(fullPrefix + QString::number(size) + iconPngSuffix());
 }
 
-static const int dockTitleIconSizes[] = {10, 16, 20, 32, 48, 64};
-static const int titleBarSizes[] = {16, 32, 48};
-static const int toolBarExtHSizes[] = {8, 16, 32};
-static const int toolBarExtVSizes[] = {5, 10, 20};
+static constexpr auto dockTitleIconSizes = {10, 16, 20, 32, 48, 64};
+static constexpr auto titleBarSizes = {16, 32, 48};
+static constexpr auto toolBarExtHSizes = {8, 16, 32};
+static constexpr auto toolBarExtVSizes = {5, 10, 20};
 #endif // imageformat_png
 
 /*!
@@ -6218,25 +6220,19 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
     switch (standardIcon) {
 #ifndef QT_NO_IMAGEFORMAT_PNG
     case SP_TitleBarMinButton:
-        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-min-"),
-                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
+        addIconFiles(u"titlebar-min-", titleBarSizes, icon);
         break;
     case SP_TitleBarMaxButton:
-        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-max-"),
-                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
+        addIconFiles(u"titlebar-max-", titleBarSizes, icon);
         break;
     case SP_TitleBarShadeButton:
-        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-shade-"),
-                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
-
+        addIconFiles(u"titlebar-shade-", titleBarSizes, icon);
         break;
     case SP_TitleBarUnshadeButton:
-        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-unshade-"),
-                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
+        addIconFiles(u"titlebar-unshade-", titleBarSizes, icon);
         break;
     case SP_TitleBarContextHelpButton:
-        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-contexthelp-"),
-                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
+        addIconFiles(u"titlebar-contexthelp-", titleBarSizes, icon);
         break;
      case SP_FileDialogNewFolder:
         icon.addFile(":/qt-project.org/styles/commonstyle/images/newdirectory-16.png"_L1, QSize(16, 16));
@@ -6433,8 +6429,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         icon.addFile(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"_L1, QSize(16, 16));
         break;
     case SP_TitleBarCloseButton:
-        addIconFiles(iconResourcePrefix() + QStringLiteral("closedock-"),
-                     dockTitleIconSizes, sizeof(dockTitleIconSizes)/sizeof(dockTitleIconSizes[0]), icon);
+        addIconFiles(u"closedock-", dockTitleIconSizes, icon);
         break;
     case SP_TitleBarMenuButton:
 #  ifndef QT_NO_IMAGEFORMAT_XPM
@@ -6443,19 +6438,13 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         icon.addFile(":/qt-project.org/qmessagebox/images/qtlogo-64.png"_L1);
         break;
     case SP_TitleBarNormalButton:
-        addIconFiles(iconResourcePrefix() + QStringLiteral("normalizedockup-"),
-                     dockTitleIconSizes, sizeof(dockTitleIconSizes)/sizeof(dockTitleIconSizes[0]), icon);
+        addIconFiles(u"normalizedockup-", dockTitleIconSizes, icon);
         break;
-    case SP_ToolBarHorizontalExtensionButton: {
-        QString prefix = iconResourcePrefix() + QStringLiteral("toolbar-ext-h-");
-        if (rtl)
-            prefix += QStringLiteral("rtl-");
-        addIconFiles(prefix, toolBarExtHSizes, sizeof(toolBarExtHSizes)/sizeof(toolBarExtHSizes[0]), icon);
-    }
+    case SP_ToolBarHorizontalExtensionButton:
+        addIconFiles(rtl ? u"toolbar-ext-h-rtl-" : u"toolbar-ext-h-", toolBarExtHSizes, icon);
         break;
     case SP_ToolBarVerticalExtensionButton:
-        addIconFiles(iconResourcePrefix() + QStringLiteral("toolbar-ext-v-"),
-                     toolBarExtVSizes, sizeof(toolBarExtVSizes)/sizeof(toolBarExtVSizes[0]), icon);
+        addIconFiles(u"toolbar-ext-v-", toolBarExtVSizes, icon);
         break;
     case SP_TabCloseButton:
         icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-16.png", QSize(16, 16),
