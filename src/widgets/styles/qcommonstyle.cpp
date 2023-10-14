@@ -5984,6 +5984,7 @@ QIcon QCommonStylePrivate::iconFromResourceTheme(QCommonStyle::StandardPixmap st
     case QStyle::SP_DialogNoButton:
         addIconFiles(u"standardbutton-no-", pngIconSizes, icon);
         break;
+    case QStyle::SP_CommandLink:
     case QStyle::SP_ArrowForward:
         return q->proxy()->standardIcon(rtl(option) ? QStyle::SP_ArrowLeft
                                                     : QStyle::SP_ArrowRight,
@@ -6009,8 +6010,20 @@ QIcon QCommonStylePrivate::iconFromResourceTheme(QCommonStyle::StandardPixmap st
         addIconFiles(u"dirclosed-", pngIconSizes, icon, QIcon::Normal, QIcon::Off);
         addIconFiles(u"diropen-", pngIconSizes, icon, QIcon::Normal, QIcon::On);
         break;
+    case QStyle::SP_DirOpenIcon:
+        addIconFiles(u"diropen-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_DirClosedIcon:
+        addIconFiles(u"dirclosed-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_DirLinkIcon:
+        addIconFiles(u"dirlink-", pngIconSizes, icon);
+        break;
     case QStyle::SP_DriveCDIcon:
         addIconFiles(u"cdr-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_DriveFDIcon:
+        addIconFiles(u"floppy-", pngIconSizes, icon);
         break;
     case QStyle::SP_DriveHDIcon:
         addIconFiles(u"harddrive-", pngIconSizes, icon);
