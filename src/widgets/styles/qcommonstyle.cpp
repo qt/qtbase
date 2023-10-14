@@ -6094,7 +6094,7 @@ QIcon QCommonStylePrivate::iconFromResourceTheme(QCommonStyle::StandardPixmap st
         addIconFiles(u"standardbutton-closetab-hover-", {16, 32}, icon, QIcon::Active, QIcon::Off);
         break;
     case QStyle::SP_LineEditClearButton:
-        addIconFiles(u"cleartext-", {16, 32}, icon);
+        addIconFiles(u"cleartext-", pngIconSizes, icon);
         break;
     default:
         break;

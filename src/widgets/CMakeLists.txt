@@ -83,6 +83,7 @@ set(qstyle_resource_files
     "styles/images/cdr-128.png"
     "styles/images/cdr-16.png"
     "styles/images/cdr-32.png"
+    "styles/images/cleartext-128.png"
     "styles/images/cleartext-16.png"
     "styles/images/cleartext-32.png"
     "styles/images/closedock-10.png"
