@@ -297,15 +297,15 @@ static void qt_call_pre_routines()
     if (!preRList.exists())
         return;
 
-    QVFuncList list;
-    {
+    const QStartUpFuncList list = [] {
         const auto locker = qt_scoped_lock(globalRoutinesMutex);
         // Unlike qt_call_post_routines, we don't empty the list, because
         // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
         // the function to be executed every time QCoreApplication is created.
-        list = *preRList;
-    }
-    for (QtCleanUpFunction f : std::as_const(list))
+        return *preRList;
+    }();
+
+    for (QtStartUpFunction f : list)
         f();
 }
 
