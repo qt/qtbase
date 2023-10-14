@@ -5519,8 +5519,8 @@ static void addIconFiles(QStringView prefix, std::initializer_list<T> sizes, QIc
 
 static constexpr auto dockTitleIconSizes = {10, 16, 20, 32, 48, 64};
 static constexpr auto titleBarSizes = {16, 32, 48};
-static constexpr auto toolBarExtHSizes = {8, 16, 32};
-static constexpr auto toolBarExtVSizes = {5, 10, 20};
+static constexpr auto toolBarExtHSizes = {8, 16, 32, 128};
+static constexpr auto toolBarExtVSizes = {5, 10, 20, 80};
 static constexpr auto pngIconSizes = {16, 32, 128};
 #endif // imageformat_png
 
