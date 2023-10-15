@@ -227,8 +227,13 @@ public:
             types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
         void **pSlot = nullptr;
-        if constexpr (std::is_member_function_pointer_v<std::decay_t<Func2>>)
+        if constexpr (std::is_member_function_pointer_v<std::decay_t<Func2>>) {
             pSlot = const_cast<void **>(reinterpret_cast<void *const *>(&slot));
+        } else {
+            Q_ASSERT_X((type & Qt::UniqueConnection) == 0, "",
+                       "QObject::connect: Unique connection requires the slot to be a pointer to "
+                       "a member function of a QObject subclass.");
+        }
 
         return connectImpl(sender, reinterpret_cast<void **>(&signal), context, pSlot,
                            QtPrivate::makeCallableObject<Func1>(std::forward<Func2>(slot)),

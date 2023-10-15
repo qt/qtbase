@@ -6303,11 +6303,46 @@ void tst_QObject::connectFunctorWithContextUnique()
     QVERIFY(QObject::connect(&sender, &SenderObject::signal1, &receiver, &ReceiverObject::slot1));
     receiver.count_slot1 = 0;
 
-    QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, ReceiverObject): unique connections require a pointer to member function of a QObject subclass");
+    QVERIFY(QObject::connect(&sender, &SenderObject::signal2, &receiver, &ReceiverObject::slot2));
+    receiver.count_slot2 = 0;
+
+    const auto oredType = Qt::ConnectionType(Qt::DirectConnection | Qt::UniqueConnection);
+
+    // Will assert in debug builds, so only test in release builds
+#if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
+    auto ignoreMsg = [] {
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QObject::connect(SenderObject, ReceiverObject): unique connections "
+                             "require a pointer to member function of a QObject subclass");
+    };
+
+    ignoreMsg();
     QVERIFY(!QObject::connect(&sender, &SenderObject::signal1, &receiver, [&](){ receiver.slot1(); }, Qt::UniqueConnection));
+
+    ignoreMsg();
+    QVERIFY(!QObject::connect(
+        &sender, &SenderObject::signal2, &receiver, [&]() { receiver.slot2(); }, oredType));
+#endif
 
     sender.emitSignal1();
     QCOMPARE(receiver.count_slot1, 1);
+
+    sender.emitSignal2();
+    QCOMPARE(receiver.count_slot2, 1);
+
+    // Check connecting to PMF doesn't hit the assert
+
+    QVERIFY(QObject::connect(&sender, &SenderObject::signal3, &receiver, &ReceiverObject::slot3,
+                             Qt::UniqueConnection));
+    receiver.count_slot3 = 0;
+    sender.emitSignal3();
+    QCOMPARE(receiver.count_slot3, 1);
+
+    QVERIFY(QObject::connect(&sender, &SenderObject::signal4, &receiver, &ReceiverObject::slot4,
+                             oredType));
+    receiver.count_slot4 = 0;
+    sender.emitSignal4();
+    QCOMPARE(receiver.count_slot4, 1);
 }
 
 class MyFunctor
