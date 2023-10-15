@@ -5525,206 +5525,33 @@ static constexpr auto pngIconSizes = {16, 32, 128};
 static constexpr auto mediaIconSizes = {16, 32};
 #endif // imageformat_png
 
-#if defined(Q_OS_WIN) || QT_CONFIG(imageformat_png)
-static QIcon clearTextIcon(bool rtl)
-{
-    const QString directionalThemeName = rtl
-        ? QStringLiteral("edit-clear-locationbar-ltr") : QStringLiteral("edit-clear-locationbar-rtl");
-    if (QIcon::hasThemeIcon(directionalThemeName))
-        return QIcon::fromTheme(directionalThemeName);
-    const QString themeName = QStringLiteral("edit-clear");
-    if (QIcon::hasThemeIcon(themeName))
-        return QIcon::fromTheme(themeName);
-
-    QIcon icon;
-#ifndef QT_NO_IMAGEFORMAT_PNG
-    addIconFiles(u"cleartext-", {16, 32}, icon);
-#endif // !QT_NO_IMAGEFORMAT_PNG
-    return icon;
-}
-#endif
-
 /*! \reimp */
 QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
                                      const QWidget *widget) const
 {
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QGuiApplication::isRightToLeft());
-#ifdef QT_NO_IMAGEFORMAT_PNG
-    Q_UNUSED(widget);
-    Q_UNUSED(sp);
-#else
-    QPixmap pixmap;
+    Q_D(const QCommonStyle);
+    QIcon icon;
 
-    if (QGuiApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
-        switch (sp) {
-        case QStyle::SP_DialogYesButton:
-        case QStyle::SP_DialogOkButton:
-            pixmap = QIcon::fromTheme("dialog-ok"_L1).pixmap(16);
-            break;
-        case QStyle::SP_DialogApplyButton:
-            pixmap = QIcon::fromTheme("dialog-ok-apply"_L1).pixmap(16);
-            break;
-        case QStyle::SP_DialogDiscardButton:
-            pixmap = QIcon::fromTheme("edit-delete"_L1).pixmap(16);
-            break;
-        case QStyle::SP_DialogCloseButton:
-            pixmap = QIcon::fromTheme("dialog-close"_L1).pixmap(16);
-            break;
-        case QStyle::SP_DirHomeIcon:
-            pixmap = QIcon::fromTheme("user-home"_L1).pixmap(16);
-            break;
-        case QStyle::SP_MessageBoxInformation:
-            pixmap = QIcon::fromTheme("messagebox_info"_L1).pixmap(16);
-            break;
-        case QStyle::SP_MessageBoxWarning:
-            pixmap = QIcon::fromTheme("messagebox_warning"_L1).pixmap(16);
-            break;
-        case QStyle::SP_MessageBoxCritical:
-            pixmap = QIcon::fromTheme("messagebox_critical"_L1).pixmap(16);
-            break;
-        case QStyle::SP_MessageBoxQuestion:
-            pixmap = QIcon::fromTheme("help"_L1).pixmap(16);
-            break;
-        case QStyle::SP_DialogOpenButton:
-        case QStyle::SP_DirOpenIcon:
-            pixmap = QIcon::fromTheme("folder-open"_L1).pixmap(16);
-            break;
-        case QStyle::SP_FileIcon:
-            pixmap = QIcon::fromTheme("text-x-generic"_L1, QIcon::fromTheme("empty"_L1)).pixmap(16);
-            break;
-        case QStyle::SP_DirClosedIcon:
-        case QStyle::SP_DirIcon:
-                pixmap = QIcon::fromTheme("folder"_L1).pixmap(16);
-                break;
-        case QStyle::SP_DriveFDIcon:
-                pixmap = QIcon::fromTheme("media-floppy"_L1,
-                                          QIcon::fromTheme("3floppy_unmount"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_ComputerIcon:
-                pixmap = QIcon::fromTheme("computer"_L1, QIcon::fromTheme("system"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_DesktopIcon:
-                pixmap = QIcon::fromTheme("user-desktop"_L1,
-                                          QIcon::fromTheme("desktop"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_TrashIcon:
-                pixmap = QIcon::fromTheme("user-trash"_L1,
-                                          QIcon::fromTheme("trashcan_empty"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_DriveCDIcon:
-        case QStyle::SP_DriveDVDIcon:
-                pixmap = QIcon::fromTheme("media-optical"_L1,
-                                          QIcon::fromTheme("cdrom_unmount"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_DriveHDIcon:
-                pixmap = QIcon::fromTheme("drive-harddisk"_L1,
-                                          QIcon::fromTheme("hdd_unmount"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_FileDialogToParent:
-                pixmap = QIcon::fromTheme("go-up"_L1, QIcon::fromTheme("up"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_FileDialogNewFolder:
-                pixmap = QIcon::fromTheme("folder_new"_L1).pixmap(16);
-                break;
-        case QStyle::SP_ArrowUp:
-                pixmap = QIcon::fromTheme("go-up"_L1,
-                                          QIcon::fromTheme("up"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_ArrowDown:
-                pixmap = QIcon::fromTheme("go-down"_L1, QIcon::fromTheme("down"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_ArrowRight:
-                pixmap = QIcon::fromTheme("go-next"_L1, QIcon::fromTheme("forward"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_ArrowLeft:
-                pixmap = QIcon::fromTheme("go-previous"_L1, QIcon::fromTheme("back"_L1)).pixmap(16);
-                break;
-        case QStyle::SP_FileDialogDetailedView:
-                pixmap = QIcon::fromTheme("view_detailed"_L1).pixmap(16);
-                break;
-        case QStyle::SP_FileDialogListView:
-                pixmap = QIcon::fromTheme("view_icon"_L1).pixmap(16);
-                break;
-        case QStyle::SP_BrowserReload:
-                pixmap = QIcon::fromTheme("reload"_L1).pixmap(16);
-                break;
-        case QStyle::SP_BrowserStop:
-                pixmap = QIcon::fromTheme("process-stop"_L1).pixmap(16);
-                break;
-        case QStyle::SP_MediaPlay:
-                pixmap = QIcon::fromTheme("media-playback-start"_L1).pixmap(16);
-                break;
-        case QStyle::SP_MediaPause:
-                pixmap = QIcon::fromTheme("media-playback-pause"_L1).pixmap(16);
-                break;
-        case QStyle::SP_MediaStop:
-                pixmap = QIcon::fromTheme("media-playback-stop"_L1).pixmap(16);
-                break;
-        case QStyle::SP_MediaSeekForward:
-                pixmap = QIcon::fromTheme("media-seek-forward"_L1).pixmap(16);
-                break;
-        case QStyle::SP_MediaSeekBackward:
-                pixmap = QIcon::fromTheme("media-seek-backward"_L1).pixmap(16);
-                break;
-        case QStyle::SP_MediaSkipForward:
-                pixmap = QIcon::fromTheme("media-skip-forward"_L1).pixmap(16);
-                break;
-        case QStyle::SP_MediaSkipBackward:
-                pixmap = QIcon::fromTheme("media-skip-backward"_L1).pixmap(16);
-                break;
-        case QStyle::SP_DialogResetButton:
-                pixmap = QIcon::fromTheme("edit-clear"_L1).pixmap(24);
-                break;
-        case QStyle::SP_DialogHelpButton:
-                pixmap = QIcon::fromTheme("help-contents"_L1).pixmap(24);
-                break;
-        case QStyle::SP_DialogNoButton:
-        case QStyle::SP_DialogCancelButton:
-                pixmap = QIcon::fromTheme("dialog-cancel"_L1,
-                                         QIcon::fromTheme("process-stop"_L1)).pixmap(24);
-                break;
-        case QStyle::SP_DialogSaveButton:
-                pixmap = QIcon::fromTheme("document-save"_L1).pixmap(24);
-                break;
-        case QStyle::SP_FileLinkIcon:
-            pixmap = QIcon::fromTheme("emblem-symbolic-link"_L1).pixmap(16);
-            if (!pixmap.isNull()) {
-                QPixmap fileIcon = QIcon::fromTheme("text-x-generic"_L1).pixmap(16);
-                if (fileIcon.isNull())
-                    fileIcon = QIcon::fromTheme("empty"_L1).pixmap(16);
-                if (!fileIcon.isNull()) {
-                    QPainter painter(&fileIcon);
-                    painter.drawPixmap(0, 0, 16, 16, pixmap);
-                    return fileIcon;
-                }
-            }
-            break;
-        case QStyle::SP_DirLinkIcon:
-                pixmap = QIcon::fromTheme("emblem-symbolic-link"_L1).pixmap(16);
-                if (!pixmap.isNull()) {
-                    QPixmap dirIcon = QIcon::fromTheme("folder"_L1).pixmap(16);
-                    if (!dirIcon.isNull()) {
-                        QPainter painter(&dirIcon);
-                        painter.drawPixmap(0, 0, 16, 16, pixmap);
-                        return dirIcon;
-                    }
-                }
-                break;
-        case QStyle::SP_LineEditClearButton:
-            pixmap = clearTextIcon(rtl).pixmap(16);
-            break;
-        default:
-            break;
-        }
-    }
+    icon = d->iconFromWindowsTheme(sp, option, widget);
+    if (!icon.isNull())
+        return icon.pixmap(QSize(16, 16), qt_getDevicePixelRatio(widget));
 
-    if (!pixmap.isNull())
-        return pixmap;
-#endif //QT_NO_IMAGEFORMAT_PNG
-    switch (sp) {
+    icon = d->iconFromApplicationTheme(sp, option, widget);
+    if (!icon.isNull())
+        return icon.pixmap(QSize(16, 16), qt_getDevicePixelRatio(widget));
+
+    icon = d->iconFromMacTheme(sp, option, widget);
+    if (!icon.isNull())
+        return icon.pixmap(QSize(16, 16), qt_getDevicePixelRatio(widget));
+
+    icon = d->iconFromResourceTheme(sp, option, widget);
+    if (!icon.isNull())
+        return icon.pixmap(QSize(16, 16), qt_getDevicePixelRatio(widget));
+
 #ifndef QT_NO_IMAGEFORMAT_XPM
+    switch (sp) {
     case QStyle::SP_ToolBarHorizontalExtensionButton:
-        if (rtl) {
+        if (d->rtl(option)) {
             auto im = QImage(tb_extension_arrow_h_xpm).convertToFormat(QImage::Format_ARGB32).mirrored(true, false);
             return QPixmap::fromImage(std::move(im));
         }
@@ -5735,122 +5562,6 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
         return cachedPixmapFromXPM(filedialog_start_xpm);
     case QStyle::SP_FileDialogEnd:
         return cachedPixmapFromXPM(filedialog_end_xpm);
-#endif
-#ifndef QT_NO_IMAGEFORMAT_PNG
-    case QStyle::SP_CommandLink:
-    case QStyle::SP_ArrowForward:
-        if (rtl)
-            return proxy()->standardPixmap(SP_ArrowLeft, option, widget);
-        return proxy()->standardPixmap(SP_ArrowRight, option, widget);
-    case QStyle::SP_ArrowBack:
-        if (rtl)
-            return proxy()->standardPixmap(SP_ArrowRight, option, widget);
-        return proxy()->standardPixmap(SP_ArrowLeft, option, widget);
-    case QStyle::SP_ArrowLeft:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/left-16.png"_L1);
-    case QStyle::SP_ArrowRight:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/right-16.png"_L1);
-    case QStyle::SP_ArrowUp:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/up-16.png"_L1);
-    case QStyle::SP_ArrowDown:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/down-16.png"_L1);
-    case QStyle::SP_FileDialogToParent:
-        return proxy()->standardPixmap(SP_ArrowUp, option, widget);
-    case QStyle::SP_FileDialogNewFolder:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/newdirectory-16.png"_L1);
-    case QStyle::SP_FileDialogDetailedView:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/viewdetailed-16.png"_L1);
-    case QStyle::SP_FileDialogInfoView:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/fileinfo-16.png"_L1);
-    case QStyle::SP_FileDialogContentsView:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/filecontents-16.png"_L1);
-    case QStyle::SP_FileDialogListView:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/viewlist-16.png"_L1);
-    case QStyle::SP_FileDialogBack:
-        return proxy()->standardPixmap(SP_ArrowBack, option, widget);
-    case QStyle::SP_DriveHDIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/harddrive-16.png"_L1);
-    case QStyle::SP_TrashIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/trash-16.png"_L1);
-    case QStyle::SP_DriveFDIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/floppy-16.png"_L1);
-    case QStyle::SP_DriveNetIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/networkdrive-16.png"_L1);
-    case QStyle::SP_DesktopIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/desktop-16.png"_L1);
-    case QStyle::SP_ComputerIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/computer-16.png"_L1);
-    case QStyle::SP_DriveCDIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/cdr-16.png"_L1);
-    case QStyle::SP_DriveDVDIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/dvd-16.png"_L1);
-    case QStyle::SP_DirHomeIcon:
-    case QStyle::SP_DirOpenIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/diropen-16.png"_L1);
-    case QStyle::SP_DirIcon:
-    case QStyle::SP_DirClosedIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/dirclosed-16.png"_L1);
-    case QStyle::SP_DirLinkIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/dirlink-16.png"_L1);
-    case QStyle::SP_FileIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/file-16.png"_L1);
-    case QStyle::SP_FileLinkIcon:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/filelink-16.png"_L1);
-    case QStyle::SP_DialogOkButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-16.png"_L1);
-    case QStyle::SP_DialogCancelButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-16.png"_L1);
-    case QStyle::SP_DialogHelpButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-help-16.png"_L1);
-    case QStyle::SP_DialogOpenButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"_L1);
-    case QStyle::SP_DialogSaveButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-save-16.png"_L1);
-    case QStyle::SP_DialogCloseButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-close-16.png"_L1);
-    case QStyle::SP_DialogApplyButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-16.png"_L1);
-    case QStyle::SP_DialogResetButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-16.png"_L1);
-    case QStyle::SP_DialogDiscardButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-16.png"_L1);
-    case QStyle::SP_DialogYesButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-16.png"_L1);
-    case QStyle::SP_DialogNoButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-no-16.png"_L1);
-    case QStyle::SP_BrowserReload:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/refresh-24.png"_L1);
-    case QStyle::SP_BrowserStop:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/stop-24.png"_L1);
-    case QStyle::SP_MediaPlay:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-play-32.png"_L1);
-    case QStyle::SP_MediaPause:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-pause-32.png"_L1);
-    case QStyle::SP_MediaStop:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-stop-32.png"_L1);
-    case QStyle::SP_MediaSeekForward:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-seek-forward-32.png"_L1);
-    case QStyle::SP_MediaSeekBackward:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-seek-backward-32.png"_L1);
-    case QStyle::SP_MediaSkipForward:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-skip-forward-32.png"_L1);
-    case QStyle::SP_MediaSkipBackward:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-skip-backward-32.png"_L1);
-    case QStyle::SP_MediaVolume:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-volume-16.png"_L1);
-    case QStyle::SP_MediaVolumeMuted:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"_L1);
-    case QStyle::SP_LineEditClearButton:
-        return clearTextIcon(rtl).pixmap(16);
-    case QStyle::SP_TabCloseButton:
-        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-16.png"_L1);
-#endif // QT_NO_IMAGEFORMAT_PNG
-    default:
-        break;
-    }
-
-#ifndef QT_NO_IMAGEFORMAT_XPM
-    switch (sp) {
     case QStyle::SP_TitleBarMenuButton:
         return titleBarMenuCachedPixmapFromXPM();
     case QStyle::SP_TitleBarShadeButton:
@@ -5882,22 +5593,16 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     }
 #endif //QT_NO_IMAGEFORMAT_XPM
 
-#if !QT_CONFIG(imageformat_png) && !QT_CONFIG(imageformat_xpm) && !QT_CONFIG(imageformat_png)
-    Q_UNUSED(rtl);
-#endif
-
     return QPixmap();
 }
 
-/*!
-    \internal
-*/
-QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
-                                 const QWidget *widget) const
+QIcon QCommonStylePrivate::iconFromWindowsTheme(QCommonStyle::StandardPixmap standardIcon,
+                                                const QStyleOption *option,
+                                                const QWidget *widget) const
 {
-    QIcon icon;
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QGuiApplication::isRightToLeft());
-
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+    QIcon icon;;
 #ifdef Q_OS_WIN
     switch (standardIcon) {
     case QStyle::SP_DriveCDIcon:
@@ -5926,8 +5631,8 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
     case QStyle::SP_DirLinkIcon:
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
             QPlatformTheme::StandardPixmap spOff = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
-            QPlatformTheme::StandardPixmap spOn = standardIcon == SP_DirIcon ? QPlatformTheme::DirOpenIcon :
-                                                                                 QPlatformTheme::DirLinkOpenIcon;
+            QPlatformTheme::StandardPixmap spOn = standardIcon == QStyle::SP_DirIcon ? QPlatformTheme::DirOpenIcon
+                                                                                     : QPlatformTheme::DirLinkOpenIcon;
             for (int size = 16 ; size <= 32 ; size += 16) {
                 QSizeF pixSize(size, size);
                 QPixmap pixmap = theme->standardPixmap(spOff, pixSize);
@@ -5937,204 +5642,186 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             }
         }
         break;
-    case QStyle::SP_LineEditClearButton:
-        icon = clearTextIcon(rtl);
-        break;
     default:
         break;
     }
-    if (!icon.isNull())
-        return icon;
-
+#else
+    Q_UNUSED(standardIcon)
 #endif
+    return icon;
+}
 
+QIcon QCommonStylePrivate::iconFromApplicationTheme(QCommonStyle::StandardPixmap standardIcon,
+                                                    const QStyleOption *option,
+                                                    const QWidget *widget) const
+{
     if (QGuiApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
         case QStyle::SP_DirHomeIcon:
-                icon = QIcon::fromTheme("user-home"_L1);
-                break;
+            return QIcon::fromTheme("user-home"_L1);
         case QStyle::SP_MessageBoxInformation:
-                icon = QIcon::fromTheme("dialog-information"_L1);
-                break;
+            return QIcon::fromTheme("dialog-information"_L1);
         case QStyle::SP_MessageBoxWarning:
-                icon = QIcon::fromTheme("dialog-warning"_L1);
-                break;
+            return QIcon::fromTheme("dialog-warning"_L1);
         case QStyle::SP_MessageBoxCritical:
-                icon = QIcon::fromTheme("dialog-error"_L1);
-                break;
+            return QIcon::fromTheme("dialog-error"_L1);
         case QStyle::SP_MessageBoxQuestion:
-                icon = QIcon::fromTheme("dialog-question"_L1);
-                break;
+            return QIcon::fromTheme("dialog-question"_L1);
         case QStyle::SP_DialogOpenButton:
         case QStyle::SP_DirOpenIcon:
-                icon = QIcon::fromTheme("folder-open"_L1);
-                break;
+            return QIcon::fromTheme("folder-open"_L1);
         case QStyle::SP_DialogSaveButton:
-                icon = QIcon::fromTheme("document-save"_L1);
-                break;
+            return QIcon::fromTheme("document-save"_L1);
         case QStyle::SP_DialogApplyButton:
-                icon = QIcon::fromTheme("dialog-ok-apply"_L1);
-                break;
+            return QIcon::fromTheme("dialog-ok-apply"_L1);
         case QStyle::SP_DialogYesButton:
         case QStyle::SP_DialogOkButton:
-                icon = QIcon::fromTheme("dialog-ok"_L1);
-                break;
+            return QIcon::fromTheme("dialog-ok"_L1);
         case QStyle::SP_DialogDiscardButton:
-                icon = QIcon::fromTheme("edit-delete"_L1);
-                break;
+            return QIcon::fromTheme("edit-delete"_L1);
         case QStyle::SP_DialogResetButton:
-                icon = QIcon::fromTheme("edit-clear"_L1);
-                break;
+            return QIcon::fromTheme("edit-clear"_L1);
         case QStyle::SP_DialogHelpButton:
-                icon = QIcon::fromTheme("help-contents"_L1);
-                break;
+            return QIcon::fromTheme("help-contents"_L1);
         case QStyle::SP_FileIcon:
-                icon = QIcon::fromTheme("text-x-generic"_L1);
-                break;
+            return QIcon::fromTheme("text-x-generic"_L1);
         case QStyle::SP_DirClosedIcon:
         case QStyle::SP_DirIcon:
-                icon = QIcon::fromTheme("folder"_L1);
-                break;
+            return QIcon::fromTheme("folder"_L1);
         case QStyle::SP_DriveFDIcon:
-                icon = QIcon::fromTheme("floppy_unmount"_L1);
-                break;
+            return QIcon::fromTheme("floppy_unmount"_L1);
         case QStyle::SP_ComputerIcon:
-                icon = QIcon::fromTheme("computer"_L1, QIcon::fromTheme("system"_L1));
-                break;
+            return QIcon::fromTheme("computer"_L1, QIcon::fromTheme("system"_L1));
         case QStyle::SP_DesktopIcon:
-                icon = QIcon::fromTheme("user-desktop"_L1);
-                break;
+            return QIcon::fromTheme("user-desktop"_L1);
         case QStyle::SP_TrashIcon:
-                icon = QIcon::fromTheme("user-trash"_L1);
-                break;
+            return QIcon::fromTheme("user-trash"_L1);
         case QStyle::SP_DriveCDIcon:
         case QStyle::SP_DriveDVDIcon:
-                icon = QIcon::fromTheme("media-optical"_L1);
-                break;
+            return QIcon::fromTheme("media-optical"_L1);
         case QStyle::SP_DriveHDIcon:
-                icon = QIcon::fromTheme("drive-harddisk"_L1);
-                break;
+            return QIcon::fromTheme("drive-harddisk"_L1);
         case QStyle::SP_FileDialogToParent:
-                icon = QIcon::fromTheme("go-up"_L1);
-                break;
+            return QIcon::fromTheme("go-up"_L1);
         case QStyle::SP_FileDialogNewFolder:
-                icon = QIcon::fromTheme("folder-new"_L1);
-                break;
+            return QIcon::fromTheme("folder-new"_L1);
         case QStyle::SP_ArrowUp:
-                icon = QIcon::fromTheme("go-up"_L1);
-                break;
+            return QIcon::fromTheme("go-up"_L1);
         case QStyle::SP_ArrowDown:
-                icon = QIcon::fromTheme("go-down"_L1);
-                break;
+            return QIcon::fromTheme("go-down"_L1);
         case QStyle::SP_ArrowRight:
-                icon = QIcon::fromTheme("go-next"_L1);
-                break;
+            return QIcon::fromTheme("go-next"_L1);
         case QStyle::SP_ArrowLeft:
-                icon = QIcon::fromTheme("go-previous"_L1);
-                break;
+            return QIcon::fromTheme("go-previous"_L1);
         case QStyle::SP_DialogNoButton:
         case QStyle::SP_DialogCancelButton:
-                icon = QIcon::fromTheme("dialog-cancel"_L1, QIcon::fromTheme("process-stop"_L1));
-                break;
+            return QIcon::fromTheme("dialog-cancel"_L1, QIcon::fromTheme("process-stop"_L1));
         case QStyle::SP_DialogCloseButton:
-                icon = QIcon::fromTheme("window-close"_L1);
-                break;
+            return QIcon::fromTheme("window-close"_L1);
         case QStyle::SP_FileDialogDetailedView:
-                icon = QIcon::fromTheme("view-list-details"_L1);
-                break;
+            return QIcon::fromTheme("view-list-details"_L1);
         case QStyle::SP_FileDialogListView:
-                icon = QIcon::fromTheme("view-list-icons"_L1);
-                break;
+            return QIcon::fromTheme("view-list-icons"_L1);
         case QStyle::SP_BrowserReload:
-                icon = QIcon::fromTheme("view-refresh"_L1);
-                break;
+            return QIcon::fromTheme("view-refresh"_L1);
         case QStyle::SP_BrowserStop:
-                icon = QIcon::fromTheme("process-stop"_L1);
-                break;
+            return QIcon::fromTheme("process-stop"_L1);
         case QStyle::SP_MediaPlay:
-                icon = QIcon::fromTheme("media-playback-start"_L1);
-                break;
+            return QIcon::fromTheme("media-playback-start"_L1);
         case QStyle::SP_MediaPause:
-                icon = QIcon::fromTheme("media-playback-pause"_L1);
-                break;
+            return QIcon::fromTheme("media-playback-pause"_L1);
         case QStyle::SP_MediaStop:
-                icon = QIcon::fromTheme("media-playback-stop"_L1);
-                break;
+            return QIcon::fromTheme("media-playback-stop"_L1);
         case QStyle::SP_MediaSeekForward:
-                icon = QIcon::fromTheme("media-seek-forward"_L1);
-                break;
+            return QIcon::fromTheme("media-seek-forward"_L1);
         case QStyle::SP_MediaSeekBackward:
-                icon = QIcon::fromTheme("media-seek-backward"_L1);
-                break;
+            return QIcon::fromTheme("media-seek-backward"_L1);
         case QStyle::SP_MediaSkipForward:
-                icon = QIcon::fromTheme("media-skip-forward"_L1);
-                break;
+            return QIcon::fromTheme("media-skip-forward"_L1);
         case QStyle::SP_MediaSkipBackward:
-                icon = QIcon::fromTheme("media-skip-backward"_L1);
-                break;
+            return QIcon::fromTheme("media-skip-backward"_L1);
         case QStyle::SP_MediaVolume:
-                icon = QIcon::fromTheme("audio-volume-medium"_L1);
-                break;
+            return QIcon::fromTheme("audio-volume-medium"_L1);
         case QStyle::SP_MediaVolumeMuted:
-                icon = QIcon::fromTheme("audio-volume-muted"_L1);
-                break;
+            return QIcon::fromTheme("audio-volume-muted"_L1);
         case QStyle::SP_ArrowForward:
-            if (rtl)
-                return QCommonStyle::standardIcon(SP_ArrowLeft, option, widget);
-            return QCommonStyle::standardIcon(SP_ArrowRight, option, widget);
+            return iconFromApplicationTheme(rtl(option) ? QStyle::SP_ArrowLeft
+                                                        : QStyle::SP_ArrowRight,
+                                            option, widget);
         case QStyle::SP_ArrowBack:
-            if (rtl)
-                return QCommonStyle::standardIcon(SP_ArrowRight, option, widget);
-            return QCommonStyle::standardIcon(SP_ArrowLeft, option, widget);
-        case QStyle::SP_FileLinkIcon:
-            {
-                QIcon linkIcon = QIcon::fromTheme("emblem-symbolic-link"_L1);
-                if (!linkIcon.isNull()) {
-                    QIcon baseIcon = QCommonStyle::standardIcon(SP_FileIcon, option, widget);
-                    const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
-                    for (int i = 0 ; i < sizes.size() ; ++i) {
-                        int size = sizes[i].width();
-                        QPixmap basePixmap = baseIcon.pixmap(QSize(size, size), qt_getDevicePixelRatio(widget));
-                        QPixmap linkPixmap = linkIcon.pixmap(QSize(size / 2, size / 2), qt_getDevicePixelRatio(widget));
+            return iconFromApplicationTheme(rtl(option) ? QStyle::SP_ArrowRight
+                                                        : QStyle::SP_ArrowLeft,
+                                            option, widget);
+        case QStyle::SP_FileLinkIcon: {
+                QIcon icon;
+                const QIcon linkIcon = QIcon::fromTheme("emblem-symbolic-link"_L1);
+                const QIcon baseIcon = iconFromApplicationTheme(QStyle::SP_FileIcon,
+                                                                option, widget);
+                if (!linkIcon.isNull() || !baseIcon.isNull()) {
+                    const auto sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
+                    const auto dpr = qt_getDevicePixelRatio(widget);
+                    for (const auto size : sizes) {
+                        QPixmap basePixmap = baseIcon.pixmap(size, dpr);
+                        QPixmap linkPixmap = linkIcon.pixmap(size / 2, dpr);
                         QPainter painter(&basePixmap);
-                        painter.drawPixmap(size/2, size/2, linkPixmap);
+                        const auto w = size.width() / 2;
+                        painter.drawPixmap(w, w, linkPixmap);
                         icon.addPixmap(basePixmap);
                     }
                 }
+                return icon;
             }
             break;
-        case QStyle::SP_DirLinkIcon:
-            {
-                QIcon linkIcon = QIcon::fromTheme("emblem-symbolic-link"_L1);
-                if (!linkIcon.isNull()) {
-                    QIcon baseIcon = QCommonStyle::standardIcon(SP_DirIcon, option, widget);
-                    const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
-                    for (int i = 0 ; i < sizes.size() ; ++i) {
-                        int size = sizes[i].width();
-                        QPixmap basePixmap = baseIcon.pixmap(QSize(size, size), qt_getDevicePixelRatio(widget));
-                        QPixmap linkPixmap = linkIcon.pixmap(QSize(size / 2, size / 2), qt_getDevicePixelRatio(widget));
+        case QStyle::SP_DirLinkIcon: {
+                QIcon icon;
+                const QIcon linkIcon = QIcon::fromTheme("emblem-symbolic-link"_L1);
+                const QIcon baseIcon = iconFromApplicationTheme(QStyle::SP_DirIcon,
+                                                                option, widget);
+                if (!linkIcon.isNull() || !baseIcon.isNull()) {
+                    const auto sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
+                    const auto dpr = qt_getDevicePixelRatio(widget);
+                    for (const auto size : sizes) {
+                        QPixmap basePixmap = baseIcon.pixmap(size, dpr);
+                        QPixmap linkPixmap = linkIcon.pixmap(size / 2, dpr);
                         QPainter painter(&basePixmap);
-                        painter.drawPixmap(size/2, size/2, linkPixmap);
+                        const auto w = size.width() / 2;
+                        painter.drawPixmap(w, w, linkPixmap);
                         icon.addPixmap(basePixmap);
                     }
                 }
-        }
+                return icon;
+            }
         break;
+        case QStyle::SP_LineEditClearButton: {
+            const QString directionalThemeName = rtl(option)
+                ? QStringLiteral("edit-clear-locationbar-ltr") : QStringLiteral("edit-clear-locationbar-rtl");
+            if (QIcon::hasThemeIcon(directionalThemeName))
+                return QIcon::fromTheme(directionalThemeName);
+            const QString themeName = QStringLiteral("edit-clear");
+            if (QIcon::hasThemeIcon(themeName))
+                return QIcon::fromTheme(themeName);
+            break;
+        }
         default:
             break;
         }
     } // if (QGuiApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty())
 
-    if (!icon.isNull())
-        return icon;
+    return {};
+}
 
-#if defined(Q_OS_MAC)
+QIcon QCommonStylePrivate::iconFromMacTheme(QCommonStyle::StandardPixmap standardIcon,
+                                            const QStyleOption *option,
+                                            const QWidget *widget) const
+{
+#ifdef Q_OS_DARWIN
+    Q_Q(const QCommonStyle);
     if (QGuiApplication::desktopSettingsAware()) {
         switch (standardIcon) {
         case QStyle::SP_DirIcon: {
             // A rather special case
-            QIcon closeIcon = QCommonStyle::standardIcon(SP_DirClosedIcon, option, widget);
-            QIcon openIcon = QCommonStyle::standardIcon(SP_DirOpenIcon, option, widget);
+            QIcon closeIcon = q->standardIcon(QStyle::SP_DirClosedIcon, option, widget);
+            QIcon openIcon = q->standardIcon(QStyle::SP_DirOpenIcon, option, widget);
             closeIcon.addPixmap(openIcon.pixmap(16, 16), QIcon::Normal, QIcon::On);
             closeIcon.addPixmap(openIcon.pixmap(32, 32), QIcon::Normal, QIcon::On);
             closeIcon.addPixmap(openIcon.pixmap(64, 64), QIcon::Normal, QIcon::On);
@@ -6145,7 +5832,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         case QStyle::SP_TitleBarNormalButton:
         case QStyle::SP_TitleBarCloseButton: {
             QIcon titleBarIcon;
-            QString prefix = standardIcon == SP_TitleBarCloseButton
+            QString prefix = standardIcon == QStyle::SP_TitleBarCloseButton
                             ? QStringLiteral(":/qt-project.org/styles/macstyle/images/closedock-")
                             : QStringLiteral(":/qt-project.org/styles/macstyle/images/dockdock-");
             for (const auto size : dockTitleIconSizes) {
@@ -6190,18 +5877,29 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
 
                     retIcon.addPixmap(mainIcon);
                 }
-                if (!retIcon.isNull())
-                    return retIcon;
+                return retIcon;
             }
 
         default:
             break;
         }
     } // if (QGuiApplication::desktopSettingsAware())
-#endif // Q_OS_MAC
+#else // Q_OS_DARWIN
+    Q_UNUSED(standardIcon);
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+#endif // Q_OS_DARWIN
+    return {};
+}
 
-    switch (standardIcon) {
+QIcon QCommonStylePrivate::iconFromResourceTheme(QCommonStyle::StandardPixmap standardIcon,
+                                                 const QStyleOption *option,
+                                                 const QWidget *widget) const
+{
+    Q_Q(const QCommonStyle);
+    QIcon icon;
 #ifndef QT_NO_IMAGEFORMAT_PNG
+    switch (standardIcon) {
     case QStyle::SP_TitleBarMinButton:
         addIconFiles(u"titlebar-min-", titleBarSizes, icon);
         break;
@@ -6221,9 +5919,9 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         addIconFiles(u"newdirectory-", pngIconSizes, icon);
         break;
     case QStyle::SP_FileDialogBack:
-        return proxy()->standardIcon(SP_ArrowBack, option, widget);
+        return q->proxy()->standardIcon(QStyle::SP_ArrowBack, option, widget);
     case QStyle::SP_FileDialogToParent:
-        return proxy()->standardIcon(SP_ArrowUp, option, widget);
+        return q->proxy()->standardIcon(QStyle::SP_ArrowUp, option, widget);
     case QStyle::SP_FileDialogDetailedView:
         addIconFiles(u"viewdetailed-", pngIconSizes, icon);
         break;
@@ -6270,9 +5968,13 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         addIconFiles(u"standardbutton-no-", pngIconSizes, icon);
         break;
     case QStyle::SP_ArrowForward:
-        return proxy()->standardIcon(rtl ? SP_ArrowLeft : SP_ArrowRight, option, widget);
+        return q->proxy()->standardIcon(rtl(option) ? QStyle::SP_ArrowLeft
+                                                    : QStyle::SP_ArrowRight,
+                                        option, widget);
     case QStyle::SP_ArrowBack:
-        return proxy()->standardIcon(rtl ? SP_ArrowRight : SP_ArrowLeft, option, widget);
+        return q->proxy()->standardIcon(rtl(option) ? QStyle::SP_ArrowRight
+                                                    : QStyle::SP_ArrowLeft,
+                                        option, widget);
     case QStyle::SP_ArrowLeft:
         addIconFiles(u"left-", pngIconSizes, icon);
         break;
@@ -6293,8 +5995,14 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
     case QStyle::SP_DriveCDIcon:
         addIconFiles(u"cdr-", pngIconSizes, icon);
         break;
+    case QStyle::SP_DriveHDIcon:
+        addIconFiles(u"harddrive-", pngIconSizes, icon);
+        break;
     case QStyle::SP_DriveDVDIcon:
         addIconFiles(u"dvd-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_DriveNetIcon:
+        addIconFiles(u"networkdrive-", pngIconSizes, icon);
         break;
     case QStyle::SP_FileIcon:
         addIconFiles(u"file-", pngIconSizes, icon);
@@ -6302,8 +6010,14 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
     case QStyle::SP_FileLinkIcon:
         addIconFiles(u"filelink-", pngIconSizes, icon);
         break;
+    case QStyle::SP_DesktopIcon:
+        addIconFiles(u"desktop-", {16, 32}, icon);
+        break;
     case QStyle::SP_TrashIcon:
         addIconFiles(u"trash-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_ComputerIcon:
+        addIconFiles(u"computer-", {16, 32}, icon);
         break;
     case QStyle::SP_BrowserReload:
         addIconFiles(u"refresh-", {24, 32}, icon);
@@ -6339,6 +6053,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         addIconFiles(u"media-volume-muted-", {16}, icon);
         break;
     case QStyle::SP_TitleBarCloseButton:
+    case QStyle::SP_DockWidgetCloseButton:
         addIconFiles(u"closedock-", dockTitleIconSizes, icon);
         break;
     case QStyle::SP_TitleBarMenuButton:
@@ -6351,7 +6066,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         addIconFiles(u"normalizedockup-", dockTitleIconSizes, icon);
         break;
     case QStyle::SP_ToolBarHorizontalExtensionButton:
-        addIconFiles(rtl ? u"toolbar-ext-h-rtl-" : u"toolbar-ext-h-", toolBarExtHSizes, icon);
+        addIconFiles(rtl(option) ? u"toolbar-ext-h-rtl-" : u"toolbar-ext-h-", toolBarExtHSizes, icon);
         break;
     case QStyle::SP_ToolBarVerticalExtensionButton:
         addIconFiles(u"toolbar-ext-v-", toolBarExtVSizes, icon);
@@ -6361,11 +6076,58 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         addIconFiles(u"standardbutton-closetab-down-", {16, 32}, icon, QIcon::Normal, QIcon::On);
         addIconFiles(u"standardbutton-closetab-hover-", {16, 32}, icon, QIcon::Active, QIcon::Off);
         break;
-#endif // QT_NO_IMAGEFORMAT_PNG
+    case QStyle::SP_LineEditClearButton:
+        addIconFiles(u"cleartext-", {16, 32}, icon);
+        break;
     default:
-        icon.addPixmap(proxy()->standardPixmap(standardIcon, option, widget));
         break;
     }
+#else // QT_NO_IMAGEFORMAT_PNG
+    Q_UNUSED(standardIcon);
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+#endif // QT_NO_IMAGEFORMAT_PNG
+    return icon;
+}
+
+
+/*!
+    \internal
+*/
+QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
+                                 const QWidget *widget) const
+{
+    Q_D(const QCommonStyle);
+    QIcon icon;
+
+    icon = d->iconFromWindowsTheme(standardIcon, option, widget);
+    if (!icon.isNull())
+        return icon;
+
+    icon = d->iconFromApplicationTheme(standardIcon, option, widget);
+    if (!icon.isNull())
+        return icon;
+
+    icon = d->iconFromMacTheme(standardIcon, option, widget);
+    if (!icon.isNull())
+        return icon;
+
+    icon = d->iconFromResourceTheme(standardIcon, option, widget);
+    if (!icon.isNull())
+        return icon;
+
+#ifndef QT_NO_IMAGEFORMAT_XPM
+    switch (standardIcon) {
+    case QStyle::SP_TitleBarMenuButton:
+        icon.addPixmap(titleBarMenuCachedPixmapFromXPM());
+        break;
+    default:
+        break;
+    }
+    if (!icon.isNull())
+        return icon;
+#endif
+    icon = proxy()->standardPixmap(standardIcon, option, widget);
     return icon;
 }
 

@@ -97,6 +97,22 @@ public:
     void stopAnimation(const QObject *target) const;
     void removeAnimation(const QObject *target) const;
 
+    QIcon iconFromWindowsTheme(QCommonStyle::StandardPixmap standardIcon,
+                               const QStyleOption *option,
+                               const QWidget *widget) const;
+    QIcon iconFromMacTheme(QCommonStyle::StandardPixmap standardIcon,
+                           const QStyleOption *option,
+                           const QWidget *widget) const;
+    QIcon iconFromApplicationTheme(QCommonStyle::StandardPixmap standardIcon,
+                                   const QStyleOption *option,
+                                   const QWidget *widget) const;
+    QIcon iconFromResourceTheme(QCommonStyle::StandardPixmap standardIcon,
+                                const QStyleOption *option,
+                                const QWidget *widget) const;
+    static bool inline rtl(const QStyleOption *option) {
+        return (option && option->direction == Qt::RightToLeft) ||
+            (!option && QGuiApplication::isRightToLeft());
+    }
 private:
     mutable QHash<const QObject*, QStyleAnimation*> animations;
 #endif // animation

@@ -48,6 +48,7 @@ void tst_QFileIconProvider::iconType_data()
 // public QIcon icon(QFileIconProvider::IconType const& type) const
 void tst_QFileIconProvider::iconType()
 {
+    QGuiApplication::setDesktopSettingsAware(false);
     QFETCH(QFileIconProvider::IconType, type);
     QFileIconProvider provider;
     QVERIFY(!provider.icon(type).isNull());
