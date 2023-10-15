@@ -5900,6 +5900,24 @@ QIcon QCommonStylePrivate::iconFromResourceTheme(QCommonStyle::StandardPixmap st
     QIcon icon;
 #ifndef QT_NO_IMAGEFORMAT_PNG
     switch (standardIcon) {
+    case QStyle::SP_MessageBoxInformation:
+        addIconFiles(u"information-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_MessageBoxWarning:
+        addIconFiles(u"warning-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_MessageBoxCritical:
+        addIconFiles(u"critical-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_MessageBoxQuestion:
+        addIconFiles(u"question-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_FileDialogStart:
+        addIconFiles(u"filedialog_start-", pngIconSizes, icon);
+        break;
+    case QStyle::SP_FileDialogEnd:
+        addIconFiles(u"filedialog_end-", pngIconSizes, icon);
+        break;
     case QStyle::SP_TitleBarMinButton:
         addIconFiles(u"titlebar-min-", titleBarSizes, icon);
         break;
