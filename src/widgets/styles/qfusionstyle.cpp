@@ -75,77 +75,6 @@ static const int groupBoxBottomMargin    =  0;  // space below the groupbox
 static const int groupBoxTopMargin       =  3;
 
 #if QT_CONFIG(imageformat_xpm)
-/* XPM */
-static const char * const fusion_dock_widget_close_xpm[] = {
-    "11 13 7 1",
-    "  c None",
-    ". c #D5CFCB",
-    "+ c #8F8B88",
-    "@ c #6C6A67",
-    "# c #ABA6A3",
-    "$ c #B5B0AC",
-    "% c #A4A09D",
-    "           ",
-    " +@@@@@@@+ ",
-    "+#       #+",
-    "@ $@   @$ @",
-    "@ @@@ @@@ @",
-    "@  @@@@@  @",
-    "@   @@@   @",
-    "@  @@@@@  @",
-    "@ @@@ @@@ @",
-    "@ $@   @$ @",
-    "+%       #+",
-    " +@@@@@@@+ ",
-    "           "};
-
-static const char * const dock_widget_restore_xpm[] = {
-    "11 13 7 1",
-    " c None",
-    ". c #D5CFCB",
-    "+ c #8F8B88",
-    "@ c #6C6A67",
-    "# c #ABA6A3",
-    "$ c #B5B0AC",
-    "% c #A4A09D",
-    "           ",
-    " +@@@@@@@+ ",
-    "+#       #+",
-    "@   #@@@# @",
-    "@   @   @ @",
-    "@ #@@@# @ @",
-    "@ @   @ @ @",
-    "@ @   @@@ @",
-    "@ @   @   @",
-    "@ #@@@#   @",
-    "+%       #+",
-    " +@@@@@@@+ ",
-    "           "};
-
-static const char * const workspace_minimize[] = {
-    "11 13 7 1",
-    "  c None",
-    ". c #D5CFCB",
-    "+ c #8F8B88",
-    "@ c #6C6A67",
-    "# c #ABA6A3",
-    "$ c #B5B0AC",
-    "% c #A4A09D",
-    "           ",
-    " +@@@@@@@+ ",
-    "+#       #+",
-    "@         @",
-    "@         @",
-    "@         @",
-    "@ @@@@@@@ @",
-    "@ @@@@@@@ @",
-    "@         @",
-    "@         @",
-    "+%       #+",
-    " +@@@@@@@+ ",
-    "           "};
-
-
 static const char * const qt_titlebar_context_help[] = {
     "10 10 3 1",
     "  c None",
@@ -3709,19 +3638,6 @@ QRect QFusionStyle::subElementRect(SubElement sr, const QStyleOption *opt, const
 QIcon QFusionStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
                                  const QWidget *widget) const
 {
-#if QT_CONFIG(imageformat_xpm)
-    switch (standardIcon) {
-    case SP_TitleBarNormalButton:
-        return QIcon(QPixmap(dock_widget_restore_xpm));
-    case SP_TitleBarMinButton:
-        return QIcon(QPixmap(workspace_minimize));
-    case SP_TitleBarCloseButton:
-    case SP_DockWidgetCloseButton:
-        return QIcon(QPixmap(fusion_dock_widget_close_xpm));
-    default:
-        break;
-    }
-#endif // imageformat_xpm
     return QCommonStyle::standardIcon(standardIcon, option, widget);
 }
 
@@ -3731,21 +3647,6 @@ QIcon QFusionStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
 QPixmap QFusionStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                                      const QWidget *widget) const
 {
-#ifndef QT_NO_IMAGEFORMAT_XPM
-    switch (standardPixmap) {
-    case SP_TitleBarNormalButton:
-        return QPixmap(dock_widget_restore_xpm);
-    case SP_TitleBarMinButton:
-        return QPixmap(workspace_minimize);
-    case SP_TitleBarCloseButton:
-    case SP_DockWidgetCloseButton:
-        return QPixmap(fusion_dock_widget_close_xpm);
-
-    default:
-        break;
-    }
-#endif //QT_NO_IMAGEFORMAT_XPM
-
     return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 }
 
