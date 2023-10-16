@@ -203,6 +203,22 @@ function(qt_internal_create_wrapper_scripts)
     elseif(CMAKE_BUILD_TYPE)
         set(__qt_configured_configs "${CMAKE_BUILD_TYPE}")
     endif()
+
+    if(
+        # Skip stripping pure debug builds so it's easier to debug issues in CI VMs.
+        (NOT QT_FEATURE_debug_and_release
+            AND QT_FEATURE_debug
+            AND NOT QT_FEATURE_separate_debug_info)
+
+        # Skip stripping on MSVC because ${CMAKE_STRIP} might contain a MinGW strip binary
+        # and the breaks the linker version flag embedded in the binary and causes Qt Creator
+        # to mis-identify the Kit ABI.
+        OR MSVC
+        )
+        set(__qt_skip_strip_installed_artifacts TRUE)
+    else()
+        set(__qt_skip_strip_installed_artifacts FALSE)
+    endif()
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/${__qt_cmake_install_script_name}.in"
                    "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${__qt_cmake_install_script_name}" @ONLY)
     qt_install(FILES "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${__qt_cmake_install_script_name}"
