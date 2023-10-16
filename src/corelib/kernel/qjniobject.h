@@ -561,20 +561,10 @@ private:
     friend bool operator==(const QJniObject &, const QJniObject &);
     friend bool operator!=(const QJniObject&, const QJniObject&);
 
-    template<typename T, typename = void>
-    struct IntegerTypeDetail
-    {
-        using type = T;
-    };
-    template<typename T>
-    struct IntegerTypeDetail<T, typename std::enable_if_t<std::is_enum_v<T>>>
-    {
-        using type = std::underlying_type_t<T>;
-    };
-
-    template<typename Have, typename Want>
-    static constexpr bool likeIntegerType = std::is_same_v<Have, Want>
-                                         || std::is_same_v<typename IntegerTypeDetail<Have>::type, Want>;
+    template <typename Have, typename Want>
+    static constexpr bool sameTypeForJni = (QtJniTypes::Traits<Have>::signature()
+                                           == QtJniTypes::Traits<Want>::signature())
+                                       && (sizeof(Have) == sizeof(Want));
 
     template<typename T>
     static constexpr void callMethodForType(JNIEnv *env, T &res, jobject obj,
@@ -583,22 +573,22 @@ private:
         va_list args = {};
         va_start(args, id);
 
-        if constexpr (std::is_same_v<T, jboolean>)
-            res = env->CallBooleanMethodV(obj, id, args);
-        else if constexpr (likeIntegerType<T, jbyte>)
-            res = T{env->CallByteMethodV(obj, id, args)};
-        else if constexpr (likeIntegerType<T, jchar>)
-            res = T{env->CallCharMethodV(obj, id, args)};
-        else if constexpr (likeIntegerType<T, jshort>)
-            res = T{env->CallShortMethodV(obj, id, args)};
-        else if constexpr (likeIntegerType<T, jint>)
-            res = T{env->CallIntMethodV(obj, id, args)};
-        else if constexpr (likeIntegerType<T, jlong>)
-            res = T{env->CallLongMethodV(obj, id, args)};
-        else if constexpr (std::is_same_v<T, jfloat>)
-            res = env->CallFloatMethodV(obj, id, args);
-        else if constexpr (std::is_same_v<T, jdouble>)
-            res = env->CallDoubleMethodV(obj, id, args);
+        if constexpr (sameTypeForJni<T, jboolean>)
+            res = T(env->CallBooleanMethodV(obj, id, args));
+        else if constexpr (sameTypeForJni<T, jbyte>)
+            res = T(env->CallByteMethodV(obj, id, args));
+        else if constexpr (sameTypeForJni<T, jchar>)
+            res = T(env->CallCharMethodV(obj, id, args));
+        else if constexpr (sameTypeForJni<T, jshort>)
+            res = T(env->CallShortMethodV(obj, id, args));
+        else if constexpr (sameTypeForJni<T, jint>)
+            res = T(env->CallIntMethodV(obj, id, args));
+        else if constexpr (sameTypeForJni<T, jlong>)
+            res = T(env->CallLongMethodV(obj, id, args));
+        else if constexpr (sameTypeForJni<T, jfloat>)
+            res = T(env->CallFloatMethodV(obj, id, args));
+        else if constexpr (sameTypeForJni<T, jdouble>)
+            res = T(env->CallDoubleMethodV(obj, id, args));
         else
             QtJniTypes::staticAssertTypeMismatch();
         va_end(args);
@@ -612,22 +602,22 @@ private:
             return;
         va_list args = {};
         va_start(args, id);
-        if constexpr (std::is_same_v<T, jboolean>)
-            res = env->CallStaticBooleanMethodV(clazz, id, args);
-        else if constexpr (likeIntegerType<T, jbyte>)
-            res = T{env->CallStaticByteMethodV(clazz, id, args)};
-        else if constexpr (likeIntegerType<T, jchar>)
-            res = T{env->CallStaticCharMethodV(clazz, id, args)};
-        else if constexpr (likeIntegerType<T, jshort>)
-            res = T{env->CallStaticShortMethodV(clazz, id, args)};
-        else if constexpr (likeIntegerType<T, jint>)
-            res = T{env->CallStaticIntMethodV(clazz, id, args)};
-        else if constexpr (likeIntegerType<T, jlong>)
-            res = T{env->CallStaticLongMethodV(clazz, id, args)};
-        else if constexpr (std::is_same_v<T, jfloat>)
-            res = env->CallStaticFloatMethodV(clazz, id, args);
-        else if constexpr (std::is_same_v<T, jdouble>)
-            res = env->CallStaticDoubleMethodV(clazz, id, args);
+        if constexpr (sameTypeForJni<T, jboolean>)
+            res = T(env->CallStaticBooleanMethodV(clazz, id, args));
+        else if constexpr (sameTypeForJni<T, jbyte>)
+            res = T(env->CallStaticByteMethodV(clazz, id, args));
+        else if constexpr (sameTypeForJni<T, jchar>)
+            res = T(env->CallStaticCharMethodV(clazz, id, args));
+        else if constexpr (sameTypeForJni<T, jshort>)
+            res = T(env->CallStaticShortMethodV(clazz, id, args));
+        else if constexpr (sameTypeForJni<T, jint>)
+            res = T(env->CallStaticIntMethodV(clazz, id, args));
+        else if constexpr (sameTypeForJni<T, jlong>)
+            res = T(env->CallStaticLongMethodV(clazz, id, args));
+        else if constexpr (sameTypeForJni<T, jfloat>)
+            res = T(env->CallStaticFloatMethodV(clazz, id, args));
+        else if constexpr (sameTypeForJni<T, jdouble>)
+            res = T(env->CallStaticDoubleMethodV(clazz, id, args));
         else
             QtJniTypes::staticAssertTypeMismatch();
         va_end(args);
@@ -648,22 +638,22 @@ private:
     static constexpr void getFieldForType(JNIEnv *env, T &res, jobject obj,
                                           jfieldID id)
     {
-        if constexpr (std::is_same_v<T, jboolean>)
-            res = env->GetBooleanField(obj, id);
-        else if constexpr (likeIntegerType<T, jbyte>)
-            res = T{env->GetByteField(obj, id)};
-        else if constexpr (likeIntegerType<T, jchar>)
-            res = T{env->GetCharField(obj, id)};
-        else if constexpr (likeIntegerType<T, jshort>)
-            res = T{env->GetShortField(obj, id)};
-        else if constexpr (likeIntegerType<T, jint>)
-            res = T{env->GetIntField(obj, id)};
-        else if constexpr (likeIntegerType<T, jlong>)
-            res = T{env->GetLongField(obj, id)};
-        else if constexpr (std::is_same_v<T, jfloat>)
-            res = env->GetFloatField(obj, id);
-        else if constexpr (std::is_same_v<T, jdouble>)
-            res = env->GetDoubleField(obj, id);
+        if constexpr (sameTypeForJni<T, jboolean>)
+            res = T(env->GetBooleanField(obj, id));
+        else if constexpr (sameTypeForJni<T, jbyte>)
+            res = T(env->GetByteField(obj, id));
+        else if constexpr (sameTypeForJni<T, jchar>)
+            res = T(env->GetCharField(obj, id));
+        else if constexpr (sameTypeForJni<T, jshort>)
+            res = T(env->GetShortField(obj, id));
+        else if constexpr (sameTypeForJni<T, jint>)
+            res = T(env->GetIntField(obj, id));
+        else if constexpr (sameTypeForJni<T, jlong>)
+            res = T(env->GetLongField(obj, id));
+        else if constexpr (sameTypeForJni<T, jfloat>)
+            res = T(env->GetFloatField(obj, id));
+        else if constexpr (sameTypeForJni<T, jdouble>)
+            res = T(env->GetDoubleField(obj, id));
         else
             QtJniTypes::staticAssertTypeMismatch();
     }
@@ -672,22 +662,22 @@ private:
     static constexpr void getStaticFieldForType(JNIEnv *env, T &res, jclass clazz,
                                                 jfieldID id)
     {
-        if constexpr (std::is_same_v<T, jboolean>)
-            res = env->GetStaticBooleanField(clazz, id);
-        else if constexpr (likeIntegerType<T, jbyte>)
-            res = T{env->GetStaticByteField(clazz, id)};
-        else if constexpr (likeIntegerType<T, jchar>)
-            res = T{env->GetStaticCharField(clazz, id)};
-        else if constexpr (likeIntegerType<T, jshort>)
-            res = T{env->GetStaticShortField(clazz, id)};
-        else if constexpr (likeIntegerType<T, jint>)
-            res = T{env->GetStaticIntField(clazz, id)};
-        else if constexpr (likeIntegerType<T, jlong>)
-            res = T{env->GetStaticLongField(clazz, id)};
-        else if constexpr (std::is_same_v<T, jfloat>)
-            res = env->GetStaticFloatField(clazz, id);
-        else if constexpr (std::is_same_v<T, jdouble>)
-            res = env->GetStaticDoubleField(clazz, id);
+        if constexpr (sameTypeForJni<T, jboolean>)
+            res = T(env->GetStaticBooleanField(clazz, id));
+        else if constexpr (sameTypeForJni<T, jbyte>)
+            res = T(env->GetStaticByteField(clazz, id));
+        else if constexpr (sameTypeForJni<T, jchar>)
+            res = T(env->GetStaticCharField(clazz, id));
+        else if constexpr (sameTypeForJni<T, jshort>)
+            res = T(env->GetStaticShortField(clazz, id));
+        else if constexpr (sameTypeForJni<T, jint>)
+            res = T(env->GetStaticIntField(clazz, id));
+        else if constexpr (sameTypeForJni<T, jlong>)
+            res = T(env->GetStaticLongField(clazz, id));
+        else if constexpr (sameTypeForJni<T, jfloat>)
+            res = T(env->GetStaticFloatField(clazz, id));
+        else if constexpr (sameTypeForJni<T, jdouble>)
+            res = T(env->GetStaticDoubleField(clazz, id));
         else
             QtJniTypes::staticAssertTypeMismatch();
     }
@@ -697,22 +687,22 @@ private:
                                           jfieldID id, T value)
     {
         LocalFrame<T> frame;
-        if constexpr (std::is_same_v<T, jboolean>)
-            env->SetBooleanField(obj, id, value);
-        else if constexpr (likeIntegerType<T, jbyte>)
+        if constexpr (sameTypeForJni<T, jboolean>)
+            env->SetBooleanField(obj, id, static_cast<jboolean>(value));
+        else if constexpr (sameTypeForJni<T, jbyte>)
             env->SetByteField(obj, id, static_cast<jbyte>(value));
-        else if constexpr (likeIntegerType<T, jchar>)
+        else if constexpr (sameTypeForJni<T, jchar>)
             env->SetCharField(obj, id, static_cast<jchar>(value));
-        else if constexpr (likeIntegerType<T, jshort>)
+        else if constexpr (sameTypeForJni<T, jshort>)
             env->SetShortField(obj, id, static_cast<jshort>(value));
-        else if constexpr (likeIntegerType<T, jint>)
+        else if constexpr (sameTypeForJni<T, jint>)
             env->SetIntField(obj, id, static_cast<jint>(value));
-        else if constexpr (likeIntegerType<T, jlong>)
+        else if constexpr (sameTypeForJni<T, jlong>)
             env->SetLongField(obj, id, static_cast<jlong>(value));
-        else if constexpr (std::is_same_v<T, jfloat>)
-            env->SetFloatField(obj, id, value);
-        else if constexpr (std::is_same_v<T, jdouble>)
-            env->SetDoubleField(obj, id, value);
+        else if constexpr (sameTypeForJni<T, jfloat>)
+            env->SetFloatField(obj, id, static_cast<jfloat>(value));
+        else if constexpr (sameTypeForJni<T, jdouble>)
+            env->SetDoubleField(obj, id, static_cast<jdouble>(value));
         else if constexpr (QtJniTypes::isObjectType<T>())
             env->SetObjectField(obj, id, static_cast<jobject>(frame.convertToJni(value)));
         else
@@ -724,22 +714,22 @@ private:
                                           jfieldID id, T value)
     {
         LocalFrame<T> frame;
-        if constexpr (std::is_same_v<T, jboolean>)
-            env->SetStaticBooleanField(clazz, id, value);
-        else if constexpr (likeIntegerType<T, jbyte>)
+        if constexpr (sameTypeForJni<T, jboolean>)
+            env->SetStaticBooleanField(clazz, id, static_cast<jboolean>(value));
+        else if constexpr (sameTypeForJni<T, jbyte>)
             env->SetStaticByteField(clazz, id, static_cast<jbyte>(value));
-        else if constexpr (likeIntegerType<T, jchar>)
+        else if constexpr (sameTypeForJni<T, jchar>)
             env->SetStaticCharField(clazz, id, static_cast<jchar>(value));
-        else if constexpr (likeIntegerType<T, jshort>)
+        else if constexpr (sameTypeForJni<T, jshort>)
             env->SetStaticShortField(clazz, id, static_cast<jshort>(value));
-        else if constexpr (likeIntegerType<T, jint>)
+        else if constexpr (sameTypeForJni<T, jint>)
             env->SetStaticIntField(clazz, id, static_cast<jint>(value));
-        else if constexpr (likeIntegerType<T, jlong>)
+        else if constexpr (sameTypeForJni<T, jlong>)
             env->SetStaticLongField(clazz, id, static_cast<jlong>(value));
-        else if constexpr (std::is_same_v<T, jfloat>)
-            env->SetStaticFloatField(clazz, id, value);
-        else if constexpr (std::is_same_v<T, jdouble>)
-            env->SetStaticDoubleField(clazz, id, value);
+        else if constexpr (sameTypeForJni<T, jfloat>)
+            env->SetStaticFloatField(clazz, id, static_cast<jfloat>(value));
+        else if constexpr (sameTypeForJni<T, jdouble>)
+            env->SetStaticDoubleField(clazz, id, static_cast<jdouble>(value));
         else if constexpr (QtJniTypes::isObjectType<T>())
             env->SetStaticObjectField(clazz, id, static_cast<jobject>(frame.convertToJni(value)));
         else

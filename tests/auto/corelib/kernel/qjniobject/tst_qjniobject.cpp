@@ -77,6 +77,7 @@ private slots:
     void getStaticIntField();
     void getStaticByteFieldClassName();
     void getStaticByteField();
+    void getStaticBooleanField();
     void getStaticLongFieldClassName();
     void getStaticLongField();
     void getStaticDoubleFieldClassName();
@@ -936,6 +937,12 @@ void tst_QJniObject::getStaticByteField()
     QCOMPARE(e, Enum::MAX_VALUE);
 }
 
+void tst_QJniObject::getStaticBooleanField()
+{
+    QCOMPARE(TestClass::getStaticField<jboolean>("S_BOOLEAN_VAR"),
+             TestClass::getStaticField<bool>("S_BOOLEAN_VAR"));
+}
+
 void tst_QJniObject::getStaticLongFieldClassName()
 {
     jlong i = QJniObject::getStaticField<jlong>("java/lang/Long", "MAX_VALUE");
@@ -1038,6 +1045,7 @@ void tst_QJniObject::getBooleanField()
 
     QVERIFY(obj.isValid());
     QVERIFY(obj.getField<jboolean>("BOOL_FIELD"));
+    QVERIFY(obj.getField<bool>("BOOL_FIELD"));
 }
 
 void tst_QJniObject::getIntField()
@@ -1109,6 +1117,7 @@ void tst_QJniObject::setCharField()
 void tst_QJniObject::setBooleanField()
 {
     setField("BOOLEAN_VAR", jboolean(true));
+    setField("BOOLEAN_VAR", true);
 }
 
 void tst_QJniObject::setObjectField()
@@ -1191,6 +1200,7 @@ void tst_QJniObject::setStaticCharField()
 void tst_QJniObject::setStaticBooleanField()
 {
     setStaticField("S_BOOLEAN_VAR", jboolean(true));
+    setStaticField("S_BOOLEAN_VAR", true);
 }
 
 void tst_QJniObject::setStaticObjectField()
