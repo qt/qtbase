@@ -4862,14 +4862,24 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
             || (ws * hs) >= (1<<20)
 #endif
             ) {
+            QImage scaledImage;
             if (mat.m11() < 0.0F && mat.m22() < 0.0F) { // horizontal/vertical flip
-                return smoothScaled(wd, hd).mirrored(true, true).convertToFormat(format());
+                scaledImage = smoothScaled(wd, hd).mirrored(true, true);
             } else if (mat.m11() < 0.0F) { // horizontal flip
-                return smoothScaled(wd, hd).mirrored(true, false).convertToFormat(format());
+                scaledImage = smoothScaled(wd, hd).mirrored(true, false);
             } else if (mat.m22() < 0.0F) { // vertical flip
-                return smoothScaled(wd, hd).mirrored(false, true).convertToFormat(format());
+                scaledImage = smoothScaled(wd, hd).mirrored(false, true);
             } else { // no flipping
-                return smoothScaled(wd, hd).convertToFormat(format());
+                scaledImage = smoothScaled(wd, hd);
+            }
+
+            switch (format()) {
+            case QImage::Format_Mono:
+            case QImage::Format_MonoLSB:
+            case QImage::Format_Indexed8:
+                return scaledImage;
+            default:
+                return scaledImage.convertToFormat(format());
             }
         }
     }
