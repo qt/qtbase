@@ -15,8 +15,6 @@
 // We mean it.
 //
 
-#include <QtCore/private/qsystemlibrary_p.h>
-#include <QtCore/private/qsystemerror_p.h>
 #include <rhi/qrhi.h>
 
 #include <QtGui/qwindow.h>

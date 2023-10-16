@@ -16,7 +16,6 @@
 //
 
 #include "qrhi_p.h"
-#include <rhi/qshaderdescription.h>
 #include <QWindow>
 #include <QBitArray>
 
