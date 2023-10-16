@@ -39,6 +39,9 @@ public:
     QString capturePrefix() const;
     void setCapturePrefix(const QString &prefix);
 
+    QString capturedFileName();
+    QStringList capturedFilesNames();
+
     bool isLoaded() const;
     bool isCapturing() const;
     void openCapture() const;

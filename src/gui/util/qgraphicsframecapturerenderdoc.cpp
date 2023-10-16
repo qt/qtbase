@@ -213,7 +213,18 @@ void QGraphicsFrameCaptureRenderDoc::endCaptureFrame()
     }
 
     qCInfo(lcGraphicsFrameCapture) << "A frame capture is going to end.";
-    s_rdocApi->EndFrameCapture(m_nativeHandle, nullptr);
+    uint32_t result = s_rdocApi->EndFrameCapture(m_nativeHandle, nullptr);
+
+    if (result) {
+        uint32_t count = s_rdocApi->GetNumCaptures();
+        uint32_t pathLength = 0;
+        s_rdocApi->GetCapture(count - 1, nullptr, &pathLength, nullptr);
+        if (pathLength > 0) {
+            QVarLengthArray<char> name(pathLength, 0);
+            s_rdocApi->GetCapture(count - 1, name.data(), &pathLength, nullptr);
+            m_capturedFilesNames.append(QString::fromUtf8(name.data(), -1));
+        }
+    }
 }
 
 void QGraphicsFrameCaptureRenderDoc::updateCapturePathAndTemplate()
