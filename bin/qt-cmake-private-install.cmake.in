@@ -5,13 +5,18 @@
 # https://gitlab.kitware.com/cmake/cmake/-/issues/20713
 # https://gitlab.kitware.com/cmake/cmake/-/issues/21475
 set(configs "@__qt_configured_configs@")
+set(should_skip_strip "@__qt_skip_strip_installed_artifacts@")
+
 if(NOT QT_BUILD_DIR)
     message(FATAL_ERROR "No QT_BUILD_DIR value provided to qt-cmake-private-install.")
 endif()
-unset(strip_arg)
-if ("x@MSVC@" STREQUAL "x")
-  set(strip_arg --strip)
+
+if(should_skip_strip)
+    unset(strip_arg)
+else()
+    set(strip_arg --strip)
 endif()
+
 foreach(config ${configs})
     message(STATUS "Installing configuration: '${config}'")
     set(args "${CMAKE_COMMAND}" --install ${QT_BUILD_DIR} --config "${config}" ${strip_arg})
