@@ -111,6 +111,7 @@ void QGraphicsFrameCaptureMetal::endCaptureFrame()
     }
 
     [m_captureManager stopCapture];
+    m_capturedFilesNames.append(QString::fromNSString(m_traceURL.path));
     frameNumber++;
 }
 

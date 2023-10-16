@@ -18,8 +18,7 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qloggingcategory.h>
-
-class QRhi;
+#include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -27,6 +26,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcGraphicsFrameCapture)
 
 class QRhi;
 struct QRhiNativeHandles;
+
 class QGraphicsFrameCapturePrivate
 {
 public:
@@ -43,6 +43,12 @@ public:
     QString capturePrefix() const { return m_capturePrefix; }
     virtual void setCapturePrefix(const QString &prefix) { m_capturePrefix = prefix; }
 
+    virtual QString capturedFileName() const
+    {
+        return !m_capturedFilesNames.isEmpty() ? m_capturedFilesNames.last() : QString();
+    }
+    virtual QStringList capturedFilesNames() const { return m_capturedFilesNames; }
+
     virtual bool initialized() const = 0;
     virtual bool isCapturing() const = 0;
     virtual void openCapture() = 0;
@@ -53,6 +59,7 @@ protected:
     void *m_nativeHandle = nullptr;
     QString m_capturePath;
     QString m_capturePrefix;
+    QStringList m_capturedFilesNames;
 };
 
 QT_END_NAMESPACE

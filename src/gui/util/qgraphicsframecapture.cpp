@@ -82,6 +82,22 @@ void QGraphicsFrameCapture::setCapturePrefix(const QString &prefix)
         d->setCapturePrefix(prefix);
 }
 
+QString QGraphicsFrameCapture::capturedFileName()
+{
+    if (!d.isNull())
+        return d->capturedFileName();
+
+    return QString();
+}
+
+QStringList QGraphicsFrameCapture::capturedFilesNames()
+{
+    if (!d.isNull())
+        return d->capturedFilesNames();
+
+    return QStringList();
+}
+
 bool QGraphicsFrameCapture::isLoaded() const
 {
     if (!d.isNull())
