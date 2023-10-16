@@ -229,19 +229,28 @@ elseif(UIKIT)
     target_compile_definitions(PlatformCommonInternal INTERFACE GLES_SILENCE_DEPRECATION)
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang"
-    AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "14.0.0"
-)
-    # Xcode 14's Clang will emit objc_msgSend stubs by default, which ld
-    # from earlier Xcode versions will fail to understand when linking
-    # against static libraries with these stubs. Disable the stubs explicitly,
-    # for as long as we do support Xcode < 14.
-    set(is_static_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>")
-    set(is_objc "$<COMPILE_LANGUAGE:OBJC,OBJCXX>")
-    set(is_static_and_objc "$<AND:${is_static_lib},${is_objc}>")
-    target_compile_options(PlatformCommonInternal INTERFACE
-        "$<${is_static_and_objc}:-fno-objc-msgsend-selector-stubs>"
-    )
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "14.0.0")
+        # Xcode 14's Clang will emit objc_msgSend stubs by default, which ld
+        # from earlier Xcode versions will fail to understand when linking
+        # against static libraries with these stubs. Disable the stubs explicitly,
+        # for as long as we do support Xcode < 14.
+        set(is_static_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>")
+        set(is_objc "$<COMPILE_LANGUAGE:OBJC,OBJCXX>")
+        set(is_static_and_objc "$<AND:${is_static_lib},${is_objc}>")
+        target_compile_options(PlatformCommonInternal INTERFACE
+            "$<${is_static_and_objc}:-fno-objc-msgsend-selector-stubs>"
+        )
+    endif()
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "15.0.0")
+        # A bug in Xcode 15 adds duplicate flags to the linker. In addition, the
+        # `-warn_duplicate_libraries` is now enabled by default which may result
+        # in several 'duplicate libraries warning'.
+        #   - https://gitlab.kitware.com/cmake/cmake/-/issues/25297 and
+        #   - https://indiestack.com/2023/10/xcode-15-duplicate-library-linker-warnings/
+        target_link_options(PlatformCommonInternal INTERFACE
+            "LINKER:-no_warn_duplicate_libraries")
+    endif()
 endif()
 
 if(MSVC)
