@@ -1383,7 +1383,7 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, QStringConverter::
 QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
                                               QStringConverter::State *state)
 {
-    const QChar *ch = in.data();
+    const wchar_t *ch = reinterpret_cast<const wchar_t *>(in.data());
     qsizetype uclen = in.size();
 
     Q_ASSERT(uclen < INT_MAX); // ### FIXME
@@ -1399,22 +1399,19 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
     BOOL used_def;
     QByteArray mb(4096, 0);
     int len;
-    while (!(len=WideCharToMultiByte(codePage, 0, (const wchar_t*)ch, uclen,
-                mb.data(), mb.size()-1, 0, &used_def)))
-    {
+    while (!(len = WideCharToMultiByte(codePage, 0, ch, uclen, mb.data(), mb.size() - 1, 0,
+                                       &used_def))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
-            mb.resize(1+WideCharToMultiByte(codePage, 0,
-                                (const wchar_t*)ch, uclen,
-                                0, 0, 0, &used_def));
+            mb.resize(1+WideCharToMultiByte(codePage, 0, ch, uclen, 0, 0, 0, &used_def));
                 // and try again...
         } else {
             // Fail.  Probably can't happen in fact (dwFlags is 0).
 #ifndef QT_NO_DEBUG
             // Can't use qWarning(), as it'll recurse to handle %ls
-            fprintf(stderr,
-                    "WideCharToMultiByte: Cannot convert multibyte text (error %d): %ls\n",
-                    r, reinterpret_cast<const wchar_t*>(QString(ch, uclen).utf16()));
+            fprintf(stderr, "WideCharToMultiByte: Cannot convert multibyte text (error %d): %ls\n",
+                    r,
+                    reinterpret_cast<const wchar_t *>(QStringView(ch, uclen).toString().utf16()));
 #endif
             break;
         }
