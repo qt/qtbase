@@ -1396,14 +1396,22 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
         return QByteArray();
     if (uclen == 0)
         return QByteArray("");
-    QByteArray mb(4096, 0);
+
+    std::array<char, 4096> buf;
+    char *out = buf.data();
+    qsizetype outlen = buf.size();
+    QByteArray mb;
+
     int len;
-    while (!(len = WideCharToMultiByte(codePage, 0, ch, uclen, mb.data(), mb.size() - 1, nullptr,
+    while (!(len = WideCharToMultiByte(codePage, 0, ch, int(uclen), out, int(outlen), nullptr,
                                        nullptr))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
-            mb.resize(1
-                      + WideCharToMultiByte(codePage, 0, ch, uclen, nullptr, 0, nullptr, nullptr));
+            int neededLength = WideCharToMultiByte(codePage, 0, ch, int(uclen), nullptr, 0, nullptr,
+                                                   nullptr);
+            mb.resize(neededLength);
+            out = mb.data();
+            outlen = neededLength;
             // and try again...
         } else {
             // Fail.  Probably can't happen in fact (dwFlags is 0).
@@ -1416,7 +1424,12 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
             break;
         }
     }
-    mb.resize(len);
+    if (!len)
+        return QByteArray();
+    if (out == buf.data())
+        mb = QByteArray(buf.data(), len);
+    else
+        mb.resize(len);
     return mb;
 }
 #endif
