@@ -63,6 +63,9 @@ public:
     void setTimeout(int timeout);
     int timeout() const;
 
+    void setInteractiveAuthorizationAllowed(bool enable);
+    bool isInteractiveAuthorizationAllowed() const;
+
     QDBusMessage call(const QString &method)
     {
         return doCall(QDBus::AutoDetect, method, nullptr, 0);

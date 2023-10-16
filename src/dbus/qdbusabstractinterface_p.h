@@ -42,6 +42,7 @@ public:
     QString interface;
     mutable QDBusError lastError;
     int timeout;
+    bool interactiveAuthorizationAllowed;
 
     // this is set during creation and never changed
     // it can't be const because QDBusInterfacePrivate has one more check

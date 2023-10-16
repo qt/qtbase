@@ -79,6 +79,7 @@ QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv
       lastError(checkIfValid(serv, p, iface, isDynamic, (connectionPrivate() &&
                                                          connectionPrivate()->mode == QDBusConnectionPrivate::PeerMode))),
       timeout(-1),
+      interactiveAuthorizationAllowed(false),
       isValid(!lastError.isValid())
 {
     if (!isValid)
@@ -397,6 +398,30 @@ int QDBusAbstractInterface::timeout() const
 }
 
 /*!
+    When passed \a enable = \c true it causes all consecutive DBus calls made via
+    this interface to have the InteractiveAuthorizationAllowed flag set. Passing
+    false disables this behavior.
+
+    \since 6.7
+    \sa QDBusMessage::setInteractiveAuthorizationAllowed()
+*/
+void QDBusAbstractInterface::setInteractiveAuthorizationAllowed(bool enable)
+{
+    d_func()->interactiveAuthorizationAllowed = enable;
+}
+
+/*!
+    Returns the current value of the InteractiveAuthorizationAllowed flag.
+
+    \since 6.7
+    \sa QDBusMessage::setInteractiveAuthorizationAllowed()
+*/
+bool QDBusAbstractInterface::isInteractiveAuthorizationAllowed() const
+{
+    return d_func()->interactiveAuthorizationAllowed;
+}
+
+/*!
     Places a call to the remote method specified by \a method on this interface, using \a args as
     arguments. This function returns the message that was received as a reply, which can be a normal
     QDBusMessage::ReplyMessage (indicating success) or QDBusMessage::ErrorMessage (if the call
@@ -488,6 +513,8 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(), interface(), method);
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
+    if (d->interactiveAuthorizationAllowed)
+        msg.setInteractiveAuthorizationAllowed(true);
     return d->connection.asyncCall(msg, d->timeout);
 }
 
