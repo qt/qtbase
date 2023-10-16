@@ -2,4 +2,4 @@
 # bypassing the Qt6 Config file, aka find_package(Qt6SpecificFoo) repated x times. But it's not
 # critical.
 find_package(@INSTALL_CMAKE_NAMESPACE@ @main_qt_package_version@
-             REQUIRED COMPONENTS @QT_REPO_KNOWN_MODULES_STRING@)
+             COMPONENTS @QT_REPO_KNOWN_MODULES_STRING@)
