@@ -1043,12 +1043,9 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from,
     for (int i=0; i<d->lines.size(); ++i) {
         if (d->lines.at(i).from > from + length)
             break;
-        else if (d->lines.at(i).from + d->lines[i].length >= from) {
-            QList<QGlyphRun> glyphRuns = QTextLine(i, d).glyphRuns(from, length, retrievalFlags);
-
-            for (int j = 0; j < glyphRuns.size(); j++) {
-                const QGlyphRun &glyphRun = glyphRuns.at(j);
-
+        else if (d->lines.at(i).from + d->lines.at(i).length >= from) {
+            const QList<QGlyphRun> glyphRuns = QTextLine(i, d).glyphRuns(from, length, retrievalFlags);
+            for (const QGlyphRun &glyphRun : glyphRuns) {
                 QRawFont rawFont = glyphRun.rawFont();
 
                 QFontEngine *fontEngine = rawFont.d->fontEngine;
@@ -1107,7 +1104,6 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange>
     int firstLine = 0;
     int lastLine = d->lines.size();
     for (int i = 0; i < d->lines.size(); ++i) {
-        QTextLine l(i, d);
         const QScriptLine &sl = d->lines.at(i);
 
         if (sl.y > clipe) {
