@@ -3179,7 +3179,7 @@ void QTextEngine::setBoundary(int strPos) const
 
 QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
 {
-    const QScriptItem &si = layoutData->items[item];
+    const QScriptItem &si = layoutData->items.at(item);
 
     QFixed dpiScale = 1;
     if (QTextDocumentPrivate::get(block) != nullptr && QTextDocumentPrivate::get(block)->layout() != nullptr) {
@@ -3221,7 +3221,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                     // find next tab to calculate the width required.
                     tab = QFixed::fromReal(tabSpec.position);
                     for (int i=item + 1; i < layoutData->items.size(); i++) {
-                        const QScriptItem &item = layoutData->items[i];
+                        const QScriptItem &item = layoutData->items.at(i);
                         if (item.analysis.flags == QScriptAnalysis::TabOrObject) { // found it.
                             tabSectionEnd = item.position;
                             break;
