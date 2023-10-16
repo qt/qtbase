@@ -495,62 +495,80 @@
         \li 32-bit signed integer
         \li typedef qint32
     \row
+        \li INTEGER(n)
+        \li Integer with up to 45 digits precision
+        \li Mapped to QString
+    \row
         \li BIGINT
         \li 64-bit signed integer
         \li typedef qint64
     \row
         \li REAL
-        \li 32-bit Single-precision floating point
-        \li typedef qreal
+        \li 32-bit Single-precision IEEE floating point
+        \li typedef float
     \row
         \li DOUBLE PRECISION
-        \li 64-bit Double-precision floating point
+        \li 64-bit Double-precision IEEE floating point
         \li Mapped to QString for high precision doubles, otherwise qreal
     \row
         \li FLOAT
-        \li 64-bit Double-precision floating point
-        \li typedef qreal
+        \li 64-bit Double-precision IEEE floating point
+        \li Mapped to QString for high precision doubles, otherwise qreal
+    \row
+        \li FLOAT(n)
+        \li Floating point with up to 45 digits precision
+        \li Mapped to QString
+    \row
+        \li DECIMAL(p,s)
+        \li Decimal with up to 45 digits precision and scale
+        \li Mapped to QString
     \row
         \li CHAR
-        \li Fixed-length, null-terminated character string
+        \li Fixed-length character Latin-1 string (CHAR or character)
         \li Mapped to QString
     \row
         \li VARCHAR
-        \li Null-terminated varying length string
+        \li Variable length Latin-1 string (VARCHAR or CHARACTER VARYING)
         \li Mapped to QString
     \row
         \li NCHAR
-        \li Fixed-length, null-terminated Unicode character string
+        \li Fixed-length Unicode string (NCHAR or NATIONAL CHARACTER)
         \li Mapped to QString
     \row
         \li NVARCHAR
-        \li Null-terminated varying length Unicode string
+        \li Variable length Unicode string (NVARCHAR or NATIONAL CHARACTER VARYING)
         \li Mapped to QString
     \row
+        \li BINARY
+        \li Fixed length binary data
+        \li Mapped to QByteArray
+    \row
+        \li VARBINARY
+        \li Variable length binary data (VARBINARY or BINARY VARYING)
+        \li Mapped to QByteArray
+    \row
         \li BLOB
-        \li Not null-terminated varying binary string with 4-byte string
-        length indicator
+        \li Binary large object (BLOB or BINARY LARGE OBJECT)
         \li Mapped to QByteArray
     \row
         \li CLOB
-        \li Character large string object
+        \li Latin-1 character large object (CLOB or CHARACTER LARGE OBJECT)
         \li Mapped to QString
     \row
         \li NCLOB
-        \li National Character large string object
+        \li Unicode character large object (NCLOB or NATIONAL CHARACTER LARGE OBJECT)
         \li Mapped to QString
     \row
         \li DATE
-        \li Null-terminated character string of the following format:
-        yyyy-mm-dd
+        \li Date consisting of year, month, and day
         \li Mapped to QDate
     \row
         \li TIME
-        \li Null-terminated character string of the following format: hh.mm.ss
+        \li Time consisting of hours, minute, seconds with optional fractional seconds
         \li Mapped to QTime
     \row
         \li TIMESTAMP
-        \li Null-terminated character string of the following format: yyyy-mm-dd-hh.mm.ss.nnnnnn
+        \li Date and time with optional fractional seconds
         \li Mapped to QDateTime
     \row
         \li BUILTIN.UUID
@@ -561,7 +579,56 @@
         \li Boolean
         \li bool
     \row
-        \li DECIMAL(p,s)
-        \li By default mapping to QString
+        \li INTERVAL YEAR(7)
+        \li Year, format '±yyyyyyy' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL YEAR(7) TO MONTH
+        \li Year to month, format '±yyyyyyy-mm' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL MONTH(7)
+        \li Month, format '±mmmmmmm' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL DAY(7)
+        \li Day, format '±ddddddd' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL DAY(7) TO HOUR
+        \li Day to hour, format '±ddddddd hh' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL DAY(7) TO MINUTE
+        \li Day to minute, format '±ddddddd hh:mm' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL DAY(7) TO SECOND(9)
+        \li Day to second, format '±ddddddd hh:mm:ss[.fffffffff]' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL HOUR(8)
+        \li Hour, format '±hhhhhhhh' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL HOUR(8) TO MINUTE
+        \li Hour to minute, format '±hhhhhhhh:mm' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL HOUR(8) TO SECOND(9)
+        \li Hour to second, format '±hhhhhhhh:mm:ss[.fffffffff]' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL MINUTE(10)
+        \li Minute, format '±mmmmmmmmmm' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL MINUTE(10) TO SECOND(9)
+        \li Minute to second, format '±mmmmmmmmmm:ss[.fffffffff]' (max precision)
+        \li Mapped to QString
+    \row
+        \li INTERVAL SECOND(12,9)
+        \li Second, format '±ssssssssssss[.fffffffff]' (max precision)
+        \li Mapped to QString
   \endtable
 */
