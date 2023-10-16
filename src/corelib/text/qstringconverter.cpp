@@ -1253,7 +1253,8 @@ int QLocal8Bit::checkUtf8()
     return GetACP() == CP_UTF8 ? 1 : -1;
 }
 
-static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::State *state)
+static QString convertToUnicodeCharByChar(QByteArrayView in, quint32 codePage,
+                                          QStringConverter::State *state)
 {
     qsizetype length = in.size();
     const char *chars = in.data();
@@ -1285,10 +1286,10 @@ static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::S
     const char *mb = mbcs;
     const char *next = 0;
     QString s;
-    while ((next = CharNextExA(CP_ACP, mb, 0)) != mb) {
+    while ((next = CharNextExA(codePage, mb, 0)) != mb) {
         wchar_t wc[2] ={0};
         int charlength = int(next - mb); // always just a few bytes
-        int len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
+        int len = MultiByteToWideChar(codePage, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
         if (len>0) {
             s.append(QChar(wc[0]));
         } else {
@@ -1305,8 +1306,13 @@ static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::S
     return s;
 }
 
-
 QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::State *state)
+{
+    return convertToUnicode_sys(in, CP_ACP, state);
+}
+
+QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
+                                         QStringConverter::State *state)
 {
     qsizetype length = in.size();
 
@@ -1336,7 +1342,7 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::St
         prev[0] = state_data;
         prev[1] = mb[0];
         remainingChars = 0;
-        len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
+        len = MultiByteToWideChar(codePage, MB_PRECOMPOSED,
                                     prev, 2, wc.data(), wc.length());
         if (len) {
             sp.append(QChar(wc[0]));
@@ -1351,11 +1357,11 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::St
         }
     }
 
-    while (!(len=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS,
+    while (!(len=MultiByteToWideChar(codePage, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS,
                 mb, mblen, wc.data(), wc.length()))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
-                const int wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
+                const int wclen = MultiByteToWideChar(codePage, MB_PRECOMPOSED,
                                     mb, mblen, 0, 0);
                 wc.resize(wclen);
         } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
@@ -1364,7 +1370,7 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::St
                 mblen--;
             //check whether,  we hit an invalid character in the middle
             if ((mblen <= 1) || (remainingChars && state_data))
-                return convertToUnicodeCharByChar(in, state);
+                return convertToUnicodeCharByChar(in, codePage, state);
             //Remove the last character and try again...
             state_data = mb[mblen-1];
             remainingChars = 1;
@@ -1396,6 +1402,12 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::St
 
 QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, QStringConverter::State *state)
 {
+    return convertFromUnicode_sys(in, CP_ACP, state);
+}
+
+QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
+                                              QStringConverter::State *state)
+{
     const QChar *ch = in.data();
     qsizetype uclen = in.size();
 
@@ -1412,12 +1424,12 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, QStringConverter::
     BOOL used_def;
     QByteArray mb(4096, 0);
     int len;
-    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
+    while (!(len=WideCharToMultiByte(codePage, 0, (const wchar_t*)ch, uclen,
                 mb.data(), mb.size()-1, 0, &used_def)))
     {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
-            mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
+            mb.resize(1+WideCharToMultiByte(codePage, 0,
                                 (const wchar_t*)ch, uclen,
                                 0, 0, 0, &used_def));
                 // and try again...
