@@ -155,19 +155,20 @@ inline QString AnchorData::toString() const
 struct SequentialAnchorData : public AnchorData
 {
     SequentialAnchorData(const QList<AnchorVertex *> &vertices, const QList<AnchorData *> &edges)
-        : AnchorData(), m_children(vertices), m_edges(edges)
+        : AnchorData(), m_edges(edges)
     {
         type = AnchorData::Sequential;
         isVertical = m_edges.at(0)->isVertical;
 #ifdef QT_DEBUG
         name = QString::fromLatin1("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
+#else
+        Q_UNUSED(vertices);
 #endif
     }
 
     virtual void updateChildrenSizes() override;
     void calculateSizeHints();
 
-    QList<AnchorVertex *> m_children; // list of vertices in the sequence
     const QList<AnchorData *> m_edges; // keep the list of edges too.
 };
 
