@@ -413,7 +413,7 @@ void tst_QDBusMarshall::sendArrayOfArrays_data()
     QTest::newRow("emptyvariantlist") << QVariant::fromValue(variants) << "aav"
             << "[Argument: aav {}]";
     variants << QVariantList();
-    QTest::newRow("emptyvariantlist") << QVariant::fromValue(variants) << "aav"
+    QTest::newRow("variantlist-empty-variantlist-element") << QVariant::fromValue(variants) << "aav"
             << "[Argument: aav {[Argument: av {}]}]";
     variants << (QVariantList() << QString("Hello") << QByteArray("World"))
              << (QVariantList() << 42 << -43.0 << 44U << Q_INT64_C(-45))
@@ -948,12 +948,12 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << "org.qtproject.QtDBus.Error.InvalidMember"
             << "Invalid method name: this isn't valid" << "";
 
-    QTest::newRow("invalid-variant1") << serviceName << objectPath << interfaceName << "ping"
+    QTest::newRow("invalid-variant") << serviceName << objectPath << interfaceName << "ping"
             << (QVariantList() << QVariant())
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Invalid QVariant passed in arguments"
             << "QDBusMarshaller: cannot add an invalid QVariant";
-    QTest::newRow("invalid-variant1") << serviceName << objectPath << interfaceName << "ping"
+    QTest::newRow("invalid-qdbusvariant") << serviceName << objectPath << interfaceName << "ping"
             << (QVariantList() << QVariant::fromValue(QDBusVariant()))
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Invalid QVariant passed in arguments"
@@ -1303,22 +1303,23 @@ void tst_QDBusMarshall::demarshallStrings_data()
 
     // All primitive types demarshall to null string types
     typedef QPair<QVariant, char> ValSigPair;
-    const QList<ValSigPair> nullStringTypes
-        = QList<ValSigPair>()
-            << ValSigPair(QVariant::fromValue(QString()), 's')
-            << ValSigPair(QVariant::fromValue(QDBusObjectPath()), 'o')
-            << ValSigPair(QVariant::fromValue(QDBusSignature()), 'g');
-    for (const ValSigPair &valSigPair : nullStringTypes) {
-        QTest::newRow("bool(false)") << QVariant(false) << valSigPair.second << valSigPair.first;
-        QTest::newRow("bool(true)") << QVariant(true) << valSigPair.second << valSigPair.first;
-        QTest::newRow("byte") << QVariant::fromValue(uchar(1)) << valSigPair.second << valSigPair.first;
-        QTest::newRow("int16") << QVariant::fromValue(short(2)) << valSigPair.second << valSigPair.first;
-        QTest::newRow("uint16") << QVariant::fromValue(ushort(3)) << valSigPair.second << valSigPair.first;
-        QTest::newRow("int") << QVariant(1) << valSigPair.second << valSigPair.first;
-        QTest::newRow("uint") << QVariant(2U) << valSigPair.second << valSigPair.first;
-        QTest::newRow("int64") << QVariant(Q_INT64_C(3)) << valSigPair.second << valSigPair.first;
-        QTest::newRow("uint64") << QVariant(Q_UINT64_C(4)) << valSigPair.second << valSigPair.first;
-        QTest::newRow("double") << QVariant(42.5) << valSigPair.second << valSigPair.first;
+    const QList<ValSigPair> nullStringTypes = {
+        ValSigPair(QVariant::fromValue(QString()), 's'),
+        ValSigPair(QVariant::fromValue(QDBusObjectPath()), 'o'),
+        ValSigPair(QVariant::fromValue(QDBusSignature()), 'g')
+    };
+    for (const auto &[v, charSymbol] : nullStringTypes) {
+        const char *name = v.typeName();
+        QTest::addRow("bool(false)-%s", name) << QVariant(false) << charSymbol << v;
+        QTest::addRow("bool(true)-%s", name) << QVariant(true) << charSymbol << v;
+        QTest::addRow("byte-%s", name) << QVariant::fromValue(uchar(1)) << charSymbol << v;
+        QTest::addRow("int16-%s", name) << QVariant::fromValue(short(2)) << charSymbol << v;
+        QTest::addRow("uint16-%s", name) << QVariant::fromValue(ushort(3)) << charSymbol << v;
+        QTest::addRow("int-%s", name) << QVariant(1) << charSymbol << v;
+        QTest::addRow("uint-%s", name) << QVariant(2U) << charSymbol << v;
+        QTest::addRow("int64-%s", name) << QVariant(Q_INT64_C(3)) << charSymbol << v;
+        QTest::addRow("uint64-%s", name) << QVariant(Q_UINT64_C(4)) << charSymbol << v;
+        QTest::addRow("double-%s", name) << QVariant(42.5) << charSymbol << v;
     }
 
     // String types should demarshall to each other. This is a regression test
