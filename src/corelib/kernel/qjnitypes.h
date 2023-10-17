@@ -235,6 +235,7 @@ template <> struct PromotedType<signed char> { using Type = int; };
 template <> struct PromotedType<unsigned char> { using Type = unsigned int; };
 template <> struct PromotedType<short> { using Type = int; };
 template <> struct PromotedType<unsigned short> { using Type = unsigned int; };
+template <> struct PromotedType<float> { using Type = double; };
 
 // Map any QJniObject type to jobject; that's what's on the va_list
 template <typename Arg>
