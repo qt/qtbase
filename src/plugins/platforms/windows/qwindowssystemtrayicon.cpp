@@ -162,8 +162,6 @@ void QWindowsSystemTrayIcon::cleanup()
 void QWindowsSystemTrayIcon::updateIcon(const QIcon &icon)
 {
     qCDebug(lcQpaTrayIcon) << __FUNCTION__ << '(' << icon << ')' << this;
-    if (icon.cacheKey() == m_icon.cacheKey())
-        return;
     m_icon = icon;
     const HICON hIconToDestroy = createIcon(icon);
     if (ensureInstalled())
