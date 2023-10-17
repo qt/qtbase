@@ -4,6 +4,8 @@
 package org.qtproject.qt.android;
 
 import android.content.Context;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
@@ -11,15 +13,16 @@ import android.view.ViewGroup;
 
 import java.util.HashMap;
 
-public class QtWindow implements QtSurface.SurfaceChangedCallback {
+public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
     private final static String TAG = "QtWindow";
 
+    private View m_surfaceContainer;
     private QtLayout m_layout;
-    private QtSurface m_surface;
     private View m_nativeView;
     private HashMap<Integer, QtWindow> m_childWindows = new HashMap<Integer, QtWindow>();
     private QtWindow m_parentWindow;
     private int m_id;
+    private GestureDetector m_gestureDetector;
 
     private static native void setSurface(int windowId, Surface surface);
 
@@ -27,8 +30,15 @@ public class QtWindow implements QtSurface.SurfaceChangedCallback {
     {
         m_id = View.generateViewId();
         QtNative.runAction(() -> {
-            m_layout = new QtLayout(context);
+            m_layout = new QtLayout(context, this);
             setParent(parentWindow);
+            m_gestureDetector =
+                new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                    public void onLongPress(MotionEvent event) {
+                        QtInputDelegate.longPress(getId(), (int) event.getX(), (int) event.getY());
+                    }
+                });
+            m_gestureDetector.setIsLongpressEnabled(true);
         });
     }
 
@@ -57,6 +67,27 @@ public class QtWindow implements QtSurface.SurfaceChangedCallback {
         setSurface(getId(), surface);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        QtInputDelegate.sendTouchEvent(event, getId());
+        m_gestureDetector.onTouchEvent(event);
+        return true;
+    }
+
+    @Override
+    public boolean onTrackballEvent(MotionEvent event)
+    {
+        QtInputDelegate.sendTrackballEvent(event, getId());
+        return true;
+    }
+
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event)
+    {
+        return QtInputDelegate.sendGenericMotionEvent(event, getId());
+    }
+
     public void removeWindow()
     {
         if (m_parentWindow != null)
@@ -65,30 +96,28 @@ public class QtWindow implements QtSurface.SurfaceChangedCallback {
 
     public void createSurface(final boolean onTop,
                               final int x, final int y, final int w, final int h,
-                              final int imageDepth)
+                              final int imageDepth, final boolean isOpaque,
+                              final int surfaceContainerType) // TODO constant for type
     {
         QtNative.runAction(new Runnable() {
             @Override
             public void run() {
-                if (m_surface != null)
-                    m_layout.removeView(m_surface);
+                if (m_surfaceContainer != null)
+                    m_layout.removeView(m_surfaceContainer);
 
                 m_layout.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-                // TODO currently setting child windows to onTop, since their surfaces
-                // now get created earlier than the parents -> they are behind the parent window
-                // without this, and SurfaceView z-ordering is limited
-                boolean tempOnTop = onTop || (m_parentWindow != null);
-
-                QtSurface surface = new QtSurface(m_layout.getContext(), QtWindow.this,
-                                                  QtWindow.this.getId(), tempOnTop, imageDepth);
-                surface.setLayoutParams(new QtLayout.LayoutParams(
+                if (surfaceContainerType == 0) {
+                    m_surfaceContainer = new QtSurface(m_layout.getContext(), QtWindow.this,
+                                                       onTop, imageDepth);
+                } else {
+                    m_surfaceContainer = new QtTextureView(m_layout.getContext(), QtWindow.this, isOpaque);
+                }
+                 m_surfaceContainer.setLayoutParams(new QtLayout.LayoutParams(
                                                             ViewGroup.LayoutParams.MATCH_PARENT,
                                                             ViewGroup.LayoutParams.MATCH_PARENT));
-
-                // The QtSurface of this window will be added as the first of the stack.
+                // The surface container of this window will be added as the first of the stack.
                 // All other views are stacked based on the order they are created.
-                m_layout.addView(surface, 0);
-                m_surface = surface;
+                m_layout.addView(m_surfaceContainer, 0);
             }
         });
     }
@@ -98,9 +127,9 @@ public class QtWindow implements QtSurface.SurfaceChangedCallback {
         QtNative.runAction(new Runnable() {
             @Override
             public void run() {
-                if (m_surface != null) {
-                    m_layout.removeView(m_surface);
-                    m_surface = null;
+                if (m_surfaceContainer != null) {
+                    m_layout.removeView(m_surfaceContainer);
+                    m_surfaceContainer = null;
                 }
             }
         });

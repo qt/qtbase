@@ -26,6 +26,11 @@ class QAndroidPlatformScreen;
 class QAndroidPlatformWindow: public QPlatformWindow
 {
 public:
+    enum class SurfaceContainer {
+        SurfaceView,
+        TextureView
+    };
+
     explicit QAndroidPlatformWindow(QWindow *window);
     ~QAndroidPlatformWindow();
     void lower() override;
@@ -77,6 +82,7 @@ protected:
 
     int m_nativeViewId = -1;
     QtJniTypes::QtWindow m_nativeQtWindow;
+    SurfaceContainer m_surfaceContainerType = SurfaceContainer::SurfaceView;
     QtJniTypes::QtWindow m_nativeParentQtWindow;
     // The Android Surface, accessed from multiple threads, guarded by m_surfaceMutex
     QtJniTypes::Surface m_androidSurfaceObject;

@@ -58,6 +58,14 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
 
     if (window->isTopLevel())
         platformScreen()->addWindow(this);
+
+    // TODO should handle case where this changes at runtime -> need to change existing window
+    // into TextureView (or perhaps not, if the parent window would be SurfaceView, as long as
+    // onTop was false it would stay below the children)
+    if (platformScreen()->windows().size() > 1)
+        m_surfaceContainerType = SurfaceContainer::TextureView;
+    else
+        m_surfaceContainerType = SurfaceContainer::SurfaceView;
 }
 
 QAndroidPlatformWindow::~QAndroidPlatformWindow()
@@ -239,8 +247,10 @@ void QAndroidPlatformWindow::createSurface()
     }
 
     const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
+    const bool isOpaque = format().hasAlpha() || (0.0 < window()->opacity() < 1.0);
 
-    m_nativeQtWindow.callMethod<void>("createSurface", windowStaysOnTop, x, y, w, h, 32);
+    m_nativeQtWindow.callMethod<void>("createSurface", windowStaysOnTop, x, y, w, h, 32, isOpaque,
+                                      m_surfaceContainerType);
     m_surfaceCreated = true;
 }
 
