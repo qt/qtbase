@@ -3310,7 +3310,7 @@ int main(int argc, char *argv[])
                                          it.value().qtDirectories);
 
         // All architectures have a copy of the gradle files but only one set needs to be copied.
-        if (!androidTemplatetCopied && options.build && !options.auxMode && !options.copyDependenciesOnly) {
+        if (!androidTemplatetCopied && options.build && !options.copyDependenciesOnly) {
             cleanAndroidFiles(options);
             if (Q_UNLIKELY(options.timing))
                 fprintf(stdout, "[TIMING] %lld ns: Cleaned Android file\n", options.timer.nsecsElapsed());
@@ -3347,13 +3347,12 @@ int main(int argc, char *argv[])
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %lld ns: Copied extra resources\n", options.timer.nsecsElapsed());
 
-        if (!options.auxMode) {
-            if (!copyStdCpp(&options))
-                return CannotCopyGnuStl;
+        if (!copyStdCpp(&options))
+            return CannotCopyGnuStl;
 
-            if (Q_UNLIKELY(options.timing))
-                fprintf(stdout, "[TIMING] %lld ns: Copied GNU STL\n", options.timer.nsecsElapsed());
-        }
+        if (Q_UNLIKELY(options.timing))
+            fprintf(stdout, "[TIMING] %lld ns: Copied GNU STL\n", options.timer.nsecsElapsed());
+
         // If Unbundled deployment is used, remove app lib as we don't want it packaged inside the APK
         if (options.deploymentMechanism == Options::Unbundled) {
             QString appLibPath = "%1/libs/%2/lib%3_%2.so"_L1.
