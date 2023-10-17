@@ -172,6 +172,7 @@ public class QtDisplayManager {
         }
     }
 
+    @UsedFromNativeCode
     public static Display getDisplay(Context context, int displayId)
     {
         DisplayManager displayManager =
@@ -182,6 +183,7 @@ public class QtDisplayManager {
         return null;
     }
 
+    @UsedFromNativeCode
     public static List<Display> getAvailableDisplays(Context context)
     {
         DisplayManager displayManager =
@@ -193,6 +195,7 @@ public class QtDisplayManager {
         return new ArrayList<>();
     }
 
+    @UsedFromNativeCode
     public static Size getDisplaySize(Context displayContext, Display display)
     {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {

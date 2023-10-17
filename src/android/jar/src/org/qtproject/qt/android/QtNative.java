@@ -59,6 +59,7 @@ public class QtNative
         return m_started && (hasActivity || hasService);
     }
 
+    @UsedFromNativeCode
     public static ClassLoader classLoader()
     {
         return m_classLoader;
@@ -83,6 +84,7 @@ public class QtNative
         }
     }
 
+    @UsedFromNativeCode
     public static Activity activity()
     {
         synchronized (m_mainActivityMutex) {
@@ -90,6 +92,7 @@ public class QtNative
         }
     }
 
+    @UsedFromNativeCode
     public static Service service()
     {
         synchronized (m_mainActivityMutex) {
@@ -97,12 +100,14 @@ public class QtNative
         }
     }
 
+    @UsedFromNativeCode
     public static Context getContext() {
         if (m_activity != null)
             return m_activity;
         return m_service;
     }
 
+    @UsedFromNativeCode
     public static String[] getStringArray(String joinedString)
     {
         return joinedString.split(",");
@@ -154,6 +159,7 @@ public class QtNative
         }
     }
 
+    @UsedFromNativeCode
     public static boolean openURL(Context context, String url, String mime)
     {
         final Uri uri = getUriWithValidPermission(context, url, "r");
@@ -207,6 +213,7 @@ public class QtNative
         }
     }
 
+    @UsedFromNativeCode
     private static void runPendingCppRunnablesOnAndroidThread()
     {
         synchronized (m_mainActivityMutex) {
@@ -228,6 +235,7 @@ public class QtNative
         }
     }
 
+    @UsedFromNativeCode
     private static void setViewVisibility(final View view, final boolean visible)
     {
         runAction(new Runnable() {
@@ -278,6 +286,7 @@ public class QtNative
         });
     }
 
+    @UsedFromNativeCode
     public static int checkSelfPermission(String permission)
     {
         synchronized (m_mainActivityMutex) {
@@ -287,6 +296,7 @@ public class QtNative
         }
     }
 
+    @UsedFromNativeCode
     private static byte[][] getSSLCertificates()
     {
         ArrayList<byte[]> certificateList = new ArrayList<>();
@@ -314,6 +324,7 @@ public class QtNative
         return certificateArray;
     }
 
+    @UsedFromNativeCode
     private static String[] listAssetContent(android.content.res.AssetManager asset, String path) {
         String [] list;
         ArrayList<String> res = new ArrayList<>();

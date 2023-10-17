@@ -1129,10 +1129,6 @@ public class ExtractStyle {
         return json;
     }
 
-    public JSONObject extractTextAppearanceInformation(int styleName, String qtClass, AttributeSet attributeSet) {
-        return extractTextAppearanceInformation(styleName, qtClass, android.R.attr.textAppearance, attributeSet);
-    }
-
     public JSONObject extractTextAppearanceInformation(int styleName, String qtClass) {
         return extractTextAppearanceInformation(styleName, qtClass, android.R.attr.textAppearance, null);
     }

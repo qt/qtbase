@@ -85,15 +85,18 @@ public class QtActivityDelegate
         return m_displayManager;
     }
 
+    @UsedFromNativeCode
     QtInputDelegate getInputDelegate() {
         return m_inputDelegate;
     }
 
+    @UsedFromNativeCode
     QtLayout getQtLayout()
     {
         return m_layout;
     }
 
+    @UsedFromNativeCode
     public void setSystemUiVisibility(int systemUiVisibility)
     {
         QtNative.runAction(new Runnable() {
@@ -161,11 +164,6 @@ public class QtActivityDelegate
             e.printStackTrace();
             return false;
         }
-    }
-
-    public void onTerminate() {
-        QtNative.terminateQt();
-        QtNative.m_qtThread.exit();
     }
 
     public void startNativeApplication(ArrayList<String> appParams, String mainLib)
@@ -307,6 +305,7 @@ public class QtActivityDelegate
         });
     }
 
+    @UsedFromNativeCode
     public void notifyLocationChange(int viewId)
     {
         if (m_accessibilityDelegate == null)
@@ -314,6 +313,7 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyLocationChange(viewId);
     }
 
+    @UsedFromNativeCode
     public void notifyObjectHide(int viewId, int parentId)
     {
         if (m_accessibilityDelegate == null)
@@ -321,6 +321,7 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyObjectHide(viewId, parentId);
     }
 
+    @UsedFromNativeCode
     public void notifyObjectFocus(int viewId)
     {
         if (m_accessibilityDelegate == null)
@@ -328,6 +329,7 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyObjectFocus(viewId);
     }
 
+    @UsedFromNativeCode
     public void notifyValueChanged(int viewId, String value)
     {
         if (m_accessibilityDelegate == null)
@@ -335,6 +337,7 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyValueChanged(viewId, value);
     }
 
+    @UsedFromNativeCode
     public void notifyScrolledEvent(int viewId)
     {
         if (m_accessibilityDelegate == null)
@@ -342,11 +345,13 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyScrolledEvent(viewId);
     }
 
+    @UsedFromNativeCode
     public void notifyQtAndroidPluginRunning(boolean running)
     {
         m_isPluginRunning = running;
     }
 
+    @UsedFromNativeCode
     public void initializeAccessibility()
     {
         final QtActivityDelegate currentDelegate = this;
@@ -386,6 +391,7 @@ public class QtActivityDelegate
         }
     }
 
+    @UsedFromNativeCode
     public void resetOptionsMenu()
     {
         QtNative.runAction(new Runnable() {
@@ -396,6 +402,7 @@ public class QtActivityDelegate
         });
     }
 
+    @UsedFromNativeCode
     public void openOptionsMenu()
     {
         QtNative.runAction(new Runnable() {
@@ -414,6 +421,7 @@ public class QtActivityDelegate
         m_contextMenuVisible = true;
     }
 
+    @UsedFromNativeCode
     public void openContextMenu(final int x, final int y, final int w, final int h)
     {
         m_layout.postDelayed(new Runnable() {
@@ -439,6 +447,7 @@ public class QtActivityDelegate
         }, 100);
     }
 
+    @UsedFromNativeCode
     public void closeContextMenu()
     {
         QtNative.runAction(new Runnable() {
@@ -459,6 +468,7 @@ public class QtActivityDelegate
             m_activity.getActionBar().show();
     }
 
+    @UsedFromNativeCode
     public void insertNativeView(int id, View view, int x, int y, int w, int h) {
     QtNative.runAction(new Runnable() {
             @Override
@@ -485,6 +495,7 @@ public class QtActivityDelegate
         });
     }
 
+    @UsedFromNativeCode
     public void createSurface(int id, boolean onTop, int x, int y, int w, int h, int imageDepth) {
         QtNative.runAction(new Runnable() {
             @Override
@@ -526,6 +537,7 @@ public class QtActivityDelegate
         });
     }
 
+    @UsedFromNativeCode
     public void setSurfaceGeometry(int id, int x, int y, int w, int h) {
         QtNative.runAction(new Runnable() {
             @Override
@@ -544,6 +556,7 @@ public class QtActivityDelegate
         });
     }
 
+    @UsedFromNativeCode
     public void destroySurface(int id) {
         QtNative.runAction(new Runnable() {
             @Override
@@ -577,6 +590,7 @@ public class QtActivityDelegate
         return m_surfaces.size();
     }
 
+    @UsedFromNativeCode
     public void bringChildToFront(int id)
     {
         QtNative.runAction(new Runnable() {
@@ -597,6 +611,7 @@ public class QtActivityDelegate
         });
     }
 
+    @UsedFromNativeCode
     public void bringChildToBack(int id)
     {
         QtNative.runAction(new Runnable() {

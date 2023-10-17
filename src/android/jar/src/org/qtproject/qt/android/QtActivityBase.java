@@ -298,11 +298,13 @@ public class QtActivityBase extends Activity
         QtNative.sendRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    @UsedFromNativeCode
     public void hideSplashScreen(final int duration)
     {
         m_delegate.hideSplashScreen(duration);
     }
 
+    @UsedFromNativeCode
     QtActivityDelegate getActivityDelegate()
     {
         return m_delegate;

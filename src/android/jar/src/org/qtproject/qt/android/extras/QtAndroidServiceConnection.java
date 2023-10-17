@@ -7,8 +7,11 @@ import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
+import org.qtproject.qt.android.UsedFromNativeCode;
+
 public class QtAndroidServiceConnection implements ServiceConnection
 {
+    @UsedFromNativeCode
     public QtAndroidServiceConnection(long id)
     {
         m_id = id;

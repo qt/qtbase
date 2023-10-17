@@ -23,12 +23,13 @@ set(java_sources
     src/org/qtproject/qt/android/QtNative.java
     src/org/qtproject/qt/android/QtSurface.java
     src/org/qtproject/qt/android/QtThread.java
-    src/org/qtproject/qt/android/extras//QtAndroidBinder.java
+    src/org/qtproject/qt/android/extras/QtAndroidBinder.java
     src/org/qtproject/qt/android/extras/QtAndroidServiceConnection.java
     src/org/qtproject/qt/android/extras/QtNative.java
     src/org/qtproject/qt/android/QtConstants.java
     src/org/qtproject/qt/android/QtClipboardManager.java
     src/org/qtproject/qt/android/QtDisplayManager.java
+    src/org/qtproject/qt/android/UsedFromNativeCode.java
 )
 
 qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android

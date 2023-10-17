@@ -324,6 +324,8 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         return event;
     }
 
+    // This can be used for debug by performActionForVirtualViewId()
+    /** @noinspection unused*/
     private void dumpNodes(int parentId)
     {
         Log.i(TAG, "A11Y hierarchy: " + parentId + " parent: " + QtNativeAccessibility.parentId(parentId));
@@ -369,8 +371,8 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         result.setPackageName(source.getPackageName());
         result.setClassName(source.getClassName());
 
-// Spit out the entire hierarchy for debugging purposes
-//        dumpNodes(-1);
+        // Spit out the entire hierarchy for debugging purposes
+        // dumpNodes(-1);
 
         if (m_activityDelegate.getSurfaceCount() != 0) {
             int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);

@@ -59,6 +59,7 @@ public class QtClipboardManager
         }
     }
 
+    @UsedFromNativeCode
     public void clearClipData()
     {
         if (m_clipboardManager != null) {
@@ -72,6 +73,8 @@ public class QtClipboardManager
         }
         m_usePrimaryClip = false;
     }
+
+    @UsedFromNativeCode
     public void setClipboardText(Context context, String text)
     {
         if (m_clipboardManager != null) {
@@ -101,11 +104,13 @@ public class QtClipboardManager
         return false;
     }
 
+    @UsedFromNativeCode
     public boolean hasClipboardText()
     {
         return hasClipboardMimeType("text/(.*)");
     }
 
+    @UsedFromNativeCode
     public String getClipboardText()
     {
         try {
@@ -144,6 +149,7 @@ public class QtClipboardManager
         }
     }
 
+    @UsedFromNativeCode
     public void setClipboardHtml(Context context, String text, String html)
     {
         if (m_clipboardManager != null) {
@@ -170,11 +176,13 @@ public class QtClipboardManager
         return false;
     }
 
+    @UsedFromNativeCode
     public boolean hasClipboardHtml()
     {
         return hasClipboardMimeType("text/html");
     }
 
+    @UsedFromNativeCode
     public String getClipboardHtml()
     {
         try {
@@ -192,6 +200,7 @@ public class QtClipboardManager
         return "";
     }
 
+    @UsedFromNativeCode
     public void setClipboardUri(Context context, String uriString)
     {
         if (m_clipboardManager != null) {
@@ -201,11 +210,13 @@ public class QtClipboardManager
         }
     }
 
+    @UsedFromNativeCode
     public boolean hasClipboardUri()
     {
         return hasClipboardMimeType("text/uri-list");
     }
 
+    @UsedFromNativeCode
     private String[] getClipboardUris()
     {
         ArrayList<String> uris = new ArrayList<>();

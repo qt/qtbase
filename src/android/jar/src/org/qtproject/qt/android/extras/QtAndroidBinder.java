@@ -6,8 +6,11 @@ package org.qtproject.qt.android.extras;
 import android.os.Binder;
 import android.os.Parcel;
 
+import org.qtproject.qt.android.UsedFromNativeCode;
+
 public class QtAndroidBinder extends Binder
 {
+    @UsedFromNativeCode
     public QtAndroidBinder(long id)
     {
         m_id = id;

@@ -139,6 +139,7 @@ public class QtInputDelegate {
     }
 
     // Is the keyboard fully visible i.e. visible and no ongoing animation
+    @UsedFromNativeCode
     public boolean isSoftwareKeyboardVisible()
     {
         return isKeyboardVisible() && !m_isKeyboardHidingAnimationOngoing;
@@ -182,6 +183,7 @@ public class QtInputDelegate {
 
     }
 
+    @UsedFromNativeCode
     public void resetSoftwareKeyboard()
     {
         if (m_imm == null)
@@ -452,6 +454,7 @@ public class QtInputDelegate {
         });
     }
 
+    @UsedFromNativeCode
     public void updateSelection(final int selStart, final int selEnd,
                                 final int candidatesStart, final int candidatesEnd)
     {
@@ -466,6 +469,7 @@ public class QtInputDelegate {
         });
     }
 
+    @UsedFromNativeCode
     public int getSelectHandleWidth()
     {
         int width = 0;
@@ -481,6 +485,7 @@ public class QtInputDelegate {
        be adjusted.
        mode is one of QAndroidInputContext::CursorHandleShowMode
     */
+    @UsedFromNativeCode
     public void updateHandles(Activity activity, QtLayout layout, int mode,
                               int editX, int editY, int editButtons,
                               int x1, int y1, int x2, int y2, boolean rtl)

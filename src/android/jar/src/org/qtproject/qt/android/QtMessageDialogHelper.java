@@ -55,7 +55,7 @@ public class QtMessageDialogHelper
         m_activity = activity;
     }
 
-
+    @UsedFromNativeCode
     public void setStandardIcon(int icon)
     {
         m_standardIcon = icon;
@@ -114,26 +114,31 @@ public class QtMessageDialogHelper
         return null;
     }
 
+    @UsedFromNativeCode
     public void setTile(String title)
     {
         m_title = Html.fromHtml(title);
     }
 
+    @UsedFromNativeCode
     public void setText(String text)
     {
         m_text = Html.fromHtml(text);
     }
 
+    @UsedFromNativeCode
     public void setInformativeText(String informativeText)
     {
         m_informativeText = Html.fromHtml(informativeText);
     }
 
+    @UsedFromNativeCode
     public void setDetailedText(String text)
     {
         m_detailedText = Html.fromHtml(text);
     }
 
+    @UsedFromNativeCode
     public void addButton(int id, String text)
     {
         if (m_buttonsList == null)
@@ -150,7 +155,7 @@ public class QtMessageDialogHelper
         return  d;
     }
 
-
+    @UsedFromNativeCode
     public void show(long handler)
     {
         m_handler = handler;
@@ -314,6 +319,7 @@ public class QtMessageDialogHelper
         });
     }
 
+    @UsedFromNativeCode
     public void hide()
     {
         m_activity.runOnUiThread( new Runnable() {
