@@ -292,7 +292,11 @@ QList<QSslCertificate> QSchannelBackend::systemCaCertificatesImplementation()
     // Similar to non-Darwin version found in qtlsbackend_openssl.cpp,
     // QTlsPrivate::systemCaCertificates function.
     QList<QSslCertificate> systemCerts;
-    auto hSystemStore = QHCertStorePointer(CertOpenSystemStore(0, L"ROOT"));
+
+    auto hSystemStore = QHCertStorePointer(
+            CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, 0,
+                          CERT_STORE_READONLY_FLAG | CERT_SYSTEM_STORE_CURRENT_USER, L"ROOT"));
+
     if (hSystemStore) {
         PCCERT_CONTEXT pc = nullptr;
         while ((pc = CertFindCertificateInStore(hSystemStore.get(), X509_ASN_ENCODING, 0,
@@ -1952,7 +1956,10 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
         // the Ca list, not just included during verification.
         // That being said, it's not trivial to add the root certificates (if and only if they
         // came from the system root store). And I don't see this mentioned in our documentation.
-        auto rootStore = QHCertStorePointer(CertOpenSystemStore(0, L"ROOT"));
+        auto rootStore = QHCertStorePointer(
+                CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, 0,
+                              CERT_STORE_READONLY_FLAG | CERT_SYSTEM_STORE_CURRENT_USER, L"ROOT"));
+
         if (!rootStore) {
 #ifdef QSSLSOCKET_DEBUG
             qCWarning(lcTlsBackendSchannel, "Failed to open the system root CA certificate store!");
