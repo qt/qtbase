@@ -2240,6 +2240,8 @@ void tst_QStringConverter::encodingForName_data()
     row("ISO8859-1",   QStringConverter::Latin1);
     row("iso8859-1",   QStringConverter::Latin1);
     row("latin1",      QStringConverter::Latin1);
+    row("latin-1_-",   QStringConverter::Latin1);
+    row("latin_1-_",   QStringConverter::Latin1);
     row("-_latin-1",   QStringConverter::Latin1);
     row("_-latin_1",   QStringConverter::Latin1);
 

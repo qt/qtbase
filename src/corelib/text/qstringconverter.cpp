@@ -1768,21 +1768,16 @@ const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringCo
 // match names case insensitive and skipping '-' and '_'
 static bool nameMatch(const char *a, const char *b)
 {
-    while (*a && *b) {
-        if (*a == '-' || *a == '_') {
+    do {
+        while (*a == '-' || *a == '_')
             ++a;
-            continue;
-        }
-        if (*b == '-' || *b == '_') {
+        while (*b == '-' || *b == '_')
             ++b;
-            continue;
-        }
-        if (QtMiscUtils::toAsciiLower(*a) != QtMiscUtils::toAsciiLower(*b))
-            return false;
-        ++a;
-        ++b;
-    }
-    return !*a && !*b;
+        if (!*a && !*b) // end of both strings
+            return true;
+    } while (QtMiscUtils::toAsciiLower(*a++) == QtMiscUtils::toAsciiLower(*b++));
+
+    return false;
 }
 
 
