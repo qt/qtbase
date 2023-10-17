@@ -785,7 +785,8 @@ void QWindowsIntegration::updateApplicationBadge()
     // to a task bar button being created for the fist time or after
     // Explorer had crashed and re-started. In any case, re-apply the
     // badge so that everything is up to date.
-    setApplicationBadge(m_applicationBadgeNumber);
+    if (m_applicationBadgeNumber)
+        setApplicationBadge(m_applicationBadgeNumber);
 }
 
 #if QT_CONFIG(vulkan)
