@@ -107,13 +107,15 @@ static inline bool time_update(struct timespec *tv, const struct timespec &start
     return tv->tv_sec >= 0;
 }
 
-#if QT_CONFIG(poll_poll)
+[[maybe_unused]]
 static inline int timespecToMillisecs(const struct timespec *ts)
 {
-    return (ts == NULL) ? -1 :
-           (ts->tv_sec * 1000) + (ts->tv_nsec / 1000000);
+    using namespace std::chrono;
+    if (!ts)
+        return -1;
+    auto ms = ceil<milliseconds>(timespecToChrono<nanoseconds>(*ts));
+    return int(ms.count());
 }
-#endif
 
 // defined in qpoll.cpp
 int qt_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts);
