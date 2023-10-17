@@ -276,7 +276,7 @@ function(qt_auto_detect_cmake_config)
 endfunction()
 
 function(qt_auto_detect_cyclic_toolchain)
-    if(CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "/qt.toolchain.cmake$")
+    if(CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "/qt\\.toolchain\\.cmake$")
         message(FATAL_ERROR
                 "Woah there! You can't use the Qt generated qt.toolchain.cmake file to configure "
                 "qtbase, because that will create a toolchain file that includes itself!\n"
