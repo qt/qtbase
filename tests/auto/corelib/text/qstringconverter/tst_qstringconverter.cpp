@@ -14,6 +14,21 @@
 
 using namespace Qt::StringLiterals;
 
+QT_BEGIN_NAMESPACE
+namespace QTest {
+template <typename T>
+char *toString(const std::optional<T> &opt)
+{
+    if (opt)
+        return QTest::toString(*opt);
+    else
+        return qstrdup("std::nullopt");
+}
+} // namespace QTest
+QT_END_NAMESPACE
+
+using QTest::toString;
+
 static constexpr bool IsBigEndian = QSysInfo::ByteOrder == QSysInfo::BigEndian;
 enum CodecLimitation {
     AsciiOnly,
@@ -2209,19 +2224,30 @@ void tst_QStringConverter::encodingForName_data()
     QTest::addColumn<QByteArray>("name");
     QTest::addColumn<std::optional<QStringConverter::Encoding>>("encoding");
 
-    QTest::newRow("UTF-8") << QByteArray("UTF-8") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
-    QTest::newRow("utf8") << QByteArray("utf8") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
-    QTest::newRow("Utf-8") << QByteArray("Utf-8") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
-    QTest::newRow("UTF-16") << QByteArray("UTF-16") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16);
-    QTest::newRow("UTF-16le") << QByteArray("UTF-16le") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16LE);
-    QTest::newRow("ISO-8859-1") << QByteArray("ISO-8859-1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
-    QTest::newRow("ISO8859-1") << QByteArray("ISO8859-1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
-    QTest::newRow("iso8859-1") << QByteArray("iso8859-1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
-    QTest::newRow("latin1") << QByteArray("latin1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
-    QTest::newRow("latin2") << QByteArray("latin2") << std::optional<QStringConverter::Encoding>();
-    QTest::newRow("latin15") << QByteArray("latin15") << std::optional<QStringConverter::Encoding>();
-    QTest::newRow("<empty>") << QByteArray("") << std::optional<QStringConverter::Encoding>();
-    QTest::newRow("<nullptr>") << QByteArray(nullptr) << std::optional<QStringConverter::Encoding>();
+    auto row = [](const char *name, std::optional<QStringConverter::Encoding> expected = std::nullopt) {
+        auto protect = [](auto p) { return p ? *p ? p : "<empty>" : "<nullptr>"; };
+        QTest::addRow("%s", protect(name)) << QByteArray(name) << expected;
+    };
+
+    row("UTF-8",       QStringConverter::Utf8);
+    row("utf8",        QStringConverter::Utf8);
+    row("Utf-8",       QStringConverter::Utf8);
+    row("UTF-16",      QStringConverter::Utf16);
+    row("UTF-16le",    QStringConverter::Utf16LE);
+    row("ISO-8859-1",  QStringConverter::Latin1);
+    row("ISO8859-1",   QStringConverter::Latin1);
+    row("iso8859-1",   QStringConverter::Latin1);
+    row("latin1",      QStringConverter::Latin1);
+    row("-_latin-1",   QStringConverter::Latin1);
+    row("_-latin_1",   QStringConverter::Latin1);
+
+    // failures:
+    row(nullptr);
+    row("");
+    row("latin2");
+    row("latin42");
+    row(" latin1");    // spaces are significant
+    row("\tlatin1");   // HTs are significant
 }
 
 void tst_QStringConverter::encodingForName()
