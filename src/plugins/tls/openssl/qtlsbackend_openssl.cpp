@@ -363,7 +363,9 @@ QList<QSslCertificate> systemCaCertificates()
     QList<QSslCertificate> systemCerts;
 #if defined(Q_OS_WIN)
     HCERTSTORE hSystemStore;
-    hSystemStore = CertOpenSystemStoreW(0, L"ROOT");
+    hSystemStore =
+            CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, 0,
+                          CERT_STORE_READONLY_FLAG | CERT_SYSTEM_STORE_CURRENT_USER, L"ROOT");
     if (hSystemStore) {
         PCCERT_CONTEXT pc = nullptr;
         while (1) {
