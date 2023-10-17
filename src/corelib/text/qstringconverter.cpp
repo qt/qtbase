@@ -1747,6 +1747,8 @@ QStringConverter::QStringConverter(const char *name, Flags f)
 */
 std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(const char *name)
 {
+    if (!name)
+        return std::nullopt;
     for (int i = 0; i < LastEncoding + 1; ++i) {
         if (nameMatch(encodingInterfaces[i].name, name))
             return QStringConverter::Encoding(i);
