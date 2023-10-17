@@ -2229,7 +2229,7 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(cons
         if (nameMatch(encodingInterfaces[i].name, name))
             return QStringConverter::Encoding(i);
     }
-    if (nameMatch(name, "latin1"))
+    if (nameMatch("latin1", name))
         return QStringConverter::Latin1;
     return std::nullopt;
 }
