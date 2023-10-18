@@ -26,7 +26,7 @@
 #include <security.h>
 #include <schnlsp.h>
 
-#if NTDDI_VERSION >= NTDDI_WINBLUE && !defined(Q_CC_MINGW)
+#if NTDDI_VERSION >= NTDDI_WINBLUE && defined(SECBUFFER_APPLICATION_PROTOCOLS)
 // ALPN = Application Layer Protocol Negotiation
 #define SUPPORTS_ALPN 1
 #endif
