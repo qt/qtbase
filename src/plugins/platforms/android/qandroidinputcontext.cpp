@@ -769,7 +769,15 @@ void QAndroidInputContext::touchDown(int x, int y)
                 focusObjectStopComposing();
         }
 
-        updateSelectionHandles();
+        // Check if cursor is visible in focused window before updating handles
+        QPlatformWindow *window = qGuiApp->focusWindow()->handle();
+        const QRectF curRect = cursorRectangle();
+        const QPoint cursorGlobalPoint = window->mapToGlobal(QPoint(curRect.x(), curRect.y()));
+        const QRect windowRect = QPlatformInputContext::inputItemClipRectangle().toRect();
+        const QRect windowGlobalRect = QRect(window->mapToGlobal(windowRect.topLeft()), windowRect.size());
+
+        if (windowGlobalRect.contains(cursorGlobalPoint.x(), cursorGlobalPoint.y()))
+            updateSelectionHandles();
     }
 }
 
