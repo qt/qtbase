@@ -79,6 +79,8 @@ public:
     QPdfPrintEnginePrivate(QPrinter::PrinterMode m);
     ~QPdfPrintEnginePrivate();
 
+    QPrinter::ColorMode printerColorMode() const;
+
     virtual bool openPrintDevice();
     virtual void closePrintDevice();
 

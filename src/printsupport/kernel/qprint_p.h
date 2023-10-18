@@ -68,6 +68,7 @@ namespace QPrint {
         DuplexShortSide
     };
 
+    // Note: Keep in sync with QPrinter::ColorMode
     enum ColorMode {
         GrayScale,
         Color
