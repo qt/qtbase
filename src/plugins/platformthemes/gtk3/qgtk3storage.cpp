@@ -573,7 +573,6 @@ void QGtk3Storage::createMapping()
         ADD(All, AlternateBase);
 
         GTK(Default, Foreground, NORMAL);
-        ADD(All, ToolTipText);
         MODIFY(Normal, Text, 100, 100, 100);
         ADD(All, PlaceholderText, Light);
         MODIFY(Normal, Text, -100, -100, -100);
