@@ -75,6 +75,7 @@ public:
         Format_RGBX32FPx4,
         Format_RGBA32FPx4,
         Format_RGBA32FPx4_Premultiplied,
+        Format_CMYK32,
 #ifndef Q_QDOC
         NImageFormats
 #endif

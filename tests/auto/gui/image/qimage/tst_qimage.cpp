@@ -321,7 +321,9 @@ static QLatin1String formatToString(QImage::Format format)
         return QLatin1String("RGBA32FPx4");
     case QImage::Format_RGBA32FPx4_Premultiplied:
         return QLatin1String("RGBA32FPx4pm");
-    default:
+    case QImage::Format_CMYK32:
+        return QLatin1String("CMYK32");
+    case QImage::NImageFormats:
         break;
     };
     Q_UNREACHABLE();
@@ -1507,6 +1509,8 @@ void tst_QImage::setPixelWithAlpha_data()
             continue;
         if (c == QImage::Format_Alpha8)
             continue;
+        if (c == QImage::Format_CMYK32)
+            continue;
         QTest::newRow(qPrintable(formatToString(QImage::Format(c)))) << QImage::Format(c);
     }
 }
@@ -2568,7 +2572,8 @@ void tst_QImage::rgbSwapped_data()
     for (int i = QImage::Format_Indexed8; i < QImage::NImageFormats; ++i) {
         if (i == QImage::Format_Alpha8
             || i == QImage::Format_Grayscale8
-            || i == QImage::Format_Grayscale16) {
+            || i == QImage::Format_Grayscale16
+            || i == QImage::Format_CMYK32) {
             continue;
         }
         QTest::addRow("%s", formatToString(QImage::Format(i)).data()) << QImage::Format(i);
@@ -3050,13 +3055,15 @@ void tst_QImage::inplaceRgbConversion_data()
     for (int i = QImage::Format_RGB32; i < QImage::NImageFormats; ++i) {
         if (i == QImage::Format_Alpha8
             || i == QImage::Format_Grayscale8
-            || i == QImage::Format_Grayscale16) {
+            || i == QImage::Format_Grayscale16
+            || i == QImage::Format_CMYK32) {
             continue;
         }
         for (int j = QImage::Format_RGB32; j < QImage::NImageFormats; ++j) {
             if (j == QImage::Format_Alpha8
                 || j == QImage::Format_Grayscale8
-                || j == QImage::Format_Grayscale16) {
+                || j == QImage::Format_Grayscale16
+                || j == QImage::Format_CMYK32) {
                 continue;
             }
             if (i == j)
@@ -3345,7 +3352,8 @@ void tst_QImage::invertPixelsRGB_data()
     for (int i = QImage::Format_RGB32; i < QImage::NImageFormats; ++i) {
         if (i == QImage::Format_Alpha8
             || i == QImage::Format_Grayscale8
-            || i == QImage::Format_Grayscale16) {
+            || i == QImage::Format_Grayscale16
+            || i == QImage::Format_CMYK32) {
             continue;
         }
         QTest::addRow("%s", formatToString(QImage::Format(i)).data()) << QImage::Format(i);

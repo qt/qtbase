@@ -4,6 +4,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qcolortransform_p.h>
 #include <private/qcolortrclut_p.h>
+#include <private/qcmyk_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qendian_p.h>
 #include <private/qpixellayout_p.h>
@@ -2454,6 +2455,34 @@ static bool convert_Grayscale8_to_Indexed8_inplace(QImageData *data, Qt::ImageCo
     return true;
 }
 
+template <bool SourceIsPremultiplied>
+static void convert_ARGB32_to_CMYK32(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(src->format == QImage::Format_RGB32 ||
+             src->format == QImage::Format_ARGB32 ||
+             src->format == QImage::Format_ARGB32_Premultiplied);
+    Q_ASSERT(dest->format == QImage::Format_CMYK32);
+    Q_ASSERT(src->width == dest->width);
+    Q_ASSERT(src->height == dest->height);
+
+    const uchar *src_data = src->data;
+    uchar *dest_data = dest->data;
+    for (int y = 0; y < src->height; ++y) {
+        const QRgb *srcRgba = reinterpret_cast<const QRgb *>(src_data);
+        uint *destCmyk = reinterpret_cast<uint *>(dest_data);
+
+        for (int x = 0; x < src->width; ++x) {
+            QRgb sourcePixel = srcRgba[x];
+            if constexpr (SourceIsPremultiplied)
+                sourcePixel = qUnpremultiply(sourcePixel);
+
+            destCmyk[x] = QCmyk32::fromRgba(sourcePixel).toUint();
+        }
+
+        src_data += src->bytes_per_line;;
+        dest_data += dest->bytes_per_line;
+    }
+}
 
 // first index source, second dest
 Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormats] = {};
@@ -2589,6 +2618,11 @@ static void qInitImageConversions()
 
     qimage_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4] = convert_passthrough;
     qimage_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4_Premultiplied] = convert_passthrough;
+
+    qimage_converter_map[QImage::Format_CMYK32][QImage::Format_CMYK32] = convert_passthrough;
+    qimage_converter_map[QImage::Format_RGB32][QImage::Format_CMYK32] = convert_ARGB32_to_CMYK32<false>;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_CMYK32] = convert_ARGB32_to_CMYK32<false>;
+    qimage_converter_map[QImage::Format_ARGB32_Premultiplied][QImage::Format_CMYK32] = convert_ARGB32_to_CMYK32<true>;
 
     // Inline converters:
     qimage_inplace_converter_map[QImage::Format_Indexed8][QImage::Format_Grayscale8] =

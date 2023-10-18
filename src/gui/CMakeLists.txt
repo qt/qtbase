@@ -170,6 +170,7 @@ qt_internal_add_module(Gui
         painting/qcolortrclut.cpp painting/qcolortrclut_p.h
         painting/qcompositionfunctions.cpp
         painting/qcosmeticstroker.cpp painting/qcosmeticstroker_p.h
+        painting/qcmyk_p.h
         painting/qdatabuffer_p.h
         painting/qdrawhelper_p.h
         painting/qdrawhelper_x86_p.h

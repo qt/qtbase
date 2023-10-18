@@ -173,6 +173,7 @@ const char *PaintCommands::imageFormatTable[] = {
     "RGBx32FPx4",
     "RGBA32FPx4",
     "RGBA32FPx4_Premultiplied",
+    "CMYK32",
 };
 
 const char *PaintCommands::renderHintTable[] = {

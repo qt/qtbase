@@ -304,6 +304,7 @@ bool QImageData::checkForAlphaPixels() const
     case QImage::Format_RGBX64:
     case QImage::Format_RGBX16FPx4:
     case QImage::Format_RGBX32FPx4:
+    case QImage::Format_CMYK32:
         break;
     case QImage::Format_Invalid:
     case QImage::NImageFormats:
@@ -360,7 +361,7 @@ bool QImageData::checkForAlphaPixels() const
     refer to the \l{How to Create Qt Plugins}{Plugin HowTo}.
 
     \warning Painting on a QImage with the format
-    QImage::Format_Indexed8 is not supported.
+    QImage::Format_Indexed8 or QImage::Format_CMYK32 is not supported.
 
     \tableofcontents
 
@@ -742,8 +743,9 @@ bool QImageData::checkForAlphaPixels() const
     \value Format_RGBA32FPx4 The image is stored using a 4 32-bit floating point RGBA format (32FP-32FP-32FP-32FP). (added in Qt 6.2)
     \value Format_RGBA32FPx4_Premultiplied    The image is stored using a premultiplied 4 32-bit floating point
                              RGBA format (32FP-32FP-32FP-32FP). (added in Qt 6.2)
+    \value Format_CMYK32     The image is stored using a 32 bit CMYK format (0xCCMMYYKK). (added in Qt 6.8)
 
-    \note Drawing into a QImage with QImage::Format_Indexed8 is not
+    \note Drawing into a QImage with format QImage::Format_Indexed8 or QImage::Format_CMYK32 is not
     supported.
 
     \note Avoid most rendering directly to most of these formats using QPainter. Rendering
@@ -5726,6 +5728,19 @@ static constexpr QPixelFormat pixelformats[] = {
                      /*ALPHA POSITION*/    QPixelFormat::AtEnd,
                      /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
                      /*INTERPRETATION*/    QPixelFormat::FloatingPoint,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_CMYK32:
+        QPixelFormat(QPixelFormat::CMYK,
+                     /*RED*/                8,
+                     /*GREEN*/              8,
+                     /*BLUE*/               8,
+                     /*FOURTH*/             8,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              0,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
                      /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
 };
 static_assert(sizeof(pixelformats) / sizeof(*pixelformats) == QImage::NImageFormats);
