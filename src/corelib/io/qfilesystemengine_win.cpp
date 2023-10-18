@@ -390,12 +390,6 @@ static QBasicAtomicInt qt_ntfs_permission_lookup_v2 = Q_BASIC_ATOMIC_INITIALIZER
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 
-/*!
-    \internal
-
-    Returns true if the check was previously enabled.
-*/
-
 bool qEnableNtfsPermissionChecks() noexcept
 {
     return qt_ntfs_permission_lookup_v2.fetchAndAddRelaxed(1)
@@ -403,24 +397,12 @@ QT_IF_DEPRECATED_SINCE(6, 6, /*nothing*/, + qt_ntfs_permission_lookup)
         != 0;
 }
 
-/*!
-    \internal
-
-    Returns true if the check is disabled, i.e. there are no more users.
-*/
-
 bool qDisableNtfsPermissionChecks() noexcept
 {
     return qt_ntfs_permission_lookup_v2.fetchAndSubRelaxed(1)
 QT_IF_DEPRECATED_SINCE(6, 6, /*nothing*/, + qt_ntfs_permission_lookup)
         == 1;
 }
-
-/*!
-    \internal
-
-    Returns true if the check is enabled.
-*/
 
 bool qAreNtfsPermissionChecksEnabled() noexcept
 {

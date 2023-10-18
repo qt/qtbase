@@ -1250,6 +1250,107 @@ qint64 QFile::size() const
 */
 
 
+/*!
+    \class QNtfsPermissionCheckGuard
+    \since 6.6
+    \inmodule QtCore
+    \brief The QNtfsPermissionCheckGuard class is a RAII class to manage NTFS
+    permission checking.
+
+    \ingroup io
+
+    For performance reasons, QFile, QFileInfo, and related classes do not
+    perform full ownership and permission (ACL) checking on NTFS file systems
+    by default. During the lifetime of any instance of this class, that
+    default is overridden and advanced checking is performed. This provides
+    a safe and easy way to manage enabling and disabling this change to the
+    default behavior.
+
+    Example:
+
+    \snippet ntfsp.cpp raii
+
+    This class is available only on Windows.
+
+    \section1 qt_ntfs_permission_lookup
+
+    Prior to Qt 6.6, the user had to directly manipulate the global variable
+    \c qt_ntfs_permission_lookup. However, this was a non-atomic global
+    variable and as such it was prone to data races.
+
+    The variable \c qt_ntfs_permission_lookup is therefore deprecated since Qt
+    6.6.
+*/
+
+/*!
+    \fn QNtfsPermissionCheckGuard::QNtfsPermissionCheckGuard()
+
+    Creates a guard and calls the function qEnableNtfsPermissionChecks().
+*/
+
+/*!
+    \fn QNtfsPermissionCheckGuard::~QNtfsPermissionCheckGuard()
+
+    Destroys the guard and calls the function qDisableNtfsPermissionChecks().
+*/
+
+
+/*!
+    \fn bool qEnableNtfsPermissionChecks()
+    \since 6.6
+    \threadsafe
+    \relates QNtfsPermissionCheckGuard
+
+    Enables permission checking on NTFS file systems. Returns \c true if the check
+    was already enabled before the call to this function, meaning that there
+    are other users.
+
+    This function is only available on Windows and makes the direct
+    manipulation of \l qt_ntfs_permission_lookup obsolete.
+
+    This is a low-level function, please consider the RAII class
+    \l QNtfsPermissionCheckGuard instead.
+
+    \note The thread-safety of this function holds only as long as there are no
+    concurrent updates to \l qt_ntfs_permission_lookup.
+*/
+
+/*!
+    \fn bool qDisableNtfsPermissionChecks()
+    \since 6.6
+    \threadsafe
+    \relates QNtfsPermissionCheckGuard
+
+    Disables permission checking on NTFS file systems. Returns \c true if the
+    check is disabled, meaning that there are no more users.
+
+    This function is only available on Windows and makes the direct
+    manipulation of \l qt_ntfs_permission_lookup obsolete.
+
+    This is a low-level function and must (only) be called to match one earlier
+    call to qEnableNtfsPermissionChecks(). Please consider the RAII class
+    \l QNtfsPermissionCheckGuard instead.
+
+    \note The thread-safety of this function holds only as long as there are no
+    concurrent updates to \l qt_ntfs_permission_lookup.
+*/
+
+/*!
+    \fn bool qAreNtfsPermissionChecksEnabled()
+    \since 6.6
+    \threadsafe
+    \relates QNtfsPermissionCheckGuard
+
+    Checks the status of the permission checks on NTFS file systems. Returns
+    \c true if the check is enabled.
+
+    This function is only available on Windows and makes the direct
+    manipulation of \l qt_ntfs_permission_lookup obsolete.
+
+    \note The thread-safety of this function holds only as long as there are no
+    concurrent updates to \l qt_ntfs_permission_lookup.
+*/
+
 QT_END_NAMESPACE
 
 #ifndef QT_NO_QOBJECT
