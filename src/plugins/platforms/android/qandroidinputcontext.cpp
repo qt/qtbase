@@ -563,6 +563,11 @@ void QAndroidInputContext::updateSelectionHandles()
     bool readOnly = readOnlyVariant.toBool();
     QPlatformWindow *qPlatformWindow = qGuiApp->focusWindow()->handle();
 
+    if (!readOnly && ((m_handleMode & 0xff) == Hidden)) {
+        QtAndroidInput::updateHandles(Hidden);
+        return;
+    }
+
     if ( cpos == anchor && (!readOnlyVariant.isValid() || readOnly)) {
         QtAndroidInput::updateHandles(Hidden);
         return;
@@ -589,9 +594,8 @@ void QAndroidInputContext::updateSelectionHandles()
         if (!query.value(Qt::ImSurroundingText).toString().isEmpty())
             buttons |= EditContext::SelectAllButton;
         QtAndroidInput::updateHandles(m_handleMode, editMenuPoint, buttons, cursorPointGlobal);
-        // The VK is hidden, reset the timer
-        if (m_hideCursorHandleTimer.isActive())
-            m_hideCursorHandleTimer.start();
+        m_hideCursorHandleTimer.start();
+
         return;
     }
 
