@@ -51,9 +51,16 @@ instructions:
       condition: property
       property: host.os
       equals_value: Windows
+
   - type: EnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: "-V"
+    # Keep the testrun quiet for ASAN testruns, since there are FAILs happening all over the place
+    disable_if:
+      condition: property
+      property: features
+      contains_value: UseAddressSanitizer
+
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: " --stop-on-failure"
