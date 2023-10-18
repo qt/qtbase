@@ -51,17 +51,41 @@ typedef QHash<QByteArray, QTzTimeZone> QTzTimeZoneHash;
 
 static bool isTzFile(const QString &name);
 
+// Open a named file under the zone info directory:
+static bool openZoneInfo(QString name, QFile *file)
+{
+    // At least on Linux / glibc (see man 3 tzset), $TZDIR overrides the system
+    // default location for zone info:
+    const QString tzdir = qEnvironmentVariable("TZDIR");
+    if (!tzdir.isEmpty()) {
+        file->setFileName(QDir(tzdir).filePath(name));
+        if (file->open(QIODevice::ReadOnly))
+            return true;
+    }
+    // Try modern system path first:
+    constexpr auto zoneShare = "/usr/share/zoneinfo/"_L1;
+    if (tzdir != zoneShare && tzdir != zoneShare.chopped(1)) {
+        file->setFileName(zoneShare + name);
+        if (file->open(QIODevice::ReadOnly))
+            return true;
+    }
+    // Fall back to legacy system path:
+    constexpr auto zoneLib = "/usr/lib/zoneinfo/"_L1;
+    if (tzdir != zoneLib && tzdir != zoneLib.chopped(1)) {
+        file->setFileName(zoneShare + name);
+        if (file->open(QIODevice::ReadOnly))
+            return true;
+    }
+    return false;
+}
+
 // Parse zone.tab table for territory information, read directories to ensure we
 // find all installed zones (many are omitted from zone.tab; even more from
 // zone1970.tab).
 static QTzTimeZoneHash loadTzTimeZones()
 {
-    QString path = QStringLiteral("/usr/share/zoneinfo/zone.tab");
-    if (!QFile::exists(path))
-        path = QStringLiteral("/usr/lib/zoneinfo/zone.tab");
-
-    QFile tzif(path);
-    if (!tzif.open(QIODevice::ReadOnly))
+    QFile tzif;
+    if (!openZoneInfo("zone.tab"_L1, &tzif))
         return QTzTimeZoneHash();
 
     QTzTimeZoneHash zonesHash;
@@ -91,6 +115,7 @@ static QTzTimeZoneHash loadTzTimeZones()
         }
     }
 
+    const QString path = tzif.fileName();
     const qsizetype cut = path.lastIndexOf(u'/');
     Q_ASSERT(cut > 0);
     const QDir zoneDir = QDir(path.first(cut));
@@ -761,21 +786,14 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
         tzif.setFileName(QStringLiteral("/etc/localtime"));
         if (!tzif.open(QIODevice::ReadOnly))
             return ret;
-    } else {
-        // Open named tz, try modern path first, if fails try legacy path
-        tzif.setFileName("/usr/share/zoneinfo/"_L1 + QString::fromLocal8Bit(ianaId));
-        if (!tzif.open(QIODevice::ReadOnly)) {
-            tzif.setFileName("/usr/lib/zoneinfo/"_L1 + QString::fromLocal8Bit(ianaId));
-            if (!tzif.open(QIODevice::ReadOnly)) {
-                // ianaId may be a POSIX rule, taken from $TZ or /etc/TZ
-                auto check = validatePosixRule(ianaId);
-                if (check.isValid) {
-                    ret.m_hasDst = check.hasDst;
-                    ret.m_posixRule = ianaId;
-                }
-                return ret;
-            }
+    } else if (!openZoneInfo(QString::fromLocal8Bit(ianaId), &tzif)) {
+        // ianaId may be a POSIX rule, taken from $TZ or /etc/TZ
+        auto check = validatePosixRule(ianaId);
+        if (check.isValid) {
+            ret.m_hasDst = check.hasDst;
+            ret.m_posixRule = ianaId;
         }
+        return ret;
     }
 
     QDataStream ds(&tzif);
@@ -1317,7 +1335,8 @@ private:
     {
         // On most distros /etc/localtime is a symlink to a real file so extract
         // name from the path
-        const auto zoneinfo = "/zoneinfo/"_L1;
+        const QString tzdir = qEnvironmentVariable("TZDIR");
+        constexpr auto zoneinfo = "/zoneinfo/"_L1;
         QString path = QStringLiteral("/etc/localtime");
         long iteration = getSymloopMax();
         // Symlink may point to another symlink etc. before being under zoneinfo/
@@ -1325,9 +1344,15 @@ private:
         // symlink, like America/Montreal pointing to America/Toronto
         do {
             path = QFile::symLinkTarget(path);
-            int index = path.indexOf(zoneinfo);
-            if (index >= 0) // Found zoneinfo file; extract zone name from path:
-                return QStringView{ path }.mid(index + zoneinfo.size()).toUtf8();
+            // If it's a zoneinfo file, extract the zone name from its path:
+            int index = tzdir.isEmpty() ? -1 : path.indexOf(tzdir);
+            if (index >= 0) {
+                const auto tail = QStringView{ path }.sliced(index + tzdir.size()).toUtf8();
+                return tail.startsWith(u'/') ? tail.sliced(1) : tail;
+            }
+            index = path.indexOf(zoneinfo);
+            if (index >= 0)
+                return QStringView{ path }.sliced(index + zoneinfo.size()).toUtf8();
         } while (!path.isEmpty() && --iteration > 0);
 
         return QByteArray();

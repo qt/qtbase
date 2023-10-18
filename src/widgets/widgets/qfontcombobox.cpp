@@ -3,9 +3,9 @@
 
 #include "qfontcombobox.h"
 
+#include <qabstractitemdelegate.h>
 #include <qaccessible.h>
 #include <qstringlistmodel.h>
-#include <qitemdelegate.h>
 #include <qlistview.h>
 #include <qpainter.h>
 #include <qevent.h>

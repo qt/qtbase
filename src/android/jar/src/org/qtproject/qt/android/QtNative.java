@@ -581,7 +581,7 @@ public class QtNative
         if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
             sendMouseEvent(event, id);
         } else if (m_tabletEventSupported && pointerType != 0) {
-            tabletEvent(id, event.getDeviceId(), event.getEventTime(), event.getAction(), pointerType,
+            tabletEvent(id, event.getDeviceId(), event.getEventTime(), event.getActionMasked(), pointerType,
                 event.getButtonState(), event.getX(), event.getY(), event.getPressure());
         } else {
             touchBegin(id);

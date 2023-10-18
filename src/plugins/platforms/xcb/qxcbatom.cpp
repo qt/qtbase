@@ -111,6 +111,7 @@ static const char *xcb_atomnames = {
     "_NET_WM_WINDOW_TYPE_NORMAL\0"
     "_KDE_NET_WM_WINDOW_TYPE_OVERRIDE\0"
 
+    "_KDE_NET_WM_DESKTOP_FILE\0"
     "_KDE_NET_WM_FRAME_STRUT\0"
     "_NET_FRAME_EXTENTS\0"
 
@@ -196,6 +197,7 @@ static const char *xcb_atomnames = {
     "_COMPIZ_DECOR_REQUEST\0"
     "_COMPIZ_DECOR_DELETE_PIXMAP\0"
     "_COMPIZ_TOOLKIT_ACTION\0"
+    "_GTK_APPLICATION_ID\0"
     "_GTK_LOAD_ICONTHEMES\0"
     "AT_SPI_BUS\0"
     "EDID\0"

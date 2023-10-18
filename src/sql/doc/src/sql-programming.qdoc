@@ -496,11 +496,11 @@
     submitted.
 
     The items in the view are rendered using a delegate. The default
-    delegate, QItemDelegate, handles the most common data types (\c
+    delegate, QStyledItemDelegate, handles the most common data types (\c
     int, QString, QImage, etc.). The delegate is also responsible for
     providing editor widgets (e.g., a combobox) when the user starts
     editing an item in the view. You can create your own delegates by
-    subclassing QAbstractItemDelegate or QItemDelegate. See
+    subclassing QAbstractItemDelegate or QStyledItemDelegate. See
     \l{Model/View Programming} for more information.
 
     QSqlTableModel is optimized to operate on a single table at a

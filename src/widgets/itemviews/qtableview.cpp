@@ -4,7 +4,7 @@
 #include "qtableview.h"
 
 #include <qheaderview.h>
-#include <qitemdelegate.h>
+#include <qabstractitemdelegate.h>
 #include <qapplication.h>
 #include <qpainter.h>
 #include <qstyle.h>

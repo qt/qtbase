@@ -3,6 +3,7 @@
 
 /*!
     \example threads/waitconditions
+    \examplecategory {Data Processing & I/O}
     \title Producer and Consumer using Wait Conditions
     \ingroup qtconcurrent-mtexamples
 

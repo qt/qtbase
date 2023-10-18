@@ -34,3 +34,27 @@ while (new_data_available()) {
     encoded += fromUtf16(chunk);
 }
 //! [3]
+
+{
+//! [4]
+QByteArray encodedString = "...";
+auto toUtf16 = QStringDecoder(QStringDecoder::Utf8);
+auto data = toUtf16(encodedString); // data's type is QStringDecoder::EncodedData<const QByteArray &>
+QString string = toUtf16(encodedString); // Implicit conversion to QString
+
+// Here you have to cast "data" to QString
+auto func = [&]() { return !toUtf16.hasError() ? QString(data) : u"foo"_s; }
+//! [4]
+}
+
+{
+//! [5]
+QString string = "...";
+auto fromUtf16 = QStringEncoder(QStringEncoder::Utf8);
+auto data = fromUtf16(string); // data's type is QStringEncoder::DecodedData<const QString &>
+QByteArray encodedString = fromUtf16(string); // Implicit conversion to QByteArray
+
+// Here you have to cast "data" to QByteArray
+auto func = [&]() { return !fromUtf16.hasError() ? QByteArray(data) : "foo"_ba; }
+//! [5]
+}

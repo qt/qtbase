@@ -115,7 +115,7 @@
     \section1 Delegate Class Definition and Implementation
 
     The delegate we use to mediate interaction between the widget mapper and
-    the input widgets is a small QItemDelegate subclass:
+    the input widgets is a small QStyledItemDelegate subclass:
 
     \snippet sqlwidgetmapper/delegate.h Delegate class definition
 
@@ -126,7 +126,7 @@
     Since we only provide an empty implementation of the constructor, we
     concentrate on the other two functions.
 
-    The \l{QItemDelegate::}{setEditorData()} implementation takes the data
+    The \l{QStyledItemDelegate::}{setEditorData()} implementation takes the data
     referred to by the model index supplied and processes it according to
     the presence of a \c currentIndex property in the editor widget:
 
@@ -138,10 +138,10 @@
     values needed for the \c currentIndex property.
 
     As a result, instead of showing "0", "1" or "2" in the combo box, one of
-    its predefined set of items is shown. We call QItemDelegate::setEditorData()
+    its predefined set of items is shown. We call QStyledItemDelegate::setEditorData()
     for widgets without the \c currentIndex property.
 
-    The \l{QItemDelegate::}{setModelData()} implementation performs the reverse
+    The \l{QStyledItemDelegate::}{setModelData()} implementation performs the reverse
     process, taking the value stored in the widget's \c currentIndex property
     and storing it back in the model:
 

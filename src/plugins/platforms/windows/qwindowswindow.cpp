@@ -947,7 +947,6 @@ QWindowsWindowData
 
     result.geometry = obtainedGeometry;
     result.restoreGeometry = frameGeometry(result.hwnd, topLevel);
-    result.preMoveGeometry = obtainedGeometry;
     result.fullFrameMargins = context->margins;
     result.embedded = embedded;
     result.hasFrame = hasFrame;
@@ -2164,56 +2163,11 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
     }
 }
 
-QWindow *QWindowsWindow::topTransientOf(QWindow *w)
-{
-    while (QWindow *transientParent = w->transientParent())
-        w = transientParent;
-    return w;
-}
-
-void QWindowsWindow::moveTransientChildren()
-{
-    // We need the topmost Transient parent since it is the window that will initiate
-    // the chain of moves, and is the only one with an already up to date DPI, which we
-    // need for the scaling.
-    const QWindowsWindow *topTransient = QWindowsWindow::windowsWindowOf(topTransientOf(window()));
-
-    const QWindow *currentWindow = window();
-    const QWindowList allWindows = QGuiApplication::allWindows();
-    for (QWindow *w : allWindows) {
-        if (w->transientParent() == currentWindow && w != currentWindow && w->isVisible()) {
-            QWindowsWindow *transientChild = QWindowsWindow::windowsWindowOf(w);
-
-            RECT oldChildPos{};
-            GetWindowRect(transientChild->handle(), &oldChildPos);
-            const RECT oldParentPos = RECTfromQRect(preMoveRect());
-
-            const qreal scale =
-                    QHighDpiScaling::roundScaleFactor(qreal(topTransient->savedDpi()) / QWindowsScreen::baseDpi) /
-                    QHighDpiScaling::roundScaleFactor(qreal(transientChild->savedDpi()) / QWindowsScreen::baseDpi);
-
-            const RECT offset =
-                    RECTfromQRect(QRect(scale * (oldChildPos.left - oldParentPos.left),
-                                        scale * (oldChildPos.top - oldParentPos.top), 0, 0));
-            const RECT newParentPos = RECTfromQRect(m_data.geometry);
-            const RECT newChildPos { newParentPos.left + offset.left,
-                                     newParentPos.top + offset.top,
-                                     transientChild->geometry().width(),
-                                     transientChild->geometry().height() };
-
-            SetWindowPos(transientChild->handle(), nullptr, newChildPos.left, newChildPos.top,
-                         newChildPos.right, newChildPos.bottom, SWP_NOZORDER | SWP_NOACTIVATE);
-        }
-    }
-}
-
 void QWindowsWindow::handleMoved()
 {
-    setPreMoveRect(geometry());
     // Minimize/Set parent can send nonsensical move events.
     if (!IsIconic(m_data.hwnd) && !testFlag(WithinSetParent))
         handleGeometryChange();
-    moveTransientChildren();
 }
 
 void QWindowsWindow::handleResized(int wParam, LPARAM lParam)

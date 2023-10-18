@@ -12,11 +12,15 @@
 #include "deviceeventcontroller_adaptor.h"
 #include "atspi/atspi-constants.h"
 
+#if __has_include(<xcb/xproto.h>)
 #include <xcb/xproto.h>
+#endif
 
 //#define KEYBOARD_DEBUG
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::Literals::StringLiterals;
 
 /*!
     \class QSpiApplicationAdaptor
@@ -125,9 +129,13 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
         de.modifiers = 0;
         if ((keyEvent->modifiers() & Qt::ShiftModifier) && (keyEvent->key() != Qt::Key_Shift))
             de.modifiers |= 1 << ATSPI_MODIFIER_SHIFT;
-        // TODO rather introduce Qt::CapslockModifier into KeyboardModifier
-        if (keyEvent->nativeModifiers() & XCB_MOD_MASK_LOCK )
-            de.modifiers |= 1 << ATSPI_MODIFIER_SHIFTLOCK;
+#ifdef XCB_MOD_MASK_LOCK
+        if (QGuiApplication::platformName().startsWith("xcb"_L1)) {
+            // TODO rather introduce Qt::CapslockModifier into KeyboardModifier
+            if (keyEvent->nativeModifiers() & XCB_MOD_MASK_LOCK )
+                de.modifiers |= 1 << ATSPI_MODIFIER_SHIFTLOCK;
+        }
+#endif
         if ((keyEvent->modifiers() & Qt::ControlModifier) && (keyEvent->key() != Qt::Key_Control))
             de.modifiers |= 1 << ATSPI_MODIFIER_CONTROL;
         if ((keyEvent->modifiers() & Qt::AltModifier) && (keyEvent->key() != Qt::Key_Alt))

@@ -3,7 +3,7 @@
 #include "qtreeview.h"
 
 #include <qheaderview.h>
-#include <qitemdelegate.h>
+#include <qabstractitemdelegate.h>
 #include <qapplication.h>
 #include <qscrollbar.h>
 #include <qpainter.h>

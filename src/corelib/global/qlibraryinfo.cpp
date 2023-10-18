@@ -475,6 +475,7 @@ QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo
         "Examples", "examples",
         "Tests", "tests"
     );
+    [[maybe_unused]]
     constexpr QByteArrayView dot{"."};
 
     LocationInfo result;
@@ -743,7 +744,7 @@ extern "C" void qt_core_boilerplate() __attribute__((force_align_arg_pointer));
 void qt_core_boilerplate()
 {
     printf("This is the QtCore library version %s\n"
-           "Copyright (C) 2016 The Qt Company Ltd.\n"
+           "Copyright (C) 2023 The Qt Company Ltd.\n"
            "Contact: http://www.qt.io/licensing/\n"
            "\n"
            "Installation prefix: %s\n"

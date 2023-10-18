@@ -656,7 +656,8 @@ extern "C" LRESULT QT_WIN_CALLBACK qDisplayChangeObserverWndProc(HWND hwnd, UINT
         if (QWindowsTheme *t = QWindowsTheme::instance())
             t->displayChanged();
         QWindowsWindow::displayChanged();
-        QWindowsContext::instance()->screenManager().handleScreenChanges();
+        if (auto *context = QWindowsContext::instance())
+            context->screenManager().handleScreenChanges();
     }
 
     return DefWindowProc(hwnd, message, wParam, lParam);

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 #include <QTableView>
 #include <QVBoxLayout>
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 #include <QItemEditorFactory>
 #include <QDoubleSpinBox>
 
@@ -38,7 +38,7 @@ LocaleWidget::LocaleWidget(QWidget *parent)
     m_model = new LocaleModel(this);
     m_view = new QTableView(this);
 
-    QItemDelegate *delegate = qobject_cast<QItemDelegate*>(m_view->itemDelegate());
+    QStyledItemDelegate *delegate = qobject_cast<QStyledItemDelegate*>(m_view->itemDelegate());
     Q_ASSERT(delegate != 0);
     static EditorFactory editor_factory;
     delegate->setItemEditorFactory(&editor_factory);

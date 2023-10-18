@@ -22,12 +22,20 @@ target_link_libraries(tst_manual_ios_assets PRIVATE
 )
 
 # Custom Info.plist
-set_target_properties(tst_manual_ios_assets
-    PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.ios.cmake.plist")
+if(IOS)
+    if(XCODE_VERSION AND XCODE_VERSION VERSION_LESS "14")
+        set(plist_path "${CMAKE_CURRENT_SOURCE_DIR}/Info.ios.cmake.xcode.13.0.plist")
+    else()
+        set(plist_path "${CMAKE_CURRENT_SOURCE_DIR}/Info.ios.cmake.xcode.14.3.plist")
+    endif()
+    set_target_properties(tst_manual_ios_assets
+        PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${plist_path}")
+endif()
 
 # Custom resources
 file(GLOB_RECURSE text_files CONFIGURE_DEPENDS "*.txt")
 if(text_files)
+    list(FILTER text_files EXCLUDE REGEX CMakeLists.txt)
     target_sources(tst_manual_ios_assets PRIVATE ${text_files})
     # On iOS the 'Resources' prefix is removed by Xcode because on iOS app bundles are shallow,
     # so the final location of the text file will be
@@ -40,22 +48,36 @@ if(text_files)
 endif()
 
 # App icons
-file(GLOB_RECURSE app_icons CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/appicon/AppIcon*.png")
-if(IOS AND app_icons)
-    target_sources(tst_manual_ios_assets PRIVATE ${app_icons})
-    set_source_files_properties(
-        ${app_icons}
-        PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-endif()
+# https://developer.apple.com/library/archive/qa/qa1686/_index.html
+# https://help.apple.com/xcode/mac/current/#/dev10510b1f7
+# https://web.archive.org/web/20180124234409/https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon/
+# https://doc.qt.io/qt-6/ios-platform-notes.html#icons
+# No need to copy the icons into the bundle manually when using Xcode 13+.
+# - rely on Xcode 13 to copy the needed icon files that are specified in the asset catalog (all the
+#   required ones should be specified manually)
+# - rely on Xcode 14 to generate the needed icon files based on the 1024x1024 sized image in the
+#   asset catalog
 
-# Asset catalog with images
+# Asset catalog with images and icons.
 if(IOS)
     enable_language(OBJCXX)
-    set(asset_catalog_path "${CMAKE_CURRENT_SOURCE_DIR}/Assets.xcassets")
+    if(XCODE_VERSION AND XCODE_VERSION VERSION_LESS "14")
+        set(asset_catalog_path "${CMAKE_CURRENT_SOURCE_DIR}/AssetsXcode13.0.xcassets")
+    else()
+        set(asset_catalog_path "${CMAKE_CURRENT_SOURCE_DIR}/AssetsXcode14.3.xcassets")
+    endif()
     target_sources(tst_manual_ios_assets PRIVATE "${asset_catalog_path}")
     set_source_files_properties(
         ${asset_catalog_path}
         PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+    # Make sure asset catalog compilation generates the needed app icons image sizes.
+    # This might not be needed in a future Qt version where qt_add_executable might do it
+    # automatically. Unclear how to do it cleanly though, because specifying the option when
+    # the asset catalog doesn't have an AppIcon set will cause a build failure.
+    set_target_properties(tst_manual_ios_assets PROPERTIES
+        XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME AppIcon)
+
     target_sources(tst_manual_ios_assets PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/utils.mm")
 endif()
 

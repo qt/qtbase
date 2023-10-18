@@ -58,6 +58,6 @@ private:
     bool *m_shutdown = nullptr;
 };
 
-#include "qctfplugin.moc"
-
 QT_END_NAMESPACE
+
+#include "qctfplugin.moc"

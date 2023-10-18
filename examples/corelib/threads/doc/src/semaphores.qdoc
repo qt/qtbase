@@ -3,6 +3,7 @@
 
 /*!
     \example threads/semaphores
+    \examplecategory {Data Processing & I/O}
     \title Producer and Consumer using Semaphores
     \ingroup qtconcurrent-mtexamples
 

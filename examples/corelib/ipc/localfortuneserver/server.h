@@ -6,7 +6,10 @@
 
 #include <QApplication>
 #include <QDialog>
+#include <QLabel>
+#include <QLineEdit>
 #include <QLocalServer>
+#include <QPushButton>
 
 class Server : public QDialog
 {
@@ -17,8 +20,17 @@ public:
 
 private:
     void sendFortune();
+    void toggleListenButton();
+    void listenToServer();
+    void stopListening();
+
     QLocalServer *server;
+    QLineEdit *hostLineEdit;
+    QLabel *statusLabel;
+    QPushButton *listenButton;
+    QPushButton *stopListeningButton;
     QStringList fortunes;
+    QString name;
 };
 
 #endif

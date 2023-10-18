@@ -8,6 +8,7 @@
 #include "androidjnimain.h"
 #include "qandroidplatformintegration.h"
 
+#include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QTouchEvent>
 #include <QPointer>
@@ -99,7 +100,7 @@ namespace QtAndroidInput
         QPoint globalPos(x,y);
         QWindow *tlw = topLevelWindowAt(globalPos);
         m_mouseGrabber = tlw;
-        QPoint localPos = tlw ? (globalPos - tlw->position()) : globalPos;
+        QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
         QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
                                                  Qt::MouseButtons(Qt::LeftButton),
                                                  Qt::LeftButton, QEvent::MouseButtonPress);
@@ -111,7 +112,8 @@ namespace QtAndroidInput
         QWindow *tlw = m_mouseGrabber.data();
         if (!tlw)
             tlw = topLevelWindowAt(globalPos);
-        QPoint localPos = tlw ? (globalPos -tlw->position()) : globalPos;
+
+        QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
         QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
                                                  Qt::MouseButtons(Qt::NoButton),
                                                  Qt::LeftButton, QEvent::MouseButtonRelease);
@@ -129,7 +131,7 @@ namespace QtAndroidInput
         QWindow *tlw = m_mouseGrabber.data();
         if (!tlw)
             tlw = topLevelWindowAt(globalPos);
-        QPoint localPos = tlw ? (globalPos-tlw->position()) : globalPos;
+        QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
         QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
                                                  Qt::MouseButtons(m_mouseGrabber ? Qt::LeftButton : Qt::NoButton),
                                                  Qt::NoButton, QEvent::MouseMove);
@@ -144,7 +146,7 @@ namespace QtAndroidInput
         QWindow *tlw = m_mouseGrabber.data();
         if (!tlw)
             tlw = topLevelWindowAt(globalPos);
-        QPoint localPos = tlw ? (globalPos-tlw->position()) : globalPos;
+        QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
         QPoint angleDelta(hdelta * 120, vdelta * 120);
 
         QWindowSystemInterface::handleWheelEvent(tlw,
@@ -167,7 +169,7 @@ namespace QtAndroidInput
         m_ignoreMouseEvents = true;
         QPoint globalPos(x,y);
         QWindow *tlw = topLevelWindowAt(globalPos);
-        QPoint localPos = tlw ? (globalPos-tlw->position()) : globalPos;
+        QPoint localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobal(globalPos) : globalPos;
 
         // Click right button if no other button is already pressed.
         if (!m_mouseGrabber) {
@@ -292,7 +294,7 @@ namespace QtAndroidInput
         QPointF globalPosF(x, y);
         QPoint globalPos((int)x, (int)y);
         QWindow *tlw = topLevelWindowAt(globalPos);
-        QPointF localPos = tlw ? (globalPosF - tlw->position()) : globalPosF;
+        QPointF localPos = tlw && tlw->handle() ? tlw->handle()->mapFromGlobalF(globalPosF) : globalPosF;
 
         // Galaxy Note with plain Android:
         // 0 1 0    stylus press
@@ -312,6 +314,7 @@ namespace QtAndroidInput
         Qt::MouseButtons buttons = Qt::NoButton;
         switch (action) {
         case 1:     // ACTION_UP
+        case 6:     // ACTION_POINTER_UP, happens if stylus is not the primary pointer
         case 212:   // stylus release while side-button held on Galaxy Note 4
             buttons = Qt::NoButton;
             break;

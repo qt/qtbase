@@ -5,7 +5,7 @@
 #include <QApplication>
 #include <QTableView>
 #include <QStandardItemModel>
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 #include <QDebug>
 #include <QComboBox>
 
@@ -16,10 +16,10 @@ public:
     ~ExampleEditor() { QApplication::instance()->quit(); }
 };
 
-class ExampleDelegate : public QItemDelegate
+class ExampleDelegate : public QStyledItemDelegate
 {
 public:
-    ExampleDelegate() : QItemDelegate()
+    ExampleDelegate() : QStyledItemDelegate()
     {
         m_editor = new ExampleEditor(0);
         m_combobox = new QComboBox(0);

@@ -12,7 +12,7 @@
 #if QT_CONFIG(tableview)
 #include <qtableview.h>
 #endif
-#include <qitemdelegate.h>
+#include <qabstractitemdelegate.h>
 #include <qmap.h>
 #if QT_CONFIG(menu)
 #include <qmenu.h>
