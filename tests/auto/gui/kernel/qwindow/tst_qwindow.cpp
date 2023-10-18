@@ -30,6 +30,7 @@ private slots:
     void create();
     void setParent();
     void setVisible();
+    void setVisibleThenCreate();
     void setVisibleFalseDoesNotCreateWindow();
     void eventOrderOnShow();
     void paintEvent();
@@ -237,6 +238,40 @@ void tst_QWindow::setVisible()
     i.setParent(&h);
     QVERIFY2(i.handle(), "Making a visible but not created child window child of a created window should create it");
     QVERIFY(QTest::qWaitForWindowExposed(&i));
+}
+
+class SurfaceCreatedWindow : public QWindow
+{
+    Q_OBJECT
+public:
+    using QWindow::QWindow;
+
+    bool eventFilter(QObject *o, QEvent *e) override
+    {
+        if (e->type() == QEvent::PlatformSurface) {
+            auto type = static_cast<QPlatformSurfaceEvent*>(e)->surfaceEventType();
+            if (type == QPlatformSurfaceEvent::SurfaceCreated)
+                ++surfaceCreatedEvents;
+        }
+        return false;
+    }
+
+    int surfaceCreatedEvents = 0;
+};
+
+void tst_QWindow::setVisibleThenCreate()
+{
+    QWindow parent;
+    parent.setObjectName("Parent");
+    SurfaceCreatedWindow child(&parent);
+    child.installEventFilter(&child);
+    child.setObjectName("Child");
+    child.setVisible(true);
+    child.create();
+    QCOMPARE(child.surfaceCreatedEvents, 1);
+    parent.setVisible(true);
+    QCOMPARE(child.surfaceCreatedEvents, 1);
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
 }
 
 void tst_QWindow::setVisibleFalseDoesNotCreateWindow()
