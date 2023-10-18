@@ -1094,6 +1094,32 @@ or the character \a ch
 */
 
 /*!
+    \fn bool QStringView::isLower() const
+    \since 6.7
+    Returns \c true if this view is identical to its lowercase folding.
+
+    Note that this does \e not mean that the string view does not contain
+    uppercase letters (some uppercase letters do not have a lowercase
+    folding; they are left unchanged by toString().toLower()).
+    For more information, refer to the Unicode standard, section 3.13.
+
+    \sa QChar::toLower(), isUpper()
+*/
+
+/*!
+    \fn bool QStringView::isUpper() const
+    \since 6.7
+    Returns \c true if this view is identical to its uppercase folding.
+
+    Note that this does \e not mean that the the string view does not contain
+    lowercase letters (some lowercase letters do not have a uppercase
+    folding; they are left unchanged by toString().toUpper()).
+    For more information, refer to the Unicode standard, section 3.13.
+
+    \sa QChar::toUpper(), isLower()
+*/
+
+/*!
     \fn QStringView::toWCharArray(wchar_t *array) const
     \since 5.14
 

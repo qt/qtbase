@@ -324,6 +324,11 @@ public:
     [[nodiscard]] bool isValidUtf16() const noexcept
     { return QtPrivate::isValidUtf16(*this); }
 
+    [[nodiscard]] bool isUpper() const noexcept
+    { return QtPrivate::isUpper(*this); }
+    [[nodiscard]] bool isLower() const noexcept
+    { return QtPrivate::isLower(*this); }
+
     [[nodiscard]] inline short toShort(bool *ok = nullptr, int base = 10) const;
     [[nodiscard]] inline ushort toUShort(bool *ok = nullptr, int base = 10) const;
     [[nodiscard]] inline int toInt(bool *ok = nullptr, int base = 10) const;

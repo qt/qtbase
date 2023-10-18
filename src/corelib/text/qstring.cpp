@@ -5416,6 +5416,27 @@ bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
     return foldCase(at(size() - 1)) == foldCase(c);
 }
 
+static bool checkCase(QStringView s, QUnicodeTables::Case c) noexcept
+{
+    QStringIterator it(s);
+    while (it.hasNext()) {
+        const char32_t uc = it.next();
+        if (qGetProp(uc)->cases[c].diff)
+            return false;
+    }
+    return true;
+}
+
+bool QtPrivate::isLower(QStringView s) noexcept
+{
+    return checkCase(s, QUnicodeTables::LowerCase);
+}
+
+bool QtPrivate::isUpper(QStringView s) noexcept
+{
+    return checkCase(s, QUnicodeTables::UpperCase);
+}
+
 /*!
     Returns \c true if the string is uppercase, that is, it's identical
     to its toUpper() folding.
@@ -5431,15 +5452,7 @@ bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
 */
 bool QString::isUpper() const
 {
-    QStringIterator it(*this);
-
-    while (it.hasNext()) {
-        const char32_t uc = it.next();
-        if (qGetProp(uc)->cases[QUnicodeTables::UpperCase].diff)
-            return false;
-    }
-
-    return true;
+    return QtPrivate::isUpper(qToStringViewIgnoringNull(*this));
 }
 
 /*!
@@ -5457,15 +5470,7 @@ bool QString::isUpper() const
  */
 bool QString::isLower() const
 {
-    QStringIterator it(*this);
-
-    while (it.hasNext()) {
-        const char32_t uc = it.next();
-        if (qGetProp(uc)->cases[QUnicodeTables::LowerCase].diff)
-            return false;
-    }
-
-    return true;
+    return QtPrivate::isLower(qToStringViewIgnoringNull(*this));
 }
 
 static QByteArray qt_convert_to_latin1(QStringView string);

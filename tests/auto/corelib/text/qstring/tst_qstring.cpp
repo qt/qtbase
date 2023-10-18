@@ -2944,10 +2944,12 @@ void tst_QString::isLower_isUpper()
     QFETCH(bool, isUpper);
 
     QCOMPARE(string.isLower(), isLower);
+    QCOMPARE(QStringView(string).isLower(), isLower);
     QCOMPARE(string.toLower() == string, isLower);
     QVERIFY(string.toLower().isLower());
 
     QCOMPARE(string.isUpper(), isUpper);
+    QCOMPARE(QStringView(string).isUpper(), isUpper);
     QCOMPARE(string.toUpper() == string, isUpper);
     QVERIFY(string.toUpper().isUpper());
 }
