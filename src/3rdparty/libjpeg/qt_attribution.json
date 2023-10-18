@@ -6,8 +6,8 @@
 
     "Description": "The Independent JPEG Group's JPEG software",
     "Homepage": "http://libjpeg-turbo.virtualgl.org/",
-    "Version": "3.0.0",
-    "DownloadLocation": "https://sourceforge.net/projects/libjpeg-turbo/files/3.0.0/libjpeg-turbo-3.0.0.tar.gz",
+    "Version": "3.0.1",
+    "DownloadLocation": "https://sourceforge.net/projects/libjpeg-turbo/files/3.0.1/libjpeg-turbo-3.0.1.tar.gz",
     "License": "Independent JPEG Group License and BSD 3-Clause \"New\" or \"Revised\" License and zlib License",
     "LicenseId": "IJG AND BSD-3-Clause AND Zlib",
     "LicenseFiles": [ "LICENSE", "ijg-license.txt", "zlib-license.txt"],
