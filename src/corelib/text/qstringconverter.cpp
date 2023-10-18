@@ -1387,7 +1387,6 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
 
     Q_ASSERT(uclen < INT_MAX); // ### FIXME
     Q_ASSERT(state);
-    Q_UNUSED(state); // ### Fixme
     if (state->flags & QStringConverter::Flag::Stateless) // temporary
         state = nullptr;
 
@@ -1401,15 +1400,47 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
     qsizetype outlen = buf.size();
     QByteArray mb;
 
-    int len;
+    if (state && state->remainingChars > 0) {
+        Q_ASSERT(state->remainingChars == 1);
+        // Let's try to decode the pending character
+        wchar_t wc[2] = { wchar_t(state->state_data[0]), ch[0] };
+        int len = WideCharToMultiByte(codePage, 0, wc, int(std::size(wc)), out, outlen, nullptr,
+                                      nullptr);
+        if (!len)
+            return {}; // Cannot recover, and I refuse to believe it was a size limitation
+        out += len;
+        outlen -= len;
+        ++ch;
+        --uclen;
+        state->remainingChars = 0;
+        state->state_data[0] = 0;
+        if (uclen == 0)
+            return QByteArrayView(buf.data(), len).toByteArray();
+    }
+
+    if (state && QChar::isHighSurrogate(ch[uclen - 1])) {
+        // We can handle a missing low surrogate at the end of the string,
+        // so if there is one, exclude it now and store it in the state.
+        state->remainingChars = 1;
+        state->state_data[0] = ch[uclen - 1];
+        --uclen;
+        if (uclen == 0)
+            return QByteArray();
+    }
+
+    Q_ASSERT(uclen > 0);
+
+    int len = 0;
     while (!(len = WideCharToMultiByte(codePage, 0, ch, int(uclen), out, int(outlen), nullptr,
                                        nullptr))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
             int neededLength = WideCharToMultiByte(codePage, 0, ch, int(uclen), nullptr, 0, nullptr,
                                                    nullptr);
-            mb.resize(neededLength);
-            out = mb.data();
+            const qsizetype currentLength = out - buf.data();
+            mb.resize(currentLength + neededLength);
+            memcpy(mb.data(), out, currentLength * sizeof(*out));
+            out = mb.data() + currentLength;
             outlen = neededLength;
             // and try again...
         } else {
@@ -1423,12 +1454,13 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
             break;
         }
     }
-    if (!len)
-        return QByteArray();
-    if (out == buf.data())
-        mb = QByteArray(buf.data(), len);
-    else
-        mb.resize(len);
+    auto end = out + len;
+    if (QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size())) {
+        if (end != buf.data()) // else: we return null-array
+            mb = QByteArrayView(buf.data(), end).toByteArray();
+    } else {
+        mb.truncate(end - mb.data());
+    }
     return mb;
 }
 #endif

@@ -2499,6 +2499,10 @@ void tst_QStringConverter::fromLocal8Bit_data()
     QTest::newRow("shiftJIS")
             << "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd\xa4\x90\xa2\x8a\x45\x81\x49"_ba
             << u"こんにちは､世界！"_s << SHIFT_JIS;
+
+    constexpr uint GB_18030 = 54936u;
+    QTest::newRow("GB-18030") << "\xc4\xe3\xba\xc3\xca\xc0\xbd\xe7\xa3\xa1"_ba << u"你好世界！"_s
+                              << GB_18030;
 }
 
 void tst_QStringConverter::fromLocal8Bit()
@@ -2595,6 +2599,7 @@ void tst_QStringConverter::toLocal8Bit()
     for (QChar c : utf16)
         result += QLocal8Bit::convertFromUnicode_sys(QStringView(&c, 1), codePage, &state);
     QCOMPARE(result, eightBit);
+    QCOMPARE(state.remainingChars, 0);
 }
 
 void tst_QStringConverter::toLocal8Bit_special_cases()
@@ -2604,20 +2609,33 @@ void tst_QStringConverter::toLocal8Bit_special_cases()
     constexpr uint UTF8 = 65001u;
     // Decode a 2-code unit character, but only provide 1 code unit at first:
     const char16_t a[] = u"𬽦";
-    QStringView firstHalf = QStringView(a, 1);
-    QByteArray result = QLocal8Bit::convertFromUnicode_sys(firstHalf, UTF8, &state);
-    QEXPECT_FAIL("", "We don't currently handle missing the low surrogate", Abort);
+    QStringView codeUnits = a;
+    QByteArray result = QLocal8Bit::convertFromUnicode_sys(codeUnits.first(1), UTF8, &state);
     QCOMPARE(result, QString());
     QVERIFY(result.isNull());
     QCOMPARE_GT(state.remainingChars, 0);
     // Then provide the second code unit:
-    QStringView secondHalf = QStringView(a + 1, 1);
-    result = QLocal8Bit::convertFromUnicode_sys(secondHalf, UTF8, &state);
+    result = QLocal8Bit::convertFromUnicode_sys(codeUnits.sliced(1), UTF8, &state);
     QCOMPARE(result, "\xf0\xac\xbd\xa6"_ba);
     QCOMPARE(state.remainingChars, 0);
 
     // Retain compat with the behavior for toLocal8Bit:
-    QCOMPARE(firstHalf.toLocal8Bit(), "?");
+    QCOMPARE(codeUnits.first(1).toLocal8Bit(), "?");
+
+    // Now do the same, but the second time we feed in a character, we also
+    // provide many more so the internal stack buffer is not large enough.
+    result.clear();
+    state.clear();
+    QString str = QStringView(a).toString().repeated(2048);
+    codeUnits = str;
+    result = QLocal8Bit::convertFromUnicode_sys(codeUnits.first(1), UTF8, &state);
+    QCOMPARE(result, QString());
+    QVERIFY(result.isNull());
+    QCOMPARE_GT(state.remainingChars, 0);
+    // Then we provide the rest of the string:
+    result = QLocal8Bit::convertFromUnicode_sys(codeUnits.sliced(1), UTF8, &state);
+    QCOMPARE(result.first(4), "\xf0\xac\xbd\xa6"_ba);
+    QCOMPARE(state.remainingChars, 0);
 }
 #endif // Q_OS_WIN
 
