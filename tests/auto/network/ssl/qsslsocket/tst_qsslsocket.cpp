@@ -166,9 +166,7 @@ private slots:
     void protocol();
     void protocolServerSide_data();
     void protocolServerSide();
-#if QT_CONFIG(openssl)
     void serverCipherPreferences();
-#endif
     void setCaCertificates();
     void setLocalCertificate();
     void localCertificateChain();
