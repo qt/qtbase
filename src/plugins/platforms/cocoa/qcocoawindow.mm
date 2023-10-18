@@ -346,6 +346,10 @@ void QCocoaWindow::setVisible(bool visible)
         // Make the NSView visible first, before showing the NSWindow (in case of top level windows)
         m_view.hidden = NO;
 
+        // Explicitly mark the view as needing display, as we may
+        // not have drawn anything to the view when it was hidden.
+        [m_view setNeedsDisplay:YES];
+
         if (isContentView()) {
             QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
