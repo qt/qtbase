@@ -21,6 +21,8 @@ my_name = os.path.basename(sys.argv[0])
 logging_format = my_name + " %(levelname)8s: %(message)s"
 L.basicConfig(format=logging_format, level=L.DEBUG)
 
+L.info("This test is wrapped with sanitizer-testrunner.py. FAIL results are being ignored! Only crashes and ASAN errors are caught.")
+
 proc = None
 if sys.argv[1] == "-f":            # hidden option to parse pre-existing files
     f = open(sys.argv[2], "r", errors="ignore")
