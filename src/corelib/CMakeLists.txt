@@ -1458,4 +1458,6 @@ qt_internal_extend_target(Core
     EXTRA_LINKER_SCRIPT_EXPORTS
         # QFutureInterfaceBase::setContinuation(std::function<void (QFutureInterfaceBase const&)>, QFutureInterfaceBasePrivate*)
         "_ZN20QFutureInterfaceBase15setContinuationE*P27QFutureInterfaceBasePrivate"
+        # QReadWriteLock::destroyRecursive(QReadWriteLockPrivate*)
+        "_ZN14QReadWriteLock16destroyRecursiveEP21QReadWriteLockPrivate"
 )
