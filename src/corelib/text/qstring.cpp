@@ -9070,26 +9070,6 @@ QString QtPrivate::argToQString(QLatin1StringView pattern, size_t n, const ArgBa
     return argToQStringImpl(pattern, n, args);
 }
 
-/*! \fn bool QString::isSimpleText() const
-
-    \internal
-*/
-bool QString::isSimpleText() const
-{
-    const char16_t *p = d.data();
-    const char16_t * const end = p + d.size;
-    while (p < end) {
-        char16_t uc = *p;
-        // sort out regions of complex text formatting
-        if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
-            return false;
-        }
-        p++;
-    }
-
-    return true;
-}
-
 /*! \fn bool QString::isRightToLeft() const
 
     Returns \c true if the string is read right to left.

@@ -964,8 +964,6 @@ public:
 
     inline bool isNull() const { return d->isNull(); }
 
-
-    bool isSimpleText() const;
     bool isRightToLeft() const;
     [[nodiscard]] bool isValidUtf16() const noexcept
     { return QStringView(*this).isValidUtf16(); }
