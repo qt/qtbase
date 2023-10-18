@@ -950,7 +950,7 @@ void QDBusXmlToCpp::writeAdaptor(const QString &filename,
            << "        \"\")\n"
               "public:\n"
               "    " << className << "(" << parent << " *parent);\n"
-              "    virtual ~" << className << "();\n\n";
+              "    ~" << className << "() override;\n\n";
 
         if (!parentClassName.isEmpty())
             hs << "    inline " << parent << " *parent() const\n"
