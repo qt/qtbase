@@ -3626,7 +3626,7 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
         it = std::remove_copy_if(first_match + 1, end, it, match);
         copy.d.size = std::distance(dst, it);
         copy.d.data()[copy.d.size] = u'\0';
-        *this = copy;
+        *this = std::move(copy);
     }
     return *this;
 }
