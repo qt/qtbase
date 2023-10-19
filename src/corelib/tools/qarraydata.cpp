@@ -145,18 +145,13 @@ static QArrayData *allocateData(qsizetype allocSize)
     return header;
 }
 
-
 namespace {
-// QArrayData with strictest alignment requirements supported by malloc()
-struct alignas(std::max_align_t) AlignedQArrayData : QArrayData
-{
-};
-
 struct AllocationResult {
     void *data;
     QArrayData *header;
 };
 }
+using QtPrivate::AlignedQArrayData;
 
 static inline AllocationResult
 allocateHelper(qsizetype objectSize, qsizetype alignment, qsizetype capacity,
@@ -172,6 +167,7 @@ allocateHelper(qsizetype objectSize, qsizetype alignment, qsizetype capacity,
         // Allocate extra (alignment - Q_ALIGNOF(AlignedQArrayData)) padding
         // bytes so we can properly align the data array. This assumes malloc is
         // able to provide appropriate alignment for the header -- as it should!
+        // Effectively, we allocate one QTypedArrayData<T>::AlignmentDummy.
         headerSize += alignment - headerAlignment;
     }
     Q_ASSERT(headerSize > 0);
