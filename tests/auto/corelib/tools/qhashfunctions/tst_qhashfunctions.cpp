@@ -106,7 +106,7 @@ void tst_QHashFunctions::consistent()
 
     // floats
     {
-        const/*expr broken: QTBUG-116079*/ qfloat16 f16 = -42.f;
+        const/*expr broken: QTBUG-116079*/ qfloat16 f16 = qfloat16(-42.f);
         const auto h16 = qHash(f16, seed);
         const auto h32 = qHash(float(f16), seed);
         const auto h64 = qHash(double(f16), seed);
