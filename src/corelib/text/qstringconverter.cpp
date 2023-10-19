@@ -1360,9 +1360,8 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
                 mb, mblen, wc.data(), wc.length()))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
-                const int wclen = MultiByteToWideChar(codePage, MB_PRECOMPOSED,
-                                    mb, mblen, 0, 0);
-                wc.resize(wclen);
+            const int wclen = MultiByteToWideChar(codePage, MB_PRECOMPOSED, mb, mblen, 0, 0);
+            wc.resize(wclen);
         } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
             //find the last non NULL character
             while (mblen > 1  && !(mb[mblen-1]))
