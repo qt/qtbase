@@ -5522,7 +5522,6 @@ static constexpr auto titleBarSizes = {16, 32, 48};
 static constexpr auto toolBarExtHSizes = {8, 16, 32};
 static constexpr auto toolBarExtVSizes = {5, 10, 20};
 static constexpr auto pngIconSizes = {16, 32, 128};
-static constexpr auto mediaIconSizes = {16, 32};
 #endif // imageformat_png
 
 /*! \reimp */
@@ -6044,25 +6043,25 @@ QIcon QCommonStylePrivate::iconFromResourceTheme(QCommonStyle::StandardPixmap st
         addIconFiles(u"stop-", {24, 32}, icon);
         break;
     case QStyle::SP_MediaPlay:
-        addIconFiles(u"media-play-", mediaIconSizes, icon);
+        addIconFiles(u"media-play-", pngIconSizes, icon);
         break;
     case QStyle::SP_MediaPause:
-        addIconFiles(u"media-pause-", mediaIconSizes, icon);
+        addIconFiles(u"media-pause-", pngIconSizes, icon);
         break;
     case QStyle::SP_MediaStop:
-        addIconFiles(u"media-stop-", mediaIconSizes, icon);
+        addIconFiles(u"media-stop-", pngIconSizes, icon);
         break;
     case QStyle::SP_MediaSeekForward:
-        addIconFiles(u"media-seek-forward-", mediaIconSizes, icon);
+        addIconFiles(u"media-seek-forward-", pngIconSizes, icon);
         break;
     case QStyle::SP_MediaSeekBackward:
-        addIconFiles(u"media-seek-backward-", mediaIconSizes, icon);
+        addIconFiles(u"media-seek-backward-", pngIconSizes, icon);
         break;
     case QStyle::SP_MediaSkipForward:
-        addIconFiles(u"media-skip-forward-", mediaIconSizes, icon);
+        addIconFiles(u"media-skip-forward-", pngIconSizes, icon);
         break;
     case QStyle::SP_MediaSkipBackward:
-        addIconFiles(u"media-skip-backward-", mediaIconSizes, icon);
+        addIconFiles(u"media-skip-backward-", pngIconSizes, icon);
         break;
     case QStyle::SP_MediaVolume:
         addIconFiles(u"media-volume-", {16}, icon);
