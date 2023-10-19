@@ -15,13 +15,14 @@
 #include <memory>
 #include <string>
 
+#include <QMimeData>
 QT_BEGIN_NAMESPACE
 
 namespace qstdweb {
     struct CancellationFlag;
 }
 
-class QMimeData;
+
 class QPoint;
 class QRect;
 
@@ -35,7 +36,7 @@ struct DataTransfer
     DataTransfer &operator=(const DataTransfer &other);
     DataTransfer &operator=(DataTransfer &&other);
 
-    QMimeData *toMimeDataWithFile() ;
+    QMimeData *toMimeDataWithFile(std::function<void(QMimeData &)> callback);
     QMimeData *toMimeDataPreview();
     void setDragImage(emscripten::val element, const QPoint &hotspot);
     void setData(std::string format, std::string data);

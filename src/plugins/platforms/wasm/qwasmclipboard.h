@@ -38,6 +38,7 @@ public:
     ProcessKeyboardResult processKeyboard(const KeyEvent &event);
     static void installEventHandlers(const emscripten::val &target);
     bool hasClipboardApi();
+    void sendClipboardData(emscripten::val event);
 
 private:
     void initClipboardPermissions();
