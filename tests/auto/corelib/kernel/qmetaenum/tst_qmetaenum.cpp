@@ -98,6 +98,10 @@ void tst_QMetaEnum::valuesToKeys()
 
     QMetaEnum me = QMetaEnum::fromType<Qt::WindowFlags>();
     QCOMPARE(me.valueToKeys(windowFlags), expected);
+    bool ok = false;
+    using U = Qt::WindowFlags::Int;
+    QCOMPARE(U(me.keysToValue(expected, &ok)), U(windowFlags));
+    QVERIFY(ok);
 }
 
 void tst_QMetaEnum::defaultConstructed()
