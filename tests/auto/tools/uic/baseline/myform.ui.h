@@ -74,7 +74,7 @@ public:
 
         gridLayout->addWidget(checkBox_2, 1, 1, 1, 1);
 
-        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem, 5, 0, 1, 1);
 

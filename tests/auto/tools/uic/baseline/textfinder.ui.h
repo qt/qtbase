@@ -77,7 +77,7 @@ public:
 
         vboxLayout->addWidget(textEdit);
 
-        spacerItem = new QSpacerItem(20, 16, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 16, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout->addItem(spacerItem);
 

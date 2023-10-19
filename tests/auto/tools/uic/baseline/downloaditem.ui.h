@@ -48,7 +48,7 @@ public:
         horizontalLayout->setObjectName("horizontalLayout");
         fileIcon = new QLabel(DownloadItem);
         fileIcon->setObjectName("fileIcon");
-        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(fileIcon->sizePolicy().hasHeightForWidth());
@@ -60,7 +60,7 @@ public:
         verticalLayout_2->setObjectName("verticalLayout_2");
         fileNameLabel = new SqueezeLabel(DownloadItem);
         fileNameLabel->setObjectName("fileNameLabel");
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Preferred);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(fileNameLabel->sizePolicy().hasHeightForWidth());
@@ -76,7 +76,7 @@ public:
 
         downloadInfoLabel = new SqueezeLabel(DownloadItem);
         downloadInfoLabel->setObjectName("downloadInfoLabel");
-        QSizePolicy sizePolicy2(QSizePolicy::Minimum, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy2(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Preferred);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(downloadInfoLabel->sizePolicy().hasHeightForWidth());
@@ -89,7 +89,7 @@ public:
 
         verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName("verticalLayout");
-        verticalSpacer = new QSpacerItem(17, 1, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer = new QSpacerItem(17, 1, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         verticalLayout->addItem(verticalSpacer);
 
@@ -109,7 +109,7 @@ public:
 
         verticalLayout->addWidget(openButton);
 
-        verticalSpacer_2 = new QSpacerItem(17, 5, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer_2 = new QSpacerItem(17, 5, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         verticalLayout->addItem(verticalSpacer_2);
 

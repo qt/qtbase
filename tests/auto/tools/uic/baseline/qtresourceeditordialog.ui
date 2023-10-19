@@ -59,7 +59,7 @@
           <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeType" >
-          <enum>QSizePolicy::Ignored</enum>
+          <enum>QSizePolicy::Policy::Ignored</enum>
          </property>
          <property name="sizeHint" >
           <size>

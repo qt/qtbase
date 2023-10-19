@@ -135,7 +135,7 @@ public:
 
         buttonLayout->addWidget(closeBut);
 
-        spacer1 = new QSpacerItem(20, 51, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacer1 = new QSpacerItem(20, 51, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         buttonLayout->addItem(spacer1);
 

@@ -144,7 +144,7 @@ public:
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName("hboxLayout");
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 
@@ -162,7 +162,7 @@ public:
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName("hboxLayout1");
-        spacerItem1 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(20, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout1->addItem(spacerItem1);
 

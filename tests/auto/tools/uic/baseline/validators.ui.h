@@ -99,7 +99,7 @@ public:
 
         hboxLayout->addWidget(localeSelector);
 
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 
@@ -140,7 +140,7 @@ public:
 
         minVal = new QSpinBox(groupBox);
         minVal->setObjectName("minVal");
-        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(1);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(minVal->sizePolicy().hasHeightForWidth());
@@ -183,7 +183,7 @@ public:
         vboxLayout2->setObjectName("vboxLayout2");
         ledWidget = new LEDWidget(frame);
         ledWidget->setObjectName("ledWidget");
-        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(ledWidget->sizePolicy().hasHeightForWidth());
@@ -204,7 +204,7 @@ public:
 
         vboxLayout1->addLayout(hboxLayout1);
 
-        spacerItem1 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem1 = new QSpacerItem(20, 20, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         vboxLayout1->addItem(spacerItem1);
 
@@ -332,7 +332,7 @@ public:
 
         vboxLayout3->addLayout(hboxLayout2);
 
-        spacerItem2 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem2 = new QSpacerItem(20, 20, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         vboxLayout3->addItem(spacerItem2);
 
@@ -344,7 +344,7 @@ public:
 
         vboxLayout->addWidget(groupBox_2);
 
-        spacerItem3 = new QSpacerItem(20, 111, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem3 = new QSpacerItem(20, 111, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout->addItem(spacerItem3);
 
@@ -354,7 +354,7 @@ public:
 #endif
         hboxLayout3->setContentsMargins(0, 0, 0, 0);
         hboxLayout3->setObjectName("hboxLayout3");
-        spacerItem4 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem4 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout3->addItem(spacerItem4);
 

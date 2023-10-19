@@ -92,11 +92,11 @@ public:
 
         gridLayout->addWidget(launchButton, 1, 1, 1, 1);
 
-        spacerItem = new QSpacerItem(101, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(101, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem, 1, 2, 1, 1);
 
-        spacerItem1 = new QSpacerItem(113, 16, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem1 = new QSpacerItem(113, 16, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         gridLayout->addItem(spacerItem1, 2, 1, 1, 1);
 
@@ -179,7 +179,7 @@ public:
 
         gridLayout1->addWidget(syncContentsButton, 3, 1, 1, 1);
 
-        spacerItem2 = new QSpacerItem(81, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem2 = new QSpacerItem(81, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout1->addItem(spacerItem2, 3, 2, 1, 1);
 

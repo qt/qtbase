@@ -149,7 +149,7 @@ public:
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName("hboxLayout");
-        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 
@@ -175,7 +175,7 @@ public:
 #endif
         gridLayout->setContentsMargins(5, 5, 5, 5);
         gridLayout->setObjectName("gridLayout");
-        spacerItem1 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem1 = new QSpacerItem(20, 20, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         gridLayout->addItem(spacerItem1, 3, 0, 1, 1);
 
@@ -211,7 +211,7 @@ public:
 
         hboxLayout1->addWidget(helpButton);
 
-        spacerItem2 = new QSpacerItem(61, 21, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem2 = new QSpacerItem(61, 21, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout1->addItem(spacerItem2);
 

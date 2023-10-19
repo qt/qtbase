@@ -99,7 +99,7 @@ public:
 
         gridLayout->addWidget(nameCombo, 0, 1, 1, 3);
 
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem, 1, 3, 1, 1);
 

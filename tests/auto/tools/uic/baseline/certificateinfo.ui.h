@@ -69,7 +69,7 @@ public:
 
         hboxLayout2 = new QHBoxLayout();
         hboxLayout2->setObjectName("hboxLayout2");
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout2->addItem(spacerItem);
 

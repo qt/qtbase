@@ -51,7 +51,7 @@ public:
         if (BookmarkDialog->objectName().isEmpty())
             BookmarkDialog->setObjectName("BookmarkDialog");
         BookmarkDialog->resize(450, 135);
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(BookmarkDialog->sizePolicy().hasHeightForWidth());
@@ -114,7 +114,7 @@ public:
         bookmarkWidget = new BookmarkWidget(BookmarkDialog);
         bookmarkWidget->setObjectName("bookmarkWidget");
         bookmarkWidget->setEnabled(true);
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Ignored);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Ignored);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(bookmarkWidget->sizePolicy().hasHeightForWidth());

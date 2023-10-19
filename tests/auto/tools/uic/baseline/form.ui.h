@@ -61,7 +61,7 @@ public:
 #endif
         vboxLayout->setContentsMargins(1, 1, 1, 1);
         vboxLayout->setObjectName("vboxLayout");
-        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout->addItem(spacerItem);
 
@@ -106,7 +106,7 @@ public:
 
         vboxLayout->addLayout(hboxLayout2);
 
-        spacerItem1 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem1 = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout->addItem(spacerItem1);
 

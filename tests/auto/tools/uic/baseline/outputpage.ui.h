@@ -37,13 +37,13 @@ public:
         OutputPage->resize(417, 242);
         gridLayout = new QGridLayout(OutputPage);
         gridLayout->setObjectName("gridLayout");
-        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         gridLayout->addItem(spacerItem, 0, 1, 1, 1);
 
         label = new QLabel(OutputPage);
         label->setObjectName("label");
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
@@ -53,7 +53,7 @@ public:
 
         projectLineEdit = new QLineEdit(OutputPage);
         projectLineEdit->setObjectName("projectLineEdit");
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(projectLineEdit->sizePolicy().hasHeightForWidth());
@@ -75,7 +75,7 @@ public:
 
         gridLayout->addWidget(collectionLineEdit, 2, 1, 1, 1);
 
-        spacerItem1 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem1 = new QSpacerItem(20, 20, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem1, 3, 1, 1, 1);
 
