@@ -55,7 +55,7 @@ public:
 
         horizontalLayout->addWidget(cleanupButton);
 
-        spacerItem = new QSpacerItem(58, 24, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(58, 24, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         horizontalLayout->addItem(spacerItem);
 
@@ -67,7 +67,7 @@ public:
 
         gridLayout->addWidget(itemCount, 1, 1, 1, 1);
 
-        horizontalSpacer = new QSpacerItem(148, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        horizontalSpacer = new QSpacerItem(148, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(horizontalSpacer, 1, 2, 1, 1);
 

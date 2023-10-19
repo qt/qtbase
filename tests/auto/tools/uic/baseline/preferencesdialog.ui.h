@@ -109,7 +109,7 @@ public:
 
         gridLayout->addWidget(m_removeTemplatePathButton, 1, 1, 1, 1);
 
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem, 1, 2, 1, 1);
 

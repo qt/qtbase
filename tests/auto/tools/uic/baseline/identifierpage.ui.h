@@ -40,7 +40,7 @@ public:
         IdentifierPage->resize(417, 242);
         gridLayout = new QGridLayout(IdentifierPage);
         gridLayout->setObjectName("gridLayout");
-        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         gridLayout->addItem(spacerItem, 0, 1, 1, 1);
 
@@ -49,11 +49,11 @@ public:
 
         gridLayout->addWidget(identifierCheckBox, 1, 0, 1, 3);
 
-        spacerItem1 = new QSpacerItem(161, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(161, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem1, 1, 3, 1, 1);
 
-        spacerItem2 = new QSpacerItem(30, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        spacerItem2 = new QSpacerItem(30, 20, QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(spacerItem2, 2, 0, 1, 1);
 
@@ -76,7 +76,7 @@ public:
 
         gridLayout->addWidget(fileNameButton, 3, 1, 1, 2);
 
-        spacerItem3 = new QSpacerItem(20, 31, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem3 = new QSpacerItem(20, 31, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem3, 4, 1, 1, 1);
 

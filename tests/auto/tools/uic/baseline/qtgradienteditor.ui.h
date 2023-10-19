@@ -127,7 +127,7 @@ public:
         frame = new QFrame(QtGradientEditor);
         frame->setObjectName("frame");
         frame->setGeometry(QRect(10, 69, 193, 150));
-        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(frame->sizePolicy().hasHeightForWidth());
@@ -204,7 +204,7 @@ public:
         zoomAllButton = new QToolButton(QtGradientEditor);
         zoomAllButton->setObjectName("zoomAllButton");
         zoomAllButton->setGeometry(QRect(279, 260, 72, 26));
-        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(zoomAllButton->sizePolicy().hasHeightForWidth());
@@ -220,7 +220,7 @@ public:
         frame_2 = new QFrame(QtGradientEditor);
         frame_2->setObjectName("frame_2");
         frame_2->setGeometry(QRect(48, 333, 155, 23));
-        QSizePolicy sizePolicy2(QSizePolicy::Ignored, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy2(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Preferred);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(frame_2->sizePolicy().hasHeightForWidth());
@@ -232,7 +232,7 @@ public:
         hboxLayout->setContentsMargins(0, 0, 0, 0);
         hueColorLine = new QtColorLine(frame_2);
         hueColorLine->setObjectName("hueColorLine");
-        QSizePolicy sizePolicy3(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy3(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Preferred);
         sizePolicy3.setHorizontalStretch(0);
         sizePolicy3.setVerticalStretch(0);
         sizePolicy3.setHeightForWidth(hueColorLine->sizePolicy().hasHeightForWidth());
@@ -335,7 +335,7 @@ public:
         colorLabel = new QLabel(QtGradientEditor);
         colorLabel->setObjectName("colorLabel");
         colorLabel->setGeometry(QRect(10, 298, 32, 29));
-        QSizePolicy sizePolicy4(QSizePolicy::Fixed, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy4(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Preferred);
         sizePolicy4.setHorizontalStretch(0);
         sizePolicy4.setVerticalStretch(0);
         sizePolicy4.setHeightForWidth(colorLabel->sizePolicy().hasHeightForWidth());
@@ -346,7 +346,7 @@ public:
         hsvRadioButton = new QRadioButton(QtGradientEditor);
         hsvRadioButton->setObjectName("hsvRadioButton");
         hsvRadioButton->setGeometry(QRect(80, 301, 49, 23));
-        QSizePolicy sizePolicy5(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy5(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
         sizePolicy5.setHorizontalStretch(0);
         sizePolicy5.setVerticalStretch(0);
         sizePolicy5.setHeightForWidth(hsvRadioButton->sizePolicy().hasHeightForWidth());
@@ -471,7 +471,7 @@ public:
         zoomButtonsWidget = new QWidget(QtGradientEditor);
         zoomButtonsWidget->setObjectName("zoomButtonsWidget");
         zoomButtonsWidget->setGeometry(QRect(209, 260, 64, 26));
-        QSizePolicy sizePolicy6(QSizePolicy::Maximum, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy6(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Preferred);
         sizePolicy6.setHorizontalStretch(0);
         sizePolicy6.setVerticalStretch(0);
         sizePolicy6.setHeightForWidth(zoomButtonsWidget->sizePolicy().hasHeightForWidth());
@@ -489,14 +489,14 @@ public:
 
         hboxLayout4->addWidget(zoomOutButton);
 
-        spacerItem = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(0, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout4->addItem(spacerItem);
 
         detailsButton = new QToolButton(QtGradientEditor);
         detailsButton->setObjectName("detailsButton");
         detailsButton->setGeometry(QRect(176, 40, 25, 22));
-        QSizePolicy sizePolicy7(QSizePolicy::Fixed, QSizePolicy::Ignored);
+        QSizePolicy sizePolicy7(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Ignored);
         sizePolicy7.setHorizontalStretch(0);
         sizePolicy7.setVerticalStretch(0);
         sizePolicy7.setHeightForWidth(detailsButton->sizePolicy().hasHeightForWidth());

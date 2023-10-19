@@ -67,7 +67,7 @@ public:
         vboxLayout->setObjectName("vboxLayout");
         groupBox = new QGroupBox(databaseTranslationDialog);
         groupBox->setObjectName("groupBox");
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Maximum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
@@ -97,7 +97,7 @@ public:
 
         groupBox_2 = new QGroupBox(databaseTranslationDialog);
         groupBox_2->setObjectName("groupBox_2");
-        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Minimum);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Minimum);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(groupBox_2->sizePolicy().hasHeightForWidth());
@@ -140,7 +140,7 @@ public:
 
         vboxLayout3->addWidget(moveDownButton);
 
-        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout3->addItem(spacerItem);
 
@@ -165,7 +165,7 @@ public:
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName("hboxLayout1");
-        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout1->addItem(spacerItem1);
 

@@ -105,7 +105,7 @@ public:
 
         horizontalLayout_4->addWidget(deleteItemButton);
 
-        spacerItem = new QSpacerItem(28, 23, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(28, 23, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         horizontalLayout_4->addItem(spacerItem);
 
@@ -144,7 +144,7 @@ public:
 
         horizontalLayout_2->addWidget(itemIconSelector);
 
-        horizontalSpacer = new QSpacerItem(288, 21, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        horizontalSpacer = new QSpacerItem(288, 21, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         horizontalLayout_2->addItem(horizontalSpacer);
 
@@ -156,7 +156,7 @@ public:
 
         columnsBox = new QGroupBox(qdesigner_internal__TreeWidgetEditor);
         columnsBox->setObjectName("columnsBox");
-        QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(columnsBox->sizePolicy().hasHeightForWidth());
@@ -165,7 +165,7 @@ public:
         gridLayout_2->setObjectName("gridLayout_2");
         listWidget = new QListWidget(columnsBox);
         listWidget->setObjectName("listWidget");
-        QSizePolicy sizePolicy1(QSizePolicy::Ignored, QSizePolicy::Expanding);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Expanding);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(listWidget->sizePolicy().hasHeightForWidth());
@@ -186,7 +186,7 @@ public:
 
         horizontalLayout_3->addWidget(deleteColumnButton);
 
-        spacerItem1 = new QSpacerItem(13, 23, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(13, 23, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         horizontalLayout_3->addItem(spacerItem1);
 
@@ -215,7 +215,7 @@ public:
 
         horizontalLayout->addWidget(columnIconSelector);
 
-        spacerItem2 = new QSpacerItem(0, 10, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem2 = new QSpacerItem(0, 10, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         horizontalLayout->addItem(spacerItem2);
 

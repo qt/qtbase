@@ -68,7 +68,7 @@
         <enum>Qt::Vertical</enum>
        </property>
        <property name="sizeType" >
-        <enum>QSizePolicy::Fixed</enum>
+        <enum>QSizePolicy::Policy::Fixed</enum>
        </property>
        <property name="sizeHint" >
         <size>
@@ -98,7 +98,7 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType" >
-        <enum>QSizePolicy::Fixed</enum>
+        <enum>QSizePolicy::Policy::Fixed</enum>
        </property>
        <property name="sizeHint" >
         <size>
@@ -156,7 +156,7 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType" >
-        <enum>QSizePolicy::Fixed</enum>
+        <enum>QSizePolicy::Policy::Fixed</enum>
        </property>
        <property name="sizeHint" >
         <size>
@@ -201,7 +201,7 @@
         <enum>Qt::Vertical</enum>
        </property>
        <property name="sizeType" >
-        <enum>QSizePolicy::Fixed</enum>
+        <enum>QSizePolicy::Policy::Fixed</enum>
        </property>
        <property name="sizeHint" >
         <size>
@@ -298,7 +298,7 @@
         <enum>Qt::Vertical</enum>
        </property>
        <property name="sizeType" >
-        <enum>QSizePolicy::Fixed</enum>
+        <enum>QSizePolicy::Policy::Fixed</enum>
        </property>
        <property name="sizeHint" >
         <size>
