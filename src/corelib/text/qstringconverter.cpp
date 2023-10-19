@@ -10,6 +10,7 @@
 #include "private/qstringiterator_p.h"
 #include "private/qtools_p.h"
 #include "qbytearraymatcher.h"
+#include "qcontainertools_impl.h"
 
 #if QT_CONFIG(icu)
 #include <unicode/ucnv.h>
@@ -24,6 +25,8 @@
 #include <QtCore/qvarlengtharray.h>
 #endif // !QT_BOOTSTRAPPED
 #endif
+
+#include <array>
 
 #if __has_include(<bit>) && __cplusplus > 201703L
 #include <bit>
@@ -1322,10 +1325,12 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     if (!mb || !mblen)
         return QString();
 
-    QVarLengthArray<wchar_t, 4096> wc(4096);
+    std::array<wchar_t, 4096> buf;
+    wchar_t *out = buf.data();
+    qsizetype outlen = buf.size();
+
     int len;
     QString sp;
-    bool prepend = false;
     char state_data = 0;
     int remainingChars = 0;
 
@@ -1341,31 +1346,32 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
         prev[0] = state_data;
         prev[1] = mb[0];
         remainingChars = 0;
-        len = MultiByteToWideChar(codePage, MB_PRECOMPOSED,
-                                    prev, 2, wc.data(), wc.length());
+        len = MultiByteToWideChar(codePage, MB_PRECOMPOSED, prev, 2, out, outlen);
         if (len) {
-            sp.append(QChar(wc[0]));
             if (mblen == 1) {
                 state->remainingChars = 0;
-                return sp;
+                return QStringView(out, len).toString();
             }
-            prepend = true;
             mb++;
             mblen--;
-            wc[0] = 0;
+            ++out;
+            --outlen;
         }
     }
 
     while (!(len=MultiByteToWideChar(codePage, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS,
-                mb, mblen, wc.data(), wc.length()))) {
+                mb, mblen, out, int(outlen)))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
+            Q_ASSERT(QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size()));
             const int wclen = MultiByteToWideChar(codePage, MB_PRECOMPOSED, mb, mblen, 0, 0);
-            wc.resize(wclen);
+            const qsizetype offset = qsizetype(out - buf.data());
+            sp.resize(offset + wclen);
+            auto it = reinterpret_cast<wchar_t *>(sp.data());
+            it = std::copy_n(buf.data(), offset, it);
+            out = it;
+            outlen = wclen;
         } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
-            //find the last non NULL character
-            while (mblen > 1  && !(mb[mblen-1]))
-                mblen--;
             //check whether,  we hit an invalid character in the middle
             if ((mblen <= 1) || (remainingChars && state_data))
                 return convertToUnicodeCharByChar(in, codePage, state);
@@ -1383,7 +1389,7 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     if (len <= 0)
         return QString();
 
-    if (wc[len-1] == 0) // len - 1: we don't want terminator
+    if (out[len - 1] == u'\0')
         --len;
 
     //save the new state information
@@ -1391,11 +1397,14 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
         state->state_data[0] = (char)state_data;
         state->remainingChars = remainingChars;
     }
-    QString s((QChar*)wc.data(), len);
-    if (prepend) {
-        return sp+s;
+
+    if (QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size())) {
+        if (out - buf.data() + len > 0)
+            sp = QStringView(buf.data(), out + len).toString();
+    } else{
+        sp.truncate(out - reinterpret_cast<wchar_t *>(sp.data()) + len);
     }
-    return s;
+    return sp;
 }
 
 QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, QStringConverter::State *state)
