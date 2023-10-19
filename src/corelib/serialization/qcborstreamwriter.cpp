@@ -7,9 +7,11 @@
 #include <private/qcborcommon_p.h>
 
 #include <private/qnumeric_p.h>
+#include <private/qstringconverter_p.h>
 #include <qbuffer.h>
 #include <qdebug.h>
 #include <qstack.h>
+#include <qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -439,8 +441,10 @@ void QCborStreamWriter::append(QLatin1StringView str)
         // it is plain US-ASCII
         appendTextString(str.latin1(), str.size());
     } else {
-        // non-ASCII, so we need a pass-through UTF-16
-        append(QString(str));
+        // non-ASCII, convert:
+        QVarLengthArray<char> utf8(str.size() * 2); // each L1 char gives at most two U8 units
+        const qsizetype written = QUtf8::convertFromLatin1(utf8.data(), str) - utf8.data();
+        appendTextString(utf8.data(), written);
     }
 }
 
