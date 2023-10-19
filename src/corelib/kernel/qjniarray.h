@@ -70,16 +70,16 @@ class QJniArrayBase : public QJniObject
                            > : std::true_type {};
 
 public:
-    QJniArrayBase(jarray array)
+    explicit QJniArrayBase(jarray array)
         : QJniObject(static_cast<jobject>(array))
     {
         static_assert(sizeof(QJniArrayBase) == sizeof(QJniObject),
                       "QJniArrayBase must have the same size as QJniObject!");
     }
-    QJniArrayBase(const QJniObject &object)
+    explicit QJniArrayBase(const QJniObject &object)
         : QJniObject(object)
     {}
-    QJniArrayBase(QJniObject &&object) noexcept
+    explicit QJniArrayBase(QJniObject &&object) noexcept
         : QJniObject(std::move(object))
     {}
 
@@ -157,6 +157,12 @@ public:
         , std::enable_if_t<QJniArrayBase::CanConvert<Container>, bool> = true
     >
     explicit QJniArray(Container &&container);
+
+    template <typename Other, std::enable_if_t<std::is_convertible_v<Other, Type>, bool> = true>
+    QJniArray(QJniArray<Other> &&other)
+        : QJniArrayBase(std::forward<QJniArray<Other>>(other))
+    {
+    }
     ~QJniArray() = default;
 
     auto arrayObject() const
