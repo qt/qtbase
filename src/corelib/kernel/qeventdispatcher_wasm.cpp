@@ -271,7 +271,6 @@ bool QEventDispatcherWasm::isValidEventDispatcherPointer(QEventDispatcherWasm *e
     if (eventDispatcher == g_mainThreadEventDispatcher)
         return true;
 #if QT_CONFIG(thread)
-    Q_ASSERT(!g_staticDataMutex.try_lock()); // caller must lock mutex
     if (g_secondaryThreadEventDispatchers.contains(eventDispatcher))
         return true;
 #endif
