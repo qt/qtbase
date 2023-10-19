@@ -46,29 +46,10 @@ public:
     }
 };
 
-struct QJniLocalRefDeleterPrivate
-{
-    static void cleanup(jobject obj)
-    {
-        if (!obj)
-            return;
-
-        QJniEnvironment env;
-        env->DeleteLocalRef(obj);
-    }
-};
-
-// To simplify this we only define it for jobjects.
-typedef QScopedPointer<_jobject, QJniLocalRefDeleterPrivate> QJniScopedLocalRefPrivate;
-
-
 Q_GLOBAL_STATIC(QThreadStorage<QJniEnvironmentPrivateTLS *>, jniEnvTLS)
 
 
-
 /*!
-    \fn QJniEnvironment::QJniEnvironment()
-
     Constructs a new JNI Environment object and attaches the current thread to the Java VM.
 */
 QJniEnvironment::QJniEnvironment()
@@ -111,8 +92,6 @@ bool QJniEnvironment::isValid() const
 }
 
 /*!
-    \fn JNIEnv *QJniEnvironment::operator->() const
-
     Provides access to the JNI Environment's \c JNIEnv pointer.
 */
 JNIEnv *QJniEnvironment::operator->() const
@@ -121,8 +100,6 @@ JNIEnv *QJniEnvironment::operator->() const
 }
 
 /*!
-    \fn JNIEnv &QJniEnvironment::operator*() const
-
     Returns the JNI Environment's \c JNIEnv object.
 */
 JNIEnv &QJniEnvironment::operator*() const
@@ -131,8 +108,6 @@ JNIEnv &QJniEnvironment::operator*() const
 }
 
 /*!
-    \fn JNIEnv *QJniEnvironment::jniEnv() const
-
     Returns the JNI Environment's \c JNIEnv pointer.
 */
 JNIEnv *QJniEnvironment::jniEnv() const
@@ -323,8 +298,6 @@ jfieldID QJniEnvironment::findStaticField(jclass clazz, const char *fieldName, c
 */
 
 /*!
-    \fn JavaVM *QJniEnvironment::javaVM()
-
     Returns the Java VM interface for the current process. Although it might
     be possible to have multiple Java VMs per process, Android allows only one.
 
@@ -448,7 +421,7 @@ bool QJniEnvironment::checkAndClearExceptions(QJniEnvironment::OutputMode output
 
 namespace {
     // Any pending exception need to be cleared before calling this
-    QString exceptionMessage(JNIEnv *env, const jthrowable &exception)
+    QString exceptionMessage(JNIEnv *env, jthrowable exception)
     {
         if (!exception)
             return {};
@@ -496,8 +469,6 @@ namespace {
 } // end namespace
 
 /*!
-    \fn QJniEnvironment::checkAndClearExceptions(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose)
-
     Cleans any pending exceptions for \a env, either silently or reporting
     stack backtrace, depending on the \a outputMode. This is useful when you
     already have a \c JNIEnv pointer such as in a native function implementation.
