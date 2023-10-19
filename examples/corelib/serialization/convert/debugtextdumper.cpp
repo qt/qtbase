@@ -80,7 +80,10 @@ QVariant DebugTextDumper::loadFile(QIODevice *f, const Converter *&outputConvert
 void DebugTextDumper::saveFile(QIODevice *f, const QVariant &contents,
                                const QStringList &options) const
 {
-    Q_UNUSED(options);
+    if (!options.isEmpty()) {
+        qFatal("Unknown option '%s' to debug text output. This format has no options.",
+               qPrintable(options.first()));
+    }
     QString s = dumpVariant(contents);
     s[s.size() - 1] = u'\n'; // replace the comma with newline
 
