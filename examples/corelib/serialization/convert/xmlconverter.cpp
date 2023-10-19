@@ -49,9 +49,8 @@ static QVariantList listFromXml(QXmlStreamReader &xml, Converter::Options option
             break;
         }
 
-        fprintf(stderr, "%lld:%lld: Invalid XML %s '%s'.\n", xml.lineNumber(), xml.columnNumber(),
-                qPrintable(xml.tokenString()), qPrintable(xml.name().toString()));
-        exit(EXIT_FAILURE);
+        qFatal("%lld:%lld: Invalid XML %s '%s'.", xml.lineNumber(), xml.columnNumber(),
+               qPrintable(xml.tokenString()), qPrintable(xml.name().toString()));
     }
 
     xml.readNext();
@@ -91,9 +90,8 @@ static VariantOrderedMap::value_type mapEntryFromXml(QXmlStreamReader &xml,
             break;
         }
 
-        fprintf(stderr, "%lld:%lld: Invalid XML %s '%s'.\n", xml.lineNumber(), xml.columnNumber(),
-                qPrintable(xml.tokenString()), qPrintable(xml.name().toString()));
-        exit(EXIT_FAILURE);
+        qFatal("%lld:%lld: Invalid XML %s '%s'.", xml.lineNumber(), xml.columnNumber(),
+               qPrintable(xml.tokenString()), qPrintable(xml.name().toString()));
     }
 
     return { key, value };
@@ -135,9 +133,8 @@ static QVariant mapFromXml(QXmlStreamReader &xml, Converter::Options options)
             break;
         }
 
-        fprintf(stderr, "%lld:%lld: Invalid XML %s '%s'.\n", xml.lineNumber(), xml.columnNumber(),
-                qPrintable(xml.tokenString()), qPrintable(xml.name().toString()));
-        exit(EXIT_FAILURE);
+        qFatal("%lld:%lld: Invalid XML %s '%s'.", xml.lineNumber(), xml.columnNumber(),
+               qPrintable(xml.tokenString()), qPrintable(xml.name().toString()));
     }
 
     xml.readNext();
@@ -154,9 +151,8 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
     if (name == "map"_L1)
         return mapFromXml(xml, options);
     if (name != "value"_L1) {
-        fprintf(stderr, "%lld:%lld: Invalid XML key '%s'.\n",
-                xml.lineNumber(), xml.columnNumber(), qPrintable(name.toString()));
-        exit(EXIT_FAILURE);
+        qFatal("%lld:%lld: Invalid XML key '%s'.",
+               xml.lineNumber(), xml.columnNumber(), qPrintable(name.toString()));
     }
 
     QXmlStreamAttributes attrs = xml.attributes();
@@ -169,9 +165,8 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
         if (xml.isCDATA() || xml.isCharacters() || xml.isEndElement())
             break;
 
-        fprintf(stderr, "%lld:%lld: Invalid XML %s '%s'.\n", xml.lineNumber(), xml.columnNumber(),
-                qPrintable(xml.tokenString()), qPrintable(name.toString()));
-        exit(EXIT_FAILURE);
+        qFatal("%lld:%lld: Invalid XML %s '%s'.", xml.lineNumber(), xml.columnNumber(),
+               qPrintable(xml.tokenString()), qPrintable(name.toString()));
     }
 
     QStringView text = xml.text();
@@ -191,9 +186,8 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
             // let's see floating point
             double d = text.toDouble(&ok);
             if (!ok) {
-                fprintf(stderr, "%lld:%lld: Invalid XML: could not interpret '%s' as a number.\n",
-                        xml.lineNumber(), xml.columnNumber(), qPrintable(text.toString()));
-                exit(EXIT_FAILURE);
+                qFatal("%lld:%lld: Invalid XML: could not interpret '%s' as a number.",
+                       xml.lineNumber(), xml.columnNumber(), qPrintable(text.toString()));
             }
             result = d;
         }
@@ -207,9 +201,8 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
         } else if (encoding.isEmpty() || encoding == "base64"_L1) {
             result = QByteArray::fromBase64(data);
         } else {
-            fprintf(stderr, "%lld:%lld: Invalid XML: unknown encoding '%s' for bytes.\n",
-                    xml.lineNumber(), xml.columnNumber(), qPrintable(encoding.toString()));
-            exit(EXIT_FAILURE);
+            qFatal("%lld:%lld: Invalid XML: unknown encoding '%s' for bytes.",
+                   xml.lineNumber(), xml.columnNumber(), qPrintable(encoding.toString()));
         }
     } else if (type == "string"_L1) {
         result = text.toString();
@@ -228,9 +221,8 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
             } else if (c == '0') {
                 ++n;
             } else if (!c.isSpace()) {
-                fprintf(stderr, "%lld:%lld: Invalid XML: invalid bit string '%s'.\n",
-                        xml.lineNumber(), xml.columnNumber(), qPrintable(text.toString()));
-                exit(EXIT_FAILURE);
+                qFatal("%lld:%lld: Invalid XML: invalid bit string '%s'.",
+                       xml.lineNumber(), xml.columnNumber(), qPrintable(text.toString()));
             }
         }
         ba.resize(n);
@@ -248,16 +240,14 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
         else
             id = QMetaType::fromName(type.toLatin1()).id();
         if (id == QMetaType::UnknownType) {
-            fprintf(stderr, "%lld:%lld: Invalid XML: unknown type '%s'.\n",
-                    xml.lineNumber(), xml.columnNumber(), qPrintable(type.toString()));
-            exit(EXIT_FAILURE);
+            qFatal("%lld:%lld: Invalid XML: unknown type '%s'.",
+                   xml.lineNumber(), xml.columnNumber(), qPrintable(type.toString()));
         }
 
         result = text.toString();
         if (!result.convert(QMetaType(id))) {
-            fprintf(stderr, "%lld:%lld: Invalid XML: could not parse content as type '%s'.\n",
-                    xml.lineNumber(), xml.columnNumber(), qPrintable(type.toString()));
-            exit(EXIT_FAILURE);
+            qFatal("%lld:%lld: Invalid XML: could not parse content as type '%s'.",
+                   xml.lineNumber(), xml.columnNumber(), qPrintable(type.toString()));
         }
     }
 
@@ -266,9 +256,8 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
     } while (xml.isComment() || xml.isWhitespace());
 
     if (!xml.isEndElement()) {
-        fprintf(stderr, "%lld:%lld: Invalid XML %s '%s'.\n", xml.lineNumber(), xml.columnNumber(),
-                qPrintable(xml.tokenString()), qPrintable(name.toString()));
-        exit(EXIT_FAILURE);
+        qFatal("%lld:%lld: Invalid XML %s '%s'.", xml.lineNumber(), xml.columnNumber(),
+               qPrintable(xml.tokenString()), qPrintable(name.toString()));
     }
 
     xml.readNext();
@@ -388,8 +377,7 @@ static void variantToXml(QXmlStreamWriter &xml, const QVariant &v)
                     xml.writeAttribute(typeString, QString::fromLatin1(typeName));
                     xml.writeCharacters(copy.toString());
                 } else {
-                    fprintf(stderr, "XML: don't know how to serialize type '%s'.\n", typeName);
-                    exit(EXIT_FAILURE);
+                    qFatal("XML: don't know how to serialize type '%s'.", typeName);
                 }
             }
         }
@@ -435,10 +423,8 @@ QVariant XmlConverter::loadFile(QIODevice *f, const Converter *&outputConverter)
     QXmlStreamReader xml(f);
     xml.readNextStartElement();
     QVariant v = variantFromXml(xml, outputConverter->outputOptions());
-    if (xml.hasError()) {
-        fprintf(stderr, "XML error: %s", qPrintable(xml.errorString()));
-        exit(EXIT_FAILURE);
-    }
+    if (xml.hasError())
+        qFatal("XML error: %s", qPrintable(xml.errorString()));
 
     return v;
 }
@@ -453,9 +439,8 @@ void XmlConverter::saveFile(QIODevice *f, const QVariant &contents,
         } else if (s == "compact=yes"_L1) {
             compact = true;
         } else {
-            fprintf(stderr, "Unknown option '%s' to XML output. Valid options are:\n%s",
-                    qPrintable(s), xmlOptionHelp);
-            exit(EXIT_FAILURE);
+            qFatal("Unknown option '%s' to XML output. Valid options are:\n%s",
+                   qPrintable(s), xmlOptionHelp);
         }
     }
 

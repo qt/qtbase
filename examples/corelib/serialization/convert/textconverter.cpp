@@ -98,9 +98,8 @@ void TextConverter::saveFile(QIODevice *f, const QVariant &contents,
                              const QStringList &options) const
 {
     if (!options.isEmpty()) {
-        fprintf(stderr, "Unknown option '%s' to text output. This format has no options.\n",
-                qPrintable(options.first()));
-        exit(EXIT_FAILURE);
+        qFatal("Unknown option '%s' to text output. This format has no options.",
+               qPrintable(options.first()));
     }
 
     QTextStream out(f);
