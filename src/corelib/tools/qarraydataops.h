@@ -236,7 +236,7 @@ public:
             if (it == end)
                 return result;
 
-            QPodArrayOps<T> other(this->size, this->size);
+            QPodArrayOps<T> other(this->size);
             Q_CHECK_PTR(other.data());
             auto dest = other.begin();
             // std::uninitialized_copy will fallback to ::memcpy/memmove()
