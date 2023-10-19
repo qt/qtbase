@@ -70,9 +70,8 @@ QTemporaryFileName::QTemporaryFileName(const QString &templateName)
         qfilename.append(".XXXXXX"_L1);
 
     // "Nativify" :-)
-    QFileSystemEntry::NativePath filename = QFileSystemEngine::absoluteName(
-            QFileSystemEntry(qfilename, QFileSystemEntry::FromInternalPath()))
-        .nativeFilePath();
+    QFileSystemEntry::NativePath filename =
+            QFileSystemEntry(QDir::cleanPath(qfilename)).nativeFilePath();
 
     // Find mask in native path
     phPos = filename.size();

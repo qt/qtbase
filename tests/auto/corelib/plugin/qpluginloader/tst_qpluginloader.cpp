@@ -16,6 +16,8 @@
 #  include <QtCore/private/qmachparser_p.h>
 #endif
 
+using namespace Qt::StringLiterals;
+
 // Helper macros to let us know if some suffixes are valid
 #define bundle_VALID    false
 #define dylib_VALID     false
@@ -128,7 +130,7 @@ static std::unique_ptr<QTemporaryFile> patchElf(const QString &source, ElfPatche
         const char *basename = QTest::currentDataTag();
         if (!basename)
             basename = QTest::currentTestFunction();
-        tmplib.reset(new QTemporaryFile(basename + QString(".XXXXXX" SUFFIX)));
+        tmplib.reset(new QTemporaryFile(QDir::currentPath() + u'/' + basename + u".XXXXXX" SUFFIX ""_s));
         QVERIFY2(tmplib->open(), qPrintable(tmplib->errorString()));
 
         // sanity-check
