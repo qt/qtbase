@@ -9,6 +9,7 @@
 #include <QCborStreamWriter>
 #include <QCborValue>
 #include <QDataStream>
+#include <QDebug>
 #include <QFile>
 #include <QFloat16>
 #include <QMetaType>
@@ -178,9 +179,8 @@ void CborDiagnosticDumper::saveFile(QIODevice *f, const QVariant &contents,
             }
         }
 
-        fprintf(stderr, "Unknown CBOR diagnostic option '%s'. Available options are:\n%s",
-                qPrintable(s), diagnosticHelp);
-        exit(EXIT_FAILURE);
+        qFatal("Unknown CBOR diagnostic option '%s'. Available options are:\n%s",
+               qPrintable(s), diagnosticHelp);
     }
 
     QTextStream out(f);
@@ -239,13 +239,12 @@ QVariant CborConverter::loadFile(QIODevice *f, const Converter *&outputConverter
     QCborValue contents = QCborValue::fromCbor(reader);
     qint64 offset = reader.currentOffset();
     if (reader.lastError()) {
-        fprintf(stderr, "Error loading CBOR contents (byte %lld): %s\n", offset,
-                qPrintable(reader.lastError().toString()));
-        fprintf(stderr, " bytes: %s\n",
-                (ptr ? mapped.mid(offset, 9) : f->read(9)).toHex(' ').constData());
-        exit(EXIT_FAILURE);
+        qFatal().nospace()
+            << "Error loading CBOR contents (byte " << offset
+            << "): " << reader.lastError().toString()
+            << "\n bytes: " << (ptr ? mapped.mid(offset, 9) : f->read(9));
     } else if (offset < mapped.size() || (!ptr && f->bytesAvailable())) {
-        fprintf(stderr, "Warning: bytes remaining at the end of the CBOR stream\n");
+        qWarning("Warning: bytes remaining at the end of the CBOR stream");
     }
 
     if (outputConverter == nullptr)
@@ -315,9 +314,8 @@ void CborConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
             }
         }
 
-        fprintf(stderr, "Unknown CBOR format option '%s'. Valid options are:\n%s",
-                qPrintable(s), cborOptionHelp);
-        exit(EXIT_FAILURE);
+        qFatal("Unknown CBOR format option '%s'. Valid options are:\n%s",
+               qPrintable(s), cborOptionHelp);
     }
     //! [4]
     QCborValue v =
