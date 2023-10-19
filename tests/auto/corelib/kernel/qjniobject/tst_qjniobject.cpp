@@ -113,6 +113,7 @@ private slots:
     void templateApiCheck();
     void isClassAvailable();
     void fromLocalRef();
+    void largeObjectArray();
 
     void callback_data();
     void callback();
@@ -1534,9 +1535,10 @@ void tst_QJniObject::templateApiCheck()
         const auto reverse = testClass.callMethod<jobject[]>("reverseObjectArray", newArray);
         QVERIFY(reverse.isValid());
         QCOMPARE(reverse.size(), 3);
-        QCOMPARE(QJniObject(reverse.at(0)).toString(), u"three"_s);
-        QCOMPARE(QJniObject(reverse.at(1)).toString(), u"two"_s);
-        QCOMPARE(QJniObject(reverse.at(2)).toString(), u"one"_s);
+        // QJniArray::at returns a jobject that's a local reference; make sure we don't free it twice
+        QCOMPARE(QJniObject::fromLocalRef(reverse.at(0)).toString(), u"three"_s);
+        QCOMPARE(QJniObject::fromLocalRef(reverse.at(1)).toString(), u"two"_s);
+        QCOMPARE(QJniObject::fromLocalRef(reverse.at(2)).toString(), u"one"_s);
     }
 
     // jbooleanArray ------------------------------------------------------------------------------
@@ -1840,6 +1842,25 @@ void tst_QJniObject::fromLocalRef()
     QJniEnvironment env;
     for (int i = 0; i != limit; ++i)
         QJniObject o = QJniObject::fromLocalRef(env->FindClass("java/lang/String"));
+}
+
+void tst_QJniObject::largeObjectArray()
+{
+    QJniArray<jobject> newArray(QList<QJniObject>{QJniObject::fromString(u"one"_s),
+                                                    QJniObject::fromString(u"two"_s),
+                                                    QJniObject::fromString(u"three"_s)});
+    QVERIFY(newArray.isValid());
+    const QJniArray<QJniObject> reverse = TestClass::callStaticMethod<jobject[]>(
+                                                            "staticReverseObjectArray", newArray);
+    QVERIFY(reverse.isValid());
+    QCOMPARE(reverse.size(), 3);
+
+    // make sure we don't leak local references
+    for (int i = 0; i < 10000; ++i) {
+        QVERIFY(reverse.at(0).isValid());
+        QVERIFY(reverse.at(1).isValid());
+        QVERIFY(reverse.at(2).isValid());
+    }
 }
 
 
