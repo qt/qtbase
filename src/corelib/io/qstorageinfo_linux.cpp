@@ -229,11 +229,9 @@ quint64 QStorageInfoPrivate::initRootPath()
     for (auto it = infos.rbegin(); it != infos.rend(); ++it) {
         if (rootPathDevId != it->stDev || !isParentOf(it->mountPoint, oldRootPath))
             continue;
-        rootPath = std::move(it->mountPoint);
-        device = std::move(it->device);
-        fileSystemType = std::move(it->fsType);
-        subvolume = std::move(it->fsRoot);
-        return it->stDev;
+        auto stDev = it->stDev;
+        setFromMountInfo(std::move(*it));
+        return stDev;
     }
     return 0;
 }

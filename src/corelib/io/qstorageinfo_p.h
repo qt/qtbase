@@ -67,13 +67,20 @@ public:
         QByteArray fsRoot;
         dev_t stDev = 0;
     };
-    QStorageInfoPrivate(MountInfo &&info)
-        : rootPath(std::move(info.mountPoint)),
-          device(std::move(info.device)),
-          subvolume(std::move(info.fsRoot)),
-          fileSystemType(std::move(info.fsType))
+
+    void setFromMountInfo(MountInfo &&info)
     {
+        rootPath = std::move(info.mountPoint);
+        fileSystemType = std::move(info.fsType);
+        device = std::move(info.device);
+        subvolume = std::move(info.fsRoot);
     }
+
+    QStorageInfoPrivate(MountInfo &&info)
+    {
+        setFromMountInfo(std::move(info));
+    }
+
 #elif defined(Q_OS_UNIX)
     void initRootPath();
     void retrieveVolumeInfo();
