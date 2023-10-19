@@ -2435,11 +2435,7 @@ bool QSortFilterProxyModel::removeColumns(int column, int count, const QModelInd
 */
 void QSortFilterProxyModel::fetchMore(const QModelIndex &parent)
 {
-    Q_D(QSortFilterProxyModel);
-    QModelIndex source_parent;
-    if (d->indexValid(parent))
-        source_parent = mapToSource(parent);
-    d->model->fetchMore(source_parent);
+    QAbstractProxyModel::fetchMore(parent);
 }
 
 /*!
@@ -2447,11 +2443,7 @@ void QSortFilterProxyModel::fetchMore(const QModelIndex &parent)
 */
 bool QSortFilterProxyModel::canFetchMore(const QModelIndex &parent) const
 {
-    Q_D(const QSortFilterProxyModel);
-    QModelIndex source_parent;
-    if (d->indexValid(parent))
-        source_parent = mapToSource(parent);
-    return d->model->canFetchMore(source_parent);
+    return QAbstractProxyModel::canFetchMore(parent);
 }
 
 /*!
@@ -2459,11 +2451,7 @@ bool QSortFilterProxyModel::canFetchMore(const QModelIndex &parent) const
 */
 Qt::ItemFlags QSortFilterProxyModel::flags(const QModelIndex &index) const
 {
-    Q_D(const QSortFilterProxyModel);
-    QModelIndex source_index;
-    if (d->indexValid(index))
-        source_index = mapToSource(index);
-    return d->model->flags(source_index);
+    return QAbstractProxyModel::flags(index);
 }
 
 /*!
