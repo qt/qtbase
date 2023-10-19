@@ -450,8 +450,8 @@ public:
         vboxLayout7->setContentsMargins(0, 0, 0, 0);
         line1 = new QFrame(line1Widget);
         line1->setObjectName("line1");
-        line1->setFrameShape(QFrame::HLine);
-        line1->setFrameShadow(QFrame::Sunken);
+        line1->setFrameShape(QFrame::Shape::HLine);
+        line1->setFrameShadow(QFrame::Shadow::Sunken);
 
         vboxLayout7->addWidget(line1);
 
@@ -463,8 +463,8 @@ public:
         vboxLayout8->setContentsMargins(0, 0, 0, 0);
         line2 = new QFrame(line2Widget);
         line2->setObjectName("line2");
-        line2->setFrameShape(QFrame::HLine);
-        line2->setFrameShadow(QFrame::Sunken);
+        line2->setFrameShape(QFrame::Shape::HLine);
+        line2->setFrameShadow(QFrame::Shadow::Sunken);
 
         vboxLayout8->addWidget(line2);
 

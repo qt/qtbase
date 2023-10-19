@@ -103,8 +103,8 @@ public:
 
         line = new QFrame(BookmarkDialog);
         line->setObjectName("line");
-        line->setFrameShape(QFrame::HLine);
-        line->setFrameShadow(QFrame::Sunken);
+        line->setFrameShape(QFrame::Shape::HLine);
+        line->setFrameShadow(QFrame::Shadow::Sunken);
 
         horizontalLayout_3->addWidget(line);
 

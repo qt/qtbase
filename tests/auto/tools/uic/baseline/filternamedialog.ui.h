@@ -53,8 +53,8 @@ public:
 
         line = new QFrame(FilterNameDialogClass);
         line->setObjectName("line");
-        line->setFrameShape(QFrame::HLine);
-        line->setFrameShadow(QFrame::Sunken);
+        line->setFrameShape(QFrame::Shape::HLine);
+        line->setFrameShadow(QFrame::Shadow::Sunken);
 
         gridLayout->addWidget(line, 1, 0, 1, 3);
 

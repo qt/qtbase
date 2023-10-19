@@ -1300,9 +1300,9 @@ void WriteInitialization::writeProperties(const QString &varName,
         } else if (propertyName == "orientation"_L1
                     && m_uic->customWidgetsInfo()->extends(className, "Line")) {
             // Line support
-            QString shape = u"QFrame::HLine"_s;
+            QString shape = u"QFrame::Shape::HLine"_s;
             if (p->elementEnum().endsWith("::Vertical"_L1))
-                shape = u"QFrame::VLine"_s;
+                shape = u"QFrame::Shape::VLine"_s;
 
             m_output << m_indent << varName << language::derefPointer << "setFrameShape("
                 << language::enumValue(shape) << ')' << language::eol;
@@ -1310,7 +1310,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             if (!frameShadowEncountered) {
                 m_output << m_indent << varName << language::derefPointer
                     << "setFrameShadow("
-                    << language::enumValue("QFrame::Sunken"_L1)
+                    << language::enumValue("QFrame::Shadow::Sunken"_L1)
                     << ')' << language::eol;
             }
             continue;

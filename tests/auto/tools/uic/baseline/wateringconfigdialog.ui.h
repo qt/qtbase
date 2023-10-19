@@ -227,8 +227,8 @@ public:
 
         line = new QFrame(WateringConfigDialog);
         line->setObjectName("line");
-        line->setFrameShape(QFrame::HLine);
-        line->setFrameShadow(QFrame::Sunken);
+        line->setFrameShape(QFrame::Shape::HLine);
+        line->setFrameShadow(QFrame::Shadow::Sunken);
 
         vboxLayout->addWidget(line);
 
