@@ -495,7 +495,7 @@ public:
             quint32 maybeSize;
             bool hasDynamicOffset;
         };
-        static const int MAX_TEX_SAMPLER_ARRAY_SIZE = 16;
+        static constexpr int MAX_TEX_SAMPLER_ARRAY_SIZE = 16;
         struct TextureAndOrSamplerData {
             int count;
             TextureAndSampler texSamplers[MAX_TEX_SAMPLER_ARRAY_SIZE];
@@ -535,7 +535,7 @@ public:
         }
     };
 
-    static const int LAYOUT_DESC_ENTRIES_PER_BINDING = 4;
+    static constexpr int LAYOUT_DESC_ENTRIES_PER_BINDING = 4;
 
     template<typename Output>
     static void serializeLayoutDescription(const QRhiShaderResourceBinding *first,
@@ -1213,7 +1213,7 @@ public:
     virtual void updateResources(UpdateFlags flags = {}) = 0;
 
 protected:
-    static const int BINDING_PREALLOC = 12;
+    static constexpr int BINDING_PREALLOC = 12;
     QRhiShaderResourceBindings(QRhiImplementation *rhi);
     QVarLengthArray<QRhiShaderResourceBinding, BINDING_PREALLOC> m_bindings;
     size_t m_layoutDescHash = 0;
@@ -1943,7 +1943,7 @@ public:
     const QRhiNativeHandles *nativeHandles();
     bool makeThreadLocalNativeContextCurrent();
 
-    static const int MAX_MIP_LEVELS = 16; // -> max width or height is 65536
+    static constexpr int MAX_MIP_LEVELS = 16; // -> max width or height is 65536
 
     void releaseCachedResources();
 
