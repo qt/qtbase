@@ -1332,27 +1332,17 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
 
     int len;
     QString sp;
-    char state_data = 0;
-    int remainingChars = 0;
-
-    //save the current state information
-    if (state) {
-        state_data = (char)state->state_data[0];
-        remainingChars = state->remainingChars;
-    }
 
     //convert the pending character (if available)
-    if (state && remainingChars) {
+    if (state && state->remainingChars) {
         char prev[3] = {0};
-        prev[0] = state_data;
+        prev[0] = state->state_data[0];
         prev[1] = mb[0];
-        remainingChars = 0;
+        state->remainingChars = 0;
         len = MultiByteToWideChar(codePage, MB_PRECOMPOSED, prev, 2, out, outlen);
         if (len) {
-            if (mblen == 1) {
-                state->remainingChars = 0;
+            if (mblen == 1)
                 return QStringView(out, len).toString();
-            }
             mb++;
             mblen--;
             ++out;
@@ -1374,11 +1364,13 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
             outlen = wclen;
         } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
             //check whether,  we hit an invalid character in the middle
-            if ((mblen <= 1) || (remainingChars && state_data))
+            if (state && ((mblen <= 1) || (state->remainingChars && state->state_data[0])))
                 return convertToUnicodeCharByChar(in, codePage, state);
             //Remove the last character and try again...
-            state_data = mb[mblen-1];
-            remainingChars = 1;
+            if (state) {
+                state->state_data[0] = mb[mblen - 1];
+                state->remainingChars = 1;
+            } // else: We have discarded a character that we won't handle? @todo
             mblen--;
         } else {
             // Fail.
@@ -1387,24 +1379,21 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
         }
     }
 
-    if (len <= 0)
-        return QString();
-
-    if (out[len - 1] == u'\0')
-        --len;
-
-    //save the new state information
-    if (state) {
-        state->state_data[0] = (char)state_data;
-        state->remainingChars = remainingChars;
-    }
-
     if (QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size())) {
         if (out - buf.data() + len > 0)
             sp = QStringView(buf.data(), out + len).toString();
     } else{
         sp.truncate(out - reinterpret_cast<wchar_t *>(sp.data()) + len);
     }
+
+    if (sp.size() && sp.back().isNull())
+        sp.chop(1);
+
+    if (!state && mblen != length) { // We have trailing characters that should be converted
+        qsizetype diff = length - mblen;
+        sp.resize(sp.size() + diff, QChar::ReplacementCharacter);
+    }
+
     return sp;
 }
 
