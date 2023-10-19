@@ -14,6 +14,7 @@
 #include <QtCore/qeventloop.h>
 #include <QtCore/qmimedata.h>
 #include <QtCore/qtimer.h>
+#include <QFile>
 
 #include <functional>
 #include <string>
@@ -152,22 +153,31 @@ void QWasmDrag::onNativeDrop(DragEvent *event)
     const QPointF pointInTargetWindowCoords = event->targetWindow->mapFromGlobal(pointInQtScreen);
 
     const Qt::DropActions actions = m_dragState
-            ? m_dragState->drag->supportedActions()
-            : (Qt::DropAction::CopyAction | Qt::DropAction::MoveAction
-               | Qt::DropAction::LinkAction);
+                                        ? m_dragState->drag->supportedActions()
+                                        : (Qt::DropAction::CopyAction | Qt::DropAction::MoveAction
+                                           | Qt::DropAction::LinkAction);
+    Qt::MouseButton mouseButton = event->mouseButton;
+    QFlags<Qt::KeyboardModifier> modifiers = event->modifiers;
 
-    auto dropResponse = std::make_shared<QPlatformDropQtResponse>(true, Qt::DropAction::CopyAction);
-    QMimeData *data = event->dataTransfer.toMimeDataWithFile();
-    *dropResponse = QWindowSystemInterface::handleDrop(event->targetWindow, data,
-                                                       pointInTargetWindowCoords.toPoint(), actions,
-                                                       event->mouseButton, event->modifiers);
+    const auto pointerCallback = std::function([&, wasmWindow, pointInTargetWindowCoords,
+    actions, mouseButton, modifiers](QMimeData &data) {
+        if (data.formats().count() == 0)
+            return;
+        auto dropResponse = std::make_shared<QPlatformDropQtResponse>(true, Qt::DropAction::CopyAction);
 
-    if (dropResponse->isAccepted()) {
-        event->acceptDrop();
-        event->dataTransfer.setDropAction(dropResponse->acceptedAction());
+        *dropResponse = QWindowSystemInterface::handleDrop(wasmWindow->window(), &data,
+                                                           pointInTargetWindowCoords.toPoint(), actions,
+                                                           mouseButton, modifiers);
 
-        m_dragState->dropAction = dropResponse->acceptedAction();
-    }
+        if (dropResponse->isAccepted()) {
+//            event->acceptDrop(); // boom
+//            event->dataTransfer.setDropAction(dropResponse->acceptedAction());
+
+            m_dragState->dropAction = dropResponse->acceptedAction();
+        }
+    });
+
+     event->dataTransfer.toMimeDataWithFile(pointerCallback);
 }
 
 void QWasmDrag::onNativeDragFinished(DragEvent *event)

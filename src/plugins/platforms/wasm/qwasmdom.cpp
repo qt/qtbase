@@ -3,7 +3,6 @@
 
 #include "qwasmdom.h"
 
-#include <QMimeData>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qimage.h>
@@ -14,6 +13,9 @@
 #include <emscripten/wire.h>
 
 QT_BEGIN_NAMESPACE
+
+// this needs to live outside the life of DataTransfer
+Q_GLOBAL_STATIC(QMimeData, resultMimeData);
 
 namespace dom {
 namespace {
@@ -36,7 +38,9 @@ std::string dropActionToDropEffect(Qt::DropAction action)
 }
 } // namespace
 
-DataTransfer::DataTransfer(emscripten::val webDataTransfer) : webDataTransfer(webDataTransfer) { }
+DataTransfer::DataTransfer(emscripten::val webDataTransfer)
+    : webDataTransfer(webDataTransfer) {
+}
 
 DataTransfer::~DataTransfer() = default;
 
@@ -78,10 +82,9 @@ void DataTransfer::setDataFromMimeData(const QMimeData &mimeData)
     }
 }
 
-QMimeData *DataTransfer::toMimeDataWithFile()
+QMimeData *DataTransfer::toMimeDataWithFile(std::function<void(QMimeData &)> callback)
 {
-    QMimeData *resultMimeData = new QMimeData(); // QScopedPointer?
-
+    resultMimeData->clear();
     enum class ItemKind {
         File,
         String,
@@ -99,8 +102,43 @@ QMimeData *DataTransfer::toMimeDataWithFile()
         case ItemKind::File: {
             m_webFile = item.call<emscripten::val>("getAsFile");
             qstdweb::File webfile(m_webFile);
-            QUrl fileUrl(QStringLiteral("file:///") + QString::fromStdString(webfile.name()));
-            uriList.append(fileUrl);
+            if (webfile.size() == 0
+                || webfile.size() > 1e+9) { // limit file size to 1 GB
+                qWarning() << "Something happened, File size is" << webfile.size();
+                continue;
+            }
+            QByteArray fileContent(webfile.size(), Qt::Uninitialized);
+            QString  mimeFormat = QString::fromStdString(webfile.type());
+            QString fileName = QString::fromStdString(webfile.name());
+
+            // there's a file, now read it
+            webfile.stream(fileContent.data(), [=]() {
+                QList<QUrl> fileUriList;
+                if (!fileContent.isEmpty()) {
+                     if (mimeFormat.contains("image/")) {
+                        QImage image;
+                        image.loadFromData(fileContent, nullptr);
+                        resultMimeData->setImageData(image);
+                    } else {
+                        QUrl fileUrl(QStringLiteral("file:///") +
+                                    QString::fromStdString(webfile.name()));
+                        fileUriList.append(fileUrl);
+                        QFile file(fileName);
+                        if (!file.open(QFile::WriteOnly)) {
+                            qWarning() << "File was not opened";
+                            return;
+                        }
+
+                        if (file.write(fileContent) < 0)
+                            qWarning() << "Write failed";
+
+                        file.close();
+                        resultMimeData->setUrls(fileUriList);
+                    }
+                    callback(*resultMimeData);
+                }
+            });
+
             break;
         }
         case ItemKind::String:
@@ -131,9 +169,15 @@ QMimeData *DataTransfer::toMimeDataWithFile()
             }
             break;
         }
-    }
-    if (!uriList.isEmpty())
+    } // end items
+
+    if (!uriList.isEmpty()) {
         resultMimeData->setUrls(uriList);
+    }
+
+    if (resultMimeData->formats().length() > 0)
+        callback(*resultMimeData);
+
     return resultMimeData;
 }
 

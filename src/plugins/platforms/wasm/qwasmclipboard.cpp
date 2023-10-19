@@ -70,16 +70,7 @@ static void qClipboardPasteTo(val event)
 {
     event.call<void>("preventDefault"); // prevent browser from handling drop event
 
-    static std::shared_ptr<qstdweb::CancellationFlag> readDataCancellation = nullptr;
-    dom::DataTransfer transfer(event["clipboardData"]);
-    auto data = transfer.toMimeDataWithFile();
-    if (data->formats().isEmpty())
-        return;
-    // Persist clipboard data so that the app can read it when handling the CTRL+V
-    QWasmIntegration::get()->clipboard()->QPlatformClipboard::setMimeData(data,
-                                                                          QClipboard::Clipboard);
-    QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_V,
-                                            Qt::ControlModifier, "V");
+    QWasmIntegration::get()->getWasmClipboard()->sendClipboardData(event);
 }
 
 EMSCRIPTEN_BINDINGS(qtClipboardModule) {
@@ -292,4 +283,22 @@ void QWasmClipboard::writeToClipboard()
     document.call<val>("execCommand", val("copy"));
 }
 
+void QWasmClipboard::sendClipboardData(emscripten::val event)
+{
+    dom::DataTransfer transfer(event["clipboardData"]);
+    QMimeData *mData;
+    const auto pointerCallback = std::function([&](QMimeData &data) {
+        mData = &data;
+        // Persist clipboard data so that the app can read it when handling the CTRL+V
+        QWasmIntegration::get()->clipboard()->QPlatformClipboard::setMimeData(mData,
+                                                                              QClipboard::Clipboard);
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_V,
+                                               Qt::ControlModifier, "V");
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_V,
+                                               Qt::ControlModifier, "V");
+    });
+
+    transfer.toMimeDataWithFile(pointerCallback); // mimedata
+
+}
 QT_END_NAMESPACE
