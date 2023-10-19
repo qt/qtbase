@@ -178,6 +178,8 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
         d.retrieveVolumeInfo();
         if (d.bytesTotal == 0 && d.rootPath != u'/')
             continue;
+        if (info.stDev != deviceIdForPath(d.rootPath))
+            continue;       // probably something mounted over this mountpoint
         d.name = retrieveLabel(d.device);
         volumes.emplace_back(QStorageInfo(*new QStorageInfoPrivate(std::move(d))));
     }
