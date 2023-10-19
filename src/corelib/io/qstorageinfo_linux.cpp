@@ -59,6 +59,14 @@ static QString decodeFsEncString(const QString &str)
     return decoded;
 }
 
+static inline dev_t deviceIdForPath(const QString &device)
+{
+    QT_STATBUF st;
+    if (QT_STAT(QFile::encodeName(device), &st) < 0)
+        return 0;
+    return st.st_dev;
+}
+
 static inline QString retrieveLabel(const QByteArray &device)
 {
     static const char pathDiskByLabel[] = "/dev/disk/by-label";
@@ -136,24 +144,25 @@ void QStorageInfoPrivate::initRootPath()
         return;
     }
 
-    qsizetype maxLength = 0;
-    const QString oldRootPath = rootPath;
-    rootPath.clear();
-
-    MountInfo *bestInfo = nullptr;
-    for (MountInfo &info : infos) {
-        // we try to find most suitable entry
-        qsizetype mpSize = info.mountPoint.size();
-        if (maxLength < mpSize && isParentOf(info.mountPoint, oldRootPath)) {
-            bestInfo = &info;
-            maxLength = mpSize;
-        }
-    }
-    if (bestInfo) {
-        rootPath = std::move(bestInfo->mountPoint);
-        device = std::move(bestInfo->device);
-        fileSystemType = std::move(bestInfo->fsType);
-        subvolume = std::move(bestInfo->fsRoot);
+    // We iterate over the /proc/self/mountinfo list backwards because then any
+    // matching isParentOf must be the actual mount point because it's the most
+    // recent mount on that path. Linux does allow mounting over non-empty
+    // directories, such as in:
+    //   # mount | tail -2
+    //   tmpfs on /tmp/foo/bar type tmpfs (rw,relatime,inode64)
+    //   tmpfs on /tmp/foo type tmpfs (rw,relatime,inode64)
+    // But just in case there's a mount --move, we ensure the device ID does
+    // match.
+    const QString oldRootPath = std::exchange(rootPath, QString());
+    const dev_t rootPathDevId = deviceIdForPath(oldRootPath);
+    for (auto it = infos.rbegin(); it != infos.rend(); ++it) {
+        if (rootPathDevId != it->stDev || !isParentOf(it->mountPoint, oldRootPath))
+            continue;
+        rootPath = std::move(it->mountPoint);
+        device = std::move(it->device);
+        fileSystemType = std::move(it->fsType);
+        subvolume = std::move(it->fsRoot);
+        return;
     }
 }
 
