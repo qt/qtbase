@@ -184,6 +184,23 @@ void tst_QStorageInfo::storageList()
         QVERIFY(!storage.device().isEmpty());
         QVERIFY(!storage.fileSystemType().isEmpty());
 #endif
+
+        QStorageInfo other(storage.rootPath());
+        QVERIFY(other.isValid());
+        QCOMPARE(other.rootPath(), storage.rootPath());
+        QCOMPARE(other.device(), storage.device());
+        QCOMPARE(other.subvolume(), storage.subvolume());
+        QCOMPARE(other.fileSystemType(), storage.fileSystemType());
+        QCOMPARE(other.name(), storage.name());
+        QCOMPARE(other.displayName(), storage.displayName());
+
+        QCOMPARE(other.bytesTotal(), storage.bytesTotal());
+        QCOMPARE(other.blockSize(), storage.blockSize());
+        // not comparing free space because it may have changed
+
+        QCOMPARE(other.isRoot(), storage.isRoot());
+        QCOMPARE(other.isReadOnly(), storage.isReadOnly());
+        QCOMPARE(other.isReady(), storage.isReady());
 }
 
 static bool checkFilesystemGoodForWriting(QTemporaryFile &file, QStorageInfo &storage)

@@ -30,7 +30,6 @@ class QStorageInfoPrivate : public QSharedData
 public:
     QStorageInfoPrivate() = default;
 
-    void initRootPath();
     void doStat();
 
     static QList<QStorageInfo> mountedVolumes();
@@ -46,18 +45,20 @@ public:
 
 protected:
 #if defined(Q_OS_WIN)
+    void initRootPath();
     void retrieveVolumeInfo();
     void retrieveDiskFreeSpace();
     bool queryStorageProperty();
     void queryFileFsSectorSizeInformation();
 #elif defined(Q_OS_DARWIN)
+    void initRootPath();
     void retrievePosixInfo();
     void retrieveUrlProperties(bool initRootPath = false);
     void retrieveLabel();
-#elif defined(Q_OS_UNIX)
+#elif defined(Q_OS_LINUX)
+    quint64 initRootPath();
     void retrieveVolumeInfo();
 
-#  ifdef Q_OS_LINUX
 public:
     struct MountInfo {
         QString mountPoint;
@@ -73,7 +74,9 @@ public:
           fileSystemType(std::move(info.fsType))
     {
     }
-#  endif
+#elif defined(Q_OS_UNIX)
+    void initRootPath();
+    void retrieveVolumeInfo();
 #endif
 
 public:

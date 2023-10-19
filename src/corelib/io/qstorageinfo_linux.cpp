@@ -67,33 +67,57 @@ static inline dev_t deviceIdForPath(const QString &device)
     return st.st_dev;
 }
 
-static inline QString retrieveLabel(const QByteArray &device)
+static inline quint64 retrieveDeviceId(const QByteArray &device, quint64 deviceId = 0)
+{
+    // major = 0 implies an anonymous block device, so we need to stat() the
+    // actual device to get its dev_t. This is required for btrfs (and possibly
+    // others), which always uses them for all the subvolumes (including the
+    // root):
+    // https://codebrowser.dev/linux/linux/fs/btrfs/disk-io.c.html#btrfs_init_fs_root
+    // https://codebrowser.dev/linux/linux/fs/super.c.html#get_anon_bdev
+    // For everything else, we trust the parameter.
+    if (major(deviceId) != 0)
+        return deviceId;
+
+    // don't even try to stat() a relative path or "/"
+    if (device.size() < 2 || !device.startsWith('/'))
+        return 0;
+
+    QT_STATBUF st;
+    if (QT_STAT(device, &st) < 0)
+        return 0;
+    if (!S_ISBLK(st.st_mode))
+        return 0;
+    return st.st_rdev;
+}
+
+static inline QString retrieveLabel(const QByteArray &device, quint64 deviceId)
 {
     static const char pathDiskByLabel[] = "/dev/disk/by-label";
 
-    QFileInfo devinfo(QFile::decodeName(device));
-    QString devicePath = devinfo.canonicalFilePath();
-    if (devicePath.isEmpty())
+    deviceId = retrieveDeviceId(device, deviceId);
+    if (!deviceId)
         return QString();
 
     auto filter = QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot;
     QDirIterator it(QLatin1StringView(pathDiskByLabel), filter);
     while (it.hasNext()) {
         QFileInfo fileInfo = it.nextFileInfo();
-        if (fileInfo.symLinkTarget() == devicePath)
-            return decodeFsEncString(fileInfo.fileName());
+        QString name = fileInfo.fileName();
+        if (retrieveDeviceId(QFile::encodeName(fileInfo.filePath())) == deviceId)
+            return decodeFsEncString(std::move(name));
     }
     return QString();
 }
 
 void QStorageInfoPrivate::doStat()
 {
-    initRootPath();
-    if (rootPath.isEmpty())
+    quint64 deviceId = initRootPath();
+    if (!deviceId)
         return;
 
     retrieveVolumeInfo();
-    name = retrieveLabel(device);
+    name = retrieveLabel(device, deviceId);
 }
 
 void QStorageInfoPrivate::retrieveVolumeInfo()
@@ -132,16 +156,25 @@ static std::vector<MountInfo> parseMountInfo(FilterMountInfo filter = FilterMoun
     return doParseMountInfo(mountinfo, filter);
 }
 
-void QStorageInfoPrivate::initRootPath()
+quint64 QStorageInfoPrivate::initRootPath()
 {
     rootPath = QFileInfo(rootPath).canonicalFilePath();
     if (rootPath.isEmpty())
-        return;
+        return 0;
 
     std::vector<MountInfo> infos = parseMountInfo();
     if (infos.empty()) {
         rootPath = u'/';
-        return;
+
+        // Need to return something non-zero here for this unlikely condition.
+        // Linux currently uses 20 bits for the minor portion[1] in a 32-bit
+        // integer; glibc, MUSL, and 64-bit Bionic use a 64-bit userspace
+        // dev_t, so this value will not match a real device from the kernel.
+        // 32-bit Bionic still has a 32-bit dev_t, but its makedev() macro[2]
+        // returns 64-bit content too.
+        // [1] https://codebrowser.dev/linux/linux/include/linux/kdev_t.h.html#_M/MINORBITS
+        // [2] https://android.googlesource.com/platform/bionic/+/ndk-r19/libc/include/sys/sysmacros.h#39
+        return makedev(0, -1);
     }
 
     // We iterate over the /proc/self/mountinfo list backwards because then any
@@ -162,8 +195,9 @@ void QStorageInfoPrivate::initRootPath()
         device = std::move(it->device);
         fileSystemType = std::move(it->fsType);
         subvolume = std::move(it->fsRoot);
-        return;
+        return it->stDev;
     }
+    return 0;
 }
 
 QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
@@ -180,7 +214,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
             continue;
         if (info.stDev != deviceIdForPath(d.rootPath))
             continue;       // probably something mounted over this mountpoint
-        d.name = retrieveLabel(d.device);
+        d.name = retrieveLabel(d.device, info.stDev);
         volumes.emplace_back(QStorageInfo(*new QStorageInfoPrivate(std::move(d))));
     }
     return volumes;
