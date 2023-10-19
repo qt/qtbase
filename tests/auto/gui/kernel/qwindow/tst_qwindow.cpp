@@ -22,6 +22,12 @@
 
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
+static bool isPlatformEglFS()
+{
+    static const bool isEglFS = !QGuiApplication::platformName().compare(QLatin1String("eglfs"), Qt::CaseInsensitive);
+    return isEglFS;
+}
+
 class tst_QWindow: public QObject
 {
     Q_OBJECT
@@ -473,11 +479,16 @@ void tst_QWindow::resizeEventAfterResize()
     // Make sure we get a resizeEvent after calling resize
     window.resize(m_testWindowSize);
 
+    if (isPlatformEglFS())
+        QEXPECT_FAIL("", "eglfs windows are fullscreen by default.", Continue);
+
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
 }
 
 void tst_QWindow::exposeEventOnShrink_QTBUG54040()
 {
+    if (isPlatformEglFS())
+        QSKIP("", "eglfs windows are fullscreen by default.", Continue);
     Window window;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
     window.setTitle(QTest::currentTestFunction());
@@ -660,6 +671,8 @@ void tst_QWindow::childWindowPositioning_data()
 
 void tst_QWindow::childWindowPositioning()
 {
+    if (isPlatformEglFS())
+        QSKIP("eglfs does not support child windows.");
     const QPoint topLeftOrigin(0, 0);
 
     ColoredWindow topLevelWindowFirst(Qt::green);
@@ -2131,6 +2144,10 @@ void tst_QWindow::initialSize()
     w.setTitle(QLatin1String(QTest::currentTestFunction()));
     w.setWidth(m_testWindowSize.width());
     w.showNormal();
+
+    if (isPlatformEglFS())
+        QEXPECT_FAIL("", "eglfs windows are fullscreen by default.", Continue);
+
     QTRY_COMPARE(w.width(), m_testWindowSize.width());
     QTRY_VERIFY(w.height() > 0);
     }
@@ -2142,6 +2159,8 @@ void tst_QWindow::initialSize()
     w.showNormal();
 
     const QSize expectedSize = testSize;
+    if (isPlatformEglFS())
+        QEXPECT_FAIL("", "eglfs windows are fullscreen by default.", Continue);
     QTRY_COMPARE(w.size(), expectedSize);
     }
 }
@@ -2317,6 +2336,10 @@ void tst_QWindow::modalWindowPosition()
     window.setModality(Qt::WindowModal);
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    if (isPlatformEglFS())
+        QEXPECT_FAIL("", "eglfs windows are fullscreen by default.", Continue);
+
     QCOMPARE(window.geometry(), origGeo);
 }
 
@@ -2344,6 +2367,9 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
 
     if (isPlatformOffscreenOrMinimal())
         QSKIP("Can't test window focusing on offscreen/minimal");
+
+    if (isPlatformEglFS())
+        QSKIP("QCursor::setPos() is not supported on this platform");
 
     const QPoint center = QGuiApplication::primaryScreen()->availableGeometry().center();
 
@@ -2525,6 +2551,8 @@ void tst_QWindow::spuriousMouseMove()
         QSKIP("No enter events sent");
     if (platformName == QLatin1String("wayland"))
         QSKIP("Setting mouse cursor position is not possible on Wayland");
+    if (isPlatformEglFS())
+        QSKIP("QCursor::setPos() is not supported on this platform");
     const QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
     const QPoint center = screenGeometry.center();
     QCursor::setPos(center);
@@ -2945,6 +2973,9 @@ void tst_QWindow::enterLeaveOnWindowShowHide()
 {
     if (isPlatformWayland())
         QSKIP("Can't set cursor position and qWaitForWindowActive on Wayland");
+
+    if (isPlatformEglFS())
+        QSKIP("QCursor::setPos() is not supported on this platform");
 
     QFETCH(Qt::WindowType, windowType);
 
