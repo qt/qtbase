@@ -74,9 +74,15 @@ imagedirs   += images \
 navigation.landingpage = "Qt Widgets"
 navigation.cppclassespage = "Qt Widgets C++ Classes"
 
+# Highlighted examples for User Interface Components category
 manifestmeta.highlighted.names = \
     "QtWidgets/Editable Tree Model Example" \
     "QtWidgets/Menus Example"
+
+# Highlighted examples for Desktop category
+manifestmeta.highlighted.names += \
+    "QtWidgets/System Tray Icon Example" \
+    "QtWidgets/Taking a Screenshot"
 
 # Enforce zero documentation warnings
 warninglimit = 0
