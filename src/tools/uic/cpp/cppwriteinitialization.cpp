@@ -24,6 +24,24 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 namespace {
+
+    // Expand "Horizontal", "Qt::Horizontal" to "Qt::Orientation::Horizontal"
+    QString expandEnum(QString value, const QString &prefix)
+    {
+        if (value.startsWith(prefix))
+            return value;
+        const auto pos = value.lastIndexOf("::"_L1);
+        if (pos == -1)
+            return prefix + "::"_L1 + value;
+        value.replace(0, pos, prefix);
+        return value;
+    }
+
+    inline QString expandSizePolicyEnum(const QString &value)
+    {
+        return expandEnum(value, "QSizePolicy::Policy"_L1);
+    }
+
     // figure out the toolbar area of a DOM attrib list.
     // By legacy, it is stored as an integer. As of 4.3.0, it is the enumeration value.
     QString toolBarAreaStringFromDOMAttributes(const CPP::WriteInitialization::DomPropertyMap &attributes) {
@@ -62,27 +80,17 @@ namespace {
         output << w << ", " << h << ", ";
 
         // size type
-        QString sizeType;
-        if (const DomProperty *st = properties.value("sizeType"_L1)) {
-            const QString value = st->elementEnum();
-            if (value.startsWith("QSizePolicy::"_L1))
-                sizeType = value;
-            else
-                sizeType = "QSizePolicy::"_L1 + value;
-        } else {
-            sizeType = QStringLiteral("QSizePolicy::Expanding");
-        }
+        const DomProperty *st = properties.value("sizeType"_L1);
+        QString horizType = st != nullptr ? st->elementEnum() : "Expanding"_L1;
+        QString vertType = "Minimum"_L1;
 
         // orientation
-        bool isVspacer = false;
-        if (const DomProperty *o = properties.value("orientation"_L1)) {
-            const QString orientation = o->elementEnum();
-            if (orientation == "Qt::Vertical"_L1 || orientation == "Vertical"_L1)
-                isVspacer = true;
-        }
-        const QString horizType = isVspacer ? "QSizePolicy::Minimum"_L1 : sizeType;
-        const QString vertType = isVspacer ? sizeType : "QSizePolicy::Minimum"_L1;
-        output << language::enumValue(horizType) << ", " << language::enumValue(vertType) << ')';
+        const DomProperty *o = properties.value("orientation"_L1);
+        if (o != nullptr && o->elementEnum().endsWith("Vertical"_L1))
+            std::swap(horizType, vertType);
+
+        output << language::enumValue(expandSizePolicyEnum(horizType)) << ", "
+               << language::enumValue(expandSizePolicyEnum(vertType)) << ')';
     }
 
 
@@ -1285,7 +1293,7 @@ void WriteInitialization::writeProperties(const QString &varName,
                     && m_uic->customWidgetsInfo()->extends(className, "Line")) {
             // Line support
             QString shape = u"QFrame::HLine"_s;
-            if (p->elementEnum() == "Qt::Vertical"_L1)
+            if (p->elementEnum().endsWith("::Vertical"_L1))
                 shape = u"QFrame::VLine"_s;
 
             m_output << m_indent << varName << language::derefPointer << "setFrameShape("
@@ -1594,12 +1602,18 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
     m_sizePolicyNameMap.insert(sizePolicyHandle, spName);
 
     m_output << m_indent << language::stackVariableWithInitParameters("QSizePolicy", spName);
+    QString horizPolicy;
+    QString vertPolicy;
     if (sp->hasElementHSizeType() && sp->hasElementVSizeType()) {
-        m_output << "QSizePolicy" << language::qualifier << language::sizePolicy(sp->elementHSizeType())
-            << ", QSizePolicy" << language::qualifier << language::sizePolicy(sp->elementVSizeType());
+        horizPolicy = language::sizePolicy(sp->elementHSizeType());
+        vertPolicy = language::sizePolicy(sp->elementVSizeType());
     } else if (sp->hasAttributeHSizeType() && sp->hasAttributeVSizeType()) {
-        m_output << "QSizePolicy" << language::qualifier << sp->attributeHSizeType()
-            << ", QSizePolicy" << language::qualifier << sp->attributeVSizeType();
+        horizPolicy = sp->attributeHSizeType();
+        vertPolicy = sp->attributeVSizeType();
+    }
+    if (!horizPolicy.isEmpty() && !vertPolicy.isEmpty()) {
+        m_output << language::enumValue(expandSizePolicyEnum(horizPolicy))
+            << ", " << language::enumValue(expandSizePolicyEnum(vertPolicy));
     }
     m_output << ')' << language::eol;
 

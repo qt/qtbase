@@ -148,7 +148,7 @@ public:
 
         hboxLayout->addWidget(italic);
 
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 
@@ -203,7 +203,7 @@ public:
 
         hboxLayout1->addWidget(invertSelection);
 
-        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout1->addItem(spacerItem1);
 
@@ -322,7 +322,7 @@ public:
 
         hboxLayout5->addWidget(generate);
 
-        spacerItem2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem2 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout5->addItem(spacerItem2);
 

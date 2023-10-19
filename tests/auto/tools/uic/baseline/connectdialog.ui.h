@@ -68,7 +68,7 @@ public:
 
         hboxLayout->addWidget(editSignalsButton);
 
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 
@@ -95,7 +95,7 @@ public:
 
         hboxLayout1->addWidget(editSlotsButton);
 
-        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout1->addItem(spacerItem1);
 

@@ -84,7 +84,7 @@ public:
         hboxLayout->setObjectName("hboxLayout");
         lookInCombo = new QFileDialogComboBox(QFileDialog);
         lookInCombo->setObjectName("lookInCombo");
-        QSizePolicy sizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(1);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(lookInCombo->sizePolicy().hasHeightForWidth());
@@ -128,7 +128,7 @@ public:
 
         splitter = new QSplitter(QFileDialog);
         splitter->setObjectName("splitter");
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(splitter->sizePolicy().hasHeightForWidth());
@@ -180,7 +180,7 @@ public:
 
         fileNameLabel = new QLabel(QFileDialog);
         fileNameLabel->setObjectName("fileNameLabel");
-        QSizePolicy sizePolicy2(QSizePolicy::Minimum, QSizePolicy::Preferred);
+        QSizePolicy sizePolicy2(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Preferred);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(fileNameLabel->sizePolicy().hasHeightForWidth());
@@ -191,7 +191,7 @@ public:
 
         fileNameEdit = new QFileDialogLineEdit(QFileDialog);
         fileNameEdit->setObjectName("fileNameEdit");
-        QSizePolicy sizePolicy3(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy3(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Fixed);
         sizePolicy3.setHorizontalStretch(1);
         sizePolicy3.setVerticalStretch(0);
         sizePolicy3.setHeightForWidth(fileNameEdit->sizePolicy().hasHeightForWidth());
@@ -208,7 +208,7 @@ public:
 
         fileTypeLabel = new QLabel(QFileDialog);
         fileTypeLabel->setObjectName("fileTypeLabel");
-        QSizePolicy sizePolicy4(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy4(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Fixed);
         sizePolicy4.setHorizontalStretch(0);
         sizePolicy4.setVerticalStretch(0);
         sizePolicy4.setHeightForWidth(fileTypeLabel->sizePolicy().hasHeightForWidth());
@@ -218,7 +218,7 @@ public:
 
         fileTypeCombo = new QComboBox(QFileDialog);
         fileTypeCombo->setObjectName("fileTypeCombo");
-        QSizePolicy sizePolicy5(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy5(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Fixed);
         sizePolicy5.setHorizontalStretch(0);
         sizePolicy5.setVerticalStretch(0);
         sizePolicy5.setHeightForWidth(fileTypeCombo->sizePolicy().hasHeightForWidth());

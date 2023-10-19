@@ -172,7 +172,7 @@ public:
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName("hboxLayout");
-        spacerItem = new QSpacerItem(131, 31, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(131, 31, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 

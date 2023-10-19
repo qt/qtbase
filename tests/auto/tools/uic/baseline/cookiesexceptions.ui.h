@@ -80,7 +80,7 @@ public:
 
         hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setObjectName("hboxLayout1");
-        spacerItem = new QSpacerItem(81, 25, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(81, 25, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout1->addItem(spacerItem);
 
@@ -112,7 +112,7 @@ public:
         ExceptionsGroupBox->setObjectName("ExceptionsGroupBox");
         gridLayout1 = new QGridLayout(ExceptionsGroupBox);
         gridLayout1->setObjectName("gridLayout1");
-        spacerItem1 = new QSpacerItem(252, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(252, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout1->addItem(spacerItem1, 0, 0, 1, 3);
 
@@ -136,7 +136,7 @@ public:
 
         gridLayout1->addWidget(removeAllButton, 2, 1, 1, 1);
 
-        spacerItem2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem2 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout1->addItem(spacerItem2, 2, 2, 1, 2);
 

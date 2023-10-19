@@ -42,7 +42,7 @@ public:
         vboxLayout->setObjectName("vboxLayout");
         gradientView = new QtGradientView(QtGradientViewDialog);
         gradientView->setObjectName("gradientView");
-        QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::MinimumExpanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(gradientView->sizePolicy().hasHeightForWidth());

@@ -42,7 +42,7 @@ public:
         vboxLayout->setObjectName("vboxLayout");
         gradientEditor = new QtGradientEditor(QtGradientDialog);
         gradientEditor->setObjectName("gradientEditor");
-        QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::MinimumExpanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(gradientEditor->sizePolicy().hasHeightForWidth());

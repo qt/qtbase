@@ -84,7 +84,7 @@ public:
         horizontalLayout->setObjectName("horizontalLayout");
         gbPrintRange = new QGroupBox(copiesTab);
         gbPrintRange->setObjectName("gbPrintRange");
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(gbPrintRange->sizePolicy().hasHeightForWidth());
@@ -131,7 +131,7 @@ public:
 
         _4->addWidget(to);
 
-        spacerItem = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(0, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         _4->addItem(spacerItem);
 
@@ -143,7 +143,7 @@ public:
 
         _3->addWidget(printSelection);
 
-        verticalSpacer = new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer = new QSpacerItem(1, 1, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         _3->addItem(verticalSpacer);
 
@@ -166,7 +166,7 @@ public:
 
         gridLayout->addWidget(copies, 0, 1, 1, 2);
 
-        horizontalSpacer = new QSpacerItem(91, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        horizontalSpacer = new QSpacerItem(91, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout->addItem(horizontalSpacer, 0, 3, 1, 1);
 
@@ -177,7 +177,7 @@ public:
 
         outputIcon = new QLabel(groupBox);
         outputIcon->setObjectName("outputIcon");
-        QSizePolicy sizePolicy1(QSizePolicy::Ignored, QSizePolicy::Ignored);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(outputIcon->sizePolicy().hasHeightForWidth());
@@ -190,7 +190,7 @@ public:
 
         gridLayout->addWidget(reverse, 2, 0, 1, 2);
 
-        verticalSpacer_2 = new QSpacerItem(0, 1, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer_2 = new QSpacerItem(0, 1, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(verticalSpacer_2, 3, 0, 1, 4);
 
@@ -207,7 +207,7 @@ public:
         colorMode->setObjectName("colorMode");
         gridLayout_4 = new QGridLayout(colorMode);
         gridLayout_4->setObjectName("gridLayout_4");
-        verticalSpacer_6 = new QSpacerItem(1, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer_6 = new QSpacerItem(1, 0, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout_4->addItem(verticalSpacer_6, 2, 0, 1, 1);
 
@@ -249,7 +249,7 @@ public:
 
         verticalLayout->addWidget(duplexShort);
 
-        verticalSpacer1 = new QSpacerItem(1, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer1 = new QSpacerItem(1, 0, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         verticalLayout->addItem(verticalSpacer1);
 
