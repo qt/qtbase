@@ -2546,7 +2546,6 @@ void tst_QStringConverter::fromLocal8Bit_special_cases()
     QCOMPARE_GT(state.remainingChars, 0);
     // Then provide the remaining octet:
     result = QLocal8Bit::convertToUnicode_sys("\xa0", UTF8, &state);
-    QEXPECT_FAIL("", "We don't store enough state to handle this case", Abort);
     QCOMPARE(result, u"你");
     QCOMPARE(state.remainingChars, 0);
 
@@ -2555,20 +2554,22 @@ void tst_QStringConverter::fromLocal8Bit_special_cases()
     state.clear();
     constexpr uint GB_18030 = 54936u;
     const char sequence[] = "\x95\x32\x90\x31";
-    QByteArrayView octets = QByteArrayView(sequence);
+    // Repeat the sequence multiple times to test handling of exhaustion of
+    // internal buffer
+    QByteArray repeated = QByteArray(sequence).repeated(2049);
+    QByteArrayView octets = QByteArrayView(repeated);
     result = QLocal8Bit::convertToUnicode_sys(octets.first(2), GB_18030, &state);
     QCOMPARE(result, QString());
     QVERIFY(result.isNull());
-    QEXPECT_FAIL("", "We don't store enough state to handle this case.", Abort);
     QCOMPARE_GT(state.remainingChars, 0);
     // Then provide one more octet:
     result = QLocal8Bit::convertToUnicode_sys(octets.sliced(2, 1), GB_18030, &state);
     QCOMPARE(result, QString());
     QVERIFY(result.isNull());
     QCOMPARE_GT(state.remainingChars, 0);
-    // Then provide the last octet
-    result = QLocal8Bit::convertToUnicode_sys(octets.last(1), GB_18030, &state);
-    QCOMPARE(result, u"𠂇");
+    // Then provide the last octet + the rest of the string
+    result = QLocal8Bit::convertToUnicode_sys(octets.sliced(3), GB_18030, &state);
+    QCOMPARE(result.first(2), u"𠂇");
     QCOMPARE(state.remainingChars, 0);
 }
 
@@ -2618,7 +2619,7 @@ void tst_QStringConverter::toLocal8Bit_special_cases()
     // Retain compat with the behavior for toLocal8Bit:
     QCOMPARE(firstHalf.toLocal8Bit(), "?");
 }
-#endif
+#endif // Q_OS_WIN
 
 struct DontCrashAtExit {
     ~DontCrashAtExit() {
