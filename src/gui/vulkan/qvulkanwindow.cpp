@@ -178,12 +178,12 @@ Q_DECLARE_LOGGING_CATEGORY(lcGuiVk)
   As an exception to this rule, \c robustBufferAccess is never enabled. Use the
   callback mechanism described below, if enabling that feature is desired.
 
-  Just enabling the 1.0 core features is not always sufficient, and therefore
-  full control over the VkPhysicalDeviceFeatures used for device creation is
-  possible too by registering a callback function with
+  This is not always desirable, and may be insufficient with Vulkan 1.1 and
+  higher. Therefore, full control over the VkPhysicalDeviceFeatures used for
+  device creation is possible too by registering a callback function with
   setEnabledFeaturesModifier(). When set, the callback function is invoked,
-  letting it alter the VkPhysicalDeviceFeatures, instead of enabling only the
-  1.0 core features.
+  letting it alter the VkPhysicalDeviceFeatures. To instead provide a chainable
+  VkPhysicalDeviceFeatures2, call setEnabledFeatures2Modifier().
 
   \sa QVulkanInstance, QWindow
  */
@@ -702,17 +702,22 @@ void QVulkanWindowPrivate::init()
     devInfo.enabledExtensionCount = devExts.size();
     devInfo.ppEnabledExtensionNames = devExts.constData();
 
-    VkPhysicalDeviceFeatures features;
-    memset(&features, 0, sizeof(features));
-    if (enabledFeaturesModifier) {
+    VkPhysicalDeviceFeatures features = {};
+    VkPhysicalDeviceFeatures2 features2 = {};
+    if (enabledFeatures2Modifier) {
+        features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        enabledFeatures2Modifier(features2);
+        devInfo.pNext = &features2;
+    } else if (enabledFeaturesModifier) {
         enabledFeaturesModifier(features);
+        devInfo.pEnabledFeatures = &features;
     } else {
         // Enable all supported 1.0 core features, except ones that likely
         // involve a performance penalty.
         f->vkGetPhysicalDeviceFeatures(physDev, &features);
         features.robustBufferAccess = VK_FALSE;
+        devInfo.pEnabledFeatures = &features;
     }
-    devInfo.pEnabledFeatures = &features;
 
     // Device layers are not supported by QVulkanWindow since that's an already deprecated
     // API. However, have a workaround for systems with older API and layers (f.ex. L4T
@@ -1625,16 +1630,12 @@ void QVulkanWindow::setQueueCreateInfoModifier(const QueueCreateInfoModifier &mo
     praticular, \c robustBufferAccess is always disabled in order to avoid
     unexpected performance hits.
 
-    This however is not always sufficient when working with Vulkan 1.1 or 1.2
-    features and extensions. Hence this callback mechanism.
-
     The VkPhysicalDeviceFeatures reference passed in is all zeroed out at the
     point when the function is invoked. It is up to the function to change
-    members to true, or set up \c pNext chains as it sees fit.
+    members as it sees fit.
 
-    \note When setting up \c pNext chains, make sure the referenced objects
-    have a long enough lifetime, for example by storing them as member
-    variables in the QVulkanWindow subclass.
+    \note To control Vulkan 1.1, 1.2, or 1.3 features, use
+    setEnabledFeatures2Modifier() and the corresponding callback type instead.
 
     \sa setEnabledFeaturesModifier()
  */
@@ -1642,14 +1643,58 @@ void QVulkanWindow::setQueueCreateInfoModifier(const QueueCreateInfoModifier &mo
 /*!
     Sets the enabled device features modification function \a modifier.
 
-    \sa EnabledFeaturesModifier
+    \note To control Vulkan 1.1, 1.2, or 1.3 features, use
+    setEnabledFeatures2Modifier() instead.
 
-    \since 6.4
+    \note \a modifier is passed to the callback function with all members set
+    to false. It is up to the function to change members as it sees fit.
+
+    \since 6.7
+    \sa EnabledFeaturesModifier
  */
 void QVulkanWindow::setEnabledFeaturesModifier(const EnabledFeaturesModifier &modifier)
 {
     Q_D(QVulkanWindow);
     d->enabledFeaturesModifier = modifier;
+}
+
+/*!
+    \typedef QVulkanWindow::EnabledFeatures2Modifier
+
+    A function that is called during graphics initialization to alter the
+    VkPhysicalDeviceFeatures2 that is changed to the VkDeviceCreateInfo.
+
+    By default QVulkanWindow enables all Vulkan 1.0 core features that the
+    physical device reports as supported, with certain exceptions. In
+    praticular, \c robustBufferAccess is always disabled in order to avoid
+    unexpected performance hits.
+
+    This however is not always sufficient when working with Vulkan 1.1, 1.2, or
+    1.3 features and extensions. Hence this callback mechanism. If only Vulkan
+    1.0 is relevant at run time, use setEnabledFeaturesModifier() instead.
+
+    The VkPhysicalDeviceFeatures2 reference passed to the callback function
+    with \c sType set, but the rest zeroed out. It is up to the function to
+    change members to true, or set up \c pNext chains as it sees fit.
+
+    \note When setting up \c pNext chains, make sure the referenced objects
+    have a long enough lifetime, for example by storing them as member
+    variables in the QVulkanWindow subclass.
+
+    \since 6.7
+    \sa setEnabledFeatures2Modifier()
+ */
+
+/*!
+    Sets the enabled device features modification function \a modifier.
+
+    \since 6.7
+    \sa EnabledFeatures2Modifier
+*/
+void QVulkanWindow::setEnabledFeatures2Modifier(const EnabledFeatures2Modifier &modifier)
+{
+    Q_D(QVulkanWindow);
+    d->enabledFeatures2Modifier = modifier;
 }
 
 /*!

@@ -54,6 +54,14 @@ public:
     virtual void logicalDeviceLost();
 };
 
+#ifndef VK_VERSION_1_1
+typedef struct VkPhysicalDeviceFeatures2 {
+    VkStructureType             sType;
+    void*                       pNext;
+    VkPhysicalDeviceFeatures    features;
+} VkPhysicalDeviceFeatures2;
+#endif
+
 class Q_GUI_EXPORT QVulkanWindow : public QWindow
 {
     Q_OBJECT
@@ -79,6 +87,9 @@ public:
 
     typedef std::function<void(VkPhysicalDeviceFeatures &)> EnabledFeaturesModifier;
     void setEnabledFeaturesModifier(const EnabledFeaturesModifier &modifier);
+
+    typedef std::function<void(VkPhysicalDeviceFeatures2 &)> EnabledFeatures2Modifier;
+    void setEnabledFeatures2Modifier(const EnabledFeatures2Modifier &modifier);
 
     void setPreferredColorFormats(const QList<VkFormat> &formats);
 

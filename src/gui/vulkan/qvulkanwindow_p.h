@@ -68,6 +68,7 @@ public:
     VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
     QVulkanWindow::QueueCreateInfoModifier queueCreateInfoModifier;
     QVulkanWindow::EnabledFeaturesModifier enabledFeaturesModifier;
+    QVulkanWindow::EnabledFeatures2Modifier enabledFeatures2Modifier;
 
     VkDevice dev = VK_NULL_HANDLE;
     QVulkanDeviceFunctions *devFuncs;
