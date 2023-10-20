@@ -44,7 +44,7 @@ manifestmeta.highlighted.names = \
     "QtNetwork/Fortune Client" \
     "QtNetwork/Fortune Server" \
     "QtNetwork/HTTP Client" \
-    "QtNetwork/Secure Socket Client Example" \
+    "QtNetwork/Secure Socket Client" \
     "QtNetwork/Torrent Example"
 
 # Enforce zero documentation warnings
