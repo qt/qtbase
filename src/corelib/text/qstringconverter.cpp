@@ -1395,15 +1395,15 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
         return QByteArray();
     if (uclen == 0)
         return QByteArray("");
-    BOOL used_def;
     QByteArray mb(4096, 0);
     int len;
-    while (!(len = WideCharToMultiByte(codePage, 0, ch, uclen, mb.data(), mb.size() - 1, 0,
-                                       &used_def))) {
+    while (!(len = WideCharToMultiByte(codePage, 0, ch, uclen, mb.data(), mb.size() - 1, nullptr,
+                                       nullptr))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
-            mb.resize(1+WideCharToMultiByte(codePage, 0, ch, uclen, 0, 0, 0, &used_def));
-                // and try again...
+            mb.resize(1
+                      + WideCharToMultiByte(codePage, 0, ch, uclen, nullptr, 0, nullptr, nullptr));
+            // and try again...
         } else {
             // Fail.  Probably can't happen in fact (dwFlags is 0).
 #ifndef QT_NO_DEBUG
