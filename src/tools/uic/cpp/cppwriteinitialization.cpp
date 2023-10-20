@@ -33,7 +33,7 @@ namespace {
             return result;
         switch (pstyle->kind()) {
         case DomProperty::Number:
-            result = QLatin1StringView(language::toolbarArea(pstyle->elementNumber()));
+            result = language::toolbarArea(pstyle->elementNumber());
             break;
         case DomProperty::Enum:
             result = pstyle->elementEnum();
