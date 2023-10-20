@@ -1681,7 +1681,8 @@ QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
         defaultSs = getDefaultStyleSheet();
         QStyle *bs = baseStyle();
         styleSheetCaches->styleSheetCache.insert(bs, defaultSs);
-        QObject::connect(bs, SIGNAL(destroyed(QObject*)), styleSheetCaches, SLOT(styleDestroyed(QObject*)), Qt::UniqueConnection);
+        QObject::connect(bs, &QStyle::destroyed, styleSheetCaches,
+                         &QStyleSheetStyleCaches::styleDestroyed);
     } else {
         defaultSs = defaultCacheIt.value();
     }
@@ -2904,7 +2905,9 @@ bool QStyleSheetStyle::initObject(const QObject *obj) const
         const_cast<QWidget *>(w)->setAttribute(Qt::WA_StyleSheet, true);
     }
 
-    QObject::connect(obj, SIGNAL(destroyed(QObject*)), styleSheetCaches, SLOT(objectDestroyed(QObject*)), Qt::UniqueConnection);
+    connect(obj, &QObject::destroyed,
+            styleSheetCaches, &QStyleSheetStyleCaches::objectDestroyed,
+            Qt::UniqueConnection);
     return true;
 }
 
@@ -2948,10 +2951,10 @@ void QStyleSheetStyle::polish(QWidget *w)
         QRenderRule rule = renderRule(sa, PseudoElement_None, PseudoClass_Enabled);
         if ((rule.hasBorder() && rule.border()->hasBorderImage())
             || (rule.hasBackground() && !rule.background()->pixmap.isNull())) {
-            QObject::connect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()), Qt::UniqueConnection);
-            QObject::connect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()), Qt::UniqueConnection);
+            connect(sa->horizontalScrollBar(), &QScrollBar::valueChanged,
+                    sa, QOverload<>::of(&QAbstractScrollArea::update), Qt::UniqueConnection);
+            connect(sa->verticalScrollBar(), &QScrollBar::valueChanged,
+                    sa, QOverload<>::of(&QAbstractScrollArea::update), Qt::UniqueConnection);
         }
     }
 #endif
@@ -3054,13 +3057,13 @@ void QStyleSheetStyle::unpolish(QWidget *w)
     setGeometry(w);
     w->setAttribute(Qt::WA_StyleSheetTarget, false);
     w->setAttribute(Qt::WA_StyleSheet, false);
-    QObject::disconnect(w, nullptr, this, nullptr);
+    w->disconnect(this);
 #if QT_CONFIG(scrollarea)
     if (QAbstractScrollArea *sa = qobject_cast<QAbstractScrollArea *>(w)) {
-        QObject::disconnect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                            sa, SLOT(update()));
-        QObject::disconnect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                            sa, SLOT(update()));
+        disconnect(sa->horizontalScrollBar(), &QScrollBar::valueChanged,
+                   sa, QOverload<>::of(&QAbstractScrollArea::update));
+        disconnect(sa->verticalScrollBar(), &QScrollBar::valueChanged,
+                   sa, QOverload<>::of(&QAbstractScrollArea::update));
     }
 #endif
     baseStyle()->unpolish(w);
