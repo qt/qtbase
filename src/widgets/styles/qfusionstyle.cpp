@@ -375,37 +375,18 @@ QFusionStyle::~QFusionStyle()
 }
 
 /*!
-    \fn void QFusionStyle::drawItemText(QPainter *painter, const QRect &rectangle, int alignment, const QPalette &palette,
-                                    bool enabled, const QString& text, QPalette::ColorRole textRole) const
-
-    Draws the given \a text in the specified \a rectangle using the
-    provided \a painter and \a palette.
-
-    Text is drawn using the painter's pen. If an explicit \a textRole
-    is specified, then the text is drawn using the \a palette's color
-    for the specified role.  The \a enabled value indicates whether or
-    not the item is enabled; when reimplementing, this value should
-    influence how the item is drawn.
-
-    The text is aligned and wrapped according to the specified \a
-    alignment.
-
-    \sa Qt::Alignment
+    \reimp
 */
 void QFusionStyle::drawItemText(QPainter *painter, const QRect &rect, int alignment, const QPalette &pal,
                                 bool enabled, const QString& text, QPalette::ColorRole textRole) const
 {
+    Q_UNUSED(enabled);
     if (text.isEmpty())
         return;
 
     QPen savedPen = painter->pen();
-    if (textRole != QPalette::NoRole) {
+    if (textRole != QPalette::NoRole)
         painter->setPen(QPen(pal.brush(textRole), savedPen.widthF()));
-    }
-    if (!enabled) {
-        QPen pen = painter->pen();
-        painter->setPen(pen);
-    }
     painter->drawText(rect, alignment, text);
     painter->setPen(savedPen);
 }
