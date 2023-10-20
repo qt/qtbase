@@ -224,7 +224,7 @@ struct QUnixOSVersion
     QString prettyName;             // $PRETTY_NAME                 $DISTRIB_DESCRIPTION
 };
 
-static QString unquote(const char *begin, const char *end)
+static QString unquote(QByteArrayView str)
 {
     // man os-release says:
     // Variable assignment values must be enclosed in double
@@ -235,10 +235,11 @@ static QString unquote(const char *begin, const char *end)
     // All strings should be in UTF-8 format, and non-printable
     // characters should not be used. It is not supported to
     // concatenate multiple individually quoted strings.
-    if (*begin == '"')
-        return QString::fromUtf8(begin + 1, end - begin - 2);
-    return QString::fromUtf8(begin, end - begin);
+    if (str.size() >= 2 && str.front() == '"' && str.back() == '"')
+        str = str.sliced(1).chopped(1);
+    return QString::fromUtf8(str);
 }
+
 static QByteArray getEtcFileContent(const char *filename)
 {
     // we're avoiding QFile here
@@ -279,19 +280,19 @@ static bool readEtcFile(QUnixOSVersion &v, const char *filename,
 
         if (line.startsWith(idKey)) {
             ptr += idKey.size();
-            v.productType = unquote(ptr, eol);
+            v.productType = unquote({ptr, eol});
             continue;
         }
 
         if (line.startsWith(prettyNameKey)) {
             ptr += prettyNameKey.size();
-            v.prettyName = unquote(ptr, eol);
+            v.prettyName = unquote({ptr, eol});
             continue;
         }
 
         if (line.startsWith(versionKey)) {
             ptr += versionKey.size();
-            v.productVersion = unquote(ptr, eol);
+            v.productVersion = unquote({ptr, eol});
             continue;
         }
     }
