@@ -92,12 +92,10 @@ public:
 
     int animationFps;
 #if QT_CONFIG(animation)
-    void _q_removeAnimation();
-
-    QList<const QObject*> animationTargets() const;
     QStyleAnimation* animation(const QObject *target) const;
     void startAnimation(QStyleAnimation *animation) const;
     void stopAnimation(const QObject *target) const;
+    void removeAnimation();
 
 private:
     mutable QHash<const QObject*, QStyleAnimation*> animations;

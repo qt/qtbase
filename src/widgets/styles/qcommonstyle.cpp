@@ -1266,12 +1266,6 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
 
 #if QT_CONFIG(animation)
 /*! \internal */
-QList<const QObject*> QCommonStylePrivate::animationTargets() const
-{
-    return animations.keys();
-}
-
-/*! \internal */
 QStyleAnimation * QCommonStylePrivate::animation(const QObject *target) const
 {
     return animations.value(target);
@@ -1282,7 +1276,9 @@ void QCommonStylePrivate::startAnimation(QStyleAnimation *animation) const
 {
     Q_Q(const QCommonStyle);
     stopAnimation(animation->target());
-    q->connect(animation, SIGNAL(destroyed()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
+    QObjectPrivate::connect(animation, &QStyleAnimation::destroyed,
+                            this, &QCommonStylePrivate::removeAnimation,
+                            Qt::UniqueConnection);
     animations.insert(animation->target(), animation);
     animation->start();
 }
@@ -1298,7 +1294,7 @@ void QCommonStylePrivate::stopAnimation(const QObject *target) const
 }
 
 /*! \internal */
-void QCommonStylePrivate::_q_removeAnimation()
+void QCommonStylePrivate::removeAnimation()
 {
     Q_Q(QCommonStyle);
     QObject *animation = q->sender();

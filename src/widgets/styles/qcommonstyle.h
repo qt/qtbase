@@ -61,9 +61,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QCommonStyle)
     Q_DISABLE_COPY(QCommonStyle)
-#if QT_CONFIG(animation)
-    Q_PRIVATE_SLOT(d_func(), void _q_removeAnimation())
-#endif
 };
 
 QT_END_NAMESPACE
