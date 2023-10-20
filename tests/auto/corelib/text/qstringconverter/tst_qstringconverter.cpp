@@ -2568,10 +2568,7 @@ void tst_QStringConverter::fromLocal8Bit_special_cases()
     result = QLocal8Bit::convertToUnicode_sys(octets.first(2), GB_18030, &state);
     QCOMPARE(result, QString());
     QVERIFY(result.isNull());
-    QEXPECT_FAIL("",
-                 "We don't store enough state to handle this case. + GB 18030 does not work with "
-                 "the MB_PRECOMPOSED flag.",
-                 Abort);
+    QEXPECT_FAIL("", "We don't store enough state to handle this case.", Abort);
     QCOMPARE_GT(state.remainingChars, 0);
     // Then provide one more octet:
     result = QLocal8Bit::convertToUnicode_sys(octets.sliced(2, 1), GB_18030, &state);
