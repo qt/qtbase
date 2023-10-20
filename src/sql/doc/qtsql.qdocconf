@@ -40,5 +40,10 @@ imagedirs   += images \
 navigation.landingpage = "Qt SQL"
 navigation.cppclassespage = "Qt SQL C++ Classes"
 
+# Highlighted examples in Data Processing & IO category
+manifestmeta.highlighted.names = \
+    "QtSql/Master Detail Example" \
+    "QtSql/SQL Browser"
+
 # Fail the documentation build if there are more warnings than the limit
 warninglimit = 0
