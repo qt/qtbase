@@ -1275,11 +1275,11 @@ QStyleAnimation * QCommonStylePrivate::animation(const QObject *target) const
 void QCommonStylePrivate::startAnimation(QStyleAnimation *animation) const
 {
     Q_Q(const QCommonStyle);
-    stopAnimation(animation->target());
-    QObjectPrivate::connect(animation, &QStyleAnimation::destroyed,
-                            this, &QCommonStylePrivate::removeAnimation,
-                            Qt::UniqueConnection);
-    animations.insert(animation->target(), animation);
+    const auto target = animation->target();
+    stopAnimation(target);
+    QObject::connect(animation, &QStyleAnimation::destroyed,
+                     q, [this, target]() { removeAnimation(target); });
+    animations.insert(target, animation);
     animation->start();
 }
 
@@ -1294,12 +1294,9 @@ void QCommonStylePrivate::stopAnimation(const QObject *target) const
 }
 
 /*! \internal */
-void QCommonStylePrivate::removeAnimation()
+void QCommonStylePrivate::removeAnimation(const QObject *target) const
 {
-    Q_Q(QCommonStyle);
-    QObject *animation = q->sender();
-    if (animation)
-        animations.remove(animation->parent());
+    animations.remove(target);
 }
 #endif
 

@@ -95,7 +95,7 @@ public:
     QStyleAnimation* animation(const QObject *target) const;
     void startAnimation(QStyleAnimation *animation) const;
     void stopAnimation(const QObject *target) const;
-    void removeAnimation();
+    void removeAnimation(const QObject *target) const;
 
 private:
     mutable QHash<const QObject*, QStyleAnimation*> animations;
