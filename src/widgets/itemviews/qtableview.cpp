@@ -610,7 +610,9 @@ void QTableViewPrivate::clearConnections()
     for (const QMetaObject::Connection &connection : dynHorHeaderConnections)
         QObject::disconnect(connection);
     QObject::disconnect(selectionmodelConnection);
+#if QT_CONFIG(abstractbutton)
     QObject::disconnect(cornerWidgetConnection);
+#endif
 }
 
 /*!
