@@ -28,10 +28,10 @@ struct Object : QJniObject
     Q_IMPLICIT Object(QJniObject &&object) : QJniObject(std::move(object)) {}
 
     // Compiler-generated copy/move semantics based on QJniObject's shared d-pointer are fine!
-    Object(const Object<Type> &other) = default;
-    Object(Object<Type> &&other) = default;
-    Object<Type> &operator=(const Object<Type> &other) = default;
-    Object<Type> &operator=(Object<Type> &&other) = default;
+    Object(const Object &other) = default;
+    Object(Object &&other) = default;
+    Object &operator=(const Object &other) = default;
+    Object &operator=(Object &&other) = default;
 
     // avoid ambiguities with deleted const char * constructor
     Q_IMPLICIT Object(std::nullptr_t) : QJniObject() {}
@@ -41,18 +41,13 @@ struct Object : QJniObject
             , ValidSignatureTypes<Args...> = true
     >
     explicit Object(Args &&...args)
-        : QJniObject(Qt::Initialization::Uninitialized)
-    {
-        *this = Object<Type>{QJniObject::construct<Class>(std::forward<Args>(args)...)};
-    }
+        : QJniObject(QtJniTypes::Traits<Class>::className(), std::forward<Args>(args)...)
+    {}
 
     // named constructors avoid ambiguities
-    static Object<Type> fromJObject(jobject object) { return Object<Type>(object); }
+    static Object fromJObject(jobject object) { return Object(object); }
     template <typename ...Args>
-    static Object<Type> construct(Args &&...args)
-    {
-        return Object<Type>{QJniObject::construct<Class, Args...>(std::forward<Args>(args)...)};
-    }
+    static Object construct(Args &&...args) { return Object{std::forward<Args>(args)...}; }
 
     // public API forwarding to QJniObject, with the implicit Class template parameter
     template <typename Ret, typename ...Args
