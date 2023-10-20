@@ -187,6 +187,7 @@ public:
     void retranslateStrings();
 
     void setVisible(bool visible) override;
+    bool canBeNativeDialog() const override;
 
     static int showOldMessageBox(QWidget *parent, QMessageBox::Icon icon,
                                  const QString &title, const QString &text,
@@ -2715,6 +2716,32 @@ static QPlatformDialogHelper::StandardButtons helperStandardButtons(QMessageBox 
 {
     QPlatformDialogHelper::StandardButtons buttons(int(q->standardButtons()));
     return buttons;
+}
+
+bool QMessageBoxPrivate::canBeNativeDialog() const
+{
+    // Don't use Q_Q here! This function is called from ~QDialog,
+    // so Q_Q calling q_func() invokes undefined behavior (invalid cast in q_func()).
+    const QDialog * const q = static_cast<const QMessageBox*>(q_ptr);
+    if (nativeDialogInUse)
+        return true;
+    if (QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs)
+        || q->testAttribute(Qt::WA_DontShowOnScreen)) {
+        return false;
+    }
+
+    if (strcmp(QMessageBox::staticMetaObject.className(), q->metaObject()->className()) != 0)
+        return false;
+
+    for (auto *customButton : customButtonList) {
+        if (QPushButton *pushButton = qobject_cast<QPushButton *>(customButton)) {
+            // We can't support buttons with menus in native dialogs (yet)
+            if (pushButton->menu())
+                return false;
+        }
+    }
+
+    return QDialogPrivate::canBeNativeDialog();
 }
 
 void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
