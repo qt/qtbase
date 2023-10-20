@@ -1660,8 +1660,6 @@ void QMessageBox::open(QObject *receiver, const char *member)
 void QMessageBoxPrivate::setVisible(bool visible)
 {
     Q_Q(QMessageBox);
-    if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden) != visible)
-        return;
 
     if (canBeNativeDialog())
         setNativeDialogVisible(visible);

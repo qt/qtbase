@@ -2156,11 +2156,6 @@ void QColorDialog::setVisible(bool visible)
 void QColorDialogPrivate::setVisible(bool visible)
 {
     Q_Q(QColorDialog);
-    if (visible){
-        if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && !q->testAttribute(Qt::WA_WState_Hidden))
-            return;
-    } else if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden))
-        return;
 
     if (visible)
         selectedQColor = QColor();

@@ -974,8 +974,7 @@ void QFontDialog::setVisible(bool visible)
 void QFontDialogPrivate::setVisible(bool visible)
 {
     Q_Q(QFontDialog);
-    if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden) != visible)
-        return;
+
     if (canBeNativeDialog())
         setNativeDialogVisible(visible);
     if (nativeDialogInUse) {

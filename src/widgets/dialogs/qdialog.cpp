@@ -740,6 +740,10 @@ void QDialog::closeEvent(QCloseEvent *e)
 void QDialog::setVisible(bool visible)
 {
     Q_D(QDialog);
+
+    if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) != visible)
+        return;
+
     d->setVisible(visible);
 }
 
@@ -764,9 +768,6 @@ void QDialogPrivate::setVisible(bool visible)
     }
 
     if (visible) {
-        if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && !q->testAttribute(Qt::WA_WState_Hidden))
-            return;
-
         q->QWidget::setVisible(visible);
 
         // Window activation might be prevented. We can't test isActiveWindow here,
@@ -817,8 +818,6 @@ void QDialogPrivate::setVisible(bool visible)
 #endif
 
     } else {
-        if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden))
-            return;
 
 #if QT_CONFIG(accessibility)
         if (q->isVisible()) {

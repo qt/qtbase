@@ -848,11 +848,6 @@ void QFileDialog::setVisible(bool visible)
 void QFileDialogPrivate::setVisible(bool visible)
 {
     Q_Q(QFileDialog);
-    if (visible){
-        if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && !q->testAttribute(Qt::WA_WState_Hidden))
-            return;
-    } else if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden))
-        return;
 
     if (canBeNativeDialog()){
         if (setNativeDialogVisible(visible)){
