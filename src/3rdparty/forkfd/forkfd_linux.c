@@ -157,7 +157,7 @@ static int system_forkfd_pidfd_set_flags(int pidfd, int flags)
 
 int system_vforkfd(int flags, pid_t *ppid, int (*childFn)(void *), void *token, int *system)
 {
-    __attribute__((aligned(64))) char childStack[4096];
+    __attribute__((aligned(64))) char childStack[SIGSTKSZ];
     pid_t pid;
     int pidfd;
     unsigned long cloneflags = CLONE_PIDFD | CLONE_VFORK | CLONE_VM | SIGCHLD;
