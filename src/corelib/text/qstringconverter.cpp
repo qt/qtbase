@@ -1291,7 +1291,7 @@ static QString convertToUnicodeCharByChar(QByteArrayView in, quint32 codePage,
     while ((next = CharNextExA(codePage, mb, 0)) != mb) {
         wchar_t wc[2] ={0};
         int charlength = int(next - mb); // always just a few bytes
-        int len = MultiByteToWideChar(codePage, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
+        int len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
         if (len>0) {
             s.append(QChar(wc[0]));
         } else {
@@ -1338,7 +1338,7 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
         prev[0] = state->state_data[0];
         prev[1] = mb[0];
         state->remainingChars = 0;
-        len = MultiByteToWideChar(codePage, MB_PRECOMPOSED, prev, 2, out, outlen);
+        len = MultiByteToWideChar(codePage, 0, prev, 2, out, outlen);
         if (len) {
             if (mblen == 1)
                 return QStringView(out, len).toString();
@@ -1349,12 +1349,12 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
         }
     }
 
-    while (!(len=MultiByteToWideChar(codePage, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS,
+    while (!(len=MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS,
                 mb, mblen, out, int(outlen)))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
             Q_ASSERT(QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size()));
-            const int wclen = MultiByteToWideChar(codePage, MB_PRECOMPOSED, mb, mblen, 0, 0);
+            const int wclen = MultiByteToWideChar(codePage, 0, mb, mblen, 0, 0);
             const qsizetype offset = qsizetype(out - buf.data());
             sp.resize(offset + wclen);
             auto it = reinterpret_cast<wchar_t *>(sp.data());
