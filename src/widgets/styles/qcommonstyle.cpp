@@ -5503,12 +5503,27 @@ static QPixmap cachedPixmapFromXPM(const char * const *xpm)
 static inline QPixmap titleBarMenuCachedPixmapFromXPM() { return cachedPixmapFromXPM(qt_menu_xpm); }
 #endif // QT_CONFIG(imageformat_xpm)
 
-#ifndef QT_NO_IMAGEFORMAT_PNG
-static inline QString clearText16IconPath()
+#if QT_CONFIG(imageformat_png)
+static inline QString iconResourcePrefix() { return QStringLiteral(":/qt-project.org/styles/commonstyle/images/"); }
+static inline QString iconPngSuffix() { return QStringLiteral(".png"); }
+
+template <typename T>
+static void addIconFiles(QStringView prefix, std::initializer_list<T> sizes, QIcon &icon,
+                         QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::Off)
 {
-    return QStringLiteral(":/qt-project.org/styles/commonstyle/images/cleartext-16.png");
+    const auto fullPrefix = iconResourcePrefix() + prefix;
+    for (int size : sizes)
+        icon.addFile(fullPrefix + QString::number(size) + iconPngSuffix(),
+                     QSize(size, size), mode, state);
 }
-#endif // !QT_NO_IMAGEFORMAT_PNG
+
+static constexpr auto dockTitleIconSizes = {10, 16, 20, 32, 48, 64};
+static constexpr auto titleBarSizes = {16, 32, 48};
+static constexpr auto toolBarExtHSizes = {8, 16, 32};
+static constexpr auto toolBarExtVSizes = {5, 10, 20};
+static constexpr auto pngIconSizes = {16, 32, 128};
+static constexpr auto mediaIconSizes = {16, 32};
+#endif // imageformat_png
 
 #if defined(Q_OS_WIN) || QT_CONFIG(imageformat_png)
 static QIcon clearTextIcon(bool rtl)
@@ -5523,14 +5538,7 @@ static QIcon clearTextIcon(bool rtl)
 
     QIcon icon;
 #ifndef QT_NO_IMAGEFORMAT_PNG
-    QPixmap clearText16(clearText16IconPath());
-    Q_ASSERT(!clearText16.size().isEmpty());
-    icon.addPixmap(clearText16);
-    QPixmap clearText32(QStringLiteral(":/qt-project.org/styles/commonstyle/images/cleartext-32.png"));
-    Q_ASSERT(!clearText32.size().isEmpty());
-    icon.addPixmap(clearText32);
-    clearText32.setDevicePixelRatio(2); // The 32x32 pixmap can also be used for 16x16/devicePixelRatio=2
-    icon.addPixmap(clearText32);
+    addIconFiles(u"cleartext-", {16, 32}, icon);
 #endif // !QT_NO_IMAGEFORMAT_PNG
     return icon;
 }
@@ -5833,7 +5841,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     case SP_MediaVolumeMuted:
         return QPixmap(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"_L1);
     case SP_LineEditClearButton:
-        return QPixmap(clearText16IconPath());
+        return clearTextIcon(rtl).pixmap(16);
     case SP_TabCloseButton:
         return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-16.png"_L1);
 #endif // QT_NO_IMAGEFORMAT_PNG
@@ -5880,24 +5888,6 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 
     return QPixmap();
 }
-
-#if QT_CONFIG(imageformat_png)
-static inline QString iconResourcePrefix() { return QStringLiteral(":/qt-project.org/styles/commonstyle/images/"); }
-static inline QString iconPngSuffix() { return QStringLiteral(".png"); }
-
-template <typename T>
-static void addIconFiles(QStringView prefix, std::initializer_list<T> sizes, QIcon &icon)
-{
-    const auto fullPrefix = iconResourcePrefix() + prefix;
-    for (int size : sizes)
-        icon.addFile(fullPrefix + QString::number(size) + iconPngSuffix());
-}
-
-static constexpr auto dockTitleIconSizes = {10, 16, 20, 32, 48, 64};
-static constexpr auto titleBarSizes = {16, 32, 48};
-static constexpr auto toolBarExtHSizes = {8, 16, 32};
-static constexpr auto toolBarExtVSizes = {5, 10, 20};
-#endif // imageformat_png
 
 /*!
     \internal
@@ -6228,198 +6218,125 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         addIconFiles(u"titlebar-contexthelp-", titleBarSizes, icon);
         break;
      case SP_FileDialogNewFolder:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/newdirectory-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/newdirectory-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/newdirectory-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"newdirectory-", pngIconSizes, icon);
         break;
     case SP_FileDialogBack:
-        return QCommonStyle::standardIcon(SP_ArrowBack, option, widget);
+        return proxy()->standardIcon(SP_ArrowBack, option, widget);
     case SP_FileDialogToParent:
-        return QCommonStyle::standardIcon(SP_ArrowUp, option, widget);
+        return proxy()->standardIcon(SP_ArrowUp, option, widget);
     case SP_FileDialogDetailedView:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewdetailed-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewdetailed-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewdetailed-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"viewdetailed-", pngIconSizes, icon);
         break;
     case SP_FileDialogInfoView:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/fileinfo-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/fileinfo-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/fileinfo-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"fileinfo-", pngIconSizes, icon);
         break;
     case SP_FileDialogContentsView:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/filecontents-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/filecontents-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/filecontents-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"filecontents-", pngIconSizes, icon);
         break;
     case SP_FileDialogListView:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewlist-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewlist-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewlist-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"viewlist-", pngIconSizes, icon);
         break;
     case SP_DialogOkButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-ok-", pngIconSizes, icon);
         break;
     case SP_DialogCancelButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-cancel-", pngIconSizes, icon);
         break;
     case SP_DialogHelpButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-help-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-help-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-help-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-help-", pngIconSizes, icon);
         break;
     case SP_DialogOpenButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-open-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-open-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-open-", pngIconSizes, icon);
         break;
     case SP_DialogSaveButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-save-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-save-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-save-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-save-", pngIconSizes, icon);
         break;
     case SP_DialogCloseButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-close-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-close-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-close-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-close-", pngIconSizes, icon);
         break;
     case SP_DialogApplyButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-apply-", pngIconSizes, icon);
         break;
     case SP_DialogResetButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-clear-", pngIconSizes, icon);
         break;
     case SP_DialogDiscardButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-delete-", pngIconSizes, icon);
         break;
     case SP_DialogYesButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-yes-", pngIconSizes, icon);
         break;
     case SP_DialogNoButton:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-no-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-no-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-no-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"standardbutton-no-", pngIconSizes, icon);
         break;
     case SP_ArrowForward:
-        if (rtl)
-            return QCommonStyle::standardIcon(SP_ArrowLeft, option, widget);
-        return QCommonStyle::standardIcon(SP_ArrowRight, option, widget);
+        return proxy()->standardIcon(rtl ? SP_ArrowLeft : SP_ArrowRight, option, widget);
     case SP_ArrowBack:
-        if (rtl)
-            return QCommonStyle::standardIcon(SP_ArrowRight, option, widget);
-        return QCommonStyle::standardIcon(SP_ArrowLeft, option, widget);
+        return proxy()->standardIcon(rtl ? SP_ArrowRight : SP_ArrowLeft, option, widget);
     case SP_ArrowLeft:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/left-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/left-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/left-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"left-", pngIconSizes, icon);
         break;
     case SP_ArrowRight:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/right-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/right-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/right-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"right-", pngIconSizes, icon);
         break;
     case SP_ArrowUp:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/up-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/up-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/up-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"up-", pngIconSizes, icon);
         break;
     case SP_ArrowDown:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/down-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/down-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/down-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"down-", pngIconSizes, icon);
         break;
    case SP_DirHomeIcon:
    case SP_DirIcon:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/dirclosed-16.png"_L1,
-                     QSize(), QIcon::Normal, QIcon::Off);
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/diropen-16.png"_L1,
-                     QSize(), QIcon::Normal, QIcon::On);
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/dirclosed-32.png"_L1,
-                     QSize(32, 32), QIcon::Normal, QIcon::Off);
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/diropen-32.png"_L1,
-                     QSize(32, 32), QIcon::Normal, QIcon::On);
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/dirclosed-128.png"_L1,
-                     QSize(128, 128), QIcon::Normal, QIcon::Off);
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/diropen-128.png"_L1,
-                     QSize(128, 128), QIcon::Normal, QIcon::On);
+        addIconFiles(u"dirclosed-", pngIconSizes, icon, QIcon::Normal, QIcon::Off);
+        addIconFiles(u"diropen-", pngIconSizes, icon, QIcon::Normal, QIcon::On);
         break;
     case SP_DriveCDIcon:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/cdr-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/cdr-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/cdr-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"cdr-", pngIconSizes, icon);
         break;
     case SP_DriveDVDIcon:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/dvd-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/dvd-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/dvd-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"dvd-", pngIconSizes, icon);
         break;
     case SP_FileIcon:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/file-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/file-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/file-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"file-", pngIconSizes, icon);
         break;
     case SP_FileLinkIcon:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/filelink-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/filelink-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/filelink-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"filelink-", pngIconSizes, icon);
         break;
     case SP_TrashIcon:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/trash-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/trash-32.png"_L1, QSize(32, 32));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/trash-128.png"_L1, QSize(128, 128));
+        addIconFiles(u"trash-", pngIconSizes, icon);
         break;
     case SP_BrowserReload:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/refresh-24.png"_L1, QSize(24, 24));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/refresh-32.png"_L1, QSize(32, 32));
+        addIconFiles(u"refresh-", {24, 32}, icon);
         break;
     case SP_BrowserStop:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/stop-24.png"_L1, QSize(24, 24));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/stop-32.png"_L1, QSize(32, 32));
+        addIconFiles(u"stop-", {24, 32}, icon);
         break;
     case SP_MediaPlay:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-play-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-play-32.png"_L1, QSize(32, 32));
+        addIconFiles(u"media-play-", mediaIconSizes, icon);
         break;
     case SP_MediaPause:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-pause-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-pause-32.png"_L1, QSize(32, 32));
+        addIconFiles(u"media-pause-", mediaIconSizes, icon);
         break;
     case SP_MediaStop:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-stop-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-stop-32.png"_L1, QSize(32, 32));
+        addIconFiles(u"media-stop-", mediaIconSizes, icon);
         break;
     case SP_MediaSeekForward:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-seek-forward-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-seek-forward-32.png"_L1, QSize(32, 32));
+        addIconFiles(u"media-seek-forward-", mediaIconSizes, icon);
         break;
     case SP_MediaSeekBackward:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-seek-backward-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-seek-backward-32.png"_L1, QSize(32, 32));
+        addIconFiles(u"media-seek-backward-", mediaIconSizes, icon);
         break;
     case SP_MediaSkipForward:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-skip-forward-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-skip-forward-32.png"_L1, QSize(32, 32));
+        addIconFiles(u"media-skip-forward-", mediaIconSizes, icon);
         break;
     case SP_MediaSkipBackward:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-skip-backward-16.png"_L1, QSize(16, 16));
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-skip-backward-32.png"_L1, QSize(32, 32));
+        addIconFiles(u"media-skip-backward-", mediaIconSizes, icon);
         break;
     case SP_MediaVolume:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-volume-16.png"_L1, QSize(16, 16));
+        addIconFiles(u"media-volume-", {16}, icon);
         break;
     case SP_MediaVolumeMuted:
-        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"_L1, QSize(16, 16));
+        addIconFiles(u"media-volume-muted-", {16}, icon);
         break;
     case SP_TitleBarCloseButton:
         addIconFiles(u"closedock-", dockTitleIconSizes, icon);
@@ -6440,18 +6357,9 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         addIconFiles(u"toolbar-ext-v-", toolBarExtVSizes, icon);
         break;
     case SP_TabCloseButton:
-        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-16.png", QSize(16, 16),
-                     QIcon::Normal, QIcon::Off);
-        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-32.png", QSize(32, 32),
-                     QIcon::Normal, QIcon::Off);
-        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-down-16.png", QSize(16, 16),
-                     QIcon::Normal, QIcon::On);
-        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-down-32.png", QSize(32, 32),
-                     QIcon::Normal, QIcon::On);
-        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-hover-16.png", QSize(16, 16),
-                     QIcon::Active, QIcon::Off);
-        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-hover-32.png", QSize(32, 32),
-                     QIcon::Active, QIcon::Off);
+        addIconFiles(u"standardbutton-closetab-", {16, 32}, icon, QIcon::Normal, QIcon::Off);
+        addIconFiles(u"standardbutton-closetab-down-", {16, 32}, icon, QIcon::Normal, QIcon::On);
+        addIconFiles(u"standardbutton-closetab-hover-", {16, 32}, icon, QIcon::Active, QIcon::Off);
         break;
 #endif // QT_NO_IMAGEFORMAT_PNG
     default:
