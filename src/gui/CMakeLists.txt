@@ -439,7 +439,7 @@ if(QT_FEATURE_graphicsframecapture)
             util/qgraphicsframecapture_p_p.h
     )
 
-    qt_internal_extend_target(Gui CONDITION WIN32 OR (UNIX AND NOT APPLE)
+    qt_internal_extend_target(Gui CONDITION (WIN32 OR (UNIX AND NOT APPLE)) AND QT_FEATURE_library
         LIBRARIES
             RenderDoc::RenderDoc
         SOURCES

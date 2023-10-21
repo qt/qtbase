@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qgraphicsframecapture_p.h"
-#if defined (Q_OS_WIN) || defined(Q_OS_LINUX)
+#if (defined (Q_OS_WIN) || defined(Q_OS_LINUX)) && QT_CONFIG(library)
 #include "qgraphicsframecapturerenderdoc_p_p.h"
 #elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include "qgraphicsframecapturemetal_p_p.h"
+#else
+#include "qgraphicsframecapture_p_p.h"
 #endif
 
 #include <QtCore/qstandardpaths.h>
@@ -24,7 +26,7 @@ QGraphicsFrameCapturePrivate::QGraphicsFrameCapturePrivate()
 
 QGraphicsFrameCapture::QGraphicsFrameCapture()
 {
-#if defined (Q_OS_WIN) || defined(Q_OS_LINUX)
+#if (defined (Q_OS_WIN) || defined(Q_OS_LINUX)) && QT_CONFIG(library)
     d.reset(new QGraphicsFrameCaptureRenderDoc);
 #elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
     d.reset(new QGraphicsFrameCaptureMetal);
