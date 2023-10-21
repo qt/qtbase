@@ -1661,8 +1661,6 @@ void tst_QSslSocket::protocolServerSide()
     QCOMPARE(client.isEncrypted(), works);
 }
 
-#if QT_CONFIG(openssl)
-
 void tst_QSslSocket::serverCipherPreferences()
 {
     if (!isTestingOpenSsl)
@@ -1756,8 +1754,6 @@ void tst_QSslSocket::serverCipherPreferences()
         QCOMPARE(client.sessionCipher().name(), testedCiphers[1].name());
     }
 }
-
-#endif // Feature 'openssl'.
 
 
 void tst_QSslSocket::setCaCertificates()
