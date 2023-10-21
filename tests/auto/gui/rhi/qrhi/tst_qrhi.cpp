@@ -6348,7 +6348,7 @@ void tst_QRhi::storageBuffer()
         u->uploadStaticBuffer(fromGpuBuffer.data(), 0, blocks["fromGpu"].knownSize, QByteArray(blocks["fromGpu"].knownSize, 0).constData());
 
         QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
-        srb->setBindings({QRhiShaderResourceBinding::bufferLoadStore(blocks["toGpu"].binding, QRhiShaderResourceBinding::ComputeStage, toGpuBuffer.data()),
+        srb->setBindings({QRhiShaderResourceBinding::bufferLoad(blocks["toGpu"].binding, QRhiShaderResourceBinding::ComputeStage, toGpuBuffer.data()),
                           QRhiShaderResourceBinding::bufferLoadStore(blocks["fromGpu"].binding, QRhiShaderResourceBinding::ComputeStage, fromGpuBuffer.data())});
 
         QVERIFY(srb->create());
