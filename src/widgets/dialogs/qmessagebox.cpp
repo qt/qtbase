@@ -1662,6 +1662,11 @@ void QMessageBoxPrivate::setVisible(bool visible)
     if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden) != visible)
         return;
 
+    // Last minute setup
+    if (autoAddOkButton)
+        q->addButton(QMessageBox::Ok);
+    detectEscapeButton();
+
     if (canBeNativeDialog())
         setNativeDialogVisible(visible);
 
@@ -1706,13 +1711,7 @@ QMessageBox::ButtonRole QMessageBox::buttonRole(QAbstractButton *button) const
 void QMessageBox::showEvent(QShowEvent *e)
 {
     Q_D(QMessageBox);
-    if (d->autoAddOkButton) {
-        addButton(Ok);
-    }
-    if (d->detailsButton)
-        addButton(d->detailsButton, QMessageBox::ActionRole);
     d->clickedButton = nullptr;
-    d->detectEscapeButton();
     d->updateSize();
 
 #if QT_CONFIG(accessibility)
