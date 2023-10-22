@@ -577,7 +577,9 @@ void QCoreApplicationPrivate::initConsole()
             return;
         consoleAllocated = true;
     } else if (env.compare(u"attach"_s, Qt::CaseInsensitive) == 0) {
-        if (AttachConsole(ATTACH_PARENT_PROCESS) == FALSE)
+        // If the calling process is already attached to a console,
+        // the error code returned is ERROR_ACCESS_DENIED.
+        if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::GetLastError() != ERROR_ACCESS_DENIED)
             return;
     } else {
         // Unknown input, don't make any decision for the user.
