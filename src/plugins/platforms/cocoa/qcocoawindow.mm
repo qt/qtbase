@@ -305,6 +305,31 @@ void QCocoaWindow::setVisible(bool visible)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::setVisible" << window() << visible;
 
+    // Our implementation of setVisible below is not idempotent, as for
+    // modal windows it calls beginSheet/endSheet or starts/ends modal
+    // sessions. However we can't simply guard for m_view.hidden already
+    // having the right state, as the behavior of this function differs
+    // based on whether the window has been initialized or not, as
+    // handleGeometryChange will bail out if the window is still
+    // initializing. Since we know we'll get a second setVisible
+    // call after creation, we can check for that case specifically,
+    // which means we can then safely guard on m_view.hidden changing.
+
+    if (!m_initialized) {
+        qCDebug(lcQpaWindow) << "Window still initializing, skipping setting visibility";
+        return; // We'll get another setVisible call after create is done
+    }
+
+    if (visible == !m_view.hidden) {
+        qCDebug(lcQpaWindow) << "No change in visible status. Ignoring.";
+        return;
+    }
+
+    if (m_inSetVisible) {
+        qCWarning(lcQpaWindow) << "Already setting window visible!";
+        return;
+    }
+
     QScopedValueRollback<bool> rollback(m_inSetVisible, true);
 
     QMacAutoReleasePool pool;
