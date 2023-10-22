@@ -50,6 +50,7 @@ QList<QKeyCombination> QKeyMapper::possibleKeys(const QKeyEvent *e)
             result << (Qt::Key(e->text().at(0).unicode()) | e->modifiers());
     }
 
+#if QT_CONFIG(shortcut)
     if (lcQpaKeyMapper().isDebugEnabled()) {
         qCDebug(lcQpaKeyMapper) << "Resulting possible key combinations:";
         for (auto keyCombination : result) {
@@ -59,6 +60,7 @@ QList<QKeyCombination> QKeyMapper::possibleKeys(const QKeyEvent *e)
                 << qUtf8Printable(keySequence.toString(QKeySequence::NativeText));
         }
     }
+#endif
 
     return result;
 }
