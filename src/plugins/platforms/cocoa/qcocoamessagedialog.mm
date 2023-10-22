@@ -189,16 +189,6 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     for (auto customButton : customButtons)
         addButton(customButton.label, customButton.id, customButton.role);
 
-
-    // QMessageDialog's logic for adding a fallback OK button if no other buttons
-    // are added depends on QMessageBox::showEvent(), which is too late when
-    // native dialogs are in use. To ensure there's always an OK button with a tag
-    // we recognize we add it explicitly here as a fallback.
-    if (!m_alert.buttons.count) {
-        addButton(platformTheme->standardButtonText(StandardButton::Ok),
-            StandardButton::Ok, ButtonRole::AcceptRole);
-    }
-
     if (auto checkBoxLabel = options()->checkBoxLabel(); !checkBoxLabel.isNull()) {
         checkBoxLabel = QPlatformTheme::removeMnemonics(checkBoxLabel);
         m_alert.suppressionButton.title = checkBoxLabel.toNSString();
