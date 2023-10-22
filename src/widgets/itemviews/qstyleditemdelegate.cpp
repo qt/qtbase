@@ -477,15 +477,7 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
 
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
-    // let the editor take up all available space
-    //if the editor is not a QLineEdit
-    //or it is in a QTableView
-#if QT_CONFIG(tableview) && QT_CONFIG(lineedit)
-    if (qobject_cast<QExpandingLineEdit*>(editor) && !qobject_cast<const QTableView*>(widget))
-        opt.showDecorationSelected = editor->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, nullptr, editor);
-    else
-#endif
-        opt.showDecorationSelected = true;
+    opt.showDecorationSelected = editor->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, nullptr, editor);
 
     QStyle *style = widget ? widget->style() : QApplication::style();
     QRect geom = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, widget);

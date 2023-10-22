@@ -1160,12 +1160,8 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItem *opt,  QRect
                                          checkRect->size(), check);
         *pixmapRect = QStyle::alignedRect(opt->direction, opt->decorationAlignment,
                                           pixmapRect->size(), decoration);
-        // the text takes up all available space, unless the decoration is not shown as selected
-        if (opt->showDecorationSelected)
-            *textRect = display;
-        else
-            *textRect = QStyle::alignedRect(opt->direction, opt->displayAlignment,
-                                            textRect->size().boundedTo(display.size()), display);
+        // the textRect takes up all remaining size
+        *textRect = display;
     } else {
         *checkRect = check;
         *pixmapRect = decoration;
