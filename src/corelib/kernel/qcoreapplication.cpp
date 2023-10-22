@@ -1729,7 +1729,7 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
     Q_ASSERT(receiver);
     Q_ASSERT(postedEvents);
 
-    auto receiverPostedEvents = receiver->d_func()->postedEvents;
+    int receiverPostedEvents = receiver->d_func()->postedEvents.loadRelaxed();
     // compress posted timers to this object.
     if (event->type() == QEvent::Timer && receiverPostedEvents > 0) {
         int timerId = static_cast<QTimerEvent *>(event)->timerId();
