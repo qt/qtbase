@@ -778,6 +778,8 @@ public:
     QPixmap iconPixmap;
     QString checkBoxLabel;
     Qt::CheckState checkBoxState = Qt::Unchecked;
+    int defaultButtonId = 0;
+    int escapeButtonId = 0;
 };
 
 QMessageDialogOptions::QMessageDialogOptions(QMessageDialogOptionsPrivate *dd)
@@ -902,6 +904,11 @@ const QList<QMessageDialogOptions::CustomButton> &QMessageDialogOptions::customB
     return d->customButtons;
 }
 
+void QMessageDialogOptions::clearCustomButtons()
+{
+    d->customButtons.clear();
+}
+
 const QMessageDialogOptions::CustomButton *QMessageDialogOptions::customButton(int id)
 {
     const int i = int(d->customButtons.indexOf(CustomButton(id)));
@@ -922,6 +929,26 @@ QString QMessageDialogOptions::checkBoxLabel() const
 Qt::CheckState QMessageDialogOptions::checkBoxState() const
 {
     return d->checkBoxState;
+}
+
+void QMessageDialogOptions::setDefaultButton(int id)
+{
+    d->defaultButtonId = id;
+}
+
+int QMessageDialogOptions::defaultButton() const
+{
+    return d->defaultButtonId;
+}
+
+void QMessageDialogOptions::setEscapeButton(int id)
+{
+    d->escapeButtonId = id;
+}
+
+int QMessageDialogOptions::escapeButton() const
+{
+    return d->escapeButtonId;
 }
 
 QPlatformDialogHelper::ButtonRole QPlatformDialogHelper::buttonRole(QPlatformDialogHelper::StandardButton button)
