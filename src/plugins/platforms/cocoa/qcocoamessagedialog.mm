@@ -134,8 +134,8 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         break;
     }
 
-    bool defaultButtonAdded = false;
-    bool cancelButtonAdded = false;
+    auto defaultButton = options()->defaultButton();
+    auto escapeButton = options()->escapeButton();
 
     const auto addButton = [&](auto title, auto tag, auto role) {
         title = QPlatformTheme::removeMnemonics(title);
@@ -145,17 +145,25 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         // and going toward the left/bottom. By default, the first button has a key equivalent of
         // Return, any button with a title of "Cancel" has a key equivalent of Escape, and any button
         // with the title "Don't Save" has a key equivalent of Command-D (but only if it's not the first
-        // button). Unfortunately QMessageBox does not currently plumb setDefaultButton/setEscapeButton
-        // through the dialog options, so we can't forward this information directly. The closest we
-        // can get right now is to use the role to set the button's key equivalent.
+        // button). If an explicit default or escape button has been set, we respect these,
+        // and otherwise we fall back to role-based default and escape buttons.
 
-        if (role == AcceptRole && !defaultButtonAdded) {
+        if (!defaultButton && role == AcceptRole)
+            defaultButton = tag;
+
+        if (tag == defaultButton)
             button.keyEquivalent = @"\r";
-            defaultButtonAdded = true;
-        } else if (role == RejectRole && !cancelButtonAdded) {
+        else if ([button.keyEquivalent isEqualToString:@"\r"])
+            button.keyEquivalent = @"";
+
+        if (!escapeButton && role == RejectRole)
+            escapeButton = tag;
+
+        // Don't override default button with escape button, to match AppKit default
+        if (tag == escapeButton && ![button.keyEquivalent isEqualToString:@"\r"])
             button.keyEquivalent = @"\e";
-            cancelButtonAdded = true;
-        }
+        else if ([button.keyEquivalent isEqualToString:@"\e"])
+            button.keyEquivalent = @"";
 
         if (@available(macOS 11, *))
             button.hasDestructiveAction = role == DestructiveRole;
@@ -188,6 +196,11 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     const auto customButtons = options()->customButtons();
     for (auto customButton : customButtons)
         addButton(customButton.label, customButton.id, customButton.role);
+
+    // If we didn't find a an explicit or implicit default button above
+    // we restore the AppKit behavior of making the first button default.
+    if (!defaultButton)
+        m_alert.buttons.firstObject.keyEquivalent = @"\r";
 
     if (auto checkBoxLabel = options()->checkBoxLabel(); !checkBoxLabel.isNull()) {
         checkBoxLabel = QPlatformTheme::removeMnemonics(checkBoxLabel);

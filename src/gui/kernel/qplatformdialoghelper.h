@@ -463,10 +463,17 @@ public:
     void removeButton(int id);
     const QList<CustomButton> &customButtons();
     const CustomButton *customButton(int id);
+    void clearCustomButtons();
 
     void setCheckBox(const QString &label, Qt::CheckState state);
     QString checkBoxLabel() const;
     Qt::CheckState checkBoxState() const;
+
+    void setEscapeButton(int id);
+    int escapeButton() const;
+
+    void setDefaultButton(int id);
+    int defaultButton() const;
 
 private:
     QMessageDialogOptionsPrivate *d;
