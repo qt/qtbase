@@ -60,6 +60,8 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+Q_FORWARD_DECLARE_OBJC_CLASS(NSWindow);
+
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcEventDispatcher);
@@ -68,7 +70,7 @@ typedef struct _NSModalSession *NSModalSession;
 typedef struct _QCocoaModalSessionInfo {
     QPointer<QWindow> window;
     NSModalSession session;
-    void *nswindow;
+    NSWindow *nswindow;
 } QCocoaModalSessionInfo;
 
 class QCocoaEventDispatcherPrivate;
