@@ -1654,8 +1654,12 @@ void TlsCryptographSchannel::transmit()
                 qCWarning(lcTlsBackendSchannel, "The internal SSPI handle is invalid!");
                 Q_UNREACHABLE();
             } else if (status == SEC_E_INVALID_TOKEN) {
-                qCWarning(lcTlsBackendSchannel, "Got SEC_E_INVALID_TOKEN!");
-                Q_UNREACHABLE(); // Happened once due to a bug, but shouldn't generally happen(?)
+                // Supposedly we have an invalid token, it's under-documented what
+                // this means, so to be safe we disconnect.
+                shutdown = true;
+                disconnectFromHost();
+                setErrorAndEmit(d, QAbstractSocket::SslInternalError, schannelErrorToString(status));
+                break;
             } else if (status == SEC_E_MESSAGE_ALTERED) {
                 // The message has been altered, disconnect now.
                 shutdown = true; // skips sending the shutdown alert
