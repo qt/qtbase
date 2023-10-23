@@ -1238,9 +1238,18 @@ function(qt6_extract_metatypes target)
             add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
             _qt_internal_assign_to_internal_targets_folder(${target}_automoc_json_extraction)
         else()
-            set(cmake_autogen_timestamp_file
-                "${target_autogen_build_dir}/timestamp"
-            )
+            set(timestamp_file "${target_autogen_build_dir}/timestamp")
+            set(timestamp_file_with_config "${timestamp_file}_$<CONFIG>")
+            if (is_multi_config AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.29"
+                AND NOT QT_INTERNAL_USE_OLD_AUTOGEN_GRAPH_MULTI_CONFIG_METATYPES)
+                string(JOIN "" timestamp_genex
+                    "$<IF:$<BOOL:$<TARGET_PROPERTY:${target},"
+                    "AUTOGEN_BETTER_GRAPH_MULTI_CONFIG>>,"
+                    "${timestamp_file_with_config},${timestamp_file}>")
+                set(cmake_autogen_timestamp_file "${timestamp_genex}")
+            else()
+                set(cmake_autogen_timestamp_file ${timestamp_file})
+            endif()
 
             add_custom_command(OUTPUT ${type_list_file}
                 DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
