@@ -24,6 +24,7 @@
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/q20iterator.h>
+#include <QtCore/private/qnumeric_p.h>
 #endif // !QT_BOOTSTRAPPED
 #endif
 
@@ -1264,11 +1265,8 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::St
 QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
                                          QStringConverter::State *state)
 {
-    qsizetype length = in.size();
-
-    Q_ASSERT(length < INT_MAX); // ### FIXME
     const char *mb = in.data();
-    int mblen = length;
+    qsizetype mblen = in.size();
 
     if (state && state->flags & QStringConverter::Flag::Stateless)
         state = nullptr;
@@ -1353,11 +1351,11 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
         return {it, size};
     };
 
-    constexpr int MaxStep = std::numeric_limits<int>::max();
-    const char *end = mb + mblen;
-    while (mb != end) {
-        const int nextIn = int(std::min(qsizetype(mblen), qsizetype(MaxStep)));
-        const int nextOut = int(std::min(outlen, qsizetype(MaxStep)));
+    // Need it in this scope, since we try to decrease our window size if we
+    // encounter an error
+    int nextIn = qt_saturate<int>(mblen);
+    while (mblen > 0) {
+        const int nextOut = qt_saturate<int>(outlen);
         std::tie(out, outlen) = growOut(1); // Need space for at least one character
         if (!out)
             return {};
@@ -1370,25 +1368,56 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
         } else {
             int r = GetLastError();
             if (r == ERROR_INSUFFICIENT_BUFFER) {
-                Q_ASSERT(QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size()));
                 const int wclen = MultiByteToWideChar(codePage, 0, mb, nextIn, 0, 0);
                 std::tie(out, outlen) = growOut(wclen);
                 if (!out)
                     return {};
-            } else if (r == ERROR_NO_UNICODE_TRANSLATION && state
-                    && state->remainingChars < q20::ssize(state->state_data)) {
-                ++state->remainingChars;
-                --mblen;
-                for (qsizetype i = 0; i < state->remainingChars; ++i)
-                    state->state_data[i] = mb[mblen + i];
-                if (mblen == 0)
+            } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
+                // Can't decode the current window, so either store the state,
+                // reduce window size or output a replacement character.
+
+                // Check if we can store all remaining characters in the state
+                // to be used next time we're called:
+                if (state && mblen <= q20::ssize(state->state_data)) {
+                    state->remainingChars = mblen;
+                    std::copy_n(mb, mblen, state->state_data);
+                    mb += mblen;
+                    mblen = 0;
                     break;
+                }
+
+                // .. if not, try to find the last valid character in the window
+                // and try again with a shrunken window:
+                if (nextIn > 1) {
+                    // There may be some incomplete data at the end of our current
+                    // window, so decrease the window size and try again.
+                    // In the worst case scenario there is gigs of undecodable
+                    // garbage, but what are we supposed to do about that?
+                    const auto it = CharPrevExA(codePage, mb, mb + nextIn, 0);
+                    if (it != mb)
+                        nextIn = int(it - mb);
+                    else
+                        --nextIn;
+                    continue;
+                }
+
+                // Finally, we are forced to output a replacement character for
+                // the first byte in the window:
+                std::tie(out, outlen) = growOut(1);
+                if (!out)
+                    return {};
+                *out = QChar::ReplacementCharacter;
+                ++out;
+                --outlen;
+                ++mb;
+                --mblen;
             } else {
                 // Fail.
                 qWarning("MultiByteToWideChar: Cannot convert multibyte text");
                 break;
             }
         }
+        nextIn = qt_saturate<int>(mblen);
     }
 
     if (sp.isEmpty()) {
@@ -1403,8 +1432,11 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     if (sp.size() && sp.back().isNull())
         sp.chop(1);
 
-    if (!state && mblen > 0) // We have trailing characters that should be converted
+    if (!state && mblen > 0) {
+        // We have trailing character(s) that could not be converted, and
+        // nowhere to cache them
         sp.resize(sp.size() + mblen, QChar::ReplacementCharacter);
+    }
     return sp;
 }
 

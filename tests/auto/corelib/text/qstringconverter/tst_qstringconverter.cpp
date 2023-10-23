@@ -199,6 +199,7 @@ private slots:
     void fromLocal8Bit_data();
     void fromLocal8Bit();
     void fromLocal8Bit_special_cases();
+    void fromLocal8Bit_2GiB();
     void toLocal8Bit_data();
     void toLocal8Bit();
     void toLocal8Bit_special_cases();
@@ -2626,6 +2627,41 @@ void tst_QStringConverter::fromLocal8Bit_special_cases()
     result = QLocal8Bit::convertToUnicode_sys(octets.sliced(3), GB_18030, &state);
     QCOMPARE(result.first(2), u"𠂇");
     QCOMPARE(state.remainingChars, 0);
+}
+
+void tst_QStringConverter::fromLocal8Bit_2GiB()
+{
+#if QT_POINTER_SIZE == 4
+    QSKIP("This test is only relevant for 64-bit builds");
+#else
+    qsizetype size = qsizetype(std::numeric_limits<int>::max()) + 3;
+    QByteArray input;
+    QT_TRY {
+        input.reserve(size);
+    } QT_CATCH (const std::bad_alloc &) {
+        QSKIP("Out of memory");
+    }
+    // fill with '､' - a single octet character in Shift-JIS
+    input.fill('\xa4', std::numeric_limits<int>::max() - 1);
+    // then append 'こ' - a two octet character in Shift-JIS
+    // which is now straddling the 2 GiB boundary
+    input += "\x82\xb1";
+    // then append another two '､', so that our output is also crossing the
+    // 2 GiB boundary
+    input += "\xa4\xa4";
+    QCOMPARE(input.size(), input.capacity());
+    constexpr uint SHIFT_JIS = 932u;
+    QStringConverter::State state;
+    QString result;
+    QT_TRY {
+        result = QLocal8Bit::convertToUnicode_sys(input, SHIFT_JIS, &state);
+    } QT_CATCH (const std::bad_alloc &) {
+        QSKIP("Out of memory");
+    }
+    QCOMPARE(result.size(), size - 1); // The 2-octet character is only 1 code unit in UTF-16
+    QCOMPARE(result.last(4), u"､こ､､"); // Check we correctly decoded it
+    QCOMPARE(state.remainingChars, 0); // and there is nothing left in the state
+#endif
 }
 
 void tst_QStringConverter::toLocal8Bit_data()
