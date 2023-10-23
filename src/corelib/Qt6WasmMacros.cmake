@@ -91,6 +91,15 @@ function(_qt_internal_wasm_add_target_helpers target)
         endif()
         target_link_options("${target}" PRIVATE "SHELL:-s INITIAL_MEMORY=${QT_WASM_INITIAL_MEMORY}")
 
+        # Set maximum memory size, either from user setting or to 4GB (the 32-bit maximum)
+        get_target_property(_tmp_maximumMemory "${target}" QT_WASM_MAXIMUM_MEMORY)
+        if(_tmp_maximumMemory)
+            set(QT_WASM_MAXIMUM_MEMORY "${_tmp_maximumMemory}")
+        elseif(NOT DEFINED QT_WASM_MAXIMUM_MEMORY)
+            set(QT_WASM_MAXIMUM_MEMORY "4GB")
+        endif()
+        target_link_options("${target}" PRIVATE "SHELL:-s MAXIMUM_MEMORY=${QT_WASM_MAXIMUM_MEMORY}")
+
     endif()
 endfunction()
 
