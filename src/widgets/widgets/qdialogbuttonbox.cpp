@@ -1013,8 +1013,20 @@ void QDialogButtonBoxPrivate::ensureFirstAcceptIsDefault()
             break;
         }
     }
-    if (!hasDefault && firstAcceptButton)
+    if (!hasDefault && firstAcceptButton) {
         firstAcceptButton->setDefault(true);
+        // When the QDialogButtonBox is focused, and it doesn't have an
+        // explicit focus widget, it will transfer focus to its focus
+        // proxy, which is the first button in the layout. This behavior,
+        // combined with the behavior that QPushButtons in a QDialog will
+        // by default have their autoDefault set to true, results in the
+        // focus proxy/first button stealing the default button status
+        // immediately when the button box is focused, which is not what
+        // we want. Account for this by explicitly making the firstAcceptButton
+        // focused as well, unless an explicit focus widget has been set.
+        if (dialog && !dialog->focusWidget())
+            firstAcceptButton->setFocus();
+    }
 }
 
 void QDialogButtonBoxPrivate::disconnectAll()
