@@ -44,6 +44,12 @@ void tst_QLatin1StringMatcher::overloads()
         QCOMPARE(m.indexIn("Hellohello"_L1), 5);
         QCOMPARE(m.indexIn("helloHello"_L1), 0);
         QCOMPARE(m.indexIn("helloHello"_L1, 1), -1);
+
+        QCOMPARE(m.indexIn(u"hello"), 0);
+        QCOMPARE(m.indexIn(u"Hello"), -1);
+        QCOMPARE(m.indexIn(u"Hellohello"), 5);
+        QCOMPARE(m.indexIn(u"helloHello"), 0);
+        QCOMPARE(m.indexIn(u"helloHello", 1), -1);
     }
     {
         QLatin1StringMatcher m("Hello"_L1, Qt::CaseSensitive);
@@ -53,6 +59,12 @@ void tst_QLatin1StringMatcher::overloads()
         QCOMPARE(m.indexIn("Hellohello"_L1), 0);
         QCOMPARE(m.indexIn("helloHello"_L1), 5);
         QCOMPARE(m.indexIn("helloHello"_L1, 6), -1);
+
+        QCOMPARE(m.indexIn(u"hello"), -1);
+        QCOMPARE(m.indexIn(u"Hello"), 0);
+        QCOMPARE(m.indexIn(u"Hellohello"), 0);
+        QCOMPARE(m.indexIn(u"helloHello"), 5);
+        QCOMPARE(m.indexIn(u"helloHello", 6), -1);
     }
     {
         QLatin1StringMatcher m("hello"_L1, Qt::CaseInsensitive);
@@ -63,6 +75,13 @@ void tst_QLatin1StringMatcher::overloads()
         QCOMPARE(m.indexIn("helloHello"_L1), 0);
         QCOMPARE(m.indexIn("helloHello"_L1, 1), 5);
         QCOMPARE(m.indexIn("helloHello"_L1, 6), -1);
+
+        QCOMPARE(m.indexIn(u"hello"), 0);
+        QCOMPARE(m.indexIn(u"Hello"), 0);
+        QCOMPARE(m.indexIn(u"Hellohello"), 0);
+        QCOMPARE(m.indexIn(u"helloHello"), 0);
+        QCOMPARE(m.indexIn(u"helloHello", 1), 5);
+        QCOMPARE(m.indexIn(u"helloHello", 6), -1);
     }
     {
         QLatin1StringMatcher m("Hello"_L1, Qt::CaseInsensitive);
@@ -73,6 +92,13 @@ void tst_QLatin1StringMatcher::overloads()
         QCOMPARE(m.indexIn("helloHello"_L1), 0);
         QCOMPARE(m.indexIn("helloHello"_L1, 1), 5);
         QCOMPARE(m.indexIn("helloHello"_L1, 6), -1);
+
+        QCOMPARE(m.indexIn(u"hello"), 0);
+        QCOMPARE(m.indexIn(u"Hello"), 0);
+        QCOMPARE(m.indexIn(u"Hellohello"), 0);
+        QCOMPARE(m.indexIn(u"helloHello"), 0);
+        QCOMPARE(m.indexIn(u"helloHello", 1), 5);
+        QCOMPARE(m.indexIn(u"helloHello", 6), -1);
     }
     {
         QLatin1StringMatcher m(hello, Qt::CaseSensitive);
@@ -81,6 +107,11 @@ void tst_QLatin1StringMatcher::overloads()
         QCOMPARE(m.indexIn(hello, 1), -1);
         QCOMPARE(m.indexIn(hello2, 1), hello.size());
         QCOMPARE(m.indexIn(hello2, 6), -1);
+
+        QCOMPARE(m.indexIn(QString::fromLatin1(hello)), 0);
+        QCOMPARE(m.indexIn(QString::fromLatin1(hello), 1), -1);
+        QCOMPARE(m.indexIn(QString::fromLatin1(hello2), 1), hello.size());
+        QCOMPARE(m.indexIn(QString::fromLatin1(hello2), 6), -1);
     }
 }
 
@@ -387,25 +418,35 @@ void tst_QLatin1StringMatcher::haystacksWithMoreThan4GiBWork()
     QCOMPARE(large.size(), BaseSize + needle.size());
     qDebug("created dataset in %lld ms", timer.elapsed());
 
-    using MaybeThread = std::thread;
+    {
+        //
+        // WHEN: trying to match an occurrence past the 4GiB mark
+        //
+        qsizetype dynamicResult;
+        auto t = std::thread{ [&] {
+            QLatin1StringMatcher m(QLatin1StringView(needle), Qt::CaseSensitive);
+            dynamicResult = m.indexIn(QLatin1StringView(large));
+        } };
+        t.join();
 
-    //
-    // WHEN: trying to match an occurrence past the 4GiB mark
-    //
+        //
+        // THEN: the result index is not truncated
+        //
 
-    qsizetype dynamicResult;
+        QCOMPARE(dynamicResult, qsizetype(BaseSize));
+    }
 
-    auto t = MaybeThread{ [&] {
-        QLatin1StringMatcher m(QLatin1StringView(needle), Qt::CaseSensitive);
-        dynamicResult = m.indexIn(QLatin1StringView(large));
-    } };
-    t.join();
+    {
+        qsizetype dynamicResult;
+        auto t = std::thread{ [&] {
+            QLatin1StringMatcher m(QLatin1StringView(needle), Qt::CaseSensitive);
+            dynamicResult = m.indexIn(QStringView(QString::fromLatin1(large)));
+        } };
+        t.join();
 
-    //
-    // THEN: the result index is not trucated
-    //
+        QCOMPARE(dynamicResult, qsizetype(BaseSize));
+    }
 
-    QCOMPARE(dynamicResult, qsizetype(BaseSize));
 #else
     QSKIP("This test is 64-bit only.");
 #endif

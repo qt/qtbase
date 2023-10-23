@@ -160,6 +160,31 @@ Qt::CaseSensitivity QLatin1StringMatcher::caseSensitivity() const noexcept
 */
 qsizetype QLatin1StringMatcher::indexIn(QLatin1StringView haystack, qsizetype from) const noexcept
 {
+    return indexIn_helper(haystack, from);
+}
+
+/*!
+    \since 6.8
+    \overload
+
+    Searches for the pattern in the given \a haystack starting from index
+    position \a from.
+
+    \sa caseSensitivity(), pattern()
+*/
+qsizetype QLatin1StringMatcher::indexIn(QStringView haystack, qsizetype from) const noexcept
+{
+    return indexIn_helper(haystack, from);
+}
+
+/*!
+    \internal
+*/
+template <typename String>
+qsizetype QLatin1StringMatcher::indexIn_helper(String haystack, qsizetype from) const noexcept
+{
+    static_assert(QtPrivate::isLatin1OrUtf16View<String>);
+
     if (m_pattern.isEmpty() && from == haystack.size())
         return from;
     if (from < 0) // Historical behavior (see QString::indexOf and co.)
@@ -167,8 +192,15 @@ qsizetype QLatin1StringMatcher::indexIn(QLatin1StringView haystack, qsizetype fr
     if (from >= haystack.size())
         return -1;
 
-    auto begin = haystack.begin() + from;
-    auto end = haystack.end();
+    const auto start = [haystack] {
+        if constexpr (std::is_same_v<String, QStringView>)
+            return haystack.utf16();
+        else
+            return haystack.begin();
+    }();
+
+    auto begin = start + from;
+    auto end = start + haystack.size();
     auto found = begin;
     if (m_cs == Qt::CaseSensitive) {
         found = m_caseSensitiveSearcher(begin, end, m_pattern.begin(), m_pattern.end()).begin;
@@ -178,7 +210,7 @@ qsizetype QLatin1StringMatcher::indexIn(QLatin1StringView haystack, qsizetype fr
         const qsizetype bufferSize = std::min(m_pattern.size(), qsizetype(sizeof m_foldBuffer));
         const QLatin1StringView restNeedle = m_pattern.sliced(bufferSize);
         const bool needleLongerThanBuffer = restNeedle.size() > 0;
-        QLatin1StringView restHaystack = haystack;
+        String restHaystack = haystack;
         do {
             found = m_caseInsensitiveSearcher(found, end, m_foldBuffer, &m_foldBuffer[bufferSize])
                             .begin;
@@ -189,13 +221,13 @@ qsizetype QLatin1StringMatcher::indexIn(QLatin1StringView haystack, qsizetype fr
             }
             restHaystack = haystack.sliced(
                     qMin(haystack.size(),
-                         bufferSize + qsizetype(std::distance(haystack.begin(), found))));
+                         bufferSize + qsizetype(std::distance(start, found))));
             if (restHaystack.startsWith(restNeedle, Qt::CaseInsensitive))
                 break;
             ++found;
         } while (true);
     }
-    return std::distance(haystack.begin(), found);
+    return std::distance(start, found);
 }
 
 QT_END_NAMESPACE
