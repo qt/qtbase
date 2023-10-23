@@ -673,13 +673,23 @@ static inline MsvcDebugRuntimeResult checkMsvcDebugRuntime(const QStringList &de
         qsizetype pos = 0;
         if (lib.startsWith("MSVCR"_L1, Qt::CaseInsensitive)
             || lib.startsWith("MSVCP"_L1, Qt::CaseInsensitive)
-            || lib.startsWith("VCRUNTIME"_L1, Qt::CaseInsensitive)) {
+            || lib.startsWith("VCRUNTIME"_L1, Qt::CaseInsensitive)
+            || lib.startsWith("VCCORLIB"_L1, Qt::CaseInsensitive)
+            || lib.startsWith("CONCRT"_L1, Qt::CaseInsensitive)
+            || lib.startsWith("UCRTBASE"_L1, Qt::CaseInsensitive)) {
             qsizetype lastDotPos = lib.lastIndexOf(u'.');
             pos = -1 == lastDotPos ? 0 : lastDotPos - 1;
         }
 
-        if (pos > 0 && lib.contains("_app"_L1, Qt::CaseInsensitive))
-            pos -= 4;
+        if (pos > 0) {
+            const auto removeExtraSuffix = [&lib, &pos](const QString &suffix) -> void {
+                if (lib.contains(suffix, Qt::CaseInsensitive))
+                    pos -= suffix.size();
+            };
+            removeExtraSuffix("_app"_L1);
+            removeExtraSuffix("_atomic_wait"_L1);
+            removeExtraSuffix("_codecvt_ids"_L1);
+        }
 
         if (pos)
             return lib.at(pos).toLower() == u'd' ? MsvcDebugRuntime : MsvcReleaseRuntime;
