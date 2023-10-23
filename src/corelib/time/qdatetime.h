@@ -32,53 +32,36 @@ public:
     QDate(int y, int m, int d, QCalendar cal);
 #if __cpp_lib_chrono >= 201907L || defined(Q_QDOC)
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
-    Q_IMPLICIT QDate(std::chrono::year_month_day ymd)
+    Q_IMPLICIT constexpr QDate(std::chrono::year_month_day date) noexcept
+        : jd(date.ok() ? stdSysDaysToJulianDay(date) : nullJd())
+    {}
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    Q_IMPLICIT constexpr QDate(std::chrono::year_month_day_last date) noexcept
+        : jd(date.ok() ? stdSysDaysToJulianDay(date) : nullJd())
+    {}
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    Q_IMPLICIT constexpr QDate(std::chrono::year_month_weekday date) noexcept
+        : jd(date.ok() ? stdSysDaysToJulianDay(date) : nullJd())
+    {}
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    Q_IMPLICIT constexpr QDate(std::chrono::year_month_weekday_last date) noexcept
+        : jd(date.ok() ? stdSysDaysToJulianDay(date) : nullJd())
+    {}
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    static constexpr QDate fromStdSysDays(const std::chrono::sys_days &days) noexcept
     {
-        if (!ymd.ok())
-            jd = nullJd();
-        else
-            *this = fromStdSysDays(ymd);
+        return QDate(stdSysDaysToJulianDay(days));
     }
 
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
-    Q_IMPLICIT QDate(std::chrono::year_month_day_last ymdl)
+    constexpr std::chrono::sys_days toStdSysDays() const noexcept
     {
-        if (!ymdl.ok())
-            jd = nullJd();
-        else
-            *this = fromStdSysDays(ymdl);
-    }
-
-    QT_POST_CXX17_API_IN_EXPORTED_CLASS
-    Q_IMPLICIT QDate(std::chrono::year_month_weekday ymw)
-    {
-        if (!ymw.ok())
-            jd = nullJd();
-        else
-            *this = fromStdSysDays(ymw);
-    }
-
-    QT_POST_CXX17_API_IN_EXPORTED_CLASS
-    Q_IMPLICIT QDate(std::chrono::year_month_weekday_last ymwl)
-    {
-        if (!ymwl.ok())
-            jd = nullJd();
-        else
-            *this = fromStdSysDays(ymwl);
-    }
-
-    QT_POST_CXX17_API_IN_EXPORTED_CLASS
-    static QDate fromStdSysDays(const std::chrono::sys_days &days)
-    {
-        const QDate epoch(unixEpochJd());
-        return epoch.addDays(days.time_since_epoch().count());
-    }
-
-    QT_POST_CXX17_API_IN_EXPORTED_CLASS
-    std::chrono::sys_days toStdSysDays() const
-    {
-        const QDate epoch(unixEpochJd());
-        return std::chrono::sys_days(std::chrono::days(epoch.daysTo(*this)));
+        const qint64 days = isValid() ? jd - unixEpochJd() : 0;
+        return std::chrono::sys_days(std::chrono::days(days));
     }
 #endif
 
@@ -166,6 +149,21 @@ private:
     static constexpr inline qint64 minJd() { return Q_INT64_C(-784350574879); }
     static constexpr inline qint64 maxJd() { return Q_INT64_C( 784354017364); }
     static constexpr inline qint64 unixEpochJd() { return Q_INT64_C(2440588); }
+
+#if __cpp_lib_chrono >= 201907L
+    static constexpr qint64 stdSysDaysToJulianDay(const std::chrono::sys_days &days) noexcept
+    {
+        const auto epochDays = days.time_since_epoch().count();
+        // minJd() and maxJd() fit into 40 bits.
+        if constexpr (sizeof(epochDays) >= 41) {
+            constexpr auto top = maxJd() - unixEpochJd();
+            constexpr auto bottom = minJd() - unixEpochJd();
+            if (epochDays > top || epochDays < bottom)
+                return nullJd();
+        }
+        return unixEpochJd() + epochDays;
+    }
+#endif // __cpp_lib_chrono >= 201907L
 
     qint64 jd;
 

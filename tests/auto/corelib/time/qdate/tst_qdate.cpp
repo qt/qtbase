@@ -1745,6 +1745,38 @@ void tst_QDate::roundtrip() const
         QCOMPARE(loopDate.toJulianDay(), testDate.toJulianDay());
         loopDate = loopDate.addDays(1);
     }
+
+#if __cpp_lib_chrono >= 201907L
+    // Test roundtrip for from/to std::chrono conversions.
+    // Compile-time test, to verify it's all constexpr.
+    using namespace std::chrono;
+    {
+        constexpr sys_days expected{days{minJd}};
+        constexpr sys_days actual{QDate::fromStdSysDays(expected).toStdSysDays()};
+        static_assert(actual == expected);
+    }
+    {
+        // constexpr year_month_day expected{sys_days{days{maxJd}}}; // Overflow at least on MSVC
+        constexpr year_month_day expected{1970y, January, 1d};
+        constexpr sys_days actual{QDate(expected).toStdSysDays()};
+        static_assert(actual == sys_days(expected));
+    }
+    {
+        constexpr year_month_day_last expected{2001y, {October / last}};
+        constexpr sys_days actual{QDate(expected).toStdSysDays()};
+        static_assert(actual == sys_days(expected));
+    }
+    {
+        constexpr year_month_weekday expected{2001y, December, Saturday[1]};
+        constexpr sys_days actual{QDate(expected).toStdSysDays()};
+        static_assert(actual == sys_days(expected));
+    }
+    {
+        constexpr year_month_weekday_last expected{2001y, November, Friday[last]};
+        constexpr sys_days actual{QDate(expected).toStdSysDays()};
+        static_assert(actual == sys_days(expected));
+    }
+#endif // __cpp_lib_chrono >= 201907L
 }
 
 void tst_QDate::qdebug() const

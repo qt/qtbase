@@ -446,14 +446,14 @@ QDate::QDate(int y, int m, int d, QCalendar cal)
 }
 
 /*!
-    \fn QDate::QDate(std::chrono::year_month_day ymd)
-    \fn QDate::QDate(std::chrono::year_month_day_last ymd)
-    \fn QDate::QDate(std::chrono::year_month_weekday ymd)
-    \fn QDate::QDate(std::chrono::year_month_weekday_last ymd)
+    \fn QDate::QDate(std::chrono::year_month_day date)
+    \fn QDate::QDate(std::chrono::year_month_day_last date)
+    \fn QDate::QDate(std::chrono::year_month_weekday date)
+    \fn QDate::QDate(std::chrono::year_month_weekday_last date)
 
     \since 6.4
 
-    Constructs a QDate representing the same date as \a ymd. This allows for
+    Constructs a QDate representing the same date as \a date. This allows for
     easy interoperability between the Standard Library calendaring classes and
     Qt datetime classes.
 
@@ -462,9 +462,9 @@ QDate::QDate(int y, int m, int d, QCalendar cal)
     \snippet code/src_corelib_time_qdatetime.cpp 22
 
     \note Unlike QDate, std::chrono::year and the related classes feature the
-    year zero. This means that if \a ymd is in the year zero or before, the
+    year zero. This means that if \a date is in the year zero or before, the
     resulting QDate object will have an year one less than the one specified by
-    \a ymd.
+    \a date.
 
     \note This function requires C++20.
 */
