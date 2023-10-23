@@ -124,13 +124,13 @@
     variants should return a list of supported variant names
     (QList<QByteArray>) in this option.
 
-    \value OptimizedWrite. A handler which supports this option
+    \value OptimizedWrite A handler which supports this option
     is expected to turn on optimization flags when writing.
 
-    \value ProgressiveScanWrite. A handler which supports
+    \value ProgressiveScanWrite A handler which supports
     this option is expected to write the image as a progressive scan image.
 
-    \value ImageTransformation. A handler which supports this option can read
+    \value ImageTransformation A handler which supports this option can read
     the transformation metadata of an image. A handler that supports this option
     should not apply the transformation itself.
 */
