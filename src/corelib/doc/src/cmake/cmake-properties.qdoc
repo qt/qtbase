@@ -592,6 +592,29 @@ For more information, see \l{https://github.com/emscripten-core/emscripten/blob/
 */
 
 /*!
+\page cmake-target-property-qt-wasm-maximum-memory.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_WASM_MAXIMUM_MEMORY
+\target cmake-target-property-QT_WASM_MAXIMUM_MEMORY
+
+\summary {Internal WebAssembly maximum memory.}
+
+\cmakepropertysince 6.7
+\preliminarycmakeproperty
+\cmakepropertywebassemblyonly
+
+Specifies the maximum amount of memory the applicataion can use. Translates into
+the Emscripten compiler setting of MAXIMUM_MEMORY. The default value
+is 4GB, which is the maximum for 32-bit WebAssembly.
+
+For more information, see \l{https://github.com/emscripten-core/emscripten/blob/main/src/settings.js}{Emscripten compiler settings}.
+*/
+
+
+
+/*!
 \page cmake-target-property-qt-ios-launch-screen.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
