@@ -32,12 +32,8 @@ endif()
 
 if(__harfbuzz_broken_config_file OR NOT __harfbuzz_found)
     find_package(PkgConfig QUIET)
-    if(PKG_CONFIG_EXECUTABLE MATCHES "pkgconf")
-        # pkgconf is an alternative implementation of pkg-config
-        set(pkgconf_is_used TRUE)
-    endif()
     pkg_check_modules(PC_HARFBUZZ IMPORTED_TARGET "harfbuzz")
-    if(PC_HARFBUZZ_FOUND AND NOT pkgconf_is_used)
+    if(PC_HARFBUZZ_FOUND)
         set(__harfbuzz_target_name "PkgConfig::PC_HARFBUZZ")
         set(__harfbuzz_find_include_dirs_hints
             HINTS ${PC_HARFBUZZ_INCLUDEDIR})
@@ -59,7 +55,7 @@ if(__harfbuzz_broken_config_file OR NOT __harfbuzz_found)
 
     if(HARFBUZZ_INCLUDE_DIRS AND HARFBUZZ_LIBRARIES)
         set(__harfbuzz_found TRUE)
-        if(NOT PC_HARFBUZZ_FOUND OR pkgconf_is_used)
+        if(NOT PC_HARFBUZZ_FOUND)
             add_library(${__harfbuzz_target_name} UNKNOWN IMPORTED)
             list(TRANSFORM HARFBUZZ_INCLUDE_DIRS APPEND "/harfbuzz")
             set_target_properties(${__harfbuzz_target_name} PROPERTIES
