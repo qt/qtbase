@@ -29,7 +29,7 @@ Window::Window(QWidget *parent)
     connect(loadButton, &QPushButton::clicked,
             this, QOverload<>::of(&Window::loadImage));
     connect(resetButton, &QPushButton::clicked,
-            thread, &RenderThread::stopProcess);
+            thread, &RenderThread::requestInterruption);
     connect(thread, &RenderThread::finished,
             this, &Window::resetUi);
 //! [set up widgets and connections] //! [connecting signal with custom type]
