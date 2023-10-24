@@ -170,7 +170,7 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
 
     const auto *platformTheme = QGuiApplicationPrivate::platformTheme();
     if (auto standardButtons = options()->standardButtons()) {
-        for (int standardButton = FirstButton; standardButton < LastButton; standardButton <<= 1) {
+        for (int standardButton = FirstButton; standardButton <= LastButton; standardButton <<= 1) {
             if (standardButtons & standardButton) {
                 auto title = platformTheme->standardButtonText(standardButton);
                 addButton(title, standardButton, buttonRole(StandardButton(standardButton)));
