@@ -91,6 +91,7 @@ private slots:
     void invalidConstructs_data();
     void invalidConstructs();
 #endif
+    void ownerComparisons();
 
     // let invalidConstructs be the last test, because it's the slowest;
     // add new tests above this block
@@ -2839,6 +2840,141 @@ void tst_QSharedPointer::overloads()
     sharedOverloaded.test();
     Overloaded<QWeakPointer> weakOverloaded;
     weakOverloaded.test();
+}
+
+void tst_QSharedPointer::ownerComparisons()
+{
+    using SP = QSharedPointer<int>;
+    using WP = QWeakPointer<int>;
+
+#define CHECK_EQ(a, b) \
+    do { \
+        QVERIFY(a.owner_equal(b)); \
+        QVERIFY(b.owner_equal(a)); \
+        QVERIFY(!a.owner_before(b)); \
+        QVERIFY(!b.owner_before(a)); \
+        QVERIFY(a.owner_hash() == b.owner_hash()); \
+    } while (false)
+
+#define CHECK_NOT_EQ(a, b) \
+    do { \
+        QVERIFY(!a.owner_equal(b)); \
+        QVERIFY(!b.owner_equal(a)); \
+        QVERIFY(a.owner_before(b) || b.owner_before(a)); \
+    } while (false)
+
+    // null
+    {
+        SP sp1;
+        SP sp2;
+        WP wp1 = sp1;
+        WP wp2;
+
+        CHECK_EQ(sp1, sp1);
+        CHECK_EQ(sp1, sp2);
+        CHECK_EQ(sp1, wp1);
+        CHECK_EQ(sp2, wp2);
+        CHECK_EQ(wp1, wp1);
+        CHECK_EQ(wp1, wp2);
+        CHECK_EQ(wp2, wp2);
+    }
+
+    // same owner
+    {
+        SP sp1 = SP::create(123);
+        SP sp2 = sp1;
+        WP wp1 = sp1;
+        SP wp2 = sp2;
+
+        CHECK_EQ(sp1, sp1);
+        CHECK_EQ(sp1, sp2);
+        CHECK_EQ(sp1, wp1);
+        CHECK_EQ(sp2, wp2);
+        CHECK_EQ(wp1, wp1);
+        CHECK_EQ(wp1, wp2);
+    }
+
+    // owning vs null
+    {
+        SP sp1 = SP::create(123);
+        SP sp2;
+        WP wp1 = sp1;
+        WP wp2 = sp2;
+
+        CHECK_EQ(sp1, sp1);
+        CHECK_NOT_EQ(sp1, sp2);
+        CHECK_EQ(sp1, wp1);
+        CHECK_EQ(sp2, wp2);
+        CHECK_EQ(wp1, wp1);
+        CHECK_NOT_EQ(wp1, wp2);
+    }
+
+    // different owners
+    {
+        SP sp1 = SP::create(123);
+        SP sp2 = SP::create(456);
+        WP wp1 = sp1;
+        WP wp2 = sp2;
+
+        CHECK_EQ(sp1, sp1);
+        CHECK_NOT_EQ(sp1, sp2);
+        CHECK_EQ(sp1, wp1);
+        CHECK_EQ(sp2, wp2);
+        CHECK_EQ(wp1, wp1);
+        CHECK_NOT_EQ(wp1, wp2);
+    }
+
+    // reset vs. null
+    {
+        SP sp1 = SP::create(123);
+        SP sp2;
+        WP wp1 = sp1;
+        WP wp2;
+
+        CHECK_EQ(sp1, sp1);
+        CHECK_NOT_EQ(sp1, sp2);
+        CHECK_EQ(sp1, wp1);
+        CHECK_NOT_EQ(sp1, wp2);
+        CHECK_EQ(wp1, wp1);
+        CHECK_NOT_EQ(wp1, wp2);
+
+        sp1.reset();
+
+        CHECK_EQ(sp1, sp1);
+        CHECK_EQ(sp1, sp2);
+        CHECK_NOT_EQ(sp1, wp1);
+        CHECK_EQ(sp2, wp2);
+        CHECK_EQ(wp1, wp1);
+        CHECK_NOT_EQ(wp1, wp2);
+    }
+
+    // expired weak pointers
+    {
+        WP wp1 = SP::create(123);
+        WP wp2;
+
+        CHECK_EQ(wp1, wp1);
+        CHECK_NOT_EQ(wp1, wp2);
+    }
+
+    {
+        WP wp1 = SP::create(123);
+        WP wp2 = wp1;
+
+        CHECK_EQ(wp1, wp1);
+        CHECK_EQ(wp1, wp2);
+    }
+
+    {
+        WP wp1 = SP::create(123);
+        WP wp2 = SP::create(456);
+
+        CHECK_EQ(wp1, wp1);
+        CHECK_EQ(wp2, wp2);
+        CHECK_NOT_EQ(wp1, wp2);
+    }
+#undef CHECK_EQ
+#undef CHECK_NOT_EQ
 }
 
 QTEST_MAIN(tst_QSharedPointer)

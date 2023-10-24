@@ -72,6 +72,19 @@ public:
 
     template <typename... Args>
     static inline QSharedPointer<T> create(Args &&... args);
+
+    // owner-based comparisons
+    template <typename X>
+    bool owner_before(const QSharedPointer<X> &other) const noexcept;
+    template <typename X>
+    bool owner_before(const QWeakPointer<X> &other) const noexcept;
+
+    template <typename X>
+    bool owner_equal(const QSharedPointer<X> &other) const noexcept;
+    template <typename X>
+    bool owner_equal(const QWeakPointer<X> &other) const noexcept;
+
+    size_t owner_hash() const noexcept;
 };
 
 template <class T>
@@ -108,6 +121,19 @@ public:
 
     QSharedPointer<T> toStrongRef() const;
     QSharedPointer<T> lock() const;
+
+    // owner-based comparisons
+    template <typename X>
+    bool owner_before(const QWeakPointer<X> &other) const noexcept;
+    template <typename X>
+    bool owner_before(const QSharedPointer<X> &other) const noexcept;
+
+    template <typename X>
+    bool owner_equal(const QWeakPointer<X> &other) const noexcept;
+    template <typename X>
+    bool owner_equal(const QSharedPointer<X> &other) const noexcept;
+
+    size_t owner_hash() const noexcept;
 };
 
 template <class T>

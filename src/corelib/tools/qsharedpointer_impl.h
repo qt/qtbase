@@ -444,6 +444,23 @@ public:
 #undef DECLARE_TEMPLATE_COMPARE_SET
 #undef DECLARE_COMPARE_SET
 
+    template <typename X>
+    bool owner_before(const QSharedPointer<X> &other) const noexcept
+    { return std::less<>()(d, other.d); }
+    template <typename X>
+    bool owner_before(const QWeakPointer<X> &other) const noexcept
+    { return std::less<>()(d, other.d); }
+
+    template <typename X>
+    bool owner_equal(const QSharedPointer<X> &other) const noexcept
+    { return d == other.d; }
+    template <typename X>
+    bool owner_equal(const QWeakPointer<X> &other) const noexcept
+    { return d == other.d; }
+
+    size_t owner_hash() const noexcept
+    { return std::hash<Data *>()(d); }
+
 private:
     Q_NODISCARD_CTOR
     explicit QSharedPointer(Qt::Initialization) {}
@@ -683,6 +700,23 @@ public:
     { return !p.isNull(); }
     friend bool operator!=(std::nullptr_t, const QWeakPointer &p)
     { return !p.isNull(); }
+
+    template <typename X>
+    bool owner_before(const QWeakPointer<X> &other) const noexcept
+    { return std::less<>()(d, other.d); }
+    template <typename X>
+    bool owner_before(const QSharedPointer<X> &other) const noexcept
+    { return std::less<>()(d, other.d); }
+
+    template <typename X>
+    bool owner_equal(const QWeakPointer<X> &other) const noexcept
+    { return d == other.d; }
+    template <typename X>
+    bool owner_equal(const QSharedPointer<X> &other) const noexcept
+    { return d == other.d; }
+
+    size_t owner_hash() const noexcept
+    { return std::hash<Data *>()(d); }
 
 private:
     friend struct QtPrivate::EnableInternalData;

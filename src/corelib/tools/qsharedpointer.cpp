@@ -711,6 +711,49 @@
 */
 
 /*!
+    \fn template <class T> template <class X> bool QSharedPointer<T>::owner_before(const QSharedPointer<X> &other) const noexcept
+    \fn template <class T> template <class X> bool QSharedPointer<T>::owner_before(const QWeakPointer<X> &other) const noexcept
+    \fn template <class T> template <class X> bool QWeakPointer<T>::owner_before(const QSharedPointer<X> &other) const noexcept
+    \fn template <class T> template <class X> bool QWeakPointer<T>::owner_before(const QWeakPointer<X> &other) const noexcept
+    \since 6.7
+
+    Returns \c true if and only if this smart pointer precedes \a other
+    in an implementation-defined owner-based ordering. The ordering is such
+    that two smart pointers are considered equivalent if they are both
+    empty or if they both own the same object (even if their apparent type
+    and pointer are different).
+
+    \sa owner_equal
+*/
+
+/*!
+    \fn template <class T> template <class X> bool QSharedPointer<T>::owner_equal(const QSharedPointer<X> &other) const noexcept
+    \fn template <class T> template <class X> bool QSharedPointer<T>::owner_equal(const QWeakPointer<X> &other) const noexcept
+    \fn template <class T> template <class X> bool QWeakPointer<T>::owner_equal(const QSharedPointer<X> &other) const noexcept
+    \fn template <class T> template <class X> bool QWeakPointer<T>::owner_equal(const QWeakPointer<X> &other) const noexcept
+
+    \since 6.7
+
+    Returns \c true if and only if this smart pointer and \a other
+    share ownership.
+
+    \sa owner_before, owner_hash
+*/
+
+/*!
+    \fn template <class T> size_t QSharedPointer<T>::owner_hash() const noexcept
+    \fn template <class T> size_t QWeakPointer<T>::owner_hash() const noexcept
+
+    \since 6.7
+
+    Returns a owner-based hash value for this smart pointer object.
+    Smart pointers that compare equal (as per \c{owner_equal}) will
+    have an identical owner-based hash.
+
+    \sa owner_equal
+*/
+
+/*!
     \fn template <class T> QWeakPointer<T>::QWeakPointer()
 
     Creates a QWeakPointer that points to nothing.
