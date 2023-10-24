@@ -12,7 +12,7 @@ qt_feature("macdeployqt" PRIVATE
     LABEL "macOS deployment tool"
     PURPOSE "The Mac deployment tool automates the process of creating a deployable application bundle that contains the Qt libraries as private frameworks."
     AUTODETECT CMAKE_HOST_APPLE
-    CONDITION MACOS)
+    CONDITION MACOS AND QT_FEATURE_thread)
 
 qt_feature("windeployqt" PRIVATE
     SECTION "Deployment"
