@@ -2840,22 +2840,37 @@ void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
     options->setStandardIcon(helperIcon(q->icon()));
     options->setIconPixmap(q->iconPixmap());
 
+    // Clear up front, since we might have prepared earlier
+    options->clearCustomButtons();
+
     // Add standard buttons and resolve default/escape button
-    options->setStandardButtons(helperStandardButtons(q));
+    auto standardButtons = helperStandardButtons(q);
     for (int button = QDialogButtonBox::StandardButton::FirstButton;
              button <= QDialogButtonBox::StandardButton::LastButton; button <<= 1) {
         auto *standardButton = buttonBox->button(QDialogButtonBox::StandardButton(button));
         if (!standardButton)
             continue;
 
+        if (auto *platformTheme = QGuiApplicationPrivate::platformTheme()) {
+            if (standardButton->text() != platformTheme->standardButtonText(button)) {
+                // The standard button has been customized, so add it as
+                // a custom button instead.
+                const auto buttonRole = buttonBox->buttonRole(standardButton);
+                options->addButton(standardButton->text(),
+                    static_cast<QPlatformDialogHelper::ButtonRole>(buttonRole),
+                    standardButton, button);
+                standardButtons &= ~QPlatformDialogHelper::StandardButton(button);
+            }
+        }
+
         if (standardButton == defaultButton)
             options->setDefaultButton(button);
         else if (standardButton == detectedEscapeButton)
             options->setEscapeButton(button);
     }
+    options->setStandardButtons(standardButtons);
 
     // Add custom buttons and resolve default/escape button
-    options->clearCustomButtons();
     for (auto *customButton : customButtonList) {
         // Unless it's the details button, since we don't do any
         // plumbing for the button's action in that case.
