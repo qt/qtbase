@@ -23,6 +23,8 @@ class QWasmScreen;
 class QOpenGLContext;
 class QOpenGLTexture;
 
+enum class QWasmWindowTreeNodeChangeType;
+
 class QWasmCompositor final : public QObject
 {
     Q_OBJECT
@@ -30,30 +32,21 @@ public:
     QWasmCompositor(QWasmScreen *screen);
     ~QWasmCompositor() final;
 
-    void addWindow(QWasmWindow *window);
-    void removeWindow(QWasmWindow *window);
-
     void setVisible(QWasmWindow *window, bool visible);
-    void raise(QWasmWindow *window);
-    void lower(QWasmWindow *window);
-
     void onScreenDeleting();
 
-    QWindow *windowAt(QPoint globalPoint, int padding = 0) const;
-    QWindow *keyWindow() const;
-
     QWasmScreen *screen();
+    void setEnabled(bool enabled);
 
     enum UpdateRequestDeliveryType { ExposeEventDelivery, UpdateRequestDelivery };
     void requestUpdateAllWindows();
     void requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType = ExposeEventDelivery);
 
     void handleBackingStoreFlush(QWindow *window);
+    void onWindowTreeChanged(QWasmWindowTreeNodeChangeType changeType, QWasmWindow *window);
 
 private:
-    void frame(bool all, const QList<QWasmWindow *> &windows);
-
-    void onTopWindowChanged();
+    void frame(const QList<QWasmWindow *> &windows);
 
     void deregisterEventHandlers();
     void destroy();
@@ -65,10 +58,6 @@ private:
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
     bool processTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
-
-    void updateEnabledState();
-
-    QWasmWindowStack m_windowStack;
 
     bool m_isEnabled = true;
     QMap<QWasmWindow *, UpdateRequestDeliveryType> m_requestUpdateWindows;

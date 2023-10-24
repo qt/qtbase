@@ -32,6 +32,7 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmstring.cpp qwasmstring.h
         qwasmtheme.cpp qwasmtheme.h
         qwasmwindow.cpp qwasmwindow.h
+        qwasmwindowtreenode.cpp qwasmwindowtreenode.h
         qwasmwindowclientarea.cpp qwasmwindowclientarea.h
         qwasmwindownonclientarea.cpp qwasmwindownonclientarea.h
         qwasminputcontext.cpp qwasminputcontext.h

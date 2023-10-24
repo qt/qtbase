@@ -21,8 +21,7 @@ using namespace emscripten;
 
 Q_GUI_EXPORT int qt_defaultDpiX();
 
-QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
-    : QObject(screen), m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this))
+QWasmCompositor::QWasmCompositor(QWasmScreen *screen) : QObject(screen)
 {
     QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
 }
@@ -33,6 +32,22 @@ QWasmCompositor::~QWasmCompositor()
         emscripten_cancel_animation_frame(m_requestAnimationFrameId);
 
     destroy();
+}
+
+void QWasmCompositor::onWindowTreeChanged(QWasmWindowTreeNodeChangeType changeType,
+                                          QWasmWindow *window)
+{
+    auto allWindows = screen()->allWindows();
+    setEnabled(std::any_of(allWindows.begin(), allWindows.end(), [](QWasmWindow *element) {
+        return !element->context2d().isUndefined();
+    }));
+    if (changeType == QWasmWindowTreeNodeChangeType::NodeRemoval)
+        m_requestUpdateWindows.remove(window);
+}
+
+void QWasmCompositor::setEnabled(bool enabled)
+{
+    m_isEnabled = enabled;
 }
 
 void QWasmCompositor::onScreenDeleting()
@@ -56,59 +71,6 @@ void QWasmCompositor::destroy()
     // TODO(mikolaj.boc): Investigate if m_isEnabled is needed at all. It seems like a frame should
     // not be generated after this instead.
     m_isEnabled = false; // prevent frame() from creating a new m_context
-}
-
-void QWasmCompositor::addWindow(QWasmWindow *window)
-{
-    m_windowStack.pushWindow(window);
-    m_windowStack.topWindow()->requestActivateWindow();
-
-    updateEnabledState();
-}
-
-void QWasmCompositor::removeWindow(QWasmWindow *window)
-{
-    m_requestUpdateWindows.remove(window);
-    m_windowStack.removeWindow(window);
-    if (m_windowStack.topWindow())
-        m_windowStack.topWindow()->requestActivateWindow();
-
-    updateEnabledState();
-}
-
-void QWasmCompositor::updateEnabledState()
-{
-    m_isEnabled = std::any_of(m_windowStack.begin(), m_windowStack.end(), [](QWasmWindow *window) {
-        return !window->context2d().isUndefined();
-    });
-}
-
-void QWasmCompositor::raise(QWasmWindow *window)
-{
-    m_windowStack.raise(window);
-}
-
-void QWasmCompositor::lower(QWasmWindow *window)
-{
-    m_windowStack.lower(window);
-}
-
-QWindow *QWasmCompositor::windowAt(QPoint targetPointInScreenCoords, int padding) const
-{
-    const auto found = std::find_if(
-            m_windowStack.begin(), m_windowStack.end(),
-            [padding, &targetPointInScreenCoords](const QWasmWindow *window) {
-                const QRect geometry = window->windowFrameGeometry().adjusted(-padding, -padding,
-                                                                              padding, padding);
-
-                return window->isVisible() && geometry.contains(targetPointInScreenCoords);
-            });
-    return found != m_windowStack.end() ? (*found)->window() : nullptr;
-}
-
-QWindow *QWasmCompositor::keyWindow() const
-{
-    return m_windowStack.topWindow() ? m_windowStack.topWindow()->window() : nullptr;
 }
 
 void QWasmCompositor::requestUpdateAllWindows()
@@ -158,29 +120,19 @@ void QWasmCompositor::deliverUpdateRequests()
     // update set.
     auto requestUpdateWindows = m_requestUpdateWindows;
     m_requestUpdateWindows.clear();
-    bool requestUpdateAllWindows = m_requestUpdateAllWindows;
-    m_requestUpdateAllWindows = false;
 
     // Update window content, either all windows or a spesific set of windows. Use the correct
     // update type: QWindow subclasses expect that requested and delivered updateRequests matches
     // exactly.
     m_inDeliverUpdateRequest = true;
-    if (requestUpdateAllWindows) {
-        for (QWasmWindow *window : m_windowStack) {
-            auto it = requestUpdateWindows.find(window);
-            UpdateRequestDeliveryType updateType =
-                (it == m_requestUpdateWindows.end() ? ExposeEventDelivery : it.value());
-            deliverUpdateRequest(window, updateType);
-        }
-    } else {
-        for (auto it = requestUpdateWindows.constBegin(); it != requestUpdateWindows.constEnd(); ++it) {
-            auto *window = it.key();
-            UpdateRequestDeliveryType updateType = it.value();
-            deliverUpdateRequest(window, updateType);
-        }
+    for (auto it = requestUpdateWindows.constBegin(); it != requestUpdateWindows.constEnd(); ++it) {
+        auto *window = it.key();
+        UpdateRequestDeliveryType updateType = it.value();
+        deliverUpdateRequest(window, updateType);
     }
+
     m_inDeliverUpdateRequest = false;
-    frame(requestUpdateAllWindows, requestUpdateWindows.keys());
+    frame(requestUpdateWindows.keys());
 }
 
 void QWasmCompositor::deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType)
@@ -213,36 +165,15 @@ int dpiScaled(qreal value)
     return value * (qreal(qt_defaultDpiX()) / 96.0);
 }
 
-void QWasmCompositor::frame(bool all, const QList<QWasmWindow *> &windows)
+void QWasmCompositor::frame(const QList<QWasmWindow *> &windows)
 {
-    if (!m_isEnabled || m_windowStack.empty() || !screen())
+     if (!m_isEnabled || !screen())
         return;
 
-    if (all) {
-        std::for_each(m_windowStack.rbegin(), m_windowStack.rend(),
-                      [](QWasmWindow *window) { window->paint(); });
-    } else {
-        std::for_each(windows.begin(), windows.end(), [](QWasmWindow *window) { window->paint(); });
-    }
+    for (QWasmWindow *window : windows)
+        window->paint();
 }
 
-void QWasmCompositor::onTopWindowChanged()
-{
-    constexpr int zOrderForElementInFrontOfScreen = 3;
-    int z = zOrderForElementInFrontOfScreen;
-    std::for_each(m_windowStack.rbegin(), m_windowStack.rend(),
-                  [&z](QWasmWindow *window) { window->setZOrder(z++); });
-
-    auto it = m_windowStack.begin();
-    if (it == m_windowStack.end()) {
-        return;
-    }
-    (*it)->onActivationChanged(true);
-    ++it;
-    for (; it != m_windowStack.end(); ++it) {
-        (*it)->onActivationChanged(false);
-    }
-}
 
 QWasmScreen *QWasmCompositor::screen()
 {
