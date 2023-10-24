@@ -882,9 +882,9 @@ QPlatformDialogHelper::StandardButtons QMessageDialogOptions::standardButtons() 
 }
 
 int QMessageDialogOptions::addButton(const QString &label, QPlatformDialogHelper::ButtonRole role,
-                                     void *buttonImpl)
+                                     void *buttonImpl, int buttonId)
 {
-    const CustomButton b(d->nextCustomButtonId++, label, role, buttonImpl);
+    const CustomButton b(buttonId ? buttonId : d->nextCustomButtonId++, label, role, buttonImpl);
     d->customButtons.append(b);
     return b.id;
 }
