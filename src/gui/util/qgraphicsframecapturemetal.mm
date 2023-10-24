@@ -27,7 +27,7 @@ QGraphicsFrameCaptureMetal::QGraphicsFrameCaptureMetal()
 
 QGraphicsFrameCaptureMetal::~QGraphicsFrameCaptureMetal()
 {
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) && QT_CONFIG(process)
     if (m_process) {
         m_process->terminate();
         delete m_process;
@@ -131,7 +131,10 @@ bool QGraphicsFrameCaptureMetal::isCapturing() const
 
 void QGraphicsFrameCaptureMetal::openCapture()
 {
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
+#if !QT_CONFIG(process)
+    qFatal("QGraphicsFrameCapture requires QProcess on macOS");
+#else
     if (!initialized()) {
         qCWarning(lcGraphicsFrameCapture) << "Capturing on Metal was not initialized. Can not open XCode with a valid capture.";
         return;
@@ -147,6 +150,7 @@ void QGraphicsFrameCaptureMetal::openCapture()
 
     m_process->kill();
     m_process->start();
+#endif
 #endif
 }
 

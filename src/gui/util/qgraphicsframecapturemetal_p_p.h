@@ -42,7 +42,7 @@ public:
 
 private:
     void updateCaptureFileName();
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) && QT_CONFIG(process)
     QProcess *m_process = nullptr;
 #endif
     MTLCaptureManager *m_captureManager = nullptr;
