@@ -303,25 +303,52 @@ void tst_QImageReader::jpegRgbCmyk()
     QImage image1(prefix + QLatin1String("YCbCr_cmyk.jpg"));
     QImage image2(prefix + QLatin1String("YCbCr_cmyk.png"));
 
-    if (image1 != image2) {
-        // first, do some obvious tests
-        QCOMPARE(image1.height(), image2.height());
-        QCOMPARE(image1.width(), image2.width());
-        QCOMPARE(image1.format(), image2.format());
-        QCOMPARE(image1.format(), QImage::Format_RGB32);
+    QVERIFY(!image1.isNull());
+    QVERIFY(!image2.isNull());
 
-        // compare all the pixels with a slack of 3. This ignores rounding errors
-        // in libjpeg/libpng, where some versions sacrifice accuracy for speed.
-        for (int h = 0; h < image1.height(); ++h) {
-            const uchar *s1 = image1.constScanLine(h);
-            const uchar *s2 = image2.constScanLine(h);
-            for (int w = 0; w < image1.width() * 4; ++w) {
-                if (*s1 != *s2) {
-                    QVERIFY2(qAbs(*s1 - *s2) <= 3, qPrintable(QString("images differ in line %1, col %2 (image1: %3, image2: %4)").arg(h).arg(w).arg(*s1, 0, 16).arg(*s2, 0, 16)));
-                }
-                s1++;
-                s2++;
-            }
+    QCOMPARE(image1.height(), image2.height());
+    QCOMPARE(image1.width(), image2.width());
+
+    QCOMPARE(image1.format(), QImage::Format_CMYK32);
+    QCOMPARE(image2.format(), QImage::Format_RGB32);
+
+    // compare all the pixels with a slack of 3. This ignores rounding errors
+    // in libjpeg/libpng, where some versions sacrifice accuracy for speed.
+    const auto fuzzyCompareColors = [](const QColor &c1, const QColor &c2) {
+        int c1rgba[4];
+        int c2rgba[4];
+
+        c1.getRgb(c1rgba + 0,
+                  c1rgba + 1,
+                  c1rgba + 2,
+                  c1rgba + 3);
+
+        c2.getRgb(c2rgba + 0,
+                  c2rgba + 1,
+                  c2rgba + 2,
+                  c2rgba + 3);
+
+        const auto fuzzyCompare = [](int a, int b) {
+            return qAbs(a - b) <= 3;
+        };
+
+        return fuzzyCompare(c1rgba[0], c2rgba[0]) &&
+               fuzzyCompare(c1rgba[1], c2rgba[1]) &&
+               fuzzyCompare(c1rgba[2], c2rgba[2]) &&
+               fuzzyCompare(c1rgba[3], c2rgba[3]);
+    };
+
+    for (int h = 0; h < image1.height(); ++h) {
+        const uchar *sl1 = image1.constScanLine(h);
+        const uchar *sl2 = image2.constScanLine(h);
+        for (int w = 0; w < image1.width(); ++w) {
+            const uchar *s1 = sl1 + w * 4;
+            const uchar *s2 = sl2 + w * 4;
+
+            QColor c1 = QColor::fromCmyk(s1[0], s1[1], s1[2], s1[3]);
+            QColor c2 = QColor::fromRgb(s2[2], s2[1], s2[0]);
+            QVERIFY2(fuzzyCompareColors(c1, c2),
+                     qPrintable(QString("images differ in line %1, col %2").arg(h).arg(w)));
         }
     }
 }
@@ -589,7 +616,7 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("ppm-4") << QString("test.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
 
     QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg") << QImage::Format_Grayscale8;
-    QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg") << QImage::Format_RGB32;
+    QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg") << QImage::Format_CMYK32;
     QTest::newRow("jpeg-3") << QString("YCbCr_rgb.jpg") << QByteArray("jpeg") << QImage::Format_RGB32;
 
     QTest::newRow("gif-1") << QString("earth.gif") << QByteArray("gif") << QImage::Format_Invalid;
