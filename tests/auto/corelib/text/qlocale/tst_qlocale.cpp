@@ -163,20 +163,19 @@ private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
     QStringList cleanEnv;
-    bool europeanTimeZone;
+    const bool europeanTimeZone;
     void toReal_data();
 
     using TransientLocale = QTestLocaleChange::TransientLocale;
 };
 
 tst_QLocale::tst_QLocale()
+    // Some tests are specific to CET, test if it applies:
+    : europeanTimeZone(
+        QDate(2013, 1, 1).startOfDay().offsetFromUtc() == 3600
+        && QDate(2013, 6, 1).startOfDay().offsetFromUtc() == 7200)
 {
     qRegisterMetaType<QLocale::FormatType>("QLocale::FormatType");
-
-    // Test if in Central European Time zone
-    uint x1 = QDateTime(QDate(1990, 1, 1), QTime()).toSecsSinceEpoch();
-    uint x2 = QDateTime(QDate(1990, 6, 1), QTime()).toSecsSinceEpoch();
-    europeanTimeZone = (x1 == 631148400 && x2 == 644191200);
 }
 
 void tst_QLocale::initTestCase()
