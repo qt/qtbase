@@ -867,9 +867,11 @@ struct QD3D12ShaderResourceBindings : public QRhiShaderResourceBindings
                            QD3D12ShaderResourceVisitor::StorageOp op,
                            int shaderRegister);
 
-    QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
     bool hasDynamicOffset = false;
     uint generation = 0;
+
+    friend class QRhiD3D12;
+    friend struct QD3D12ShaderResourceVisitor;
 };
 
 struct QD3D12GraphicsPipeline : public QRhiGraphicsPipeline
