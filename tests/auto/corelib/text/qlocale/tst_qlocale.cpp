@@ -173,7 +173,11 @@ tst_QLocale::tst_QLocale()
     // Some tests are specific to CET, test if it applies:
     : europeanTimeZone(
         QDate(2013, 1, 1).startOfDay().offsetFromUtc() == 3600
-        && QDate(2013, 6, 1).startOfDay().offsetFromUtc() == 7200)
+        && QDate(2013, 6, 1).startOfDay().offsetFromUtc() == 7200
+        // ICU in a zone not currently doing DST may ignore any historical DST
+        // excursions in its display-names (Africa/Tripoli).
+        && QDate(QDate::currentDate().year(), 1, 1).startOfDay().offsetFromUtc() == 3600
+        && QDate(QDate::currentDate().year(), 7, 1).startOfDay().offsetFromUtc() == 7200)
 {
     qRegisterMetaType<QLocale::FormatType>("QLocale::FormatType");
 }

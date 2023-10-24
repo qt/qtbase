@@ -290,9 +290,6 @@ public:
     QLocale::Territory territory() const override;
     QString comment() const override;
 
-    QString displayName(qint64 atMSecsSinceEpoch,
-                        QTimeZone::NameType nameType,
-                        const QLocale &locale) const override;
     QString displayName(QTimeZone::TimeType timeType,
                         QTimeZone::NameType nameType,
                         const QLocale &locale) const override;
