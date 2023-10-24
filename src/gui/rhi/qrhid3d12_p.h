@@ -687,6 +687,7 @@ struct QD3D12Buffer : public QRhiBuffer
     };
     QVarLengthArray<HostWrite, 16> pendingHostWrites[QD3D12_FRAMES_IN_FLIGHT];
     friend class QRhiD3D12;
+    friend struct QD3D12CommandBuffer;
 };
 
 struct QD3D12RenderBuffer : public QRhiRenderBuffer
@@ -734,6 +735,7 @@ struct QD3D12Texture : public QRhiTexture
     DXGI_SAMPLE_DESC sampleDesc;
     uint generation = 0;
     friend class QRhiD3D12;
+    friend struct QD3D12CommandBuffer;
 };
 
 struct QD3D12Sampler : public QRhiSampler
@@ -963,6 +965,35 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
 
     // global
     double lastGpuTime = 0;
+
+    // per-setShaderResources
+    struct VisitorData {
+        QVarLengthArray<QPair<QD3D12ObjectHandle, quint32>, 4> cbufs[6];
+        QVarLengthArray<QD3D12Descriptor, 8> srvs[6];
+        QVarLengthArray<QD3D12Descriptor, 8> samplers[6];
+        QVarLengthArray<QPair<QD3D12ObjectHandle, D3D12_UNORDERED_ACCESS_VIEW_DESC>, 4> uavs[6];
+    } visitorData;
+
+    void visitUniformBuffer(QD3D12Stage s,
+                            const QRhiShaderResourceBinding::Data::UniformBufferData &d,
+                            int shaderRegister,
+                            int binding,
+                            int dynamicOffsetCount,
+                            const QRhiCommandBuffer::DynamicOffset *dynamicOffsets);
+    void visitTexture(QD3D12Stage s,
+                      const QRhiShaderResourceBinding::TextureAndSampler &d,
+                      int shaderRegister);
+    void visitSampler(QD3D12Stage s,
+                      const QRhiShaderResourceBinding::TextureAndSampler &d,
+                      int shaderRegister);
+    void visitStorageBuffer(QD3D12Stage s,
+                            const QRhiShaderResourceBinding::Data::StorageBufferData &d,
+                            QD3D12ShaderResourceVisitor::StorageOp op,
+                            int shaderRegister);
+    void visitStorageImage(QD3D12Stage s,
+                           const QRhiShaderResourceBinding::Data::StorageImageData &d,
+                           QD3D12ShaderResourceVisitor::StorageOp op,
+                           int shaderRegister);
 };
 
 struct QD3D12SwapChain : public QRhiSwapChain
@@ -1201,34 +1232,6 @@ public:
     QVarLengthArray<QD3D12Readback, 4> activeReadbacks;
     bool offscreenActive = false;
     QD3D12CommandBuffer *offscreenCb[QD3D12_FRAMES_IN_FLIGHT] = {};
-
-    struct VisitorData {
-        QVarLengthArray<QPair<QD3D12ObjectHandle, quint32>, 4> cbufs[6];
-        QVarLengthArray<QD3D12Descriptor, 8> srvs[6];
-        QVarLengthArray<QD3D12Descriptor, 8> samplers[6];
-        QVarLengthArray<QPair<QD3D12ObjectHandle, D3D12_UNORDERED_ACCESS_VIEW_DESC>, 4> uavs[6];
-    } visitorData;
-
-    void visitUniformBuffer(QD3D12Stage s,
-                            const QRhiShaderResourceBinding::Data::UniformBufferData &d,
-                            int shaderRegister,
-                            int binding,
-                            int dynamicOffsetCount,
-                            const QRhiCommandBuffer::DynamicOffset *dynamicOffsets);
-    void visitTexture(QD3D12Stage s,
-                      const QRhiShaderResourceBinding::TextureAndSampler &d,
-                      int shaderRegister);
-    void visitSampler(QD3D12Stage s,
-                      const QRhiShaderResourceBinding::TextureAndSampler &d,
-                      int shaderRegister);
-    void visitStorageBuffer(QD3D12Stage s,
-                            const QRhiShaderResourceBinding::Data::StorageBufferData &d,
-                            QD3D12ShaderResourceVisitor::StorageOp op,
-                            int shaderRegister);
-    void visitStorageImage(QD3D12Stage s,
-                           const QRhiShaderResourceBinding::Data::StorageImageData &d,
-                           QD3D12ShaderResourceVisitor::StorageOp op,
-                           int shaderRegister);
 
     struct {
         bool multiView = false;

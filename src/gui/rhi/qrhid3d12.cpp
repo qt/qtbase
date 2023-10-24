@@ -849,12 +849,12 @@ void QRhiD3D12::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
     }
 }
 
-void QRhiD3D12::visitUniformBuffer(QD3D12Stage s,
-                                   const QRhiShaderResourceBinding::Data::UniformBufferData &d,
-                                   int,
-                                   int binding,
-                                   int dynamicOffsetCount,
-                                   const QRhiCommandBuffer::DynamicOffset *dynamicOffsets)
+void QD3D12CommandBuffer::visitUniformBuffer(QD3D12Stage s,
+                                             const QRhiShaderResourceBinding::Data::UniformBufferData &d,
+                                             int,
+                                             int binding,
+                                             int dynamicOffsetCount,
+                                             const QRhiCommandBuffer::DynamicOffset *dynamicOffsets)
 {
     QD3D12Buffer *bufD = QRHI_RES(QD3D12Buffer, d.buf);
     quint32 offset = d.offset;
@@ -867,29 +867,30 @@ void QRhiD3D12::visitUniformBuffer(QD3D12Stage s,
             }
         }
     }
-    visitorData.cbufs[s].append({ bufD->handles[currentFrameSlot], offset });
+    QRHI_RES_RHI(QRhiD3D12);
+    visitorData.cbufs[s].append({ bufD->handles[rhiD->currentFrameSlot], offset });
 }
 
-void QRhiD3D12::visitTexture(QD3D12Stage s,
-                             const QRhiShaderResourceBinding::TextureAndSampler &d,
-                             int)
+void QD3D12CommandBuffer::visitTexture(QD3D12Stage s,
+                                       const QRhiShaderResourceBinding::TextureAndSampler &d,
+                                       int)
 {
     QD3D12Texture *texD = QRHI_RES(QD3D12Texture, d.tex);
     visitorData.srvs[s].append(texD->srv);
 }
 
-void QRhiD3D12::visitSampler(QD3D12Stage s,
-                             const QRhiShaderResourceBinding::TextureAndSampler &d,
-                             int)
+void QD3D12CommandBuffer::visitSampler(QD3D12Stage s,
+                                       const QRhiShaderResourceBinding::TextureAndSampler &d,
+                                       int)
 {
     QD3D12Sampler *samplerD = QRHI_RES(QD3D12Sampler, d.sampler);
     visitorData.samplers[s].append(samplerD->lookupOrCreateShaderVisibleDescriptor());
 }
 
-void QRhiD3D12::visitStorageBuffer(QD3D12Stage s,
-                                   const QRhiShaderResourceBinding::Data::StorageBufferData &d,
-                                   QD3D12ShaderResourceVisitor::StorageOp,
-                                   int)
+void QD3D12CommandBuffer::visitStorageBuffer(QD3D12Stage s,
+                                             const QRhiShaderResourceBinding::Data::StorageBufferData &d,
+                                             QD3D12ShaderResourceVisitor::StorageOp,
+                                             int)
 {
     QD3D12Buffer *bufD = QRHI_RES(QD3D12Buffer, d.buf);
     // SPIRV-Cross generated HLSL uses RWByteAddressBuffer
@@ -902,10 +903,10 @@ void QRhiD3D12::visitStorageBuffer(QD3D12Stage s,
     visitorData.uavs[s].append({ bufD->handles[0], uavDesc });
 }
 
-void QRhiD3D12::visitStorageImage(QD3D12Stage s,
-                                  const QRhiShaderResourceBinding::Data::StorageImageData &d,
-                                  QD3D12ShaderResourceVisitor::StorageOp,
-                                  int)
+void QD3D12CommandBuffer::visitStorageImage(QD3D12Stage s,
+                                            const QRhiShaderResourceBinding::Data::StorageImageData &d,
+                                            QD3D12ShaderResourceVisitor::StorageOp,
+                                            int)
 {
     QD3D12Texture *texD = QRHI_RES(QD3D12Texture, d.tex);
     const bool isCube = texD->m_flags.testFlag(QRhiTexture::CubeMap);
@@ -1064,14 +1065,15 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
         QD3D12ShaderResourceVisitor visitor(srbD, stageData, gfxPsD ? 5 : 1);
 
+        QD3D12CommandBuffer::VisitorData &visitorData(cbD->visitorData);
         visitorData = {};
 
         using namespace std::placeholders;
-        visitor.uniformBuffer = std::bind(&QRhiD3D12::visitUniformBuffer, this, _1, _2, _3, _4, dynamicOffsetCount, dynamicOffsets);
-        visitor.texture = std::bind(&QRhiD3D12::visitTexture, this, _1, _2, _3);
-        visitor.sampler = std::bind(&QRhiD3D12::visitSampler, this, _1, _2, _3);
-        visitor.storageBuffer = std::bind(&QRhiD3D12::visitStorageBuffer, this, _1, _2, _3, _4);
-        visitor.storageImage = std::bind(&QRhiD3D12::visitStorageImage, this, _1, _2, _3, _4);
+        visitor.uniformBuffer = std::bind(&QD3D12CommandBuffer::visitUniformBuffer, cbD, _1, _2, _3, _4, dynamicOffsetCount, dynamicOffsets);
+        visitor.texture = std::bind(&QD3D12CommandBuffer::visitTexture, cbD, _1, _2, _3);
+        visitor.sampler = std::bind(&QD3D12CommandBuffer::visitSampler, cbD, _1, _2, _3);
+        visitor.storageBuffer = std::bind(&QD3D12CommandBuffer::visitStorageBuffer, cbD, _1, _2, _3, _4);
+        visitor.storageImage = std::bind(&QD3D12CommandBuffer::visitStorageImage, cbD, _1, _2, _3, _4);
 
         visitor.visit();
 
