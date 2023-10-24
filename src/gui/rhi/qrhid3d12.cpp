@@ -2698,6 +2698,7 @@ bool QD3D12MipmapGenerator::create(QRhiD3D12 *rhiD)
     // b0
     rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    rootParams[0].Descriptor.Flags = D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC;
 
     // t0
     descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -4821,6 +4822,7 @@ void QD3D12ShaderResourceBindings::visitUniformBuffer(QD3D12Stage s,
     rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParam.ShaderVisibility = qd3d12_stageToVisibility(s);
     rootParam.Descriptor.ShaderRegister = shaderRegister;
+    rootParam.Descriptor.Flags = D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC;
     visitorData.cbParams[s].append(rootParam);
 }
 
