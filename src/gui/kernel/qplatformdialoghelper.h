@@ -458,7 +458,7 @@ public:
     };
 
     int addButton(const QString &label, QPlatformDialogHelper::ButtonRole role,
-                  void *buttonImpl = nullptr);
+                  void *buttonImpl = nullptr, int buttonId = 0);
     void removeButton(int id);
     const QList<CustomButton> &customButtons();
     const CustomButton *customButton(int id);
