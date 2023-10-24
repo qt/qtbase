@@ -74,15 +74,25 @@ if (NOT QT_NO_CREATE_TARGETS AND @INSTALL_CMAKE_NAMESPACE@@target@_FOUND)
         ${_@QT_CMAKE_EXPORT_NAMESPACE@@target@_OWN_PRIVATE_INCLUDE_DIRS})
 
     foreach(_module_dep ${_@QT_CMAKE_EXPORT_NAMESPACE@@target@_MODULE_DEPENDENCIES})
-        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@_INCLUDE_DIRS
+        if(_module_dep MATCHES ".+Private$")
+            set(_private_suffix "Private")
+        else()
+            set(_private_suffix "")
+        endif()
+        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@${_private_suffix}_INCLUDE_DIRS
              ${@QT_CMAKE_EXPORT_NAMESPACE@${_module_dep}_INCLUDE_DIRS})
-        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@_PRIVATE_INCLUDE_DIRS
+        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@${_private_suffix}_PRIVATE_INCLUDE_DIRS
              ${@QT_CMAKE_EXPORT_NAMESPACE@${_module_dep}_PRIVATE_INCLUDE_DIRS})
-        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@_DEFINITIONS
+        if(_private_suffix)
+            list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@_PRIVATE_INCLUDE_DIRS
+                ${@QT_CMAKE_EXPORT_NAMESPACE@${_module_dep}_PRIVATE_INCLUDE_DIRS})
+        endif()
+        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@${_private_suffix}_DEFINITIONS
              ${@QT_CMAKE_EXPORT_NAMESPACE@${_module_dep}_DEFINITIONS})
-        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@_COMPILE_DEFINITIONS
+        list(APPEND @QT_CMAKE_EXPORT_NAMESPACE@@target@${_private_suffix}_COMPILE_DEFINITIONS
              ${@QT_CMAKE_EXPORT_NAMESPACE@${_module_dep}_COMPILE_DEFINITIONS})
     endforeach()
+    unset(_private_suffix)
 
     list(REMOVE_DUPLICATES @QT_CMAKE_EXPORT_NAMESPACE@@target@_INCLUDE_DIRS)
     list(REMOVE_DUPLICATES @QT_CMAKE_EXPORT_NAMESPACE@@target@_PRIVATE_INCLUDE_DIRS)
