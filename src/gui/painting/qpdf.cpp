@@ -7,6 +7,7 @@
 
 #include "qplatformdefs.h"
 
+#include <private/qcmyk_p.h>
 #include <private/qfont_p.h>
 #include <private/qmath_p.h>
 #include <private/qpainter_p.h>
@@ -2419,7 +2420,7 @@ int QPdfEnginePrivate::writeCompressed(const char *src, int len)
     return len;
 }
 
-int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height, int depth,
+int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height, WriteImageOption option,
                                   int maskObject, int softMaskObject, bool dct, bool isMono)
 {
     int image = addXrefEntry(-1);
@@ -2429,7 +2430,8 @@ int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height,
             "/Width %d\n"
             "/Height %d\n", width, height);
 
-    if (depth == 1) {
+    switch (option) {
+    case WriteImageOption::Monochrome:
         if (!isMono) {
             xprintf("/ImageMask true\n"
                     "/Decode [1 0]\n");
@@ -2437,10 +2439,21 @@ int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height,
             xprintf("/BitsPerComponent 1\n"
                     "/ColorSpace /DeviceGray\n");
         }
-    } else {
+        break;
+    case WriteImageOption::Grayscale:
         xprintf("/BitsPerComponent 8\n"
-                "/ColorSpace %s\n", (depth == 32) ? "/DeviceRGB" : "/DeviceGray");
+                "/ColorSpace /DeviceGray\n");
+        break;
+    case WriteImageOption::RGB:
+        xprintf("/BitsPerComponent 8\n"
+                "/ColorSpace /DeviceRGB\n");
+        break;
+    case WriteImageOption::CMYK:
+        xprintf("/BitsPerComponent 8\n"
+                "/ColorSpace /DeviceCMYK\n");
+        break;
     }
+
     if (maskObject > 0)
         xprintf("/Mask %d 0 R\n", maskObject);
     if (softMaskObject > 0)
@@ -3042,7 +3055,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
         format = QImage::Format_Mono;
     } else {
         *bitmap = false;
-        if (format != QImage::Format_RGB32 && format != QImage::Format_ARGB32) {
+        if (format != QImage::Format_RGB32 && format != QImage::Format_ARGB32 && format != QImage::Format_CMYK32) {
             image = image.convertToFormat(QImage::Format_ARGB32);
             format = QImage::Format_ARGB32;
         }
@@ -3050,7 +3063,6 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
 
     int w = image.width();
     int h = image.height();
-    int d = image.depth();
 
     if (format == QImage::Format_Mono) {
         int bytesPerLine = (w + 7) >> 3;
@@ -3061,7 +3073,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
             memcpy(rawdata, image.constScanLine(y), bytesPerLine);
             rawdata += bytesPerLine;
         }
-        object = writeImage(data, w, h, d, 0, 0, false, is_monochrome(img.colorTable()));
+        object = writeImage(data, w, h, WriteImageOption::Monochrome, 0, 0, false, is_monochrome(img.colorTable()));
     } else {
         QByteArray softMaskData;
         bool dct = false;
@@ -3073,10 +3085,14 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
             QBuffer buffer(&imageData);
             QImageWriter writer(&buffer, "jpeg");
             writer.setQuality(94);
+            if (format == QImage::Format_CMYK32) {
+                // PDFs require CMYK colors not to be inverted in the JPEG encoding
+                writer.setSubType("CMYK");
+            }
             writer.write(image);
             dct = true;
 
-            if (format != QImage::Format_RGB32) {
+            if (format != QImage::Format_RGB32 && format != QImage::Format_CMYK32) {
                 softMaskData.resize(w * h);
                 uchar *sdata = (uchar *)softMaskData.data();
                 for (int y = 0; y < h; ++y) {
@@ -3091,41 +3107,59 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
                 }
             }
         } else {
-            imageData.resize(grayscale ? w * h : 3 * w * h);
-            uchar *data = (uchar *)imageData.data();
-            softMaskData.resize(w * h);
-            uchar *sdata = (uchar *)softMaskData.data();
-            for (int y = 0; y < h; ++y) {
-                const QRgb *rgb = (const QRgb *)image.constScanLine(y);
+            if (format == QImage::Format_CMYK32) {
+                imageData.resize(grayscale ? w * h : w * h * 4);
+                uchar *data = (uchar *)imageData.data();
+                const qsizetype bytesPerLine = image.bytesPerLine();
                 if (grayscale) {
-                    for (int x = 0; x < w; ++x) {
-                        *(data++) = qGray(*rgb);
-                        uchar alpha = qAlpha(*rgb);
-                        *sdata++ = alpha;
-                        hasMask |= (alpha < 255);
-                        hasAlpha |= (alpha != 0 && alpha != 255);
-                        ++rgb;
+                    for (int y = 0; y < h; ++y) {
+                        const uint *cmyk = (const uint *)image.constScanLine(y);
+                        for (int x = 0; x < w; ++x)
+                            *data++ = qGray(QCmyk32::fromCmyk32(*cmyk++).toColor().rgba());
                     }
                 } else {
-                    for (int x = 0; x < w; ++x) {
-                        *(data++) = qRed(*rgb);
-                        *(data++) = qGreen(*rgb);
-                        *(data++) = qBlue(*rgb);
-                        uchar alpha = qAlpha(*rgb);
-                        *sdata++ = alpha;
-                        hasMask |= (alpha < 255);
-                        hasAlpha |= (alpha != 0 && alpha != 255);
-                        ++rgb;
+                    for (int y = 0; y < h; ++y) {
+                        uchar *start = data + y * w * 4;
+                        memcpy(start, image.constScanLine(y), bytesPerLine);
+                    }
+                }
+            } else {
+                imageData.resize(grayscale ? w * h : 3 * w * h);
+                uchar *data = (uchar *)imageData.data();
+                softMaskData.resize(w * h);
+                uchar *sdata = (uchar *)softMaskData.data();
+                for (int y = 0; y < h; ++y) {
+                    const QRgb *rgb = (const QRgb *)image.constScanLine(y);
+                    if (grayscale) {
+                        for (int x = 0; x < w; ++x) {
+                            *(data++) = qGray(*rgb);
+                            uchar alpha = qAlpha(*rgb);
+                            *sdata++ = alpha;
+                            hasMask |= (alpha < 255);
+                            hasAlpha |= (alpha != 0 && alpha != 255);
+                            ++rgb;
+                        }
+                    } else {
+                        for (int x = 0; x < w; ++x) {
+                            *(data++) = qRed(*rgb);
+                            *(data++) = qGreen(*rgb);
+                            *(data++) = qBlue(*rgb);
+                            uchar alpha = qAlpha(*rgb);
+                            *sdata++ = alpha;
+                            hasMask |= (alpha < 255);
+                            hasAlpha |= (alpha != 0 && alpha != 255);
+                            ++rgb;
+                        }
                     }
                 }
             }
-            if (format == QImage::Format_RGB32)
+            if (format == QImage::Format_RGB32 || format == QImage::Format_CMYK32)
                 hasAlpha = hasMask = false;
         }
         int maskObject = 0;
         int softMaskObject = 0;
         if (hasAlpha) {
-            softMaskObject = writeImage(softMaskData, w, h, 8, 0, 0);
+            softMaskObject = writeImage(softMaskData, w, h, WriteImageOption::Grayscale, 0, 0);
         } else if (hasMask) {
             // dither the soft mask to 1bit and add it. This also helps PDF viewers
             // without transparency support
@@ -3141,9 +3175,18 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
                 }
                 mdata += bytesPerLine;
             }
-            maskObject = writeImage(mask, w, h, 1, 0, 0);
+            maskObject = writeImage(mask, w, h, WriteImageOption::Monochrome, 0, 0);
         }
-        object = writeImage(imageData, w, h, grayscale ? 8 : 32,
+
+        const WriteImageOption option = [&]() {
+            if (grayscale)
+                return WriteImageOption::Grayscale;
+            if (format == QImage::Format_CMYK32)
+                return WriteImageOption::CMYK;
+            return WriteImageOption::RGB;
+        }();
+
+        object = writeImage(imageData, w, h, option,
                             maskObject, softMaskObject, dct);
     }
     imageCache.insert(serial_no, object);

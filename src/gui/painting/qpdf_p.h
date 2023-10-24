@@ -304,7 +304,15 @@ private:
     QDataStream* stream;
     int streampos;
 
-    int writeImage(const QByteArray &data, int width, int height, int depth,
+    enum class WriteImageOption
+    {
+        Monochrome,
+        Grayscale,
+        RGB,
+        CMYK,
+    };
+
+    int writeImage(const QByteArray &data, int width, int height, WriteImageOption option,
                    int maskObject, int softMaskObject, bool dct = false, bool isMono = false);
     void writePage();
 
