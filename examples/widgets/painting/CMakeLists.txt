@@ -4,7 +4,7 @@
 qt_internal_add_example(basicdrawing)
 qt_internal_add_example(concentriccircles)
 qt_internal_add_example(affine)
-# qt_internal_add_example(composition) # FIXME: Seems buggy wrt. usesOpenGL function
+qt_internal_add_example(composition)
 qt_internal_add_example(deform)
 qt_internal_add_example(gradients)
 qt_internal_add_example(pathstroke)

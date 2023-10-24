@@ -14,11 +14,6 @@
 #include <QBoxLayout>
 #include <QRegularExpression>
 #include <QOffscreenSurface>
-#include <QOpenGLContext>
-#if QT_CONFIG(opengl)
-#include <QtOpenGL/QOpenGLPaintDevice>
-#include <QtOpenGL/QOpenGLWindow>
-#endif
 
 extern QPixmap cached(const QString &img);
 
@@ -34,61 +29,13 @@ ArthurFrame::ArthurFrame(QWidget *parent)
     pt.end();
 }
 
-
-#if QT_CONFIG(opengl)
-void ArthurFrame::enableOpenGL(bool use_opengl)
-{
-    if (m_use_opengl == use_opengl)
-        return;
-
-    m_use_opengl = use_opengl;
-
-    if (!m_glWindow && use_opengl) {
-        createGlWindow();
-        QApplication::postEvent(this, new QResizeEvent(size(), size()));
-    }
-
-    if (use_opengl) {
-        m_glWidget->show();
-    } else {
-        if (m_glWidget)
-            m_glWidget->hide();
-    }
-
-    update();
-}
-
-void ArthurFrame::createGlWindow()
-{
-    Q_ASSERT(m_use_opengl);
-
-    m_glWindow = new QOpenGLWindow();
-    QSurfaceFormat f = QSurfaceFormat::defaultFormat();
-    f.setSamples(4);
-    f.setAlphaBufferSize(8);
-    f.setStencilBufferSize(8);
-    m_glWindow->setFormat(f);
-    m_glWindow->setFlags(Qt::WindowTransparentForInput);
-    m_glWindow->resize(width(), height());
-    m_glWidget = QWidget::createWindowContainer(m_glWindow, this);
-    // create() must be called after createWindowContainer() otherwise
-    // an incorrect offsetting of the position will occur.
-    m_glWindow->create();
-}
-#endif
-
-
 void ArthurFrame::paintEvent(QPaintEvent *e)
 {
     static QImage *static_image = nullptr;
 
     QPainter painter;
 
-    if (preferImage()
-#if QT_CONFIG(opengl)
-        && !m_use_opengl
-#endif
-        ) {
+    if (preferImage()) {
         if (!static_image || static_image->size() != size()) {
             delete static_image;
             static_image = new QImage(size(), QImage::Format_RGB32);
@@ -103,18 +50,7 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
         painter.fillRect(0, height() - o, o, o, bg);
         painter.fillRect(width() - o, height() - o, o, o, bg);
     } else {
-#if QT_CONFIG(opengl)
-        if (m_use_opengl && m_glWindow->isValid()) {
-            m_glWindow->makeCurrent();
-
-            painter.begin(m_glWindow);
-            painter.fillRect(QRectF(0, 0, m_glWindow->width(), m_glWindow->height()), palette().color(backgroundRole()));
-        } else {
-            painter.begin(this);
-        }
-#else
         painter.begin(this);
-#endif
     }
 
     painter.setClipRect(e->rect());
@@ -158,27 +94,15 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
     painter.setBrush(Qt::NoBrush);
     painter.drawPath(clipPath);
 
-    if (preferImage()
-#if QT_CONFIG(opengl)
-        && !m_use_opengl
-#endif
-        ) {
+    if (preferImage()) {
         painter.end();
         painter.begin(this);
         painter.drawImage(e->rect(), *static_image, e->rect());
     }
-#if QT_CONFIG(opengl)
-    if (m_use_opengl)
-        m_glWindow->update();
-#endif
 }
 
 void ArthurFrame::resizeEvent(QResizeEvent *e)
 {
-#if QT_CONFIG(opengl)
-    if (m_glWidget)
-        m_glWidget->setGeometry(0, 0, e->size().width(), e->size().height());
-#endif
     QWidget::resizeEvent(e);
 }
 

@@ -10,11 +10,6 @@
 #include <QMouseEvent>
 #include <qmath.h>
 
-#if QT_CONFIG(opengl)
-#include <QOpenGLFunctions>
-#include <QOpenGLWindow>
-#endif
-
 const int animationInterval = 15; // update every 16 ms = ~60FPS
 
 CompositionWidget::CompositionWidget(QWidget *parent)
@@ -94,12 +89,6 @@ CompositionWidget::CompositionWidget(QWidget *parent)
 
     QPushButton *showSourceButton = new QPushButton(mainGroup);
     showSourceButton->setText(tr("Show Source"));
-#if QT_CONFIG(opengl)
-    QPushButton *enableOpenGLButton = new QPushButton(mainGroup);
-    enableOpenGLButton->setText(tr("Use OpenGL"));
-    enableOpenGLButton->setCheckable(true);
-    enableOpenGLButton->setChecked(view->usesOpenGL());
-#endif
     QPushButton *whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText(tr("What's This?"));
     whatsThisButton->setCheckable(true);
@@ -121,9 +110,6 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     mainGroupLayout->addWidget(animateButton);
     mainGroupLayout->addWidget(whatsThisButton);
     mainGroupLayout->addWidget(showSourceButton);
-#if QT_CONFIG(opengl)
-    mainGroupLayout->addWidget(enableOpenGLButton);
-#endif
 
     QGridLayout *modesLayout = new QGridLayout(modesGroup);
     modesLayout->addWidget(rbClear, 0, 0);
@@ -165,9 +151,6 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     connect(whatsThisButton, &QAbstractButton::clicked, view, &ArthurFrame::setDescriptionEnabled);
     connect(view, &ArthurFrame::descriptionEnabledChanged, whatsThisButton, &QAbstractButton::setChecked);
     connect(showSourceButton, &QAbstractButton::clicked, view, &ArthurFrame::showSource);
-#if QT_CONFIG(opengl)
-    connect(enableOpenGLButton, &QAbstractButton::clicked, view, &ArthurFrame::enableOpenGL);
-#endif
     connect(animateButton, &QAbstractButton::toggled, view, &CompositionRenderer::setAnimationEnabled);
 
     circleColorSlider->setValue(270);
@@ -217,10 +200,6 @@ CompositionRenderer::CompositionRenderer(QWidget *parent)
     m_circle_pos = QPoint(200, 100);
 
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-#if QT_CONFIG(opengl)
-    m_pbuffer_size = 1024;
-    m_base_tex = 0;
-#endif
 }
 
 CompositionRenderer::~CompositionRenderer()
@@ -313,89 +292,25 @@ void CompositionRenderer::drawSource(QPainter &p)
 
 void CompositionRenderer::paint(QPainter *painter)
 {
-#if QT_CONFIG(opengl)
-    if (usesOpenGL() && glWindow()->isValid()) {
-        auto *funcs = QOpenGLContext::currentContext()->functions();
+    if (m_buffer.size() != size()) {
+        m_buffer = QImage(size(), QImage::Format_ARGB32_Premultiplied);
+        m_base_buffer = QImage(size(), QImage::Format_ARGB32_Premultiplied);
 
-        if (!m_blitter.isCreated())
-            m_blitter.create();
+        m_base_buffer.fill(0);
 
-        int new_pbuf_size = m_pbuffer_size;
-        while (size().width() > new_pbuf_size || size().height() > new_pbuf_size)
-            new_pbuf_size *= 2;
+        QPainter p(&m_base_buffer);
 
-        while (size().width() < new_pbuf_size/2 && size().height() < new_pbuf_size/2)
-            new_pbuf_size /= 2;
-
-        if (!m_fbo || new_pbuf_size != m_pbuffer_size) {
-            m_fbo.reset(new QFboPaintDevice(QSize(new_pbuf_size, new_pbuf_size), false, false));
-            m_pbuffer_size = new_pbuf_size;
-        }
-
-        if (size() != m_previous_size) {
-            m_previous_size = size();
-            QPainter p(m_fbo.get());
-            p.setCompositionMode(QPainter::CompositionMode_Source);
-            p.fillRect(QRect(QPoint(0, 0), size()), Qt::transparent);
-            p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-            drawBase(p);
-            p.end();
-            if (m_base_tex)
-                funcs->glDeleteTextures(1, &m_base_tex);
-            m_base_tex = m_fbo->takeTexture();
-        }
-
-        painter->beginNativePainting();
-        uint compositingTex;
-        {
-            QPainter p(m_fbo.get());
-            p.beginNativePainting();
-            m_blitter.bind();
-            const QRect targetRect(QPoint(0, 0), m_fbo->size());
-            const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, QRect(QPoint(0, 0), m_fbo->size()));
-            m_blitter.blit(m_base_tex, target, QOpenGLTextureBlitter::OriginBottomLeft);
-            m_blitter.release();
-            p.endNativePainting();
-            drawSource(p);
-            p.end();
-            compositingTex = m_fbo->texture();
-        }
-        painter->endNativePainting();
-
-        painter->beginNativePainting();
-        funcs->glEnable(GL_BLEND);
-        funcs->glBlendEquation(GL_FUNC_ADD);
-        funcs->glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        m_blitter.bind();
-        const QRect targetRect(QPoint(0, 0), m_fbo->size());
-        const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, QRect(QPoint(0, 0), size()));
-        m_blitter.blit(compositingTex, target, QOpenGLTextureBlitter::OriginBottomLeft);
-        m_blitter.release();
-        painter->endNativePainting();
-    } else
-#endif
-    {
-        // using a QImage
-        if (m_buffer.size() != size()) {
-            m_buffer = QImage(size(), QImage::Format_ARGB32_Premultiplied);
-            m_base_buffer = QImage(size(), QImage::Format_ARGB32_Premultiplied);
-
-            m_base_buffer.fill(0);
-
-            QPainter p(&m_base_buffer);
-
-            drawBase(p);
-        }
-
-        memcpy(m_buffer.bits(), m_base_buffer.bits(), m_buffer.sizeInBytes());
-
-        {
-            QPainter p(&m_buffer);
-            drawSource(p);
-        }
-
-        painter->drawImage(0, 0, m_buffer);
+        drawBase(p);
     }
+
+    memcpy(m_buffer.bits(), m_base_buffer.bits(), m_buffer.sizeInBytes());
+
+    {
+        QPainter p(&m_buffer);
+        drawSource(p);
+    }
+
+    painter->drawImage(0, 0, m_buffer);
 }
 
 void CompositionRenderer::mousePressEvent(QMouseEvent *e)
@@ -443,12 +358,6 @@ void CompositionRenderer::setCirclePos(const QPointF &pos)
     const QRect oldRect = rectangle_around(m_circle_pos).toAlignedRect();
     m_circle_pos = pos;
     const QRect newRect = rectangle_around(m_circle_pos).toAlignedRect();
-#if QT_CONFIG(opengl)
-    if (usesOpenGL()) {
-        update();
-        return;
-    }
-#endif
     update(oldRect | newRect);
 }
 

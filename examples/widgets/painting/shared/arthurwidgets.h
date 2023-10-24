@@ -9,7 +9,6 @@
 #include <QPushButton>
 #include <QGroupBox>
 
-QT_FORWARD_DECLARE_CLASS(QOpenGLWindow)
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
@@ -30,19 +29,11 @@ public:
     void loadSourceFile(const QString &fileName);
 
     bool preferImage() const { return m_preferImage; }
-#if QT_CONFIG(opengl)
-    QOpenGLWindow *glWindow() const { return m_glWindow; }
-#endif
 
 public slots:
     void setPreferImage(bool pi) { m_preferImage = pi; }
     void setDescriptionEnabled(bool enabled);
     void showSource();
-
-#if QT_CONFIG(opengl)
-    void enableOpenGL(bool use_opengl);
-    bool usesOpenGL() { return m_use_opengl; }
-#endif
 
 signals:
     void descriptionEnabledChanged(bool);
@@ -51,12 +42,6 @@ protected:
     void paintEvent(QPaintEvent *) override;
     void resizeEvent(QResizeEvent *) override;
 
-#if QT_CONFIG(opengl)
-    virtual void createGlWindow();
-    QOpenGLWindow *m_glWindow = nullptr;
-    QWidget *m_glWidget = nullptr;
-    bool m_use_opengl = false;
-#endif
     QPixmap m_tile;
 
     bool m_showDoc = false;

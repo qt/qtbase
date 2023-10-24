@@ -1,11 +1,5 @@
 INCLUDEPATH += $$PWD
 
-qtConfig(opengl) {
-    QT += opengl
-    SOURCES += $$PWD/fbopaintdevice.cpp
-    HEADERS += $$PWD/fbopaintdevice.h
-}
-
 SOURCES += \
     $$PWD/arthurstyle.cpp\
     $$PWD/arthurwidgets.cpp \

@@ -6,10 +6,6 @@
 
 #include <algorithm>
 
-#if QT_CONFIG(opengl)
-#include <QtOpenGL/QOpenGLWindow>
-#endif
-
 HoverPoints::HoverPoints(QWidget *widget, PointShape shape)
     : QObject(widget),
       m_widget(widget),
@@ -230,17 +226,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
 void HoverPoints::paintPoints()
 {
     QPainter p;
-#if QT_CONFIG(opengl)
-    ArthurFrame *af = qobject_cast<ArthurFrame *>(m_widget);
-    if (af && af->usesOpenGL() && af->glWindow()->isValid()) {
-        af->glWindow()->makeCurrent();
-        p.begin(af->glWindow());
-    } else {
-        p.begin(m_widget);
-    }
-#else
     p.begin(m_widget);
-#endif
 
     p.setRenderHint(QPainter::Antialiasing);
 

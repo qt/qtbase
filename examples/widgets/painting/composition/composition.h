@@ -6,11 +6,6 @@
 
 #include "arthurwidgets.h"
 
-#if QT_CONFIG(opengl)
-#include "fbopaintdevice.h"
-#include <QOpenGLTextureBlitter>
-#endif
-
 #include <QPainter>
 #include <QEvent>
 
@@ -143,14 +138,6 @@ private:
     ObjectType m_current_object;
     bool m_animation_enabled;
     int m_animationTimer;
-
-#if QT_CONFIG(opengl)
-    std::unique_ptr<QFboPaintDevice> m_fbo;
-    int m_pbuffer_size; // width==height==size of pbuffer
-    uint m_base_tex;
-    QSize m_previous_size;
-    QOpenGLTextureBlitter m_blitter;
-#endif
 };
 
 #endif // COMPOSITION_H

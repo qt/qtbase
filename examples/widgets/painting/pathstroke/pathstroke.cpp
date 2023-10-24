@@ -177,12 +177,6 @@ void PathStrokeControls::layoutForDesktop()
 
     QPushButton *showSourceButton = new QPushButton(mainGroup);
     showSourceButton->setText(tr("Show Source"));
-#if QT_CONFIG(opengl)
-    QPushButton *enableOpenGLButton = new QPushButton(mainGroup);
-    enableOpenGLButton->setText(tr("Use OpenGL"));
-    enableOpenGLButton->setCheckable(true);
-    enableOpenGLButton->setChecked(m_renderer->usesOpenGL());
-#endif
     QPushButton *whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText(tr("What's This?"));
     whatsThisButton->setCheckable(true);
@@ -206,9 +200,6 @@ void PathStrokeControls::layoutForDesktop()
     mainGroupLayout->addWidget(animated);
     mainGroupLayout->addStretch(1);
     mainGroupLayout->addWidget(showSourceButton);
-#if QT_CONFIG(opengl)
-    mainGroupLayout->addWidget(enableOpenGLButton);
-#endif
     mainGroupLayout->addWidget(whatsThisButton);
 
 
@@ -221,10 +212,6 @@ void PathStrokeControls::layoutForDesktop()
 
     connect(showSourceButton, &QAbstractButton::clicked,
             m_renderer, &ArthurFrame::showSource);
-#if QT_CONFIG(opengl)
-    connect(enableOpenGLButton, &QAbstractButton::clicked,
-            m_renderer, &ArthurFrame::enableOpenGL);
-#endif
     connect(whatsThisButton, &QAbstractButton::clicked,
             m_renderer, &ArthurFrame::setDescriptionEnabled);
     connect(m_renderer, &ArthurFrame::descriptionEnabledChanged,
@@ -259,13 +246,6 @@ void PathStrokeControls::layoutForSmallScreens()
     penWidth->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     penWidth->setRange(0, 500);
 
-#if QT_CONFIG(opengl)
-    QPushButton *enableOpenGLButton = new QPushButton(this);
-    enableOpenGLButton->setText(tr("Use OpenGL"));
-    enableOpenGLButton->setCheckable(true);
-    enableOpenGLButton->setChecked(m_renderer->usesOpenGL());
-#endif
-
     // Layouts:
     QHBoxLayout *penWidthLayout = new QHBoxLayout;
     penWidthLayout->addWidget(penWidthLabel, 0, Qt::AlignRight);
@@ -274,9 +254,6 @@ void PathStrokeControls::layoutForSmallScreens()
     QVBoxLayout *leftLayout = new QVBoxLayout;
     leftLayout->addWidget(m_capGroup);
     leftLayout->addWidget(m_joinGroup);
-#if QT_CONFIG(opengl)
-    leftLayout->addWidget(enableOpenGLButton);
-#endif
     leftLayout->addLayout(penWidthLayout);
 
     QVBoxLayout *rightLayout = new QVBoxLayout;
@@ -296,10 +273,6 @@ void PathStrokeControls::layoutForSmallScreens()
     mainLayout->addLayout(rightLayout, 1, 2);
     mainLayout->addWidget(quitBtn, 2, 1, Qt::AlignHCenter | Qt::AlignTop);
     mainLayout->addWidget(okBtn, 2, 2, Qt::AlignHCenter | Qt::AlignTop);
-
-#if QT_CONFIG(opengl)
-    connect(enableOpenGLButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::enableOpenGL);
-#endif
 
     connect(penWidth, &QAbstractSlider::valueChanged, m_renderer, &PathStrokeRenderer::setPenWidth);
     connect(quitBtn, &QAbstractButton::clicked, this, &PathStrokeControls::emitQuitSignal);
