@@ -3,6 +3,7 @@
 
 if(ANDROID)
     add_subdirectory(android)
+    add_subdirectory(android_appless)
 endif()
 if(WIN32)
     add_subdirectory(windows)
