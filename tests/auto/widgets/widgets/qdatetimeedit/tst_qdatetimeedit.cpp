@@ -3501,6 +3501,8 @@ void tst_QDateTimeEdit::timeSpec_data()
     QTest::newRow("setTimeSpec") << false;
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QDateTimeEdit::timeSpec()
 {
     QFETCH(bool, useSetProperty);
@@ -3541,6 +3543,7 @@ void tst_QDateTimeEdit::timeSpec()
         QSKIP("Not tested in the GMT timezone");
     }
 }
+QT_WARNING_POP
 #endif // test deprecated timeSpec property
 
 void tst_QDateTimeEdit::timeZoneBug()
