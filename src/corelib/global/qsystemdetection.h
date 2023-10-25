@@ -38,6 +38,7 @@
      ANDROID  - Android platform
      HAIKU    - Haiku
      WEBOS    - LG WebOS
+     WASM     - WebAssembly
 
    The following operating systems have variants:
      LINUX    - both Q_OS_LINUX and Q_OS_ANDROID are defined when building for Android
