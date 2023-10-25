@@ -17,8 +17,20 @@ template <typename T>
 class QAtomicInteger : public QBasicAtomicInteger<T>
 {
 public:
+    // Non-atomic API
     constexpr QAtomicInteger(T value = 0) noexcept : QBasicAtomicInteger<T>(value) {}
-    using QBasicAtomicInteger<T>::operator=;
+
+    inline QAtomicInteger(const QAtomicInteger &other) noexcept
+        : QBasicAtomicInteger<T>()
+    {
+        this->storeRelease(other.loadAcquire());
+    }
+
+    inline QAtomicInteger &operator=(const QAtomicInteger &other) noexcept
+    {
+        this->storeRelease(other.loadAcquire());
+        return *this;
+    }
 
 #ifdef Q_QDOC
     T loadRelaxed() const;
@@ -96,12 +108,13 @@ public:
 #endif
 };
 
-// ### Qt 7: make QAtomicInt a typedef
 class QAtomicInt : public QAtomicInteger<int>
 {
 public:
-    using QAtomicInteger<int>::QAtomicInteger;
-    using QAtomicInteger<int>::operator=;
+    // Non-atomic API
+    // We could use QT_COMPILER_INHERITING_CONSTRUCTORS, but we need only one;
+    // the implicit definition for all the others is fine.
+    constexpr QAtomicInt(int value = 0) noexcept : QAtomicInteger<int>(value) {}
 };
 
 // High-level atomic pointer operations
@@ -110,7 +123,18 @@ class QAtomicPointer : public QBasicAtomicPointer<T>
 {
 public:
     constexpr QAtomicPointer(T *value = nullptr) noexcept : QBasicAtomicPointer<T>(value) {}
-    using QBasicAtomicPointer<T>::operator=;
+
+    inline QAtomicPointer(const QAtomicPointer<T> &other) noexcept
+        : QBasicAtomicPointer<T>()
+    {
+        this->storeRelease(other.loadAcquire());
+    }
+
+    inline QAtomicPointer<T> &operator=(const QAtomicPointer<T> &other) noexcept
+    {
+        this->storeRelease(other.loadAcquire());
+        return *this;
+    }
 
 #ifdef Q_QDOC
     T *loadAcquire() const;

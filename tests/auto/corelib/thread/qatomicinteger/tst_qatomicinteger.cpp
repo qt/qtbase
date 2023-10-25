@@ -90,6 +90,12 @@ private Q_SLOTS:
     void constructor_data() { addData(); }
     void constructor();
 
+    void copy_data() { addData(); }
+    void copy();
+
+    void assign_data() { addData(); }
+    void assign();
+
     void operatorInteger_data() { addData(); }
     void operatorInteger();
 
@@ -211,6 +217,52 @@ void tst_QAtomicIntegerXX::constructor()
 
     QVERIFY(atomic.loadRelaxed() >= std::numeric_limits<T>::min());
     QVERIFY(atomic.loadRelaxed() <= std::numeric_limits<T>::max());
+}
+
+void tst_QAtomicIntegerXX::copy()
+{
+    QFETCH(LargeInt, value);
+
+    QAtomicInteger<T> atomic(value);
+    QAtomicInteger<T> copy(atomic);
+    QCOMPARE(copy.loadRelaxed(), atomic.loadRelaxed());
+
+    QAtomicInteger<T> copy2 = atomic;
+    QCOMPARE(copy2.loadRelaxed(), atomic.loadRelaxed());
+
+    // move
+    QAtomicInteger<T> copy3(std::move(copy));
+    QCOMPARE(copy3.loadRelaxed(), atomic.loadRelaxed());
+
+    QAtomicInteger<T> copy4 = std::move(copy2);
+    QCOMPARE(copy4.loadRelaxed(), atomic.loadRelaxed());
+}
+
+void tst_QAtomicIntegerXX::assign()
+{
+    QFETCH(LargeInt, value);
+
+    QAtomicInteger<T> atomic(value);
+    QAtomicInteger<T> copy;
+    copy = atomic;
+    QCOMPARE(copy.loadRelaxed(), atomic.loadRelaxed());
+
+    QAtomicInteger<T> copy2;
+    copy2 = atomic;  // operator=(const QAtomicInteger &)
+    QCOMPARE(copy2.loadRelaxed(), atomic.loadRelaxed());
+
+    QAtomicInteger<T> copy2bis;
+    copy2bis = atomic.loadRelaxed(); // operator=(T)
+    QCOMPARE(copy2bis.loadRelaxed(), atomic.loadRelaxed());
+
+    // move
+    QAtomicInteger<T> copy3;
+    copy3 = std::move(copy);
+    QCOMPARE(copy3.loadRelaxed(), atomic.loadRelaxed());
+
+    QAtomicInteger<T> copy4;
+    copy4 = std::move(copy2);
+    QCOMPARE(copy4.loadRelaxed(), atomic.loadRelaxed());
 }
 
 void tst_QAtomicIntegerXX::operatorInteger()

@@ -15,6 +15,7 @@ private slots:
     void alignment();
 
     void constructor();
+    void copy_constructor();
     void assignment_operator();
 
     void isTestAndSetNative();
@@ -98,6 +99,27 @@ void tst_QAtomicPointer::constructor()
     void *three = &two;
     QAtomicPointer<void> atomic3 = three;
     QCOMPARE(atomic3.loadRelaxed(), three);
+}
+
+void tst_QAtomicPointer::copy_constructor()
+{
+    void *one = this;
+    QAtomicPointer<void> atomic1 = one;
+    QAtomicPointer<void> atomic1_copy = atomic1;
+    QCOMPARE(atomic1_copy.loadRelaxed(), one);
+    QCOMPARE(atomic1_copy.loadRelaxed(), atomic1.loadRelaxed());
+
+    void *two = &one;
+    QAtomicPointer<void> atomic2 = two;
+    QAtomicPointer<void> atomic2_copy = atomic2;
+    QCOMPARE(atomic2_copy.loadRelaxed(), two);
+    QCOMPARE(atomic2_copy.loadRelaxed(), atomic2.loadRelaxed());
+
+    void *three = &two;
+    QAtomicPointer<void> atomic3 = three;
+    QAtomicPointer<void> atomic3_copy = atomic3;
+    QCOMPARE(atomic3_copy.loadRelaxed(), three);
+    QCOMPARE(atomic3_copy.loadRelaxed(), atomic3.loadRelaxed());
 }
 
 void tst_QAtomicPointer::assignment_operator()

@@ -211,6 +211,20 @@
 */
 
 /*!
+    \fn template <typename T> QAtomicInteger<T>::QAtomicInteger(const QAtomicInteger &other)
+
+    Constructs a copy of \a other.
+*/
+
+/*!
+    \fn template <typename T> QAtomicInteger &QAtomicInteger<T>::operator=(const QAtomicInteger &other)
+
+    Assigns \a other to this QAtomicInteger and returns a reference to
+    this QAtomicInteger.
+*/
+
+
+/*!
     \fn template <typename T> T QAtomicInteger<T>::loadRelaxed() const
     \since 5.14
 
@@ -1352,6 +1366,19 @@
     \fn template <typename T> QAtomicPointer<T>::QAtomicPointer(T *value)
 
     Constructs a QAtomicPointer with the given \a value.
+*/
+
+/*!
+    \fn template <typename T> QAtomicPointer<T>::QAtomicPointer(const QAtomicPointer<T> &other)
+
+    Constructs a copy of \a other.
+*/
+
+/*!
+    \fn template <typename T> QAtomicPointer &QAtomicPointer<T>::operator=(const QAtomicPointer &other)
+
+    Assigns \a other to this QAtomicPointer and returns a reference to
+    this QAtomicPointer.
 */
 
 /*!
