@@ -8,8 +8,12 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qreadwritelock.h>
+#include <QtCore/qloggingcategory.h>
+
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcJniThreadCheck, "qt.core.jni.threadcheck")
 
 using namespace Qt::StringLiterals;
 
@@ -735,22 +739,70 @@ QJniObject::QJniObject(jobject object)
 QJniObject::~QJniObject()
 {}
 
+namespace {
+QByteArray getClassNameHelper(JNIEnv *env, const QJniObjectPrivate *d)
+{
+    if (env->PushLocalFrame(3) != JNI_OK) // JVM out of memory
+        return QByteArray();
+
+    jmethodID mid = env->GetMethodID(d->m_jclass, "getClass", "()Ljava/lang/Class;");
+    jobject classObject = env->CallObjectMethod(d->m_jobject, mid);
+    jclass classObjectClass = env->GetObjectClass(classObject);
+    mid = env->GetMethodID(classObjectClass, "getName", "()Ljava/lang/String;");
+    jstring stringObject = static_cast<jstring>(env->CallObjectMethod(classObject, mid));
+    const jsize length = env->GetStringUTFLength(stringObject);
+    const char* nameString = env->GetStringUTFChars(stringObject, NULL);
+    const QByteArray result = QByteArray::fromRawData(nameString, length).replace('.', '/');
+    env->ReleaseStringUTFChars(stringObject, nameString);
+    env->PopLocalFrame(nullptr);
+    return result;
+}
+}
+
 /*! \internal
 
     While we can synchronize concurrent access to a QJniObject on the C++ side,
     we cannot synchronize access across C++ and Java, so any concurrent access to
     a QJniObject, except the most basic ref-counting operations (destructor and
-    assignment) is wrong. All calls must happen from the thread that created the
+    assignment) is dangerous, and all calls should happen from the thread that
+    created the Java object.
+
+    However, we have code in Qt that does that, so we use a cheap approach to check
+    for the condition and fall back to the thread-local JNI environment. We do not
+    re-attach to the thread though - that must have been done when constructing this
     QJniObject.
 */
 JNIEnv *QJniObject::jniEnv() const noexcept
 {
-    Q_ASSERT_X([this]{
-        QJniEnvironment currentThreadEnv;
-        return currentThreadEnv.jniEnv() == d->jniEnv();
-    }(), __FUNCTION__, "QJniEnvironment mismatch, probably accessing this Java object"
-                       " from the wrong thread!");
-    return d->jniEnv();
+    JNIEnv *env = nullptr;
+    const bool threadCheck = [this, &env]{
+        JavaVM *vm = QtAndroidPrivate::javaVM();
+        const jint ret = vm->GetEnv((void**)&env, JNI_VERSION_1_6);
+        if (ret == JNI_EDETACHED) {
+            qCCritical(lcJniThreadCheck) << "The JNI Environment has been detached from its Java "
+                                            "thread!";
+            return false;
+        } else if (ret != JNI_OK) {
+            qCCritical(lcJniThreadCheck) << "An error occurred while acquiring JNI environment!";
+            return false;
+        }
+        if (env != d->jniEnv()) {
+            qCCritical(lcJniThreadCheck) << "JNI Environment mismatch - probably accessing this "
+                                            "Java object from the wrong thread!";
+            return false;
+        }
+        return true;
+    }();
+    if (!threadCheck) {
+        if (!env) {
+            qFatal() << "No JNI environment attached to" << QThread::currentThread();
+        } else {
+            qCCritical(lcJniThreadCheck) << "JNI threading error when calling object of type"
+                                         << getClassNameHelper(env, d.get()) << "from thread"
+                                         << QThread::currentThread();
+        }
+    }
+    return env;
 }
 
 /*!
@@ -806,18 +858,7 @@ QByteArray QJniObject::className() const
 {
     if (d->m_className.isEmpty() && d->m_jclass && d->m_jobject) {
         JNIEnv *env = jniEnv();
-        if (env->PushLocalFrame(3) != JNI_OK) // JVM out of memory
-            return d->m_className;
-        jmethodID mid = env->GetMethodID(d->m_jclass, "getClass", "()Ljava/lang/Class;");
-        jobject classObject = env->CallObjectMethod(d->m_jobject, mid);
-        jclass classObjectClass = env->GetObjectClass(classObject);
-        mid = env->GetMethodID(classObjectClass, "getName", "()Ljava/lang/String;");
-        jstring stringObject = static_cast<jstring>(env->CallObjectMethod(classObject, mid));
-        const jsize length = env->GetStringUTFLength(stringObject);
-        const char* nameString = env->GetStringUTFChars(stringObject, NULL);
-        d->m_className = QByteArray::fromRawData(nameString, length).replace('.', '/');
-        env->ReleaseStringUTFChars(stringObject, nameString);
-        env->PopLocalFrame(nullptr);
+        d->m_className = getClassNameHelper(env, d.get());
     }
     return d->m_className;
 }

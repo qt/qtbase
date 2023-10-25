@@ -29,8 +29,6 @@ QT_BEGIN_NAMESPACE
     It has not been tested for other platforms.
 */
 
-static const char qJniThreadName[] = "QtThread";
-
 class QJniEnvironmentPrivate
 {
 public:
@@ -61,7 +59,11 @@ QJniEnvironment::QJniEnvironment()
         return;
 
     if (ret == JNI_EDETACHED) { // We need to (re-)attach
-        JavaVMAttachArgs args = { JNI_VERSION_1_6, qJniThreadName, nullptr };
+        const QByteArray threadName = QThread::currentThread()->objectName().toUtf8();
+        JavaVMAttachArgs args = { JNI_VERSION_1_6,
+                                  threadName.isEmpty() ? "QtThread" : threadName.constData(),
+                                  nullptr
+                                };
         if (vm->AttachCurrentThread(&d->jniEnv, &args) != JNI_OK)
             return;
 
