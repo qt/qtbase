@@ -42,7 +42,7 @@ public:
     QWin32PrintEnginePrivate *ep;
 };
 
-static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
+static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWindow *parentWindow,
                                     QPrintDialog *pdlg,
                                     QPrintDialogPrivate *d, HGLOBAL *tempDevNames)
 {
@@ -101,8 +101,6 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
 
     if (d->ep->printToFile)
         pd->Flags |= PD_PRINTTOFILE;
-    Q_ASSERT(parent);
-    QWindow *parentWindow = parent->windowHandle();
     pd->hwndOwner = parentWindow ? (HWND)QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow) : 0;
     pd->lpPageRanges[0].nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
     pd->lpPageRanges[0].nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
@@ -182,15 +180,20 @@ int QPrintDialog::exec()
 int QPrintDialogPrivate::openWindowsPrintDialogModally()
 {
     Q_Q(QPrintDialog);
-    QWidget *parent = q->parentWidget();
-    if (parent)
-        parent = parent->window();
-    else
-        parent = QApplication::activeWindow();
+    QWindow *parentWindow = q->windowHandle() ? q->windowHandle()->transientParent() : nullptr;
+    if (!parentWindow) {
+        QWidget *parent = q->parentWidget();
+        if (parent)
+            parent = parent->window();
+        else
+            parent = QApplication::activeWindow();
 
-    // If there is no window, fall back to the print dialog itself
-    if (parent == 0)
-        parent = q;
+        // If there is no window, fall back to the print dialog itself
+        if (!parent)
+            parent = q;
+
+        parentWindow = parent->windowHandle();
+    }
 
     q->QDialog::setVisible(true);
 
@@ -205,7 +208,7 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
     memset(&pd, 0, sizeof(PRINTDLGEX));
     pd.lStructSize = sizeof(PRINTDLGEX);
     pd.lpPageRanges = &pageRange;
-    qt_win_setup_PRINTDLGEX(&pd, parent, q, this, tempDevNames);
+    qt_win_setup_PRINTDLGEX(&pd, parentWindow, q, this, tempDevNames);
 
     do {
         done = true;
