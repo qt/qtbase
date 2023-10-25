@@ -652,36 +652,28 @@ public:
     // std::weak_ptr compatibility:
     [[nodiscard]] QSharedPointer<T> lock() const { return toStrongRef(); }
 
-#if QT_DEPRECATED_SINCE(6, 7)
     template <class X>
-    QT_DEPRECATED_VERSION_X_6_7("Comparison of QWeakPointers is inconsistent and may lead to crashes. lock() them and then compare the resulting QSharedPointers.")
     bool operator==(const QWeakPointer<X> &o) const noexcept
     { return d == o.d && value == static_cast<const T *>(o.value); }
 
     template <class X>
-    QT_DEPRECATED_VERSION_X_6_7("Comparison of QWeakPointers is inconsistent and may lead to crashes. lock() them and then compare the resulting QSharedPointers.")
     bool operator!=(const QWeakPointer<X> &o) const noexcept
     { return !(*this == o); }
 
     template <class X>
-    QT_DEPRECATED_VERSION_X_6_7("Comparison of QWeakPointers is inconsistent and may lead to crashes. lock() them and then compare the resulting QSharedPointers.")
     bool operator==(const QSharedPointer<X> &o) const noexcept
     { return d == o.d; }
 
     template <class X>
-    QT_DEPRECATED_VERSION_X_6_7("Comparison of QWeakPointers is inconsistent and may lead to crashes. lock() them and then compare the resulting QSharedPointers.")
     bool operator!=(const QSharedPointer<X> &o) const noexcept
     { return !(*this == o); }
 
     template <typename X>
-    QT_DEPRECATED_VERSION_X_6_7("Comparison of QWeakPointers is inconsistent and may lead to crashes. lock() them and then compare the resulting QSharedPointers.")
     friend bool operator==(const QSharedPointer<X> &p1, const QWeakPointer &p2) noexcept
     { return p2 == p1; }
     template <typename X>
-    QT_DEPRECATED_VERSION_X_6_7("Comparison of QWeakPointers is inconsistent and may lead to crashes. lock() them and then compare the resulting QSharedPointers.")
     friend bool operator!=(const QSharedPointer<X> &p1, const QWeakPointer &p2) noexcept
     { return p2 != p1; }
-#endif
 
     friend bool operator==(const QWeakPointer &p, std::nullptr_t)
     { return p.isNull(); }
