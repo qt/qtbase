@@ -3593,14 +3593,14 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                     text = when.timeZone().displayName(when, QTimeZone::LongName);
                     break;
 #endif // timezone
-                case 3:
-                case 2:
+                case 3: // ±hh:mm
+                case 2: // ±hhmm (we'll remove the ':' at the end)
                     text = when.toOffsetFromUtc(when.offsetFromUtc()).timeZoneAbbreviation();
                     // If the offset is UTC that'll be a Qt::UTC, otherwise Qt::OffsetFromUTC.
-                    Q_ASSERT(text.startsWith("UTC"_L1));
-                    // The Qt::UTC case omits the zero offset, which we want:
-                    text = text.size() == 3 ? u"+00:00"_s : text.sliced(3);
-                    if (repeat == 2) // +hhmm format, rather than +hh:mm format
+                    Q_ASSERT(text.startsWith("UTC"_L1)); // Need to strip this.
+                    // The Qt::UTC case omits the zero offset:
+                    text = text.size() == 3 ? u"+00:00"_s : std::move(text).sliced(3);
+                    if (repeat == 2)
                         text = text.remove(u':');
                     break;
                 default:
