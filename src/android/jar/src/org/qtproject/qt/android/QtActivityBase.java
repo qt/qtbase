@@ -10,15 +10,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
-import android.text.method.MetaKeyKeyListener;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+
+import java.lang.reflect.Field;
 
 public class QtActivityBase extends Activity
 {
@@ -48,17 +49,7 @@ public class QtActivityBase extends Activity
 
     public String QT_ANDROID_DEFAULT_THEME = null; // sets the default theme.
 
-    private final QtActivityLoader m_loader = new QtActivityLoader(this);
-
-    private final QtActivityDelegate m_delegate = new QtActivityDelegate();
-
-    protected void onCreateHook(Bundle savedInstanceState) {
-        m_loader.APPLICATION_PARAMETERS = APPLICATION_PARAMETERS;
-        m_loader.ENVIRONMENT_VARIABLES = ENVIRONMENT_VARIABLES;
-        m_loader.QT_ANDROID_THEMES = QT_ANDROID_THEMES;
-        m_loader.QT_ANDROID_DEFAULT_THEME = QT_ANDROID_DEFAULT_THEME;
-        m_loader.onCreate(savedInstanceState);
-    }
+    private QtActivityDelegate m_delegate;
 
     public static final String EXTRA_SOURCE_INFO = "org.qtproject.qt.android.sourceInfo";
 
@@ -83,12 +74,58 @@ public class QtActivityBase extends Activity
         intent.putExtra(EXTRA_SOURCE_INFO, sourceInformation);
     }
 
+    private void handleActivityRestart() {
+        if (QtNative.isStarted()) {
+            boolean updated = m_delegate.updateActivityAfterRestart(this);
+            if (!updated) {
+                // could not update the activity so restart the application
+                Intent intent = Intent.makeRestartActivityTask(getComponentName());
+                startActivity(intent);
+                QtNative.quitApp();
+                Runtime.getRuntime().exit(0);
+            }
+        }
+    }
+
+    void configureActivityTheme() {
+        if (QT_ANDROID_THEMES == null || QT_ANDROID_DEFAULT_THEME == null) {
+            if (Build.VERSION.SDK_INT < 29) {
+                QT_ANDROID_THEMES = new String[]{"Theme_Holo_Light"};
+                QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
+            } else {
+                QT_ANDROID_THEMES = new String[]{"Theme_DeviceDefault_DayNight"};
+                QT_ANDROID_DEFAULT_THEME = "Theme_DeviceDefault_DayNight";
+            }
+        }
+        try {
+            Field f = Class.forName("android.R$style").getDeclaredField(QT_ANDROID_DEFAULT_THEME);
+            int themeId = f.getInt(null);
+            setTheme(themeId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        onCreateHook(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_ACTION_BAR);
+
+        m_delegate = new QtActivityDelegate(this);
+
+        handleActivityRestart();
         addReferrer(getIntent());
+        configureActivityTheme();
+
+        QtActivityLoader loader = new QtActivityLoader(this);
+        loader.setApplicationParameters(APPLICATION_PARAMETERS);
+        loader.setEnvironmentVariables(ENVIRONMENT_VARIABLES);
+        loader.setEnvironmentVariable("QT_ANDROID_THEME", QT_ANDROID_DEFAULT_THEME);
+
+        loader.loadQtLibraries();
+        m_delegate.startNativeApplication(loader.getApplicationParameters(),
+                loader.getMainLibrary());
     }
 
     @Override

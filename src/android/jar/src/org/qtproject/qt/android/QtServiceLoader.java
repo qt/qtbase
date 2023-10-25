@@ -5,35 +5,47 @@
 package org.qtproject.qt.android;
 
 import android.app.Service;
-import android.os.Bundle;
 import android.content.ComponentName;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
-import java.security.Provider;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class QtServiceLoader extends QtLoader {
-    Service m_service;
+    private final Service m_service;
 
     public QtServiceLoader(Service service) {
         super(service);
         m_service = service;
+
+        extractContextMetaData();
     }
 
-    public void onCreate() {
+    @Override
+    protected void initContextInfo() {
         try {
-            m_contextInfo = m_service.getPackageManager().getServiceInfo(new ComponentName(
-                    m_service, m_service.getClass()), PackageManager.GET_META_DATA);
+            m_contextInfo = m_service.getPackageManager().getServiceInfo(
+                    new ComponentName(m_service, m_service.getClass()),
+                    PackageManager.GET_META_DATA);
         } catch (Exception e) {
             e.printStackTrace();
-            m_service.stopSelf();
-            return;
+            finish();
         }
-
-        startApp(true);
     }
 
     @Override
     protected void finish() {
         m_service.stopSelf();
+    }
+
+    @Override
+    protected void initStaticClassesImpl(Class<?> initClass, Object staticInitDataObject) {
+        try {
+            Method m = initClass.getMethod("setService", Service.class, Object.class);
+            m.invoke(staticInitDataObject, m_service, this);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            Log.d(QtTAG, "Class " + initClass.getName() + " does not implement setService method");
+        }
     }
 }

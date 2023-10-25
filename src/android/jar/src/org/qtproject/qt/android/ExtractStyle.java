@@ -5,8 +5,10 @@
 package org.qtproject.qt.android;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
@@ -136,26 +138,50 @@ public class ExtractStyle {
     Context m_context;
     private final HashMap<String, DrawableCache> m_drawableCache = new HashMap<>();
 
-    private static final String EXTRACT_STYLE_KEY = "extract.android.style";
-    private static final String EXTRACT_STYLE_MINIMAL_KEY = "extract.android.style.option";
-
     private static boolean m_missingNormalStyle = false;
     private static boolean m_missingDarkStyle = false;
     private static String  m_stylePath = null;
     private static boolean m_extractMinimal = false;
 
-    public static void setup(Bundle loaderParams) {
-        if (loaderParams.containsKey(EXTRACT_STYLE_KEY)) {
-            m_stylePath = loaderParams.getString(EXTRACT_STYLE_KEY);
+    private static final String QtTAG = "QtExtractStyle";
 
-            boolean darkModeFileMissing = !(new File(m_stylePath + "darkUiMode/style.json").exists());
-            m_missingDarkStyle = Build.VERSION.SDK_INT > 28 && darkModeFileMissing;
+    private static boolean isUiModeDark(Configuration config)
+    {
+        return (config.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+    }
 
-            m_missingNormalStyle = !(new File(m_stylePath + "style.json").exists());
+    public static String setup(Activity activity, String extractOption, int dpi) {
 
-            m_extractMinimal = loaderParams.containsKey(EXTRACT_STYLE_MINIMAL_KEY) &&
-                               loaderParams.getBoolean(EXTRACT_STYLE_MINIMAL_KEY);
+        String dataDir = activity.getApplicationInfo().dataDir;
+        m_stylePath = dataDir + "/qt-reserved-files/android-style/" + dpi + "/";
+
+        if (!extractOption.equals("default") && !extractOption.equals("full")
+                && !extractOption.equals("minimal") && !extractOption.equals("none")) {
+            Log.e(QtTAG, "Invalid extract_android_style option \"" + extractOption
+                    + "\", defaulting to \"default\"");
+            extractOption = "default";
         }
+
+        // QTBUG-69810: The extraction code will trigger compatibility warnings on Android
+        // SDK version >= 28 when the target SDK version is set to something lower then 28,
+        // so default to "none" and issue a warning if that is the case.
+        if (extractOption.equals("default")) {
+            int targetSdk = activity.getApplicationInfo().targetSdkVersion;
+            if (targetSdk < 28 && Build.VERSION.SDK_INT >= 28) {
+                Log.e(QtTAG, "extract_android_style option set to \"none\" when " +
+                        "targetSdkVersion is less then 28");
+                extractOption = "none";
+            }
+        }
+
+        boolean darkModeFileMissing = !(new File(m_stylePath + "darkUiMode/style.json").exists());
+        m_missingDarkStyle = Build.VERSION.SDK_INT > 28 && darkModeFileMissing;
+        m_missingNormalStyle = !(new File(m_stylePath + "style.json").exists());
+        m_extractMinimal = extractOption.equals("minimal");
+
+        ExtractStyle.runIfNeeded(activity, isUiModeDark(activity.getResources().getConfiguration()));
+
+        return m_stylePath;
     }
 
     public static void runIfNeeded(Context context, boolean extractDarkMode) {

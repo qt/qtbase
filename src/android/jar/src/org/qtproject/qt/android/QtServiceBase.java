@@ -9,28 +9,27 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class QtServiceBase extends Service {
-
-    private final QtServiceDelegate m_delegate = new QtServiceDelegate(this);
-    QtServiceLoader m_loader = new QtServiceLoader(this);
-    protected void onCreateHook() {
-        // the application has already started
-        // do not reload everything again
-        if (QtNative.isStarted()) {
-            m_loader = null;
-            Log.w(QtNative.QtTAG,
-                    "A QtService tried to start in the same process as an initiated " +
-                            "QtActivity. That is not supported. This results in the service " +
-                            "functioning as an Android Service detached from Qt.");
-        } else {
-            m_loader.onCreate();
-        }
-    }
+    private QtServiceDelegate m_delegate;
 
     @Override
     public void onCreate()
     {
         super.onCreate();
-        onCreateHook();
+
+        m_delegate = new QtServiceDelegate(this);
+
+        // the application has already started, do not reload everything again
+        if (QtNative.isStarted()) {
+            Log.w(QtNative.QtTAG,
+                    "A QtService tried to start in the same process as an initiated " +
+                            "QtActivity. That is not supported. This results in the service " +
+                            "functioning as an Android Service detached from Qt.");
+            return;
+        }
+
+        QtServiceLoader loader = new QtServiceLoader(this);
+        loader.loadQtLibraries();
+        QtNative.startApplication(loader.getApplicationParameters(), loader.getMainLibrary());
     }
 
     @Override

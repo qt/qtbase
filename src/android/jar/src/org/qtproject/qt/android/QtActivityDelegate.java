@@ -8,15 +8,12 @@ package org.qtproject.qt.android;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.Rect;
 import android.os.Build;
-import android.os.Bundle;
-import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -39,13 +36,10 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.hardware.display.DisplayManager;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 import org.qtproject.qt.android.accessibility.QtAccessibilityDelegate;
-import static org.qtproject.qt.android.QtConstants.*;
 
 public class QtActivityDelegate
 {
@@ -57,12 +51,8 @@ public class QtActivityDelegate
     public static final int SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2;
     private int m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
 
-    private static String m_applicationParameters = null;
-
     private int m_currentRotation = -1; // undefined
     private int m_nativeOrientation = Configuration.ORIENTATION_UNDEFINED;
-
-    private String m_mainLib;
 
     private boolean m_started = false;
     private boolean m_quitApp = true;
@@ -88,10 +78,25 @@ public class QtActivityDelegate
     };
     private final QtInputDelegate m_inputDelegate = new QtInputDelegate(m_keyboardVisibilityListener);
 
-    QtActivityDelegate() { }
-
-    QtInputDelegate getInputDelegate()
+    QtActivityDelegate(Activity activity)
     {
+        m_activity = activity;
+        QtNative.setActivity(m_activity, this);
+
+        setActionBarVisibility(false);
+
+        try {
+            m_inputDelegate.setSoftInputMode(m_activity.getPackageManager()
+                    .getActivityInfo(m_activity.getComponentName(), 0).softInputMode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        DisplayManager displayManager = (DisplayManager) m_activity.getSystemService(Context.DISPLAY_SERVICE);
+        displayManager.registerDisplayListener(m_displayListener, null);
+    }
+
+    QtInputDelegate getInputDelegate() {
         return m_inputDelegate;
     }
 
@@ -194,24 +199,7 @@ public class QtActivityDelegate
         return m_contextMenuVisible;
     }
 
-    int getAppIconSize(Activity a)
-    {
-        int size = a.getResources().getDimensionPixelSize(android.R.dimen.app_icon_size);
-        if (size < 36 || size > 512) { // check size sanity
-            DisplayMetrics metrics = new DisplayMetrics();
-            a.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            size = metrics.densityDpi / 10 * 3;
-            if (size < 36)
-                size = 36;
-
-            if (size > 512)
-                size = 512;
-        }
-
-        return size;
-    }
-
-    private final DisplayManager.DisplayListener displayListener = new DisplayManager.DisplayListener()
+    private final DisplayManager.DisplayListener m_displayListener = new DisplayManager.DisplayListener()
     {
         @Override
         public void onDisplayAdded(int displayId) {
@@ -252,14 +240,14 @@ public class QtActivityDelegate
         }
     };
 
-    public boolean updateActivity(Activity activity)
-    {
+    public boolean updateActivityAfterRestart(Activity activity) {
         try {
             // set new activity
-            loadActivity(activity);
+            m_activity = activity;
+            QtNative.setActivity(m_activity, this);
 
             // update the new activity content view to old layout
-            ViewGroup layoutParent = (ViewGroup)m_layout.getParent();
+            ViewGroup layoutParent = (ViewGroup) m_layout.getParent();
             if (layoutParent != null)
                 layoutParent.removeView(m_layout);
 
@@ -274,169 +262,37 @@ public class QtActivityDelegate
         }
     }
 
-    private void loadActivity(Activity activity)
-        throws NoSuchMethodException, PackageManager.NameNotFoundException
-    {
-        m_activity = activity;
-
-        QtNative.setActivity(m_activity, this);
-        setActionBarVisibility(false);
-
-        m_inputDelegate.setSoftInputMode(m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), 0).softInputMode);
-
-        DisplayManager displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
-        displayManager.registerDisplayListener(displayListener, null);
-    }
-
-    public boolean loadApplication(Activity activity, ClassLoader classLoader, Bundle loaderParams)
-    {
-        /// check parameters integrity
-        if (!loaderParams.containsKey(NATIVE_LIBRARIES_KEY)
-                || !loaderParams.containsKey(BUNDLED_LIBRARIES_KEY)
-                || !loaderParams.containsKey(ENVIRONMENT_VARIABLES_KEY)) {
-            return false;
-        }
-
-        try {
-            loadActivity(activity);
-            QtNative.setClassLoader(classLoader);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        if (loaderParams.containsKey(STATIC_INIT_CLASSES_KEY)) {
-            for (String className: Objects.requireNonNull(loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY))) {
-                if (className.length() == 0)
-                    continue;
-
-                try {
-                  Class<?> initClass = classLoader.loadClass(className);
-                  Object staticInitDataObject = initClass.newInstance(); // create an instance
-                  try {
-                      Method m = initClass.getMethod("setActivity", Activity.class, Object.class);
-                      m.invoke(staticInitDataObject, m_activity, this);
-                  } catch (Exception e) {
-                      Log.d(QtNative.QtTAG, "Class " + className + " does not implement setActivity method");
-                  }
-
-                  // For modules that don't need/have setActivity
-                  try {
-                      Method m = initClass.getMethod("setContext", Context.class);
-                      m.invoke(staticInitDataObject, (Context)m_activity);
-                  } catch (Exception e) {
-                      e.printStackTrace();
-                  }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        QtNative.loadQtLibraries(loaderParams.getStringArrayList(NATIVE_LIBRARIES_KEY));
-        ArrayList<String> libraries = loaderParams.getStringArrayList(BUNDLED_LIBRARIES_KEY);
-        String nativeLibsDir = QtNativeLibrariesDir.nativeLibrariesDir(m_activity);
-        QtNative.loadBundledLibraries(libraries, nativeLibsDir);
-        m_mainLib = loaderParams.getString(MAIN_LIBRARY_KEY);
-        // older apps provide the main library as the last bundled library; look for this if the main library isn't provided
-        if (null == m_mainLib && libraries.size() > 0) {
-            m_mainLib = libraries.get(libraries.size() - 1);
-            libraries.remove(libraries.size() - 1);
-        }
-
-        ExtractStyle.setup(loaderParams);
-        ExtractStyle.runIfNeeded(m_activity, isUiModeDark(m_activity.getResources().getConfiguration()));
-
-        QtNative.setEnvironmentVariables(loaderParams.getString(ENVIRONMENT_VARIABLES_KEY));
-        QtNative.setEnvironmentVariable("QT_ANDROID_FONTS_MONOSPACE",
-                                        "Droid Sans Mono;Droid Sans;Droid Sans Fallback");
-        QtNative.setEnvironmentVariable("QT_ANDROID_FONTS_SERIF", "Droid Serif");
-        QtNative.setEnvironmentVariable("HOME", m_activity.getFilesDir().getAbsolutePath());
-        QtNative.setEnvironmentVariable("TMPDIR", m_activity.getCacheDir().getAbsolutePath());
-        QtNative.setEnvironmentVariable("QT_ANDROID_FONTS",
-                                        "Roboto;Droid Sans;Droid Sans Fallback");
-        QtNative.setEnvironmentVariable("QT_ANDROID_APP_ICON_SIZE",
-                                        String.valueOf(getAppIconSize(activity)));
-
-        if (loaderParams.containsKey(APPLICATION_PARAMETERS_KEY))
-            m_applicationParameters = loaderParams.getString(APPLICATION_PARAMETERS_KEY);
-        else
-            m_applicationParameters = "";
-
-        m_mainLib = QtNative.loadMainLibrary(m_mainLib, nativeLibsDir);
-        return m_mainLib != null;
-    }
-
-    public boolean startApplication()
-    {
-        // start application
-        try {
-
-            Bundle extras = m_activity.getIntent().getExtras();
-            if (extras != null) {
-                try {
-                    final boolean isDebuggable = (m_activity.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-                    if (!isDebuggable)
-                        throw new Exception();
-
-                    if (extras.containsKey("extraenvvars")) {
-                        try {
-                            QtNative.setEnvironmentVariables(new String(
-                                    Base64.decode(extras.getString("extraenvvars"), Base64.DEFAULT),
-                                    "UTF-8"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if (extras.containsKey("extraappparams")) {
-                        try {
-                            m_applicationParameters += "\t" + new String(Base64.decode(extras.getString("extraappparams"), Base64.DEFAULT), "UTF-8");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.e(QtNative.QtTAG, "Not in debug mode! It is not allowed to use " +
-                                          "extra arguments in non-debug mode.");
-                    // This is not an error, so keep it silent
-                    // e.printStackTrace();
-                }
-            } // extras != null
-
-            if (null == m_surfaces)
-                onCreate(null);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public void onTerminate()
-    {
+    public void onTerminate() {
         QtNative.terminateQt();
         QtNative.m_qtThread.exit();
     }
 
-    public void onCreate(Bundle savedInstanceState)
+    public void startNativeApplication(ArrayList<String> appParams, String mainLib)
+    {
+        if (m_surfaces != null)
+            return;
+
+        Runnable startApplication = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    QtNative.startApplication(appParams, mainLib);
+                    m_started = true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    m_activity.finish();
+                }
+            }
+        };
+
+        initMembers(startApplication);
+    }
+    
+    private void initMembers(Runnable startApplicationRunnable)
     {
         m_quitApp = true;
-        Runnable startApplication = null;
-        if (null == savedInstanceState) {
-            startApplication = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        QtNative.startApplication(m_applicationParameters, m_mainLib);
-                        m_started = true;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        m_activity.finish();
-                    }
-                }
-            };
-        }
-        m_layout = new QtLayout(m_activity, startApplication);
+
+        m_layout = new QtLayout(m_activity, startApplicationRunnable);
 
         int orientation = m_activity.getResources().getConfiguration().orientation;
 
@@ -591,11 +447,6 @@ public class QtActivityDelegate
     public void initializeAccessibility()
     {
         m_accessibilityDelegate = new QtAccessibilityDelegate(m_activity, m_layout, this);
-    }
-
-    boolean isUiModeDark(Configuration config)
-    {
-        return (config.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
 
     void handleUiModeChange(int uiMode)

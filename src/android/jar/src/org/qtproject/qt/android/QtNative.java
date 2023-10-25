@@ -215,102 +215,8 @@ public class QtNative
         }
     }
 
-    // this method loads full path libs
-    public static void loadQtLibraries(final ArrayList<String> libraries)
-    {
-        m_qtThread.run(new Runnable() {
-            @Override
-            public void run() {
-                if (libraries == null)
-                    return;
-                for (String libName : libraries) {
-                    try {
-                        File f = new File(libName);
-                        if (f.exists())
-                            System.load(libName);
-                        else
-                            Log.i(QtTAG, "Can't find '" + libName + "'");
-                    } catch (SecurityException e) {
-                        Log.i(QtTAG, "Can't load '" + libName + "'", e);
-                    } catch (Exception e) {
-                        Log.i(QtTAG, "Can't load '" + libName + "'", e);
-                    }
-                }
-            }
-        });
-    }
-
-    // this method loads bundled libs by name.
-    public static void loadBundledLibraries(final ArrayList<String> libraries, final String nativeLibraryDir)
-    {
-        m_qtThread.run(new Runnable() {
-            @Override
-            public void run() {
-                if (libraries == null)
-                    return;
-
-                for (String libName : libraries) {
-                    try {
-                        String libNameTemplate = "lib" + libName + ".so";
-                        File f = new File(nativeLibraryDir + libNameTemplate);
-                        if (!f.exists()) {
-                            Log.i(QtTAG, "Can't find '" + f.getAbsolutePath());
-                            try {
-                                ApplicationInfo info = getContext().getApplicationContext().getPackageManager()
-                                    .getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
-                                String systemLibraryDir = QtNativeLibrariesDir.systemLibrariesDir;
-                                if (info.metaData.containsKey("android.app.system_libs_prefix"))
-                                    systemLibraryDir = info.metaData.getString("android.app.system_libs_prefix");
-                                f = new File(systemLibraryDir + libNameTemplate);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        if (f.exists())
-                            System.load(f.getAbsolutePath());
-                        else
-                            Log.i(QtTAG, "Can't find '" + f.getAbsolutePath());
-                    } catch (Exception e) {
-                        Log.i(QtTAG, "Can't load '" + libName + "'", e);
-                    }
-                }
-            }
-        });
-    }
-
-    public static String loadMainLibrary(final String mainLibrary, final String nativeLibraryDir)
-    {
-        final String[] res = new String[1];
-        res[0] = null;
-        m_qtThread.run(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String mainLibNameTemplate = "lib" + mainLibrary + ".so";
-                    File f = new File(nativeLibraryDir + mainLibNameTemplate);
-                    if (!f.exists()) {
-                        try {
-                            ApplicationInfo info = getContext().getApplicationContext().getPackageManager()
-                                    .getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
-                            String systemLibraryDir = QtNativeLibrariesDir.systemLibrariesDir;
-                            if (info.metaData.containsKey("android.app.system_libs_prefix"))
-                                systemLibraryDir = info.metaData.getString("android.app.system_libs_prefix");
-                            f = new File(systemLibraryDir + mainLibNameTemplate);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            return;
-                        }
-                    }
-                    if (!f.exists())
-                        return;
-                    System.load(f.getAbsolutePath());
-                    res[0] = f.getAbsolutePath();
-                } catch (Exception e) {
-                    Log.e(QtTAG, "Can't load '" + mainLibrary + "'", e);
-                }
-            }
-        });
-        return res[0];
+    static QtThread getQtThread() {
+        return m_qtThread;
     }
 
     public static void setActivity(Activity qtMainActivity, QtActivityDelegate qtActivityDelegate)
@@ -430,17 +336,12 @@ public class QtNative
         return new Size(bounds.width(), bounds.height());
     }
 
-    public static boolean startApplication(String params, String mainLib) throws Exception
+    public static boolean startApplication(ArrayList<String> params, String mainLib)
     {
-        if (params == null)
-            params = "-platform\tandroid";
-
         final boolean[] res = new boolean[1];
-        res[0] = false;
         synchronized (m_mainActivityMutex) {
-            if (params.length() > 0 && !params.startsWith("\t"))
-                params = "\t" + params;
-            final String qtParams = mainLib + params;
+            String paramsStr = String.join("\t", params);
+            final String qtParams = mainLib + "\t" + paramsStr;
             m_qtThread.run(new Runnable() {
                 @Override
                 public void run() {
@@ -970,40 +871,6 @@ public class QtNative
             e.printStackTrace();
         }
         return res.toArray(new String[res.size()]);
-    }
-
-    /**
-     *Sets a single environment variable
-     *
-     * returns true if the value was set, false otherwise.
-     * in case it cannot set value will log the exception
-     **/
-    public static void setEnvironmentVariable(String key, String value)
-    {
-        try {
-            android.system.Os.setenv(key, value, true);
-        } catch (Exception e) {
-            Log.e(QtNative.QtTAG, "Could not set environment variable:" + key + "=" + value);
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     *Sets multiple environment variables
-     *
-     * Uses '\t' as divider between variables and '=' between key/value
-     * Ex: key1=val1\tkey2=val2\tkey3=val3
-     * Note: it assumed that the key cannot have '=' but the value can
-     **/
-    public static void setEnvironmentVariables(String environmentVariables)
-    {
-        for (String variable : environmentVariables.split("\t")) {
-            String[] keyvalue = variable.split("=", 2);
-            if (keyvalue.length < 2 || keyvalue[0].isEmpty())
-                continue;
-
-            setEnvironmentVariable(keyvalue[0], keyvalue[1]);
-        }
     }
 
     // screen methods
