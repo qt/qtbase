@@ -503,6 +503,11 @@ uint32_t ArrayBuffer::byteLength() const
     return m_arrayBuffer["byteLength"].as<uint32_t>();
 }
 
+ArrayBuffer ArrayBuffer::slice(uint32_t begin, uint32_t end) const
+{
+    return ArrayBuffer(m_arrayBuffer.call<emscripten::val>("slice", begin, end));
+}
+
 emscripten::val ArrayBuffer::val() const
 {
     return m_arrayBuffer;
@@ -512,6 +517,13 @@ Blob::Blob(const emscripten::val &blob)
     :m_blob(blob)
 {
 
+}
+
+Blob Blob::fromArrayBuffer(const ArrayBuffer &arrayBuffer)
+{
+    auto array = emscripten::val::array();
+    array.call<void>("push", arrayBuffer.val());
+    return Blob(emscripten::val::global("Blob").new_(array));
 }
 
 uint32_t Blob::size() const
@@ -534,6 +546,25 @@ Blob Blob::copyFrom(const char *buffer, uint32_t size, std::string mimeType)
 Blob Blob::copyFrom(const char *buffer, uint32_t size)
 {
     return copyFrom(buffer, size, "application/octet-stream");
+}
+
+Blob Blob::slice(uint32_t begin, uint32_t end) const
+{
+    return Blob(m_blob.call<emscripten::val>("slice", begin, end));
+}
+
+ArrayBuffer Blob::arrayBuffer_sync() const
+{
+    QEventLoop loop;
+    emscripten::val buffer;
+    qstdweb::Promise::make(m_blob, "arrayBuffer", {
+        .thenFunc = [&loop, &buffer](emscripten::val arrayBuffer) {
+            buffer = arrayBuffer;
+            loop.quit();
+        }
+    });
+    loop.exec();
+    return ArrayBuffer(buffer);
 }
 
 emscripten::val Blob::val() const
@@ -704,6 +735,13 @@ uint32_t Uint8Array::length() const
 void Uint8Array::set(const Uint8Array &source)
 {
     m_uint8Array.call<void>("set", source.m_uint8Array); // copies source content
+}
+
+Uint8Array Uint8Array::subarray(uint32_t begin, uint32_t end)
+{
+    // Note: using uint64_t here errors with "Cannot convert a BigInt value to a number"
+    // (see JS BigInt and Number types). Use uint32_t for now.
+    return Uint8Array(m_uint8Array.call<emscripten::val>("subarray", begin, end));
 }
 
 // Copies the Uint8Array content to a destination on the heap
@@ -888,6 +926,101 @@ readDataTransfer(emscripten::val webDataTransfer, std::function<QVariant(QByteAr
                  std::function<void(std::unique_ptr<QMimeData>)> onDone)
 {
     return DataTransferReader::read(webDataTransfer, std::move(imageReader), std::move(onDone));
+}
+
+BlobIODevice::BlobIODevice(Blob blob)
+    : m_blob(blob)
+{
+
+}
+
+bool BlobIODevice::open(QIODevice::OpenMode mode)
+{
+    if (mode.testFlag(QIODevice::WriteOnly))
+        return false;
+    return QIODevice::open(mode);
+}
+
+bool BlobIODevice::isSequential() const
+{
+    return false;
+}
+
+qint64 BlobIODevice::size() const
+{
+    return m_blob.size();
+}
+
+bool BlobIODevice::seek(qint64 pos)
+{
+    if (pos >= size())
+        return false;
+    return QIODevice::seek(pos);
+}
+
+qint64 BlobIODevice::readData(char *data, qint64 maxSize)
+{
+    uint64_t begin = QIODevice::pos();
+    uint64_t end = std::min<uint64_t>(begin + maxSize, size());
+    uint64_t size = end - begin;
+    if (size > 0) {
+        qstdweb::ArrayBuffer buffer = m_blob.slice(begin, end).arrayBuffer_sync();
+        qstdweb::Uint8Array(buffer).copyTo(data);
+    }
+    return size;
+}
+
+qint64 BlobIODevice::writeData(const char *, qint64)
+{
+    Q_UNREACHABLE();
+}
+
+Uint8ArrayIODevice::Uint8ArrayIODevice(Uint8Array array)
+    : m_array(array)
+{
+
+}
+
+bool Uint8ArrayIODevice::open(QIODevice::OpenMode mode)
+{
+    return QIODevice::open(mode);
+}
+
+bool Uint8ArrayIODevice::isSequential() const
+{
+    return false;
+}
+
+qint64 Uint8ArrayIODevice::size() const
+{
+    return m_array.length();
+}
+
+bool Uint8ArrayIODevice::seek(qint64 pos)
+{
+    if (pos >= size())
+        return false;
+    return QIODevice::seek(pos);
+}
+
+qint64 Uint8ArrayIODevice::readData(char *data, qint64 maxSize)
+{
+    uint64_t begin = QIODevice::pos();
+    uint64_t end = std::min<uint64_t>(begin + maxSize, size());
+    uint64_t size = end - begin;
+    if (size > 0)
+        m_array.subarray(begin, end).copyTo(data);
+    return size;
+}
+
+qint64 Uint8ArrayIODevice::writeData(const char *data, qint64 maxSize)
+{
+    uint64_t begin = QIODevice::pos();
+    uint64_t end = std::min<uint64_t>(begin + maxSize, size());
+    uint64_t size = end - begin;
+    if (size > 0)
+        m_array.subarray(begin, end).set(Uint8Array(data, size));
+    return size;
 }
 
 } // namespace qstdweb

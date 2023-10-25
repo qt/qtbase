@@ -58,6 +58,7 @@ namespace qstdweb {
         explicit ArrayBuffer(uint32_t size);
         explicit ArrayBuffer(const emscripten::val &arrayBuffer);
         uint32_t byteLength() const;
+        ArrayBuffer slice(uint32_t begin, uint32_t end) const;
         emscripten::val val() const;
 
     private:
@@ -68,9 +69,12 @@ namespace qstdweb {
     class Q_CORE_EXPORT Blob {
     public:
         explicit Blob(const emscripten::val &blob);
+        static Blob fromArrayBuffer(const ArrayBuffer &arrayBuffer);
         uint32_t size() const;
         static Blob copyFrom(const char *buffer, uint32_t size, std::string mimeType);
         static Blob copyFrom(const char *buffer, uint32_t size);
+        Blob slice(uint32_t begin, uint32_t end) const;
+        ArrayBuffer arrayBuffer_sync() const;
         emscripten::val val() const;
         std::string type() const;
 
@@ -140,6 +144,7 @@ namespace qstdweb {
         ArrayBuffer buffer() const;
         uint32_t length() const;
         void set(const Uint8Array &source);
+        Uint8Array subarray(uint32_t begin, uint32_t end);
 
         void copyTo(char *destination) const;
         QByteArray copyToQByteArray() const;
@@ -207,6 +212,40 @@ namespace qstdweb {
         return wrappedCallback;
     }
 
+    class Q_CORE_EXPORT BlobIODevice: public QIODevice
+    {
+    public:
+        BlobIODevice(Blob blob);
+        bool open(QIODeviceBase::OpenMode mode) override;
+        bool isSequential() const override;
+        qint64 size() const override;
+        bool seek(qint64 pos) override;
+
+    protected:
+        qint64 readData(char *data, qint64 maxSize) override;
+        qint64 writeData(const char *, qint64) override;
+
+    private:
+        Blob m_blob;
+    };
+
+    class Uint8ArrayIODevice: public QIODevice
+    {
+    public:
+        Uint8ArrayIODevice(Uint8Array array);
+        bool open(QIODevice::OpenMode mode) override;
+        bool isSequential() const override;
+        qint64 size() const override;
+        bool seek(qint64 pos) override;
+
+    protected:
+        qint64 readData(char *data, qint64 maxSize) override;
+        qint64 writeData(const char *data, qint64 size) override;
+
+    private:
+        Uint8Array m_array;
+    };
+
     inline emscripten::val window()
     {
         static emscripten::val savedWindow = emscripten::val::global("window");
@@ -224,6 +263,7 @@ namespace qstdweb {
     Q_CORE_EXPORT std::shared_ptr<CancellationFlag>
     readDataTransfer(emscripten::val webObject, std::function<QVariant(QByteArray)> imageReader,
                      std::function<void(std::unique_ptr<QMimeData>)> onDone);
+
 
 #if QT_CONFIG(thread)
     template<class T>
@@ -261,6 +301,7 @@ namespace qstdweb {
         return task();
     }
 #endif // QT_CONFIG(thread)
+
 }
 
 QT_END_NAMESPACE
