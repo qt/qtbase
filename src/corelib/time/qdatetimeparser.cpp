@@ -1180,17 +1180,20 @@ static QTime actualTime(QDateTimeParser::Sections known,
 */
 static int startsWithLocalTimeZone(QStringView name, const QDateTime &when)
 {
+    // Pick longest match that we might get.
+    qsizetype longest = 0;
     // On MS-Win, at least when system zone is UTC, the tzname[]s may be empty.
     for (int i = 0; i < 2; ++i) {
         const QString zone(qTzName(i));
-        if (!zone.isEmpty() && name.startsWith(zone))
-            return zone.size();
+        if (zone.size() > longest && name.startsWith(zone))
+            longest = zone.size();
     }
     // Mimic what QLocale::toString() would have used, to ensure round-trips work:
     const QString local = QDateTime(when.date(), when.time()).timeZoneAbbreviation();
-    if (name.startsWith(local))
-        return local.size();
-    return 0;
+    if (local.size() > longest && name.startsWith(local))
+        longest = local.size();
+    Q_ASSERT(longest <= INT_MAX); // Timezone names are not that long.
+    return int(longest);
 }
 
 /*!
