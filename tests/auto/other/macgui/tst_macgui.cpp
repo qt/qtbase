@@ -126,40 +126,6 @@ void tst_MacGui::splashScreenModality()
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
-class PrimaryWindowDialog : public QDialog
-{
-Q_OBJECT
-public:
-    PrimaryWindowDialog();
-    QWidget *secondaryWindow;
-    QWidget *frontWidget;
-public slots:
-    void showSecondaryWindow();
-    void test();
-};
-
-PrimaryWindowDialog::PrimaryWindowDialog() : QDialog(0)
-{
-    frontWidget = 0;
-    secondaryWindow = new ColorWidget(this);
-    secondaryWindow->setWindowFlags(Qt::Window);
-    secondaryWindow->resize(400, 400);
-    secondaryWindow->move(100, 100);
-    QTimer::singleShot(1000, this, SLOT(showSecondaryWindow()));
-    QTimer::singleShot(2000, this, SLOT(test()));
-    QTimer::singleShot(3000, this, SLOT(close()));
-}
-
-void PrimaryWindowDialog::showSecondaryWindow()
-{
-    secondaryWindow->show();
-}
-
-void PrimaryWindowDialog::test()
-{
-    frontWidget = QApplication::widgetAt(secondaryWindow->mapToGlobal(QPoint(100, 100)));
-}
-
 /*
     Test that a non-modal child window of a modal dialog is shown in front
     of the dialog even if the dialog becomes modal after the child window
@@ -168,11 +134,28 @@ void PrimaryWindowDialog::test()
 void tst_MacGui::nonModalOrder()
 {
     clearSequence();
-    PrimaryWindowDialog primary;
-    primary.resize(400, 400);
-    primary.move(100, 100);
-    primary.exec();
-    QCOMPARE(primary.frontWidget, primary.secondaryWindow);
+
+    QDialog dialog;
+    dialog.resize(400, 400);
+    dialog.move(100, 100);
+
+    ColorWidget child(&dialog);
+    // The child window needs to be a dialog, as only subclasses of NSPanel
+    // are allowed to override worksWhenModal, which is needed to mark the
+    // transient child as working within the modal session of the parent.
+    child.setWindowFlags(Qt::Window | Qt::Dialog);
+    child.resize(400, 400);
+    child.move(100, 100);
+
+    QTimer::singleShot(0, [&]{
+        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+        child.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&child));
+        QCOMPARE(QApplication::widgetAt(child.mapToGlobal(QPoint(100, 100))), &child);
+        dialog.close();
+    });
+
+    dialog.exec();
 }
 
 /*
