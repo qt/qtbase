@@ -162,25 +162,32 @@ async function qtLoad(config)
         return originalLocatedFilename;
     }
 
+    let onExitCalled = false;
     const originalOnExit = config.onExit;
     config.onExit = code => {
         originalOnExit?.();
-        config.qt.onExit?.({
-            code,
-            crashed: false
-        });
+
+        if (!onExitCalled) {
+            onExitCalled = true;
+            config.qt.onExit?.({
+                code,
+                crashed: false
+            });
+        }
     }
 
     const originalOnAbort = config.onAbort;
     config.onAbort = text =>
     {
         originalOnAbort?.();
-
-        aborted = true;
-        config.qt.onExit?.({
-            text,
-            crashed: true
-        });
+        
+        if (!onExitCalled) {
+            onExitCalled = true;
+            config.qt.onExit?.({
+                text,
+                crashed: true
+            });
+        }
     };
 
     const fetchPreloadFiles = async () => {
@@ -206,10 +213,13 @@ async function qtLoad(config)
         instance = await Promise.race(
             [circuitBreaker, config.qt.entryFunction(config)]);
     } catch (e) {
-        config.qt.onExit?.({
-            text: e.message,
-            crashed: true
-        });
+        if (!onExitCalled) {
+            onExitCalled = true;
+            config.qt.onExit?.({
+                text: e.message,
+                crashed: true
+            });
+        }
         throw e;
     }
 
