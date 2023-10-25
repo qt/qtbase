@@ -105,6 +105,12 @@ async function qtLoad(config)
     config.qtFontDpi = config.qt.fontDpi;
     delete config.qt.fontDpi;
 
+    // Make Emscripten not call main(); this gives us more control over
+    // the startup sequence.
+    const originalNoInitialRun = config.noInitialRun;
+    const originalArguments = config.arguments;
+    config.noInitialRun = true;
+
     // Used for rejecting a failed load's promise where emscripten itself does not allow it,
     // like in instantiateWasm below. This allows us to throw in case of a load error instead of
     // hanging on a promise to entry function, which emscripten unfortunately does.
@@ -219,7 +225,18 @@ async function qtLoad(config)
     try {
         instance = await Promise.race(
             [circuitBreaker, config.qt.entryFunction(config)]);
+
+        // Call main after creating the instance. We've opted into manually
+        // calling main() by setting noInitialRun in the config. Thie Works around
+        // issue where Emscripten suppresses all exceptions thrown during main.
+        if (!originalNoInitialRun)
+            instance.callMain(originalArguments);
     } catch (e) {
+        // If this is the exception thrown by app.exec() then that is a normal
+        // case and we suppress it.
+        if (e == "unwind") // not much to go on
+            return;
+
         if (!onExitCalled) {
             onExitCalled = true;
             config.qt.onExit?.({
