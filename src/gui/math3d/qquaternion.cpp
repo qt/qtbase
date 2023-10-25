@@ -26,14 +26,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QQuaternion::QQuaternion()
+    \fn QQuaternion::QQuaternion() noexcept
 
     Constructs an identity quaternion (1, 0, 0, 0), i.e. with the vector (0, 0, 0)
     and scalar 1.
 */
 
 /*!
-    \fn QQuaternion::QQuaternion(Qt::Initialization)
+    \fn QQuaternion::QQuaternion(Qt::Initialization) noexcept
     \since 5.5
     \internal
 
@@ -41,7 +41,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QQuaternion::QQuaternion(float scalar, float xpos, float ypos, float zpos)
+    \fn QQuaternion::QQuaternion(float scalar, float xpos, float ypos, float zpos) noexcept
 
     Constructs a quaternion with the vector (\a xpos, \a ypos, \a zpos)
     and \a scalar.
@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_VECTOR3D
 
 /*!
-    \fn QQuaternion::QQuaternion(float scalar, const QVector3D& vector)
+    \fn QQuaternion::QQuaternion(float scalar, const QVector3D &vector) noexcept
 
     Constructs a quaternion vector from the specified \a vector and
     \a scalar.
@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QVector3D QQuaternion::vector() const
+    \fn QVector3D QQuaternion::vector() const noexcept
 
     Returns the vector component of this quaternion.
 
@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QQuaternion::setVector(const QVector3D& vector)
+    \fn void QQuaternion::setVector(const QVector3D &vector) noexcept
 
     Sets the vector component of this quaternion to \a vector.
 
@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 /*!
-    \fn void QQuaternion::setVector(float x, float y, float z)
+    \fn void QQuaternion::setVector(float x, float y, float z) noexcept
 
     Sets the vector component of this quaternion to (\a x, \a y, \a z).
 
@@ -87,13 +87,13 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_VECTOR4D
 
 /*!
-    \fn QQuaternion::QQuaternion(const QVector4D& vector)
+    \fn QQuaternion::QQuaternion(const QVector4D &vector) noexcept
 
     Constructs a quaternion from the components of \a vector.
 */
 
 /*!
-    \fn QVector4D QQuaternion::toVector4D() const
+    \fn QVector4D QQuaternion::toVector4D() const noexcept
 
     Returns this quaternion as a 4D vector.
 */
@@ -101,14 +101,14 @@ QT_BEGIN_NAMESPACE
 #endif
 
 /*!
-    \fn bool QQuaternion::isNull() const
+    \fn bool QQuaternion::isNull() const noexcept
 
     Returns \c true if the x, y, z, and scalar components of this
     quaternion are set to 0.0; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QQuaternion::isIdentity() const
+    \fn bool QQuaternion::isIdentity() const noexcept
 
     Returns \c true if the x, y, and z components of this
     quaternion are set to 0.0, and the scalar component is set
@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn float QQuaternion::x() const
+    \fn float QQuaternion::x() const noexcept
 
     Returns the x coordinate of this quaternion's vector.
 
@@ -124,7 +124,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn float QQuaternion::y() const
+    \fn float QQuaternion::y() const noexcept
 
     Returns the y coordinate of this quaternion's vector.
 
@@ -132,7 +132,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn float QQuaternion::z() const
+    \fn float QQuaternion::z() const noexcept
 
     Returns the z coordinate of this quaternion's vector.
 
@@ -140,7 +140,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn float QQuaternion::scalar() const
+    \fn float QQuaternion::scalar() const noexcept
 
     Returns the scalar component of this quaternion.
 
@@ -148,7 +148,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QQuaternion::setX(float x)
+    \fn void QQuaternion::setX(float x) noexcept
 
     Sets the x coordinate of this quaternion's vector to the given
     \a x coordinate.
@@ -157,7 +157,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QQuaternion::setY(float y)
+    \fn void QQuaternion::setY(float y) noexcept
 
     Sets the y coordinate of this quaternion's vector to the given
     \a y coordinate.
@@ -166,7 +166,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QQuaternion::setZ(float z)
+    \fn void QQuaternion::setZ(float z) noexcept
 
     Sets the z coordinate of this quaternion's vector to the given
     \a z coordinate.
@@ -175,7 +175,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QQuaternion::setScalar(float scalar)
+    \fn void QQuaternion::setScalar(float scalar) noexcept
 
     Sets the scalar component of this quaternion to \a scalar.
 
@@ -183,7 +183,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn float QQuaternion::dotProduct(const QQuaternion &q1, const QQuaternion &q2)
+    \fn float QQuaternion::dotProduct(const QQuaternion &q1, const QQuaternion &q2) noexcept
     \since 5.5
 
     Returns the dot product of \a q1 and \a q2.
@@ -251,7 +251,7 @@ void QQuaternion::normalize()
 }
 
 /*!
-    \fn QQuaternion QQuaternion::inverted() const
+    \fn QQuaternion QQuaternion::inverted() const noexcept
     \since 5.5
 
     Returns the inverse of this quaternion.
@@ -261,7 +261,7 @@ void QQuaternion::normalize()
 */
 
 /*!
-    \fn QQuaternion QQuaternion::conjugated() const
+    \fn QQuaternion QQuaternion::conjugated() const noexcept
     \since 5.5
 
     Returns the conjugate of this quaternion, which is
@@ -278,13 +278,13 @@ void QQuaternion::normalize()
 
     \snippet code/src_gui_math3d_qquaternion.cpp 1
 */
-QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
+QVector3D QQuaternion::rotatedVector(const QVector3D &vector) const
 {
     return (*this * QQuaternion(0, vector) * conjugated()).vector();
 }
 
 /*!
-    \fn QQuaternion &QQuaternion::operator+=(const QQuaternion &quaternion)
+    \fn QQuaternion &QQuaternion::operator+=(const QQuaternion &quaternion) noexcept
 
     Adds the given \a quaternion to this quaternion and returns a reference to
     this quaternion.
@@ -293,7 +293,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 */
 
 /*!
-    \fn QQuaternion &QQuaternion::operator-=(const QQuaternion &quaternion)
+    \fn QQuaternion &QQuaternion::operator-=(const QQuaternion &quaternion) noexcept
 
     Subtracts the given \a quaternion from this quaternion and returns a
     reference to this quaternion.
@@ -302,7 +302,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 */
 
 /*!
-    \fn QQuaternion &QQuaternion::operator*=(float factor)
+    \fn QQuaternion &QQuaternion::operator*=(float factor) noexcept
 
     Multiplies this quaternion's components by the given \a factor, and
     returns a reference to this quaternion.
@@ -311,7 +311,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 */
 
 /*!
-    \fn QQuaternion &QQuaternion::operator*=(const QQuaternion &quaternion)
+    \fn QQuaternion &QQuaternion::operator*=(const QQuaternion &quaternion) noexcept
 
     Multiplies this quaternion by \a quaternion and returns a reference
     to this quaternion.
@@ -329,7 +329,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 #ifndef QT_NO_VECTOR3D
 
 /*!
-    \fn void QQuaternion::getAxisAndAngle(QVector3D *axis, float *angle) const
+    \fn void QQuaternion::getAxisAndAngle(QVector3D *axis, float *angle) const noexcept
     \since 5.5
     \overload
 
@@ -345,7 +345,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 
     \sa getAxisAndAngle()
 */
-QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
+QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D &axis, float angle)
 {
     // Algorithm from:
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q56
@@ -738,21 +738,21 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 #endif // QT_NO_VECTOR3D
 
 /*!
-    \fn bool QQuaternion::operator==(const QQuaternion &q1, const QQuaternion &q2)
+    \fn bool QQuaternion::operator==(const QQuaternion &q1, const QQuaternion &q2) noexcept
 
     Returns \c true if \a q1 is equal to \a q2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
 /*!
-    \fn bool QQuaternion::operator!=(const QQuaternion &q1, const QQuaternion &q2)
+    \fn bool QQuaternion::operator!=(const QQuaternion &q1, const QQuaternion &q2) noexcept
 
     Returns \c true if \a q1 is not equal to \a q2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
 /*!
-    \fn const QQuaternion operator+(const QQuaternion &q1, const QQuaternion &q2)
+    \fn const QQuaternion operator+(const QQuaternion &q1, const QQuaternion &q2) noexcept
     \relates QQuaternion
 
     Returns a QQuaternion object that is the sum of the given quaternions,
@@ -762,7 +762,7 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 */
 
 /*!
-    \fn const QQuaternion operator-(const QQuaternion &q1, const QQuaternion &q2)
+    \fn const QQuaternion operator-(const QQuaternion &q1, const QQuaternion &q2) noexcept
     \relates QQuaternion
 
     Returns a QQuaternion object that is formed by subtracting
@@ -772,7 +772,7 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 */
 
 /*!
-    \fn const QQuaternion operator*(float factor, const QQuaternion &quaternion)
+    \fn const QQuaternion operator*(float factor, const QQuaternion &quaternion) noexcept
     \relates QQuaternion
 
     Returns a copy of the given \a quaternion,  multiplied by the
@@ -782,7 +782,7 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 */
 
 /*!
-    \fn const QQuaternion operator*(const QQuaternion &quaternion, float factor)
+    \fn const QQuaternion operator*(const QQuaternion &quaternion, float factor) noexcept
     \relates QQuaternion
 
     Returns a copy of the given \a quaternion,  multiplied by the
@@ -792,7 +792,7 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 */
 
 /*!
-    \fn const QQuaternion operator*(const QQuaternion &q1, const QQuaternion& q2)
+    \fn const QQuaternion operator*(const QQuaternion &q1, const QQuaternion &q2) noexcept
     \relates QQuaternion
 
     Multiplies \a q1 and \a q2 using quaternion multiplication.
@@ -803,7 +803,7 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 */
 
 /*!
-    \fn const QQuaternion operator-(const QQuaternion &quaternion)
+    \fn const QQuaternion operator-(const QQuaternion &quaternion) noexcept
     \relates QQuaternion
     \overload
 
@@ -826,7 +826,7 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 #ifndef QT_NO_VECTOR3D
 
 /*!
-    \fn QVector3D operator*(const QQuaternion &quaternion, const QVector3D &vec)
+    \fn QVector3D operator*(const QQuaternion &quaternion, const QVector3D &vec) noexcept
     \since 5.5
     \relates QQuaternion
 
@@ -836,7 +836,7 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 #endif
 
 /*!
-    \fn bool qFuzzyCompare(const QQuaternion& q1, const QQuaternion& q2)
+    \fn bool qFuzzyCompare(const QQuaternion &q1, const QQuaternion &q2) noexcept
     \relates QQuaternion
 
     Returns \c true if \a q1 and \a q2 are equal, allowing for a small
@@ -855,7 +855,7 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
     \sa nlerp()
 */
 QQuaternion QQuaternion::slerp
-    (const QQuaternion& q1, const QQuaternion& q2, float t)
+    (const QQuaternion &q1, const QQuaternion &q2, float t)
 {
     // Handle the easy cases first.
     if (t <= 0.0f)
@@ -904,7 +904,7 @@ QQuaternion QQuaternion::slerp
     \sa slerp()
 */
 QQuaternion QQuaternion::nlerp
-    (const QQuaternion& q1, const QQuaternion& q2, float t)
+    (const QQuaternion &q1, const QQuaternion &q2, float t)
 {
     // Handle the easy cases first.
     if (t <= 0.0f)
