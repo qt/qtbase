@@ -345,11 +345,37 @@ export class QtLoaderIntegrationTests
             caughtException = e;
         }
 
-        assert.isUndefined(caughtException);
+        assert.isTrue(caughtException !== undefined);
         assert.equal(1, onExitMock.calls.length);
         const exitStatus = onExitMock.calls[0][0];
         assert.isTrue(exitStatus.crashed);
         assert.isUndefined(exitStatus.code);
+        assert.isNotUndefined(exitStatus.text);
+    }
+
+    async stackOwerflowImmediately()
+    {
+        const onExitMock = new Mock();
+        let caughtException;
+        try {
+            await qtLoad({
+                arguments: ['--no-gui', '--stack-owerflow-immediately'],
+                qt: {
+                    onExit: onExitMock,
+                    entryFunction: tst_qtloader_integration_entry,
+                }
+            });
+        } catch (e) {
+            caughtException = e;
+        }
+
+        assert.isTrue(caughtException !== undefined);
+        assert.equal(1, onExitMock.calls.length);
+        const exitStatus = onExitMock.calls[0][0];
+        assert.isTrue(exitStatus.crashed);
+        assert.isUndefined(exitStatus.code);
+        // text should be "RangeError: Maximum call stack
+        // size exceeded", or similar.
         assert.isNotUndefined(exitStatus.text);
     }
 

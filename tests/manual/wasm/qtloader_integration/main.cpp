@@ -69,6 +69,11 @@ void crash()
     std::abort();
 }
 
+void stackOverflow()
+{
+    stackOverflow(); // should eventually termniate with exception
+}
+
 void exitApp()
 {
     emscripten_force_exit(ExitValueFromExitApp);
@@ -143,8 +148,15 @@ int main(int argc, char **argv)
     if (crashImmediately)
         crash();
 
+    const bool stackOverflowImmediately =
+            std::find(arguments.begin(), arguments.end(), QStringLiteral("--stack-owerflow-immediately"))
+            != arguments.end();
+    if (stackOverflowImmediately)
+        stackOverflow();
+
     const bool noGui = std::find(arguments.begin(), arguments.end(), QStringLiteral("--no-gui"))
             != arguments.end();
+
     if (!noGui) {
         AppWindow window;
         window.show();
