@@ -36,6 +36,7 @@ public:
     void init();
     void reset();
     bool createDefaultRenderPass();
+    QSize surfacePixelSize() const;
     void recreateSwapChain();
     uint32_t chooseTransientImageMemType(VkImage img, uint32_t startIndex);
     bool createTransientImage(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspectMask,
