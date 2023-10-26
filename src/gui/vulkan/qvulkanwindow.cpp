@@ -1834,13 +1834,26 @@ void QVulkanWindowRenderer::logicalDeviceLost()
 {
 }
 
+QSize QVulkanWindowPrivate::surfacePixelSize() const
+{
+    Q_Q(const QVulkanWindow);
+    VkSurfaceCapabilitiesKHR surfaceCaps = {};
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevs.at(physDevIndex), surface, &surfaceCaps);
+    VkExtent2D bufferSize = surfaceCaps.currentExtent;
+    if (bufferSize.width == uint32_t(-1)) {
+        Q_ASSERT(bufferSize.height == uint32_t(-1));
+        return q->size() * q->devicePixelRatio();
+    }
+    return QSize(int(bufferSize.width), int(bufferSize.height));
+}
+
 void QVulkanWindowPrivate::beginFrame()
 {
     if (!swapChain || framePending)
         return;
 
     Q_Q(QVulkanWindow);
-    if (q->size() * q->devicePixelRatio() != swapChainImageSize) {
+    if (swapChainImageSize != surfacePixelSize()) {
         recreateSwapChain();
         if (!swapChain)
             return;
@@ -2424,6 +2437,19 @@ VkFormat QVulkanWindow::depthStencilFormat() const
 
     This usually matches the size of the window, but may also differ in case
     \c vkGetPhysicalDeviceSurfaceCapabilitiesKHR reports a fixed size.
+
+    In addition, it has been observed on some platforms that the
+    Vulkan-reported surface size is different with high DPI scaling active,
+    meaning the QWindow-reported
+    \l{QWindow::}{size()} multiplied with the \l{QWindow::}{devicePixelRatio()}
+    was 1 pixel less or more when compared to the value returned from here,
+    presumably due to differences in rounding. Rendering code should be aware
+    of this, and any related rendering logic must be based in the value returned
+    from here, never on the QWindow-reported size. Regardless of which pixel size
+    is correct in theory, Vulkan rendering must only ever rely on the Vulkan
+    API-reported surface size. Otherwise validation errors may occur, e.g. when
+    setting the viewport, because the application-provided values may become
+    out-of-bounds from Vulkan's perspective.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initSwapChainResources() up until
