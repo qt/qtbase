@@ -320,11 +320,11 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
     switch (cap) {
         case ApplicationState: return true;
         case ThreadedPixmaps: return true;
-        case NativeWidgets: return QtAndroidPrivate::activity();
-        case OpenGL: return QtAndroidPrivate::activity();
-        case ForeignWindows: return QtAndroidPrivate::activity();
-        case ThreadedOpenGL: return !needsBasicRenderloopWorkaround() && QtAndroidPrivate::activity();
-        case RasterGLSurface: return QtAndroidPrivate::activity();
+        case NativeWidgets: return QtAndroidPrivate::activity().isValid();
+        case OpenGL: return QtAndroidPrivate::activity().isValid();
+        case ForeignWindows: return QtAndroidPrivate::activity().isValid();
+        case ThreadedOpenGL: return !needsBasicRenderloopWorkaround() && QtAndroidPrivate::activity().isValid();
+        case RasterGLSurface: return QtAndroidPrivate::activity().isValid();
         case TopStackedNativeChildWindows: return false;
         case MaximizeUsingFullscreenGeometry: return true;
         default:
@@ -334,7 +334,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
 
 QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    if (!QtAndroidPrivate::activity())
+    if (!QtAndroidPrivate::activity().isValid())
         return nullptr;
 
     return new QAndroidPlatformBackingStore(window);
@@ -342,7 +342,7 @@ QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(Q
 
 QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    if (!QtAndroidPrivate::activity())
+    if (!QtAndroidPrivate::activity().isValid())
         return nullptr;
     QSurfaceFormat format(context->format());
     format.setAlphaBufferSize(8);
@@ -360,7 +360,7 @@ QOpenGLContext *QAndroidPlatformIntegration::createOpenGLContext(EGLContext cont
 
 QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    if (!QtAndroidPrivate::activity())
+    if (!QtAndroidPrivate::activity().isValid())
         return nullptr;
 
     QSurfaceFormat format(surface->requestedFormat());
@@ -374,7 +374,7 @@ QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenS
 
 QOffscreenSurface *QAndroidPlatformIntegration::createOffscreenSurface(ANativeWindow *nativeSurface) const
 {
-    if (!QtAndroidPrivate::activity() || !nativeSurface)
+    if (!QtAndroidPrivate::activity().isValid() || !nativeSurface)
         return nullptr;
 
     auto *surface = new QOffscreenSurface;
@@ -385,7 +385,7 @@ QOffscreenSurface *QAndroidPlatformIntegration::createOffscreenSurface(ANativeWi
 
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const
 {
-    if (!QtAndroidPrivate::activity())
+    if (!QtAndroidPrivate::activity().isValid())
         return nullptr;
 
 #if QT_CONFIG(vulkan)

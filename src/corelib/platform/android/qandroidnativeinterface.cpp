@@ -68,7 +68,7 @@ QtJniTypes::Context QNativeInterface::QAndroidApplication::context()
 */
 bool QNativeInterface::QAndroidApplication::isActivityContext()
 {
-    return QtAndroidPrivate::activity();
+    return QtAndroidPrivate::activity().isValid();
 }
 
 /*!

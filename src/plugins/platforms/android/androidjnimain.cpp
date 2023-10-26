@@ -484,7 +484,7 @@ static void waitForServiceSetup(JNIEnv *env, jclass /*clazz*/)
     Q_UNUSED(env);
     // The service must wait until the QCoreApplication starts otherwise onBind will be
     // called too early
-    if (QtAndroidPrivate::service())
+    if (QtAndroidPrivate::service().isValid())
         QtAndroidPrivate::waitForServiceSetup();
 }
 
