@@ -25,7 +25,6 @@ public:
         qreal border = qMax(paperSize.height(), paperSize.width()) / 25;
         brect = QRectF(QPointF(-border, -border),
                        QSizeF(paperSize)+QSizeF(2*border, 2*border));
-        setCacheMode(DeviceCoordinateCache);
     }
 
     QRectF boundingRect() const override
