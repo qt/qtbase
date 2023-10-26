@@ -12,6 +12,8 @@ private slots:
     void invalid();
     void basics();
     void setGetMargins();
+    void setUnits_data();
+    void setUnits();
 };
 
 void tst_QPageLayout::invalid()
@@ -236,6 +238,54 @@ void tst_QPageLayout::setGetMargins()
     QCOMPARE(fullPage.margins(), margins);
     QCOMPARE(fullPage.minimumMargins(), min);
     QCOMPARE(fullPage.maximumMargins(), max);
+}
+
+void tst_QPageLayout::setUnits_data()
+{
+    QTest::addColumn<QPageLayout::Unit>("units");
+    QTest::newRow("Millimeter") << QPageLayout::Millimeter;
+    QTest::newRow("Point") << QPageLayout::Point;
+    QTest::newRow("Inch") << QPageLayout::Inch;
+    QTest::newRow("Pica") << QPageLayout::Pica;
+    QTest::newRow("Didot") << QPageLayout::Didot;
+    QTest::newRow("Cicero") << QPageLayout::Cicero;
+}
+
+void tst_QPageLayout::setUnits()
+{
+    QFETCH(QPageLayout::Unit, units);
+    QPageLayout pageLayout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(), units);
+    int maxLeftX100 = qFloor(pageLayout.maximumMargins().left() * 100);
+    QVERIFY(maxLeftX100 > 0);
+    for (int i = 1; i <= maxLeftX100; ++i) {
+        const qreal margin = i / 100.;
+        const QMarginsF unitsMargins = QMarginsF(margin, margin, margin, margin);
+        pageLayout.setMargins(unitsMargins);
+        pageLayout.setUnits(QPageLayout::Point);
+        const QMarginsF pointsMargins = pageLayout.margins();
+        if (units == QPageLayout::Point) {
+            QCOMPARE(pointsMargins, unitsMargins);
+        } else {
+            QCOMPARE_GT(pointsMargins.left(), unitsMargins.left());
+            QCOMPARE_GT(pointsMargins.top(), unitsMargins.top());
+            QCOMPARE_GT(pointsMargins.right(), unitsMargins.right());
+            QCOMPARE_GT(pointsMargins.bottom(), unitsMargins.bottom());
+        }
+        pageLayout.setUnits(units);
+        const QMarginsF convertedUnitsMargins = pageLayout.margins();
+        if (units == QPageLayout::Didot) {
+            // When using Didot units, the small multiplier and ceiling function in conversion
+            // may cause the converted units to not match the original exactly. However, we
+            // can verify that the converted margins are always greater than or equal to the
+            // original.
+            QCOMPARE_GE(convertedUnitsMargins.left(), unitsMargins.left());
+            QCOMPARE_GE(convertedUnitsMargins.top(), unitsMargins.top());
+            QCOMPARE_GE(convertedUnitsMargins.right(), unitsMargins.right());
+            QCOMPARE_GE(convertedUnitsMargins.bottom(), unitsMargins.bottom());
+        } else {
+            QCOMPARE(convertedUnitsMargins, unitsMargins);
+        }
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QPageLayout)
