@@ -2,11 +2,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
-project(qt_single_test VERSION 6.0.0 LANGUAGES C CXX ASM)
-
-find_package(Qt6 REQUIRED COMPONENTS BuildInternals Core)
-
-include(${CMAKE_CURRENT_LIST_DIR}/Main.cmake NO_POLICY_SCOPE)
 
 # Get the absolute path of the passed-in project dir, relative to the current working directory
 # of the calling script, rather than relative to this source directory.
@@ -29,6 +24,15 @@ if(NOT IS_DIRECTORY "${absolute_project_path}")
         set(absolute_project_path "${directory}")
     endif()
 endif()
+
+# Get the project name base on test directory name
+get_filename_component(project_name "${absolute_project_path}" NAME)
+
+project(${project_name} VERSION 6.0.0 LANGUAGES C CXX ASM)
+
+find_package(Qt6 REQUIRED COMPONENTS BuildInternals Core)
+
+include(${CMAKE_CURRENT_LIST_DIR}/Main.cmake NO_POLICY_SCOPE)
 
 # Add the test project path as a subdirectory project.
 add_subdirectory("${absolute_project_path}" "build_dir")
