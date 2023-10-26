@@ -203,6 +203,14 @@ QT_USE_NAMESPACE
                 << "as frontmost application. Activating" << currentApplication << "instead.";
             [NSApplication.sharedApplication activateIgnoringOtherApps:YES];
         }
+
+        // Qt windows are typically shown in main(), at which point the application
+        // is not active yet. When the application is activated, either externally
+        // or via the override above, it will only bring the main and key windows
+        // forward, which differs from the behavior if these windows had been shown
+        // once the application was already active. To work around this, we explicitly
+        // activate the current application again, bringing all windows to the front.
+        [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
     }
 
     QCocoaMenuBar::insertWindowMenu();
