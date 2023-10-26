@@ -80,10 +80,14 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
 {
     if (resource=="JavaVM")
         return QtAndroid::javaVM();
-    if (resource == "QtActivity")
-        return QtAndroid::activity();
-    if (resource == "QtService")
-        return QtAndroid::service();
+    if (resource == "QtActivity") {
+        extern Q_CORE_EXPORT jobject qt_androidActivity();
+        return qt_androidActivity();
+    }
+    if (resource == "QtService") {
+        extern Q_CORE_EXPORT jobject qt_androidService();
+        return qt_androidService();
+    }
     if (resource == "AndroidStyleData") {
         if (m_androidStyle) {
             if (m_androidStyle->m_styleData.isEmpty())
@@ -227,9 +231,9 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
         m_accessibility = new QAndroidPlatformAccessibility();
 #endif // QT_CONFIG(accessibility)
 
-    QJniObject javaActivity(QtAndroid::activity());
+    QJniObject javaActivity = QtAndroidPrivate::activity();
     if (!javaActivity.isValid())
-        javaActivity = QtAndroid::service();
+        javaActivity = QtAndroidPrivate::service();
 
     if (javaActivity.isValid()) {
         QJniObject resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
@@ -316,11 +320,11 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
     switch (cap) {
         case ApplicationState: return true;
         case ThreadedPixmaps: return true;
-        case NativeWidgets: return QtAndroid::activity();
-        case OpenGL: return QtAndroid::activity();
-        case ForeignWindows: return QtAndroid::activity();
-        case ThreadedOpenGL: return !needsBasicRenderloopWorkaround() && QtAndroid::activity();
-        case RasterGLSurface: return QtAndroid::activity();
+        case NativeWidgets: return QtAndroidPrivate::activity();
+        case OpenGL: return QtAndroidPrivate::activity();
+        case ForeignWindows: return QtAndroidPrivate::activity();
+        case ThreadedOpenGL: return !needsBasicRenderloopWorkaround() && QtAndroidPrivate::activity();
+        case RasterGLSurface: return QtAndroidPrivate::activity();
         case TopStackedNativeChildWindows: return false;
         case MaximizeUsingFullscreenGeometry: return true;
         default:
@@ -330,7 +334,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
 
 QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    if (!QtAndroid::activity())
+    if (!QtAndroidPrivate::activity())
         return nullptr;
 
     return new QAndroidPlatformBackingStore(window);
@@ -338,7 +342,7 @@ QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(Q
 
 QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    if (!QtAndroid::activity())
+    if (!QtAndroidPrivate::activity())
         return nullptr;
     QSurfaceFormat format(context->format());
     format.setAlphaBufferSize(8);
@@ -356,7 +360,7 @@ QOpenGLContext *QAndroidPlatformIntegration::createOpenGLContext(EGLContext cont
 
 QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    if (!QtAndroid::activity())
+    if (!QtAndroidPrivate::activity())
         return nullptr;
 
     QSurfaceFormat format(surface->requestedFormat());
@@ -370,7 +374,7 @@ QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenS
 
 QOffscreenSurface *QAndroidPlatformIntegration::createOffscreenSurface(ANativeWindow *nativeSurface) const
 {
-    if (!QtAndroid::activity() || !nativeSurface)
+    if (!QtAndroidPrivate::activity() || !nativeSurface)
         return nullptr;
 
     auto *surface = new QOffscreenSurface;
@@ -381,7 +385,7 @@ QOffscreenSurface *QAndroidPlatformIntegration::createOffscreenSurface(ANativeWi
 
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const
 {
-    if (!QtAndroid::activity())
+    if (!QtAndroidPrivate::activity())
         return nullptr;
 
 #if QT_CONFIG(vulkan)

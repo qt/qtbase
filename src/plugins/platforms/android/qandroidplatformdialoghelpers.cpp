@@ -19,7 +19,7 @@ static jclass g_messageDialogHelperClass = nullptr;
 
 QAndroidPlatformMessageDialogHelper::QAndroidPlatformMessageDialogHelper()
     : m_javaMessageDialog(g_messageDialogHelperClass, "(Landroid/app/Activity;)V",
-                          static_cast<jobject>(QtAndroid::activity()))
+                          static_cast<jobject>(QtAndroidPrivate::activity()))
 {
 }
 

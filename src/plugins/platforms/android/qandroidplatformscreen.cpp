@@ -368,7 +368,7 @@ int QAndroidPlatformScreen::rasterSurfaces()
 void QAndroidPlatformScreen::doRedraw(QImage* screenGrabImage)
 {
     PROFILE_SCOPE;
-    if (!QtAndroid::activity())
+    if (!QtAndroidPrivate::activity())
         return;
 
     if (m_dirtyRect.isEmpty())

@@ -25,7 +25,7 @@ const char JniIntentClass[] = "android/content/Intent";
 
 QAndroidPlatformFileDialogHelper::QAndroidPlatformFileDialogHelper()
     : QPlatformFileDialogHelper(),
-      m_activity(QtAndroid::activity())
+      m_activity(QtAndroidPrivate::activity())
 {
 }
 

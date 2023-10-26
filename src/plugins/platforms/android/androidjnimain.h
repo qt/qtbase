@@ -50,8 +50,6 @@ namespace QtAndroid
     jobject assets();
     AAssetManager *assetManager();
     jclass applicationClass();
-    QtJniTypes::Activity activity();
-    QtJniTypes::Service service();
 
     // Keep synchronized with flags in ActivityDelegate.java
     enum SystemUiVisibility {

@@ -21,11 +21,9 @@ void QAndroidSystemLocale::getLocaleFromJava() const
     QWriteLocker locker(&m_lock);
 
     QJniObject javaLocaleObject;
-    QJniObject javaActivity(QtAndroid::activity());
-    if (!javaActivity.isValid())
-        javaActivity = QtAndroid::service();
-    if (javaActivity.isValid()) {
-        QJniObject resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
+    const QJniObject javaContext = QtAndroidPrivate::context();
+    if (javaContext.isValid()) {
+        QJniObject resources = javaContext.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
         QJniObject configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
 
         javaLocaleObject = configuration.getObjectField("locale", "Ljava/util/Locale;");

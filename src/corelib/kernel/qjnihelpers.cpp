@@ -253,10 +253,22 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     return JNI_OK;
 }
 
+Q_CORE_EXPORT jobject qt_androidActivity()
+{
+    QReadLocker locker(g_updateMutex());
+    return g_jActivity;
+}
+
+
 QtJniTypes::Activity QtAndroidPrivate::activity()
 {
     QReadLocker locker(g_updateMutex());
     return g_jActivity;
+}
+
+Q_CORE_EXPORT jobject qt_androidService()
+{
+    return g_jService;
 }
 
 QtJniTypes::Service QtAndroidPrivate::service()

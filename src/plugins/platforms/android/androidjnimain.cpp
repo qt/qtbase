@@ -44,9 +44,7 @@ static jmethodID m_loadClassMethodID = nullptr;
 static AAssetManager *m_assetManager = nullptr;
 static jobject m_assets = nullptr;
 static jobject m_resourcesObj = nullptr;
-static QtJniTypes::Activity m_activityObject = nullptr;
 static jmethodID m_createSurfaceMethodID = nullptr;
-static QtJniTypes::Service m_serviceObject = nullptr;
 static jmethodID m_setSurfaceGeometryMethodID = nullptr;
 static jmethodID m_destroySurfaceMethodID = nullptr;
 
@@ -158,16 +156,6 @@ namespace QtAndroid
     jclass applicationClass()
     {
         return m_applicationClass;
-    }
-
-    QtJniTypes::Activity activity()
-    {
-        return m_activityObject;
-    }
-
-    QtJniTypes::Service service()
-    {
-        return m_serviceObject;
     }
 
     void setSystemUiVisibility(SystemUiVisibility uiVisibility)
@@ -496,7 +484,7 @@ static void waitForServiceSetup(JNIEnv *env, jclass /*clazz*/)
     Q_UNUSED(env);
     // The service must wait until the QCoreApplication starts otherwise onBind will be
     // called too early
-    if (m_serviceObject)
+    if (QtAndroidPrivate::service())
         QtAndroidPrivate::waitForServiceSetup();
 }
 
@@ -867,28 +855,24 @@ static int registerNatives(JNIEnv *env)
 
     jmethodID methodID;
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "activity", "()Landroid/app/Activity;");
-    jobject activityObject = env->CallStaticObjectMethod(m_applicationClass, methodID);
-    GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "service", "()Landroid/app/Service;");
-    jobject serviceObject = env->CallStaticObjectMethod(m_applicationClass, methodID);
+    jobject contextObject = env->CallStaticObjectMethod(m_applicationClass, methodID);
+    if (!contextObject) {
+        GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "service", "()Landroid/app/Service;");
+        contextObject = env->CallStaticObjectMethod(m_applicationClass, methodID);
+    }
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "classLoader", "()Ljava/lang/ClassLoader;");
     m_classLoaderObject = env->NewGlobalRef(env->CallStaticObjectMethod(m_applicationClass, methodID));
     clazz = env->GetObjectClass(m_classLoaderObject);
     GET_AND_CHECK_METHOD(m_loadClassMethodID, clazz, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-    if (serviceObject)
-        m_serviceObject = serviceObject; // m_serviceObject creates and manages as global ref
 
-    if (activityObject)
-        m_activityObject = activityObject; // m_activityObject creates and manages as global ref
-
-    jobject object = activityObject ? activityObject : serviceObject;
-    if (object) {
+    if (contextObject) {
         FIND_AND_CHECK_CLASS("android/content/ContextWrapper");
         GET_AND_CHECK_METHOD(methodID, clazz, "getAssets", "()Landroid/content/res/AssetManager;");
-        m_assets = env->NewGlobalRef(env->CallObjectMethod(object, methodID));
+        m_assets = env->NewGlobalRef(env->CallObjectMethod(contextObject, methodID));
         m_assetManager = AAssetManager_fromJava(env, m_assets);
 
         GET_AND_CHECK_METHOD(methodID, clazz, "getResources", "()Landroid/content/res/Resources;");
-        m_resourcesObj = env->NewGlobalRef(env->CallObjectMethod(object, methodID));
+        m_resourcesObj = env->NewGlobalRef(env->CallObjectMethod(contextObject, methodID));
 
         FIND_AND_CHECK_CLASS("android/graphics/Bitmap");
         m_bitmapClass = static_cast<jclass>(env->NewGlobalRef(clazz));
@@ -907,6 +891,8 @@ static int registerNatives(JNIEnv *env)
                              m_bitmapDrawableClass,
                              "<init>",
                              "(Landroid/content/res/Resources;Landroid/graphics/Bitmap;)V");
+
+        env->DeleteLocalRef(contextObject);
     }
 
     return JNI_TRUE;
