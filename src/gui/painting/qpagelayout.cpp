@@ -39,41 +39,19 @@ Q_GUI_EXPORT qreal qt_pointMultiplier(QPageLayout::Unit unit)
 // Multiplier for converting pixels to points.
 extern qreal qt_pixelMultiplier(int resolution);
 
-QPointF qt_convertPoint(const QPointF &xy, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits)
-{
-    // If the size have the same units, or are all 0, then don't need to convert
-    if (fromUnits == toUnits || xy.isNull())
-        return xy;
-
-    // If converting to points then convert and round to 0 decimal places
-    if (toUnits == QPageLayout::Point) {
-        const qreal multiplier = qt_pointMultiplier(fromUnits);
-        return QPointF(qRound(xy.x() * multiplier),
-                       qRound(xy.y() * multiplier));
-    }
-
-    // If converting to other units, need to convert to unrounded points first
-    QPointF pointXy = (fromUnits == QPageLayout::Point) ? xy : xy * qt_pointMultiplier(fromUnits);
-
-    // Then convert from points to required units rounded to 2 decimal places
-    const qreal multiplier = qt_pointMultiplier(toUnits);
-    return QPointF(qRound(pointXy.x() * 100 / multiplier) / 100.0,
-                   qRound(pointXy.y() * 100 / multiplier) / 100.0);
-}
-
 Q_GUI_EXPORT QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits)
 {
     // If the margins have the same units, or are all 0, then don't need to convert
     if (fromUnits == toUnits || margins.isNull())
         return margins;
 
-    // If converting to points then convert and round to 0 decimal places
+    // If converting to points then convert and round up to 2 decimal places
     if (toUnits == QPageLayout::Point) {
-        const qreal multiplier = qt_pointMultiplier(fromUnits);
-        return QMarginsF(qRound(margins.left() * multiplier),
-                         qRound(margins.top() * multiplier),
-                         qRound(margins.right() * multiplier),
-                         qRound(margins.bottom() * multiplier));
+        const qreal multiplierX100 = qt_pointMultiplier(fromUnits) * 100;
+        return QMarginsF(qCeil(margins.left() * multiplierX100) / 100.0,
+                         qCeil(margins.top() * multiplierX100) / 100.0,
+                         qCeil(margins.right() * multiplierX100) / 100.0,
+                         qCeil(margins.bottom() * multiplierX100) / 100.0);
     }
 
     // If converting to other units, need to convert to unrounded points first
