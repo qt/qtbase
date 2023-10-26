@@ -12,28 +12,34 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_JNI_CLASS(Locale, "java/util/Locale")
+Q_DECLARE_JNI_CLASS(Resources, "android/content/res/Resources")
+Q_DECLARE_JNI_CLASS(Configuration, "android/content/res/Configuration")
+Q_DECLARE_JNI_CLASS(LocaleList, "android/os/LocaleList")
+
+using namespace QtJniTypes;
+
 QAndroidSystemLocale::QAndroidSystemLocale() : m_locale(QLocale::C)
 {
 }
 
 void QAndroidSystemLocale::getLocaleFromJava() const
 {
+    const Locale javaLocaleObject = []{
+        const QJniObject javaContext = QtAndroidPrivate::context();
+        if (javaContext.isValid()) {
+            const QJniObject resources = javaContext.callMethod<Resources>("getResources");
+            const QJniObject configuration = resources.callMethod<Configuration>("getConfiguration");
+            return configuration.getField<Locale>("locale");
+        } else {
+            return Locale::callStaticMethod<Locale>("getDefault");
+        }
+    }();
+
+    const QString languageCode = javaLocaleObject.callMethod<QString>("getLanguage");
+    const QString countryCode = javaLocaleObject.callMethod<QString>("getCountry");
+
     QWriteLocker locker(&m_lock);
-
-    QJniObject javaLocaleObject;
-    const QJniObject javaContext = QtAndroidPrivate::context();
-    if (javaContext.isValid()) {
-        QJniObject resources = javaContext.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
-        QJniObject configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
-
-        javaLocaleObject = configuration.getObjectField("locale", "Ljava/util/Locale;");
-    } else {
-        javaLocaleObject = QJniObject::callStaticObjectMethod("java/util/Locale", "getDefault", "()Ljava/util/Locale;");
-    }
-
-    QString languageCode = javaLocaleObject.callObjectMethod("getLanguage", "()Ljava/lang/String;").toString();
-    QString countryCode = javaLocaleObject.callObjectMethod("getCountry", "()Ljava/lang/String;").toString();
-
     m_locale = QLocale(languageCode + u'_' + countryCode);
 }
 
@@ -140,12 +146,9 @@ QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const
         Q_ASSERT_X(false, Q_FUNC_INFO, "This can't happen.");
     case UILanguages: {
         if (QtAndroidPrivate::androidSdkVersion() >= 24) {
-            QJniObject localeListObject =
-                QJniObject::callStaticObjectMethod("android/os/LocaleList", "getDefault",
-                                                   "()Landroid/os/LocaleList;");
+            LocaleList localeListObject = LocaleList::callStaticMethod<LocaleList>("getDefault");
             if (localeListObject.isValid()) {
-                QString lang = localeListObject.callObjectMethod("toLanguageTags",
-                                                                 "()Ljava/lang/String;").toString();
+                QString lang = localeListObject.callMethod<QString>("toLanguageTags");
                 // Some devices return with it enclosed in []'s so check if both exists before
                 // removing to ensure it is formatted correctly
                 if (lang.startsWith(QChar('[')) && lang.endsWith(QChar(']')))
