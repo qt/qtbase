@@ -534,7 +534,8 @@ public:
     // This function takes ownership of the jobject and releases the local ref. before returning.
     static QJniObject fromLocalRef(jobject lref);
 
-    template <typename T>
+    template <typename T,
+              std::enable_if_t<std::is_convertible_v<T, jobject>, bool> = true>
     QJniObject &operator=(T obj)
     {
         assign(static_cast<T>(obj));

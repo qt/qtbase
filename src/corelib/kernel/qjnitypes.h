@@ -21,8 +21,6 @@ template<typename Type>
 struct Object : QJniObject
 {
     using Class = Type;
-    operator jobject() const noexcept { return object(); }
-
     Q_IMPLICIT Object(jobject object) : QJniObject(object) {}
     Q_IMPLICIT Object(const QJniObject &object) : QJniObject(object) {}
     Q_IMPLICIT Object(QJniObject &&object) : QJniObject(std::move(object)) {}
