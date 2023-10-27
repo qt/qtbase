@@ -1635,10 +1635,10 @@
     Creates a dummy touch device of type \a devType with capabilities \a caps for
     simulation of touch events.
 
-    The touch device will be registered with the QPA window system interface,
-    and deleted automatically when the QCoreApplication is deleted. So you
-    should typically use createTouchDevice() to initialize a QPointingDevice
-    member variable in your test case class, and use the same instance for all tests.
+    The touch device will be registered with the Qt window system interface.
+    You should typically use createTouchDevice() to initialize a QPointingDevice
+    member variable in your test case class, use the same instance for all tests and
+    delete it when no longer needed.
 
     \sa QTest::QTouchEventSequence, touchEvent()
 */
