@@ -894,7 +894,9 @@ bool QUtcTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
         if (isEntryInIanaList(ianaId, data.id()))
             return true;
     }
-    // But see offsetFromUtcString(), which lets us accept some "unavailable" IDs.
+    // Callers may want to || offsetFromUtcString(ianaId) != invalidSeconds(),
+    // but those are technically not IANA IDs and the custom QTimeZone
+    // constructor needs the return here to reflect that.
     return false;
 }
 
