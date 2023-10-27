@@ -67,7 +67,7 @@ void QRasterBackingStore::beginPaint(const QRegion &region)
     if (m_image.devicePixelRatio() != nativeWindowDevicePixelRatio || m_image.size() != effectiveBufferSize) {
         m_image = QImage(effectiveBufferSize, format());
         m_image.setDevicePixelRatio(nativeWindowDevicePixelRatio);
-        if (m_image.format() == QImage::Format_ARGB32_Premultiplied)
+        if (m_image.hasAlphaChannel())
             m_image.fill(Qt::transparent);
     }
 
