@@ -26,6 +26,7 @@ public:
     ~QRhiBackingStore();
 
     void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
+    QImage::Format format() const override;
 };
 
 QT_END_NAMESPACE

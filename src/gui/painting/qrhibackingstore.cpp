@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qrhibackingstore_p.h"
+#include <private/qimage_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -41,6 +42,19 @@ void QRhiBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     static QPlatformTextureList emptyTextureList;
     bool translucentBackground = m_image.hasAlphaChannel();
     rhiFlush(window, window->devicePixelRatio(), region, offset, &emptyTextureList, translucentBackground);
+}
+
+QImage::Format QRhiBackingStore::format() const
+{
+    QImage::Format fmt = QRasterBackingStore::format();
+
+    // With render-to-texture widgets and QRhi-based flushing the backingstore
+    // image must have an alpha channel. Hence upgrading the format. Matches
+    // what other platforms (Windows, xcb) do.
+    if (QImage::toPixelFormat(fmt).alphaUsage() != QPixelFormat::UsesAlpha)
+        fmt = qt_maybeAlphaVersionWithSameDepth(fmt);
+
+    return fmt;
 }
 
 QT_END_NAMESPACE
