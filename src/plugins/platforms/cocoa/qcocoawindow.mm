@@ -320,7 +320,7 @@ void QCocoaWindow::setVisible(bool visible)
         return; // We'll get another setVisible call after create is done
     }
 
-    if (visible == !m_view.hidden) {
+    if (visible == !m_view.hidden && (!isContentView() || visible == m_view.window.visible)) {
         qCDebug(lcQpaWindow) << "No change in visible status. Ignoring.";
         return;
     }
