@@ -94,6 +94,7 @@ private slots:
     void enterLeaveOnWindowShowHide_data();
     void enterLeaveOnWindowShowHide();
 #endif
+    void windowExposedAfterReparent();
 
 private:
     QPoint m_availableTopLeft;
@@ -3006,6 +3007,25 @@ void tst_QWindow::enterLeaveOnWindowShowHide()
     QCOMPARE(window.enterPosition, window.mapFromGlobal(QCursor::pos()));
 }
 #endif
+
+void tst_QWindow::windowExposedAfterReparent()
+{
+    QWindow parent;
+    QWindow child(&parent);
+    child.show();
+    parent.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
+
+    child.setParent(nullptr);
+    QCoreApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
+
+    child.setParent(&parent);
+    QCoreApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
+}
 
 #include <tst_qwindow.moc>
 QTEST_MAIN(tst_QWindow)
