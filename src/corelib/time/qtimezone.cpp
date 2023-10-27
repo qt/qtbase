@@ -1504,9 +1504,13 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds(QLocale::Territory territory)
     Returns a list of all available IANA time zone IDs with a given standard
     time offset of \a offsetSeconds.
 
+    Where the given offset is supported, \c{QTimeZone(offsetSeconds).id()} is
+    included in the list, even if it is not an IANA ID. This only arises when
+    there is no IANA UTC-offset ID with the given offset.
+
     This method is only available when feature \c timezone is enabled.
 
-    \sa isTimeZoneIdAvailable()
+    \sa isTimeZoneIdAvailable(), QTimeZone(int)
 */
 
 QList<QByteArray> QTimeZone::availableTimeZoneIds(int offsetSeconds)

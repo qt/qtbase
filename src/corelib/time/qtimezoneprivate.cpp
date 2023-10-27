@@ -989,6 +989,12 @@ QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(qint32 offsetSeconds
         }
         result << id.toByteArray();
     }
+    // CLDR only has round multiples of a quarter hour, and only some of
+    // those. For anything else, throw in the ID we would use for this offset
+    // (if we'd accept that ID).
+    QByteArray isoName = isoOffsetFormat(offsetSeconds, QTimeZone::ShortName).toUtf8();
+    if (offsetFromUtcString(isoName) == qint64(offsetSeconds) && !result.contains(isoName))
+        result << isoName;
     // Not guaranteed to be sorted, so sort:
     std::sort(result.begin(), result.end());
     // ### assuming no duplicates
