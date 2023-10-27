@@ -507,7 +507,9 @@ QTimeZone::QTimeZone(int offsetSeconds)
 
 QTimeZone::QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
                      const QString &abbreviation, QLocale::Territory territory, const QString &comment)
-    : d(isTimeZoneIdAvailable(zoneId) ? nullptr // Don't let client code hijack a real zone name.
+    : d(QUtcTimeZonePrivate().isTimeZoneIdAvailable(zoneId)
+        || global_tz->backend->isTimeZoneIdAvailable(zoneId)
+        ? nullptr // Don't let client code hijack a real zone name.
         : new QUtcTimeZonePrivate(zoneId, offsetSeconds, name, abbreviation, territory, comment))
 {
 }
@@ -1361,8 +1363,9 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
     // IDs as availableTimeZoneIds() may be slow
     if (!QTimeZonePrivate::isValidId(ianaId))
         return false;
-    return QUtcTimeZonePrivate().isTimeZoneIdAvailable(ianaId) ||
-           global_tz->backend->isTimeZoneIdAvailable(ianaId);
+    return QUtcTimeZonePrivate().isTimeZoneIdAvailable(ianaId)
+        || QUtcTimeZonePrivate::offsetFromUtcString(ianaId) != QTimeZonePrivate::invalidSeconds()
+        || global_tz->backend->isTimeZoneIdAvailable(ianaId);
 }
 
 static QList<QByteArray> set_union(const QList<QByteArray> &l1, const QList<QByteArray> &l2)
