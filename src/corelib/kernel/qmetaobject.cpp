@@ -3193,6 +3193,33 @@ const char *QMetaEnum::scope() const
     return mobj ? mobj->className() : nullptr;
 }
 
+static bool isScopeMatch(QByteArrayView scope, const QMetaEnum *e)
+{
+    const QByteArrayView className = e->enclosingMetaObject()->className();
+
+    // Typical use-cases:
+    // a) Unscoped: namespace N { class C { enum E { F }; }; };  key == "N::C::F"
+    // b) Scoped: namespace N { class C { enum class E { F }; }; }; key == "N::C::E::F"
+    if (scope == className)
+        return true;
+
+    // Not using name() because if isFlag() is true, we want the actual name
+    // of the enum, e.g. "MyFlag", not "MyFlags", e.g.
+    // enum MyFlag { F1, F2 }; Q_DECLARE_FLAGS(MyFlags, MyFlag);
+    QByteArrayView name = e->enumName();
+
+    // Match fully qualified enumerator in unscoped enums, key == "N::C::E::F"
+    // equivalent to use-case "a" above
+    const auto sz = className.size();
+    if (scope.size() == sz + qsizetype(qstrlen("::")) + name.size()
+        && scope.startsWith(className)
+        && scope.sliced(sz, 2) == "::"
+        && scope.sliced(sz + 2) == name)
+        return true;
+
+    return false;
+}
+
 /*!
     Returns the integer value of the given enumeration \a key, or -1
     if \a key is not defined.
@@ -3210,9 +3237,10 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
         *ok = false;
     if (!mobj || !key)
         return -1;
+
     const auto [scope, enumKey] = parse_scope(QLatin1StringView(key));
     for (int i = 0; i < int(data.keyCount()); ++i) {
-        if ((!scope || *scope == objectClassName(mobj))
+        if ((!scope || isScopeMatch(*scope, this))
             && enumKey == stringDataView(mobj, mobj->d.data[data.data() + 2 * i])) {
             if (ok != nullptr)
                 *ok = true;
@@ -3317,7 +3345,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
         return -1;
     for (const auto &untrimmed : list) {
         const auto parsed = parse_scope(untrimmed.trimmed());
-        if (parsed.scope && *parsed.scope != objectClassName(mobj))
+        if (parsed.scope && !isScopeMatch(*parsed.scope, this))
             return -1; // wrong type name in qualified name
         if (auto thisValue = lookup(parsed.key))
             value |= *thisValue;
