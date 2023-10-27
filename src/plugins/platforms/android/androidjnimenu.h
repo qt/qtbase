@@ -15,6 +15,7 @@ class QAndroidPlatformMenuItem;
 class QWindow;
 class QRect;
 class QPoint;
+class QJniEnvironment;
 
 namespace QtAndroidMenu
 {
@@ -31,7 +32,7 @@ namespace QtAndroidMenu
     void removeMenuBar(QAndroidPlatformMenuBar *menuBar);
 
     // Menu support
-    bool registerNatives(JNIEnv *env);
+    bool registerNatives(QJniEnvironment &env);
 }
 
 QT_END_NAMESPACE

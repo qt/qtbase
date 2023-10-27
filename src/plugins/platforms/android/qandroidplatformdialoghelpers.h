@@ -8,11 +8,12 @@
 #include <jni.h>
 
 #include <QEventLoop>
-#include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
 #include <qpa/qplatformdialoghelper.h>
 
 QT_BEGIN_NAMESPACE
+
+class QJniEnvironment;
 
 namespace QtAndroidDialogHelpers {
 
@@ -41,7 +42,7 @@ private:
 };
 
 
-bool registerNatives(JNIEnv *env);
+bool registerNatives(QJniEnvironment &env);
 
 }
 

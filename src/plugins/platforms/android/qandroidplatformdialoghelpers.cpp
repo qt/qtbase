@@ -150,7 +150,7 @@ static void dialogResult(JNIEnv * /*env*/, jobject /*thiz*/, jlong handler, int 
     QMetaObject::invokeMethod(object, "dialogResult", Qt::QueuedConnection, Q_ARG(int, buttonID));
 }
 
-static JNINativeMethod methods[] = {
+static const JNINativeMethod methods[] = {
     {"dialogResult", "(JI)V", (void *)dialogResult}
 };
 
@@ -162,21 +162,19 @@ static JNINativeMethod methods[] = {
         return false; \
     }
 
-bool registerNatives(JNIEnv *env)
+bool registerNatives(QJniEnvironment &env)
 {
     const char QtMessageHandlerHelperClassName[] = "org/qtproject/qt/android/QtMessageDialogHelper";
-    QJniEnvironment qenv;
-    jclass clazz = qenv.findClass(QtMessageHandlerHelperClassName);
+    jclass clazz = env.findClass(QtMessageHandlerHelperClassName);
     if (!clazz) {
         __android_log_print(ANDROID_LOG_FATAL, QtAndroid::qtTagText(), QtAndroid::classErrorMsgFmt()
                             , QtMessageHandlerHelperClassName);
         return false;
     }
     g_messageDialogHelperClass = static_cast<jclass>(env->NewGlobalRef(clazz));
-    FIND_AND_CHECK_CLASS("org/qtproject/qt/android/QtNativeDialogHelper");
-    jclass appClass = static_cast<jclass>(env->NewGlobalRef(clazz));
 
-    if (env->RegisterNatives(appClass, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
+    if (!env.registerNativeMethods("org/qtproject/qt/android/QtNativeDialogHelper",
+                                  methods, sizeof(methods) / sizeof(methods[0]))) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "RegisterNatives failed");
         return false;
     }

@@ -378,11 +378,11 @@ namespace QtAndroidMenu
         return false; \
     }
 
-    bool registerNatives(JNIEnv *env)
+    bool registerNatives(QJniEnvironment &env)
     {
         jclass appClass = applicationClass();
 
-        if (env->RegisterNatives(appClass, methods,  sizeof(methods) / sizeof(methods[0])) < 0) {
+        if (!env.registerNativeMethods(appClass, methods,  sizeof(methods) / sizeof(methods[0]))) {
             __android_log_print(ANDROID_LOG_FATAL,"Qt", "RegisterNatives failed");
             return false;
         }

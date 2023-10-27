@@ -921,11 +921,10 @@ namespace QtAndroidInput
         {"dispatchKeyEvent", "(Landroid/view/KeyEvent;)Z", reinterpret_cast<void *>(dispatchKeyEvent)},
     };
 
-    bool registerNatives()
+    bool registerNatives(QJniEnvironment &env)
     {
-        QJniEnvironment qenv;
-        if (!qenv.registerNativeMethods(QtJniTypes::Traits<QtJniTypes::QtInputDelegate>::className(),
-                                        methods, sizeof(methods) / sizeof(methods[0]))) {
+        if (!env.registerNativeMethods(QtJniTypes::Traits<QtJniTypes::QtInputDelegate>::className(),
+                                 methods, sizeof(methods) / sizeof(methods[0]))) {
             __android_log_print(ANDROID_LOG_FATAL,"Qt", "RegisterNatives failed");
             return false;
         }

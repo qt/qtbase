@@ -29,6 +29,7 @@
 #include <QtCore/qjniobject.h>
 #include <QtCore/qprocess.h>
 #include <QtCore/qresource.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qthread.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -807,46 +808,47 @@ static JNINativeMethod methods[] = {
 clazz = env->FindClass(CLASS_NAME); \
 if (!clazz) { \
     __android_log_print(ANDROID_LOG_FATAL, m_qtTag, m_classErrorMsg, CLASS_NAME); \
-    return JNI_FALSE; \
+    return false; \
 }
 
 #define GET_AND_CHECK_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
 VAR = env->GetMethodID(CLASS, METHOD_NAME, METHOD_SIGNATURE); \
 if (!VAR) { \
     __android_log_print(ANDROID_LOG_FATAL, m_qtTag, m_methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE); \
-    return JNI_FALSE; \
+    return false; \
 }
 
 #define GET_AND_CHECK_STATIC_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
 VAR = env->GetStaticMethodID(CLASS, METHOD_NAME, METHOD_SIGNATURE); \
 if (!VAR) { \
     __android_log_print(ANDROID_LOG_FATAL, m_qtTag, m_methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE); \
-    return JNI_FALSE; \
+    return false; \
 }
 
 #define GET_AND_CHECK_FIELD(VAR, CLASS, FIELD_NAME, FIELD_SIGNATURE) \
 VAR = env->GetFieldID(CLASS, FIELD_NAME, FIELD_SIGNATURE); \
 if (!VAR) { \
     __android_log_print(ANDROID_LOG_FATAL, m_qtTag, m_methodErrorMsg, FIELD_NAME, FIELD_SIGNATURE); \
-    return JNI_FALSE; \
+    return false; \
 }
 
 #define GET_AND_CHECK_STATIC_FIELD(VAR, CLASS, FIELD_NAME, FIELD_SIGNATURE) \
 VAR = env->GetStaticFieldID(CLASS, FIELD_NAME, FIELD_SIGNATURE); \
 if (!VAR) { \
     __android_log_print(ANDROID_LOG_FATAL, m_qtTag, m_methodErrorMsg, FIELD_NAME, FIELD_SIGNATURE); \
-    return JNI_FALSE; \
+    return false; \
 }
 
-static int registerNatives(JNIEnv *env)
+static bool registerNatives(QJniEnvironment &env)
 {
     jclass clazz;
     FIND_AND_CHECK_CLASS("org/qtproject/qt/android/QtNative");
     m_applicationClass = static_cast<jclass>(env->NewGlobalRef(clazz));
 
-    if (env->RegisterNatives(m_applicationClass, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
+    if (!env.registerNativeMethods(m_applicationClass,
+                                   methods, sizeof(methods) / sizeof(methods[0]))) {
         __android_log_print(ANDROID_LOG_FATAL,"Qt", "RegisterNatives failed");
-        return JNI_FALSE;
+        return false;
     }
 
     GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IZIIIII)V");
@@ -860,42 +862,46 @@ static int registerNatives(JNIEnv *env)
         GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "service", "()Landroid/app/Service;");
         contextObject = env->CallStaticObjectMethod(m_applicationClass, methodID);
     }
+
+    if (!contextObject) {
+        __android_log_print(ANDROID_LOG_FATAL,"Qt", "Failed to get Activity or Service object");
+        return false;
+    }
+    const auto releaseContextObject = qScopeGuard([&env, contextObject]{
+        env->DeleteLocalRef(contextObject);
+    });
+
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "classLoader", "()Ljava/lang/ClassLoader;");
     m_classLoaderObject = env->NewGlobalRef(env->CallStaticObjectMethod(m_applicationClass, methodID));
     clazz = env->GetObjectClass(m_classLoaderObject);
     GET_AND_CHECK_METHOD(m_loadClassMethodID, clazz, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
 
-    if (contextObject) {
-        FIND_AND_CHECK_CLASS("android/content/ContextWrapper");
-        GET_AND_CHECK_METHOD(methodID, clazz, "getAssets", "()Landroid/content/res/AssetManager;");
-        m_assets = env->NewGlobalRef(env->CallObjectMethod(contextObject, methodID));
-        m_assetManager = AAssetManager_fromJava(env, m_assets);
+    FIND_AND_CHECK_CLASS("android/content/ContextWrapper");
+    GET_AND_CHECK_METHOD(methodID, clazz, "getAssets", "()Landroid/content/res/AssetManager;");
+    m_assets = env->NewGlobalRef(env->CallObjectMethod(contextObject, methodID));
+    m_assetManager = AAssetManager_fromJava(env.jniEnv(), m_assets);
 
-        GET_AND_CHECK_METHOD(methodID, clazz, "getResources", "()Landroid/content/res/Resources;");
-        m_resourcesObj = env->NewGlobalRef(env->CallObjectMethod(contextObject, methodID));
+    GET_AND_CHECK_METHOD(methodID, clazz, "getResources", "()Landroid/content/res/Resources;");
+    m_resourcesObj = env->NewGlobalRef(env->CallObjectMethod(contextObject, methodID));
 
-        FIND_AND_CHECK_CLASS("android/graphics/Bitmap");
-        m_bitmapClass = static_cast<jclass>(env->NewGlobalRef(clazz));
-        GET_AND_CHECK_STATIC_METHOD(m_createBitmapMethodID, m_bitmapClass
-                                    , "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
-        FIND_AND_CHECK_CLASS("android/graphics/Bitmap$Config");
-        jfieldID fieldId;
-        GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
-        m_ARGB_8888_BitmapConfigValue = env->NewGlobalRef(env->GetStaticObjectField(clazz, fieldId));
-        GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "RGB_565", "Landroid/graphics/Bitmap$Config;");
-        m_RGB_565_BitmapConfigValue = env->NewGlobalRef(env->GetStaticObjectField(clazz, fieldId));
+    FIND_AND_CHECK_CLASS("android/graphics/Bitmap");
+    m_bitmapClass = static_cast<jclass>(env->NewGlobalRef(clazz));
+    GET_AND_CHECK_STATIC_METHOD(m_createBitmapMethodID, m_bitmapClass,
+                                "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
+    FIND_AND_CHECK_CLASS("android/graphics/Bitmap$Config");
+    jfieldID fieldId;
+    GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
+    m_ARGB_8888_BitmapConfigValue = env->NewGlobalRef(env->GetStaticObjectField(clazz, fieldId));
+    GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "RGB_565", "Landroid/graphics/Bitmap$Config;");
+    m_RGB_565_BitmapConfigValue = env->NewGlobalRef(env->GetStaticObjectField(clazz, fieldId));
 
-        FIND_AND_CHECK_CLASS("android/graphics/drawable/BitmapDrawable");
-        m_bitmapDrawableClass = static_cast<jclass>(env->NewGlobalRef(clazz));
-        GET_AND_CHECK_METHOD(m_bitmapDrawableConstructorMethodID,
-                             m_bitmapDrawableClass,
-                             "<init>",
-                             "(Landroid/content/res/Resources;Landroid/graphics/Bitmap;)V");
+    FIND_AND_CHECK_CLASS("android/graphics/drawable/BitmapDrawable");
+    m_bitmapDrawableClass = static_cast<jclass>(env->NewGlobalRef(clazz));
+    GET_AND_CHECK_METHOD(m_bitmapDrawableConstructorMethodID,
+                         m_bitmapDrawableClass,
+                         "<init>", "(Landroid/content/res/Resources;Landroid/graphics/Bitmap;)V");
 
-        env->DeleteLocalRef(contextObject);
-    }
-
-    return JNI_TRUE;
+    return true;
 }
 
 QT_END_NAMESPACE
@@ -908,23 +914,16 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
     initialized = true;
 
     QT_USE_NAMESPACE
-    typedef union {
-        JNIEnv *nativeEnvironment;
-        void *venv;
-    } UnionJNIEnvToVoid;
-
-    UnionJNIEnvToVoid uenv;
-    uenv.venv = nullptr;
-    m_javaVM = nullptr;
-
-    if (vm->GetEnv(&uenv.venv, JNI_VERSION_1_6) != JNI_OK) {
-        __android_log_print(ANDROID_LOG_FATAL, "Qt", "GetEnv failed");
+    m_javaVM = vm;
+    QJniEnvironment env;
+    if (!env.isValid()) {
+        m_javaVM = nullptr;
+        __android_log_print(ANDROID_LOG_FATAL, "Qt", "Failed to initialize the JNI Environment");
         return -1;
     }
 
-    JNIEnv *env = uenv.nativeEnvironment;
     if (!registerNatives(env)
-            || !QtAndroidInput::registerNatives()
+            || !QtAndroidInput::registerNatives(env)
             || !QtAndroidMenu::registerNatives(env)
             || !QtAndroidAccessibility::registerNatives(env)
             || !QtAndroidDialogHelpers::registerNatives(env)
@@ -934,11 +933,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
     }
     QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
 
-    m_javaVM = vm;
     // attach qt main thread data to this thread
-    QObject threadSetter;
-    if (threadSetter.thread())
-        threadSetter.thread()->setObjectName("QtMainLoopThread");
+    QThread::currentThread()->setObjectName("QtMainLoopThread");
     __android_log_print(ANDROID_LOG_INFO, "Qt", "qt started");
     return JNI_VERSION_1_6;
 }

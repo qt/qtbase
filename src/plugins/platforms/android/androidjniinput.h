@@ -13,6 +13,8 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods);
 
+class QJniEnvironment;
+
 namespace QtAndroidInput
 {
     // Software keyboard support
@@ -49,7 +51,7 @@ namespace QtAndroidInput
     void registerKeyEventListener(KeyEventListener *listener);
     void unregisterKeyEventListener(KeyEventListener *listener);
 
-    bool registerNatives();
+    bool registerNatives(QJniEnvironment &env);
 }
 
 QT_END_NAMESPACE

@@ -9,12 +9,13 @@
 QT_BEGIN_NAMESPACE
 
 class QObject;
+class QJniEnvironment;
 
 namespace QtAndroidAccessibility
 {
     void initialize();
     bool isActive();
-    bool registerNatives(JNIEnv *env);
+    bool registerNatives(QJniEnvironment &env);
     void notifyLocationChange(uint accessibilityObjectId);
     void notifyObjectHide(uint accessibilityObjectId);
     void notifyObjectFocus(uint accessibilityObjectId);
