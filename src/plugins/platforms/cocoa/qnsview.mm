@@ -273,15 +273,29 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
     return focusWindow;
 }
 
+/*
+    Invoked when the view is hidden, either directly,
+    or in response to an ancestor being hidden.
+*/
 - (void)viewDidHide
 {
+    qCDebug(lcQpaWindow) << "Did hide" << self;
+
     if (!m_platformWindow->isExposed())
         return;
 
     m_platformWindow->handleExposeEvent(QRegion());
+}
 
-    // Note: setNeedsDisplay is automatically called for
-    // viewDidUnhide so no reason to override it here.
+/*
+    Invoked when the view is unhidden, either directly,
+    or in response to an ancestor being unhidden.
+*/
+- (void)viewDidUnhide
+{
+     qCDebug(lcQpaWindow) << "Did unhide" << self;
+
+     [self setNeedsDisplay:YES];
 }
 
 - (BOOL)isTransparentForUserInput
