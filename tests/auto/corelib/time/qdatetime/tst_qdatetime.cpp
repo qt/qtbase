@@ -4197,7 +4197,7 @@ void tst_QDateTime::timeZones() const
     QCOMPARE(nzStdOffset.date(), QDate(2012, 6, 1));
     QCOMPARE(nzStdOffset.time(), QTime(12, 0));
     QVERIFY(nzStdOffset.timeZone() == nzTzOffset);
-    QCOMPARE(nzStdOffset.timeZone().id(), QByteArray("UTC+12"));
+    QCOMPARE(nzStdOffset.timeZone().id(), QByteArray("UTC+12:00"));
     QCOMPARE(nzStdOffset.offsetFromUtc(), 43200);
     QVERIFY(!nzStdOffset.isDaylightTime());
     QCOMPARE(nzStdOffset.toMSecsSinceEpoch(), utcStd.toMSecsSinceEpoch());

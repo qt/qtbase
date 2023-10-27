@@ -813,11 +813,25 @@ qint64 QUtcTimeZonePrivate::offsetFromUtcString(const QByteArray &id)
     return seconds * sign;
 }
 
-// Create offset from UTC
+// Create from UTC offset:
 QUtcTimeZonePrivate::QUtcTimeZonePrivate(qint32 offsetSeconds)
 {
-    QString utcId = isoOffsetFormat(offsetSeconds, QTimeZone::ShortName);
-    init(utcId.toUtf8(), offsetSeconds, utcId, utcId, QLocale::AnyTerritory, utcId);
+    QString name;
+    QByteArray id;
+    // If there's an IANA ID for this offset, use it:
+    const auto data = std::lower_bound(std::begin(utcDataTable), std::end(utcDataTable),
+                                       offsetSeconds, atLowerUtcOffset);
+    if (data != std::end(utcDataTable) && data->offsetFromUtc == offsetSeconds) {
+        QByteArrayView ianaId = data->id();
+        qsizetype cut = ianaId.indexOf(' ');
+        id = (cut < 0 ? ianaId : ianaId.first(cut)).toByteArray();
+        name = QString::fromUtf8(id);
+        Q_ASSERT(!name.isEmpty());
+    } else { // Fall back to a UTC-offset name:
+        name = isoOffsetFormat(offsetSeconds, QTimeZone::ShortName);
+        id = name.toUtf8();
+    }
+    init(id, offsetSeconds, name, name, QLocale::AnyTerritory, name);
 }
 
 QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QByteArray &zoneId, int offsetSeconds,

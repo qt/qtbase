@@ -452,11 +452,13 @@ QTimeZone::Data &QTimeZone::Data::operator=(QTimeZonePrivate *dptr) noexcept
     Creates a time zone instance with the requested IANA ID \a ianaId.
 
     The ID must be one of the available system IDs or a valid UTC-with-offset
-    ID, otherwise an invalid time zone will be returned.
+    ID, otherwise an invalid time zone will be returned. For UTC-with-offset
+    IDs, when they are not in fact IANA IDs, the \c{id()} of the resulting
+    instance may differ from the ID passed to the constructor.
 
     This constructor is only available when feature \c timezone is enabled.
 
-    \sa availableTimeZoneIds()
+    \sa availableTimeZoneIds(), id()
 */
 
 QTimeZone::QTimeZone(const QByteArray &ianaId)
@@ -498,7 +500,7 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
     \c{QTimeZone::fromSecondsAfterUtc(offsetSeconds)}, albeit implemented as a
     time zone.
 
-    \sa MinUtcOffsetSecs, MaxUtcOffsetSecs
+    \sa MinUtcOffsetSecs, MaxUtcOffsetSecs, id()
 */
 
 QTimeZone::QTimeZone(int offsetSeconds)
@@ -789,6 +791,28 @@ bool QTimeZone::isValid() const
 
     IANA IDs are used on all platforms.  On Windows these are translated from
     the Windows ID into the best match IANA ID for the time zone and territory.
+
+    If this timezone instance was not constructed from an IANA ID, its ID is
+    determined by how it was constructed. In most cases, the ID passed when
+    constructing the instance is used. (The constructor for a custom zone uses
+    the ID it is passed, which must not be an IANA ID.) There are two
+    exceptions.
+    \list
+    \li Instances constructed by passing only a UTC offset in seconds have no ID
+        passed when constructing.
+    \li The constructor taking only an IANA ID will also accept some UTC-offset
+        IDs that are not in fact IANA IDs: its handling of these is equivalent
+        to passing the corresponding offset in seconds, as for the first
+        exception.
+    \endlist
+
+    In the two exceptional cases, if there is an IANA UTC-offset zone with the
+    specified offset, the instance constructed uses that IANA zone's ID, even
+    though this may differ from the (non-IANA) UTC-offset ID passed to the
+    constructor. Otherwise, the instance uses an ID synthesized from its offset,
+    with the form UTC±hh:mm:ss, omitting any trailing :00 for zero seconds or
+    minutes. Again, this may differ from the UTC-offset ID passed to the
+    constructor.
 
     This method is only available when feature \c timezone is enabled.
 */
@@ -1404,6 +1428,9 @@ QTimeZone QTimeZone::utc()
 /*!
     Returns \c true if a given time zone \a ianaId is available on this system.
 
+    This may include some non-IANA IDs, notably UTC-offset IDs, that are not
+    listed in \l availableTimeZoneIds().
+
     This method is only available when feature \c timezone is enabled.
 
     \sa availableTimeZoneIds()
@@ -1441,6 +1468,10 @@ static QList<QByteArray> set_union(const QList<QByteArray> &l1, const QList<QByt
 
     This method is only available when feature \c timezone is enabled.
 
+    \note the QTimeZone constructor will also accept some UTC-offset IDs that
+    are not in the list returned - it would be impractical to list all possible
+    UTC-offset IDs.
+
     \sa isTimeZoneIdAvailable()
 */
 
@@ -1454,7 +1485,7 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds()
     Returns a list of all available IANA time zone IDs for a given \a territory.
 
     As a special case, a \a territory of \l {QLocale::}{AnyTerritory} selects
-    those time zones that have no kown territorial association, such as UTC. If
+    those time zones that have no known territorial association, such as UTC. If
     you require a list of all time zone IDs for all territories then use the
     standard availableTimeZoneIds() method.
 
