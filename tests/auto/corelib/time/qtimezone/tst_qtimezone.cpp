@@ -538,6 +538,12 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
         QVERIFY2(QTimeZone::isTimeZoneIdAvailable(id), id);
         QVERIFY2(QTimeZone(id).isValid(), id);
     }
+    for (qint32 offset = QTimeZone::MinUtcOffsetSecs;
+         offset <= QTimeZone::MinUtcOffsetSecs; ++offset) {
+        const QByteArray id = QTimeZone(offset).id();
+        QVERIFY2(QTimeZone::isTimeZoneIdAvailable(id), id);
+        QVERIFY2(QTimeZone(id).isValid(), id);
+    }
 }
 
 void tst_QTimeZone::utcOffsetId_data()
