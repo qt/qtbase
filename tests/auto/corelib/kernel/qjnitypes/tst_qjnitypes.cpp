@@ -161,6 +161,15 @@ Q_DECLARE_JNI_NATIVE_METHOD(nativeFunction)
 
 static_assert(QtJniTypes::nativeMethodSignature(nativeFunction) == "(ILjava/lang/String;J)Z");
 
+static QString nativeFunctionStrings(JNIEnv *, jclass, const QString &, const QtJniTypes::String &)
+{
+    return QString();
+}
+Q_DECLARE_JNI_NATIVE_METHOD(nativeFunctionStrings)
+
+static_assert(QtJniTypes::nativeMethodSignature(nativeFunctionStrings)
+                == "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+
 static int forwardDeclaredNativeFunction(JNIEnv *, jobject, bool);
 Q_DECLARE_JNI_NATIVE_METHOD(forwardDeclaredNativeFunction)
 static int forwardDeclaredNativeFunction(JNIEnv *, jobject, bool) { return 0; }

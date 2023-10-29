@@ -214,6 +214,7 @@ struct QtJniTypes::Traits<QtJniTypes::Type> {                   \
 // Macros for native methods
 
 namespace QtJniMethods {
+namespace Detail {
 // Various helpers to forward a call from a variadic argument function to
 // the real function with proper type conversion. This is needed because we
 // want to write functions that take QJniObjects (subclasses), while Java
@@ -232,19 +233,53 @@ template <> struct PromotedType<float> { using Type = double; };
 
 // Map any QJniObject type to jobject; that's what's on the va_list
 template <typename Arg>
-using JNITypeForArg = std::conditional_t<std::is_base_of_v<QJniObject, Arg>, jobject,
-                                                                             typename PromotedType<Arg>::Type>;
+struct JNITypeForArgImpl
+{
+    using Type = std::conditional_t<std::is_base_of_v<QJniObject, Arg>,
+                                    jobject, typename PromotedType<Arg>::Type>;
+    static Arg fromVarArg(Type &&t)
+    {
+        return static_cast<Arg>(t);
+    }
+};
+
+template <>
+struct JNITypeForArgImpl<QString>
+{
+    using Type = jstring;
+
+    static QString fromVarArg(Type &&t)
+    {
+        return QJniObject(t).toString();
+    }
+};
+
+template <typename Arg>
+using JNITypeForArg = typename JNITypeForArgImpl<q20::remove_cvref_t<Arg>>::Type;
+template <typename Arg, typename Type>
+static inline auto methodArgFromVarArg(Type &&t)
+{
+    return JNITypeForArgImpl<q20::remove_cvref_t<Arg>>::fromVarArg(std::move(t));
+}
 
 // Turn a va_list into a tuple of typed arguments
+template <typename ...Args>
+static constexpr auto makeTupleFromArgsHelper(va_list args)
+{
+    return std::tuple<q20::remove_cvref_t<Args>...>{
+        methodArgFromVarArg<q20::remove_cvref_t<Args>>(va_arg(args, JNITypeForArg<Args>))...
+    };
+}
+
 template <typename Ret, typename ...Args>
 static constexpr auto makeTupleFromArgs(Ret (*)(JNIEnv *, jobject, Args...), va_list args)
 {
-    return std::tuple<Args...>{ va_arg(args, JNITypeForArg<Args>)... };
+    return makeTupleFromArgsHelper<Args...>(args);
 }
 template <typename Ret, typename ...Args>
 static constexpr auto makeTupleFromArgs(Ret (*)(JNIEnv *, jclass, Args...), va_list args)
 {
-    return std::tuple<Args...>{ va_arg(args, JNITypeForArg<Args>)... };
+    return makeTupleFromArgsHelper<Args...>(args);
 }
 
 // Get the return type of a function point
@@ -254,25 +289,26 @@ auto nativeFunctionReturnType(Ret(*function)(Args...))
     return function(std::declval<Args>()...);
 }
 
-} // QtJniMethods
+} // namespace Detail
+} // namespace QtJniMethods
 
 // A va_ variadic arguments function that we register with JNI as a proxy
 // for the function we have. This function uses the helpers to unpack the
 // variadic arguments into a tuple of typed arguments, which we then call
 // the actual function with. This then takes care of implicit conversions,
 // e.g. a jobject becomes a QJniObject.
-#define Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method)                      \
-static decltype(QtJniMethods::nativeFunctionReturnType(Method))         \
-va_##Method(JNIEnv *env, jclass thiz, ...)                              \
-{                                                                       \
-    va_list args;                                                       \
-    va_start(args, thiz);                                               \
-    auto va_cleanup = qScopeGuard([&args]{ va_end(args); });            \
-    auto argTuple = QtJniMethods::makeTupleFromArgs(Method, args);      \
-    return std::apply([env, thiz](auto &&... args) {                    \
-        return Method(env, thiz, args...);                              \
-    }, argTuple);                                                       \
-}                                                                       \
+#define Q_DECLARE_JNI_NATIVE_METHOD_HELPER(Method)                              \
+static decltype(QtJniMethods::Detail::nativeFunctionReturnType(Method))         \
+va_##Method(JNIEnv *env, jclass thiz, ...)                                      \
+{                                                                               \
+    va_list args;                                                               \
+    va_start(args, thiz);                                                       \
+    auto va_cleanup = qScopeGuard([&args]{ va_end(args); });                    \
+    auto argTuple = QtJniMethods::Detail::makeTupleFromArgs(Method, args);      \
+    return std::apply([env, thiz](auto &&... args) {                            \
+        return Method(env, thiz, args...);                                      \
+    }, argTuple);                                                               \
+}                                                                               \
 
 
 #define Q_DECLARE_JNI_NATIVE_METHOD(...)                        \

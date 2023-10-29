@@ -1863,20 +1863,44 @@ void tst_QJniObject::largeObjectArray()
     }
 }
 
+enum class CallbackParameterType
+{
+    Object,
+    ObjectRef,
+    String,
+    Byte,
+    Boolean,
+    Int,
+    Double
+};
 
 static std::optional<TestClass> calledWithObject;
 static int callbackWithObject(JNIEnv *, jobject, TestClass that)
 {
     calledWithObject.emplace(that);
-    return 42;
+    return int(CallbackParameterType::Object);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithObject)
+static int callbackWithObjectRef(JNIEnv *, jobject, const TestClass &that)
+{
+    calledWithObject.emplace(that);
+    return int(CallbackParameterType::ObjectRef);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithObjectRef)
+
+static std::optional<QString> calledWithString;
+static int callbackWithString(JNIEnv *, jobject, const QString &string)
+{
+    calledWithString.emplace(string);
+    return int(CallbackParameterType::String);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithString)
 
 static std::optional<jbyte> calledWithByte;
 static int callbackWithByte(JNIEnv *, jobject, jbyte value)
 {
     calledWithByte.emplace(value);
-    return 43;
+    return int(CallbackParameterType::Byte);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithByte)
 
@@ -1884,7 +1908,7 @@ static std::optional<jbyte> calledWithBoolean;
 static int callbackWithBoolean(JNIEnv *, jobject, bool value)
 {
     calledWithBoolean.emplace(value);
-    return 44;
+    return int(CallbackParameterType::Boolean);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithBoolean)
 
@@ -1892,7 +1916,7 @@ static std::optional<int> calledWithInt;
 static int callbackWithInt(JNIEnv *, jobject, int value)
 {
     calledWithInt.emplace(value);
-    return 45;
+    return int(CallbackParameterType::Int);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithInt)
 
@@ -1900,40 +1924,26 @@ static std::optional<double> calledWithDouble;
 static int callbackWithDouble(JNIEnv *, jobject, double value)
 {
     calledWithDouble.emplace(value);
-    return 46;
+    return int(CallbackParameterType::Double);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithDouble)
-
-enum class CallbackParameterType
-{
-    Object,
-    Byte,
-    Boolean,
-    Int,
-    Double,
-};
 
 void tst_QJniObject::callback_data()
 {
     QTest::addColumn<CallbackParameterType>("parameterType");
-    QTest::addColumn<int>("expectedResult");
 
-    QTest::addRow("Object")     << CallbackParameterType::Object
-                                << callbackWithObject(nullptr, nullptr, {});
-    QTest::addRow("Byte")       << CallbackParameterType::Byte
-                                << callbackWithByte(nullptr, nullptr, {});
-    QTest::addRow("Boolean")    << CallbackParameterType::Boolean
-                                << callbackWithBoolean(nullptr, nullptr, {});
-    QTest::addRow("Int")        << CallbackParameterType::Int
-                                << callbackWithInt(nullptr, nullptr, {});
-    QTest::addRow("Double")     << CallbackParameterType::Double
-                                << callbackWithDouble(nullptr, nullptr, {});
+    QTest::addRow("Object")     << CallbackParameterType::Object;
+    QTest::addRow("ObjectRef")  << CallbackParameterType::ObjectRef;
+    QTest::addRow("String")     << CallbackParameterType::String;
+    QTest::addRow("Byte")       << CallbackParameterType::Byte;
+    QTest::addRow("Boolean")    << CallbackParameterType::Boolean;
+    QTest::addRow("Int")        << CallbackParameterType::Int;
+    QTest::addRow("Double")     << CallbackParameterType::Double;
 }
 
 void tst_QJniObject::callback()
 {
     QFETCH(const CallbackParameterType, parameterType);
-    QFETCH(const int, expectedResult);
 
     TestClass testObject;
     QJniEnvironment env;
@@ -1947,6 +1957,22 @@ void tst_QJniObject::callback()
         result = testObject.callMethod<int>("callMeBackWithObject", testObject);
         QVERIFY(calledWithObject);
         QCOMPARE(calledWithObject.value(), testObject);
+        break;
+    case CallbackParameterType::ObjectRef:
+        QVERIFY(env.registerNativeMethods(testObject.objectClass(), {
+            Q_JNI_NATIVE_METHOD(callbackWithObjectRef)
+        }));
+        result = testObject.callMethod<int>("callMeBackWithObjectRef", testObject);
+        QVERIFY(calledWithObject);
+        QCOMPARE(calledWithObject.value(), testObject);
+        break;
+    case CallbackParameterType::String:
+        QVERIFY(env.registerNativeMethods(testObject.objectClass(), {
+            Q_JNI_NATIVE_METHOD(callbackWithString)
+        }));
+        result = testObject.callMethod<int>("callMeBackWithString", QString::number(123));
+        QVERIFY(calledWithString);
+        QCOMPARE(calledWithString.value(), "123");
         break;
     case CallbackParameterType::Byte:
         QVERIFY(env.registerNativeMethods(testObject.objectClass(), {
@@ -1981,7 +2007,7 @@ void tst_QJniObject::callback()
         QCOMPARE(calledWithDouble.value(), 1.2345);
         break;
     }
-    QCOMPARE(result, expectedResult);
+    QCOMPARE(result, int(parameterType));
 }
 
 QTEST_MAIN(tst_QJniObject)

@@ -275,6 +275,8 @@ public class QtJniObjectTestClass
 
     // --------------------------------------------------------------------------------------------
     native public int callbackWithObject(QtJniObjectTestClass that);
+    native public int callbackWithObjectRef(QtJniObjectTestClass that);
+    native public int callbackWithString(String string);
     native public int callbackWithByte(byte value);
     native public int callbackWithBoolean(boolean value);
     native public int callbackWithInt(int value);
@@ -283,6 +285,16 @@ public class QtJniObjectTestClass
     public int callMeBackWithObject(QtJniObjectTestClass that)
     {
         return callbackWithObject(that);
+    }
+
+    public int callMeBackWithObjectRef(QtJniObjectTestClass that)
+    {
+        return callbackWithObjectRef(that);
+    }
+
+    public int callMeBackWithString(String string)
+    {
+        return callbackWithString(string);
     }
 
     public int callMeBackWithByte(byte value)
