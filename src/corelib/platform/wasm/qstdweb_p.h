@@ -18,6 +18,7 @@
 #include <private/qglobal_p.h>
 #include <QtCore/qglobal.h>
 #include "QtCore/qhash.h"
+#include "QtCore/qiodevice.h"
 
 #include <emscripten/val.h>
 
