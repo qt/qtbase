@@ -3,25 +3,22 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qmetaobject.h"
-#include "qmetatype.h"
-#include "qobject.h"
 #include "qmetaobject_p.h"
+#include "qmetatype.h"
 #include "qmetatype_p.h"
+#include "qobject.h"
+#include "qobject_p.h"
 
 #include <qcoreapplication.h>
-#include <qcoreevent.h>
-#include <qdatastream.h>
-#include <qstringlist.h>
-#include <qthread.h>
 #include <qvariant.h>
-#include <qdebug.h>
+
+// qthread(_p).h uses QT_CONFIG(thread) internally and has a dummy
+// interface for the non-thread support case
+#include <qthread.h>
+#include "private/qthread_p.h"
 #if QT_CONFIG(thread)
 #include <qsemaphore.h>
 #endif
-
-#include "private/qobject_p.h"
-#include "private/qmetaobject_p.h"
-#include "private/qthread_p.h"
 
 // for normalizeTypeInternal
 #include "private/qmetaobject_moc_p.h"
