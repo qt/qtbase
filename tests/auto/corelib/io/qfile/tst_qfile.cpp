@@ -1464,8 +1464,9 @@ void tst_QFile::setPermissions_data()
 
 void tst_QFile::setPermissions()
 {
-#ifdef Q_OS_QNX
-    QSKIP("This test doesn't pass on QNX and no one has cared to investigate.");
+#ifdef Q_OS_UNIX
+    if (::getuid() == 0)
+        QSKIP("Running this test as root doesn't make sense");
 #endif
     QFETCH(bool, opened);
 
