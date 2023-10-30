@@ -386,10 +386,9 @@ void QHttpPartPrivate::checkHeaderCreated() const
 {
     if (!headerCreated) {
         // copied from QHttpNetworkRequestPrivate::header() and adapted
-        QList<QPair<QByteArray, QByteArray> > fields = allRawHeaders();
-        QList<QPair<QByteArray, QByteArray> >::const_iterator it = fields.constBegin();
-        for (; it != fields.constEnd(); ++it)
-            header += it->first + ": " + it->second + "\r\n";
+        const auto fields = allRawHeaders();
+        for (const auto &[name, value] : fields)
+            header += name + ": " + value + "\r\n";
         header += "\r\n";
         headerCreated = true;
     }
