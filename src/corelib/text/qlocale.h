@@ -1170,6 +1170,7 @@ private:
     bool equals(const QLocale &other) const;
     friend class QLocalePrivate;
     friend class QSystemLocale;
+    friend class QTimeZonePrivate;
     friend class QCalendarBackend;
     friend class QRomanCalendar;
     friend Q_CORE_EXPORT size_t qHash(const QLocale &key, size_t seed) noexcept;

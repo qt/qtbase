@@ -4253,6 +4253,12 @@ QString QDateTime::timeZoneAbbreviation() const
         return d->m_timeZone.abbreviation(*this);
 #endif // timezone
     case Qt::LocalTime:
+#if defined(Q_OS_WIN) && QT_CONFIG(timezone)
+        // MS's tzname is a full MS-name, not an abbreviation:
+        if (QString sys = QTimeZone::systemTimeZone().abbreviation(*this); !sys.isEmpty())
+            return sys;
+        // ... but, even so, a full name isn't as bad as empty.
+#endif
         return QDateTimePrivate::localNameAtMillis(getMSecs(d),
                                                    extractDaylightStatus(getStatus(d)));
     }

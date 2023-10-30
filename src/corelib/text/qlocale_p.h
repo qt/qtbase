@@ -398,17 +398,18 @@ public:
 
     struct DataRange
     {
-        quint16 offset;
-        quint16 size;
+        using Index = quint32;
+        Index offset; // Some zone data tables are big.
+        Index size; // (for consistency and to avoid struct-padding)
         [[nodiscard]] QString getData(const char16_t *table) const
         {
             return size > 0
-                ? QString::fromRawData(reinterpret_cast<const QChar *>(table + offset), size)
+                ? QString::fromRawData(stringStart(table), stringSize())
                 : QString();
         }
         [[nodiscard]] QStringView viewData(const char16_t *table) const
         {
-            return { reinterpret_cast<const QChar *>(table + offset), size };
+            return { stringStart(table), stringSize() };
         }
         [[nodiscard]] QString getListEntry(const char16_t *table, qsizetype index) const
         {
@@ -427,19 +428,32 @@ public:
             return 0;
         }
     private:
+        [[nodiscard]] const QChar *stringStart(const char16_t *table) const
+        {
+            return reinterpret_cast<const QChar *>(table + offset);
+        }
+        [[nodiscard]] qsizetype stringSize() const
+        {
+            // On 32-bit platforms, this is a narrowing cast, but the size has
+            // always come from an 8-bit or 16-bit table value so can't actually
+            // have a problem with that.
+            qsizetype result = static_cast<qsizetype>(size);
+            Q_ASSERT(result >= 0);
+            return result;
+        }
         [[nodiscard]] DataRange listEntry(const char16_t *table, qsizetype index) const
         {
             const char16_t separator = ';';
-            quint16 i = 0;
+            Index i = 0;
             while (index > 0 && i < size) {
                 if (table[offset + i] == separator)
                     index--;
                 i++;
             }
-            quint16 end = i;
+            Index end = i;
             while (end < size && table[offset + end] != separator)
                 end++;
-            return { quint16(offset + i), quint16(end - i) };
+            return { offset + i, end - i };
         }
     };
 

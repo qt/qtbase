@@ -153,8 +153,8 @@ public:
         return QByteArrayLiteral("UTC");
     }
 
+protected:
 #if QT_CONFIG(timezone_locale)
-private:
     // Defined in qtimezonelocale.cpp
     QString localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc,
                        QTimeZone::TimeType timeType,
@@ -162,7 +162,6 @@ private:
                        const QLocale &locale) const;
 #endif // L10n helpers.
 
-protected:
     QByteArray m_id;
 };
 Q_DECLARE_TYPEINFO(QTimeZonePrivate::Data, Q_RELOCATABLE_TYPE);

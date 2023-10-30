@@ -401,6 +401,9 @@ bool qLocalTime(time_t utc, struct tm *local)
    tzset() or anything that behaves as if it called tzset(). So also lock this
    access to prevent such collisions.
 
+   Note that, on Windows, the return is a Microsoft-specific full name for the
+   zone, not an abbreviation.
+
    Parameter dstIndex must be 1 for DST or 0 for standard time.
    Returns the relevant form of the name of local-time's zone.
 */

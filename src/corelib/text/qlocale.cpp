@@ -307,6 +307,9 @@ QLocaleId QLocaleId::withLikelySubtagsAdded() const
        are specified in the key are replaced by the match (even if different);
        but the other tags of this replace what's in the match (even when the
        match does specify a value).
+
+       Keep QLocaleXmlReader.__fillLikely() in sync with this, to ensure
+       locale-appropriate time-zone naming works correctly.
     */
     static_assert(std::size(likely_subtags) % 2 == 0);
     auto *pairs = reinterpret_cast<const LikelyPair *>(likely_subtags);
@@ -483,6 +486,59 @@ static qsizetype findLocaleIndexById(QLocaleId localeId)
 
     return -1;
 }
+
+static constexpr qsizetype locale_data_size = q20::ssize(locale_data) - 1; // trailing guard
+
+#if QT_CONFIG(timezone) && QT_CONFIG(timezone_locale) && !QT_CONFIG(icu)
+namespace QtTimeZoneLocale {
+
+// Indices of locales obtained from the given by likely subtag fall-backs.
+QList<qsizetype> fallbackLocalesFor(qsizetype index)
+{
+    // Should match QLocaleXmlReader.pruneZoneNaming()'s fallbacks() helper,
+    // aside from the special-case kludge for C -> en_US.
+    Q_ASSERT(index < locale_data_size);
+    QList<qsizetype> result = {index};
+    QLocaleId id = locale_data[index].id();
+    if (id.language_id == QLocale::C) {
+        id = { QLocale::English, QLocale::LatinScript, QLocale::UnitedStates };
+        qsizetype it = findLocaleIndexById(id);
+        Q_ASSERT_X(it != -1, Q_FUNC_INFO, "Missing en_Latn_US from locale data");
+        Q_ASSERT_X(it != index, // equivalent to !result.contains(it)
+                   Q_FUNC_INFO, "en_Latn_US != C");
+        result << it;
+    }
+
+    const QLocaleId base = id;
+    QLocaleId likely = id.withLikelySubtagsAdded();
+    if (likely != base) {
+        qsizetype it = findLocaleIndexById(likely);
+        if (it != -1 && !result.contains(it))
+            result << it;
+    }
+    if (id.territory_id) {
+        id.territory_id = 0;
+        likely = id.withLikelySubtagsAdded();
+        if (likely != base) {
+            qsizetype it = findLocaleIndexById(likely);
+            if (it != -1 && !result.contains(it))
+                result << it;
+        }
+    }
+    if (id.script_id) {
+        id.script_id = 0;
+        likely = id.withLikelySubtagsAdded();
+        if (likely != base) {
+            qsizetype it = findLocaleIndexById(likely);
+            if (it != -1 && !result.contains(it))
+                result << it;
+        }
+    }
+    return result;
+}
+
+} // QtTimeZoneLocale
+#endif // timezone_locale && !icu
 
 qsizetype QLocaleData::findLocaleIndex(QLocaleId lid)
 {
@@ -874,8 +930,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     return ds;
 }
 #endif // QT_NO_DATASTREAM
-
-static constexpr qsizetype locale_data_size = q20::ssize(locale_data) - 1; // trailing guard
 
 Q_GLOBAL_STATIC(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                 new QLocalePrivate(defaultData(), defaultIndex()))

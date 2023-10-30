@@ -69,11 +69,16 @@ class ByteArrayData:
     def __init__(self):
         self.data, self.hash = [], {}
 
-    def append(self, s):
+    def lookup(self, s):
+        return self.append(s, False)
+
+    def append(self, s, create = True):
         assert s.isascii(), s
         s += '\0'
         if s in self.hash:
             return self.hash[s]
+        if not create:
+            raise Error(f'Entry "{s[:-1]}" missing from reused table !')
 
         index = len(self.data)
         if index > 0xffff:
@@ -98,6 +103,8 @@ class StringDataToken:
         self.index = index
         self.length = length
 
+# Would tables benefit from pre-population, one script at a time ?
+# That might improve the chances of match-ups in store.
 class StringData:
     def __init__(self, name, lenbits = 8, indbits = 16):
         self.data = []
@@ -105,6 +112,9 @@ class StringData:
         self.name = name
         self.text = '' # Used in quick-search for matches in data
         self.__bits = lenbits, indbits
+
+    def end(self):
+        return StringDataToken(len(self.data), 0, *self.__bits)
 
     def append(self, s):
         try:
@@ -114,6 +124,8 @@ class StringData:
             self.hash[s] = token
         return token
 
+    # The longMetaZoneName table grows to c. 0xe061c bytes, making the
+    # searching here rather expensive.
     def __store(self, s):
         """Add string s to known data.
 
@@ -304,6 +316,29 @@ class TimeZoneDataWriter (LocaleSourceEditor):
                 f' // {name} / {land}\n')
         out('};\n')
 
+    def nameTables(self, locales):
+        """Ensure all zone and metazone names used by locales are known
+
+        Must call before writeTables(), to ensure zone and metazone naming
+        include all entries, rather than only those implicated in the
+        locale-independent data. Returns the ByteArrayData() objects for IANA
+        ID and metazone names, whose lookup() can be used to map names to table
+        indices when writing the locale-dependent data.
+
+        Because the locale-dependent additions made here happen after the
+        carefully ordered entries from the locale-independent data (generated
+        along with their sorted tables), the added entries don't follow the
+        same sort-order. Fortunately LocaleZoneDataWriter's tables sorted by
+        metaIdKey are OK with using the key regardless of the lexical ordering
+        of the IDs, and the IANA-sorted things can be sorted on the actual IANA
+        ID, rather than index in the (now haphazardly sorted) table."""
+        for locale in locales:
+            for k in locale.zoneNaming.keys():
+                self.__ianaTable.append(k)
+            for k in locale.metaNaming.keys():
+                self.__metaIdData.append(k)
+        return self.__ianaTable, self.__metaIdData
+
     def writeTables(self):
         self.__windowsTable.write(self.writer.write, 'windowsIdData')
         self.__ianaListTable.write(self.writer.write, 'ianaListData')
@@ -330,6 +365,227 @@ class TimeZoneDataWriter (LocaleSourceEditor):
         assert len(utcName) == 9 and utcName[6] == ':', utcName
         hour, mins = int(utcName[4:6]), int(utcName[-2:])
         return sign * (hour * 60 + mins) * 60
+
+
+class LocaleZoneDataWriter (LocaleSourceEditor):
+    def __init__(self, path: Path, temp: Path, version: str,
+                 ianaNames: ByteArrayData, metaNames: ByteArrayData):
+        super().__init__(path, temp, version)
+        self.__iana, self.__meta = ianaNames, metaNames
+        self.__hourFormatTable = StringData('hourFormatTable') # "±HH:mm" Some have single H.
+        self.__gmtFormatTable = StringData('gmtFormatTable') # "GMT%0"
+        # Could be split in three - generic, standard, daylight-saving - if too big:
+        self.__regionFormatTable = StringData('regionFormatTable') # "%0 (Summer|Standard)? Time"
+        self.__fallbackFormatTable = StringData('fallbackFormatTable')
+        self.__exemplarCityTable = StringData('exemplarCityTable', indbits = 32)
+        self.__shortZoneNameTable = StringData('shortZoneNameTable')
+        self.__longZoneNameTable = StringData('longZoneNameTable')
+        self.__shortMetaZoneNameTable = StringData('shortMetaZoneNameTable')
+        # Would splitting this table up by (gen, std, dst) miss
+        # chances to avoid duplication ? It should speed append().
+        self.__longMetaZoneNameTable = StringData('longMetaZoneNameTable', indbits = 32)
+
+    def localeData(self, locales, names):
+        out = self.writer.write
+
+        out('// Sorted by locale index, then iana name\n')
+        out('static constexpr LocaleZoneExemplar localeZoneExemplarTable[] = {\n')
+        out('    // locInd, ianaInd, xcty{ind, sz}\n')
+        store = self.__exemplarCityTable.append
+        formatLine = ''.join((
+            '    {{ ',
+            '{:4d},{:5d},', # Sort keys
+            '{:8d},{:3d},', # Index and size
+            ' }}')).format
+        index = 0
+        for locInd, key in enumerate(names):
+            locale = locales[key]
+            locale.exemplarStart = index
+            for name, data in sorted(locale.zoneNaming.items()):
+                eg = store(data.get('exemplarCity', ''))
+                if not eg.length:
+                    continue # No exemplar city given, skip this row.
+                out(formatLine(locInd, self.__iana.lookup(name), eg.index, eg.length)
+                    + (f', // {name} {locale.language}/{locale.script}/{locale.territory}\n'
+                       if index == locale.exemplarStart else f', // {name}\n')
+                    )
+                index += 1
+        out('}; // Exemplar city table\n')
+        if index >= (1 << 32):
+            raise Error(f'Exemplar table has too many ({index}) entries')
+        exemplarRowCount = index
+
+        out('\n// Sorted by locale index, then iana name\n')
+        out('static constexpr LocaleZoneNames localeZoneNameTable[] = {\n')
+        out('    // locInd, ianaInd, (lngGen, lngStd, lngDst,'
+            ' srtGen, srtStd, srtDst){ind, sz}\n')
+        longStore = self.__longZoneNameTable.append
+        shortStore = self.__shortZoneNameTable.append
+        formatLine = ''.join((
+            '    {{ ',
+            '{:4d},{:5d},', # Sort keys
+            '{:8d},' * 3, '{:5d},' * 3, # Range starts
+            '{:3d},' * 6, # Range sizes
+            ' }}')).format
+        index = 0
+        for locInd, key in enumerate(names):
+            locale = locales[key]
+            locale.zoneStart = index
+            for name, data in sorted(locale.zoneNaming.items()):
+                ranges = ( tuple(longStore(z)
+                                 for z in data.get('long', ('', '', '')))
+                           + tuple(shortStore(z)
+                                   for z in data.get('short', ('', '', '')))
+                          ) # 6 entries; 3 32-bit, 3 16-bit
+                if not any(r.length for r in ranges):
+                    continue # No names given, don't generate a row
+                out(formatLine(*((locInd, self.__iana.lookup(name))
+                                 + tuple(r.index for r in ranges)
+                                 + tuple(r.length for r in ranges)
+                                 ))
+                    + (f', // {name} {locale.language}/{locale.script}/{locale.territory}\n'
+                       if index == locale.zoneStart else f', // {name}\n')
+                    )
+                index += 1
+        out('}; // Zone naming table\n')
+        if index >= (1 << 16):
+            raise Error(f'Zone naming table has too many ({index}) entries')
+        localeNameCount = index
+
+        # Only a small proportion (about 1 in 18) of metazones have short
+        # names, so splitting their names across two tables keeps the (many)
+        # rows of the long name table short, making the duplication of sort
+        # keys in the (much smaller) short name table still work out as a
+        # saving.
+
+        out('\n// Sorted by locale index, then meta key\n')
+        out('static constexpr LocaleMetaZoneLongNames localeMetaZoneLongNameTable[] = {\n')
+        out('    // locInd, metaKey, (generic, standard, DST){ind, sz}\n')
+        store = self.__longMetaZoneNameTable.append
+        formatLine = ''.join((
+            '    {{ ',
+            '{:4d},{:5d},', # Sort keys
+            '{:8d},' * 3, # Range starts
+            '{:3d},' * 3, # Range sizes
+            ' }}')).format
+        index = 0
+        for locInd, key in enumerate(names):
+            locale = locales[key]
+            locale.metaZoneLongStart = index
+            # Map metazone names to indices in metazone table:
+            for key, meta, data in sorted(
+                    (self.__meta.lookup(k), k, v)
+                    for k, v in locale.metaNaming.items()):
+                ranges = tuple(store(z)
+                               for z in data.get('long', ('', '', ''))
+                               ) # 3 entries, all 32-bit
+                if not any(r.length for r in ranges):
+                    continue # No names given, don't generate a row
+                out(formatLine(*((locInd, key)
+                                 + tuple(r.index for r in ranges)
+                                 + tuple(r.length for r in ranges)
+                                 ))
+                    + (f', // {meta} {locale.language}/{locale.script}/{locale.territory}\n'
+                       if index == locale.metaZoneLongStart else f', // {meta}\n')
+                    )
+                index += 1
+        out('}; // Metazone long name table\n')
+        if index >= (1 << 32):
+            raise Error(f'Metazone long name table has too many ({index}) entries')
+        metaLongCount = index
+
+        out('\n// Sorted by locale index, then meta key\n')
+        out('static constexpr LocaleMetaZoneShortNames localeMetaZoneShortNameTable[] = {\n')
+        out('    // locInd, metaKey, (generic, standard, DST){ind, sz}\n')
+        store = self.__shortMetaZoneNameTable.append
+        formatLine = ''.join((
+            '    {{ ',
+            '{:4d},{:5d},', # Sort keys
+            '{:5d},' * 3, # Range starts
+            '{:3d},' * 3, # Range sizes
+            ' }}')).format
+        index = 0
+        for locInd, key in enumerate(names):
+            locale = locales[key]
+            locale.metaZoneShortStart = index
+            # Map metazone names to indices in metazone table:
+            for key, meta, data in sorted(
+                    (self.__meta.lookup(k), k, v)
+                    for k, v in locale.metaNaming.items()):
+                ranges = tuple(store(z)
+                               for z in data.get('short', ('', '', ''))
+                               ) # 3 entries, all 16-bit
+                if not any(r.length for r in ranges):
+                    continue # No names given, don't generate a row
+                out(formatLine(*((locInd, key)
+                                 + tuple(r.index for r in ranges)
+                                 + tuple(r.length for r in ranges)
+                                 ))
+                    + (f', // {meta} {locale.language}/{locale.script}/{locale.territory}\n'
+                       if index == locale.metaZoneShortStart else f', // {meta}\n')
+                    )
+                index += 1
+        out('}; // Metazone short name table\n')
+        if index >= (1 << 16):
+            raise Error(f'Metazone short name table has too many ({index}) entries')
+        metaShortCount = index
+
+        out('\n// Indexing matches that of locale_data in qlocale_data_p.h\n')
+        out('static constexpr LocaleZoneData localeZoneData[] = {\n')
+        out('    // LOCALE_TAGS(lng,scp,ter) xct1st, zn1st, ml1st, ms1st, '
+            '(+hr, -hr, gmt, flbk, rgen, rstd, rdst){ind,sz}\n')
+        hour = self.__hourFormatTable
+        gmt = self.__gmtFormatTable
+        region = self.__regionFormatTable
+        fall = self.__fallbackFormatTable
+        formatLine = ''.join((
+            '    {{ ',
+            'LOCALE_TAGS({:3d},{:3d},{:3d})', # key: language, script, territory
+            '{:6d},' * 4, # exemplarStart, metaZone{Long,Short}Start, zoneStart
+            '{:5d},' * 7, # Range starts
+            '{:3d},' * 7, # Range sizes
+            ' }}')).format
+        for key in names:
+            locale = locales[key]
+            ranges = (
+                (hour.append(locale.positiveOffsetFormat),
+                 hour.append(locale.negativeOffsetFormat),
+                 gmt.append(locale.gmtOffsetFormat),
+                 fall.append(locale.fallbackZoneFormat))
+                + tuple(region.append(r) for r in locale.regionFormats)
+                ) # 7 entries
+            out(formatLine(*(
+                key
+                + (locale.exemplarStart, locale.metaZoneLongStart,
+                   locale.metaZoneShortStart, locale.zoneStart)
+                + tuple(r.index for r in ranges)
+                + tuple(r.length for r in ranges)
+            ))
+                + f', // {locale.language}/{locale.script}/{locale.territory}\n')
+        ranges = 2 * (hour.end(),) + (
+            gmt.end(), fall.end()) + 3 * (region.end(),)
+        out(formatLine(*(
+            (0, 0, 0, exemplarRowCount, metaLongCount,
+             metaShortCount, localeNameCount)
+            + tuple(r.index for r in ranges)
+            + tuple(r.length for r in ranges)
+        ))
+            + ' // Terminal row\n')
+        out('}; // Locale/zone data\n')
+
+    def writeTables(self):
+        for data in (self.__hourFormatTable,
+                     self.__gmtFormatTable,
+                     self.__regionFormatTable,
+                     self.__fallbackFormatTable,
+                     self.__exemplarCityTable,
+                     self.__shortZoneNameTable,
+                     self.__longZoneNameTable,
+                     self.__shortMetaZoneNameTable,
+                     self.__longMetaZoneNameTable):
+            data.write(self.writer)
+        self.writer.write('\n')
+
 
 class LocaleDataWriter (LocaleSourceEditor):
     def likelySubtags(self, likely):
@@ -831,9 +1087,23 @@ def main(argv, out, err):
             writer.territoryZone(reader.territoryZone())
             writer.metaLandZone(reader.metaLandZone())
             writer.zoneMetaStory(reader.zoneMetaStory())
+            ianaNames, metaNames = writer.nameTables(locale_map.values())
             writer.writeTables()
     except Exception as e:
         err.write(f'\nError updating qtimezoneprivate_data_p.h: {e}\n')
+        if args.verbose > 0:
+            raise
+        return 1
+
+    # Locale-dependent timezone data
+    try:
+        with LocaleZoneDataWriter(
+                qtsrcdir.joinpath('src/corelib/time/qtimezonelocale_data_p.h'),
+                qtsrcdir, reader.cldrVersion, ianaNames, metaNames) as writer:
+            writer.localeData(locale_map, locale_keys)
+            writer.writeTables()
+    except Exception as e:
+        err.write(f'\nError updating qtimezonelocale_data_p.h: {e}\n')
         if args.verbose > 0:
             raise
         return 1
