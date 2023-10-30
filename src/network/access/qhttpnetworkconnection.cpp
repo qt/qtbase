@@ -1447,9 +1447,9 @@ QNetworkProxy QHttpNetworkConnection::transparentProxy() const
 }
 #endif
 
-QHttpNetworkConnection::ConnectionType QHttpNetworkConnection::connectionType()
+QHttpNetworkConnection::ConnectionType QHttpNetworkConnection::connectionType() const
 {
-    Q_D(QHttpNetworkConnection);
+    Q_D(const QHttpNetworkConnection);
     return d->connectionType;
 }
 
@@ -1484,9 +1484,9 @@ void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config
         d->channels[i].setSslConfiguration(config);
 }
 
-std::shared_ptr<QSslContext> QHttpNetworkConnection::sslContext()
+std::shared_ptr<QSslContext> QHttpNetworkConnection::sslContext() const
 {
-    Q_D(QHttpNetworkConnection);
+    Q_D(const QHttpNetworkConnection);
     return d->sslContext;
 }
 

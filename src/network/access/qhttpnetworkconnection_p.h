@@ -92,7 +92,7 @@ public:
 
     QHttpNetworkConnectionChannel *channels() const;
 
-    ConnectionType connectionType();
+    ConnectionType connectionType() const;
     void setConnectionType(ConnectionType type);
 
     QHttp2Configuration http2Parameters() const;
@@ -102,7 +102,7 @@ public:
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);
     void ignoreSslErrors(const QList<QSslError> &errors, int channel = -1);
-    std::shared_ptr<QSslContext> sslContext();
+    std::shared_ptr<QSslContext> sslContext() const;
     void setSslContext(std::shared_ptr<QSslContext> context);
 #endif
 
