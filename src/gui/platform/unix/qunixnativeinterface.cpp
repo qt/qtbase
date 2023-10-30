@@ -235,6 +235,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEvdevKeyMapper);
 
 /*!
     \class QNativeInterface::QWaylandApplication
+    \inheaderfile QGuiApplication
     \since 6.5
     \brief Native interface to a Wayland application.
 
