@@ -75,11 +75,10 @@ public:
 
     Q_NODISCARD_CTOR
     QArrayDataPointer(QArrayDataPointer &&other) noexcept
-        : d(other.d), ptr(other.ptr), size(other.size)
+        : d(std::exchange(other.d, nullptr)),
+          ptr(std::exchange(other.ptr, nullptr)),
+          size(std::exchange(other.size, 0))
     {
-        other.d = nullptr;
-        other.ptr = nullptr;
-        other.size = 0;
     }
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QArrayDataPointer)
