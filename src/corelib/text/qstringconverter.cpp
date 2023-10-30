@@ -1333,35 +1333,45 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     Q_ASSERT(mblen > 0);
     Q_ASSERT(!state || state->remainingChars == 0);
 
-    while (!(len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, mblen, out,
-                                          int(outlen)))) {
-        int r = GetLastError();
-        if (r == ERROR_INSUFFICIENT_BUFFER) {
-            Q_ASSERT(QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size()));
-            const int wclen = MultiByteToWideChar(codePage, 0, mb, mblen, 0, 0);
-            const qsizetype offset = qsizetype(out - buf.data());
-            sp.resize(offset + wclen);
-            auto it = reinterpret_cast<wchar_t *>(sp.data());
-            it = std::copy_n(buf.data(), offset, it);
-            out = it;
-            outlen = wclen;
-        } else if (r == ERROR_NO_UNICODE_TRANSLATION && state
-                   && state->remainingChars < q20::ssize(state->state_data)) {
-            ++state->remainingChars;
-            --mblen;
-            for (qsizetype i = 0; i < state->remainingChars; ++i)
-                state->state_data[i] = mb[mblen + i];
-            if (mblen == 0)
-                break;
+    constexpr int MaxStep = std::numeric_limits<int>::max();
+    const char *end = mb + mblen;
+    while (mb != end) {
+        const int nextIn = int(std::min(qsizetype(mblen), qsizetype(MaxStep)));
+        const int nextOut = int(std::min(outlen, qsizetype(MaxStep)));
+        len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, nextIn, out, nextOut);
+        if (len) {
+            mb += nextIn;
+            mblen -= nextIn;
+            out += len;
+            outlen -= len;
         } else {
-            // Fail.
-            qWarning("MultiByteToWideChar: Cannot convert multibyte text");
-            break;
+            int r = GetLastError();
+            if (r == ERROR_INSUFFICIENT_BUFFER) {
+                Q_ASSERT(QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size()));
+                const int wclen = MultiByteToWideChar(codePage, 0, mb, nextIn, 0, 0);
+                auto begin = buf.data();
+                const qsizetype offset = qsizetype(std::distance(begin, out));
+                qsizetype newSize = offset + wclen;
+                sp.resize(newSize);
+                auto it = reinterpret_cast<wchar_t *>(sp.data());
+                it = std::copy_n(buf.data(), offset, it);
+                out = it;
+                outlen = wclen;
+            } else if (r == ERROR_NO_UNICODE_TRANSLATION && state
+                    && state->remainingChars < q20::ssize(state->state_data)) {
+                ++state->remainingChars;
+                --mblen;
+                for (qsizetype i = 0; i < state->remainingChars; ++i)
+                    state->state_data[i] = mb[mblen + i];
+                if (mblen == 0)
+                    break;
+            } else {
+                // Fail.
+                qWarning("MultiByteToWideChar: Cannot convert multibyte text");
+                break;
+            }
         }
     }
-    out += len;
-    if (len)
-        mblen = 0;
 
     if (sp.isEmpty()) {
         // We must have only used the stack buffer
