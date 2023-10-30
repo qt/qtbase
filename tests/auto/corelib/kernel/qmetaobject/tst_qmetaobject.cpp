@@ -312,8 +312,8 @@ private slots:
     void normalizedType_data();
     void normalizedType();
     void customPropertyType();
-    void checkScope_data();
-    void checkScope();
+    void keysToValue_data();
+    void keysToValue(); // Also keyToValue()
     void propertyNotify();
     void propertyConstant();
     void propertyFinal();
@@ -2339,7 +2339,7 @@ void tst_QMetaObject::customPropertyType()
     QCOMPARE(prop.metaType().id(), QMetaType::QVariantList);
 }
 
-void tst_QMetaObject::checkScope_data()
+void tst_QMetaObject::keysToValue_data()
 {
     QTest::addColumn<QObject *>("object");
     QTest::addColumn<QByteArray>("name");
@@ -2353,7 +2353,7 @@ void tst_QMetaObject::checkScope_data()
 }
 
 
-void tst_QMetaObject::checkScope()
+void tst_QMetaObject::keysToValue()
 {
     QFETCH(QObject *, object);
     QFETCH(QByteArray, name);
@@ -2419,6 +2419,28 @@ void tst_QMetaObject::checkScope()
     QCOMPARE(mf.keysToValue("MyNamespace::" + name + "::MyFlag2|MyNamespace::" + name + "::MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
     QCOMPARE(QLatin1String(mf.valueToKeys(3)), QLatin1String("MyFlag1|MyFlag2"));
+
+    // Test flags with extra '|'
+    QTest::ignoreMessage(QtWarningMsg,
+        QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, ends with '|'.+"_s));
+    QCOMPARE(mf.keysToValue("MyFlag1|MyFlag2|", &ok), -1);
+    QCOMPARE(ok, false);
+
+    QTest::ignoreMessage(QtWarningMsg,
+        QRegularExpression(u"QMetaEnum::keysToValue: malformed keys string, starts with '|'.+"_s));
+    QCOMPARE(mf.keysToValue("|MyFlag1|MyFlag2|", &ok), -1);
+    QCOMPARE(ok, false);
+
+    QTest::ignoreMessage(QtWarningMsg,
+        QRegularExpression(
+            u"QMetaEnum::keysToValue: malformed keys string, has two consecutive '|'.+"_s));
+    QCOMPARE(mf.keysToValue("MyFlag1||MyFlag2", &ok), -1);
+    QCOMPARE(ok, false);
+
+    // Test empty string
+    QTest::ignoreMessage(QtWarningMsg, "QMetaEnum::keysToValue: empty keys string.");
+    QCOMPARE(mf.keysToValue("", &ok), -1);
+    QCOMPARE(ok, false);
 }
 
 void tst_QMetaObject::propertyNotify()

@@ -3240,6 +3240,51 @@ const char *QMetaEnum::valueToKey(int value) const
     return nullptr;
 }
 
+static bool parseEnumFlags(QByteArrayView v, QVarLengthArray<QByteArrayView, 10> &list)
+{
+    v = v.trimmed();
+    if (v.empty()) {
+        qWarning("QMetaEnum::keysToValue: empty keys string.");
+        return false;
+    }
+
+    qsizetype sep = v.indexOf('|', 0);
+    if (sep == 0) {
+        qWarning("QMetaEnum::keysToValue: malformed keys string, starts with '|', \"%s\"",
+                 v.constData());
+        return false;
+    }
+
+    if (sep == -1) { // One flag
+        list.push_back(v);
+        return true;
+    }
+
+    if (v.endsWith('|')) {
+        qWarning("QMetaEnum::keysToValue: malformed keys string, ends with '|', \"%s\"",
+                 v.constData());
+        return false;
+    }
+
+    const auto begin = v.begin();
+    const auto end = v.end();
+    auto b = begin;
+    for (; b != end && sep != -1; sep = v.indexOf('|', sep)) {
+        list.push_back({b, begin + sep});
+        ++sep; // Skip over '|'
+        b = begin + sep;
+        if (*b == '|') {
+            qWarning("QMetaEnum::keysToValue: malformed keys string, has two consecutive '|': "
+                     "\"%s\"", v.constData());
+            return false;
+        }
+    }
+
+    // The rest of the string
+    list.push_back({b, end});
+    return true;
+}
+
 /*!
     Returns the value derived from combining together the values of
     the \a keys using the OR operator, or -1 if \a keys is not
@@ -3266,7 +3311,11 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
     };
 
     int value = 0;
-    for (const QLatin1StringView &untrimmed : qTokenize(QLatin1StringView{keys}, u'|')) {
+    QVarLengthArray<QByteArrayView, 10> list;
+    const bool r = parseEnumFlags(QByteArrayView{keys}, list);
+    if (!r)
+        return -1;
+    for (const auto &untrimmed : list) {
         const auto parsed = parse_scope(untrimmed.trimmed());
         if (parsed.scope && *parsed.scope != objectClassName(mobj))
             return -1; // wrong type name in qualified name
