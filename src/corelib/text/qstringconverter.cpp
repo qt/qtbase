@@ -1359,22 +1359,24 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
             break;
         }
     }
+    out += len;
+    if (len)
+        mblen = 0;
 
-    if (QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size())) {
-        if (out - buf.data() + len > 0)
-            sp = QStringView(buf.data(), out + len).toString();
+    if (sp.isEmpty()) {
+        // We must have only used the stack buffer
+        if (out != buf.data()) // else: we return null-string
+            sp = QStringView(buf.data(), out).toString();
     } else{
-        sp.truncate(out - reinterpret_cast<wchar_t *>(sp.data()) + len);
+        const auto begin = reinterpret_cast<wchar_t *>(sp.data());
+        sp.truncate(std::distance(begin, out));
     }
 
     if (sp.size() && sp.back().isNull())
         sp.chop(1);
 
-    if (!state && mblen != length) { // We have trailing characters that should be converted
-        qsizetype diff = length - mblen;
-        sp.resize(sp.size() + diff, QChar::ReplacementCharacter);
-    }
-
+    if (!state && mblen > 0) // We have trailing characters that should be converted
+        sp.resize(sp.size() + mblen, QChar::ReplacementCharacter);
     return sp;
 }
 
@@ -1439,6 +1441,7 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
                                        nullptr))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
+            Q_ASSERT(mb.isEmpty());
             int neededLength = WideCharToMultiByte(codePage, 0, ch, int(uclen), nullptr, 0, nullptr,
                                                    nullptr);
             const qsizetype currentLength = out - buf.data();
@@ -1458,12 +1461,13 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
             break;
         }
     }
-    auto end = out + len;
-    if (QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size())) {
-        if (end != buf.data()) // else: we return null-array
-            mb = QByteArrayView(buf.data(), end).toByteArray();
+    out += len;
+    if (mb.isEmpty()) {
+        // We must have only used the stack buffer
+        if (out != buf.data()) // else: we return null-array
+            mb = QByteArrayView(buf.data(), out).toByteArray();
     } else {
-        mb.truncate(end - mb.data());
+        mb.truncate(std::distance(mb.data(), out));
     }
     return mb;
 }
