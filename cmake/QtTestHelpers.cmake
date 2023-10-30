@@ -31,7 +31,11 @@ function(qt_internal_add_benchmark target)
     )
 
     if(NOT arg_OUTPUT_DIRECTORY)
-        set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+        if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+            set(arg_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        else()
+            set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+        endif()
     endif()
 
     qt_internal_library_deprecation_level(deprecation_define)
@@ -477,8 +481,12 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
-    if (NOT arg_OUTPUT_DIRECTORY)
-        set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    if(NOT arg_OUTPUT_DIRECTORY)
+        if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+            set(arg_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        else()
+            set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+        endif()
     endif()
 
     set(private_includes
