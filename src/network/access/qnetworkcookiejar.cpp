@@ -200,49 +200,38 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     Q_D(const QNetworkCookieJar);
     const QDateTime now = QDateTime::currentDateTimeUtc();
     QList<QNetworkCookie> result;
-    bool isEncrypted = url.scheme() == "https"_L1;
+    const bool isEncrypted = url.scheme() == "https"_L1;
 
     // scan our cookies for something that matches
-    QList<QNetworkCookie>::ConstIterator it = d->allCookies.constBegin(),
-                                        end = d->allCookies.constEnd();
-    for ( ; it != end; ++it) {
-        if (!isParentDomain(url.host(), it->domain()))
+    for (const auto &cookie : std::as_const(d->allCookies)) {
+        if (!isEncrypted && cookie.isSecure())
             continue;
-        if (!isParentPath(url.path(), it->path()))
+        if (!cookie.isSessionCookie() && cookie.expirationDate() < now)
             continue;
-        if (!(*it).isSessionCookie() && (*it).expirationDate() < now)
+        const QString urlHost = url.host();
+        const QString cookieDomain = cookie.domain();
+        if (!isParentDomain(urlHost, cookieDomain))
             continue;
-        if ((*it).isSecure() && !isEncrypted)
+        if (!isParentPath(url.path(), cookie.path()))
             continue;
 
-        QString domain = it->domain();
+        QStringView domain = cookieDomain;
         if (domain.startsWith(u'.')) /// Qt6?: remove when compliant with RFC6265
-            domain = domain.mid(1);
+            domain = domain.sliced(1);
 #if QT_CONFIG(topleveldomain)
-        if (qIsEffectiveTLD(domain) && url.host() != domain)
+        if (urlHost != domain && qIsEffectiveTLD(domain))
             continue;
 #else
-        if (!domain.contains(u'.') && url.host() != domain)
+        if (!domain.contains(u'.') && urlHost != domain)
             continue;
 #endif // topleveldomain
 
-        // insert this cookie into result, sorted by path
-        QList<QNetworkCookie>::Iterator insertIt = result.begin();
-        while (insertIt != result.end()) {
-            if (insertIt->path().size() < it->path().size()) {
-                // insert here
-                insertIt = result.insert(insertIt, *it);
-                break;
-            } else {
-                ++insertIt;
-            }
-        }
-
-        // this is the shortest path yet, just append
-        if (insertIt == result.end())
-            result += *it;
+        result += cookie;
     }
 
+    auto longerPath = [](const auto &c1, const auto &c2)
+                      { return c1.path().size() > c2.path().size(); };
+    std::sort(result.begin(), result.end(), longerPath);
     return result;
 }
 
