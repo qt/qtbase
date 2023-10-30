@@ -305,13 +305,14 @@ bool QNetworkCookieJar::deleteCookie(const QNetworkCookie &cookie)
 */
 bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl &url) const
 {
-    QString domain = cookie.domain();
+    const QString cookieDomain = cookie.domain();
+    QStringView domain = cookieDomain;
     const QString host = url.host();
     if (!isParentDomain(domain, host) && !isParentDomain(host, domain))
         return false; // not accepted
 
     if (domain.startsWith(u'.'))
-        domain = domain.mid(1);
+        domain = domain.sliced(1);
 
     // We shouldn't reject if:
     // "[...] the domain-attribute is identical to the canonicalized request-host"
