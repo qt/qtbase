@@ -19,6 +19,7 @@ sles-15
 [showMinimizedKeepsFocus]
 android
 macos-13 ci
+macos-14 ci
 [normalGeometry]
 android
 [saveRestoreGeometry]
