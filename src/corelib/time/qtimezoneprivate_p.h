@@ -378,7 +378,7 @@ private:
 };
 #endif // Q_OS_DARWIN
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !QT_CONFIG(icu)
 class Q_AUTOTEST_EXPORT QWinTimeZonePrivate final : public QTimeZonePrivate
 {
 public:
@@ -434,7 +434,7 @@ private:
     QString m_daylightName;
     QList<QWinTransitionRule> m_tranRules;
 };
-#endif // Q_OS_WIN
+#endif // Q_OS_WIN && !icu
 
 #ifdef Q_OS_ANDROID
 class QAndroidTimeZonePrivate final : public QTimeZonePrivate
