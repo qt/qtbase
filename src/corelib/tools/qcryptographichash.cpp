@@ -593,11 +593,14 @@ QCryptographicHashPrivate::EVP::EVP(QCryptographicHash::Algorithm method)
          * algorithm available.
          */
         legacyProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "legacy"));
-        defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "default"));
 
-        if (!legacyProvider || !defaultProvider)
+        if (!legacyProvider)
             return;
     }
+
+    defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "default"));
+    if (!defaultProvider)
+        return;
 
     context = EVP_MD_CTX_ptr(EVP_MD_CTX_new());
 
