@@ -2532,6 +2532,14 @@ void tst_QStringConverter::fromLocal8Bit()
         result += QLocal8Bit::convertToUnicode_sys({&c, 1}, codePage, &state);
     QCOMPARE(result, utf16);
     QCOMPARE(state.remainingChars, 0);
+
+    result.clear();
+    state.clear();
+    // Decode the full string again, this time without state
+    state.flags |= QStringConverter::Flag::Stateless;
+    result = QLocal8Bit::convertToUnicode_sys(eightBit, codePage, &state);
+    QCOMPARE(result, utf16);
+    QCOMPARE(state.remainingChars, 0);
 }
 
 void tst_QStringConverter::fromLocal8Bit_special_cases()
@@ -2547,6 +2555,17 @@ void tst_QStringConverter::fromLocal8Bit_special_cases()
     result = QLocal8Bit::convertToUnicode_sys("\xb1", SHIFT_JIS, &state);
     QCOMPARE(result, u"こ");
     QCOMPARE(state.remainingChars, 0);
+
+    // And without state:
+    result.clear();
+    QStringConverter::State statelessState;
+    statelessState.flags |= QStringConverter::Flag::Stateless;
+    result = QLocal8Bit::convertToUnicode_sys("\x82", SHIFT_JIS, &statelessState);
+    result += QLocal8Bit::convertToUnicode_sys("\xb1", SHIFT_JIS, &statelessState);
+    // 0xb1 is a valid single-octet character in Shift-JIS, so the output
+    // isn't really what you would expect:
+    QCOMPARE(result, QString(QChar::ReplacementCharacter) + u'ｱ');
+    QCOMPARE(statelessState.remainingChars, 0);
 
     // Now try a 3-octet UTF-8 sequence:
     result.clear();
@@ -2609,6 +2628,14 @@ void tst_QStringConverter::toLocal8Bit()
         result += QLocal8Bit::convertFromUnicode_sys(QStringView(&c, 1), codePage, &state);
     QCOMPARE(result, eightBit);
     QCOMPARE(state.remainingChars, 0);
+
+    result.clear();
+    state.clear();
+    // Decode the full string again, this time without state
+    state.flags |= QStringConverter::Flag::Stateless;
+    result = QLocal8Bit::convertFromUnicode_sys(utf16, codePage, &state);
+    QCOMPARE(result, eightBit);
+    QCOMPARE(state.remainingChars, 0);
 }
 
 void tst_QStringConverter::toLocal8Bit_special_cases()
@@ -2630,6 +2657,16 @@ void tst_QStringConverter::toLocal8Bit_special_cases()
 
     // Retain compat with the behavior for toLocal8Bit:
     QCOMPARE(codeUnits.first(1).toLocal8Bit(), "?");
+
+    // QString::toLocal8Bit is already stateless, but test stateless handling
+    // explicitly anyway:
+    result.clear();
+    QStringConverter::State statelessState;
+    statelessState.flags |= QStringConverter::Flag::Stateless;
+    result = QLocal8Bit::convertFromUnicode_sys(codeUnits.first(1), UTF8, &statelessState);
+    result += QLocal8Bit::convertFromUnicode_sys(codeUnits.sliced(1), UTF8, &statelessState);
+    // Windows uses the replacement character for invalid characters:
+    QCOMPARE(result, "\ufffd\ufffd");
 
     // Now do the same, but the second time we feed in a character, we also
     // provide many more so the internal stack buffer is not large enough.
