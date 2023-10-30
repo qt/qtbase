@@ -62,6 +62,22 @@ void tst_qfloat16::compareCompiles()
     QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, qfloat16::NativeType>();
 #endif
     QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, int>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, qint8>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, quint8>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, qint16>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, quint16>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, char16_t>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, long>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, unsigned long>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, wchar_t>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, qint32>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, quint32>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, qint64>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, quint64>();
+#ifdef QT_SUPPORTS_INT128
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, qint128>();
+    QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, quint128>();
+#endif
 }
 
 void tst_qfloat16::ordering_data()
@@ -142,10 +158,25 @@ void tst_qfloat16::ordering()
 
     if (qIsFinite(right)) {
         CHECK_INT(int);
-        // These fail because of QTBUG-117637. Will be fixed in a follow-up patch.
-        // CHECK_INT(qint8);
-        // CHECK_INT(qint16);
-        // CHECK_INT(qint64);
+        CHECK_INT(qint8);
+        CHECK_INT(signed char);
+        CHECK_INT(qint16);
+        CHECK_INT(qint32);
+        CHECK_INT(qint64);
+#if QT_SUPPORTS_INT128
+        CHECK_INT(qint128);
+#endif
+        if (right >= 0) {
+            CHECK_INT(unsigned int);
+            CHECK_INT(quint8);
+            CHECK_INT(unsigned char);
+            CHECK_INT(quint16);
+            CHECK_INT(quint32);
+            CHECK_INT(quint64);
+    #if QT_SUPPORTS_INT128
+            CHECK_INT(quint128);
+    #endif
+        }
     }
 
 #undef CHECK_INT

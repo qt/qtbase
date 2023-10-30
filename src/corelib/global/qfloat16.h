@@ -14,6 +14,7 @@
 
 #include <limits>
 #include <string.h>
+#include <type_traits>
 
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__AVX2__) && !defined(__F16C__)
 // All processors that support AVX2 do support F16C too, so we could enable the
@@ -50,6 +51,19 @@ class qfloat16
         quint16 b16;
         constexpr inline explicit Wrap(int value) : b16(quint16(value)) {}
     };
+
+#ifdef QT_SUPPORTS_INT128
+    template <typename T>
+    using IsIntegral = std::disjunction<std::is_integral<T>,
+                                        std::is_same<std::remove_const_t<T>, qint128>,
+                                        std::is_same<std::remove_const_t<T>, quint128>>;
+#else
+    template <typename T>
+    using IsIntegral = std::is_integral<T>;
+#endif
+    template <typename T>
+    using if_type_is_integral = std::enable_if_t<IsIntegral<std::remove_reference_t<T>>::value,
+                                                 bool>;
 
 public:
     using NativeType = QtPrivate::NativeFloat16Type;
@@ -189,11 +203,27 @@ QT_WARNING_DISABLE_FLOAT_COMPARE
 #endif
 #undef QF16_MAKE_ORDER_OP_FP
 
-    friend bool comparesEqual(const qfloat16 &lhs, int rhs) noexcept
+    template <typename T, if_type_is_integral<T> = true>
+    friend bool comparesEqual(const qfloat16 &lhs, T rhs) noexcept
     { return static_cast<NearestFloat>(lhs) == static_cast<NearestFloat>(rhs); }
-    friend Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, int rhs) noexcept
+    template <typename T, if_type_is_integral<T> = true>
+    friend Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, T rhs) noexcept
     { return Qt::compareThreeWay(static_cast<NearestFloat>(lhs), static_cast<NearestFloat>(rhs)); }
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, int)
+
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint8)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint8)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint16)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint16)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint32)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint32)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, long)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, unsigned long)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint64)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint64)
+#ifdef QT_SUPPORTS_INT128
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint128)
+    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint128)
+#endif
 
 QT_WARNING_POP
 
