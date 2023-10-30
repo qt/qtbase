@@ -112,7 +112,7 @@ void QNetworkCookieJar::setAllCookies(const QList<QNetworkCookie> &cookieList)
     d->allCookies = cookieList;
 }
 
-static inline bool isParentPath(const QString &path, const QString &reference)
+static inline bool isParentPath(QStringView path, QStringView reference)
 {
     if ((path.isEmpty() && reference == "/"_L1) || path.startsWith(reference)) {
         //The cookie-path and the request-path are identical.
@@ -131,12 +131,12 @@ static inline bool isParentPath(const QString &path, const QString &reference)
     return false;
 }
 
-static inline bool isParentDomain(const QString &domain, const QString &reference)
+static inline bool isParentDomain(QStringView domain, QStringView reference)
 {
     if (!reference.startsWith(u'.'))
         return domain == reference;
 
-    return domain.endsWith(reference) || domain == QStringView{reference}.mid(1);
+    return domain.endsWith(reference) || domain == reference.mid(1);
 }
 
 /*!
