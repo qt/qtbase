@@ -1270,6 +1270,9 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     const char *mb = in.data();
     int mblen = length;
 
+    if (state && state->flags & QStringConverter::Flag::Stateless)
+        state = nullptr;
+
     if (!mb || !mblen)
         return QString();
 
@@ -1327,7 +1330,7 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     }
 
     Q_ASSERT(mblen > 0);
-    Q_ASSERT(state->remainingChars == 0);
+    Q_ASSERT(!state || state->remainingChars == 0);
 
     while (!(len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, mblen, out,
                                           int(outlen)))) {
