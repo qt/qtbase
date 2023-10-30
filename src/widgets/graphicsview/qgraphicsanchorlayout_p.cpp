@@ -529,7 +529,7 @@ void AnchorData::dump(int indent) {
         p->secondEdge->dump(indent+2);
     } else if (type == Sequential) {
         const auto *s = static_cast<SequentialAnchorData *>(this);
-        qDebug("%*s type: sequential(%lld):", indent, "", s->m_edges.size());
+        qDebug("%*s type: sequential(%lld):", indent, "", qint64(s->m_edges.size()));
         for (AnchorData *e : s->m_edges)
             e->dump(indent + 2);
     } else {
