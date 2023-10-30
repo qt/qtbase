@@ -174,9 +174,9 @@ windowsIdList = (
 
 # List of standard UTC IDs to use.  Not public so may be safely changed.
 # Do not remove IDs, as each entry is part of the API/behavior guarantee.
+# IDs for the same offset shall be space-joined; list the preferred ID first.
 # ( UTC Id, Offset Seconds )
 utcIdList = (
-    ('UTC',            0),  # Goes first so is default
     ('UTC-14:00', -50400),
     ('UTC-13:00', -46800),
     ('UTC-12:00', -43200),
@@ -193,8 +193,9 @@ utcIdList = (
     ('UTC-03:00', -10800),
     ('UTC-02:00',  -7200),
     ('UTC-01:00',  -3600),
-    ('UTC-00:00',      0), # Should recognize, but avoid using (see Note below).
+    ('UTC',            0), # Goes first (among zero-offset) to be default
     ('UTC+00:00',      0),
+    ('UTC-00:00',      0), # Should recognize, but avoid using (see Note below).
     ('UTC+01:00',   3600),
     ('UTC+02:00',   7200),
     ('UTC+03:00',  10800),
@@ -301,12 +302,16 @@ class ZoneIdWriter (SourceFileEditor):
                     pair[1], pair[0]))
         out('};\n\n')
 
+        offsetMap = {}
+        for pair in utcIdList:
+            offsetMap[pair[1]] = offsetMap.get(pair[1], ()) + (pair[0],)
         # Write UTC ID key table
         out('// IANA ID Index, UTC Offset\n')
         out('static constexpr QUtcData utcDataTable[] = {\n')
-        for pair in utcIdList:
+        for offset in sorted(offsetMap.keys()): # Sort so C++ can binary-chop.
+            names = offsetMap[offset];
             out('    {{ {:6d},{:6d} }}, // {}\n'.format(
-                    ianaIdData.append(pair[0]), pair[1], pair[0]))
+                    ianaIdData.append(' '.join(names)), offset, names[0]))
         out('};\n')
 
         return windowsIdData, ianaIdData

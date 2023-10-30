@@ -42,6 +42,12 @@ static QByteArray toWindowsIdLiteral(quint16 windowsIdKey)
     return QByteArray();
 }
 
+// For use with std::lower_bound():
+static bool atLowerUtcOffset(const QUtcData &entry, qint32 offsetSeconds)
+{
+    return entry.offsetFromUtc < offsetSeconds;
+}
+
 /*
     Base class implementing common utility routines, only instantiate for a null tz.
 */
@@ -744,7 +750,7 @@ static bool isEntryInIanaList(QByteArrayView id, QByteArrayView ianaIds)
     while ((cut = ianaIds.indexOf(' ')) >= 0) {
         if (id == ianaIds.first(cut))
             return true;
-        ianaIds = ianaIds.sliced(cut);
+        ianaIds = ianaIds.sliced(cut + 1);
     }
     return id == ianaIds;
 }
@@ -935,7 +941,7 @@ QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds() const
         qsizetype cut;
         while ((cut = id.indexOf(' ')) >= 0) {
             result << id.first(cut).toByteArray();
-            id = id.sliced(cut);
+            id = id.sliced(cut + 1);
         }
         result << id.toByteArray();
     }
@@ -958,16 +964,16 @@ QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(qint32 offsetSeconds
     // Only if it's present in CLDR. (May get more than one ID: UTC, UTC+00:00
     // and UTC-00:00 all have the same offset.)
     QList<QByteArray> result;
-    for (const QUtcData &data : utcDataTable) {
-        if (data.offsetFromUtc == offsetSeconds) {
-            QByteArrayView id = data.id();
-            qsizetype cut;
-            while ((cut = id.indexOf(' ')) >= 0) {
-                result << id.first(cut).toByteArray();
-                id = id.sliced(cut);
-            }
-            result << id.toByteArray();
+    const auto data = std::lower_bound(std::begin(utcDataTable), std::end(utcDataTable),
+                                       offsetSeconds, atLowerUtcOffset);
+    if (data != std::end(utcDataTable) && data->offsetFromUtc == offsetSeconds) {
+        QByteArrayView id = data->id();
+        qsizetype cut;
+        while ((cut = id.indexOf(' ')) >= 0) {
+            result << id.first(cut).toByteArray();
+            id = id.sliced(cut + 1);
         }
+        result << id.toByteArray();
     }
     // Not guaranteed to be sorted, so sort:
     std::sort(result.begin(), result.end());

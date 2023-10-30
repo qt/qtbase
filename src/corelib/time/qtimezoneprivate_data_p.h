@@ -89,7 +89,7 @@ struct QUtcData
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2023-08-01 from the
+    This part of the file was generated on 2023-10-30 from the
     Common Locale Data Repository v43 file supplemental/windowsZones.xml
 
     http://www.unicode.org/cldr/
@@ -156,7 +156,7 @@ static constexpr QZoneData zoneDataTable[] = {
     {     27,   207,  1278 }, // Central Europe Standard Time / Serbia
     {     27,   212,  1294 }, // Central Europe Standard Time / Slovakia
     {     27,   213,  1312 }, // Central Europe Standard Time / Slovenia
-    {     28,    29,  1329 }, // Central European Standard Time / Bosnia And Herzegovina
+    {     28,    29,  1329 }, // Central European Standard Time / Bosnia and Herzegovina
     {     28,    60,  1345 }, // Central European Standard Time / Croatia
     {     28,   140,  1359 }, // Central European Standard Time / Macedonia
     {     28,   187,  1373 }, // Central European Standard Time / Poland
@@ -212,7 +212,7 @@ static constexpr QZoneData zoneDataTable[] = {
     {     48,    81,  2727 }, // GMT Standard Time / Faroe Islands
     {     48,   100,  2743 }, // GMT Standard Time / Guernsey
     {     48,   114,  2759 }, // GMT Standard Time / Ireland
-    {     48,   115,  2773 }, // GMT Standard Time / Isle Of Man
+    {     48,   115,  2773 }, // GMT Standard Time / Isle of Man
     {     48,   121,  2792 }, // GMT Standard Time / Jersey
     {     48,   188,  2806 }, // GMT Standard Time / Portugal
     {     48,   220,  2837 }, // GMT Standard Time / Spain
@@ -222,7 +222,7 @@ static constexpr QZoneData zoneDataTable[] = {
     {     50,    89,  2902 }, // Greenwich Standard Time / Gambia
     {     50,    92,  2916 }, // Greenwich Standard Time / Ghana
     {     50,    95,  2929 }, // Greenwich Standard Time / Greenland
-    {     50,   101,  2950 }, // Greenwich Standard Time / Guinea Bissau
+    {     50,   101,  2950 }, // Greenwich Standard Time / Guinea-Bissau
     {     50,   102,  2964 }, // Greenwich Standard Time / Guinea
     {     50,   109,  2979 }, // Greenwich Standard Time / Iceland
     {     50,   118,  2998 }, // Greenwich Standard Time / Ivory Coast
@@ -314,7 +314,7 @@ static constexpr QZoneData zoneDataTable[] = {
     {     95,   184,  4603 }, // SA Pacific Standard Time / Peru
     {     96,     0,  4616 }, // SA Western Standard Time / AnyTerritory
     {     96,     8,  4626 }, // SA Western Standard Time / Anguilla
-    {     96,    10,  4643 }, // SA Western Standard Time / Antigua And Barbuda
+    {     96,    10,  4643 }, // SA Western Standard Time / Antigua and Barbuda
     {     96,    13,  4659 }, // SA Western Standard Time / Aruba
     {     96,    21,  4673 }, // SA Western Standard Time / Barbados
     {     96,    28,  4690 }, // SA Western Standard Time / Bolivia
@@ -332,17 +332,17 @@ static constexpr QZoneData zoneDataTable[] = {
     {     96,   158,  4938 }, // SA Western Standard Time / Montserrat
     {     96,   189,  4957 }, // SA Western Standard Time / Puerto Rico
     {     96,   195,  4977 }, // SA Western Standard Time / Saint Barthelemy
-    {     96,   197,  4999 }, // SA Western Standard Time / Saint Kitts And Nevis
+    {     96,   197,  4999 }, // SA Western Standard Time / Saint Kitts and Nevis
     {     96,   198,  5016 }, // SA Western Standard Time / Saint Lucia
     {     96,   199,  5033 }, // SA Western Standard Time / Saint Martin
-    {     96,   201,  5049 }, // SA Western Standard Time / Saint Vincent And Grenadines
+    {     96,   201,  5049 }, // SA Western Standard Time / Saint Vincent and Grenadines
     {     96,   211,  5068 }, // SA Western Standard Time / Sint Maarten
-    {     96,   236,  5090 }, // SA Western Standard Time / Trinidad And Tobago
+    {     96,   236,  5090 }, // SA Western Standard Time / Trinidad and Tobago
     {     96,   249,  5112 }, // SA Western Standard Time / United States Virgin Islands
-    {     97,   200,  5130 }, // Saint Pierre Standard Time / Saint Pierre And Miquelon
+    {     97,   200,  5130 }, // Saint Pierre Standard Time / Saint Pierre and Miquelon
     {     98,   193,  5147 }, // Sakhalin Standard Time / Russia
     {     99,   202,  5161 }, // Samoa Standard Time / Samoa
-    {    100,   204,  5174 }, // Sao Tome Standard Time / Sao Tome And Principe
+    {    100,   204,  5174 }, // Sao Tome Standard Time / Sao Tome and Principe
     {    101,   193,  5190 }, // Saratov Standard Time / Russia
     {    102,     0,  5205 }, // SE Asia Standard Time / AnyTerritory
     {    102,     9,  5215 }, // SE Asia Standard Time / Antarctica
@@ -361,7 +361,7 @@ static constexpr QZoneData zoneDataTable[] = {
     {    104,     0,  5427 }, // South Africa Standard Time / AnyTerritory
     {    104,    30,  5437 }, // South Africa Standard Time / Botswana
     {    104,    38,  5453 }, // South Africa Standard Time / Burundi
-    {    104,    57,  5470 }, // South Africa Standard Time / Congo Kinshasa
+    {    104,    57,  5470 }, // South Africa Standard Time / Congo - Kinshasa
     {    104,    76,  5488 }, // South Africa Standard Time / Eswatini
     {    104,   133,  5503 }, // South Africa Standard Time / Lesotho
     {    104,   142,  5517 }, // South Africa Standard Time / Malawi
@@ -386,7 +386,7 @@ static constexpr QZoneData zoneDataTable[] = {
     {    114,   235,  5819 }, // Tonga Standard Time / Tonga
     {    115,   193,  5837 }, // Transbaikal Standard Time / Russia
     {    116,   239,  5848 }, // Turkey Standard Time / Turkey
-    {    117,   241,  5864 }, // Turks And Caicos Standard Time / Turks And Caicos Islands
+    {    117,   241,  5864 }, // Turks And Caicos Standard Time / Turks and Caicos Islands
     {    118,   156,  5883 }, // Ulaanbaatar Standard Time / Mongolia
     {    119,   248,  5916 }, // US Eastern Standard Time / United States
     {    120,     0,  5983 }, // US Mountain Standard Time / AnyTerritory
@@ -403,7 +403,7 @@ static constexpr QZoneData zoneDataTable[] = {
     {    123,   186,  6178 }, // UTC-08 / Pitcairn
     {    124,     0,  6195 }, // UTC-02 / AnyTerritory
     {    124,    32,  6205 }, // UTC-02 / Brazil
-    {    124,   217,  6221 }, // UTC-02 / South Georgia And South Sandwich Islands
+    {    124,   217,  6221 }, // UTC-02 / South Georgia and South Sandwich Islands
     {    125,     0,  6244 }, // UTC / AnyTerritory
     {    126,     0,  6260 }, // UTC+12 / AnyTerritory
     {    126,   125,  6271 }, // UTC+12 / Kiribati
@@ -411,7 +411,7 @@ static constexpr QZoneData zoneDataTable[] = {
     {    126,   163,  6319 }, // UTC+12 / Nauru
     {    126,   242,  6333 }, // UTC+12 / Tuvalu
     {    126,   247,  6350 }, // UTC+12 / United States Outlying Islands
-    {    126,   256,  6363 }, // UTC+12 / Wallis And Futuna
+    {    126,   256,  6363 }, // UTC+12 / Wallis and Futuna
     {    127,     0,  6378 }, // UTC+13 / AnyTerritory
     {    127,   125,  6389 }, // UTC+13 / Kiribati
     {    127,   234,  6407 }, // UTC+13 / Tokelau
@@ -426,8 +426,8 @@ static constexpr QZoneData zoneDataTable[] = {
     {    132,    40,  6560 }, // W. Central Africa Standard Time / Cameroon
     {    132,    46,  6574 }, // W. Central Africa Standard Time / Central African Republic
     {    132,    48,  6588 }, // W. Central Africa Standard Time / Chad
-    {    132,    56,  6604 }, // W. Central Africa Standard Time / Congo Brazzaville
-    {    132,    57,  6623 }, // W. Central Africa Standard Time / Congo Kinshasa
+    {    132,    56,  6604 }, // W. Central Africa Standard Time / Congo - Brazzaville
+    {    132,    57,  6623 }, // W. Central Africa Standard Time / Congo - Kinshasa
     {    132,    73,  6639 }, // W. Central Africa Standard Time / Equatorial Guinea
     {    132,    88,  6653 }, // W. Central Africa Standard Time / Gabon
     {    132,   169,  6671 }, // W. Central Africa Standard Time / Nigeria
@@ -445,7 +445,7 @@ static constexpr QZoneData zoneDataTable[] = {
     {    133,   165,  6857 }, // W. Europe Standard Time / Netherlands
     {    133,   175,  6874 }, // W. Europe Standard Time / Norway
     {    133,   203,  6886 }, // W. Europe Standard Time / San Marino
-    {    133,   224,  6904 }, // W. Europe Standard Time / Svalbard And Jan Mayen
+    {    133,   224,  6904 }, // W. Europe Standard Time / Svalbard and Jan Mayen
     {    133,   225,  6924 }, // W. Europe Standard Time / Sweden
     {    133,   226,  6941 }, // W. Europe Standard Time / Switzerland
     {    133,   253,  6955 }, // W. Europe Standard Time / Vatican City
@@ -614,25 +614,23 @@ static constexpr QWindowsData windowsDataTable[] = {
 
 // IANA ID Index, UTC Offset
 static constexpr QUtcData utcDataTable[] = {
-    {   7788,     0 }, // UTC
-    {   7792,-50400 }, // UTC-14:00
-    {   7802,-46800 }, // UTC-13:00
-    {   7812,-43200 }, // UTC-12:00
-    {   7822,-39600 }, // UTC-11:00
-    {   7832,-36000 }, // UTC-10:00
-    {   7842,-32400 }, // UTC-09:00
-    {   7852,-28800 }, // UTC-08:00
-    {   7862,-25200 }, // UTC-07:00
-    {   7872,-21600 }, // UTC-06:00
-    {   7882,-18000 }, // UTC-05:00
-    {   7892,-16200 }, // UTC-04:30
-    {   7902,-14400 }, // UTC-04:00
-    {   7912,-12600 }, // UTC-03:30
-    {   7922,-10800 }, // UTC-03:00
-    {   7932, -7200 }, // UTC-02:00
-    {   7942, -3600 }, // UTC-01:00
-    {   7952,     0 }, // UTC-00:00
-    {   7962,     0 }, // UTC+00:00
+    {   7788,-50400 }, // UTC-14:00
+    {   7798,-46800 }, // UTC-13:00
+    {   7808,-43200 }, // UTC-12:00
+    {   7818,-39600 }, // UTC-11:00
+    {   7828,-36000 }, // UTC-10:00
+    {   7838,-32400 }, // UTC-09:00
+    {   7848,-28800 }, // UTC-08:00
+    {   7858,-25200 }, // UTC-07:00
+    {   7868,-21600 }, // UTC-06:00
+    {   7878,-18000 }, // UTC-05:00
+    {   7888,-16200 }, // UTC-04:30
+    {   7898,-14400 }, // UTC-04:00
+    {   7908,-12600 }, // UTC-03:30
+    {   7918,-10800 }, // UTC-03:00
+    {   7928, -7200 }, // UTC-02:00
+    {   7938, -3600 }, // UTC-01:00
+    {   7948,     0 }, // UTC
     {   7972,  3600 }, // UTC+01:00
     {   7982,  7200 }, // UTC+02:00
     {   7992, 10800 }, // UTC+03:00
@@ -1348,18 +1346,18 @@ static constexpr char ianaIdData[] = {
 0x6e, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x54, 0x61, 0x73, 0x68, 0x6b, 0x65, 0x6e, 0x74, 0x0,
 0x41, 0x73, 0x69, 0x61, 0x2f, 0x48, 0x65, 0x62, 0x72, 0x6f, 0x6e, 0x0, 0x41, 0x73, 0x69, 0x61,
 0x2f, 0x59, 0x61, 0x6b, 0x75, 0x74, 0x73, 0x6b, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61,
-0x2f, 0x57, 0x68, 0x69, 0x74, 0x65, 0x68, 0x6f, 0x72, 0x73, 0x65, 0x0, 0x55, 0x54, 0x43, 0x0,
-0x55, 0x54, 0x43, 0x2d, 0x31, 0x34, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x31, 0x33,
-0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x31, 0x32, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54,
-0x43, 0x2d, 0x31, 0x31, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x31, 0x30, 0x3a, 0x30,
-0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x39, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d,
-0x30, 0x38, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x37, 0x3a, 0x30, 0x30, 0x0,
-0x55, 0x54, 0x43, 0x2d, 0x30, 0x36, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x35,
-0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x34, 0x3a, 0x33, 0x30, 0x0, 0x55, 0x54,
-0x43, 0x2d, 0x30, 0x34, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x33, 0x3a, 0x33,
-0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x33, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d,
-0x30, 0x32, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x31, 0x3a, 0x30, 0x30, 0x0,
-0x55, 0x54, 0x43, 0x2d, 0x30, 0x30, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2b, 0x30, 0x30,
+0x2f, 0x57, 0x68, 0x69, 0x74, 0x65, 0x68, 0x6f, 0x72, 0x73, 0x65, 0x0, 0x55, 0x54, 0x43, 0x2d,
+0x31, 0x34, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x31, 0x33, 0x3a, 0x30, 0x30, 0x0,
+0x55, 0x54, 0x43, 0x2d, 0x31, 0x32, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x31, 0x31,
+0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x31, 0x30, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54,
+0x43, 0x2d, 0x30, 0x39, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x38, 0x3a, 0x30,
+0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x37, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d,
+0x30, 0x36, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x35, 0x3a, 0x30, 0x30, 0x0,
+0x55, 0x54, 0x43, 0x2d, 0x30, 0x34, 0x3a, 0x33, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x34,
+0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x33, 0x3a, 0x33, 0x30, 0x0, 0x55, 0x54,
+0x43, 0x2d, 0x30, 0x33, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x32, 0x3a, 0x30,
+0x30, 0x0, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x31, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x20,
+0x55, 0x54, 0x43, 0x2b, 0x30, 0x30, 0x3a, 0x30, 0x30, 0x20, 0x55, 0x54, 0x43, 0x2d, 0x30, 0x30,
 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2b, 0x30, 0x31, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54,
 0x43, 0x2b, 0x30, 0x32, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2b, 0x30, 0x33, 0x3a, 0x30,
 0x30, 0x0, 0x55, 0x54, 0x43, 0x2b, 0x30, 0x33, 0x3a, 0x33, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2b,
