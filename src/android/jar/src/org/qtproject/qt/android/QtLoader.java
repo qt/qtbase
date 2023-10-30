@@ -337,7 +337,11 @@ public abstract class QtLoader {
     @SuppressLint("DiscouragedApi")
     private ArrayList<String> getLocalLibrariesList() {
         int id = m_resources.getIdentifier("load_local_libs", "array", m_packageName);
-        return preferredAbiLibs(m_resources.getStringArray(id));
+        ArrayList<String> localLibs = new ArrayList<>();
+        for (String arrayItem : preferredAbiLibs(m_resources.getStringArray(id))) {
+            Collections.addAll(localLibs, arrayItem.split(":"));
+        }
+        return localLibs;
     }
 
     @SuppressLint("DiscouragedApi")
