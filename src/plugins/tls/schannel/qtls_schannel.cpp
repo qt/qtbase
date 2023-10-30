@@ -2098,6 +2098,15 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
     for (DWORD i = 0; i < verifyDepth; i++) {
         CERT_CHAIN_ELEMENT *element = chain->rgpElement[i];
         QSslCertificate certificate = getCertificateFromChainElement(element);
+        if (certificate.isNull()) {
+            const auto &previousCert = !peerCertificateChain.isEmpty() ? peerCertificateChain.last()
+                                                                       : QSslCertificate();
+            auto error = QSslError(QSslError::SslError::UnableToGetIssuerCertificate, previousCert);
+            sslErrors += error;
+            emit q->peerVerifyError(error);
+            if (previousCert.isNull() || q->state() != QAbstractSocket::ConnectedState)
+                return false;
+        }
         const QList<QSslCertificateExtension> extensions = certificate.extensions();
 
 #ifdef QSSLSOCKET_DEBUG

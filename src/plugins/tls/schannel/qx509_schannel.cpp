@@ -41,10 +41,11 @@ QSslCertificate X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(const
     QByteArray derData = QByteArray((const char *)certificateContext->pbCertEncoded,
                                     certificateContext->cbCertEncoded);
     QSslCertificate certificate(derData, QSsl::Der);
-
-    auto *certBackend = QTlsBackend::backend<X509CertificateSchannel>(certificate);
-    Q_ASSERT(certBackend);
-    certBackend->certificateContext = CertDuplicateCertificateContext(certificateContext);
+    if (!certificate.isNull()) {
+        auto *certBackend = QTlsBackend::backend<X509CertificateSchannel>(certificate);
+        Q_ASSERT(certBackend);
+        certBackend->certificateContext = CertDuplicateCertificateContext(certificateContext);
+    }
     return certificate;
 }
 
