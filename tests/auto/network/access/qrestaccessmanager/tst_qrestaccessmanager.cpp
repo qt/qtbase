@@ -108,6 +108,7 @@ void tst_QRestAccessManager::networkRequestReply()
     const QByteArray methodPOST{"POST"_ba};
     const QByteArray methodGET{"GET"_ba};
     const QByteArray methodPUT{"PUT"_ba};
+    const QByteArray methodCUSTOM{"FOOBAR"_ba};
 
     // DELETE
     manager.deleteResource(request, this, callback);
@@ -135,6 +136,22 @@ void tst_QRestAccessManager::networkRequestReply()
     manager.get(request, &bufferIoDevice, this, callback);
     VERIFY_REPLY_OK(methodGET);
     QCOMPARE(serverSideRequest.body, ioDeviceData);
+
+    // CUSTOM
+    manager.sendCustomRequest(request, methodCUSTOM, byteArrayData, this, callback);
+    VERIFY_REPLY_OK(methodCUSTOM);
+    QCOMPARE(serverSideRequest.body, byteArrayData);
+
+    manager.sendCustomRequest(request, methodCUSTOM, &bufferIoDevice, this, callback);
+    VERIFY_REPLY_OK(methodCUSTOM);
+    QCOMPARE(serverSideRequest.body, ioDeviceData);
+
+    multiPart.reset(new QHttpMultiPart(QHttpMultiPart::FormDataType));
+    multiPart->append(part);
+    manager.sendCustomRequest(request, methodCUSTOM, multiPart.get(), this, callback);
+    VERIFY_REPLY_OK(methodCUSTOM);
+    QVERIFY(serverSideRequest.body.contains("--boundary"_ba));
+    QVERIFY(serverSideRequest.body.contains("multipart_text"_ba));
 
     // POST
     manager.post(request, byteArrayData, this, callback);
@@ -206,6 +223,8 @@ void tst_QRestAccessManager::networkRequestReply()
     //manager.head(request, "f"_ba); // data not allowed
     //manager.post(request, ""_ba, this, [](int param){}); // Wrong callback signature
     //manager.get(request, this, [](int param){}); // Wrong callback signature
+    //manager.sendCustomRequest(request, this, [](){}); // No verb && no data
+    //manager.sendCustomRequest(request, "FOOBAR", this, [](){}); // No verb || no data
 }
 
 void tst_QRestAccessManager::abort()

@@ -82,3 +82,10 @@ manager->deleteResource(request, this, [this](QRestReply *reply) {
 });
 //! [8]
 
+
+//! [9]
+manager->sendCustomRequest(request, "MYMETHOD",  myData,  this, [this](QRestReply *reply) {
+    if (reply->isSuccess())
+        // ...
+});
+//! [9]

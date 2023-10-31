@@ -32,7 +32,6 @@ QRestReply *METHOD##WithDataImpl(const QNetworkRequest &request, DATA data,     
                                  const QObject *context, QtPrivate::QSlotObjectBase *slot);      \
 /* end */
 
-
 #define QREST_METHOD_NO_DATA(METHOD)                                                             \
 public:                                                                                          \
 template <typename Functor, if_compatible_callback<Functor> = true>                              \
@@ -50,6 +49,26 @@ QRestReply *METHOD(const QNetworkRequest &request)                              
 private:                                                                                         \
 QRestReply *METHOD##NoDataImpl(const QNetworkRequest &request,                                   \
                                const QObject *context, QtPrivate::QSlotObjectBase *slot);        \
+/* end */
+
+#define QREST_METHOD_CUSTOM_WITH_DATA(DATA)                                                      \
+public:                                                                                          \
+template <typename Functor, if_compatible_callback<Functor> = true>                              \
+QRestReply *sendCustomRequest(const QNetworkRequest& request, const QByteArray &method, DATA data, \
+       const ContextTypeForFunctor<Functor> *context,                                            \
+       Functor &&callback)                                                                       \
+{                                                                                                \
+    return customWithDataImpl(request, method, data, context,                                    \
+           QtPrivate::makeCallableObject<CallbackPrototype>(std::forward<Functor>(callback)));   \
+}                                                                                                \
+QRestReply *sendCustomRequest(const QNetworkRequest& request, const QByteArray &method, DATA data) \
+{                                                                                                \
+    return customWithDataImpl(request, method, data, nullptr, nullptr);                          \
+}                                                                                                \
+private:                                                                                         \
+QRestReply *customWithDataImpl(const QNetworkRequest& request, const QByteArray &method,         \
+                               DATA data, const QObject* context,                                \
+                               QtPrivate::QSlotObjectBase *slot);                                \
 /* end */
 
 class QRestAccessManagerPrivate;
@@ -95,6 +114,9 @@ public:
     QREST_METHOD_WITH_DATA(put, const QByteArray &)
     QREST_METHOD_WITH_DATA(put, QHttpMultiPart *)
     QREST_METHOD_WITH_DATA(put, QIODevice *)
+    QREST_METHOD_CUSTOM_WITH_DATA(const QByteArray &)
+    QREST_METHOD_CUSTOM_WITH_DATA(QIODevice *)
+    QREST_METHOD_CUSTOM_WITH_DATA(QHttpMultiPart *)
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
@@ -113,6 +135,7 @@ private:
 
 #undef QREST_METHOD_NO_DATA
 #undef QREST_METHOD_WITH_DATA
+#undef QREST_METHOD_CUSTOM_WITH_DATA
 
 QT_END_NAMESPACE
 

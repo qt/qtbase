@@ -56,6 +56,7 @@ public:
         Put,
         Post,
         Delete,
+        Custom,
     } method = Method::Unknown;
 
     // Parsing helpers for incoming data => HttpData

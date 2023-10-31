@@ -151,6 +151,8 @@ bool HttpTestServer::readMethod(QTcpSocket *socket)
             method = Method::Post;
         else if (fragment == "DELETE")
             method = Method::Delete;
+        else if (fragment == "FOOBAR") // used by custom verb/method tests
+            method = Method::Custom;
         else
             qWarning("Invalid operation %s", fragment.data());
 

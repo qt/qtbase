@@ -109,6 +109,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li \c put()
         \li \c head()
         \li \c deleteResource()
+        \li \c sendCustomRequest()
     \row
         \li No data
         \li X
@@ -116,6 +117,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li -
         \li X
         \li X
+        \li -
     \row
         \li QByteArray
         \li X
@@ -123,11 +125,13 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li -
         \li -
+        \li X
     \row
         \li QJsonObject *)
         \li X
         \li X
         \li X
+        \li -
         \li -
         \li -
     \row
@@ -137,11 +141,13 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li -
         \li -
+        \li -
     \row
         \li QVariantMap **)
         \li -
         \li X
         \li X
+        \li -
         \li -
         \li -
     \row
@@ -151,6 +157,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li -
         \li -
+        \li X
     \row
         \li QIODevice
         \li X
@@ -158,6 +165,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li -
         \li -
+        \li X
     \endtable
 
     *) QJsonObject and QJsonArray are sent in \l QJsonDocument::Compact format,
@@ -476,6 +484,44 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         QRestAccessManager::requestFinished()
 */
 
+/*!
+    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::sendCustomRequest(
+            const QNetworkRequest& request, const QByteArray &method, const QByteArray &data,
+            const ContextTypeForFunctor<Functor> *context,
+            Functor &&callback)
+
+    Issues \a request based HTTP request with custom \a method and the
+    provided \a data.
+
+    The optional \a callback and \a context object can be provided for
+    handling the request completion as illustrated below:
+
+    \snippet code/src_network_access_qrestaccessmanager.cpp 9
+
+    Alternatively the signals of the returned QRestReply* object can be
+    used. For further information see
+    \l {Issuing Network Requests and Handling Replies}.
+
+*/
+
+/*!
+    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::sendCustomRequest(
+            const QNetworkRequest& request, const QByteArray &method, QIODevice *data,
+            const ContextTypeForFunctor<Functor> *context,
+            Functor &&callback)
+
+    \overload
+*/
+
+/*!
+    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::sendCustomRequest(
+            const QNetworkRequest& request, const QByteArray &method, QHttpMultiPart *data,
+            const ContextTypeForFunctor<Functor> *context,
+            Functor &&callback)
+
+    \overload
+*/
+
 /*
     Memory management/object ownership:
     - QRestAM is parent of QNAM and QRestReplies
@@ -752,6 +798,36 @@ QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request, 
 {
     Q_D(QRestAccessManager);
     return d->executeRequest([&]() { return d->qnam->put(request, data); }, context, slot);
+}
+
+QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,
+                                                   const QByteArray& method, const QByteArray &data,
+                                                   const QObject *context,
+                                                   QtPrivate::QSlotObjectBase *slot)
+{
+    Q_D(QRestAccessManager);
+    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, method, data); },
+                             context, slot);
+}
+
+QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,
+                                                   const QByteArray& method, QIODevice *data,
+                                                   const QObject *context,
+                                                   QtPrivate::QSlotObjectBase *slot)
+{
+    Q_D(QRestAccessManager);
+    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, method, data); },
+                             context, slot);
+}
+
+QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,
+                                                   const QByteArray& method, QHttpMultiPart *data,
+                                                   const QObject *context,
+                                                   QtPrivate::QSlotObjectBase *slot)
+{
+    Q_D(QRestAccessManager);
+    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, method, data); },
+                             context, slot);
 }
 
 QRestReply *QRestAccessManagerPrivate::createActiveRequest(QNetworkReply *networkReply,
