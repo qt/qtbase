@@ -49,5 +49,5 @@ android
 [render]
 wayland
 [hoverPosition]
-macos-14 x86_64
+macos-14 x86
 
