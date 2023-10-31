@@ -28,9 +28,9 @@ class Converter
 {
 protected:
     Converter();
+    static bool isNull(const Converter *converter); // in nullconverter.cpp
 
 public:
-    static Converter *null;
 
     enum class Direction { In = 1, Out = 2, InOut = In | Out };
     Q_DECLARE_FLAGS(Directions, Direction)

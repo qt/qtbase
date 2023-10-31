@@ -6,7 +6,10 @@
 using namespace Qt::StringLiterals;
 
 static NullConverter nullConverter;
-Converter *Converter::null = &nullConverter;
+bool Converter::isNull(const Converter *converter)
+{
+    return converter == &nullConverter;
+}
 
 QString NullConverter::name() const
 {
