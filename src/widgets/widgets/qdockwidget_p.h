@@ -52,8 +52,8 @@ class QDockWidgetPrivate : public QWidgetPrivate
 
 public:
     void init();
-    void _q_toggleView(bool); // private slot
-    void _q_toggleTopLevel(); // private slot
+    void toggleView(bool);
+    void toggleTopLevel();
 
     void updateButtons();
     static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos);

@@ -85,8 +85,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QDockWidget)
     Q_DISABLE_COPY(QDockWidget)
-    Q_PRIVATE_SLOT(d_func(), void _q_toggleView(bool))
-    Q_PRIVATE_SLOT(d_func(), void _q_toggleTopLevel())
     friend class QDockAreaLayout;
     friend class QDockWidgetItem;
     friend class QMainWindowLayout;
