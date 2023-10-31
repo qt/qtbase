@@ -14,27 +14,6 @@
 
 using namespace Qt::StringLiterals;
 
-Converter::Converter()
-{
-    converters().append(this);
-}
-
-Converter::~Converter()
-{
-    converters().removeAll(this);
-}
-
-QList<const Converter *> &Converter::converters()
-{
-    Q_CONSTINIT static QList<const Converter *> store;
-    return store;
-}
-
-const QList<const Converter *> &Converter::allConverters()
-{
-    return converters();
-}
-
 static const Converter *prepareConverter(QString format, Converter::Direction direction,
                                          QFile *stream)
 {

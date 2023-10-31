@@ -11,6 +11,7 @@ target.path = $$[QT_INSTALL_EXAMPLES]/corelib/serialization/convert
 INSTALLS += target
 
 SOURCES += main.cpp \
+    converter.cpp \
     cborconverter.cpp \
     datastreamconverter.cpp \
     debugtextdumper.cpp \
