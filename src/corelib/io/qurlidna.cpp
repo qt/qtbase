@@ -777,7 +777,7 @@ bool DomainValidityChecker::checkLabel(const QString &label, QUrl::AceProcessing
     return true;
 }
 
-static QString convertToAscii(const QString &normalizedDomain, AceLeadingDot dot)
+static QString convertToAscii(QStringView normalizedDomain, AceLeadingDot dot)
 {
     qsizetype lastIdx = 0;
     QString aceForm; // this variable is here for caching
@@ -795,7 +795,7 @@ static QString convertToAscii(const QString &normalizedDomain, AceLeadingDot dot
             if (dot == ForbidLeadingDot || idx > 0)
                 return {}; // two delimiters in a row -- empty label not allowed
         } else {
-            const auto label = QStringView(normalizedDomain).sliced(lastIdx, labelLength);
+            const auto label = normalizedDomain.sliced(lastIdx, labelLength);
             aceForm.clear();
             qt_punycodeEncoder(label, &aceForm);
             if (aceForm.isEmpty())
@@ -814,7 +814,7 @@ static QString convertToAscii(const QString &normalizedDomain, AceLeadingDot dot
     return aceResult;
 }
 
-static bool checkAsciiDomainName(const QString &normalizedDomain, AceLeadingDot dot,
+static bool checkAsciiDomainName(QStringView normalizedDomain, AceLeadingDot dot,
                                  bool *usesPunycode)
 {
     qsizetype lastIdx = 0;
@@ -833,7 +833,7 @@ static bool checkAsciiDomainName(const QString &normalizedDomain, AceLeadingDot 
             if (dot == ForbidLeadingDot || idx > 0)
                 return false; // two delimiters in a row -- empty label not allowed
         } else {
-            const auto label = QStringView(normalizedDomain).sliced(lastIdx, labelLength);
+            const auto label = normalizedDomain.sliced(lastIdx, labelLength);
             if (!validateAsciiLabel(label))
                 return false;
 
