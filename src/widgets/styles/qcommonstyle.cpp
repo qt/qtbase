@@ -5751,11 +5751,13 @@ QIcon QCommonStylePrivate::iconFromApplicationTheme(QCommonStyle::StandardPixmap
             return iconFromApplicationTheme(rtl(option) ? QStyle::SP_ArrowRight
                                                         : QStyle::SP_ArrowLeft,
                                             option, widget);
+        case QStyle::SP_DirLinkIcon:
         case QStyle::SP_FileLinkIcon: {
+                const auto si = (standardIcon == QStyle::SP_DirLinkIcon)
+                    ? QStyle::SP_DirIcon : QStyle::SP_FileIcon;
                 QIcon icon;
                 const QIcon linkIcon = QIcon::fromTheme("emblem-symbolic-link"_L1);
-                const QIcon baseIcon = iconFromApplicationTheme(QStyle::SP_FileIcon,
-                                                                option, widget);
+                const QIcon baseIcon = iconFromApplicationTheme(si, option, widget);
                 if (!linkIcon.isNull() || !baseIcon.isNull()) {
                     const auto sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
                     const auto dpr = qt_getDevicePixelRatio(widget);
@@ -5771,26 +5773,6 @@ QIcon QCommonStylePrivate::iconFromApplicationTheme(QCommonStyle::StandardPixmap
                 return icon;
             }
             break;
-        case QStyle::SP_DirLinkIcon: {
-                QIcon icon;
-                const QIcon linkIcon = QIcon::fromTheme("emblem-symbolic-link"_L1);
-                const QIcon baseIcon = iconFromApplicationTheme(QStyle::SP_DirIcon,
-                                                                option, widget);
-                if (!linkIcon.isNull() || !baseIcon.isNull()) {
-                    const auto sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
-                    const auto dpr = qt_getDevicePixelRatio(widget);
-                    for (const auto size : sizes) {
-                        QPixmap basePixmap = baseIcon.pixmap(size, dpr);
-                        QPixmap linkPixmap = linkIcon.pixmap(size / 2, dpr);
-                        QPainter painter(&basePixmap);
-                        const auto w = size.width() / 2;
-                        painter.drawPixmap(w, w, linkPixmap);
-                        icon.addPixmap(basePixmap);
-                    }
-                }
-                return icon;
-            }
-        break;
         case QStyle::SP_LineEditClearButton: {
             const QString directionalThemeName = rtl(option)
                 ? QStringLiteral("edit-clear-locationbar-ltr") : QStringLiteral("edit-clear-locationbar-rtl");
