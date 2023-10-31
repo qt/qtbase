@@ -14,18 +14,25 @@
 
 using namespace Qt::StringLiterals;
 
-static QList<const Converter *> *availableConverters;
-
 Converter::Converter()
 {
-    if (!availableConverters)
-        availableConverters = new QList<const Converter *>;
-    availableConverters->append(this);
+    converters().append(this);
 }
 
 Converter::~Converter()
 {
-    availableConverters->removeAll(this);
+    converters().removeAll(this);
+}
+
+QList<const Converter *> &Converter::converters()
+{
+    Q_CONSTINIT static QList<const Converter *> store;
+    return store;
+}
+
+const QList<const Converter *> &Converter::allConverters()
+{
+    return converters();
 }
 
 static const Converter *prepareConverter(QString format, Converter::Direction direction,
@@ -46,7 +53,7 @@ static const Converter *prepareConverter(QString format, Converter::Direction di
         qFatal("Could not open \"%s\" for %s: %s",
                qPrintable(stream->fileName()), dirn, qPrintable(stream->errorString()));
     } else if (format == "auto"_L1) {
-        for (const Converter *conv : std::as_const(*availableConverters)) {
+        for (const Converter *conv : Converter::allConverters()) {
             if (conv->directions().testFlag(direction) && conv->probeFile(stream))
                 return conv;
         }
@@ -56,7 +63,7 @@ static const Converter *prepareConverter(QString format, Converter::Direction di
         // Input format, however, we must know before we can call that:
         qFatal("Could not determine input format. Specify it with the -I option.");
     } else {
-        for (const Converter *conv : std::as_const(*availableConverters)) {
+        for (const Converter *conv : Converter::allConverters()) {
             if (conv->name() == format) {
                 if (!conv->directions().testFlag(direction)) {
                     qWarning("File format \"%s\" cannot be used for %s",
@@ -77,7 +84,7 @@ int main(int argc, char *argv[])
 
     QStringList inputFormats;
     QStringList outputFormats;
-    for (const Converter *conv : std::as_const(*availableConverters)) {
+    for (const Converter *conv : Converter::allConverters()) {
         auto direction = conv->directions();
         QString name = conv->name();
         if (direction.testFlag(Converter::Direction::In))
@@ -130,7 +137,7 @@ int main(int argc, char *argv[])
 
     if (parser.isSet(formatOptionsOption)) {
         QString format = parser.value(formatOptionsOption);
-        for (const Converter *conv : std::as_const(*availableConverters)) {
+        for (const Converter *conv : Converter::allConverters()) {
             if (conv->name() == format) {
                 const char *help = conv->optionsHelp();
                 if (help) {

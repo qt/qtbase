@@ -5,16 +5,19 @@
 #define CONVERTER_H
 
 #include <QIODevice>
+#include <QList>
 #include <QStringList>
 #include <QVariant>
 
 class Converter
 {
+    static QList<const Converter *> &converters();
 protected:
     Converter();
     static bool isNull(const Converter *converter); // in nullconverter.cpp
 
 public:
+    static const QList<const Converter *> &allConverters();
 
     enum class Direction { In = 1, Out = 2, InOut = In | Out };
     Q_DECLARE_FLAGS(Directions, Direction)
