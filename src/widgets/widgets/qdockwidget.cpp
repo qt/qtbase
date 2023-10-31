@@ -629,12 +629,13 @@ void QDockWidgetPrivate::init()
 
     QAbstractButton *button = new QDockWidgetTitleButton(q);
     button->setObjectName("qt_dockwidget_floatbutton"_L1);
-    QObject::connect(button, SIGNAL(clicked()), q, SLOT(_q_toggleTopLevel()));
+    QObjectPrivate::connect(button, &QAbstractButton::clicked,
+                            this, &QDockWidgetPrivate::toggleTopLevel);
     layout->setWidgetForRole(QDockWidgetLayout::FloatButton, button);
 
     button = new QDockWidgetTitleButton(q);
     button->setObjectName("qt_dockwidget_closebutton"_L1);
-    QObject::connect(button, SIGNAL(clicked()), q, SLOT(close()));
+    QObject::connect(button, &QAbstractButton::clicked, q, &QDockWidget::close);
     layout->setWidgetForRole(QDockWidgetLayout::CloseButton, button);
 
     font = QApplication::font("QDockWidgetTitle");
@@ -645,8 +646,8 @@ void QDockWidgetPrivate::init()
     toggleViewAction->setMenuRole(QAction::NoRole);
     fixedWindowTitle = qt_setWindowTitle_helperHelper(q->windowTitle(), q);
     toggleViewAction->setText(fixedWindowTitle);
-    QObject::connect(toggleViewAction, SIGNAL(triggered(bool)),
-                        q, SLOT(_q_toggleView(bool)));
+    QObjectPrivate::connect(toggleViewAction, &QAction::triggered,
+                            this, &QDockWidgetPrivate::toggleView);
 #endif
 
     updateButtons();
@@ -681,7 +682,7 @@ void QDockWidget::initStyleOption(QStyleOptionDockWidget *option) const
     option->verticalTitleBar = l->verticalTitleBar;
 }
 
-void QDockWidgetPrivate::_q_toggleView(bool b)
+void QDockWidgetPrivate::toggleView(bool b)
 {
     Q_Q(QDockWidget);
     if (b == q->isHidden()) {
@@ -729,7 +730,7 @@ void QDockWidgetPrivate::updateButtons()
     layout->invalidate();
 }
 
-void QDockWidgetPrivate::_q_toggleTopLevel()
+void QDockWidgetPrivate::toggleTopLevel()
 {
     Q_Q(QDockWidget);
     q->setFloating(!q->isFloating());
@@ -959,7 +960,7 @@ bool QDockWidgetPrivate::mouseDoubleClickEvent(QMouseEvent *event)
 
         if (event->button() == Qt::LeftButton && titleArea.contains(event->position().toPoint()) &&
             hasFeature(this, QDockWidget::DockWidgetFloatable)) {
-            _q_toggleTopLevel();
+            toggleTopLevel();
             return true;
         }
     }
@@ -1123,7 +1124,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
 #endif
                         break;
         case QEvent::NonClientAreaMouseButtonDblClick:
-            _q_toggleTopLevel();
+            toggleTopLevel();
             break;
         default:
             break;
