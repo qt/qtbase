@@ -291,7 +291,6 @@ public class QtNative
                 @Override
                 public void run() {
                     res[0] = startQtAndroidPlugin(qtParams);
-                    QtDisplayManager.setApplicationDisplayMetrics(m_activity);
                 }
             });
             m_qtThread.post(new Runnable() {

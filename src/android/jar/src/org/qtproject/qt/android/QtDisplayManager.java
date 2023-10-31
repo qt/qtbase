@@ -38,10 +38,6 @@ public class QtDisplayManager {
     public static native void handleScreenRemoved(int displayId);
     // screen methods
 
-    private static int m_widthBeforeStart = 0;
-    private static int m_heightBeforeStart = 0;
-
-
     // Keep in sync with QtAndroid::SystemUiVisibility in androidjnimain.h
     public static final int SYSTEM_UI_VISIBILITY_NORMAL = 0;
     public static final int SYSTEM_UI_VISIBILITY_FULLSCREEN = 1;
@@ -269,17 +265,9 @@ public class QtDisplayManager {
             refreshRate = display.getRefreshRate();
         }
 
-        m_widthBeforeStart = width;
-        m_heightBeforeStart = height;
-
         setDisplayMetrics(maxWidth, maxHeight, insetLeft, insetTop,
-                m_widthBeforeStart, m_heightBeforeStart, xdpi, ydpi,
+                width, height, xdpi, ydpi,
                 scaledDensity, density, refreshRate);
-    }
-
-    public static void setApplicationDisplayMetrics(Activity activity)
-    {
-        setApplicationDisplayMetrics(activity, m_widthBeforeStart, m_heightBeforeStart);
     }
 
     public static int getDisplayRotation(Activity activity) {
