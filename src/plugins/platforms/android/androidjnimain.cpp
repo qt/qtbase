@@ -50,6 +50,9 @@ static AAssetManager *m_assetManager = nullptr;
 static jobject m_assets = nullptr;
 static jobject m_resourcesObj = nullptr;
 
+static jclass m_qtActivityClass = nullptr;
+static jclass m_qtServiceClass = nullptr;
+
 static QtJniTypes::QtActivityDelegate m_activityDelegate = nullptr;
 static QtJniTypes::QtInputDelegate m_inputDelegate = nullptr;
 
@@ -201,6 +204,20 @@ namespace QtAndroid
         }
 
         return m_inputDelegate;
+    }
+
+    bool isQtApplication()
+    {
+        // Returns true if the app is a Qt app, i.e. Qt controls the whole app and
+        // the Activity/Service is created by Qt. Returns false if instead Qt is
+        // embedded into a native Android app, where the Activity/Service is created
+        // by the user, outside of Qt, and Qt content is added as a view.
+        JNIEnv *env = QJniEnvironment::getJniEnv();
+        static const jint isQtActivity = env->IsInstanceOf(QtAndroidPrivate::activity().object(),
+                                                           m_qtActivityClass);
+        static const jint isQtService = env->IsInstanceOf(QtAndroidPrivate::service().object(),
+                                                          m_qtServiceClass);
+        return isQtActivity || isQtService;
     }
 
     void notifyAccessibilityLocationChange(uint accessibilityObjectId)
@@ -500,6 +517,10 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
         env->DeleteGlobalRef(m_bitmapDrawableClass);
     if (m_assets)
         env->DeleteGlobalRef(m_assets);
+    if (m_qtActivityClass)
+        env->DeleteGlobalRef(m_qtActivityClass);
+    if (m_qtServiceClass)
+        env->DeleteGlobalRef(m_qtServiceClass);
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
@@ -816,6 +837,11 @@ static bool registerNatives(QJniEnvironment &env)
     GET_AND_CHECK_METHOD(m_bitmapDrawableConstructorMethodID,
                          m_bitmapDrawableClass,
                          "<init>", "(Landroid/content/res/Resources;Landroid/graphics/Bitmap;)V");
+
+    FIND_AND_CHECK_CLASS("org/qtproject/qt/android/QtActivityBase");
+    m_qtActivityClass = static_cast<jclass>(env->NewGlobalRef(clazz));
+    FIND_AND_CHECK_CLASS("org/qtproject/qt/android/QtServiceBase");
+    m_qtServiceClass = static_cast<jclass>(env->NewGlobalRef(clazz));
 
     return true;
 }
