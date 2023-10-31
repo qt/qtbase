@@ -74,6 +74,7 @@ protected:
     void setNativeGeometry(const QRect &geometry);
     void sendExpose() const;
     bool blockedByModal() const;
+    bool isEmbeddingContainer() const;
 
     Qt::WindowFlags m_windowFlags;
     Qt::WindowStates m_windowState;
