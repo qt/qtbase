@@ -61,7 +61,7 @@ function(_qt_internal_handle_ios_launch_screen target)
 
             file(MAKE_DIRECTORY "${launch_screen_out_dir}")
 
-            file(COPY "${launch_screen_in_path}" DESTINATION "${launch_screen_out_path}")
+            configure_file("${launch_screen_in_path}" "${launch_screen_out_path}" COPYONLY)
 
             set(final_launch_screen_path "${launch_screen_out_path}")
         else()
