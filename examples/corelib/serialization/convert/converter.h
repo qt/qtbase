@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QVariant>
 
+//! [0]
 class Converter
 {
     static QList<const Converter *> &converters();
@@ -39,5 +40,6 @@ public:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Converter::Directions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Converter::Options)
+//! [0]
 
 #endif // CONVERTER_H

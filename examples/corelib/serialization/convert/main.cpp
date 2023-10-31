@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
+//! [0]
     QStringList inputFormats;
     QStringList outputFormats;
     for (const Converter *conv : Converter::allConverters()) {
@@ -71,6 +72,7 @@ int main(int argc, char *argv[])
         if (direction.testFlag(Converter::Direction::Out))
             outputFormats << name;
     }
+//! [0]
     inputFormats.sort();
     outputFormats.sort();
     inputFormats.prepend("auto"_L1);
@@ -116,6 +118,7 @@ int main(int argc, char *argv[])
 
     if (parser.isSet(formatOptionsOption)) {
         QString format = parser.value(formatOptionsOption);
+//! [1]
         for (const Converter *conv : Converter::allConverters()) {
             if (conv->name() == format) {
                 const char *help = conv->optionsHelp();
@@ -128,10 +131,12 @@ int main(int argc, char *argv[])
                 return EXIT_SUCCESS;
             }
         }
+//! [1]
 
         qFatal("Unknown file format '%s'", qPrintable(format));
     }
 
+//! [2]
     QStringList files = parser.positionalArguments();
     QFile input(files.value(0));
     QFile output(files.value(1));
@@ -146,4 +151,5 @@ int main(int argc, char *argv[])
                "Internal error: converter format did not provide default");
     outconv->saveFile(&output, data, parser.values(optionOption));
     return EXIT_SUCCESS;
+//! [2]
 }

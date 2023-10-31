@@ -3,6 +3,7 @@
 
 #include "converter.h"
 
+//! [0]
 Converter::Converter()
 {
     converters().append(this);
@@ -23,6 +24,7 @@ const QList<const Converter *> &Converter::allConverters()
 {
     return converters();
 }
+//! [0]
 
 // Some virtual methods that Converter classes needn't override, when not relevant:
 Converter::Options Converter::outputOptions() const { return {}; }
