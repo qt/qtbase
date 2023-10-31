@@ -45,6 +45,9 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
             setGeometry(finalNativeGeometry);
     }
 
+    if (isEmbeddingContainer())
+        return;
+
     if (parent())
         m_nativeParentQtWindow = static_cast<QAndroidPlatformWindow*>(parent())->nativeWindow();
 
@@ -294,6 +297,13 @@ bool QAndroidPlatformWindow::blockedByModal() const
 {
     QWindow *modalWindow = QGuiApplication::modalWindow();
     return modalWindow && modalWindow != window();
+}
+
+bool QAndroidPlatformWindow::isEmbeddingContainer() const
+{
+    // Returns true if the window is a wrapper for a foreign window solely to allow embedding Qt
+    // into a native Android app, in which case we should not try to control it more than we "need" to
+    return !QtAndroid::isQtApplication() && window()->isTopLevel();
 }
 
 void QAndroidPlatformWindow::setSurface(JNIEnv *env, jobject object, jint windowId,

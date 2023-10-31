@@ -22,6 +22,8 @@ public:
     void applicationStateChanged(Qt::ApplicationState state) override;
     bool isForeignWindow() const override { return true; }
 
+    WId winId() const override;
+
 private:
     void addViewToWindow();
 
