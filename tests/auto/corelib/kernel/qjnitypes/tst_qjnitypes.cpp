@@ -137,7 +137,7 @@ enum class IntEnum : int {};
 enum class UnsignedEnum : unsigned {};
 enum class Int8Enum : int8_t {};
 enum class ShortEnum : short {};
-enum class LongEnum : long {};
+enum class LongEnum : quint64 {};
 enum class JIntEnum : jint {};
 
 static_assert(QtJniTypes::Traits<UnscopedEnum>::signature() == "I");
@@ -153,7 +153,7 @@ void tst_QJniTypes::initTestCase()
 
 }
 
-static bool nativeFunction(JNIEnv *, jclass, int, jstring, long)
+static bool nativeFunction(JNIEnv *, jclass, int, jstring, quint64)
 {
     return true;
 }

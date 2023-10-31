@@ -28,7 +28,7 @@ void QAndroidPlatformClipboard::onClipboardDataChanged(JNIEnv *env, jobject obj,
 QAndroidPlatformClipboard::QAndroidPlatformClipboard()
 {
     m_clipboardManager = QtClipboardManager::construct(QtAndroidPrivate::context(),
-                                                       reinterpret_cast<long>(this));
+                                                       reinterpret_cast<jlong>(this));
 }
 
 QAndroidPlatformClipboard::~QAndroidPlatformClipboard()

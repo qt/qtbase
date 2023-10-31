@@ -221,7 +221,7 @@ struct Traits {
             return CTString("I");
         } else if constexpr (std::is_same_v<T, jlong>) {
             return CTString("J");
-        } else if constexpr (std::is_same_v<T, long>) {
+        } else if constexpr (std::is_same_v<T, quint64>) {
             return CTString("J");
         } else if constexpr (std::is_same_v<T, jfloat>) {
             return CTString("F");
