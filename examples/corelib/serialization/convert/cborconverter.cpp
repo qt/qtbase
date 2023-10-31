@@ -59,9 +59,9 @@ QT_END_NAMESPACE
 // non-string keys in CBOR maps (QVariantMap can't handle those). Instead, we
 // have our own set of converter functions so we can keep the keys properly.
 
+//! [0]
 static QVariant convertCborValue(const QCborValue &value);
 
-//! [0]
 static QVariant convertCborMap(const QCborMap &map)
 {
     VariantOrderedMap result;
@@ -89,8 +89,9 @@ static QVariant convertCborValue(const QCborValue &value)
     return value.toVariant();
 }
 //! [0]
-enum TrimFloatingPoint { Double, Float, Float16 };
+
 //! [1]
+enum TrimFloatingPoint { Double, Float, Float16 };
 static QCborValue convertFromVariant(const QVariant &v, TrimFloatingPoint fpTrimming)
 {
     if (v.userType() == QMetaType::QVariantList) {
@@ -208,7 +209,6 @@ bool CborConverter::probeFile(QIODevice *f) const
     return f->isReadable() && f->peek(3) == QByteArray("\xd9\xd9\xf7", 3);
 }
 
-//! [2]
 QVariant CborConverter::loadFile(QIODevice *f, const Converter *&outputConverter) const
 {
     const char *ptr = nullptr;
@@ -242,11 +242,9 @@ QVariant CborConverter::loadFile(QIODevice *f, const Converter *&outputConverter
         return contents.toVariant();
     return convertCborValue(contents);
 }
-//! [2]
-//! [3]
+
 void CborConverter::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options) const
 {
-    //! [3]
     bool useSignature = true;
     bool useIntegers = true;
     enum { Yes, No, Always } useFloat16 = Yes, useFloat = Yes;
@@ -304,7 +302,7 @@ void CborConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
         qFatal("Unknown CBOR format option '%s'. Valid options are:\n%s",
                qPrintable(s), cborOptionHelp);
     }
-    //! [4]
+
     QCborValue v =
         convertFromVariant(contents,
                            useFloat16 == Always ? Float16 : useFloat == Always ? Float : Double);
@@ -321,4 +319,3 @@ void CborConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
         opts |= QCborValue::UseFloat16;
     v.toCbor(writer, opts);
 }
-//! [4]
