@@ -6225,11 +6225,8 @@ void QString::chop(qsizetype n)
 QString& QString::fill(QChar ch, qsizetype size)
 {
     resize(size < 0 ? d.size : size);
-    if (d.size) {
-        QChar *i = (QChar*)d.data() + d.size;
-        QChar *b = (QChar*)d.data();
-        std::fill(b, i, ch);
-    }
+    if (d.size)
+        std::fill(d.data(), d.data() + d.size, ch.unicode());
     return *this;
 }
 
