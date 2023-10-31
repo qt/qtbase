@@ -2749,7 +2749,7 @@ QImage QVulkanWindow::grab()
     d->beginFrame();
 
     if (d->colorFormat == VK_FORMAT_B8G8R8A8_UNORM)
-        d->frameGrabTargetImage = d->frameGrabTargetImage.rgbSwapped();
+        d->frameGrabTargetImage = std::move(d->frameGrabTargetImage).rgbSwapped();
 
     return d->frameGrabTargetImage;
 }
