@@ -76,7 +76,7 @@ QVariant JsonConverter::loadFile(QIODevice *f, const Converter *&outputConverter
         qFatal("Could not parse JSON content: offset %d: %s",
                error.offset, qPrintable(error.errorString()));
     }
-    if (outputConverter == null)
+    if (isNull(outputConverter))
         return QVariant();
     return doc.toVariant();
 }

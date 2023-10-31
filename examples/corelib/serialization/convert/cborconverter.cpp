@@ -250,7 +250,7 @@ QVariant CborConverter::loadFile(QIODevice *f, const Converter *&outputConverter
 
     if (outputConverter == nullptr)
         outputConverter = &cborDiagnosticDumper;
-    else if (outputConverter == null)
+    else if (isNull(outputConverter))
         return QVariant();
     else if (!outputConverter->outputOptions().testFlag(SupportsArbitraryMapKeys))
         return contents.toVariant();
