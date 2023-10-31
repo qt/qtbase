@@ -7,6 +7,7 @@
 
 #include <QtCore/qarraydata.h>
 #include <QtCore/qcontainertools_impl.h>
+#include <QtCore/qnamespace.h>
 
 #include <memory>
 #include <new>
@@ -959,6 +960,24 @@ public:
         Q_ASSERT(this->freeSpaceAtEnd() >= n);
         // b might be updated so use [b, n)
         this->copyAppend(b, b + n);
+    }
+
+    void appendUninitialized(qsizetype newSize)
+    {
+        Q_ASSERT(this->isMutable());
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(newSize > this->size);
+        Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
+
+        T *const b = this->begin();
+        do {
+            auto ptr = b + this->size;
+
+            if constexpr (std::is_constructible_v<T, Qt::Initialization>)
+                new (ptr) T(Qt::Uninitialized);
+            else
+                new (ptr) T; // not T() -- default-construct
+        } while (++this->size != newSize);
     }
 };
 

@@ -10,6 +10,7 @@
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qiterator.h>
 #include <QtCore/qcontainertools_impl.h>
+#include <QtCore/qnamespace.h>
 
 #include <functional>
 #include <limits>
@@ -324,6 +325,13 @@ public:
     inline explicit QList(const String &str)
     { append(str); }
 
+    QList(qsizetype size, Qt::Initialization)
+        : d(size)
+    {
+        if (size)
+            d->appendUninitialized(size);
+    }
+
     // compiler-generated special member functions are fine!
 
     void swap(QList &other) noexcept { d.swap(other.d); }
@@ -403,6 +411,12 @@ public:
         resize_internal(size);
         if (size > this->size())
             d->copyAppend(size - this->size(), c);
+    }
+    void resizeForOverwrite(qsizetype size)
+    {
+        resize_internal(size);
+        if (size > this->size())
+            d->appendUninitialized(size);
     }
 
     inline qsizetype capacity() const { return qsizetype(d->constAllocatedCapacity()); }
