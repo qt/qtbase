@@ -48,6 +48,8 @@ public:
     QPoint pos() const override;
     void setPos(const QPoint &pos) override;
 
+    QSize size() const override;
+
     void updateContext();
 
     static void queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask = nullptr);
