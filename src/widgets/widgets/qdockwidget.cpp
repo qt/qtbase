@@ -128,33 +128,12 @@ bool QDockWidgetTitleButton::event(QEvent *event)
     return QAbstractButton::event(event);
 }
 
-static inline bool isWindowsStyle(const QStyle *style)
-{
-    // Note: QStyleSheetStyle inherits QWindowsStyle
-    const QStyle *effectiveStyle = style;
-
-#if QT_CONFIG(style_stylesheet)
-    if (style->inherits("QStyleSheetStyle"))
-      effectiveStyle = static_cast<const QStyleSheetStyle *>(style)->baseStyle();
-#endif
-#if !defined(QT_NO_STYLE_PROXY)
-    if (style->inherits("QProxyStyle"))
-      effectiveStyle = static_cast<const QProxyStyle *>(style)->baseStyle();
-#endif
-
-    return effectiveStyle->inherits("QWindowsStyle");
-}
-
 QSize QDockWidgetTitleButton::dockButtonIconSize() const
 {
     if (m_iconSize < 0) {
         m_iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this);
-        // Dock Widget title buttons on Windows where historically limited to size 10
-        // (from small icon size 16) since only a 10x10 XPM was provided.
-        // Adding larger pixmaps to the icons thus caused the icons to grow; limit
-        // this to qpiScaled(10) here.
-        if (isWindowsStyle(style()))
-            m_iconSize = qMin((10 * logicalDpiX()) / 96, m_iconSize);
+        if (style()->styleHint(QStyle::SH_DockWidget_ButtonsHaveFrame, nullptr, this))
+            m_iconSize = (m_iconSize * 3) / 4;
     }
     return QSize(m_iconSize, m_iconSize);
 }
