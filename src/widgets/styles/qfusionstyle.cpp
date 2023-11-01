@@ -170,19 +170,19 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
         arrowRect.moveTo((rect.width() - arrowRect.width()) / 2.0,
                          (rect.height() - arrowRect.height()) / 2.0);
 
-        QVarLengthArray<QPointF, 3> triangle;
+        std::array<QPointF, 3> triangle;
         switch (type) {
         case Qt::DownArrow:
-            triangle << arrowRect.topLeft() << arrowRect.topRight() << QPointF(arrowRect.center().x(), arrowRect.bottom());
+            triangle = {arrowRect.topLeft(), arrowRect.topRight(), QPointF(arrowRect.center().x(), arrowRect.bottom())};
             break;
         case Qt::RightArrow:
-            triangle << arrowRect.topLeft() << arrowRect.bottomLeft() << QPointF(arrowRect.right(), arrowRect.center().y());
+            triangle = {arrowRect.topLeft(), arrowRect.bottomLeft(), QPointF(arrowRect.right(), arrowRect.center().y())};
             break;
         case Qt::LeftArrow:
-            triangle << arrowRect.topRight() << arrowRect.bottomRight() << QPointF(arrowRect.left(), arrowRect.center().y());
+            triangle = {arrowRect.topRight(), arrowRect.bottomRight(), QPointF(arrowRect.left(), arrowRect.center().y())};
             break;
         default:
-            triangle << arrowRect.bottomLeft() << arrowRect.bottomRight() << QPointF(arrowRect.center().x(), arrowRect.top());
+            triangle = {arrowRect.bottomLeft(), arrowRect.bottomRight(), QPointF(arrowRect.center().x(), arrowRect.top())};
             break;
         }
 
