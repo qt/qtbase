@@ -985,9 +985,8 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(QByteArray
             case ';':
                 // new field in the cookie
                 field = nextField(cookieString, position, false);
-                field.first = field.first.toLower(); // everything but the NAME=VALUE is case-insensitive
 
-                if (field.first == "expires") {
+                if (field.first.compare("expires", Qt::CaseInsensitive) == 0) {
                     position -= field.second.size();
                     int end;
                     for (end = position; end < length; ++end)
@@ -1000,7 +999,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(QByteArray
                     if (dt.isValid())
                         cookie.setExpirationDate(dt);
                     //if unparsed, ignore the attribute but not the whole cookie (RFC6265 section 5.2.1)
-                } else if (field.first == "domain") {
+                } else if (field.first.compare("domain", Qt::CaseInsensitive) == 0) {
                     QByteArrayView rawDomain = field.second;
                     //empty domain should be ignored (RFC6265 section 5.2.3)
                     if (!rawDomain.isEmpty()) {
@@ -1021,7 +1020,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(QByteArray
                             return result;
                         }
                     }
-                } else if (field.first == "max-age") {
+                } else if (field.first.compare("max-age", Qt::CaseInsensitive) == 0) {
                     bool ok = false;
                     int secs = field.second.toInt(&ok);
                     if (ok) {
@@ -1033,7 +1032,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(QByteArray
                         }
                     }
                     //if unparsed, ignore the attribute but not the whole cookie (RFC6265 section 5.2.2)
-                } else if (field.first == "path") {
+                } else if (field.first.compare("path", Qt::CaseInsensitive) == 0) {
                     if (field.second.startsWith('/')) {
                         // ### we should treat cookie paths as an octet sequence internally
                         // However RFC6265 says we should assume UTF-8 for presentation as a string
@@ -1043,11 +1042,11 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(QByteArray
                         // and also IETF test case path0030 which has valid and empty path in the same cookie
                         cookie.setPath(QString());
                     }
-                } else if (field.first == "secure") {
+                } else if (field.first.compare("secure", Qt::CaseInsensitive) == 0) {
                     cookie.setSecure(true);
-                } else if (field.first == "httponly") {
+                } else if (field.first.compare("httponly", Qt::CaseInsensitive) == 0) {
                     cookie.setHttpOnly(true);
-                } else if (field.first == "samesite") {
+                } else if (field.first.compare("samesite", Qt::CaseInsensitive) == 0) {
                     cookie.setSameSitePolicy(sameSiteFromRawString(field.second));
                 } else {
                     // ignore unknown fields in the cookie (RFC6265 section 5.2, rule 6)

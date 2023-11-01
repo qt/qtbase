@@ -289,9 +289,9 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
 
     // No PAC, decide which proxy we're looking for based on the query
     // try the protocol-specific proxy
-    QString protocol = query.protocolTag().toLower();
+    const QString protocol = query.protocolTag();
     QNetworkProxy protocolSpecificProxy;
-    if (protocol == "http"_L1) {
+    if (protocol.compare("http"_L1, Qt::CaseInsensitive) == 0) {
         protocolSpecificProxy =
             proxyFromDictionary(dict, QNetworkProxy::HttpProxy,
                                 kCFNetworkProxiesHTTPEnable,
@@ -318,13 +318,13 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
     }
 #else
     bool isHttps = false;
-    if (protocol == "ftp"_L1) {
+    if (protocol.compare("ftp"_L1, Qt::CaseInsensitive) == 0) {
         protocolSpecificProxy =
             proxyFromDictionary(dict, QNetworkProxy::FtpCachingProxy,
                                 kCFNetworkProxiesFTPEnable,
                                 kCFNetworkProxiesFTPProxy,
                                 kCFNetworkProxiesFTPPort);
-    } else if (protocol == "https"_L1) {
+    } else if (protocol.compare("https"_L1, Qt::CaseInsensitive) == 0) {
         isHttps = true;
         protocolSpecificProxy =
             proxyFromDictionary(dict, QNetworkProxy::HttpProxy,
