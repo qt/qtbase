@@ -16,7 +16,7 @@ qt_standard_project_setup()
 
 qt_add_executable(books
     bookdelegate.cpp bookdelegate.h
-    bookwindow.cpp bookwindow.h bookwindow.ui
+    bookwindow.cpp bookwindow.h
     initdb.h
     main.cpp
 )
@@ -35,7 +35,8 @@ target_link_libraries(books PRIVATE
 
 # Resources:
 set(books_resource_files
-    "images/star.png"
+    "images/star.svg"
+    "images/star-filled.svg"
 )
 
 qt_add_resources(books "books"

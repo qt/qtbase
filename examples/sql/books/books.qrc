@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/">
-  <file>images/star.png</file>
+  <file>images/star.svg</file>
+  <file>images/star-filled.svg</file>
 </qresource>
 </RCC>
