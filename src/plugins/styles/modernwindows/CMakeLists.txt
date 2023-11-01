@@ -22,5 +22,6 @@ qt_internal_add_plugin(QModernWindowsStylePlugin
         uxtheme
         Qt::Core
         Qt::Gui
+        Qt::GuiPrivate
         Qt::WidgetsPrivate
 )

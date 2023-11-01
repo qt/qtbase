@@ -116,7 +116,6 @@ public:
 
     static HTHEME createTheme(int theme, HWND hwnd);
     static QString themeName(int theme);
-    static inline bool hasTheme(int theme) { return theme >= 0 && theme < NThemes && m_themes[theme]; }
     static bool isItemViewDelegateLineEdit(const QWidget *widget);
     static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = nullptr, const QWidget *widget = nullptr);
     static int fixedPixelMetric(QStyle::PixelMetric pm);
@@ -154,8 +153,6 @@ public:
     QTime animationTime() const;
     bool transitionsEnabled() const;
 
-    static HTHEME openThemeForPrimaryScreenDpi(HWND hwnd, const wchar_t *name);
-
 private:
     static bool initVistaTreeViewTheming();
     static void cleanupVistaTreeViewTheming();
@@ -172,7 +169,6 @@ private:
     int bufferH = 0;
 
     static HWND m_vistaTreeViewHelper;
-    static HTHEME m_themes[NThemes];
 };
 
 QT_END_NAMESPACE

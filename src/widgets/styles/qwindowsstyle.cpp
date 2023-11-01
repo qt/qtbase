@@ -262,29 +262,33 @@ void QWindowsStyle::polish(QPalette &pal)
 int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *, const QWidget *widget)
 {
 #if defined(Q_OS_WIN)
+    // The pixel metrics are in device indepentent pixels;
+    // hardcode DPI to 1x 96 DPI.
+    const int dpi = 96;
+
     switch (pm) {
     case QStyle::PM_DockWidgetFrameWidth:
-        return GetSystemMetrics(SM_CXFRAME);
+        return GetSystemMetricsForDpi(SM_CXFRAME, dpi);
 
     case QStyle::PM_TitleBarHeight: {
         const int resizeBorderThickness =
-            GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+            GetSystemMetricsForDpi(SM_CXSIZEFRAME, dpi) + GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
         if (widget && (widget->windowType() == Qt::Tool))
-            return GetSystemMetrics(SM_CYSMCAPTION) + resizeBorderThickness;
-        return GetSystemMetrics(SM_CYCAPTION) + resizeBorderThickness;
+            return GetSystemMetricsForDpi(SM_CYSMCAPTION, dpi) + resizeBorderThickness;
+        return GetSystemMetricsForDpi(SM_CYCAPTION, dpi) + resizeBorderThickness;
     }
 
     case QStyle::PM_ScrollBarExtent:
         {
             NONCLIENTMETRICS ncm;
-            ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
-            if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
+            ncm.cbSize = sizeof(NONCLIENTMETRICS);
+            if (SystemParametersInfoForDpi(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0, dpi))
                 return qMax(ncm.iScrollHeight, ncm.iScrollWidth);
         }
         break;
 
     case  QStyle::PM_MdiSubWindowFrameWidth:
-        return GetSystemMetrics(SM_CYFRAME);
+        return GetSystemMetricsForDpi(SM_CYFRAME, dpi);
 
     default:
         break;
@@ -356,22 +360,10 @@ static QScreen *screenOf(const QWidget *w)
 }
 
 // Calculate the overall scale factor to obtain Qt Device Independent
-// Pixels from a native Windows size. Divide by devicePixelRatio
-// and account for secondary screens with differing logical DPI.
+// Pixels from a native Windows size.
 qreal QWindowsStylePrivate::nativeMetricScaleFactor(const QWidget *widget)
 {
-    qreal scale = QHighDpiScaling::factor(screenOf(widget));
-    qreal result = qreal(1) / scale;
-    if (QGuiApplicationPrivate::screen_list.size() > 1) {
-        const QScreen *primaryScreen = QGuiApplication::primaryScreen();
-        const QScreen *screen = screenOf(widget);
-        if (screen != primaryScreen) {
-            qreal primaryScale = QHighDpiScaling::factor(primaryScreen);
-            if (!qFuzzyCompare(scale, primaryScale))
-                result *= scale / primaryScale;
-        }
-    }
-    return result;
+    return qreal(1) / QHighDpiScaling::factor(screenOf(widget));
 }
 
 /*!
@@ -381,7 +373,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 {
     int ret = QWindowsStylePrivate::pixelMetricFromSystemDp(pm, opt, widget);
     if (ret != QWindowsStylePrivate::InvalidMetric)
-        return qRound(qreal(ret) * QWindowsStylePrivate::nativeMetricScaleFactor(widget));
+        return ret;
 
     ret = QWindowsStylePrivate::fixedPixelMetric(pm);
     if (ret != QWindowsStylePrivate::InvalidMetric)

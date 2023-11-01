@@ -13,6 +13,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <private/qapplication_p.h>
 #include <private/qsystemlibrary_p.h>
+#include <private/qwindowsthemecache_p.h>
 
 #include "qdrawutil.h" // for now
 #include <qbackingstore.h>
@@ -51,23 +52,9 @@ static const int windowsRightBorder      = 15; // right border on windows
 #  define CMDLGS_DISABLED 4
 #endif
 
-/* \internal
-    Checks if we should use Vista style , or if we should
-    fall back to Windows style.
-*/
-// Theme names matching the QWindowsVistaStylePrivate::Theme enumeration.
-static const wchar_t *themeNames[QWindowsVistaStylePrivate::NThemes] =
-{
-    L"BUTTON",   L"COMBOBOX",   L"EDIT",    L"HEADER",    L"LISTVIEW",
-    L"MENU",     L"PROGRESS",   L"REBAR",   L"SCROLLBAR", L"SPIN",
-    L"TAB",      L"TASKDIALOG", L"TOOLBAR", L"TOOLTIP",   L"TRACKBAR",
-    L"WINDOW",   L"STATUS",     L"TREEVIEW"
-};
-
 // QWindowsVistaStylePrivate -------------------------------------------------------------------------
 // Static initializations
 HWND QWindowsVistaStylePrivate::m_vistaTreeViewHelper = nullptr;
-HTHEME QWindowsVistaStylePrivate::m_themes[NThemes];
 bool QWindowsVistaStylePrivate::useVistaTheme = false;
 Q_CONSTINIT QBasicAtomicInt QWindowsVistaStylePrivate::ref = Q_BASIC_ATOMIC_INITIALIZER(-1); // -1 based refcounting
 
@@ -184,7 +171,6 @@ void QWindowsVistaStylePrivate::init(bool force)
         ref.ref();
 
     useVista(true);
-    std::fill(m_themes, m_themes + NThemes, nullptr);
 }
 
 /* \internal
@@ -221,25 +207,6 @@ bool QWindowsVistaStylePrivate::transitionsEnabled() const
             return true;
     }
     return false;
-}
-
-HTHEME QWindowsVistaStylePrivate::openThemeForPrimaryScreenDpi(HWND hwnd, const wchar_t *name)
-{
-    // We want to call OpenThemeDataForDpi, but it won't link with MinGW (11.2.0), so we
-    // dynamically load this.
-    // Only try to initialize pOpenThemeDataForDpi once. If it fails, it will likely keep failing.
-    static const auto pOpenThemeDataForDpi =
-        reinterpret_cast<decltype(&::OpenThemeDataForDpi)>(
-            QSystemLibrary::resolve(u"uxtheme"_s, "OpenThemeDataForDpi"));
-
-    // If we have screens and the OpenThemeDataForDpi function then use it :).
-    if (pOpenThemeDataForDpi && QGuiApplication::primaryScreen()) {
-        const int dpi = qRound(QGuiApplication::primaryScreen()->handle()->logicalDpi().first);
-        return pOpenThemeDataForDpi(hwnd, name, dpi);
-    }
-
-    // In case of any issues we fall back to use the plain/old OpenThemeData.
-    return OpenThemeData(hwnd, name);
 }
 
 int QWindowsVistaStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option, const QWidget *widget)
@@ -323,32 +290,15 @@ void QWindowsVistaStylePrivate::cleanupVistaTreeViewTheming()
 */
 void QWindowsVistaStylePrivate::cleanupHandleMap()
 {
-    for (auto &theme : m_themes) {
-        if (theme) {
-            CloseThemeData(theme);
-            theme = nullptr;
-        }
-    }
+    QWindowsThemeCache::clearAllThemeCaches();
     QWindowsVistaStylePrivate::cleanupVistaTreeViewTheming();
 }
 
 HTHEME QWindowsVistaStylePrivate::createTheme(int theme, HWND hwnd)
 {
-    if (Q_UNLIKELY(theme < 0 || theme >= NThemes || !hwnd)) {
-        qWarning("Invalid parameters #%d, %p", theme, hwnd);
-        return nullptr;
-    }
-    if (!m_themes[theme]) {
-        const wchar_t *name = themeNames[theme];
-        if (theme == VistaTreeViewTheme && QWindowsVistaStylePrivate::initVistaTreeViewTheming())
-            hwnd = QWindowsVistaStylePrivate::m_vistaTreeViewHelper;
-        // Use dpi from primary screen in theme.
-        m_themes[theme] = openThemeForPrimaryScreenDpi(hwnd, name);
-        if (Q_UNLIKELY(!m_themes[theme]))
-            qErrnoWarning("OpenThemeData() failed for theme %d (%s).",
-                          theme, qPrintable(themeName(theme)));
-    }
-    return m_themes[theme];
+    if (theme == VistaTreeViewTheme && QWindowsVistaStylePrivate::initVistaTreeViewTheming())
+        hwnd = QWindowsVistaStylePrivate::m_vistaTreeViewHelper;
+    return QWindowsThemeCache::createTheme(theme, hwnd);
 }
 
 QBackingStore *QWindowsVistaStylePrivate::backingStoreForWidget(const QWidget *widget)
@@ -373,8 +323,7 @@ HDC QWindowsVistaStylePrivate::hdcForWidgetBackingStore(const QWidget *widget)
 
 QString QWindowsVistaStylePrivate::themeName(int theme)
 {
-    return theme >= 0 && theme < NThemes
-            ? QString::fromWCharArray(themeNames[theme]) : QString();
+    return QWindowsThemeCache::themeName(theme);
 }
 
 bool QWindowsVistaStylePrivate::isItemViewDelegateLineEdit(const QWidget *widget)
