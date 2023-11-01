@@ -13,6 +13,8 @@
 #include <private/qcombobox_p.h>
 #include <qdebug.h>
 
+#include <array>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -148,16 +150,15 @@ static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool
 class QFontComboBoxPrivate : public QComboBoxPrivate
 {
 public:
-    inline QFontComboBoxPrivate() { filters = QFontComboBox::AllFonts; }
-
-    QFontComboBox::FontFilters filters;
+    QFontComboBox::FontFilters filters = QFontComboBox::AllFonts;
     QFont currentFont;
     QHash<QFontDatabase::WritingSystem, QString> sampleTextForWritingSystem;
     QHash<QString, QString> sampleTextForFontFamily;
     QHash<QString, QFont> displayFontForFontFamily;
+    std::array<QMetaObject::Connection, 2> connections;
 
-    void _q_updateModel();
-    void _q_currentChanged(const QString &);
+    void updateModel();
+    void currentChanged(const QString &);
 
     Q_DECLARE_PUBLIC(QFontComboBox)
 };
@@ -282,7 +283,7 @@ QSize QFontFamilyDelegate::sizeHint(const QStyleOptionViewItem &option,
 }
 
 
-void QFontComboBoxPrivate::_q_updateModel()
+void QFontComboBoxPrivate::updateModel()
 {
     Q_Q(QFontComboBox);
 
@@ -298,29 +299,28 @@ void QFontComboBoxPrivate::_q_updateModel()
     QFontFamilyDelegate *delegate = qobject_cast<QFontFamilyDelegate *>(q->view()->itemDelegate());
     QFontDatabase::WritingSystem system = delegate ? delegate->writingSystem : QFontDatabase::Any;
 
-    QStringList list = QFontDatabase::families(system);
+    const QStringList list = QFontDatabase::families(system);
     QStringList result;
 
     int offset = 0;
     QFontInfo fi(currentFont);
 
-    for (int i = 0; i < list.size(); ++i) {
-        if (QFontDatabase::isPrivateFamily(list.at(i)))
+    for (const auto &family : list) {
+        if (QFontDatabase::isPrivateFamily(family))
             continue;
 
         if ((filters & scalableMask) && (filters & scalableMask) != scalableMask) {
-            if (bool(filters & QFontComboBox::ScalableFonts) != QFontDatabase::isSmoothlyScalable(list.at(i)))
+            if (bool(filters & QFontComboBox::ScalableFonts) != QFontDatabase::isSmoothlyScalable(family))
                 continue;
         }
         if ((filters & spacingMask) && (filters & spacingMask) != spacingMask) {
-            if (bool(filters & QFontComboBox::MonospacedFonts) != QFontDatabase::isFixedPitch(list.at(i)))
+            if (bool(filters & QFontComboBox::MonospacedFonts) != QFontDatabase::isFixedPitch(family))
                 continue;
         }
-        result += list.at(i);
-        if (list.at(i) == fi.family() || list.at(i).startsWith(fi.family() + " ["_L1))
+        result += family;
+        if (family == fi.family() || family.startsWith(fi.family() + " ["_L1))
             offset = result.size() - 1;
     }
-    list = result;
 
     //we need to block the signals so that the model doesn't emit reset
     //this prevents the current index from changing
@@ -328,7 +328,7 @@ void QFontComboBoxPrivate::_q_updateModel()
     ///TODO: we should finda way to avoid blocking signals and have a real update of the model
     {
         const QSignalBlocker blocker(m);
-        m->setStringList(list);
+        m->setStringList(result);
         // Since the modelReset signal is blocked the view will not emit an accessibility event
     #if QT_CONFIG(accessibility)
         if (QAccessible::isActive()) {
@@ -338,7 +338,7 @@ void QFontComboBoxPrivate::_q_updateModel()
     #endif
     }
 
-    if (list.isEmpty()) {
+    if (result.isEmpty()) {
         if (currentFont != QFont()) {
             currentFont = QFont();
             emit q->currentFontChanged(currentFont);
@@ -349,7 +349,7 @@ void QFontComboBoxPrivate::_q_updateModel()
 }
 
 
-void QFontComboBoxPrivate::_q_currentChanged(const QString &text)
+void QFontComboBoxPrivate::currentChanged(const QString &text)
 {
     Q_Q(QFontComboBox);
     const QStringList families = currentFont.families();
@@ -410,11 +410,12 @@ QFontComboBox::QFontComboBox(QWidget *parent)
         lview->setUniformItemSizes(true);
     setWritingSystem(QFontDatabase::Any);
 
-    connect(this, SIGNAL(currentTextChanged(QString)),
-            this, SLOT(_q_currentChanged(QString)));
-
-    connect(qApp, SIGNAL(fontDatabaseChanged()),
-            this, SLOT(_q_updateModel()));
+    d->connections = {
+        QObjectPrivate::connect(this, &QFontComboBox::currentTextChanged,
+                                d, &QFontComboBoxPrivate::currentChanged),
+        QObjectPrivate::connect(qApp, &QGuiApplication::fontDatabaseChanged,
+                                d, &QFontComboBoxPrivate::updateModel),
+    };
 }
 
 
@@ -423,6 +424,9 @@ QFontComboBox::QFontComboBox(QWidget *parent)
 */
 QFontComboBox::~QFontComboBox()
 {
+    Q_D(const QFontComboBox);
+    for (const QMetaObject::Connection &connection : d->connections)
+        QObject::disconnect(connection);
 }
 
 /*!
@@ -441,7 +445,7 @@ void QFontComboBox::setWritingSystem(QFontDatabase::WritingSystem script)
     QFontFamilyDelegate *delegate = qobject_cast<QFontFamilyDelegate *>(view()->itemDelegate());
     if (delegate)
         delegate->writingSystem = script;
-    d->_q_updateModel();
+    d->updateModel();
 }
 
 QFontDatabase::WritingSystem QFontComboBox::writingSystem() const
@@ -477,7 +481,7 @@ void QFontComboBox::setFontFilters(FontFilters filters)
 {
     Q_D(QFontComboBox);
     d->filters = filters;
-    d->_q_updateModel();
+    d->updateModel();
 }
 
 QFontComboBox::FontFilters QFontComboBox::fontFilters() const
@@ -503,8 +507,8 @@ void QFontComboBox::setCurrentFont(const QFont &font)
     Q_D(QFontComboBox);
     if (font != d->currentFont) {
         d->currentFont = font;
-        d->_q_updateModel();
-        if (d->currentFont == font) { //else the signal has already be emitted by _q_updateModel
+        d->updateModel();
+        if (d->currentFont == font) { //else the signal has already be emitted by updateModel
             emit currentFontChanged(d->currentFont);
         }
     }
