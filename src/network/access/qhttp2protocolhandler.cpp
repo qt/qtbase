@@ -1098,7 +1098,7 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
     int statusCode = 0;
     for (const auto &pair : headers) {
         const auto &name = pair.name;
-        auto value = pair.value;
+        const auto value = QByteArrayView(pair.value);
 
         // TODO: part of this code copies what SPDY protocol handler does when
         // processing headers. Binary nature of HTTP/2 and SPDY saves us a lot
@@ -1118,10 +1118,8 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
             if (ok)
                 httpReply->setContentLength(length);
         } else {
-            QByteArray binder(", ");
-            if (name == "set-cookie")
-                binder = "\n";
-            httpReply->appendHeaderField(name, value.replace('\0', binder));
+            const auto binder = name == "set-cookie" ? QByteArrayView("\n") : QByteArrayView(", ");
+            httpReply->appendHeaderField(name, QByteArray(pair.value).replace('\0', binder));
         }
     }
 
