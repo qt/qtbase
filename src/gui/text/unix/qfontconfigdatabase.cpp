@@ -722,6 +722,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
     fid.filename = QFile::encodeName(fontfile->fileName);
     fid.index = fontfile->indexValue;
     fid.instanceIndex = fontfile->instanceIndex;
+    fid.variableAxes = f.variableAxisValues;
 
     // FIXME: Unify with logic in QFontEngineFT::create()
     QFontEngineFT *engine = new QFontEngineFT(f);

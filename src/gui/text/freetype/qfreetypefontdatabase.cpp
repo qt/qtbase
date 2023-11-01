@@ -62,6 +62,7 @@ QFontEngine *QFreeTypeFontDatabase::fontEngine(const QFontDef &fontDef, void *us
     faceId.filename = QFile::encodeName(fontfile->fileName);
     faceId.index = fontfile->indexValue;
     faceId.instanceIndex = fontfile->instanceIndex;
+    faceId.variableAxes = fontDef.variableAxisValues;
 
     return QFontEngineFT::create(fontDef, faceId, fontfile->data);
 }
@@ -69,7 +70,7 @@ QFontEngine *QFreeTypeFontDatabase::fontEngine(const QFontDef &fontDef, void *us
 QFontEngine *QFreeTypeFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
                                                 QFont::HintingPreference hintingPreference)
 {
-    return QFontEngineFT::create(fontData, pixelSize, hintingPreference);
+    return QFontEngineFT::create(fontData, pixelSize, hintingPreference, {});
 }
 
 QStringList QFreeTypeFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont)

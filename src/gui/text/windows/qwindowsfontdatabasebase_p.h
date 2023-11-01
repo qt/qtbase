@@ -29,6 +29,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(directwrite)
+    class QCustomFontFileLoader;
+#endif
+
 class QWindowsFontEngineData
 {
     Q_DISABLE_COPY_MOVE(QWindowsFontEngineData)
@@ -55,6 +59,8 @@ public:
 
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
+
+    void invalidate() override;
 
     static int defaultVerticalDPI();
 
@@ -98,6 +104,10 @@ protected:
 
 private:
     static bool init(QSharedPointer<QWindowsFontEngineData> data);
+
+#if QT_CONFIG(directwrite)
+    mutable std::unique_ptr<QCustomFontFileLoader> m_fontFileLoader;
+#endif
 };
 
 QT_END_NAMESPACE

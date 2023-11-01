@@ -91,7 +91,7 @@ public:
     static bool ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length);
     static QFont::Weight qtWeightFromCFWeight(float value);
 
-    static QCoreTextFontEngine *create(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
+    static QCoreTextFontEngine *create(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference, const QMap<QFont::Tag, float> &variableAxisValue);
 
 protected:
     QCoreTextFontEngine(const QFontDef &def);

@@ -295,6 +295,22 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
             FT_Set_Char_Size(face, newFreetype->face->available_sizes[0].x_ppem, newFreetype->face->available_sizes[0].y_ppem, 0, 0);
 
         FT_Set_Charmap(newFreetype->face, newFreetype->unicode_map);
+
+        if (!face_id.variableAxes.isEmpty()) {
+            FT_MM_Var *var = nullptr;
+            FT_Get_MM_Var(newFreetype->face, &var);
+            if (var != nullptr) {
+                QVarLengthArray<FT_Fixed, 16> coords(var->num_axis);
+                FT_Get_Var_Design_Coordinates(face, var->num_axis, coords.data());
+                for (FT_UInt i = 0; i < var->num_axis; ++i) {
+                    if (const auto tag = QFont::Tag::fromValue(var->axis[i].tag))
+                        coords[i] = FT_Fixed(face_id.variableAxes.value(*tag, coords[i]));
+                }
+                FT_Set_Var_Design_Coordinates(face, var->num_axis, coords.data());
+                FT_Done_MM_Var(qt_getFreetype(), var);
+            }
+        }
+
         QT_TRY {
             freetypeData->faces.insert(face_id, newFreetype.get());
         } QT_CATCH(...) {
@@ -687,27 +703,32 @@ namespace {
                 fontDef.weight = QFont::Bold;
         }
 
-        bool initFromData(const QByteArray &fontData)
+        bool initFromData(const QByteArray &fontData, const QMap<QFont::Tag, float> &variableAxisValues)
         {
             FaceId faceId;
             faceId.filename = "";
             faceId.index = 0;
             faceId.uuid = QUuid::createUuid().toByteArray();
+            faceId.variableAxes = variableAxisValues;
 
             return init(faceId, true, Format_None, fontData);
         }
     };
 }
 
-QFontEngineFT *QFontEngineFT::create(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
+QFontEngineFT *QFontEngineFT::create(const QByteArray &fontData,
+                                     qreal pixelSize,
+                                     QFont::HintingPreference hintingPreference,
+                                     const QMap<QFont::Tag, float> &variableAxisValues)
 {
     QFontDef fontDef;
     fontDef.pixelSize = pixelSize;
     fontDef.stretch = QFont::Unstretched;
     fontDef.hintingPreference = hintingPreference;
+    fontDef.variableAxisValues = variableAxisValues;
 
     QFontEngineFTRawData *fe = new QFontEngineFTRawData(fontDef);
-    if (!fe->initFromData(fontData)) {
+    if (!fe->initFromData(fontData, variableAxisValues)) {
         delete fe;
         return nullptr;
     }

@@ -126,6 +126,7 @@ public:
         int index;
         int instanceIndex;
         int encoding;
+        QMap<QFont::Tag, float> variableAxes;
     };
     virtual FaceId faceId() const { return FaceId(); }
     enum SynthesizedFlags {
@@ -368,13 +369,14 @@ inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId
             && f1.encoding == f2.encoding
             && f1.filename == f2.filename
             && f1.uuid == f2.uuid
-            && f1.instanceIndex == f2.instanceIndex;
+            && f1.instanceIndex == f2.instanceIndex
+            && f1.variableAxes == f2.variableAxes;
 }
 
 inline size_t qHash(const QFontEngine::FaceId &f, size_t seed = 0)
     noexcept(noexcept(qHash(f.filename)))
 {
-    return qHashMulti(seed, f.filename, f.uuid, f.index, f.instanceIndex, f.encoding);
+    return qHashMulti(seed, f.filename, f.uuid, f.index, f.instanceIndex, f.encoding, f.variableAxes.keys(), f.variableAxes.values());
 }
 
 

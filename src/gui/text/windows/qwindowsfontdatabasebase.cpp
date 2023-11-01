@@ -359,10 +359,10 @@ namespace {
         {
         }
 
-        inline void addKey(const void *key, const QByteArray &fontData)
+        inline void addKey(const QByteArray &fontData)
         {
-            Q_ASSERT(!m_fontDatas.contains(key));
-            m_fontDatas.insert(key, fontData);
+            if (!m_fontDatas.contains(fontData.data()))
+                m_fontDatas.insert(fontData.data(), fontData);
         }
 
         inline void removeKey(const void *key)
@@ -377,6 +377,11 @@ namespace {
         HRESULT STDMETHODCALLTYPE CreateStreamFromKey(void const *fontFileReferenceKey,
                                                       UINT32 fontFileReferenceKeySize,
                                                       OUT IDWriteFontFileStream **fontFileStream) override;
+
+        void clear()
+        {
+            m_fontDatas.clear();
+        }
 
     private:
         ULONG m_referenceCount;
@@ -435,52 +440,62 @@ namespace {
         return S_OK;
     }
 
-    class CustomFontFileLoader
-    {
-    public:
-        CustomFontFileLoader(IDWriteFactory *factory)
-        {
-            m_directWriteFactory = factory;
-
-            if (m_directWriteFactory) {
-                m_directWriteFactory->AddRef();
-
-                m_directWriteFontFileLoader = new DirectWriteFontFileLoader();
-                m_directWriteFactory->RegisterFontFileLoader(m_directWriteFontFileLoader);
-            }
-        }
-
-        ~CustomFontFileLoader()
-        {
-            if (m_directWriteFactory != nullptr && m_directWriteFontFileLoader != nullptr)
-                m_directWriteFactory->UnregisterFontFileLoader(m_directWriteFontFileLoader);
-
-            if (m_directWriteFactory != nullptr)
-                m_directWriteFactory->Release();
-        }
-
-        void addKey(const void *key, const QByteArray &fontData)
-        {
-            if (m_directWriteFontFileLoader != nullptr)
-                m_directWriteFontFileLoader->addKey(key, fontData);
-        }
-
-        void removeKey(const void *key)
-        {
-            if (m_directWriteFontFileLoader != nullptr)
-                m_directWriteFontFileLoader->removeKey(key);
-        }
-
-        IDWriteFontFileLoader *loader() const
-        {
-            return m_directWriteFontFileLoader;
-        }
-
-    private:
-        IDWriteFactory *m_directWriteFactory                    = nullptr;
-        DirectWriteFontFileLoader *m_directWriteFontFileLoader  = nullptr;
-    };
 } // Anonymous namespace
+
+class QCustomFontFileLoader
+{
+public:
+    QCustomFontFileLoader(IDWriteFactory *factory)
+    {
+        m_directWriteFactory = factory;
+
+        if (m_directWriteFactory) {
+            m_directWriteFactory->AddRef();
+
+            m_directWriteFontFileLoader = new DirectWriteFontFileLoader();
+            m_directWriteFactory->RegisterFontFileLoader(m_directWriteFontFileLoader);
+        }
+    }
+
+    ~QCustomFontFileLoader()
+    {
+        clear();
+
+        if (m_directWriteFactory != nullptr && m_directWriteFontFileLoader != nullptr)
+            m_directWriteFactory->UnregisterFontFileLoader(m_directWriteFontFileLoader);
+
+        if (m_directWriteFactory != nullptr)
+            m_directWriteFactory->Release();
+    }
+
+    void addKey(const QByteArray &fontData)
+    {
+        if (m_directWriteFontFileLoader != nullptr)
+            m_directWriteFontFileLoader->addKey(fontData);
+    }
+
+    void removeKey(const void *key)
+    {
+        if (m_directWriteFontFileLoader != nullptr)
+            m_directWriteFontFileLoader->removeKey(key);
+    }
+
+    IDWriteFontFileLoader *loader() const
+    {
+        return m_directWriteFontFileLoader;
+    }
+
+    void clear()
+    {
+        if (m_directWriteFontFileLoader != nullptr)
+            m_directWriteFontFileLoader->clear();
+    }
+
+private:
+    IDWriteFactory *m_directWriteFactory                    = nullptr;
+    DirectWriteFontFileLoader *m_directWriteFontFileLoader  = nullptr;
+};
+
 
 #endif // directwrite && direct2d
 
@@ -704,6 +719,11 @@ IDWriteFontFace *QWindowsFontDatabaseBase::createDirectWriteFace(const QByteArra
     return faces.isEmpty() ? nullptr : faces.first();
 }
 
+void QWindowsFontDatabaseBase::invalidate()
+{
+    m_fontFileLoader.reset(nullptr);
+}
+
 QList<IDWriteFontFace *> QWindowsFontDatabaseBase::createDirectWriteFaces(const QByteArray &fontData,
                                                                           bool queryVariations) const
 {
@@ -714,15 +734,17 @@ QList<IDWriteFontFace *> QWindowsFontDatabaseBase::createDirectWriteFaces(const 
         return ret;
     }
 
-    CustomFontFileLoader fontFileLoader(fontEngineData->directWriteFactory);
-    fontFileLoader.addKey(this, fontData);
+    if (m_fontFileLoader == nullptr)
+        m_fontFileLoader.reset(new QCustomFontFileLoader(fontEngineData->directWriteFactory));
+
+    m_fontFileLoader->addKey(fontData);
 
     IDWriteFontFile *fontFile = nullptr;
-    const void *key = this;
+    const void *key = fontData.data();
 
     HRESULT hres = fontEngineData->directWriteFactory->CreateCustomFontFileReference(&key,
                                                                                      sizeof(void *),
-                                                                                     fontFileLoader.loader(),
+                                                                                     m_fontFileLoader->loader(),
                                                                                      &fontFile);
     if (FAILED(hres)) {
         qErrnoWarning(hres, "%s: CreateCustomFontFileReference failed", __FUNCTION__);
@@ -793,6 +815,7 @@ QList<IDWriteFontFace *> QWindowsFontDatabaseBase::createDirectWriteFaces(const 
     }
 
     fontFile->Release();
+
     return ret;
 }
 #endif // directwrite && direct2d

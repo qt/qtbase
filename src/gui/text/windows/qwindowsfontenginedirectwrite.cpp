@@ -1015,6 +1015,8 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
     else if (fontDef.pixelSize == -1)
         fontDef.pixelSize = qRound(fontDef.pointSize * dpi / 72.);
 
+    m_faceId.variableAxes = request.variableAxisValues;
+
 #if QT_CONFIG(directwrite3)
     IDWriteFontFace3 *face3 = nullptr;
     if (SUCCEEDED(m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace3),

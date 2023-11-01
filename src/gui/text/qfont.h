@@ -128,7 +128,8 @@ public:
         StyleNameResolved           = 0x10000,
         FamiliesResolved            = 0x20000,
         FeaturesResolved            = 0x40000,
-        AllPropertiesResolved       = 0x7ffff
+        VariableAxesResolved        = 0x80000,
+        AllPropertiesResolved       = 0xfffff
     };
     Q_ENUM(ResolveProperties)
 
@@ -270,6 +271,13 @@ public:
     bool isFeatureSet(Tag tag) const;
     QList<Tag> featureTags() const;
     void clearFeatures();
+
+    void setVariableAxis(Tag tag, float value);
+    void unsetVariableAxis(Tag tag);
+    bool isVariableAxisSet(Tag tag) const;
+    float variableAxisValue(Tag tag) const;
+    void clearVariableAxes();
+    QList<Tag> variableAxisTags() const;
 
     // dupicated from QFontInfo
     bool exactMatch() const;

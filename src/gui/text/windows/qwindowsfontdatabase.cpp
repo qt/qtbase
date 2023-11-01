@@ -724,6 +724,7 @@ void QWindowsFontDatabase::populateFontDatabase()
 
 void QWindowsFontDatabase::invalidate()
 {
+    QWindowsFontDatabaseBase::invalidate();
     removeApplicationFonts();
 }
 

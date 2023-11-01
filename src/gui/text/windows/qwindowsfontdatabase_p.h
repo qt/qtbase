@@ -45,6 +45,7 @@ public:
 
     void populateFontDatabase() override;
     void invalidate() override;
+    void removeApplicationFonts();
 
     void populateFamily(const QString &familyName) override;
     bool populateFamilyAliases(const QString &missingFamily) override;
@@ -74,8 +75,9 @@ public:
     static void debugFormat(QDebug &d, const LOGFONT &lf);
 #endif // !QT_NO_DEBUG_STREAM
 
+
 private:
-    void removeApplicationFonts();
+
     void addDefaultEUDCFont();
 
     struct WinApplicationFont {

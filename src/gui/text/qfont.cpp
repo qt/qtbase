@@ -90,6 +90,9 @@ bool QFontDef::exactMatch(const QFontDef &other) const
             return false;
     }
 
+    if (variableAxisValues != other.variableAxisValues)
+        return false;
+
     return (styleHint     == other.styleHint
             && styleStrategy == other.styleStrategy
             && weight        == other.weight
@@ -346,6 +349,24 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
 
     if (!(mask & QFont::FeaturesResolved))
         features = other->features;
+
+    if (!(mask & QFont::VariableAxesResolved))
+        request.variableAxisValues = other->request.variableAxisValues;
+}
+
+bool QFontPrivate::hasVariableAxis(QFont::Tag tag, float value) const
+{
+    return request.variableAxisValues.contains(tag) && request.variableAxisValues.value(tag) == value;
+}
+
+void QFontPrivate::setVariableAxis(QFont::Tag tag, float value)
+{
+    request.variableAxisValues.insert(tag, value);
+}
+
+void QFontPrivate::unsetVariableAxis(QFont::Tag tag)
+{
+    request.variableAxisValues.remove(tag);
 }
 
 void QFontPrivate::setFeature(QFont::Tag tag, quint32 value)
@@ -1794,13 +1815,29 @@ bool QFont::operator<(const QFont &f) const
     if (d->features.size() != f.d->features.size())
         return f.d->features.size() < d->features.size();
 
-    auto it = d->features.constBegin();
-    auto jt = f.d->features.constBegin();
-    for (; it != d->features.constEnd(); ++it, ++jt) {
-        if (it.key() != jt.key())
-            return jt.key() < it.key();
-        if (it.value() != jt.value())
-            return jt.value() < it.value();
+    {
+        auto it = d->features.constBegin();
+        auto jt = f.d->features.constBegin();
+        for (; it != d->features.constEnd(); ++it, ++jt) {
+            if (it.key() != jt.key())
+                return jt.key() < it.key();
+            if (it.value() != jt.value())
+                return jt.value() < it.value();
+        }
+    }
+
+    if (r1.variableAxisValues.size() != r2.variableAxisValues.size())
+        return r1.variableAxisValues.size() < r2.variableAxisValues.size();
+
+    {
+        auto it = r1.variableAxisValues.constBegin();
+        auto jt = r2.variableAxisValues.constBegin();
+        for (; it != r1.variableAxisValues.constEnd(); ++it, ++jt) {
+            if (it.key() != jt.key())
+                return jt.key() < it.key();
+            if (it.value() != jt.value())
+                return jt.value() < it.value();
+        }
     }
 
     return false;
@@ -2359,6 +2396,142 @@ std::optional<QFont::Tag> QFont::Tag::fromString(QAnyStringView view) noexcept
 
 /*!
     \since 6.7
+
+    Applies a \a value to the variable axis corresponding to \a tag.
+
+    Variable fonts provide a way to store multiple variations (with different weights, widths
+    or styles) in the same font file. The variations are given as floating point values for
+    a pre-defined set of parameters, called "variable axes". Specific instances are typically
+    given names by the font designer, and, in Qt, these can be selected using setStyleName()
+    just like traditional sub-families.
+
+    In some cases, it is also useful to provide arbitrary values for the different axes. For
+    instance, if a font has a Regular and Bold sub-family, you may want a weight in-between these.
+    You could then manually request this by supplying a custom value for the "wght" axis in the
+    font.
+
+    \code
+        QFont font;
+        font.setVariableAxis("wght", (QFont::Normal + QFont::Bold) / 2.0f);
+    \endcode
+
+    If the "wght" axis is supported by the font and the given value is within its defined range,
+    a font corresponding to the weight 550.0 will be provided.
+
+    There are a few standard axes than many fonts provide, such as "wght" (weight), "wdth" (width),
+    "ital" (italic) and "opsz" (optical size). They each have indivdual ranges defined in the font
+    itself. For instance, "wght" may span from 100 to 900 (QFont::Thin to QFont::Black) whereas
+    "ital" can span from 0 to 1 (from not italic to fully italic).
+
+    A font may also choose to define custom axes; the only limitation is that the name has to
+    meet the requirements for a QFont::Tag (sequence of four latin-1 characters.)
+
+    By default, no variable axes are set.
+
+    \note In order to use variable axes on Windows, the application has to run with either the
+    FreeType or DirectWrite font databases. See the documentation for
+    QGuiApplication::QGuiApplication() for more information on how to select these technologies.
+
+    \sa unsetVariableAxis
+ */
+void QFont::setVariableAxis(Tag tag, float value)
+{
+    if (tag.isValid()) {
+        if (resolve_mask & QFont::VariableAxesResolved && d->hasVariableAxis(tag, value))
+            return;
+
+        detach();
+
+        d->setVariableAxis(tag, value);
+        resolve_mask |= QFont::VariableAxesResolved;
+    }
+}
+
+/*!
+    \since 6.7
+
+    Unsets a previously set variable axis value given by \a tag.
+
+    \note If no value has previously been given for this tag, the QFont will still consider its
+    variable axes as set when resolving against other QFont values.
+
+    \sa setVariableAxis
+*/
+void QFont::unsetVariableAxis(Tag tag)
+{
+    if (tag.isValid()) {
+        detach();
+
+        d->unsetVariableAxis(tag);
+        resolve_mask |= QFont::VariableAxesResolved;
+    }
+}
+
+/*!
+   \since 6.7
+
+   Returns a list of tags for all variable axes currently set on this QFont.
+
+   See \l{QFont::}{setVariableAxis()} for more details on variable axes.
+
+   \sa QFont::Tag, setVariableAxis(), unsetVariableAxis(), isVariableAxisSet(), clearVariableAxes()
+*/
+QList<QFont::Tag> QFont::variableAxisTags() const
+{
+    return d->request.variableAxisValues.keys();
+}
+
+/*!
+   \since 6.7
+
+   Returns the value set for a specific variable axis \a tag. If the tag has not been set, 0.0 will
+   be returned instead.
+
+   See \l{QFont::}{setVariableAxis()} for more details on variable axes.
+
+   \sa QFont::Tag, setVariableAxis(), unsetVariableAxis(), isVariableAxisSet(), clearVariableAxes()
+*/
+float QFont::variableAxisValue(Tag tag) const
+{
+    return d->request.variableAxisValues.value(tag);
+}
+
+/*!
+   \since 6.7
+
+   Returns true if a value for the variable axis given by \a tag has been set on the QFont,
+   otherwise returns false.
+
+   See \l{QFont::}{setVariableAxis()} for more details on font variable axes.
+
+   \sa QFont::Tag, setVariableAxis(), unsetVariableAxis(), variableAxisValue(), clearVariableAxes()
+*/
+bool QFont::isVariableAxisSet(Tag tag) const
+{
+    return d->request.variableAxisValues.contains(tag);
+}
+
+/*!
+   \since 6.7
+
+   Clears any previously set variable axis values on the QFont.
+
+   See \l{QFont::}{setVariableAxis()} for more details on variable axes.
+
+   \sa QFont::Tag, setVariableAxis(), unsetVariableAxis(), isVariableAxisSet(), variableAxisValue()
+*/
+void QFont::clearVariableAxes()
+{
+    if (d->request.variableAxisValues.isEmpty())
+        return;
+
+    detach();
+    d->request.variableAxisValues.clear();
+}
+
+
+/*!
+    \since 6.7
     \overload
 
     Applies an integer value to the typographical feature specified by \a tag when shaping the
@@ -2626,6 +2799,8 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
     }
     if (s.version() >= QDataStream::Qt_6_6)
         s << font.d->features;
+    if (s.version() >= QDataStream::Qt_6_7)
+        s << font.d->request.variableAxisValues;
     return s;
 }
 
@@ -2743,6 +2918,10 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     if (s.version() >= QDataStream::Qt_6_6) {
         font.d->features.clear();
         s >> font.d->features;
+    }
+    if (s.version() >= QDataStream::Qt_6_7) {
+        font.d->request.variableAxisValues.clear();
+        s >> font.d->request.variableAxisValues;
     }
 
     return s;
