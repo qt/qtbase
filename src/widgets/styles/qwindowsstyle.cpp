@@ -117,19 +117,20 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
             widget = widget->window();
 
             // Alt has been pressed - find all widgets that care
-            QList<QWidget *> l = widget->findChildren<QWidget *>();
+            const QList<QWidget *> children = widget->findChildren<QWidget *>();
             auto ignorable = [](QWidget *w) {
                 return w->isWindow() || !w->isVisible()
                         || w->style()->styleHint(SH_UnderlineShortcut, nullptr, w);
             };
-            l.removeIf(ignorable);
             // Update states before repainting
             d->seenAlt.append(widget);
             d->alt_down = true;
 
             // Repaint all relevant widgets
-            for (int pos = 0; pos < l.size(); ++pos)
-                l.at(pos)->update();
+            for (QWidget *w : children) {
+                if (!ignorable(w))
+                    w->update();
+            }
         }
         break;
     case QEvent::KeyRelease:
@@ -139,9 +140,9 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
             // Update state and repaint the menu bars.
             d->alt_down = false;
 #if QT_CONFIG(menubar)
-            QList<QMenuBar *> l = widget->findChildren<QMenuBar *>();
-            for (int i = 0; i < l.size(); ++i)
-                l.at(i)->update();
+            const QList<QMenuBar *> menuBars = widget->findChildren<QMenuBar *>();
+            for (QWidget *w : menuBars)
+                w->update();
 #endif
         }
         break;
@@ -808,7 +809,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         }
 #endif // QT_CONFIG(itemviews)
         if (!(opt->state & State_Off)) {
-            QPointF  points[6];
+            std::array<QPointF, 6> points;
             qreal scaleh = opt->rect.width() / 12.0;
             qreal scalev = opt->rect.height() / 12.0;
             points[0] = { opt->rect.x() + qreal(3.5) * scaleh, opt->rect.y() + qreal(5.5) * scalev };
@@ -819,7 +820,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             points[5] = { points[4].x() - 4 * scaleh,   points[4].y() + 4 * scalev };
             p->setPen(QPen(opt->palette.text().color(), 0));
             p->setBrush(opt->palette.text().color());
-            p->drawPolygon(points, 6);
+            p->drawPolygon(points.data(), static_cast<int>(points.size()));
         }
         if (doRestore)
             p->restore();
@@ -1571,11 +1572,8 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 default:
                     break;
                 }
-                if (opt->direction == Qt::RightToLeft){ //reverse layout changes the order of Beginning/end
-                    bool tmp = paintLeftBorder;
-                    paintRightBorder=paintLeftBorder;
-                    paintLeftBorder=tmp;
-                }
+                if (opt->direction == Qt::RightToLeft)  //reverse layout changes the order of Beginning/end
+                    std::swap(paintLeftBorder, paintRightBorder);
                 break;
             case Qt::RightToolBarArea :
                 switch (toolbar->positionOfLine){
