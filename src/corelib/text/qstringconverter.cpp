@@ -1471,31 +1471,40 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
     Q_ASSERT(uclen > 0);
 
     int len = 0;
-    while (!(len = WideCharToMultiByte(codePage, 0, ch, int(uclen), out, int(outlen), nullptr,
-                                       nullptr))) {
-        int r = GetLastError();
-        if (r == ERROR_INSUFFICIENT_BUFFER) {
-            Q_ASSERT(mb.isEmpty());
-            int neededLength = WideCharToMultiByte(codePage, 0, ch, int(uclen), nullptr, 0, nullptr,
-                                                   nullptr);
-            const qsizetype currentLength = out - buf.data();
-            mb.resize(currentLength + neededLength);
-            memcpy(mb.data(), out, currentLength * sizeof(*out));
-            out = mb.data() + currentLength;
-            outlen = neededLength;
-            // and try again...
+    while (uclen > 0) {
+        const int nextIn = qt_saturate<int>(uclen);
+        const int nextOut = qt_saturate<int>(outlen);
+        len = WideCharToMultiByte(codePage, 0, ch, nextIn, out, nextOut, nullptr, nullptr);
+        if (len > 0) {
+            ch += nextIn;
+            uclen -= nextIn;
+            out += len;
+            outlen -= len;
         } else {
-            // Fail.  Probably can't happen in fact (dwFlags is 0).
+            int r = GetLastError();
+            if (r == ERROR_INSUFFICIENT_BUFFER) {
+                Q_ASSERT(mb.isEmpty());
+                int neededLength = WideCharToMultiByte(codePage, 0, ch, nextIn, nullptr, 0,
+                                                       nullptr, nullptr);
+                const qsizetype currentLength = out - buf.data();
+                mb.resize(currentLength + neededLength);
+                memcpy(mb.data(), out, currentLength * sizeof(*out));
+                out = mb.data() + currentLength;
+                outlen = neededLength;
+                // and try again...
+            } else {
+                // Fail.  Probably can't happen in fact (dwFlags is 0).
 #ifndef QT_NO_DEBUG
-            // Can't use qWarning(), as it'll recurse to handle %ls
-            fprintf(stderr, "WideCharToMultiByte: Cannot convert multibyte text (error %d): %ls\n",
-                    r,
-                    reinterpret_cast<const wchar_t *>(QStringView(ch, uclen).toString().utf16()));
+                // Can't use qWarning(), as it'll recurse to handle %ls
+                fprintf(stderr,
+                        "WideCharToMultiByte: Cannot convert multibyte text (error %d): %ls\n", r,
+                        reinterpret_cast<const wchar_t *>(
+                                QStringView(ch, uclen).left(100).toString().utf16()));
 #endif
-            break;
+                break;
+            }
         }
     }
-    out += len;
     if (mb.isEmpty()) {
         // We must have only used the stack buffer
         if (out != buf.data()) // else: we return null-array
