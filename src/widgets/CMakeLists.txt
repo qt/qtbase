@@ -327,6 +327,36 @@ qt_internal_add_resource(Widgets "qstyle1"
         ${qstyle1_resource_files}
 )
 
+set(qstyle_resource_fusion_files
+    "styles/images/fusion_closedock-10.png"
+    "styles/images/fusion_closedock-16.png"
+    "styles/images/fusion_closedock-20.png"
+    "styles/images/fusion_closedock-32.png"
+    "styles/images/fusion_closedock-48.png"
+    "styles/images/fusion_closedock-64.png"
+    "styles/images/fusion_normalizedockup_10.png"
+    "styles/images/fusion_normalizedockup-16.png"
+    "styles/images/fusion_normalizedockup_20.png"
+    "styles/images/fusion_normalizedockup-32.png"
+    "styles/images/fusion_normalizedockup_48.png"
+    "styles/images/fusion_normalizedockup_64.png"
+    "styles/images/fusion_titlebar-min-10.png"
+    "styles/images/fusion_titlebar-min-16.png"
+    "styles/images/fusion_titlebar-min-20.png"
+    "styles/images/fusion_titlebar-min-32.png"
+    "styles/images/fusion_titlebar-min-48.png"
+    "styles/images/fusion_titlebar-min-64.png"
+)
+
+qt_internal_add_resource(Widgets "qstyle_fusion"
+    PREFIX
+        "/qt-project.org/styles/fusionstyle"
+    BASE
+        "styles"
+    FILES
+        ${qstyle_resource_fusion_files}
+)
+
 if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
     target_link_options(Widgets PRIVATE
                         "LINKER:--dynamic-list=${CMAKE_CURRENT_LIST_DIR}/QtWidgets.dynlist")

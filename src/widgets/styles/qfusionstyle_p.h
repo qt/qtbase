@@ -54,6 +54,7 @@ public:
     int styleHint(StyleHint hint, const QStyleOption *option = nullptr, const QWidget *widget = nullptr,
                   QStyleHintReturn *returnData = nullptr) const override;
     QRect itemPixmapRect(const QRect &r, int flags, const QPixmap &pixmap) const override;
+    QIcon iconFromTheme(StandardPixmap standardIcon) const;
     QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = nullptr,
                        const QWidget *widget = nullptr) const override;
     QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,

@@ -3635,9 +3635,47 @@ QRect QFusionStyle::subElementRect(SubElement sr, const QStyleOption *opt, const
 /*!
     \reimp
 */
+QIcon QFusionStyle::iconFromTheme(StandardPixmap standardIcon) const
+{
+    QIcon icon;
+#if QT_CONFIG(imageformat_png)
+    auto addIconFiles = [](QStringView prefix, QIcon &icon)
+    {
+        const auto fullPrefix = QStringLiteral(":/qt-project.org/styles/fusionstyle/images/") + prefix;
+        static constexpr auto dockTitleIconSizes = {10, 16, 20, 32, 48, 64};
+        for (int size : dockTitleIconSizes)
+            icon.addFile(fullPrefix + QString::number(size) + QStringLiteral(".png"),
+                         QSize(size, size));
+    };
+    switch (standardIcon) {
+    case SP_TitleBarNormalButton:
+        addIconFiles(u"fusion_normalizedockup-", icon);
+      break;
+    case SP_TitleBarMinButton:
+        addIconFiles(u"fusion_titlebar-min-", icon);
+        break;
+    case SP_TitleBarCloseButton:
+    case SP_DockWidgetCloseButton:
+        addIconFiles(u"fusion_closedock-", icon);
+        break;
+    default:
+        break;
+    }
+#else  // imageformat_png
+    Q_UNUSED(standardIcon);
+#endif // imageformat_png
+    return icon;
+}
+
+/*!
+    \reimp
+*/
 QIcon QFusionStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
                                  const QWidget *widget) const
 {
+    const auto icon = iconFromTheme(standardIcon);
+    if (!icon.availableSizes().isEmpty())
+        return icon;
     return QCommonStyle::standardIcon(standardIcon, option, widget);
 }
 
@@ -3647,6 +3685,13 @@ QIcon QFusionStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
 QPixmap QFusionStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                                      const QWidget *widget) const
 {
+    auto getDevicePixelRatio = [](const QWidget *widget)
+    {
+        return widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
+    };
+    const auto icon = iconFromTheme(standardPixmap);
+    if (!icon.availableSizes().isEmpty())
+        return icon.pixmap(QSize(16, 16), getDevicePixelRatio(widget));
     return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 }
 
