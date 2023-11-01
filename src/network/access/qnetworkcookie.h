@@ -75,7 +75,9 @@ public:
     bool hasSameIdentifier(const QNetworkCookie &other) const;
     void normalize(const QUrl &url);
 
+#if QT_NETWORK_REMOVED_SINCE(6, 7)
     static QList<QNetworkCookie> parseCookies(const QByteArray &cookieString);
+#endif
     static QList<QNetworkCookie> parseCookies(QByteArrayView cookieString);
 
 private:

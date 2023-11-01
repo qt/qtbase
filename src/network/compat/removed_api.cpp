@@ -33,6 +33,13 @@ bool QNetworkRequest::hasRawHeader(const QByteArray &headerName) const
     return hasRawHeader(qToByteArrayViewIgnoringNull(headerName));
 }
 
+#include "qnetworkcookie.h"
+
+QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieString)
+{
+    return parseCookies(qToByteArrayViewIgnoringNull(cookieString));
+}
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically

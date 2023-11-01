@@ -932,15 +932,7 @@ static QDateTime parseDateString(QByteArrayView dateString)
     cookie that is parsed.
 
     \sa toRawForm()
-*/
-QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieString)
-{
-    return parseCookies(QByteArrayView(cookieString));
-}
-
-/*!
-    \overload
-    \since 6.7
+    \note In Qt versions prior to 6.7, this function took QByteArray only.
 */
 QList<QNetworkCookie> QNetworkCookie::parseCookies(QByteArrayView cookieString)
 {
