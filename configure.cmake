@@ -1053,7 +1053,7 @@ qt_feature("intelcet" PRIVATE
 if("${INPUT_coverage}" STREQUAL "gcov")
     qt_config_compile_test(gcov
         LABEL "gcov compiler flags"
-        COMPILE_OPTIONS "-fprofile-arcs -ftest-coverage"
+        COMPILE_OPTIONS "--coverage"
         CODE
     "int main(void)
     {
