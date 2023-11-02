@@ -34,6 +34,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 using namespace QtMiscUtils;
+using namespace std::chrono_literals;
 
 class QNetworkProxy;
 
@@ -2047,9 +2048,9 @@ void QNetworkReplyHttpImplPrivate::setupTransferTimeout()
                        Qt::QueuedConnection);
     }
     transferTimeout->stop();
-    if (request.transferTimeout()) {
+    if (request.transferTimeoutAsDuration() > 0ms) {
         transferTimeout->setSingleShot(true);
-        transferTimeout->setInterval(request.transferTimeout());
+        transferTimeout->setInterval(request.transferTimeoutAsDuration());
         QMetaObject::invokeMethod(transferTimeout, "start",
                                   Qt::QueuedConnection);
 

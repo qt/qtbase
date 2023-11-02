@@ -131,7 +131,7 @@ public:
 
     bool autoDeleteReplies = false;
 
-    int transferTimeout = 0;
+    std::chrono::milliseconds transferTimeout{0};
 
     Q_DECLARE_PUBLIC(QNetworkAccessManager)
 };

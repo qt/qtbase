@@ -91,6 +91,7 @@ Q_DECLARE_METATYPE(QNetworkProxyQuery)
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 #if QT_CONFIG(ssl)
 QT_BEGIN_NAMESPACE
@@ -535,8 +536,8 @@ private Q_SLOTS:
     void autoDeleteReplies_data();
     void autoDeleteReplies();
 
-    void getWithTimeout();
-    void postWithTimeout();
+    void requestWithTimeout_data();
+    void requestWithTimeout();
 
     void moreActivitySignals_data();
     void moreActivitySignals();
@@ -9884,82 +9885,63 @@ void tst_QNetworkReply::autoDeleteReplies()
     }
 }
 
-void tst_QNetworkReply::getWithTimeout()
+void tst_QNetworkReply::requestWithTimeout_data()
 {
-    MiniHttpServer server(tst_QNetworkReply::httpEmpty200Response, false);
+    using Operation = QNetworkAccessManager::Operation;
+    QTest::addColumn<Operation>("method");
+    QTest::addColumn<int>("reqInt");
+    QTest::addColumn<std::chrono::milliseconds>("reqChrono");
+    QTest::addColumn<int>("mgrInt");
+    QTest::addColumn<std::chrono::milliseconds>("mgrChrono");
 
-    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
-    QNetworkReplyPtr reply(manager.get(request));
-    QSignalSpy spy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
+    QTest::addRow("get_req_int") << Operation::GetOperation << 500 << 0ms << 0 << 0ms;
+    QTest::addRow("get_req_chrono") << Operation::GetOperation << 0 << 500ms << 0 << 0ms;
+    QTest::addRow("get_mgr_int") << Operation::GetOperation << 0 << 0ms << 500 << 0ms;
+    QTest::addRow("get_mgr_chrono") << Operation::GetOperation << 0 << 0ms << 0 << 500ms;
 
-    QCOMPARE(waitForFinish(reply), int(Success));
-
-    QCOMPARE(spy.size(), 0);
-    QVERIFY(reply->error() == QNetworkReply::NoError);
-
-    request.setTransferTimeout(1000);
-    server.stopTransfer = true;
-
-    QNetworkReplyPtr reply2(manager.get(request));
-    QSignalSpy spy2(reply2.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
-
-    QCOMPARE(waitForFinish(reply2), int(Failure));
-
-    QCOMPARE(spy2.size(), 1);
-    QVERIFY(reply2->error() == QNetworkReply::OperationCanceledError);
-
-    request.setTransferTimeout(0);
-    manager.setTransferTimeout(1000);
-
-    QNetworkReplyPtr reply3(manager.get(request));
-    QSignalSpy spy3(reply3.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
-
-    QCOMPARE(waitForFinish(reply3), int(Failure));
-
-    QCOMPARE(spy3.size(), 1);
-    QVERIFY(reply3->error() == QNetworkReply::OperationCanceledError);
-
-    manager.setTransferTimeout(0);
+    QTest::addRow("post_req_int") << Operation::PostOperation << 500 << 0ms << 0 << 0ms;
+    QTest::addRow("post_req_chrono") << Operation::PostOperation << 0 << 500ms << 0 << 0ms;
+    QTest::addRow("post_mgr_int") << Operation::PostOperation << 0 << 0ms << 500 << 0ms;
+    QTest::addRow("post_mgr_chrono") << Operation::PostOperation << 0 << 0ms << 0 << 500ms;
 }
 
-void tst_QNetworkReply::postWithTimeout()
+void tst_QNetworkReply::requestWithTimeout()
 {
+    QFETCH(QNetworkAccessManager::Operation, method);
+    QFETCH(int, reqInt);
+    QFETCH(int, mgrInt);
+    QFETCH(std::chrono::milliseconds, reqChrono);
+    QFETCH(std::chrono::milliseconds, mgrChrono);
+    const auto data = "some data"_ba;
+    // Manager instance remains between case runs => always reset it's transferTimeout to
+    // ensure setting its transferTimeout in this case has effect
+    manager.setTransferTimeout(0ms);
+
     MiniHttpServer server(tst_QNetworkReply::httpEmpty200Response, false);
+    server.stopTransfer = true;
 
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     request.setRawHeader("Content-Type", "application/octet-stream");
-    QByteArray postData("Just some nonsense");
-    QNetworkReplyPtr reply(manager.post(request, postData));
-    QSignalSpy spy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
+    if (reqInt > 0)
+        request.setTransferTimeout(reqInt);
+    if (reqChrono > 0ms)
+        request.setTransferTimeout(reqChrono);
+    if (mgrInt > 0)
+        manager.setTransferTimeout(mgrInt);
+    if (mgrChrono > 0ms)
+        manager.setTransferTimeout(mgrChrono);
 
-    QCOMPARE(waitForFinish(reply), int(Success));
+    QNetworkReplyPtr reply;
+    if (method == QNetworkAccessManager::GetOperation)
+        reply.reset(manager.get(request));
+    else if (method == QNetworkAccessManager::PostOperation)
+        reply.reset(manager.post(request, data));
+    QVERIFY(reply);
 
-    QCOMPARE(spy.size(), 0);
-    QVERIFY(reply->error() == QNetworkReply::NoError);
-
-    request.setTransferTimeout(1000);
-    server.stopTransfer = true;
-
-    QNetworkReplyPtr reply2(manager.post(request, postData));
-    QSignalSpy spy2(reply2.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
-
-    QCOMPARE(waitForFinish(reply2), int(Failure));
-
-    QCOMPARE(spy2.size(), 1);
-    QVERIFY(reply2->error() == QNetworkReply::OperationCanceledError);
-
-    request.setTransferTimeout(0);
-    manager.setTransferTimeout(1000);
-
-    QNetworkReplyPtr reply3(manager.post(request, postData));
-    QSignalSpy spy3(reply3.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
-
-    QCOMPARE(waitForFinish(reply3), int(Failure));
-
-    QCOMPARE(spy3.size(), 1);
-    QVERIFY(reply3->error() == QNetworkReply::OperationCanceledError);
-
-    manager.setTransferTimeout(0);
+    QSignalSpy spy(reply.data(), &QNetworkReply::errorOccurred);
+    QCOMPARE(waitForFinish(reply), int(Failure));
+    QCOMPARE(spy.size(), 1);
+    QCOMPARE(reply->error(), QNetworkReply::OperationCanceledError);
 }
 
 void tst_QNetworkReply::moreActivitySignals_data()

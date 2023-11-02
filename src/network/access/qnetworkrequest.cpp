@@ -28,6 +28,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 QT_IMPL_METATYPE_EXTERN(QNetworkRequest)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest__RedirectPolicy)
@@ -407,6 +408,16 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest_
     \value DefaultTransferTimeoutConstant     The transfer timeout in milliseconds.
                                               Used if setTimeout() is called
                                               without an argument.
+
+    \sa QNetworkRequest::DefaultTransferTimeout
+ */
+
+/*!
+    \variable QNetworkRequest::DefaultTransferTimeout
+
+    The transfer timeout with \l {QNetworkRequest::TransferTimeoutConstant}
+    milliseconds. Used if setTransferTimeout() is called without an
+    argument.
  */
 
 class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate
@@ -419,7 +430,6 @@ public:
         , sslConfiguration(nullptr)
 #endif
         , maxRedirectsAllowed(maxRedirectCount)
-        , transferTimeout(0)
     { qRegisterMetaType<QNetworkRequest>(); }
     ~QNetworkRequestPrivate()
     {
@@ -479,7 +489,7 @@ public:
     QHttp2Configuration h2Configuration;
     qint64 decompressedSafetyCheckThreshold = 10ll * 1024ll * 1024ll;
 #endif
-    int transferTimeout;
+    std::chrono::milliseconds transferTimeout = 0ms;
 };
 
 /*!
@@ -977,14 +987,11 @@ void QNetworkRequest::setDecompressedSafetyCheckThreshold(qint64 threshold)
 
     Returns the timeout used for transfers, in milliseconds.
 
-    This timeout is zero if setTransferTimeout hasn't been
-    called, which means that the timeout is not used.
-
-    \sa setTransferTimeout
+    \sa setTransferTimeout()
 */
 int QNetworkRequest::transferTimeout() const
 {
-    return d->transferTimeout;
+    return int(d->transferTimeout.count());
 }
 
 /*!
@@ -992,18 +999,46 @@ int QNetworkRequest::transferTimeout() const
 
     Sets \a timeout as the transfer timeout in milliseconds.
 
-    Transfers are aborted if no bytes are transferred before
-    the timeout expires. Zero means no timer is set. If no
-    argument is provided, the timeout is
-    QNetworkRequest::DefaultTransferTimeoutConstant. If this function
-    is not called, the timeout is disabled and has the
-    value zero.
-
-    \sa transferTimeout
+    \sa setTransferTimeout(std::chrono::milliseconds),
+        transferTimeout(), transferTimeoutAsDuration()
 */
 void QNetworkRequest::setTransferTimeout(int timeout)
 {
-    d->transferTimeout = timeout;
+    d->transferTimeout = std::chrono::milliseconds(timeout);
+}
+
+/*!
+    \since 6.7
+
+    Returns the timeout duration after which the transfer is aborted if no
+    data is exchanged.
+
+    The default duration is zero, which means that the timeout is not used.
+
+    \sa setTransferTimeout(std::chrono::milliseconds)
+*/
+std::chrono::milliseconds QNetworkRequest::transferTimeoutAsDuration() const
+{
+    return d->transferTimeout;
+}
+
+/*!
+    \since 6.7
+
+    Sets the timeout \a duration to abort the transfer if no data is exchanged.
+
+    Transfers are aborted if no bytes are transferred before
+    the timeout expires. Zero means no timer is set. If no
+    argument is provided, the timeout is
+    QNetworkRequest::DefaultTransferTimeout. If this function
+    is not called, the timeout is disabled and has the
+    value zero.
+
+    \sa transferTimeoutAsDuration()
+*/
+void QNetworkRequest::setTransferTimeout(std::chrono::milliseconds duration)
+{
+    d->transferTimeout = duration;
 }
 #endif // QT_CONFIG(http) || defined (Q_OS_WASM)
 

@@ -97,6 +97,9 @@ public:
         DefaultTransferTimeoutConstant = 30000
     };
 
+    static constexpr auto DefaultTransferTimeout =
+            std::chrono::milliseconds(DefaultTransferTimeoutConstant);
+
     QNetworkRequest();
     explicit QNetworkRequest(const QUrl &url);
     QNetworkRequest(const QNetworkRequest &other);
@@ -163,7 +166,9 @@ public:
 
 #if QT_CONFIG(http) || defined (Q_OS_WASM)
     int transferTimeout() const;
-    void setTransferTimeout(int timeout = DefaultTransferTimeoutConstant);
+    void setTransferTimeout(int timeout);
+    std::chrono::milliseconds transferTimeoutAsDuration() const;
+    void setTransferTimeout(std::chrono::milliseconds duration = DefaultTransferTimeout);
 #endif // QT_CONFIG(http) || defined (Q_OS_WASM)
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;
