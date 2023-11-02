@@ -516,6 +516,10 @@ static int useForkFlags(const QProcessPrivate::UnixExtras *unixExtras)
     // ASan writes to global memory, so we mustn't use vfork().
     return FFD_USE_FORK;
 #endif
+#if defined(__SANITIZE_THREAD__) || __has_feature(thread_sanitizer)
+    // Ditto, apparently
+    return false;
+#endif
 #if defined(Q_OS_LINUX) && !QT_CONFIG(forkfd_pidfd)
     // some broken environments are known to have problems with the new Linux
     // API, so we have a way for users to opt-out during configure time (see
