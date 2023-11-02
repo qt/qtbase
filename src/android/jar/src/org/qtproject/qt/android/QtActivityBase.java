@@ -21,13 +21,7 @@ import android.view.Window;
 
 public class QtActivityBase extends Activity
 {
-    private boolean m_optionsMenuIsVisible = false;
-
-    // use this variable to pass any parameters to your application,
-    // the parameters must not contain any white spaces
-    // and must be separated with "\t"
-    // e.g "-param1\t-param2=value2\t-param3\tvalue3"
-    public String APPLICATION_PARAMETERS = null;
+    public String m_applicationParams = null;
 
     // use this variable to add any environment variables to your application.
     // the env vars must be separated with "\t"
@@ -60,6 +54,13 @@ public class QtActivityBase extends Activity
         }
 
         intent.putExtra(extraSourceInfoKey, sourceInformation);
+    }
+
+    // Append any parameters to your application,
+    // the parameters must be "\t" separated.
+    protected void appendApplicationParameters(String params)
+    {
+        m_applicationParams += params;
     }
 
     private void handleActivityRestart() {
@@ -99,7 +100,7 @@ public class QtActivityBase extends Activity
         addReferrer(getIntent());
 
         QtActivityLoader loader = new QtActivityLoader(this);
-        loader.setApplicationParameters(APPLICATION_PARAMETERS);
+        loader.setApplicationParameters(m_applicationParams);
         loader.setEnvironmentVariables(ENVIRONMENT_VARIABLES);
 
         loader.loadQtLibraries();

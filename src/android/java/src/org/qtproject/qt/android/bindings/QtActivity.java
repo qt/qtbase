@@ -19,12 +19,6 @@ public class QtActivity extends QtActivityBase
 
     private void setAppDetails()
     {
-        // use this variable to pass any parameters to your application,
-        // the parameters must not contain any white spaces
-        // and must be separated with "\t"
-        // e.g "-param1\t-param2=value2\t-param3\tvalue3"
-        APPLICATION_PARAMETERS = "";
-
         // Use this variable to add any environment variables to your application.
         // the env vars must be separated with "\t"
         // e.g. "ENV_VAR1=1\tENV_VAR2=2\t"
