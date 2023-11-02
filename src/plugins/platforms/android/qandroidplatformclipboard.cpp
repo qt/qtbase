@@ -106,9 +106,8 @@ bool QAndroidPlatformClipboard::supportsMode(QClipboard::Mode mode) const
     return QClipboard::Clipboard == mode;
 }
 
-bool QAndroidPlatformClipboard::registerNatives()
+bool QAndroidPlatformClipboard::registerNatives(QJniEnvironment &env)
 {
-    QJniEnvironment env;
     bool success = env.registerNativeMethods(Traits<QtClipboardManager>::className(),
                 { Q_JNI_NATIVE_SCOPED_METHOD(onClipboardDataChanged, QAndroidPlatformClipboard) });
     if (!success) {

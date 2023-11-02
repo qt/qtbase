@@ -24,7 +24,7 @@ public:
     void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) override;
     bool supportsMode(QClipboard::Mode mode) const override;
 
-    static bool registerNatives();
+    static bool registerNatives(QJniEnvironment &env);
 
 private:
     QMimeData *getClipboardMimeData();
