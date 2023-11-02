@@ -258,7 +258,11 @@ bool QSharedMemoryPrivate::initKey(SemaphoreAccessMode mode)
     if (!cleanHandle())
         return false;
 #if QT_CONFIG(systemsemaphore)
-    systemSemaphore.setNativeKey(semaphoreNativeKey(), 1, mode);
+    const QString legacyKey = QNativeIpcKeyPrivate::legacyKey(nativeKey);
+    const QNativeIpcKey semKey = legacyKey.isEmpty()
+            ? semaphoreNativeKey()
+            : QSystemSemaphore::legacyNativeKey(legacyKey, nativeKey.type());
+    systemSemaphore.setNativeKey(semKey, 1, mode);
     if (systemSemaphore.error() != QSystemSemaphore::NoError) {
         QString function = "QSharedMemoryPrivate::initKey"_L1;
         errorString = QSharedMemory::tr("%1: unable to set key on lock (%2)")
