@@ -107,6 +107,10 @@ void QFreeTypeFontDatabase::addNamedInstancesForFace(void *face_,
     FT_MM_Var *var = nullptr;
     FT_Get_MM_Var(face, &var);
     if (var != nullptr) {
+        std::unique_ptr<FT_MM_Var, void(*)(FT_MM_Var*)> varGuard(var, [](FT_MM_Var *res) {
+            FT_Done_MM_Var(qt_getFreetype(), res);
+        });
+
         for (FT_UInt i = 0; i < var->num_namedstyles; ++i) {
            FT_UInt id = var->namedstyle[i].strid;
 
