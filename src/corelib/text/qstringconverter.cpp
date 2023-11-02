@@ -1419,14 +1419,20 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
         Q_ASSERT(state->remainingChars == 1);
         // Let's try to decode the pending character
         wchar_t wc[2] = { wchar_t(state->state_data[0]), ch[0] };
-        int len = WideCharToMultiByte(codePage, 0, wc, int(std::size(wc)), out, outlen, nullptr,
+        // Check if the second character is a valid low surrogate,
+        // otherwise we'll just decode the first character, for which windows
+        // will output a replacement character.
+        const bool validCodePoint = QChar::isLowSurrogate(wc[1]);
+        int len = WideCharToMultiByte(codePage, 0, wc, validCodePoint ? 2 : 1, out, outlen, nullptr,
                                       nullptr);
         if (!len)
             return {}; // Cannot recover, and I refuse to believe it was a size limitation
         out += len;
         outlen -= len;
-        ++ch;
-        --uclen;
+        if (validCodePoint) {
+            ++ch;
+            --uclen;
+        }
         state->remainingChars = 0;
         state->state_data[0] = 0;
         if (uclen == 0)
