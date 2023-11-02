@@ -51,11 +51,11 @@ public class QtActivityBase extends Activity
 
     private QtActivityDelegate m_delegate;
 
-    public static final String EXTRA_SOURCE_INFO = "org.qtproject.qt.android.sourceInfo";
-
     private void addReferrer(Intent intent)
     {
-        if (intent.getExtras() != null && intent.getExtras().getString(EXTRA_SOURCE_INFO) != null)
+        final String extraSourceInfoKey = "org.qtproject.qt.android.sourceInfo";
+
+        if (intent.getExtras() != null && intent.getExtras().getString(extraSourceInfoKey) != null)
             return;
 
         String browserApplicationId = "";
@@ -71,7 +71,7 @@ public class QtActivityBase extends Activity
                 sourceInformation = referrer.toString().replaceFirst("android-app://", "");
         }
 
-        intent.putExtra(EXTRA_SOURCE_INFO, sourceInformation);
+        intent.putExtra(extraSourceInfoKey, sourceInformation);
     }
 
     private void handleActivityRestart() {
