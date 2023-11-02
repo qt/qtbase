@@ -22,13 +22,6 @@ import android.view.Window;
 public class QtActivityBase extends Activity
 {
     public String m_applicationParams = null;
-
-    // use this variable to add any environment variables to your application.
-    // the env vars must be separated with "\t"
-    // e.g. "ENV_VAR1=1\tENV_VAR2=2\t"
-    // Currently the following vars are used by the android plugin:
-    // * QT_USE_ANDROID_NATIVE_DIALOGS - 1 to use the android native dialogs.
-    public String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_DIALOGS=1";
     private boolean m_isCustomThemeSet = false;
 
     private QtActivityDelegate m_delegate;
@@ -101,7 +94,6 @@ public class QtActivityBase extends Activity
 
         QtActivityLoader loader = new QtActivityLoader(this);
         loader.setApplicationParameters(m_applicationParams);
-        loader.setEnvironmentVariables(ENVIRONMENT_VARIABLES);
 
         loader.loadQtLibraries();
         m_delegate.startNativeApplication(loader.getApplicationParameters(),

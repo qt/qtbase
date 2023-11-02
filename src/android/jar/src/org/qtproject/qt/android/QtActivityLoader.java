@@ -118,6 +118,7 @@ public class QtActivityLoader extends QtLoader {
     {
         super.extractContextMetaData();
 
+        setEnvironmentVariable("QT_USE_ANDROID_NATIVE_DIALOGS", String.valueOf(1));
         setEnvironmentVariable("QT_ANDROID_APP_ICON_SIZE", String.valueOf(getAppIconSize()));
 
         setupStyleExtraction();
