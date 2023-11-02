@@ -336,40 +336,37 @@ QVariant QSystemLocalePrivate::dayName(int day, QLocale::FormatType type)
     if (day < 1 || day > 7)
         return {};
 
-    static const LCTYPE short_day_map[]
+    static constexpr LCTYPE short_day_map[]
         = { LOCALE_SABBREVDAYNAME1, LOCALE_SABBREVDAYNAME2,
             LOCALE_SABBREVDAYNAME3, LOCALE_SABBREVDAYNAME4, LOCALE_SABBREVDAYNAME5,
             LOCALE_SABBREVDAYNAME6, LOCALE_SABBREVDAYNAME7 };
 
-    static const LCTYPE long_day_map[]
+    static constexpr LCTYPE long_day_map[]
         = { LOCALE_SDAYNAME1, LOCALE_SDAYNAME2,
             LOCALE_SDAYNAME3, LOCALE_SDAYNAME4, LOCALE_SDAYNAME5,
             LOCALE_SDAYNAME6, LOCALE_SDAYNAME7 };
 
-    static const LCTYPE narrow_day_map[]
+    static constexpr LCTYPE narrow_day_map[]
         = { LOCALE_SSHORTESTDAYNAME1, LOCALE_SSHORTESTDAYNAME2,
             LOCALE_SSHORTESTDAYNAME3, LOCALE_SSHORTESTDAYNAME4,
             LOCALE_SSHORTESTDAYNAME5, LOCALE_SSHORTESTDAYNAME6,
             LOCALE_SSHORTESTDAYNAME7 };
 
-    day -= 1;
-
-    if (type == QLocale::LongFormat)
-        return nullIfEmpty(getLocaleInfo(long_day_map[day]).toString());
-    if (type == QLocale::NarrowFormat)
-        return nullIfEmpty(getLocaleInfo(narrow_day_map[day]).toString());
-    return nullIfEmpty(getLocaleInfo(short_day_map[day]).toString());
+    return nullIfEmpty(getLocaleInfo(
+                           (type == QLocale::LongFormat ? long_day_map
+                            : type == QLocale::NarrowFormat ? narrow_day_map
+                            : short_day_map)[day - 1]).toString());
 }
 
 QVariant QSystemLocalePrivate::standaloneMonthName(int month, QLocale::FormatType type)
 {
-    static const LCTYPE short_month_map[]
+    static constexpr LCTYPE short_month_map[]
         = { LOCALE_SABBREVMONTHNAME1, LOCALE_SABBREVMONTHNAME2, LOCALE_SABBREVMONTHNAME3,
             LOCALE_SABBREVMONTHNAME4, LOCALE_SABBREVMONTHNAME5, LOCALE_SABBREVMONTHNAME6,
             LOCALE_SABBREVMONTHNAME7, LOCALE_SABBREVMONTHNAME8, LOCALE_SABBREVMONTHNAME9,
             LOCALE_SABBREVMONTHNAME10, LOCALE_SABBREVMONTHNAME11, LOCALE_SABBREVMONTHNAME12 };
 
-    static const LCTYPE long_month_map[]
+    static constexpr LCTYPE long_month_map[]
         = { LOCALE_SMONTHNAME1, LOCALE_SMONTHNAME2, LOCALE_SMONTHNAME3,
             LOCALE_SMONTHNAME4, LOCALE_SMONTHNAME5, LOCALE_SMONTHNAME6,
             LOCALE_SMONTHNAME7, LOCALE_SMONTHNAME8, LOCALE_SMONTHNAME9,
