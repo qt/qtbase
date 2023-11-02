@@ -26,19 +26,21 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
 
     // the following is in relation to the virtual geometry
     const bool forceMaximize = m_windowState & (Qt::WindowMaximized | Qt::WindowFullScreen);
-    const QRect requestedNativeGeometry =
-            forceMaximize ? QRect() : QHighDpi::toNativePixels(window->geometry(), window);
-    const QRect availableDeviceIndependentGeometry = (window->parent())
-            ? window->parent()->geometry()
-            : QHighDpi::fromNativePixels(platformScreen()->availableGeometry(), window);
-
-    // initialGeometry returns in native pixels
-    const QRect finalNativeGeometry = QPlatformWindow::initialGeometry(
-            window, requestedNativeGeometry, availableDeviceIndependentGeometry.width(),
-            availableDeviceIndependentGeometry.height());
-
-    if (requestedNativeGeometry != finalNativeGeometry)
-        setGeometry(finalNativeGeometry);
+    const QRect nativeScreenGeometry = platformScreen()->availableGeometry();
+    if (forceMaximize) {
+        setGeometry(nativeScreenGeometry);
+    } else {
+        const QRect requestedNativeGeometry = QHighDpi::toNativePixels(window->geometry(), window);
+        const QRect availableDeviceIndependentGeometry = (window->parent())
+                ? window->parent()->geometry()
+                : QHighDpi::fromNativePixels(nativeScreenGeometry, window);
+        // initialGeometry returns in native pixels
+        const QRect finalNativeGeometry = QPlatformWindow::initialGeometry(
+                window, requestedNativeGeometry, availableDeviceIndependentGeometry.width(),
+                availableDeviceIndependentGeometry.height());
+        if (requestedNativeGeometry != finalNativeGeometry)
+            setGeometry(finalNativeGeometry);
+    }
 }
 
 void QAndroidPlatformWindow::lower()
