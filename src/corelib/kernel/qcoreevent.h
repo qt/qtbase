@@ -354,6 +354,8 @@ private:
     friend class QApplication;
     friend class QGraphicsScenePrivate;
     // from QtTest:
+    // QtWebEngine event handling requires forwarding events as spontaneous.
+    // Impersonated QSpontaneKeyEvent in QtWebEngine to handle such cases.
     friend class QSpontaneKeyEvent;
     // needs this:
     Q_ALWAYS_INLINE
