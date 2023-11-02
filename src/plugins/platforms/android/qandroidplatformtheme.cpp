@@ -163,13 +163,6 @@ QJsonObject AndroidStyle::loadStyleData()
 
     Q_ASSERT(!stylePath.isEmpty());
 
-    QString androidTheme = QLatin1StringView(qgetenv("QT_ANDROID_THEME"));
-    if (!androidTheme.isEmpty() && !androidTheme.endsWith(slashChar))
-        androidTheme += slashChar;
-
-    if (!androidTheme.isEmpty() && QFileInfo::exists(stylePath + androidTheme + "style.json"_L1))
-        stylePath += androidTheme;
-
     QFile f(stylePath + "style.json"_L1);
     if (!f.open(QIODevice::ReadOnly))
         return QJsonObject();

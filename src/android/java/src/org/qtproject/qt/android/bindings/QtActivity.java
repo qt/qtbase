@@ -5,15 +5,6 @@
 package org.qtproject.qt.android.bindings;
 
 import android.os.Bundle;
-import android.provider.Browser;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.os.Build;
 
 import org.qtproject.qt.android.QtActivityBase;
 
@@ -40,21 +31,5 @@ public class QtActivity extends QtActivityBase
         // Currently the following vars are used by the android plugin:
         // * QT_USE_ANDROID_NATIVE_DIALOGS - 1 to use the android native dialogs.
         ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_DIALOGS=1";
-
-        // A list with all themes that your application want to use.
-        // The name of the theme must be the same with any theme from
-        // http://developer.android.com/reference/android/R.style.html
-        // The most used themes are:
-        //  * "Theme_Light"
-        //  * "Theme_Holo"
-        //  * "Theme_Holo_Light"
-
-        if (Build.VERSION.SDK_INT < 29) {
-            QT_ANDROID_THEMES = new String[] {"Theme_Holo_Light"};
-            QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
-        } else {
-            QT_ANDROID_THEMES = new String[] {"Theme_DeviceDefault_DayNight"};
-            QT_ANDROID_DEFAULT_THEME = "Theme_DeviceDefault_DayNight";
-        }
     }
 }

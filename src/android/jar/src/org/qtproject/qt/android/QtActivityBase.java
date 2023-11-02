@@ -19,8 +19,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 
-import java.lang.reflect.Field;
-
 public class QtActivityBase extends Activity
 {
     private boolean m_optionsMenuIsVisible = false;
@@ -37,17 +35,7 @@ public class QtActivityBase extends Activity
     // Currently the following vars are used by the android plugin:
     // * QT_USE_ANDROID_NATIVE_DIALOGS - 1 to use the android native dialogs.
     public String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_DIALOGS=1";
-
-    // A list with all themes that your application want to use.
-    // The name of the theme must be the same with any theme from
-    // http://developer.android.com/reference/android/R.style.html
-    // The most used themes are:
-    //  * "Theme_Light" - (default for API <=10) check http://developer.android.com/reference/android/R.style.html#Theme_Light
-    //  * "Theme_Holo" - check http://developer.android.com/reference/android/R.style.html#Theme_Holo
-    //  * "Theme_Holo_Light" - (default for API 11-13) check http://developer.android.com/reference/android/R.style.html#Theme_Holo_Light
-    public String[] QT_ANDROID_THEMES = null;
-
-    public String QT_ANDROID_DEFAULT_THEME = null; // sets the default theme.
+    private boolean m_isCustomThemeSet = false;
 
     private QtActivityDelegate m_delegate;
 
@@ -87,23 +75,10 @@ public class QtActivityBase extends Activity
         }
     }
 
-    void configureActivityTheme() {
-        if (QT_ANDROID_THEMES == null || QT_ANDROID_DEFAULT_THEME == null) {
-            if (Build.VERSION.SDK_INT < 29) {
-                QT_ANDROID_THEMES = new String[]{"Theme_Holo_Light"};
-                QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
-            } else {
-                QT_ANDROID_THEMES = new String[]{"Theme_DeviceDefault_DayNight"};
-                QT_ANDROID_DEFAULT_THEME = "Theme_DeviceDefault_DayNight";
-            }
-        }
-        try {
-            Field f = Class.forName("android.R$style").getDeclaredField(QT_ANDROID_DEFAULT_THEME);
-            int themeId = f.getInt(null);
-            setTheme(themeId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void setTheme(int resId) {
+        super.setTheme(resId);
+        m_isCustomThemeSet = true;
     }
 
     @Override
@@ -112,16 +87,20 @@ public class QtActivityBase extends Activity
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
 
+        if (!m_isCustomThemeSet) {
+            setTheme(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ?
+                    android.R.style.Theme_DeviceDefault_DayNight :
+                    android.R.style.Theme_Holo_Light);
+        }
+
         m_delegate = new QtActivityDelegate(this);
 
         handleActivityRestart();
         addReferrer(getIntent());
-        configureActivityTheme();
 
         QtActivityLoader loader = new QtActivityLoader(this);
         loader.setApplicationParameters(APPLICATION_PARAMETERS);
         loader.setEnvironmentVariables(ENVIRONMENT_VARIABLES);
-        loader.setEnvironmentVariable("QT_ANDROID_THEME", QT_ANDROID_DEFAULT_THEME);
 
         loader.loadQtLibraries();
         m_delegate.startNativeApplication(loader.getApplicationParameters(),
