@@ -245,6 +245,7 @@ struct QChildProcess
     CharPointerList envp;
     sigset_t oldsigset;
     int workingDirectory = -2;
+    bool isUsingVfork = usingVfork();
 
     bool ok() const
     {
@@ -290,7 +291,7 @@ struct QChildProcess
         // We only block Unix signals if we're using vfork(), to avoid a
         // changing behavior to the user's modifier and because in some OSes
         // this action would block crashing signals too.
-        if (usingVfork()) {
+        if (isUsingVfork) {
             sigset_t emptyset;
             sigfillset(&emptyset);
             pthread_sigmask(SIG_SETMASK, &emptyset, &oldsigset);
@@ -299,7 +300,7 @@ struct QChildProcess
 
     void restoreSignalMask() const noexcept
     {
-        if (usingVfork())
+        if (isUsingVfork)
             pthread_sigmask(SIG_SETMASK, &oldsigset, nullptr);
     }
 
@@ -308,7 +309,7 @@ struct QChildProcess
     template <typename Lambda> int doFork(Lambda &&childLambda)
     {
         pid_t pid;
-        if (usingVfork()) {
+        if (isUsingVfork) {
             QT_IGNORE_DEPRECATIONS(pid = vfork();)
         } else {
             pid = fork();
@@ -320,7 +321,7 @@ struct QChildProcess
 
     int startChild(pid_t *pid)
     {
-        int ffdflags = FFD_CLOEXEC | (usingVfork() ? 0 : FFD_USE_FORK);
+        int ffdflags = FFD_CLOEXEC | (isUsingVfork ? 0 : FFD_USE_FORK);
         return ::vforkfd(ffdflags, pid, &QChildProcess::startProcess, this);
     }
 
@@ -616,6 +617,10 @@ inline QString QChildProcess::resolveExecutable(const QString &program)
     return program;
 }
 
+extern "C" {
+__attribute__((weak)) pid_t __interceptor_vfork();
+}
+
 inline bool globalUsingVfork() noexcept
 {
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
@@ -638,7 +643,10 @@ inline bool globalUsingVfork() noexcept
     return false;
 #endif
 
-    return true;
+    // Dynamically detect whether libasan or libtsan are loaded into the
+    // process' memory. We need this because the user's code may be compiled
+    // with ASan or TSan, but not Qt.
+    return __interceptor_vfork == nullptr;
 }
 
 inline bool QChildProcess::usingVfork() const noexcept
