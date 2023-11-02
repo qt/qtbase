@@ -421,10 +421,10 @@ public abstract class QtLoader {
                 System.load(library);
                 loadedLib = library;
             } else {
-                Log.i(QtTAG, "Can't find '" + library + "'");
+                Log.e(QtTAG, "Can't find '" + library + "'");
             }
         } catch (Exception e) {
-            Log.i(QtTAG, "Can't load '" + library + "'", e);
+            Log.e(QtTAG, "Can't load '" + library + "'", e);
         }
 
         return loadedLib;
