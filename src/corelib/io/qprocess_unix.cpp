@@ -510,6 +510,10 @@ static QString resolveExecutable(const QString &program)
     return program;
 }
 
+extern "C" {
+__attribute__((weak)) pid_t __interceptor_vfork();
+}
+
 static int useForkFlags(const QProcessPrivate::UnixExtras *unixExtras)
 {
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
@@ -531,6 +535,12 @@ static int useForkFlags(const QProcessPrivate::UnixExtras *unixExtras)
     // why: without the tools to investigate why it happens, we didn't bother.
     return FFD_USE_FORK;
 #endif
+
+    // Dynamically detect whether libasan or libtsan are loaded into the
+    // process' memory. We need this because the user's code may be compiled
+    // with ASan or TSan, but not Qt.
+    if (__interceptor_vfork != nullptr)
+        return FFD_USE_FORK;
 
     if (!unixExtras || !unixExtras->childProcessModifier)
         return 0;           // no modifier was supplied
