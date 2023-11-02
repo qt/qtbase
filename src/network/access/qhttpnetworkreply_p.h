@@ -179,7 +179,6 @@ public:
     qint64 readBody(QAbstractSocket *socket, QByteDataBuffer *out);
     qint64 readBodyVeryFast(QAbstractSocket *socket, char *b);
     qint64 readBodyFast(QAbstractSocket *socket, QByteDataBuffer *rb);
-    bool findChallenge(bool forProxy, QByteArray &challenge) const;
     void clear();
     void clearHttpLayerInformation();
 

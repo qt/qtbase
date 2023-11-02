@@ -378,22 +378,6 @@ void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
     }
 }
 
-bool QHttpNetworkReplyPrivate::findChallenge(bool forProxy, QByteArray &challenge) const
-{
-    challenge.clear();
-    // find out the type of authentication protocol requested.
-    const auto header = QByteArrayView(forProxy ? "proxy-authenticate" : "www-authenticate");
-    // pick the best protocol (has to match parsing in QAuthenticatorPrivate)
-    QList<QByteArray> challenges = headerFieldValues(header);
-    for (int i = 0; i<challenges.size(); i++) {
-        QByteArray line = challenges.at(i);
-        // todo use qstrincmp
-        if (!line.toLower().startsWith("negotiate"))
-            challenge = line;
-    }
-    return !challenge.isEmpty();
-}
-
 qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
 {
     if (fragment.isEmpty()) {
