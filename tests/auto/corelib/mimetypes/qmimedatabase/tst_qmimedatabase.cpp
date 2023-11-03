@@ -21,6 +21,7 @@
 #include <QtCore/QTextStream>
 #include <QtConcurrent/QtConcurrentRun>
 #include <private/qspan_p.h>
+#include <QtCore/private/qduplicatetracker_p.h>
 
 #include <QTest>
 #include <QBuffer>
@@ -174,7 +175,7 @@ void tst_QMimeDatabase::mimeTypeForName()
     QMimeType s0 = db.mimeTypeForName(QString::fromLatin1("application/x-zerosize"));
     QVERIFY(s0.isValid());
     QCOMPARE(s0.name(), QString::fromLatin1("application/x-zerosize"));
-    QCOMPARE(s0.comment(), QString::fromLatin1("empty document"));
+    QCOMPARE(s0.comment(), QString::fromLatin1("Empty document"));
 
     QMimeType s0Again = db.mimeTypeForName(QString::fromLatin1("application/x-zerosize"));
     QCOMPARE(s0Again.name(), s0.name());
@@ -194,7 +195,7 @@ void tst_QMimeDatabase::mimeTypeForName()
 
     QMimeType bzip2 = db.mimeTypeForName(QString::fromLatin1("application/x-bzip2"));
     QVERIFY(bzip2.isValid());
-    QCOMPARE(bzip2.comment(), QString::fromLatin1("Bzip archive"));
+    QCOMPARE(bzip2.comment(), QString::fromLatin1("Bzip2 archive"));
 
     QMimeType defaultMime = db.mimeTypeForName(QString::fromLatin1("application/octet-stream"));
     QVERIFY(defaultMime.isValid());
@@ -240,8 +241,10 @@ void tst_QMimeDatabase::mimeTypeForFileName_data()
 
     QTest::newRow("desktop file") << "foo.desktop" << "application/x-desktop";
     QTest::newRow("old kdelnk file is x-desktop too") << "foo.kdelnk" << "application/x-desktop";
-    QTest::newRow("double-extension file") << "foo.tar.bz2" << "application/x-bzip-compressed-tar";
-    QTest::newRow("single-extension file") << "foo.bz2" << "application/x-bzip";
+    QTest::newRow("double-extension file") << "foo.tar.bz2"
+                                           << "application/x-bzip2-compressed-tar";
+    QTest::newRow("single-extension file") << "foo.bz2"
+                                           << "application/x-bzip2";
     QTest::newRow(".doc should assume msword") << "somefile.doc" << "application/msword"; // #204139
     QTest::newRow("glob that uses [] syntax, 1") << "Makefile" << "text/x-makefile";
     QTest::newRow("glob that uses [] syntax, 2") << "makefile" << "text/x-makefile";
@@ -457,7 +460,10 @@ void tst_QMimeDatabase::comment()
     QMimeType directory = db.mimeTypeForName(s_inodeMimetype);
     QCOMPARE(directory.comment(), QStringLiteral("Ordner"));
     QLocale::setDefault(QLocale("fr"));
-    QCOMPARE(directory.comment(), QStringLiteral("dossier"));
+    // Missing in s-m-i 2.3 due to case changes
+    // QCOMPARE(directory.comment(), QStringLiteral("dossier"));
+    QMimeType cpp = db.mimeTypeForName("text/x-c++src");
+    QCOMPARE(cpp.comment(), QStringLiteral("code source C++"));
 }
 
 // In here we do the tests that need some content in a temporary file.
@@ -722,7 +728,7 @@ void tst_QMimeDatabase::allMimeTypes()
     QVERIFY(!lst.isEmpty());
 
     // Hardcoding this is the only way to check both providers find the same number of mimetypes.
-    QCOMPARE(lst.size(), 851);
+    QCOMPARE(lst.size(), 888);
 
     for (const QMimeType &mime : lst) {
         const QString name = mime.name();
@@ -790,7 +796,7 @@ void tst_QMimeDatabase::filterString_data()
     QTest::newRow("single-pattern") << "application/pdf"
                                     << "PDF document (*.pdf)";
     QTest::newRow("multiple-patterns-text-plain") << "text/plain"
-                                                  << "plain text document (*.txt *.asc *,v)";
+                                                  << "Plain text document (*.txt *.asc *,v)";
 }
 
 void tst_QMimeDatabase::filterString()
@@ -841,6 +847,8 @@ void tst_QMimeDatabase::findByFileName_data()
 
     QByteArray line(1024, Qt::Uninitialized);
 
+    QDuplicateTracker<QString, 800> seen;
+
     while (!f.atEnd()) {
         const qint64 len = f.readLine(line.data(), 1023);
 
@@ -856,10 +864,16 @@ void tst_QMimeDatabase::findByFileName_data()
         QString xFail;
         if (list.size() >= 3)
             xFail = list.at(2);
+        QString rowTag = filePath;
+        if (seen.hasSeen(rowTag)) {
+            // Two testcases for the same file, e.g.
+            // test.ogg audio/ogg oxx
+            // test.ogg audio/x-vorbis+ogg x
+            rowTag += "_2";
+        }
 
-        QTest::newRow(filePath.toLatin1().constData())
-                      << QString(prefix + filePath)
-                      << mimeTypeType << xFail;
+        QTest::newRow(rowTag.toLatin1().constData())
+                << QString(prefix + filePath) << mimeTypeType << xFail;
     }
 }
 
