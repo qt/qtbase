@@ -390,7 +390,7 @@
     computations), i.e. until isFinished() returns \c true.
 */
 
-/*! \fn template <typename T> T QFuture<T>::result() const
+/*! \fn template <typename T> template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>> T QFuture<T>::result() const
 
     Returns the first result in the future. If the result is not immediately
     available, this function will block and wait for the result to become
@@ -405,7 +405,7 @@
     \sa resultAt(), results(), takeResult()
 */
 
-/*! \fn template <typename T> T QFuture<T>::resultAt(int index) const
+/*! \fn template <typename T> template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>> T QFuture<T>::resultAt(int index) const
 
     Returns the result at \a index in the future. If the result is not
     immediately available, this function will block and wait for the result to
@@ -417,7 +417,7 @@
     \sa result(), results(), takeResult(), resultCount()
 */
 
-/*! \fn template <typename T> bool QFuture<T>::isResultReadyAt(int index) const
+/*! \fn template <typename T> template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>> bool QFuture<T>::isResultReadyAt(int index) const
 
     Returns \c true if the result at \a index is immediately available; otherwise
     returns \c false.
@@ -428,7 +428,7 @@
     \sa resultAt(), resultCount(), takeResult()
 */
 
-/*! \fn template <typename T> QList<T> QFuture<T>::results() const
+/*! \fn template <typename T> template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>> QList<T> QFuture<T>::results() const
 
     Returns all results from the future. If the results are not immediately available,
     this function will block and wait for them to become available. Note that
@@ -444,7 +444,7 @@
 */
 
 #if 0
-/*! \fn template <typename T> std::vector<T> QFuture<T>::takeResults()
+/*! \fn template <typename T> template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>> std::vector<T> QFuture<T>::takeResults()
 
     If isValid() returns \c false, calling this function leads to undefined behavior.
     takeResults() takes all results from the QFuture object and invalidates it
@@ -463,7 +463,7 @@
 */
 #endif
 
-/*! \fn template <typename T> std::vector<T> QFuture<T>::takeResult()
+/*! \fn template <typename T> template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>> std::vector<T> QFuture<T>::takeResult()
 
     \since 6.0
 
@@ -498,7 +498,7 @@
     \sa takeResult(), result(), results(), resultAt()
 */
 
-/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::begin() const
+/*! \fn template<typename T> template<class U = T, typename = QtPrivate::EnableForNonVoid<U>> QFuture<T>::const_iterator QFuture<T>::begin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first result in the
     future.
@@ -506,7 +506,7 @@
     \sa constBegin(), end()
 */
 
-/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::end() const
+/*! \fn template<typename T> template<class U = T, typename = QtPrivate::EnableForNonVoid<U>> QFuture<T>::const_iterator QFuture<T>::end() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary result
     after the last result in the future.
@@ -514,7 +514,7 @@
     \sa begin(), constEnd()
 */
 
-/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::constBegin() const
+/*! \fn template<typename T> template<class U = T, typename = QtPrivate::EnableForNonVoid<U>> QFuture<T>::const_iterator QFuture<T>::constBegin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first result in the
     future.
@@ -522,7 +522,7 @@
     \sa begin(), constEnd()
 */
 
-/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::constEnd() const
+/*! \fn template<typename T> template<class U = T, typename = QtPrivate::EnableForNonVoid<U>> QFuture<T>::const_iterator QFuture<T>::constEnd() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary result
     after the last result in the future.
@@ -936,7 +936,7 @@
     \sa QtFuture::whenAny()
 */
 
-/*! \fn template<class Sender, class Signal> static QFuture<ArgsType<Signal>> QtFuture::connect(Sender *sender, Signal signal)
+/*! \fn template<class Sender, class Signal, typename = QtPrivate::EnableIfInvocable<Sender, Signal>> static QFuture<ArgsType<Signal>> QtFuture::connect(Sender *sender, Signal signal)
 
     Creates and returns a QFuture which will become available when the \a sender emits
     the \a signal. If the \a signal takes no arguments, a QFuture<void> is returned. If
@@ -975,7 +975,7 @@
     \sa QFuture, QFuture::then()
 */
 
-/*! \fn template<typename T> static QFuture<std::decay_t<T>> QtFuture::makeReadyFuture(T &&value)
+/*! \fn template<typename T, typename = QtPrivate::EnableForNonVoid<T>> static QFuture<std::decay_t<T>> QtFuture::makeReadyFuture(T &&value)
 
     \since 6.1
     \overload
@@ -1319,7 +1319,7 @@
     \sa onFailed(), onCanceled()
 */
 
-/*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onFailed(Function &&handler)
+/*! \fn template<class T> template<class Function, typename = std::enable_if_t<!QtPrivate::ArgResolver<Function>::HasExtraArgs>> QFuture<T> QFuture<T>::onFailed(Function &&handler)
 
     \since 6.0
 
@@ -1362,7 +1362,7 @@
     \sa then(), onCanceled()
 */
 
-/*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onFailed(QObject *context, Function &&handler)
+/*! \fn template<class T> template<class Function, typename = std::enable_if_t<!QtPrivate::ArgResolver<Function>::HasExtraArgs>> QFuture<T> QFuture<T>::onFailed(QObject *context, Function &&handler)
 
     \since 6.1
     \overload
@@ -1390,7 +1390,7 @@
     \sa then(), onCanceled()
 */
 
-/*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onCanceled(Function &&handler)
+/*! \fn template<class T> template<class Function, typename = std::enable_if_t<std::is_invocable_r_v<T, Function>>> QFuture<T> QFuture<T>::onCanceled(Function &&handler)
 
     \since 6.0
 
@@ -1435,7 +1435,7 @@
     \sa then(), onFailed()
 */
 
-/*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onCanceled(QObject *context, Function &&handler)
+/*! \fn template<class T> template<class Function, typename = std::enable_if_t<std::is_invocable_r_v<T, Function>>> QFuture<T> QFuture<T>::onCanceled(QObject *context, Function &&handler)
 
     \since 6.1
     \overload
