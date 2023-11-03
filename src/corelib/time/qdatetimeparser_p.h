@@ -203,6 +203,7 @@ private:
     };
 
     QString getAmPmText(AmPm ap, Case cs) const;
+    QDateTime baseDate(const QTimeZone &zone) const;
 
     friend class QDTPUnitTestParser;
 
