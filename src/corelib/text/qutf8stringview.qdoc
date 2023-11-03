@@ -217,7 +217,7 @@
 */
 
 /*!
-    \fn template <typename Char> QUtf8StringView::QUtf8StringView(const Char *str, qsizetype len)
+    \fn template <typename Char, if_compatible_char<Char> = true> QUtf8StringView::QUtf8StringView(const Char *str, qsizetype len)
 
     Constructs a string view on \a str with length \a len.
 
@@ -233,7 +233,7 @@
 */
 
 /*!
-    \fn template <typename Char> QUtf8StringView::QUtf8StringView(const Char *first, const Char *last)
+    \fn template <typename Char, if_compatible_char<Char> = true> QUtf8StringView::QUtf8StringView(const Char *first, const Char *last)
 
     Constructs a string view on \a first with length (\a last - \a first).
 
