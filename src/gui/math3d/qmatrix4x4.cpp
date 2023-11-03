@@ -100,7 +100,7 @@ QMatrix4x4::QMatrix4x4(const float *values)
 */
 
 /*!
-    \fn QGenericMatrix<N, M, float> QMatrix4x4::toGenericMatrix() const
+    \fn template <int N, int M> QGenericMatrix<N, M, float> QMatrix4x4::toGenericMatrix() const
 
     Constructs a NxM generic matrix from the left-most N columns and
     top-most M rows of this 4x4 matrix.  If N or M is greater than 4,
