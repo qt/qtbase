@@ -3314,10 +3314,10 @@ QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QKeySe
 #endif // QT_CONFIG(shortcut)
 
 /*!
-    \fn template<typename...Args> QAction *QWidget::addAction(const QString &text, Args&&...args)
-    \fn template<typename...Args> QAction *QWidget::addAction(const QString &text, const QKeySequence &shortcut, Args&&...args)
-    \fn template<typename...Args> QAction *QWidget::addAction(const QIcon &icon, const QString &text, Args&&...args)
-    \fn template<typename...Args> QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut, Args&&...args)
+    \fn template<typename...Args, typename = compatible_action_slot_args<Args...>> QAction *QWidget::addAction(const QString &text, Args&&...args)
+    \fn template<typename...Args, typename = compatible_action_slot_args<Args...>> QAction *QWidget::addAction(const QString &text, const QKeySequence &shortcut, Args&&...args)
+    \fn template<typename...Args, typename = compatible_action_slot_args<Args...>> QAction *QWidget::addAction(const QIcon &icon, const QString &text, Args&&...args)
+    \fn template<typename...Args, typename = compatible_action_slot_args<Args...>> QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut, Args&&...args)
 
     \since 6.3
     \overload

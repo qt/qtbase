@@ -6501,7 +6501,7 @@ void QGraphicsItem::setData(int key, const QVariant &value)
 }
 
 /*!
-    \fn T qgraphicsitem_cast(QGraphicsItem *item)
+    \fn template <class T> qgraphicsitem_cast(QGraphicsItem *item)
     \relates QGraphicsItem
     \since 4.2
 
