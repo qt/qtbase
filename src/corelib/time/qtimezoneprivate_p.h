@@ -366,7 +366,7 @@ public:
     Data previousTransition(qint64 beforeMSecsSinceEpoch) const override;
 
     QByteArray systemTimeZoneId() const override;
-
+    bool isTimeZoneIdAvailable(const QByteArray &ianaId) const override;
     QList<QByteArray> availableTimeZoneIds() const override;
 
     NSTimeZone *nsTimeZone() const;
