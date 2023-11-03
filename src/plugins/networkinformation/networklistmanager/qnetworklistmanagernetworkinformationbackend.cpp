@@ -72,6 +72,7 @@ public:
                                              | QNetworkInformation::Feature::CaptivePortal
 #if QT_CONFIG(cpp_winrt)
                                              | QNetworkInformation::Feature::TransportMedium
+                                             | QNetworkInformation::Feature::Metered
 #endif
                                              );
     }
