@@ -237,9 +237,9 @@ int QDateTimeParser::absoluteMax(int s, const QDateTime &cur) const
     case MSecSection:
         return 999;
     case YearSection2Digits:
-    case YearSection:
         // sectionMaxSize will prevent people from typing in a larger number in
         // count == 2 sections; stepBy() will work on real years anyway.
+    case YearSection:
         return 9999;
     case MonthSection:
         return calendar.maximumMonthsInYear();
@@ -1032,7 +1032,7 @@ static QDate actualDate(QDateTimeParser::Sections known, const QCalendar &calend
 
     QDate first(year, month, 1, calendar);
     int last = known & QDateTimeParser::MonthSection
-        ? (known & QDateTimeParser::YearSection
+        ? (known.testAnyFlag(QDateTimeParser::YearSectionMask)
            ? calendar.daysInMonth(month, year) : calendar.daysInMonth(month))
         : 0;
     // We can only fix DOW if we know year as well as month (hence last):
