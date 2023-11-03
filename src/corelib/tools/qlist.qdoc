@@ -274,7 +274,7 @@
     Constructs a list from the std::initializer_list given by \a args.
 */
 
-/*! \fn template <typename T> template<typename InputIterator, if_input_iterator<InputIterator>> QList<T>::QList(InputIterator first, InputIterator last)
+/*! \fn template<typename T> template <typename InputIterator, if_input_iterator<InputIterator> = true> QList<T>::QList(InputIterator first, InputIterator last)
     \since 5.14
 
     Constructs a list with the contents in the iterator range [\a first, \a last).
