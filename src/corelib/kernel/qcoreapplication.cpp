@@ -2828,7 +2828,7 @@ Qt::PermissionStatus QCoreApplication::checkPermission(const QPermission &permis
 }
 
 /*!
-    \fn template<typename Functor> void QCoreApplication::requestPermission(
+    \fn template <typename Functor, std::enable_if_t< QtPrivate::AreFunctionsCompatible<RequestPermissionPrototype, Functor>::value, bool> = true> void QCoreApplication::requestPermission(
         const QPermission &permission, Functor &&functor)
 
     Requests the given \a permission.
