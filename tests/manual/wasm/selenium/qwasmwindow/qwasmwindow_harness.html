@@ -67,7 +67,9 @@
                 events: () => eventList,
                 hitTestPoint: (x, y, screenId) => {
                     return document
-                        .querySelector(`#${screenId}`).shadowRoot.elementsFromPoint(x, y);
+                        .querySelector(`#${screenId}`)
+                        .querySelector('#qt-shadow-container')
+                        .shadowRoot.elementsFromPoint(x, y);
                 }
             };
         })();

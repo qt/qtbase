@@ -545,9 +545,14 @@ class Screen:
                         .startswith('qt-window-'), self.hit_test_point(x, y))]]
 
     def query_windows(self):
+        shadow_container = self.element.find_element(By.CSS_SELECTOR, f'#qt-shadow-container')
         return [
-            Window(self, element=element) for element in self.element.shadow_root.find_elements(
+            Window(self, element=element) for element in shadow_container.shadow_root.find_elements(
                     By.CSS_SELECTOR, f'div#{self.name} > div.qt-window')]
+
+    def find_element(self, method, query):
+        shadow_container = self.element.find_element(By.CSS_SELECTOR, f'#qt-shadow-container')
+        return shadow_container.shadow_root.find_element(method, query)
 
 
 class Window:
@@ -556,7 +561,7 @@ class Window:
         if element is not None:
             self.element = element
             self.title = element.find_element(
-                    By.CSS_SELECTOR, f'.title-bar > .window-name').text
+                    By.CSS_SELECTOR, f'.title-bar > .window-name').get_property("textContent")
             information = self.__window_information()
             self.screen = Screen(self.driver, screen_name=information['screen']['name'])
             pass
@@ -578,8 +583,8 @@ class Window:
                 )
                 self.screen = parent
         self._window_id = self.__window_information()['id']
-        self.element = self.screen.element.shadow_root.find_element(
-                    By.CSS_SELECTOR, f'#qt-window-{self._window_id}')
+        self.element = self.screen.find_element(
+                By.CSS_SELECTOR, f'#qt-window-{self._window_id}')
         if visible:
             self.set_visible(True)
 
