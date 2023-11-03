@@ -61,6 +61,11 @@ instructions:
       property: features
       contains_value: UseAddressSanitizer
 
+    # Always print the output from a failing test, even when ctest is not in verbose mode
+  - type: EnvironmentVariable
+    variableName: CTEST_OUTPUT_ON_FAILURE
+    variableValue: "1"
+
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: " --stop-on-failure"
