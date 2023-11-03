@@ -129,7 +129,7 @@ Q_GLOBAL_STATIC(QDBusCustomTypes, customTypes)
 */
 
 /*!
-    \fn int qDBusRegisterMetaType()
+    \fn template<typename T> QMetaType qDBusRegisterMetaType()
     \relates QDBusArgument
     \threadsafe
     \since 4.2
