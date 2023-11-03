@@ -56,12 +56,10 @@ QMacTimeZonePrivate *QMacTimeZonePrivate::clone() const
 
 void QMacTimeZonePrivate::init(const QByteArray &ianaId)
 {
-    if (availableTimeZoneIds().contains(ianaId)) {
-        m_nstz = [[NSTimeZone timeZoneWithName:QString::fromUtf8(ianaId).toNSString()] retain];
-        if (m_nstz)
-            m_id = ianaId;
-    }
-    if (!m_nstz) {
+    m_nstz = [[NSTimeZone timeZoneWithName:QString::fromUtf8(ianaId).toNSString()] retain];
+    if (m_nstz) {
+        m_id = ianaId;
+    } else {
         // macOS has been seen returning a systemTimeZone which reports its name
         // as Asia/Kolkata, which doesn't appear in knownTimeZoneNames (which
         // calls the zone Asia/Calcutta). So explicitly check for the name
@@ -283,6 +281,12 @@ QByteArray QMacTimeZonePrivate::systemTimeZoneId() const
     [NSTimeZone resetSystemTimeZone];
     Q_ASSERT(NSTimeZone.systemTimeZone);
     return QString::fromNSString(NSTimeZone.systemTimeZone.name).toUtf8();
+}
+
+bool QMacTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray& ianaId) const
+{
+    QMacAutoReleasePool pool;
+    return [NSTimeZone timeZoneWithName:QString::fromUtf8(ianaId).toNSString()] != nil;
 }
 
 QList<QByteArray> QMacTimeZonePrivate::availableTimeZoneIds() const
