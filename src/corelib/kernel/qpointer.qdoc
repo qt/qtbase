@@ -99,8 +99,8 @@
 */
 
 /*!
-    \fn template <class T> template <class X> QPointer<T>::QPointer(QPointer<X> &&other)
-    \fn template <class T> template <class X> QPointer<T>::QPointer(const QPointer<X> &other)
+    \fn template <class T> template <typename X, if_convertible<X> = true> QPointer<T>::QPointer(QPointer<X> &&other)
+    \fn template <class T> template <typename X, if_convertible<X> = true> QPointer<T>::QPointer(const QPointer<X> &other)
     \since 6.6
 
     Conversion constructor. Constructs a new QPointer by moving or copying from
@@ -113,7 +113,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> QPointer<T> &QPointer<T>::operator=(const QPointer<X> &other)
+    \fn template <class T> template <typename X, if_convertible<X> = true> QPointer<T> &QPointer<T>::operator=(const QPointer<X> &other)
     \since 6.6
 
     Conversion assignment operator. Makes this guarded pointer guard the
@@ -124,7 +124,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> QPointer<T> &QPointer<T>::operator=(QPointer<X> &&other)
+    \fn template <class T> template <typename X, if_convertible<X> = true> &QPointer<T>::operator=(QPointer<X> &&other)
     \since 6.6.1
 
     Conversion move-assignment operator. Makes this guarded pointer guard the
@@ -202,7 +202,7 @@
 */
 
 /*!
-    \fn template <typename T, typename X> bool QPointer<T>::operator==(X *o, const QPointer<T> &p)
+    \fn template <typename T> template<typename X> bool QPointer<T>::operator==(X *o, const QPointer<T> &p)
 
     Equality operator. Returns \c true if \a o and the guarded
     pointer \a p are pointing to the same object, otherwise
@@ -210,7 +210,7 @@
 
 */
 /*!
-    \fn template <typename T, typename X> bool QPointer<T>::operator==(const QPointer<T> &p, X *o)
+    \fn template <typename T> template<typename X> bool QPointer<T>::operator==(const QPointer<T> &p, X *o)
 
     Equality operator. Returns \c true if \a o and the guarded
     pointer \a p are pointing to the same object, otherwise
@@ -218,7 +218,7 @@
 
 */
 /*!
-    \fn template <typename T, typename X> bool QPointer<T>::operator==(const QPointer<T> &p1, const QPointer<X> &p2)
+    \fn template <typename T> template<typename X> bool QPointer<T>::operator==(const QPointer<T> &p1, const QPointer<X> &p2)
 
     Equality operator. Returns \c true if the guarded pointers \a p1 and \a p2
     are pointing to the same object, otherwise
@@ -241,21 +241,21 @@
 */
 
 /*!
-    \fn template <typename T, typename X> bool QPointer<T>::operator!=(const QPointer<T> &p, X *o)
+    \fn template <typename T> template<typename X> bool QPointer<T>::operator!=(const QPointer<T> &p, X *o)
 
     Inequality operator. Returns \c true if \a o and the guarded
     pointer \a p are not pointing to the same object, otherwise
     returns \c false.
 */
 /*!
-    \fn template <typename T, typename X> bool QPointer<T>::operator!=(X *o, const QPointer<T> &p)
+    \fn template <typename T> template<typename X> bool QPointer<T>::operator!=(X *o, const QPointer<T> &p)
 
     Inequality operator. Returns \c true if \a o and the guarded
     pointer \a p are not pointing to the same object, otherwise
     returns \c false.
 */
 /*!
-    \fn template <typename T, typename X> bool QPointer<T>::operator!=(const QPointer<T> &p1, const QPointer<X> &p2)
+    \fn template <typename T> template<typename X> bool QPointer<T>::operator!=(const QPointer<T> &p1, const QPointer<X> &p2)
 
     Inequality operator. Returns \c true if  the guarded pointers \a p1 and
     \a p2 are not pointing to the same object, otherwise
