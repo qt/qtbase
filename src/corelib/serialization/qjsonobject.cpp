@@ -223,7 +223,7 @@ QVariantHash QJsonObject::toVariantHash() const
 /*!
     Returns a list of all keys in this object.
 
-    The list is sorted lexographically.
+    The list is sorted alphabetically.
  */
 QStringList QJsonObject::keys() const
 {
