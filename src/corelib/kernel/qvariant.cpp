@@ -2585,7 +2585,7 @@ QT_WARNING_POP
 
 #endif
 
-/*! \fn template<typename T> void QVariant::setValue(T &&value)
+/*! \fn template<typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, QVariant>>> void QVariant::setValue(T &&value)
 
     Stores a copy of \a value. If \c{T} is a type that QVariant
     doesn't support, QMetaType is used to store the value. A compile
@@ -2598,13 +2598,13 @@ QT_WARNING_POP
     \sa value(), fromValue(), canConvert()
  */
 
-/*! \fn template<typename T> void QVariant::setValue(const QVariant &value)
+/*! \fn void QVariant::setValue(const QVariant &value)
 
     Copies \a value over this QVariant. It is equivalent to simply
     assigning \a value to this QVariant.
 */
 
-/*! \fn template<typename T> void QVariant::setValue(QVariant &&value)
+/*! \fn void QVariant::setValue(QVariant &&value)
 
     Moves \a value over this QVariant. It is equivalent to simply
     move assigning \a value to this QVariant.
@@ -2650,7 +2650,7 @@ QT_WARNING_POP
     \sa canView(), Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE()
 */
 
-/*! \fn bool QVariant::canConvert() const
+/*! \fn template<typename T> bool QVariant::canConvert() const
 
     Returns \c true if the variant can be converted to the template type \c{T},
     otherwise false.
@@ -2666,7 +2666,7 @@ QT_WARNING_POP
     \sa convert()
 */
 
-/*! \fn bool QVariant::canView() const
+/*! \fn template<typename T> bool QVariant::canView() const
 
     Returns \c true if a mutable view of the template type \c{T} can be created on this variant,
     otherwise \c false.
@@ -2686,7 +2686,7 @@ QT_WARNING_POP
     \sa setValue(), value()
 */
 
-/*! \fn template<typename T> static QVariant QVariant::fromValue(T &&value)
+/*! \fn template<typename T, if_rvalue<T> = true> static QVariant QVariant::fromValue(T &&value)
 
     \since 6.6
     \overload
