@@ -224,7 +224,7 @@
 */
 
 /*!
-    \fn QFuture<T> QtConcurrent::run(Function function, ...);
+    \fn template <typename T> QFuture<T> QtConcurrent::run(Function function, ...);
 
     Equivalent to
     \code
@@ -261,7 +261,7 @@
 
 /*!
     \since 5.4
-    \fn QFuture<T> QtConcurrent::run(QThreadPool *pool, Function function, ...);
+    \fn template <typename T> QFuture<T> QtConcurrent::run(QThreadPool *pool, Function function, ...);
 
     Schedules \a function on \a pool. Note that \a function may not run
     immediately; \a function will only be run once a thread becomes available.
