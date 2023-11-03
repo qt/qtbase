@@ -86,7 +86,7 @@
     initializer list \a list.
 */
 
-/*! \fn template <class T> template<typename InputIterator> QSet<T>::QSet(InputIterator first, InputIterator last)
+/*! \fn template <class T> template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true> QSet<T>::QSet(InputIterator first, InputIterator last)
     \since 5.14
 
     Constructs a set with the contents in the iterator range [\a first, \a last).
