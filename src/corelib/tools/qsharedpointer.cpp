@@ -988,7 +988,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
     Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
@@ -1001,7 +1001,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
     Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
@@ -1014,7 +1014,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2)
+    \fn template<class T, class X> bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2)
     \relates QSharedPointer
 
     Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
@@ -1027,7 +1027,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2)
+    \fn template<class T, class X> bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2)
     \relates QSharedPointer
 
     Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
@@ -1040,7 +1040,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
     Returns \c true if the pointer \a ptr1 is the
@@ -1054,7 +1054,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator!=(const T *ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator!=(const T *ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
     Returns \c true if the pointer \a ptr1 is not the
@@ -1068,7 +1068,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator==(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator==(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
     \relates QWeakPointer
 
     Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
@@ -1081,7 +1081,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
     \relates QWeakPointer
 
     Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
@@ -1094,7 +1094,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator==(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator==(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QWeakPointer
 
     Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
@@ -1187,7 +1187,7 @@
 */
 
 /*!
-    \fn template <class T> template <class X> bool operator!=(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+    \fn template<class T, class X> bool operator!=(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QWeakPointer
 
     Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
@@ -1200,7 +1200,7 @@
 */
 
 /*!
-    \fn template <class X> template <class T> QSharedPointer<X> qSharedPointerCast(const QSharedPointer<T> &other)
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerCast(const QSharedPointer<T> &other)
     \relates QSharedPointer
 
     Returns a shared pointer to the pointer held by \a other, cast to
@@ -1215,7 +1215,7 @@
 */
 
 /*!
-    \fn template <class X> template <class T> QSharedPointer<X> qSharedPointerCast(const QWeakPointer<T> &other)
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerCast(const QWeakPointer<T> &other)
     \relates QSharedPointer
     \relates QWeakPointer
 
@@ -1236,7 +1236,7 @@
 */
 
 /*!
-    \fn template <class X> template <class T> QSharedPointer<X> qSharedPointerDynamicCast(const QSharedPointer<T> &src)
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerDynamicCast(const QSharedPointer<T> &src)
     \relates QSharedPointer
 
     Returns a shared pointer to the pointer held by \a src, using a
@@ -1252,7 +1252,7 @@
 */
 
 /*!
-    \fn template <class X> template <class T> QSharedPointer<X> qSharedPointerDynamicCast(const QWeakPointer<T> &src)
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerDynamicCast(const QWeakPointer<T> &src)
     \relates QSharedPointer
     \relates QWeakPointer
 
@@ -1274,7 +1274,7 @@
 */
 
 /*!
-    \fn template <class X> template <class T> QSharedPointer<X> qSharedPointerConstCast(const QSharedPointer<T> &src)
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerConstCast(const QSharedPointer<T> &src)
     \relates QSharedPointer
 
     Returns a shared pointer to the pointer held by \a src, cast to
@@ -1286,7 +1286,7 @@
 */
 
 /*!
-    \fn template <class X> template <class T> QSharedPointer<X> qSharedPointerConstCast(const QWeakPointer<T> &src)
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerConstCast(const QWeakPointer<T> &src)
     \relates QSharedPointer
     \relates QWeakPointer
 
@@ -1304,7 +1304,7 @@
 */
 
 /*!
-    \fn template <class X> template <class T> QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &src)
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &src)
     \relates QSharedPointer
     \since 4.6
 
@@ -1376,7 +1376,7 @@
 */
 
 /*!
-    \fn template <class X> template <class T> QSharedPointer<X> qSharedPointerObjectCast(const QWeakPointer<T> &src)
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerObjectCast(const QWeakPointer<T> &src)
     \relates QSharedPointer
     \relates QWeakPointer
     \since 4.6
@@ -1402,7 +1402,7 @@
 
 
 /*!
-    \fn template <class X> template <class T> QWeakPointer<X> qWeakPointerCast(const QWeakPointer<T> &src)
+    \fn template <class X, class T> QWeakPointer<X> qWeakPointerCast(const QWeakPointer<T> &src)
     \relates QWeakPointer
 
     Returns a weak pointer to the pointer held by \a src, cast to
