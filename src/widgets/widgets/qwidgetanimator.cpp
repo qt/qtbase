@@ -73,7 +73,8 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
         anim->setEasingCurve(QEasingCurve::InOutQuad);
         anim->setEndValue(final_geometry);
         m_animation_map[widget] = anim;
-        connect(anim, SIGNAL(finished()), SLOT(animationFinished()));
+        connect(anim, &QPropertyAnimation::finished,
+                this, &QWidgetAnimator::animationFinished);
         anim->start(QPropertyAnimation::DeleteWhenStopped);
     } else
 #endif // animation

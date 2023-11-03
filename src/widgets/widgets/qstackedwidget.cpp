@@ -98,8 +98,10 @@ QStackedWidget::QStackedWidget(QWidget *parent)
 {
     Q_D(QStackedWidget);
     d->layout = new QStackedLayout(this);
-    connect(d->layout, SIGNAL(widgetRemoved(int)), this, SIGNAL(widgetRemoved(int)));
-    connect(d->layout, SIGNAL(currentChanged(int)), this, SIGNAL(currentChanged(int)));
+    connect(d->layout, &QStackedLayout::widgetRemoved,
+            this, &QStackedWidget::widgetRemoved);
+    connect(d->layout, &QStackedLayout::currentChanged,
+            this, &QStackedWidget::currentChanged);
 }
 
 /*!

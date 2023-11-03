@@ -494,7 +494,7 @@ void QStatusBar::showMessage(const QString &message, int timeout)
     if (timeout > 0) {
         if (!d->timer) {
             d->timer = new QTimer(this);
-            connect(d->timer, SIGNAL(timeout()), this, SLOT(clearMessage()));
+            connect(d->timer, &QTimer::timeout, this, &QStatusBar::clearMessage);
         }
         d->timer->start(timeout);
     } else if (d->timer) {
