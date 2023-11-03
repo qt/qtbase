@@ -135,7 +135,7 @@ static QAbstractOpenGLFunctions *createFunctions(const QOpenGLVersionProfile &ve
 */
 
 /*!
-    \fn static T *QOpenGLVersionFunctionsFactory::get(QOpenGLContext *context)
+    \fn template <class T> static T *QOpenGLVersionFunctionsFactory::get(QOpenGLContext *context)
 
     \overload get()
 
