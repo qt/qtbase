@@ -3391,7 +3391,7 @@ int QMetaEnum::Data::index(const QMetaObject *mobj) const
 }
 
 /*!
-    \fn QMetaEnum QMetaEnum::fromType()
+    \fn template<typename T> QMetaEnum QMetaEnum::fromType()
     \since 5.5
 
     Returns the QMetaEnum corresponding to the type in the template parameter.
