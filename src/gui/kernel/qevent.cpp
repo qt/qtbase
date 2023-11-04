@@ -4759,6 +4759,46 @@ Q_IMPL_EVENT_COMMON(QApplicationStateChangeEvent)
     Returns the state of the application.
 */
 
+/*!
+    \class QChildWindowEvent
+    \inmodule QtGui
+    \since 6.7
+    \brief The QChildWindowEvent class contains event parameters for
+    child window changes.
+
+    \ingroup events
+
+    Child window events are sent to windows when children are
+    added or removed.
+
+    In both cases you can only rely on the child being a QWindow
+    — not any subclass thereof. This is because in the
+    QEvent::ChildWindowAdded case the subclass is not yet fully
+    constructed, and in the QEvent::ChildWindowRemoved case it
+    might have already been destructed.
+*/
+
+/*!
+    Constructs a child window event object of a particular \a type
+    for the \a childWindow.
+
+    \a type can be QEvent::ChildWindowAdded or QEvent::ChildWindowRemoved.
+
+    \sa child()
+*/
+QChildWindowEvent::QChildWindowEvent(Type type, QWindow *childWindow)
+    : QEvent(type), c(childWindow)
+{
+}
+
+Q_IMPL_EVENT_COMMON(QChildWindowEvent)
+
+/*!
+    \fn QWindow *QChildWindowEvent::child() const
+
+    Returns the child window that was added or removed.
+*/
+
 QMutableTouchEvent::~QMutableTouchEvent()
     = default;
 

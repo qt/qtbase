@@ -128,7 +128,7 @@ QWindow::QWindow(QScreen *targetScreen)
     , QSurface(QSurface::Window)
 {
     Q_D(QWindow);
-    d->init(targetScreen);
+    d->init(nullptr, targetScreen);
 }
 
 static QWindow *nonDesktopParent(QWindow *parent)
@@ -169,11 +169,11 @@ QWindow::QWindow(QWindow *parent)
     \sa setParent()
 */
 QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
-    : QObject(dd, nonDesktopParent(parent))
+    : QObject(dd, nullptr)
     , QSurface(QSurface::Window)
 {
     Q_D(QWindow);
-    d->init();
+    d->init(nonDesktopParent(parent));
 }
 
 /*!
@@ -183,6 +183,8 @@ QWindow::~QWindow()
 {
     Q_D(QWindow);
     d->destroy();
+    // Decouple from parent before window goes under
+    setParent(nullptr);
     QGuiApplicationPrivate::window_list.removeAll(this);
     if (!QGuiApplicationPrivate::is_app_closing)
         QGuiApplicationPrivate::instance()->modalWindowList.removeOne(this);
@@ -206,9 +208,11 @@ QWindowPrivate::QWindowPrivate()
 QWindowPrivate::~QWindowPrivate()
     = default;
 
-void QWindowPrivate::init(QScreen *targetScreen)
+void QWindowPrivate::init(QWindow *parent, QScreen *targetScreen)
 {
     Q_Q(QWindow);
+
+    q->QObject::setParent(parent);
 
     isWindow = true;
     parentWindow = static_cast<QWindow *>(q->QObject::parent());
@@ -242,6 +246,11 @@ void QWindowPrivate::init(QScreen *targetScreen)
 #endif
         updateDevicePixelRatio();
     });
+
+    if (parentWindow) {
+        QChildWindowEvent childAddedEvent(QEvent::ChildWindowAdded, q);
+        QCoreApplication::sendEvent(parentWindow, &childAddedEvent);
+    }
 }
 
 /*!
@@ -771,6 +780,10 @@ void QWindow::setParent(QWindow *parent)
         return;
     }
 
+    QEvent parentAboutToChangeEvent(QEvent::ParentWindowAboutToChange);
+    QCoreApplication::sendEvent(this, &parentAboutToChangeEvent);
+
+    const auto previousParent = d->parentWindow;
     QObject::setParent(parent);
     d->parentWindow = parent;
 
@@ -793,6 +806,19 @@ void QWindow::setParent(QWindow *parent)
     }
 
     QGuiApplicationPrivate::updateBlockedStatus(this);
+
+    if (previousParent) {
+        QChildWindowEvent childRemovedEvent(QEvent::ChildWindowRemoved, this);
+        QCoreApplication::sendEvent(previousParent, &childRemovedEvent);
+    }
+
+    if (parent) {
+        QChildWindowEvent childAddedEvent(QEvent::ChildWindowAdded, this);
+        QCoreApplication::sendEvent(parent, &childAddedEvent);
+    }
+
+    QEvent parentChangedEvent(QEvent::ParentWindowChange);
+    QCoreApplication::sendEvent(this, &parentChangedEvent);
 }
 
 /*!

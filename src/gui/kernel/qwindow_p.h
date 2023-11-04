@@ -44,7 +44,7 @@ public:
     QWindowPrivate();
     ~QWindowPrivate() override;
 
-    void init(QScreen *targetScreen = nullptr);
+    void init(QWindow *parent, QScreen *targetScreen = nullptr);
 
 #ifndef QT_NO_CURSOR
     void setCursor(const QCursor *c = nullptr);

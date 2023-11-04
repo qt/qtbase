@@ -286,6 +286,11 @@ public:
 
         DevicePixelRatioChange = 222,
 
+        ChildWindowAdded = 223,
+        ChildWindowRemoved = 224,
+        ParentWindowAboutToChange = 225,
+        ParentWindowChange = 226,
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

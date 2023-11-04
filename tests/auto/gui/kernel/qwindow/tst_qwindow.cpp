@@ -7,6 +7,7 @@
 #include <qpa/qplatformwindow.h>
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
+#include <private/qwindow_p.h>
 #include <QtGui/QPainter>
 
 #include <QTest>
@@ -101,6 +102,8 @@ private slots:
     void enterLeaveOnWindowShowHide();
 #endif
     void windowExposedAfterReparent();
+    void childEvents();
+    void parentEvents();
 
 private:
     QPoint m_availableTopLeft;
@@ -3056,6 +3059,165 @@ void tst_QWindow::windowExposedAfterReparent()
     child.setParent(&parent);
     QCoreApplication::processEvents();
     QVERIFY(QTest::qWaitForWindowExposed(&child));
+}
+
+struct ParentWindow : public QWindow
+{
+    bool event(QEvent *event) override
+    {
+        [&]() -> void {
+            if (event->type() == QEvent::ChildWindowAdded
+             || event->type() == QEvent::ChildWindowRemoved) {
+                // We should not receive child events after the window has been destructed
+                QVERIFY(this->isWindowType());
+
+                auto *parentWindow = this;
+                auto *childEvent = static_cast<QChildWindowEvent*>(event);
+                auto *childWindow = childEvent->child();
+
+                if (event->type() == QEvent::ChildWindowAdded) {
+                    QVERIFY(childWindow->parent());
+                    QVERIFY(parentWindow->isAncestorOf(childWindow));
+                    if (childWindow->handle())
+                        QVERIFY(childWindow->handle()->parent() == parentWindow->handle());
+
+                } else {
+                    QVERIFY(!childWindow->parent());
+                    QVERIFY(!parentWindow->isAncestorOf(childWindow));
+                    if (childWindow->handle())
+                        QVERIFY(childWindow->handle()->parent() != parentWindow->handle());
+                }
+            }
+        }();
+
+        return QWindow::event(event);
+    }
+};
+
+void tst_QWindow::childEvents()
+{
+    ParentWindow parent;
+
+    {
+        // ChildAdded via constructor
+        QWindow constructorChild(&parent);
+        if (QTest::currentTestFailed()) return;
+        // ChildRemoved via destructor
+    }
+
+    if (QTest::currentTestFailed()) return;
+
+    // ChildAdded and ChildRemoved via setParent
+    QWindow child;
+    child.setParent(&parent);
+    if (QTest::currentTestFailed()) return;
+    child.setParent(nullptr);
+    if (QTest::currentTestFailed()) return;
+
+    parent.create();
+    child.create();
+
+    // ChildAdded and ChildRemoved after creation
+    child.setParent(&parent);
+    if (QTest::currentTestFailed()) return;
+    child.setParent(nullptr);
+    if (QTest::currentTestFailed()) return;
+}
+
+struct ChildWindowPrivate;
+struct ChildWindow : public QWindow
+{
+    ChildWindow(QWindow *parent = nullptr);
+};
+
+struct ChildWindowPrivate : public QWindowPrivate
+{
+    ChildWindowPrivate() : QWindowPrivate()
+    {
+        receiveParentEvents = true;
+    }
+};
+
+ChildWindow::ChildWindow(QWindow *parent)
+    : QWindow(*new ChildWindowPrivate, parent)
+{}
+
+struct ParentEventTester : public QObject
+{
+    bool eventFilter(QObject *object, QEvent *event) override
+    {
+        [&]() -> void {
+            if (event->type() == QEvent::ParentWindowAboutToChange
+             || event->type() == QEvent::ParentWindowChange) {
+                // We should not receive parent events after the window has been destructed
+                QVERIFY(object->isWindowType());
+                auto *window = static_cast<QWindow*>(object);
+
+                if (event->type() == QEvent::ParentWindowAboutToChange) {
+                    QVERIFY(window->parent() != nextExpectedParent);
+                    if (window->handle()) {
+                        QVERIFY(window->handle()->parent() !=
+                            (nextExpectedParent ? nextExpectedParent->handle() : nullptr));
+                    }
+                } else {
+                    QVERIFY(window->parent() == nextExpectedParent);
+                    if (window->handle()) {
+                        QVERIFY(window->handle()->parent() ==
+                            (nextExpectedParent ? nextExpectedParent->handle() : nullptr));
+                    }
+                }
+            }
+        }();
+
+        return QObject::eventFilter(object, event);
+    }
+
+    QWindow *nextExpectedParent = nullptr;
+};
+
+
+
+void tst_QWindow::parentEvents()
+{
+    QWindow parent;
+
+    {
+        ParentEventTester tester;
+
+        {
+            // We can't hook in early enough to get the parent change during
+            // QObject construction.
+            ChildWindow child(&parent);
+
+            // But we can observe the one during destruction
+            child.installEventFilter(&tester);
+            tester.nextExpectedParent = nullptr;
+        }
+    }
+    if (QTest::currentTestFailed()) return;
+
+    ParentEventTester tester;
+    ChildWindow child;
+    child.installEventFilter(&tester);
+
+    tester.nextExpectedParent = &parent;
+    child.setParent(&parent);
+    if (QTest::currentTestFailed()) return;
+
+    tester.nextExpectedParent = nullptr;
+    child.setParent(nullptr);
+    if (QTest::currentTestFailed()) return;
+
+    parent.create();
+    child.create();
+
+    tester.nextExpectedParent = &parent;
+    child.setParent(&parent);
+    if (QTest::currentTestFailed()) return;
+
+    tester.nextExpectedParent = nullptr;
+    child.setParent(nullptr);
+    if (QTest::currentTestFailed()) return;
 }
 
 #include <tst_qwindow.moc>
