@@ -250,7 +250,7 @@ public:
             if (type == QPlatformSurfaceEvent::SurfaceCreated)
                 ++surfaceCreatedEvents;
         }
-        return false;
+        return QWindow::eventFilter(o, e);
     }
 
     int surfaceCreatedEvents = 0;
