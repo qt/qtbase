@@ -88,8 +88,7 @@ QTextEditPrivate::QTextEditPrivate()
     : control(nullptr),
       autoFormatting(QTextEdit::AutoNone), tabChangesFocus(false),
       lineWrap(QTextEdit::WidgetWidth), lineWrapColumnOrWidth(0),
-      wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere), clickCausedFocus(0),
-      textFormat(Qt::AutoText)
+      wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere), clickCausedFocus(0)
 {
     ignoreAutomaticScrollbarAdjustment = false;
     preferRichText = false;
@@ -2652,10 +2651,7 @@ bool QTextEdit::find(const QRegularExpression &exp, QTextDocument::FindFlags opt
 */
 void QTextEdit::setText(const QString &text)
 {
-    Q_D(QTextEdit);
-    Qt::TextFormat format = d->textFormat;
-    if (d->textFormat == Qt::AutoText)
-        format = Qt::mightBeRichText(text) ? Qt::RichText : Qt::PlainText;
+    Qt::TextFormat format = Qt::mightBeRichText(text) ? Qt::RichText : Qt::PlainText;
 #ifndef QT_NO_TEXTHTMLPARSER
     if (format == Qt::RichText)
         setHtml(text);
