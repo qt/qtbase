@@ -50,7 +50,7 @@ public:
     void emitSignals(EmitPolicy ep, const QVariant &old) override;
     QString textFromValue(const QVariant &f) const override;
     QVariant valueFromText(const QString &f) const override;
-    void _q_editorCursorPositionChanged(int oldpos, int newpos) override;
+    void editorCursorPositionChanged(int oldpos, int newpos) override;
     void interpret(EmitPolicy ep) override;
     void clearCache() const override;
     QStyle::SubControl newHoverControl(const QPoint &pos) override;

@@ -948,7 +948,7 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
             d->value = d->value.toDate().startOfDay(d->timeZone);
         }
         d->updateEdit();
-        d->_q_editorCursorPositionChanged(-1, 0);
+        d->editorCursorPositionChanged(-1, 0);
     }
 }
 
@@ -2296,7 +2296,7 @@ void QDateTimeEditPrivate::emitSignals(EmitPolicy ep, const QVariant &old)
   \internal
 */
 
-void QDateTimeEditPrivate::_q_editorCursorPositionChanged(int oldpos, int newpos)
+void QDateTimeEditPrivate::editorCursorPositionChanged(int oldpos, int newpos)
 {
     if (ignoreCursorPositionChanged || specialValue())
         return;
@@ -2354,7 +2354,7 @@ void QDateTimeEditPrivate::_q_editorCursorPositionChanged(int oldpos, int newpos
 
     currentSectionIndex = s;
     Q_ASSERT_X(currentSectionIndex < sectionNodes.size(),
-               "QDateTimeEditPrivate::_q_editorCursorPositionChanged()",
+               "QDateTimeEditPrivate::editorCursorPositionChanged()",
                qPrintable(QString::fromLatin1("Internal error (%1 %2)").
                           arg(currentSectionIndex).
                           arg(sectionNodes.size())));
