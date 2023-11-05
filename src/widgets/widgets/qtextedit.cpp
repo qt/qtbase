@@ -96,6 +96,12 @@ QTextEditPrivate::QTextEditPrivate()
     inDrag = false;
 }
 
+QTextEditPrivate::~QTextEditPrivate()
+{
+    for (const QMetaObject::Connection &connection : connections)
+        QObject::disconnect(connection);
+}
+
 void QTextEditPrivate::createAutoBulletList()
 {
     QTextCursor cursor = control->textCursor();
@@ -122,24 +128,34 @@ void QTextEditPrivate::init(const QString &html)
     control = new QTextEditControl(q);
     control->setPalette(q->palette());
 
-    QObject::connect(control, SIGNAL(microFocusChanged()), q, SLOT(updateMicroFocus()));
-    QObject::connect(control, SIGNAL(documentSizeChanged(QSizeF)), q, SLOT(_q_adjustScrollbars()));
-    QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(_q_repaintContents(QRectF)));
-    QObject::connect(control, SIGNAL(visibilityRequest(QRectF)), q, SLOT(_q_ensureVisible(QRectF)));
-    QObject::connect(control, SIGNAL(currentCharFormatChanged(QTextCharFormat)),
-                     q, SLOT(_q_currentCharFormatChanged(QTextCharFormat)));
-
-    QObject::connect(control, SIGNAL(textChanged()), q, SIGNAL(textChanged()));
-    QObject::connect(control, SIGNAL(undoAvailable(bool)), q, SIGNAL(undoAvailable(bool)));
-    QObject::connect(control, SIGNAL(redoAvailable(bool)), q, SIGNAL(redoAvailable(bool)));
-    QObject::connect(control, SIGNAL(copyAvailable(bool)), q, SIGNAL(copyAvailable(bool)));
-    QObject::connect(control, SIGNAL(selectionChanged()), q, SIGNAL(selectionChanged()));
-    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(_q_cursorPositionChanged()));
-#if QT_CONFIG(cursor)
-    QObject::connect(control, SIGNAL(blockMarkerHovered(QTextBlock)), q, SLOT(_q_hoveredBlockWithMarkerChanged(QTextBlock)));
-#endif
-
-    QObject::connect(control, SIGNAL(textChanged()), q, SLOT(updateMicroFocus()));
+    connections = {
+        QObjectPrivate::connect(control, &QTextEditControl::documentSizeChanged,
+                                this, &QTextEditPrivate::adjustScrollbars),
+        QObjectPrivate::connect(control, &QTextEditControl::updateRequest,
+                                this, &QTextEditPrivate::repaintContents),
+        QObjectPrivate::connect(control, &QTextEditControl::visibilityRequest,
+                                this, &QTextEditPrivate::ensureVisible),
+        QObjectPrivate::connect(control, &QTextEditControl::blockMarkerHovered,
+                                this, &QTextEditPrivate::hoveredBlockWithMarkerChanged),
+        QObjectPrivate::connect(control, &QTextEditControl::cursorPositionChanged,
+                                this, &QTextEditPrivate::cursorPositionChanged),
+        QObject::connect(control, &QTextEditControl::microFocusChanged,
+                         q, [q]() { q->updateMicroFocus(); }),
+        QObject::connect(control, &QTextEditControl::currentCharFormatChanged,
+                         q, &QTextEdit::currentCharFormatChanged),
+        QObject::connect(control, &QTextEditControl::textChanged,
+                         q, &QTextEdit::textChanged),
+        QObject::connect(control, &QTextEditControl::undoAvailable,
+                         q, &QTextEdit::undoAvailable),
+        QObject::connect(control, &QTextEditControl::redoAvailable,
+                         q, &QTextEdit::redoAvailable),
+        QObject::connect(control, &QTextEditControl::copyAvailable,
+                         q, &QTextEdit::copyAvailable),
+        QObject::connect(control, &QTextEditControl::selectionChanged,
+                         q, &QTextEdit::selectionChanged),
+        QObject::connect(control, &QTextEditControl::textChanged,
+                         q, [q]() { q->updateMicroFocus(); }),
+    };
 
     QTextDocument *doc = control->document();
     // set a null page size initially to avoid any relayouting until the textedit
@@ -169,7 +185,7 @@ void QTextEditPrivate::init(const QString &html)
 #endif
 }
 
-void QTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
+void QTextEditPrivate::repaintContents(const QRectF &contentsRect)
 {
     if (!contentsRect.isValid()) {
         viewport->update();
@@ -187,7 +203,7 @@ void QTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
     viewport->update(r);
 }
 
-void QTextEditPrivate::_q_cursorPositionChanged()
+void QTextEditPrivate::cursorPositionChanged()
 {
     Q_Q(QTextEdit);
     emit q->cursorPositionChanged();
@@ -197,9 +213,9 @@ void QTextEditPrivate::_q_cursorPositionChanged()
 #endif
 }
 
-#if QT_CONFIG(cursor)
-void QTextEditPrivate::_q_hoveredBlockWithMarkerChanged(const QTextBlock &block)
+void QTextEditPrivate::hoveredBlockWithMarkerChanged(const QTextBlock &block)
 {
+#if QT_CONFIG(cursor)
     Q_Q(QTextEdit);
     Qt::CursorShape cursor = cursorToRestoreAfterHover;
     if (block.isValid() && !q->isReadOnly()) {
@@ -211,8 +227,8 @@ void QTextEditPrivate::_q_hoveredBlockWithMarkerChanged(const QTextBlock &block)
         }
     }
     viewport->setCursor(cursor);
-}
 #endif
+}
 
 void QTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCursor::MoveMode moveMode)
 {
@@ -261,7 +277,7 @@ static QSize documentSize(QWidgetTextControl *control)
     return docSize;
 }
 
-void QTextEditPrivate::_q_adjustScrollbars()
+void QTextEditPrivate::adjustScrollbars()
 {
     if (ignoreAutomaticScrollbarAdjustment)
         return;
@@ -311,12 +327,12 @@ void QTextEditPrivate::_q_adjustScrollbars()
 #endif
 
 // rect is in content coordinates
-void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
+void QTextEditPrivate::ensureVisible(const QRectF &_rect)
 {
     const QRect rect = _rect.toRect();
     if ((vbar->isVisible() && vbar->maximum() < rect.bottom())
         || (hbar->isVisible() && hbar->maximum() < rect.right()))
-        _q_adjustScrollbars();
+        adjustScrollbars();
     const int visibleWidth = viewport->width();
     const int visibleHeight = viewport->height();
     const bool rtl = q_func()->isRightToLeft();
@@ -1477,7 +1493,7 @@ void QTextEdit::resizeEvent(QResizeEvent *e)
             && alignmentProperty.userType() == QMetaType::Bool
             && !alignmentProperty.toBool()) {
 
-            d->_q_adjustScrollbars();
+            d->adjustScrollbars();
             return;
         }
     }
@@ -1486,7 +1502,7 @@ void QTextEdit::resizeEvent(QResizeEvent *e)
         && e->oldSize().width() != e->size().width())
         d->relayoutDocument();
     else
-        d->_q_adjustScrollbars();
+        d->adjustScrollbars();
 }
 
 void QTextEditPrivate::relayoutDocument()
@@ -1508,7 +1524,7 @@ void QTextEditPrivate::relayoutDocument()
     else
         lastUsedSize = layout->documentSize().toSize();
 
-    // ignore calls to _q_adjustScrollbars caused by an emission of the
+    // ignore calls to adjustScrollbars caused by an emission of the
     // usedSizeChanged() signal in the layout, as we're calling it
     // later on our own anyway (or deliberately not) .
     const bool oldIgnoreScrollbarAdjustment = ignoreAutomaticScrollbarAdjustment;
@@ -1547,7 +1563,7 @@ void QTextEditPrivate::relayoutDocument()
     // its size. So a layout with less width _can_ take up less vertical space, too.
     // If the wider case causes a vertical scroll bar to appear and the narrower one
     // (narrower because the vertical scroll bar takes up horizontal space)) to disappear
-    // again then we have an endless loop, as _q_adjustScrollBars sets new ranges on the
+    // again then we have an endless loop, as adjustScrollbars sets new ranges on the
     // scroll bars, the QAbstractScrollArea will find out about it and try to show/hide
     // the scroll bars again. That's why we try to detect this case here and break out.
     //
@@ -1560,7 +1576,7 @@ void QTextEditPrivate::relayoutDocument()
         && usedSize.height() <= viewport->height())
         return;
 
-    _q_adjustScrollbars();
+    adjustScrollbars();
 }
 
 void QTextEditPrivate::paint(QPainter *p, QPaintEvent *e)
@@ -1608,12 +1624,6 @@ void QTextEdit::paintEvent(QPaintEvent *e)
     Q_D(QTextEdit);
     QPainter p(d->viewport);
     d->paint(&p, e);
-}
-
-void QTextEditPrivate::_q_currentCharFormatChanged(const QTextCharFormat &fmt)
-{
-    Q_Q(QTextEdit);
-    emit q->currentCharFormatChanged(fmt);
 }
 
 void QTextEditPrivate::updateDefaultTextOption()
@@ -2369,7 +2379,7 @@ void QTextEdit::scrollToAnchor(const QString &name)
     QPointF p = d->control->anchorPosition(name);
     const int newPosition = qRound(p.y());
     if ( d->vbar->maximum() < newPosition )
-        d->_q_adjustScrollbars();
+        d->adjustScrollbars();
     d->vbar->setValue(newPosition);
 }
 

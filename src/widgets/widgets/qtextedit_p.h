@@ -33,6 +33,8 @@
 
 #include "private/qwidgettextcontrol_p.h"
 
+#include <array>
+
 QT_REQUIRE_CONFIG(textedit);
 
 QT_BEGIN_NAMESPACE
@@ -43,16 +45,17 @@ class QTextEditPrivate : public QAbstractScrollAreaPrivate
     Q_DECLARE_PUBLIC(QTextEdit)
 public:
     QTextEditPrivate();
+    ~QTextEditPrivate();
 
     void init(const QString &html = QString());
     void paint(QPainter *p, QPaintEvent *e);
-    void _q_repaintContents(const QRectF &contentsRect);
+    void repaintContents(const QRectF &contentsRect);
 
     inline QPoint mapToContents(const QPoint &point) const
     { return QPoint(point.x() + horizontalOffset(), point.y() + verticalOffset()); }
 
-    void _q_adjustScrollbars();
-    void _q_ensureVisible(const QRectF &rect);
+    void adjustScrollbars();
+    void ensureVisible(const QRectF &rect);
     void relayoutDocument();
 
     void createAutoBulletList();
@@ -66,9 +69,8 @@ public:
     inline void sendControlEvent(QEvent *e)
     { control->processEvent(e, QPointF(horizontalOffset(), verticalOffset()), viewport); }
 
-    void _q_currentCharFormatChanged(const QTextCharFormat &format);
-    void _q_cursorPositionChanged();
-    void _q_hoveredBlockWithMarkerChanged(const QTextBlock &block);
+    void cursorPositionChanged();
+    void hoveredBlockWithMarkerChanged(const QTextBlock &block);
 
     void updateDefaultTextOption();
 
@@ -99,6 +101,8 @@ public:
     QString placeholderText;
 
     Qt::CursorShape cursorToRestoreAfterHover = Qt::IBeamCursor;
+
+    std::array<QMetaObject::Connection, 13> connections;
 
 #ifdef QT_KEYPAD_NAVIGATION
     QBasicTimer deleteAllTimer;

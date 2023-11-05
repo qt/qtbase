@@ -82,9 +82,6 @@ protected:
 private:
     Q_DISABLE_COPY(QTextBrowser)
     Q_DECLARE_PRIVATE(QTextBrowser)
-    Q_PRIVATE_SLOT(d_func(), void _q_documentModified())
-    Q_PRIVATE_SLOT(d_func(), void _q_activateAnchor(const QString &))
-    Q_PRIVATE_SLOT(d_func(), void _q_highlightLink(const QString &))
 };
 
 QT_END_NAMESPACE

@@ -280,14 +280,6 @@ protected:
 
 private:
     Q_DISABLE_COPY(QTextEdit)
-    Q_PRIVATE_SLOT(d_func(), void _q_repaintContents(const QRectF &r))
-    Q_PRIVATE_SLOT(d_func(), void _q_currentCharFormatChanged(const QTextCharFormat &))
-    Q_PRIVATE_SLOT(d_func(), void _q_adjustScrollbars())
-    Q_PRIVATE_SLOT(d_func(), void _q_ensureVisible(const QRectF &))
-    Q_PRIVATE_SLOT(d_func(), void _q_cursorPositionChanged())
-#if QT_CONFIG(cursor)
-    Q_PRIVATE_SLOT(d_func(), void _q_hoveredBlockWithMarkerChanged(const QTextBlock &))
-#endif
     friend class QTextEditControl;
     friend class QTextDocument;
     friend class QWidgetTextControl;

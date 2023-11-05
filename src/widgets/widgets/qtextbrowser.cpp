@@ -46,6 +46,11 @@ public:
         , lastKeypadScrollValue(-1)
 #endif
     {}
+    ~QTextBrowserPrivate()
+    {
+        for (const QMetaObject::Connection &connection : connections)
+            QObject::disconnect(connection);
+    }
 
     void init();
 
@@ -103,14 +108,14 @@ public:
 
     QString findFile(const QUrl &name) const;
 
-    inline void _q_documentModified()
+    inline void documentModified()
     {
         textOrSourceChanged = true;
         forceLoadOnSourceChange = !currentURL.path().isEmpty();
     }
 
-    void _q_activateAnchor(const QString &href);
-    void _q_highlightLink(const QString &href);
+    void activateAnchor(const QString &href);
+    void highlightLink(const QString &href);
 
     void setSource(const QUrl &url, QTextDocument::ResourceType type);
 
@@ -129,6 +134,7 @@ public:
         Q_Q(QTextBrowser);
         emit q->highlighted(url);
     }
+    std::array<QMetaObject::Connection, 3> connections;
 };
 Q_DECLARE_TYPEINFO(QTextBrowserPrivate::HistoryEntry, Q_RELOCATABLE_TYPE);
 
@@ -190,7 +196,7 @@ QUrl QTextBrowserPrivate::resolveUrl(const QUrl &url) const
     return url;
 }
 
-void QTextBrowserPrivate::_q_activateAnchor(const QString &href)
+void QTextBrowserPrivate::activateAnchor(const QString &href)
 {
     if (href.isEmpty())
         return;
@@ -231,7 +237,7 @@ void QTextBrowserPrivate::_q_activateAnchor(const QString &href)
     q->setSource(url);
 }
 
-void QTextBrowserPrivate::_q_highlightLink(const QString &anchor)
+void QTextBrowserPrivate::highlightLink(const QString &anchor)
 {
     if (anchor.isEmpty()) {
 #ifndef QT_NO_CURSOR
@@ -670,11 +676,14 @@ void QTextBrowserPrivate::init()
     q->setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(q));
     q->setUndoRedoEnabled(false);
     viewport->setMouseTracking(true);
-    QObject::connect(q->document(), SIGNAL(contentsChanged()), q, SLOT(_q_documentModified()));
-    QObject::connect(control, SIGNAL(linkActivated(QString)),
-                     q, SLOT(_q_activateAnchor(QString)));
-    QObject::connect(control, SIGNAL(linkHovered(QString)),
-                     q, SLOT(_q_highlightLink(QString)));
+    connections = {
+        QObjectPrivate::connect(q->document(), &QTextDocument::contentsChanged,
+                                this, &QTextBrowserPrivate::documentModified),
+        QObjectPrivate::connect(control, &QWidgetTextControl::linkActivated,
+                                this, &QTextBrowserPrivate::activateAnchor),
+        QObjectPrivate::connect(control, &QWidgetTextControl::linkHovered,
+                                this, &QTextBrowserPrivate::highlightLink),
+    };
 }
 
 /*!
