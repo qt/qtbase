@@ -462,6 +462,11 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
         pixmaps += QPixmapIconEngineEntry(abs, size, mode, state);
 }
 
+bool QPixmapIconEngine::isNull()
+{
+    return pixmaps.isEmpty();
+}
+
 QString QPixmapIconEngine::key() const
 {
     return "QPixmapIconEngine"_L1;
