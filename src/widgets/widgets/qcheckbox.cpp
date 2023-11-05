@@ -28,7 +28,7 @@ public:
     uint tristate : 1;
     uint noChange : 1;
     uint hovering : 1;
-    Qt::CheckState publishedState : 2;
+    Qt::CheckState publishedState : 3;
 
     void init();
 };
