@@ -39,9 +39,9 @@ tst_QSystemTrayIcon::~tst_QSystemTrayIcon()
 void tst_QSystemTrayIcon::showHide()
 {
     QSystemTrayIcon icon;
-    icon.setIcon(QIcon("icons/icon.png"));
+    icon.setIcon(QIcon(":/icons/icon.png"));
     icon.show();
-    icon.setIcon(QIcon("icons/icon.png"));
+    icon.setIcon(QIcon(":/icons/icon.png"));
     icon.hide();
 }
 
@@ -49,7 +49,7 @@ void tst_QSystemTrayIcon::showHide()
 void tst_QSystemTrayIcon::showMessage()
 {
     QSystemTrayIcon icon;
-    icon.setIcon(QIcon("icons/icon.png"));
+    icon.setIcon(QIcon(":/icons/icon.png"));
 
     icon.showMessage("Title", "Messagecontents");
     icon.showMessage("Title", "Messagecontents", QSystemTrayIcon::NoIcon);
@@ -72,7 +72,7 @@ void tst_QSystemTrayIcon::getSetCheck()
     QCOMPARE(true, "testToolTip" == icon.toolTip());
 
     QCOMPARE(true, icon.icon().isNull());
-    icon.setIcon(QIcon("icons/icon.png"));
+    icon.setIcon(QIcon(":/icons/icon.png"));
     QCOMPARE(false, icon.icon().isNull());
 
     QMenu menu;
@@ -104,7 +104,7 @@ void tst_QSystemTrayIcon::lastWindowClosed()
     QSignalSpy spy(qApp, &QGuiApplication::lastWindowClosed);
     QWidget window;
     QSystemTrayIcon icon;
-    icon.setIcon(QIcon("whatever.png"));
+    icon.setIcon(QIcon(":/icons/icon.png"));
     icon.show();
     window.show();
     QTimer::singleShot(2500, &window, SLOT(close()));

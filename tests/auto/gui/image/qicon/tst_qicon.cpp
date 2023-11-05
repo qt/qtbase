@@ -195,17 +195,17 @@ void tst_QIcon::isNull() {
 
     // test string constructor with non-existing file
     QIcon iconNoFile = QIcon("imagedoesnotexist");
-    QVERIFY(!iconNoFile.isNull());
+    QVERIFY(iconNoFile.isNull());
     QVERIFY(!iconNoFile.actualSize(QSize(32, 32)).isValid());
 
     // test string constructor with non-existing file with suffix
     QIcon iconNoFileSuffix = QIcon("imagedoesnotexist.png");
-    QVERIFY(!iconNoFileSuffix.isNull());
+    QVERIFY(iconNoFileSuffix.isNull());
     QVERIFY(!iconNoFileSuffix.actualSize(QSize(32, 32)).isValid());
 
     // test string constructor with existing file but unsupported format
     QIcon iconUnsupportedFormat = QIcon(m_sourceFileName);
-    QVERIFY(!iconUnsupportedFormat.isNull());
+    QVERIFY(iconUnsupportedFormat.isNull());
     QVERIFY(!iconUnsupportedFormat.actualSize(QSize(32, 32)).isValid());
 
     // test string constructor with existing file and supported format
