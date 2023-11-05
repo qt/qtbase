@@ -191,7 +191,7 @@ class WizardPage : public QWizardPage
 public:
     explicit WizardPage(const QString &title, QWidget *parent = nullptr);
 
-    void initializePage();
+    void initializePage() override;
 
 private:
     WizardStyleControl *m_styleControl;

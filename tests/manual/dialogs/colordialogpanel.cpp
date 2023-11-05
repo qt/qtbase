@@ -52,7 +52,7 @@ public:
     {
     }
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
     {
         if (role == Qt::DisplayRole) {
             QString name = data(index, Qt::EditRole).toString();
