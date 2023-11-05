@@ -19,6 +19,7 @@
 #include <private/qhighdpiscaling_p.h>
 #include <private/qwindowsfontdatabasebase_p.h>
 #include <private/qpixmap_win_p.h>
+#include <private/quniquehandle_p.h>
 
 #include <QtGui/qscreen.h>
 
@@ -116,16 +117,22 @@ static float getMonitorSDRWhiteLevel(DISPLAYCONFIG_PATH_TARGET_INFO *targetInfo)
 
 using WindowsScreenDataList = QList<QWindowsScreenData>;
 
-struct RegistryHandleDeleter
+namespace {
+
+struct DiRegKeyHandleTraits
 {
-    void operator()(HKEY handle) const noexcept
+    using Type = HKEY;
+    static Type invalidValue()
     {
-        if (handle != nullptr && handle != INVALID_HANDLE_VALUE)
-            RegCloseKey(handle);
+        // The setupapi.h functions return INVALID_HANDLE_VALUE when failing to open a registry key
+        return reinterpret_cast<HKEY>(INVALID_HANDLE_VALUE);
     }
+    static bool close(Type handle) { return RegCloseKey(handle) == ERROR_SUCCESS; }
 };
 
-using RegistryHandlePtr = std::unique_ptr<std::remove_pointer_t<HKEY>, RegistryHandleDeleter>;
+using DiRegKeyHandle = QUniqueHandle<DiRegKeyHandleTraits>;
+
+}
 
 static void setMonitorDataFromSetupApi(QWindowsScreenData &data,
                                        const std::vector<DISPLAYCONFIG_PATH_INFO> &pathGroup)
@@ -207,10 +214,10 @@ static void setMonitorDataFromSetupApi(QWindowsScreenData &data,
             continue;
         }
 
-        const RegistryHandlePtr edidRegistryKey{ SetupDiOpenDevRegKey(
+        const DiRegKeyHandle edidRegistryKey{ SetupDiOpenDevRegKey(
                 devInfo, &deviceInfoData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ) };
 
-        if (!edidRegistryKey || edidRegistryKey.get() == INVALID_HANDLE_VALUE)
+        if (!edidRegistryKey.isValid())
             continue;
 
         DWORD edidDataSize{ 0 };
