@@ -16,6 +16,7 @@ private slots:
     void initTestCase();
 
     void setChecked();
+    void setCheckedSignal();
     void setTriState();
     void setText_data();
     void setText();
@@ -57,6 +58,25 @@ void tst_QCheckBox::setChecked()
 
     QTest::keyClick(&testWidget, ' ');
     QVERIFY(!testWidget.isChecked());
+}
+
+void tst_QCheckBox::setCheckedSignal()
+{
+    QCheckBox testWidget;
+    testWidget.setCheckState(Qt::Unchecked);
+    QSignalSpy checkStateChangedSpy(&testWidget, &QCheckBox::stateChanged);
+    testWidget.setCheckState(Qt::Checked);
+    testWidget.setCheckState(Qt::Checked);
+    QTRY_COMPARE(checkStateChangedSpy.size(), 1);   // get signal only once
+    QCOMPARE(testWidget.checkState(), Qt::Checked);
+    testWidget.setCheckState(Qt::Unchecked);
+    testWidget.setCheckState(Qt::Unchecked);
+    QTRY_COMPARE(checkStateChangedSpy.size(), 2);   // get signal only once
+    QCOMPARE(testWidget.checkState(), Qt::Unchecked);
+    testWidget.setCheckState(Qt::PartiallyChecked);
+    testWidget.setCheckState(Qt::PartiallyChecked);
+    QTRY_COMPARE(checkStateChangedSpy.size(), 3);   // get signal only once
+    QCOMPARE(testWidget.checkState(), Qt::PartiallyChecked);
 }
 
 void tst_QCheckBox::setTriState()
