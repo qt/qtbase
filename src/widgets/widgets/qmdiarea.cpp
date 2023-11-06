@@ -2376,6 +2376,11 @@ void QMdiArea::showEvent(QShowEvent *showEvent)
         for (QMdiSubWindow *window : copy) {
             if (!window)
                 continue;
+            if (d->viewMode == TabbedView && window->d_func()->isActive && !d->active) {
+                d->showActiveWindowMaximized = true;
+                d->emitWindowActivated(window); // Also maximizes the window
+                continue;
+            }
             if (!window->testAttribute(Qt::WA_Resized)) {
                 QSize newSize(window->sizeHint().boundedTo(viewport()->size()));
                 window->resize(newSize.expandedTo(qSmartMinSize(window)));
