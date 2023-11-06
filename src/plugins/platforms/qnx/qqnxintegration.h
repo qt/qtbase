@@ -6,6 +6,7 @@
 
 #include <qpa/qplatformintegration.h>
 #include <private/qtguiglobal_p.h>
+#include <QtCore/qhash.h>
 #include <QtCore/qmutex.h>
 
 #include <screen/screen.h>
@@ -39,8 +40,7 @@ class QQnxButtonEventNotifier;
 class QQnxClipboard;
 #endif
 
-template<class K, class V> class QHash;
-typedef QHash<screen_window_t, QWindow *> QQnxWindowMapper;
+using QQnxWindowMapper = QHash<screen_window_t, QWindow *>;
 
 class QQnxIntegration : public QPlatformIntegration
 {
