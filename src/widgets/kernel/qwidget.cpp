@@ -10866,8 +10866,10 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
                     recreate = true;
             }
             if (recreate) {
+                auto oldState = d->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)->windowState();
                 newtlw->destroy();
                 newtlw->create();
+                d->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)->setWindowState(oldState);
             }
         }
     }
