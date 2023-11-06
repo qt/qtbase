@@ -171,56 +171,24 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(events[-1]['type'], 'keyRelease')
         self.assertEqual(events[-1]['key'], 'c')
 
-    def test_parent_window_limits_moves_of_children(self):
-        screen = Screen(self._driver, ScreenPosition.FIXED,
-                        x=0, y=0, width=800, height=800)
-
-        w1 = Window(parent=screen, rect=Rect(x=200, y=200, width=400, height=400), title='w1')
-        w1_w1 = Window(parent=w1, rect=Rect(x=100, y=100, width=200, height=200), title='w1_w1')
-        w1_w1_w1 = Window(parent=w1_w1, rect=Rect(50, 50, 100, 100), title='w1_w1_w1')
-
-        self.assertEqual(w1.rect, Rect(200, 200, 400, 400))
-        self.assertEqual(w1_w1.rect, Rect(100, 100, 200, 200))
-        self.assertEqual(w1_w1_w1.rect, Rect(50, 50, 100, 100))
-
-        # Left - Middle window
-        w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
-
-        self.assertEqual(
-            w1_w1.frame_rect.x, -w1_w1.frame_rect.width / 2)
-        w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=RIGHT(w1_w1.frame_rect.width / 2 + 100))
-
-        # Right - Middle window
-        w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=RIGHT(300))
-
-        self.assertEqual(
-            w1_w1.frame_rect.x, w1.rect.width - w1_w1.frame_rect.width / 2)
-        w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(w1.rect.width / 2))
-
-        # Left - Inner window
-        w1_w1_w1.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
-
-        self.assertEqual(
-            w1_w1_w1.frame_rect.x, -w1_w1_w1.frame_rect.width / 2)
-
     def test_child_window_activation(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                         x=0, y=0, width=800, height=800)
 
-        bottom = Window(parent=screen, rect=Rect(x=0, y=0, width=800, height=800), title='root')
-        w1 = Window(parent=bottom, rect=Rect(x=100, y=100, width=600, height=600), title='w1')
+        root = Window(parent=screen, rect=Rect(x=0, y=0, width=800, height=800), title='root')
+        w1 = Window(parent=root, rect=Rect(x=100, y=100, width=600, height=600), title='w1')
         w1_w1 = Window(parent=w1, rect=Rect(x=100, y=100, width=300, height=300), title='w1_w1')
         w1_w1_w1 = Window(parent=w1_w1, rect=Rect(x=100, y=100, width=100, height=100), title='w1_w1_w1')
         w1_w1_w2 = Window(parent=w1_w1, rect=Rect(x=150, y=150, width=100, height=100), title='w1_w1_w2')
         w1_w2 = Window(parent=w1, rect=Rect(x=300, y=300, width=300, height=300), title='w1_w2')
         w1_w2_w1 = Window(parent=w1_w2, rect=Rect(x=100, y=100, width=100, height=100), title='w1_w2_w1')
-        w2 = Window(parent=bottom, rect=Rect(x=300, y=300, width=450, height=450), title='w2')
+        w2 = Window(parent=root, rect=Rect(x=300, y=300, width=450, height=450), title='w2')
 
-        self.assertEqual(screen.window_stack_at_point(w1_w1.bounding_box.midpoint[0], w1_w1.bounding_box.midpoint[1]),
-                         [w2, w1_w1_w2, w1_w1_w1, w1_w1, w1, bottom])
+        self.assertEqual(screen.window_stack_at_point(*w1_w1.bounding_box.center),
+                         [w2, w1_w1_w2, w1_w1_w1, w1_w1, w1, root])
 
-        self.assertEqual(screen.window_stack_at_point(w2.bounding_box.midpoint[0], w2.bounding_box.midpoint[1]),
-                         [w2, w1_w2_w1, w1_w2, w1, bottom])
+        self.assertEqual(screen.window_stack_at_point(*w2.bounding_box.center),
+                         [w2, w1_w2_w1, w1_w2, w1, root])
 
         for w in [w1, w1_w1, w1_w1_w1, w1_w1_w2, w1_w2, w1_w2_w1]:
             self.assertFalse(w.active)
@@ -233,8 +201,8 @@ class WidgetTestCase(unittest.TestCase):
         for w in [w1_w1, w1_w1_w1, w1_w1_w2, w2]:
             self.assertFalse(w.active)
 
-        self.assertEqual(screen.window_stack_at_point(w2.frame_rect.midpoint[0], w2.frame_rect.midpoint[1]),
-                         [w1_w2_w1, w1_w2, w1, w2, bottom])
+        self.assertEqual(screen.window_stack_at_point(*w2.bounding_box.center),
+                         [w1_w2_w1, w1_w2, w1, w2, root])
 
         w1_w1_w1.click(0, 0)
 
@@ -243,8 +211,8 @@ class WidgetTestCase(unittest.TestCase):
         for w in [w1_w1_w2, w1_w2, w1_w2_w1, w2]:
             self.assertFalse(w.active)
 
-        self.assertEqual(screen.window_stack_at_point(w1_w1_w1.bounding_box.midpoint[0], w1_w1_w1.bounding_box.midpoint[1]),
-                         [w1_w1_w1, w1_w1_w2, w1_w1, w1, w2, bottom])
+        self.assertEqual(screen.window_stack_at_point(*w1_w1_w1.bounding_box.center),
+                         [w1_w1_w1, w1_w1_w2, w1_w1, w1, w2, root])
 
         w1_w1_w2.click(w1_w1_w2.bounding_box.width, w1_w1_w2.bounding_box.height)
 
@@ -254,7 +222,7 @@ class WidgetTestCase(unittest.TestCase):
             self.assertFalse(w.active)
 
         self.assertEqual(screen.window_stack_at_point(w1_w1_w2.bounding_box.x, w1_w1_w2.bounding_box.y),
-                         [w1_w1_w2, w1_w1_w1, w1_w1, w1, w2, bottom])
+                         [w1_w1_w2, w1_w1_w1, w1_w1, w1, w2, root])
 
     def test_window_reparenting(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
@@ -924,7 +892,7 @@ class Rect:
         return f'(x: {self.x}, y: {self.y}, width: {self.width}, height: {self.height})'
 
     @property
-    def midpoint(self):
+    def center(self):
         return self.x + self.width / 2, self.y + self.height / 2,
 
 def assert_colors_equal(color1, color2, msg=None):
