@@ -2436,7 +2436,7 @@ void QTabBarPrivate::setCurrentNextEnabledIndex(int offset)
 {
     Q_Q(QTabBar);
     for (int index = currentIndex + offset; validIndex(index); index += offset) {
-        if (tabList.at(index)->enabled) {
+        if (tabList.at(index)->enabled && tabList.at(index)->visible) {
             q->setCurrentIndex(index);
             break;
         }
