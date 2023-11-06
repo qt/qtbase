@@ -2680,6 +2680,9 @@ void tst_QGraphicsScene::renderItemsWithNegativeWidthOrHeight()
 #ifdef Q_OS_ANDROID
     QSKIP("Test only works on platforms with resizable windows");
 #endif
+    if (QGuiApplication::platformName().startsWith(QLatin1String("eglfs"), Qt::CaseInsensitive))
+        QSKIP("EGLFS does not allow resizing on top window");
+
     QGraphicsScene scene(0, 0, m_testSize.width(), m_testSize.height());
 
     // Add item with negative width.
