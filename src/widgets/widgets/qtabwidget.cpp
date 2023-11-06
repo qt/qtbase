@@ -1139,7 +1139,7 @@ void QTabWidget::keyPressEvent(QKeyEvent *e)
                       ) {
                 page = 0;
             }
-            if (d->tabs->isTabEnabled(page)) {
+            if (d->tabs->isTabEnabled(page) && d->tabs->isTabVisible(page)) {
                 setCurrentIndex(page);
                 break;
             }

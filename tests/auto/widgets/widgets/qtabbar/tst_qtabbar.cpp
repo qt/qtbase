@@ -50,6 +50,7 @@ private slots:
     void hideTab_data();
     void hideTab();
     void hideAllTabs();
+    void checkHiddenTab();
 
     void setElideMode_data();
     void setElideMode();
@@ -365,6 +366,25 @@ void tst_QTabBar::hideAllTabs()
     QCOMPARE(tabbar.currentIndex(), 0);
     sizeHint = tabbar.sizeHint();
     QVERIFY(sizeHint.width() < prevSizeHint.width());
+}
+
+void tst_QTabBar::checkHiddenTab()
+{
+    QTabBar tabbar;
+
+    tabbar.addTab("foo");
+    tabbar.addTab("bar");
+    tabbar.addTab("baz");
+    tabbar.setCurrentIndex(0);
+    tabbar.setTabVisible(1, false);
+
+    QKeyEvent keyRight(QKeyEvent::KeyPress, Qt::Key_Right, Qt::NoModifier);
+    QVERIFY(QApplication::sendEvent(&tabbar, &keyRight));
+    QCOMPARE(tabbar.currentIndex(), 2);
+
+    QKeyEvent keyLeft(QKeyEvent::KeyPress, Qt::Key_Left, Qt::NoModifier);
+    QVERIFY(QApplication::sendEvent(&tabbar, &keyLeft));
+    QCOMPARE(tabbar.currentIndex(), 0);
 }
 
 void tst_QTabBar::setElideMode_data()

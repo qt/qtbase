@@ -60,6 +60,7 @@ private slots:
     void tabPosition();
     void tabEnabled();
     void tabHidden();
+    void checkHiddenTab();
     void tabText();
     void tabShape();
     void tabTooltip();
@@ -250,6 +251,32 @@ void tst_QTabWidget::tabHidden()
     for (int i = 0; i < tw->count(); ++i) {
         QVERIFY(tw->isTabVisible(i));
     }
+}
+
+void tst_QTabWidget::checkHiddenTab()
+{
+    tw->addTab(new QWidget(), "foo");
+    tw->addTab(new QWidget(), "bar");
+    tw->addTab(new QWidget(), "baz");
+    QCOMPARE(tw->count(), 3);
+    tw->setCurrentIndex(0);
+    tw->setTabVisible(1, false);
+
+    QKeyEvent keyTab(QKeyEvent::KeyPress, Qt::Key_Tab, Qt::ControlModifier);
+    QVERIFY(QApplication::sendEvent(tw, &keyTab));
+    QCOMPARE(tw->currentIndex(), 2);
+    QVERIFY(QApplication::sendEvent(tw, &keyTab));
+    QCOMPARE(tw->currentIndex(), 0);
+    QVERIFY(QApplication::sendEvent(tw, &keyTab));
+    QCOMPARE(tw->currentIndex(), 2);
+
+    QKeyEvent keyBacktab(QKeyEvent::KeyPress, Qt::Key_Backtab, Qt::ControlModifier);
+    QVERIFY(QApplication::sendEvent(tw, &keyBacktab));
+    QCOMPARE(tw->currentIndex(), 0);
+    QVERIFY(QApplication::sendEvent(tw, &keyBacktab));
+    QCOMPARE(tw->currentIndex(), 2);
+    QVERIFY(QApplication::sendEvent(tw, &keyBacktab));
+    QCOMPARE(tw->currentIndex(), 0);
 }
 
 void tst_QTabWidget::tabText()
