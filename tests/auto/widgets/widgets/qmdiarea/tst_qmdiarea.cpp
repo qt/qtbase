@@ -260,6 +260,7 @@ private slots:
     void task_236750();
     void qtbug92240_title_data();
     void qtbug92240_title();
+    void tabbedview_singleSubWindow();
     void tabbedview_activefirst();
     void tabbedview_activesecond();
     void tabbedview_activethird();
@@ -2726,6 +2727,21 @@ void tst_QMdiArea::qtbug92240_title()
     sw2->setWindowTitle(QStringLiteral("2"));
     sw2->showMaximized();
     QTRY_COMPARE(w.windowTitle(), QLatin1String("QTBUG-92240 - [2]"));
+}
+
+void tst_QMdiArea::tabbedview_singleSubWindow()
+{
+    // With only one sub-window, setViewMode() before addSubWindow(); and addSubWindow()
+    // before show(), ensure the sub-window is properly activated.
+    QMdiArea mdiArea;
+    mdiArea.setViewMode(QMdiArea::TabbedView);
+    auto *w = new QWidget(&mdiArea);
+    mdiArea.addSubWindow(w);
+    mdiArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+    auto *sub = mdiArea.subWindowList().at(0);
+    QCOMPARE(mdiArea.activeSubWindow(), sub);
+    QVERIFY(sub->isMaximized());
 }
 
 static void setupMdiAreaWithTabbedView(QMdiArea &mdiArea)
