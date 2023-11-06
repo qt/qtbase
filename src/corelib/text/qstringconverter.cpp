@@ -1332,11 +1332,35 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     Q_ASSERT(mblen > 0);
     Q_ASSERT(!state || state->remainingChars == 0);
 
+    // Return a pointer to storage where we have enough space for `size`
+    const auto growOut = [&](qsizetype size) -> std::tuple<wchar_t *, qsizetype> {
+        if (outlen >= size)
+            return {out, outlen};
+        const bool wasStackBuffer = sp.isEmpty();
+        const auto begin = wasStackBuffer ? buf.data() : reinterpret_cast<wchar_t *>(sp.data());
+        const qsizetype offset = qsizetype(std::distance(begin, out));
+        qsizetype newSize = 0;
+        if (Q_UNLIKELY(qAddOverflow(offset, size, &newSize))) {
+            Q_CHECK_PTR(false);
+            return {nullptr, 0};
+        }
+        sp.resize(newSize);
+        auto it = reinterpret_cast<wchar_t *>(sp.data());
+        if (wasStackBuffer)
+            it = std::copy_n(buf.data(), offset, it);
+        else
+            it += offset;
+        return {it, size};
+    };
+
     constexpr int MaxStep = std::numeric_limits<int>::max();
     const char *end = mb + mblen;
     while (mb != end) {
         const int nextIn = int(std::min(qsizetype(mblen), qsizetype(MaxStep)));
         const int nextOut = int(std::min(outlen, qsizetype(MaxStep)));
+        std::tie(out, outlen) = growOut(1); // Need space for at least one character
+        if (!out)
+            return {};
         len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, nextIn, out, nextOut);
         if (len) {
             mb += nextIn;
@@ -1348,14 +1372,9 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
             if (r == ERROR_INSUFFICIENT_BUFFER) {
                 Q_ASSERT(QtPrivate::q_points_into_range(out, buf.data(), buf.data() + buf.size()));
                 const int wclen = MultiByteToWideChar(codePage, 0, mb, nextIn, 0, 0);
-                auto begin = buf.data();
-                const qsizetype offset = qsizetype(std::distance(begin, out));
-                qsizetype newSize = offset + wclen;
-                sp.resize(newSize);
-                auto it = reinterpret_cast<wchar_t *>(sp.data());
-                it = std::copy_n(buf.data(), offset, it);
-                out = it;
-                outlen = wclen;
+                std::tie(out, outlen) = growOut(wclen);
+                if (!out)
+                    return {};
             } else if (r == ERROR_NO_UNICODE_TRANSLATION && state
                     && state->remainingChars < q20::ssize(state->state_data)) {
                 ++state->remainingChars;
