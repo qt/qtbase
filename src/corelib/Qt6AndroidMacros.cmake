@@ -432,8 +432,17 @@ function(qt6_android_add_apk_target target)
     if(QT_ENABLE_VERBOSE_DEPLOYMENT)
         list(APPEND extra_args "--verbose")
     endif()
-    if(QT_ANDROID_DEPLOY_RELEASE)
-        list(APPEND extra_args "--release")
+
+    if(QT_ANDROID_DEPLOY_RELEASE) # legacy opt-in variable
+        set(QT_ANDROID_DEPLOYMENT_TYPE "RELEASE")
+    endif()
+    # Setting QT_ANDROID_DEPLOYMENT_TYPE to a value other than Release disables
+    # release package signing regardless of the build type.
+    if(QT_ANDROID_DEPLOYMENT_TYPE)
+        string(TOUPPER "${QT_ANDROID_DEPLOYMENT_TYPE}" deployment_type_upper)
+        if("${deployment_type_upper}" STREQUAL "RELEASE")
+            list(APPEND extra_args "--release")
+        endif()
     elseif(NOT QT_BUILD_TESTS)
     # Workaround for tests: do not set automatically --release flag if QT_BUILD_TESTS is set.
     # Release package need to be signed. Signing is currently not supported by CI.
