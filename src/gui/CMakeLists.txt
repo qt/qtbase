@@ -641,6 +641,8 @@ endif()
 qt_internal_extend_target(Gui CONDITION ANDROID
     SOURCES
         platform/android/qandroidnativeinterface.cpp
+        painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
+        painting/qrhibackingstore.cpp painting/qrhibackingstore_p.h
 )
 
 qt_internal_extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL arm64 OR TEST_architecture_arch STREQUAL arm)

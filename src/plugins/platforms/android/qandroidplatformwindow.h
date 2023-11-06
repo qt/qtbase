@@ -7,11 +7,19 @@
 #include <qobject.h>
 #include <qrect.h>
 #include <qpa/qplatformwindow.h>
+#include <QtCore/qjnienvironment.h>
+#include <QtCore/qjniobject.h>
+#include <QtCore/qjnitypes.h>
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qwaitcondition.h>
+#include <jni.h>
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_JNI_CLASS(Surface, "android/view/Surface")
+
 class QAndroidPlatformScreen;
-class QAndroidPlatformBackingStore;
 
 class QAndroidPlatformWindow: public QPlatformWindow
 {
@@ -39,32 +47,33 @@ public:
     void propagateSizeHints() override;
     void requestActivateWindow() override;
     void updateSystemUiVisibility();
-    inline bool isRaster() const {
-        if (isForeignWindow())
-            return false;
-
-        return window()->surfaceType() == QSurface::RasterSurface
-            || window()->surfaceType() == QSurface::RasterGLSurface;
-    }
+    inline bool isRaster() const { return m_isRaster; }
     bool isExposed() const override;
 
     virtual void applicationStateChanged(Qt::ApplicationState);
 
-    void setBackingStore(QAndroidPlatformBackingStore *store) { m_backingStore = store; }
-    QAndroidPlatformBackingStore *backingStore() const { return m_backingStore; }
-
-    virtual void repaint(const QRegion &) { }
+    void onSurfaceChanged(QtJniTypes::Surface surface);
 
 protected:
     void setGeometry(const QRect &rect) override;
+    void lockSurface() { m_surfaceMutex.lock(); }
+    void unlockSurface() { m_surfaceMutex.unlock(); }
+    void createSurface();
+    void destroySurface();
+    void setSurfaceGeometry(const QRect &rect);
+    void sendExpose();
 
 protected:
     Qt::WindowFlags m_windowFlags;
     Qt::WindowStates m_windowState;
+    bool m_isRaster;
 
     WId m_windowId;
-
-    QAndroidPlatformBackingStore *m_backingStore = nullptr;
+    // The Android Surface, accessed from multiple threads, guarded by m_surfaceMutex
+    QtJniTypes::Surface m_androidSurfaceObject;
+    QWaitCondition m_surfaceWaitCondition;
+    int m_nativeSurfaceId = -1;
+    QMutex m_surfaceMutex;
 };
 
 QT_END_NAMESPACE

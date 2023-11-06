@@ -5,7 +5,6 @@
 #ifndef QANDROIDPLATFORMOPENGLWINDOW_H
 #define QANDROIDPLATFORMOPENGLWINDOW_H
 
-#include "androidsurfaceclient.h"
 #include "qandroidplatformwindow.h"
 
 #include <QWaitCondition>
@@ -16,7 +15,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QAndroidPlatformOpenGLWindow : public QAndroidPlatformWindow, public AndroidSurfaceClient
+class QAndroidPlatformOpenGLWindow : public QAndroidPlatformWindow
 {
 public:
     explicit QAndroidPlatformOpenGLWindow(QWindow *window, EGLDisplay display);
@@ -30,10 +29,7 @@ public:
 
     void applicationStateChanged(Qt::ApplicationState) override;
 
-    void repaint(const QRegion &region) override;
-
 protected:
-    void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h) override;
     void createEgl(EGLConfig config);
     void clearEgl();
 
@@ -42,9 +38,6 @@ private:
     EGLSurface m_eglSurface = EGL_NO_SURFACE;
     EGLNativeWindowType m_nativeWindow = nullptr;
 
-    int m_nativeSurfaceId = -1;
-    QJniObject m_androidSurfaceObject;
-    QWaitCondition m_surfaceWaitCondition;
     QSurfaceFormat m_format;
     QRect m_oldGeometry;
 };

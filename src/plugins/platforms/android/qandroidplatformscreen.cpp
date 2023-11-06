@@ -8,7 +8,6 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include "qandroidplatformscreen.h"
-#include "qandroidplatformbackingstore.h"
 #include "qandroidplatformintegration.h"
 #include "qandroidplatformwindow.h"
 #include "androidjnimain.h"
@@ -131,11 +130,6 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
 
 QAndroidPlatformScreen::~QAndroidPlatformScreen()
 {
-    if (m_surfaceId != -1) {
-        QtAndroid::destroySurface(m_surfaceId);
-        m_surfaceWaitCondition.wakeOne();
-        releaseSurface();
-    }
 }
 
 QWindow *QAndroidPlatformScreen::topWindow() const
@@ -159,16 +153,6 @@ QWindow *QAndroidPlatformScreen::topLevelAt(const QPoint &p) const
     return 0;
 }
 
-bool QAndroidPlatformScreen::event(QEvent *event)
-{
-    if (event->type() == QEvent::UpdateRequest) {
-        doRedraw();
-        m_updatePending = false;
-        return true;
-    }
-    return QObject::event(event);
-}
-
 void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
 {
     if (window->parent() && window->isRaster())
@@ -178,10 +162,6 @@ void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
         return;
 
     m_windowStack.prepend(window);
-    if (window->isRaster()) {
-        m_rasterSurfaces.ref();
-        setDirty(window->geometry());
-    }
 
     QWindow *w = topWindow();
     QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
@@ -198,11 +178,6 @@ void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
     if (m_windowStack.contains(window))
         qWarning() << "Failed to remove window";
 
-    if (window->isRaster()) {
-        m_rasterSurfaces.deref();
-        setDirty(window->geometry());
-    }
-
     QWindow *w = topWindow();
     QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
     topWindowChanged(w);
@@ -210,16 +185,11 @@ void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
 {
-    if (window->parent() && window->isRaster())
-        return;
-
     int index = m_windowStack.indexOf(window);
     if (index <= 0)
         return;
     m_windowStack.move(index, 0);
-    if (window->isRaster()) {
-        setDirty(window->geometry());
-    }
+
     QWindow *w = topWindow();
     QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
     topWindowChanged(w);
@@ -227,34 +197,14 @@ void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
 {
-    if (window->parent() && window->isRaster())
-        return;
-
     int index = m_windowStack.indexOf(window);
     if (index == -1 || index == (m_windowStack.size() - 1))
         return;
     m_windowStack.move(index, m_windowStack.size() - 1);
-    if (window->isRaster()) {
-        setDirty(window->geometry());
-    }
+
     QWindow *w = topWindow();
     QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
     topWindowChanged(w);
-}
-
-void QAndroidPlatformScreen::scheduleUpdate()
-{
-    if (!m_updatePending) {
-        m_updatePending = true;
-        QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
-    }
-}
-
-void QAndroidPlatformScreen::setDirty(const QRect &rect)
-{
-    QRect intersection = rect.intersected(m_availableGeometry);
-    m_dirtyRect |= intersection;
-    scheduleUpdate();
 }
 
 void QAndroidPlatformScreen::setPhysicalSize(const QSize &size)
@@ -306,7 +256,6 @@ void QAndroidPlatformScreen::setOrientation(Qt::ScreenOrientation orientation)
 
 void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
 {
-    QMutexLocker lock(&m_surfaceMutex);
     if (m_availableGeometry == rect)
         return;
 
@@ -327,25 +276,12 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
             }
         }
     }
-
-    if (m_surfaceId != -1) {
-        releaseSurface();
-        QtAndroid::setSurfaceGeometry(m_surfaceId, rect);
-    }
 }
 
 void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
 {
     for (QAndroidPlatformWindow *w : std::as_const(m_windowStack))
         w->applicationStateChanged(state);
-
-    if (state <=  Qt::ApplicationHidden) {
-        lockSurface();
-        QtAndroid::destroySurface(m_surfaceId);
-        m_surfaceId = -1;
-        releaseSurface();
-        unlockSurface();
-    }
 }
 
 void QAndroidPlatformScreen::topWindowChanged(QWindow *w)
@@ -357,133 +293,6 @@ void QAndroidPlatformScreen::topWindowChanged(QWindow *w)
         if (platformWindow != 0)
             platformWindow->updateSystemUiVisibility();
     }
-}
-
-int QAndroidPlatformScreen::rasterSurfaces()
-{
-    return m_rasterSurfaces;
-}
-
-void QAndroidPlatformScreen::doRedraw(QImage* screenGrabImage)
-{
-    PROFILE_SCOPE;
-    if (!QtAndroidPrivate::activity().isValid())
-        return;
-
-    if (m_dirtyRect.isEmpty())
-        return;
-
-    // Stop if there are no visible raster windows. If we only have RasterGLSurface
-    // windows that have renderToTexture children (i.e. they need the OpenGL path) then
-    // we do not need an overlay surface.
-    bool hasVisibleRasterWindows = false;
-    for (QAndroidPlatformWindow *window : std::as_const(m_windowStack)) {
-        if (window->window()->isVisible() && window->isRaster() && !qt_window_private(window->window())->compositing) {
-            hasVisibleRasterWindows = true;
-            break;
-        }
-    }
-    if (!hasVisibleRasterWindows) {
-        lockSurface();
-        if (m_surfaceId != -1) {
-            QtAndroid::destroySurface(m_surfaceId);
-            releaseSurface();
-            m_surfaceId = -1;
-        }
-        unlockSurface();
-        return;
-    }
-    QMutexLocker lock(&m_surfaceMutex);
-    if (m_surfaceId == -1 && m_rasterSurfaces) {
-        m_surfaceId = QtAndroid::createSurface(this, geometry(), true, m_depth);
-        AndroidDeadlockProtector protector;
-        if (!protector.acquire())
-            return;
-        m_surfaceWaitCondition.wait(&m_surfaceMutex);
-    }
-
-    if (!m_nativeSurface)
-        return;
-
-    ANativeWindow_Buffer nativeWindowBuffer;
-    ARect nativeWindowRect;
-    nativeWindowRect.top = m_dirtyRect.top();
-    nativeWindowRect.left = m_dirtyRect.left();
-    nativeWindowRect.bottom = m_dirtyRect.bottom() + 1; // for some reason that I don't understand the QRect bottom needs to +1 to be the same with ARect bottom
-    nativeWindowRect.right = m_dirtyRect.right() + 1; // same for the right
-
-    int ret;
-    if ((ret = ANativeWindow_lock(m_nativeSurface, &nativeWindowBuffer, &nativeWindowRect)) < 0) {
-        qWarning() << "ANativeWindow_lock() failed! error=" << ret;
-        return;
-    }
-
-    int bpp = 4;
-    if (nativeWindowBuffer.format == WINDOW_FORMAT_RGB_565) {
-        bpp = 2;
-        m_pixelFormat = QImage::Format_RGB16;
-    }
-
-    QImage screenImage(reinterpret_cast<uchar *>(nativeWindowBuffer.bits)
-                       , nativeWindowBuffer.width, nativeWindowBuffer.height
-                       , nativeWindowBuffer.stride * bpp , m_pixelFormat);
-
-    QPainter compositePainter(&screenImage);
-    compositePainter.setCompositionMode(QPainter::CompositionMode_Source);
-
-    QRegion visibleRegion(m_dirtyRect);
-    for (QAndroidPlatformWindow *window : std::as_const(m_windowStack)) {
-        if (!window->window()->isVisible()
-                || qt_window_private(window->window())->compositing
-                || !window->isRaster())
-            continue;
-
-        for (const QRect &rect : std::vector<QRect>(visibleRegion.begin(), visibleRegion.end())) {
-            QRect targetRect = window->geometry();
-            targetRect &= rect;
-
-            if (targetRect.isNull())
-                continue;
-
-            visibleRegion -= targetRect;
-            QRect windowRect = targetRect.translated(-window->geometry().topLeft());
-            QAndroidPlatformBackingStore *backingStore = static_cast<QAndroidPlatformWindow *>(window)->backingStore();
-            if (backingStore)
-                compositePainter.drawImage(targetRect.topLeft(), backingStore->toImage(), windowRect);
-        }
-    }
-
-    for (const QRect &rect : visibleRegion)
-        compositePainter.fillRect(rect, QColor(Qt::transparent));
-
-    ret = ANativeWindow_unlockAndPost(m_nativeSurface);
-    if (ret >= 0)
-        m_dirtyRect = QRect();
-
-    if (screenGrabImage) {
-        if (screenGrabImage->size() != screenImage.size()) {
-            uchar* bytes = static_cast<uchar*>(malloc(screenImage.height() * screenImage.bytesPerLine()));
-            *screenGrabImage = QImage(bytes, screenImage.width(), screenImage.height(),
-                                      screenImage.bytesPerLine(), m_pixelFormat,
-                                      [](void* ptr){ if (ptr) free (ptr);});
-        }
-        memcpy(screenGrabImage->bits(),
-               screenImage.bits(),
-               screenImage.bytesPerLine() * screenImage.height());
-    }
-    m_repaintOccurred = true;
-}
-
-QPixmap QAndroidPlatformScreen::doScreenShot(QRect grabRect)
-{
-    if (!m_repaintOccurred)
-       return QPixmap::fromImage(m_lastScreenshot.copy(grabRect));
-    QRect tmp = m_dirtyRect;
-    m_dirtyRect = geometry();
-    doRedraw(&m_lastScreenshot);
-    m_dirtyRect = tmp;
-    m_repaintOccurred = false;
-    return QPixmap::fromImage(m_lastScreenshot.copy(grabRect));
 }
 
 static const int androidLogicalDpi = 72;
@@ -508,67 +317,4 @@ Qt::ScreenOrientation QAndroidPlatformScreen::nativeOrientation() const
 {
     return QAndroidPlatformIntegration::m_nativeOrientation;
 }
-
-void QAndroidPlatformScreen::surfaceChanged(JNIEnv *env, jobject surface, int w, int h)
-{
-    lockSurface();
-    if (surface && w > 0  && h > 0) {
-        releaseSurface();
-        m_nativeSurface = ANativeWindow_fromSurface(env, surface);
-        QMetaObject::invokeMethod(this, "setDirty", Qt::QueuedConnection, Q_ARG(QRect, QRect(0, 0, w, h)));
-    } else {
-        releaseSurface();
-    }
-    unlockSurface();
-    m_surfaceWaitCondition.wakeOne();
-}
-
-void QAndroidPlatformScreen::releaseSurface()
-{
-    if (m_nativeSurface) {
-        ANativeWindow_release(m_nativeSurface);
-        m_nativeSurface = 0;
-    }
-}
-
-/*!
-    This function is called when Qt needs to be able to grab the content of a window.
-
-    Returns the content of the window specified with the WId handle within the boundaries of
-    QRect(x, y, width, height).
-*/
-QPixmap QAndroidPlatformScreen::grabWindow(WId window, int x, int y, int width, int height) const
-{
-    QRectF screenshotRect(x, y, width,  height);
-    QWindow* wnd = 0;
-    if (window)
-    {
-        const auto windowList = qApp->allWindows();
-        for (QWindow *w : windowList)
-            if (w->winId() == window) {
-                wnd = w;
-                break;
-            }
-    }
-    if (wnd) {
-        const qreal factor = logicalDpi().first / androidLogicalDpi; //HighDPI factor;
-        QRectF wndRect = wnd->geometry();
-        if (wnd->parent())
-            wndRect.moveTopLeft(wnd->parent()->mapToGlobal(wndRect.topLeft().toPoint()));
-        if (!qFuzzyCompare(factor, 1))
-            wndRect = QRectF(wndRect.left() * factor, wndRect.top() * factor,
-                            wndRect.width() * factor, wndRect.height() * factor);
-
-        if (!screenshotRect.isEmpty()) {
-            screenshotRect.moveTopLeft(wndRect.topLeft() + screenshotRect.topLeft());
-            screenshotRect = screenshotRect.intersected(wndRect);
-        } else {
-            screenshotRect = wndRect;
-        }
-    } else {
-        screenshotRect = screenshotRect.isValid() ? screenshotRect : geometry();
-    }
-    return const_cast<QAndroidPlatformScreen *>(this)->doScreenShot(screenshotRect.toRect());
-}
-
 QT_END_NAMESPACE

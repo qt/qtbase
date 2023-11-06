@@ -23,7 +23,7 @@ class QAndroidPlatformIntegration;
 class QWidget;
 class QString;
 class QWindow;
-class AndroidSurfaceClient;
+class QAndroidPlatformWindow;
 class QBasicMutex;
 
 Q_DECLARE_JNI_CLASS(QtActivityDelegate, "org/qtproject/qt/android/QtActivityDelegate")
@@ -37,7 +37,7 @@ namespace QtAndroid
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration);
     void setQtThread(QThread *thread);
 
-    int createSurface(AndroidSurfaceClient * client, const QRect &geometry, bool onTop, int imageDepth);
+    int createSurface(QAndroidPlatformWindow *window, const QRect &geometry, bool onTop, int imageDepth);
     int insertNativeView(QtJniTypes::View view, const QRect &geometry);
     void setViewVisibility(jobject view, bool visible);
     void setSurfaceGeometry(int surfaceId, const QRect &geometry);

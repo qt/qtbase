@@ -17,13 +17,11 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         androidjniinput.cpp androidjniinput.h
         androidjnimain.cpp androidjnimain.h
         androidjnimenu.cpp androidjnimenu.h
-        androidsurfaceclient.h
         main.cpp
         qandroidassetsfileenginehandler.cpp qandroidassetsfileenginehandler.h
         qandroideventdispatcher.cpp qandroideventdispatcher.h
         qandroidinputcontext.cpp qandroidinputcontext.h
         qandroidplatformaccessibility.cpp qandroidplatformaccessibility.h
-        qandroidplatformbackingstore.cpp qandroidplatformbackingstore.h
         qandroidplatformclipboard.cpp qandroidplatformclipboard.h
         qandroidplatformdialoghelpers.cpp qandroidplatformdialoghelpers.h
         qandroidplatformfiledialoghelper.cpp qandroidplatformfiledialoghelper.h

@@ -4,7 +4,6 @@
 #ifndef QANDROIDPLATFORMFOREIGNWINDOW_H
 #define QANDROIDPLATFORMFOREIGNWINDOW_H
 
-#include "androidsurfaceclient.h"
 #include "qandroidplatformwindow.h"
 
 #include <QtCore/QJniObject>

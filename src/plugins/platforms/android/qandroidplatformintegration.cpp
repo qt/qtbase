@@ -9,7 +9,6 @@
 #include "qabstracteventdispatcher.h"
 #include "qandroideventdispatcher.h"
 #include "qandroidplatformaccessibility.h"
-#include "qandroidplatformbackingstore.h"
 #include "qandroidplatformclipboard.h"
 #include "qandroidplatformfontdatabase.h"
 #include "qandroidplatformforeignwindow.h"
@@ -29,6 +28,7 @@
 #include <QtGui/private/qeglpbuffer_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qoffscreensurface_p.h>
+#include <QtGui/private/qrhibackingstore_p.h>
 #include <qpa/qplatformoffscreensurface.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -323,6 +323,9 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case RasterGLSurface: return QtAndroidPrivate::activity().isValid();
         case TopStackedNativeChildWindows: return false;
         case MaximizeUsingFullscreenGeometry: return true;
+        // FIXME QTBUG-118849 - we do not implement grabWindow() anymore, calling it will return
+        // a null QPixmap also for raster windows - for OpenGL windows this was always true
+        case ScreenWindowGrabbing: return false;
         default:
             return QPlatformIntegration::hasCapability(cap);
     }
@@ -333,7 +336,7 @@ QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(Q
     if (!QtAndroidPrivate::activity().isValid())
         return nullptr;
 
-    return new QAndroidPlatformBackingStore(window);
+    return new QRhiBackingStore(window);
 }
 
 QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const

@@ -377,7 +377,7 @@ class QtNative
     // application methods
 
     // surface methods
-    public static native void setSurface(int id, Object surface, int w, int h);
+    public static native void setSurface(int id, Object surface);
     // surface methods
 
     // window methods

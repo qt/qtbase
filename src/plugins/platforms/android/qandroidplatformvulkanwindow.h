@@ -10,7 +10,6 @@
 
 #define VK_USE_PLATFORM_ANDROID_KHR
 
-#include "androidsurfaceclient.h"
 #include "qandroidplatformvulkaninstance.h"
 #include "qandroidplatformwindow.h"
 
@@ -20,7 +19,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QAndroidPlatformVulkanWindow : public QAndroidPlatformWindow, public AndroidSurfaceClient
+class QAndroidPlatformVulkanWindow : public QAndroidPlatformWindow
 {
 public:
     explicit QAndroidPlatformVulkanWindow(QWindow *window);
@@ -32,17 +31,11 @@ public:
 
     VkSurfaceKHR *vkSurface();
 
-protected:
-    void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h) override;
-
 private:
-    void sendExpose();
     void clearSurface();
+    void destroyAndClearSurface();
 
-    int m_nativeSurfaceId;
     ANativeWindow *m_nativeWindow;
-    QJniObject m_androidSurfaceObject;
-    QWaitCondition m_surfaceWaitCondition;
     QSurfaceFormat m_format;
     QRect m_oldGeometry;
     VkSurfaceKHR m_vkSurface;

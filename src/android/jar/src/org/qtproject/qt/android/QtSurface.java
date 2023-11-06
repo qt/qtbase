@@ -50,13 +50,13 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback
         if (width < 1 || height < 1)
             return;
 
-        QtNative.setSurface(getId(), holder.getSurface(), width, height);
+        QtNative.setSurface(getId(), holder.getSurface());
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-        QtNative.setSurface(getId(), null, 0, 0);
+        QtNative.setSurface(getId(), null);
     }
 
     @Override

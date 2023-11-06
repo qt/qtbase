@@ -17,10 +17,13 @@ QT_BEGIN_NAMESPACE
 Q_CONSTINIT static QBasicAtomicInt winIdGenerator = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
-    : QPlatformWindow(window)
+    : QPlatformWindow(window), m_androidSurfaceObject(nullptr)
 {
     m_windowFlags = Qt::Widget;
     m_windowState = Qt::WindowNoState;
+    // the surfaceType is overwritten in QAndroidPlatformOpenGLWindow ctor so let's save
+    // the fact that it's a raster window for now
+    m_isRaster = window->surfaceType() == QSurface::RasterSurface;
     m_windowId = winIdGenerator.fetchAndAddRelaxed(1) + 1;
     setWindowState(window->windowStates());
 
@@ -169,6 +172,46 @@ void QAndroidPlatformWindow::applicationStateChanged(Qt::ApplicationState)
 
     QWindowSystemInterface::handleExposeEvent(window(), region);
     QWindowSystemInterface::flushWindowSystemEvents();
+}
+
+void QAndroidPlatformWindow::createSurface()
+{
+    const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
+    m_nativeSurfaceId = QtAndroid::createSurface(this, geometry(), windowStaysOnTop, 32);
+}
+
+void QAndroidPlatformWindow::destroySurface()
+{
+    if (m_nativeSurfaceId != -1) {
+        QtAndroid::destroySurface(m_nativeSurfaceId);
+        m_nativeSurfaceId = -1;
+    }
+}
+
+void QAndroidPlatformWindow::setSurfaceGeometry(const QRect &rect)
+{
+    if (m_nativeSurfaceId != -1)
+        QtAndroid::setSurfaceGeometry(m_nativeSurfaceId, rect);
+}
+
+void QAndroidPlatformWindow::sendExpose()
+{
+    QRect availableGeometry = screen()->availableGeometry();
+    if (!geometry().isNull() && !availableGeometry.isNull()) {
+        QWindowSystemInterface::handleExposeEvent(window(),
+                                                  QRegion(QRect(QPoint(), geometry().size())));
+    }
+}
+
+void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
+{
+    lockSurface();
+    m_androidSurfaceObject = surface;
+    if (m_androidSurfaceObject.isValid())
+        m_surfaceWaitCondition.wakeOne();
+    unlockSurface();
+    if (m_androidSurfaceObject.isValid())
+        sendExpose();
 }
 
 QT_END_NAMESPACE

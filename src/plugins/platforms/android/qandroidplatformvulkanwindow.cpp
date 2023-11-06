@@ -18,7 +18,6 @@ QT_BEGIN_NAMESPACE
 
 QAndroidPlatformVulkanWindow::QAndroidPlatformVulkanWindow(QWindow *window)
     : QAndroidPlatformWindow(window),
-      m_nativeSurfaceId(-1),
       m_nativeWindow(nullptr),
       m_vkSurface(0),
       m_createVkSurface(nullptr),
@@ -29,11 +28,7 @@ QAndroidPlatformVulkanWindow::QAndroidPlatformVulkanWindow(QWindow *window)
 QAndroidPlatformVulkanWindow::~QAndroidPlatformVulkanWindow()
 {
     m_surfaceWaitCondition.wakeOne();
-    lockSurface();
-    if (m_nativeSurfaceId != -1)
-        QtAndroid::destroySurface(m_nativeSurfaceId);
-    clearSurface();
-    unlockSurface();
+    destroyAndClearSurface();
 }
 
 void QAndroidPlatformVulkanWindow::setGeometry(const QRect &rect)
@@ -44,8 +39,7 @@ void QAndroidPlatformVulkanWindow::setGeometry(const QRect &rect)
     m_oldGeometry = geometry();
 
     QAndroidPlatformWindow::setGeometry(rect);
-    if (m_nativeSurfaceId != -1)
-        QtAndroid::setSurfaceGeometry(m_nativeSurfaceId, rect);
+    setSurfaceGeometry(rect);
 
     QRect availableGeometry = screen()->availableGeometry();
     if (rect.width() > 0
@@ -54,22 +48,13 @@ void QAndroidPlatformVulkanWindow::setGeometry(const QRect &rect)
             && availableGeometry.height() > 0) {
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
     }
-
-    if (rect.topLeft() != m_oldGeometry.topLeft())
-        repaint(QRegion(rect));
 }
 
 void QAndroidPlatformVulkanWindow::applicationStateChanged(Qt::ApplicationState state)
 {
     QAndroidPlatformWindow::applicationStateChanged(state);
     if (state <= Qt::ApplicationHidden) {
-        lockSurface();
-        if (m_nativeSurfaceId != -1) {
-            QtAndroid::destroySurface(m_nativeSurfaceId);
-            m_nativeSurfaceId = -1;
-        }
-        clearSurface();
-        unlockSurface();
+        destroyAndClearSurface();
     }
 }
 
@@ -91,27 +76,12 @@ void QAndroidPlatformVulkanWindow::clearSurface()
     }
 }
 
-void QAndroidPlatformVulkanWindow::sendExpose()
+void QAndroidPlatformVulkanWindow::destroyAndClearSurface()
 {
-    QRect availableGeometry = screen()->availableGeometry();
-    if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
-        QWindowSystemInterface::handleExposeEvent(window(), QRegion(QRect(QPoint(), geometry().size())));
-}
-
-void QAndroidPlatformVulkanWindow::surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h)
-{
-    Q_UNUSED(jniEnv);
-    Q_UNUSED(w);
-    Q_UNUSED(h);
-
     lockSurface();
-    m_androidSurfaceObject = surface;
-    if (surface)
-        m_surfaceWaitCondition.wakeOne();
+    destroySurface();
+    clearSurface();
     unlockSurface();
-
-    if (surface)
-        sendExpose();
 }
 
 VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
@@ -128,8 +98,7 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
             AndroidDeadlockProtector protector;
             if (!protector.acquire())
                 return &m_vkSurface;
-            const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
-            m_nativeSurfaceId = QtAndroid::createSurface(this, geometry(), windowStaysOnTop, 32);
+            createSurface();
             m_surfaceWaitCondition.wait(&m_surfaceMutex);
         }
 

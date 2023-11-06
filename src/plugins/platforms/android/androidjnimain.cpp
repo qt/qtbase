@@ -18,6 +18,7 @@
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformintegration.h"
 #include "qandroidplatformclipboard.h"
+#include "qandroidplatformwindow.h"
 
 #include <android/api-level.h>
 #include <android/asset_manager_jni.h>
@@ -69,7 +70,7 @@ static void *m_mainLibraryHnd = nullptr;
 static QList<QByteArray> m_applicationParams;
 static sem_t m_exitSemaphore, m_terminateSemaphore;
 
-QHash<int, AndroidSurfaceClient *> m_surfaces;
+QHash<int, QAndroidPlatformWindow *> m_surfaces;
 
 Q_CONSTINIT static QBasicMutex m_surfacesMutex;
 
@@ -323,7 +324,7 @@ namespace QtAndroid
         return QJniObject::callStaticMethod<jint>("android/view/View", "generateViewId", "()I");
     }
 
-    int createSurface(AndroidSurfaceClient *client, const QRect &geometry, bool onTop, int imageDepth)
+    int createSurface(QAndroidPlatformWindow *window, const QRect &geometry, bool onTop, int imageDepth)
     {
         QJniEnvironment env;
         if (!env.jniEnv())
@@ -331,7 +332,7 @@ namespace QtAndroid
 
         m_surfacesMutex.lock();
         jint surfaceId = generateViewId();
-        m_surfaces[surfaceId] = client;
+        m_surfaces[surfaceId] = window;
         m_surfacesMutex.unlock();
 
         jint x = 0, y = 0, w = -1, h = -1;
@@ -594,8 +595,11 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     sem_post(&m_exitSemaphore);
 }
 
-static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface, jint w, jint h)
+static void setSurface(JNIEnv *env, jobject thiz, jint id, jobject jSurface)
 {
+    Q_UNUSED(env);
+    Q_UNUSED(thiz);
+
     QMutexLocker lock(&m_surfacesMutex);
     const auto &it = m_surfaces.find(id);
     if (it == m_surfaces.end())
@@ -603,7 +607,7 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface,
 
     auto surfaceClient = it.value();
     if (surfaceClient)
-        surfaceClient->surfaceChanged(env, jSurface, w, h);
+        surfaceClient->onSurfaceChanged(jSurface);
 }
 
 static void setDisplayMetrics(JNIEnv * /*env*/, jclass /*clazz*/, jint screenWidthPixels,
@@ -658,10 +662,6 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
                 QWindowSystemInterface::handleExposeEvent(w, QRegion(QRect(QPoint(), w->geometry().size())));
         }
     }
-
-    QAndroidPlatformScreen *screen = static_cast<QAndroidPlatformScreen *>(m_androidPlatformIntegration->screen());
-    if (screen->rasterSurfaces())
-        QMetaObject::invokeMethod(screen, "setDirty", Qt::QueuedConnection, Q_ARG(QRect,screen->geometry()));
 }
 
 static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state)
@@ -802,7 +802,7 @@ static JNINativeMethod methods[] = {
     { "quitQtCoreApplication", "()V", (void *)quitQtCoreApplication },
     { "terminateQt", "()V", (void *)terminateQt },
     { "waitForServiceSetup", "()V", (void *)waitForServiceSetup },
-    { "setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface },
+    { "setSurface", "(ILjava/lang/Object;)V", (void *)setSurface },
     { "updateWindow", "()V", (void *)updateWindow },
     { "updateApplicationState", "(I)V", (void *)updateApplicationState },
     { "onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult },
