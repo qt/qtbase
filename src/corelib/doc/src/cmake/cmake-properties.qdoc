@@ -85,6 +85,30 @@ library to the MyApp dependencies:
 add_dependencies(MyApp MyService)
 \endcode
 
+When adding per-architecture libraries to a multi-abi project,
+list all their paths explicitly, rather than rely on variables like
+\c CMAKE_ANDROID_ARCH_ABI to dynamically compute the paths.
+
+Prefer:
+
+\badcode
+set(libs
+    ${CMAKE_CURRENT_BINARY_DIR}/libA_x86so
+    ${CMAKE_CURRENT_BINARY_DIR}/libA_x86_64.so
+    ${CMAKE_CURRENT_BINARY_DIR}/libA_arm64-v8a.so
+    ${CMAKE_CURRENT_BINARY_DIR}/libA_armeabi-v7a.so
+)
+set_target_properties(MyApp PROPERTIES QT_ANDROID_EXTRA_LIBS ${libs})
+\endcode
+
+over:
+
+\badcode
+set_target_properties(MyApp PROPERTIES
+    QT_ANDROID_EXTRA_LIBS
+        ${CMAKE_CURRENT_BINARY_DIR}/libA_${CMAKE_ANDROID_ARCH_ABI}.so
+\endcode
+
 \sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
 */
 
