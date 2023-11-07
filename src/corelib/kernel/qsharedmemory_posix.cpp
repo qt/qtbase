@@ -58,11 +58,11 @@ bool QSharedMemoryPrivate::create(qsizetype size)
     int fd;
 #ifdef O_CLOEXEC
     // First try with O_CLOEXEC flag, if that fails, fall back to normal flags
-    EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC, 0600));
+    QT_EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC, 0600));
     if (fd == -1)
-        EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL, 0600));
+        QT_EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL, 0600));
 #else
-    EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL, 0600));
+    QT_EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL, 0600));
 #endif
     if (fd == -1) {
         const int errorNumber = errno;
@@ -80,7 +80,7 @@ bool QSharedMemoryPrivate::create(qsizetype size)
 
     // the size may only be set once
     int ret;
-    EINTR_LOOP(ret, QT_FTRUNCATE(fd, size));
+    QT_EINTR_LOOP(ret, QT_FTRUNCATE(fd, size));
     if (ret == -1) {
         setErrorString("QSharedMemory::create (ftruncate)"_L1);
         qt_safe_close(fd);
@@ -101,11 +101,11 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 
 #ifdef O_CLOEXEC
     // First try with O_CLOEXEC flag, if that fails, fall back to normal flags
-    EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag | O_CLOEXEC, omode));
+    QT_EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag | O_CLOEXEC, omode));
     if (hand == -1)
-        EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag, omode));
+        QT_EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag, omode));
 #else
-    EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag, omode));
+    QT_EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag, omode));
 #endif
     if (hand == -1) {
         const int errorNumber = errno;

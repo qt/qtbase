@@ -165,7 +165,7 @@ void QKqueueFileSystemWatcherEngine::readFromKqueue()
         int r;
         struct kevent kev;
         struct timespec ts = { 0, 0 }; // 0 ts, because we want to poll
-        EINTR_LOOP(r, kevent(kqfd, 0, 0, &kev, 1, &ts));
+        QT_EINTR_LOOP(r, kevent(kqfd, 0, 0, &kev, 1, &ts));
         if (r < 0) {
             perror("QKqueueFileSystemWatcherEngine: error during kevent wait");
             return;
