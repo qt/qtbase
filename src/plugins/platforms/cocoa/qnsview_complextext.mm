@@ -505,6 +505,23 @@
     return NSNotFound;
 }
 
+/*
+    Returns the window level of the text input.
+
+    This allows the input method to place its input panel
+    above the text input.
+*/
+- (NSInteger)windowLevel
+{
+    // The default level assumed by input methods is NSFloatingWindowLevel,
+    // but our NSWindow level could be higher than that for many reasons,
+    // including being set via QWindow::setFlags() or directly on the
+    // NSWindow, or because we're embedded into a native view hierarchy.
+    // Return the actual window level to account for this.
+    return m_platformWindow ? m_platformWindow->nativeWindow().level
+                            : NSNormalWindowLevel;
+}
+
 // ------------- Helper functions -------------
 
 /*
