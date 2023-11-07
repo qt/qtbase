@@ -1120,20 +1120,11 @@ static QDate actualDate(QDateTimeParser::Sections known, const QCalendar &calend
 
     if ((known & QDateTimeParser::YearSection) == 0) {
         if (known & QDateTimeParser::YearSection2Digits) {
-            /*
-              Two-digit year and month are specified; choice of century can only
-              fix this if diff is in one of {1, 2, 5} or {2, 4, 6}; but not if
-              diff is in the other.  It's also only reasonable to consider
-              adjacent century, e.g. if year thinks it's 2012 and two-digit year
-              is '97, it makes sense to consider 1997.  If either adjacent
-              century does work, the other won't.
-            */
-            actual = QDate(year + 100, month, day, calendar);
-            if (calendar.dayOfWeek(actual) == dayofweek)
+            actual = calendar.matchCenturyToWeekday({year, month, day}, dayofweek);
+            if (actual.isValid()) {
+                Q_ASSERT(calendar.dayOfWeek(actual) == dayofweek);
                 return actual;
-            actual = QDate(year - 100, month, day, calendar);
-            if (calendar.dayOfWeek(actual) == dayofweek)
-                return actual;
+            }
         } else {
             // Offset by 7 is usually enough, but rare cases may need more:
             for (int y = 1; y < 12; y++) {

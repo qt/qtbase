@@ -1731,14 +1731,10 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     default for \a baseYear, selecting a year from then to 1999. Passing 1976 as
     \a baseYear will select a year from 1976 through 2075, for example. When the
     format also includes month, day (of month) and day-of-week, these suffice to
-    imply the century. Parsing all but the day of week and then using
-    QCalendar::matchCenturyToWeekday() to combine that with the day of the week
-    could disambiguate such a date, but runs the risk of turning a user error -
-    that would otherwise be recognized by the invalid result of parsing - into a
-    valid result in another century, that wasn't the user's intent. At present,
-    the date parser only considers the century indicated by \a baseYear and the
-    centuries immediately after and before it, to limit the scope for such
-    mistakes. See \l {Date ambiguities} for further details,
+    imply the century. In such a case, a matching date is selected in the
+    nearest century to the one indicated by \a baseYear, prefering later over
+    earlier. See \l QCalendar::matchCenturyToWeekday() and \l {Date ambiguities}
+    for further details,
 
     The following examples demonstrate the default values:
 
@@ -1774,15 +1770,12 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     Including a day of the week in the format can also resolve the century of a
     date specified using only the last two digits of its year. Unfortunately,
     when combined with a date in which the user (or other source of data) has
-    mixed up two of the fields, this resolution could lead to finding a date
-    which does match the format's reading but isn't the one intended by its
-    author. This would be in a different century, which would in many cases at
-    least make it possible to recognize there is a problem with the data. At
-    present, date parsing considers the centuries after and before the one
-    indicated by \a baseYear, which may fall foul of this problem. See the
-    discussion above about using QCalendar::matchCenturyToWeekday() to extend
-    that to a wider range of centuries, if that can safely be applied in your
-    use-case.
+    mixed up two of the fields, this resolution can lead to finding a date which
+    does match the format's reading but isn't the one intended by its author.
+    Likewise, if the user simply gets the day of the week wrong, in an otherwise
+    correct date, this can lead a date in a different century. In each case,
+    finding a date in a different century can turn a wrongly-input date into a
+    wildly different one.
 
     The best way to avoid date ambiguities is to use four-digit years and months
     specified by name (whether full or abbreviated), ideally collected via user
