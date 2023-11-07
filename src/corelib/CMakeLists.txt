@@ -464,11 +464,15 @@ qt_internal_extend_target(Core
     SOURCES ${core_version_tagging_files}
 )
 
-# Disable LTO, as the symbols disappear somehow under GCC
-# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=48200)
+
 if(GCC)
-    set_source_files_properties(${core_version_tagging_files}
-        PROPERTIES COMPILE_OPTIONS "-fno-lto")
+    # Disable LTO, as the symbols disappear somehow under GCC
+    # (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=48200)
+    # The issue should be fixed in GCC >= 10
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+        set_source_files_properties(${core_version_tagging_files}
+            PROPERTIES COMPILE_OPTIONS "-fno-lto")
+    endif()
 endif()
 
 qt_internal_extend_target(Core
