@@ -56,6 +56,8 @@ private slots:
     void removeWhileAttached();
     void emptyMemory();
     void readOnly();
+    void attachBeforeCreate_data();
+    void attachBeforeCreate();
 
     // basics all together
     void simpleProducerConsumer_data();
@@ -544,6 +546,39 @@ void tst_QSharedMemory::readOnly()
     p.waitForFinished();
     QCOMPARE(p.error(), QProcess::Crashed);
 #endif
+}
+
+void tst_QSharedMemory::attachBeforeCreate_data()
+{
+    QTest::addColumn<bool>("legacy");
+
+    QTest::addRow("legacy") << true;
+    QTest::addRow("non-legacy") << false;
+}
+
+void tst_QSharedMemory::attachBeforeCreate()
+{
+    QFETCH_GLOBAL(const QNativeIpcKey::Type, keyType);
+    QFETCH(const bool, legacy);
+    const QString keyStr(u"test"_s);
+    QNativeIpcKey key;
+    if (legacy) {
+        key = QSharedMemory::legacyNativeKey(keyStr, keyType);
+        // same as rememberKey(), but with legacy
+        if (!keys.contains(key)) {
+            keys.append(key);
+            remove(key);
+        }
+    } else {
+        key = rememberKey(keyStr);
+    }
+    const qsizetype sz = 100;
+    QSharedMemory mem(key);
+    QVERIFY(!mem.attach());
+    // Fails for all SystemV backends now
+    if (!legacy && (keyType < QNativeIpcKey::Type::PosixRealtime))
+        QEXPECT_FAIL("", "Not fixed yet", Continue);
+    QVERIFY(mem.create(sz));
 }
 
 /*!
