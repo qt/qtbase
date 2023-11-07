@@ -155,7 +155,7 @@ private:
     {
         const auto epochDays = days.time_since_epoch().count();
         // minJd() and maxJd() fit into 40 bits.
-        if constexpr (sizeof(epochDays) >= 41) {
+        if constexpr (sizeof(epochDays) * CHAR_BIT >= 41) {
             constexpr auto top = maxJd() - unixEpochJd();
             constexpr auto bottom = minJd() - unixEpochJd();
             if (epochDays > top || epochDays < bottom)
