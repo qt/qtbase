@@ -575,9 +575,6 @@ void tst_QSharedMemory::attachBeforeCreate()
     const qsizetype sz = 100;
     QSharedMemory mem(key);
     QVERIFY(!mem.attach());
-    // Fails for all SystemV backends now
-    if (!legacy && (keyType < QNativeIpcKey::Type::PosixRealtime))
-        QEXPECT_FAIL("", "Not fixed yet", Continue);
     QVERIFY(mem.create(sz));
 }
 

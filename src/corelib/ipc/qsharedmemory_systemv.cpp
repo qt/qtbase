@@ -160,6 +160,8 @@ bool QSharedMemorySystemV::attach(QSharedMemoryPrivate *self, QSharedMemory::Acc
     int id = shmget(unix_key, 0, (mode == QSharedMemory::ReadOnly ? 0400 : 0600));
     if (-1 == id) {
         self->setUnixErrorString("QSharedMemory::attach (shmget)"_L1);
+        unix_key = 0;
+        nativeKeyFile.clear();
         return false;
     }
 
