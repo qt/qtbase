@@ -172,13 +172,27 @@ QDockAreaLayoutItem
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QDockAreaLayoutItem *item)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    return item ? dbg << *item : dbg << "QDockAreaLayoutItem(0x0)";
+}
+
 QDebug operator<<(QDebug dbg, const QDockAreaLayoutItem &item)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
     dbg << "QDockAreaLayoutItem(" << static_cast<const void *>(&item) << "->";
     if (item.widgetItem) {
-        dbg << "widgetItem(" << item.widgetItem->widget() << ")";
+        QWidget *widget = item.widgetItem->widget();
+        if (auto *dockWidget = qobject_cast<QDockWidget *>(widget)) {
+            dbg << "widgetItem(" << dockWidget << ")";
+        } else if (auto *groupWindow = qobject_cast<QDockWidgetGroupWindow *>(widget)) {
+            dbg << "widgetItem(" << groupWindow << "->(" << groupWindow->dockWidgets() << "))";
+        } else {
+            dbg << "widgetItem(" << widget << ")";
+        }
     } else if (item.subinfo) {
         dbg << "subInfo(" << item.subinfo << "->(" << item.subinfo->item_list << ")";
     } else if (item.placeHolderItem) {

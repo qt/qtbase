@@ -324,6 +324,7 @@ public:
     void updateCurrentGapRect();
     void restore();
     void apply();
+    QList<QDockWidget *> dockWidgets() const { return findChildren<QDockWidget *>(); }
 
     QRect currentGapRect;
     QList<int> currentGapPos;

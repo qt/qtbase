@@ -75,6 +75,7 @@ struct Q_AUTOTEST_EXPORT QDockAreaLayoutItem
     uint flags;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_AUTOTEST_EXPORT QDebug operator<<(QDebug dbg, const QDockAreaLayoutItem &item);
+    friend Q_AUTOTEST_EXPORT QDebug operator<<(QDebug dbg, const QDockAreaLayoutItem *item);
 #endif
 };
 
