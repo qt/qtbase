@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtCore/private/qglobal_p.h>
+#include <QtCore/qbasicatomic.h>
 #include "qcore_unix_p.h"
 
 #include <stdlib.h>
@@ -18,6 +19,21 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+void qt_ignore_sigpipe() noexcept // noexcept: sigaction(2) is not a Posix Cancellation Point
+{
+    // Set to ignore SIGPIPE once only.
+    Q_CONSTINIT static QBasicAtomicInt atom = Q_BASIC_ATOMIC_INITIALIZER(0);
+    if (!atom.loadRelaxed()) {
+        // More than one thread could turn off SIGPIPE at the same time
+        // But that's acceptable because they all would be doing the same
+        // action
+        struct sigaction noaction = {};
+        noaction.sa_handler = SIG_IGN;
+        ::sigaction(SIGPIPE, &noaction, nullptr);
+        atom.storeRelaxed(1);
+    }
+}
 
 QByteArray qt_readlink(const char *path)
 {
