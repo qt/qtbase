@@ -135,6 +135,7 @@ int QPageSetupDialog::exec()
             if (ep->ownsDevMode && ep->devMode)
                 free(ep->devMode);
             ep->devMode = reinterpret_cast<DEVMODE *>(malloc(devModeSize));
+            QWin32PrintEnginePrivate::initializeDevMode(ep->devMode);
             ep->ownsDevMode = true;
 
             // Copy
