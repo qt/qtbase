@@ -31,6 +31,7 @@
 #include "../../3rdparty/md5/md5.cpp"
 #include "../../3rdparty/md4/md4.h"
 #include "../../3rdparty/md4/md4.cpp"
+#endif // !QT_CONFIG(openssl_hash)
 
 typedef unsigned char BitSequence;
 typedef unsigned long long DataLength;
@@ -71,6 +72,7 @@ Q_CONSTINIT static SHA3Final * const sha3Final = Final;
 
 #endif
 
+#if !QT_CONFIG(openssl_hash)
 /*
     These 2 functions replace macros of the same name in sha224-256.c and
     sha384-512.c. Originally, these macros relied on a global static 'addTemp'
@@ -266,10 +268,6 @@ static constexpr const char * methodToName(QCryptographicHash::Algorithm method)
     CASE(RealSha3_256, "SHA3-256");
     CASE(RealSha3_384, "SHA3-384");
     CASE(RealSha3_512, "SHA3-512");
-    CASE(Keccak_224, "SHA3-224");
-    CASE(Keccak_256, "SHA3-256");
-    CASE(Keccak_384, "SHA3-384");
-    CASE(Keccak_512, "SHA3-512");
     CASE(Blake2b_512, "BLAKE2B512");
     CASE(Blake2s_256, "BLAKE2S256");
 #undef CASE
@@ -283,7 +281,9 @@ static constexpr const char * methodToName(QCryptographicHash::Algorithm method)
 */
 static constexpr bool useNonOpenSSLFallback(QCryptographicHash::Algorithm method) noexcept
 {
-    if (method == QCryptographicHash::Blake2b_160 || method == QCryptographicHash::Blake2b_256 ||
+    if (method == QCryptographicHash::Keccak_224 || method == QCryptographicHash::Keccak_256 ||
+        method == QCryptographicHash::Keccak_384 || method == QCryptographicHash::Keccak_512 ||
+        method == QCryptographicHash::Blake2b_160 || method == QCryptographicHash::Blake2b_256 ||
         method == QCryptographicHash::Blake2b_384 || method == QCryptographicHash::Blake2s_128 ||
         method == QCryptographicHash::Blake2s_160 || method == QCryptographicHash::Blake2s_224)
         return true;
@@ -370,11 +370,11 @@ public:
         SHA256Context sha256Context;
         SHA384Context sha384Context;
         SHA512Context sha512Context;
+#endif
         SHA3Context sha3Context;
 
         enum class Sha3Variant { Sha3, Keccak };
         void sha3Finish(HashResult &result, int bitCount, Sha3Variant sha3Variant);
-#endif
         blake2b_state blake2bContext;
         blake2s_state blake2sContext;
 #endif
@@ -387,7 +387,6 @@ public:
 };
 
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-#ifndef USING_OPENSSL30
 void QCryptographicHashPrivate::State::sha3Finish(HashResult &result, int bitCount,
                                                   Sha3Variant sha3Variant)
 {
@@ -427,7 +426,6 @@ void QCryptographicHashPrivate::State::sha3Finish(HashResult &result, int bitCou
 
     sha3Final(&copy, result.data());
 }
-#endif // !QT_CONFIG(opensslv30)
 #endif
 
 /*!
@@ -557,9 +555,15 @@ QCryptographicHash::Algorithm QCryptographicHash::algorithm() const noexcept
 
 QCryptographicHashPrivate::State::State(QCryptographicHash::Algorithm method)
 {
-    if (method == QCryptographicHash::Blake2b_160 ||
-        method == QCryptographicHash::Blake2b_256 ||
-        method == QCryptographicHash::Blake2b_384) {
+    if (method == QCryptographicHash::Keccak_224 ||
+        method == QCryptographicHash::Keccak_256 ||
+        method == QCryptographicHash::Keccak_384 ||
+        method == QCryptographicHash::Keccak_512) {
+        new (&sha3Context) SHA3Context;
+        reset(method);
+    } else if (method == QCryptographicHash::Blake2b_160 ||
+               method == QCryptographicHash::Blake2b_256 ||
+               method == QCryptographicHash::Blake2b_384) {
         new (&blake2bContext) blake2b_state;
         reset(method);
     } else if (method == QCryptographicHash::Blake2s_128 ||
@@ -574,7 +578,11 @@ QCryptographicHashPrivate::State::State(QCryptographicHash::Algorithm method)
 
 void QCryptographicHashPrivate::State::destroy(QCryptographicHash::Algorithm method)
 {
-    if (method != QCryptographicHash::Blake2b_160 &&
+    if (method != QCryptographicHash::Keccak_224 &&
+        method != QCryptographicHash::Keccak_256 &&
+        method != QCryptographicHash::Keccak_384 &&
+        method != QCryptographicHash::Keccak_512 &&
+        method != QCryptographicHash::Blake2b_160 &&
         method != QCryptographicHash::Blake2b_256 &&
         method != QCryptographicHash::Blake2b_384 &&
         method != QCryptographicHash::Blake2s_128 &&
@@ -698,9 +706,14 @@ void QCryptographicHashPrivate::reset() noexcept
 
 void QCryptographicHashPrivate::State::reset(QCryptographicHash::Algorithm method) noexcept
 {
-    if (method == QCryptographicHash::Blake2b_160 ||
-        method == QCryptographicHash::Blake2b_256 ||
-        method == QCryptographicHash::Blake2b_384) {
+    if (method == QCryptographicHash::Keccak_224 ||
+        method == QCryptographicHash::Keccak_256 ||
+        method == QCryptographicHash::Keccak_384 ||
+        method == QCryptographicHash::Keccak_512) {
+        sha3Init(&sha3Context, hashLengthInternal(method) * 8);
+   } else if (method == QCryptographicHash::Blake2b_160 ||
+              method == QCryptographicHash::Blake2b_256 ||
+              method == QCryptographicHash::Blake2b_384) {
         blake2b_init(&blake2bContext, hashLengthInternal(method));
     } else if (method == QCryptographicHash::Blake2s_128 ||
                method == QCryptographicHash::Blake2s_160 ||
@@ -826,9 +839,14 @@ void QCryptographicHashPrivate::State::addData(QCryptographicHash::Algorithm met
     auto length = bytes.size();
     // all functions take size_t length, so we don't need to loop around them:
     {
-        if (method == QCryptographicHash::Blake2b_160 ||
-            method == QCryptographicHash::Blake2b_256 ||
-            method == QCryptographicHash::Blake2b_384) {
+        if (method == QCryptographicHash::Keccak_224 ||
+            method == QCryptographicHash::Keccak_256 ||
+            method == QCryptographicHash::Keccak_384 ||
+            method == QCryptographicHash::Keccak_512) {
+            sha3Update(&sha3Context, reinterpret_cast<const BitSequence *>(data), uint64_t(length) * 8);
+        } else if (method == QCryptographicHash::Blake2b_160 ||
+                   method == QCryptographicHash::Blake2b_256 ||
+                   method == QCryptographicHash::Blake2b_384) {
             blake2b_update(&blake2bContext, reinterpret_cast<const uint8_t *>(data), length);
         } else if (method == QCryptographicHash::Blake2s_128 ||
                 method == QCryptographicHash::Blake2s_160 ||
@@ -1000,9 +1018,14 @@ void QCryptographicHashPrivate::finalizeUnchecked() noexcept
 void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Algorithm method,
                                                          HashResult &result) noexcept
 {
-    if (method == QCryptographicHash::Blake2b_160 ||
-        method == QCryptographicHash::Blake2b_256 ||
-        method == QCryptographicHash::Blake2b_384) {
+    if (method == QCryptographicHash::Keccak_224 ||
+        method == QCryptographicHash::Keccak_256 ||
+        method == QCryptographicHash::Keccak_384 ||
+        method == QCryptographicHash::Keccak_512) {
+        sha3Finish(result, 8 * hashLengthInternal(method), Sha3Variant::Keccak);
+    } else if (method == QCryptographicHash::Blake2b_160 ||
+               method == QCryptographicHash::Blake2b_256 ||
+               method == QCryptographicHash::Blake2b_384) {
         const auto length = hashLengthInternal(method);
         blake2b_state copy = blake2bContext;
         result.resizeForOverwrite(length);
