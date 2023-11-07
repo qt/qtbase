@@ -18,6 +18,18 @@ class Q_CORE_EXPORT QBitArray
     friend Q_CORE_EXPORT size_t qHash(const QBitArray &key, size_t seed) noexcept;
     QByteArray d;
 
+    template <typename BitArray> static auto bitLocation(BitArray &ba, qsizetype i)
+    {
+        Q_ASSERT(size_t(i) < size_t(ba.size()));
+        struct R {
+            decltype(ba.d[1]) byte;
+            uchar bitMask;
+        };
+        qsizetype byteIdx = i >> 3;
+        qsizetype bitIdx = i & 7;
+        return R{ ba.d[1 + byteIdx], uchar(1U << bitIdx) };
+    }
+
 public:
     inline QBitArray() noexcept {}
     explicit QBitArray(qsizetype size, bool val = false);
@@ -41,11 +53,21 @@ public:
     inline bool isDetached() const { return d.isDetached(); }
     inline void clear() { d.clear(); }
 
-    bool testBit(qsizetype i) const;
-    void setBit(qsizetype i);
-    void setBit(qsizetype i, bool val);
-    void clearBit(qsizetype i);
-    bool toggleBit(qsizetype i);
+    bool testBit(qsizetype i) const
+    { auto r = bitLocation(*this, i); return r.byte & r.bitMask; }
+    void setBit(qsizetype i)
+    { auto r = bitLocation(*this, i); r.byte |= r.bitMask; }
+    void setBit(qsizetype i, bool val)
+    { if (val) setBit(i); else clearBit(i); }
+    void clearBit(qsizetype i)
+    { auto r = bitLocation(*this, i); r.byte &= ~r.bitMask; }
+    bool toggleBit(qsizetype i)
+    {
+        auto r = bitLocation(*this, i);
+        bool cl = r.byte & r.bitMask;
+        r.byte ^= r.bitMask;
+        return cl;
+    }
 
     bool at(qsizetype i) const;
     QBitRef operator[](qsizetype i);
@@ -80,26 +102,6 @@ inline bool QBitArray::fill(bool aval, qsizetype asize)
 Q_CORE_EXPORT QBitArray operator&(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator|(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator^(const QBitArray &, const QBitArray &);
-
-inline bool QBitArray::testBit(qsizetype i) const
-{ Q_ASSERT(size_t(i) < size_t(size()));
- return (*(reinterpret_cast<const uchar*>(d.constData())+1+(i>>3)) & (1 << (i & 7))) != 0; }
-
-inline void QBitArray::setBit(qsizetype i)
-{ Q_ASSERT(size_t(i) < size_t(size()));
- *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) |= uchar(1 << (i & 7)); }
-
-inline void QBitArray::clearBit(qsizetype i)
-{ Q_ASSERT(size_t(i) < size_t(size()));
- *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) &= ~uchar(1 << (i & 7)); }
-
-inline void QBitArray::setBit(qsizetype i, bool val)
-{ if (val) setBit(i); else clearBit(i); }
-
-inline bool QBitArray::toggleBit(qsizetype i)
-{ Q_ASSERT(size_t(i) < size_t(size()));
- uchar b = uchar(1<<(i&7)); uchar* p = reinterpret_cast<uchar*>(d.data())+1+(i>>3);
- uchar c = uchar(*p&b); *p^=b; return c!=0; }
 
 inline bool QBitArray::operator[](qsizetype i) const { return testBit(i); }
 inline bool QBitArray::at(qsizetype i) const { return testBit(i); }
