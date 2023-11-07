@@ -749,10 +749,22 @@ static LoadedOpenSsl loadOpenSsl()
 #ifdef Q_OS_OPENBSD
     libcrypto->setLoadHints(QLibrary::ExportExternalSymbolsHint);
 #endif
-#if defined(SHLIB_VERSION_NUMBER) && !defined(Q_OS_QNX) // on QNX, the libs are always libssl.so and libcrypto.so
+
+#if !defined(Q_OS_QNX) // on QNX, the libs are always libssl.so and libcrypto.so
+
+#if defined(OPENSSL_SHLIB_VERSION)
+    // OpenSSL v.3 does not have SLIB_VERSION_NUMBER but has OPENSSL_SHLIB_VERSION.
+    // The comment about OPENSSL_SHLIB_VERSION in opensslv.h is a bit troublesome:
+    // "This is defined in free form."
+    auto shlibVersion = QString("%1"_L1).arg(OPENSSL_SHLIB_VERSION).toLatin1();
+    libssl->setFileNameAndVersion("ssl"_L1, shlibVersion);
+    libcrypto->setFileNameAndVersion("crypto"_L1, shlibVersion);
+#elif defined(SHLIB_VERSION_NUMBER)
     // first attempt: the canonical name is libssl.so.<SHLIB_VERSION_NUMBER>
     libssl->setFileNameAndVersion("ssl"_L1, SHLIB_VERSION_NUMBER ""_L1);
     libcrypto->setFileNameAndVersion("crypto"_L1, SHLIB_VERSION_NUMBER ""_L1);
+#endif // OPENSSL_SHLIB_VERSION
+
     if (libcrypto->load() && libssl->load()) {
         // libssl.so.<SHLIB_VERSION_NUMBER> and libcrypto.so.<SHLIB_VERSION_NUMBER> found
         return result;
@@ -760,7 +772,7 @@ static LoadedOpenSsl loadOpenSsl()
         libssl->unload();
         libcrypto->unload();
     }
-#endif
+#endif // !defined(Q_OS_QNX)
 
 #ifndef Q_OS_DARWIN
     // second attempt: find the development files libssl.so and libcrypto.so
