@@ -7,6 +7,7 @@
 #include <QtCore/qmap.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qopenglprogrambinarycache_p.h>
+#include <QtGui/private/qwindow_p.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qmath.h>
 
@@ -6222,7 +6223,12 @@ QRhiRenderTarget *QGles2SwapChain::currentFrameRenderTarget(StereoTargetBuffer t
 QSize QGles2SwapChain::surfacePixelSize()
 {
     Q_ASSERT(m_window);
-    return m_window->size() * m_window->devicePixelRatio();
+    if (QPlatformWindow *platformWindow = m_window->handle())
+        // Prefer using QPlatformWindow geometry and DPR in order to avoid
+        // errors due to rounded QWindow geometry.
+        return platformWindow->geometry().size() * platformWindow->devicePixelRatio();
+    else
+        return m_window->size() * m_window->devicePixelRatio();
 }
 
 bool QGles2SwapChain::isFormatSupported(Format f)
