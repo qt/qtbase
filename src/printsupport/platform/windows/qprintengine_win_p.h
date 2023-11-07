@@ -111,6 +111,8 @@ public:
        is handled in the next begin or newpage. */
     void doReinit();
 
+    static void initializeDevMode(DEVMODE *);
+
     bool resetDC();
 
     void strokePath(const QPainterPath &path, const QColor &color);

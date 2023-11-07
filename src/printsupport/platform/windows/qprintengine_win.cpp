@@ -877,6 +877,7 @@ void QWin32PrintEnginePrivate::initialize()
         LONG result = DocumentProperties(nullptr, hPrinter, lpwPrinterName,
                                          nullptr, nullptr, 0);
         devMode = reinterpret_cast<DEVMODE *>(malloc(result));
+        initializeDevMode(devMode);
         ownsDevMode = true;
 
          // Get the default DevMode
@@ -914,6 +915,13 @@ void QWin32PrintEnginePrivate::initialize()
     qDebug("QWin32PrintEngine::initialize()");
     debugMetrics();
 #endif // QT_DEBUG_DRAW || QT_DEBUG_METRICS
+}
+
+void QWin32PrintEnginePrivate::initializeDevMode(DEVMODE *devMode)
+{
+    memset(devMode, 0, sizeof(DEVMODE));
+    devMode->dmSize = sizeof(DEVMODE);
+    devMode->dmSpecVersion = DM_SPECVERSION;
 }
 
 void QWin32PrintEnginePrivate::initHDC()
@@ -1055,6 +1063,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             if (!d->devMode)
                 break;
             d->devMode->dmCollate = value.toBool() ? DMCOLLATE_TRUE : DMCOLLATE_FALSE;
+            d->devMode->dmFields |= DM_COLLATE;
             d->doReinit();
         }
         break;
@@ -1064,6 +1073,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             if (!d->devMode)
                 break;
             d->devMode->dmColor = (value.toInt() == QPrinter::Color) ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+            d->devMode->dmFields |= DM_COLOR;
             d->doReinit();
         }
         break;
@@ -1089,15 +1099,19 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         switch (mode) {
         case QPrint::DuplexNone:
             d->devMode->dmDuplex = DMDUP_SIMPLEX;
+            d->devMode->dmFields |= DM_DUPLEX;
             break;
         case QPrint::DuplexAuto:
             d->devMode->dmDuplex = d->m_pageLayout.orientation() == QPageLayout::Landscape ? DMDUP_HORIZONTAL : DMDUP_VERTICAL;
+            d->devMode->dmFields |= DM_DUPLEX;
             break;
         case QPrint::DuplexLongSide:
             d->devMode->dmDuplex = DMDUP_VERTICAL;
+            d->devMode->dmFields |= DM_DUPLEX;
             break;
         case QPrint::DuplexShortSide:
             d->devMode->dmDuplex = DMDUP_HORIZONTAL;
+            d->devMode->dmFields |= DM_DUPLEX;
             break;
         default:
             // Don't change
@@ -1125,6 +1139,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             break;
         d->num_copies = value.toInt();
         d->devMode->dmCopies = d->num_copies;
+        d->devMode->dmFields |= DM_COPIES;
         d->doReinit();
         break;
 
@@ -1133,6 +1148,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             break;
         QPageLayout::Orientation orientation = QPageLayout::Orientation(value.toInt());
         d->devMode->dmOrientation = orientation == QPageLayout::Landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
+        d->devMode->dmFields |= DM_ORIENTATION;
         d->m_pageLayout.setOrientation(orientation);
         d->updateMetrics();
         d->doReinit();
