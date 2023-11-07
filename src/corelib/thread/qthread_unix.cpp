@@ -502,7 +502,7 @@ static void qt_nanosleep(timespec amount)
     // nanosleep is POSIX.1-1993
 
     int r;
-    EINTR_LOOP(r, nanosleep(&amount, &amount));
+    QT_EINTR_LOOP(r, nanosleep(&amount, &amount));
 }
 
 void QThread::sleep(unsigned long secs)

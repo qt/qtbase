@@ -1107,7 +1107,7 @@ void QProcessPrivate::waitForDeadChild()
     forkfd_info info = {}; // Silence -Wmaybe-uninitialized; Thiago says forkfd_wait cannot fail here
                            // (QTBUG-119081)
     int ret;
-    EINTR_LOOP(ret, forkfd_wait(forkfd, &info, nullptr));
+    QT_EINTR_LOOP(ret, forkfd_wait(forkfd, &info, nullptr));
 
     exitCode = info.status;
     exitStatus = info.code == CLD_EXITED ? QProcess::NormalExit : QProcess::CrashExit;
@@ -1115,7 +1115,7 @@ void QProcessPrivate::waitForDeadChild()
     delete stateNotifier;
     stateNotifier = nullptr;
 
-    EINTR_LOOP(ret, forkfd_close(forkfd));
+    QT_EINTR_LOOP(ret, forkfd_close(forkfd));
     forkfd = -1; // Child is dead, don't try to kill it anymore
 
 #if defined QPROCESS_DEBUG

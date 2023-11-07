@@ -60,7 +60,7 @@
 
 struct sockaddr;
 
-#define EINTR_LOOP(var, cmd)                    \
+#define QT_EINTR_LOOP(var, cmd)                 \
     do {                                        \
         var = cmd;                              \
     } while (var == -1 && errno == EINTR)
@@ -216,7 +216,7 @@ static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 07
     flags |= O_CLOEXEC;
 #endif
     int fd;
-    EINTR_LOOP(fd, QT_OPEN(pathname, flags, mode));
+    QT_EINTR_LOOP(fd, QT_OPEN(pathname, flags, mode));
 
 #ifndef O_CLOEXEC
     if (fd != -1)
@@ -288,10 +288,10 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
     int ret;
 #ifdef QT_THREADSAFE_CLOEXEC
     // use dup3
-    EINTR_LOOP(ret, ::dup3(oldfd, newfd, flags ? O_CLOEXEC : 0));
+    QT_EINTR_LOOP(ret, ::dup3(oldfd, newfd, flags ? O_CLOEXEC : 0));
     return ret;
 #else
-    EINTR_LOOP(ret, ::dup2(oldfd, newfd));
+    QT_EINTR_LOOP(ret, ::dup2(oldfd, newfd));
     if (ret == -1)
         return -1;
 
@@ -304,7 +304,7 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
 static inline qint64 qt_safe_read(int fd, void *data, qint64 maxlen)
 {
     qint64 ret = 0;
-    EINTR_LOOP(ret, QT_READ(fd, data, maxlen));
+    QT_EINTR_LOOP(ret, QT_READ(fd, data, maxlen));
     return ret;
 }
 #undef QT_READ
@@ -313,7 +313,7 @@ static inline qint64 qt_safe_read(int fd, void *data, qint64 maxlen)
 static inline qint64 qt_safe_write(int fd, const void *data, qint64 len)
 {
     qint64 ret = 0;
-    EINTR_LOOP(ret, QT_WRITE(fd, data, len));
+    QT_EINTR_LOOP(ret, QT_WRITE(fd, data, len));
     return ret;
 }
 #undef QT_WRITE
@@ -328,7 +328,7 @@ static inline qint64 qt_safe_write_nosignal(int fd, const void *data, qint64 len
 static inline int qt_safe_close(int fd)
 {
     int ret;
-    EINTR_LOOP(ret, QT_CLOSE(fd));
+    QT_EINTR_LOOP(ret, QT_CLOSE(fd));
     return ret;
 }
 #undef QT_CLOSE
@@ -340,28 +340,28 @@ static inline int qt_safe_execve(const char *filename, char *const argv[],
                                  char *const envp[])
 {
     int ret;
-    EINTR_LOOP(ret, ::execve(filename, argv, envp));
+    QT_EINTR_LOOP(ret, ::execve(filename, argv, envp));
     return ret;
 }
 
 static inline int qt_safe_execv(const char *path, char *const argv[])
 {
     int ret;
-    EINTR_LOOP(ret, ::execv(path, argv));
+    QT_EINTR_LOOP(ret, ::execv(path, argv));
     return ret;
 }
 
 static inline int qt_safe_execvp(const char *file, char *const argv[])
 {
     int ret;
-    EINTR_LOOP(ret, ::execvp(file, argv));
+    QT_EINTR_LOOP(ret, ::execvp(file, argv));
     return ret;
 }
 
 static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 {
     int ret;
-    EINTR_LOOP(ret, ::waitpid(pid, status, options));
+    QT_EINTR_LOOP(ret, ::waitpid(pid, status, options));
     return ret;
 }
 #endif // QT_CONFIG(process)
