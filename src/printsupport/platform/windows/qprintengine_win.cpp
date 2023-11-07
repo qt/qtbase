@@ -259,7 +259,7 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     if (!fallBack) {
         bool deleteFont = false;
-        HFONT hfont = NULL;
+        HFONT hfont = nullptr;
         if (ti.fontEngine->type() == QFontEngine::Win) {
             hfont = static_cast<HFONT>(ti.fontEngine->handle());
         }
@@ -433,7 +433,7 @@ void QWin32PrintEngine::updateClipPath(const QPainterPath &clipPath, Qt::ClipOpe
 
     bool doclip = true;
     if (op == Qt::NoClip) {
-        SelectClipRgn(d->hdc, 0);
+        SelectClipRgn(d->hdc, nullptr);
         doclip = false;
     }
 
@@ -722,7 +722,7 @@ void QWin32PrintEnginePrivate::strokePath_dev(const QPainterPath &path, const QC
         joinStyle = PS_JOIN_ROUND;
 
     HPEN pen = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | capStyle | joinStyle,
-                            (penWidth == 0) ? 1 : penWidth, &brush, 0, 0);
+                            (penWidth == 0) ? 1 : penWidth, &brush, 0, nullptr);
 
     HGDIOBJ old_pen = SelectObject(hdc, pen);
     StrokePath(hdc);
@@ -842,7 +842,8 @@ void QWin32PrintEnginePrivate::initialize()
     txop = QTransform::TxNone;
 
     QString printerName = m_printDevice.id();
-    bool ok = OpenPrinter((LPWSTR)printerName.utf16(), (LPHANDLE)&hPrinter, 0);
+    bool ok = OpenPrinter(reinterpret_cast<LPWSTR>(const_cast<ushort *>(printerName.utf16())),
+                          reinterpret_cast<LPHANDLE>(&hPrinter), nullptr);
     if (!ok) {
         qErrnoWarning("QWin32PrintEngine::initialize: OpenPrinter failed");
         return;
@@ -851,10 +852,10 @@ void QWin32PrintEnginePrivate::initialize()
     // Fetch the PRINTER_INFO_2 with DEVMODE data containing the
     // printer settings.
     DWORD infoSize, numBytes;
-    GetPrinter(hPrinter, 2, NULL, 0, &infoSize);
+    GetPrinter(hPrinter, 2, nullptr, 0, &infoSize);
     hMem = GlobalAlloc(GHND, infoSize);
-    pInfo = (PRINTER_INFO_2*) GlobalLock(hMem);
-    ok = GetPrinter(hPrinter, 2, (LPBYTE)pInfo, infoSize, &numBytes);
+    pInfo = reinterpret_cast<PRINTER_INFO_2*>(GlobalLock(hMem));
+    ok = GetPrinter(hPrinter, 2, reinterpret_cast<LPBYTE>(pInfo), infoSize, &numBytes);
 
     if (!ok) {
         qErrnoWarning("QWin32PrintEngine::initialize: GetPrinter failed");
@@ -872,23 +873,25 @@ void QWin32PrintEnginePrivate::initialize()
         // Attempt to get the DEVMODE a different way.
 
         // Allocate the required buffer
-        LONG result = DocumentProperties(NULL, hPrinter, (LPWSTR)printerName.utf16(),
-                                         NULL, NULL, 0);
-        devMode = (DEVMODE *) malloc(result);
+        auto *lpwPrinterName = reinterpret_cast<LPWSTR>(const_cast<ushort *>(printerName.utf16()));
+        LONG result = DocumentProperties(nullptr, hPrinter, lpwPrinterName,
+                                         nullptr, nullptr, 0);
+        devMode = reinterpret_cast<DEVMODE *>(malloc(result));
         ownsDevMode = true;
 
          // Get the default DevMode
-        result = DocumentProperties(NULL, hPrinter, (LPWSTR)printerName.utf16(),
-                                    devMode, NULL, DM_OUT_BUFFER);
+        result = DocumentProperties(nullptr, hPrinter, lpwPrinterName,
+                                    devMode, nullptr, DM_OUT_BUFFER);
         if (result != IDOK) {
             qErrnoWarning("QWin32PrintEngine::initialize: Failed to obtain devMode");
             free(devMode);
-            devMode = NULL;
+            devMode = nullptr;
             ownsDevMode = false;
         }
     }
 
-    hdc = CreateDC(NULL, (LPCWSTR)printerName.utf16(), 0, devMode);
+    hdc = CreateDC(nullptr, reinterpret_cast<LPCWSTR>(printerName.utf16()),
+                   nullptr, devMode);
 
     if (!hdc) {
         qErrnoWarning("QWin32PrintEngine::initialize: CreateDC failed");
@@ -917,11 +920,11 @@ void QWin32PrintEnginePrivate::initHDC()
 {
     Q_ASSERT(hdc);
 
-    HDC display_dc = GetDC(0);
+    HDC display_dc = GetDC(nullptr);
     dpi_x = GetDeviceCaps(hdc, LOGPIXELSX);
     dpi_y = GetDeviceCaps(hdc, LOGPIXELSY);
     dpi_display = GetDeviceCaps(display_dc, LOGPIXELSY);
-    ReleaseDC(0, display_dc);
+    ReleaseDC(nullptr, display_dc);
     if (dpi_display == 0) {
         qWarning("QWin32PrintEngine::metric: GetDeviceCaps() failed, "
                 "might be a driver problem");
@@ -964,11 +967,11 @@ void QWin32PrintEnginePrivate::release()
     if (ownsDevMode)
         free(devMode);
 
-    hdc = 0;
-    hPrinter = 0;
-    pInfo = 0;
-    hMem = 0;
-    devMode = 0;
+    hdc = nullptr;
+    hPrinter = nullptr;
+    pInfo = nullptr;
+    hMem = nullptr;
+    devMode = nullptr;
     ownsDevMode = false;
 }
 
@@ -1572,7 +1575,7 @@ void QWin32PrintEngine::setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalD
             d->ownsDevMode = false;
         }
         d->devMode = dm;
-        d->hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(d->m_printDevice.id().utf16()), 0, dm);
+        d->hdc = CreateDC(nullptr, reinterpret_cast<LPCWSTR>(d->m_printDevice.id().utf16()), nullptr, dm);
 
         d->num_copies = d->devMode->dmCopies;
         d->updatePageLayout();
@@ -1715,7 +1718,7 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
 
     const bool has_kerning = ti.f && ti.f->kerning();
 
-    HFONT hfont = 0;
+    HFONT hfont = nullptr;
     bool deleteFont = false;
 
     if (ti.fontEngine->type() == QFontEngine::Win) {

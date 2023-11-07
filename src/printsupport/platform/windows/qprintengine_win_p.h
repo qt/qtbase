@@ -83,25 +83,9 @@ class QWin32PrintEnginePrivate : public QAlphaPaintEnginePrivate
     Q_DECLARE_PUBLIC(QWin32PrintEngine)
 public:
     QWin32PrintEnginePrivate() :
-        hPrinter(0),
-        globalDevMode(0),
-        devMode(0),
-        pInfo(0),
-        hMem(0),
-        hdc(0),
-        ownsDevMode(false),
-        mode(QPrinter::ScreenResolution),
-        state(QPrinter::Idle),
-        resolution(0),
-        m_pageLayout(QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0, 0, 0, 0))),
-        stretch_x(1), stretch_y(1), origin_x(0), origin_y(0),
-        dpi_x(96), dpi_y(96), dpi_display(96),
-        num_copies(1),
-        printToFile(false),
-        reinit(false),
+        printToFile(false), reinit(false),
         complex_xform(false), has_pen(false), has_brush(false), has_custom_paper_size(false),
-        embed_fonts(true),
-        txop(0 /* QTransform::TxNone */)
+        embed_fonts(true)
     {
     }
 
@@ -142,19 +126,19 @@ public:
     void debugMetrics() const;
 
     // Windows GDI printer references.
-    HANDLE hPrinter;
+    HANDLE hPrinter = nullptr;
 
-    HGLOBAL globalDevMode;
-    DEVMODE *devMode;
-    PRINTER_INFO_2 *pInfo;
-    HGLOBAL hMem;
+    HGLOBAL globalDevMode = nullptr;
+    DEVMODE *devMode = nullptr;
+    PRINTER_INFO_2 *pInfo = nullptr;
+    HGLOBAL hMem = nullptr;
 
-    HDC hdc;
+    HDC hdc = nullptr;
 
     // True if devMode was allocated separately from pInfo.
-    bool ownsDevMode;
+    bool ownsDevMode = false;
 
-    QPrinter::PrinterMode mode;
+    QPrinter::PrinterMode mode = QPrinter::ScreenResolution;
 
     // Print Device
     QPrintDevice m_printDevice;
@@ -164,26 +148,26 @@ public:
     QString m_creator;
     QString fileName;
 
-    QPrinter::PrinterState state;
-    int resolution;
+    QPrinter::PrinterState state = QPrinter::Idle;
+    int resolution = 0;
 
     // Page Layout
-    QPageLayout m_pageLayout;
-
+    QPageLayout m_pageLayout{QPageSize(QPageSize::A4),
+                             QPageLayout::Portrait, QMarginsF{0, 0, 0, 0}};
     // Page metrics cache
     QRect m_paintRectPixels;
     QSize m_paintSizeMM;
 
     // Windows painting
-    qreal stretch_x;
-    qreal stretch_y;
-    int origin_x;
-    int origin_y;
+    qreal stretch_x = 1;
+    qreal stretch_y = 1;
+    int origin_x = 0;
+    int origin_y = 0;
 
-    int dpi_x;
-    int dpi_y;
-    int dpi_display;
-    int num_copies;
+    int dpi_x = 96;
+    int dpi_y = 96;
+    int dpi_display = 96;
+    int num_copies = 1;
 
     uint printToFile : 1;
     uint reinit : 1;
@@ -194,7 +178,7 @@ public:
     uint has_custom_paper_size : 1;
     uint embed_fonts : 1;
 
-    uint txop;
+    uint txop = 0; // QTransform::TxNone
 
     QColor brush_color;
     QPen pen;
