@@ -174,7 +174,7 @@ bool QSystemSemaphoreSystemV::modifySemaphore(QSystemSemaphorePrivate *self, int
     operation.sem_flg = SEM_UNDO;
 
     int res;
-    EINTR_LOOP(res, semop(semaphore, &operation, 1));
+    QT_EINTR_LOOP(res, semop(semaphore, &operation, 1));
     if (-1 == res) {
         // If the semaphore was removed be nice and create it and then modifySemaphore again
         if (errno == EINVAL || errno == EIDRM) {

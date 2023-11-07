@@ -146,7 +146,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
 {
     struct statfs64 statfs_buf;
     int result;
-    EINTR_LOOP(result, statfs64(QFile::encodeName(rootPath).constData(), &statfs_buf));
+    QT_EINTR_LOOP(result, statfs64(QFile::encodeName(rootPath).constData(), &statfs_buf));
     if (result == 0) {
         valid = true;
         ready = true;

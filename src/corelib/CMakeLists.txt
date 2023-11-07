@@ -992,8 +992,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_process AND UNIX
     SOURCES
         ../3rdparty/forkfd/forkfd.h
         io/forkfd_qt.cpp
-    NO_UNITY_BUILD_SOURCES
-        io/forkfd_qt.cpp    # EINTR_LOOP macro clashes
     INCLUDE_DIRECTORIES
         ../3rdparty/forkfd
 )

@@ -123,7 +123,7 @@ int qt_safe_poll(struct pollfd *fds, nfds_t nfds, QDeadlineTimer deadline)
     if (deadline.isForever()) {
         // no timeout -> block forever
         int ret;
-        EINTR_LOOP(ret, qt_ppoll(fds, nfds, nullptr));
+        QT_EINTR_LOOP(ret, qt_ppoll(fds, nfds, nullptr));
         return ret;
     }
 

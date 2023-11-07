@@ -412,7 +412,7 @@ static void generateStackTrace()
         writeToStderr("Failed to start debugger.\n");
     } else {
         int ret;
-        EINTR_LOOP(ret, waitpid(pid, nullptr, 0));
+        QT_EINTR_LOOP(ret, waitpid(pid, nullptr, 0));
     }
 
     writeToStderr("=== End of stack trace ===\n");
