@@ -20,7 +20,7 @@ QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
 }
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
-    : QDialog(*(new QPageSetupDialogPrivate(0)), parent)
+    : QDialog(*(new QPageSetupDialogPrivate(nullptr)), parent)
 {
     setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));
     setAttribute(Qt::WA_DontShowOnScreen);
@@ -41,7 +41,7 @@ int QPageSetupDialog::exec()
     psd.lStructSize = sizeof(PAGESETUPDLG);
 
     // we need a temp DEVMODE struct if we don't have a global DEVMODE
-    HGLOBAL hDevMode = 0;
+    HGLOBAL hDevMode = nullptr;
     int devModeSize = 0;
     if (!engine->globalDevMode()) {
         devModeSize = sizeof(DEVMODE) + ep->devMode->dmDriverExtra;
@@ -63,9 +63,10 @@ int QPageSetupDialog::exec()
     parent = parent ? parent->window() : QApplication::activeWindow();
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
 
-    QWindow *parentWindow = parent ? parent->windowHandle() : 0;
-    psd.hwndOwner = parentWindow ? (HWND)QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow) : 0;
-
+    QWindow *parentWindow = parent ? parent->windowHandle() : nullptr;
+    psd.hwndOwner = parentWindow
+        ? HWND(QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow))
+        : nullptr;
     psd.Flags = PSD_MARGINS;
     QPageLayout layout = d->printer->pageLayout();
     switch (layout.units()) {
@@ -133,7 +134,7 @@ int QPageSetupDialog::exec()
             // Make sure memory is allocated
             if (ep->ownsDevMode && ep->devMode)
                 free(ep->devMode);
-            ep->devMode = (DEVMODE *) malloc(devModeSize);
+            ep->devMode = reinterpret_cast<DEVMODE *>(malloc(devModeSize));
             ep->ownsDevMode = true;
 
             // Copy
