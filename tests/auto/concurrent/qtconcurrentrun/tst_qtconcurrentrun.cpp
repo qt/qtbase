@@ -1089,7 +1089,20 @@ void report3(QPromise<int> &promise)
     promise.addResult(1);
 }
 
+static void staticReport3(QPromise<int> &promise)
+{
+    promise.addResult(0);
+    promise.addResult(2);
+    promise.addResult(1);
+}
+
 void reportN(QPromise<double> &promise, int n)
+{
+    for (int i = 0; i < n; ++i)
+        promise.addResult(0);
+}
+
+static void staticReportN(QPromise<double> &promise, int n)
 {
     for (int i = 0; i < n; ++i)
         promise.addResult(0);
@@ -1168,9 +1181,19 @@ void tst_QtConcurrentRun::withPromise()
     QCOMPARE(run(report3).results(),
              QList<int>({0, 2, 1}));
 
-    QCOMPARE(run(reportN, 4).results(),
-             QList<double>({0, 0, 0, 0}));
+    QCOMPARE(run(&staticReport3).results(),
+             QList<int>({0, 2, 1}));
+    QCOMPARE(run(staticReport3).results(),
+             QList<int>({0, 2, 1}));
+
+    QCOMPARE(run(&reportN, 2).results(),
+             QList<double>({0, 0}));
     QCOMPARE(run(reportN, 2).results(),
+             QList<double>({0, 0}));
+
+    QCOMPARE(run(&staticReportN, 2).results(),
+             QList<double>({0, 0}));
+    QCOMPARE(run(staticReportN, 2).results(),
              QList<double>({0, 0}));
 
     QString s = QLatin1String("string");
@@ -1259,9 +1282,19 @@ void tst_QtConcurrentRun::withPromiseInThreadPool()
     QCOMPARE(run(pool.data(), report3).results(),
              QList<int>({0, 2, 1}));
 
-    QCOMPARE(run(pool.data(), reportN, 4).results(),
-             QList<double>({0, 0, 0, 0}));
+    QCOMPARE(run(pool.data(), &staticReport3).results(),
+             QList<int>({0, 2, 1}));
+    QCOMPARE(run(pool.data(), staticReport3).results(),
+             QList<int>({0, 2, 1}));
+
+    QCOMPARE(run(pool.data(), &reportN, 2).results(),
+             QList<double>({0, 0}));
     QCOMPARE(run(pool.data(), reportN, 2).results(),
+             QList<double>({0, 0}));
+
+    QCOMPARE(run(pool.data(), &staticReportN, 2).results(),
+             QList<double>({0, 0}));
+    QCOMPARE(run(pool.data(), staticReportN, 2).results(),
              QList<double>({0, 0}));
 
     QString s = QLatin1String("string");
