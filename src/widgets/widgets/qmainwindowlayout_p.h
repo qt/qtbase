@@ -29,6 +29,7 @@
 #include "QtCore/qset.h"
 #include "private/qlayoutengine_p.h"
 #include "private/qwidgetanimator_p.h"
+#include "private/qdockwidget_p.h"
 
 #if QT_CONFIG(dockwidget)
 #include "qdockarealayout_p.h"
@@ -571,7 +572,7 @@ public:
 
     void hover(QLayoutItem *hoverTarget, const QPoint &mousePos);
     bool plug(QLayoutItem *widgetItem);
-    QLayoutItem *unplug(QWidget *widget, bool group = false);
+    QLayoutItem *unplug(QWidget *widget, QDockWidgetPrivate::DragScope scope);
     void revert(QLayoutItem *widgetItem);
     void applyState(QMainWindowLayoutState &newState, bool animate = true);
     void restore(bool keepSavedState = false);
