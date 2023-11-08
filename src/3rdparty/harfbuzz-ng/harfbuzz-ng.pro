@@ -26,6 +26,7 @@ DEFINES += HB_EXTERN=
 DEFINES += HAVE_ATEXIT
 unix: DEFINES += HAVE_PTHREAD HAVE_SCHED_H HAVE_SCHED_YIELD
 win32: DEFINES += HB_NO_WIN1256
+msvc:winrt: QMAKE_CXXFLAGS += /bigobj    # prevent error C1128
 
 #Workaround https://code.google.com/p/android/issues/detail?id=194631
 android: DEFINES += _POSIX_C_SOURCE=200112L
