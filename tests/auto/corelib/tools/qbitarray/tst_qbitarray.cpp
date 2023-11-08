@@ -43,12 +43,21 @@ private slots:
     // operator &=
     void operator_andeq_data();
     void operator_andeq();
+    // operator &
+    void operator_and_data() { operator_andeq_data(); }
+    void operator_and();
     // operator |=
     void operator_oreq_data();
     void operator_oreq();
+    // operator |
+    void operator_or_data() { operator_oreq_data(); }
+    void operator_or();
     // operator ^=
     void operator_xoreq_data();
     void operator_xoreq();
+    // operator ^
+    void operator_xor_data() { operator_xoreq_data(); }
+    void operator_xor();
     // operator ~
     void operator_neg_data();
     void operator_neg();
@@ -306,6 +315,24 @@ void tst_QBitArray::operator_andeq()
     QCOMPARE(input1, res);
 }
 
+void tst_QBitArray::operator_and()
+{
+    QFETCH(QBitArray, input1);
+    QFETCH(QBitArray, input2);
+    QFETCH(QBitArray, res);
+
+    QBitArray result = input1 & input2;
+    QCOMPARE(result, res);
+
+    // operation is commutative
+    result = input2 & input1;
+    QCOMPARE(result, res);
+
+    // operation is idempotent
+    result = result & result;
+    QCOMPARE(result, res);
+}
+
 void tst_QBitArray::operator_oreq_data()
 {
     QTest::addColumn<QBitArray>("input1");
@@ -357,6 +384,24 @@ void tst_QBitArray::operator_oreq()
     QCOMPARE(input1, res);
 }
 
+void tst_QBitArray::operator_or()
+{
+    QFETCH(QBitArray, input1);
+    QFETCH(QBitArray, input2);
+    QFETCH(QBitArray, res);
+
+    QBitArray result = input1 | input2;
+    QCOMPARE(result, res);
+
+    // operation is commutative
+    result = input2 | input1;
+    QCOMPARE(result, res);
+
+    // operation is idempotent
+    result = result | result;
+    QCOMPARE(result, res);
+}
+
 void tst_QBitArray::operator_xoreq_data()
 {
     QTest::addColumn<QBitArray>("input1");
@@ -406,6 +451,27 @@ void tst_QBitArray::operator_xoreq()
     QCOMPARE(input1, res);
 }
 
+void tst_QBitArray::operator_xor()
+{
+    QFETCH(QBitArray, input1);
+    QFETCH(QBitArray, input2);
+    QFETCH(QBitArray, res);
+
+    QBitArray result = input1 ^ input2;
+    QCOMPARE(result, res);
+
+    // operation is commutative
+    result = input2 ^ input1;
+    QCOMPARE(result, res);
+
+    // XORing with oneself is nilpotent
+    result = input1 ^ input1;
+    QCOMPARE(result, QBitArray(input1.size()));
+    result = input2 ^ input2;
+    QCOMPARE(result, QBitArray(input2.size()));
+    result = res ^ res;
+    QCOMPARE(result, QBitArray(res.size()));
+}
 
 void tst_QBitArray::operator_neg_data()
 {
