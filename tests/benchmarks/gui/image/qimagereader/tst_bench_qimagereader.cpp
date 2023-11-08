@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <qtest.h>
+
 #include <QBuffer>
 #include <QDebug>
 #include <QFile>
@@ -9,6 +10,7 @@
 #include <QImageReader>
 #include <QImageWriter>
 #include <QPixmap>
+
 #include <QSet>
 #include <QTimer>
 
@@ -17,18 +19,15 @@ typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QStringMap)
 Q_DECLARE_METATYPE(QIntList)
 
-class tst_QImageReader : public QObject
+class tst_bench_QImageReader : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QImageReader();
-    virtual ~tst_QImageReader();
+    tst_bench_QImageReader();
 
 public slots:
     void initTestCase();
-    void init();
-    void cleanup();
 
 private slots:
     void readImage_data();
@@ -48,7 +47,7 @@ private:
     QString prefix;
 };
 
-tst_QImageReader::tst_QImageReader()
+tst_bench_QImageReader::tst_bench_QImageReader()
 {
     images << QPair<QString, QByteArray>(QLatin1String("colorful.bmp"), QByteArray("bmp"));
     images << QPair<QString, QByteArray>(QLatin1String("font.bmp"), QByteArray("bmp"));
@@ -75,26 +74,14 @@ tst_QImageReader::tst_QImageReader()
 #endif
 }
 
-tst_QImageReader::~tst_QImageReader()
-{
-}
-
-void tst_QImageReader::initTestCase()
+void tst_bench_QImageReader::initTestCase()
 {
     prefix = QFINDTESTDATA("images/");
     if (prefix.isEmpty())
         QFAIL("Can't find images directory!");
 }
 
-void tst_QImageReader::init()
-{
-}
-
-void tst_QImageReader::cleanup()
-{
-}
-
-void tst_QImageReader::readImage_data()
+void tst_bench_QImageReader::readImage_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QByteArray>("format");
@@ -106,7 +93,7 @@ void tst_QImageReader::readImage_data()
     }
 }
 
-void tst_QImageReader::readImage()
+void tst_bench_QImageReader::readImage()
 {
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
@@ -118,7 +105,7 @@ void tst_QImageReader::readImage()
     }
 }
 
-void tst_QImageReader::setScaledSize_data()
+void tst_bench_QImageReader::setScaledSize_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QByteArray>("format");
@@ -136,7 +123,7 @@ void tst_QImageReader::setScaledSize_data()
     }
 }
 
-void tst_QImageReader::setScaledSize()
+void tst_bench_QImageReader::setScaledSize()
 {
     QFETCH(QString, fileName);
     QFETCH(QSize, newSize);
@@ -150,7 +137,7 @@ void tst_QImageReader::setScaledSize()
     }
 }
 
-void tst_QImageReader::setClipRect_data()
+void tst_bench_QImageReader::setClipRect_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QByteArray>("format");
@@ -163,7 +150,7 @@ void tst_QImageReader::setClipRect_data()
     }
 }
 
-void tst_QImageReader::setClipRect()
+void tst_bench_QImageReader::setClipRect()
 {
     QFETCH(QString, fileName);
     QFETCH(QRect, newRect);
@@ -177,12 +164,12 @@ void tst_QImageReader::setClipRect()
     }
 }
 
-void tst_QImageReader::setScaledClipRect_data()
+void tst_bench_QImageReader::setScaledClipRect_data()
 {
     setClipRect_data();
 }
 
-void tst_QImageReader::setScaledClipRect()
+void tst_bench_QImageReader::setScaledClipRect()
 {
     QFETCH(QString, fileName);
     QFETCH(QRect, newRect);
@@ -197,5 +184,5 @@ void tst_QImageReader::setScaledClipRect()
     }
 }
 
-QTEST_MAIN(tst_QImageReader)
-#include "tst_qimagereader.moc"
+QTEST_MAIN(tst_bench_QImageReader)
+#include "tst_bench_qimagereader.moc"
