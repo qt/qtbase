@@ -69,9 +69,9 @@ public:
         return cl;
     }
 
-    bool at(qsizetype i) const;
+    bool at(qsizetype i) const { return testBit(i); }
     QBitRef operator[](qsizetype i);
-    bool operator[](qsizetype i) const;
+    bool operator[](qsizetype i) const { return testBit(i); }
 
     QBitArray &operator&=(const QBitArray &);
     QBitArray &operator|=(const QBitArray &);
@@ -81,7 +81,8 @@ public:
     inline bool operator==(const QBitArray &other) const { return d == other.d; }
     inline bool operator!=(const QBitArray &other) const { return d != other.d; }
 
-    inline bool fill(bool val, qsizetype size = -1);
+    bool fill(bool aval, qsizetype asize = -1)
+    { *this = QBitArray((asize < 0 ? this->size() : asize), aval); return true; }
     void fill(bool val, qsizetype first, qsizetype last);
 
     inline void truncate(qsizetype pos) { if (pos < size()) resize(pos); }
@@ -96,15 +97,11 @@ public:
     inline DataPtr &data_ptr() { return d.data_ptr(); }
 };
 
-inline bool QBitArray::fill(bool aval, qsizetype asize)
-{ *this = QBitArray((asize < 0 ? this->size() : asize), aval); return true; }
 
 Q_CORE_EXPORT QBitArray operator&(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator|(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator^(const QBitArray &, const QBitArray &);
 
-inline bool QBitArray::operator[](qsizetype i) const { return testBit(i); }
-inline bool QBitArray::at(qsizetype i) const { return testBit(i); }
 
 class Q_CORE_EXPORT QBitRef
 {
