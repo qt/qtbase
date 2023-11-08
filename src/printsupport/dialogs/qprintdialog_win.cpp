@@ -101,7 +101,12 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWindow *parentWindow,
 
     if (d->ep->printToFile)
         pd->Flags |= PD_PRINTTOFILE;
-    pd->hwndOwner = parentWindow ? (HWND)QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow) : 0;
+
+    WId wId = parentWindow ? parentWindow->winId() : 0;
+    //QTBUG-118899 PrintDlg needs valid window handle in hwndOwner
+    //So in case there is no valid handle in the application,
+    //use the desktop as valid handle.
+    pd->hwndOwner = wId != 0 ? HWND(wId) : GetDesktopWindow();
     pd->lpPageRanges[0].nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
     pd->lpPageRanges[0].nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
     pd->nCopies = d->printer->copyCount();
