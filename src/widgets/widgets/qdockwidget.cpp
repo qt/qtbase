@@ -771,7 +771,7 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
     tabbed widgets, and false if the dock widget should always be dragged
     alone.
  */
-void QDockWidgetPrivate::startDrag(bool group)
+void QDockWidgetPrivate::startDrag(DragScope scope)
 {
     Q_Q(QDockWidget);
 
@@ -781,9 +781,8 @@ void QDockWidgetPrivate::startDrag(bool group)
     QMainWindowLayout *layout = qt_mainwindow_layout_from_dock(q);
     Q_ASSERT(layout != nullptr);
 
-    bool wasFloating = q->isFloating();
-
-    state->widgetItem = layout->unplug(q, group);
+    const bool wasFloating = q->isFloating();
+    state->widgetItem = layout->unplug(q, scope);
     if (state->widgetItem == nullptr) {
         /*  Dock widget has a QMainWindow parent, but was never inserted with
             QMainWindow::addDockWidget, so the QMainWindowLayout has no
@@ -997,7 +996,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
             } else
 #endif
             {
-                startDrag();
+                startDrag(DragScope::Group);
                 q->grabMouse();
                 ret = true;
             }
@@ -1106,7 +1105,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
                 break;
             state->ctrlDrag = (event->modifiers() & Qt::ControlModifier) ||
                               (!hasFeature(this, QDockWidget::DockWidgetMovable) && q->isFloating());
-            startDrag();
+            startDrag(DragScope::Group);
             break;
         case QEvent::NonClientAreaMouseMove:
             if (state == nullptr || !state->dragging)
