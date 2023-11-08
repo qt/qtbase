@@ -11,6 +11,10 @@ QT_BEGIN_NAMESPACE
 class QBitRef;
 class Q_CORE_EXPORT QBitArray
 {
+    Q_CORE_EXPORT friend QBitArray operator&(const QBitArray &a1, const QBitArray &a2);
+    Q_CORE_EXPORT friend QBitArray operator|(const QBitArray &a1, const QBitArray &a2);
+    Q_CORE_EXPORT friend QBitArray operator^(const QBitArray &a1, const QBitArray &a2);
+
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QBitArray &);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QBitArray &);
@@ -105,12 +109,6 @@ public:
     inline DataPtr &data_ptr() { return d.data_ptr(); }
     inline const DataPtr &data_ptr() const { return d.data_ptr(); }
 };
-
-
-Q_CORE_EXPORT QBitArray operator&(const QBitArray &, const QBitArray &);
-Q_CORE_EXPORT QBitArray operator|(const QBitArray &, const QBitArray &);
-Q_CORE_EXPORT QBitArray operator^(const QBitArray &, const QBitArray &);
-
 
 class Q_CORE_EXPORT QBitRef
 {
