@@ -423,6 +423,7 @@ private slots:
     void selectColumnsAndCells();
     void selectWithHeader_data();
     void selectWithHeader();
+    void resetDefaultSectionSize();
 
 #if QT_CONFIG(wheelevent)
     void mouseWheel_data();
@@ -4907,6 +4908,21 @@ void tst_QTableView::selectWithHeader()
     view.scrollTo(lastIndex);
     QTest::mouseClick(header->viewport(), Qt::LeftButton, Qt::ControlModifier, clickPos);
     QVERIFY(!isSelected());
+}
+
+void tst_QTableView::resetDefaultSectionSize()
+{
+    // Create a table and change its default section size and then reset it.
+    // This should be a no op so clicking on row 1 should select row 1 and not row
+    // 0 as previously. QTBUG-116013
+    QTableWidget view(10, 10);
+    view.resize(300, 300);
+    view.verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    view.verticalHeader()->setDefaultSectionSize(120);
+    view.verticalHeader()->resetDefaultSectionSize();
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QCOMPARE(view.verticalHeader()->logicalIndexAt(9, 45), 1);
 }
 
 // This has nothing to do with QTableView, but it's convenient to reuse the QtTestTableModel
