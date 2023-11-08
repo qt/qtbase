@@ -53,7 +53,6 @@ inline ulong getTimeStamp(UIEvent *event)
 @implementation QUIView {
     QHash<NSUInteger, QWindowSystemInterface::TouchPoint> m_activeTouches;
     UITouch *m_activePencilTouch;
-    int m_nextTouchId;
     NSMutableArray<UIAccessibilityElement *> *m_accessibleElements;
     UIPanGestureRecognizer *m_scrollGestureRecognizer;
     CGPoint m_lastScrollCursorPos;
@@ -518,7 +517,10 @@ inline ulong getTimeStamp(UIEvent *event)
         {
             Q_ASSERT(!m_activeTouches.contains(touch.hash));
 #endif
-            m_activeTouches[touch.hash].id = m_nextTouchId++;
+            // Use window-independent touch identifiers, so that
+            // multi-touch works across windows.
+            static quint16 nextTouchId = 0;
+            m_activeTouches[touch.hash].id = nextTouchId++;
 #if QT_CONFIG(tabletevent)
         }
 #endif
@@ -560,9 +562,6 @@ inline ulong getTimeStamp(UIEvent *event)
     // tvOS only supports single touch
     m_activeTouches.clear();
 #endif
-
-    if (m_activeTouches.isEmpty() && !m_activePencilTouch)
-        m_nextTouchId = 0;
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
@@ -595,7 +594,6 @@ inline ulong getTimeStamp(UIEvent *event)
         qWarning("Subset of active touches cancelled by UIKit");
 
     m_activeTouches.clear();
-    m_nextTouchId = 0;
     m_activePencilTouch = nil;
 
     ulong timestamp = event ? getTimeStamp(event) : ([[NSProcessInfo processInfo] systemUptime] * 1000);
