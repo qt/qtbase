@@ -583,8 +583,9 @@ QBitArray &QBitArray::operator^=(const QBitArray &other)
 }
 
 /*!
-    Returns a bit array that contains the inverted bits of this bit
-    array.
+    \fn QBitArray QBitArray::operator~(QBitArray a)
+    Returns a bit array that contains the inverted bits of the bit
+    array \a a.
 
     Example:
     \snippet code/src_corelib_tools_qbitarray.cpp 11
@@ -592,12 +593,19 @@ QBitArray &QBitArray::operator^=(const QBitArray &other)
     \sa operator&(), operator|(), operator^()
 */
 
-QBitArray QBitArray::operator~() const
+Q_NEVER_INLINE QBitArray QBitArray::inverted_inplace() &&
 {
     qsizetype n = d.size();
-    QBitArray result(QByteArrayData(n, n));
-    const uchar *src = reinterpret_cast<const uchar *>(data_ptr().data());
-    uchar *dst = reinterpret_cast<uchar *>(result.data_ptr().data());
+    uchar *dst = reinterpret_cast<uchar *>(data_ptr().data());
+    const uchar *src = dst;
+    QBitArray result([&] {
+        if (d.isDetached() || n == 0)
+            return std::move(d.data_ptr());     // invert in-place
+
+        QByteArrayData tmp(n, n);
+        dst = reinterpret_cast<uchar *>(tmp.data());
+        return tmp;
+    }());
 
     uchar bitdiff = 8;
     if (n)

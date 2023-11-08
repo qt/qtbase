@@ -454,6 +454,7 @@ void tst_QBitArray::operator_neg()
     input = ~input;
 
     QCOMPARE(input, res);
+    QCOMPARE(~~input, res);     // performs two in-place negations
 }
 
 void tst_QBitArray::datastream_data()

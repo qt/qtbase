@@ -16,6 +16,8 @@ class Q_CORE_EXPORT QBitArray
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QBitArray &);
 #endif
     friend Q_CORE_EXPORT size_t qHash(const QBitArray &key, size_t seed) noexcept;
+    friend QBitArray operator~(QBitArray a)
+    { return std::move(a).inverted_inplace(); }
     QByteArray d;
 
     QBitArray(QByteArrayData &&dd) : d(std::move(dd)) {}
@@ -31,6 +33,8 @@ class Q_CORE_EXPORT QBitArray
         qsizetype bitIdx = i & 7;
         return R{ ba.d[1 + byteIdx], uchar(1U << bitIdx) };
     }
+
+    QBitArray inverted_inplace() &&;
 
 public:
     inline QBitArray() noexcept {}
@@ -78,7 +82,9 @@ public:
     QBitArray &operator&=(const QBitArray &);
     QBitArray &operator|=(const QBitArray &);
     QBitArray &operator^=(const QBitArray &);
+#if QT_CORE_REMOVED_SINCE(6, 7)
     QBitArray operator~() const;
+#endif
 
     inline bool operator==(const QBitArray &other) const { return d == other.d; }
     inline bool operator!=(const QBitArray &other) const { return d != other.d; }

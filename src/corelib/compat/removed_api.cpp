@@ -618,6 +618,13 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 
 #if QT_CORE_REMOVED_SINCE(6, 7)
 
+#include "qbitarray.h"
+
+QBitArray QBitArray::operator~() const
+{
+    return QBitArray(*this).inverted_inplace();
+}
+
 #include "qbytearray.h"
 
 QByteArray QByteArray::left(qsizetype len)  const
