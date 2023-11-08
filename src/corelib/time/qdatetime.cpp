@@ -1670,7 +1670,7 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDate QDate::fromString(const QString &string, const QString &format, QCalendar cal)
+    \fn QDate QDate::fromString(const QString &string, const QString &format, int baseYear, QCalendar cal)
 
     Returns the QDate represented by the \a string, using the \a
     format given, or an invalid date if the string cannot be parsed.
@@ -1720,10 +1720,18 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
 
     \table
     \header \li Field  \li Default value
-    \row    \li Year   \li 1900
+    \row    \li Year   \li \a baseYear (or 1900)
     \row    \li Month  \li 1 (January)
     \row    \li Day    \li 1
     \endtable
+
+    When \a format only specifies the last two digits of a year, the 100 years
+    starting at \a baseYear are the candidates first considered. Prior to 6.7
+    there was no \a baseYear parameter and 1900 was always used. This is the
+    default for \a baseYear, selecting a year from then to 1999. Passing 1976 as
+    \a baseYear will select a year from 1976 through 2075, for example. In some
+    cases, other fields may lead to the next or previous century being selected,
+    to get a result consistent with all fields given.
 
     The following examples demonstrate the default values:
 
@@ -1751,21 +1759,40 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     \overload
     \since 6.0
 */
-QDate QDate::fromString(const QString &string, QStringView format, QCalendar cal)
+QDate QDate::fromString(const QString &string, QStringView format, int baseYear, QCalendar cal)
 {
     QDate date;
 #if QT_CONFIG(datetimeparser)
     QDateTimeParser dt(QMetaType::QDate, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(QLocale::c());
     if (dt.parseFormat(format))
-        dt.fromString(string, &date, nullptr);
+        dt.fromString(string, &date, nullptr, baseYear);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
+    Q_UNUSED(baseYear);
     Q_UNUSED(cal);
 #endif
     return date;
 }
+
+/*!
+    \fn QDate QDate::fromString(const QString &string, const QString &format, QCalendar cal)
+    \overload
+    \since 5.14
+*/
+
+/*!
+    \fn QDate QDate::fromString(const QString &string, QStringView format, QCalendar cal)
+    \overload
+    \since 6.0
+*/
+
+/*!
+    \fn QDate QDate::fromString(QStringView string, QStringView format, int baseYear, QCalendar cal)
+    \overload
+    \since 6.7
+*/
 #endif // datestring
 
 /*!
@@ -5636,12 +5663,14 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format, QCalendar cal)
+    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format, int baseYear, QCalendar cal)
 
     Returns the QDateTime represented by the \a string, using the \a
     format given, or an invalid datetime if the string cannot be parsed.
 
     Uses the calendar \a cal if supplied, else Gregorian.
+
+    \include qlocale.cpp base-year-for-two-digit
 
     In addition to the expressions, recognized in the format string to represent
     parts of the date and time, by QDate::fromString() and QTime::fromString(),
@@ -5730,23 +5759,44 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
     \overload
     \since 6.0
 */
-QDateTime QDateTime::fromString(const QString &string, QStringView format, QCalendar cal)
+QDateTime QDateTime::fromString(const QString &string, QStringView format, int baseYear,
+                                QCalendar cal)
 {
 #if QT_CONFIG(datetimeparser)
     QDateTime datetime;
 
     QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(QLocale::c());
-    if (dt.parseFormat(format) && (dt.fromString(string, &datetime) || !datetime.isValid()))
+    if (dt.parseFormat(format) && (dt.fromString(string, &datetime, baseYear)
+                                   || !datetime.isValid())) {
         return datetime;
+    }
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
+    Q_UNUSED(baseYear);
     Q_UNUSED(cal);
 #endif
     return QDateTime();
 }
 
+/*!
+    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format, QCalendar cal)
+    \overload
+    \since 5.14
+*/
+
+/*!
+    \fn QDateTime QDateTime::fromString(const QString &string, QStringView format, QCalendar cal)
+    \overload
+    \since 6.0
+*/
+
+/*!
+    \fn QDateTime QDateTime::fromString(QStringView string, QStringView format, int baseYear, QCalendar cal)
+    \overload
+    \since 6.7
+*/
 #endif // datestring
 
 /*****************************************************************************

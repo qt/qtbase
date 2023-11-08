@@ -27,6 +27,7 @@ class QDateTime;
 class Q_CORE_EXPORT QDate
 {
     explicit constexpr QDate(qint64 julianDay) : jd(julianDay) {}
+    static constexpr int FirstTwoDigitYear = 1900; // sync with QLocale
 public:
     constexpr QDate() : jd(nullJd()) {}
     QDate(int y, int m, int d);
@@ -127,15 +128,29 @@ public:
 
     static QDate currentDate();
 #if QT_CONFIG(datestring)
+    // No DateFormat accepts a two-digit year, so no need for baseYear:
     static QDate fromString(QStringView string, Qt::DateFormat format = Qt::TextDate);
-    static QDate fromString(QStringView string, QStringView format, QCalendar cal = QCalendar())
-    { return fromString(string.toString(), format, cal); }
-    static QDate fromString(const QString &string, QStringView format, QCalendar cal = QCalendar());
     static QDate fromString(const QString &string, Qt::DateFormat format = Qt::TextDate)
     { return fromString(qToStringViewIgnoringNull(string), format); }
+
+    // Accept calendar without over-ride of base year:
+    static QDate fromString(QStringView string, QStringView format, QCalendar cal)
+    { return fromString(string.toString(), format, FirstTwoDigitYear, cal); }
+    QT_CORE_INLINE_SINCE(6, 7)
+    static QDate fromString(const QString &string, QStringView format, QCalendar cal);
+    static QDate fromString(const QString &string, const QString &format, QCalendar cal)
+    { return fromString(string, qToStringViewIgnoringNull(format), FirstTwoDigitYear, cal); }
+
+    // Overriding base year is likely more common than overriding calendar (and
+    // likely to get more so, as the legacy base drops ever further behind us).
+    static QDate fromString(QStringView string, QStringView format,
+                            int baseYear = FirstTwoDigitYear, QCalendar cal = QCalendar())
+    { return fromString(string.toString(), format, baseYear, cal); }
+    static QDate fromString(const QString &string, QStringView format,
+                            int baseYear = FirstTwoDigitYear, QCalendar cal = QCalendar());
     static QDate fromString(const QString &string, const QString &format,
-                            QCalendar cal = QCalendar())
-    { return fromString(string, qToStringViewIgnoringNull(format), cal); }
+                            int baseYear = FirstTwoDigitYear, QCalendar cal = QCalendar())
+    { return fromString(string, qToStringViewIgnoringNull(format), baseYear, cal); }
 #endif
     static bool isValid(int y, int m, int d);
     static bool isLeapYear(int year);
@@ -169,6 +184,7 @@ private:
     qint64 jd;
 
     friend class QDateTime;
+    friend class QDateTimeParser;
     friend class QDateTimePrivate;
 
     friend constexpr bool comparesEqual(const QDate &lhs, const QDate &rhs) noexcept
@@ -416,17 +432,32 @@ public:
     static QDateTime currentDateTime();
     static QDateTime currentDateTimeUtc();
 #if QT_CONFIG(datestring)
+    // No DateFormat accepts a two-digit year, so no need for baseYear:
     static QDateTime fromString(QStringView string, Qt::DateFormat format = Qt::TextDate);
-    static QDateTime fromString(QStringView string, QStringView format,
-                                QCalendar cal = QCalendar())
-    { return fromString(string.toString(), format, cal); }
-    static QDateTime fromString(const QString &string, QStringView format,
-                                QCalendar cal = QCalendar());
     static QDateTime fromString(const QString &string, Qt::DateFormat format = Qt::TextDate)
     { return fromString(qToStringViewIgnoringNull(string), format); }
-    static QDateTime fromString(const QString &string, const QString &format,
+
+    // Accept calendar without over-ride of base year:
+    static QDateTime fromString(QStringView string, QStringView format, QCalendar cal)
+    { return fromString(string.toString(), format, QDate::FirstTwoDigitYear, cal); }
+    QT_CORE_INLINE_SINCE(6, 7)
+    static QDateTime fromString(const QString &string, QStringView format, QCalendar cal);
+    static QDateTime fromString(const QString &string, const QString &format, QCalendar cal)
+    { return fromString(string, qToStringViewIgnoringNull(format), QDate::FirstTwoDigitYear, cal); }
+
+    // Overriding base year is likely more common than overriding calendar (and
+    // likely to get more so, as the legacy base drops ever further behind us).
+    static QDateTime fromString(QStringView string, QStringView format,
+                                int baseYear = QDate::FirstTwoDigitYear,
                                 QCalendar cal = QCalendar())
-    { return fromString(string, qToStringViewIgnoringNull(format), cal); }
+    { return fromString(string.toString(), format, baseYear, cal); }
+    static QDateTime fromString(const QString &string, QStringView format,
+                                int baseYear = QDate::FirstTwoDigitYear,
+                                QCalendar cal = QCalendar());
+    static QDateTime fromString(const QString &string, const QString &format,
+                                int baseYear = QDate::FirstTwoDigitYear,
+                                QCalendar cal = QCalendar())
+    { return fromString(string, qToStringViewIgnoringNull(format), baseYear, cal); }
 #endif
 
 #if QT_DEPRECATED_SINCE(6, 9)
@@ -591,6 +622,18 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QDateTime &);
 Q_CORE_EXPORT size_t qHash(const QDateTime &key, size_t seed = 0);
 Q_CORE_EXPORT size_t qHash(QDate key, size_t seed = 0) noexcept;
 Q_CORE_EXPORT size_t qHash(QTime key, size_t seed = 0) noexcept;
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 7)
+QDate QDate::fromString(const QString &string, QStringView format, QCalendar cal)
+{
+    return fromString(string, format, FirstTwoDigitYear, cal);
+}
+
+QDateTime QDateTime::fromString(const QString &string, QStringView format, QCalendar cal)
+{
+    return fromString(string, format, QDate::FirstTwoDigitYear, cal);
+}
+#endif
 
 QT_END_NAMESPACE
 

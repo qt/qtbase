@@ -35,6 +35,8 @@ class Q_CORE_EXPORT QLocale
     friend class QTextStream;
     friend class QTextStreamPrivate;
 
+    static constexpr int FirstTwoDigitYear = 1900; // sync with QDate
+
 public:
 // see qlocale_data_p.h for more info on generated data
 // GENERATED PART STARTS HERE
@@ -1011,18 +1013,39 @@ public:
     QString dateFormat(FormatType format = LongFormat) const;
     QString timeFormat(FormatType format = LongFormat) const;
     QString dateTimeFormat(FormatType format = LongFormat) const;
+    // QCalendar's header has to #include QLocale's, preventing the reverse, so
+    // QCalendar parameters can't have defaults here.
 #if QT_CONFIG(datestring)
-    QDate toDate(const QString &string, FormatType = LongFormat) const;
     QTime toTime(const QString &string, FormatType = LongFormat) const;
-    QDateTime toDateTime(const QString &string, FormatType format = LongFormat) const;
-    QDate toDate(const QString &string, const QString &format) const;
     QTime toTime(const QString &string, const QString &format) const;
+#  if QT_CORE_REMOVED_SINCE(6, 7)
+    QDate toDate(const QString &string, FormatType = LongFormat) const;
+    QDate toDate(const QString &string, const QString &format) const;
+    QDateTime toDateTime(const QString &string, FormatType format = LongFormat) const;
     QDateTime toDateTime(const QString &string, const QString &format) const;
     // Calendar-aware API
     QDate toDate(const QString &string, FormatType format, QCalendar cal) const;
-    QDateTime toDateTime(const QString &string, FormatType format, QCalendar cal) const;
     QDate toDate(const QString &string, const QString &format, QCalendar cal) const;
+    QDateTime toDateTime(const QString &string, FormatType format, QCalendar cal) const;
     QDateTime toDateTime(const QString &string, const QString &format, QCalendar cal) const;
+#  endif
+    QDate toDate(const QString &string, FormatType = LongFormat,
+                 int baseYear = FirstTwoDigitYear) const;
+    QDate toDate(const QString &string, const QString &format,
+                 int baseYear = FirstTwoDigitYear) const;
+    QDateTime toDateTime(const QString &string, FormatType format = LongFormat,
+                         int baseYear = FirstTwoDigitYear) const;
+    QDateTime toDateTime(const QString &string, const QString &format,
+                         int baseYear = FirstTwoDigitYear) const;
+    // Calendar-aware API
+    QDate toDate(const QString &string, FormatType format, QCalendar cal,
+                 int baseYear = FirstTwoDigitYear) const;
+    QDate toDate(const QString &string, const QString &format, QCalendar cal,
+                 int baseYear = FirstTwoDigitYear) const;
+    QDateTime toDateTime(const QString &string, FormatType format, QCalendar cal,
+                         int baseYear = FirstTwoDigitYear) const;
+    QDateTime toDateTime(const QString &string, const QString &format, QCalendar cal,
+                         int baseYear = FirstTwoDigitYear) const;
 #endif
 
     QString decimalPoint() const;

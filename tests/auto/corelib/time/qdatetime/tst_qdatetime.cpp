@@ -3106,14 +3106,18 @@ void tst_QDateTime::fromStringStringFormat_data()
     // Indian/Cocos had a transition at the start of 1900, so its Jan 1st starts
     // at 00:02:20 on that day; this leads to perverse results. QTBUG-77948.
     if (const QDate defDate(1900, 1, 1); defDate.startOfDay().time() == QTime(0, 0)) {
-        QTest::newRow("dMyy-only")
+        QTest::newRow("dMyy-only:19")
                 << u"101010"_s << u"dMyy"_s << 1900 << QDate(1910, 10, 10).startOfDay();
+        QTest::newRow("dMyy-only:20")
+                << u"101010"_s << u"dMyy"_s << 1911 << QDate(2010, 10, 10).startOfDay();
         QTest::newRow("secs-repeat-valid")
                 << u"1010"_s << u"sss"_s << 1900 << QDateTime(defDate, QTime(0, 0, 10));
         QTest::newRow("pm-only")
                 << u"pm"_s << u"ap"_s << 1900 << QDateTime(defDate, QTime(12, 0));
-        QTest::newRow("date-only")
+        QTest::newRow("date-only:19")
                 << u"10 Oct 10"_s << u"dd MMM yy"_s << 1900 << QDate(1910, 10, 10).startOfDay();
+        QTest::newRow("date-only:20")
+                << u"10 Oct 10"_s << u"dd MMM yy"_s << 1950 << QDate(2010, 10, 10).startOfDay();
         QTest::newRow("dow-date-only")
                 << u"Fri December 3 2004"_s << u"ddd MMMM d yyyy"_s << 1900
                 << QDate(2004, 12, 3).startOfDay();
@@ -3316,10 +3320,17 @@ void tst_QDateTime::fromStringStringFormat_data()
             << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), UTC);
 
     // Two tests derived from malformed ASN.1 strings (QTBUG-84349):
-    QTest::newRow("ASN.1:UTC")
+    QTest::newRow("curft+ASN.1:UTC")
             << u"22+221102233Z"_s << u"yyMMddHHmmsst"_s << 1900 << QDateTime();
-    QTest::newRow("ASN.1:Generalized")
+    QTest::newRow("curft+ASN.1:Generalized")
             << u"9922+221102233Z"_s << u"yyyyMMddHHmmsst"_s << 1900 << QDateTime();
+    // Verify baseYear needed by plain ASN.1 works:
+    QTest::newRow("ASN.1:UTC-start")
+            << u"500101000000Z"_s << u"yyMMddHHmmsst"_s << 1950
+            << QDate(1950, 1, 1).startOfDay(QTimeZone::UTC);
+    QTest::newRow("ASN.1:UTC-end")
+            << u"491231235959Z"_s << u"yyMMddHHmmsst"_s << 1950
+            << QDate(2049, 12, 31).endOfDay(QTimeZone::UTC).addMSecs(-999);
 
     // fuzzer test
     QTest::newRow("integer overflow found by fuzzer")
@@ -3342,9 +3353,10 @@ void tst_QDateTime::fromStringStringFormat()
 {
     QFETCH(QString, string);
     QFETCH(QString, format);
+    QFETCH(int, baseYear);
     QFETCH(QDateTime, expected);
 
-    QDateTime dt = QDateTime::fromString(string, format);
+    QDateTime dt = QDateTime::fromString(string, format, baseYear);
 
     QCOMPARE(dt, expected);
     if (expected.isValid()) {
@@ -3415,9 +3427,14 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
         // (Because QDTP tries to use local time until it reads the final zone
         // field, constructing a new QDT after reading each field, hence
         // transiently wanting 1921-05-01 00:00:00 before reading the dd field.)
-        QTest::newRow("Helsinki-joins-EET")
+        QTest::newRow("Helsinki-joins-EET:19")
                 << "Europe/Helsinki"_ba << u"210506000000Z"_s << u"yyMMddHHmmsst"_s << 1900
                 << QDateTime(QDate(1921, 5, 6), QTime(0, 0), UTC);
+        // Strictly, ASN.1 wants us to parse that with a different baseYear, so
+        // check that, too, but tweak to match the 1921 transition's mid-point:
+        QTest::newRow("Helsinki-joins-EET:20")
+                << "Europe/Helsinki"_ba << u"210501001006Z"_s << u"yyMMddHHmmsst"_s << 1950
+                << QDateTime(QDate(2021, 5, 1), QTime(0, 10, 6), UTC);
     }
     if (lacksRows)
         QSKIP("Testcases all use zones unsupported on this platform");

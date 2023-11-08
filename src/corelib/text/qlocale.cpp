@@ -2432,6 +2432,16 @@ QTime QLocale::toTime(const QString &string, FormatType format) const
     Parses \a string and returns the date it represents. The format of the date
     string is chosen according to the \a format parameter (see dateFormat()).
 
+//! [base-year-for-short]
+    Some locales use, particularly for ShortFormat, only the last two digits of
+    the year. In such a case, the 100 years starting at \a baseYear are the
+    candidates first considered. Prior to 6.7 there was no \a baseYear parameter
+    and 1900 was always used. This is the default for \a baseYear, selecting a
+    year from then to 1999. In some cases, other fields may lead to the next or
+    previous century being selected, to get a result consistent with all fields
+    given. See \l QDate::fromString() for details.
+//! [base-year-for-short]
+
     \note Month and day names, where used, must be given in the locale's
     language.
 
@@ -2439,18 +2449,18 @@ QTime QLocale::toTime(const QString &string, FormatType format) const
 
     \sa dateFormat(), toTime(), toDateTime(), QDate::fromString()
 */
-QDate QLocale::toDate(const QString &string, FormatType format) const
+QDate QLocale::toDate(const QString &string, FormatType format, int baseYear) const
 {
-    return toDate(string, dateFormat(format));
+    return toDate(string, dateFormat(format), baseYear);
 }
 
 /*!
     \since 5.14
     \overload
 */
-QDate QLocale::toDate(const QString &string, FormatType format, QCalendar cal) const
+QDate QLocale::toDate(const QString &string, FormatType format, QCalendar cal, int baseYear) const
 {
-    return toDate(string, dateFormat(format), cal);
+    return toDate(string, dateFormat(format), cal, baseYear);
 }
 
 /*!
@@ -2462,6 +2472,8 @@ QDate QLocale::toDate(const QString &string, FormatType format, QCalendar cal) c
     date string is chosen according to the \a format parameter (see
     dateFormat()).
 
+    \include qlocale.cpp base-year-for-short
+
     \note Month and day names, where used, must be given in the locale's
     language. Any am/pm indicators used must match \l amText() or \l pmText(),
     ignoring case.
@@ -2470,18 +2482,19 @@ QDate QLocale::toDate(const QString &string, FormatType format, QCalendar cal) c
 
     \sa dateTimeFormat(), toTime(), toDate(), QDateTime::fromString()
 */
-QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
+QDateTime QLocale::toDateTime(const QString &string, FormatType format, int baseYear) const
 {
-    return toDateTime(string, dateTimeFormat(format));
+    return toDateTime(string, dateTimeFormat(format), baseYear);
 }
 
 /*!
     \since 5.14
     \overload
 */
-QDateTime QLocale::toDateTime(const QString &string, FormatType format, QCalendar cal) const
+QDateTime QLocale::toDateTime(const QString &string, FormatType format, QCalendar cal,
+                              int baseYear) const
 {
-    return toDateTime(string, dateTimeFormat(format), cal);
+    return toDateTime(string, dateTimeFormat(format), cal, baseYear);
 }
 
 /*!
@@ -2522,6 +2535,16 @@ QTime QLocale::toTime(const QString &string, const QString &format) const
     Parses \a string and returns the date it represents. See QDate::fromString()
     for the interpretation of \a format.
 
+//! [base-year-for-two-digit]
+    When \a format only specifies the last two digits of a year, the 100 years
+    starting at \a baseYear are the candidates first considered. Prior to 6.7
+    there was no \a baseYear parameter and 1900 was always used. This is the
+    default for \a baseYear, selecting a year from then to 1999. In some cases,
+    other fields may lead to the next or previous century being selected, to get
+    a result consistent with all fields given. See \l QDate::fromString() for
+    details.
+//! [base-year-for-two-digit]
+
     \note Month and day names, where used, must be given in the locale's
     language.
 
@@ -2529,26 +2552,27 @@ QTime QLocale::toTime(const QString &string, const QString &format) const
 
     \sa dateFormat(), toTime(), toDateTime(), QDate::fromString()
 */
-QDate QLocale::toDate(const QString &string, const QString &format) const
+QDate QLocale::toDate(const QString &string, const QString &format, int baseYear) const
 {
-    return toDate(string, format, QCalendar());
+    return toDate(string, format, QCalendar(), baseYear);
 }
 
 /*!
     \since 5.14
     \overload
 */
-QDate QLocale::toDate(const QString &string, const QString &format, QCalendar cal) const
+QDate QLocale::toDate(const QString &string, const QString &format, QCalendar cal, int baseYear) const
 {
     QDate date;
 #if QT_CONFIG(datetimeparser)
     QDateTimeParser dt(QMetaType::QDate, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
-        dt.fromString(string, &date, nullptr);
+        dt.fromString(string, &date, nullptr, baseYear);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
+    Q_UNUSED(baseYear);
     Q_UNUSED(cal);
 #endif
     return date;
@@ -2561,6 +2585,8 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
 
     Parses \a string and returns the date-time it represents.  See
     QDateTime::fromString() for the interpretation of \a format.
+
+    \include qlocale.cpp base-year-for-two-digit
 
     \note Month and day names, where used, must be given in the locale's
     language. Any am/pm indicators used must match \l amText() or \l pmText(),
@@ -2575,27 +2601,31 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
 
     \sa dateTimeFormat(), toTime(), toDate(), QDateTime::fromString()
 */
-QDateTime QLocale::toDateTime(const QString &string, const QString &format) const
+QDateTime QLocale::toDateTime(const QString &string, const QString &format, int baseYear) const
 {
-    return toDateTime(string, format, QCalendar());
+    return toDateTime(string, format, QCalendar(), baseYear);
 }
 
 /*!
     \since 5.14
     \overload
 */
-QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCalendar cal) const
+QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCalendar cal,
+                              int baseYear) const
 {
 #if QT_CONFIG(datetimeparser)
     QDateTime datetime;
 
     QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
-    if (dt.parseFormat(format) && (dt.fromString(string, &datetime) || !datetime.isValid()))
+    if (dt.parseFormat(format) && (dt.fromString(string, &datetime, baseYear)
+                                   || !datetime.isValid())) {
         return datetime;
+    }
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
+    Q_UNUSED(baseYear);
     Q_UNUSED(cal);
 #endif
     return QDateTime();

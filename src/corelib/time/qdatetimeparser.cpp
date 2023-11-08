@@ -993,6 +993,17 @@ static int weekDayWithinMonth(QCalendar calendar, int year, int month, int day, 
 }
 
 /*!
+    \internal
+    Returns whichever of baseYear through baseYear + 99 has its % 100 == y2d.
+*/
+static int yearInCenturyFrom(int y2d, int baseYear)
+{
+    Q_ASSERT(0 <= y2d && y2d < 100);
+    const int year = baseYear - baseYear % 100 + y2d;
+    return year < baseYear ? year + 100 : year;
+}
+
+/*!
   \internal
 
   Returns a date consistent with the given data on parts specified by known,
@@ -1000,7 +1011,7 @@ static int weekDayWithinMonth(QCalendar calendar, int year, int month, int day, 
   when on valid date is consistent with the data.
 */
 
-static QDate actualDate(QDateTimeParser::Sections known, const QCalendar &calendar,
+static QDate actualDate(QDateTimeParser::Sections known, const QCalendar &calendar, int baseYear,
                         int year, int year2digits, int month, int day, int dayofweek)
 {
     QDate actual(year, month, day, calendar);
@@ -1014,7 +1025,7 @@ static QDate actualDate(QDateTimeParser::Sections known, const QCalendar &calend
     if (year % 100 != year2digits) {
         if (known & QDateTimeParser::YearSection2Digits) {
             // Over-ride year, even if specified:
-            year += year2digits - year % 100;
+            year = yearInCenturyFrom(year2digits, baseYear);
             known &= ~QDateTimeParser::YearSection;
         } else {
             year2digits = year % 100;
@@ -1260,8 +1271,8 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         int zoneOffset; // Needed to serve as *current when setting zone
         const SectionNode sn = sectionNodes.at(index);
         const QDateTime usedDateTime = [&] {
-            const QDate date = actualDate(isSet, calendar, year, year2digits,
-                                          month, day, dayofweek);
+            const QDate date = actualDate(isSet, calendar, defaultCenturyStart,
+                                          year, year2digits, month, day, dayofweek);
             const QTime time = actualTime(isSet, hour, hour12, ampm, minute, second, msec);
             return QDateTime(date, time, timeZone);
         }();
@@ -1358,15 +1369,12 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
     if (parserType != QMetaType::QTime) {
         if (year % 100 != year2digits && (isSet & YearSection2Digits)) {
             if (!(isSet & YearSection)) {
-                year = (year / 100) * 100;
-                year += year2digits;
+                year = yearInCenturyFrom(year2digits, defaultCenturyStart);
             } else {
                 conflicts = true;
                 const SectionNode &sn = sectionNode(currentSectionIndex);
-                if (sn.type == YearSection2Digits) {
-                    year = (year / 100) * 100;
-                    year += year2digits;
-                }
+                if (sn.type == YearSection2Digits)
+                    year = yearInCenturyFrom(year2digits, defaultCenturyStart);
             }
         }
 
@@ -2231,7 +2239,7 @@ QString QDateTimeParser::stateName(State s) const
 */
 QDateTime QDateTimeParser::baseDate(const QTimeZone &zone) const
 {
-    QDateTime when = QDate(1900, 1, 1).startOfDay(zone);
+    QDateTime when = QDate(defaultCenturyStart, 1, 1).startOfDay(zone);
     if (const QDateTime start = getMinimum(); when < start)
         return start;
     if (const QDateTime end = getMaximum(); when > end)
@@ -2240,8 +2248,9 @@ QDateTime QDateTimeParser::baseDate(const QTimeZone &zone) const
 }
 
 // Only called when we want only one of date or time; use UTC to avoid bogus DST issues.
-bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) const
+bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time, int baseYear) const
 {
+    defaultCenturyStart = baseYear;
     const StateNode tmp = parse(t, -1, baseDate(QTimeZone::UTC), false);
     if (tmp.state != Acceptable || tmp.conflicts)
         return false;
@@ -2265,8 +2274,9 @@ bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) con
 }
 
 // Only called when we want both date and time; default to local time.
-bool QDateTimeParser::fromString(const QString &t, QDateTime *datetime) const
+bool QDateTimeParser::fromString(const QString &t, QDateTime *datetime, int baseYear) const
 {
+    defaultCenturyStart = baseYear;
     const StateNode tmp = parse(t, -1, baseDate(QTimeZone::LocalTime), false);
     if (datetime)
         *datetime = tmp.value;

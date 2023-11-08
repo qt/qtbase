@@ -1329,6 +1329,7 @@ void tst_QDate::fromStringFormat_data()
     QTest::newRow("mistext") << u"ball"_s << u"balle"_s << 1900 << invalidDate();
     QTest::newRow("text") << u"balleh"_s << u"balleh"_s << 1900 << defDate();
     QTest::newRow("yearless:19") << u"10.01.1"_s << u"M.dd.d"_s << 1900 << QDate(1900, 10, 1);
+    QTest::newRow("yearless:20") << u"10.01.1"_s << u"M.dd.d"_s << 2000 << QDate(2000, 10, 1);
     QTest::newRow("neg-month") << u"-1.01.1"_s << u"M.dd.d"_s << 1900 << invalidDate();
     QTest::newRow("greedy-break") << u"11010"_s << u"dMMyy"_s << 1900 << invalidDate();
     QTest::newRow("neg-day") << u"-2"_s << u"d"_s << 1900 << invalidDate();
@@ -1343,6 +1344,7 @@ void tst_QDate::fromStringFormat_data()
     QTest::newRow("year-match-2001") << u"2001:01"_s << u"yyyy:yy"_s << 1900 << QDate(2001, 1, 1);
     QTest::newRow("year-match-1999") << u"99"_s << u"yy"_s << 1900 << QDate(1999, 1, 1);
     QTest::newRow("just-yy-1901") << u"01"_s << u"yy"_s << 1900 << QDate(1901, 1, 1);
+    QTest::newRow("just-yy-2001") << u"01"_s << u"yy"_s << 1970 << QDate(2001, 1, 1);
 
     QTest::newRow("Monday") << u"Monday"_s << u"dddd"_s << 1900 << QDate(1900, 1, 1);
     QTest::newRow("Tuesday") << u"Tuesday"_s << u"dddd"_s << 1900 << QDate(1900, 1, 2);
@@ -1366,16 +1368,22 @@ void tst_QDate::fromStringFormat_data()
             << u"21052006"_s << u"ddMMyyyy"_s << 1900 << QDate(2006, 5, 21);
     QTest::newRow("21May06:19")
             << u"210506"_s << u"ddMMyy"_s << 1900 << QDate(1906, 5, 21);
+    QTest::newRow("21May06:20")
+            << u"210506"_s << u"ddMMyy"_s << 1970 << QDate(2006, 5, 21);
     QTest::newRow("21/May/2006")
             << u"21/5/2006"_s << u"d/M/yyyy"_s << 1900 << QDate(2006, 5, 21);
     QTest::newRow("21/5/06")
             << u"21/5/06"_s << u"d/M/yy"_s << 1900 << QDate(1906, 5, 21);
     QTest::newRow("21/5/06:19")
             << u"21/5/06"_s << u"d/M/yy"_s << 1900 << QDate(1906, 5, 21);
+    QTest::newRow("21/5/06:20")
+            << u"21/5/06"_s << u"d/M/yy"_s << 1910 << QDate(2006, 5, 21);
     QTest::newRow("2006May21")
             << u"20060521"_s << u"yyyyMMdd"_s << 1900 << QDate(2006, 5, 21);
     QTest::newRow("06May21:19")
             << u"060521"_s << u"yyMMdd"_s << 1900 << QDate(1906, 5, 21);
+    QTest::newRow("06May21:20")
+            << u"060521"_s << u"yyMMdd"_s << 1907 << QDate(2006, 5, 21);
     QTest::newRow("lateMarch")
             << u"9999-03-06"_s << u"yyyy-MM-dd"_s << 1900 << QDate(9999, 3, 6);
     QTest::newRow("late")
@@ -1480,9 +1488,10 @@ void tst_QDate::fromStringFormat()
 {
     QFETCH(QString, string);
     QFETCH(QString, format);
+    QFETCH(int, baseYear);
     QFETCH(QDate, expected);
 
-    QDate dt = QDate::fromString(string, format);
+    QDate dt = QDate::fromString(string, format, baseYear);
     QEXPECT_FAIL("quotes-empty", "QTBUG-110669: doubled single-quotes in format mishandled",
                  Continue);
     QCOMPARE(dt, expected);

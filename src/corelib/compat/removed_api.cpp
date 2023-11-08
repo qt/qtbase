@@ -792,6 +792,46 @@ QString QLocale::bcp47Name() const
     return bcp47Name(TagSeparator::Dash);
 }
 
+QDate QLocale::toDate(const QString &string, FormatType format) const
+{
+    return toDate(string, dateFormat(format), FirstTwoDigitYear);
+}
+
+QDate QLocale::toDate(const QString &string, FormatType format, QCalendar cal) const
+{
+    return toDate(string, dateFormat(format), cal, FirstTwoDigitYear);
+}
+
+QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
+{
+    return toDateTime(string, dateTimeFormat(format), FirstTwoDigitYear);
+}
+
+QDateTime QLocale::toDateTime(const QString &string, FormatType format, QCalendar cal) const
+{
+    return toDateTime(string, dateTimeFormat(format), cal, FirstTwoDigitYear);
+}
+
+QDate QLocale::toDate(const QString &string, const QString &format) const
+{
+    return toDate(string, format, QCalendar(), FirstTwoDigitYear);
+}
+
+QDate QLocale::toDate(const QString &string, const QString &format, QCalendar cal) const
+{
+    return toDate(string, format, cal, FirstTwoDigitYear);
+}
+
+QDateTime QLocale::toDateTime(const QString &string, const QString &format) const
+{
+    return toDateTime(string, format, QCalendar(), FirstTwoDigitYear);
+}
+
+QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCalendar cal) const
+{
+    return toDateTime(string, format, cal, FirstTwoDigitYear);
+}
+
 #include "qobject.h"
 
 void qt_qFindChildren_helper(const QObject *parent, const QString &name, const QMetaObject &mo,
