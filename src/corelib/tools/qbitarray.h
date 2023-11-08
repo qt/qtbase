@@ -103,6 +103,9 @@ public:
     QBitRef operator[](qsizetype i);
     bool operator[](qsizetype i) const { return testBit(i); }
 
+    QBitArray &operator&=(QBitArray &&);
+    QBitArray &operator|=(QBitArray &&);
+    QBitArray &operator^=(QBitArray &&);
     QBitArray &operator&=(const QBitArray &);
     QBitArray &operator|=(const QBitArray &);
     QBitArray &operator^=(const QBitArray &);
