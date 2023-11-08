@@ -300,7 +300,7 @@ public class QtActivityDelegate
         m_splashScreen.startAnimation(fadeOut);
     }
 
-    public void notifyAccessibilityLocationChange(int viewId)
+    public void notifyLocationChange(int viewId)
     {
         if (m_accessibilityDelegate == null)
             return;
