@@ -249,7 +249,9 @@ void tst_QFileSystemWatcher::watchDirectory_data()
     QTest::addColumn<QStringList>("testDirNames");
     const QStringList testDirNames = {QStringLiteral("testdir"), QStringLiteral("testdir2")};
 
+#if !defined(QT_NO_INOTIFY)
     QTest::newRow("native backend") << "native" << testDirNames;
+#endif
     QTest::newRow("poller backend") << "poller" << testDirNames;
 }
 
