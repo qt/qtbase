@@ -4384,17 +4384,14 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                                             vopt->state & QStyle::State_Selected
                                                         ? QPalette::Highlight
                                                         : QPalette::Base);
-                    // only draw the indicator; no text or background
+                    // only draw the indicator; no text, icon or background
                     optIndicator.backgroundBrush = Qt::NoBrush; // no background
                     optIndicator.text.clear();
+                    optIndicator.icon = QIcon();
                     QWindowsStyle::drawControl(ce, &optIndicator, p, w);
 
-                    // If the indicator has an icon, it has been drawn now.
-                    // => don't draw it again.
-                    optCopy.icon = QIcon();
-
-                    // Now draw text, background, and highlight, but not the indicator  with the
-                    // base style. Since we can't turn off HasCheckIndicator to prevent the base
+                    // Now draw text, background,icon, and highlight, but not the indicator  with
+                    // the base style. Since we can't turn off HasCheckIndicator to prevent the base
                     // style from drawing the check indicator again (it would change how the item
                     // gets laid out) we have to clip the indicator that's already been painted.
                     const QRect checkRect = subElementRect(QStyle::SE_ItemViewItemCheckIndicator,
