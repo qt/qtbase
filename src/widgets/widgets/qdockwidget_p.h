@@ -51,6 +51,11 @@ class QDockWidgetPrivate : public QWidgetPrivate
     };
 
 public:
+    enum class DragScope {
+        Group,
+        Widget
+    };
+
     void init();
     void _q_toggleView(bool); // private slot
     void _q_toggleTopLevel(); // private slot
@@ -86,7 +91,7 @@ public:
     void setWindowState(bool floating, bool unplug = false, const QRect &rect = QRect());
     void nonClientAreaMouseEvent(QMouseEvent *event);
     void initDrag(const QPoint &pos, bool nca);
-    void startDrag(bool group = true);
+    void startDrag(DragScope scope);
     void endDrag(bool abort = false);
     void moveEvent(QMoveEvent *event);
     void recalculatePressPos(QResizeEvent *event);

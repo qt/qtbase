@@ -1792,7 +1792,7 @@ void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
                 QDockWidgetPrivate *dockPriv = static_cast<QDockWidgetPrivate *>(QObjectPrivate::get(draggingDock));
                 QDockWidgetLayout *dwlayout = static_cast<QDockWidgetLayout *>(draggingDock->layout());
                 dockPriv->initDrag(dwlayout->titleArea().center(), true);
-                dockPriv->startDrag(false);
+                dockPriv->startDrag(QDockWidgetPrivate::DragScope::Widget);
                 if (dockPriv->state)
                     dockPriv->state->ctrlDrag = e->modifiers() & Qt::ControlModifier;
             }
@@ -2552,25 +2552,25 @@ static QTabBar::Shape tabwidgetPositionToTabBarShape(QWidget *w)
     Returns the QLayoutItem of the dragged element.
     The layout item is kept in the layout but set as a gap item.
  */
-QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
+QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, QDockWidgetPrivate::DragScope scope)
 {
 #if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
     auto *groupWindow = qobject_cast<const QDockWidgetGroupWindow *>(widget->parentWidget());
     if (!widget->isWindow() && groupWindow) {
-        if (group && groupWindow->tabLayoutInfo()) {
+        if (scope == QDockWidgetPrivate::DragScope::Group && groupWindow->tabLayoutInfo()) {
             // We are just dragging a floating window as it, not need to do anything, we just have to
             // look up the corresponding QWidgetItem* if it exists
             if (QDockAreaLayoutInfo *info = dockInfo(widget->parentWidget())) {
                 QList<int> groupWindowPath = info->indexOf(widget->parentWidget());
                 return groupWindowPath.isEmpty() ? nullptr : info->item(groupWindowPath).widgetItem;
             }
-            qCDebug(lcQpaDockWidgets) << "Drag only:" << widget << "Group:" << group;
+            qCDebug(lcQpaDockWidgets) << "Drag only:" << widget << "Group:" << (scope == QDockWidgetPrivate::DragScope::Group);
             return nullptr;
         }
         QList<int> path = groupWindow->layoutInfo()->indexOf(widget);
         QDockAreaLayoutItem parentItem = groupWindow->layoutInfo()->item(path);
         QLayoutItem *item = parentItem.widgetItem;
-        if (group && path.size() > 1
+        if (scope == QDockWidgetPrivate::DragScope::Group && path.size() > 1
             && unplugGroup(this, &item, parentItem)) {
             qCDebug(lcQpaDockWidgets) << "Unplugging:" << widget << "from" << item;
             return item;
@@ -2663,7 +2663,7 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
     if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget)) {
         Q_ASSERT(path.constFirst() == 1);
 #if QT_CONFIG(tabwidget)
-        if (group && (dockOptions & QMainWindow::GroupedDragging) && path.size() > 3
+        if (scope == QDockWidgetPrivate::DragScope::Group && (dockOptions & QMainWindow::GroupedDragging) && path.size() > 3
             && unplugGroup(this, &item,
                            layoutState.dockAreaLayout.item(path.mid(1, path.size() - 2)))) {
             path.removeLast();

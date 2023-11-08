@@ -181,7 +181,7 @@ void QToolBarPrivate::startDrag(bool moving)
     const bool wasFloating = q->isFloating();
 
     if (!moving) {
-        state->widgetItem = layout->unplug(q);
+        state->widgetItem = layout->unplug(q, QDockWidgetPrivate::DragScope::Group);
         Q_ASSERT(state->widgetItem != nullptr);
     }
     state->dragging = !moving;
