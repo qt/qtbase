@@ -17,8 +17,14 @@ class DateFormatProxyModel : public QIdentityProxyModel
       return QIdentityProxyModel::data(index, role);
 
     const QDateTime dateTime = sourceModel()->data(SourceClass::DateRole).toDateTime();
-
     return dateTime.toString(m_formatString);
+  }
+
+  QMap<int, QVariant> itemData(const QModelIndex &proxyIndex) const override
+  {
+      QMap<int, QVariant> map = QIdentityProxyModel::itemData(proxyIndex);
+      map[Qt::DisplayRole] = data(proxyIndex);
+      return map;
   }
 
 private:
