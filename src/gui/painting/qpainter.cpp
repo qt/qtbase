@@ -3901,8 +3901,10 @@ void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
 #endif
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::drawRoundedRect: Painter not active");
         return;
+    }
 
     if (xRadius <= 0 || yRadius <= 0) {             // draw normal rectangle
         drawRect(rect);
@@ -3963,8 +3965,10 @@ void QPainter::drawEllipse(const QRectF &r)
 #endif
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::drawEllipse: Painter not active");
         return;
+    }
 
     QRectF rect(r.normalized());
 
@@ -4004,8 +4008,10 @@ void QPainter::drawEllipse(const QRect &r)
 #endif
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::drawEllipse: Painter not active");
         return;
+    }
 
     QRect rect(r.normalized());
 
@@ -4091,8 +4097,10 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
 #endif
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::drawArc: Painter not active");
         return;
+    }
 
     QRectF rect = r.normalized();
 
@@ -4153,8 +4161,10 @@ void QPainter::drawPie(const QRectF &r, int a, int alen)
 #endif
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::drawPie: Painter not active");
         return;
+    }
 
     if (a > (360*16)) {
         a = a % (360*16);
@@ -4222,8 +4232,10 @@ void QPainter::drawChord(const QRectF &r, int a, int alen)
 #endif
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::drawChord: Painter not active");
         return;
+    }
 
     QRectF rect = r.normalized();
 
@@ -6509,8 +6521,10 @@ void QPainter::drawPicture(const QPointF &p, const QPicture &picture)
 {
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::drawPicture: Painter not active");
         return;
+    }
 
     if (!d->extended)
         d->updateState(d->state);
@@ -6621,8 +6635,10 @@ void QPainter::fillRect(const QRectF &r, const QBrush &brush)
 {
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::fillRect: Painter not active");
         return;
+    }
 
     if (d->extended && !needsEmulation(brush)) {
         d->extended->fillRect(r, brush);
@@ -6656,8 +6672,10 @@ void QPainter::fillRect(const QRect &r, const QBrush &brush)
 {
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::fillRect: Painter not active");
         return;
+    }
 
     if (d->extended && !needsEmulation(brush)) {
         d->extended->fillRect(r, brush);
@@ -6694,8 +6712,10 @@ void QPainter::fillRect(const QRect &r, const QColor &color)
 {
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine) {
+        qWarning("QPainter::fillRect: Painter not active");
         return;
+    }
 
     if (d->extended) {
         d->extended->fillRect(r, color);
