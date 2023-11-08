@@ -18,10 +18,6 @@ class tst_QFactoryLoader : public QObject
 {
     Q_OBJECT
 
-#ifdef Q_OS_ANDROID
-    QSharedPointer<QTemporaryDir> directory;
-#endif
-
     QString binFolder;
 public slots:
     void initTestCase();
