@@ -110,7 +110,7 @@ public:
     inline const DataPtr &data_ptr() const { return d.data_ptr(); }
 };
 
-class Q_CORE_EXPORT QBitRef
+class QT6_ONLY(Q_CORE_EXPORT) QBitRef
 {
 private:
     QBitArray &a;
