@@ -8,6 +8,7 @@ qt_internal_add_benchmark(tst_bench_qimagereader
     SOURCES
         tst_bench_qimagereader.cpp
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
         Qt::Test
 )

@@ -36,6 +36,7 @@
 #include <QImageWriter>
 #include <QPixmap>
 
+#include <QtCore/private/qfactoryloader_p.h>
 #include <QSet>
 #include <QTimer>
 
@@ -55,6 +56,9 @@ public slots:
     void initTestCase();
 
 private slots:
+    void rawFactoryLoader_keyMap();
+    void rawFactoryLoader_instance();
+
     void readImage_data();
     void readImage();
 
@@ -70,6 +74,7 @@ private slots:
 private:
     QList< QPair<QString, QByteArray> > images; // filename, format
     QString prefix;
+    QFactoryLoader m_loader{QImageIOHandlerFactoryInterface_iid, "/imageformats"};
 };
 
 tst_bench_QImageReader::tst_bench_QImageReader()
@@ -105,6 +110,30 @@ void tst_bench_QImageReader::initTestCase()
     if (prefix.isEmpty())
         QFAIL("Can't find images directory!");
 }
+
+void tst_bench_QImageReader::rawFactoryLoader_keyMap()
+{
+    if (m_loader.keyMap().isEmpty())
+        QSKIP("No image plugins found.");
+
+    QBENCHMARK {
+        [[maybe_unused]] auto r = m_loader.keyMap();
+    }
+}
+
+void tst_bench_QImageReader::rawFactoryLoader_instance()
+{
+    if (m_loader.keyMap().isEmpty())
+        QSKIP("No image plugins found.");
+
+    const auto numInstances = m_loader.keyMap().uniqueKeys().size();
+
+    QBENCHMARK {
+        for (int i = 0; i < numInstances; ++i)
+            delete m_loader.instance(i);
+    }
+}
+
 
 void tst_bench_QImageReader::readImage_data()
 {
