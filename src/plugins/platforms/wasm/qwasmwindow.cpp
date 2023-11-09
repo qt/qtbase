@@ -377,12 +377,8 @@ WId QWasmWindow::winId() const
 
 void QWasmWindow::propagateSizeHints()
 {
-    QRect rect = windowGeometry();
-    if (rect.size().width() < windowMinimumSize().width()
-        && rect.size().height() < windowMinimumSize().height()) {
-        rect.setSize(windowMinimumSize());
-        setGeometry(rect);
-    }
+    // setGeometry() will take care of minimum and maximum size constraints
+    setGeometry(windowGeometry());
     m_nonClientArea->propagateSizeHints();
 }
 
