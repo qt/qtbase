@@ -166,9 +166,6 @@ void tst_QAsn1Element::dateTime()
 
     QAsn1Element elem;
     QVERIFY(elem.read(encoded));
-    QEXPECT_FAIL("UTCTime - leap day year 2000",
-                 "We decode as 1900, and then adjust to 2000. But there was no leap day in 1900!",
-                 Continue);
     QCOMPARE(elem.toDateTime(), value);
 }
 
