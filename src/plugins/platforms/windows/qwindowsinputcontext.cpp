@@ -676,7 +676,7 @@ int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
     reconv->dwTargetStrOffset = reconv->dwCompStrOffset;
     auto *pastReconv = reinterpret_cast<ushort *>(reconv + 1);
     std::copy(surroundingText.utf16(), surroundingText.utf16() + surroundingText.size(),
-              QT_MAKE_UNCHECKED_ARRAY_ITERATOR(pastReconv));
+              pastReconv);
     return memSize;
 }
 
