@@ -2850,7 +2850,7 @@ QPointF QWindow::mapToGlobal(const QPointF &pos) const
     // Map the position (and the window's global position) to native coordinates, perform
     // the addition, and then map back to device independent coordinates.
     QPointF nativeLocalPos = QHighDpi::toNativeLocalPosition(pos, this);
-    QPointF nativeWindowGlobalPos = QHighDpi::toNativeGlobalPosition(QPointF(d->globalPosition()), this);
+    QPointF nativeWindowGlobalPos = d->platformWindow->mapToGlobal(QPoint(0,0)).toPointF();
     QPointF nativeGlobalPos = nativeLocalPos + nativeWindowGlobalPos;
     QPointF deviceIndependentGlobalPos = QHighDpi::fromNativeGlobalPosition(nativeGlobalPos, this);
     return deviceIndependentGlobalPos;
@@ -2888,7 +2888,7 @@ QPointF QWindow::mapFromGlobal(const QPointF &pos) const
     // Calculate local position in the native coordinate system. (See comment for the
     // corresponding mapToGlobal() code above).
     QPointF nativeGlobalPos = QHighDpi::toNativeGlobalPosition(pos, this);
-    QPointF nativeWindowGlobalPos = QHighDpi::toNativeGlobalPosition(QPointF(d->globalPosition()), this);
+    QPointF nativeWindowGlobalPos = d->platformWindow->mapToGlobal(QPoint(0,0)).toPointF();
     QPointF nativeLocalPos = nativeGlobalPos - nativeWindowGlobalPos;
     QPointF deviceIndependentLocalPos = QHighDpi::fromNativeLocalPosition(nativeLocalPos, this);
     return deviceIndependentLocalPos;
