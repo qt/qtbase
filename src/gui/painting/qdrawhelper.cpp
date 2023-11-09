@@ -498,9 +498,8 @@ static QRgbaFloat32 *QT_FASTCALL destFetchFPUndefined(QRgbaFloat32 *buffer, QRas
 */
 static inline QRgb findNearestColor(QRgb color, QRasterBuffer *rbuf)
 {
-    QRgb color_0 = qPremultiply(rbuf->destColor0);
-    QRgb color_1 = qPremultiply(rbuf->destColor1);
-    color = qPremultiply(color);
+    const QRgb color_0 = rbuf->destColor0;
+    const QRgb color_1 = rbuf->destColor1;
 
     int r = qRed(color);
     int g = qGreen(color);
