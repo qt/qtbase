@@ -548,6 +548,19 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 }
             }
         }
+    } else if (!d->transitionsEnabled() && element == PE_IndicatorRadioButton) {
+        QObject *styleObject = option->styleObject; // Can be widget or qquickitem
+        if (styleObject) {
+            styleObject->setProperty("_q_end_radius",7.0);
+            if (option->state & State_Sunken)
+                styleObject->setProperty("_q_end_radius",2.0);
+            else if (option->state & State_MouseOver && !(option->state & State_On))
+                styleObject->setProperty("_q_end_radius",7.0);
+            else if (option->state & State_MouseOver && (option->state & State_On))
+                styleObject->setProperty("_q_end_radius",5.0);
+            else if (option->state & State_On)
+                styleObject->setProperty("_q_end_radius",4.0);
+        }
     }
 
     switch (element) {
