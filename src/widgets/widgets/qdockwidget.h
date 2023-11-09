@@ -65,8 +65,8 @@ public:
     { return (allowedAreas() & area) == area; }
 
 #ifndef QT_NO_DEBUG_STREAM
-    friend Q_AUTOTEST_EXPORT QDebug operator<<(QDebug dbg, const QDockWidget &dockWidget);
-    friend Q_AUTOTEST_EXPORT QDebug operator<<(QDebug dbg, const QDockWidget *dockWidget);
+    friend Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QDockWidget &dockWidget);
+    friend Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QDockWidget *dockWidget);
 #endif
 
 #ifndef QT_NO_ACTION
