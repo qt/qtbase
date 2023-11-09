@@ -20,8 +20,8 @@
 
     \section1 AnalogClock Class Definition
 
-    The \c AnalogClock class provides a clock widget with hour and minute
-    hands that is automatically updated every few seconds.
+    The \c AnalogClock class provides a clock widget with hour, minute and
+    second hands that is automatically updated every second.
     We subclass \l QWidget and reimplement the standard
     \l{QWidget::paintEvent()}{paintEvent()} function to draw the clock face:
 
@@ -29,19 +29,14 @@
 
     \section1 AnalogClock Class Implementation
 
-    \snippet widgets/analogclock/analogclock.cpp 1
-
     When the widget is constructed, we set up a one-second timer to
     keep track of the current time, and we connect it to the standard
     \l{QWidget::update()}{update()} slot so that the clock face is
     updated when the timer emits the \l{QTimer::timeout()}{timeout()}
-    signal.
-
-    Finally, we resize the widget so that it is displayed at a
+    signal. Finally, we resize the widget so that it is displayed at a
     reasonable size.
 
-    \snippet widgets/analogclock/analogclock.cpp 8
-    \snippet widgets/analogclock/analogclock.cpp 10
+    \snippet widgets/analogclock/analogclock.cpp 1
 
     The \c paintEvent() function is called whenever the widget's
     contents need to be updated. This happens when the widget is
@@ -49,30 +44,36 @@
     executed when the  widget's \l{QWidget::update()}{update()} slot
     is called. Since we connected the timer's
     \l{QTimer::timeout()}{timeout()} signal to this slot, it will be
-    called at least once every five seconds.
+    called at least once per second.
 
     Before we set up the painter and draw the clock, we first define
-    two lists of \l {QPoint}s and two \l{QColor}s that will be used
-    for the hour and minute hands. The minute hand's color has an
-    alpha component of 191, meaning that it's 75% opaque.
+    three lists of \l {QPoint}s and three \l{QColor}s that will be used
+    for the hour, minute and second hands. We use the
+    \l{QWidget::palette()}{palette()} function to get appropriate colors
+    that fit into the rest of the window, both in light and dark mode.
+    The hour and minute hands are drawn in the foreground color, the
+    second hand is drawn in the accent color.
 
     We also determine the length of the widget's shortest side so that we
     can fit the clock face inside the widget. It is also useful to determine
     the current time before we start drawing.
 
-    \snippet widgets/analogclock/analogclock.cpp 11
-    \snippet widgets/analogclock/analogclock.cpp 12
-    \snippet widgets/analogclock/analogclock.cpp 13
-    \snippet widgets/analogclock/analogclock.cpp 14
+    \snippet widgets/analogclock/analogclock.cpp 8
+    \snippet widgets/analogclock/analogclock.cpp 10
 
     The contents of custom widgets are drawn with a QPainter.
     Painters can be used to draw on any QPaintDevice, but they are
     usually used with widgets, so we pass the widget instance to the
     painter's constructor.
 
+    \snippet widgets/analogclock/analogclock.cpp 11
+    \snippet widgets/analogclock/analogclock.cpp 14
+
     We call QPainter::setRenderHint() with QPainter::Antialiasing to
     turn on antialiasing. This makes drawing of diagonal lines much
     smoother.
+
+    \snippet widgets/analogclock/analogclock.cpp 12
 
     The translation moves the origin to the center of the widget, and
     the scale operation ensures that the following drawing operations
@@ -80,6 +81,8 @@
     let's us use x and y coordinates between -100 and 100, and that
     ensures that these lie within the length of the widget's shortest
     side.
+
+    \snippet widgets/analogclock/analogclock.cpp 13
 
     To make our code simpler, we will draw a fixed size clock face that will
     be positioned and scaled so that it lies in the center of the widget.
@@ -91,44 +94,47 @@
 
     \image analogclock-viewport.png
 
-    We draw the hour hand first, using a formula that rotates the coordinate
-    system counterclockwise by a number of degrees determined by the current
-    hour and minute. This means that the hand will be shown rotated clockwise
-    by the required amount.
-
-    \snippet widgets/analogclock/analogclock.cpp 15
-    \snippet widgets/analogclock/analogclock.cpp 16
-
     We set the pen to be Qt::NoPen because we don't want any outline,
     and we use a solid brush with the color appropriate for
     displaying hours. Brushes are used when filling in polygons and
     other geometric shapes.
 
-    \snippet widgets/analogclock/analogclock.cpp 17
-    \snippet widgets/analogclock/analogclock.cpp 19
+    \snippet widgets/analogclock/analogclock.cpp 15
+    \snippet widgets/analogclock/analogclock.cpp 16
 
+    We draw the hour hand first, using a formula that rotates the coordinate
+    system counterclockwise by a number of degrees determined by the current
+    hour and minute. This means that the hand will be shown rotated clockwise
+    by the required amount.
     We save and restore the transformation matrix before and after the
     rotation because we want to place the minute hand without having to
     take into account any previous rotations.
 
+    \snippet widgets/analogclock/analogclock.cpp 17
+    \snippet widgets/analogclock/analogclock.cpp 19
+
+    We draw markers around the edge of the clock for each hour in the same
+    color as the hour hand. We draw each marker then rotate the coordinate
+    system so that the painter is ready for the next one.
+
     \snippet widgets/analogclock/analogclock.cpp 20
-    \codeline
+
+    The minute hand is rotated and painted in a similar way to the hour hand.
+
     \snippet widgets/analogclock/analogclock.cpp 21
 
-    We draw markers around the edge of the clock for each hour. We
-    draw each marker then rotate the coordinate system so that the
-    painter is ready for the next one.
+    For the seconds hand we do the same and add two cicles as a visual highlight.
 
-    \snippet widgets/analogclock/analogclock.cpp 22
     \snippet widgets/analogclock/analogclock.cpp 23
+    \codeline
+    \snippet widgets/analogclock/analogclock.cpp 24
 
-    The minute hand is rotated in a similar way to the hour hand.
+    Finally, we draw markers around the edge of the clock, indicating
+    minutes and seconds. This time we draw them as lines and therefore
+    set the pen to the respective color.
 
     \snippet widgets/analogclock/analogclock.cpp 25
     \codeline
-    \snippet widgets/analogclock/analogclock.cpp 26
+    \snippet widgets/analogclock/analogclock.cpp 27
 
-    Again, we draw markers around the edge of the clock, but this
-    time to indicate minutes. We skip multiples of 5 to avoid drawing
-    minute markers on top of hour markers.
 */
