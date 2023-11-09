@@ -154,6 +154,7 @@ public class QtDisplayManager {
                         WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS);
                 break;
         }
+        activity.getWindow().getDecorView().setSystemUiVisibility(systemUiVisibilityFlags);
     }
 
     public int systemUiVisibility()
