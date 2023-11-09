@@ -221,7 +221,7 @@ qreal QPainterPrivate::effectiveDevicePixelRatio() const
     if (device->devType() == QInternal::Printer)
         return qreal(1);
 
-    return qMax(qreal(1), device->devicePixelRatio());
+    return device->devicePixelRatio();
 }
 
 QTransform QPainterPrivate::hidpiScaleTransform() const
@@ -1824,7 +1824,7 @@ bool QPainter::begin(QPaintDevice *pd)
 
     Q_ASSERT(d->engine->isActive());
 
-    if (!d->state->redirectionMatrix.isIdentity() || d->effectiveDevicePixelRatio() > 1)
+    if (!d->state->redirectionMatrix.isIdentity() || !qFuzzyCompare(d->effectiveDevicePixelRatio(), qreal(1.0)))
         d->updateMatrix();
 
     Q_ASSERT(d->engine->isActive());
