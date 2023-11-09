@@ -91,6 +91,12 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     if (!options())
         return false;
 
+    // NSAlert doesn't have a section for detailed text
+    if (!options()->detailedText().isEmpty()) {
+        qCWarning(lcQpaDialogs, "Message box contains detailed text");
+        return false;
+    }
+
     if (Qt::mightBeRichText(options()->text()) ||
         Qt::mightBeRichText(options()->informativeText())) {
         // Let's fallback to non-native message box,
@@ -103,10 +109,7 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     m_alert = [NSAlert new];
     m_alert.window.title = options()->windowTitle().toNSString();
 
-    QString text = toPlainText(options()->text());
-    QString details = toPlainText(options()->detailedText());
-    if (!details.isEmpty())
-        text += u"\n\n"_s + details;
+    const QString text = toPlainText(options()->text());
     m_alert.messageText = text.toNSString();
     m_alert.informativeText = toPlainText(options()->informativeText()).toNSString();
 
