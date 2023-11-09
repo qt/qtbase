@@ -1,7 +1,7 @@
 // Copyright (C) 2014 Jeremy Lainé <jeremy.laine@m4x.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#include "private/qasn1element_p.h"
+#include "qasn1element_p.h"
 
 #include <QTest>
 

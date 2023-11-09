@@ -14,7 +14,12 @@ endif()
 qt_internal_add_test(tst_qasn1element
     SOURCES
         tst_qasn1element.cpp
+        ../../../../../src/plugins/tls/shared/qasn1element_p.h
+        ../../../../../src/plugins/tls/shared/qasn1element.cpp
+    INCLUDE_DIRECTORIES
+        ../../../../../src/plugins/tls/shared
     LIBRARIES
+        Qt::Core
         Qt::Network
         Qt::NetworkPrivate
     BUNDLE_ANDROID_OPENSSL_LIBS
