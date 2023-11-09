@@ -125,8 +125,13 @@ struct QPropertyObserverPointer;
 class QUntypedPropertyData
 {
 public:
+#if QT_DEPRECATED_SINCE(6, 8)
     // sentinel to check whether a class inherits QUntypedPropertyData
-    struct InheritsQUntypedPropertyData {};
+    struct QT_DEPRECATED_VERSION_X_6_8("Use std::is_base_of instead.")
+            InheritsQUntypedPropertyData
+    {
+    };
+#endif
 };
 
 template <typename T>

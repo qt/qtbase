@@ -29,6 +29,7 @@ class tst_QProperty : public QObject
 {
     Q_OBJECT
 private slots:
+    void inheritQUntypedPropertyData();
     void functorBinding();
     void basicDependencies();
     void multipleDependencies();
@@ -108,6 +109,59 @@ private slots:
     void propertyAdaptorBinding();
     void propertyUpdateViaSignaledProperty();
 };
+
+namespace {
+template <class T>
+constexpr auto isDerivedFromQUntypedPropertyData = std::is_base_of_v<QUntypedPropertyData, T>;
+
+template <typename Property>
+constexpr auto isDerivedFromQUntypedPropertyDataFunc(const Property &property)
+{
+    Q_UNUSED(property);
+    return isDerivedFromQUntypedPropertyData<Property>;
+}
+
+template <typename Property>
+constexpr auto isDerivedFromQUntypedPropertyDataFunc(Property *property)
+{
+    Q_UNUSED(property);
+    return isDerivedFromQUntypedPropertyData<Property>;
+}
+} // namespace
+
+void tst_QProperty::inheritQUntypedPropertyData()
+{
+    class propertyPublic : public QUntypedPropertyData
+    {
+    };
+    class propertyPrivate : private QUntypedPropertyData
+    {
+    };
+
+    // Compile time test
+    static_assert(isDerivedFromQUntypedPropertyData<propertyPublic>);
+    static_assert(isDerivedFromQUntypedPropertyData<propertyPrivate>);
+    static_assert(isDerivedFromQUntypedPropertyData<QPropertyData<int>>);
+    static_assert(isDerivedFromQUntypedPropertyData<QProperty<int>>);
+
+    // Run time test
+    propertyPublic _propertyPublic;
+    propertyPrivate _propertyPrivate;
+    QPropertyData<int> qpropertyData;
+    QProperty<int> qproperty;
+    std::unique_ptr<propertyPublic> _propertyPublicPtr{ new propertyPublic };
+    std::unique_ptr<propertyPrivate> _propertyPrivatePtr{ new propertyPrivate };
+    std::unique_ptr<QPropertyData<int>> qpropertyDataPtr{ new QPropertyData<int> };
+    std::unique_ptr<QProperty<int>> qpropertyPtr{ new QProperty<int> };
+    QVERIFY(isDerivedFromQUntypedPropertyDataFunc(_propertyPublic));
+    QVERIFY(isDerivedFromQUntypedPropertyDataFunc(_propertyPrivate));
+    QVERIFY(isDerivedFromQUntypedPropertyDataFunc(qpropertyData));
+    QVERIFY(isDerivedFromQUntypedPropertyDataFunc(qproperty));
+    QVERIFY(isDerivedFromQUntypedPropertyDataFunc(_propertyPublicPtr.get()));
+    QVERIFY(isDerivedFromQUntypedPropertyDataFunc(_propertyPrivatePtr.get()));
+    QVERIFY(isDerivedFromQUntypedPropertyDataFunc(qpropertyDataPtr.get()));
+    QVERIFY(isDerivedFromQUntypedPropertyDataFunc(qpropertyPtr.get()));
+}
 
 void tst_QProperty::functorBinding()
 {
