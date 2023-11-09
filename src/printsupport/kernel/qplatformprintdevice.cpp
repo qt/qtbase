@@ -75,6 +75,10 @@ bool QPlatformPrintDevice::isValidPageLayout(const QPageLayout &layout, int reso
     if (!supportedPageSize(layout.pageSize()).isValid())
         return false;
 
+    // In fullpage mode, margins outside the printable area are valid
+    if (layout.mode() == QPageLayout::FullPageMode)
+        return true;
+
     // Check the margins are valid
     QMarginsF pointMargins = layout.margins(QPageLayout::Point);
     QMarginsF printMargins = printableMargins(layout.pageSize(), layout.orientation(), resolution);
