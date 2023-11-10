@@ -14,7 +14,18 @@
 #define UIA_SelectionPattern2Id                  10034
 #define UIA_IsReadOnlyAttributeId                40015
 #define UIA_StrikethroughStyleAttributeId        40026
+#define UIA_StyleIdAttributeId                   40034
 #define UIA_CaretPositionAttributeId             40038
+
+#define StyleId_Heading1    70001
+#define StyleId_Heading2    70002
+#define StyleId_Heading3    70003
+#define StyleId_Heading4    70004
+#define StyleId_Heading5    70005
+#define StyleId_Heading6    70006
+#define StyleId_Heading7    70007
+#define StyleId_Heading8    70008
+#define StyleId_Heading9    70009
 
 enum CaretPosition {
     CaretPosition_Unknown           = 0,

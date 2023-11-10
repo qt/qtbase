@@ -61,6 +61,10 @@ public:
 private:
     QString automationIdForAccessible(const QAccessibleInterface *accessible);
     static void fillVariantArrayForRelation(QAccessibleInterface *accessible, QAccessible::Relation relation, VARIANT *pRetVal);
+    static void setAriaProperties(QAccessibleInterface *accessible, VARIANT *pRetVal);
+    static void setStyle(QAccessibleInterface *accessible, VARIANT *pRetVal);
+    /** Returns the UIA style ID for a heading level from 1 to 9. */
+    static int styleIdForHeadingLevel(int headingLevel);
     static QMutex m_mutex;
 };
 

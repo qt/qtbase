@@ -388,6 +388,93 @@ void QWindowsUiaMainProvider::fillVariantArrayForRelation(QAccessibleInterface* 
     pRetVal->parray = elements;
 }
 
+void QWindowsUiaMainProvider::setAriaProperties(QAccessibleInterface *accessible, VARIANT *pRetVal)
+{
+    Q_ASSERT(accessible);
+
+    QAccessibleAttributesInterface *attributesIface = accessible->attributesInterface();
+    if (!attributesIface)
+        return;
+
+    QString ariaString;
+    const QList<QAccessible::Attribute> attrKeys = attributesIface->attributeKeys();
+    for (qsizetype i = 0; i < attrKeys.size(); ++i) {
+        if (i != 0)
+            ariaString += QStringLiteral(";");
+        const QAccessible::Attribute key = attrKeys.at(i);
+        const QVariant value = attributesIface->attributeValue(key);
+        // see "Core Accessibility API Mappings" spec: https://www.w3.org/TR/core-aam-1.2/
+        switch (key) {
+        case QAccessible::Attribute::Custom:
+        {
+            // forward custom attributes as-is
+            Q_ASSERT((value.canConvert<QHash<QString, QString>>()));
+            const QHash<QString, QString> attrMap = value.value<QHash<QString, QString>>();
+            for (auto [name, val] : attrMap.asKeyValueRange()) {
+                if (name != *attrMap.keyBegin())
+                    ariaString += QStringLiteral(";");
+                ariaString += name + QStringLiteral("=") + val;
+            }
+            break;
+        }
+        case QAccessible::Attribute::Level:
+            Q_ASSERT(value.canConvert<int>());
+            ariaString += QStringLiteral("level=") + QString::number(value.toInt());
+            break;
+        default:
+            break;
+        }
+    }
+
+    setVariantString(ariaString, pRetVal);
+}
+
+void QWindowsUiaMainProvider::setStyle(QAccessibleInterface *accessible, VARIANT *pRetVal)
+{
+    Q_ASSERT(accessible);
+
+    QAccessibleAttributesInterface *attributesIface = accessible->attributesInterface();
+    if (!attributesIface)
+        return;
+
+    // currently, only heading styles are implemented here
+    if (accessible->role() != QAccessible::Role::Heading)
+        return;
+
+    const QVariant levelVariant = attributesIface->attributeValue(QAccessible::Attribute::Level);
+    if (!levelVariant.isValid())
+        return;
+
+    Q_ASSERT(levelVariant.canConvert<int>());
+    // UIA only has styles for heading levels 1-9
+    const int level = levelVariant.toInt();
+    if (level < 1 || level > 9)
+        return;
+
+    const int styleId = styleIdForHeadingLevel(level);
+    setVariantI4(styleId, pRetVal);
+}
+
+int QWindowsUiaMainProvider::styleIdForHeadingLevel(int headingLevel)
+{
+    // only heading levels 1-9 have a corresponding UIA style ID
+    Q_ASSERT(headingLevel > 0 && headingLevel <= 9);
+
+    static constexpr int styles[] = {
+        StyleId_Heading1,
+        StyleId_Heading2,
+        StyleId_Heading3,
+        StyleId_Heading4,
+        StyleId_Heading5,
+        StyleId_Heading6,
+        StyleId_Heading7,
+        StyleId_Heading8,
+        StyleId_Heading9,
+    };
+
+    return styles[headingLevel - 1];
+}
+
 HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pRetVal)
 {
     qCDebug(lcQpaUiAutomation) << __FUNCTION__ << idProp;
@@ -410,6 +497,9 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
     case UIA_AccessKeyPropertyId:
         // Accelerator key.
         setVariantString(accessible->text(QAccessible::Accelerator), pRetVal);
+        break;
+    case UIA_AriaPropertiesPropertyId:
+        setAriaProperties(accessible, pRetVal);
         break;
     case UIA_AutomationIdPropertyId:
         // Automation ID, which can be used by tools to select a specific control in the UI.
@@ -511,6 +601,9 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         setVariantString(name, pRetVal);
         break;
     }
+    case UIA_StyleIdAttributeId:
+        setStyle(accessible, pRetVal);
+        break;
     default:
         break;
     }
