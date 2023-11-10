@@ -11,22 +11,20 @@
 class InformationWindow : public QDialog
 {
     Q_OBJECT
-
 public:
     InformationWindow(int id, QSqlRelationalTableModel *items,
                       QWidget *parent = nullptr);
-
     int id() const;
 
-signals:
+Q_SIGNALS:
     void imageChanged(int id, const QString &fileName);
 //! [0]
 
 //! [1]
-private slots:
+private Q_SLOTS:
     void revert();
     void submit();
-    void enableButtons(bool enable = true);
+    void enableButtons(bool enable);
 //! [1]
 
 //! [2]

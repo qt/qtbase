@@ -14,7 +14,6 @@ class InformationWindow;
 class View : public QGraphicsView
 {
     Q_OBJECT
-
 public:
     View(const QString &items, const QString &images, QWidget *parent = nullptr);
 
@@ -23,7 +22,7 @@ protected:
 //! [0]
 
 //! [1]
-private slots:
+private Q_SLOTS:
     void updateImage(int id, const QString &fileName);
 //! [1]
 

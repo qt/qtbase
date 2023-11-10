@@ -54,7 +54,7 @@ void ImageItem::setFrame(int frame)
     QPointF center = boundingRect().center();
 
     setTransform(QTransform::fromTranslate(center.x(), center.y()), true);
-    setTransform(QTransform::fromScale(1 + frame / 330.0, 1 + frame / 330.0), true);
+    setTransform(QTransform::fromScale(1 + frame / 300.0, 1 + frame / 300.0), true);
     setTransform(QTransform::fromTranslate(-center.x(), -center.y()), true);
 }
 //! [3]
@@ -62,8 +62,8 @@ void ImageItem::setFrame(int frame)
 //! [4]
 void ImageItem::adjust()
 {
-    setTransform(QTransform::fromScale(120 / boundingRect().width(),
-                                       120 / boundingRect().height()));
+    setTransform(QTransform::fromScale(120.0 / boundingRect().width(),
+                                       120.0 / boundingRect().height()));
 }
 //! [4]
 

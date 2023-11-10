@@ -46,8 +46,8 @@
     \snippet drilldown/informationwindow.h 0
 
     When we create an information window, we pass the associated
-    item ID, a parent, and a pointer to the database, to the
-    constructor. We will use the database pointer to populate our
+    item ID, a pointer to the model, and a parent to the
+    constructor. We will use the model pointer to populate our
     window with data, while passing the parent parameter on to the
     base class. The ID is stored for future reference.
 

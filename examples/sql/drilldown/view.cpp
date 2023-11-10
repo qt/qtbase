@@ -87,8 +87,8 @@ void View::showInformation(ImageItem *image)
     if (!window) {
         window = new InformationWindow(id, itemTable, this);
 
-        connect(window, QOverload<int,const QString &>::of(&InformationWindow::imageChanged),
-                this, QOverload<int,const QString &>::of(&View::updateImage));
+        connect(window, &InformationWindow::imageChanged,
+                this, &View::updateImage);
 
         window->move(pos() + QPoint(20, 40));
         window->show();

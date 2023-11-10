@@ -11,7 +11,6 @@
 class ImageItem : public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
-
 public:
     enum { Type = UserType + 1 };
 
@@ -25,7 +24,7 @@ protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
-private slots:
+private Q_SLOTS:
     void setFrame(int frame);
     void updateItemPosition();
 
