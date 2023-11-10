@@ -1256,17 +1256,17 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
         else
             ensureSectionParsed(confFile, thePrefix);
 
-        auto j = const_cast<const ParsedSettingsMap *>(
-                &confFile->originalKeys)->lowerBound( thePrefix);
-        while (j != confFile->originalKeys.constEnd() && j.key().startsWith(thePrefix)) {
-            if (!confFile->removedKeys.contains(j.key()))
-                processChild(QStringView{j.key().originalCaseKey()}.sliced(startPos), spec, result);
-            ++j;
+        const auto &originalKeys = confFile->originalKeys;
+        auto i = originalKeys.lowerBound(thePrefix);
+        while (i != originalKeys.end() && i.key().startsWith(thePrefix)) {
+            if (!confFile->removedKeys.contains(i.key()))
+                processChild(QStringView{i.key().originalCaseKey()}.sliced(startPos), spec, result);
+            ++i;
         }
 
-        j = const_cast<const ParsedSettingsMap *>(
-                &confFile->addedKeys)->lowerBound(thePrefix);
-        while (j != confFile->addedKeys.constEnd() && j.key().startsWith(thePrefix)) {
+        const auto &addedKeys = confFile->addedKeys;
+        auto j = addedKeys.lowerBound(thePrefix);
+        while (j != addedKeys.end() && j.key().startsWith(thePrefix)) {
             processChild(QStringView{j.key().originalCaseKey()}.sliced(startPos), spec, result);
             ++j;
         }
