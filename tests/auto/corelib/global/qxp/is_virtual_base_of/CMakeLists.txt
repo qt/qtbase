@@ -14,3 +14,10 @@ qt_internal_add_test(tst_qxp_is_virtual_base_of
     LIBRARIES
         Qt::Core
 )
+
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90449
+# GCCs < 10 have no way to suppress "inaccessible base" warnings, except by disabling all warnings:
+qt_internal_extend_target(tst_qxp_is_virtual_base_of
+    CONDITION GCC AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10")
+    COMPILE_OPTIONS -w
+)
