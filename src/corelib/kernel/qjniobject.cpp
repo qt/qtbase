@@ -803,6 +803,7 @@ JNIEnv *QJniObject::jniEnv() const noexcept
 }
 
 /*!
+    \fn jobject QJniObject::object() const
     \fn template <typename T> T QJniObject::object() const
 
     Returns the object held by the QJniObject either as jobject or as type T.
@@ -1141,7 +1142,7 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
 */
 
 /*!
-    \fn template <typename T> QJniObject &QJniObject::operator=(T object)
+    \fn template <typename T, std::enable_if_t<std::is_convertible_v<T, jobject>, bool> = true> QJniObject &QJniObject::operator=(T object)
 
     Replace the current object with \a object. The old Java object will be released.
 */
@@ -1162,7 +1163,7 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
 */
 
 /*!
-    \fn T QJniObject::getField(const char *fieldName) const
+    \fn template<typename T> T QJniObject::getField(const char *fieldName) const
 
     Retrieves the value of the field \a fieldName.
 
@@ -1173,13 +1174,13 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
 */
 
 /*!
-    \fn T QJniObject::getStaticField(const char *className, const char *fieldName)
+    \fn template<typename T> T QJniObject::getStaticField(const char *className, const char *fieldName)
 
     Retrieves the value from the static field \a fieldName on the class \a className.
 */
 
 /*!
-    \fn T QJniObject::getStaticField(jclass clazz, const char *fieldName)
+    \fn template<typename T> T QJniObject::getStaticField(jclass clazz, const char *fieldName)
 
     Retrieves the value from the static field \a fieldName on \a clazz.
 */
@@ -1277,7 +1278,7 @@ QJniObject QJniObject::getStaticObjectField(jclass clazz, const char *fieldName,
 */
 
 /*!
-    \fn QJniObject QJniObject::getObjectField(const char *fieldName) const
+    \fn template<typename T> QJniObject QJniObject::getObjectField(const char *fieldName) const
 
     Retrieves a JNI object from the field \a fieldName.
 
@@ -1320,7 +1321,7 @@ QJniObject QJniObject::getObjectField(const char *fieldName, const char *signatu
 */
 
 /*!
-    \fn QJniObject QJniObject::getStaticObjectField(const char *className, const char *fieldName)
+    \fn template<typename T> QJniObject QJniObject::getStaticObjectField(const char *className, const char *fieldName)
 
     Retrieves the object from the field \a fieldName on the class \a className.
 
@@ -1330,7 +1331,7 @@ QJniObject QJniObject::getObjectField(const char *fieldName, const char *signatu
 */
 
 /*!
-    \fn QJniObject QJniObject::getStaticObjectField(jclass clazz, const char *fieldName)
+    \fn template<typename T> QJniObject QJniObject::getStaticObjectField(jclass clazz, const char *fieldName)
 
     Retrieves the object from the field \a fieldName on \a clazz.
 
