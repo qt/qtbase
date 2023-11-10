@@ -649,7 +649,7 @@ bool QDomNodeListPrivate::operator!=(const QDomNodeListPrivate &other) const
     return !operator==(other);
 }
 
-void QDomNodeListPrivate::createList()
+void QDomNodeListPrivate::createList() const
 {
     if (!node_impl)
         return;
@@ -703,16 +703,21 @@ void QDomNodeListPrivate::createList()
     }
 }
 
-QDomNodePrivate* QDomNodeListPrivate::item(int index)
+bool QDomNodeListPrivate::maybeCreateList() const
 {
     if (!node_impl)
-        return nullptr;
+        return false;
 
     const QDomDocumentPrivate *const doc = node_impl->ownerDocument();
     if (!doc || timestamp != doc->nodeListTime)
         createList();
 
-    if (index >= list.size())
+    return true;
+}
+
+QDomNodePrivate *QDomNodeListPrivate::item(int index)
+{
+    if (!maybeCreateList() || index >= list.size() || index < 0)
         return nullptr;
 
     return list.at(index);
@@ -720,14 +725,8 @@ QDomNodePrivate* QDomNodeListPrivate::item(int index)
 
 int QDomNodeListPrivate::length() const
 {
-    if (!node_impl)
+    if (!maybeCreateList())
         return 0;
-
-    const QDomDocumentPrivate *const doc = node_impl->ownerDocument();
-    if (!doc || timestamp != doc->nodeListTime) {
-        QDomNodeListPrivate *that = const_cast<QDomNodeListPrivate *>(this);
-        that->createList();
-    }
 
     return list.size();
 }
