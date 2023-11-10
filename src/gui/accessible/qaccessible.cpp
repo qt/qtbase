@@ -3192,7 +3192,7 @@ bool QAccessibleSelectionInterface::isSelected(QAccessibleInterface *childItem) 
 
  Attributes are key-value pairs. Values are stored in \l QVariant.
 
- The \a QAccessible::Attributes enumeration describes the available keys and
+ The \l QAccessible::Attribute enumeration describes the available keys and
  documents which type to use for the value of each key.
 
  While the text-specific attributes handled by \l QAccessibleTextInterface::attributes
@@ -3225,8 +3225,11 @@ QAccessibleAttributesInterface::~QAccessibleAttributesInterface()
 
  Returns the value of the attribute \a key of this object.
 
- If the specificed attribute is not set for this object, an invalid
- \l QVariant is returned.
+ If the attribute is set for this object, a value of the type documented for the
+ given key in the documentation of the \l QAccessible::Attribute enumeration is
+ returned in the \l QVariant.
+
+ Otherwise, an invalid \l QVariant is returned.
 */
 
 /*! \internal */

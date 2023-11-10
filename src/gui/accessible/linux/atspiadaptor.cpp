@@ -1647,7 +1647,7 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
         sendReply(connection, message,
                   QVariant::fromValue(spiStateSetFromSpiStates(spiState)));
     } else if (function == "GetAttributes"_L1) {
-        sendReply(connection, message, QVariant::fromValue(QSpiAttributeSet()));
+        sendReply(connection, message, QVariant::fromValue(getAttributes(interface)));
     } else if (function == "GetRelationSet"_L1) {
         sendReply(connection, message, QVariant::fromValue(relationSet(interface, connection)));
     } else if (function == "GetApplication"_L1) {
@@ -2303,6 +2303,38 @@ namespace
         }
         return AtSpiAttribute(name, value);
     }
+}
+
+QSpiAttributeSet AtSpiAdaptor::getAttributes(QAccessibleInterface *interface) const
+{
+    QSpiAttributeSet set;
+    QAccessibleAttributesInterface *attributesIface = interface->attributesInterface();
+    if (!attributesIface)
+        return set;
+
+    const QList<QAccessible::Attribute> attrKeys = attributesIface->attributeKeys();
+    for (QAccessible::Attribute key : attrKeys) {
+        const QVariant value = attributesIface->attributeValue(key);
+        // see "Core Accessibility API Mappings" spec: https://www.w3.org/TR/core-aam-1.2/
+        switch (key) {
+        case QAccessible::Attribute::Custom:
+        {
+            // forward custom attributes to AT-SPI as-is
+            Q_ASSERT((value.canConvert<QHash<QString, QString>>()));
+            const QHash<QString, QString> attrMap = value.value<QHash<QString, QString>>();
+            for (auto [name, val] : attrMap.asKeyValueRange())
+                set.insert(name, val);
+            break;
+        }
+        case QAccessible::Attribute::Level:
+            Q_ASSERT(value.canConvert<int>());
+            set.insert(QStringLiteral("level"), QString::number(value.toInt()));
+            break;
+        default:
+            break;
+        }
+    }
+    return set;
 }
 
 // FIXME all attribute methods below should share code

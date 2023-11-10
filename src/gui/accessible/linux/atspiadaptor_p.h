@@ -89,6 +89,7 @@ private:
 
     // accessible helper functions
     AtspiRole getRole(QAccessibleInterface *interface) const;
+    QSpiAttributeSet getAttributes(QAccessibleInterface *) const;
     QSpiRelationArray relationSet(QAccessibleInterface *interface, const QDBusConnection &connection) const;
     QStringList accessibleInterfaces(QAccessibleInterface *interface) const;
 
