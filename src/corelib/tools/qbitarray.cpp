@@ -686,7 +686,10 @@ Q_NEVER_INLINE QBitArray QBitArray::inverted_inplace() &&
 }
 
 /*!
-    \relates QBitArray
+    \fn QBitArray QBitArray::operator&(const QBitArray &a1, const QBitArray &a2)
+    \fn QBitArray QBitArray::operator&(QBitArray &&a1, const QBitArray &a2)
+    \fn QBitArray QBitArray::operator&(const QBitArray &a1, QBitArray &&a2)
+    \fn QBitArray QBitArray::operator&(QBitArray &&a1, QBitArray &&a2)
 
     Returns a bit array that is the AND of the bit arrays \a a1 and \a
     a2.
@@ -709,7 +712,10 @@ QBitArray operator&(const QBitArray &a1, const QBitArray &a2)
 }
 
 /*!
-    \relates QBitArray
+    \fn QBitArray QBitArray::operator|(const QBitArray &a1, const QBitArray &a2)
+    \fn QBitArray QBitArray::operator|(QBitArray &&a1, const QBitArray &a2)
+    \fn QBitArray QBitArray::operator|(const QBitArray &a1, QBitArray &&a2)
+    \fn QBitArray QBitArray::operator|(QBitArray &&a1, QBitArray &&a2)
 
     Returns a bit array that is the OR of the bit arrays \a a1 and \a
     a2.
@@ -732,7 +738,10 @@ QBitArray operator|(const QBitArray &a1, const QBitArray &a2)
 }
 
 /*!
-    \relates QBitArray
+    \fn QBitArray QBitArray::operator^(const QBitArray &a1, const QBitArray &a2)
+    \fn QBitArray QBitArray::operator^(QBitArray &&a1, const QBitArray &a2)
+    \fn QBitArray QBitArray::operator^(const QBitArray &a1, QBitArray &&a2)
+    \fn QBitArray QBitArray::operator^(QBitArray &&a1, QBitArray &&a2)
 
     Returns a bit array that is the XOR of the bit arrays \a a1 and \a
     a2.
