@@ -1998,7 +1998,8 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
 */
 bool QGuiApplication::event(QEvent *e)
 {
-    if (e->type() == QEvent::LanguageChange) {
+    switch (e->type()) {
+    case QEvent::LanguageChange:
         // if the layout direction was set explicitly, then don't override it here
         if (layout_direction == Qt::LayoutDirectionAuto)
             setLayoutDirection(layout_direction);
@@ -2006,13 +2007,15 @@ bool QGuiApplication::event(QEvent *e)
             if (topLevelWindow->flags() != Qt::Desktop)
                 postEvent(topLevelWindow, new QEvent(QEvent::LanguageChange));
         }
-    } else if (e->type() == QEvent::ApplicationFontChange ||
-               e->type() == QEvent::ApplicationPaletteChange) {
+        break;
+    case QEvent::ApplicationFontChange:
+    case QEvent::ApplicationPaletteChange:
         for (auto *topLevelWindow : QGuiApplication::topLevelWindows()) {
             if (topLevelWindow->flags() != Qt::Desktop)
                 postEvent(topLevelWindow, new QEvent(e->type()));
         }
-    } else if (e->type() == QEvent::Quit) {
+        break;
+    case QEvent::Quit:
         // Close open windows. This is done in order to deliver de-expose
         // events while the event loop is still running.
         for (QWindow *topLevelWindow : QGuiApplication::topLevelWindows()) {
@@ -2024,8 +2027,9 @@ bool QGuiApplication::event(QEvent *e)
                 return true;
             }
         }
+    default:
+        break;
     }
-
     return QCoreApplication::event(e);
 }
 
