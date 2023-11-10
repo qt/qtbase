@@ -184,7 +184,18 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
 
 void QCocoaSystemTrayIcon::updateMenu(QPlatformMenu *menu)
 {
-    m_statusItem.menu = menu ? static_cast<QCocoaMenu *>(menu)->nsMenu() : nil;
+    auto *nsMenu = menu ? static_cast<QCocoaMenu *>(menu)->nsMenu() : nil;
+    if (m_statusItem.menu == nsMenu)
+        return;
+
+    if (m_statusItem.menu) {
+        [NSNotificationCenter.defaultCenter removeObserver:m_delegate
+            name:NSMenuDidBeginTrackingNotification
+            object:m_statusItem.menu
+        ];
+    }
+
+    m_statusItem.menu = nsMenu;
 
     if (m_statusItem.menu) {
         // When a menu is assigned, NSStatusBarButtonCell will intercept the mouse
