@@ -594,18 +594,26 @@ QBitArray &QBitArray::operator^=(const QBitArray &other)
 
 QBitArray QBitArray::operator~() const
 {
-    qsizetype sz = size();
-    QBitArray a(sz);
-    const uchar *a1 = reinterpret_cast<const uchar *>(d.constData()) + 1;
-    uchar *a2 = reinterpret_cast<uchar *>(a.d.data()) + 1;
-    qsizetype n = d.size() - 1;
+    qsizetype n = d.size();
+    QBitArray result(QByteArrayData(n, n));
+    const uchar *src = reinterpret_cast<const uchar *>(data_ptr().data());
+    uchar *dst = reinterpret_cast<uchar *>(result.data_ptr().data());
 
-    while (n-- > 0)
-        *a2++ = ~*a1++;
+    uchar bitdiff = 8;
+    if (n)
+        bitdiff = dst[0] = src[0];      // copy the count of bits in the last byte
 
-    if (sz && sz % 8)
-        *(a2 - 1) &= (1 << (sz % 8)) - 1;
-    return a;
+    for (qsizetype i = 1; i < n; ++i)
+        dst[i] = ~src[i];
+
+    if (int tailCount = 16 - bitdiff; tailCount != 8) {
+        // zero the bits beyond our size in the last byte
+        Q_ASSERT(n > 1);
+        uchar tailMask = (1U << tailCount) - 1;
+        dst[n - 1] &= tailMask;
+    }
+
+    return result;
 }
 
 /*!

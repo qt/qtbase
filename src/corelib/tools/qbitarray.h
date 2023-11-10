@@ -18,6 +18,8 @@ class Q_CORE_EXPORT QBitArray
     friend Q_CORE_EXPORT size_t qHash(const QBitArray &key, size_t seed) noexcept;
     QByteArray d;
 
+    QBitArray(QByteArrayData &&dd) : d(std::move(dd)) {}
+
     template <typename BitArray> static auto bitLocation(BitArray &ba, qsizetype i)
     {
         Q_ASSERT(size_t(i) < size_t(ba.size()));
@@ -95,6 +97,7 @@ public:
 public:
     typedef QByteArray::DataPointer DataPtr;
     inline DataPtr &data_ptr() { return d.data_ptr(); }
+    inline const DataPtr &data_ptr() const { return d.data_ptr(); }
 };
 
 
