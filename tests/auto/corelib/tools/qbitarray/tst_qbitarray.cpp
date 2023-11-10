@@ -26,6 +26,12 @@ static QBitArray QStringToQBitArray(const QString &str)
     return ba;
 }
 
+static QBitArray detached(QBitArray a)
+{
+    a.detach();
+    return a;
+}
+
 class tst_QBitArray : public QObject
 {
     Q_OBJECT
@@ -323,13 +329,25 @@ void tst_QBitArray::operator_and()
 
     QBitArray result = input1 & input2;
     QCOMPARE(result, res);
+    result = input1 & QBitArray(input2);
+    QCOMPARE(result, res);
+    result = input1 & detached(input2);
+    QCOMPARE(result, res);
 
     // operation is commutative
     result = input2 & input1;
     QCOMPARE(result, res);
+    result = input2 & QBitArray(input1);
+    QCOMPARE(result, res);
+    result = input2 & detached(input1);
+    QCOMPARE(result, res);
 
     // operation is idempotent
     result = result & result;
+    QCOMPARE(result, res);
+    result = result & QBitArray(result);
+    QCOMPARE(result, res);
+    result = result & detached(result);
     QCOMPARE(result, res);
 }
 
@@ -392,13 +410,25 @@ void tst_QBitArray::operator_or()
 
     QBitArray result = input1 | input2;
     QCOMPARE(result, res);
+    result = input1 | QBitArray(input2);
+    QCOMPARE(result, res);
+    result = input1 | detached(input2);
+    QCOMPARE(result, res);
 
     // operation is commutative
     result = input2 | input1;
     QCOMPARE(result, res);
+    result = input2 | QBitArray(input1);
+    QCOMPARE(result, res);
+    result = input2 | detached(input1);
+    QCOMPARE(result, res);
 
     // operation is idempotent
     result = result | result;
+    QCOMPARE(result, res);
+    result = result | QBitArray(result);
+    QCOMPARE(result, res);
+    result = result | detached(result);
     QCOMPARE(result, res);
 }
 
@@ -459,17 +489,39 @@ void tst_QBitArray::operator_xor()
 
     QBitArray result = input1 ^ input2;
     QCOMPARE(result, res);
+    result = input1 ^ QBitArray(input2);
+    QCOMPARE(result, res);
+    result = input1 ^ detached(input2);
+    QCOMPARE(result, res);
 
     // operation is commutative
     result = input2 ^ input1;
+    QCOMPARE(result, res);
+    result = input2 ^ QBitArray(input1);
+    QCOMPARE(result, res);
+    result = input2 ^ detached(input1);
     QCOMPARE(result, res);
 
     // XORing with oneself is nilpotent
     result = input1 ^ input1;
     QCOMPARE(result, QBitArray(input1.size()));
+    result = input1 ^ QBitArray(input1);
+    QCOMPARE(result, QBitArray(input1.size()));
+    result = input1 ^ detached(input1);
+    QCOMPARE(result, QBitArray(input1.size()));
+
     result = input2 ^ input2;
     QCOMPARE(result, QBitArray(input2.size()));
+    result = input2 ^ QBitArray(input2);
+    QCOMPARE(result, QBitArray(input2.size()));
+    result = input2 ^ detached(input2);
+    QCOMPARE(result, QBitArray(input2.size()));
+
     result = res ^ res;
+    QCOMPARE(result, QBitArray(res.size()));
+    result = res ^ QBitArray(res);
+    QCOMPARE(result, QBitArray(res.size()));
+    result = res ^ detached(res);
     QCOMPARE(result, QBitArray(res.size()));
 }
 

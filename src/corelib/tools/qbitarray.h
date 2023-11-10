@@ -12,8 +12,28 @@ class QBitRef;
 class Q_CORE_EXPORT QBitArray
 {
     Q_CORE_EXPORT friend QBitArray operator&(const QBitArray &a1, const QBitArray &a2);
+    friend QBitArray operator&(QBitArray &&a1, const QBitArray &a2)
+    { return a1 &= a2; }
+    friend QBitArray operator&(const QBitArray &a1, QBitArray &&a2)
+    { return a2 &= a1; }
+    friend QBitArray operator&(QBitArray &&a1, QBitArray &&a2)
+    { return a1 &= a2; }
+
     Q_CORE_EXPORT friend QBitArray operator|(const QBitArray &a1, const QBitArray &a2);
+    friend QBitArray operator|(QBitArray &&a1, const QBitArray &a2)
+    { return a1 |= a2; }
+    friend QBitArray operator|(const QBitArray &a1, QBitArray &&a2)
+    { return a2 |= a1; }
+    friend QBitArray operator|(QBitArray &&a1, QBitArray &&a2)
+    { return a1 |= a2; }
+
     Q_CORE_EXPORT friend QBitArray operator^(const QBitArray &a1, const QBitArray &a2);
+    friend QBitArray operator^(QBitArray &&a1, const QBitArray &a2)
+    { return a1 ^= a2; }
+    friend QBitArray operator^(const QBitArray &a1, QBitArray &&a2)
+    { return a2 ^= a1; }
+    friend QBitArray operator^(QBitArray &&a1, QBitArray &&a2)
+    { return a1 ^= a2; }
 
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QBitArray &);
