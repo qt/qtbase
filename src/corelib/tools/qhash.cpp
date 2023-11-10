@@ -1512,7 +1512,7 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn template <class T> size_t qHash(std::nullptr_t key, size_t seed = 0)
+/*! \fn size_t qHash(std::nullptr_t key, size_t seed = 0)
     \relates QHash
     \since 6.0
 
