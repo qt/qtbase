@@ -731,7 +731,8 @@ void QCborStreamWriter::startArray()
    seem to allow up to 2\sup{64}-1 elements in the array. However, both
    QCborStreamWriter and QCborStreamReader are currently limited to 2\sup{32}-2
    items on 32-bit systems and 2\sup{64}-2 items on 64-bit ones. Also note that
-   QCborArray is currently limited to 2\sup{27} elements in any platform.
+   QCborArray is currently limited to 2\sup{27} elements on 32-bit platforms and
+   2\sup{59} elements on 64-bit ones.
 
    \sa startArray(), endArray(), startMap(), QCborStreamReader::isArray(),
    QCborStreamReader::isLengthKnown()
@@ -804,7 +805,8 @@ void QCborStreamWriter::startMap()
    seem to allow up to 2\sup{64}-1 pairs in the map. However, both
    QCborStreamWriter and QCborStreamReader are currently limited to 2\sup{31}-1
    items on 32-bit systems and 2\sup{63}-1 items on 64-bit ones. Also note that
-   QCborMap is currently limited to 2\sup{26} elements in any platform.
+   QCborMap is currently limited to 2\sup{26} elements on 32-bit platforms and
+   2\sup{58} on 64-bit ones.
 
    \sa startMap(), endMap(), startArray(), QCborStreamReader::isMap(),
        QCborStreamReader::isLengthKnown()
