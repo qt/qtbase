@@ -1287,15 +1287,13 @@ QString QPropertyBindingError::description() const
   can be used to express relationships between different properties in your
   application.
 
-  \note In the case of QML it is important that \l QProperty needs to be exposed
-  in \l Q_PROPERTY with the BINDABLE keyword. As a result the QML engine, uses it
-  as the bindable interface to set up the property binding. In turn, the binding
-  can be then interacted with C++ via the normal API like:
-
+  \note For QML, it's important to expose the \l QProperty in \l Q_PROPERTY
+  with the BINDABLE keyword. As a result, the QML engine uses
+  it as the bindable interface to set up the property binding. In turn, the
+  binding can then be interacted with C++ via the normal API:
   QProperty<T>::onValueChanged, QProperty::takeBinding and QBindable::hasBinding
-
-  If the property is BINDABLE, then the engine will use the change-tracking
-  inherent to the C++ property system for getting notified about changes; and
+  If the property is BINDABLE, the engine will use the change-tracking
+  inherent to the C++ property system for getting notified about changes, and it
   won't rely on signals being emitted.
 */
 
