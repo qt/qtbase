@@ -552,7 +552,7 @@ QT_WARNING_POP
 }
 
 
-/*! \fn template <typename T> const T &QFutureWatcher<T>::result() const
+/*! \fn template <typename T> template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>> const T &QFutureWatcher<T>::result() const
 
     Returns the first result in the future(). If the result is not immediately
     available, this function will block and wait for the result to become
@@ -561,7 +561,7 @@ QT_WARNING_POP
     \sa resultAt()
 */
 
-/*! \fn template <typename T> const T &QFutureWatcher<T>::resultAt(int index) const
+/*! \fn template <typename T> template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>> const T &QFutureWatcher<T>::resultAt(int index) const
 
     Returns the result at \a index in the future(). If the result is not
     immediately available, this function will block and wait for the result to
