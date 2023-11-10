@@ -2134,7 +2134,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
         XFillRectangle(d->dpy, d->hd, d->gc, x, y, sw, sh);
         restore_clip = true;
     } else if (mono_dst && !mono_src) {
-        QBitmap bitmap(pixmap);
+        QBitmap bitmap = QBitmap::fromPixmap(pixmap);
         XCopyArea(d->dpy, qt_x11PixmapHandle(bitmap), d->hd, d->gc, sx, sy, sw, sh, x, y);
     } else {
         XCopyArea(d->dpy, qt_x11PixmapHandle(pixmap), d->hd, d->gc, sx, sy, sw, sh, x, y);
