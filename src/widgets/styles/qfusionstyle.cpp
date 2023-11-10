@@ -2439,7 +2439,6 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 subtleEdge.setAlpha(40);
                 painter->setPen(subtleEdge);
                 painter->setBrush(Qt::NoBrush);
-                painter->setClipRect(scrollBarGroove.adjusted(1, 0, -1, -3));
                 painter->drawRect(scrollBarGroove.adjusted(1, 0, -1, -1));
                 painter->restore();
             }
@@ -2482,7 +2481,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     else
                         painter->setBrush(gradient);
 
-                    painter->drawRect(pixmapRect.adjusted(horizontal ? -1 : 0, horizontal ? 0 : -1, horizontal ? 0 : 1, horizontal ? 1 : 0));
+                    painter->drawRect(pixmapRect.adjusted(horizontal ? -1 : 0, horizontal ? 0 : -1, horizontal ? 0 : -1, horizontal ? -1 : 0));
 
                     painter->setPen(d->innerContrastLine());
                     painter->drawRect(scrollBarSlider.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, -1, -1));
@@ -2512,16 +2511,9 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 painter->drawRect(scrollBarSubLine.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, 0, 0));
                 painter->setPen(QPen(alphaOutline));
                 if (option->state & State_Horizontal) {
-                    if (option->direction == Qt::RightToLeft) {
-                        pixmapRect.setLeft(scrollBarSubLine.left());
-                        painter->drawLine(pixmapRect.topLeft(), pixmapRect.bottomLeft());
-                    } else {
-                        pixmapRect.setRight(scrollBarSubLine.right());
-                        painter->drawLine(pixmapRect.topRight(), pixmapRect.bottomRight());
-                    }
+                    painter->drawRect(scrollBarSubLine.adjusted(horizontal ? 0 : 1, 0, horizontal ? 1 : 0, horizontal ? -1 : 0));
                 } else {
-                    pixmapRect.setBottom(scrollBarSubLine.bottom());
-                    painter->drawLine(pixmapRect.bottomLeft(), pixmapRect.bottomRight());
+                    painter->drawRect(scrollBarSubLine.adjusted(0, 0, horizontal ? 0 : -1, 0));
                 }
 
                 QRect upRect = scrollBarSubLine.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, horizontal ? -2 : -1, horizontal ? -1 : -2);
@@ -2549,16 +2541,9 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 painter->drawRect(scrollBarAddLine.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, 0, 0));
                 painter->setPen(QPen(alphaOutline, 1));
                 if (option->state & State_Horizontal) {
-                    if (option->direction == Qt::LeftToRight) {
-                        pixmapRect.setLeft(scrollBarAddLine.left());
-                        painter->drawLine(pixmapRect.topLeft(), pixmapRect.bottomLeft());
-                    } else {
-                        pixmapRect.setRight(scrollBarAddLine.right());
-                        painter->drawLine(pixmapRect.topRight(), pixmapRect.bottomRight());
-                    }
+                    painter->drawRect(scrollBarAddLine.adjusted(horizontal ? -1 : 0, 0, horizontal ? -1 : 0, horizontal ? -1 : 0));
                 } else {
-                    pixmapRect.setTop(scrollBarAddLine.top());
-                    painter->drawLine(pixmapRect.topLeft(), pixmapRect.topRight());
+                    painter->drawRect(scrollBarAddLine.adjusted(0, horizontal ? 0 : -1, horizontal ? 0 : -1, horizontal ? 0 : -1));
                 }
 
                 QRect downRect = scrollBarAddLine.adjusted(1, 1, -1, -1);
