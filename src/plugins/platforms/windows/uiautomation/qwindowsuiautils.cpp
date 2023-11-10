@@ -176,6 +176,9 @@ long roleToControlTypeId(QAccessible::Role role)
         {QAccessible::PageTabList, UIA_TabControlTypeId},
         {QAccessible::Clock, UIA_CustomControlTypeId},
         {QAccessible::Splitter, UIA_CustomControlTypeId},
+        {QAccessible::Paragraph, UIA_TextControlTypeId},
+        {QAccessible::WebDocument, UIA_DocumentControlTypeId},
+        {QAccessible::Heading, UIA_TextControlTypeId},
     };
 
     return mapping.value(role, UIA_CustomControlTypeId);
