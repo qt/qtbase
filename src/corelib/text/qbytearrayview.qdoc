@@ -184,7 +184,7 @@
 */
 
 /*!
-    \fn template <typename Byte> QByteArrayView::QByteArrayView(const Byte *data, qsizetype len)
+    \fn template <typename Byte, if_compatible_byte<Byte> = true> QByteArrayView::QByteArrayView(const Byte *data, qsizetype len)
 
     Constructs a byte array view on \a data with length \a len.
 
@@ -202,7 +202,7 @@
 */
 
 /*!
-    \fn template <typename Byte> QByteArrayView::QByteArrayView(const Byte *first, const Byte *last)
+    \fn template <typename Byte, if_compatible_byte<Byte> = true> QByteArrayView::QByteArrayView(const Byte *first, const Byte *last)
 
     Constructs a byte array view on \a first with length (\a last - \a first).
 
@@ -270,7 +270,7 @@
 */
 
 /*!
-    \fn template <typename Container> QByteArrayView::QByteArrayView(const Container &c)
+    \fn template <typename Container, if_compatible_container<Container> = true> QByteArrayView::QByteArrayView(const Container &c)
 
     Constructs a byte array view on the array-like container \a c. The length and data
     are set via \c{std::size(c)} and \c{std::data(c)} respectively.
