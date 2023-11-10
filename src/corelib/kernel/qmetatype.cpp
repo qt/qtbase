@@ -1703,7 +1703,7 @@ using QMetaTypeMutableViewRegistry
 Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
 
 /*!
-    \fn bool QMetaType::registerConverter()
+    \fn template<typename From, typename To> bool QMetaType::registerConverter()
     \since 5.2
     Registers the possibility of an implicit conversion from type From to type To in the meta
     type system. Returns \c true if the registration succeeded, otherwise false.
@@ -1856,7 +1856,7 @@ bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
 */
 
 /*!
-    \fn bool QMetaType::hasRegisteredDebugStreamOperator()
+    \fn template<typename T> bool QMetaType::hasRegisteredDebugStreamOperator()
     \deprecated
     \since 5.2
 
@@ -2620,7 +2620,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
 */
 
 /*!
-    \fn bool QMetaType::hasRegisteredConverterFunction()
+    \fn template<typename From, typename To> bool QMetaType::hasRegisteredConverterFunction()
     Returns \c true, if the meta type system has a registered conversion from type From to type To.
     \since 5.2
     \overload
@@ -2637,7 +2637,7 @@ bool QMetaType::hasRegisteredConverterFunction(QMetaType fromType, QMetaType toT
 }
 
 /*!
-    \fn bool QMetaType::hasRegisteredMutableViewFunction()
+    \fn template<typename From, typename To> bool QMetaType::hasRegisteredMutableViewFunction()
     Returns \c true, if the meta type system has a registered mutable view on type From of type To.
     \since 6.0
     \overload
@@ -3065,7 +3065,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 */
 
 /*!
-    \fn int qRegisterMetaType(const char *typeName)
+    \fn template <typename T> int qRegisterMetaType(const char *typeName)
     \relates QMetaType
     \obsolete
     \threadsafe
@@ -3099,7 +3099,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 */
 
 /*!
-    \fn int qRegisterMetaType()
+    \fn template <typename T> int qRegisterMetaType()
     \relates QMetaType
     \threadsafe
     \since 4.2
@@ -3155,7 +3155,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
  */
 
 /*!
-    \fn int qMetaTypeId()
+    \fn template <typename T> int qMetaTypeId()
     \relates QMetaType
     \threadsafe
     \since 4.1
