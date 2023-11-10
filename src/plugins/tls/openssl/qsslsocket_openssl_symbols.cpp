@@ -756,7 +756,7 @@ static LoadedOpenSsl loadOpenSsl()
     // OpenSSL v.3 does not have SLIB_VERSION_NUMBER but has OPENSSL_SHLIB_VERSION.
     // The comment about OPENSSL_SHLIB_VERSION in opensslv.h is a bit troublesome:
     // "This is defined in free form."
-    auto shlibVersion = QString("%1"_L1).arg(OPENSSL_SHLIB_VERSION).toLatin1();
+    auto shlibVersion = QString("%1"_L1).arg(OPENSSL_SHLIB_VERSION);
     libssl->setFileNameAndVersion("ssl"_L1, shlibVersion);
     libcrypto->setFileNameAndVersion("crypto"_L1, shlibVersion);
 #elif defined(SHLIB_VERSION_NUMBER)
