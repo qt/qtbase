@@ -3795,6 +3795,7 @@ void tst_QAccessibility::bridgeTest()
     // For now this is a simple test to see if the bridge is working at all.
     // Ideally it should be extended to test all aspects of the bridge.
 #if defined(Q_OS_WIN)
+    auto guard = qScopeGuard([]() { QTestAccessibility::clearEvents(); });
 
     QWidget window;
     QVBoxLayout *lay = new QVBoxLayout(&window);
@@ -3932,9 +3933,104 @@ void tst_QAccessibility::bridgeTest()
     QCOMPARE(controlTypeId, UIA_ButtonControlTypeId);
 
     // Edit
-    hr = nodeList.at(2)->get_CurrentControlType(&controlTypeId);
+    IUIAutomationElement *uiaElement = nodeList.at(2);
+    hr = uiaElement->get_CurrentControlType(&controlTypeId);
     QVERIFY(SUCCEEDED(hr));
     QCOMPARE(controlTypeId, UIA_EditControlTypeId);
+
+    // "hello world\nhow are you today?\n"
+    IUIAutomationTextPattern *textPattern = nullptr;
+    hr = uiaElement->GetCurrentPattern(UIA_TextPattern2Id, reinterpret_cast<IUnknown**>(&textPattern));
+    QVERIFY(SUCCEEDED(hr));
+    QVERIFY(textPattern);
+
+    IUIAutomationTextRange *docRange = nullptr;
+    hr = textPattern->get_DocumentRange(&docRange);
+    QVERIFY(SUCCEEDED(hr));
+    QVERIFY(docRange);
+
+    IUIAutomationTextRange *textRange = nullptr;
+    hr = docRange->Clone(&textRange);
+    QVERIFY(SUCCEEDED(hr));
+    QVERIFY(textRange);
+    int moved;
+
+    auto rangeText = [](IUIAutomationTextRange *textRange) {
+        BSTR str;
+        QString res = "IUIAutomationTextRange::GetText() failed";
+        HRESULT hr = textRange->GetText(-1, &str);
+        if (SUCCEEDED(hr)) {
+            res = QString::fromWCharArray(str);
+            ::SysFreeString(str);
+        }
+        return res;
+    };
+
+    // Move start endpoint past "hello " to "world"
+    hr = textRange->Move(TextUnit_Character, 6, &moved);
+    QVERIFY(SUCCEEDED(hr));
+    QCOMPARE(moved, 6);
+    // If the range was not empty, it should be collapsed to contain a single text unit
+    QCOMPARE(rangeText(textRange), QString("w"));
+
+    // Move end endpoint to end of "world"
+    hr = textRange->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Character, 4, &moved);
+    QVERIFY(SUCCEEDED(hr));
+    QCOMPARE(moved, 4);
+    QCOMPARE(rangeText(textRange), QString("world"));
+
+    // MSDN: "Zero has no effect". This behavior was also verified with native controls.
+    hr = textRange->Move(TextUnit_Character, 0, &moved);
+    QVERIFY(SUCCEEDED(hr));
+    QCOMPARE(moved, 0);
+    QCOMPARE(rangeText(textRange), QString("world"));
+
+    hr = textRange->Move(TextUnit_Character, 1, &moved);
+    QVERIFY(SUCCEEDED(hr));
+    QCOMPARE(rangeText(textRange), QString("o"));
+
+   // move as far towards the end as possible
+    hr = textRange->Move(TextUnit_Character, 999, &moved);
+    QVERIFY(SUCCEEDED(hr));
+    QCOMPARE(rangeText(textRange), QString(""));
+
+    hr = textRange->MoveEndpointByUnit(TextPatternRangeEndpoint_Start, TextUnit_Character, -1, &moved);
+    QVERIFY(SUCCEEDED(hr));
+    QCOMPARE(rangeText(textRange), QString("\n"));
+
+    // move one forward (last possible position again)
+    hr = textRange->Move(TextUnit_Character, 1, &moved);
+    QVERIFY(SUCCEEDED(hr));
+    QCOMPARE(rangeText(textRange), QString(""));
+
+    hr = textRange->Move(TextUnit_Character, -7, &moved);
+    QVERIFY(SUCCEEDED(hr));
+    QCOMPARE(moved, -7);
+    QCOMPARE(rangeText(textRange), QString(""));
+    // simulate moving cursor (empty range) towards (and past) the end
+    QString today(" today?\n");
+    for (int i = 1; i < 9; ++i) {   // 9 is deliberately too much
+        // peek one character back
+        hr = textRange->MoveEndpointByUnit(TextPatternRangeEndpoint_Start, TextUnit_Character, -1, &moved);
+        QVERIFY(SUCCEEDED(hr));
+        QCOMPARE(rangeText(textRange), today.mid(i - 1, 1));
+
+        hr = textRange->Move(TextUnit_Character, 1, &moved);
+        QVERIFY(SUCCEEDED(hr));
+        QCOMPARE(rangeText(textRange), today.mid(i, moved));       // when we cannot move further, moved will be 0
+
+        // Make the range empty again
+        hr = textRange->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Character, -moved, &moved);
+        QVERIFY(SUCCEEDED(hr));
+
+        // advance the empty range
+        hr = textRange->Move(TextUnit_Character, 1, &moved);
+        QVERIFY(SUCCEEDED(hr));
+    }
+    docRange->Release();
+    textRange->Release();
+    textPattern->Release();
+
 
     // Table
     hr = nodeList.at(3)->get_CurrentControlType(&controlTypeId);
@@ -3954,8 +4050,6 @@ void tst_QAccessibility::bridgeTest()
     windowElement->Release();
     automation->Release();
     CoUninitialize();
-
-    QTestAccessibility::clearEvents();
 #endif
 }
 
