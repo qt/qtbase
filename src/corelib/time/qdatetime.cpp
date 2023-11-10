@@ -1729,9 +1729,16 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     starting at \a baseYear are the candidates first considered. Prior to 6.7
     there was no \a baseYear parameter and 1900 was always used. This is the
     default for \a baseYear, selecting a year from then to 1999. Passing 1976 as
-    \a baseYear will select a year from 1976 through 2075, for example. In some
-    cases, other fields may lead to the next or previous century being selected,
-    to get a result consistent with all fields given.
+    \a baseYear will select a year from 1976 through 2075, for example. When the
+    format also includes month, day (of month) and day-of-week, these suffice to
+    imply the century. Parsing all but the day of week and then using
+    QCalendar::matchCenturyToWeekday() to combine that with the day of the week
+    could disambiguate such a date, but runs the risk of turning a user error -
+    that would otherwise be recognized by the invalid result of parsing - into a
+    valid result in another century, that wasn't the user's intent. At present,
+    the date parser only considers the century indicated by \a baseYear and the
+    centuries immediately after and before it, to limit the scope for such
+    mistakes. See \l {Date ambiguities} for further details,
 
     The following examples demonstrate the default values:
 
@@ -1744,6 +1751,57 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     residue that may be a shorter expression. Thus \c{'MMMMMMMMMM'} would match
     \c{"MayMay05"} and set the month to May. Likewise, \c{'MMMMMM'} would match
     \c{"May08"} and find it inconsistent, leading to an invalid date.
+
+    \section2 Date ambiguities
+
+    Different cultures use different formats for dates and, as a result, users
+    may mix up the order in which date fields should be given. For example,
+    \c{"Wed 28-Nov-01"} might mean either 2028 November 1st or the 28th of
+    November, 2001 (each of which happens to be a Wednesday). Using format
+    \c{"ddd yy-MMM-dd"} it shall be interpreted the first way, using \c{"ddd
+    dd-MMM-yy"} the second. However, which the user meant may depend on the way
+    the user normally writes dates, rather than the format the code was
+    expecting.
+
+    The example considered above mixed up day of the month and a two-digit year.
+    Similar confusion can arise over interchanging the month and day of the
+    month, when both are given as numbers. In these cases, including a day of
+    the week field in the date format can provide some redundancy, that may help
+    to catch errors of this kind. However, as in the example above, this is not
+    always effective: the interchange of two fields (or their meanings) may
+    produce dates with the same day of the week.
+
+    Including a day of the week in the format can also resolve the century of a
+    date specified using only the last two digits of its year. Unfortunately,
+    when combined with a date in which the user (or other source of data) has
+    mixed up two of the fields, this resolution could lead to finding a date
+    which does match the format's reading but isn't the one intended by its
+    author. This would be in a different century, which would in many cases at
+    least make it possible to recognize there is a problem with the data. At
+    present, date parsing considers the centuries after and before the one
+    indicated by \a baseYear, which may fall foul of this problem. See the
+    discussion above about using QCalendar::matchCenturyToWeekday() to extend
+    that to a wider range of centuries, if that can safely be applied in your
+    use-case.
+
+    The best way to avoid date ambiguities is to use four-digit years and months
+    specified by name (whether full or abbreviated), ideally collected via user
+    interface idioms that make abundantly clear to the user which part of the
+    date they are selecting. Including a day of the week can also help by
+    providing the means to check consistency of the data. Where data comes from
+    the user, using a format supplied by a locale selected by the user, it is
+    best to use a long format as short formats are more likely to use two-digit
+    years. Of course, it is not always possible to control the format - data may
+    come from a source you do not control, for example.
+
+    As a result of these possible sources of confusion, particularly when you
+    cannot be sure an unambiguous format is in use, it is important to check
+    that the result of reading a string as a date is not just valid but
+    reasonable for the purpose for which it was supplied. If the result is
+    outside some range of reasonable values, it may be worth getting the user to
+    confirm their date selection, showing the date read from the string in a
+    long format that does include month name and four-digit year, to make it
+    easier for them to recognize any errors.
 
     \sa toString(), QDateTime::fromString(), QTime::fromString(),
         QLocale::toDate()
