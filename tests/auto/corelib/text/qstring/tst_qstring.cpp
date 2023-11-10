@@ -334,7 +334,8 @@ private:
 
     class TransientDefaultLocale
     {
-        const QLocale prior; // Records what *was* the default before we set it.
+        // This default-constructed QLocale records what *was* the default before we changed it:
+        const QLocale prior = {};
     public:
         TransientDefaultLocale(const QLocale &transient) { revise(transient); }
         void revise(const QLocale &transient) { QLocale::setDefault(transient); }
