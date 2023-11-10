@@ -349,7 +349,8 @@ public:
         TableInterface,
         TableCellInterface,
         HyperlinkInterface,
-        SelectionInterface
+        SelectionInterface,
+        AttributesInterface,
     };
 
     enum TextBoundaryType {
@@ -359,6 +360,11 @@ public:
         ParagraphBoundary,
         LineBoundary,
         NoBoundary
+    };
+
+    enum class Attribute {
+        Custom,
+        Level,
     };
 
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);

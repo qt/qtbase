@@ -412,6 +412,43 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \sa QAccessibleTextInterface
 */
 
+/*! \enum QAccessible::Attribute
+    This enum describes different types of attributes used by the
+    \l QAccessibleAttributesInterface.
+    \since 6.8
+
+    These attributes are comparable to the concept of properties/(object)
+    attributes found in ARIA, AT-SPI2, IAccessible, UIA and NSAccessibility
+    and are mapped to their platform counterpart where applicable.
+
+    Each attribute is handled as a key-value pair, with the values of this
+    enumeration being used as keys.
+
+    Attribute values are represented in a \l QVariant. The type of the value
+    stored in the \l QVariant is fixed and specified below for each of the
+    attribute types.
+
+    \value Custom               value type: \a QHash<QString, QString>
+                                The \a Custom attribute is special in that
+                                it can effectively represent multiple attributes at
+                                once, since it itself is a \l QHash used to represent
+                                key-value pairs.
+                                For platforms supporting custom key-value pairs for
+                                attributes, those set in the \a Custom attribute
+                                are bridged to the platform layer without applying any
+                                translation to platform-specific attributes. In general,
+                                the other, more strongly typed attributes should be used.
+                                This attribute can e.g. be used for prototyping
+                                before officially adding an official new enumeration value
+                                for a specific feature.
+    \value Level                value type: \a int
+                                Defines the hierarchical level of an element within a structure,
+                                e.g. the heading level of a heading. This attribute conceptually
+                                matches the "aria-level" property in ARIA.
+
+    \sa QAccessibleAttributesInterface
+*/
+
 
 /*!
     \enum QAccessible::InterfaceType
@@ -431,8 +468,9 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value TableCellInterface       For cells in a TableInterface object.
     \value HyperlinkInterface       For hyperlink nodes (usually embedded as children of text nodes)
     \value [since 6.5] SelectionInterface For non-text objects that support selection of child objects.
+    \value [since 6.8] AttributesInterface For objects that support object-specific attributes.
 
-    \sa QAccessibleInterface::interface_cast(), QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface, QAccessibleSelectionInterface
+    \sa QAccessibleInterface::interface_cast(), QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface, QAccessibleSelectionInterface, QAccessibleAttributesInterface
 */
 
 #if QT_CONFIG(accessibility)
@@ -3068,6 +3106,54 @@ bool QAccessibleSelectionInterface::isSelected(QAccessibleInterface *childItem) 
     i.e. whether the selection is empty after this method has been called.
 */
 
+
+/*!
+    \since 6.8
+    \class QAccessibleAttributesInterface
+    \inmodule QtGui
+    \ingroup accessibility
+
+ \brief The QAccessibleAttributesInterface class implements support for
+ reporting attributes for an accessible object.
+
+ Attributes are key-value pairs. Values are stored in \l QVariant.
+
+ The \a QAccessible::Attributes enumeration describes the available keys and
+ documents which type to use for the value of each key.
+
+ While the text-specific attributes handled by \l QAccessibleTextInterface::attributes
+ are specific to objects implementing text and are specific to a specific text
+ position/offset, the attributes handled by the \l QAccessibleAttributesInterface
+ can be used for objects of any role and apply for the whole object.
+
+ Classes already implementing \l QAccessibleTextInterface for text-specific attrtibutes
+ may want to implement \l QAccessibleAttributesInterface in addition for object-specific
+ attributes.
+*/
+
+/*!
+
+ Destroys the QAccessibleAttributesInterface.
+*/
+QAccessibleAttributesInterface::~QAccessibleAttributesInterface()
+{
+}
+
+/*!
+    \fn QList<QAccessible::Attribute> QAccessibleAttributesInterface::attributeKeys() const
+
+ Returns the keys of all attributes the object supports. The \l QAccessible::Attribute
+ enumeration describes available keys.
+*/
+
+/*!
+    \fn QVariant QAccessibleAttributesInterface::attributeValue(QAccessible::Attribute key) const
+
+ Returns the value of the attribute \a key of this object.
+
+ If the specificed attribute is not set for this object, an invalid
+ \l QVariant is returned.
+*/
 
 /*! \internal */
 QString qAccessibleLocalizedActionDescription(const QString &actionName)
