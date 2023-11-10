@@ -548,7 +548,10 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_png
         WrapPNG::WrapPNG
 )
 
-qt_internal_extend_target(Gui CONDITION ((QT_FEATURE_png) AND (WIN32 AND MINGW)) AND (GCC_VERSION___equals___8.1.0)
+qt_internal_extend_target(Gui
+    CONDITION
+        QT_FEATURE_png AND WIN32 AND MINGW AND
+        (CMAKE_CXX_COMPILER_VESION VERSION_EQUAL "8.1.0")
     COMPILE_OPTIONS
         -fno-reorder-blocks-and-partition
 )
