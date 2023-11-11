@@ -3099,13 +3099,13 @@ QStringList QStandardItemModel::mimeTypes() const
 */
 QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
 {
-    QMimeData *data = QAbstractItemModel::mimeData(indexes);
+    std::unique_ptr<QMimeData> data(QAbstractItemModel::mimeData(indexes));
     if (!data)
         return nullptr;
 
     const QString format = qStandardItemModelDataListMimeType();
     if (!mimeTypes().contains(format))
-        return data;
+        return data.release();
     QByteArray encoded;
     QDataStream stream(&encoded, QIODevice::WriteOnly);
 
@@ -3157,7 +3157,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     }
 
     data->setData(format, encoded);
-    return data;
+    return data.release();
 }
 
 
