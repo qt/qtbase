@@ -3,20 +3,17 @@
 
 package org.qtproject.qt.android;
 
+import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.ImageView;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
-import android.view.MotionEvent;
-import android.widget.PopupWindow;
-import android.app.Activity;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
 
 /* This view represents one of the handle (selection or cursor handle) */
 class CursorView extends ImageView

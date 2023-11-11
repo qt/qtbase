@@ -4,27 +4,23 @@
 
 package org.qtproject.qt.android.accessibility;
 
-import android.accessibilityservice.AccessibilityService;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.system.Os;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.text.TextUtils;
-
-import android.view.accessibility.*;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
-import android.view.MotionEvent;
-import android.view.View.OnHoverListener;
-
-import android.content.Context;
-import android.system.Os;
-
-import java.util.LinkedList;
-import java.util.List;
+import android.view.accessibility.AccessibilityNodeProvider;
 
 import org.qtproject.qt.android.QtActivityDelegate;
 import org.qtproject.qt.android.QtNative;

@@ -3,8 +3,6 @@
 
 package org.qtproject.qt.android.extras;
 
-import android.content.ComponentName;
-import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.Parcel;
 

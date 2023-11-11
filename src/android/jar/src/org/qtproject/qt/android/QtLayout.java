@@ -6,20 +6,9 @@ package org.qtproject.qt.android;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Rect;
-import android.os.Build;
-import android.util.Log;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsets;
-import android.view.WindowManager;
-import android.graphics.Insets;
-import android.view.WindowMetrics;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 
 public class QtLayout extends ViewGroup
 {

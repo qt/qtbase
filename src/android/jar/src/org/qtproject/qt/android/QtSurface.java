@@ -4,16 +4,12 @@
 
 package org.qtproject.qt.android;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 
 public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 {

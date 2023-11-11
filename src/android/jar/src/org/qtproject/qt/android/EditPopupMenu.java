@@ -4,24 +4,14 @@
 
 package org.qtproject.qt.android;
 
+import android.R;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.ImageView;
-import android.content.res.TypedArray;
-import android.graphics.drawable.Drawable;
-import android.view.MotionEvent;
-import android.widget.PopupWindow;
-import android.app.Activity;
-import android.view.ViewTreeObserver;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup;
-import android.R;
+import android.view.ViewTreeObserver;
+import android.widget.PopupWindow;
 
 // Helper class that manages a cursor or selection handle
 public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayoutChangeListener,
