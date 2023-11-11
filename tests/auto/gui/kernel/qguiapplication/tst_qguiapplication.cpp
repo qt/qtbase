@@ -47,6 +47,7 @@ private slots:
     void changeFocusWindow();
     void keyboardModifiers();
     void palette();
+    void paletteNoCrash();
     void font();
     void modalWindow();
     void quitOnLastWindowClosed();
@@ -550,6 +551,15 @@ void tst_QGuiApplication::palette()
     QCOMPARE(signalSpy.size(), 2);
 #endif
     QCOMPARE(QGuiApplication::palette(), QPalette());
+}
+
+void tst_QGuiApplication::paletteNoCrash()
+{
+    QGuiApplication::setDesktopSettingsAware(false);
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    // this would crash on windows (QTBUG-111527)
+    QGuiApplication a(argc, argv);
 }
 
 void tst_QGuiApplication::font()

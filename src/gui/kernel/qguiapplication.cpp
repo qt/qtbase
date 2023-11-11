@@ -3502,7 +3502,8 @@ bool QGuiApplicationPrivate::setPalette(const QPalette &palette)
 */
 QPalette QGuiApplicationPrivate::basePalette() const
 {
-    return platformTheme() ? *platformTheme()->palette() : Qt::gray;
+    const auto pf = platformTheme();
+    return pf && pf->palette() ? *pf->palette() : Qt::gray;
 }
 
 void QGuiApplicationPrivate::handlePaletteChanged(const char *className)
