@@ -38,10 +38,10 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
     private static final String DEFAULT_CLASS_NAME = "$VirtualChild";
 
     private View m_view = null;
-    private AccessibilityManager m_manager;
-    private QtActivityDelegate m_activityDelegate;
-    private Activity m_activity;
-    private ViewGroup m_layout;
+    private final AccessibilityManager m_manager;
+    private final QtActivityDelegate m_activityDelegate;
+    private final Activity m_activity;
+    private final ViewGroup m_layout;
 
     // The accessible object that currently has the "accessibility focus"
     // usually indicated by a yellow rectangle on screen.
@@ -453,7 +453,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         return node;
     }
 
-    private AccessibilityNodeProvider m_nodeProvider = new AccessibilityNodeProvider()
+    private final AccessibilityNodeProvider m_nodeProvider = new AccessibilityNodeProvider()
     {
         @Override
         public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId)

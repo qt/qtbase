@@ -18,7 +18,7 @@ import android.widget.PopupWindow;
 /* This view represents one of the handle (selection or cursor handle) */
 class CursorView extends ImageView
 {
-    private CursorHandle mHandle;
+    private final CursorHandle mHandle;
     // The coordinare which where clicked
     private float m_offsetX;
     private float m_offsetY;
@@ -66,18 +66,18 @@ class CursorView extends ImageView
 // Helper class that manages a cursor or selection handle
 public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 {
-    private View m_layout = null;
+    private final View m_layout;
     private CursorView m_cursorView = null;
     private PopupWindow m_popup = null;
-    private int m_id;
-    private int m_attr;
-    private Activity m_activity;
+    private final int m_id;
+    private final int m_attr;
+    private final Activity m_activity;
     private int m_posX = 0;
     private int m_posY = 0;
     private int m_lastX;
     private int m_lastY;
     int tolerance;
-    private boolean m_rtl;
+    private final boolean m_rtl;
     int m_yShift;
 
     public CursorHandle(Activity activity, View layout, int id, int attr, boolean rtl) {

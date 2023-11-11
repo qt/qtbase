@@ -17,10 +17,10 @@ import android.widget.PopupWindow;
 public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayoutChangeListener,
         EditContextView.OnClickListener
 {
-    private View m_layout = null;
-    private EditContextView m_view = null;
+    private final View m_layout;
+    private final EditContextView m_view;
     private PopupWindow m_popup = null;
-    private Activity m_activity;
+    private final Activity m_activity;
     private int m_posX;
     private int m_posY;
     private int m_buttons;

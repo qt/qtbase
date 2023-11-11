@@ -38,8 +38,8 @@ public class QtInputDelegate {
     public static native void handleLocationChanged(int id, int x, int y);
     // handle methods
 
-    private QtEditText m_editText = null;
-    private InputMethodManager m_imm = null;
+    private final QtEditText m_editText;
+    private final InputMethodManager m_imm;
 
     private boolean m_keyboardIsVisible = false;
     private boolean m_isKeyboardHidingAnimationOngoing = false;

@@ -92,7 +92,7 @@ public class QtInputConnection extends BaseInputConnection
         void onSendKeyEventDefaultCase();
     }
 
-    private QtEditText m_view = null;
+    private final QtEditText m_view;
 
     private void setClosing(boolean closing)
     {

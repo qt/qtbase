@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class QtThread {
-    private ArrayList<Runnable> m_pendingRunnables = new ArrayList<Runnable>();
+    private final ArrayList<Runnable> m_pendingRunnables = new ArrayList<Runnable>();
     private boolean m_exit = false;
-    private Thread m_qtThread = new Thread(new Runnable() {
+    private final Thread m_qtThread = new Thread(new Runnable() {
         @Override
         public void run() {
             while (!m_exit) {

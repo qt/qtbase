@@ -54,7 +54,7 @@ public class QtActivityDelegate
     private QtAccessibilityDelegate m_accessibilityDelegate = null;
     private final QtDisplayManager m_displayManager = new QtDisplayManager();
 
-    private QtInputDelegate m_inputDelegate = null;
+    private final QtInputDelegate m_inputDelegate;
 
     QtActivityDelegate(Activity activity)
     {
