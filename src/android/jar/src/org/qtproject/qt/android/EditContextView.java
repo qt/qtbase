@@ -23,7 +23,7 @@ public class EditContextView extends LinearLayout implements View.OnClickListene
     public static final int PASTE_BUTTON = 1 << 2;
     public static final int SALL_BUTTON  = 1 << 3;
 
-    HashMap<Integer, ContextButton> m_buttons = new HashMap<Integer, ContextButton>(4);
+    HashMap<Integer, ContextButton> m_buttons = new HashMap<>(4);
     OnClickListener m_onClickListener;
 
     public interface OnClickListener

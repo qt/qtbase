@@ -71,7 +71,7 @@ public class QtInputConnection extends BaseInputConnection
             Rect r = new Rect();
             activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
 
-            int screenHeight = 0;
+            int screenHeight;
             if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                 DisplayMetrics metrics = new DisplayMetrics();
                 activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);

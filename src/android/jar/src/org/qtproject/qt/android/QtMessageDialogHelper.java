@@ -142,7 +142,7 @@ public class QtMessageDialogHelper
     public void addButton(int id, String text)
     {
         if (m_buttonsList == null)
-            m_buttonsList = new ArrayList<ButtonStruct>();
+            m_buttonsList = new ArrayList<>();
         m_buttonsList.add(new ButtonStruct(this, id, text));
     }
 
@@ -271,18 +271,19 @@ public class QtMessageDialogHelper
                         bv.setOnClickListener(button);
                         if (!firstButton) // first button
                         {
-                            LinearLayout.LayoutParams layout = null;
                             View spacer = new View(m_activity);
                             try {
-                                layout = new LinearLayout.LayoutParams(1, RelativeLayout.LayoutParams.MATCH_PARENT);
+                                LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(1,
+                                        RelativeLayout.LayoutParams.MATCH_PARENT);
                                 spacer.setBackgroundDrawable(getStyledDrawable("dividerVertical"));
                                 buttonsLayout.addView(spacer, layout);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }
-                        LinearLayout.LayoutParams layout = null;
-                        layout = new LinearLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT, 1.0f);
+                        LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(
+                                RelativeLayout.LayoutParams.MATCH_PARENT,
+                                RelativeLayout.LayoutParams.WRAP_CONTENT, 1.0f);
                         buttonsLayout.addView(bv, layout);
                         firstButton = false;
                     }

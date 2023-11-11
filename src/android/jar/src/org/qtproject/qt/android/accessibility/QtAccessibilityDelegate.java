@@ -113,7 +113,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
                         m_view.setOnHoverListener(new HoverEventListener());
                     } catch (Exception e) {
                         // Unknown exception means something went wrong.
-                        Log.w("Qt A11y", "Unknown exception: " + e.toString());
+                        Log.w("Qt A11y", "Unknown exception: " + e);
                     }
             } else {
                 if (m_view != null) {
@@ -425,10 +425,9 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         screenRect.offset(offsetX, offsetY);
         node.setBoundsInScreen(screenRect);
 
-        Rect rectInParent = screenRect;
         Rect parentScreenRect = QtNativeAccessibility.screenRect(parentId);
-        rectInParent.offset(-parentScreenRect.left, -parentScreenRect.top);
-        node.setBoundsInParent(rectInParent);
+        screenRect.offset(-parentScreenRect.left, -parentScreenRect.top);
+        node.setBoundsInParent(screenRect);
 
         // Manage internal accessibility focus state.
         if (m_focusedVirtualViewId == virtualViewId) {

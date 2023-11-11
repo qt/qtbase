@@ -6,8 +6,6 @@ package org.qtproject.qt.android;
 import android.app.Application;
 
 public class QtApplicationBase extends Application {
-    public final static String QtTAG = "Qt";
-
     @Override
     public void onTerminate() {
         QtNative.terminateQt();

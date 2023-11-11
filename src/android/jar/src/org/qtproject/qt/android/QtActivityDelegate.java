@@ -37,7 +37,7 @@ import org.qtproject.qt.android.accessibility.QtAccessibilityDelegate;
 
 public class QtActivityDelegate
 {
-    private Activity m_activity = null;
+    private Activity m_activity;
 
     private boolean m_started = false;
     private boolean m_quitApp = true;
@@ -218,8 +218,8 @@ public class QtActivityDelegate
             e.printStackTrace();
         }
 
-        m_surfaces =  new HashMap<Integer, QtSurface>();
-        m_nativeViews = new HashMap<Integer, View>();
+        m_surfaces = new HashMap<>();
+        m_nativeViews = new HashMap<>();
         m_activity.registerForContextMenu(m_layout);
         m_activity.setContentView(m_layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,

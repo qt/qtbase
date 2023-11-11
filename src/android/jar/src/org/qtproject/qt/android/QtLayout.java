@@ -163,8 +163,7 @@ public class QtLayout extends ViewGroup
 
     /**
     * Per-child layout information associated with AbsoluteLayout.
-    * See
-    * {@link android.R.styleable#AbsoluteLayout_Layout Absolute Layout Attributes}
+    * See {android.R.styleable#AbsoluteLayout_Layout Absolute Layout Attributes}
     * for a list of all child view attributes that this class supports.
     */
     public static class LayoutParams extends ViewGroup.LayoutParams
@@ -221,7 +220,7 @@ public class QtLayout extends ViewGroup
 
     /**
     * set the layout params on a child view.
-    *
+    * <p>
     * Note: This function adds the child view if it's not in the
     *       layout already.
     */

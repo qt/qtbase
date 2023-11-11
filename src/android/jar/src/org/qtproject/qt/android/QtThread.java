@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class QtThread {
-    private final ArrayList<Runnable> m_pendingRunnables = new ArrayList<Runnable>();
+    private final ArrayList<Runnable> m_pendingRunnables = new ArrayList<>();
     private boolean m_exit = false;
     private final Thread m_qtThread = new Thread(new Runnable() {
         @Override
@@ -18,7 +18,7 @@ public class QtThread {
                     synchronized (m_qtThread) {
                         if (m_pendingRunnables.size() == 0)
                             m_qtThread.wait();
-                        pendingRunnables = new ArrayList<Runnable>(m_pendingRunnables);
+                        pendingRunnables = new ArrayList<>(m_pendingRunnables);
                         m_pendingRunnables.clear();
                     }
                     for (Runnable runnable : pendingRunnables)

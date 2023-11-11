@@ -14,7 +14,6 @@ import android.view.SurfaceView;
 public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 {
     private final GestureDetector m_gestureDetector;
-    private Object m_accessibilityDelegate = null;
 
     public QtSurface(Context context, int id, boolean onTop, int imageDepth)
     {
