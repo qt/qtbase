@@ -332,9 +332,9 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         Log.i(TAG, "    desc: " + QtNativeAccessibility.descriptionForAccessibleObject(parentId) + " rect: " + QtNativeAccessibility.screenRect(parentId));
         Log.i(TAG, " NODE: " + getNodeForVirtualViewId(parentId));
         int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(parentId);
-        for (int i = 0; i < ids.length; ++i) {
-            Log.i(TAG, parentId + " has child: " + ids[i]);
-            dumpNodes(ids[i]);
+        for (int id : ids) {
+            Log.i(TAG, parentId + " has child: " + id);
+            dumpNodes(id);
         }
     }
 
@@ -376,8 +376,8 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
         if (m_activityDelegate.getSurfaceCount() != 0) {
             int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);
-            for (int i = 0; i < ids.length; ++i)
-                result.addChild(m_view, ids[i]);
+            for (int id : ids)
+                result.addChild(m_view, id);
         }
 
         // The offset values have changed, so we need to re-focus the
@@ -439,8 +439,8 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         }
 
         int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(virtualViewId);
-        for (int i = 0; i < ids.length; ++i)
-            node.addChild(m_view, ids[i]);
+        for (int id : ids)
+            node.addChild(m_view, id);
         if (node.isScrollable()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 node.setCollectionInfo(new CollectionInfo(ids.length, 1, false));
