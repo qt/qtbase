@@ -138,6 +138,7 @@ private slots:
     void taskQTBUG_45114_setItemData();
     void setItemPersistentIndex();
     void signalsOnTakeItem();
+    void takeChild();
     void createPersistentOnLayoutAboutToBeChanged();
 private:
     QStandardItemModel *m_model = nullptr;
@@ -1820,6 +1821,37 @@ void tst_QStandardItemModel::createPersistentOnLayoutAboutToBeChanged() // QTBUG
     QCOMPARE(layoutAboutToBeChangedSpy.size(), 1);
     QCOMPARE(layoutChangedSpy.size(), 1);
 }
+
+void tst_QStandardItemModel::takeChild()  // QTBUG-117900
+{
+  {
+      // with model
+      QStandardItemModel model1;
+      QStandardItemModel model2;
+      QStandardItem base1("base1");
+      model1.setItem(0, 0, &base1);
+      QStandardItem base2("base2");
+      model2.setItem(0, 0, &base2);
+      auto item = new QStandardItem("item1");
+      item->appendRow({new QStandardItem("child")});
+      base1.appendRow({item});
+      base2.appendRow({base1.takeChild(0, 0)});
+      QCOMPARE(base1.child(0, 0), nullptr);
+      QCOMPARE(base2.child(0, 0), item);
+  }
+  {
+      // without model
+      QStandardItem base1("base1");
+      QStandardItem base2("base2");
+      auto item = new QStandardItem("item1");
+      item->appendRow({new QStandardItem("child")});
+      base1.appendRow({item});
+      base2.appendRow({base1.takeChild(0, 0)});
+      QCOMPARE(base1.child(0, 0), nullptr);
+      QCOMPARE(base2.child(0, 0), item);
+  }
+}
+
 
 QTEST_MAIN(tst_QStandardItemModel)
 #include "tst_qstandarditemmodel.moc"
