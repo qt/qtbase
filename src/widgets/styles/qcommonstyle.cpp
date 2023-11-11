@@ -741,26 +741,26 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                                                      % HexString<uint>(pe),
                                              opt, QSize(size, size));
             if (!QPixmapCache::find(pixmapName, &pixmap)) {
-                qreal pixelRatio = p->device()->devicePixelRatio();
-                int border = qRound(pixelRatio*(size/5));
-                int sqsize = qRound(pixelRatio*(2*(size/2)));
+                const qreal pixelRatio = p->device()->devicePixelRatio();
+                const qreal border = pixelRatio * (size / 5.);
+                const qreal sqsize = pixelRatio * size;
                 QImage image(sqsize, sqsize, QImage::Format_ARGB32_Premultiplied);
-                image.fill(0);
+                image.fill(Qt::transparent);
                 QPainter imagePainter(&image);
 
-                QPolygon a;
+                QPolygonF poly;
                 switch (pe) {
                     case PE_IndicatorArrowUp:
-                        a.setPoints(3, border, sqsize/2,  sqsize/2, border,  sqsize - border, sqsize/2);
+                        poly = {QPointF(border, sqsize / 2), QPointF(sqsize / 2, border),  QPointF(sqsize - border, sqsize / 2)};
                         break;
                     case PE_IndicatorArrowDown:
-                        a.setPoints(3, border, sqsize/2,  sqsize/2, sqsize - border,  sqsize - border, sqsize/2);
+                        poly = {QPointF(border, sqsize / 2), QPointF(sqsize / 2, sqsize - border), QPointF(sqsize - border, sqsize / 2)};
                         break;
                     case PE_IndicatorArrowRight:
-                        a.setPoints(3, sqsize - border, sqsize/2,  sqsize/2, border,  sqsize/2, sqsize - border);
+                        poly = {QPointF(sqsize - border, sqsize / 2), QPointF(sqsize / 2, border), QPointF(sqsize / 2, sqsize - border)};
                         break;
                     case PE_IndicatorArrowLeft:
-                        a.setPoints(3, border, sqsize/2,  sqsize/2, border,  sqsize/2, sqsize - border);
+                        poly = {QPointF(border, sqsize / 2), QPointF(sqsize / 2, border), QPointF(sqsize / 2, sqsize - border)};
                         break;
                     default:
                         break;
@@ -774,9 +774,9 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                     bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt, widget);
                 }
 
-                QRect bounds = a.boundingRect();
-                int sx = sqsize / 2 - bounds.center().x() - 1;
-                int sy = sqsize / 2 - bounds.center().y() - 1;
+                const QRectF bounds = poly.boundingRect();
+                const qreal sx = sqsize / 2 - bounds.center().x() - 1;
+                const qreal sy = sqsize / 2 - bounds.center().y() - 1;
                 imagePainter.translate(sx + bsx, sy + bsy);
                 imagePainter.setPen(opt->palette.buttonText().color());
                 imagePainter.setBrush(opt->palette.buttonText());
@@ -785,13 +785,13 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                     imagePainter.translate(1, 1);
                     imagePainter.setBrush(opt->palette.light().color());
                     imagePainter.setPen(opt->palette.light().color());
-                    imagePainter.drawPolygon(a);
+                    imagePainter.drawPolygon(poly);
                     imagePainter.translate(-1, -1);
                     imagePainter.setBrush(opt->palette.mid().color());
                     imagePainter.setPen(opt->palette.mid().color());
                 }
 
-                imagePainter.drawPolygon(a);
+                imagePainter.drawPolygon(poly);
                 imagePainter.end();
                 pixmap = QPixmap::fromImage(image);
                 pixmap.setDevicePixelRatio(pixelRatio);
