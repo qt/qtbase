@@ -1614,15 +1614,21 @@ void tst_QStandardItemModel::removeRowsAndColumns()
 
     QList<QStandardItem *> row_taken = model.takeRow(6);
     QCOMPARE(row_taken.size(), col_list.size());
-    for (int c = 0; c < col_list.size(); c++)
-        QCOMPARE(row_taken[c]->text() , row_list[6] + QLatin1Char('x') + col_list[c]);
+    for (qsizetype c = 0; c < row_taken.size(); c++) {
+        auto item = row_taken.at(c);
+        QCOMPARE(item->text() , row_list[6] + QLatin1Char('x') + col_list[c]);
+        delete item;
+    }
     row_list.remove(6);
     VERIFY_MODEL
 
     QList<QStandardItem *> col_taken = model.takeColumn(10);
     QCOMPARE(col_taken.size(), row_list.size());
-    for (int r = 0; r < row_list.size(); r++)
-        QCOMPARE(col_taken[r]->text() , row_list[r] + QLatin1Char('x') + col_list[10]);
+    for (qsizetype r = 0; r < col_taken.size(); r++) {
+        auto item = col_taken.at(r);
+        QCOMPARE(item->text() , row_list[r] + QLatin1Char('x') + col_list[10]);
+        delete item;
+    }
     col_list.remove(10);
     VERIFY_MODEL
 }
@@ -1792,6 +1798,7 @@ void tst_QStandardItemModel::signalsOnTakeItem() // QTBUG-89145
     QCOMPARE(takenItem->model(), nullptr);
     QCOMPARE(takenItem->child(0, 0)->model(), nullptr);
     QCOMPARE(m.index(1, 0).data(), QVariant());
+    delete takenItem;
 }
 
 void tst_QStandardItemModel::createPersistentOnLayoutAboutToBeChanged() // QTBUG-93466
