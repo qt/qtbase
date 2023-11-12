@@ -1223,7 +1223,7 @@ QScrollBar::sub-line:horizontal {
 
 
 //! [135]
-QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
     border: 2px solid grey;
     width: 3px;
     height: 3px;
@@ -1267,7 +1267,7 @@ QScrollBar::sub-line:horizontal {
     right: 20px;
 }
 
-QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
     width: 3px;
     height: 3px;
     background: pink;
