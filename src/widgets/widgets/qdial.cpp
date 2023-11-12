@@ -94,6 +94,8 @@ int QDialPrivate::bound(int val) const
     if (wrapping) {
         if ((val >= minimum) && (val <= maximum))
             return val;
+        if (minimum == maximum)
+            return minimum;
         val = minimum + ((val - minimum) % (maximum - minimum));
         if (val < minimum)
             val += maximum - minimum;
