@@ -59,9 +59,13 @@ void QSystemTrayIconPrivate::updateIcon_sys()
 void QSystemTrayIconPrivate::updateMenu_sys()
 {
 #if QT_CONFIG(menu)
-    if (qpa_sys && menu) {
-        addPlatformMenu(menu);
-        qpa_sys->updateMenu(menu->platformMenu());
+    if (qpa_sys) {
+        if (menu) {
+            addPlatformMenu(menu);
+            qpa_sys->updateMenu(menu->platformMenu());
+        } else {
+            qpa_sys->updateMenu(nullptr);
+        }
     }
 #endif
 }
