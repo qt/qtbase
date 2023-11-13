@@ -3271,10 +3271,12 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
     // We expect that the platform plugins send DevicePixelRatioChange events.
     // As a fail-safe make a final check here to make sure the cached DPR value is
     // always up to date before sending the expose event.
-    const bool dprWasChanged = QWindowPrivate::get(window)->updateDevicePixelRatio();
-    if (dprWasChanged)
-        qWarning() << "The cached device pixel ratio value was stale on window expose. "
-                   << "Please file a QTBUG which explains how to reproduce.";
+    if (e->isExposed && !e->region.isEmpty()) {
+        const bool dprWasChanged = QWindowPrivate::get(window)->updateDevicePixelRatio();
+        if (dprWasChanged)
+            qWarning() << "The cached device pixel ratio value was stale on window expose. "
+                       << "Please file a QTBUG which explains how to reproduce.";
+    }
 
     // We treat expose events for an already exposed window as paint events
     if (wasExposed && p->exposed && shouldSynthesizePaintEvents) {
