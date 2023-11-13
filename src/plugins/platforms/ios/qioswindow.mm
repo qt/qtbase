@@ -52,17 +52,22 @@ QIOSWindow::QIOSWindow(QWindow *window, WId nativeHandle)
 
     setParent(QPlatformWindow::parent());
 
-    // Resolve default window geometry in case it was not set before creating the
-    // platform window. This picks up eg. minimum-size if set, and defaults to
-    // the "maxmized" geometry (even though we're not in that window state).
-    // FIXME: Detect if we apply a maximized geometry and send a window state
-    // change event in that case.
-    m_normalGeometry = initialGeometry(window, QPlatformWindow::geometry(),
-        screen()->availableGeometry().width(), screen()->availableGeometry().height());
+    if (!isForeignWindow()) {
+        // Resolve default window geometry in case it was not set before creating the
+        // platform window. This picks up eg. minimum-size if set, and defaults to
+        // the "maxmized" geometry (even though we're not in that window state).
+        // FIXME: Detect if we apply a maximized geometry and send a window state
+        // change event in that case.
+        m_normalGeometry = initialGeometry(window, QPlatformWindow::geometry(),
+            screen()->availableGeometry().width(), screen()->availableGeometry().height());
 
-    setWindowState(window->windowStates());
-    setOpacity(window->opacity());
-    setMask(QHighDpi::toNativeLocalRegion(window->mask(), window));
+        setWindowState(window->windowStates());
+        setOpacity(window->opacity());
+        setMask(QHighDpi::toNativeLocalRegion(window->mask(), window));
+    } else {
+        // Pick up essential foreign window state
+        QPlatformWindow::setGeometry(QRectF::fromCGRect(m_view.frame).toRect());
+    }
 
     Qt::ScreenOrientation initialOrientation = window->contentOrientation();
     if (initialOrientation != Qt::PrimaryOrientation) {
@@ -424,6 +429,11 @@ QDebug operator<<(QDebug debug, const QIOSWindow *window)
 QUIView *quiview_cast(UIView *view)
 {
     return qt_objc_cast<QUIView *>(view);
+}
+
+bool QIOSWindow::isForeignWindow() const
+{
+    return ![m_view isKindOfClass:QUIView.class];
 }
 
 QT_END_NAMESPACE
