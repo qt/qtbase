@@ -25,3 +25,8 @@ qt_internal_extend_target(QCtfTracePlugin CONDITION QT_FEATURE_zstd
     LIBRARIES
         WrapZSTD::WrapZSTD
 )
+
+qt_internal_extend_target(QCtfTracePlugin CONDITION (QT_FEATURE_cxx17_filesystem) AND (GCC AND (QMAKE_GCC_MAJOR_VERSION LESS 9))
+    LINK_OPTIONS
+        "-lstdc++fs"
+)

@@ -15,7 +15,7 @@
 #include <qplatformdefs.h>
 #include "qctflib_p.h"
 
-#ifndef Q_OS_INTEGRITY
+#if QT_CONFIG(cxx17_filesystem)
 #include <filesystem>
 #endif
 
@@ -121,7 +121,7 @@ QCtfLibImpl::QCtfLibImpl()
         m_session.tracepoints.append(allLiteral());
         m_session.name = defaultLiteral();
     } else {
-#ifdef Q_OS_INTEGRITY
+#if !QT_CONFIG(cxx17_filesystem)
         qCWarning(lcDebugTrace) << "Unable to use filesystem";
         return;
 #endif
@@ -168,7 +168,7 @@ QCtfLibImpl::QCtfLibImpl()
                 m_session.name = defaultLiteral();
             }
             m_location = location + u"/ust";
-#ifndef Q_OS_INTEGRITY
+#if QT_CONFIG(cxx17_filesystem)
             std::filesystem::create_directory(qPrintable(m_location), qPrintable(location));
 #endif
         }
@@ -185,7 +185,7 @@ QCtfLibImpl::QCtfLibImpl()
 
 void QCtfLibImpl::clearLocation()
 {
-#ifndef Q_OS_INTEGRITY
+#if QT_CONFIG(cxx17_filesystem)
     const std::filesystem::path location{qUtf16Printable(m_location)};
     for (auto const& dirEntry : std::filesystem::directory_iterator{location})
     {
