@@ -224,6 +224,30 @@
 */
 
 /*!
+    \fn QStrongOrdering::is_eq  (QStrongOrdering o)
+    \fn QStrongOrdering::is_neq (QStrongOrdering o)
+    \fn QStrongOrdering::is_lt  (QStrongOrdering o)
+    \fn QStrongOrdering::is_lteq(QStrongOrdering o)
+    \fn QStrongOrdering::is_gt  (QStrongOrdering o)
+    \fn QStrongOrdering::is_gteq(QStrongOrdering o)
+
+//! [is_eq_table]
+    Converts \a o into the result of one of the six relational operators:
+    \table
+    \header \li Function    \li Operation
+    \row    \li \c{is_eq}   \li \a o \c{== 0}
+    \row    \li \c{is_neq}  \li \a o \c{!= 0}
+    \row    \li \c{is_lt}   \li \a o \c{< 0}
+    \row    \li \c{is_lteq} \li \a o \c{<= 0}
+    \row    \li \c{is_gt}   \li \a o \c{> 0}
+    \row    \li \c{is_gteq} \li \a o \c{>= 0}
+    \endtable
+//! [is_eq_table]
+
+    These functions are provided for compatibility with \c{std::strong_ordering}.
+*/
+
+/*!
     \variable QStrongOrdering::Less
 
     Represents the result of a comparison where the left operand is less
@@ -367,6 +391,19 @@
 */
 
 /*!
+    \fn QWeakOrdering::is_eq  (QWeakOrdering o)
+    \fn QWeakOrdering::is_neq (QWeakOrdering o)
+    \fn QWeakOrdering::is_lt  (QWeakOrdering o)
+    \fn QWeakOrdering::is_lteq(QWeakOrdering o)
+    \fn QWeakOrdering::is_gt  (QWeakOrdering o)
+    \fn QWeakOrdering::is_gteq(QWeakOrdering o)
+
+    \include qcompare.qdoc is_eq_table
+
+    These functions are provided for compatibility with \c{std::weak_ordering}.
+*/
+
+/*!
     \variable QWeakOrdering::Less
 
     Represents the result of a comparison where the left operand is less than
@@ -497,6 +534,19 @@
     \fn bool operator<=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering rhs)
     \fn bool operator> (QtPrivate::CompareAgainstLiteralZero, QPartialOrdering rhs)
     \fn bool operator>=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering rhs)
+*/
+
+/*!
+    \fn QPartialOrdering::is_eq  (QPartialOrdering o)
+    \fn QPartialOrdering::is_neq (QPartialOrdering o)
+    \fn QPartialOrdering::is_lt  (QPartialOrdering o)
+    \fn QPartialOrdering::is_lteq(QPartialOrdering o)
+    \fn QPartialOrdering::is_gt  (QPartialOrdering o)
+    \fn QPartialOrdering::is_gteq(QPartialOrdering o)
+
+    \include qcompare.qdoc is_eq_table
+
+    These functions are provided for compatibility with \c{std::partial_ordering}.
 */
 
 /*!

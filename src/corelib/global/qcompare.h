@@ -152,6 +152,17 @@ private:
         : m_order(static_cast<QtPrivate::CompareUnderlyingType>(order))
     {}
 
+    QT_WARNING_PUSH
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100903
+    QT_WARNING_DISABLE_GCC("-Wzero-as-null-pointer-constant")
+    friend constexpr bool is_eq  (QPartialOrdering o) noexcept { return o == 0; }
+    friend constexpr bool is_neq (QPartialOrdering o) noexcept { return o != 0; }
+    friend constexpr bool is_lt  (QPartialOrdering o) noexcept { return o <  0; }
+    friend constexpr bool is_lteq(QPartialOrdering o) noexcept { return o <= 0; }
+    friend constexpr bool is_gt  (QPartialOrdering o) noexcept { return o >  0; }
+    friend constexpr bool is_gteq(QPartialOrdering o) noexcept { return o >= 0; }
+    QT_WARNING_POP
+
     // instead of the exposition only is_ordered member in [cmp.partialord],
     // use a private function
     constexpr bool isOrdered() const noexcept
@@ -308,6 +319,17 @@ private:
     constexpr explicit QWeakOrdering(QtPrivate::Ordering order) noexcept
         : m_order(static_cast<QtPrivate::CompareUnderlyingType>(order))
     {}
+
+    QT_WARNING_PUSH
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100903
+    QT_WARNING_DISABLE_GCC("-Wzero-as-null-pointer-constant")
+    friend constexpr bool is_eq  (QWeakOrdering o) noexcept { return o == 0; }
+    friend constexpr bool is_neq (QWeakOrdering o) noexcept { return o != 0; }
+    friend constexpr bool is_lt  (QWeakOrdering o) noexcept { return o <  0; }
+    friend constexpr bool is_lteq(QWeakOrdering o) noexcept { return o <= 0; }
+    friend constexpr bool is_gt  (QWeakOrdering o) noexcept { return o >  0; }
+    friend constexpr bool is_gteq(QWeakOrdering o) noexcept { return o >= 0; }
+    QT_WARNING_POP
 
     QtPrivate::CompareUnderlyingType m_order;
 };
@@ -477,6 +499,17 @@ public:
     constexpr explicit QStrongOrdering(QtPrivate::Ordering order) noexcept
         : m_order(static_cast<QtPrivate::CompareUnderlyingType>(order))
     {}
+
+    QT_WARNING_PUSH
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100903
+    QT_WARNING_DISABLE_GCC("-Wzero-as-null-pointer-constant")
+    friend constexpr bool is_eq  (QStrongOrdering o) noexcept { return o == 0; }
+    friend constexpr bool is_neq (QStrongOrdering o) noexcept { return o != 0; }
+    friend constexpr bool is_lt  (QStrongOrdering o) noexcept { return o <  0; }
+    friend constexpr bool is_lteq(QStrongOrdering o) noexcept { return o <= 0; }
+    friend constexpr bool is_gt  (QStrongOrdering o) noexcept { return o >  0; }
+    friend constexpr bool is_gteq(QStrongOrdering o) noexcept { return o >= 0; }
+    QT_WARNING_POP
 
     QtPrivate::CompareUnderlyingType m_order;
 };
