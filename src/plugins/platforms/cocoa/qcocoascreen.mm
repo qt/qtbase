@@ -542,7 +542,12 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
             if (!w->isVisible())
                 return;
 
-            if (!QHighDpi::toNativePixels(w->geometry(), w).contains(point))
+            auto nativeGeometry = QHighDpi::toNativePixels(w->geometry(), w);
+            if (!nativeGeometry.contains(point))
+                return;
+
+            QRegion mask = QHighDpi::toNativeLocalPosition(w->mask(), w);
+            if (!mask.isEmpty() && !mask.contains(point - nativeGeometry.topLeft()))
                 return;
 
             window = w;
