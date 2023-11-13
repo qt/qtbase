@@ -13,10 +13,8 @@ qt_internal_add_test(tst_qfactoryloader
         ../tst_qfactoryloader.cpp
     LIBRARIES
         Qt::CorePrivate
+        tst_qfactoryloader_staticplugin
 )
-
-## Scopes:
-#####################################################################
 
 qt_internal_extend_target(tst_qfactoryloader CONDITION NOT QT_FEATURE_library
     LIBRARIES

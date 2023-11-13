@@ -25,6 +25,8 @@ public slots:
 private slots:
     void usingTwoFactoriesFromSameDir();
     void extraSearchPath();
+    void staticPlugin_data();
+    void staticPlugin();
 };
 
 static const char binFolderC[] = "bin";
@@ -103,6 +105,49 @@ void tst_QFactoryLoader::extraSearchPath()
     loader1.setExtraSearchPath(QString());
     QVERIFY(loader1.metaData().isEmpty());
 #endif
+}
+
+Q_IMPORT_PLUGIN(StaticPlugin1)
+Q_IMPORT_PLUGIN(StaticPlugin2)
+constexpr bool IsDebug =
+#ifdef QT_NO_DEBUG
+        false &&
+#endif
+        true;
+
+void tst_QFactoryLoader::staticPlugin_data()
+{
+    QTest::addColumn<QString>("iid");
+    auto addRow = [](const char *iid) {
+        QTest::addRow("%s", iid) << QString(iid);
+    };
+    addRow("StaticPlugin1");
+    addRow("StaticPlugin2");
+}
+
+void tst_QFactoryLoader::staticPlugin()
+{
+    QFETCH(QString, iid);
+    QFactoryLoader loader(iid.toLatin1(), "/irrelevant");
+    QFactoryLoader::MetaDataList list = loader.metaData();
+    QCOMPARE(list.size(), 1);
+
+    QCborMap map = list.at(0).toCbor();
+    QCOMPARE(map[int(QtPluginMetaDataKeys::QtVersion)],
+            QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0));
+    QCOMPARE(map[int(QtPluginMetaDataKeys::IID)], iid);
+    QCOMPARE(map[int(QtPluginMetaDataKeys::ClassName)], iid);
+    QCOMPARE(map[int(QtPluginMetaDataKeys::IsDebug)], IsDebug);
+
+    QCborValue metaData = map[int(QtPluginMetaDataKeys::MetaData)];
+    QVERIFY(metaData.isMap());
+    QCOMPARE(metaData["Keys"], QCborArray{ "Value" });
+    QCOMPARE(loader.indexOf("Value"), 0);
+
+    // instantiate
+    QObject *instance = loader.instance(0);
+    QVERIFY(instance);
+    QCOMPARE(instance->metaObject()->className(), iid);
 }
 
 QTEST_MAIN(tst_QFactoryLoader)
