@@ -109,7 +109,7 @@
 
     Now we can create a QDataStream object, passing the socket to
     QDataStream's constructor, and as in the other client examples we set
-    the stream protocol version to QDataStream::Qt_4_0.
+    the stream protocol version to QDataStream::Qt_6_5.
 
     \snippet blockingfortuneclient/fortunethread.cpp 12
 
