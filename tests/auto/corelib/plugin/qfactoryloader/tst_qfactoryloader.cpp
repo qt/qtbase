@@ -5,6 +5,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qplugin.h>
+#include <QtCore/qversionnumber.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qlibrary_p.h>
 #include "plugin1/plugininterface1.h"
@@ -48,21 +49,61 @@ void tst_QFactoryLoader::usingTwoFactoriesFromSameDir()
     // set the library path to contain the directory where the 'bin' dir is located
     QCoreApplication::setLibraryPaths( { QFileInfo(binFolder).absolutePath() });
 #endif
+    auto versionNumber = [](const QCborValue &value) {
+        // Qt plugins only store major & minor versions in the metadata, so
+        // the low 8 bits are always zero.
+        qint64 v = value.toInteger();
+        return QVersionNumber(v >> 16, uchar(v >> 8));
+    };
+    QVersionNumber qtVersion(QT_VERSION_MAJOR, 0);
 
     const QString suffix = QLatin1Char('/') + QLatin1String(binFolderC);
     QFactoryLoader loader1(PluginInterface1_iid, suffix);
+    const QFactoryLoader::MetaDataList list1 = loader1.metaData();
+    const QList<QCborArray> keys1 = loader1.metaDataKeys();
+    QCOMPARE(list1.size(), 1);
+    QCOMPARE(keys1.size(), 1);
+    QCOMPARE_GE(versionNumber(list1[0].value(QtPluginMetaDataKeys::QtVersion)), qtVersion);
+    QCOMPARE(list1[0].value(QtPluginMetaDataKeys::IID), PluginInterface1_iid);
+    QCOMPARE(list1[0].value(QtPluginMetaDataKeys::ClassName), "Plugin1");
 
-    PluginInterface1 *plugin1 = qobject_cast<PluginInterface1 *>(loader1.instance(0));
+    // plugin1's Q_PLUGIN_METADATA has FILE "plugin1.json"
+    QCborValue metadata1 = list1[0].value(QtPluginMetaDataKeys::MetaData);
+    QCOMPARE(metadata1.type(), QCborValue::Map);
+    QCOMPARE(metadata1["Keys"], QCborArray{ "plugin1" });
+    QCOMPARE(keys1[0], QCborArray{ "plugin1" });
+    QCOMPARE(loader1.indexOf("Plugin1"), 0);
+    QCOMPARE(loader1.indexOf("PLUGIN1"), 0);
+    QCOMPARE(loader1.indexOf("Plugin2"), -1);
+
+    QFactoryLoader loader2(PluginInterface2_iid, suffix);
+    const QFactoryLoader::MetaDataList list2 = loader2.metaData();
+    const QList<QCborArray> keys2 = loader2.metaDataKeys();
+    QCOMPARE(list2.size(), 1);
+    QCOMPARE(keys2.size(), 1);
+    QCOMPARE_GE(versionNumber(list2[0].value(QtPluginMetaDataKeys::QtVersion)), qtVersion);
+    QCOMPARE(list2[0].value(QtPluginMetaDataKeys::IID), PluginInterface2_iid);
+    QCOMPARE(list2[0].value(QtPluginMetaDataKeys::ClassName), "Plugin2");
+
+    // plugin2's Q_PLUGIN_METADATA does not have FILE
+    QCOMPARE(list2[0].value(QtPluginMetaDataKeys::MetaData), QCborValue());
+    QCOMPARE(keys2[0], QCborArray());
+    QCOMPARE(loader2.indexOf("Plugin1"), -1);
+    QCOMPARE(loader2.indexOf("Plugin2"), -1);
+
+    QObject *obj1 = loader1.instance(0);
+    PluginInterface1 *plugin1 = qobject_cast<PluginInterface1 *>(obj1);
     QVERIFY2(plugin1,
              qPrintable(QString::fromLatin1("Cannot load plugin '%1'")
                         .arg(QLatin1String(PluginInterface1_iid))));
+    QCOMPARE(obj1->metaObject()->className(), "Plugin1");
 
-    QFactoryLoader loader2(PluginInterface2_iid, suffix);
-
-    PluginInterface2 *plugin2 = qobject_cast<PluginInterface2 *>(loader2.instance(0));
+    QObject *obj2 = loader2.instance(0);
+    PluginInterface2 *plugin2 = qobject_cast<PluginInterface2 *>(obj2);
     QVERIFY2(plugin2,
              qPrintable(QString::fromLatin1("Cannot load plugin '%1'")
                         .arg(QLatin1String(PluginInterface2_iid))));
+    QCOMPARE(obj2->metaObject()->className(), "Plugin2");
 
     QCOMPARE(plugin1->pluginName(), QLatin1String("Plugin1 ok"));
     QCOMPARE(plugin2->pluginName(), QLatin1String("Plugin2 ok"));
@@ -167,6 +208,7 @@ void tst_QFactoryLoader::staticPlugin()
     QCborValue metaData = map[int(QtPluginMetaDataKeys::MetaData)];
     QVERIFY(metaData.isMap());
     QCOMPARE(metaData["Keys"], QCborArray{ "Value" });
+    QCOMPARE(loader.metaDataKeys(), QList{ QCborArray{ "Value" } });
     QCOMPARE(loader.indexOf("Value"), 0);
 
     // instantiate

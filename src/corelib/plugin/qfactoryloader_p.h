@@ -86,6 +86,7 @@ public:
     using MetaDataList = QList<QPluginParsedMetaData>;
 
     MetaDataList metaData() const;
+    QList<QCborArray> metaDataKeys() const;
     QObject *instance(int index) const;
 };
 
