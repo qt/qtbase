@@ -5,15 +5,13 @@
 #include "qfactoryloader_p.h"
 
 #ifndef QT_NO_QOBJECT
-#include "qfactoryinterface.h"
-
 #include "private/qcoreapplication_p.h"
 #include "private/qduplicatetracker_p.h"
 #include "private/qloggingregistry_p.h"
 #include "private/qobject_p.h"
 #include "qcborarray.h"
 #include "qcbormap.h"
-#include "qcborvalue.h"
+#include "qcborstreamreader.h"
 #include "qcborvalue.h"
 #include "qdiriterator.h"
 #include "qfileinfo.h"
@@ -39,6 +37,122 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 Q_TRACE_POINT(qtcore, QFactoryLoader_update, const QString &fileName);
+
+namespace {
+struct IterationResult
+{
+    enum Result {
+        FinishedSearch = 0,
+        ContinueSearch,
+
+        // parse errors
+        ParsingError = -1,
+        InvalidMetaDataVersion = -2,
+        InvalidTopLevelItem = -3,
+        InvalidHeaderItem = -4,
+    };
+    Result result;
+    QCborError error = { QCborError::NoError };
+
+    Q_IMPLICIT IterationResult(Result r) : result(r) {}
+    Q_IMPLICIT IterationResult(QCborError e) : result(ParsingError), error(e) {}
+};
+
+struct QFactoryLoaderIidSearch
+{
+    QLatin1StringView iid;
+    bool matchesIid = false;
+    QFactoryLoaderIidSearch(QLatin1StringView iid) : iid(iid) {}
+
+    static QString readString(QCborStreamReader &reader)
+    {
+        QString result;
+        if (!reader.isLengthKnown())
+            return result;
+        auto r = reader.readString();
+        if (r.status != QCborStreamReader::Ok)
+            return result;
+        result = std::move(r.data);
+        r = reader.readString();
+        if (r.status != QCborStreamReader::EndOfString)
+            result = QString();
+        return result;
+    }
+
+    static IterationResult::Result skip(QCborStreamReader &reader)
+    {
+        // skip this, whatever it is
+        reader.next();
+        return IterationResult::ContinueSearch;
+    }
+
+    IterationResult::Result operator()(QtPluginMetaDataKeys key, QCborStreamReader &reader)
+    {
+        if (key != QtPluginMetaDataKeys::IID)
+            return skip(reader);
+        matchesIid = (readString(reader) == iid);
+        return IterationResult::FinishedSearch;
+    }
+    IterationResult::Result operator()(const QCborValue &, QCborStreamReader &reader)
+    {
+        return skip(reader);
+    }
+};
+} // unnamed namespace
+
+template <typename F> static IterationResult iterateInPluginMetaData(QByteArrayView raw, F &&f)
+{
+    QPluginMetaData::Header header;
+    Q_ASSERT(raw.size() >= qsizetype(sizeof(header)));
+    memcpy(&header, raw.data(), sizeof(header));
+    if (Q_UNLIKELY(header.version > QPluginMetaData::CurrentMetaDataVersion))
+        return IterationResult::InvalidMetaDataVersion;
+
+    // use fromRawData to keep QCborStreamReader from copying
+    raw = raw.sliced(sizeof(header));
+    QByteArray ba = QByteArray::fromRawData(raw.data(), raw.size());
+    QCborStreamReader reader(ba);
+    if (reader.isInvalid())
+        return reader.lastError();
+    if (!reader.isMap())
+        return IterationResult::InvalidTopLevelItem;
+    if (!reader.enterContainer())
+        return reader.lastError();
+    while (reader.isValid()) {
+        IterationResult::Result r;
+        if (reader.isInteger()) {
+            // integer key, one of ours
+            qint64 value = reader.toInteger();
+            auto key = QtPluginMetaDataKeys(value);
+            if (qint64(key) != value)
+                return IterationResult::InvalidHeaderItem;
+            if (!reader.next())
+                return reader.lastError();
+            r = f(key, reader);
+        } else {
+            QCborValue key = QCborValue::fromCbor(reader);
+            if (key.isInvalid())
+                return reader.lastError();
+            r = f(key, reader);
+        }
+
+        if (QCborError e = reader.lastError())
+            return e;
+        if (r != IterationResult::ContinueSearch)
+            return r;
+    }
+
+    if (!reader.leaveContainer())
+        return reader.lastError();
+    return IterationResult::FinishedSearch;
+}
+
+static bool isIidMatch(QByteArrayView raw, QLatin1StringView iid)
+{
+    QFactoryLoaderIidSearch search(iid);
+    iterateInPluginMetaData(raw, search);
+    return search.matchesIid;
+}
 
 bool QPluginParsedMetaData::parse(QByteArrayView raw)
 {
@@ -387,8 +501,7 @@ QObject *QFactoryLoader::instance(int index) const
     const QList<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
     for (QStaticPlugin plugin : staticPlugins) {
         QByteArrayView pluginData(static_cast<const char *>(plugin.rawMetaData), plugin.rawMetaDataSize);
-        QPluginParsedMetaData parsed(pluginData);
-        if (parsed.isError() || parsed.value(QtPluginMetaDataKeys::IID) != iid)
+        if (!isIidMatch(pluginData, iid))
             continue;
 
         if (index == 0)

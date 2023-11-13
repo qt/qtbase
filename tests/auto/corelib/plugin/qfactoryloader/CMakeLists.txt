@@ -9,4 +9,5 @@ endif()
 
 add_subdirectory(plugin1)
 add_subdirectory(plugin2)
+add_subdirectory(staticplugin)
 add_subdirectory(test)
