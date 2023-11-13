@@ -54,23 +54,30 @@ void ShapedClock::mouseMoveEvent(QMouseEvent *event)
 //! [3]
 void ShapedClock::paintEvent(QPaintEvent *)
 {
-    static const QPoint hourHand[3] = {
-        QPoint(7, 8),
-        QPoint(-7, 8),
-        QPoint(0, -40)
+    static const QPoint hourHand[4] = {
+        QPoint(5, 14),
+        QPoint(-5, 14),
+        QPoint(-4, -71),
+        QPoint(4, -71)
     };
-    static const QPoint minuteHand[3] = {
-        QPoint(7, 8),
-        QPoint(-7, 8),
-        QPoint(0, -70)
+    static const QPoint minuteHand[4] = {
+        QPoint(4, 14),
+        QPoint(-4, 14),
+        QPoint(-3, -89),
+        QPoint(3, -89)
+    };
+    static const QPoint secondsHand[4] = {
+       QPoint(1, 14),
+       QPoint(-1, 14),
+       QPoint(-1, -89),
+       QPoint(1, -89)
     };
 
-    QColor hourColor(127, 0, 127);
-    QColor minuteColor(0, 127, 127, 191);
+    const QColor hourColor(palette().color(QPalette::Text));
+    const QColor minuteColor(palette().color(QPalette::Text));
+    const QColor secondsColor(palette().color(QPalette::Accent));
 
     int side = qMin(width(), height());
-    QTime time = QTime::currentTime();
-
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.translate(width() / 2, height() / 2);
@@ -82,34 +89,40 @@ void ShapedClock::paintEvent(QPaintEvent *)
     painter.drawEllipse(QPoint(0, 0), 98, 98);
     painter.setOpacity(1.0);
 
+    QTime time = QTime::currentTime();
     painter.setPen(Qt::NoPen);
     painter.setBrush(hourColor);
 
     painter.save();
     painter.rotate(30.0 * ((time.hour() + time.minute() / 60.0)));
-    painter.drawConvexPolygon(hourHand, 3);
+    painter.drawConvexPolygon(hourHand, 4);
     painter.restore();
 
-    painter.setPen(hourColor);
-
     for (int i = 0; i < 12; ++i) {
-        painter.drawLine(88, 0, 96, 0);
+        painter.drawRect(73, -3, 16, 6);
         painter.rotate(30.0);
     }
 
-    painter.setPen(Qt::NoPen);
     painter.setBrush(minuteColor);
 
     painter.save();
-    painter.rotate(6.0 * (time.minute() + time.second() / 60.0));
-    painter.drawConvexPolygon(minuteHand, 3);
+    painter.rotate(6.0 * time.minute());
+    painter.drawConvexPolygon(minuteHand, 4);
+    painter.restore();
+
+    painter.setBrush(secondsColor);
+
+    painter.save();
+    painter.rotate(6.0 * time.second());
+    painter.drawConvexPolygon(secondsHand, 4);
+    painter.drawEllipse(-3, -3, 6, 6);
+    painter.drawEllipse(-5, -68, 10, 10);
     painter.restore();
 
     painter.setPen(minuteColor);
 
     for (int j = 0; j < 60; ++j) {
-        if ((j % 5) != 0)
-            painter.drawLine(92, 0, 96, 0);
+        painter.drawLine(92, 0, 96, 0);
         painter.rotate(6.0);
     }
 }
