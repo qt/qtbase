@@ -150,7 +150,10 @@ QCocoaWindow::~QCocoaWindow()
     QMacAutoReleasePool pool;
     [m_nsWindow makeFirstResponder:nil];
     [m_nsWindow setContentView:nil];
-    if ([m_view superview])
+
+    // Remove from superview only if we have a Qt window parent,
+    // as we don't want to affect window container foreign windows.
+    if (QPlatformWindow::parent())
         [m_view removeFromSuperview];
 
     // Make sure to disconnect observer in all case if view is valid
