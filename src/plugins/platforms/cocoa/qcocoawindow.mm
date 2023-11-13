@@ -1499,6 +1499,10 @@ void QCocoaWindow::recreateWindowIfNeeded()
     QPlatformWindow *parentWindow = QPlatformWindow::parent();
     auto *parentCocoaWindow = static_cast<QCocoaWindow *>(parentWindow);
 
+    QCocoaWindow *oldParentCocoaWindow = nullptr;
+    if (QNSView *qnsView = qnsview_cast(m_view.superview))
+        oldParentCocoaWindow = qnsView.platformWindow;
+
     if (isForeignWindow()) {
         // A foreign window is created as such, and can never move between being
         // foreign and not, so we don't need to get rid of any existing NSWindows,
@@ -1508,16 +1512,14 @@ void QCocoaWindow::recreateWindowIfNeeded()
         // We do however need to manage the parent relationship
         if (parentCocoaWindow)
             [parentCocoaWindow->m_view addSubview:m_view];
+        else if (oldParentCocoaWindow)
+            [m_view removeFromSuperview];
 
         return;
     }
 
     const bool isEmbeddedView = isEmbedded();
     RecreationReasons recreateReason = RecreationNotNeeded;
-
-    QCocoaWindow *oldParentCocoaWindow = nullptr;
-    if (QNSView *qnsView = qnsview_cast(m_view.superview))
-        oldParentCocoaWindow = qnsView.platformWindow;
 
     if (parentWindow != oldParentCocoaWindow)
          recreateReason |= ParentChanged;
