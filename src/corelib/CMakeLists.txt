@@ -1460,6 +1460,11 @@ foreach(minor_version RANGE ${PROJECT_VERSION_MINOR})
         string(APPEND linker_script_contents "${current} {} ${previous};\n")
     endif()
 endforeach()
+if (QT_NAMESPACE STREQUAL "")
+    set(linker_script_symbol "_ZN14QReadWriteLock16destroyRecursiveEP21QReadWriteLockPrivate")
+else()
+    set(linker_script_symbol "_ZN15${QT_NAMESPACE}14QReadWriteLock16destroyRecursiveEPNS_21QReadWriteLockPrivateE")
+endif()
 qt_internal_extend_target(Core
     EXTRA_LINKER_SCRIPT_CONTENT "${linker_script_contents}"
 
@@ -1469,5 +1474,5 @@ qt_internal_extend_target(Core
         # QFutureInterfaceBase::setContinuation(std::function<void (QFutureInterfaceBase const&)>, QFutureInterfaceBasePrivate*)
         "_ZN20QFutureInterfaceBase15setContinuationE*P27QFutureInterfaceBasePrivate"
         # QReadWriteLock::destroyRecursive(QReadWriteLockPrivate*)
-        "_ZN14QReadWriteLock16destroyRecursiveEP21QReadWriteLockPrivate"
+        ${linker_script_symbol}
 )

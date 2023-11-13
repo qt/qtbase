@@ -400,11 +400,15 @@ qt_internal_extend_target(Network CONDITION WIN32
 if(QT_FEATURE_private_tests)
     add_subdirectory(doc/snippets/network)
 endif()
-
+if (QT_NAMESPACE STREQUAL "")
+    set(linker_script_symbol "_ZN16QNetworkDatagram7destroyEP23QNetworkDatagramPrivate")
+else()
+    set(linker_script_symbol "_ZN15${QT_NAMESPACE}16QNetworkDatagram7destroyEPNS_23QNetworkDatagramPrivateE")
+endif()
 qt_internal_extend_target(Network
     # Workaround for QTBUG-118229:
     # Function called by inline methods taking a pointer to a private class as a parameter
     EXTRA_LINKER_SCRIPT_EXPORTS
         # QNetworkDatagram::destroy(QNetworkDatagramPrivate *d)
-        "_ZN16QNetworkDatagram7destroyEP23QNetworkDatagramPrivate"
+        ${linker_script_symbol}
 )

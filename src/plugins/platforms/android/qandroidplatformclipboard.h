@@ -11,9 +11,9 @@
 
 #ifndef QT_NO_CLIPBOARD
 
-Q_DECLARE_JNI_CLASS(QtClipboardManager, "org/qtproject/qt/android/QtClipboardManager");
-
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_JNI_CLASS(QtClipboardManager, "org/qtproject/qt/android/QtClipboardManager");
 
 class QAndroidPlatformClipboard : public QPlatformClipboard
 {

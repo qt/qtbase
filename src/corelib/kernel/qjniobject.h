@@ -773,7 +773,9 @@ inline bool operator!=(const QJniObject &obj1, const QJniObject &obj2)
 
 // This cannot be included earlier as QJniArray is a QJniObject subclass, but it
 // must be included so that we can implement QJniObject::LocalFrame conversion.
+QT_END_NAMESPACE
 #include <QtCore/qjniarray.h>
+QT_BEGIN_NAMESPACE
 
 template <typename ...Args>
 template <typename T>

@@ -7,6 +7,7 @@
 
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QSet>
+#include <QtCore/qjnitypes.h>
 
 QT_BEGIN_NAMESPACE
 
