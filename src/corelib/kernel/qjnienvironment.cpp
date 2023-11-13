@@ -351,6 +351,15 @@ bool QJniEnvironment::registerNativeMethods(const char *className, const JNINati
 
     return registerNativeMethods(clazz, methods, size);
 }
+
+/*!
+    \fn bool QJniEnvironment::registerNativeMethods(const char *className, std::initializer_list<JNINativeMethod> methods)
+    \overload
+
+    Registers the native functions methods in \a methods for the Java class \a className.
+    Returns \c true if the registration is successful, otherwise \c false.
+*/
+
 #if QT_DEPRECATED_SINCE(6, 2)
 /*!
     \overload
@@ -404,6 +413,14 @@ bool QJniEnvironment::registerNativeMethods(jclass clazz, const JNINativeMethod 
     }
     return true;
 }
+
+/*!
+    \fn bool QJniEnvironment::registerNativeMethods(jclass clazz, std::initializer_list<JNINativeMethod> methods)
+    \overload
+
+    Registers the native functions methods in \a methods for the Java class \a clazz.
+    Returns \c true if the registration is successful, otherwise \c false.
+*/
 
 /*!
     \enum QJniEnvironment::OutputMode

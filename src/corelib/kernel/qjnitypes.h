@@ -47,6 +47,12 @@ struct Object : QJniObject
     template <typename ...Args>
     static Object construct(Args &&...args) { return Object{std::forward<Args>(args)...}; }
 
+    static bool registerNativeMethods(std::initializer_list<JNINativeMethod> methods)
+    {
+        QJniEnvironment env;
+        return env.registerNativeMethods<Class>(methods);
+    }
+
     // public API forwarding to QJniObject, with the implicit Class template parameter
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC

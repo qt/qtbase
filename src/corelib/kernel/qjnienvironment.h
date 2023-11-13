@@ -64,6 +64,12 @@ public:
         return registerNativeMethods(clazz, std::data(methods), methods.size());
     }
 
+    template<typename Class>
+    bool registerNativeMethods(std::initializer_list<JNINativeMethod> methods)
+    {
+        return registerNativeMethods(QtJniTypes::Traits<Class>::className().data(), methods);
+    }
+
 #if QT_DEPRECATED_SINCE(6, 2)
     // ### Qt 7: remove
     QT_DEPRECATED_VERSION_X_6_2("Use the overload with a const JNINativeMethod[] instead.")
