@@ -836,11 +836,10 @@ void QColorLuminancePicker::paintEvent(QPaintEvent *)
     qDrawShadePanel(&p, r, g, true);
     p.setPen(g.windowText().color());
     p.setBrush(g.windowText());
-    QPolygon a;
-    int y = val2y(val);
-    a.setPoints(3, w, y, w+5, y+5, w+5, y-5);
     p.eraseRect(w, 0, 5, height());
-    p.drawPolygon(a);
+    const int y = val2y(val);
+    const std::array<QPoint, 3> points = {QPoint(w, y), QPoint(w + 5, y + 5), QPoint(w + 5, y - 5)};
+    p.drawPolygon(points.data(), static_cast<int>(points.size()));
 }
 
 void QColorLuminancePicker::setCol(int h, int s , int v)
