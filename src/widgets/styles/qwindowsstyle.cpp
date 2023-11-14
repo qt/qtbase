@@ -1940,39 +1940,36 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                 QSliderDirection dir;
 
                 if (orient == Qt::Horizontal)
-                    if (tickAbove)
-                        dir = SlUp;
-                    else
-                        dir = SlDown;
+                    dir = tickAbove ? SlUp : SlDown;
                 else
-                    if (tickAbove)
-                        dir = SlLeft;
-                    else
-                        dir = SlRight;
+                    dir = tickAbove ? SlLeft : SlRight;
 
-                QPolygon a;
-
+                std::array<QPoint, 5> points;
                 int d = 0;
                 switch (dir) {
                 case SlUp:
-                    y1 = y1 + wi/2;
+                    y1 = y1 + wi / 2;
                     d =  (wi + 1) / 2 - 1;
-                    a.setPoints(5, x1,y1, x1,y2, x2,y2, x2,y1, x1+d,y1-d);
+                    points = {QPoint(x1, y1), QPoint(x1, y2), QPoint(x2, y2),
+                              QPoint(x2, y1), QPoint(x1 + d, y1 - d)};
                     break;
                 case SlDown:
-                    y2 = y2 - wi/2;
+                    y2 = y2 - wi / 2;
                     d =  (wi + 1) / 2 - 1;
-                    a.setPoints(5, x1,y1, x1,y2, x1+d,y2+d, x2,y2, x2,y1);
+                    points = {QPoint(x1, y1), QPoint(x1, y2), QPoint(x1 + d, y2 + d),
+                              QPoint(x2, y2), QPoint(x2, y1)};
                     break;
                 case SlLeft:
                     d =  (he + 1) / 2 - 1;
-                    x1 = x1 + he/2;
-                    a.setPoints(5, x1,y1, x1-d,y1+d, x1,y2, x2,y2, x2,y1);
+                    x1 = x1 + he / 2;
+                    points = {QPoint(x1, y1), QPoint(x1 - d, y1 + d), QPoint(x1,y2),
+                              QPoint(x2, y2), QPoint(x2, y1)};
                     break;
                 case SlRight:
                     d =  (he + 1) / 2 - 1;
-                    x2 = x2 - he/2;
-                    a.setPoints(5, x1,y1, x1,y2, x2,y2, x2+d,y1+d, x2,y1);
+                    x2 = x2 - he / 2;
+                    points = {QPoint(x1, y1), QPoint(x1, y2), QPoint(x2, y2),
+                              QPoint(x2 + d, y1 + d), QPoint(x2, y1)};
                     break;
                 }
 
@@ -1982,7 +1979,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                 Qt::BGMode oldMode = p->backgroundMode();
                 p->setBackgroundMode(Qt::OpaqueMode);
                 p->drawRect(x1, y1, x2-x1+1, y2-y1+1);
-                p->drawPolygon(a);
+                p->drawPolygon(points.data(), static_cast<int>(points.size()));
                 p->setBrush(oldBrush);
                 p->setBackgroundMode(oldMode);
 
