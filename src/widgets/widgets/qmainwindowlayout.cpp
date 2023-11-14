@@ -1507,7 +1507,6 @@ void QMainWindowLayout::showDockWidgets() const
 
 // Checks if QDockWidgetGroupWindow or QDockWidget can be plugged the area indicated by path.
 // Returns false if called with invalid widget type or if compiled without dockwidget support.
-#if QT_CONFIG(dockwidget)
 static bool isAreaAllowed(QWidget *widget, const QList<int> &path)
 {
     Q_ASSERT_X((path.size() > 1), "isAreaAllowed", "invalid path size");
@@ -1542,7 +1541,6 @@ static bool isAreaAllowed(QWidget *widget, const QList<int> &path)
     qCDebug(lcQpaDockWidgets) << "Docking requested for invalid widget type (coding error)." << widget << area;
     return false;
 }
-#endif
 
 void QMainWindowLayout::setCorner(Qt::Corner corner, Qt::DockWidgetArea area)
 {
@@ -1562,7 +1560,6 @@ Qt::DockWidgetArea QMainWindowLayout::corner(Qt::Corner corner) const
 // Returns the rectangle of a dockWidgetArea
 // if max is true, the maximum possible rectangle for dropping is returned
 // the current visible rectangle otherwise
-#if QT_CONFIG(dockwidget)
 QRect QMainWindowLayout::dockWidgetAreaRect(const Qt::DockWidgetArea area, DockWidgetAreaSize size) const
 {
     const QInternal::DockPosition dockPosition = toDockPos(area);
@@ -1578,7 +1575,6 @@ QRect QMainWindowLayout::dockWidgetAreaRect(const Qt::DockWidgetArea area, DockW
     // Return maximum or visible rectangle
     return (size == Maximum) ? dl.gapRect(dockPosition) : dl.docks[dockPosition].rect;
 }
-#endif
 
 void QMainWindowLayout::addDockWidget(Qt::DockWidgetArea area,
                                              QDockWidget *dockwidget,
