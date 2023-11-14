@@ -1982,14 +1982,15 @@ void QObject::killTimer(int id)
 
     Returns the child of this object that can be cast into type T and
     that is called \a name, or \nullptr if there is no such object.
-    Omitting the \a name argument causes all object names to be matched.
+    A null \a name argument causes all objects to be matched. An empty,
+    non-null \a name matches only objects whose \l objectName is empty.
     The search is performed recursively, unless \a options specifies the
     option FindDirectChildrenOnly.
 
-    If there is more than one child matching the search, the most
-    direct ancestor is returned. If there are several direct
-    ancestors, it is undefined which one will be returned. In that
-    case, findChildren() should be used.
+    If there is more than one child matching the search, the most-direct
+    ancestor is returned. If there are several most-direct ancestors, the
+    first child in children() will be returned. In that case, it's better
+    to use findChildren() to get the complete list of all children.
 
     This example returns a child \c{QPushButton} of \c{parentWidget}
     named \c{"button1"}, even if the button isn't a direct child of
