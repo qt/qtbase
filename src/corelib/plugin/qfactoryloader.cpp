@@ -62,7 +62,8 @@ struct QFactoryLoaderIidSearch
 {
     QLatin1StringView iid;
     bool matchesIid = false;
-    QFactoryLoaderIidSearch(QLatin1StringView iid) : iid(iid) {}
+    QFactoryLoaderIidSearch(QLatin1StringView iid) : iid(iid)
+    { Q_ASSERT(!iid.isEmpty()); }
 
     static QString readString(QCborStreamReader &reader)
     {
@@ -93,7 +94,7 @@ struct QFactoryLoaderIidSearch
         matchesIid = (readString(reader) == iid);
         return IterationResult::FinishedSearch;
     }
-    IterationResult::Result operator()(const QCborValue &, QCborStreamReader &reader)
+    IterationResult::Result operator()(const QString &, QCborStreamReader &reader)
     {
         return skip(reader);
     }
@@ -129,11 +130,13 @@ template <typename F> static IterationResult iterateInPluginMetaData(QByteArrayV
             if (!reader.next())
                 return reader.lastError();
             r = f(key, reader);
-        } else {
-            QCborValue key = QCborValue::fromCbor(reader);
-            if (key.isInvalid())
+        } else if (reader.isString()) {
+            QString key = readString(reader);
+            if (key.isNull())
                 return reader.lastError();
             r = f(key, reader);
+        } else {
+            return IterationResult::InvalidTopLevelItem;
         }
 
         if (QCborError e = reader.lastError())
@@ -156,24 +159,35 @@ static bool isIidMatch(QByteArrayView raw, QLatin1StringView iid)
 
 bool QPluginParsedMetaData::parse(QByteArrayView raw)
 {
-    QPluginMetaData::Header header;
-    Q_ASSERT(raw.size() >= qsizetype(sizeof(header)));
-    memcpy(&header, raw.data(), sizeof(header));
-    if (Q_UNLIKELY(header.version > QPluginMetaData::CurrentMetaDataVersion))
+    QCborMap map;
+    auto r = iterateInPluginMetaData(raw, [&](const auto &key, QCborStreamReader &reader) {
+        QCborValue item = QCborValue::fromCbor(reader);
+        if (item.isInvalid())
+            return IterationResult::ParsingError;
+        if constexpr (std::is_enum_v<std::decay_t<decltype(key)>>)
+            map[int(key)] = item;
+        else
+            map[key] = item;
+        return IterationResult::ContinueSearch;
+    });
+
+    switch (r.result) {
+    case IterationResult::FinishedSearch:
+    case IterationResult::ContinueSearch:
+        break;
+
+    // parse errors
+    case IterationResult::ParsingError:
+        return setError(QFactoryLoader::tr("Metadata parsing error: %1").arg(r.error.toString()));
+    case IterationResult::InvalidMetaDataVersion:
         return setError(QFactoryLoader::tr("Invalid metadata version"));
-
-    // use fromRawData to keep QCborStreamReader from copying
-    raw = raw.sliced(sizeof(header));
-    QByteArray ba = QByteArray::fromRawData(raw.data(), raw.size());
-    QCborParserError err;
-    QCborValue metadata = QCborValue::fromCbor(ba, &err);
-
-    if (err.error != QCborError::NoError)
-        return setError(QFactoryLoader::tr("Metadata parsing error: %1").arg(err.error.toString()));
-    if (!metadata.isMap())
+    case IterationResult::InvalidTopLevelItem:
+    case IterationResult::InvalidHeaderItem:
         return setError(QFactoryLoader::tr("Unexpected metadata contents"));
-    QCborMap map = metadata.toMap();
-    metadata = {};
+    }
+
+    // header was validated
+    auto header = qFromUnaligned<QPluginMetaData::Header>(raw.data());
 
     DecodedArchRequirements archReq =
             header.version == 0 ? decodeVersion0ArchRequirements(header.plugin_arch_requirements)
