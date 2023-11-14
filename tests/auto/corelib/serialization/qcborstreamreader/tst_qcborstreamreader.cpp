@@ -707,6 +707,27 @@ void tst_QCborStreamReader::strings()
         QVERIFY(reader.toString(str));
         QCOMPARE(str, prefix + QString::fromUtf8(fullString));
     }
+
+    // Re-do again using the UTF-8 interface.
+    reader.reset();
+    QVERIFY(reader.isString() || reader.isByteArray());
+    if (reader.isString()) {
+        QByteArray prefix("some prefix");
+        QByteArray utf8 = prefix;
+        QVERIFY(reader.toUtf8String(utf8));
+        QCOMPARE(utf8, prefix + fullString);
+
+        reader.reset();
+        fullString = prefix;
+        forever {
+            auto r = reader.readUtf8String();
+            QCOMPARE_NE(r.status, QCborStreamReader::Error);
+            fullString += r.data;
+            if (r.status == QCborStreamReader::EndOfString)
+                break;
+        }
+        QCOMPARE(fullString, utf8);
+    }
 }
 
 void tst_QCborStreamReader::tags_data()
@@ -948,6 +969,29 @@ void tst_QCborStreamReader::validation()
             QVERIFY(reader.toString().isNull());
         else
             QVERIFY(reader.toByteArray().isNull());
+    }
+
+    reader.reset();
+
+    // and the UTF-8 API
+    if (reader.isString()) {
+        QByteArray prefix = "some prefix";
+        QByteArray ba = prefix;
+        QVERIFY(!reader.toUtf8String(ba));
+        QVERIFY(ba.startsWith(prefix));     // but may have decoded some
+        QCOMPARE(reader.lastError(), error);
+
+        reader.reset();
+        QVERIFY(reader.toUtf8String().isNull());
+
+        reader.reset();
+        auto r = reader.readUtf8String();
+        for ( ; r.status == QCborStreamReader::Ok; r = reader.readUtf8String()) {
+            // while the data is valid...
+            QVERIFY(!r.data.isNull());
+        }
+        QCOMPARE_NE(r.status, QCborStreamReader::EndOfString);
+        QCOMPARE(reader.lastError(), error);
     }
 }
 
