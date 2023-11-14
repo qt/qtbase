@@ -2261,11 +2261,13 @@ QVariantList AtSpiAdaptor::getAttributes(QAccessibleInterface *interface, int of
     QString joined = interface->textInterface()->attributes(offset, &startOffset, &endOffset);
     const QStringList attributes = joined.split(u';', Qt::SkipEmptyParts, Qt::CaseSensitive);
     for (const QString &attr : attributes) {
-        QStringList items;
-        items = attr.split(u':', Qt::SkipEmptyParts, Qt::CaseSensitive);
-        AtSpiAttribute attribute = atspiTextAttribute(items[0], items[1]);
-        if (!attribute.isNull())
-            set[attribute.name] = attribute.value;
+        QStringList items = attr.split(u':', Qt::SkipEmptyParts, Qt::CaseSensitive);
+        if (items.count() == 2)
+        {
+            AtSpiAttribute attribute = atspiTextAttribute(items[0], items[1]);
+            if (!attribute.isNull())
+                set[attribute.name] = attribute.value;
+        }
     }
 
     QVariantList list;
