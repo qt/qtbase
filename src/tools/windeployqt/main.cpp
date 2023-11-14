@@ -953,6 +953,14 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir, const boo
         return {};
     }
 
+    // By default, only deploy qwindows.dll
+    if (subDirName == u"platforms"
+        && !(pluginSelections.includedPlugins.contains(pluginName)
+             || (pluginSelections.enabledPluginTypes.contains(subDirName)))
+        && !pluginName.startsWith(u"qwindows")) {
+        return {};
+    }
+
     const QString pluginPath = subDir.absoluteFilePath(plugin);
 
     // If dueToModule is false, check if the user included the plugin or the entire type. In the
@@ -1043,25 +1051,17 @@ QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disab
                 : debugMatchModeIn;
             QDir subDir(subDirFi.absoluteFilePath());
             std::wcout << "Adding in plugin type " << subDirFi.baseName() << " for module: " << qtModuleEntries.moduleById(module).name << '\n';
-            // Filter for platform or any.
-            QString filter;
+
             const bool isPlatformPlugin = subDirName == "platforms"_L1;
-            if (isPlatformPlugin) {
-                filter = QStringLiteral("qwindows");
-                if (!infix.isEmpty())
-                    filter += infix;
-            } else {
-                filter = u"*"_s;
-            }
             const QStringList plugins =
-                    findSharedLibraries(subDir, platform, debugMatchMode, filter);
+                    findSharedLibraries(subDir, platform, debugMatchMode, QString());
             for (const QString &plugin : plugins) {
                 const QString pluginPath =
                         deployPlugin(plugin, subDir, dueToModule, debugMatchMode, usedQtModules,
                                      disabledQtModules, pluginSelections, libraryLocation, infix,
                                      platform, deployInsightTrackerPlugin);
                 if (!pluginPath.isEmpty()) {
-                    if (isPlatformPlugin)
+                    if (isPlatformPlugin && plugin.startsWith(u"qwindows"))
                         *platformPlugin = subDir.absoluteFilePath(plugin);
                     result.append(pluginPath);
                 }
