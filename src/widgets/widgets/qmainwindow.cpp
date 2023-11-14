@@ -1290,6 +1290,13 @@ bool QMainWindow::event(QEvent *event)
             return true;
 #endif // QT_CONFIG(statustip)
 
+#if QT_CONFIG(dockwidget)
+        case QEvent::Show:
+            Q_ASSERT(d->layout);
+            d->layout->showDockWidgets();
+            break;
+#endif // QT_CONFIG(dockwidget)
+
         case QEvent::StyleChange:
 #if QT_CONFIG(dockwidget)
             Q_ASSERT(d->layout);
