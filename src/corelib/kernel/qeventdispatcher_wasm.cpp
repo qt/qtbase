@@ -223,6 +223,15 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
             handleApplicationExec();
     }
 
+#if QT_CONFIG(thread)
+    {
+        // Reset wakeUp state: if wakeUp() was called at some point before
+        // this then processPostedEvents() below will service that call.
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_wakeUpCalled = false;
+    }
+#endif
+
     processPostedEvents();
 
     // The processPostedEvents() call above may process an event which deletes the
@@ -413,7 +422,12 @@ bool QEventDispatcherWasm::wait(int timeout)
     if (isSecondaryThreadEventDispatcher()) {
         std::unique_lock<std::mutex> lock(m_mutex);
 
-        m_wakeUpCalled = false;
+        // If wakeUp() was called there might be pending events in the event
+        // queue which should be processed. Don't block, instead return
+        // so that the event loop can spin and call processEvents() again.
+        if (m_wakeUpCalled)
+            return true;
+
         auto wait_time = timeout > 0 ? timeout * 1ms : std::chrono::duration<int, std::micro>::max();
         bool wakeUpCalled = m_moreEvents.wait_for(lock, wait_time, [=] { return m_wakeUpCalled; });
         return wakeUpCalled;
