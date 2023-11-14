@@ -119,6 +119,9 @@ void tst_QOpenGLWindow::resize()
     if (isPlatformWayland())
         QSKIP("Wayland: Crashes on Intel Mesa due to a driver bug (QTBUG-66848).");
 
+    if (QGuiApplication::platformName().startsWith(QLatin1String("eglfs"), Qt::CaseInsensitive))
+        QSKIP("EGLFS does not allow resizing on top level window");
+
     Window w;
     w.reset();
     w.resize(640, 480);

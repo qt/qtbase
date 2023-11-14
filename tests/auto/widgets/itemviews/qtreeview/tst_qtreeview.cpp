@@ -4820,6 +4820,9 @@ void tst_QTreeView::fetchMoreOnScroll()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
+    if (QGuiApplication::platformName().startsWith(QLatin1String("eglfs"), Qt::CaseInsensitive))
+        QSKIP("EGLFS does not allow resizing on top level window");
+
     QTreeView tw;
     FetchMoreModel im;
     tw.setModel(&im);
@@ -4897,6 +4900,9 @@ void tst_QTreeView::checkIntersectedRect_data()
 
 void tst_QTreeView::checkIntersectedRect()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("eglfs"), Qt::CaseInsensitive))
+        QSKIP("EGLFS does not allow resizing on top level window");
+
     QFETCH(QStandardItemModel *, model);
     QFETCH(const QList<QModelIndex>, changedIndexes);
     QFETCH(bool, isEmpty);
@@ -5197,6 +5203,10 @@ void tst_QTreeView::fetchUntilScreenFull()
         };
         TreeItem* m_root;
     };
+
+    if (QGuiApplication::platformName().startsWith(QLatin1String("eglfs"), Qt::CaseInsensitive))
+        QSKIP("EGLFS does not allow resizing on top level window");
+
 
     QTreeView tv;
     TreeModel model;
