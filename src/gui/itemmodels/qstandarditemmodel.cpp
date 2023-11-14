@@ -868,9 +868,15 @@ QStandardItem *QStandardItem::parent() const
     Sets the item's data for the given \a role to the specified \a value.
 
     If you subclass QStandardItem and reimplement this function, your
-    reimplementation should call emitDataChanged() if you do not call
-    the base implementation of setData(). This will ensure that e.g.
-    views using the model are notified of the changes.
+    reimplementation should:
+    \list
+    \li call emitDataChanged() if you do not call the base implementation of
+        setData(). This will ensure that e.g. views using the model are notified
+        of the changes
+    \li call the base implementation for roles you don't handle, otherwise
+        setting flags, e.g. by calling setFlags(), setCheckable(), setEditable()
+        etc., will not work.
+    \endlist
 
     \note The default implementation treats Qt::EditRole and Qt::DisplayRole
     as referring to the same data.
@@ -923,6 +929,11 @@ void QStandardItem::clearData()
 /*!
     Returns the item's data for the given \a role, or an invalid
     QVariant if there is no data for the role.
+
+    If you reimplement this function, your reimplementation should call
+    the base implementation for roles you don't handle, otherwise getting
+    flags, e.g. by calling flags(), isCheckable(), isEditable() etc.,
+    will not work.
 
     \note The default implementation treats Qt::EditRole and Qt::DisplayRole
     as referring to the same data.
