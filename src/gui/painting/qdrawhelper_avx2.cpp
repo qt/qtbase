@@ -1,6 +1,6 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // Copyright (C) 2018 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #include "qdrawhelper_p.h"
 #include "qdrawhelper_x86_p.h"

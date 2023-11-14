@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # Copyright (C) 2017 Intel Corporation.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial
 use strict;
 
 MAKEFILE: while ($_ = shift @ARGV) {

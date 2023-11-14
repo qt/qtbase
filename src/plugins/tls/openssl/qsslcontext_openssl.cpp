@@ -2,7 +2,7 @@
 // Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 // Copyright (C) 2014 Governikus GmbH & Co. KG.
 // Copyright (C) 2016 Richard J. Moore <rich@kde.org>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qssldiffiehellmanparameters.h>

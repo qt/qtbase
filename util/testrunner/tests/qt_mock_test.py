@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (C) 2021 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 
 # This is an artificial test, mimicking the Qt tests, for example tst_whatever.

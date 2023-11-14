@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright (C) 2023 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 PICK_TO_BRANCHES="6.6 6.5 6.2 5.15"
 #UPSTREAM=github.com:publicsuffix/list.git          # use this if you have a github account

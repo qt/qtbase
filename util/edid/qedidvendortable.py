@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (C) 2017 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 import urllib.request
 

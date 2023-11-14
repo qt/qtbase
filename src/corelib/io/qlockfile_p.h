@@ -1,5 +1,5 @@
 // Copyright (C) 2013 David Faure <faure+bluesystems@kde.org>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #ifndef QLOCKFILE_P_H
 #define QLOCKFILE_P_H

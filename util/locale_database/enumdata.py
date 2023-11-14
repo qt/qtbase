@@ -1,5 +1,5 @@
 # Copyright (C) 2021 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 # A run of cldr2qlocalexml.py will produce output reporting any
 # language, script and territory codes it sees, in data, for which it

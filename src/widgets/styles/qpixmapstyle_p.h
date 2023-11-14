@@ -1,7 +1,7 @@
 // Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 // Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #ifndef QPIXMAPSTYLE_H
 #define QPIXMAPSTYLE_H
