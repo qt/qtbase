@@ -2787,6 +2787,7 @@ void QMainWindowLayout::hover(QLayoutItem *hoverTarget,
   QWidget *widget = hoverTarget->widget();
 
 #if QT_CONFIG(dockwidget)
+    widget->raise();
     if ((dockOptions & QMainWindow::GroupedDragging) && (qobject_cast<QDockWidget*>(widget)
             || qobject_cast<QDockWidgetGroupWindow *>(widget))) {
 
