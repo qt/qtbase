@@ -19,6 +19,7 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.View;
 
+import java.lang.ref.WeakReference;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -31,9 +32,9 @@ import javax.net.ssl.X509TrustManager;
 
 public class QtNative
 {
-    private static Activity m_activity = null;
+    private static WeakReference<Activity> m_activity = null;
     private static boolean m_activityPaused = false;
-    private static Service m_service = null;
+    private static WeakReference<Service> m_service = null;
     public static final Object m_mainActivityMutex = new Object(); // mutex used to synchronize runnable operations
 
     public static final String QtTAG = "Qt JAVA";
@@ -54,9 +55,7 @@ public class QtNative
 
     public static boolean isStarted()
     {
-        boolean hasActivity = m_activity != null;
-        boolean hasService = m_service != null;
-        return m_started && (hasActivity || hasService);
+        return m_started && (isActivityValid() || isServiceValid());
     }
 
     @UsedFromNativeCode
@@ -73,14 +72,14 @@ public class QtNative
     public static void setActivity(Activity qtMainActivity)
     {
         synchronized (m_mainActivityMutex) {
-            m_activity = qtMainActivity;
+            m_activity = new WeakReference<>(qtMainActivity);
         }
     }
 
     public static void setService(Service qtMainService)
     {
         synchronized (m_mainActivityMutex) {
-            m_service = qtMainService;
+            m_service = new WeakReference<>(qtMainService);
         }
     }
 
@@ -88,23 +87,33 @@ public class QtNative
     public static Activity activity()
     {
         synchronized (m_mainActivityMutex) {
-            return m_activity;
+            return m_activity != null ? m_activity.get() : null;
         }
+    }
+
+    public static boolean isActivityValid()
+    {
+        return m_activity != null && m_activity.get() != null;
     }
 
     @UsedFromNativeCode
     public static Service service()
     {
         synchronized (m_mainActivityMutex) {
-            return m_service;
+            return m_service != null ? m_service.get() : null;
         }
+    }
+
+    public static boolean isServiceValid()
+    {
+        return m_service != null && m_service.get() != null;
     }
 
     @UsedFromNativeCode
     public static Context getContext() {
-        if (m_activity != null)
-            return m_activity;
-        return m_service;
+        if (isActivityValid())
+            return m_activity.get();
+        return service();
     }
 
     @UsedFromNativeCode
@@ -174,7 +183,13 @@ public class QtNative
             if (!mime.isEmpty())
                 intent.setDataAndType(uri, mime);
 
-            activity().startActivity(intent);
+            Activity activity = activity();
+            if (activity == null) {
+                Log.w(QtTAG, "openURL(): The activity reference is null");
+                return false;
+            }
+
+            activity.startActivity(intent);
 
             return true;
         } catch (Exception e) {
@@ -209,7 +224,7 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
             final Handler handler = new Handler(mainLooper);
-            final boolean active = (m_activity != null && !m_activityPaused) || m_service != null;
+            final boolean active = (isActivityValid() && !m_activityPaused) || isServiceValid();
             if (!active || !handler.post(action))
                 m_lostActions.add(action);
         }
@@ -219,9 +234,9 @@ public class QtNative
     private static void runPendingCppRunnablesOnAndroidThread()
     {
         synchronized (m_mainActivityMutex) {
-            if (m_activity != null) {
+            if (isActivityValid()) {
                 if (!m_activityPaused)
-                    m_activity.runOnUiThread(runPendingCppRunnablesRunnable);
+                    m_activity.get().runOnUiThread(runPendingCppRunnablesRunnable);
                 else
                     runAction(runPendingCppRunnablesRunnable);
             } else {
@@ -278,10 +293,10 @@ public class QtNative
             @Override
             public void run() {
                 quitQtAndroidPlugin();
-                if (m_activity != null)
-                     m_activity.finish();
-                 if (m_service != null)
-                     m_service.stopSelf();
+                if (isActivityValid())
+                     m_activity.get().finish();
+                 if (isServiceValid())
+                     m_service.get().stopSelf();
 
                  m_started = false;
             }

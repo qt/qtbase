@@ -6,6 +6,7 @@ package org.qtproject.qt.android;
 
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 import android.view.WindowMetrics;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.CompletionInfo;
@@ -61,6 +62,8 @@ public class QtInputConnection extends BaseInputConnection
     private static final int ID_SWITCH_INPUT_METHOD = android.R.id.switchInputMethod;
     private static final int ID_ADD_TO_DICTIONARY = android.R.id.addToDictionary;
 
+    private static final String QtTAG = "QtInputConnection";
+
     private final QtInputConnectionListener m_qtInputConnectionListener;
 
     class HideKeyboardRunnable implements Runnable {
@@ -68,6 +71,11 @@ public class QtInputConnection extends BaseInputConnection
         public void run() {
             // Check that the keyboard is really no longer there.
             Activity activity = QtNative.activity();
+            if (activity == null) {
+                Log.w(QtTAG, "HideKeyboardRunnable: The activity reference is null");
+                return;
+            }
+
             Rect r = new Rect();
             activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
 
