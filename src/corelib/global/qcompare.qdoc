@@ -7,7 +7,7 @@
     \title Comparison types overview
     \keyword three-way comparison
     \inmodule QtCore
-    \sa QStrongOrdering, QWeakOrdering, QPartialOrdering
+    \sa Qt::strong_ordering, Qt::weak_ordering, Qt::partial_ordering
 
     \note Qt's comparison types provide functionality equivalent to their C++20
     standard counterparts. The only reason why they exist is to make the
@@ -35,49 +35,49 @@
     \row
         \li \l {https://en.cppreference.com/w/cpp/utility/compare/strong_ordering}
         {std::strong_ordering}
-        \li QStrongOrdering
+        \li Qt::strong_ordering
         \li yes
         \li yes
         \li integral types, case-sensitive strings, QDate, QTime
     \row
         \li \l {https://en.cppreference.com/w/cpp/utility/compare/weak_ordering}
         {std::weak_ordering}
-        \li QWeakOrdering
+        \li Qt::weak_ordering
         \li no
         \li yes
         \li case-insensitive strings, unordered associative containers, QDateTime
     \row
         \li \l {https://en.cppreference.com/w/cpp/utility/compare/partial_ordering}
         {std::partial_ordering}
-        \li QPartialOrdering
+        \li Qt::partial_ordering
         \li no
         \li no
         \li floating-point types, QOperatingSystemVersion, QVariant
     \endtable
 
-    The strongest comparison type, QStrongOrdering, represents a strict total
+    The strongest comparison type, Qt::strong_ordering, represents a strict total
     order. It requires that any two elements be comparable in a way where
     equality implies substitutability. In other words, equivalent values
     cannot be distinguished from each other. A practical example would be the
     case-sensitive comparison of two strings. For instance, when comparing the
-    values \c "Qt" and \c "Qt" the result would be \l QStrongOrdering::Equal.
+    values \c "Qt" and \c "Qt" the result would be \l Qt::strong_ordering::equal.
     Both values are indistinguishable and all deterministic operations performed
     on these values would yield identical results.
 
-    QWeakOrdering represents a total order. While any two values still need to
+    Qt::weak_ordering represents a total order. While any two values still need to
     be comparable, equivalent values may be distinguishable. The canonical
     example here would be the case-insensitive comparison of two strings. For
     instance, when comparing the values \c "Qt" and \c "qt" both hold the same
     letters but with different representations. This comparison would
-    result in \l QWeakOrdering::Equivalent, but not actually \c Equal.
+    result in \l Qt::weak_ordering::equivalent, but not actually \c Equal.
     Another example would be QDateTime, which can represent a given instant in
     time in terms of local time or any other time-zone, including UTC. The
     different representations are equivalent, even though their \c time() and
     sometimes \c date() may differ.
 
-    QPartialOrdering represents, as the name implies, a partial ordering. It
+    Qt::partial_ordering represents, as the name implies, a partial ordering. It
     allows for the possibility that two values may not be comparable, resulting
-    in an \l {QPartialOrdering::}{Unordered} state. Additionally, equivalent
+    in an \l {Qt::partial_ordering::}{unordered} state. Additionally, equivalent
     values may still be distinguishable. A practical example would be the
     comparison of two floating-point values, comparing with NaN (Not-a-Number)
     would yield an unordered result. Another example is the comparison of two
@@ -91,29 +91,29 @@
 */
 
 /*!
-    \class QStrongOrdering
+    \class Qt::strong_ordering
     \inmodule QtCore
-    \brief QStrongOrdering represents a comparison where equivalent values are
+    \brief Qt::strong_ordering represents a comparison where equivalent values are
     indistinguishable.
-    \sa QWeakOrdering, QPartialOrdering, {Comparison types overview}
+    \sa Qt::weak_ordering, Qt::partial_ordering, {Comparison types overview}
     \since 6.7
 
-    A value of type QStrongOrdering is typically returned from a three-way
+    A value of type Qt::strong_ordering is typically returned from a three-way
     comparison function. Such a function compares two objects and establishes
     that the two objects are in a strict ordering relationship; that is, the
     function establishes a well-defined total order.
 
-    The possible values of type QStrongOrdering are fully represented by the
+    The possible values of type Qt::strong_ordering are fully represented by the
     following four symbolic constants:
 
     \list
-    \li \c Less represents that the left operand is less than the right;
-    \li \c Equal represents that the left operand is equivalent to the right;
-    \li \c Equivalent is an alias for \c Equal;
-    \li \c Greater represents that the left operand is greater than the right.
+    \li \l less represents that the left operand is less than the right;
+    \li \l equal represents that the left operand is equivalent to the right;
+    \li \l equivalent is an alias for \c Equal;
+    \li \l greater represents that the left operand is greater than the right.
     \endlist
 
-    QStrongOrdering is idiomatically used by comparing an instance against a
+    Qt::strong_ordering is idiomatically used by comparing an instance against a
     literal zero, for instance like this:
 
     \code
@@ -121,10 +121,10 @@
     // given a, b, c, d as objects of some type that allows for a 3-way compare,
     // and a compare function declared as follows:
 
-    QStrongOrdering compare(T lhs, T rhs); // defined out-of-line
+    Qt::strong_ordering compare(T lhs, T rhs); // defined out-of-line
     ~~~
 
-    QStrongOrdering result = compare(a, b);
+    Qt::strong_ordering result = compare(a, b);
     if (result < 0) {
         // a is less than b
     }
@@ -137,69 +137,69 @@
 */
 
 /*!
-    \fn QStrongOrdering::operator QPartialOrdering() const
+    \fn Qt::strong_ordering::operator Qt::partial_ordering() const
 
-    Converts this QStrongOrdering value to a QPartialOrdering object using the
+    Converts this Qt::strong_ordering value to a Qt::partial_ordering object using the
     following rules:
 
     \list
-    \li \l Less converts to \l {QPartialOrdering::Less}.
-    \li \l Equivalent converts to \l {QPartialOrdering::Equivalent}.
-    \li \l Equal converts to \l {QPartialOrdering::Equivalent}.
-    \li \l Greater converts to \l {QPartialOrdering::Greater}.
+    \li \l less converts to \l {Qt::partial_ordering::less}.
+    \li \l equivalent converts to \l {Qt::partial_ordering::equivalent}.
+    \li \l equal converts to \l {Qt::partial_ordering::equivalent}.
+    \li \l greater converts to \l {Qt::partial_ordering::greater}.
     \endlist
 */
 
 /*!
-    \fn QStrongOrdering::operator QWeakOrdering() const
+    \fn Qt::strong_ordering::operator Qt::weak_ordering() const
 
-    Converts this QStrongOrdering value to a QWeakOrdering object using the
+    Converts this Qt::strong_ordering value to a Qt::weak_ordering object using the
     following rules:
 
     \list
-    \li \l Less converts to \l {QWeakOrdering::Less}.
-    \li \l Equivalent converts to \l {QWeakOrdering::Equivalent}.
-    \li \l Equal converts to \l {QWeakOrdering::Equivalent}.
-    \li \l Greater converts to \l {QWeakOrdering::Greater}.
+    \li \l less converts to \l {Qt::weak_ordering::less}.
+    \li \l equivalent converts to \l {Qt::weak_ordering::equivalent}.
+    \li \l equal converts to \l {Qt::weak_ordering::equivalent}.
+    \li \l greater converts to \l {Qt::weak_ordering::greater}.
     \endlist
 */
 
 /*!
-    \fn QStrongOrdering::QStrongOrdering(std::strong_ordering stdorder)
+    \fn Qt::strong_ordering::strong_ordering(std::strong_ordering stdorder)
 
-    Constructs a QStrongOrdering object from \a stdorder using the following rules:
+    Constructs a Qt::strong_ordering object from \a stdorder using the following rules:
 
     \list
-    \li std::strong_ordering::less converts to \l Less.
-    \li std::strong_ordering::equivalent converts to \l Equivalent.
-    \li std::strong_ordering::equal converts to \l Equal.
-    \li std::strong_ordering::greater converts to \l Greater.
+    \li std::strong_ordering::less converts to \l less.
+    \li std::strong_ordering::equivalent converts to \l equivalent.
+    \li std::strong_ordering::equal converts to \l equal.
+    \li std::strong_ordering::greater converts to \l greater.
     \endlist
 */
 
 /*!
-    \fn QStrongOrdering::operator std::strong_ordering() const
+    \fn Qt::strong_ordering::operator std::strong_ordering() const
 
-    Converts this QStrongOrdering value to a std::strong_ordering object using
+    Converts this Qt::strong_ordering value to a std::strong_ordering object using
     the following rules:
 
     \list
-    \li \l Less converts to std::strong_ordering::less.
-    \li \l Equivalent converts to std::strong_ordering::equivalent.
-    \li \l Equal converts to std::strong_ordering::equal.
-    \li \l Greater converts to std::strong_ordering::greater.
+    \li \l less converts to std::strong_ordering::less.
+    \li \l equivalent converts to std::strong_ordering::equivalent.
+    \li \l equal converts to std::strong_ordering::equal.
+    \li \l greater converts to std::strong_ordering::greater.
     \endlist
 */
 
 /*!
-    \fn bool QStrongOrdering::operator==(QStrongOrdering lhs, QStrongOrdering rhs)
+    \fn bool Qt::strong_ordering::operator==(Qt::strong_ordering lhs, Qt::strong_ordering rhs)
 
     Returns true if \a lhs and \a rhs represent the same result;
     otherwise, returns false.
 */
 
 /*!
-    \fn bool QStrongOrdering::operator!=(QStrongOrdering lhs, QStrongOrdering rhs)
+    \fn bool Qt::strong_ordering::operator!=(Qt::strong_ordering lhs, Qt::strong_ordering rhs)
 
     Returns true if \a lhs and \a rhs represent different results;
     otherwise, returns true.
@@ -207,29 +207,29 @@
 
 /*!
     \internal
-    \relates QStrongOrdering
-    \fn bool operator==(QStrongOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator!=(QStrongOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator< (QStrongOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator<=(QStrongOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator> (QStrongOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator>=(QStrongOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \relates Qt::strong_ordering
+    \fn bool operator==(Qt::strong_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator!=(Qt::strong_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator< (Qt::strong_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator<=(Qt::strong_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator> (Qt::strong_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator>=(Qt::strong_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
 
-    \fn bool operator==(QtPrivate::CompareAgainstLiteralZero, QStrongOrdering rhs)
-    \fn bool operator!=(QtPrivate::CompareAgainstLiteralZero, QStrongOrdering rhs)
-    \fn bool operator< (QtPrivate::CompareAgainstLiteralZero, QStrongOrdering rhs)
-    \fn bool operator<=(QtPrivate::CompareAgainstLiteralZero, QStrongOrdering rhs)
-    \fn bool operator> (QtPrivate::CompareAgainstLiteralZero, QStrongOrdering rhs)
-    \fn bool operator>=(QtPrivate::CompareAgainstLiteralZero, QStrongOrdering rhs)
+    \fn bool operator==(QtPrivate::CompareAgainstLiteralZero, Qt::strong_ordering rhs)
+    \fn bool operator!=(QtPrivate::CompareAgainstLiteralZero, Qt::strong_ordering rhs)
+    \fn bool operator< (QtPrivate::CompareAgainstLiteralZero, Qt::strong_ordering rhs)
+    \fn bool operator<=(QtPrivate::CompareAgainstLiteralZero, Qt::strong_ordering rhs)
+    \fn bool operator> (QtPrivate::CompareAgainstLiteralZero, Qt::strong_ordering rhs)
+    \fn bool operator>=(QtPrivate::CompareAgainstLiteralZero, Qt::strong_ordering rhs)
 */
 
 /*!
-    \fn QStrongOrdering::is_eq  (QStrongOrdering o)
-    \fn QStrongOrdering::is_neq (QStrongOrdering o)
-    \fn QStrongOrdering::is_lt  (QStrongOrdering o)
-    \fn QStrongOrdering::is_lteq(QStrongOrdering o)
-    \fn QStrongOrdering::is_gt  (QStrongOrdering o)
-    \fn QStrongOrdering::is_gteq(QStrongOrdering o)
+    \fn Qt::strong_ordering::is_eq  (Qt::strong_ordering o)
+    \fn Qt::strong_ordering::is_neq (Qt::strong_ordering o)
+    \fn Qt::strong_ordering::is_lt  (Qt::strong_ordering o)
+    \fn Qt::strong_ordering::is_lteq(Qt::strong_ordering o)
+    \fn Qt::strong_ordering::is_gt  (Qt::strong_ordering o)
+    \fn Qt::strong_ordering::is_gteq(Qt::strong_ordering o)
 
 //! [is_eq_table]
     Converts \a o into the result of one of the six relational operators:
@@ -248,56 +248,56 @@
 */
 
 /*!
-    \variable QStrongOrdering::Less
+    \variable Qt::strong_ordering::less
 
     Represents the result of a comparison where the left operand is less
     than the right operand.
 */
 
 /*!
-    \variable QStrongOrdering::Equivalent
+    \variable Qt::strong_ordering::equivalent
 
     Represents the result of a comparison where the left operand is equal
-    to the right operand. Same as \l {QStrongOrdering::Equal}.
+    to the right operand. Same as \l {Qt::strong_ordering::equal}.
 */
 
 /*!
-    \variable QStrongOrdering::Equal
+    \variable Qt::strong_ordering::equal
 
     Represents the result of a comparison where the left operand is equal
-    to the right operand. Same as \l {QStrongOrdering::Equivalent}.
+    to the right operand. Same as \l {Qt::strong_ordering::equivalent}.
 */
 
 /*!
-    \variable QStrongOrdering::Greater
+    \variable Qt::strong_ordering::greater
 
     Represents the result of a comparison where the left operand is greater
     than the right operand.
 */
 
 /*!
-    \class QWeakOrdering
+    \class Qt::weak_ordering
     \inmodule QtCore
-    \brief QWeakOrdering represents a comparison where equivalent values are
+    \brief Qt::weak_ordering represents a comparison where equivalent values are
     still distinguishable.
-    \sa QStrongOrdering, QPartialOrdering, {Comparison types overview}
+    \sa Qt::strong_ordering, Qt::partial_ordering, {Comparison types overview}
     \since 6.7
 
-    A value of type QWeakOrdering is typically returned from a three-way
+    A value of type Qt::weak_ordering is typically returned from a three-way
     comparison function. Such a function compares two objects and establishes
     the order of the elements relative to each other.
 
-    The possible values of type QWeakOrdering are fully represented by the
+    The possible values of type Qt::weak_ordering are fully represented by the
     following three symbolic constants:
 
     \list
-    \li \c Less represents that the left operand is less than the right;
-    \li \c Equivalent represents that the left operand is equivalent to the
+    \li \l less represents that the left operand is less than the right;
+    \li \l equivalent represents that the left operand is equivalent to the
     right;
-    \li \c Greater represents that the left operand is greater than the right,
+    \li \l greater represents that the left operand is greater than the right,
     \endlist
 
-    QWeakOrdering is idiomatically used by comparing an instance against a
+    Qt::weak_ordering is idiomatically used by comparing an instance against a
     literal zero, for instance like this:
 
     \code
@@ -305,10 +305,10 @@
     // given a, b, c, d as objects of some type that allows for a 3-way compare,
     // and a compare function declared as follows:
 
-    QWeakOrdering compare(T lhs, T rhs); // defined out-of-line
+    Qt::weak_ordering compare(T lhs, T rhs); // defined out-of-line
     ~~~
 
-    QWeakOrdering result = compare(a, b);
+    Qt::weak_ordering result = compare(a, b);
     if (result < 0) {
         // a is less than b
     }
@@ -321,52 +321,52 @@
 */
 
 /*!
-    \fn QWeakOrdering::operator QPartialOrdering() const
+    \fn Qt::weak_ordering::operator Qt::partial_ordering() const
 
-    Converts this QWeakOrdering value to a QPartialOrdering object using the
+    Converts this Qt::weak_ordering value to a Qt::partial_ordering object using the
     following rules:
 
     \list
-    \li \l Less converts to \l {QPartialOrdering::Less}.
-    \li \l Equivalent converts to \l {QPartialOrdering::Equivalent}.
-    \li \l Greater converts to \l {QPartialOrdering::Greater}.
+    \li \l less converts to \l {Qt::partial_ordering::less}.
+    \li \l equivalent converts to \l {Qt::partial_ordering::equivalent}.
+    \li \l greater converts to \l {Qt::partial_ordering::greater}.
     \endlist
 */
 
 /*!
-    \fn QWeakOrdering::QWeakOrdering(std::weak_ordering stdorder)
+    \fn Qt::weak_ordering::weak_ordering(std::weak_ordering stdorder)
 
-    Constructs a QWeakOrdering object from \a stdorder using the following rules:
+    Constructs a Qt::weak_ordering object from \a stdorder using the following rules:
 
     \list
-    \li std::weak_ordering::less converts to \l Less.
-    \li std::weak_ordering::equivalent converts to \l Equivalent.
-    \li std::weak_ordering::greater converts to \l Greater.
+    \li std::weak_ordering::less converts to \l less.
+    \li std::weak_ordering::equivalent converts to \l equivalent.
+    \li std::weak_ordering::greater converts to \l greater.
     \endlist
 */
 
 /*!
-    \fn QWeakOrdering::operator std::weak_ordering() const
+    \fn Qt::weak_ordering::operator std::weak_ordering() const
 
-    Converts this QWeakOrdering value to a std::weak_ordering object using
+    Converts this Qt::weak_ordering value to a std::weak_ordering object using
     the following rules:
 
     \list
-    \li \l Less converts to std::weak_ordering::less.
-    \li \l Equivalent converts to std::weak_ordering::equivalent.
-    \li \l Greater converts to std::weak_ordering::greater.
+    \li \l less converts to std::weak_ordering::less.
+    \li \l equivalent converts to std::weak_ordering::equivalent.
+    \li \l greater converts to std::weak_ordering::greater.
     \endlist
 */
 
 /*!
-    \fn bool QWeakOrdering::operator==(QWeakOrdering lhs, QWeakOrdering rhs)
+    \fn bool Qt::weak_ordering::operator==(Qt::weak_ordering lhs, Qt::weak_ordering rhs)
 
     Return true if \a lhs and \a rhs represent the same result;
     otherwise, returns false.
 */
 
 /*!
-    \fn bool QWeakOrdering::operator!=(QWeakOrdering lhs, QWeakOrdering rhs)
+    \fn bool Qt::weak_ordering::operator!=(Qt::weak_ordering lhs, Qt::weak_ordering rhs)
 
     Return true if \a lhs and \a rhs represent different results;
     otherwise, returns true.
@@ -374,29 +374,29 @@
 
 /*!
     \internal
-    \relates QWeakOrdering
-    \fn bool operator==(QWeakOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator!=(QWeakOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator< (QWeakOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator<=(QWeakOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator> (QWeakOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
-    \fn bool operator>=(QWeakOrdering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \relates Qt::weak_ordering
+    \fn bool operator==(Qt::weak_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator!=(Qt::weak_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator< (Qt::weak_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator<=(Qt::weak_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator> (Qt::weak_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator>=(Qt::weak_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
 
-    \fn bool operator==(QtPrivate::CompareAgainstLiteralZero, QWeakOrdering rhs)
-    \fn bool operator!=(QtPrivate::CompareAgainstLiteralZero, QWeakOrdering rhs)
-    \fn bool operator< (QtPrivate::CompareAgainstLiteralZero, QWeakOrdering rhs)
-    \fn bool operator<=(QtPrivate::CompareAgainstLiteralZero, QWeakOrdering rhs)
-    \fn bool operator> (QtPrivate::CompareAgainstLiteralZero, QWeakOrdering rhs)
-    \fn bool operator>=(QtPrivate::CompareAgainstLiteralZero, QWeakOrdering rhs)
+    \fn bool operator==(QtPrivate::CompareAgainstLiteralZero, Qt::weak_ordering rhs)
+    \fn bool operator!=(QtPrivate::CompareAgainstLiteralZero, Qt::weak_ordering rhs)
+    \fn bool operator< (QtPrivate::CompareAgainstLiteralZero, Qt::weak_ordering rhs)
+    \fn bool operator<=(QtPrivate::CompareAgainstLiteralZero, Qt::weak_ordering rhs)
+    \fn bool operator> (QtPrivate::CompareAgainstLiteralZero, Qt::weak_ordering rhs)
+    \fn bool operator>=(QtPrivate::CompareAgainstLiteralZero, Qt::weak_ordering rhs)
 */
 
 /*!
-    \fn QWeakOrdering::is_eq  (QWeakOrdering o)
-    \fn QWeakOrdering::is_neq (QWeakOrdering o)
-    \fn QWeakOrdering::is_lt  (QWeakOrdering o)
-    \fn QWeakOrdering::is_lteq(QWeakOrdering o)
-    \fn QWeakOrdering::is_gt  (QWeakOrdering o)
-    \fn QWeakOrdering::is_gteq(QWeakOrdering o)
+    \fn Qt::weak_ordering::is_eq  (Qt::weak_ordering o)
+    \fn Qt::weak_ordering::is_neq (Qt::weak_ordering o)
+    \fn Qt::weak_ordering::is_lt  (Qt::weak_ordering o)
+    \fn Qt::weak_ordering::is_lteq(Qt::weak_ordering o)
+    \fn Qt::weak_ordering::is_gt  (Qt::weak_ordering o)
+    \fn Qt::weak_ordering::is_gteq(Qt::weak_ordering o)
 
     \include qcompare.qdoc is_eq_table
 
@@ -404,24 +404,177 @@
 */
 
 /*!
-    \variable QWeakOrdering::Less
+    \variable Qt::weak_ordering::less
 
     Represents the result of a comparison where the left operand is less than
     the right operand.
 */
 
 /*!
-    \variable QWeakOrdering::Equivalent
+    \variable Qt::weak_ordering::equivalent
 
     Represents the result of a comparison where the left operand is equivalent
     to the right operand.
 */
 
 /*!
-    \variable QWeakOrdering::Greater
+    \variable Qt::weak_ordering::greater
 
     Represents the result of a comparison where the left operand is greater
     than the right operand.
+*/
+
+/*!
+    \class Qt::partial_ordering
+    \inmodule QtCore
+    \brief Qt::partial_ordering represents the result of a comparison that allows
+    for unordered results.
+    \sa Qt::strong_ordering, Qt::weak_ordering, {Comparison types overview}
+    \since 6.7
+
+    A value of type Qt::partial_ordering is typically returned from a
+    three-way comparison function. Such a function compares two
+    objects, and it may either establish that the two objects are
+    ordered relative to each other, or that they are not ordered. The
+    Qt::partial_ordering value returned from the comparison function
+    represents one of those possibilities.
+
+    The possible values of type Qt::partial_ordering are, in fact, fully
+    represented by the following four symbolic constants:
+
+    \list
+    \li \l less represents that the left operand is less than the right;
+    \li \l equivalent represents that left operand is equivalent to the right;
+    \li \l greater represents that the left operand is greater than the right;
+    \li \l unordered represents that the left operand is \e {not ordered} with
+    respect to the right operand.
+    \endlist
+
+    Qt::partial_ordering is idiomatically used by comparing an instance
+    against a literal zero, for instance like this:
+
+    \code
+
+    // given a, b, c, d as objects of some type that allows for a 3-way compare,
+    // and a compare function declared as follows:
+
+    Qt::partial_ordering compare(T lhs, T rhs); // defined out-of-line
+    ~~~
+
+    Qt::partial_ordering result = compare(a, b);
+    if (result < 0) {
+        // a is less than b
+    }
+
+    if (compare(c, d) >= 0) {
+        // c is greater than or equal to d
+    }
+
+    \endcode
+
+    A Qt::partial_ordering value which represents an unordered result will
+    always return false when compared against literal 0.
+*/
+
+/*!
+    \fn Qt::partial_ordering::partial_ordering(std::partial_ordering stdorder)
+
+    Constructs a Qt::partial_ordering object from \a stdorder using the following
+    rules:
+
+    \list
+    \li std::partial_ordering::less converts to \l less.
+    \li std::partial_ordering::equivalent converts to \l equivalent.
+    \li std::partial_ordering::greater converts to \l greater.
+    \li std::partial_ordering::unordered converts to \l unordered
+    \endlist
+*/
+
+/*!
+    \fn Qt::partial_ordering::operator std::partial_ordering() const
+
+    Converts this Qt::partial_ordering value to a std::partial_ordering object using
+    the following rules:
+
+    \list
+    \li \l less converts to std::partial_ordering::less.
+    \li \l equivalent converts to std::partial_ordering::equivalent.
+    \li \l greater converts to std::partial_ordering::greater.
+    \li \l unordered converts to std::partial_ordering::unordered.
+    \endlist
+*/
+
+/*!
+    \fn bool Qt::partial_ordering::operator==(Qt::partial_ordering lhs, Qt::partial_ordering rhs)
+
+    Return true if \a lhs and \a rhs represent the same result;
+    otherwise, returns false.
+*/
+
+/*!
+    \fn bool Qt::partial_ordering::operator!=(Qt::partial_ordering lhs, Qt::partial_ordering rhs)
+
+    Return true if \a lhs and \a rhs represent different results;
+    otherwise, returns true.
+*/
+
+/*!
+    \internal
+    \relates Qt::partial_ordering
+    \fn bool operator==(Qt::partial_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator!=(Qt::partial_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator< (Qt::partial_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator<=(Qt::partial_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator> (Qt::partial_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+    \fn bool operator>=(Qt::partial_ordering lhs, QtPrivate::CompareAgainstLiteralZero)
+
+    \fn bool operator==(QtPrivate::CompareAgainstLiteralZero, Qt::partial_ordering rhs)
+    \fn bool operator!=(QtPrivate::CompareAgainstLiteralZero, Qt::partial_ordering rhs)
+    \fn bool operator< (QtPrivate::CompareAgainstLiteralZero, Qt::partial_ordering rhs)
+    \fn bool operator<=(QtPrivate::CompareAgainstLiteralZero, Qt::partial_ordering rhs)
+    \fn bool operator> (QtPrivate::CompareAgainstLiteralZero, Qt::partial_ordering rhs)
+    \fn bool operator>=(QtPrivate::CompareAgainstLiteralZero, Qt::partial_ordering rhs)
+*/
+
+/*!
+    \fn Qt::partial_ordering::is_eq  (Qt::partial_ordering o)
+    \fn Qt::partial_ordering::is_neq (Qt::partial_ordering o)
+    \fn Qt::partial_ordering::is_lt  (Qt::partial_ordering o)
+    \fn Qt::partial_ordering::is_lteq(Qt::partial_ordering o)
+    \fn Qt::partial_ordering::is_gt  (Qt::partial_ordering o)
+    \fn Qt::partial_ordering::is_gteq(Qt::partial_ordering o)
+
+    \include qcompare.qdoc is_eq_table
+
+    These functions are provided for compatibility with \c{std::partial_ordering}.
+*/
+
+/*!
+    \variable Qt::partial_ordering::less
+
+    Represents the result of a comparison where the left operand is less than
+    the right operand.
+*/
+
+/*!
+    \variable Qt::partial_ordering::equivalent
+
+    Represents the result of a comparison where the left operand is equivalent
+    to the right operand.
+*/
+
+/*!
+    \variable Qt::partial_ordering::greater
+
+    Represents the result of a comparison where the left operand is greater
+    than the right operand.
+*/
+
+/*!
+    \variable Qt::partial_ordering::unordered
+
+    Represents the result of a comparison where the left operand is not ordered
+    with respect to the right operand.
 */
 
 /*!
@@ -429,7 +582,7 @@
     \inmodule QtCore
     \brief QPartialOrdering represents the result of a comparison that allows
     for unordered results.
-    \sa QStrongOrdering, QWeakOrdering, {Comparison types overview}
+    \sa Qt::strong_ordering, Qt::weak_ordering, {Comparison types overview}
     \since 6.0
 
     A value of type QPartialOrdering is typically returned from a

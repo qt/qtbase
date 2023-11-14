@@ -12,6 +12,7 @@ class tst_QCompare: public QObject
 {
     Q_OBJECT
 private slots:
+    void legacyPartialOrdering();
     void partialOrdering();
     void weakOrdering();
     void strongOrdering();
@@ -19,7 +20,7 @@ private slots:
     void is_eq_overloads();
 };
 
-void tst_QCompare::partialOrdering()
+void tst_QCompare::legacyPartialOrdering()
 {
     static_assert(QPartialOrdering::Unordered == QPartialOrdering::Unordered);
     static_assert(QPartialOrdering::Unordered != QPartialOrdering::Less);
@@ -129,320 +130,430 @@ void tst_QCompare::partialOrdering()
     static_assert(!(0 >= QPartialOrdering::Greater));
 }
 
+void tst_QCompare::partialOrdering()
+{
+    static_assert(Qt::partial_ordering::unordered == Qt::partial_ordering::unordered);
+    static_assert(Qt::partial_ordering::unordered != Qt::partial_ordering::less);
+    static_assert(Qt::partial_ordering::unordered != Qt::partial_ordering::equivalent);
+    static_assert(Qt::partial_ordering::unordered != Qt::partial_ordering::greater);
+
+    static_assert(Qt::partial_ordering::less != Qt::partial_ordering::unordered);
+    static_assert(Qt::partial_ordering::less == Qt::partial_ordering::less);
+    static_assert(Qt::partial_ordering::less != Qt::partial_ordering::equivalent);
+    static_assert(Qt::partial_ordering::less != Qt::partial_ordering::greater);
+
+    static_assert(Qt::partial_ordering::equivalent != Qt::partial_ordering::unordered);
+    static_assert(Qt::partial_ordering::equivalent != Qt::partial_ordering::less);
+    static_assert(Qt::partial_ordering::equivalent == Qt::partial_ordering::equivalent);
+    static_assert(Qt::partial_ordering::equivalent != Qt::partial_ordering::greater);
+
+    static_assert(Qt::partial_ordering::greater != Qt::partial_ordering::unordered);
+    static_assert(Qt::partial_ordering::greater != Qt::partial_ordering::less);
+    static_assert(Qt::partial_ordering::greater != Qt::partial_ordering::equivalent);
+    static_assert(Qt::partial_ordering::greater == Qt::partial_ordering::greater);
+
+    static_assert(!is_eq  (Qt::partial_ordering::unordered));
+    static_assert(!is_neq (Qt::partial_ordering::unordered));
+    static_assert(!is_lt  (Qt::partial_ordering::unordered));
+    static_assert(!is_lteq(Qt::partial_ordering::unordered));
+    static_assert(!is_gt  (Qt::partial_ordering::unordered));
+    static_assert(!is_gteq(Qt::partial_ordering::unordered));
+
+    static_assert(!(Qt::partial_ordering::unordered == 0));
+    static_assert(!(Qt::partial_ordering::unordered != 0));
+    static_assert(!(Qt::partial_ordering::unordered <  0));
+    static_assert(!(Qt::partial_ordering::unordered <= 0));
+    static_assert(!(Qt::partial_ordering::unordered >  0));
+    static_assert(!(Qt::partial_ordering::unordered >= 0));
+
+    static_assert(!(0 == Qt::partial_ordering::unordered));
+    static_assert(!(0 != Qt::partial_ordering::unordered));
+    static_assert(!(0 <  Qt::partial_ordering::unordered));
+    static_assert(!(0 <= Qt::partial_ordering::unordered));
+    static_assert(!(0 >  Qt::partial_ordering::unordered));
+    static_assert(!(0 >= Qt::partial_ordering::unordered));
+
+
+    static_assert(!is_eq  (Qt::partial_ordering::less));
+    static_assert( is_neq (Qt::partial_ordering::less));
+    static_assert( is_lt  (Qt::partial_ordering::less));
+    static_assert( is_lteq(Qt::partial_ordering::less));
+    static_assert(!is_gt  (Qt::partial_ordering::less));
+    static_assert(!is_gteq(Qt::partial_ordering::less));
+
+    static_assert(!(Qt::partial_ordering::less == 0));
+    static_assert( (Qt::partial_ordering::less != 0));
+    static_assert( (Qt::partial_ordering::less <  0));
+    static_assert( (Qt::partial_ordering::less <= 0));
+    static_assert(!(Qt::partial_ordering::less >  0));
+    static_assert(!(Qt::partial_ordering::less >= 0));
+
+    static_assert(!(0 == Qt::partial_ordering::less));
+    static_assert( (0 != Qt::partial_ordering::less));
+    static_assert(!(0 <  Qt::partial_ordering::less));
+    static_assert(!(0 <= Qt::partial_ordering::less));
+    static_assert( (0 >  Qt::partial_ordering::less));
+    static_assert( (0 >= Qt::partial_ordering::less));
+
+
+    static_assert( is_eq  (Qt::partial_ordering::equivalent));
+    static_assert(!is_neq (Qt::partial_ordering::equivalent));
+    static_assert(!is_lt  (Qt::partial_ordering::equivalent));
+    static_assert( is_lteq(Qt::partial_ordering::equivalent));
+    static_assert(!is_gt  (Qt::partial_ordering::equivalent));
+    static_assert( is_gteq(Qt::partial_ordering::equivalent));
+
+    static_assert( (Qt::partial_ordering::equivalent == 0));
+    static_assert(!(Qt::partial_ordering::equivalent != 0));
+    static_assert(!(Qt::partial_ordering::equivalent <  0));
+    static_assert( (Qt::partial_ordering::equivalent <= 0));
+    static_assert(!(Qt::partial_ordering::equivalent >  0));
+    static_assert( (Qt::partial_ordering::equivalent >= 0));
+
+    static_assert( (0 == Qt::partial_ordering::equivalent));
+    static_assert(!(0 != Qt::partial_ordering::equivalent));
+    static_assert(!(0 <  Qt::partial_ordering::equivalent));
+    static_assert( (0 <= Qt::partial_ordering::equivalent));
+    static_assert(!(0 >  Qt::partial_ordering::equivalent));
+    static_assert( (0 >= Qt::partial_ordering::equivalent));
+
+
+    static_assert(!is_eq  (Qt::partial_ordering::greater));
+    static_assert( is_neq (Qt::partial_ordering::greater));
+    static_assert(!is_lt  (Qt::partial_ordering::greater));
+    static_assert(!is_lteq(Qt::partial_ordering::greater));
+    static_assert( is_gt  (Qt::partial_ordering::greater));
+    static_assert( is_gteq(Qt::partial_ordering::greater));
+
+    static_assert(!(Qt::partial_ordering::greater == 0));
+    static_assert( (Qt::partial_ordering::greater != 0));
+    static_assert(!(Qt::partial_ordering::greater <  0));
+    static_assert(!(Qt::partial_ordering::greater <= 0));
+    static_assert( (Qt::partial_ordering::greater >  0));
+    static_assert( (Qt::partial_ordering::greater >= 0));
+
+    static_assert(!(0 == Qt::partial_ordering::greater));
+    static_assert( (0 != Qt::partial_ordering::greater));
+    static_assert( (0 <  Qt::partial_ordering::greater));
+    static_assert( (0 <= Qt::partial_ordering::greater));
+    static_assert(!(0 >  Qt::partial_ordering::greater));
+    static_assert(!(0 >= Qt::partial_ordering::greater));
+}
+
 void tst_QCompare::weakOrdering()
 {
-    static_assert(QWeakOrdering::Less == QWeakOrdering::Less);
-    static_assert(QWeakOrdering::Less != QWeakOrdering::Equivalent);
-    static_assert(QWeakOrdering::Less != QWeakOrdering::Greater);
+    static_assert(Qt::weak_ordering::less == Qt::weak_ordering::less);
+    static_assert(Qt::weak_ordering::less != Qt::weak_ordering::equivalent);
+    static_assert(Qt::weak_ordering::less != Qt::weak_ordering::greater);
 
-    static_assert(QWeakOrdering::Equivalent != QWeakOrdering::Less);
-    static_assert(QWeakOrdering::Equivalent == QWeakOrdering::Equivalent);
-    static_assert(QWeakOrdering::Equivalent != QWeakOrdering::Greater);
+    static_assert(Qt::weak_ordering::equivalent != Qt::weak_ordering::less);
+    static_assert(Qt::weak_ordering::equivalent == Qt::weak_ordering::equivalent);
+    static_assert(Qt::weak_ordering::equivalent != Qt::weak_ordering::greater);
 
-    static_assert(QWeakOrdering::Greater != QWeakOrdering::Less);
-    static_assert(QWeakOrdering::Greater != QWeakOrdering::Equivalent);
-    static_assert(QWeakOrdering::Greater == QWeakOrdering::Greater);
+    static_assert(Qt::weak_ordering::greater != Qt::weak_ordering::less);
+    static_assert(Qt::weak_ordering::greater != Qt::weak_ordering::equivalent);
+    static_assert(Qt::weak_ordering::greater == Qt::weak_ordering::greater);
 
-    static_assert(!is_eq  (QWeakOrdering::Less));
-    static_assert( is_neq (QWeakOrdering::Less));
-    static_assert( is_lt  (QWeakOrdering::Less));
-    static_assert( is_lteq(QWeakOrdering::Less));
-    static_assert(!is_gt  (QWeakOrdering::Less));
-    static_assert(!is_gteq(QWeakOrdering::Less));
+    static_assert(!is_eq  (Qt::weak_ordering::less));
+    static_assert( is_neq (Qt::weak_ordering::less));
+    static_assert( is_lt  (Qt::weak_ordering::less));
+    static_assert( is_lteq(Qt::weak_ordering::less));
+    static_assert(!is_gt  (Qt::weak_ordering::less));
+    static_assert(!is_gteq(Qt::weak_ordering::less));
 
-    static_assert(!(QWeakOrdering::Less == 0));
-    static_assert( (QWeakOrdering::Less != 0));
-    static_assert( (QWeakOrdering::Less <  0));
-    static_assert( (QWeakOrdering::Less <= 0));
-    static_assert(!(QWeakOrdering::Less >  0));
-    static_assert(!(QWeakOrdering::Less >= 0));
+    static_assert(!(Qt::weak_ordering::less == 0));
+    static_assert( (Qt::weak_ordering::less != 0));
+    static_assert( (Qt::weak_ordering::less <  0));
+    static_assert( (Qt::weak_ordering::less <= 0));
+    static_assert(!(Qt::weak_ordering::less >  0));
+    static_assert(!(Qt::weak_ordering::less >= 0));
 
-    static_assert(!(0 == QWeakOrdering::Less));
-    static_assert( (0 != QWeakOrdering::Less));
-    static_assert(!(0 <  QWeakOrdering::Less));
-    static_assert(!(0 <= QWeakOrdering::Less));
-    static_assert( (0 >  QWeakOrdering::Less));
-    static_assert( (0 >= QWeakOrdering::Less));
-
-
-    static_assert( is_eq  (QWeakOrdering::Equivalent));
-    static_assert(!is_neq (QWeakOrdering::Equivalent));
-    static_assert(!is_lt  (QWeakOrdering::Equivalent));
-    static_assert( is_lteq(QWeakOrdering::Equivalent));
-    static_assert(!is_gt  (QWeakOrdering::Equivalent));
-    static_assert( is_gteq(QWeakOrdering::Equivalent));
-
-    static_assert( (QWeakOrdering::Equivalent == 0));
-    static_assert(!(QWeakOrdering::Equivalent != 0));
-    static_assert(!(QWeakOrdering::Equivalent <  0));
-    static_assert( (QWeakOrdering::Equivalent <= 0));
-    static_assert(!(QWeakOrdering::Equivalent >  0));
-    static_assert( (QWeakOrdering::Equivalent >= 0));
-
-    static_assert( (0 == QWeakOrdering::Equivalent));
-    static_assert(!(0 != QWeakOrdering::Equivalent));
-    static_assert(!(0 <  QWeakOrdering::Equivalent));
-    static_assert( (0 <= QWeakOrdering::Equivalent));
-    static_assert(!(0 >  QWeakOrdering::Equivalent));
-    static_assert( (0 >= QWeakOrdering::Equivalent));
+    static_assert(!(0 == Qt::weak_ordering::less));
+    static_assert( (0 != Qt::weak_ordering::less));
+    static_assert(!(0 <  Qt::weak_ordering::less));
+    static_assert(!(0 <= Qt::weak_ordering::less));
+    static_assert( (0 >  Qt::weak_ordering::less));
+    static_assert( (0 >= Qt::weak_ordering::less));
 
 
-    static_assert(!is_eq  (QWeakOrdering::Greater));
-    static_assert( is_neq (QWeakOrdering::Greater));
-    static_assert(!is_lt  (QWeakOrdering::Greater));
-    static_assert(!is_lteq(QWeakOrdering::Greater));
-    static_assert( is_gt  (QWeakOrdering::Greater));
-    static_assert( is_gteq(QWeakOrdering::Greater));
+    static_assert( is_eq  (Qt::weak_ordering::equivalent));
+    static_assert(!is_neq (Qt::weak_ordering::equivalent));
+    static_assert(!is_lt  (Qt::weak_ordering::equivalent));
+    static_assert( is_lteq(Qt::weak_ordering::equivalent));
+    static_assert(!is_gt  (Qt::weak_ordering::equivalent));
+    static_assert( is_gteq(Qt::weak_ordering::equivalent));
 
-    static_assert(!(QWeakOrdering::Greater == 0));
-    static_assert( (QWeakOrdering::Greater != 0));
-    static_assert(!(QWeakOrdering::Greater <  0));
-    static_assert(!(QWeakOrdering::Greater <= 0));
-    static_assert( (QWeakOrdering::Greater >  0));
-    static_assert( (QWeakOrdering::Greater >= 0));
+    static_assert( (Qt::weak_ordering::equivalent == 0));
+    static_assert(!(Qt::weak_ordering::equivalent != 0));
+    static_assert(!(Qt::weak_ordering::equivalent <  0));
+    static_assert( (Qt::weak_ordering::equivalent <= 0));
+    static_assert(!(Qt::weak_ordering::equivalent >  0));
+    static_assert( (Qt::weak_ordering::equivalent >= 0));
 
-    static_assert(!(0 == QWeakOrdering::Greater));
-    static_assert( (0 != QWeakOrdering::Greater));
-    static_assert( (0 <  QWeakOrdering::Greater));
-    static_assert( (0 <= QWeakOrdering::Greater));
-    static_assert(!(0 >  QWeakOrdering::Greater));
-    static_assert(!(0 >= QWeakOrdering::Greater));
+    static_assert( (0 == Qt::weak_ordering::equivalent));
+    static_assert(!(0 != Qt::weak_ordering::equivalent));
+    static_assert(!(0 <  Qt::weak_ordering::equivalent));
+    static_assert( (0 <= Qt::weak_ordering::equivalent));
+    static_assert(!(0 >  Qt::weak_ordering::equivalent));
+    static_assert( (0 >= Qt::weak_ordering::equivalent));
+
+
+    static_assert(!is_eq  (Qt::weak_ordering::greater));
+    static_assert( is_neq (Qt::weak_ordering::greater));
+    static_assert(!is_lt  (Qt::weak_ordering::greater));
+    static_assert(!is_lteq(Qt::weak_ordering::greater));
+    static_assert( is_gt  (Qt::weak_ordering::greater));
+    static_assert( is_gteq(Qt::weak_ordering::greater));
+
+    static_assert(!(Qt::weak_ordering::greater == 0));
+    static_assert( (Qt::weak_ordering::greater != 0));
+    static_assert(!(Qt::weak_ordering::greater <  0));
+    static_assert(!(Qt::weak_ordering::greater <= 0));
+    static_assert( (Qt::weak_ordering::greater >  0));
+    static_assert( (Qt::weak_ordering::greater >= 0));
+
+    static_assert(!(0 == Qt::weak_ordering::greater));
+    static_assert( (0 != Qt::weak_ordering::greater));
+    static_assert( (0 <  Qt::weak_ordering::greater));
+    static_assert( (0 <= Qt::weak_ordering::greater));
+    static_assert(!(0 >  Qt::weak_ordering::greater));
+    static_assert(!(0 >= Qt::weak_ordering::greater));
 }
 
 void tst_QCompare::strongOrdering()
 {
-    static_assert(QStrongOrdering::Less == QStrongOrdering::Less);
-    static_assert(QStrongOrdering::Less != QStrongOrdering::Equal);
-    static_assert(QStrongOrdering::Less != QStrongOrdering::Equivalent);
-    static_assert(QStrongOrdering::Less != QStrongOrdering::Greater);
+    static_assert(Qt::strong_ordering::less == Qt::strong_ordering::less);
+    static_assert(Qt::strong_ordering::less != Qt::strong_ordering::equal);
+    static_assert(Qt::strong_ordering::less != Qt::strong_ordering::equivalent);
+    static_assert(Qt::strong_ordering::less != Qt::strong_ordering::greater);
 
-    static_assert(QStrongOrdering::Equal != QStrongOrdering::Less);
-    static_assert(QStrongOrdering::Equal == QStrongOrdering::Equal);
-    static_assert(QStrongOrdering::Equal == QStrongOrdering::Equivalent);
-    static_assert(QStrongOrdering::Equal != QStrongOrdering::Greater);
+    static_assert(Qt::strong_ordering::equal != Qt::strong_ordering::less);
+    static_assert(Qt::strong_ordering::equal == Qt::strong_ordering::equal);
+    static_assert(Qt::strong_ordering::equal == Qt::strong_ordering::equivalent);
+    static_assert(Qt::strong_ordering::equal != Qt::strong_ordering::greater);
 
-    static_assert(QStrongOrdering::Equivalent != QStrongOrdering::Less);
-    static_assert(QStrongOrdering::Equivalent == QStrongOrdering::Equal);
-    static_assert(QStrongOrdering::Equivalent == QStrongOrdering::Equivalent);
-    static_assert(QStrongOrdering::Equivalent != QStrongOrdering::Greater);
+    static_assert(Qt::strong_ordering::equivalent != Qt::strong_ordering::less);
+    static_assert(Qt::strong_ordering::equivalent == Qt::strong_ordering::equal);
+    static_assert(Qt::strong_ordering::equivalent == Qt::strong_ordering::equivalent);
+    static_assert(Qt::strong_ordering::equivalent != Qt::strong_ordering::greater);
 
-    static_assert(QStrongOrdering::Greater != QStrongOrdering::Less);
-    static_assert(QStrongOrdering::Greater != QStrongOrdering::Equal);
-    static_assert(QStrongOrdering::Greater != QStrongOrdering::Equivalent);
-    static_assert(QStrongOrdering::Greater == QStrongOrdering::Greater);
+    static_assert(Qt::strong_ordering::greater != Qt::strong_ordering::less);
+    static_assert(Qt::strong_ordering::greater != Qt::strong_ordering::equal);
+    static_assert(Qt::strong_ordering::greater != Qt::strong_ordering::equivalent);
+    static_assert(Qt::strong_ordering::greater == Qt::strong_ordering::greater);
 
-    static_assert(!is_eq  (QStrongOrdering::Less));
-    static_assert( is_neq (QStrongOrdering::Less));
-    static_assert( is_lt  (QStrongOrdering::Less));
-    static_assert( is_lteq(QStrongOrdering::Less));
-    static_assert(!is_gt  (QStrongOrdering::Less));
-    static_assert(!is_gteq(QStrongOrdering::Less));
+    static_assert(!is_eq  (Qt::strong_ordering::less));
+    static_assert( is_neq (Qt::strong_ordering::less));
+    static_assert( is_lt  (Qt::strong_ordering::less));
+    static_assert( is_lteq(Qt::strong_ordering::less));
+    static_assert(!is_gt  (Qt::strong_ordering::less));
+    static_assert(!is_gteq(Qt::strong_ordering::less));
 
-    static_assert(!(QStrongOrdering::Less == 0));
-    static_assert( (QStrongOrdering::Less != 0));
-    static_assert( (QStrongOrdering::Less <  0));
-    static_assert( (QStrongOrdering::Less <= 0));
-    static_assert(!(QStrongOrdering::Less >  0));
-    static_assert(!(QStrongOrdering::Less >= 0));
+    static_assert(!(Qt::strong_ordering::less == 0));
+    static_assert( (Qt::strong_ordering::less != 0));
+    static_assert( (Qt::strong_ordering::less <  0));
+    static_assert( (Qt::strong_ordering::less <= 0));
+    static_assert(!(Qt::strong_ordering::less >  0));
+    static_assert(!(Qt::strong_ordering::less >= 0));
 
-    static_assert(!(0 == QStrongOrdering::Less));
-    static_assert( (0 != QStrongOrdering::Less));
-    static_assert(!(0 <  QStrongOrdering::Less));
-    static_assert(!(0 <= QStrongOrdering::Less));
-    static_assert( (0 >  QStrongOrdering::Less));
-    static_assert( (0 >= QStrongOrdering::Less));
-
-
-    static_assert( is_eq  (QStrongOrdering::Equal));
-    static_assert(!is_neq (QStrongOrdering::Equal));
-    static_assert(!is_lt  (QStrongOrdering::Equal));
-    static_assert( is_lteq(QStrongOrdering::Equal));
-    static_assert(!is_gt  (QStrongOrdering::Equal));
-    static_assert( is_gteq(QStrongOrdering::Equal));
-
-    static_assert( (QStrongOrdering::Equal == 0));
-    static_assert(!(QStrongOrdering::Equal != 0));
-    static_assert(!(QStrongOrdering::Equal <  0));
-    static_assert( (QStrongOrdering::Equal <= 0));
-    static_assert(!(QStrongOrdering::Equal >  0));
-    static_assert( (QStrongOrdering::Equal >= 0));
-
-    static_assert( (0 == QStrongOrdering::Equal));
-    static_assert(!(0 != QStrongOrdering::Equal));
-    static_assert(!(0 <  QStrongOrdering::Equal));
-    static_assert( (0 <= QStrongOrdering::Equal));
-    static_assert(!(0 >  QStrongOrdering::Equal));
-    static_assert( (0 >= QStrongOrdering::Equal));
+    static_assert(!(0 == Qt::strong_ordering::less));
+    static_assert( (0 != Qt::strong_ordering::less));
+    static_assert(!(0 <  Qt::strong_ordering::less));
+    static_assert(!(0 <= Qt::strong_ordering::less));
+    static_assert( (0 >  Qt::strong_ordering::less));
+    static_assert( (0 >= Qt::strong_ordering::less));
 
 
-    static_assert( is_eq  (QStrongOrdering::Equivalent));
-    static_assert(!is_neq (QStrongOrdering::Equivalent));
-    static_assert(!is_lt  (QStrongOrdering::Equivalent));
-    static_assert( is_lteq(QStrongOrdering::Equivalent));
-    static_assert(!is_gt  (QStrongOrdering::Equivalent));
-    static_assert( is_gteq(QStrongOrdering::Equivalent));
+    static_assert( is_eq  (Qt::strong_ordering::equal));
+    static_assert(!is_neq (Qt::strong_ordering::equal));
+    static_assert(!is_lt  (Qt::strong_ordering::equal));
+    static_assert( is_lteq(Qt::strong_ordering::equal));
+    static_assert(!is_gt  (Qt::strong_ordering::equal));
+    static_assert( is_gteq(Qt::strong_ordering::equal));
 
-    static_assert( (QStrongOrdering::Equivalent == 0));
-    static_assert(!(QStrongOrdering::Equivalent != 0));
-    static_assert(!(QStrongOrdering::Equivalent <  0));
-    static_assert( (QStrongOrdering::Equivalent <= 0));
-    static_assert(!(QStrongOrdering::Equivalent >  0));
-    static_assert( (QStrongOrdering::Equivalent >= 0));
+    static_assert( (Qt::strong_ordering::equal == 0));
+    static_assert(!(Qt::strong_ordering::equal != 0));
+    static_assert(!(Qt::strong_ordering::equal <  0));
+    static_assert( (Qt::strong_ordering::equal <= 0));
+    static_assert(!(Qt::strong_ordering::equal >  0));
+    static_assert( (Qt::strong_ordering::equal >= 0));
 
-    static_assert( (0 == QStrongOrdering::Equivalent));
-    static_assert(!(0 != QStrongOrdering::Equivalent));
-    static_assert(!(0 <  QStrongOrdering::Equivalent));
-    static_assert( (0 <= QStrongOrdering::Equivalent));
-    static_assert(!(0 >  QStrongOrdering::Equivalent));
-    static_assert( (0 >= QStrongOrdering::Equivalent));
+    static_assert( (0 == Qt::strong_ordering::equal));
+    static_assert(!(0 != Qt::strong_ordering::equal));
+    static_assert(!(0 <  Qt::strong_ordering::equal));
+    static_assert( (0 <= Qt::strong_ordering::equal));
+    static_assert(!(0 >  Qt::strong_ordering::equal));
+    static_assert( (0 >= Qt::strong_ordering::equal));
 
 
-    static_assert(!is_eq  (QStrongOrdering::Greater));
-    static_assert( is_neq (QStrongOrdering::Greater));
-    static_assert(!is_lt  (QStrongOrdering::Greater));
-    static_assert(!is_lteq(QStrongOrdering::Greater));
-    static_assert( is_gt  (QStrongOrdering::Greater));
-    static_assert( is_gteq(QStrongOrdering::Greater));
+    static_assert( is_eq  (Qt::strong_ordering::equivalent));
+    static_assert(!is_neq (Qt::strong_ordering::equivalent));
+    static_assert(!is_lt  (Qt::strong_ordering::equivalent));
+    static_assert( is_lteq(Qt::strong_ordering::equivalent));
+    static_assert(!is_gt  (Qt::strong_ordering::equivalent));
+    static_assert( is_gteq(Qt::strong_ordering::equivalent));
 
-    static_assert(!(QStrongOrdering::Greater == 0));
-    static_assert( (QStrongOrdering::Greater != 0));
-    static_assert(!(QStrongOrdering::Greater <  0));
-    static_assert(!(QStrongOrdering::Greater <= 0));
-    static_assert( (QStrongOrdering::Greater >  0));
-    static_assert( (QStrongOrdering::Greater >= 0));
+    static_assert( (Qt::strong_ordering::equivalent == 0));
+    static_assert(!(Qt::strong_ordering::equivalent != 0));
+    static_assert(!(Qt::strong_ordering::equivalent <  0));
+    static_assert( (Qt::strong_ordering::equivalent <= 0));
+    static_assert(!(Qt::strong_ordering::equivalent >  0));
+    static_assert( (Qt::strong_ordering::equivalent >= 0));
 
-    static_assert(!(0 == QStrongOrdering::Greater));
-    static_assert( (0 != QStrongOrdering::Greater));
-    static_assert( (0 <  QStrongOrdering::Greater));
-    static_assert( (0 <= QStrongOrdering::Greater));
-    static_assert(!(0 >  QStrongOrdering::Greater));
-    static_assert(!(0 >= QStrongOrdering::Greater));
+    static_assert( (0 == Qt::strong_ordering::equivalent));
+    static_assert(!(0 != Qt::strong_ordering::equivalent));
+    static_assert(!(0 <  Qt::strong_ordering::equivalent));
+    static_assert( (0 <= Qt::strong_ordering::equivalent));
+    static_assert(!(0 >  Qt::strong_ordering::equivalent));
+    static_assert( (0 >= Qt::strong_ordering::equivalent));
+
+
+    static_assert(!is_eq  (Qt::strong_ordering::greater));
+    static_assert( is_neq (Qt::strong_ordering::greater));
+    static_assert(!is_lt  (Qt::strong_ordering::greater));
+    static_assert(!is_lteq(Qt::strong_ordering::greater));
+    static_assert( is_gt  (Qt::strong_ordering::greater));
+    static_assert( is_gteq(Qt::strong_ordering::greater));
+
+    static_assert(!(Qt::strong_ordering::greater == 0));
+    static_assert( (Qt::strong_ordering::greater != 0));
+    static_assert(!(Qt::strong_ordering::greater <  0));
+    static_assert(!(Qt::strong_ordering::greater <= 0));
+    static_assert( (Qt::strong_ordering::greater >  0));
+    static_assert( (Qt::strong_ordering::greater >= 0));
+
+    static_assert(!(0 == Qt::strong_ordering::greater));
+    static_assert( (0 != Qt::strong_ordering::greater));
+    static_assert( (0 <  Qt::strong_ordering::greater));
+    static_assert( (0 <= Qt::strong_ordering::greater));
+    static_assert(!(0 >  Qt::strong_ordering::greater));
+    static_assert(!(0 >= Qt::strong_ordering::greater));
 }
 
 void tst_QCompare::conversions()
 {
-    // QWeakOrdering -> QPartialOrdering
+    // Qt::weak_ordering -> Qt::partial_ordering
     {
-        constexpr QPartialOrdering less = QWeakOrdering::Less;
-        static_assert(less == QPartialOrdering::Less);
-        constexpr QPartialOrdering equivalent = QWeakOrdering::Equivalent;
-        static_assert(equivalent == QPartialOrdering::Equivalent);
-        constexpr QPartialOrdering greater = QWeakOrdering::Greater;
-        static_assert(greater == QPartialOrdering::Greater);
+        constexpr Qt::partial_ordering less = Qt::weak_ordering::less;
+        static_assert(less == Qt::partial_ordering::less);
+        constexpr Qt::partial_ordering equivalent = Qt::weak_ordering::equivalent;
+        static_assert(equivalent == Qt::partial_ordering::equivalent);
+        constexpr Qt::partial_ordering greater = Qt::weak_ordering::greater;
+        static_assert(greater == Qt::partial_ordering::greater);
     }
-    // QStrongOrdering -> QPartialOrdering
+    // Qt::strong_ordering -> Qt::partial_ordering
     {
-        constexpr QPartialOrdering less = QStrongOrdering::Less;
-        static_assert(less == QPartialOrdering::Less);
-        constexpr QPartialOrdering equal = QStrongOrdering::Equal;
-        static_assert(equal == QPartialOrdering::Equivalent);
-        constexpr QPartialOrdering equivalent = QStrongOrdering::Equivalent;
-        static_assert(equivalent == QPartialOrdering::Equivalent);
-        constexpr QPartialOrdering greater = QStrongOrdering::Greater;
-        static_assert(greater == QPartialOrdering::Greater);
+        constexpr Qt::partial_ordering less = Qt::strong_ordering::less;
+        static_assert(less == Qt::partial_ordering::less);
+        constexpr Qt::partial_ordering equal = Qt::strong_ordering::equal;
+        static_assert(equal == Qt::partial_ordering::equivalent);
+        constexpr Qt::partial_ordering equivalent = Qt::strong_ordering::equivalent;
+        static_assert(equivalent == Qt::partial_ordering::equivalent);
+        constexpr Qt::partial_ordering greater = Qt::strong_ordering::greater;
+        static_assert(greater == Qt::partial_ordering::greater);
     }
-    // QStrongOrdering -> QWeakOrdering
+    // Qt::strong_ordering -> Qt::weak_ordering
     {
-        constexpr QWeakOrdering less = QStrongOrdering::Less;
-        static_assert(less == QWeakOrdering::Less);
-        constexpr QWeakOrdering equal = QStrongOrdering::Equal;
-        static_assert(equal == QWeakOrdering::Equivalent);
-        constexpr QWeakOrdering equivalent = QStrongOrdering::Equivalent;
-        static_assert(equivalent == QWeakOrdering::Equivalent);
-        constexpr QWeakOrdering greater = QStrongOrdering::Greater;
-        static_assert(greater == QWeakOrdering::Greater);
+        constexpr Qt::weak_ordering less = Qt::strong_ordering::less;
+        static_assert(less == Qt::weak_ordering::less);
+        constexpr Qt::weak_ordering equal = Qt::strong_ordering::equal;
+        static_assert(equal == Qt::weak_ordering::equivalent);
+        constexpr Qt::weak_ordering equivalent = Qt::strong_ordering::equivalent;
+        static_assert(equivalent == Qt::weak_ordering::equivalent);
+        constexpr Qt::weak_ordering greater = Qt::strong_ordering::greater;
+        static_assert(greater == Qt::weak_ordering::greater);
     }
     // Mixed types
     {
-        static_assert(QPartialOrdering::Less == QStrongOrdering::Less);
-        static_assert(QPartialOrdering::Equivalent != QStrongOrdering::Less);
-        static_assert(QPartialOrdering::Equivalent == QStrongOrdering::Equal);
-        static_assert(QPartialOrdering::Greater == QStrongOrdering::Greater);
+        static_assert(Qt::partial_ordering::less == Qt::strong_ordering::less);
+        static_assert(Qt::partial_ordering::equivalent != Qt::strong_ordering::less);
+        static_assert(Qt::partial_ordering::equivalent == Qt::strong_ordering::equal);
+        static_assert(Qt::partial_ordering::greater == Qt::strong_ordering::greater);
 
-        static_assert(QPartialOrdering::Less == QWeakOrdering::Less);
-        static_assert(QPartialOrdering::Equivalent == QWeakOrdering::Equivalent);
-        static_assert(QPartialOrdering::Greater == QWeakOrdering::Greater);
+        static_assert(Qt::partial_ordering::less == Qt::weak_ordering::less);
+        static_assert(Qt::partial_ordering::equivalent == Qt::weak_ordering::equivalent);
+        static_assert(Qt::partial_ordering::greater == Qt::weak_ordering::greater);
 
-        static_assert(QWeakOrdering::Less == QStrongOrdering::Less);
-        static_assert(QWeakOrdering::Equivalent != QStrongOrdering::Greater);
-        static_assert(QWeakOrdering::Equivalent == QStrongOrdering::Equal);
-        static_assert(QWeakOrdering::Greater == QStrongOrdering::Greater);
+        static_assert(Qt::weak_ordering::less == Qt::strong_ordering::less);
+        static_assert(Qt::weak_ordering::equivalent != Qt::strong_ordering::greater);
+        static_assert(Qt::weak_ordering::equivalent == Qt::strong_ordering::equal);
+        static_assert(Qt::weak_ordering::greater == Qt::strong_ordering::greater);
 
-        static_assert(QWeakOrdering::Less == QPartialOrdering::Less);
-        static_assert(QWeakOrdering::Equivalent == QPartialOrdering::Equivalent);
-        static_assert(QWeakOrdering::Greater == QPartialOrdering::Greater);
+        static_assert(Qt::weak_ordering::less == Qt::partial_ordering::less);
+        static_assert(Qt::weak_ordering::equivalent == Qt::partial_ordering::equivalent);
+        static_assert(Qt::weak_ordering::greater == Qt::partial_ordering::greater);
 
-        static_assert(QStrongOrdering::Less == QPartialOrdering::Less);
-        static_assert(QStrongOrdering::Equivalent == QPartialOrdering::Equivalent);
-        static_assert(QStrongOrdering::Equal == QPartialOrdering::Equivalent);
-        static_assert(QStrongOrdering::Greater == QPartialOrdering::Greater);
+        static_assert(Qt::strong_ordering::less == Qt::partial_ordering::less);
+        static_assert(Qt::strong_ordering::equivalent == Qt::partial_ordering::equivalent);
+        static_assert(Qt::strong_ordering::equal == Qt::partial_ordering::equivalent);
+        static_assert(Qt::strong_ordering::greater == Qt::partial_ordering::greater);
 
-        static_assert(QStrongOrdering::Less == QWeakOrdering::Less);
-        static_assert(QStrongOrdering::Equivalent == QWeakOrdering::Equivalent);
-        static_assert(QStrongOrdering::Equal == QWeakOrdering::Equivalent);
-        static_assert(QStrongOrdering::Greater == QWeakOrdering::Greater);
+        static_assert(Qt::strong_ordering::less == Qt::weak_ordering::less);
+        static_assert(Qt::strong_ordering::equivalent == Qt::weak_ordering::equivalent);
+        static_assert(Qt::strong_ordering::equal == Qt::weak_ordering::equivalent);
+        static_assert(Qt::strong_ordering::greater == Qt::weak_ordering::greater);
     }
 #ifdef __cpp_lib_three_way_comparison
-    // QPartialOrdering <-> std::partial_ordering
+    // Qt::partial_ordering <-> std::partial_ordering
     {
-        static_assert(QPartialOrdering::Less == std::partial_ordering::less);
-        static_assert(QPartialOrdering::Less != std::partial_ordering::greater);
-        static_assert(std::partial_ordering::unordered != QPartialOrdering::Equivalent);
-        static_assert(std::partial_ordering::unordered == QPartialOrdering::Unordered);
+        static_assert(Qt::partial_ordering::less == std::partial_ordering::less);
+        static_assert(Qt::partial_ordering::less != std::partial_ordering::greater);
+        static_assert(std::partial_ordering::unordered != Qt::partial_ordering::equivalent);
+        static_assert(std::partial_ordering::unordered == Qt::partial_ordering::unordered);
 
-        static_assert((QPartialOrdering(std::partial_ordering::less) ==
+        static_assert((Qt::partial_ordering(std::partial_ordering::less) ==
                        std::partial_ordering::less));
-        static_assert((QPartialOrdering(std::partial_ordering::equivalent) ==
+        static_assert((Qt::partial_ordering(std::partial_ordering::equivalent) ==
                        std::partial_ordering::equivalent));
-        static_assert((QPartialOrdering(std::partial_ordering::greater) ==
+        static_assert((Qt::partial_ordering(std::partial_ordering::greater) ==
                        std::partial_ordering::greater));
-        static_assert((QPartialOrdering(std::partial_ordering::unordered) ==
+        static_assert((Qt::partial_ordering(std::partial_ordering::unordered) ==
                        std::partial_ordering::unordered));
     }
-    // QWeakOrdering <-> std::weak_ordering
+    // Qt::weak_ordering <-> std::weak_ordering
     {
-        static_assert(QWeakOrdering::Less == std::weak_ordering::less);
-        static_assert(QWeakOrdering::Less != std::weak_ordering::equivalent);
-        static_assert(std::weak_ordering::greater != QWeakOrdering::Less);
-        static_assert(std::weak_ordering::equivalent == QWeakOrdering::Equivalent);
+        static_assert(Qt::weak_ordering::less == std::weak_ordering::less);
+        static_assert(Qt::weak_ordering::less != std::weak_ordering::equivalent);
+        static_assert(std::weak_ordering::greater != Qt::weak_ordering::less);
+        static_assert(std::weak_ordering::equivalent == Qt::weak_ordering::equivalent);
 
-        static_assert((QWeakOrdering(std::weak_ordering::less) ==
+        static_assert((Qt::weak_ordering(std::weak_ordering::less) ==
                        std::weak_ordering::less));
-        static_assert((QWeakOrdering(std::weak_ordering::equivalent) ==
+        static_assert((Qt::weak_ordering(std::weak_ordering::equivalent) ==
                        std::weak_ordering::equivalent));
-        static_assert((QWeakOrdering(std::weak_ordering::greater) ==
+        static_assert((Qt::weak_ordering(std::weak_ordering::greater) ==
                        std::weak_ordering::greater));
     }
-    // QStrongOrdering <-> std::strong_ordering
+    // Qt::strong_ordering <-> std::strong_ordering
     {
-        static_assert(QStrongOrdering::Less == std::strong_ordering::less);
-        static_assert(QStrongOrdering::Less != std::strong_ordering::equivalent);
-        static_assert(std::strong_ordering::greater != QStrongOrdering::Less);
-        static_assert(std::strong_ordering::equivalent == QStrongOrdering::Equivalent);
+        static_assert(Qt::strong_ordering::less == std::strong_ordering::less);
+        static_assert(Qt::strong_ordering::less != std::strong_ordering::equivalent);
+        static_assert(std::strong_ordering::greater != Qt::strong_ordering::less);
+        static_assert(std::strong_ordering::equivalent == Qt::strong_ordering::equivalent);
 
-        static_assert((QStrongOrdering(std::strong_ordering::less) ==
+        static_assert((Qt::strong_ordering(std::strong_ordering::less) ==
                        std::strong_ordering::less));
-        static_assert((QStrongOrdering(std::strong_ordering::equivalent) ==
+        static_assert((Qt::strong_ordering(std::strong_ordering::equivalent) ==
                        std::strong_ordering::equivalent));
-        static_assert((QStrongOrdering(std::strong_ordering::greater) ==
+        static_assert((Qt::strong_ordering(std::strong_ordering::greater) ==
                        std::strong_ordering::greater));
     }
-    // Mixed Q*Ordering <> std::*ordering types
+    // Mixed Qt::*_ordering <> std::*_ordering types
     {
-        static_assert(QStrongOrdering::Less == std::partial_ordering::less);
-        static_assert(QStrongOrdering::Less != std::partial_ordering::greater);
-        static_assert(QStrongOrdering::Equal == std::weak_ordering::equivalent);
-        static_assert(QStrongOrdering::Equivalent != std::weak_ordering::less);
+        static_assert(Qt::strong_ordering::less == std::partial_ordering::less);
+        static_assert(Qt::strong_ordering::less != std::partial_ordering::greater);
+        static_assert(Qt::strong_ordering::equal == std::weak_ordering::equivalent);
+        static_assert(Qt::strong_ordering::equivalent != std::weak_ordering::less);
 
-        static_assert(QWeakOrdering::Less != std::partial_ordering::greater);
-        static_assert(QWeakOrdering::Less == std::partial_ordering::less);
-        static_assert(QWeakOrdering::Equivalent == std::strong_ordering::equivalent);
-        static_assert(QWeakOrdering::Equivalent != std::strong_ordering::less);
+        static_assert(Qt::weak_ordering::less != std::partial_ordering::greater);
+        static_assert(Qt::weak_ordering::less == std::partial_ordering::less);
+        static_assert(Qt::weak_ordering::equivalent == std::strong_ordering::equivalent);
+        static_assert(Qt::weak_ordering::equivalent != std::strong_ordering::less);
 
-        static_assert(QPartialOrdering::Less != std::weak_ordering::greater);
-        static_assert(QPartialOrdering::Less == std::weak_ordering::less);
-        static_assert(QPartialOrdering::Equivalent == std::strong_ordering::equivalent);
-        static_assert(QPartialOrdering::Equivalent != std::strong_ordering::less);
+        static_assert(Qt::partial_ordering::less != std::weak_ordering::greater);
+        static_assert(Qt::partial_ordering::less == std::weak_ordering::less);
+        static_assert(Qt::partial_ordering::equivalent == std::strong_ordering::equivalent);
+        static_assert(Qt::partial_ordering::equivalent != std::strong_ordering::less);
     }
 #endif
 

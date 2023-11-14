@@ -166,8 +166,8 @@ void testEqualityOperators(LeftType lhs, RightType rhs, bool expectedEqual)
     (==, !=, <, >, <=, >=) for the \a lhs operand of type \c {LeftType} and
     the \a rhs operand of type \c {RightType}.
 
-    The \c OrderingType must be one of QPartialOrdering, QStrongOrdering, or
-    QWeakOrdering.
+    The \c OrderingType must be one of Qt::partial_ordering,
+    Qt::weak_ordering, or Qt::strong_ordering.
 
     The \a expectedOrdering parameter provides the expected
     relation between \a lhs and \a rhs.
@@ -178,7 +178,7 @@ void testEqualityOperators(LeftType lhs, RightType rhs, bool expectedEqual)
     \code
     QDateTime now = QDateTime::currentDateTime();
     QDateTime later = now.addMSec(1);
-    QTestPrivate::testComparisonOperators(now, later, QWeakOrdering::Less);
+    QTestPrivate::testComparisonOperators(now, later, Qt::weak_ordering::less);
     if (QTest:currentTestFailed())
         return;
     \endcode
@@ -186,19 +186,18 @@ void testEqualityOperators(LeftType lhs, RightType rhs, bool expectedEqual)
 template <typename LeftType, typename RightType, typename OrderingType>
 void testAllComparisonOperators(LeftType lhs, RightType rhs, OrderingType expectedOrdering)
 {
-    constexpr bool isQOrderingType = std::is_same_v<OrderingType, QPartialOrdering>
-            || std::is_same_v<OrderingType, QWeakOrdering>
-            || std::is_same_v<OrderingType, QStrongOrdering>;
-
+    constexpr bool isQOrderingType = std::is_same_v<OrderingType, Qt::partial_ordering>
+                                        || std::is_same_v<OrderingType, Qt::weak_ordering>
+                                        || std::is_same_v<OrderingType, Qt::strong_ordering>;
     static_assert(isQOrderingType,
                   "Please provide, as the expectedOrdering parameter, a value "
-                  "of one of the Q{Partial,Weak,Strong}Ordering types.");
+                  "of one of the Qt::{partial,weak,strong_ordering types.");
 
     // We have all sorts of operator==() between Q*Ordering and std::*_ordering
-    // types, so we can just compare to QPartialOrdering.
-    const bool expectedEqual = expectedOrdering == QPartialOrdering::Equivalent;
-    const bool expectedLess = expectedOrdering == QPartialOrdering::Less;
-    const bool expectedUnordered = expectedOrdering == QPartialOrdering::Unordered;
+    // types, so we can just compare to Qt::partial_ordering.
+    const bool expectedEqual = expectedOrdering == Qt::partial_ordering::equivalent;
+    const bool expectedLess = expectedOrdering == Qt::partial_ordering::less;
+    const bool expectedUnordered = expectedOrdering == Qt::partial_ordering::unordered;
 
     CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, lhs, rhs, ==,
                        !expectedUnordered && expectedEqual)

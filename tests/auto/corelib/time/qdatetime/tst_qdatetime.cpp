@@ -2502,7 +2502,7 @@ void tst_QDateTime::ordering_data()
 {
     QTest::addColumn<QDateTime>("left");
     QTest::addColumn<QDateTime>("right");
-    QTest::addColumn<QWeakOrdering>("expectedOrdering");
+    QTest::addColumn<Qt::weak_ordering>("expectedOrdering");
 
     Q_CONSTINIT static const auto constructName = [](const QDateTime &dt) -> QByteArray {
         if (dt.isNull())
@@ -2513,7 +2513,7 @@ void tst_QDateTime::ordering_data()
     };
 
     Q_CONSTINIT static const auto generateRow =
-            [](const QDateTime &left, const QDateTime &right, QWeakOrdering ordering) {
+            [](const QDateTime &left, const QDateTime &right, Qt::weak_ordering ordering) {
         const QByteArray leftStr = constructName(left);
         const QByteArray rightStr = constructName(right);
         QTest::addRow("%s_vs_%s", leftStr.constData(), rightStr.constData())
@@ -2533,25 +2533,25 @@ void tst_QDateTime::ordering_data()
     epochWest1h.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(-3600));
     QDateTime local1970(epoch.date(), epoch.time()); // Local time's epoch
 
-    generateRow(june, june, QWeakOrdering::Equivalent);
-    generateRow(june, juneLater, QWeakOrdering::Less);
-    generateRow(june, badDay, QWeakOrdering::Greater);
-    generateRow(badDay, QDateTime(), QWeakOrdering::Equivalent);
-    generateRow(june, QDateTime(), QWeakOrdering::Greater);
-    generateRow(epoch, nextDay, QWeakOrdering::Less);
-    generateRow(epoch, prevDay, QWeakOrdering::Greater);
-    generateRow(epoch, epochEast1h, QWeakOrdering::Equivalent);
-    generateRow(epoch, epochWest1h, QWeakOrdering::Equivalent);
-    generateRow(epochEast1h, epochWest1h, QWeakOrdering::Equivalent);
+    generateRow(june, june, Qt::weak_ordering::equivalent);
+    generateRow(june, juneLater, Qt::weak_ordering::less);
+    generateRow(june, badDay, Qt::weak_ordering::greater);
+    generateRow(badDay, QDateTime(), Qt::weak_ordering::equivalent);
+    generateRow(june, QDateTime(), Qt::weak_ordering::greater);
+    generateRow(epoch, nextDay, Qt::weak_ordering::less);
+    generateRow(epoch, prevDay, Qt::weak_ordering::greater);
+    generateRow(epoch, epochEast1h, Qt::weak_ordering::equivalent);
+    generateRow(epoch, epochWest1h, Qt::weak_ordering::equivalent);
+    generateRow(epochEast1h, epochWest1h, Qt::weak_ordering::equivalent);
     if (epochTimeType == LocalTimeIsUtc)
-        generateRow(epoch, local1970, QWeakOrdering::Equivalent);
+        generateRow(epoch, local1970, Qt::weak_ordering::equivalent);
 }
 
 void tst_QDateTime::ordering()
 {
     QFETCH(QDateTime, left);
     QFETCH(QDateTime, right);
-    QFETCH(QWeakOrdering, expectedOrdering);
+    QFETCH(Qt::weak_ordering, expectedOrdering);
 
     QTestPrivate::testAllComparisonOperators(left, right, expectedOrdering);
 }

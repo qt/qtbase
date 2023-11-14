@@ -362,30 +362,30 @@ void tst_QTime::ordering_data()
 {
     QTest::addColumn<QTime>("left");
     QTest::addColumn<QTime>("right");
-    QTest::addColumn<QStrongOrdering>("expectedOrdering");
+    QTest::addColumn<Qt::strong_ordering>("expectedOrdering");
 
-    auto generateRow = [](QTime t1, QTime t2, QStrongOrdering ordering) {
+    auto generateRow = [](QTime t1, QTime t2, Qt::strong_ordering ordering) {
         const QByteArray t1Str = t1.toString("hh:mm:ss.zz").toLatin1();
         const QByteArray t2Str = t2.toString("hh:mm:ss.zz").toLatin1();
         QTest::addRow("%s_vs_%s", t1Str.constData(), t2Str.constData()) << t1 << t2 << ordering;
     };
 
-    generateRow(QTime(0, 0), QTime(0, 0), QStrongOrdering::Equivalent);
-    generateRow(QTime(12, 34, 56, 20), QTime(12, 34, 56, 30), QStrongOrdering::Less);
-    generateRow(QTime(13, 34, 46, 20), QTime(13, 34, 56, 20), QStrongOrdering::Less);
-    generateRow(QTime(13, 24, 56, 20), QTime(13, 34, 56, 20), QStrongOrdering::Less);
-    generateRow(QTime(12, 34, 56, 20), QTime(13, 34, 56, 20), QStrongOrdering::Less);
-    generateRow(QTime(14, 34, 56, 20), QTime(13, 34, 56, 20), QStrongOrdering::Greater);
-    generateRow(QTime(13, 44, 56, 20), QTime(13, 34, 56, 20), QStrongOrdering::Greater);
-    generateRow(QTime(13, 34, 56, 20), QTime(13, 34, 46, 20), QStrongOrdering::Greater);
-    generateRow(QTime(13, 34, 56, 30), QTime(13, 34, 56, 20), QStrongOrdering::Greater);
+    generateRow(QTime(0, 0), QTime(0, 0), Qt::strong_ordering::equivalent);
+    generateRow(QTime(12, 34, 56, 20), QTime(12, 34, 56, 30), Qt::strong_ordering::less);
+    generateRow(QTime(13, 34, 46, 20), QTime(13, 34, 56, 20), Qt::strong_ordering::less);
+    generateRow(QTime(13, 24, 56, 20), QTime(13, 34, 56, 20), Qt::strong_ordering::less);
+    generateRow(QTime(12, 34, 56, 20), QTime(13, 34, 56, 20), Qt::strong_ordering::less);
+    generateRow(QTime(14, 34, 56, 20), QTime(13, 34, 56, 20), Qt::strong_ordering::greater);
+    generateRow(QTime(13, 44, 56, 20), QTime(13, 34, 56, 20), Qt::strong_ordering::greater);
+    generateRow(QTime(13, 34, 56, 20), QTime(13, 34, 46, 20), Qt::strong_ordering::greater);
+    generateRow(QTime(13, 34, 56, 30), QTime(13, 34, 56, 20), Qt::strong_ordering::greater);
 }
 
 void tst_QTime::ordering()
 {
     QFETCH(QTime, left);
     QFETCH(QTime, right);
-    QFETCH(QStrongOrdering, expectedOrdering);
+    QFETCH(Qt::strong_ordering, expectedOrdering);
 
     QTestPrivate::testAllComparisonOperators(left, right, expectedOrdering);
 }
