@@ -560,6 +560,9 @@ private Q_SLOTS:
     void notFoundWithCompression_data();
     void notFoundWithCompression();
 
+    void qhttpPartDebug_data();
+    void qhttpPartDebug();
+
     void qtbug68821proxyError_data();
     void qtbug68821proxyError();
 
@@ -10477,6 +10480,59 @@ void tst_QNetworkReply::notFoundWithCompression()
 
     QFETCH(QByteArray, expected);
     QCOMPARE(reply->readAll(), expected);
+}
+
+void tst_QNetworkReply::qhttpPartDebug_data()
+{
+    QTest::addColumn<QByteArray>("header_data");
+    QTest::addColumn<QByteArray>("raw_header_data");
+    QTest::addColumn<QList<QByteArray>>("expected_header_values");
+    QTest::addColumn<bool>("overwrite");
+
+    QTest::newRow("header-data-set") << "form-data; name=\"prompt\""_ba << ""_ba
+                    << (QList<QByteArray>() << "form-data; name=\"prompt\""_ba) << false;
+    QTest::newRow("raw-header-data-set") << ""_ba << "thisismykeyherebutnotreally"_ba
+                    << (QList<QByteArray>() << "thisismykeyherebutnotreally"_ba) << false;
+    QTest::newRow("both-set") << "form-data; name=\"prompt\""_ba
+                              << "thisismykeyherebutnotreally"_ba
+                              << (QList<QByteArray>()
+                                    << "form-data; name=\"prompt\""_ba
+                                    << "thisismykeyherebutnotreally"_ba) << false;
+    QTest::newRow("overwrite") << "form-data; name=\"prompt\""_ba
+                               << "thisismykeyherebutnotreally"_ba
+                               << (QList<QByteArray>()
+                                    << "thisismykeyherebutnotreally"_ba
+                                    << "thisismykeyherebutnotreally"_ba) << true;
+}
+
+void tst_QNetworkReply::qhttpPartDebug()
+{
+    QFETCH(const QByteArray, header_data);
+    QFETCH(const QByteArray, raw_header_data);
+    QFETCH(const QList<QByteArray>, expected_header_values);
+    QFETCH(bool, overwrite);
+
+    QHttpPart httpPart;
+
+    if (!header_data.isEmpty())
+        httpPart.setHeader(QNetworkRequest::ContentDispositionHeader, header_data);
+
+    if (!raw_header_data.isEmpty())
+        httpPart.setRawHeader("Authorization", raw_header_data);
+
+    if (overwrite)
+        httpPart.setRawHeader("Content-Disposition", raw_header_data);
+
+    QByteArray msg;
+    {
+        QBuffer buf(&msg);
+        QVERIFY(buf.open(QIODevice::WriteOnly));
+        QDebug debug(&buf);
+        debug << httpPart;
+    }
+
+    for (const auto &value : expected_header_values)
+        QVERIFY2(msg.contains(value), "Missing header value: " + value);
 }
 
 void tst_QNetworkReply::qtbug68821proxyError_data()

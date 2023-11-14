@@ -19,6 +19,7 @@ QT_BEGIN_NAMESPACE
 
 class QHttpPartPrivate;
 class QHttpMultiPart;
+class QDebug;
 
 class Q_NETWORK_EXPORT QHttpPart
 {
@@ -45,6 +46,9 @@ private:
     QSharedDataPointer<QHttpPartPrivate> d;
 
     friend class QHttpMultiPartIODevice;
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QHttpPart &httpPart);
+#endif
 };
 
 Q_DECLARE_SHARED(QHttpPart)
