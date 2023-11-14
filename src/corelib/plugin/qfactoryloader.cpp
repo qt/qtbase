@@ -65,21 +65,6 @@ struct QFactoryLoaderIidSearch
     QFactoryLoaderIidSearch(QLatin1StringView iid) : iid(iid)
     { Q_ASSERT(!iid.isEmpty()); }
 
-    static QString readString(QCborStreamReader &reader)
-    {
-        QString result;
-        if (!reader.isLengthKnown())
-            return result;
-        auto r = reader.readString();
-        if (r.status != QCborStreamReader::Ok)
-            return result;
-        result = std::move(r.data);
-        r = reader.readString();
-        if (r.status != QCborStreamReader::EndOfString)
-            result = QString();
-        return result;
-    }
-
     static IterationResult::Result skip(QCborStreamReader &reader)
     {
         // skip this, whatever it is
@@ -91,10 +76,10 @@ struct QFactoryLoaderIidSearch
     {
         if (key != QtPluginMetaDataKeys::IID)
             return skip(reader);
-        matchesIid = (readString(reader) == iid);
+        matchesIid = (reader.toString() == iid);
         return IterationResult::FinishedSearch;
     }
-    IterationResult::Result operator()(const QString &, QCborStreamReader &reader)
+    IterationResult::Result operator()(QUtf8StringView, QCborStreamReader &reader)
     {
         return skip(reader);
     }
@@ -124,8 +109,8 @@ struct QFactoryLoaderMetaDataKeysExtractor : QFactoryLoaderIidSearch
             return IterationResult::ParsingError;
         while (reader.isValid()) {
             // the metadata is JSON, so keys are all strings
-            QString key = reader.toString();
-            if (key == "Keys"_L1) {
+            QByteArray key = reader.toUtf8String();
+            if (key == "Keys") {
                 if (!reader.isArray() || !reader.isLengthKnown())
                     return IterationResult::InvalidHeaderItem;
                 keys = QCborValue::fromCbor(reader).toArray();
@@ -170,10 +155,10 @@ template <typename F> static IterationResult iterateInPluginMetaData(QByteArrayV
                 return reader.lastError();
             r = f(key, reader);
         } else if (reader.isString()) {
-            QString key = readString(reader);
+            QByteArray key = reader.toUtf8String();
             if (key.isNull())
                 return reader.lastError();
-            r = f(key, reader);
+            r = f(QUtf8StringView(key), reader);
         } else {
             return IterationResult::InvalidTopLevelItem;
         }
@@ -206,7 +191,7 @@ bool QPluginParsedMetaData::parse(QByteArrayView raw)
         if constexpr (std::is_enum_v<std::decay_t<decltype(key)>>)
             map[int(key)] = item;
         else
-            map[key] = item;
+            map[QString::fromUtf8(key)] = item;
         return IterationResult::ContinueSearch;
     });
 
