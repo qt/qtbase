@@ -2712,7 +2712,7 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, QDockWidgetPrivate::Drag
 #endif
 
 #if !QT_CONFIG(dockwidget) || !QT_CONFIG(tabbar)
-    Q_UNUSED(group);
+    Q_UNUSED(scope);
 #endif
 
     layoutState.unplug(path ,&savedState);
