@@ -14,6 +14,7 @@ from typing import Iterable, TextIO
 from xml.dom import minidom
 from weakref import WeakValueDictionary as CacheDict
 from pathlib import Path
+from datetime import datetime
 
 from ldml import Error, Node, XmlScanner, Supplement, LocaleScanner
 from localetools import names_clash
@@ -585,6 +586,151 @@ enumdata.py (keeping the old name as an alias):
                 windows.append((wid, code, ' '.join(ianas)))
 
         return defaults, windows
+
+    def readMetaZoneMap(self, alias):
+        """Digests the metaZones supplemental data.
+
+        Required argument, alias, should be the first of
+        bcp47Aliases()'s pair of returns; it is used to map CLDR IDs
+        to IANA IDs.
+
+        Ignores the metazoneIds, at least for now. Reads mapTimezones
+        as a mapping from metazone to mapping from territory (possibly
+        via CLDR ID) to IANA ID; the entry for territory '001' (world)
+        is the exemplar zone for the metazone. Reads metazoneInfo as a
+        mapping from IANA IDs (possibly given as CLDR IDs) to usage
+        histories. Reads primaryZones as a mapping from territory (via
+        CLDR IDs) to IANA IDs. Returns a triple of these three
+        mappings, in the given order, with the territories mapped to
+        pairs of: an integer value of a corresponding
+        QLocale::Territory and the territory code (a short string).
+
+        The usage history of each zone is a sequence of triples (to,
+        from, metazone) indicating an interval of time, bounded by to
+        and from, during which the zone followed the metazone. A
+        bounding time of None indicates no bound at its end;
+        otherwise, each bound is a "yyyy-MM-dd hh:mm" datetime
+        string. Earlier time intervals are sorted before later;
+        successive intervals usually abut."""
+        metaZones = self.supplement('metaZones.xml') # Doesn't appear to use draft attribute
+        # Map CLDR name to IANA name (or use CLDR name if unknown to alias):
+        zoneName = lambda n, g=alias.get: g(n, n)
+
+        metaMap = {} # { meta: { territory code: zoneId } }
+        # Entry with territory 001 is "golden zone" for the metazone.
+        for mapMeta in metaZones.findNodes('metaZones/mapTimezones'):
+            attrs = mapMeta.attributes()
+            if attrs.get('type', '') != 'metazones':
+                continue
+            if attrs.get('typeVersion', '') != '2018e':
+                # We may be able to cope, but someone needs to check
+                raise Error('Version of metazone map type is not 2018e', attrs)
+
+            for node in mapMeta.findAllChildren('mapZone'):
+                attrs = node.attributes()
+                try:
+                    meta, code, zone = attrs['other'], attrs['territory'], attrs['type']
+                except KeyError:
+                    continue
+
+                bok = metaMap.setdefault(meta, {})
+                assert code not in bok, (meta, code)
+                bok[code] = zoneName(zone)
+        # Territories not named in a metaMap entry fall back on the
+        # value for 001, so every metaMap must have this "golden"
+        # entry:
+        assert all('001' in bok for bok in metaMap.values())
+
+        def scanUses(zone, check=metaMap):
+            for node in zone.findAllChildren('usesMetazone'):
+                attrs = node.attributes()
+                mzone = attrs['mzone']
+                if mzone not in check:
+                    raise Error('Unknown metazone', mzone)
+                # These are UTC date-times.
+                yield attrs.get('from'), attrs.get('to'), mzone
+
+        def sortKey(triple):
+            start, stop, mzone = triple
+            # The start = None entry should sort first; since its key
+            # is its stop, which is likely the next entry's start, we
+            # append a zero-second field to any non-None start to make
+            # it sort (lexically) after its predecessor's stop value.
+            return f'{start}:00' if start else stop
+            # (If both start and stop are None, there's only one entry
+            # in the list, so the sorting is fatuous and the key
+            # doesn't matter).
+
+        def timeRep(text, notime, epoch=datetime(1970, 1, 1, 0, 0)):
+            """Map a 'yyyy-MM-dd HH:mm' string to epoch minutes.
+
+            If the HH:mm part is omitted, second parameter notime is true to
+            use the end of the day, false for the start. LDM specifies this
+            reading of the pure-date values for start and stop attributes.  If
+            the HH:mm part is 24:00, the end of the day is also used; LDML
+            specifies this but python's datetime.fromisoformat() doesn't like
+            it.
+
+            Since the datetimes are given as UTC and only to minute precision,
+            with only 1440 minutes in a day, 32 bits can represent a span of
+            over 8 thousand years in epoch minutes form. As we use this only
+            for times of changes to metazone status of a zone, all after the
+            epoch, we can use an unsigned 32-bit int to reach year 10136."""
+            try:
+                if len(text) == 10:
+                    if notime:
+                        raise ValueError
+                    # else: fromisoformat reads it as start of day
+                else:
+                    assert len(text) == 16, text
+
+                # If it's given with HH:mm as 24:00, this throws:
+                diff = datetime.fromisoformat(text) - epoch
+            except ValueError:
+                diff = datetime.fromisoformat(text[:10]) - epoch
+                diff += diff.__class__(days=1)
+
+            assert diff.days >= 0 and diff.seconds >= 0, (diff, text)
+            assert diff.seconds % 60 == 0, (diff, text)
+            return diff.days * 1440 + int(diff.seconds / 60)
+
+        def mapTimes(triple, alpha=0, omega=(1<<32)-1, torep=timeRep):
+            start, stop, mzone = triple
+            start = alpha if start is None else torep(start, False)
+            stop = omega if stop is None else torep(stop, True)
+            # Treat any date after omega - 1 as end of time, as we need omega -
+            # 1 as a sentinel value in the C++ binary chop code.
+            if stop + 1 >= omega:
+                stop = omega
+            return start, stop, mzone
+
+        zones = {} # { ianaId: ( (from, to, meta), ... ) }
+        for metaInfo in metaZones.findNodes('metaZones/metazoneInfo'):
+            for zone in metaInfo.findAllChildren('timezone'):
+                iana = zoneName(zone.dom.attributes['type'].value)
+                story = tuple(sorted(scanUses(zone), key=sortKey))
+                # Only {first,last} entry can have None for {from,to}:
+                assert not any(s[0] is None for s in story[1:]), (iana, story)
+                assert not any(s[1] is None for s in story[:-1]), (iana, story)
+                # Each ends when or before the next starts:
+                assert all(old[1] <= new[0]
+                           for old, new in zip(story[:-1], story[1:])), (iana, story)
+                # Now repack story in our compact form:
+                zones[iana] = tuple(mapTimes(x) for x in story)
+
+        # Every mapTimeZones entry should have a reverse entry in
+        # metazoneInfo:
+        assert all(all(any(metaz == s[-1] for s in zones.get(zone, ()))
+                       for zone in bok.values())
+                   for metaz, bok in metaMap.items())
+
+        territorial = {} # { territory code: IANA ID }
+        for prime in metaZones.findNodes('primaryZones/primaryZone'):
+            code = prime.attributes()['iso3166']
+            assert code not in territorial, code
+            territorial[code] = zoneName(prime.dom.childNodes[0].wholeText)
+
+        return metaMap, zones, territorial
 
     @property
     def cldrVersion(self):
