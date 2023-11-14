@@ -498,6 +498,7 @@ public:
                          Qt::Orientation orientation);
     Qt::DockWidgetArea dockWidgetArea(QWidget* widget) const;
     bool restoreDockWidget(QDockWidget *dockwidget);
+    void showDockWidgets() const;
 #if QT_CONFIG(tabbar)
     void tabifyDockWidget(QDockWidget *first, QDockWidget *second);
     void raise(QDockWidget *widget);

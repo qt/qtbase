@@ -1494,6 +1494,17 @@ inline static Qt::DockWidgetArea toDockWidgetArea(int pos)
     return QDockWidgetPrivate::toDockWidgetArea(static_cast<QInternal::DockPosition>(pos));
 }
 
+void QMainWindowLayout::showDockWidgets() const
+{
+    const auto dockWidgets = parent()->findChildren<QDockWidget *>(Qt::FindDirectChildrenOnly);
+    for (auto *dockWidget : dockWidgets)
+        dockWidget->show();
+
+    const auto groupWindows = parent()->findChildren<QDockWidgetGroupWindow *>(Qt::FindDirectChildrenOnly);
+    for (auto *groupWindow : groupWindows)
+        groupWindow->show();
+}
+
 // Checks if QDockWidgetGroupWindow or QDockWidget can be plugged the area indicated by path.
 // Returns false if called with invalid widget type or if compiled without dockwidget support.
 static bool isAreaAllowed(QWidget *widget, const QList<int> &path)
