@@ -4974,7 +4974,7 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
            daysAfterEpoch * SECS_PER_DAY;
 }
 
-#elif defined(Q_OS_UNIX)
+#elif defined(Q_OS_UNIX) // Assume POSIX-compliant
 QDate QDate::currentDate()
 {
     return QDateTime::currentDateTime().date();
@@ -4992,18 +4992,18 @@ QDateTime QDateTime::currentDateTime(const QTimeZone &zone)
 
 qint64 QDateTime::currentMSecsSinceEpoch() noexcept
 {
-    // posix compliant system
-    // we have milliseconds
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    return tv.tv_sec * MSECS_PER_SEC + tv.tv_usec / 1000;
+    struct timespec when;
+    if (clock_gettime(CLOCK_REALTIME, &when) == 0) // should always succeed
+        return when.tv_sec * MSECS_PER_SEC + (when.tv_nsec + 500'000) / 1'000'000;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 qint64 QDateTime::currentSecsSinceEpoch() noexcept
 {
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    return tv.tv_sec;
+    struct timespec when;
+    if (clock_gettime(CLOCK_REALTIME, &when) == 0) // should always succeed
+        return when.tv_sec;
+    Q_UNREACHABLE_RETURN(0);
 }
 #else
 #error "What system is this?"
