@@ -29,11 +29,17 @@
 #include "QtCore/qset.h"
 #include "private/qlayoutengine_p.h"
 #include "private/qwidgetanimator_p.h"
+#if QT_CONFIG(dockwidget)
 #include "private/qdockwidget_p.h"
 
-#if QT_CONFIG(dockwidget)
 #include "qdockarealayout_p.h"
 #include "qdockwidget.h"
+#else
+struct QDockWidgetPrivate {
+    enum class DragScope {
+        Group
+    };
+};
 #endif
 #if QT_CONFIG(toolbar)
 #include "qtoolbararealayout_p.h"
