@@ -6,6 +6,7 @@
 
 #include <QtCore/qdatastream.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qtimezone.h>
 #include <QtCore/qlist.h>
 #include <QDebug>
 #include <private/qtools_p.h>
@@ -224,15 +225,10 @@ QDateTime QAsn1Element::toDateTime() const
         return result;
 
     if (mType == UtcTimeType && mValue.size() == 13) {
-        result = QDateTime::fromString(QString::fromLatin1(mValue),
-                                       QStringLiteral("yyMMddHHmmsst"));
-        if (!result.isValid())
+        const QLatin1StringView inputView(mValue);
+        QDate date = QDate::fromString(inputView.first(6), u"yyMMdd");
+        if (!date.isValid())
             return result;
-
-        Q_ASSERT(result.timeSpec() == Qt::UTC);
-
-        QDate date = result.date();
-
         // RFC 2459:
         //   Where YY is greater than or equal to 50, the year shall be
         //   interpreted as 19YY; and
@@ -242,10 +238,15 @@ QDateTime QAsn1Element::toDateTime() const
         // QDateTime interprets the 'yy' format as 19yy, so we may need to adjust
         // the year (bring it in the [1950, 2049] range).
         if (date.year() < 1950)
-            result.setDate(date.addYears(100));
+            date = date.addYears(100);
 
-        Q_ASSERT(result.date().year() >= 1950);
-        Q_ASSERT(result.date().year() <= 2049);
+        Q_ASSERT(date.year() >= 1950);
+        Q_ASSERT(date.year() <= 2049);
+
+        QTime time = QTime::fromString(inputView.sliced(6, 6), u"HHmmss");
+        if (!time.isValid())
+            return result;
+        result = QDateTime(date, time, QTimeZone::UTC);
     } else if (mType == GeneralizedTimeType && mValue.size() == 15) {
         result = QDateTime::fromString(QString::fromLatin1(mValue),
                                        QStringLiteral("yyyyMMddHHmmsst"));
