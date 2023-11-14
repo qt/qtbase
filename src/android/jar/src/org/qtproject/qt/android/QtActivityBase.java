@@ -21,7 +21,7 @@ import android.view.Window;
 
 public class QtActivityBase extends Activity
 {
-    public String m_applicationParams = null;
+    private String m_applicationParams = null;
     private boolean m_isCustomThemeSet = false;
 
     private QtActivityDelegate m_delegate;
@@ -51,7 +51,7 @@ public class QtActivityBase extends Activity
 
     // Append any parameters to your application,
     // the parameters must be "\t" separated.
-    protected void appendApplicationParameters(String params)
+    public void appendApplicationParameters(String params)
     {
         m_applicationParams += params;
     }
@@ -76,7 +76,7 @@ public class QtActivityBase extends Activity
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
+    protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
@@ -292,6 +292,7 @@ public class QtActivityBase extends Activity
         QtNative.onActivityResult(requestCode, resultCode, data);
     }
 
+    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
         QtNative.sendRequestPermissionsResult(requestCode, permissions, grantResults);
