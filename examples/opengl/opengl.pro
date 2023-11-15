@@ -4,8 +4,7 @@ SUBDIRS = openglwindow \
           hellogles3
 
 qtHaveModule(widgets) {
-    SUBDIRS += contextinfo \
-               2dpainting \
+    SUBDIRS += 2dpainting \
                hellogl2 \
                cube \
                textures \
