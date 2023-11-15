@@ -41,6 +41,7 @@ public:
     QWindow *topLevelAt(const QPoint &point) const override;
     QList<QPlatformScreen *> virtualSiblings() const override;
     QPlatformScreen::SubpixelAntialiasingType subpixelAntialiasingTypeHint() const override;
+    Qt::ScreenOrientation orientation() const override;
 
     // ----------------------------------------------------
 
@@ -90,6 +91,7 @@ private:
     QSizeF m_physicalSize;
     QCocoaCursor *m_cursor;
     qreal m_devicePixelRatio = 0;
+    qreal m_rotation = 0;
 
     CVDisplayLinkRef m_displayLink = nullptr;
     dispatch_source_t m_displayLinkSource = nullptr;

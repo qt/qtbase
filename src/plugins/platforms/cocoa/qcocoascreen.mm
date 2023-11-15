@@ -248,6 +248,7 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
     const QRect previousGeometry = m_geometry;
     const QRect previousAvailableGeometry = m_availableGeometry;
     const qreal previousRefreshRate = m_refreshRate;
+    const double previousRotation = m_rotation;
 
     // The reference screen for the geometry is always the primary screen
     QRectF primaryScreenGeometry = QRectF::fromCGRect(CGDisplayBounds(CGMainDisplayID()));
@@ -272,6 +273,7 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
     QCFType<CGDisplayModeRef> displayMode = CGDisplayCopyDisplayMode(m_displayId);
     float refresh = CGDisplayModeGetRefreshRate(displayMode);
     m_refreshRate = refresh > 0 ? refresh : 60.0;
+    m_rotation = CGDisplayRotation(displayId);
 
     if (@available(macOS 10.15, *))
         m_name = QString::fromNSString(nsScreen.localizedName);
@@ -279,6 +281,9 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
         m_name = displayName(m_displayId);
 
     const bool didChangeGeometry = m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry;
+
+    if (m_rotation != previousRotation)
+        QWindowSystemInterface::handleScreenOrientationChange(screen(), orientation());
 
     if (didChangeGeometry)
         QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
@@ -520,6 +525,19 @@ QPlatformScreen::SubpixelAntialiasingType QCocoaScreen::subpixelAntialiasingType
         type = QPlatformScreen::Subpixel_RGB;
     }
     return type;
+}
+
+Qt::ScreenOrientation QCocoaScreen::orientation() const
+{
+    if (m_rotation == 0)
+        return Qt::LandscapeOrientation;
+    if (m_rotation == 90)
+        return Qt::PortraitOrientation;
+    if (m_rotation == 180)
+        return Qt::InvertedLandscapeOrientation;
+    if (m_rotation == 270)
+        return Qt::InvertedPortraitOrientation;
+    return QPlatformScreen::orientation();
 }
 
 QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
