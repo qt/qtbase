@@ -750,7 +750,7 @@ public:
                              bool offsetOnlyChange);
     void resetShaderResources();
     void executeCommandBuffer(QD3D11CommandBuffer *cbD);
-    DXGI_SAMPLE_DESC effectiveSampleCount(int sampleCount) const;
+    DXGI_SAMPLE_DESC effectiveSampleDesc(int sampleCount) const;
     void finishActiveReadbacks();
     void reportLiveObjects(ID3D11Device *device);
     void clearShaderCache();

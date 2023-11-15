@@ -3058,24 +3058,18 @@ void QRhiD3D12::waitGpu()
     }
 }
 
-DXGI_SAMPLE_DESC QRhiD3D12::effectiveSampleCount(int sampleCount, DXGI_FORMAT format) const
+DXGI_SAMPLE_DESC QRhiD3D12::effectiveSampleDesc(int sampleCount, DXGI_FORMAT format) const
 {
     DXGI_SAMPLE_DESC desc;
     desc.Count = 1;
     desc.Quality = 0;
 
-    // Stay compatible with QSurfaceFormat and friends where samples == 0 means the same as 1.
-    int s = qBound(1, sampleCount, 64);
-
-    if (!supportedSampleCounts().contains(s)) {
-        qWarning("Attempted to set unsupported sample count %d", sampleCount);
-        return desc;
-    }
+    const int s = effectiveSampleCount(sampleCount);
 
     if (s > 1) {
         D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msaaInfo = {};
         msaaInfo.Format = format;
-        msaaInfo.SampleCount = s;
+        msaaInfo.SampleCount = UINT(s);
         if (SUCCEEDED(dev->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &msaaInfo, sizeof(msaaInfo)))) {
             if (msaaInfo.NumQualityLevels > 0) {
                 desc.Count = UINT(s);
@@ -3946,7 +3940,7 @@ bool QD3D12RenderBuffer::create()
     case QRhiRenderBuffer::Color:
     {
         dxgiFormat = toD3DTextureFormat(backingFormat(), {});
-        sampleDesc = rhiD->effectiveSampleCount(m_sampleCount, dxgiFormat);
+        sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, dxgiFormat);
         D3D12_RESOURCE_DESC resourceDesc = {};
         resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
         resourceDesc.Width = UINT64(m_pixelSize.width());
@@ -3987,7 +3981,7 @@ bool QD3D12RenderBuffer::create()
     case QRhiRenderBuffer::DepthStencil:
     {
         dxgiFormat = DS_FORMAT;
-        sampleDesc = rhiD->effectiveSampleCount(m_sampleCount, dxgiFormat);
+        sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, dxgiFormat);
         D3D12_RESOURCE_DESC resourceDesc = {};
         resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
         resourceDesc.Width = UINT64(m_pixelSize.width());
@@ -4143,7 +4137,7 @@ bool QD3D12Texture::prepareCreate(QSize *adjustedSize)
     QRHI_RES_RHI(QRhiD3D12);
     dxgiFormat = toD3DTextureFormat(m_format, m_flags);
     mipLevelCount = uint(hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1);
-    sampleDesc = rhiD->effectiveSampleCount(m_sampleCount, dxgiFormat);
+    sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, dxgiFormat);
     if (sampleDesc.Count > 1) {
         if (isCube) {
             qWarning("Cubemap texture cannot be multisample");
@@ -4297,7 +4291,7 @@ bool QD3D12Texture::create()
 
     bool needsOptimizedClearValueSpecified = false;
     UINT resourceFlags = 0;
-    if (m_flags.testFlag(RenderTarget)) {
+    if (m_flags.testFlag(RenderTarget) || sampleDesc.Count > 1) {
         if (isDepth)
             resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         else
@@ -5575,7 +5569,7 @@ bool QD3D12GraphicsPipeline::create()
     }
 
     QD3D12RenderPassDescriptor *rpD = QRHI_RES(QD3D12RenderPassDescriptor, m_renderPassDesc);
-    const DXGI_SAMPLE_DESC sampleDesc = rhiD->effectiveSampleCount(m_sampleCount, DXGI_FORMAT(rpD->colorFormat[0]));
+    const DXGI_SAMPLE_DESC sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, DXGI_FORMAT(rpD->colorFormat[0]));
 
     struct {
         QD3D12PipelineStateSubObject<ID3D12RootSignature *, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE> rootSig;
@@ -6204,7 +6198,7 @@ void QD3D12SwapChain::chooseFormats()
                      "(or Use HDR is Off in the Display Settings), ignoring HDR format request");
         }
     }
-    sampleDesc = rhiD->effectiveSampleCount(m_sampleCount, colorFormat);
+    sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, colorFormat);
 }
 
 bool QD3D12SwapChain::createOrResize()

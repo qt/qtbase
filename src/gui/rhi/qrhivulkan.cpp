@@ -3989,18 +3989,12 @@ QList<int> QRhiVulkan::supportedSampleCounts() const
     return result;
 }
 
-VkSampleCountFlagBits QRhiVulkan::effectiveSampleCount(int sampleCount)
+VkSampleCountFlagBits QRhiVulkan::effectiveSampleCountBits(int sampleCount)
 {
-    // Stay compatible with QSurfaceFormat and friends where samples == 0 means the same as 1.
-    sampleCount = qBound(1, sampleCount, 64);
-
-    if (!supportedSampleCounts().contains(sampleCount)) {
-        qWarning("Attempted to set unsupported sample count %d", sampleCount);
-        return VK_SAMPLE_COUNT_1_BIT;
-    }
+    const int s = effectiveSampleCount(sampleCount);
 
     for (const auto &qvk_sampleCount : qvk_sampleCounts) {
-        if (qvk_sampleCount.count == sampleCount)
+        if (qvk_sampleCount.count == s)
             return qvk_sampleCount.mask;
     }
 
@@ -6051,7 +6045,7 @@ bool QVkRenderBuffer::create()
         return false;
 
     QRHI_RES_RHI(QRhiVulkan);
-    samples = rhiD->effectiveSampleCount(m_sampleCount);
+    samples = rhiD->effectiveSampleCountBits(m_sampleCount);
 
     switch (m_type) {
     case QRhiRenderBuffer::Color:
@@ -6192,7 +6186,7 @@ bool QVkTexture::prepareCreate(QSize *adjustedSize)
         qWarning("Too many mip levels (%d, max is %d), truncating mip chain", mipLevelCount, maxLevels);
         mipLevelCount = maxLevels;
     }
-    samples = rhiD->effectiveSampleCount(m_sampleCount);
+    samples = rhiD->effectiveSampleCountBits(m_sampleCount);
     if (samples > VK_SAMPLE_COUNT_1_BIT) {
         if (isCube) {
             qWarning("Cubemap texture cannot be multisample");
@@ -7307,7 +7301,7 @@ bool QVkGraphicsPipeline::create()
 
     VkPipelineMultisampleStateCreateInfo msInfo = {};
     msInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    msInfo.rasterizationSamples = rhiD->effectiveSampleCount(m_sampleCount);
+    msInfo.rasterizationSamples = rhiD->effectiveSampleCountBits(m_sampleCount);
     pipelineInfo.pMultisampleState = &msInfo;
 
     VkPipelineDepthStencilStateCreateInfo dsInfo = {};
@@ -7704,7 +7698,7 @@ bool QVkSwapChain::ensureSurface()
         }
     }
 
-    samples = rhiD->effectiveSampleCount(m_sampleCount);
+    samples = rhiD->effectiveSampleCountBits(m_sampleCount);
 
     quint32 presModeCount = 0;
     rhiD->vkGetPhysicalDeviceSurfacePresentModesKHR(rhiD->physDev, surface, &presModeCount, nullptr);

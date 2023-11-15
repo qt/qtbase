@@ -441,19 +441,13 @@ QList<int> QRhiD3D11::supportedSampleCounts() const
     return { 1, 2, 4, 8 };
 }
 
-DXGI_SAMPLE_DESC QRhiD3D11::effectiveSampleCount(int sampleCount) const
+DXGI_SAMPLE_DESC QRhiD3D11::effectiveSampleDesc(int sampleCount) const
 {
     DXGI_SAMPLE_DESC desc;
     desc.Count = 1;
     desc.Quality = 0;
 
-    // Stay compatible with QSurfaceFormat and friends where samples == 0 means the same as 1.
-    int s = qBound(1, sampleCount, 64);
-
-    if (!supportedSampleCounts().contains(s)) {
-        qWarning("Attempted to set unsupported sample count %d", sampleCount);
-        return desc;
-    }
+    const int s = effectiveSampleCount(sampleCount);
 
     desc.Count = UINT(s);
     if (s > 1)
@@ -3100,7 +3094,7 @@ bool QD3D11RenderBuffer::create()
         return false;
 
     QRHI_RES_RHI(QRhiD3D11);
-    sampleDesc = rhiD->effectiveSampleCount(m_sampleCount);
+    sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount);
 
     D3D11_TEXTURE2D_DESC desc = {};
     desc.Width = UINT(m_pixelSize.width());
@@ -3271,7 +3265,7 @@ bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
     QRHI_RES_RHI(QRhiD3D11);
     dxgiFormat = toD3DTextureFormat(m_format, m_flags);
     mipLevelCount = uint(hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1);
-    sampleDesc = rhiD->effectiveSampleCount(m_sampleCount);
+    sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount);
     if (sampleDesc.Count > 1) {
         if (isCube) {
             qWarning("Cubemap texture cannot be multisample");
@@ -4447,7 +4441,7 @@ bool QD3D11GraphicsPipeline::create()
     rastDesc.SlopeScaledDepthBias = m_slopeScaledDepthBias;
     rastDesc.DepthClipEnable = true;
     rastDesc.ScissorEnable = m_flags.testFlag(UsesScissor);
-    rastDesc.MultisampleEnable = rhiD->effectiveSampleCount(m_sampleCount).Count > 1;
+    rastDesc.MultisampleEnable = rhiD->effectiveSampleDesc(m_sampleCount).Count > 1;
     HRESULT hr = rhiD->dev->CreateRasterizerState(&rastDesc, &rastState);
     if (FAILED(hr)) {
         qWarning("Failed to create rasterizer state: %s",
@@ -5088,7 +5082,7 @@ bool QD3D11SwapChain::createOrResize()
         swapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
     if (!swapChain) {
-        sampleDesc = rhiD->effectiveSampleCount(m_sampleCount);
+        sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount);
         colorFormat = DEFAULT_FORMAT;
         srgbAdjustedColorFormat = m_flags.testFlag(sRGB) ? DEFAULT_SRGB_FORMAT : DEFAULT_FORMAT;
 
