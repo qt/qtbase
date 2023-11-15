@@ -1220,7 +1220,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
                             if (info == nullptr) {
                                 continue;
                             }
-                            info->item_list.append(QDockAreaLayoutItem(new QDockWidgetItem(w)));
+                            info->add(w);
                         }
                     }
                 }
