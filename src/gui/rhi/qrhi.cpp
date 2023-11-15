@@ -7889,6 +7889,41 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
     return true;
 }
 
+int QRhiImplementation::effectiveSampleCount(int sampleCount) const
+{
+    // Stay compatible with QSurfaceFormat and friends where samples == 0 means the same as 1.
+    const int s = qBound(1, sampleCount, 64);
+    const QList<int> supported = supportedSampleCounts();
+    int result = 1;
+
+    // Stay compatible with Qt 5 in that requesting an unsupported sample count
+    // is not an error (although we still do a categorized debug print about
+    // this), and rather a supported value, preferably a close one, not just 1,
+    // is used instead. This is actually deviating from Qt 5 as that performs a
+    // clamping only and does not handle cases such as when sample count 2 is
+    // not supported but 4 is. (OpenGL handles things like that gracefully,
+    // other APIs may not, so improve this by picking the next largest, or in
+    // absence of that, the largest value; this with the goal to not reduce
+    // quality by rather picking a larger-than-requested value than a smaller one)
+
+    for (int i = 0, ie = supported.count(); i != ie; ++i) {
+        // assumes the 'supported' list is sorted
+        if (supported[i] >= s) {
+            result = supported[i];
+            break;
+        }
+    }
+
+    if (result != s) {
+        if (result == 1 && !supported.isEmpty())
+            result = supported.last();
+        qCDebug(QRHI_LOG_INFO, "Attempted to set unsupported sample count %d, using %d instead",
+                sampleCount, result);
+    }
+
+    return result;
+}
+
 /*!
     \internal
  */

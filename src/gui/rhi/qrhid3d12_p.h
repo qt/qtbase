@@ -1109,7 +1109,7 @@ public:
     void setPipelineCacheData(const QByteArray &data) override;
 
     void waitGpu();
-    DXGI_SAMPLE_DESC effectiveSampleCount(int sampleCount, DXGI_FORMAT format) const;
+    DXGI_SAMPLE_DESC effectiveSampleDesc(int sampleCount, DXGI_FORMAT format) const;
     bool ensureDirectCompositionDevice();
     bool startCommandListForCurrentFrameSlot(ID3D12GraphicsCommandList **cmdList);
     void enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpdateBatch *resourceUpdates);

@@ -867,7 +867,6 @@ public:
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     void enqueueBarriersForPass(QGles2CommandBuffer *cbD);
-    int effectiveSampleCount(int sampleCount) const;
     QByteArray shaderSource(const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion);
     bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion);
     bool linkProgram(GLuint program);

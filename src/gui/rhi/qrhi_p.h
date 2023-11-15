@@ -231,6 +231,8 @@ public:
         return a.d.binding < b.d.binding;
     }
 
+    int effectiveSampleCount(int sampleCount) const;
+
     QRhi *q;
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;
