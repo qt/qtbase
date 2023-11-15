@@ -48,6 +48,7 @@ static const std::array additionalLocalMimeFiles = {
     "invalid-magic2.xml",
     "invalid-magic3.xml",
     "magic-and-hierarchy.xml",
+    "circular-inheritance.xml",
     "webm-glob-deleteall.xml",
 };
 
@@ -388,6 +389,13 @@ void tst_QMimeDatabase::inheritance()
     const QMimeType mswordTemplate = db.mimeTypeForName(QString::fromLatin1("application/msword-template"));
     QVERIFY(mswordTemplate.isValid());
     QVERIFY(mswordTemplate.inherits(QLatin1String("application/msword")));
+
+    // Check that buggy type definitions that have circular inheritance don't cause an infinite
+    // loop, especially when resolving a conflict between the file's name and its contents
+    const QMimeType ecmascript = db.mimeTypeForName(QString::fromLatin1("application/ecmascript"));
+    QVERIFY(ecmascript.allAncestors().contains("text/plain"));
+    const QMimeType javascript = db.mimeTypeForFileNameAndData("xml.js", "<?xml?>");
+    QVERIFY(javascript.inherits(QString::fromLatin1("text/javascript")));
 }
 
 void tst_QMimeDatabase::aliases()

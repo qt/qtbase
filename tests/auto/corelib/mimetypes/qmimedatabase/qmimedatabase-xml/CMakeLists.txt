@@ -31,6 +31,7 @@ qt_internal_add_test(tst_qmimedatabase-xml
 #)
 set(testdata_resource_files
     "../add-extension.xml"
+    "../circular-inheritance.xml"
     "../invalid-magic1.xml"
     "../invalid-magic2.xml"
     "../invalid-magic3.xml"
