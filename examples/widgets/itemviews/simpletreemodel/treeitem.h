@@ -11,7 +11,7 @@
 class TreeItem
 {
 public:
-    explicit TreeItem(const QVariantList &data, TreeItem *parentItem = nullptr);
+    explicit TreeItem(QVariantList data, TreeItem *parentItem = nullptr);
 
     void appendChild(std::unique_ptr<TreeItem> &&child);
 
