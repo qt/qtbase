@@ -736,7 +736,7 @@ void tst_QMimeDatabase::allMimeTypes()
     QVERIFY(!lst.isEmpty());
 
     // Hardcoding this is the only way to check both providers find the same number of mimetypes.
-    QCOMPARE(lst.size(), 888);
+    QCOMPARE(lst.size(), 908);
 
     for (const QMimeType &mime : lst) {
         const QString name = mime.name();
@@ -757,7 +757,9 @@ void tst_QMimeDatabase::suffixes_data()
     QTest::newRow("mimetype with a single pattern") << "application/pdf" << "*.pdf" << "pdf";
     QTest::newRow("mimetype-with-multiple-patterns-kpr") << "application/x-kpresenter" << "*.kpr;*.kpt" << "kpr";
     // The preferred suffix for image/jpeg is *.jpg, as per https://bugs.kde.org/show_bug.cgi?id=176737
-    QTest::newRow("jpeg") << "image/jpeg" << "*.jpe;*.jpg;*.jpeg" << "jpg";
+    QTest::newRow("jpeg") << "image/jpeg"
+                          << "*.jfif;*.jpe;*.jpg;*.jpeg"
+                          << "jpg";
     QTest::newRow("mimetype with many patterns") << "application/vnd.wordperfect" << "*.wp;*.wp4;*.wp5;*.wp6;*.wpd;*.wpp" << "wp";
     QTest::newRow("oasis text mimetype") << "application/vnd.oasis.opendocument.text" << "*.odt" << "odt";
     QTest::newRow("oasis presentation mimetype") << "application/vnd.oasis.opendocument.presentation" << "*.odp" << "odp";
@@ -1270,7 +1272,7 @@ void tst_QMimeDatabase::installNewLocalMimeType()
 
     // QTBUG-116905: globPatterns() should merge all locations
     // add-extension.xml adds *.jnewext
-    const QStringList expectedJpegPatterns{ "*.jpg", "*.jpeg", "*.jpe", "*.jnewext" };
+    const QStringList expectedJpegPatterns{ "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.jnewext" };
     QCOMPARE(db.mimeTypeForName(QStringLiteral("image/jpeg")).globPatterns(), expectedJpegPatterns);
 
     // Now that we have two directories with mime definitions, check that everything still works
