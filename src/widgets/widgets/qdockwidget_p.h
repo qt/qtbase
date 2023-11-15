@@ -106,6 +106,7 @@ public:
     void setResizerActive(bool active);
 
     bool isAnimating() const;
+    bool isTabbed() const;
 
 private:
     QWidgetResizeHandler *resizer = nullptr;

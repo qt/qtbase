@@ -331,6 +331,9 @@ public:
     void updateCurrentGapRect();
     void restore();
     void apply();
+    void childEvent(QChildEvent *event) override;
+    void reparent(QDockWidget *dockWidget);
+    void destroyIfSingleItemLeft();
     QList<QDockWidget *> dockWidgets() const { return findChildren<QDockWidget *>(); }
 
     QRect currentGapRect;
@@ -341,6 +344,7 @@ signals:
 
 protected:
     bool event(QEvent *) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
     void paintEvent(QPaintEvent*) override;
 
 private:
@@ -572,6 +576,7 @@ public:
 #if QT_CONFIG(dockwidget)
     QPointer<QDockWidgetGroupWindow> currentHoveredFloat; // set when dragging over a floating dock widget
     void setCurrentHoveredFloat(QDockWidgetGroupWindow *w);
+    bool isDockWidgetTabbed(const QDockWidget *dockWidget) const;
 #endif
     bool isInApplyState = false;
 

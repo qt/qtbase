@@ -24,3 +24,13 @@ android
 qnx
 macos
 b2qt
+
+# OSes are flaky because of unplugging and plugging requires
+# precise calculation of the title bar area for mouse emulation
+# That's not possible for floating dock widgets.
+[deleteFloatingTabWithSingleDockWidget]
+qnx
+b2qt
+arm
+android
+macos
