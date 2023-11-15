@@ -255,7 +255,7 @@ void tst_PlatformSocketEngine::broadcastTest()
     PLATFORMSOCKETENGINE broadcastSocket;
 
     // Initialize a regular Udp socket
-    QVERIFY(broadcastSocket.initialize(QAbstractSocket::UdpSocket, QAbstractSocket::AnyIPProtocol));
+    QVERIFY(broadcastSocket.initialize(QAbstractSocket::UdpSocket, QAbstractSocket::IPv4Protocol));
 
     // Bind to any port on all interfaces
     QVERIFY(broadcastSocket.bind(QHostAddress::Any, 0));
