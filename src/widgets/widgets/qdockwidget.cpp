@@ -847,6 +847,11 @@ void QDockWidgetPrivate::endDrag(EndDragMode mode)
                         tabPosition = mwLayout->tabPosition(toDockWidgetArea(dwgw->layoutInfo()->dockPos));
                     }
 #endif
+                    // Reparent, if the drag was out of a dock widget group window
+                    if (mode == EndDragMode::LocationChange) {
+                        if (auto *groupWindow = qobject_cast<QDockWidgetGroupWindow *>(q->parentWidget()))
+                            groupWindow->reparent(q);
+                    }
                 }
                 q->activateWindow();
             } else {
@@ -948,6 +953,15 @@ bool QDockWidgetPrivate::mouseDoubleClickEvent(QMouseEvent *event)
     return false;
 }
 
+bool QDockWidgetPrivate::isTabbed() const
+{
+    Q_Q(const QDockWidget);
+    QDockWidget *that = const_cast<QDockWidget *>(q);
+    auto *mwLayout = qt_mainwindow_layout_from_dock(that);
+    Q_ASSERT(mwLayout);
+    return mwLayout->isDockWidgetTabbed(q);
+}
+
 bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
 {
     bool ret = false;
@@ -978,7 +992,8 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
             } else
 #endif
             {
-                startDrag(DragScope::Group);
+                const DragScope scope = isTabbed() ? DragScope::Group : DragScope::Widget;
+                startDrag(scope);
                 q->grabMouse();
                 ret = true;
             }
