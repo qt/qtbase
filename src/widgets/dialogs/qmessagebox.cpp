@@ -2817,6 +2817,7 @@ bool QMessageBoxPrivate::canBeNativeDialog() const
     if (strcmp(QMessageBox::staticMetaObject.className(), q->metaObject()->className()) != 0)
         return false;
 
+#if QT_CONFIG(menu)
     for (auto *customButton : buttonBox->buttons()) {
         if (QPushButton *pushButton = qobject_cast<QPushButton *>(customButton)) {
             // We can't support buttons with menus in native dialogs (yet)
@@ -2824,6 +2825,7 @@ bool QMessageBoxPrivate::canBeNativeDialog() const
                 return false;
         }
     }
+#endif
 
     return QDialogPrivate::canBeNativeDialog();
 }
