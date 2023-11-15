@@ -149,7 +149,7 @@ public:
 // low-level API:
 namespace QTest
 {
-    int iterationCount();
+    int iterationCount() noexcept;
     void setIterationCountHint(int count);
     void setIterationCount(int count);
 

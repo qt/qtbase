@@ -28,8 +28,8 @@ public:
     QBenchmarkIterationController();
     QBenchmarkIterationController(RunMode runMode);
     ~QBenchmarkIterationController();
-    bool isDone();
-    void next();
+    bool isDone() const noexcept;
+    void next() noexcept;
     int i;
 };
 
