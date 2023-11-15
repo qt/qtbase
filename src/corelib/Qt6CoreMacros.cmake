@@ -2750,6 +2750,22 @@ function(_qt_internal_setup_deploy_support)
         set(target ${aliased_target})
     endif()
 
+    # Generate deployment information for each target if the CMake version is recent enough.
+    # The call is deferred to have all targets of the projects available.
+    if(CMAKE_VERSION GREATER_EQUAL "3.19.0")
+        if(is_multi_config)
+            set(targets_file "${deploy_impl_dir}/QtDeployTargets-$<CONFIG>.cmake")
+        else()
+            set(targets_file "${deploy_impl_dir}/QtDeployTargets.cmake")
+        endif()
+        cmake_language(EVAL CODE
+            "cmake_language(DEFER
+                DIRECTORY [[${CMAKE_SOURCE_DIR}]]
+                CALL _qt_internal_write_target_deploy_info [[${targets_file}]])"
+        )
+        set_property(TARGET ${target} PROPERTY _qt_deploy_support_files "${targets_file}")
+    endif()
+
     # Make sure to look under the Qt bin dir with find_program, rather than randomly picking up
     # a deployqt tool in the system.
     # QT6_INSTALL_PREFIX is not set during Qt build, so add the hints conditionally.
@@ -2912,6 +2928,22 @@ endforeach()
 unset(__qt_deploy_support_file)
 unset(__qt_deploy_support_files)
 ")
+endfunction()
+
+# Write deployment information for the targets of the project.
+function(_qt_internal_write_target_deploy_info out_file)
+    _qt_internal_collect_buildsystem_targets(targets
+        "${CMAKE_SOURCE_DIR}" INCLUDE EXECUTABLE SHARED_LIBRARY MODULE_LIBRARY)
+    set(content "")
+    foreach(target IN LISTS targets)
+        set(var_prefix "__QT_DEPLOY_TARGET_${target}")
+        string(APPEND content "set(${var_prefix}_FILE $<TARGET_FILE:${target}>)\n")
+        if(WIN32 AND CMAKE_VERSION GREATER_EQUAL "3.21")
+            string(APPEND content
+                "set(${var_prefix}_RUNTIME_DLLS $<TARGET_RUNTIME_DLLS:${target}>)\n")
+        endif()
+    endforeach()
+    file(GENERATE OUTPUT "${out_file}" CONTENT "${content}")
 endfunction()
 
 # We basically mirror CMake's policy setup
