@@ -32,7 +32,7 @@ public:
     int columnCount(const QModelIndex &parent = {}) const override;
 
 private:
-    static void setupModelData(const QStringList &lines, TreeItem *parent);
+    static void setupModelData(const QList<QStringView> &lines, TreeItem *parent);
 
     std::unique_ptr<TreeItem> rootItem;
 };
