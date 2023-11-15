@@ -56,6 +56,11 @@ public:
         Widget
     };
 
+    enum class EndDragMode {
+        LocationChange,
+        Abort
+    };
+
     void init();
     void toggleView(bool);
     void toggleTopLevel();
@@ -92,7 +97,7 @@ public:
     void nonClientAreaMouseEvent(QMouseEvent *event);
     void initDrag(const QPoint &pos, bool nca);
     void startDrag(DragScope scope);
-    void endDrag(bool abort = false);
+    void endDrag(EndDragMode mode);
     void moveEvent(QMoveEvent *event);
     void recalculatePressPos(QResizeEvent *event);
 
