@@ -811,23 +811,21 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
 {
     QMutexLocker locker(&m_mutex);
 
-    QVarLengthArray<std::unique_ptr<QFutureCallOutEvent>, 3> events;
-
     const auto currentState = state.loadRelaxed();
     if (currentState & QFutureInterfaceBase::Started) {
-        events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::Started));
+        interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Started));
         if (m_progress) {
-            events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
+            interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
                                                         m_progress->minimum,
                                                         m_progress->maximum));
-            events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::Progress,
+            interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Progress,
                                                         m_progressValue,
                                                         m_progress->text));
         } else {
-            events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
+            interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
                                                         0,
                                                         0));
-            events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::Progress,
+            interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Progress,
                                                         m_progressValue,
                                                         QString()));
         }
@@ -838,7 +836,7 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
         while (it != data.m_results.end()) {
             const int begin = it.resultIndex();
             const int end = begin + it.batchSize();
-            events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::ResultsReady,
+            interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ResultsReady,
                                                         begin,
                                                         end));
             it.batchedAdvance();
@@ -846,21 +844,17 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
     }
 
     if (currentState & QFutureInterfaceBase::Suspended)
-        events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
+        interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
     else if (currentState & QFutureInterfaceBase::Suspending)
-        events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::Suspending));
+        interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspending));
 
     if (currentState & QFutureInterfaceBase::Canceled)
-        events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
+        interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
 
     if (currentState & QFutureInterfaceBase::Finished)
-        events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::Finished));
+        interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Finished));
 
     outputConnections.append(interface);
-
-    locker.unlock();
-    for (auto &&event : events)
-        interface->postCallOutEvent(*event);
 }
 
 void QFutureInterfaceBasePrivate::disconnectOutputInterface(QFutureCallOutInterface *interface)
