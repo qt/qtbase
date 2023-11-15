@@ -41,6 +41,7 @@
 #define QXCBWINDOW_H
 
 #include <qpa/qplatformwindow.h>
+#include <QtCore/QObject>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
 
@@ -57,8 +58,9 @@ class QXcbScreen;
 class QXcbSyncWindowRequest;
 class QIcon;
 
-class Q_XCB_EXPORT QXcbWindow : public QXcbObject, public QXcbWindowEventListener, public QPlatformWindow
+class Q_XCB_EXPORT QXcbWindow : public QObject, public QXcbObject, public QXcbWindowEventListener, public QPlatformWindow
 {
+    Q_OBJECT
 public:
     enum NetWmState {
         NetWmStateAbove = 0x1,

@@ -129,7 +129,7 @@ const quint32 XEMBED_VERSION = 0;
 
 QXcbScreen *QXcbWindow::parentScreen()
 {
-    return parent() ? static_cast<QXcbWindow*>(parent())->parentScreen() : xcbScreen();
+    return QPlatformWindow::parent() ? static_cast<QXcbWindow*>(QPlatformWindow::parent())->parentScreen() : xcbScreen();
 }
 
 //QPlatformWindow::screenForGeometry version that uses deviceIndependentGeometry
@@ -275,8 +275,8 @@ void QXcbWindow::create()
     Qt::WindowType type = window()->type();
 
     QXcbScreen *currentScreen = xcbScreen();
-    QXcbScreen *platformScreen = parent() ? parentScreen() : initialScreen();
-    QRect rect = parent()
+    QXcbScreen *platformScreen = QPlatformWindow::parent() ? parentScreen() : initialScreen();
+    QRect rect = QPlatformWindow::parent()
         ? QHighDpi::toNativeLocalPosition(window()->geometry(), platformScreen)
         : QHighDpi::toNativePixels(window()->geometry(), platformScreen);
 
@@ -316,11 +316,11 @@ void QXcbWindow::create()
         QWindowSystemInterface::handleWindowScreenChanged(window(), platformScreen->QPlatformScreen::screen());
 
     xcb_window_t xcb_parent_id = platformScreen->root();
-    if (parent()) {
-        xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
-        m_embedded = parent()->isForeignWindow();
+    if (QPlatformWindow::parent()) {
+        xcb_parent_id = static_cast<QXcbWindow *>(QPlatformWindow::parent())->xcb_window();
+        m_embedded = QPlatformWindow::parent()->isForeignWindow();
 
-        QSurfaceFormat parentFormat = parent()->window()->requestedFormat();
+        QSurfaceFormat parentFormat = QPlatformWindow::parent()->window()->requestedFormat();
         if (window()->surfaceType() != QSurface::OpenGLSurface && parentFormat.hasAlpha()) {
             window()->setFormat(parentFormat);
         }
@@ -338,16 +338,16 @@ void QXcbWindow::create()
             qWarning() << "Failed to use requested visual id.";
     }
 
-    if (parent()) {
+    if (QPlatformWindow::parent()) {
         // When using a Vulkan QWindow via QWidget::createWindowContainer() we
         // must make sure the visuals are compatible. Now, the parent will be
         // of RasterGLSurface which typically chooses a GLX/EGL compatible
         // visual which may not be what the Vulkan window would choose.
         // Therefore, take the parent's visual.
         if (window()->surfaceType() == QSurface::VulkanSurface
-                && parent()->window()->surfaceType() != QSurface::VulkanSurface)
+                && QPlatformWindow::parent()->window()->surfaceType() != QSurface::VulkanSurface)
         {
-            visual = platformScreen->visualForId(static_cast<QXcbWindow *>(parent())->visualId());
+            visual = platformScreen->visualForId(static_cast<QXcbWindow *>(QPlatformWindow::parent())->visualId());
         }
     }
 
@@ -570,7 +570,7 @@ void QXcbWindow::setGeometry(const QRect &rect)
     propagateSizeHints();
 
     QXcbScreen *currentScreen = xcbScreen();
-    QXcbScreen *newScreen = parent() ? parentScreen() : static_cast<QXcbScreen*>(screenForGeometry(rect));
+    QXcbScreen *newScreen = QPlatformWindow::parent() ? parentScreen() : static_cast<QXcbScreen*>(screenForGeometry(rect));
 
     if (!newScreen)
         newScreen = xcbScreen();
@@ -1794,7 +1794,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 {
     bool fromSendEvent = (event->response_type & 0x80);
     QPoint pos(event->x, event->y);
-    if (!parent() && !fromSendEvent) {
+    if (!QPlatformWindow::parent() && !fromSendEvent) {
         // Do not trust the position, query it instead.
         auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(),
                                  xcb_window(), xcbScreen()->root(), 0, 0);
@@ -1805,7 +1805,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     }
 
     const QRect actualGeometry = QRect(pos, QSize(event->width, event->height));
-    QPlatformScreen *newScreen = parent() ? parent()->screen() : screenForGeometry(actualGeometry);
+    QPlatformScreen *newScreen = QPlatformWindow::parent() ? QPlatformWindow::parent()->screen() : screenForGeometry(actualGeometry);
     if (!newScreen)
         return;
 
@@ -1915,7 +1915,7 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
 
     if (m_embedded && !m_trayIconWindow) {
         if (window() != QGuiApplication::focusWindow()) {
-            const QXcbWindow *container = static_cast<const QXcbWindow *>(parent());
+            const QXcbWindow *container = static_cast<const QXcbWindow *>(QPlatformWindow::parent());
             Q_ASSERT(container != nullptr);
 
             sendXEmbedMessage(container->xcb_window(), XEMBED_REQUEST_FOCUS);
@@ -2363,7 +2363,7 @@ bool QXcbWindow::windowEvent(QEvent *event)
             case Qt::BacktabFocusReason:
                 {
                 const QXcbWindow *container =
-                    static_cast<const QXcbWindow *>(parent());
+                    static_cast<const QXcbWindow *>(QPlatformWindow::parent());
                 sendXEmbedMessage(container->xcb_window(),
                                   focusEvent->reason() == Qt::TabFocusReason ?
                                   XEMBED_FOCUS_NEXT : XEMBED_FOCUS_PREV);
