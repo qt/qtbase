@@ -218,6 +218,8 @@ qt_copy_or_install(FILES
                    cmake/QtAutogenHelpers.cmake
                    cmake/QtBaseTopLevelHelpers.cmake
                    cmake/QtBuild.cmake
+                   cmake/QtBuildHelpers.cmake
+                   cmake/QtBuildPathsHelpers.cmake
                    cmake/QtBuildInformation.cmake
                    cmake/QtCMakeHelpers.cmake
                    cmake/QtCMakeVersionHelpers.cmake
@@ -247,6 +249,7 @@ qt_copy_or_install(FILES
                    cmake/QtInstallHelpers.cmake
                    cmake/QtJavaHelpers.cmake
                    cmake/QtLalrHelpers.cmake
+                   cmake/QtMkspecHelpers.cmake
                    cmake/QtModuleConfig.cmake.in
                    cmake/QtModuleDependencies.cmake.in
                    cmake/QtModuleHeadersCheck.cmake
