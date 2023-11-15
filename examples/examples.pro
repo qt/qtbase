@@ -2,8 +2,7 @@ TEMPLATE      = subdirs
 CONFIG += no_docs_target
 
 SUBDIRS = \
-    corelib \
-    embedded
+    corelib
 
 !contains(TEMPLATE, "vc.*") {    # QTBUG-91033
     qtHaveModule(dbus): SUBDIRS += dbus
