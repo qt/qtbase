@@ -26,6 +26,8 @@ private slots:
     void testAndroidActivity();
     void testRunOnAndroidMainThread();
     void testFullScreenDimensions();
+    void orientationChange_data();
+    void orientationChange();
 };
 
 void tst_Android::assetsRead()
@@ -297,6 +299,25 @@ void tst_Android::testFullScreenDimensions()
         QTRY_COMPARE(screen->geometry().width(), int(realSize.getField<jint>("x")));
         QTRY_COMPARE(screen->geometry().height(), int(realSize.getField<jint>("y")));
     }
+}
+
+void tst_Android::orientationChange_data()
+{
+    QTest::addColumn<int>("nativeOrientation");
+    QTest::addColumn<Qt::ScreenOrientation>("expected");
+
+    QTest::newRow("Landscape") << 0 << Qt::LandscapeOrientation;
+    QTest::newRow("Portrait") << 1 << Qt::PortraitOrientation;
+}
+
+void tst_Android::orientationChange()
+{
+    QFETCH(int, nativeOrientation);
+    QFETCH(Qt::ScreenOrientation, expected);
+
+    auto context = QNativeInterface::QAndroidApplication::context();
+    context.callMethod<void>("setRequestedOrientation", nativeOrientation);
+    QTRY_COMPARE(qGuiApp->primaryScreen()->orientation(), expected);
 }
 
 QTEST_MAIN(tst_Android)

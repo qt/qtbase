@@ -63,8 +63,6 @@ public class QtActivityDelegate
 
         setActionBarVisibility(false);
 
-        m_displayManager.registerDisplayListener(m_activity, m_layout);
-
         QtInputDelegate.KeyboardVisibilityListener keyboardVisibilityListener =
                 new QtInputDelegate.KeyboardVisibilityListener() {
             @Override
@@ -190,12 +188,14 @@ public class QtActivityDelegate
 
         initMembers(startApplication);
     }
-    
+
     private void initMembers(Runnable startApplicationRunnable)
     {
         m_quitApp = true;
 
         m_layout = new QtLayout(m_activity, startApplicationRunnable);
+
+        m_displayManager.registerDisplayListener(m_activity, m_layout);
 
         int orientation = m_activity.getResources().getConfiguration().orientation;
 
