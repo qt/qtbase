@@ -96,7 +96,7 @@
     \brief QStrongOrdering represents a comparison where equivalent values are
     indistinguishable.
     \sa QWeakOrdering, QPartialOrdering, {Comparison types overview}
-    \since 6.6
+    \since 6.7
 
     A value of type QStrongOrdering is typically returned from a three-way
     comparison function. Such a function compares two objects and establishes
@@ -257,7 +257,7 @@
     \brief QWeakOrdering represents a comparison where equivalent values are
     still distinguishable.
     \sa QStrongOrdering, QPartialOrdering, {Comparison types overview}
-    \since 6.6
+    \since 6.7
 
     A value of type QWeakOrdering is typically returned from a three-way
     comparison function. Such a function compares two objects and establishes
