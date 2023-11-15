@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/ecmascript">
+    <comment>It's more accurate to say that ECMAScript is a subset of JavaScript</comment>
+    <sub-class-of type="text/javascript"/>
+    <glob pattern="*.js"/>
+  </mime-type>
+  <mime-type type="text/javascript">
+    <comment>than to say that JavaScript is a subset of ECMAScript</comment>
+    <sub-class-of type="application/ecmascript"/>
+    <glob pattern="*.js"/>
+  </mime-type>
+</mime-info>
