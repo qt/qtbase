@@ -269,6 +269,129 @@ function(qt_internal_extend_target target)
     endif()
 endfunction()
 
+# Given CMAKE_CONFIG and ALL_CMAKE_CONFIGS, determines if a directory suffix needs to be appended
+# to each destination, and sets the computed install target destination arguments in OUT_VAR.
+# Defaults used for each of the destination types, and can be configured per destination type.
+function(qt_get_install_target_default_args)
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+       ""
+       "OUT_VAR;CMAKE_CONFIG;RUNTIME;LIBRARY;ARCHIVE;INCLUDES;BUNDLE"
+       "ALL_CMAKE_CONFIGS")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_CMAKE_CONFIG)
+        message(FATAL_ERROR "No value given for CMAKE_CONFIG.")
+    endif()
+    if(NOT arg_ALL_CMAKE_CONFIGS)
+        message(FATAL_ERROR "No value given for ALL_CMAKE_CONFIGS.")
+    endif()
+    list(LENGTH arg_ALL_CMAKE_CONFIGS all_configs_count)
+    list(GET arg_ALL_CMAKE_CONFIGS 0 first_config)
+
+    set(suffix "")
+    if(all_configs_count GREATER 1 AND NOT arg_CMAKE_CONFIG STREQUAL first_config)
+        set(suffix "/${arg_CMAKE_CONFIG}")
+    endif()
+
+    set(runtime "${INSTALL_BINDIR}")
+    if(arg_RUNTIME)
+        set(runtime "${arg_RUNTIME}")
+    endif()
+
+    set(library "${INSTALL_LIBDIR}")
+    if(arg_LIBRARY)
+        set(library "${arg_LIBRARY}")
+    endif()
+
+    set(archive "${INSTALL_LIBDIR}")
+    if(arg_ARCHIVE)
+        set(archive "${arg_ARCHIVE}")
+    endif()
+
+    set(includes "${INSTALL_INCLUDEDIR}")
+    if(arg_INCLUDES)
+        set(includes "${arg_INCLUDES}")
+    endif()
+
+    set(bundle "${INSTALL_BINDIR}")
+    if(arg_BUNDLE)
+        set(bundle "${arg_BUNDLE}")
+    endif()
+
+    set(args
+        RUNTIME DESTINATION  "${runtime}${suffix}"
+        LIBRARY DESTINATION  "${library}${suffix}"
+        ARCHIVE DESTINATION  "${archive}${suffix}" COMPONENT Devel
+        BUNDLE DESTINATION   "${bundle}${suffix}"
+        INCLUDES DESTINATION "${includes}${suffix}")
+    set(${arg_OUT_VAR} "${args}" PARENT_SCOPE)
+endfunction()
+
+macro(qt_internal_setup_default_target_function_options)
+    set(__default_private_args
+        SOURCES
+        LIBRARIES
+        INCLUDE_DIRECTORIES
+        SYSTEM_INCLUDE_DIRECTORIES
+        DEFINES
+        DBUS_ADAPTOR_BASENAME
+        DBUS_ADAPTOR_FLAGS
+        DBUS_ADAPTOR_SOURCES
+        DBUS_INTERFACE_BASENAME
+        DBUS_INTERFACE_FLAGS
+        DBUS_INTERFACE_SOURCES
+        FEATURE_DEPENDENCIES
+        COMPILE_OPTIONS
+        LINK_OPTIONS
+        MOC_OPTIONS
+        DISABLE_AUTOGEN_TOOLS
+        ENABLE_AUTOGEN_TOOLS
+        PLUGIN_TYPES
+        NO_PCH_SOURCES
+        NO_UNITY_BUILD_SOURCES
+    )
+    set(__default_public_args
+        PUBLIC_LIBRARIES
+        PUBLIC_INCLUDE_DIRECTORIES
+        PUBLIC_DEFINES
+        PUBLIC_COMPILE_OPTIONS
+        PUBLIC_LINK_OPTIONS
+    )
+    set(__default_private_module_args
+        PRIVATE_MODULE_INTERFACE
+    )
+    set(__default_target_info_args
+        TARGET_VERSION
+        TARGET_PRODUCT
+        TARGET_DESCRIPTION
+        TARGET_COMPANY
+        TARGET_COPYRIGHT
+    )
+
+    # Collection of arguments so they can be shared across qt_internal_add_executable
+    # and qt_internal_add_test_helper.
+    set(__qt_internal_add_executable_optional_args
+        GUI
+        NO_INSTALL
+        EXCEPTIONS
+        DELAY_RC
+        DELAY_TARGET_INFO
+        QT_APP
+        NO_UNITY_BUILD
+    )
+    set(__qt_internal_add_executable_single_args
+        CORE_LIBRARY
+        OUTPUT_DIRECTORY
+        INSTALL_DIRECTORY
+        VERSION
+        ${__default_target_info_args}
+    )
+    set(__qt_internal_add_executable_multi_args
+        ${__default_private_args}
+        ${__default_public_args}
+    )
+endmacro()
+
 function(qt_is_imported_target target out_var)
     if(NOT TARGET "${target}")
         set(target "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
