@@ -10,8 +10,8 @@
 #include "treeitem.h"
 
 //! [0]
-TreeItem::TreeItem(const QVariantList &data, TreeItem *parent)
-    : m_itemData(data), m_parentItem(parent)
+TreeItem::TreeItem(QVariantList data, TreeItem *parent)
+    : m_itemData(std::move(data)), m_parentItem(parent)
 {}
 //! [0]
 
@@ -25,32 +25,28 @@ void TreeItem::appendChild(std::unique_ptr<TreeItem> &&child)
 //! [2]
 TreeItem *TreeItem::child(int row)
 {
-    if (row < 0 || row >= m_childItems.size())
-        return nullptr;
-    return m_childItems.at(row).get();
+    return row >= 0 && row < childCount() ? m_childItems.at(row).get() : nullptr;
 }
 //! [2]
 
 //! [3]
 int TreeItem::childCount() const
 {
-    return m_childItems.size();
+    return int(m_childItems.size());
 }
 //! [3]
 
 //! [4]
 int TreeItem::columnCount() const
 {
-    return m_itemData.count();
+    return int(m_itemData.count());
 }
 //! [4]
 
 //! [5]
 QVariant TreeItem::data(int column) const
 {
-    if (column < 0 || column >= m_itemData.size())
-        return QVariant();
-    return m_itemData.at(column);
+    return m_itemData.value(column);
 }
 //! [5]
 
@@ -64,11 +60,11 @@ TreeItem *TreeItem::parentItem()
 //! [7]
 int TreeItem::row() const
 {
-    if (!m_parentItem)
+    if (m_parentItem == nullptr)
         return 0;
     const auto it = std::find_if(m_parentItem->m_childItems.cbegin(), m_parentItem->m_childItems.cend(),
                                  [this](const std::unique_ptr<TreeItem> &treeItem) {
-                                     return treeItem.get() == const_cast<TreeItem *>(this);
+                                     return treeItem.get() == this;
                                  });
 
     if (it != m_parentItem->m_childItems.cend())

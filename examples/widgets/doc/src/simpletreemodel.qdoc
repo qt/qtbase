@@ -145,8 +145,9 @@
 
     \snippet itemviews/simpletreemodel/treeitem.cpp 4
 
-    Column data is returned by the \c data() function. The bounds are checked
-    before accessing the container with the data:
+    Column data is returned by the \c data() function. We use
+    the QList::value() convenience function which checks the bounds
+    and returns a default-constructed QVariant in case they are violated:
 
     \snippet itemviews/simpletreemodel/treeitem.cpp 5
 
