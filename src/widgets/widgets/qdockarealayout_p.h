@@ -109,6 +109,7 @@ public:
     QList<int> gapIndex(const QPoint &pos, bool nestingEnabled,
                             TabMode tabMode) const;
     void remove(const QList<int> &path);
+    void remove(QWidget *widget);
     void unnest(int index);
     void split(int index, Qt::Orientation orientation, QLayoutItem *dockWidgetItem);
 #if QT_CONFIG(tabbar)
@@ -156,6 +157,7 @@ public:
 
     QLayoutItem *itemAt(int *x, int index) const;
     QLayoutItem *takeAt(int *x, int index);
+    void add(QWidget *widget);
     void deleteAllLayoutItems();
 
     QMainWindowLayout *mainWindowLayout() const;

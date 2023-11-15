@@ -1018,6 +1018,14 @@ void QDockAreaLayoutInfo::remove(const QList<int> &path)
     }
 }
 
+void QDockAreaLayoutInfo::remove(QWidget *widget)
+{
+    const QList<int> path = indexOf(widget);
+    if (path.isEmpty())
+        return;
+    remove(path);
+}
+
 QLayoutItem *QDockAreaLayoutInfo::plug(const QList<int> &path)
 {
     Q_ASSERT(!path.isEmpty());
@@ -1147,8 +1155,6 @@ bool QDockAreaLayoutInfo::insertGap(const QList<int> &path, QLayoutItem *dockWid
         insert_tabbed = true;
         index = -index - 1;
     }
-
-//    dump(qDebug() << "insertGap() before:" << index << tabIndex, *this, QString());
 
     if (path.size() > 1) {
         QDockAreaLayoutItem &item = item_list[index];
@@ -1778,6 +1784,26 @@ QLayoutItem *QDockAreaLayoutInfo::takeAt(int *x, int index)
     return nullptr;
 }
 
+// Add a dock widget or dock widget group window to the item list
+void QDockAreaLayoutInfo::add(QWidget *widget)
+{
+    // Do not add twice
+    if (!indexOf(widget).isEmpty())
+        return;
+
+    if (auto *dockWidget = qobject_cast<QDockWidget *>(widget)) {
+        item_list.append(QDockAreaLayoutItem(new QDockWidgetItem(dockWidget)));
+        return;
+    }
+
+    if (auto *groupWindow = qobject_cast<QDockWidgetGroupWindow *>(widget)) {
+        item_list.append(QDockAreaLayoutItem(new QDockWidgetGroupWindowItem(groupWindow)));
+        return;
+    }
+
+    qFatal("Coding error. Add supports only QDockWidget and QDockWidgetGroupWindow");
+}
+
 void QDockAreaLayoutInfo::deleteAllLayoutItems()
 {
     for (int i = 0; i < item_list.size(); ++i) {
@@ -1971,6 +1997,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 if (testing) {
                     //was it is not really added to the layout, we need to delete the object here
                     delete item.widgetItem;
+                    item.widgetItem = nullptr;
                 }
             }
         } else if (nextMarker == SequenceMarker) {
