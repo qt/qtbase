@@ -1821,9 +1821,9 @@ void QMainWindowTabBar::mouseReleaseEvent(QMouseEvent *e)
 {
     if (draggingDock && e->button() == Qt::LeftButton) {
         QDockWidgetPrivate *dockPriv = static_cast<QDockWidgetPrivate *>(QObjectPrivate::get(draggingDock));
-        if (dockPriv->state && dockPriv->state->dragging) {
-            dockPriv->endDrag();
-        }
+        if (dockPriv->state && dockPriv->state->dragging)
+            dockPriv->endDrag(QDockWidgetPrivate::EndDragMode::LocationChange);
+
         draggingDock = nullptr;
     }
     QTabBar::mouseReleaseEvent(e);
