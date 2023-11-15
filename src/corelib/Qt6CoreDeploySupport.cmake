@@ -316,6 +316,7 @@ function(qt6_deploy_runtime_dependencies)
         ADDITIONAL_LIBRARIES
         ADDITIONAL_MODULES
         ${file_GRD_options}
+        DEPLOY_TOOL_OPTIONS
     )
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "${no_value_options}" "${single_value_options}" "${multi_value_options}"
@@ -403,6 +404,7 @@ function(qt6_deploy_runtime_dependencies)
         if(arg_NO_COMPILER_RUNTIME)
             list(APPEND tool_options --no-compiler-runtime)
         endif()
+        list(APPEND tool_options ${arg_DEPLOY_TOOL_OPTIONS})
     elseif(__QT_DEPLOY_SYSTEM_NAME STREQUAL Darwin)
         set(extra_binaries_option "-executable=")
         if(NOT arg_NO_APP_STORE_COMPLIANCE)
@@ -411,6 +413,7 @@ function(qt6_deploy_runtime_dependencies)
         if(NOT arg_NO_OVERWRITE)
             list(APPEND tool_options -always-overwrite)
         endif()
+        list(APPEND tool_options ${arg_DEPLOY_TOOL_OPTIONS})
     endif()
 
     # This is an internal variable. It is normally unset and is only intended

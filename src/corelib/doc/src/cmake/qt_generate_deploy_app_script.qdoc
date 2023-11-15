@@ -24,6 +24,7 @@ qt_generate_deploy_app_script(
     [NO_TRANSLATIONS]
     [NO_COMPILER_RUNTIME]
     [NO_UNSUPPORTED_PLATFORM_ERROR]
+    [DEPLOY_TOOL_OPTIONS ...]
     [PRE_INCLUDE_REGEXES regexes...]
     [PRE_EXCLUDE_REGEXES regexes...]
     [POST_INCLUDE_REGEXES regexes...]
@@ -73,6 +74,9 @@ customized way.
 
 For Windows desktop applications, the required runtime files for the compiler
 are also installed by default. To prevent this, specify \c{NO_COMPILER_RUNTIME}.
+
+You can use \c{DEPLOY_TOOL_OPTIONS} to pass additional options to the underlying
+deployment tool.
 
 For deploying a QML application, use
 \l{qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}

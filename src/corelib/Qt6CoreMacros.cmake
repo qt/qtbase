@@ -3267,6 +3267,7 @@ function(qt6_generate_deploy_app_script)
     )
     set(qt_deploy_runtime_dependencies_options
         # These options are forwarded as is to qt_deploy_runtime_dependencies.
+        DEPLOY_TOOL_OPTIONS
         PRE_INCLUDE_REGEXES
         PRE_EXCLUDE_REGEXES
         POST_INCLUDE_REGEXES
