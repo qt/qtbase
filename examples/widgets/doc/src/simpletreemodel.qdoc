@@ -318,4 +318,20 @@
 
     To ensure that the model works correctly, it is only necessary to
     create instances of \c TreeItem with the correct data and parent item.
+
+    \section1 Testing the model
+
+    Correctly implementing an item model can be challenging. The class
+    \l QAbstractItemModelTester from the \l{Qt Test} module checks for model
+    consistency, like the model index creation and parent-child relationships.
+
+    You can test your model by just passing a model instance to the class
+    constructor, for instance as part of a Qt unit test:
+
+    \snippet itemviews/simpletreemodel/test.cpp 1
+
+    To create a test which can be run using the \c ctest executable,
+    \c add_test() is used:
+
+    \snippet itemviews/simpletreemodel/CMakeLists.txt 1
 */

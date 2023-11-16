@@ -10,7 +10,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/itemviews/simpletreemodel")
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Test Widgets)
 
 qt_standard_project_setup()
 
@@ -48,3 +48,29 @@ install(TARGETS simpletreemodel
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )
+
+#! [1]
+# Unit Test
+
+include(CTest)
+
+qt_add_executable(simpletreemodel_tester
+    test.cpp
+    treeitem.cpp treeitem.h
+    treemodel.cpp treemodel.h)
+
+target_link_libraries(simpletreemodel_tester PRIVATE
+    Qt6::Core
+    Qt6::Test
+)
+
+qt_add_resources(simpletreemodel_tester "simpletreemodel"
+    PREFIX
+        "/"
+    FILES
+        ${simpletreemodel_resource_files}
+)
+
+add_test(NAME simpletreemodel_tester
+         COMMAND simpletreemodel_tester)
+#! [1]
