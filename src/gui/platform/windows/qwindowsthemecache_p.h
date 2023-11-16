@@ -15,6 +15,8 @@
 // We mean it.
 //
 
+#include "QtGui/private/qtguiglobal_p.h"
+
 #include <QtCore/qt_windows.h>
 #include <uxtheme.h>
 

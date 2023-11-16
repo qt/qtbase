@@ -22,7 +22,7 @@ Q_GLOBAL_STATIC(ThemesCache, themesCache);
 QString QWindowsThemeCache::themeName(int theme)
 {
     return theme >= 0 && theme < int(std::size(themeNames))
-        ? QString::fromWCharArray(::themeNames[theme]) : QString();
+        ? QString::fromWCharArray(themeNames[theme]) : QString();
 }
 
 HTHEME QWindowsThemeCache::createTheme(int theme, HWND hwnd)
