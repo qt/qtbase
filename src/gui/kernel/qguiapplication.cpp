@@ -2256,12 +2256,14 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             qAbs(globalPoint.y() - pressPos.y()) > doubleClickDistance)
             mousePressButton = Qt::NoButton;
     } else {
+        static unsigned long lastPressTimestamp = 0;
         mouse_buttons = e->buttons;
         if (mousePress) {
             ulong doubleClickInterval = static_cast<ulong>(QGuiApplication::styleHints()->mouseDoubleClickInterval());
-            doubleClick = e->timestamp - persistentEPD->eventPoint.pressTimestamp()
+            doubleClick = e->timestamp - lastPressTimestamp
                         < doubleClickInterval && button == mousePressButton;
             mousePressButton = button;
+            lastPressTimestamp = e ->timestamp;
         }
     }
 
