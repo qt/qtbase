@@ -340,7 +340,7 @@ namespace QtAndroid
         return surfaceId;
     }
 
-    int insertNativeView(jobject view, const QRect &geometry)
+    int insertNativeView(QtJniTypes::View view, const QRect &geometry)
     {
         m_surfacesMutex.lock();
         jint surfaceId = generateViewId();
