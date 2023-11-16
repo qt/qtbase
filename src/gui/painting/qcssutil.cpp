@@ -168,28 +168,28 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
         if (width == 1 || (dw1 == 0 && dw2 == 0)) {
             p->drawRect(QRectF(x1, y1, x2-x1, y2-y1));
         } else { // draw trapezoid
-            QPolygonF quad;
+            std::array<QPointF, 4> quad;
             switch (edge) {
             case TopEdge:
-                quad << QPointF(x1, y1) << QPointF(x1 + dw1, y2)
-                     << QPointF(x2 - dw2, y2) << QPointF(x2, y1);
+                quad = {QPointF(x1, y1), QPointF(x1 + dw1, y2),
+                        QPointF(x2 - dw2, y2), QPointF(x2, y1)};
                 break;
             case BottomEdge:
-                quad << QPointF(x1 + dw1, y1) << QPointF(x1, y2)
-                     << QPointF(x2, y2) << QPointF(x2 - dw2, y1);
+                quad = {QPointF(x1 + dw1, y1), QPointF(x1, y2),
+                        QPointF(x2, y2), QPointF(x2 - dw2, y1)};
                 break;
             case LeftEdge:
-                quad << QPointF(x1, y1) << QPointF(x1, y2)
-                     << QPointF(x2, y2 - dw2) << QPointF(x2, y1 + dw1);
+                quad = {QPointF(x1, y1), QPointF(x1, y2),
+                        QPointF(x2, y2 - dw2), QPointF(x2, y1 + dw1)};
                 break;
             case RightEdge:
-                quad << QPointF(x1, y1 + dw1) << QPointF(x1, y2 - dw2)
-                     << QPointF(x2, y2) << QPointF(x2, y1);
+                quad = {QPointF(x1, y1 + dw1), QPointF(x1, y2 - dw2),
+                        QPointF(x2, y2), QPointF(x2, y1)};
                 break;
             default:
                 break;
             }
-            p->drawConvexPolygon(quad);
+            p->drawConvexPolygon(quad.data(), static_cast<int>(quad.size()));
         }
         break;
     }
