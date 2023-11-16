@@ -219,6 +219,7 @@ qt_copy_or_install(FILES
                    cmake/QtBaseTopLevelHelpers.cmake
                    cmake/QtBuild.cmake
                    cmake/QtBuildHelpers.cmake
+                   cmake/QtBuildOptionsHelpers.cmake
                    cmake/QtBuildPathsHelpers.cmake
                    cmake/QtBuildInformation.cmake
                    cmake/QtCMakeHelpers.cmake

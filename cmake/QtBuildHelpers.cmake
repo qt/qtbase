@@ -1,6 +1,75 @@
 # Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+macro(qt_internal_set_qt_building_qt)
+    # Set the QT_BUILDING_QT variable so we can verify whether we are building
+    # Qt from source.
+    # Make sure not to set it when building a standalone test, otherwise
+    # upon reconfiguration we get an error about qt_internal_add_test
+    # not being found due the if(NOT QT_BUILDING_QT) check we have
+    # in each standalone test.
+    if(NOT QT_INTERNAL_IS_STANDALONE_TEST)
+        set(QT_BUILDING_QT TRUE CACHE BOOL
+            "When this is present and set to true, it signals that we are building Qt from source.")
+    endif()
+endmacro()
+
+macro(qt_internal_unset_extra_build_internals_vars)
+    # Reset content of extra build internal vars for each inclusion of QtSetup.
+    unset(QT_EXTRA_BUILD_INTERNALS_VARS)
+endmacro()
+
+macro(qt_internal_get_generator_is_multi_config)
+    # Save the global property in a variable to make it available to feature conditions.
+    get_property(QT_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+endmacro()
+
+macro(qt_internal_setup_position_independent_code)
+    ## Position independent code:
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+    # Does the linker support position independent code?
+    include(CheckPIESupported)
+    check_pie_supported()
+endmacro()
+
+macro(qt_internal_set_link_depends_no_shared)
+    # Do not relink dependent libraries when no header has changed:
+    set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
+endmacro()
+
+macro(qt_internal_set_qt_source_tree_var)
+    # Specify the QT_SOURCE_TREE only when building qtbase. Needed by some tests when the tests are
+    # built as part of the project, and not standalone. For standalone tests, the value is set in
+    # QtBuildInternalsExtra.cmake.
+    if(PROJECT_NAME STREQUAL "QtBase")
+        set(QT_SOURCE_TREE "${QtBase_SOURCE_DIR}" CACHE PATH
+            "A path to the source tree of the previously configured QtBase project." FORCE)
+    endif()
+endmacro()
+
+macro(qt_internal_include_qt_platform_android)
+    ## Android platform settings
+    if(ANDROID)
+        include(QtPlatformAndroid)
+    endif()
+endmacro()
+
+macro(qt_internal_set_compiler_optimization_flags)
+    include(QtCompilerOptimization)
+endmacro()
+
+macro(qt_internal_set_compiler_warning_flags)
+    include(QtCompilerFlags)
+endmacro()
+
+macro(qt_internal_set_skip_setup_deployment)
+    if(NOT QT_BUILD_EXAMPLES)
+        # Disable deployment setup to avoid warnings about missing patchelf with CMake < 3.21.
+        set(QT_SKIP_SETUP_DEPLOYMENT ON)
+    endif()
+endmacro()
+
 macro(qt_internal_reset_global_state)
     qt_internal_clear_qt_repo_known_modules()
     qt_internal_clear_qt_repo_known_plugin_types()
@@ -60,12 +129,15 @@ macro(qt_internal_include_all_helpers)
     include(Qt3rdPartyLibraryHelpers)
     include(QtAppHelpers)
     include(QtAutogenHelpers)
+    include(QtBuildInformation)
+    include(QtBuildOptionsHelpers)
     include(QtBuildPathsHelpers)
     include(QtCMakeHelpers)
     include(QtDbusHelpers)
     include(QtDeferredDependenciesHelpers)
     include(QtDocsHelpers)
     include(QtExecutableHelpers)
+    include(QtFeature)
     include(QtFindPackageHelpers)
     include(QtFlagHandlingHelpers)
     include(QtFrameworkHelpers)
@@ -176,11 +248,56 @@ macro(qt_internal_setup_android_platform_specifics)
 endmacro()
 
 macro(qt_internal_setup_build_and_global_variables)
+    qt_internal_set_qt_building_qt()
+    qt_internal_compute_features_from_possible_inputs()
+
+    # Depends on qt_internal_compute_features_from_possible_inputs
+    qt_internal_set_default_build_type()
+
+    qt_internal_set_message_log_level(CMAKE_MESSAGE_LOG_LEVEL)
+    qt_internal_unset_extra_build_internals_vars()
+    qt_internal_get_generator_is_multi_config()
+
+    # Depends on qt_internal_set_default_build_type
+    qt_internal_setup_cmake_config_postfix()
+
+    qt_internal_setup_position_independent_code()
+    qt_internal_set_link_depends_no_shared()
+
+    # Depends on qt_internal_compute_features_from_possible_inputs
+    qt_internal_setup_default_install_prefix()
+
+    qt_internal_set_qt_source_tree_var()
+    qt_internal_set_export_compile_commands()
+    qt_internal_set_configure_from_ide()
+
+    # Depends on qt_internal_compute_features_from_possible_inputs
+    # Depends on qt_internal_set_configure_from_ide
+    qt_internal_set_sync_headers_at_configure_time()
+
+    # Depends on qt_internal_compute_features_from_possible_inputs
+
+    qt_internal_setup_build_benchmarks()
+
+    # Depends on qt_internal_compute_features_from_possible_inputs
+    # Depends on qt_internal_setup_build_benchmarks
+    qt_internal_setup_build_tests()
+
+    qt_internal_setup_build_tools()
+
+    # Depends on qt_internal_setup_default_install_prefix
+    qt_internal_setup_build_examples()
+
+    qt_internal_set_qt_host_path()
+
+    qt_internal_include_qt_platform_android()
+
+    # Depends on qt_internal_setup_default_install_prefix
     qt_internal_setup_paths_and_prefixes()
 
     qt_internal_reset_global_state()
 
-    # Depends on paths and prefixes.
+    # Depends on qt_internal_setup_paths_and_prefixes
     qt_internal_set_mkspecs_dir()
     qt_internal_setup_platform_definitions_and_mkspec()
 
@@ -199,5 +316,17 @@ macro(qt_internal_setup_build_and_global_variables)
     qt_internal_set_apple_archiver_flags()
     qt_internal_set_debug_extend_target()
     qt_internal_setup_poor_mans_scope_finalizer()
+
+    qt_internal_set_compiler_optimization_flags()
+    qt_internal_set_compiler_warning_flags()
+
+    qt_set_language_standards()
+    qt_internal_set_use_ccache()
+    qt_internal_set_unity_build()
+    qt_internal_set_allow_symlink_in_paths()
+    qt_internal_set_skip_setup_deployment()
+    qt_internal_set_qt_allow_download()
+
+    qt_internal_detect_dirty_features()
 endmacro()
 
