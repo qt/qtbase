@@ -13,6 +13,7 @@ class tst_QCompare: public QObject
     Q_OBJECT
 private slots:
     void legacyPartialOrdering();
+    void stdQtBinaryCompatibility();
     void partialOrdering();
     void weakOrdering();
     void strongOrdering();
@@ -128,6 +129,44 @@ void tst_QCompare::legacyPartialOrdering()
     static_assert( (0 <= QPartialOrdering::Greater));
     static_assert(!(0 >  QPartialOrdering::Greater));
     static_assert(!(0 >= QPartialOrdering::Greater));
+}
+
+void tst_QCompare::stdQtBinaryCompatibility()
+{
+#ifndef __cpp_lib_three_way_comparison
+    QSKIP("This test requires C++20 three-way-comparison support enabled in the stdlib.");
+#else
+    QCOMPARE_EQ(sizeof(std::partial_ordering), 1U);
+    QCOMPARE_EQ(sizeof( Qt::partial_ordering), 1U);
+    QCOMPARE_EQ(sizeof(std::   weak_ordering), 1U);
+    QCOMPARE_EQ(sizeof( Qt::   weak_ordering), 1U);
+    QCOMPARE_EQ(sizeof(std:: strong_ordering), 1U);
+    QCOMPARE_EQ(sizeof( Qt:: strong_ordering), 1U);
+
+    auto valueOf = [](auto obj) {
+        typename QIntegerForSizeof<decltype(obj)>::Unsigned value;
+        memcpy(&value, &obj, sizeof(obj));
+        return value;
+    };
+#define CHECK(type, flag) \
+        QCOMPARE_EQ(valueOf( Qt:: type ## _ordering :: flag), \
+                    valueOf(std:: type ## _ordering :: flag)) \
+        /* end */
+    CHECK(partial, unordered);
+    CHECK(partial, less);
+    CHECK(partial, greater);
+    CHECK(partial, equivalent);
+
+    CHECK(weak, less);
+    CHECK(weak, greater);
+    CHECK(weak, equivalent);
+
+    CHECK(strong, less);
+    CHECK(strong, greater);
+    CHECK(strong, equivalent);
+    CHECK(strong, equal);
+#undef CHECK
+#endif //__cpp_lib_three_way_comparison
 }
 
 void tst_QCompare::partialOrdering()

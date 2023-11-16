@@ -2,6 +2,41 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
+#include "qcompare.h"
+
+#ifdef __cpp_lib_bit_cast
+#include <bit>
+#endif
+
+QT_BEGIN_NAMESPACE
+
+#ifdef __cpp_lib_three_way_comparison
+static_assert(sizeof(std::partial_ordering) == sizeof(Qt::partial_ordering));
+static_assert(sizeof(std::weak_ordering) == sizeof(Qt::weak_ordering));
+static_assert(sizeof(std::strong_ordering) == sizeof(Qt::strong_ordering));
+#ifdef __cpp_lib_bit_cast
+#define CHECK(type, flag) \
+    static_assert(std::bit_cast<Qt:: type ## _ordering>(std:: type ## _ordering:: flag) \
+                  == Qt:: type ## _ordering :: flag); \
+    static_assert(std::bit_cast<std:: type ## _ordering>(Qt:: type ## _ordering:: flag) \
+                  == std:: type ## _ordering :: flag) \
+    /* end */
+CHECK(partial, unordered);
+CHECK(partial, less);
+CHECK(partial, greater);
+CHECK(partial, equivalent);
+CHECK(weak, less);
+CHECK(weak, greater);
+CHECK(weak, equivalent);
+CHECK(strong, less);
+CHECK(strong, greater);
+CHECK(strong, equal);
+CHECK(strong, equivalent);
+#undef CHECK
+#endif // __cpp_lib_bit_cast
+#endif //__cpp_lib_three_way_comparison
+
+
 /*!
     \page comparison-types.html overview
     \title Comparison types overview
@@ -398,7 +433,7 @@
     \fn Qt::weak_ordering::is_gt  (Qt::weak_ordering o)
     \fn Qt::weak_ordering::is_gteq(Qt::weak_ordering o)
 
-    \include qcompare.qdoc is_eq_table
+    \include qcompare.cpp is_eq_table
 
     These functions are provided for compatibility with \c{std::weak_ordering}.
 */
@@ -544,7 +579,7 @@
     \fn Qt::partial_ordering::is_gt  (Qt::partial_ordering o)
     \fn Qt::partial_ordering::is_gteq(Qt::partial_ordering o)
 
-    \include qcompare.qdoc is_eq_table
+    \include qcompare.cpp is_eq_table
 
     These functions are provided for compatibility with \c{std::partial_ordering}.
 */
@@ -697,7 +732,7 @@
     \fn QPartialOrdering::is_gt  (QPartialOrdering o)
     \fn QPartialOrdering::is_gteq(QPartialOrdering o)
 
-    \include qcompare.qdoc is_eq_table
+    \include qcompare.cpp is_eq_table
 
     These functions are provided for compatibility with \c{std::partial_ordering}.
 */
@@ -729,3 +764,5 @@
     Represents the result of a comparison where the left operand is not ordered
     with respect to the right operand.
 */
+
+QT_END_NAMESPACE

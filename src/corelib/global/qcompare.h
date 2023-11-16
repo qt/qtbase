@@ -30,9 +30,21 @@ enum class Ordering : CompareUnderlyingType
     Greater = 1
 };
 
-enum class Uncomparable : CompareUnderlyingType
+enum class LegacyUncomparable : CompareUnderlyingType
 {
     Unordered = -127
+};
+
+enum class Uncomparable : CompareUnderlyingType
+{
+    Unordered =
+        #if defined(_LIBCPP_VERSION) // libc++
+                -127
+        #elif defined(__GLIBCXX__)   // libstd++
+                   2
+        #else                        // assume MSSTL
+                -128
+        #endif
 };
 
 } // namespace QtPrivate
@@ -112,7 +124,7 @@ public:
         else if (stdorder == std::partial_ordering::greater)
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Greater);
         else if (stdorder == std::partial_ordering::unordered)
-            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Uncomparable::Unordered);
+            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::LegacyUncomparable::Unordered);
     }
 
     constexpr Q_IMPLICIT operator std::partial_ordering() const noexcept
@@ -123,7 +135,7 @@ public:
             return std::partial_ordering::equivalent;
         else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Greater)
             return std::partial_ordering::greater;
-        else if (static_cast<QtPrivate::Uncomparable>(m_order) == QtPrivate::Uncomparable::Unordered)
+        else if (static_cast<QtPrivate::LegacyUncomparable>(m_order) == QtPrivate::LegacyUncomparable::Unordered)
             return std::partial_ordering::unordered;
         return std::partial_ordering::unordered;
     }
@@ -145,7 +157,7 @@ private:
     constexpr explicit QPartialOrdering(QtPrivate::Ordering order) noexcept
         : m_order(static_cast<QtPrivate::CompareUnderlyingType>(order))
     {}
-    constexpr explicit QPartialOrdering(QtPrivate::Uncomparable order) noexcept
+    constexpr explicit QPartialOrdering(QtPrivate::LegacyUncomparable order) noexcept
         : m_order(static_cast<QtPrivate::CompareUnderlyingType>(order))
     {}
 
@@ -163,7 +175,7 @@ private:
     // instead of the exposition only is_ordered member in [cmp.partialord],
     // use a private function
     constexpr bool isOrdered() const noexcept
-    { return m_order != static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Uncomparable::Unordered); }
+    { return m_order != static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::LegacyUncomparable::Unordered); }
 
     QtPrivate::CompareUnderlyingType m_order;
 };
@@ -171,7 +183,7 @@ private:
 inline constexpr QPartialOrdering QPartialOrdering::Less(QtPrivate::Ordering::Less);
 inline constexpr QPartialOrdering QPartialOrdering::Equivalent(QtPrivate::Ordering::Equivalent);
 inline constexpr QPartialOrdering QPartialOrdering::Greater(QtPrivate::Ordering::Greater);
-inline constexpr QPartialOrdering QPartialOrdering::Unordered(QtPrivate::Uncomparable::Unordered);
+inline constexpr QPartialOrdering QPartialOrdering::Unordered(QtPrivate::LegacyUncomparable::Unordered);
 
 namespace Qt {
 

@@ -49,7 +49,7 @@ qt_internal_add_module(Core
         global/archdetect.cpp
         global/qassert.cpp global/qassert.h
         global/qcompare_impl.h
-        global/qcompare.h
+        global/qcompare.cpp global/qcompare.h
         global/qcompilerdetection.h
         global/qconstructormacros.h
         global/qcontainerinfo.h
