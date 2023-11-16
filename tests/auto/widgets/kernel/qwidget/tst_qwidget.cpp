@@ -7854,6 +7854,9 @@ private:
 
 void tst_QWidget::render()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("QTBUG-118984: crashes on Android.");
+#endif
     QCalendarWidget source;
     source.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     // disable anti-aliasing to eliminate potential differences when subpixel antialiasing
