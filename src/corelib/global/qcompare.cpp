@@ -11,9 +11,6 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef __cpp_lib_three_way_comparison
-static_assert(sizeof(std::partial_ordering) == sizeof(Qt::partial_ordering));
-static_assert(sizeof(std::weak_ordering) == sizeof(Qt::weak_ordering));
-static_assert(sizeof(std::strong_ordering) == sizeof(Qt::strong_ordering));
 #ifdef __cpp_lib_bit_cast
 #define CHECK(type, flag) \
     static_assert(std::bit_cast<Qt:: type ## _ordering>(std:: type ## _ordering:: flag) \

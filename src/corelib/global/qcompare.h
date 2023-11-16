@@ -12,6 +12,9 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qcompare_impl.h>
 
+#ifdef __cpp_lib_bit_cast
+#include <bit>
+#endif
 #ifdef __cpp_lib_three_way_comparison
 #include <compare>
 #endif
@@ -266,6 +269,10 @@ public:
 
     constexpr Q_IMPLICIT operator std::partial_ordering() const noexcept
     {
+        static_assert(sizeof(*this) == sizeof(std::partial_ordering));
+#ifdef __cpp_lib_bit_cast
+        return std::bit_cast<std::partial_ordering>(*this);
+#else
         switch (m_order) {
         case qToUnderlying(QtPrivate::Ordering::Less):          return std::partial_ordering::less;
         case qToUnderlying(QtPrivate::Ordering::Greater):       return std::partial_ordering::greater;
@@ -273,6 +280,7 @@ public:
         case qToUnderlying(QtPrivate::Uncomparable::Unordered): return std::partial_ordering::unordered;
         }
         Q_UNREACHABLE_RETURN(std::partial_ordering::unordered);
+#endif // __cpp_lib_bit_cast
     }
 
     friend constexpr bool operator==(partial_ordering lhs, std::partial_ordering rhs) noexcept
@@ -414,12 +422,17 @@ public:
 
     constexpr Q_IMPLICIT operator std::weak_ordering() const noexcept
     {
+        static_assert(sizeof(*this) == sizeof(std::weak_ordering));
+#ifdef __cpp_lib_bit_cast
+        return std::bit_cast<std::weak_ordering>(*this);
+#else
         switch (m_order) {
         case qToUnderlying(QtPrivate::Ordering::Less):          return std::weak_ordering::less;
         case qToUnderlying(QtPrivate::Ordering::Greater):       return std::weak_ordering::greater;
         case qToUnderlying(QtPrivate::Ordering::Equivalent):    return std::weak_ordering::equivalent;
         }
         Q_UNREACHABLE_RETURN(std::weak_ordering::equivalent);
+#endif // __cpp_lib_bit_cast
     }
 
     friend constexpr bool operator==(weak_ordering lhs, std::weak_ordering rhs) noexcept
@@ -593,12 +606,17 @@ public:
 
     constexpr Q_IMPLICIT operator std::strong_ordering() const noexcept
     {
+        static_assert(sizeof(*this) == sizeof(std::strong_ordering));
+#ifdef __cpp_lib_bit_cast
+        return std::bit_cast<std::strong_ordering>(*this);
+#else
         switch (m_order) {
         case qToUnderlying(QtPrivate::Ordering::Less):    return std::strong_ordering::less;
         case qToUnderlying(QtPrivate::Ordering::Greater): return std::strong_ordering::greater;
         case qToUnderlying(QtPrivate::Ordering::Equal):   return std::strong_ordering::equal;
         }
         Q_UNREACHABLE_RETURN(std::strong_ordering::equal);
+#endif // __cpp_lib_bit_cast
     }
 
     friend constexpr bool operator==(strong_ordering lhs, std::strong_ordering rhs) noexcept
