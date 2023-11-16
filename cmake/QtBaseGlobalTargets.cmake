@@ -222,6 +222,8 @@ qt_copy_or_install(FILES
                    cmake/QtBuildOptionsHelpers.cmake
                    cmake/QtBuildPathsHelpers.cmake
                    cmake/QtBuildInformation.cmake
+                   cmake/QtBuildRepoExamplesHelpers.cmake
+                   cmake/QtBuildRepoHelpers.cmake
                    cmake/QtCMakeHelpers.cmake
                    cmake/QtCMakeVersionHelpers.cmake
                    cmake/QtCMakePackageVersionFile.cmake.in
