@@ -5086,6 +5086,14 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
  */
 
 /*!
+    \typedef QRhiShaderResourceBindingSet
+    \relates QRhi
+    \since 6.7
+
+    Synonym for QRhiShaderResourceBindings.
+*/
+
+/*!
     \internal
  */
 QRhiShaderResourceBindings::QRhiShaderResourceBindings(QRhiImplementation *rhi)

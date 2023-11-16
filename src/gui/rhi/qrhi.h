@@ -1237,6 +1237,11 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiShaderResourceBindings::UpdateFlags)
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderResourceBindings &);
 #endif
 
+// The proper name. Until it gets rolled out universally, have the better name
+// as a typedef. Eventually it should be reversed (the old name being a typedef
+// to the new one).
+using QRhiShaderResourceBindingSet = QRhiShaderResourceBindings;
+
 class Q_GUI_EXPORT QRhiGraphicsPipeline : public QRhiResource
 {
 public:
