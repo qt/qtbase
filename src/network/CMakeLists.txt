@@ -110,6 +110,7 @@ qt_internal_extend_target(Network CONDITION APPLE
 
 qt_internal_extend_target(Network CONDITION WASM
     SOURCES
+        access/qformdatabuilder.cpp access/qformdatabuilder.h
         access/qhttpmultipart.cpp access/qhttpmultipart.h access/qhttpmultipart_p.h
         access/qhttpnetworkheader.cpp access/qhttpnetworkheader_p.h
         access/qnetworkreplywasmimpl.cpp access/qnetworkreplywasmimpl_p.h
@@ -126,6 +127,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_http
         access/http2/huffman.cpp access/http2/huffman_p.h
         access/qabstractprotocolhandler.cpp access/qabstractprotocolhandler_p.h
         access/qdecompresshelper.cpp access/qdecompresshelper_p.h
+        access/qformdatabuilder.cpp access/qformdatabuilder.h
         access/qhttp1configuration.cpp access/qhttp1configuration.h
         access/qhttp2configuration.cpp access/qhttp2configuration.h
         access/qhttp2connection.cpp access/qhttp2connection_p.h
