@@ -1442,7 +1442,8 @@ void QXcbWindow::propagateSizeHints()
                                           qMin(XCOORD_MAX, maximumSize.height()));
 
     if (sizeIncrement.width() > 0 || sizeIncrement.height() > 0) {
-        xcb_icccm_size_hints_set_base_size(&hints, baseSize.width(), baseSize.height());
+        if (!baseSize.isNull() && baseSize.isValid())
+            xcb_icccm_size_hints_set_base_size(&hints, baseSize.width(), baseSize.height());
         xcb_icccm_size_hints_set_resize_inc(&hints, sizeIncrement.width(), sizeIncrement.height());
     }
 
