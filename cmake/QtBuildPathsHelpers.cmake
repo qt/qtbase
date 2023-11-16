@@ -1,6 +1,57 @@
 # Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+macro(qt_internal_setup_default_install_prefix)
+    # Detect non-prefix builds: either when the qtbase install prefix is set to the binary dir
+    # or when a developer build is explicitly enabled and no install prefix (or staging prefix)
+    # is specified.
+    # This detection only happens when building qtbase, and later is propagated via the generated
+    # QtBuildInternalsExtra.cmake file.
+    if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
+        if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+            # Handle both FEATURE_ and QT_FEATURE_ cases when they are specified on the command line
+            # explicitly. It's possible for one to be set, but not the other, because
+            # qtbase/configure.cmake is not processed by this point.
+            if((FEATURE_developer_build
+                OR QT_FEATURE_developer_build
+                OR FEATURE_no_prefix
+                OR QT_FEATURE_no_prefix
+                )
+                AND NOT CMAKE_STAGING_PREFIX)
+                # Handle non-prefix builds by setting the CMake install prefix to point to qtbase's
+                # build dir. While building another repo (like qtsvg) the CMAKE_PREFIX_PATH should
+                # be set on the command line to point to the qtbase build dir.
+                set(__qt_default_prefix "${QtBase_BINARY_DIR}")
+            else()
+                if(CMAKE_HOST_WIN32)
+                    set(__qt_default_prefix "C:/Qt/")
+                else()
+                    set(__qt_default_prefix "/usr/local/")
+                endif()
+                string(APPEND __qt_default_prefix
+                    "Qt-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+            endif()
+            set(CMAKE_INSTALL_PREFIX ${__qt_default_prefix} CACHE PATH
+                "Install path prefix, prepended onto install directories." FORCE)
+            unset(__qt_default_prefix)
+        endif()
+        if(CMAKE_STAGING_PREFIX)
+            set(__qt_prefix "${CMAKE_STAGING_PREFIX}")
+        else()
+            set(__qt_prefix "${CMAKE_INSTALL_PREFIX}")
+        endif()
+        if(__qt_prefix STREQUAL QtBase_BINARY_DIR)
+            set(__qt_will_install_value OFF)
+        else()
+            set(__qt_will_install_value ON)
+        endif()
+        set(QT_WILL_INSTALL ${__qt_will_install_value} CACHE BOOL
+            "Boolean indicating if doing a Qt prefix build (vs non-prefix build)." FORCE)
+        unset(__qt_prefix)
+        unset(__qt_will_install_value)
+    endif()
+endmacro()
+
 function(qt_internal_setup_build_and_install_paths)
     # Compute the values of QT_BUILD_DIR, QT_INSTALL_DIR, QT_CONFIG_BUILD_DIR, QT_CONFIG_INSTALL_DIR
     # taking into account whether the current build is a prefix build or a non-prefix build,
