@@ -2679,14 +2679,15 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         if (cols > 0) {
             row = index / cols;
             col = index % cols;
-            QAccessibleTableCellInterface *cell = interface->tableInterface()->cellAt(row, col)->tableCellInterface();
-            if (cell) {
-                row = cell->rowIndex();
-                col = cell->columnIndex();
-                rowExtents = cell->rowExtent();
-                colExtents = cell->columnExtent();
-                isSelected = cell->isSelected();
-                success = true;
+            if (QAccessibleInterface *cell = interface->tableInterface()->cellAt(row, col)) {
+                if (QAccessibleTableCellInterface *cellIface = cell->tableCellInterface()) {
+                    row = cellIface->rowIndex();
+                    col = cellIface->columnIndex();
+                    rowExtents = cellIface->rowExtent();
+                    colExtents = cellIface->columnExtent();
+                    isSelected = cellIface->isSelected();
+                    success = true;
+                }
             }
         }
         QVariantList list;
@@ -2696,12 +2697,22 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
     } else if (function == "GetColumnExtentAt"_L1) {
         int row = message.arguments().at(0).toInt();
         int column = message.arguments().at(1).toInt();
-        connection.send(message.createReply(interface->tableInterface()->cellAt(row, column)->tableCellInterface()->columnExtent()));
+        int columnExtent = 0;
+        if (QAccessibleInterface *cell = interface->tableInterface()->cellAt(row, column)) {
+            if (QAccessibleTableCellInterface *cellIface = cell->tableCellInterface())
+                columnExtent = cellIface->columnExtent();
+        }
+        connection.send(message.createReply(columnExtent));
 
     } else if (function == "GetRowExtentAt"_L1) {
         int row = message.arguments().at(0).toInt();
         int column = message.arguments().at(1).toInt();
-        connection.send(message.createReply(interface->tableInterface()->cellAt(row, column)->tableCellInterface()->rowExtent()));
+        int rowExtent = 0;
+        if (QAccessibleInterface *cell = interface->tableInterface()->cellAt(row, column)) {
+            if (QAccessibleTableCellInterface *cellIface = cell->tableCellInterface())
+                rowExtent = cellIface->rowExtent();
+        }
+        connection.send(message.createReply(rowExtent));
 
     } else if (function == "GetColumnHeader"_L1) {
         int column = message.arguments().at(0).toInt();
@@ -2741,8 +2752,12 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
     } else if (function == "IsSelected"_L1) {
         int row = message.arguments().at(0).toInt();
         int column = message.arguments().at(1).toInt();
-        QAccessibleTableCellInterface* cell = interface->tableInterface()->cellAt(row, column)->tableCellInterface();
-        connection.send(message.createReply(cell->isSelected()));
+        bool selected = false;
+        if (QAccessibleInterface* cell = interface->tableInterface()->cellAt(row, column)) {
+            if (QAccessibleTableCellInterface *cellIface = cell->tableCellInterface())
+                selected = cellIface->isSelected();
+        }
+        connection.send(message.createReply(selected));
     } else if (function == "AddColumnSelection"_L1) {
         int column = message.arguments().at(0).toInt();
         connection.send(message.createReply(interface->tableInterface()->selectColumn(column)));
