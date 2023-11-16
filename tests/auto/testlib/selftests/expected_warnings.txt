@@ -69,6 +69,9 @@ Ran out of cabbage!
 SKIP   : tst_Warnings::testFailOnWarningsThenSkip() My cabbage! :(
    Loc: [qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp(0)]
 PASS   : tst_Warnings::testFailOnWarningsAndIgnoreWarnings()
+FAIL!  : tst_Warnings::testFailOnTemporaryObjectDestruction() Received a warning that resulted in a failure:
+Running low on toothpaste!
+   Loc: [qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp(0)]
 PASS   : tst_Warnings::cleanupTestCase()
-Totals: 5 passed, 10 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 5 passed, 11 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Warnings *********
