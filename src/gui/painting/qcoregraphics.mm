@@ -182,6 +182,24 @@ QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
 
 #endif // Q_OS_MACOS
 
+#ifdef Q_OS_IOS
+
+QImage qt_mac_toQImage(const UIImage *image, QSizeF size)
+{
+    QImage ret(size.width(), size.height(), QImage::Format_ARGB32_Premultiplied);
+    ret.fill(Qt::transparent);
+    QMacCGContext ctx(&ret);
+    if (!ctx)
+        return QImage();
+    UIGraphicsPushContext(ctx);
+    const CGRect rect = CGRectMake(0, 0, size.width(), size.height());
+    [image drawInRect:rect];
+    UIGraphicsPopContext();
+    return ret;
+}
+
+#endif // Q_OS_IOS
+
 // ---------------------- Colors and Brushes ----------------------
 
 QColor qt_mac_toQColor(CGColorRef color)

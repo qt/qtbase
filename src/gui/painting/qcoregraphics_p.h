@@ -23,14 +23,23 @@
 
 #include <CoreGraphics/CoreGraphics.h>
 
-#if defined(__OBJC__) && defined(Q_OS_MACOS)
-#include <AppKit/AppKit.h>
-#define HAVE_APPKIT
+#if defined(__OBJC__)
+# if defined(Q_OS_MACOS)
+#  include <AppKit/AppKit.h>
+#  define HAVE_APPKIT
+# elif defined(Q_OS_IOS)
+#  include <UIKit/UIKit.h>
+#  define HAVE_UIKIT
+# endif
 #endif
 
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT CGBitmapInfo qt_mac_bitmapInfoForImage(const QImage &image);
+
+#ifdef HAVE_UIKIT
+Q_GUI_EXPORT QImage qt_mac_toQImage(const UIImage *image, QSizeF size);
+#endif
 
 #ifdef HAVE_APPKIT
 Q_GUI_EXPORT QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
