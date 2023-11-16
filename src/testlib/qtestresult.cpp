@@ -149,13 +149,6 @@ void QTestResult::finishedCurrentTestData()
         addFailure("QEXPECT_FAIL was called without any subsequent verification statements");
 
     clearExpectFail();
-
-    if (!QTest::hasFailed() && QTestLog::unhandledIgnoreMessages()) {
-        QTestLog::printUnhandledIgnoreMessages();
-        addFailure("Not all expected messages were received");
-    }
-    QTestLog::clearIgnoreMessages();
-    QTestLog::clearFailOnWarnings();
 }
 
 /*!
@@ -175,6 +168,11 @@ void QTestResult::finishedCurrentTestData()
 */
 void QTestResult::finishedCurrentTestDataCleanup()
 {
+    if (!QTest::hasFailed() && QTestLog::unhandledIgnoreMessages()) {
+        QTestLog::printUnhandledIgnoreMessages();
+        addFailure("Not all expected messages were received");
+    }
+
     // If the current test hasn't failed or been skipped, then it passes.
     if (!QTest::hasFailed() && !QTest::skipCurrentTest) {
         if (QTest::blacklistCurrentTest)

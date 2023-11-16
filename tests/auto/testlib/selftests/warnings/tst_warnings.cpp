@@ -27,6 +27,7 @@ private slots:
     void testFailOnWarningsThenSkip();
 #endif
     void testFailOnWarningsAndIgnoreWarnings();
+    void testFailOnTemporaryObjectDestruction();
 };
 
 void tst_Warnings::testWarnings()
@@ -206,6 +207,27 @@ void tst_Warnings::testFailOnWarningsAndIgnoreWarnings()
     QTest::ignoreMessage(QtWarningMsg, warningStr);
     // Shouldn't fail; we ignored it.
     qWarning(warningStr);
+}
+
+void tst_Warnings::testFailOnTemporaryObjectDestruction()
+{
+    QTest::failOnWarning("Running low on toothpaste!");
+    QTest::ignoreMessage(QtWarningMsg, "Ran out of cabbage!");
+
+    class TestObject : public QObject
+    {
+    public:
+        ~TestObject()
+        {
+            // Shouldn't fail - ignored
+            qWarning("Ran out of cabbage!");
+            // Should fail
+            qWarning("Running low on toothpaste!");
+        }
+    };
+
+    QScopedPointer<TestObject, QScopedPointerDeleteLater> testObject(new TestObject);
+    QVERIFY(testObject);
 }
 
 QTEST_MAIN(tst_Warnings)

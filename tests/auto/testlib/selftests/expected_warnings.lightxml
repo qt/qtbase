@@ -201,6 +201,13 @@ Ran out of cabbage!]]></Description>
     <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
   </TestFunction>
+  <TestFunction name="testFailOnTemporaryObjectDestruction">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <Description><![CDATA[Received a warning that resulted in a failure:
+Running low on toothpaste!]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
   <TestFunction name="cleanupTestCase">
     <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
