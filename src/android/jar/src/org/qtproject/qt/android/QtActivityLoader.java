@@ -52,12 +52,7 @@ public class QtActivityLoader extends QtLoader {
                 "fatal_error_msg", "string", packageName);
         errorDialog.setMessage(resources.getString(id));
         errorDialog.setButton(Dialog.BUTTON_POSITIVE, resources.getString(android.R.string.ok),
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                });
+                (dialog, which) -> finish());
         errorDialog.show();
     }
 

@@ -46,12 +46,7 @@ public class QtNative
     private static final QtThread m_qtThread = new QtThread();
     private static ClassLoader m_classLoader = null;
 
-    private static final Runnable runPendingCppRunnablesRunnable = new Runnable() {
-        @Override
-        public void run() {
-            runPendingCppRunnables();
-        }
-    };
+    private static final Runnable runPendingCppRunnablesRunnable = QtNative::runPendingCppRunnables;
 
     public static boolean isStarted()
     {
@@ -255,12 +250,7 @@ public class QtNative
     @UsedFromNativeCode
     private static void setViewVisibility(final View view, final boolean visible)
     {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                view.setVisibility(visible ? View.VISIBLE : View.GONE);
-            }
-        });
+        runAction(() -> view.setVisibility(visible ? View.VISIBLE : View.GONE));
     }
 
     public static boolean startApplication(ArrayList<String> params, String mainLib)
@@ -269,18 +259,8 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             String paramsStr = String.join("\t", params);
             final String qtParams = mainLib + "\t" + paramsStr;
-            m_qtThread.run(new Runnable() {
-                @Override
-                public void run() {
-                    res[0] = startQtAndroidPlugin(qtParams);
-                }
-            });
-            m_qtThread.post(new Runnable() {
-                @Override
-                public void run() {
-                    startQtApplication();
-                }
-            });
+            m_qtThread.run(() -> res[0] = startQtAndroidPlugin(qtParams));
+            m_qtThread.post(QtNative::startQtApplication);
             waitForServiceSetup();
             m_started = true;
         }
@@ -289,17 +269,14 @@ public class QtNative
 
     public static void quitApp()
     {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                quitQtAndroidPlugin();
-                if (isActivityValid())
-                     m_activity.get().finish();
-                 if (isServiceValid())
-                     m_service.get().stopSelf();
+        runAction(() -> {
+            quitQtAndroidPlugin();
+            if (isActivityValid())
+                m_activity.get().finish();
+            if (isServiceValid())
+                m_service.get().stopSelf();
 
-                 m_started = false;
-            }
+             m_started = false;
         });
     }
 

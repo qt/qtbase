@@ -161,99 +161,83 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     public void notifyScrolledEvent(int viewId)
     {
-        QtNative.runAction(new Runnable() {
-            @Override
-            public void run() {
-                sendEventForVirtualViewId(viewId, AccessibilityEvent.TYPE_VIEW_SCROLLED);
-            }
-        });
+        QtNative.runAction(() -> sendEventForVirtualViewId(viewId,
+                AccessibilityEvent.TYPE_VIEW_SCROLLED));
     }
 
     public void notifyLocationChange(int viewId)
     {
-        QtNative.runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_focusedVirtualViewId == viewId)
-                    invalidateVirtualViewId(m_focusedVirtualViewId);
-            }
+        QtNative.runAction(() -> {
+            if (m_focusedVirtualViewId == viewId)
+                invalidateVirtualViewId(m_focusedVirtualViewId);
         });
     }
 
     public void notifyObjectHide(int viewId, int parentId)
     {
-        QtNative.runAction(new Runnable() {
-            @Override
-            public void run() {
-                // If the object had accessibility focus, we need to clear it.
-                // Note: This code is mostly copied from
-                // AccessibilityNodeProvider::performAction, but we remove the
-                // focus only if the focused view id matches the one that was hidden.
-                if (m_focusedVirtualViewId == viewId) {
-                    m_focusedVirtualViewId = INVALID_ID;
-                    m_view.invalidate();
-                    sendEventForVirtualViewId(viewId,
-                            AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
-                }
-                // When the object is hidden, we need to notify its parent about
-                // content change, not the hidden object itself
-                invalidateVirtualViewId(parentId);
+        QtNative.runAction(() -> {
+            // If the object had accessibility focus, we need to clear it.
+            // Note: This code is mostly copied from
+            // AccessibilityNodeProvider::performAction, but we remove the
+            // focus only if the focused view id matches the one that was hidden.
+            if (m_focusedVirtualViewId == viewId) {
+                m_focusedVirtualViewId = INVALID_ID;
+                m_view.invalidate();
+                sendEventForVirtualViewId(viewId,
+                        AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
             }
+            // When the object is hidden, we need to notify its parent about
+            // content change, not the hidden object itself
+            invalidateVirtualViewId(parentId);
         });
     }
 
     public void notifyObjectFocus(int viewId)
     {
-        QtNative.runAction(new Runnable() {
-            @Override
-            public void run() {
-                if (m_view == null)
-                    return;
-                m_focusedVirtualViewId = viewId;
-                m_view.invalidate();
-                sendEventForVirtualViewId(viewId,
-                        AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
-            }
+        QtNative.runAction(() -> {
+            if (m_view == null)
+                return;
+            m_focusedVirtualViewId = viewId;
+            m_view.invalidate();
+            sendEventForVirtualViewId(viewId,
+                    AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
         });
     }
 
     public void notifyValueChanged(int viewId, String value)
     {
-        QtNative.runAction(new Runnable() {
-            @Override
-            public void run() {
-                // Send a TYPE_ANNOUNCEMENT event with the new value
+        QtNative.runAction(() -> {
+            // Send a TYPE_ANNOUNCEMENT event with the new value
 
-                if ((viewId == INVALID_ID) || !m_manager.isEnabled()) {
-                    Log.w(TAG, "notifyValueChanged() for invalid view");
-                    return;
-                }
-
-                final ViewGroup group = (ViewGroup) m_view.getParent();
-                if (group == null) {
-                    Log.w(TAG, "Could not announce value because ViewGroup was null.");
-                    return;
-                }
-
-                final AccessibilityEvent event =
-                        AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT);
-
-                event.setEnabled(true);
-                event.setClassName(m_view.getClass().getName() + DEFAULT_CLASS_NAME);
-
-                event.setContentDescription(value);
-
-                if (event.getText().isEmpty() && TextUtils.isEmpty(event.getContentDescription())) {
-                    Log.w(TAG, "No value to announce for " + event.getClassName());
-                    return;
-                }
-
-                event.setPackageName(m_view.getContext().getPackageName());
-                event.setSource(m_view, viewId);
-
-                if (!group.requestSendAccessibilityEvent(m_view, event))
-                    Log.w(TAG, "Failed to send value change announcement for " + event.getClassName());
+            if ((viewId == INVALID_ID) || !m_manager.isEnabled()) {
+                Log.w(TAG, "notifyValueChanged() for invalid view");
+                return;
             }
+
+            final ViewGroup group = (ViewGroup) m_view.getParent();
+            if (group == null) {
+                Log.w(TAG, "Could not announce value because ViewGroup was null.");
+                return;
+            }
+
+            final AccessibilityEvent event =
+                    AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT);
+
+            event.setEnabled(true);
+            event.setClassName(m_view.getClass().getName() + DEFAULT_CLASS_NAME);
+
+            event.setContentDescription(value);
+
+            if (event.getText().isEmpty() && TextUtils.isEmpty(event.getContentDescription())) {
+                Log.w(TAG, "No value to announce for " + event.getClassName());
+                return;
+            }
+
+            event.setPackageName(m_view.getContext().getPackageName());
+            event.setSource(m_view, viewId);
+
+            if (!group.requestSendAccessibilityEvent(m_view, event))
+                Log.w(TAG, "Failed to send value change announcement for " + event.getClassName());
         });
     }
 

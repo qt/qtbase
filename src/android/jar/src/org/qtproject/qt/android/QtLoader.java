@@ -462,13 +462,10 @@ public abstract class QtLoader {
         ArrayList<String> oneEntryArray = new ArrayList<>(Collections.singletonList(mainLibName));
         String mainLibPath = getLibrariesFullPaths(oneEntryArray).get(0);
         final boolean[] success = {true};
-        QtNative.getQtThread().run(new Runnable() {
-            @Override
-            public void run() {
-                m_mainLib = loadLibraryHelper(mainLibPath);
-                if (m_mainLib == null)
-                    success[0] = false;
-            }
+        QtNative.getQtThread().run(() -> {
+            m_mainLib = loadLibraryHelper(mainLibPath);
+            if (m_mainLib == null)
+                success[0] = false;
         });
 
         return success[0];
@@ -488,15 +485,12 @@ public abstract class QtLoader {
         ArrayList<String> fullPathLibs = getLibrariesFullPaths(libraries);
 
         final boolean[] success = {true};
-        QtNative.getQtThread().run(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < fullPathLibs.size(); ++i) {
-                    String libName = fullPathLibs.get(i);
-                    if (loadLibraryHelper(libName) == null) {
-                        success[0] = false;
-                        break;
-                    }
+        QtNative.getQtThread().run(() -> {
+            for (int i = 0; i < fullPathLibs.size(); ++i) {
+                String libName = fullPathLibs.get(i);
+                if (loadLibraryHelper(libName) == null) {
+                    success[0] = false;
+                    break;
                 }
             }
         });

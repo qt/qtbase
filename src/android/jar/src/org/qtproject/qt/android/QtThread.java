@@ -45,12 +45,9 @@ public class QtThread {
     public void run(final Runnable runnable) {
         final Semaphore sem = new Semaphore(0);
         synchronized (m_qtThread) {
-            m_pendingRunnables.add(new Runnable() {
-                @Override
-                public void run() {
-                    runnable.run();
-                    sem.release();
-                }
+            m_pendingRunnables.add(() -> {
+                runnable.run();
+                sem.release();
             });
             m_qtThread.notify();
         }

@@ -35,21 +35,14 @@ public class QtClipboardManager
     {
         if (context != null) {
             final Semaphore semaphore = new Semaphore(0);
-            QtNative.runAction(new Runnable() {
-                @Override
-                public void run() {
-                    m_clipboardManager =
-                            (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                    if (m_clipboardManager != null) {
-                        m_clipboardManager.addPrimaryClipChangedListener(
-                                new ClipboardManager.OnPrimaryClipChangedListener() {
-                                    public void onPrimaryClipChanged() {
-                                        onClipboardDataChanged(m_nativePointer);
-                                    }
-                                });
-                    }
-                    semaphore.release();
+            QtNative.runAction(() -> {
+                m_clipboardManager =
+                        (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                if (m_clipboardManager != null) {
+                    m_clipboardManager.addPrimaryClipChangedListener(
+                            () -> onClipboardDataChanged(m_nativePointer));
                 }
+                semaphore.release();
             });
             try {
                 semaphore.acquire();
