@@ -266,15 +266,13 @@ public:
 
     constexpr Q_IMPLICIT operator std::partial_ordering() const noexcept
     {
-        if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Less)
-            return std::partial_ordering::less;
-        else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Equivalent)
-            return std::partial_ordering::equivalent;
-        else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Greater)
-            return std::partial_ordering::greater;
-        else if (static_cast<QtPrivate::Uncomparable>(m_order) == QtPrivate::Uncomparable::Unordered)
-            return std::partial_ordering::unordered;
-        return std::partial_ordering::unordered;
+        switch (m_order) {
+        case qToUnderlying(QtPrivate::Ordering::Less):          return std::partial_ordering::less;
+        case qToUnderlying(QtPrivate::Ordering::Greater):       return std::partial_ordering::greater;
+        case qToUnderlying(QtPrivate::Ordering::Equivalent):    return std::partial_ordering::equivalent;
+        case qToUnderlying(QtPrivate::Uncomparable::Unordered): return std::partial_ordering::unordered;
+        }
+        Q_UNREACHABLE_RETURN(std::partial_ordering::unordered);
     }
 
     friend constexpr bool operator==(partial_ordering lhs, std::partial_ordering rhs) noexcept
@@ -416,13 +414,12 @@ public:
 
     constexpr Q_IMPLICIT operator std::weak_ordering() const noexcept
     {
-        if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Less)
-            return std::weak_ordering::less;
-        else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Equivalent)
-            return std::weak_ordering::equivalent;
-        else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Greater)
-            return std::weak_ordering::greater;
-        return std::weak_ordering::equivalent;
+        switch (m_order) {
+        case qToUnderlying(QtPrivate::Ordering::Less):          return std::weak_ordering::less;
+        case qToUnderlying(QtPrivate::Ordering::Greater):       return std::weak_ordering::greater;
+        case qToUnderlying(QtPrivate::Ordering::Equivalent):    return std::weak_ordering::equivalent;
+        }
+        Q_UNREACHABLE_RETURN(std::weak_ordering::equivalent);
     }
 
     friend constexpr bool operator==(weak_ordering lhs, std::weak_ordering rhs) noexcept
@@ -596,15 +593,12 @@ public:
 
     constexpr Q_IMPLICIT operator std::strong_ordering() const noexcept
     {
-        if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Less)
-            return std::strong_ordering::less;
-        else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Equivalent)
-            return std::strong_ordering::equivalent;
-        else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Equal)
-            return std::strong_ordering::equal;
-        else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Greater)
-            return std::strong_ordering::greater;
-        return std::strong_ordering::equivalent;
+        switch (m_order) {
+        case qToUnderlying(QtPrivate::Ordering::Less):    return std::strong_ordering::less;
+        case qToUnderlying(QtPrivate::Ordering::Greater): return std::strong_ordering::greater;
+        case qToUnderlying(QtPrivate::Ordering::Equal):   return std::strong_ordering::equal;
+        }
+        Q_UNREACHABLE_RETURN(std::strong_ordering::equal);
     }
 
     friend constexpr bool operator==(strong_ordering lhs, std::strong_ordering rhs) noexcept
