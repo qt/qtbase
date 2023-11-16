@@ -318,7 +318,6 @@ void QTestLog::clearIgnoreMessages()
     QTest::IgnoreResultList::clearList(QTest::ignoreResultList);
 }
 
-
 void QTestLog::clearFailOnWarnings()
 {
     QTest::failOnWarningList.clear();
@@ -326,6 +325,8 @@ void QTestLog::clearFailOnWarnings()
 
 void QTestLog::clearCurrentTestState()
 {
+    clearIgnoreMessages();
+    clearFailOnWarnings();
     QTest::currentTestState = QTest::Unresolved;
 }
 
