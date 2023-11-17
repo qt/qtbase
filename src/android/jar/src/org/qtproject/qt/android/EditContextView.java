@@ -4,6 +4,7 @@
 package org.qtproject.qt.android;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Point;
 import android.text.TextUtils;
@@ -12,16 +13,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.R;
 
 import java.util.HashMap;
 
+@SuppressLint("ViewConstructor")
 public class EditContextView extends LinearLayout implements View.OnClickListener
 {
-    public static final int CUT_BUTTON   = 1 << 0;
+    public static final int CUT_BUTTON   = 1;
     public static final int COPY_BUTTON  = 1 << 1;
     public static final int PASTE_BUTTON = 1 << 2;
-    public static final int SALL_BUTTON  = 1 << 3;
+    public static final int SELECT_ALL_BUTTON = 1 << 3;
 
     HashMap<Integer, ContextButton> m_buttons = new HashMap<>(4);
     OnClickListener m_onClickListener;
@@ -41,8 +42,10 @@ public class EditContextView extends LinearLayout implements View.OnClickListene
             setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             setGravity(Gravity.CENTER);
-            setTextColor(getResources().getColor(R.color.widget_edittext_dark));
-            EditContextView.this.setBackground(getResources().getDrawable(R.drawable.editbox_background_normal));
+            setTextColor(getResources().getColor(
+                    android.R.color.widget_edittext_dark, context.getTheme()));
+            EditContextView.this.setBackground(getResources().getDrawable(
+                    android.R.drawable.editbox_background_normal, context.getTheme()));
             float scale = getResources().getDisplayMetrics().density;
             int hPadding = (int)(16 * scale + 0.5f);
             int vPadding = (int)(8 * scale + 0.5f);
@@ -69,10 +72,21 @@ public class EditContextView extends LinearLayout implements View.OnClickListene
 
     public void updateButtons(int buttonsLayout)
     {
-        m_buttons.get(R.string.cut).setVisibility((buttonsLayout & CUT_BUTTON) != 0 ? View.VISIBLE : View.GONE);
-        m_buttons.get(R.string.copy).setVisibility((buttonsLayout & COPY_BUTTON) != 0 ? View.VISIBLE : View.GONE);
-        m_buttons.get(R.string.paste).setVisibility((buttonsLayout & PASTE_BUTTON) != 0 ? View.VISIBLE : View.GONE);
-        m_buttons.get(R.string.selectAll).setVisibility((buttonsLayout & SALL_BUTTON) != 0 ? View.VISIBLE : View.GONE);
+        ContextButton button = m_buttons.get(android.R.string.cut);
+        if (button != null)
+            button.setVisibility((buttonsLayout & CUT_BUTTON) != 0 ? View.VISIBLE : View.GONE);
+
+        button = m_buttons.get(android.R.string.copy);
+        if (button != null)
+            button.setVisibility((buttonsLayout & COPY_BUTTON) != 0 ? View.VISIBLE : View.GONE);
+
+        button = m_buttons.get(android.R.string.paste);
+        if (button != null)
+            button.setVisibility((buttonsLayout & PASTE_BUTTON) != 0 ? View.VISIBLE : View.GONE);
+
+        button = m_buttons.get(android.R.string.selectAll);
+        if (button != null)
+            button.setVisibility((buttonsLayout & SELECT_ALL_BUTTON) != 0 ? View.VISIBLE : View.GONE);
     }
 
     public Point getCalculatedSize()
@@ -97,9 +111,9 @@ public class EditContextView extends LinearLayout implements View.OnClickListene
         m_onClickListener = onClickListener;
         setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        addButton(R.string.cut);
-        addButton(R.string.copy);
-        addButton(R.string.paste);
-        addButton(R.string.selectAll);
+        addButton(android.R.string.cut);
+        addButton(android.R.string.copy);
+        addButton(android.R.string.paste);
+        addButton(android.R.string.selectAll);
     }
 }

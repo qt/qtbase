@@ -7,7 +7,6 @@ package org.qtproject.qt.android;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
@@ -80,36 +79,18 @@ public class QtMessageDialogHelper
         switch (m_standardIcon)
         {
             case 1: // Information
-                try {
-                    return m_activity.getResources().getDrawable(android.R.drawable.ic_dialog_info,
-                                                                 m_activity.getTheme());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
+                return m_activity.getResources().getDrawable(android.R.drawable.ic_dialog_info,
+                        m_activity.getTheme());
             case 2: // Warning
-//                try {
-//                    return Class.forName("android.R$drawable").getDeclaredField("stat_sys_warning").getInt(null);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
+                return m_activity.getResources().getDrawable(android.R.drawable.stat_sys_warning,
+                        m_activity.getTheme());
 //                break;
             case 3: // Critical
-                try {
-                    return m_activity.getResources().getDrawable(android.R.drawable.ic_dialog_alert,
-                                                                 m_activity.getTheme());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
+                return m_activity.getResources().getDrawable(android.R.drawable.ic_dialog_alert,
+                        m_activity.getTheme());
             case 4: // Question
-                try {
-                    return m_activity.getResources().getDrawable(android.R.drawable.ic_menu_help,
-                                                                 m_activity.getTheme());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
+                return m_activity.getResources().getDrawable(android.R.drawable.ic_menu_help,
+                        m_activity.getTheme());
         }
         return null;
     }
@@ -146,9 +127,9 @@ public class QtMessageDialogHelper
         m_buttonsList.add(new ButtonStruct(this, id, text));
     }
 
-    private Drawable getStyledDrawable(String drawable) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException
+    private Drawable getStyledDrawable(int id)
     {
-        int[] attrs = {Class.forName("android.R$attr").getDeclaredField(drawable).getInt(null)};
+        int[] attrs = { id };
         final TypedArray a = m_theme.obtainStyledAttributes(attrs);
         Drawable d = a.getDrawable(0);
         a.recycle();
@@ -192,9 +173,11 @@ public class QtMessageDialogHelper
                 view.setLongClickable(true);
 
                 view.setText(m_text);
-                view.setTextAppearance(m_activity, android.R.style.TextAppearance_Medium);
+                view.setTextAppearance(android.R.style.TextAppearance_Medium);
 
-                RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
                 layout.setMargins(16, 8, 16, 8);
                 layout.addRule(RelativeLayout.ALIGN_PARENT_TOP);
                 dialogLayout.addView(view, layout);
@@ -209,9 +192,11 @@ public class QtMessageDialogHelper
                 view.setLongClickable(true);
 
                 view.setText(m_informativeText);
-                view.setTextAppearance(m_activity, android.R.style.TextAppearance_Medium);
+                view.setTextAppearance(android.R.style.TextAppearance_Medium);
 
-                RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
                 layout.setMargins(16, 8, 16, 8);
                 if (lastView != null)
                     layout.addRule(RelativeLayout.BELOW, lastView.getId());
@@ -229,9 +214,11 @@ public class QtMessageDialogHelper
                 view.setLongClickable(true);
 
                 view.setText(m_detailedText);
-                view.setTextAppearance(m_activity, android.R.style.TextAppearance_Small);
+                view.setTextAppearance(android.R.style.TextAppearance_Small);
 
-                RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
                 layout.setMargins(16, 8, 16, 8);
                 if (lastView != null)
                     layout.addRule(RelativeLayout.BELOW, lastView.getId());
@@ -251,7 +238,7 @@ public class QtMessageDialogHelper
                 {
                     Button bv;
                     try {
-                        bv = new Button(m_activity, null, Class.forName("android.R$attr").getDeclaredField("borderlessButtonStyle").getInt(null));
+                        bv = new Button(m_activity, null, android.R.attr.borderlessButtonStyle);
                     } catch (Exception e) {
                         bv = new Button(m_activity);
                         e.printStackTrace();
@@ -265,7 +252,7 @@ public class QtMessageDialogHelper
                         try {
                             LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(1,
                                     RelativeLayout.LayoutParams.MATCH_PARENT);
-                            spacer.setBackgroundDrawable(getStyledDrawable("dividerVertical"));
+                            spacer.setBackground(getStyledDrawable(android.R.attr.dividerVertical));
                             buttonsLayout.addView(spacer, layout);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -279,22 +266,26 @@ public class QtMessageDialogHelper
                 }
 
                 try {
-                    View horizontalDevider = new View(m_activity);
-                    horizontalDevider.setId(id++);
-                    horizontalDevider.setBackgroundDrawable(getStyledDrawable("dividerHorizontal"));
-                    RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 1);
+                    View horizontalDivider = new View(m_activity);
+                    horizontalDivider.setId(id);
+                    horizontalDivider.setBackground(getStyledDrawable(
+                            android.R.attr.dividerHorizontal));
+                    RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.MATCH_PARENT, 1);
                     relativeParams.setMargins(0, 10, 0, 0);
                     if (lastView != null) {
                         relativeParams.addRule(RelativeLayout.BELOW, lastView.getId());
                     }
                     else
                         relativeParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-                    dialogLayout.addView(horizontalDevider, relativeParams);
-                    lastView = horizontalDevider;
+                    dialogLayout.addView(horizontalDivider, relativeParams);
+                    lastView = horizontalDivider;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
                 if (lastView != null) {
                     relativeParams.addRule(RelativeLayout.BELOW, lastView.getId());
                 }

@@ -4,6 +4,7 @@
 
 package org.qtproject.qt.android;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.view.GestureDetector;
@@ -11,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+@SuppressLint("ViewConstructor")
 public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 {
     private final GestureDetector m_gestureDetector;

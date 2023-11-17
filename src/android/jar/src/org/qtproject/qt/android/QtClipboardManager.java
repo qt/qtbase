@@ -59,7 +59,7 @@ public class QtClipboardManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 m_clipboardManager.clearPrimaryClip();
             } else {
-                String[] mimeTypes = { ClipDescription.MIMETYPE_UNKNOWN };
+                String[] mimeTypes = { "application/octet-stream" };
                 ClipData data = new ClipData("", mimeTypes, new ClipData.Item(new Intent()));
                 m_clipboardManager.setPrimaryClip(data);
             }

@@ -5,6 +5,7 @@
 package org.qtproject.qt.android;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.text.InputType;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -68,10 +69,10 @@ public class QtEditText extends View
         return new QtInputConnection(this, m_qtInputConnectionListener);
     }
 
-// // DEBUG CODE
-//    @Override
-//    protected void onDraw(Canvas canvas) {
-//        canvas.drawARGB(127, 255, 0, 255);
-//        super.onDraw(canvas);
-//    }
+    @Override
+    protected void onDraw(Canvas canvas) {
+        // DEBUG CODE
+        // canvas.drawARGB(127, 255, 0, 255);
+        super.onDraw(canvas);
+    }
 }

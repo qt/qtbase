@@ -52,6 +52,7 @@ public class QtActivityBase extends Activity
 
     // Append any parameters to your application,
     // the parameters must be "\t" separated.
+    /** @noinspection unused*/
     public void appendApplicationParameters(String params)
     {
         m_applicationParams += params;

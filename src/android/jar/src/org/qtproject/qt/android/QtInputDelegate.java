@@ -20,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
+/** @noinspection FieldCanBeLocal*/
 public class QtInputDelegate {
 
     // keyboard methods

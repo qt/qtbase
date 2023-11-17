@@ -29,7 +29,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 {
     private static final String TAG = "Qt A11Y";
 
-    // Qt uses the upper half of the unsiged integers
+    // Qt uses the upper half of the unsigned integers
     // all low positive ints should be fine.
     public static final int INVALID_ID = 333; // half evil
 
@@ -89,7 +89,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
             if (Os.getenv("QT_ANDROID_DISABLE_ACCESSIBILITY") != null)
                 return;
             if (enabled) {
-                    try {
+                try {
                         View view = m_view;
                         if (view == null) {
                             view = new View(m_activity);
@@ -98,8 +98,11 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
                         // ### Keep this for debugging for a while. It allows us to visually see that our View
                         // ### is on top of the surface(s)
-                        // ColorDrawable color = new ColorDrawable(0x80ff8080);    //0xAARRGGBB
-                        // view.setBackground(color);
+                        //noinspection CommentedOutCode
+                        {
+                            // ColorDrawable color = new ColorDrawable(0x80ff8080);    //0xAARRGGBB
+                            // view.setBackground(color);
+                        }
                         view.setAccessibilityDelegate(QtAccessibilityDelegate.this);
 
                         // if all is fine, add it to the layout
@@ -149,8 +152,6 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         switch (event.getAction()) {
             case MotionEvent.ACTION_HOVER_ENTER:
             case MotionEvent.ACTION_HOVER_MOVE:
-                setHoveredVirtualViewId(virtualViewId);
-                break;
             case MotionEvent.ACTION_HOVER_EXIT:
                 setHoveredVirtualViewId(virtualViewId);
                 break;
@@ -241,24 +242,24 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
-    public boolean sendEventForVirtualViewId(int virtualViewId, int eventType)
+    public void sendEventForVirtualViewId(int virtualViewId, int eventType)
     {
         final AccessibilityEvent event = getEventForVirtualViewId(virtualViewId, eventType);
-        return sendAccessibilityEvent(event);
+        sendAccessibilityEvent(event);
     }
 
-    public boolean sendAccessibilityEvent(AccessibilityEvent event)
+    public void sendAccessibilityEvent(AccessibilityEvent event)
     {
         if (event == null)
-            return false;
+            return;
 
         final ViewGroup group = (ViewGroup) m_view.getParent();
         if (group == null) {
             Log.w(TAG, "Could not send AccessibilityEvent because group was null. This should really not happen.");
-            return false;
+            return;
         }
 
-        return group.requestSendAccessibilityEvent(m_view, event);
+        group.requestSendAccessibilityEvent(m_view, event);
     }
 
     public void invalidateVirtualViewId(int virtualViewId)
@@ -416,10 +417,10 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         // Manage internal accessibility focus state.
         if (m_focusedVirtualViewId == virtualViewId) {
             node.setAccessibilityFocused(true);
-            node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+            node.performAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
         } else {
             node.setAccessibilityFocused(false);
-            node.addAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
+            node.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
         }
 
         int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(virtualViewId);
@@ -483,16 +484,19 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
                         return m_view.performAccessibilityAction(action, arguments);
                     }
             }
-            handled |= performActionForVirtualViewId(virtualViewId, action, arguments);
+            handled |= performActionForVirtualViewId(virtualViewId, action);
 
             return handled;
         }
     };
 
-    protected boolean performActionForVirtualViewId(int virtualViewId, int action, Bundle arguments)
+    protected boolean performActionForVirtualViewId(int virtualViewId, int action)
     {
-//        Log.i(TAG, "ACTION " + action + " on " + virtualViewId);
-//        dumpNodes(virtualViewId);
+        //noinspection CommentedOutCode
+        {
+            // Log.i(TAG, "ACTION " + action + " on " + virtualViewId);
+            // dumpNodes(virtualViewId);
+        }
         boolean success = false;
         switch (action) {
         case AccessibilityNodeInfo.ACTION_CLICK:

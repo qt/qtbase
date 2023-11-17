@@ -3,6 +3,7 @@
 
 package org.qtproject.qt.android;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -16,10 +17,11 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 
 /* This view represents one of the handle (selection or cursor handle) */
+@SuppressLint("ViewConstructor")
 class CursorView extends ImageView
 {
     private final CursorHandle mHandle;
-    // The coordinare which where clicked
+    // The coordinate which where clicked
     private float m_offsetX;
     private float m_offsetY;
     private boolean m_pressed = false;
@@ -49,7 +51,7 @@ class CursorView extends ImageView
             if (!m_pressed)
                 return false;
             mHandle.updatePosition(Math.round(ev.getRawX() - m_offsetX),
-                                    Math.round(ev.getRawY() - m_offsetY));
+                    Math.round(ev.getRawY() - m_offsetY));
             break;
         }
 
@@ -60,7 +62,6 @@ class CursorView extends ImageView
         }
         return true;
     }
-
 }
 
 // Helper class that manages a cursor or selection handle
@@ -92,27 +93,26 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         m_rtl = rtl;
     }
 
-    private boolean initOverlay(){
-        if (m_popup == null){
+    private void initOverlay(){
+        if (m_popup != null)
+            return;
 
-            Context context = m_layout.getContext();
-            int[] attrs = {m_attr};
-            TypedArray a = context.getTheme().obtainStyledAttributes(attrs);
-            Drawable drawable = a.getDrawable(0);
+        Context context = m_layout.getContext();
+        int[] attrs = {m_attr};
+        TypedArray a = context.getTheme().obtainStyledAttributes(attrs);
+        Drawable drawable = a.getDrawable(0);
 
-            m_cursorView = new CursorView(context, this);
-            m_cursorView.setImageDrawable(drawable);
+        m_cursorView = new CursorView(context, this);
+        m_cursorView.setImageDrawable(drawable);
 
-            m_popup = new PopupWindow(context, null, android.R.attr.textSelectHandleWindowStyle);
-            m_popup.setSplitTouchEnabled(true);
-            m_popup.setClippingEnabled(false);
-            m_popup.setContentView(m_cursorView);
-            m_popup.setWidth(drawable.getIntrinsicWidth());
-            m_popup.setHeight(drawable.getIntrinsicHeight());
+        m_popup = new PopupWindow(context, null, android.R.attr.textSelectHandleWindowStyle);
+        m_popup.setSplitTouchEnabled(true);
+        m_popup.setClippingEnabled(false);
+        m_popup.setContentView(m_cursorView);
+        m_popup.setWidth(drawable.getIntrinsicWidth());
+        m_popup.setHeight(drawable.getIntrinsicHeight());
 
-            m_layout.getViewTreeObserver().addOnPreDrawListener(this);
-        }
-        return true;
+        m_layout.getViewTreeObserver().addOnPreDrawListener(this);
     }
 
     // Show the handle at a given position (or move it if it is already shown)

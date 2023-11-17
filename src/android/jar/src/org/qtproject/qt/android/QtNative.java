@@ -122,6 +122,7 @@ public class QtNative
         return new Exception().getStackTrace()[1].getMethodName() + ": ";
     }
 
+    /** @noinspection SameParameterValue*/
     private static Uri getUriWithValidPermission(Context context, String uri, String openMode)
     {
         Uri parsedUri;

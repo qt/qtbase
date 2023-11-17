@@ -280,7 +280,8 @@ public abstract class QtLoader {
 
     /**
      * Returns the application level metadata.
-     **/
+     *
+     * @noinspection SameParameterValue*/
     private String getApplicationMetaData(String key) {
         if (m_contextInfo == null)
             return "";
