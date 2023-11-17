@@ -877,7 +877,59 @@ macro(qt_internal_setup_standalone_test_when_called_as_a_find_package_component)
 endmacro()
 
 macro(qt_internal_setup_build_internals)
+    qt_internal_set_qt_repo_dependencies()
     qt_internal_setup_platform_support_variables()
     qt_internal_setup_pkg_config_and_system_prefixes()
     qt_internal_setup_standalone_test_when_called_as_a_find_package_component()
+endmacro()
+
+# Recursively reads the dependencies section from dependencies.yaml in ${repo_dir} and returns the
+# list of dependencies, including transitive ones, in out_var.
+#
+# The returned dependencies are topologically sorted.
+#
+# Example output for qtdeclarative:
+# qtbase;qtimageformats;qtlanguageserver;qtshadertools;qtsvg
+#
+function(qt_internal_read_repo_dependencies out_var repo_dir)
+    set(seen ${ARGN})
+    set(dependencies "")
+    set(in_dependencies_section FALSE)
+    set(dependencies_file "${repo_dir}/dependencies.yaml")
+    if(EXISTS "${dependencies_file}")
+        file(STRINGS "${dependencies_file}" lines)
+        foreach(line IN LISTS lines)
+            if(line MATCHES "^([^ ]+):")
+                if(CMAKE_MATCH_1 STREQUAL "dependencies")
+                    set(in_dependencies_section TRUE)
+                else()
+                    set(in_dependencies_section FALSE)
+                endif()
+            elseif(in_dependencies_section AND line MATCHES "^  (.+):$")
+                set(dependency "${CMAKE_MATCH_1}")
+                set(dependency_repo_dir "${repo_dir}/${dependency}")
+                string(REGEX MATCH "[^/]+$" dependency "${dependency}")
+                if(NOT dependency IN_LIST seen)
+                    qt_internal_read_repo_dependencies(subdeps "${dependency_repo_dir}"
+                        ${seen} ${dependency})
+                    if(dependency MATCHES "^tqtc-(.+)")
+                        set(dependency "${CMAKE_MATCH_1}")
+                    endif()
+                    list(APPEND dependencies ${subdeps} ${dependency})
+                endif()
+            endif()
+        endforeach()
+        list(REMOVE_DUPLICATES dependencies)
+    endif()
+    set(${out_var} "${dependencies}" PARENT_SCOPE)
+endfunction()
+
+macro(qt_internal_set_qt_repo_dependencies)
+    # The top-level check needs to happen because it's possible
+    # to configure a top-level build with a few repos and then configure another repo
+    # using qt-configure-module in a separate build dir, where QT_SUPERBUILD will not
+    # be set anymore.
+    if(DEFINED QT_REPO_MODULE_VERSION AND NOT DEFINED QT_REPO_DEPENDENCIES AND NOT QT_SUPERBUILD)
+        qt_internal_read_repo_dependencies(QT_REPO_DEPENDENCIES "${PROJECT_SOURCE_DIR}")
+    endif()
 endmacro()
