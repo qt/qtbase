@@ -5,23 +5,22 @@ android
 # QDockWidget::isFloating() is flaky after state change on these OS
 [closeAndDelete]
 macos
-[floatingTabs]
+b2qt
+arm
+android
+
 # QTBUG-103091
+[floatingTabs]
+arm
+android
 qnx
 macos
-[closeAndDelete]
 b2qt
-[floatingTabs]
-macos b2qt arm android
-[closeAndDelete]
+
+# QTBUG-103091
+[hoverWithoutDrop]
+arm
+android
+qnx
+macos
 b2qt
-[floatingTabs]
-arm
-[closeAndDelete]
-macos b2qt arm android
-[floatingTabs]
-arm
-[closeAndDelete]
-android
-[floatingTabs]
-android
