@@ -461,7 +461,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
     if constexpr (UseSse4_1) {
 #  ifndef Q_OS_QNX              // compiler fails in the code below
         __m128i mask;
-        auto updatePtrSimd = [&](__m128i data) {
+        auto updatePtrSimd = [&](__m128i data) -> bool {
             __m128i masked = _mm_and_si128(mask, data);
             __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
             uint result = _mm_movemask_epi8(comparison);
