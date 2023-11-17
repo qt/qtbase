@@ -120,76 +120,186 @@ macro(qt_internal_set_debug_extend_target)
     option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
 endmacro()
 
+# These upstream CMake modules will be automatically include()'d when doing
+# find_package(Qt6 COMPONENTS BuildInternals).
+function(qt_internal_get_qt_build_upstream_cmake_modules out_var)
+    set(${out_var}
+        CMakeFindBinUtils
+        CMakePackageConfigHelpers
+        CheckCXXSourceCompiles
+        FeatureSummary
+        PARENT_SCOPE
+    )
+endfunction()
+
+# These helpers will be installed when building qtbase, and they will be automatically include()'d
+# when doing find_package(Qt6 COMPONENTS BuildInternals).
+# The helpers are expected to exist under the qtbase/cmake sub-directory and their file name
+# extension should be '.cmake'.
+function(qt_internal_get_qt_build_private_helpers out_var)
+    set(${out_var}
+        Qt3rdPartyLibraryHelpers
+        QtAndroidHelpers
+        QtAppHelpers
+        QtAutogenHelpers
+        QtBuildInformation
+        QtBuildOptionsHelpers
+        QtBuildPathsHelpers
+        QtBuildRepoExamplesHelpers
+        QtBuildRepoHelpers
+        QtCMakeHelpers
+        QtCMakeVersionHelpers
+        QtDbusHelpers
+        QtDeferredDependenciesHelpers
+        QtDocsHelpers
+        QtExecutableHelpers
+        QtFindPackageHelpers
+        QtFlagHandlingHelpers
+        QtFrameworkHelpers
+        QtGlobalStateHelpers
+        QtHeadersClean
+        QtInstallHelpers
+        QtJavaHelpers
+        QtLalrHelpers
+        QtMkspecHelpers
+        QtModuleHelpers
+        QtNoLinkTargetHelpers
+        QtPkgConfigHelpers
+        QtPlatformTargetHelpers
+        QtPluginHelpers
+        QtPostProcessHelpers
+        QtPrecompiledHeadersHelpers
+        QtPriHelpers
+        QtPrlHelpers
+        QtQmakeHelpers
+        QtResourceHelpers
+        QtRpathHelpers
+        QtSanitizerHelpers
+        QtScopeFinalizerHelpers
+        QtSeparateDebugInfo
+        QtSimdHelpers
+        QtSingleRepoTargetSetBuildHelpers
+        QtSyncQtHelpers
+        QtTargetHelpers
+        QtTestHelpers
+        QtToolHelpers
+        QtToolchainHelpers
+        QtUnityBuildHelpers
+        QtWasmHelpers
+        QtWrapperScriptHelpers
+        PARENT_SCOPE
+    )
+endfunction()
+
+# These files will be installed when building qtbase, but will NOT be automatically include()d
+# when doing find_package(Qt6 COMPONENTS BuildInternals).
+# The files are expected to exist under the qtbase/cmake sub-directory.
+function(qt_internal_get_qt_build_private_files_to_install out_var)
+    set(${out_var}
+        ModuleDescription.json.in
+        PkgConfigLibrary.pc.in
+        Qt3rdPartyLibraryConfig.cmake.in
+        QtBaseTopLevelHelpers.cmake
+        QtBuild.cmake
+        QtBuildHelpers.cmake
+        QtCMakePackageVersionFile.cmake.in
+        QtCompilerFlags.cmake
+        QtCompilerOptimization.cmake
+        QtConfigDependencies.cmake.in
+        QtConfigureTimeExecutableCMakeLists.txt.in
+        QtFileConfigure.txt.in
+        QtFindWrapConfigExtra.cmake.in
+        QtFindWrapHelper.cmake
+        QtFinishPkgConfigFile.cmake
+        QtFinishPrlFile.cmake
+        QtGenerateExtPri.cmake
+        QtGenerateLibHelpers.cmake
+        QtGenerateLibPri.cmake
+        QtGenerateVersionScript.cmake
+        QtModuleConfig.cmake.in
+        QtModuleDependencies.cmake.in
+        QtModuleHeadersCheck.cmake
+        QtModuleToolsConfig.cmake.in
+        QtModuleToolsDependencies.cmake.in
+        QtModuleToolsVersionlessTargets.cmake.in
+        QtPlatformAndroid.cmake
+        QtPlatformSupport.cmake
+        QtPluginConfig.cmake.in
+        QtPluginDependencies.cmake.in
+        QtPlugins.cmake.in
+        QtPostProcess.cmake
+        QtProcessConfigureArgs.cmake
+        QtSeparateDebugInfo.Info.plist.in
+        QtSetup.cmake
+        QtStandaloneTestsConfig.cmake.in
+        QtWriteArgsFile.cmake
+        modulecppexports.h.in
+        modulecppexports_p.h.in
+        qbatchedtestrunner.in.cpp
+        PARENT_SCOPE
+    )
+endfunction()
+
+# These helpers will be installed when building qtbase, and they will be automatically include()'d
+# when doing find_package(Qt6 COMPONENTS BuildInternals).
+# The helpers are expected to exist under the qtbase/cmake sub-directory and their file name
+# extension should be '.cmake'.
+# In addition, they are meant to be included when doing find_package(Qt6) as well.
+function(qt_internal_get_qt_build_public_helpers out_var)
+    set(${out_var}
+        QtFeature
+        QtFeatureCommon
+        QtPublicAppleHelpers
+        QtPublicCMakeHelpers
+        QtPublicCMakeVersionHelpers
+        QtPublicDependencyHelpers
+        QtPublicExternalProjectHelpers
+        QtPublicFinalizerHelpers
+        QtPublicFindPackageHelpers
+        QtPublicPluginHelpers
+        QtPublicTargetHelpers
+        QtPublicTestHelpers
+        QtPublicToolHelpers
+        QtPublicWalkLibsHelpers
+        PARENT_SCOPE
+    )
+endfunction()
+
+# These files will be installed when building qtbase, but will NOT be automatically include()d
+# when doing find_package(Qt6) nor find_package(Qt6 COMPONENTS BuildInternals).
+# The files are expected to exist under the qtbase/cmake sub-directory.
+function(qt_internal_get_qt_build_public_files_to_install out_var)
+    set(${out_var}
+        QtCopyFileIfDifferent.cmake
+        QtInitProject.cmake
+
+        # Public CMake files that are installed next Qt6Config.cmake, but are NOT included by it.
+        # Instead they are included by the generated CMake toolchain file.
+        QtPublicWasmToolchainHelpers.cmake
+
+        PARENT_SCOPE
+    )
+endfunction()
+
+# Includes all Qt CMake helper files that define functions and macros.
 macro(qt_internal_include_all_helpers)
     # Upstream cmake modules.
-    include(CheckCXXSourceCompiles)
-    include(CMakeFindBinUtils)
-    include(CMakePackageConfigHelpers)
-    include(FeatureSummary)
+    qt_internal_get_qt_build_upstream_cmake_modules(__qt_upstream_helpers)
+    foreach(__qt_file_name IN LISTS __qt_upstream_helpers)
+        include("${__qt_file_name}")
+    endforeach()
 
     # Internal helpers available only while building Qt itself.
-    include(Qt3rdPartyLibraryHelpers)
-    include(QtAndroidHelpers)
-    include(QtAppHelpers)
-    include(QtAutogenHelpers)
-    include(QtBuildInformation)
-    include(QtBuildOptionsHelpers)
-    include(QtBuildPathsHelpers)
-    include(QtBuildRepoExamplesHelpers)
-    include(QtBuildRepoHelpers)
-    include(QtCMakeHelpers)
-    include(QtCMakeVersionHelpers)
-    include(QtDbusHelpers)
-    include(QtDeferredDependenciesHelpers)
-    include(QtDocsHelpers)
-    include(QtExecutableHelpers)
-    include(QtFeature)
-    include(QtFindPackageHelpers)
-    include(QtFlagHandlingHelpers)
-    include(QtFrameworkHelpers)
-    include(QtGlobalStateHelpers)
-    include(QtHeadersClean)
-    include(QtInstallHelpers)
-    include(QtJavaHelpers)
-    include(QtLalrHelpers)
-    include(QtMkspecHelpers)
-    include(QtModuleHelpers)
-    include(QtNoLinkTargetHelpers)
-    include(QtPkgConfigHelpers)
-    include(QtPlatformTargetHelpers)
-    include(QtPluginHelpers)
-    include(QtPostProcessHelpers)
-    include(QtPrecompiledHeadersHelpers)
-    include(QtPriHelpers)
-    include(QtPrlHelpers)
-    include(QtQmakeHelpers)
-    include(QtResourceHelpers)
-    include(QtRpathHelpers)
-    include(QtSanitizerHelpers)
-    include(QtScopeFinalizerHelpers)
-    include(QtSeparateDebugInfo)
-    include(QtSimdHelpers)
-    include(QtSingleRepoTargetSetBuildHelpers)
-    include(QtSyncQtHelpers)
-    include(QtTargetHelpers)
-    include(QtTestHelpers)
-    include(QtToolchainHelpers)
-    include(QtToolHelpers)
-    include(QtUnityBuildHelpers)
-    include(QtWasmHelpers)
-    include(QtWrapperScriptHelpers)
+    qt_internal_get_qt_build_private_helpers(__qt_private_helpers)
+    foreach(__qt_file_name IN LISTS __qt_private_helpers)
+        include("${__qt_file_name}")
+    endforeach()
 
     # Helpers that are available in public projects and while building Qt itself.
-    include(QtPublicAppleHelpers)
-    include(QtPublicCMakeHelpers)
-    include(QtPublicDependencyHelpers)
-    include(QtPublicExternalProjectHelpers)
-    include(QtPublicFindPackageHelpers)
-    include(QtPublicPluginHelpers)
-    include(QtPublicTargetHelpers)
-    include(QtPublicTestHelpers)
-    include(QtPublicToolHelpers)
-    include(QtPublicWalkLibsHelpers)
+    qt_internal_get_qt_build_public_helpers(__qt_public_helpers)
+    foreach(__qt_file_name IN LISTS __qt_public_helpers)
+        include("${__qt_file_name}")
+    endforeach()
 endmacro()
 
 function(qt_internal_check_host_path_set_for_cross_compiling)
