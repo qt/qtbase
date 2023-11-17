@@ -713,17 +713,6 @@ endif()\n")
 
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${install_prefix_content}")
 
-        # The top-level check needs to happen inside QtBuildInternals, because it's possible
-        # to configure a top-level build with a few repos and then configure another repo
-        # using qt-configure-module in a separate build dir, where QT_SUPERBUILD will not
-        # be set anymore.
-        string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-            "
-if(DEFINED QT_REPO_MODULE_VERSION AND NOT DEFINED QT_REPO_DEPENDENCIES AND NOT QT_SUPERBUILD)
-    qt_internal_read_repo_dependencies(QT_REPO_DEPENDENCIES \"$\{PROJECT_SOURCE_DIR}\")
-endif()
-")
-
         if(DEFINED OpenGL_GL_PREFERENCE)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "
