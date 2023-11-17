@@ -254,18 +254,18 @@ public class QtNative
         runAction(() -> view.setVisibility(visible ? View.VISIBLE : View.GONE));
     }
 
-    public static boolean startApplication(ArrayList<String> params, String mainLib)
+    public static void startApplication(ArrayList<String> params, String mainLib)
     {
-        final boolean[] res = new boolean[1];
         synchronized (m_mainActivityMutex) {
-            String paramsStr = String.join("\t", params);
-            final String qtParams = mainLib + "\t" + paramsStr;
-            m_qtThread.run(() -> res[0] = startQtAndroidPlugin(qtParams));
+            m_qtThread.run(() -> {
+                final String qtParams = mainLib + "\t" + String.join("\t", params);
+                if (!startQtAndroidPlugin(qtParams))
+                    Log.e(QtTAG, "An error occurred while starting the Qt Android plugin");
+            });
             m_qtThread.post(QtNative::startQtApplication);
             waitForServiceSetup();
             m_started = true;
         }
-        return res[0];
     }
 
     public static void quitApp()
