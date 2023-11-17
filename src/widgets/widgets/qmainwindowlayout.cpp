@@ -448,11 +448,6 @@ void QDockWidgetGroupWindow::destroyOrHideIfEmpty()
         if (!wasHidden)
             dw->show();
     }
-#if QT_CONFIG(tabbar)
-    const auto tabBars = findChildren<QTabBar *>(Qt::FindDirectChildrenOnly);
-    for (QTabBar *tb : tabBars)
-        tb->setParent(parentWidget());
-#endif
     deleteLater();
 }
 
@@ -1776,6 +1771,7 @@ class QMainWindowTabBar : public QTabBar
 {
     QMainWindow *mainWindow;
     QPointer<QDockWidget> draggingDock; // Currently dragging (detached) dock widget
+    ~QMainWindowTabBar();
 public:
     QMainWindowTabBar(QMainWindow *parent);
 protected:
@@ -1839,6 +1835,21 @@ void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
         }
     }
     QTabBar::mouseMoveEvent(e);
+}
+
+QMainWindowTabBar::~QMainWindowTabBar()
+{
+    if (!mainWindow || mainWindow == parentWidget())
+        return;
+
+    // tab bar is not parented to the main window
+    // => can only be a dock widget group window
+    // => remove itself from used and unused tab bar containers
+    auto *mwLayout = qt_mainwindow_layout(mainWindow);
+    if (!mwLayout)
+        return;
+    mwLayout->unusedTabBars.removeOne(this);
+    mwLayout->usedTabBars.remove(this);
 }
 
 void QMainWindowTabBar::mouseReleaseEvent(QMouseEvent *e)
