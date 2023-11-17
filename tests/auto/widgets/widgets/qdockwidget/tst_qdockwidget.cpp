@@ -1529,7 +1529,6 @@ void tst_QDockWidget::closeAndDelete()
         QSKIP("Test skipped on Wayland.");
 #ifdef QT_BUILD_INTERNAL
     // Create a mainwindow with a central widget and two dock widgets
-    QObject localContext;
     QPointer<QDockWidget> d1;
     QPointer<QDockWidget> d2;
     QPointer<QWidget> cent;
@@ -1555,8 +1554,10 @@ void tst_QDockWidget::closeAndDelete()
         qWarning("OS flakiness: D2 is docked and reports being floating");
 
     // Close everything with a single shot. Expected behavior: Event loop stops
-    bool eventLoopStopped = true;
-    QTimer::singleShot(0, &localContext, [mainWindow, d1, d2] {
+    QSignalSpy closeSpy(qApp, &QApplication::lastWindowClosed);
+    QObject localContext;
+
+    QTimer::singleShot(0, &localContext, [&](){
         mainWindow->close();
         QTRY_VERIFY(!mainWindow->isVisible());
         QTRY_VERIFY(d1->isVisible());
@@ -1565,18 +1566,11 @@ void tst_QDockWidget::closeAndDelete()
         d2->close();
         QTRY_VERIFY(!d1->isVisible());
         QTRY_VERIFY(!d2->isVisible());
-    });
-
-    // Fallback timer to report event loop still running
-    QTimer::singleShot(100, &localContext, [&eventLoopStopped] {
-        qCDebug(lcTestDockWidget) << "Last dock widget hasn't shout down event loop!";
-        eventLoopStopped = false;
+        QTRY_COMPARE(closeSpy.count(), 1);
         QApplication::quit();
     });
 
     QApplication::exec();
-
-    QTRY_VERIFY(eventLoopStopped);
 
     // Check heap cleanup
     qCDebug(lcTestDockWidget) << "Deleting mainWindow";
