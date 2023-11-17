@@ -5,6 +5,7 @@
 #include <QtTest/qtestdata.h>
 #include <QtTest/qtestassert.h>
 
+#include <QtCore/private/qduplicatetracker_p.h>
 #include <QtCore/qmetaobject.h>
 
 #include <string.h>
@@ -35,9 +36,11 @@ public:
     using DataList = std::vector<QTestData *>;
     DataList dataList;
 
+    using TagSet = QDuplicateTracker<std::string>;
+    TagSet tagSet;
+
     void addColumn(int elemType, const char *elemName) { elementList.push_back(Element(elemName, elemType)); }
     void addRow(QTestData *data) { dataList.push_back(data); }
-    bool hasRow(const char *name) const;
 
     static QTestTable *currentTestTable;
     static QTestTable *gTable;
@@ -73,7 +76,8 @@ bool QTestTable::isEmpty() const
 
 QTestData *QTestTable::newData(const char *tag)
 {
-    if (d->hasRow(tag))
+    QTEST_ASSERT(tag);
+    if (d->tagSet.hasSeen(tag))
         qWarning("Duplicate data tag \"%s\" - please rename.", tag);
 
     QTestData *dt = new QTestData(tag, this);
@@ -122,12 +126,6 @@ public:
 private:
     const char *m_needle;
 };
-
-bool QTestTablePrivate::hasRow(const char *rowName) const
-{
-    QTEST_ASSERT(rowName);
-    return std::find_if(dataList.begin(), dataList.end(), NamePredicate(rowName)) != dataList.end();
-}
 
 int QTestTable::indexOf(const char *elementName) const
 {
