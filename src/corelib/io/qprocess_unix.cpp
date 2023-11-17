@@ -1253,7 +1253,8 @@ void QProcessPrivate::waitForDeadChild()
     Q_ASSERT(forkfd != -1);
 
     // read the process information from our fd
-    forkfd_info info;
+    forkfd_info info = {}; // Silence -Wmaybe-uninitialized; Thiago says forkfd_wait cannot fail here
+                           // (QTBUG-119081)
     int ret;
     EINTR_LOOP(ret, forkfd_wait(forkfd, &info, nullptr));
 
