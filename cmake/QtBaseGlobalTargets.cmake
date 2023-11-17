@@ -63,10 +63,8 @@ qt_copy_or_install(
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}/CMakeLists.txt")
 
-include(QtToolchainHelpers)
 qt_internal_create_toolchain_file()
 
-include(QtWrapperScriptHelpers)
 qt_internal_create_wrapper_scripts()
 
 ## Library to hold global features:
@@ -134,7 +132,6 @@ target_include_directories(GlobalConfigPrivate INTERFACE
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
-include(QtPlatformTargetHelpers)
 qt_internal_setup_public_platform_target()
 
 # defines PlatformCommonInternal PlatformModuleInternal PlatformPluginInternal PlatformToolInternal
