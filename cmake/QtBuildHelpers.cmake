@@ -127,6 +127,7 @@ macro(qt_internal_include_all_helpers)
 
     # Internal helpers available only while building Qt itself.
     include(Qt3rdPartyLibraryHelpers)
+    include(QtAndroidHelpers)
     include(QtAppHelpers)
     include(QtAutogenHelpers)
     include(QtBuildInformation)
@@ -167,14 +168,7 @@ macro(qt_internal_include_all_helpers)
     include(QtTestHelpers)
     include(QtToolHelpers)
     include(QtUnityBuildHelpers)
-
-    if(ANDROID)
-        include(QtAndroidHelpers)
-    endif()
-
-    if(WASM)
-        include(QtWasmHelpers)
-    endif()
+    include(QtWasmHelpers)
 
     # Helpers that are available in public projects and while building Qt itself.
     include(QtPublicAppleHelpers)
