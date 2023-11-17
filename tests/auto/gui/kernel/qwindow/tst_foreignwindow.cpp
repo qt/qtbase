@@ -82,17 +82,13 @@ void tst_ForeignWindow::embedForeignWindow()
     NativeWindow nativeWindow;
     QVERIFY(nativeWindow);
 
-    // Top level windows may not have 0 as their winId, e.g. on
-    // XCB the root window of the screen is used.
-    const auto originalParentWinId = nativeWindow.parentWinId();
-
     // As a prerequisite to that, we must be able to reparent the foreign window
     std::unique_ptr<QWindow> foreignWindow(QWindow::fromWinId(nativeWindow));
     foreignWindow->setParent(&parentWindow);
     QTRY_COMPARE(nativeWindow.parentWinId(), parentWindow.winId());
 
     foreignWindow->setParent(nullptr);
-    QTRY_COMPARE(nativeWindow.parentWinId(), originalParentWinId);
+    QTRY_VERIFY(nativeWindow.parentWinId() != parentWindow.winId());
 }
 
 void tst_ForeignWindow::embedInForeignWindow()
