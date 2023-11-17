@@ -65,7 +65,7 @@ static int framebuffer = -1;
 
 QByteArray QEglFSDeviceIntegration::fbDeviceName() const
 {
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_VXWORKS)
     QByteArray fbDev = qgetenv("QT_QPA_EGLFS_FB");
     if (fbDev.isEmpty())
         fbDev = QByteArrayLiteral("/dev/fb0");
@@ -95,7 +95,7 @@ int QEglFSDeviceIntegration::framebufferIndex() const
 
 void QEglFSDeviceIntegration::platformInit()
 {
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_VXWORKS)
     QByteArray fbDev = fbDeviceName();
 
     framebuffer = qt_safe_open(fbDev, O_RDONLY);
@@ -113,7 +113,7 @@ void QEglFSDeviceIntegration::platformInit()
 
 void QEglFSDeviceIntegration::platformDestroy()
 {
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_VXWORKS)
     if (framebuffer != -1)
         close(framebuffer);
 #endif
