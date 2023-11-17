@@ -1389,13 +1389,16 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
                 iconRect = visualRect(button->direction, textRect, iconRect);
 
-                if (button->direction == Qt::RightToLeft) {
-                    tf |= Qt::AlignRight;
+                if (button->direction == Qt::RightToLeft)
                     textRect.setRight(iconRect.left() - iconSpacing / 2);
-                } else {
-                    tf |= Qt::AlignLeft; //left align, we adjust the text-rect instead
+                else
                     textRect.setLeft(iconRect.left() + iconRect.width() + iconSpacing / 2);
-                }
+
+                // qt_format_text reverses again when  painter->layoutDirection is also RightToLeft
+                if (p->layoutDirection() == button->direction)
+                    tf |= Qt::AlignLeft;
+                else
+                    tf |= Qt::AlignRight;
 
                 if (button->state & (State_On | State_Sunken))
                     iconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, widget),
