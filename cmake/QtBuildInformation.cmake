@@ -27,7 +27,6 @@ function(qt_print_feature_summary)
         endif()
     endif()
 
-    include(FeatureSummary)
     # Show which packages were found.
     feature_summary(INCLUDE_QUIET_PACKAGES
                     WHAT PACKAGES_FOUND

@@ -62,7 +62,7 @@ if(NOT QT_BUILD_INTERNALS_SKIP_CMAKE_MODULE_PATH_ADDITION)
     qt_set_up_build_internals_paths()
 endif()
 
-include(QtBuildRepoExamplesHelpers)
-include(QtBuildRepoHelpers)
+include(QtBuildHelpers)
 
+qt_internal_include_all_helpers()
 qt_internal_setup_build_internals()

@@ -9,7 +9,6 @@
 # components that are involved in build procedure.
 macro(qt_internal_project_setup)
     # Check for the minimum CMake version.
-    include(QtCMakeVersionHelpers)
     qt_internal_require_suitable_cmake_version()
     qt_internal_upgrade_cmake_policies()
 endmacro()
@@ -20,7 +19,6 @@ macro(qt_build_internals_set_up_private_api)
 
     # Qt specific setup common for all modules:
     include(QtSetup)
-    include(FeatureSummary)
 
     # Optionally include a repo specific Setup module.
     include(${PROJECT_NAME}Setup OPTIONAL)

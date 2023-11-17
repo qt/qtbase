@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-include(QtPostProcessHelpers)
-
 qt_internal_create_depends_files()
 qt_generate_build_internals_extra_cmake_code()
 qt_internal_create_plugins_auto_inclusion_files()
