@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 
 public class QtLayout extends ViewGroup
 {
-    private Runnable m_startApplicationRunnable;
-
     private int m_activityDisplayRotation = -1;
     private int m_ownDisplayRotation = -1;
     private int m_nativeOrientation = -1;
@@ -33,10 +31,9 @@ public class QtLayout extends ViewGroup
         return m_ownDisplayRotation;
     }
 
-    public QtLayout(Context context, Runnable startRunnable)
+    public QtLayout(Context context)
     {
         super(context);
-        m_startApplicationRunnable = startRunnable;
     }
 
     public QtLayout(Context context, AttributeSet attrs)
@@ -50,7 +47,7 @@ public class QtLayout extends ViewGroup
     }
 
     @Override
-    protected void onSizeChanged (int w, int h, int oldw, int oldh)
+    protected void onSizeChanged(int w, int h, int oldw, int oldh)
     {
         Activity activity = (Activity)getContext();
         if (activity == null)
@@ -68,11 +65,6 @@ public class QtLayout extends ViewGroup
             QtDisplayManager.handleOrientationChanged(newRotation, m_nativeOrientation);
         }
         m_ownDisplayRotation = newRotation;
-
-        if (m_startApplicationRunnable != null) {
-            m_startApplicationRunnable.run();
-            m_startApplicationRunnable = null;
-        }
     }
 
     @Override

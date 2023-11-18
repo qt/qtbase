@@ -16,6 +16,7 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -132,20 +133,21 @@ public class QtActivityDelegate
         if (m_surfaces != null)
             return;
 
-        Runnable startApplication = () -> {
-            try {
-                QtNative.startApplication(appParams, mainLib);
-            } catch (Exception e) {
-                e.printStackTrace();
-                m_activity.finish();
-            }
-        };
-        initMembers(startApplication);
+        initMembers();
+
+        m_layout.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        QtNative.startApplication(appParams, mainLib);
+                        m_layout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    }
+                });
     }
 
-    private void initMembers(Runnable startApplicationRunnable)
+    private void initMembers()
     {
-        m_layout = new QtLayout(m_activity, startApplicationRunnable);
+        m_layout = new QtLayout(m_activity);
 
         m_displayManager.registerDisplayListener(m_activity, m_layout);
 
