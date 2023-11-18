@@ -3230,6 +3230,26 @@
 */
 
 /*!
+    \enum class Qt::TimerId
+    \since 6.8
+    \relates QObject
+    \relates QTimer
+    \relates QChronoTimer
+
+    This is used to represent timer IDs (for example, QTimer and QChronoTimer).
+    The underlying type is \c int. You can use \l qToUnderlying() to convert
+    Qt::TimerId to \c int.
+
+    \value Invalid Represents a no-op timer ID; it's usage depends on the
+    context, for example, this is the value returned by QObject::startTimer()
+    to indicate it failed to start a timer; whereas QChronoTimer::id() returns
+    this value when the timer is inactive, that is, \c timer.isActive()
+    returns \c false.
+
+    \sa QTimer::id(), QChronoTimer::id(), QObject::startTimer()
+*/
+
+/*!
     \enum Qt::ScrollPhase
     \since 5.2
 

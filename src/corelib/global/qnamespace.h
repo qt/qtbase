@@ -1675,6 +1675,10 @@ namespace Qt {
         VeryCoarseTimer
     };
 
+    enum class TimerId {
+        Invalid = 0,
+    };
+
     enum ScrollPhase {
         NoScrollPhase = 0,
         ScrollBegin,

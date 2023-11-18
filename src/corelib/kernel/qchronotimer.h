@@ -38,7 +38,7 @@ public:
 
     bool isActive() const;
     QBindable<bool> bindableActive();
-    int id() const;
+    Qt::TimerId id() const;
 
     void setInterval(std::chrono::nanoseconds nsec);
     std::chrono::nanoseconds interval() const;

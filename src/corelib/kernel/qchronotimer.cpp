@@ -167,10 +167,12 @@ QBindable<bool> QChronoTimer::bindableActive()
 }
 
 /*!
-    Returns the ID of the timer if the timer is running; otherwise returns
-    -1.
+    Returns a Qt::TimerId representing the timer ID if the timer is running;
+    otherwise returns \c Qt::TimerId::Invalid.
+
+    \sa Qt::TimerId
 */
-int QChronoTimer::id() const
+Qt::TimerId QChronoTimer::id() const
 {
     return d_func()->id;
 }
@@ -189,8 +191,8 @@ void QChronoTimer::start()
     auto *d = d_func();
     if (d->isActive()) // stop running timer
         stop();
-    const auto id = QObject::startTimer(d->intervalDuration, d->type);
-    if (id > 0) {
+    const auto id = Qt::TimerId{QObject::startTimer(d->intervalDuration, d->type)};
+    if (id > Qt::TimerId::Invalid) {
         d->id = id;
         d->isActiveData.notify();
     }
@@ -206,7 +208,7 @@ void QChronoTimer::stop()
     auto *d = d_func();
     if (d->isActive()) {
         QObject::killTimer(d->id);
-        d->id = QTimerPrivate::INV_TIMER;
+        d->id = Qt::TimerId::Invalid;
         d->isActiveData.notify();
     }
 }
@@ -217,7 +219,7 @@ void QChronoTimer::stop()
 void QChronoTimer::timerEvent(QTimerEvent *e)
 {
     auto *d = d_func();
-    if (e->timerId() == d->id) {
+    if (Qt::TimerId{e->timerId()} == d->id) {
         if (d->single)
             stop();
         Q_EMIT timeout(QPrivateSignal());
@@ -288,14 +290,14 @@ void QChronoTimer::setInterval(std::chrono::nanoseconds nsec)
     d->intervalDuration.setValueBypassingBindings(nsec);
     if (d->isActive()) { // Create new timer
         QObject::killTimer(d->id); // Restart timer
-        const auto id = QObject::startTimer(nsec, d->type);
-        if (id > 0) {
+        const auto newId = Qt::TimerId{QObject::startTimer(nsec, d->type)};
+        if (newId > Qt::TimerId::Invalid) {
             // Restarted successfully. No need to update the active state.
-            d->id = id;
+            d->id = newId;
         } else {
             // Failed to start the timer.
             // Need to notify about active state change.
-            d->id = QTimerPrivate::INV_TIMER;
+            d->id = Qt::TimerId::Invalid;
             d->isActiveData.notify();
         }
     }
@@ -328,7 +330,7 @@ QBindable<std::chrono::nanoseconds> QChronoTimer::bindableInterval()
 std::chrono::nanoseconds QChronoTimer::remainingTime() const
 {
     if (isActive())
-        return QAbstractEventDispatcher::instance()->remainingTime(d_func()->id) * 1ms;
+        return 1ms * QAbstractEventDispatcher::instance()->remainingTime(qToUnderlying(d_func()->id));
     return std::chrono::nanoseconds::min();
 }
 

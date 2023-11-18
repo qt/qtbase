@@ -576,6 +576,10 @@ void tst_QChronoTimer::deleteLaterOnQChronoTimer()
     QVERIFY(pointer.isNull());
 }
 
+namespace {
+int operator&(Qt::TimerId id, int i) { return qToUnderlying(id) & i; }
+}
+
 static constexpr auto MoveToThread_Timeout = 200ms;
 static constexpr auto MoveToThread_Wait = 300ms;
 
@@ -727,7 +731,7 @@ class TimerIdPersistsAfterThreadExitThread : public QThread
 {
 public:
     std::unique_ptr<QChronoTimer> timer;
-    int timerId = -1;
+    Qt::TimerId timerId = Qt::TimerId::Invalid;
     int returnValue = -1;
 
     void run() override

@@ -175,9 +175,21 @@ QBindable<bool> QTimer::bindableActive()
 */
 int QTimer::timerId() const
 {
-    return d_func()->id;
+    auto v = qToUnderlying(id());
+    return v == 0 ? -1 : v;
 }
 
+/*!
+    \since 6.8
+    Returns a Qt::TimerId representing the timer ID if the timer is running;
+    otherwise returns \c Qt::TimerId::Invalid.
+
+    \sa Qt::TimerId
+*/
+Qt::TimerId QTimer::id() const
+{
+    return d_func()->id;
+}
 
 /*! \overload start()
 
@@ -193,9 +205,10 @@ void QTimer::start()
     Q_D(QTimer);
     if (d->isActive()) // stop running timer
         stop();
-    const int id = QObject::startTimer(std::chrono::milliseconds{d->inter}, d->type);
-    if (id > 0) {
-        d->id = id;
+
+    const auto newId = Qt::TimerId{QObject::startTimer(d->inter * 1ms, d->type)};
+    if (newId > Qt::TimerId::Invalid) {
+        d->id = newId;
         d->isActiveData.notify();
     }
 }
@@ -249,7 +262,7 @@ void QTimer::stop()
     Q_D(QTimer);
     if (d->isActive()) {
         QObject::killTimer(d->id);
-        d->id = QTimerPrivate::INV_TIMER;
+        d->id = Qt::TimerId::Invalid;
         d->isActiveData.notify();
     }
 }
@@ -261,7 +274,7 @@ void QTimer::stop()
 void QTimer::timerEvent(QTimerEvent *e)
 {
     Q_D(QTimer);
-    if (e->timerId() == d->id) {
+    if (Qt::TimerId{e->timerId()} == d->id) {
         if (d->single)
             stop();
         emit timeout(QPrivateSignal());
@@ -572,14 +585,14 @@ void QTimer::setInterval(std::chrono::milliseconds interval)
     d->inter.setValueBypassingBindings(msec);
     if (d->isActive()) { // create new timer
         QObject::killTimer(d->id);                        // restart timer
-        const int id = QObject::startTimer(std::chrono::milliseconds{msec}, d->type);
-        if (id > 0) {
+        const auto newId = Qt::TimerId{QObject::startTimer(msec * 1ms, d->type)};
+        if (newId > Qt::TimerId::Invalid) {
             // Restarted successfully. No need to update the active state.
-            d->id = id;
+            d->id = newId;
         } else {
             // Failed to start the timer.
             // Need to notify about active state change.
-            d->id = QTimerPrivate::INV_TIMER;
+            d->id = Qt::TimerId::Invalid;
             d->isActiveData.notify();
         }
     }
@@ -612,7 +625,7 @@ int QTimer::remainingTime() const
 {
     Q_D(const QTimer);
     if (d->isActive()) {
-        return QAbstractEventDispatcher::instance()->remainingTime(d->id);
+        return QAbstractEventDispatcher::instance()->remainingTime(qToUnderlying(d->id));
     }
 
     return -1;

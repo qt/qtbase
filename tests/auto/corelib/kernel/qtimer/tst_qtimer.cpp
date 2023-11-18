@@ -98,6 +98,7 @@ private slots:
     void automatedBindingTests();
 
     void negativeInterval();
+    void testTimerId();
 };
 
 void tst_QTimer::zeroTimer()
@@ -816,12 +817,10 @@ void tst_QTimer::timerFiresOnlyOncePerProcessEvents()
 class TimerIdPersistsAfterThreadExitThread : public QThread
 {
 public:
-    QTimer *timer;
-    int timerId, returnValue;
+    QTimer *timer = nullptr;
+    Qt::TimerId timerId = Qt::TimerId::Invalid;
+    int returnValue = -1;
 
-    TimerIdPersistsAfterThreadExitThread()
-        : QThread(), timer(0), timerId(-1), returnValue(-1)
-    { }
     ~TimerIdPersistsAfterThreadExitThread()
     {
         delete timer;
@@ -833,10 +832,14 @@ public:
         timer = new QTimer;
         connect(timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
         timer->start(100);
-        timerId = timer->timerId();
+        timerId = timer->id();
         returnValue = eventLoop.exec();
     }
 };
+
+namespace {
+int operator&(Qt::TimerId id, int i) { return qToUnderlying(id) & i; }
+}
 
 void tst_QTimer::timerIdPersistsAfterThreadExit()
 {
@@ -861,6 +864,19 @@ void tst_QTimer::cancelLongTimer()
     QVERIFY(timer.isActive()); //if the timer completes immediately with an error, then this will fail
     timer.stop();
     QVERIFY(!timer.isActive());
+}
+
+void tst_QTimer::testTimerId()
+{
+    QTimer timer;
+    timer.start(100ms);
+    QVERIFY(timer.isActive());
+    QCOMPARE_GT(timer.timerId(), 0);
+    QCOMPARE_GT(timer.id(), Qt::TimerId::Invalid);
+    timer.stop();
+    QVERIFY(!timer.isActive());
+    QCOMPARE(timer.timerId(), -1);
+    QCOMPARE(timer.id(), Qt::TimerId::Invalid);
 }
 
 class TimeoutCounter : public QObject

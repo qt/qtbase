@@ -191,8 +191,8 @@ QObjectPrivate::~QObjectPrivate()
                 thisThreadData->eventDispatcher.loadRelaxed()->unregisterTimers(q_ptr);
 
             // release the timer ids back to the pool
-            for (int i = 0; i < extraData->runningTimers.size(); ++i)
-                QAbstractEventDispatcherPrivate::releaseTimerId(extraData->runningTimers.at(i));
+            for (auto id : std::as_const(extraData->runningTimers))
+                QAbstractEventDispatcherPrivate::releaseTimerId(id);
         } else {
             qWarning("QObject::~QObject: Timers cannot be stopped from another thread");
         }
@@ -1888,6 +1888,13 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
     is \c std::chrono::nanoseconds, prior to that it was \c
     std::chrono::milliseconds. This change is backwards compatible with
     older releases of Qt.
+
+    \note In Qt 6.8, QObject was changed to use Qt::TimerId to represent timer
+    IDs. This method converts the TimerId to int for backwards compatibility
+    reasons, however you can use Qt::TimerId to check the value returned by
+    this method, for example:
+    \snippet code/src_corelib_kernel_qobject.cpp invalid-timer-id
+
 */
 int QObject::startTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType)
 {
@@ -1914,7 +1921,7 @@ int QObject::startTimer(std::chrono::nanoseconds interval, Qt::TimerType timerTy
     const auto msecs = std::chrono::ceil<std::chrono::milliseconds>(interval);
     int timerId = dispatcher->registerTimer(msecs.count(), timerType, this);
     d->ensureExtraData();
-    d->extraData->runningTimers.append(timerId);
+    d->extraData->runningTimers.append(Qt::TimerId{timerId});
     return timerId;
 }
 
@@ -1929,17 +1936,26 @@ int QObject::startTimer(std::chrono::nanoseconds interval, Qt::TimerType timerTy
 
 void QObject::killTimer(int id)
 {
+    killTimer(Qt::TimerId{id});
+}
+
+/*!
+    \since 6.8
+    \overload
+*/
+void QObject::killTimer(Qt::TimerId id)
+{
     Q_D(QObject);
     if (Q_UNLIKELY(thread() != QThread::currentThread())) {
         qWarning("QObject::killTimer: Timers cannot be stopped from another thread");
         return;
     }
-    if (id) {
+    if (id > Qt::TimerId::Invalid) {
         int at = d->extraData ? d->extraData->runningTimers.indexOf(id) : -1;
         if (at == -1) {
             // timer isn't owned by this object
             qWarning("QObject::killTimer(): Error: timer id %d is not valid for object %p (%s, %ls), timer has not been killed",
-                     id,
+                     qToUnderlying(id),
                      this,
                      metaObject()->className(),
                      qUtf16Printable(objectName()));
@@ -1948,13 +1964,12 @@ void QObject::killTimer(int id)
 
         auto thisThreadData = d->threadData.loadRelaxed();
         if (thisThreadData->hasEventDispatcher())
-            thisThreadData->eventDispatcher.loadRelaxed()->unregisterTimer(id);
+            thisThreadData->eventDispatcher.loadRelaxed()->unregisterTimer(qToUnderlying(id));
 
         d->extraData->runningTimers.remove(at);
         QAbstractEventDispatcherPrivate::releaseTimerId(id);
     }
 }
-
 
 /*!
     \fn QObject *QObject::parent() const

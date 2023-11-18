@@ -469,3 +469,16 @@ const bool wasBlocked = someQObject->blockSignals(true);
 // no signals here
 someQObject->blockSignals(wasBlocked);
 //! [54]
+
+{
+//! [invalid-timer-id]
+    QObject *obj;
+    ...
+    int id = obj->startTimer(100ms);
+    if (id > Qt::TimerId::Invalid)
+        // The timer has been started successfully
+
+    if (id > 0) // Equivalent, albeit less readable
+        // The timer has been started successfully
+//! [invalid-timer-id]
+}

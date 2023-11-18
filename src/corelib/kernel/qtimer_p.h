@@ -12,10 +12,12 @@
 //
 // We mean it.
 //
-#include "qobject_p.h"
-#include "qproperty_p.h"
 #include "qtimer.h"
 #include "qchronotimer.h"
+
+#include "qobject_p.h"
+#include "qproperty_p.h"
+#include "qttypetraits.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -39,7 +41,7 @@ public:
     void setIntervalDuration(std::chrono::nanoseconds nsec)
     {
         if (isQTimer) {
-            const auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(nsec);
+            const auto msec = std::chrono::ceil<std::chrono::milliseconds>(nsec);
             static_cast<QTimer *>(q)->setInterval(msec);
         } else {
             static_cast<QChronoTimer *>(q)->setInterval(nsec);
@@ -52,9 +54,9 @@ public:
         static_cast<QTimer *>(q)->setInterval(msec);
     }
 
-    bool isActive() const { return id > 0; }
+    bool isActive() const { return id > Qt::TimerId::Invalid; }
 
-    int id = INV_TIMER;
+    Qt::TimerId id = Qt::TimerId::Invalid;
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, int, inter, &QTimerPrivate::setInterval, 0)
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, std::chrono::nanoseconds, intervalDuration,
                                        &QTimerPrivate::setIntervalDuration,
@@ -64,8 +66,7 @@ public:
     Q_OBJECT_COMPUTED_PROPERTY(QTimerPrivate, bool, isActiveData, &QTimerPrivate::isActive)
 
     QObject *q;
-    // true if q is a QTimer*, false otherwise
-    const bool isQTimer = false;
+    const bool isQTimer = false; // true if q is a QTimer*
 };
 
 QT_END_NAMESPACE

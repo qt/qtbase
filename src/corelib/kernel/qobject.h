@@ -149,6 +149,7 @@ public:
     int startTimer(std::chrono::nanoseconds time, Qt::TimerType timerType = Qt::CoarseTimer);
 
     void killTimer(int id);
+    void killTimer(Qt::TimerId id);
 
     template<typename T>
     T findChild(QAnyStringView aName, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const

@@ -16,7 +16,9 @@
 //
 
 #include "QtCore/qabstracteventdispatcher.h"
+#include "QtCore/qnamespace.h"
 #include "private/qobject_p.h"
+#include "QtCore/qttypetraits.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -33,6 +35,8 @@ public:
 
     static int allocateTimerId();
     static void releaseTimerId(int id);
+    static void releaseTimerId(Qt::TimerId id)
+    { releaseTimerId(qToUnderlying(id)); }
 };
 
 QT_END_NAMESPACE

@@ -31,6 +31,7 @@ public:
     bool isActive() const;
     QBindable<bool> bindableActive();
     int timerId() const;
+    Qt::TimerId id() const;
 
     void setInterval(int msec);
     int interval() const;

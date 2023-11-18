@@ -91,7 +91,7 @@ public:
 
         QList<QByteArray> propertyNames;
         QList<QVariant> propertyValues;
-        QList<int> runningTimers;
+        QList<Qt::TimerId> runningTimers;
         QList<QPointer<QObject>> eventFilters;
         Q_OBJECT_COMPAT_PROPERTY(QObjectPrivate::ExtraData, QString, objectName,
                                  &QObjectPrivate::ExtraData::setObjectNameForwarder,
