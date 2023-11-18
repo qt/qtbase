@@ -133,7 +133,7 @@ QChronoTimer::QChronoTimer(std::chrono::nanoseconds nsec, QObject *parent)
 */
 QChronoTimer::~QChronoTimer()
 {
-    if (d_func()->id != QTimerPrivate::INV_TIMER) // stop running timer
+    if (d_func()->isActive()) // stop running timer
         stop();
 }
 
@@ -187,7 +187,7 @@ int QChronoTimer::id() const
 void QChronoTimer::start()
 {
     auto *d = d_func();
-    if (d->id != QTimerPrivate::INV_TIMER) // stop running timer
+    if (d->isActive()) // stop running timer
         stop();
     const auto id = QObject::startTimer(d->intervalDuration, d->type);
     if (id > 0) {
@@ -204,7 +204,7 @@ void QChronoTimer::start()
 void QChronoTimer::stop()
 {
     auto *d = d_func();
-    if (d->id != QTimerPrivate::INV_TIMER) {
+    if (d->isActive()) {
         QObject::killTimer(d->id);
         d->id = QTimerPrivate::INV_TIMER;
         d->isActiveData.notify();
@@ -286,7 +286,7 @@ void QChronoTimer::setInterval(std::chrono::nanoseconds nsec)
     d->intervalDuration.removeBindingUnlessInWrapper();
     const bool intervalChanged = nsec != d->intervalDuration.valueBypassingBindings();
     d->intervalDuration.setValueBypassingBindings(nsec);
-    if (d->id != QTimerPrivate::INV_TIMER) { // Create new timer
+    if (d->isActive()) { // Create new timer
         QObject::killTimer(d->id); // Restart timer
         const auto id = QObject::startTimer(nsec, d->type);
         if (id > 0) {

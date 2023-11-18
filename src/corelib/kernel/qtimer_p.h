@@ -52,7 +52,7 @@ public:
         static_cast<QTimer *>(q)->setInterval(msec);
     }
 
-    bool isActiveActualCalculation() const { return id > 0; }
+    bool isActive() const { return id > 0; }
 
     int id = INV_TIMER;
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, int, inter, &QTimerPrivate::setInterval, 0)
@@ -61,8 +61,7 @@ public:
                                        std::chrono::nanoseconds{0})
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, bool, single, false)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, Qt::TimerType, type, Qt::CoarseTimer)
-    Q_OBJECT_COMPUTED_PROPERTY(QTimerPrivate, bool, isActiveData,
-                               &QTimerPrivate::isActiveActualCalculation)
+    Q_OBJECT_COMPUTED_PROPERTY(QTimerPrivate, bool, isActiveData, &QTimerPrivate::isActive)
 
     QObject *q;
     // true if q is a QTimer*, false otherwise

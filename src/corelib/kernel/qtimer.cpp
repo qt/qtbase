@@ -130,7 +130,7 @@ QTimer::QTimer(QObject *parent)
 
 QTimer::~QTimer()
 {
-    if (d_func()->id != QTimerPrivate::INV_TIMER) // stop running timer
+    if (d_func()->isActive()) // stop running timer
         stop();
 }
 
@@ -191,7 +191,7 @@ int QTimer::timerId() const
 void QTimer::start()
 {
     Q_D(QTimer);
-    if (d->id != QTimerPrivate::INV_TIMER) // stop running timer
+    if (d->isActive()) // stop running timer
         stop();
     const int id = QObject::startTimer(std::chrono::milliseconds{d->inter}, d->type);
     if (id > 0) {
@@ -247,7 +247,7 @@ void QTimer::start(std::chrono::milliseconds interval)
 void QTimer::stop()
 {
     Q_D(QTimer);
-    if (d->id != QTimerPrivate::INV_TIMER) {
+    if (d->isActive()) {
         QObject::killTimer(d->id);
         d->id = QTimerPrivate::INV_TIMER;
         d->isActiveData.notify();
@@ -570,7 +570,7 @@ void QTimer::setInterval(std::chrono::milliseconds interval)
     d->inter.removeBindingUnlessInWrapper();
     const bool intervalChanged = msec != d->inter.valueBypassingBindings();
     d->inter.setValueBypassingBindings(msec);
-    if (d->id != QTimerPrivate::INV_TIMER) { // create new timer
+    if (d->isActive()) { // create new timer
         QObject::killTimer(d->id);                        // restart timer
         const int id = QObject::startTimer(std::chrono::milliseconds{msec}, d->type);
         if (id > 0) {
@@ -611,7 +611,7 @@ QBindable<int> QTimer::bindableInterval()
 int QTimer::remainingTime() const
 {
     Q_D(const QTimer);
-    if (d->id != QTimerPrivate::INV_TIMER) {
+    if (d->isActive()) {
         return QAbstractEventDispatcher::instance()->remainingTime(d->id);
     }
 
