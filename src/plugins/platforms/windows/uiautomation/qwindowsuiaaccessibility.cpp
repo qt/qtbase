@@ -97,11 +97,7 @@ void QWindowsUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event
     if (!event)
         return;
 
-    // Ignore events sent before the first UI Automation
-    // request or while QAccessible is being activated.
-    if (!m_accessibleActive)
-        return;
-
+    // Always handle system sound events
     switch (event->type()) {
         case QAccessible::PopupMenuStart:
             playSystemSound(QStringLiteral("MenuPopup"));
@@ -115,6 +111,11 @@ void QWindowsUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event
         default:
             break;
     }
+
+    // Ignore events sent before the first UI Automation
+    // request or while QAccessible is being activated.
+    if (!m_accessibleActive)
+        return;
 
     QAccessibleInterface *accessible = event->accessibleInterface();
     if (!isActive() || !accessible || !accessible->isValid())
