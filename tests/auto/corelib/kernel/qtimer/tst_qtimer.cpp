@@ -1031,7 +1031,7 @@ void tst_QTimer::singleShotToFunctors()
     thread.wait();
 
     struct MoveOnly : CountedStruct {
-        Q_DISABLE_COPY(MoveOnly);
+        Q_DISABLE_COPY(MoveOnly)
         MoveOnly(MoveOnly &&o) : CountedStruct(std::move(o)) {};
         MoveOnly(int *c) : CountedStruct(c) {}
     };
