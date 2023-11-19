@@ -256,6 +256,8 @@ public class QtActivityBase extends Activity
     {
         super.onRestoreInstanceState(savedInstanceState);
         QtNative.setStarted(savedInstanceState.getBoolean("Started"));
+        int savedSystemUiVisibility = savedInstanceState.getInt("SystemUiVisibility");
+        m_delegate.displayManager().setSystemUiVisibility(this, savedSystemUiVisibility);
         // FIXME restore all surfaces
     }
 
