@@ -1745,7 +1745,7 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
     // handles (Yes, No) and (Yes|Default, No)
     if (defaultButton && !(buttons & defaultButton)) {
         const int defaultButtons = defaultButton | QMessageBox::Default;
-        const int otherButtons = static_cast<int>(buttons);
+        const int otherButtons = buttons.toInt();
         const int ret = QMessageBoxPrivate::showOldMessageBox(parent, icon, title,
                                                               text, otherButtons,
                                                               defaultButtons, 0);
