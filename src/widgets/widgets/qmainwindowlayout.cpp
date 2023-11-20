@@ -1865,11 +1865,11 @@ class QMainWindowTabBar : public QTabBar
     Q_OBJECT
     QMainWindow *mainWindow;
     QPointer<QDockWidget> draggingDock; // Currently dragging (detached) dock widget
-    ~QMainWindowTabBar();
 public:
     QMainWindowTabBar(QMainWindow *parent);
     QDockWidget *dockAt(int index) const;
     QList<QDockWidget *> dockWidgets() const;
+    ~QMainWindowTabBar();
 protected:
     bool event(QEvent *e) override;
     void mouseReleaseEvent(QMouseEvent*) override;
