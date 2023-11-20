@@ -942,7 +942,7 @@ qt_feature("concurrent" PUBLIC
 qt_feature_definition("concurrent" "QT_NO_CONCURRENT" NEGATE VALUE "1")
 qt_feature("dbus" PUBLIC PRIVATE
     LABEL "Qt D-Bus"
-    AUTODETECT NOT UIKIT AND NOT ANDROID
+    AUTODETECT NOT UIKIT AND NOT ANDROID AND NOT VXWORKS
     CONDITION QT_FEATURE_thread AND NOT WASM
 )
 qt_feature_definition("dbus" "QT_NO_DBUS" NEGATE VALUE "1")
