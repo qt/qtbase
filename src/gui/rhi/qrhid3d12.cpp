@@ -176,9 +176,20 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
     HRESULT hr = CreateDXGIFactory2(factoryFlags, __uuidof(IDXGIFactory2), reinterpret_cast<void **>(&dxgiFactory));
     if (FAILED(hr)) {
-        qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s",
-                 qPrintable(QSystemError::windowsComString(hr)));
-        return false;
+        // retry without debug, if it was requested (to match D3D11 backend behavior)
+        if (debugLayer) {
+            qCDebug(QRHI_LOG_INFO, "Debug layer was requested but is not available. "
+                                   "Attempting to create DXGIFactory2 without it.");
+            factoryFlags &= ~DXGI_CREATE_FACTORY_DEBUG;
+            hr = CreateDXGIFactory2(factoryFlags, __uuidof(IDXGIFactory2), reinterpret_cast<void **>(&dxgiFactory));
+        }
+        if (SUCCEEDED(hr)) {
+            debugLayer = false;
+        } else {
+            qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s",
+                     qPrintable(QSystemError::windowsComString(hr)));
+            return false;
+        }
     }
 
     supportsAllowTearing = false;
