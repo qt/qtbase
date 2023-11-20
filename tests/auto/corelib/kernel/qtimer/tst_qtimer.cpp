@@ -2,9 +2,19 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+/* WARNING: this source-code is reused by another test.
+
+   As Qt built with GUI support may use a different backend for its event loops
+   and other timer-related matters, it is important to test it in that form, as
+   well as in its GUI-less form. So this source file is reused by a build config
+   in the GUI module. Similarly, testing with and without glib is supported,
+   where relevant (see DISABLE_GLIB below).
+*/
 #ifdef QT_GUI_LIB
+// When compiled as tests/auto/gui/kernel/qguitimer/'s source-code:
 #  include <QtGui/QGuiApplication>
 #else
+// When compiled as tests/auto/corelib/kernel/qtimer/'s source-code:
 #  include <QtCore/QCoreApplication>
 #endif
 
