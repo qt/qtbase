@@ -107,9 +107,10 @@ NSWindow<QNSWindowProtocol> *qnswindow_cast(NSWindow *window)
             continue;
 
         if ([window conformsToProtocol:@protocol(QNSWindowProtocol)]) {
-            QCocoaWindow *cocoaWindow = static_cast<QCocoaNSWindow *>(window).platformWindow;
-            window.level = notification.name == NSApplicationWillResignActiveNotification ?
-                NSNormalWindowLevel : cocoaWindow->windowLevel(cocoaWindow->window()->flags());
+            if (QCocoaWindow *cocoaWindow = static_cast<QCocoaNSWindow *>(window).platformWindow) {
+                window.level = notification.name == NSApplicationWillResignActiveNotification ?
+                    NSNormalWindowLevel : cocoaWindow->windowLevel(cocoaWindow->window()->flags());
+            }
         }
 
         // The documentation says that "when a window enters a new level, it’s ordered
