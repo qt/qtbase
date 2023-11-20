@@ -4,7 +4,6 @@
 
 #ifdef QT_GUI_LIB
 #  include <QtGui/QGuiApplication>
-#  define tst_QTimer tst_QGuiTimer
 #else
 #  include <QtCore/QCoreApplication>
 #endif
@@ -24,12 +23,6 @@
 #endif
 
 #ifdef DISABLE_GLIB
-#  ifdef tst_QTimer
-#    undef tst_QTimer
-#    define tst_QTimer tst_QGuiTimer_NoGlib
-#  else
-#    define tst_QTimer tst_QTimer_NoGlib
-#  endif
 static bool glibDisabled = []() {
     qputenv("QT_NO_GLIB", "1");
     return true;

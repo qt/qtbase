@@ -11,22 +11,24 @@ if (NOT QT_FEATURE_thread)
     return()
 endif()
 
-qt_internal_add_test(tst_qtimer
-    SOURCES
-        tst_qtimer.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::TestPrivate
-)
-
-if(QT_FEATURE_glib AND UNIX)
-    qt_internal_add_test(tst_qtimer_no_glib
+function(addTimerTest test)
+    qt_internal_add_test(${test}
         SOURCES
             tst_qtimer.cpp
-        DEFINES
-            DISABLE_GLIB
         LIBRARIES
             Qt::CorePrivate
             Qt::TestPrivate
     )
+endfunction()
+
+addTimerTest(tst_qtimer)
+
+if(QT_FEATURE_glib AND UNIX)
+    addTimerTest(tst_qtimer_no_glib)
+    qt_internal_extend_target(tst_qtimer_no_glib
+        DEFINES
+            DISABLE_GLIB
+            tst_QTimer=tst_QTimer_no_glib # Class name in the unittest
+    )
 endif()
+
