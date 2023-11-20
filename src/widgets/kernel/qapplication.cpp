@@ -310,7 +310,6 @@ QWidget *QApplication::topLevelAt(const QPoint &pos)
 */
 
 void qt_init_tooltip_palette();
-void qt_cleanup();
 
 QStyle *QApplicationPrivate::app_style = nullptr;        // default application style
 #ifndef QT_NO_STYLE_STYLESHEET
@@ -708,7 +707,10 @@ QApplication::~QApplication()
 
     d->cleanupMultitouch();
 
-    qt_cleanup();
+    QPixmapCache::clear();
+    QColormap::cleanup();
+
+    QApplicationPrivate::active_window = nullptr; //### this should not be necessary
 
     if (QApplicationPrivate::widgetCount)
         qDebug("Widgets left: %i    Max widgets: %i \n", QWidgetPrivate::instanceCounter, QWidgetPrivate::maxInstances);
@@ -717,14 +719,6 @@ QApplication::~QApplication()
 
     QApplicationPrivate::enabledAnimations = QPlatformTheme::GeneralUiEffect;
     QApplicationPrivate::widgetCount = false;
-}
-
-void qt_cleanup()
-{
-    QPixmapCache::clear();
-    QColormap::cleanup();
-
-    QApplicationPrivate::active_window = nullptr; //### this should not be necessary
 }
 
 /*!

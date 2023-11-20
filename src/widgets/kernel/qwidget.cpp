@@ -12448,7 +12448,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     if ((windowType() == Qt::Popup) && qApp)
         qApp->d_func()->closePopup(this);
 
-    if (this == QApplicationPrivate::active_window)
+    if (this == qApp->activeWindow())
         QApplicationPrivate::setActiveWindow(nullptr);
     if (QWidget::mouseGrabber() == this)
         releaseMouse();

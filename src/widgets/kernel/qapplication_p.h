@@ -145,7 +145,6 @@ public:
     static QWidget *main_widget;
     static QWidget *focus_widget;
     static QWidget *hidden_focus_widget;
-    static QWidget *active_window;
 #if QT_CONFIG(wheelevent)
     static int  wheel_scroll_lines;
     static QPointer<QWidget> wheel_widget;
@@ -228,6 +227,7 @@ private:
     static void giveFocusAccordingToFocusPolicy(QWidget *w, QEvent *event, QPoint localPos);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);
 
+    static QWidget *active_window;
 
     static bool isAlien(QWidget *);
 };
