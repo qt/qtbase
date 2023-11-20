@@ -280,16 +280,20 @@ void QDialogButtonBoxPrivate::layoutButtons()
         ++currentLayout;
     }
 
-    QWidget *lastWidget = nullptr;
-    q->setFocusProxy(nullptr);
+    QWidgetList layoutWidgets;
     for (int i = 0; i < buttonLayout->count(); ++i) {
-        QLayoutItem *item = buttonLayout->itemAt(i);
-        if (QWidget *widget = item->widget()) {
-            if (lastWidget)
-                QWidget::setTabOrder(lastWidget, widget);
-            else
-                q->setFocusProxy(widget);
-            lastWidget = widget;
+        if (auto *widget = buttonLayout->itemAt(i)->widget())
+            layoutWidgets << widget;
+    }
+
+    q->setFocusProxy(nullptr);
+    if (!layoutWidgets.isEmpty()) {
+        QWidget *prev = layoutWidgets.constLast();
+        for (QWidget *here : layoutWidgets) {
+            QWidget::setTabOrder(prev, here);
+            prev = here;
+            if (auto *pushButton = qobject_cast<QPushButton *>(prev); pushButton->isDefault())
+                q->setFocusProxy(pushButton);
         }
     }
 
