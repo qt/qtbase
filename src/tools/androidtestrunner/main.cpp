@@ -488,6 +488,65 @@ struct RunnerLocker
                 1, QSystemSemaphore::Open };
 };
 
+void printLogcat(const QString &formattedTime)
+{
+    QString logcatCmd = "%1 logcat "_L1.arg(g_options.adbCommand);
+    if (g_options.sdkVersion <= 23 || g_options.pid == -1)
+        logcatCmd += "-t '%1'"_L1.arg(formattedTime);
+    else
+        logcatCmd += "-d --pid=%1"_L1.arg(QString::number(g_options.pid));
+
+    QByteArray logcat;
+    if (!execCommand(logcatCmd, &logcat)) {
+        qCritical() << "Error: failed to fetch logcat of the test";
+        return;
+    }
+
+    if (logcat.isEmpty()) {
+        qWarning() << "The retrieved logcat is empty";
+        return;
+    }
+
+    qDebug() << "****** Begin logcat output ******";
+    qDebug().noquote() << logcat;
+    qDebug() << "****** End logcat output ******";
+}
+
+void printLogcatCrashBuffer(const QString &formattedTime)
+{
+    QString crashCmd = "%1 logcat -b crash -t '%2'"_L1.arg(g_options.adbCommand, formattedTime);
+
+    QByteArray crashLogcat;
+    if (!execCommand(crashCmd, &crashLogcat)) {
+        qCritical() << "Error: failed to fetch logcat crash buffer";
+        return;
+    }
+
+    if (crashLogcat.isEmpty()) {
+        qDebug() << "The retrieved logcat crash buffer is empty";
+        return;
+    }
+
+    qDebug() << "****** Begin logcat crash buffer output ******";
+    qDebug().noquote() << crashLogcat;
+    qDebug() << "****** End logcat crash buffer output ******";
+}
+
+static QString getCurrentTimeString()
+{
+    const QString timeFormat = (g_options.sdkVersion <= 23) ?
+            "%m-%d\\ %H:%M:%S.000"_L1 : "%Y-%m-%d\\ %H:%M:%S.%3N"_L1;
+
+    QString dateCmd = "%1 shell date +'%2'"_L1.arg(g_options.adbCommand, timeFormat);
+    QByteArray output;
+    if (!execCommand(dateCmd, &output)) {
+        qWarning() << "Date/time adb command failed";
+        return {};
+    }
+
+    return QString::fromUtf8(output.simplified());
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -542,28 +601,25 @@ int main(int argc, char *argv[])
     if (!parseTestArgs())
         return 1;
 
+    const QString formattedTime = getCurrentTimeString();
+
     // start the tests
-    bool res = execCommand(QStringLiteral("%1 %2").arg(g_options.adbCommand, g_options.testArgs),
+    bool res = execCommand("%1 %2"_L1.arg(g_options.adbCommand, g_options.testArgs),
                            nullptr, g_options.verbose)
             && waitToFinish();
 
-    // get logcat output
-    if (res && g_options.showLogcatOutput) {
-        if (g_options.sdkVersion <= 23) {
-            fprintf(stderr, "Cannot show logcat output on Android 23 and below.\n");
-            fflush(stderr);
-        } else if (g_options.pid > 0) {
-            fprintf(stdout, "Logcat output:\n");
-            res &= execCommand(QStringLiteral("%1 logcat -d --pid=%2")
-                                       .arg(g_options.adbCommand)
-                                       .arg(g_options.pid),
-                               nullptr, true);
-            fprintf(stdout, "End Logcat output.\n");
-        }
-    }
-
     if (res)
         res &= pullFiles();
+
+    // If we have a failure, attempt to print both logcat and the crash buffer which
+    // includes the crash stacktrace that is not included in the default logcat.
+    if (!res) {
+        printLogcat(formattedTime);
+        printLogcatCrashBuffer(formattedTime);
+    } else if (g_options.showLogcatOutput) {
+        printLogcat(formattedTime);
+    }
+
     res &= execCommand(QStringLiteral("%1 uninstall %2").arg(g_options.adbCommand, g_options.package),
                        nullptr, g_options.verbose);
     fflush(stdout);
