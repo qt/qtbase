@@ -1019,6 +1019,15 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \since 6.7
+    \fn template <class T> QDebug operator<<(QDebug debug, const std::optional<T> &opt)
+    \relates QDebug
+
+    Writes the contents of \a opt (or \c nullopt if not set) to \a debug.
+    \c T needs to support streaming into QDebug.
+*/
+
+/*!
     \fn template <typename T> QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
     \relates QDebug
 
@@ -1049,6 +1058,13 @@ QDebug &QDebug::resetFormat()
   \fn QDebug &QDebug::operator<<(std::nullptr_t)
   \internal
  */
+
+/*!
+    \since 6.7
+    \fn QDebug &QDebug::operator<<(std::nullopt_t)
+
+    Writes nullopt to the stream.
+*/
 
 /*!
     \class QDebugStateSaver

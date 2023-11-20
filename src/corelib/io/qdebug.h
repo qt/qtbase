@@ -126,6 +126,7 @@ public:
     inline QDebug &operator<<(QByteArrayView t) { putByteArray(t.constData(), t.size(), ContainsBinary); return maybeSpace(); }
     inline QDebug &operator<<(const void * t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(std::nullptr_t) { stream->ts << "(nullptr)"; return maybeSpace(); }
+    inline QDebug &operator<<(std::nullopt_t) { stream->ts << "nullopt"; return maybeSpace(); }
     inline QDebug &operator<<(QTextStreamFunction f) {
         stream->ts << f;
         return *this;
@@ -359,6 +360,17 @@ template <class Key, class T>
 inline QDebugIfHasDebugStreamContainer<QMultiHash<Key, T>, Key, T> operator<<(QDebug debug, const QMultiHash<Key, T> &hash)
 {
     return QtPrivate::printAssociativeContainer(debug, "QMultiHash", hash);
+}
+
+template <class T>
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::optional<T> &opt)
+{
+    const QDebugStateSaver saver(debug);
+    if (!opt)
+        debug.nospace() << std::nullopt;
+    else
+        debug.nospace() << "std::optional(" << *opt << ')';
+    return debug;
 }
 
 template <class T1, class T2>
