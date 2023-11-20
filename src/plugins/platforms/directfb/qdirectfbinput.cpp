@@ -176,7 +176,7 @@ void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
 void QDirectFbInput::handleGotFocusEvent(const DFBEvent &event)
 {
     QWindow *tlw = m_tlwMap.value(event.window.window_id);
-    QWindowSystemInterface::handleWindowActivated(tlw, Qt::ActiveWindowFocusReason);
+    QWindowSystemInterface::handleFocusWindowChanged(tlw, Qt::ActiveWindowFocusReason);
 }
 
 void QDirectFbInput::handleCloseEvent(const DFBEvent &event)

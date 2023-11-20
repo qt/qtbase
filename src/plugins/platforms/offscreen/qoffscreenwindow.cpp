@@ -86,7 +86,7 @@ void QOffscreenWindow::setVisible(bool visible)
 
     if (visible) {
         if (window()->type() != Qt::ToolTip)
-            QWindowSystemInterface::handleWindowActivated(window(), Qt::ActiveWindowFocusReason);
+            QWindowSystemInterface::handleFocusWindowChanged(window(), Qt::ActiveWindowFocusReason);
 
         if (m_pendingGeometryChangeOnShow) {
             m_pendingGeometryChangeOnShow = false;
@@ -122,7 +122,7 @@ void QOffscreenWindow::setVisible(bool visible)
 void QOffscreenWindow::requestActivateWindow()
 {
     if (m_visible)
-        QWindowSystemInterface::handleWindowActivated(window(), Qt::ActiveWindowFocusReason);
+        QWindowSystemInterface::handleFocusWindowChanged(window(), Qt::ActiveWindowFocusReason);
 }
 
 WId QOffscreenWindow::winId() const

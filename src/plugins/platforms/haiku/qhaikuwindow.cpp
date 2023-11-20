@@ -294,7 +294,7 @@ void QHaikuWindow::haikuWindowResized(const QSize &size, bool zoomInProgress)
 
 void QHaikuWindow::haikuWindowActivated(bool activated)
 {
-    QWindowSystemInterface::handleWindowActivated(activated ? window() : nullptr);
+    QWindowSystemInterface::handleFocusWindowChanged(activated ? window() : nullptr);
 }
 
 void QHaikuWindow::haikuWindowMinimized(bool minimize)

@@ -2087,8 +2087,8 @@ void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::processWindowSystemEvent(
     case QWindowSystemInterfacePrivate::Leave:
         QGuiApplicationPrivate::processLeaveEvent(static_cast<QWindowSystemInterfacePrivate::LeaveEvent *>(e));
         break;
-    case QWindowSystemInterfacePrivate::ActivatedWindow:
-        QGuiApplicationPrivate::processActivatedEvent(static_cast<QWindowSystemInterfacePrivate::ActivatedWindowEvent *>(e));
+    case QWindowSystemInterfacePrivate::FocusWindow:
+        QGuiApplicationPrivate::processFocusWindowEvent(static_cast<QWindowSystemInterfacePrivate::FocusWindowEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::WindowStateChanged:
         QGuiApplicationPrivate::processWindowStateChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowStateChangedEvent *>(e));
@@ -2511,10 +2511,10 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
     QCoreApplication::sendSpontaneousEvent(e->leave.data(), &event);
 }
 
-void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
+void QGuiApplicationPrivate::processFocusWindowEvent(QWindowSystemInterfacePrivate::FocusWindowEvent *e)
 {
     QWindow *previous = QGuiApplicationPrivate::focus_window;
-    QWindow *newFocus = e->activated.data();
+    QWindow *newFocus = e->focused.data();
 
     if (previous == newFocus)
         return;

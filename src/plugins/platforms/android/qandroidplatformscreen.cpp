@@ -184,7 +184,7 @@ void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
     }
 
     QWindow *w = topWindow();
-    QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
+    QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
     topWindowChanged(w);
 }
 
@@ -204,7 +204,7 @@ void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
     }
 
     QWindow *w = topWindow();
-    QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
+    QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
     topWindowChanged(w);
 }
 
@@ -221,7 +221,7 @@ void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
         setDirty(window->geometry());
     }
     QWindow *w = topWindow();
-    QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
+    QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
     topWindowChanged(w);
 }
 
@@ -238,7 +238,7 @@ void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
         setDirty(window->geometry());
     }
     QWindow *w = topWindow();
-    QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
+    QWindowSystemInterface::handleFocusWindowChanged(w, Qt::ActiveWindowFocusReason);
     topWindowChanged(w);
 }
 

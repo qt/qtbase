@@ -94,7 +94,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     m_focusInTimer.setInterval(focusInDelay);
     m_focusInTimer.callOnTimeout(this, []() {
         // No FocusIn events for us, proceed with FocusOut normally.
-        QWindowSystemInterface::handleWindowActivated(nullptr, Qt::ActiveWindowFocusReason);
+        QWindowSystemInterface::handleFocusWindowChanged(nullptr, Qt::ActiveWindowFocusReason);
     });
 
     sync();

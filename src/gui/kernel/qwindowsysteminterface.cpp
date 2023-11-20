@@ -240,9 +240,9 @@ void QWindowSystemInterface::handleEnterLeaveEvent(QWindow *enter, QWindow *leav
     handleEnterEvent(enter, local, global);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowActivated, QWindow *window, Qt::FocusReason r)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleFocusWindowChanged, QWindow *window, Qt::FocusReason r)
 {
-    handleWindowSystemEvent<QWindowSystemInterfacePrivate::ActivatedWindowEvent, Delivery>(window, r);
+    handleWindowSystemEvent<QWindowSystemInterfacePrivate::FocusWindowEvent, Delivery>(window, r);
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowStateChanged, QWindow *window, Qt::WindowStates newState, int oldState)

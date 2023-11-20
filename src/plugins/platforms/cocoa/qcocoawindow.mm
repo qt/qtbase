@@ -1261,8 +1261,8 @@ void QCocoaWindow::windowDidBecomeKey()
         return;
 
     // See also [QNSView becomeFirstResponder]
-    QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(
-                focusCocoaWindow->window(), Qt::ActiveWindowFocusReason);
+    QWindowSystemInterface::handleFocusWindowChanged<QWindowSystemInterface::SynchronousDelivery>(
+                window(), Qt::ActiveWindowFocusReason);
 }
 
 void QCocoaWindow::windowDidResignKey()
@@ -1288,7 +1288,7 @@ void QCocoaWindow::windowDidResignKey()
 
     // Lost key window, go ahead and set the active window to zero
     if (!windowIsPopupType()) {
-        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(
+        QWindowSystemInterface::handleFocusWindowChanged<QWindowSystemInterface::SynchronousDelivery>(
             nullptr, Qt::ActiveWindowFocusReason);
     }
 }

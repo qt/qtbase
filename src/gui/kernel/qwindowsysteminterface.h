@@ -157,8 +157,9 @@ public:
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleLeaveEvent(QWindow *window);
     static void handleEnterLeaveEvent(QWindow *enter, QWindow *leave, const QPointF &local = QPointF(), const QPointF& global = QPointF());
+
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static void handleWindowActivated(QWindow *window, Qt::FocusReason r = Qt::OtherFocusReason);
+    static void handleFocusWindowChanged(QWindow *window, Qt::FocusReason r = Qt::OtherFocusReason);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleWindowStateChanged(QWindow *window, Qt::WindowStates newState, int oldState = -1);
