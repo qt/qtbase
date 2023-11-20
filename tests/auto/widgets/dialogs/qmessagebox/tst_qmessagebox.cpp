@@ -482,14 +482,7 @@ QT_WARNING_DISABLE_DEPRECATED
     ExecCloseHelper closeHelper;
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No);
-    int expectedButton = int(QMessageBox::Yes);
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
-        const int dialogButtonBoxLayout = theme->themeHint(QPlatformTheme::DialogButtonBoxLayout).toInt();
-        if (dialogButtonBoxLayout == QDialogButtonBox::MacLayout
-            || dialogButtonBoxLayout == QDialogButtonBox::GnomeLayout)
-            expectedButton = int(QMessageBox::No);
-    }
-    COMPARE(ret, expectedButton);
+    COMPARE(ret, QMessageBox::No);
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Enter);
