@@ -428,34 +428,40 @@ static void obtainSDKVersion()
 static bool pullFiles()
 {
     bool ret = true;
+    QByteArray userId;
+    // adb get-current-user command is available starting from API level 26.
+    if (g_options.sdkVersion >= 26) {
+        const QString userIdCmd = "%1 shell cmd activity get-current-user"_L1.arg(g_options.adbCommand);
+        if (!execCommand(userIdCmd, &userId)) {
+            qCritical() << "Error: failed to retrieve the user ID";
+            return false;
+        }
+    } else {
+        userId = "0";
+    }
+
     for (auto it = g_options.outFiles.constBegin(); it != g_options.outFiles.end(); ++it) {
         // Get only stdout from cat and get rid of stderr and fail later if the output is empty
-        const QString catCmd = QStringLiteral("cat files/output.%1 2> /dev/null").arg(it.key());
+        const QString outSuffix = it.key();
+        const QString catCmd = "cat files/output.%1 2> /dev/null"_L1.arg(outSuffix);
+        const QString fullCatCmd = "%1 shell 'run-as %2 --user %3 %4'"_L1.arg(
+                g_options.adbCommand, g_options.package, QString::fromUtf8(userId.simplified()),
+                catCmd);
 
         QByteArray output;
-        if (!execCommand(QStringLiteral("%1 shell 'run-as %2 %3'")
-                         .arg(g_options.adbCommand, g_options.package, catCmd), &output)) {
-            // Cannot find output file. Check in path related to current user
-            QByteArray userId;
-            execCommand(QStringLiteral("%1 shell cmd activity get-current-user")
-                        .arg(g_options.adbCommand), &userId);
-            const QString userIdSimplified(QString::fromUtf8(userId).simplified());
-            if (!execCommand(QStringLiteral("%1 shell 'run-as %2 --user %3 %4'")
-                        .arg(g_options.adbCommand, g_options.package, userIdSimplified, catCmd),
-                         &output)) {
-                return false;
-            }
-        }
-
-        if (output.isEmpty()) {
-            fprintf(stderr, "Failed to get the test output from the target. Either the output "
-                            "is empty or androidtestrunner failed to retrieve it.\n");
+        if (!execCommand(fullCatCmd, &output)) {
+            qCritical() << "Error: failed to retrieve the test's output.%1 file."_L1.arg(outSuffix);
             return false;
         }
 
-        auto checkerIt = g_options.checkFiles.find(it.key());
-        ret = ret && checkerIt != g_options.checkFiles.end() && checkerIt.value()(output);
-        if (it.value() == QStringLiteral("-")){
+        if (output.isEmpty()) {
+            qCritical() << "Error: the test's output.%1 is empty."_L1.arg(outSuffix);
+            return false;
+        }
+
+        auto checkerIt = g_options.checkFiles.find(outSuffix);
+        ret &= (checkerIt != g_options.checkFiles.end() && checkerIt.value()(output));
+        if (it.value() == "-"_L1) {
             fprintf(stdout, "%s", output.constData());
             fflush(stdout);
         } else {
