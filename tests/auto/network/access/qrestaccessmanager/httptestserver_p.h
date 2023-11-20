@@ -54,6 +54,7 @@ public:
         Head,
         Get,
         Put,
+        Patch,
         Post,
         Delete,
         Custom,

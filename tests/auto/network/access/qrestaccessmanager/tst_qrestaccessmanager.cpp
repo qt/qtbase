@@ -108,6 +108,7 @@ void tst_QRestAccessManager::networkRequestReply()
     const QByteArray methodPOST{"POST"_ba};
     const QByteArray methodGET{"GET"_ba};
     const QByteArray methodPUT{"PUT"_ba};
+    const QByteArray methodPATCH{"PATCH"_ba};
     const QByteArray methodCUSTOM{"FOOBAR"_ba};
 
     // DELETE
@@ -209,6 +210,27 @@ void tst_QRestAccessManager::networkRequestReply()
     VERIFY_REPLY_OK(methodPUT);
     QCOMPARE(serverSideRequest.body, ioDeviceData);
 
+    // PATCH
+    manager.patch(request, byteArrayData, this, callback);
+    VERIFY_REPLY_OK(methodPATCH);
+    QCOMPARE(serverSideRequest.body, byteArrayData);
+
+    manager.patch(request, jsonObjectData, this, callback);
+    VERIFY_REPLY_OK(methodPATCH);
+    QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).object(), jsonObjectData);
+
+    manager.patch(request, jsonArrayData, this, callback);
+    VERIFY_REPLY_OK(methodPATCH);
+    QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).array(), jsonArrayData);
+
+    manager.patch(request, variantMapData, this, callback);
+    VERIFY_REPLY_OK(methodPATCH);
+    QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).object(), jsonObjectData);
+
+    manager.patch(request, &bufferIoDevice, this, callback);
+    VERIFY_REPLY_OK(methodPATCH);
+    QCOMPARE(serverSideRequest.body, ioDeviceData);
+
     //These must NOT compile
     //manager.get(request, [](){}); // callback without context object
     //manager.get(request, ""_ba, [](){}); // callback without context object
@@ -219,6 +241,9 @@ void tst_QRestAccessManager::networkRequestReply()
     //manager.post(request); // data is required
     //manager.put(request, QString()); // wrong datatype
     //manager.put(request); // data is required
+    //manager.patch(request, 123); // wrong datatype
+    //manager.patch(request, QString()); // wrong datatype
+    //manager.patch(request); // data is required
     //manager.deleteResource(request, "f"_ba); // data not allowed
     //manager.head(request, "f"_ba); // data not allowed
     //manager.post(request, ""_ba, this, [](int param){}); // Wrong callback signature

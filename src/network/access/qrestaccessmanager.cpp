@@ -108,6 +108,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li \c post()
         \li \c put()
         \li \c head()
+        \li \c patch()
         \li \c deleteResource()
         \li \c sendCustomRequest()
     \row
@@ -116,6 +117,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li -
         \li -
         \li X
+        \li -
         \li X
         \li -
     \row
@@ -124,6 +126,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li X
         \li -
+        \li X
         \li -
         \li X
     \row
@@ -132,6 +135,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li X
         \li -
+        \li X
         \li -
         \li -
     \row
@@ -140,6 +144,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li X
         \li -
+        \li X
         \li -
         \li -
     \row
@@ -148,6 +153,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li X
         \li -
+        \li X
         \li -
         \li -
     \row
@@ -157,6 +163,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li -
         \li -
+        \li -
         \li X
     \row
         \li QIODevice
@@ -164,6 +171,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
         \li X
         \li -
+        \li X
         \li -
         \li X
     \endtable
@@ -431,6 +439,77 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 
 /*!
     \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
+                    const QNetworkRequest &request, QIODevice *data,
+                    const ContextTypeForFunctor<Functor> *context,
+                    Functor &&callback)
+
+    \overload
+*/
+
+/*!
+    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
+                    const QNetworkRequest &request, const QJsonObject &data,
+                    const ContextTypeForFunctor<Functor> *context,
+                    Functor &&callback)
+
+    Issues an \c {HTTP PATCH} based on \a request.
+
+    The optional \a callback and \a context object can be provided for
+    handling the request completion as illustrated below:
+
+    \snippet code/src_network_access_qrestaccessmanager.cpp 10
+
+    Alternatively the signals of the returned QRestReply* object can be
+    used. For further information see
+    \l {Issuing Network Requests and Handling Replies}.
+
+    The \c patch() method always requires \a data parameter. The following
+    data types are supported:
+    \list
+        \li QByteArray
+        \li QJsonObject *)
+        \li QJsonArray *)
+        \li QVariantMap **)
+        \li QIODevice*
+    \endlist
+
+    *) Sent in \l QJsonDocument::Compact format, and the
+    \c Content-Type header is set to \c {application/json}  if the
+    \c Content-Type header was not set
+    **) QVariantMap is converted to and treated as a QJsonObject
+
+    \sa QRestReply, QRestReply::finished(), QRestAccessManager::requestFinished()
+*/
+
+/*!
+    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
+                    const QNetworkRequest &request, const QJsonArray &data,
+                    const ContextTypeForFunctor<Functor> *context,
+                    Functor &&callback)
+
+    \overload
+*/
+
+/*!
+    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
+                    const QNetworkRequest &request, const QVariantMap &data,
+                    const ContextTypeForFunctor<Functor> *context,
+                    Functor &&callback)
+
+    \overload
+*/
+
+/*!
+    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
+                    const QNetworkRequest &request, const QByteArray &data,
+                    const ContextTypeForFunctor<Functor> *context,
+                    Functor &&callback)
+
+    \overload
+*/
+
+/*!
+    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
                     const QNetworkRequest &request, QIODevice *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -798,6 +877,52 @@ QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request, 
 {
     Q_D(QRestAccessManager);
     return d->executeRequest([&]() { return d->qnam->put(request, data); }, context, slot);
+}
+
+static const auto PATCH = "PATCH"_ba;
+
+QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
+                                                const QJsonObject &data, const QObject *context,
+                                                QtPrivate::QSlotObjectBase *slot)
+{
+    Q_D(QRestAccessManager);
+    return d->executeRequest(
+            [&](auto req, auto json){ return d->qnam->sendCustomRequest(req, PATCH, json); },
+            data, request, context, slot);
+}
+
+QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
+                                                const QJsonArray &data, const QObject *context,
+                                                QtPrivate::QSlotObjectBase *slot)
+{
+    Q_D(QRestAccessManager);
+    return d->executeRequest(
+            [&](auto req, auto json){ return d->qnam->sendCustomRequest(req, PATCH, json); },
+            data, request, context, slot);
+}
+
+QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
+                                                const QVariantMap &data, const QObject *context,
+                                                QtPrivate::QSlotObjectBase *slot)
+{
+    return patchWithDataImpl(request, QJsonObject::fromVariantMap(data), context, slot);
+}
+
+QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
+                                                const QByteArray &data, const QObject *context,
+                                                QtPrivate::QSlotObjectBase *slot)
+{
+    Q_D(QRestAccessManager);
+    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, PATCH, data); },
+                             context, slot);
+}
+
+QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request, QIODevice *data,
+                                           const QObject *context, QtPrivate::QSlotObjectBase *slot)
+{
+    Q_D(QRestAccessManager);
+    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, PATCH, data); },
+                             context, slot);
 }
 
 QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,

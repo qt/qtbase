@@ -89,3 +89,11 @@ manager->sendCustomRequest(request, "MYMETHOD",  myData,  this, [this](QRestRepl
         // ...
 });
 //! [9]
+
+
+//! [10]
+manager->patch(request, myData, this, [this](QRestReply *reply) {
+    if (reply->isSuccess())
+        // ...
+});
+//! [10]

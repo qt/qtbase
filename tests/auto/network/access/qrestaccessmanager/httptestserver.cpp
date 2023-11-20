@@ -147,6 +147,8 @@ bool HttpTestServer::readMethod(QTcpSocket *socket)
             method = Method::Get;
         else if (fragment == "PUT")
             method = Method::Put;
+        else if (fragment == "PATCH")
+            method = Method::Patch;
         else if (fragment == "POST")
             method = Method::Post;
         else if (fragment == "DELETE")
