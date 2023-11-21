@@ -451,10 +451,6 @@ if(NOT DEFINED QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
     set(QT_SKIP_AUTO_QML_PLUGIN_INCLUSION OFF)
 endif()
 
-if(QT_REPO_MODULE_VERSION)
-    message(STATUS \"Skip auto QML plugin inclusion is set to \${QT_SKIP_AUTO_QML_PLUGIN_INCLUSION}\")
-endif()
-
 file(GLOB __qt_qml_plugins_config_file_list \"\${CMAKE_CURRENT_LIST_DIR}/QmlPlugins/${INSTALL_CMAKE_NAMESPACE}*Config.cmake\")
 if (__qt_qml_plugins_config_file_list AND NOT QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
     # First round of inclusions ensure all qml plugin targets are brought into scope.
