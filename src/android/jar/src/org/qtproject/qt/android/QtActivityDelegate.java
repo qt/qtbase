@@ -37,7 +37,6 @@ public class QtActivityDelegate
 {
     private Activity m_activity;
 
-    private boolean m_started = false;
     private boolean m_isPluginRunning = false;
 
     private HashMap<Integer, QtSurface> m_surfaces = null;
@@ -98,16 +97,6 @@ public class QtActivityDelegate
         });
     }
 
-    void setStarted(boolean started)
-    {
-        m_started = started;
-    }
-
-    boolean isStarted()
-    {
-        return m_started;
-    }
-
     boolean isPluginRunning()
     {
         return m_isPluginRunning;
@@ -153,13 +142,11 @@ public class QtActivityDelegate
         Runnable startApplication = () -> {
             try {
                 QtNative.startApplication(appParams, mainLib);
-                m_started = true;
             } catch (Exception e) {
                 e.printStackTrace();
                 m_activity.finish();
             }
         };
-
         initMembers(startApplication);
     }
 

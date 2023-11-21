@@ -59,7 +59,7 @@ public class QtActivityBase extends Activity
     }
 
     private void handleActivityRestart() {
-        if (QtNative.isStarted()) {
+        if (QtNative.getStateDetails().isStarted) {
             boolean updated = m_delegate.updateActivityAfterRestart(this);
             if (!updated) {
                 // could not update the activity so restart the application
@@ -119,15 +119,15 @@ public class QtActivityBase extends Activity
     {
         super.onPause();
         if (Build.VERSION.SDK_INT < 24 || !isInMultiWindowMode())
-            QtNative.setApplicationState(QtConstants.ApplicationState.ApplicationInactive);
+            QtNative.setApplicationState(QtNative.ApplicationState.ApplicationInactive);
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        QtNative.setApplicationState(QtConstants.ApplicationState.ApplicationActive);
-        if (m_delegate.isStarted()) {
+        QtNative.setApplicationState(QtNative.ApplicationState.ApplicationActive);
+        if (QtNative.getStateDetails().isStarted) {
             QtNative.updateWindow();
             // Suspending the app clears the immersive mode, so we need to set it again.
             m_delegate.displayManager().updateFullScreen(this);
@@ -138,7 +138,7 @@ public class QtActivityBase extends Activity
     protected void onStop()
     {
         super.onStop();
-        QtNative.setApplicationState(QtConstants.ApplicationState.ApplicationSuspended);
+        QtNative.setApplicationState(QtNative.ApplicationState.ApplicationSuspended);
     }
 
     @Override
@@ -187,7 +187,8 @@ public class QtActivityBase extends Activity
     @Override
     public boolean dispatchKeyEvent(KeyEvent event)
     {
-        if (m_delegate.isStarted() && m_delegate.getInputDelegate().handleDispatchKeyEvent(event))
+        boolean handleResult = m_delegate.getInputDelegate().handleDispatchKeyEvent(event);
+        if (QtNative.getStateDetails().isStarted && handleResult)
             return true;
 
         return super.dispatchKeyEvent(event);
@@ -197,7 +198,7 @@ public class QtActivityBase extends Activity
     public boolean dispatchGenericMotionEvent(MotionEvent event)
     {
         boolean handled = m_delegate.getInputDelegate().handleDispatchGenericMotionEvent(event);
-        if (m_delegate.isStarted() && handled)
+        if (QtNative.getStateDetails().isStarted && handled)
             return true;
 
         return super.dispatchGenericMotionEvent(event);
@@ -206,7 +207,8 @@ public class QtActivityBase extends Activity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        if (!m_delegate.isStarted() || !m_delegate.isPluginRunning())
+        QtNative.ApplicationStateDetails stateDetails = QtNative.getStateDetails();
+        if (!stateDetails.isStarted || !m_delegate.isPluginRunning())
             return false;
 
         return m_delegate.getInputDelegate().onKeyDown(keyCode, event);
@@ -215,7 +217,8 @@ public class QtActivityBase extends Activity
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-        if (!m_delegate.isStarted() || !m_delegate.isPluginRunning())
+        QtNative.ApplicationStateDetails stateDetails = QtNative.getStateDetails();
+        if (!stateDetails.isStarted || !m_delegate.isPluginRunning())
             return false;
 
         return m_delegate.getInputDelegate().onKeyUp(keyCode, event);
@@ -252,7 +255,7 @@ public class QtActivityBase extends Activity
     protected void onRestoreInstanceState(Bundle savedInstanceState)
     {
         super.onRestoreInstanceState(savedInstanceState);
-        m_delegate.setStarted(savedInstanceState.getBoolean("Started"));
+        QtNative.setStarted(savedInstanceState.getBoolean("Started"));
         // FIXME restore all surfaces
     }
 
@@ -269,7 +272,7 @@ public class QtActivityBase extends Activity
     {
         super.onSaveInstanceState(outState);
         outState.putInt("SystemUiVisibility", m_delegate.displayManager().systemUiVisibility());
-        outState.putBoolean("Started", m_delegate.isStarted());
+        outState.putBoolean("Started", QtNative.getStateDetails().isStarted);
     }
 
     @Override

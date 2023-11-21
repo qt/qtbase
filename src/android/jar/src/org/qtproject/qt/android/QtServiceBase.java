@@ -14,8 +14,10 @@ public class QtServiceBase extends Service {
     {
         super.onCreate();
 
+        QtNative.setApplicationState(QtNative.ApplicationState.ApplicationHidden);
+
         // the application has already started, do not reload everything again
-        if (QtNative.isStarted()) {
+        if (QtNative.getStateDetails().isStarted) {
             Log.w(QtNative.QtTAG,
                     "A QtService tried to start in the same process as an initiated " +
                             "QtActivity. That is not supported. This results in the service " +

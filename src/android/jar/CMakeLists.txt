@@ -26,7 +26,6 @@ set(java_sources
     src/org/qtproject/qt/android/extras/QtAndroidBinder.java
     src/org/qtproject/qt/android/extras/QtAndroidServiceConnection.java
     src/org/qtproject/qt/android/extras/QtNative.java
-    src/org/qtproject/qt/android/QtConstants.java
     src/org/qtproject/qt/android/QtClipboardManager.java
     src/org/qtproject/qt/android/QtDisplayManager.java
     src/org/qtproject/qt/android/UsedFromNativeCode.java

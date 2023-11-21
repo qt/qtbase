@@ -33,25 +33,20 @@ import javax.net.ssl.X509TrustManager;
 public class QtNative
 {
     private static WeakReference<Activity> m_activity = null;
-    private static boolean m_activityPaused = false;
     private static WeakReference<Service> m_service = null;
     public static final Object m_mainActivityMutex = new Object(); // mutex used to synchronize runnable operations
+
+    private static final ApplicationStateDetails m_stateDetails = new ApplicationStateDetails();
 
     public static final String QtTAG = "Qt JAVA";
 
     // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
     private static final ArrayList<Runnable> m_lostActions = new ArrayList<>();
-    private static boolean m_started = false;
 
     private static final QtThread m_qtThread = new QtThread();
     private static ClassLoader m_classLoader = null;
 
     private static final Runnable runPendingCppRunnablesRunnable = QtNative::runPendingCppRunnables;
-
-    public static boolean isStarted()
-    {
-        return m_started && (isActivityValid() || isServiceValid());
-    }
 
     @UsedFromNativeCode
     public static ClassLoader classLoader()
@@ -198,16 +193,37 @@ public class QtNative
         return m_qtThread;
     }
 
+    // Keep in sync with src/corelib/global/qnamespace.h
+    public static class ApplicationState {
+        static final int ApplicationSuspended = 0x0;
+        static final int ApplicationHidden = 0x1;
+        static final int ApplicationInactive = 0x2;
+        static final int ApplicationActive = 0x4;
+    }
+
+    public static class ApplicationStateDetails {
+        int state = ApplicationState.ApplicationSuspended;
+        boolean isStarted = false;
+    }
+
+    public static ApplicationStateDetails getStateDetails()
+    {
+        return m_stateDetails;
+    }
+
+    public static void setStarted(boolean started)
+    {
+        m_stateDetails.isStarted = started;
+    }
+
     public static void setApplicationState(int state)
     {
         synchronized (m_mainActivityMutex) {
-            if (state == QtConstants.ApplicationState.ApplicationActive) {
-                m_activityPaused = false;
+            m_stateDetails.state = state;
+            if (state == ApplicationState.ApplicationActive) {
                 for (Runnable mLostAction : m_lostActions)
                     runAction(mLostAction);
                 m_lostActions.clear();
-            } else {
-                m_activityPaused = true;
             }
         }
         updateApplicationState(state);
@@ -220,7 +236,8 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
             final Handler handler = new Handler(mainLooper);
-            final boolean active = (isActivityValid() && !m_activityPaused) || isServiceValid();
+            final boolean isStateActive = m_stateDetails.state == ApplicationState.ApplicationActive;
+            final boolean active = (isActivityValid() && isStateActive) || isServiceValid();
             if (!active || !handler.post(action))
                 m_lostActions.add(action);
         }
@@ -231,7 +248,7 @@ public class QtNative
     {
         synchronized (m_mainActivityMutex) {
             if (isActivityValid()) {
-                if (!m_activityPaused)
+                if (m_stateDetails.state == ApplicationState.ApplicationActive)
                     m_activity.get().runOnUiThread(runPendingCppRunnablesRunnable);
                 else
                     runAction(runPendingCppRunnablesRunnable);
@@ -264,7 +281,7 @@ public class QtNative
             });
             m_qtThread.post(QtNative::startQtApplication);
             waitForServiceSetup();
-            m_started = true;
+            m_stateDetails.isStarted = true;
         }
     }
 
@@ -276,8 +293,7 @@ public class QtNative
                 m_activity.get().finish();
             if (isServiceValid())
                 m_service.get().stopSelf();
-
-             m_started = false;
+            m_stateDetails.isStarted = false;
         });
     }
 
