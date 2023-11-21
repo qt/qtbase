@@ -541,6 +541,7 @@ static int timeout = -1;
 static bool noCrashHandler = false;
 static int repetitions = 1;
 static bool repeatForever = false;
+static bool skipBlacklisted = false;
 
 /*! \internal
     Invoke a method of the object without generating warning if the method does not exist
@@ -773,6 +774,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          "                       Useful for finding flaky tests. If negative, the tests are\n"
          "                       repeated forever. This is intended as a developer tool, and\n"
          "                       is only supported with the plain text logger.\n"
+         " -skipblacklisted    : Skip blacklisted tests. Useful for measuring test coverage.\n"
          "\n"
          " Benchmarking options:\n"
 #if QT_CONFIG(valgrind)
@@ -932,6 +934,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             }
         } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
             QTest::noCrashHandler = true;
+        } else if (strcmp(argv[i], "-skipblacklisted") == 0) {
+            QTest::skipBlacklisted = true;
 #if QT_CONFIG(valgrind)
         } else if (strcmp(argv[i], "-callgrind") == 0) {
             if (!QBenchmarkValgrindUtils::haveValgrind()) {
@@ -1417,6 +1421,7 @@ bool TestMethods::invokeTest(int index, QLatin1StringView tag, WatchDog *watchDo
                tag[global.size()] == ':';
     };
     bool foundFunction = false;
+    bool blacklisted = false;
 
     /* For each entry in the global data table, do: */
     do {
@@ -1443,20 +1448,28 @@ bool TestMethods::invokeTest(int index, QLatin1StringView tag, WatchDog *watchDo
             if (dataTagMatches(tag, QLatin1StringView(dataTag(curDataIndex)),
                                QLatin1StringView(globalDataTag(curGlobalDataIndex)))) {
                 foundFunction = true;
-                if (QTestPrivate::checkBlackLists(name.constData(), dataTag(curDataIndex),
-                                                  globalDataTag(curGlobalDataIndex))) {
+                blacklisted = QTestPrivate::checkBlackLists(name.constData(), dataTag(curDataIndex),
+                                                            globalDataTag(curGlobalDataIndex));
+                if (blacklisted)
                     QTestResult::setBlacklistCurrentTest(true);
-                 }
 
-                QTestDataSetter s(curDataIndex >= dataCount ? nullptr : table.testData(curDataIndex));
+                if (blacklisted && skipBlacklisted) {
+                    QTest::qSkip("Skipping blacklisted test since -skipblacklisted option is set.",
+                                  NULL, 0);
+                    QTestResult::finishedCurrentTestData();
+                    QTestResult::finishedCurrentTestDataCleanup();
+                } else {
+                    QTestDataSetter s(
+                        curDataIndex >= dataCount ? nullptr : table.testData(curDataIndex));
 
-                QTestPrivate::qtestMouseButtons = Qt::NoButton;
-                if (watchDog)
-                    watchDog->beginTest();
-                QTest::lastMouseTimestamp += 500;   // Maintain at least 500ms mouse event timestamps between each test function call
-                invokeTestOnData(index);
-                if (watchDog)
-                    watchDog->testFinished();
+                    QTestPrivate::qtestMouseButtons = Qt::NoButton;
+                    if (watchDog)
+                        watchDog->beginTest();
+                    QTest::lastMouseTimestamp += 500;   // Maintain at least 500ms mouse event timestamps between each test function call
+                    invokeTestOnData(index);
+                    if (watchDog)
+                        watchDog->testFinished();
+                }
 
                 if (!tag.isEmpty() && !globalDataCount)
                     break;

@@ -1,0 +1,13 @@
+TAP version 13
+# tst_SkipBlacklisted
+ok 1 - initTestCase()
+ok 2 - pass()
+ok 3 - blacklisted() # SKIP Skipping blacklisted test since -skipblacklisted option is set.
+ok 4 - blacklistedData() # SKIP Skipping blacklisted test since -skipblacklisted option is set.
+ok 5 - blacklistedData(should pass)
+ok 6 - blacklistedData() # SKIP Skipping blacklisted test since -skipblacklisted option is set.
+ok 7 - cleanupTestCase()
+1..7
+# tests 7
+# pass 4
+# fail 0

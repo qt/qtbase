@@ -352,6 +352,12 @@
     Run the testsuite n times or until the test fails. Useful for finding
     flaky tests. If negative, the tests are repeated forever. This is intended
     as a developer tool, and is only supported with the plain text logger.
+    \li \c -skipblacklisted \br
+    Skip the blacklisted tests. This option is intended to allow more accurate
+    measurement of test coverage by preventing blacklisted tests from inflating
+    coverage statistics. When not measuring test coverage, it is recommended to
+    execute blacklisted tests to reveal any changes in their results, such as
+    a new crash or the issue that caused blacklisting being resolved.
 
     \li \c -platform \e name \br
     This command line argument applies to all Qt applications, but might be

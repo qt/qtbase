@@ -95,6 +95,7 @@ set(subprograms
     signaldumper
     singleskip
     skip
+    skipblacklisted
     skipcleanup
     skipcleanuptestcase
     skipinit

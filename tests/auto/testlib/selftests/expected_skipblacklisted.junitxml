@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite name="tst_SkipBlacklisted" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="5" failures="0" errors="0" skipped="3" time="@TEST_DURATION@">
+  <properties>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
+  </properties>
+  <testcase name="initTestCase" classname="tst_SkipBlacklisted" time="@TEST_DURATION@"/>
+  <testcase name="pass" classname="tst_SkipBlacklisted" time="@TEST_DURATION@"/>
+  <testcase name="blacklisted" classname="tst_SkipBlacklisted" time="@TEST_DURATION@">
+    <skipped message="Skipping blacklisted test since &#x002D;skipblacklisted option is set."/>
+  </testcase>
+  <testcase name="blacklistedData(should pass)" classname="tst_SkipBlacklisted" time="@TEST_DURATION@">
+    <skipped message="Skipping blacklisted test since &#x002D;skipblacklisted option is set."/>
+    <skipped message="Skipping blacklisted test since &#x002D;skipblacklisted option is set."/>
+  </testcase>
+  <testcase name="cleanupTestCase" classname="tst_SkipBlacklisted" time="@TEST_DURATION@"/>
+</testsuite>

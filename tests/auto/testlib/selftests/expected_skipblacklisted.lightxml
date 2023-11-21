@@ -1,0 +1,36 @@
+  <Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QtBuild/>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="pass">
+    <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="blacklisted">
+    <Incident type="skip" file="" line="0">
+      <Description><![CDATA[Skipping blacklisted test since -skipblacklisted option is set.]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="blacklistedData">
+    <Incident type="skip" file="" line="0">
+      <Description><![CDATA[Skipping blacklisted test since -skipblacklisted option is set.]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[should pass]]></DataTag>
+    </Incident>
+    <Incident type="skip" file="" line="0">
+      <Description><![CDATA[Skipping blacklisted test since -skipblacklisted option is set.]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>

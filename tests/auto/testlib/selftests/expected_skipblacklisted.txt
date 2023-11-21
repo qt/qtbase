@@ -1,0 +1,11 @@
+********* Start testing of tst_SkipBlacklisted *********
+Config: Using QtTest library
+PASS   : tst_SkipBlacklisted::initTestCase()
+PASS   : tst_SkipBlacklisted::pass()
+SKIP   : tst_SkipBlacklisted::blacklisted() Skipping blacklisted test since -skipblacklisted option is set.
+SKIP   : tst_SkipBlacklisted::blacklistedData() Skipping blacklisted test since -skipblacklisted option is set.
+PASS   : tst_SkipBlacklisted::blacklistedData(should pass)
+SKIP   : tst_SkipBlacklisted::blacklistedData() Skipping blacklisted test since -skipblacklisted option is set.
+PASS   : tst_SkipBlacklisted::cleanupTestCase()
+Totals: 4 passed, 0 failed, 3 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_SkipBlacklisted *********

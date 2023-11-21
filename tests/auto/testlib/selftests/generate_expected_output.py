@@ -37,10 +37,11 @@ TESTS = ['assert', 'badxml', 'benchlibcallgrind', 'benchlibcounting',
          'fetchbogus', 'findtestdata', 'float', 'globaldata', 'longstring',
          'maxwarnings', 'mouse', 'multiexec', 'pairdiagnostics', 'pass',
          'printdatatags', 'printdatatagswithglobaltags', 'qexecstringlist',
-         'signaldumper', 'silent', 'silent_fatal', 'singleskip', 'skip', 'skipcleanup',
-         'skipcleanuptestcase', 'skipinit', 'skipinitdata', 'sleep', 'strcmp',
-         'subtest', 'testlib', 'tuplediagnostics', 'verbose1', 'verbose2',
-         'verifyexceptionthrown', 'warnings', 'watchdog', 'junit', 'keyboard']
+         'signaldumper', 'silent', 'silent_fatal', 'singleskip', 'skip',
+         'skipblacklisted', 'skipcleanup', 'skipcleanuptestcase', 'skipinit',
+         'skipinitdata', 'sleep', 'strcmp', 'subtest', 'testlib', 'tuplediagnostics',
+         'verbose1', 'verbose2', 'verifyexceptionthrown', 'warnings', 'watchdog',
+         'junit', 'keyboard']
 
 
 class Fail (Exception): pass
