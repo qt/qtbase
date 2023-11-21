@@ -3205,31 +3205,55 @@ void tst_QComboBox::task_QTBUG_54191_slotOnEditTextChangedSetsComboBoxToReadOnly
     QCOMPARE(cb.currentIndex(), 1);
 }
 
+class ComboBox : public QComboBox {
+public:
+    using QComboBox::QComboBox;
+
+    void keyPressEvent(QKeyEvent *e) override
+    {
+        QComboBox::keyPressEvent(e);
+        accepted = e->isAccepted();
+    }
+    bool accepted = false;
+};
+
 void tst_QComboBox::keyboardSelection()
 {
-    QComboBox comboBox;
+    ComboBox comboBox;
     const int keyboardInterval = QApplication::keyboardInputInterval();
-    QStringList list;
-    list << "OA" << "OB" << "OC" << "OO" << "OP" << "PP";
+    const QStringList list = {"OA", "OB", "OC", "OO", "OP", "PP"};
     comboBox.addItems(list);
 
     // Clear any remaining keyboard input from previous tests.
     QTest::qWait(keyboardInterval);
     QTest::keyClicks(&comboBox, "oo", Qt::NoModifier, 50);
     QCOMPARE(comboBox.currentText(), list.at(3));
+    QCOMPARE(comboBox.accepted, true);
 
     QTest::qWait(keyboardInterval);
     QTest::keyClicks(&comboBox, "op", Qt::NoModifier, 50);
     QCOMPARE(comboBox.currentText(), list.at(4));
+    QCOMPARE(comboBox.accepted, true);
 
     QTest::keyClick(&comboBox, Qt::Key_P, Qt::NoModifier, keyboardInterval);
     QCOMPARE(comboBox.currentText(), list.at(5));
+    QCOMPARE(comboBox.accepted, true);
 
     QTest::keyClick(&comboBox, Qt::Key_O, Qt::NoModifier, keyboardInterval);
     QCOMPARE(comboBox.currentText(), list.at(0));
+    QCOMPARE(comboBox.accepted, true);
 
     QTest::keyClick(&comboBox, Qt::Key_O, Qt::NoModifier, keyboardInterval);
     QCOMPARE(comboBox.currentText(), list.at(1));
+    QCOMPARE(comboBox.accepted, true);
+
+    QTest::keyClick(&comboBox, Qt::Key_Tab, Qt::NoModifier, keyboardInterval);
+    QCOMPARE(comboBox.currentText(), list.at(1));
+    QCOMPARE(comboBox.accepted, false);
+
+    QTest::keyClick(&comboBox, Qt::Key_Tab, Qt::ControlModifier, keyboardInterval);
+    QCOMPARE(comboBox.currentText(), list.at(1));
+    QCOMPARE(comboBox.accepted, false);
 }
 
 void tst_QComboBox::updateDelegateOnEditableChange()
