@@ -208,7 +208,7 @@ public class QtActivityBase extends Activity
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
         QtNative.ApplicationStateDetails stateDetails = QtNative.getStateDetails();
-        if (!stateDetails.isStarted || !m_delegate.isPluginRunning())
+        if (!stateDetails.isStarted || !stateDetails.nativePluginIntegrationReady)
             return false;
 
         return m_delegate.getInputDelegate().onKeyDown(keyCode, event);
@@ -218,7 +218,7 @@ public class QtActivityBase extends Activity
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
         QtNative.ApplicationStateDetails stateDetails = QtNative.getStateDetails();
-        if (!stateDetails.isStarted || !m_delegate.isPluginRunning())
+        if (!stateDetails.isStarted || !stateDetails.nativePluginIntegrationReady)
             return false;
 
         return m_delegate.getInputDelegate().onKeyUp(keyCode, event);

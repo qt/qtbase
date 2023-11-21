@@ -203,6 +203,7 @@ public class QtNative
 
     public static class ApplicationStateDetails {
         int state = ApplicationState.ApplicationSuspended;
+        boolean nativePluginIntegrationReady = false;
         boolean isStarted = false;
     }
 
@@ -214,6 +215,12 @@ public class QtNative
     public static void setStarted(boolean started)
     {
         m_stateDetails.isStarted = started;
+    }
+
+    @UsedFromNativeCode
+    public static void notifyNativePluginIntegrationReady(boolean ready)
+    {
+        m_stateDetails.nativePluginIntegrationReady = ready;
     }
 
     public static void setApplicationState(int state)

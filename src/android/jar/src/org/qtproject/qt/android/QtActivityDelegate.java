@@ -37,8 +37,6 @@ public class QtActivityDelegate
 {
     private Activity m_activity;
 
-    private boolean m_isPluginRunning = false;
-
     private HashMap<Integer, QtSurface> m_surfaces = null;
     private HashMap<Integer, View> m_nativeViews = null;
     private QtLayout m_layout = null;
@@ -95,11 +93,6 @@ public class QtActivityDelegate
             m_layout.requestLayout();
             QtNative.updateWindow();
         });
-    }
-
-    boolean isPluginRunning()
-    {
-        return m_isPluginRunning;
     }
 
     void setContextMenuVisible(boolean contextMenuVisible)
@@ -298,12 +291,6 @@ public class QtActivityDelegate
         if (m_accessibilityDelegate == null)
             return;
         m_accessibilityDelegate.notifyScrolledEvent(viewId);
-    }
-
-    @UsedFromNativeCode
-    public void notifyQtAndroidPluginRunning(boolean running)
-    {
-        m_isPluginRunning = running;
     }
 
     @UsedFromNativeCode

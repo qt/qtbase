@@ -99,6 +99,7 @@ namespace QtAndroid
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration)
     {
         m_androidPlatformIntegration = androidPlatformIntegration;
+        QtAndroid::notifyNativePluginIntegrationReady((bool)m_androidPlatformIntegration);
 
         // flush the pending state if necessary.
         if (m_androidPlatformIntegration && (m_pendingApplicationState != -1)) {
@@ -213,9 +214,11 @@ namespace QtAndroid
         qtActivityDelegate().callMethod<void>("notifyScrolledEvent", accessibilityObjectId);
     }
 
-    void notifyQtAndroidPluginRunning(bool running)
+    void notifyNativePluginIntegrationReady(bool ready)
     {
-        qtActivityDelegate().callMethod<void>("notifyQtAndroidPluginRunning", running);
+        QJniObject::callStaticMethod<void>(m_applicationClass,
+                                           "notifyNativePluginIntegrationReady",
+                                           ready);
     }
 
     jobject createBitmap(QImage img, JNIEnv *env)

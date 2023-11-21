@@ -54,7 +54,6 @@ Qt::ScreenOrientation QAndroidPlatformIntegration::m_orientation = Qt::PrimaryOr
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::PrimaryOrientation;
 
 bool QAndroidPlatformIntegration::m_showPasswordEnabled = false;
-static bool m_running = false;
 
 Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
 Q_DECLARE_JNI_CLASS(QtDisplayManager, "org/qtproject/qt/android/QtDisplayManager")
@@ -159,10 +158,6 @@ void QAndroidPlatformNativeInterface::customEvent(QEvent *event)
     api->accessibility()->setActive(QtAndroidAccessibility::isActive());
 #endif // QT_CONFIG(accessibility)
 
-    if (!m_running) {
-        m_running = true;
-        QtAndroid::notifyQtAndroidPluginRunning(m_running);
-    }
     api->flushPendingUpdates();
 }
 
