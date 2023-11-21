@@ -107,8 +107,9 @@ Build options:
   -gcov ................ Instrument with the GCov code coverage tool [no]
 
   -trace [backend] ..... Enable instrumentation with tracepoints.
-                         Currently supported backends are 'etw' (Windows) and
-                         'lttng' (Linux), or 'yes' for auto-detection. [no]
+                         Currently supported backends are 'etw' (Windows),
+                         'lttng' (Linux), 'ctf' (Common Trace Format, cross-platform)
+                         or 'yes' for auto-detection. [no]
 
   -sanitize {address|thread|memory|fuzzer-no-link|undefined}
                          Instrument with the specified compiler sanitizer.
