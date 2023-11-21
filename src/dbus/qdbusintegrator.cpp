@@ -665,6 +665,7 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
                     const QString &signature_, QList<QMetaType> &metaTypes)
 {
     QByteArray msgSignature = signature_.toLatin1();
+    QString parametersErrorMsg;
 
     for (int idx = mo->methodCount() - 1 ; idx >= QObject::staticMetaObject.methodCount(); --idx) {
         QMetaMethod mm = mo->method(idx);
@@ -691,8 +692,10 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
 
         QString errorMsg;
         int inputCount = qDBusParametersForMethod(mm, metaTypes, errorMsg);
-        if (inputCount == -1)
+        if (inputCount == -1) {
+            parametersErrorMsg = errorMsg;
             continue;           // problem parsing
+        }
 
         metaTypes[0] = returnType;
         bool hasMessage = false;
@@ -754,6 +757,13 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
     }
 
     // no slot matched
+    if (!parametersErrorMsg.isEmpty()) {
+        qCWarning(dbusIntegration, "QDBusConnection: couldn't handle call to %s: %ls",
+                  name.constData(), qUtf16Printable(parametersErrorMsg));
+    } else {
+        qCWarning(dbusIntegration, "QDBusConnection: couldn't handle call to %s, no slot matched",
+                  name.constData());
+    }
     return -1;
 }
 
