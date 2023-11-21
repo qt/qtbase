@@ -84,7 +84,7 @@ bool ClientArea::deliverEvent(const PointerEvent &event)
                            pointInTargetWindowCoords.y() / m_window->window()->height());
 
     const auto tp = m_pointerIdToTouchPoints.find(event.pointerId);
-    if (tp != m_pointerIdToTouchPoints.end()) {
+    if (event.pointerType != PointerType::Pen && tp != m_pointerIdToTouchPoints.end()) {
         touchPoint = &tp.value();
     } else {
         touchPoint = &m_pointerIdToTouchPoints
