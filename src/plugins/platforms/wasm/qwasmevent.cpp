@@ -180,6 +180,8 @@ PointerEvent::PointerEvent(EventType type, emscripten::val event) : MouseEvent(t
             return PointerType::Mouse;
         if (type == "touch")
             return PointerType::Touch;
+        if (type == "pen")
+            return PointerType::Pen;
         return PointerType::Other;
     })();
     width = event["width"].as<qreal>();

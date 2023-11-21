@@ -39,6 +39,7 @@ enum class EventType {
 enum class PointerType {
     Mouse,
     Touch,
+    Pen,
     Other,
 };
 
