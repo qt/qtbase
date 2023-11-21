@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QDBusMessage>
 #include <QDBusConnection>
+#include <QLoggingCategory>
 
 static const char serviceName[] = "org.qtproject.autotests.qpong";
 static const char objectPath[] = "/org/qtproject/qpong";
@@ -31,6 +32,9 @@ public slots:
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+
+    // Silence many warnings from findSlot() about ping() not having the expected argument types
+    QLoggingCategory::setFilterRules("qt.dbus.integration=false");
 
     QDBusConnection con = QDBusConnection::sessionBus();
     if (!con.isConnected())
