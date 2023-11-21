@@ -269,6 +269,10 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
                                                 maxTouchPoints,
                                                 0);
             QWindowSystemInterface::registerInputDevice(m_touchDevice);
+
+            QWindowSystemInterface::registerInputDevice(
+                    new QInputDevice("Virtual keyboard"_L1, 0, QInputDevice::DeviceType::Keyboard,
+                                     {}, qApp));
         }
 
         auto contentResolver = javaActivity.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
