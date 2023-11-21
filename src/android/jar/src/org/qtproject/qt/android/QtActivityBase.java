@@ -23,6 +23,7 @@ public class QtActivityBase extends Activity
 {
     private String m_applicationParams = null;
     private boolean m_isCustomThemeSet = false;
+    private boolean m_retainNonConfigurationInstance = false;
 
     private QtActivityDelegate m_delegate;
 
@@ -143,7 +144,7 @@ public class QtActivityBase extends Activity
     protected void onDestroy()
     {
         super.onDestroy();
-        if (m_delegate.isQuitApp()) {
+        if (!m_retainNonConfigurationInstance) {
             QtNative.terminateQt();
             QtNative.setActivity(null);
             QtNative.m_qtThread.exit();
@@ -258,9 +259,8 @@ public class QtActivityBase extends Activity
     public Object onRetainNonConfigurationInstance()
     {
         super.onRetainNonConfigurationInstance();
-        m_delegate.setQuitApp(false);
+        m_retainNonConfigurationInstance = true;
         return true;
-
     }
 
     @Override

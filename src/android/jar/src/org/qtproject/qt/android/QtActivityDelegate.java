@@ -40,7 +40,6 @@ public class QtActivityDelegate
     private Activity m_activity;
 
     private boolean m_started = false;
-    private boolean m_quitApp = true;
     private boolean m_isPluginRunning = false;
 
     private HashMap<Integer, QtSurface> m_surfaces = null;
@@ -119,16 +118,6 @@ public class QtActivityDelegate
         return m_started;
     }
 
-    void setQuitApp(boolean quitApp)
-    {
-        m_quitApp = quitApp;
-    }
-
-    boolean isQuitApp()
-    {
-        return m_quitApp;
-    }
-
     boolean isPluginRunning()
     {
         return m_isPluginRunning;
@@ -189,8 +178,6 @@ public class QtActivityDelegate
 
     private void initMembers(Runnable startApplicationRunnable)
     {
-        m_quitApp = true;
-
         m_layout = new QtLayout(m_activity, startApplicationRunnable);
 
         m_displayManager.registerDisplayListener(m_activity, m_layout);
