@@ -399,8 +399,44 @@ endif()
 
 _qt_internal_test_expect_pass(test_config_expressions)
 _qt_internal_test_expect_pass(test_QTP0003)
+
 if(NOT NO_GUI)
     _qt_internal_test_expect_pass(test_collecting_plugins)
 endif()
 
 _qt_internal_test_expect_pass(test_qt_manual_moc)
+
+# check if the os is opensuse. If it is, we need to skip tests due to CI problems
+set(is_opensuse FALSE)
+if(UNIX)
+    if(EXISTS "/etc/os-release")
+        file(STRINGS "/etc/os-release" os_release_content)
+        foreach(line IN LISTS os_release_content)
+            if(line MATCHES "openSUSE" OR line MATCHES "opensuse")
+                set(is_opensuse TRUE)
+                break()
+            endif()
+        endforeach()
+    endif()
+endif()
+
+if(NOT QNX AND NOT WASM AND NOT (WIN32 AND QT_BUILD_MINIMAL_STATIC_TESTS)
+    AND NOT is_opensuse)
+    # Since our CI machines are slow, ctest --build-and-test buffers the output
+    # of the configure step of a test, and the fact that we run all the test
+    # logic in the configure step, we need to divide the tests into smaller
+    # chunks to avoid CI stdout timeout errors.
+    # See https://gitlab.kitware.com/cmake/cmake/-/issues/25790
+    _qt_internal_test_expect_pass(test_qt_add_ui_common)
+    _qt_internal_test_expect_pass(test_qt_add_ui_1)
+    _qt_internal_test_expect_pass(test_qt_add_ui_2)
+    _qt_internal_test_expect_pass(test_qt_add_ui_3)
+    _qt_internal_test_expect_pass(test_qt_add_ui_4)
+    _qt_internal_test_expect_pass(test_qt_add_ui_5)
+    _qt_internal_test_expect_pass(test_qt_add_ui_6)
+    _qt_internal_test_expect_pass(test_qt_add_ui_7)
+    _qt_internal_test_expect_pass(test_qt_add_ui_8)
+    _qt_internal_test_expect_pass(test_qt_add_ui_9)
+    _qt_internal_test_expect_pass(test_qt_add_ui_10)
+endif()
+
