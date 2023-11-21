@@ -3294,8 +3294,9 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
 #endif
 
         if (!d->lineEdit) {
-            if (!e->text().isEmpty())
-                d->keyboardSearchString(e->text());
+            const auto text = e->text();
+            if (!text.isEmpty() && text.at(0).isPrint())
+                d->keyboardSearchString(text);
             else
                 e->ignore();
         }
