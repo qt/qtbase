@@ -335,3 +335,5 @@ cmake_install.cmake
 *_autogen
 tst_*.xml
 CMakeUserPresets.json
+/.vs/
+/out/
