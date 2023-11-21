@@ -4,6 +4,7 @@
 #ifndef QWASMBASE64IMAGESTORE_H
 #define QWASMBASE64IMAGESTORE_H
 
+#include <string>
 #include <string_view>
 
 #include <QtCore/qtconfigmacros.h>
