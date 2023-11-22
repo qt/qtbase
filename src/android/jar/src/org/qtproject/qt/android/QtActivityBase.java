@@ -120,6 +120,7 @@ public class QtActivityBase extends Activity
         super.onPause();
         if (Build.VERSION.SDK_INT < 24 || !isInMultiWindowMode())
             QtNative.setApplicationState(QtNative.ApplicationState.ApplicationInactive);
+        m_delegate.displayManager().unregisterDisplayListener();
     }
 
     @Override
@@ -128,6 +129,7 @@ public class QtActivityBase extends Activity
         super.onResume();
         QtNative.setApplicationState(QtNative.ApplicationState.ApplicationActive);
         if (QtNative.getStateDetails().isStarted) {
+            m_delegate.displayManager().registerDisplayListener();
             QtNative.updateWindow();
             // Suspending the app clears the immersive mode, so we need to set it again.
             m_delegate.displayManager().updateFullScreen();

@@ -95,12 +95,18 @@ public class QtDisplayManager {
         };
     }
 
-    // TODO: unregister the listener upon activity destruction as well
     public void registerDisplayListener()
     {
         DisplayManager displayManager =
                 (DisplayManager) m_activity.getSystemService(Context.DISPLAY_SERVICE);
         displayManager.registerDisplayListener(m_displayListener, null);
+    }
+
+    public void unregisterDisplayListener()
+    {
+        DisplayManager displayManager =
+                (DisplayManager) m_activity.getSystemService(Context.DISPLAY_SERVICE);
+        displayManager.unregisterDisplayListener(m_displayListener);
     }
 
     public static int getNativeOrientation(Activity activity, int rotation)
