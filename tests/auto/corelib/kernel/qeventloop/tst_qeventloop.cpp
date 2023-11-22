@@ -138,6 +138,7 @@ class tst_QEventLoop : public QObject
     Q_OBJECT
 private slots:
     // This test *must* run first. See the definition for why.
+    void processEvents_data();
     void processEvents();
     void exec();
     void reexec();
@@ -159,8 +160,21 @@ protected:
     void customEvent(QEvent *e) override;
 };
 
+void tst_QEventLoop::processEvents_data()
+{
+    QTest::addColumn<QString>("mode");
+
+#ifdef QT_GUI_LIB
+    QTest::addRow("gui") << "gui";
+#else
+    QTest::addRow("core") << "core";
+#endif
+}
+
 void tst_QEventLoop::processEvents()
 {
+    QFETCH(QString, mode);
+
     QSignalSpy aboutToBlockSpy(QAbstractEventDispatcher::instance(), &QAbstractEventDispatcher::aboutToBlock);
     QSignalSpy awakeSpy(QAbstractEventDispatcher::instance(), &QAbstractEventDispatcher::awake);
 
