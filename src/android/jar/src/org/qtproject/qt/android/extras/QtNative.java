@@ -6,7 +6,7 @@ package org.qtproject.qt.android.extras;
 import android.os.IBinder;
 import android.os.Parcel;
 
-public class QtNative {
+class QtNative {
     // Binder
     public static native boolean onTransact(long id, int code, Parcel data, Parcel reply, int flags);
 

@@ -52,7 +52,7 @@ class QtNativeInputConnection
     static native boolean updateCursorPosition();
 }
 
-public class QtInputConnection extends BaseInputConnection
+class QtInputConnection extends BaseInputConnection
 {
     private static final int ID_SELECT_ALL = android.R.id.selectAll;
     private static final int ID_CUT = android.R.id.cut;

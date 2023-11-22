@@ -65,7 +65,7 @@ class CursorView extends ImageView
 }
 
 // Helper class that manages a cursor or selection handle
-public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
+class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 {
     private final View m_layout;
     private CursorView m_cursorView = null;

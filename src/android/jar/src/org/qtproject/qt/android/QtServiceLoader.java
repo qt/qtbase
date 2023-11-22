@@ -12,7 +12,7 @@ import android.util.Log;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class QtServiceLoader extends QtLoader {
+class QtServiceLoader extends QtLoader {
     private final Service m_service;
 
     public QtServiceLoader(Service service) {

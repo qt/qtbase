@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class QtDisplayManager {
+class QtDisplayManager {
 
     // screen methods
     public static native void setDisplayMetrics(int screenWidthPixels, int screenHeightPixels,

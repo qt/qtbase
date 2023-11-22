@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
-public class QtClipboardManager
+class QtClipboardManager
 {
     public static native void onClipboardDataChanged(long nativePointer);
 

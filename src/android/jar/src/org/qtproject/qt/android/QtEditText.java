@@ -13,7 +13,7 @@ import android.view.inputmethod.InputConnection;
 
 import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
-public class QtEditText extends View
+class QtEditText extends View
 {
     int m_initialCapsMode = 0;
     int m_imeOptions = 0;

@@ -32,9 +32,7 @@ import android.widget.PopupMenu;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.qtproject.qt.android.accessibility.QtAccessibilityDelegate;
-
-public class QtActivityDelegate
+class QtActivityDelegate
 {
     private Activity m_activity;
 

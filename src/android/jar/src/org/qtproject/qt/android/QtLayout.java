@@ -10,7 +10,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class QtLayout extends ViewGroup
+class QtLayout extends ViewGroup
 {
     private int m_activityDisplayRotation = -1;
     private int m_ownDisplayRotation = -1;
