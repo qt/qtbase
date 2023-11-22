@@ -42,7 +42,7 @@ public class QtNative
     private static final ArrayList<Runnable> m_lostActions = new ArrayList<>();
     private static boolean m_started = false;
 
-    public static QtThread m_qtThread = new QtThread();
+    private static final QtThread m_qtThread = new QtThread();
     private static ClassLoader m_classLoader = null;
 
     private static final Runnable runPendingCppRunnablesRunnable = new Runnable() {

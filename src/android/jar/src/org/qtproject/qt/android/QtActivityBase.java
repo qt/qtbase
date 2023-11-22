@@ -147,7 +147,7 @@ public class QtActivityBase extends Activity
         if (!m_retainNonConfigurationInstance) {
             QtNative.terminateQt();
             QtNative.setActivity(null);
-            QtNative.m_qtThread.exit();
+            QtNative.getQtThread().exit();
             System.exit(0);
         }
     }

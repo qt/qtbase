@@ -9,7 +9,7 @@ public class QtApplicationBase extends Application {
     @Override
     public void onTerminate() {
         QtNative.terminateQt();
-        QtNative.m_qtThread.exit();
+        QtNative.getQtThread().exit();
         super.onTerminate();
     }
 }

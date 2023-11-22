@@ -35,7 +35,7 @@ public class QtServiceBase extends Service {
         QtNative.quitQtCoreApplication();
         QtNative.terminateQt();
         QtNative.setService(null);
-        QtNative.m_qtThread.exit();
+        QtNative.getQtThread().exit();
         System.exit(0);
     }
 
