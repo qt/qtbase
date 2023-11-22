@@ -185,11 +185,7 @@ QT_BEGIN_NAMESPACE
 // **************** Static declarations ******************
 
 #endif // !defined QT_LINKED_OPENSSL
-#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
 typedef uint64_t qssloptions;
-#else
-typedef unsigned long qssloptions;
-#endif
 // TODO: the following lines previously were a part of 1.1 - specific header.
 // To reduce the amount of the change, I'm directly copying and pasting the
 // content of the header here. Later, can be better sorted/split into groups,
@@ -550,11 +546,7 @@ void q_GENERAL_NAME_free(GENERAL_NAME *a);
         q_SSL_CTX_ctrl(ctx,SSL_CTRL_EXTRA_CHAIN_CERT,0,(char *)x509)
 #define q_OpenSSL_add_all_algorithms() q_OPENSSL_add_all_algorithms_conf()
 
-#if OPENSSL_VERSION_MAJOR < 3
-int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char *CApath);
-#else
 int q_SSL_CTX_load_verify_dir(SSL_CTX *ctx, const char *CApath);
-#endif // OPENSSL_VERSION_MAJOR
 
 int q_i2d_SSL_SESSION(SSL_SESSION *in, unsigned char **pp);
 SSL_SESSION *q_d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length);
@@ -676,17 +668,11 @@ const char *q_SSL_alert_desc_string_long(int value);
 int q_SSL_CTX_get_security_level(const SSL_CTX *ctx);
 void q_SSL_CTX_set_security_level(SSL_CTX *ctx, int level);
 
-// Here we have the ones that make difference between OpenSSL pre/post v3:
-#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
 X509 *q_SSL_get1_peer_certificate(SSL *a);
 #define q_SSL_get_peer_certificate q_SSL_get1_peer_certificate
 int q_EVP_PKEY_get_bits(const EVP_PKEY *pkey);
 int q_EVP_PKEY_get_base_id(const EVP_PKEY *pkey);
 #define q_EVP_PKEY_base_id q_EVP_PKEY_get_base_id
-#else
-X509 *q_SSL_get_peer_certificate(SSL *a);
-int q_EVP_PKEY_base_id(EVP_PKEY *a);
-#endif // OPENSSL_VERSION_MAJOR >= 3
 
 #ifndef OPENSSL_NO_DEPRECATED_3_0
 

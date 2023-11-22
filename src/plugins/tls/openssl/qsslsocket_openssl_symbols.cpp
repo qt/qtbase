@@ -302,14 +302,9 @@ DEFINEFUNC(int, SSL_version, const SSL *a, a, return 0, return)
 DEFINEFUNC2(int, SSL_get_error, SSL *a, a, int b, b, return -1, return)
 DEFINEFUNC(STACK_OF(X509) *, SSL_get_peer_cert_chain, SSL *a, a, return nullptr, return)
 
-#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
 DEFINEFUNC(X509 *, SSL_get1_peer_certificate, SSL *a, a, return nullptr, return)
 DEFINEFUNC(int, EVP_PKEY_get_bits, const EVP_PKEY *pkey, pkey, return -1, return)
 DEFINEFUNC(int, EVP_PKEY_get_base_id, const EVP_PKEY *pkey, pkey, return -1, return)
-#else
-DEFINEFUNC(X509 *, SSL_get_peer_certificate, SSL *a, a, return nullptr, return)
-DEFINEFUNC(int, EVP_PKEY_base_id, EVP_PKEY *a, a, return NID_undef, return)
-#endif // OPENSSL_VERSION_MAJOR >= 3
 
 DEFINEFUNC(long, SSL_get_verify_result, const SSL *a, a, return -1, return)
 DEFINEFUNC(SSL *, SSL_new, SSL_CTX *a, a, return nullptr, return)
@@ -380,11 +375,7 @@ DEFINEFUNC(X509_STORE_CTX *, X509_STORE_CTX_new, DUMMYARG, DUMMYARG, return null
 DEFINEFUNC2(void *, X509_STORE_CTX_get_ex_data, X509_STORE_CTX *ctx, ctx, int idx, idx, return nullptr, return)
 DEFINEFUNC(int, SSL_get_ex_data_X509_STORE_CTX_idx, DUMMYARG, DUMMYARG, return -1, return)
 
-#if OPENSSL_VERSION_MAJOR < 3
-DEFINEFUNC3(int, SSL_CTX_load_verify_locations, SSL_CTX *ctx, ctx, const char *CAfile, CAfile, const char *CApath, CApath, return 0, return)
-#else
 DEFINEFUNC2(int, SSL_CTX_load_verify_dir, SSL_CTX *ctx, ctx, const char *CApath, CApath, return 0, return)
-#endif // OPENSSL_VERSION_MAJOR
 
 DEFINEFUNC2(int, i2d_SSL_SESSION, SSL_SESSION *in, in, unsigned char **pp, pp, return 0, return)
 DEFINEFUNC3(SSL_SESSION *, d2i_SSL_SESSION, SSL_SESSION **a, a, const unsigned char **pp, pp, long length, length, return nullptr, return)
@@ -646,9 +637,7 @@ static QStringList findAllLibCrypto()
 }
 # endif
 
-#if (OPENSSL_VERSION_NUMBER >> 28) < 3
-#define QT_OPENSSL_VERSION "1_1"
-#elif OPENSSL_VERSION_MAJOR == 3 // Starting with 3.0 this define is available
+#if OPENSSL_VERSION_MAJOR == 3 // Starting with 3.0 this define is available
 #define QT_OPENSSL_VERSION "3"
 #endif // > 3 intentionally left undefined
 
@@ -919,17 +908,10 @@ bool q_resolveOpenSslSymbols()
             return false;
         }
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000
         if (q_OpenSSL_version_num() < 0x30000000) {
             qCWarning(lcTlsBackend, "Incompatible version of OpenSSL (built with OpenSSL >= 3.x, runtime version is < 3.x)");
             return false;
         }
-#else
-        if (q_OpenSSL_version_num() >= 0x30000000) {
-            qCWarning(lcTlsBackend, "Incompatible version of OpenSSL (built with OpenSSL 1.x, runtime version is >= 3.x)");
-            return false;
-        }
-#endif // OPENSSL_VERSION_NUMBER
 
         RESOLVEFUNC(SSL_SESSION_get_ticket_lifetime_hint)
 
@@ -1072,14 +1054,9 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(SSL_get_error)
         RESOLVEFUNC(SSL_get_peer_cert_chain)
 
-#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
         RESOLVEFUNC(SSL_get1_peer_certificate)
         RESOLVEFUNC(EVP_PKEY_get_bits)
         RESOLVEFUNC(EVP_PKEY_get_base_id)
-#else
-        RESOLVEFUNC(SSL_get_peer_certificate)
-        RESOLVEFUNC(EVP_PKEY_base_id)
-#endif // OPENSSL_VERSION_MAJOR >= 3
 
 #ifndef OPENSSL_NO_DEPRECATED_3_0
         RESOLVEFUNC(DH_new)
@@ -1211,11 +1188,7 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(X509_verify_cert)
         RESOLVEFUNC(d2i_X509)
         RESOLVEFUNC(i2d_X509)
-#if OPENSSL_VERSION_MAJOR < 3
-        RESOLVEFUNC(SSL_CTX_load_verify_locations)
-#else
         RESOLVEFUNC(SSL_CTX_load_verify_dir)
-#endif // OPENSSL_VERSION_MAJOR
         RESOLVEFUNC(i2d_SSL_SESSION)
         RESOLVEFUNC(d2i_SSL_SESSION)
 
