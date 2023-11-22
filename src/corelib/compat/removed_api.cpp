@@ -928,6 +928,28 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 #endif // QT_CORE_REMOVED_SINCE(6, 7)
 
 #if QT_CORE_REMOVED_SINCE(6, 8)
+#include "qabstractitemmodel.h"
+
+bool QPersistentModelIndex::operator<(const QPersistentModelIndex &other) const noexcept
+{
+    return is_lt(compareThreeWay(*this, other));
+}
+
+bool QPersistentModelIndex::operator==(const QPersistentModelIndex &other) const noexcept
+{
+    return comparesEqual(*this, other);
+}
+
+bool QPersistentModelIndex::operator==(const QModelIndex &other) const noexcept
+{
+    return comparesEqual(*this, other);
+}
+
+bool QPersistentModelIndex::operator!=(const QModelIndex &other) const noexcept
+{
+    return !comparesEqual(*this, other);
+}
+
 #include "qbitarray.h" // inlined API
 
 #include "qbytearray.h" // inlined API

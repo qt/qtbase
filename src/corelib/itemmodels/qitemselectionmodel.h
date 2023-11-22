@@ -77,7 +77,7 @@ private:
     friend bool comparesEqual(const QItemSelectionRange &lhs,
                               const QItemSelectionRange &rhs) noexcept
     {
-        return (lhs.tl == rhs.tl && lhs.br == rhs.br);
+        return comparesEqual(lhs.tl, rhs.tl) && comparesEqual(lhs.br, rhs.br);
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QItemSelectionRange)
     QPersistentModelIndex tl, br;

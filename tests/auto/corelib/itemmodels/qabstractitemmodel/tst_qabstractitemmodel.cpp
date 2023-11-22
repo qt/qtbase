@@ -994,8 +994,8 @@ void tst_QAbstractItemModel::complexChangesWithPersistent()
 void tst_QAbstractItemModel::modelIndexComparisons()
 {
     QTestPrivate::testAllComparisonOperatorsCompile<QModelIndex>();
-    QTestPrivate::testEqualityOperatorsCompile<QPersistentModelIndex>();
-    QTestPrivate::testEqualityOperatorsCompile<QPersistentModelIndex, QModelIndex>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QPersistentModelIndex>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QPersistentModelIndex, QModelIndex>();
 
     QtTestModel model(3, 3);
 
@@ -1003,6 +1003,7 @@ void tst_QAbstractItemModel::modelIndexComparisons()
     QModelIndex mi22 = model.index(2, 2);
     QPersistentModelIndex pmi11 = mi11;
     QPersistentModelIndex pmi22 = mi22;
+    QPersistentModelIndex pmiU;
 
     QT_TEST_EQUALITY_OPS(mi11, mi11, true);
     QT_TEST_EQUALITY_OPS(mi11, mi22, false);
@@ -1013,6 +1014,17 @@ void tst_QAbstractItemModel::modelIndexComparisons()
     QT_TEST_EQUALITY_OPS(pmi11, pmi22, false);
     QT_TEST_EQUALITY_OPS(pmi11, mi11, true);
     QT_TEST_EQUALITY_OPS(pmi11, mi22, false);
+
+    QT_TEST_ALL_COMPARISON_OPS(pmi11, pmi11, Qt::strong_ordering::equal);
+    QT_TEST_ALL_COMPARISON_OPS(pmi11, pmi22, Qt::strong_ordering::less);
+    // Disengaged QPMIs are sorted randomly (based on address of their Private)
+    // So all we can check here is QPMIs with d == nullptr, which should reliably
+    // come before any others.
+    QT_TEST_ALL_COMPARISON_OPS(pmiU, pmiU, Qt::strong_ordering::equal);
+    QT_TEST_ALL_COMPARISON_OPS(pmi11, pmiU, Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(pmi11, mi11, Qt::strong_ordering::equal);
+    QT_TEST_ALL_COMPARISON_OPS(pmi11, mi22, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(pmiU, mi11, Qt::strong_ordering::less);
 }
 
 void tst_QAbstractItemModel::testMoveSameParentDown_data()

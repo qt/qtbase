@@ -178,17 +178,21 @@ public:
     QPersistentModelIndex(const QModelIndex &index);
     QPersistentModelIndex(const QPersistentModelIndex &other);
     ~QPersistentModelIndex();
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator<(const QPersistentModelIndex &other) const noexcept;
     bool operator==(const QPersistentModelIndex &other) const noexcept;
     inline bool operator!=(const QPersistentModelIndex &other) const noexcept
     { return !operator==(other); }
+#endif
     QPersistentModelIndex &operator=(const QPersistentModelIndex &other);
     inline QPersistentModelIndex(QPersistentModelIndex &&other) noexcept
         : d(std::exchange(other.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPersistentModelIndex)
     void swap(QPersistentModelIndex &other) noexcept { qt_ptr_swap(d, other.d); }
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QModelIndex &other) const noexcept;
     bool operator!=(const QModelIndex &other) const noexcept;
+#endif
     QPersistentModelIndex &operator=(const QModelIndex &other);
     operator QModelIndex() const;
     int row() const;
@@ -208,6 +212,18 @@ private:
     friend size_t qHash(const QPersistentModelIndex &, size_t seed) noexcept;
     friend bool qHashEquals(const QPersistentModelIndex &a, const QPersistentModelIndex &b) noexcept
     { return a.d == b.d; }
+    friend Q_CORE_EXPORT bool
+    comparesEqual(const QPersistentModelIndex &lhs, const QPersistentModelIndex &rhs) noexcept;
+    friend Q_CORE_EXPORT bool
+    comparesEqual(const QPersistentModelIndex &lhs, const QModelIndex &rhs) noexcept;
+    friend Q_CORE_EXPORT Qt::strong_ordering // ### Qt 7: partial_ordering?
+    compareThreeWay(const QPersistentModelIndex &lhs, const QPersistentModelIndex &rhs) noexcept;
+    friend Q_CORE_EXPORT Qt::strong_ordering // ### Qt 7: partial_ordering?
+    compareThreeWay(const QPersistentModelIndex &lhs, const QModelIndex &rhs) noexcept;
+#if !QT_CORE_REMOVED_SINCE(6, 8)
+    Q_DECLARE_STRONGLY_ORDERED(QPersistentModelIndex)
+    Q_DECLARE_STRONGLY_ORDERED(QPersistentModelIndex, QModelIndex)
+#endif
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QPersistentModelIndex &);
 #endif
