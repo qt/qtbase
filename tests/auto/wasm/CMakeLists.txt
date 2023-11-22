@@ -24,7 +24,6 @@ qt_internal_add_test(tst_qwasmwindowstack
         QT_NO_FOREACH
     LIBRARIES
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
         Qt::Widgets
@@ -37,6 +36,5 @@ qt_internal_add_test(tst_qwasmkeytranslator
         QT_NO_FOREACH
     LIBRARIES
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
         Qt::Core
 )
