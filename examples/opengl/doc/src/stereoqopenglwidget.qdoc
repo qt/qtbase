@@ -5,8 +5,16 @@
     \example stereoqopenglwidget
     \title QOpenGLWidget Stereoscopic Rendering Example
     \examplecategory {Graphics & Multimedia}
-    \brief This example shows how to create a minimal QOpenGLWidget based application
-    with stereoscopic rendering support.
+    \ingroup examples-widgets-opengl
+    \brief This example shows how to create a minimal QOpenGLWidget based
+    application with stereoscopic rendering support.
+
+    \note Support for stereoscopic rendering has certain hardware requirements,
+    such as, a graphics card with stereo support, 3D glasses and specific
+    monitors.
+
+    \note This example renders two images to two separate buffers. When you
+    view the images through 3D glasses, they give a 3D holographic effect.
 
     \image stereoexample-leftbuffer.png
 
@@ -15,9 +23,6 @@
     \image stereoexample-rightbuffer.png
 
     The above image is what will be rendered to the right buffer.
-
-    \note Support for stereoscopic rendering has certain hardware requirements, like
-    your graphics card needs stereo support.
 
     \section1 Setting the correct surface flag
     To enable stereoscopic rendering you need to set the flag
