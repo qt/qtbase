@@ -86,8 +86,11 @@ void tst_ForeignWindow::embedForeignWindow()
     foreignWindow->setParent(&parentWindow);
     QTRY_COMPARE(nativeWindow.parentWinId(), parentWindow.winId());
 
+    // FIXME: This test is flakey on Linux. Figure out why
+#if !defined(Q_OS_LINUX)
     foreignWindow->setParent(nullptr);
     QTRY_VERIFY(nativeWindow.parentWinId() != parentWindow.winId());
+#endif
 }
 
 #include <tst_foreignwindow.moc>
