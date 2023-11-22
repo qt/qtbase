@@ -366,12 +366,14 @@ void QTabBarPrivate::init()
     leftB = new QToolButton(q);
     leftB->setObjectName(u"ScrollLeftButton"_s);
     leftB->setAutoRepeat(true);
-    QObject::connect(leftB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
+    QObjectPrivate::connect(leftB, &QToolButton::clicked,
+                            this, &QTabBarPrivate::scrollTabs);
     leftB->hide();
     rightB = new QToolButton(q);
     rightB->setObjectName(u"ScrollRightButton"_s);
     rightB->setAutoRepeat(true);
-    QObject::connect(rightB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
+    QObjectPrivate::connect(rightB, &QToolButton::clicked,
+                            this, &QTabBarPrivate::scrollTabs);
     rightB->hide();
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplicationPrivate::keypadNavigationEnabled()) {
@@ -765,7 +767,7 @@ void QTabBarPrivate::autoHideTabs()
         q->setVisible(q->count() > 1);
 }
 
-void QTabBarPrivate::_q_closeTab()
+void QTabBarPrivate::closeTab()
 {
     Q_Q(QTabBar);
     QObject *object = q->sender();
@@ -788,7 +790,7 @@ void QTabBarPrivate::_q_closeTab()
         emit q->tabCloseRequested(tabToClose);
 }
 
-void QTabBarPrivate::_q_scrollTabs()
+void QTabBarPrivate::scrollTabs()
 {
     Q_Q(QTabBar);
     const QObject *sender = q->sender();
@@ -973,7 +975,8 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
         initStyleOption(&opt, index);
         ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
         QAbstractButton *closeButton = new CloseButton(this);
-        connect(closeButton, SIGNAL(clicked()), this, SLOT(_q_closeTab()));
+        QObjectPrivate::connect(closeButton, &CloseButton::clicked,
+                                d, &QTabBarPrivate::closeTab);
         setTabButton(index, closeSide, closeButton);
     }
 
@@ -2577,7 +2580,8 @@ void QTabBar::setTabsClosable(bool closable)
                 continue;
             newButtons = true;
             QAbstractButton *closeButton = new CloseButton(this);
-            connect(closeButton, SIGNAL(clicked()), this, SLOT(_q_closeTab()));
+            QObjectPrivate::connect(closeButton, &CloseButton::clicked,
+                                    d, &QTabBarPrivate::closeTab);
             setTabButton(i, closeSide, closeButton);
         }
         if (newButtons)

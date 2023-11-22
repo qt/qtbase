@@ -141,9 +141,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QTabWidget)
     Q_DISABLE_COPY(QTabWidget)
-    Q_PRIVATE_SLOT(d_func(), void _q_showTab(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_removeTab(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_tabMoved(int, int))
     void setUpLayout(bool = false);
 };
 

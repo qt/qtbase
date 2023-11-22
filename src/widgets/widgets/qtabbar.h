@@ -185,8 +185,6 @@ protected:
 private:
     Q_DISABLE_COPY(QTabBar)
     Q_DECLARE_PRIVATE(QTabBar)
-    Q_PRIVATE_SLOT(d_func(), void _q_scrollTabs())
-    Q_PRIVATE_SLOT(d_func(), void _q_closeTab())
 };
 
 QT_END_NAMESPACE

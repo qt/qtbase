@@ -156,9 +156,9 @@ public:
     QTabWidgetPrivate();
     ~QTabWidgetPrivate();
     void updateTabBarPosition();
-    void _q_showTab(int);
-    void _q_removeTab(int);
-    void _q_tabMoved(int from, int to);
+    void showTab(int);
+    void removeTab(int);
+    void tabMoved(int from, int to);
     void init();
     bool isAutoHidden() const
     {
@@ -197,7 +197,7 @@ void QTabWidgetPrivate::init()
     // hack so that QMacStyle::layoutSpacing() can detect tab widget pages
     stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, QSizePolicy::TabWidget));
 
-    QObject::connect(stack, SIGNAL(widgetRemoved(int)), q, SLOT(_q_removeTab(int)));
+    QObjectPrivate::connect(stack, &QStackedWidget::widgetRemoved, this, &QTabWidgetPrivate::removeTab);
     QTabBar *tabBar = new QTabBar(q);
     tabBar->setObjectName("qt_tabwidget_tabbar"_L1);
     tabBar->setDrawBase(false);
@@ -720,17 +720,17 @@ void QTabWidget::setTabBar(QTabBar* tb)
     delete d->tabs;
     d->tabs = tb;
     setFocusProxy(d->tabs);
-    connect(d->tabs, SIGNAL(currentChanged(int)),
-            this, SLOT(_q_showTab(int)));
-    connect(d->tabs, SIGNAL(tabMoved(int,int)),
-            this, SLOT(_q_tabMoved(int,int)));
-    connect(d->tabs, SIGNAL(tabBarClicked(int)),
-            this, SIGNAL(tabBarClicked(int)));
-    connect(d->tabs, SIGNAL(tabBarDoubleClicked(int)),
-            this, SIGNAL(tabBarDoubleClicked(int)));
+    QObjectPrivate::connect(d->tabs, &QTabBar::currentChanged,
+                            d, &QTabWidgetPrivate::showTab);
+    QObjectPrivate::connect(d->tabs, &QTabBar::tabMoved,
+                            d, &QTabWidgetPrivate::tabMoved);
+    connect(d->tabs, &QTabBar::tabBarClicked,
+            this, &QTabWidget::tabBarClicked);
+    connect(d->tabs, &QTabBar::tabBarDoubleClicked,
+            this, &QTabWidget::tabBarDoubleClicked);
     if (d->tabs->tabsClosable())
-        connect(d->tabs, SIGNAL(tabCloseRequested(int)),
-                this, SIGNAL(tabCloseRequested(int)));
+        connect(d->tabs, &QTabBar::tabCloseRequested,
+                this, &QTabWidget::tabCloseRequested);
     tb->setExpanding(!documentMode());
     setUpLayout();
 }
@@ -752,7 +752,7 @@ QTabBar* QTabWidget::tabBar() const
     sized.
 */
 
-void QTabWidgetPrivate::_q_showTab(int index)
+void QTabWidgetPrivate::showTab(int index)
 {
     Q_Q(QTabWidget);
     if (index < stack->count() && index >= 0)
@@ -760,7 +760,7 @@ void QTabWidgetPrivate::_q_showTab(int index)
     emit q->currentChanged(index);
 }
 
-void QTabWidgetPrivate::_q_removeTab(int index)
+void QTabWidgetPrivate::removeTab(int index)
 {
     Q_Q(QTabWidget);
     tabs->removeTab(index);
@@ -768,7 +768,7 @@ void QTabWidgetPrivate::_q_removeTab(int index)
     q->tabRemoved(index);
 }
 
-void QTabWidgetPrivate::_q_tabMoved(int from, int to)
+void QTabWidgetPrivate::tabMoved(int from, int to)
 {
     const QSignalBlocker blocker(stack);
     QWidget *w = stack->widget(from);

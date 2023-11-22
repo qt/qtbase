@@ -187,8 +187,8 @@ public:
     inline bool validIndex(int index) const { return index >= 0 && index < tabList.size(); }
     void setCurrentNextEnabledIndex(int offset);
 
-    void _q_scrollTabs();
-    void _q_closeTab();
+    void scrollTabs();
+    void closeTab();
     void moveTab(int index, int offset);
     void moveTabFinished(int index);
 
