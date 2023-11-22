@@ -11,6 +11,18 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
+qt_internal_add_test(tst_fetchapi
+    SOURCES
+        tst_fetchapi.cpp
+    DEFINES
+        QT_NO_FOREACH
+    LIBRARIES
+        Qt::GuiPrivate
+        Qt::Network
+    PUBLIC_LIBRARIES
+        Qt::Core
+)
+
 qt_internal_add_test(tst_localfileapi
     SOURCES
         tst_localfileapi.cpp
