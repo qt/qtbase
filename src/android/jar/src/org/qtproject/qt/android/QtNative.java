@@ -202,6 +202,8 @@ public class QtNative
         updateApplicationState(state);
     }
 
+    // Post a runnable to Main (UI) Thread if the app is active,
+    // otherwise, queue it to be posted when the the app is active again
     public static void runAction(Runnable action)
     {
         synchronized (m_mainActivityMutex) {
