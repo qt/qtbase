@@ -101,6 +101,7 @@ private slots:
     void resizeKeepsScroll();
     void changeTabTextKeepsScroll();
     void settingCurrentTabBeforeShowDoesntScroll();
+    void checkPositionsAfterShapeChange();
 
 private:
     void checkPositions(const TabBar &tabbar, const QList<int> &positions);
@@ -1500,6 +1501,46 @@ void tst_QTabBar::settingCurrentTabBeforeShowDoesntScroll()
 
     // this should scroll
     QCOMPARE_GT(getScrollOffset(), 0);
+}
+
+void tst_QTabBar::checkPositionsAfterShapeChange()
+{
+    class TabWidget : public QTabWidget
+    {
+    public:
+        using QTabWidget::QTabWidget;
+        using QTabWidget::setTabBar;
+    };
+  
+    class TabBar : public QTabBar
+    {
+    public:
+        using QTabBar::initStyleOption;
+        void resizeEvent(QResizeEvent *e) override
+        {
+            QTabBar::resizeEvent(e);
+            resized = true;
+        }
+        bool resized = false;
+    };
+
+    TabWidget tabWidget;
+    auto *tabBar = new TabBar;
+    tabWidget.setTabBar(tabBar);
+    for (int i = 0; i < 3; ++i)
+        tabWidget.addTab(new QWidget, u"Tab %1"_s.arg(i));
+    tabWidget.setTabPosition(QTabWidget::North);
+    tabWidget.setCurrentIndex(2);
+    tabWidget.resize(300, 300);
+    tabWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tabWidget));
+
+    tabBar->resized = false;
+    tabWidget.setTabPosition(QTabWidget::East);
+    QVERIFY(QTest::qWaitFor([&]() { return tabBar->resized; }));
+    QStyleOptionTab opt;
+    tabBar->initStyleOption(&opt, 2);
+    QVERIFY(opt.rect.top() > 0);
 }
 
 QTEST_MAIN(tst_QTabBar)

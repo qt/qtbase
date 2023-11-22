@@ -831,14 +831,9 @@ void QTabBarPrivate::refresh()
             pressedIndex = -1;
     }
 
-    if (!q->isVisible()) {
-        layoutDirty = true;
-    } else {
-        layoutTabs();
-        makeVisible(currentIndex);
+    layoutDirty = true;
+    if (q->isVisible())
         q->update();
-        q->updateGeometry();
-    }
 }
 
 /*!
