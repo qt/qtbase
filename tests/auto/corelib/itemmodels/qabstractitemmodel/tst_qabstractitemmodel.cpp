@@ -993,7 +993,7 @@ void tst_QAbstractItemModel::complexChangesWithPersistent()
 
 void tst_QAbstractItemModel::modelIndexComparisons()
 {
-    QTestPrivate::testEqualityOperatorsCompile<QModelIndex>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QModelIndex>();
     QTestPrivate::testEqualityOperatorsCompile<QPersistentModelIndex>();
     QTestPrivate::testEqualityOperatorsCompile<QPersistentModelIndex, QModelIndex>();
 
@@ -1006,6 +1006,9 @@ void tst_QAbstractItemModel::modelIndexComparisons()
 
     QT_TEST_EQUALITY_OPS(mi11, mi11, true);
     QT_TEST_EQUALITY_OPS(mi11, mi22, false);
+    QT_TEST_ALL_COMPARISON_OPS(mi11, mi11, Qt::strong_ordering::equal);
+    QT_TEST_ALL_COMPARISON_OPS(mi11, mi22, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(mi22, mi11, Qt::strong_ordering::greater);
     QT_TEST_EQUALITY_OPS(pmi11, pmi11, true);
     QT_TEST_EQUALITY_OPS(pmi11, pmi22, false);
     QT_TEST_EQUALITY_OPS(pmi11, mi11, true);

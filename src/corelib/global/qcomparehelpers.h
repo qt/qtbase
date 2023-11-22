@@ -559,8 +559,102 @@ constexpr Qt::strong_ordering compareThreeWay(Enum lhs, Enum rhs) noexcept
 {
     return compareThreeWay(qToUnderlying(lhs), qToUnderlying(rhs));
 }
-
 } // namespace Qt
+
+namespace QtOrderingPrivate {
+
+template <typename Head, typename...Tail, std::size_t...Is>
+constexpr std::tuple<Tail...> qt_tuple_pop_front_impl(const std::tuple<Head, Tail...> &t,
+                                                      std::index_sequence<Is...>) noexcept
+{
+    return std::tuple<Tail...>(std::get<Is + 1>(t)...);
+}
+
+template <typename Head, typename...Tail>
+constexpr std::tuple<Tail...> qt_tuple_pop_front(const std::tuple<Head, Tail...> &t) noexcept
+{
+    return qt_tuple_pop_front_impl(t, std::index_sequence_for<Tail...>{});
+}
+
+template <typename LhsHead, typename...LhsTail, typename RhsHead, typename...RhsTail>
+constexpr auto compareThreeWayMulti(const std::tuple<LhsHead, LhsTail...> &lhs, // ie. not empty
+                                    const std::tuple<RhsHead, RhsTail...> &rhs) noexcept
+{
+    static_assert(sizeof...(LhsTail) == sizeof...(RhsTail),
+                                                            // expanded together below, but provide a nicer error message:
+                  "The tuple arguments have to have the same size.");
+
+    using Qt::compareThreeWay;
+    using R = std::common_type_t<
+            decltype(compareThreeWay(std::declval<LhsHead>(), std::declval<RhsHead>())),
+            decltype(compareThreeWay(std::declval<LhsTail>(), std::declval<RhsTail>()))...
+            >;
+
+    const auto &l = std::get<0>(lhs);
+    const auto &r = std::get<0>(rhs);
+    static_assert(noexcept(compareThreeWay(l, r)),
+                  "This function requires all relational operators to be noexcept.");
+    const auto res = compareThreeWay(l, r);
+    if constexpr (sizeof...(LhsTail) > 0) {
+        if (is_eq(res))
+            return R{compareThreeWayMulti(qt_tuple_pop_front(lhs), qt_tuple_pop_front(rhs))};
+    }
+    return R{res};
+}
+
+} //QtOrderingPrivate
+
+namespace Qt {
+// A wrapper class that adapts the wrappee to use the strongly-ordered
+// <functional> function objects for implementing the relational operators.
+// Mostly useful to avoid UB on pointers (which it currently mandates P to be),
+// because all the comparison helpers (incl. std::compare_three_way on
+// std::tuple<T*>!) will use the language-level operators.
+//
+template <typename P>
+class totally_ordered_wrapper
+{
+    static_assert(std::is_pointer_v<P>);
+    using T = std::remove_pointer_t<P>;
+
+    P ptr;
+public:
+    explicit constexpr totally_ordered_wrapper(P p) : ptr(p) {}
+
+    constexpr P get() const noexcept { return ptr; }
+    constexpr P operator->() const noexcept { return get(); }
+    constexpr T& operator*() const noexcept { return *get(); }
+
+    explicit constexpr operator bool() const noexcept { return get(); }
+
+private:
+    friend constexpr auto compareThreeWay(const totally_ordered_wrapper &lhs, const totally_ordered_wrapper &rhs) noexcept
+    { return Qt::compareThreeWay(lhs.ptr, rhs.ptr); }
+#define MAKE_RELOP(Ret, op, Op) \
+    friend constexpr Ret operator op (const totally_ordered_wrapper &lhs, const totally_ordered_wrapper &rhs) noexcept \
+    { return std:: Op {}(lhs.ptr, rhs.ptr); } \
+    friend constexpr Ret operator op (const totally_ordered_wrapper &lhs, const P &rhs) noexcept \
+    { return std:: Op {}(lhs.ptr, rhs    ); } \
+    friend constexpr Ret operator op (const P &lhs, const totally_ordered_wrapper &rhs) noexcept \
+    { return std:: Op {}(lhs,     rhs.ptr); } \
+    friend constexpr Ret operator op (const totally_ordered_wrapper &lhs, std::nullptr_t) noexcept \
+    { return std:: Op {}(lhs.ptr, nullptr); } \
+    friend constexpr Ret operator op (std::nullptr_t, const totally_ordered_wrapper &rhs) noexcept \
+    { return std:: Op {}(nullptr, rhs.ptr); } \
+    /* end */
+    MAKE_RELOP(bool, ==, equal_to<P>)
+    MAKE_RELOP(bool, !=, not_equal_to<P>)
+    MAKE_RELOP(bool, < , less<P>)
+    MAKE_RELOP(bool, <=, less_equal<P>)
+    MAKE_RELOP(bool, > , greater<P>)
+    MAKE_RELOP(bool, >=, greater_equal<P>)
+#ifdef __cpp_lib_three_way_comparison
+    MAKE_RELOP(auto, <=>, compare_three_way)
+#endif
+#undef MAKE_RELOP
+};
+
+} //Qt
 
 QT_END_NAMESPACE
 

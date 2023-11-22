@@ -5,10 +5,13 @@
 #ifndef QABSTRACTITEMMODEL_H
 #define QABSTRACTITEMMODEL_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
+
+#include <tuple>
 
 QT_REQUIRE_CONFIG(itemmodel);
 
@@ -138,19 +141,16 @@ public:
     inline QVariant data(int role = Qt::DisplayRole) const;
     inline void multiData(QModelRoleDataSpan roleDataSpan) const;
     inline Qt::ItemFlags flags() const;
-    constexpr inline const QAbstractItemModel *model() const noexcept { return m; }
+    constexpr inline const QAbstractItemModel *model() const noexcept { return m.get(); }
     constexpr inline bool isValid() const noexcept { return (r >= 0) && (c >= 0) && (m != nullptr); }
-    constexpr inline bool operator==(const QModelIndex &other) const noexcept
-        { return (other.r == r) && (other.i == i) && (other.c == c) && (other.m == m); }
-    constexpr inline bool operator!=(const QModelIndex &other) const noexcept
-        { return !(*this == other); }
-    constexpr inline bool operator<(const QModelIndex &other) const noexcept
-        {
-            return  r <  other.r
-                || (r == other.r && (c <  other.c
-                                 || (c == other.c && (i <  other.i
-                                                  || (i == other.i && std::less<const QAbstractItemModel *>()(m, other.m))))));
-        }
+
+private:
+    constexpr auto asTuple() const noexcept { return std::tie(r, c, i, m); }
+    friend constexpr bool comparesEqual(const QModelIndex &lhs, const QModelIndex &rhs) noexcept
+    { return lhs.asTuple() == rhs.asTuple(); }
+    friend constexpr Qt::strong_ordering compareThreeWay(const QModelIndex &lhs, const QModelIndex &rhs) noexcept
+    { return QtOrderingPrivate::compareThreeWayMulti(lhs.asTuple(), rhs.asTuple()); }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QModelIndex)
 private:
     inline QModelIndex(int arow, int acolumn, const void *ptr, const QAbstractItemModel *amodel) noexcept
         : r(arow), c(acolumn), i(reinterpret_cast<quintptr>(ptr)), m(amodel) {}
@@ -158,7 +158,7 @@ private:
         : r(arow), c(acolumn), i(id), m(amodel) {}
     int r, c;
     quintptr i;
-    const QAbstractItemModel *m;
+    Qt::totally_ordered_wrapper<const QAbstractItemModel *> m;
 };
 Q_DECLARE_TYPEINFO(QModelIndex, Q_RELOCATABLE_TYPE);
 

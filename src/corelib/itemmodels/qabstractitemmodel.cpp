@@ -1158,6 +1158,7 @@ void QAbstractItemModel::resetInternalData()
 
     \ingroup model-view
 
+    \compares strong
 
     This class is used as an index into item models derived from
     QAbstractItemModel. The index is used by item views, delegates, and
@@ -1328,23 +1329,21 @@ void QAbstractItemModel::resetInternalData()
 */
 
 /*!
-    \fn bool QModelIndex::operator==(const QModelIndex &other) const
+    \fn bool QModelIndex::operator==(const QModelIndex &lhs, const QModelIndex &rhs)
 
-    Returns \c{true} if this model index refers to the same location as the
-    \a other model index; otherwise returns \c{false}.
+    Returns \c{true} if \a lhs model index refers to the same location as the
+    \a rhs model index; otherwise returns \c{false}.
 
     The internal data pointer, row, column, and model values are used when
     comparing with another model index.
 */
 
-
 /*!
-    \fn bool QModelIndex::operator!=(const QModelIndex &other) const
+    \fn bool QModelIndex::operator!=(const QModelIndex &lhs, const QModelIndex &rhs)
 
-    Returns \c{true} if this model index does not refer to the same location as
-    the \a other model index; otherwise returns \c{false}.
+    Returns \c{true} if \a lhs model index does not refer to the same location as
+    the \a rhs model index; otherwise returns \c{false}.
 */
-
 
 /*!
     \fn QModelIndex QModelIndex::parent() const
@@ -4124,10 +4123,10 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 */
 
 /*!
-    \fn bool QModelIndex::operator<(const QModelIndex &other) const
+    \fn bool QModelIndex::operator<(const QModelIndex &lhs, const QModelIndex &rhs)
     \since 4.1
 
-    Returns \c{true} if this model index is smaller than the \a other
+    Returns \c{true} if \a lhs model index is smaller than the \a rhs
     model index; otherwise returns \c{false}.
 
     The less than calculation is not directly useful to developers - the way that indexes
