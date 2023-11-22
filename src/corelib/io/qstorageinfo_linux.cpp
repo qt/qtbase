@@ -10,7 +10,7 @@
 #include <private/qcore_unix_p.h>
 #include <private/qtools_p.h>
 
-#include <sys/mount.h>
+#include <linux/mount.h>
 #include <sys/statfs.h>
 
 QT_BEGIN_NAMESPACE
