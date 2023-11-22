@@ -21,20 +21,6 @@ Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
 // implemented in qutimimeconverter.mm
 void registerBuiltInTypes();
 
-/*!
-    \fn void qRegisterDraggedTypes(const QStringList &types)
-    \relates QUtiMimeConverter
-
-    Registers the given \a types as custom pasteboard types.
-
-    This function should be called to enable the Drag and Drop events
-    for custom pasteboard types on Cocoa implementations. This is required
-    in addition to a QUtiMimeConverter subclass implementation. By default
-    drag and drop is enabled for all standard pasteboard types.
-
-   \sa QUtiMimeConverter
-*/
-
 void registerDraggedTypes(const QStringList &types)
 {
     (*globalDraggedTypesList()) += types;

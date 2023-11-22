@@ -53,7 +53,21 @@ using namespace Qt::StringLiterals;
     By subclasses this class, one can extend Qt's drag and drop
     and clipboard handling to convert to and from unsupported, or proprietary, UTI formats.
 
-    A subclass of QUtiMimeConverter will automatically be registered, and active, upon instantiation.
+    Construct an instance of your converter implementation after instantiating
+    QGuiApplication:
+
+    \code
+    int main(int argc, char **argv)
+    {
+        QGuiApplication app(argc, argv);
+        JsonMimeConverter jsonConverter;
+    }
+    \endcode
+
+    Destroying the instance will unregister the converter and remove support
+    for the conversion. It is also valid to heap-allocate the converter
+    instance; Qt takes ownership and will delete the converter object during
+    QGuiApplication shut-down.
 
     Qt has predefined support for the following UTIs:
     \list
@@ -94,6 +108,8 @@ QUtiMimeConverter::QUtiMimeConverter(HandlerScope scope)
 /*!
     Constructs a new conversion object and adds it to the
     globally accessed list of available converters.
+
+    Call this constructor after QGuiApplication has been created.
 */
 QUtiMimeConverter::QUtiMimeConverter()
     : QUtiMimeConverter(HandlerScopeFlag::All)
