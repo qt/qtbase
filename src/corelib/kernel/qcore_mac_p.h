@@ -204,7 +204,7 @@ Q_CORE_EXPORT bool qt_apple_isSandboxed();
 
 #if defined(__OBJC__)
 QT_END_NAMESPACE
-@interface NSObject (QtSandboxHelpers)
+@interface NSObject (QtExtras)
 - (id)qt_valueForPrivateKey:(NSString *)key;
 @end
 QT_BEGIN_NAMESPACE

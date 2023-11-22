@@ -505,7 +505,7 @@ bool qt_apple_isSandboxed()
 }
 
 QT_END_NAMESPACE
-@implementation NSObject (QtSandboxHelpers)
+@implementation NSObject (QtExtras)
 - (id)qt_valueForPrivateKey:(NSString *)key
 {
     if (qt_apple_isSandboxed())
