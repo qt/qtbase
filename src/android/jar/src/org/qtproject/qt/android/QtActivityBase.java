@@ -130,7 +130,7 @@ public class QtActivityBase extends Activity
         if (QtNative.getStateDetails().isStarted) {
             QtNative.updateWindow();
             // Suspending the app clears the immersive mode, so we need to set it again.
-            m_delegate.displayManager().updateFullScreen(this);
+            m_delegate.displayManager().updateFullScreen();
         }
     }
 
@@ -257,7 +257,7 @@ public class QtActivityBase extends Activity
         super.onRestoreInstanceState(savedInstanceState);
         QtNative.setStarted(savedInstanceState.getBoolean("Started"));
         int savedSystemUiVisibility = savedInstanceState.getInt("SystemUiVisibility");
-        m_delegate.displayManager().setSystemUiVisibility(this, savedSystemUiVisibility);
+        m_delegate.displayManager().setSystemUiVisibility(savedSystemUiVisibility);
         // FIXME restore all surfaces
     }
 
@@ -282,7 +282,7 @@ public class QtActivityBase extends Activity
     {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus)
-            m_delegate.displayManager().updateFullScreen(this);
+            m_delegate.displayManager().updateFullScreen();
     }
 
     @Override

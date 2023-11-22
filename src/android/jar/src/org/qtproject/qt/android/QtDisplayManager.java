@@ -44,21 +44,23 @@ public class QtDisplayManager {
     public static final int SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2;
     private int m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
 
-    // FIXME: some methods here make more sense as non-static, fix that
-    QtDisplayManager() {}
+    private DisplayManager.DisplayListener m_displayListener = null;
+    private final Activity m_activity;
 
-    // TODO: unregister the listener upon activity destruction as well
-    public void registerDisplayListener(Activity activity, QtLayout layout)
+    QtDisplayManager(Activity activity, QtLayout layout)
     {
-        DisplayManager.DisplayListener displayListener = new DisplayManager.DisplayListener()
-        {
+        m_activity = activity;
+        initDisplayListener(layout);
+    }
+
+    private void initDisplayListener(QtLayout layout) {
+        m_displayListener = new DisplayManager.DisplayListener() {
             @Override
             public void onDisplayAdded(int displayId) {
                 QtDisplayManager.handleScreenAdded(displayId);
             }
 
-            private boolean isSimilarRotation(int r1, int r2)
-            {
+            private boolean isSimilarRotation(int r1, int r2) {
                 return (r1 == r2)
                         || (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
                         || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)
@@ -67,11 +69,10 @@ public class QtDisplayManager {
             }
 
             @Override
-            public void onDisplayChanged(int displayId)
-            {
+            public void onDisplayChanged(int displayId) {
                 Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-                        ? activity.getWindowManager().getDefaultDisplay()
-                        : activity.getDisplay();
+                        ? m_activity.getWindowManager().getDefaultDisplay()
+                        : m_activity.getDisplay();
                 int rotation = display.getRotation();
                 layout.setActivityDisplayRotation(rotation);
                 // Process orientation change only if it comes after the size
@@ -79,7 +80,7 @@ public class QtDisplayManager {
                 // Otherwise it will be processed in QtLayout.
                 if (isSimilarRotation(rotation, layout.displayRotation())) {
                     QtDisplayManager.handleOrientationChanged(rotation,
-                            getNativeOrientation(activity, rotation));
+                            getNativeOrientation(m_activity, rotation));
                 }
 
                 float refreshRate = display.getRefreshRate();
@@ -92,9 +93,14 @@ public class QtDisplayManager {
                 QtDisplayManager.handleScreenRemoved(displayId);
             }
         };
+    }
 
-        DisplayManager displayManager = (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
-        displayManager.registerDisplayListener(displayListener, null);
+    // TODO: unregister the listener upon activity destruction as well
+    public void registerDisplayListener()
+    {
+        DisplayManager displayManager =
+                (DisplayManager) m_activity.getSystemService(Context.DISPLAY_SERVICE);
+        displayManager.registerDisplayListener(m_displayListener, null);
     }
 
     public static int getNativeOrientation(Activity activity, int rotation)
@@ -112,9 +118,8 @@ public class QtDisplayManager {
         return nativeOrientation;
     }
 
-    public void setSystemUiVisibility(Activity activity, int systemUiVisibility)
+    public void setSystemUiVisibility(int systemUiVisibility)
     {
-
         if (m_systemUiVisibility == systemUiVisibility)
             return;
 
@@ -123,16 +128,16 @@ public class QtDisplayManager {
         int systemUiVisibilityFlags = View.SYSTEM_UI_FLAG_VISIBLE;
         switch (m_systemUiVisibility) {
             case SYSTEM_UI_VISIBILITY_NORMAL:
-                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    activity.getWindow().getAttributes().layoutInDisplayCutoutMode =
+                    m_activity.getWindow().getAttributes().layoutInDisplayCutoutMode =
                             WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
                 }
                 break;
             case SYSTEM_UI_VISIBILITY_FULLSCREEN:
-                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                 systemUiVisibilityFlags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -141,22 +146,22 @@ public class QtDisplayManager {
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         | View.INVISIBLE;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    activity.getWindow().getAttributes().layoutInDisplayCutoutMode =
+                    m_activity.getWindow().getAttributes().layoutInDisplayCutoutMode =
                             WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
                 }
                 break;
             case SYSTEM_UI_VISIBILITY_TRANSLUCENT:
-                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN
+                m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN
                         | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
                         | WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    activity.getWindow().getAttributes().layoutInDisplayCutoutMode =
+                    m_activity.getWindow().getAttributes().layoutInDisplayCutoutMode =
                             WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
                 }
                 break;
         }
-        activity.getWindow().getDecorView().setSystemUiVisibility(systemUiVisibilityFlags);
+        m_activity.getWindow().getDecorView().setSystemUiVisibility(systemUiVisibilityFlags);
     }
 
     public int systemUiVisibility()
@@ -164,11 +169,11 @@ public class QtDisplayManager {
         return m_systemUiVisibility;
     }
 
-    public void updateFullScreen(Activity activity)
+    public void updateFullScreen()
     {
         if (m_systemUiVisibility == SYSTEM_UI_VISIBILITY_FULLSCREEN) {
             m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
-            setSystemUiVisibility(activity, SYSTEM_UI_VISIBILITY_FULLSCREEN);
+            setSystemUiVisibility(SYSTEM_UI_VISIBILITY_FULLSCREEN);
         }
     }
 

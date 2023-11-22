@@ -47,9 +47,9 @@ public class QtActivityDelegate
     private View m_dummyView = null;
 
     private QtAccessibilityDelegate m_accessibilityDelegate = null;
-    private final QtDisplayManager m_displayManager = new QtDisplayManager();
+    private QtDisplayManager m_displayManager = null;
 
-    private final QtInputDelegate m_inputDelegate;
+    private QtInputDelegate m_inputDelegate = null;
 
     QtActivityDelegate(Activity activity)
     {
@@ -57,18 +57,6 @@ public class QtActivityDelegate
         QtNative.setActivity(m_activity);
 
         setActionBarVisibility(false);
-
-        QtInputDelegate.KeyboardVisibilityListener keyboardVisibilityListener =
-                () -> m_displayManager.updateFullScreen(m_activity);
-        m_inputDelegate = new QtInputDelegate(m_activity, keyboardVisibilityListener);
-
-        try {
-            PackageManager pm = m_activity.getPackageManager();
-            ActivityInfo activityInfo =  pm.getActivityInfo(m_activity.getComponentName(), 0);
-            m_inputDelegate.setSoftInputMode(activityInfo.softInputMode);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     QtDisplayManager displayManager() {
@@ -90,7 +78,7 @@ public class QtActivityDelegate
     public void setSystemUiVisibility(int systemUiVisibility)
     {
         QtNative.runAction(() -> {
-            m_displayManager.setSystemUiVisibility(m_activity, systemUiVisibility);
+            m_displayManager.setSystemUiVisibility(systemUiVisibility);
             m_layout.requestLayout();
             QtNative.updateWindow();
         });
@@ -149,7 +137,20 @@ public class QtActivityDelegate
     {
         m_layout = new QtLayout(m_activity);
 
-        m_displayManager.registerDisplayListener(m_activity, m_layout);
+        m_displayManager = new QtDisplayManager(m_activity, m_layout);
+        m_displayManager.registerDisplayListener();
+
+        QtInputDelegate.KeyboardVisibilityListener keyboardVisibilityListener =
+                () -> m_displayManager.updateFullScreen();
+        m_inputDelegate = new QtInputDelegate(m_activity, keyboardVisibilityListener);
+
+        try {
+            PackageManager pm = m_activity.getPackageManager();
+            ActivityInfo activityInfo =  pm.getActivityInfo(m_activity.getComponentName(), 0);
+            m_inputDelegate.setSoftInputMode(activityInfo.softInputMode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
 
         int orientation = m_activity.getResources().getConfiguration().orientation;
 
