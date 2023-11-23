@@ -19,6 +19,17 @@ begin_block drawing
     setPen black
     drawText 0 68 "QwErTy@"
 
+    setPen green 1 SolidLine
+    drawLine 0 75 10 75
+    setPen 800000ff 1
+    drawPoint 0 75
+    drawPoint 10 75
+
+    setPen green 2 SolidLine
+    drawLine 20 75 30 75
+    setPen 800000ff 2
+    drawPoint 20 75
+    drawPoint 30 75
 
     setPen black 1
     setBrush 7f7fff
