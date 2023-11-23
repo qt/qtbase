@@ -6,6 +6,7 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qdialog.h>
+#include <QtWidgets/qdialogbuttonbox.h>
 
 QT_REQUIRE_CONFIG(messagebox);
 
@@ -64,6 +65,10 @@ public:
 
         NRoles
     };
+    Q_ENUM(ButtonRole)
+    static_assert(static_cast<int>(ButtonRole::NRoles) ==
+                  static_cast<int>(QDialogButtonBox::ButtonRole::NRoles),
+                  "QMessageBox::ButtonRole and QDialogButtonBox::ButtonRole out of sync!");
 
     enum StandardButton {
         // keep this in sync with QDialogButtonBox::StandardButton and QPlatformDialogHelper::StandardButton
@@ -98,6 +103,12 @@ public:
         FlagMask           = 0x00000300,        // obsolete
         ButtonMask         = ~FlagMask          // obsolete
     };
+    Q_ENUM(StandardButton);
+    static_assert(static_cast<int>(StandardButton::LastButton) ==
+                  static_cast<int>(QDialogButtonBox::StandardButton::LastButton),
+                  "QMessageBox::StandardButton and QDialogButtonBox::StandardButton out of sync!");
+
+
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     typedef StandardButton Button;
 #endif
