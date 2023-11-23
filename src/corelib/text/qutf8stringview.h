@@ -13,6 +13,7 @@
 #include <QtCore/qbytearrayview.h>
 
 #include <string>
+#include <string_view>
 #include <QtCore/q20type_traits.h>
 
 QT_BEGIN_NAMESPACE

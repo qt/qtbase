@@ -10,6 +10,7 @@
 #include <QtCore/qstringalgorithms.h>
 
 #include <string>
+#include <string_view>
 #include <QtCore/q20type_traits.h>
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)

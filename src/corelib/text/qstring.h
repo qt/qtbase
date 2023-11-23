@@ -25,6 +25,7 @@
 #include <string>
 #include <iterator>
 #include <QtCore/q20memory.h>
+#include <string_view>
 
 #include <stdarg.h>
 
