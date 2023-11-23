@@ -70,7 +70,6 @@ qt_internal_add_module(Network
     PRECOMPILED_HEADER
         "../corelib/global/qt_pch.h"
     GENERATE_CPP_EXPORTS
-    GENERATE_PRIVATE_CPP_EXPORTS
 )
 
 ## Scopes:

@@ -73,7 +73,6 @@ qt_internal_add_module(Test
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
     GENERATE_CPP_EXPORTS
-    GENERATE_PRIVATE_CPP_EXPORTS
 )
 
 if(TARGET Gui)
