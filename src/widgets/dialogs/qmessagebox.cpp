@@ -1744,11 +1744,14 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
 {
     // necessary for source compatibility with Qt 4.0 and 4.1
     // handles (Yes, No) and (Yes|Default, No)
-    if (defaultButton && !(buttons & defaultButton))
-        return (QMessageBox::StandardButton)
-                    QMessageBoxPrivate::showOldMessageBox(parent, icon, title,
-                                                            text, int(buttons),
-                                                            int(defaultButton), 0);
+    if (defaultButton && !(buttons & defaultButton)) {
+        const int defaultButtons = defaultButton | QMessageBox::Default;
+        const int otherButtons = static_cast<int>(buttons);
+        const int ret = QMessageBoxPrivate::showOldMessageBox(parent, icon, title,
+                                                              text, otherButtons,
+                                                              defaultButtons, 0);
+        return static_cast<QMessageBox::StandardButton>(ret);
+    }
 
     QMessageBox msgBox(icon, title, text, QMessageBox::NoButton, parent);
     QDialogButtonBox *buttonBox = msgBox.findChild<QDialogButtonBox*>();
