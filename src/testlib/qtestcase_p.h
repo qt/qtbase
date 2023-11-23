@@ -16,7 +16,6 @@
 //
 
 #include <QtTest/qtestcase.h>
-#include <QtTest/private/qttestexports_p.h>
 #include <QtTest/qttestglobal.h>
 
 #include <QtCore/qstring.h>
@@ -26,8 +25,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest {
 #if QT_CONFIG(batch_test_support)
-    Q_TESTLIB_PRIVATE_EXPORT QList<QString> qGetTestCaseNames();
-    Q_TESTLIB_PRIVATE_EXPORT TestEntryFunction qGetTestCaseEntryFunction(const QString &name);
+    Q_TESTLIB_EXPORT QList<QString> qGetTestCaseNames();
+    Q_TESTLIB_EXPORT TestEntryFunction qGetTestCaseEntryFunction(const QString &name);
 #endif  // QT_CONFIG(batch_test_support)
 } // namespace QTest
 
