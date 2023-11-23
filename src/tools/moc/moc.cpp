@@ -706,8 +706,10 @@ void Moc::parse()
                             switch (next()) {
                             case NAMESPACE:
                                 if (test(IDENTIFIER)) {
-                                    while (test(SCOPE))
+                                    while (test(SCOPE)) {
+                                        test(INLINE); // ignore inline namespaces
                                         next(IDENTIFIER);
+                                    }
                                     if (test(EQ)) {
                                         // namespace Foo = Bar::Baz;
                                         until(SEMIC);
