@@ -17,7 +17,6 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_GENERATE_METATYPES
         NO_HEADERSCLEAN_CHECK
         GENERATE_CPP_EXPORTS
-        GENERATE_PRIVATE_CPP_EXPORTS
         NO_UNITY_BUILD
     )
     set(${single_args}
