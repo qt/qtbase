@@ -47,14 +47,9 @@ public:
     { setNativeKey({ key, type }, initialValue, mode); }
     QNativeIpcKey nativeIpcKey() const;
 
-#if QT_DEPRECATED_SINCE(6, 10)
-    QT_DEPRECATED_VERSION_X_6_10("Please refer to 'Native IPC Key' documentation")
     QSystemSemaphore(const QString &key, int initialValue = 0, AccessMode mode = Open);
-    QT_DEPRECATED_VERSION_X_6_10("Please refer to 'Native IPC Key' documentation")
     void setKey(const QString &key, int initialValue = 0, AccessMode mode = Open);
-    QT_DEPRECATED_VERSION_X_6_10("Please refer to 'Native IPC Key' documentation")
     QString key() const;
-#endif
 
     bool acquire();
     bool release(int n = 1);
