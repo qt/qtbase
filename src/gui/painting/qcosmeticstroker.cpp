@@ -364,7 +364,7 @@ void QCosmeticStroker::drawPoints(const QPoint *points, int num)
     const QPoint *end = points + num;
     while (points < end) {
         QPointF p = QPointF(*points) * state->matrix;
-        drawPixel(this, qRound(p.x()), qRound(p.y()), 255);
+        drawPixel(this, std::floor(p.x()), std::floor(p.y()), 255);
         ++points;
     }
 
@@ -377,7 +377,7 @@ void QCosmeticStroker::drawPoints(const QPointF *points, int num)
     const QPointF *end = points + num;
     while (points < end) {
         QPointF p = (*points) * state->matrix;
-        drawPixel(this, qRound(p.x()), qRound(p.y()), 255);
+        drawPixel(this, std::floor(p.x()), std::floor(p.y()), 255);
         ++points;
     }
 
