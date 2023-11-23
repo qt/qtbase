@@ -77,6 +77,9 @@ const char *string_hash_hash = STRING_HASH_HASH("baz");
    of writing this comment.
 */
 namespace A::inline B {}
+namespace A {
+   namespace B::inline C {}
+}
 #endif
 
 Q_DECLARE_METATYPE(const QMetaObject*);
