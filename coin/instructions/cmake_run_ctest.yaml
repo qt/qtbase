@@ -23,6 +23,13 @@ instructions:
       condition: property
       property: target.osVersion
       in_values: [QNX_710]
+  - type: AppendToEnvironmentVariable
+    variableName: TESTRUNNER
+    variableValue: " {{.AgentWorkingDir}}/coin_vxworks_qemu_runner.sh"
+    enable_if:
+      condition: property
+      property: target.osVersion
+      in_values: [VxWorks]
   - type: Group
     enable_if:
       condition: property
@@ -51,6 +58,8 @@ instructions:
       condition: property
       property: host.os
       equals_value: Windows
+
+  - !include "{{qt/qtbase}}/vxworks_test_env_setup.yaml"
 
     # Keep the testrun quiet for ASAN testruns, since there are FAILs happening all over the place...
   - type: EnvironmentVariable
@@ -117,7 +126,7 @@ instructions:
         command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
         executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
         ignoreExitCode: false
-        maxTimeInSeconds: 10800
+        maxTimeInSeconds: 14400
         maxTimeBetweenOutput: "{{.Env.COIN_COMMAND_OUTPUT_TIMEOUT}}"
         userMessageOnFailure: >
           Failed to run tests.
@@ -131,7 +140,7 @@ instructions:
         command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
         executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
         ignoreExitCode: true
-        maxTimeInSeconds: 10800
+        maxTimeInSeconds: 14400
         maxTimeBetweenOutput: "{{.Env.COIN_COMMAND_OUTPUT_TIMEOUT}}"
         userMessageOnFailure: >
           Failed to run tests.

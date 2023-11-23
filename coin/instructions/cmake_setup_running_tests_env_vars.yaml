@@ -45,3 +45,15 @@ instructions:
         - condition: property
           property: features
           not_contains_value: DisableTests
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/vxworks_testrunner.yaml"
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: target.osVersion
+          equals_value: VxWorks
+        - condition: property
+          property: features
+          not_contains_value: DisableTests

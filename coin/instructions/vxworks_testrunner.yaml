@@ -1,0 +1,39 @@
+type: Group
+instructions:
+  - type: WriteFile
+    filename: "{{.AgentWorkingDir}}/coin_vxworks_qemu_runner.sh"
+    fileMode: 493
+    fileContents: |
+      #!/bin/bash
+      quoted_args=`python3 -c 'import sys, shlex; print(shlex.join(sys.argv[2:]))' "$@"`
+
+      testdir="$(dirname $1)"
+      testexecutable="$1"
+      echo RUNNING via serial: "$quoted_args"
+      echo "cmd rtp exec -p 200 -t 0x01000000 -u 300000 $testexecutable -- $quoted_args" > /home/qt/work/vx.sh
+      echo "cmd echo \"qtest_in_vxworks_complete: $?\"" >> /home/qt/work/vx.sh
+      #rtp exec            Execute a process.
+      #               -p : specify the initial task priority
+      #                     200 is high, 255 max
+      #               -t : task options for the RTPs initial task
+      #                    0x01000000 turn on coprocessor
+      #               -u : specify the size of the process task stack
+      #               -- : mark the end of "rtp exec" options.
+
+      # qtest_in_vxworks_complete echo is used to detect test process completion as it will
+      # be echoed after test process ends normally or crashes when normal log lines are not present.
+
+      echo "cmd cd $testdir" > /tmp/guest.in
+      sleep 0.5
+      echo "</home/qt/work/vx.sh" > /tmp/guest.in
+
+      while read -t 600 line; do
+          echo "$line"
+          if echo "$line" | /usr/bin/grep -q "qtest_in_vxworks_complete"
+          then
+              read -t 1 line</tmp/guest.out
+              echo "$line"
+              exitcode=$(echo "$line" | sed -nr 's/qtest_in_vxworks_complete: (-?[0-9]+)/\1/gp' | tr -d '\r')
+              exit $exitcode
+          fi
+      done < /tmp/guest.out

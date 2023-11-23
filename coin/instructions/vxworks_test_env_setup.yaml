@@ -1,0 +1,85 @@
+type: Group
+instructions:
+  # Allows access from NFS export.
+  - type: ExecuteCommand
+    command: "chmod -R 777 {{.AgentWorkingDir}}"
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Failed to set dir permissions"
+  - type: MakeDirectory
+    directory: "{{.AgentWorkingDir}}/vxworkshome"
+  - type: ExecuteCommand
+    command: "sudo chown 2001:100 {{.AgentWorkingDir}}/vxworkshome"
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Failed to vxworks home ownership"
+  - type: ExecuteCommand
+    command: "mkfifo /tmp/guest.in /tmp/guest.out"
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Failed to mkfifo"
+  - type: ExecuteCommand
+    command: "{{.Env.HOME}}/vxworks_qemu_launcher.sh"
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Failed to start VxWorks emulator"
+  - type: WriteFile
+    filename: "{{.AgentWorkingDir}}/coin_vxworks_vars.sh"
+    fileMode: 493
+    fileContents: |
+      #!/bin/bash
+      sleep 10
+      declare -A hosts
+      hosts["qt-test-server"]="172.31.1.1"
+      hosts["qt-test-server.qt-test-net"]="172.31.1.1"
+      hosts["qt-test-server.test-net.qt.local"]="172.31.1.1"
+      hosts["vsftpd.test-net.qt.local"]="172.31.1.1"
+      hosts["apache2.test-net.qt.local"]="172.31.1.1"
+      hosts["squid.test-net.qt.local"]="172.31.1.1"
+      hosts["danted.test-net.qt.local"]="172.31.1.1"
+      hosts["ftp-proxy.test-net.qt.local"]="172.31.1.1"
+      hosts["echo.test-net.qt.local"]="172.31.1.1"
+      hosts["cyrus.test-net.qt.local"]="172.31.1.1"
+      hosts["iptables.test-net.qt.local"]="172.31.1.1"
+
+      declare -A env_vars
+      env_vars["LD_LIBRARY_PATH"]=$VXWORKS_TEST_LIBS_PATH
+      env_vars["ICU_DATA"]="/opt/fsl_imx6_2_0_6_2_VSB/3pp/ICU/icu/source/data/in/icudt73l.dat"
+      env_vars["TMPDIR"]="/tmp"
+      env_vars["QT_QPA_FONTDIR"]="/opt/fsl_imx6_2_0_6_2_VSB/fonts"
+      env_vars["VXWORKS_CERTS_DIR"]="/opt/fsl_imx6_2_0_6_2_VSB/certs"
+      env_vars["HOME"]="/home/qt/work/vxworkshome"
+      env_vars["QML_LOADERTHREAD_STACK_SIZE"]="131072"
+      env_vars["QTEST_FUNCTION_TIMEOUT"]="600000"
+      env_vars["QT_PLUGIN_PATH"]="/home/qt/work/install/target/plugins"
+      env_vars["QT_QPA_PLATFORM_PLUGIN_PATH"]="/home/qt/work/install/target/plugins/platforms"
+
+      for i in "${!hosts[@]}"
+      do
+        echo "hostAdd \"$i\", \"${hosts[$i]}\"" > /tmp/guest.in
+        sleep 1
+      done
+
+      for i in "${!env_vars[@]}"
+      do
+        echo "cmd setenv \"$i\" \"${env_vars[$i]}\"" > /tmp/guest.in
+        sleep 1
+      done
+
+      echo "cmd sysvar set -o ipdnsc.primaryns \"10.150.153.13\"" > /tmp/guest.in
+      sleep 1
+
+      date=($(date "+%Y-%m-%d %H:%M:%S"))
+      echo "cmd date ${date[0]}" > /tmp/guest.in
+      sleep 1
+      echo "cmd time ${date[1]}" > /tmp/guest.in
+
+  - type: ExecuteCommand
+    command: "{{.AgentWorkingDir}}/coin_vxworks_vars.sh"
+    maxTimeInSeconds: 600
+    maxTimeBetweenOutput: 600
+    userMessageOnFailure: "Failed to run coin_vxworks_vars.sh after having started the emulator"
+enable_if:
+  condition: property
+  property: target.osVersion
+  equals_value: VxWorks
