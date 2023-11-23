@@ -10,9 +10,9 @@
 #include <QXmlStreamReader>
 
 #include <algorithm>
-#include <chrono>
 #include <functional>
-#include <thread>
+#include <QtCore/QDeadlineTimer>
+#include <QtCore/QThread>
 
 #include <shellquote_shared.h>
 
@@ -115,7 +115,7 @@ struct Options
     bool helpRequested = false;
     bool verbose = false;
     bool skipAddInstallRoot = false;
-    std::chrono::seconds timeout{480}; // 8 minutes
+    int timeoutSecs = 480; // 8 minutes
     QString buildPath;
     QString adbCommand{QStringLiteral("adb")};
     QString makeCommand;
@@ -205,7 +205,7 @@ static bool parseOptions()
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
-                g_options.timeout = std::chrono::seconds{arguments.at(++i).toInt()};
+                g_options.timeoutSecs = arguments.at(++i).toInt();
         } else if (argument.compare(QStringLiteral("--help"), Qt::CaseInsensitive) == 0) {
             g_options.helpRequested = true;
         } else if (argument.compare(QStringLiteral("--verbose"), Qt::CaseInsensitive) == 0) {
@@ -355,53 +355,58 @@ static bool parseTestArgs()
     return true;
 }
 
+static bool obtainPid() {
+    QByteArray output;
+    const auto psCmd = "%1 shell \"ps | grep ' %2'\""_L1.arg(g_options.adbCommand,
+                                                            shellQuote(g_options.package));
+    if (!execCommand(psCmd, &output))
+        return false;
+
+    const QList<QByteArray> lines = output.split(u'\n');
+    if (lines.size() < 1)
+        return false;
+
+    QList<QByteArray> columns = lines.first().simplified().replace(u'\t', u' ').split(u' ');
+    if (columns.size() < 3)
+        return false;
+
+    if (g_options.pid == -1) {
+        bool ok = false;
+        int pid = columns.at(1).toInt(&ok);
+        if (ok)
+            g_options.pid = pid;
+    }
+
+    return true;
+}
+
 static bool isRunning() {
     QByteArray output;
-    if (!execCommand(QStringLiteral("%1 shell \"ps | grep ' %2'\"").arg(g_options.adbCommand,
-                                                                        shellQuote(g_options.package)), &output)) {
-
+    const auto psCmd = "%1 shell \"ps | grep ' %2'\""_L1.arg(g_options.adbCommand,
+                                                            shellQuote(g_options.package));
+    if (!execCommand(psCmd, &output))
         return false;
-    }
+
     return output.indexOf(QLatin1StringView(" " + g_options.package.toUtf8())) > -1;
 }
 
-static bool waitToFinish()
+static void waitForFinished()
 {
-    using clock = std::chrono::system_clock;
-    auto start = clock::now();
-    // wait to start
-    while (!isRunning()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        if ((clock::now() - start) > std::chrono::seconds{10})
-            return false;
-    }
-
-    if (g_options.sdkVersion > 23) { // pidof is broken in SDK 23, non-existent before
-        QByteArray output;
-        const QString command(QStringLiteral("%1 shell pidof -s %2")
-                                      .arg(g_options.adbCommand, shellQuote(g_options.package)));
-        execCommand(command, &output, g_options.verbose);
-        bool ok = false;
-        int pid = output.toInt(&ok); // If we got more than one pid, fail.
-        if (ok) {
-            g_options.pid = pid;
-        } else {
-            fprintf(stderr,
-                    "Unable to obtain the PID of the running unit test. Command \"%s\" "
-                    "returned \"%s\"\n",
-                    command.toUtf8().constData(), output.constData());
-            fflush(stderr);
-        }
-    }
+    // wait to start and set PID
+    QDeadlineTimer startDeadline(10000);
+    do {
+        if (obtainPid())
+            break;
+        QThread::msleep(100);
+    } while (!startDeadline.hasExpired());
 
     // Wait to finish
-    while (isRunning()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        if (g_options.timeout >= std::chrono::seconds::zero()
-                && (clock::now() - start) > g_options.timeout)
-            return false;
-    }
-    return true;
+    QDeadlineTimer finishedDeadline(g_options.timeoutSecs * 1000);
+    do {
+        if (!isRunning())
+            break;
+        QThread::msleep(250);
+    } while (!finishedDeadline.hasExpired());
 }
 
 static void obtainSDKVersion()
@@ -604,9 +609,10 @@ int main(int argc, char *argv[])
     const QString formattedTime = getCurrentTimeString();
 
     // start the tests
-    bool res = execCommand("%1 %2"_L1.arg(g_options.adbCommand, g_options.testArgs),
-                           nullptr, g_options.verbose)
-            && waitToFinish();
+    const auto startCmd = "%1 %2"_L1.arg(g_options.adbCommand, g_options.testArgs);
+    bool res = execCommand(startCmd, nullptr, g_options.verbose);
+
+    waitForFinished();
 
     if (res)
         res &= pullFiles();
