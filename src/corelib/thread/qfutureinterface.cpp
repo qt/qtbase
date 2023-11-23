@@ -44,72 +44,18 @@ const auto suspendingOrSuspended =
 
 } // unnamed namespace
 
-class QBasicFutureWatcher : public QObject, QFutureCallOutInterface
+class QObjectContinuationWrapper : public QObject
 {
     Q_OBJECT
 public:
-    explicit QBasicFutureWatcher(QObject *parent = nullptr);
-    ~QBasicFutureWatcher() override;
+    explicit QObjectContinuationWrapper(QObject *parent = nullptr)
+        : QObject(parent)
+    {
+    }
 
-    void setFuture(QFutureInterfaceBase &fi);
-
-    bool event(QEvent *event) override;
-
-Q_SIGNALS:
-    void finished();
-
-private:
-    QFutureInterfaceBase future;
-
-    void postCallOutEvent(const QFutureCallOutEvent &event) override;
-    void callOutInterfaceDisconnected() override;
+signals:
+    void run();
 };
-
-void QBasicFutureWatcher::postCallOutEvent(const QFutureCallOutEvent &event)
-{
-    if (thread() == QThread::currentThread()) {
-        // If we are in the same thread, don't queue up anything.
-        std::unique_ptr<QFutureCallOutEvent> clonedEvent(event.clone());
-        QCoreApplication::sendEvent(this, clonedEvent.get());
-    } else {
-        QCoreApplication::postEvent(this, event.clone());
-    }
-}
-
-void QBasicFutureWatcher::callOutInterfaceDisconnected()
-{
-    QCoreApplication::removePostedEvents(this, QEvent::FutureCallOut);
-}
-
-/*
- * QBasicFutureWatcher is a more lightweight version of QFutureWatcher for internal use
- */
-QBasicFutureWatcher::QBasicFutureWatcher(QObject *parent)
-    : QObject(parent)
-{
-}
-
-QBasicFutureWatcher::~QBasicFutureWatcher()
-{
-    future.d->disconnectOutputInterface(this);
-}
-
-void QBasicFutureWatcher::setFuture(QFutureInterfaceBase &fi)
-{
-    future = fi;
-    future.d->connectOutputInterface(this);
-}
-
-bool QBasicFutureWatcher::event(QEvent *event)
-{
-    if (event->type() == QEvent::FutureCallOut) {
-        QFutureCallOutEvent *callOutEvent = static_cast<QFutureCallOutEvent *>(event);
-        if (callOutEvent->callOutType == QFutureCallOutEvent::Finished)
-            emit finished();
-        return true;
-    }
-    return QObject::event(event);
-}
 
 void QtPrivate::watchContinuationImpl(const QObject *context, QSlotObjectBase *slotObj,
                                       QFutureInterfaceBase &fi)
@@ -119,22 +65,40 @@ void QtPrivate::watchContinuationImpl(const QObject *context, QSlotObjectBase *s
 
     auto slot = SlotObjUniquePtr(slotObj);
 
-    auto *watcher = new QBasicFutureWatcher;
+    auto *watcher = new QObjectContinuationWrapper;
     watcher->moveToThread(context->thread());
+
+    // We need to protect acccess to the watcher. The context object (and in turn, the watcher)
+    // could be destroyed while the continuation that emits the signal is running. We have to
+    // prevent that.
+    // The mutex has to be recursive, because the continuation itself could delete the context
+    // object (and thus the watcher), which will try to lock the mutex from the same thread twice.
+    auto watcherMutex = std::make_shared<QRecursiveMutex>();
+    const auto destroyWatcher = [watcherMutex, watcher]() mutable {
+        QMutexLocker lock(watcherMutex.get());
+        watcher->deleteLater();
+    };
+
     // ### we're missing a convenient way to `QObject::connect()` to a `QSlotObjectBase`...
-    QObject::connect(watcher, &QBasicFutureWatcher::finished,
+    QObject::connect(watcher, &QObjectContinuationWrapper::run,
                      // for the following, cf. QMetaObject::invokeMethodImpl():
                      // we know `slot` is a lambda returning `void`, so we can just
                      // `call()` with `obj` and `args[0]` set to `nullptr`:
-                     watcher, [slot = std::move(slot)] {
+                     context, [slot = std::move(slot)] {
                          void *args[] = { nullptr }; // for `void` return value
                          slot->call(nullptr, args);
                      });
-    QObject::connect(watcher, &QBasicFutureWatcher::finished,
-                     watcher, &QObject::deleteLater);
-    QObject::connect(context, &QObject::destroyed,
-                     watcher, &QObject::deleteLater);
-    watcher->setFuture(fi);
+    QObject::connect(watcher, &QObjectContinuationWrapper::run, watcher, &QObject::deleteLater);
+    QObject::connect(context, &QObject::destroyed, watcher, destroyWatcher);
+
+    fi.setContinuation([watcherMutex, watcher = QPointer(watcher)]
+                       (const QFutureInterfaceBase &parentData)
+    {
+        Q_UNUSED(parentData);
+        QMutexLocker lock(watcherMutex.get());
+        if (watcher)
+            emit watcher->run();
+    });
 }
 
 QFutureCallOutInterface::~QFutureCallOutInterface()

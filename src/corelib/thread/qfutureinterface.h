@@ -21,6 +21,7 @@ QT_BEGIN_NAMESPACE
 
 template <typename T> class QFuture;
 class QThreadPool;
+class QFutureInterfaceBase;
 class QFutureInterfaceBasePrivate;
 class QFutureWatcherBase;
 class QFutureWatcherBasePrivate;
@@ -39,8 +40,10 @@ template<class Function, class ResultType>
 class FailureHandler;
 #endif
 
+void Q_CORE_EXPORT watchContinuationImpl(const QObject *context,
+                                         QtPrivate::QSlotObjectBase *slotObj,
+                                         QFutureInterfaceBase &fi);
 }
-class QBasicFutureWatcher;
 
 class Q_CORE_EXPORT QFutureInterfaceBase
 {
@@ -178,7 +181,8 @@ private:
     friend class QtPrivate::FailureHandler;
 #endif
 
-    friend class QBasicFutureWatcher;
+    friend Q_CORE_EXPORT void QtPrivate::watchContinuationImpl(
+            const QObject *context, QtPrivate::QSlotObjectBase *slotObj, QFutureInterfaceBase &fi);
 
     template<class T>
     friend class QPromise;
