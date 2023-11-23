@@ -43,7 +43,7 @@ static constexpr int MAX_TOTAL_HEADER_SIZE = 256 * 1024;
 
 }
 
-class Q_NETWORK_PRIVATE_EXPORT QHttpHeaderParser
+class Q_NETWORK_EXPORT QHttpHeaderParser
 {
 public:
     QHttpHeaderParser();

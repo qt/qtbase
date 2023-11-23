@@ -18,7 +18,6 @@
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/private/qglobal_p.h>
 #include <QtNetwork/private/qtnetwork-config_p.h>
-#include <QtNetwork/private/qtnetworkexports_p.h>
 
 QT_BEGIN_NAMESPACE
 

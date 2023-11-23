@@ -57,7 +57,7 @@ class QSslKey;
 
 namespace QTlsPrivate {
 
-class Q_NETWORK_PRIVATE_EXPORT TlsKey {
+class Q_NETWORK_EXPORT TlsKey {
 public:
     virtual ~TlsKey();
 
@@ -94,7 +94,7 @@ public:
     QByteArray pemFooter() const;
 };
 
-class Q_NETWORK_PRIVATE_EXPORT X509Certificate
+class Q_NETWORK_EXPORT X509Certificate
 {
 public:
     virtual ~X509Certificate();
@@ -151,7 +151,7 @@ using X509Pkcs12ReaderPtr = bool (*)(QIODevice *device, QSslKey *key, QSslCertif
 
 #if QT_CONFIG(ssl)
 // TLS over TCP. Handshake, encryption/decryption.
-class Q_NETWORK_PRIVATE_EXPORT TlsCryptograph : public QObject
+class Q_NETWORK_EXPORT TlsCryptograph : public QObject
 {
 public:
     virtual ~TlsCryptograph();
@@ -187,7 +187,7 @@ class TlsCryptograph;
 
 #if QT_CONFIG(dtls)
 
-class Q_NETWORK_PRIVATE_EXPORT DtlsBase
+class Q_NETWORK_EXPORT DtlsBase
 {
 public:
     virtual ~DtlsBase();
@@ -217,7 +217,7 @@ public:
 };
 
 // TLS over UDP. Handshake, encryption/decryption.
-class Q_NETWORK_PRIVATE_EXPORT DtlsCryptograph : virtual public DtlsBase
+class Q_NETWORK_EXPORT DtlsCryptograph : virtual public DtlsBase
 {
 public:
 
