@@ -125,15 +125,10 @@ QSharedMemory::QSharedMemory(const QNativeIpcKey &key, QObject *parent)
     setNativeKey(key);
 }
 
-#if QT_DEPRECATED_SINCE(6, 10)
 /*!
-  \deprecated
-
   Constructs a shared memory object with the given \a parent and with
   the legacy key set to \a key. Because its key is set, its create() and
   attach() functions can be called.
-
-  Legacy keys are deprecated. See \l{Native IPC Keys} for more information.
 
   \sa setKey(), create(), attach()
  */
@@ -141,7 +136,6 @@ QSharedMemory::QSharedMemory(const QString &key, QObject *parent)
     : QSharedMemory(legacyNativeKey(key), parent)
 {
 }
-#endif
 
 /*!
   The destructor clears the key, which forces the shared memory object
@@ -160,9 +154,7 @@ QSharedMemory::~QSharedMemory()
     d->cleanHandle();
 }
 
-#if QT_DEPRECATED_SINCE(6, 10)
 /*!
-  \deprecated
   \overload
 
   Sets the legacy \a key for this shared memory object. If \a key is the same
@@ -186,7 +178,6 @@ void QSharedMemory::setKey(const QString &key)
 {
     setNativeKey(legacyNativeKey(key));
 }
-#endif
 
 /*!
   \since 4.8
@@ -298,9 +289,7 @@ bool QSharedMemoryPrivate::initKey(SemaphoreAccessMode mode)
     return true;
 }
 
-#if QT_DEPRECATED_SINCE(6, 10)
 /*!
-  \deprecated
   Returns the legacy key assigned with setKey() to this shared memory, or a null key
   if no key has been assigned, or if the segment is using a nativeKey(). The
   key is the identifier used by Qt applications to identify the shared memory
@@ -316,7 +305,6 @@ QString QSharedMemory::key() const
     Q_D(const QSharedMemory);
     return QNativeIpcKeyPrivate::legacyKey(d->nativeKey);
 }
-#endif
 
 /*!
   \since 4.8
