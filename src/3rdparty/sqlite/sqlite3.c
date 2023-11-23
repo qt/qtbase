@@ -1,6 +1,6 @@
 /******************************************************************************
 ** This file is an amalgamation of many separate C source files from SQLite
-** version 3.44.0.  By combining all the individual C code files into this
+** version 3.44.1.  By combining all the individual C code files into this
 ** single large file, the entire code can be compiled as a single translation
 ** unit.  This allows many compilers to do optimizations that would not be
 ** possible if the files were compiled separately.  Performance improvements
@@ -18,7 +18,7 @@
 ** separate file. This file contains only code for the core SQLite library.
 **
 ** The content in this amalgamation comes from Fossil check-in
-** 17129ba1ff7f0daf37100ee82d507aef7827.
+** d295f48e8f367b066b881780c98bdf980a1d.
 */
 #define SQLITE_CORE 1
 #define SQLITE_AMALGAMATION 1
@@ -459,9 +459,9 @@ extern "C" {
 ** [sqlite3_libversion_number()], [sqlite3_sourceid()],
 ** [sqlite_version()] and [sqlite_source_id()].
 */
-#define SQLITE_VERSION        "3.44.0"
-#define SQLITE_VERSION_NUMBER 3044000
-#define SQLITE_SOURCE_ID      "2023-11-01 11:23:50 17129ba1ff7f0daf37100ee82d507aef7827cf38de1866e2633096ae6ad81301"
+#define SQLITE_VERSION        "3.44.1"
+#define SQLITE_VERSION_NUMBER 3044001
+#define SQLITE_SOURCE_ID      "2023-11-22 14:18:12 d295f48e8f367b066b881780c98bdf980a1d550397d5ba0b0e49842c95b3e8b4"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -5886,13 +5886,27 @@ SQLITE_API int sqlite3_create_window_function(
 ** </dd>
 **
 ** [[SQLITE_SUBTYPE]] <dt>SQLITE_SUBTYPE</dt><dd>
-** The SQLITE_SUBTYPE flag indicates to SQLite that a function may call
+** The SQLITE_SUBTYPE flag indicates to SQLite that a function might call
 ** [sqlite3_value_subtype()] to inspect the sub-types of its arguments.
-** Specifying this flag makes no difference for scalar or aggregate user
-** functions. However, if it is not specified for a user-defined window
-** function, then any sub-types belonging to arguments passed to the window
-** function may be discarded before the window function is called (i.e.
-** sqlite3_value_subtype() will always return 0).
+** This flag instructs SQLite to omit some corner-case optimizations that
+** might disrupt the operation of the [sqlite3_value_subtype()] function,
+** causing it to return zero rather than the correct subtype().
+** SQL functions that invokes [sqlite3_value_subtype()] should have this
+** property.  If the SQLITE_SUBTYPE property is omitted, then the return
+** value from [sqlite3_value_subtype()] might sometimes be zero even though
+** a non-zero subtype was specified by the function argument expression.
+**
+** [[SQLITE_RESULT_SUBTYPE]] <dt>SQLITE_RESULT_SUBTYPE</dt><dd>
+** The SQLITE_RESULT_SUBTYPE flag indicates to SQLite that a function might call
+** [sqlite3_result_subtype()] to cause a sub-type to be associated with its
+** result.
+** Every function that invokes [sqlite3_result_subtype()] should have this
+** property.  If it does not, then the call to [sqlite3_result_subtype()]
+** might become a no-op if the function is used as term in an
+** [expression index].  On the other hand, SQL functions that never invoke
+** [sqlite3_result_subtype()] should avoid setting this property, as the
+** purpose of this property is to disable certain optimizations that are
+** incompatible with subtypes.
 ** </dd>
 ** </dl>
 */
@@ -5900,6 +5914,7 @@ SQLITE_API int sqlite3_create_window_function(
 #define SQLITE_DIRECTONLY       0x000080000
 #define SQLITE_SUBTYPE          0x000100000
 #define SQLITE_INNOCUOUS        0x000200000
+#define SQLITE_RESULT_SUBTYPE   0x001000000
 
 /*
 ** CAPI3REF: Deprecated Functions
@@ -6096,6 +6111,12 @@ SQLITE_API int sqlite3_value_encoding(sqlite3_value*);
 ** information can be used to pass a limited amount of context from
 ** one SQL function to another.  Use the [sqlite3_result_subtype()]
 ** routine to set the subtype for the return value of an SQL function.
+**
+** Every [application-defined SQL function] that invoke this interface
+** should include the [SQLITE_SUBTYPE] property in the text
+** encoding argument when the function is [sqlite3_create_function|registered].
+** If the [SQLITE_SUBTYPE] property is omitted, then sqlite3_value_subtype()
+** might return zero instead of the upstream subtype in some corner cases.
 */
 SQLITE_API unsigned int sqlite3_value_subtype(sqlite3_value*);
 
@@ -6226,14 +6247,22 @@ SQLITE_API sqlite3 *sqlite3_context_db_handle(sqlite3_context*);
 ** <li> ^(when sqlite3_set_auxdata() is invoked again on the same
 **       parameter)^, or
 ** <li> ^(during the original sqlite3_set_auxdata() call when a memory
-**      allocation error occurs.)^ </ul>
+**      allocation error occurs.)^
+** <li> ^(during the original sqlite3_set_auxdata() call if the function
+**      is evaluated during query planning instead of during query execution,
+**      as sometimes happens with [SQLITE_ENABLE_STAT4].)^ </ul>
 **
-** Note the last bullet in particular.  The destructor X in
+** Note the last two bullets in particular.  The destructor X in
 ** sqlite3_set_auxdata(C,N,P,X) might be called immediately, before the
 ** sqlite3_set_auxdata() interface even returns.  Hence sqlite3_set_auxdata()
 ** should be called near the end of the function implementation and the
 ** function implementation should not make any use of P after
-** sqlite3_set_auxdata() has been called.
+** sqlite3_set_auxdata() has been called.  Furthermore, a call to
+** sqlite3_get_auxdata() that occurs immediately after a corresponding call
+** to sqlite3_set_auxdata() might still return NULL if an out-of-memory
+** condition occurred during the sqlite3_set_auxdata() call or if the
+** function is being evaluated during query planning rather than during
+** query execution.
 **
 ** ^(In practice, auxiliary data is preserved between function calls for
 ** function parameters that are compile-time constants, including literal
@@ -6507,6 +6536,20 @@ SQLITE_API int sqlite3_result_zeroblob64(sqlite3_context*, sqlite3_uint64 n);
 ** higher order bits are discarded.
 ** The number of subtype bytes preserved by SQLite might increase
 ** in future releases of SQLite.
+**
+** Every [application-defined SQL function] that invokes this interface
+** should include the [SQLITE_RESULT_SUBTYPE] property in its
+** text encoding argument when the SQL function is
+** [sqlite3_create_function|registered].  If the [SQLITE_RESULT_SUBTYPE]
+** property is omitted from the function that invokes sqlite3_result_subtype(),
+** then in some cases the sqlite3_result_subtype() might fail to set
+** the result subtype.
+**
+** If SQLite is compiled with -DSQLITE_STRICT_SUBTYPE=1, then any
+** SQL function that invokes the sqlite3_result_subtype() interface
+** and that does not have the SQLITE_RESULT_SUBTYPE property will raise
+** an error.  Future versions of SQLite might enable -DSQLITE_STRICT_SUBTYPE=1
+** by default.
 */
 SQLITE_API void sqlite3_result_subtype(sqlite3_context*,unsigned int);
 
@@ -17811,14 +17854,15 @@ struct FuncDestructor {
 #define SQLITE_FUNC_SLOCHNG  0x2000 /* "Slow Change". Value constant during a
                                     ** single query - might change over time */
 #define SQLITE_FUNC_TEST     0x4000 /* Built-in testing functions */
-/*                           0x8000 -- available for reuse */
+#define SQLITE_FUNC_RUNONLY  0x8000 /* Cannot be used by valueFromFunction */
 #define SQLITE_FUNC_WINDOW   0x00010000 /* Built-in window-only function */
 #define SQLITE_FUNC_INTERNAL 0x00040000 /* For use by NestedParse() only */
 #define SQLITE_FUNC_DIRECT   0x00080000 /* Not for use in TRIGGERs or VIEWs */
-#define SQLITE_FUNC_SUBTYPE  0x00100000 /* Result likely to have sub-type */
+/* SQLITE_SUBTYPE            0x00100000 // Consumer of subtypes */
 #define SQLITE_FUNC_UNSAFE   0x00200000 /* Function has side effects */
 #define SQLITE_FUNC_INLINE   0x00400000 /* Functions implemented in-line */
 #define SQLITE_FUNC_BUILTIN  0x00800000 /* This is a built-in function */
+/*  SQLITE_RESULT_SUBTYPE    0x01000000 // Generator of subtypes */
 #define SQLITE_FUNC_ANYORDER 0x08000000 /* count/min/max aggregate */
 
 /* Identifier numbers for each in-line function */
@@ -17910,9 +17954,10 @@ struct FuncDestructor {
 #define MFUNCTION(zName, nArg, xPtr, xFunc) \
   {nArg, SQLITE_FUNC_BUILTIN|SQLITE_FUNC_CONSTANT|SQLITE_UTF8, \
    xPtr, 0, xFunc, 0, 0, 0, #zName, {0} }
-#define JFUNCTION(zName, nArg, iArg, xFunc) \
-  {nArg, SQLITE_FUNC_BUILTIN|SQLITE_DETERMINISTIC|\
-   SQLITE_FUNC_CONSTANT|SQLITE_UTF8, \
+#define JFUNCTION(zName, nArg, bUseCache, bWS, bRS, iArg, xFunc) \
+  {nArg, SQLITE_FUNC_BUILTIN|SQLITE_DETERMINISTIC|SQLITE_FUNC_CONSTANT|\
+   SQLITE_UTF8|((bUseCache)*SQLITE_FUNC_RUNONLY)|\
+   ((bRS)*SQLITE_SUBTYPE)|((bWS)*SQLITE_RESULT_SUBTYPE), \
    SQLITE_INT_TO_PTR(iArg), 0, xFunc, 0, 0, 0, #zName, {0} }
 #define INLINE_FUNC(zName, nArg, iArg, mFlags) \
   {nArg, SQLITE_FUNC_BUILTIN|\
@@ -29453,7 +29498,7 @@ SQLITE_PRIVATE void sqlite3MemoryBarrier(void){
   SQLITE_MEMORY_BARRIER;
 #elif defined(__GNUC__)
   __sync_synchronize();
-#elif MSVC_VERSION>=1300
+#elif MSVC_VERSION>=1400
   _ReadWriteBarrier();
 #elif defined(MemoryBarrier)
   MemoryBarrier();
@@ -61447,10 +61492,13 @@ act_like_temp_file:
 */
 SQLITE_API sqlite3_file *sqlite3_database_file_object(const char *zName){
   Pager *pPager;
+  const char *p;
   while( zName[-1]!=0 || zName[-2]!=0 || zName[-3]!=0 || zName[-4]!=0 ){
     zName--;
   }
-  pPager = *(Pager**)(zName - 4 - sizeof(Pager*));
+  p = zName - 4 - sizeof(Pager*);
+  assert( EIGHT_BYTE_ALIGNMENT(p) );
+  pPager = *(Pager**)p;
   return pPager->fd;
 }
 
@@ -83411,7 +83459,7 @@ static int valueFromFunction(
 #endif
   assert( pFunc );
   if( (pFunc->funcFlags & (SQLITE_FUNC_CONSTANT|SQLITE_FUNC_SLOCHNG))==0
-   || (pFunc->funcFlags & SQLITE_FUNC_NEEDCOLL)
+   || (pFunc->funcFlags & (SQLITE_FUNC_NEEDCOLL|SQLITE_FUNC_RUNONLY))!=0
   ){
     return SQLITE_OK;
   }
@@ -89952,6 +90000,18 @@ SQLITE_API void sqlite3_result_subtype(sqlite3_context *pCtx, unsigned int eSubt
 #ifdef SQLITE_ENABLE_API_ARMOR
   if( pCtx==0 ) return;
 #endif
+#if defined(SQLITE_STRICT_SUBTYPE) && SQLITE_STRICT_SUBTYPE+0!=0
+  if( pCtx->pFunc!=0
+   && (pCtx->pFunc->funcFlags & SQLITE_RESULT_SUBTYPE)==0
+  ){
+    char zErr[200];
+    sqlite3_snprintf(sizeof(zErr), zErr,
+                     "misuse of sqlite3_result_subtype() by %s()",
+                     pCtx->pFunc->zName);
+    sqlite3_result_error(pCtx, zErr, -1);
+    return;
+  }
+#endif /* SQLITE_STRICT_SUBTYPE */
   pOut = pCtx->pOut;
   assert( sqlite3_mutex_held(pOut->db->mutex) );
   pOut->eSubtype = eSubtype & 0xff;
@@ -100321,7 +100381,7 @@ case OP_VCheck: {             /* out2 */
   pTab = pOp->p4.pTab;
   assert( pTab!=0 );
   assert( IsVirtual(pTab) );
-  assert( pTab->u.vtab.p!=0 );
+  if( pTab->u.vtab.p==0 ) break;
   pVtab = pTab->u.vtab.p->pVtab;
   assert( pVtab!=0 );
   pModule = pVtab->pModule;
@@ -113917,8 +113977,8 @@ SQLITE_PRIVATE int sqlite3ExprListCompare(const ExprList *pA, const ExprList *pB
 */
 SQLITE_PRIVATE int sqlite3ExprCompareSkip(Expr *pA,Expr *pB, int iTab){
   return sqlite3ExprCompare(0,
-             sqlite3ExprSkipCollateAndLikely(pA),
-             sqlite3ExprSkipCollateAndLikely(pB),
+             sqlite3ExprSkipCollate(pA),
+             sqlite3ExprSkipCollate(pB),
              iTab);
 }
 
@@ -147605,10 +147665,11 @@ static void selectAddSubqueryTypeInfo(Walker *pWalker, Select *p){
   SrcList *pTabList;
   SrcItem *pFrom;
 
-  assert( p->selFlags & SF_Resolved );
   if( p->selFlags & SF_HasTypeInfo ) return;
   p->selFlags |= SF_HasTypeInfo;
   pParse = pWalker->pParse;
+  testcase( (p->selFlags & SF_Resolved)==0 );
+  assert( (p->selFlags & SF_Resolved) || IN_RENAME_OBJECT );
   pTabList = p->pSrc;
   for(i=0, pFrom=pTabList->a; i<pTabList->nSrc; i++, pFrom++){
     Table *pTab = pFrom->pTab;
@@ -148630,6 +148691,7 @@ SQLITE_PRIVATE int sqlite3Select(
           TREETRACE(0x1000,pParse,p,
                     ("LEFT-JOIN simplifies to JOIN on term %d\n",i));
           pItem->fg.jointype &= ~(JT_LEFT|JT_OUTER);
+          unsetJoinExpr(p->pWhere, pItem->iCursor, 0);
         }
       }
       if( pItem->fg.jointype & JT_LTORJ ){
@@ -148644,17 +148706,15 @@ SQLITE_PRIVATE int sqlite3Select(
               TREETRACE(0x1000,pParse,p,
                         ("RIGHT-JOIN simplifies to JOIN on term %d\n",j));
               pI2->fg.jointype &= ~(JT_RIGHT|JT_OUTER);
+              unsetJoinExpr(p->pWhere, pI2->iCursor, 1);
             }
           }
         }
-        for(j=pTabList->nSrc-1; j>=i; j--){
+        for(j=pTabList->nSrc-1; j>=0; j--){
           pTabList->a[j].fg.jointype &= ~JT_LTORJ;
           if( pTabList->a[j].fg.jointype & JT_RIGHT ) break;
         }
       }
-      assert( pItem->iCursor>=0 );
-      unsetJoinExpr(p->pWhere, pItem->iCursor,
-                    pTabList->a[0].fg.jointype & JT_LTORJ);
     }
 
     /* No further action if this term of the FROM clause is not a subquery */
@@ -166058,6 +166118,20 @@ static SQLITE_NOINLINE void whereAddIndexedExpr(
       continue;
     }
     if( sqlite3ExprIsConstant(pExpr) ) continue;
+    if( pExpr->op==TK_FUNCTION ){
+      /* Functions that might set a subtype should not be replaced by the
+      ** value taken from an expression index since the index omits the
+      ** subtype.  https://sqlite.org/forum/forumpost/68d284c86b082c3e */
+      int n;
+      FuncDef *pDef;
+      sqlite3 *db = pParse->db;
+      assert( ExprUseXList(pExpr) );
+      n = pExpr->x.pList ? pExpr->x.pList->nExpr : 0;
+      pDef = sqlite3FindFunction(db, pExpr->u.zToken, n, ENC(db), 0);
+      if( pDef==0 || (pDef->funcFlags & SQLITE_RESULT_SUBTYPE)!=0 ){
+        continue;
+      }
+    }
     p = sqlite3DbMallocRaw(pParse->db,  sizeof(IndexedExpr));
     if( p==0 ) break;
     p->pIENext = pParse->pIdxEpr;
@@ -168240,7 +168314,7 @@ SQLITE_PRIVATE int sqlite3WindowRewrite(Parse *pParse, Select *p){
       assert( ExprUseXList(pWin->pOwner) );
       assert( pWin->pWFunc!=0 );
       pArgs = pWin->pOwner->x.pList;
-      if( pWin->pWFunc->funcFlags & SQLITE_FUNC_SUBTYPE ){
+      if( pWin->pWFunc->funcFlags & SQLITE_SUBTYPE ){
         selectWindowRewriteEList(pParse, pMWin, pSrc, pArgs, pTab, &pSublist);
         pWin->iArgCol = (pSublist ? pSublist->nExpr : 0);
         pWin->bExprArgs = 1;
@@ -179414,7 +179488,7 @@ SQLITE_PRIVATE int sqlite3CreateFunc(
   assert( SQLITE_FUNC_CONSTANT==SQLITE_DETERMINISTIC );
   assert( SQLITE_FUNC_DIRECT==SQLITE_DIRECTONLY );
   extraFlags = enc &  (SQLITE_DETERMINISTIC|SQLITE_DIRECTONLY|
-                       SQLITE_SUBTYPE|SQLITE_INNOCUOUS);
+                       SQLITE_SUBTYPE|SQLITE_INNOCUOUS|SQLITE_RESULT_SUBTYPE);
   enc &= (SQLITE_FUNC_ENCMASK|SQLITE_ANY);
 
   /* The SQLITE_INNOCUOUS flag is the same bit as SQLITE_FUNC_UNSAFE.  But
@@ -202995,12 +203069,18 @@ static void jsonAppendNormalizedString(JsonString *p, const char *zIn, u32 N){
   zIn++;
   N -= 2;
   while( N>0 ){
-    for(i=0; i<N && zIn[i]!='\\'; i++){}
+    for(i=0; i<N && zIn[i]!='\\' && zIn[i]!='"'; i++){}
     if( i>0 ){
       jsonAppendRawNZ(p, zIn, i);
       zIn += i;
       N -= i;
       if( N==0 ) break;
+    }
+    if( zIn[0]=='"' ){
+      jsonAppendRawNZ(p, "\\\"", 2);
+      zIn++;
+      N--;
+      continue;
     }
     assert( zIn[0]=='\\' );
     switch( (u8)zIn[1] ){
@@ -203396,7 +203476,8 @@ static void jsonReturnJson(
   JsonParse *pParse,          /* The complete JSON */
   JsonNode *pNode,            /* Node to return */
   sqlite3_context *pCtx,      /* Return value for this function */
-  int bGenerateAlt            /* Also store the rendered text in zAlt */
+  int bGenerateAlt,           /* Also store the rendered text in zAlt */
+  int omitSubtype             /* Do not call sqlite3_result_subtype() */
 ){
   JsonString s;
   if( pParse->oom ){
@@ -203411,7 +203492,7 @@ static void jsonReturnJson(
       pParse->nAlt = s.nUsed;
     }
     jsonResult(&s);
-    sqlite3_result_subtype(pCtx, JSON_SUBTYPE);
+    if( !omitSubtype ) sqlite3_result_subtype(pCtx, JSON_SUBTYPE);
   }
 }
 
@@ -203452,7 +203533,8 @@ static u32 jsonHexToInt4(const char *z){
 static void jsonReturn(
   JsonParse *pParse,          /* Complete JSON parse tree */
   JsonNode *pNode,            /* Node to return */
-  sqlite3_context *pCtx       /* Return value for this function */
+  sqlite3_context *pCtx,      /* Return value for this function */
+  int omitSubtype             /* Do not call sqlite3_result_subtype() */
 ){
   switch( pNode->eType ){
     default: {
@@ -203598,7 +203680,7 @@ static void jsonReturn(
     }
     case JSON_ARRAY:
     case JSON_OBJECT: {
-      jsonReturnJson(pParse, pNode, pCtx, 0);
+      jsonReturnJson(pParse, pNode, pCtx, 0, omitSubtype);
       break;
     }
   }
@@ -204950,7 +205032,7 @@ static void jsonParseFunc(
   printf("iSubst    = %u\n", p->iSubst);
   printf("iHold     = %u\n", p->iHold);
   jsonDebugPrintNodeEntries(p->aNode, p->nNode);
-  jsonReturnJson(p, p->aNode, ctx, 1);
+  jsonReturnJson(p, p->aNode, ctx, 1, 0);
 }
 
 /*
@@ -205136,15 +205218,14 @@ static void jsonExtractFunc(
       }
       if( pNode ){
         if( flags & JSON_JSON ){
-          jsonReturnJson(p, pNode, ctx, 0);
+          jsonReturnJson(p, pNode, ctx, 0, 0);
         }else{
-          jsonReturn(p, pNode, ctx);
-          sqlite3_result_subtype(ctx, 0);
+          jsonReturn(p, pNode, ctx, 1);
         }
       }
     }else{
       pNode = jsonLookup(p, zPath, 0, ctx);
-      if( p->nErr==0 && pNode ) jsonReturn(p, pNode, ctx);
+      if( p->nErr==0 && pNode ) jsonReturn(p, pNode, ctx, 0);
     }
   }else{
     /* Two or more PATH arguments results in a JSON array with each
@@ -205270,7 +205351,7 @@ static void jsonPatchFunc(
   if( pResult && pX->oom==0 ){
     jsonDebugPrintParse(pX);
     jsonDebugPrintNode(pResult);
-    jsonReturnJson(pX, pResult, ctx, 0);
+    jsonReturnJson(pX, pResult, ctx, 0, 0);
   }else{
     sqlite3_result_error_nomem(ctx);
   }
@@ -205349,7 +205430,7 @@ static void jsonRemoveFunc(
     }
   }
   if( (pParse->aNode[0].jnFlags & JNODE_REMOVE)==0 ){
-    jsonReturnJson(pParse, pParse->aNode, ctx, 1);
+    jsonReturnJson(pParse, pParse->aNode, ctx, 1, 0);
   }
 remove_done:
   jsonDebugPrintParse(p);
@@ -205478,7 +205559,7 @@ static void jsonReplaceFunc(
       jsonReplaceNode(ctx, pParse, (u32)(pNode - pParse->aNode), argv[i+1]);
     }
   }
-  jsonReturnJson(pParse, pParse->aNode, ctx, 1);
+  jsonReturnJson(pParse, pParse->aNode, ctx, 1, 0);
 replace_err:
   jsonDebugPrintParse(pParse);
   jsonParseFree(pParse);
@@ -205532,7 +205613,7 @@ static void jsonSetFunc(
     }
   }
   jsonDebugPrintParse(pParse);
-  jsonReturnJson(pParse, pParse->aNode, ctx, 1);
+  jsonReturnJson(pParse, pParse->aNode, ctx, 1, 0);
 jsonSetDone:
   jsonParseFree(pParse);
 }
@@ -206047,7 +206128,7 @@ static int jsonEachColumn(
     case JEACH_KEY: {
       if( p->i==0 ) break;
       if( p->eType==JSON_OBJECT ){
-        jsonReturn(&p->sParse, pThis, ctx);
+        jsonReturn(&p->sParse, pThis, ctx, 0);
       }else if( p->eType==JSON_ARRAY ){
         u32 iKey;
         if( p->bRecursive ){
@@ -206063,7 +206144,7 @@ static int jsonEachColumn(
     }
     case JEACH_VALUE: {
       if( pThis->jnFlags & JNODE_LABEL ) pThis++;
-      jsonReturn(&p->sParse, pThis, ctx);
+      jsonReturn(&p->sParse, pThis, ctx, 0);
       break;
     }
     case JEACH_TYPE: {
@@ -206074,7 +206155,7 @@ static int jsonEachColumn(
     case JEACH_ATOM: {
       if( pThis->jnFlags & JNODE_LABEL ) pThis++;
       if( pThis->eType>=JSON_ARRAY ) break;
-      jsonReturn(&p->sParse, pThis, ctx);
+      jsonReturn(&p->sParse, pThis, ctx, 0);
       break;
     }
     case JEACH_ID: {
@@ -206367,34 +206448,43 @@ static sqlite3_module jsonTreeModule = {
 SQLITE_PRIVATE void sqlite3RegisterJsonFunctions(void){
 #ifndef SQLITE_OMIT_JSON
   static FuncDef aJsonFunc[] = {
-    JFUNCTION(json,               1, 0,  jsonRemoveFunc),
-    JFUNCTION(json_array,        -1, 0,  jsonArrayFunc),
-    JFUNCTION(json_array_length,  1, 0,  jsonArrayLengthFunc),
-    JFUNCTION(json_array_length,  2, 0,  jsonArrayLengthFunc),
-    JFUNCTION(json_error_position,1, 0,  jsonErrorFunc),
-    JFUNCTION(json_extract,      -1, 0,  jsonExtractFunc),
-    JFUNCTION(->,                 2, JSON_JSON, jsonExtractFunc),
-    JFUNCTION(->>,                2, JSON_SQL, jsonExtractFunc),
-    JFUNCTION(json_insert,       -1, 0,  jsonSetFunc),
-    JFUNCTION(json_object,       -1, 0,  jsonObjectFunc),
-    JFUNCTION(json_patch,         2, 0,  jsonPatchFunc),
-    JFUNCTION(json_quote,         1, 0,  jsonQuoteFunc),
-    JFUNCTION(json_remove,       -1, 0,  jsonRemoveFunc),
-    JFUNCTION(json_replace,      -1, 0,  jsonReplaceFunc),
-    JFUNCTION(json_set,          -1, JSON_ISSET,  jsonSetFunc),
-    JFUNCTION(json_type,          1, 0,  jsonTypeFunc),
-    JFUNCTION(json_type,          2, 0,  jsonTypeFunc),
-    JFUNCTION(json_valid,         1, 0,  jsonValidFunc),
-#if SQLITE_DEBUG
-    JFUNCTION(json_parse,         1, 0,  jsonParseFunc),
-    JFUNCTION(json_test1,         1, 0,  jsonTest1Func),
+    /*                     calls sqlite3_result_subtype()                    */
+    /*                                  |                                    */
+    /*              Uses cache ______   |   __ calls sqlite3_value_subtype() */
+    /*                               |  |  |                                 */
+    /*          Num args _________   |  |  |   ___ Flags                     */
+    /*                            |  |  |  |  |                              */
+    /*                            |  |  |  |  |                              */
+    JFUNCTION(json,               1, 1, 1, 0, 0,          jsonRemoveFunc),
+    JFUNCTION(json_array,        -1, 0, 1, 1, 0,          jsonArrayFunc),
+    JFUNCTION(json_array_length,  1, 1, 0, 0, 0,          jsonArrayLengthFunc),
+    JFUNCTION(json_array_length,  2, 1, 0, 0, 0,          jsonArrayLengthFunc),
+    JFUNCTION(json_error_position,1, 1, 0, 0, 0,          jsonErrorFunc),
+    JFUNCTION(json_extract,      -1, 1, 1, 0, 0,          jsonExtractFunc),
+    JFUNCTION(->,                 2, 1, 1, 0, JSON_JSON,  jsonExtractFunc),
+    JFUNCTION(->>,                2, 1, 0, 0, JSON_SQL,   jsonExtractFunc),
+    JFUNCTION(json_insert,       -1, 1, 1, 1, 0,          jsonSetFunc),
+    JFUNCTION(json_object,       -1, 0, 1, 1, 0,          jsonObjectFunc),
+    JFUNCTION(json_patch,         2, 1, 1, 0, 0,          jsonPatchFunc),
+    JFUNCTION(json_quote,         1, 0, 1, 1, 0,          jsonQuoteFunc),
+    JFUNCTION(json_remove,       -1, 1, 1, 0, 0,          jsonRemoveFunc),
+    JFUNCTION(json_replace,      -1, 1, 1, 1, 0,          jsonReplaceFunc),
+    JFUNCTION(json_set,          -1, 1, 1, 1, JSON_ISSET, jsonSetFunc),
+    JFUNCTION(json_type,          1, 1, 0, 0, 0,          jsonTypeFunc),
+    JFUNCTION(json_type,          2, 1, 0, 0, 0,          jsonTypeFunc),
+    JFUNCTION(json_valid,         1, 1, 0, 0, 0,          jsonValidFunc),
+#ifdef SQLITE_DEBUG
+    JFUNCTION(json_parse,         1, 1, 1, 0, 0,          jsonParseFunc),
+    JFUNCTION(json_test1,         1, 1, 0, 1, 0,          jsonTest1Func),
 #endif
     WAGGREGATE(json_group_array,  1, 0, 0,
        jsonArrayStep, jsonArrayFinal, jsonArrayValue, jsonGroupInverse,
-       SQLITE_SUBTYPE|SQLITE_UTF8|SQLITE_DETERMINISTIC),
+       SQLITE_SUBTYPE|SQLITE_RESULT_SUBTYPE|SQLITE_UTF8|
+       SQLITE_DETERMINISTIC),
     WAGGREGATE(json_group_object, 2, 0, 0,
        jsonObjectStep, jsonObjectFinal, jsonObjectValue, jsonGroupInverse,
-       SQLITE_SUBTYPE|SQLITE_UTF8|SQLITE_DETERMINISTIC)
+       SQLITE_SUBTYPE|SQLITE_RESULT_SUBTYPE|SQLITE_UTF8|
+       SQLITE_DETERMINISTIC)
   };
   sqlite3InsertBuiltinFuncs(aJsonFunc, ArraySize(aJsonFunc));
 #endif
@@ -236131,10 +236221,8 @@ static Fts5HashEntry *fts5HashEntryMerge(
 }
 
 /*
-** Extract all tokens from hash table iHash and link them into a list
-** in sorted order. The hash table is cleared before returning. It is
-** the responsibility of the caller to free the elements of the returned
-** list.
+** Link all tokens from hash table iHash into a list in sorted order. The
+** tokens are not removed from the hash table.
 */
 static int fts5HashEntrySort(
   Fts5Hash *pHash,
@@ -239000,6 +239088,14 @@ static void fts5SegIterHashInit(
         pLeaf->p = (u8*)pList;
       }
     }
+
+    /* The call to sqlite3Fts5HashScanInit() causes the hash table to
+    ** fill the size field of all existing position lists. This means they
+    ** can no longer be appended to. Since the only scenario in which they
+    ** can be appended to is if the previous operation on this table was
+    ** a DELETE, by clearing the Fts5Index.bDelete flag we can avoid this
+    ** possibility altogether.  */
+    p->bDelete = 0;
   }else{
     p->rc = sqlite3Fts5HashQuery(p->pHash, sizeof(Fts5Data),
         (const char*)pTerm, nTerm, (void**)&pLeaf, &nList
@@ -240677,7 +240773,7 @@ static void fts5WriteAppendPoslistData(
   const u8 *a = aData;
   int n = nData;
 
-  assert( p->pConfig->pgsz>0 );
+  assert( p->pConfig->pgsz>0 || p->rc!=SQLITE_OK );
   while( p->rc==SQLITE_OK
      && (pPage->buf.n + pPage->pgidx.n + n)>=p->pConfig->pgsz
   ){
@@ -241937,8 +242033,9 @@ static int sqlite3Fts5IndexOptimize(Fts5Index *p){
 
   assert( p->rc==SQLITE_OK );
   fts5IndexFlush(p);
-  assert( p->nContentlessDelete==0 );
+  assert( p->rc!=SQLITE_OK || p->nContentlessDelete==0 );
   pStruct = fts5StructureRead(p);
+  assert( p->rc!=SQLITE_OK || pStruct!=0 );
   fts5StructureInvalidate(p);
 
   if( pStruct ){
@@ -247515,7 +247612,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2023-11-01 11:23:50 17129ba1ff7f0daf37100ee82d507aef7827cf38de1866e2633096ae6ad81301", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2023-11-22 14:18:12 d295f48e8f367b066b881780c98bdf980a1d550397d5ba0b0e49842c95b3e8b4", -1, SQLITE_TRANSIENT);
 }
 
 /*
