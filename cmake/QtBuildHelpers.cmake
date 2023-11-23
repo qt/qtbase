@@ -235,7 +235,6 @@ function(qt_internal_get_qt_build_private_files_to_install out_var)
         QtStandaloneTestsConfig.cmake.in
         QtWriteArgsFile.cmake
         modulecppexports.h.in
-        modulecppexports_p.h.in
         qbatchedtestrunner.in.cpp
         PARENT_SCOPE
     )

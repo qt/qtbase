@@ -429,12 +429,8 @@ function(qt_internal_add_module target)
                     "CPP_EXPORT_HEADER_BASE_NAME;${arg_CPP_EXPORT_HEADER_BASE_NAME}"
                 )
             endif()
-            if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
-                set(generate_private_cpp_export "GENERATE_PRIVATE_CPP_EXPORTS")
-            endif()
             qt_internal_generate_cpp_global_exports(${target} ${module_define_infix}
                 "${cpp_export_header_base_name}"
-                "${generate_private_cpp_export}"
             )
         endif()
 
@@ -1165,7 +1161,7 @@ endfunction()
 
 function(qt_internal_generate_cpp_global_exports target module_define_infix)
     cmake_parse_arguments(arg
-        "GENERATE_PRIVATE_CPP_EXPORTS"
+        ""
         "CPP_EXPORT_HEADER_BASE_NAME"
         "" ${ARGN}
     )
@@ -1190,20 +1186,6 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix)
     set(${out_public_header} "${generated_header_path}" PARENT_SCOPE)
     target_sources(${target} PRIVATE "${generated_header_path}")
     set_source_files_properties("${generated_header_path}" PROPERTIES GENERATED TRUE)
-
-    if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
-        set(generated_private_header_path
-            "${module_build_interface_private_include_dir}/${header_base_name}_p.h"
-        )
-
-        configure_file("${QT_CMAKE_DIR}/modulecppexports_p.h.in"
-            "${generated_private_header_path}" @ONLY
-        )
-
-        set(${out_private_header} "${generated_private_header_path}" PARENT_SCOPE)
-        target_sources(${target} PRIVATE "${generated_private_header_path}")
-        set_source_files_properties("${generated_private_header_path}" PROPERTIES GENERATED TRUE)
-    endif()
 endfunction()
 
 function(qt_internal_install_module_headers target)
