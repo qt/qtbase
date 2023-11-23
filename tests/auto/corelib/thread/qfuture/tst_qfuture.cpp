@@ -204,6 +204,7 @@ private slots:
 #endif
     void onCanceled();
     void cancelContinuations();
+    void continuationsWithContext_data();
     void continuationsWithContext();
     void continuationsWithMoveOnlyLambda();
 #if 0
@@ -3223,15 +3224,35 @@ void tst_QFuture::cancelContinuations()
     }
 }
 
+void tst_QFuture::continuationsWithContext_data()
+{
+    QTest::addColumn<bool>("inOtherThread");
+    QTest::addRow("in-other-thread") << true;
+    QTest::addRow("in-main-thread-qtbug119406") << false;
+}
+
 void tst_QFuture::continuationsWithContext()
 {
-    QThread thread;
-    thread.start();
-
-    auto context = new QObject();
-    context->moveToThread(&thread);
+    QFETCH(bool, inOtherThread);
 
     auto tstThread = QThread::currentThread();
+    QThread *thread = inOtherThread ? new QThread
+                                    : tstThread;
+    auto context = new QObject();
+
+    const auto cleanupGuard = qScopeGuard([&] {
+        context->deleteLater();
+        if (thread != tstThread) {
+            thread->quit();
+            thread->wait();
+            delete thread;
+        }
+    });
+
+    if (inOtherThread) {
+        thread->start();
+        context->moveToThread(thread);
+    }
 
     // .then()
     {
@@ -3244,12 +3265,12 @@ void tst_QFuture::continuationsWithContext()
                               })
                               .then(context,
                                     [&](int val) {
-                                        if (QThread::currentThread() != &thread)
+                                        if (QThread::currentThread() != thread)
                                             return 0;
                                         return val + 1;
                                     })
                               .then([&](int val) {
-                                  if (QThread::currentThread() != &thread)
+                                  if (QThread::currentThread() != thread)
                                       return 0;
                                   return val + 1;
                               });
@@ -3265,12 +3286,12 @@ void tst_QFuture::continuationsWithContext()
         auto future = promise.future()
                               .onCanceled(context,
                                           [&] {
-                                              if (QThread::currentThread() != &thread)
+                                              if (QThread::currentThread() != thread)
                                                   return 0;
                                               return 1;
                                           })
                               .then([&](int val) {
-                                  if (QThread::currentThread() != &thread)
+                                  if (QThread::currentThread() != thread)
                                       return 0;
                                   return val + 1;
                               });
@@ -3287,17 +3308,17 @@ void tst_QFuture::continuationsWithContext()
         // like QPointers to the parent not being set to nullptr during child
         // object destruction.
         QPointer shortLivedContext = new FakeQWidget();
-        shortLivedContext->moveToThread(&thread);
+        shortLivedContext->moveToThread(thread);
 
         QPromise<int> promise;
         auto future = promise.future()
                               .then(shortLivedContext, [&](int val) {
-                                  if (QThread::currentThread() != &thread)
+                                  if (QThread::currentThread() != thread)
                                       return 0;
                                   return val + 1000;
                               })
                               .onCanceled([&, ptr=QPointer(shortLivedContext)] {
-                                  if (QThread::currentThread() != &thread)
+                                  if (QThread::currentThread() != thread)
                                       return 0;
                                   if (ptr)
                                       return 1;
@@ -3307,10 +3328,10 @@ void tst_QFuture::continuationsWithContext()
 
         QMetaObject::invokeMethod(shortLivedContext, [&]() {
             delete shortLivedContext;
-        }, Qt::BlockingQueuedConnection);
+        }, inOtherThread ? Qt::BlockingQueuedConnection
+                         : Qt::DirectConnection);
 
         promise.finish();
-
         QCOMPARE(future.result(), 2);
     }
 
@@ -3326,12 +3347,12 @@ void tst_QFuture::continuationsWithContext()
                               })
                               .onFailed(context,
                                         [&] {
-                                            if (QThread::currentThread() != &thread)
+                                            if (QThread::currentThread() != thread)
                                                 return 0;
                                             return 1;
                                         })
                               .then([&](int val) {
-                                  if (QThread::currentThread() != &thread)
+                                  if (QThread::currentThread() != thread)
                                       return 0;
                                   return val + 1;
                               });
@@ -3340,11 +3361,6 @@ void tst_QFuture::continuationsWithContext()
         QCOMPARE(future.result(), 2);
     }
 #endif // QT_NO_EXCEPTIONS
-
-    context->deleteLater();
-
-    thread.quit();
-    thread.wait();
 }
 
 void tst_QFuture::continuationsWithMoveOnlyLambda()
