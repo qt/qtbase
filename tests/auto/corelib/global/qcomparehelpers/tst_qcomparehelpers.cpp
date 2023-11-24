@@ -206,18 +206,8 @@ void tst_QCompareHelpers::compareImpl()
         return;
 #ifdef __cpp_lib_three_way_comparison
     // Also check std types.
-
-    // if Ordering == Qt::strong_ordering -> std::strong_ordering
-    // else if Ordering == Qt::weak_ordering -> std::weak_ordering
-    // else std::partial_ordering
-    using StdType = std::conditional_t<
-                        std::is_same_v<OrderingType, Qt::strong_ordering>,
-                            std::strong_ordering,
-                            std::conditional_t<std::is_same_v<OrderingType, Qt::weak_ordering>,
-                                std::weak_ordering,
-                                std::partial_ordering>>;
-
-    QTestPrivate::testAllComparisonOperators(lhs, rhs, static_cast<StdType>(expectedOrdering));
+    QTestPrivate::testAllComparisonOperators(lhs, rhs,
+                                             QtOrderingPrivate::to_std(expectedOrdering));
     if (QTest::currentTestFailed())
         return;
 #endif // __cpp_lib_three_way_comparison

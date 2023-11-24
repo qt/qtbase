@@ -21,10 +21,39 @@
 #ifdef __cpp_lib_three_way_comparison
 #include <compare>
 #endif
+#include <QtCore/q20type_traits.h>
 
 #include <functional> // std::less
 
 QT_BEGIN_NAMESPACE
+
+namespace QtOrderingPrivate {
+#ifdef __cpp_lib_three_way_comparison
+
+template <typename QtOrdering> struct StdOrdering;
+template <typename StdOrdering> struct QtOrdering;
+
+#define QT_STD_MAP(x) \
+    template <> struct StdOrdering< Qt::x##_ordering> : q20::type_identity<std::x##_ordering> {};\
+    template <> struct StdOrdering<std::x##_ordering> : q20::type_identity<std::x##_ordering> {};\
+    template <> struct  QtOrdering<std::x##_ordering> : q20::type_identity< Qt::x##_ordering> {};\
+    template <> struct  QtOrdering< Qt::x##_ordering> : q20::type_identity< Qt::x##_ordering> {};\
+    /* end */
+QT_STD_MAP(partial)
+QT_STD_MAP(weak)
+QT_STD_MAP(strong)
+#undef QT_STD_MAP
+
+template <typename In> constexpr auto to_std(In in) noexcept
+    -> typename QtOrderingPrivate::StdOrdering<In>::type
+{ return in; }
+
+template <typename In> constexpr auto to_Qt(In in) noexcept
+    -> typename QtOrderingPrivate::QtOrdering<In>::type
+{ return in; }
+
+#endif // __cpp_lib_three_way_comparison
+} // namespace QtOrderingPrivate
 
 /*
     For all the macros these parameter names are used:
