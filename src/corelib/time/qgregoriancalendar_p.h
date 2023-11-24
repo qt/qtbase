@@ -34,6 +34,7 @@ public:
     // Julian Day conversions:
     bool dateToJulianDay(int year, int month, int day, qint64 *jd) const override;
     QCalendar::YearMonthDay julianDayToDate(qint64 jd) const override;
+    qint64 matchCenturyToWeekday(const QCalendar::YearMonthDay &parts, int dow) const override;
 
     // Static optimized versions for the benefit of QDate:
     static int weekDayOfJulian(qint64 jd);

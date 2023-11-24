@@ -109,6 +109,59 @@ QCalendar::YearMonthDay QGregorianCalendar::julianDayToDate(qint64 jd) const
     return partsFromJulian(jd);
 }
 
+qint64
+QGregorianCalendar::matchCenturyToWeekday(const QCalendar::YearMonthDay &parts, int dow) const
+{
+    /* The Gregorian four-century cycle is a whole number of weeks long, so we
+       only need to consider four centuries, from previous through next-but-one.
+       There are thus three days of the week that can't happen, for any given
+       day-of-month, month and year-mod-100. (Exception: '00 Feb 29 has only one
+       option.)
+    */
+    auto maybe = julianFromParts(parts.year, parts.month, parts.day);
+    if (maybe) {
+        int diff = weekDayOfJulian(*maybe) - dow;
+        if (!diff)
+            return *maybe;
+        int year = parts.year < 0 ? parts.year + 1 : parts.year;
+        // What matters is the placement of leap days, so dates before March
+        // effectively belong with the dates since the preceding March:
+        const auto yearSplit = qDivMod<100>(year - (parts.month < 3 ? 1 : 0));
+        const int centuryMod4 = qMod<4>(yearSplit.quotient);
+        // Week-day shift for a century is 5, unless crossing a multiple of 400's Feb 29th.
+        static_assert(qMod<7>(36524) == 5); // and (3 * 5) % 7 = 1
+        // Formulae arrived at by case-by-case analysis of the values of
+        // centuryMod4 and diff (and the above clue to multiply by -3 = 4):
+        if (qMod<7>(diff * 4 + centuryMod4) < 4) {
+            // Century offset maps qMod<7>(diff) in {5, 6} to -1, {3, 4} to +2, and {1, 2} to +1:
+            year += (((qMod<7>(diff) + 3) / 2) % 4 - 1) * 100;
+            maybe = julianFromParts(year > 0 ? year : year - 1, parts.month, parts.day);
+            if (maybe && weekDayOfJulian(*maybe) == dow)
+                return *maybe;
+            Q_ASSERT(parts.month == 2 && parts.day == 29
+                     && dow != int(Qt::Tuesday) && !(year % 100));
+        }
+
+    } else if (parts.month == 2 && parts.day == 29) {
+        int year = parts.year < 0 ? parts.year + 1 : parts.year;
+        // Feb 29th on a century needs to resolve to a multiple of 400 years.
+        const auto yearSplit = qDivMod<100>(year);
+        if (!yearSplit.remainder) {
+            const auto centuryMod4 = qMod<4>(yearSplit.quotient);
+            Q_ASSERT(centuryMod4); // or we'd have got a valid date to begin with.
+            if (centuryMod4 == 1) // round down
+                year -= 100;
+            else // 2 or 3; round up
+                year += (4 - centuryMod4) * 100;
+            maybe = julianFromParts(year > 0 ? year : year - 1, parts.month, parts.day);
+            if (maybe && weekDayOfJulian(*maybe) == dow) // (Can only happen for Tuesday.)
+                return *maybe;
+            Q_ASSERT(dow != int(Qt::Tuesday));
+        }
+    }
+    return (std::numeric_limits<qint64>::min)();
+}
+
 int QGregorianCalendar::yearStartWeekDay(int year)
 {
     // Equivalent to weekDayOfJulian(julianForParts({year, 1, 1})

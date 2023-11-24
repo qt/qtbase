@@ -853,18 +853,73 @@ int QCalendarBackend::maximumMonthsInYear() const
    already used in QDate::dayOfWeek() to mean an invalid date). The calendar
    should treat the numbers used as an \c enum, whose values need not be
    contiguous, nor need they follow closely from the 1 through 7 of the usual
-   returns. It suffices that weekDayName() can recognize each such number as
-   identifying a distinct name, that it returns to identify the particular
-   intercallary day.
+   returns. It suffices that;
+   \list
+     \li weekDayName() can recognize each such number as identifying a distinct
+         name, that it returns to identify the particular intercallary day; and
+     \li matchCenturyToWeekday() can determine what century adjustment aligns a
+         given date within a century to a given day of the week, where this is
+         relevant and possible.
+   \endlist
 
    This base implementation uses the day-numbering that various calendars have
    borrowed off the Hebrew calendar.
 
-   \sa weekDayName(), standaloneWeekDayName(), QDate::dayOfWeek()
- */
+   \sa weekDayName(), standaloneWeekDayName(), QDate::dayOfWeek(), Qt::DayOfWeek
+*/
 int QCalendarBackend::dayOfWeek(qint64 jd) const
 {
     return QRoundingDown::qMod<7>(jd) + 1;
+}
+
+/*!
+    \since 6.7
+    Adjusts century of \a parts to match \a dow.
+
+    Preserves parts.month and parts.day while adjusting parts.year by a multiple
+    of 100 (taking the absence of year zero into account, when relevant) to
+    obtain a date for which dayOfWeek() is \a dow. Prefers smaller changes over
+    larger and increases to the century over decreases of the same
+    magnitude. Returns the Julian Day number for the selected date or
+    std::numeric_limits<qint64>::min(), a.k.a. QDate::nullJd(), if there is no
+    date matching these requirements.
+
+    The base-class provides a brute-force implementation that steps outwards
+    from the given date by centures, above and below by up to 14 centuries, in
+    search of a matching date. This is neither computationally efficient nor
+    elegant but should work as advertised for calendars in which every month-day
+    combination does appear on all days of the week, across sufficiently many
+    centuries.
+*/
+qint64 QCalendarBackend::matchCenturyToWeekday(const QCalendar::YearMonthDay &parts, int dow) const
+{
+    Q_ASSERT(parts.isValid());
+    // Brute-force solution as fall-back.
+    const auto checkOffset = [parts, dow, this](int centuries) -> std::optional<qint64> {
+        // Offset parts.year by the given number of centuries:
+        int year = parts.year + centuries * 100;
+        // but take into account the effect of crossing zero, if we did:
+        if (!hasYearZero() && (parts.year > 0) != (year > 0))
+            year += parts.year > 0 ? -1 : +1;
+        qint64 jd;
+        if (isDateValid(year, parts.month, parts.day)
+            && dateToJulianDay(year, parts.month, parts.day, &jd)
+            && dayOfWeek(jd) == dow) {
+            return jd;
+        }
+        return std::nullopt;
+    };
+    // Empirically, aside from Gregorian, each calendar finds every dow within
+    // any 29-century run, so 14 centuries is the biggest offset we ever need.
+    for (int offset = 0; offset < 15; ++offset) {
+        if (auto jd = checkOffset(offset))
+            return *jd;
+        if (offset) {
+            if (auto jd = checkOffset(-offset))
+                return *jd;
+        }
+    }
+    return (std::numeric_limits<qint64>::min)();
 }
 
 // Month and week-day name look-ups (implemented in qlocale.cpp):
@@ -1422,6 +1477,32 @@ QDate QCalendar::dateFromParts(int year, int month, int day) const
 QDate QCalendar::dateFromParts(const QCalendar::YearMonthDay &parts) const
 {
     return parts.isValid() ? dateFromParts(parts.year, parts.month, parts.day) : QDate();
+}
+
+/*!
+    \since 6.7
+    Adjusts the century of a date to match a given day of the week.
+
+    For use when given a date's day of week, day of month, month and last two
+    digits of the year. Returns a QDate instance with the given \a dow as its \l
+    {QDate::}{dayOfWeek()}, matching the given \a parts in month and day of the
+    month. The returned QDate's \l {QDate::}{year()} shall differ from
+    \c{parts.year} by a multiple of 100, preferring small multiples over larger
+    and positive multiples over their negations.
+
+    If no date matches these conditions, an invalid QDate is returned: the day
+    of week is incompatible with the other data given. This arises, for example,
+    with the Gregorian calendar, whose 400-year cycle is a whole number of weeks
+    long, so any given month and day of that month only ever falls, in years
+    with a given last two digits, on four days of the week. (In the special case
+    of February 29th at the turn of a century, when that is a leap year, only
+    one day of the week is possible: Tuesday.)
+*/
+QDate QCalendar::matchCenturyToWeekday(const QCalendar::YearMonthDay &parts, int dow) const
+{
+    SAFE_D();
+    return d && parts.isValid()
+        ? QDate::fromJulianDay(d->matchCenturyToWeekday(parts, dow)) : QDate();
 }
 
 /*!

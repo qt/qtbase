@@ -144,6 +144,7 @@ public:
     // QDate conversions:
     QDate dateFromParts(int year, int month, int day) const;
     QDate dateFromParts(const YearMonthDay &parts) const;
+    QDate matchCenturyToWeekday(const YearMonthDay &parts, int dow) const;
     YearMonthDay partsFromDate(QDate date) const;
     int dayOfWeek(QDate date) const;
 
