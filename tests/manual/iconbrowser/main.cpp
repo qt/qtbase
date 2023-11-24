@@ -6,6 +6,10 @@
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtGui/qpa/qplatformtheme.h>
 
+#ifdef QT_QUICKWIDGETS_LIB
+#include <QQuickWidget>
+#endif
+
 using namespace Qt::StringLiterals;
 
 class IconModel : public QAbstractItemModel
@@ -546,6 +550,21 @@ int main(int argc, char* argv[])
     widget.addTab(new IconView<IconModel::Icon>(&model), "QIcon::fromTheme");
     widget.addTab(new IconView<IconModel::Style>(&model), "QStyle");
     widget.addTab(new IconView<IconModel::Theme>(&model), "QPlatformTheme");
+
+#ifdef QT_QUICKWIDGETS_LIB
+    QQuickWidget *quickBrowser = new QQuickWidget;
+    quickBrowser->setSource(QUrl(u"qrc:/Main.qml"_s));
+    quickBrowser->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    widget.addTab(quickBrowser, "Qt Quick");
+    QObject::connect(quickBrowser, &QQuickWidget::statusChanged, quickBrowser,
+                     [](QQuickWidget::Status status){
+        qDebug() << status;
+    });
+    QObject::connect(quickBrowser, &QQuickWidget::sceneGraphError, quickBrowser,
+                     [](QQuickWindow::SceneGraphError error, const QString &message){
+        qDebug() << error << message;
+    });
+#endif
 
     widget.show();
     return app.exec();

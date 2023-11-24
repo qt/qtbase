@@ -14,6 +14,20 @@ qt_internal_add_manual_test(iconbrowser
         Qt::WidgetsPrivate
 )
 
+if (TARGET Qt::Quick)
+find_package(Qt6 COMPONENTS QuickWidgets REQUIRED)
+
+qt_add_qml_module(iconbrowser
+    URI main
+    VERSION 1.0
+    QML_FILES "Main.qml"
+    NO_RESOURCE_TARGET_PATH
+)
+target_link_libraries(iconbrowser PRIVATE
+    Qt6::QuickWidgets
+)
+endif()
+
 if (ANDROID)
     set(font_filename "MaterialIcons-Regular.ttf")
     if (QT_ALLOW_DOWNLOAD)
