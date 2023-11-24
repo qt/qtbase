@@ -281,16 +281,10 @@ using namespace Qt::StringLiterals;
 class QJniObjectPrivate
 {
 public:
-    // The JNIEnv is attached to the current thread, and the pointer remains
-    // valid for as long as the thread is alive. If the QJniObject were to
-    // outlive the thread that it lives in, and gets called for anything other
-    // than destruction, then we have a data race anyway.
     QJniObjectPrivate()
-        : m_env(QJniEnvironment::getJniEnv())
     {
     }
     ~QJniObjectPrivate() {
-        // use the environment of the current thread here
         JNIEnv *env = QJniEnvironment::getJniEnv();
         if (m_jobject)
             env->DeleteGlobalRef(m_jobject);
@@ -298,16 +292,11 @@ public:
             env->DeleteGlobalRef(m_jclass);
     }
 
-    JNIEnv *jniEnv() const noexcept
-    {
-        return m_env;
-    }
-
     template <typename ...Args>
     void construct(const char *signature = nullptr, Args &&...args)
     {
         if (m_jclass) {
-            JNIEnv *env = jniEnv();
+            JNIEnv *env = QJniEnvironment::getJniEnv();
             // get default constructor
             jmethodID constructorId = QJniObject::getCachedMethodID(env, m_jclass, m_className, "<init>",
                                                                     signature ? signature : "()V");
@@ -326,7 +315,6 @@ public:
     }
 
     QByteArray m_className;
-    JNIEnv * const m_env;
     jobject m_jobject = nullptr;
     jclass m_jclass = nullptr;
     bool m_own_jclass = true;
@@ -706,7 +694,7 @@ QJniObject::QJniObject(jobject object)
     if (!object)
         return;
 
-    JNIEnv *env = d->jniEnv();
+    JNIEnv *env = QJniEnvironment::getJniEnv();
     d->m_jobject = env->NewGlobalRef(object);
     jclass cls = env->GetObjectClass(object);
     d->m_jclass = static_cast<jclass>(env->NewGlobalRef(cls));
@@ -758,48 +746,11 @@ QByteArray getClassNameHelper(JNIEnv *env, const QJniObjectPrivate *d)
 
 /*! \internal
 
-    While we can synchronize concurrent access to a QJniObject on the C++ side,
-    we cannot synchronize access across C++ and Java, so any concurrent access to
-    a QJniObject, except the most basic ref-counting operations (destructor and
-    assignment) is dangerous, and all calls should happen from the thread that
-    created the Java object.
-
-    However, we have code in Qt that does that, so we use a cheap approach to check
-    for the condition and fall back to the thread-local JNI environment. We do not
-    re-attach to the thread though - that must have been done when constructing this
-    QJniObject.
+    Returns the JNIEnv of the calling thread.
 */
 JNIEnv *QJniObject::jniEnv() const noexcept
 {
-    JNIEnv *env = nullptr;
-    const bool threadCheck = [this, &env]{
-        JavaVM *vm = QtAndroidPrivate::javaVM();
-        const jint ret = vm->GetEnv((void**)&env, JNI_VERSION_1_6);
-        if (ret == JNI_EDETACHED) {
-            qCCritical(lcJniThreadCheck) << "The JNI Environment has been detached from its Java "
-                                            "thread!";
-            return false;
-        } else if (ret != JNI_OK) {
-            qCCritical(lcJniThreadCheck) << "An error occurred while acquiring JNI environment!";
-            return false;
-        }
-        if (env != d->jniEnv()) {
-            qCCritical(lcJniThreadCheck) << "JNI Environment mismatch - probably accessing this "
-                                            "Java object from the wrong thread!";
-            return false;
-        }
-        return true;
-    }();
-    if (!threadCheck) {
-        if (!env) {
-            qFatal() << "No JNI environment attached to" << QThread::currentThread();
-        } else {
-            qCCritical(lcJniThreadCheck) << "JNI threading error when calling object of type"
-                                         << getClassNameHelper(env, d.get()) << "from thread"
-                                         << QThread::currentThread();
-        }
-    }
-    return env;
+    return QJniEnvironment::getJniEnv();
 }
 
 /*!
@@ -1467,7 +1418,7 @@ void QJniObject::assign(jobject obj)
 
     d = QSharedPointer<QJniObjectPrivate>::create();
     if (obj) {
-        JNIEnv *env = d->jniEnv();
+        JNIEnv *env = QJniEnvironment::getJniEnv();
         d->m_jobject = env->NewGlobalRef(obj);
         jclass objectClass = env->GetObjectClass(obj);
         d->m_jclass = static_cast<jclass>(env->NewGlobalRef(objectClass));
