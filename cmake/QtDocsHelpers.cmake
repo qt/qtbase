@@ -119,8 +119,6 @@ function(qt_internal_add_docs)
 
     if(QT_SUPERBUILD)
         set(qt_install_docs_env "${QtBase_BINARY_DIR}/${INSTALL_DOCDIR}")
-    elseif(QT_WILL_INSTALL)
-        set(qt_install_docs_env "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
     else()
         set(qt_install_docs_env "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
     endif()
