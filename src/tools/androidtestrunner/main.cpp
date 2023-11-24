@@ -125,6 +125,7 @@ struct Options
     QHash<QString, QString> outFiles;
     QString testArgs;
     QString apkPath;
+    QString ndkStackPath;
     int sdkVersion = -1;
     int pid = -1;
     bool showLogcatOutput = false;
@@ -201,6 +202,11 @@ static bool parseOptions()
             g_options.skipAddInstallRoot = true;
         } else if (argument.compare(QStringLiteral("--show-logcat"), Qt::CaseInsensitive) == 0) {
             g_options.showLogcatOutput = true;
+        } else if (argument.compare("--ndk-stack"_L1, Qt::CaseInsensitive) == 0) {
+            if (i + 1 == arguments.size())
+                g_options.helpRequested = true;
+            else
+                g_options.ndkStackPath = arguments.at(++i);
         } else if (argument.compare(QStringLiteral("--timeout"), Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
@@ -226,6 +232,14 @@ static bool parseOptions()
     QString serial = qEnvironmentVariable("ANDROID_DEVICE_SERIAL");
     if (!serial.isEmpty())
         g_options.adbCommand += QStringLiteral(" -s %1").arg(serial);
+
+    if (g_options.ndkStackPath.isEmpty()) {
+        const QString ndkPath = qEnvironmentVariable("ANDROID_NDK_ROOT");
+        const QString ndkStackPath = ndkPath + QDir::separator() + "ndk-stack"_L1;
+        if (QFile::exists(ndkStackPath))
+            g_options.ndkStackPath = ndkStackPath;
+    }
+
     return true;
 }
 
@@ -258,6 +272,9 @@ static void printHelp()
                     "    --skip-install-root: Do not append INSTALL_ROOT=... to the make command.\n"
                     "\n"
                     "    --show-logcat: Print Logcat output to stdout.\n"
+                    "\n"
+                    "    --ndk-stack: Path to ndk-stack tool that symbolizes crash stacktraces.\n"
+                    "       By default, ANDROID_NDK_ROOT env var is used to deduce the tool path.\n"
                     "\n"
                     "    -- Arguments that will be passed to the test application.\n"
                     "\n"
@@ -517,9 +534,41 @@ void printLogcat(const QString &formattedTime)
     qDebug() << "****** End logcat output ******";
 }
 
+static QString getDeviceABI()
+{
+    const QString abiCmd = "%1 shell getprop ro.product.cpu.abi"_L1.arg(g_options.adbCommand);
+    QByteArray abi;
+    if (!execCommand(abiCmd, &abi)) {
+        qWarning() << "Warning: failed to get the device abi, fallback to first libs dir";
+        return {};
+    }
+
+    return QString::fromUtf8(abi.simplified());
+}
+
 void printLogcatCrashBuffer(const QString &formattedTime)
 {
     QString crashCmd = "%1 logcat -b crash -t '%2'"_L1.arg(g_options.adbCommand, formattedTime);
+
+    if (!g_options.ndkStackPath.isEmpty()) {
+        auto libsPath = "%1/libs/"_L1.arg(g_options.buildPath);
+        QString abi = getDeviceABI();
+        if (abi.isEmpty()) {
+            QStringList subDirs = QDir(libsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+            if (!subDirs.isEmpty())
+                abi = subDirs.first();
+        }
+
+        if (!abi.isEmpty()) {
+            libsPath += abi;
+            crashCmd += " | %1 -sym %2"_L1.arg(g_options.ndkStackPath, libsPath);
+        } else {
+            qWarning() << "Warning: failed to get the libs abi, ndk-stack cannot be used.";
+        }
+    } else {
+        qWarning() << "Warning: ndk-stack path not provided and couldn't be deduced "
+                      "using the ANDROID_NDK_ROOT environment variable.";
+    }
 
     QByteArray crashLogcat;
     if (!execCommand(crashCmd, &crashLogcat)) {
