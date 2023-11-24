@@ -415,19 +415,19 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 #endif
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
-        if (const QStyleOptionComboBox *sb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
+        if (const QStyleOptionComboBox *combobox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             QBrush fillColor = state & State_MouseOver && !(state & State_HasFocus) ? QBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]) : option->palette.brush(QPalette::Base);
             QRectF rect = option->rect.adjusted(2,2,-2,-2);
             painter->setBrush(fillColor);
-            painter->setPen(highContrastTheme == true ? sb->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
+            painter->setPen(highContrastTheme == true ? combobox->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
             painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
             if (sub & SC_ComboBoxArrow) {
-                QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget).adjusted(0, 0, 0, 1);
+                QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget).adjusted(-4, 0, -4, 1);
                 painter->setFont(assetFont);
-                painter->setPen(sb->palette.text().color());
+                painter->setPen(combobox->palette.text().color());
                 painter->drawText(rect,"\uE019", Qt::AlignVCenter | Qt::AlignHCenter);
             }
-            if (sb->editable) {
+            if (combobox->editable) {
                 QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0);
                 painter->setPen(QPen(lineColor));
                 painter->drawLine(rect.bottomLeft() + QPoint(2,1), rect.bottomRight() + QPoint(-2,1));
@@ -1628,6 +1628,27 @@ int QWindows11Style::styleHint(StyleHint hint, const QStyleOption *opt,
     }
 }
 
+QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOption *option,
+                     const QWidget *widget) const
+{
+    QRect ret;
+    switch (element) {
+    case QStyle::SE_LineEditContents:
+        ret = option->rect.adjusted(8,0,-8,0);
+        break;
+    case QStyle::SE_ItemViewItemText:
+        if (widget && widget->parentWidget() &&
+            widget->parentWidget()->inherits("QComboBoxPrivateContainer"))
+            ret = option->rect.adjusted(5,0,-5,0);
+        else
+            ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+        break;
+    default:
+        ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+    }
+    return ret;
+}
+
 /*!
  \internal
  */
@@ -1637,6 +1658,19 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
     QRect ret;
 
     switch (control) {
+#if QT_CONFIG(combobox)
+    case QStyle::CC_ComboBox:
+        if (const QStyleOptionComboBox *combobox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
+            switch (subControl) {
+            case SC_ComboBoxEditField:
+                ret = combobox->rect.adjusted(8,0,0,0);
+                break;
+            default:
+                ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
+            }
+        }
+        break;
+#endif
 #if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
