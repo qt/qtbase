@@ -32,7 +32,7 @@ static void discard_pbm_line(QIODevice *d)
     } while (res > 0 && buf[res-1] != '\n');
 }
 
-static int read_pbm_int(QIODevice *d, bool *ok)
+static int read_pbm_int(QIODevice *d, bool *ok, int maxDigits = -1)
 {
     char c;
     int          val = -1;
@@ -50,6 +50,8 @@ static int read_pbm_int(QIODevice *d, bool *ok)
                 } else {
                     hasOverflow = true;
                 }
+                if (maxDigits > 0 && --maxDigits == 0)
+                    break;
                 continue;
             } else {
                 if (c == '#')                        // comment
@@ -64,6 +66,8 @@ static int read_pbm_int(QIODevice *d, bool *ok)
         else if (c == '#')
             discard_pbm_line(d);
         else
+            break;
+        if (maxDigits > 0 && --maxDigits == 0)
             break;
     }
     if (val < 0)
@@ -213,7 +217,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                     b = 0;
                     for (int i=0; i<8; i++) {
                         if (i < bitsLeft)
-                            b = (b << 1) | (read_pbm_int(device, &ok) & 1);
+                            b = (b << 1) | (read_pbm_int(device, &ok, 1) & 1);
                         else
                             b = (b << 1) | (0 & 1); // pad it our self if we need to
                     }
