@@ -1,23 +1,21 @@
 // Copyright (C) 2019 BogDan Vatra <bogdan@kde.org>
-// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#include <QCoreApplication>
-#include <QDir>
-#include <QHash>
-#include <QRegularExpression>
-#include <QSystemSemaphore>
-#include <QXmlStreamReader>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QDeadlineTimer>
+#include <QtCore/QDir>
+#include <QtCore/QHash>
+#include <QtCore/QProcess>
+#include <QtCore/QProcessEnvironment>
+#include <QtCore/QRegularExpression>
+#include <QtCore/QSystemSemaphore>
+#include <QtCore/QThread>
+#include <QtCore/QXmlStreamReader>
 
-#include <algorithm>
-#include <functional>
 #include <atomic>
 #include <csignal>
-#include <QtCore/QDeadlineTimer>
-#include <QtCore/QThread>
-#include <QtCore/QProcessEnvironment>
-
-#include <QtCore/QProcess>
+#include <functional>
 
 using namespace Qt::StringLiterals;
 
@@ -29,12 +27,12 @@ static bool checkJunit(const QByteArray &data) {
         if (!reader.isStartElement())
             continue;
 
-        if (reader.name() == QStringLiteral("error"))
+        if (reader.name() == "error"_L1)
             return false;
 
-        const QString type = reader.attributes().value(QStringLiteral("type")).toString();
-        if (reader.name() == QStringLiteral("failure")) {
-            if (type == QStringLiteral("fail") || type == QStringLiteral("xpass"))
+        const QString type = reader.attributes().value("type"_L1).toString();
+        if (reader.name() == "failure"_L1) {
+            if (type == "fail"_L1 || type == "xpass"_L1)
                 return false;
         }
     }
@@ -65,10 +63,10 @@ static bool checkXml(const QByteArray &data) {
     QXmlStreamReader reader{data};
     while (!reader.atEnd()) {
         reader.readNext();
-        const QString type = reader.attributes().value(QStringLiteral("type")).toString();
-        const bool isIncident = (reader.name() == QStringLiteral("Incident"));
+        const QString type = reader.attributes().value("type"_L1).toString();
+        const bool isIncident = (reader.name() == "Incident"_L1);
         if (reader.isStartElement() && isIncident) {
-            if (type == QStringLiteral("fail") || type == QStringLiteral("xpass"))
+            if (type == "fail"_L1 || type == "xpass"_L1)
                 return false;
         }
     }
@@ -112,7 +110,7 @@ struct Options
     bool skipAddInstallRoot = false;
     int timeoutSecs = 600; // 10 minutes
     QString buildPath;
-    QString adbCommand{QStringLiteral("adb")};
+    QString adbCommand{"adb"_L1};
     QString makeCommand;
     QString package;
     QString activity;
@@ -125,14 +123,14 @@ struct Options
     int pid = -1;
     bool showLogcatOutput = false;
     const QHash<QString, std::function<bool(const QByteArray &)>> checkFiles = {
-        {QStringLiteral("txt"), checkTxt},
-        {QStringLiteral("csv"), checkCsv},
-        {QStringLiteral("xml"), checkXml},
-        {QStringLiteral("lightxml"), checkLightxml},
-        {QStringLiteral("xunitxml"), checkJunit},
-        {QStringLiteral("junitxml"), checkJunit},
-        {QStringLiteral("teamcity"), checkTeamcity},
-        {QStringLiteral("tap"), checkTap},
+        {"txt"_L1, checkTxt},
+        {"csv"_L1, checkCsv},
+        {"xml"_L1, checkXml},
+        {"lightxml"_L1, checkLightxml},
+        {"xunitxml"_L1, checkJunit},
+        {"junitxml"_L1, checkJunit},
+        {"teamcity"_L1, checkTeamcity},
+        {"tap"_L1, checkTap},
     };
 };
 
@@ -191,50 +189,50 @@ static bool parseOptions()
     int i = 1;
     for (; i < arguments.size(); ++i) {
         const QString &argument = arguments.at(i);
-        if (argument.compare(QStringLiteral("--adb"), Qt::CaseInsensitive) == 0) {
+        if (argument.compare("--adb"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
                 g_options.adbCommand = arguments.at(++i);
-        } else if (argument.compare(QStringLiteral("--path"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--path"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
                 g_options.buildPath = arguments.at(++i);
-        } else if (argument.compare(QStringLiteral("--make"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--make"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
                 g_options.makeCommand = arguments.at(++i);
-        } else if (argument.compare(QStringLiteral("--apk"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--apk"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
                 g_options.apkPath = arguments.at(++i);
-        } else if (argument.compare(QStringLiteral("--activity"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--activity"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
                 g_options.activity = arguments.at(++i);
-        } else if (argument.compare(QStringLiteral("--skip-install-root"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--skip-install-root"_L1, Qt::CaseInsensitive) == 0) {
             g_options.skipAddInstallRoot = true;
-        } else if (argument.compare(QStringLiteral("--show-logcat"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--show-logcat"_L1, Qt::CaseInsensitive) == 0) {
             g_options.showLogcatOutput = true;
         } else if (argument.compare("--ndk-stack"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
                 g_options.ndkStackPath = arguments.at(++i);
-        } else if (argument.compare(QStringLiteral("--timeout"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--timeout"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
                 g_options.timeoutSecs = arguments.at(++i).toInt();
-        } else if (argument.compare(QStringLiteral("--help"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--help"_L1, Qt::CaseInsensitive) == 0) {
             g_options.helpRequested = true;
-        } else if (argument.compare(QStringLiteral("--verbose"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--verbose"_L1, Qt::CaseInsensitive) == 0) {
             g_options.verbose = true;
-        } else if (argument.compare(QStringLiteral("--"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare("--"_L1, Qt::CaseInsensitive) == 0) {
             ++i;
             break;
         } else {
@@ -249,7 +247,7 @@ static bool parseOptions()
 
     QString serial = qEnvironmentVariable("ANDROID_DEVICE_SERIAL");
     if (!serial.isEmpty())
-        g_options.adbCommand += QStringLiteral(" -s %1").arg(serial);
+        g_options.adbCommand += " -s %1"_L1.arg(serial);
 
     if (g_options.ndkStackPath.isEmpty()) {
         const QString ndkPath = qEnvironmentVariable("ANDROID_NDK_ROOT");
@@ -310,8 +308,8 @@ static QString packageNameFromAndroidManifest(const QString &androidManifestPath
         QXmlStreamReader reader(&androidManifestXml);
         while (!reader.atEnd()) {
             reader.readNext();
-            if (reader.isStartElement() && reader.name() == QStringLiteral("manifest"))
-                return reader.attributes().value(QStringLiteral("package")).toString();
+            if (reader.isStartElement() && reader.name() == "manifest"_L1)
+                return reader.attributes().value("package"_L1).toString();
         }
     }
     return {};
@@ -324,8 +322,8 @@ static QString activityFromAndroidManifest(const QString &androidManifestPath)
         QXmlStreamReader reader(&androidManifestXml);
         while (!reader.atEnd()) {
             reader.readNext();
-            if (reader.isStartElement() && reader.name() == QStringLiteral("activity"))
-                return reader.attributes().value(QStringLiteral("android:name")).toString();
+            if (reader.isStartElement() && reader.name() == "activity"_L1)
+                return reader.attributes().value("android:name"_L1).toString();
         }
     }
     return {};
@@ -334,26 +332,26 @@ static QString activityFromAndroidManifest(const QString &androidManifestPath)
 static void setOutputFile(QString file, QString format)
 {
     if (file.isEmpty())
-        file = QStringLiteral("-");
+        file = "-"_L1;
     if (format.isEmpty())
-        format = QStringLiteral("txt");
+        format = "txt"_L1;
 
     g_options.outFiles[format] = file;
 }
 
 static bool parseTestArgs()
 {
-    QRegularExpression oldFormats{QStringLiteral("^-(txt|csv|xunitxml|junitxml|xml|lightxml|teamcity|tap)$")};
-    QRegularExpression newLoggingFormat{QStringLiteral("^(.*),(txt|csv|xunitxml|junitxml|xml|lightxml|teamcity|tap)$")};
+    QRegularExpression oldFormats{"^-(txt|csv|xunitxml|junitxml|xml|lightxml|teamcity|tap)$"_L1};
+    QRegularExpression newLoggingFormat{"^(.*),(txt|csv|xunitxml|junitxml|xml|lightxml|teamcity|tap)$"_L1};
 
     QString file;
     QString logType;
     QStringList unhandledArgs;
     for (int i = 0; i < g_options.testArgsList.size(); ++i) {
         const QString &arg = g_options.testArgsList[i].trimmed();
-        if (arg == QStringLiteral("--"))
+        if (arg == "--"_L1)
             continue;
-        if (arg == QStringLiteral("-o")) {
+        if (arg == "-o"_L1) {
             if (i >= g_options.testArgsList.size() - 1)
                 return false; // missing file argument
 
@@ -692,7 +690,7 @@ int main(int argc, char *argv[])
     if (!execCommand(g_options.makeCommand, nullptr, true)) {
         if (!g_options.skipAddInstallRoot) {
             // we need to run make INSTALL_ROOT=path install to install the application file(s) first
-            if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install").arg(g_options.makeCommand,
+            if (!execCommand("%1 INSTALL_ROOT=%2 install"_L1.arg(g_options.makeCommand,
                                         QDir::toNativeSeparators(g_options.buildPath)), nullptr)) {
                 return 1;
             }
@@ -719,7 +717,7 @@ int main(int argc, char *argv[])
     if (!execAdbCommand(installArgs, nullptr))
         return 1;
 
-    QString manifest = g_options.buildPath + QStringLiteral("/AndroidManifest.xml");
+    QString manifest = g_options.buildPath + "/AndroidManifest.xml"_L1;
     g_options.package = packageNameFromAndroidManifest(manifest);
     if (g_options.activity.isEmpty())
         g_options.activity = activityFromAndroidManifest(manifest);
