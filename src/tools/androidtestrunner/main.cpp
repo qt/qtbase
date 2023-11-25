@@ -11,6 +11,8 @@
 
 #include <algorithm>
 #include <functional>
+#include <atomic>
+#include <csignal>
 #include <QtCore/QDeadlineTimer>
 #include <QtCore/QThread>
 
@@ -496,20 +498,6 @@ static bool pullFiles()
     return ret;
 }
 
-struct RunnerLocker
-{
-    RunnerLocker()
-    {
-        runner.acquire();
-    }
-    ~RunnerLocker()
-    {
-        runner.release();
-    }
-    QSystemSemaphore runner{ QSystemSemaphore::platformSafeKey(u"androidtestrunner"_s),
-                1, QSystemSemaphore::Open };
-};
-
 void printLogcat(const QString &formattedTime)
 {
     QString logcatCmd = "%1 logcat "_L1.arg(g_options.adbCommand);
@@ -601,8 +589,41 @@ static QString getCurrentTimeString()
     return QString::fromUtf8(output.simplified());
 }
 
+struct TestRunnerSystemSemaphore
+{
+    TestRunnerSystemSemaphore() { }
+    ~TestRunnerSystemSemaphore() { release(); }
+
+    void acquire() { isAcquired.store(semaphore.acquire()); }
+
+    void release()
+    {
+        bool expected = true;
+        // NOTE: There's still could be tiny time gap between the compare_exchange_strong() call
+        // and release() call where the thread could be interrupted, if that's ever an issue,
+        // this code could be checked and improved further.
+        if (isAcquired.compare_exchange_strong(expected, false))
+            isAcquired.store(!semaphore.release());
+    }
+
+    std::atomic<bool> isAcquired { false };
+    QSystemSemaphore semaphore { QSystemSemaphore::platformSafeKey(u"androidtestrunner"_s),
+                                   1, QSystemSemaphore::Open };
+};
+
+TestRunnerSystemSemaphore testRunnerLock;
+
+void sigHandler(int signal)
+{
+    std::signal(signal, SIG_DFL);
+    testRunnerLock.release();
+}
+
 int main(int argc, char *argv[])
 {
+    std::signal(SIGINT,  sigHandler);
+    std::signal(SIGTERM, sigHandler);
+
     QCoreApplication a(argc, argv);
     if (!parseOptions()) {
         printHelp();
@@ -640,7 +661,9 @@ int main(int argc, char *argv[])
 
     obtainSDKVersion();
 
-    RunnerLocker lock; // do not install or run packages while another test is running
+    // do not install or run packages while another test is running
+    testRunnerLock.acquire();
+
     if (!execCommand(QStringLiteral("%1 install -r -g %2")
                         .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose)) {
         return 1;
@@ -678,5 +701,8 @@ int main(int argc, char *argv[])
     res &= execCommand(QStringLiteral("%1 uninstall %2").arg(g_options.adbCommand, g_options.package),
                        nullptr, g_options.verbose);
     fflush(stdout);
+
+    testRunnerLock.release();
+
     return res ? 0 : 1;
 }
