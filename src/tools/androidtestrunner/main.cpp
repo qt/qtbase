@@ -15,6 +15,7 @@
 #include <csignal>
 #include <QtCore/QDeadlineTimer>
 #include <QtCore/QThread>
+#include <QtCore/QProcessEnvironment>
 
 #include <shellquote_shared.h>
 
@@ -366,10 +367,25 @@ static bool parseTestArgs()
 
     g_options.testArgs += unhandledArgs.join(u' ');
 
-    g_options.testArgs = QStringLiteral("shell am start -e applicationArguments \"%1\" -n %2/%3")
-            .arg(shellQuote(g_options.testArgs.trimmed()))
-            .arg(g_options.package)
-            .arg(g_options.activity);
+    // Pass over any testlib env vars if set
+    QString testEnvVars;
+    const QStringList envVarsList = QProcessEnvironment::systemEnvironment().toStringList();
+    for (const QString &var : envVarsList) {
+        if (var.startsWith("QTEST_"_L1))
+            testEnvVars += "%1 "_L1.arg(var);
+    }
+
+    if (!testEnvVars.isEmpty()) {
+        testEnvVars = QString::fromUtf8(testEnvVars.trimmed().toUtf8().toBase64());
+        testEnvVars = "-e extraenvvars \"%4\""_L1.arg(testEnvVars);
+    }
+
+    g_options.testArgs = "shell am start -n %1/%2 -e applicationArguments \"%3\" %4"_L1
+                                 .arg(g_options.package)
+                                 .arg(g_options.activity)
+                                 .arg(shellQuote(g_options.testArgs.trimmed()))
+                                 .arg(testEnvVars)
+                                 .trimmed();
 
     return true;
 }
