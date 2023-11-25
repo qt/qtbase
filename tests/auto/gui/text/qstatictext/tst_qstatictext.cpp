@@ -50,10 +50,6 @@ private slots:
     void rotatedPainter();
     void scaledPainter();
     void projectedPainter();
-#if 0
-    void rotatedScaledAndTranslatedPainter_data();
-    void rotatedScaledAndTranslatedPainter();
-#endif
     void transformationChanged();
 
     void plainTextVsRichText();
@@ -500,61 +496,6 @@ void tst_QStaticText::projectedPainter()
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
-
-#if 0
-void tst_QStaticText::rotatedScaledAndTranslatedPainter_data()
-{
-    QTest::addColumn<qreal>("offset");
-
-    for (int i=0; i<100; ++i) {
-        qreal offset = 300 + i / 100.;
-        QTest::newRow(QByteArray::number(offset).constData()) << offset;
-    }
-}
-
-void tst_QStaticText::rotatedScaledAndTranslatedPainter()
-{
-    QFETCH(qreal, offset);
-
-    QPixmap imageDrawText(1000, 1000);
-    imageDrawText.fill(Qt::white);
-    {
-        QPainter p(&imageDrawText);
-        p.translate(offset, 0);
-        p.rotate(45.0);
-        p.scale(2.0, 2.0);
-        p.translate(100, 200);
-
-        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-    }
-
-    QPixmap imageDrawStaticText(1000, 1000);
-    imageDrawStaticText.fill(Qt::white);
-    {
-        QPainter p(&imageDrawStaticText);
-        p.translate(offset, 0);
-        p.rotate(45.0);
-        p.scale(2.0, 2.0);
-        p.translate(100, 200);
-
-        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        text.setTextFormat(Qt::PlainText);
-
-        p.drawStaticText(QPointF(11, 12 - QFontMetricsF(p.font()).ascent()), text);
-    }
-
-#if defined(DEBUG_SAVE_IMAGE)
-    imageDrawText.save("rotatedScaledAndPainter_imageDrawText.png");
-    imageDrawStaticText.save("rotatedScaledAndPainter_imageDrawStaticText.png");
-#endif
-
-    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
-
-    if (!supportsTransformations())
-      QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
-    QCOMPARE(imageDrawStaticText, imageDrawText);
-}
-#endif
 
 void tst_QStaticText::transformationChanged()
 {
