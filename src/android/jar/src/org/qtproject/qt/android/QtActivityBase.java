@@ -21,7 +21,7 @@ import android.view.Window;
 
 public class QtActivityBase extends Activity
 {
-    private String m_applicationParams = null;
+    private String m_applicationParams = "";
     private boolean m_isCustomThemeSet = false;
     private boolean m_retainNonConfigurationInstance = false;
 
@@ -50,11 +50,16 @@ public class QtActivityBase extends Activity
         intent.putExtra(extraSourceInfoKey, sourceInformation);
     }
 
-    // Append any parameters to your application,
-    // the parameters must be "\t" separated.
+    // Append any parameters to your application.
+    // Either a whitespace or a tab is accepted as a separator between parameters.
     /** @noinspection unused*/
     public void appendApplicationParameters(String params)
     {
+        if (params == null || params.isEmpty())
+            return;
+
+        if (!m_applicationParams.isEmpty())
+            m_applicationParams += " ";
         m_applicationParams += params;
     }
 
@@ -95,7 +100,7 @@ public class QtActivityBase extends Activity
         addReferrer(getIntent());
 
         QtActivityLoader loader = new QtActivityLoader(this);
-        loader.setApplicationParameters(m_applicationParams);
+        loader.appendApplicationParameters(m_applicationParams);
 
         loader.loadQtLibraries();
         m_delegate.startNativeApplication(loader.getApplicationParameters(),

@@ -125,7 +125,7 @@ class QtActivityLoader extends QtLoader {
 
         String intentArgs = intent.getStringExtra("applicationArguments");
         if (intentArgs != null)
-            setApplicationParameters(intentArgs);
+            appendApplicationParameters(intentArgs);
 
         Bundle extras = intent.getExtras();
         if (extras == null) {
@@ -144,7 +144,7 @@ class QtActivityLoader extends QtLoader {
 
             if (extras.containsKey("extraappparams")) {
                 String extraAppParams = extras.getString("extraappparams");
-                setApplicationParameters(getDecodedUtfString(extraAppParams));
+                appendApplicationParameters(getDecodedUtfString(extraAppParams));
             }
         } else {
             Log.d(QtNative.QtTAG, "Not in debug mode! It is not allowed to use extra arguments " +

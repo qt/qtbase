@@ -38,7 +38,7 @@ abstract class QtLoader {
     protected ComponentInfo m_contextInfo;
 
     protected String m_mainLib;
-    protected ArrayList<String> m_applicationParameters = new ArrayList<>();
+    protected String m_applicationParameters = "";
     protected HashMap<String, String> m_environmentVariables = new HashMap<>();
 
     /**
@@ -91,7 +91,7 @@ abstract class QtLoader {
         String backgroundRunning = getMetaData("android.app.background_running");
         setEnvironmentVariable("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED", backgroundRunning);
         setEnvironmentVariable("QTRACE_LOCATION", getMetaData("android.app.trace_location"));
-        setApplicationParameters(getMetaData("android.app.arguments"));
+        appendApplicationParameters(getMetaData("android.app.arguments"));
     }
 
     private ArrayList<String> preferredAbiLibs(String[] libs) {
@@ -164,31 +164,22 @@ abstract class QtLoader {
      * the main library's main() function. This is assembled from
      * a combination of static values and also metadata dependent values.
      **/
-    public ArrayList<String> getApplicationParameters() {
+    public String getApplicationParameters() {
         return m_applicationParameters;
     }
 
     /**
-     * Adds a parameter string to the internal array list of parameters.
-     **/
-    public void setApplicationParameter(String param)
-    {
-        if (param == null || param.isEmpty())
-            return;
-        m_applicationParameters.add(param);
-    }
-
-    /**
      * Adds a list of parameters to the internal array list of parameters.
-     * This expects the parameters separated by '\t'.
+     * Either a whitespace or a tab is accepted as a separator between parameters.
      **/
-    public void setApplicationParameters(String params)
+    public void appendApplicationParameters(String params)
     {
         if (params == null || params.isEmpty())
             return;
 
-        for (String param : params.split("\t"))
-            setApplicationParameter(param);
+        if (!m_applicationParameters.isEmpty())
+            m_applicationParameters += " ";
+        m_applicationParameters += params;
     }
 
     /**
@@ -208,15 +199,16 @@ abstract class QtLoader {
     /**
      * Sets a list of keys/values string to as environment variables.
      * This expects the key/value to be separated by '=', and parameters
-     * to be separated by '\t'.
-     * Ex: key1=val1\tkey2=val2\tkey3=val3
+     * to be separated by tabs or space.
      **/
     public void setEnvironmentVariables(String environmentVariables)
     {
         if (environmentVariables == null || environmentVariables.isEmpty())
             return;
 
-        for (String variable : environmentVariables.split("\t")) {
+        environmentVariables = environmentVariables.replaceAll("\t", " ");
+
+        for (String variable : environmentVariables.split(" ")) {
             String[] keyValue = variable.split("=", 2);
             if (keyValue.length < 2 || keyValue[0].isEmpty())
                 continue;

@@ -114,7 +114,7 @@ class QtActivityDelegate
         }
     }
 
-    public void startNativeApplication(ArrayList<String> appParams, String mainLib)
+    public void startNativeApplication(String appParams, String mainLib)
     {
         if (m_surfaces != null)
             return;
