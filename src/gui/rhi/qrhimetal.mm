@@ -2682,6 +2682,15 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
 
+    id<MTLBlitCommandEncoder> blitEnc = nil;
+    auto ensureBlit = [&blitEnc, cbD, this]() {
+        if (!blitEnc) {
+            blitEnc = [cbD->d->cb blitCommandEncoder];
+            if (debugMarkers)
+                [blitEnc pushDebugGroup: @"Texture upload/copy"];
+        }
+    };
+
     for (int opIdx = 0; opIdx < ud->activeBufferOpCount; ++opIdx) {
         const QRhiResourceUpdateBatchPrivate::BufferOp &u(ud->bufferOps[opIdx]);
         if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
@@ -2720,18 +2729,16 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 readback.readSize = u.readSize;
                 readback.result = u.result;
                 d->activeBufferReadbacks.append(readback);
+#ifdef Q_OS_MACOS
+                if (bufD->d->managed) {
+                    // On non-Apple Silicon, manually synchronize memory from GPU to CPU
+                    ensureBlit();
+                    [blitEnc synchronizeResource:readback.buf];
+                }
+#endif
             }
         }
     }
-
-    id<MTLBlitCommandEncoder> blitEnc = nil;
-    auto ensureBlit = [&blitEnc, cbD, this] {
-        if (!blitEnc) {
-            blitEnc = [cbD->d->cb blitCommandEncoder];
-            if (debugMarkers)
-                [blitEnc pushDebugGroup: @"Texture upload/copy"];
-        }
-    };
 
     for (int opIdx = 0; opIdx < ud->activeTextureOpCount; ++opIdx) {
         const QRhiResourceUpdateBatchPrivate::TextureOp &u(ud->textureOps[opIdx]);
