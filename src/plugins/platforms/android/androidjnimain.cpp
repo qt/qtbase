@@ -36,6 +36,9 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
+
+using namespace Qt::StringLiterals;
+
 QT_BEGIN_NAMESPACE
 
 static JavaVM *m_javaVM = nullptr;
@@ -439,14 +442,16 @@ namespace QtAndroid
 
 static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring paramsString)
 {
+    Q_UNUSED(env)
+
     m_androidPlatformIntegration = nullptr;
     m_androidAssetsFileEngineHandler = new AndroidAssetsFileEngineHandler();
     m_androidContentFileEngineHandler = new AndroidContentFileEngineHandler();
     m_mainLibraryHnd = nullptr;
 
-    const char *nativeString = env->GetStringUTFChars(paramsString, 0);
-    const QStringList argsList = QProcess::splitCommand(QString::fromUtf8(nativeString));
-    env->ReleaseStringUTFChars(paramsString, nativeString);
+    // QProcess::splitCommand() treats triple quotes as the quote character itself.
+    QString params = QJniObject(paramsString).toString().replace("\""_L1, "\"\"\""_L1);
+    const QStringList argsList = QProcess::splitCommand(params);
 
     for (const QString &arg : argsList)
         m_applicationParams.append(arg.toUtf8());

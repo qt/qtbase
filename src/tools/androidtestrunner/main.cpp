@@ -355,7 +355,7 @@ static bool parseTestArgs()
             if (match.hasMatch()) {
                 logType = match.capturedTexts().at(1);
             } else {
-                unhandledArgs << QStringLiteral(" \\\"%1\\\"").arg(arg);
+                unhandledArgs << " %1"_L1.arg(arg).replace("\""_L1, "\\\""_L1);
             }
         }
     }
