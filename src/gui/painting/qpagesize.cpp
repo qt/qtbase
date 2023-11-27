@@ -543,7 +543,7 @@ static QSize qt_convertPointsToPixels(const QSize &size, int resolution)
     if (!size.isValid() || resolution <= 0)
         return QSize();
     const qreal multiplier = qt_pixelMultiplier(resolution);
-    return QSize(qRound(size.width() / multiplier), qRound(size.height() / multiplier));
+    return QSize(qFloor(size.width() / multiplier), qFloor(size.height() / multiplier));
 }
 
 static QSizeF qt_convertPointsToUnits(const QSize &size, QPageSize::Unit units)

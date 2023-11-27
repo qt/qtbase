@@ -49,11 +49,13 @@ void tst_QPageSize::basics()
     QCOMPARE(a4.size(QPageSize::Pica), QSizeF(49.58, 70.17));
     QCOMPARE(a4.sizePoints(), QSize(595, 842));
     QCOMPARE(a4.sizePixels(72), QSize(595, 842));
+    QCOMPARE(a4.sizePixels(600), QSize(4958, 7016)); // Rounded down
     QCOMPARE(a4.rect(QPageSize::Millimeter), QRectF(0, 0, 210, 297));
     QCOMPARE(a4.rect(QPageSize::Inch), QRectF(0, 0, 8.27, 11.69));
     QCOMPARE(a4.rect(QPageSize::Pica), QRectF(0, 0, 49.58, 70.17));
     QCOMPARE(a4.rectPoints(), QRect(0, 0, 595, 842));
     QCOMPARE(a4.rectPixels(72), QRect(0, 0, 595, 842));
+    QCOMPARE(a4.rectPixels(600), QRect(0, 0, 4958, 7016)); // Rounded down
 
     // Simple QPageSize::PaperSizeId later in list
     QPageSize folio = QPageSize(QPageSize::Folio);
