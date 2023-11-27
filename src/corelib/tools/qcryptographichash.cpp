@@ -1417,21 +1417,32 @@ void QMessageAuthenticationCodePrivate::initMessageHash() noexcept
     \ingroup tools
     \reentrant
 
-    QMessageAuthenticationCode supports all cryptographic hashes which are supported by
-    QCryptographicHash.
+    Use the QMessageAuthenticationCode class to generate hash-based message
+    authentication codes (HMACs). The class supports all cryptographic
+    hash algorithms from \l QCryptographicHash (see also
+    \l{QCryptographicHash::Algorithms}).
 
-    To generate message authentication code, pass hash algorithm QCryptographicHash::Algorithm
-    to constructor, then set key and message by setKey() and addData() functions. Result
-    can be acquired by result() function.
+    To generate a message authentication code, pass a suitable hash
+    algorithm and secret key to the constructor. Then process the message
+    data by calling \l addData() one or more times. After the full
+    message has been processed, get the final authentication code
+    via the \l result() function:
+
     \snippet qmessageauthenticationcode/main.cpp 0
     \dots
     \snippet qmessageauthenticationcode/main.cpp 1
 
-    Alternatively, this effect can be achieved by providing message,
-    key and method to hash() method.
+    For simple cases like above, you can also use the static
+    \l hash() function:
+
     \snippet qmessageauthenticationcode/main.cpp 2
 
-    \sa QCryptographicHash
+
+    \note The cryptographic strength of the HMAC depends upon the
+    size of the secret key, and the security of the
+    underlying hash function.
+
+    \sa QCryptographicHash, QCryptographicHash::Algorithms
 */
 
 /*!
