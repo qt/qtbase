@@ -222,6 +222,7 @@ protected:
 
     Qt::WindowStates m_windowState = Qt::WindowNoState;
 
+    QMutex m_mappedMutex;
     bool m_mapped = false;
     bool m_transparent = false;
     bool m_deferredActivation = false;

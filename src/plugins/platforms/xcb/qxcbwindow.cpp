@@ -1461,11 +1461,14 @@ void QXcbWindow::requestActivateWindow()
         return;
     }
 
-    if (!m_mapped) {
-        m_deferredActivation = true;
-        return;
+    {
+        QMutexLocker locker(&m_mappedMutex);
+        if (!m_mapped) {
+            m_deferredActivation = true;
+            return;
+        }
+        m_deferredActivation = false;
     }
-    m_deferredActivation = false;
 
     updateNetWmUserTime(connection()->time());
     QWindow *focusWindow = QGuiApplication::focusWindow();
@@ -1874,8 +1877,11 @@ QPoint QXcbWindow::mapFromGlobal(const QPoint &pos) const
 void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
 {
     if (event->window == m_window) {
+        m_mappedMutex.lock();
         m_mapped = true;
-        if (m_deferredActivation)
+        const bool deferredActivation = m_deferredActivation;
+        m_mappedMutex.unlock();
+        if (deferredActivation)
             requestActivateWindow();
 
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
@@ -1885,7 +1891,9 @@ void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
 void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
 {
     if (event->window == m_window) {
+        m_mappedMutex.lock();
         m_mapped = false;
+        m_mappedMutex.unlock();
         QWindowSystemInterface::handleExposeEvent(window(), QRegion());
     }
 }
