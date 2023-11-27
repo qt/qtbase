@@ -1507,7 +1507,7 @@ QMessageAuthenticationCode::~QMessageAuthenticationCode()
 */
 
 /*!
-    Resets message data. Calling this method doesn't affect the key.
+    Resets message data. Calling this function doesn't affect the key.
 */
 void QMessageAuthenticationCode::reset() noexcept
 {
@@ -1516,9 +1516,9 @@ void QMessageAuthenticationCode::reset() noexcept
 }
 
 /*!
-    Sets secret \a key. Calling this method automatically resets the object state.
+    Sets secret \a key. Calling this function automatically resets the object state.
 
-    For optimal performance, call this method only to \e change the active key,
+    For optimal performance, call this function only to \e change the active key,
     not to set an \e initial key, as in
 
     \code
