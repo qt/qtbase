@@ -302,7 +302,7 @@ public:
     [[nodiscard]] constexpr char front() const { Q_ASSERT(!empty()); return m_data[0]; }
     [[nodiscard]] constexpr char back()  const { Q_ASSERT(!empty()); return m_data[m_size - 1]; }
 
-    [[nodiscard]] Q_IMPLICIT operator std::string_view() const noexcept
+    [[nodiscard]] constexpr Q_IMPLICIT operator std::string_view() const noexcept
     { return std::string_view(m_data, size_t(m_size)); }
 
     //
