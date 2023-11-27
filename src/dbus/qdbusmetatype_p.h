@@ -37,7 +37,7 @@ QMetaType signature(); // QDBusSignature
 QMetaType error(); // QDBusError
 QMetaType unixfd(); // QDBusUnixFileDescriptor
 
-void init();
+Q_DBUS_EXPORT void init();
 }; // namespace QDBusMetaTypeId
 
 inline QMetaType QDBusMetaTypeId::message()

@@ -9,7 +9,7 @@
 #include <QtDBus/private/dbus_minimal_p.h>
 
 #include "test1.h"
-
+#include "test2.h"
 
 // in qdbusxmlgenerator.cpp
 QT_BEGIN_NAMESPACE
@@ -47,6 +47,7 @@ private:
 void tst_qdbuscpp2xml::initTestCase()
 {
     m_tests.insert("test1", new Test1);
+    m_tests.insert("test2", new Test2);
 }
 
 void tst_qdbuscpp2xml::cleanupTestCase()
@@ -61,14 +62,16 @@ void tst_qdbuscpp2xml::qdbuscpp2xml_data()
 
     QBitArray doneFlags(int(QDBusConnection::ExportAllContents) + 1);
     for (int flag = 0x10; flag < QDBusConnection::ExportScriptableContents; flag += 0x10) {
-        QTest::newRow("xmlgenerator-" + QByteArray::number(flag)) << "test1" << flag;
-        doneFlags.setBit(flag);
-        for (int mask = QDBusConnection::ExportAllSlots; mask <= QDBusConnection::ExportAllContents; mask += 0x110) {
-            int flags = flag | mask;
-            if (doneFlags.testBit(flags))
-                continue;
-            QTest::newRow("xmlgenerator-" + QByteArray::number(flags)) << "test1" << flags;
-            doneFlags.setBit(flags);
+        for (const auto &testFile : m_tests.keys()) {
+            QTest::newRow("xmlgenerator-" + QByteArray::number(flag) + "-" + qUtf8Printable(testFile)) << testFile << flag;
+            doneFlags.setBit(flag);
+            for (int mask = QDBusConnection::ExportAllSlots; mask <= QDBusConnection::ExportAllContents; mask += 0x110) {
+                int flags = flag | mask;
+                if (doneFlags.testBit(flags))
+                    continue;
+                QTest::newRow("xmlgenerator-" + QByteArray::number(flags) + "-" + qUtf8Printable(testFile)) << testFile << flags;
+                doneFlags.setBit(flags);
+            }
         }
     }
 }

@@ -15,6 +15,7 @@
 
 #include <qdbusconnection.h>    // for the Export* flags
 #include <private/qdbusconnection_p.h>    // for the qDBusCheckAsyncTag
+#include <private/qdbusmetatype_p.h> // for QDBusMetaTypeId::init()
 
 using namespace Qt::StringLiterals;
 
@@ -430,6 +431,8 @@ int main(int argc, char **argv)
     for (int n = 1; n < argc; ++n)
         args.append(QString::fromLocal8Bit(argv[n]));
     parseCmdLine(args);
+
+    QDBusMetaTypeId::init();
 
     QList<ClassDef> classes;
 

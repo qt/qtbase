@@ -14,6 +14,7 @@ endif()
 qt_internal_add_test(tst_qdbuscpp2xml
     SOURCES
         test1.h
+        test2.h
         tst_qdbuscpp2xml.cpp
     LIBRARIES
         Qt::DBusPrivate
@@ -22,6 +23,7 @@ qt_internal_add_test(tst_qdbuscpp2xml
 # Resources:
 set(qdbuscpp2xml_resource_files
     "test1.h"
+    "test2.h"
 )
 
 qt_internal_add_resource(tst_qdbuscpp2xml "qdbuscpp2xml"
