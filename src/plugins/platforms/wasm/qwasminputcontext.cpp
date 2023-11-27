@@ -59,12 +59,6 @@ QWasmInputContext::QWasmInputContext()
                            emscripten::val(quintptr(reinterpret_cast<void *>(this))));
         emscripten::val body = document["body"];
         body.call<void>("appendChild", m_inputElement);
-
-        // Enter is sent through target window, let's just handle this here
-        emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, (void *)this, 1,
-                                        &inputMethodKeyboardCallback);
-        emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, (void *)this, 1,
-                                      &inputMethodKeyboardCallback);
     }
 
     if (platform() == Platform::MacOS || platform() == Platform::iOS) {
@@ -163,19 +157,5 @@ void QWasmInputContext::inputStringChanged(QString &inputString, int eventType, 
         eventType == EMSCRIPTEN_EVENT_KEYDOWN ? inputString : QStringLiteral(""));
 }
 
-int QWasmInputContext::inputMethodKeyboardCallback(int eventType,
-                                               const EmscriptenKeyboardEvent *keyEvent,
-                                               void *userData)
-{
-    // we get Enter, Backspace and function keys via emscripten on target window
-    QString strKey(keyEvent->key);
-    if (strKey == "Unidentified" || strKey == "Process")
-        return false;
-
-    QWasmInputContext *wasmInput = reinterpret_cast<QWasmInputContext*>(userData);
-    wasmInput->inputStringChanged(strKey, eventType, wasmInput);
-
-    return true;
-}
 
 QT_END_NAMESPACE
