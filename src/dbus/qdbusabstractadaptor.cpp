@@ -104,6 +104,9 @@ void QDBusAbstractAdaptorPrivate::saveIntrospectionXml(QDBusAbstractAdaptor *ada
 QDBusAbstractAdaptor::QDBusAbstractAdaptor(QObject* obj)
     : QObject(*new QDBusAbstractAdaptorPrivate, obj)
 {
+
+    Q_ASSERT_X(obj, Q_FUNC_INFO, "Expected non-null parent");
+
     QDBusAdaptorConnector *connector = qDBusCreateAdaptorConnector(obj);
 
     connector->waitingForPolish = true;
