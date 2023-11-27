@@ -65,8 +65,6 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 
 qt_internal_create_toolchain_file()
 
-qt_internal_create_wrapper_scripts()
-
 ## Library to hold global features:
 ## These features are stored and accessed via Qt::GlobalConfig, but the
 ## files always lived in Qt::Core, so we keep it that way
@@ -119,6 +117,9 @@ qt_generate_global_config_pri_file()
 qt_generate_global_module_pri_file()
 qt_generate_global_device_pri_file()
 qt_generate_qmake_and_qtpaths_wrapper_for_target()
+
+# Depends on the global features being evaluated.
+qt_internal_create_wrapper_scripts()
 
 add_library(Qt::GlobalConfig ALIAS GlobalConfig)
 
