@@ -82,7 +82,7 @@ public:
     void clampMargins(const QMarginsF &margins);
 
     QMarginsF margins(QPageLayout::Unit units) const;
-    QMargins marginsPoints() const;
+    QMarginsF marginsPoints() const;
     QMargins marginsPixels(int resolution) const;
 
     void setDefaultMargins(const QMarginsF &minMargins);
@@ -164,14 +164,14 @@ QMarginsF QPageLayoutPrivate::margins(QPageLayout::Unit units) const
     return qt_convertMargins(m_margins, m_units, units);
 }
 
-QMargins QPageLayoutPrivate::marginsPoints() const
+QMarginsF QPageLayoutPrivate::marginsPoints() const
 {
-    return qt_convertMargins(m_margins, m_units, QPageLayout::Point).toMargins();
+    return qt_convertMargins(m_margins, m_units, QPageLayout::Point);
 }
 
 QMargins QPageLayoutPrivate::marginsPixels(int resolution) const
 {
-    return marginsPoints() / qt_pixelMultiplier(resolution);
+    return QMarginsF(marginsPoints() / qt_pixelMultiplier(resolution)).toMargins();
 }
 
 void QPageLayoutPrivate::setDefaultMargins(const QMarginsF &minMargins)
@@ -699,7 +699,7 @@ QMarginsF QPageLayout::margins(Unit units) const
 
 QMargins QPageLayout::marginsPoints() const
 {
-    return d->marginsPoints();
+    return d->marginsPoints().toMargins();
 }
 
 /*!
@@ -866,7 +866,7 @@ QRect QPageLayout::paintRectPoints() const
     if (!isValid())
         return QRect();
     return d->m_mode == FullPageMode ? d->fullRectPoints()
-                                                  : d->fullRectPoints() - d->marginsPoints();
+                                                  : d->fullRectPoints() - d->marginsPoints().toMargins();
 }
 
 /*!
