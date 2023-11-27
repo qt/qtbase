@@ -195,8 +195,11 @@ function(qt_internal_android_test_arguments target timeout out_test_runner out_t
     endif()
 
     set(target_binary_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>")
-    set(apk_dir "${target_binary_dir}/android-build")
-
+    if(QT_USE_TARGET_ANDROID_BUILD_DIR)
+        set(apk_dir "${target_binary_dir}/android-build-${target}")
+    else()
+        set(apk_dir "${target_binary_dir}/android-build")
+    endif()
     set(${out_test_arguments}
         "--path" "${apk_dir}"
         "--adb" "${ANDROID_SDK_ROOT}/platform-tools/adb"
