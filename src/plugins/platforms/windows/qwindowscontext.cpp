@@ -1118,7 +1118,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             d->m_creationContext->applyToMinMaxInfo(reinterpret_cast<MINMAXINFO *>(lParam));
             return true;
         case QtWindows::ResizeEvent:
-            d->m_creationContext->obtainedSize = QSize(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            d->m_creationContext->obtainedSize = QSize(LOWORD(lParam), HIWORD(lParam));
             return true;
         case QtWindows::MoveEvent:
             d->m_creationContext->obtainedPos = QPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
