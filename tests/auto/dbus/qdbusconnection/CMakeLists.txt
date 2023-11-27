@@ -16,4 +16,6 @@ qt_internal_add_test(tst_qdbusconnection
         tst_qdbusconnection.cpp tst_qdbusconnection.h
     LIBRARIES
         Qt::DBus
+    TESTDATA
+        tst_qdbusconnection.conf
 )

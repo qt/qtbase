@@ -250,6 +250,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::doConnectToBus(const QString &ad
     if (c) {
         // register on the bus
         if (!q_dbus_bus_register(c, error)) {
+            q_dbus_connection_close(c);
             q_dbus_connection_unref(c);
             c = nullptr;
         }
