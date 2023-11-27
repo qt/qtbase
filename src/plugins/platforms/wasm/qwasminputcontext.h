@@ -30,6 +30,7 @@ public:
 
     void focusWindowChanged(QWindow *focusWindow);
     void inputStringChanged(QString &, int eventType, QWasmInputContext *context);
+    emscripten::val m_inputElement = emscripten::val::null();
 
 private:
     emscripten::val inputHandlerElementForFocusedWindow();
@@ -37,11 +38,8 @@ private:
     bool m_inputPanelVisible = false;
 
     QPointer<QWindow> m_focusWindow;
-    emscripten::val m_inputElement = emscripten::val::null();
     std::unique_ptr<qstdweb::EventCallback> m_blurEventHandler;
     std::unique_ptr<qstdweb::EventCallback> m_inputEventHandler;
-    static int inputMethodKeyboardCallback(int eventType,
-                                       const EmscriptenKeyboardEvent *keyEvent, void *userData);
     bool inputPanelIsOpen = false;
 };
 

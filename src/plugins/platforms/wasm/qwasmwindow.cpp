@@ -127,9 +127,20 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
         event.call<void>("stopPropagation");
     });
 
+   emscripten::val keyFocusWindow;
+    if (QWasmIntegration::get()->inputContext()) {
+        QWasmInputContext *wasmContext =
+            static_cast<QWasmInputContext *>(QWasmIntegration::get()->inputContext());
+        // if there is an touchscreen input context,
+        // use that window for key input
+        keyFocusWindow = wasmContext->m_inputElement;
+    } else {
+        keyFocusWindow = m_qtWindow;
+    }
+
     m_keyDownCallback =
-            std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keydown", keyCallback);
-    m_keyUpCallback = std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keyup", keyCallback);
+            std::make_unique<qstdweb::EventCallback>(keyFocusWindow, "keydown", keyCallback);
+    m_keyUpCallback = std::make_unique<qstdweb::EventCallback>(keyFocusWindow, "keyup", keyCallback);
 
     setParent(parent());
 }
