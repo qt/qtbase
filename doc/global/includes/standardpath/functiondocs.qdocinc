@@ -12,7 +12,7 @@
 //! [findExecutable]
 
     Finds the executable named \a executableName in the specified
-    \a paths, or the system paths if paths is empty.
+    \a paths, or the system paths if \a paths is empty.
 
     On most operating systems the system path is determined by the
     \c PATH environment variable. The directories where to search for
@@ -21,8 +21,8 @@
     twice, once with paths set and once with paths empty.
     Symlinks are not resolved in order to preserve behavior for the
     case of executables whose behavior depends on the name they are
-    invoked with
-    .
+    invoked with.
+
     \note On Windows, the usual executable extensions (from the PATHEXT
     environment variable) are automatically appended. For example, the
     findExecutable("foo") call finds \c foo.exe or \c foo.bat if
@@ -31,8 +31,8 @@
     Returns the absolute file path to the executable, or an empty
     string if not found.
 
-    If the given \n executableName is an absolute path pointing to
-    an executable its clean path is returned.
+    If the given \a executableName is an absolute path pointing to
+    an executable, its clean path is returned.
 
 //! [findExecutable]
 
