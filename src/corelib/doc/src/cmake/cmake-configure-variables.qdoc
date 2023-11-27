@@ -340,6 +340,27 @@ The mentioned variables are used internally by \l{androiddeployqt}.
 */
 
 /*!
+\page cmake-variable-qt-android-deployment-type.html
+\ingroup cmake-variables-qtcore
+
+\title QT_USE_TARGET_ANDROID_BUILD_DIR
+\target cmake-variable-QT_USE_TARGET_ANDROID_BUILD_DIR
+
+\summary {Enables the use of per-target Android build directories.}
+
+\cmakevariablesince 6.7
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+The variable appends the target-specific suffix to the android-build directory.
+The variable only takes an effect when it's set in \c CACHE. The variable is
+only supported by Qt Creator starting from version 13.
+If a single \c CMakeLists.txt contains more than one Android executable and
+this option is not set, you will see a warning. To disable the warning, set
+\c QT_SKIP_ANDROID_BUILD_DIR_CHECK to \c TRUE.
+*/
+
+/*!
 \page cmake-variable-qt-no-collect-build-tree-apk-deps.html
 \ingroup cmake-variables-qtcore
 
