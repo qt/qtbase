@@ -1716,7 +1716,7 @@ bool SyncScanner::generateQtCamelCaseFileIfContentChanged(const std::string &out
 
     std::string buffer = "#include \"";
     buffer += aliasedFilePath;
-    buffer += "\"\n";
+    buffer += "\" // IWYU pragma: export\n";
 
     return writeIfDifferent(outputFilePath, buffer);
 }
@@ -1743,7 +1743,7 @@ bool SyncScanner::generateAliasedHeaderFileIfTimestampChanged(const std::string 
         std::cerr << "Unable to write header file alias: " << outputFilePath << std::endl;
         return false;
     }
-    ofs << "#include \"" << aliasedFilePath << "\"\n";
+    ofs << "#include \"" << aliasedFilePath << "\" // IWYU pragma: export\n";
     ofs.close();
     return true;
 }
