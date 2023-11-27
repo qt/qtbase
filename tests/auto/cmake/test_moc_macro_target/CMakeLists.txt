@@ -14,7 +14,14 @@ qt_generate_moc(main_gen_test.cpp
   "${CMAKE_CURRENT_BINARY_DIR}/main_gen_test.moc"
   TARGET QtGenerateMacroTest
 )
+list(APPEND CMAKE_AUTOMOC_MACRO_NAMES MySpecialMacro)
 add_executable(QtGenerateMacroTest main_gen_test.cpp "${CMAKE_CURRENT_BINARY_DIR}/main_gen_test.moc")
+get_target_property(current_macros QtGenerateMacroTest AUTOMOC_MACRO_NAMES)
+
+if(NOT "${CMAKE_AUTOMOC_MACRO_NAMES}" STREQUAL "${current_macros}")
+    message(FATAL_ERROR "Expected ${CMAKE_AUTOMOC_MACRO_NAMES} but received ${current_macros}")
+endif()
+
 target_include_directories(QtGenerateMacroTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/interface")
 target_link_libraries(QtGenerateMacroTest PRIVATE Qt6::Core)
 
