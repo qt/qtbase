@@ -197,6 +197,10 @@ void tst_QByteArrayView::constExpr() const
         static_assert(bv.isEmpty());
         static_assert(bv.data() == nullptr);
 
+        constexpr std::string_view sv = bv;
+        static_assert(sv.size() == 0);
+        static_assert(sv.data() == nullptr);
+
         constexpr QByteArrayView bv2(bv.data(), bv.data() + bv.size());
         static_assert(bv2.isNull());
         static_assert(bv2.empty());
@@ -208,6 +212,10 @@ void tst_QByteArrayView::constExpr() const
         static_assert(bv.empty());
         static_assert(bv.isEmpty());
         static_assert(bv.data() != nullptr);
+
+        constexpr std::string_view sv = bv;
+        static_assert(sv.size() == bv.size());
+        static_assert(sv.data() == bv.data());
 
         constexpr QByteArrayView bv2(bv.data(), bv.data() + bv.size());
         static_assert(!bv2.isNull());
@@ -241,6 +249,14 @@ void tst_QByteArrayView::constExpr() const
         static_assert(bv.rbegin()  != bv.rend());
         static_assert(bv.crbegin() != bv.crend());
 
+        constexpr std::string_view sv = bv;
+        static_assert(sv.size() == bv.size());
+        static_assert(sv.data() == bv.data());
+#ifdef AMBIGUOUS_CALL // QTBUG-108805
+        static_assert(sv == bv);
+        static_assert(bv == sv);
+#endif
+
         constexpr QByteArrayView bv2(bv.data(), bv.data() + bv.size());
         static_assert(!bv2.isNull());
         static_assert(!bv2.empty());
@@ -266,6 +282,13 @@ void tst_QByteArrayView::constExpr() const
         static_assert(bv.at(4)   == 'o');
         static_assert(bv.back()  == 'o');
         static_assert(bv.last()  == 'o');
+
+        constexpr std::string_view sv = bv;
+        static_assert(bv.size() == sv.size());
+#ifdef AMBIGUOUS_CALL // QTBUG-108805
+        static_assert(bv == sv);
+        static_assert(sv == bv);
+#endif
     }
     {
         static constexpr char hello[] = { 'H', 'e', 'l', 'l', 'o' };
@@ -283,6 +306,13 @@ void tst_QByteArrayView::constExpr() const
         static_assert(bv.at(4)   == 'o');
         static_assert(bv.back()  == 'o');
         static_assert(bv.last()  == 'o');
+
+        constexpr std::string_view sv = bv;
+        static_assert(bv.size() == sv.size());
+#ifdef AMBIGUOUS_CALL // QTBUG-108805
+        static_assert(bv == sv);
+        static_assert(sv == bv);
+#endif
     }
 #endif
     {
@@ -291,6 +321,10 @@ void tst_QByteArrayView::constExpr() const
         static_assert(bv.isNull());
         static_assert(bv.isEmpty());
         static_assert(bv.size() == 0);
+
+        constexpr std::string_view sv = bv;
+        static_assert(sv.size() == 0);
+        static_assert(sv.data() == nullptr);
     }
 }
 
