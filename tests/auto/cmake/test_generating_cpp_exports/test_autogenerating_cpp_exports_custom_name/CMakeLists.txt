@@ -3,7 +3,6 @@
 
 qt_internal_add_module(TestAutogeneratingCppExportsCustomName
     NO_UNITY_BUILD
-    GENERATE_CPP_EXPORTS
     CPP_EXPORT_HEADER_BASE_NAME
         "customname_exports"
     SOURCES

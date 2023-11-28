@@ -37,7 +37,6 @@ qt_internal_add_module(Concurrent
         Qt::CorePrivate
     PRECOMPILED_HEADER
         "../corelib/global/qt_pch.h"
-    GENERATE_CPP_EXPORTS
 )
 
 ## Scopes:

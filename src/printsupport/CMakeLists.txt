@@ -39,7 +39,6 @@ qt_internal_add_module(PrintSupport
         Qt::CorePrivate
         Qt::GuiPrivate
         Qt::WidgetsPrivate
-    GENERATE_CPP_EXPORTS
     QPA_HEADER_FILTERS
         "(^|/)qplatform.+\\.h$"
 )

@@ -371,6 +371,7 @@ function(qt_internal_add_3rdparty_header_module target)
         INTERNAL_MODULE
         HEADER_MODULE
         NO_CONFIG_HEADER_FILE
+        NO_GENERATE_CPP_EXPORTS
         EXTERNAL_HEADERS ${arg_EXTERNAL_HEADERS}
         EXTERNAL_HEADERS_DIR ${arg_EXTERNAL_HEADERS_DIR}
     )

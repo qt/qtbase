@@ -16,7 +16,6 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_ADDITIONAL_TARGET_INFO
         NO_GENERATE_METATYPES
         NO_HEADERSCLEAN_CHECK
-        GENERATE_CPP_EXPORTS # deprecated
         NO_GENERATE_CPP_EXPORTS
         NO_UNITY_BUILD
     )
@@ -423,8 +422,7 @@ function(qt_internal_add_module target)
         # We should not generate export headers if module is defined as pure STATIC.
         # Static libraries don't need to export their symbols, and corner cases when sources are
         # also used in shared libraries, should be handled manually.
-        if((NOT arg_NO_GENERATE_CPP_EXPORTS OR arg_GENERATE_CPP_EXPORTS) AND NOT arg_STATIC
-            AND NOT arg_HEADER_MODULE)
+        if(NOT arg_NO_GENERATE_CPP_EXPORTS AND NOT arg_STATIC AND NOT arg_HEADER_MODULE)
             if(arg_CPP_EXPORT_HEADER_BASE_NAME)
                 set(cpp_export_header_base_name
                     "CPP_EXPORT_HEADER_BASE_NAME;${arg_CPP_EXPORT_HEADER_BASE_NAME}"

@@ -290,7 +290,6 @@ qt_internal_add_module(Gui
         painting/qdrawhelper.cpp
     PRECOMPILED_HEADER
         "kernel/qt_gui_pch.h"
-    GENERATE_CPP_EXPORTS
     QPA_HEADER_FILTERS
         "(^|/)qplatform.+\\.h$|(^|/)qwindowsystem.+\\.h$"
     RHI_HEADER_FILTERS
