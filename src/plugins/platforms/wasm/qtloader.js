@@ -121,15 +121,13 @@ async function qtLoad(config)
         }
     }
 
-    const originalPreRun = config.preRun;
-    config.preRun = instance =>
-    {
-        originalPreRun?.();
-
+    const qtPreRun = (instance) => {
+        // Copy qt.environment to instance.ENV
         throwIfEnvUsedButNotExported(instance, config);
         for (const [name, value] of Object.entries(config.qt.environment ?? {}))
             instance.ENV[name] = value;
 
+        // Copy self.preloadData to MEMFS
         const makeDirs = (FS, filePath) => {
             const parts = filePath.split("/");
             let path = "/";
@@ -147,13 +145,16 @@ async function qtLoad(config)
                 }
             }
         }
-
         throwIfFsUsedButNotExported(instance, config);
         for ({destination, data} of self.preloadData) {
             makeDirs(instance.FS, destination);
             instance.FS.writeFile(destination, new Uint8Array(data));
         }
-    };
+    }
+
+    if (!config.preRun)
+        config.preRun = [];
+    config.preRun.push(qtPreRun);
 
     config.onRuntimeInitialized = () => config.qt.onLoaded?.();
 
