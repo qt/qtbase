@@ -35,7 +35,7 @@ private:
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(onClipboardDataChanged)
 
     QMimeData *data = nullptr;
-    QtJniTypes::QtClipboardManager m_clipboardManager;
+    QtJniTypes::QtClipboardManager m_clipboardManager = nullptr;
 };
 
 QT_END_NAMESPACE
