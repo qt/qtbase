@@ -2481,6 +2481,10 @@ bool QFont::isFeatureSet(Tag tag) const
 */
 void QFont::clearFeatures()
 {
+    if (d->features.isEmpty())
+        return;
+
+    d->detachButKeepEngineData(this);
     d->features.clear();
 }
 
