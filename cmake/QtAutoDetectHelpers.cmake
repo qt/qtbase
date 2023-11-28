@@ -282,38 +282,6 @@ function(qt_auto_detect_cyclic_toolchain)
     endif()
 endfunction()
 
-function(qt_internal_get_darwin_sdk_version out_var)
-    if(APPLE)
-        if(CMAKE_SYSTEM_NAME STREQUAL iOS)
-            set(sdk_name "iphoneos")
-        else()
-            # Default to macOS
-            set(sdk_name "macosx")
-        endif()
-        set(xcrun_version_arg "--show-sdk-version")
-        execute_process(COMMAND /usr/bin/xcrun --sdk ${sdk_name} ${xcrun_version_arg}
-                        OUTPUT_VARIABLE sdk_version
-                        ERROR_VARIABLE xcrun_error)
-        if(NOT sdk_version)
-            message(FATAL_ERROR
-                    "Can't determine darwin ${sdk_name} SDK version. Error: ${xcrun_error}")
-        endif()
-        string(STRIP "${sdk_version}" sdk_version)
-        set(${out_var} "${sdk_version}" PARENT_SCOPE)
-    endif()
-endfunction()
-
-function(qt_internal_get_xcode_version out_var)
-    if(APPLE)
-        execute_process(COMMAND /usr/bin/xcrun xcodebuild -version
-                        OUTPUT_VARIABLE xcode_version
-                        ERROR_VARIABLE xcrun_error)
-        string(REPLACE "\n" " " xcode_version "${xcode_version}")
-        string(STRIP "${xcode_version}" xcode_version)
-        set(${out_var} "${xcode_version}" PARENT_SCOPE)
-    endif()
-endfunction()
-
 function(qt_auto_detect_darwin)
     if(APPLE)
         # If no CMAKE_OSX_DEPLOYMENT_TARGET is provided, default to a value that Qt defines.
@@ -334,11 +302,11 @@ function(qt_auto_detect_darwin)
             endif()
         endif()
 
-        qt_internal_get_darwin_sdk_version(darwin_sdk_version)
-        set(QT_MAC_SDK_VERSION "${darwin_sdk_version}" CACHE STRING "Darwin SDK version.")
+        _qt_internal_get_apple_sdk_version(apple_sdk_version)
+        set(QT_MAC_SDK_VERSION "${apple_sdk_version}" CACHE STRING "Darwin SDK version.")
 
-        qt_internal_get_xcode_version(xcode_version)
-        set(QT_MAC_XCODE_VERSION "${xcode_version}" CACHE STRING "Xcode version.")
+        _qt_internal_get_xcode_version_raw(xcode_version_raw)
+        set(QT_MAC_XCODE_VERSION "${xcode_version_raw}" CACHE STRING "Xcode version.")
 
         list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
         if(NOT CMAKE_SYSTEM_NAME STREQUAL iOS AND arch_count GREATER 0)
@@ -497,6 +465,7 @@ macro(qt_internal_setup_autodetect)
     # This needs to be here because QtAutoDetect loads before any other modules
     option(QT_USE_VCPKG "Enable the use of vcpkg" ON)
 
+    include("${CMAKE_CURRENT_LIST_DIR}/QtPublicAppleHelpers.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/QtPublicWasmToolchainHelpers.cmake")
 
     # Let CMake load our custom platform modules.
