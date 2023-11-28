@@ -1308,11 +1308,9 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 
             painter->setPen(highContrastTheme == true ? vopt->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
             if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid) {
-            }
-            else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
+            } else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
                 painter->drawLine(option->rect.topRight(), option->rect.bottomRight());
-            }
-            else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
+            } else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
                 painter->drawLine(option->rect.topLeft(), option->rect.bottomLeft());
             } else {
                 painter->drawLine(option->rect.topRight(), option->rect.bottomRight());
@@ -1321,21 +1319,22 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             painter->setPen(QPen(option->palette.buttonText().color()));
 
             bool isTreeView = widget && widget->inherits("QTreeView");
+
             if ((vopt->state & State_Selected || vopt->state & State_MouseOver) && !(isTreeView && vopt->state & State_MouseOver) && vopt->showDecorationSelected) {
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                painter->setPen(Qt::NoPen);
+            } else {
+                painter->setBrush(vopt->backgroundBrush);
+            }
+            painter->setPen(Qt::NoPen);
 
-                if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid) {
-                    painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(2,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
-                }
-                else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
-                    painter->drawRoundedRect(rect.marginsRemoved(QMargins(2,2,0,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
-                }
-                else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
-                    painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(0,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
-                } else {
-                    painter->drawRect(vopt->rect.marginsRemoved(QMargins(0,2,0,2)));
-                }
+            if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid) {
+                painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(2,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
+            } else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
+                painter->drawRoundedRect(rect.marginsRemoved(QMargins(2,2,0,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
+            } else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
+                painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(0,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
+            } else {
+                painter->drawRect(vopt->rect.marginsRemoved(QMargins(0,2,0,2)));
             }
 
             // draw the check mark
@@ -1368,7 +1367,9 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
 
             painter->setPen(QPen(option->palette.buttonText().color()));
-            d->viewItemDrawText(painter, vopt, textRect);
+            const QAbstractItemView* view = qobject_cast<const QAbstractItemView*>(widget);
+            if (!view->isPersistentEditorOpen(vopt->index))
+                d->viewItemDrawText(painter, vopt, textRect);
             if (vopt->state & State_Selected && (vopt->viewItemPosition == QStyleOptionViewItem::Beginning || vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid)) {
                 if (widget && widget->inherits("QListView") && qobject_cast<const QListView*>(widget)->viewMode() != QListView::IconMode) {
                     painter->setPen(QPen(vopt->palette.accent().color()));
