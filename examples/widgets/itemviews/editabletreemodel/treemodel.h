@@ -52,7 +52,7 @@ public:
                     const QModelIndex &parent = {}) override;
 
 private:
-    void setupModelData(const QStringList &lines);
+    void setupModelData(const QList<QStringView> &lines);
     TreeItem *getItem(const QModelIndex &index) const;
 
     std::unique_ptr<TreeItem> rootItem;
