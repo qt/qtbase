@@ -46,6 +46,7 @@ qt_internal_add_module(EglFSDeviceIntegrationPrivate
         EGL::EGL
     HEADER_SYNC_SOURCE_DIRECTORY
         "${CMAKE_CURRENT_SOURCE_DIR}/api"
+    NO_GENERATE_CPP_EXPORTS
 )
 
 ## Scopes:

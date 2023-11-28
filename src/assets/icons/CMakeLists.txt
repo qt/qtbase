@@ -5,6 +5,7 @@ qt_internal_add_module(ExampleIconsPrivate
     CONFIG_MODULE_NAME example_icons
     STATIC
     INTERNAL_MODULE
+    NO_GENERATE_CPP_EXPORTS
 )
 
 set(icons_resource_files

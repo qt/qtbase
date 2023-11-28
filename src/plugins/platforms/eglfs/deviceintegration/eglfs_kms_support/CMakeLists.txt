@@ -24,4 +24,5 @@ qt_internal_add_module(EglFsKmsSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
         Qt::KmsSupportPrivate
+    NO_GENERATE_CPP_EXPORTS
 )

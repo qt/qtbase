@@ -19,4 +19,5 @@ qt_internal_add_module(KmsSupportPrivate
         Libdrm::Libdrm
         Qt::CorePrivate
         Qt::GuiPrivate
+    NO_GENERATE_CPP_EXPORTS
 )

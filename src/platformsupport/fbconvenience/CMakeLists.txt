@@ -22,4 +22,5 @@ qt_internal_add_module(FbSupportPrivate
         Qt::GuiPrivate
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
+    NO_GENERATE_CPP_EXPORTS
 )
