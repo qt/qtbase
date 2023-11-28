@@ -803,7 +803,7 @@ qt_feature("timezone" PUBLIC
     SECTION "Utilities"
     LABEL "QTimeZone"
     PURPOSE "Provides support for time-zone handling."
-    CONDITION NOT WASM
+    CONDITION NOT WASM AND NOT VXWORKS
 )
 qt_feature("datetimeparser" PRIVATE
     SECTION "Utilities"

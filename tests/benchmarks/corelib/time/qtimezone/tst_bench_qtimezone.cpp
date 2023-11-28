@@ -15,6 +15,7 @@ class tst_QTimeZone : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+#if QT_CONFIG(timezone)
     void isTimeZoneIdAvailable();
     void systemTimeZone();
     void zoneByName_data();
@@ -25,6 +26,7 @@ private Q_SLOTS:
     void transitionsForward();
     void transitionsReverse_data() { transitionList_data(); }
     void transitionsReverse();
+#endif
 };
 
 static QList<QByteArray> enoughZones()
@@ -52,7 +54,7 @@ static QList<QByteArray> enoughZones()
     result << QByteArray("Vulcan/ShiKahr"); // invalid: also worth testing
     return result;
 }
-
+#if QT_CONFIG(timezone)
 void tst_QTimeZone::isTimeZoneIdAvailable()
 {
     const QList<QByteArray> available = QTimeZone::availableTimeZoneIds();
@@ -68,7 +70,6 @@ void tst_QTimeZone::systemTimeZone()
         QTimeZone::systemTimeZone();
     }
 }
-
 void tst_QTimeZone::zoneByName_data()
 {
     QTest::addColumn<QByteArray>("name");
@@ -139,6 +140,7 @@ void tst_QTimeZone::transitionsReverse()
             tran = zone.previousTransition(tran.atUtc);
     }
 }
+#endif
 
 QTEST_MAIN(tst_QTimeZone)
 

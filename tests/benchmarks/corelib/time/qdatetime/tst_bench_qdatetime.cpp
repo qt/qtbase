@@ -13,7 +13,9 @@ class tst_QDateTime : public QObject
     Q_OBJECT
 
     static QList<QDateTime> daily(qint64 start, qint64 end);
+#if QT_CONFIG(timezone)
     static QList<QDateTime> norse(qint64 start, qint64 end);
+#endif
     void decade_data();
 
 private Q_SLOTS:
@@ -28,8 +30,10 @@ private Q_SLOTS:
     void timeZoneAbbreviation();
     void toMSecsSinceEpoch_data() { decade_data(); }
     void toMSecsSinceEpoch();
+#if QT_CONFIG(timezone) 
     void toMSecsSinceEpochTz_data() { decade_data(); }
     void toMSecsSinceEpochTz();
+#endif
     void setDate();
     void setTime();
 #if QT_DEPRECATED_SINCE(6, 9)
@@ -37,14 +41,18 @@ private Q_SLOTS:
     void setOffsetFromUtc();
 #endif
     void setMSecsSinceEpoch();
+#if QT_CONFIG(timezone)
     void setMSecsSinceEpochTz();
+#endif
     void toString();
     void toStringTextFormat();
     void toStringIsoFormat();
     void addDays();
+#if QT_CONFIG(timezone)
     void addDaysTz();
-    void addMSecs();
     void addMSecsTz();
+#endif
+    void addMSecs();
 #if QT_DEPRECATED_SINCE(6, 9)
     void toTimeSpec();
     void toOffsetFromUtc();
@@ -65,7 +73,9 @@ private Q_SLOTS:
     void fromStringIso();
     void fromMSecsSinceEpoch();
     void fromMSecsSinceEpochUtc();
+#if QT_CONFIG(timezone)
     void fromMSecsSinceEpochTz();
+#endif
 };
 
 using namespace QtPrivate::DateTimeConstants;
@@ -102,7 +112,7 @@ QList<QDateTime> tst_QDateTime::daily(qint64 start, qint64 end)
         list.append(QDateTime(QDate::fromJulianDay(jd).startOfDay()));
     return list;
 }
-
+#if QT_CONFIG(timezone)
 QList<QDateTime> tst_QDateTime::norse(qint64 start, qint64 end)
 {
     const QTimeZone cet("Europe/Oslo");
@@ -112,7 +122,7 @@ QList<QDateTime> tst_QDateTime::norse(qint64 start, qint64 end)
         list.append(QDateTime(QDate::fromJulianDay(jd).startOfDay(cet)));
     return list;
 }
-
+#endif
 void tst_QDateTime::create()
 {
     QFETCH(const qint64, startJd);
@@ -199,7 +209,7 @@ void tst_QDateTime::toMSecsSinceEpoch()
             test.toMSecsSinceEpoch();
     }
 }
-
+#if QT_CONFIG(timezone)
 void tst_QDateTime::toMSecsSinceEpochTz()
 {
     QFETCH(const qint64, startJd);
@@ -213,7 +223,7 @@ void tst_QDateTime::toMSecsSinceEpochTz()
     }
     Q_UNUSED(result);
 }
-
+#endif
 void tst_QDateTime::setDate()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
@@ -264,7 +274,7 @@ void tst_QDateTime::setMSecsSinceEpoch()
             test.setMSecsSinceEpoch(msecs);
     }
 }
-
+#if QT_CONFIG(timezone)
 void tst_QDateTime::setMSecsSinceEpochTz()
 {
     const qint64 msecs = qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970 + 180) * MSECS_PER_DAY;
@@ -274,7 +284,7 @@ void tst_QDateTime::setMSecsSinceEpochTz()
             test.setMSecsSinceEpoch(msecs);
     }
 }
-
+#endif
 void tst_QDateTime::toString()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2011);
@@ -312,7 +322,7 @@ void tst_QDateTime::addDays()
     }
     Q_UNUSED(next);
 }
-
+#if QT_CONFIG(timezone)
 void tst_QDateTime::addDaysTz()
 {
     const auto list = norse(JULIAN_DAY_2010, JULIAN_DAY_2020);
@@ -321,7 +331,7 @@ void tst_QDateTime::addDaysTz()
             QDateTime result = test.addDays(1);
     }
 }
-
+#endif
 void tst_QDateTime::addMSecs()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
@@ -332,7 +342,7 @@ void tst_QDateTime::addMSecs()
     }
     Q_UNUSED(next);
 }
-
+#if QT_CONFIG(timezone)
 void tst_QDateTime::addMSecsTz()
 {
     const auto list = norse(JULIAN_DAY_2010, JULIAN_DAY_2020);
@@ -341,7 +351,7 @@ void tst_QDateTime::addMSecsTz()
             QDateTime result = test.addMSecs(1);
     }
 }
-
+#endif
 #if QT_DEPRECATED_SINCE(6, 9)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
@@ -527,7 +537,7 @@ void tst_QDateTime::fromMSecsSinceEpochUtc()
             QDateTime::fromMSecsSinceEpoch(jd * MSECS_PER_DAY, QTimeZone::UTC);
     }
 }
-
+#if QT_CONFIG(timezone)
 void tst_QDateTime::fromMSecsSinceEpochTz()
 {
     const int start = JULIAN_DAY_2010 - JULIAN_DAY_1970;
@@ -538,6 +548,7 @@ void tst_QDateTime::fromMSecsSinceEpochTz()
             QDateTime test = QDateTime::fromMSecsSinceEpoch(jd * MSECS_PER_DAY, cet);
     }
 }
+#endif
 
 QTEST_MAIN(tst_QDateTime)
 
