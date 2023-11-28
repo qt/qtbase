@@ -11,7 +11,7 @@
 class TreeItem
 {
 public:
-    explicit TreeItem(const QVariantList &data, TreeItem *parent = nullptr);
+    explicit TreeItem(QVariantList data, TreeItem *parent = nullptr);
 
     TreeItem *child(int number);
     int childCount() const;

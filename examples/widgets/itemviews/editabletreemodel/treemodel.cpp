@@ -4,8 +4,6 @@
 #include "treemodel.h"
 #include "treeitem.h"
 
-#include <QtWidgets>
-
 using namespace Qt::StringLiterals;
 
 //! [0]
@@ -36,10 +34,10 @@ int TreeModel::columnCount(const QModelIndex &parent) const
 QVariant TreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
-        return QVariant();
+        return {};
 
     if (role != Qt::DisplayRole && role != Qt::EditRole)
-        return QVariant();
+        return {};
 
     TreeItem *item = getItem(index);
 
@@ -60,8 +58,7 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 TreeItem *TreeModel::getItem(const QModelIndex &index) const
 {
     if (index.isValid()) {
-        TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
-        if (item)
+        if (auto *item = static_cast<TreeItem*>(index.internalPointer()))
             return item;
     }
     return rootItem.get();
@@ -71,28 +68,25 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const
 QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
                                int role) const
 {
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return rootItem->data(section);
-
-    return QVariant();
+    return (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+        ? rootItem->data(section) : QVariant{};
 }
 
 //! [5]
 QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (parent.isValid() && parent.column() != 0)
-        return QModelIndex();
+        return {};
 //! [5]
 
 //! [6]
     TreeItem *parentItem = getItem(parent);
     if (!parentItem)
-        return QModelIndex();
+        return {};
 
-    TreeItem *childItem = parentItem->child(row);
-    if (childItem)
+    if (auto *childItem = parentItem->child(row))
         return createIndex(row, column, childItem);
-    return QModelIndex();
+    return {};
 }
 //! [6]
 
@@ -124,15 +118,13 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
 QModelIndex TreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return QModelIndex();
+        return {};
 
     TreeItem *childItem = getItem(index);
     TreeItem *parentItem = childItem ? childItem->parent() : nullptr;
 
-    if (parentItem == rootItem.get() || !parentItem)
-        return QModelIndex();
-
-    return createIndex(parentItem->row(), 0, parentItem);
+    return (parentItem != rootItem.get() && parentItem != nullptr)
+        ? createIndex(parentItem->row(), 0, parentItem) : QModelIndex{};
 }
 //! [7]
 
