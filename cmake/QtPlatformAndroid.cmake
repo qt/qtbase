@@ -185,7 +185,7 @@ define_property(TARGET
 )
 
 # Returns test execution arguments for Android targets
-function(qt_internal_android_test_arguments target out_test_runner out_test_arguments)
+function(qt_internal_android_test_arguments target timeout out_test_runner out_test_arguments)
     set(${out_test_runner} "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}/androidtestrunner" PARENT_SCOPE)
     set(deployment_tool "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}/androiddeployqt")
 
@@ -203,7 +203,7 @@ function(qt_internal_android_test_arguments target out_test_runner out_test_argu
         "--skip-install-root"
         "--make" "${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target}_make_apk"
         "--apk" "${apk_dir}/${target}.apk"
-        "--timeout" "-1"
+        "--timeout" "${timeout}"
         "--verbose"
         PARENT_SCOPE
     )

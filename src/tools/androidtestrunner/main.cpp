@@ -118,7 +118,7 @@ struct Options
     bool helpRequested = false;
     bool verbose = false;
     bool skipAddInstallRoot = false;
-    int timeoutSecs = 480; // 8 minutes
+    int timeoutSecs = 600; // 10 minutes
     QString buildPath;
     QString adbCommand{QStringLiteral("adb")};
     QString makeCommand;
@@ -270,7 +270,7 @@ static void printHelp()
                     "    --activity <acitvity>: The Activity to run. If missing the first\n"
                     "       activity from AndroidManifest.qml file will be used.\n"
                     "\n"
-                    "    --timeout <seconds>: Timeout to run the test. Default is 5 minutes.\n"
+                    "    --timeout <seconds>: Timeout to run the test. Default is 10 minutes.\n"
                     "\n"
                     "    --skip-install-root: Do not append INSTALL_ROOT=... to the make command.\n"
                     "\n"
