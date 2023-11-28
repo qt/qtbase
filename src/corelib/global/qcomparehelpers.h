@@ -353,23 +353,11 @@ constexpr bool IsFloatType_v<QtPrivate::NativeFloat16Type> = true;
 
 namespace Qt {
 
-template <typename T, typename U>
-using if_integral =
-        std::enable_if_t<QtPrivate::IsIntegralType_v<std::remove_reference_t<T>>
-                           && QtPrivate::IsIntegralType_v<std::remove_reference_t<U>>,
-                         bool>;
+template <typename T>
+using if_integral = std::enable_if_t<QtPrivate::IsIntegralType_v<T>, bool>;
 
-template <typename T, typename U>
-using if_floating_point =
-        std::enable_if_t<QtPrivate::IsFloatType_v<std::remove_reference_t<T>>
-                           && QtPrivate::IsFloatType_v<std::remove_reference_t<U>>,
-                         bool>;
-
-template <typename T, typename U>
-using if_integral_and_floating_point =
-        std::enable_if_t<QtPrivate::IsIntegralType_v<std::remove_reference_t<T>>
-                           && QtPrivate::IsFloatType_v<std::remove_reference_t<U>>,
-                         bool>;
+template <typename T>
+using if_floating_point = std::enable_if_t<QtPrivate::IsFloatType_v<T>, bool>;
 
 template <typename T, typename U>
 using if_compatible_pointers =
@@ -382,7 +370,8 @@ template <typename Enum>
 using if_enum = std::enable_if_t<std::is_enum_v<Enum>, bool>;
 
 template <typename LeftInt, typename RightInt,
-          if_integral<LeftInt, RightInt> = true>
+          if_integral<LeftInt> = true,
+          if_integral<RightInt> = true>
 constexpr Qt::strong_ordering compareThreeWay(LeftInt lhs, RightInt rhs) noexcept
 {
     static_assert(std::is_signed_v<LeftInt> == std::is_signed_v<RightInt>,
@@ -401,7 +390,8 @@ constexpr Qt::strong_ordering compareThreeWay(LeftInt lhs, RightInt rhs) noexcep
 }
 
 template <typename LeftFloat, typename RightFloat,
-          if_floating_point<LeftFloat, RightFloat> = true>
+          if_floating_point<LeftFloat> = true,
+          if_floating_point<RightFloat> = true>
 constexpr Qt::partial_ordering compareThreeWay(LeftFloat lhs, RightFloat rhs) noexcept
 {
 QT_WARNING_PUSH
@@ -422,14 +412,16 @@ QT_WARNING_POP
 }
 
 template <typename IntType, typename FloatType,
-          if_integral_and_floating_point<IntType, FloatType> = true>
+          if_integral<IntType> = true,
+          if_floating_point<FloatType> = true>
 constexpr Qt::partial_ordering compareThreeWay(IntType lhs, FloatType rhs) noexcept
 {
     return compareThreeWay(FloatType(lhs), rhs);
 }
 
 template <typename FloatType, typename IntType,
-          if_integral_and_floating_point<IntType, FloatType> = true>
+          if_floating_point<FloatType> = true,
+          if_integral<IntType> = true>
 constexpr Qt::partial_ordering compareThreeWay(FloatType lhs, IntType rhs) noexcept
 {
     return compareThreeWay(lhs, FloatType(rhs));

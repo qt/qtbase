@@ -460,7 +460,8 @@ void tst_QCompareHelpers::generatedClasses()
 }
 
 template <typename LeftType, typename RightType,
-          Qt::if_integral<LeftType, RightType> = true>
+          Qt::if_integral<LeftType> = true,
+          Qt::if_integral<RightType> = true>
 void testOrderForTypes()
 {
     LeftType l0{0};
@@ -506,7 +507,8 @@ void testOrderForTypes()
 }
 
 template <typename LeftType, typename RightType,
-          Qt::if_floating_point<LeftType, RightType> = true>
+          Qt::if_floating_point<LeftType> = true,
+          Qt::if_floating_point<RightType> = true>
 void testOrderForTypes()
 {
     LeftType lNeg{-1.0};
@@ -575,7 +577,8 @@ void testOrderForTypes()
 }
 
 template <typename IntType, typename FloatType,
-          Qt::if_integral_and_floating_point<IntType, FloatType> = true>
+          Qt::if_integral<IntType> = true,
+          Qt::if_floating_point<FloatType> = true>
 void testOrderForTypes()
 {
     IntType l0{0};
