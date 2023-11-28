@@ -3,7 +3,6 @@
 
 qt_internal_add_module(TestAutogeneratingCppExports
     NO_UNITY_BUILD
-    GENERATE_CPP_EXPORTS
     SOURCES
         module_api.h
         module_api.cpp

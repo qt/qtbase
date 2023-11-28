@@ -336,7 +336,6 @@ qt_internal_add_module(Core
         WrapZLIB::WrapZLIB
     PRECOMPILED_HEADER
         "global/qt_pch.h"
-    GENERATE_CPP_EXPORTS
     PUBLIC_LIBRARIES
         Qt::Platform
     EXTRA_CMAKE_FILES

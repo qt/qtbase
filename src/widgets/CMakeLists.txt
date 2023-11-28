@@ -71,7 +71,6 @@ qt_internal_add_module(Widgets
         "kernel/qt_widgets_pch.h"
     NO_PCH_SOURCES
         compat/removed_api.cpp
-    GENERATE_CPP_EXPORTS
 )
 
 qt_internal_extend_target(Widgets CONDITION APPLE

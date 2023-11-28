@@ -54,7 +54,6 @@ qt_internal_add_module(DBus
         Qt::Core
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
-    GENERATE_CPP_EXPORTS
 )
 
 # This file is included by qdbusargument.cpp
