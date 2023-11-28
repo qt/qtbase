@@ -80,9 +80,9 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 
     QWasmClipboard::installEventHandlers(m_canvas);
 
-    // set inputmode to none to stop mobile keyboard opening
+    // set inputMode to none to stop mobile keyboard opening
     // when user clicks anywhere on the canvas.
-    m_canvas.set("inputmode", std::string("none"));
+    m_canvas.set("inputMode", std::string("none"));
 
     // Hide the canvas from screen readers.
     m_canvas.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
@@ -362,6 +362,8 @@ void QWasmWindow::raise()
 {
     bringToTop();
     invalidate();
+    if (QWasmIntegration::get()->inputContext())
+        m_canvas.call<void>("focus");
 }
 
 void QWasmWindow::lower()
