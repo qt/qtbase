@@ -17,7 +17,7 @@ TreeModel::TreeModel(const QStringList &headers, const QString &data, QObject *p
         rootData << header;
 
     rootItem = std::make_unique<TreeItem>(rootData);
-    setupModelData(data.split('\n'_L1));
+    setupModelData(QStringView{data}.split(u'\n'));
 }
 //! [0]
 
@@ -201,55 +201,46 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
     return result;
 }
 
-void TreeModel::setupModelData(const QStringList &lines)
+void TreeModel::setupModelData(const QList<QStringView> &lines)
 {
-    QList<TreeItem *> parents;
-    QList<int> indentations;
-    parents << rootItem.get();
-    indentations << 0;
+    struct ParentIndentation
+    {
+        TreeItem *parent;
+        qsizetype indentation;
+    };
 
-    int number = 0;
+    QList<ParentIndentation> state{{rootItem.get(), 0}};
 
-    while (number < lines.count()) {
-        int position = 0;
-        while (position < lines[number].length()) {
-            if (lines[number].at(position) != ' '_L1)
-                break;
-            ++position;
+    for (const auto &line : lines) {
+        qsizetype position = 0;
+        for ( ; position < line.length() && line.at(position).isSpace(); ++position) {
         }
 
-        const QString lineData = lines[number].mid(position).trimmed();
-
+        const QStringView lineData = line.sliced(position).trimmed();
         if (!lineData.isEmpty()) {
             // Read the column data from the rest of the line.
-            const QStringList columnStrings =
-                lineData.split('\t'_L1, Qt::SkipEmptyParts);
+            const auto columnStrings = lineData.split(u'\t', Qt::SkipEmptyParts);
             QVariantList columnData;
-            columnData.reserve(columnStrings.size());
-            for (const QString &columnString : columnStrings)
-                columnData << columnString;
+            columnData.reserve(columnStrings.count());
+            for (const auto &columnString : columnStrings)
+                columnData << columnString.toString();
 
-            if (position > indentations.last()) {
+            if (position > state.constLast().indentation) {
                 // The last child of the current parent is now the new parent
                 // unless the current parent has no children.
-
-                if (parents.last()->childCount() > 0) {
-                    parents << parents.last()->child(parents.last()->childCount()-1);
-                    indentations << position;
-                }
+                auto *lastParent = state.constLast().parent;
+                if (lastParent->childCount() > 0)
+                    state.append({lastParent->child(lastParent->childCount() - 1), position});
             } else {
-                while (position < indentations.last() && parents.count() > 0) {
-                    parents.pop_back();
-                    indentations.pop_back();
-                }
+                while (position < state.constLast().indentation && !state.isEmpty())
+                    state.removeLast();
             }
 
             // Append a new item to the current parent's list of children.
-            TreeItem *parent = parents.last();
+            auto *parent = state.constLast().parent;
             parent->insertChildren(parent->childCount(), 1, rootItem->columnCount());
             for (int column = 0; column < columnData.size(); ++column)
-                parent->child(parent->childCount() - 1)->setData(column, columnData[column]);
+                parent->child(parent->childCount() - 1)->setData(column, columnData.at(column));
         }
-        ++number;
     }
 }
