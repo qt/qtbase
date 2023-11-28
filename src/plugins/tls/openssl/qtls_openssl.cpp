@@ -1438,11 +1438,14 @@ bool TlsCryptographOpenSSL::initSslContext()
     else if (mode == QSslSocket::SslServerMode)
         q_SSL_set_psk_server_callback(ssl, &q_ssl_psk_server_callback);
 
+#if OPENSSL_VERSION_NUMBER >= 0x10101006L
     // Set the client callback for TLSv1.3 PSK
     if (mode == QSslSocket::SslClientMode
         && QSslSocket::sslLibraryBuildVersionNumber() >= 0x10101006L) {
         q_SSL_set_psk_use_session_callback(ssl, &q_ssl_psk_use_session_callback);
     }
+#endif // openssl version >= 0x10101006L
+
 #endif // OPENSSL_NO_PSK
 
 #if QT_CONFIG(ocsp)
