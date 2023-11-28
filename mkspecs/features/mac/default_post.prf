@@ -17,6 +17,7 @@ contains(TEMPLATE, .*app) {
     }
 
     # Detect incompatible SDK versions
+    # The CMake equivalent is in cmake/QtPublicAppleHelpers.cmake.
 
     isEmpty(QT_MAC_SDK_VERSION_MIN): \
         QT_MAC_SDK_VERSION_MIN = $$QT_MAC_SDK_VERSION
