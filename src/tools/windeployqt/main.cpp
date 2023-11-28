@@ -228,7 +228,8 @@ static QString msgFileDoesNotExist(const QString & file)
 
 enum CommandLineParseFlag {
     CommandLineParseError = 0x1,
-    CommandLineParseHelpRequested = 0x2
+    CommandLineParseHelpRequested = 0x2,
+    CommandLineVersionRequested = 0x4
 };
 
 static QCommandLineOption createQMakeOption()
@@ -329,7 +330,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
         "installation (e.g. <QT_DIR\\bin>) to the PATH variable and then run:\n  windeployqt <path-to-app-binary>\n\n"
         "If your application uses Qt Quick, run:\n  windeployqt --qmldir <path-to-app-qml-files> <path-to-app-binary>"_s);
     const QCommandLineOption helpOption = parser->addHelpOption();
-    parser->addVersionOption();
+    const QCommandLineOption versionOption = parser->addVersionOption();
 
     QCommandLineOption dirOption(QStringLiteral("dir"),
                                  QStringLiteral("Use directory instead of binary directory."),
@@ -515,6 +516,8 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     const bool success = parser->parse(arguments);
     if (parser->isSet(helpOption))
         return CommandLineParseHelpRequested;
+    if (parser->isSet(versionOption))
+        return CommandLineVersionRequested;
     if (!success) {
         *errorMessage = parser->errorText();
         return CommandLineParseError;
@@ -1797,6 +1800,10 @@ int main(int argc, char **argv)
         const int result = parseArguments(QCoreApplication::arguments(), &parser, &options, &errorMessage);
         if (result & CommandLineParseError)
             std::wcerr << errorMessage << "\n\n";
+        if (result & CommandLineVersionRequested) {
+            std::fputs(QT_VERSION_STR "\n", stdout);
+            return 0;
+        }
         if (result & CommandLineParseHelpRequested)
             std::fputs(qPrintable(helpText(parser, pluginInfo)), stdout);
         if (result & CommandLineParseError)
