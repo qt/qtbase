@@ -16,9 +16,11 @@ class TreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
+    Q_DISABLE_COPY_MOVE(TreeModel)
+
     TreeModel(const QStringList &headers, const QString &data,
               QObject *parent = nullptr);
-    ~TreeModel();
+    ~TreeModel() override;
 //! [0] //! [1]
 
     QVariant data(const QModelIndex &index, int role) const override;
@@ -26,11 +28,11 @@ public:
                         int role = Qt::DisplayRole) const override;
 
     QModelIndex index(int row, int column,
-                      const QModelIndex &parent = QModelIndex()) const override;
+                      const QModelIndex &parent = {}) const override;
     QModelIndex parent(const QModelIndex &index) const override;
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    int rowCount(const QModelIndex &parent = {}) const override;
+    int columnCount(const QModelIndex &parent = {}) const override;
 //! [1]
 
 //! [2]
@@ -41,13 +43,13 @@ public:
                        const QVariant &value, int role = Qt::EditRole) override;
 
     bool insertColumns(int position, int columns,
-                       const QModelIndex &parent = QModelIndex()) override;
+                       const QModelIndex &parent = {}) override;
     bool removeColumns(int position, int columns,
-                       const QModelIndex &parent = QModelIndex()) override;
+                       const QModelIndex &parent = {}) override;
     bool insertRows(int position, int rows,
-                    const QModelIndex &parent = QModelIndex()) override;
+                    const QModelIndex &parent = {}) override;
     bool removeRows(int position, int rows,
-                    const QModelIndex &parent = QModelIndex()) override;
+                    const QModelIndex &parent = {}) override;
 
 private:
     void setupModelData(const QStringList &lines);

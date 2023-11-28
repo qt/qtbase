@@ -10,24 +10,23 @@
 #include "treeitem.h"
 
 //! [0]
-TreeItem::TreeItem(const QVariantList &data, TreeItem *parent)
-    : itemData(data), m_parentItem(parent)
+TreeItem::TreeItem(QVariantList data, TreeItem *parent)
+    : itemData(std::move(data)), m_parentItem(parent)
 {}
 //! [0]
 
 //! [1]
 TreeItem *TreeItem::child(int number)
 {
-    if (number < 0 || number >= qsizetype(m_childItems.size()))
-        return nullptr;
-    return m_childItems.at(number).get();
+    return (number >= 0 && number < childCount())
+        ? m_childItems.at(number).get() : nullptr;
 }
 //! [1]
 
 //! [2]
 int TreeItem::childCount() const
 {
-    return m_childItems.size();
+    return int(m_childItems.size());
 }
 //! [2]
 
@@ -38,7 +37,7 @@ int TreeItem::row() const
         return 0;
     const auto it = std::find_if(m_parentItem->m_childItems.cbegin(), m_parentItem->m_childItems.cend(),
                                  [this](const std::unique_ptr<TreeItem> &treeItem) {
-        return treeItem.get() == const_cast<TreeItem *>(this);
+        return treeItem.get() == this;
     });
 
     if (it != m_parentItem->m_childItems.cend())
@@ -51,16 +50,14 @@ int TreeItem::row() const
 //! [4]
 int TreeItem::columnCount() const
 {
-    return itemData.count();
+    return int(itemData.count());
 }
 //! [4]
 
 //! [5]
 QVariant TreeItem::data(int column) const
 {
-    if (column < 0 || column >= itemData.size())
-        return QVariant();
-    return itemData.at(column);
+    return itemData.value(column);
 }
 //! [5]
 
