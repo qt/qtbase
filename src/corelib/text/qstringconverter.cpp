@@ -1269,8 +1269,16 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     const char *mb = in.data();
     qsizetype mblen = in.size();
 
-    if (state && state->flags & QStringConverter::Flag::Stateless)
+    Q_ASSERT(state);
+    qsizetype &invalidChars = state->invalidChars;
+    using Flag = QStringConverter::Flag;
+    const bool useNullForReplacement = !!(state->flags & Flag::ConvertInvalidToNull);
+    const char16_t replacementCharacter = useNullForReplacement ? QChar::Null
+                                                                : QChar::ReplacementCharacter;
+    if (state->flags & Flag::Stateless) {
+        Q_ASSERT(state->remainingChars == 0);
         state = nullptr;
+    }
 
     if (!mb || !mblen)
         return QString();
@@ -1321,7 +1329,8 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
             // We couldn't decode any of the characters in the saved state,
             // so output replacement characters
             for (int i = 0; i < state->remainingChars; ++i)
-                out[i] = QChar::ReplacementCharacter;
+                out[i] = replacementCharacter;
+            invalidChars += state->remainingChars;
             out += state->remainingChars;
             outlen -= state->remainingChars;
             state->remainingChars = 0;
@@ -1407,7 +1416,8 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
                 std::tie(out, outlen) = growOut(1);
                 if (!out)
                     return {};
-                *out = QChar::ReplacementCharacter;
+                *out = replacementCharacter;
+                ++invalidChars;
                 ++out;
                 --outlen;
                 ++mb;
@@ -1436,7 +1446,8 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     if (!state && mblen > 0) {
         // We have trailing character(s) that could not be converted, and
         // nowhere to cache them
-        sp.resize(sp.size() + mblen, QChar::ReplacementCharacter);
+        sp.resize(sp.size() + mblen, replacementCharacter);
+        invalidChars += mblen;
     }
     return sp;
 }
@@ -1453,8 +1464,18 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
     qsizetype uclen = in.size();
 
     Q_ASSERT(state);
-    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+    // The Windows API has a *boolean* out-parameter that says if a replacement
+    // character was used, but it gives us no way to know _how many_ were used.
+    // Since we cannot simply scan the string for replacement characters
+    // (which is potentially a question mark, and thus a valid character),
+    // we simply do not track the number of invalid characters here.
+    // auto &invalidChars = state->invalidChars;
+
+    using Flag = QStringConverter::Flag;
+    if (state->flags & Flag::Stateless) { // temporary
+        Q_ASSERT(state->remainingChars == 0);
         state = nullptr;
+    }
 
     if (!ch)
         return QByteArray();
