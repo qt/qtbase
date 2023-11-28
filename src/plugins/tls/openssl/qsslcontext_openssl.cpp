@@ -555,10 +555,17 @@ QT_WARNING_POP
         // tell OpenSSL the directories where to look up the root certs on demand
         const QList<QByteArray> unixDirs = QSslSocketPrivate::unixRootCertDirectories();
         int success = 1;
+#if OPENSSL_VERSION_MAJOR < 3
+        for (const QByteArray &unixDir : unixDirs) {
+            if ((success = q_SSL_CTX_load_verify_locations(sslContext->ctx, nullptr, unixDir.constData())) != 1)
+                break;
+        }
+#else
         for (const QByteArray &unixDir : unixDirs) {
             if ((success = q_SSL_CTX_load_verify_dir(sslContext->ctx, unixDir.constData())) != 1)
                 break;
         }
+#endif // OPENSSL_VERSION_MAJOR
         if (success != 1) {
             const auto qtErrors = QTlsBackendOpenSSL::getErrorsFromOpenSsl();
             qCWarning(lcTlsBackend) << "An error encountered while to set root certificates location:"
