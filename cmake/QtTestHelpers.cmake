@@ -579,6 +579,11 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
+    # Pass 95% of the timeout to allow the test runner time to do any cleanup
+    # before being killed.
+    set(percentage "95")
+    qt_internal_get_android_test_timeout("${arg_TIMEOUT}" "${percentage}" android_timeout)
+
     if (ANDROID)
         if(arg_BUNDLE_ANDROID_OPENSSL_LIBS)
             if(NOT OPENSSL_ROOT_DIR)
@@ -595,7 +600,8 @@ function(qt_internal_add_test name)
                 endif()
             endif()
         endif()
-        qt_internal_android_test_arguments("${name}" test_executable extra_test_args)
+        qt_internal_android_test_arguments(
+            "${name}" "${android_timeout}" test_executable extra_test_args)
         set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
     elseif(QNX)
         set(test_working_dir "")
@@ -786,6 +792,30 @@ function(qt_internal_add_test name)
     endif()
 
     qt_internal_add_test_finalizers("${name}")
+endfunction()
+
+# Given an optional test timeout value (specified via qt_internal_add_test's TIMEOUT option)
+# returns a percentage of the final timeout to be passed to the androidtestrunner executable.
+#
+# When the optional timeout is empty, default to cmake's defaults for getting the timeout.
+function(qt_internal_get_android_test_timeout input_timeout percentage output_timeout_var)
+    set(actual_timeout "${input_timeout}")
+    if(NOT actual_timeout)
+        # Related: https://gitlab.kitware.com/cmake/cmake/-/issues/20450
+        if(DART_TESTING_TIMEOUT)
+            set(actual_timeout "${DART_TESTING_TIMEOUT}")
+        elseif(CTEST_TEST_TIMEOUT)
+            set(actual_timeout "${CTEST_TEST_TIMEOUT}")
+        else()
+            # Default DART_TESTING_TIMEOUT is 25 minutes, specified in seconds
+            # https://github.com/Kitware/CMake/blob/master/Modules/CTest.cmake#L167C16-L167C16
+            set(actual_timeout "1500")
+        endif()
+    endif()
+
+    math(EXPR calculated_timeout "${actual_timeout} * ${percentage} / 100")
+
+    set(${output_timeout_var} "${calculated_timeout}" PARENT_SCOPE)
 endfunction()
 
 # This function adds test with specified NAME and wraps given test COMMAND with standalone cmake
