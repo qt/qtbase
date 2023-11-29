@@ -1688,26 +1688,31 @@ char *toPrettyCString(const char *p, qsizetype length)
 }
 
 /*!
+    \fn char *toPrettyUnicode(QStringView string)
     \internal
     Returns the same QString but with only the ASCII characters still shown;
     everything else is replaced with \c {\uXXXX}.
 
     Similar to QDebug::putString().
 */
+
+constexpr qsizetype PrettyUnicodeMaxOutputSize = 256;
+
 char *toPrettyUnicode(QStringView string)
 {
     auto p = string.utf16();
     auto length = string.size();
     // keep it simple for the vast majority of cases
     bool trimmed = false;
-    auto buffer = std::make_unique<char[]>(256);
+    auto buffer = std::make_unique<char[]>(PrettyUnicodeMaxOutputSize);
     const auto end = p + length;
     char *dst = buffer.get();
 
     *dst++ = '"';
     for ( ; p != end; ++p) {
-        if (dst - buffer.get() > 245) {
-            // plus the quote, the three dots and NUL, it's 250, 251 or 255
+        // escape sequence, closing quote, the three dots and NUL
+        constexpr qsizetype MaxIncrement = sizeof(R"(\uXXXX"...)"); // includes NUL
+        if (dst - buffer.get() > PrettyUnicodeMaxOutputSize - MaxIncrement) {
             trimmed = true;
             break;
         }
@@ -1718,7 +1723,6 @@ char *toPrettyUnicode(QStringView string)
         }
 
         // write as an escape sequence
-        // this means we may advance dst to buffer.data() + 246 or 250
         *dst++ = '\\';
         switch (*p) {
         case 0x22:
