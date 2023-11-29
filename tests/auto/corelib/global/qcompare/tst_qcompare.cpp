@@ -13,6 +13,7 @@ class tst_QCompare: public QObject
     Q_OBJECT
 private slots:
     void legacyPartialOrdering();
+    void legacyConversions();
     void stdQtBinaryCompatibility();
     void partialOrdering();
     void weakOrdering();
@@ -129,6 +130,27 @@ void tst_QCompare::legacyPartialOrdering()
     static_assert( (0 <= QPartialOrdering::Greater));
     static_assert(!(0 >  QPartialOrdering::Greater));
     static_assert(!(0 >= QPartialOrdering::Greater));
+}
+
+void tst_QCompare::legacyConversions()
+{
+#define CHECK_CONVERTS(Lhs, Rhs) static_assert(std::is_convertible_v<Lhs, Rhs>)
+#define CHECK_ALL(NS) do { \
+        CHECK_CONVERTS(QPartialOrdering, NS ::partial_ordering); \
+        static_assert(QPartialOrdering::Less == NS ::partial_ordering::less); \
+        static_assert(QPartialOrdering::Greater == NS ::partial_ordering::greater); \
+        static_assert(QPartialOrdering::Equivalent == NS ::partial_ordering::equivalent); \
+        static_assert(QPartialOrdering::Unordered == NS ::partial_ordering::unordered); \
+        \
+        CHECK_CONVERTS(NS ::partial_ordering, QPartialOrdering); \
+    } while (false)
+
+#ifdef __cpp_lib_three_way_comparison
+    CHECK_ALL(std);
+#endif // __cpp_lib_three_way_comparison
+
+#undef CHECK_ALL
+#undef CHECK_CONVERTS
 }
 
 void tst_QCompare::stdQtBinaryCompatibility()
