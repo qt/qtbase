@@ -414,10 +414,10 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         // Manage internal accessibility focus state.
         if (m_focusedVirtualViewId == virtualViewId) {
             node.setAccessibilityFocused(true);
-            node.performAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+            node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
         } else {
             node.setAccessibilityFocused(false);
-            node.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
+            node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_ACCESSIBILITY_FOCUS);
         }
 
         int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(virtualViewId);
