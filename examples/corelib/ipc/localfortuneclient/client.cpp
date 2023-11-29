@@ -63,19 +63,13 @@ void Client::requestNewFortune()
 
 void Client::readFortune()
 {
-    if (blockSize == 0) {
-        // Relies on the fact that QDataStream serializes a quint32 into
-        // sizeof(quint32) bytes
-        if (socket->bytesAvailable() < (int)sizeof(quint32))
-            return;
-        in >> blockSize;
-    }
-
-    if (socket->bytesAvailable() < blockSize || in.atEnd())
-        return;
+    in.startTransaction();
 
     QString nextFortune;
     in >> nextFortune;
+
+    if (!in.commitTransaction())
+        return;
 
     if (nextFortune == currentFortune) {
         QTimer::singleShot(0, this, &Client::requestNewFortune);
