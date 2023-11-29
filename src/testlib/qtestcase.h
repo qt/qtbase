@@ -353,9 +353,6 @@ namespace QTest
     }
 
     template <typename T1, typename T2>
-    inline char *toString(const QPair<T1, T2> &pair);
-
-    template <typename T1, typename T2>
     inline char *toString(const std::pair<T1, T2> &pair);
 
     template <class... Types>
