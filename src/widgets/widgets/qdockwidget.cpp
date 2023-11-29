@@ -815,6 +815,10 @@ void QDockWidgetPrivate::endDrag(EndDragMode mode)
         Q_ASSERT(mainWindow != nullptr);
         QMainWindowLayout *mwLayout = qt_mainwindow_layout(mainWindow);
 
+        // if mainWindow is being deleted in an ongoing drag, make it a no-op instead of crashing
+        if (!mwLayout)
+            return;
+
         if (mode == EndDragMode::Abort || !mwLayout->plug(state->widgetItem)) {
             if (hasFeature(this, QDockWidget::DockWidgetFloatable)) {
                 // This QDockWidget will now stay in the floating state.

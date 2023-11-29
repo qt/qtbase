@@ -49,7 +49,7 @@ public:
             , useUnifiedToolBar(false)
 #endif
     { }
-    QMainWindowLayout *layout;
+    QPointer<QMainWindowLayout> layout;
     QSize iconSize;
     bool explicitIconSize;
     Qt::ToolButtonStyle toolButtonStyle;
@@ -60,7 +60,7 @@ public:
 
     static inline QMainWindowLayout *mainWindowLayout(const QMainWindow *mainWindow)
     {
-        return mainWindow ? mainWindow->d_func()->layout : static_cast<QMainWindowLayout *>(nullptr);
+        return mainWindow ? mainWindow->d_func()->layout.data() : static_cast<QMainWindowLayout *>(nullptr);
     }
 };
 
