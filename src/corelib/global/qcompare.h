@@ -132,13 +132,16 @@ public:
 #ifdef __cpp_lib_bit_cast
         return std::bit_cast<std::partial_ordering>(*this);
 #else
+        using O = QtPrivate::Ordering;
+        using U = QtPrivate::Uncomparable;
+        using R = std::partial_ordering;
         switch (m_order) {
-        case qToUnderlying(QtPrivate::Ordering::Less):          return std::partial_ordering::less;
-        case qToUnderlying(QtPrivate::Ordering::Greater):       return std::partial_ordering::greater;
-        case qToUnderlying(QtPrivate::Ordering::Equivalent):    return std::partial_ordering::equivalent;
-        case qToUnderlying(QtPrivate::Uncomparable::Unordered): return std::partial_ordering::unordered;
+        case qToUnderlying(O::Less):        return R::less;
+        case qToUnderlying(O::Greater):     return R::greater;
+        case qToUnderlying(O::Equivalent):  return R::equivalent;
+        case qToUnderlying(U::Unordered):   return R::unordered;
         }
-        Q_UNREACHABLE_RETURN(std::partial_ordering::unordered);
+        Q_UNREACHABLE_RETURN(R::unordered);
 #endif // __cpp_lib_bit_cast
     }
 
@@ -285,12 +288,14 @@ public:
 #ifdef __cpp_lib_bit_cast
         return std::bit_cast<std::weak_ordering>(*this);
 #else
+        using O = QtPrivate::Ordering;
+        using R = std::weak_ordering;
         switch (m_order) {
-        case qToUnderlying(QtPrivate::Ordering::Less):          return std::weak_ordering::less;
-        case qToUnderlying(QtPrivate::Ordering::Greater):       return std::weak_ordering::greater;
-        case qToUnderlying(QtPrivate::Ordering::Equivalent):    return std::weak_ordering::equivalent;
+        case qToUnderlying(O::Less):          return R::less;
+        case qToUnderlying(O::Greater):       return R::greater;
+        case qToUnderlying(O::Equivalent):    return R::equivalent;
         }
-        Q_UNREACHABLE_RETURN(std::weak_ordering::equivalent);
+        Q_UNREACHABLE_RETURN(R::equivalent);
 #endif // __cpp_lib_bit_cast
     }
 
@@ -469,12 +474,14 @@ public:
 #ifdef __cpp_lib_bit_cast
         return std::bit_cast<std::strong_ordering>(*this);
 #else
+        using O = QtPrivate::Ordering;
+        using R = std::strong_ordering;
         switch (m_order) {
-        case qToUnderlying(QtPrivate::Ordering::Less):    return std::strong_ordering::less;
-        case qToUnderlying(QtPrivate::Ordering::Greater): return std::strong_ordering::greater;
-        case qToUnderlying(QtPrivate::Ordering::Equal):   return std::strong_ordering::equal;
+        case qToUnderlying(O::Less):    return R::less;
+        case qToUnderlying(O::Greater): return R::greater;
+        case qToUnderlying(O::Equal):   return R::equal;
         }
-        Q_UNREACHABLE_RETURN(std::strong_ordering::equal);
+        Q_UNREACHABLE_RETURN(R::equal);
 #endif // __cpp_lib_bit_cast
     }
 
@@ -714,15 +721,16 @@ public:
 
     constexpr Q_IMPLICIT operator std::partial_ordering() const noexcept
     {
-        if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Less)
-            return std::partial_ordering::less;
-        else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Equivalent)
-            return std::partial_ordering::equivalent;
-        else if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Greater)
-            return std::partial_ordering::greater;
-        else if (static_cast<QtPrivate::LegacyUncomparable>(m_order) == QtPrivate::LegacyUncomparable::Unordered)
-            return std::partial_ordering::unordered;
-        return std::partial_ordering::unordered;
+        using O = QtPrivate::Ordering;
+        using U = QtPrivate::LegacyUncomparable;
+        using R = std::partial_ordering;
+        switch (m_order) {
+        case qToUnderlying(O::Less):       return R::less;
+        case qToUnderlying(O::Greater):    return R::greater;
+        case qToUnderlying(O::Equivalent): return R::equivalent;
+        case qToUnderlying(U::Unordered):  return R::unordered;
+        }
+        Q_UNREACHABLE_RETURN(R::unordered);
     }
 
     friend constexpr bool operator==(QPartialOrdering lhs, std::partial_ordering rhs) noexcept
