@@ -377,8 +377,8 @@ inline char *toString(const std::pair<T1, T2> &pair)
     return formatString("std::pair(", ")", 2, first.data(), second.data());
 }
 
-template <typename Tuple, int... I>
-inline char *toString(const Tuple & tuple, QtPrivate::IndexesList<I...>) {
+template <typename Tuple, std::size_t... I>
+inline char *tupleToString(const Tuple &tuple, std::index_sequence<I...>) {
     using UP = std::unique_ptr<char[]>;
     // Generate a table of N + 1 elements where N is the number of
     // elements in the tuple.
@@ -392,8 +392,7 @@ inline char *toString(const Tuple & tuple, QtPrivate::IndexesList<I...>) {
 template <class... Types>
 inline char *toString(const std::tuple<Types...> &tuple)
 {
-    static const std::size_t params_count = sizeof...(Types);
-    return toString(tuple, typename QtPrivate::Indexes<params_count>::Value());
+    return tupleToString(tuple, std::make_index_sequence<sizeof...(Types)>{});
 }
 
 inline char *toString(std::nullptr_t)
