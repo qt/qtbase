@@ -25,6 +25,11 @@ private slots:
 
 void tst_QCompare::legacyPartialOrdering()
 {
+    static_assert(QPartialOrdering::Unordered ==  QPartialOrdering::unordered);
+    static_assert(QPartialOrdering::Less ==       QPartialOrdering::less);
+    static_assert(QPartialOrdering::Equivalent == QPartialOrdering::equivalent);
+    static_assert(QPartialOrdering::Greater ==    QPartialOrdering::greater);
+
     static_assert(QPartialOrdering::Unordered == QPartialOrdering::Unordered);
     static_assert(QPartialOrdering::Unordered != QPartialOrdering::Less);
     static_assert(QPartialOrdering::Unordered != QPartialOrdering::Equivalent);

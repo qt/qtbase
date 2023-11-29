@@ -644,6 +644,11 @@ public:
     static const QPartialOrdering Greater;
     static const QPartialOrdering Unordered;
 
+    static const QPartialOrdering less;
+    static const QPartialOrdering equivalent;
+    static const QPartialOrdering greater;
+    static const QPartialOrdering unordered;
+
     friend constexpr bool operator==(QPartialOrdering lhs,
                                      QtPrivate::CompareAgainstLiteralZero) noexcept
     { return lhs.isOrdered() && lhs.m_order == 0; }
@@ -825,6 +830,11 @@ inline constexpr QPartialOrdering QPartialOrdering::Less(QtPrivate::Ordering::Le
 inline constexpr QPartialOrdering QPartialOrdering::Equivalent(QtPrivate::Ordering::Equivalent);
 inline constexpr QPartialOrdering QPartialOrdering::Greater(QtPrivate::Ordering::Greater);
 inline constexpr QPartialOrdering QPartialOrdering::Unordered(QtPrivate::LegacyUncomparable::Unordered);
+
+inline constexpr QPartialOrdering QPartialOrdering::less(QtPrivate::Ordering::Less);
+inline constexpr QPartialOrdering QPartialOrdering::equivalent(QtPrivate::Ordering::Equivalent);
+inline constexpr QPartialOrdering QPartialOrdering::greater(QtPrivate::Ordering::Greater);
+inline constexpr QPartialOrdering QPartialOrdering::unordered(QtPrivate::LegacyUncomparable::Unordered);
 
 QT_END_NAMESPACE
 

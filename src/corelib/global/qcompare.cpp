@@ -652,10 +652,10 @@ CHECK(strong, equivalent);
     represented by the following four symbolic constants:
 
     \list
-    \li \c Less represents that the left operand is less than the right;
-    \li \c Equivalent represents that left operand is equivalent to the right;
-    \li \c Greater represents that the left operand is greater than the right;
-    \li \c Unordered represents that the left operand is \e {not ordered} with
+    \li \c less represents that the left operand is less than the right;
+    \li \c equivalent represents that left operand is equivalent to the right;
+    \li \c greater represents that the left operand is greater than the right;
+    \li \c unordered represents that the left operand is \e {not ordered} with
     respect to the right operand.
     \endlist
 
@@ -692,10 +692,10 @@ CHECK(strong, equivalent);
     rules:
 
     \list
-    \li std::partial_ordering::less converts to \l Less.
-    \li std::partial_ordering::equivalent converts to \l Equivalent.
-    \li std::partial_ordering::greater converts to \l Greater.
-    \li std::partial_ordering::unordered converts to \l Unordered
+    \li std::partial_ordering::less converts to \l less.
+    \li std::partial_ordering::equivalent converts to \l equivalent.
+    \li std::partial_ordering::greater converts to \l greater.
+    \li std::partial_ordering::unordered converts to \l unordered
     \endlist
 */
 
@@ -706,10 +706,10 @@ CHECK(strong, equivalent);
     the following rules:
 
     \list
-    \li \l Less converts to std::partial_ordering::less.
-    \li \l Equivalent converts to std::partial_ordering::equivalent.
-    \li \l Greater converts to std::partial_ordering::greater.
-    \li \l Unordered converts to std::partial_ordering::unordered.
+    \li \l less converts to std::partial_ordering::less.
+    \li \l equivalent converts to std::partial_ordering::equivalent.
+    \li \l greater converts to std::partial_ordering::greater.
+    \li \l unordered converts to std::partial_ordering::unordered.
     \endlist
 */
 
@@ -757,6 +757,34 @@ CHECK(strong, equivalent);
     \include qcompare.cpp is_eq_table
 
     These functions are provided for compatibility with \c{std::partial_ordering}.
+*/
+
+/*!
+    \variable QPartialOrdering::less
+
+    Represents the result of a comparison where the left operand is less than
+    the right operand.
+*/
+
+/*!
+    \variable QPartialOrdering::equivalent
+
+    Represents the result of a comparison where the left operand is equivalent
+    to the right operand.
+*/
+
+/*!
+    \variable QPartialOrdering::greater
+
+    Represents the result of a comparison where the left operand is greater
+    than the right operand.
+*/
+
+/*!
+    \variable QPartialOrdering::unordered
+
+    Represents the result of a comparison where the left operand is not ordered
+    with respect to the right operand.
 */
 
 /*!
