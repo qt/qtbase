@@ -557,7 +557,7 @@ size_t qHash(const QVersionNumber &key, size_t seed)
 */
 
 /*!
-    \fn template<typename Integer, if_valid_segment_type<Integer> = true> static bool QTypeRevision::isValidSegment(Integer segment)
+    \fn template<typename Integer, QTypeRevision::if_valid_segment_type<Integer> = true> static bool QTypeRevision::isValidSegment(Integer segment)
 
     Returns true if the given number can be used as either major or minor
     version in a QTypeRevision. The valid range for \a segment is \c {>= 0} and \c {< 255}.
@@ -572,7 +572,7 @@ size_t qHash(const QVersionNumber &key, size_t seed)
 */
 
 /*!
-    \fn template<typename Major, typename Minor, if_valid_segment_type<Major> = true, if_valid_segment_type<Minor> = true> static QTypeRevision QTypeRevision::fromVersion(Major majorVersion, Minor minorVersion)
+    \fn template<typename Major, typename Minor, QTypeRevision::if_valid_segment_type<Major> = true, QTypeRevision::if_valid_segment_type<Minor> = true> static QTypeRevision QTypeRevision::fromVersion(Major majorVersion, Minor minorVersion)
 
     Produces a QTypeRevision from the given \a majorVersion and \a minorVersion,
     both of which need to be a valid segments.
@@ -581,7 +581,7 @@ size_t qHash(const QVersionNumber &key, size_t seed)
 */
 
 /*!
-    \fn template<typename Major, if_valid_segment_type<Major> = true> static QTypeRevision QTypeRevision::fromMajorVersion(Major majorVersion)
+    \fn template<typename Major, QTypeRevision::if_valid_segment_type<Major> = true> static QTypeRevision QTypeRevision::fromMajorVersion(Major majorVersion)
 
     Produces a QTypeRevision from the given \a majorVersion with an invalid minor
     version. \a majorVersion needs to be a valid segment.
@@ -590,7 +590,7 @@ size_t qHash(const QVersionNumber &key, size_t seed)
 */
 
 /*!
-    \fn template<typename Minor, if_valid_segment_type<Minor> = true> static QTypeRevision QTypeRevision::fromMinorVersion(Minor minorVersion)
+    \fn template<typename Minor, QTypeRevision::if_valid_segment_type<Minor> = true> static QTypeRevision QTypeRevision::fromMinorVersion(Minor minorVersion)
 
     Produces a QTypeRevision from the given \a minorVersion with an invalid major
     version. \a minorVersion needs to be a valid segment.
@@ -599,7 +599,7 @@ size_t qHash(const QVersionNumber &key, size_t seed)
 */
 
 /*!
-    \fn template<typename Integer, if_valid_value_type<Integer> = true> static QTypeRevision QTypeRevision::fromEncodedVersion(Integer value)
+    \fn template<typename Integer, QTypeRevision::if_valid_value_type<Integer> = true> static QTypeRevision QTypeRevision::fromEncodedVersion(Integer value)
 
     Produces a QTypeRevision from the given \a value. \a value encodes both the
     minor and major versions in the least significant and second least
@@ -660,7 +660,7 @@ size_t qHash(const QVersionNumber &key, size_t seed)
 */
 
 /*!
-    \fn template<typename Integer, if_valid_value_type<Integer> = true> Integer QTypeRevision::toEncodedVersion() const
+    \fn template<typename Integer, QTypeRevision::if_valid_value_type<Integer> = true> Integer QTypeRevision::toEncodedVersion() const
 
     Transforms the revision into an integer value, encoding the minor
     version into the least significant byte, and the major version into

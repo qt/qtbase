@@ -226,7 +226,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 */
 
 /*!
-    \fn template <typename T, if_permission<T>> QPermission::QPermission(const T &type)
+    \fn template <typename T, QPermission::if_permission<T>> QPermission::QPermission(const T &type)
 
     Constructs a permission from the given \l{typed permission} \a type.
 
@@ -240,7 +240,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 */
 
 /*!
-    \fn template <typename T, if_permission<T>> std::optional<T> QPermission::value() const
+    \fn template <typename T, QPermission::if_permission<T>> std::optional<T> QPermission::value() const
 
     Returns the \l{typed permission} of type \c T, or \c{std::nullopt} if this
     QPermission object doesn't contain one.

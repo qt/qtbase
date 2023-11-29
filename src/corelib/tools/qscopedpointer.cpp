@@ -269,7 +269,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> template <typename D, if_same_type<D> = true> QScopedArrayPointer<T, Cleanup>::QScopedArrayPointer(D * p)
+    \fn template <typename T, typename Cleanup> template <typename D, QScopedArrayPointer<T, Cleanup>::if_same_type<D> = true> QScopedArrayPointer<T, Cleanup>::QScopedArrayPointer(D * p)
 
     Constructs a QScopedArrayPointer and stores the array of objects
     pointed to by \a p.

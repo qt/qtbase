@@ -129,7 +129,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Char, if_compatible_char<Char> = true> QAnyStringView::QAnyStringView(const Char *str, qsizetype len)
+    \fn template <typename Char, QAnyStringView::if_compatible_char<Char> = true> QAnyStringView::QAnyStringView(const Char *str, qsizetype len)
 
     Constructs a string view on \a str with length \a len.
 
@@ -146,7 +146,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Char, if_compatible_char<Char> = true> QAnyStringView::QAnyStringView(const Char *first, const Char *last)
+    \fn template <typename Char, QAnyStringView::if_compatible_char<Char> = true> QAnyStringView::QAnyStringView(const Char *first, const Char *last)
 
     Constructs a string view on \a first with length (\a last - \a first).
 
@@ -221,7 +221,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Container, if_compatible_container<Container>> QAnyStringView::QAnyStringView(const Container &str)
+    \fn template <typename Container, QAnyStringView::if_compatible_container<Container>> QAnyStringView::QAnyStringView(const Container &str)
 
     Constructs a string view on \a str. The length is taken from \c{std::size(str)}.
 

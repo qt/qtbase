@@ -143,11 +143,15 @@ public:
 # endif // Q_QDOC
 
 #ifndef QT_NO_CONTEXTLESS_CONNECT
+    #ifdef Q_QDOC
+    template <typename Functor>
+    #else
     // requestPermission to a functor or function pointer (without context)
     template <typename Functor,
               std::enable_if_t<
                     QtPrivate::AreFunctionsCompatible<RequestPermissionPrototype, Functor>::value,
                     bool> = true>
+    #endif
     void requestPermission(const QPermission &permission, Functor &&func)
     {
         requestPermission(permission, nullptr, std::forward<Functor>(func));

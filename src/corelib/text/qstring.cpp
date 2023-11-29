@@ -3341,7 +3341,7 @@ QString &QString::append(QChar ch)
 */
 
 /*!
-    \fn template <typename InputIterator, if_compatible_iterator<InputIterator>> QString &QString::assign(InputIterator first, InputIterator last)
+    \fn template <typename InputIterator, QString::if_compatible_iterator<InputIterator>> QString &QString::assign(InputIterator first, InputIterator last)
     \since 6.6
 
     Replaces the contents of this string with a copy of the elements in the

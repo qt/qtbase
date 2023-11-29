@@ -101,7 +101,7 @@ void QRunnable::QGenericRunnable::run()
 */
 
 /*!
-    \fn template<typename Callable, if_callable<Callable>> QRunnable *QRunnable::create(Callable &&callableToRun);
+    \fn template<typename Callable, QRunnable::if_callable<Callable>> QRunnable *QRunnable::create(Callable &&callableToRun);
     \since 5.15
 
     Creates a QRunnable that calls \a callableToRun in run().

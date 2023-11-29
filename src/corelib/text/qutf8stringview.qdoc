@@ -217,7 +217,7 @@
 */
 
 /*!
-    \fn template <typename Char, if_compatible_char<Char> = true> QUtf8StringView::QUtf8StringView(const Char *str, qsizetype len)
+    \fn template <typename Char, QUtf8StringView::if_compatible_char<Char> = true> QUtf8StringView::QUtf8StringView(const Char *str, qsizetype len)
 
     Constructs a string view on \a str with length \a len.
 
@@ -233,7 +233,7 @@
 */
 
 /*!
-    \fn template <typename Char, if_compatible_char<Char> = true> QUtf8StringView::QUtf8StringView(const Char *first, const Char *last)
+    \fn template <typename Char, QUtf8StringView::if_compatible_char<Char> = true> QUtf8StringView::QUtf8StringView(const Char *first, const Char *last)
 
     Constructs a string view on \a first with length (\a last - \a first).
 
@@ -287,7 +287,7 @@
 */
 
 /*!
-    \fn template <typename Container, if_compatible_container<Container>> QUtf8StringView::QUtf8StringView(const Container &str)
+    \fn template <typename Container, QUtf8StringView::if_compatible_container<Container>> QUtf8StringView::QUtf8StringView(const Container &str)
 
     Constructs a string view on \a str. The length is taken from \c{std::size(str)}.
 
@@ -306,7 +306,7 @@
 */
 
 /*!
-    \fn template <typename Char, size_t Size, if_compatible_char<Char>> QUtf8StringView::fromArray(const Char (&string)[Size])
+    \fn template <typename Char, size_t Size, QUtf8StringView::if_compatible_char<Char>> QUtf8StringView::fromArray(const Char (&string)[Size])
 
     Constructs a string view on the full character string literal \a string,
     including any trailing \c{Char(0)}. If you don't want the

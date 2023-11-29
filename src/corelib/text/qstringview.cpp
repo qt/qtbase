@@ -179,7 +179,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Char, if_compatible_char<Char> = true> QStringView::QStringView(const Char *str, qsizetype len)
+    \fn template <typename Char, QStringView::if_compatible_char<Char> = true> QStringView::QStringView(const Char *str, qsizetype len)
 
     Constructs a string view on \a str with length \a len.
 
@@ -195,7 +195,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Char, if_compatible_char<Char> = true> QStringView::QStringView(const Char *first, const Char *last)
+    \fn template <typename Char, QStringView::if_compatible_char<Char> = true> QStringView::QStringView(const Char *first, const Char *last)
 
     Constructs a string view on \a first with length (\a last - \a first).
 
@@ -262,7 +262,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Container, if_compatible_container<Container>> QStringView::QStringView(const Container &str)
+    \fn template <typename Container, QStringView::if_compatible_container<Container>> QStringView::QStringView(const Container &str)
 
     Constructs a string view on \a str. The length is taken from \c{std::size(str)}.
 
@@ -281,7 +281,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Char, size_t Size, if_compatible_char<Char> = true> static QStringView QStringView::fromArray(const Char (&string)[Size]) noexcept
+    \fn template <typename Char, size_t Size, QStringView::if_compatible_char<Char> = true> static QStringView QStringView::fromArray(const Char (&string)[Size]) noexcept
 
     Constructs a string view on the full character string literal \a string,
     including any trailing \c{Char(0)}. If you don't want the

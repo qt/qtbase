@@ -544,7 +544,7 @@ QVariant::QVariant(const QVariant &p)
 }
 
 /*!
-    \fn template <typename T, typename... Args, if_constructible<T, Args...> = true> QVariant::QVariant(std::in_place_type_t<T>, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<T>, Args...>::value)
+    \fn template <typename T, typename... Args, QVariant::if_constructible<T, Args...> = true> QVariant::QVariant(std::in_place_type_t<T>, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<T>, Args...>::value)
 
     \since 6.6
     Constructs a new variant containing a value of type \c T. The contained
@@ -561,7 +561,7 @@ QVariant::QVariant(const QVariant &p)
 
 /*!
 
-    \fn template <typename T, typename U, typename... Args, if_constructible<T, std::initializer_list<U> &, Args...> = true> explicit QVariant::QVariant(std::in_place_type_t<T>, std::initializer_list<U> il, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<T>, std::initializer_list<U> &, Args... >::value)
+    \fn template <typename T, typename U, typename... Args, QVariant::if_constructible<T, std::initializer_list<U> &, Args...> = true> explicit QVariant::QVariant(std::in_place_type_t<T>, std::initializer_list<U> il, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<T>, std::initializer_list<U> &, Args... >::value)
 
     \since 6.6
     \overload
@@ -572,7 +572,7 @@ QVariant::QVariant(const QVariant &p)
 
 
 /*!
-    \fn template <typename T, typename... Args, if_constructible<T, Args...> = true> QVariant::emplace(Args&&... args)
+    \fn template <typename T, typename... Args, QVariant::if_constructible<T, Args...> = true> QVariant::emplace(Args&&... args)
 
     \since 6.6
     Replaces the object currently held in \c{*this} with an object of
@@ -583,7 +583,7 @@ QVariant::QVariant(const QVariant &p)
  */
 
 /*!
-    \fn template <typename T, typename U, typename... Args, if_constructible<T, std::initializer_list<U> &, Args...> = true> QVariant::emplace(std::initializer_list<U> list, Args&&... args)
+    \fn template <typename T, typename U, typename... Args, QVariant::if_constructible<T, std::initializer_list<U> &, Args...> = true> QVariant::emplace(std::initializer_list<U> list, Args&&... args)
 
     \since 6.6
     \overload
@@ -2686,7 +2686,7 @@ QT_WARNING_POP
     \sa setValue(), value()
 */
 
-/*! \fn template<typename T, if_rvalue<T> = true> static QVariant QVariant::fromValue(T &&value)
+/*! \fn template<typename T, QVariant::if_rvalue<T> = true> static QVariant QVariant::fromValue(T &&value)
 
     \since 6.6
     \overload

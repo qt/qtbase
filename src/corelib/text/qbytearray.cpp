@@ -2134,7 +2134,7 @@ QByteArray& QByteArray::append(char ch)
 */
 
 /*!
-    \fn template <typename InputIterator, if_input_iterator<InputIterator>> QByteArray &QByteArray::assign(InputIterator first, InputIterator last)
+    \fn template <typename InputIterator, QByteArray::if_input_iterator<InputIterator>> QByteArray &QByteArray::assign(InputIterator first, InputIterator last)
     \since 6.6
 
     Replaces the contents of this byte array with a copy of the elements in the

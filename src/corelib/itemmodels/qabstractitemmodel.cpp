@@ -212,7 +212,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    \fn template <typename Container, if_compatible_container<Container> = true> QModelRoleDataSpan::QModelRoleDataSpan(Container &c) noexcept
+    \fn template <typename Container, QModelRoleDataSpan::if_compatible_container<Container> = true> QModelRoleDataSpan::QModelRoleDataSpan(Container &c) noexcept
 
     Constructs an QModelRoleDataSpan spanning over the container \a c,
     which can be any contiguous container of QModelRoleData objects.

@@ -1099,7 +1099,7 @@ CHECK(strong, equivalent);
 */
 
 /*!
-    \fn template <typename LeftInt, typename RightInt> Qt::compareThreeWay(LeftInt lhs, RightInt rhs)
+    \fn template <typename LeftInt, typename RightInt, Qt::if_integral<LeftInt, RightInt> = true> Qt::compareThreeWay(LeftInt lhs, RightInt rhs)
     \since 6.7
     \relates <QtCompare>
     \overload
@@ -1137,7 +1137,7 @@ CHECK(strong, equivalent);
 */
 
 /*!
-    \fn template <typename LeftFloat, typename RightFloat> Qt::compareThreeWay(LeftFloat lhs, RightFloat rhs)
+    \fn template <typename LeftFloat, typename RightFloat, Qt::if_floating_point<LeftFloat, RightFloat> = true> Qt::compareThreeWay(LeftFloat lhs, RightFloat rhs)
     \since 6.7
     \relates <QtCompare>
     \overload
@@ -1176,7 +1176,7 @@ CHECK(strong, equivalent);
 */
 
 /*!
-    \fn template <typename IntType, typename FloatType> Qt::compareThreeWay(IntType lhs, FloatType rhs)
+    \fn template <typename IntType, typename FloatType, Qt::if_integral_and_floating_point<IntType, FloatType> = true> Qt::compareThreeWay(IntType lhs, FloatType rhs)
     \since 6.7
     \relates <QtCompare>
     \overload
@@ -1196,7 +1196,7 @@ CHECK(strong, equivalent);
 */
 
 /*!
-    \fn template <typename FloatType, typename IntType> Qt::compareThreeWay(FloatType lhs, IntType rhs)
+    \fn template <typename FloatType, typename IntType, Qt::if_integral_and_floating_point<IntType, FloatType> = true> Qt::compareThreeWay(FloatType lhs, IntType rhs)
     \since 6.7
     \relates <QtCompare>
     \overload
@@ -1216,7 +1216,7 @@ CHECK(strong, equivalent);
 */
 
 /*!
-    \fn template <typename LeftType, typename RightType> Qt::compareThreeWay(const LeftType *lhs, const RightType *rhs)
+    \fn template <typename LeftType, typename RightType, Qt::if_compatible_pointers<LeftType, RightType> = true> Qt::compareThreeWay(const LeftType *lhs, const RightType *rhs)
     \since 6.7
     \relates <QtCompare>
     \overload
@@ -1232,7 +1232,7 @@ CHECK(strong, equivalent);
 */
 
 /*!
-    \fn template <class Enum> Qt::compareThreeWay(Enum lhs, Enum rhs)
+    \fn template <class Enum, Qt::if_enum<Enum> = true> Qt::compareThreeWay(Enum lhs, Enum rhs)
     \since 6.7
     \relates <QtCompare>
     \overload

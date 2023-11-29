@@ -99,8 +99,8 @@
 */
 
 /*!
-    \fn template <class T> template <typename X, if_convertible<X> = true> QPointer<T>::QPointer(QPointer<X> &&other)
-    \fn template <class T> template <typename X, if_convertible<X> = true> QPointer<T>::QPointer(const QPointer<X> &other)
+    \fn template <class T> template <typename X, QPointer<T>::if_convertible<X> = true> QPointer<T>::QPointer(QPointer<X> &&other)
+    \fn template <class T> template <typename X, QPointer<T>::if_convertible<X> = true> QPointer<T>::QPointer(const QPointer<X> &other)
     \since 6.6
 
     Conversion constructor. Constructs a new QPointer by moving or copying from
@@ -113,7 +113,7 @@
 */
 
 /*!
-    \fn template <class T> template <typename X, if_convertible<X> = true> QPointer<T> &QPointer<T>::operator=(const QPointer<X> &other)
+    \fn template <class T> template <typename X, QPointer<T>::if_convertible<X> = true> QPointer<T> &QPointer<T>::operator=(const QPointer<X> &other)
     \since 6.6
 
     Conversion assignment operator. Makes this guarded pointer guard the
@@ -124,7 +124,7 @@
 */
 
 /*!
-    \fn template <class T> template <typename X, if_convertible<X> = true> &QPointer<T>::operator=(QPointer<X> &&other)
+    \fn template <class T> template <typename X, QPointer<T>::if_convertible<X> = true> &QPointer<T>::operator=(QPointer<X> &&other)
     \since 6.6.1
 
     Conversion move-assignment operator. Makes this guarded pointer guard the
