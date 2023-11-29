@@ -700,6 +700,54 @@ public:
     friend constexpr bool operator!=(QPartialOrdering lhs, QPartialOrdering rhs) noexcept
     { return lhs.m_order != rhs.m_order; }
 
+    constexpr Q_IMPLICIT QPartialOrdering(Qt::partial_ordering order) noexcept
+        : m_order{} // == equivalent
+    {
+        if (order == Qt::partial_ordering::less)
+            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Less);
+        else if (order == Qt::partial_ordering::greater)
+            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::Ordering::Greater);
+        else if (order == Qt::partial_ordering::unordered)
+            m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::LegacyUncomparable::Unordered);
+    }
+
+    constexpr Q_IMPLICIT QPartialOrdering(Qt::weak_ordering stdorder) noexcept
+        : QPartialOrdering(Qt::partial_ordering{stdorder}) {}
+
+    constexpr Q_IMPLICIT QPartialOrdering(Qt::strong_ordering stdorder) noexcept
+        : QPartialOrdering(Qt::partial_ordering{stdorder}) {}
+
+    constexpr Q_IMPLICIT operator Qt::partial_ordering() const noexcept
+    {
+        using O = QtPrivate::Ordering;
+        using U = QtPrivate::LegacyUncomparable;
+        using R = Qt::partial_ordering;
+        switch (m_order) {
+        case qToUnderlying(O::Less):       return R::less;
+        case qToUnderlying(O::Greater):    return R::greater;
+        case qToUnderlying(O::Equivalent): return R::equivalent;
+        case qToUnderlying(U::Unordered):  return R::unordered;
+        }
+        // GCC 8.x does not treat __builtin_unreachable() as constexpr
+#if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+        // NOLINTNEXTLINE(qt-use-unreachable-return): Triggers on Clang, breaking GCC 8
+        Q_UNREACHABLE();
+#endif
+        return R::unordered;
+    }
+
+    friend constexpr bool operator==(QPartialOrdering lhs, Qt::partial_ordering rhs) noexcept
+    { Qt::partial_ordering qt = lhs; return qt == rhs; }
+
+    friend constexpr bool operator!=(QPartialOrdering lhs, Qt::partial_ordering rhs) noexcept
+    { Qt::partial_ordering qt = lhs; return qt != rhs; }
+
+    friend constexpr bool operator==(Qt::partial_ordering lhs, QPartialOrdering rhs) noexcept
+    { Qt::partial_ordering qt = rhs; return lhs == qt; }
+
+    friend constexpr bool operator!=(Qt::partial_ordering lhs, QPartialOrdering rhs) noexcept
+    { Qt::partial_ordering qt = rhs; return lhs != qt; }
+
 #ifdef __cpp_lib_three_way_comparison
     constexpr Q_IMPLICIT QPartialOrdering(std::partial_ordering stdorder) noexcept
     {

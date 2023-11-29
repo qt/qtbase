@@ -148,6 +148,7 @@ void tst_QCompare::legacyConversions()
         CHECK_CONVERTS(NS ::strong_ordering,  QPartialOrdering); \
     } while (false)
 
+    CHECK_ALL(Qt);
 #ifdef __cpp_lib_three_way_comparison
     CHECK_ALL(std);
 #endif // __cpp_lib_three_way_comparison
