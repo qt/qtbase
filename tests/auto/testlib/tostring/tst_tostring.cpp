@@ -21,25 +21,34 @@ private slots:
 void tst_toString::addColumns()
 {
     QTest::addColumn<ToStringFunction>("fn");
-    QTest::addColumn<QByteArrayView>("expected");
+    QTest::addColumn<QByteArray>("expected");
     QTest::addColumn<QByteArrayView>("expr");
     QTest::addColumn<QByteArrayView>("file");
     QTest::addColumn<int>("line");
 }
+
 void tst_toString::testRows()
 {
     QFETCH(ToStringFunction, fn);
-    QFETCH(QByteArrayView, expected);
+    QFETCH(const QByteArray, expected);
     QFETCH(QByteArrayView, expr);
     QFETCH(QByteArrayView, file);
     QFETCH(int, line);
 
     std::unique_ptr<char []> ptr{fn()};
+    const auto len = qstrlen(ptr.get());
     QTest::qCompare(ptr.get(), expected, expr.data(), expected.data(), file.data(), line);
+    if (QTest::currentTestFailed()) {
+        qDebug("tail diff:\n"
+               "   actual:%s\n"
+               " expected:%s",
+               ptr.get() + len - std::min(size_t{40}, len),
+               expected.data() + expected.size() - std::min(qsizetype{40}, expected.size()));
+    }
 }
 
 template <typename T> void addRow(QByteArrayView name, T &&value, QByteArrayView expression,
-                                  QByteArrayView expected, QByteArrayView file, int line)
+                                  const QByteArray &expected, QByteArrayView file, int line)
 {
     ToStringFunction fn = [v = std::move(value)]() { return QTest::toString(v); };
     QTest::newRow(name.data()) << fn << expected << expression << file << line;
