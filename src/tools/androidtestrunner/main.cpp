@@ -16,6 +16,11 @@
 #include <atomic>
 #include <csignal>
 #include <functional>
+#if defined(Q_OS_WIN32)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
 
 using namespace Qt::StringLiterals;
 
@@ -445,7 +450,10 @@ static bool isRunning() {
     return output.indexOf(QLatin1StringView(" " + g_options.package.toUtf8())) > -1;
 }
 
-static void waitForFinished()
+std::atomic<bool> isPackageInstalled { false };
+std::atomic<bool> isTestRunnerInterrupted { false };
+
+static void waitForStartedAndFinished()
 {
     // wait to start and set PID
     QDeadlineTimer startDeadline(10000);
@@ -453,7 +461,7 @@ static void waitForFinished()
         if (obtainPid())
             break;
         QThread::msleep(100);
-    } while (!startDeadline.hasExpired());
+    } while (!startDeadline.hasExpired() && !isTestRunnerInterrupted.load());
 
     // Wait to finish
     QDeadlineTimer finishedDeadline(g_options.timeoutSecs * 1000);
@@ -461,10 +469,10 @@ static void waitForFinished()
         if (!isRunning())
             break;
         QThread::msleep(250);
-    } while (!finishedDeadline.hasExpired());
+    } while (!finishedDeadline.hasExpired() && !isTestRunnerInterrupted.load());
 }
 
-static void obtainSDKVersion()
+static void obtainSdkVersion()
 {
     // SDK version is necessary, as in SDK 23 pidof is broken, so we cannot obtain the pid.
     // Also, Logcat cannot filter by pid in SDK 23, so we don't offer the --show-logcat option.
@@ -647,6 +655,11 @@ static QString getCurrentTimeString()
     return QString::fromUtf8(output.simplified());
 }
 
+static bool uninstallTestPackage()
+{
+    return execAdbCommand({ "uninstall"_L1, g_options.package }, nullptr);
+}
+
 struct TestRunnerSystemSemaphore
 {
     TestRunnerSystemSemaphore() { }
@@ -675,6 +688,13 @@ void sigHandler(int signal)
 {
     std::signal(signal, SIG_DFL);
     testRunnerLock.release();
+    // Ideally we shouldn't be doing such calls from a signal handler,
+    // and we can't use QSocketNotifier because this tool doesn't spin
+    // a main event loop. Since, there's no other alternative to do this,
+    // let's do the cleanup anyway.
+    if (!isPackageInstalled.load())
+        _exit(-1);
+    isTestRunnerInterrupted.store(true);
 }
 
 int main(int argc, char *argv[])
@@ -715,14 +735,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    obtainSDKVersion();
-
-    // do not install or run packages while another test is running
-    testRunnerLock.acquire();
-
-    const QStringList installArgs = { "install"_L1, "-r"_L1, "-g"_L1, g_options.apkPath };
-    if (!execAdbCommand(installArgs, nullptr))
-        return 1;
+    obtainSdkVersion();
 
     QString manifest = g_options.buildPath + "/AndroidManifest.xml"_L1;
     g_options.package = packageNameFromAndroidManifest(manifest);
@@ -733,29 +746,43 @@ int main(int argc, char *argv[])
     if (!parseTestArgs())
         return 1;
 
+    // do not install or run packages while another test is running
+    testRunnerLock.acquire();
+
+    const QStringList installArgs = { "install"_L1, "-r"_L1, "-g"_L1, g_options.apkPath };
+    isPackageInstalled.store(execAdbCommand(installArgs, nullptr));
+    if (!isPackageInstalled)
+        return 1;
+
     const QString formattedTime = getCurrentTimeString();
 
     // start the tests
-    bool res = execAdbCommand(g_options.amStarttestArgs, nullptr);
+    bool success = execAdbCommand(g_options.amStarttestArgs, nullptr);
 
-    waitForFinished();
+    waitForStartedAndFinished();
 
-    if (res)
-        res &= pullFiles();
+    if (success) {
+        success &= pullFiles();
+        if (g_options.showLogcatOutput)
+            printLogcat(formattedTime);
+    }
 
     // If we have a failure, attempt to print both logcat and the crash buffer which
     // includes the crash stacktrace that is not included in the default logcat.
-    if (!res) {
+    if (!success) {
         printLogcat(formattedTime);
         printLogcatCrashBuffer(formattedTime);
-    } else if (g_options.showLogcatOutput) {
-        printLogcat(formattedTime);
     }
 
-    res &= execAdbCommand({ "uninstall"_L1, g_options.package }, nullptr);
+    success &= uninstallTestPackage();
     fflush(stdout);
 
     testRunnerLock.release();
 
-    return res ? 0 : 1;
+    if (isTestRunnerInterrupted.load()) {
+        qCritical() << "The androidtestrunner was interrupted and the was test cleaned up.";
+        return 1;
+    }
+
+    return success ? 0 : 1;
 }
