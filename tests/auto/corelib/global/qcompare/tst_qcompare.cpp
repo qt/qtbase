@@ -144,6 +144,8 @@ void tst_QCompare::legacyConversions()
         static_assert(QPartialOrdering::Unordered == NS ::partial_ordering::unordered); \
         \
         CHECK_CONVERTS(NS ::partial_ordering, QPartialOrdering); \
+        CHECK_CONVERTS(NS ::weak_ordering,    QPartialOrdering); \
+        CHECK_CONVERTS(NS ::strong_ordering,  QPartialOrdering); \
     } while (false)
 
 #ifdef __cpp_lib_three_way_comparison

@@ -706,6 +706,12 @@ public:
             m_order = static_cast<QtPrivate::CompareUnderlyingType>(QtPrivate::LegacyUncomparable::Unordered);
     }
 
+    constexpr Q_IMPLICIT QPartialOrdering(std::weak_ordering stdorder) noexcept
+        : QPartialOrdering(std::partial_ordering(stdorder)) {}
+
+    constexpr Q_IMPLICIT QPartialOrdering(std::strong_ordering stdorder) noexcept
+        : QPartialOrdering(std::partial_ordering(stdorder)) {}
+
     constexpr Q_IMPLICIT operator std::partial_ordering() const noexcept
     {
         if (static_cast<QtPrivate::Ordering>(m_order) == QtPrivate::Ordering::Less)
