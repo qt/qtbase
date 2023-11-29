@@ -201,8 +201,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 color = opt->palette.windowText().color();
             }
             const QRect focusRect = opt->rect.adjusted(1, 1, -1, -1);
-            const QBrush fill(bg);
-            qDrawPlainRect(p, focusRect, color, 1, bg.isValid() ? &fill : nullptr);
+            qDrawPlainRect(p, focusRect, color, 1);
         }
         break;
     case PE_IndicatorMenuCheckMark: {
