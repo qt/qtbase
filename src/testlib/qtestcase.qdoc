@@ -1364,13 +1364,6 @@
 */
 
 /*!
-    \fn template <typename T1, typename T2> char *QTest::toString(const QPair<T1, T2> &pair)
-    \overload
-    \since 5.11
-    Returns a textual representation of the \a pair.
-*/
-
-/*!
     \fn template <typename T1, typename T2> char *QTest::toString(const std::pair<T1, T2> &pair)
     \overload
     \since 5.11
