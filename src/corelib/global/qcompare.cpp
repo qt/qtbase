@@ -743,6 +743,7 @@ CHECK(strong, equivalent);
     \fn QPartialOrdering::is_gt  (QPartialOrdering o)
     \fn QPartialOrdering::is_gteq(QPartialOrdering o)
 
+    \since 6.7
     \include qcompare.cpp is_eq_table
 
     These functions are provided for compatibility with \c{std::partial_ordering}.
