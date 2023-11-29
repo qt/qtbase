@@ -1623,12 +1623,6 @@
 */
 
 /*!
-    \fn template <typename Tuple, int... I> char *QTest::toString(const Tuple &tuple, QtPrivate::IndexesList<I...> )
-    \internal
-    \since 5.12
-*/
-
-/*!
     \fn QPointingDevice * QTest::createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen, QInputDevice::Capabilities caps = QInputDevice::Capability::Position)
     \since 5.8
 
