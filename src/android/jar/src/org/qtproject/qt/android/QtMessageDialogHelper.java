@@ -6,11 +6,12 @@ package org.qtproject.qt.android;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
-import android.text.ClipboardManager;
+import android.content.ClipboardManager;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -166,8 +167,9 @@ class QtMessageDialogHelper
             View.OnLongClickListener copyText = view -> {
                 TextView tv = (TextView)view;
                 if (tv != null) {
-                    ClipboardManager cm = (ClipboardManager) m_activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                    cm.setText(tv.getText());
+                    ClipboardManager cm = (ClipboardManager) m_activity.getSystemService(
+                            Context.CLIPBOARD_SERVICE);
+                    cm.setPrimaryClip(ClipData.newPlainText(tv.getText(), tv.getText()));
                 }
                 return true;
             };
