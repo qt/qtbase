@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,7 +43,7 @@ class CursorView extends ImageView
         switch (ev.getActionMasked()) {
         case MotionEvent.ACTION_DOWN: {
             m_offsetX = ev.getRawX();
-            m_offsetY = ev.getRawY() + getHeight() / 2;
+            m_offsetY = ev.getRawY() + (float) getHeight() / 2;
             m_pressed = true;
             break;
         }
@@ -67,6 +68,7 @@ class CursorView extends ImageView
 // Helper class that manages a cursor or selection handle
 class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 {
+    private static final String QtTag = "QtCursorHandle";
     private final View m_layout;
     private CursorView m_cursorView = null;
     private PopupWindow m_popup = null;
@@ -109,8 +111,13 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         m_popup.setSplitTouchEnabled(true);
         m_popup.setClippingEnabled(false);
         m_popup.setContentView(m_cursorView);
-        m_popup.setWidth(drawable.getIntrinsicWidth());
-        m_popup.setHeight(drawable.getIntrinsicHeight());
+        if (drawable != null) {
+            m_popup.setWidth(drawable.getIntrinsicWidth());
+            m_popup.setHeight(drawable.getIntrinsicHeight());
+        } else {
+            Log.w(QtTag, "initOverlay(): cannot get width/height for popup " +
+                    "from null drawable for attribute " + m_attr);
+        }
 
         m_layout.getViewTreeObserver().addOnPreDrawListener(this);
     }

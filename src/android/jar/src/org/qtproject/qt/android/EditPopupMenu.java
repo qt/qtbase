@@ -4,7 +4,6 @@
 
 package org.qtproject.qt.android;
 
-import android.R;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
@@ -136,16 +135,16 @@ class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayout
     @Override
     public void contextButtonClicked(int buttonId) {
         switch (buttonId) {
-        case R.string.cut:
+        case android.R.string.cut:
             QtNativeInputConnection.cut();
             break;
-        case R.string.copy:
+        case android.R.string.copy:
             QtNativeInputConnection.copy();
             break;
-        case R.string.paste:
+        case android.R.string.paste:
             QtNativeInputConnection.paste();
             break;
-        case R.string.selectAll:
+        case android.R.string.selectAll:
             QtNativeInputConnection.selectAll();
             break;
         }

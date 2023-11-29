@@ -13,8 +13,10 @@ import android.graphics.drawable.Drawable;
 import android.text.ClipboardManager;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -145,7 +147,11 @@ class QtMessageDialogHelper
                 m_dialog.dismiss();
 
             m_dialog = new AlertDialog.Builder(m_activity).create();
-            m_theme = m_dialog.getWindow().getContext().getTheme();
+            Window window = m_dialog.getWindow();
+            if (window != null)
+                m_theme = window.getContext().getTheme();
+            else
+                Log.w(QtTAG, "show(): cannot set theme from null window!");
 
             if (m_title != null)
                 m_dialog.setTitle(m_title);
@@ -327,6 +333,7 @@ class QtMessageDialogHelper
         m_handler = 0;
     }
 
+    private static final String QtTAG = "QtMessageDialogHelper";
     private final Activity m_activity;
     private int m_standardIcon = 0;
     private Spanned m_title, m_text, m_informativeText, m_detailedText;

@@ -16,6 +16,7 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
@@ -29,7 +30,6 @@ import android.view.WindowInsetsController;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 class QtActivityDelegate
@@ -187,10 +187,10 @@ class QtActivityDelegate
 
         handleUiModeChange(m_activity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK);
 
-        float refreshRate = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-                ? m_activity.getWindowManager().getDefaultDisplay().getRefreshRate()
-                : m_activity.getDisplay().getRefreshRate();
-        QtDisplayManager.handleRefreshRateChanged(refreshRate);
+        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+                ? m_activity.getWindowManager().getDefaultDisplay()
+                : m_activity.getDisplay();
+        QtDisplayManager.handleRefreshRateChanged(QtDisplayManager.getRefreshRate(display));
 
         m_layout.getViewTreeObserver().addOnPreDrawListener(() -> {
             if (!m_inputDelegate.isKeyboardVisible())
@@ -448,10 +448,16 @@ class QtActivityDelegate
         QtNative.runAction(() -> {
             if (m_surfaces.containsKey(id)) {
                 QtSurface surface = m_surfaces.get(id);
-                surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                if (surface != null)
+                    surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                else
+                    Log.e(QtNative.QtTAG, "setSurfaceGeometry(): surface is null!");
             } else if (m_nativeViews.containsKey(id)) {
                 View view = m_nativeViews.get(id);
-                view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                if (view != null)
+                    view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                else
+                    Log.e(QtNative.QtTAG, "setSurfaceGeometry(): view is null!");
             } else {
                 Log.e(QtNative.QtTAG, "Surface " + id + " not found!");
             }

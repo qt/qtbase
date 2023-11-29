@@ -73,7 +73,7 @@ class QtDisplayManager {
                 Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
                         ? m_activity.getWindowManager().getDefaultDisplay()
                         : m_activity.getDisplay();
-                int rotation = display.getRotation();
+                int rotation = display != null ? display.getRotation() : Surface.ROTATION_0;
                 layout.setActivityDisplayRotation(rotation);
                 // Process orientation change only if it comes after the size
                 // change, or if the screen is rotated by 180 degrees.
@@ -83,7 +83,7 @@ class QtDisplayManager {
                             getNativeOrientation(m_activity, rotation));
                 }
 
-                float refreshRate = display.getRefreshRate();
+                float refreshRate = getRefreshRate(display);
                 QtDisplayManager.handleRefreshRateChanged(refreshRate);
                 QtDisplayManager.handleScreenChanged(displayId);
             }
@@ -93,6 +93,11 @@ class QtDisplayManager {
                 QtDisplayManager.handleScreenRemoved(displayId);
             }
         };
+    }
+
+    static float getRefreshRate(Display display)
+    {
+        return display != null ? display.getRefreshRate() : 60.0f;
     }
 
     public void registerDisplayListener()
@@ -274,14 +279,9 @@ class QtDisplayManager {
         double density = displayMetrics.density;
         double scaledDensity = displayMetrics.scaledDensity;
 
-        float refreshRate = 60.0f;
-        if (display != null) {
-            refreshRate = display.getRefreshRate();
-        }
-
         setDisplayMetrics(maxWidth, maxHeight, insetLeft, insetTop,
                 width, height, xdpi, ydpi,
-                scaledDensity, density, refreshRate);
+                scaledDensity, density, getRefreshRate(display));
     }
 
     public static int getDisplayRotation(Activity activity) {
