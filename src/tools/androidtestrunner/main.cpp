@@ -13,6 +13,13 @@
 #include <functional>
 #include <atomic>
 #include <csignal>
+
+#if defined(Q_OS_WIN32)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <QtCore/QDeadlineTimer>
 #include <QtCore/QThread>
 #include <QtCore/QProcessEnvironment>
@@ -425,7 +432,10 @@ static bool isRunning() {
     return output.indexOf(QLatin1StringView(" " + g_options.package.toUtf8())) > -1;
 }
 
-static void waitForFinished()
+std::atomic<bool> isPackageInstalled { false };
+std::atomic<bool> isTestRunnerInterrupted { false };
+
+static void waitForStartedAndFinished()
 {
     // wait to start and set PID
     QDeadlineTimer startDeadline(10000);
@@ -433,7 +443,7 @@ static void waitForFinished()
         if (obtainPid())
             break;
         QThread::msleep(100);
-    } while (!startDeadline.hasExpired());
+    } while (!startDeadline.hasExpired() && !isTestRunnerInterrupted.load());
 
     // Wait to finish
     QDeadlineTimer finishedDeadline(g_options.timeoutSecs * 1000);
@@ -441,10 +451,10 @@ static void waitForFinished()
         if (!isRunning())
             break;
         QThread::msleep(250);
-    } while (!finishedDeadline.hasExpired());
+    } while (!finishedDeadline.hasExpired() && !isTestRunnerInterrupted.load());
 }
 
-static void obtainSDKVersion()
+static void obtainSdkVersion()
 {
     // SDK version is necessary, as in SDK 23 pidof is broken, so we cannot obtain the pid.
     // Also, Logcat cannot filter by pid in SDK 23, so we don't offer the --show-logcat option.
@@ -605,6 +615,12 @@ static QString getCurrentTimeString()
     return QString::fromUtf8(output.simplified());
 }
 
+static bool uninstallTestPackage()
+{
+    return execCommand(QStringLiteral("%1 uninstall %2").arg(g_options.adbCommand,
+                       g_options.package), nullptr, g_options.verbose);
+}
+
 struct TestRunnerSystemSemaphore
 {
     TestRunnerSystemSemaphore() { }
@@ -633,6 +649,13 @@ void sigHandler(int signal)
 {
     std::signal(signal, SIG_DFL);
     testRunnerLock.release();
+    // Ideally we shouldn't be doing such calls from a signal handler,
+    // and we can't use QSocketNotifier because this tool doesn't spin
+    // a main event loop. Since, there's no other alternative to do this,
+    // let's do the cleanup anyway.
+    if (!isPackageInstalled.load())
+        _exit(-1);
+    isTestRunnerInterrupted.store(true);
 }
 
 int main(int argc, char *argv[])
@@ -675,15 +698,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    obtainSDKVersion();
-
-    // do not install or run packages while another test is running
-    testRunnerLock.acquire();
-
-    if (!execCommand(QStringLiteral("%1 install -r -g %2")
-                        .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose)) {
-        return 1;
-    }
+    obtainSdkVersion();
 
     QString manifest = g_options.buildPath + QStringLiteral("/AndroidManifest.xml");
     g_options.package = packageNameFromAndroidManifest(manifest);
@@ -694,31 +709,44 @@ int main(int argc, char *argv[])
     if (!parseTestArgs())
         return 1;
 
+    // do not install or run packages while another test is running
+    testRunnerLock.acquire();
+
+    isPackageInstalled.store(execCommand(QStringLiteral("%1 install -r -g %2")
+                    .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose));
+    if (!isPackageInstalled)
+        return 1;
+
     const QString formattedTime = getCurrentTimeString();
 
     // start the tests
     const auto startCmd = "%1 %2"_L1.arg(g_options.adbCommand, g_options.testArgs);
-    bool res = execCommand(startCmd, nullptr, g_options.verbose);
+    bool success = execCommand(startCmd, nullptr, g_options.verbose);
 
-    waitForFinished();
+    waitForStartedAndFinished();
 
-    if (res)
-        res &= pullFiles();
+    if (success) {
+        success &= pullFiles();
+        if (g_options.showLogcatOutput)
+            printLogcat(formattedTime);
+    }
 
     // If we have a failure, attempt to print both logcat and the crash buffer which
     // includes the crash stacktrace that is not included in the default logcat.
-    if (!res) {
+    if (!success) {
         printLogcat(formattedTime);
         printLogcatCrashBuffer(formattedTime);
-    } else if (g_options.showLogcatOutput) {
-        printLogcat(formattedTime);
     }
 
-    res &= execCommand(QStringLiteral("%1 uninstall %2").arg(g_options.adbCommand, g_options.package),
-                       nullptr, g_options.verbose);
+    success &= uninstallTestPackage();
     fflush(stdout);
 
     testRunnerLock.release();
 
-    return res ? 0 : 1;
+    if (isTestRunnerInterrupted.load()) {
+        qCritical() << "The androidtestrunner was interrupted and the was test cleaned up.";
+        return 1;
+    }
+
+    return success ? 0 : 1;
 }

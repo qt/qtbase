@@ -579,12 +579,12 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
-    # Pass 95% of the timeout to allow the test runner time to do any cleanup
-    # before being killed.
-    set(percentage "95")
-    qt_internal_get_android_test_timeout("${arg_TIMEOUT}" "${percentage}" android_timeout)
-
     if (ANDROID)
+        # Pass 95% of the timeout to allow the test runner time to do any cleanup
+        # before being killed.
+        set(percentage "95")
+        qt_internal_get_android_test_timeout("${arg_TIMEOUT}" "${percentage}" android_timeout)
+
         if(arg_BUNDLE_ANDROID_OPENSSL_LIBS)
             if(NOT OPENSSL_ROOT_DIR)
                 message(WARNING "The argument BUNDLE_ANDROID_OPENSSL_LIBS is set "
@@ -693,6 +693,14 @@ function(qt_internal_add_test name)
         set_tests_properties("${testname}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
         if(arg_TIMEOUT)
             set_tests_properties(${testname} PROPERTIES TIMEOUT ${arg_TIMEOUT})
+        endif()
+
+        if(ANDROID)
+            # Set timeout signal and some time for androidtestrunner to do cleanup
+            set_tests_properties(${testname} PROPERTIES
+                TIMEOUT_SIGNAL_NAME "SIGINT"
+                TIMEOUT_SIGNAL_GRACE_PERIOD 10.0
+            )
         endif()
 
         # Add a ${target}/check makefile target, to more easily test one test.
