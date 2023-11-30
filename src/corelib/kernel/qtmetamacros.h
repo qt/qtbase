@@ -103,6 +103,8 @@ QT_BEGIN_NAMESPACE
 #  endif
 #elif defined(Q_CC_GNU) && Q_CC_GNU >= 501
 #  define Q_OBJECT_NO_OVERRIDE_WARNING      QT_WARNING_DISABLE_GCC("-Wsuggest-override")
+#elif defined(Q_CC_MSVC)
+#  define Q_OBJECT_NO_OVERRIDE_WARNING      QT_WARNING_DISABLE_MSVC(26433)
 #else
 #  define Q_OBJECT_NO_OVERRIDE_WARNING
 #endif
