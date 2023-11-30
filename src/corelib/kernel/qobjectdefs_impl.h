@@ -51,25 +51,27 @@ namespace QtPrivate {
     template <typename L> struct List_Left<L, 0> { typedef List<> Value; };
 
     /*
-       Trick to set the return value of a slot that works even if the signal or the slot returns void
-       to be used like
-            function(), ApplyReturnValue<ReturnType>(&return_value)
-       if function() returns a value, the operator,(T, ApplyReturnValue<ReturnType>) is called, but if it
-       returns void, the built-in one is used without an error.
-    */
-    template <typename T>
-    struct ApplyReturnValue {
-        void *data;
-        explicit ApplyReturnValue(void *data_) : data(data_) {}
+        This is used to store the return value from a slot, whether the caller
+        wants to store this value (QMetaObject::invokeMethod() with
+        qReturnArg() or non-void signal ) or not.
+     */
+    struct FunctorCallBase
+    {
+        template <typename R, typename Lambda>
+        static void call_internal(void **args, Lambda &&fn) noexcept(noexcept(fn()))
+        {
+            using SlotRet = decltype(fn());
+            if constexpr (std::is_void_v<R> || std::is_void_v<SlotRet>) {
+                Q_UNUSED(args);
+            } else {
+                if (args[0]) {
+                    *reinterpret_cast<R *>(args[0]) = fn();
+                    return;
+                }
+            }
+            fn();
+        }
     };
-    template<typename T, typename U>
-    void operator,(T &&value, const ApplyReturnValue<U> &container) {
-        if (container.data)
-            *reinterpret_cast<U *>(container.data) = std::forward<T>(value);
-    }
-    template<typename T>
-    void operator,(T, const ApplyReturnValue<void> &) {}
-
 
     /*
       The FunctionPointer<Func> struct is a type trait for function pointer.
@@ -132,41 +134,57 @@ namespace QtPrivate {
 
     template <typename, typename, typename, typename> struct FunctorCall;
     template <int... II, typename... SignalArgs, typename R, typename Function>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, Function> {
-        static void call(Function &f, void **arg) {
-            f((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
+    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, Function> : FunctorCallBase
+    {
+        static void call(Function &f, void **arg)
+        {
+            call_internal<R>(arg, [&] {
+                return f((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...);
+            });
         }
     };
     template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...)> {
+    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...)> : FunctorCallBase
+    {
         static void call(SlotRet (Obj::*f)(SlotArgs...), Obj *o, void **arg)
         {
             assertObjectType<Obj>(o);
-            (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
+            call_internal<R>(arg, [&] {
+                return (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...);
+            });
         }
     };
     template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const> {
+    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const> : FunctorCallBase
+    {
         static void call(SlotRet (Obj::*f)(SlotArgs...) const, Obj *o, void **arg)
         {
             assertObjectType<Obj>(o);
-            (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
+            call_internal<R>(arg, [&] {
+                return (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...);
+            });
         }
     };
     template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) noexcept> {
+    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) noexcept> : FunctorCallBase
+    {
         static void call(SlotRet (Obj::*f)(SlotArgs...) noexcept, Obj *o, void **arg)
         {
             assertObjectType<Obj>(o);
-            (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
+            call_internal<R>(arg, [&]() noexcept {
+                return (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...);
+            });
         }
     };
     template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const noexcept> {
+    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const noexcept> : FunctorCallBase
+    {
         static void call(SlotRet (Obj::*f)(SlotArgs...) const noexcept, Obj *o, void **arg)
         {
             assertObjectType<Obj>(o);
-            (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
+            call_internal<R>(arg, [&]() noexcept {
+                return (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...);
+            });
         }
     };
 
