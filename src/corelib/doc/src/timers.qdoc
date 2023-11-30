@@ -6,7 +6,7 @@
     \title Timers
     \brief How to use Qt timers in your application.
 
-    \ingroup best-practices
+    \ingroup how-to
 
     QObject, the base class of all Qt objects, provides the basic
     timer support in Qt. With QObject::startTimer(), you start a
