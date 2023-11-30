@@ -18,6 +18,7 @@ private slots:
     void partialOrdering();
     void weakOrdering();
     void strongOrdering();
+    void threeWayCompareWithLiteralZero();
     void conversions();
     void is_eq_overloads();
     void compareThreeWay();
@@ -498,6 +499,73 @@ void tst_QCompare::strongOrdering()
     static_assert( (0 <= Qt::strong_ordering::greater));
     static_assert(!(0 >  Qt::strong_ordering::greater));
     static_assert(!(0 >= Qt::strong_ordering::greater));
+}
+
+void tst_QCompare::threeWayCompareWithLiteralZero()
+{
+#ifndef __cpp_lib_three_way_comparison
+    QSKIP("This test requires C++20 <=> support enabled in the compiler and the stdlib.");
+#else
+    // the result of <=> is _always_ a std::_ordering type:
+#define CHECK(O) do { \
+        using StdO = typename QtOrderingPrivate::StdOrdering<O>::type; \
+        static_assert(std::is_same_v<decltype(0 <=> std::declval<O&>()), StdO>); \
+        static_assert(std::is_same_v<decltype(std::declval<O&>() <=> 0), StdO>); \
+    } while (false)
+
+    CHECK(Qt::partial_ordering);
+    CHECK(Qt::weak_ordering);
+    CHECK(Qt::strong_ordering);
+    CHECK(QPartialOrdering);
+    // API symmetry check:
+    CHECK(std::partial_ordering);
+    CHECK(std::weak_ordering);
+    CHECK(std::strong_ordering);
+
+#undef CHECK
+
+#define CHECK(O, what, reversed) do { \
+        using StdO = typename QtOrderingPrivate::StdOrdering<O>::type; \
+        static_assert((O :: what <=> 0) == StdO:: what); \
+        static_assert((0 <=> O :: what) == StdO:: reversed); \
+    } while (false)
+
+    CHECK(Qt::partial_ordering, unordered,  unordered);
+    CHECK(Qt::partial_ordering, equivalent, equivalent);
+    CHECK(Qt::partial_ordering, less,       greater);
+    CHECK(Qt::partial_ordering, greater,    less);
+
+    CHECK(Qt::weak_ordering, equivalent, equivalent);
+    CHECK(Qt::weak_ordering, less,       greater);
+    CHECK(Qt::weak_ordering, greater,    less);
+
+    CHECK(Qt::strong_ordering, equal,     equal);
+    CHECK(Qt::strong_ordering, less,      greater);
+    CHECK(Qt::strong_ordering, greater,   less);
+
+    CHECK(QPartialOrdering, unordered,  unordered);
+    CHECK(QPartialOrdering, equivalent, equivalent);
+    CHECK(QPartialOrdering, less,       greater);
+    CHECK(QPartialOrdering, greater,    less);
+
+    // API symmetry check:
+
+    CHECK(std::partial_ordering, unordered,  unordered);
+    CHECK(std::partial_ordering, equivalent, equivalent);
+    CHECK(std::partial_ordering, less,       greater);
+    CHECK(std::partial_ordering, greater,    less);
+
+    CHECK(std::weak_ordering, equivalent, equivalent);
+    CHECK(std::weak_ordering, less,       greater);
+    CHECK(std::weak_ordering, greater,    less);
+
+    CHECK(std::strong_ordering, equal,     equal);
+    CHECK(std::strong_ordering, less,      greater);
+    CHECK(std::strong_ordering, greater,   less);
+
+#undef CHECK
+#endif // __cpp_lib_three_way_comparisons
+
 }
 
 void tst_QCompare::conversions()

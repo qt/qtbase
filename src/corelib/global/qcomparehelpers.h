@@ -27,6 +27,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPartialOrdering;
+
 namespace QtOrderingPrivate {
 #ifdef __cpp_lib_three_way_comparison
 
@@ -43,6 +45,9 @@ QT_STD_MAP(partial)
 QT_STD_MAP(weak)
 QT_STD_MAP(strong)
 #undef QT_STD_MAP
+
+template <> struct StdOrdering<QPartialOrdering> : q20::type_identity<std::partial_ordering> {};
+template <> struct  QtOrdering<QPartialOrdering> : q20::type_identity< Qt::partial_ordering> {};
 
 template <typename In> constexpr auto to_std(In in) noexcept
     -> typename QtOrderingPrivate::StdOrdering<In>::type
