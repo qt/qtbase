@@ -614,6 +614,7 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
                      int width, int height, qreal rx, qreal ry,
                      const QColor &lineColor, int lineWidth,
                      const QBrush *fill)
+    \since 6.7
     \relates <qdrawutil.h>
 
     Draws the plain rounded rectangle beginning at (\a x, \a y)
@@ -635,6 +636,7 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
     \sa qDrawShadeRect(), QStyle
 */
 
+// ### Qt7: Pass QPen instead of QColor for frame drawing
 void qDrawPlainRoundedRect(QPainter *p, int x, int y, int w, int h,
                     qreal rx, qreal ry, const QColor &c,
                     int lineWidth, const QBrush *fill)
@@ -885,6 +887,7 @@ void qDrawPlainRect(QPainter *p, const QRect &r, const QColor &c,
                                    qreal rx, qreal ry,
                                    const QColor &lineColor, int lineWidth,
                                    const QBrush *fill)
+    \since 6.7
     \relates <qdrawutil.h>
     \overload
 
