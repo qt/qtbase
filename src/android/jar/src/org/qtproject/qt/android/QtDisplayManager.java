@@ -44,45 +44,30 @@ class QtDisplayManager {
     public static final int SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2;
     private int m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
 
+    private static int m_previousRotation = -1;
+
     private DisplayManager.DisplayListener m_displayListener = null;
     private final Activity m_activity;
 
-    QtDisplayManager(Activity activity, QtLayout layout)
+    QtDisplayManager(Activity activity)
     {
         m_activity = activity;
-        initDisplayListener(layout);
+        initDisplayListener();
     }
 
-    private void initDisplayListener(QtLayout layout) {
+    private void initDisplayListener() {
         m_displayListener = new DisplayManager.DisplayListener() {
             @Override
             public void onDisplayAdded(int displayId) {
                 QtDisplayManager.handleScreenAdded(displayId);
             }
 
-            private boolean isSimilarRotation(int r1, int r2) {
-                return (r1 == r2)
-                        || (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
-                        || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)
-                        || (r1 == Surface.ROTATION_90 && r2 == Surface.ROTATION_270)
-                        || (r1 == Surface.ROTATION_270 && r2 == Surface.ROTATION_90);
-            }
-
             @Override
             public void onDisplayChanged(int displayId) {
+                handleOrientationChanges(m_activity, false);
                 Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
                         ? m_activity.getWindowManager().getDefaultDisplay()
                         : m_activity.getDisplay();
-                int rotation = display != null ? display.getRotation() : Surface.ROTATION_0;
-                layout.setActivityDisplayRotation(rotation);
-                // Process orientation change only if it comes after the size
-                // change, or if the screen is rotated by 180 degrees.
-                // Otherwise it will be processed in QtLayout.
-                if (isSimilarRotation(rotation, layout.displayRotation())) {
-                    QtDisplayManager.handleOrientationChanged(rotation,
-                            getNativeOrientation(m_activity, rotation));
-                }
-
                 float refreshRate = getRefreshRate(display);
                 QtDisplayManager.handleRefreshRateChanged(refreshRate);
                 QtDisplayManager.handleScreenChanged(displayId);
@@ -93,6 +78,53 @@ class QtDisplayManager {
                 QtDisplayManager.handleScreenRemoved(displayId);
             }
         };
+    }
+
+    private static boolean isSameSizeForOrientations(int r1, int r2) {
+        return (r1 == r2) ||
+                (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
+                || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)
+                || (r1 == Surface.ROTATION_90 && r2 == Surface.ROTATION_270)
+                || (r1 == Surface.ROTATION_270 && r2 == Surface.ROTATION_90);
+    }
+
+    static void handleOrientationChanges(Activity activity, boolean sizeChanged)
+    {
+        int currentRotation = getDisplayRotation(activity);
+        int nativeOrientation = getNativeOrientation(activity, currentRotation);
+
+        if (m_previousRotation == currentRotation)
+            return;
+
+        // If the the current and previous rotations are similar then QtLayout.onSizeChanged()
+        // might not be called, so we can already update the orientation, and rely on this to
+        // called again once the resize event is sent.
+        // Note: Android 10 emulator seems to not always send an event when the orientation
+        // changes, could be a bug in the emulator.
+        boolean noResizeNeeded = isSameSizeForOrientations(m_previousRotation, currentRotation);
+        if (m_previousRotation == -1 || sizeChanged || noResizeNeeded) {
+            QtDisplayManager.handleOrientationChanged(currentRotation, nativeOrientation);
+            m_previousRotation = currentRotation;
+        }
+    }
+
+    private static int getDisplayRotation(Activity activity) {
+        Display display = Build.VERSION.SDK_INT < Build.VERSION_CODES.R ?
+                activity.getWindowManager().getDefaultDisplay() :
+                activity.getDisplay();
+
+        return display != null ? display.getRotation() : 0;
+    }
+
+    private static int getNativeOrientation(Activity activity, int rotation)
+    {
+        int orientation = activity.getResources().getConfiguration().orientation;
+        boolean rot90 = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
+        boolean isLandscape = (orientation == Configuration.ORIENTATION_LANDSCAPE);
+        if ((isLandscape && !rot90) || (!isLandscape && rot90))
+            return Configuration.ORIENTATION_LANDSCAPE;
+
+        return Configuration.ORIENTATION_PORTRAIT;
     }
 
     static float getRefreshRate(Display display)
@@ -112,21 +144,6 @@ class QtDisplayManager {
         DisplayManager displayManager =
                 (DisplayManager) m_activity.getSystemService(Context.DISPLAY_SERVICE);
         displayManager.unregisterDisplayListener(m_displayListener);
-    }
-
-    public static int getNativeOrientation(Activity activity, int rotation)
-    {
-        int nativeOrientation;
-
-        int orientation = activity.getResources().getConfiguration().orientation;
-        boolean rot90 = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
-        boolean isLandscape = (orientation == Configuration.ORIENTATION_LANDSCAPE);
-        if ((isLandscape && !rot90) || (!isLandscape && rot90))
-            nativeOrientation = Configuration.ORIENTATION_LANDSCAPE;
-        else
-            nativeOrientation = Configuration.ORIENTATION_PORTRAIT;
-
-        return nativeOrientation;
     }
 
     public void setSystemUiVisibility(int systemUiVisibility)
@@ -282,21 +299,5 @@ class QtDisplayManager {
         setDisplayMetrics(maxWidth, maxHeight, insetLeft, insetTop,
                 width, height, xdpi, ydpi,
                 scaledDensity, density, getRefreshRate(display));
-    }
-
-    public static int getDisplayRotation(Activity activity) {
-        Display display;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            final WindowManager windowManager = activity.getWindowManager();
-            display = windowManager.getDefaultDisplay();
-        } else {
-            display = activity.getDisplay();
-        }
-
-        int newRotation = 0;
-        if (display != null) {
-            newRotation = display.getRotation();
-        }
-        return newRotation;
     }
 }

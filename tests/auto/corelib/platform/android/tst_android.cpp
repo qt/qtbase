@@ -12,6 +12,8 @@
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtCore/qdiriterator.h>
+#include <QWidget>
+#include <QSignalSpy>
 
 using namespace Qt::StringLiterals;
 
@@ -305,19 +307,37 @@ void tst_Android::orientationChange_data()
 {
     QTest::addColumn<int>("nativeOrientation");
     QTest::addColumn<Qt::ScreenOrientation>("expected");
+    QTest::addColumn<QSize>("screenSize");
 
-    QTest::newRow("Landscape") << 0 << Qt::LandscapeOrientation;
-    QTest::newRow("Portrait") << 1 << Qt::PortraitOrientation;
+    const QSize portraitSize = QGuiApplication::primaryScreen()->size();
+    const QSize landscapeSize = QSize(portraitSize.height(), portraitSize.width());
+
+    QTest::newRow("InvertedLandscape") << 8 << Qt::InvertedLandscapeOrientation << landscapeSize;
+    QTest::newRow("InvertedPortrait") << 9 << Qt::InvertedPortraitOrientation << portraitSize;
+    QTest::newRow("Landscape") << 0 << Qt::LandscapeOrientation << landscapeSize;
+    // Leave Portrait till the end
+    QTest::newRow("Portrait") << 1 << Qt::PortraitOrientation << portraitSize;
 }
 
 void tst_Android::orientationChange()
 {
     QFETCH(int, nativeOrientation);
     QFETCH(Qt::ScreenOrientation, expected);
+    QFETCH(QSize, screenSize);
+
+    // For QTBUG-94459 to check that the widget size are consistent after orientation changes
+    QWidget widget;
+    widget.show();
 
     auto context = QNativeInterface::QAndroidApplication::context();
     context.callMethod<void>("setRequestedOrientation", nativeOrientation);
-    QTRY_COMPARE(qGuiApp->primaryScreen()->orientation(), expected);
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QSignalSpy orientationSpy(screen, SIGNAL(orientationChanged(Qt::ScreenOrientation)));
+    QTRY_COMPARE(screen->orientation(), expected);
+    QCOMPARE(orientationSpy.size(), 1);
+    QCOMPARE(screen->size(), screenSize);
+    QCOMPARE(widget.size(), screen->availableSize());
 }
 
 QTEST_MAIN(tst_Android)

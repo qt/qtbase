@@ -135,7 +135,7 @@ class QtActivityDelegate
     {
         m_layout = new QtLayout(m_activity);
 
-        m_displayManager = new QtDisplayManager(m_activity, m_layout);
+        m_displayManager = new QtDisplayManager(m_activity);
         m_displayManager.registerDisplayListener();
 
         QtInputDelegate.KeyboardVisibilityListener keyboardVisibilityListener =
@@ -179,11 +179,7 @@ class QtActivityDelegate
         m_activity.setContentView(m_layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                              ViewGroup.LayoutParams.MATCH_PARENT));
-
-        int rotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
-        int nativeOrientation = QtDisplayManager.getNativeOrientation(m_activity, rotation);
-        m_layout.setNativeOrientation(nativeOrientation);
-        QtDisplayManager.handleOrientationChanged(rotation, nativeOrientation);
+        QtDisplayManager.handleOrientationChanges(m_activity, false);
 
         handleUiModeChange(m_activity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK);
 
