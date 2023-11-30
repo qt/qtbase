@@ -784,6 +784,9 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
 
 void tst_QGraphicsProxyWidget::focusProxy_QTBUG_51856()
 {
+#ifdef ANDROID
+    QSKIP("This test leads to failures on subsequent test cases, QTBUG-119574");
+#endif
     // QSpinBox has an internal QLineEdit; this QLineEdit has the spinbox
     // as its focus proxy.
     struct FocusedSpinBox : QSpinBox
