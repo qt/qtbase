@@ -372,9 +372,18 @@ h3.fn, span.fn {
 .fngroup h3.fngroupitem {
     margin-bottom: 5px;
 }
-h3.fn code {
+
+h3.fn code,
+h3.flags code,
+td.tblQmlFuncNode > p > code,
+td.tblQmlPropNode > p > code {
     float: right;
 }
+
+code.extra.summary {
+    font-size: 12px;
+}
+
 h3.fn:target {
     background-color: #F6F6D6;
 }
