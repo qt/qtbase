@@ -1718,7 +1718,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     QString stores a string of 16-bit \l{QChar}s, where each QChar
     corresponds to one UTF-16 code unit. (Unicode characters
     with code values above 65535 are stored using surrogate pairs,
-    i.e., two consecutive \l{QChar}s.)
+    that is, two consecutive \l{QChar}s.)
 
     \l{Unicode} is an international standard that supports most of the
     writing systems in use today. It is a superset of US-ASCII (ANSI
@@ -1734,17 +1734,15 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     store raw bytes and traditional 8-bit '\\0'-terminated strings.
     For most purposes, QString is the class you want to use. It is
     used throughout the Qt API, and the Unicode support ensures that
-    your applications will be easy to translate if you want to expand
-    your application's market at some point. The two main cases where
-    QByteArray is appropriate are when you need to store raw binary
-    data, and when memory conservation is critical (like in embedded
-    systems).
+    your applications are easy to translate if you want to expand
+    your application's market at some point. Two prominent cases
+    where QByteArray is appropriate are when you need to store raw
+    binary data, and when memory conservation is critical (like in
+    embedded systems).
 
-    \tableofcontents
+    \section1 Initializing a string
 
-    \section1 Initializing a String
-
-    One way to initialize a QString is simply to pass a \c{const char
+    One way to initialize a QString is to pass a \c{const char
     *} to its constructor. For example, the following code creates a
     QString of size 5 containing the data "Hello":
 
@@ -1755,17 +1753,18 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     In all of the QString functions that take \c{const char *}
     parameters, the \c{const char *} is interpreted as a classic
-    C-style '\\0'-terminated string encoded in UTF-8. It is legal for
-    the \c{const char *} parameter to be \nullptr.
+    C-style \c{'\\0'}-terminated string. Except where the function's
+    name overtly indicates some other encoding, such \c{const char *}
+    parameters are assumed to be encoded in UTF-8.
 
     You can also provide string data as an array of \l{QChar}s:
 
     \snippet qstring/main.cpp 1
 
     QString makes a deep copy of the QChar data, so you can modify it
-    later without experiencing side effects. (If for performance
-    reasons you don't want to take a deep copy of the character data,
-    use QString::fromRawData() instead.)
+    later without experiencing side effects. You can avoid taking a
+    deep copy of the character data by using QStringView or
+    QString::fromRawData() instead.
 
     Another approach is to set the size of the string using resize()
     and to initialize the data character per character. QString uses
@@ -1782,7 +1781,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     \snippet qstring/main.cpp 3
 
-    The at() function can be faster than \l operator[](), because it
+    The at() function can be faster than \l operator[]() because it
     never causes a \l{deep copy} to occur. Alternatively, use the
     first(), last(), or sliced() functions to extract several characters
     at a time.
@@ -1804,11 +1803,11 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     You can also pass string literals to functions that take QStrings
     as arguments, invoking the QString(const char *)
     constructor. Similarly, you can pass a QString to a function that
-    takes a \c{const char *} argument using the \l qPrintable() macro
+    takes a \c{const char *} argument using the \l qPrintable() macro,
     which returns the given QString as a \c{const char *}. This is
     equivalent to calling <QString>.toLocal8Bit().constData().
 
-    \section1 Manipulating String Data
+    \section1 Manipulating string data
 
     QString provides the following basic functions for modifying the
     character data: append(), prepend(), insert(), replace(), and
@@ -1816,19 +1815,19 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     \snippet qstring/main.cpp 5
 
-    In the above example the replace() function's first two arguments are the
+    In the above example, the replace() function's first two arguments are the
     position from which to start replacing and the number of characters that
     should be replaced.
 
     When data-modifying functions increase the size of the string,
-    they may lead to reallocation of memory for the QString object. When
+    QString may reallocate the memory in which it holds its data. When
     this happens, QString expands by more than it immediately needs so as
     to have space for further expansion without reallocation until the size
-    of the string has greatly increased.
+    of the string has significantly increased.
 
-    The insert(), remove() and, when replacing a sub-string with one of
+    The insert(), remove(), and, when replacing a sub-string with one of
     different size, replace() functions can be slow (\l{linear time}) for
-    large strings, because they require moving many characters in the string
+    large strings because they require moving many characters in the string
     by at least one position in memory.
 
     If you are building a QString gradually and know in advance
@@ -1846,32 +1845,32 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     method of the QString is called. Accessing such an iterator or reference
     after the call to a non-\c{const} method leads to undefined behavior. When
     stability for iterator-like functionality is required, you should use
-    indexes instead of iterators as they are not tied to QString's internal
+    indexes instead of iterators, as they are not tied to QString's internal
     state and thus do not get invalidated.
 
     \note Due to \l{implicit sharing}, the first non-\c{const} operator or
-    function used on a given QString may cause it to, internally, perform a deep
+    function used on a given QString may cause it to internally perform a deep
     copy of its data. This invalidates all iterators over the string and
-    references to individual characters within it. After the first non-\c{const}
-    operator, operations that modify QString may completely (in case of
-    reallocation) or partially invalidate iterators and references, but other
-    methods (such as begin() or end()) will not. Accessing an iterator or
-    reference after it has been invalidated leads to undefined behavior.
+    references to individual characters within it. Do not call non-const
+    functions while keeping iterators. Accessing an iterator or reference
+    after it has been invalidated leads to undefined behavior. See the
+    \l{Implicit sharing iterator problem} section for more information.
 
-    A frequent requirement is to remove whitespace characters from a
-    string ('\\n', '\\t', ' ', etc.). If you want to remove whitespace
-    from both ends of a QString, use the trimmed() function. If you
-    want to remove whitespace from both ends and replace multiple
-    consecutive whitespaces with a single space character within the
-    string, use simplified().
+    A frequent requirement is to remove or simplify the spacing between
+    visible characters in a string. The characters that make up that spacing
+    are those for which \l {QChar::}{isSpace()} returns \c true, such as
+    the simple space \c{' '}, the horizontal tab \c{'\\t'} and the newline \c{'\\n'}.
+    To obtain a copy of a string leaving out any spacing from its start and end,
+    use \l trimmed(). To also replace each sequence of spacing characters within
+    the string with a simple space, \c{' '}, use \l simplified().
 
     If you want to find all occurrences of a particular character or
     substring in a QString, use the indexOf() or lastIndexOf()
-    functions. The former searches forward starting from a given index
-    position, the latter searches backward. Both return the index
-    position of the character or substring if they find it; otherwise,
-    they return -1.  For example, here is a typical loop that finds all
-    occurrences of a particular substring:
+    functions.The former searches forward, the latter searches backward.
+    Either can be told an index position from which to start their search.
+    Each returns the index position of the character or substring if they
+    find it; otherwise, they return -1.  For example, here is a typical loop
+    that finds all occurrences of a particular substring:
 
     \snippet qstring/main.cpp 6
 
@@ -1880,52 +1879,57 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     setNum() functions, the number() static functions, and the
     toInt(), toDouble(), and similar functions.
 
-    To get an upper- or lowercase version of a string use toUpper() or
+    To get an uppercase or lowercase version of a string, use toUpper() or
     toLower().
 
     Lists of strings are handled by the QStringList class. You can
     split a string into a list of strings using the split() function,
     and join a list of strings into a single string with an optional
-    separator using QStringList::join(). You can obtain a list of
-    strings from a string list that contain a particular substring or
-    that match a particular QRegularExpression using the QStringList::filter()
-    function.
+    separator using QStringList::join(). You can obtain a filtered list
+    from a string list by selecting the entries in it that contain a
+    particular substring or match a particular QRegularExpression.
+    See QStringList::filter() for details.
 
-    \section1 Querying String Data
+    \section1 Querying string data
 
-    If you want to see if a QString starts or ends with a particular
-    substring use startsWith() or endsWith(). If you simply want to
-    check whether a QString contains a particular character or
-    substring, use the contains() function. If you want to find out
-    how many times a particular character or substring occurs in the
-    string, use count().
+    To see if a QString starts or ends with a particular substring, use
+    startsWith() or endsWith(). To check whether a QString contains a
+    specific character or substring, use the contains() function. To
+    find out how many times a particular character or substring occurs
+    in a string, use count().
 
     To obtain a pointer to the actual character data, call data() or
     constData(). These functions return a pointer to the beginning of
     the QChar data. The pointer is guaranteed to remain valid until a
     non-\c{const} function is called on the QString.
 
-    \section2 Comparing Strings
+    \section2 Comparing strings
 
     QStrings can be compared using overloaded operators such as \l
     operator<(), \l operator<=(), \l operator==(), \l operator>=(),
-    and so on.  Note that the comparison is based exclusively on the
-    numeric Unicode values of the characters. It is very fast, but is
-    not what a human would expect; the QString::localeAwareCompare()
-    function is usually a better choice for sorting user-interface
-    strings, when such a comparison is available.
+    and so on. The comparison is based exclusively on the lexicographical
+    order of the two strings, seen as sequences of UTF-16 code units.
+    It is very fast but is not what a human would expect; the
+    QString::localeAwareCompare() function is usually a better choice for
+    sorting user-interface strings, when such a comparison is available.
 
-    On Unix-like platforms (including Linux, \macos and iOS), when Qt
-    is linked with the ICU library (which it usually is), its
-    locale-aware sorting is used.  Otherwise, on \macos and iOS, \l
-    localeAwareCompare() compares according the "Order for sorted
-    lists" setting in the International preferences panel. On other
-    Unix-like systems without ICU, the comparison falls back to the
-    system library's \c strcoll(),
+    When Qt is linked with the ICU library (which it usually is), its
+    locale-aware sorting is used. Otherwise, platform-specific solutions
+    are used:
+    \list
+        \li On Windows, localeAwareCompare() uses the current user locale,
+            as set in the \uicontrol{regional} and \uicontrol{language}
+            options portion of \uicontrol{Control Panel}.
+        \li On \macos and iOS, \l localeAwareCompare() compares according
+            to the \uicontrol{Order for sorted lists} setting in the
+            \uicontrol{International preferences} panel.
+        \li On other Unix-like systems, the comparison falls back to the
+            system library's \c strcoll().
+    \endlist
 
-    \section1 Converting Between Encoded Strings Data and QString
+    \section1 Converting between encoded string data and QString
 
-    QString provides the following three functions that return a
+    QString provides the following functions that return a
     \c{const char *} version of the string as QByteArray: toUtf8(),
     toLatin1(), and toLocal8Bit().
 
@@ -1956,7 +1960,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     \li \l QT_NO_CAST_FROM_ASCII disables automatic conversions from
        C string literals and pointers to Unicode.
     \li \l QT_RESTRICTED_CAST_FROM_ASCII allows automatic conversions
-       from C characters and character arrays, but disables automatic
+       from C characters and character arrays but disables automatic
        conversions from character pointers to Unicode.
     \li \l QT_NO_CAST_TO_ASCII disables automatic conversion from QString
        to C strings.
@@ -1964,7 +1968,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     You then need to explicitly call fromUtf8(), fromLatin1(),
     or fromLocal8Bit() to construct a QString from an
-    8-bit string, or use the lightweight QLatin1StringView class, for
+    8-bit string, or use the lightweight QLatin1StringView class. For
     example:
 
     \snippet code/src_corelib_text_qstring.cpp 1
@@ -1985,7 +1989,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     \snippet qstring/main.cpp 7
 
-    The \c result variable, is a normal variable allocated on the
+    The \c result variable is a normal variable allocated on the
     stack. When \c return is called, and because we're returning by
     value, the copy constructor is called and a copy of the string is
     returned. No actual copying takes place thanks to the implicit
@@ -1993,12 +1997,12 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     \endtable
 
-    \section1 Distinction Between Null and Empty Strings
+    \section1 Distinction between null and empty strings
 
-    For historical reasons, QString distinguishes between a null
-    string and an empty string. A \e null string is a string that is
+    For historical reasons, QString distinguishes between null
+    and empty strings. A \e null string is a string that is
     initialized using QString's default constructor or by passing
-    (\c{const char *})0 to the constructor. An \e empty string is any
+    \nullptr to the constructor. An \e empty string is any
     string with size 0. A null string is always empty, but an empty
     string isn't necessarily null:
 
@@ -2006,10 +2010,10 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     All functions except isNull() treat null strings the same as empty
     strings. For example, toUtf8().constData() returns a valid pointer
-    (\e not nullptr) to a '\\0' character for a null string. We
+    (not \nullptr) to a '\\0' character for a null string. We
     recommend that you always use the isEmpty() function and avoid isNull().
 
-    \section1 Number Formats
+    \section1 Number formats
 
     When a QString::arg() \c{'%'} format specifier includes the \c{'L'} locale
     qualifier, and the base is ten (its default), the default locale is
@@ -2019,16 +2023,16 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     C locale's representation of numbers.
 
     When QString::arg() applies left-padding to numbers, the fill character
-    \c{'0'} is treated specially. If the number is negative, its minus sign will
-    appear before the zero-padding. If the field is localized, the
+    \c{'0'} is treated specially. If the number is negative, its minus sign
+    appears before the zero-padding. If the field is localized, the
     locale-appropriate zero character is used in place of \c{'0'}. For
     floating-point numbers, this special treatment only applies if the number is
     finite.
 
-    \section2 Floating-point Formats
+    \section2 Floating-point formats
 
-    In member functions (e.g., arg(), number()) that represent floating-point
-    numbers (\c float or \c double) as strings, the form of display can be
+    In member functions (for example, arg() and number()) that format floating-point
+    numbers (\c float or \c double) as strings, the representation used can be
     controlled by a choice of \e format and \e precision, whose meanings are as
     for \l {QLocale::toString(double, char, int)}.
 
@@ -2037,14 +2041,14 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     the exponent shows its sign and includes at least two digits, left-padding
     with zero if needed.
 
-    \section1 More Efficient String Construction
+    \section1 More efficient string construction
 
     Many strings are known at compile time. The QString constructor from
     C++ string literals will copy the contents of the string,
-    treating the contents as UTF-8. This requires a memory allocation and the
-    re-encoding of the string data, operations that will happen at runtime.
-    If the string data is known at compile time, you can use the QStringLiteral macro
-    or similarly \c{operator""_s} to create QString's payload at compile
+    treating the contents as UTF-8. This requires memory allocation and
+    re-encoding string data, operations that will happen at runtime.
+    If the string data is known at compile time, you can use the QStringLiteral
+    macro or similarly \c{operator""_s} to create QString's payload at compile
     time instead.
 
     Using the QString \c{'+'} operator, it is easy to construct a
@@ -2056,7 +2060,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     There is nothing wrong with either of these string constructions,
     but there are a few hidden inefficiencies:
 
-    First, multiple uses of the \c{'+'} operator usually means
+    First, repeated use of the \c{'+'} operator may lead to
     multiple memory allocations. When concatenating \e{n} substrings,
     where \e{n > 2}, there can be as many as \e{n - 1} calls to the
     memory allocator.
@@ -2078,55 +2082,57 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     then called \e{once} to get the required space, and the substrings
     are copied into it one by one.
 
-    Additional efficiency is gained by inlining and reduced reference
+    Additional efficiency is gained by inlining and reducing reference
     counting (the QString created from a \c{QStringBuilder}
     has a ref count of 1, whereas QString::append() needs an extra
     test).
 
     There are two ways you can access this improved method of string
     construction. The straightforward way is to include
-    \c{QStringBuilder} wherever you want to use it, and use the
+    \c{QStringBuilder} wherever you want to use it and use the
     \c{'%'} operator instead of \c{'+'} when concatenating strings:
 
     \snippet qstring/stringbuilder.cpp 5
 
-    A more global approach, which is more convenient but not entirely source
-    compatible, is to define \c QT_USE_QSTRINGBUILDER (by adding it to the compiler
-    flags) at build time. This will make concatenating strings with \c{'+'} work the
-    same way as \c{QStringBuilder} \c{'%'}.
+    A more global approach, which is more convenient but not entirely
+    source-compatible, is to define \c QT_USE_QSTRINGBUILDER (by adding
+    it to the compiler flags) at build time. This will make concatenating
+    strings with \c{'+'} work the same way as \c{QStringBuilder's} \c{'%'}.
 
-    \note Using automatic type deduction (e.g. by using the \c auto keyword)
-    with the result of string concatenation when QStringBuilder is enabled will
-    show that the concatenation is indeed an object of a QStringBuilder specialization:
+    \note Using automatic type deduction (for example, by using the \c
+    auto keyword) with the result of string concatenation when QStringBuilder
+    is enabled will show that the concatenation is indeed an object of a
+    QStringBuilder specialization:
 
     \snippet qstring/stringbuilder.cpp 6
 
-    This does not cause any harm, as QStringBuilder will implictly convert to
+    This does not cause any harm, as QStringBuilder will implicitly convert to
     QString when required. If this is undesirable, then one should specify
-    the required types instead of having the compiler deduce them:
+    the necessary types instead of having the compiler deduce them:
 
     \snippet qstring/stringbuilder.cpp 7
 
-    \section1 Maximum Size and Out-of-memory Conditions
+    \section1 Maximum size and out-of-memory conditions
 
     The maximum size of QString depends on the architecture. Most 64-bit
     systems can allocate more than 2 GB of memory, with a typical limit
     of 2^63 bytes. The actual value also depends on the overhead required for
-    managing the data block. As a result, you can expect the maximum size
-    of 2 GB minus overhead on 32-bit platforms, and 2^63 bytes minus overhead
+    managing the data block. As a result, you can expect a maximum size
+    of 2 GB minus overhead on 32-bit platforms and 2^63 bytes minus overhead
     on 64-bit platforms. The number of elements that can be stored in a
     QString is this maximum size divided by the size of QChar.
 
     When memory allocation fails, QString throws a \c std::bad_alloc
     exception if the application was compiled with exception support.
-    Out of memory conditions in Qt containers are the only case where Qt
+    Out-of-memory conditions in Qt containers are the only cases where Qt
     will throw exceptions. If exceptions are disabled, then running out of
     memory is undefined behavior.
 
-    Note that the operating system may impose further limits on applications
-    holding a lot of allocated memory, especially large, contiguous blocks.
-    Such considerations, the configuration of such behavior or any mitigation
-    are outside the scope of the Qt API.
+    \note Target operating systems may impose limits on how much memory an
+    application can allocate, in total, or on the size of individual allocations.
+    This may further restrict the size of string a QString can hold.
+    Mitigating or controlling the behavior these limits cause is beyond the
+    scope of the Qt API.
 
     \sa fromRawData(), QChar, QStringView, QLatin1StringView, QByteArray
 */
@@ -2412,8 +2418,8 @@ encoded in \1, and is converted to QString using the \2 function.
 /*! \fn std::wstring QString::toStdWString() const
 
     Returns a std::wstring object with the data contained in this
-    QString. The std::wstring is encoded in utf16 on platforms where
-    wchar_t is 2 bytes wide (e.g. windows) and in ucs4 on platforms
+    QString. The std::wstring is encoded in UTF-16 on platforms where
+    wchar_t is 2 bytes wide (for example, Windows) and in UTF-32 on platforms
     where wchar_t is 4 bytes wide (most Unix systems).
 
     This method is mostly useful to pass a QString to a function
@@ -2565,7 +2571,7 @@ QString::QString(QChar ch)
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
-    \note: any null ('\\0') bytes in the byte array will be included in this
+    \note Any null ('\\0') bytes in the byte array will be included in this
     string, converted to Unicode null characters (U+0000). This behavior is
     different from Qt 5.x.
 
@@ -2712,20 +2718,20 @@ void QString::resize(qsizetype newSize, QChar fillChar)
 
     Ensures the string has space for at least \a size characters.
 
-    If you know in advance how large the string will be, you can call this
-    function to save repeated reallocation in the course of building it.
+    If you know in advance how large a string will be, you can call this
+    function to save repeated reallocation while building it.
     This can improve performance when building a string incrementally.
     A long sequence of operations that add to a string may trigger several
     reallocations, the last of which may leave you with significantly more
-    space than you really need, which is less efficient than doing a single
+    space than you need. This is less efficient than doing a single
     allocation of the right size at the start.
 
     If in doubt about how much space shall be needed, it is usually better to
     use an upper bound as \a size, or a high estimate of the most likely size,
     if a strict upper bound would be much bigger than this. If \a size is an
     underestimate, the string will grow as needed once the reserved size is
-    exceeded, which may lead to a larger allocation than your best overestimate
-    would have and will slow the operation that triggers it.
+    exceeded, which may lead to a larger allocation than your best
+    overestimate would have and will slow the operation that triggers it.
 
     \warning reserve() reserves memory but does not change the size of the
     string. Accessing data beyond the end of the string is undefined behavior.
