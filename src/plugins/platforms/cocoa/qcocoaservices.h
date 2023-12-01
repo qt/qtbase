@@ -11,8 +11,12 @@ QT_BEGIN_NAMESPACE
 class QCocoaServices : public QPlatformServices
 {
 public:
+    bool hasCapability(Capability capability) const override;
+
     bool openUrl(const QUrl &url) override;
     bool openDocument(const QUrl &url) override;
+
+    QPlatformServiceColorPicker *colorPicker(QWindow *parent) override;
 };
 
 QT_END_NAMESPACE
