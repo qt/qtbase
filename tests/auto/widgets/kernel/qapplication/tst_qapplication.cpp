@@ -1335,9 +1335,6 @@ void DeleteLaterWidget::checkDeleteLater()
 
 void tst_QApplication::testDeleteLater()
 {
-#ifdef Q_OS_MAC
-    QSKIP("This test fails and then hangs on OS X, see QTBUG-24318");
-#endif
     int argc = 0;
     QApplication app(argc, nullptr);
     connect(&app, &QGuiApplication::lastWindowClosed, &app, &QCoreApplication::quit);
