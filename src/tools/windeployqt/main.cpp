@@ -1777,15 +1777,15 @@ int main(int argc, char **argv)
     const QMap<QString, QString> qtpathsVariables =
             queryQtPaths(options.qtpathsBinary, &errorMessage);
     const QString xSpec = qtpathsVariables.value(QStringLiteral("QMAKE_XSPEC"));
-    options.platform = platformFromMkSpec(xSpec);
-    if (options.platform == UnknownPlatform) {
-        std::wcerr << "Unsupported platform " << xSpec << '\n';
-        return 1;
-    }
-
     if (qtpathsVariables.isEmpty() || xSpec.isEmpty()
         || !qtpathsVariables.contains(QStringLiteral("QT_INSTALL_BINS"))) {
         std::wcerr << "Unable to query qtpaths: " << errorMessage << '\n';
+        return 1;
+    }
+
+    options.platform = platformFromMkSpec(xSpec);
+    if (options.platform == UnknownPlatform) {
+        std::wcerr << "Unsupported platform " << xSpec << '\n';
         return 1;
     }
 
