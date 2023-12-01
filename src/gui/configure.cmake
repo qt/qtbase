@@ -1217,6 +1217,7 @@ qt_feature("raster-fp" PRIVATE
     SECTION "Painting"
     LABEL "QPainter - floating point raster"
     PURPOSE "Internal painting support for floating point rasterization."
+    CONDITION NOT VXWORKS # QTBUG-115777
 )
 qt_feature("undocommand" PUBLIC
     SECTION "Utilities"
