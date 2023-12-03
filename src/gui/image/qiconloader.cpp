@@ -853,7 +853,7 @@ QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
         } else if (dir.type == QIconDirInfo::Fallback) {
             return QIcon(entry->filename).actualSize(size, mode, state);
         } else {
-            int result = qMin<int>(dir.size, qMin(size.width(), size.height()));
+            int result = qMin<int>(dir.size * dir.scale, qMin(size.width(), size.height()));
             return QSize(result, result);
         }
     }
