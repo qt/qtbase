@@ -108,7 +108,6 @@ function(qt_internal_add_headersclean_target module_target module_headers)
             -Woverloaded-virtual -Wshadow -Wundef -Wfloat-equal
             -Wnon-virtual-dtor -Wpointer-arith -Wformat-security
             -Wchar-subscripts -Wold-style-cast
-            -Wno-long-long -Wno-variadic-macros
             -fno-operator-names)
 
         if(QT_FEATURE_reduce_relocations AND UNIX)
