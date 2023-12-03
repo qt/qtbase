@@ -1,11 +1,2 @@
 [tcpLoopbackPerformance]
-windows-10 msvc-2015
-windows-7sp1
-[receiveUrgentData]
-windows-10 msvc-2015
-windows-7sp1
-[serverTest]
-windows-10 msvc-2015
-windows-7sp1
-[tcpLoopbackPerformance]
 windows

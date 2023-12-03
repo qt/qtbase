@@ -11,8 +11,6 @@ windows
 # QTBUG-69162
 windows-10
 android
-[testInputEvents]
-rhel-7.4
 [modalWindowPosition]
 # QTBUG-69161
 android

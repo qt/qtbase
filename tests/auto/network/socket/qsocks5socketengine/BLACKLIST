@@ -7,7 +7,4 @@ qnx ci
 # QTBUG-74162
 [passwordAuth2]
 ubuntu
-[downloadBigFile]
-windows-10 msvc-2015
-windows-7sp1
 

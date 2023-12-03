@@ -1,6 +1,0 @@
-[lockupsInStartDetached]
-redhatenterpriselinuxworkstation-6.6
-# QTBUG-48455
-[fileWriterProcess]
-windows-10 msvc-2017
-

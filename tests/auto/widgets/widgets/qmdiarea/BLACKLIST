@@ -1,15 +1,7 @@
 [tileSubWindows]
-ubuntu-16.04
-rhel-7.6
 centos
 opensuse-leap
 macos
-ubuntu-18.04
-ubuntu-20.04
-macos
-rhel-7.4
-macos
-opensuse-42.3
 [resizeTimer]
 macos
 

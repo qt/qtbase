@@ -1,7 +1,3 @@
-[tst_resize_count]
-# QTBUG-66345
-opensuse-42.3
-ubuntu-16.04
 # QTBUG-87412
 [tst_move_show]
 android

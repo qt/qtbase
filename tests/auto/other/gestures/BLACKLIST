@@ -1,6 +1,4 @@
 [panelPropagation]
-ubuntu-20.04
 ubuntu-22.04 ci
 [panelStacksBehindParent]
-ubuntu-20.04
 ubuntu-22.04 ci
