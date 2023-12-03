@@ -310,6 +310,51 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     qMove takes an rvalue reference to its parameter \a x, and converts it to an xvalue.
 */
 
+/*!
+    \macro QT_ENABLE_STRICT_MODE_UP_TO
+    \relates <QtGlobal>
+    \since 6.8
+
+    Defining this macro will disable a number of Qt APIs that are
+    deemed suboptimal or dangerous.
+
+    This macro's value must be set to a Qt version, using
+    \l{QT_VERSION_CHECK}'s encoding. For instance, in order to set it
+    to Qt 6.6, define \c{QT_ENABLE_STRICT_MODE_UP_TO=0x060600}.
+    This will disable only the APIs introduced in versions up to (and
+    including) the specified Qt version.
+
+    If the \l QT_DISABLE_DEPRECATED_UP_TO macro is \e not defined,
+    then QT_ENABLE_STRICT_MODE_UP_TO will define it as well,
+    to the same value.
+
+    This macro should always be set to the minimum Qt version that
+    your project wants to support.
+
+    The APIs disabled by this macro are listed in the table below,
+    together with the minimum value to use in order to disable them.
+
+    \table
+    \header \li Version \li Disabled APIs
+    \row \li 6.0.0 \li \l{foreach-keyword}{foreach} (see \l{QT_NO_FOREACH})
+    \row \li 6.0.0 \li QString constructors from \c{const char *} (see \l{QT_NO_CAST_FROM_ASCII})
+    \row \li 6.0.0 \li QString conversions towards \c{const char *} / QByteArray (see \l{QT_NO_CAST_TO_ASCII})
+    \row \li 6.0.0 \li QByteArray implicit conversions towards \c{const char *} (see \l{QT_NO_CAST_FROM_BYTEARRAY})
+    \row \li 6.0.0 \li QUrl implicit conversions from QString (see \l{QT_NO_URL_CAST_FROM_STRING})
+    \row \li 6.0.0 \li Allowing narrowing conversions in signal-slot connections (see \l{QT_NO_NARROWING_CONVERSIONS_IN_CONNECT})
+    \row \li 6.0.0 \li Java-style iterators for Qt containers
+    \row \li 6.6.0 \li The qExchange() function (see \l{QT_NO_QEXCHANGE})
+    \row \li 6.7.0 \li Overloads of QObject::connect that do not take a context object (see \l{QT_NO_CONTEXTLESS_CONNECT})
+    \row \li 6.8.0 \li The qAsConst() function (see \l{QT_NO_QASCONST})
+    \endtable
+
+    Moreover, individual APIs may also get disabled as part of the
+    setting of QT_DISABLE_DEPRECATED_UP_TO. Please refer to each class'
+    documentation for more details.
+
+    \sa QT_DISABLE_DEPRECATED_UP_TO, QT_NO_KEYWORDS, QT_VERSION_CHECK
+*/
+
 namespace QtPrivate {
 Q_LOGGING_CATEGORY(lcNativeInterface, "qt.nativeinterface")
 }
