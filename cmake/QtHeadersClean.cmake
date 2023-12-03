@@ -101,19 +101,19 @@ function(qt_internal_add_headersclean_target module_target module_headers)
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
             OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang|IntelLLVM")
-        # Turn on some extra warnings not found in -Wall -Wextra.
 
-        set(hcleanFLAGS -Wall -Wextra -Werror -Woverloaded-virtual -Wshadow -Wundef -Wfloat-equal
-            -Wnon-virtual-dtor -Wpointer-arith -Wformat-security -Wno-long-long -Wno-variadic-macros
-            -fno-operator-names
-            -pedantic-errors)
+        # Compile header in strict C++20 mode. Enable further warnings.
+        set(hcleanFLAGS -std=c++2a
+            -Wall -Wextra -Werror -pedantic-errors
+            -Woverloaded-virtual -Wshadow -Wundef -Wfloat-equal
+            -Wnon-virtual-dtor -Wpointer-arith -Wformat-security
+            -Wchar-subscripts -Wold-style-cast
+            -Wno-long-long -Wno-variadic-macros
+            -fno-operator-names)
 
         if(QT_FEATURE_reduce_relocations AND UNIX)
             list(APPEND hcleanFLAGS -fPIC)
         endif()
-
-        # options accepted by GCC and Clang
-        list(APPEND hcleanFLAGS -Wchar-subscripts -Wold-style-cast)
 
         if (NOT ((TEST_architecture_arch STREQUAL arm)
                 OR (TEST_architecture_arch STREQUAL mips)))
@@ -133,9 +133,6 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang|IntelLLVM")
             list(APPEND hcleanFLAGS -Wshorten-64-to-32)
         endif()
-
-        # Use strict mode C++20, with no GNU extensions (see -pedantic-errors above).
-        list(APPEND hcleanFLAGS -std=c++2a)
 
         separate_arguments(cxx_flags NATIVE_COMMAND ${CMAKE_CXX_FLAGS})
 
