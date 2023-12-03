@@ -387,7 +387,7 @@
     Qt's own build. For Windows systems, it was always the Windows backend. For
     Unix systems, it defaulted to the System V backend if the configuration
     script determined it was available. If it was not available, it fell back
-    to the POSIX one (since Qt 4.8). The POSIX backend could be explicitly
+    to the POSIX one. The POSIX backend could be explicitly
     selected using the \c{-feature-ipc_posix} option to the Qt configure
     script; if it was enabled, the \c{QT_POSIX_IPC} macro would be defined.
 

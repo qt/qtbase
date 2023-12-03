@@ -2234,10 +2234,9 @@ const char *QMetaMethod::typeName() const
     differently, and treat them according to the specific needs of your
     application.
 
-    \note Since Qt 5.0, \c moc expands preprocessor macros, so it is necessary
+    \note \c moc expands preprocessor macros, so it is necessary
     to surround the definition with \c #ifndef \c Q_MOC_RUN, as shown in the
-    example above. This was not required in Qt 4. The code as shown above works
-    with Qt 4 too.
+    example above.
 */
 const char *QMetaMethod::tag() const
 {

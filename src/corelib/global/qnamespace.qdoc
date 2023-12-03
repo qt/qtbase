@@ -617,7 +617,7 @@
            connection types, using a bitwise OR. When Qt::UniqueConnection is
            set, QObject::connect() will fail if the connection already exists
            (i.e. if the same signal is already connected to the same slot
-           for the same pair of objects). This flag was introduced in Qt 4.6.
+           for the same pair of objects).
 
     \value SingleShotConnection
            This is a flag that can be combined with any one of the above
@@ -2769,8 +2769,7 @@
     \value CheckStateRole       This role is used to obtain the checked state of
                                 an item. (Qt::CheckState)
     \value InitialSortOrderRole This role is used to obtain the initial sort order
-                                of a header view section. (Qt::SortOrder). This
-                                role was introduced in Qt 4.8.
+                                of a header view section. (Qt::SortOrder).
 
     Accessibility roles (with associated types):
 
