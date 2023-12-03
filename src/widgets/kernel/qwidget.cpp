@@ -1313,8 +1313,6 @@ void QWidgetPrivate::create()
     }
 
     data.window_flags = win->flags();
-    if (!win->isTopLevel()) // In a Widget world foreign windows can only be top level
-      data.window_flags &= ~Qt::ForeignWindow;
 
 #if QT_CONFIG(xcb)
     if (!topData()->role.isNull()) {
