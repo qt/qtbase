@@ -899,13 +899,13 @@ QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::SlotObjUniquePtr slotObj,
 
     \section1 Dynamic Properties
 
-    From Qt 4.2, dynamic properties can be added to and removed from QObject
+    Dynamic properties can be added to and removed from QObject
     instances at run-time. Dynamic properties do not need to be declared at
     compile-time, yet they provide the same advantages as static properties
     and are manipulated using the same API - using property() to read them
     and setProperty() to write them.
 
-    From Qt 4.3, dynamic properties are supported by
+    Dynamic properties are supported by
     \l{Qt Designer's Widget Editing Mode#The Property Editor}{Qt Designer},
     and both standard Qt widgets and user-created forms can be given dynamic
     properties.
@@ -2402,7 +2402,7 @@ void QObject::removeEventFilter(QObject *obj)
     QCoreApplication::exec()), the object will be deleted once the
     event loop is started. If deleteLater() is called after the main event loop
     has stopped, the object will not be deleted.
-    Since Qt 4.8, if deleteLater() is called on an object that lives in a
+    If deleteLater() is called on an object that lives in a
     thread with no running event loop, the object will be destroyed when the
     thread finishes.
 
@@ -2461,8 +2461,7 @@ void QObject::deleteLater()
 
     If the same \a sourceText is used in different roles within the
     same context, an additional identifying string may be passed in
-    \a disambiguation (\nullptr by default). In Qt 4.4 and earlier, this was
-    the preferred way to pass comments to translators.
+    \a disambiguation (\nullptr by default).
 
     Example:
 

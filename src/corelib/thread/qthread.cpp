@@ -256,17 +256,16 @@ QThreadPrivate::~QThreadPrivate()
     documentation for terminate() and setTerminationEnabled() for
     detailed information.
 
-    From Qt 4.8 onwards, it is possible to deallocate objects that
-    live in a thread that has just ended, by connecting the
-    finished() signal to QObject::deleteLater().
+    You often want to deallocate objects that live in a thread when
+    a thread ends. To do this, connect the finished() signal to
+    QObject::deleteLater().
 
     Use wait() to block the calling thread, until the other thread
     has finished execution (or until a specified time has passed).
 
     QThread also provides static, platform independent sleep
     functions: sleep(), msleep(), and usleep() allow full second,
-    millisecond, and microsecond resolution respectively. These
-    functions were made public in Qt 5.0.
+    millisecond, and microsecond resolution respectively.
 
     \note wait() and the sleep() functions should be unnecessary in
     general, since Qt is an event-driven framework. Instead of
