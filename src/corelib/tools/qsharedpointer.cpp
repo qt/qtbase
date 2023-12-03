@@ -139,8 +139,7 @@
     can also exceptionally be -1, indicating that there are no QSharedPointers
     attached to an object, which is tracked too. The only case where this is
     possible is that of QWeakPointers and QPointers tracking a QObject. Note
-    that QWeakPointers tracking a QObject is a deprecated feature as of Qt 5.0,
-    kept only for compatibility with Qt 4.x.
+    that QWeakPointers tracking a QObject is deprecated.
 
     The weak reference count controls the lifetime of the d-pointer itself.
     It can be thought of as an internal/intrusive reference count for

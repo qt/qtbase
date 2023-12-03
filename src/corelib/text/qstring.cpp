@@ -2054,16 +2054,15 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     \snippet qstring/stringbuilder.cpp 0
 
     There is nothing wrong with either of these string constructions,
-    but there are a few hidden inefficiencies. Beginning with Qt 4.6,
-    you can eliminate them.
+    but there are a few hidden inefficiencies:
 
     First, multiple uses of the \c{'+'} operator usually means
     multiple memory allocations. When concatenating \e{n} substrings,
     where \e{n > 2}, there can be as many as \e{n - 1} calls to the
     memory allocator.
 
-    In 4.6, an internal template class \c{QStringBuilder} has been
-    added along with a few helper functions. This class is marked
+    These allocations can be optimized by an internal class
+    \c{QStringBuilder}. This class is marked
     internal and does not appear in the documentation, because you
     aren't meant to instantiate it in your code. Its use will be
     automatic, as described below. The class is found in
