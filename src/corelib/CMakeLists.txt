@@ -1422,7 +1422,7 @@ qt_internal_extend_target(Core
     # Function called by inline methods taking a pointer to a private class as a parameter
     EXTRA_LINKER_SCRIPT_EXPORTS
         # QFutureInterfaceBase::setContinuation(std::function<void (QFutureInterfaceBase const&)>, QFutureInterfaceBasePrivate*)
-        "_ZN20QFutureInterfaceBase15setContinuationE*P27QFutureInterfaceBasePrivate"
+        "_ZN*20QFutureInterfaceBase15setContinuationE*27QFutureInterfaceBasePrivate*"
         # QReadWriteLock::destroyRecursive(QReadWriteLockPrivate*)
-        "_ZN14QReadWriteLock16destroyRecursiveEP21QReadWriteLockPrivate"
+        "_ZN*14QReadWriteLock16destroyRecursiveEP*21QReadWriteLockPrivate*"
 )

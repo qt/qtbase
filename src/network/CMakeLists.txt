@@ -402,5 +402,5 @@ qt_internal_extend_target(Network
     # Function called by inline methods taking a pointer to a private class as a parameter
     EXTRA_LINKER_SCRIPT_EXPORTS
         # QNetworkDatagram::destroy(QNetworkDatagramPrivate *d)
-        "_ZN16QNetworkDatagram7destroyEP23QNetworkDatagramPrivate"
+        "_ZN*16QNetworkDatagram7destroyEP*23QNetworkDatagramPrivate*"
 )
