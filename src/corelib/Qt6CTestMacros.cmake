@@ -129,6 +129,9 @@ function(_qt_internal_get_cmake_test_configure_options out_var)
         list(APPEND option_list "-DQT_BUILD_DIR=${QT_BUILD_DIR}")
     endif()
 
+    # Pass a variable that can serve as a marker for cmake build tests in other build system code.
+    list(APPEND option_list "-DQT_INTERNAL_IS_CMAKE_BUILD_TEST=ON")
+
     if(APPLE AND CMAKE_OSX_ARCHITECTURES)
         list(LENGTH CMAKE_OSX_ARCHITECTURES osx_arch_count)
 

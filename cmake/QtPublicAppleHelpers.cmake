@@ -844,9 +844,9 @@ function(_qt_internal_get_cached_xcode_version out_var)
     set(${out_var} "${xcode_version}" PARENT_SCOPE)
 endfunction()
 
-# Warn when the platform SDK or Xcode version are not supported.
+# Warn or error out when the platform SDK or Xcode version are not supported.
 #
-# The warnings are currently only shown when building Qt, not when building user projects
+# The messages are currently only shown when building Qt, not when building user projects
 # with CMake.
 # The warnings ARE shown for qmake user projects.
 #
@@ -891,11 +891,14 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
     endif()
 
     # The default differs in different branches.
-    set(failed_check_should_error FALSE)
+    set(failed_check_should_error TRUE)
 
     if(failed_check_should_error)
         # Allow downgrading the error into a warning.
-        if(QT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK)
+        #
+        # Our cmake build tests might be executed on older not officially supported Xcode or SDK
+        # versions in the CI. Downgrade the error in this case as well.
+        if(QT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK OR QT_INTERNAL_IS_CMAKE_BUILD_TEST)
             set(message_type WARNING)
             set(extra_message " Due to QT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK being ON "
                 "the build will continue, but it will likely fail. Use at your own risk.")
