@@ -168,16 +168,40 @@ static void dumpItemLists(const QMainWindowLayout *layout, const char *function,
 
 #endif // QT_CONFIG(dockwidget) && !defined(QT_NO_DEBUG)
 
-/******************************************************************************
- ** QDockWidgetGroupWindow
- */
-// QDockWidgetGroupWindow is the floating window containing several QDockWidgets floating together.
-// (QMainWindow::GroupedDragging feature)
-// QDockWidgetGroupLayout is the layout of that window and use a QDockAreaLayoutInfo to layout
-// the QDockWidgets inside it.
-// If there is only one QDockWidgets, or all QDockWidgets are tabbed together, it is equivalent
-// of a floating QDockWidget (the title of the QDockWidget is the title of the window). But if there
-// are nested QDockWidget, an additional title bar is there.
+
+/*!
+    \internal
+    QDockWidgetGroupWindow is a floating window, containing several QDockWidgets floating together.
+    This requires QMainWindow::GroupedDragging to be enabled.
+    QDockWidgets floating jointly in a QDockWidgetGroupWindow are considered to be docked.
+    Their \c isFloating property is \c false.
+    QDockWidget children of a QDockWidgetGroupWindow are either:
+    \list
+    \li tabbed (as long as Qt is compiled with the \c tabbar feature), or
+    \li arranged next to each other, equivalent to the default on a main window dock.
+    \endlist
+
+    QDockWidgetGroupWindow uses QDockWidgetGroupLayout to lay out its QDockWidget children.
+    It stores layout information in a QDockAreaLayoutInfo, including temporary spacer items
+    and rubber bands.
+
+    If its QDockWidget children are tabbed, the QDockWidgetGroupWindow shows the active QDockWidget's
+    title as its own window title.
+
+    QDockWidgetGroupWindow is designed to hold more than one QDockWidget.
+    A QDockWidgetGroupWindow with only one QDockWidget child may occur only temporarily
+    \list
+    \li in its construction phase, or
+    \li during a hover: While QDockWidget A is hovered over B, B is converted into a QDockWidgetGroupWindow.
+    \endlist
+
+    A QDockWidgetGroupWindow with only one QDockWidget child must never get focus, be dragged or dropped.
+    To enforce this restriction, QDockWidgetGrouWindow will remove itself after its second QDockWidget
+    child has been removed. It will make its last QDockWidget child a single, floating QDockWidget.
+    Eventually, the empty QDockWidgetGroupWindow will call deleteLater() on itself.
+*/
+
+
 #if QT_CONFIG(dockwidget)
 class QDockWidgetGroupLayout : public QLayout,
                                public QMainWindowLayoutSeparatorHelper<QDockWidgetGroupLayout>
