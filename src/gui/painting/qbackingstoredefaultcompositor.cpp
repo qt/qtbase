@@ -535,6 +535,12 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
 
     const qreal dpr = window->devicePixelRatio();
     const QRect deviceWindowRect = scaledRect(QRect(QPoint(), window->size()), dpr);
+    const QRect sourceWindowRect = scaledRect(QRect(QPoint(), window->size()), sourceDevicePixelRatio);
+    // If sourceWindowRect is larger than deviceWindowRect, we are doing high
+    // DPI downscaling. In that case Linear filtering is a must, whereas for the
+    // 1:1 case Nearest must be used for Qt 5 visual compatibility.
+    const bool needsLinearSampler = sourceWindowRect.width() > deviceWindowRect.width()
+                                    && sourceWindowRect.height() > deviceWindowRect.height();
 
     const bool invertTargetY = !rhi->isYUpInNDC();
     const bool invertSource = !rhi->isYUpInFramebuffer();
@@ -543,7 +549,6 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
         // The backingstore is for the entire tlw. In case of native children, offset tells the position
         // relative to the tlw. The window rect is scaled by the source device pixel ratio to get
         // the source rect.
-        const QRect sourceWindowRect = scaledRect(QRect(QPoint(), window->size()), sourceDevicePixelRatio);
         const QPoint sourceWindowOffset = scaledOffset(offset, sourceDevicePixelRatio);
         const QRect srcRect = toBottomLeftRect(sourceWindowRect.translated(sourceWindowOffset), m_texture->pixelSize().height());
         const QMatrix3x3 source = sourceTransform(srcRect, m_texture->pixelSize(), origin);
@@ -551,16 +556,8 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
         if (invertTargetY)
             target.data()[5] = -1.0f;
         updateUniforms(&m_widgetQuadData, resourceUpdates, target, source, uniformOptions);
-
-        // If sourceWindowRect is larger than deviceWindowRect, we are doing
-        // high DPI downscaling. In that case Linear filtering is a must,
-        // whereas for the 1:1 case Nearest must be used for Qt 5 visual
-        // compatibility.
-        if (sourceWindowRect.width() > deviceWindowRect.width()
-            && sourceWindowRect.height() > deviceWindowRect.height())
-        {
+        if (needsLinearSampler)
             updatePerQuadData(&m_widgetQuadData, m_texture.get(), nullptr, NeedsLinearFiltering);
-        }
     }
 
     const int textureWidgetCount = textures->count();
@@ -591,6 +588,8 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
             else
                 updatePerQuadData(&m_textureQuadData[i], t, tExtra);
             updateUniforms(&m_textureQuadData[i], resourceUpdates, target, source);
+            if (needsLinearSampler)
+                updatePerQuadData(&m_textureQuadData[i], t, tExtra, NeedsLinearFiltering);
         } else {
             m_textureQuadData[i].reset();
         }
