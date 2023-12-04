@@ -528,6 +528,7 @@ QHttpHeaders::QHttpHeaders() : d(new QHttpHeadersPrivate)
 QHttpHeaders QHttpHeaders::fromListOfPairs(const QList<std::pair<QByteArray, QByteArray>> &headers)
 {
     QHttpHeaders h;
+    h.d->headers.reserve(headers.size());
     for (const auto &header : headers)
         h.append(header.first, header.second);
     return h;
@@ -542,6 +543,7 @@ QHttpHeaders QHttpHeaders::fromListOfPairs(const QList<std::pair<QByteArray, QBy
 QHttpHeaders QHttpHeaders::fromMultiMap(const QMultiMap<QByteArray, QByteArray> &headers)
 {
     QHttpHeaders h;
+    h.d->headers.reserve(headers.size());
     for (const auto &[name,value] : headers.asKeyValueRange())
         h.append(name, value);
     return h;
@@ -556,6 +558,7 @@ QHttpHeaders QHttpHeaders::fromMultiMap(const QMultiMap<QByteArray, QByteArray> 
 QHttpHeaders QHttpHeaders::fromMultiHash(const QMultiHash<QByteArray, QByteArray> &headers)
 {
     QHttpHeaders h;
+    h.d->headers.reserve(headers.size());
     for (const auto &[name,value] : headers.asKeyValueRange())
         h.append(name, value);
     return h;
