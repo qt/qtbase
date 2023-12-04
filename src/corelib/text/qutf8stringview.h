@@ -202,7 +202,7 @@ public:
     [[nodiscard]] inline QString toString() const; // defined in qstring.h
 
     [[nodiscard]] constexpr qsizetype size() const noexcept { return m_size; }
-    [[nodiscard]] const_pointer data() const noexcept { return reinterpret_cast<const_pointer>(m_data); }
+    [[nodiscard]] constexpr const_pointer data() const noexcept { return m_data; }
 #ifdef __cpp_char8_t
     [[nodiscard]] const char8_t *utf8() const noexcept { return reinterpret_cast<const char8_t*>(m_data); }
 #endif
