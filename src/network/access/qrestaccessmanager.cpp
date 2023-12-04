@@ -35,6 +35,8 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     \inmodule QtNetwork
     \reentrant
 
+    \preliminary
+
     QRestAccessManager provides a networking API for typical REST client
     applications. It provides the means to issue HTTP requests such as GET
     and POST. The responses to these requests can be handled with traditional
