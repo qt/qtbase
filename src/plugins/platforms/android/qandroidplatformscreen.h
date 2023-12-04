@@ -11,15 +11,16 @@
 #include <QWaitCondition>
 #include <QtCore/QJniObject>
 #include <qpa/qplatformscreen.h>
-#include <qpa/qplatformscreen_p.h>
+#include <QtGui/qscreen_platform.h>
 
 QT_BEGIN_NAMESPACE
 
 class QAndroidPlatformWindow;
 
-class QAndroidPlatformScreen: public QObject,
-                              public QPlatformScreen,
-                              public QNativeInterface::Private::QAndroidScreen
+
+class QAndroidPlatformScreen : public QObject,
+                               public QPlatformScreen,
+                               public QNativeInterface::QAndroidScreen
 {
     Q_OBJECT
 public:

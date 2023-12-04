@@ -131,7 +131,7 @@ qt_internal_add_module(Gui
         kernel/qplatformwindow.cpp kernel/qplatformwindow.h kernel/qplatformwindow_p.h
         kernel/qpointingdevice.cpp kernel/qpointingdevice.h kernel/qpointingdevice_p.h
         kernel/qrasterwindow.cpp kernel/qrasterwindow.h
-        kernel/qscreen.cpp kernel/qscreen.h kernel/qscreen_p.h
+        kernel/qscreen.cpp kernel/qscreen.h kernel/qscreen_p.h kernel/qscreen_platform.h
         kernel/qsessionmanager.cpp kernel/qsessionmanager.h kernel/qsessionmanager_p.h
         kernel/qstylehints.cpp kernel/qstylehints.h kernel/qstylehints_p.h
         kernel/qsurface.cpp kernel/qsurface.h

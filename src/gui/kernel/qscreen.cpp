@@ -703,8 +703,23 @@ QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
     result.setDevicePixelRatio(result.devicePixelRatio() * factor);
     return result;
 }
+
+/*!
+    \fn template <typename QNativeInterface> QNativeInterface *QScreen::nativeInterface() const
+
+    Returns a native interface of the given type for the screen.
+
+    This function provides access to platform specific functionality
+    of QScreen, as defined in the QNativeInterface namespace:
+
+    \annotatedlist native-interfaces-qscreen
+
+    If the requested interface is not available a \nullptr is returned.
+ */
+
 void *QScreen::resolveInterface(const char *name, int revision) const
 {
+    using namespace QNativeInterface;
     using namespace QNativeInterface::Private;
 
     auto *platformScreen = handle();

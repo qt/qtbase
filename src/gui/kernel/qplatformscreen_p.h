@@ -20,14 +20,6 @@
 #include <QtCore/qpointer.h>
 #include <QtCore/qnativeinterface.h>
 
-#if defined(Q_OS_WIN32)
-#include <qwindowdefs_win.h>
-#endif
-
-#if QT_CONFIG(wayland)
-struct wl_output;
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QScreen;
@@ -75,31 +67,6 @@ struct Q_GUI_EXPORT QWebOSScreen
     virtual void addFlipListener(void (*callback)()) = 0;
 };
 #endif
-
-#if defined(Q_OS_WIN32) || defined(Q_QDOC)
-struct Q_GUI_EXPORT QWindowsScreen
-{
-    QT_DECLARE_NATIVE_INTERFACE(QWindowsScreen, 1, QScreen)
-    virtual HMONITOR handle() const = 0;
-};
-#endif
-
-#if QT_CONFIG(wayland) || defined(Q_QDOC)
-struct Q_GUI_EXPORT QWaylandScreen
-{
-    QT_DECLARE_NATIVE_INTERFACE(QWaylandScreen, 1, QScreen)
-    virtual wl_output *output() const = 0;
-};
-#endif
-
-#if defined(Q_OS_ANDROID) || defined(Q_QDOC)
-struct Q_GUI_EXPORT QAndroidScreen
-{
-    QT_DECLARE_NATIVE_INTERFACE(QAndroidScreen, 1, QScreen)
-    virtual int displayId() const = 0;
-};
-#endif
-
 } // QNativeInterface::Private
 
 QT_END_NAMESPACE

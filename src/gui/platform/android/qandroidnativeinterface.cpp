@@ -35,6 +35,20 @@ QOffscreenSurface  *QNativeInterface::QAndroidOffscreenSurface::fromNative(ANati
             &QAndroidOffScreenIntegration::createOffscreenSurface>(nativeSurface);
 }
 
-QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QAndroidScreen);
+/*!
+    \class QNativeInterface::QAndroidScreen
+    \since 6.7
+    \brief Native interface to a screen.
+
+    Accessed through QScreen::nativeInterface().
+    \inmodule QtGui
+    \ingroup native-interfaces
+    \ingroup native-interfaces-qscreen
+*/
+/*!
+    \fn int QNativeInterface::QAndroidScreen::displayId() const;
+    \return The Id of the underlying Android display.
+*/
+QT_DEFINE_NATIVE_INTERFACE(QAndroidScreen);
 
 QT_END_NAMESPACE

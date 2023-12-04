@@ -147,5 +147,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QScreen *);
 
 QT_END_NAMESPACE
 
+#include <QtGui/qscreen_platform.h>
+
 #endif // QSCREEN_H
 
