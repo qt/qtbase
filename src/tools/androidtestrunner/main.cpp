@@ -368,7 +368,14 @@ static bool parseTestArgs()
             if (match.hasMatch()) {
                 logType = match.capturedTexts().at(1);
             } else {
-                unhandledArgs << " %1"_L1.arg(arg);
+                // Use triple literal quotes so that QProcess::splitCommand() in androidjnimain.cpp
+                // keeps quotes characters inside the string.
+                QString quotedArg = QString(arg).replace("\""_L1, "\\\"\\\"\\\""_L1);
+                // Escape single quotes so they don't interfere with the shell command,
+                // and so they get passed to the app as single quote inside the string.
+                quotedArg.replace("'"_L1, "\'"_L1);
+                // Add escaped double quote character so that args with spaces are treated as one.
+                unhandledArgs << " \\\"%1\\\""_L1.arg(quotedArg);
             }
         }
     }
@@ -380,7 +387,7 @@ static bool parseTestArgs()
         testAppArgs += "-o output.%1,%1 "_L1.arg(format);
 
     testAppArgs += unhandledArgs.join(u' ').trimmed();
-    testAppArgs = "'%1'"_L1.arg(testAppArgs);
+    testAppArgs = "\"%1\""_L1.arg(testAppArgs);
     const QString activityName = "%1/%2"_L1.arg(g_options.package).arg(g_options.activity);
 
     // Pass over any testlib env vars if set

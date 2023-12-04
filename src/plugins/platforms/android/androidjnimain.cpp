@@ -449,9 +449,7 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
     m_androidContentFileEngineHandler = new AndroidContentFileEngineHandler();
     m_mainLibraryHnd = nullptr;
 
-    // QProcess::splitCommand() treats triple quotes as the quote character itself.
-    QString params = QJniObject(paramsString).toString().replace("\""_L1, "\"\"\""_L1);
-    const QStringList argsList = QProcess::splitCommand(params);
+    const QStringList argsList = QProcess::splitCommand(QJniObject(paramsString).toString());
 
     for (const QString &arg : argsList)
         m_applicationParams.append(arg.toUtf8());
