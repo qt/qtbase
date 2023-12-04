@@ -1449,9 +1449,12 @@ QDockWidget::DockWidgetFeatures QDockWidget::features() const
     \property QDockWidget::floating
     \brief whether the dock widget is floating
 
-    A floating dock widget is presented to the user as an independent
-    window "on top" of its parent QMainWindow, instead of being
-    docked in the QMainWindow.
+    A floating dock widget is presented to the user as a single, independent
+    window "on top" of its parent QMainWindow, instead of being docked
+    either in the QMainWindow, or in a group of tabbed dock widgets.
+
+    Floating dock widgets can be individually positioned and resized, both
+    programmatically or by mouse interaction.
 
     By default, this property is \c true.
 
