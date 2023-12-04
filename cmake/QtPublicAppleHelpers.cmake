@@ -812,6 +812,12 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
     _qt_internal_get_cached_apple_sdk_version(sdk_version)
     _qt_internal_get_cached_xcode_version(xcode_version)
 
+    if(NOT max_sdk_version MATCHES "^[0-9]+$")
+        message(FATAL_ERROR
+            "Invalid max SDK version: ${max_sdk_version} "
+            "It should be a major version number, without minor or patch version components.")
+    endif()
+
     # The default differs in different branches.
     set(failed_check_should_error FALSE)
 
@@ -860,9 +866,9 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
         return()
     endif()
 
-    # Upper bound checks should always be warnings, because the build might still work even
-    # if untested.
-    if(sdk_version VERSION_GREATER_EQUAL max_sdk_version)
+    # Make sure we warn only when the current version is greater than the max supported version.
+    math(EXPR next_after_max_sdk_version "${max_sdk_version} + 1")
+    if(sdk_version VERSION_GREATER_EQUAL next_after_max_sdk_version)
         message(WARNING
             "Qt has only been tested with version ${max_sdk_version} "
             "of the platform SDK, you're using ${sdk_version}. "
