@@ -792,19 +792,12 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
         return()
     endif()
 
-    # Only show the warnings once in a top-level build.
-    get_property(warnings_shown GLOBAL PROPERTY _qt_internal_apple_sdk_and_xcode_warnings_shown)
-    if(warnings_shown)
+    # Only run the check once in a top-level build.
+    get_property(check_done GLOBAL PROPERTY _qt_internal_apple_sdk_and_xcode_check_done)
+    if(check_done)
         return()
     endif()
-    set_property(GLOBAL PROPERTY _qt_internal_apple_sdk_and_xcode_warnings_shown "TRUE")
-
-    # Allow upgrading the warning into an error.
-    if(QT_FORCE_FATAL_APPLE_SDK_AND_XCODE_CHECK)
-        set(message_type FATAL_ERROR)
-    else()
-        set(message_type WARNING)
-    endif()
+    set_property(GLOBAL PROPERTY _qt_internal_apple_sdk_and_xcode_check_done "TRUE")
 
     if(IOS)
         set(min_sdk_version "${QT_SUPPORTED_MIN_IOS_SDK_VERSION}")
@@ -819,10 +812,39 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
     _qt_internal_get_cached_apple_sdk_version(sdk_version)
     _qt_internal_get_cached_xcode_version(xcode_version)
 
+    # The default differs in different branches.
+    set(failed_check_should_error FALSE)
+
+    if(failed_check_should_error)
+        # Allow downgrading the error into a warning.
+        if(QT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK)
+            set(message_type WARNING)
+            set(extra_message " Due to QT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK being ON "
+                "the build will continue, but it will likely fail. Use at your own risk.")
+        else()
+            set(message_type FATAL_ERROR)
+            set(extra_message " You can turn this error into a warning by configuring with "
+                "-DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON, but the build will likely fail. "
+                "Use at your own risk.")
+        endif()
+    else()
+        # Allow upgrading the warning into an error.
+        if(QT_FORCE_FATAL_APPLE_SDK_AND_XCODE_CHECK)
+            set(message_type FATAL_ERROR)
+            set(extra_message " Erroring out due to QT_FORCE_FATAL_APPLE_SDK_AND_XCODE_CHECK "
+                "being ON.")
+        else()
+            set(message_type WARNING)
+            set(extra_message " You can turn this warning into an error by configuring with "
+                "-DQT_FORCE_FATAL_APPLE_SDK_AND_XCODE_CHECK=ON. ")
+        endif()
+    endif()
+
     if(sdk_version VERSION_LESS min_sdk_version AND NOT QT_NO_APPLE_SDK_MIN_VERSION_CHECK)
         message(${message_type}
             "Qt requires at least version ${min_sdk_version} of the platform SDK, "
             "you're building against version ${sdk_version}. Please upgrade."
+            ${extra_message}
         )
     endif()
 
@@ -830,6 +852,7 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
         message(${message_type}
             "Qt requires at least version ${min_xcode_version} of Xcode, "
             "you're building against version ${xcode_version}. Please upgrade."
+            ${extra_message}
         )
     endif()
 
@@ -837,8 +860,10 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
         return()
     endif()
 
+    # Upper bound checks should always be warnings, because the build might still work even
+    # if untested.
     if(sdk_version VERSION_GREATER_EQUAL max_sdk_version)
-        message(${message_type}
+        message(WARNING
             "Qt has only been tested with version ${max_sdk_version} "
             "of the platform SDK, you're using ${sdk_version}. "
             "This is an unsupported configuration. You may experience build issues, "
