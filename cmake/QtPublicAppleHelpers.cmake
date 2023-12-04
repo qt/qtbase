@@ -784,6 +784,10 @@ endfunction()
 #
 # The qmake equivalent for user projects is in mkspecs/features/mac/default_post.prf.
 function(_qt_internal_check_apple_sdk_and_xcode_versions)
+    if(NOT APPLE)
+        return()
+    endif()
+
     if(QT_NO_APPLE_SDK_AND_XCODE_CHECK)
         return()
     endif()
