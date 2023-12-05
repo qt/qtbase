@@ -182,6 +182,8 @@ public:
     }
 
     using value_type = const char;
+    using pointer = value_type*;
+    using const_pointer = pointer;
     using reference = value_type&;
     using const_reference = reference;
     using iterator = value_type*;

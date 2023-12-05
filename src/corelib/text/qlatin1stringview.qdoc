@@ -103,6 +103,14 @@
 */
 
 /*!
+    \typedef QLatin1StringView::pointer
+    \typedef QLatin1StringView::const_pointer
+    \since 6.7
+
+    Alias for \c{value_type *}. Provided for compatibility with the STL.
+*/
+
+/*!
     \typedef QLatin1StringView::reference
     \since 5.10
 
