@@ -640,6 +640,21 @@ void tst_QMetaType::typeNameNormalization()
     }
 }
 
+QT_BEGIN_NAMESPACE
+namespace QtPrivate { struct tst_QMetaType_TestType {}; }
+QT_END_NAMESPACE
+
+void tst_QMetaType::typeNameInQtPrivate()
+{
+    using T = QT_PREPEND_NAMESPACE(QtPrivate::tst_QMetaType_TestType);
+
+    // some compilers (GCC) are known to suppress the namespace prefix if the
+    // type and the function where it is expanded on are on the same namespace
+    static constexpr char expectedName[] = "QtPrivate::tst_QMetaType_TestType";
+    QMetaType mt = QMetaType::fromType<T>();
+    QCOMPARE(mt.name(), expectedName);
+}
+
 #if QT_DEPRECATED_SINCE(6, 0)
 void tst_QMetaType::testDeprecatedGetters()
 {
