@@ -51,6 +51,15 @@
  *
  *      $QTDIR may be used as a placeholder for the "qtdir" configuration property (see @qtdir), for instance:
  *          "source": "$QTDIR/plugins/imageformats/libqjpeg.so"
+ *  - localFonts.requestPermission: bool
+ *       Whether Qt should request for local fonts access permission on startup (default false).
+ *  - localFonts.familiesCollection string
+ *       Specifies a collection of local fonts to load. Possible values are:
+ *          "NoFontFamilies"      : Don't load any font families
+ *          "DefaultFontFamilies" : A subset of available font families; currently the "web-safe" fonts (default).
+ *          "AllFontFamilies"     : All local font families (not reccomended)
+ *  - localFonts.extraFamilies: [string]
+ *       Adds additional font families to be loaded at startup.
  *
  * @return Promise<instance: EmscriptenModule>
  *      The promise is resolved when the module has been instantiated and its main function has been
