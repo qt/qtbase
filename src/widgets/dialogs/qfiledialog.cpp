@@ -190,7 +190,8 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
     dialog. By default symlinks are resolved.
 
     \value DontConfirmOverwrite Don't ask for confirmation if an
-    existing file is selected.  By default confirmation is requested.
+    existing file is selected.  By default, confirmation is requested.
+    (Valid only if \l acceptMode is \l {QFileDialog::}{AcceptSave}).
 
     Note: This option is not supported on macOS when using the
     native file dialog.
