@@ -19,7 +19,7 @@ endif()
 
 if(QT_FEATURE_androiddeployqt)
     add_subdirectory(androiddeployqt)
-    if(QT_FEATURE_gui AND QT_FEATURE_systemsemaphore)
+    if(QT_FEATURE_gui AND QT_FEATURE_process AND QT_FEATURE_systemsemaphore)
         add_subdirectory(androidtestrunner)
     endif()
 endif()
