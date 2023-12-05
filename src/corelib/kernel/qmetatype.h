@@ -2235,6 +2235,7 @@ struct is_std_pair<std::pair<T1_, T2_>> : std::true_type {
     using T2 = T2_;
 };
 
+namespace TypeNameHelper {
 template<typename T>
 constexpr auto typenameHelper()
 {
@@ -2276,15 +2277,15 @@ constexpr auto typenameHelper()
             QT_STRINGIFY(QT_NAMESPACE) "::"
 #endif
 #if defined(Q_CC_MSVC) && defined(Q_CC_CLANG)
-            "auto __cdecl QtPrivate::typenameHelper(void) [T = "
+            "auto __cdecl QtPrivate::TypeNameHelper::typenameHelper(void) [T = "
 #elif defined(Q_CC_MSVC)
-            "auto __cdecl QtPrivate::typenameHelper<"
+            "auto __cdecl QtPrivate::TypeNameHelper::typenameHelper<"
 #elif defined(Q_CC_CLANG)
-            "auto QtPrivate::typenameHelper() [T = "
+            "auto QtPrivate::TypeNameHelper::typenameHelper() [T = "
 #elif defined(Q_CC_GHS)
-            "auto QtPrivate::typenameHelper<T>()[with T="
+            "auto QtPrivate::TypeNameHelper::typenameHelper<T>()[with T="
 #else
-            "constexpr auto QtPrivate::typenameHelper() [with T = "
+            "constexpr auto QtPrivate::TypeNameHelper::typenameHelper() [with T = "
 #endif
             ) - 1;
 #if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
@@ -2310,6 +2311,8 @@ constexpr auto typenameHelper()
         return result;
     }
 }
+} // namespace TypeNameHelper
+using TypeNameHelper::typenameHelper;
 
 template<typename T, typename = void>
 struct BuiltinMetaType : std::integral_constant<int, 0>
