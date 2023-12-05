@@ -32,7 +32,7 @@ macro(qt_build_internals_set_up_private_api)
 endmacro()
 
 # add toplevel targets for each subdirectory, e.g. qtbase_src
-function(qt_build_internals_add_toplevel_targets)
+function(qt_build_internals_add_toplevel_targets qt_repo_targets_name)
     set(qt_repo_target_all "")
     get_directory_property(directories DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" SUBDIRECTORIES)
     foreach(directory IN LISTS directories)
@@ -333,7 +333,7 @@ macro(qt_build_repo_end)
         endif()
     endif()
 
-    qt_build_internals_add_toplevel_targets()
+    qt_build_internals_add_toplevel_targets(${qt_repo_targets_name})
 
     if(NOT QT_SUPERBUILD)
         qt_print_build_instructions()
