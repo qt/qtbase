@@ -267,7 +267,6 @@ void QWasmFontDatabase::populateFontDatabase()
     // Load bundled font file from resources.
     const QString fontFileNames[] = {
         QStringLiteral(":/fonts/DejaVuSansMono.ttf"),
-        QStringLiteral(":/fonts/Vera.ttf"),
         QStringLiteral(":/fonts/DejaVuSans.ttf"),
     };
     for (const QString &fontFileName : fontFileNames) {
@@ -325,9 +324,9 @@ QStringList QWasmFontDatabase::fallbacksForFamily(const QString &family, QFont::
     QStringList fallbacks
         = QFreeTypeFontDatabase::fallbacksForFamily(family, style, styleHint, script);
 
-    // Add the vera.ttf and DejaVuSans.ttf fonts (loaded in populateFontDatabase above) as falback fonts
+    // Add the DejaVuSans.ttf font (loaded in populateFontDatabase above) as a falback font
     // to all other fonts (except itself).
-    static const QString wasmFallbackFonts[] = { "Bitstream Vera Sans", "DejaVu Sans" };
+    static const QString wasmFallbackFonts[] = { "DejaVu Sans" };
     for (auto wasmFallbackFont : wasmFallbackFonts) {
         if (family != wasmFallbackFont && !fallbacks.contains(wasmFallbackFont))
             fallbacks.append(wasmFallbackFont);
@@ -343,7 +342,7 @@ void QWasmFontDatabase::releaseHandle(void *handle)
 
 QFont QWasmFontDatabase::defaultFont() const
 {
-    return QFont("Bitstream Vera Sans"_L1);
+    return QFont("DejaVu Sans"_L1);
 }
 
 namespace {

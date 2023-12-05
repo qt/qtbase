@@ -49,7 +49,6 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
 
 # Resources:
 set(wasmfonts_resource_files
-    "${QtBase_SOURCE_DIR}/src/3rdparty/wasm/Vera.ttf"
     "${QtBase_SOURCE_DIR}/src/3rdparty/wasm/DejaVuSans.ttf"
     "${QtBase_SOURCE_DIR}/src/3rdparty/wasm/DejaVuSansMono.ttf"
 )

@@ -1,20 +1,5 @@
 [
 {
-    "Id": "vera_font",
-    "Name": "Bitstream Vera Font",
-    "QDocModule": "qtgui",
-    "QtUsage": "Used for WebAssembly platform.",
-    "Files": "Vera.ttf",
-    "Description": "Vera is a group typeface (font) with a liberal license.",
-
-    "Version": "1.10",
-    "DownloadLocation": "http://ftp.gnome.org/pub/GNOME/sources/ttf-bitstream-vera/1.10/ttf-bitstream-vera-1.10.tar.bz2",
-    "License": "Bitstream Vera Font License",
-    "LicenseId": "urn:dje:license:bitstream",
-    "LicenseFile": "VERA-LICENSE",
-    "Copyright": "Copyright (C) 2003 Bitstream,Inc"
-},
-{
     "Id": "dejayvu",
     "Name": "DejaVu Fonts",
     "QDocModule": "qtgui",
