@@ -115,6 +115,8 @@ private slots:
     void renderToTextureSrbReuse();
     void renderToTextureIndexedDraw_data();
     void renderToTextureIndexedDraw();
+    void renderToTextureArrayMultiView_data();
+    void renderToTextureArrayMultiView();
     void renderToWindowSimple_data();
     void renderToWindowSimple();
     void finishWithinSwapchainFrame_data();
@@ -421,7 +423,8 @@ void tst_QRhi::create()
             QRhi::OneDimensionalTextureMipmaps,
             QRhi::HalfAttributes,
             QRhi::RenderToOneDimensionalTexture,
-            QRhi::ThreeDimensionalTextureMipmaps
+            QRhi::ThreeDimensionalTextureMipmaps,
+            QRhi::MultiView
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -3701,6 +3704,182 @@ void tst_QRhi::renderToTextureIndexedDraw()
         QVERIFY(redCount < blueCount);
     else
         QVERIFY(redCount > blueCount);
+}
+
+void tst_QRhi::renderToTextureArrayMultiView_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureArrayMultiView()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::MultiView))
+        QSKIP("Multiview not supported, skipping testing on this backend");
+
+    if (rhi->backend() == QRhi::Vulkan && rhi->driverInfo().deviceType == QRhiDriverInfo::CpuDevice)
+        QSKIP("lavapipe does not like multiview, skip for now");
+
+    for (int sampleCount : rhi->supportedSampleCounts()) {
+        const QSize outputSize(1920, 1080);
+        QRhiTexture::Flags textureFlags = QRhiTexture::RenderTarget;
+        if (sampleCount <= 1)
+            textureFlags |= QRhiTexture::UsedAsTransferSource;
+        QScopedPointer<QRhiTexture> texture(rhi->newTextureArray(QRhiTexture::RGBA8, 2, outputSize, sampleCount, textureFlags));
+        QVERIFY(texture->create());
+
+        // exercise a depth-stencil buffer as well, not that the triangle needs it; note that this also needs to be a two-layer texture array
+        QScopedPointer<QRhiTexture> ds(rhi->newTextureArray(QRhiTexture::D24S8, 2, outputSize, sampleCount, QRhiTexture::RenderTarget));
+        QVERIFY(ds->create());
+
+        QScopedPointer<QRhiTexture> resolveTexture;
+        if (sampleCount > 1) {
+            resolveTexture.reset(rhi->newTextureArray(QRhiTexture::RGBA8, 2, outputSize, 1, QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+            QVERIFY(resolveTexture->create());
+        }
+
+        QRhiColorAttachment multiViewAtt(texture.get());
+        multiViewAtt.setMultiViewCount(2);
+        if (sampleCount > 1)
+            multiViewAtt.setResolveTexture(resolveTexture.get());
+
+        QRhiTextureRenderTargetDescription rtDesc(multiViewAtt);
+        rtDesc.setDepthTexture(ds.get());
+
+        QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(rtDesc));
+        QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+        rt->setRenderPassDescriptor(rpDesc.data());
+        QVERIFY(rt->create());
+
+        QRhiCommandBuffer *cb = nullptr;
+        QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+        QVERIFY(cb);
+
+        QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+        static float triangleData[] = {
+            0.0f,   0.5f,    1.0f, 0.0f, 0.0f,
+            -0.5f,  -0.5f,    0.0f, 1.0f, 0.0f,
+            0.5f,  -0.5f,    0.0f, 0.0f, 1.0f
+        };
+
+        QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(triangleData)));
+        QVERIFY(vbuf->create());
+        updates->uploadStaticBuffer(vbuf.data(), triangleData);
+
+        QScopedPointer<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 128)); // mat4 mvp[2]
+        QVERIFY(ubuf->create());
+
+        QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+        srb->setBindings({
+            QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, ubuf.get())
+        });
+        QVERIFY(srb->create());
+
+        QScopedPointer<QRhiGraphicsPipeline> ps(rhi->newGraphicsPipeline());
+        ps->setShaderStages({
+            { QRhiShaderStage::Vertex, loadShader(":/data/multiview.vert.qsb") },
+            { QRhiShaderStage::Fragment, loadShader(":/data/multiview.frag.qsb") }
+        });
+        ps->setMultiViewCount(2); // the view count must be set both on the render target and the pipeline
+        QRhiVertexInputLayout inputLayout;
+        inputLayout.setBindings({
+            { 5 * sizeof(float) }
+        });
+        inputLayout.setAttributes({
+            { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
+            { 0, 1, QRhiVertexInputAttribute::Float3, quint32(2 * sizeof(float)) }
+        });
+        ps->setDepthTest(true);
+        ps->setDepthWrite(true);
+        ps->setSampleCount(sampleCount);
+        ps->setVertexInputLayout(inputLayout);
+        ps->setShaderResourceBindings(srb.get());
+        ps->setRenderPassDescriptor(rpDesc.get());
+        QVERIFY(ps->create());
+
+        QMatrix4x4 mvp = rhi->clipSpaceCorrMatrix();
+        mvp.perspective(45.0f, outputSize.width() / float(outputSize.height()), 0.01f, 1000.0f);
+        mvp.translate(0, 0, -2);
+        mvp.rotate(90, 0, 0, 1); // point left
+        updates->updateDynamicBuffer(ubuf.get(), 0, 64, mvp.constData());
+        mvp.rotate(-180, 0, 0, 1); // point right
+        updates->updateDynamicBuffer(ubuf.get(), 64, 64, mvp.constData());
+
+        cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, updates);
+        cb->setGraphicsPipeline(ps.data());
+        cb->setShaderResources();
+        cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+        QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+        cb->setVertexInput(0, 1, &vbindings);
+        cb->draw(3);
+
+        QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+        QRhiReadbackResult readResult[2];
+        QRhiReadbackDescription readbackDesc;
+        if (sampleCount > 1)
+            readbackDesc.setTexture(resolveTexture.get());
+        else
+            readbackDesc.setTexture(texture.get());
+        readbackDesc.setLayer(0);
+        readbackBatch->readBackTexture(readbackDesc, &readResult[0]);
+        readbackDesc.setLayer(1);
+        readbackBatch->readBackTexture(readbackDesc, &readResult[1]);
+
+        cb->endPass(readbackBatch);
+
+        rhi->endOffscreenFrame();
+
+        if (rhi->backend() == QRhi::Null)
+            QSKIP("No real content with Null backend, skipping multiview content check");
+
+        // both readbacks should be finished now due to using offscreen frames
+
+        QImage image0 = QImage(reinterpret_cast<const uchar *>(readResult[0].data.constData()),
+                            readResult[0].pixelSize.width(), readResult[0].pixelSize.height(),
+                            QImage::Format_RGBA8888);
+        if (rhi->isYUpInFramebuffer()) // note that we used clipSpaceCorrMatrix
+            image0 = image0.mirrored();
+
+        QImage image1 = QImage(reinterpret_cast<const uchar *>(readResult[1].data.constData()),
+                            readResult[1].pixelSize.width(), readResult[1].pixelSize.height(),
+                            QImage::Format_RGBA8888);
+        if (rhi->isYUpInFramebuffer())
+            image1 = image1.mirrored();
+
+        QVERIFY(!image0.isNull());
+        QVERIFY(!image1.isNull());
+
+        // image0 should have a triangle rotated so that it points left with the red
+        // tip. image1 should have a triangle rotated so that it points right with
+        // the red tip. Both are centered, so we will check in range 0..width/2 for
+        // image0 and width/2..width-1 for image1 to see if the red-enough pixels
+        // are present.
+
+        int y = image0.height() / 2;
+        int n = 0;
+        for (int x = 0; x < image0.width() / 2; ++x) {
+            QRgb c = image0.pixel(x, y);
+            if (qRed(c) > 250 && qGreen(c) < 10 && qBlue(c) < 10)
+                ++n;
+        }
+        QVERIFY(n >= 10);
+
+        y = image1.height() / 2;
+        n = 0;
+        for (int x = image1.width() / 2; x < image1.width(); ++x) {
+            QRgb c = image1.pixel(x, y);
+            if (qRed(c) > 250 && qGreen(c) < 10 && qBlue(c) < 10)
+                ++n;
+        }
+        QVERIFY(n >= 10);
+    }
 }
 
 void tst_QRhi::renderToWindowSimple_data()

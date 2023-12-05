@@ -26,3 +26,5 @@ qsb --glsl 320es,430 --msl 21 --msltess tessinterfaceblocks.vert -o tessinterfac
 qsb --glsl 320es,430 --msl 21 --tess-mode triangles tessinterfaceblocks.tesc -o tessinterfaceblocks.tesc.qsb
 qsb --glsl 320es,430 --msl 21  --tess-vertex-count 3 tessinterfaceblocks.tese -o tessinterfaceblocks.tese.qsb
 qsb --glsl 320es,430 --msl 21 simpletess.frag -o tessinterfaceblocks.frag.qsb
+qsb --view-count 2 --glsl "300 es,330" --hlsl 61 -c --msl 12 multiview.vert -o multiview.vert.qsb
+qsb --glsl "300 es,330" --hlsl 61 -c --msl 12 multiview.frag -o multiview.frag.qsb
