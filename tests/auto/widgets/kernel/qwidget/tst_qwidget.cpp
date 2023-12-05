@@ -6577,6 +6577,9 @@ void tst_QWidget::moveChild()
 
 void tst_QWidget::showAndMoveChild()
 {
+#ifdef ANDROID
+    QSKIP("Fails on Android due to removed grabWindow(): QTBUG-118849");
+#endif
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     QWidget parent(nullptr, Qt::Window | Qt::WindowStaysOnTopHint);
