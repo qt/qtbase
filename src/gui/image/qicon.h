@@ -22,6 +22,10 @@ public:
     enum Mode { Normal, Disabled, Active, Selected };
     enum State { On, Off };
 
+    struct ThemeIcon {
+#include <QtGui/qiconconstants_impl.h>
+    };
+
     QIcon() noexcept;
     QIcon(const QPixmap &pixmap);
     QIcon(const QIcon &other);

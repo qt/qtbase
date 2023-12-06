@@ -41,6 +41,7 @@ private slots:
     void streamAvailableSizes();
     void fromTheme();
     void fromThemeCache();
+    void fromThemeConstant();
 
 #ifndef QT_NO_WIDGETS
     void task184901_badCache();
@@ -846,6 +847,11 @@ void tst_QIcon::fromThemeCache()
     QVERIFY(!QIcon::fromTheme("button-open").isNull());
     QVERIFY(!QIcon::fromTheme("button-open-fallback").isNull());
     QVERIFY(QIcon::fromTheme("notexist-fallback").isNull());
+}
+
+void tst_QIcon::fromThemeConstant()
+{
+    const QIcon icon = QIcon::fromTheme(QIcon::ThemeIcon::EditCut);
 }
 
 void tst_QIcon::task223279_inconsistentAddFile()

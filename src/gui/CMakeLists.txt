@@ -61,7 +61,7 @@ qt_internal_add_module(Gui
         image/qabstractfileiconprovider.cpp image/qabstractfileiconprovider.h image/qabstractfileiconprovider_p.h
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
-        image/qicon.cpp image/qicon.h image/qicon_p.h
+        image/qicon.cpp image/qicon.h image/qicon_p.h image/qiconconstants_impl.h
         image/qiconengine.cpp image/qiconengine.h image/qiconengine_p.h
         image/qiconengineplugin.cpp image/qiconengineplugin.h
         image/qiconloader.cpp image/qiconloader_p.h
