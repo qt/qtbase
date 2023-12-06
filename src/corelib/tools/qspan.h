@@ -97,6 +97,7 @@ class QSpanCommon {
 protected:
     template <typename Iterator>
     using is_compatible_iterator = std::conjunction<
+            // ### C++20: extend to contiguous_iteratorss
             std::is_base_of<
                 std::random_access_iterator_tag,
                 typename std::iterator_traits<Iterator>::iterator_category
@@ -108,6 +109,7 @@ protected:
         >;
     template <typename Iterator, typename End>
     using is_compatible_iterator_and_sentinel = std::conjunction<
+            // ### C++20: extend to contiguous_iterators and real sentinels
             is_compatible_iterator<Iterator>,
             std::negation<std::is_convertible<End, std::size_t>>
         >;
@@ -118,7 +120,7 @@ protected:
         : is_compatible_iterator<QSpanPrivate::iterator_t<Range>> {};
     template <typename Range>
     using is_compatible_range = std::conjunction<
-            // ### this needs more work, esp. extension to C++20 contiguous iterators
+            // ### C++20: extend to contiguous_iterators
             std::negation<is_qspan<Range>>,
             std::negation<is_std_span<Range>>,
             std::negation<is_std_array<Range>>,
