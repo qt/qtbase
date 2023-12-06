@@ -126,6 +126,12 @@ bool QSystemSemaphorePosix::modifySemaphore(QSystemSemaphorePrivate *self, int c
         int cnt = count;
         do {
             if (::sem_post(semaphore) == -1) {
+#if defined(Q_OS_VXWORKS)
+                if (errno == EINVAL) {
+                    semaphore = SEM_FAILED;
+                    return modifySemaphore(self, cnt);
+                }
+#endif
                 self->setUnixErrorString("QSystemSemaphore::modifySemaphore (sem_post)"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
                 qDebug("QSystemSemaphorePosix::modify sem_post failed %d %d", count, errno);
