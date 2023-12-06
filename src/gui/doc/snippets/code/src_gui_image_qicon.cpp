@@ -8,7 +8,7 @@ namespace src_gui_image_qicon {
 
 struct MyWidget : public QWidget
 {
-    void drawIcon(QPainter *painter, QPoint pos);
+    void drawIcon(QPainter *painter, const QRect &rect);
     bool isChecked() { return true; }
     QIcon icon;
 };
@@ -17,9 +17,13 @@ void wrapper0() {
 
 //! [0]
 QToolButton *button = new QToolButton;
-button->setIcon(QIcon("open.xpm"));
+button->setIcon(QIcon("open.png"));
 //! [0]
 
+//! [addFile]
+QIcon openIcon("open.png");
+openIcon.addFile("open-disabled.png", QIcon::Disabled);
+//! [addFile]
 
 //! [1]
 button->setIcon(QIcon());
@@ -29,14 +33,12 @@ button->setIcon(QIcon());
 
 
 //! [2]
-void MyWidget::drawIcon(QPainter *painter, QPoint pos)
+void MyWidget::drawIcon(QPainter *painter, const QRect &rect)
 {
-    QPixmap pixmap = icon.pixmap(QSize(22, 22),
-                                   isEnabled() ? QIcon::Normal
-                                               : QIcon::Disabled,
-                                   isChecked() ? QIcon::On
-                                               : QIcon::Off);
-    painter->drawPixmap(pos, pixmap);
+    icon.paint(painter, rect, Qt::AlignCenter, isEnabled() ? QIcon::Normal
+                                                           : QIcon::Disabled,
+                                               isChecked() ? QIcon::On
+                                                           : QIcon::Off);
 }
 //! [2]
 
