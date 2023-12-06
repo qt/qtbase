@@ -432,10 +432,7 @@ QIcon QCocoaTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptio
 
 QIconEngine *QCocoaTheme::createIconEngine(const QString &iconName) const
 {
-    static bool experimentalIconEngines = qEnvironmentVariableIsSet("QT_ENABLE_EXPERIMENTAL_ICON_ENGINES");
-    if (experimentalIconEngines)
-        return new QAppleIconEngine(iconName);
-    return nullptr;
+    return new QAppleIconEngine(iconName);
 }
 
 QVariant QCocoaTheme::themeHint(ThemeHint hint) const

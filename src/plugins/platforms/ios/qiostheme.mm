@@ -174,10 +174,7 @@ const QFont *QIOSTheme::font(Font type) const
 
 QIconEngine *QIOSTheme::createIconEngine(const QString &iconName) const
 {
-    static bool experimentalIconEngines = qEnvironmentVariableIsSet("QT_ENABLE_EXPERIMENTAL_ICON_ENGINES");
-    if (experimentalIconEngines)
-        return new QAppleIconEngine(iconName);
-    return nullptr;
+    return new QAppleIconEngine(iconName);
 }
 
 QT_END_NAMESPACE

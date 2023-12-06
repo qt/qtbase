@@ -45,15 +45,15 @@ void MyWidget::drawIcon(QPainter *painter, const QRect &rect)
 
 void wrapper1() {
 
-//! [3]
-QIcon undoicon = QIcon::fromTheme("edit-undo");
-//! [3]
+//! [fromTheme]
+QIcon undoicon = QIcon::fromTheme(QIcon::ThemeIcon::EditUndo);
+//! [fromTheme]
 
 } // wrapper1
 
 
 //! [4]
-QIcon undoicon = QIcon::fromTheme("edit-undo", QIcon(":/undo.png"));
+QIcon undoicon = QIcon::fromTheme(QIcon::ThemeIcon::EditUndo, QIcon(":/undo.png"));
 //! [4]
 
 

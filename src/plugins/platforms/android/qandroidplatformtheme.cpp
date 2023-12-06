@@ -484,11 +484,7 @@ const QFont *QAndroidPlatformTheme::font(Font type) const
 
 QIconEngine *QAndroidPlatformTheme::createIconEngine(const QString &iconName) const
 {
-    static bool experimentalIconEngines = qEnvironmentVariableIsSet("QT_ENABLE_EXPERIMENTAL_ICON_ENGINES");
-    if (experimentalIconEngines)
-        return new QAndroidPlatformIconEngine(iconName);
-    return nullptr;
-
+    return new QAndroidPlatformIconEngine(iconName);
 }
 
 QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const

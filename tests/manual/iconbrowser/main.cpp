@@ -534,8 +534,6 @@ private:
 
 int main(int argc, char* argv[])
 {
-    qputenv("QT_ENABLE_EXPERIMENTAL_ICON_ENGINES", "1");
-
     QApplication app(argc, argv);
 
 #ifdef ICONBROWSER_RESOURCE

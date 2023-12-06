@@ -578,11 +578,22 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
   The most convenient way to construct an icon is by using the
   \l{QIcon::}{fromTheme()} factory function. Qt implements access to
   the native icon library on platforms that support the
-  \l {Freedesktop Icon Theme Specification}.
+  \l {Freedesktop Icon Theme Specification}. Since Qt 6.7, Qt also
+  provides access to the native icon library on macOS, iOS, and
+  Windows 10 and 11. On Android, Qt can access icons from the Material
+  design system as long as the
+  \l{https://github.com/google/material-design-icons/tree/master/font}
+  {MaterialIcons-Regular} font is available on the system, or bundled
+  as a resource at \c{:/qt-project.org/icons/MaterialIcons-Regular.ttf}
+  with the application.
+
+  \snippet code/src_gui_image_qicon.cpp fromTheme
 
   Applications can use the same theming specification to provide
   their own icon library. See below for an example theme description
   and the corresponding directory structure for the image files.
+  Icons from an application-provided theme take precedence over the
+  native icon library.
 
   In addition, it is possible to provide custom \l {QIconEngine}
   {icon engines}. This allows applications to customize every aspect
@@ -622,6 +633,10 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
   \note QIcon needs a QGuiApplication instance before the icon is created.
 
   \section1 High DPI Icons
+
+  Icons that are provided by the native icon library are usually based
+  on vector graphics, and will automatically be rendered in the appropriate
+  resolution.
 
   When providing your own image files via \l addFile(), then QIcon will
   use Qt's \l {High Resolution Versions of Images}{"@nx" high DPI syntax}.
@@ -1306,21 +1321,15 @@ void QIcon::setFallbackThemeName(const QString &name)
     the \l{fallbackThemeName()}{fallback icon theme} is consulted,
     before falling back to looking up standalone icon files in the
     \l{QIcon::fallbackSearchPaths()}{fallback icon search path}.
+    Finally, the platform's native icon library is consulted.
 
     To fetch an icon from the current icon theme:
 
-    \snippet code/src_gui_image_qicon.cpp 3
+    \snippet code/src_gui_image_qicon.cpp fromTheme
 
     If an \l{themeName()}{icon theme} has not been explicitly
     set via setThemeName() a platform defined icon theme will
     be used.
-
-    \note Platform icon themes is only implemented on
-    \l{Freedesktop} based systems at the moment,
-    following the \l{Freedesktop Icon Naming Specification}.
-    In order to use themed icons on other platforms, you will have
-    to bundle a \l{setThemeName()}{compliant theme} in one of your
-    themeSearchPaths(), and set the appropriate themeName().
 
     \sa themeName(), fallbackThemeName(), setThemeName(), themeSearchPaths(), fallbackSearchPaths(),
         {Freedesktop Icon Naming Specification}
@@ -1349,6 +1358,7 @@ QIcon QIcon::fromTheme(const QString &name)
     the \l{fallbackThemeName()}{fallback icon theme} is consulted,
     before falling back to looking up standalone icon files in the
     \l{QIcon::fallbackSearchPaths()}{fallback icon search path}.
+    Finally, the platform's native icon library is consulted.
 
     If no icon is found \a fallback is returned.
 

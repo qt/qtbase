@@ -1177,10 +1177,7 @@ QIcon QWindowsTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOpt
 
 QIconEngine *QWindowsTheme::createIconEngine(const QString &iconName) const
 {
-    static bool experimentalIconEngines = qEnvironmentVariableIsSet("QT_ENABLE_EXPERIMENTAL_ICON_ENGINES");
-    if (experimentalIconEngines)
-        return new QWindowsIconEngine(iconName);
-    return nullptr;
+    return new QWindowsIconEngine(iconName);
 }
 
 static inline bool doUseNativeMenus()
