@@ -283,7 +283,7 @@ public:
     using const_iterator = const_pointer;      // implementation-defined choice
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-    static constexpr size_type extent = E;
+    static constexpr std::size_t extent = E;
 
     // [span.cons], constructors, copy, and assignment
     using Base::Base;
