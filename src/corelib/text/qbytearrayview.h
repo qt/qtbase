@@ -263,7 +263,7 @@ public:
     [[nodiscard]] qsizetype indexOf(QByteArrayView a, qsizetype from = 0) const noexcept
     { return QtPrivate::findByteArray(*this, from, a); }
     [[nodiscard]] qsizetype indexOf(char ch, qsizetype from = 0) const noexcept
-    { return QtPrivate::findByteArray(*this, from, QByteArrayView(&ch, 1)); }
+    { return QtPrivate::findByteArray(*this, from, ch); }
 
     [[nodiscard]] bool contains(QByteArrayView a) const noexcept
     { return indexOf(a) != qsizetype(-1); }
@@ -275,7 +275,7 @@ public:
     [[nodiscard]] qsizetype lastIndexOf(QByteArrayView a, qsizetype from) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, a); }
     [[nodiscard]] qsizetype lastIndexOf(char ch, qsizetype from = -1) const noexcept
-    { return QtPrivate::lastIndexOf(*this, from, QByteArrayView(&ch, 1)); }
+    { return QtPrivate::lastIndexOf(*this, from, ch); }
 
     [[nodiscard]] qsizetype count(QByteArrayView a) const noexcept
     { return QtPrivate::count(*this, a); }

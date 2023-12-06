@@ -2656,6 +2656,11 @@ static inline qsizetype findCharHelper(QByteArrayView haystack, qsizetype from, 
     return -1;
 }
 
+qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, char needle) noexcept
+{
+    return findCharHelper(haystack, from, needle);
+}
+
 qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
 {
     const auto ol = needle.size();
@@ -2690,6 +2695,7 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByt
 */
 
 /*!
+    \fn qsizetype QByteArray::indexOf(char ch, qsizetype from) const
     \overload
 
     Returns the index position of the start of the first occurrence of the
@@ -2701,11 +2707,6 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByt
 
     \sa lastIndexOf(), contains()
 */
-
-qsizetype QByteArray::indexOf(char ch, qsizetype from) const
-{
-    return qToByteArrayViewIgnoringNull(*this).indexOf(ch, from);
-}
 
 static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char *needle,
                                    qsizetype ol, qsizetype from)
@@ -2758,6 +2759,11 @@ static inline qsizetype lastIndexOfCharHelper(QByteArrayView haystack, qsizetype
         }
     }
     return -1;
+}
+
+qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, char needle) noexcept
+{
+    return lastIndexOfCharHelper(haystack, from, needle);
 }
 
 qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
@@ -2813,6 +2819,7 @@ qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteA
 */
 
 /*!
+    \fn qsizetype QByteArray::lastIndexOf(char ch, qsizetype from) const
     \overload
 
     Returns the index position of the start of the last occurrence of byte \a ch
@@ -2825,11 +2832,6 @@ qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteA
 
     \sa indexOf(), contains()
 */
-
-qsizetype QByteArray::lastIndexOf(char ch, qsizetype from) const
-{
-    return qToByteArrayViewIgnoringNull(*this).lastIndexOf(ch, from);
-}
 
 static inline qsizetype countCharHelper(QByteArrayView haystack, char needle) noexcept
 {

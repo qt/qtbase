@@ -26,7 +26,13 @@ bool startsWith(QByteArrayView haystack, QByteArrayView needle) noexcept;
 bool endsWith(QByteArrayView haystack, QByteArrayView needle) noexcept;
 
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
+qsizetype findByteArray(QByteArrayView haystack, qsizetype from, char needle) noexcept;
+
+[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
 qsizetype findByteArray(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept;
+
+[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
+qsizetype lastIndexOf(QByteArrayView haystack, qsizetype from, char needle) noexcept;
 
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
 qsizetype lastIndexOf(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept;
