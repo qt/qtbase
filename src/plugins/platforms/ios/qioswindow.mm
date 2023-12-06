@@ -303,8 +303,6 @@ void QIOSWindow::requestActivateWindow()
 
 void QIOSWindow::raiseOrLower(bool raise)
 {
-    // Re-insert m_view at the correct index among its sibling views
-    // (QWindows) according to their current m_windowLevel:
     if (!isQtApplication())
         return;
 
@@ -312,17 +310,27 @@ void QIOSWindow::raiseOrLower(bool raise)
     if (subviews.count == 1)
         return;
 
-    for (int i = int(subviews.count) - 1; i >= 0; --i) {
-        UIView *view = static_cast<UIView *>([subviews objectAtIndex:i]);
-        if (view.hidden || view == m_view || !view.qwindow)
-            continue;
-        int level = static_cast<QIOSWindow *>(view.qwindow->handle())->m_windowLevel;
-        if (m_windowLevel > level || (raise && m_windowLevel == level)) {
-            [m_view.superview insertSubview:m_view aboveSubview:view];
-            return;
+    if (m_view.superview == m_view.qtViewController.view) {
+        // We're a top level window, so we need to take window
+        // levels into account.
+        for (int i = int(subviews.count) - 1; i >= 0; --i) {
+            UIView *view = static_cast<UIView *>([subviews objectAtIndex:i]);
+            if (view.hidden || view == m_view || !view.qwindow)
+                continue;
+            int level = static_cast<QIOSWindow *>(view.qwindow->handle())->m_windowLevel;
+            if (m_windowLevel > level || (raise && m_windowLevel == level)) {
+                [m_view.superview insertSubview:m_view aboveSubview:view];
+                return;
+            }
         }
+        [m_view.superview insertSubview:m_view atIndex:0];
+    } else {
+        // Child window, or embedded into a non-Qt view controller
+        if (raise)
+            [m_view.superview bringSubviewToFront:m_view];
+        else
+            [m_view.superview sendSubviewToBack:m_view];
     }
-    [m_view.superview insertSubview:m_view atIndex:0];
 }
 
 void QIOSWindow::updateWindowLevel()
