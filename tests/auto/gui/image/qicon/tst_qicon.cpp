@@ -722,10 +722,16 @@ void tst_QIcon::fromTheme()
         QCOMPARE(i.availableSizes(), abIcon.availableSizes());
     }
 
-    // Check that setting a fallback theme invalidates earlier lookups
-    QVERIFY(QIcon::fromTheme("edit-cut").isNull());
-    QIcon::setFallbackThemeName("fallbacktheme");
-    QVERIFY(!QIcon::fromTheme("edit-cut").isNull());
+    // Setting or changing the fallback theme should invalidate earlier lookups.
+    // We can only test this if the system doesn't provide an icon, because once
+    // we got a valid icon, it will be cached, and even if we proxy to a different
+    // engine when a fallback theme is set, the cacheKey of the icon will be the
+    // same.
+    const QIcon editCut = QIcon::fromTheme("edit-cut");
+    if (editCut.isNull()) {
+        QIcon::setFallbackThemeName("fallbacktheme");
+        QVERIFY(!QIcon::fromTheme("edit-cut").isNull());
+    }
 
     // Make sure setting the theme name clears the state
     QIcon::setThemeName("");
