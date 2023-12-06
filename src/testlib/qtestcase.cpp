@@ -1697,6 +1697,50 @@ char *toPrettyCString(const char *p, qsizetype length)
 */
 
 constexpr qsizetype PrettyUnicodeMaxOutputSize = 256;
+// escape sequence, closing quote, the three dots and NUL
+constexpr qsizetype PrettyUnicodeMaxIncrement = sizeof(R"(\uXXXX"...)"); // includes NUL
+
+static char *writePrettyUnicodeChar(char16_t ch, char * const buffer)
+{
+    auto dst = buffer;
+    auto first = [&](int n) { Q_ASSERT(dst - buffer == n); return dst; };
+    if (ch < 0x7f && ch >= 0x20 && ch != '\\' && ch != '"') {
+        *dst++ = ch;
+        return first(1);
+    }
+
+    // write as an escape sequence
+    *dst++ = '\\';
+    switch (ch) {
+    case 0x22:
+    case 0x5c:
+        *dst++ = uchar(ch);
+        break;
+    case 0x8:
+        *dst++ = 'b';
+        break;
+    case 0xc:
+        *dst++ = 'f';
+        break;
+    case 0xa:
+        *dst++ = 'n';
+        break;
+    case 0xd:
+        *dst++ = 'r';
+        break;
+    case 0x9:
+        *dst++ = 't';
+        break;
+    default:
+        *dst++ = 'u';
+        *dst++ = toHexUpper(ch >> 12);
+        *dst++ = toHexUpper(ch >> 8);
+        *dst++ = toHexUpper(ch >> 4);
+        *dst++ = toHexUpper(ch);
+        return first(6);
+    }
+    return first(2);
+}
 
 char *toPrettyUnicode(QStringView string)
 {
@@ -1710,47 +1754,11 @@ char *toPrettyUnicode(QStringView string)
 
     *dst++ = '"';
     for ( ; p != end; ++p) {
-        // escape sequence, closing quote, the three dots and NUL
-        constexpr qsizetype MaxIncrement = sizeof(R"(\uXXXX"...)"); // includes NUL
-        if (dst - buffer.get() > PrettyUnicodeMaxOutputSize - MaxIncrement) {
+        if (dst - buffer.get() > PrettyUnicodeMaxOutputSize - PrettyUnicodeMaxIncrement) {
             trimmed = true;
             break;
         }
-
-        if (*p < 0x7f && *p >= 0x20 && *p != '\\' && *p != '"') {
-            *dst++ = *p;
-            continue;
-        }
-
-        // write as an escape sequence
-        *dst++ = '\\';
-        switch (*p) {
-        case 0x22:
-        case 0x5c:
-            *dst++ = uchar(*p);
-            break;
-        case 0x8:
-            *dst++ = 'b';
-            break;
-        case 0xc:
-            *dst++ = 'f';
-            break;
-        case 0xa:
-            *dst++ = 'n';
-            break;
-        case 0xd:
-            *dst++ = 'r';
-            break;
-        case 0x9:
-            *dst++ = 't';
-            break;
-        default:
-            *dst++ = 'u';
-            *dst++ = toHexUpper(*p >> 12);
-            *dst++ = toHexUpper(*p >> 8);
-            *dst++ = toHexUpper(*p >> 4);
-            *dst++ = toHexUpper(*p);
-        }
+        dst = writePrettyUnicodeChar(*p, dst);
     }
 
     *dst++ = '"';
