@@ -23,22 +23,21 @@ using namespace Qt::StringLiterals;
 namespace {
 auto *loadImage(const QString &iconName)
 {
-    static constexpr std::pair<QStringView, NSString *> iconMap[] = {
-        {u"address-book-new", @"folder.circle"},
-        {u"application-exit", @"xmark.circle"},
-        {u"appointment-new", @"hourglass.badge.plus"},
-        {u"call-start", @"phone.arrow.up.right"},
-        {u"call-stop", @"phone.arrow.down.left"},
-        {u"edit-clear", @"clear"},
-        {u"edit-copy", @"doc.on.doc"},
-        {u"edit-cut", @"scissors"},
-        {u"edit-delete", @"delete.left"},
-        {u"edit-find", @"magnifyingglass"},
-        {u"edit-find-replace", @"arrow.up.left.and.down.right.magnifyingglass"},
-        {u"edit-paste", @"clipboard"},
-        {u"edit-redo", @"arrowshape.turn.up.right"},
-        {u"edit-select-all", @""},
-        {u"edit-undo", @"arrowshape.turn.up.left"},
+    static constexpr std::pair<QLatin1StringView, NSString *> iconMap[] = {
+        {QIcon::ThemeIcon::AddressBookNew, @"folder.circle"},
+        {QIcon::ThemeIcon::ApplicationExit, @"xmark.circle"},
+        {QIcon::ThemeIcon::AppointmentNew, @"hourglass.badge.plus"},
+        {QIcon::ThemeIcon::CallStart, @"phone.arrow.up.right"},
+        {QIcon::ThemeIcon::CallStop, @"phone.arrow.down.left"},
+        {QIcon::ThemeIcon::EditClear, @"clear"},
+        {QIcon::ThemeIcon::EditCopy, @"doc.on.doc"},
+        {QIcon::ThemeIcon::EditCut, @"scissors"},
+        {QIcon::ThemeIcon::EditDelete, @"delete.left"},
+        {QIcon::ThemeIcon::EditFind, @"magnifyingglass"},
+        {QIcon::ThemeIcon::EditFindReplace, @"arrow.up.left.and.down.right.magnifyingglass"},
+        {QIcon::ThemeIcon::EditPaste, @"clipboard"},
+        {QIcon::ThemeIcon::EditRedo, @"arrowshape.turn.up.right"},
+        {QIcon::ThemeIcon::EditUndo, @"arrowshape.turn.up.left"},
     };
     const auto it = std::find_if(std::begin(iconMap), std::end(iconMap), [iconName](const auto &c){
         return c.first == iconName;
