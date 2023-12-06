@@ -1,9 +1,9 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include "../../../src/plugins/platforms/wasm/qwasmkeytranslator.h"
+#include "../../../../src/plugins/platforms/wasm/qwasmkeytranslator.h"
 
-#include "../../../src/plugins/platforms/wasm/qwasmevent.h"
+#include "../../../../src/plugins/platforms/wasm/qwasmevent.h"
 
 #include <QTest>
 

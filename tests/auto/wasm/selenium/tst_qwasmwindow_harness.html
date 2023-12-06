@@ -1,10 +1,10 @@
 <!doctype html>
 
 <head>
-    <script type="text/javascript" src="qwasmwindow_harness.js"></script>
+    <script type="text/javascript" src="tst_qwasmwindow_harness.js"></script>
     <script>
         (async () => {
-            const instance = await qwasmwindow_harness_entry({});
+            const instance = await tst_qwasmwindow_harness_entry({});
             window.instance = instance;
 
             const testSandbox = document.createElement('div');

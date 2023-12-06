@@ -267,4 +267,4 @@ int main(int argc, char **argv)
     return 0;
 }
 
-#include "qwasmwindow_harness.moc"
+#include "tst_qwasmwindow_harness.moc"

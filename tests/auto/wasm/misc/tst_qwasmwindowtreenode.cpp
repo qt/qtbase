@@ -1,7 +1,7 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include "../../../src/plugins/platforms/wasm/qwasmwindowtreenode.h"
+#include "../../../../src/plugins/platforms/wasm/qwasmwindowtreenode.h"
 #include <QtGui/QWindow>
 #include <QTest>
 #include <emscripten/val.h>
