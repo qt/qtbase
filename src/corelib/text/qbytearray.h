@@ -476,7 +476,7 @@ public:
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
     iterator begin() { return data(); }
-    const_iterator begin() const noexcept { return data(); }
+    const_iterator begin() const noexcept { return d.data(); }
     const_iterator cbegin() const noexcept { return begin(); }
     const_iterator constBegin() const noexcept { return begin(); }
     iterator end() { return begin() + size(); }
