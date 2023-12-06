@@ -30,19 +30,11 @@ private:
     {
         return (quint64(mode) << 32) | state;
     }
-    struct Glyphs
-    {
-        constexpr Glyphs(char16_t g1 = 0, char16_t g2 = 0, char16_t g3 = 0) noexcept
-                    : codepoints{g1, g2, g3}
-        {}
-        constexpr bool isNull() const noexcept { return codepoints[0].isNull(); }
-        const QChar codepoints[3] = {};
-    };
-    Glyphs glyphs() const;
+    QString glyphs() const;
 
     const QString m_iconName;
     QFont m_iconFont;
-    const Glyphs m_glyphs;
+    const QString m_glyphs;
     mutable QPixmap m_pixmap;
     mutable quint64 m_cacheKey = {};
 };

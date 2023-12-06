@@ -219,29 +219,31 @@ static QString fetchFont(const QString &query)
 }
 }
 
-QAndroidPlatformIconEngine::Glyphs QAndroidPlatformIconEngine::glyphs() const
+QString QAndroidPlatformIconEngine::glyphs() const
 {
     if (!QFontInfo(m_iconFont).exactMatch())
         return {};
 
-    static constexpr std::pair<QStringView, Glyphs> glyphMap[] = {
-        {u"edit-clear", 0xe872},
-        {u"edit-copy", 0xe14d},
-        {u"edit-cut", 0xe14e},
-        {u"edit-delete", 0xe14a},
-        {u"edit-find", 0xe8b6},
-        {u"edit-find-replace", 0xe881},
-        {u"edit-paste", 0xe14f},
-        {u"edit-redo", 0xe15a},
-        {u"edit-select-all", 0xe162},
-        {u"edit-undo", 0xe166},
-        {u"printer", 0xe8ad},
+    static constexpr std::pair<QLatin1StringView, QStringView> glyphMap[] = {
+        {QIcon::ThemeIcon::EditClear, u"\ue872"},
+        {QIcon::ThemeIcon::EditCopy, u"\ue14d"},
+        {QIcon::ThemeIcon::EditCut, u"\ue14e"},
+        {QIcon::ThemeIcon::EditDelete, u"\ue14a"},
+        {QIcon::ThemeIcon::EditFind, u"\ue8b6"},
+        {QIcon::ThemeIcon::EditFindReplace, u"\ue881"},
+        {QIcon::ThemeIcon::EditPaste, u"\ue14f"},
+        {QIcon::ThemeIcon::EditRedo, u"\ue15a"},
+        {QIcon::ThemeIcon::EditSelectAll, u"\ue162"},
+        {QIcon::ThemeIcon::EditUndo, u"\ue166"},
+        {QIcon::ThemeIcon::Printer, u"\ue8ad"},
+        {QLatin1StringView("banana"), u"🍌"},
     };
 
     const auto it = std::find_if(std::begin(glyphMap), std::end(glyphMap), [this](const auto &c){
         return c.first == m_iconName;
     });
-    return it != std::end(glyphMap) ? it->second : Glyphs();
+    return it != std::end(glyphMap) ? it->second.toString()
+                                    : (m_iconName.length() == 1 ? m_iconName : QString());
 }
 
 QAndroidPlatformIconEngine::QAndroidPlatformIconEngine(const QString &iconName)
@@ -284,7 +286,13 @@ QString QAndroidPlatformIconEngine::iconName()
 
 bool QAndroidPlatformIconEngine::isNull()
 {
-    return m_glyphs.isNull() || !QFontMetrics(m_iconFont).inFont(m_glyphs.codepoints[0]);
+    if (m_glyphs.isEmpty())
+        return true;
+    const QChar c0 = m_glyphs.at(0);
+    const QFontMetrics fontMetrics(m_iconFont);
+    if (c0.category() == QChar::Other_Surrogate && m_glyphs.size() > 1)
+        return !fontMetrics.inFontUcs4(QChar::surrogateToUcs4(c0, m_glyphs.at(1)));
+    return !fontMetrics.inFont(c0);
 }
 
 QList<QSize> QAndroidPlatformIconEngine::availableSizes(QIcon::Mode, QIcon::State)
@@ -332,15 +340,7 @@ QPixmap QAndroidPlatformIconEngine::scaledPixmap(const QSize &size, QIcon::Mode 
         }
 
         const QRect rect({0, 0}, size);
-        if (m_glyphs.codepoints[0] == QChar(0xffff)) {
-            painter.drawText(rect, Qt::AlignCenter, QString(m_glyphs.codepoints + 1, 2));
-        } else {
-            for (const auto &glyph : m_glyphs.codepoints) {
-                if (glyph.isNull())
-                    break;
-                painter.drawText(rect, glyph);
-            }
-        }
+        painter.drawText(rect, Qt::AlignCenter, m_glyphs);
 
         m_cacheKey = cacheKey;
     }

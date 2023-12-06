@@ -12,31 +12,31 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-QWindowsIconEngine::Glyphs QWindowsIconEngine::glyphs() const
+QString QWindowsIconEngine::glyphs() const
 {
     if (!QFontInfo(m_iconFont).exactMatch())
         return {};
 
-    static constexpr std::pair<QStringView, Glyphs> glyphMap[] = {
-        {u"edit-clear", 0xe894},
-        {u"edit-copy", 0xe8c8},
-        {u"edit-cut", 0xe8c6},
-        {u"edit-delete", 0xe74d},
-        {u"edit-find", 0xe721},
-        {u"edit-find-replace", Glyphs(0xeb51, 0xeb52)},
-        {u"edit-paste", 0xe77f},
-        {u"edit-redo", 0xe7a6},
-        {u"edit-select-all", 0xe8b3},
-        {u"edit-undo", 0xe7a7},
-        {u"printer", 0xe749},
-        {u"red-heart", Glyphs(0x2764, 0xFE0F)},
-        {u"banana", Glyphs(0xffff, 0xD83C, 0xDF4C)},
+    static constexpr std::pair<QLatin1StringView, QStringView> glyphMap[] = {
+        {QIcon::ThemeIcon::EditClear, u"\ue894"},
+        {QIcon::ThemeIcon::EditCopy, u"\ue8c8"},
+        {QIcon::ThemeIcon::EditCut, u"\ue8c6"},
+        {QIcon::ThemeIcon::EditDelete, u"\ue74d"},
+        {QIcon::ThemeIcon::EditFind, u"\ue721"},
+        {QIcon::ThemeIcon::EditPaste, u"\ue77f"},
+        {QIcon::ThemeIcon::EditRedo, u"\ue7a6"},
+        {QIcon::ThemeIcon::EditSelectAll, u"\ue8b3"},
+        {QIcon::ThemeIcon::EditUndo, u"\ue7a7"},
+        {QIcon::ThemeIcon::Printer, u"\ue749"},
+        {QLatin1StringView("banana"), u"🍌"},
     };
 
     const auto it = std::find_if(std::begin(glyphMap), std::end(glyphMap), [this](const auto &c){
         return c.first == m_iconName;
     });
-    return it != std::end(glyphMap) ? it->second : Glyphs();
+
+    return it != std::end(glyphMap) ? it->second.toString()
+                                    : (m_iconName.length() == 1 ? m_iconName : QString());
 }
 
 namespace {
@@ -74,7 +74,14 @@ QString QWindowsIconEngine::iconName()
 
 bool QWindowsIconEngine::isNull()
 {
-    return m_glyphs.isNull();
+    if (m_glyphs.isEmpty())
+        return true;
+
+    const QChar c0 = m_glyphs.at(0);
+    const QFontMetrics fontMetrics(m_iconFont);
+    if (c0.category() == QChar::Other_Surrogate && m_glyphs.size() > 1)
+        return !fontMetrics.inFontUcs4(QChar::surrogateToUcs4(c0, m_glyphs.at(1)));
+    return !fontMetrics.inFont(c0);
 }
 
 QList<QSize> QWindowsIconEngine::availableSizes(QIcon::Mode, QIcon::State)
@@ -122,15 +129,7 @@ QPixmap QWindowsIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QI
         }
 
         const QRect rect({0, 0}, size);
-        if (m_glyphs.codepoints[0] == QChar(0xffff)) {
-            painter.drawText(rect, Qt::AlignCenter, QString(m_glyphs.codepoints + 1, 2));
-        } else {
-            for (const auto &glyph : m_glyphs.codepoints) {
-                if (glyph.isNull())
-                    break;
-                painter.drawText(rect, glyph);
-            }
-        }
+        painter.drawText(rect, Qt::AlignCenter, m_glyphs);
 
         m_cacheKey = cacheKey;
     }
