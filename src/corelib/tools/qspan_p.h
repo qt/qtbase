@@ -252,7 +252,10 @@ public:
 } // namespace QSpanPrivate
 
 template <typename T, std::size_t E>
-class QSpan : private QSpanPrivate::QSpanBase<T, E>
+class QSpan
+#ifndef Q_QDOC
+    : private QSpanPrivate::QSpanBase<T, E>
+#endif
 {
     using Base = QSpanPrivate::QSpanBase<T, E>;
     Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
@@ -298,14 +301,14 @@ public:
     [[nodiscard]] constexpr pointer data() const noexcept { return this->m_data; }
 
     // [span.iterators]
-    [[nodiscard]] constexpr auto begin() const noexcept { return data(); }
-    [[nodiscard]] constexpr auto end() const noexcept { return data() + size(); }
-    [[nodiscard]] constexpr auto cbegin() const noexcept { return const_iterator{begin()}; }
-    [[nodiscard]] constexpr auto cend() const noexcept { return const_iterator{end()}; }
-    [[nodiscard]] constexpr auto rbegin() const noexcept { return reverse_iterator{end()}; }
-    [[nodiscard]] constexpr auto rend() const noexcept { return reverse_iterator{begin()}; }
-    [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator{end()}; }
-    [[nodiscard]] constexpr auto crend() const noexcept { return const_reverse_iterator{begin()}; }
+    [[nodiscard]] constexpr iterator begin() const noexcept { return data(); }
+    [[nodiscard]] constexpr iterator end() const noexcept { return data() + size(); }
+    [[nodiscard]] constexpr const_iterator cbegin() const noexcept { return begin(); }
+    [[nodiscard]] constexpr const_iterator cend() const noexcept { return end(); }
+    [[nodiscard]] constexpr reverse_iterator rbegin() const noexcept { return reverse_iterator{end()}; }
+    [[nodiscard]] constexpr reverse_iterator rend() const noexcept { return reverse_iterator{begin()}; }
+    [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+    [[nodiscard]] constexpr const_reverse_iterator crend() const noexcept { return rend(); }
 
     // [span.sub]
     template <std::size_t Count>
