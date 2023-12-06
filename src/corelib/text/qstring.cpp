@@ -133,31 +133,6 @@ static inline bool foldAndCompare(const T a, const T b)
     searching forward from index
     position \a from. Returns -1 if \a ch could not be found.
 */
-static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept
-{
-    if (from < -str.size()) // from < 0 && abs(from) > str.size(), avoiding overflow
-        return -1;
-    if (from < 0)
-        from = qMax(from + str.size(), qsizetype(0));
-    if (from < str.size()) {
-        const char16_t *s = str.utf16();
-        char16_t c = ch.unicode();
-        const char16_t *n = s + from;
-        const char16_t *e = s + str.size();
-        if (cs == Qt::CaseSensitive) {
-            n = QtPrivate::qustrchr(QStringView(n, e), c);
-            if (n != e)
-                return n - s;
-        } else {
-            c = foldCase(c);
-            auto it = std::find_if(n, e, [c](auto ch) { return foldAndCompare(ch, c); });
-            if (it != e)
-                return std::distance(s, it);
-        }
-    }
-    return -1;
-}
-
 template <typename Haystack>
 static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle,
                                      qsizetype from, Qt::CaseSensitivity cs) noexcept
@@ -792,6 +767,23 @@ const char16_t *QtPrivate::qustrchr(QStringView str, char16_t c) noexcept
 #endif // aarch64
 
     return std::find(n, e, c);
+}
+
+/*!
+ * \internal
+ *
+ * Searches case-insensitively for character \a c in the string \a str and
+ * returns a pointer to it. Iif the character is not found, this function
+ * returns a pointer to the end of the string -- that is, \c{str.end()}.
+ */
+Q_NEVER_INLINE
+const char16_t *QtPrivate::qustrcasechr(QStringView str, char16_t c) noexcept
+{
+    const QChar *n = str.begin();
+    const QChar *e = str.end();
+    c = foldCase(c);
+    auto it = std::find_if(n, e, [c](auto ch) { return foldAndCompare(ch, QChar(c)); });
+    return reinterpret_cast<const char16_t *>(it);
 }
 
 // Note: ptr on output may be off by one and point to a preceding US-ASCII
@@ -9637,15 +9629,12 @@ bool QtPrivate::endsWith(QLatin1StringView haystack, QLatin1StringView needle, Q
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
-qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, char16_t needle0, Qt::CaseSensitivity cs) noexcept
-{
-    return qFindChar(haystack0, needle0, from, cs);
-}
-
 qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringView needle0, Qt::CaseSensitivity cs) noexcept
 {
     const qsizetype l = haystack0.size();
     const qsizetype sl = needle0.size();
+    if (sl == 1)
+        return findString(haystack0, from, needle0[0], cs);
     if (from < 0)
         from += l;
     if (std::size_t(sl + from) > std::size_t(l))
@@ -9654,9 +9643,6 @@ qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringVi
         return from;
     if (!l)
         return -1;
-
-    if (sl == 1)
-        return qFindChar(haystack0, needle0[0], from, cs);
 
     /*
         We use the Boyer-Moore algorithm in cases where the overhead

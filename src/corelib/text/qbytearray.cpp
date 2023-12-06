@@ -2642,25 +2642,6 @@ QByteArray QByteArray::repeated(qsizetype times) const
         hashHaystack -= std::size_t(a) << ol_minus_1; \
     hashHaystack <<= 1
 
-static inline qsizetype findCharHelper(QByteArrayView haystack, qsizetype from, char needle) noexcept
-{
-    if (from < 0)
-        from = qMax(from + haystack.size(), qsizetype(0));
-    if (from < haystack.size()) {
-        const char *const b = haystack.data();
-        if (const auto n = static_cast<const char *>(
-                    memchr(b + from, needle, static_cast<size_t>(haystack.size() - from)))) {
-            return n - b;
-        }
-    }
-    return -1;
-}
-
-qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, char needle) noexcept
-{
-    return findCharHelper(haystack, from, needle);
-}
-
 qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
 {
     const auto ol = needle.size();
@@ -2673,7 +2654,7 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByt
     }
 
     if (ol == 1)
-        return findCharHelper(haystack, from, needle.front());
+        return findByteArray(haystack, from, needle.front());
 
     if (from > l || ol + from > l)
         return -1;

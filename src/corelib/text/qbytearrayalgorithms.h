@@ -25,7 +25,7 @@ bool startsWith(QByteArrayView haystack, QByteArrayView needle) noexcept;
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
 bool endsWith(QByteArrayView haystack, QByteArrayView needle) noexcept;
 
-[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
+[[nodiscard]] inline
 qsizetype findByteArray(QByteArrayView haystack, qsizetype from, char needle) noexcept;
 
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION

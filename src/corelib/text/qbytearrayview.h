@@ -361,6 +361,20 @@ inline quint16 qChecksum(const char *s, qsizetype len,
 { return qChecksum(QByteArrayView(s, len), standard); }
 #endif
 
+qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, char needle) noexcept
+{
+    if (from < 0)
+        from = qMax(from + haystack.size(), qsizetype(0));
+    if (from < haystack.size()) {
+        const char *const b = haystack.data();
+        if (const auto n = static_cast<const char *>(
+                    memchr(b + from, needle, static_cast<size_t>(haystack.size() - from)))) {
+            return n - b;
+        }
+    }
+    return -1;
+}
+
 QT_END_NAMESPACE
 
 #endif // QBYTEARRAYVIEW_H
