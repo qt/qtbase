@@ -109,20 +109,20 @@ void tst_QDBusLocalCalls::makeInvalidCalls()
         QDBusMessage callMsg = QDBusMessage::createMethodCall(conn.baseService(),
                                                               "/", QString(), "echo");
         QDBusMessage replyMsg = doCall(callMsg);
-        QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ErrorMessage));
+        QCOMPARE(replyMsg.type(), QDBusMessage::ErrorMessage);
 
         QDBusError error(replyMsg);
-        QCOMPARE(int(error.type()), int(QDBusError::UnknownMethod));
+        QCOMPARE(error.type(), QDBusError::UnknownMethod);
     }
 
     {
         QDBusMessage callMsg = QDBusMessage::createMethodCall(conn.baseService(),
                                                               "/no_object", QString(), "echo");
         QDBusMessage replyMsg = doCall(callMsg);
-        QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ErrorMessage));
+        QCOMPARE(replyMsg.type(), QDBusMessage::ErrorMessage);
 
         QDBusError error(replyMsg);
-        QCOMPARE(int(error.type()), int(QDBusError::UnknownObject));
+        QCOMPARE(error.type(), QDBusError::UnknownObject);
     }
 }
 
@@ -134,7 +134,7 @@ void tst_QDBusLocalCalls::makeCalls()
     callMsg << value;
     QDBusMessage replyMsg = doCall(callMsg);
 
-    QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));
+    QCOMPARE(replyMsg.type(), QDBusMessage::ReplyMessage);
 
     QVariantList replyArgs = replyMsg.arguments();
     QCOMPARE(replyArgs.size(), 1);
@@ -149,7 +149,7 @@ void tst_QDBusLocalCalls::makeCallsVariant()
     callMsg << QVariant::fromValue(QDBusVariant(value));
     QDBusMessage replyMsg = doCall(callMsg);
 
-    QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));
+    QCOMPARE(replyMsg.type(), QDBusMessage::ReplyMessage);
 
     QVariantList replyArgs = replyMsg.arguments();
     QCOMPARE(replyArgs.size(), 1);
@@ -166,7 +166,7 @@ void tst_QDBusLocalCalls::makeCallsTwoRets()
     callMsg << (QStringList() << "One" << "Two");
     QDBusMessage replyMsg = doCall(callMsg);
 
-    QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));
+    QCOMPARE(replyMsg.type(), QDBusMessage::ReplyMessage);
 
     QVariantList replyArgs = replyMsg.arguments();
     QCOMPARE(replyArgs.size(), 2);
@@ -186,7 +186,7 @@ void tst_QDBusLocalCalls::makeCallsComplex()
     callMsg << QVariant::fromValue(value);
     QDBusMessage replyMsg = doCall(callMsg);
 
-    QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));
+    QCOMPARE(replyMsg.type(), QDBusMessage::ReplyMessage);
 
     QVariantList replyArgs = replyMsg.arguments();
     QCOMPARE(replyArgs.size(), 1);
@@ -201,10 +201,10 @@ void tst_QDBusLocalCalls::makeDelayedCalls()
                                                           "/", QString(), "delayed");
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: cannot call local method 'delayed' at object / (with signature '') on blocking mode");
     QDBusMessage replyMsg = doCall(callMsg);
-    QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ErrorMessage));
+    QCOMPARE(replyMsg.type(), QDBusMessage::ErrorMessage);
 
     QDBusError error(replyMsg);
-    QCOMPARE(int(error.type()), int(QDBusError::InternalError));
+    QCOMPARE(error.type(), QDBusError::InternalError);
 }
 
 void tst_QDBusLocalCalls::asyncReplySignal()
