@@ -8,6 +8,9 @@
 
 #include <algorithm>
 #include <array>
+#ifdef __cpp_lib_span
+#include <span>
+#endif
 #include <vector>
 
 namespace {
@@ -49,6 +52,17 @@ static_assert(std::is_trivially_destructible_v<QSpan<NotNothrowMovable, 0>>);
 static_assert(std::is_convertible_v<QSpan<int, 42>, QSpan<int>>);
 static_assert(std::is_convertible_v<QSpan<int, 0>, QSpan<int>>);
 
+#ifdef __cpp_lib_span
+static_assert(std::is_convertible_v<std::span<int, 42>, QSpan<int>>);
+static_assert(std::is_convertible_v<std::span<int, 0>, QSpan<int>>);
+
+#ifdef __cpp_lib_concepts
+// requires enable_borrowed_range
+static_assert(std::is_convertible_v<QSpan<int, 42>, std::span<int>>);
+static_assert(std::is_convertible_v<QSpan<int, 0>, std::span<int>>);
+#endif // __cpp_lib_concepts
+#endif // __cpp_lib_span
+
 //
 // Mutable spans implicitly convert to read-only ones, but not vice versa:
 //
@@ -59,6 +73,28 @@ static_assert(std::is_convertible_v<QSpan<int, 0>, QSpan<const int, 0>>);
 static_assert(!std::is_convertible_v<QSpan<const int>, QSpan<int>>);
 static_assert(!std::is_convertible_v<QSpan<const int, 42>, QSpan<int, 42>>);
 static_assert(!std::is_convertible_v<QSpan<const int, 0>, QSpan<int, 0>>);
+
+#ifdef __cpp_lib_span
+static_assert(std::is_convertible_v<std::span<int>, QSpan<const int>>);
+static_assert(std::is_convertible_v<std::span<int, 42>, QSpan<const int, 42>>);
+static_assert(std::is_convertible_v<std::span<int, 0>, QSpan<const int, 0>>);
+
+static_assert(!std::is_convertible_v<std::span<const int>, QSpan<int>>);
+static_assert(!std::is_convertible_v<std::span<const int, 42>, QSpan<int, 42>>);
+static_assert(!std::is_convertible_v<std::span<const int, 0>, QSpan<int, 0>>);
+
+static_assert(std::is_convertible_v<QSpan<int>, std::span<const int>>);
+// fixed-size std::span constructors are explicit:
+static_assert(!std::is_convertible_v<QSpan<int, 42>, std::span<const int, 42>>);
+static_assert(!std::is_convertible_v<QSpan<int, 0>, std::span<const int, 0>>);
+// observe: is_convertible<From,To>, but is_constuctible<To,From>!
+static_assert(std::is_constructible_v<std::span<const int, 42>, QSpan<int, 42>>);
+static_assert(std::is_constructible_v<std::span<const int, 0>, QSpan<int, 0>>);
+
+static_assert(!std::is_convertible_v<QSpan<const int>, std::span<int>>);
+static_assert(!std::is_convertible_v<QSpan<const int, 42>, std::span<int, 42>>);
+static_assert(!std::is_convertible_v<QSpan<const int, 0>, std::span<int, 0>>);
+#endif // __cpp_lib_span
 
 class tst_QSpan : public QObject
 {
