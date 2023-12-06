@@ -71,6 +71,7 @@ private Q_SLOTS:
     void zeroExtentSpansMaintainADataPointer() const;
     void fromArray() const;
     void fromStdArray() const;
+    void fromStdInitializerList() const;
     void fromZeroSizeStdArray() const;
     void fromStdVector() const;
     void fromQList() const;
@@ -329,6 +330,21 @@ void tst_QSpan::fromStdArray() const
 {
     std::array<int, 4> ai = {42, 84, 168, 336};
     from_container_impl<4>(ai);
+}
+
+void tst_QSpan::fromStdInitializerList() const
+{
+    std::initializer_list<int> il = {42, 84, 168, 336};
+
+    QSpan sci = il; // CTAD
+    // special case: always deduced as <const int>:
+    static_assert(std::is_same_v<decltype(sci), QSpan<const int>>);
+
+    QCOMPARE_EQ(sci.size(), qsizetype(il.size()));
+    QCOMPARE_EQ(sci.data(), il.begin());
+
+    check_nonempty_span(sci, 4);
+    RETURN_IF_FAILED();
 }
 
 void tst_QSpan::fromZeroSizeStdArray() const
