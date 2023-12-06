@@ -79,6 +79,12 @@ static void sendMouseRelease(QWidget *widget, const QPoint &point, Qt::MouseButt
     QApplication::sendEvent(widget, &event);
 }
 
+static bool isPlatformEGLFS()
+{
+    static const bool isEGLFS = !QGuiApplication::platformName().compare(QLatin1String("eglfs"), Qt::CaseInsensitive);
+    return isEGLFS;
+}
+
 class EventSpy : public QObject
 {
     Q_OBJECT
@@ -648,6 +654,8 @@ void tst_QGraphicsView::openGLViewport()
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
         QSKIP("QOpenGL is not supported on this platform.");
+    if (isPlatformEGLFS())
+        QSKIP("", "Resizing does not work on EGLFS on top level window", Continue);
 
     QGraphicsScene scene;
     scene.setBackgroundBrush(Qt::white);
@@ -1629,6 +1637,9 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust_data()
 
 void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
 {
+    if (isPlatformEGLFS())
+        QSKIP("", "Resizing does not work on EGLFS on top level window", Continue);
+
     QFETCH(QRect, updateRect);
     QFETCH(int, numPaints);
     QFETCH(bool, adjustForAntialiasing);
@@ -1922,6 +1933,9 @@ void tst_QGraphicsView::mapToSceneRect_data()
 
 void tst_QGraphicsView::mapToSceneRect()
 {
+    if (isPlatformEGLFS())
+        QSKIP("", "Resizing does not work on EGLFS on top level window", Continue);
+
     QFETCH(QRect, viewRect);
     QFETCH(QPolygonF, scenePoly);
     QFETCH(qreal, rotation);
@@ -2877,6 +2891,9 @@ public:
 
 void tst_QGraphicsView::scrollBarRanges()
 {
+    if (isPlatformEGLFS())
+        QSKIP("", "Resizing does not work on EGLFS on top level window", Continue);
+
     QFETCH(QByteArray, style);
     QFETCH(QSize, viewportSize);
     QFETCH(QRectF, sceneRect);
@@ -3649,6 +3666,9 @@ void tst_QGraphicsView::moveItemWhileScrolling_data()
 
 void tst_QGraphicsView::moveItemWhileScrolling()
 {
+    if (isPlatformEGLFS())
+        QSKIP("", "Resizing does not work on EGLFS on top level window", Continue);
+
     QFETCH(bool, adjustForAntialiasing);
     QFETCH(bool, changedConnected);
 
@@ -4172,6 +4192,9 @@ void tst_QGraphicsView::update2_data()
 
 void tst_QGraphicsView::update2()
 {
+    if (isPlatformEGLFS())
+        QSKIP("", "Resizing does not work on EGLFS on top level window", Continue);
+
     QFETCH(qreal, penWidth);
     QFETCH(bool, antialiasing);
     QFETCH(bool, changedConnected);
@@ -4771,6 +4794,9 @@ void tst_QGraphicsView::QTBUG_4151_clipAndIgnore()
 
 void tst_QGraphicsView::QTBUG_5859_exposedRect()
 {
+    if (isPlatformEGLFS())
+        QSKIP("", "Resizing does not work on EGLFS on top level window", Continue);
+
     class CustomScene : public QGraphicsScene
     {
     public:
