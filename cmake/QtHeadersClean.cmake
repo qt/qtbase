@@ -120,7 +120,8 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         endif()
 
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            list(APPEND hcleanFLAGS -Wdouble-promotion -Wfloat-conversion)
+            list(APPEND hcleanFLAGS -Wzero-as-null-pointer-constant
+                -Wdouble-promotion -Wfloat-conversion)
         endif()
 
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang|IntelLLVM")
