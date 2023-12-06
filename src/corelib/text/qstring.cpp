@@ -4414,14 +4414,11 @@ qsizetype QString::indexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensit
 }
 
 /*!
+    \fn qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
     \overload indexOf()
 
     \include qstring.qdocinc {qstring-first-index-of} {character} {ch}
 */
-qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
-{
-    return qFindChar(QStringView(unicode(), size()), ch, from, cs);
-}
 
 /*!
   \include qstring.qdocinc {qstring-last-index-of} {string} {str}
@@ -4516,14 +4513,11 @@ qsizetype QString::lastIndexOf(QLatin1StringView str, qsizetype from, Qt::CaseSe
 */
 
 /*!
+  \fn qsizetype QString::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
   \overload lastIndexOf()
 
   \include qstring.qdocinc {qstring-last-index-of} {character} {ch}
 */
-qsizetype QString::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
-{
-    return qLastIndexOf(QStringView(*this), ch, from, cs);
-}
 
 /*!
   \fn QString::lastIndexOf(QChar ch, Qt::CaseSensitivity) const
@@ -9643,6 +9637,11 @@ bool QtPrivate::endsWith(QLatin1StringView haystack, QLatin1StringView needle, Q
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
+qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, char16_t needle0, Qt::CaseSensitivity cs) noexcept
+{
+    return qFindChar(haystack0, needle0, from, cs);
+}
+
 qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringView needle0, Qt::CaseSensitivity cs) noexcept
 {
     const qsizetype l = haystack0.size();
@@ -9800,6 +9799,11 @@ qsizetype QtPrivate::findString(QLatin1StringView haystack, qsizetype from, QLat
 
     QLatin1StringMatcher matcher(needle, Qt::CaseSensitivity::CaseInsensitive);
     return matcher.indexIn(haystack, from);
+}
+
+qsizetype QtPrivate::lastIndexOf(QStringView haystack, qsizetype from, char16_t needle, Qt::CaseSensitivity cs) noexcept
+{
+    return qLastIndexOf(haystack, QChar(needle), from, cs);
 }
 
 qsizetype QtPrivate::lastIndexOf(QStringView haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs) noexcept
