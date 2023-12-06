@@ -438,7 +438,7 @@ template <typename QStringLike, typename std::enable_if<
     std::is_same<QStringLike, QString>::value,
     bool>::type = true>
 inline QStringView qToStringViewIgnoringNull(const QStringLike &s) noexcept
-{ return QStringView(s.data(), s.size()); }
+{ return QStringView(s.begin(), s.size()); }
 
 // QChar inline functions:
 

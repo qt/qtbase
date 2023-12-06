@@ -433,7 +433,7 @@ void tst_QByteArrayView::fromQByteArray() const
     QByteArray empty = "";
 
     QVERIFY(QByteArrayView(null).isNull());
-    QVERIFY(!qToByteArrayViewIgnoringNull(null).isNull());
+    QVERIFY(qToByteArrayViewIgnoringNull(null).isNull());
 
     QVERIFY(QByteArrayView(null).isEmpty());
     QVERIFY(qToByteArrayViewIgnoringNull(null).isEmpty());

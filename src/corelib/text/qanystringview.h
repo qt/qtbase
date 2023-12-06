@@ -352,7 +352,7 @@ template <typename QStringLike, std::enable_if_t<std::disjunction_v<
         std::is_same<QStringLike, QByteArray>
     >, bool> = true>
 [[nodiscard]] inline QAnyStringView qToAnyStringViewIgnoringNull(const QStringLike &s) noexcept
-{ return QAnyStringView(s.data(), s.size()); }
+{ return QAnyStringView(s.begin(), s.size()); }
 
 QT_END_NAMESPACE
 

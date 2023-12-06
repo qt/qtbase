@@ -347,7 +347,7 @@ Q_DECLARE_TYPEINFO_BODY(QBasicUtf8StringView<UseChar8T>, Q_PRIMITIVE_TYPE);
 
 template <typename QStringLike, std::enable_if_t<std::is_same_v<QStringLike, QByteArray>, bool> = true>
 [[nodiscard]] inline q_no_char8_t::QUtf8StringView qToUtf8StringViewIgnoringNull(const QStringLike &s) noexcept
-{ return q_no_char8_t::QUtf8StringView(s.data(), s.size()); }
+{ return q_no_char8_t::QUtf8StringView(s.begin(), s.size()); }
 #endif // Q_QDOC
 
 QT_END_NAMESPACE

@@ -346,7 +346,7 @@ Q_DECLARE_TYPEINFO(QByteArrayView, Q_PRIMITIVE_TYPE);
 template<typename QByteArrayLike,
          std::enable_if_t<std::is_same_v<QByteArrayLike, QByteArray>, bool> = true>
 [[nodiscard]] inline QByteArrayView qToByteArrayViewIgnoringNull(const QByteArrayLike &b) noexcept
-{ return QByteArrayView(b.data(), b.size()); }
+{ return QByteArrayView(b.begin(), b.size()); }
 
 inline int QByteArrayView::compare(QByteArrayView a, Qt::CaseSensitivity cs) const noexcept
 {
