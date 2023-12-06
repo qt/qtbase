@@ -23,7 +23,7 @@ typedef struct _XDisplay Display;
 struct xcb_connection_t;
 #endif
 
-#if defined(Q_OS_UNIX)
+#if QT_CONFIG(wayland)
 struct wl_display;
 struct wl_compositor;
 struct wl_seat;
@@ -46,7 +46,7 @@ struct Q_GUI_EXPORT QX11Application
 };
 #endif
 
-#if defined(Q_OS_UNIX) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(wayland) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QWaylandApplication
 {
     QT_DECLARE_NATIVE_INTERFACE(QWaylandApplication, 1, QGuiApplication)

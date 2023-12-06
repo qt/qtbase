@@ -62,6 +62,7 @@ qt_find_package(WrapVulkanHeaders PROVIDED_TARGETS WrapVulkanHeaders::WrapVulkan
     MODULE_NAME gui QMAKE_LIB vulkan MARK_OPTIONAL)
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(Wayland PROVIDED_TARGETS Wayland::Server MODULE_NAME gui QMAKE_LIB wayland_server)
+    qt_find_package(Wayland PROVIDED_TARGETS Wayland::Client MODULE_NAME gui QMAKE_LIB wayland_client)
 endif()
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(X11 PROVIDED_TARGETS X11::X11 MODULE_NAME gui QMAKE_LIB xlib)
@@ -863,7 +864,7 @@ qt_feature("eglfs_rcar" PRIVATE
 )
 qt_feature("eglfs_viv_wl" PRIVATE
     LABEL "EGLFS i.Mx6 Wayland"
-    CONDITION QT_FEATURE_eglfs_viv AND Wayland_FOUND
+    CONDITION QT_FEATURE_eglfs_viv AND TARGET Wayland::Server
 )
 qt_feature("eglfs_openwfd" PRIVATE
     LABEL "EGLFS OpenWFD"
@@ -1243,6 +1244,11 @@ qt_feature("graphicsframecapture" PRIVATE
     CONDITION TEST_renderdoc OR (MACOS OR IOS)
 )
 qt_feature_definition("undogroup" "QT_NO_UNDOGROUP" NEGATE VALUE "1")
+qt_feature("wayland" PUBLIC
+    SECTION "Platform plugins"
+    LABEL "Wayland"
+    CONDITION TARGET Wayland::Client
+)
 qt_configure_add_summary_section(NAME "Qt Gui")
 qt_configure_add_summary_entry(ARGS "accessibility")
 qt_configure_add_summary_entry(ARGS "freetype")

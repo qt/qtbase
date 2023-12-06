@@ -24,7 +24,7 @@
 #include <qwindowdefs_win.h>
 #endif
 
-#if defined(Q_OS_UNIX)
+#if QT_CONFIG(wayland)
 struct wl_output;
 #endif
 
@@ -84,7 +84,7 @@ struct Q_GUI_EXPORT QWindowsScreen
 };
 #endif
 
-#if defined(Q_OS_UNIX) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(wayland) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QWaylandScreen
 {
     QT_DECLARE_NATIVE_INTERFACE(QWaylandScreen, 1, QScreen)

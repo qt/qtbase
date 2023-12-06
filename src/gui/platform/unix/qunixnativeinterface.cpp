@@ -231,7 +231,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEvdevKeyMapper);
 
 #endif // QT_CONFIG(evdev)
 
-#if defined(Q_OS_UNIX)
+#if QT_CONFIG(wayland)
 
 /*!
     \class QNativeInterface::QWaylandApplication
@@ -301,6 +301,6 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWaylandScreen);
 
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWaylandWindow);
 
-#endif // Q_OS_UNIX
+#endif // QT_CONFIG(wayland)
 
 QT_END_NAMESPACE

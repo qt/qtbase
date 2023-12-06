@@ -21,7 +21,7 @@
 #include <QtCore/qnativeinterface.h>
 #include <QtGui/qwindow.h>
 
-#if defined(Q_OS_UNIX)
+#if QT_CONFIG(wayland)
 #include <any>
 #include <QtCore/qobject.h>
 
@@ -106,7 +106,7 @@ struct Q_GUI_EXPORT QWindowsWindow
 };
 #endif // Q_OS_WIN
 
-#if defined(Q_OS_UNIX)
+#if QT_CONFIG(wayland)
 struct Q_GUI_EXPORT QWaylandWindow : public QObject
 {
     Q_OBJECT

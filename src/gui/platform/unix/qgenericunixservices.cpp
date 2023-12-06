@@ -418,6 +418,7 @@ QByteArray QGenericUnixServices::desktopEnvironment() const
 template<typename F>
 void runWithXdgActivationToken(F &&functionToCall)
 {
+#if QT_CONFIG(wayland)
     QWindow *window = qGuiApp->focusWindow();
 
     if (!window) {
@@ -439,6 +440,9 @@ void runWithXdgActivationToken(F &&functionToCall)
                      &QNativeInterface::Private::QWaylandWindow::xdgActivationTokenCreated,
                      waylandWindow, functionToCall, Qt::SingleShotConnection);
     waylandWindow->requestXdgActivationToken(waylandApp->lastInputSerial());
+#else
+    functionToCall({});
+#endif
 }
 
 bool QGenericUnixServices::openUrl(const QUrl &url)
