@@ -66,6 +66,11 @@ static void resizeAllScreens(emscripten::val event)
     QWasmIntegration::get()->resizeAllScreens();
 }
 
+static void loadLocalFontFamilies(emscripten::val event)
+{
+    QWasmIntegration::get()->loadLocalFontFamilies(event);
+}
+
 EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 {
     function("qtSetContainerElements", &setContainerElements);
@@ -74,6 +79,7 @@ EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
     function("qtResizeContainerElement", &resizeContainerElement);
     function("qtUpdateDpi", &qtUpdateDpi);
     function("qtResizeAllScreens", &resizeAllScreens);
+    function("qtLoadLocalFontFamilies", &loadLocalFontFamilies);
 }
 
 QWasmIntegration *QWasmIntegration::s_instance;
@@ -393,6 +399,11 @@ void QWasmIntegration::resizeAllScreens()
 {
     for (const auto &elementAndScreen : m_screens)
         elementAndScreen.wasmScreen->updateQScreenAndCanvasRenderSize();
+}
+
+void QWasmIntegration::loadLocalFontFamilies(emscripten::val families)
+{
+    m_fontDb->populateLocalFontFamilies(families);
 }
 
 quint64 QWasmIntegration::getTimestamp()

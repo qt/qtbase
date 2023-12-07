@@ -74,8 +74,9 @@ public:
     void addContainerElement(emscripten::val elementArray);
     void removeContainerElement(emscripten::val elementArray);
     void resizeScreen(const emscripten::val &canvas);
-    void resizeAllScreens();
     void updateDpi();
+    void resizeAllScreens();
+    void loadLocalFontFamilies(emscripten::val families);
     void removeBackingStore(QWindow* window);
     static quint64 getTimestamp();
 
