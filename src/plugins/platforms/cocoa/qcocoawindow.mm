@@ -1246,16 +1246,13 @@ void QCocoaWindow::windowDidEndLiveResize()
 
 void QCocoaWindow::windowDidBecomeKey()
 {
-    if (isForeignWindow())
-        return;
-
     // The NSWindow we're part of become key. Check if we're the first
     // responder, and if so, deliver focus window change to our window.
     if (m_view.window.firstResponder != m_view)
         return;
 
     qCDebug(lcQpaWindow) << m_view.window << "became key window."
-        << "Updating focus window to" << this;
+        << "Updating focus window to" << this << "with view" << m_view;
 
     if (windowIsPopupType()) {
         qCDebug(lcQpaWindow) << "Window is popup. Skipping focus window change.";
@@ -1269,16 +1266,13 @@ void QCocoaWindow::windowDidBecomeKey()
 
 void QCocoaWindow::windowDidResignKey()
 {
-    if (isForeignWindow())
-        return;
-
     // The NSWindow we're part of lost key. Check if we're the first
     // responder, and if so, deliver window deactivation to our window.
     if (m_view.window.firstResponder != m_view)
         return;
 
     qCDebug(lcQpaWindow) << m_view.window << "resigned key window."
-        << "Clearing focus window" << this;
+        << "Clearing focus window" << this << "with view" << m_view;
 
     // Make sure popups are closed before we deliver activation changes, which are
     // otherwise ignored by QApplication.
