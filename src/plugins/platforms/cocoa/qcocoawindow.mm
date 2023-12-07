@@ -1246,19 +1246,21 @@ void QCocoaWindow::windowDidEndLiveResize()
 
 void QCocoaWindow::windowDidBecomeKey()
 {
-    if (!isContentView())
-        return;
-
     if (isForeignWindow())
         return;
 
-    QNSView *firstResponderView = qt_objc_cast<QNSView *>(m_view.window.firstResponder);
-    if (!firstResponderView)
+    // The NSWindow we're part of become key. Check if we're the first
+    // responder, and if so, deliver focus window change to our window.
+    if (m_view.window.firstResponder != m_view)
         return;
 
-    const QCocoaWindow *focusCocoaWindow = firstResponderView.platformWindow;
-    if (focusCocoaWindow->windowIsPopupType())
+    qCDebug(lcQpaWindow) << m_view.window << "became key window."
+        << "Updating focus window to" << this;
+
+    if (windowIsPopupType()) {
+        qCDebug(lcQpaWindow) << "Window is popup. Skipping focus window change.";
         return;
+    }
 
     // See also [QNSView becomeFirstResponder]
     QWindowSystemInterface::handleFocusWindowChanged<QWindowSystemInterface::SynchronousDelivery>(
@@ -1267,11 +1269,16 @@ void QCocoaWindow::windowDidBecomeKey()
 
 void QCocoaWindow::windowDidResignKey()
 {
-    if (!isContentView())
-        return;
-
     if (isForeignWindow())
         return;
+
+    // The NSWindow we're part of lost key. Check if we're the first
+    // responder, and if so, deliver window deactivation to our window.
+    if (m_view.window.firstResponder != m_view)
+        return;
+
+    qCDebug(lcQpaWindow) << m_view.window << "resigned key window."
+        << "Clearing focus window" << this;
 
     // Make sure popups are closed before we deliver activation changes, which are
     // otherwise ignored by QApplication.
@@ -1283,6 +1290,8 @@ void QCocoaWindow::windowDidResignKey()
     NSWindow *newKeyWindow = [NSApp keyWindow];
     if (newKeyWindow && newKeyWindow != m_view.window
         && [newKeyWindow conformsToProtocol:@protocol(QNSWindowProtocol)]) {
+        qCDebug(lcQpaWindow) << "New key window" << newKeyWindow
+            << "is Qt window. Deferring focus window change.";
         return;
     }
 
